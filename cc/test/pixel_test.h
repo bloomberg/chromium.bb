@@ -111,7 +111,7 @@ class PixelTest : public testing::Test {
   void EnableExternalStencilTest();
 
  private:
-  void ReadbackResult(base::Closure quit_run_loop,
+  void ReadbackResult(base::OnceClosure quit_run_loop,
                       std::unique_ptr<viz::CopyOutputResult> result);
 
   bool PixelsMatchReference(const base::FilePath& ref_file,

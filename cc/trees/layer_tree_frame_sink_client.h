@@ -48,8 +48,8 @@ class CC_EXPORT LayerTreeFrameSinkClient {
   // If set, |callback| will be called subsequent to each new tree activation,
   // regardless of the compositor visibility or damage. |callback| must remain
   // valid for the lifetime of the LayerTreeFrameSinkClient or until
-  // unregistered by giving a null base::Closure.
-  virtual void SetTreeActivationCallback(const base::Closure& callback) = 0;
+  // unregistered by giving a null callback.
+  virtual void SetTreeActivationCallback(base::RepeatingClosure callback) = 0;
 
   // Notification that the previous CompositorFrame given to
   // SubmitCompositorFrame() has been processed and that another frame

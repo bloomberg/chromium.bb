@@ -16,9 +16,9 @@ namespace {
 class TestNotifier : public DelayedUniqueNotifier {
  public:
   TestNotifier(base::SequencedTaskRunner* task_runner,
-               const base::Closure& closure,
+               base::RepeatingClosure closure,
                const base::TimeDelta& delay)
-      : DelayedUniqueNotifier(task_runner, closure, delay) {}
+      : DelayedUniqueNotifier(task_runner, std::move(closure), delay) {}
   ~TestNotifier() override = default;
 
   // Overridden from DelayedUniqueNotifier:
@@ -54,10 +54,10 @@ class DelayedUniqueNotifierTest : public testing::Test {
 
 TEST_F(DelayedUniqueNotifierTest, ZeroDelay) {
   base::TimeDelta delay;  // Zero delay.
-  TestNotifier notifier(
-      task_runner_.get(),
-      base::Bind(&DelayedUniqueNotifierTest::Notify, base::Unretained(this)),
-      delay);
+  TestNotifier notifier(task_runner_.get(),
+                        base::BindRepeating(&DelayedUniqueNotifierTest::Notify,
+                                            base::Unretained(this)),
+                        delay);
 
   EXPECT_EQ(0, NotificationCount());
 
@@ -89,10 +89,10 @@ TEST_F(DelayedUniqueNotifierTest, ZeroDelay) {
 
 TEST_F(DelayedUniqueNotifierTest, SmallDelay) {
   base::TimeDelta delay = base::TimeDelta::FromMicroseconds(20);
-  TestNotifier notifier(
-      task_runner_.get(),
-      base::Bind(&DelayedUniqueNotifierTest::Notify, base::Unretained(this)),
-      delay);
+  TestNotifier notifier(task_runner_.get(),
+                        base::BindRepeating(&DelayedUniqueNotifierTest::Notify,
+                                            base::Unretained(this)),
+                        delay);
 
   EXPECT_EQ(0, NotificationCount());
 
@@ -149,10 +149,10 @@ TEST_F(DelayedUniqueNotifierTest, SmallDelay) {
 
 TEST_F(DelayedUniqueNotifierTest, RescheduleDelay) {
   base::TimeDelta delay = base::TimeDelta::FromMicroseconds(20);
-  TestNotifier notifier(
-      task_runner_.get(),
-      base::Bind(&DelayedUniqueNotifierTest::Notify, base::Unretained(this)),
-      delay);
+  TestNotifier notifier(task_runner_.get(),
+                        base::BindRepeating(&DelayedUniqueNotifierTest::Notify,
+                                            base::Unretained(this)),
+                        delay);
 
   base::TimeTicks schedule_time;
   // Move time 19 units forward and reschedule, expecting that we still need to
@@ -191,10 +191,10 @@ TEST_F(DelayedUniqueNotifierTest, RescheduleDelay) {
 
 TEST_F(DelayedUniqueNotifierTest, CancelAndHasPendingNotification) {
   base::TimeDelta delay = base::TimeDelta::FromMicroseconds(20);
-  TestNotifier notifier(
-      task_runner_.get(),
-      base::Bind(&DelayedUniqueNotifierTest::Notify, base::Unretained(this)),
-      delay);
+  TestNotifier notifier(task_runner_.get(),
+                        base::BindRepeating(&DelayedUniqueNotifierTest::Notify,
+                                            base::Unretained(this)),
+                        delay);
 
   EXPECT_EQ(0, NotificationCount());
 
@@ -261,10 +261,10 @@ TEST_F(DelayedUniqueNotifierTest, CancelAndHasPendingNotification) {
 
 TEST_F(DelayedUniqueNotifierTest, ShutdownWithScheduledTask) {
   base::TimeDelta delay = base::TimeDelta::FromMicroseconds(20);
-  TestNotifier notifier(
-      task_runner_.get(),
-      base::Bind(&DelayedUniqueNotifierTest::Notify, base::Unretained(this)),
-      delay);
+  TestNotifier notifier(task_runner_.get(),
+                        base::BindRepeating(&DelayedUniqueNotifierTest::Notify,
+                                            base::Unretained(this)),
+                        delay);
 
   EXPECT_EQ(0, NotificationCount());
 
@@ -302,10 +302,10 @@ TEST_F(DelayedUniqueNotifierTest, ShutdownWithScheduledTask) {
 
 TEST_F(DelayedUniqueNotifierTest, ShutdownPreventsSchedule) {
   base::TimeDelta delay = base::TimeDelta::FromMicroseconds(20);
-  TestNotifier notifier(
-      task_runner_.get(),
-      base::Bind(&DelayedUniqueNotifierTest::Notify, base::Unretained(this)),
-      delay);
+  TestNotifier notifier(task_runner_.get(),
+                        base::BindRepeating(&DelayedUniqueNotifierTest::Notify,
+                                            base::Unretained(this)),
+                        delay);
 
   EXPECT_EQ(0, NotificationCount());
 

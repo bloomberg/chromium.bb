@@ -29,7 +29,7 @@ ImageController::ImageController(
 ImageController::~ImageController() {
   StopWorkerTasks();
   for (auto& request : orphaned_decode_requests_)
-    request.callback.Run(request.id, ImageDecodeResult::FAILURE);
+    std::move(request.callback).Run(request.id, ImageDecodeResult::FAILURE);
 }
 
 void ImageController::StopWorkerTasks() {
@@ -221,7 +221,7 @@ std::vector<scoped_refptr<TileTask>> ImageController::SetPredecodeImages(
 
 ImageController::ImageDecodeRequestId ImageController::QueueImageDecode(
     const DrawImage& draw_image,
-    const ImageDecodedCallback& callback) {
+    ImageDecodedCallback callback) {
   // We must not receive any image requests if we have no worker.
   CHECK(worker_task_runner_);
 
@@ -240,8 +240,9 @@ ImageController::ImageDecodeRequestId ImageController::QueueImageDecode(
 
   // Schedule the task and signal that there is more work.
   base::AutoLock hold(lock_);
-  image_decode_queue_[id] = ImageDecodeRequest(
-      id, draw_image, callback, std::move(result.task), result.need_unref);
+  image_decode_queue_[id] =
+      ImageDecodeRequest(id, draw_image, std::move(callback),
+                         std::move(result.task), result.need_unref);
 
   // If this is the only image decode request, schedule a task to run.
   // Otherwise, the task will be scheduled in the previou task's completion.
@@ -268,7 +269,8 @@ void ImageController::UnlockImageDecode(ImageDecodeRequestId id) {
 
 void ImageController::ProcessNextImageDecodeOnWorkerThread() {
   TRACE_EVENT0("cc", "ImageController::ProcessNextImageDecodeOnWorkerThread");
-  ImageDecodeRequest decode;
+  scoped_refptr<TileTask> decode_task;
+  ImageDecodeRequestId decode_id;
   {
     base::AutoLock hold(lock_);
 
@@ -279,8 +281,8 @@ void ImageController::ProcessNextImageDecodeOnWorkerThread() {
     // Take the next request from the queue.
     auto decode_it = image_decode_queue_.begin();
     DCHECK(decode_it != image_decode_queue_.end());
-    decode = std::move(decode_it->second);
-    image_decode_queue_.erase(decode_it);
+    decode_task = decode_it->second.task;
+    decode_id = decode_it->second.id;
 
     // Notify that the task will need completion. Note that there are two cases
     // where we process this. First, we might complete this task as a response
@@ -289,7 +291,9 @@ void ImageController::ProcessNextImageDecodeOnWorkerThread() {
     // (either post task happens after running, or the thread was already joined
     // which means the task ran). This means that we can put the decode into
     // |requests_needing_completion_| here before actually running the task.
-    requests_needing_completion_[decode.id] = decode;
+    requests_needing_completion_[decode_id] = std::move(decode_it->second);
+
+    image_decode_queue_.erase(decode_it);
   }
 
   // Run the task if we need to run it. If the task state isn't new, then
@@ -298,15 +302,15 @@ void ImageController::ProcessNextImageDecodeOnWorkerThread() {
   // Note that the other tasks's completion will also run first, since the
   // requests are ordered. So, when we process this task's completion, we
   // won't actually do anything with the task and simply issue the callback.
-  if (decode.task && decode.task->state().IsNew()) {
-    decode.task->state().DidSchedule();
-    decode.task->state().DidStart();
-    decode.task->RunOnWorkerThread();
-    decode.task->state().DidFinish();
+  if (decode_task && decode_task->state().IsNew()) {
+    decode_task->state().DidSchedule();
+    decode_task->state().DidStart();
+    decode_task->RunOnWorkerThread();
+    decode_task->state().DidFinish();
   }
   origin_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&ImageController::ImageDecodeCompleted,
-                                weak_ptr_, decode.id));
+                                weak_ptr_, decode_id));
 }
 
 void ImageController::ImageDecodeCompleted(ImageDecodeRequestId id) {
@@ -357,7 +361,7 @@ void ImageController::ImageDecodeCompleted(ImageDecodeRequestId id) {
                      base::Unretained(this)));
 
   // Finally run the requested callback.
-  callback.Run(id, result);
+  std::move(callback).Run(id, result);
 }
 
 void ImageController::GenerateTasksForOrphanedRequests() {
@@ -393,23 +397,19 @@ ImageController::ImageDecodeRequest::ImageDecodeRequest() = default;
 ImageController::ImageDecodeRequest::ImageDecodeRequest(
     ImageDecodeRequestId id,
     const DrawImage& draw_image,
-    const ImageDecodedCallback& callback,
+    ImageDecodedCallback callback,
     scoped_refptr<TileTask> task,
     bool need_unref)
     : id(id),
       draw_image(draw_image),
-      callback(callback),
+      callback(std::move(callback)),
       task(std::move(task)),
       need_unref(need_unref) {}
 ImageController::ImageDecodeRequest::ImageDecodeRequest(
     ImageDecodeRequest&& other) = default;
-ImageController::ImageDecodeRequest::ImageDecodeRequest(
-    const ImageDecodeRequest& other) = default;
 ImageController::ImageDecodeRequest::~ImageDecodeRequest() = default;
 
 ImageController::ImageDecodeRequest& ImageController::ImageDecodeRequest::
 operator=(ImageDecodeRequest&& other) = default;
-ImageController::ImageDecodeRequest& ImageController::ImageDecodeRequest::
-operator=(const ImageDecodeRequest& other) = default;
 
 }  // namespace cc

@@ -2265,7 +2265,7 @@ class MockReadyToDrawRasterBufferProviderImpl
       SetReadyToDrawCallback,
       uint64_t(
           const std::vector<const ResourcePool::InUsePoolResource*>& resources,
-          const base::RepeatingClosure& callback,
+          base::OnceClosure callback,
           uint64_t pending_callback_id));
 
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
@@ -2369,7 +2369,7 @@ TEST_F(TileManagerReadyToDrawTest, SmoothActivationWaitsOnCallback) {
   host_impl()->SetTreePriority(SMOOTHNESS_TAKES_PRIORITY);
   SetupTreesWithPendingTreeTiles();
 
-  base::RepeatingClosure callback;
+  base::OnceClosure callback;
   {
     base::RunLoop run_loop;
 
@@ -2380,16 +2380,15 @@ TEST_F(TileManagerReadyToDrawTest, SmoothActivationWaitsOnCallback) {
         .WillRepeatedly(Return(false));
 
     EXPECT_CALL(*mock_raster_buffer_provider(), SetReadyToDrawCallback(_, _, 0))
-        .WillOnce(testing::Invoke(
-            [&run_loop, &callback](
-                const std::vector<const ResourcePool::InUsePoolResource*>&
-                    resources,
-                const base::RepeatingClosure& callback_in,
-                uint64_t pending_callback_id) {
-              callback = callback_in;
-              run_loop.Quit();
-              return 1;
-            }));
+        .WillOnce([&run_loop, &callback](
+                      const std::vector<const ResourcePool::InUsePoolResource*>&
+                          resources,
+                      base::OnceClosure callback_in,
+                      uint64_t pending_callback_id) {
+          callback = std::move(callback_in);
+          run_loop.Quit();
+          return 1;
+        });
     host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
     run_loop.Run();
   }
@@ -2404,7 +2403,7 @@ TEST_F(TileManagerReadyToDrawTest, SmoothActivationWaitsOnCallback) {
     EXPECT_CALL(*mock_raster_buffer_provider(),
                 IsResourceReadyToDraw(testing::_))
         .WillRepeatedly(Return(true));
-    callback.Run();
+    std::move(callback).Run();
     run_loop.Run();
   }
 
@@ -2432,7 +2431,7 @@ TEST_F(TileManagerReadyToDrawTest, SmoothDrawWaitsOnCallback) {
   host_impl()->SetTreePriority(SMOOTHNESS_TAKES_PRIORITY);
   SetupTreesWithActiveTreeTiles();
 
-  base::RepeatingClosure callback;
+  base::OnceClosure callback;
   {
     base::RunLoop run_loop;
 
@@ -2443,16 +2442,15 @@ TEST_F(TileManagerReadyToDrawTest, SmoothDrawWaitsOnCallback) {
         .WillRepeatedly(Return(false));
 
     EXPECT_CALL(*mock_raster_buffer_provider(), SetReadyToDrawCallback(_, _, 0))
-        .WillOnce(Invoke(
-            [&run_loop, &callback](
-                const std::vector<const ResourcePool::InUsePoolResource*>&
-                    resources,
-                const base::RepeatingClosure& callback_in,
-                uint64_t pending_callback_id) {
-              callback = callback_in;
-              run_loop.Quit();
-              return 1;
-            }));
+        .WillOnce([&run_loop, &callback](
+                      const std::vector<const ResourcePool::InUsePoolResource*>&
+                          resources,
+                      base::OnceClosure callback_in,
+                      uint64_t pending_callback_id) {
+          callback = std::move(callback_in);
+          run_loop.Quit();
+          return 1;
+        });
     host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
     run_loop.Run();
   }
@@ -2467,7 +2465,7 @@ TEST_F(TileManagerReadyToDrawTest, SmoothDrawWaitsOnCallback) {
     EXPECT_CALL(*mock_raster_buffer_provider(),
                 IsResourceReadyToDraw(testing::_))
         .WillRepeatedly(Return(true));
-    callback.Run();
+    std::move(callback).Run();
     run_loop.Run();
   }
 
@@ -2633,21 +2631,20 @@ TEST_F(TileManagerReadyToDrawTest, ReadyToDrawRespectsRequirementChange) {
   EXPECT_CALL(*mock_raster_buffer_provider(), IsResourceReadyToDraw(testing::_))
       .WillRepeatedly(Return(false));
 
-  base::RepeatingClosure callback;
+  base::OnceClosure callback;
   {
     base::RunLoop run_loop;
 
     EXPECT_CALL(*mock_raster_buffer_provider(), SetReadyToDrawCallback(_, _, 0))
-        .WillOnce(testing::Invoke(
-            [&run_loop, &callback](
-                const std::vector<const ResourcePool::InUsePoolResource*>&
-                    resources,
-                const base::RepeatingClosure& callback_in,
-                uint64_t pending_callback_id) {
-              callback = callback_in;
-              run_loop.Quit();
-              return 1;
-            }));
+        .WillOnce([&run_loop, &callback](
+                      const std::vector<const ResourcePool::InUsePoolResource*>&
+                          resources,
+                      base::OnceClosure callback_in,
+                      uint64_t pending_callback_id) {
+          callback = std::move(callback_in);
+          run_loop.Quit();
+          return 1;
+        });
     host_impl()->tile_manager()->DidModifyTilePriorities();
     host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
     run_loop.Run();

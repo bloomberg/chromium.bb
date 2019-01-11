@@ -397,11 +397,12 @@ TileManager::TileManager(
                              tile_manager_settings_.min_image_bytes_to_checker),
       more_tiles_need_prepare_check_notifier_(
           task_runner_,
-          base::Bind(&TileManager::CheckIfMoreTilesNeedToBePrepared,
-                     base::Unretained(this))),
-      signals_check_notifier_(task_runner_,
-                              base::Bind(&TileManager::FlushAndIssueSignals,
-                                         base::Unretained(this))),
+          base::BindRepeating(&TileManager::CheckIfMoreTilesNeedToBePrepared,
+                              base::Unretained(this))),
+      signals_check_notifier_(
+          task_runner_,
+          base::BindRepeating(&TileManager::FlushAndIssueSignals,
+                              base::Unretained(this))),
       has_scheduled_tile_tasks_(false),
       prepare_tiles_count_(0u),
       next_tile_id_(0u),
@@ -1650,8 +1651,9 @@ void TileManager::CheckPendingGpuWorkAndIssueSignals() {
     pending_required_for_activation_callback_id_ =
         raster_buffer_provider_->SetReadyToDrawCallback(
             required_for_activation,
-            base::Bind(&TileManager::CheckPendingGpuWorkAndIssueSignals,
-                       ready_to_draw_callback_weak_ptr_factory_.GetWeakPtr()),
+            base::BindOnce(
+                &TileManager::CheckPendingGpuWorkAndIssueSignals,
+                ready_to_draw_callback_weak_ptr_factory_.GetWeakPtr()),
             pending_required_for_activation_callback_id_);
   }
 
@@ -1661,8 +1663,9 @@ void TileManager::CheckPendingGpuWorkAndIssueSignals() {
     pending_required_for_draw_callback_id_ =
         raster_buffer_provider_->SetReadyToDrawCallback(
             required_for_draw,
-            base::Bind(&TileManager::CheckPendingGpuWorkAndIssueSignals,
-                       ready_to_draw_callback_weak_ptr_factory_.GetWeakPtr()),
+            base::BindOnce(
+                &TileManager::CheckPendingGpuWorkAndIssueSignals,
+                ready_to_draw_callback_weak_ptr_factory_.GetWeakPtr()),
             pending_required_for_draw_callback_id_);
   }
 

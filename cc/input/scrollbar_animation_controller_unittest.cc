@@ -1467,7 +1467,7 @@ TEST_F(ScrollbarAnimationControllerAndroidTest,
   EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
   scrollbar_controller_->DidScrollEnd();
 
-  EXPECT_TRUE(start_fade_.Equals(base::Closure()));
+  EXPECT_TRUE(start_fade_.is_null());
 
   time += base::TimeDelta::FromSeconds(100);
   scrollbar_controller_->Animate(time);
@@ -1490,7 +1490,7 @@ TEST_F(ScrollbarAnimationControllerAndroidTest,
   EXPECT_TRUE(scrollbar_controller_->ScrollbarsHidden());
 
   // No fade out animation should have been enqueued.
-  EXPECT_TRUE(start_fade_.Equals(base::Closure()));
+  EXPECT_TRUE(start_fade_.is_null());
 }
 
 TEST_F(ScrollbarAnimationControllerAndroidTest, HideOnResize) {
@@ -1626,7 +1626,7 @@ TEST_F(ScrollbarAnimationControllerAndroidTest, AwakenByScrollingGesture) {
   EXPECT_FALSE(did_request_animate_);
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
 
-  EXPECT_TRUE(start_fade_.Equals(base::Closure()));
+  EXPECT_TRUE(start_fade_.is_null());
 
   time += base::TimeDelta::FromSeconds(100);
 

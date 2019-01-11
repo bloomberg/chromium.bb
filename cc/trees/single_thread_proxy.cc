@@ -458,8 +458,9 @@ void SingleThreadProxy::DidReceiveCompositorFrameAckOnImplThread() {
     // TextureLayer) is PostTasked and we want to make sure ack is received
     // after resources are returned.
     task_runner_provider_->MainThreadTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&SingleThreadProxy::DidReceiveCompositorFrameAck,
-                              frame_sink_bound_weak_ptr_));
+        FROM_HERE,
+        base::BindOnce(&SingleThreadProxy::DidReceiveCompositorFrameAck,
+                       frame_sink_bound_weak_ptr_));
   }
 }
 

@@ -4110,7 +4110,7 @@ class OnDrawLayerTreeFrameSink : public viz::TestLayerTreeFrameSink {
       base::SingleThreadTaskRunner* task_runner,
       bool synchronous_composite,
       double refresh_rate,
-      base::Closure invalidate_callback)
+      base::RepeatingClosure invalidate_callback)
       : TestLayerTreeFrameSink(std::move(compositor_context_provider),
                                std::move(worker_context_provider),
                                gpu_memory_buffer_manager,
@@ -4131,7 +4131,7 @@ class OnDrawLayerTreeFrameSink : public viz::TestLayerTreeFrameSink {
   }
 
  private:
-  const base::Closure invalidate_callback_;
+  const base::RepeatingClosure invalidate_callback_;
 };
 
 class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
@@ -4148,7 +4148,7 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
       scoped_refptr<viz::RasterContextProvider> worker_context_provider)
       override {
-    auto on_draw_callback = base::Bind(
+    auto on_draw_callback = base::BindRepeating(
         &LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor::
             CallOnDraw,
         base::Unretained(this));
@@ -5348,10 +5348,10 @@ class LayerTreeHostTestTreeActivationCallback : public LayerTreeHostTest {
   void SetCallback(LayerTreeHostImpl* host_impl, bool enable) {
     host_impl->SetTreeActivationCallback(
         enable
-            ? base::Bind(
+            ? base::BindRepeating(
                   &LayerTreeHostTestTreeActivationCallback::ActivationCallback,
                   base::Unretained(this))
-            : base::Closure());
+            : base::RepeatingClosure());
   }
 
   void ActivationCallback() { ++callback_count_; }
@@ -5895,10 +5895,10 @@ class LayerTreeHostTestKeepSwapPromise : public LayerTreeHostTest {
 
   void SetCallback(LayerTreeHostImpl* host_impl, bool enable) {
     host_impl->SetTreeActivationCallback(
-        enable
-            ? base::Bind(&LayerTreeHostTestKeepSwapPromise::ActivationCallback,
-                         base::Unretained(this))
-            : base::Closure());
+        enable ? base::BindRepeating(
+                     &LayerTreeHostTestKeepSwapPromise::ActivationCallback,
+                     base::Unretained(this))
+               : base::RepeatingClosure());
   }
 
   void DisplayDidDrawAndSwapOnThread() override {
@@ -6012,10 +6012,10 @@ class LayerTreeHostTestKeepSwapPromiseMFBA : public LayerTreeHostTest {
 
   void SetCallback(LayerTreeHostImpl* host_impl, bool enable) {
     host_impl->SetTreeActivationCallback(
-        enable ? base::Bind(
+        enable ? base::BindRepeating(
                      &LayerTreeHostTestKeepSwapPromiseMFBA::ActivationCallback,
                      base::Unretained(this))
-               : base::Closure());
+               : base::RepeatingClosure());
   }
 
   void DisplayDidDrawAndSwapOnThread() override {
@@ -8299,9 +8299,9 @@ class LayerTreeHostTestQueueImageDecode : public LayerTreeHostTest {
     image_ = DrawImage(CreateDiscardablePaintImage(gfx::Size(400, 400)),
                        SkIRect::MakeWH(400, 400), kNone_SkFilterQuality,
                        SkMatrix::I(), PaintImage::kDefaultFrameIndex);
-    auto callback =
-        base::Bind(&LayerTreeHostTestQueueImageDecode::ImageDecodeFinished,
-                   base::Unretained(this));
+    auto callback = base::BindRepeating(
+        &LayerTreeHostTestQueueImageDecode::ImageDecodeFinished,
+        base::Unretained(this));
     // Schedule the decode twice for the same image.
     layer_tree_host()->QueueImageDecode(image_.paint_image(), callback);
     layer_tree_host()->QueueImageDecode(image_.paint_image(), callback);
@@ -8356,10 +8356,10 @@ class LayerTreeHostTestQueueImageDecodeNonLazy : public LayerTreeHostTest {
                            .set_image(SkImage::MakeFromBitmap(bitmap_),
                                       PaintImage::GetNextContentId())
                            .TakePaintImage();
-    auto callback = base::Bind(
+    auto callback = base::BindOnce(
         &LayerTreeHostTestQueueImageDecodeNonLazy::ImageDecodeFinished,
         base::Unretained(this));
-    layer_tree_host()->QueueImageDecode(image, callback);
+    layer_tree_host()->QueueImageDecode(image, std::move(callback));
   }
 
   void ImageDecodeFinished(bool decode_succeeded) {
@@ -8431,9 +8431,9 @@ class LayerTreeHostTestDiscardAckAfterRelease : public LayerTreeHostTest {
     // that WillReceiveCompositorFrameAck which we PostTask below will be called
     // before DidReceiveCompositorFrameAck.
     MainThreadTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&LayerTreeHostTestDiscardAckAfterRelease::
-                                  WillReceiveCompositorFrameAck,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&LayerTreeHostTestDiscardAckAfterRelease::
+                                      WillReceiveCompositorFrameAck,
+                                  base::Unretained(this)));
   }
 
   void WillReceiveCompositorFrameAck() {
@@ -8460,8 +8460,8 @@ class LayerTreeHostTestDiscardAckAfterRelease : public LayerTreeHostTest {
     // before we are in CheckFrameAck.
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&LayerTreeHostTestDiscardAckAfterRelease::CheckFrameAck,
-                   base::Unretained(this)));
+        base::BindOnce(&LayerTreeHostTestDiscardAckAfterRelease::CheckFrameAck,
+                       base::Unretained(this)));
   }
 
   void DidReceiveCompositorFrameAck() override { received_ack_ = true; }

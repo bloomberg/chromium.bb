@@ -228,7 +228,7 @@ class FastInkView::LayerTreeFrameSinkHolder
     if (root_window_ && exported_resources_.empty())
       ScheduleDelete();
   }
-  void SetTreeActivationCallback(const base::Closure& callback) override {}
+  void SetTreeActivationCallback(base::RepeatingClosure callback) override {}
   void DidReceiveCompositorFrameAck() override {
     if (view_)
       view_->DidReceiveCompositorFrameAck();
