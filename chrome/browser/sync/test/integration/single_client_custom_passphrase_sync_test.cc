@@ -67,9 +67,7 @@ class DatatypeCommitCountingFakeServerObserver : public FakeServer::Observer {
 // key derivation methods are set, read and handled properly. They do not,
 // however, directly ensure that two clients syncing through the same account
 // will be able to access each others' data in the presence of a custom
-// passphrase. For this, a separate two-client test will be used.
-//
-// TODO(davidovic): Add two-client tests and update the above comment.
+// passphrase. For this, a separate two-client test is be used.
 class SingleClientCustomPassphraseSyncTest : public SyncTest {
  public:
   SingleClientCustomPassphraseSyncTest() : SyncTest(SINGLE_CLIENT) {}
@@ -193,10 +191,39 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
       /*passphrase=*/"hunter2"));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
+class SingleClientCustomPassphraseForceDisableScryptSyncTest
+    : public SingleClientCustomPassphraseSyncTest {
+ public:
+  SingleClientCustomPassphraseForceDisableScryptSyncTest()
+      : features_(/*force_disabled=*/true, /*use_for_new_passphrases=*/false) {}
+
+ private:
+  ScopedScryptFeatureToggler features_;
+};
+
+class SingleClientCustomPassphraseDoNotUseScryptSyncTest
+    : public SingleClientCustomPassphraseSyncTest {
+ public:
+  SingleClientCustomPassphraseDoNotUseScryptSyncTest()
+      : features_(/*force_disabled=*/false, /*use_for_new_passphrases=*/false) {
+  }
+
+ private:
+  ScopedScryptFeatureToggler features_;
+};
+
+class SingleClientCustomPassphraseUseScryptSyncTest
+    : public SingleClientCustomPassphraseSyncTest {
+ public:
+  SingleClientCustomPassphraseUseScryptSyncTest()
+      : features_(/*force_disabled=*/false, /*use_for_new_passphrases=*/true) {}
+
+ private:
+  ScopedScryptFeatureToggler features_;
+};
+
+IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
                        CommitsEncryptedDataUsingPbkdf2WhenScryptDisabled) {
-  ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
-                                     /*use_for_new_passphrases=*/false);
   SetEncryptionPassphraseForClient(/*index=*/0, "hunter2");
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AddURL(/*profile=*/0, "PBKDF2 encrypted",
@@ -212,10 +239,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
       /*passphrase=*/"hunter2"));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
+IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseUseScryptSyncTest,
                        CommitsEncryptedDataUsingScryptWhenScryptEnabled) {
-  ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
-                                     /*use_for_new_passphrases=*/true);
   SetEncryptionPassphraseForClient(/*index=*/0, "hunter2");
   ASSERT_TRUE(SetupSync());
 
@@ -264,10 +289,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
   CanDecryptScryptKeyEncryptedDataWhenScryptNotDisabled
 #endif
 IN_PROC_BROWSER_TEST_F(
-    SingleClientCustomPassphraseSyncTest,
+    SingleClientCustomPassphraseDoNotUseScryptSyncTest,
     MAYBE_CanDecryptScryptKeyEncryptedDataWhenScryptNotDisabled) {
-  ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
-                                     /*use_for_new_passphrases_=*/false);
   KeyParams key_params = {
       KeyDerivationParams::CreateForScrypt("someConstantSalt"), "hunter2"};
   InjectEncryptedServerBookmark("scypt-encrypted bookmark",
@@ -283,7 +306,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(WaitForClientBookmarkWithTitle("scypt-encrypted bookmark"));
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
+// See crbug.com/915219 about THREAD_SANITIZER.
+#if defined(GOOGLE_CHROME_BUILD) || defined(THREAD_SANITIZER)
 // TODO(crbug.com/902297): Make the test pass in Chrome-branded builds.
 #define MAYBE_CannotDecryptScryptKeyEncryptedDataWhenScryptDisabled \
   DISABLED_CannotDecryptScryptKeyEncryptedDataWhenScryptDisabled
@@ -292,18 +316,23 @@ IN_PROC_BROWSER_TEST_F(
   CannotDecryptScryptKeyEncryptedDataWhenScryptDisabled
 #endif
 IN_PROC_BROWSER_TEST_F(
-    SingleClientCustomPassphraseSyncTest,
+    SingleClientCustomPassphraseForceDisableScryptSyncTest,
     MAYBE_CannotDecryptScryptKeyEncryptedDataWhenScryptDisabled) {
-  KeyParams key_params = {
-      KeyDerivationParams::CreateForScrypt("someConstantSalt"), "hunter2"};
-  sync_pb::NigoriSpecifics nigori = CreateCustomPassphraseNigori(key_params);
-  InjectEncryptedServerBookmark("scypt-encrypted bookmark",
-                                GURL("http://example.com/doesnt-matter"),
-                                key_params);
-  // Can only set feature state now because creating a Nigori and injecting an
-  // encrypted bookmark both require key derivation using scrypt.
-  ScopedScryptFeatureToggler toggler(/*force_disabled=*/true,
-                                     /*use_for_new_passphrases_=*/false);
+  sync_pb::NigoriSpecifics nigori;
+  {
+    // Creating a Nigori and injecting an encrypted bookmark both require key
+    // derivation using scrypt, so temporarily enable it. This overrides the
+    // feature toggle in the test fixture, which will be restored after this
+    // block.
+    ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
+                                       /*use_for_new_passphrases_=*/false);
+    KeyParams key_params = {
+        KeyDerivationParams::CreateForScrypt("someConstantSalt"), "hunter2"};
+    nigori = CreateCustomPassphraseNigori(key_params);
+    InjectEncryptedServerBookmark("scypt-encrypted bookmark",
+                                  GURL("http://example.com/doesnt-matter"),
+                                  key_params);
+  }
   SetNigoriInFakeServer(GetFakeServer(), nigori);
   SetDecryptionPassphraseForClient(/*index=*/0, "hunter2");
 
@@ -312,10 +341,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(WaitForPassphraseRequiredState(/*desired_state=*/true));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
+IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
                        DoesNotLeakUnencryptedData) {
-  ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
-                                     /*use_for_new_passphrases=*/false);
   SetEncryptionPassphraseForClient(/*index=*/0, "hunter2");
   DatatypeCommitCountingFakeServerObserver observer(GetFakeServer());
   ASSERT_TRUE(SetupSync());
@@ -337,10 +364,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
   EXPECT_EQ(observer.GetCommitCountForDatatype(syncer::BOOKMARKS), 1);
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
+IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
                        ReencryptsDataWhenPassphraseIsSet) {
-  ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
-                                     /*use_for_new_passphrases=*/false);
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(WaitForNigori(PassphraseType::KEYSTORE_PASSPHRASE));
   ASSERT_TRUE(AddURL(/*profile=*/0, "Re-encryption is great",
