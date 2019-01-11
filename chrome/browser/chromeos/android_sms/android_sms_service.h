@@ -29,12 +29,14 @@ class MultiDeviceSetupClient;
 namespace android_sms {
 
 class ConnectionManager;
+class PairingLostNotifier;
 
 // KeyedService which manages Android Messages integration. This service
-// has three main responsibilities:
+// has four main responsibilities:
 //   (1) Maintaining a connection with the Messages ServiceWorker,
-//   (2) Managing installation/launching of the Messages PWA, and
-//   (3) Tracking the pairing state of the PWA.
+//   (2) Managing installation/launching of the Messages PWA,
+//   (3) Tracking the pairing state of the PWA, and
+//   (4) Notifying users when their phones need to be re-paired.
 class AndroidSmsService : public KeyedService,
                           public session_manager::SessionManagerObserver {
  public:
@@ -69,6 +71,7 @@ class AndroidSmsService : public KeyedService,
       android_sms_app_helper_delegate_;
   std::unique_ptr<AndroidSmsPairingStateTrackerImpl>
       android_sms_pairing_state_tracker_;
+  std::unique_ptr<PairingLostNotifier> pairing_lost_notifier_;
   std::unique_ptr<ConnectionManager> connection_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidSmsService);

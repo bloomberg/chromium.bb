@@ -136,6 +136,7 @@ MessageCenterController::MessageCenterController() {
                                        &kNotificationImageIcon,
                                        &kNotificationInstalledIcon,
                                        &kNotificationLinuxIcon,
+                                       &kNotificationMessagesIcon,
                                        &kNotificationMultiDeviceSetupIcon,
                                        &kNotificationMobileDataIcon,
                                        &kNotificationMobileDataOffIcon,
