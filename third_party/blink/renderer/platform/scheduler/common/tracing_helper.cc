@@ -30,13 +30,6 @@ void ValidateTracingCategory(const char* category) {
 
 }  // namespace internal
 
-void WarmupTracingCategories() {
-  // No need to warm-up toplevel category here.
-  TRACE_EVENT_WARMUP_CATEGORY(TracingCategoryName::kDefault);
-  TRACE_EVENT_WARMUP_CATEGORY(TracingCategoryName::kInfo);
-  TRACE_EVENT_WARMUP_CATEGORY(TracingCategoryName::kDebug);
-}
-
 std::string PointerToString(const void* pointer) {
   return base::StringPrintf(
       "0x%" PRIx64,
