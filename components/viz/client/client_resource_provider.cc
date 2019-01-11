@@ -54,8 +54,8 @@ struct ClientResourceProvider::ImportedResource {
 };
 
 ClientResourceProvider::ClientResourceProvider(
-    bool delegated_sync_points_required)
-    : delegated_sync_points_required_(delegated_sync_points_required) {
+    bool verified_sync_tokens_required)
+    : verified_sync_tokens_required_(verified_sync_tokens_required) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
@@ -109,7 +109,7 @@ void ClientResourceProvider::PrepareSendToParent(
 
   // Lazily create any mailboxes and verify all unverified sync tokens.
   std::vector<GLbyte*> unverified_sync_tokens;
-  if (delegated_sync_points_required_) {
+  if (verified_sync_tokens_required_) {
     for (ImportedResource* imported : imports) {
       if (!imported->resource.is_software &&
           !imported->resource.mailbox_holder.sync_token.verified_flush()) {
@@ -120,7 +120,7 @@ void ClientResourceProvider::PrepareSendToParent(
   }
 
   if (!unverified_sync_tokens.empty()) {
-    DCHECK(delegated_sync_points_required_);
+    DCHECK(verified_sync_tokens_required_);
     DCHECK(context_provider);
     context_provider->ContextGL()->VerifySyncTokensCHROMIUM(
         unverified_sync_tokens.data(), unverified_sync_tokens.size());
