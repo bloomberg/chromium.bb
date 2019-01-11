@@ -57,7 +57,7 @@ class ExpireHistoryBackend {
   // The delegate pointer must be non-null. We will NOT take ownership of it.
   // HistoryBackendClient may be null. The HistoryBackendClient is used when
   // expiring URLS so that we don't remove any URLs or favicons that are
-  // bookmarked (visits are removed though).
+  // bookmarked or have a credential saved on (visits are removed though).
   ExpireHistoryBackend(HistoryBackendNotifier* notifier,
                        HistoryBackendClient* backend_client,
                        scoped_refptr<base::SequencedTaskRunner> task_runner);
@@ -168,9 +168,9 @@ class ExpireHistoryBackend {
   //
   // Assumes the main_db_ is non-NULL.
   //
-  // NOTE: If the url is bookmarked, we keep the favicons and thumbnails.
+  // NOTE: If the url is pinned, we keep the favicons and thumbnails.
   void DeleteOneURL(const URLRow& url_row,
-                    bool is_bookmarked,
+                    bool is_pinned,
                     DeleteEffects* effects);
 
   // Deletes all favicons associated with |gurl|.

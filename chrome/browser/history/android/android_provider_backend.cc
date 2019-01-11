@@ -807,15 +807,14 @@ bool AndroidProviderBackend::UpdateBookmarks() {
     return false;
   }
 
-  std::vector<URLAndTitle> bookmarks;
-  backend_client_->GetBookmarks(&bookmarks);
+  std::vector<URLAndTitle> pinned_urls = backend_client_->GetPinnedURLs();
 
-  if (bookmarks.empty())
+  if (pinned_urls.empty())
     return true;
 
   std::vector<URLID> url_ids;
-  for (std::vector<URLAndTitle>::const_iterator i =
-           bookmarks.begin(); i != bookmarks.end(); ++i) {
+  for (std::vector<URLAndTitle>::const_iterator i = pinned_urls.begin();
+       i != pinned_urls.end(); ++i) {
     URLID url_id = history_db_->GetRowForURL(i->url, NULL);
     if (url_id == 0) {
       URLRow url_row(i->url);

@@ -1936,8 +1936,9 @@ void HistoryBackend::SetImportedFavicons(
         // save the favicon mapping. This will match with what history db does
         // for regular bookmarked URLs with favicons - when history db is
         // cleaned, we keep an entry in the db with 0 visits as long as that
-        // url is bookmarked.
-        if (backend_client_ && backend_client_->IsBookmarked(*url)) {
+        // url is bookmarked. The same is applicable to the saved credential's
+        // URLs.
+        if (backend_client_ && backend_client_->IsPinnedURL(*url)) {
           URLRow url_info(*url);
           url_info.set_visit_count(0);
           url_info.set_typed_count(0);
@@ -2669,39 +2670,38 @@ void HistoryBackend::NotifyURLsDeleted(DeletionInfo deletion_info) {
 
 void HistoryBackend::DeleteAllHistory() {
   // Our approach to deleting all history is:
-  //  1. Copy the bookmarks and their dependencies to new tables with temporary
-  //     names.
+  //  1. Copy the pinned URLs and their dependencies to new tables with
+  //     temporary names.
   //  2. Delete the original tables. Since tables can not share pages, we know
   //     that any data we don't want to keep is now in an unused page.
   //  3. Renaming the temporary tables to match the original.
   //  4. Vacuuming the database to delete the unused pages.
   //
-  // Since we are likely to have very few bookmarks and their dependencies
+  // Since we are likely to have very few pinned URLs and their dependencies
   // compared to all history, this is also much faster than just deleting from
   // the original tables directly.
 
-  // Get the bookmarked URLs.
-  std::vector<URLAndTitle> starred_url_and_titles;
+  // Get the pinned URLs.
+  std::vector<URLAndTitle> pinned_url;
   if (backend_client_)
-    backend_client_->GetBookmarks(&starred_url_and_titles);
+    pinned_url = backend_client_->GetPinnedURLs();
 
   URLRows kept_url_rows;
   std::vector<GURL> starred_urls;
-  for (const URLAndTitle& url_and_title : starred_url_and_titles) {
-    const GURL& url = url_and_title.url;
-    starred_urls.push_back(url);
-
+  for (URLAndTitle& url_and_title : pinned_url) {
     URLRow row;
-    if (db_->GetRowForURL(url, &row)) {
+    if (db_->GetRowForURL(url_and_title.url, &row)) {
       // Clear the last visit time so when we write these rows they are "clean."
       row.set_last_visit(Time());
       row.set_visit_count(0);
       row.set_typed_count(0);
       kept_url_rows.push_back(row);
     }
+
+    starred_urls.push_back(std::move(url_and_title.url));
   }
 
-  // Delete all cached favicons which are not used by bookmarks.
+  // Delete all cached favicons which are not used by the UI.
   if (!ClearAllThumbnailHistory(starred_urls)) {
     LOG(ERROR) << "Thumbnail history could not be cleared";
     // We continue in this error case. If the user wants to delete their

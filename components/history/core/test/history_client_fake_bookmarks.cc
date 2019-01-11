@@ -25,7 +25,7 @@ class FakeBookmarkDatabase
   void DelBookmark(const GURL& url);
 
   bool IsBookmarked(const GURL& url);
-  void GetBookmarks(std::vector<URLAndTitle>* bookmarks);
+  std::vector<URLAndTitle> GetBookmarks();
 
  private:
   friend class base::RefCountedThreadSafe<FakeBookmarkDatabase>;
@@ -61,13 +61,14 @@ bool FakeBookmarkDatabase::IsBookmarked(const GURL& url) {
   return bookmarks_.find(url) != bookmarks_.end();
 }
 
-void FakeBookmarkDatabase::GetBookmarks(std::vector<URLAndTitle>* bookmarks) {
+std::vector<URLAndTitle> FakeBookmarkDatabase::GetBookmarks() {
   base::AutoLock with_lock(lock_);
-  bookmarks->reserve(bookmarks->size() + bookmarks_.size());
+  std::vector<URLAndTitle> result;
+  result.reserve(bookmarks_.size());
   for (const auto& pair : bookmarks_) {
-    URLAndTitle url_and_title = { pair.first, pair.second };
-    bookmarks->push_back(url_and_title);
+    result.push_back(URLAndTitle{pair.first, pair.second});
   }
+  return result;
 }
 
 namespace {
@@ -79,8 +80,8 @@ class HistoryBackendClientFakeBookmarks : public HistoryBackendClient {
   ~HistoryBackendClientFakeBookmarks() override;
 
   // HistoryBackendClient implementation.
-  bool IsBookmarked(const GURL& url) override;
-  void GetBookmarks(std::vector<URLAndTitle>* bookmarks) override;
+  bool IsPinnedURL(const GURL& url) override;
+  std::vector<URLAndTitle> GetPinnedURLs() override;
   bool ShouldReportDatabaseError() override;
   bool IsWebSafe(const GURL& url) override;
 #if defined(OS_ANDROID)
@@ -106,13 +107,12 @@ HistoryBackendClientFakeBookmarks::HistoryBackendClientFakeBookmarks(
 HistoryBackendClientFakeBookmarks::~HistoryBackendClientFakeBookmarks() {
 }
 
-bool HistoryBackendClientFakeBookmarks::IsBookmarked(const GURL& url) {
+bool HistoryBackendClientFakeBookmarks::IsPinnedURL(const GURL& url) {
   return bookmarks_->IsBookmarked(url);
 }
 
-void HistoryBackendClientFakeBookmarks::GetBookmarks(
-    std::vector<URLAndTitle>* bookmarks) {
-  bookmarks_->GetBookmarks(bookmarks);
+std::vector<URLAndTitle> HistoryBackendClientFakeBookmarks::GetPinnedURLs() {
+  return bookmarks_->GetBookmarks();
 }
 
 bool HistoryBackendClientFakeBookmarks::ShouldReportDatabaseError() {

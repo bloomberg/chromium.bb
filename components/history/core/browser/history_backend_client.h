@@ -32,14 +32,12 @@ class HistoryBackendClient {
   HistoryBackendClient() {}
   virtual ~HistoryBackendClient() {}
 
-  // Returns true if the specified URL is bookmarked.
-  virtual bool IsBookmarked(const GURL& url) = 0;
+  // Returns true if the specified URL is pinned due to being bookmarked or used
+  // by the password manager.
+  virtual bool IsPinnedURL(const GURL& url) = 0;
 
-  // Returns, by reference in |bookmarks|, the set of bookmarked URLs and their
-  // title. This returns the unique set of URLs. For example, if two bookmarks
-  // reference the same URL only one entry is added even if the title are not
-  // the same.
-  virtual void GetBookmarks(std::vector<URLAndTitle>* bookmarks) = 0;
+  // Returns the set of pinned URLs with their titles.
+  virtual std::vector<URLAndTitle> GetPinnedURLs() = 0;
 
   // Returns whether database errors should be reported to the crash server.
   virtual bool ShouldReportDatabaseError() = 0;
