@@ -60,7 +60,6 @@ source_set("web") {
     "browser_url_rewriter_impl.mm",
     "crw_navigation_item_storage.mm",
     "features.mm",
-    "load_committed_details.cc",
     "network_context_owner.cc",
     "service_manager_connection_impl.cc",
     "service_manager_connection_impl.h",

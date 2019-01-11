@@ -14,7 +14,6 @@
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
-#include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/reload_type.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
@@ -78,7 +77,7 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
   MOCK_METHOD0(LoadIfNecessary, void());
   MOCK_METHOD0(Reload, void());
   MOCK_METHOD1(OnNavigationItemsPruned, void(size_t));
-  MOCK_METHOD1(OnNavigationItemCommitted, void(const LoadCommittedDetails&));
+  MOCK_METHOD1(OnNavigationItemCommitted, void(NavigationItem* item));
   MOCK_METHOD4(GoToBackForwardListItem,
                void(WKBackForwardListItem*,
                     NavigationItem*,

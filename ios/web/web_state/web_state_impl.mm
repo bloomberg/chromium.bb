@@ -25,7 +25,6 @@
 #import "ios/web/public/crw_session_storage.h"
 #include "ios/web/public/favicon_url.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
-#include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/url_util.h"
 #import "ios/web/public/web_client.h"
@@ -856,9 +855,8 @@ void WebStateImpl::OnNavigationItemsPruned(size_t pruned_item_count) {
     observer.NavigationItemsPruned(this, pruned_item_count);
 }
 
-void WebStateImpl::OnNavigationItemCommitted(
-    const LoadCommittedDetails& load_details) {
-  if (wk_navigation_util::IsWKInternalUrl(load_details.item->GetURL()))
+void WebStateImpl::OnNavigationItemCommitted(NavigationItem* item) {
+  if (wk_navigation_util::IsWKInternalUrl(item->GetURL()))
     return;
 
   // A committed navigation item indicates that NavigationManager has a new
@@ -866,8 +864,6 @@ void WebStateImpl::OnNavigationItemCommitted(
   // history.
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled())
     restored_session_storage_ = nil;
-  for (auto& observer : observers_)
-    observer.NavigationItemCommitted(this, load_details);
 }
 
 WebState* WebStateImpl::GetWebState() {

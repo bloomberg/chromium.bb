@@ -221,10 +221,6 @@ class NavigationManagerImpl : public NavigationManager {
   // TODO(crbug.com/738020): Remove legacy code and merge
   // WKBasedNavigationManager into this class after the navigation experiment.
 
-  // Checks whether or not two URLs differ only in the fragment.
-  static bool IsFragmentChangeNavigationBetweenUrls(const GURL& existing_url,
-                                                    const GURL& new_url);
-
   // Applies the user agent override to |pending_item|, or inherits the user
   // agent of |inherit_from| if |user_agent_override_option| is INHERIT.
   static void UpdatePendingItemUserAgentType(

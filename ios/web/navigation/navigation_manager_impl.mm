@@ -70,18 +70,6 @@ NavigationItem* NavigationManagerImpl::GetLastCommittedNonRedirectedItem(
 }
 
 /* static */
-bool NavigationManagerImpl::IsFragmentChangeNavigationBetweenUrls(
-    const GURL& existing_url,
-    const GURL& new_url) {
-  // TODO(crbug.com/749542): Current implementation incorrectly returns false
-  // if URL changes from http://google.com#foo to http://google.com.
-  if (existing_url == new_url || !new_url.has_ref())
-    return false;
-
-  return existing_url.EqualsIgnoringRef(new_url);
-}
-
-/* static */
 void NavigationManagerImpl::UpdatePendingItemUserAgentType(
     UserAgentOverrideOption user_agent_override_option,
     const NavigationItem* inherit_from_item,

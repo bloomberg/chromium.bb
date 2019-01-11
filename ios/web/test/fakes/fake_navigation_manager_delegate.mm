@@ -24,7 +24,7 @@ void FakeNavigationManagerDelegate::Reload() {}
 void FakeNavigationManagerDelegate::OnNavigationItemsPruned(
     size_t pruned_item_count) {}
 void FakeNavigationManagerDelegate::OnNavigationItemCommitted(
-    const LoadCommittedDetails& load_details) {}
+    NavigationItem* item) {}
 WebState* FakeNavigationManagerDelegate::GetWebState() {
   return nullptr;
 }

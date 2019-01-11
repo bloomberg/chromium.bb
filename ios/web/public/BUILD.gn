@@ -38,7 +38,6 @@ source_set("public") {
     "java_script_dialog_callback.h",
     "java_script_dialog_presenter.h",
     "java_script_dialog_type.h",
-    "load_committed_details.h",
     "navigation_item.h",
     "navigation_item_list.h",
     "navigation_item_list.mm",
