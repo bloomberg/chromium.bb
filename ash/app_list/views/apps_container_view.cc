@@ -208,6 +208,7 @@ void AppsContainerView::UpdateYPositionAndOpacity() {
 void AppsContainerView::OnTabletModeChanged(bool started) {
   suggestion_chip_container_view_->OnTabletModeChanged(started);
   apps_grid_view_->OnTabletModeChanged(started);
+  app_list_folder_view_->OnTabletModeChanged(started);
 }
 
 gfx::Size AppsContainerView::CalculatePreferredSize() const {

@@ -36,6 +36,8 @@ class APP_LIST_EXPORT FolderHeaderView : public views::View,
   void OnFolderItemRemoved();
   bool HasTextFocus() const;
   void SetTextFocus();
+  bool is_tablet_mode() const { return is_tablet_mode_; }
+  void set_tablet_mode(bool started) { is_tablet_mode_ = started; }
 
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
@@ -100,6 +102,8 @@ class APP_LIST_EXPORT FolderHeaderView : public views::View,
   FolderHeaderViewDelegate* delegate_;
 
   bool folder_name_visible_;
+
+  bool is_tablet_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(FolderHeaderView);
 };
