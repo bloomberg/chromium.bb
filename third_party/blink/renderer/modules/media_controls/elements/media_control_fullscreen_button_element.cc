@@ -20,7 +20,6 @@ MediaControlFullscreenButtonElement::MediaControlFullscreenButtonElement(
     : MediaControlInputElement(media_controls, kMediaIgnore) {
   setType(input_type_names::kButton);
   SetShadowPseudoId(AtomicString("-webkit-media-controls-fullscreen-button"));
-  setAttribute(html_names::kRoleAttr, "button");
   SetIsFullscreen(MediaElement().IsFullscreen());
   SetIsWanted(false);
 }

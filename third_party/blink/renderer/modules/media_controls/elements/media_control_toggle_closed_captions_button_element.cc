@@ -47,7 +47,6 @@ MediaControlToggleClosedCaptionsButtonElement::
     MediaControlToggleClosedCaptionsButtonElement(
         MediaControlsImpl& media_controls)
     : MediaControlInputElement(media_controls, kMediaIgnore) {
-  setAttribute(html_names::kRoleAttr, "button");
   setAttribute(html_names::kAriaLabelAttr,
                WTF::AtomicString(GetLocale().QueryString(
                    WebLocalizedString::kAXMediaShowClosedCaptionsButton)));
