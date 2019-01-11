@@ -37,12 +37,14 @@ class LocalCardMigrationIconView : public PageActionIconView {
   // PageActionIconView:
   void OnExecuting(PageActionIconView::ExecuteSource execute_source) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
+  const gfx::VectorIcon& GetVectorIconBadge() const override;
 
  private:
   ManageMigrationUiController* GetController() const;
 
   // IconLabelBubbleView:
   void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
 
   // Used to do nullptr check when getting the controller.
   Browser* const browser_;

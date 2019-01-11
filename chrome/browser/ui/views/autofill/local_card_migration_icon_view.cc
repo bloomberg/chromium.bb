@@ -15,6 +15,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
 
 namespace autofill {
 
@@ -72,6 +73,7 @@ bool LocalCardMigrationIconView::Update() {
       // to be manually set since the migration dialog is not anchored at the
       // credit card icon.
       case LocalCardMigrationFlowStep::OFFER_DIALOG: {
+        UpdateIconImage();
         AnimateInkDrop(views::InkDropState::ACTIVATED, /*event=*/nullptr);
         break;
       }
@@ -84,6 +86,11 @@ bool LocalCardMigrationIconView::Update() {
         break;
       }
       case LocalCardMigrationFlowStep::MIGRATION_FINISHED: {
+        UnpauseAnimation();
+        SetEnabled(true);
+        break;
+      }
+      case LocalCardMigrationFlowStep::MIGRATION_FAILED: {
         UnpauseAnimation();
         SetEnabled(true);
         break;
@@ -106,6 +113,15 @@ void LocalCardMigrationIconView::OnExecuting(
 
 const gfx::VectorIcon& LocalCardMigrationIconView::GetVectorIcon() const {
   return kCreditCardIcon;
+}
+
+const gfx::VectorIcon& LocalCardMigrationIconView::GetVectorIconBadge() const {
+  ManageMigrationUiController* controller = GetController();
+  if (controller && controller->GetFlowStep() ==
+                        LocalCardMigrationFlowStep::MIGRATION_FAILED) {
+    return kBlockedBadgeIcon;
+  }
+  return gfx::kNoneIcon;
 }
 
 base::string16 LocalCardMigrationIconView::GetTextForTooltipAndAccessibleName()
@@ -144,6 +160,12 @@ void LocalCardMigrationIconView::AnimationProgressed(
       GetAnimationValue() >= animation_text_full_length_shown_state) {
     PauseAnimation();
   }
+}
+
+void LocalCardMigrationIconView::AnimationEnded(
+    const gfx::Animation* animation) {
+  IconLabelBubbleView::AnimationEnded(animation);
+  UpdateIconImage();
 }
 
 }  // namespace autofill

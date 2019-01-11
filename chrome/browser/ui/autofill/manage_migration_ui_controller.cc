@@ -55,6 +55,16 @@ void ManageMigrationUiController::UpdateCreditCardIcon(
 
   DCHECK_EQ(flow_step_, LocalCardMigrationFlowStep::MIGRATION_RESULT_PENDING);
   flow_step_ = LocalCardMigrationFlowStep::MIGRATION_FINISHED;
+  for (const auto& cc : migratable_credit_cards) {
+    if (cc.migration_status() ==
+        MigratableCreditCard::MigrationStatus::FAILURE_ON_UPLOAD) {
+      flow_step_ = LocalCardMigrationFlowStep::MIGRATION_FAILED;
+      break;
+    }
+  }
+  if (has_server_error)
+    flow_step_ = LocalCardMigrationFlowStep::MIGRATION_FAILED;
+
   // Show error dialog when |has_server_error| is true, which indicates
   // Payments Rpc failure.
   show_error_dialog_ = has_server_error;
@@ -70,6 +80,10 @@ void ManageMigrationUiController::OnUserClickedCreditCardIcon() {
       break;
     }
     case LocalCardMigrationFlowStep::MIGRATION_FINISHED: {
+      ShowFeedbackDialog();
+      break;
+    }
+    case LocalCardMigrationFlowStep::MIGRATION_FAILED: {
       show_error_dialog_ ? ShowErrorDialog() : ShowFeedbackDialog();
       break;
     }
