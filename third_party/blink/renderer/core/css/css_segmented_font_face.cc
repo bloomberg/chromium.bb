@@ -98,8 +98,9 @@ scoped_refptr<FontData> CSSSegmentedFontFace::GetFontData(
 
   const FontSelectionRequest& font_selection_request =
       font_description.GetFontSelectionRequest();
-  FontCacheKey key = font_description.CacheKey(FontFaceCreationParams(),
-                                               font_selection_request);
+  bool is_unique_match = false;
+  FontCacheKey key = font_description.CacheKey(
+      FontFaceCreationParams(), is_unique_match, font_selection_request);
 
   scoped_refptr<SegmentedFontData>& font_data =
       font_data_table_.insert(key, nullptr).stored_value->value;

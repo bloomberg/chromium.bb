@@ -53,17 +53,20 @@ struct FontCacheKey {
       : creation_params_(),
         font_size_(0),
         options_(0),
-        device_scale_factor_(0) {}
+        device_scale_factor_(0),
+        is_unique_match_(false) {}
   FontCacheKey(FontFaceCreationParams creation_params,
                float font_size,
                unsigned options,
                float device_scale_factor,
-               scoped_refptr<FontVariationSettings> variation_settings)
+               scoped_refptr<FontVariationSettings> variation_settings,
+               bool is_unique_match)
       : creation_params_(creation_params),
         font_size_(font_size * kFontSizePrecisionMultiplier),
         options_(options),
         device_scale_factor_(device_scale_factor),
-        variation_settings_(std::move(variation_settings)) {}
+        variation_settings_(std::move(variation_settings)),
+        is_unique_match_(is_unique_match) {}
 
   FontCacheKey(WTF::HashTableDeletedValueType)
       : font_size_(HashTableDeletedSize()) {}
@@ -71,10 +74,13 @@ struct FontCacheKey {
   unsigned GetHash() const {
     // Convert from float with 3 digit precision before hashing.
     unsigned device_scale_factor_hash = device_scale_factor_ * 1000;
-    unsigned hash_codes[5] = {
-        creation_params_.GetHash(), font_size_, options_,
+    unsigned hash_codes[6] = {
+        creation_params_.GetHash(),
+        font_size_,
+        options_,
         device_scale_factor_hash,
-        variation_settings_ ? variation_settings_->GetHash() : 0};
+        variation_settings_ ? variation_settings_->GetHash() : 0,
+        is_unique_match_};
     return StringHasher::HashMemory<sizeof(hash_codes)>(hash_codes);
   }
 
@@ -82,7 +88,8 @@ struct FontCacheKey {
     return creation_params_ == other.creation_params_ &&
            font_size_ == other.font_size_ && options_ == other.options_ &&
            device_scale_factor_ == other.device_scale_factor_ &&
-           variation_settings_ == other.variation_settings_;
+           variation_settings_ == other.variation_settings_ &&
+           is_unique_match_ == other.is_unique_match_;
   }
 
   bool IsHashTableDeletedValue() const {
@@ -105,6 +112,7 @@ struct FontCacheKey {
   // device_scale_factor_ to be a part of computing the cache key.
   float device_scale_factor_;
   scoped_refptr<FontVariationSettings> variation_settings_;
+  bool is_unique_match_;
 };
 
 struct FontCacheKeyHash {

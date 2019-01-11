@@ -118,7 +118,10 @@ FontPlatformData* FontCache::GetFontPlatformData(
 
   float size = font_description.EffectiveFontSize();
   unsigned rounded_size = size * FontCacheKey::PrecisionMultiplier();
-  FontCacheKey key = font_description.CacheKey(creation_params);
+  bool is_unique_match =
+      alternate_font_name == AlternateFontName::kLocalUniqueFace;
+  FontCacheKey key =
+      font_description.CacheKey(creation_params, is_unique_match);
 
   // Remove the font size from the cache key, and handle the font size
   // separately in the inner HashMap. So that different size of FontPlatformData
