@@ -123,6 +123,24 @@ int GzipUncompressHelper(Bytef* dest,
 
 namespace compression {
 
+bool GzipCompress(base::StringPiece input,
+                  char* output_buffer,
+                  size_t output_buffer_size,
+                  size_t* compressed_size) {
+  static_assert(sizeof(Bytef) == 1, "");
+
+  // uLongf can be larger than size_t.
+  uLongf compressed_size_long = static_cast<uLongf>(output_buffer_size);
+  if (GzipCompressHelper(bit_cast<Bytef*>(output_buffer), &compressed_size_long,
+                         bit_cast<const Bytef*>(input.data()),
+                         static_cast<uLongf>(input.size())) != Z_OK) {
+    return false;
+  }
+  // No overflow, as compressed_size_long <= output.size() which is a size_t.
+  *compressed_size = static_cast<size_t>(compressed_size_long);
+  return true;
+}
+
 bool GzipCompress(base::StringPiece input, std::string* output) {
   // Not using std::vector<> because allocation failures are recoverable,
   // which is hidden by std::vector<>.
