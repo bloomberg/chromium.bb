@@ -257,3 +257,11 @@ chrome.accessibilityPrivate.onSelectToSpeakStateChangeRequested;
  * Called when a Switch Access user activates dictation from the context menu.
  */
 chrome.accessibilityPrivate.toggleDictation = function() {};
+
+/**
+ * Called to request battery status from Chrome OS system.
+ * @param {function(string):void} callback Returns battery description as a
+ *     string.
+ */
+chrome.accessibilityPrivate.getBatteryDescription = function(callback) {};
+

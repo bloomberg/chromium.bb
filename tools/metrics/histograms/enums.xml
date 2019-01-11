@@ -17636,6 +17636,7 @@ Called by update_net_error_codes.py.-->
       label="ACCESSIBILITY_PRIVATE_FORWARDKEYEVENTSTOSWITCHACCESS"/>
   <int value="1309"
       label="AUTOTESTPRIVATE_ENSUREWINDOWSERVICECLIENTHASDRAWNWINDOW"/>
+  <int value="1310" label="ACCESSIBILITY_PRIVATE_GETBATTERYDESCRIPTION"/>
 </enum>
 
 <enum name="ExtensionIconState">

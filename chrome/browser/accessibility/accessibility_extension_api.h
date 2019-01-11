@@ -6,12 +6,15 @@
 #define CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_H_
 
 #include <string>
-
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "extensions/browser/extension_function.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/public/interfaces/accessibility_controller.mojom.h"
+#endif
 
 // API function that enables or disables web content accessibility support.
 class AccessibilityPrivateSetNativeAccessibilityEnabledFunction
@@ -144,6 +147,21 @@ class AccessibilityPrivateForwardKeyEventsToSwitchAccessFunction
   DECLARE_EXTENSION_FUNCTION(
       "accessibilityPrivate.forwardKeyEventsToSwitchAccess",
       ACCESSIBILITY_PRIVATE_FORWARDKEYEVENTSTOSWITCHACCESS)
+};
+
+// API function that is called to get the device's battery status as a string.
+class AccessibilityPrivateGetBatteryDescriptionFunction
+    : public UIThreadExtensionFunction {
+ public:
+  AccessibilityPrivateGetBatteryDescriptionFunction();
+  ResponseAction Run() override;
+  void OnGotBatteryDescription(const base::string16& battery_description);
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.getBatteryDescription",
+                             ACCESSIBILITY_PRIVATE_GETBATTERYDESCRIPTION)
+
+ private:
+  ~AccessibilityPrivateGetBatteryDescriptionFunction() override;
+  ash::mojom::AccessibilityControllerPtr controller_ = nullptr;
 };
 
 #endif  // defined (OS_CHROMEOS)
