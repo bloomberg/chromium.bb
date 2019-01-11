@@ -352,6 +352,14 @@ const char kEnableWebPaymentsSingleAppUiSkipDescription[] =
     "Enable Web Payments to skip showing its UI if the developer specifies a "
     "single app.";
 
+const char kEnableAutocompleteDataRetentionPolicyName[] =
+    "Enable automatic cleanup of expired Autocomplete entries.";
+const char kEnableAutocompleteDataRetentionPolicyDescription[] =
+    "If enabled, will clean-up Autocomplete entries whose last use date is "
+    "older than the current retention policy. These entries will be "
+    "permanently deleted from the client on startup, and will be unlinked "
+    "from sync.";
+
 const char kEnableAutofillAccountWalletStorageName[] =
     "Enable the account data storage for autofill";
 const char kEnableAutofillAccountWalletStorageDescription[] =

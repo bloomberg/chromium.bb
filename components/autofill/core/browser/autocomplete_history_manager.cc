@@ -126,7 +126,7 @@ void AutocompleteHistoryManager::Init(
   // No need to run the retention policy in OTR.
   if (!is_off_the_record_ &&
       base::FeatureList::IsEnabled(
-          autofill::features::kAutocompleteRententionPolicyEnabled)) {
+          autofill::features::kAutocompleteRetentionPolicyEnabled)) {
     int current_major_version = GetCurrentMajorVersion();
 
     // Upon successful cleanup, the last cleaned-up major version is being

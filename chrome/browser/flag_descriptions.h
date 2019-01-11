@@ -250,6 +250,9 @@ extern const char kEnableAccessibilityObjectModelDescription[];
 extern const char kEnableAudioFocusEnforcementName[];
 extern const char kEnableAudioFocusEnforcementDescription[];
 
+extern const char kEnableAutocompleteDataRetentionPolicyName[];
+extern const char kEnableAutocompleteDataRetentionPolicyDescription[];
+
 extern const char kEnableAutofillAccountWalletStorageName[];
 extern const char kEnableAutofillAccountWalletStorageDescription[];
 

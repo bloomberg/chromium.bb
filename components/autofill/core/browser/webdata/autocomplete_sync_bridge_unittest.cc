@@ -453,7 +453,7 @@ TEST_F(AutocompleteSyncBridgeTest,
        ApplySyncChangesSimple_FlagOff_Calls_RemoveExpiredFormElements) {
   base::test::ScopedFeatureList scoped_features;
   scoped_features.InitAndDisableFeature(
-      features::kAutocompleteRententionPolicyEnabled);
+      features::kAutocompleteRetentionPolicyEnabled);
 
   EXPECT_CALL(*backend(), RemoveExpiredFormElements);
 
@@ -467,7 +467,7 @@ TEST_F(AutocompleteSyncBridgeTest,
        ApplySyncChangesSimple_FlagOn_Not_Calls_RemoveExpiredFormElements) {
   base::test::ScopedFeatureList scoped_features;
   scoped_features.InitAndEnableFeature(
-      features::kAutocompleteRententionPolicyEnabled);
+      features::kAutocompleteRetentionPolicyEnabled);
 
   EXPECT_CALL(*backend(), RemoveExpiredFormElements).Times(0);
 

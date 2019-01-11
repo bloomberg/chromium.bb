@@ -706,7 +706,7 @@ bool AutofillTable::RemoveExpiredFormElements(
   auto change_type = AutofillChange::REMOVE;
 
   if (base::FeatureList::IsEnabled(
-          autofill::features::kAutocompleteRententionPolicyEnabled)) {
+          autofill::features::kAutocompleteRetentionPolicyEnabled)) {
     period = kAutocompleteRetentionPolicyPeriodInDays;
     change_type = AutofillChange::EXPIRE;
   }

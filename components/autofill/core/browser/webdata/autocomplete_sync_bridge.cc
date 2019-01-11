@@ -342,7 +342,7 @@ Optional<syncer::ModelError> AutocompleteSyncBridge::MergeSyncData(
   // TODO(crbug.com/920214) Deprecated, clean-up as part of the
   // Autocomplete Retention Policy flag cleanup.
   if (!base::FeatureList::IsEnabled(
-          autofill::features::kAutocompleteRententionPolicyEnabled)) {
+          autofill::features::kAutocompleteRetentionPolicyEnabled)) {
     web_data_backend_->RemoveExpiredFormElements();
   }
 
@@ -373,7 +373,7 @@ Optional<ModelError> AutocompleteSyncBridge::ApplySyncChanges(
   // TODO(crbug.com/920214) Deprecated, clean-up as part of the
   // Autocomplete Retention Policy flag cleanup.
   if (!base::FeatureList::IsEnabled(
-          autofill::features::kAutocompleteRententionPolicyEnabled)) {
+          autofill::features::kAutocompleteRetentionPolicyEnabled)) {
     web_data_backend_->RemoveExpiredFormElements();
   }
   return {};

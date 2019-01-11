@@ -361,7 +361,7 @@ TEST_F(AutocompleteHistoryManagerTest, PresentationField) {
 TEST_F(AutocompleteHistoryManagerTest, Init_TriggersCleanup) {
   // Enable the feature, and set the major version.
   scoped_features.InitAndEnableFeature(
-      features::kAutocompleteRententionPolicyEnabled);
+      features::kAutocompleteRetentionPolicyEnabled);
   prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
                      GetCurrentMajorVersion() - 1);
 
@@ -377,7 +377,7 @@ TEST_F(AutocompleteHistoryManagerTest, Init_TriggersCleanup) {
 TEST_F(AutocompleteHistoryManagerTest, Init_OTR_Not_TriggersCleanup) {
   // Enable the feature, and set the major version.
   scoped_features.InitAndEnableFeature(
-      features::kAutocompleteRententionPolicyEnabled);
+      features::kAutocompleteRetentionPolicyEnabled);
   prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
                      GetCurrentMajorVersion() - 1);
 
@@ -394,7 +394,7 @@ TEST_F(AutocompleteHistoryManagerTest,
        Init_FeatureDisabled_Not_TriggersCleanup) {
   // Disable the feature, and set the major version.
   scoped_features.InitAndDisableFeature(
-      features::kAutocompleteRententionPolicyEnabled);
+      features::kAutocompleteRetentionPolicyEnabled);
   prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
                      GetCurrentMajorVersion() - 1);
 
@@ -411,7 +411,7 @@ TEST_F(AutocompleteHistoryManagerTest,
        Init_SameMajorVersion_Not_TriggersCleanup) {
   // Enable the feature, and set the major version.
   scoped_features.InitAndEnableFeature(
-      features::kAutocompleteRententionPolicyEnabled);
+      features::kAutocompleteRetentionPolicyEnabled);
   prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
                      GetCurrentMajorVersion());
 

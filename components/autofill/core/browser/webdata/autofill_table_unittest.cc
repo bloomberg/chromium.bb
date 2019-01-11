@@ -822,7 +822,7 @@ TEST_F(AutofillTableTest,
 // Autocomplete Retention Policy feature flag is off.
 TEST_F(AutofillTableTest, RemoveExpiredFormElements_FlagOff_Removes) {
   scoped_feature_list_.InitAndDisableFeature(
-      features::kAutocompleteRententionPolicyEnabled);
+      features::kAutocompleteRetentionPolicyEnabled);
   auto kNow = AutofillClock::Now();
   auto k4MonthsOld = kNow - base::TimeDelta::FromDays(4 * 30);
 
@@ -844,7 +844,7 @@ TEST_F(AutofillTableTest, RemoveExpiredFormElements_FlagOff_Removes) {
 // Autocomplete Retention Policy feature flag is on.
 TEST_F(AutofillTableTest, RemoveExpiredFormElements_FlagOn_Expires) {
   scoped_feature_list_.InitAndEnableFeature(
-      features::kAutocompleteRententionPolicyEnabled);
+      features::kAutocompleteRetentionPolicyEnabled);
   auto kNow = AutofillClock::Now();
   auto k2YearsOld = kNow - base::TimeDelta::FromDays(2 * 365);
 
@@ -866,7 +866,7 @@ TEST_F(AutofillTableTest, RemoveExpiredFormElements_FlagOn_Expires) {
 // delete non-expired entries' data from the SQLite table.
 TEST_F(AutofillTableTest, RemoveExpiredFormElements_FlagOn_NotOldEnough) {
   scoped_feature_list_.InitAndEnableFeature(
-      features::kAutocompleteRententionPolicyEnabled);
+      features::kAutocompleteRetentionPolicyEnabled);
   auto kNow = AutofillClock::Now();
   auto k2DaysOld = kNow - base::TimeDelta::FromDays(2);
 
