@@ -39,3 +39,13 @@ message TokenMapping {
 message Suspension {
   optional string fqdn = 1;
 }
+
+// Allows for any one of {WebsiteEvent, Suspension, TokenMapping} to be stored
+// in the same proto database.
+message UsageStat {
+  oneof value {
+    WebsiteEvent website_event = 1;
+    Suspension suspension = 2;
+    TokenMapping token_mapping = 3;
+  }
+}

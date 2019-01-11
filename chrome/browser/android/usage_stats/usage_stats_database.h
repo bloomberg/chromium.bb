@@ -73,9 +73,7 @@ class UsageStatsDatabase {
                         StatusCallback callback);
 
  private:
-  std::unique_ptr<leveldb_proto::ProtoDatabase<WebsiteEvent>> website_event_db_;
-  std::unique_ptr<leveldb_proto::ProtoDatabase<Suspension>> suspension_db_;
-  std::unique_ptr<leveldb_proto::ProtoDatabase<TokenMapping>> token_mapping_db_;
+  std::unique_ptr<leveldb_proto::ProtoDatabase<UsageStat>> proto_db_;
 
   base::WeakPtrFactory<UsageStatsDatabase> weak_ptr_factory_;
 
