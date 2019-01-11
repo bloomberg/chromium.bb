@@ -125,9 +125,13 @@
     <div id="mainContainer" on-scroll="onScroll_">
       <managed-footnote hidden="[[inSearchMode_]]"></managed-footnote>
       <iron-list id="downloadsList" items="[[items_]]"
-          hidden="[[!hasDownloads_]]" scroll-target="mainContainer">
+          hidden="[[!hasDownloads_]]" scroll-target="mainContainer"
+          preserve-focus>
         <template>
-          <downloads-item data="[[item]]"></downloads-item>
+          <downloads-item data="[[item]]" tabindex$="[[tabIndex]]"
+              iron-list-tab-index="[[tabIndex]]" last-focused="{{lastFocused_}}"
+              list-blurred="{{listBlurred_}}">
+          </downloads-item>
         </template>
       </iron-list>
       <div id="no-downloads" hidden="[[hasDownloads_]]">
