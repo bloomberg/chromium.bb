@@ -75,7 +75,7 @@ initWithBaseViewController:(UIViewController*)viewController
     _personalDataManager->AddObserver(_personalDataManagerObserver.get());
 
     std::vector<autofill::CreditCard*> cards =
-        _personalDataManager->GetCreditCardsToSuggest(true);
+        _personalDataManager->GetCreditCards();
 
     _cardMediator = [[ManualFillCardMediator alloc] initWithCards:cards];
     _cardMediator.navigationDelegate = self;
