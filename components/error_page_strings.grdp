@@ -49,7 +49,7 @@
       Take me there now
     </message>
     <message name="IDS_ERRORPAGES_SAVE_PAGE_BUTTON" desc="Label for the button that will save the page for later. The saved page is not retained in Downloads, unlike with the DOWNLOAD button.">
-      Save page for later
+      Load page later
     </message>
     <message name="IDS_ERRORPAGES_CANCEL_SAVE_PAGE_BUTTON" desc="Label for the button that will cancel the request to save the page for later. 'Cancel' is colored blue with the 'a' tag.">
       Chrome will let you know when this page is ready. &lt;a&gt;Cancel&lt;/a&gt;
