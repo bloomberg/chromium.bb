@@ -222,10 +222,8 @@ StyleSheetContents* CSSStyleSheetResource::CreateParsedStyleSheetFromCache(
 
   // If the stylesheet has a media query, we need to clone the cached sheet
   // due to potential differences in the rule set.
-  if (RuntimeEnabledFeatures::CacheStyleSheetWithMediaQueriesEnabled() &&
-      parsed_style_sheet_cache_->HasMediaQueries()) {
+  if (parsed_style_sheet_cache_->HasMediaQueries())
     return parsed_style_sheet_cache_->Copy();
-  }
 
   return parsed_style_sheet_cache_;
 }
