@@ -1146,17 +1146,17 @@ If the name of the corresponding content attribute is different from the attribu
 
 Whether `[Reflect]` should be specified or not depends on the spec of each attribute.
 
-### [ReflectEmpty="value"] _(a)_
+### [ReflectEmpty] _(a)_
 
 Specification: [Enumerated attributes](http://www.whatwg.org/specs/web-apps/current-work/#enumerated-attribute) - _defined in spec prose, not as an IDL extended attribute._
 
-Summary: `[ReflectEmpty="value"]` gives the attribute keyword value to reflect when an attribute is present, but without a value; it supplements `[ReflectOnly]` and `[Reflect]`.
+Summary: `[ReflectEmpty]` gives the attribute keyword value to reflect when an attribute is present, but without a value; it supplements `[ReflectOnly]` and `[Reflect]`.
 
 Usage: The possible usage is `[ReflectEmpty="value"]` in combination with `[ReflectOnly]`:
 
 ```webidl
 interface HTMLMyElement {
-    [Reflect, ReflectOnly="for"|"against", ReflectEmpty="for"] attribute DOMString vote;
+    [Reflect, ReflectOnly=("for", "against"), ReflectEmpty="for"] attribute DOMString vote;
 };
 ```
 
@@ -1164,17 +1164,17 @@ The `[ReflectEmpty]` extended attribute specifies the value that an IDL getter f
 
 `[ReflectEmpty]` should be used if the specification for the content attribute has an empty attribute value mapped to some attribute state. For HTML, this applies to [enumerated attributes](http://www.whatwg.org/specs/web-apps/current-work/#enumerated-attribute) only.
 
-### [ReflectInvalid="value"] _(a)_
+### [ReflectInvalid] _(a)_
 
 Specification: [Limited value attributes](http://www.whatwg.org/specs/web-apps/current-work/#limited-to-only-known-values) - _defined in spec prose, not as an IDL extended attribute._
 
-Summary: `[ReflectInvalid="value"]` gives the attribute keyword value to reflect when an attribute has an invalid/unknown value. It supplements `[ReflectOnly]` and `[Reflect]`.
+Summary: `[ReflectInvalid]` gives the attribute keyword value to reflect when an attribute has an invalid/unknown value. It supplements `[ReflectOnly]` and `[Reflect]`.
 
 Usage: The possible usage is `[ReflectInvalid="value"]` in combination with `[ReflectOnly]`:
 
 ```webidl
 interface HTMLMyElement {
-    [Reflect, ReflectOnly="left"|"right", ReflectInvalid="left"] attribute DOMString direction;
+    [Reflect, ReflectOnly=("left", "right"), ReflectInvalid="left"] attribute DOMString direction;
 };
 ```
 
@@ -1182,17 +1182,17 @@ The `[ReflectInvalid]` extended attribute specifies the value that an IDL getter
 
 `[ReflectInvalid]` should be used if the specification for the content attribute has an _invalid value state_ defined. For HTML, this applies to [enumerated attributes](http://www.whatwg.org/specs/web-apps/current-work/#enumerated-attribute) only.
 
-### [ReflectMissing="value"] _(a)_
+### [ReflectMissing] _(a)_
 
 Specification: [Limited value attributes](http://www.whatwg.org/specs/web-apps/current-work/#limited-to-only-known-values) - _defined in spec prose, not as an IDL extended attribute._
 
-Summary: `[ReflectMissing="value"]` gives the attribute keyword value to reflect when an attribute isn't present. It supplements `[ReflectOnly]` and `[Reflect]`.
+Summary: `[ReflectMissing]` gives the attribute keyword value to reflect when an attribute isn't present. It supplements `[ReflectOnly]` and `[Reflect]`.
 
 Usage: The possible usage is `[ReflectMissing="value"]` in combination with `[ReflectOnly]`:
 
 ```webidl
 interface HTMLMyElement {
-    [Reflect, ReflectOnly="ltr"|"rtl"|"auto", ReflectMissing="auto"] attribute DOMString preload;
+    [Reflect, ReflectOnly=("ltr", "rtl", "auto"), ReflectMissing="auto"] attribute DOMString preload;
 };
 ```
 
@@ -1200,26 +1200,26 @@ The `[ReflectMissing]` extended attribute specifies the value that an IDL getter
 
 `[ReflectMissing]` should be used if the specification for the content attribute has a _missing value state_ defined. For HTML, this applies to [enumerated attributes](http://www.whatwg.org/specs/web-apps/current-work/#enumerated-attribute) only.
 
-### [ReflectOnly=&lt;list&gt;] _(a)_
+### [ReflectOnly] _(a)_
 
 Specification: [Limited value attributes](http://www.whatwg.org/specs/web-apps/current-work/#limited-to-only-known-values) - _defined in spec prose, not as an IDL extended attribute._
 
-Summary: `[ReflectOnly=<list>]` indicates that a reflected string attribute should be limited to a set of allowable values; it supplements `[Reflect]`.
+Summary: `[ReflectOnly]` indicates that a reflected string attribute should be limited to a set of allowable values; it supplements `[Reflect]`.
 
-Usage: The possible usage is `[ReflectOnly="A1"|...|"An"]` where A1 (up to n) are the attribute values allowed. `[ReflectOnly=<list>]` is used in combination with `[Reflect]`:
+Usage: The possible usages are `[ReflectOnly="value"]` and `[ReflectOnly=("A1",...,"An")]` where A1 (up to n) are the attribute values allowed. `[ReflectOnly]` is used in combination with `[Reflect]`:
 
 ```webidl
 interface HTMLMyElement {
     [Reflect, ReflectOnly="on"] attribute DOMString toggle;
-    [Reflect=q, ReflectOnly="first"|"second"|"third"|"fourth"] attribute DOMString quarter;
+    [Reflect=q, ReflectOnly=("first", "second", "third", "fourth")] attribute DOMString quarter;
 };
 ```
 
-The ReflectOnly attribute limits the range of values that the attribute getter can return from its reflected attribute. If the content attribute has a value that is a case-insensitive match for one of the values given in the `ReflectOnly`'s list (using "`|`" as separator), then it will be returned. To allow attribute values that use characters that go beyond what IDL identifiers may contain, string literals are used. This is a Blink syntactic extension to extended attributes.
+The ReflectOnly attribute limits the range of values that the attribute getter can return from its reflected attribute. If the content attribute has a value that is a case-insensitive match for one of `ReflectOnly`'s values, then it will be returned. To allow attribute values that use characters that go beyond what IDL identifiers may contain, string literals are used. This is a Blink syntactic extension to extended attributes.
 
 If there is no match, the empty string will be returned. As required by the specification, no such checking is performed when the reflected IDL attribute is set.
 
-`[ReflectOnly=<list>]` should be used if the specification for a reflected IDL attribute says it is _"limited to only known values"_.
+`[ReflectOnly]` should be used if the specification for a reflected IDL attribute says it is _"limited to only known values"_.
 
 ### [RuntimeEnabled] _(i, m, a, c)_
 
