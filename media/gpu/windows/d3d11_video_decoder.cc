@@ -306,6 +306,12 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
       return;
     }
 
+    if (config.is_encrypted() && dec_config.guidConfigBitstreamEncryption !=
+                                     D3D11_DECODER_ENCRYPTION_HW_CENC) {
+      // For encrypted media, it has to use HW CENC decoder config.
+      continue;
+    }
+
     if (IsVP9(config) && dec_config.ConfigBitstreamRaw == 1) {
       // DXVA VP9 specification mentions ConfigBitstreamRaw "shall be 1".
       found = true;
@@ -322,9 +328,6 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
     NotifyError("Failed to find decoder config");
     return;
   }
-
-  if (config_.is_encrypted())
-    dec_config.guidConfigBitstreamEncryption = D3D11_DECODER_ENCRYPTION_HW_CENC;
 
   memcpy(&decoder_guid_, &decoder_guid, sizeof decoder_guid_);
 
