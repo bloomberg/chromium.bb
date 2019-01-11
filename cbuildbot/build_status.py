@@ -38,7 +38,7 @@ class SlaveStatus(object):
   ACCEPTED_STATUSES = (constants.BUILDER_STATUS_PASSED,
                        constants.BUILDER_STATUS_SKIPPED,)
 
-  def __init__(self, start_time, builders_array, master_build_id, db,
+  def __init__(self, start_time, builders_array, master_build_id, buildstore,
                config=None, metadata=None, buildbucket_client=None,
                version=None, pool=None, dry_run=True):
     """Initializes a SlaveStatus instance.
@@ -47,7 +47,7 @@ class SlaveStatus(object):
       start_time: datetime.datetime object of when the build started.
       builders_array: List of the expected slave builds.
       master_build_id: The build_id of the master build.
-      db: An instance of cidb.CIDBConnection to fetch data from CIDB.
+      buildstore: BuildStore instance to make DB calls.
       config: Instance of config_lib.BuildConfig. Config dict of this build.
       metadata: Instance of metadata_lib.CBuildbotMetadata. Metadata of this
                 build.
@@ -61,7 +61,8 @@ class SlaveStatus(object):
     self.start_time = start_time
     self.all_builders = builders_array
     self.master_build_id = master_build_id
-    self.db = db
+    self.buildstore = buildstore
+    self.db = buildstore.GetCIDBHandle()
     self.config = config
     self.metadata = metadata
     self.buildbucket_client = buildbucket_client

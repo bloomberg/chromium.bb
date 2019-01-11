@@ -10,6 +10,7 @@ from __future__ import print_function
 import os
 import re
 
+from chromite.lib import buildstore as buildstore_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
@@ -113,6 +114,8 @@ class UprevChromeCommand(command.CliCommand):
                               'certificates and other connection '
                               'information. Obtain your credentials '
                               'at go/cros-cidb-admin.'))
+    parser.add_argument('--fake-buildstore', action='store', default=False,
+                        help='Use a FakeBuildStore instance')
     parser.add_argument('--bug', action='store', required=True,
                         help='Used in the "BUG" field of CLs.')
     parser.add_argument('--nowipe', default=True, dest='wipe',
@@ -128,12 +131,12 @@ class UprevChromeCommand(command.CliCommand):
                         'ex:--reviewer x@email.com --reviewer y@email.com')
     return parser
 
-  def ValidatePFQBuild(self, pfq_build, db):
+  def ValidatePFQBuild(self, pfq_build, buildstore):
     """Validate the pfq build id.
 
     Args:
       pfq_build: master chrome pfq build_id to uprev.
-      db: cidb connection instance.
+      buildstore: BuildStore instance to make DB calls.
 
     Returns:
       build_number if pfq_build is valid.
@@ -141,7 +144,8 @@ class UprevChromeCommand(command.CliCommand):
     Raises:
       InvalidPFQBuildIdExcpetion when pfq_build is invalid.
     """
-    pfq_info = db.GetBuildStatus(pfq_build)
+    pfq_info = buildstore.GetBuildStatuses([pfq_build])[0]
+    db = buildstore.GetCIDBHandle()
 
     # Return False if it's not a master_chromium_pfq build.
     if pfq_info['build_config'] != constants.PFQ_MASTER:
@@ -350,9 +354,6 @@ class UprevChromeCommand(command.CliCommand):
     """
     self.options.Freeze()
 
-    # Delay import so sqlalchemy isn't pulled in until we need it.
-    from chromite.lib import cidb
-
     cidb_creds = self.options.cred_dir
     if cidb_creds is None:
       try:
@@ -364,9 +365,11 @@ class UprevChromeCommand(command.CliCommand):
                       'with --cred-dir.')
         raise
 
-    db = cidb.CIDBConnection(cidb_creds)
-
-    build_number = self.ValidatePFQBuild(self.options.pfq_build, db)
+    if self.options.fake_buildstore:
+      buildstore = buildstore_lib.FakeBuildStore()
+    else:
+      buildstore = buildstore_lib.BuildStore(cidb_creds=cidb_creds)
+    build_number = self.ValidatePFQBuild(self.options.pfq_build, buildstore)
 
     with osutils.TempDir(prefix='uprevchrome_',
                          delete=self.options.wipe) as work_dir:

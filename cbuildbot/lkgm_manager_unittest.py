@@ -25,6 +25,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
+from chromite.lib.buildstore import FakeBuildStore
 
 
 FAKE_VERSION_STRING = '1.2.4-rc3'
@@ -127,6 +128,7 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
     self.branch = 'master'
     self.build_name = 'amd64-generic'
     self.incr_type = 'branch'
+    self.buildstore = FakeBuildStore()
 
     # Create tmp subdirs based on the one provided TempDirMixin.
     self.tmpdir = os.path.join(self.tempdir, "base")
@@ -138,7 +140,8 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
         self.source_repo, self.tmpdir, self.branch, depth=1)
     self.manager = lkgm_manager.LKGMManager(
         repo, self.manifest_repo, self.build_name, constants.PFQ_TYPE, 'branch',
-        force=False, branch=self.branch, dry_run=True)
+        force=False, branch=self.branch, buildstore=self.buildstore,
+        dry_run=True)
     self.manager.manifest_dir = self.tmpmandir
     self.manager.lkgm_path = os.path.join(
         self.tmpmandir, constants.LKGM_MANIFEST)

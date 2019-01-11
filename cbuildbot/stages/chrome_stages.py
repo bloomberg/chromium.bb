@@ -351,7 +351,6 @@ class ChromeLKGMSyncStage(sync_stages.SyncStage):
 
   def GetNextManifest(self):
     """Override: Gets the LKGM from the Chrome tree."""
-    _, db = self._run.GetCIDBHandle()
     chrome_lkgm = commands.GetChromeLKGM(self._run.options.chrome_version)
 
     # We need a full buildspecs manager here as we need an initialized manifest
@@ -367,7 +366,7 @@ class ChromeLKGMSyncStage(sync_stages.SyncStage):
         incr_type='build',
         force=False,
         branch=self._run.manifest_branch,
-        db=db)
+        buildstore=self.buildstore)
 
     manifest_manager.BootstrapFromVersion(chrome_lkgm)
     return manifest_manager.GetLocalManifest(chrome_lkgm)

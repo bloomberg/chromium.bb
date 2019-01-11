@@ -21,6 +21,7 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import timeout_util
 from chromite.lib import tree_status
+from chromite.lib.buildstore import FakeBuildStore
 
 
 FAKE_VERSION = """
@@ -310,19 +311,19 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
                      '_InitSlaveInfo')
 
     self.db = mock.Mock()
+    self.buildstore = FakeBuildStore(self.db)
     self.buildbucket_client_mock = mock.Mock()
 
     self.PatchObject(tree_status, 'GetExperimentalBuilders', return_value=[])
 
-  def BuildManager(self, config=None, metadata=None, db=None,
+  def BuildManager(self, config=None, metadata=None,
                    buildbucket_client=None):
-    db = db or self.db
     repo = repository.RepoRepository(
         self.source_repo, self.tempdir, self.branch)
     manager = manifest_version.BuildSpecsManager(
         repo, self.manifest_repo, self.build_names, self.incr_type, False,
         branch=self.branch, dry_run=True, config=config, metadata=metadata,
-        db=db, buildbucket_client=buildbucket_client)
+        buildstore=self.buildstore, buildbucket_client=buildbucket_client)
     manager.manifest_dir = self.tmpmandir
     # Shorten the sleep between attempts.
     manager.SLEEP_TIMEOUT = 1
@@ -521,14 +522,14 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
   def testWaitForSlavesToCompleteWithEmptyBuildersArray(self):
     """Test WaitForSlavesToComplete with an empty builders_array."""
     self.manager = self.BuildManager()
-    self.manager.WaitForSlavesToComplete(1, self.db, [])
+    self.manager.WaitForSlavesToComplete(1, [])
 
   def testWaitForSlavesToComplete(self):
     """Test WaitForSlavesToComplete."""
     self.PatchObject(build_status.SlaveStatus, 'UpdateSlaveStatus')
     self.PatchObject(build_status.SlaveStatus, 'ShouldWait', return_value=False)
     self.manager = self.BuildManager()
-    self.manager.WaitForSlavesToComplete(1, self.db, ['build_1', 'build_2'])
+    self.manager.WaitForSlavesToComplete(1, ['build_1', 'build_2'])
 
   def testWaitForSlavesToCompleteWithTimeout(self):
     """Test WaitForSlavesToComplete raises timeout."""
@@ -538,5 +539,5 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     self.assertRaises(
         timeout_util.TimeoutError,
         self.manager.WaitForSlavesToComplete,
-        1, self.db, ['build_1', 'build_2'], timeout=1,
+        1, ['build_1', 'build_2'], timeout=1,
         ignore_timeout_exception=False)

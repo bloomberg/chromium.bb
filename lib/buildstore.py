@@ -27,19 +27,20 @@ class BuildStore(object):
   """BuildStore class to handle all DB calls."""
 
   def __init__(self, _read_from_bb=False, _write_to_bb=False,
-               _write_to_cidb=True):
+               _write_to_cidb=True, cidb_creds=None):
     """Get an instance of the BuildStore.
 
     Args:
       _read_from_bb: Specify the read source.
       _write_to_bb: Determines whether information is written to Buildbucket.
       _write_to_cidb: Determines whether information is written to CIDB.
+      cidb_creds: CIDB credentials for scripts running outside of cbuildbot.
     """
     self._read_from_bb = _read_from_bb
     self._write_to_bb = _write_to_bb
     self._write_to_cidb = _write_to_cidb
+    self.cidb_creds = cidb_creds
     self.cidb_conn = None
-    self.process_id = os.getpid()
     self.process_id = os.getpid()
 
   def _IsCIDBClientMissing(self):
@@ -76,7 +77,9 @@ class BuildStore(object):
     pid_mismatch = (self.process_id != os.getpid())
     if self._IsCIDBClientMissing() or pid_mismatch:
       self.process_id = os.getpid()
-      if not cidb.CIDBConnectionFactory.IsCIDBSetup():
+      if self.cidb_creds:
+        self.cidb_conn = cidb.CIDBConnection(self.cidb_creds)
+      elif not cidb.CIDBConnectionFactory.IsCIDBSetup():
         self.cidb_conn = None
       else:
         self.cidb_conn = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder(
@@ -207,6 +210,9 @@ class FakeBuildStore(object):
 
   def AreClientsReady(self):
     return True
+
+  def GetCIDBHandle(self):
+    return self.fake_cidb
 
   def InsertBuild(self,
                   builder_name,

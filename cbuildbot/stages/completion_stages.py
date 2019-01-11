@@ -103,19 +103,18 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     self._fatal = False
     self.buildbucket_client = self.GetBuildbucketClient()
 
-  def _WaitForSlavesToComplete(self, manager, build_id, db, builders_array,
+  def _WaitForSlavesToComplete(self, manager, build_id, builders_array,
                                timeout):
     """Wait for slave builds to complete.
 
     Args:
       manager: An instance of BuildSpecsManager.
       build_id: The build id of the master build.
-      db: An instance of cidb.CIDBConnection.
       builders_array: A list of builder names (strings) of slave builds.
       timeout: Number of seconds to wait for the results.
     """
     return manager.WaitForSlavesToComplete(
-        build_id, db, builders_array, timeout=timeout)
+        build_id, builders_array, timeout=timeout)
 
   def _GetBuilderStatusesFetcher(self):
     """Construct and return the BuilderStatusesFetcher instance.
@@ -159,7 +158,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       if sync_stages.MasterSlaveLKGMSyncStage.external_manager:
         manager = sync_stages.MasterSlaveLKGMSyncStage.external_manager
 
-      self._WaitForSlavesToComplete(manager, build_id, db, builders_array,
+      self._WaitForSlavesToComplete(manager, build_id, builders_array,
                                     timeout)
 
     # Set exclude_experimental to False to fetch the BuilderStatus for
@@ -680,7 +679,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       tree_status.SendHealthAlert(
           self._run, subject, msg, extra_fields=extra_fields)
 
-  def _WaitForSlavesToComplete(self, manager, build_id, db, builders_array,
+  def _WaitForSlavesToComplete(self, manager, build_id, builders_array,
                                timeout):
     """Wait for slave builds to complete.
 
@@ -695,7 +694,6 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     # changes and change dependencies.
     return manager.WaitForSlavesToComplete(
         build_id,
-        db,
         builders_array,
         pool=self.sync_stage.pool,
         timeout=timeout)

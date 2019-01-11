@@ -130,6 +130,7 @@ class ManifestVersionedSyncStageTest(
     self.incr_type = 'branch'
     self.next_version = 'next_version'
     self.sync_stage = None
+    self.buildstore = FakeBuildStore()
 
     self.repo = repository.RepoRepository(self.source_repo, self.tempdir,
                                           self.branch)
@@ -139,9 +140,9 @@ class ManifestVersionedSyncStageTest(
         self.incr_type,
         force=False,
         branch=self.branch,
+        buildstore=self.buildstore,
         dry_run=True)
 
-    self.buildstore = FakeBuildStore()
     self._Prepare()
 
   def _Prepare(self, bot_id=None, **kwargs):
@@ -1661,6 +1662,12 @@ class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
 
     self.repo = repository.RepoRepository(self.source_repo, self.tempdir,
                                           self.branch)
+
+    # Create and set up a fake cidb instance.
+    self.fake_db = fake_cidb.FakeCIDBConnection()
+    self.buildstore = FakeBuildStore(self.fake_db)
+    cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
+
     self.manager = lkgm_manager.LKGMManager(
         source_repo=self.repo,
         manifest_repo=self.manifest_version_url,
@@ -1669,12 +1676,8 @@ class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
         incr_type=self.incr_type,
         force=False,
         branch=self.branch,
+        buildstore=self.buildstore,
         dry_run=True)
-
-    # Create and set up a fake cidb instance.
-    self.fake_db = fake_cidb.FakeCIDBConnection()
-    self.buildstore = FakeBuildStore(self.fake_db)
-    cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
 
     self.PatchObject(buildbucket_lib, 'GetServiceAccount', return_value=True)
     self.PatchObject(auth.AuthorizedHttp, '__init__', return_value=None)

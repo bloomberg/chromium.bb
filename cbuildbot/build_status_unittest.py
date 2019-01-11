@@ -24,6 +24,7 @@ from chromite.lib import fake_cidb
 from chromite.lib import metadata_lib
 from chromite.lib import patch_unittest
 from chromite.lib import tree_status
+from chromite.lib.buildstore import FakeBuildStore
 
 
 # pylint: disable=protected-access
@@ -202,6 +203,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     self.master_canary_config = site_config['master-release']
     self.metadata = metadata_lib.CBuildbotMetadata()
     self.db = fake_cidb.FakeCIDBConnection()
+    self.buildstore = FakeBuildStore(self.db)
     self.buildbucket_client = mock.Mock()
     self.PatchObject(tree_status, 'GetExperimentalBuilders', return_value=[])
     self._patch_factory = patch_unittest.MockPatchFactory()
@@ -224,7 +226,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
       buildbucket_client = self.buildbucket_client
 
     return build_status.SlaveStatus(
-        start_time, builders_array, master_build_id, db,
+        start_time, builders_array, master_build_id, self.buildstore,
         config=config,
         metadata=metadata,
         buildbucket_client=buildbucket_client,
