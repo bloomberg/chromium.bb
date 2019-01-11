@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/memory/scoped_refptr.h"
 #include "media/base/video_types.h"
 #include "media/video/picture.h"
 #include "ui/gfx/geometry/size.h"
@@ -19,6 +20,9 @@ class GLContext;
 }  // namespace gl
 
 namespace media {
+
+class VideoFrame;
+
 namespace test {
 
 // The frame renderer interface can be used to render decoded frames to screen,
@@ -26,10 +30,6 @@ namespace test {
 // context.
 class FrameRenderer {
  public:
-  using PictureBuffersCreatedCB =
-      base::OnceCallback<void(const std::vector<PictureBuffer>)>;
-  using PictureRenderedCB = base::OnceClosure;
-
   virtual ~FrameRenderer() = default;
   // Acquire the GL context for the current thread. This is needed if the
   // context is shared between multiple threads.
@@ -39,15 +39,9 @@ class FrameRenderer {
   // Get the current GL context.
   virtual gl::GLContext* GetGLContext() = 0;
 
-  // Create a set of picture buffers, |cb| should be called upon completion.
-  virtual void CreatePictureBuffers(size_t requested_num_of_buffers,
-                                    VideoPixelFormat pixel_format,
-                                    const gfx::Size& size,
-                                    uint32_t texture_target,
-                                    PictureBuffersCreatedCB cb) = 0;
-  // Render the specified picture, |cb| should be called once rendering is done
-  // so the decoder can reuse the picture buffer.
-  virtual void RenderPicture(const Picture& picture, PictureRenderedCB cb) = 0;
+  // Render the specified video frame. Once rendering is done the reference to
+  // the |video_frame| should be dropped so the video frame can be reused.
+  virtual void RenderFrame(scoped_refptr<VideoFrame> video_frame) = 0;
 };
 
 }  // namespace test

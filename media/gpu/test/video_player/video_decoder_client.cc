@@ -10,8 +10,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/video_frame.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
 #include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
+#include "media/gpu/test/video_frame_helpers.h"
 #include "media/gpu/test/video_player/frame_renderer.h"
 
 #define DVLOGF(level) DVLOG(level) << __func__ << "(): "
@@ -132,12 +134,24 @@ void VideoDecoderClient::ProvidePictureBuffers(
             << " picture buffers with size " << size.height() << "x"
             << size.height();
 
-  // TODO(dstaessens@) Avoid using Unretained(this) here.
-  FrameRenderer::PictureBuffersCreatedCB cb = BindToCurrentLoop(
-      base::BindOnce(&VideoDecoderClient::OnPictureBuffersCreatedTask,
-                     base::Unretained(this)));
-  frame_renderer_->CreatePictureBuffers(requested_num_of_buffers, pixel_format,
-                                        size, texture_target, std::move(cb));
+  // Create a set of picture buffers and give them to the decoder.
+  std::vector<PictureBuffer> picture_buffers;
+  for (uint32_t i = 0; i < requested_num_of_buffers; ++i)
+    picture_buffers.emplace_back(GetNextPictureBufferId(), size);
+  decoder_->AssignPictureBuffers(picture_buffers);
+
+  // Create a video frame for each of the picture buffers and provide memory
+  // handles to the video frame's data to the decoder.
+  for (const PictureBuffer& picture_buffer : picture_buffers) {
+    scoped_refptr<VideoFrame> video_frame =
+        CreateVideoFrame(pixel_format, size);
+    LOG_ASSERT(video_frame) << "Failed to create video frame";
+    video_frames_.emplace(picture_buffer.id(), video_frame);
+    gfx::GpuMemoryBufferHandle handle =
+        CreateGpuMemoryBufferHandle(video_frame);
+    LOG_ASSERT(!handle.is_null()) << "Failed to create GPU memory handle";
+    decoder_->ImportBufferForPicture(picture_buffer.id(), pixel_format, handle);
+  }
 }
 
 void VideoDecoderClient::DismissPictureBuffer(int32_t picture_buffer_id) {
@@ -151,11 +165,24 @@ void VideoDecoderClient::PictureReady(const Picture& picture) {
 
   event_cb_.Run(VideoPlayerEvent::kFrameDecoded);
 
-  // TODO(dstaessens@) Avoid using Unretained(this) here.
-  FrameRenderer::PictureRenderedCB cb = BindToCurrentLoop(
-      base::BindOnce(&VideoDecoderClient::OnPictureRenderedTask,
+  auto it = video_frames_.find(picture.picture_buffer_id());
+  LOG_ASSERT(it != video_frames_.end());
+  scoped_refptr<VideoFrame> video_frame = it->second;
+
+  // Wrap the video frame in another video frame that calls
+  // ReusePictureBufferTask() upon destruction. When the renderer is done using
+  // the video frame, the associated picture buffer will automatically be
+  // flagged for reuse.
+  base::OnceClosure delete_cb = BindToCurrentLoop(
+      base::BindOnce(&VideoDecoderClient::ReusePictureBufferTask,
                      base::Unretained(this), picture.picture_buffer_id()));
-  frame_renderer_->RenderPicture(picture, std::move(cb));
+
+  scoped_refptr<VideoFrame> wrapped_video_frame = VideoFrame::WrapVideoFrame(
+      video_frame, video_frame->format(), video_frame->visible_rect(),
+      video_frame->visible_rect().size());
+  wrapped_video_frame->AddDestructionObserver(std::move(delete_cb));
+
+  frame_renderer_->RenderFrame(wrapped_video_frame);
 }
 
 void VideoDecoderClient::NotifyEndOfBitstreamBuffer(
@@ -216,7 +243,11 @@ void VideoDecoderClient::CreateDecoderFactoryTask(base::WaitableEvent* done) {
   LOG_ASSERT(!decoder_factory_) << "Decoder factory already created";
   DVLOGF(4);
 
-  if (frame_renderer_->GetGLContext()) {
+  frame_renderer_->AcquireGLContext();
+  bool hasGLContext = frame_renderer_->GetGLContext() != nullptr;
+  frame_renderer_->ReleaseGLContext();
+
+  if (hasGLContext) {
     decoder_factory_ = GpuVideoDecodeAcceleratorFactory::Create(
         base::BindRepeating(&FrameRenderer::GetGLContext,
                             base::Unretained(frame_renderer_)),
@@ -348,19 +379,7 @@ void VideoDecoderClient::ResetTask() {
   event_cb_.Run(VideoPlayerEvent::kResetting);
 }
 
-void VideoDecoderClient::OnPictureBuffersCreatedTask(
-    std::vector<PictureBuffer> buffers) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
-  DVLOGF(4);
-
-  // Assigning picture buffers requires an active GL context.
-  // TODO(dstaessens@) Investigate making the decoder manage the GL context.
-  frame_renderer_->AcquireGLContext();
-  decoder_->AssignPictureBuffers(buffers);
-  frame_renderer_->ReleaseGLContext();
-}
-
-void VideoDecoderClient::OnPictureRenderedTask(int32_t picture_buffer_id) {
+void VideoDecoderClient::ReusePictureBufferTask(int32_t picture_buffer_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
   DCHECK(decoder_);
   DVLOGF(4) << "Picture buffer ID: " << picture_buffer_id;
@@ -377,6 +396,14 @@ int32_t VideoDecoderClient::GetNextBitstreamBufferId() {
   // reserved for uninitialized buffers.
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x7FFFFFFF;
   return next_bitstream_buffer_id_;
+}
+
+int32_t VideoDecoderClient::GetNextPictureBufferId() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
+  // The picture buffer ID should always be positive, negative values are
+  // reserved for uninitialized buffers.
+  next_picture_buffer_id_ = (next_picture_buffer_id_ + 1) & 0x7FFFFFFF;
+  return next_picture_buffer_id_;
 }
 
 }  // namespace test

@@ -74,8 +74,12 @@ void VideoPlayer::SetStream(const Video* const video) {
     decoder_client_->DestroyDecoder();
   }
 
-  // Create a decoder for the specified video.
+  // Create a decoder for the specified video. We'll always use import mode as
+  // this is the only mode supported by the media::VideoDecoder interface, which
+  // the video decoders are being migrated to.
   VideoDecodeAccelerator::Config decoder_config(video->Profile());
+  decoder_config.output_mode =
+      VideoDecodeAccelerator::Config::OutputMode::IMPORT;
   decoder_client_->CreateDecoder(decoder_config, video->Data());
 
   video_ = video;

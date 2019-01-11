@@ -32,16 +32,11 @@ class FrameRendererDummy : public FrameRenderer {
   // Create an instance of the dummy frame renderer.
   static std::unique_ptr<FrameRendererDummy> Create();
 
+  // FrameRenderer implementation
   void AcquireGLContext() override;
   void ReleaseGLContext() override;
   gl::GLContext* GetGLContext() override;
-
-  void CreatePictureBuffers(size_t requested_num_of_buffers,
-                            VideoPixelFormat pixel_format,
-                            const gfx::Size& size,
-                            uint32_t texture_target,
-                            PictureBuffersCreatedCB cb) override;
-  void RenderPicture(const Picture& picture, PictureRenderedCB cb) override;
+  void RenderFrame(scoped_refptr<VideoFrame> video_frame) override;
 
  private:
   FrameRendererDummy();
@@ -51,13 +46,9 @@ class FrameRendererDummy : public FrameRenderer {
   // Destroy the frame renderer.
   void Destroy();
 
-  // Get the next picture buffer id to be used.
-  int32_t GetNextPictureBufferId();
-
 #ifdef USE_OZONE
   std::unique_ptr<ui::OzoneGpuTestHelper> gpu_helper_;
 #endif
-  int32_t next_picture_buffer_id_ = 0;
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(FrameRendererDummy);
