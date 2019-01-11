@@ -219,7 +219,8 @@ void vp9_highbd_temporal_filter_apply_c(const uint8_t* frame1,
                                         unsigned int block_width,
                                         unsigned int block_height,
                                         int strength,
-                                        int filter_weight,
+                                        int* blk_fw,
+                                        int use_32x32,
                                         uint32_t* accumulator,
                                         uint16_t* count);
 #define vp9_highbd_temporal_filter_apply vp9_highbd_temporal_filter_apply_c
