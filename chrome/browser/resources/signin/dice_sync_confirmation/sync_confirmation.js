@@ -13,6 +13,10 @@ cr.define('sync.confirmation', function() {
     // even when the page zoom in Chrome is different than 100%.
     syncConfirmationBrowserProxy.initializedWithSize(
         [document.body.offsetHeight]);
+    // The web dialog size has been initialized, so reset the body width to
+    // auto. This makes sure that the body only takes up the viewable width,
+    // e.g. when there is a scrollbar.
+    document.body.style.width = 'auto';
   }
 
   function clearFocus() {
