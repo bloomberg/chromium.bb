@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/fetch/buffering_bytes_consumer.h"
 
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+
 namespace blink {
 
 BufferingBytesConsumer::BufferingBytesConsumer(BytesConsumer* bytes_consumer)
@@ -121,7 +123,7 @@ void BufferingBytesConsumer::BufferData() {
       return;
     if (result == Result::kOk) {
       Vector<char> chunk;
-      chunk.Append(p, available);
+      chunk.Append(p, SafeCast<wtf_size_t>(available));
       buffer_.push_back(std::move(chunk));
       result = bytes_consumer_->EndRead(available);
     }
