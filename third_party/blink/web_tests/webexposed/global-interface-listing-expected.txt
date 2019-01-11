@@ -1911,9 +1911,12 @@ interface Element : Node
     getter ariaDescribedBy
     getter ariaDetails
     getter ariaDisabled
+    getter ariaErrorMessage
     getter ariaExpanded
+    getter ariaFlowTo
     getter ariaHasPopup
     getter ariaHidden
+    getter ariaKeyShortcuts
     getter ariaLabel
     getter ariaLabelledBy
     getter ariaLevel
@@ -2047,9 +2050,12 @@ interface Element : Node
     setter ariaDescribedBy
     setter ariaDetails
     setter ariaDisabled
+    setter ariaErrorMessage
     setter ariaExpanded
+    setter ariaFlowTo
     setter ariaHasPopup
     setter ariaHidden
+    setter ariaKeyShortcuts
     setter ariaLabel
     setter ariaLabelledBy
     setter ariaLevel

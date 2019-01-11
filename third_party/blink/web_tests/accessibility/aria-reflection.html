@@ -145,15 +145,37 @@ test(function(t) {
 }, "aria-details attribute reflects.");
 </script>
 
+<div id="disabled" aria-disabled="true"></div>
+
+<script>
+test(function(t) {
+    var element = document.getElementById("disabled");
+    assert_equals(element.ariaDisabled, "true");
+    element.ariaDisabled = "false";
+    assert_equals(element.getAttribute("aria-disabled"), "false");
+}, "aria-disabled attribute reflects.");
+</script>
+
 <div id="errormessage" aria-errormessage="x"></div>
 
 <script>
 test(function(t) {
     var element = document.getElementById("errormessage");
-    assert_equals(element.ariaDisabled, "x");
-    element.ariaDisabled = "y";
+    assert_equals(element.ariaErrorMessage, "x");
+    element.ariaErrorMessage = "y";
     assert_equals(element.getAttribute("aria-errormessage"), "y");
 }, "aria-errormessage attribute reflects.");
+</script>
+
+<div id="expanded" aria-expanded="true"></div>
+
+<script>
+test(function(t) {
+    var element = document.getElementById("expanded");
+    assert_equals(element.ariaExpanded, "true");
+    element.ariaExpanded = "false";
+    assert_equals(element.getAttribute("aria-expanded"), "false");
+}, "aria-expanded attribute reflects.");
 </script>
 
 <div id="flowto" aria-flowto="x"></div>
@@ -161,8 +183,8 @@ test(function(t) {
 <script>
 test(function(t) {
     var element = document.getElementById("flowto");
-    assert_equals(element.ariaExpanded, "x");
-    element.ariaExpanded = "y";
+    assert_equals(element.ariaFlowTo, "x");
+    element.ariaFlowTo = "y";
     assert_equals(element.getAttribute("aria-flowto"), "y");
 }, "aria-flowto attribute reflects.");
 </script>
@@ -178,13 +200,24 @@ test(function(t) {
 }, "aria-haspopup attribute reflects.");
 </script>
 
+<div id="hidden" aria-hidden="true" tabindex="-1"></div>
+
+<script>
+test(function(t) {
+    var element = document.getElementById("hidden");
+    assert_equals(element.ariaHidden, "true");
+    element.ariaHidden = "false";
+    assert_equals(element.getAttribute("aria-hidden"), "false");
+}, "aria-hidden attribute reflects.");
+</script>
+
 <div id="keyshortcuts" aria-keyshortcuts="x"></div>
 
 <script>
 test(function(t) {
     var element = document.getElementById("keyshortcuts");
-    assert_equals(element.ariaHidden, "x");
-    element.ariaHidden = "y";
+    assert_equals(element.ariaKeyShortcuts, "x");
+    element.ariaKeyShortcuts = "y";
     assert_equals(element.getAttribute("aria-keyshortcuts"), "y");
 }, "aria-keyshortcuts attribute reflects.");
 </script>
