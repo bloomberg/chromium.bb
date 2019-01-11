@@ -27,7 +27,6 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   // support kUnordered features or targets.  kRandomForest might support more
   // combination of orderings and types.
   enum class Model {
-    kRandomForest,
     kExtraTrees,
   };
 
@@ -77,7 +76,7 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   // Unique name for this learner.
   std::string name;
 
-  Model model = Model::kRandomForest;
+  Model model = Model::kExtraTrees;
 
   std::vector<ValueDescription> feature_descriptions;
 
