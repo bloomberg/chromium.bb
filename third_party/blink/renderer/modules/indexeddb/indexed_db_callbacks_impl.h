@@ -24,11 +24,6 @@ class WebIDBCallbacks;
 // blink::WebIDBCallbacks.
 class IndexedDBCallbacksImpl : public mojom::blink::IDBCallbacks {
  public:
-  // |kNoTransaction| is used as the default transaction ID when instantiating
-  // an IndexedDBCallbacksImpl instance.  See web_idb_factory_impl.cc for those
-  // cases.
-  enum : int64_t { kNoTransaction = -1 };
-
   IndexedDBCallbacksImpl(std::unique_ptr<WebIDBCallbacks> callbacks);
   ~IndexedDBCallbacksImpl() override;
 

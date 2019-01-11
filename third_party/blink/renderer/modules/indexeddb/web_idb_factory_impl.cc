@@ -6,8 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "third_party/blink/renderer/modules/indexeddb/indexed_db_callbacks_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_database_callbacks_impl.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks_impl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -21,7 +21,7 @@ WebIDBFactoryImpl::~WebIDBFactoryImpl() = default;
 void WebIDBFactoryImpl::GetDatabaseInfo(
     WebIDBCallbacks* callbacks,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  callbacks->SetState(nullptr, IndexedDBCallbacksImpl::kNoTransaction);
+  callbacks->SetState(nullptr, WebIDBCallbacksImpl::kNoTransaction);
   auto callbacks_impl =
       std::make_unique<IndexedDBCallbacksImpl>(base::WrapUnique(callbacks));
   factory_->GetDatabaseInfo(GetCallbacksProxy(std::move(callbacks_impl)));
@@ -30,7 +30,7 @@ void WebIDBFactoryImpl::GetDatabaseInfo(
 void WebIDBFactoryImpl::GetDatabaseNames(
     WebIDBCallbacks* callbacks,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  callbacks->SetState(nullptr, IndexedDBCallbacksImpl::kNoTransaction);
+  callbacks->SetState(nullptr, WebIDBCallbacksImpl::kNoTransaction);
   auto callbacks_impl =
       std::make_unique<IndexedDBCallbacksImpl>(base::WrapUnique(callbacks));
   factory_->GetDatabaseNames(GetCallbacksProxy(std::move(callbacks_impl)));
@@ -43,7 +43,7 @@ void WebIDBFactoryImpl::Open(
     WebIDBCallbacks* callbacks,
     WebIDBDatabaseCallbacks* database_callbacks,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  callbacks->SetState(nullptr, IndexedDBCallbacksImpl::kNoTransaction);
+  callbacks->SetState(nullptr, WebIDBCallbacksImpl::kNoTransaction);
   auto callbacks_impl =
       std::make_unique<IndexedDBCallbacksImpl>(base::WrapUnique(callbacks));
   auto database_callbacks_impl =
@@ -60,7 +60,7 @@ void WebIDBFactoryImpl::DeleteDatabase(
     WebIDBCallbacks* callbacks,
     bool force_close,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  callbacks->SetState(nullptr, IndexedDBCallbacksImpl::kNoTransaction);
+  callbacks->SetState(nullptr, WebIDBCallbacksImpl::kNoTransaction);
   auto callbacks_impl =
       std::make_unique<IndexedDBCallbacksImpl>(base::WrapUnique(callbacks));
   DCHECK(!name.IsNull());

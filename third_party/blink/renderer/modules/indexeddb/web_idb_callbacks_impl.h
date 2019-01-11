@@ -49,6 +49,11 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
   USING_FAST_MALLOC(WebIDBCallbacksImpl);
 
  public:
+  // |kNoTransaction| is used as the default transaction ID when instantiating
+  // an WebIDBCallbacksImpl instance.  See web_idb_factory_impl.cc for those
+  // cases.
+  enum : int64_t { kNoTransaction = -1 };
+
   static std::unique_ptr<WebIDBCallbacksImpl> Create(IDBRequest*);
 
   ~WebIDBCallbacksImpl() override;
