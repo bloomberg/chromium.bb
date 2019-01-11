@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_ARENA_H_
-#define NET_BASE_ARENA_H_
+#ifndef NET_THIRD_PARTY_SPDY_PLATFORM_IMPL_SPDY_UNSAFE_ARENA_IMPL_H_
+#define NET_THIRD_PARTY_SPDY_PLATFORM_IMPL_SPDY_UNSAFE_ARENA_IMPL_H_
 
 #include <memory>
 #include <vector>
 
-#include "net/base/net_export.h"
+#include "net/third_party/spdy/platform/api/spdy_export.h"
 
-namespace net {
+namespace spdy {
 
 // Allocates large blocks of memory, and doles them out in smaller chunks.
 // Not thread-safe.
-class NET_EXPORT_PRIVATE UnsafeArena {
+class SPDY_EXPORT_PRIVATE SpdyUnsafeArenaImpl {
  public:
   class Status {
    private:
-    friend class UnsafeArena;
+    friend class SpdyUnsafeArenaImpl;
     size_t bytes_allocated_;
 
    public:
@@ -27,17 +27,17 @@ class NET_EXPORT_PRIVATE UnsafeArena {
   };
 
   // Blocks allocated by this arena will be at least |block_size| bytes.
-  explicit UnsafeArena(size_t block_size);
-  ~UnsafeArena();
+  explicit SpdyUnsafeArenaImpl(size_t block_size);
+  ~SpdyUnsafeArenaImpl();
 
   // Copy and assign are not allowed.
-  UnsafeArena() = delete;
-  UnsafeArena(const UnsafeArena&) = delete;
-  UnsafeArena& operator=(const UnsafeArena&) = delete;
+  SpdyUnsafeArenaImpl() = delete;
+  SpdyUnsafeArenaImpl(const SpdyUnsafeArenaImpl&) = delete;
+  SpdyUnsafeArenaImpl& operator=(const SpdyUnsafeArenaImpl&) = delete;
 
   // Move is allowed.
-  UnsafeArena(UnsafeArena&& other);
-  UnsafeArena& operator=(UnsafeArena&& other);
+  SpdyUnsafeArenaImpl(SpdyUnsafeArenaImpl&& other);
+  SpdyUnsafeArenaImpl& operator=(SpdyUnsafeArenaImpl&& other);
 
   char* Alloc(size_t size);
   char* Realloc(char* original, size_t oldsize, size_t newsize);
@@ -72,6 +72,6 @@ class NET_EXPORT_PRIVATE UnsafeArena {
   Status status_;
 };
 
-}  // namespace net
+}  // namespace spdy
 
-#endif  // NET_BASE_ARENA_H_
+#endif  // NET_THIRD_PARTY_SPDY_PLATFORM_IMPL_SPDY_UNSAFE_ARENA_IMPL_H_
