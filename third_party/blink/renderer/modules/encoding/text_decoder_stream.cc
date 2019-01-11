@@ -53,12 +53,6 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
     // algorithm (https://heycam.github.io/webidl/#dfn-get-buffer-source-copy).
     if (bufferSource.IsArrayBufferView()) {
       const auto* view = bufferSource.GetAsArrayBufferView().View();
-      // If IsDetachedBuffer(O), then throw a TypeError.
-      if (view->buffer()->IsNeutered()) {
-        exception_state.ThrowTypeError(
-            ExceptionMessages::FailedToConvertJSValue("BufferSource"));
-        return;
-      }
       const char* start = static_cast<const char*>(view->BaseAddress());
       uint32_t length = view->byteLength();
       DecodeAndEnqueue(start, length, WTF::FlushBehavior::kDoNotFlush,
@@ -67,12 +61,6 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
     }
     DCHECK(bufferSource.IsArrayBuffer());
     const auto* array_buffer = bufferSource.GetAsArrayBuffer();
-    // If IsDetachedBuffer(O), then throw a TypeError.
-    if (array_buffer->IsNeutered()) {
-      exception_state.ThrowTypeError(
-          ExceptionMessages::FailedToConvertJSValue("BufferSource"));
-      return;
-    }
     const char* start = static_cast<const char*>(array_buffer->Data());
     uint32_t length = array_buffer->ByteLength();
     DecodeAndEnqueue(start, length, WTF::FlushBehavior::kDoNotFlush, controller,
