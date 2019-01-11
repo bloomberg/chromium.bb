@@ -107,8 +107,8 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="17513872634828108">Açık sekmeler</translation>
 <translation id="1779089405699405702">Görsel kod çözücüsü</translation>
 <translation id="1782483593938241562">Bitiş tarihi: <ph name="DATE" /></translation>
+<translation id="1791662854739702043">Yüklendi</translation>
 <translation id="1792959175193046959">Dosyaların indirileceği varsayılan konumu istediğiniz zaman değiştirebilirsiniz</translation>
-<translation id="1796971354271036388">VR modülü yükleniyor...</translation>
 <translation id="1807246157184219062">Açık</translation>
 <translation id="1821253160463689938">Belirtilen sayfaları ziyaret etmiyor olsanız bile tercihlerinizi hatırlamak için çerezler kullanır</translation>
 <translation id="1829244130665387512">Sayfada bul</translation>
@@ -488,7 +488,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="4837753911714442426">Sayfayı yazdırma seçeneklerini açar</translation>
 <translation id="4842092870884894799">Şifre oluşturma pop-up'ı gösteriliyor</translation>
 <translation id="4850886885716139402">Görüntüle</translation>
-<translation id="4857347795080810417">VR modülü yüklendi</translation>
 <translation id="4860895144060829044">Telefon et</translation>
 <translation id="4875775213178255010">İçerik Önerileri</translation>
 <translation id="4878404682131129617">Proxy sunucu üzerinden tünel oluşturulamadı</translation>
@@ -551,7 +550,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5327248766486351172">Ad</translation>
 <translation id="5335288049665977812">Sitelerin JavaScript çalıştırmasına izin ver (önerilir)</translation>
 <translation id="5363230136052241468">Yeni sekme sayfasını yüklemek için ana ekran düğmesine dokunun</translation>
-<translation id="5372829067651257087">URL kopyalandı.</translation>
 <translation id="5391532827096253100">Bu siteye bağlantınız güvenli değil. Site bilgileri</translation>
 <translation id="5400569084694353794">Bu uygulamayı kullanarak <ph name="BEGIN_LINK1" />Chrome'un Gizlilik Şartları<ph name="END_LINK1" />'nı ve <ph name="BEGIN_LINK2" />Gizlilik Uyarısı<ph name="END_LINK2" />'nı kabul etmiş olursunuz.</translation>
 <translation id="5403644198645076998">Yalnızca belirli sitelere izin ver</translation>
@@ -749,7 +747,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6746124502594467657">Aşağı taşı</translation>
 <translation id="6766622839693428701">Kapatmak için aşağı kaydırın.</translation>
 <translation id="6766758767654711248">Siteye gitmek için dokunun</translation>
-<translation id="6768277682697012280">AR modülü yükleniyor...</translation>
 <translation id="6776813977906306442">İndir düğmesini kullanarak videoları daha sonra izlemek üzere indirin</translation>
 <translation id="6782111308708962316">Üçüncü taraf web sitelerinin çerez verilerini kaydetmesini ve okumasını engelle</translation>
 <translation id="6790428901817661496">Oynat</translation>
@@ -776,7 +773,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6963642900430330478">Bu sayfa tehlikeli. Site bilgileri</translation>
 <translation id="6963766334940102469">Yer işaretlerini silme</translation>
 <translation id="6965382102122355670">Tamam</translation>
-<translation id="6968317970155454671">AR modülü yüklenemedi</translation>
 <translation id="6978479750597523876">Çeviri ayarlarını sıfırla</translation>
 <translation id="6979737339423435258">Tüm zamanlar</translation>
 <translation id="6981982820502123353">Erişilebilirlik</translation>
@@ -974,7 +970,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="8487700953926739672">Çevrimdışı kullanılabilir</translation>
 <translation id="8489271220582375723">Geçmiş sayfasını açar</translation>
 <translation id="8493948351860045254">Yer aç</translation>
-<translation id="8496140788721644230">AR modülü yüklendi</translation>
 <translation id="8497726226069778601">Burada görülecek bir şey yok… henüz</translation>
 <translation id="8503559462189395349">Chrome Şifreleri</translation>
 <translation id="8503813439785031346">Kullanıcı adı</translation>

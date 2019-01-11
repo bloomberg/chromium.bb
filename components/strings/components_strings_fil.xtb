@@ -12,7 +12,6 @@
 <translation id="1055184225775184556">&amp;I-undo ang Pagdagdag</translation>
 <translation id="1058479211578257048">Sine-save ang mga card...</translation>
 <translation id="10614374240317010">Hindi kailanman nag-save</translation>
-<translation id="1066396345355680611">Maaari kang mawalan ng access sa protektadong content mula sa <ph name="SITE" /> at ilang iba pang site.</translation>
 <translation id="106701514854093668">Mga Bookmark sa Desktop</translation>
 <translation id="1074497978438210769">Hindi secure</translation>
 <translation id="1080116354587839789">Pagkasyahin sa lapad</translation>
@@ -461,7 +460,6 @@
 <translation id="3901925938762663762">Na-expire na ang card</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3946209740501886391">Palaging hilingin sa site na ito</translation>
-<translation id="3947577358805392297">I-save ang page para sa ibang pagkakataon</translation>
 <translation id="3949571496842715403">Hindi mapatunayan ng server na ito na <ph name="DOMAIN" /> ito; hindi tinutukoy ng certificate ng seguridad nito ang Mga Alternatibong Pangalan ng Subject. Maaaring dahil ito sa isang maling configuration o sa isang umaatake na humahadlang sa iyong koneksyon.</translation>
 <translation id="3949601375789751990">Lalabas dito ang iyong history ng pag-browse</translation>
 <translation id="3950820424414687140">Mag-sign in</translation>
@@ -627,7 +625,6 @@
 <translation id="5045550434625856497">Hindi wastong password</translation>
 <translation id="5056549851600133418">Mga artikulo para sa iyo</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Suriin ang proxy address<ph name="END_LINK" /></translation>
-<translation id="5086888986931078152">Mawawalan ka ng access sa protektadong content mula sa ilang site.</translation>
 <translation id="5087286274860437796">Hindi angkop ang certificate ng server sa oras na ito.</translation>
 <translation id="5087580092889165836">Magdagdag ng card</translation>
 <translation id="5089810972385038852">Estado</translation>
@@ -755,7 +752,6 @@
 <translation id="5939518447894949180">I-reset</translation>
 <translation id="5946937721014915347">Binubuksan ang <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Hindi maka-enroll gamit ang account ng consumer (may available na naka-package na lisensya).</translation>
-<translation id="5966151627327109289">Sina-sign out ka sa karamihang site. Maaari kang mawalan ng access sa pinoprotektahang content mula sa <ph name="SITE" /> at iba pang site.</translation>
 <translation id="5967592137238574583">I-edit ang Impormasyon ng Contact</translation>
 <translation id="5967867314010545767">Alisin sa history</translation>
 <translation id="5975083100439434680">Mag-zoom out</translation>
@@ -778,7 +774,6 @@
 <translation id="6059925163896151826">Mga USB device</translation>
 <translation id="6071091556643036997">Invalid ang uri ng patakaran.</translation>
 <translation id="6080696365213338172">Nag-access ka ng nilalaman gamit ang isang certificate na ibinigay ng administrator. Maaaring harangin ng iyong administrator ang data na ibibigay mo sa <ph name="DOMAIN" />.</translation>
-<translation id="6096619198407627433">Sina-sign out ka sa karamihang site. Hindi ka masa-sign out sa iyong Google Account. Maaari kang mawalan ng access sa pinoprotektahang content mula sa <ph name="SITE" /> at iba pang site.</translation>
 <translation id="610911394827799129">Maaaring may iba pang anyo ng history ng pag-browse ang iyong Google Account sa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Wala}=1{1 password (naka-sync)}one{# password (naka-sync)}other{# na password (naka-sync)}}</translation>
 <translation id="6146055958333702838">Tingnan ang anumang mga kable at i-reboot ang anumang mga router, modem o iba
@@ -962,7 +957,6 @@ Mga karagdagang detalye:
 <translation id="7444046173054089907">Naka-block ang site na ito</translation>
 <translation id="7445762425076701745">Hindi ganap na mapatunayan ang pagkakakilanlan ng server na konektado ka. Konektado ka sa server gamit ang pangalan na angkop lamang sa loob ng iyong network, na walang paraan ang panglabas na certificate authority na patunayan ang pagmamay-ari. Dahil magbibigay ang ilang kinauukulan sa certificate para sa mga pangalang ito, walang paraan upang matiyak na konektado ka sa nilayong website at hindi isang umaatake.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Matuto nang higit pa<ph name="END_LINK" /> tungkol sa problemang ito.</translation>
-<translation id="7453467225369441013">Isa-sign out ka sa karamihan ng mga site. Hindi ka masa-sign out sa iyong Google Account.</translation>
 <translation id="7455133967321480974">Gamitin ang pangkalahatang default (I-block)</translation>
 <translation id="7460618730930299168">Iba ang screening sa napili mo. Magpatuloy?</translation>
 <translation id="7473891865547856676">Hindi, Salamat</translation>
@@ -1145,7 +1139,6 @@ Mga karagdagang detalye:
 <translation id="860043288473659153">Pangalan ng cardholder</translation>
 <translation id="8620436878122366504">Hindi pa ito inaaprubahan ng iyong mga magulang</translation>
 <translation id="8625384913736129811">I-save ang Card na Ito sa Device na Ito</translation>
-<translation id="8662811608048051533">Nagsa-sign out sa iyo sa karamihan ng site.</translation>
 <translation id="8663226718884576429">Buod ng Order, <ph name="TOTAL_LABEL" />, Higit pang Detalye</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, sagot, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Ang iyong koneksyon sa <ph name="DOMAIN" /> ay hindi naka-encrypt.</translation>

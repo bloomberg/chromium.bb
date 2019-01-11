@@ -1118,6 +1118,12 @@
 <translation id="3628480121685794414">Dayakan pencetakan simpleks</translation>
 <translation id="3646859102161347133">Tetapkan jenis penggadang skrin</translation>
 <translation id="3653237928288822292">Ikon pembekal carian lalai</translation>
+<translation id="3660510274595679517">
+        Jika dasar ini ditetapkan kepada Benar, pendaftaran pengurusan awan adalah mandatori dan menyekat proses pelancaran Chrome jika gagal.
+
+        Jika dasar ini dibiarkan tanpa ditetapkan atau ditetapkan kepada Palsu, pendaftaran pengurusan awan tidak diwajibkan dan tidak menyekat proses pelancaran Chrome jika gagal.
+
+        Dasar ini digunakan oleh pendaftaran dasar awan skop mesin pada desktop dan boleh ditetapkan oleh Daftaran atau GPO pada Windows, plist pada Mac dan fail dasar JSON pada Linux.</translation>
 <translation id="3660562134618097814">Pindahkan kuki IdP SAML semasa log masuk</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Medan satu baris tidak akan digunakan lagi dan akan dialih keluar pada masa akan datang. Sila gunakan kotak teks berbilang baris di bawah.)</translation>
 <translation id="3709266154059827597">Konfigurasi senarai hitam pemasangan sambungan</translation>

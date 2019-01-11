@@ -12,7 +12,6 @@
 <translation id="1055184225775184556">&amp;Anular adição</translation>
 <translation id="1058479211578257048">A guardar os cartões…</translation>
 <translation id="10614374240317010">Nunca guardadas</translation>
-<translation id="1066396345355680611">Pode perder o acesso ao conteúdo protegido de <ph name="SITE" /> e de outros sites.</translation>
 <translation id="106701514854093668">Marcadores do Ambiente de Trabalho</translation>
 <translation id="1074497978438210769">Inseguro</translation>
 <translation id="1080116354587839789">Ajustar à largura</translation>
@@ -461,7 +460,6 @@
 <translation id="3901925938762663762">O cartão expirou</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3946209740501886391">Perguntar sempre neste site</translation>
-<translation id="3947577358805392297">Guardar a página para mais tarde</translation>
 <translation id="3949571496842715403">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O respetivo certificado de segurança não especifica Nomes alternativos do requerente. Isto pode ser o resultado de uma configuração incorreta ou de um utilizador mal-intencionado que intercetou a sua ligação.</translation>
 <translation id="3949601375789751990">O histórico de navegação é apresentado aqui</translation>
 <translation id="3950820424414687140">Iniciar sessão</translation>
@@ -627,7 +625,6 @@
 <translation id="5045550434625856497">Palavra-passe incorrecta</translation>
 <translation id="5056549851600133418">Artigos para si</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Verificar o endereço proxy<ph name="END_LINK" /></translation>
-<translation id="5086888986931078152">Pode perder o acesso ao conteúdo protegido de alguns sites.</translation>
 <translation id="5087286274860437796">De momento, o certificado do servidor não é válido.</translation>
 <translation id="5087580092889165836">Adicionar cartão</translation>
 <translation id="5089810972385038852">Estado</translation>
@@ -755,7 +752,6 @@
 <translation id="5939518447894949180">Repor</translation>
 <translation id="5946937721014915347">A abrir <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Não é possível inscrever-se com conta de consumidor (licença incluída disponível).</translation>
-<translation id="5966151627327109289">A sua sessão é terminada na maioria dos sites. Pode perder o acesso a conteúdo protegido de <ph name="SITE" /> e de outros sites.</translation>
 <translation id="5967592137238574583">Editar informações de contacto</translation>
 <translation id="5967867314010545767">Remover do histórico</translation>
 <translation id="5975083100439434680">Reduzir</translation>
@@ -778,7 +774,6 @@
 <translation id="6059925163896151826">Dispositivos USB</translation>
 <translation id="6071091556643036997">O tipo de política é inválido.</translation>
 <translation id="6080696365213338172">Acedeu a conteúdos utilizando um certificado fornecido por um gestor. Os dados que fornecer a <ph name="DOMAIN" /> podem ser intercetados pelo seu gestor.</translation>
-<translation id="6096619198407627433">A sua sessão é terminada na maioria dos sites. A sessão na sua Conta Google não é terminada. Pode perder o acesso a conteúdo protegido de <ph name="SITE" /> e de outros sites.</translation>
 <translation id="610911394827799129">A sua Conta Google pode ter outras formas do histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Nenhuma}=1{1 palavra-passe (sincronizada)}other{# palavras-passe (sincronizadas)}}</translation>
 <translation id="6146055958333702838">Verifique os cabos e reinicie todos os routers, modems ou outros
@@ -961,7 +956,6 @@ Detalhes adicionais:
 <translation id="7444046173054089907">Este site está bloqueado</translation>
 <translation id="7445762425076701745">Não é possível validar totalmente a identidade do servidor ao qual está ligado. Está ligado a um servidor com um nome que apenas é válido na sua rede, que não permite que uma autoridade de certificação externa valide a respectiva propriedade. Ainda assim, algumas autoridades emitem certificados para esses nomes, pelo que não há forma de garantir que está ligado ao Website que pretende e não a um site pirata.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Saber mais<ph name="END_LINK" /> sobre este problema.</translation>
-<translation id="7453467225369441013">A sua sessão é terminada na maioria dos sites. A sessão na sua Conta Google não é terminada.</translation>
 <translation id="7455133967321480974">Utilizar predefinição global (Bloquear)</translation>
 <translation id="7460618730930299168">A apresentação é diferente daquilo que selecionou. Pretende continuar?</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
@@ -1145,7 +1139,6 @@ Detalhes adicionais:
 <translation id="860043288473659153">Nome do titular do cartão</translation>
 <translation id="8620436878122366504">Os teus pais ainda não o aprovaram</translation>
 <translation id="8625384913736129811">Guardar este cartão neste dispositivo</translation>
-<translation id="8662811608048051533">A sua sessão é terminada na maioria dos sites.</translation>
 <translation id="8663226718884576429">Resumo da encomenda, <ph name="TOTAL_LABEL" />, mais detalhes</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, resposta, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">A sua ligação a <ph name="DOMAIN" /> não está encriptada.</translation>

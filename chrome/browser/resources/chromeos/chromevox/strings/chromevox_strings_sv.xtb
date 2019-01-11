@@ -289,48 +289,6 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="3322936298410871309">Föregående rubrik på nivå 1</translation>
 <translation id="3323447499041942178">Textruta</translation>
 <translation id="3338224621010291843">Skjutreglage för <ph name="NAME" /> med värdet <ph name="VALUE" /></translation>
-<translation id="3353420241558113817">{"ar": "arabiska",
-        "bg": "bulgariska",
-        "ca": "katalanska",
-        "cs": "tjeckiska",
-        "da": "danska",
-        "de": "tyska",
-        "de_CH": "tyska (Schweiz)",
-        "de_DE": "tyska (Tyskland)",
-        "el": "grekiska",
-        "en": "engelska",
-        "en_CA": "engelska (Kanada)",
-        "en_GB": "engelska (Storbritannien)",
-        "en_US": "engelska (USA)",
-        "es": "spanska",
-        "et": "estniska",
-        "fr": "franska",
-        "fr_CA": "franska (Kanada)",
-        "fr_FR": "franska (Frankrike)",
-        "fi": "finska",
-        "he": "hebreiska",
-        "hi": "hindi",
-        "hr": "kroatiska",
-        "hu": "ungerska",
-        "is": "isländska",
-        "it": "italienska",
-        "ko": "koreanska",
-        "lt": "litauiska",
-        "lv": "lettiska",
-        "nb": "norska (bokmål)",
-        "nl": "nederländska",
-        "pl": "polska",
-        "pt": "portugisiska",
-        "ro": "rumänska",
-        "ru": "ryska",
-        "sk": "slovakiska",
-        "sl": "slovenska",
-        "sr": "serbiska",
-        "sv": "svenska",
-        "tr": "turkiska",
-        "vi": "vietnamesiska",
-        "zh": "kinesiska",
-        "zh_TW": "kinesiska (traditionell)"}</translation>
 <translation id="335581015389089642">Tal</translation>
 <translation id="3359142382821736686">avgränsare</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{plustecken}other{# plustecken}}</translation>
@@ -706,6 +664,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="6387719785439924554">sidoruta</translation>
 <translation id="6411426777058107714">Det finns ingen föregående alternativknapp.</translation>
 <translation id="6414968628640960377">Föregående element av annan typ.</translation>
+<translation id="6417265370957905582">Google Assistent</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{kolon}other{# kolon}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, meny</translation>
 <translation id="6444046323172968959">Varningsdialogruta</translation>

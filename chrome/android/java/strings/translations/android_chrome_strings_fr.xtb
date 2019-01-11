@@ -107,8 +107,8 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="17513872634828108">Onglets ouverts</translation>
 <translation id="1779089405699405702">Décodage d'images</translation>
 <translation id="1782483593938241562">Date de fin : <ph name="DATE" /></translation>
+<translation id="1791662854739702043">Installé dans</translation>
 <translation id="1792959175193046959">Modifier à tout moment l'emplacement de téléchargement par défaut</translation>
-<translation id="1796971354271036388">Installation du module RV…</translation>
 <translation id="1807246157184219062">Clair</translation>
 <translation id="1821253160463689938">Utilise des cookies pour mémoriser vos préférences, même si vous n'accédez pas à ces pages</translation>
 <translation id="1829244130665387512">Rechercher sur la page</translation>
@@ -488,7 +488,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="4837753911714442426">Afficher les options d'impression de la page</translation>
 <translation id="4842092870884894799">Affichage de la fenêtre contextuelle de génération de mot de passe</translation>
 <translation id="4850886885716139402">Afficher</translation>
-<translation id="4857347795080810417">Module RV installé</translation>
 <translation id="4860895144060829044">Appeler</translation>
 <translation id="4875775213178255010">Recommandations de contenus</translation>
 <translation id="4878404682131129617">Échec de l'établissement d'un tunnel via un serveur proxy</translation>
@@ -551,7 +550,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5327248766486351172">Nom</translation>
 <translation id="5335288049665977812">Autoriser les sites à exécuter JavaScript (recommandé)</translation>
 <translation id="5363230136052241468">Appuyez sur le bouton d'accueil pour charger la page "Nouvel onglet"</translation>
-<translation id="5372829067651257087">L'URL a bien été copiée.</translation>
 <translation id="5391532827096253100">Votre connexion à ce site n'est pas sécurisée. Informations sur le site</translation>
 <translation id="5400569084694353794">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK1" />Conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />Avis de confidentialité<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="5403644198645076998">N'autoriser que certains sites</translation>
@@ -749,7 +747,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6746124502594467657">Descendre</translation>
 <translation id="6766622839693428701">Balayez l'écran vers le bas pour fermer la feuille.</translation>
 <translation id="6766758767654711248">Appuyez pour accéder au site</translation>
-<translation id="6768277682697012280">Installation du module RA…</translation>
 <translation id="6776813977906306442">Téléchargez des vidéos à regarder plus tard à l'aide du bouton "Télécharger"</translation>
 <translation id="6782111308708962316">Empêcher les sites Web tiers d'enregistrer et de lire les données des cookies</translation>
 <translation id="6790428901817661496">Lire</translation>
@@ -776,7 +773,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6963642900430330478">Cette page est dangereuse. Informations sur le site</translation>
 <translation id="6963766334940102469">Supprimer des favoris</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6968317970155454671">Échec de l'installation du module RA</translation>
 <translation id="6978479750597523876">Réinitialiser les paramètres de Google Traduction</translation>
 <translation id="6979737339423435258">Toutes les périodes</translation>
 <translation id="6981982820502123353">Accessibilité</translation>
@@ -974,7 +970,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8487700953926739672">Disponible hors connexion</translation>
 <translation id="8489271220582375723">Ouvrir la page "Historique"</translation>
 <translation id="8493948351860045254">Libérer de l'espace</translation>
-<translation id="8496140788721644230">Module RA installé</translation>
 <translation id="8497726226069778601">Aucune page à afficher pour le moment</translation>
 <translation id="8503559462189395349">Mots de passe Google Chrome</translation>
 <translation id="8503813439785031346">Nom d'utilisateur</translation>

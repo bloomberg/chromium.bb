@@ -107,8 +107,8 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="17513872634828108">Odpri zavihke</translation>
 <translation id="1779089405699405702">Slikovni dekodirnik</translation>
 <translation id="1782483593938241562">Končni datum: <ph name="DATE" /></translation>
+<translation id="1791662854739702043">Nameščeno</translation>
 <translation id="1792959175193046959">Kadar koli lahko spremenite privzeto mesto za prenose</translation>
-<translation id="1796971354271036388">Nameščanje modula NR …</translation>
 <translation id="1807246157184219062">Svetlo</translation>
 <translation id="1821253160463689938">Uporablja piškotke, da si zapomni vaše nastavitve, tudi če teh strani ne obiskujete</translation>
 <translation id="1829244130665387512">Poišči na strani</translation>
@@ -487,7 +487,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4837753911714442426">Odpiranje možnosti za tiskanje strani</translation>
 <translation id="4842092870884894799">Prikaz pojavnega okna za ustvarjanje gesel</translation>
 <translation id="4850886885716139402">Pogled</translation>
-<translation id="4857347795080810417">Nameščen modul za NR</translation>
 <translation id="4860895144060829044">Pokličite</translation>
 <translation id="4875775213178255010">Predlogi za vsebino</translation>
 <translation id="4878404682131129617">Vzpostavljanje tunela prek strežnika proxy ni uspelo</translation>
@@ -550,7 +549,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5327248766486351172">Ime</translation>
 <translation id="5335288049665977812">Spletnim mestom dovoli izvajanje JavaScripta (priporočeno)</translation>
 <translation id="5363230136052241468">Dotaknite se gumba za začetni zaslon, če želite naložiti nov zavihek s povezavami</translation>
-<translation id="5372829067651257087">URL je kopiran.</translation>
 <translation id="5391532827096253100">Povezava s tem spletnim mestom ni varna. Podatki o spletnem mestu.</translation>
 <translation id="5400569084694353794">Če uporabljate to aplikacijo, se strinjate s <ph name="BEGIN_LINK1" />pogoji storitve<ph name="END_LINK1" /> in <ph name="BEGIN_LINK2" />pravilnikom o zasebnosti<ph name="END_LINK2" /> za Chrome.</translation>
 <translation id="5403644198645076998">Dovoli samo nekatera spletna mesta</translation>
@@ -748,7 +746,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6746124502594467657">Premakni dol</translation>
 <translation id="6766622839693428701">Povlecite navzdol, da zaprete.</translation>
 <translation id="6766758767654711248">Dotaknite se, če želite na spletno mesto</translation>
-<translation id="6768277682697012280">Nameščanje modula RR …</translation>
 <translation id="6776813977906306442">Z gumbom za prenos lahko prenesete videoposnetke za poznejši ogled</translation>
 <translation id="6782111308708962316">Drugim spletnim mestom prepreči shranjevanje in branje podatkov piškotkov</translation>
 <translation id="6790428901817661496">Predvajanje</translation>
@@ -775,7 +772,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6963642900430330478">Ta stran je nevarna. Podatki o spletnem mestu.</translation>
 <translation id="6963766334940102469">Izbriši zaznamke</translation>
 <translation id="6965382102122355670">V redu</translation>
-<translation id="6968317970155454671">Nameščanje modula RR ni uspelo</translation>
 <translation id="6978479750597523876">Ponastavljanje nastavitev za prevajanje</translation>
 <translation id="6979737339423435258">Od začetka</translation>
 <translation id="6981982820502123353">Dostopnost</translation>
@@ -973,7 +969,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="8487700953926739672">Na voljo brez povezave</translation>
 <translation id="8489271220582375723">Odpiranje strani z zgodovino</translation>
 <translation id="8493948351860045254">Sprosti prostor</translation>
-<translation id="8496140788721644230">Modul RR je nameščen</translation>
 <translation id="8497726226069778601">Nimate česa videti ... Za zdaj.</translation>
 <translation id="8503559462189395349">Gesla za Chrome</translation>
 <translation id="8503813439785031346">Uporabniško ime</translation>

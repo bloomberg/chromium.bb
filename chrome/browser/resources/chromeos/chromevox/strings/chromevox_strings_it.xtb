@@ -288,48 +288,6 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="3322936298410871309">Intestazione livello 1 precedente</translation>
 <translation id="3323447499041942178">Casella di testo</translation>
 <translation id="3338224621010291843">Dispositivo di scorrimento <ph name="NAME" /> <ph name="VALUE" /></translation>
-<translation id="3353420241558113817">{"ar": "Arabo",
-        "bg": "Bulgaro",
-        "ca": "Catalano",
-        "cs": "Ceco",
-        "da": "Danese",
-        "de": "Tedesco",
-        "de_CH": "Tedesco (Svizzera)",
-        "de_DE": "Tedesco (Germania)",
-        "el": "Greco",
-        "en": "Inglese",
-        "en_CA": "Inglese (Canada)",
-        "en_GB": "Inglese (Regno Unito)",
-        "en_US": "Inglese (Stati Uniti)",
-        "es": "Spagnolo",
-        "et": "Estone",
-        "fr": "Francese",
-        "fr_CA": "Francese (Canada)",
-        "fr_FR": "Francese (Francia)",
-        "fi": "Finlandese",
-        "he": "Ebraico",
-        "hi": "Hindi",
-        "hr": "Croato",
-        "hu": "Ungherese",
-        "is": "Islandese",
-        "it": "Italiano",
-        "ko": "Coreano",
-        "lt": "Lituano",
-        "lv": "Lettone",
-        "nb": "Norvegese Bokmål",
-        "nl": "Olandese",
-        "pl": "Polacco",
-        "pt": "Portoghese",
-        "ro": "Rumeno",
-        "ru": "Russo",
-        "sk": "Slovacco",
-        "sl": "Sloveno",
-        "sr": "Serbo",
-        "sv": "Svedese",
-        "tr": "Turco",
-        "vi": "Vietnamita",
-        "zh": "Cinese",
-        "zh_TW": "Cinese (Han tradizionale)"}</translation>
 <translation id="335581015389089642">Voce</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{più}other{# segni più}}</translation>
@@ -705,6 +663,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="6387719785439924554">di lato</translation>
 <translation id="6411426777058107714">Nessun pulsante di opzione precedente.</translation>
 <translation id="6414968628640960377">Elemento diverso precedente.</translation>
+<translation id="6417265370957905582">Assistente Google</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{due punti}other{# segni di due punti}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, menu</translation>
 <translation id="6444046323172968959">Finestra di avviso</translation>

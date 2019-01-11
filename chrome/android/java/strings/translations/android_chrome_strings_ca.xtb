@@ -107,8 +107,8 @@ Tanmateix, no ets invisible. El teu cap, el teu proveïdor de serveis d'Internet
 <translation id="17513872634828108">Pestanyes obertes</translation>
 <translation id="1779089405699405702">Descodificador d'imatges</translation>
 <translation id="1782483593938241562">Data de finalització: <ph name="DATE" /></translation>
+<translation id="1791662854739702043">Instal·lat</translation>
 <translation id="1792959175193046959">Canvia la ubicació predeterminada de baixada en qualsevol moment</translation>
-<translation id="1796971354271036388">S'està instal·lant el mòdul de RV...</translation>
 <translation id="1807246157184219062">Clar</translation>
 <translation id="1821253160463689938">Utilitza galetes per recordar les teves preferències, fins i tot si no visites aquestes pàgines</translation>
 <translation id="1829244130665387512">Cerca a la pàgina</translation>
@@ -488,7 +488,6 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="4837753911714442426">Obre les opcions per imprimir la pàgina</translation>
 <translation id="4842092870884894799">Es mostra la finestra emergent de generació de contrasenyes</translation>
 <translation id="4850886885716139402">Mostra</translation>
-<translation id="4857347795080810417">El mòdul de RV s'ha instal·lat</translation>
 <translation id="4860895144060829044">Truca</translation>
 <translation id="4875775213178255010">Suggeriments de contingut</translation>
 <translation id="4878404682131129617">S'ha produït un error en establir un túnel mitjançant el servidor intermediari</translation>
@@ -551,7 +550,6 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5327248766486351172">Nom</translation>
 <translation id="5335288049665977812">Permet que els llocs executin JavaScript (opció recomanada)</translation>
 <translation id="5363230136052241468">Toca el botó d'inici per carregar la pàgina Pestanya nova</translation>
-<translation id="5372829067651257087">S'ha copiat l'URL.</translation>
 <translation id="5391532827096253100">La connexió a aquest lloc web no és segura. Informació del lloc web</translation>
 <translation id="5400569084694353794">En fer servir aquesta aplicació, accepteu les <ph name="BEGIN_LINK1" />Condicions del servei<ph name="END_LINK1" /> i l'<ph name="BEGIN_LINK2" />Avís de privadesa<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="5403644198645076998">Permet només certs llocs</translation>
@@ -749,7 +747,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6746124502594467657">Mou avall</translation>
 <translation id="6766622839693428701">Llisca cap avall per tancar el full.</translation>
 <translation id="6766758767654711248">Toca per anar al lloc web</translation>
-<translation id="6768277682697012280">S'està instal·lant el mòdul de realitat augmentada...</translation>
 <translation id="6776813977906306442">Amb el botó Baixa, pots baixar vídeos per mirar-los més tard</translation>
 <translation id="6782111308708962316">Impedeix que els llocs web de tercers desin i llegeixin les dades de les galetes</translation>
 <translation id="6790428901817661496">Reprodueix</translation>
@@ -776,7 +773,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6963642900430330478">Aquesta pàgina és perillosa. Informació del lloc web</translation>
 <translation id="6963766334940102469">Suprimeix les adreces d'interès</translation>
 <translation id="6965382102122355670">D'acord</translation>
-<translation id="6968317970155454671">No s'ha pogut instal·lar el mòdul de realitat augmentada</translation>
 <translation id="6978479750597523876">Restableix la configuració del Traductor</translation>
 <translation id="6979737339423435258">Tot el període</translation>
 <translation id="6981982820502123353">Accessibilitat</translation>
@@ -974,7 +970,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8487700953926739672">Disponible sense connexió</translation>
 <translation id="8489271220582375723">Obre la pàgina de l'historial</translation>
 <translation id="8493948351860045254">Allibera espai</translation>
-<translation id="8496140788721644230">S'ha instal·lat el mòdul de realitat augmentada</translation>
 <translation id="8497726226069778601">Aquí encara no hi ha contingut per mostrar</translation>
 <translation id="8503559462189395349">Contrasenyes de Chrome</translation>
 <translation id="8503813439785031346">Nom d'usuari</translation>

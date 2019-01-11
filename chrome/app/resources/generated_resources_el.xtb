@@ -1379,7 +1379,6 @@
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">Αυτή η καρτέλα χρησιμοποιεί την κάμερα ή το μικρόφωνό σας.</translation>
 <translation id="3083193146044397360">Αποκλείστηκε προσωρινά για την προστασία σας</translation>
-<translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Απόθεση για εγκατάσταση</translation>
 <translation id="3084771660770137092">Είτε εξαντλήθηκε η μνήμη του Chrome ή η διαδικασία για την ιστοσελίδα τερματίστηκε για κάποιον άλλο λόγο. Για να συνεχίσετε, επαναλάβετε τη φόρτωση ή μεταβείτε σε άλλη σελίδα.</translation>
 <translation id="3085412380278336437">Ο ιστότοπος μπορεί να χρησιμοποιήσει την κάμερά σας</translation>
@@ -2562,6 +2561,7 @@
 <translation id="4941246025622441835">Χρησιμοποιήστε αυτήν την επίταξη συσκευής κατά την εγγραφή της συσκευής στο πρόγραμμα εταιρικής διαχείρισης:</translation>
 <translation id="4941627891654116707">Μέγεθος γραμματοσειράς</translation>
 <translation id="494286511941020793">Βοήθεια για τη διαμόρφωση διακομιστή μεσολάβησης</translation>
+<translation id="495170559598752135">Ενέργειες</translation>
 <translation id="4953689047182316270">Απάντηση σε συμβάντα προσβασιμότητας</translation>
 <translation id="4953808748584563296">Προεπιλεγμένο πορτοκαλί avatar</translation>
 <translation id="4955710816792587366">Επιλογή PIN</translation>
@@ -2816,7 +2816,6 @@
 <translation id="5331975486040154427">Συσκευή USB-C (πίσω αριστερή θύρα)</translation>
 <translation id="5332624210073556029">Ζώνη ώρας:</translation>
 <translation id="5334142896108694079">Προσωρινή μνήμη σεναρίου</translation>
-<translation id="5334899159203764908">Μάθετε περισσότερα για την <ph name="BEGIN_LINK" />πρόσβαση ιστοτόπου<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Δημιουργία αντιγράφων ασφαλείας για <ph name="FILE_COUNT" /> αρχεία στο <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">Να μην επιτρέπεται η πρόσβαση των ιστοτόπων στις συσκευές USB</translation>
 <translation id="5337771866151525739">Εγκαταστάθηκε από τρίτο μέρος.</translation>
@@ -5059,7 +5058,6 @@
 <translation id="8725066075913043281">Προσπαθήστε ξανά</translation>
 <translation id="8725178340343806893">Αγαπημένα/σελιδοδείκτες</translation>
 <translation id="8726206820263995930">Σφάλμα ανάκτησης ρυθμίσεων πολιτικής από το διακομιστή: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727344521467137076">Υπάρχει επιβλαβές λογισμικό στον υπολογιστή σας. Το Chrome το καταργεί και θα επαναφέρει τις ρυθμίσεις σας, ούτως ώστε το πρόγραμμα περιήγησης να λειτουργεί και πάλι κανονικά.</translation>
 <translation id="8730621377337864115">Ολοκληρώθηκε</translation>
 <translation id="8732030010853991079">Χρησιμοποιήστε αυτήν την επέκταση κάνοντας κλικ σε αυτό το εικονίδιο.</translation>
 <translation id="8732212173949624846">Ανάγνωση και αλλαγή του ιστορικού περιήγησης σε όλες τις συνδεδεμένες συσκευές σας</translation>
@@ -5249,7 +5247,6 @@
 <translation id="9033857511263905942">&amp;Επικόλληση</translation>
 <translation id="9034924485347205037">Αρχεία Linux</translation>
 <translation id="9035012421917565900">Τα στοιχεία δεν είναι δυνατό να επιστρέψουν στο "<ph name="DESTINATION_NAME" />", επομένως δεν θα μπορείτε να αναιρέσετε αυτήν την ενέργεια.</translation>
-<translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">Εμφάνιση πρωτοτύπου</translation>
 <translation id="9038430547971207796">Την επόμενη φορά, το τηλέφωνό σας θα ξεκλειδώσει το <ph name="DEVICE_TYPE" />. Απενεργοποιήστε το Smart Lock στις Ρυθμίσεις.</translation>
 <translation id="9038620279323455325">Το αρχείο με το όνομα "<ph name="FILE_NAME" />" υπάρχει ήδη. Επιλέξτε ένα διαφορετικό όνομα.</translation>

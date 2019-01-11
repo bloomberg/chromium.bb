@@ -12,7 +12,6 @@
 <translation id="1055184225775184556">&amp;Razveljavi dodajanje</translation>
 <translation id="1058479211578257048">Shranjevanje kartic …</translation>
 <translation id="10614374240317010">Nikoli shranjeno</translation>
-<translation id="1066396345355680611">Morda boste izgubili dostop do zaščitene vsebine na spletnem mestu <ph name="SITE" /> in drugih spletnih mestih.</translation>
 <translation id="106701514854093668">Zaznamki namizja</translation>
 <translation id="1074497978438210769">Ni varno</translation>
 <translation id="1080116354587839789">Prilagoditev prikaza širini</translation>
@@ -461,7 +460,6 @@
 <translation id="3901925938762663762">Kartica je potekla</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> – <ph name="ERROR" /></translation>
 <translation id="3946209740501886391">Vedno vprašaj na tem spletnem mestu</translation>
-<translation id="3947577358805392297">Shrani stran za pozneje</translation>
 <translation id="3949571496842715403">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo ne določa nadomestnih imen SAN (Subject Alternative Name). Razlog za to je morda napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="3949601375789751990">Tu je prikazana zgodovina brskanja</translation>
 <translation id="3950820424414687140">Prijava</translation>
@@ -627,7 +625,6 @@
 <translation id="5045550434625856497">Nepravilno geslo</translation>
 <translation id="5056549851600133418">Članki za vas</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />preveriti naslov strežnika proxy<ph name="END_LINK" /></translation>
-<translation id="5086888986931078152">Morda boste izgubili dostop do zaščitene vsebine na nekaterih spletnih mestih.</translation>
 <translation id="5087286274860437796">Potrdilo strežnika trenutno ni veljavno.</translation>
 <translation id="5087580092889165836">Dodaj kartico</translation>
 <translation id="5089810972385038852">Država:</translation>
@@ -755,7 +752,6 @@
 <translation id="5939518447894949180">Ponastavi</translation>
 <translation id="5946937721014915347">Odpiranje spletnega mesta <ph name="SITE_NAME" /> …</translation>
 <translation id="5951495562196540101">S potrošniškim računom se ni mogoče včlaniti (na voljo je pridružena licenca).</translation>
-<translation id="5966151627327109289">Odjavljeni boste z večine spletnih mest. Morda boste izgubili dostop do zaščitene vsebine na spletnem mestu <ph name="SITE" /> in drugih spletnih mestih.</translation>
 <translation id="5967592137238574583">Urejanje podatkov o stiku</translation>
 <translation id="5967867314010545767">Odstrani iz zgodovine</translation>
 <translation id="5975083100439434680">Pomanjšaj</translation>
@@ -778,7 +774,6 @@
 <translation id="6059925163896151826">Naprave USB</translation>
 <translation id="6071091556643036997">Vrsta pravilnika je neveljavna.</translation>
 <translation id="6080696365213338172">Do vsebine ste dostopali z geslom, ki ga je zagotovil skrbnik. Podatke, ki jih pošljete v <ph name="DOMAIN" />, lahko prestreže skrbnik.</translation>
-<translation id="6096619198407627433">Odjavljeni boste z večine spletnih mest. Ne boste odjavljeni iz Google Računa. Morda boste izgubili dostop do zaščitene vsebine na spletnem mestu <ph name="SITE" /> in drugih spletnih mestih.</translation>
 <translation id="610911394827799129">V Google Računu so morda druge vrste zgodovine brskanja na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Brez}=1{1 geslo (sinhronizirano)}one{# geslo (sinhronizirano)}two{# gesli (sinhronizirani)}few{# gesla (sinhronizirana)}other{# gesel (sinhroniziranih)}}</translation>
 <translation id="6146055958333702838">Preverite kable in znova zaženite usmerjevalnike, modeme ali druge omrežne 
@@ -962,7 +957,6 @@ Dodatne podrobnosti:
 <translation id="7444046173054089907">To spletno mesto je blokirano</translation>
 <translation id="7445762425076701745">Identitete strežnika, s katerim ste povezani, ni mogoče v celoti preveriti. S strežnikom ste povezani z uporabo imena, ki je veljavno samo v vašem omrežju, zato zunanji overitelj potrdil ne more preveriti njegovega lastništva. Ker nekateri overitelji potrdil kljub temu izdajajo potrdila za takšna imena, ni mogoče zagotoviti, da ste povezani z želenim spletnim mestom in ne z napadalcem.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Preberite več<ph name="END_LINK" /> o tej težavi.</translation>
-<translation id="7453467225369441013">Odjavi vas iz večine spletnih mest, vendar ne iz Google Računa.</translation>
 <translation id="7455133967321480974">Uporabi globalno privzeto (Blokiraj)</translation>
 <translation id="7460618730930299168">Predvajanje se razlikuje od tega, kar ste izbrali. Želite nadaljevati?</translation>
 <translation id="7473891865547856676">Ne, hvala</translation>
@@ -1145,7 +1139,6 @@ Dodatne podrobnosti:
 <translation id="860043288473659153">Ime imetnika kartice</translation>
 <translation id="8620436878122366504">Starši še niso odobrili</translation>
 <translation id="8625384913736129811">Shrani to kartico v tej napravi</translation>
-<translation id="8662811608048051533">Odjavi vas iz večine spletnih mest.</translation>
 <translation id="8663226718884576429">Povzetek naročila, <ph name="TOTAL_LABEL" />, več podrobnosti</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, odgovor, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Vaša povezava z <ph name="DOMAIN" /> ni kodirana.</translation>

@@ -107,8 +107,8 @@ Azonban Ön nem lesz láthatatlan. A privát mód használatával nem rejtheti e
 <translation id="17513872634828108">Megnyitott lapok</translation>
 <translation id="1779089405699405702">Képdekóder</translation>
 <translation id="1782483593938241562">Befejezés dátuma: <ph name="DATE" /></translation>
+<translation id="1791662854739702043">Telepítve</translation>
 <translation id="1792959175193046959">Az alapértelmezett letöltési helyet bármikor módosíthatja</translation>
-<translation id="1796971354271036388">VR-modul telepítése...</translation>
 <translation id="1807246157184219062">Világos</translation>
 <translation id="1821253160463689938">Cookie-kat használ a preferenciák megjegyzésére még akkor is, ha Ön nem keresi fel az adott oldalakat</translation>
 <translation id="1829244130665387512">Keresés ezen az oldalon</translation>
@@ -488,7 +488,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="4837753911714442426">Oldalnyomtatási lehetőségek megnyitása</translation>
 <translation id="4842092870884894799">Jelszógenerálás előugró ablakának megjelenítése</translation>
 <translation id="4850886885716139402">Nézet</translation>
-<translation id="4857347795080810417">VR-modul telepítve</translation>
 <translation id="4860895144060829044">Hívás</translation>
 <translation id="4875775213178255010">Javasolt tartalmak</translation>
 <translation id="4878404682131129617">Nem sikerült a proxyszerveren keresztüli alagút kialakítása</translation>
@@ -551,7 +550,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5327248766486351172">Név</translation>
 <translation id="5335288049665977812">Engedélyezze a webhelyek számára a JavaScript futtatását (ajánlott)</translation>
 <translation id="5363230136052241468">Koppintson a Kezdőképernyő gombra az új lap oldal betöltéséhez</translation>
-<translation id="5372829067651257087">URL kimásolva.</translation>
 <translation id="5391532827096253100">Kapcsolata a webhellyel nem biztonságos. Webhelyadatok</translation>
 <translation id="5400569084694353794">Az alkalmazás használatával Ön elfogadja a Chrome <ph name="BEGIN_LINK1" />Általános Szerződési Feltételeit<ph name="END_LINK1" /> és az <ph name="BEGIN_LINK2" />Adatvédelmi közleményt<ph name="END_LINK2" />.</translation>
 <translation id="5403644198645076998">Csak bizonyos webhelyek engedélyezése</translation>
@@ -749,7 +747,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6746124502594467657">Mozgatás lefelé</translation>
 <translation id="6766622839693428701">A bezáráshoz csúsztasson lefelé.</translation>
 <translation id="6766758767654711248">Koppintson a webhely felkereséséhez</translation>
-<translation id="6768277682697012280">AR-modul telepítése…</translation>
 <translation id="6776813977906306442">A Letöltés gomb segítségével videókat tölthet le, hogy később tekintse meg őket</translation>
 <translation id="6782111308708962316">Megakadályozza, hogy harmadik felek webhelyei mentsék és olvassák a cookie-adatokat.</translation>
 <translation id="6790428901817661496">Játék</translation>
@@ -776,7 +773,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6963642900430330478">Ez az oldal veszélyes. Webhelyadatok</translation>
 <translation id="6963766334940102469">Könyvjelzők törlése</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6968317970155454671">Nem sikerült telepíteni az AR-modult</translation>
 <translation id="6978479750597523876">A fordító beállításainak visszaállítása</translation>
 <translation id="6979737339423435258">Mindenkori</translation>
 <translation id="6981982820502123353">Kisegítő lehetőségek</translation>
@@ -974,7 +970,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8487700953926739672">Offline elérhető</translation>
 <translation id="8489271220582375723">Az Előzmények oldal megnyitása</translation>
 <translation id="8493948351860045254">Terület felszabadítása</translation>
-<translation id="8496140788721644230">AR-modul telepítve</translation>
 <translation id="8497726226069778601">Nincs itt semmi látnivaló… még</translation>
 <translation id="8503559462189395349">Chrome-jelszavak</translation>
 <translation id="8503813439785031346">Felhasználónév</translation>

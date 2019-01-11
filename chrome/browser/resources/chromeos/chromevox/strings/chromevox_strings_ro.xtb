@@ -289,48 +289,6 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="3322936298410871309">Titlul de nivel 1 anterior</translation>
 <translation id="3323447499041942178">Casetă de text</translation>
 <translation id="3338224621010291843">Glisor <ph name="VALUE" /> <ph name="NAME" /></translation>
-<translation id="3353420241558113817">{"ar": "Arabă",
-        "bg": "Bulgară",
-        "ca": "Catalană",
-        "cs": "Cehă",
-        "da": "Daneză",
-        "de": "Germană",
-        "de_CH": "Germană (Elveția)",
-        "de_DE": "Germană (Germania)",
-        "el": "Greacă",
-        "en": "Engleză",
-        "en_CA": "Engleză (Canada)",
-        "en_GB": "Engleză (Regatul Unit)",
-        "en_US": "Engleză (Statele Unite ale Americii)",
-        "es": "Spaniolă",
-        "et": "Estonă",
-        "fr": "Franceză",
-        "fr_CA": "Franceză (Canada)",
-        "fr_FR": "Franceză (Franța)",
-        "fi": "Finlandeză",
-        "he": "Ebraică",
-        "hi": "Hindi",
-        "hr": "Croată",
-        "hu": "Maghiară",
-        "is": "Islandeză",
-        "it": "Italiană",
-        "ko": "Coreeană",
-        "lt": "Lituaniană",
-        "lv": "Letonă",
-        "nb": "Norvegiană (Bokmål)",
-        "nl": "Neerlandeză",
-        "pl": "Poloneză",
-        "pt": "Portugheză",
-        "ro": "Română",
-        "ru": "Rusă",
-        "sk": "Slovacă",
-        "sl": "Slovenă",
-        "sr": "Sârbă",
-        "sv": "Suedeză",
-        "tr": "Turcă",
-        "vi": "Vietnameză",
-        "zh": "Chineză",
-        "zh_TW": "Chineză (Han tradițional)"}</translation>
 <translation id="335581015389089642">Voce</translation>
 <translation id="3359142382821736686">separator</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{plus}few{# semne plus}other{# de semne plus}}</translation>
@@ -706,6 +664,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="6387719785439924554">separat</translation>
 <translation id="6411426777058107714">Nu există un buton radio anterior.</translation>
 <translation id="6414968628640960377">Elementul diferit anterior.</translation>
+<translation id="6417265370957905582">Asistent Google</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{semn două puncte}few{# semne două puncte}other{# de semne două puncte}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, meniu</translation>
 <translation id="6444046323172968959">Casetă de dialog de alertă</translation>

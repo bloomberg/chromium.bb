@@ -289,48 +289,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3322936298410871309">Forrige overskrift på nivå 1</translation>
 <translation id="3323447499041942178">Tekstboks</translation>
 <translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" />-glidebryter</translation>
-<translation id="3353420241558113817">{"ar": "Arabisk",
-        "bg": "Bulgarsk",
-        "ca": "Katalansk",
-        "cs": "Tsjekkisk",
-        "da": "Dansk",
-        "de": "Tysk",
-        "de_CH": "Tysk (Sveits)",
-        "de_DE": "Tysk (Tyskland)",
-        "el": "Gresk",
-        "en": "Engelsk",
-        "en_CA": "Engelsk (Canada)",
-        "en_GB": "Engelsk (Storbritannia)",
-        "en_US": "Engelsk (USA)",
-        "es": "Spansk",
-        "et": "Estisk",
-        "fr": "Fransk",
-        "fr_CA": "Fransk (Canada)",
-        "fr_FR": "Fransk (Frankrike)",
-        "fi": "Finsk",
-        "he": "Hebraisk",
-        "hi": "Hindi",
-        "hr": "Kroatisk",
-        "hu": "Ungarsk",
-        "is": "Islandsk",
-        "it": "Italiensk",
-        "ko": "Koreansk",
-        "lt": "Litauisk",
-        "lv": "Latvisk",
-        "nb": "Norsk bokmål",
-        "nl": "Nederlandsk",
-        "pl": "Polsk",
-        "pt": "Portugisisk",
-        "ro": "Rumensk",
-        "ru": "Russisk",
-        "sk": "Slovakisk",
-        "sl": "Slovensk",
-        "sr": "Serbisk",
-        "sv": "Svensk",
-        "tr": "Tyrkisk",
-        "vi": "Vietnamesisk",
-        "zh": "Kinesisk",
-        "zh_TW": "Kinesisk (tradisjonell han)"}</translation>
 <translation id="335581015389089642">Tale</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{pluss}other{# plusstegn}}</translation>
@@ -706,6 +664,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">Det finnes ingen tidligere alternativknapper.</translation>
 <translation id="6414968628640960377">Forrige ulike element.</translation>
+<translation id="6417265370957905582">Google Assistent</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{kolon}other{# kolontegn}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, meny</translation>
 <translation id="6444046323172968959">Varseldialog</translation>

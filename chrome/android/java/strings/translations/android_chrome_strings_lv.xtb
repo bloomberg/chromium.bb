@@ -107,8 +107,8 @@
 <translation id="17513872634828108">Atvērt cilnes</translation>
 <translation id="1779089405699405702">Attēlu dekodētājs</translation>
 <translation id="1782483593938241562">Beigu datums: <ph name="DATE" /></translation>
+<translation id="1791662854739702043">Instalēts</translation>
 <translation id="1792959175193046959">Noklusējuma lejupielādes vietu var mainīt jebkurā laikā.</translation>
-<translation id="1796971354271036388">Notiek VR moduļa instalēšana…</translation>
 <translation id="1807246157184219062">Gaišs</translation>
 <translation id="1821253160463689938">Izmanto sīkfailus, lai iegaumētu jūsu preferences, pat ja neapmeklējāt šīs lapas</translation>
 <translation id="1829244130665387512">Atrast lapā</translation>
@@ -488,7 +488,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="4837753911714442426">Atvērt iespējas, lai izdrukātu lapu</translation>
 <translation id="4842092870884894799">Tiek rādīts paroles ģenerēšanas uznirstošais logs</translation>
 <translation id="4850886885716139402">Skatīt</translation>
-<translation id="4857347795080810417">VR modulis ir instalēts</translation>
 <translation id="4860895144060829044">Zvanīt</translation>
 <translation id="4875775213178255010">Satura ieteikumi</translation>
 <translation id="4878404682131129617">Neizdevās iestatīt porta pārsūtīšanu, izmantojot starpniekserveri.</translation>
@@ -551,7 +550,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5327248766486351172">Nosaukums</translation>
 <translation id="5335288049665977812">Atļaut vietnēm izmantot JavaScript (ieteicams)</translation>
 <translation id="5363230136052241468">Lai ielādētu jaunas cilnes lapu, pieskarieties pogai Sākums</translation>
-<translation id="5372829067651257087">Vietrādis URL nokopēts</translation>
 <translation id="5391532827096253100">Savienojums ar šo vietni nav drošs. Vietnes informācija</translation>
 <translation id="5400569084694353794">Izmantojot šo lietojumprogrammu, jūs piekrītat Chrome <ph name="BEGIN_LINK1" />pakalpojumu sniegšanas noteikumiem<ph name="END_LINK1" /> un <ph name="BEGIN_LINK2" />konfidencialitātes paziņojumam<ph name="END_LINK2" />.</translation>
 <translation id="5403644198645076998">Atļaut apmeklēt tikai konkrētas vietnes</translation>
@@ -749,7 +747,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6746124502594467657">Pārvietot uz leju</translation>
 <translation id="6766622839693428701">Velciet uz leju, lai aizvērtu.</translation>
 <translation id="6766758767654711248">Pieskarieties, lai atvērtu vietni</translation>
-<translation id="6768277682697012280">Tiek instalēts PR modulis...</translation>
 <translation id="6776813977906306442">Nospiediet pogu Lejupielādēt, lai lejupielādētu videoklipus un tos skatītos vēlāk.</translation>
 <translation id="6782111308708962316">Neļaut trešo pušu vietnēm saglabāt un nolasīt sīkfailu datus</translation>
 <translation id="6790428901817661496">Atskaņot</translation>
@@ -776,7 +773,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6963642900430330478">Šī lapa ir bīstama. Vietnes informācija</translation>
 <translation id="6963766334940102469">Dzēst grāmatzīmes</translation>
 <translation id="6965382102122355670">Labi</translation>
-<translation id="6968317970155454671">Neizdevās instalēt PR moduli</translation>
 <translation id="6978479750597523876">Atiestatīt tulkošanas iestatījumus</translation>
 <translation id="6979737339423435258">Visā periodā</translation>
 <translation id="6981982820502123353">Pieejamība</translation>
@@ -974,7 +970,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="8487700953926739672">Pieejams bezsaistē</translation>
 <translation id="8489271220582375723">Atvērt vēstures lapu</translation>
 <translation id="8493948351860045254">Atbrīvot vietu</translation>
-<translation id="8496140788721644230">PR modulis ir instalēts</translation>
 <translation id="8497726226069778601">Šeit vēl nekā nav...</translation>
 <translation id="8503559462189395349">Chrome paroles</translation>
 <translation id="8503813439785031346">Lietotājvārds</translation>

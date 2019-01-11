@@ -1379,7 +1379,6 @@
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">Dit tabblad maakt gebruik van je camera of microfoon.</translation>
 <translation id="3083193146044397360">Tijdelijk geblokkeerd ter bescherming van je veiligheid</translation>
-<translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Neerzetten om te installeren</translation>
 <translation id="3084771660770137092">Chrome beschikt over onvoldoende geheugen of het webpaginaproces is om een andere reden beëindigd. Laad de pagina opnieuw of ga naar een andere pagina om door te gaan.</translation>
 <translation id="3085412380278336437">Site kan je camera gebruiken</translation>
@@ -2562,6 +2561,7 @@
 <translation id="4941246025622441835">Gebruik deze apparaataanvraag wanneer het apparaat wordt geactiveerd voor bedrijfsbeheer:</translation>
 <translation id="4941627891654116707">Lettergrootte</translation>
 <translation id="494286511941020793">Ondersteuning voor proxyconfiguratie</translation>
+<translation id="495170559598752135">Acties</translation>
 <translation id="4953689047182316270">Reageren op toegankelijkheidsgebeurtenissen</translation>
 <translation id="4953808748584563296">Standaard oranje avatar</translation>
 <translation id="4955710816792587366">Je pincode kiezen</translation>
@@ -2817,7 +2817,6 @@
 <translation id="5331975486040154427">USB-C-apparaat (poort links aan de achterkant)</translation>
 <translation id="5332624210073556029">Tijdzone:</translation>
 <translation id="5334142896108694079">Script in cache</translation>
-<translation id="5334899159203764908">Meer informatie over <ph name="BEGIN_LINK" />sitetoegang<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Back-up van <ph name="FILE_COUNT" /> maken op <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">Sites geen toegang tot USB-apparaten toestaan</translation>
 <translation id="5337771866151525739">Geïnstalleerd door derden.</translation>
@@ -5058,7 +5057,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8725066075913043281">Opnieuw proberen</translation>
 <translation id="8725178340343806893">Favorieten/bladwijzers</translation>
 <translation id="8726206820263995930">Fout bij het ophalen van beleidsinstellingen van de server: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727344521467137076">Er staat schadelijke software op je computer. Chrome verwijdert deze software en herstelt je instellingen zodat je browser weer normaal werkt.</translation>
 <translation id="8730621377337864115">Gereed</translation>
 <translation id="8732030010853991079">Gebruik deze extensie door op dit pictogram te klikken.</translation>
 <translation id="8732212173949624846">Je browsegeschiedenis lezen en wijzigen voor alle ingelogde apparaten</translation>
@@ -5251,7 +5249,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="9033857511263905942">&amp;Plakken</translation>
 <translation id="9034924485347205037">Linux-bestanden</translation>
 <translation id="9035012421917565900">De items kunnen niet worden teruggezet naar '<ph name="DESTINATION_NAME" />', dus je kunt deze actie niet ongedaan maken.</translation>
-<translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">Origineel weergeven</translation>
 <translation id="9038430547971207796">De volgende keer wordt je <ph name="DEVICE_TYPE" /> ontgrendeld met je telefoon. Schakel Smart Lock uit in Instellingen.</translation>
 <translation id="9038620279323455325">Er bestaat al een bestand met de naam '<ph name="FILE_NAME" />'. Kies een andere naam.</translation>

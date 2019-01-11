@@ -107,8 +107,8 @@
 <translation id="17513872634828108">தாவல்களைத் திற</translation>
 <translation id="1779089405699405702">இமேஜ் டீகோடர்</translation>
 <translation id="1782483593938241562">முடிவுத் தேதி: <ph name="DATE" /></translation>
+<translation id="1791662854739702043">நிறுவப்பட்டது</translation>
 <translation id="1792959175193046959">எப்போது வேண்டுமானாலும் இயல்புப் பதிவிறக்க இடத்தை மாற்றலாம்</translation>
-<translation id="1796971354271036388">VR மாடியூலை நிறுவுகிறது...</translation>
 <translation id="1807246157184219062">வெளிச்சம்</translation>
 <translation id="1821253160463689938">நீங்கள் அந்தப் பக்கங்களைப் பார்வையிடவில்லை என்றாலும், உங்கள் விருப்பத்தேர்வுகளை நினைவில்கொள்ள குக்கீகளைப் பயன்படுத்தும்</translation>
 <translation id="1829244130665387512">இந்தப் பக்கத்தில் தேடு</translation>
@@ -488,7 +488,6 @@
 <translation id="4837753911714442426">பக்கத்தை அச்சிடுவதற்கான விருப்பங்களைத் திறக்கும்</translation>
 <translation id="4842092870884894799">கடவுச்சொல் உருவாக்க பாப்-அப்பைக் காட்டுகிறது</translation>
 <translation id="4850886885716139402">காட்சி</translation>
-<translation id="4857347795080810417">VR மாடியூல் நிறுவப்பட்டது</translation>
 <translation id="4860895144060829044">அழை</translation>
 <translation id="4875775213178255010">உள்ளடக்கப் பரிந்துரைகள்</translation>
 <translation id="4878404682131129617">ப்ராக்ஸி சர்வர் மூலமாக டனல் இணைப்பை உருவாக்க முடியவில்லை</translation>
@@ -551,7 +550,6 @@
 <translation id="5327248766486351172">பெயர்</translation>
 <translation id="5335288049665977812">JavaScriptஐ இயக்குவதற்கு, தளங்களை அனுமதி (பரிந்துரைக்கப்படுகிறது)</translation>
 <translation id="5363230136052241468">புதிய தாவல் பக்கத்தை ஏற்ற, முகப்பு பட்டனைத் தட்டவும்</translation>
-<translation id="5372829067651257087">URL நகலெடுக்கப்பட்டது.</translation>
 <translation id="5391532827096253100">இந்தத் தளத்திற்கான இணைப்பு பாதுகாப்பானதல்ல. தளத் தகவல்</translation>
 <translation id="5400569084694353794">இந்தப் பயன்பாட்டைப் பயன்படுத்துவதன் மூலம், Chrome இன் <ph name="BEGIN_LINK1" />சேவை விதிமுறைகள்<ph name="END_LINK1" /> மற்றும் <ph name="BEGIN_LINK2" />தனியுரிமை அறிக்கையை<ph name="END_LINK2" /> ஏற்கிறீர்கள்.</translation>
 <translation id="5403644198645076998">குறிப்பிட்ட தளங்களை மட்டும் அனுமதி</translation>
@@ -749,7 +747,6 @@
 <translation id="6746124502594467657">கீழே நகர்த்து</translation>
 <translation id="6766622839693428701">மூடுவதற்கு, கீழே ஸ்வைப் செய்யவும்.</translation>
 <translation id="6766758767654711248">தளத்திற்குச் செல்ல, தட்டவும்</translation>
-<translation id="6768277682697012280">AR மாடியூலை நிறுவுகிறது...</translation>
 <translation id="6776813977906306442">பதிவிறக்கு எனும் பொத்தானைப் பயன்படுத்தி, பிறகு பார்ப்பதற்கு வீடியோக்களைப் பதிவிறக்கலாம்</translation>
 <translation id="6782111308708962316">குக்கீத் தரவைச் சேமிப்பதிலிருந்தும் படிப்பதிலிருந்தும் மூன்றாம் தரப்பு இணையதளங்களைத் தடு</translation>
 <translation id="6790428901817661496">இயக்கு</translation>
@@ -776,7 +773,6 @@
 <translation id="6963642900430330478">இந்தப் பக்கம் ஆபத்தானது. தளத் தகவல்</translation>
 <translation id="6963766334940102469">புத்தகக்குறிகளை நீக்கு</translation>
 <translation id="6965382102122355670">சரி</translation>
-<translation id="6968317970155454671">AR மாடியூலை நிறுவ முடியவில்லை</translation>
 <translation id="6978479750597523876">மொழியாக்க அமைப்புகளை மீட்டமை</translation>
 <translation id="6979737339423435258">எல்லா நேரமும்</translation>
 <translation id="6981982820502123353">அணுகல் தன்மை</translation>
@@ -974,7 +970,6 @@
 <translation id="8487700953926739672">ஆஃப்லைனில் இருக்கிறது</translation>
 <translation id="8489271220582375723">வரலாறு பக்கத்தைத் திறக்கும்</translation>
 <translation id="8493948351860045254">இடத்தைக் காலியாக்கு</translation>
-<translation id="8496140788721644230">AR மாடியூல் நிறுவப்பட்டது</translation>
 <translation id="8497726226069778601">இதுவரை இங்கே காண்பதற்கு ஒன்றுமில்லை...</translation>
 <translation id="8503559462189395349">Chrome கடவுச்சொற்கள்</translation>
 <translation id="8503813439785031346">பயனர்பெயர்</translation>

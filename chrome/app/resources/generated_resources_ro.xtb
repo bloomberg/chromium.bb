@@ -1379,7 +1379,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">Această filă utilizează camera foto sau microfonul dvs.</translation>
 <translation id="3083193146044397360">Blocată temporar pentru protecția securității</translation>
-<translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Plasați pentru instalare</translation>
 <translation id="3084771660770137092">Fie Chrome nu are suficientă memorie, fie procesarea paginii web a fost întreruptă dintr-un alt motiv. Pentru a continua, reîncarcă sau accesează altă pagină.</translation>
 <translation id="3085412380278336437">Site-ul poate folosi camera foto</translation>
@@ -2175,7 +2174,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4316850752623536204">Site-ul dezvoltatorului</translation>
 <translation id="4320177379694898372">Fără conexiune la internet</translation>
 <translation id="4320948194796820126">Adaugă un marcaj la e-mail</translation>
-<translation id="4321442524549817090">Arată adresa URL</translation>
+<translation id="4321442524549817090">A&amp;rată adresa URL</translation>
 <translation id="4322394346347055525">Închide celelalte file</translation>
 <translation id="4324577459193912240">Fișier incomplet</translation>
 <translation id="4325237902968425115">Se dezinstalează <ph name="LINUX_APP_NAME" />...</translation>
@@ -2562,6 +2561,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4941246025622441835">Utilizați această solicitare pentru dispozitiv la înscrierea dispozitivului pentru gestionarea la nivel de întreprindere:</translation>
 <translation id="4941627891654116707">Dimensiunea fontului</translation>
 <translation id="494286511941020793">Ajutor de configurare pentru proxy</translation>
+<translation id="495170559598752135">Acțiuni</translation>
 <translation id="4953689047182316270">să răspundă evenimentelor de accesibilitate</translation>
 <translation id="4953808748584563296">Avatar portocaliu prestabilit</translation>
 <translation id="4955710816792587366">Alege codul PIN</translation>
@@ -2816,7 +2816,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5331975486040154427">Dispozitiv USB-C (portul din stânga spate)</translation>
 <translation id="5332624210073556029">Fus orar:</translation>
 <translation id="5334142896108694079">Memorie cache de scripturi</translation>
-<translation id="5334899159203764908">Află mai multe despre <ph name="BEGIN_LINK" />accesul la site<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Se face backup pentru <ph name="FILE_COUNT" /> în <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">Nu permite niciunui site să acceseze dispozitive USB</translation>
 <translation id="5337771866151525739">Instalată de o terță parte.</translation>
@@ -5058,7 +5057,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8725066075913043281">Încearcă din nou</translation>
 <translation id="8725178340343806893">Preferințe/Marcaje</translation>
 <translation id="8726206820263995930">Eroare la preluarea setărilor politicii de pe server: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727344521467137076">Ai software dăunător pe computer. Chrome îl elimină și îți va restabili setările pentru ca browserul să funcționeze normal din nou.</translation>
 <translation id="8730621377337864115">Terminat</translation>
 <translation id="8732030010853991079">Utilizați extensia dând clic pe această pictogramă.</translation>
 <translation id="8732212173949624846">Citește și modifică istoricul de navigare pe toate dispozitivele conectate</translation>
@@ -5250,7 +5248,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="9033857511263905942">&amp;Inserați</translation>
 <translation id="9034924485347205037">Fișiere Linux</translation>
 <translation id="9035012421917565900">Articolele nu pot fi mutate înapoi în „<ph name="DESTINATION_NAME" />”, prin urmare, nu vei putea să anulezi această acțiune.</translation>
-<translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">Afișează versiunea originală</translation>
 <translation id="9038430547971207796">Data viitoare, telefonul tău va debloca dispozitivul <ph name="DEVICE_TYPE" />. Dezactivează Smart Lock din Setări.</translation>
 <translation id="9038620279323455325">Fișierul cu numele „<ph name="FILE_NAME" />” există deja. Alege un alt nume.</translation>

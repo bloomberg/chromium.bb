@@ -1379,7 +1379,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">Esta pestaña está utilizando tu cámara o tu micrófono.</translation>
 <translation id="3083193146044397360">Bloqueado temporalmente para proteger tu seguridad</translation>
-<translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Soltar para instalar</translation>
 <translation id="3084771660770137092">El proceso de la página web puede haber finalizado porque se haya agotado la memoria de Chrome o por algún otro motivo. Para continuar, vuelve a cargar la página o accede a otra.</translation>
 <translation id="3085412380278336437">El sitio web puede usar la cámara</translation>
@@ -2559,6 +2558,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4941246025622441835">Utiliza esta solicitud de dispositivo al registrar el dispositivo para la administración empresarial:</translation>
 <translation id="4941627891654116707">Tamaño de la fuente</translation>
 <translation id="494286511941020793">Ayuda para la configuración de proxy</translation>
+<translation id="495170559598752135">Acciones</translation>
 <translation id="4953689047182316270">Responder a eventos de accesibilidad</translation>
 <translation id="4953808748584563296">Avatar naranja predeterminado</translation>
 <translation id="4955710816792587366">Elige un PIN</translation>
@@ -2813,7 +2813,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5331975486040154427">Dispositivo USB tipo C (puerto trasero izquierdo)</translation>
 <translation id="5332624210073556029">Zona horaria:</translation>
 <translation id="5334142896108694079">Caché de secuencia de comandos</translation>
-<translation id="5334899159203764908">Más información sobre el <ph name="BEGIN_LINK" />acceso del sitio web<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Creando copia de seguridad de <ph name="FILE_COUNT" /> en <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">No permitir que ningún sitio web acceda a los dispositivos USB</translation>
 <translation id="5337771866151525739">Instalada por una aplicación externa</translation>
@@ -5055,7 +5054,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8725066075913043281">Volver a intentarlo</translation>
 <translation id="8725178340343806893">Favoritos/Marcadores</translation>
 <translation id="8726206820263995930">Error al recuperar la configuración de política del servidor (<ph name="CLIENT_ERROR" />)</translation>
-<translation id="8727344521467137076">Se ha detectado software dañino en tu ordenador. Chrome lo eliminará y restaurará tu configuración para que el navegador vuelva a funcionar con normalidad.</translation>
 <translation id="8730621377337864115">Listo</translation>
 <translation id="8732030010853991079">Haz clic en este icono para utilizar esta extensión.</translation>
 <translation id="8732212173949624846">Leer y modificar tu historial de navegación en todos los dispositivos en los que has iniciado sesión</translation>
@@ -5247,7 +5245,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="9033857511263905942">&amp;Pegar</translation>
 <translation id="9034924485347205037">Archivos de Linux</translation>
 <translation id="9035012421917565900">Estos elementos no se pueden volver a mover a "<ph name="DESTINATION_NAME" />", por lo que no podrás deshacer esta acción.</translation>
-<translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">Mostrar original</translation>
 <translation id="9038430547971207796">La próxima vez, el teléfono desbloqueará tu <ph name="DEVICE_TYPE" />. Desactiva Smart Lock en Configuración.</translation>
 <translation id="9038620279323455325">Ya existe el archivo "<ph name="FILE_NAME" />". Elige otro nombre.</translation>

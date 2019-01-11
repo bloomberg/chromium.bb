@@ -12,7 +12,6 @@
 <translation id="1055184225775184556">&amp;Poništi dodavanje</translation>
 <translation id="1058479211578257048">Spremanje kartica...</translation>
 <translation id="10614374240317010">Zaporke se nikad ne spremaju</translation>
-<translation id="1066396345355680611">Možda ćete izgubiti pristup zaštićenom sadržaju s web-lokacije <ph name="SITE" /> i nekih drugih web-lokacija.</translation>
 <translation id="106701514854093668">Oznake radne površine</translation>
 <translation id="1074497978438210769">Nije sigurno</translation>
 <translation id="1080116354587839789">Prilagođavanje širini</translation>
@@ -460,7 +459,6 @@
 <translation id="3901925938762663762">Kartica je istekla</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3946209740501886391">Uvijek pitaj na ovoj web-lokaciji</translation>
-<translation id="3947577358805392297">Spremi stranicu za kasnije</translation>
 <translation id="3949571496842715403">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat ne navodi alternativne nazive predmeta. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="3949601375789751990">Ovdje se prikazuje vaša povijest pregledavanja</translation>
 <translation id="3950820424414687140">Prijava</translation>
@@ -626,7 +624,6 @@
 <translation id="5045550434625856497">Pogrešna zaporka</translation>
 <translation id="5056549851600133418">Preporučeni članci</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />provjerite proxy adresu<ph name="END_LINK" /></translation>
-<translation id="5086888986931078152">Možda ćete izgubiti pristup zaštićenom sadržaju s nekih web-lokacija.</translation>
 <translation id="5087286274860437796">Certifikat poslužitelja trenutačno nije važeći.</translation>
 <translation id="5087580092889165836">Dodaj karticu</translation>
 <translation id="5089810972385038852">Savezna država</translation>
@@ -754,7 +751,6 @@
 <translation id="5939518447894949180">Ponovno postavi</translation>
 <translation id="5946937721014915347">Otvaranje web-lokacije <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Prijava s računom potrošača nije moguća (dostupna je paketna licenca).</translation>
-<translation id="5966151627327109289">Odjavit ćete se s većine web-lokacija. Možda ćete izgubiti pristup zaštićenom sadržaju s web-lokacije <ph name="SITE" /> i nekih drugih web-lokacija.</translation>
 <translation id="5967592137238574583">Uredite podatke za kontakt</translation>
 <translation id="5967867314010545767">Ukloni iz povijesti</translation>
 <translation id="5975083100439434680">Smanji</translation>
@@ -777,7 +773,6 @@
 <translation id="6059925163896151826">USB uređaji</translation>
 <translation id="6071091556643036997">Vrsta pravila nije važeća.</translation>
 <translation id="6080696365213338172">Pristupili ste sadržaju pomoću certifikata koji je izdao administrator. Administrator može presresti podatke koje dostavljate domeni <ph name="DOMAIN" />.</translation>
-<translation id="6096619198407627433">Odjavit ćete se s većine web-lokacija, ali se nećete odjaviti s Google računa. Možda ćete izgubiti pristup zaštićenom sadržaju s web-lokacije <ph name="SITE" /> i nekih drugih web-lokacija.</translation>
 <translation id="610911394827799129">Na vašem Google računu možda postoje drugi oblici povijesti pregledavanja na stranici <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Nijedna}=1{1 zaporka (sinkronizirana)}one{# zaporka (sinkronizirana)}few{# zaporke (sinkronizirane)}other{# zaporki (sinkroniziranih)}}</translation>
 <translation id="6146055958333702838">Provjerite kabele i ponovo pokrenite usmjerivače, modeme ili druge mrežne
@@ -961,7 +956,6 @@ Dodatne pojedinosti:
 <translation id="7444046173054089907">Ova je web-lokacija blokirana</translation>
 <translation id="7445762425076701745">Identitet poslužitelja s kojim ste se povezali ne može se u potpunosti potvrditi. Povezali ste se s poslužiteljem upotrebom imena koje je valjano samo unutar vaše mreže, a za koje vanjsko tijelo za izdavanje certifikata nikako ne može potvrditi vlasništvo. Budući da postoje tijela za izdavanje certifikata koja će izdati certifikat za ta imena bez obzira na sve, nema načina da budete sigurni da ste povezani sa željenom web-lokacijom, a ne s napadačem.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /> o tom problemu.</translation>
-<translation id="7453467225369441013">Odjavit ćete se s većine web-lokacija, ali se nećete odjaviti s Google računa.</translation>
 <translation id="7455133967321480974">Upotrijebi globalnu zadanu vrijednost (blokiraj)</translation>
 <translation id="7460618730930299168">Projekcija se razlikuje od onog što ste odabrali. Želite li nastaviti?</translation>
 <translation id="7473891865547856676">Ne, hvala</translation>
@@ -1145,7 +1139,6 @@ Dodatne pojedinosti:
 <translation id="860043288473659153">Ime vlasnika kartice</translation>
 <translation id="8620436878122366504">Roditelji je još nisu odobrili</translation>
 <translation id="8625384913736129811">Spremi tu karticu na ovaj uređaj</translation>
-<translation id="8662811608048051533">Odjavit ćete se s većine web-lokacija.</translation>
 <translation id="8663226718884576429">Sažetak narudžbe, <ph name="TOTAL_LABEL" />, više pojedinosti</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, odgovor, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Vaša veza s <ph name="DOMAIN" /> nije šifrirana.</translation>

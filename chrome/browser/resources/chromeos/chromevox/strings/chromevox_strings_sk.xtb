@@ -288,48 +288,6 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="3322936298410871309">Predchádzajúci nadpis 1. úrovne</translation>
 <translation id="3323447499041942178">Textové pole</translation>
 <translation id="3338224621010291843">Posúvač <ph name="VALUE" /> <ph name="NAME" /></translation>
-<translation id="3353420241558113817">{"ar": "arabčina",
-        "bg": "bulharčina",
-        "ca": "katalánčina",
-        "cs": "čeština",
-        "da": "dánčina",
-        "de": "nemčina",
-        "de_CH": "nemčina (Švajčiarsko)",
-        "de_DE": "nemčina (Nemecko)",
-        "el": "gréčtina",
-        "en": "angličtina",
-        "en_CA": "angličtina (Kanada)",
-        "en_GB": "angličtina (Spojené kráľovstvo)",
-        "en_US": "angličtina (Spojené štáty)",
-        "es": "španielčina",
-        "et": "estónčina",
-        "fr": "francúzština",
-        "fr_CA": "francúzština (Kanada)",
-        "fr_FR": "francúzština (Francúzsko)",
-        "fi": "fínčina",
-        "he": "hebrejčina",
-        "hi": "hindčina",
-        "hr": "chorvátčina",
-        "hu": "maďarčina",
-        "is": "islandčina",
-        "it": "taliančina",
-        "ko": "kórejčina",
-        "lt": "litovčina",
-        "lv": "lotyština",
-        "nb": "nórčina bokmål",
-        "nl": "holandčina",
-        "pl": "poľština",
-        "pt": "portugalčina",
-        "ro": "rumunčina",
-        "ru": "ruština",
-        "sk": "slovenčina",
-        "sl": "slovinčina",
-        "sr": "srbčina",
-        "sv": "švédčina",
-        "tr": "turečtina",
-        "vi": "vietnamčina",
-        "zh": "čínština",
-        "zh_TW": "čínština (tradičná)"}</translation>
 <translation id="335581015389089642">Reč</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{znak plus}few{# znaky plus}many{# plus signs}other{# znakov plus}}</translation>
@@ -705,6 +663,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="6387719785439924554">odsadený text</translation>
 <translation id="6411426777058107714">Žiadny predchádzajúci prepínač</translation>
 <translation id="6414968628640960377">Predchádzajúci odlišný prvok</translation>
+<translation id="6417265370957905582">Asistent Google</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{dvojbodka}few{# dvojbodky}many{# colons}other{# dvojbodiek}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, ponuka</translation>
 <translation id="6444046323172968959">Dialógové okno s upozornením</translation>

@@ -107,8 +107,8 @@
 <translation id="17513872634828108">తెరిచిన ట్యాబ్‍లు</translation>
 <translation id="1779089405699405702">చిత్ర డీకోడర్</translation>
 <translation id="1782483593938241562">ముగింపు తేదీ <ph name="DATE" /></translation>
+<translation id="1791662854739702043">వ్యవస్థాపించబడింది</translation>
 <translation id="1792959175193046959">డిఫాల్ట్ డౌన్‌లోడ్ స్థానాన్ని ఎప్పుడైనా మార్చుకోండి</translation>
-<translation id="1796971354271036388">VR మాడ్యూల్‌ని ఇన్‌స్టాల్ చేస్తోంది...</translation>
 <translation id="1807246157184219062">లేత</translation>
 <translation id="1821253160463689938">మీ ప్రాధాన్యతలను గుర్తుంచుకోవడానికి కుక్కీలను ఉపయోగిస్తుంది, మీరు ఆ పేజీలను సందర్శించకపోయినా కూడా అది అమలవుతుంది</translation>
 <translation id="1829244130665387512">పేజీలో కనుగొను</translation>
@@ -279,7 +279,7 @@
 <translation id="3137521801621304719">అజ్ఞాత మోడ్ నుండి నిష్క్రమించండి</translation>
 <translation id="3148434565183091099">మీ అన్ని పరికరాల్లో మీ బుక్‌మార్క్‌లను పొందడానికి, Chromeకి సైన్ ఇన్ చేయండి.</translation>
 <translation id="3157842584138209013">మరిన్ని ఎంపికలు బటన్ నుండి మీరు ఎంత డేటాను సేవ్ చేసారో చూడండి</translation>
-<translation id="3166827708714933426">ట్యాబ్ మరియు విండో సత్వరమార్గాలు</translation>
+<translation id="3166827708714933426">ట్యాబ్ మరియు విండో షార్ట్‌క‌ట్‌లు</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android సెట్టింగ్‌లు<ph name="END_LINK" />లో Chrome కోసం అనుమతులను ఆన్ చేయండి.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> నిల్వ డేటా</translation>
 <translation id="3207960819495026254">బుక్‌మార్క్ చేయబడింది</translation>
@@ -402,7 +402,7 @@
 <translation id="4170011742729630528">సేవ అందుబాటులో లేదు; తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> వినియోగించబడింది</translation>
 <translation id="4181841719683918333">భాషలు</translation>
-<translation id="4195643157523330669">క్రొత్త టాబ్‌లో తెరువు</translation>
+<translation id="4195643157523330669">కొత్త‌ టాబ్‌లో తెరువు</translation>
 <translation id="4198423547019359126">డౌన్‌లోడ్ స్థానాలు అందుబాటులో లేవు</translation>
 <translation id="4209895695669353772">Google ద్వారా మీ అభిరుచికి తగిన కంటెంట్‌ను సిఫార్సుల రూపంలో పొందాలనుకుంటే, సమకాలీకరణ ఎంపికను ఆన్ చేయాలి</translation>
 <translation id="4225719675976901337">కంటెంట్ కనుగొనబడలేదు</translation>
@@ -430,7 +430,7 @@
 <translation id="4433925000917964731">Google అందించిన లైట్ పేజీ</translation>
 <translation id="4434045419905280838">పాప్-అప్‌లు మరియు మళ్లింపులు</translation>
 <translation id="4440958355523780886">Google నుండి లైట్ పేజీ అందించబడింది. అసలు పేజీని లోడ్ చేయడానికి నొక్కండి.</translation>
-<translation id="4452411734226507615"><ph name="TAB_TITLE" /> ట్యాబ్‌ని మూసివేయండి</translation>
+<translation id="4452411734226507615"><ph name="TAB_TITLE" /> ట్యాబ్‌ను మూసివేయండి</translation>
 <translation id="4452548195519783679"><ph name="FOLDER_NAME" />కి బుక్‌మార్క్ చేసారు</translation>
 <translation id="4453340223357552416"><ph name="PRODUCT_NAME" />లో <ph name="FILE_NAME" /> డౌన్‌లోడ్ చేయబడింది</translation>
 <translation id="445467742685312942">రక్షణలోని కంటెంట్‌ను ప్లే చేయడానికి సైట్‌లను అనుమతించండి</translation>
@@ -488,7 +488,6 @@
 <translation id="4837753911714442426">పేజీని ముద్రించడానికి ఎంపికలను తెరవండి</translation>
 <translation id="4842092870884894799">పాస్‌వర్డ్ ఉత్పత్తి పాప్ అప్ చూపబడుతోంది</translation>
 <translation id="4850886885716139402">వీక్షణ</translation>
-<translation id="4857347795080810417">VR మాడ్యూల్ ఇన్‌స్టాల్ చేయబడింది</translation>
 <translation id="4860895144060829044">కాల్ చేయండి</translation>
 <translation id="4875775213178255010">కంటెంట్ సూచనలు</translation>
 <translation id="4878404682131129617">ప్రాక్సీ సర్వర్ ద్వారా ఒక సొరంగంను ఏర్పాటు చేయడం విఫలమైంది</translation>
@@ -536,7 +535,7 @@
 <translation id="5210365745912300556">ట్యాబ్‌ను మూసివేయి</translation>
 <translation id="5222676887888702881">సైన్ ఔట్</translation>
 <translation id="5224771365102442243">వీడియోతో</translation>
-<translation id="5233638681132016545">కొత్త టాబ్</translation>
+<translation id="5233638681132016545">కొత్త‌ టాబ్</translation>
 <translation id="526421993248218238">ఈ పేజీని లోడ్ చేయడం సాధ్యం కాదు</translation>
 <translation id="5271967389191913893">డౌన్‌లోడ్ చేయాల్సిన కంటెంట్‌ను పరికరం తెరవలేదు.</translation>
 <translation id="528192093759286357">పూర్తి స్క్రీన్ నుండి నిష్క్రమించడానికి పైనుండి లాగి, వెనుకకు బటన్‌ను తాకండి.</translation>
@@ -551,7 +550,6 @@
 <translation id="5327248766486351172">పేరు</translation>
 <translation id="5335288049665977812">సైట్‌లను జావాస్క్రిప్ట్ అమలు చేయడానికి అనుమతిస్తుంది (సిఫార్సు చేయబడింది)</translation>
 <translation id="5363230136052241468">కొత్త ట్యాబ్ పేజీని లోడ్ చేయడానికి హోమ్ బటన్‌ని నొక్కండి</translation>
-<translation id="5372829067651257087">URL కాపీ చేయబడింది.</translation>
 <translation id="5391532827096253100">ఈ సైట్‌కి మీ కనెక్షన్ సురక్షితంగా లేదు. సైట్ సమాచారం</translation>
 <translation id="5400569084694353794">ఈ అప్లికేషన్‌ను ఉపయోగించడం ద్వారా, మీరు Chrome <ph name="BEGIN_LINK1" />సేవా నిబంధనలు<ph name="END_LINK1" /> మరియు <ph name="BEGIN_LINK2" />గోప్యతా నోటీసు<ph name="END_LINK2" />ని అంగీకరిస్తున్నారు.</translation>
 <translation id="5403644198645076998">నిర్దిష్ట సైట్‌లను మాత్రమే అనుమతించండి</translation>
@@ -646,7 +644,7 @@
 <translation id="5962718611393537961">కుదించడానికి నొక్కండి</translation>
 <translation id="6000066717592683814">Googleని ఉంచు</translation>
 <translation id="6005538289190791541">సూచించబడిన పాస్‌వర్డ్‌</translation>
-<translation id="6039379616847168523">తరువాత ట్యాబ్‌కు వెళ్లండి</translation>
+<translation id="6039379616847168523">తదుపరి ట్యాబ్‌కు వెళ్లండి</translation>
 <translation id="6040143037577758943">మూసివేయి</translation>
 <translation id="6042308850641462728">మరింత</translation>
 <translation id="604996488070107836">తెలియని లోపం కారణంగా <ph name="FILE_NAME" /> డౌన్‌లోడ్ విఫలమైంది.</translation>
@@ -735,7 +733,7 @@
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" />\u2026 మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="6656545060687952787">పరికరాల కోసం స్కాన్ చేయడానికి Chromeకు స్థాన యాక్సెస్ అవసరం. <ph name="BEGIN_LINK" />అనుమతులను అప్‌డేట్ చేయండి<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">పాస్‌వర్డ్</translation>
-<translation id="6659594942844771486">టాబ్</translation>
+<translation id="6659594942844771486">ట్యాబ్</translation>
 <translation id="666268767214822976">మీరు చిరునామా పట్టీలో టైప్ చేస్తున్నప్పుడు సంబంధిత ప్రశ్నలను మరియు జనాదరణ పొందిన వెబ్‌సైట్‌లను చూపడానికి సూచన సేవను ఉపయోగించండి</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" />లో తెరువు</translation>
 <translation id="666981079809192359">Chrome గోప్యతా నోటీసు</translation>
@@ -749,7 +747,6 @@
 <translation id="6746124502594467657">క్రిందికి తరలించు</translation>
 <translation id="6766622839693428701">మూసివేయడానికి దిగువకు స్వైప్ చేయండి.</translation>
 <translation id="6766758767654711248">సైట్‌లోకి వెళ్లడం కోసం నొక్కండి</translation>
-<translation id="6768277682697012280">AR మాడ్యూల్‌ని ఇన్‌స్టాల్ చేస్తోంది...</translation>
 <translation id="6776813977906306442">డౌన్‌లోడ్ బటన్‌ని ఉపయోగించి వీడియోలను డౌన్‌లోడ్ చేసుకుని, ఆపై వాటిని తర్వాత చూడండి</translation>
 <translation id="6782111308708962316">మూడవ పక్షం వెబ్‌సైట్‌లను కుక్కీ డేటా సేవ్ చేయనీయకుండా, చదవనీయకుండా నిరోధించు</translation>
 <translation id="6790428901817661496">ప్లే చేయి</translation>
@@ -776,7 +773,6 @@
 <translation id="6963642900430330478">ఈ పేజీ ప్రమాదకరమైనది. సైట్ సమాచారం</translation>
 <translation id="6963766334940102469">బుక్‌మార్క్‌లను తొలగించు</translation>
 <translation id="6965382102122355670">సరే</translation>
-<translation id="6968317970155454671">AR మాడ్యూల్‌ని ఇన్‌స్టాల్ చేయడం విఫలమైంది</translation>
 <translation id="6978479750597523876">అనువాద సెట్టింగ్‌లను రీసెట్ చేయండి</translation>
 <translation id="6979737339423435258">మొత్తం సమయం</translation>
 <translation id="6981982820502123353">యాక్సెస్ సామర్థ్యం</translation>
@@ -810,7 +806,7 @@
 <translation id="7180611975245234373">రిఫ్రెష్ చేయి</translation>
 <translation id="7189372733857464326">Google Play సేవల నవీకరణ పూర్తి కావడానికి వేచి ఉంది</translation>
 <translation id="7189598951263744875">భాగస్వామ్యం చేయి...</translation>
-<translation id="7191430249889272776">నేపథ్యంలో ట్యాబ్ తెరవబడింది.</translation>
+<translation id="7191430249889272776">బ్యాక్‌గ్రౌండ్‌లో ట్యాబ్ తెరవబడింది.</translation>
 <translation id="7221869452894271364">ఈ పేజీని రీలోడ్ చెయ్యి</translation>
 <translation id="723171743924126238">చిత్రాలను ఎంచుకోండి</translation>
 <translation id="7243308994586599757">స్క్రీన్ దిగువభాగం సమీపంలో ఎంపికలు అందుబాటులో ఉంటాయి</translation>
@@ -913,7 +909,7 @@
 <translation id="7999064672810608036">మీరు ఖచ్చితంగా కుక్కీలతో సహా మొత్తం స్థానిక డేటాను తీసివేసి, ఈ వెబ్‌సైట్ కోసం అన్ని అనుమతులను రీసెట్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="8004582292198964060">బ్రౌజర్</translation>
 <translation id="8007176423574883786">ఈ పరికరం కోసం ఆఫ్ చేయబడింది</translation>
-<translation id="8015452622527143194">పేజీ మొత్తాన్ని తిరిగి డిఫాల్ట్ పరిమాణానికి తెస్తుంది</translation>
+<translation id="8015452622527143194">పేజీలో ఉన్నవ‌న్నీ, తిరిగి డిఫాల్ట్ సైజ్‌కు తీసుకురండి</translation>
 <translation id="802154636333426148">డౌన్‌లోడ్ విఫలమైంది</translation>
 <translation id="8026334261755873520">బ్రౌజింగ్ డేటాను క్లియర్ చెయ్యి</translation>
 <translation id="8035133914807600019">కొత్త ఫోల్డర్…</translation>
@@ -928,7 +924,7 @@
 <translation id="8063895661287329888">బుక్‌మార్క్‌ను జోడించడంలో విఫలమైంది.</translation>
 <translation id="806745655614357130">నా డేటాను విడిగా ఉంచండి</translation>
 <translation id="8068648041423924542">ప్రమాణపత్రం ఎంపిక చేయడం సాధ్యపడలేదు.</translation>
-<translation id="8073388330009372546">చిత్రాన్ని కొత్త ట్యాబ్‌లో తె.</translation>
+<translation id="8073388330009372546">కొత్త ట్యాబ్‌లో చిత్రం తెరువు</translation>
 <translation id="8084114998886531721">సేవ్ చేసిన పాస్‌వర్డ్</translation>
 <translation id="8087000398470557479">ఈ కంటెంట్ Google ద్వారా డెలివర్ చేయబడిన <ph name="DOMAIN_NAME" />లోనిది.</translation>
 <translation id="8103578431304235997">అజ్ఞాత ట్యాబ్</translation>
@@ -974,7 +970,6 @@
 <translation id="8487700953926739672">ఆఫ్‌లైన్‌లో అందుబాటు</translation>
 <translation id="8489271220582375723">చరిత్ర పేజీని తెరవండి</translation>
 <translation id="8493948351860045254">స్థలాన్ని ఖాళీ చేయి</translation>
-<translation id="8496140788721644230">AR మాడ్యూల్ ఇన్‌స్టాల్ చేయబడింది</translation>
 <translation id="8497726226069778601">ఇక్కడ చూడటానికి ఏమీ లేదు… ఇప్పటికీ</translation>
 <translation id="8503559462189395349">Chrome పాస్‌వర్డ్‌లు</translation>
 <translation id="8503813439785031346">యూజర్‌పేరు</translation>
@@ -1006,7 +1001,7 @@
 <translation id="8687353297350450808">{N_BARS,plural, =1{సిగ్నల్ సామర్థ్యం స్థాయి: # బార్}other{సిగ్నల్ సామర్థ్యం స్థాయి: # బార్‌లు}}</translation>
 <translation id="868929229000858085">మీ పరిచయాలను వెతకండి</translation>
 <translation id="869891660844655955">గడువు తేదీ</translation>
-<translation id="8719023831149562936">ప్రస్తుత ట్యాబ్‌ని Beam చేయడం సాధ్యపడదు</translation>
+<translation id="8719023831149562936">ప్రస్తుత ట్యాబ్‌ను బీమ్ చేయడం సాధ్యపడదు</translation>
 <translation id="8725066075913043281">మళ్ళీ ప్రయత్నించండి</translation>
 <translation id="8728487861892616501">యాప్‌ని ఉపయోగించడం ద్వారా, మీరు Chrome యొక్క <ph name="BEGIN_LINK1" />సేవా నిబంధనలు<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />గోప్యతా నోటీసు<ph name="END_LINK2" /> మరియు <ph name="BEGIN_LINK3" />Google ఖాతాల కోసం Family Linkలో నిర్వహించే గోప్యతా నోటీసు<ph name="END_LINK3" />ను అంగీకరిస్తున్నారు.</translation>
 <translation id="8730621377337864115">పూర్తయింది</translation>
@@ -1035,7 +1030,7 @@
 <translation id="8958424370300090006">నిర్దిష్ట సైట్ కోసం కుక్కీలను బ్లాక్ చేయండి.</translation>
 <translation id="8959122750345127698">దీనికి నావిగేట్ చేయడం సాధ్యపడదు: <ph name="URL" /></translation>
 <translation id="8965591936373831584">పెండింగ్‌లో ఉంది</translation>
-<translation id="8972098258593396643">డిఫాల్ట్ ఫోల్డర్‌కు డౌన్‌లోడ్ చేయాలా?</translation>
+<translation id="8972098258593396643">డిఫాల్ట్ ఫోల్డర్‌లోకి డౌన్‌లోడ్ చేయాలా?</translation>
 <translation id="8979405271719829084">తర్వాత చూడటం కోసం వీడియోలను డౌన్‌లోడ్ చేసుకోండి</translation>
 <translation id="8981454092730389528">Google కార్య‌క‌లాపాల నియంత్రణలు</translation>
 <translation id="8983677657449185470">సురక్షిత బ్రౌజింగ్‌ను మెరుగుపరచడంలో సహాయపడండి</translation>

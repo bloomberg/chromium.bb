@@ -107,8 +107,8 @@ Gayunpaman, hindi ka invisible. Kahit na nakapribado ka, makikita pa rin ng iyon
 <translation id="17513872634828108">Mga bukas na tab</translation>
 <translation id="1779089405699405702">Pang-decode ng larawan</translation>
 <translation id="1782483593938241562">Petsa ng pagtatapos <ph name="DATE" /></translation>
+<translation id="1791662854739702043">Na-install</translation>
 <translation id="1792959175193046959">Baguhin ang default na lokasyon ng pag-download anumang oras</translation>
-<translation id="1796971354271036388">Ini-install ang VR module...</translation>
 <translation id="1807246157184219062">Maliwanag</translation>
 <translation id="1821253160463689938">Gumamit ng mga cookie para matandaan ang iyong mga kagustuhan, kahit na hindi mo binibisita ang mga page na iyon</translation>
 <translation id="1829244130665387512">Nahanap sa pahina</translation>
@@ -488,7 +488,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="4837753911714442426">Buksan ang mga opsyon sa pag-print ng page</translation>
 <translation id="4842092870884894799">Ipinapakita ang popup para sa pagbuo ng password</translation>
 <translation id="4850886885716139402">View</translation>
-<translation id="4857347795080810417">Na-install ang VR module</translation>
 <translation id="4860895144060829044">Tawagan</translation>
 <translation id="4875775213178255010">Mga Iminumungkahing Content</translation>
 <translation id="4878404682131129617">Hindi nakagawa ng tunnel sa pamamagitan ng proxy server</translation>
@@ -551,7 +550,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5327248766486351172">Pangalan</translation>
 <translation id="5335288049665977812">Payagan ang mga site na magpatakbo ng JavaScript (inirerekomenda)</translation>
 <translation id="5363230136052241468">I-tap ang button ng home para ma-load ang page ng bagong tab</translation>
-<translation id="5372829067651257087">Kinopya ang URL.</translation>
 <translation id="5391532827096253100">Hindi secure ang iyong koneksyon sa site na ito. Impormasyon ng site</translation>
 <translation id="5400569084694353794">Kapag ginamit mo ang application na ito, ang ibig sabihin, sumasang-ayon ka sa <ph name="BEGIN_LINK1" />Mga Tuntunin ng Serbisyo<ph name="END_LINK1" /> at <ph name="BEGIN_LINK2" />Patakaran sa Privacy<ph name="END_LINK2" /> ng Chrome.</translation>
 <translation id="5403644198645076998">Ilang partikular na site lang ang payagan</translation>
@@ -749,7 +747,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6746124502594467657">Ibaba</translation>
 <translation id="6766622839693428701">Mag-swipe pababa para isara.</translation>
 <translation id="6766758767654711248">I-tap para pumunta sa site</translation>
-<translation id="6768277682697012280">Ini-install ang module ng AR...</translation>
 <translation id="6776813977906306442">Mag-download ng mga video upang panoorin sa ibang pagkakataon gamit ang button na I-download</translation>
 <translation id="6782111308708962316">Pigilan ang mga third-party na website na mag-save at magbasa ng data ng cookie</translation>
 <translation id="6790428901817661496">I-play</translation>
@@ -776,7 +773,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6963642900430330478">Mapanganib ang page na ito. Impormasyon ng site</translation>
 <translation id="6963766334940102469">Mag-delete ng mga bookmark</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6968317970155454671">Hindi na-install ang module ng AR</translation>
 <translation id="6978479750597523876">I-reset ang mga setting ng pag-translate</translation>
 <translation id="6979737339423435258">Lahat ng oras</translation>
 <translation id="6981982820502123353">Pagiging Maa-access</translation>
@@ -974,7 +970,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8487700953926739672">Available sa offline</translation>
 <translation id="8489271220582375723">Buksan ang page ng history</translation>
 <translation id="8493948351860045254">Magbakante ng espasyo</translation>
-<translation id="8496140788721644230">Nag-install ng module ng AR</translation>
 <translation id="8497726226069778601">Walang makikita dito... sa ngayon</translation>
 <translation id="8503559462189395349">Mga Password sa Chrome</translation>
 <translation id="8503813439785031346">Username</translation>

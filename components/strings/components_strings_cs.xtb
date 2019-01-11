@@ -12,7 +12,6 @@
 <translation id="1055184225775184556">&amp;Vrátit přidání zpět</translation>
 <translation id="1058479211578257048">Ukládání karet...</translation>
 <translation id="10614374240317010">Nikdy se neukládají</translation>
-<translation id="1066396345355680611">Můžete ztratit přístup k chráněnému obsahu z webu <ph name="SITE" /> a některých dalších webů.</translation>
 <translation id="106701514854093668">Záložky v PC</translation>
 <translation id="1074497978438210769">Nezabezpečeno</translation>
 <translation id="1080116354587839789">Přizpůsobit na šířku</translation>
@@ -457,7 +456,6 @@
 <translation id="3901925938762663762">Karta vypršela</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3946209740501886391">Na tomto webu se vždy zeptat</translation>
-<translation id="3947577358805392297">Uložit stránku na později</translation>
 <translation id="3949571496842715403">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. V jeho bezpečnostním certifikátu nejsou uvedeny alternativní názvy subjektu. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="3949601375789751990">Zde se zobrazuje vaše historie prohlížení</translation>
 <translation id="3950820424414687140">Přihlaste se</translation>
@@ -623,7 +621,6 @@
 <translation id="5045550434625856497">Nesprávné heslo</translation>
 <translation id="5056549851600133418">Články pro vás</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Zkontrolovat adresu proxy serveru<ph name="END_LINK" /></translation>
-<translation id="5086888986931078152">Můžete ztratit přístup k chráněnému obsahu z některých webů.</translation>
 <translation id="5087286274860437796">Certifikát serveru v tuto chvíli není platný.</translation>
 <translation id="5087580092889165836">Přidat kartu</translation>
 <translation id="5089810972385038852">Stát/kraj</translation>
@@ -751,7 +748,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5939518447894949180">Resetovat</translation>
 <translation id="5946937721014915347">Otevírání webu <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Pomocí běžného uživatelského účtu se nelze zaregistrovat (je k dispozici licence v balíčku).</translation>
-<translation id="5966151627327109289">Odhlásí vás z většiny webů. Můžete ztratit přístup k chráněnému obsahu z webu <ph name="SITE" /> a některých dalších webů.</translation>
 <translation id="5967592137238574583">Úprava kontaktních údajů</translation>
 <translation id="5967867314010545767">Odstranit z historie</translation>
 <translation id="5975083100439434680">Oddálit</translation>
@@ -774,7 +770,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6059925163896151826">Zařízení USB</translation>
 <translation id="6071091556643036997">Typ zásady je neplatný.</translation>
 <translation id="6080696365213338172">Získali jste přístup k obsahu pomocí certifikátu poskytnutého správcem. Údaje poskytovaná doméně <ph name="DOMAIN" /> bude správce moci zachytit.</translation>
-<translation id="6096619198407627433">Odhlásí vás z většiny webů. Nebudete odhlášeni od účtu Google. Můžete ztratit přístup k chráněnému obsahu z webu <ph name="SITE" /> a některých dalších webů.</translation>
 <translation id="610911394827799129">Na stránce <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Žádné}=1{1 heslo (synchronizováno)}few{# hesla (synchronizováno)}many{# hesla (synchronizováno)}other{# hesel (synchronizováno)}}</translation>
 <translation id="6146055958333702838">Zkontrolujte všechny kabely a restartujte všechny směrovače, modemy a další síťová zařízení, která používáte.</translation>
@@ -956,7 +951,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7444046173054089907">Tento web je blokován</translation>
 <translation id="7445762425076701745">Totožnost serveru, k němuž jste připojeni, nelze plně ověřit. Jste připojeni k serveru, který používá název platný pouze v rámci vaší sítě. Externí certifikační autorita nemůže vlastnictví názvu nijak ověřit. Některé certifikační autority však vydají certifikát i pro takové názvy, a nelze tedy zaručit, že jste připojeni k požadovanému webu a nikoli k webu útočníka.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /> o tomto problému.</translation>
-<translation id="7453467225369441013">Odhlásí vás z většiny webů. Z účtu Google odhlášeni nebudete.</translation>
 <translation id="7455133967321480974">Použít výchozí globální hodnotu (Blokovat)</translation>
 <translation id="7460618730930299168">Přehrává se jiný obsah, než jste vybrali. Pokračovat?</translation>
 <translation id="7473891865547856676">Ne, děkuji</translation>
@@ -1140,7 +1134,6 @@ Další podrobnosti:
 <translation id="860043288473659153">Jméno držitele karty</translation>
 <translation id="8620436878122366504">Rodiče přístup dosud neschválili.</translation>
 <translation id="8625384913736129811">Uložit tuto kartu do zařízení</translation>
-<translation id="8662811608048051533">Odhlásí vás z většiny webů.</translation>
 <translation id="8663226718884576429">Shrnutí objednávky, <ph name="TOTAL_LABEL" />, další podrobnosti</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, odpověď, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Vaše spojení se serverem <ph name="DOMAIN" /> není šifrované.</translation>

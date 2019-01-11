@@ -107,8 +107,8 @@
 <translation id="17513872634828108">Отворени раздели</translation>
 <translation id="1779089405699405702">Декодиране на изображения</translation>
 <translation id="1782483593938241562">Крайна дата: <ph name="DATE" /></translation>
+<translation id="1791662854739702043">Инсталиран</translation>
 <translation id="1792959175193046959">Променете стандартното местоположение за изтегляне по всяко време</translation>
-<translation id="1796971354271036388">Модулът за VR се инсталира...</translation>
 <translation id="1807246157184219062">Светло</translation>
 <translation id="1821253160463689938">Използва „бисквитки“ за запомняне на предпочитанията ви дори ако не посещавате тези страници</translation>
 <translation id="1829244130665387512">Търсене в страницата</translation>
@@ -488,7 +488,6 @@
 <translation id="4837753911714442426">Отваряне на опциите за отпечатване на страницата</translation>
 <translation id="4842092870884894799">Изскачащият прозорец за генериране на пароли е показан</translation>
 <translation id="4850886885716139402">Изглед</translation>
-<translation id="4857347795080810417">Модулът за VR бе инсталиран</translation>
 <translation id="4860895144060829044">Обаждане</translation>
 <translation id="4875775213178255010">Предложения за съдържание</translation>
 <translation id="4878404682131129617">Създаването на тунел през прокси сървъра не бе успешно</translation>
@@ -551,7 +550,6 @@
 <translation id="5327248766486351172">Име</translation>
 <translation id="5335288049665977812">Разрешаване на сайтовете да изпълняват JavaScript (препоръчително)</translation>
 <translation id="5363230136052241468">Докоснете бутона „Начало“, за да се зареди нов раздел</translation>
-<translation id="5372829067651257087">URL адресът е копиран.</translation>
 <translation id="5391532827096253100">Връзката ви с този сайт не е защитена. Информация за сайта</translation>
 <translation id="5400569084694353794">С използването на това приложение приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на Chrome.</translation>
 <translation id="5403644198645076998">Разрешаване само на конкретни сайтове</translation>
@@ -750,7 +748,6 @@
 <translation id="6746124502594467657">Придвижване надолу</translation>
 <translation id="6766622839693428701">Прекарайте пръст надолу, за да затворите.</translation>
 <translation id="6766758767654711248">Докоснете, за да посетите сайта</translation>
-<translation id="6768277682697012280">Модулът за AR се инсталира...</translation>
 <translation id="6776813977906306442">Изтегляйте видеоклипове посредством бутона „Изтегляне“, за да ги гледате по-късно</translation>
 <translation id="6782111308708962316">Забраняване на уебсайтовете на трети страни да запазват и четат данни в „бисквитки“</translation>
 <translation id="6790428901817661496">Пускане</translation>
@@ -777,7 +774,6 @@
 <translation id="6963642900430330478">Тази страница е опасна. Информация за сайта</translation>
 <translation id="6963766334940102469">Изтриване на отметките</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6968317970155454671">Инсталирането на модула за AR не бе успешно</translation>
 <translation id="6978479750597523876">Нулиране на настройките за превод</translation>
 <translation id="6979737339423435258">За цялото време</translation>
 <translation id="6981982820502123353">Достъпност</translation>
@@ -975,7 +971,6 @@
 <translation id="8487700953926739672">Налице офлайн</translation>
 <translation id="8489271220582375723">Отваряне на страницата „История“</translation>
 <translation id="8493948351860045254">Освобождаване на място</translation>
-<translation id="8496140788721644230">Модулът за AR бе инсталиран</translation>
 <translation id="8497726226069778601">Тук няма нищо… засега</translation>
 <translation id="8503559462189395349">Пароли в Chrome</translation>
 <translation id="8503813439785031346">Потребителско име</translation>

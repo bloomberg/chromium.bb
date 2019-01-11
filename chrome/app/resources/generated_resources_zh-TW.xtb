@@ -1378,7 +1378,6 @@
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">這個分頁正在使用你的相機和/或麥克風。</translation>
 <translation id="3083193146044397360">已暫時封鎖權限，保護你的安全</translation>
-<translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">拖曳即可安裝</translation>
 <translation id="3084771660770137092">Chrome 記憶體不足或其他某些原因導致網頁處理程序終止。如要繼續執行，請重新載入或前往其他網頁。</translation>
 <translation id="3085412380278336437">網站可以使用你的攝影機</translation>
@@ -2173,7 +2172,7 @@
 <translation id="4316850752623536204">開發人員網站</translation>
 <translation id="4320177379694898372">沒有網際網路連線</translation>
 <translation id="4320948194796820126">為電子郵件服務加上書籤</translation>
-<translation id="4321442524549817090">顯示網址</translation>
+<translation id="4321442524549817090">顯示網址 (&amp;H)</translation>
 <translation id="4322394346347055525">關閉其他分頁</translation>
 <translation id="4324577459193912240">檔案未完成下載</translation>
 <translation id="4325237902968425115">正在解除安裝「<ph name="LINUX_APP_NAME" />」...</translation>
@@ -2560,6 +2559,7 @@
 <translation id="4941246025622441835">為企業管理服務註冊裝置時使用這個裝置申請單：</translation>
 <translation id="4941627891654116707">字型大小</translation>
 <translation id="494286511941020793">Proxy 設定說明</translation>
+<translation id="495170559598752135">動作</translation>
 <translation id="4953689047182316270">回應協助工具活動</translation>
 <translation id="4953808748584563296">預設的橘色顯示圖片</translation>
 <translation id="4955710816792587366">選擇 PIN 碼</translation>
@@ -2814,7 +2814,6 @@
 <translation id="5331975486040154427">USB-C 裝置 (左後方連接埠)</translation>
 <translation id="5332624210073556029">時區：</translation>
 <translation id="5334142896108694079">指令碼快取</translation>
-<translation id="5334899159203764908">進一步瞭解<ph name="BEGIN_LINK" />網站存取權<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">正在將 <ph name="FILE_COUNT" />備份到 <ph name="BEGIN_LINK" />Google 雲端硬碟<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">禁止任何網站存取 USB 裝置</translation>
 <translation id="5337771866151525739">由第三方安裝。</translation>
@@ -5054,7 +5053,6 @@
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8725178340343806893">我的收藏/書籤</translation>
 <translation id="8726206820263995930">從伺服器擷取政策設定時發生錯誤：<ph name="CLIENT_ERROR" />。</translation>
-<translation id="8727344521467137076">在你的電腦上發現有害軟體。Chrome 正在進行移除，並且會還原相關設定，讓你的瀏覽器恢復正常運作。</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="8732030010853991079">按一下這個圖示，即可使用這項擴充功能。</translation>
 <translation id="8732212173949624846">讀取及變更你已登入的所有裝置上的瀏覽記錄</translation>
@@ -5246,7 +5244,6 @@
 <translation id="9033857511263905942">貼上(&amp;P)</translation>
 <translation id="9034924485347205037">Linux 檔案</translation>
 <translation id="9035012421917565900">這些項目無法移回「<ph name="DESTINATION_NAME" />」，因此無法復原這項操作。</translation>
-<translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">顯示原文</translation>
 <translation id="9038430547971207796">下次手機就會為你的 <ph name="DEVICE_TYPE" /> 解鎖。你可以在「設定」中停用 Smart Lock。</translation>
 <translation id="9038620279323455325">名稱為「<ph name="FILE_NAME" />」的檔案已經存在，請選擇其他名稱。</translation>

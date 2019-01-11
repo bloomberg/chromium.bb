@@ -107,8 +107,8 @@ Et ole kuitenkaan näkymätön. Yksityinen tila ei piilota selaustietojasi työn
 <translation id="17513872634828108">Avoimet välilehdet</translation>
 <translation id="1779089405699405702">Kuvien dekooderi</translation>
 <translation id="1782483593938241562">Päättymispäivä: <ph name="DATE" /></translation>
+<translation id="1791662854739702043">Asennettu</translation>
 <translation id="1792959175193046959">Muuta oletuslataussijaintia milloin tahansa</translation>
-<translation id="1796971354271036388">Asennetaan VR-moduulia…</translation>
 <translation id="1807246157184219062">Vaalea</translation>
 <translation id="1821253160463689938">Käyttää evästeitä asetustesi muistamiseen, vaikka et kävisi kyseisillä sivuilla</translation>
 <translation id="1829244130665387512">Haku sivulta</translation>
@@ -488,7 +488,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="4837753911714442426">Avaa sivun tulostusvaihtoehdot</translation>
 <translation id="4842092870884894799">Salasanojen luomisen ponnahdusikkuna on näkyvissä.</translation>
 <translation id="4850886885716139402">Näytä</translation>
-<translation id="4857347795080810417">VR-moduuli asennettu</translation>
 <translation id="4860895144060829044">Soita</translation>
 <translation id="4875775213178255010">Sisältöehdotukset</translation>
 <translation id="4878404682131129617">Tunnelin muodostaminen välityspalvelimen kautta epäonnistui</translation>
@@ -551,7 +550,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5327248766486351172">Nimi</translation>
 <translation id="5335288049665977812">Anna kaikkien sivustojen käyttää JavaScriptiä (suositus).</translation>
 <translation id="5363230136052241468">Napauta aloitusnäyttöpainiketta ladataksesi uusi välilehti ‑sivun.</translation>
-<translation id="5372829067651257087">URL-osoite kopioitu</translation>
 <translation id="5391532827096253100">Sivustolle muodostamasi yhteys ei ole turvallinen. Sivuston tiedot</translation>
 <translation id="5400569084694353794">Käyttämällä sovellusta hyväksyt Chromen <ph name="BEGIN_LINK1" />käyttöehdot<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />tietosuojailmoituksen<ph name="END_LINK2" />.</translation>
 <translation id="5403644198645076998">Salli vain tietyt sivustot</translation>
@@ -749,7 +747,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6746124502594467657">Siirrä alas</translation>
 <translation id="6766622839693428701">Sulje pyyhkäisemällä alas.</translation>
 <translation id="6766758767654711248">Siirry sivustolle napauttamalla.</translation>
-<translation id="6768277682697012280">Asennetaan AR-moduulia…</translation>
 <translation id="6776813977906306442">Lataa videoita myöhemmin katsottavaksi painamalla latauspainiketta.</translation>
 <translation id="6782111308708962316">Estä kolmannen osapuolen verkkosivustoja tallentamasta ja lukemasta evästetietoja</translation>
 <translation id="6790428901817661496">Toista</translation>
@@ -776,7 +773,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6963642900430330478">Tämä sivu on vaarallinen. Sivuston tiedot</translation>
 <translation id="6963766334940102469">Poista kirjanmerkkejä</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6968317970155454671">AR-moduulin asentaminen epäonnistui</translation>
 <translation id="6978479750597523876">Nollaa käännösasetukset</translation>
 <translation id="6979737339423435258">Kaikki</translation>
 <translation id="6981982820502123353">Esteettömyys</translation>
@@ -974,7 +970,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8487700953926739672">Käytettävissä offline-tilassa</translation>
 <translation id="8489271220582375723">Avaa Historia-sivu</translation>
 <translation id="8493948351860045254">Vapauta tilaa</translation>
-<translation id="8496140788721644230">AR-moduuli asennettu</translation>
 <translation id="8497726226069778601">Täällä ei ole mitään nähtävää… vielä</translation>
 <translation id="8503559462189395349">Chrome-salasanat</translation>
 <translation id="8503813439785031346">Käyttäjätunnus</translation>

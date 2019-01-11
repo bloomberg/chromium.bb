@@ -107,8 +107,8 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo priva
 <translation id="17513872634828108">Pestañas abiertas</translation>
 <translation id="1779089405699405702">Decodificador de imágenes</translation>
 <translation id="1782483593938241562">Fecha de finalización: <ph name="DATE" /></translation>
+<translation id="1791662854739702043">Ubicación</translation>
 <translation id="1792959175193046959">Cambia la ubicación predeterminada de las descargas en cualquier momento</translation>
-<translation id="1796971354271036388">Instalando módulo de realidad virtual...</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1821253160463689938">Usa cookies para recordar tus preferencias aunque no visites esas páginas</translation>
 <translation id="1829244130665387512">Buscar en la página</translation>
@@ -488,7 +488,6 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="4837753911714442426">Abre las opciones para imprimir la página</translation>
 <translation id="4842092870884894799">Mostrando la ventana emergente de generación de contraseña</translation>
 <translation id="4850886885716139402">Ver</translation>
-<translation id="4857347795080810417">Se ha instalado el módulo de realidad virtual</translation>
 <translation id="4860895144060829044">Llamar</translation>
 <translation id="4875775213178255010">Sugerencias de contenido</translation>
 <translation id="4878404682131129617">No se ha podido establecer conexión a través del servidor proxy</translation>
@@ -551,7 +550,6 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5327248766486351172">Nombre</translation>
 <translation id="5335288049665977812">Permitir que los sitios web utilicen JavaScript (recomendado)</translation>
 <translation id="5363230136052241468">Toca el botón de inicio para cargar la página Nueva pestaña</translation>
-<translation id="5372829067651257087">Se ha copiado la URL.</translation>
 <translation id="5391532827096253100">Tu conexión a este sitio web no es segura. Información del sitio web</translation>
 <translation id="5400569084694353794">Al utilizar esta aplicación, aceptas las <ph name="BEGIN_LINK1" />Condiciones de Servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />Aviso de Privacidad<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="5403644198645076998">Permitir solo determinados sitios web</translation>
@@ -749,7 +747,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6746124502594467657">Bajar</translation>
 <translation id="6766622839693428701">Desliza el dedo hacia abajo para cerrarla.</translation>
 <translation id="6766758767654711248">Toca para ir al sitio web</translation>
-<translation id="6768277682697012280">Instalando el módulo de realidad aumentada...</translation>
 <translation id="6776813977906306442">Descarga vídeos para verlos más tarde con el botón Descargar</translation>
 <translation id="6782111308708962316">Impedir que los sitios web de terceros guarden y consulten datos de cookies</translation>
 <translation id="6790428901817661496">Reproducir</translation>
@@ -776,7 +773,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6963642900430330478">Esta página es peligrosa. Información del sitio web</translation>
 <translation id="6963766334940102469">Eliminar marcadores</translation>
 <translation id="6965382102122355670">Aceptar</translation>
-<translation id="6968317970155454671">No se ha podido instalar el módulo de realidad aumentada</translation>
 <translation id="6978479750597523876">Restablecer ajustes de traducción</translation>
 <translation id="6979737339423435258">Desde siempre</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
@@ -974,7 +970,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8487700953926739672">Disponible sin conexión</translation>
 <translation id="8489271220582375723">Abre la página Historial</translation>
 <translation id="8493948351860045254">Liberar espacio</translation>
-<translation id="8496140788721644230">Se ha instalado el módulo de realidad aumentada</translation>
 <translation id="8497726226069778601">Aún no tienes contenido</translation>
 <translation id="8503559462189395349">Contraseñas de Chrome</translation>
 <translation id="8503813439785031346">Nombre de usuario</translation>

@@ -73,6 +73,7 @@
 <translation id="1446450296470737166">MIDI ഉപകരണങ്ങളുടെ പൂർണ്ണ നിയന്ത്രണം അനുവദിക്കുക</translation>
 <translation id="145097072038377568">Android ക്രമീകരണത്തിൽ ഓഫാക്കിയിരിക്കുന്നു</translation>
 <translation id="1477626028522505441">സെർവർ പ്രശ്‌നങ്ങൾ കാരണം <ph name="FILE_NAME" /> ഡൗൺലോഡ് ചെയ്യാനായില്ല.</translation>
+<translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ ഒരെണ്ണം കൂടി)}other{ (+ # എണ്ണം കൂടി)}}</translation>
 <translation id="1501480321619201731">ഗ്രൂപ്പ് ഇല്ലാതാക്കൂ</translation>
 <translation id="1506061864768559482">തിരയൽ എഞ്ചിൻ</translation>
 <translation id="1513352483775369820">ബുക്ക്‌മാർക്കുകളും വെബ് ചരിത്രവും</translation>
@@ -107,8 +108,8 @@
 <translation id="17513872634828108">ഓപ്പൺ ടാബുകൾ</translation>
 <translation id="1779089405699405702">ഇമേജ് ഡീകോഡർ</translation>
 <translation id="1782483593938241562">അവസാന തീയതി <ph name="DATE" /></translation>
+<translation id="1791662854739702043">ഇന്‍സ്റ്റാളുചെയ്തു</translation>
 <translation id="1792959175193046959">ഏതുസമയത്തും ഡിഫോൾട്ട് ഡൗൺലോഡ് ലൊക്കേഷൻ മാറ്റുക</translation>
-<translation id="1796971354271036388">VR മൊഡ്യൂള്‍ ഇന്‍‌സ്‌റ്റാള്‍ ചെയ്യുന്നു...</translation>
 <translation id="1807246157184219062">ലൈറ്റ്</translation>
 <translation id="1821253160463689938">നിങ്ങൾ ആ പേജുകൾ സന്ദർശിക്കുന്നില്ലെങ്കിൽ പോലും, നിങ്ങളുടെ മുൻഗണനകൾ ഓർമ്മിക്കുന്നതിന് കുക്കികളെ ഉപയോഗിക്കുന്നു</translation>
 <translation id="1829244130665387512">പേജില്‍ കണ്ടുപിടിക്കുക</translation>
@@ -208,6 +209,7 @@
 <translation id="2513403576141822879">സ്വകാര്യത, സുരക്ഷ, ഡാറ്റാ ശേഖരണം എന്നിവയുമായി ബന്ധപ്പെട്ട കൂടുതൽ ക്രമീകരണത്തിന്, <ph name="BEGIN_LINK" />സമന്വയവും Google സേവനങ്ങളും<ph name="END_LINK" /> കാണുക</translation>
 <translation id="2523184218357549926">Google-ൽ നിങ്ങൾ സന്ദർശിക്കുന്ന പേജുകളുടെ URL-കൾ അയയ്ക്കുന്നു</translation>
 <translation id="2532336938189706096">വെബ് കാഴ്‌ച</translation>
+<translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> ഇനങ്ങൾ ഇല്ലാതാക്കി</translation>
 <translation id="2536728043171574184">ഈ പേജിന്റെ ഒരു ഓഫ്‌ലൈൻ പതിപ്പ് കാണുന്നു</translation>
 <translation id="2546283357679194313">കുക്കികളും സൈറ്റ് ഡാറ്റയും</translation>
 <translation id="2567385386134582609">ചിത്രം</translation>
@@ -239,6 +241,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> സെക്കൻഡ് ശേഷിക്കുന്നു</translation>
 <translation id="2779651927720337254">പരാജയപ്പെട്ടു</translation>
 <translation id="2781151931089541271">ഒരു സെക്കൻഡ് ശേഷിക്കുന്നു</translation>
+<translation id="2784212955220061919">ലൈറ്റ് മോഡിൽ, Chrome 60 ശതമാനം വരെ കുറവ് ഡാറ്റ ഉപയോഗിക്കുകയും പേജുകൾ വേഗത്തിൽ ലോഡ് ചെയ്യുകയും ചെയ്യുന്നു. Google-ന്‍റെ ക്ലൗഡ് സാങ്കേതികവിദ്യ, നിങ്ങൾ സന്ദർശിക്കുന്ന പേജുകൾ ഒപ്റ്റിമൈസ് ചെയ്യുന്നു.</translation>
 <translation id="2803478378562657435">സംരക്ഷിച്ച പാസ്‌വേഡുകളും പാസ്‌വേഡ് ഓപ്‌ഷനുകളും കാണിക്കുന്നു</translation>
 <translation id="2810645512293415242">ഡാറ്റ ലാഭിക്കുന്നതിനും വേഗത്തിൽ ലോഡുചെയ്യുന്നതിനുമായി ലളിതവൽക്കരിച്ചിരിക്കുന്ന പേജ്.</translation>
 <translation id="281504910091592009">നിങ്ങളുടെ <ph name="BEGIN_LINK" />Google അക്കൗണ്ടിൽ<ph name="END_LINK" /> സംരക്ഷിച്ച പാസ്‌വേഡുകൾ കാണുക, മാനേജ് ചെയ്യുക</translation>
@@ -250,9 +253,11 @@
 <translation id="2876764156902388290">ഈ പേജ് കാണിക്കുന്നതിന് Chrome കുറച്ച് ഡാറ്റയാണ് ഉപയോഗിക്കുന്നത്</translation>
 <translation id="2888126860611144412">Chrome-നെ കുറിച്ച്</translation>
 <translation id="2891154217021530873">പേജ് ലോഡുചെയ്യുന്നത് നിർത്തുക</translation>
+<translation id="2893180576842394309">തിരയലും മറ്റ് Google സേവനങ്ങളും വ്യക്തിപരമാക്കാൻ Google നിങ്ങളുടെ ചരിത്രം ഉപയോഗിച്ചേക്കാം</translation>
 <translation id="2900528713135656174">ഇവന്റ് സൃഷ്‌ടിക്കുക</translation>
 <translation id="2902702728133930130">ആരംഭിക്കുന്ന സമയത്ത് ഒരു അപ്രതീക്ഷിത പിശക് കാരണം Chrome പരാജയപ്പെട്ടു.</translation>
 <translation id="290376772003165898">പേജ് <ph name="LANGUAGE" /> ഭാഷയിലല്ലേ?</translation>
+<translation id="290908127926267163">ഫലങ്ങളിലേക്ക് തിരിച്ചെത്താൻ നിങ്ങൾ ടാപ്പ് ചെയ്യുന്ന വാക്കുകളും ചുറ്റുമുള്ള ടെക്‌സ്‌റ്റും Google ഉപയോഗിച്ചേക്കാം</translation>
 <translation id="2910701580606108292">പരിരക്ഷിത ഉള്ളടക്കം പ്ലേ ചെയ്യാൻ സൈറ്റുകളെ അനുവദിക്കുന്നതിന് മുമ്പ് ചോദിക്കുക</translation>
 <translation id="2913331724188855103">കുക്കി ഡാറ്റ സംരക്ഷിക്കുന്നതിനും വായിക്കുന്നതിനും സൈറ്റുകളെ അനുവദിക്കുക (ശുപാർശചെയ്‌തത്)</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> സ്‌റ്റോറേജ്</translation>
@@ -271,6 +276,7 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />സഹായം തേടുക<ph name="END_LINK" /></translation>
 <translation id="3045654778214005718">ഇതേപോലുള്ള കൂടുതൽ കാര്യങ്ങൾ Google-ൽ കാണുക</translation>
 <translation id="305593374596241526">ലൊക്കേഷൻ ഓഫാണ്; <ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിൽ<ph name="END_LINK" /> അത് ഓണാക്കുക.</translation>
+<translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> ബുക്ക്‌മാർക്ക്}other{<ph name="BOOKMARKS_COUNT_MANY" /> ബുക്ക്‌മാർക്കുകൾ}}</translation>
 <translation id="307908932405420782">ഉടൻ തന്നെ കൂടുതൽ ലേഖനങ്ങൾ ദൃശ്യമാകും. പ്രഭാതം ആസ്വദിക്കൂ!</translation>
 <translation id="3089395242580810162">ആൾമാറാട്ട ടാബിൽ തുറക്കുക</translation>
 <translation id="311456632243022227">Chrome-ൽ ഒന്നിലധികം ലിങ്കുകൾ തുറന്നു</translation>
@@ -283,6 +289,7 @@
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിൽ<ph name="END_LINK" /> Chrome-നായി അനുമതികൾ ഓണാക്കുക.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> സംഭരിച്ച വിവരം</translation>
 <translation id="3207960819495026254">ബുക്ക്‌മാർക്കുചെയ്‌തു</translation>
+<translation id="3211426585530211793"><ph name="ITEM_TITLE" /> ഇല്ലാതാക്കി</translation>
 <translation id="321773570071367578">നിങ്ങൾ പാസ്‌ഫ്രെയ്‌സ് മറന്നുപോയെങ്കിലോ ഈ ക്രമീകരണം മാറ്റണമെങ്കിലോ, <ph name="BEGIN_LINK" />സമന്വയം റീസെറ്റുചെയ്യുക<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">മൈക്രോഫോൺ</translation>
 <translation id="3232754137068452469">വെബ് ആപ്പ്</translation>
@@ -324,6 +331,7 @@
 <translation id="3549657413697417275">ചരിത്രം തിരയുക</translation>
 <translation id="3552151358455404883"><ph name="BEGIN_LINK1" />ക്രമീകരണത്തിൽ<ph name="END_LINK1" /> Chrome സമന്വയിപ്പിക്കലും വ്യക്‌തിപരമാക്കലും മാനേജുചെയ്യുക</translation>
 <translation id="3557336313807607643">കോൺടാക്‌റ്റുകളിലേക്ക് ചേർക്കുക</translation>
+<translation id="3566923219790363270">Chrome ഇപ്പോഴും VR-നായി തയ്യാറെടുത്തുകൊണ്ടിരിക്കുകയാണ്. Chrome പിന്നീട് റീസ്‌റ്റാർട്ട് ചെയ്യുക.</translation>
 <translation id="3568688522516854065">നിങ്ങളുടെ മറ്റ് ഉപകരണങ്ങളിൽ നിന്നുള്ള ടാബുകൾ ലഭിക്കാൻ, സൈൻ ഇൻ ചെയ്‌ത് സമന്വയിപ്പിക്കൽ ഓണാക്കുക</translation>
 <translation id="3587482841069643663">എല്ലാം</translation>
 <translation id="358794129225322306">ഒന്നിലേറെ ഫയലുകള്‍ സ്വമേധയാ ഡൗണ്‍‌ലോഡ് ചെയ്യാന്‍ സൈറ്റിനെ അനുവദിക്കുക.</translation>
@@ -488,7 +496,6 @@
 <translation id="4837753911714442426">പേജ് അച്ചടിക്കുന്നതിനുള്ള ഓപ്‌ഷനുകൾ തുറക്കുക</translation>
 <translation id="4842092870884894799">പാസ്‌വേഡ് സൃഷ്ടിക്കൽ പോപ്പ് അപ്പ് കാണിക്കുന്നു</translation>
 <translation id="4850886885716139402">കാണുക</translation>
-<translation id="4857347795080810417">VR മൊഡ്യൂള്‍ ഇന്‍‌സ്‌റ്റാള്‍ ചെയ്‌തു</translation>
 <translation id="4860895144060829044">വിളിക്കുക</translation>
 <translation id="4875775213178255010">ഉള്ളടക്ക നിർദ്ദേശങ്ങൾ</translation>
 <translation id="4878404682131129617">പ്രോക്‌സി സെർവർ മുഖേന ഒരു ടണൽ രൂപപ്പെടുത്താനായില്ല</translation>
@@ -502,6 +509,7 @@
 <translation id="4913161338056004800">സ്ഥിതിവിവരക്കണക്കുകൾ റീസെറ്റുചെയ്യുക</translation>
 <translation id="4913169188695071480">പുതുക്കിയെടുക്കുന്നത് നിർത്തുക</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />ഉപകരണങ്ങൾ<ph name="END_LINK" /> സ്‌കാൻ ചെയ്യുമ്പോൾ സഹായം തേടുക…</translation>
+<translation id="4943703118917034429">വെർച്വൽ റിയാലിറ്റി</translation>
 <translation id="4943872375798546930">ഫലങ്ങളൊന്നുമില്ല</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> നിങ്ങളുടെ സ്‌ക്രീൻ പങ്കിടുന്നു</translation>
 <translation id="4961107849584082341">ഈ പേജ് ഏത് ഭാഷയിലേക്കും വിവര്‍ത്തനം ചെയ്യുക</translation>
@@ -524,6 +532,7 @@
 <translation id="5123685120097942451">അദൃശ്യ ടാബ്</translation>
 <translation id="5127805178023152808">സമന്വയം ഓഫാണ്</translation>
 <translation id="5129038482087801250">വെബ് ആപ്പ് ഇൻസ്‌റ്റാൾ ചെയ്യുക</translation>
+<translation id="5132942445612118989">നിങ്ങളുടെ പാസ്‌വേഡുകളും ചരിത്രവും മറ്റും എല്ലാ ഉപകരണങ്ങളിലും സമന്വയിപ്പിക്കുക</translation>
 <translation id="5139940364318403933">Google ഡ്രൈവ് എങ്ങനെ ഉപയോഗിക്കണമെന്ന് അറിയുക</translation>
 <translation id="515227803646670480">സംഭരിച്ച വിവരം മായ്‌ക്കുക</translation>
 <translation id="5152843274749979095">ഉപയോഗിക്കാനാവുന്ന ആപ്‌സൊന്നും ഇൻസ്റ്റാൾ ചെയ്തിട്ടില്ല</translation>
@@ -551,7 +560,7 @@
 <translation id="5327248766486351172">പേര്</translation>
 <translation id="5335288049665977812">JavaScript റൺ ചെയ്യാൻ സൈറ്റുകളെ അനുവദിക്കുക (ശുപാർശചെയ്‌തിരിക്കുന്നു)</translation>
 <translation id="5363230136052241468">പുതിയ ടാബ് പേജ് ലോഡ് ചെയ്യാൻ ഹോം ബട്ടൺ ടാപ്പ് ചെയ്യുക</translation>
-<translation id="5372829067651257087">URL പകർത്തി.</translation>
+<translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ടാബ് തുറന്നിരിക്കുന്നു, ടാബുകൾ മാറാനായി ടാപ്പ് ചെയ്യുക}other{<ph name="OPEN_TABS_MANY" /> ടാബുകൾ തുറന്നിരിക്കുന്നു, മാറാനായി ടാപ്പ് ചെയ്യുക}}</translation>
 <translation id="5391532827096253100">ഈ സൈറ്റിലേക്കുള്ള നിങ്ങളുടെ കണക്ഷൻ സുരക്ഷിതമല്ല. സൈറ്റ് വിവരങ്ങള്‍</translation>
 <translation id="5400569084694353794">ഈ അപ്ലിക്കേഷൻ ഉപയോഗിക്കുന്നതിലൂടെ, നിങ്ങൾ Chrome-ന്റെ <ph name="BEGIN_LINK1" />സേവന നിബന്ധനകളും<ph name="END_LINK1" /> <ph name="BEGIN_LINK2" />സ്വകാര്യതാ അറിയിപ്പും<ph name="END_LINK2" /> അംഗീകരിക്കുന്നു.</translation>
 <translation id="5403644198645076998">ചില സൈറ്റുകളെ മാത്രം അനുവദിക്കുക</translation>
@@ -617,6 +626,7 @@
 <translation id="5765780083710877561">വിവരണം:</translation>
 <translation id="5777170031995031090">തിരയലും പരസ്യങ്ങളും മറ്റ് Google സേവനങ്ങളും വ്യക്തിപരമാക്കാൻ, Google നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രം ഉപയോഗിക്കുന്ന രീതി നിയന്ത്രിക്കുക.</translation>
 <translation id="5793665092639000975"><ph name="SPACE_USED" /> / <ph name="SPACE_AVAILABLE" /> ഉപയോഗിക്കുന്നു</translation>
+<translation id="5797070761912323120">തിരയലും പരസ്യവും മറ്റ് Google സേവനങ്ങളും വ്യക്തിപരമാക്കാൻ Google നിങ്ങളുടെ ചരിത്രം ഉപയോഗിച്ചേക്കാം</translation>
 <translation id="5804241973901381774">അനുമതികൾ</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# മണിക്കൂര്‍ മുമ്പ്}other{# മണിക്കൂര്‍ മുമ്പ്}}</translation>
 <translation id="5817918615728894473">ജോടിയാക്കുക</translation>
@@ -749,11 +759,11 @@
 <translation id="6746124502594467657">താഴേക്ക് നീക്കുക</translation>
 <translation id="6766622839693428701">അവസാനിപ്പിക്കാൻ താഴേക്ക് സ്വൈപ്പ് ചെയ്യുക.</translation>
 <translation id="6766758767654711248">സൈറ്റിലേക്ക് പോകാൻ ടാപ്പ് ചെയ്യുക</translation>
-<translation id="6768277682697012280">AR മൊഡ്യൂള്‍ ഇൻസ്‌റ്റാൾ ചെയ്യുന്നു...</translation>
 <translation id="6776813977906306442">പിന്നീട് കാണുന്നതിന്, ഡൗൺലോഡ് ബട്ടൺ ഉപയോഗിച്ച്, വീഡിയോകൾ ഡൗൺലോഡ് ചെയ്യുക</translation>
 <translation id="6782111308708962316">കുക്കി വിവരം സംരക്ഷിക്കുകയും വായിക്കുകയും ചെയ്യുന്നതിൽ നിന്ന് മൂന്നാംകക്ഷി വെബ്‌സൈറ്റുകളെ തടയുക</translation>
 <translation id="6790428901817661496">പ്ലേചെയ്യുക</translation>
 <translation id="679325081238418596">നിങ്ങളുടെ ബുക്ക്‌മാർക്കുകൾ, ചരിത്രം, പാസ്‌വേഡുകൾ, മറ്റ് ക്രമീകരണം എന്നിവ എല്ലാ ഉപകരണങ്ങളിലും ഉപയോഗിക്കുക</translation>
+<translation id="6811034713472274749">പേജ്, കാണാൻ തയ്യാറാണ്</translation>
 <translation id="6818926723028410516">ഇനങ്ങൾ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6820607729870073286">നിങ്ങൾക്ക് സംരക്ഷിച്ച വെബ്‌സൈറ്റ് ക്രമീകരണമൊന്നുമില്ല.</translation>
 <translation id="6820686453637990663">CVC</translation>
@@ -776,7 +786,6 @@
 <translation id="6963642900430330478">ഈ പേജ് അപകടകരമാണ്. സൈറ്റ് വിവരങ്ങള്‍</translation>
 <translation id="6963766334940102469">ബുക്ക്‌മാർക്കുകൾ ഇല്ലാതാക്കുക</translation>
 <translation id="6965382102122355670">ശരി</translation>
-<translation id="6968317970155454671">AR മൊഡ്യൂള്‍ ഇൻസ്‌റ്റാൾ ചെയ്യാനായില്ല</translation>
 <translation id="6978479750597523876">വിവർത്തന ക്രമീകരണം പുനഃസജ്ജമാക്കുക</translation>
 <translation id="6979737339423435258">എല്ലാ സമയത്തും</translation>
 <translation id="6981982820502123353">ഉപയോഗസഹായി</translation>
@@ -786,6 +795,7 @@
 <translation id="7016516562562142042">നിലവിലെ തിരയൽ എഞ്ചിനിൽ അനുവദിച്ചിരിക്കുന്നു</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> ഡൗൺലോഡുചെയ്‌തു</translation>
 <translation id="7022756207310403729">ബ്രൗസറിൽ തുറക്കുക</translation>
+<translation id="702384510542929236">വ്യക്തിപര വിവരങ്ങൾ ഒഴികെയുള്ള ചില സിസ്‌റ്റം വിവരങ്ങളും പേജ് ഉള്ളടക്കവും Google-ലേക്ക് അയയ്ക്കുന്നു</translation>
 <translation id="702463548815491781">TalkBack അല്ലെങ്കിൽ ആക്‌സസ് മാറുക ഓണായിരിക്കുമ്പോൾ ശുപാർശ ചെയ്യുന്നു</translation>
 <translation id="7029809446516969842">പാസ്‌വേഡുകള്‍</translation>
 <translation id="7031882061095297553">ഇതിലേക്ക് സമന്വയിപ്പിക്കുക</translation>
@@ -811,6 +821,7 @@
 <translation id="7189372733857464326">Google Play സേവനങ്ങൾ അപ്‌ഡേറ്റുചെയ്യുന്നത് പൂർത്തിയാക്കാൻ കാത്തിരിക്കുന്നു</translation>
 <translation id="7189598951263744875">പങ്കിടുക...</translation>
 <translation id="7191430249889272776">ടാബ് പശ്ചാത്തലത്തിൽ തുറന്നു.</translation>
+<translation id="7206089834920080277">VR-ന് തയ്യാറെടുക്കുന്നു</translation>
 <translation id="7221869452894271364">ഈ പേജ് വീണ്ടും ലോഡ് ചെയ്യുക</translation>
 <translation id="723171743924126238">ചിത്രങ്ങൾ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="7243308994586599757">സ്‌ക്രീനിന്റെ ചുവടെ ഓപ്‌ഷനുകൾ ലഭ്യമാണ്</translation>
@@ -820,6 +831,7 @@
 <translation id="7291387454912369099">അസിസ്‌റ്റന്റ് ചെക്ക് ഔട്ട് ചെയ്യാൻ പ്രേരിപ്പിച്ചു</translation>
 <translation id="729975465115245577">നിങ്ങളുടെ ഉപകരണത്തിൽ പാസ്‍വേഡ് ഫയൽ സംഭരിക്കാനുള്ള ആപ്പ് ഇല്ല.</translation>
 <translation id="7302081693174882195">വിശദാംശങ്ങൾ: സംരക്ഷിച്ച ഡാറ്റയുടെ അളവനുസരിച്ച് അടുക്കിയത്</translation>
+<translation id="7328017930301109123">ലൈറ്റ് മോഡിൽ, Chrome 60 ശതമാനം വരെ കുറവ് ഡാറ്റ ഉപയോഗിക്കുകയും പേജുകൾ വേഗത്തിൽ ലോഡ് ചെയ്യുകയും ചെയ്യുന്നു.</translation>
 <translation id="7333031090786104871">ഇപ്പോഴും മുമ്പത്തെ സൈറ്റ് ചേർത്തുകൊണ്ടിരിക്കുകയാണ്</translation>
 <translation id="7352939065658542140">വീഡിയോ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{തിരഞ്ഞെടുത്ത ഒരു ഇനം പങ്കിടുക}other{തിരഞ്ഞെടുത്ത # ഇനങ്ങൾ പങ്കിടുക}}</translation>
@@ -858,6 +870,7 @@
 <translation id="7562080006725997899">ബ്രൗസിംഗ് ഡാറ്റ മായ്‌ക്കൽ</translation>
 <translation id="756809126120519699">Chrome ഡാറ്റ മായ്‌ച്ചു</translation>
 <translation id="757524316907819857">പരിരക്ഷിത ഉള്ളടക്കം പ്ലേ ചെയ്യുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>
+<translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> ഫയൽ ഡൗൺലോഡ് ചെയ്‌തു}other{<ph name="FILES_DOWNLOADED_MANY" /> ഫയലുകൾ ഡൗൺലോഡ് ചെയ്‌തു}}</translation>
 <translation id="7589445247086920869">നിലവിലെ തിരയൽ എഞ്ചിനിൽ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="7593557518625677601">Chrome സമന്വയം ആരംഭിക്കാൻ Android ക്രമീകരണം തുറന്ന് Android സിസ്‌റ്റം സമന്വയിപ്പിക്കൽ വീണ്ടും പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="7596558890252710462">ഓപ്പറേറ്റിംഗ് സിസ്റ്റം</translation>
@@ -934,6 +947,7 @@
 <translation id="8103578431304235997">ആൾമാറാട്ട ടാബ്</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">ബന്ധപ്പെട്ട പേജുകൾ നിർദ്ദേശിക്കുക</translation>
+<translation id="8106605975779102845">പേജിലെ ഏതെങ്കിലും വാക്ക് ടാപ്പ് ചെയ്‌ത് തിരയുക (തിരയാനായി ടാപ്പ് ചെയ്യുക)</translation>
 <translation id="8109613176066109935">നിങ്ങളുടെ എല്ലാ ഉപകരണങ്ങളിലും ബുക്ക്‌മാർക്കുകൾ ലഭിക്കാൻ, സമന്വയിപ്പിക്കൽ ഓണാക്കുക</translation>
 <translation id="8116925261070264013">മ്യൂട്ടുചെയ്‌തു</translation>
 <translation id="813082847718468539">സൈറ്റ് വിവരങ്ങള്‍ കാണുക</translation>
@@ -958,6 +972,7 @@
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> ഭാഷയിലുള്ള പേജുകൾ വിവർത്തനം ചെയ്യില്ല</translation>
 <translation id="8349013245300336738">ഉപയോഗിച്ച ഡാറ്റയുടെ അളവിനനുസരിച്ച് അടുക്കുക</translation>
 <translation id="8372893542064058268">ഒരു പ്രത്യേക സൈറ്റിന് വേണ്ടി പശ്ചാത്തലം സമന്വയിപ്പിക്കൽ അനുവദിക്കുക.</translation>
+<translation id="8373513848523649558">നിങ്ങൾക്ക് ഏത് സമയത്തും <ph name="BEGIN_LINK1" />ഈ ക്രമീകരണം ഇഷ്‌ടാനുസൃതമാക്കാം<ph name="END_LINK1" /></translation>
 <translation id="8374821112118309944">നിങ്ങൾ ഏറ്റവും പുതിയ പതിപ്പിലേക്ക് TalkBack അപ്ഡേറ്റുചെയ്യേണ്ടതുണ്ട്.</translation>
 <translation id="8380167699614421159">ഈ സൈറ്റ്, അനാവശ്യമോ തെറ്റിദ്ധരിപ്പിക്കുന്നതോ ആയ പരസ്യങ്ങള്‍ കാണിക്കുന്നു</translation>
 <translation id="8393700583063109961">സന്ദേശം അയയ്ക്കുക</translation>
@@ -974,7 +989,6 @@
 <translation id="8487700953926739672">ഓഫ്‌ലൈനില്‍ ലഭ്യമാണ്</translation>
 <translation id="8489271220582375723">ചരിത്ര പേജ് തുറക്കുക</translation>
 <translation id="8493948351860045254">ഇടം സൃഷ്‌ടിക്കുക</translation>
-<translation id="8496140788721644230">AR മൊഡ്യൂള്‍ ഇൻസ്‌റ്റാൾ ചെയ്‌തു</translation>
 <translation id="8497726226069778601">ഇതുവരെയും ഇവിടെ കാണാനായി ഒന്നുമില്ല...</translation>
 <translation id="8503559462189395349">Chrome പാസ്‌വേഡുകൾ</translation>
 <translation id="8503813439785031346">ഉപയോക്തൃനാമം</translation>

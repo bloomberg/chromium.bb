@@ -1379,7 +1379,6 @@
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">Kartica upotrebljava vaš fotoaparat ili mikrofon.</translation>
 <translation id="3083193146044397360">Privremeno blokirano radi vaše zaštite</translation>
-<translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Ispustite da biste instalirali</translation>
 <translation id="3084771660770137092">Pregledniku Chrome ponestalo je memorije ili je proces za web-stranicu prekinut iz nekog drugog razloga. Da biste nastavili, ponovo učitajte stranicu ili idite na neku drugu stranicu.</translation>
 <translation id="3085412380278336437">Web-lokacija može upotrebljavati vašu kameru</translation>
@@ -2562,6 +2561,7 @@
 <translation id="4941246025622441835">Upotrijebite taj zahtjev uređaja kada prijavljujete uređaj za poslovno upravljanje:</translation>
 <translation id="4941627891654116707">Veličina fonta</translation>
 <translation id="494286511941020793">Pomoć za proxy konfiguraciju</translation>
+<translation id="495170559598752135">Radnje</translation>
 <translation id="4953689047182316270">Odgovori na događaje pristupačnosti</translation>
 <translation id="4953808748584563296">Zadani narančasti avatar</translation>
 <translation id="4955710816792587366">Odaberite PIN</translation>
@@ -2816,7 +2816,6 @@
 <translation id="5331975486040154427">USB-C uređaj (stražnji lijevi priključak)</translation>
 <translation id="5332624210073556029">Vremenska zona:</translation>
 <translation id="5334142896108694079">Predmemorija skripte</translation>
-<translation id="5334899159203764908">Saznajte više o <ph name="BEGIN_LINK" />pristupu web-lokacijama<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Sigurnosno kopiranje datoteka (ukupno) <ph name="FILE_COUNT" /> na <ph name="BEGIN_LINK" />Google disk<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">Onemogući svim web-lokacijama pristup USB uređajima</translation>
 <translation id="5337771866151525739">Instalirala treća strana.</translation>
@@ -5059,7 +5058,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8725066075913043281">Pokušajte ponovo</translation>
 <translation id="8725178340343806893">Favoriti/oznake</translation>
 <translation id="8726206820263995930">Pogreška pri dohvaćanju postavki pravila s poslužitelja: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727344521467137076">Na vašem računalu ima štetnog softvera. Chrome ga uklanja i vratit će vaše postavke kako bi vaš preglednik ponovno funkcionirao normalno.</translation>
 <translation id="8730621377337864115">Gotovo</translation>
 <translation id="8732030010853991079">Upotrijebite to proširenje klikom na ovu ikonu.</translation>
 <translation id="8732212173949624846">pročitati i promijeniti vašu povijest pregledavanja na svim uređajima na kojima ste prijavljeni</translation>
@@ -5251,7 +5249,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="9033857511263905942">&amp;Zalijepi</translation>
 <translation id="9034924485347205037">Linux datoteke</translation>
 <translation id="9035012421917565900">Te se stavke ne mogu vratiti na odredište "<ph name="DESTINATION_NAME" />", tako da nećete moći poništiti tu radnju.</translation>
-<translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">Prikaži izvornik</translation>
 <translation id="9038430547971207796">Sljedeći će put telefon otključati vaš <ph name="DEVICE_TYPE" />. Smart Lock isključite u Postavkama.</translation>
 <translation id="9038620279323455325">Datoteka s nazivom "<ph name="FILE_NAME" />" već postoji. Odaberite drugi naziv.</translation>

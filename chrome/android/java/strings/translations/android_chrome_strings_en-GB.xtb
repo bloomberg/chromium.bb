@@ -73,6 +73,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="1446450296470737166">Allow full control of MIDI devices</translation>
 <translation id="145097072038377568">Turned off in Android Settings</translation>
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> download failed due to server issues.</translation>
+<translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 more)}other{ (+ # more)}}</translation>
 <translation id="1501480321619201731">Delete group</translation>
 <translation id="1506061864768559482">Search engine</translation>
 <translation id="1513352483775369820">Bookmarks and web history</translation>
@@ -107,8 +108,8 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="17513872634828108">Open tabs</translation>
 <translation id="1779089405699405702">Image decoder</translation>
 <translation id="1782483593938241562">End date <ph name="DATE" /></translation>
+<translation id="1791662854739702043">Installed</translation>
 <translation id="1792959175193046959">Change the default download location at any time</translation>
-<translation id="1796971354271036388">Installing VR module…</translation>
 <translation id="1807246157184219062">Light</translation>
 <translation id="1821253160463689938">Uses cookies to remember your preferences, even if you don't visit those pages</translation>
 <translation id="1829244130665387512">Find in page</translation>
@@ -208,6 +209,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="2513403576141822879">For more settings that relate to privacy, security and data collection, see <ph name="BEGIN_LINK" />Sync and Google services<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Sends URLs of pages that you visit to Google</translation>
 <translation id="2532336938189706096">Web View</translation>
+<translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> items deleted</translation>
 <translation id="2536728043171574184">Viewing an offline copy of this page</translation>
 <translation id="2546283357679194313">Cookies and site data</translation>
 <translation id="2567385386134582609">IMAGE</translation>
@@ -239,6 +241,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="2777555524387840389"><ph name="SECONDS" /> secs left</translation>
 <translation id="2779651927720337254">failed</translation>
 <translation id="2781151931089541271">1 sec left</translation>
+<translation id="2784212955220061919">In Lite mode, Chrome loads pages faster and uses up to 60 per cent less data. Google's cloud technology optimises the pages that you visit.</translation>
 <translation id="2803478378562657435">Showing saved passwords and password options</translation>
 <translation id="2810645512293415242">Simplified page to save data and load faster.</translation>
 <translation id="281504910091592009">View and manage saved passwords in your <ph name="BEGIN_LINK" />Google account<ph name="END_LINK" /></translation>
@@ -250,9 +253,11 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="2876764156902388290">Chrome is using less data to show you this page</translation>
 <translation id="2888126860611144412">About Chrome</translation>
 <translation id="2891154217021530873">Stop page loading</translation>
+<translation id="2893180576842394309">Google may use your history to personalise Search and other Google services</translation>
 <translation id="2900528713135656174">Create event</translation>
 <translation id="2902702728133930130">Chrome failed during start-up with an unexpected error.</translation>
 <translation id="290376772003165898">Page is not in <ph name="LANGUAGE" />?</translation>
+<translation id="290908127926267163">Google may use the words that you tap on and surrounding text to return results</translation>
 <translation id="2910701580606108292">Ask before allowing sites to play protected content</translation>
 <translation id="2913331724188855103">Allow sites to save and read cookie data (recommended)</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> storage</translation>
@@ -271,6 +276,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Get help<ph name="END_LINK" /></translation>
 <translation id="3045654778214005718">See more like this from Google</translation>
 <translation id="305593374596241526">Location is off; turn it on in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
+<translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bookmark}other{<ph name="BOOKMARKS_COUNT_MANY" /> bookmarks}}</translation>
 <translation id="307908932405420782">More articles will appear soon. Enjoy your morning!</translation>
 <translation id="3089395242580810162">Open in incognito tab</translation>
 <translation id="311456632243022227">Multiple links opened in Chrome</translation>
@@ -283,6 +289,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="3190152372525844641">Turn on permissions for Chrome in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> stored data</translation>
 <translation id="3207960819495026254">Bookmarked</translation>
+<translation id="3211426585530211793">Deleted <ph name="ITEM_TITLE" /></translation>
 <translation id="321773570071367578">If you forgot your passphrase or want to change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">Microphone</translation>
 <translation id="3232754137068452469">Web App</translation>
@@ -324,6 +331,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="3549657413697417275">Search your history</translation>
 <translation id="3552151358455404883">Manage Chrome Sync and personalisation in <ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Add to contacts</translation>
+<translation id="3566923219790363270">Chrome is still preparing for VR. Restart Chrome later.</translation>
 <translation id="3568688522516854065">To get your tabs from your other devices, sign in and turn on sync</translation>
 <translation id="3587482841069643663">All</translation>
 <translation id="358794129225322306">Allow a site to download multiple files automatically.</translation>
@@ -488,7 +496,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4837753911714442426">Open options to print page</translation>
 <translation id="4842092870884894799">Showing password generation pop-up</translation>
 <translation id="4850886885716139402">View</translation>
-<translation id="4857347795080810417">Installed VR module</translation>
 <translation id="4860895144060829044">Call</translation>
 <translation id="4875775213178255010">Content Suggestions</translation>
 <translation id="4878404682131129617">Establishing a tunnel via proxy server failed</translation>
@@ -502,6 +509,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4913161338056004800">Reset statistics</translation>
 <translation id="4913169188695071480">Stop refreshing</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Get help<ph name="END_LINK" /> while scanning for devices…</translation>
+<translation id="4943703118917034429">Virtual Reality</translation>
 <translation id="4943872375798546930">No results</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> is sharing your screen</translation>
 <translation id="4961107849584082341">Translate this page to any language</translation>
@@ -524,6 +532,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5123685120097942451">Incognito tab</translation>
 <translation id="5127805178023152808">Sync is off</translation>
 <translation id="5129038482087801250">Install web app</translation>
+<translation id="5132942445612118989">Sync your passwords, history and more on all devices</translation>
 <translation id="5139940364318403933">Learn how to use Google Drive</translation>
 <translation id="515227803646670480">Clear stored data</translation>
 <translation id="5152843274749979095">No supported apps installed</translation>
@@ -551,7 +560,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5327248766486351172">Name</translation>
 <translation id="5335288049665977812">Allow sites to run JavaScript (recommended)</translation>
 <translation id="5363230136052241468">Tap the home button to load the new tab page</translation>
-<translation id="5372829067651257087">URL copied.</translation>
+<translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> open tab, tap to switch tabs}other{<ph name="OPEN_TABS_MANY" /> open tabs, tap to switch tabs}}</translation>
 <translation id="5391532827096253100">Your connection to this site is not secure. Site information</translation>
 <translation id="5400569084694353794">By using this application, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />.</translation>
 <translation id="5403644198645076998">Only allow certain sites</translation>
@@ -617,6 +626,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="5765780083710877561">Description:</translation>
 <translation id="5777170031995031090">Control how Google uses your browsing history to personalise Search, ads and other Google services.</translation>
 <translation id="5793665092639000975">Using <ph name="SPACE_USED" /> of <ph name="SPACE_AVAILABLE" /></translation>
+<translation id="5797070761912323120">Google may use your history to personalise Search, ads and other Google services</translation>
 <translation id="5804241973901381774">Permissions</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# hour ago}other{# hours ago}}</translation>
 <translation id="5817918615728894473">Pair</translation>
@@ -749,11 +759,11 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6746124502594467657">Move down</translation>
 <translation id="6766622839693428701">Swipe down to close.</translation>
 <translation id="6766758767654711248">Tap to go to site</translation>
-<translation id="6768277682697012280">Installing AR module...</translation>
 <translation id="6776813977906306442">Download videos to watch later using the Download button</translation>
 <translation id="6782111308708962316">Prevent third-party websites from saving and reading cookie data</translation>
 <translation id="6790428901817661496">Play</translation>
 <translation id="679325081238418596">Get your bookmarks, history, passwords and other settings on all your devices</translation>
+<translation id="6811034713472274749">Page is ready to view</translation>
 <translation id="6818926723028410516">Select items</translation>
 <translation id="6820607729870073286">You have no saved website settings.</translation>
 <translation id="6820686453637990663">CVC</translation>
@@ -776,7 +786,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6963642900430330478">This page is dangerous. Site information</translation>
 <translation id="6963766334940102469">Delete bookmarks</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6968317970155454671">Failed to install AR module</translation>
 <translation id="6978479750597523876">Reset translate settings</translation>
 <translation id="6979737339423435258">All time</translation>
 <translation id="6981982820502123353">Accessibility</translation>
@@ -786,6 +795,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7016516562562142042">Allowed for current search engine</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> downloaded</translation>
 <translation id="7022756207310403729">Open in browser</translation>
+<translation id="702384510542929236">Sends some system information and page content to Google anonymously</translation>
 <translation id="702463548815491781">Recommended when TalkBack or Switch Access are on</translation>
 <translation id="7029809446516969842">Passwords</translation>
 <translation id="7031882061095297553">Sync to</translation>
@@ -811,6 +821,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7189372733857464326">Waiting for Google Play Services to finish updating</translation>
 <translation id="7189598951263744875">Share...</translation>
 <translation id="7191430249889272776">Tab opened in background.</translation>
+<translation id="7206089834920080277">Getting ready for VR...</translation>
 <translation id="7221869452894271364">Reload this page</translation>
 <translation id="723171743924126238">Select images</translation>
 <translation id="7243308994586599757">Options available near bottom of the screen</translation>
@@ -820,6 +831,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7291387454912369099">Assistant Triggered Checkout</translation>
 <translation id="729975465115245577">Your device doesn’t have an app to store the passwords file.</translation>
 <translation id="7302081693174882195">Details: Sorted by amount of data saved</translation>
+<translation id="7328017930301109123">In Lite mode, Chrome loads pages faster and uses up to 60 per cent less data.</translation>
 <translation id="7333031090786104871">Still adding previous site</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Share 1 selected item}other{Share # selected items}}</translation>
@@ -858,6 +870,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7562080006725997899">Clear browsing data</translation>
 <translation id="756809126120519699">Cleared Chrome data</translation>
 <translation id="757524316907819857">Block sites from playing protected content</translation>
+<translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> file downloaded}other{<ph name="FILES_DOWNLOADED_MANY" /> files downloaded}}</translation>
 <translation id="7589445247086920869">Block for current search engine</translation>
 <translation id="7593557518625677601">Open Android settings and re-enable Android system sync to start Chrome sync</translation>
 <translation id="7596558890252710462">Operating system</translation>
@@ -934,6 +947,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8103578431304235997">Incognito Tab</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Suggest related pages</translation>
+<translation id="8106605975779102845">Search by tapping a word on a page (Tap to Search)</translation>
 <translation id="8109613176066109935">To get your bookmarks on all your devices, turn on sync</translation>
 <translation id="8116925261070264013">Muted</translation>
 <translation id="813082847718468539">View site information</translation>
@@ -958,6 +972,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8339163506404995330">Pages in <ph name="LANGUAGE" /> will not be translated</translation>
 <translation id="8349013245300336738">Sort by amount of data used</translation>
 <translation id="8372893542064058268">Allow Background Sync for a specific site.</translation>
+<translation id="8373513848523649558">You can <ph name="BEGIN_LINK1" />customise these settings<ph name="END_LINK1" /> at any time</translation>
 <translation id="8374821112118309944">You need to update TalkBack to a newer version.</translation>
 <translation id="8380167699614421159">This site shows intrusive or misleading ads</translation>
 <translation id="8393700583063109961">Send message</translation>
@@ -974,7 +989,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8487700953926739672">Available offline</translation>
 <translation id="8489271220582375723">Open the history page</translation>
 <translation id="8493948351860045254">Free up space</translation>
-<translation id="8496140788721644230">Installed AR module</translation>
 <translation id="8497726226069778601">Nothing to see here… yet</translation>
 <translation id="8503559462189395349">Chrome Passwords</translation>
 <translation id="8503813439785031346">Username</translation>

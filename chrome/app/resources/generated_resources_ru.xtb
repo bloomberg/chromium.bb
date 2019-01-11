@@ -1379,7 +1379,6 @@
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">Эта вкладка использует вашу камеру или микрофон</translation>
 <translation id="3083193146044397360">Временно заблокировано в целях безопасности</translation>
-<translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Чтобы установить расширение, перетащите его</translation>
 <translation id="3084771660770137092">Выполнение процесса этой веб-страницы было прекращено. Это может быть вызвано тем, что Chrome не хватает памяти, или иными причинами. Чтобы продолжить, обновите страницу или перейдите на другой URL.</translation>
 <translation id="3085412380278336437">Сайт может использовать камеру</translation>
@@ -2562,6 +2561,7 @@
 <translation id="4941246025622441835">Воспользуйтесь этой заявкой при регистрации устройства в домене предприятия:</translation>
 <translation id="4941627891654116707">Размер шрифта</translation>
 <translation id="494286511941020793">Справка по конфигурации прокси-сервера</translation>
+<translation id="495170559598752135">Действия</translation>
 <translation id="4953689047182316270">Использование специальных возможностей</translation>
 <translation id="4953808748584563296">Аватар по умолчанию (оранжевый)</translation>
 <translation id="4955710816792587366">Установите PIN-код</translation>
@@ -2816,7 +2816,6 @@
 <translation id="5331975486040154427">Устройство USB-C (дальний порт слева)</translation>
 <translation id="5332624210073556029">Часовой пояс:</translation>
 <translation id="5334142896108694079">Кеш скрипта</translation>
-<translation id="5334899159203764908">Подробнее <ph name="BEGIN_LINK" />о доступе для сайта<ph name="END_LINK" />…</translation>
 <translation id="5335458522276292100">Сохранение файлов (<ph name="FILE_COUNT" />) на <ph name="BEGIN_LINK" />Google Диске<ph name="END_LINK" />…</translation>
 <translation id="5336126339807372270">Запретить сайтам доступ к USB-устройствам.</translation>
 <translation id="5337771866151525739">Установлено независимым поставщиком.</translation>
@@ -5057,7 +5056,6 @@
 <translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="8725178340343806893">Избранное/Закладки</translation>
 <translation id="8726206820263995930">Ошибка при получении настроек политики с сервера: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727344521467137076">На компьютере обнаружено вредоносное ПО. Chrome удалит его и восстановит настройки, чтобы вернуть браузер в обычное состояние.</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8732030010853991079">Активируйте расширение, нажав на этот значок.</translation>
 <translation id="8732212173949624846">Чтение и изменение истории просмотров на всех устройствах, где вы используете этот аккаунт</translation>
@@ -5249,7 +5247,6 @@
 <translation id="9033857511263905942">&amp;Вставить</translation>
 <translation id="9034924485347205037">Файлы Linux</translation>
 <translation id="9035012421917565900">Объекты нельзя переместить обратно на общий диск "<ph name="DESTINATION_NAME" />", поэтому вы не сможете отменить это действие.</translation>
-<translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">Показать оригинал</translation>
 <translation id="9038430547971207796">Теперь вы можете снимать блокировку устройства <ph name="DEVICE_TYPE" /> с помощью телефона. Чтобы выключить Smart Lock, перейдите в настройки.</translation>
 <translation id="9038620279323455325">Файл "<ph name="FILE_NAME" />" уже существует. Выберите другое название.</translation>

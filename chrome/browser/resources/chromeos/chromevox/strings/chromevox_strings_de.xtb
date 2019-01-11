@@ -288,48 +288,6 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="3322936298410871309">Vorherige Überschrift der Ebene 1</translation>
 <translation id="3323447499041942178">Textfeld</translation>
 <translation id="3338224621010291843">Schieberegler <ph name="VALUE" /><ph name="NAME" /></translation>
-<translation id="3353420241558113817">{"ar": "Arabisch",
-        "bg": "Bulgarisch",
-        "ca": "Katalanisch",
-        "cs": "Tschechisch",
-        "da": "Dänisch",
-        "de": "Deutsch",
-        "de_CH": "Deutsch (Schweiz)",
-        "de_DE": "Deutsch (Deutschland)",
-        "el": "Griechisch",
-        "en": "Englisch",
-        "en_CA": "Englisch (Kanada)",
-        "en_GB": "Englisch (Vereinigtes Königreich)",
-        "en_US": "Englisch (USA)",
-        "es": "Spanisch",
-        "et": "Estnisch",
-        "fr": "Französisch",
-        "fr_CA": "Französisch (Kanada)",
-        "fr_FR": "Französisch (Frankreich)",
-        "fi": "Finnisch",
-        "he": "Hebräisch",
-        "hi": "Hindi",
-        "hr": "Kroatisch",
-        "hu": "Ungarisch",
-        "is": "Isländisch",
-        "it": "Italienisch",
-        "ko": "Koreanisch",
-        "lt": "Litauisch",
-        "lv": "Lettisch",
-        "nb": "Norwegisch (Bokmål)",
-        "nl": "Niederländisch",
-        "pl": "Polnisch",
-        "pt": "Portugiesisch",
-        "ro": "Rumänisch",
-        "ru": "Russisch",
-        "sk": "Slowakisch",
-        "sl": "Slowenisch",
-        "sr": "Serbisch",
-        "sv": "Schwedisch",
-        "tr": "Türkisch",
-        "vi": "Vietnamesisch",
-        "zh": "Chinesisch",
-        "zh_TW": ""Chinesisch (Traditionelles Han)"}</translation>
 <translation id="335581015389089642">Sprachausgabe</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{Pluszeichen}other{# Pluszeichen}}</translation>
@@ -705,6 +663,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">Kein vorheriges Optionsfeld</translation>
 <translation id="6414968628640960377">Vorheriges anderes Element</translation>
+<translation id="6417265370957905582">Google Assistant</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{Doppelpunkt}other{# Doppelpunkte}}</translation>
 <translation id="6438968337250688271">Menü "<ph name="NAME" />"</translation>
 <translation id="6444046323172968959">Benachrichtigungsdialogfeld</translation>

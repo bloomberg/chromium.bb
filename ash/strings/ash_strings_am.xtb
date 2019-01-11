@@ -88,7 +88,7 @@
 <translation id="2341729377289034582">ወደ አቀባዊ ተቆልፏል</translation>
 <translation id="2352467521400612932">የስቲለስ ቅንብሮች</translation>
 <translation id="2354174487190027830"><ph name="NAME" />ን በማግበር ላይ</translation>
-<translation id="2359808026110333948">ይቀጥሉ</translation>
+<translation id="2359808026110333948">ቀጥል</translation>
 <translation id="2365393535144473978">የተንቀሳቃሽ ስልክ ውሂብን ማንቃት ብሉቱዝን ያነቃል።</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">አትረብሽ የሚለውን አብራ ወይም አጥፋ</translation>
@@ -196,6 +196,7 @@
 <translation id="4072264167173457037">መካከለኛ ሲግናል</translation>
 <translation id="4146833061457621061">Play ሙዚቃ</translation>
 <translation id="4181841719683918333">ቋንቋዎች</translation>
+<translation id="4195877955194704651">ራስሰር ጠቅታዎች አዝራር</translation>
 <translation id="4217571870635786043">በቃል ማስጻፍ</translation>
 <translation id="4261870227682513959">የማሳወቂያ ቅንብሮችን አሳይ። ማሳወቂያዎች ጠፍተዋል</translation>
 <translation id="4269883910223712419">የዚህ መሣሪያ የሚከተሉትን የማድረግ ችሎታ አለው፦</translation>
@@ -372,6 +373,7 @@
 <translation id="7348093485538360975">የታይታ የቁልፍ ሰሌዳ</translation>
 <translation id="735745346212279324">የቪ ፒ ኤን ግንኙነት ተቋርጧል</translation>
 <translation id="7377169924702866686">Caps Lock በርቷል።</translation>
+<translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />ሰ</translation>
 <translation id="7398254312354928459">የአውታረ መረብ ግንኙነት ተቀይሯል</translation>
 <translation id="742594950370306541">ካሜራ ስራ ላይ ነው።</translation>
 <translation id="743058460480092004">ካሜራና ማይክራፎን ስራ ላይ ናቸው።</translation>
@@ -473,6 +475,7 @@
 <translation id="8874184842967597500">አልተገናኘም</translation>
 <translation id="8877788021141246043">አስታዋሽ አዘጋጅ</translation>
 <translation id="8878886163241303700">ማያ ገጽ በማስቀጠል ላይ</translation>
+<translation id="890616557918890486">ምንጭ ይለውጡ</translation>
 <translation id="8921624153894383499">የGoogle ረዳቱ ይህን ቋንቋ አይናገርም።</translation>
 <translation id="8938800817013097409">USB-C መሣሪያ (የቀኝ ወደብ ከኋላ በኩል)</translation>
 <translation id="8940956008527784070">ባትሪ ዝቅተኛ ነው (<ph name="PERCENTAGE" />%)</translation>

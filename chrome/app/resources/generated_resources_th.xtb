@@ -1379,7 +1379,6 @@
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">แท็บนี้กำลังใช้กล้องถ่ายรูปหรือไมโครโฟนของคุณ</translation>
 <translation id="3083193146044397360">ถูกบล็อกชั่วคราวเพื่อรักษาความปลอดภัยให้คุณ</translation>
-<translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">วางเพื่อติดตั้ง</translation>
 <translation id="3084771660770137092">ไม่ว่า Chrome จะมีหน่วยความจำไม่เพียงพอหรือกระบวนการของหน้าเว็บถูกยกเลิกด้วยเหตุใดก็ตาม หากต้องการดำเนินการต่อ ให้โหลดซ้ำหรือไปที่หน้าเว็บอื่น</translation>
 <translation id="3085412380278336437">เว็บไซต์ใช้กล้องของคุณได้</translation>
@@ -2562,6 +2561,7 @@
 <translation id="4941246025622441835">ใช้ข้อกำหนดของอุปกรณ์นี้เมื่อลงทะเบียนอุปกรณ์สำหรับการจัดการองค์กร:</translation>
 <translation id="4941627891654116707">ขนาดแบบอักษร</translation>
 <translation id="494286511941020793">ความช่วยเหลือในการกำหนดค่าพร็อกซี</translation>
+<translation id="495170559598752135">การทำงาน</translation>
 <translation id="4953689047182316270">ตอบสนองต่อเหตุการณ์การเข้าถึงพิเศษ</translation>
 <translation id="4953808748584563296">รูปโปรไฟล์เริ่มต้นสีส้ม</translation>
 <translation id="4955710816792587366">เลือก PIN ของคุณ</translation>
@@ -2816,7 +2816,6 @@
 <translation id="5331975486040154427">อุปกรณ์ USB-C (พอร์ตด้านหลังซ้าย)</translation>
 <translation id="5332624210073556029">โซนเวลา:</translation>
 <translation id="5334142896108694079">แคชของสคริปต์</translation>
-<translation id="5334899159203764908">ดูข้อมูลเพิ่มเติมเกี่ยวกับ<ph name="BEGIN_LINK" />การเข้าถึงเว็บไซต์<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">กำลังสำรอง <ph name="FILE_COUNT" />ไปยัง <ph name="BEGIN_LINK" />Google ไดรฟ์<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">ไม่อนุญาตให้เว็บไซต์เข้าถึงอุปกรณ์ USB</translation>
 <translation id="5337771866151525739">ติดตั้งโดยบุคคลที่สาม</translation>
@@ -5058,7 +5057,6 @@
 <translation id="8725066075913043281">ลองอีกครั้ง</translation>
 <translation id="8725178340343806893">รายการโปรด/บุ๊กมาร์ก</translation>
 <translation id="8726206820263995930">เกิดข้อผิดพลาดขณะดึงข้อมูลการตั้งค่านโยบายจากเซิร์ฟเวอร์: <ph name="CLIENT_ERROR" /></translation>
-<translation id="8727344521467137076">พบซอฟต์แวร์อันตรายในคอมพิวเตอร์ของคุณ Chrome กำลังนำซอฟต์แวร์ดังกล่าวออกและคืนการตั้งค่าเดิมเพื่อให้เบราว์เซอร์ทำงานเป็นปกติอีกครั้ง</translation>
 <translation id="8730621377337864115">เสร็จสิ้น</translation>
 <translation id="8732030010853991079">ใช้ส่วนขยายนี้โดยคลิกที่ไอคอนนี้</translation>
 <translation id="8732212173949624846">อ่านและเปลี่ยนแปลงประวัติการเข้าชมบนอุปกรณ์ที่คุณลงชื่อเข้าใช้ทุกเครื่อง</translation>
@@ -5250,7 +5248,6 @@
 <translation id="9033857511263905942">&amp;วาง</translation>
 <translation id="9034924485347205037">ไฟล์ Linux</translation>
 <translation id="9035012421917565900">ไม่สามารถย้ายรายการกลับไปที่ "<ph name="DESTINATION_NAME" />" คุณจึงไม่สามารถเลิกทำการดำเนินการนี้</translation>
-<translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">แสดงหน้าเว็บเดิม</translation>
 <translation id="9038430547971207796">โทรศัพท์จะปลดล็อก <ph name="DEVICE_TYPE" /> ของคุณในครั้งถัดไป คุณสามารถปิด Smart Lock ได้ใน "การตั้งค่า"</translation>
 <translation id="9038620279323455325">มีไฟล์ชื่อ "<ph name="FILE_NAME" />" อยู่แล้ว โปรดเลือกชื่ออื่น</translation>

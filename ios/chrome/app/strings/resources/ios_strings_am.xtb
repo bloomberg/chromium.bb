@@ -86,7 +86,7 @@
 <translation id="2320166752086256636">የቁልፍ ሰሌዳን ደብቅ</translation>
 <translation id="2339560363438331454">ማመሳሰል እና የGoogle አገልግሎቶች</translation>
 <translation id="2351097562818989364">የትርጉም ቅንብሮችዎ ዳግም እንዲጀምሩ ተደርገዋል።</translation>
-<translation id="2359808026110333948">ይቀጥሉ</translation>
+<translation id="2359808026110333948">ቀጥል</translation>
 <translation id="2360196772093551345">የሞባይል ጣቢያ ጠይቅ</translation>
 <translation id="2381405137052800939">መሠረታዊ ነገሮች</translation>
 <translation id="2386793615875593361">1 ተመርጧል</translation>
@@ -132,6 +132,7 @@
 <translation id="2989805286512600854">በአዲስ ትር ክፈት</translation>
 <translation id="3024255823539804759">ያለፈው ቀን</translation>
 <translation id="3037605927509011580">ውይ፣ ተሰናከለ!</translation>
+<translation id="3059750684806925578">የተቀዳ ምስልን ይፈልጉ</translation>
 <translation id="3112556859945124369">ምልክት አድርግበት…</translation>
 <translation id="3157684681743766797">ሁሉንም ምልክት አድርግባቸው…</translation>
 <translation id="3175081911749765310">የድር አገልግሎቶች</translation>
@@ -380,6 +381,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="7159472599653637159">የተንቀሳቃሽ ስልክ ጣቢያ ጠይቅ</translation>
 <translation id="7167621057293532233">የውሂብ ዓይነቶች</translation>
 <translation id="7189598951263744875">አጋራ...</translation>
+<translation id="7192050974311852563">መግባት ይጀምሩ</translation>
 <translation id="7203585745079012652">መልሶችን ተመልሰህ ተናገር</translation>
 <translation id="722055596168483966">የGoogle አገልግሎቶችን ግላዊነት አላብስ</translation>
 <translation id="7272437679830969316">የእርስዎን ማንነት ማረጋገጥ አልተቻለም። የይለፍ ቃል አልተቀዳም።</translation>
@@ -421,6 +423,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">የይለፍ ቃላትን ወደ ውጭ ላክ...</translation>
 <translation id="7947953824732555851">ተቀበል እና ግባ</translation>
+<translation id="794799177247607889">መግባት አቁም</translation>
 <translation id="7961015016161918242">በፍጹም</translation>
 <translation id="7971521879845308059">ብቅ-ባዮችን አግድ</translation>
 <translation id="7981313251711023384">ይበልጥ ፈጣን ለሆነ አሰሳ እና ፍለጋ ገጾችን ቅድሚያ ይጫኑ</translation>

@@ -1378,7 +1378,6 @@
 <translation id="308268297242056490">‏معرف موارد منتظم (URI)</translation>
 <translation id="3082780749197361769">تستخدم علامة التبويب هذه الكاميرا أو الميكروفون.</translation>
 <translation id="3083193146044397360">تم الحظر مؤقتًا لحماية أمانك</translation>
-<translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">إسقاط للتثبيت</translation>
 <translation id="3084771660770137092">‏ربما نفدت الذاكرة لدى Chrome أو تم إنهاء العملية لصفحة الويب لسبب آخر. للمتابعة، أعد التحميل أو انتقل إلى صفحة أخرى.</translation>
 <translation id="3085412380278336437">يمكن لموقع الويب استخدام الكاميرا.</translation>
@@ -2170,7 +2169,7 @@
 <translation id="4316850752623536204">موقع الويب لمطوّر البرامج</translation>
 <translation id="4320177379694898372">لا يتوفر اتصال بالإنترنت</translation>
 <translation id="4320948194796820126">إضافة إشارة مرجعية إلى بريدك الإلكتروني</translation>
-<translation id="4321442524549817090">‏عرض عنوان URL</translation>
+<translation id="4321442524549817090">‏عرض&amp;عنوان URL</translation>
 <translation id="4322394346347055525">إغلاق علامات التبويب الأخرى</translation>
 <translation id="4324577459193912240">ملف غير مكتمل</translation>
 <translation id="4325237902968425115">جارٍ إلغاء تثبيت <ph name="LINUX_APP_NAME" />...</translation>
@@ -2557,6 +2556,7 @@
 <translation id="4941246025622441835">استخدام طلب الجهاز عند تسجيل الجهاز في إدارة المؤسسات:</translation>
 <translation id="4941627891654116707">حجم الخط</translation>
 <translation id="494286511941020793">مساعدة تهيئة الخادم الوكيل</translation>
+<translation id="495170559598752135">إجراءات</translation>
 <translation id="4953689047182316270">الاستجابة لأحداث إمكانية الوصول</translation>
 <translation id="4953808748584563296">الصورة الرمزية التلقائية البرتقالية</translation>
 <translation id="4955710816792587366">اختيار رقم التعريف الشخصي</translation>
@@ -2811,7 +2811,6 @@
 <translation id="5331975486040154427">‏جهاز USB-C (المنفذ الخلفي الأيسر)</translation>
 <translation id="5332624210073556029">المنطقة الزمنية:</translation>
 <translation id="5334142896108694079">ذاكرة التخزين المؤقت للنص البرمجي</translation>
-<translation id="5334899159203764908">مزيد من المعلومات عن <ph name="BEGIN_LINK" />إمكانية الوصول إلى موقع الويب<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">‏الاحتفاظ بنسخة احتياطية من <ph name="FILE_COUNT" /> في <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">‏عدم السماح لأي موقع بالوصول إلى أجهزة USB</translation>
 <translation id="5337771866151525739">تم التثبيت من جهة خارجية.</translation>
@@ -5054,7 +5053,6 @@
 <translation id="8725066075913043281">أعد المحاولة</translation>
 <translation id="8725178340343806893">المفضّلة/الإشارات</translation>
 <translation id="8726206820263995930">حدث خطأ عند جلب إعدادات السياسة من الخادم: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727344521467137076">‏هناك برنامج ضار على جهاز الكمبيوتر، ويعمل Chrome حاليًا على إزالته واستعادة إعداداتك لكي يعمل متصفحك بشكلٍ طبيعي من جديد.</translation>
 <translation id="8730621377337864115">تم</translation>
 <translation id="8732030010853991079">استخدم هذه الإضافة بالنقر على هذا الرمز.</translation>
 <translation id="8732212173949624846">قراءة سجل التصفح وتعديله على كل الأجهزة التي سجلت الدخول إليها</translation>
@@ -5246,7 +5244,6 @@
 <translation id="9033857511263905942">ل&amp;صق</translation>
 <translation id="9034924485347205037">‏ملفات نظام التشغيل Linux</translation>
 <translation id="9035012421917565900">لا يمكن نقل العناصر مرة أخرى إلى '<ph name="DESTINATION_NAME" />'، لذلك لن تتمكن من التراجع عن هذا الإجراء.</translation>
-<translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">عرض الصفحة الأصلية</translation>
 <translation id="9038430547971207796">‏في المرة القادمة، سيلغي هاتفك قفل جهاز <ph name="DEVICE_TYPE" />. أوقف تشغيل Smart Lock في الإعدادات.</translation>
 <translation id="9038620279323455325">الملف الذي يحمل الاسم "<ph name="FILE_NAME" />" موجود من قبل. يُرجى اختيار اسم مختلف.</translation>

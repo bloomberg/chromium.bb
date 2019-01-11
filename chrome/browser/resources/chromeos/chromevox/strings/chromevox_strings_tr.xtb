@@ -288,48 +288,6 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="3322936298410871309">Önceki 1. düzey başlık</translation>
 <translation id="3323447499041942178">Metin kutusu</translation>
 <translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> kaydırma çubuğu</translation>
-<translation id="3353420241558113817">{"ar": "Arapça",
-        "bg": "Bulgarca",
-        "ca": "Katalanca",
-        "cs": "Çekçe",
-        "da": "Danca",
-        "de": "Almanca",
-        "de_CH": "Almanca (İsviçre)",
-        "de_DE": "Almanca (Almanya)",
-        "el": "Yunanca",
-        "en": "İngilizce",
-        "en_CA": "İngilizce (Kanada)",
-        "en_GB": "İngilizce (İngiltere)",
-        "en_US": "İngilizce (ABD)",
-        "es": "İspanyolca",
-        "et": "Estonca",
-        "fr": "Fransızca",
-        "fr_CA": "Fransızca (Kanada)",
-        "fr_FR": "Fransızca (Fransa)",
-        "fi": "Fince",
-        "he": "İbranice",
-        "hi": "Hint Dili",
-        "hr": "Hırvatça",
-        "hu": "Macarca",
-        "is": "İzlandaca",
-        "it": "İtalyanca",
-        "ko": "Korece",
-        "lt": "Litvanca",
-        "lv": "Letonca",
-        "nb": "Norveççe Bokmål",
-        "nl": "Felemenkçe",
-        "pl": "Lehçe",
-        "pt": "Portekizce",
-        "ro": "Rumence",
-        "ru": "Rusça",
-        "sk": "Slovakça",
-        "sl": "Slovence",
-        "sr": "Sırpça",
-        "sv": "İsveççe",
-        "tr": "Türkçe",
-        "vi": "Vietnamca",
-        "zh": "Çince",
-        "zh_TW": "Çince (Geleneksel Han)"}</translation>
 <translation id="335581015389089642">Konuşma</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{artı işareti}other{# artı işareti}}</translation>
@@ -705,6 +663,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">Önceki radyo düğmesi yok.</translation>
 <translation id="6414968628640960377">Önceki farklı öğe.</translation>
+<translation id="6417265370957905582">Google Asistan</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{iki nokta}other{# iki nokta}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, menü</translation>
 <translation id="6444046323172968959">Uyarı iletişim kutusu</translation>

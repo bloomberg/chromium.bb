@@ -107,8 +107,8 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="17513872634828108">Schede aperte</translation>
 <translation id="1779089405699405702">Decoder di immagini</translation>
 <translation id="1782483593938241562">Data di fine: <ph name="DATE" /></translation>
+<translation id="1791662854739702043">Installato</translation>
 <translation id="1792959175193046959">Modifica il percorso di download predefinito in qualsiasi momento</translation>
-<translation id="1796971354271036388">Installazione modulo VR…</translation>
 <translation id="1807246157184219062">Chiaro</translation>
 <translation id="1821253160463689938">Utilizza i cookie per memorizzare le tue preferenze, anche se non visiti quelle pagine</translation>
 <translation id="1829244130665387512">Trova nella pagina</translation>
@@ -488,7 +488,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="4837753911714442426">Apri la pagina delle opzioni di stampa</translation>
 <translation id="4842092870884894799">È mostrato il popup di generazione della password</translation>
 <translation id="4850886885716139402">Visualizza</translation>
-<translation id="4857347795080810417">Modulo VR installato</translation>
 <translation id="4860895144060829044">Chiama</translation>
 <translation id="4875775213178255010">Contenuti suggeriti</translation>
 <translation id="4878404682131129617">Creazione di un tunnel tramite server proxy non riuscita</translation>
@@ -551,7 +550,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5335288049665977812">Consenti l'esecuzione di JavaScript nei siti (opzione consigliata)</translation>
 <translation id="5363230136052241468">Tocca il pulsante Home per caricare la pagina Nuova scheda</translation>
-<translation id="5372829067651257087">URL copiato.</translation>
 <translation id="5391532827096253100">La tua connessione al sito non è sicura. Informazioni sul sito</translation>
 <translation id="5400569084694353794">Se utilizzi questa applicazione, accetti i <ph name="BEGIN_LINK1" />Termini di servizio<ph name="END_LINK1" /> e l'<ph name="BEGIN_LINK2" />Informativa sulla privacy<ph name="END_LINK2" /> di Chrome.</translation>
 <translation id="5403644198645076998">Consenti solo siti specifici</translation>
@@ -749,7 +747,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6746124502594467657">Sposta giù</translation>
 <translation id="6766622839693428701">Fai scorrere verso il basso per chiudere.</translation>
 <translation id="6766758767654711248">Tocca per visitare il sito</translation>
-<translation id="6768277682697012280">Installazione modulo AR…</translation>
 <translation id="6776813977906306442">Usa il pulsante di download per scaricare video da guardare in seguito.</translation>
 <translation id="6782111308708962316">Impedisci ai siti web di terze parti di salvare e leggere i dati dei cookie</translation>
 <translation id="6790428901817661496">Play</translation>
@@ -776,7 +773,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6963642900430330478">Questa pagina è pericolosa Informazioni sul sito</translation>
 <translation id="6963766334940102469">Elimina Preferiti</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6968317970155454671">Installazione del modulo AR non riuscita</translation>
 <translation id="6978479750597523876">Reimposta impostazioni traduzione</translation>
 <translation id="6979737339423435258">Tutto</translation>
 <translation id="6981982820502123353">Accessibilità</translation>
@@ -974,7 +970,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8487700953926739672">Disponibile offline</translation>
 <translation id="8489271220582375723">Apri la pagina Cronologia</translation>
 <translation id="8493948351860045254">Libera spazio</translation>
-<translation id="8496140788721644230">Modulo AR installato</translation>
 <translation id="8497726226069778601">Qui non c'è ancora niente</translation>
 <translation id="8503559462189395349">Password Chrome</translation>
 <translation id="8503813439785031346">Nome utente</translation>

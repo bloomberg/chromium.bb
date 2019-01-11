@@ -289,48 +289,6 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="3322936298410871309">Előző 1. szintű fejléc</translation>
 <translation id="3323447499041942178">Szövegmező</translation>
 <translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> csúszka</translation>
-<translation id="3353420241558113817">{"ar": "arab",
-        "bg": "bolgár",
-        "ca": "katalán",
-        "cs": "cseh",
-        "da": "dán",
-        "de": "német",
-        "de_CH": "német (Svájc)",
-        "de_DE": "német (Németország)",
-        "el": "görög",
-        "en": "angol",
-        "en_CA": "angol (Kanada)",
-        "en_GB": "angol (Egyesült Királyság)",
-        "en_US": "angol (Amerikai Egyesült Államok)",
-        "es": "spanyol",
-        "et": "észt",
-        "fr": "francia",
-        "fr_CA": "francia (Kanada)",
-        "fr_FR": "francia (Franciaország)",
-        "fi": "finn",
-        "he": "héber",
-        "hi": "hindi",
-        "hr": "horvát",
-        "hu": "magyar",
-        "is": "izlandi",
-        "it": "olasz",
-        "ko": "koreai",
-        "lt": "litván",
-        "lv": "lett",
-        "nb": "norvég bokmål",
-        "nl": "holland",
-        "pl": "lengyel",
-        "pt": "portugál",
-        "ro": "román",
-        "ru": "orosz",
-        "sk": "szlovák",
-        "sl": "szlovén",
-        "sr": "szerb",
-        "sv": "svéd",
-        "tr": "török",
-        "vi": "vietnami",
-        "zh": "kínai",
-        "zh_TW": "kínai (hagyományos han)"}</translation>
 <translation id="335581015389089642">Beszéd</translation>
 <translation id="3359142382821736686">elválasztó</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{pluszjel}other{# pluszjel}}</translation>
@@ -706,6 +664,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="6387719785439924554">oldaltartalom</translation>
 <translation id="6411426777058107714">Nincs előző választógomb.</translation>
 <translation id="6414968628640960377">Előző eltérő elem.</translation>
+<translation id="6417265370957905582">Google Segéd</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{kettőspont}other{# kettőspont}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, menü</translation>
 <translation id="6444046323172968959">Értesítő párbeszédpanel</translation>

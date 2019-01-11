@@ -1120,6 +1120,12 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="3628480121685794414">Simpleksprintimise lubamine</translation>
 <translation id="3646859102161347133">Ekraaniluubi tüübi määramine</translation>
 <translation id="3653237928288822292">Vaikeotsingupakkuja ikoon</translation>
+<translation id="3660510274595679517">
+        Kui selle reegli väärtuseks määratakse Tõene, on pilvehalduses registreerumine kohustuslik. Kui tingimus pole täidetud, blokeeritakse Chrome'i käivitamise protsess.
+
+        Kui selle reegli väärtuseks määratakse Väär või see jäetakse määramata, on pilvehalduses registreerumine valikuline. Kui tingimus pole täidetud, siis Chrome'i käivitamise protsessi ei blokeerita.
+
+        Seda reeglit kasutatakse arvutites seadme ulatuses pilvereegli registreerimiseks ja selle saab määrata failiga Registry või GPO Windowsis, failiga plist Macis ja JSON-i reeglifailiga Linuxis.</translation>
 <translation id="3660562134618097814">SAML IdP küpsisefailide ülekandmine sisselogimisel</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Üherealist välja enam ei toetata ja tulevikus see eemaldatakse. Hakake kasutama allolevat mitmerealist tekstivälja.)</translation>
 <translation id="3709266154059827597">Laienduste installimise musta nimekirja seadistamine</translation>

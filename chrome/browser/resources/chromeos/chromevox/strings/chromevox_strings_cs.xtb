@@ -288,48 +288,6 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="3322936298410871309">Předchozí nadpis 1. úrovně</translation>
 <translation id="3323447499041942178">Textové pole</translation>
 <translation id="3338224621010291843">Posuvník <ph name="NAME" /> – <ph name="VALUE" /></translation>
-<translation id="3353420241558113817">{"ar": "arabština",
-"bg": "bulharština",
-"ca": "katalánština",
-"cs": "čeština",
-"da": "dánština",
-"de": "němčina",
-"de_CH": "němčina (Švýcarsko)",
-"de_DE": "němčina (Německo)",
-"el": "řečtina",
-"en": "angličtina",
-"en_CA": "angličtina (Kanada)",
-"en_GB": "angličtina (Velká Británie)",
-"en_US": "angličtina (USA)",
-"es": "španělština",
-"et": "estonština",
-"fr": "francouzština",
-"fr_CA": "francouzština (Kanada)",
-"fr_FR": "francouzština (Francie)",
-"fi": "finština",
-"he": "hebrejština",
-"hi": "hindština",
-"hr": "chorvatština",
-"hu": "maďarština",
-"is": "islandština",
-"it": "italština",
-"ko": "korejština",
-"lt": "litevština",
-"lv": "lotyština",
-"nb": "norština (bokmål)",
-"nl": "nizozemština",
-"pl": "polština",
-"pt": "portugalština",
-"ro": "rumunština",
-"ru": "ruština",
-"sk": "slovenština",
-"sl": "slovinština",
-"sr": "srbština",
-"sv": "švédština",
-"tr": "turečtina",
-"vi": "vietnamština",
-"zh": "čínština",
-"zh_TW": "čínština (tradiční)"}</translation>
 <translation id="335581015389089642">Řeč</translation>
 <translation id="3359142382821736686">oddělovač</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{plus}few{# znaky plus}many{# plus signs}other{# znaků plus}}</translation>
@@ -705,6 +663,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="6387719785439924554">stranou</translation>
 <translation id="6411426777058107714">Žádný předchozí přepínač.</translation>
 <translation id="6414968628640960377">Předchozí jiný prvek.</translation>
+<translation id="6417265370957905582">Asistent Google</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{dvojtečka}few{# dvojtečky}many{# colons}other{# dvojteček}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, nabídka</translation>
 <translation id="6444046323172968959">Dialog upozornění</translation>

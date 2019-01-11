@@ -289,48 +289,6 @@
 <translation id="3322936298410871309">Prejšnji naslov na ravni 1</translation>
 <translation id="3323447499041942178">Besedilno polje</translation>
 <translation id="3338224621010291843">Drsnik z vrednostjo <ph name="VALUE" /> in imenom <ph name="NAME" /></translation>
-<translation id="3353420241558113817">{"ar": "arabščina",
-        "bg": "bolgarščina",
-        "ca": "katalonščina",
-        "cs": "češčina",
-        "da": "danščina",
-        "de": "nemščina",
-        "de_CH": "nemščina (Švica)",
-        "de_DE": "nemščina (Nemčija)",
-        "el": "grščina",
-        "en": "angleščina",
-        "en_CA": "angleščina (Kanada)",
-        "en_GB": "angleščina (Združeno kraljestvo)",
-        "en_US": "angleščina (Združene države)",
-        "es": "španščina",
-        "et": "estonščina",
-        "fr": "francoščina",
-        "fr_CA": "francoščina (Kanada)",
-        "fr_FR": "francoščina (Francija)",
-        "fi": "finščina",
-        "he": "hebrejščina",
-        "hi": "hindijščina",
-        "hr": "hrvaščina",
-        "hu": "madžarščina",
-        "is": "islandščina",
-        "it": "italijanščina",
-        "ko": "korejščina",
-        "lt": "litovščina",
-        "lv": "latvijščina",
-        "nb": "norveščina (Bokmål)",
-        "nl": "nizozemščina",
-        "pl": "poljščina",
-        "pt": "portugalščina",
-        "ro": "romunščina",
-        "ru": "ruščina",
-        "sk": "slovaščina",
-        "sl": "slovenščina",
-        "sr": "srbščina",
-        "sv": "švedščina",
-        "tr": "turščina",
-        "vi": "vietnamščina",
-        "zh": "kitajščina",
-        "zh_TW": "kitajščina (tradicionalna han)"}</translation>
 <translation id="335581015389089642">Speech</translation>
 <translation id="3359142382821736686">loččrt</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{znak za plus}one{# znak za plus}two{# znaka za plus}few{# znaki za plus}other{# znakov za plus}}</translation>
@@ -706,6 +664,7 @@
 <translation id="6387719785439924554">poleg</translation>
 <translation id="6411426777058107714">Ni prejšnjega izbirnega gumba.</translation>
 <translation id="6414968628640960377">Prejšnji drugačni element.</translation>
+<translation id="6417265370957905582">Pomočnik Google</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{dvopičje}one{# dvopičje}two{# dvopičji}few{# dvopičja}other{# dvopičij}}</translation>
 <translation id="6438968337250688271">Meni <ph name="NAME" /></translation>
 <translation id="6444046323172968959">Pogovorno okno z opozorilom</translation>

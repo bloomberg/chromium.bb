@@ -1376,7 +1376,6 @@
 <translation id="308268297242056490">URI адрес</translation>
 <translation id="3082780749197361769">Този раздел използва камерата или микрофона ви.</translation>
 <translation id="3083193146044397360">Временно блокирано от съображения за сигурност</translation>
-<translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Освободете, за да инсталирате</translation>
 <translation id="3084771660770137092">Или Chrome няма достатъчно памет, или процесът за уеб страницата бе прекратен по друга причина. За да продължите, презаредете или отворете друга страница.</translation>
 <translation id="3085412380278336437">Сайтът може да използва камерата ви</translation>
@@ -2561,6 +2560,7 @@
 <translation id="4941246025622441835">Използване на заявката за устройството при записването му за корпоративно управление:</translation>
 <translation id="4941627891654116707">Размер на шрифта</translation>
 <translation id="494286511941020793">Помощ за конфигурация на прокси сървър</translation>
+<translation id="495170559598752135">Действия</translation>
 <translation id="4953689047182316270">Реагиране на събития за достъпност</translation>
 <translation id="4953808748584563296">Стандартен оранжев аватар</translation>
 <translation id="4955710816792587366">Изберете ПИН код</translation>
@@ -2815,7 +2815,6 @@
 <translation id="5331975486040154427">Устройство с USB-C (задният ляв порт)</translation>
 <translation id="5332624210073556029">Часова зона:</translation>
 <translation id="5334142896108694079">Кеш за скриптове</translation>
-<translation id="5334899159203764908">Научете повече за <ph name="BEGIN_LINK" />достъпа на сайта<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Създаваме резервно копие на <ph name="FILE_COUNT" /> в <ph name="BEGIN_LINK" />Google Диск<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">Забраняване на сайтовете да осъществяват достъп до USB устройства</translation>
 <translation id="5337771866151525739">Инсталирано от трета страна.</translation>
@@ -5058,7 +5057,6 @@
 <translation id="8725066075913043281">Опитайте отново</translation>
 <translation id="8725178340343806893">Любими/Отметки</translation>
 <translation id="8726206820263995930">Грешка при извличането на настройките за правилa от сървъра: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727344521467137076">На компютъра ви има опасен софтуер. Chrome го премахва и възстановява настройките ви, така че браузърът отново да заработи нормално.</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8732030010853991079">Използвайте това разширение, като кликнете върху съответната икона.</translation>
 <translation id="8732212173949624846">Четене и промяна на историята на сърфирането ви на всички устройства, на които сте влезли в профила си</translation>
@@ -5250,7 +5248,6 @@
 <translation id="9033857511263905942">&amp;Поставяне</translation>
 <translation id="9034924485347205037">Файлове за Linux</translation>
 <translation id="9035012421917565900">Елементите не могат да бъдат върнати в/ъв „<ph name="DESTINATION_NAME" />“, така че няма да можете да отмените това действие.</translation>
-<translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">Показване на оригинала</translation>
 <translation id="9038430547971207796">Следващия път телефонът ви ще отключи вашия <ph name="DEVICE_TYPE" />. Можете да изключите Smart Lock от настройките.</translation>
 <translation id="9038620279323455325">Файлът „<ph name="FILE_NAME" />“ вече съществува. Моля, изберете друго име.</translation>

@@ -196,6 +196,7 @@
 <translation id="4072264167173457037">سیگنال متوسط</translation>
 <translation id="4146833061457621061">‏Play music (موسیقی پخش کن)</translation>
 <translation id="4181841719683918333">زبان‌ها</translation>
+<translation id="4195877955194704651">دکمه کلیک خودکار</translation>
 <translation id="4217571870635786043">املا</translation>
 <translation id="4261870227682513959">نمایش تنظیمات اعلان. اعلان‌ها خاموش است</translation>
 <translation id="4269883910223712419">سرپرست این دستگاه می‌تواند:</translation>
@@ -373,6 +374,7 @@
 <translation id="7348093485538360975">صفحه‌کلید روی صفحه</translation>
 <translation id="735745346212279324">‏VPN قطع است</translation>
 <translation id="7377169924702866686">‏Caps Lock روشن است.</translation>
+<translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> ثانیه</translation>
 <translation id="7398254312354928459">اتصال شبکه تغییریافته</translation>
 <translation id="742594950370306541">دوربین در حال استفاده است.</translation>
 <translation id="743058460480092004">دوربین و میکروفن در حال استفاده هستند.</translation>
@@ -474,6 +476,7 @@
 <translation id="8874184842967597500">متصل نیست</translation>
 <translation id="8877788021141246043">‏Set a reminder (یادآوری تنظیم کن)</translation>
 <translation id="8878886163241303700">صفحه گسترش یافته است</translation>
+<translation id="890616557918890486">تغییر منبع</translation>
 <translation id="8921624153894383499">‏«دستیار Google» به این زبان صحبت نمی‌کند.</translation>
 <translation id="8938800817013097409">‏دستگاه USB-C (درگاه عقب سمت راست)</translation>
 <translation id="8940956008527784070">باتری ضعیف است (<ph name="PERCENTAGE" />٪)</translation>

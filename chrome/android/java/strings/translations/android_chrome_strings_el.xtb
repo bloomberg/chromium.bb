@@ -107,8 +107,8 @@
 <translation id="17513872634828108">Ανοικτές καρτέλες</translation>
 <translation id="1779089405699405702">Εργαλείο αποκωδικοποίησης εικόνων</translation>
 <translation id="1782483593938241562">Ημερομηνία λήξης: <ph name="DATE" /></translation>
+<translation id="1791662854739702043">Εγκατεστημένο</translation>
 <translation id="1792959175193046959">Αλλάξτε την προεπιλεγμένη τοποθεσία λήψης ανά πάσα στιγμή</translation>
-<translation id="1796971354271036388">Εγκατάσταση λειτουργικής μονάδας VR…</translation>
 <translation id="1807246157184219062">Ανοιχτόχρωμο</translation>
 <translation id="1821253160463689938">Χρησιμοποιεί cookie για την απομνημόνευση των προτιμήσεών σας, ακόμα κι αν δεν επισκέπτεστε αυτές τις σελίδες</translation>
 <translation id="1829244130665387512">Εύρεση στη σελίδα</translation>
@@ -488,7 +488,6 @@
 <translation id="4837753911714442426">Άνοιγμα επιλογών για την εκτύπωση της σελίδας</translation>
 <translation id="4842092870884894799">Εμφάνιση αναδυόμενου παραθύρου δημιουργίας κωδικού πρόσβασης</translation>
 <translation id="4850886885716139402">Προβολή</translation>
-<translation id="4857347795080810417">Η λειτουργική μονάδα VR εγκαταστάθηκε</translation>
 <translation id="4860895144060829044">Κλήση</translation>
 <translation id="4875775213178255010">Προτάσεις περιεχομένου</translation>
 <translation id="4878404682131129617">Η δημιουργία διοχέτευσης μέσω διακομιστή μεσολάβησης απέτυχε</translation>
@@ -551,7 +550,6 @@
 <translation id="5327248766486351172">Όνομα</translation>
 <translation id="5335288049665977812">Να επιτρέπεται στους ιστότοπους να εκτελούν JavaScript (συνιστάται)</translation>
 <translation id="5363230136052241468">Πατήστε το κουμπί αρχικής οθόνης για να φορτώσετε τη σελίδα σε νέα καρτέλα</translation>
-<translation id="5372829067651257087">Έγινε αντιγραφή του URL.</translation>
 <translation id="5391532827096253100">Η σύνδεσή σας σε αυτόν τον ιστότοπο δεν είναι ασφαλής. Πληροφορίες ιστοτόπου</translation>
 <translation id="5400569084694353794">Χρησιμοποιώντας αυτήν την εφαρμογή, αποδέχεστε τους <ph name="BEGIN_LINK1" />Όρους Παροχής Υπηρεσιών<ph name="END_LINK1" /> και τη <ph name="BEGIN_LINK2" />Σημείωση Απορρήτου<ph name="END_LINK2" /> του Chrome.</translation>
 <translation id="5403644198645076998">Να επιτρέπονται μόνο συγκεκριμένοι ιστότοποι</translation>
@@ -749,7 +747,6 @@
 <translation id="6746124502594467657">Μετακίνηση προς τα κάτω</translation>
 <translation id="6766622839693428701">Σύρετε προς τα κάτω για κλείσιμο.</translation>
 <translation id="6766758767654711248">Πατήστε για μετάβαση στον ιστότοπο</translation>
-<translation id="6768277682697012280">Εγκατάσταση λειτουργικής μονάδας AR…</translation>
 <translation id="6776813977906306442">Κατεβάστε βίντεο για να τα παρακολουθήσετε αργότερα, χρησιμοποιώντας το κουμπί Λήψης</translation>
 <translation id="6782111308708962316">Αποτροπή αποθήκευσης και ανάγνωσης δεδομένων cookie από ιστότοπους τρίτων</translation>
 <translation id="6790428901817661496">Αναπαραγωγή</translation>
@@ -776,7 +773,6 @@
 <translation id="6963642900430330478">Αυτή η σελίδα είναι επικίνδυνη. Πληροφορίες ιστοτόπου</translation>
 <translation id="6963766334940102469">Διαγραφή σελιδοδεικτών</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6968317970155454671">Αποτυχία εγκατάστασης λειτουργικής μονάδας AR</translation>
 <translation id="6978479750597523876">Επαναφορά ρυθμίσεων μετάφρασης</translation>
 <translation id="6979737339423435258">Από την αρχή</translation>
 <translation id="6981982820502123353">Προσβασιμότητα</translation>
@@ -974,7 +970,6 @@
 <translation id="8487700953926739672">Διαθέσιμο εκτός σύνδεσης</translation>
 <translation id="8489271220582375723">Άνοιγμα σελίδας "Ιστορικό"</translation>
 <translation id="8493948351860045254">Ελευθερώστε χώρο</translation>
-<translation id="8496140788721644230">Η λειτουργική μονάδα AR εγκαταστάθηκε</translation>
 <translation id="8497726226069778601">Δεν υπάρχει τίποτα να δείτε εδώ…ακόμη</translation>
 <translation id="8503559462189395349">Κωδικοί πρόσβασης Chrome</translation>
 <translation id="8503813439785031346">Όνομα χρήστη</translation>

@@ -12,7 +12,6 @@
 <translation id="1055184225775184556">&amp;ביטול הוספה</translation>
 <translation id="1058479211578257048">הכרטיסים נשמרים...</translation>
 <translation id="10614374240317010">פריטים שאף פעם לא נשמרו</translation>
-<translation id="1066396345355680611">ייתכן שלא תהיה לך יותר גישה לתוכן מוגן מ-<ph name="SITE" /> ומאתרים אחרים.</translation>
 <translation id="106701514854093668">סימניות שולחן עבודה</translation>
 <translation id="1074497978438210769">לא מאובטח</translation>
 <translation id="1080116354587839789">התאם לרוחב</translation>
@@ -461,7 +460,6 @@
 <translation id="3901925938762663762">תוקף הכרטיס פג</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3946209740501886391">שאל תמיד באתר הזה</translation>
-<translation id="3947577358805392297">שמירת הדף למועד מאוחר יותר</translation>
 <translation id="3949571496842715403">‏השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו לא מציין ערכי Subject Alternative Name. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="3949601375789751990">היסטוריית הגלישה שלך מופיעה כאן</translation>
 <translation id="3950820424414687140">כניסה</translation>
@@ -631,7 +629,6 @@ Del</translation>
 <translation id="5045550434625856497">סיסמה שגויה</translation>
 <translation id="5056549851600133418">מאמרים שעשויים לעניין אותך</translation>
 <translation id="5070335125961472645">‏<ph name="BEGIN_LINK" />לבדוק את כתובת שרת ה-Proxy<ph name="END_LINK" /></translation>
-<translation id="5086888986931078152">ייתכן שלא תהיה לך יותר גישה לתוכן מוגן מאתרים מסוימים.</translation>
 <translation id="5087286274860437796">האישור של השרת אינו תקף כעת.</translation>
 <translation id="5087580092889165836">הוסף כרטיס</translation>
 <translation id="5089810972385038852">מדינה</translation>
@@ -760,7 +757,6 @@ Del</translation>
 <translation id="5939518447894949180">אפס</translation>
 <translation id="5946937721014915347">פתיחה של <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">אי אפשר להירשם באמצעות חשבון פרטי (יש רישיון משויך זמין).</translation>
-<translation id="5966151627327109289">הפעולה מוציאה אותך מרוב האתרים. ייתכן שלא תהיה לך יותר גישה לתוכן מוגן מ-<ph name="SITE" /> ומאתרים אחרים.</translation>
 <translation id="5967592137238574583">עריכת הפרטים ליצירת קשר</translation>
 <translation id="5967867314010545767">הסר מההיסטוריה</translation>
 <translation id="5975083100439434680">התרחק</translation>
@@ -783,7 +779,6 @@ Del</translation>
 <translation id="6059925163896151826">‏מכשירי USB</translation>
 <translation id="6071091556643036997">סוג המדיניות אינו חוקי.</translation>
 <translation id="6080696365213338172">ניגשת לתוכן באמצעות אישור שהוענק על ידי מנהל מערכת. מנהל המערכת שלך עשוי ליירט נתונים שתספק ל-<ph name="DOMAIN" />.</translation>
-<translation id="6096619198407627433">‏הפעולה תגרום ליציאה מרוב האתרים. לא תבוצע יציאה מחשבון Google שלך. ייתכן שלא תהיה לך יותר גישה לתוכן מוגן מ-<ph name="SITE" /> ומאתרים אחרים.</translation>
 <translation id="610911394827799129">‏ייתכן שלחשבון Google שלך משויכים סוגים אחרים של היסטוריית גלישה בכתובת <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{ללא}=1{סיסמה אחת (מסונכרנת)}two{שתי סיסמאות (מסונכרנות)}many{# סיסמאות (מסונכרנות)}other{# סיסמאות (מסונכרנות)}}</translation>
 <translation id="6146055958333702838">בדוק את הכבלים והפעל מחדש את הנתבים, המודמים ושאר התקני הרשת
@@ -967,7 +962,6 @@ Del</translation>
 <translation id="7444046173054089907">האתר הזה חסום</translation>
 <translation id="7445762425076701745">לא ניתן לאמת לגמרי את הזהות של השרת שאליו אתה מחובר. אתה מחובר לשרת באמצעות שם שקיים רק ברשת שלך, ושלרשות אישורים חיצונית אין דרך לאמת את בעלותך עליו. מכיוון שחלק מרשויות האישורים ינפיקו אישורים לשמות אלה ללא קשר, אין דרך להבטיח שאתה מחובר לאתר המיועד ואינך גורם תוקף.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /> על בעיה זו.</translation>
-<translation id="7453467225369441013">‏תבוצע יציאה שלך מרוב האתרים. לא תבוצע יציאה מחשבון Google שלך.</translation>
 <translation id="7455133967321480974">השתמש בברירת המחדל הכללית (חסום)</translation>
 <translation id="7460618730930299168">הסינון שונה ממה שבחרת. להמשיך?</translation>
 <translation id="7473891865547856676">לא, תודה</translation>
@@ -1151,7 +1145,6 @@ Del</translation>
 <translation id="860043288473659153">שם בעל הכרטיס</translation>
 <translation id="8620436878122366504">ההורים שלך עדיין לא אישרו זאת</translation>
 <translation id="8625384913736129811">שמירת כרטיס זה במכשיר הנוכחי</translation>
-<translation id="8662811608048051533">תבוצע יציאה שלך מרוב האתרים.</translation>
 <translation id="8663226718884576429">סיכום הזמנה, <ph name="TOTAL_LABEL" />, פרטים נוספים</translation>
 <translation id="8680536109547170164"><ph name="QUERY" /> , תשובה, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">ההתחברות שלך אל <ph name="DOMAIN" /> אינה מוצפנת.</translation>

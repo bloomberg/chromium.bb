@@ -3,7 +3,7 @@
 <translationbundle lang="te">
 <translation id="104962181688258143">ఫైల్స్ యాప్‌ని తెరవండి</translation>
 <translation id="1122869341872663659"><ph name="QUERY" /> కోసం <ph name="N" /> ఫలితాలను చూపుతోంది</translation>
-<translation id="1195667586424773550">ట్యాబ్ యొక్క చిరునామా బార్‌లోకి లింక్‌ను లాగండి</translation>
+<translation id="1195667586424773550">ట్యాబ్ చిరునామా బార్‌లోకి లింక్‌ను లాగండి</translation>
 <translation id="1204450209689312104">కొత్త విండోని అజ్ఞాత మోడ్‌లో తెరవండి</translation>
 <translation id="1251638888133819822">పూర్తి స్క్రీన్ మాగ్నిఫైయర్‌ను ఆన్ లేదా ఆఫ్ చేస్తుంది</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
@@ -22,7 +22,7 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">చిరునామా బార్‌లో మీరు నమోదు చేసే దానికి www. మరియు .com జోడించి, ఆపై పేజీని తెరవండి</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, ఆపై <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> లేదా <ph name="LEFT" /></translation>
-<translation id="1996162290124031907">తరువాత ట్యాబ్‌కి వెళ్లండి</translation>
+<translation id="1996162290124031907">తదుపరి ట్యాబ్‌కు వెళ్లండి</translation>
 <translation id="2010818616644390445">విండోలో చివరి ట్యాబ్‌కు వెళ్లండి</translation>
 <translation id="2040706009561734834">లాంచర్‌ని తెరవండి/మూసివేయండి</translation>
 <translation id="2088054208777350526">కీబోర్డ్ షార్ట్‌కట్‌ల కోసం శోధించు</translation>
@@ -30,7 +30,7 @@
 <translation id="2145908266289632567">వచన సవరణ</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 నుండి =</translation>
 <translation id="2181097965834437145">బుక్‌మార్క్‌ల బార్‌ని చూపండి లేదా దాచండి</translation>
-<translation id="2185166372312820725">మునుపటి ట్యాబ్‌కి వెళ్లండి</translation>
+<translation id="2185166372312820725">మునుపటి ట్యాబ్‌కు వెళ్లండి</translation>
 <translation id="2194790690264064655"><ph name="CTRL" />ను నొక్కి, లింక్‌ను క్లిక్ చేయండి</translation>
 <translation id="2382644247745281995">ప్రస్తుత కీబోర్డ్ లేఅవుట్‌తో మద్దతు లేదు</translation>
 <translation id="2397416548179033562">Chrome మెనూను చూపు</translation>
@@ -65,13 +65,13 @@
 <translation id="3422679037938588196">మీ శోధన కోసం తరువాత సరిపోలికకు వెళ్లండి</translation>
 <translation id="344577624355799426"><ph name="ALT" /> లేదా <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">మీ ప్రస్తుత విండోలో తెరిచి ఉన్న అన్ని పేజీలను బుక్‌మార్క్‌ల వలె కొత్త ఫోల్డర్‌లో సేవ్ చేయండి</translation>
-<translation id="355103131818127604">లింక్‌ను కొత్త ట్యాబ్‌లో నేపథ్యంలో తెరవండి</translation>
+<translation id="355103131818127604">లింక్‌ను కొత్త ట్యాబ్‌లో బ్యాక్‌గ్రౌండ్‌లో తెరవండి</translation>
 <translation id="3622741593887335780">దగ్గరగా జూమ్ చేస్తుంది (డాక్ చేయబడినప్పుడు లేదా పూర్తి స్క్రీన్ మాగ్నిఫైయర్‌లు ప్రారంభించబడినప్పుడు)</translation>
 <translation id="3649256019230929621">విండోను కనిష్టీకరించు</translation>
 <translation id="3655154169297074232">ట్యాబ్‌లు &amp; విండోలు</translation>
 <translation id="3668361878347172356">మీ చివరి చర్యను మళ్లీ చేయండి</translation>
 <translation id="3710784500737332588">సహాయ కేంద్రాన్ని తెరవండి</translation>
-<translation id="3720939646656082033">లింక్‌ని కొత్త ట్యాబ్‌లో తెరిచి, కొత్త ట్యాబ్‌కి మారండి</translation>
+<translation id="3720939646656082033">లింక్‌ను కొత్త ట్యాబ్‌లో తెరిచి, కొత్త ట్యాబ్‌కు మారండి</translation>
 <translation id="3725795051337497754">ప్రస్తుత ట్యాబ్‌ను మూసివేయండి</translation>
 <translation id="3751033133896282964">మీ చివరి చర్యను రద్దు చేయండి</translation>
 <translation id="3792178297143798024">మీ అరలో హైలైట్ చేయబడిన అంశాన్ని తెరవండి</translation>
@@ -81,7 +81,7 @@
 <translation id="3994783594793697310">డిస్‌ప్లే జూమ్ స్థాయిని రీసెట్ చేస్తుంది</translation>
 <translation id="4026843240379844265">యాక్టివ్ విండోని డిస్‌ప్లేల మధ్య తరల్చండి</translation>
 <translation id="4035482366624727273">పేజీలోని ప్రతిదాన్ని ఎంచుకోండి</translation>
-<translation id="4060703249685950734">మీరు మూసివేసిన చివరి ట్యాబ్ లేదా విండోని తిరిగి తెరవండి</translation>
+<translation id="4060703249685950734">మీరు మూసివేసిన చివరి ట్యాబ్ లేదా విండోను తిరిగి తెరవండి</translation>
 <translation id="4090342722461256974"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" />ని నొక్కి, పట్టుకుని, మీరు తెరవాలనుకుంటున్న విండో వచ్చే వరకు <ph name="TAB" />ని నొక్కండి, ఆపై వదిలివేయండి.</translation>
 <translation id="4092538597492297615">ఎంచుకున్న కంటెంట్‌ను క్లిప్‌బోర్డ్‌కు కాపీ చేయండి</translation>
 <translation id="4101772068965291327">హోమ్ పేజీని తెరువు</translation>
@@ -107,7 +107,7 @@
 <translation id="526651782186312376">పంక్తి ప్రారంభం వరకు వచనాన్ని ఎంచుకోండి</translation>
 <translation id="5316716239522500219">మానిటర్‌లను ప్రతిబింబించు</translation>
 <translation id="539072479502328326">డాక్ చేసిన మాగ్నిఫైయర్‌ను ఆన్ లేదా ఆఫ్ చేస్తుంది</translation>
-<translation id="5541719484267030947">ట్యాబ్‌ని లాగే సమయంలో, <ph name="ESC" />ని నొక్కండి</translation>
+<translation id="5541719484267030947">ట్యాబ్‌ను లాగే సమయంలో, <ph name="ESC" />ని నొక్కండి</translation>
 <translation id="5554139136362089836">ప్రస్తుత పేజీని శోధించండి</translation>
 <translation id="5563050856984839829"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />ను నొక్కి, లింక్‌ను క్లిక్ చేయండి</translation>
 <translation id="561814908794220892">వెబ్‌పేజీని కొత్త ట్యాబ్‌లో తెరవండి</translation>
@@ -178,7 +178,7 @@
 <translation id="8429696719963529183">F కీలు (F1 నుండి F12 వరకు) ఉపయోగించండి</translation>
 <translation id="8537650670971624753">శోధన మోడ్ నుండి నిష్క్రమించు</translation>
 <translation id="85690795166292698">లింక్‌ను కొత్త ట్యాబ్‌లో తెరవండి</translation>
-<translation id="8609384513243082612">కొత్త ట్యాబ్‌ని తెరవండి</translation>
+<translation id="8609384513243082612">కొత్త ట్యాబ్‌ను తెరవండి</translation>
 <translation id="8644639153978066712">దాచబడిన ఫైల్‌లను ఫైల్స్ యాప్ ద్వారా ప్రదర్శించండి</translation>
 <translation id="8717459106217102612">మునుపటి పదం లేదా అక్షరాన్ని ఎంచుకోండి</translation>
 <translation id="8727232706774971183">మీ నోటిఫికేషన్‌లను చూడండి</translation>

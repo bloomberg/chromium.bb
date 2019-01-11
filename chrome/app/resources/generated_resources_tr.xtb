@@ -1379,7 +1379,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">Bu sekme kameranızı ve/veya mikrofonunuzu kullanıyor.</translation>
 <translation id="3083193146044397360">Güvenliğinizi korumak için geçici olarak engellendi</translation>
-<translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Yükleme hedefi</translation>
 <translation id="3084771660770137092">Ya Chrome'da bellek kalmadı ya da web sayfasına ait işlem başka bir nedenden dolayı sonlandırıldı. Devam etmek için yeniden yükleyin veya başka bir sayfaya gidin.</translation>
 <translation id="3085412380278336437">Site, kameranızı kullanabilir</translation>
@@ -2562,6 +2561,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4941246025622441835">Cihazın kurumsal yönetim için kaydını yaparken şu cihaz talebini kullan:</translation>
 <translation id="4941627891654116707">Yazı tipi boyutu</translation>
 <translation id="494286511941020793">Proxy Yapılandırması Yardımı</translation>
+<translation id="495170559598752135">İşlemler</translation>
 <translation id="4953689047182316270">Erişilebilirlikle İlgili Etkinliklere Yanıt Verme</translation>
 <translation id="4953808748584563296">Varsayılan turuncu avatar</translation>
 <translation id="4955710816792587366">PIN'inizi seçin</translation>
@@ -2816,7 +2816,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5331975486040154427">USB-C cihaz (sol arka bağlantı noktası)</translation>
 <translation id="5332624210073556029">Saat dilimi:</translation>
 <translation id="5334142896108694079">Komut Dosyası Önbelleği</translation>
-<translation id="5334899159203764908"><ph name="BEGIN_LINK" />Site erişimi<ph name="END_LINK" /> hakkında daha fazla bilgi edinin</translation>
 <translation id="5335458522276292100"><ph name="FILE_COUNT" /> <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />'a yedekleniyor</translation>
 <translation id="5336126339807372270">Hiçbir sitenin USB cihazlarına erişmesine izin verme</translation>
 <translation id="5337771866151525739">Üçüncü tarafça yüklendi.</translation>
@@ -5058,7 +5057,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8725066075913043281">Yeniden dene</translation>
 <translation id="8725178340343806893">Sık Kullanılanlar/Yer İşaretleri</translation>
 <translation id="8726206820263995930">Sunucudan politika ayarları alınırken hata oluştu: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727344521467137076">Bilgisayarınızda zararlı yazılım var. Chrome bunu kaldırıyor ve tarayıcınızın tekrar normal şekilde çalışması için ayarlarınızı geri yükleyecek.</translation>
 <translation id="8730621377337864115">Bitti</translation>
 <translation id="8732030010853991079">Bu simgeyi tıklayarak bu uzantıyı kullanın.</translation>
 <translation id="8732212173949624846">Oturum açtığınız tüm cihazlarda göz atma geçmişinizi okuma ve değiştirme</translation>
@@ -5250,7 +5248,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="9033857511263905942">&amp;Yapıştır</translation>
 <translation id="9034924485347205037">Linux dosyaları</translation>
 <translation id="9035012421917565900">Öğeler "<ph name="DESTINATION_NAME" />" hedefine geri taşınamaz. Bu nedenle bu işlemi geri alamazsınız.</translation>
-<translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">Orijinali Göster</translation>
 <translation id="9038430547971207796">Bir dahaki sefere telefonunuzu kullanarak <ph name="DEVICE_TYPE" /> cihazınızın kilidini açabilirsiniz. Ayarlar'dan Smart Lock'u kapatın.</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" adlı dosya zaten var. Lütfen farklı bir ad seçin.</translation>

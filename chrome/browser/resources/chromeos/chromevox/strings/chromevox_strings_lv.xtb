@@ -289,48 +289,6 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="3322936298410871309">Iepriekšējais 1. līmeņa virsraksts</translation>
 <translation id="3323447499041942178">Tekstlodziņš</translation>
 <translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> slīdnis</translation>
-<translation id="3353420241558113817">{"ar”: “Arābu”,
-        “bg”: “Bulgāru”,
-        “ca”: “Katalāņu”,
-        “cs”: “Čehu”,
-        “da”: “Dāņu”,
-        “de”: “Vācu”,
-        “de_CH”: “Vācu (Šveice)”,
-        “de_DE”: “Vācu (Vācija)”,
-        “el”: “Grieķu”,
-        “en”: “Angļu”,
-        “en_CA”: “Angļu (Kanāda)”,
-        “en_GB”: “Angļu (Lielbritānija)”,
-        “en_US”: “Angļu (Amerikas Savienotās Valstis)”,
-        “es”: “Spāņu”,
-        “et”: “Igauņu”,
-        “fr”: “Franču”,
-        “fr_CA”: “Franču (Kanāda)”,
-        “fr_FR”: “Franču (Francija)”,
-        “fi”: “Somu”,
-        “he”: “Ivrits”,
-        “hi”: “Hindi”,
-        “hr”: “Horvātu”,
-        “hu”: “Ungāru”,
-        “is”: “Īslandiešu”,
-        “it”: “Itāļu”,
-        “ko”: “Korejiešu”,
-        “lt”: “Lietuviešu”,
-        “lv”: “Latviešu”,
-        “nb”: “Norvēģu bukmols”,
-        “nl”: “Holandiešu”,
-        “pl”: “Poļu”,
-        “pt”: “Portugāļu”,
-        “ro”: “Rumāņu”,
-        “ru”: “Krievu”,
-        “sk”: “Slovāku”,
-        “sl”: “Slovēņu”,
-        “sr”: “Serbu”,
-        “sv”: “Zviedru”,
-        “tr”: “Turku”,
-        “vi”: “Vjetnamiešu”,
-        “zh”: “Ķīniešu”,
-        “zh_TW”: “Ķīniešu (hanu tradicionālā)”}</translation>
 <translation id="335581015389089642">Runa</translation>
 <translation id="3359142382821736686">atdalītājs</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{pluszīme}zero{# pluszīmju}one{# pluszīme}other{# pluszīmes}}</translation>
@@ -706,6 +664,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="6387719785439924554">malā novietots saturs</translation>
 <translation id="6411426777058107714">Iepriekš nav nevienas radiopogas.</translation>
 <translation id="6414968628640960377">Iepriekšējais atšķirīgais elements.</translation>
+<translation id="6417265370957905582">Google asistents</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{kols}zero{# kolu}one{# kols}other{# koli}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, izvēlne</translation>
 <translation id="6444046323172968959">Brīdinājuma dialoglodziņš</translation>

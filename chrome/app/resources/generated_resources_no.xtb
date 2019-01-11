@@ -1375,7 +1375,6 @@
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">Denne fanen bruker kameraet eller mikrofonen.</translation>
 <translation id="3083193146044397360">Midlertidig blokkert for å ivareta sikkerheten din</translation>
-<translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Slipp for å installere</translation>
 <translation id="3084771660770137092">Chrome gikk tom for minne, eller prosessen for nettsiden ble avsluttet av andre årsaker. Hvis du vil fortsette, laster du inn siden på nytt, eller går til en annen side.</translation>
 <translation id="3085412380278336437">Nettstedet kan bruke kameraet ditt</translation>
@@ -2555,6 +2554,7 @@
 <translation id="4941246025622441835">Bruk denne enhetsrekvisisjonen når du registrerer enheten for bedriftsadministrering.</translation>
 <translation id="4941627891654116707">Skriftstørrelse</translation>
 <translation id="494286511941020793">Hjelp for konfigurering av mellomtjenere</translation>
+<translation id="495170559598752135">Handlinger</translation>
 <translation id="4953689047182316270">Svar på tilgjengelighetshendelser</translation>
 <translation id="4953808748584563296">Oransje standardbrukerbilde</translation>
 <translation id="4955710816792587366">Velg PIN-koden din</translation>
@@ -2809,7 +2809,6 @@
 <translation id="5331975486040154427">USB-C-enhet (porten bak på venstre side)</translation>
 <translation id="5332624210073556029">Tidssone:</translation>
 <translation id="5334142896108694079">Skriptbuffer</translation>
-<translation id="5334899159203764908">Finn ut mer om <ph name="BEGIN_LINK" />nettstedstilgang<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Sikkerhetskopierer <ph name="FILE_COUNT" /> til <ph name="BEGIN_LINK" />Google Disk<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">Ikke gi noen nettsteder tilgang til USB-enheter</translation>
 <translation id="5337771866151525739">Installert av en tredjepart.</translation>
@@ -5049,7 +5048,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8725066075913043281">Prøv igjen</translation>
 <translation id="8725178340343806893">Favoritter/bokmerker</translation>
 <translation id="8726206820263995930">Feil under henting av innstillingsangivelser fra tjeneren: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727344521467137076">Det finnes skadelig programvare på datamaskinen du bruker. Chrome fjerner den og gjenoppretter innstillingene dine, sånn at nettleseren fungerer normalt igjen.</translation>
 <translation id="8730621377337864115">Ferdig</translation>
 <translation id="8732030010853991079">Bruk denne utvidelsen ved å klikke på dette ikonet.</translation>
 <translation id="8732212173949624846">lese og endre nettleserloggen på alle enhetene du er pålogget</translation>
@@ -5241,7 +5239,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9033857511263905942">&amp;Lim inn</translation>
 <translation id="9034924485347205037">Linux-filer</translation>
 <translation id="9035012421917565900">Disse elementene kan ikke flyttes tilbake til «<ph name="DESTINATION_NAME" />», så du kan ikke angre denne handlingen.</translation>
-<translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">Vis original</translation>
 <translation id="9038430547971207796">Neste gang låser telefonen opp denne <ph name="DEVICE_TYPE" />-enheten. Du kan slå av Smart Lock i innstillingene.</translation>
 <translation id="9038620279323455325">Filnavnet «<ph name="FILE_NAME" />» finnes allerede. Velg et annet navn.</translation>

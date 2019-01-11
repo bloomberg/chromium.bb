@@ -12,7 +12,6 @@
 <translation id="1055184225775184556">&amp;Hozzáadás visszavonása</translation>
 <translation id="1058479211578257048">Kártyák mentése…</translation>
 <translation id="10614374240317010">Az alábbi oldalakról soha ne mentsen jelszavakat</translation>
-<translation id="1066396345355680611">Elveszítheti hozzáférését a(z) <ph name="SITE" /> és más webhelyek védett tartalmaihoz.</translation>
 <translation id="106701514854093668">Asztali könyvjelzők</translation>
 <translation id="1074497978438210769">Nem biztonságos</translation>
 <translation id="1080116354587839789">Szélességhez igazítás</translation>
@@ -459,7 +458,6 @@
 <translation id="3901925938762663762">A kártya lejárt</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3946209740501886391">Mindig kérdezze meg ezen a webhelyen</translation>
-<translation id="3947577358805392297">Oldal mentése későbbre</translation>
 <translation id="3949571496842715403">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványában nincs meghatározva a „Subject Alternative Names” mező. Ezt okozhatja konfigurációs hiba, vagy az, hogy egy támadó eltérítette az Ön kapcsolatát.</translation>
 <translation id="3949601375789751990">A böngészési előzmények itt jelennek meg</translation>
 <translation id="3950820424414687140">Bejelentkezés</translation>
@@ -625,7 +623,6 @@
 <translation id="5045550434625856497">Helytelen jelszó</translation>
 <translation id="5056549851600133418">Cikkek Önnek</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />A proxy címének ellenőrzése<ph name="END_LINK" /></translation>
-<translation id="5086888986931078152">Elveszítheti hozzáférését egyes webhelyek védett tartalmaihoz.</translation>
 <translation id="5087286274860437796">A szerver tanúsítványa jelenleg nem érvényes.</translation>
 <translation id="5087580092889165836">Kártya hozzáadása</translation>
 <translation id="5089810972385038852">Állam</translation>
@@ -753,7 +750,6 @@
 <translation id="5939518447894949180">Visszaállítás</translation>
 <translation id="5946937721014915347">A(z) <ph name="SITE_NAME" /> megnyitása…</translation>
 <translation id="5951495562196540101">Fogyasztói fiókkal nem lehet regisztrálni (a csomaghoz tartozik licenc is).</translation>
-<translation id="5966151627327109289">A rendszer a legtöbb webhelyről kijelentkezteti Önt. Elveszítheti hozzáférését a(z) <ph name="SITE" /> és más webhelyek védett tartalmaihoz.</translation>
 <translation id="5967592137238574583">Kapcsolattartási adatok szerkesztése</translation>
 <translation id="5967867314010545767">Eltávolítás az előzmények közül</translation>
 <translation id="5975083100439434680">Kicsinyítés</translation>
@@ -776,7 +772,6 @@
 <translation id="6059925163896151826">USB-eszközök</translation>
 <translation id="6071091556643036997">A házirend típusa érvénytelen.</translation>
 <translation id="6080696365213338172">A tartalmat egy rendszergazda által biztosított tanúsítványon keresztül érte el. A(z) <ph name="DOMAIN" /> számára megadott adatok a rendszergazda számára is elérhetők.</translation>
-<translation id="6096619198407627433">A rendszer a legtöbb webhelyről kijelentkezteti Önt, de Google-fiókjából nem. Elveszítheti hozzáférését a(z) <ph name="SITE" /> és más webhelyek védett tartalmaihoz.</translation>
 <translation id="610911394827799129">Előfordulhat, hogy a böngészési előzmények más formái még megtalálhatók Google-fiókjában a <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> webhelyen</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Nincs}=1{1 jelszó (szinkronizálva)}other{# jelszó (szinkronizálva)}}</translation>
 <translation id="6146055958333702838">Ellenőrizze a kábeleket, majd indítsa újra a routert, modemet vagy más
@@ -960,7 +955,6 @@ További részletek:
 <translation id="7444046173054089907">Ez a webhely le van tiltva</translation>
 <translation id="7445762425076701745">Nem sikerült teljesen ellenőrizni a szerver azonosságát, amelyhez kapcsolódik. Egy olyan névvel kapcsolódik a szerverhez, amelynek tulajdonjogát egy külső tanúsítványkibocsátó nem ellenőrizheti. Mivel egyes tanúsítványkibocsátók figyelmen kívül hagyják ezeket a neveket, így semmi nem biztosítja, hogy a kívánt webhelyhez kapcsolódik, és nem egy támadó webhelyhez.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />További információk megtekintése<ph name="END_LINK" /> a problémával kapcsolatban.</translation>
-<translation id="7453467225369441013">A rendszer a legtöbb webhelyről kijelentkezteti Önt, de Google-fiókjából nem.</translation>
 <translation id="7455133967321480974">Globális alapértelmezés használata (Tiltás)</translation>
 <translation id="7460618730930299168">Az előzetes vetítés eltér az Ön által kijelölttől.  Folytatja?</translation>
 <translation id="7473891865547856676">Nem, köszönöm</translation>
@@ -1144,7 +1138,6 @@ További részletek:
 <translation id="860043288473659153">Kártyatulajdonos neve</translation>
 <translation id="8620436878122366504">A szüleid még nem hagyták jóvá</translation>
 <translation id="8625384913736129811">Kártya mentése az eszközre</translation>
-<translation id="8662811608048051533">A rendszer a legtöbb webhelyről kijelentkezteti Önt.</translation>
 <translation id="8663226718884576429">Rendelés-összefoglaló, <ph name="TOTAL_LABEL" />, További részletek</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />. A válasz: <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">A kapcsolat (<ph name="DOMAIN" />) nem titkosított.</translation>

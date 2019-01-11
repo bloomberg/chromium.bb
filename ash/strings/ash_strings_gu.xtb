@@ -196,6 +196,7 @@
 <translation id="4072264167173457037">મધ્યમ સિગ્નલ</translation>
 <translation id="4146833061457621061">મ્યુઝિક વગાડો</translation>
 <translation id="4181841719683918333">ભાષાઓ</translation>
+<translation id="4195877955194704651">ઑટોમૅટિક ક્લિક બટન</translation>
 <translation id="4217571870635786043">ડિક્ટેશન</translation>
 <translation id="4261870227682513959">નોટિફિકેશન સેટિંગ બતાવો. નોટિફિકેશન બંધ છે</translation>
 <translation id="4269883910223712419">આ ઉપકરણના વ્યવસ્થાપકની ક્ષમતા:</translation>
@@ -372,6 +373,7 @@
 <translation id="7348093485538360975">ઑન-સ્ક્રીન કીબોર્ડ</translation>
 <translation id="735745346212279324">VPN ડિસ્કનેક્ટ કર્યું છે</translation>
 <translation id="7377169924702866686">Caps Lock ચાલુ છે.</translation>
+<translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> સેકન્ડ</translation>
 <translation id="7398254312354928459">સ્વિચ કરેલ નેટવર્ક કનેક્શન</translation>
 <translation id="742594950370306541">કૅમેરો ઉપયોગમાં છે.</translation>
 <translation id="743058460480092004">કૅમેરો અને માઇક્રોફોન ઉપયોગમાં છે.</translation>
@@ -473,6 +475,7 @@
 <translation id="8874184842967597500">કનેક્ટેડ નથી</translation>
 <translation id="8877788021141246043">રિમાઇન્ડર સેટ કરો</translation>
 <translation id="8878886163241303700">સ્ક્રીનને વિસ્તૃત કરી રહ્યું છે</translation>
+<translation id="890616557918890486">સ્રોત બદલો</translation>
 <translation id="8921624153894383499">Google સહાયક આ ભાષા બોલતું નથી.</translation>
 <translation id="8938800817013097409">USB-C ડિવાઇસ (પાછળની બાજુએ જમણું પોર્ટ)</translation>
 <translation id="8940956008527784070">બૅટરી ઓછી (<ph name="PERCENTAGE" />%)</translation>

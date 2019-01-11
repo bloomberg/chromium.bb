@@ -12,7 +12,6 @@
 <translation id="1055184225775184556">&amp;Deshacer acción de añadir</translation>
 <translation id="1058479211578257048">Guardando tarjetas…</translation>
 <translation id="10614374240317010">Contraseñas que nunca se guardan</translation>
-<translation id="1066396345355680611">Es posible que dejes de tener acceso al contenido protegido de <ph name="SITE" /> y a otros sitios web.</translation>
 <translation id="106701514854093668">Marcadores del ordenador</translation>
 <translation id="1074497978438210769">No es seguro</translation>
 <translation id="1080116354587839789">Se ajusta al ancho</translation>
@@ -461,7 +460,6 @@
 <translation id="3901925938762663762">La tarjeta ha caducado</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3946209740501886391">Preguntar siempre en este sitio web</translation>
-<translation id="3947577358805392297">Guardar página para más tarde</translation>
 <translation id="3949571496842715403">Este servidor no ha podido demostrar que es <ph name="DOMAIN" />; su certificado de seguridad no especifica nombres alternativos del sujeto. Este problema puede deberse a una configuración incorrecta o a que un atacante ha interceptado la conexión.</translation>
 <translation id="3949601375789751990">Tu historial de navegación aparece aquí</translation>
 <translation id="3950820424414687140">Iniciar sesión</translation>
@@ -627,7 +625,6 @@
 <translation id="5045550434625856497">Contraseña incorrecta</translation>
 <translation id="5056549851600133418">Artículos recomendados para ti</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Comprobar la dirección del proxy<ph name="END_LINK" /></translation>
-<translation id="5086888986931078152">Es posible que dejes de tener acceso al contenido protegido de algunos sitios web.</translation>
 <translation id="5087286274860437796">El certificado del servidor no es válido en este momento.</translation>
 <translation id="5087580092889165836">Añadir tarjeta</translation>
 <translation id="5089810972385038852">Estado/provincia</translation>
@@ -755,7 +752,6 @@
 <translation id="5939518447894949180">Restablecer</translation>
 <translation id="5946937721014915347">Abriendo <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">No te puedes registrar con una cuenta de consumidor (hay una licencia asociada disponible).</translation>
-<translation id="5966151627327109289">Se cerrará la sesión de la mayoría de los sitios web. Es posible que dejes de tener acceso al contenido protegido de <ph name="SITE" /> y otros sitios web.</translation>
 <translation id="5967592137238574583">Edita la información de contacto</translation>
 <translation id="5967867314010545767">Eliminar del historial</translation>
 <translation id="5975083100439434680">Reducir</translation>
@@ -778,7 +774,6 @@
 <translation id="6059925163896151826">Dispositivos USB</translation>
 <translation id="6071091556643036997">El tipo de política no es válido.</translation>
 <translation id="6080696365213338172">Has accedido al contenido mediante un certificado proporcionado por el administrador. Los datos que proporciones a <ph name="DOMAIN" /> pueden ser interceptados por tu administrador.</translation>
-<translation id="6096619198407627433">Se cerrará la sesión de la mayoría de los sitios web, pero no la de tu cuenta de Google. Es posible que dejes de tener acceso al contenido protegido de <ph name="SITE" /> y otros sitios web.</translation>
 <translation id="610911394827799129">Es posible que tu cuenta de Google tenga otros tipos de historial de navegación en la página <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Ninguna}=1{1 contraseña (sincronizada)}other{# contraseñas (sincronizadas)}}</translation>
 <translation id="6146055958333702838">Comprueba los cables y reinicia los routers, los módems o cualquier otro dispositivo
@@ -962,7 +957,6 @@ Más información:
 <translation id="7444046173054089907">Este sitio web se ha bloqueado</translation>
 <translation id="7445762425076701745">La identidad del servidor al que estás conectado no se puede validar por completo. Estás conectado a un servidor con un nombre que solo es válido en tu red y cuya propiedad no puede validar en modo alguno una entidad emisora de certificados externa. A pesar de ello, algunas entidades emisoras emiten certificados para esos nombres, por lo que no es posible garantizar que estés conectado al sitio web deseado, en lugar de a un atacante.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Consultar más información<ph name="END_LINK" /> sobre este problema</translation>
-<translation id="7453467225369441013">Cierra tu sesión en la mayoría de los sitios web. No se cerrará la sesión en tu cuenta de Google.</translation>
 <translation id="7455133967321480974">Utilizar valor predeterminado global (Bloquear)</translation>
 <translation id="7460618730930299168">El filtro es distinto al que has seleccionado. ¿Quieres continuar?</translation>
 <translation id="7473891865547856676">No, gracias</translation>
@@ -1145,7 +1139,6 @@ Más información:
 <translation id="860043288473659153">Nombre del titular de la tarjeta</translation>
 <translation id="8620436878122366504">Tus padres aún no lo han aprobado</translation>
 <translation id="8625384913736129811">Guardar esta tarjeta en el dispositivo</translation>
-<translation id="8662811608048051533">Cierra tu sesión en la mayoría de los sitios web.</translation>
 <translation id="8663226718884576429">Resumen del pedido: <ph name="TOTAL_LABEL" /> (más detalles)</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, respuesta: <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Tu conexión a <ph name="DOMAIN" /> no está cifrada.</translation>
