@@ -21,6 +21,8 @@ void AnalyzeZipFile(base::File zip_file,
                     base::File temp_file,
                     ArchiveAnalyzerResults* results);
 
+int CountLocalFileHeaders(base::File* zip_file);
+
 }  // namespace zip_analyzer
 }  // namespace safe_browsing
 
