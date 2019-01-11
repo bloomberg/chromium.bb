@@ -136,7 +136,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
       const override;
   int64_t ServiceWorkerID() const override;
 
-  bool IsMainFrame() const override;
   bool DefersLoading() const override;
   bool IsLoadComplete() const override;
 

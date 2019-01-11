@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_resource_client.h"
+#include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
@@ -352,9 +353,10 @@ void TestThatIsNotPlaceholderRequestAndServeResponse(
 }
 
 ResourceFetcher* CreateFetcher() {
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
   return MakeGarbageCollected<ResourceFetcher>(
-      MakeGarbageCollected<MockFetchContext>(
-          MockFetchContext::kShouldLoadNewResource));
+      *properties, MakeGarbageCollected<MockFetchContext>(
+                       MockFetchContext::kShouldLoadNewResource));
 }
 
 TEST(ImageResourceTest, MultipartImage) {
@@ -1867,8 +1869,9 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   MockFetchContext* context = MakeGarbageCollected<MockFetchContext>(
       MockFetchContext::LoadPolicy::kShouldLoadNewResource,
       page_holder->GetFrame().GetTaskRunner(TaskType::kInternalTest));
-  ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(context);
-  ResourceLoadScheduler* scheduler = ResourceLoadScheduler::Create();
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(*properties, context);
+  ResourceLoadScheduler* scheduler = ResourceLoadScheduler::Create(context);
   ImageResource* image_resource = ImageResource::CreateForTest(test_url);
 
   // Ensure that |image_resource| has a loader.

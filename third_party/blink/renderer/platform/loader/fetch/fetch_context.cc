@@ -32,6 +32,7 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/platform_probe_sink.h"
 #include "third_party/blink/renderer/platform/probe/platform_trace_events_agent.h"
 
@@ -84,6 +85,11 @@ void FetchContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(platform_probe_sink_);
   visitor->Trace(fetch_client_settings_object_);
   visitor->Trace(fetcher_);
+}
+
+const ResourceFetcherProperties& FetchContext::GetResourceFetcherProperties()
+    const {
+  return fetcher_->GetProperties();
 }
 
 void FetchContext::DispatchDidChangeResourcePriority(unsigned long,
@@ -145,6 +151,10 @@ void FetchContext::DidLoadResource(Resource*) {}
 void FetchContext::DidObserveLoadingBehavior(WebLoadingBehaviorFlag) {}
 
 void FetchContext::AddResourceTiming(const ResourceTimingInfo&) {}
+
+bool FetchContext::IsMainFrame() const {
+  return GetResourceFetcherProperties().IsMainFrame();
+}
 
 const SecurityOrigin* FetchContext::GetSecurityOrigin() const {
   return GetFetchClientSettingsObject()->GetSecurityOrigin();

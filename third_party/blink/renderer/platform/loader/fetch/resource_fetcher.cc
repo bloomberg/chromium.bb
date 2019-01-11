@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
@@ -365,15 +366,55 @@ mojom::RequestContextType ResourceFetcher::DetermineRequestContext(
   return mojom::RequestContextType::SUBRESOURCE;
 }
 
-ResourceFetcher::ResourceFetcher(FetchContext* new_context)
-    : ResourceFetcher(new_context, MakeGarbageCollected<NullConsoleLogger>()) {}
+// A delegating ResourceFetcherProperties subclass which can be from the
+// original ResourceFetcherProperties.
+class ResourceFetcher::DetachableProperties final
+    : public ResourceFetcherProperties {
+ public:
+  explicit DetachableProperties(const ResourceFetcherProperties& properties)
+      : properties_(properties) {}
+  ~DetachableProperties() override = default;
 
-ResourceFetcher::ResourceFetcher(FetchContext* new_context,
+  void Detach() {
+    if (!properties_) {
+      // Already detached.
+      return;
+    }
+
+    is_main_frame_ = properties_->IsMainFrame();
+
+    properties_ = nullptr;
+  }
+
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(properties_);
+    ResourceFetcherProperties::Trace(visitor);
+  }
+
+  bool IsMainFrame() const override {
+    return properties_ ? properties_->IsMainFrame() : is_main_frame_;
+  }
+
+ private:
+  // |properties_| is null if and only if detached.
+  Member<const ResourceFetcherProperties> properties_;
+
+  // The following members are used when detached.
+  bool is_main_frame_ = false;
+};
+
+ResourceFetcher::ResourceFetcher(const ResourceFetcherProperties& properties,
+                                 FetchContext* new_context)
+    : ResourceFetcher(properties,
+                      new_context,
+                      MakeGarbageCollected<NullConsoleLogger>()) {}
+
+ResourceFetcher::ResourceFetcher(const ResourceFetcherProperties& properties,
+                                 FetchContext* new_context,
                                  ConsoleLogger* console_logger)
-    : context_(new_context),
+    : properties_(*MakeGarbageCollected<DetachableProperties>(properties)),
+      context_(new_context),
       console_logger_(console_logger),
-      scheduler_(ResourceLoadScheduler::Create(&Context())),
-      archive_(Context().IsMainFrame() ? nullptr : Context().Archive()),
       resource_timing_report_timer_(
           Context().GetLoadingTaskRunner(),
           this,
@@ -388,10 +429,16 @@ ResourceFetcher::ResourceFetcher(FetchContext* new_context,
   if (IsMainThread())
     MainThreadFetchersSet().insert(this);
   context_->Bind(this);
+  archive_ = properties_->IsMainFrame() ? nullptr : Context().Archive();
+  scheduler_ = ResourceLoadScheduler::Create(&Context());
 }
 
 ResourceFetcher::~ResourceFetcher() {
   InstanceCounters::DecrementCounter(InstanceCounters::kResourceFetcherCounter);
+}
+
+const ResourceFetcherProperties& ResourceFetcher::GetProperties() const {
+  return *properties_;
 }
 
 Resource* ResourceFetcher::CachedResource(const KURL& resource_url) const {
@@ -1443,9 +1490,21 @@ FetchContext& ResourceFetcher::Context() const {
 void ResourceFetcher::ClearContext() {
   scheduler_->Shutdown();
   ClearPreloads(ResourceFetcher::kClearAllPreloads);
-  context_->Unbind();
-  context_ = Context().Detach();
-  context_->Bind(this);
+
+  {
+    // This block used to be
+    //  context_ = Context().Detach();
+    // While we are splitting FetchContext to multiple classes we need to call
+    // "detach" for multiple objects in a coordinated manner. See
+    // https://crbug.com/914739 for the progress.
+    // TODO(yhirano): Remove the cross-class dependency.
+    auto* context = context_.Get();
+    context_ = Context().Detach();
+    context->Unbind();
+    properties_->Detach();
+    context_->Bind(this);
+  }
+
   console_logger_ = MakeGarbageCollected<NullConsoleLogger>();
 
   // Make sure the only requests still going are keepalive requests.
@@ -1928,6 +1987,7 @@ void ResourceFetcher::RevalidateStaleResource(Resource* stale_resource) {
 
 void ResourceFetcher::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);
+  visitor->Trace(properties_);
   visitor->Trace(console_logger_);
   visitor->Trace(scheduler_);
   visitor->Trace(archive_);

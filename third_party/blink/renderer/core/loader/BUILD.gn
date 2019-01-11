@@ -33,6 +33,8 @@ blink_core_sources("loader") {
     "frame_loader_state_machine.cc",
     "frame_loader_state_machine.h",
     "frame_loader_types.h",
+    "frame_resource_fetcher_properties.cc",
+    "frame_resource_fetcher_properties.h",
     "history_item.cc",
     "history_item.h",
     "http_equiv.cc",
@@ -133,6 +135,7 @@ blink_core_sources("loader") {
     "threadable_loader_client.h",
     "worker_fetch_context.cc",
     "worker_fetch_context.h",
+    "worker_resource_fetcher_properties.h",
   ]
 
   public_deps = [

@@ -272,6 +272,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/frame_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/language.h"
+#include "third_party/blink/renderer/platform/loader/fetch/null_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
@@ -722,6 +723,7 @@ Document::Document(const DocumentInit& initializer,
     fetcher_ = FrameFetchContext::CreateFetcherForImportedDocument(this);
   } else {
     fetcher_ = MakeGarbageCollected<ResourceFetcher>(
+        *MakeGarbageCollected<NullResourceFetcherProperties>(),
         &FetchContext::NullInstance(GetTaskRunner(TaskType::kNetworking)));
   }
   DCHECK(fetcher_);

@@ -67,6 +67,7 @@ class KURL;
 class MHTMLArchive;
 class PlatformProbeSink;
 class ResourceError;
+class ResourceFetcherProperties;
 class ResourceResponse;
 class ResourceTimingInfo;
 enum class ResourceType : uint8_t;
@@ -104,6 +105,7 @@ class PLATFORM_EXPORT FetchContext
 
   virtual void AddAdditionalRequestHeaders(ResourceRequest&, FetchResourceType);
 
+  const ResourceFetcherProperties& GetResourceFetcherProperties() const;
   const FetchClientSettingsObject* GetFetchClientSettingsObject() const;
 
   // Returns the cache policy for the resource. ResourceRequest is not passed as
@@ -197,7 +199,7 @@ class PLATFORM_EXPORT FetchContext
   }
   virtual int64_t ServiceWorkerID() const { return -1; }
 
-  virtual bool IsMainFrame() const { return true; }
+  bool IsMainFrame() const;
   virtual bool DefersLoading() const { return false; }
   virtual bool IsLoadComplete() const { return false; }
 

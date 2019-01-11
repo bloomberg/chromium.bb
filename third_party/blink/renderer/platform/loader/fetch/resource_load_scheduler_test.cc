@@ -7,7 +7,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
+#include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
@@ -61,9 +63,11 @@ class ResourceLoadSchedulerTest : public testing::Test {
   using ThrottleOption = ResourceLoadScheduler::ThrottleOption;
   void SetUp() override {
     DCHECK(RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled());
-    scheduler_ =
-        ResourceLoadScheduler::Create(MakeGarbageCollected<MockFetchContext>(
-            MockFetchContext::kShouldNotLoadNewResource));
+    auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+    auto* context = MakeGarbageCollected<MockFetchContext>(
+        MockFetchContext::kShouldNotLoadNewResource);
+    MakeGarbageCollected<ResourceFetcher>(*properties, context);
+    scheduler_ = ResourceLoadScheduler::Create(context);
     Scheduler()->SetOutstandingLimitForTesting(1);
   }
   void TearDown() override { Scheduler()->Shutdown(); }
