@@ -32,8 +32,8 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/lazy_context_id.h"
+#include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager_delegate.h"
 #include "extensions/browser/process_manager_factory.h"
@@ -432,10 +432,9 @@ bool ProcessManager::WakeEventPage(const std::string& extension_id,
     // The extension is already awake.
     return false;
   }
-  LazyBackgroundTaskQueue* queue =
-      LazyBackgroundTaskQueue::Get(browser_context_);
-  queue->AddPendingTask(
-      LazyContextId(browser_context_, extension_id),
+  const LazyContextId context_id(browser_context_, extension_id);
+  context_id.GetTaskQueue()->AddPendingTask(
+      context_id,
       base::BindOnce(&PropagateExtensionWakeResult, std::move(callback)));
   return true;
 }

@@ -37,8 +37,8 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
-#include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/lazy_context_id.h"
+#include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/url_pattern.h"
@@ -350,14 +350,14 @@ void FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread(
                                      handler_pid, nullptr);
   } else {
     // We have to wake the handler background page before we proceed.
-    extensions::LazyBackgroundTaskQueue* queue =
-        extensions::LazyBackgroundTaskQueue::Get(profile_);
+    const extensions::LazyContextId context_id(profile_, extension_->id());
+    extensions::LazyContextTaskQueue* queue = context_id.GetTaskQueue();
     if (!queue->ShouldEnqueueTask(profile_, extension_.get())) {
       ExecuteDoneOnUIThread(false);
       return;
     }
     queue->AddPendingTask(
-        extensions::LazyContextId(profile_, extension_->id()),
+        context_id,
         base::BindOnce(
             &FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent,
             weak_ptr_factory_.GetWeakPtr(),

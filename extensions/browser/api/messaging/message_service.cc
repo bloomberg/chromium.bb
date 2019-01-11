@@ -38,8 +38,6 @@
 #include "extensions/browser/extension_web_contents_observer.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
-#include "extensions/browser/lazy_background_task_queue.h"
-#include "extensions/browser/lazy_context_id.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -162,7 +160,6 @@ static content::RenderProcessHost* GetExtensionProcess(
 
 MessageService::MessageService(BrowserContext* context)
     : messaging_delegate_(ExtensionsAPIClient::Get()->GetMessagingDelegate()),
-      lazy_background_task_queue_(LazyBackgroundTaskQueue::Get(context)),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(nullptr, messaging_delegate_);
@@ -635,9 +632,10 @@ void MessageService::ClosePortImpl(const PortId& port_id,
   if (it == channels_.end()) {
     auto pending = pending_lazy_background_page_channels_.find(channel_id);
     if (pending != pending_lazy_background_page_channels_.end()) {
-      lazy_background_task_queue_->AddPendingTask(
-          LazyContextId(pending->second.browser_context(),
-                        pending->second.extension_id()),
+      const LazyContextId context_id(pending->second.browser_context(),
+                                     pending->second.extension_id());
+      context_id.GetTaskQueue()->AddPendingTask(
+          context_id,
           base::BindOnce(&MessageService::PendingLazyBackgroundPageClosePort,
                          weak_factory_.GetWeakPtr(), port_id, process_id,
                          routing_id, force_close, error_message));
@@ -736,9 +734,10 @@ void MessageService::EnqueuePendingMessageForLazyBackgroundLoad(
 
   auto pending = pending_lazy_background_page_channels_.find(channel_id);
   if (pending != pending_lazy_background_page_channels_.end()) {
-    lazy_background_task_queue_->AddPendingTask(
-        LazyContextId(pending->second.browser_context(),
-                      pending->second.extension_id()),
+    const LazyContextId context_id(pending->second.browser_context(),
+                                   pending->second.extension_id());
+    context_id.GetTaskQueue()->AddPendingTask(
+        context_id,
         base::BindOnce(&MessageService::PendingLazyBackgroundPagePostMessage,
                        weak_factory_.GetWeakPtr(), source_port_id, message));
   }
@@ -772,15 +771,17 @@ bool MessageService::MaybeAddPendingLazyBackgroundPageOpenChannelTask(
   if (!IncognitoInfo::IsSplitMode(extension))
     context = ExtensionsBrowserClient::Get()->GetOriginalContext(context);
 
-  if (!lazy_background_task_queue_->ShouldEnqueueTask(context, extension))
+  const LazyContextId context_id(context, extension->id());
+  LazyContextTaskQueue* task_queue = context_id.GetTaskQueue();
+  if (!task_queue->ShouldEnqueueTask(context, extension))
     return false;
 
   ChannelId channel_id = (*params)->receiver_port_id.GetChannelId();
   pending_lazy_background_page_channels_.insert(std::make_pair(
       channel_id, PendingLazyBackgroundPageChannel(context, extension->id())));
   int source_id = (*params)->source_process_id;
-  lazy_background_task_queue_->AddPendingTask(
-      LazyContextId(context, extension->id()),
+  task_queue->AddPendingTask(
+      context_id,
       base::BindOnce(&MessageService::PendingLazyBackgroundPageOpenChannel,
                      weak_factory_.GetWeakPtr(), base::Passed(params),
                      source_id));

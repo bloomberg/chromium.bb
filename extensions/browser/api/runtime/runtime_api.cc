@@ -31,8 +31,8 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/lazy_context_id.h"
+#include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/common/api/runtime.h"
 #include "extensions/common/error_utils.h"
@@ -104,7 +104,7 @@ void DispatchOnStartupEventImpl(
     const std::string& extension_id,
     bool first_call,
     std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info) {
-  // A NULL ContextInfo from the LazyBackgroundTaskQueue means the page failed
+  // A NULL ContextInfo from the task callback means the page failed
   // to load. Give up.
   if (!context_info && !first_call)
     return;
@@ -127,14 +127,15 @@ void DispatchOnStartupEventImpl(
       ExtensionRegistry::Get(browser_context)->enabled_extensions().GetByID(
           extension_id);
   if (extension && BackgroundInfo::HasPersistentBackgroundPage(extension) &&
-      first_call &&
-      LazyBackgroundTaskQueue::Get(browser_context)
-          ->ShouldEnqueueTask(browser_context, extension)) {
-    LazyBackgroundTaskQueue::Get(browser_context)
-        ->AddPendingTask(LazyContextId(browser_context, extension_id),
-                         base::BindOnce(&DispatchOnStartupEventImpl,
-                                        browser_context, extension_id, false));
-    return;
+      first_call) {
+    const LazyContextId context_id(browser_context, extension_id);
+    LazyContextTaskQueue* task_queue = context_id.GetTaskQueue();
+    if (task_queue->ShouldEnqueueTask(browser_context, extension)) {
+      task_queue->AddPendingTask(
+          context_id, base::BindOnce(&DispatchOnStartupEventImpl,
+                                     browser_context, extension_id, false));
+      return;
+    }
   }
 
   std::unique_ptr<base::ListValue> event_args(new base::ListValue());
@@ -596,13 +597,12 @@ void RuntimeAPI::OnExtensionInstalledAndLoaded(
 ExtensionFunction::ResponseAction RuntimeGetBackgroundPageFunction::Run() {
   ExtensionHost* host = ProcessManager::Get(browser_context())
                             ->GetBackgroundHostForExtension(extension_id());
-  if (LazyBackgroundTaskQueue::Get(browser_context())
-          ->ShouldEnqueueTask(browser_context(), extension())) {
-    LazyBackgroundTaskQueue::Get(browser_context())
-        ->AddPendingTask(
-            LazyContextId(browser_context(), extension_id()),
-            base::BindOnce(&RuntimeGetBackgroundPageFunction::OnPageLoaded,
-                           this));
+  const LazyContextId context_id(browser_context(), extension_id());
+  LazyContextTaskQueue* task_queue = context_id.GetTaskQueue();
+  if (task_queue->ShouldEnqueueTask(browser_context(), extension())) {
+    task_queue->AddPendingTask(
+        context_id,
+        base::BindOnce(&RuntimeGetBackgroundPageFunction::OnPageLoaded, this));
   } else if (host) {
     OnPageLoaded(std::make_unique<LazyContextTaskQueue::ContextInfo>(host));
   } else {
