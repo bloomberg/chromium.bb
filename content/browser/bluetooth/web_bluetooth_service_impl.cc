@@ -12,6 +12,7 @@
 
 #include <algorithm>
 
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/bluetooth/bluetooth_blocklist.h"
@@ -258,8 +259,58 @@ bool WebBluetoothServiceImpl::ScanningClient::SendEvent(
   if (disconnected_)
     return false;
 
-  // TODO(dougt): filter out devices the client is not interested in.
-  client_->ScanEvent(std::move(result));
+  if (options_->accept_all_advertisements) {
+    client_->ScanEvent(std::move(result));
+    return true;
+  }
+
+  DCHECK(options_->filters.has_value());
+
+  // For every filter, we're going to check to see if a |name|, |name_prefix|,
+  // or |services| have been set. If one of these is set, we will check the
+  // scan result to see if it matches the filter's value.  If it doesn't, we'll
+  // just continue with the next filter. If all of the properties in a filter
+  // have a match, we can post the ScanEvent.  Otherwise, we are going to drop
+  // it.  This logic can be reduced a bit, but I think clarity will decrease.
+
+  for (auto& filter : options_->filters.value()) {
+    // Check to see if there is a direct match against the advertisement name
+    if (filter->name.has_value()) {
+      if (!result->name.has_value())
+        continue;
+
+      if (filter->name.value() != result->name.value())
+        continue;
+    }
+
+    // Check if there is a name prefix match
+    if (filter->name_prefix.has_value()) {
+      if (!result->name.has_value())
+        continue;
+
+      if (!base::StartsWith(result->name.value(), filter->name_prefix.value(),
+                            base::CompareCase::SENSITIVE)) {
+        continue;
+      }
+    }
+    // Check to see if there is a service uuid match
+    if (filter->services.has_value()) {
+      bool found_uuid_match = false;
+      for (auto& filter_uuid : filter->services.value()) {
+        found_uuid_match = base::ContainsValue(result->uuids, filter_uuid);
+        if (found_uuid_match)
+          break;
+      }
+      if (!found_uuid_match)
+        continue;
+    }
+    // TODO(crbug.com/707635): Support manufacturerData and serviceData filters.
+
+    client_->ScanEvent(std::move(result));
+    return true;
+  }
+
+  // Event was filtered out.
   return true;
 }
 
