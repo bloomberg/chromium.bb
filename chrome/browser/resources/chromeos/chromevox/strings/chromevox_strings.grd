@@ -2716,6 +2716,9 @@
       <message desc="Describes the volume up key in the ChromeVox keyboard explorer." name="IDS_CHROMEVOX_VOLUME_UP_KEY">
         volume up
       </message>
+      <message desc="Describes the Assistant key in the ChromeVox keyboard explorer." name="IDS_CHROMEVOX_ASSISTANT_KEY">
+        Google Assistant
+      </message>
 
       <!-- Panel -->
       <message desc="Title of the ChromeVox panel, a window that displays the text ChromeVox is speaking and contains controls to manipulate ChromeVox." name="IDS_CHROMEVOX_PANEL_TITLE">
