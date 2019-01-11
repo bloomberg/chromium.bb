@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -614,7 +615,6 @@ void DeleteDesktopShortcuts(const base::FilePath& profile_path,
   const bool had_shortcuts = !shortcuts.empty();
   if (ensure_shortcuts_remain && had_shortcuts &&
       !ChromeDesktopShortcutsExist(chrome_exe)) {
-
     ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
     ShellUtil::AddDefaultShortcutProperties(chrome_exe, &properties);
     properties.set_shortcut_name(
@@ -794,9 +794,9 @@ bool ProfileShortcutManager::IsFeatureEnabled() {
 }
 
 // static
-ProfileShortcutManager* ProfileShortcutManager::Create(
+std::unique_ptr<ProfileShortcutManager> ProfileShortcutManager::Create(
     ProfileManager* manager) {
-  return new ProfileShortcutManagerWin(manager);
+  return std::make_unique<ProfileShortcutManagerWin>(manager);
 }
 
 ProfileShortcutManagerWin::ProfileShortcutManagerWin(ProfileManager* manager)

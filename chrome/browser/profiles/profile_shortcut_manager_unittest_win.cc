@@ -46,8 +46,8 @@ class ProfileShortcutManagerTest : public testing::Test {
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_attributes_storage_ =
         profile_manager_->profile_attributes_storage();
-    profile_shortcut_manager_.reset(
-        ProfileShortcutManager::Create(profile_manager_->profile_manager()));
+    profile_shortcut_manager_ =
+        ProfileShortcutManager::Create(profile_manager_->profile_manager());
     profile_1_name_ = L"My profile";
     profile_1_path_ = CreateProfileDirectory(profile_1_name_);
     profile_2_name_ = L"My profile 2";

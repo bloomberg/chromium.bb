@@ -387,8 +387,7 @@ ProfileManager::ProfileManager(const base::FilePath& user_data_dir)
       content::NotificationService::AllSources());
 
   if (ProfileShortcutManager::IsFeatureEnabled() && !user_data_dir_.empty())
-    profile_shortcut_manager_.reset(ProfileShortcutManager::Create(
-                                    this));
+    profile_shortcut_manager_ = ProfileShortcutManager::Create(this);
 }
 
 ProfileManager::~ProfileManager() {
