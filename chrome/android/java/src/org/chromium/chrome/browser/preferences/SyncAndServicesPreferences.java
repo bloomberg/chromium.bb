@@ -175,6 +175,8 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
     private boolean mIsEngineInitialized;
     private boolean mIsPassphraseRequired;
+    private ProfileSyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
+
     /**
      * This is usually equal to AndroidSyncSettings.isSyncEnabled(), but may have a different value
      * if passphrase dialog is shown (see {@link #onStop} for details).
@@ -301,7 +303,16 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mSyncGroup.setExpanded(!useSyncAndAllServices);
         mNonpersonalizedServices.setExpanded(!useSyncAndAllServices);
 
+        // Prevent sync settings changes from taking effect until the user leaves this screen.
+        mSyncSetupInProgressHandle = mProfileSyncService.getSetupInProgressHandle();
+
         updatePreferences();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mSyncSetupInProgressHandle.close();
     }
 
     private Preference.OnPreferenceClickListener toOnClickListener(Runnable runnable) {
@@ -349,8 +360,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mIsEngineInitialized = mProfileSyncService.isEngineInitialized();
         mIsPassphraseRequired =
                 mIsEngineInitialized && mProfileSyncService.isPassphraseRequiredForDecryption();
-        // This prevents sync from actually syncing until the dialog is closed.
-        mProfileSyncService.setSetupInProgress(true);
         mProfileSyncService.addSyncStateChangedListener(this);
         updateSyncStateFromAndroidSyncSettings();
 
@@ -361,26 +370,12 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     public void onStop() {
         super.onStop();
 
-        mProfileSyncService.removeSyncStateChangedListener(this);
-        // If this activity is closing, apply configuration changes and tell sync that
-        // the user is done configuring sync.
-        if (getActivity().isChangingConfigurations()) return;
-        // Only save state if internal and external state match. If a stop and clear comes
-        // while the dialog is open, this will be false and settings won't be saved.
-        if (mIsSyncEnabled && AndroidSyncSettings.get().isSyncEnabled()) {
-            // Save the new data type state.
-            configureSyncDataTypes();
-            // Inform sync that the user has finished setting up sync at least once.
-            mProfileSyncService.setFirstSetupComplete();
-        }
-        PersonalDataManager.setPaymentsIntegrationEnabled(mSyncPaymentsIntegration.isChecked());
-        // Setup is done. This was preventing sync from turning on even if it was enabled.
-        // TODO(crbug/557784): This needs to be set only when we think the user is done with
-        // setting up. This means: 1) If the user leaves the Sync Settings screen (via back)
-        // or, 2) If the user leaves the screen by tapping on "Manage Synced Data"
-        mProfileSyncService.setSetupInProgress(false);
-
         mSigninPreference.unregisterForUpdates();
+        mProfileSyncService.removeSyncStateChangedListener(this);
+
+        // Save the new data type state.
+        configureSyncDataTypes();
+        PersonalDataManager.setPaymentsIntegrationEnabled(mSyncPaymentsIntegration.isChecked());
     }
 
     @Override

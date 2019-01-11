@@ -100,16 +100,16 @@ public class AccountManagementFragment extends PreferenceFragment
     private Profile mProfile;
     private String mSignedInAccountName;
     private ProfileDataCache mProfileDataCache;
+    private @Nullable ProfileSyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
 
     @Override
     public void onCreate(Bundle savedState) {
         super.onCreate(savedState);
 
-        // Prevent sync from starting if it hasn't already to give the user a chance to change
-        // their sync settings.
         ProfileSyncService syncService = ProfileSyncService.get();
         if (syncService != null) {
-            syncService.setSetupInProgress(true);
+            // Prevent sync settings changes from taking effect until the user leaves this screen.
+            mSyncSetupInProgressHandle = syncService.getSetupInProgressHandle();
         }
 
         mGaiaServiceType = AccountManagementScreenHelper.GAIA_SERVICE_TYPE_NONE;
@@ -147,6 +147,14 @@ public class AccountManagementFragment extends PreferenceFragment
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mSyncSetupInProgressHandle != null) {
+            mSyncSetupInProgressHandle.close();
+        }
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         SigninManager.get().addSignInStateObserver(this);
@@ -168,17 +176,6 @@ public class AccountManagementFragment extends PreferenceFragment
         ProfileSyncService syncService = ProfileSyncService.get();
         if (syncService != null) {
             syncService.removeSyncStateChangedListener(this);
-        }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        // Allow sync to begin syncing if it hasn't yet.
-        ProfileSyncService syncService = ProfileSyncService.get();
-        if (syncService != null) {
-            syncService.setSetupInProgress(false);
         }
     }
 

@@ -231,9 +231,6 @@ public class SigninHelper {
         mSigninManager.signIn(account, null, new SignInCallback() {
             @Override
             public void onSignInComplete() {
-                if (mProfileSyncService != null) {
-                    mProfileSyncService.setSetupInProgress(false);
-                }
                 validateAccountsInternal(true);
             }
 

@@ -134,6 +134,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
     private SyncedAccountPreference mSyncedAccountPreference;
 
     private ProfileSyncService mProfileSyncService;
+    private ProfileSyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
 
     @SyncError
     private int mCurrentSyncError = SyncError.NO_ERROR;
@@ -144,6 +145,9 @@ public class SyncCustomizationFragment extends PreferenceFragment
 
         mProfileSyncService = ProfileSyncService.get();
         assert mProfileSyncService != null;
+        // Prevent sync settings changes from taking effect until the user leaves this screen.
+        mSyncSetupInProgressHandle = mProfileSyncService.getSetupInProgressHandle();
+
         mIsEngineInitialized = mProfileSyncService.isEngineInitialized();
         mIsPassphraseRequired =
                 mIsEngineInitialized && mProfileSyncService.isPassphraseRequiredForDecryption();
@@ -203,6 +207,12 @@ public class SyncCustomizationFragment extends PreferenceFragment
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mSyncSetupInProgressHandle.close();
+    }
+
+    @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         if (preference == mSyncEverything) {
             ThreadUtils.postOnUiThread(this::updateDataTypeState);
@@ -252,8 +262,6 @@ public class SyncCustomizationFragment extends PreferenceFragment
         mIsEngineInitialized = mProfileSyncService.isEngineInitialized();
         mIsPassphraseRequired =
                 mIsEngineInitialized && mProfileSyncService.isPassphraseRequiredForDecryption();
-        // This prevents sync from actually syncing until the dialog is closed.
-        mProfileSyncService.setSetupInProgress(true);
         mProfileSyncService.addSyncStateChangedListener(this);
         updateSyncState();
     }
@@ -263,24 +271,10 @@ public class SyncCustomizationFragment extends PreferenceFragment
         super.onStop();
 
         mProfileSyncService.removeSyncStateChangedListener(this);
-        // If this activity is closing, apply configuration changes and tell sync that
-        // the user is done configuring sync.
-        if (!getActivity().isChangingConfigurations()) {
-            // Only save state if the switch and external state match. If a stop and clear comes
-            // while the dialog is open, this will be false and settings won't be saved.
-            if (mSyncSwitchPreference.isChecked() && AndroidSyncSettings.get().isSyncEnabled()) {
-                // Save the new data type state.
-                configureSyncDataTypes();
-                // Inform sync that the user has finished setting up sync at least once.
-                mProfileSyncService.setFirstSetupComplete();
-            }
-            PersonalDataManager.setPaymentsIntegrationEnabled(mPaymentsIntegration.isChecked());
-            // Setup is done. This was preventing sync from turning on even if it was enabled.
-            // TODO(crbug/557784): This needs to be set only when we think the user is done with
-            // setting up. This means: 1) If the user leaves the Sync Settings screen (via back)
-            // or, 2) If the user leaves the screen by tapping on "Manage Synced Data"
-            mProfileSyncService.setSetupInProgress(false);
-        }
+
+        // Save the new data type state.
+        configureSyncDataTypes();
+        PersonalDataManager.setPaymentsIntegrationEnabled(mPaymentsIntegration.isChecked());
     }
 
     /**
@@ -366,7 +360,8 @@ public class SyncCustomizationFragment extends PreferenceFragment
     }
 
     private void configureSyncDataTypes() {
-        if (maybeDisableSync()) return;
+        maybeDisableSync();
+        if (!mProfileSyncService.isSyncRequested()) return;
 
         boolean syncEverything = mSyncEverything.isChecked();
         mProfileSyncService.setChosenDataTypes(syncEverything, getSelectedModelTypes());
@@ -714,20 +709,17 @@ public class SyncCustomizationFragment extends PreferenceFragment
 
     /**
      * Disables Sync if all data types have been disabled.
-     *
-     * @return true if Sync has been disabled, false otherwise.
      */
-    private boolean maybeDisableSync() {
+    private void maybeDisableSync() {
         if (mSyncEverything.isChecked()
                 || !getSelectedModelTypes().isEmpty()
                 || !canDisableSync()) {
-            return false;
+            return;
         }
         stopSync();
         mSyncSwitchPreference.setChecked(false);
         // setChecked doesn't trigger the callback, so update manually.
         updateSyncStateFromSwitch();
-        return true;
     }
 
     private void stopSync() {
