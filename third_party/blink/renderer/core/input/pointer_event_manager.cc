@@ -674,7 +674,7 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
   if (fake_event)
     return WebInputEventResult::kHandledSuppressed;
 
-  EventTarget* effective_target = GetEffectiveTargetForPointerEvent(
+  Element* effective_target = GetEffectiveTargetForPointerEvent(
       pointer_event_target, pointer_event->pointerId());
 
   if ((event_type == WebInputEvent::kPointerDown ||
@@ -702,15 +702,15 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
   if (pointer_event->isPrimary() &&
       !prevent_mouse_event_for_pointer_type_[ToPointerTypeIndex(
           mouse_event.pointer_type)]) {
-    EventTarget* mouse_target = effective_target;
-    // Event path could be null if pointer event is not dispatched and
-    // that happens for example when pointer event feature is not enabled.
+    Element* mouse_target = effective_target;
+    // Event path could be null if the pointer event is not dispatched.
     if (!event_handling_util::IsInDocument(mouse_target) &&
         pointer_event->HasEventPath()) {
       for (const auto& context :
            pointer_event->GetEventPath().NodeEventContexts()) {
-        if (event_handling_util::IsInDocument(&context.GetNode())) {
-          mouse_target = &context.GetNode();
+        if (context.GetNode().IsElementNode() &&
+            event_handling_util::IsInDocument(&context.GetNode())) {
+          mouse_target = ToElement(&context.GetNode());
           break;
         }
       }
