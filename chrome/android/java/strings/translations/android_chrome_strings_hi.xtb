@@ -107,8 +107,8 @@
 <translation id="17513872634828108">टैब खोलें</translation>
 <translation id="1779089405699405702">चित्र डीकोडर</translation>
 <translation id="1782483593938241562">खत्म होने की तारीख: <ph name="DATE" /></translation>
+<translation id="1791662854739702043">इंस्‍टॉल किया गया</translation>
 <translation id="1792959175193046959">डिफ़ॉल्ट डाउनलोड स्थान किसी भी समय बदलें</translation>
-<translation id="1796971354271036388">वीआर मॉड्यूल इंस्टॉल किया जा रहा है...</translation>
 <translation id="1807246157184219062">हल्का</translation>
 <translation id="1821253160463689938">आपकी पसंद याद रखने के लिए कुकी का इस्तेमाल करती है, भले ही आप उन पेजों पर नहीं जाते</translation>
 <translation id="1829244130665387512">पेज में ढूंढें</translation>
@@ -488,7 +488,6 @@
 <translation id="4837753911714442426">पेज प्रिंट करने के विकल्प खोलें</translation>
 <translation id="4842092870884894799">पासवर्ड जेनरेशन पॉपअप दिखाया जा रहा है</translation>
 <translation id="4850886885716139402">देखें</translation>
-<translation id="4857347795080810417">वीआर मॉड्यूल इंस्टॉल हो गया है</translation>
 <translation id="4860895144060829044">कॉल करें</translation>
 <translation id="4875775213178255010">सामग्री के सुझाव</translation>
 <translation id="4878404682131129617">प्रॉक्सी सर्वर के ज़रिए सुरंग बनाना विफल रहा</translation>
@@ -551,7 +550,6 @@
 <translation id="5327248766486351172">नाम</translation>
 <translation id="5335288049665977812">साइट को JavaScript चलाने की अनुमति दें (अनुशंसित)</translation>
 <translation id="5363230136052241468">'नया टैब पेज' लोड करने के लिए 'होम' बटन पर टैप करें</translation>
-<translation id="5372829067651257087">URL की कॉपी की गई.</translation>
 <translation id="5391532827096253100">इस साइट से आपका कनेक्शन सुरक्षित नहीं है. साइट की जानकारी</translation>
 <translation id="5400569084694353794">इस ऐप्‍लिकेशन का उपयाेग करके, आप Chrome की <ph name="BEGIN_LINK1" />सेवा की शर्तों<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />निजता नोटिस<ph name="END_LINK2" /> से सहमत होते हैं.</translation>
 <translation id="5403644198645076998">सिर्फ़ कुछ निश्चित साइटों को ही अनुमति दें</translation>
@@ -749,7 +747,6 @@
 <translation id="6746124502594467657">नीचे जाएं</translation>
 <translation id="6766622839693428701">बंद करने के लिए नीचे स्वाइप करें.</translation>
 <translation id="6766758767654711248">साइट पर जाने के लिए टैप करें</translation>
-<translation id="6768277682697012280">AR मॉड्यूल इंस्टॉल किया जा रहा है...</translation>
 <translation id="6776813977906306442">डाउनलोड करें बटन का उपयोग करके बाद में देखने के लिए वीडियो डाउनलोड करें</translation>
 <translation id="6782111308708962316">तृतीय पक्ष वेबसाइट को कुकी डेटा सहेजने और पढ़ने से रोकें</translation>
 <translation id="6790428901817661496">चलाएं</translation>
@@ -776,7 +773,6 @@
 <translation id="6963642900430330478">यह पेज खतरनाक है. साइट की जानकारी</translation>
 <translation id="6963766334940102469">बुकमार्क हटाएं</translation>
 <translation id="6965382102122355670">ठीक है</translation>
-<translation id="6968317970155454671">AR मॉड्यूल इंस्टॉल नहीं किया जा सका</translation>
 <translation id="6978479750597523876">अनुवाद सेटिंग रीसेट करें</translation>
 <translation id="6979737339423435258">हमेशा</translation>
 <translation id="6981982820502123353">पहुंच क्षमता</translation>
@@ -974,7 +970,6 @@
 <translation id="8487700953926739672">ऑफ़लाइन उपलब्ध है</translation>
 <translation id="8489271220582375723">इतिहास पेज खोलें</translation>
 <translation id="8493948351860045254">स्‍थान खाली करें</translation>
-<translation id="8496140788721644230">AR मॉड्यूल इंस्टॉल किया गया</translation>
 <translation id="8497726226069778601">यहां देखने के लिए…अभी तक कुछ भी नहीं है</translation>
 <translation id="8503559462189395349">Chrome पासवर्ड</translation>
 <translation id="8503813439785031346">उपयोगकर्ता नाम</translation>

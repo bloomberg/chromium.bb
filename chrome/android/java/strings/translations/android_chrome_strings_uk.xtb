@@ -107,8 +107,8 @@
 <translation id="17513872634828108">Відкриті вкладки</translation>
 <translation id="1779089405699405702">Декодер зображень</translation>
 <translation id="1782483593938241562">Дата завершення: <ph name="DATE" /></translation>
+<translation id="1791662854739702043">Установлено</translation>
 <translation id="1792959175193046959">Будь-коли змінюйте папку для завантажень за умовчанням</translation>
-<translation id="1796971354271036388">Встановлюється модуль VR…</translation>
 <translation id="1807246157184219062">Світла</translation>
 <translation id="1821253160463689938">Використовує файли cookie, щоб зберігати налаштування, навіть якщо ви не відвідуєте ці сторінки</translation>
 <translation id="1829244130665387512">Знайти на сторінці</translation>
@@ -488,7 +488,6 @@
 <translation id="4837753911714442426">Відкрити налаштування друку сторінки</translation>
 <translation id="4842092870884894799">Показ спливаючих вікон для створення пароля</translation>
 <translation id="4850886885716139402">Перегляд</translation>
-<translation id="4857347795080810417">Установлено модуль VR</translation>
 <translation id="4860895144060829044">Зателефонувати</translation>
 <translation id="4875775213178255010">Пропозиції вмісту</translation>
 <translation id="4878404682131129617">Не вдалося налагодити зв’язок через проксі-сервер</translation>
@@ -551,7 +550,6 @@
 <translation id="5327248766486351172">Назва</translation>
 <translation id="5335288049665977812">Дозволити сайтам запускати Javascript (рекомендується)</translation>
 <translation id="5363230136052241468">Торкніться кнопки головного екрана, щоб завантажити сторінку нової вкладки</translation>
-<translation id="5372829067651257087">URL-адресу скопійовано.</translation>
 <translation id="5391532827096253100">Ваше з’єднання з цим сайтом незахищене. Інформація про сайт</translation>
 <translation id="5400569084694353794">Користуючись цим додатком, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="5403644198645076998">Дозволити лише певні сайти</translation>
@@ -749,7 +747,6 @@
 <translation id="6746124502594467657">Вниз</translation>
 <translation id="6766622839693428701">Проведіть пальцем униз, щоб закрити.</translation>
 <translation id="6766758767654711248">Натисніть, щоб перейти на сайт</translation>
-<translation id="6768277682697012280">Встановлюється модуль доповненої реальності…</translation>
 <translation id="6776813977906306442">Завантажити відео за допомогою відповідної кнопки, щоб переглянути їх пізніше</translation>
 <translation id="6782111308708962316">Забороняти стороннім веб-сайтам зберігати та переглядати дані файлів cookie</translation>
 <translation id="6790428901817661496">Відтворити</translation>
@@ -776,7 +773,6 @@
 <translation id="6963642900430330478">Ця сторінка небезпечна. Інформація про сайт</translation>
 <translation id="6963766334940102469">Видалити закладки</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6968317970155454671">Не вдалося встановити модуль доповненої реальності</translation>
 <translation id="6978479750597523876">Скинути налаштування перекладу</translation>
 <translation id="6979737339423435258">Весь час</translation>
 <translation id="6981982820502123353">Доступність</translation>
@@ -974,7 +970,6 @@
 <translation id="8487700953926739672">Доступ у режимі офлайн</translation>
 <translation id="8489271220582375723">Відкрити сторінку "Історія"</translation>
 <translation id="8493948351860045254">Звільнити місце</translation>
-<translation id="8496140788721644230">Модуль доповненої реальності встановлено</translation>
 <translation id="8497726226069778601">Тут ще нічого немає…</translation>
 <translation id="8503559462189395349">Паролі Chrome</translation>
 <translation id="8503813439785031346">Ім’я користувача</translation>

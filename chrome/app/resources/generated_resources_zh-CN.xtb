@@ -1374,7 +1374,6 @@
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">此标签页正在使用您的摄像头或麦克风。</translation>
 <translation id="3083193146044397360">已暂时屏蔽相应权限以保护您的安全</translation>
-<translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">拖放以安装</translation>
 <translation id="3084771660770137092">Chrome 浏览器内存不足或因其他原因网页进程终止。要继续，请重新加载或转到其他网页。</translation>
 <translation id="3085412380278336437">该网站可能会使用您的摄像头</translation>
@@ -2554,6 +2553,7 @@
 <translation id="4941246025622441835">将设备登记到企业管理目录下时使用此设备前提条件：</translation>
 <translation id="4941627891654116707">字号</translation>
 <translation id="494286511941020793">代理配置帮助</translation>
+<translation id="495170559598752135">操作</translation>
 <translation id="4953689047182316270">对无障碍事件做出响应</translation>
 <translation id="4953808748584563296">默认的橙色头像</translation>
 <translation id="4955710816792587366">选择 PIN 码</translation>
@@ -2803,7 +2803,6 @@
 <translation id="5331975486040154427">USB-C 设备（左侧后端端口）</translation>
 <translation id="5332624210073556029">时区：</translation>
 <translation id="5334142896108694079">脚本缓存</translation>
-<translation id="5334899159203764908">详细了解<ph name="BEGIN_LINK" />网站访问权限<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">正在将 <ph name="FILE_COUNT" />备份到 <ph name="BEGIN_LINK" />Google 云端硬盘<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">禁止任何网站访问 USB 设备</translation>
 <translation id="5337771866151525739">由第三方安装。</translation>
@@ -5042,7 +5041,6 @@
 <translation id="8725066075913043281">重试</translation>
 <translation id="8725178340343806893">收藏夹/书签</translation>
 <translation id="8726206820263995930">从服务器抓取策略设置时出错：<ph name="CLIENT_ERROR" />。</translation>
-<translation id="8727344521467137076">我们在您的计算机上发现了有害软件。Chrome 正在移除该软件并将恢复您的设置，以确保您的浏览器能够重新正常运行。</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="8732030010853991079">点击该图标，即可使用此扩展程序。</translation>
 <translation id="8732212173949624846">读取和更改您在所有登录过的设备上的浏览记录</translation>
@@ -5234,7 +5232,6 @@
 <translation id="9033857511263905942">粘贴(&amp;P)</translation>
 <translation id="9034924485347205037">Linux 文件</translation>
 <translation id="9035012421917565900">这些内容一旦移出“<ph name="DESTINATION_NAME" />”便无法移回，因此您将无法撤消这项操作。</translation>
-<translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">显示原始网页</translation>
 <translation id="9038430547971207796">下次，您就能使用配对手机解锁您的 <ph name="DEVICE_TYPE" /> 了。您可在“设置”中关闭 Smart Lock。</translation>
 <translation id="9038620279323455325">已有名为“<ph name="FILE_NAME" />”的文件。请另选一个名称。</translation>

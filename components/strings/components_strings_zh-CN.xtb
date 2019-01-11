@@ -12,7 +12,6 @@
 <translation id="1055184225775184556">撤消添加(&amp;U)</translation>
 <translation id="1058479211578257048">正在保存银行卡…</translation>
 <translation id="10614374240317010">一律不保存</translation>
-<translation id="1066396345355680611">您可能会无法再访问 <ph name="SITE" /> 及其他一些网站上的受保护内容。</translation>
 <translation id="106701514854093668">桌面书签</translation>
 <translation id="1074497978438210769">不安全</translation>
 <translation id="1080116354587839789">适合窗口宽度</translation>
@@ -457,7 +456,6 @@
 <translation id="3901925938762663762">此信用卡已过期</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3946209740501886391">在该网站上一律询问</translation>
-<translation id="3947577358805392297">保存页面以备后用</translation>
 <translation id="3949571496842715403">此服务器无法证实它就是 <ph name="DOMAIN" /> - 它的安全证书没有指定主题备用名称。这可能是因为某项配置有误或某个攻击者拦截了您的连接。</translation>
 <translation id="3949601375789751990">您的浏览记录会显示在此处</translation>
 <translation id="3950820424414687140">登录</translation>
@@ -623,7 +621,6 @@
 <translation id="5045550434625856497">密码不正确</translation>
 <translation id="5056549851600133418">为您推荐的文章</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />检查代理服务器地址<ph name="END_LINK" /></translation>
-<translation id="5086888986931078152">您可能会无法再访问某些网站上的受保护内容。</translation>
 <translation id="5087286274860437796">服务器的证书目前无效。</translation>
 <translation id="5087580092889165836">添加新卡</translation>
 <translation id="5089810972385038852">州/省/直辖市/自治区</translation>
@@ -751,7 +748,6 @@
 <translation id="5939518447894949180">重置</translation>
 <translation id="5946937721014915347">正在打开 <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">无法通过消费者帐号注册（有封装的许可）。</translation>
-<translation id="5966151627327109289">会致使您从大多数网站退出。您可能会无法再访问 <ph name="SITE" /> 及一些其他网站上的受保护内容。</translation>
 <translation id="5967592137238574583">修改联系信息</translation>
 <translation id="5967867314010545767">从历史记录中移除</translation>
 <translation id="5975083100439434680">缩小</translation>
@@ -774,7 +770,6 @@
 <translation id="6059925163896151826">USB 设备</translation>
 <translation id="6071091556643036997">政策类型无效。</translation>
 <translation id="6080696365213338172">您已使用管理员提供的证书访问了内容，因此管理员可以拦截您提供给 <ph name="DOMAIN" /> 的数据。</translation>
-<translation id="6096619198407627433">会致使您从大多数网站退出，但不会退出您的 Google 帐号。您可能会无法再访问 <ph name="SITE" /> 及一些其他网站上的受保护内容。</translation>
 <translation id="610911394827799129">您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{无}=1{1 个密码（已同步）}other{# 个密码（已同步）}}</translation>
 <translation id="6146055958333702838">请检查所有网线是否都已连好，然后重新启动您可能正在使用的任何路由器、调制解调器或其他网络设备。</translation>
@@ -957,7 +952,6 @@
 <translation id="7444046173054089907">此网站已被屏蔽</translation>
 <translation id="7445762425076701745">无法完全验证您所连接到的服务器的身份。您在连接服务器时使用的服务器名称仅在您的网络中有效，而外部证书授权中心无法验证该名称的所有权。由于一些证书授权中心仍然会为这些名称颁发证书，因此无法确保您连接到想要访问的网站而不是攻击网站。</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />详细了解<ph name="END_LINK" />此问题。</translation>
-<translation id="7453467225369441013">您会从大多数网站退出，但不会退出自己的 Google 帐号。</translation>
 <translation id="7455133967321480974">使用全局默认设置（阻止）</translation>
 <translation id="7460618730930299168">此处显示的放映时间不同于您的选择。继续？</translation>
 <translation id="7473891865547856676">不，谢谢</translation>
@@ -1141,7 +1135,6 @@
 <translation id="860043288473659153">持卡人姓名</translation>
 <translation id="8620436878122366504">您的父母尚未批准此请求</translation>
 <translation id="8625384913736129811">将此卡的信息保存到该设备</translation>
-<translation id="8662811608048051533">您会从大多数网站退出。</translation>
 <translation id="8663226718884576429">订单摘要，<ph name="TOTAL_LABEL" />，更多详情</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />，答案，<ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">您与 <ph name="DOMAIN" /> 的连接未加密。</translation>

@@ -289,48 +289,6 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="3322936298410871309">Ankstesnė 1 lygio antraštė</translation>
 <translation id="3323447499041942178">Teksto laukelis</translation>
 <translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> šliaužiklis</translation>
-<translation id="3353420241558113817">{"ar": "arabų k.",
-        "bg": "bulgarų k.",
-        "ca": "katalonų k.",
-        "cs": "čekų k.",
-        "da": "danų k.",
-        "de": "vokiečių k.",
-        "de_CH": "vokiečių k. (Šveicarija)",
-        "de_DE": "vokiečių k. (Vokietija)",
-        "el": "graikų k.",
-        "en": "anglų k.",
-        "en_CA": "anglų k. (Kanada)",
-        "en_GB": "anglų k. (Jungtinė Karalystė)",
-        "en_US": "anglų k. (Jungtinės Amerikos Valstijos)",
-        "es": "ispanų k.",
-        "et": "estų k.",
-        "fr": "prancūzų k.",
-        "fr_CA": "prancūzų k. (Kanada)",
-        "fr_FR": "prancūzų k. (Prancūzija)",
-        "fi": "suomių k.",
-        "he": "hebrajų k.",
-        "hi": "hindi k.",
-        "hr": "kroatų k.",
-        "hu": "vengrų k.",
-        "is": "islandų k.",
-        "it": "italų k.",
-        "ko": "korėjiečių k.",
-        "lt": "lietuvių k.",
-        "lv": "latvių k.",
-        "nb": "norvegų k. (Bokmål)",
-        "nl": "danų k.",
-        "pl": "lenkų k.",
-        "pt": "portugalų k.",
-        "ro": "rumunų k.",
-        "ru": "rusų k.",
-        "sk": "slovakų k.",
-        "sl": "slovėnų k.",
-        "sr": "serbų k.",
-        "sv": "švedų k.",
-        "tr": "turkų k.",
-        "vi": "vietnamiečių k.",
-        "zh": "kinų k.",
-        "zh_TW": "kinų k. (tradicinė hanių)"}</translation>
 <translation id="335581015389089642">Kalba</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{pliuso ženklas}one{# pliuso ženklas}few{# pliuso ženklai}many{# plus signs}other{# pliuso ženklų}}</translation>
@@ -706,6 +664,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="6387719785439924554">šalia</translation>
 <translation id="6411426777058107714">Nėra ankstesnės akutės.</translation>
 <translation id="6414968628640960377">Ankstesnis kitoks elementas.</translation>
+<translation id="6417265370957905582">„Google“ padėjėjas</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{dvitaškis}one{# dvitaškis}few{# dvitaškiai}many{# colons}other{# dvitaškių}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, meniu</translation>
 <translation id="6444046323172968959">Įspėjimo dialogo langas</translation>

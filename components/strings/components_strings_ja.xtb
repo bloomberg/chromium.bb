@@ -12,7 +12,6 @@
 <translation id="1055184225775184556">追加の取り消し（&amp;U）</translation>
 <translation id="1058479211578257048">カードを保存しています...</translation>
 <translation id="10614374240317010">常に保存しない</translation>
-<translation id="1066396345355680611"><ph name="SITE" /> と他の一部のサイトで、保護されたコンテンツにアクセスできなくなる可能性があります。</translation>
 <translation id="106701514854093668">パソコンのブックマーク</translation>
 <translation id="1074497978438210769">保護されていない通信</translation>
 <translation id="1080116354587839789">ウィンドウ幅に合わせる</translation>
@@ -461,7 +460,6 @@
 <translation id="3901925938762663762">カードの有効期限が切れています</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3946209740501886391">このサイトでは常に確認</translation>
-<translation id="3947577358805392297">ページを保存しておく</translation>
 <translation id="3949571496842715403">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書で SAN（サブジェクトの別名）が指定されていません。設定が不適切であるか、悪意のあるユーザーによって接続が妨害されている可能性があります。</translation>
 <translation id="3949601375789751990">閲覧履歴がここに表示されます</translation>
 <translation id="3950820424414687140">ログイン</translation>
@@ -627,7 +625,6 @@
 <translation id="5045550434625856497">パスワードが正しくありません</translation>
 <translation id="5056549851600133418">おすすめの記事</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />プロキシ アドレスを確認する<ph name="END_LINK" /></translation>
-<translation id="5086888986931078152">一部のサイトで、保護されたコンテンツにアクセスできなくなる可能性があります。</translation>
 <translation id="5087286274860437796">サーバーの証明書が現在有効ではありません。</translation>
 <translation id="5087580092889165836">カードを追加</translation>
 <translation id="5089810972385038852">都道府県 / 州</translation>
@@ -755,7 +752,6 @@
 <translation id="5939518447894949180">リセット</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> を開いています…</translation>
 <translation id="5951495562196540101">一般ユーザー向けアカウントでは登録できません（ライセンス パッケージが利用可能です）。</translation>
-<translation id="5966151627327109289">ほとんどのサイトからログアウトします。<ph name="SITE" /> と他の一部のサイトで、保護されたコンテンツにアクセスできなくなる可能性があります。</translation>
 <translation id="5967592137238574583">連絡先情報の編集</translation>
 <translation id="5967867314010545767">履歴から削除</translation>
 <translation id="5975083100439434680">縮小する</translation>
@@ -778,7 +774,6 @@
 <translation id="6059925163896151826">USB デバイス</translation>
 <translation id="6071091556643036997">ポリシーのタイプが無効です。</translation>
 <translation id="6080696365213338172">管理者が提供する証明書を使用してコンテンツにアクセスしています。<ph name="DOMAIN" /> に提供するデータは管理者によって傍受される可能性があります。</translation>
-<translation id="6096619198407627433">ほとんどのサイトからログアウトします。Google アカウントへのログイン状態は維持されます。<ph name="SITE" /> と他の一部のサイトで、保護されたコンテンツにアクセスできなくなる可能性があります。</translation>
 <translation id="610911394827799129">お使いの Google アカウントの <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に、他の形式の閲覧履歴が記録されている場合があります</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{なし}=1{1 個のパスワード（同期済み）}other{# 個のパスワード（同期済み）}}</translation>
 <translation id="6146055958333702838">ケーブルを確認し、使用しているネットワーク デバイス（ルーター、モデムなど）を
@@ -962,7 +957,6 @@
 <translation id="7444046173054089907">このサイトはブロックされています</translation>
 <translation id="7445762425076701745">接続してるサーバーの身元について、十分な検証ができません。接続しているサーバーは、そのネットワーク内でのみ有効な名前を使用しており、外部認証局がその所有権を検証する方法はありません。こうした名前で証明書を発行する認証局もあるので、接続先が意図したウェブサイトか、悪意のあるユーザーのサイトかは確認できません。</translation>
 <translation id="7451311239929941790">この問題について<ph name="BEGIN_LINK" />詳細を確認<ph name="END_LINK" />する</translation>
-<translation id="7453467225369441013">ほとんどのサイトからログアウトします。Google アカウントへのログイン状態は維持されます。</translation>
 <translation id="7455133967321480974">グローバルのデフォルト値（[ブロック]）を使用</translation>
 <translation id="7460618730930299168">スクリーニングが選択内容と異なっています。続行しますか？</translation>
 <translation id="7473891865547856676">スキップ</translation>
@@ -1146,7 +1140,6 @@
 <translation id="860043288473659153">カード名義人</translation>
 <translation id="8620436878122366504">保護者がまだサイトを開くことを許可していません</translation>
 <translation id="8625384913736129811">このカード情報をこの端末に保存する</translation>
-<translation id="8662811608048051533">ほとんどのサイトからログアウトします。</translation>
 <translation id="8663226718884576429">ご注文の概要、<ph name="TOTAL_LABEL" />、その他の詳細</translation>
 <translation id="8680536109547170164">「<ph name="QUERY" />」に対する答え: 「<ph name="ANSWER" />」</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> への接続は暗号化されていません。</translation>

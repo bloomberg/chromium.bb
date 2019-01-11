@@ -289,48 +289,6 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="3322936298410871309">Tiêu đề cấp 1 trước</translation>
 <translation id="3323447499041942178">Hộp văn bản</translation>
 <translation id="3338224621010291843">Thanh trượt <ph name="VALUE" /> <ph name="NAME" /></translation>
-<translation id="3353420241558113817">{"ar": "tiếng Ả Rập",
-        "bg": "tiếng Bungari",
-        "ca": "tiếng Catalan",
-        "cs": "tiếng Séc",
-        "da": "tiếng Đan Mạch",
-        "de": "tiếng Đức",
-        "de_CH": "tiếng Đức (Thụy Sĩ)",
-        "de_DE": "tiếng Đức (Đức)",
-        "el": "tiếng Hy Lạp",
-        "en": "tiếng Anh",
-        "en_CA": "tiếng Anh (Canada)",
-        "en_GB": "tiếng Anh (Anh)",
-        "en_US": "tiếng Anh (Mỹ)",
-        "es": "tiếng Tây Ban Nha",
-        "et": "tiếng Estonia",
-        "fr": "tiếng Pháp",
-        "fr_CA": "tiếng Pháp (Canada)",
-        "fr_FR": "tiếng Pháp (Pháp)",
-        "fi": "tiếng Phần Lan",
-        "he": "tiếng Do Thái",
-        "hi": "tiếng Hindi",
-        "hr": "tiếng Croatia",
-        "hu": "tiếng Hungary",
-        "is": "tiếng Iceland",
-        "it": "tiếng Ý",
-        "ko": "tiếng Hàn",
-        "lt": "tiếng Lithuania",
-        "lv": "tiếng Latvia",
-        "nb": "tiếng Bokmål Na Uy",
-        "nl": "tiếng Hà Lan",
-        "pl": "tiếng Ba Lan",
-        "pt": "tiếng Bồ Đào Nha",
-        "ro": "tiếng Rumani",
-        "ru": "tiếng Nga",
-        "sk": "tiếng Slovak",
-        "sl": "tiếng Slovenia",
-        "sr": "tiếng Serbia",
-        "sv": "tiếng Thụy Điển",
-        "tr": "tiếng Thổ Nhĩ Kỳ",
-        "vi": "tiếng Việt",
-        "zh": "tiếng Trung",
-        "zh_TW": "tiếng Trung (tiếng Trung phồn thể)"}</translation>
 <translation id="335581015389089642">Giọng nói</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{dấu cộng}other{# dấu cộng}}</translation>
@@ -706,6 +664,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="6387719785439924554">loại trừ</translation>
 <translation id="6411426777058107714">Không có nút radio trước nào.</translation>
 <translation id="6414968628640960377">Phần tử khác trước.</translation>
+<translation id="6417265370957905582">Trợ lý Google</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{dấu hai chấm}other{# dấu hai chấm}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, menu</translation>
 <translation id="6444046323172968959">Hộp thoại thông báo</translation>

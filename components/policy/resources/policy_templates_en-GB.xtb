@@ -1122,6 +1122,12 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3628480121685794414">Enable simplex printing</translation>
 <translation id="3646859102161347133">Set screen magnifier type</translation>
 <translation id="3653237928288822292">Default search provider icon</translation>
+<translation id="3660510274595679517">
+        If this policy is set to true, cloud management enrolment is mandatory and blocks Chrome launch process if failed.
+
+        If this policy is left unset or set to false, cloud management enrolment is optional and does not block Chrome launch process if failed.
+
+        This policy is used by machine scope cloud policy enrolment on desktop and can be set by Registry or GPO on Windows, plist on Mac and JSON policy file on Linux.</translation>
 <translation id="3660562134618097814">Transfer SAML IdP cookies during login</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (The single-line field is deprecated and will be removed in the future. Please start using the multi-line text box below.)</translation>
 <translation id="3709266154059827597">Configure extension installation blacklist</translation>

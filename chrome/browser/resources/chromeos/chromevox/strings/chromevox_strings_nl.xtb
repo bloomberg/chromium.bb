@@ -288,48 +288,6 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="3322936298410871309">Vorige kop voor niveau 1</translation>
 <translation id="3323447499041942178">Tekstvak</translation>
 <translation id="3338224621010291843">Schuifregelaar <ph name="VALUE" /> <ph name="NAME" /></translation>
-<translation id="3353420241558113817">{"ar": "Arabisch",
-        "bg": "Bulgaars",
-        "ca": "Catalaans",
-        "cs": "Tsjechisch",
-        "da": "Deens",
-        "de": "Duits",
-        "de_CH": "Duits (Zwitserland)",
-        "de_DE": "Duits (Duitsland)",
-        "el": "Grieks",
-        "en": "Engels",
-        "en_CA": "Engels (Canada)",
-        "en_GB": "Engels (Verenigd Koninkrijk)",
-        "en_US": "Engels (Verenigde Staten)",
-        "es": "Spaans",
-        "et": "Ests",
-        "fr": "Frans",
-        "fr_CA": "Frans (Canada)",
-        "fr_FR": "Frans (Frankrijk)",
-        "fi": "Fins",
-        "he": "Hebreeuws",
-        "hi": "Hindi",
-        "hr": "Kroatisch",
-        "hu": "Hongaars",
-        "is": "IJslands",
-        "it": "Italiaans",
-        "ko": "Koreaans",
-        "lt": "Litouws",
-        "lv": "Lets",
-        "nb": "Noors (Bokmål)",
-        "nl": "Nederlands",
-        "pl": "Pools",
-        "pt": "Portugees",
-        "ro": "Roemeens",
-        "ru": "Russisch",
-        "sk": "Slowaaks",
-        "sl": "Sloveens",
-        "sr": "Servisch",
-        "sv": "Zweeds",
-        "tr": "Turks",
-        "vi": "Vietnamees",
-        "zh": "Chinees",
-        "zh_TW": "Chinees (Traditioneel Han)"}</translation>
 <translation id="335581015389089642">Spraak</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{plusteken}other{# plustekens}}</translation>
@@ -705,6 +663,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="6387719785439924554">terzijde</translation>
 <translation id="6411426777058107714">Geen vorig keuzerondje.</translation>
 <translation id="6414968628640960377">Vorig ander element.</translation>
+<translation id="6417265370957905582">Google Assistent</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{dubbelepunt}other{# dubbelepunten}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, menu</translation>
 <translation id="6444046323172968959">Dialoogvenster voor meldingen</translation>

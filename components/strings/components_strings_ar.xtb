@@ -12,7 +12,6 @@
 <translation id="1055184225775184556">تراجع عن الإ&amp;ضافة</translation>
 <translation id="1058479211578257048">جارٍ حفظ البطاقات...</translation>
 <translation id="10614374240317010">لم يتم الحفظ مطلقًا</translation>
-<translation id="1066396345355680611">قد تفقد إمكانية الوصول إلى محتوى محمي من <ph name="SITE" /> وبعض المواقع الأخرى.</translation>
 <translation id="106701514854093668">الإشارات المرجعية على سطح المكتب</translation>
 <translation id="1074497978438210769">غير آمن</translation>
 <translation id="1080116354587839789">ملاءمة مع العرض</translation>
@@ -461,7 +460,6 @@
 <translation id="3901925938762663762">انتهت صلاحية البطاقة</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3946209740501886391">السؤال دائمًا على موقع الويب هذا</translation>
-<translation id="3947577358805392297">حفظ الصفحة لوقت لاحق</translation>
 <translation id="3949571496842715403">لم يتمكن هذا الخادم من إثبات أنه <ph name="DOMAIN" />؛ بل إن شهادة الأمان التابعة له لا تُحدّد الأسماء البديلة للمضيفات. وربما يكون السبب في ذلك وجود خطأ في التهيئة أو اعتراض أحد المهاجمين للاتصال.</translation>
 <translation id="3949601375789751990">يظهر سجلّ التصفّح هنا</translation>
 <translation id="3950820424414687140">تسجيل الدخول</translation>
@@ -627,7 +625,6 @@
 <translation id="5045550434625856497">كلمة مرور غير صحيحة</translation>
 <translation id="5056549851600133418">مقالات من أجلك</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />التحقق من عنوان الخادم الوكيل<ph name="END_LINK" /></translation>
-<translation id="5086888986931078152">قد تفقد إمكانية الوصول إلى محتوى محمي من بعض المواقع.</translation>
 <translation id="5087286274860437796">شهادة الخادم ليست صالحة حاليًا.</translation>
 <translation id="5087580092889165836">إضافة بطاقة</translation>
 <translation id="5089810972385038852">الولاية</translation>
@@ -755,7 +752,6 @@
 <translation id="5939518447894949180">إعادة</translation>
 <translation id="5946937721014915347">جارٍ فتح <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">لا يمكن التسجيل باستخدام حساب المستهلك (الترخيص المجمّع متوفّر).</translation>
-<translation id="5966151627327109289">يُسجَّل خروجك من معظم المواقع الإلكترونية. وقد تفقد إمكانية الوصول إلى محتوى محمي من <ph name="SITE" /> وبعض المواقع الإلكترونية الأخرى.</translation>
 <translation id="5967592137238574583">تعديل معلومات الاتصال</translation>
 <translation id="5967867314010545767">إزالة من السجل</translation>
 <translation id="5975083100439434680">تصغير</translation>
@@ -778,7 +774,6 @@
 <translation id="6059925163896151826">‏أجهزة USB</translation>
 <translation id="6071091556643036997">نوع السياسة غير صالح.</translation>
 <translation id="6080696365213338172">لقد دخلت إلى المحتوى باستخدام شهادة وفرها المشرف. ويمكن أن يعترض المشرف طريق البيانات التي تقدمها إلى <ph name="DOMAIN" />.</translation>
-<translation id="6096619198407627433">‏يُسجَّل خروجك من معظم المواقع الإلكترونية. ولن يُسجَّل خروجك من حسابك على Google. قد تفقد إمكانية الوصول إلى محتوى محمي من <ph name="SITE" /> وبعض المواقع الإلكترونية الأخرى.</translation>
 <translation id="610911394827799129">‏قد يتضمن حسابك على Google نماذج أخرى من سجل التصفح على <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{بدون}=1{ كلمة مرور واحدة (تمت مزامنتها)}two{كلمتا مرور (#) (تمت مزامنتهما)}few{# كلمات مرور (تمت مزامنتها)}many{# كلمة مرور (تمت مزامنتها)}other{# كلمة مرور (تمت مزامنتها)}}</translation>
 <translation id="6146055958333702838">تحقق من أي كابلات وأعد تشغيل أي أجهزة توجيه أو أجهزة مودم أو أجهزة شبكة
@@ -962,7 +957,6 @@
 <translation id="7444046173054089907">تم حظر هذا الموقع</translation>
 <translation id="7445762425076701745">لا يمكن التحقق بصورة كاملة من صحة هوية الخادم الذي تتصل به. فأنت متصل بخادم باستخدام اسم صالح فقط ضمن شبكتك، والذي لن يتمكن المرجع المصدق الخارجي من التحقق من ملكيته. وحيث إن بعض المراجع المصدقة تُصدر الشهادات لهذه الأسماء على أي حال، فليست هناك طريقة للتأكد من أنك متصل بموقع الويب المقصود وليس بأحد المهاجمين.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /> حول هذه المشكلة.</translation>
-<translation id="7453467225369441013">‏سيتم تسجيل الخروج من معظم مواقع الويب لكن لن يتم تسجيل الخروج من حسابك في Google.</translation>
 <translation id="7455133967321480974">استخدام الإعداد التلقائي العمومي (حظر)</translation>
 <translation id="7460618730930299168">يختلف هذا الفحص عن اختيارك. هل تريد المتابعة؟</translation>
 <translation id="7473891865547856676">لا، شكرًا</translation>
@@ -1146,7 +1140,6 @@
 <translation id="860043288473659153">اسم حامل البطاقة</translation>
 <translation id="8620436878122366504">لم يوافق عليه والداك حتى الآن</translation>
 <translation id="8625384913736129811">حفظ هذه البطاقة إلى هذا الجهاز</translation>
-<translation id="8662811608048051533">يخرجك من معظم مواقع الويب.</translation>
 <translation id="8663226718884576429">ملخّص الطلب و<ph name="TOTAL_LABEL" /> وتفاصيل إضافية</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />، إجابة، <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">الاتصال بالموقع <ph name="DOMAIN" /> غير محميّ بنظام تشفير.</translation>

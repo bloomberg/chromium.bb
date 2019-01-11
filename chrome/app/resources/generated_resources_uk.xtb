@@ -1379,7 +1379,6 @@
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">Ця вкладка використовує вашу камеру чи мікрофон.</translation>
 <translation id="3083193146044397360">Тимчасово заблоковано, щоб захистити вашу конфіденційність</translation>
-<translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Перетягніть, щоб установити</translation>
 <translation id="3084771660770137092">Недостатньо пам'яті Chrome або процес для веб-сторінки припинено з іншої причини. Щоб продовжити, перезавантажте цю сторінку чи перейдіть на іншу.</translation>
 <translation id="3085412380278336437">Сайт може використовувати камеру</translation>
@@ -2175,7 +2174,7 @@
 <translation id="4316850752623536204">Веб-сайт розробника</translation>
 <translation id="4320177379694898372">Немає з’єднання з Інтернетом</translation>
 <translation id="4320948194796820126">Додайте закладку в електронну пошту</translation>
-<translation id="4321442524549817090">Показати URL-адресу</translation>
+<translation id="4321442524549817090">П&amp;оказати URL-адресу</translation>
 <translation id="4322394346347055525">Закрити інші вкладки</translation>
 <translation id="4324577459193912240">Файл неповний</translation>
 <translation id="4325237902968425115">Видаляється <ph name="LINUX_APP_NAME" />…</translation>
@@ -2562,6 +2561,7 @@
 <translation id="4941246025622441835">Використати заявку цього пристрою під час його реєстрації для корпоративного керування:</translation>
 <translation id="4941627891654116707">Розмір шрифту</translation>
 <translation id="494286511941020793">Довідка про конфігурацію проксі-сервера</translation>
+<translation id="495170559598752135">Дії</translation>
 <translation id="4953689047182316270">реагувати на події спеціальних можливостей</translation>
 <translation id="4953808748584563296">Стандартний оранжевий аватар</translation>
 <translation id="4955710816792587366">Придумайте PIN-код</translation>
@@ -2816,7 +2816,6 @@
 <translation id="5331975486040154427">Пристрій, під’єднаний до порту USB-C (ліворуч на задній панелі)</translation>
 <translation id="5332624210073556029">Часовий пояс:</translation>
 <translation id="5334142896108694079">Кеш сценаріїв</translation>
-<translation id="5334899159203764908">Докладніше про <ph name="BEGIN_LINK" />доступ до сайтів<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Резервне копіювання на <ph name="BEGIN_LINK" />Google Диск<ph name="END_LINK" />: <ph name="FILE_COUNT" /></translation>
 <translation id="5336126339807372270">Заборонити всім сайтам отримувати доступ до пристроїв USB</translation>
 <translation id="5337771866151525739">Встановлено третьою стороною.</translation>
@@ -5058,7 +5057,6 @@
 <translation id="8725066075913043281">Повторити спробу</translation>
 <translation id="8725178340343806893">Улюблені/Закладки</translation>
 <translation id="8726206820263995930">Помилка під час отримання налаштувань політики із сервера: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727344521467137076">На вашому комп’ютері виявлено зловмисне програмне забезпечення. Chrome видалить його та відновить налаштування для роботи веб-переглядача у звичайному режимі.</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8732030010853991079">Запустіть розширення, натиснувши цей значок.</translation>
 <translation id="8732212173949624846">Читати й змінювати історію веб-перегляду на всіх пристроях, на яких ви ввійшли</translation>
@@ -5250,7 +5248,6 @@
 <translation id="9033857511263905942">&amp;Вставити</translation>
 <translation id="9034924485347205037">Файли Linux</translation>
 <translation id="9035012421917565900">Елементи не можна перенести назад у розташування "<ph name="DESTINATION_NAME" />", тож ви не зможете відмінити цю дію.</translation>
-<translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">Показати оригінал</translation>
 <translation id="9038430547971207796">Наступного разу пристрій <ph name="DEVICE_TYPE" /> буде розблоковано за допомогою вашого телефона. Smart Lock можна вимкнути в налаштуваннях.</translation>
 <translation id="9038620279323455325">Файл із назвою "<ph name="FILE_NAME" />" уже існує. Виберіть іншу назву.</translation>

@@ -107,8 +107,8 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="17513872634828108">Geopende tabbladen</translation>
 <translation id="1779089405699405702">Image Decoder</translation>
 <translation id="1782483593938241562">Einddatum: <ph name="DATE" /></translation>
+<translation id="1791662854739702043">Geïnstalleerd</translation>
 <translation id="1792959175193046959">Je kunt op elk gewenst moment de standaard downloadlocatie wijzigen</translation>
-<translation id="1796971354271036388">VR-module installeren …</translation>
 <translation id="1807246157184219062">Licht</translation>
 <translation id="1821253160463689938">Maakt gebruik van cookies om je voorkeuren te onthouden, zelfs als je deze pagina's niet bezoekt</translation>
 <translation id="1829244130665387512">Vinden op pagina</translation>
@@ -488,7 +488,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4837753911714442426">Afdrukopties voor de pagina openen</translation>
 <translation id="4842092870884894799">Pop-upvenster voor wachtwoord genereren wordt weergegeven</translation>
 <translation id="4850886885716139402">Weergave</translation>
-<translation id="4857347795080810417">VR-module geïnstalleerd</translation>
 <translation id="4860895144060829044">Bellen</translation>
 <translation id="4875775213178255010">Contentsuggesties</translation>
 <translation id="4878404682131129617">Kan geen tunnel tot stand brengen via de proxyserver</translation>
@@ -551,7 +550,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5327248766486351172">Naam</translation>
 <translation id="5335288049665977812">Sites toestaan JavaScript uit te voeren (aanbevolen)</translation>
 <translation id="5363230136052241468">Tik op de startknop om de nieuwe tabbladpagina te laden</translation>
-<translation id="5372829067651257087">URL gekopieerd.</translation>
 <translation id="5391532827096253100">Je verbinding met deze site is niet beveiligd. Site-informatie</translation>
 <translation id="5400569084694353794">Als je deze app gebruikt, ga je akkoord met de <ph name="BEGIN_LINK1" />Servicevoorwaarden<ph name="END_LINK1" /> en het <ph name="BEGIN_LINK2" />Privacybeleid<ph name="END_LINK2" /> van Chrome.</translation>
 <translation id="5403644198645076998">Alleen bepaalde sites toestaan</translation>
@@ -749,7 +747,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6746124502594467657">Omlaag</translation>
 <translation id="6766622839693428701">Veeg omlaag om te sluiten.</translation>
 <translation id="6766758767654711248">Tik om naar de site te gaan</translation>
-<translation id="6768277682697012280">AR-module installeren...</translation>
 <translation id="6776813977906306442">Gebruik de knop Downloaden om video's te downloaden zodat je ze later kunt bekijken</translation>
 <translation id="6782111308708962316">Voorkomen dat websites van derden cookiegegevens opslaan en lezen</translation>
 <translation id="6790428901817661496">Spelen</translation>
@@ -776,7 +773,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6963642900430330478">Deze pagina is gevaarlijk. Site-informatie</translation>
 <translation id="6963766334940102469">Bladwijzers verwijderen</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6968317970155454671">Kan AR-module niet installeren</translation>
 <translation id="6978479750597523876">Vertaalinstellingen opnieuw instellen</translation>
 <translation id="6979737339423435258">Altijd</translation>
 <translation id="6981982820502123353">Toegankelijkheid</translation>
@@ -974,7 +970,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8487700953926739672">Offline beschikbaar</translation>
 <translation id="8489271220582375723">De pagina Geschiedenis openen</translation>
 <translation id="8493948351860045254">Ruimte vrijmaken</translation>
-<translation id="8496140788721644230">AR-module geïnstalleerd</translation>
 <translation id="8497726226069778601">Hier is nog niets te zien</translation>
 <translation id="8503559462189395349">Chrome-wachtwoorden</translation>
 <translation id="8503813439785031346">Gebruikersnaam</translation>

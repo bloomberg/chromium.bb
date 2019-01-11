@@ -107,8 +107,8 @@
 <translation id="17513872634828108">Открытые вкладки</translation>
 <translation id="1779089405699405702">Дешифратор изображений</translation>
 <translation id="1782483593938241562">Дата окончания: <ph name="DATE" /></translation>
+<translation id="1791662854739702043">Установлено</translation>
 <translation id="1792959175193046959">Вы можете в любой момент изменить расположение скачиваемых файлов по умолчанию.</translation>
-<translation id="1796971354271036388">Установка VR-модуля…</translation>
 <translation id="1807246157184219062">Светлый</translation>
 <translation id="1821253160463689938">Использовать файлы cookie, чтобы запомнить ваши предпочтения, даже если вы не открываете эти страницы</translation>
 <translation id="1829244130665387512">Найти на странице</translation>
@@ -488,7 +488,6 @@
 <translation id="4837753911714442426">Открыть параметры печати страницы</translation>
 <translation id="4842092870884894799">Открыто всплывающее окно создания пароля</translation>
 <translation id="4850886885716139402">Посмотреть</translation>
-<translation id="4857347795080810417">VR-модуль установлен</translation>
 <translation id="4860895144060829044">Позвонить</translation>
 <translation id="4875775213178255010">Предлагаемый контент</translation>
 <translation id="4878404682131129617">Не удалось создать туннель через прокси-сервер.</translation>
@@ -551,7 +550,6 @@
 <translation id="5327248766486351172">Название</translation>
 <translation id="5335288049665977812">Разрешить сайтам использовать JavaScript (рекомендуется)</translation>
 <translation id="5363230136052241468">Нажмите кнопку главного экрана, чтобы открыть страницу быстрого доступа</translation>
-<translation id="5372829067651257087">URL скопирован.</translation>
 <translation id="5391532827096253100">Подключение к сайту не защищено. Информация о сайте</translation>
 <translation id="5400569084694353794">Работая с приложением, вы принимаете <ph name="BEGIN_LINK1" />Условия использования<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Примечание о конфиденциальности<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="5403644198645076998">Разрешить доступ только к определенным сайтам</translation>
@@ -749,7 +747,6 @@
 <translation id="6746124502594467657">Переместить вниз</translation>
 <translation id="6766622839693428701">Проведите вниз, чтобы закрыть панель.</translation>
 <translation id="6766758767654711248">Нажмите, чтобы перейти на сайт</translation>
-<translation id="6768277682697012280">Установка модуля дополненной реальности...</translation>
 <translation id="6776813977906306442">Чтобы скачать видео для просмотра, нажмите соответствующую кнопку</translation>
 <translation id="6782111308708962316">Запретить сторонним веб-сайтам сохранять и просматривать файлы cookie</translation>
 <translation id="6790428901817661496">Воспроизвести</translation>
@@ -776,7 +773,6 @@
 <translation id="6963642900430330478">Эта страница представляет опасность. Информация о сайте</translation>
 <translation id="6963766334940102469">Удалить закладки</translation>
 <translation id="6965382102122355670">ОК</translation>
-<translation id="6968317970155454671">Не удалось установить модуль дополненной реальности</translation>
 <translation id="6978479750597523876">Сбросить настройки перевода</translation>
 <translation id="6979737339423435258">Все время</translation>
 <translation id="6981982820502123353">Специальные возможности</translation>
@@ -974,7 +970,6 @@
 <translation id="8487700953926739672">Доступно в автономном режиме</translation>
 <translation id="8489271220582375723">Открыть страницу "История"</translation>
 <translation id="8493948351860045254">Освободить место</translation>
-<translation id="8496140788721644230">Модуль дополненной реальности установлен</translation>
 <translation id="8497726226069778601">Здесь появятся часто посещаемые страницы</translation>
 <translation id="8503559462189395349">Пароли Chrome</translation>
 <translation id="8503813439785031346">Имя пользователя</translation>

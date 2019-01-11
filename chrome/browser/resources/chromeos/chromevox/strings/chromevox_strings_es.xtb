@@ -289,48 +289,6 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="3322936298410871309">Encabezado anterior de nivel 1</translation>
 <translation id="3323447499041942178">Cuadro de texto</translation>
 <translation id="3338224621010291843">Control deslizante del <ph name="NAME" /> al <ph name="VALUE" /></translation>
-<translation id="3353420241558113817">{"ar": "Árabe",
-        "bg": "Búlgaro",
-        "ca": "Catalán",
-        "cs": "Checo",
-        "da": "Danés",
-        "de": "Alemán",
-        "de_CH": "Alemán (Suiza)",
-        "de_DE": "Alemán (Alemania)",
-        "el": "Griego",
-        "en": "Inglés",
-        "en_CA": "Inglés (Canadá)",
-        "en_GB": "Inglés (Reino Unido)",
-        "en_US": "Inglés (Estados Unidos)",
-        "es": "Español",
-        "et": "Estonio",
-        "fr": "Francés",
-        "fr_CA": "Francés (Canadá)",
-        "fr_FR": "Francés (Francia)",
-        "fi": "Finés",
-        "he": "Hebreo",
-        "hi": "Hindú",
-        "hr": "Croata",
-        "hu": "Húngaro",
-        "is": "Islandés",
-        "it": "Italiano",
-        "ko": "Coreano",
-        "lt": "Lituano",
-        "lv": "Letón",
-        "nb": "Noruego (Bokmål)",
-        "nl": "Neerlandés",
-        "pl": "Polaco",
-        "pt": "Portugués",
-        "ro": "Rumano",
-        "ru": "Ruso",
-        "sk": "Eslovaco",
-        "sl": "Esloveno",
-        "sr": "Serbio",
-        "sv": "Sueco",
-        "tr": "Turco",
-        "vi": "Vietnamita",
-        "zh": "Chino",
-        "zh_TW": "Chino (Han tradicional)"}</translation>
 <translation id="335581015389089642">Voz</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{más}other{# signos más}}</translation>
@@ -706,6 +664,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="6387719785439924554">etiqueta de contenido tangencial</translation>
 <translation id="6411426777058107714">No hay ningún botón de opción anterior.</translation>
 <translation id="6414968628640960377">Elemento anterior distinto</translation>
+<translation id="6417265370957905582">Asistente de Google</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{dos puntos}other{# signos dos puntos}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, menú</translation>
 <translation id="6444046323172968959">Cuadro de diálogo de alerta</translation>

@@ -107,8 +107,8 @@
 <translation id="17513872634828108">開いているタブ</translation>
 <translation id="1779089405699405702">画像デコーダー</translation>
 <translation id="1782483593938241562">終了日: <ph name="DATE" /></translation>
+<translation id="1791662854739702043">インストール先</translation>
 <translation id="1792959175193046959">デフォルトのダウンロード保存先はいつでも変更できます</translation>
-<translation id="1796971354271036388">VR モジュールをインストールしています...</translation>
 <translation id="1807246157184219062">明</translation>
 <translation id="1821253160463689938">Cookie を使って設定を保存します（これらのページにアクセスしない場合も Cookie が保持されます）</translation>
 <translation id="1829244130665387512">ページ内検索</translation>
@@ -488,7 +488,6 @@
 <translation id="4837753911714442426">ページの印刷オプションを開く</translation>
 <translation id="4842092870884894799">パスワード作成のポップアップを表示しています</translation>
 <translation id="4850886885716139402">表示</translation>
-<translation id="4857347795080810417">VR モジュールがインストールされました</translation>
 <translation id="4860895144060829044">通話</translation>
 <translation id="4875775213178255010">おすすめのコンテンツ</translation>
 <translation id="4878404682131129617">プロキシ サーバー経由のトンネルを確立できませんでした</translation>
@@ -551,7 +550,6 @@
 <translation id="5327248766486351172">名前</translation>
 <translation id="5335288049665977812">サイトに Javascript の実行を許可する（推奨）</translation>
 <translation id="5363230136052241468">新しいタブの画面を読み込むには、ホームボタンをタップします</translation>
-<translation id="5372829067651257087">URL をコピーしました。</translation>
 <translation id="5391532827096253100">このサイトへの接続は保護されていません。サイト情報</translation>
 <translation id="5400569084694353794">このアプリケーションを使用すると、Chrome の<ph name="BEGIN_LINK1" />利用規約<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />プライバシーに関するお知らせ<ph name="END_LINK2" />に同意したことになります。</translation>
 <translation id="5403644198645076998">特定のサイトのみを許可</translation>
@@ -749,7 +747,6 @@
 <translation id="6746124502594467657">下に移動</translation>
 <translation id="6766622839693428701">閉じるには下にスワイプします。</translation>
 <translation id="6766758767654711248">タップしてサイトに移動する</translation>
-<translation id="6768277682697012280">AR モジュールをインストールしています...</translation>
 <translation id="6776813977906306442">動画をダウンロードして後で見るには、[ダウンロード] をクリックします</translation>
 <translation id="6782111308708962316">サードパーティのウェブサイトが Cookie データを保存したり読み取ったりできないようにします</translation>
 <translation id="6790428901817661496">再生</translation>
@@ -776,7 +773,6 @@
 <translation id="6963642900430330478">このページは危険です。サイト情報</translation>
 <translation id="6963766334940102469">ブックマークを削除</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6968317970155454671">AR モジュールをインストールできませんでした</translation>
 <translation id="6978479750597523876">翻訳設定をリセット</translation>
 <translation id="6979737339423435258">全期間</translation>
 <translation id="6981982820502123353">ユーザー補助機能</translation>
@@ -974,7 +970,6 @@
 <translation id="8487700953926739672">オフラインでの利用</translation>
 <translation id="8489271220582375723">履歴ページを開く</translation>
 <translation id="8493948351860045254">容量を空ける</translation>
-<translation id="8496140788721644230">AR モジュールをインストールしました</translation>
 <translation id="8497726226069778601">表示するものがまだありません</translation>
 <translation id="8503559462189395349">Chrome パスワード</translation>
 <translation id="8503813439785031346">ユーザー名</translation>

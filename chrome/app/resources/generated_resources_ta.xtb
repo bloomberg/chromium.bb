@@ -1380,7 +1380,6 @@
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">இந்தத் தாவல், உங்கள் கேமரா அல்லது மைக்ரோஃபோனைப் பயன்படுத்துகிறது.</translation>
 <translation id="3083193146044397360">உங்கள் பாதுகாப்பை உறுதிசெய்ய, தற்காலிகமாகத் தடுக்கப்பட்டது</translation>
-<translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">நிறுவ விடு</translation>
 <translation id="3084771660770137092">Chrome க்கு நினைவகம் போதாமல் இருக்கலாம் அல்லது வேறு ஏதேனும் காரணத்தினால் வலைப்பக்கத்திற்கான செயலாக்கம் நிறுத்தப்பட்டிருக்கலாம்.  தொடர்வதற்கு, மீண்டும் ஏற்றுக அல்லது மற்றொரு பக்கத்திற்கு செல்க.</translation>
 <translation id="3085412380278336437">தளத்தால் உங்கள் கேமராவைப் பயன்படுத்த முடியும்</translation>
@@ -2175,7 +2174,7 @@
 <translation id="4316850752623536204">டெவலப்பர் இணையதளம்</translation>
 <translation id="4320177379694898372">இணைய இணைப்பு இல்லை</translation>
 <translation id="4320948194796820126">புக்மார்க்கில் சேர்க்க மின்னஞ்சல் சேவையைத் தேர்ந்தெடுக்கவும்</translation>
-<translation id="4321442524549817090">URLலைக் காட்டு</translation>
+<translation id="4321442524549817090">URLலைக் கா&amp;ட்டு</translation>
 <translation id="4322394346347055525">பிற தாவல்களை மூடுக</translation>
 <translation id="4324577459193912240">பதிவிறக்கம் முழுமையடையவில்லை</translation>
 <translation id="4325237902968425115"><ph name="LINUX_APP_NAME" />ஐ நிறுவல் நீக்குகிறது...</translation>
@@ -2562,6 +2561,7 @@
 <translation id="4941246025622441835">நிறுவன மேலாண்மைக்காக சாதனத்தைச் சேர்க்கும்போது இந்தச் சாதனக் கோரிக்கையைப் பயன்படுத்தவும்:</translation>
 <translation id="4941627891654116707">எழுத்துரு அளவு</translation>
 <translation id="494286511941020793">பதிலி உள்ளமைவு உதவி</translation>
+<translation id="495170559598752135">செயல்கள்</translation>
 <translation id="4953689047182316270">அணுகல்தன்மை நிகழ்வுகளுக்குப் பதிலளித்தல்</translation>
 <translation id="4953808748584563296">இயல்பு ஆரஞ்சுநிற அவதார்</translation>
 <translation id="4955710816792587366">பின்னைத் தேர்ந்தெடுக்கவும்</translation>
@@ -2816,7 +2816,6 @@
 <translation id="5331975486040154427">USB-C சாதனம் (இடது பக்கம் பின்னே இருக்கும் போர்ட்)</translation>
 <translation id="5332624210073556029">நேர மண்டலம்:</translation>
 <translation id="5334142896108694079">ஸ்கிரிப்ட் தற்காலிக சேமிப்பு</translation>
-<translation id="5334899159203764908"><ph name="BEGIN_LINK" />தள அணுகலைப்<ph name="END_LINK" /> பற்றி மேலும் அறிக</translation>
 <translation id="5335458522276292100"><ph name="BEGIN_LINK" />Google இயக்ககத்திற்கு<ph name="END_LINK" /> <ph name="FILE_COUNT" /> கோப்புகளைக் காப்புப் பிரதி எடுக்கிறது</translation>
 <translation id="5336126339807372270">USB சாதனங்களை அணுக, எந்தத் தளத்தையும் அனுமதிக்காதே</translation>
 <translation id="5337771866151525739">மூன்றாம் தரப்பால் நிறுவப்பட்டதாகும்.</translation>
@@ -5061,7 +5060,6 @@
 <translation id="8725066075913043281">மீண்டும் முயற்சிக்கவும்</translation>
 <translation id="8725178340343806893">விருப்பங்கள்/புக்மார்க்ஸ்</translation>
 <translation id="8726206820263995930">சேவையகத்திலிருந்து கொள்கை அமைப்புகளைப் பெறுவதில் பிழை: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727344521467137076">உங்கள் கணினியில் தீங்கிழைக்கும் மென்பொருள் உள்ளது. Chrome அதை அகற்றுகிறது. உங்கள் உலாவியை வழக்கம் போல் மீண்டும் செயல்படுத்துவதற்கு, உங்கள் அமைப்புகளை Chrome மீட்டமைக்கும்.</translation>
 <translation id="8730621377337864115">முடிந்தது</translation>
 <translation id="8732030010853991079">இந்த ஐகானில் கிளிக் செய்து இந்த நீட்டிப்பைப் பயன்படுத்துக.</translation>
 <translation id="8732212173949624846">நீங்கள் உள்நுழைந்துள்ள எல்லா சாதனங்களிலிருக்கும் உலாவல் வரலாற்றைப் படிக்கலாம் மற்றும் மாற்றலாம்</translation>
@@ -5253,7 +5251,6 @@
 <translation id="9033857511263905942">&amp;ஒட்டு</translation>
 <translation id="9034924485347205037">Linux கோப்புகள்</translation>
 <translation id="9035012421917565900">கோப்புகளை '<ph name="DESTINATION_NAME" />'க்கு மீண்டும் நகர்த்த முடியாது என்பதால், இதைச் செயல்தவிர்க்க முடியாது.</translation>
-<translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">அசல் மொழியில் காட்டு</translation>
 <translation id="9038430547971207796">அடுத்த முறை, உங்கள் மொபைலானது <ph name="DEVICE_TYPE" /> சாதனத்தைத் திறக்கும். அமைப்புகளுக்குச் சென்று, Smart Lockஐ முடக்கலாம்.</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" என்ற பெயருள்ள கோப்பு ஏற்கனவே உள்ளது. வேறொரு பெயரைத் தேர்வுசெய்யவும்.</translation>

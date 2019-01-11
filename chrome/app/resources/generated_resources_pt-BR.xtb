@@ -1379,7 +1379,6 @@
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">Esta guia está usando sua câmera ou microfone.</translation>
 <translation id="3083193146044397360">Bloqueada temporariamente para proteger sua segurança</translation>
-<translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Soltar para instalar</translation>
 <translation id="3084771660770137092">O Google Chrome ficou sem memória ou o processo da página foi encerrado por algum outro motivo. Para continuar, atualize a página ou vá para outra página.</translation>
 <translation id="3085412380278336437">O site pode usar sua câmera</translation>
@@ -2175,7 +2174,7 @@
 <translation id="4316850752623536204">Website do desenvolvedor</translation>
 <translation id="4320177379694898372">Sem conexão com a Internet</translation>
 <translation id="4320948194796820126">Adicione seu e-mail aos favoritos</translation>
-<translation id="4321442524549817090">Mostrar URL</translation>
+<translation id="4321442524549817090">M&amp;ostrar URL</translation>
 <translation id="4322394346347055525">Fechar outras guias</translation>
 <translation id="4324577459193912240">Arquivo incompleto</translation>
 <translation id="4325237902968425115">Desinstalando <ph name="LINUX_APP_NAME" />…</translation>
@@ -2562,6 +2561,7 @@
 <translation id="4941246025622441835">Usar essa requisição de dispositivo ao inscrever o dispositivo no gerenciamento corporativo:</translation>
 <translation id="4941627891654116707">Tamanho da fonte</translation>
 <translation id="494286511941020793">Ajuda da configuração de proxy</translation>
+<translation id="495170559598752135">Ações</translation>
 <translation id="4953689047182316270">Responder a eventos de acessibilidade</translation>
 <translation id="4953808748584563296">Avatar laranja padrão</translation>
 <translation id="4955710816792587366">Escolher o PIN</translation>
@@ -2816,7 +2816,6 @@
 <translation id="5331975486040154427">Dispositivo USB-C (porta traseira da esquerda)</translation>
 <translation id="5332624210073556029">Fuso horário:</translation>
 <translation id="5334142896108694079">Cache de script</translation>
-<translation id="5334899159203764908">Saiba mais sobre o <ph name="BEGIN_LINK" />acesso aos sites<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">Fazendo backup de <ph name="FILE_COUNT" /> arquivo(s) para o <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">Não permitir que nenhum site acesse dispositivos USB</translation>
 <translation id="5337771866151525739">Instalada por terceiro.</translation>
@@ -5061,7 +5060,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8725178340343806893">Favoritos</translation>
 <translation id="8726206820263995930">Erro ao obter as configurações da política a partir do servidor: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727344521467137076">Há um software prejudicial no seu computador. O Chrome está removendo esse software e restaurará as configurações para que o navegador volte a funcionar normalmente.</translation>
 <translation id="8730621377337864115">Concluído</translation>
 <translation id="8732030010853991079">Para usar esta extensão, clique neste ícone.</translation>
 <translation id="8732212173949624846">Ler e modificar seu histórico de navegação em todos os dispositivos nos quais você fez login</translation>
@@ -5253,7 +5251,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="9033857511263905942">&amp;Colar</translation>
 <translation id="9034924485347205037">Arquivos do Linux</translation>
 <translation id="9035012421917565900">Os itens não poderão retornar para '<ph name="DESTINATION_NAME" />', portanto, você não poderá desfazer esta ação.</translation>
-<translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">Mostrar original</translation>
 <translation id="9038430547971207796">Na próxima vez, o smartphone desbloqueará seu <ph name="DEVICE_TYPE" />. Desative o Smart Lock nas configurações.</translation>
 <translation id="9038620279323455325">O arquivo chamado "<ph name="FILE_NAME" />" já existe. Escolha outro nome.</translation>

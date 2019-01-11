@@ -107,8 +107,8 @@
 <translation id="17513872634828108">開啟分頁</translation>
 <translation id="1779089405699405702">影像解碼器</translation>
 <translation id="1782483593938241562">結束日期：<ph name="DATE" /></translation>
+<translation id="1791662854739702043">安裝位置</translation>
 <translation id="1792959175193046959">你隨時可以變更預設的下載位置</translation>
-<translation id="1796971354271036388">正在安裝 VR 模組...</translation>
 <translation id="1807246157184219062">淺色</translation>
 <translation id="1821253160463689938">使用 Cookie 記住你的偏好設定 (即使你沒有造訪這些網頁)</translation>
 <translation id="1829244130665387512">在網頁中尋找</translation>
@@ -488,7 +488,6 @@
 <translation id="4837753911714442426">開啟列印網頁的選項</translation>
 <translation id="4842092870884894799">目前顯示的是密碼產生彈出式視窗</translation>
 <translation id="4850886885716139402">檢視</translation>
-<translation id="4857347795080810417">已安裝 VR 模組</translation>
 <translation id="4860895144060829044">撥號</translation>
 <translation id="4875775213178255010">內容建議</translation>
 <translation id="4878404682131129617">無法透過 Proxy 伺服器建立通道</translation>
@@ -551,7 +550,6 @@
 <translation id="5327248766486351172">名稱</translation>
 <translation id="5335288049665977812">允許網站執行 JavaScript (建議)</translation>
 <translation id="5363230136052241468">輕觸 [首頁] 按鈕即可載入新分頁</translation>
-<translation id="5372829067651257087">已複製網址。</translation>
 <translation id="5391532827096253100">你與這個網站的連線不安全。網站資訊</translation>
 <translation id="5400569084694353794">使用這個應用程式即表示您同意接受 Chrome 的《<ph name="BEGIN_LINK1" />服務條款<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />隱私權聲明<ph name="END_LINK2" />》。</translation>
 <translation id="5403644198645076998">只允許特定網站</translation>
@@ -749,7 +747,6 @@
 <translation id="6746124502594467657">下移</translation>
 <translation id="6766622839693428701">向下滑動即可關閉。</translation>
 <translation id="6766758767654711248">輕觸即可前往網站</translation>
-<translation id="6768277682697012280">正在安裝 AR 模組...</translation>
 <translation id="6776813977906306442">使用 [下載] 按鈕可下載影片以供日後觀看</translation>
 <translation id="6782111308708962316">禁止第三方網站儲存及讀取 Cookie 資料</translation>
 <translation id="6790428901817661496">播放</translation>
@@ -776,7 +773,6 @@
 <translation id="6963642900430330478">這個網頁不安全。網站資訊</translation>
 <translation id="6963766334940102469">刪除書籤</translation>
 <translation id="6965382102122355670">確定</translation>
-<translation id="6968317970155454671">無法安裝 AR 模組</translation>
 <translation id="6978479750597523876">重設翻譯設定</translation>
 <translation id="6979737339423435258">不限時間</translation>
 <translation id="6981982820502123353">協助工具</translation>
@@ -974,7 +970,6 @@
 <translation id="8487700953926739672">可離線使用</translation>
 <translation id="8489271220582375723">開啟記錄頁面</translation>
 <translation id="8493948351860045254">釋出空間</translation>
-<translation id="8496140788721644230">已安裝 AR 模組</translation>
 <translation id="8497726226069778601">目前還沒有任何常用網頁…</translation>
 <translation id="8503559462189395349">Chrome 密碼</translation>
 <translation id="8503813439785031346">使用者名稱</translation>

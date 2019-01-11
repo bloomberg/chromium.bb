@@ -12,7 +12,6 @@
 <translation id="1055184225775184556">&amp;Hoàn tác thêm</translation>
 <translation id="1058479211578257048">Đang lưu thẻ...</translation>
 <translation id="10614374240317010">Không bao giờ lưu</translation>
-<translation id="1066396345355680611">Bạn có thể mất quyền truy cập vào nội dung được bảo vệ của <ph name="SITE" /> và một số trang web khác.</translation>
 <translation id="106701514854093668">Dấu trang máy tính</translation>
 <translation id="1074497978438210769">Không bảo mật</translation>
 <translation id="1080116354587839789">Vừa với chiều rộng</translation>
@@ -461,7 +460,6 @@
 <translation id="3901925938762663762">Thẻ đã hết hạn</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3946209740501886391">Luôn hỏi trên trang web này</translation>
-<translation id="3947577358805392297">Lưu trang để xem sau</translation>
 <translation id="3949571496842715403">Máy chủ này không thể chứng minh được đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ không chỉ định Tên thay thế đối tượng. Điều này có thể do cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="3949601375789751990">Lịch sử duyệt web của bạn xuất hiện ở đây</translation>
 <translation id="3950820424414687140">Đăng nhập</translation>
@@ -627,7 +625,6 @@
 <translation id="5045550434625856497">Mật khẩu sai</translation>
 <translation id="5056549851600133418">Bài viết dành cho bạn</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Kiểm tra địa chỉ proxy<ph name="END_LINK" /></translation>
-<translation id="5086888986931078152">Bạn có thể mất quyền truy cập vào nội dung được bảo vệ của một số trang web.</translation>
 <translation id="5087286274860437796">Chứng chỉ của máy chủ không hợp lệ tại thời điểm này.</translation>
 <translation id="5087580092889165836">Thêm thẻ</translation>
 <translation id="5089810972385038852">Tỉnh</translation>
@@ -755,7 +752,6 @@
 <translation id="5939518447894949180">Đặt lại</translation>
 <translation id="5946937721014915347">Đang mở <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Không thể đăng ký bằng tài khoản người dùng thông thường (có sẵn giấy phép theo gói).</translation>
-<translation id="5966151627327109289">Bạn sẽ bị đăng xuất khỏi hầu hết các trang web và có thể mất quyền truy cập vào nội dung được bảo vệ trên <ph name="SITE" /> và một số trang web khác.</translation>
 <translation id="5967592137238574583">Chỉnh sửa thông tin liên hệ</translation>
 <translation id="5967867314010545767">Xóa khỏi lịch sử</translation>
 <translation id="5975083100439434680">Thu nhỏ</translation>
@@ -778,7 +774,6 @@
 <translation id="6059925163896151826">Thiết bị USB</translation>
 <translation id="6071091556643036997">Loại chính sách là không hợp lệ.</translation>
 <translation id="6080696365213338172">Bạn đã truy cập nội dung bằng chứng chỉ do quản trị viên cấp. Dữ liệu mà bạn cung cấp cho <ph name="DOMAIN" /> có thể bị quản trị viên của bạn chặn.</translation>
-<translation id="6096619198407627433">Bạn sẽ bị đăng xuất khỏi hầu hết các trang web, trừ Tài khoản Google của mình. Bạn có thể mất quyền truy cập vào nội dung được bảo vệ trên <ph name="SITE" /> và một số trang web khác.</translation>
 <translation id="610911394827799129">Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Không có}=1{1 mật khẩu (đã đồng bộ hóa)}other{# mật khẩu (đã đồng bộ hóa)}}</translation>
 <translation id="6146055958333702838">Kiểm tra mọi dây cáp rồi khởi động lại bộ định tuyến, modem hoặc các thiết bị
@@ -962,7 +957,6 @@ Thông tin chi tiết bổ sung:
 <translation id="7444046173054089907">Trang web này bị chặn</translation>
 <translation id="7445762425076701745">Không thể xác thực đầy đủ nhận dạng của máy chủ bạn đã kết nối. Bạn đã kết nối vào máy chủ bằng một tên chỉ hợp lệ trong mạng của bạn và đó là tên mà các tổ chức phát hành chứng chỉ bên ngoài không thể xác thực được. Vì một số tổ chức phát hành chứng chỉ sẽ cấp chứng chỉ cho các tên này thay thế, nên không có cách nào đảm bảo bạn được kết nối tới trang web đã chỉ định và không phải là kẻ tấn công.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /> về sự cố này.</translation>
-<translation id="7453467225369441013">Đăng xuất bạn khỏi hầu hết các trang web. Bạn sẽ không bị đăng xuất khỏi Tài khoản Google của mình.</translation>
 <translation id="7455133967321480974">Sử dụng cài đặt mặc định chung (Chặn)</translation>
 <translation id="7460618730930299168">Màn hình khác với nội dung bạn đã chọn. Bạn có muốn tiếp tục không?</translation>
 <translation id="7473891865547856676">Không, cảm ơn</translation>
@@ -1146,7 +1140,6 @@ Thông tin chi tiết bổ sung:
 <translation id="860043288473659153">Tên chủ thẻ</translation>
 <translation id="8620436878122366504">Cha mẹ của bạn chưa phê duyệt trang web</translation>
 <translation id="8625384913736129811">Lưu thẻ này vào thiết bị này</translation>
-<translation id="8662811608048051533">Đăng xuất bạn khỏi hầu hết các trang web.</translation>
 <translation id="8663226718884576429">Tóm tắt đơn hàng, <ph name="TOTAL_LABEL" />, chi tiết khác</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, câu trả lời, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Kết nối của bạn đến <ph name="DOMAIN" /> không được mã hóa.</translation>

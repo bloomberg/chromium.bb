@@ -107,8 +107,8 @@
 <translation id="17513872634828108">כרטיסיות פתוחות</translation>
 <translation id="1779089405699405702">מפענח התמונות</translation>
 <translation id="1782483593938241562">תאריך סיום <ph name="DATE" /></translation>
+<translation id="1791662854739702043">מותקן</translation>
 <translation id="1792959175193046959">אפשר תמיד לשנות את מיקום ההורדות</translation>
-<translation id="1796971354271036388">‏מתקין מודול VR…</translation>
 <translation id="1807246157184219062">בהיר</translation>
 <translation id="1821253160463689938">‏שימוש בקובצי cookie כדי לשמור את ההעדפות שלך, גם אם לא נכנסת אל הדפים האלה</translation>
 <translation id="1829244130665387512">חפש בדף</translation>
@@ -488,7 +488,6 @@
 <translation id="4837753911714442426">פתח אפשרויות להדפסת דפים</translation>
 <translation id="4842092870884894799">מציג את החלון הקופץ של יצירת סיסמה</translation>
 <translation id="4850886885716139402">הצג</translation>
-<translation id="4857347795080810417">‏הותקן מודול VR</translation>
 <translation id="4860895144060829044">התקשר</translation>
 <translation id="4875775213178255010">תוכן מוצע</translation>
 <translation id="4878404682131129617">‏יצירת מנהרה בעזרת שרת proxy נכשלה</translation>
@@ -551,7 +550,6 @@
 <translation id="5327248766486351172">שם</translation>
 <translation id="5335288049665977812">‏אפשר לאתרים להריץ JavaScript (מומלץ)</translation>
 <translation id="5363230136052241468">כדי לטעון את דף הכרטיסייה החדשה, צריך להקיש על הלחצן הראשי</translation>
-<translation id="5372829067651257087">כתובת האתר הועתקה.</translation>
 <translation id="5391532827096253100">החיבור שלך לאתר הזה לא מאובטח. פרטי האתר</translation>
 <translation id="5400569084694353794">‏בעצם השימוש באפליקציה זו, אתה מסכים ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />הודעת הפרטיות<ph name="END_LINK2" /> של Chrome.</translation>
 <translation id="5403644198645076998">התר גישה רק לאתרים ספציפיים</translation>
@@ -749,7 +747,6 @@
 <translation id="6746124502594467657">הזז למטה</translation>
 <translation id="6766622839693428701">החלקה מטה סוגרת.</translation>
 <translation id="6766758767654711248">הקשה תעביר אותך אל האתר</translation>
-<translation id="6768277682697012280">‏מתקין מודול AR...</translation>
 <translation id="6776813977906306442">אפשר ללחוץ על לחצן ההורדה כדי להוריד סרטונים ולצפות בהם מאוחר יותר</translation>
 <translation id="6782111308708962316">‏מנע מאתרים של צד שלישי לשמור ולקרוא נתונים של קובצי cookie</translation>
 <translation id="6790428901817661496">הפעל</translation>
@@ -776,7 +773,6 @@
 <translation id="6963642900430330478">הדף הזה מסוכן. פרטי האתר</translation>
 <translation id="6963766334940102469">מחק סימניות</translation>
 <translation id="6965382102122355670">אישור</translation>
-<translation id="6968317970155454671">‏התקנת מודול AR נכשלה</translation>
 <translation id="6978479750597523876">‏אפס את הגדרות Google Translate</translation>
 <translation id="6979737339423435258">משחר ההיסטוריה</translation>
 <translation id="6981982820502123353">נגישות</translation>
@@ -974,7 +970,6 @@
 <translation id="8487700953926739672">זמין במצב לא מקוון</translation>
 <translation id="8489271220582375723">פתח את דף ההיסטוריה</translation>
 <translation id="8493948351860045254">פנה שטח אחסון</translation>
-<translation id="8496140788721644230">‏מודול AR הותקן</translation>
 <translation id="8497726226069778601">אין מה לראות כאן… בינתיים</translation>
 <translation id="8503559462189395349">‏סיסמאות Chrome</translation>
 <translation id="8503813439785031346">שם משתמש</translation>

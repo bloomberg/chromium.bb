@@ -107,8 +107,8 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="17513872634828108">Öppna flikar</translation>
 <translation id="1779089405699405702">Bildavkodare</translation>
 <translation id="1782483593938241562">Slutdatum <ph name="DATE" /></translation>
+<translation id="1791662854739702043">Installerat</translation>
 <translation id="1792959175193046959">Ändra standardplats för nedladdningar när som helst</translation>
-<translation id="1796971354271036388">Installerar VR-modul …</translation>
 <translation id="1807246157184219062">Ljus</translation>
 <translation id="1821253160463689938">Kommer ihåg med hjälp av cookies vad du brukar välja även om du inte besöker sidorna i fråga</translation>
 <translation id="1829244130665387512">Hitta på sida</translation>
@@ -488,7 +488,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4837753911714442426">Öppna utskriftsalternativ</translation>
 <translation id="4842092870884894799">Visar popupfönster för lösenordsgenerering</translation>
 <translation id="4850886885716139402">Visa</translation>
-<translation id="4857347795080810417">VR-modulen har installerats</translation>
 <translation id="4860895144060829044">Ring</translation>
 <translation id="4875775213178255010">Förslag på innehåll</translation>
 <translation id="4878404682131129617">Det gick inte att upprätta en tunnel via proxyserver</translation>
@@ -551,7 +550,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5327248766486351172">Namn</translation>
 <translation id="5335288049665977812">Tillåt att Javascript körs på webbplatser (rekommenderas)</translation>
 <translation id="5363230136052241468">Tryck på hemknappen om du vill läsa in sidan Ny flik</translation>
-<translation id="5372829067651257087">Webbadress kopierad.</translation>
 <translation id="5391532827096253100">Anslutningen till webbplatsen är inte säker. Webbplatsinformation</translation>
 <translation id="5400569084694353794">Genom att använda det här programmet godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretessmeddelande<ph name="END_LINK2" />.</translation>
 <translation id="5403644198645076998">Tillåt endast vissa webbplatser</translation>
@@ -749,7 +747,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6746124502594467657">Flytta ned</translation>
 <translation id="6766622839693428701">Svep nedåt när du vill stänga.</translation>
 <translation id="6766758767654711248">Tryck här för att besöka webbplatsen</translation>
-<translation id="6768277682697012280">Installerar AR-modul …</translation>
 <translation id="6776813977906306442">Ladda ned videor att titta på senare med knappen Ladda ned.</translation>
 <translation id="6782111308708962316">Hindra att webbplatser från tredje part sparar och läser cookiedata</translation>
 <translation id="6790428901817661496">Spela</translation>
@@ -776,7 +773,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6963642900430330478">Sidan är farlig. Webbplatsinformation</translation>
 <translation id="6963766334940102469">Radera bokmärken</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6968317970155454671">Det gick inte att installera AR-modulen</translation>
 <translation id="6978479750597523876">Återställ översättningsinställningar</translation>
 <translation id="6979737339423435258">Genom tiderna</translation>
 <translation id="6981982820502123353">Tillgänglighet</translation>
@@ -974,7 +970,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8487700953926739672">Tillgänglig offline</translation>
 <translation id="8489271220582375723">Öppna historiksidan</translation>
 <translation id="8493948351860045254">Frigör lagringsutrymme</translation>
-<translation id="8496140788721644230">AR-modulen har installerats</translation>
 <translation id="8497726226069778601">Det finns inget att se här … än</translation>
 <translation id="8503559462189395349">Lösenord i Chrome</translation>
 <translation id="8503813439785031346">Användarnamn</translation>

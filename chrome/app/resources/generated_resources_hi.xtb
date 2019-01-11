@@ -1379,7 +1379,6 @@
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">यह टैब आपके कैमरे या माइक्रोफ़ोन का उपयोग कर रहा है.</translation>
 <translation id="3083193146044397360">आपकी सुरक्षा के लिए कुछ समय तक ब्लॉक किया गया</translation>
-<translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">इंस्टॉल करने के लिए यहां छोड़ें</translation>
 <translation id="3084771660770137092">या तो Chrome की मेमोरी खत्म हो गई है या वेबपेज की प्रक्रिया किसी और वजह से खत्म कर दी गई है. जारी रखने के लिए, फिर लोड करें या किसी और पेज पर जाएं.</translation>
 <translation id="3085412380278336437">साइट आपके कैमरे का इस्तेमाल कर सकती है</translation>
@@ -2561,6 +2560,7 @@
 <translation id="4941246025622441835">एंटरप्राइज़ प्रबंधन के लिए डिवाइस को नामांकित करते समय इस डिवाइस अनुरोध का उपयोग करें:</translation>
 <translation id="4941627891654116707">फ़ॉन्ट का आकार</translation>
 <translation id="494286511941020793">प्रॉक्सी कॉन्फ़िगरेशन सहायता</translation>
+<translation id="495170559598752135">क्रियाएं</translation>
 <translation id="4953689047182316270">सुलभता इवेंट का जवाब दें</translation>
 <translation id="4953808748584563296">डिफ़ॉल्ट नारंगी अवतार</translation>
 <translation id="4955710816792587366">अनलॉक करने के लिए अपना पिन चुनें</translation>
@@ -2815,7 +2815,6 @@
 <translation id="5331975486040154427">USB-C डिवाइस (बायां पिछला पोर्ट)</translation>
 <translation id="5332624210073556029">समय क्षेत्र:</translation>
 <translation id="5334142896108694079">स्क्रिप्ट संचय</translation>
-<translation id="5334899159203764908"><ph name="BEGIN_LINK" />साइट एक्सेस<ph name="END_LINK" /> करने के बारे में ज़्यादा जानें</translation>
 <translation id="5335458522276292100"><ph name="FILE_COUNT" /> का <ph name="BEGIN_LINK" />Google डिस्क<ph name="END_LINK" /> में बैक अप लिया जा रहा है</translation>
 <translation id="5336126339807372270">किसी भी साइट को USB डिवाइस एक्सेस न करने दें</translation>
 <translation id="5337771866151525739">किसी तृतीय पक्ष द्वारा इंस्टॉल किया गया.</translation>
@@ -5057,7 +5056,6 @@
 <translation id="8725066075913043281">पुन: प्रयास करें</translation>
 <translation id="8725178340343806893">पसंदीदा/बुकमार्क बार</translation>
 <translation id="8726206820263995930">सर्वर से नीति सेटिंग फ़ेच करते समय गड़बड़ी: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727344521467137076">आपके कंप्यूटर पर नुकसान पहुंचाने वाला सॉफ़्टवेयर है. Chrome उसे हटा रहा है और आपकी सेटिंग को बहाल करेगा ताकि आपका ब्राउज़र फिर से सामान्य रूप से काम करने लगे.</translation>
 <translation id="8730621377337864115">पूर्ण</translation>
 <translation id="8732030010853991079">इस आइकॉन पर क्लिक करके इस एक्सटेंशन का उपयोग करें.</translation>
 <translation id="8732212173949624846">अपने प्रवेश किए हुए सभी डिवाइस पर अपना ब्राउज़िंग इतिहास पढ़ें और बदलें</translation>
@@ -5249,7 +5247,6 @@
 <translation id="9033857511263905942">&amp;चिपकाएं</translation>
 <translation id="9034924485347205037">Linux की फ़ाइलें</translation>
 <translation id="9035012421917565900">आइटम '<ph name="DESTINATION_NAME" />' में वापस नहीं ले जाए जा सकते हैं, इसलिए आप इस कार्रवाई को पहले जैसा नहीं कर सकेंगे.</translation>
-<translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">मूल दिखाएं</translation>
 <translation id="9038430547971207796">अगली बार, आपका फ़ोन आपके <ph name="DEVICE_TYPE" /> को अनलॉक करेगा. सेटिंग में जाकर Smart Lock बंद करें.</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" नाम की फ़ाइल पहले से मौजूद है. कृपया कोई दूसरा नाम चुनें.</translation>

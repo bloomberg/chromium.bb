@@ -107,8 +107,8 @@
 <translation id="17513872634828108">علامات التبويب المفتوحة</translation>
 <translation id="1779089405699405702">أداة فك تشفير الصور</translation>
 <translation id="1782483593938241562">تاريخ الانتهاء: <ph name="DATE" /></translation>
+<translation id="1791662854739702043">تم التثبيت</translation>
 <translation id="1792959175193046959">تغيير موقع التنزيل التلقائي في أي وقت</translation>
-<translation id="1796971354271036388">‏جارٍ تثبيت وحدة VR...</translation>
 <translation id="1807246157184219062">فاتح</translation>
 <translation id="1821253160463689938">يستخدم ملفات تعريف الارتباط لتذكّر الإعدادات المُفضّلة حتى إذا لم تزُر تلك الصفحات.</translation>
 <translation id="1829244130665387512">البحث في الصفحة</translation>
@@ -488,7 +488,6 @@
 <translation id="4837753911714442426">فتح الخيارات لطباعة الصفحة</translation>
 <translation id="4842092870884894799">عرض نافذة إنشاء كلمة المرور المنبثقة</translation>
 <translation id="4850886885716139402">عرض</translation>
-<translation id="4857347795080810417">‏تم تثبيت وحدة VR</translation>
 <translation id="4860895144060829044">اتصال</translation>
 <translation id="4875775213178255010">اقتراحات المحتوى</translation>
 <translation id="4878404682131129617">أخفق إنشاء نفق عبر الخادم الوكيل.</translation>
@@ -551,7 +550,6 @@
 <translation id="5327248766486351172">الاسم</translation>
 <translation id="5335288049665977812">السماح للمواقع بتشغيل جافا سكريبت (موصى به)</translation>
 <translation id="5363230136052241468">انقر على زر "الشاشة الرئيسية" لتحميل صفحة علامة التبويب الجديدة</translation>
-<translation id="5372829067651257087">‏تمّ نسح عنوان URL.</translation>
 <translation id="5391532827096253100">إن اتصالك بهذا الموقع الإلكتروني غير آمن. معلومات موقع الويب</translation>
 <translation id="5400569084694353794">باستخدام هذا التطبيق، فإنك توافق على <ph name="BEGIN_LINK1" />شروط الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" />.</translation>
 <translation id="5403644198645076998">السماح بمواقع ويب معيّنة فقط</translation>
@@ -749,7 +747,6 @@
 <translation id="6746124502594467657">الانتقال إلى أسفل</translation>
 <translation id="6766622839693428701">يمكنك التمرير السريع للأسفل للإغلاق.</translation>
 <translation id="6766758767654711248">انقر للانتقال إلى موقع الويب</translation>
-<translation id="6768277682697012280">جارٍ تثبيت وحدة الواقع المعزّز...</translation>
 <translation id="6776813977906306442">يمكنك تنزيل فيديوهات لمشاهدتها لاحقًا باستخدام زر "التنزيل"</translation>
 <translation id="6782111308708962316">منع مواقع الويب التابعة لجهات خارجية من حفظ بيانات ملفات تعريف الارتباط وقراءتها</translation>
 <translation id="6790428901817661496">التشغيل</translation>
@@ -776,7 +773,6 @@
 <translation id="6963642900430330478">تُعدُّ هذه الصفحة خطيرة. معلومات موقع الويب</translation>
 <translation id="6963766334940102469">حذف الإشارات المرجعية</translation>
 <translation id="6965382102122355670">موافق</translation>
-<translation id="6968317970155454671">تعذَّر تثبيت وحدة الواقع المعزّز</translation>
 <translation id="6978479750597523876">إعادة تعيين إعدادات الترجمة</translation>
 <translation id="6979737339423435258">جميع الأوقات</translation>
 <translation id="6981982820502123353">إمكانية الدخول</translation>
@@ -974,7 +970,6 @@
 <translation id="8487700953926739672">التوفر بلا إنترنت</translation>
 <translation id="8489271220582375723">فتح صفحة السجل</translation>
 <translation id="8493948351860045254">تفريغ بعض المساحة</translation>
-<translation id="8496140788721644230">تم تثبيت وحدة الواقع المعزّز</translation>
 <translation id="8497726226069778601">لا يوجد شيء هنا... حتى الآن</translation>
 <translation id="8503559462189395349">‏كلمات المرور في Chrome</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>

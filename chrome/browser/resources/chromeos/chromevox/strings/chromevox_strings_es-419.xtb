@@ -289,48 +289,6 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="3322936298410871309">Encabezado anterior de nivel 1</translation>
 <translation id="3323447499041942178">Cuadro de texto</translation>
 <translation id="3338224621010291843">Control deslizante <ph name="VALUE" /> <ph name="NAME" /></translation>
-<translation id="3353420241558113817">{"ar": "árabe",
-        "bg": "búlgaro",
-        "ca": "catalán",
-        "cs": "checo",
-        "da": "danés",
-        "de": "alemán",
-        "de_CH": "alemán (Suiza)",
-        "de_DE": "alemán (Alemania)",
-        "el": "griego",
-        "en": "inglés",
-        "en_CA": "inglés (Canadá)",
-        "en_GB": "inglés (Reino Unido)",
-        "en_US": "inglés (Estados Unidos)",
-        "es": "español",
-        "et": "estonio",
-        "fr": "francés",
-        "fr_CA": "francés (Canadá)",
-        "fr_FR": "francés (Francia)",
-        "fi": "finlandés",
-        "he": "hebreo",
-        "hi": "hindi",
-        "hr": "croata",
-        "hu": "húngaro",
-        "is": "islandés",
-        "it": "italiano",
-        "ko": "coreano",
-        "lt": "lituano",
-        "lv": "letón",
-        "nb": "bokmål noruego",
-        "nl": "holandés",
-        "pl": "polaco",
-        "pt": "portugués",
-        "ro": "rumano",
-        "ru": "ruso",
-        "sk": "eslovaco",
-        "sl": "esloveno",
-        "sr": "serbio",
-        "sv": "sueco",
-        "tr": "turco",
-        "vi": "vietnamita",
-        "zh": "chino",
-        "zh_TW": "chino (tradicional)"}</translation>
 <translation id="335581015389089642">Voz</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{más}other{# signos más}}</translation>
@@ -706,6 +664,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="6387719785439924554">lateral</translation>
 <translation id="6411426777058107714">No hay ningún botón de selección anterior.</translation>
 <translation id="6414968628640960377">Elemento anterior distinto</translation>
+<translation id="6417265370957905582">Asistente de Google</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{dos puntos}other{# dos puntos}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, menú</translation>
 <translation id="6444046323172968959">Cuadro de diálogo de alerta</translation>

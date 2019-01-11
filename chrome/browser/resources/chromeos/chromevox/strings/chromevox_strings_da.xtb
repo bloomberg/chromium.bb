@@ -289,48 +289,6 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3322936298410871309">Forrige niveau 1-overskrift</translation>
 <translation id="3323447499041942178">Tekstfelt</translation>
 <translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> skyder</translation>
-<translation id="3353420241558113817">{"ar": "arabisk",
-        "bg": "bulgarsk",
-        "ca": "catalansk",
-        "cs": "tjekkisk",
-        "da": "dansk",
-        "de": "tysk",
-        "de_CH": "tysk (Schweiz)",
-        "de_DE": "tysk (Tyskland)",
-        "el": "græsk",
-        "en": "engelsk",
-        "en_CA": "engelsk (Canada)",
-        "en_GB": "engelsk (Storbritannien)",
-        "en_US": "engelsk (USA)",
-        "es": "spansk",
-        "et": "estisk",
-        "fr": "fransk",
-        "fr_CA": "fransk (Canada)",
-        "fr_FR": "fransk (Frankrig)",
-        "fi": "finsk",
-        "he": "hebraisk",
-        "hi": "hindi",
-        "hr": "kroatisk",
-        "hu": "ungarsk",
-        "is": "islandsk",
-        "it": "italiensk",
-        "ko": "koreansk",
-        "lt": "litauisk",
-        "lv": "lettisk",
-        "nb": "norsk bokmål",
-        "nl": "hollandsk",
-        "pl": "polsk",
-        "pt": "portugisisk",
-        "ro": "rumænsk",
-        "ru": "russisk",
-        "sk": "slovakisk",
-        "sl": "slovensk",
-        "sr": "serbisk",
-        "sv": "svensk",
-        "tr": "tyrkisk",
-        "vi": "vietnamesisk",
-        "zh": "kinesisk",
-        "zh_TW": "kinesisk (traditionelt han)"}</translation>
 <translation id="335581015389089642">Tale</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{plus}one{# plustegn}other{# plustegn}}</translation>
@@ -706,6 +664,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="6387719785439924554">tilsi</translation>
 <translation id="6411426777058107714">Ingen tidligere alternativknapper.</translation>
 <translation id="6414968628640960377">Forrige anderledes element.</translation>
+<translation id="6417265370957905582">Google Assistent</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{kolon}one{# koloner}other{# koloner}}</translation>
 <translation id="6438968337250688271">Menuen <ph name="NAME" /></translation>
 <translation id="6444046323172968959">Underretningsdialogboks</translation>

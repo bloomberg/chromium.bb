@@ -289,48 +289,6 @@
 <translation id="3322936298410871309">前のレベル 1 見出し</translation>
 <translation id="3323447499041942178">テキスト ボックス</translation>
 <translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> スライダー</translation>
-<translation id="3353420241558113817">{"ar": "アラビア語",
-        "bg": "ブルガリア語",
-        "ca": "カタロニア語",
-        "cs": "チェコ語",
-        "da": "デンマーク語",
-        "de": "ドイツ語",
-        "de_CH": "ドイツ語（スイス）",
-        "de_DE": "ドイツ語（ドイツ）",
-        "el": "ギリシャ語",
-        "en": "英語",
-        "en_CA": "英語（カナダ）",
-        "en_GB": "英語（イギリス）",
-        "en_US": "英語（アメリカ）",
-        "es": "スペイン語",
-        "et": "エストニア語",
-        "fr": "フランス語",
-        "fr_CA": "フランス語（カナダ）",
-        "fr_FR": "フランス語（フランス）",
-        "fi": "フィンランド語",
-        "he": "ヘブライ語",
-        "hi": "ヒンディー語",
-        "hr": "クロアチア語",
-        "hu": "ハンガリー語",
-        "is": "アイスランド語",
-        "it": "イタリア語",
-        "ko": "韓国語",
-        "lt": "リトアニア語",
-        "lv": "ラトビア語",
-        "nb": "ノルウェー語（ブークモール）",
-        "nl": "オランダ語",
-        "pl": "ポーランド語",
-        "pt": "ポルトガル語",
-        "ro": "ルーマニア語",
-        "ru": "ロシア語",
-        "sk": "スロバキア語",
-        "sl": "スロベニア語",
-        "sr": "セルビア語",
-        "sv": "スウェーデン語",
-        "tr": "トルコ語",
-        "vi": "ベトナム語",
-        "zh": "中国語",
-        "zh_TW": "中国語（繁体字）"}</translation>
 <translation id="335581015389089642">スピーチ</translation>
 <translation id="3359142382821736686">区切り文字</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{プラス}other{# 個のプラス記号}}</translation>
@@ -706,6 +664,7 @@
 <translation id="6387719785439924554">別記</translation>
 <translation id="6411426777058107714">前のラジオボタンはありません。</translation>
 <translation id="6414968628640960377">前の異なる要素。</translation>
+<translation id="6417265370957905582">Google アシスタント</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{コロン}other{# 個のコロン}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />、メニュー</translation>
 <translation id="6444046323172968959">アラート ダイアログ</translation>

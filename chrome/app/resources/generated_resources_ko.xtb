@@ -1379,7 +1379,6 @@
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">이 탭은 카메라 또는 마이크를 사용 중입니다.</translation>
 <translation id="3083193146044397360">보안을 위해 일시적으로 차단됨</translation>
-<translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">드롭하여 설치</translation>
 <translation id="3084771660770137092">Chrome에 메모리가 부족하거나 웹페이지 프로세싱이 다른 이유로 종료되었습니다. 계속하려면 새로고침하거나 다른 페이지로 이동하세요.</translation>
 <translation id="3085412380278336437">사이트에서 카메라를 사용할 수 있습니다.</translation>
@@ -2560,6 +2559,7 @@
 <translation id="4941246025622441835">다음과 같이 기기를 엔터프라이즈 관리용으로 등록할 때 이 기기 요청을 사용합니다.</translation>
 <translation id="4941627891654116707">글꼴 크기</translation>
 <translation id="494286511941020793">프록시 설정 도움말</translation>
+<translation id="495170559598752135">작업</translation>
 <translation id="4953689047182316270">접근성 이벤트에 응답</translation>
 <translation id="4953808748584563296">기본 주황색 아바타</translation>
 <translation id="4955710816792587366">PIN 선택</translation>
@@ -2814,7 +2814,6 @@
 <translation id="5331975486040154427">USB-C 기기(좌측 후면 포트)</translation>
 <translation id="5332624210073556029">표준시간대:</translation>
 <translation id="5334142896108694079">스크립트 캐시</translation>
-<translation id="5334899159203764908"><ph name="BEGIN_LINK" />사이트 액세스 권한<ph name="END_LINK" /> 자세히 알아보기</translation>
 <translation id="5335458522276292100"><ph name="BEGIN_LINK" />Google 드라이브<ph name="END_LINK" />에 파일 <ph name="FILE_COUNT" />개 백업 중</translation>
 <translation id="5336126339807372270">모든 사이트의 USB 기기 액세스를 허용하지 않음</translation>
 <translation id="5337771866151525739">제3자에 의해 설치되었습니다.</translation>
@@ -5056,7 +5055,6 @@
 <translation id="8725066075913043281">다시 시도하세요</translation>
 <translation id="8725178340343806893">즐겨찾기/북마크</translation>
 <translation id="8726206820263995930">서버에서 정책 설정을 가져오는 중에 오류 발생: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727344521467137076">컴퓨터에 유해한 소프트웨어가 있습니다. Chrome에서 이 소프트웨어를 삭제하고 있으며 설정을 복원하여 브라우저가 다시 정상적으로 작동하도록 합니다.</translation>
 <translation id="8730621377337864115">완료</translation>
 <translation id="8732030010853991079">아이콘을 클릭하여 확장 프로그램을 사용합니다.</translation>
 <translation id="8732212173949624846">로그인한 모든 기기의 인터넷 사용 기록 조회 및 변경</translation>
@@ -5248,7 +5246,6 @@
 <translation id="9033857511263905942">붙여넣기(&amp;P)</translation>
 <translation id="9034924485347205037">Linux 파일</translation>
 <translation id="9035012421917565900">항목을 다시 '<ph name="DESTINATION_NAME" />'(으)로 이동할 수 없으므로 이 작업을 실행취소할 수 없습니다.</translation>
-<translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">원본 보기</translation>
 <translation id="9038430547971207796">다음번에는 휴대전화를 통해 <ph name="DEVICE_TYPE" />이(가) 잠금 해제됩니다. 설정에서 Smart Lock을 사용 중지하세요.</translation>
 <translation id="9038620279323455325">'<ph name="FILE_NAME" />' 파일이 이미 존재합니다. 다른 이름을 선택하세요.</translation>

@@ -289,48 +289,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="3322936298410871309">Previous level 1 heading</translation>
 <translation id="3323447499041942178">Text box</translation>
 <translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> slider</translation>
-<translation id="3353420241558113817">{"ar": "Arabic",
-        "bg": "Bulgarian",
-        "ca": "Catalan",
-        "cs": "Czech",
-        "da": "Danish",
-        "de": "German",
-        "de_CH": "German (Switzerland)",
-        "de_DE": "German (Germany)",
-        "el": "Greek",
-        "en": "English",
-        "en_CA": "English (Canada)",
-        "en_GB": "English (United Kingdom)",
-        "en_US": "English (United States)",
-        "es": "Spanish",
-        "et": "Estonian",
-        "fr": "French",
-        "fr_CA": "French (Canada)",
-        "fr_FR": "French (France)",
-        "fi": "Finnish",
-        "he": "Hebrew",
-        "hi": "Hindi",
-        "hr": "Croatian",
-        "hu": "Hungarian",
-        "is": "Icelandic",
-        "it": "Italian",
-        "ko": "Korean",
-        "lt": "Lithuanian",
-        "lv": "Latvian",
-        "nb": "Norwegian Bokmål",
-        "nl": "Dutch",
-        "pl": "Polish",
-        "pt": "Portuguese",
-        "ro": "Romanian",
-        "ru": "Russian",
-        "sk": "Slovak",
-        "sl": "Slovenian",
-        "sr": "Serbian",
-        "sv": "Swedish",
-        "tr": "Turkish",
-        "vi": "Vietnamese",
-        "zh": "Chinese",
-        "zh_TW": "Chinese (Traditional Han)"}</translation>
 <translation id="335581015389089642">Speech</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{plus}other{# plus signs}}</translation>
@@ -706,6 +664,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">No previous radio button.</translation>
 <translation id="6414968628640960377">Previous different element.</translation>
+<translation id="6417265370957905582">Google Assistant</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{colon}other{# colons}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, menu</translation>
 <translation id="6444046323172968959">Alert dialogue</translation>

@@ -288,48 +288,6 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="3322936298410871309">Capçalera del nivell 1 anterior</translation>
 <translation id="3323447499041942178">Quadre de text</translation>
 <translation id="3338224621010291843">Control lliscant <ph name="VALUE" /> <ph name="NAME" /></translation>
-<translation id="3353420241558113817">{"ar": "Àrab",
-        "bg": "Búlgar",
-        "ca": "Català",
-        "cs": "Txec",
-        "da": "Danès",
-        "de": "Alemany",
-        "de_CH": "Alemany (Suïssa)",
-        "de_DE": "Alemany (Alemanya)",
-        "el": "Grec",
-        "en": "Anglès",
-        "en_CA": "Anglès (Canadà)",
-        "en_GB": "Anglès (Regne Unit)",
-        "en_US": "Anglès (Estats Units)",
-        "es": "Espanyol",
-        "et": "Estonià",
-        "fr": "Francès",
-        "fr_CA": "Francès (Canadà)",
-        "fr_FR": "Francès (França)",
-        "fi": "Finès",
-        "he": "Hebreu",
-        "hi": "Hindi",
-        "hr": "Croata",
-        "hu": "Hongarès",
-        "is": "Islandès",
-        "it": "Italià",
-        "ko": "Coreà",
-        "lt": "Lituà",
-        "lv": "Letó",
-        "nb": "Noruec Bokmål",
-        "nl": "Neerlandès",
-        "pl": "Polonès",
-        "pt": "Portuguès",
-        "ro": "Romanès",
-        "ru": "Rus",
-        "sk": "Eslovac",
-        "sl": "Eslovè",
-        "sr": "Serbi",
-        "sv": "Suec",
-        "tr": "Turc",
-        "vi": "Vietnamita",
-        "zh": "Xinès",
-        "zh_TW": "Xinès (han tradicional)"}</translation>
 <translation id="335581015389089642">Veu</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{més}other{# signes més}}</translation>
@@ -705,6 +663,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="6387719785439924554">complement</translation>
 <translation id="6411426777058107714">No hi ha cap botó d'opció anterior.</translation>
 <translation id="6414968628640960377">Element diferent anterior.</translation>
+<translation id="6417265370957905582">Assistent de Google</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{dos punts}other{# dos punts}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, menú</translation>
 <translation id="6444046323172968959">Diàleg d'alerta</translation>

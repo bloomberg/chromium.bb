@@ -288,48 +288,6 @@
 <translation id="3322936298410871309">ቀዳሚ የደረጃ 1 ርዕስ</translation>
 <translation id="3323447499041942178">የፅሁፍ ሳጥን</translation>
 <translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> ተንሸራታች</translation>
-<translation id="3353420241558113817">{"ar": «አረብኛ»,
-        "bg": «ቡልጋሪያን»,
-        "ca": «ካታላን»,
-        "cs": «ቼክ»,
-        "da": «ዳኒሽ»,
-        "de": «ጀርመንኛ»,
-        "de_CH": «ጀርመንኛ (ስዊዘርላንድ)»,
-        "de_DE": «ጀርመንኛ (ጀርመን)»,
-        "el": «ግሪክኛ»,
-        "en": «እንግሊዝኛ»,
-        "en_CA": «እንግሊዝኛ (ካናዳ)»,
-        "en_GB": «እንግሊዝኛ (ዩናይትድ ኪንግደም)»,
-        "en_US": «እንግሊዝኛ (አሜሪካ)»,
-        "es": «ስፓኒሽ»,
-        "et": «ኢስቶኒያን»,
-        "fr": «ፈረንሳይኛ»,
-        "fr_CA": «ፈረንሳይኛ (ካናዳ)»,
-        "fr_FR": «ፈረንሳይኛ (ፈረንሳይ)»,
-        "fi": «ፊኒሽ»,
-        "he": «ዕብራይስጥ»,
-        "hi": «ሂንዲ»,
-        "hr": «ክሮሺያኛ»,
-        "hu": «ሃንጋሪያኛ»,
-        "is": «አይስላንድኛ»,
-        "it": «ጣልያንኛ»,
-        "ko": «ኮሪያኛ»,
-        "lt": «ሊቱዌኒያኛ»,
-        "lv": «ላቲቪያኛ»,
-        "nb": «ኖርዌጂያን ቦክማል»,
-        "nl": «ደች»,
-        "pl": «ፖላንድኛ»,
-        "pt": «ፓርቱጋልኛ»,
-        "ro": «ሮማኒያኛ»,
-        "ru": «ራሽያን»,
-        "sk": «ስሎቫክኛ»,
-        "sl": «ስሎቬኒያኛ»,
-        "sr": «ሰርቢያኛ»,
-        "sv": «ስዊድንኛ»,
-        "tr": «ቱርክኛ»,
-        "vi": «ቬትናምኛ»,
-        "zh": «ቻይንኛ»,
-        "zh_TW": «ቻይንኛ (ተለምዷዊ ሃን)»}</translation>
 <translation id="335581015389089642">ንግግር</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{መደመር}one{# የመደመር ምልክቶች}other{# የመደመር ምልክቶች}}</translation>
@@ -705,6 +663,7 @@
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">ምንም ቀዳሚ የሬዲዮ አዝራር የለም።</translation>
 <translation id="6414968628640960377">ቀዳሚ የተለየ አካል።</translation>
+<translation id="6417265370957905582">Google ረዳት</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{ሁለት ነጥብ}one{# ሁለት ነጥቦች}other{# ሁለት ነጥቦች}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />፣ ምናሌ</translation>
 <translation id="6444046323172968959">የማንቂያ መገናኛ</translation>

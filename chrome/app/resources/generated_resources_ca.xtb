@@ -1377,7 +1377,6 @@
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">Aquesta pestanya utilitza la càmera o el micròfon.</translation>
 <translation id="3083193146044397360">S'ha bloquejat de manera temporal per protegir la teva seguretat</translation>
-<translation id="308330327687243295">https://mail.google.com/mail/?extsrc=mailto&amp;url=%s</translation>
 <translation id="3084548735795614657">Desplegueu per instal·lar</translation>
 <translation id="3084771660770137092">Chrome s'ha quedat sense memòria, o bé el procés de la pàgina web s'ha cancel·lat per algun altre motiu. Per continuar, torneu-la a carregar o aneu a una altra pàgina.</translation>
 <translation id="3085412380278336437">El lloc web pot utilitzar la càmera</translation>
@@ -2521,7 +2520,7 @@
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4887424188275796356">Obre amb el lector del sistema</translation>
 <translation id="488785315393301722">Mostra els detalls</translation>
-<translation id="4890242622846228088">L'Assistent utilitza aquestes gravacions i les sol·licituds de veu per crear i actualitzar el teu model de veu, que només es desa als dispositius on has activat Voice Match. Consulta o suprimeix l'activitat de veu als controls d'activitat de Google.</translation>
+<translation id="4890242622846228088">L'Assistent utilitza aquests enregistraments i les sol·licituds de veu per crear i actualitzar el teu model de veu, que només s'emmagatzema als dispositius on has activat Voice Match. Consulta o suprimeix l'activitat de veu als controls d'activitat de Google.</translation>
 <translation id="4890773143211625964">Mostra les opcions avançades de la impressora</translation>
 <translation id="4891089016822695758">Fòrum per a la versió beta</translation>
 <translation id="4892969127351273348">No es pot obrir amb <ph name="APP_NAME" /></translation>
@@ -2558,6 +2557,7 @@
 <translation id="4941246025622441835">Feu servir aquesta sol·licitud de dispositiu en inscriure el dispositiu per a la gestió d'empresa:</translation>
 <translation id="4941627891654116707">Mida de la lletra</translation>
 <translation id="494286511941020793">Ajuda per configurar servidors intermediaris</translation>
+<translation id="495170559598752135">Accions</translation>
 <translation id="4953689047182316270">Respondre als esdeveniments d'accessibilitat</translation>
 <translation id="4953808748584563296">Avatar taronja predeterminat</translation>
 <translation id="4955710816792587366">Tria un PIN</translation>
@@ -2813,7 +2813,6 @@
 <translation id="5331975486040154427">Dispositiu USB-C (port posterior esquerre)</translation>
 <translation id="5332624210073556029">Zona horària:</translation>
 <translation id="5334142896108694079">Memòria cau d'scripts</translation>
-<translation id="5334899159203764908">Més informació sobre l'<ph name="BEGIN_LINK" />accés als llocs web<ph name="END_LINK" /></translation>
 <translation id="5335458522276292100">S'estan afegint <ph name="FILE_COUNT" /> a la còpia de seguretat de <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="5336126339807372270">No permetis que cap lloc web accedeixi als dispositius USB</translation>
 <translation id="5337771866151525739">Instal·lat per tercers.</translation>
@@ -5053,7 +5052,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8725066075913043281">Torna-ho a provar</translation>
 <translation id="8725178340343806893">Preferits/adreces d'interès</translation>
 <translation id="8726206820263995930">S'ha produït un error en recuperar la configuració de la política del servidor: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="8727344521467137076">Hi ha programari nociu a l'ordinador. Chrome l'està suprimint i restaurarà la configuració perquè el navegador torni a funcionar amb normalitat.</translation>
 <translation id="8730621377337864115">Fet</translation>
 <translation id="8732030010853991079">Per fer servir aquesta extensió, feu clic en aquesta icona.</translation>
 <translation id="8732212173949624846">Llegeix i modifica l'historial de navegació en tots els dispositius on s'hagi iniciat la sessió</translation>
@@ -5245,7 +5243,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9033857511263905942">&amp;Enganxa</translation>
 <translation id="9034924485347205037">Fitxers de Linux</translation>
 <translation id="9035012421917565900">Com que els elements no es poden retornar a <ph name="DESTINATION_NAME" />, aquesta acció no es pot desfer.</translation>
-<translation id="9037008143807155145">https://www.google.com/calendar/render?cid=%s</translation>
 <translation id="9037965129289936994">Mostra l'original</translation>
 <translation id="9038430547971207796">La propera vegada, el telèfon desbloquejarà <ph name="DEVICE_TYPE" />. Desactiva Smart Lock a Configuració.</translation>
 <translation id="9038620279323455325">Ja hi ha un fitxer anomenat "<ph name="FILE_NAME" />". Tria un altre nom.</translation>
