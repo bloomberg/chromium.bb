@@ -73,6 +73,16 @@ let RawSiteException;
 let SiteException;
 
 /**
+ * The chooser exception information passed from the C++ handler.
+ * See also: ChooserException.
+ * @typedef {{chooserType: !settings.ChooserType,
+ *            displayName: string,
+ *            object: Object,
+ *            sites: Array<!RawSiteException>}}
+ */
+let RawChooserException;
+
+/**
  * The chooser exception after it has been converted/filtered for UI use.
  * See also: RawChooserException.
  * @typedef {{chooserType: !settings.ChooserType,
@@ -151,6 +161,14 @@ cr.define('settings', function() {
      * @return {!Promise<!Array<!SiteGroup>>}
      */
     getAllSites(contentTypes) {}
+
+    /**
+     * Gets the chooser exceptions for a particular chooser type.
+     * @param {settings.ChooserType} chooserType The chooser type to grab
+     *     exceptions from.
+     * @return {!Promise<!Array<!RawChooserException>>}
+     */
+    getChooserExceptionList(chooserType) {}
 
     /**
      * Converts a given number of bytes into a human-readable format, with data
@@ -375,6 +393,11 @@ cr.define('settings', function() {
     /** @override */
     getAllSites(contentTypes) {
       return cr.sendWithPromise('getAllSites', contentTypes);
+    }
+
+    /** @override */
+    getChooserExceptionList(chooserType) {
+      return cr.sendWithPromise('getChooserExceptionList', chooserType);
     }
 
     /** @override */

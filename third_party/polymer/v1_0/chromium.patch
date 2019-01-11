@@ -136,6 +136,45 @@ index 55714942c93c..46fb9adf6a04 100644
          right: 0;
          left: auto;
          transform-origin: right top;
+diff --git a/components-chromium/paper-tooltip/paper-tooltip-extracted.js b/components-chromium/paper-tooltip/paper-tooltip-extracted.js
+index 2830d229760c..2116f616a93b 100644
+--- a/components-chromium/paper-tooltip/paper-tooltip-extracted.js
++++ b/components-chromium/paper-tooltip/paper-tooltip-extracted.js
+@@ -123,12 +123,16 @@ Polymer({
+       },
+       /**
+        * Returns the target element that this tooltip is anchored to. It is
+-       * either the element given by the `for` attribute, or the immediate parent
+-       * of the tooltip.
++       * either the element given by the `for` attribute, the element manually
++       * specified through the `target` attribute, or the immediate parent of
++       * the tooltip.
+        *
+        * @type {Node}
+        */
+       get target() {
++        if (this._manualTarget)
++          return this._manualTarget;
++
+         var parentNode = Polymer.dom(this).parentNode;
+         // If the parentNode is a document fragment, then we need to use the host.
+         var ownerRoot = Polymer.dom(this).getOwnerRoot();
+@@ -142,6 +146,15 @@ Polymer({
+         return target;
+       },
+
++      /**
++       * Sets the target element that this tooltip will be anchored to.
++       * @param {Node} target
++       */
++      set target(target) {
++        this._manualTarget = target;
++        this._findTarget();
++      },
++
+       /**
+        * @return {void}
+        */
 diff --git a/components-chromium/polymer2/lib/legacy/legacy-element-mixin.html b/components-chromium/polymer2/lib/legacy/legacy-element-mixin.html
 index 7306c651407e..9c88699a3924 100644
 --- a/components-chromium/polymer2/lib/legacy/legacy-element-mixin.html

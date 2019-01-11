@@ -10,6 +10,7 @@ js_type_check("closure_compile") {
     ":all_sites",
     ":category_default_setting",
     ":category_setting_exceptions",
+    ":chooser_exception_list",
     ":chooser_exception_list_entry",
     ":constants",
     ":cookie_info",
@@ -71,6 +72,18 @@ js_library("category_setting_exceptions") {
     "../settings_page:settings_animated_pages",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
+  ]
+  externs_list = [ "$externs_path/settings_private.js" ]
+}
+
+js_library("chooser_exception_list") {
+  deps = [
+    ":chooser_exception_list_entry",
+    ":constants",
+    ":site_settings_behavior",
+    "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js:list_property_update_behavior",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
   externs_list = [ "$externs_path/settings_private.js" ]
 }

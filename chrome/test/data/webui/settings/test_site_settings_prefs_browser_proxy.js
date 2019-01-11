@@ -8,7 +8,9 @@
  * @typedef {{defaults: !Object<settings.ContentSettingsTypes,
  *                             !DefaultContentSetting>,
  *            exceptions: !Object<settings.ContentSettingsTypes,
- *                                !Array<!RawSiteException>>}}
+ *                                !Array<!RawSiteException>>,
+ *            chooserExceptions: !Object<settings.ContentSettingsTypes,
+ *                                       !Array<!RawChooserException>>}}
  */
 let SiteSettingsPref;
 
@@ -23,11 +25,13 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'clearFlashPref',
+      'fetchBlockAutoplayStatus',
       'fetchUsbDevices',
       'fetchZoomLevels',
       'getAllSites',
-      'getFormattedBytes',
+      'getChooserExceptionList',
       'getDefaultValueForContentType',
+      'getFormattedBytes',
       'getExceptionList',
       'getOriginPermissions',
       'isOriginValid',
@@ -45,14 +49,13 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       'setOriginPermissions',
       'setProtocolDefault',
       'updateIncognitoStatus',
-      'fetchBlockAutoplayStatus',
     ]);
 
     /** @private {boolean} */
     this.hasIncognito_ = false;
 
     /** @private {!SiteSettingsPref} */
-    this.prefs_ = test_util.createSiteSettingsPrefs([], []);
+    this.prefs_ = test_util.createSiteSettingsPrefs([], [], []);
 
     /** @private {!Array<ZoomLevelEntry>} */
     this.zoomList_ = [];
@@ -264,6 +267,24 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       pref = pref.concat(incognitoElements);
     }
 
+    return Promise.resolve(pref);
+  }
+
+  /** @override */
+  getChooserExceptionList(chooserType) {
+    let pref = this.prefs_.chooserExceptions[chooserType];
+    assert(pref != undefined, 'Pref is missing for ' + chooserType);
+
+    if (this.hasIncognito_) {
+      const incognitoElements = [];
+      for (let i = 0; i < pref.length; ++i) {
+        // Copy |pref[i]| to avoid changing the original |pref[i]|.
+        incognitoElements.push(Object.assign({}, pref[i], {incognito: true}));
+      }
+      pref.push(...incognitoElements);
+    }
+
+    this.methodCalled('getChooserExceptionList', chooserType);
     return Promise.resolve(pref);
   }
 

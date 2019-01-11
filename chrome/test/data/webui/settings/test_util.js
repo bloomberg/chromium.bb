@@ -127,6 +127,22 @@ cr.define('test_util', function() {
   }
 
   /**
+   * Helper to create a mock RawChooserException.
+   * @param {!settings.ChooserType} chooserType The chooser exception type.
+   * @param {Array<!SiteException>} sites A list of SiteExceptions corresponding
+   *     to the chooser exception.
+   * @param {!Object=} override An object with a subset of the properties of
+   *     RawChooserException. Properties defined in |override| will overwrite
+   *     the defaults in this function's return value.
+   * @return {RawChooserException}
+   */
+  function createRawChooserException(chooserType, sites, override) {
+    return Object.assign(
+        {chooserType: chooserType, displayName: '', object: {}, sites: sites},
+        override || {});
+  }
+
+  /**
    * Helper to create a mock SiteSettingsPref.
    * @param {!Array<{setting: settings.ContentSettingsTypes,
    *                 value: DefaultContentSetting}>} defaultsList A list of
@@ -138,9 +154,15 @@ cr.define('test_util', function() {
    *     RawSiteExceptions and the content settings they apply to, which will
    *     overwrite the exceptions in the SiteSettingsPref returned by this
    *     function.
+   * @param {!Array<{setting: settings.ContentSettingsTypes,
+   *                 value: !Array<RawChooserException>}>} chooserExceptionsList
+   *     A list of RawChooserExceptions and the chooser type that they apply to,
+   *     which will overwrite the exceptions in the SiteSettingsPref returned by
+   *     this function.
    * @return {SiteSettingsPref}
    */
-  function createSiteSettingsPrefs(defaultsList, exceptionsList) {
+  function createSiteSettingsPrefs(
+      defaultsList, exceptionsList, chooserExceptionsList = []) {
     // These test defaults reflect the actual defaults assigned to each
     // ContentSettingType, but keeping these in sync shouldn't matter for tests.
     const defaults = {};
@@ -172,15 +194,21 @@ cr.define('test_util', function() {
       defaults[override.setting] = override.value;
     });
 
+    const chooserExceptions = {};
     const exceptions = {};
     for (let type in settings.ContentSettingsTypes) {
+      chooserExceptions[settings.ContentSettingsTypes[type]] = [];
       exceptions[settings.ContentSettingsTypes[type]] = [];
     }
-    exceptionsList.forEach((override) => {
+    exceptionsList.forEach(override => {
       exceptions[override.setting] = override.value;
+    });
+    chooserExceptionsList.forEach(override => {
+      chooserExceptions[override.setting] = override.value;
     });
 
     return {
+      chooserExceptions: chooserExceptions,
       defaults: defaults,
       exceptions: exceptions,
     };
@@ -238,6 +266,7 @@ cr.define('test_util', function() {
     createContentSettingTypeToValuePair: createContentSettingTypeToValuePair,
     createDefaultContentSetting: createDefaultContentSetting,
     createOriginInfo: createOriginInfo,
+    createRawChooserException: createRawChooserException,
     createRawSiteException: createRawSiteException,
     createSiteGroup: createSiteGroup,
     createSiteSettingsPrefs: createSiteSettingsPrefs,
