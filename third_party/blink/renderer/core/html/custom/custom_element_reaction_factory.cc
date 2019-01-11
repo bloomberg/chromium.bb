@@ -15,21 +15,21 @@ class CustomElementUpgradeReaction final : public CustomElementReaction {
  public:
   CustomElementUpgradeReaction(CustomElementDefinition& definition,
                                bool upgrade_invisible_elements)
-      : CustomElementReaction(&definition),
+      : CustomElementReaction(definition),
         upgrade_invisible_elements_(upgrade_invisible_elements) {}
 
  private:
-  void Invoke(Element* element) override {
+  void Invoke(Element& element) override {
     // Don't call Upgrade() if it's already upgraded. Multiple upgrade reactions
     // could be enqueued because the state changes in step 10 of upgrades.
     // https://html.spec.whatwg.org/multipage/scripting.html#upgrades
-    if (element->GetCustomElementState() == CustomElementState::kUndefined) {
+    if (element.GetCustomElementState() == CustomElementState::kUndefined) {
       // Don't upgrade elements inside an invisible-static tree, unless it was
       // triggered by CustomElementRegistry::upgrade.
       if (!RuntimeEnabledFeatures::InvisibleDOMEnabled() ||
-          !element->IsInsideInvisibleStaticSubtree() ||
+          !element.IsInsideInvisibleStaticSubtree() ||
           upgrade_invisible_elements_)
-        definition_->Upgrade(element);
+        definition_->Upgrade(&element);
     }
   }
 
@@ -44,12 +44,12 @@ class CustomElementConnectedCallbackReaction final
     : public CustomElementReaction {
  public:
   CustomElementConnectedCallbackReaction(CustomElementDefinition& definition)
-      : CustomElementReaction(&definition) {
+      : CustomElementReaction(definition) {
     DCHECK(definition.HasConnectedCallback());
   }
 
  private:
-  void Invoke(Element* element) override {
+  void Invoke(Element& element) override {
     definition_->RunConnectedCallback(element);
   }
 
@@ -62,12 +62,12 @@ class CustomElementDisconnectedCallbackReaction final
     : public CustomElementReaction {
  public:
   CustomElementDisconnectedCallbackReaction(CustomElementDefinition& definition)
-      : CustomElementReaction(&definition) {
+      : CustomElementReaction(definition) {
     DCHECK(definition.HasDisconnectedCallback());
   }
 
  private:
-  void Invoke(Element* element) override {
+  void Invoke(Element& element) override {
     definition_->RunDisconnectedCallback(element);
   }
 
@@ -82,7 +82,7 @@ class CustomElementAdoptedCallbackReaction final
   CustomElementAdoptedCallbackReaction(CustomElementDefinition& definition,
                                        Document& old_owner,
                                        Document& new_owner)
-      : CustomElementReaction(&definition),
+      : CustomElementReaction(definition),
         old_owner_(old_owner),
         new_owner_(new_owner) {
     DCHECK(definition.HasAdoptedCallback());
@@ -95,9 +95,8 @@ class CustomElementAdoptedCallbackReaction final
   }
 
  private:
-  void Invoke(Element* element) override {
-    definition_->RunAdoptedCallback(element, old_owner_.Get(),
-                                    new_owner_.Get());
+  void Invoke(Element& element) override {
+    definition_->RunAdoptedCallback(element, *old_owner_, *new_owner_);
   }
 
   Member<Document> old_owner_;
@@ -116,7 +115,7 @@ class CustomElementAttributeChangedCallbackReaction final
       const QualifiedName& name,
       const AtomicString& old_value,
       const AtomicString& new_value)
-      : CustomElementReaction(&definition),
+      : CustomElementReaction(definition),
         name_(name),
         old_value_(old_value),
         new_value_(new_value) {
@@ -124,7 +123,7 @@ class CustomElementAttributeChangedCallbackReaction final
   }
 
  private:
-  void Invoke(Element* element) override {
+  void Invoke(Element& element) override {
     definition_->RunAttributeChangedCallback(element, name_, old_value_,
                                              new_value_);
   }
@@ -144,7 +143,7 @@ class CustomElementFormAssociatedCallbackReaction final
   CustomElementFormAssociatedCallbackReaction(
       CustomElementDefinition& definition,
       HTMLFormElement* nullable_form)
-      : CustomElementReaction(&definition), form_(nullable_form) {
+      : CustomElementReaction(definition), form_(nullable_form) {
     DCHECK(definition.HasFormAssociatedCallback());
   }
 
@@ -154,7 +153,7 @@ class CustomElementFormAssociatedCallbackReaction final
   }
 
  private:
-  void Invoke(Element* element) override {
+  void Invoke(Element& element) override {
     definition_->RunFormAssociatedCallback(element, form_.Get());
   }
 
@@ -169,12 +168,12 @@ class CustomElementFormResetCallbackReaction final
     : public CustomElementReaction {
  public:
   CustomElementFormResetCallbackReaction(CustomElementDefinition& definition)
-      : CustomElementReaction(&definition) {
+      : CustomElementReaction(definition) {
     DCHECK(definition.HasFormResetCallback());
   }
 
  private:
-  void Invoke(Element* element) override {
+  void Invoke(Element& element) override {
     definition_->RunFormResetCallback(element);
   }
 
@@ -189,12 +188,12 @@ class CustomElementDisabledStateChangedCallbackReaction final
   CustomElementDisabledStateChangedCallbackReaction(
       CustomElementDefinition& definition,
       bool is_disabled)
-      : CustomElementReaction(&definition), is_disabled_(is_disabled) {
+      : CustomElementReaction(definition), is_disabled_(is_disabled) {
     DCHECK(definition.HasDisabledStateChangedCallback());
   }
 
  private:
-  void Invoke(Element* element) override {
+  void Invoke(Element& element) override {
     definition_->RunDisabledStateChangedCallback(element, is_disabled_);
   }
 

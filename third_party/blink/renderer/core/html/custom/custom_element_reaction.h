@@ -17,10 +17,10 @@ class Element;
 class CORE_EXPORT CustomElementReaction
     : public GarbageCollectedFinalized<CustomElementReaction> {
  public:
-  CustomElementReaction(CustomElementDefinition*);
+  CustomElementReaction(CustomElementDefinition&);
   virtual ~CustomElementReaction() = default;
 
-  virtual void Invoke(Element*) = 0;
+  virtual void Invoke(Element&) = 0;
 
   virtual void Trace(blink::Visitor*);
 

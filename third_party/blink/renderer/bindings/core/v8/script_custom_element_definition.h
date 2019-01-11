@@ -58,19 +58,19 @@ class CORE_EXPORT ScriptCustomElementDefinition final
   bool HasFormResetCallback() const override;
   bool HasDisabledStateChangedCallback() const override;
 
-  void RunConnectedCallback(Element*) override;
-  void RunDisconnectedCallback(Element*) override;
-  void RunAdoptedCallback(Element*,
-                          Document* old_owner,
-                          Document* new_owner) override;
-  void RunAttributeChangedCallback(Element*,
+  void RunConnectedCallback(Element&) override;
+  void RunDisconnectedCallback(Element&) override;
+  void RunAdoptedCallback(Element&,
+                          Document& old_owner,
+                          Document& new_owner) override;
+  void RunAttributeChangedCallback(Element&,
                                    const QualifiedName&,
                                    const AtomicString& old_value,
                                    const AtomicString& new_value) override;
-  void RunFormAssociatedCallback(Element* element,
+  void RunFormAssociatedCallback(Element& element,
                                  HTMLFormElement* nullable_form) override;
-  void RunFormResetCallback(Element* element) override;
-  void RunDisabledStateChangedCallback(Element* element,
+  void RunFormResetCallback(Element& element) override;
+  void RunDisabledStateChangedCallback(Element& element,
                                        bool is_disabled) override;
 
  private:
