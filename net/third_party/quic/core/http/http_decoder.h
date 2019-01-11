@@ -16,6 +16,22 @@ namespace quic {
 
 class QuicDataReader;
 
+// Struct that stores meta data of a data frame.
+// |header_length| stores number of bytes header occupies.
+// |payload_length| stores number of bytes payload occupies.
+struct QUIC_EXPORT_PRIVATE Http3FrameLengths {
+  Http3FrameLengths(uint64_t header, uint64_t payload)
+      : header_length(header), payload_length(payload) {}
+
+  bool operator==(const Http3FrameLengths& other) const {
+    return (header_length == other.header_length) &&
+           (payload_length == other.payload_length);
+  }
+
+  QuicByteCount header_length;
+  QuicByteCount payload_length;
+};
+
 // A class for decoding the HTTP frames that are exchanged in an HTTP over QUIC
 // session.
 class QUIC_EXPORT_PRIVATE HttpDecoder {
@@ -42,8 +58,9 @@ class QUIC_EXPORT_PRIVATE HttpDecoder {
     // Called when a SETTINGS frame has been successfully parsed.
     virtual void OnSettingsFrame(const SettingsFrame& frame) = 0;
 
-    // Called when a DATA frame has been recevied.
-    virtual void OnDataFrameStart() = 0;
+    // Called when a DATA frame has been recevied, |frame_lengths| will be
+    // passed to inform header length and payload length of the frame.
+    virtual void OnDataFrameStart(Http3FrameLengths frame_length) = 0;
     // Called when the payload of a DATA frame has read. May be called
     // multiple times for a single frame.
     virtual void OnDataFramePayload(QuicStringPiece payload) = 0;
@@ -85,6 +102,8 @@ class QUIC_EXPORT_PRIVATE HttpDecoder {
   // Returns the number of bytes consumed, or 0 if there was an error, in which
   // case error() should be consulted.
   size_t ProcessInput(const char* data, size_t len);
+
+  bool has_payload() { return has_payload_; }
 
   QuicErrorCode error() const { return error_; }
   const QuicString& error_detail() const { return error_detail_; }
@@ -147,6 +166,9 @@ class QUIC_EXPORT_PRIVATE HttpDecoder {
   QuicErrorCode error_;
   // The issue which caused |error_|
   QuicString error_detail_;
+  // True if the call to ProcessInput() generates any payload. Flushed every
+  // time ProcessInput() is called.
+  bool has_payload_;
   // Remaining unparsed data.
   QuicString buffer_;
   // Remaining unparsed length field data.

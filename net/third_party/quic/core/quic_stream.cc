@@ -994,6 +994,10 @@ bool QuicStream::CanWriteNewData() const {
   return BufferedDataBytes() < buffered_data_threshold_;
 }
 
+bool QuicStream::CanWriteNewDataAfterData(QuicByteCount length) const {
+  return (BufferedDataBytes() + length) < buffered_data_threshold_;
+}
+
 uint64_t QuicStream::stream_bytes_written() const {
   return send_buffer_.stream_bytes_written();
 }

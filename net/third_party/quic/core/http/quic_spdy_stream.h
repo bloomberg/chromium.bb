@@ -15,7 +15,10 @@
 #include <list>
 
 #include "base/macros.h"
+#include "net/third_party/quic/core/http/http_decoder.h"
+#include "net/third_party/quic/core/http/http_encoder.h"
 #include "net/third_party/quic/core/http/quic_header_list.h"
+#include "net/third_party/quic/core/http/quic_spdy_stream_body_buffer.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_stream.h"
 #include "net/third_party/quic/core/quic_stream_sequencer.h"
@@ -163,6 +166,13 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
 
   bool headers_decompressed() const { return headers_decompressed_; }
 
+  size_t total_header_bytes_written() const {
+    return total_header_bytes_written_;
+  }
+
+  // Returns total amount of body bytes that have been read.
+  uint64_t total_body_bytes_read() const;
+
   const QuicHeaderList& header_list() const { return header_list_; }
 
   bool trailers_decompressed() const { return trailers_decompressed_; }
@@ -187,6 +197,10 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   // will be available.
   bool IsClosed() { return sequencer()->IsClosed(); }
 
+  void OnDataFrameStart(Http3FrameLengths frame_lengths);
+  void OnDataFramePayload(QuicStringPiece payload);
+  void OnDataFrameEnd();
+
   using QuicStream::CloseWriteSide;
 
  protected:
@@ -204,6 +218,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
  private:
   friend class test::QuicStreamPeer;
   friend class QuicStreamUtils;
+  class HttpDecoderVisitor;
 
   QuicSpdySession* spdy_session_;
 
@@ -220,6 +235,17 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   bool trailers_consumed_;
   // The parsed trailers received from the peer.
   spdy::SpdyHeaderBlock received_trailers_;
+
+  // Http encoder for writing streams.
+  HttpEncoder encoder_;
+  // Http decoder for processing raw incoming stream frames.
+  HttpDecoder decoder_;
+  // Visitor of the HttpDecoder.
+  std::unique_ptr<HttpDecoderVisitor> http_decoder_visitor_;
+  // Buffer that contains decoded data of the stream.
+  QuicSpdyStreamBodyBuffer body_buffer_;
+  // Total bytes of header written to the stream.
+  size_t total_header_bytes_written_;
 };
 
 }  // namespace quic

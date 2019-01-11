@@ -24,6 +24,83 @@ using spdy::SpdyHeaderBlock;
 using spdy::SpdyPriority;
 
 namespace quic {
+
+// Visitor of HttpDecoder that passes data frame to QuicSpdyStream and closes
+// the connection on unexpected frames.
+class QuicSpdyStream::HttpDecoderVisitor : public HttpDecoder::Visitor {
+ public:
+  explicit HttpDecoderVisitor(QuicSpdyStream* stream) : stream_(stream) {}
+  HttpDecoderVisitor(const HttpDecoderVisitor&) = delete;
+  HttpDecoderVisitor& operator=(const HttpDecoderVisitor&) = delete;
+
+  void OnError(HttpDecoder* decoder) override {
+    stream_->session()->connection()->CloseConnection(
+        QUIC_HTTP_DECODER_ERROR, "Http decoder internal error",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+  }
+
+  void OnPriorityFrame(const PriorityFrame& frame) override {
+    CloseConnectionOnWrongFrame("Priority");
+  }
+
+  void OnCancelPushFrame(const CancelPushFrame& frame) override {
+    CloseConnectionOnWrongFrame("Cancel Push");
+  }
+
+  void OnMaxPushIdFrame(const MaxPushIdFrame& frame) override {
+    CloseConnectionOnWrongFrame("Max Push Id");
+  }
+
+  void OnGoAwayFrame(const GoAwayFrame& frame) override {
+    CloseConnectionOnWrongFrame("Goaway");
+  }
+
+  void OnSettingsFrame(const SettingsFrame& frame) override {
+    CloseConnectionOnWrongFrame("Settings");
+  }
+
+  void OnDataFrameStart(Http3FrameLengths frame_lengths) override {
+    stream_->OnDataFrameStart(frame_lengths);
+  }
+
+  void OnDataFramePayload(QuicStringPiece payload) override {
+    stream_->OnDataFramePayload(payload);
+  }
+
+  void OnDataFrameEnd() override { stream_->OnDataFrameEnd(); }
+
+  void OnHeadersFrameStart() override {
+    CloseConnectionOnWrongFrame("Headers");
+  }
+
+  void OnHeadersFramePayload(QuicStringPiece payload) override {
+    CloseConnectionOnWrongFrame("Headers");
+  }
+
+  void OnHeadersFrameEnd() override { CloseConnectionOnWrongFrame("Headers"); }
+
+  void OnPushPromiseFrameStart(PushId push_id) override {
+    CloseConnectionOnWrongFrame("Push Promise");
+  }
+
+  void OnPushPromiseFramePayload(QuicStringPiece payload) override {
+    CloseConnectionOnWrongFrame("Push Promise");
+  }
+
+  void OnPushPromiseFrameEnd() override {
+    CloseConnectionOnWrongFrame("Push Promise");
+  }
+
+ private:
+  void CloseConnectionOnWrongFrame(QuicString frame_type) {
+    stream_->session()->connection()->CloseConnection(
+        QUIC_HTTP_DECODER_ERROR, frame_type + " frame received on data stream",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+  }
+
+  QuicSpdyStream* stream_;
+};
+
 #define ENDPOINT                                                   \
   (session()->perspective() == Perspective::IS_SERVER ? "Server: " \
                                                       : "Client:"  \
@@ -37,13 +114,21 @@ QuicSpdyStream::QuicSpdyStream(QuicStreamId id,
       visitor_(nullptr),
       headers_decompressed_(false),
       trailers_decompressed_(false),
-      trailers_consumed_(false) {
+      trailers_consumed_(false),
+      http_decoder_visitor_(new HttpDecoderVisitor(this)),
+      body_buffer_(sequencer()),
+      total_header_bytes_written_(0) {
   DCHECK_NE(QuicUtils::GetCryptoStreamId(
                 spdy_session->connection()->transport_version()),
             id);
   // Don't receive any callbacks from the sequencer until headers
   // are complete.
   sequencer()->SetBlockedUntilFlush();
+
+  if (spdy_session_->connection()->transport_version() == QUIC_VERSION_99) {
+    sequencer()->set_level_triggered(true);
+  }
+  decoder_.set_visitor(http_decoder_visitor_.get());
 }
 
 QuicSpdyStream::QuicSpdyStream(PendingStream pending,
@@ -54,13 +139,21 @@ QuicSpdyStream::QuicSpdyStream(PendingStream pending,
       visitor_(nullptr),
       headers_decompressed_(false),
       trailers_decompressed_(false),
-      trailers_consumed_(false) {
+      trailers_consumed_(false),
+      http_decoder_visitor_(new HttpDecoderVisitor(this)),
+      body_buffer_(sequencer()),
+      total_header_bytes_written_(0) {
   DCHECK_NE(QuicUtils::GetCryptoStreamId(
                 spdy_session->connection()->transport_version()),
             id());
   // Don't receive any callbacks from the sequencer until headers
   // are complete.
   sequencer()->SetBlockedUntilFlush();
+
+  if (spdy_session_->connection()->transport_version() == QUIC_VERSION_99) {
+    sequencer()->set_level_triggered(true);
+  }
+  decoder_.set_visitor(http_decoder_visitor_.get());
 }
 
 QuicSpdyStream::~QuicSpdyStream() {}
@@ -83,7 +176,20 @@ void QuicSpdyStream::WriteOrBufferBody(
     QuicStringPiece data,
     bool fin,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
+  if (spdy_session_->connection()->transport_version() == QUIC_VERSION_99 &&
+      data.length() > 0) {
+    std::unique_ptr<char[]> buffer;
+    QuicByteCount header_length =
+        encoder_.SerializeDataFrameHeader(data.length(), &buffer);
+    WriteOrBufferData(QuicStringPiece(buffer.get(), header_length), false,
+                      nullptr);
+    QUIC_DLOG(INFO) << "Stream " << id() << " is writing header of length "
+                    << header_length;
+    total_header_bytes_written_ += header_length;
+  }
   WriteOrBufferData(data, fin, std::move(ack_listener));
+  QUIC_DLOG(INFO) << "Stream" << id() << " is writing body of length "
+                  << data.length();
 }
 
 size_t QuicSpdyStream::WriteTrailers(
@@ -131,27 +237,59 @@ QuicConsumedData QuicSpdyStream::WritevBody(const struct iovec* iov,
       iov, count,
       session()->connection()->helper()->GetStreamSendBufferAllocator(),
       GetQuicFlag(FLAGS_quic_send_buffer_max_data_slice_size));
-  return WriteMemSlices(storage.ToSpan(), fin);
+  return WriteBodySlices(storage.ToSpan(), fin);
 }
 
 QuicConsumedData QuicSpdyStream::WriteBodySlices(QuicMemSliceSpan slices,
                                                  bool fin) {
+  if (spdy_session_->connection()->transport_version() != QUIC_VERSION_99 ||
+      slices.empty()) {
+    return WriteMemSlices(slices, fin);
+  }
+
+  std::unique_ptr<char[]> buffer;
+  QuicByteCount header_length =
+      encoder_.SerializeDataFrameHeader(slices.total_length(), &buffer);
+  if (!CanWriteNewDataAfterData(header_length)) {
+    return {0, false};
+  }
+
+  struct iovec header_iov = {static_cast<void*>(buffer.get()), header_length};
+  QuicMemSliceStorage storage(
+      &header_iov, 1,
+      spdy_session_->connection()->helper()->GetStreamSendBufferAllocator(),
+      GetQuicFlag(FLAGS_quic_send_buffer_max_data_slice_size));
+  WriteMemSlices(storage.ToSpan(), false);
+  QUIC_DLOG(INFO) << "Stream " << id() << " is writing header of length "
+                  << header_length;
+  total_header_bytes_written_ += header_length;
+  QUIC_DLOG(INFO) << "Stream" << id() << " is writing body of length "
+                  << slices.total_length();
   return WriteMemSlices(slices, fin);
 }
 
 size_t QuicSpdyStream::Readv(const struct iovec* iov, size_t iov_len) {
   DCHECK(FinishedReadingHeaders());
-  return sequencer()->Readv(iov, iov_len);
+  if (spdy_session_->connection()->transport_version() != QUIC_VERSION_99) {
+    return sequencer()->Readv(iov, iov_len);
+  }
+  return body_buffer_.ReadBody(iov, iov_len);
 }
 
 int QuicSpdyStream::GetReadableRegions(iovec* iov, size_t iov_len) const {
   DCHECK(FinishedReadingHeaders());
-  return sequencer()->GetReadableRegions(iov, iov_len);
+  if (spdy_session_->connection()->transport_version() != QUIC_VERSION_99) {
+    return sequencer()->GetReadableRegions(iov, iov_len);
+  }
+  return body_buffer_.PeekBody(iov, iov_len);
 }
 
 void QuicSpdyStream::MarkConsumed(size_t num_bytes) {
   DCHECK(FinishedReadingHeaders());
-  return sequencer()->MarkConsumed(num_bytes);
+  if (spdy_session_->connection()->transport_version() != QUIC_VERSION_99) {
+    return sequencer()->MarkConsumed(num_bytes);
+  }
+  body_buffer_.MarkBodyConsumed(num_bytes);
 }
 
 bool QuicSpdyStream::IsDoneReading() const {
@@ -162,11 +300,21 @@ bool QuicSpdyStream::IsDoneReading() const {
 }
 
 bool QuicSpdyStream::HasBytesToRead() const {
-  return sequencer()->HasBytesToRead();
+  if (spdy_session_->connection()->transport_version() != QUIC_VERSION_99) {
+    return sequencer()->HasBytesToRead();
+  }
+  return body_buffer_.HasBytesToRead();
 }
 
 void QuicSpdyStream::MarkTrailersConsumed() {
   trailers_consumed_ = true;
+}
+
+uint64_t QuicSpdyStream::total_body_bytes_read() const {
+  if (spdy_session_->connection()->transport_version() == QUIC_VERSION_99) {
+    return body_buffer_.total_body_bytes_received();
+  }
+  return sequencer()->NumBytesConsumed();
 }
 
 void QuicSpdyStream::ConsumeHeaderList() {
@@ -284,7 +432,30 @@ void QuicSpdyStream::OnStreamReset(const QuicRstStreamFrame& frame) {
 }
 
 void QuicSpdyStream::OnDataAvailable() {
-  OnBodyAvailable();
+  if (session()->connection()->transport_version() != QUIC_VERSION_99) {
+    OnBodyAvailable();
+    return;
+  }
+
+  iovec iov;
+  bool has_payload = false;
+  while (sequencer()->PrefetchNextRegion(&iov)) {
+    decoder_.ProcessInput(reinterpret_cast<const char*>(iov.iov_base),
+                          iov.iov_len);
+    if (decoder_.has_payload()) {
+      has_payload = true;
+    }
+  }
+
+  if (has_payload) {
+    OnBodyAvailable();
+    return;
+  }
+
+  if (sequencer()->IsClosed()) {
+    OnBodyAvailable();
+    return;
+  }
 }
 
 void QuicSpdyStream::OnClose() {
@@ -347,6 +518,19 @@ bool QuicSpdyStream::FinishedReadingTrailers() const {
 
 void QuicSpdyStream::ClearSession() {
   spdy_session_ = nullptr;
+}
+
+void QuicSpdyStream::OnDataFrameStart(Http3FrameLengths frame_lengths) {
+  body_buffer_.OnDataHeader(frame_lengths);
+}
+
+void QuicSpdyStream::OnDataFramePayload(QuicStringPiece payload) {
+  body_buffer_.OnDataPayload(payload);
+}
+
+void QuicSpdyStream::OnDataFrameEnd() {
+  DVLOG(1) << "Reaches the end of a data frame. Total bytes received are "
+           << body_buffer_.total_body_bytes_received();
 }
 
 #undef ENDPOINT  // undef for jumbo builds

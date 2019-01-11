@@ -2207,9 +2207,20 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
   QuicString request_string =
       "a request body bigger than one packet" + QuicString(kMaxPacketSize, '.');
 
+  // Calculate header length for version 99, so that the ack listener know how
+  // many actual bytes will be acked.
+  QuicByteCount header_length = 0;
+  if (client_->client()->client_session()->connection()->transport_version() ==
+      QUIC_VERSION_99) {
+    HttpEncoder encoder;
+    std::unique_ptr<char[]> buf;
+    header_length =
+        encoder.SerializeDataFrameHeader(request_string.length(), &buf);
+  }
+
   // The TestAckListener will cause a failure if not notified.
   QuicReferenceCountedPointer<TestAckListener> ack_listener(
-      new TestAckListener(request_string.length()));
+      new TestAckListener(request_string.length() + header_length));
 
   // Send the request, and register the delegate for ACKs.
   client_->SendData(request_string, true, ack_listener);

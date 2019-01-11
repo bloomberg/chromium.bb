@@ -303,6 +303,7 @@ const struct QuicErrorMapping {
     {quic::QUIC_STREAM_ID_BLOCKED_ERROR,
      "quic.stream.id.in.stream_id_blocked.frame"},
     {quic::QUIC_MAX_STREAM_ID_ERROR, "quic.stream.id.in.max_stream_id.frame"},
+    {quic::QUIC_HTTP_DECODER_ERROR, "quic.http.decoder.error"},
 
     // No error. Used as bound while iterating.
     {quic::QUIC_LAST_ERROR, "quic.last_error"}};

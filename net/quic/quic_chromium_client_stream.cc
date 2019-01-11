@@ -320,7 +320,7 @@ size_t QuicChromiumClientStream::Handle::NumBytesConsumed() const {
 bool QuicChromiumClientStream::Handle::HasBytesToRead() const {
   if (!stream_)
     return false;
-  return stream_->sequencer()->HasBytesToRead();
+  return stream_->HasBytesToRead();
 }
 
 bool QuicChromiumClientStream::Handle::IsDoneReading() const {
@@ -504,7 +504,7 @@ void QuicChromiumClientStream::OnBodyAvailable() {
     return;
   }
 
-  if (!sequencer()->HasBytesToRead() && !FinishedReadingTrailers()) {
+  if (!HasBytesToRead() && !FinishedReadingTrailers()) {
     // If there is no data to read, wait until either FIN is received or
     // trailers are delivered.
     return;
@@ -555,7 +555,7 @@ bool QuicChromiumClientStream::WriteStreamData(quic::QuicStringPiece data,
   // Must not be called when data is buffered.
   DCHECK(!HasBufferedData());
   // Writes the data, or buffers it.
-  WriteOrBufferData(data, fin, nullptr);
+  WriteOrBufferBody(data, fin, nullptr);
   return !HasBufferedData();  // Was all data written?
 }
 
@@ -569,7 +569,7 @@ bool QuicChromiumClientStream::WritevStreamData(
   for (size_t i = 0; i < buffers.size(); ++i) {
     bool is_fin = fin && (i == buffers.size() - 1);
     quic::QuicStringPiece string_data(buffers[i]->data(), lengths[i]);
-    WriteOrBufferData(string_data, is_fin, nullptr);
+    WriteOrBufferBody(string_data, is_fin, nullptr);
   }
   return !HasBufferedData();  // Was all data written?
 }
