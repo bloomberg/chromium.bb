@@ -224,6 +224,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(history_url, entry->GetVirtualURL());
   EXPECT_EQ(history_url, entry->GetHistoryURLForDataURL());
   EXPECT_EQ(data_url1, entry->GetURL());
+  EXPECT_EQ("http://baseurl", EvalJs(shell(), "self.origin"));
+  EXPECT_EQ(url::Origin::Create(base_url),
+            shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 
   // Navigate again to a different data URL.
   const std::string data2 = "<html><title>Two</title><body>bar</body></html>";
@@ -234,6 +237,11 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_TRUE(NavigateToURL(shell(), data_url2));
     same_tab_observer.Wait();
   }
+  url::Origin data_origin =
+      shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin();
+  EXPECT_TRUE(data_origin.opaque());
+  EXPECT_EQ(url::SchemeHostPort(),
+            data_origin.GetTupleOrPrecursorTupleIfOpaque());
 
   // Go back.
   TestNavigationObserver back_load_observer(shell()->web_contents());
@@ -253,6 +261,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   EXPECT_EQ(data_url1,
             shell()->web_contents()->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_EQ(url::Origin::Create(base_url),
+            shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
@@ -1860,7 +1870,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(main_url, entry->GetURL());
   FrameNavigationEntry* root_entry = entry->root_node()->frame_entry.get();
   EXPECT_EQ(main_url, root_entry->url());
-  EXPECT_EQ(main_origin, root_entry->origin());
+  EXPECT_EQ(main_origin, root_entry->committed_origin());
 
   // Verify subframe entries.  The entry should now have one blank subframe
   // FrameNavigationEntry, but this does not count as committing a real load.
@@ -1868,7 +1878,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   FrameNavigationEntry* frame_entry =
       entry->root_node()->children[0]->frame_entry.get();
   EXPECT_EQ(about_blank_url, frame_entry->url());
-  EXPECT_EQ(main_origin, frame_entry->origin());
+  EXPECT_EQ(main_origin, frame_entry->committed_origin());
   EXPECT_FALSE(root->child_at(0)->has_committed_real_load());
 
   // 1a. A nested iframe with no URL should also create a subframe entry but not
@@ -1888,7 +1898,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   ASSERT_EQ(1U, entry->root_node()->children[0]->children.size());
   frame_entry = entry->root_node()->children[0]->children[0]->frame_entry.get();
   EXPECT_EQ(about_blank_url, frame_entry->url());
-  EXPECT_EQ(main_origin, frame_entry->origin());
+  EXPECT_EQ(main_origin, frame_entry->committed_origin());
   EXPECT_FALSE(root->child_at(0)->child_at(0)->has_committed_real_load());
 
   // 2. Create another iframe with an explicit about:blank URL.
@@ -1912,7 +1922,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   ASSERT_EQ(2U, entry->root_node()->children.size());
   frame_entry = entry->root_node()->children[1]->frame_entry.get();
   EXPECT_EQ(about_blank_url, frame_entry->url());
-  EXPECT_EQ(main_origin, frame_entry->origin());
+  EXPECT_EQ(main_origin, frame_entry->committed_origin());
   EXPECT_FALSE(root->child_at(1)->has_committed_real_load());
 
   // 3. A real same-site navigation in the nested iframe should be AUTO.
@@ -1939,7 +1949,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   ASSERT_EQ(1U, entry->root_node()->children[0]->children.size());
   frame_entry = entry->root_node()->children[0]->children[0]->frame_entry.get();
   EXPECT_EQ(frame_url, frame_entry->url());
-  EXPECT_EQ(url::Origin::Create(frame_url), frame_entry->origin());
+  EXPECT_EQ(url::Origin::Create(frame_url), frame_entry->committed_origin());
   EXPECT_FALSE(root->child_at(0)->has_committed_real_load());
   EXPECT_TRUE(root->child_at(0)->child_at(0)->has_committed_real_load());
   EXPECT_FALSE(root->child_at(1)->has_committed_real_load());
@@ -1967,11 +1977,11 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   ASSERT_EQ(2U, entry->root_node()->children.size());
   frame_entry = entry->root_node()->children[1]->frame_entry.get();
   EXPECT_EQ(foo_url, frame_entry->url());
-  EXPECT_EQ(url::Origin::Create(foo_url), frame_entry->origin());
+  EXPECT_EQ(url::Origin::Create(foo_url), frame_entry->committed_origin());
   EXPECT_FALSE(root->child_at(0)->has_committed_real_load());
   EXPECT_TRUE(root->child_at(0)->child_at(0)->has_committed_real_load());
   EXPECT_TRUE(root->child_at(1)->has_committed_real_load());
-  EXPECT_EQ(frame_entry->origin(),
+  EXPECT_EQ(frame_entry->committed_origin(),
             root->child_at(1)->current_frame_host()->GetLastCommittedOrigin());
 
   // 5. A new navigation to about:blank in the nested frame should count as a
@@ -1997,7 +2007,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   frame_entry =
       entry2->root_node()->children[0]->children[0]->frame_entry.get();
   EXPECT_EQ(about_blank_url, frame_entry->url());
-  EXPECT_EQ(main_origin, frame_entry->origin());
+  EXPECT_EQ(main_origin, frame_entry->committed_origin());
   EXPECT_FALSE(root->child_at(0)->has_committed_real_load());
   EXPECT_TRUE(root->child_at(0)->child_at(0)->has_committed_real_load());
   EXPECT_TRUE(root->child_at(1)->has_committed_real_load());
@@ -2744,6 +2754,13 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // The entry should have a FrameNavigationEntry for the data subframe.
   ASSERT_EQ(1U, entry2->root_node()->children.size());
   EXPECT_EQ(data_url, entry2->root_node()->children[0]->frame_entry->url());
+  EXPECT_EQ(entry2->root_node()
+                ->frame_entry->committed_origin()
+                ->GetTupleOrPrecursorTupleIfOpaque(),
+            entry2->root_node()
+                ->children[0]
+                ->frame_entry->committed_origin()
+                ->GetTupleOrPrecursorTupleIfOpaque());
 
   // 3. Navigate the iframe cross-site to a page with a nested iframe.
   GURL frame_url_b(embedded_test_server()->GetURL(
@@ -2768,6 +2785,15 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(frame_url_b, entry3->root_node()->children[0]->frame_entry->url());
   EXPECT_EQ(data_url,
             entry3->root_node()->children[0]->children[0]->frame_entry->url());
+  EXPECT_EQ(entry3->root_node()
+                ->children[0]
+                ->frame_entry->committed_origin()
+                ->GetTupleOrPrecursorTupleIfOpaque(),
+            entry3->root_node()
+                ->children[0]
+                ->children[0]
+                ->frame_entry->committed_origin()
+                ->GetTupleOrPrecursorTupleIfOpaque());
 
   // 4. Navigate the nested iframe cross-site.
   GURL frame_url_c(embedded_test_server()->GetURL(
@@ -2876,6 +2902,15 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(frame_url_b, entry3->root_node()->children[0]->frame_entry->url());
   EXPECT_EQ(data_url,
             entry3->root_node()->children[0]->children[0]->frame_entry->url());
+  EXPECT_EQ(entry3->root_node()
+                ->children[0]
+                ->frame_entry->committed_origin()
+                ->GetTupleOrPrecursorTupleIfOpaque(),
+            entry3->root_node()
+                ->children[0]
+                ->children[0]
+                ->frame_entry->committed_origin()
+                ->GetTupleOrPrecursorTupleIfOpaque());
 
   // Verify that we did not reload the main frame. See https://crbug.com/586234.
   EXPECT_EQ(3, EvalJs(root, "foo"));
@@ -2898,6 +2933,13 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // The entry should have a FrameNavigationEntry for the subframe.
   ASSERT_EQ(1U, entry2->root_node()->children.size());
   EXPECT_EQ(data_url, entry2->root_node()->children[0]->frame_entry->url());
+  EXPECT_EQ(entry2->root_node()
+                ->frame_entry->committed_origin()
+                ->GetTupleOrPrecursorTupleIfOpaque(),
+            entry2->root_node()
+                ->children[0]
+                ->frame_entry->committed_origin()
+                ->GetTupleOrPrecursorTupleIfOpaque());
 
   // 9. Go back again, to the initial main frame page.
   {
@@ -2933,6 +2975,15 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(frame_url_b, entry3->root_node()->children[0]->frame_entry->url());
   EXPECT_EQ(data_url,
             entry3->root_node()->children[0]->children[0]->frame_entry->url());
+  EXPECT_EQ(entry3->root_node()
+                ->children[0]
+                ->frame_entry->committed_origin()
+                ->GetTupleOrPrecursorTupleIfOpaque(),
+            entry3->root_node()
+                ->children[0]
+                ->children[0]
+                ->frame_entry->committed_origin()
+                ->GetTupleOrPrecursorTupleIfOpaque());
 }
 
 // Verify that we navigate to the fallback (original) URL if a subframe's
@@ -5867,6 +5918,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   EXPECT_EQ(1, controller.GetEntryCount());
   EXPECT_EQ(1, EvalJs(shell(), "history.length"));
+  const url::Origin opaque_origin = root->current_origin();
+  EXPECT_TRUE(opaque_origin.opaque());
+  EXPECT_EQ(url::SchemeHostPort(),
+            opaque_origin.GetTupleOrPrecursorTupleIfOpaque());
 
   // Add an iframe with no 'src'.
   GURL blank_url(url::kAboutBlankURL);
@@ -5874,15 +5929,17 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "var iframe = document.createElement('iframe');"
       "iframe.id = 'frame';"
       "document.body.appendChild(iframe);";
-  EXPECT_TRUE(ExecJs(root->current_frame_host(), script));
+  EXPECT_TRUE(ExecJs(root, script));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(1, controller.GetEntryCount());
-  EXPECT_EQ(1, EvalJs(shell(), "history.length"));
+  EXPECT_EQ(1, EvalJs(root, "history.length"));
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   ASSERT_EQ(1U, root->child_count());
   FrameTreeNode* frame = root->child_at(0);
   ASSERT_NE(nullptr, frame);
   EXPECT_EQ(blank_url, frame->current_url());
+  EXPECT_EQ(opaque_origin, root->current_origin());
+  EXPECT_EQ(opaque_origin, frame->current_origin());
 
   // Do a document.write in the subframe to create a link to click.
   std::string html = "<a id='fraglink' href='#frag'>fragment link</a>";
@@ -5891,16 +5948,26 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "iframe.contentWindow.document.write($1);"
       "iframe.contentWindow.document.close();",
       html);
-  EXPECT_TRUE(ExecJs(root->current_frame_host(), document_write_script));
+  EXPECT_TRUE(ExecJs(root, document_write_script));
+  EXPECT_EQ(opaque_origin, root->current_origin());
+  EXPECT_EQ(opaque_origin, frame->current_origin());
 
   // Click the link to do a same document navigation.  Due to the
-  // document.write, the new URL matches the parent frame's URL.
+  // document.write, the new URL matches the parent frame's URL, but the
+  // opaque origin is preserved.
   GURL frame_url_2("data:text/html,Top level page#frag");
   std::string link_script = "document.getElementById('fraglink').click()";
-  EXPECT_TRUE(ExecJs(frame->current_frame_host(), link_script));
+  EXPECT_TRUE(ExecJs(frame, link_script));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(opaque_origin, root->current_origin());
+  EXPECT_EQ(opaque_origin, frame->current_origin());
+  EXPECT_EQ(ListValueOf("Top level page", "fragment link"),
+            EvalJs(frame,
+                   "[window.parent.document.body.textContent,"
+                   " document.body.textContent]"))
+      << "Frames should be same-origin and able to script each other.";
   EXPECT_EQ(2, controller.GetEntryCount());
-  EXPECT_EQ(2, EvalJs(shell(), "history.length"));
+  EXPECT_EQ(2, EvalJs(root, "history.length"));
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(frame_url_2, frame->current_url());
 
@@ -5914,10 +5981,11 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // Verify the process is still alive by running script.  We can't just call
   // IsRenderFrameLive after the navigation since it might not have disconnected
   // yet.
-  EXPECT_TRUE(ExecJs(root->current_frame_host(), "true;"));
+  EXPECT_EQ("ping", EvalJs(root, "'ping'"));
   EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
 
   EXPECT_EQ(blank_url, frame->current_url());
+  EXPECT_EQ(opaque_origin, frame->current_origin());
 }
 
 // Ensure that we do not corrupt a NavigationEntry's PageState if a subframe

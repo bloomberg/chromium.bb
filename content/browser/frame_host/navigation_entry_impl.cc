@@ -699,6 +699,7 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
 CommitNavigationParams NavigationEntryImpl::ConstructCommitNavigationParams(
     const FrameNavigationEntry& frame_entry,
     const GURL& original_url,
+    const base::Optional<url::Origin>& origin_to_commit,
     const std::string& original_method,
     bool is_history_navigation_in_new_child,
     const std::map<std::string, bool>& subframe_unique_names,
@@ -726,9 +727,9 @@ CommitNavigationParams NavigationEntryImpl::ConstructCommitNavigationParams(
   }
 
   CommitNavigationParams commit_params(
-      GetIsOverridingUserAgent(), redirects, original_url, original_method,
-      GetCanLoadLocalResources(), frame_entry.page_state(), GetUniqueID(),
-      is_history_navigation_in_new_child, subframe_unique_names,
+      origin_to_commit, GetIsOverridingUserAgent(), redirects, original_url,
+      original_method, GetCanLoadLocalResources(), frame_entry.page_state(),
+      GetUniqueID(), is_history_navigation_in_new_child, subframe_unique_names,
       intended_as_new_entry, pending_offset_to_send, current_offset_to_send,
       current_length_to_send, IsViewSourceMode(), should_clear_history_list());
 #if defined(OS_ANDROID)
@@ -783,7 +784,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
     SiteInstanceImpl* site_instance,
     scoped_refptr<SiteInstanceImpl> source_site_instance,
     const GURL& url,
-    const url::Origin& origin,
+    const base::Optional<url::Origin>& origin,
     const Referrer& referrer,
     const std::vector<GURL>& redirect_chain,
     const PageState& page_state,
@@ -842,9 +843,9 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
   // or unique name.
   FrameNavigationEntry* frame_entry = new FrameNavigationEntry(
       unique_name, item_sequence_number, document_sequence_number,
-      site_instance, std::move(source_site_instance), url, &origin, referrer,
-      redirect_chain, page_state, method, post_id,
-      std::move(blob_url_loader_factory));
+      site_instance, std::move(source_site_instance), url,
+      base::OptionalOrNullptr(origin), referrer, redirect_chain, page_state,
+      method, post_id, std::move(blob_url_loader_factory));
   parent_node->children.push_back(
       std::make_unique<NavigationEntryImpl::TreeNode>(parent_node,
                                                       frame_entry));

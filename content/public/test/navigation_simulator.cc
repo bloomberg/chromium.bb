@@ -926,6 +926,7 @@ bool NavigationSimulator::SimulateRendererInitiatedStart() {
           base::nullopt /* detools_initiator_info */);
   CommonNavigationParams common_params;
   common_params.url = navigation_url_;
+  common_params.initiator_origin = url::Origin();
   common_params.method = initial_method_;
   common_params.referrer = referrer_;
   common_params.transition = transition_;

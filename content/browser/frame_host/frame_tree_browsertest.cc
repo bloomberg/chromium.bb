@@ -13,6 +13,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -435,6 +436,64 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest,
   EXPECT_EQ("Hi from a.com", EvalJs(target, "document.body.innerHTML"));
 }
 
+// Tests a cross-origin navigation to a data: URL. The main frame initiates this
+// navigation on its grandchild. It should wind up in the main frame's process
+// and have precursor origin of the main frame origin.
+IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateGrandchildToDataUrl) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  WebContentsImpl* contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // The leaf node (c.com) will be navigated. Its grandparent node (a.com) will
+  // initiate the navigation.
+  FrameTreeNode* target =
+      contents->GetFrameTree()->root()->child_at(0)->child_at(0);
+  FrameTreeNode* initiator = target->parent()->parent();
+
+  // Give the target a name.
+  EXPECT_TRUE(ExecJs(target, "window.name = 'target';"));
+
+  // Navigate the target frame through the initiator frame.
+  {
+    TestFrameNavigationObserver observer(target);
+    EXPECT_TRUE(
+        ExecJs(initiator, "window.open('data:text/html,content', 'target');"));
+    observer.Wait();
+  }
+
+  url::Origin original_target_origin =
+      target->current_frame_host()->GetLastCommittedOrigin();
+  EXPECT_TRUE(original_target_origin.opaque());
+  EXPECT_EQ(original_target_origin.GetTupleOrPrecursorTupleIfOpaque(),
+            url::SchemeHostPort(main_url));
+
+  // Navigate the grandchild frame again cross-process to foo.com, then
+  // go back in session history. The origin for the data: URL must be preserved.
+  {
+    TestFrameNavigationObserver observer(target);
+    EXPECT_TRUE(ExecJs(target, JsReplace("window.location = $1",
+                                         embedded_test_server()->GetURL(
+                                             "foo.com", "/title2.html"))));
+    observer.Wait();
+  }
+  EXPECT_NE(original_target_origin,
+            target->current_frame_host()->GetLastCommittedOrigin());
+  {
+    TestFrameNavigationObserver observer(target);
+    contents->GetController().GoBack();
+    observer.Wait();
+  }
+
+  url::Origin target_origin =
+      target->current_frame_host()->GetLastCommittedOrigin();
+  EXPECT_TRUE(target_origin.opaque());
+  EXPECT_EQ(target_origin.GetTupleOrPrecursorTupleIfOpaque(),
+            url::SchemeHostPort(main_url));
+  EXPECT_EQ(target_origin, original_target_origin);
+}
+
 // Ensures that iframe with srcdoc is always put in the same origin as its
 // parent frame.
 IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, ChildFrameWithSrcdoc) {
@@ -791,7 +850,7 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
-                       OriginSetOnCrossProcessNavigations) {
+                       OriginSetOnNavigations) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -824,12 +883,259 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
   EXPECT_EQ(root->current_origin().Serialize() + '/',
             main_url.GetOrigin().spec());
 
-  GURL data_url("data:text/html,foo");
-  NavigateFrameToURL(root->child_at(1), data_url);
+  {
+    GURL data_url("data:text/html,foo");
+    TestNavigationObserver observer(shell()->web_contents());
+    EXPECT_TRUE(
+        ExecJs(root->child_at(1), JsReplace("window.location = $1", data_url)));
+    observer.Wait();
+  }
 
   // Navigating to a data URL should set a unique origin.  This is represented
-  // as "null" per RFC 6454.
+  // as "null" per RFC 6454.  A frame navigating itself to a data: URL does not
+  // require a process transfer, but should retain the original origin
+  // as its precursor.
   EXPECT_EQ(root->child_at(1)->current_origin().Serialize(), "null");
+  EXPECT_TRUE(root->child_at(1)->current_origin().opaque());
+  ASSERT_EQ(
+      url::SchemeHostPort(main_url),
+      root->child_at(1)->current_origin().GetTupleOrPrecursorTupleIfOpaque())
+      << "Expected the precursor origin to be preserved; should be the "
+         "initiator of a data: navigation.";
+
+  // Adding an <iframe sandbox srcdoc=> frame should result in a unique origin
+  // that is different-origin from its data: URL parent.
+  {
+    TestNavigationObserver observer(shell()->web_contents());
+
+    ASSERT_EQ(0U, root->child_at(1)->child_count());
+    EXPECT_TRUE(
+        ExecJs(root->child_at(1), JsReplace(
+                                      R"(
+                var iframe = document.createElement('iframe');
+                iframe.setAttribute('sandbox', 'allow-scripts');
+                iframe.srcdoc = $1;
+                document.body.appendChild(iframe);
+            )",
+                                      "<html><body>This sandboxed doc should "
+                                      "be different-origin.</body></html>")));
+    observer.Wait();
+    ASSERT_EQ(1U, root->child_at(1)->child_count());
+  }
+
+  url::Origin root_origin = root->current_origin();
+  url::Origin child_1 = root->child_at(1)->current_origin();
+  url::Origin child_1_0 = root->child_at(1)->child_at(0)->current_origin();
+  EXPECT_FALSE(root_origin.opaque());
+  EXPECT_TRUE(child_1.opaque());
+  EXPECT_TRUE(child_1_0.opaque());
+  EXPECT_NE(child_1, child_1_0);
+  EXPECT_EQ(url::SchemeHostPort(main_url),
+            root_origin.GetTupleOrPrecursorTupleIfOpaque());
+  EXPECT_EQ(url::SchemeHostPort(main_url),
+            child_1.GetTupleOrPrecursorTupleIfOpaque());
+  EXPECT_EQ(url::SchemeHostPort(main_url),
+            child_1_0.GetTupleOrPrecursorTupleIfOpaque());
+
+  {
+    TestNavigationObserver observer(shell()->web_contents());
+
+    ASSERT_EQ(1U, root->child_at(1)->child_count());
+    EXPECT_TRUE(
+        ExecJs(root->child_at(1), JsReplace(
+                                      R"(
+                var iframe = document.createElement('iframe');
+                iframe.srcdoc = $1;
+                document.body.appendChild(iframe);
+            )",
+                                      "<html><body>This srcdoc document should "
+                                      "be same-origin.</body></html>")));
+    observer.Wait();
+    ASSERT_EQ(2U, root->child_at(1)->child_count());
+  }
+  EXPECT_EQ(root_origin, root->current_origin());
+  EXPECT_EQ(child_1, root->child_at(1)->current_origin());
+  EXPECT_EQ(child_1_0, root->child_at(1)->child_at(0)->current_origin());
+  url::Origin child_1_1 = root->child_at(1)->child_at(1)->current_origin();
+  EXPECT_EQ(child_1, child_1_1);
+  EXPECT_NE(child_1_0, child_1_1);
+
+  {
+    TestNavigationObserver observer(shell()->web_contents());
+
+    ASSERT_EQ(2U, root->child_at(1)->child_count());
+    EXPECT_TRUE(
+        ExecJs(root->child_at(1), JsReplace(
+                                      R"(
+                var iframe = document.createElement('iframe');
+                iframe.src = 'data:text/html;base64,' + btoa($1);
+                document.body.appendChild(iframe);
+            )",
+                                      "<html><body>This data: doc should be "
+                                      "different-origin.</body></html>")));
+    observer.Wait();
+    ASSERT_EQ(3U, root->child_at(1)->child_count());
+  }
+  EXPECT_EQ(root_origin, root->current_origin());
+  EXPECT_EQ(child_1, root->child_at(1)->current_origin());
+  EXPECT_EQ(child_1_0, root->child_at(1)->child_at(0)->current_origin());
+  EXPECT_EQ(child_1_1, root->child_at(1)->child_at(1)->current_origin());
+  url::Origin child_1_2 = root->child_at(1)->child_at(2)->current_origin();
+  EXPECT_NE(child_1, child_1_2);
+  EXPECT_NE(child_1_0, child_1_2);
+  EXPECT_NE(child_1_1, child_1_2);
+  EXPECT_EQ(url::SchemeHostPort(main_url),
+            child_1_2.GetTupleOrPrecursorTupleIfOpaque());
+
+  // If the parent navigates its child to a data URL, it should transfer
+  // to the parent's process, and the precursor origin should track the
+  // parent's origin.
+  {
+    GURL data_url("data:text/html,foo2");
+    TestNavigationObserver observer(shell()->web_contents());
+    EXPECT_TRUE(ExecJs(root, JsReplace("frames[0].location = $1", data_url)));
+    observer.Wait();
+    EXPECT_EQ(data_url, root->child_at(0)->current_url());
+  }
+
+  EXPECT_EQ(root->child_at(0)->current_origin().Serialize(), "null");
+  EXPECT_TRUE(root->child_at(0)->current_origin().opaque());
+  EXPECT_EQ(
+      url::SchemeHostPort(main_url),
+      root->child_at(0)->current_origin().GetTupleOrPrecursorTupleIfOpaque());
+  EXPECT_EQ(root->current_frame_host()->GetProcess(),
+            root->child_at(0)->current_frame_host()->GetProcess());
+}
+
+// Test to verify that a blob: URL that is created by a unique opaque origin
+// will correctly set the origin_to_commit on a session history navigation.
+IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
+                       OriginForBlobUrlsFromUniqueOpaqueOrigin) {
+  // Start off with a navigation to data: URL in the main frame. It should
+  // result in a unique opaque origin without any precursor information.
+  GURL data_url("data:text/html,foo<iframe id='child' src='" +
+                embedded_test_server()->GetURL("/title1.html").spec() +
+                "'></iframe>");
+  EXPECT_TRUE(NavigateToURL(shell(), data_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_TRUE(root->current_origin().opaque());
+  EXPECT_TRUE(
+      root->current_origin().GetTupleOrPrecursorTupleIfOpaque().IsInvalid());
+  EXPECT_EQ(1UL, root->child_count());
+  FrameTreeNode* child = root->child_at(0);
+
+  // Create a blob: URL and navigate the child frame to it.
+  std::string html = "<html><body>This is blob content.</body></html>";
+  std::string script = JsReplace(
+      "var blob = new Blob([$1], {type: 'text/html'});"
+      "var blob_url = URL.createObjectURL(blob);"
+      "document.getElementById('child').src = blob_url;"
+      "blob_url;",
+      html);
+  GURL blob_url;
+  {
+    TestFrameNavigationObserver observer(child);
+    blob_url = GURL(EvalJs(root, script).ExtractString());
+    observer.Wait();
+    EXPECT_EQ(blob_url, child->current_frame_host()->GetLastCommittedURL());
+  }
+
+  // We expect the frame to have committed in an opaque origin which contains
+  // the same precursor information - none.
+  url::Origin blob_origin = child->current_origin();
+  EXPECT_TRUE(blob_origin.opaque());
+  EXPECT_EQ(root->current_origin().GetTupleOrPrecursorTupleIfOpaque(),
+            blob_origin.GetTupleOrPrecursorTupleIfOpaque());
+
+  // Navigate the frame away to any web URL.
+  {
+    GURL url(embedded_test_server()->GetURL("/title2.html"));
+    TestFrameNavigationObserver observer(child);
+    EXPECT_TRUE(ExecJs(child, JsReplace("window.location = $1", url)));
+    observer.Wait();
+    EXPECT_EQ(url, child->current_frame_host()->GetLastCommittedURL());
+  }
+  EXPECT_FALSE(child->current_origin().opaque());
+  EXPECT_TRUE(shell()->web_contents()->GetController().CanGoBack());
+  EXPECT_EQ(3, shell()->web_contents()->GetController().GetEntryCount());
+  EXPECT_EQ(
+      2, shell()->web_contents()->GetController().GetLastCommittedEntryIndex());
+
+  // Verify the blob URL still exists in the main frame, which keeps it alive
+  // allowing a session history navigation back to succeed.
+  EXPECT_EQ(blob_url, GURL(EvalJs(root, "blob_url;").ExtractString()));
+
+  // Now navigate back in session history. It should successfully go back to
+  // the blob: URL.
+  {
+    TestFrameNavigationObserver observer(child);
+    shell()->web_contents()->GetController().GoBack();
+    observer.Wait();
+  }
+  EXPECT_EQ(blob_url, child->current_frame_host()->GetLastCommittedURL());
+  EXPECT_TRUE(child->current_origin().opaque());
+  EXPECT_EQ(blob_origin, child->current_origin());
+  EXPECT_EQ(root->current_origin().GetTupleOrPrecursorTupleIfOpaque(),
+            child->current_origin().GetTupleOrPrecursorTupleIfOpaque());
+}
+
+// Test to verify that about:blank iframe, which is a child of a sandboxed
+// iframe is not considered same origin, but precursor information is preserved
+// in its origin.
+IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
+                       AboutBlankSubframeInSandboxedFrame) {
+  // Start off by navigating to a page with sandboxed iframe, which allows
+  // script execution.
+  GURL main_url(
+      embedded_test_server()->GetURL("/sandboxed_main_frame_script.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_EQ(1UL, root->child_count());
+  FrameTreeNode* child = root->child_at(0);
+
+  // Navigate the frame to data: URL to cause it to have an opaque origin that
+  // is derived from the |main_url| origin.
+  GURL data_url("data:text/html,<html><body>foo</body></html>");
+  {
+    TestFrameNavigationObserver observer(child);
+    EXPECT_TRUE(ExecJs(root, JsReplace("frames[0].location = $1", data_url)));
+    observer.Wait();
+    EXPECT_EQ(data_url, child->current_frame_host()->GetLastCommittedURL());
+  }
+
+  // Add an about:blank iframe to the data: frame, which should not inherit the
+  // origin, but should preserve the precursor information.
+  {
+    EXPECT_TRUE(ExecJs(child,
+                       "var f = document.createElement('iframe');"
+                       "document.body.appendChild(f);"));
+  }
+  EXPECT_EQ(1UL, child->child_count());
+  FrameTreeNode* grandchild = child->child_at(0);
+
+  EXPECT_TRUE(grandchild->current_origin().opaque());
+  EXPECT_EQ(GURL(url::kAboutBlankURL),
+            grandchild->current_frame_host()->GetLastCommittedURL());
+
+  // The origin of the data: document should have precursor information matching
+  // the main frame origin.
+  EXPECT_EQ(root->current_origin().GetTupleOrPrecursorTupleIfOpaque(),
+            child->current_origin().GetTupleOrPrecursorTupleIfOpaque());
+
+  // The same should hold also for the about:blank subframe of the data: frame.
+  EXPECT_EQ(root->current_origin().GetTupleOrPrecursorTupleIfOpaque(),
+            grandchild->current_origin().GetTupleOrPrecursorTupleIfOpaque());
+
+  // The about:blank document should not be able to access its parent, as they
+  // are considered cross origin due to the sandbox flags on the parent.
+  EXPECT_FALSE(ExecJs(grandchild, "window.parent.foo = 'bar';"));
+  EXPECT_NE(child->current_origin(), grandchild->current_origin());
 }
 
 // Ensure that a popup opened from a sandboxed main frame inherits sandbox flags
@@ -963,75 +1269,6 @@ IN_PROC_BROWSER_TEST_F(IsolateIcelandFrameTreeBrowserTest,
       "Where A = http://a.com/\n"
       "      B = http://b.is/",
       FrameTreeVisualizer().DepictFrameTree(root));
-}
-
-// Test to verify that a blob: URL that is created by an unique opaque origin
-// will correctly navigate back in session history.
-IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
-                       OriginForBlobUrlsFromUniqueOpaqueOrigin) {
-  // Start off with a navigation to data: URL in the main frame. It should
-  // result in an unique opaque origin without any precursor information.
-  GURL data_url("data:text/html,foo<iframe id='child' src='" +
-                embedded_test_server()->GetURL("/title1.html").spec() +
-                "'></iframe>");
-  EXPECT_TRUE(NavigateToURL(shell(), data_url));
-
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
-  EXPECT_TRUE(root->current_origin().opaque());
-  EXPECT_EQ(1UL, root->child_count());
-
-  // Create a blob: URL and navigate the child frame to it.
-  std::string html = "<html><body>This is blob content.</body></html>";
-  std::string script = JsReplace(
-      "var blob = new Blob([$1], {type: 'text/html'});"
-      "var blob_url = URL.createObjectURL(blob);"
-      "document.getElementById('child').src = blob_url;"
-      "blob_url",
-      html);
-  GURL blob_url;
-  {
-    TestFrameNavigationObserver observer(root->child_at(0));
-    blob_url = GURL(EvalJs(root, script).ExtractString());
-    observer.WaitForCommit();
-    EXPECT_EQ(blob_url,
-              root->child_at(0)->current_frame_host()->GetLastCommittedURL());
-  }
-
-  // We expect the frame to have committed in an opaque origin which contains
-  // the same precursor information - aka none :).
-  EXPECT_TRUE(root->child_at(0)->current_origin().opaque());
-  url::Origin blob_origin = root->child_at(0)->current_origin();
-
-  // Navigate the frame away to any web URL.
-  {
-    GURL url(embedded_test_server()->GetURL("/title2.html"));
-    TestFrameNavigationObserver observer(root->child_at(0));
-    EXPECT_TRUE(
-        ExecJs(root->child_at(0), JsReplace("window.location = $1", url)));
-    observer.WaitForCommit();
-    EXPECT_EQ(url,
-              root->child_at(0)->current_frame_host()->GetLastCommittedURL());
-  }
-  EXPECT_FALSE(root->child_at(0)->current_origin().opaque());
-  EXPECT_TRUE(shell()->web_contents()->GetController().CanGoBack());
-  EXPECT_EQ(
-      2, shell()->web_contents()->GetController().GetLastCommittedEntryIndex());
-
-  EXPECT_EQ(blob_url, GURL(EvalJs(root, "blob_url;").ExtractString()));
-
-  // Now navigate back in session history. It should successfully go back to
-  // the blob: URL.
-  {
-    TestFrameNavigationObserver observer(root->child_at(0));
-    shell()->web_contents()->GetController().GoBack();
-    observer.WaitForCommit();
-    EXPECT_EQ(
-        1,
-        shell()->web_contents()->GetController().GetLastCommittedEntryIndex());
-  }
-  EXPECT_TRUE(root->child_at(0)->current_origin().opaque());
 }
 
 }  // namespace content

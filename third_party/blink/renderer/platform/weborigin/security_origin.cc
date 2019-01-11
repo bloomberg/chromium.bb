@@ -618,7 +618,6 @@ const SecurityOrigin* SecurityOrigin::GetOriginOrPrecursorOriginIfOpaque()
     return this;
 
   DCHECK(IsOpaque());
-  DCHECK(!precursor_origin_->IsOpaque());
   return precursor_origin_.get();
 }
 

@@ -368,7 +368,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   // TODO(clamy): See if the navigation start time should be measured in the
   // renderer and sent to the browser instead of being measured here.
   CommitNavigationParams commit_params(
-      override_user_agent,
+      base::nullopt, override_user_agent,
       std::vector<GURL>(),  // redirects
       common_params.url, common_params.method,
       false,                          // can_load_local_resources
@@ -417,7 +417,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
       params.gesture == NavigationGestureUser, InitiatorCSPInfo(),
       std::string() /* href_translate */, base::TimeTicks::Now());
   CommitNavigationParams commit_params(
-      params.is_overriding_user_agent, params.redirects,
+      params.origin, params.is_overriding_user_agent, params.redirects,
       params.original_request_url, params.method,
       false /* can_load_local_resources */, params.page_state,
       params.nav_entry_id, false /* is_history_navigation_in_new_child */,
@@ -930,6 +930,11 @@ void NavigationRequest::OnRequestRedirected(
 
   commit_params_.redirect_response.push_back(response->head);
   commit_params_.redirect_infos.push_back(redirect_info);
+
+  // On redirects, the initial origin_to_commit is no longer correct, so it
+  // must be cleared to avoid sending incorrect value to the renderer process.
+  if (commit_params_.origin_to_commit)
+    commit_params_.origin_to_commit.reset();
 
   commit_params_.redirects.push_back(common_params_.url);
   common_params_.url = redirect_info.new_url;
@@ -1753,6 +1758,13 @@ void NavigationRequest::CommitErrorPage(
     const base::Optional<std::string>& error_page_content) {
   UpdateCommitNavigationParamsHistory();
   frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host);
+  // Error pages commit in an opaque origin in the renderer process. If this
+  // NavigationRequest resulted in committing an error page, just clear the
+  // |origin_to_commit| and let the renderer process calculate the origin.
+  // TODO(nasko): Create an opque origin here and pass it for the renderer
+  // to commit into it. Potentially also make it an opaque origin derived from
+  // the error page URL, so it can be checked at DidCommit processing.
+  commit_params_.origin_to_commit.reset();
   if (IsPerNavigationMojoInterfaceEnabled() && request_navigation_client_ &&
       request_navigation_client_.is_bound()) {
     if (associated_site_instance_id_ ==

@@ -106,6 +106,7 @@ CommonNavigationParams::~CommonNavigationParams() = default;
 CommitNavigationParams::CommitNavigationParams() = default;
 
 CommitNavigationParams::CommitNavigationParams(
+    const base::Optional<url::Origin>& origin_to_commit,
     bool is_overriding_user_agent,
     const std::vector<GURL>& redirects,
     const GURL& original_url,
@@ -121,7 +122,8 @@ CommitNavigationParams::CommitNavigationParams(
     int current_history_list_length,
     bool is_view_source,
     bool should_clear_history_list)
-    : is_overriding_user_agent(is_overriding_user_agent),
+    : origin_to_commit(origin_to_commit),
+      is_overriding_user_agent(is_overriding_user_agent),
       redirects(redirects),
       original_url(original_url),
       original_method(original_method),

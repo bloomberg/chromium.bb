@@ -6537,9 +6537,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
   // Set sandbox flags for child frame.
-  EXPECT_TRUE(ExecuteScript(root,
-                            "document.querySelector('iframe').sandbox = "
-                            "    'allow-scripts allow-popups';"));
+  EXPECT_TRUE(ExecJs(root,
+                     "document.querySelector('iframe').sandbox = "
+                     "    'allow-scripts allow-popups';"));
 
   // Calculate expected flags.  Note that "allow-scripts" resets both
   // WebSandboxFlags::Scripts and WebSandboxFlags::AutomaticFeatures bits per
@@ -6560,8 +6560,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
             root->child_at(0)->effective_frame_policy().sandbox_flags);
 
   // Verify that they've also taken effect on the renderer side.  The sandboxed
-  // frame's origin should be unique.
+  // frame's origin should be opaque.
   EXPECT_EQ("null", GetOriginFromRenderer(root->child_at(0)));
+  const url::SchemeHostPort tuple_b(frame_url);
+  const url::Origin sandbox_origin_b = root->child_at(0)->current_origin();
+  EXPECT_TRUE(sandbox_origin_b.opaque());
+  EXPECT_EQ(tuple_b, sandbox_origin_b.GetTupleOrPrecursorTupleIfOpaque());
 
   // Open a popup named "foo" from the sandboxed child frame.
   Shell* foo_shell =
@@ -6577,16 +6581,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // process.
   EXPECT_EQ(expected_flags, foo_root->effective_frame_policy().sandbox_flags);
 
-  // The popup's origin should be unique, since it's sandboxed.
+  // The popup's origin should be opaque, since it's sandboxed, but cross-origin
+  // from its opener.
   EXPECT_EQ("null", GetOriginFromRenderer(foo_root));
+  url::Origin sandbox_origin_b2 = foo_root->current_origin();
+  EXPECT_NE(sandbox_origin_b2, sandbox_origin_b);
+  EXPECT_TRUE(sandbox_origin_b2.opaque());
+  EXPECT_EQ(tuple_b, sandbox_origin_b2.GetTupleOrPrecursorTupleIfOpaque());
 
-  // Navigate the popup cross-site.  This should keep the unique origin and the
-  // inherited sandbox flags.
+  // Navigate the popup cross-site.  This should be placed in an opaque origin
+  // derived from c.com, and retain the inherited sandbox flags.
   GURL c_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  const url::SchemeHostPort tuple_c(c_url);
   {
     TestFrameNavigationObserver popup_observer(foo_root);
-    EXPECT_TRUE(
-        ExecuteScript(foo_root, "location.href = '" + c_url.spec() + "';"));
+    EXPECT_TRUE(ExecJs(foo_root, JsReplace("location.href = $1", c_url)));
     popup_observer.Wait();
     EXPECT_EQ(c_url, foo_shell->web_contents()->GetLastCommittedURL());
   }
@@ -6595,22 +6604,31 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // sides.
   EXPECT_EQ(expected_flags, foo_root->effective_frame_policy().sandbox_flags);
   EXPECT_EQ("null", GetOriginFromRenderer(foo_root));
+  const url::Origin sandbox_origin_c = foo_root->current_origin();
+  EXPECT_NE(sandbox_origin_b, sandbox_origin_c);
+  EXPECT_TRUE(sandbox_origin_c.opaque());
+  EXPECT_EQ(tuple_c, sandbox_origin_c.GetTupleOrPrecursorTupleIfOpaque());
 
   // Navigate the popup back to b.com.  The popup should perform a
-  // remote-to-local navigation in the b.com process, and keep the unique
+  // remote-to-local navigation in the b.com process, and keep an opaque
   // origin and the inherited sandbox flags.
   {
     TestFrameNavigationObserver popup_observer(foo_root);
-    EXPECT_TRUE(
-        ExecuteScript(foo_root, "location.href = '" + frame_url.spec() + "';"));
+    EXPECT_TRUE(ExecJs(foo_root, JsReplace("location.href = $1", frame_url)));
     popup_observer.Wait();
     EXPECT_EQ(frame_url, foo_shell->web_contents()->GetLastCommittedURL());
   }
 
   // Confirm that the popup is still sandboxed, both on browser and renderer
-  // sides.
+  // sides. This navigation should result in a new opaque origin derived
+  // from b.com.
   EXPECT_EQ(expected_flags, foo_root->effective_frame_policy().sandbox_flags);
   EXPECT_EQ("null", GetOriginFromRenderer(foo_root));
+  url::Origin sandbox_origin_b3 = foo_root->current_origin();
+  EXPECT_TRUE(sandbox_origin_b3.opaque());
+  EXPECT_EQ(tuple_b, sandbox_origin_b3.GetTupleOrPrecursorTupleIfOpaque());
+  EXPECT_NE(sandbox_origin_b, sandbox_origin_b3);
+  EXPECT_NE(sandbox_origin_b2, sandbox_origin_b3);
 }
 
 // Verify that popups opened from frames sandboxed with the

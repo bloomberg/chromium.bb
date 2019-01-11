@@ -984,6 +984,11 @@ void FillNavigationParams(const CommonNavigationParams& common_params,
 
   navigation_params->is_user_activated =
       commit_params.was_activated == WasActivatedOption::kYes;
+
+  if (commit_params.origin_to_commit) {
+    navigation_params->origin_to_commit =
+        commit_params.origin_to_commit.value();
+  }
 }
 
 }  // namespace

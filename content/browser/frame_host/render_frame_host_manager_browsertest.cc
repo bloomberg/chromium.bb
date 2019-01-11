@@ -4342,6 +4342,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
 
   scoped_refptr<SiteInstance> success_site_instance =
       shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+  url::Origin expected_origin =
+      shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin();
+
+  EXPECT_EQ(url::Origin::Create(error_url), expected_origin);
 
   // Install an interceptor which will cause network failure for |error_url|,
   // reload the existing entry and verify.
@@ -4403,6 +4407,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
       GURL(kUnreachableWebDataURL),
       policy->GetOriginLock(
           shell()->web_contents()->GetSiteInstance()->GetProcess()->GetID()));
+  EXPECT_EQ(expected_origin,
+            shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 
   // Test the same scenario as above, but this time initiated by the
   // renderer process.
@@ -4448,6 +4454,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
       GURL(kUnreachableWebDataURL),
       policy->GetOriginLock(
           shell()->web_contents()->GetSiteInstance()->GetProcess()->GetID()));
+  EXPECT_EQ(expected_origin,
+            shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 }
 
 // Make sure that reload works properly if it redirects to a different site than

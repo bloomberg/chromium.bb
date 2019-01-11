@@ -285,14 +285,16 @@ class CORE_EXPORT DocumentLoader
   // initalizes a bunch of state on the Document (e.g., the state based on
   // response headers).
   enum class InstallNewDocumentReason { kNavigation, kJavascriptURL };
-  void InstallNewDocument(const KURL&,
-                          Document* owner_document,
-                          WebGlobalObjectReusePolicy,
-                          const AtomicString& mime_type,
-                          const AtomicString& encoding,
-                          InstallNewDocumentReason,
-                          ParserSynchronizationPolicy,
-                          const KURL& overriding_url);
+  void InstallNewDocument(
+      const KURL&,
+      const scoped_refptr<const SecurityOrigin> initiator_origin,
+      Document* owner_document,
+      WebGlobalObjectReusePolicy,
+      const AtomicString& mime_type,
+      const AtomicString& encoding,
+      InstallNewDocumentReason,
+      ParserSynchronizationPolicy,
+      const KURL& overriding_url);
   void DidInstallNewDocument(Document*);
   void WillCommitNavigation();
   void DidCommitNavigation(WebGlobalObjectReusePolicy);
@@ -379,6 +381,7 @@ class CORE_EXPORT DocumentLoader
   bool data_received_;
 
   WebNavigationType navigation_type_;
+  scoped_refptr<SecurityOrigin> origin_to_commit_;
 
   DocumentLoadTiming document_load_timing_;
 

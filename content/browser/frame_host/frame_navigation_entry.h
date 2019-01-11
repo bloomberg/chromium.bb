@@ -59,7 +59,7 @@ class CONTENT_EXPORT FrameNavigationEntry
       SiteInstanceImpl* site_instance,
       scoped_refptr<SiteInstanceImpl> source_site_instance,
       const GURL& url,
-      const url::Origin& origin,
+      const base::Optional<url::Origin>& origin,
       const Referrer& referrer,
       const std::vector<GURL>& redirect_chain,
       const PageState& page_state,
@@ -127,8 +127,12 @@ class CONTENT_EXPORT FrameNavigationEntry
   // The origin of the document the frame has committed. It is optional, since
   // pending entries do not have an origin associated with them and the real
   // origin is set at commit time.
-  void set_origin(const url::Origin& origin) { origin_ = origin; }
-  const base::Optional<url::Origin>& origin() const { return origin_; }
+  void set_committed_origin(const url::Origin& origin) {
+    committed_origin_ = origin;
+  }
+  const base::Optional<url::Origin>& committed_origin() const {
+    return committed_origin_;
+  }
 
   // The redirect chain traversed during this frame navigation, from the initial
   // redirecting URL to the final non-redirecting current URL.
@@ -168,25 +172,6 @@ class CONTENT_EXPORT FrameNavigationEntry
   friend class base::RefCounted<FrameNavigationEntry>;
   virtual ~FrameNavigationEntry();
 
-  // Internal version of UpdateEntry, which differs in accepting the |origin|
-  // parameter as a pointer instead of const ref. It is used internally by
-  // the Clone method, which can be called without the origin being properly
-  // initialized.
-  void UpdateEntryInternal(
-      const std::string& frame_unique_name,
-      int64_t item_sequence_number,
-      int64_t document_sequence_number,
-      SiteInstanceImpl* site_instance,
-      scoped_refptr<SiteInstanceImpl> source_site_instance,
-      const GURL& url,
-      const url::Origin* origin,
-      const Referrer& referrer,
-      const std::vector<GURL>& redirect_chain,
-      const PageState& page_state,
-      const std::string& method,
-      int64_t post_id,
-      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
-
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
   // Add all new fields to |UpdateEntry|.
   // TODO(creis): These fields have implications for session restore.  This is
@@ -201,10 +186,10 @@ class CONTENT_EXPORT FrameNavigationEntry
   // This member is cleared at commit time and is not persisted.
   scoped_refptr<SiteInstanceImpl> source_site_instance_;
   GURL url_;
-  // For a committed navigation, holds the origin that ultimately committed.
+  // For a committed navigation, holds the origin of the resulting document.
   // TODO(nasko): This should be possible to calculate at ReadyToCommit time
   // and verified when receiving the DidCommit IPC.
-  base::Optional<url::Origin> origin_;
+  base::Optional<url::Origin> committed_origin_;
   Referrer referrer_;
   // This is used when transferring a pending entry from one process to another.
   // We also send the main frame's redirect chain through session sync for

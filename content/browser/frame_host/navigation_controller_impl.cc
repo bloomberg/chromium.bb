@@ -233,6 +233,29 @@ bool ShouldTreatNavigationAsReload(const GURL& url,
   return true;
 }
 
+bool DoesURLMatchOriginForNavigation(
+    const GURL& url,
+    const base::Optional<url::Origin>& origin) {
+  // If there is no origin supplied there is nothing to match. This can happen
+  // for navigations to a pending entry and therefore it should be allowed.
+  if (!origin)
+    return true;
+
+  return origin->CanBeDerivedFrom(url);
+}
+
+base::Optional<url::Origin> GetCommittedOriginForFrameEntry(
+    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
+  // Error pages commit in an opaque origin, yet have the real URL that resulted
+  // in an error as the |params.url|. Since successful reload of an error page
+  // should commit in the correct origin, setting the opaque origin on the
+  // FrameNavigationEntry will be incorrect.
+  if (params.url_is_unreachable)
+    return base::nullopt;
+
+  return base::make_optional(params.origin);
+}
+
 bool IsValidURLForNavigation(bool is_main_frame,
                              const GURL& virtual_url,
                              const GURL& dest_url) {
@@ -1256,9 +1279,9 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     FrameNavigationEntry* frame_entry = new FrameNavigationEntry(
         rfh->frame_tree_node()->unique_name(), params.item_sequence_number,
         params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
-        params.url, &params.origin, params.referrer, params.redirects,
-        params.page_state, params.method, params.post_id,
-        nullptr /* blob_url_loader_factory */);
+        params.url, (params.url_is_unreachable) ? nullptr : &params.origin,
+        params.referrer, params.redirects, params.page_state, params.method,
+        params.post_id, nullptr /* blob_url_loader_factory */);
 
     new_entry = GetLastCommittedEntry()->CloneAndReplace(
         frame_entry, true, rfh->frame_tree_node(),
@@ -1369,7 +1392,8 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   frame_entry->SetPageState(params.page_state);
   frame_entry->set_method(params.method);
   frame_entry->set_post_id(params.post_id);
-  frame_entry->set_origin(params.origin);
+  if (!params.url_is_unreachable)
+    frame_entry->set_committed_origin(params.origin);
 
   // history.pushState() is classified as a navigation to a new page, but sets
   // is_same_document to true. In this case, we already have the title and
@@ -1562,8 +1586,8 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
   entry->AddOrUpdateFrameEntry(
       rfh->frame_tree_node(), params.item_sequence_number,
       params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
-      params.url, params.origin, params.referrer, params.redirects,
-      params.page_state, params.method, params.post_id,
+      params.url, GetCommittedOriginForFrameEntry(params), params.referrer,
+      params.redirects, params.page_state, params.method, params.post_id,
       nullptr /* blob_url_loader_factory */);
 
   // The redirected to page should not inherit the favicon from the previous
@@ -1636,8 +1660,8 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
   existing_entry->AddOrUpdateFrameEntry(
       rfh->frame_tree_node(), params.item_sequence_number,
       params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
-      params.url, params.origin, params.referrer, params.redirects,
-      params.page_state, params.method, params.post_id,
+      params.url, GetCommittedOriginForFrameEntry(params), params.referrer,
+      params.redirects, params.page_state, params.method, params.post_id,
       nullptr /* blob_url_loader_factory */);
 
   DiscardNonCommittedEntries();
@@ -1668,9 +1692,9 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
   scoped_refptr<FrameNavigationEntry> frame_entry(new FrameNavigationEntry(
       rfh->frame_tree_node()->unique_name(), params.item_sequence_number,
       params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
-      params.url, &params.origin, params.referrer, params.redirects,
-      params.page_state, params.method, params.post_id,
-      nullptr /* blob_url_loader_factory */));
+      params.url, (params.url_is_unreachable) ? nullptr : &params.origin,
+      params.referrer, params.redirects, params.page_state, params.method,
+      params.post_id, nullptr /* blob_url_loader_factory */));
 
   std::unique_ptr<NavigationEntryImpl> new_entry =
       GetLastCommittedEntry()->CloneAndReplace(
@@ -1739,8 +1763,8 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
   last_committed->AddOrUpdateFrameEntry(
       rfh->frame_tree_node(), params.item_sequence_number,
       params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
-      params.url, params.origin, params.referrer, params.redirects,
-      params.page_state, params.method, params.post_id,
+      params.url, GetCommittedOriginForFrameEntry(params), params.referrer,
+      params.redirects, params.page_state, params.method, params.post_id,
       nullptr /* blob_url_loader_factory */);
 
   return send_commit_notification;
@@ -2069,10 +2093,6 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
   FrameTreeNode* node = render_frame_host->frame_tree_node();
 
-  // TODO(nasko): Plumb through the real initiator origin and use it to
-  // compute the origin to use.
-  url::Origin origin_to_use;
-
   // Create a NavigationEntry for the transfer, without making it the pending
   // entry. Subframe transfers should have a clone of the last committed entry
   // with a FrameNavigationEntry for the target frame. Main frame transfers
@@ -2102,8 +2122,8 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
     entry->AddOrUpdateFrameEntry(
         node, -1, -1, nullptr,
         static_cast<SiteInstanceImpl*>(source_site_instance), url,
-        origin_to_use, referrer, std::vector<GURL>(), PageState(), method, -1,
-        blob_url_loader_factory);
+        base::nullopt /* commit_origin */, referrer, std::vector<GURL>(),
+        PageState(), method, -1, blob_url_loader_factory);
   } else {
     // Main frame case.
     entry = NavigationEntryImpl::FromNavigationEntry(CreateNavigationEntry(
@@ -2137,8 +2157,8 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
     frame_entry = new FrameNavigationEntry(
         node->unique_name(), -1, -1, nullptr,
         static_cast<SiteInstanceImpl*>(source_site_instance), url,
-        &origin_to_use, referrer, std::vector<GURL>(), PageState(), method, -1,
-        blob_url_loader_factory);
+        nullptr /* origin */, referrer, std::vector<GURL>(), PageState(),
+        method, -1, blob_url_loader_factory);
   }
 
   LoadURLParams params(url);
@@ -2727,15 +2747,11 @@ NavigationControllerImpl::CreateNavigationEntryFromLoadParams(
     // the target subframe.
     entry = GetLastCommittedEntry()->Clone();
 
-    // TODO(nasko): Investigate what is the proper origin to supply here
-    // or whether a valid one is required.
-    url::Origin origin;
-
     entry->AddOrUpdateFrameEntry(
         node, -1, -1, nullptr,
         static_cast<SiteInstanceImpl*>(params.source_site_instance.get()),
-        params.url, origin, params.referrer, params.redirect_chain, PageState(),
-        "GET", -1, blob_url_loader_factory);
+        params.url, base::nullopt, params.referrer, params.redirect_chain,
+        PageState(), "GET", -1, blob_url_loader_factory);
   } else {
     // Otherwise, create a pending entry for the main frame.
 
@@ -2805,6 +2821,9 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
 
   GURL url_to_load;
   GURL virtual_url;
+  base::Optional<url::Origin> origin_to_commit =
+      frame_entry ? frame_entry->committed_origin() : base::nullopt;
+
   // For main frames, rewrite the URL if necessary and compute the virtual URL
   // that should be shown in the address bar.
   if (node->IsMainFrame()) {
@@ -2848,6 +2867,12 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
 
   if (!IsValidURLForNavigation(node->IsMainFrame(), virtual_url, url_to_load))
     return nullptr;
+
+  if (!DoesURLMatchOriginForNavigation(url_to_load, origin_to_commit)) {
+    DCHECK(false) << " url:" << url_to_load
+                  << " origin:" << origin_to_commit.value();
+    return nullptr;
+  }
 
   // Determine if Previews should be used for the navigation.
   PreviewsState previews_state = PREVIEWS_UNSPECIFIED;
@@ -2897,10 +2922,10 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
       params.href_translate, params.input_start);
 
   CommitNavigationParams commit_params(
-      override_user_agent, params.redirect_chain, common_params.url,
-      common_params.method, params.can_load_local_resources,
-      frame_entry->page_state(), entry->GetUniqueID(),
-      false /* is_history_navigation_in_new_child */,
+      frame_entry->committed_origin(), override_user_agent,
+      params.redirect_chain, common_params.url, common_params.method,
+      params.can_load_local_resources, frame_entry->page_state(),
+      entry->GetUniqueID(), false /* is_history_navigation_in_new_child */,
       entry->GetSubframeUniqueNames(node), true /* intended_as_new_entry */,
       -1 /* pending_history_list_offset */,
       params.should_clear_history_list ? -1 : GetLastCommittedEntryIndex(),
@@ -2936,6 +2961,9 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
     bool is_same_document_history_load,
     bool is_history_navigation_in_new_child) {
   GURL dest_url = frame_entry->url();
+  base::Optional<url::Origin> origin_to_commit =
+      frame_entry->committed_origin();
+
   Referrer dest_referrer = frame_entry->referrer();
   if (reload_type == ReloadType::ORIGINAL_REQUEST_URL &&
       entry->GetOriginalRequestURL().is_valid() && !entry->GetHasPostData()) {
@@ -2945,6 +2973,7 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
     // case avoids issues with sending data to the wrong page.
     dest_url = entry->GetOriginalRequestURL();
     dest_referrer = Referrer();
+    origin_to_commit.reset();
   }
 
   if (auto* rfh = frame_tree_node->current_frame_host()) {
@@ -2957,6 +2986,12 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
 
   if (!IsValidURLForNavigation(frame_tree_node->IsMainFrame(),
                                entry->GetVirtualURL(), dest_url)) {
+    return nullptr;
+  }
+
+  if (!DoesURLMatchOriginForNavigation(dest_url, origin_to_commit)) {
+    DCHECK(false) << " url:" << dest_url
+                  << " origin:" << origin_to_commit.value();
     return nullptr;
   }
 
@@ -3006,7 +3041,7 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
   // Reload no longer leads to this being called for a pending NavigationEntry
   // of index -1.
   CommitNavigationParams commit_params = entry->ConstructCommitNavigationParams(
-      *frame_entry, common_params.url, common_params.method,
+      *frame_entry, common_params.url, origin_to_commit, common_params.method,
       is_history_navigation_in_new_child,
       entry->GetSubframeUniqueNames(frame_tree_node),
       GetPendingEntryIndex() == -1 /* intended_as_new_entry */,

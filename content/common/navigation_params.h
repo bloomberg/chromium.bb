@@ -249,7 +249,8 @@ struct CONTENT_EXPORT NavigationTiming {
 // commit a navigation besides those in CommonNavigationParams.
 struct CONTENT_EXPORT CommitNavigationParams {
   CommitNavigationParams();
-  CommitNavigationParams(bool is_overriding_user_agent,
+  CommitNavigationParams(const base::Optional<url::Origin>& origin_to_commit,
+                         bool is_overriding_user_agent,
                          const std::vector<GURL>& redirects,
                          const GURL& original_url,
                          const std::string& original_method,
@@ -266,6 +267,14 @@ struct CONTENT_EXPORT CommitNavigationParams {
                          bool should_clear_history_list);
   CommitNavigationParams(const CommitNavigationParams& other);
   ~CommitNavigationParams();
+
+  // The origin to be used for committing the navigation, if specified.
+  // This will be an origin that's compatible with the |url| in the
+  // CommonNavigationParams; if |url| is data: or about:blank, or the frame has
+  // sandbox attributes, this determines the origin of the resulting document.
+  // It is specified for session history navigations, for which the origin is
+  // known and saved in the FrameNavigationEntry.
+  base::Optional<url::Origin> origin_to_commit;
 
   // Whether or not the user agent override string should be used.
   bool is_overriding_user_agent = false;

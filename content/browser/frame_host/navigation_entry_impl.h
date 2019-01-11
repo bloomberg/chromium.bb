@@ -189,6 +189,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   CommitNavigationParams ConstructCommitNavigationParams(
       const FrameNavigationEntry& frame_entry,
       const GURL& original_url,
+      const base::Optional<url::Origin>& origin_to_commit,
       const std::string& original_method,
       bool is_history_navigation_in_new_child,
       const std::map<std::string, bool>& subframe_unique_names,
@@ -229,7 +230,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       SiteInstanceImpl* site_instance,
       scoped_refptr<SiteInstanceImpl> source_site_instance,
       const GURL& url,
-      const url::Origin& origin,
+      const base::Optional<url::Origin>& origin,
       const Referrer& referrer,
       const std::vector<GURL>& redirect_chain,
       const PageState& page_state,

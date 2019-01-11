@@ -445,7 +445,8 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
             base::TimeTicks::Now(), base::TimeTicks::Now());
     CommitNavigationParams commit_params =
         entry->ConstructCommitNavigationParams(
-            *frame_entry, common_params.url, common_params.method, false,
+            *frame_entry, common_params.url, frame_entry->committed_origin(),
+            common_params.method, false,
             entry->GetSubframeUniqueNames(frame_tree_node),
             controller->GetPendingEntryIndex() ==
                 -1 /* intended_as_new_entry */,
@@ -2869,7 +2870,8 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
       FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
       base::TimeTicks::Now(), base::TimeTicks::Now());
   CommitNavigationParams commit_params = entry.ConstructCommitNavigationParams(
-      *frame_entry, common_params.url, common_params.method, false,
+      *frame_entry, common_params.url, frame_entry->committed_origin(),
+      common_params.method, false,
       entry.GetSubframeUniqueNames(frame_tree_node),
       controller().GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
       static_cast<NavigationControllerImpl&>(controller())
@@ -2943,7 +2945,8 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
       FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
       base::TimeTicks::Now(), base::TimeTicks::Now());
   CommitNavigationParams commit_params = entry.ConstructCommitNavigationParams(
-      *frame_entry, common_params.url, common_params.method, false,
+      *frame_entry, common_params.url, frame_entry->committed_origin(),
+      common_params.method, false,
       entry.GetSubframeUniqueNames(frame_tree_node),
       controller().GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
       static_cast<NavigationControllerImpl&>(controller())
@@ -3014,7 +3017,8 @@ TEST_F(RenderFrameHostManagerTestWithBrowserSideNavigation,
       FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
       base::TimeTicks::Now(), base::TimeTicks::Now());
   CommitNavigationParams commit_params = entry.ConstructCommitNavigationParams(
-      *frame_entry, common_params.url, common_params.method, false,
+      *frame_entry, common_params.url, frame_entry->committed_origin(),
+      common_params.method, false,
       entry.GetSubframeUniqueNames(frame_tree_node),
       controller().GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
       static_cast<NavigationControllerImpl&>(controller())
