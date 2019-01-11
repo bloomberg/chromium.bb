@@ -11,9 +11,7 @@
 namespace usage_stats {
 
 const char kNamespace[] = "usage_stats";
-const char kWebsiteEventPrefix[] = "website_event";
-const char kSuspensionPrefix[] = "suspension";
-const char kTokenMappingPrefix[] = "token_mapping";
+const char kTypePrefix[] = "usage_stats";
 
 UsageStatsDatabase::UsageStatsDatabase(Profile* profile)
     : weak_ptr_factory_(this) {
@@ -23,18 +21,12 @@ UsageStatsDatabase::UsageStatsDatabase(Profile* profile)
 
   base::FilePath usage_stats_dir = profile->GetPath().Append(kNamespace);
 
-  scoped_refptr<base::SequencedTaskRunner> db_task_runner =
+  // TODO(crbug/921133): Switch back to separate dbs for each message type when
+  // possible.
+  proto_db_ = db_provider->GetDB<UsageStat>(
+      kNamespace, kTypePrefix, usage_stats_dir,
       base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
-
-  website_event_db_ = db_provider->GetDB<WebsiteEvent>(
-      kNamespace, kWebsiteEventPrefix, usage_stats_dir, db_task_runner);
-
-  suspension_db_ = db_provider->GetDB<Suspension>(
-      kNamespace, kSuspensionPrefix, usage_stats_dir, db_task_runner);
-
-  token_mapping_db_ = db_provider->GetDB<TokenMapping>(
-      kNamespace, kTokenMappingPrefix, usage_stats_dir, db_task_runner);
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
 }
 
 UsageStatsDatabase::~UsageStatsDatabase() = default;
