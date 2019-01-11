@@ -179,6 +179,10 @@ void UDPClientSocket::SetWriteBatchingActive(bool active) {
   socket_.SetWriteBatchingActive(active);
 }
 
+int UDPClientSocket::SetMulticastInterface(uint32_t interface_index) {
+  return socket_.SetMulticastInterface(interface_index);
+}
+
 void UDPClientSocket::EnableRecvOptimization() {
 #if defined(OS_POSIX)
   socket_.enable_experimental_recv_optimization();

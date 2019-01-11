@@ -95,6 +95,10 @@ class TestUDPClientSocket : public DatagramClientSocket {
   void SetWriteMultiCoreEnabled(bool enabled) override {}
   void SetSendmmsgEnabled(bool enabled) override {}
   void SetWriteBatchingActive(bool active) override {}
+  int SetMulticastInterface(uint32_t interface_index) override {
+    NOTIMPLEMENTED();
+    return ERR_NOT_IMPLEMENTED;
+  }
 
   int ConnectUsingNetwork(NetworkChangeNotifier::NetworkHandle network,
                           const IPEndPoint& address) override {

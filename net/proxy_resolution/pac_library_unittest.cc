@@ -93,25 +93,6 @@ class MockUDPSocket : public DatagramClientSocket {
     ADD_FAILURE() << "Called Read()";
     return ERR_UNEXPECTED;
   }
-  int WriteAsync(
-      DatagramBuffers buffers,
-      CompletionOnceCallback callback,
-      const NetworkTrafficAnnotationTag& traffic_annotation) override {
-    ADD_FAILURE() << "Called WriteAsync()";
-    return ERR_UNEXPECTED;
-  }
-  int WriteAsync(
-      const char* buffer,
-      size_t buf_len,
-      CompletionOnceCallback callback,
-      const NetworkTrafficAnnotationTag& traffic_annotation) override {
-    ADD_FAILURE() << "Called WriteAsync()";
-    return ERR_UNEXPECTED;
-  }
-  DatagramBuffers GetUnwrittenBuffers() override {
-    ADD_FAILURE() << "Called GetUnwrittenBuffers()";
-    return DatagramBuffers();
-  }
   int SetReceiveBufferSize(int32_t size) override {
     ADD_FAILURE() << "Called SetReceiveBufferSize()";
     return ERR_UNEXPECTED;
@@ -120,10 +101,7 @@ class MockUDPSocket : public DatagramClientSocket {
     ADD_FAILURE() << "Called SetSendBufferSize()";
     return ERR_UNEXPECTED;
   }
-  int SetDoNotFragment() override {
-    ADD_FAILURE() << "Called SetDoNotFragment()";
-    return ERR_UNEXPECTED;
-  }
+
   // DatagramSocket implementation.
   void Close() override { ADD_FAILURE() << "Called Close()"; }
   int GetPeerAddress(IPEndPoint* address) const override {
@@ -140,24 +118,12 @@ class MockUDPSocket : public DatagramClientSocket {
   void UseNonBlockingIO() override {
     ADD_FAILURE() << "Called UseNonBlockingIO()";
   }
-  void SetWriteAsyncEnabled(bool enabled) override {
-    ADD_FAILURE() << "Called SetWriteAsyncEnabled()";
+  int SetDoNotFragment() override {
+    ADD_FAILURE() << "Called SetDoNotFragment()";
+    return ERR_UNEXPECTED;
   }
-  void SetMaxPacketSize(size_t max_packet_size) override {
-    ADD_FAILURE() << "Called SetWriteAsyncEnabled()";
-  }
-  bool WriteAsyncEnabled() override {
-    ADD_FAILURE() << "Called WriteAsyncEnabled()";
-    return false;
-  }
-  void SetWriteMultiCoreEnabled(bool enabled) override {
-    ADD_FAILURE() << "Called SetWriteMultiCoreEnabled()";
-  }
-  void SetSendmmsgEnabled(bool enabled) override {
-    ADD_FAILURE() << "Called SetSendmmsgEnabled()";
-  }
-  void SetWriteBatchingActive(bool active) override {
-    ADD_FAILURE() << "Called SetWriteBatchingActive()";
+  void SetMsgConfirm(bool confirm) override {
+    ADD_FAILURE() << "Called SetMsgConfirm()";
   }
   const NetLogWithSource& NetLog() const override {
     ADD_FAILURE() << "Called NetLog()";
@@ -185,8 +151,47 @@ class MockUDPSocket : public DatagramClientSocket {
   void ApplySocketTag(const SocketTag& tag) override {
     ADD_FAILURE() << "Called ApplySocketTag()";
   }
-  void SetMsgConfirm(bool confirm) override {
-    ADD_FAILURE() << "Called SetMsgConfirm()";
+  int WriteAsync(
+      DatagramBuffers buffers,
+      CompletionOnceCallback callback,
+      const NetworkTrafficAnnotationTag& traffic_annotation) override {
+    ADD_FAILURE() << "Called WriteAsync()";
+    return ERR_UNEXPECTED;
+  }
+  int WriteAsync(
+      const char* buffer,
+      size_t buf_len,
+      CompletionOnceCallback callback,
+      const NetworkTrafficAnnotationTag& traffic_annotation) override {
+    ADD_FAILURE() << "Called WriteAsync()";
+    return ERR_UNEXPECTED;
+  }
+  DatagramBuffers GetUnwrittenBuffers() override {
+    ADD_FAILURE() << "Called GetUnwrittenBuffers()";
+    return DatagramBuffers();
+  }
+  void SetWriteAsyncEnabled(bool enabled) override {
+    ADD_FAILURE() << "Called SetWriteAsyncEnabled()";
+  }
+  void SetMaxPacketSize(size_t max_packet_size) override {
+    ADD_FAILURE() << "Called SetWriteAsyncEnabled()";
+  }
+  bool WriteAsyncEnabled() override {
+    ADD_FAILURE() << "Called WriteAsyncEnabled()";
+    return false;
+  }
+  void SetWriteMultiCoreEnabled(bool enabled) override {
+    ADD_FAILURE() << "Called SetWriteMultiCoreEnabled()";
+  }
+  void SetSendmmsgEnabled(bool enabled) override {
+    ADD_FAILURE() << "Called SetSendmmsgEnabled()";
+  }
+  void SetWriteBatchingActive(bool active) override {
+    ADD_FAILURE() << "Called SetWriteBatchingActive()";
+  }
+  int SetMulticastInterface(uint32_t interface_index) override {
+    ADD_FAILURE() << "Called SetMulticastInterface()";
+    return ERR_UNEXPECTED;
   }
 
  private:
