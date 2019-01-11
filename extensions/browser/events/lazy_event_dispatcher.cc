@@ -8,9 +8,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/lazy_context_id.h"
-#include "extensions/browser/service_worker_task_queue.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 
 using content::BrowserContext;

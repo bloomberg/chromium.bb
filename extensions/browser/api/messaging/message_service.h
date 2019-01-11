@@ -33,7 +33,6 @@ class BrowserContext;
 namespace extensions {
 class Extension;
 class ExtensionHost;
-class LazyBackgroundTaskQueue;
 class MessagingDelegate;
 
 // This class manages message and event passing between renderer processes.
@@ -187,7 +186,7 @@ class MessageService : public BrowserContextKeyedAPI,
                        MessageChannel* channel,
                        const Message& message);
 
-  // Potentially registers a pending task with the LazyBackgroundTaskQueue
+  // Potentially registers a pending task with the background task queue
   // to open a channel. Returns true if a task was queued.
   // Takes ownership of |params| if true is returned.
   bool MaybeAddPendingLazyBackgroundPageOpenChannelTask(
@@ -196,7 +195,7 @@ class MessageService : public BrowserContextKeyedAPI,
       std::unique_ptr<OpenChannelParams>* params,
       const PendingMessagesQueue& pending_messages);
 
-  // Callbacks for LazyBackgroundTaskQueue tasks. The queue passes in an
+  // Callbacks for background task queue tasks. The queue passes in an
   // ExtensionHost to its task callbacks, though some of our callbacks don't
   // use that argument.
   void PendingLazyBackgroundPageOpenChannel(
@@ -253,9 +252,6 @@ class MessageService : public BrowserContextKeyedAPI,
   PendingChannelMap pending_incognito_channels_;
   PendingLazyBackgroundPageChannelMap pending_lazy_background_page_channels_;
   MessagePropertyProvider property_provider_;
-
-  // Weak pointer. Guaranteed to outlive this class.
-  LazyBackgroundTaskQueue* lazy_background_task_queue_;
 
   base::WeakPtrFactory<MessageService> weak_factory_;
 
