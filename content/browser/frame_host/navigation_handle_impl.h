@@ -335,10 +335,29 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     proxy_server_ = proxy_server;
   }
 
+  std::vector<std::string> TakeRemovedRequestHeaders() {
+    return std::move(removed_request_headers_);
+  }
+
+  net::HttpRequestHeaders TakeModifiedRequestHeaders() {
+    return std::move(modified_request_headers_);
+  }
+
   // Sets ID of the RenderProcessHost we expect the navigation to commit in.
   // This is used to inform the RenderProcessHost to expect a navigation to the
   // url we're navigating to.
   void SetExpectedProcess(RenderProcessHost* expected_process);
+
+  // Remove a request's header. If the header is not present, it has no effect.
+  // Must be called during a redirect.
+  void RemoveRequestHeader(const std::string& header_name);
+
+  // Set a request's header. If the header is already present, its value is
+  // overwritten. When modified during a navigation start, the headers will be
+  // applied to the initial network request. When modified during a redirect,
+  // the headers will be applied to the redirected request.
+  void SetRequestHeader(const std::string& header_name,
+                        const std::string& header_value);
 
   NavigationThrottle* GetDeferringThrottleForTesting() const {
     return GetDeferringThrottle();
@@ -471,6 +490,13 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // The headers used for the request.
   net::HttpRequestHeaders request_headers_;
+
+  // Used to update the request's headers. When modified during the navigation
+  // start, the headers will be applied to the initial network request. When
+  // modified during a redirect, the headers will be applied to the redirected
+  // request.
+  std::vector<std::string> removed_request_headers_;
+  net::HttpRequestHeaders modified_request_headers_;
 
   // The POST body associated with this navigation.  This will be null for GET
   // and/or other non-POST requests (or if a response to a POST request was a
