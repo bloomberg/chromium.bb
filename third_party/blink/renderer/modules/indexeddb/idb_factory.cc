@@ -92,7 +92,10 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
     }
   }
 
-  void OnError(const IDBDatabaseError& error) override {
+  void SetState(base::WeakPtr<WebIDBCursorImpl> cursor,
+                int64_t transaction_id) override {}
+
+  void Error(int32_t code, const String& message) override {
     if (!promise_resolver_)
       return;
 
@@ -105,18 +108,23 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
     promise_resolver_.Clear();
   }
 
-  void OnSuccess(
-      const Vector<IDBNameAndVersion>& idb_name_and_version_list) override {
+  void SuccessNamesAndVersionsList(
+      Vector<mojom::blink::IDBNameAndVersionPtr> names_and_versions) override {
     if (!promise_resolver_)
       return;
 
     HeapVector<Member<IDBDatabaseInfo>> name_and_version_list;
-    for (const auto& item : idb_name_and_version_list) {
+    name_and_version_list.ReserveInitialCapacity(name_and_version_list.size());
+    for (const mojom::blink::IDBNameAndVersionPtr& name_version :
+         names_and_versions) {
+      const IDBNameAndVersion idb_name_and_version(name_version->name,
+                                                   name_version->version);
       IDBDatabaseInfo* idb_info = IDBDatabaseInfo::Create();
-      idb_info->setName(item.name);
-      idb_info->setVersion(item.version);
+      idb_info->setName(name_version->name);
+      idb_info->setVersion(name_version->version);
       name_and_version_list.push_back(idb_info);
     }
+
     probe::AsyncTask async_task(
         ExecutionContext::From(promise_resolver_->GetScriptState()), this,
         "success");
@@ -124,45 +132,56 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
     promise_resolver_.Clear();
   }
 
-  void OnSuccess(const Vector<String>&) override { NOTREACHED(); }
+  void SuccessStringList(const Vector<String>&) override { NOTREACHED(); }
 
-  void OnSuccess(WebIDBCursor* cursor,
-                 std::unique_ptr<IDBKey> key,
-                 std::unique_ptr<IDBKey> primary_key,
-                 std::unique_ptr<IDBValue> value) override {
+  void SuccessCursor(
+      mojom::blink::IDBCursorAssociatedPtrInfo cursor_info,
+      std::unique_ptr<IDBKey> key,
+      std::unique_ptr<IDBKey> primary_key,
+      base::Optional<std::unique_ptr<IDBValue>> optional_value) override {
     NOTREACHED();
   }
 
-  void OnSuccess(WebIDBDatabase* backend,
-                 const IDBDatabaseMetadata& metadata) override {
+  void SuccessCursorPrefetch(
+      Vector<std::unique_ptr<IDBKey>> keys,
+      Vector<std::unique_ptr<IDBKey>> primary_keys,
+      Vector<std::unique_ptr<IDBValue>> values) override {
     NOTREACHED();
   }
 
-  void OnSuccess(std::unique_ptr<IDBKey> key) override { NOTREACHED(); }
-
-  void OnSuccess(std::unique_ptr<IDBValue> value) override { NOTREACHED(); }
-
-  void OnSuccess(Vector<std::unique_ptr<IDBValue>> values) override {
+  void SuccessDatabase(mojom::blink::IDBDatabaseAssociatedPtrInfo backend,
+                       const IDBDatabaseMetadata& metadata) override {
     NOTREACHED();
   }
 
-  void OnSuccess(long long value) override { NOTREACHED(); }
+  void SuccessKey(std::unique_ptr<IDBKey> key) override { NOTREACHED(); }
 
-  void OnSuccess() override { NOTREACHED(); }
-
-  void OnSuccess(std::unique_ptr<IDBKey> key,
-                 std::unique_ptr<IDBKey> primary_key,
-                 std::unique_ptr<IDBValue> value) override {
+  void SuccessValue(mojom::blink::IDBReturnValuePtr return_value) override {
     NOTREACHED();
   }
 
-  void OnBlocked(long long old_version) override { NOTREACHED(); }
+  void SuccessArray(Vector<mojom::blink::IDBReturnValuePtr> values) override {
+    NOTREACHED();
+  }
 
-  void OnUpgradeNeeded(long long old_version,
-                       WebIDBDatabase* database,
-                       const IDBDatabaseMetadata& metadata,
-                       mojom::IDBDataLoss data_loss,
-                       String data_loss_message) override {
+  void SuccessInteger(int64_t value) override { NOTREACHED(); }
+
+  void Success() override { NOTREACHED(); }
+
+  void SuccessCursorContinue(
+      std::unique_ptr<IDBKey> key,
+      std::unique_ptr<IDBKey> primary_key,
+      base::Optional<std::unique_ptr<IDBValue>> value) override {
+    NOTREACHED();
+  }
+
+  void Blocked(int64_t old_version) override { NOTREACHED(); }
+
+  void UpgradeNeeded(mojom::blink::IDBDatabaseAssociatedPtrInfo database,
+                     int64_t old_version,
+                     mojom::IDBDataLoss data_loss,
+                     const String& data_loss_message,
+                     const IDBDatabaseMetadata& metadata) override {
     NOTREACHED();
   }
 

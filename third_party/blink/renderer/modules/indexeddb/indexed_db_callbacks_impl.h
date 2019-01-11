@@ -18,7 +18,6 @@
 namespace blink {
 
 class WebIDBCallbacks;
-class WebIDBCursorImpl;
 
 // Implements the child-process end of the pipe used to deliver callbacks.
 // |callback_runner_| is used to post tasks back to the thread which owns the
@@ -30,9 +29,7 @@ class IndexedDBCallbacksImpl : public mojom::blink::IDBCallbacks {
   // cases.
   enum : int64_t { kNoTransaction = -1 };
 
-  IndexedDBCallbacksImpl(std::unique_ptr<WebIDBCallbacks> callbacks,
-                         int64_t transaction_id,
-                         const base::WeakPtr<WebIDBCursorImpl>& cursor);
+  IndexedDBCallbacksImpl(std::unique_ptr<WebIDBCallbacks> callbacks);
   ~IndexedDBCallbacksImpl() override;
 
   // mojom::blink::IDBCallbacks implementation:
@@ -68,8 +65,6 @@ class IndexedDBCallbacksImpl : public mojom::blink::IDBCallbacks {
  private:
   scoped_refptr<base::SingleThreadTaskRunner> callback_runner_;
   std::unique_ptr<WebIDBCallbacks> callbacks_;
-  base::WeakPtr<WebIDBCursorImpl> cursor_;
-  int64_t transaction_id_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBCallbacksImpl);
 };

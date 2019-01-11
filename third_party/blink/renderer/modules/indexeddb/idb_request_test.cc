@@ -28,7 +28,10 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -58,6 +61,114 @@
 
 namespace blink {
 namespace {
+
+class BackendDatabaseWithMockedClose
+    : public testing::StrictMock<mojom::blink::IDBDatabase> {
+ public:
+  explicit BackendDatabaseWithMockedClose(
+      mojom::blink::IDBDatabaseAssociatedRequest request)
+      : binding_(this, std::move(request)) {
+    binding_.set_connection_error_handler(
+        base::BindOnce(&BackendDatabaseWithMockedClose::DatabaseDestroyed,
+                       base::Unretained(this)));
+  }
+
+  void DatabaseDestroyed() { destroyed_ = true; }
+
+  void CreateObjectStore(int64_t transaction_id,
+                         int64_t object_store_id,
+                         const WTF::String& name,
+                         const ::blink::IDBKeyPath& key_path,
+                         bool auto_increment) override {}
+  void DeleteObjectStore(int64_t transaction_id,
+                         int64_t object_store_id) override {}
+  void RenameObjectStore(int64_t transaction_id,
+                         int64_t object_store_id,
+                         const WTF::String& new_name) override {}
+  void CreateTransaction(int64_t transaction_id,
+                         const WTF::Vector<int64_t>& object_store_ids,
+                         mojom::blink::IDBTransactionMode mode) override {}
+  MOCK_METHOD0(Close, void());
+  void VersionChangeIgnored() override {}
+  void AddObserver(int64_t transaction_id,
+                   int32_t observer_id,
+                   bool include_transaction,
+                   bool no_records,
+                   bool values,
+                   uint32_t operation_types) override {}
+  void RemoveObservers(const WTF::Vector<int32_t>& observers) override {}
+  void Get(int64_t transaction_id,
+           int64_t object_store_id,
+           int64_t index_id,
+           mojom::blink::IDBKeyRangePtr key_range,
+           bool key_only,
+           mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}
+  void GetAll(int64_t transaction_id,
+              int64_t object_store_id,
+              int64_t index_id,
+              mojom::blink::IDBKeyRangePtr key_range,
+              bool key_only,
+              int64_t max_count,
+              mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}
+  void Put(int64_t transaction_id,
+           int64_t object_store_id,
+           std::unique_ptr<::blink::IDBValue> value,
+           std::unique_ptr<::blink::IDBKey> key,
+           mojom::blink::IDBPutMode mode,
+           WTF::Vector<::blink::IDBIndexKeys> index_keys,
+           mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}
+  void SetIndexKeys(int64_t transaction_id,
+                    int64_t object_store_id,
+                    std::unique_ptr<::blink::IDBKey> primary_key,
+                    WTF::Vector<::blink::IDBIndexKeys> index_keys) override {}
+  void SetIndexesReady(int64_t transaction_id,
+                       int64_t object_store_id,
+                       const WTF::Vector<int64_t>& index_ids) override {}
+  void OpenCursor(
+      int64_t transaction_id,
+      int64_t object_store_id,
+      int64_t index_id,
+      mojom::blink::IDBKeyRangePtr key_range,
+      mojom::blink::IDBCursorDirection direction,
+      bool key_only,
+      mojom::blink::IDBTaskType task_type,
+      mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}
+  void Count(int64_t transaction_id,
+             int64_t object_store_id,
+             int64_t index_id,
+             mojom::blink::IDBKeyRangePtr key_range,
+             mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}
+  void DeleteRange(
+      int64_t transaction_id,
+      int64_t object_store_id,
+      mojom::blink::IDBKeyRangePtr key_range,
+      mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}
+  void Clear(int64_t transaction_id,
+             int64_t object_store_id,
+             mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}
+  void CreateIndex(int64_t transaction_id,
+                   int64_t object_store_id,
+                   int64_t index_id,
+                   const WTF::String& name,
+                   const ::blink::IDBKeyPath& key_path,
+                   bool unique,
+                   bool multi_entry) override {}
+  void DeleteIndex(int64_t transaction_id,
+                   int64_t object_store_id,
+                   int64_t index_id) override {}
+  void RenameIndex(int64_t transaction_id,
+                   int64_t object_store_id,
+                   int64_t index_id,
+                   const WTF::String& new_name) override {}
+  void Abort(int64_t transaction_id) override {}
+  void Commit(int64_t transaction_id) override {}
+
+  bool destroyed() { return destroyed_; }
+
+ private:
+  bool destroyed_ = false;
+  mojo::AssociatedBinding<mojom::blink::IDBDatabase> binding_;
+};
 
 class IDBRequestTest : public testing::Test {
  protected:
@@ -247,8 +358,12 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
   Persistent<IDBDatabaseCallbacks> callbacks = IDBDatabaseCallbacks::Create();
 
   {
-    std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
-    EXPECT_CALL(*backend, Close()).Times(1);
+    mojom::blink::IDBDatabaseAssociatedPtr ptr;
+    std::unique_ptr<BackendDatabaseWithMockedClose> mock_database =
+        std::make_unique<BackendDatabaseWithMockedClose>(
+            mojo::MakeRequestAssociatedWithDedicatedPipe(&ptr));
+    EXPECT_CALL(*mock_database, Close()).Times(1);
+
     IDBOpenDBRequest* request = IDBOpenDBRequest::Create(
         scope.GetScriptState(), callbacks, kTransactionId, kVersion,
         IDBRequest::AsyncTraceState());
@@ -256,13 +371,18 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
     std::unique_ptr<WebIDBCallbacks> callbacks = request->CreateWebCallbacks();
 
     scope.GetExecutionContext()->NotifyContextDestroyed();
-    callbacks->OnUpgradeNeeded(kOldVersion, backend.release(), metadata,
-                               mojom::IDBDataLoss::None, String());
+    callbacks->UpgradeNeeded(ptr.PassInterface(), kOldVersion,
+                             mojom::IDBDataLoss::None, String(), metadata);
+    platform_->RunUntilIdle();
   }
 
   {
-    std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
-    EXPECT_CALL(*backend, Close()).Times(1);
+    mojom::blink::IDBDatabaseAssociatedPtr ptr;
+    std::unique_ptr<BackendDatabaseWithMockedClose> mock_database =
+        std::make_unique<BackendDatabaseWithMockedClose>(
+            mojo::MakeRequestAssociatedWithDedicatedPipe(&ptr));
+    EXPECT_CALL(*mock_database, Close()).Times(1);
+
     IDBOpenDBRequest* request = IDBOpenDBRequest::Create(
         scope.GetScriptState(), callbacks, kTransactionId, kVersion,
         IDBRequest::AsyncTraceState());
@@ -270,7 +390,8 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
     std::unique_ptr<WebIDBCallbacks> callbacks = request->CreateWebCallbacks();
 
     scope.GetExecutionContext()->NotifyContextDestroyed();
-    callbacks->OnSuccess(backend.release(), metadata);
+    callbacks->SuccessDatabase(ptr.PassInterface(), metadata);
+    platform_->RunUntilIdle();
   }
 }
 

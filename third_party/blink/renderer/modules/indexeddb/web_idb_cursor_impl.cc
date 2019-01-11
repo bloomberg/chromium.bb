@@ -48,8 +48,9 @@ void WebIDBCursorImpl::Advance(uint32_t count, WebIDBCallbacks* callbacks_ptr) {
   }
   ResetPrefetchCache();
 
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr());
+  callbacks->SetState(weak_factory_.GetWeakPtr(), transaction_id_);
+  auto callbacks_impl =
+      std::make_unique<IndexedDBCallbacksImpl>(std::move(callbacks));
   cursor_->Advance(count, GetCallbacksProxy(std::move(callbacks_impl)));
 }
 
@@ -74,8 +75,9 @@ void WebIDBCursorImpl::CursorContinue(const IDBKey* key,
       // Request pre-fetch.
       ++pending_onsuccess_callbacks_;
 
-      auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-          std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr());
+      callbacks->SetState(weak_factory_.GetWeakPtr(), transaction_id_);
+      auto callbacks_impl =
+          std::make_unique<IndexedDBCallbacksImpl>(std::move(callbacks));
       cursor_->Prefetch(prefetch_amount_,
                         GetCallbacksProxy(std::move(callbacks_impl)));
 
@@ -91,8 +93,9 @@ void WebIDBCursorImpl::CursorContinue(const IDBKey* key,
     ResetPrefetchCache();
   }
 
-  auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
-      std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr());
+  callbacks->SetState(weak_factory_.GetWeakPtr(), transaction_id_);
+  auto callbacks_impl =
+      std::make_unique<IndexedDBCallbacksImpl>(std::move(callbacks));
   cursor_->CursorContinue(IDBKey::Clone(key), IDBKey::Clone(primary_key),
                           GetCallbacksProxy(std::move(callbacks_impl)));
 }
@@ -172,8 +175,8 @@ void WebIDBCursorImpl::CachedContinue(WebIDBCallbacks* callbacks) {
     ResetPrefetchCache();
   }
 
-  callbacks->OnSuccess(std::move(key), std::move(primary_key),
-                       std::move(value));
+  callbacks->SuccessCursorContinue(std::move(key), std::move(primary_key),
+                                   std::move(value));
 }
 
 void WebIDBCursorImpl::ResetPrefetchCache() {

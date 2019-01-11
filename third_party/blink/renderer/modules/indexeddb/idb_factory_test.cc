@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -82,8 +83,8 @@ TEST_F(IDBFactoryTest, WebIDBGetDBInfoCallbacksResolvesPromise) {
   EXPECT_FALSE(on_fulfilled);
   EXPECT_FALSE(on_rejected);
 
-  const Vector<IDBNameAndVersion> name_and_info_list;
-  callbacks->OnSuccess(name_and_info_list);
+  Vector<mojom::blink::IDBNameAndVersionPtr> name_and_info_list;
+  callbacks->SuccessNamesAndVersionsList(std::move(name_and_info_list));
 
   EXPECT_FALSE(on_fulfilled);
   EXPECT_FALSE(on_rejected);
@@ -117,7 +118,7 @@ TEST_F(IDBFactoryTest, WebIDBGetDBNamesCallbacksRejectsPromise) {
   EXPECT_FALSE(on_fulfilled);
   EXPECT_FALSE(on_rejected);
 
-  callbacks->OnError(IDBDatabaseError(1));
+  callbacks->Error(0, String());
 
   EXPECT_FALSE(on_fulfilled);
   EXPECT_FALSE(on_rejected);

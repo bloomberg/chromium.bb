@@ -83,13 +83,14 @@ class MockContinueCallbacks : public testing::StrictMock<MockWebIDBCallbacks> {
                         Vector<WebBlobInfo>* blobs = nullptr)
       : key_(key), blobs_(blobs) {}
 
-  void OnSuccess(std::unique_ptr<IDBKey> key,
-                 std::unique_ptr<IDBKey> primaryKey,
-                 std::unique_ptr<IDBValue> value) override {
+  void SuccessCursorContinue(
+      std::unique_ptr<IDBKey> key,
+      std::unique_ptr<IDBKey> primaryKey,
+      base::Optional<std::unique_ptr<IDBValue>> value) override {
     if (key_)
       *key_ = IDBKey::Clone(key);
-    if (blobs_)
-      *blobs_ = value->BlobInfo();
+    if (blobs_ && value.has_value())
+      *blobs_ = value.value()->BlobInfo();
   }
 
  private:

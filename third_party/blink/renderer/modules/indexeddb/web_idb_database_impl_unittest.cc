@@ -42,7 +42,7 @@ TEST_F(WebIDBDatabaseImplTest, ValueSizeTest) {
 
   ASSERT_GT(value_data->size() + key->SizeEstimate(), kMaxValueSizeForTesting);
   ThreadState::Current()->CollectAllGarbage();
-  EXPECT_CALL(callbacks, OnError(_)).Times(1);
+  EXPECT_CALL(callbacks, Error(_, _)).Times(1);
 
   WebIDBDatabaseImpl database_impl(nullptr);
   database_impl.max_put_value_size_ = kMaxValueSizeForTesting;
@@ -83,7 +83,7 @@ TEST_F(WebIDBDatabaseImplTest, KeyAndValueSizeTest) {
   DCHECK_GT(value_data->size() + key->SizeEstimate(), kMaxValueSizeForTesting);
 
   ThreadState::Current()->CollectAllGarbage();
-  EXPECT_CALL(callbacks, OnError(_)).Times(1);
+  EXPECT_CALL(callbacks, Error(_, _)).Times(1);
 
   WebIDBDatabaseImpl database_impl(nullptr);
   database_impl.max_put_value_size_ = kMaxValueSizeForTesting;
