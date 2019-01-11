@@ -180,6 +180,18 @@ class NGInlineNodeTest : public NGLayoutTest {
   FontCachePurgePreventer purge_preventer_;
 };
 
+class NodeParameterTest : public NGInlineNodeTest,
+                          public testing::WithParamInterface<const char*> {};
+
+INSTANTIATE_TEST_CASE_P(
+    NGInlineNodeTest,
+    NodeParameterTest,
+    testing::Values("text",
+                    "<span>span</span>",
+                    "<span>1234 12345678</span>",
+                    "<span style='display: inline-block'>box</span>",
+                    "<img>"));
+
 #define TEST_ITEM_TYPE_OFFSET(item, type, start, end) \
   EXPECT_EQ(NGInlineItem::type, item.Type());         \
   EXPECT_EQ(start, item.StartOffset());               \
@@ -759,15 +771,17 @@ TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnRemove) {
 }
 
 // Test marking line boxes when removing a span.
-TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnRemoveFirst) {
-  SetupHtml("container", R"HTML(
-    <div id=container style="font-size: 10px; width: 10ch">
-      <span id=t>1234</span>5678
+TEST_P(NodeParameterTest, MarkLineBoxesDirtyOnRemoveFirst) {
+  SetupHtml("container", String(R"HTML(
+    <div id=container style="font-size: 10px; width: 10ch">)HTML") +
+                             GetParam() + R"HTML(<span>after</span>
     </div>
   )HTML");
 
-  Element* span = GetElementById("t");
-  span->remove();
+  Element* container = GetElementById("container");
+  Node* node = container->firstChild();
+  ASSERT_TRUE(node);
+  node->remove();
 
   auto lines = MarkLineBoxesDirty();
   EXPECT_TRUE(lines[0]->IsDirty());
@@ -788,6 +802,27 @@ TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnRemove2) {
   auto lines = MarkLineBoxesDirty();
   EXPECT_FALSE(lines[0]->IsDirty());
   EXPECT_TRUE(lines[1]->IsDirty());
+}
+
+// Test marking line boxes when removing a text node on 2nd line.
+TEST_P(NodeParameterTest, MarkLineBoxesDirtyOnRemoveAfterBR) {
+  SetupHtml("container", String(R"HTML(
+    <div id=container style="font-size: 10px; width: 10ch">
+      line 1
+      <br>)HTML") + GetParam() +
+                             "</div>");
+
+  Element* container = GetElementById("container");
+  Node* node = container->lastChild();
+  ASSERT_TRUE(node);
+  node->remove();
+
+  auto lines = MarkLineBoxesDirty();
+  EXPECT_TRUE(lines[0]->IsDirty());
+  // Currently, only the first dirty line is marked.
+  EXPECT_FALSE(lines[1]->IsDirty());
+
+  ForceLayout();  // Ensure running layout does not crash.
 }
 
 // Test marking line boxes when the first span has NeedsLayout. The span is
