@@ -120,6 +120,15 @@ appearance of the Google homepage. It’s not actually a real search bar,
 and if the user interacts with it, the NTP moves keyboard focus and any
 text to the Omnibox and hides the Fakebox.
 
+##### Search Suggestions
+
+Above the NTP tiles there is space for search suggestions. Search suggestions
+are typically 3-4 queries recommended to logged-in users based on their previous
+search history.
+
+Search suggestions are fetched from Google servers on NTP load and cached to be
+displayed on the following NTP load.
+
 ##### Middle-slot Promos
 
 Below the NTP tiles, there is space for a **Middle-slot Promo**. A promo is

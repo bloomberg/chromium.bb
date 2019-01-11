@@ -124,6 +124,7 @@ var IDS = {
   NTP_CONTENTS: 'ntp-contents',
   PROMO: 'promo',
   RESTORE_ALL_LINK: 'mv-restore',
+  SUGGESTIONS: 'suggestions',
   TILES: 'mv-tiles',
   TILES_IFRAME: 'mv-single',
   UNDO_LINK: 'mv-undo',
@@ -850,6 +851,10 @@ function handlePostMessage(event) {
   if (cmd === 'loaded') {
     tilesAreLoaded = true;
     if (configData.isGooglePage) {
+      // Show search suggestions if they were previously hidden.
+      if ($(IDS.SUGGESTIONS)) {
+        $(IDS.SUGGESTIONS).style.visibility = 'visible';
+      }
       if (!$('one-google-loader')) {
         // Load the OneGoogleBar script. It'll create a global variable name
         // "og" which is a dict corresponding to the native OneGoogleBarData
@@ -905,6 +910,21 @@ function handlePostMessage(event) {
     // custom link edit dialog without saving.
     $(IDS.TILES_IFRAME)
         .contentWindow.postMessage({cmd: 'focusMenu', tid: args.tid}, '*');
+  }
+}
+
+function showSearchSuggestions() {
+  // Inject search suggestions as early as possible to avoid shifting of other
+  // elements.
+  if (!$('search-suggestions-loader')) {
+    var ssScript = document.createElement('script');
+    ssScript.id = 'search-suggestions-loader';
+    ssScript.src = 'chrome-search://local-ntp/search-suggestions.js';
+    ssScript.async = false;
+    document.body.appendChild(ssScript);
+    ssScript.onload = function() {
+      injectSearchSuggestions(search_suggestions);
+    };
   }
 }
 
@@ -971,6 +991,7 @@ function init() {
   var searchboxApiHandle = embeddedSearchApiHandle.searchBox;
 
   if (configData.isGooglePage) {
+    showSearchSuggestions();
     enableMDIcons();
 
     ntpApiHandle.onaddcustomlinkdone = onAddCustomLinkDone;
@@ -1180,6 +1201,23 @@ function injectPromo(promo) {
   promoContainer.id = IDS.PROMO;
   promoContainer.innerHTML += promo.promoHtml;
   $(IDS.NTP_CONTENTS).appendChild(promoContainer);
+}
+
+
+/**
+ * Injects search suggestions into the page. Called *synchronously* with cached
+ * data as not to cause shifting of the most visited tiles.
+ */
+function injectSearchSuggestions(suggestions) {
+  if (suggestions.suggestionsHtml === '') {
+    return;
+  }
+
+  let suggestionsContainer = document.createElement('div');
+  suggestionsContainer.id = IDS.SUGGESTIONS;
+  suggestionsContainer.style.visibility = 'hidden';
+  suggestionsContainer.innerHTML += suggestions.suggestionsHtml;
+  $(IDS.NTP_CONTENTS).insertBefore(suggestionsContainer, $('most-visited'));
 }
 
 

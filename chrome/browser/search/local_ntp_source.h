@@ -18,6 +18,7 @@
 #include "chrome/browser/search/background/ntp_background_service_observer.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_observer.h"
 #include "chrome/browser/search/promos/promo_service_observer.h"
+#include "chrome/browser/search/search_suggest/search_suggest_service_observer.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "content/public/browser/url_data_source.h"
 
@@ -30,6 +31,7 @@ struct PromoData;
 class NtpBackgroundService;
 class OneGoogleBarService;
 class PromoService;
+class SearchSuggestService;
 class Profile;
 
 namespace search_provider_logos {
@@ -46,7 +48,8 @@ class LogoService;
 class LocalNtpSource : public content::URLDataSource,
                        public NtpBackgroundServiceObserver,
                        public OneGoogleBarServiceObserver,
-                       public PromoServiceObserver {
+                       public PromoServiceObserver,
+                       public SearchSuggestServiceObserver {
  public:
   explicit LocalNtpSource(Profile* profile);
   ~LocalNtpSource() override;
@@ -87,6 +90,14 @@ class LocalNtpSource : public content::URLDataSource,
     content::URLDataSource::GotDataCallback callback;
   };
 
+  struct SearchSuggestRequest {
+    explicit SearchSuggestRequest(base::TimeTicks start_time);
+    explicit SearchSuggestRequest(const SearchSuggestRequest&);
+    ~SearchSuggestRequest();
+
+    base::TimeTicks start_time;
+  };
+
   // Overridden from content::URLDataSource:
   std::string GetSource() const override;
   void StartDataRequest(
@@ -118,9 +129,16 @@ class LocalNtpSource : public content::URLDataSource,
   void OnPromoDataUpdated() override;
   void OnPromoServiceShuttingDown() override;
 
+  // Overridden from SearchSuggestServiceObserver:
+  void OnSearchSuggestDataUpdated() override;
+  void OnSearchSuggestServiceShuttingDown() override;
+
   void ServeOneGoogleBar(const base::Optional<OneGoogleBarData>& data);
 
   void ServePromo(const base::Optional<PromoData>& data);
+
+  void MaybeServeSearchSuggestions(
+      const content::URLDataSource::GotDataCallback& callback);
 
   Profile* const profile_;
 
@@ -146,6 +164,13 @@ class LocalNtpSource : public content::URLDataSource,
   PromoService* promo_service_;
 
   ScopedObserver<PromoService, PromoServiceObserver> promo_service_observer_;
+
+  std::vector<SearchSuggestRequest> search_suggest_requests_;
+
+  SearchSuggestService* search_suggest_service_;
+
+  ScopedObserver<SearchSuggestService, SearchSuggestServiceObserver>
+      search_suggest_service_observer_;
 
   search_provider_logos::LogoService* logo_service_;
   std::unique_ptr<DesktopLogoObserver> logo_observer_;

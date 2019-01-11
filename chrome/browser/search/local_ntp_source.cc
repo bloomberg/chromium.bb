@@ -37,6 +37,9 @@
 #include "chrome/browser/search/promos/promo_service.h"
 #include "chrome/browser/search/promos/promo_service_factory.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/search/search_suggest/search_suggest_data.h"
+#include "chrome/browser/search/search_suggest/search_suggest_service.h"
+#include "chrome/browser/search/search_suggest/search_suggest_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_provider_logos/logo_service_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -95,6 +98,7 @@ const char kNtpBackgroundCollectionScriptFilename[] =
 const char kNtpBackgroundImageScriptFilename[] = "ntp-background-images.js";
 const char kOneGoogleBarScriptFilename[] = "one-google.js";
 const char kPromoScriptFilename[] = "promo.js";
+const char kSearchSuggestionsScriptFilename[] = "search-suggestions.js";
 const char kThemeCSSFilename[] = "theme.css";
 
 const struct Resource{
@@ -124,6 +128,7 @@ const struct Resource{
     {kNtpBackgroundImageScriptFilename, kLocalResource, "text/javascript"},
     {kOneGoogleBarScriptFilename, kLocalResource, "text/javascript"},
     {kPromoScriptFilename, kLocalResource, "text/javascript"},
+    {kSearchSuggestionsScriptFilename, kLocalResource, "text/javascript"},
     {kThemeCSSFilename, kLocalResource, "text/css"},
     // Image may not be a jpeg but the .jpg extension here still works for other
     // filetypes. Special handling for different extensions isn't worth the
@@ -400,6 +405,13 @@ std::unique_ptr<base::DictionaryValue> ConvertPromoDataToDict(
     result->SetString("promoHtml", promo->promo_html);
   else
     result->SetString("promoHtml", std::string());
+  return result;
+}
+
+std::unique_ptr<base::DictionaryValue> ConvertSearchSuggestDataToDict(
+    const SearchSuggestData& data) {
+  auto result = std::make_unique<base::DictionaryValue>();
+  result->SetString("suggestionsHtml", data.suggestions_html);
   return result;
 }
 
@@ -702,6 +714,9 @@ LocalNtpSource::LocalNtpSource(Profile* profile)
       one_google_bar_service_observer_(this),
       promo_service_(PromoServiceFactory::GetForProfile(profile_)),
       promo_service_observer_(this),
+      search_suggest_service_(
+          SearchSuggestServiceFactory::GetForProfile(profile_)),
+      search_suggest_service_observer_(this),
       logo_service_(nullptr),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -715,6 +730,11 @@ LocalNtpSource::LocalNtpSource(Profile* profile)
   // disabled.
   if (one_google_bar_service_)
     one_google_bar_service_observer_.Add(one_google_bar_service_);
+
+  // |search_suggest_service_| is null in incognito, or when the feature is
+  // disabled.
+  if (search_suggest_service_)
+    search_suggest_service_observer_.Add(search_suggest_service_);
 
   // |promo_service_| is null in incognito, or when the feature is
   // disabled.
@@ -854,6 +874,20 @@ void LocalNtpSource::StartDataRequest(
     // we can sometimes use cached data.
     promo_requests_.emplace_back(base::TimeTicks::Now(), callback);
     promo_service_->Refresh();
+
+    return;
+  }
+
+  if (stripped_path == kSearchSuggestionsScriptFilename) {
+    if (!search_suggest_service_) {
+      callback.Run(nullptr);
+      return;
+    }
+
+    MaybeServeSearchSuggestions(callback);
+
+    search_suggest_requests_.emplace_back(base::TimeTicks::Now());
+    search_suggest_service_->Refresh();
 
     return;
   }
@@ -1198,6 +1232,51 @@ void LocalNtpSource::OnPromoServiceShuttingDown() {
   promo_service_ = nullptr;
 }
 
+void LocalNtpSource::OnSearchSuggestDataUpdated() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  bool result = search_suggest_service_->search_suggest_data().has_value();
+  base::TimeTicks now = base::TimeTicks::Now();
+  for (const auto& request : search_suggest_requests_) {
+    base::TimeDelta delta = now - request.start_time;
+    UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.SearchSuggestions.RequestLatency",
+                               delta);
+    if (result) {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "NewTabPage.SearchSuggestions.RequestLatency.Success", delta);
+    } else {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "NewTabPage.SearchSuggestions.RequestLatency.Failure", delta);
+    }
+  }
+  search_suggest_requests_.clear();
+}
+
+void LocalNtpSource::OnSearchSuggestServiceShuttingDown() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  search_suggest_service_observer_.RemoveAll();
+  search_suggest_service_ = nullptr;
+}
+void LocalNtpSource::MaybeServeSearchSuggestions(
+    const content::URLDataSource::GotDataCallback& callback) {
+  base::Optional<SearchSuggestData> data =
+      search_suggest_service_->search_suggest_data();
+  if (!data.has_value()) {
+    callback.Run(nullptr);
+    return;
+  }
+
+  SearchSuggestData suggest_data = *data;
+  search_suggest_service_->ClearSearchSuggestData();
+  scoped_refptr<base::RefCountedString> result;
+  std::string js;
+  base::JSONWriter::Write(*ConvertSearchSuggestDataToDict(suggest_data), &js);
+  js = "var search_suggestions  = " + js + ";";
+  result = base::RefCountedString::TakeString(&js);
+  callback.Run(result);
+}
+
 void LocalNtpSource::ServeOneGoogleBar(
     const base::Optional<OneGoogleBarData>& data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -1285,3 +1364,12 @@ LocalNtpSource::PromoRequest::PromoRequest(
 LocalNtpSource::PromoRequest::PromoRequest(const PromoRequest&) = default;
 
 LocalNtpSource::PromoRequest::~PromoRequest() = default;
+
+LocalNtpSource::SearchSuggestRequest::SearchSuggestRequest(
+    base::TimeTicks start_time)
+    : start_time(start_time) {}
+
+LocalNtpSource::SearchSuggestRequest::SearchSuggestRequest(
+    const SearchSuggestRequest&) = default;
+
+LocalNtpSource::SearchSuggestRequest::~SearchSuggestRequest() = default;
