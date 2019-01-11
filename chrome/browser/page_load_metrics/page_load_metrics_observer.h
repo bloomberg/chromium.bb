@@ -296,6 +296,11 @@ class PageLoadMetricsObserver {
 
   static bool IsStandardWebPageMimeType(const std::string& mime_type);
 
+  static void AssignTimeAndSizeForLargestContentfulPaint(
+      base::Optional<base::TimeDelta>& largest_content_paint_time,
+      uint64_t& largest_content_paint_size,
+      const page_load_metrics::mojom::PaintTimingPtr& paint_timing);
+
   // The page load started, with the given navigation handle.
   // currently_committed_url contains the URL of the committed page load at the
   // time the navigation for navigation_handle was initiated, or the empty URL

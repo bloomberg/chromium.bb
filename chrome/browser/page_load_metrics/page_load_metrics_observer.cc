@@ -159,4 +159,26 @@ bool PageLoadMetricsObserver::IsStandardWebPageMimeType(
   return mime_type == "text/html" || mime_type == "application/xhtml+xml";
 }
 
+// static
+void PageLoadMetricsObserver::AssignTimeAndSizeForLargestContentfulPaint(
+    base::Optional<base::TimeDelta>& largest_content_paint_time,
+    uint64_t& largest_content_paint_size,
+    const page_load_metrics::mojom::PaintTimingPtr& paint_timing) {
+  base::Optional<base::TimeDelta>& text_time = paint_timing->largest_text_paint;
+  base::Optional<base::TimeDelta>& image_time =
+      paint_timing->largest_image_paint;
+  uint64_t& text_size = paint_timing->largest_text_paint_size;
+  uint64_t& image_size = paint_timing->largest_image_paint_size;
+
+  // Size being 0 means the paint time is not recorded.
+  if ((text_size > image_size) ||
+      (text_size == image_size && text_time < image_time)) {
+    largest_content_paint_time = text_time;
+    largest_content_paint_size = text_size;
+  } else {
+    largest_content_paint_time = image_time;
+    largest_content_paint_size = image_size;
+  }
+}
+
 }  // namespace page_load_metrics
