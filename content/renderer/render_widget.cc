@@ -2182,10 +2182,11 @@ void RenderWidget::OnDragSourceEnded(const gfx::PointF& client_point,
 }
 
 void RenderWidget::OnDragSourceSystemDragEnded() {
-  if (!GetWebWidget())
+  blink::WebFrameWidget* frame_widget = GetFrameWidget();
+  if (!frame_widget)
     return;
 
-  static_cast<WebFrameWidget*>(GetWebWidget())->DragSourceSystemDragEnded();
+  frame_widget->DragSourceSystemDragEnded();
 }
 
 void RenderWidget::ShowVirtualKeyboardOnElementFocus() {
