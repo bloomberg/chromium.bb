@@ -35,6 +35,11 @@ const std::vector<InteractionsStats>& FakeFormFetcher::GetInteractionsStats()
 }
 
 const std::vector<const autofill::PasswordForm*>&
+FakeFormFetcher::GetNonFederatedMatches() const {
+  return non_federated_;
+}
+
+const std::vector<const autofill::PasswordForm*>&
 FakeFormFetcher::GetFederatedMatches() const {
   return federated_;
 }
@@ -62,6 +67,7 @@ void FakeFormFetcher::SetNonFederated(
     const std::vector<const autofill::PasswordForm*>& non_federated,
     size_t filtered_count) {
   state_ = State::NOT_WAITING;
+  non_federated_ = non_federated;
   for (Consumer* consumer : consumers_) {
     consumer->ProcessMatches(non_federated, filtered_count);
   }

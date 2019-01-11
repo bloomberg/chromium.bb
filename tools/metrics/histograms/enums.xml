@@ -40866,6 +40866,32 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="From Android"/>
 </enum>
 
+<enum name="PasswordManagerFillingAssistance">
+  <summary>
+    This enum shows the user experience with the passwords filling. The first 4
+    buckets are ranging from the best (automatic) to the worst (the user has to
+    type already saved password). Also there are buckets that showed the cases
+    when it was impossible to help because the unknown credentials were
+    submitted. The last bucket is correspond to the strange cases, that the
+    submitted form has nor user input, nor autofilled data in password fields.
+  </summary>
+  <int value="0" label="Credential fields were filled automatically"/>
+  <int value="1"
+      label="Credential fields were filled by manual filling (but none
+             required typing)"/>
+  <int value="2"
+      label="Password was filled (automatically or manually), known username
+             was typed"/>
+  <int value="3" label="Known password was typed"/>
+  <int value="4"
+      label="Unknown credentials were typed (neither username nor password
+             were known) while some credentials were stored."/>
+  <int value="5" label="No saved credentials"/>
+  <int value="6" label="Neither user input nor filling in password fields">
+    For example, it might be because of 3rd party password managers.
+  </int>
+</enum>
+
 <enum name="PasswordManagerFirstRendererFillingResult">
   <int value="0" label="Success"/>
   <int value="1" label="No password element">

@@ -26,6 +26,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using autofill::FieldPropertiesFlags;
 using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::FormSignature;
@@ -1651,6 +1652,37 @@ TEST_F(NewPasswordFormManagerTest, Update) {
   ASSERT_TRUE(best_matches.find(username) != best_matches.end());
   EXPECT_EQ(saved_match_, *best_matches[username]);
   EXPECT_TRUE(credentials_to_update.empty());
+}
+
+// TODO(https://crbug.com/918846): implement FillingAssistance metric on iOS.
+#if defined(OS_IOS)
+#define MAYBE_FillingAssistanceMetric DISABLED_FillingAssistanceMetric
+#else
+#define MAYBE_FillingAssistanceMetric FillingAssistanceMetric
+#endif
+TEST_F(NewPasswordFormManagerTest, MAYBE_FillingAssistanceMetric) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  fetcher_->SetNonFederated({&saved_match_}, 0u);
+
+  // Simulate that the user fills the saved credentials manually.
+  submitted_form_.fields[kUsernameFieldIndex].value =
+      saved_match_.username_value;
+  submitted_form_.fields[kUsernameFieldIndex].properties_mask =
+      FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER;
+  submitted_form_.fields[kPasswordFieldIndex].value =
+      saved_match_.password_value;
+  submitted_form_.fields[kPasswordFieldIndex].properties_mask =
+      FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER;
+
+  base::HistogramTester histogram_tester;
+  //  Simulate successful submission.
+  form_manager_->ProvisionallySaveIfIsManaged(submitted_form_, &driver_);
+  form_manager_->GetMetricsRecorder()->LogSubmitPassed();
+
+  form_manager_.reset();
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.FillingAssistance",
+      PasswordFormMetricsRecorder::FillingAssistance::kManual, 1);
 }
 
 }  // namespace

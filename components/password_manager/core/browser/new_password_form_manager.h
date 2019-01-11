@@ -224,6 +224,11 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
       const autofill::FormData& form,
       FormDataParser::Mode mode);
 
+  // Calculates FillingAssistance metric for |submitted_form|. The metric is
+  // recorded in case when the successful submission is detected.
+  void CalculateFillingAssistanceMetric(
+      const autofill::FormData& submitted_form);
+
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;
 

@@ -549,6 +549,7 @@ bool NewPasswordFormManager::ProvisionallySaveIfIsManaged(
   parsed_submitted_form_ = std::move(parsed_submitted_form);
   submitted_form_ = submitted_form;
   is_submitted_ = true;
+  CalculateFillingAssistanceMetric(submitted_form);
 
   CreatePendingCredentials();
   return true;
@@ -1019,6 +1020,31 @@ std::unique_ptr<PasswordForm> NewPasswordFormManager::ParseFormAndMakeLogging(
                              *password_form);
   }
   return password_form;
+}
+
+void NewPasswordFormManager::CalculateFillingAssistanceMetric(
+    const FormData& submitted_form) {
+  // TODO(https://crbug.com/918846): implement collecting all necessary data on
+  // iOS.
+#if not defined(OS_IOS)
+  std::set<base::string16> saved_usernames;
+  std::set<base::string16> saved_passwords;
+
+  const std::vector<const PasswordForm*>& saved_forms =
+      form_fetcher_->GetNonFederatedMatches();
+
+  for (auto* saved_form : saved_forms) {
+    saved_usernames.insert(saved_form->username_value);
+    saved_passwords.insert(saved_form->password_value);
+  }
+
+  // Saved credentials might have empty usernames which are not interesting for
+  // filling assistance metric.
+  saved_usernames.erase(base::string16());
+
+  metrics_recorder_->CalculateFillingAssistanceMetric(
+      submitted_form, saved_usernames, saved_passwords);
+#endif
 }
 
 }  // namespace password_manager

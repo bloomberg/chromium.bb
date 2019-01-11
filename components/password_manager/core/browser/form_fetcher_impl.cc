@@ -141,6 +141,11 @@ const std::vector<InteractionsStats>& FormFetcherImpl::GetInteractionsStats()
   return interactions_stats_;
 }
 
+const std::vector<const PasswordForm*>&
+FormFetcherImpl::GetNonFederatedMatches() const {
+  return weak_non_federated_;
+}
+
 const std::vector<const PasswordForm*>& FormFetcherImpl::GetFederatedMatches()
     const {
   return weak_federated_;
