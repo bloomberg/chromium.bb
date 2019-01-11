@@ -706,10 +706,10 @@ class CORE_EXPORT Node : public EventTarget {
 
   // Wrapper for nodes that don't have a layoutObject, but still cache the style
   // (like HTMLOptionElement).
-  inline ComputedStyle* MutableComputedStyle() const;
-  inline const ComputedStyle* GetComputedStyle() const;
-  inline const ComputedStyle* ParentComputedStyle() const;
-  inline const ComputedStyle& ComputedStyleRef() const;
+  ComputedStyle* MutableComputedStyle() const;
+  const ComputedStyle* GetComputedStyle() const;
+  const ComputedStyle* ParentComputedStyle() const;
+  const ComputedStyle& ComputedStyleRef() const;
 
   const ComputedStyle* EnsureComputedStyle(
       PseudoId pseudo_element_specifier = kPseudoIdNone) {
