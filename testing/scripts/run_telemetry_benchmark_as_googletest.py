@@ -26,6 +26,11 @@ This script is intended to be the base command invoked by the isolate,
 followed by a subsequent Python script. It could be generalized to
 invoke an arbitrary executable.
 
+
+TESTING:
+To test changes to this script, please run
+cd tools/perf
+./run_tests ScriptsSmokeTest.testRunTelemetryBenchmarkAsGoogletest
 """
 
 import argparse
@@ -86,7 +91,7 @@ def main():
   return rc
 
 def run_benchmark(args, rest_args, histogram_results):
-  """  Run benchmark with args.
+  """Run benchmark with args.
 
   Args:
     args: the option object resulted from parsing commandline args required for
@@ -102,6 +107,24 @@ def run_benchmark(args, rest_args, histogram_results):
     json_test_results: json object contains the Pass/Fail data of the benchmark.
     benchmark_log: string contains the stdout/stderr of the benchmark run.
   """
+  # TODO(crbug.com/920002): These arguments cannot go into
+  # run_performance_tests.py because
+  # run_gtest_perf_tests.py does not yet support them. Note that ideally
+  # we would use common.BaseIsolatedScriptArgsAdapter, but this will take
+  # a good deal of refactoring to accomplish.
+  parser = argparse.ArgumentParser()
+  parser.add_argument(
+      '--isolated-script-test-repeat', type=int, required=False)
+  parser.add_argument(
+      '--isolated-script-test-launcher-retry-limit', type=int, required=False,
+      choices=[0])  # Telemetry does not support retries. crbug.com/894254#c21
+  parser.add_argument(
+      '--isolated-script-test-also-run-disabled-tests',
+      default=False, action='store_true', required=False)
+  # Parse leftover args not already parsed in run_performance_tests.py or in
+  # main().
+  args, rest_args = parser.parse_known_args(args=rest_args, namespace=args)
+
   env = os.environ.copy()
   env['CHROME_HEADLESS'] = '1'
 
@@ -123,15 +146,16 @@ def run_benchmark(args, rest_args, histogram_results):
     filter_list = common.extract_filter_list(args.isolated_script_test_filter)
     # Need to convert this to a valid regex.
     filter_regex = '(' + '|'.join(filter_list) + ')'
-    cmd_args = cmd_args + [
-      '--story-filter=' + filter_regex
-    ]
+    cmd_args.append('--story-filter=' + filter_regex)
+  if args.isolated_script_test_repeat:
+    cmd_args.append('--pageset-repeat=' + str(args.isolated_script_test_repeat))
+  if args.isolated_script_test_also_run_disabled_tests:
+    cmd_args.append('--also-run-disabled-tests')
+  cmd_args.append('--output-dir=' + tempfile_dir)
+  cmd_args.append('--output-format=json-test-results')
+  cmd = [sys.executable] + cmd_args
   rc = 1  # Set default returncode in case there is an exception.
   try:
-    cmd = [sys.executable] + cmd_args + [
-      '--output-dir', tempfile_dir,
-      '--output-format=json-test-results',
-    ]
     if args.xvfb:
       rc = xvfb.run_executable(cmd, env=env, stdoutfile=stdoutfile)
     else:
