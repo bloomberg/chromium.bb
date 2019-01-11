@@ -137,6 +137,7 @@ import org.chromium.chrome.browser.tasks.TasksUma;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -1503,6 +1504,12 @@ public class ChromeTabbedActivity
                     // causes the toolbar color to change (if necessary) based on whether or not
                     // we're in incognito mode.
                     setStatusBarColor(null, Color.BLACK);
+                } else {
+                    // When opening a new Incognito Tab from a normal Tab (or vice versa), the
+                    // status bar color is updated. However, this update is triggered after the
+                    // animation, so we update here for the duration of the new Tab animation.
+                    setStatusBarColor(null, ColorUtils.getDefaultThemeColor(
+                            getResources(), newModel.isIncognito()));
                 }
             }
 
@@ -2264,19 +2271,13 @@ public class ChromeTabbedActivity
         if (!ChromeFeatureList.isInitialized()
                 || (!ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
                            && !DeviceClassManager.enableAccessibilityLayout())) {
-            super.setStatusBarColor(tab,
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color));
+            super.setStatusBarColor(tab, ColorUtils.getDefaultThemeColor(getResources(), false));
             return;
         }
 
-        if (mTabModelSelectorImpl != null && mTabModelSelectorImpl.isIncognitoSelected()) {
-            super.setStatusBarColor(tab,
-                    ApiCompatibilityUtils.getColor(
-                            getResources(), R.color.incognito_modern_primary_color));
-        } else {
-            super.setStatusBarColor(tab,
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color));
-        }
+        boolean incognito =
+                mTabModelSelectorImpl != null && mTabModelSelectorImpl.isIncognitoSelected();
+        super.setStatusBarColor(tab, ColorUtils.getDefaultThemeColor(getResources(), incognito));
     }
 
     @Override
