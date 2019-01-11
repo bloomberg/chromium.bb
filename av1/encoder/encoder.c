@@ -5085,6 +5085,139 @@ static int setup_interp_filter_search_mask(AV1_COMP *cpi) {
   return mask;
 }
 
+static int is_integer_mv(AV1_COMP *cpi, const YV12_BUFFER_CONFIG *cur_picture,
+                         const YV12_BUFFER_CONFIG *last_picture,
+                         hash_table *last_hash_table) {
+  aom_clear_system_state();
+  // check use hash ME
+  int k;
+  uint32_t hash_value_1;
+  uint32_t hash_value_2;
+
+  const int block_size = 8;
+  const double threshold_current = 0.8;
+  const double threshold_average = 0.95;
+  const int max_history_size = 32;
+  int T = 0;  // total block
+  int C = 0;  // match with collocated block
+  int S = 0;  // smooth region but not match with collocated block
+  int M = 0;  // match with other block
+
+  const int pic_width = cur_picture->y_width;
+  const int pic_height = cur_picture->y_height;
+  for (int i = 0; i + block_size <= pic_height; i += block_size) {
+    for (int j = 0; j + block_size <= pic_width; j += block_size) {
+      const int x_pos = j;
+      const int y_pos = i;
+      int match = 1;
+      T++;
+
+      // check whether collocated block match with current
+      uint8_t *p_cur = cur_picture->y_buffer;
+      uint8_t *p_ref = last_picture->y_buffer;
+      int stride_cur = cur_picture->y_stride;
+      int stride_ref = last_picture->y_stride;
+      p_cur += (y_pos * stride_cur + x_pos);
+      p_ref += (y_pos * stride_ref + x_pos);
+
+      if (cur_picture->flags & YV12_FLAG_HIGHBITDEPTH) {
+        uint16_t *p16_cur = CONVERT_TO_SHORTPTR(p_cur);
+        uint16_t *p16_ref = CONVERT_TO_SHORTPTR(p_ref);
+        for (int tmpY = 0; tmpY < block_size && match; tmpY++) {
+          for (int tmpX = 0; tmpX < block_size && match; tmpX++) {
+            if (p16_cur[tmpX] != p16_ref[tmpX]) {
+              match = 0;
+            }
+          }
+          p16_cur += stride_cur;
+          p16_ref += stride_ref;
+        }
+      } else {
+        for (int tmpY = 0; tmpY < block_size && match; tmpY++) {
+          for (int tmpX = 0; tmpX < block_size && match; tmpX++) {
+            if (p_cur[tmpX] != p_ref[tmpX]) {
+              match = 0;
+            }
+          }
+          p_cur += stride_cur;
+          p_ref += stride_ref;
+        }
+      }
+
+      if (match) {
+        C++;
+        continue;
+      }
+
+      if (av1_hash_is_horizontal_perfect(cur_picture, block_size, x_pos,
+                                         y_pos) ||
+          av1_hash_is_vertical_perfect(cur_picture, block_size, x_pos, y_pos)) {
+        S++;
+        continue;
+      }
+
+      av1_get_block_hash_value(
+          cur_picture->y_buffer + y_pos * stride_cur + x_pos, stride_cur,
+          block_size, &hash_value_1, &hash_value_2,
+          (cur_picture->flags & YV12_FLAG_HIGHBITDEPTH), &cpi->td.mb);
+      // Hashing does not work for highbitdepth currently.
+      // TODO(Roger): Make it work for highbitdepth.
+      if (av1_use_hash_me(&cpi->common)) {
+        if (av1_has_exact_match(last_hash_table, hash_value_1, hash_value_2)) {
+          M++;
+        }
+      }
+    }
+  }
+
+  assert(T > 0);
+  double csm_rate = ((double)(C + S + M)) / ((double)(T));
+  double m_rate = ((double)(M)) / ((double)(T));
+
+  cpi->csm_rate_array[cpi->rate_index] = csm_rate;
+  cpi->m_rate_array[cpi->rate_index] = m_rate;
+
+  cpi->rate_index = (cpi->rate_index + 1) % max_history_size;
+  cpi->rate_size++;
+  cpi->rate_size = AOMMIN(cpi->rate_size, max_history_size);
+
+  if (csm_rate < threshold_current) {
+    return 0;
+  }
+
+  if (C == T) {
+    return 1;
+  }
+
+  double csm_average = 0.0;
+  double m_average = 0.0;
+
+  for (k = 0; k < cpi->rate_size; k++) {
+    csm_average += cpi->csm_rate_array[k];
+    m_average += cpi->m_rate_array[k];
+  }
+  csm_average /= cpi->rate_size;
+  m_average /= cpi->rate_size;
+
+  if (csm_average < threshold_average) {
+    return 0;
+  }
+
+  if (M > (T - C - S) / 3) {
+    return 1;
+  }
+
+  if (csm_rate > 0.99 && m_rate > 0.01) {
+    return 1;
+  }
+
+  if (csm_average + m_average > 1.01) {
+    return 1;
+  }
+
+  return 0;
+}
+
 static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
                                      unsigned int *frame_flags) {
   AV1_COMMON *const cm = &cpi->common;
@@ -5092,8 +5225,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   CurrentFrame *const current_frame = &cm->current_frame;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   struct segmentation *const seg = &cm->seg;
-
-  aom_clear_system_state();
 
   // frame type has been decided outside of this function call
   cm->cur_frame->frame_type = current_frame->frame_type;
@@ -5186,6 +5317,26 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     ++current_frame->frame_number;
 
     return AOM_CODEC_OK;
+  }
+
+  // Work out whether to force_integer_mv this frame
+  if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools &&
+      !frame_is_intra_only(cm)) {
+    if (cpi->common.seq_params.force_integer_mv == 2) {
+      // Adaptive mode: see what previous frame encoded did
+      if (cpi->unscaled_last_source != NULL) {
+        cm->cur_frame_force_integer_mv =
+            is_integer_mv(cpi, cpi->source, cpi->unscaled_last_source,
+                          cpi->previous_hash_table);
+      } else {
+        cpi->common.cur_frame_force_integer_mv = 0;
+      }
+    } else {
+      cpi->common.cur_frame_force_integer_mv =
+          cpi->common.seq_params.force_integer_mv;
+    }
+  } else {
+    cpi->common.cur_frame_force_integer_mv = 0;
   }
 
   // Set default state for segment based loop filter update flags.
@@ -5410,6 +5561,11 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     *frame_flags = cpi->frame_flags | FRAMEFLAGS_KEY;
   } else {
     *frame_flags = cpi->frame_flags & ~FRAMEFLAGS_KEY;
+  }
+
+  // Store encoded frame's hash table for is_integer_mv() next time
+  if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools) {
+    cpi->previous_hash_table = &cm->cur_frame->hash_table;
   }
 
   // Clear the one shot update flags for segmentation map and mode/ref loop
@@ -5872,139 +6028,6 @@ static void compute_internal_stats(AV1_COMP *cpi, int frame_bytes) {
   }
 }
 #endif  // CONFIG_INTERNAL_STATS
-
-static int is_integer_mv(AV1_COMP *cpi, const YV12_BUFFER_CONFIG *cur_picture,
-                         const YV12_BUFFER_CONFIG *last_picture,
-                         hash_table *last_hash_table) {
-  aom_clear_system_state();
-  // check use hash ME
-  int k;
-  uint32_t hash_value_1;
-  uint32_t hash_value_2;
-
-  const int block_size = 8;
-  const double threshold_current = 0.8;
-  const double threshold_average = 0.95;
-  const int max_history_size = 32;
-  int T = 0;  // total block
-  int C = 0;  // match with collocated block
-  int S = 0;  // smooth region but not match with collocated block
-  int M = 0;  // match with other block
-
-  const int pic_width = cur_picture->y_width;
-  const int pic_height = cur_picture->y_height;
-  for (int i = 0; i + block_size <= pic_height; i += block_size) {
-    for (int j = 0; j + block_size <= pic_width; j += block_size) {
-      const int x_pos = j;
-      const int y_pos = i;
-      int match = 1;
-      T++;
-
-      // check whether collocated block match with current
-      uint8_t *p_cur = cur_picture->y_buffer;
-      uint8_t *p_ref = last_picture->y_buffer;
-      int stride_cur = cur_picture->y_stride;
-      int stride_ref = last_picture->y_stride;
-      p_cur += (y_pos * stride_cur + x_pos);
-      p_ref += (y_pos * stride_ref + x_pos);
-
-      if (cur_picture->flags & YV12_FLAG_HIGHBITDEPTH) {
-        uint16_t *p16_cur = CONVERT_TO_SHORTPTR(p_cur);
-        uint16_t *p16_ref = CONVERT_TO_SHORTPTR(p_ref);
-        for (int tmpY = 0; tmpY < block_size && match; tmpY++) {
-          for (int tmpX = 0; tmpX < block_size && match; tmpX++) {
-            if (p16_cur[tmpX] != p16_ref[tmpX]) {
-              match = 0;
-            }
-          }
-          p16_cur += stride_cur;
-          p16_ref += stride_ref;
-        }
-      } else {
-        for (int tmpY = 0; tmpY < block_size && match; tmpY++) {
-          for (int tmpX = 0; tmpX < block_size && match; tmpX++) {
-            if (p_cur[tmpX] != p_ref[tmpX]) {
-              match = 0;
-            }
-          }
-          p_cur += stride_cur;
-          p_ref += stride_ref;
-        }
-      }
-
-      if (match) {
-        C++;
-        continue;
-      }
-
-      if (av1_hash_is_horizontal_perfect(cur_picture, block_size, x_pos,
-                                         y_pos) ||
-          av1_hash_is_vertical_perfect(cur_picture, block_size, x_pos, y_pos)) {
-        S++;
-        continue;
-      }
-
-      av1_get_block_hash_value(
-          cur_picture->y_buffer + y_pos * stride_cur + x_pos, stride_cur,
-          block_size, &hash_value_1, &hash_value_2,
-          (cur_picture->flags & YV12_FLAG_HIGHBITDEPTH), &cpi->td.mb);
-      // Hashing does not work for highbitdepth currently.
-      // TODO(Roger): Make it work for highbitdepth.
-      if (av1_use_hash_me(&cpi->common)) {
-        if (av1_has_exact_match(last_hash_table, hash_value_1, hash_value_2)) {
-          M++;
-        }
-      }
-    }
-  }
-
-  assert(T > 0);
-  double csm_rate = ((double)(C + S + M)) / ((double)(T));
-  double m_rate = ((double)(M)) / ((double)(T));
-
-  cpi->csm_rate_array[cpi->rate_index] = csm_rate;
-  cpi->m_rate_array[cpi->rate_index] = m_rate;
-
-  cpi->rate_index = (cpi->rate_index + 1) % max_history_size;
-  cpi->rate_size++;
-  cpi->rate_size = AOMMIN(cpi->rate_size, max_history_size);
-
-  if (csm_rate < threshold_current) {
-    return 0;
-  }
-
-  if (C == T) {
-    return 1;
-  }
-
-  double csm_average = 0.0;
-  double m_average = 0.0;
-
-  for (k = 0; k < cpi->rate_size; k++) {
-    csm_average += cpi->csm_rate_array[k];
-    m_average += cpi->m_rate_array[k];
-  }
-  csm_average /= cpi->rate_size;
-  m_average /= cpi->rate_size;
-
-  if (csm_average < threshold_average) {
-    return 0;
-  }
-
-  if (M > (T - C - S) / 3) {
-    return 1;
-  }
-
-  if (csm_rate > 0.99 && m_rate > 0.01) {
-    return 1;
-  }
-
-  if (csm_average + m_average > 1.01) {
-    return 1;
-  }
-
-  return 0;
-}
 
 // Code for temporal dependency model
 typedef struct GF_PICTURE {
@@ -6891,24 +6914,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     cpi->common.current_frame_id = -1;
   }
 
-  if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools &&
-      !frame_is_intra_only(cm)) {
-    if (cpi->common.seq_params.force_integer_mv == 2) {
-      struct lookahead_entry *previous_entry =
-          av1_lookahead_peek(cpi->lookahead, cpi->previous_index);
-      if (!previous_entry)
-        cpi->common.cur_frame_force_integer_mv = 0;
-      else
-        cpi->common.cur_frame_force_integer_mv = is_integer_mv(
-            cpi, cpi->source, &previous_entry->img, cpi->previous_hash_table);
-    } else {
-      cpi->common.cur_frame_force_integer_mv =
-          cpi->common.seq_params.force_integer_mv;
-    }
-  } else {
-    cpi->common.cur_frame_force_integer_mv = 0;
-  }
-
   if (cpi->twopass.gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
     set_frame_size(cpi, cm->width, cm->height);
     setup_tpl_stats(cpi);
@@ -6924,23 +6929,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     // One pass encode
     if (Pass0Encode(cpi, size, dest, frame_flags) != AOM_CODEC_OK)
       return AOM_CODEC_ERROR;
-  }
-  if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools) {
-    cpi->previous_hash_table = &cm->cur_frame->hash_table;
-    {
-      int l;
-      for (l = -MAX_PRE_FRAMES; l < cpi->lookahead->max_sz; l++) {
-        if ((cpi->lookahead->buf + l) == source) {
-          cpi->previous_index = l;
-          break;
-        }
-      }
-
-      if (l == cpi->lookahead->max_sz) {
-        aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
-                           "Failed to find last frame original buffer");
-      }
-    }
   }
 
   if (!cm->large_scale_tile) {
