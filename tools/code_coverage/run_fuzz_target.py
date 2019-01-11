@@ -197,6 +197,7 @@ def Main():
   start_time = time.time()
   _RunFuzzTarget(args.fuzzer, fuzzer_name, args.output_dir, corpus_dir,
                  args.timeout)
+  end_time = time.time()
   shutil.rmtree(corpus_dir)
 
   if args.isolated_script_test_output:
@@ -204,18 +205,24 @@ def Main():
     # on src/testing/scripts/common.
     with open(args.isolated_script_test_output, 'w') as f:
       json.dump({
-          fuzzer_name: {
-              'expected': 'PASS',
-              'actual': 'PASS',
-          },
+          'version': 3,
           'interrupted': False,
           'path_delimiter': '.',
-          'version': 3,
-          'seconds_since_epoch': start_time,
+          'seconds_since_epoch': int(start_time),
           'num_failures_by_type': {
               'FAIL': 0,
               'PASS': 1
           },
+          'num_regressions': 0,
+          'tests': {
+            fuzzer_name: {
+                'expected': 'PASS',
+                'actual': 'PASS',
+                'times': [
+                    int(end_time - start_time),
+                ]
+            },
+          }
       }, f)
 
   return 0
