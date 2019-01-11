@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SAFE_BROWSING_SERVICES_DELEGATE_H_
 
 #include <memory>
+#include <string>
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/safe_browsing/incident_reporting/delayed_analysis_callback.h"
@@ -122,6 +123,8 @@ class ServicesDelegate {
   virtual void CreateTelemetryService(Profile* profile) = 0;
   virtual void RemoveTelemetryService() = 0;
   virtual TelemetryService* GetTelemetryService() const = 0;
+
+  virtual std::string GetSafetyNetId() const = 0;
 };
 
 }  // namespace safe_browsing

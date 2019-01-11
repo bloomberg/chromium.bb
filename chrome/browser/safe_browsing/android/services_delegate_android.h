@@ -53,6 +53,8 @@ class ServicesDelegateAndroid : public ServicesDelegate {
   void RemoveTelemetryService() override;
   TelemetryService* GetTelemetryService() const override;
 
+  std::string GetSafetyNetId() const override;
+
   SafeBrowsingService* const safe_browsing_service_;
 
   // The telemetry service tied to the current profile.
