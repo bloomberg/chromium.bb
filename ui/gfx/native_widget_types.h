@@ -207,7 +207,9 @@ typedef id NativeViewAccessible;
 #if defined(USE_X11)
 typedef AtkObject* NativeViewAccessible;
 #else
-typedef void* NativeViewAccessible;
+typedef struct _UnimplementedNativeViewAccessible
+    UnimplementedNativeViewAccessible;
+typedef UnimplementedNativeViewAccessible* NativeViewAccessible;
 #endif
 #endif
 

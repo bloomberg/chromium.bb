@@ -1128,6 +1128,12 @@ test("content_browsertests") {
       "//services/service_manager/zygote",
       "//ui/gfx:test_support",
     ]
+
+    if (use_atk) {
+      sources +=
+          [ "../browser/accessibility/accessibility_auralinux_browsertest.cc" ]
+      configs += [ "//build/config/linux/atk" ]
+    }
   }
 
   if (is_android) {

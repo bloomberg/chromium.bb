@@ -79,6 +79,8 @@ NativeViewHostAura::~NativeViewHostAura() {
     host_->native_view()->RemoveObserver(this);
     host_->native_view()->ClearProperty(views::kHostViewKey);
     host_->native_view()->ClearProperty(aura::client::kHostWindowKey);
+    host_->native_view()->ClearProperty(
+        aura::client::kParentNativeViewAccessibleKey);
     clipping_window_->ClearProperty(views::kHostViewKey);
     if (host_->native_view()->parent() == clipping_window_.get())
       clipping_window_->RemoveChild(host_->native_view());
@@ -94,10 +96,17 @@ void NativeViewHostAura::AttachNativeView() {
   host_->native_view()->AddObserver(this);
   host_->native_view()->SetProperty(views::kHostViewKey,
       static_cast<View*>(host_));
+
   original_transform_ = host_->native_view()->transform();
   original_transform_changed_ = false;
   AddClippingWindow();
   InstallMask();
+}
+
+void NativeViewHostAura::SetParentAccessible(
+    gfx::NativeViewAccessible accessible) {
+  host_->native_view()->SetProperty(
+      aura::client::kParentNativeViewAccessibleKey, accessible);
 }
 
 void NativeViewHostAura::NativeViewDetaching(bool destroyed) {
@@ -114,6 +123,8 @@ void NativeViewHostAura::NativeViewDetaching(bool destroyed) {
     host_->native_view()->RemoveObserver(this);
     host_->native_view()->ClearProperty(views::kHostViewKey);
     host_->native_view()->ClearProperty(aura::client::kHostWindowKey);
+    host_->native_view()->ClearProperty(
+        aura::client::kParentNativeViewAccessibleKey);
     if (original_transform_changed_)
       host_->native_view()->SetTransform(original_transform_);
     host_->native_view()->Hide();

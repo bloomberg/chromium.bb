@@ -49,6 +49,10 @@ void NativeViewHost::Detach() {
   Detach(false);
 }
 
+void NativeViewHost::SetParentAccessible(gfx::NativeViewAccessible accessible) {
+  native_wrapper_->SetParentAccessible(accessible);
+}
+
 bool NativeViewHost::SetCornerRadius(int corner_radius) {
   return SetCustomMask(views::Painter::CreatePaintedLayer(
       views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,

@@ -269,6 +269,8 @@ void NativeViewHostMac::SetVisible(bool visible) {
   [native_view_ setHidden:!visible];
 }
 
+void NativeViewHostMac::SetParentAccessible(gfx::NativeViewAccessible) {}
+
 // static
 NativeViewHostWrapper* NativeViewHostWrapper::CreateWrapper(
     NativeViewHost* host) {
