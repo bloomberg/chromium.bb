@@ -204,15 +204,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
 // Tests that selecting "Open Image in New Tab" from the context menu properly
 // opens the image in a new background tab.
-// TODO(crbug.com/817810): Enable this test.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testOpenImageInNewTabFromContextMenu \
-  testOpenImageInNewTabFromContextMenu
-#else
-#define MAYBE_testOpenImageInNewTabFromContextMenu \
-  FLAKY_testOpenImageInNewTabFromContextMenu
-#endif
-- (void)MAYBE_testOpenImageInNewTabFromContextMenu {
+- (void)testOpenImageInNewTabFromContextMenu {
   const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
   [ChromeEarlGrey loadURL:pageURL];
   [ChromeEarlGrey waitForWebViewContainingText:kLogoPageText];
@@ -231,13 +223,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 }
 
 // Tests "Open in New Tab" on context menu.
-// TODO(crbug.com/817810): Enable this test.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testContextMenuOpenInNewTab testContextMenuOpenInNewTab
-#else
-#define MAYBE_testContextMenuOpenInNewTab FLAKY_testContextMenuOpenInNewTab
-#endif
-- (void)MAYBE_testContextMenuOpenInNewTab {
+- (void)testContextMenuOpenInNewTab {
   const GURL initialURL = self.testServer->GetURL(kInitialPageUrl);
   [ChromeEarlGrey loadURL:initialURL];
   [ChromeEarlGrey waitForWebViewContainingText:kInitialPageDestinationLinkText];
@@ -256,14 +242,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 }
 
 // Tests that the context menu is displayed for an image url.
-// TODO(crbug.com/817810): Enable this test.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testContextMenuDisplayedOnImage testContextMenuDisplayedOnImage
-#else
-#define MAYBE_testContextMenuDisplayedOnImage \
-  FLAKY_testContextMenuDisplayedOnImage
-#endif
-- (void)MAYBE_testContextMenuDisplayedOnImage {
+- (void)testContextMenuDisplayedOnImage {
   const GURL imageURL = self.testServer->GetURL(kLogoPageImageSourcePath);
   [ChromeEarlGrey loadURL:imageURL];
 
