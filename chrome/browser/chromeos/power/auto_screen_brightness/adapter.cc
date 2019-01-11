@@ -20,9 +20,6 @@ namespace chromeos {
 namespace power {
 namespace auto_screen_brightness {
 
-constexpr base::TimeDelta Adapter::kAmbientLightShortHorizon;
-constexpr int Adapter::kNumberAmbientValuesToTrack;
-
 Adapter::Adapter(Profile* profile,
                  AlsReader* als_reader,
                  BrightnessMonitor* brightness_monitor,
@@ -76,9 +73,9 @@ void Adapter::OnAmbientLightUpdated(int lux) {
 
   latest_als_time_ = now;
 
-  ambient_light_values_.SaveToBuffer({lux, now});
+  ambient_light_values_->SaveToBuffer({lux, now});
 
-  MaybeAdjustBrightness();
+  MaybeAdjustBrightness(now);
 }
 
 void Adapter::OnAlsReaderInitialized(AlsReader::AlsInitStatus status) {
@@ -169,8 +166,9 @@ base::Optional<MonotoneCubicSpline> Adapter::GetPersonalCurveForTesting()
   return personal_curve_;
 }
 
-double Adapter::GetAverageAmbientForTesting() const {
-  return AverageAmbient(ambient_light_values_, -1);
+base::Optional<double> Adapter::GetAverageAmbientForTesting(
+    base::TimeTicks now) {
+  return ambient_light_values_->AverageAmbient(now);
 }
 
 double Adapter::GetBrighteningThresholdForTesting() const {
@@ -251,6 +249,22 @@ void Adapter::InitParams() {
     return;
   }
   params_.model_curve = static_cast<ModelCurve>(model_curve);
+
+  const int auto_brightness_als_horizon_seconds =
+      GetFieldTrialParamByFeatureAsInt(
+          features::kAutoScreenBrightness,
+          "auto_brightness_als_horizon_seconds",
+          params_.auto_brightness_als_horizon.InSeconds());
+
+  if (auto_brightness_als_horizon_seconds <= 0) {
+    adapter_status_ = Status::kDisabled;
+    LogParameterError(ParameterError::kAdapterError);
+    return;
+  }
+  params_.auto_brightness_als_horizon =
+      base::TimeDelta::FromSeconds(auto_brightness_als_horizon_seconds);
+  ambient_light_values_ = std::make_unique<AmbientLightSampleBuffer>(
+      params_.auto_brightness_als_horizon);
 }
 
 void Adapter::OnPowerManagerServiceAvailable(bool service_is_ready) {
@@ -314,7 +328,8 @@ bool Adapter::CanAdjustBrightness(double current_average_ambient) const {
 
   if (latest_brightness_change_time_.is_null()) {
     // Brightness hasn't been changed before.
-    return latest_als_time_ - first_als_time_ >= kAmbientLightShortHorizon ||
+    return latest_als_time_ - first_als_time_ >=
+               params_.auto_brightness_als_horizon ||
            params_.update_brightness_on_startup;
   }
 
@@ -334,8 +349,13 @@ bool Adapter::CanAdjustBrightness(double current_average_ambient) const {
          current_average_ambient < *darkening_lux_threshold_;
 }
 
-void Adapter::MaybeAdjustBrightness() {
-  const double average_ambient_lux = AverageAmbient(ambient_light_values_, -1);
+void Adapter::MaybeAdjustBrightness(base::TimeTicks now) {
+  const base::Optional<double> average_ambient_lux_opt =
+      ambient_light_values_->AverageAmbient(now);
+  if (!average_ambient_lux_opt)
+    return;
+
+  const double average_ambient_lux = average_ambient_lux_opt.value();
 
   if (!CanAdjustBrightness(average_ambient_lux))
     return;

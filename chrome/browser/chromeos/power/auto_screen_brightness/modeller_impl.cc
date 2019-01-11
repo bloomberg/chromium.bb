@@ -123,9 +123,6 @@ bool SetInitialCurves(Trainer* trainer,
 
 }  // namespace
 
-constexpr int ModellerImpl::kAmbientLightHorizonSeconds;
-constexpr base::TimeDelta ModellerImpl::kAmbientLightHorizon;
-constexpr int ModellerImpl::kNumberAmbientValuesToTrack;
 constexpr char ModellerImpl::kModelDir[];
 constexpr char ModellerImpl::kCurveFileName[];
 
@@ -168,8 +165,7 @@ void ModellerImpl::OnAmbientLightUpdated(int lux) {
   if (is_modeller_enabled_.has_value() && !*is_modeller_enabled_)
     return;
 
-  const AmbientLightSample sample = {lux, tick_clock_->NowTicks()};
-  ambient_light_values_.SaveToBuffer(sample);
+  ambient_light_values_->SaveToBuffer({lux, tick_clock_->NowTicks()});
 }
 
 void ModellerImpl::OnAlsReaderInitialized(AlsReader::AlsInitStatus status) {
@@ -195,14 +191,16 @@ void ModellerImpl::OnUserBrightnessChanged(double old_brightness_percent,
   if (is_modeller_enabled_.has_value() && !*is_modeller_enabled_)
     return;
 
+  const base::TimeTicks now = tick_clock_->NowTicks();
   // We don't add any training data if there is no ambient light sample.
-  if (ambient_light_values_.CurrentIndex() == 0)
+  const base::Optional<double> average_ambient_lux_opt =
+      ambient_light_values_->AverageAmbient(now);
+  if (!average_ambient_lux_opt)
     return;
 
-  const double average_ambient_lux = AverageAmbient(ambient_light_values_, -1);
+  const double average_ambient_lux = average_ambient_lux_opt.value();
   data_cache_.push_back({old_brightness_percent, new_brightness_percent,
-                         ConvertToLog(average_ambient_lux),
-                         tick_clock_->NowTicks()});
+                         ConvertToLog(average_ambient_lux), now});
 
   ScheduleTrainerStart();
 }
@@ -230,9 +228,10 @@ std::unique_ptr<ModellerImpl> ModellerImpl::CreateForTesting(
       true /* is_testing */));
 }
 
-double ModellerImpl::AverageAmbientForTesting() const {
+base::Optional<double> ModellerImpl::AverageAmbientForTesting(
+    base::TimeTicks now) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return AverageAmbient(ambient_light_values_, -1);
+  return ambient_light_values_->AverageAmbient(now);
 }
 
 size_t ModellerImpl::NumberTrainingDataPointsForTesting() const {
@@ -310,6 +309,17 @@ ModellerImpl::ModellerImpl(
     is_modeller_enabled_ = false;
     return;
   }
+
+  // Default is to average over past 10 seconds.
+  const int model_als_horizon_seconds = GetFieldTrialParamByFeatureAsInt(
+      features::kAutoScreenBrightness, "model_als_horizon_seconds", 10);
+
+  if (model_als_horizon_seconds <= 0) {
+    is_modeller_enabled_ = false;
+    return;
+  }
+  ambient_light_values_ = std::make_unique<AmbientLightSampleBuffer>(
+      base::TimeDelta::FromSeconds(model_als_horizon_seconds));
 
   als_reader_observer_.Add(als_reader);
   brightness_monitor_observer_.Add(brightness_monitor);
