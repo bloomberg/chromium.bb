@@ -80,19 +80,19 @@ public class DownloadActivityV2Test {
     @Before
     public void setUp() throws Exception {
         // TODO(yliuyliu): Write a new StubbedOfflineContentProvider for new Download UI testing.
-        StubbedProvider stubbdedProvider = new StubbedProvider();
+        StubbedProvider stubbedProvider = new StubbedProvider();
         OfflineContentAggregatorFactory.setOfflineContentProviderForTests(
-                stubbdedProvider.getOfflineContentProvider());
+                stubbedProvider.getOfflineContentProvider());
 
         OfflineItem item0 = StubbedProvider.createOfflineItem(0, "20151019 07:26");
         OfflineItem item1 = StubbedProvider.createOfflineItem(1, "20151020 07:27");
         OfflineItem item2 = StubbedProvider.createOfflineItem(2, "20151021 07:28");
         OfflineItem item3 = StubbedProvider.createOfflineItem(3, "20151021 07:29");
 
-        stubbdedProvider.getOfflineContentProvider().items.add(item0);
-        stubbdedProvider.getOfflineContentProvider().items.add(item1);
-        stubbdedProvider.getOfflineContentProvider().items.add(item2);
-        stubbdedProvider.getOfflineContentProvider().items.add(item3);
+        stubbedProvider.getOfflineContentProvider().items.add(item0);
+        stubbedProvider.getOfflineContentProvider().items.add(item1);
+        stubbedProvider.getOfflineContentProvider().items.add(item2);
+        stubbedProvider.getOfflineContentProvider().items.add(item3);
 
         TrackerFactory.setTrackerForTests(mTracker);
 
