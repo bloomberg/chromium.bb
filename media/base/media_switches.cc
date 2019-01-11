@@ -419,7 +419,7 @@ const base::Feature kMediaFoundationH264Encoding{
 
 // Enables MediaFoundation based video capture
 const base::Feature kMediaFoundationVideoCapture{
-    "MediaFoundationVideoCapture", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MediaFoundationVideoCapture", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables DirectShow GetPhotoState implementation
 // Created to act as a kill switch by disabling it, in the case of the
