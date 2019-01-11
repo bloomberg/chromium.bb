@@ -459,7 +459,13 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("checkCutDisabledForReadOnlyFolderInTree").EnableDriveFs(),
         TestCase("checkPasteEnabledForReadWriteFolderInTree").EnableDriveFs(),
         TestCase("checkPasteDisabledForReadOnlyFolderInTree").EnableDriveFs(),
-        TestCase("checkContextMenuForTeamDriveRoot").EnableDriveFs()));
+        TestCase("checkContextMenuForTeamDriveRoot").EnableDriveFs(),
+        TestCase("checkDownloadsContextMenu"),
+        TestCase("checkDownloadsContextMenu").EnableMyFilesVolume(),
+        TestCase("checkPlayFilesContextMenu"),
+        TestCase("checkPlayFilesContextMenu").EnableMyFilesVolume(),
+        TestCase("checkLinuxFilesContextMenu"),
+        TestCase("checkLinuxFilesContextMenu").EnableMyFilesVolume()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Delete, /* delete.js */

@@ -599,3 +599,72 @@ testcase.checkContextMenuForTeamDriveRoot = function() {
     'new-folder': true
   });
 };
+
+/**
+ * Checks that mutating context menu items are not present for a root within
+ * My files.
+ */
+async function checkMyFilesRootItemContextMenu(itemName) {
+  // Open FilesApp on Downloads.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
+
+  // Navigate to My files.
+  await remoteCall.waitAndClickElement(appId, '#breadcrumb-path-0');
+
+  // Wait for the navigation to complete.
+  const expectedRows = [
+    ['Downloads', '--', 'Folder'],
+    ['Play files', '--', 'Folder'],
+    ['Linux files', '--', 'Folder'],
+  ];
+  await remoteCall.waitForFiles(
+      appId, expectedRows,
+      {ignoreFileSize: true, ignoreLastModifiedTime: true});
+
+  // Select the item.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('selectFile', appId, [itemName]));
+
+  // Wait for the file to be selected.
+  await remoteCall.waitForElement(appId, '.table-row[selected]');
+
+  // Right-click the selected file.
+  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
+      'fakeMouseRightClick', appId, ['.table-row[selected]']));
+
+  // Wait for the context menu to appear.
+  await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
+
+  // Check that the commands are neither visible nor enabled.
+  for (const commandId
+           of ['delete', 'copy', 'cut', 'zip-selection', 'rename']) {
+    let query = `#file-context-menu:not([hidden]) [command="#${
+        commandId}"][disabled][hidden]`;
+    await remoteCall.waitForElement(appId, query);
+  }
+}
+
+/**
+ * Check that mutating context menu items are not shown for Downloads within My
+ * files.
+ */
+testcase.checkDownloadsContextMenu = function() {
+  return checkMyFilesRootItemContextMenu('Downloads');
+};
+
+/**
+ * Check that mutating context menu items are not shown for Play files within My
+ * files.
+ */
+testcase.checkPlayFilesContextMenu = function() {
+  return checkMyFilesRootItemContextMenu('Play files');
+};
+
+/**
+ * Check that mutating context menu items are not shown for Linux files within
+ * My files.
+ */
+testcase.checkLinuxFilesContextMenu = function() {
+  return checkMyFilesRootItemContextMenu('Linux files');
+};

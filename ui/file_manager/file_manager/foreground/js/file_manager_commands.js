@@ -259,7 +259,7 @@ CommandUtil.isRootEntry = function(volumeManager, entry) {
   }
 
   var volumeInfo = volumeManager.getVolumeInfo(entry);
-  return !!volumeInfo && volumeInfo.displayRoot === entry;
+  return !!volumeInfo && util.isSameEntry(volumeInfo.displayRoot, entry);
 };
 
 /**
@@ -285,7 +285,19 @@ CommandUtil.shouldShowMenuItemsForEntry = function(volumeManager, entry) {
   }
 
   // If the entry is not a valid entry, hide context menu entries.
-  if (!volumeManager || !volumeManager.getVolumeInfo(entry)) {
+  if (!volumeManager) {
+    return false;
+  }
+
+  const volumeInfo = volumeManager.getVolumeInfo(entry);
+  if (!volumeInfo) {
+    return false;
+  }
+
+  // If the file is /Downloads within My files, hide context menu entries.
+  if (util.isMyFilesVolumeEnabled() &&
+      volumeInfo.volumeType === VolumeManagerCommon.RootType.DOWNLOADS &&
+      entry.fullPath === '/Downloads') {
     return false;
   }
 
@@ -1560,7 +1572,10 @@ CommandHandler.COMMANDS_['zip-selection'] = /** @type {Command} */ ({
    */
   execute: function(event, fileManager) {
     var dirEntry = fileManager.getCurrentDirectoryEntry();
-    if (!dirEntry) {
+    if (!dirEntry ||
+        !fileManager.getSelection().entries.every(
+            CommandUtil.shouldShowMenuItemsForEntry.bind(
+                null, fileManager.volumeManager))) {
       return;
     }
 
@@ -1595,6 +1610,14 @@ CommandHandler.COMMANDS_['zip-selection'] = /** @type {Command} */ ({
     var dirEntry = fileManager.getCurrentDirectoryEntry();
     var selection = fileManager.getSelection();
 
+    if (!selection.entries.every(CommandUtil.shouldShowMenuItemsForEntry.bind(
+            null, fileManager.volumeManager))) {
+      event.canExecute = false;
+      event.command.setHidden(true);
+      return;
+    }
+
+    event.command.setHidden(false);
     var isOnEligibleLocation = CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ ?
         true :
         !fileManager.directoryModel.isOnDrive() &&
