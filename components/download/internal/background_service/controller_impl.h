@@ -28,7 +28,7 @@
 #include "components/download/public/background_service/client.h"
 #include "components/download/public/background_service/download_params.h"
 #include "components/download/public/background_service/navigation_monitor.h"
-#include "components/download/public/background_service/task_scheduler.h"
+#include "components/download/public/task/task_scheduler.h"
 
 namespace download {
 

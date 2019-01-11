@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_EMPTY_TASK_SCHEDULER_H_
-#define COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_EMPTY_TASK_SCHEDULER_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_TASK_EMPTY_TASK_SCHEDULER_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_TASK_EMPTY_TASK_SCHEDULER_H_
 
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "components/download/public/background_service/task_scheduler.h"
+#include "components/download/public/task/task_scheduler.h"
 
 namespace download {
 
@@ -33,4 +33,4 @@ class EmptyTaskScheduler : public TaskScheduler {
 
 }  // namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_EMPTY_TASK_SCHEDULER_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_TASK_EMPTY_TASK_SCHEDULER_H_

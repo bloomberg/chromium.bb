@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_PUBLIC_BACKGROUND_SERVICE_TASK_SCHEDULER_H_
-#define COMPONENTS_DOWNLOAD_PUBLIC_BACKGROUND_SERVICE_TASK_SCHEDULER_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_TASK_TASK_SCHEDULER_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_TASK_TASK_SCHEDULER_H_
 
 #include <stdint.h>
 
-#include "components/download/public/background_service/download_task_types.h"
+#include "components/download/public/task/download_task_types.h"
 
 namespace download {
 
@@ -36,4 +36,4 @@ class TaskScheduler {
 
 }  // namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_PUBLIC_BACKGROUND_SERVICE_TASK_SCHEDULER_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_TASK_TASK_SCHEDULER_H_

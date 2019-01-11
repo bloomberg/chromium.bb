@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "components/download/public/background_service/clients.h"
 #include "components/download/public/background_service/download_service.h"
-#include "components/download/public/background_service/download_task_types.h"
+#include "components/download/public/task/download_task_types.h"
 
 namespace download {
 

@@ -13,7 +13,7 @@
 #include "components/download/internal/background_service/entry.h"
 #include "components/download/public/background_service/clients.h"
 #include "components/download/public/background_service/download_params.h"
-#include "components/download/public/background_service/download_task_types.h"
+#include "components/download/public/task/download_task_types.h"
 
 namespace download {
 

@@ -11,7 +11,7 @@
 #include "components/download/internal/background_service/config.h"
 #include "components/download/internal/background_service/entry.h"
 #include "components/download/internal/background_service/scheduler/device_status.h"
-#include "components/download/public/background_service/task_scheduler.h"
+#include "components/download/public/task/task_scheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
