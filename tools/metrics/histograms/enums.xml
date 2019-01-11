@@ -21243,6 +21243,7 @@ Called by update_net_error_codes.py.-->
   <int value="2726" label="BadgeSet"/>
   <int value="2727" label="BadgeClear"/>
   <int value="2728" label="ElementTimingExplicitlyRequested"/>
+  <int value="2729" label="V8HTMLMediaElement_CaptureStream_Method"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
