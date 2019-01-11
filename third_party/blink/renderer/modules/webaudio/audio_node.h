@@ -28,8 +28,10 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "base/synchronization/atomic_flag.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/webaudio/delete_soon_with_graph_lock.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -50,6 +52,8 @@ class AudioNodeOutput;
 class AudioParam;
 class DeferredTaskHandler;
 class ExceptionState;
+
+struct AudioHandlerTraits;
 
 // An AudioNode is the basic building block for handling audio within an
 // BaseAudioContext.  It may be an audio source, an intermediate processing
@@ -73,7 +77,13 @@ class ExceptionState;
 // Be careful to avoid reference cycles. If an AudioHandler has a reference
 // cycle including the owner AudioNode, objects in the cycle are never
 // collected.
-class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
+//
+// Due to AudioHandlerTraits, AudioHandler is not deleted immediately upon
+// losing its last reference. This is required since its last reference may be
+// dropped during Oilpan finalization on the main thread, but the graph lock is
+// required to perform handler teardown. See also delete_soon_with_graph_lock.h.
+class MODULES_EXPORT AudioHandler
+    : public ThreadSafeRefCounted<AudioHandler, AudioHandlerTraits> {
  public:
   enum NodeType {
     kNodeTypeUnknown = 0,
@@ -119,7 +129,9 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   // rendering thread, and inside dispose().  We must not call context() in the
   // destructor.
   virtual BaseAudioContext* Context() const;
-  void ClearContext() { context_ = nullptr; }
+
+  // Explicitly drop the pointer to the BaseAudioContext (during finalization).
+  void ClearContext();
 
   DeferredTaskHandler& GetDeferredTaskHandler() const {
     return *deferred_task_handler_;
@@ -267,17 +279,19 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
  private:
   void SetNodeType(NodeType);
 
+  // Returns true if the object has no remaining references, and is now
+  // scheduled for deletion. At this point it is no longer safe to take any new
+  // references to the object to extend its lifetime.
+  bool IsDoomed() { return !HasAtLeastOneRef(); }
+
   bool is_initialized_;
   NodeType node_type_;
 
   // The owner AudioNode. Accessed only on the main thread.
   const WeakPersistent<AudioNode> node_;
 
-  // This untraced member is safe because this is cleared for all of live
-  // AudioHandlers when the BaseAudioContext dies.  Do not access m_context
-  // directly, use context() instead.
-  // See http://crbug.com/404527 for the detail.
-  UntracedMember<BaseAudioContext> context_;
+  // Accessed on multiple threads.
+  CrossThreadWeakPersistent<BaseAudioContext> context_;
 
   // Legal to access even when |context_| may be gone, such as during the
   // destructor.
@@ -315,6 +329,12 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   // The new channel interpretation that will be used to set the actual
   // intepretation in the pre or post rendering phase.
   AudioBus::ChannelInterpretation new_channel_interpretation_;
+};
+
+struct AudioHandlerTraits {
+  static void Destruct(const AudioHandler* handler) {
+    DeleteSoonWithGraphLock(handler);
+  }
 };
 
 class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {
