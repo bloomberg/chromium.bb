@@ -487,10 +487,12 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
     }
   }
 
+  if (FragmentAnchor* anchor = frame_view->GetFragmentAnchor())
+    anchor->DidScroll(scroll_type);
+
   if (IsExplicitScrollType(scroll_type)) {
     if (scroll_type != kCompositorScroll)
       ShowOverlayScrollbars();
-    frame_view->ClearFragmentAnchor();
     GetScrollAnchor()->Clear();
   }
 
