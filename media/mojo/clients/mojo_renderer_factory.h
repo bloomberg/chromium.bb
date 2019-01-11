@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "media/base/media_log.h"
 #include "media/base/renderer_factory.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
@@ -22,13 +21,24 @@ namespace media {
 class GpuVideoAcceleratorFactories;
 
 // The default factory class for creating MojoRenderer.
+//
+// The MojoRenderer should be thought of as a pure communication layer between
+// media::Pipeline and a media::Renderer in a different process.
+//
+// Implementors of new media::Renderer types are encouraged to create small
+// wrapper factories that use MRF, rather than creating derived MojoRenderer
+// types, or extending MRF. See DecryptingRendererFactory and
+// MediaPlayerRendererClientFactory for examples of small wrappers around MRF.
+//
+// NOTE: MediaPlayerRendererClientFactory uses MojoRenderer specific methods,
+//       and uses a static_cast<MojoRenderer*> internally. |this| should
+//       never return anything but a MojoRenderer. See crbug.com/919494.
 class MojoRendererFactory : public RendererFactory {
  public:
   using GetGpuFactoriesCB = base::Callback<GpuVideoAcceleratorFactories*()>;
   using GetTypeSpecificIdCB = base::Callback<std::string()>;
 
-  MojoRendererFactory(media::MediaLog* media_log,
-                      mojom::HostedRendererType type,
+  MojoRendererFactory(mojom::HostedRendererType type,
                       const GetGpuFactoriesCB& get_gpu_factories_cb,
                       media::mojom::InterfaceFactory* interface_factory);
 
@@ -52,8 +62,6 @@ class MojoRendererFactory : public RendererFactory {
 
  private:
   mojom::RendererPtr GetRendererPtr();
-
-  media::MediaLog* const media_log_;
 
   GetGpuFactoriesCB get_gpu_factories_cb_;
   GetTypeSpecificIdCB get_type_specific_id_;

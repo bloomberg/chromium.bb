@@ -48,16 +48,12 @@ void DecryptingRenderer::Initialize(MediaResource* media_resource,
   DCHECK(media_resource);
   DCHECK(client);
 
+  // Using |this| with a MediaResource::Type::URL will result in a crash.
+  DCHECK_EQ(media_resource->GetType(), MediaResource::Type::STREAM);
+
   media_resource_ = media_resource;
   client_ = client;
   init_cb_ = std::move(init_cb);
-
-  // Using a DecryptingMediaResource when our MediaResource has a URL type will
-  // result in a crash.
-  if (media_resource_->GetType() == MediaResource::URL) {
-    InitializeRenderer(true);
-    return;
-  }
 
   bool has_encrypted_stream = HasEncryptedStream();
 
@@ -165,8 +161,8 @@ void DecryptingRenderer::InitializeRenderer(bool success) {
     return;
   }
 
-  // |decrypting_media_resource_| is null when |media_resource_| has a URL type
-  // or when |cdm_context_| is null and there are no encrypted streams.
+  // |decrypting_media_resource_| when |cdm_context_| is null and there are no
+  // encrypted streams.
   MediaResource* const maybe_decrypting_media_resource =
       decrypting_media_resource_ ? decrypting_media_resource_.get()
                                  : media_resource_;
