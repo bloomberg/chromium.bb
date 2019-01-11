@@ -101,7 +101,7 @@ Do not attempt to write your own canonicalizer.
 
     * Omit default ports (80 for http, 443 for https).
 
-    * If in a space-constrained environment, it's acceptable to use registrable domain instead of the full origin. (e.g., [AMP for CCT](https://docs.google.com/presentation/d/1SNAvoQdXvQsYJAdMJbdCaRvzP3fUYKS87dknrHDV4xU/edit#slide=id.p))
+    * If in a space-constrained environment, it's acceptable to use registrable domain instead of the full origin.
 
 ### Eliding URLs
 
