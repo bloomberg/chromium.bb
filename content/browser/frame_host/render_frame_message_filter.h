@@ -101,14 +101,11 @@ class CONTENT_EXPORT RenderFrameMessageFilter
   void InitializeCookieManager(
       network::mojom::CookieManagerRequest cookie_manager_request);
 
-  // |new_render_frame_id|, |document_interface_broker_content_handle|,
-  // |document_interface_broker_blink_handle| and |devtools_frame_token| are out
-  // parameters. Browser process defines them for the renderer process.
+  // |params_reply| is an out parameter. Browser process defines it for the
+  // renderer process.
   void OnCreateChildFrame(
       const FrameHostMsg_CreateChildFrame_Params& params,
-      int* new_render_frame_id,
-      FrameHostMsg_CreateChildFrame_Params_Reply* params_reply,
-      base::UnguessableToken* devtools_frame_token);
+      FrameHostMsg_CreateChildFrame_Params_Reply* params_reply);
   void OnCookiesEnabled(int render_frame_id,
                         const GURL& url,
                         const GURL& site_for_cookies,
