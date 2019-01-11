@@ -40,10 +40,11 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver,
              GlobalFetch::ScopedFetcher* fetcher, TimeTicks start_time,
-             CacheStorage* _, mojom::blink::OpenResultPtr result) {
+             CacheStorage*, mojom::blink::OpenResultPtr result) {
             if (!resolver->GetExecutionContext() ||
-                resolver->GetExecutionContext()->IsContextDestroyed())
+                resolver->GetExecutionContext()->IsContextDestroyed()) {
               return;
+            }
             if (result->is_status()) {
               switch (result->get_status()) {
                 case mojom::blink::CacheStorageError::kErrorNotFound:
@@ -58,8 +59,11 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
             } else {
               UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Open",
                                   TimeTicks::Now() - start_time);
+              // See https://bit.ly/2S0zRAS for task types.
               resolver->Resolve(
-                  Cache::Create(fetcher, std::move(result->get_cache())));
+                  Cache::Create(fetcher, std::move(result->get_cache()),
+                                resolver->GetExecutionContext()->GetTaskRunner(
+                                    blink::TaskType::kMiscPlatformAPI)));
             }
           },
           WrapPersistent(resolver), WrapPersistent(scoped_fetcher_.Get()),
@@ -237,19 +241,23 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
 CacheStorage::CacheStorage(ExecutionContext* context,
                            GlobalFetch::ScopedFetcher* fetcher)
     : scoped_fetcher_(fetcher) {
+  // See https://bit.ly/2S0zRAS for task types.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      context->GetTaskRunner(blink::TaskType::kMiscPlatformAPI);
+
   // Service workers may already have a CacheStoragePtr provided as an
   // optimization.
   if (auto* service_worker = DynamicTo<ServiceWorkerGlobalScope>(context)) {
     mojom::blink::CacheStoragePtrInfo info = service_worker->TakeCacheStorage();
     if (info) {
       cache_storage_ptr_ = RevocableInterfacePtr<mojom::blink::CacheStorage>(
-          std::move(info), context->GetInterfaceInvalidator());
+          std::move(info), context->GetInterfaceInvalidator(), task_runner);
       return;
     }
   }
 
-  context->GetInterfaceProvider()->GetInterface(
-      MakeRequest(&cache_storage_ptr_, context->GetInterfaceInvalidator()));
+  context->GetInterfaceProvider()->GetInterface(MakeRequest(
+      &cache_storage_ptr_, context->GetInterfaceInvalidator(), task_runner));
 }
 
 CacheStorage::~CacheStorage() = default;

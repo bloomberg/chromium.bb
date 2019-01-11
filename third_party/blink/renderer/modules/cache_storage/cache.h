@@ -32,10 +32,12 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
 
  public:
   static Cache* Create(GlobalFetch::ScopedFetcher*,
-                       mojom::blink::CacheStorageCacheAssociatedPtrInfo);
+                       mojom::blink::CacheStorageCacheAssociatedPtrInfo,
+                       scoped_refptr<base::SingleThreadTaskRunner>);
 
   Cache(GlobalFetch::ScopedFetcher*,
-        mojom::blink::CacheStorageCacheAssociatedPtrInfo);
+        mojom::blink::CacheStorageCacheAssociatedPtrInfo,
+        scoped_refptr<base::SingleThreadTaskRunner>);
 
   // From Cache.idl:
   ScriptPromise match(ScriptState*,

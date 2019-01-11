@@ -443,8 +443,10 @@ class Cache::CodeCacheHandleCallbackForPut final
 
 Cache* Cache::Create(
     GlobalFetch::ScopedFetcher* fetcher,
-    mojom::blink::CacheStorageCacheAssociatedPtrInfo cache_ptr_info) {
-  return MakeGarbageCollected<Cache>(fetcher, std::move(cache_ptr_info));
+    mojom::blink::CacheStorageCacheAssociatedPtrInfo cache_ptr_info,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  return MakeGarbageCollected<Cache>(fetcher, std::move(cache_ptr_info),
+                                     std::move(task_runner));
 }
 
 ScriptPromise Cache::match(ScriptState* script_state,
@@ -578,9 +580,10 @@ mojom::blink::QueryParamsPtr Cache::ToQueryParams(
 }
 
 Cache::Cache(GlobalFetch::ScopedFetcher* fetcher,
-             mojom::blink::CacheStorageCacheAssociatedPtrInfo cache_ptr_info)
+             mojom::blink::CacheStorageCacheAssociatedPtrInfo cache_ptr_info,
+             scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : scoped_fetcher_(fetcher) {
-  cache_ptr_.Bind(std::move(cache_ptr_info));
+  cache_ptr_.Bind(std::move(cache_ptr_info), std::move(task_runner));
 }
 
 void Cache::Trace(blink::Visitor* visitor) {

@@ -14,6 +14,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
@@ -269,7 +270,9 @@ class CacheStorageTest : public PageTestBase {
     binding_ = std::make_unique<
         mojo::AssociatedBinding<mojom::blink::CacheStorageCache>>(
         cache_.get(), std::move(request));
-    return Cache::Create(fetcher, cache_ptr.PassInterface());
+    return Cache::Create(
+        fetcher, cache_ptr.PassInterface(),
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
   ErrorCacheForTests* test_cache() { return cache_.get(); }
