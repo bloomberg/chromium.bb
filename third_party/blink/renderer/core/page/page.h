@@ -49,6 +49,7 @@ namespace blink {
 class AutoscrollController;
 class BrowserControls;
 class ChromeClient;
+class ConsoleMessageStorage;
 class ContextMenuController;
 class Document;
 class DragCaret;
@@ -69,7 +70,7 @@ class ScrollingCoordinator;
 class ScrollbarTheme;
 class SecurityOrigin;
 class Settings;
-class ConsoleMessageStorage;
+class SpatialNavigationController;
 class TopDocumentRootScrollerController;
 class ValidationMessageClient;
 class VisualViewport;
@@ -169,6 +170,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   DragCaret& GetDragCaret() const { return *drag_caret_; }
   DragController& GetDragController() const { return *drag_controller_; }
   FocusController& GetFocusController() const { return *focus_controller_; }
+  SpatialNavigationController& GetSpatialNavigationController();
   ContextMenuController& GetContextMenuController() const {
     return *context_menu_controller_;
   }
@@ -352,6 +354,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   const Member<VisualViewport> visual_viewport_;
   const Member<OverscrollController> overscroll_controller_;
   const Member<LinkHighlights> link_highlights_;
+  Member<SpatialNavigationController> spatial_navigation_controller_;
 
   Member<PluginData> plugin_data_;
 
