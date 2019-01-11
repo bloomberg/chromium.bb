@@ -84,6 +84,17 @@ content::OpenURLParams MakeOpenURLParams(content::NavigationHandle* handle,
   content::OpenURLParams url_params(
       url, handle->GetReferrer(), WindowOpenDisposition::CURRENT_TAB,
       handle->GetPageTransition(), handle->IsRendererInitiated());
+  // crbug.com/916892: When a client redirect occurs on a site before the page
+  // has finished loading, it is not considered a new NavigationEntry and so
+  // clicking "Back" on the redirected page returns to the previous loaded page.
+  // However, all browser-initiated navigations are assumed to be new
+  // NavigationEntries (see NavigationControllerImpl::NavigateWithoutEntry). So
+  // if the canceled navigation was a client redirect, and there is a previous
+  // entry to go to, set |should_replace_current_entry|.
+  url_params.should_replace_current_entry =
+      (handle->GetPageTransition() & ui::PAGE_TRANSITION_CLIENT_REDIRECT) &&
+      handle->IsRendererInitiated() &&
+      handle->GetWebContents()->GetController().GetLastCommittedEntry();
   url_params.extra_headers = headers;
   url_params.redirect_chain = handle->GetRedirectChain();
   url_params.frame_tree_node_id = handle->GetFrameTreeNodeId();
