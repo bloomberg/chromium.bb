@@ -12,12 +12,17 @@
 @protocol ApplicationCommands;
 @protocol UrlLoader;
 
+class WebStateList;
+
 // Coordinator that presents Recent Tabs.
 @interface RecentTabsCoordinator : ChromeCoordinator
 // The dispatcher for this Coordinator.
 @property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 // URL loader being managed by this Coordinator.
 @property(nonatomic, weak) id<UrlLoader> loader;
+// WebStateList managed by this Coordinator.
+@property(nonatomic, assign) WebStateList* webStateList;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_RECENT_TABS_RECENT_TABS_COORDINATOR_H_

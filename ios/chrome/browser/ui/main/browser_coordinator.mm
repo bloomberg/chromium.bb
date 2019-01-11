@@ -358,6 +358,7 @@
                     browserState:self.browserState];
   self.recentTabsCoordinator.loader = self.viewController;
   self.recentTabsCoordinator.dispatcher = self.applicationCommandHandler;
+  self.recentTabsCoordinator.webStateList = self.tabModel.webStateList;
   [self.recentTabsCoordinator start];
 }
 
