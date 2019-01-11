@@ -27,6 +27,9 @@ const base::Feature kEnableStereoAudioInput{"AssistantEnableStereoAudioInput",
 
 const base::Feature kTimerNotification{"ChromeOSAssistantTimerNotification",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kEnableTextQueriesWithClientDiscourseContext{
+    "AssistantEnableTextQueriesWithClientDiscourseContext",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTimerTicks{"ChromeOSAssistantTimerTicks",
                                 base::FEATURE_DISABLED_BY_DEFAULT};

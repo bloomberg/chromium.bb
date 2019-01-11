@@ -54,6 +54,10 @@ COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsTimerTicksEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsWarmerWelcomeEnabled();
 
+// Enables sending the client discourse context with text queries.
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+extern const base::Feature kEnableTextQueriesWithClientDiscourseContext;
+
 }  // namespace features
 }  // namespace assistant
 }  // namespace chromeos

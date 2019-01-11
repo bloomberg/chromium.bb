@@ -222,8 +222,8 @@ class AssistantManagerServiceImpl
       const std::vector<uint8_t>& assistant_screenshot);
 
   void SendScreenContextRequest(
-      ax::mojom::AssistantExtraPtr assistant_extra,
-      std::unique_ptr<ui::AssistantTree> assistant_tree,
+      ax::mojom::AssistantExtra* assistant_extra,
+      ui::AssistantTree* assistant_tree,
       const std::vector<uint8_t>& assistant_screenshot);
 
   void FillServerExperimentIds(std::vector<std::string>* server_experiment_ids);
