@@ -134,6 +134,14 @@ class TestWindowTree : public ws::mojom::WindowTree {
     return last_transfer_should_cancel_;
   }
 
+  bool last_accepts_drops() const { return last_accepts_drops_; }
+
+  size_t get_and_clear_accepts_drops_count() {
+    const int value = accepts_drops_count_;
+    accepts_drops_count_ = 0u;
+    return value;
+  }
+
  private:
   struct Change {
     WindowTreeChangeType type;
@@ -309,6 +317,9 @@ class TestWindowTree : public ws::mojom::WindowTree {
   ws::Id last_transfer_current_ = 0u;
   ws::Id last_transfer_new_ = 0u;
   bool last_transfer_should_cancel_ = false;
+  bool last_accepts_drops_ = false;
+
+  size_t accepts_drops_count_ = 0u;
 
   // Support only one scheduled embed in test.
   base::UnguessableToken scheduled_embed_;

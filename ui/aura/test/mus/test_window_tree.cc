@@ -194,7 +194,10 @@ void TestWindowTree::SetHitTestInsets(ws::Id window_id,
   last_touch_hit_test_insets_ = touch;
 }
 
-void TestWindowTree::SetCanAcceptDrops(ws::Id window_id, bool accepts_drops) {}
+void TestWindowTree::SetCanAcceptDrops(ws::Id window_id, bool accepts_drops) {
+  last_accepts_drops_ = accepts_drops;
+  ++accepts_drops_count_;
+}
 
 void TestWindowTree::SetWindowVisibility(uint32_t change_id,
                                          ws::Id window_id,
