@@ -76,13 +76,28 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
       return;
     }
 
-    PRINTER_LOG(DEBUG) << printer.make_and_model() << " Resolving IP";
+    // Ensure that |address| is non-empty before attempting to resolve it.
+    // If the uri in |printer| does not contain both a hostname and a port
+    // number then GetHostAndPort() will return an empty string.
+    auto address = printer.GetHostAndPort();
+    if (address.IsEmpty()) {
+      // Return an error and abort printer setup. If we attempt to call
+      // EndpointResolver::Start() with an empty address then it will fail
+      // silently without returning into the callback.
+      PRINTER_LOG(ERROR) << "Address is invalid";
+      std::move(callback).Run(PrinterSetupResult::kPrinterUnreachable);
+      return;
+    }
+
+    PRINTER_LOG(DEBUG) << printer.make_and_model()
+                       << " Resolving IP: " << address.ToString();
+
     // Resolve the uri to an ip with a mutable copy of the printer.
     endpoint_resolver_->Start(
-        printer.GetHostAndPort(),
-        base::BindOnce(
-            &PrinterConfigurerImpl::OnIpResolved, weak_factory_.GetWeakPtr(),
-            std::make_unique<Printer>(printer), std::move(callback)));
+        address, base::BindOnce(&PrinterConfigurerImpl::OnIpResolved,
+                                weak_factory_.GetWeakPtr(),
+                                std::make_unique<Printer>(printer),
+                                std::move(callback)));
   }
 
  private:
