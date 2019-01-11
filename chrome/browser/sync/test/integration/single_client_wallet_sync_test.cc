@@ -1267,8 +1267,17 @@ IN_PROC_BROWSER_TEST_F(
 // 3. Enable Sync-the-feature again -> profile storage.
 // 4. StopAndClear() -> account storage.
 // 5. Enable Sync-the-feature again -> profile storage.
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
-                       SwitchesBetweenAccountAndProfileStorageOnTogglingSync) {
+// Flaky on TSan, see crbug.com/917380.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_SwitchesBetweenAccountAndProfileStorageOnTogglingSync \
+  DISABLED_SwitchesBetweenAccountAndProfileStorageOnTogglingSync
+#else
+#define MAYBE_SwitchesBetweenAccountAndProfileStorageOnTogglingSync \
+  SwitchesBetweenAccountAndProfileStorageOnTogglingSync
+#endif
+IN_PROC_BROWSER_TEST_F(
+    SingleClientWalletSyncTest,
+    MAYBE_SwitchesBetweenAccountAndProfileStorageOnTogglingSync) {
   base::test::ScopedFeatureList features;
   features.InitWithFeatures(
       /*enabled_features=*/{switches::kSyncStandaloneTransport,
