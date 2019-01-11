@@ -137,6 +137,7 @@ void ImagePaintTimingDetector::PopulateTraceValue(
 void ImagePaintTimingDetector::OnLargestImagePaintDetected(
     ImageRecord* largest_image_record) {
   DCHECK(largest_image_record);
+  DCHECK(!largest_image_record->first_paint_time_after_loaded.is_null());
   largest_image_paint_ = largest_image_record;
   std::unique_ptr<TracedValue> value = TracedValue::Create();
   PopulateTraceValue(*value, *largest_image_record,
@@ -150,6 +151,7 @@ void ImagePaintTimingDetector::OnLargestImagePaintDetected(
 void ImagePaintTimingDetector::OnLastImagePaintDetected(
     ImageRecord* last_image_record) {
   DCHECK(last_image_record);
+  DCHECK(!last_image_record->first_paint_time_after_loaded.is_null());
   last_image_paint_ = last_image_record;
   std::unique_ptr<TracedValue> value = TracedValue::Create();
   PopulateTraceValue(*value, *last_image_record,
@@ -170,12 +172,16 @@ void ImagePaintTimingDetector::Analyze() {
   //   result unless it's a new candidate.
   ImageRecord* largest_image_record = FindLargestPaintCandidate();
   bool new_candidate_detected = false;
-  if (largest_image_record && largest_image_record != largest_image_paint_) {
+  if (largest_image_record &&
+      !largest_image_record->first_paint_time_after_loaded.is_null() &&
+      largest_image_record != largest_image_paint_) {
     new_candidate_detected = true;
     OnLargestImagePaintDetected(largest_image_record);
   }
   ImageRecord* last_image_record = FindLastPaintCandidate();
-  if (last_image_record && last_image_record != last_image_paint_) {
+  if (last_image_record &&
+      !last_image_record->first_paint_time_after_loaded.is_null() &&
+      last_image_record != last_image_paint_) {
     new_candidate_detected = true;
     OnLastImagePaintDetected(last_image_record);
   }

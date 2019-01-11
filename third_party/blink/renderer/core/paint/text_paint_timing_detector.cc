@@ -59,7 +59,6 @@ void TextPaintTimingDetector::OnLargestTextDetected(
     const TextRecord& largest_text_record) {
   largest_text_paint_ = largest_text_record.first_paint_time;
   largest_text_paint_size_ = largest_text_record.first_size;
-
   std::unique_ptr<TracedValue> value = TracedValue::Create();
   PopulateTraceValue(*value, largest_text_record,
                      largest_text_candidate_index_max_++);
@@ -90,12 +89,16 @@ void TextPaintTimingDetector::TimerFired(TimerBase* time) {
 void TextPaintTimingDetector::Analyze() {
   TextRecord* largest_text_first_paint = FindLargestPaintCandidate();
   bool new_candidate_detected = false;
+  DCHECK(!largest_text_first_paint ||
+         !largest_text_first_paint->first_paint_time.is_null());
   if (largest_text_first_paint &&
       largest_text_first_paint->first_paint_time != largest_text_paint_) {
     OnLargestTextDetected(*largest_text_first_paint);
     new_candidate_detected = true;
   }
   TextRecord* last_text_first_paint = FindLastPaintCandidate();
+  DCHECK(!last_text_first_paint ||
+         !last_text_first_paint->first_paint_time.is_null());
   if (last_text_first_paint &&
       last_text_first_paint->first_paint_time != last_text_paint_) {
     OnLastTextDetected(*last_text_first_paint);
