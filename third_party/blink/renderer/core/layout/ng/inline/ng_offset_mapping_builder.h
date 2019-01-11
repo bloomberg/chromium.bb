@@ -15,6 +15,7 @@
 namespace blink {
 
 class LayoutObject;
+class NGCaretNavigator;
 
 // This is the helper class for constructing the DOM-to-TextContent offset
 // mapping. It holds an offset mapping, and provides APIs to modify the mapping
@@ -119,7 +120,9 @@ class CORE_EXPORT NGOffsetMappingBuilder {
 
   // Finalize and return the offset mapping.
   // This method can only be called once, as it can invalidate the stored data.
-  NGOffsetMapping Build();
+  // Also moves the passed-in |NGCaretNavigator| into the result
+  // |NGOffsetMapping|.
+  NGOffsetMapping Build(std::unique_ptr<NGCaretNavigator>);
 
  private:
   // Helper function for CollapseTrailingSpace() to maintain unit ranges.
