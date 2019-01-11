@@ -157,6 +157,7 @@ class PLATFORM_EXPORT ResourceLoader final
 
  private:
   friend class SubresourceIntegrityTest;
+  friend class ResourceLoaderIsolatedCodeCacheTest;
   class CodeCacheRequest;
 
   bool ShouldFetchCodeCache();
