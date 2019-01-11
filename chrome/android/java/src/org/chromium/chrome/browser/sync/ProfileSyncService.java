@@ -92,6 +92,8 @@ public class ProfileSyncService {
      */
     private MasterSyncEnabledProvider mMasterSyncEnabledProvider;
 
+    private int mSetupInProgressCounter;
+
     /**
      * Retrieves or creates the ProfileSyncService singleton instance. Returns null if sync is
      * disabled (via flag or variation).
@@ -388,13 +390,48 @@ public class ProfileSyncService {
     }
 
     /**
-     * Notifies sync whether sync setup is in progress - this tells sync whether it should start
-     * syncing data types when it starts up, or if it should just stay in "configuration mode".
-     *
-     * @param inProgress True to put sync in configuration mode, false to turn off configuration
-     *                   and allow syncing.
+     * Instances of this class keep sync paused until {@link #close} is called. Use
+     * {@link ProfileSyncService#getSetupInProgressHandle} to create. Please note that
+     * {@link #close} should be called on every instance of this class.
      */
-    public void setSetupInProgress(boolean inProgress) {
+    public final class SyncSetupInProgressHandle {
+        private boolean mClosed;
+
+        private SyncSetupInProgressHandle() {
+            ThreadUtils.assertOnUiThread();
+            if (++mSetupInProgressCounter == 1) {
+                setSetupInProgress(true);
+            }
+        }
+
+        public void close() {
+            ThreadUtils.assertOnUiThread();
+            if (mClosed) return;
+            mClosed = true;
+
+            assert mSetupInProgressCounter > 0;
+            if (--mSetupInProgressCounter == 0) {
+                setSetupInProgress(false);
+                // The user has finished setting up sync at least once.
+                setFirstSetupComplete();
+            }
+        }
+    }
+
+    /**
+     * Called by the UI to prevent changes in sync settings from taking effect while these settings
+     * are being modified by the user. When sync settings UI is no longer visible,
+     * {@link SyncSetupInProgressHandle#close} has to be invoked for sync settings to be applied.
+     * Sync settings will remain paused as long as there are unclosed objects returned by this
+     * method. Please note that the behavior of SyncSetupInProgressHandle is slightly different from
+     * the equivalent C++ object, as Java instances don't commit sync settings as soon as any
+     * instance of SyncSetupInProgressHandle is closed.
+     */
+    public SyncSetupInProgressHandle getSetupInProgressHandle() {
+        return new SyncSetupInProgressHandle();
+    }
+
+    private void setSetupInProgress(boolean inProgress) {
         nativeSetSetupInProgress(mNativeProfileSyncServiceAndroid, inProgress);
     }
 

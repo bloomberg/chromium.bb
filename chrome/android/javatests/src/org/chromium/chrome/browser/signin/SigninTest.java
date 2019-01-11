@@ -340,11 +340,7 @@ public class SigninTest {
         // Sync doesn't actually start up until we finish the sync setup. This usually happens
         // in the resume of the Main activity, but we forcefully do this here.
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            ProfileSyncService syncService = ProfileSyncService.get();
-            syncService.setFirstSetupComplete();
-            syncService.setSetupInProgress(false);
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.get().setFirstSetupComplete());
         prefActivity.finish();
 
         // Verify that signin succeeded.
