@@ -24,12 +24,14 @@ class CdmContext;
 class DemuxerStream;
 class DecryptingDemuxerStream;
 
-// DecryptingMediaResource is used as a proxy for a MediaResource
-// implementation. This wrapper is only created when the decryptor
-// implementation always supports decrypt-only and will decrypt the streams
-// that it retrieves from the internal MediaResource. These clear streams are
-// then passed downstream, allowing renderer implementations to no longer need
-// to worry about decryption.
+// DecryptingMediaResource is a wrapper for a MediaResource implementation that
+// provides decryption. It should only be created when:
+// - The |media_resource| has type MediaResource::STREAM, and
+// - The |cdm_context| has a Decryptor that always supports decrypt-only.
+// Internally DecryptingDemuxerStreams will be created for all streams in
+// |media_resource| and decrypt them into clear streams. These clear streams are
+// then passed downstream to the rest of the media pipeline, which should no
+// longer need to worry about decryption.
 class MEDIA_EXPORT DecryptingMediaResource : public MediaResource {
  public:
   using InitCB = base::OnceCallback<void(bool success)>;
@@ -44,7 +46,6 @@ class MEDIA_EXPORT DecryptingMediaResource : public MediaResource {
   // MediaResource implementation:
   MediaResource::Type GetType() const override;
   std::vector<DemuxerStream*> GetAllStreams() override;
-  MediaUrlParams GetMediaUrlParams() const override;
 
   void Initialize(InitCB init_cb, WaitingCB waiting_cb_);
 

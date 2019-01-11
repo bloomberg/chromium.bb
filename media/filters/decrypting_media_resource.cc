@@ -40,7 +40,8 @@ DecryptingMediaResource::DecryptingMediaResource(
 DecryptingMediaResource::~DecryptingMediaResource() = default;
 
 MediaResource::Type DecryptingMediaResource::GetType() const {
-  return media_resource_->GetType();
+  DCHECK_EQ(MediaResource::STREAM, media_resource_->GetType());
+  return MediaResource::STREAM;
 }
 
 std::vector<DemuxerStream*> DecryptingMediaResource::GetAllStreams() {
@@ -48,10 +49,6 @@ std::vector<DemuxerStream*> DecryptingMediaResource::GetAllStreams() {
     return streams_;
 
   return media_resource_->GetAllStreams();
-}
-
-MediaUrlParams DecryptingMediaResource::GetMediaUrlParams() const {
-  return media_resource_->GetMediaUrlParams();
 }
 
 void DecryptingMediaResource::Initialize(InitCB init_cb, WaitingCB waiting_cb) {
