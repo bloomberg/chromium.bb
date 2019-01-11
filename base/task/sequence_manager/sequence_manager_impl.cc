@@ -109,13 +109,6 @@ SequenceManagerImpl::SequenceManagerImpl(
       main_thread_only_(associated_thread_,
                         settings.randomised_sampling_enabled),
       weak_factory_(this) {
-  TRACE_EVENT_WARMUP_CATEGORY("sequence_manager");
-  TRACE_EVENT_WARMUP_CATEGORY(TRACE_DISABLED_BY_DEFAULT("sequence_manager"));
-  TRACE_EVENT_WARMUP_CATEGORY(
-      TRACE_DISABLED_BY_DEFAULT("sequence_manager.debug"));
-  TRACE_EVENT_WARMUP_CATEGORY(
-      TRACE_DISABLED_BY_DEFAULT("sequence_manager.verbose_snapshots"));
-
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("sequence_manager"), "SequenceManager", this);
   main_thread_only().selector.SetTaskQueueSelectorObserver(this);

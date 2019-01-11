@@ -153,9 +153,6 @@ TracingSamplerProfiler::TracingSamplerProfiler(
     : sampled_thread_id_(sampled_thread_id) {
   DCHECK_NE(sampled_thread_id_, base::kInvalidThreadId);
 
-  // Make sure tracing system notices profiler category.
-  TRACE_EVENT_WARMUP_CATEGORY(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"));
-
   // If tracing was enabled before initializing this class, we missed the
   // OnTraceLogEnabled() event. Synthesize it so we can late-join the party.
   // If the observer is added after the calling |OnTraceLogEnabled|, there is

@@ -139,8 +139,6 @@ void MemoryDumpManager::Initialize(
   RegisterDumpProvider(JavaHeapDumpProvider::GetInstance(), "JavaHeap",
                        nullptr);
 #endif
-
-  TRACE_EVENT_WARMUP_CATEGORY(kTraceCategory);
 }
 
 void MemoryDumpManager::RegisterDumpProvider(
