@@ -242,13 +242,6 @@ void AccountTrackerService::NotifyAccountUpdated(
     observer.OnAccountUpdated(account_info);
 }
 
-void AccountTrackerService::NotifyAccountImageUpdated(
-    const std::string& account_id,
-    const gfx::Image& image) {
-  for (auto& observer : observer_list_)
-    observer.OnAccountImageUpdated(account_id, image);
-}
-
 void AccountTrackerService::NotifyAccountUpdateFailed(
     const std::string& account_id) {
   for (auto& observer : observer_list_)
@@ -326,9 +319,10 @@ void AccountTrackerService::SetAccountImage(const std::string& account_id,
                                             const gfx::Image& image) {
   if (!base::ContainsKey(accounts_, account_id))
     return;
-  accounts_[account_id].account_image = image;
+  AccountInfo& account_info = accounts_[account_id];
+  account_info.account_image = image;
   SaveAccountImageToDisk(account_id, image);
-  NotifyAccountImageUpdated(account_id, image);
+  NotifyAccountUpdated(account_info);
 }
 
 void AccountTrackerService::SetIsChildAccount(const std::string& account_id,
@@ -455,8 +449,9 @@ void AccountTrackerService::OnAccountImageLoaded(const std::string& account_id,
                                                  gfx::Image image) {
   if (base::ContainsKey(accounts_, account_id) &&
       accounts_[account_id].account_image.IsEmpty()) {
-    accounts_[account_id].account_image = image;
-    NotifyAccountImageUpdated(account_id, image);
+    AccountInfo& account_info = accounts_[account_id];
+    account_info.account_image = image;
+    NotifyAccountUpdated(account_info);
   }
 }
 

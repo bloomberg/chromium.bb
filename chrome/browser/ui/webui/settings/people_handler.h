@@ -143,8 +143,6 @@ class PeopleHandler : public SettingsPageUIHandler,
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // AccountTrackerService::Observer implementation.
   void OnAccountUpdated(const AccountInfo& info) override;
-  void OnAccountImageUpdated(const std::string& account_id,
-                             const gfx::Image& image) override;
   void OnAccountRemoved(const AccountInfo& info) override;
 #endif
 

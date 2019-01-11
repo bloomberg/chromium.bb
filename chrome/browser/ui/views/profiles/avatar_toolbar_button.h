@@ -68,8 +68,7 @@ class AvatarToolbarButton : public ToolbarButton,
 
   // AccountTrackerService::Observer:
   // Needed if the first sync promo account should be displayed.
-  void OnAccountImageUpdated(const std::string& account_id,
-                             const gfx::Image& image) override;
+  void OnAccountUpdated(const AccountInfo& info) override;
   void OnAccountRemoved(const AccountInfo& info) override;
 
   // ui::MaterialDesignControllerObserver:

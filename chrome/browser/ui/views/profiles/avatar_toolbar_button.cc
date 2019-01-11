@@ -225,8 +225,7 @@ void AvatarToolbarButton::OnGaiaAccountsInCookieUpdated(
   UpdateIcon();
 }
 
-void AvatarToolbarButton::OnAccountImageUpdated(const std::string& account_id,
-                                                const gfx::Image& image) {
+void AvatarToolbarButton::OnAccountUpdated(const AccountInfo& info) {
   UpdateIcon();
 }
 

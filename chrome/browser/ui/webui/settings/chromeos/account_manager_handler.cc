@@ -243,12 +243,6 @@ void AccountManagerUIHandler::OnAccountUpdated(const AccountInfo& info) {
   RefreshUI();
 }
 
-void AccountManagerUIHandler::OnAccountImageUpdated(
-    const std::string& account_id,
-    const gfx::Image& image) {
-  RefreshUI();
-}
-
 void AccountManagerUIHandler::OnAccountRemoved(const AccountInfo& account_key) {
 }
 
