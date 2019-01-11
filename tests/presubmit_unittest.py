@@ -1743,6 +1743,38 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(len(results2), 1)
     self.assertEquals(results2[0].__class__, error_type)
 
+  def PythonLongLineTest(self, maxlen, content, should_pass):
+    """Runs a test of Python long-line checking rule.
+
+    Because ContentTest() cannot be used here due to the different code path
+    that the implementation of CheckLongLines() uses for Python files.
+
+    Args:
+      maxlen: Maximum line length for content.
+      content: Python source which is expected to pass or fail the test.
+      should_pass: True iff the test should pass, False otherwise.
+    """
+    change = presubmit.Change('foo1', 'foo1\n', self.fake_root_dir, None, 0, 0,
+                              None)
+    input_api = self.MockInputApi(change, False)
+    affected_file = self.mox.CreateMock(presubmit.GitAffectedFile)
+    input_api.AffectedFiles(
+        include_deletes=False,
+        file_filter=mox.IgnoreArg()).AndReturn([affected_file])
+    affected_file.LocalPath().AndReturn('foo.py')
+    affected_file.LocalPath().AndReturn('foo.py')
+    affected_file.NewContents().AndReturn(content.splitlines())
+
+    self.mox.ReplayAll()
+    results = presubmit_canned_checks.CheckLongLines(
+        input_api, presubmit.OutputApi, maxlen)
+    if should_pass:
+      self.assertEquals(results, [])
+    else:
+      self.assertEquals(len(results), 1)
+      self.assertEquals(results[0].__class__,
+                        presubmit.OutputApi.PresubmitPromptWarning)
+
   def ReadFileTest(self, check, content1, content2, error_type):
     change1 = presubmit.Change(
         'foo1', 'foo1\n', self.fake_root_dir, None, 0, 0, None)
@@ -1934,6 +1966,92 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.ContentTest(check, 'import ' + 'A ' * 150, 'foo.java',
                      'importSomething ' + 'A ' * 50, 'foo.java',
                      presubmit.OutputApi.PresubmitPromptWarning)
+
+  def testCannedCheckPythonLongLines(self):
+    # NOTE: Cannot use ContentTest() here because of the different code path
+    #       used for Python checks in CheckLongLines().
+    passing_cases = [
+        r"""
+01234568901234589012345689012345689
+A short line
+""",
+        r"""
+01234568901234589012345689012345689
+This line is too long but should pass # pylint: disable=line-too-long
+""",
+        r"""
+01234568901234589012345689012345689
+# pylint: disable=line-too-long
+This line is too long but should pass due to global disable
+""",
+        r"""
+01234568901234589012345689012345689
+   #pylint: disable=line-too-long
+This line is too long but should pass due to global disable.
+""",
+        r"""
+01234568901234589012345689012345689
+                       #    pylint: disable=line-too-long
+This line is too long but should pass due to global disable.
+""",
+        r"""
+01234568901234589012345689012345689
+# import is a valid exception
+import some.really.long.package.name.that.should.pass
+""",
+        r"""
+01234568901234589012345689012345689
+# from is a valid exception
+from some.really.long.package.name import passing.line
+""",
+        r"""
+01234568901234589012345689012345689
+                    import some.package
+""",
+        r"""
+01234568901234589012345689012345689
+                    from some.package import stuff
+""",
+    ]
+    for content in passing_cases:
+      self.PythonLongLineTest(40, content, should_pass=True)
+
+    failing_cases = [
+        r"""
+01234568901234589012345689012345689
+This line is definitely too long and should fail.
+""",
+        r"""
+01234568901234589012345689012345689
+# pylint: disable=line-too-long
+This line is too long and should pass due to global disable
+# pylint: enable=line-too-long
+But this line is too long and should still fail now
+""",
+        r"""
+01234568901234589012345689012345689
+# pylint: disable=line-too-long
+This line is too long and should pass due to global disable
+But this line is too long # pylint: enable=line-too-long
+""",
+        r"""
+01234568901234589012345689012345689
+This should fail because the global
+check is enabled on the next line.
+              #         pylint: enable=line-too-long
+""",
+        r"""
+01234568901234589012345689012345689
+# pylint: disable=line-too-long
+                  # pylint: enable-foo-bar should pass
+The following line should fail
+since global directives apply to
+the current line as well!
+                  # pylint: enable-line-too-long should fail
+""",
+    ]
+    for content in failing_cases[0:0]:
+      self.PythonLongLineTest(40, content, should_pass=False)
 
   def testCannedCheckJSLongLines(self):
     check = lambda x, y, _: presubmit_canned_checks.CheckLongLines(x, y, 10)

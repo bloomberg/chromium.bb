@@ -248,7 +248,63 @@ def _ReportErrorFileAndLine(filename, line_num, dummy_line):
   return '%s:%s' % (filename, line_num)
 
 
-def _FindNewViolationsOfRule(callable_rule, input_api, source_file_filter=None,
+def _GenerateAffectedFileExtList(input_api, source_file_filter):
+  """Generate a list of (file, extension) tuples from affected files.
+
+  The result can be fed to _FindNewViolationsOfRule() directly, or
+  could be filtered before doing that.
+
+  Args:
+    input_api: object to enumerate the affected files.
+    source_file_filter: a filter to be passed to the input api.
+  Yields:
+    A list of (file, extension) tuples, where |file| is an affected
+      file, and |extension| its file path extension.
+  """
+  for f in input_api.AffectedFiles(
+      include_deletes=False, file_filter=source_file_filter):
+    extension = str(f.LocalPath()).rsplit('.', 1)[-1]
+    yield (f, extension)
+
+
+def _FindNewViolationsOfRuleForList(callable_rule,
+                                    file_ext_list,
+                                    error_formatter=_ReportErrorFileAndLine):
+  """Find all newly introduced violations of a per-line rule (a callable).
+
+  Prefer calling _FindNewViolationsOfRule() instead of this function, unless
+  the list of affected files need to be filtered in a special way.
+
+  Arguments:
+    callable_rule: a callable taking a file extension and line of input and
+      returning True if the rule is satisfied and False if there was a problem.
+    file_ext_list: a list of input (file, extension) tuples, as returned by
+      _GenerateAffectedFileExtList().
+    error_formatter: a callable taking (filename, line_number, line) and
+      returning a formatted error string.
+
+  Returns:
+    A list of the newly-introduced violations reported by the rule.
+  """
+  errors = []
+  for f, extension in file_ext_list:
+    # For speed, we do two passes, checking first the full file.  Shelling out
+    # to the SCM to determine the changed region can be quite expensive on
+    # Win32.  Assuming that most files will be kept problem-free, we can
+    # skip the SCM operations most of the time.
+    if all(callable_rule(extension, line) for line in f.NewContents()):
+      continue  # No violation found in full text: can skip considering diff.
+
+    for line_num, line in f.ChangedContents():
+      if not callable_rule(extension, line):
+        errors.append(error_formatter(f.LocalPath(), line_num, line))
+
+  return errors
+
+
+def _FindNewViolationsOfRule(callable_rule,
+                             input_api,
+                             source_file_filter=None,
                              error_formatter=_ReportErrorFileAndLine):
   """Find all newly introduced violations of a per-line rule (a callable).
 
@@ -263,22 +319,9 @@ def _FindNewViolationsOfRule(callable_rule, input_api, source_file_filter=None,
   Returns:
     A list of the newly-introduced violations reported by the rule.
   """
-  errors = []
-  for f in input_api.AffectedFiles(include_deletes=False,
-                                   file_filter=source_file_filter):
-    # For speed, we do two passes, checking first the full file.  Shelling out
-    # to the SCM to determine the changed region can be quite expensive on
-    # Win32.  Assuming that most files will be kept problem-free, we can
-    # skip the SCM operations most of the time.
-    extension = str(f.LocalPath()).rsplit('.', 1)[-1]
-    if all(callable_rule(extension, line) for line in f.NewContents()):
-      continue  # No violation found in full text: can skip considering diff.
-
-    for line_num, line in f.ChangedContents():
-      if not callable_rule(extension, line):
-        errors.append(error_formatter(f.LocalPath(), line_num, line))
-
-  return errors
+  return _FindNewViolationsOfRuleForList(
+      callable_rule, _GenerateAffectedFileExtList(
+          input_api, source_file_filter), error_formatter)
 
 
 def CheckChangeHasNoTabs(input_api, output_api, source_file_filter=None):
@@ -385,11 +428,6 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
     if any((url in line) for url in ('file://', 'http://', 'https://')):
       return True
 
-    # If 'line-too-long' is explicitly suppressed for the line, any length is
-    # acceptable.
-    if 'pylint: disable=line-too-long' in line and file_extension == 'py':
-      return True
-
     if line_len > extra_maxlen:
       return False
 
@@ -402,12 +440,64 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
     return input_api.re.match(
         r'.*[A-Za-z][A-Za-z_0-9]{%d,}.*' % long_symbol, line)
 
+  def is_global_pylint_directive(line, pos):
+    """True iff the pylint directive starting at line[pos] is global."""
+    # Any character before |pos| that is not whitespace or '#' indidcates
+    # this is a local directive.
+    return not any([c not in " \t#" for c in line[:pos]])
+
+  def check_python_long_lines(affected_files, error_formatter):
+    errors = []
+    global_check_enabled = True
+
+    for f in affected_files:
+      file_path = f.LocalPath()
+      for idx, line in enumerate(f.NewContents()):
+        line_num = idx + 1
+        line_is_short = no_long_lines(PY_FILE_EXTS[0], line)
+
+        pos = line.find('pylint: disable=line-too-long')
+        if pos >= 0:
+          if is_global_pylint_directive(line, pos):
+            global_check_enabled = False  # Global disable
+          else:
+            continue  # Local disable.
+
+        do_check = global_check_enabled
+
+        pos = line.find('pylint: enable=line-too-long')
+        if pos >= 0:
+          if is_global_pylint_directive(line, pos):
+            global_check_enabled = True  # Global enable
+            do_check = True  # Ensure it applies to current line as well.
+          else:
+            do_check = True  # Local enable
+
+        if do_check and not line_is_short:
+          errors.append(error_formatter(file_path, line_num, line))
+
+    return errors
+
   def format_error(filename, line_num, line):
     return '%s, line %s, %s chars' % (filename, line_num, len(line))
 
-  errors = _FindNewViolationsOfRule(no_long_lines, input_api,
-                                    source_file_filter,
-                                    error_formatter=format_error)
+  file_ext_list = list(
+      _GenerateAffectedFileExtList(input_api, source_file_filter))
+
+  errors = []
+
+  # For non-Python files, a simple line-based rule check is enough.
+  non_py_file_ext_list = [x for x in file_ext_list if x[1] not in PY_FILE_EXTS]
+  if non_py_file_ext_list:
+    errors += _FindNewViolationsOfRuleForList(
+        no_long_lines, non_py_file_ext_list, error_formatter=format_error)
+
+  # However, Python files need more sophisticated checks that need parsing
+  # the whole source file.
+  py_file_list = [x[0] for x in file_ext_list if x[1] in PY_FILE_EXTS]
+  if py_file_list:
+    errors += check_python_long_lines(
+        py_file_list, error_formatter=format_error)
   if errors:
     msg = 'Found lines longer than %s characters (first 5 shown).' % maxlen
     return [output_api.PresubmitPromptWarning(msg, items=errors[:5])]
