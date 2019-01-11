@@ -16,14 +16,63 @@ function describeValue(value) {
   }
 }
 
-async function generateResponse(request) {
+function extractBoundary(request) {
+  const reg = new RegExp('multipart\/form-data; boundary=(.*)');
+  for (var header of request.headers) {
+    if (header[0] == 'content-type') {
+      var regResult = reg.exec(header[1]);
+      if (regResult)
+        return regResult[1];
+    }
+  }
+  return undefined;
+}
+
+async function asFormData(request) {
   const formData = await request.formData();
   const result = {};
   result.entries = [];
   for (var pair of formData.entries()) {
     result.entries.push({key: pair[0], value: describeValue(pair[1])});
   }
-  const resultString = JSON.stringify(result);
+  return JSON.stringify(result);
+}
+
+async function asText(request) {
+  const boundary = extractBoundary(request);
+  if (!boundary)
+    throw 'error: no boundary found';
+
+  const text = await request.text();
+  return JSON.stringify({
+    boundary: boundary,
+    body: text
+  });
+}
+
+async function asBlob(request) {
+  const boundary = extractBoundary(request);
+  if (!boundary)
+    throw 'error: no boundary found';
+
+  const blob = await request.blob();
+  return JSON.stringify({
+    boundary: boundary,
+    bodySize: blob.size
+  });
+}
+
+async function generateResponse(request) {
+  const url = new URL(request.url);
+  const getAs = url.searchParams.get('getAs');
+  let resultString;
+  if (getAs == 'formData')
+    resultString = await asFormData(request);
+  else if (getAs == 'blob')
+    resultString = await asBlob(request)
+  else
+    resultString = await asText(request);
+
   const body = String.raw`
     <!doctype html>
     <html>
