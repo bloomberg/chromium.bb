@@ -4,7 +4,7 @@
 
 #include "ash/wm/workspace/workspace_event_handler.h"
 
-#include "ash/touch/touch_uma.h"
+#include "ash/public/cpp/touch_uma.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -87,14 +87,14 @@ void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     return;
 
   if (event->details().tap_count() != 2) {
-    TouchUMA::GetInstance()->RecordGestureAction(GESTURE_FRAMEVIEW_TAP);
+    TouchUMA::RecordGestureAction(GESTURE_FRAMEVIEW_TAP);
     return;
   }
 
   if (click_component_ == previous_target_component) {
     base::RecordAction(
         base::UserMetricsAction("Caption_GestureTogglesMaximize"));
-    TouchUMA::GetInstance()->RecordGestureAction(GESTURE_MAXIMIZE_DOUBLETAP);
+    TouchUMA::RecordGestureAction(GESTURE_MAXIMIZE_DOUBLETAP);
     const wm::WMEvent wm_event(wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION);
     wm::GetWindowState(target)->OnWMEvent(&wm_event);
     event->StopPropagation();
