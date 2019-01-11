@@ -78,19 +78,15 @@ class AutofillWalletMetadataSyncBridge
   // AutofillWebDataServiceObserverOnDBSequence implementation.
   void AutofillProfileChanged(const AutofillProfileChange& change) override;
   void CreditCardChanged(const CreditCardChange& change) override;
-  void AutofillMultipleChanged() override;
 
  private:
-  // Syncs up an updated entity |entity_after_change| (if needed).
-  void SyncUpUpdatedEntity(
-      std::unique_ptr<syncer::EntityData> entity_after_change);
-
   // Returns the table associated with the |web_data_backend_|.
   AutofillTable* GetAutofillTable();
 
-  // Synchronously load sync metadata from the autofill table and pass it to the
-  // processor so that it can start tracking changes.
-  void LoadMetadata();
+  // Synchronously load the sync data into |cache_| and sync metadata from the
+  // autofill table and pass the latter to the processor so that it can start
+  // tracking changes.
+  void LoadDataCacheAndMetadata();
 
   // Reads local wallet metadata from the database and passes them into
   // |callback|. If |storage_keys_set| is not set, it returns all data entries.
@@ -99,12 +95,21 @@ class AutofillWalletMetadataSyncBridge
       base::Optional<std::unordered_set<std::string>> storage_keys_set,
       DataCallback callback);
 
+  // Reacts to a local |change| of an entry of type |type|.
+  template <class DataType>
+  void LocalMetadataChanged(sync_pb::WalletMetadataSpecifics::Type type,
+                            AutofillDataModelChange<DataType> change);
+
   // AutofillWalletMetadataSyncBridge is owned by |web_data_backend_| through
   // SupportsUserData, so it's guaranteed to outlive |this|.
   AutofillWebDataBackend* const web_data_backend_;
 
   ScopedObserver<AutofillWebDataBackend, AutofillWalletMetadataSyncBridge>
       scoped_observer_;
+
+  // Cache of the local data that allows figuring out the diff for local
+  // changes; keyed by storage keys.
+  std::map<std::string, AutofillMetadata> cache_;
 
   // Indicates whether we should rely on wallet data being actively synced. If
   // true, the bridge will prune metadata entries without corresponding wallet

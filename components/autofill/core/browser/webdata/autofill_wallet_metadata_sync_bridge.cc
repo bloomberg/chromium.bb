@@ -55,16 +55,36 @@ std::string GetSpecificsIdForMetadataId(const std::string& metadata_id) {
 // Returns the wallet metadata specifics storage key for the specified |type|
 // and |metadata_id|.
 std::string GetStorageKeyForWalletMetadataTypeAndId(
-    sync_pb::WalletMetadataSpecifics::Type type,
+    WalletMetadataSpecifics::Type type,
     const std::string& metadata_id) {
   return GetStorageKeyForWalletMetadataTypeAndSpecificsId(
       type, GetSpecificsIdForMetadataId(metadata_id));
 }
 
+struct TypeAndMetadataId {
+  WalletMetadataSpecifics::Type type;
+  std::string metadata_id;
+};
+
+TypeAndMetadataId ParseWalletMetadataStorageKey(
+    const std::string& storage_key) {
+  TypeAndMetadataId parsed;
+
+  base::Pickle pickle(storage_key.data(), storage_key.size());
+  base::PickleIterator iterator(pickle);
+  int type_int;
+  if (!iterator.ReadInt(&type_int) ||
+      !iterator.ReadString(&parsed.metadata_id)) {
+    NOTREACHED() << "Unsupported storage_key provided " << storage_key;
+  }
+  parsed.type = static_cast<WalletMetadataSpecifics::Type>(type_int);
+  return parsed;
+}
+
 // Returns EntityData for wallet_metadata for |local_metadata| and |type|.
 std::unique_ptr<EntityData> CreateEntityDataFromAutofillMetadata(
-    const AutofillMetadata& local_metadata,
-    WalletMetadataSpecifics::Type type) {
+    WalletMetadataSpecifics::Type type,
+    const AutofillMetadata& local_metadata) {
   auto entity_data = std::make_unique<EntityData>();
   std::string specifics_id = GetSpecificsIdForMetadataId(local_metadata.id);
   entity_data->non_unique_name = GetClientTagForSpecificsId(type, specifics_id);
@@ -97,18 +117,71 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillMetadata(
   return entity_data;
 }
 
-// Returns EntityData for wallet_metadata for |local_profile|.
-std::unique_ptr<EntityData> CreateMetadataEntityDataFromAutofillServerProfile(
-    const AutofillProfile& local_profile) {
-  return CreateEntityDataFromAutofillMetadata(local_profile.GetMetadata(),
-                                              WalletMetadataSpecifics::ADDRESS);
+// Metadata is worth updating if its value is "newer" then before; here "newer"
+// is the ordering of legal state transitions that metadata can take that is
+// defined below.
+bool IsMetadataWorthUpdating(AutofillMetadata existing_entry,
+                             AutofillMetadata new_entry) {
+  if (existing_entry.use_count < new_entry.use_count &&
+      existing_entry.use_date < new_entry.use_date) {
+    return true;
+  }
+  // For the following type-specific fields, we don't have to distinguish the
+  // type of metadata as both entries must be of the same type and therefore
+  // irrelevant values are default, thus equal.
+
+  // It is only legal to move from non-converted to converted. Do not accept
+  // the other transition.
+  if (!existing_entry.has_converted && new_entry.has_converted) {
+    return true;
+  }
+  if (existing_entry.billing_address_id != new_entry.billing_address_id) {
+    return true;
+  }
+  return false;
 }
 
-// Returns EntityData for wallet_metadata for |local_card|.
-std::unique_ptr<EntityData> CreateMetadataEntityDataFromCard(
-    const CreditCard& local_card) {
-  return CreateEntityDataFromAutofillMetadata(local_card.GetMetadata(),
-                                              WalletMetadataSpecifics::CARD);
+bool AddServerMetadata(AutofillTable* table,
+                       WalletMetadataSpecifics::Type type,
+                       const AutofillMetadata& metadata) {
+  switch (type) {
+    case WalletMetadataSpecifics::ADDRESS:
+      return table->AddServerAddressMetadata(metadata);
+    case WalletMetadataSpecifics::CARD:
+      return table->AddServerCardMetadata(metadata);
+    case WalletMetadataSpecifics::UNKNOWN:
+      NOTREACHED();
+      return false;
+  }
+}
+
+bool RemoveServerMetadata(AutofillTable* table,
+                          WalletMetadataSpecifics::Type type,
+                          const std::string& id) {
+  switch (type) {
+    case WalletMetadataSpecifics::ADDRESS:
+      return table->RemoveServerAddressMetadata(id);
+    case WalletMetadataSpecifics::CARD:
+      return table->RemoveServerCardMetadata(id);
+    case WalletMetadataSpecifics::UNKNOWN:
+      NOTREACHED();
+      return false;
+  }
+}
+
+bool UpdateServerMetadata(AutofillTable* table,
+                          WalletMetadataSpecifics::Type type,
+                          const AutofillMetadata& metadata) {
+  // TODO: Create UpdateServerAddressMetadata() that takes metadata as arg.
+  switch (type) {
+    case WalletMetadataSpecifics::ADDRESS:
+      return table->UpdateServerAddressMetadata(metadata);
+    case WalletMetadataSpecifics::CARD:
+      return table->UpdateServerCardMetadata(metadata);
+    case WalletMetadataSpecifics::UNKNOWN:
+      NOTREACHED();
+      return false;
+  }
 }
 
 }  // namespace
@@ -147,7 +220,7 @@ AutofillWalletMetadataSyncBridge::AutofillWalletMetadataSyncBridge(
   DCHECK(web_data_backend_);
   scoped_observer_.Add(web_data_backend_);
 
-  LoadMetadata();
+  LoadDataCacheAndMetadata();
 }
 
 AutofillWalletMetadataSyncBridge::~AutofillWalletMetadataSyncBridge() {}
@@ -211,58 +284,49 @@ std::string AutofillWalletMetadataSyncBridge::GetStorageKey(
 
 void AutofillWalletMetadataSyncBridge::AutofillProfileChanged(
     const AutofillProfileChange& change) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  const AutofillProfile* changed = change.data_model();
-  if (!changed || changed->record_type() != AutofillProfile::SERVER_PROFILE) {
+  // Skip local profiles (if possible, i.e. if it is not a deletion where
+  // data_model() is not set).
+  if (change.data_model() &&
+      change.data_model()->record_type() != AutofillProfile::SERVER_PROFILE) {
     return;
   }
-
-  // The only legal change on a server profile is that its use count or use date
-  // or has-converted status gets updated. Other changes (adding, deleting) are
-  // only done by the AutofillWalletSyncBridge and result only in the
-  // AutofillMultipleChanged() notification.
-  DCHECK(change.type() == AutofillProfileChange::UPDATE);
-  SyncUpUpdatedEntity(
-      CreateMetadataEntityDataFromAutofillServerProfile(*changed));
+  LocalMetadataChanged(WalletMetadataSpecifics::ADDRESS, change);
 }
 
 void AutofillWalletMetadataSyncBridge::CreditCardChanged(
     const CreditCardChange& change) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  const CreditCard* changed = change.data_model();
-  if (!changed || changed->record_type() == CreditCard::LOCAL_CARD) {
-    return;
-  }
-
-  // The only legal change on a server card is that its use count or use date or
-  // billing address id gets updated. Other changes (adding, deleting) are only
-  // done by the AutofillWalletSyncBridge and result only in the
-  // AutofillMultipleChanged() notification.
-  DCHECK(change.type() == CreditCardChange::UPDATE);
-  SyncUpUpdatedEntity(CreateMetadataEntityDataFromCard(*changed));
-}
-
-void AutofillWalletMetadataSyncBridge::AutofillMultipleChanged() {
-  NOTIMPLEMENTED();
-}
-
-void AutofillWalletMetadataSyncBridge::SyncUpUpdatedEntity(
-    std::unique_ptr<EntityData> entity_after_change) {
-  NOTIMPLEMENTED();
+  LocalMetadataChanged(WalletMetadataSpecifics::CARD, change);
 }
 
 AutofillTable* AutofillWalletMetadataSyncBridge::GetAutofillTable() {
   return AutofillTable::FromWebDatabase(web_data_backend_->GetDatabase());
 }
 
-void AutofillWalletMetadataSyncBridge::LoadMetadata() {
+void AutofillWalletMetadataSyncBridge::LoadDataCacheAndMetadata() {
   if (!web_data_backend_ || !web_data_backend_->GetDatabase() ||
       !GetAutofillTable()) {
     change_processor()->ReportError(
         {FROM_HERE, "Failed to load AutofillWebDatabase."});
     return;
+  }
+
+  // Load the data cache (both addresses and cards into the same cache, the keys
+  // in the cache never overlap).
+  std::map<std::string, AutofillMetadata> addresses_metadata;
+  std::map<std::string, AutofillMetadata> cards_metadata;
+  if (!GetAutofillTable()->GetServerAddressesMetadata(&addresses_metadata) ||
+      !GetAutofillTable()->GetServerCardsMetadata(&cards_metadata)) {
+    change_processor()->ReportError(
+        {FROM_HERE, "Failed reading autofill data from WebDatabase."});
+    return;
+  }
+  for (const auto& it : addresses_metadata) {
+    cache_[GetStorageKeyForWalletMetadataTypeAndId(
+        WalletMetadataSpecifics::ADDRESS, it.first)] = it.second;
+  }
+  for (const auto& it : cards_metadata) {
+    cache_[GetStorageKeyForWalletMetadataTypeAndId(
+        WalletMetadataSpecifics::CARD, it.first)] = it.second;
   }
 
   // Load the metadata and send to the processor.
@@ -282,34 +346,79 @@ void AutofillWalletMetadataSyncBridge::GetDataImpl(
     DataCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::vector<std::unique_ptr<AutofillProfile>> profiles;
-  std::vector<std::unique_ptr<CreditCard>> cards;
-  if (!GetAutofillTable()->GetServerProfiles(&profiles) ||
-      !GetAutofillTable()->GetServerCreditCards(&cards)) {
-    change_processor()->ReportError(
-        {FROM_HERE, "Failed to load entries from table."});
-    return;
-  }
-
   auto batch = std::make_unique<syncer::MutableDataBatch>();
 
-  for (const std::unique_ptr<AutofillProfile>& entry : profiles) {
-    std::string key = GetStorageKeyForWalletMetadataTypeAndId(
-        WalletMetadataSpecifics::ADDRESS, entry->GetMetadata().id);
-    if (!storage_keys_set || base::ContainsKey(*storage_keys_set, key)) {
-      batch->Put(key,
-                 CreateMetadataEntityDataFromAutofillServerProfile(*entry));
-    }
-  }
-  for (const std::unique_ptr<CreditCard>& entry : cards) {
-    std::string key = GetStorageKeyForWalletMetadataTypeAndId(
-        WalletMetadataSpecifics::CARD, entry->GetMetadata().id);
-    if (!storage_keys_set || base::ContainsKey(*storage_keys_set, key)) {
-      batch->Put(key, CreateMetadataEntityDataFromCard(*entry));
+  for (const auto& pair : cache_) {
+    const std::string& storage_key = pair.first;
+    const AutofillMetadata& metadata = pair.second;
+    TypeAndMetadataId parsed_storage_key =
+        ParseWalletMetadataStorageKey(storage_key);
+    if (!storage_keys_set ||
+        base::ContainsKey(*storage_keys_set, storage_key)) {
+      batch->Put(storage_key, CreateEntityDataFromAutofillMetadata(
+                                  parsed_storage_key.type, metadata));
     }
   }
 
   std::move(callback).Run(std::move(batch));
+}
+
+template <class DataType>
+void AutofillWalletMetadataSyncBridge::LocalMetadataChanged(
+    WalletMetadataSpecifics::Type type,
+    AutofillDataModelChange<DataType> change) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const std::string& metadata_id = change.key();
+  std::string storage_key =
+      GetStorageKeyForWalletMetadataTypeAndId(type, metadata_id);
+  std::unique_ptr<MetadataChangeList> metadata_change_list =
+      CreateMetadataChangeList();
+
+  switch (change.type()) {
+    case AutofillProfileChange::EXPIRE:
+      NOTREACHED() << "EXPIRE change is not allowed for wallet entities";
+      return;
+    case AutofillProfileChange::REMOVE:
+      if (RemoveServerMetadata(GetAutofillTable(), type, metadata_id)) {
+        cache_.erase(storage_key);
+        // Send up deletion only if we had this entry in the DB. It is not there
+        // if (i) it was previously deleted by a remote deletion or (ii) this is
+        // notification for a LOCAL_PROFILE (which have non-overlapping
+        // storage_keys).
+        change_processor()->Delete(storage_key, metadata_change_list.get());
+      }
+      return;
+    case AutofillProfileChange::ADD:
+    case AutofillProfileChange::UPDATE:
+      DCHECK(change.data_model());
+
+      AutofillMetadata new_entry = change.data_model()->GetMetadata();
+      auto it = cache_.find(storage_key);
+      base::Optional<AutofillMetadata> existing_entry = base::nullopt;
+      if (it != cache_.end()) {
+        existing_entry = it->second;
+      }
+
+      if (existing_entry &&
+          !IsMetadataWorthUpdating(*existing_entry, new_entry)) {
+        // Skip changes that are outdated, etc. (changes that would result in
+        // inferior metadata compared to what we have now).
+        return;
+      }
+
+      cache_[storage_key] = new_entry;
+      if (existing_entry) {
+        UpdateServerMetadata(GetAutofillTable(), type, new_entry);
+      } else {
+        AddServerMetadata(GetAutofillTable(), type, new_entry);
+      }
+
+      change_processor()->Put(
+          storage_key, CreateEntityDataFromAutofillMetadata(type, new_entry),
+          metadata_change_list.get());
+      return;
+  }
 }
 
 }  // namespace autofill
