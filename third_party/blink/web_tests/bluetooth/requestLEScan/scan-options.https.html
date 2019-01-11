@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/testdriver.js"></script>
+<script src="../../resources/testdriver-vendor.js"></script>
+<script src="../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
+<script src="../../external/wpt/bluetooth/resources/bluetooth-scanning-helpers.js"></script>
+<script>
+'use strict';
+const test_desc = 'requestLEScan options in scan result.';
+
+bluetooth_test(async () => {
+  const fake_central =
+    await navigator.bluetooth.test.simulateCentral({state: 'powered-on'});
+
+  await callWithTrustedClick(async () => {
+    let scan = await navigator.bluetooth.requestLEScan({acceptAllAdvertisements: true});
+    assert_true(scan.acceptAllAdvertisements, "1")
+
+    scan = await navigator.bluetooth.requestLEScan({filters: [{name: 'Health Thermometer'}]});
+    assert_false(scan.acceptAllAdvertisements, "2")
+
+    scan = await navigator.bluetooth.requestLEScan({acceptAllAdvertisements: false,
+                                                    filters: [{name: 'Health Thermometer'}]});
+    assert_false(scan.acceptAllAdvertisements, "3")
+
+    scan = await navigator.bluetooth.requestLEScan({acceptAllAdvertisements: true,
+                                                    keepRepeatedDevices: true});
+    assert_true(scan.acceptAllAdvertisements, "4")
+    assert_true(scan.keepRepeatedDevices, "1:" + scan.keepRepeatedDevices)
+
+    scan = await navigator.bluetooth.requestLEScan({acceptAllAdvertisements: true,
+                                                    keepRepeatedDevices: false});
+    assert_true(scan.acceptAllAdvertisements, "6")
+    assert_false(scan.keepRepeatedDevices, "7")
+  });
+
+}, test_desc);
+
+</script>

@@ -6,22 +6,23 @@
 
 namespace blink {
 
-BluetoothLEScan* BluetoothLEScan::Create(mojo::BindingId id,
-                                         Bluetooth* bluetooth,
-                                         bool keep_repeated_devices,
-                                         bool accept_all_advertisements) {
-  return MakeGarbageCollected<BluetoothLEScan>(
-      id, bluetooth, keep_repeated_devices, accept_all_advertisements);
+BluetoothLEScan* BluetoothLEScan::Create(
+    mojo::BindingId id,
+    Bluetooth* bluetooth,
+    mojom::blink::WebBluetoothRequestLEScanOptionsPtr options) {
+  return MakeGarbageCollected<BluetoothLEScan>(id, bluetooth,
+                                               std::move(options));
 }
 
-BluetoothLEScan::BluetoothLEScan(mojo::BindingId id,
-                                 Bluetooth* bluetooth,
-                                 bool keep_repeated_devices,
-                                 bool accept_all_advertisements)
+BluetoothLEScan::BluetoothLEScan(
+    mojo::BindingId id,
+    Bluetooth* bluetooth,
+    mojom::blink::WebBluetoothRequestLEScanOptionsPtr options)
     : id_(id),
       bluetooth_(bluetooth),
-      keep_repeated_devices_(keep_repeated_devices),
-      accept_all_advertisements_(accept_all_advertisements) {}
+      keep_repeated_devices_(options ? options->keep_repeated_devices : false),
+      accept_all_advertisements_(options ? options->accept_all_advertisements
+                                         : false) {}
 
 const HeapVector<Member<BluetoothLEScanFilterInit>>& BluetoothLEScan::filters()
     const {

@@ -146,6 +146,13 @@ struct WebBluetoothRemoteGATTCharacteristic {
   uint32 properties;
 };
 
+// On success, |options| contains the values used for the scan request. On
+// error, |result| will indicate the failure type.
+union RequestScanningStartResult {
+  WebBluetoothResult error_result;
+  WebBluetoothRequestLEScanOptions options;
+};
+
 struct WebBluetoothScanResult {
   WebBluetoothDevice device;
   string? name;
@@ -274,7 +281,7 @@ interface WebBluetoothService {
   // Starts scanning for low energy devices.
   RequestScanningStart(associated WebBluetoothScanClient client,
                        WebBluetoothRequestLEScanOptions options) => (
-      WebBluetoothResult result);
+                       RequestScanningStartResult result);
 };
 
 // Classes that implement this interface will be notified of device events.

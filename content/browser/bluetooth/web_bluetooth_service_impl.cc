@@ -1048,9 +1048,9 @@ void WebBluetoothServiceImpl::RequestScanningStart(
                          std::move(options), std::move(callback)));
       return;
     }
-
-    std::move(callback).Run(
+    auto result = blink::mojom::RequestScanningStartResult::NewErrorResult(
         blink::mojom::WebBluetoothResult::BLUETOOTH_LOW_ENERGY_NOT_AVAILABLE);
+    std::move(callback).Run(std::move(result));
     return;
   }
 
@@ -1072,15 +1072,18 @@ void WebBluetoothServiceImpl::RequestScanningStartImpl(
   }
 
   if (!adapter) {
-    std::move(callback).Run(
+    auto result = blink::mojom::RequestScanningStartResult::NewErrorResult(
         blink::mojom::WebBluetoothResult::BLUETOOTH_LOW_ENERGY_NOT_AVAILABLE);
+    std::move(callback).Run(std::move(result));
     return;
   }
 
   if (discovery_session_) {
-    scanning_clients_.push_back(std::make_unique<ScanningClient>(
-        std::move(client), std::move(options)));
-    std::move(callback).Run(blink::mojom::WebBluetoothResult::SUCCESS);
+    scanning_clients_.push_back(
+        std::make_unique<ScanningClient>(std::move(client), options.Clone()));
+    auto result = blink::mojom::RequestScanningStartResult::NewOptions(
+        std::move(options));
+    std::move(callback).Run(std::move(result));
     return;
   }
 
@@ -1108,10 +1111,13 @@ void WebBluetoothServiceImpl::OnStartDiscoverySession(
   discovery_request_pending_ = false;
   discovery_session_ = std::move(session);
   scanning_clients_.push_back(
-      std::make_unique<ScanningClient>(std::move(client), std::move(options)));
+      std::make_unique<ScanningClient>(std::move(client), options.Clone()));
 
-  for (auto& callback : discovery_callbacks_)
-    std::move(callback).Run(blink::mojom::WebBluetoothResult::SUCCESS);
+  for (auto& callback : discovery_callbacks_) {
+    auto result =
+        blink::mojom::RequestScanningStartResult::NewOptions(options.Clone());
+    std::move(callback).Run(std::move(result));
+  }
 
   discovery_callbacks_.clear();
 }
@@ -1121,8 +1127,9 @@ void WebBluetoothServiceImpl::OnDiscoverySessionError() {
   discovery_request_pending_ = false;
 
   for (auto& callback : discovery_callbacks_) {
-    std::move(callback).Run(
+    auto result = blink::mojom::RequestScanningStartResult::NewErrorResult(
         blink::mojom::WebBluetoothResult::NO_BLUETOOTH_ADAPTER);
+    std::move(callback).Run(std::move(result));
   }
 
   discovery_callbacks_.clear();

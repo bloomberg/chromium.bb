@@ -16,15 +16,14 @@ class BluetoothLEScan final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static BluetoothLEScan* Create(mojo::BindingId,
-                                 Bluetooth*,
-                                 bool keep_repeated_devices,
-                                 bool accept_all_advertisements);
+  static BluetoothLEScan* Create(
+      mojo::BindingId,
+      Bluetooth*,
+      mojom::blink::WebBluetoothRequestLEScanOptionsPtr);
 
   BluetoothLEScan(mojo::BindingId,
                   Bluetooth*,
-                  bool keep_repeated_devices,
-                  bool accept_all_advertisements);
+                  mojom::blink::WebBluetoothRequestLEScanOptionsPtr);
 
   // IDL exposed interface:
   const HeapVector<Member<BluetoothLEScanFilterInit>>& filters() const;
