@@ -3426,9 +3426,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     runRepostFormDialogWithCompletionHandler:(void (^)(BOOL))handler {
   // Display the action sheet with the arrow pointing at the top center of the
   // web contents.
-  UIView* view = webState->GetView();
+  CGRect bounds = self.view.bounds;
   CGPoint dialogLocation = CGPointMake(
-      CGRectGetMidX(view.frame), CGRectGetMinY(view.frame) + self.headerHeight);
+      CGRectGetMidX(bounds), CGRectGetMinY(bounds) + self.headerHeight);
   auto* helper = RepostFormTabHelper::FromWebState(webState);
   helper->PresentDialog(dialogLocation, base::BindOnce(^(bool shouldContinue) {
                           handler(shouldContinue);
