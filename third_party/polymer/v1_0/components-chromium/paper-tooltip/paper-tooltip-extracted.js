@@ -123,12 +123,16 @@ Polymer({
       },
       /**
        * Returns the target element that this tooltip is anchored to. It is
-       * either the element given by the `for` attribute, or the immediate parent
-       * of the tooltip.
+       * either the element given by the `for` attribute, the element manually
+       * specified through the `target` attribute, or the immediate parent of
+       * the tooltip.
        *
        * @type {Node}
        */
       get target() {
+        if (this._manualTarget)
+          return this._manualTarget;
+
         var parentNode = Polymer.dom(this).parentNode;
         // If the parentNode is a document fragment, then we need to use the host.
         var ownerRoot = Polymer.dom(this).getOwnerRoot();
@@ -140,6 +144,15 @@ Polymer({
               ownerRoot.host : parentNode;
         }
         return target;
+      },
+
+      /**
+       * Sets the target element that this tooltip will be anchored to.
+       * @param {Node} target
+       */
+      set target(target) {
+        this._manualTarget = target;
+        this._findTarget();
       },
 
       /**

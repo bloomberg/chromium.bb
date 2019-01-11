@@ -119,6 +119,12 @@
       <structure name="IDR_SETTINGS_CATEGORY_SETTING_EXCEPTIONS_JS"
                  file="site_settings/category_setting_exceptions.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_CHOOSER_EXCEPTION_LIST_HTML"
+                 file="site_settings/chooser_exception_list.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CHOOSER_EXCEPTION_LIST_JS"
+                 file="site_settings/chooser_exception_list.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CHOOSER_EXCEPTION_LIST_ENTRY_HTML"
                  file="site_settings/chooser_exception_list_entry.html"
                  type="chrome_html" />
