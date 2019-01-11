@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/animation/underlying_length_checker.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
