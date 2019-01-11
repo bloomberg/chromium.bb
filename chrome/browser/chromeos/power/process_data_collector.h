@@ -27,7 +27,6 @@
 #include "base/synchronization/lock.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/power/process_data_collector.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/power_manager_client.h"
 
 namespace chromeos {
@@ -35,7 +34,7 @@ namespace chromeos {
 // A class which starts collecting metrics about processes as soon as it is
 // initialized with |Initialize|. This class depends on the DBusThreadManager
 // and is implemented as a global singleton.
-class CHROMEOS_EXPORT ProcessDataCollector {
+class ProcessDataCollector {
  public:
   // The different sources of power consumption being tracked. This should be
   // kept in sync with the |PowerConsumerType| in power.js.

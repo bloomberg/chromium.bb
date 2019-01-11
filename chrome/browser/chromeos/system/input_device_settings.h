@@ -7,7 +7,6 @@
 
 #include "base/callback_forward.h"
 #include "base/optional.h"
-#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 namespace system {
@@ -105,7 +104,7 @@ class MouseSettings {
 };
 
 // Interface for configuring input device settings.
-class CHROMEOS_EXPORT InputDeviceSettings {
+class InputDeviceSettings {
  public:
   using DeviceExistsCallback = base::OnceCallback<void(bool)>;
 

@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/power/cpu_data_collector.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/power_manager_client.h"
 
 namespace power_manager {
@@ -24,7 +23,7 @@ namespace chromeos {
 //
 // This class is implemented as a global singleton, initialized after
 // DBusThreadManager which it depends on.
-class CHROMEOS_EXPORT PowerDataCollector : public PowerManagerClient::Observer {
+class PowerDataCollector : public PowerManagerClient::Observer {
  public:
   struct PowerSupplySample {
     PowerSupplySample();

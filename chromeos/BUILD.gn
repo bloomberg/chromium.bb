@@ -27,10 +27,10 @@ component("chromeos") {
   ]
   public_deps = [
     ":chromeos_constants",
-    ":chromeos_export",
   ]
   deps = [
     ":account_manager_proto",
+    ":chromeos_export",
     "//base",
     "//base:i18n",
     "//components/policy/proto",
