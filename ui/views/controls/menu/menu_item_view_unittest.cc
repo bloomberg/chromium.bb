@@ -4,16 +4,21 @@
 
 #include "ui/views/controls/menu/menu_item_view.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/canvas_painter.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/test/menu_test_utils.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/vector_icons.h"
+#include "ui/views/view_properties.h"
 
 namespace views {
 
@@ -169,6 +174,41 @@ TEST(MenuItemViewUnitTest, UseMnemonicOnPlatform) {
     EXPECT_EQ(0, item1->GetMnemonic());
     EXPECT_EQ(0, item2->GetMnemonic());
   }
+}
+
+// Tests MenuItemView::Layout() in the IsContainer() case.
+TEST(MenuItemViewUnitTest, ContainerLayout) {
+  TestMenuItemView root_menu;
+  MenuItemView* item = root_menu.AppendMenuItemWithLabel(1, base::string16());
+
+  // We make our menu item a simple container for our view.
+  View* child_view = item->AddChildView(std::make_unique<View>());
+
+  // We want to check that MenuItemView::Layout() respects the child's preferred
+  // size and margins.
+  const gfx::Size child_size(200, 50);
+  const gfx::Insets child_margins(5, 10);
+  child_view->SetPreferredSize(child_size);
+  child_view->SetProperty(kMarginsKey, new gfx::Insets(child_margins));
+
+  // SubmenuView does not lay out its children unless it is contained in a
+  // view. Make a simple container for it. We have to call set_owned_by_client()
+  // since |submenu| is owned by |root_menu|.
+  SubmenuView* submenu = root_menu.GetSubmenu();
+  submenu->set_owned_by_client();
+  auto submenu_parent = std::make_unique<View>();
+  submenu_parent->AddChildView(submenu);
+  submenu_parent->SetPosition(gfx::Point(0, 0));
+  submenu_parent->SetSize(submenu->GetPreferredSize());
+
+  // Get |child_view|'s bounds in |item|'s coordinate space, and check that they
+  // align with |child_view|'s margins and preferred size.
+  const gfx::Rect child_bounds =
+      child_view->ConvertRectToParent(child_view->GetLocalBounds());
+  EXPECT_EQ(child_bounds.x(), child_margins.left());
+  EXPECT_EQ(child_bounds.y(), child_margins.top());
+  EXPECT_EQ(child_bounds.width(), child_size.width());
+  EXPECT_EQ(child_bounds.height(), child_size.height());
 }
 
 class MenuItemViewPaintUnitTest : public ViewsTestBase {
