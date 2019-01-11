@@ -383,6 +383,13 @@ void MdTab::OnFocus() {
                         ui::NativeTheme::kColorId_FocusedBorderColor),
                     0x66)));
   }
+
+  // When the tab gains focus, send an accessibility event indicating that the
+  // contents are focused. When the tab loses focus, whichever new View ends up
+  // with focus will send an ax::mojom::Event::kFocus of its own, so there's no
+  // need to send one in OnBlur().
+  if (contents())
+    contents()->NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
   SchedulePaint();
 }
 
