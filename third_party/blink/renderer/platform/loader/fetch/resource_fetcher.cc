@@ -232,21 +232,29 @@ const base::Feature kStaleWhileRevalidateExperiment{
     "StaleWhileRevalidateExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool MatchesStaleWhileRevalidateControlList(const String& host) {
-  DEFINE_STATIC_LOCAL(String, kStaleWhileRevalidateControlHosts,
-                      (GetFieldTrialParamValueByFeature(
-                           kStaleWhileRevalidateExperiment, "control_hosts")
-                           .c_str()));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<String>,
+                                  stale_while_revalidate_control_hosts, ());
+  if (stale_while_revalidate_control_hosts->IsNull()) {
+    *stale_while_revalidate_control_hosts =
+        GetFieldTrialParamValueByFeature(kStaleWhileRevalidateExperiment,
+                                         "control_hosts")
+            .c_str();
+  }
   return !host.IsEmpty() &&
-         kStaleWhileRevalidateControlHosts.Find(host) != kNotFound;
+         stale_while_revalidate_control_hosts->Find(host) != kNotFound;
 }
 
 bool MatchesStaleWhileRevalidateAllowList(const String& host) {
-  DEFINE_STATIC_LOCAL(String, kStaleWhileRevalidateAllowHosts,
-                      (GetFieldTrialParamValueByFeature(
-                           kStaleWhileRevalidateExperiment, "hosts")
-                           .c_str()));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<String>,
+                                  stale_while_revalidate_allow_hosts, ());
+  if (stale_while_revalidate_allow_hosts->IsNull()) {
+    *stale_while_revalidate_allow_hosts =
+        GetFieldTrialParamValueByFeature(kStaleWhileRevalidateExperiment,
+                                         "hosts")
+            .c_str();
+  }
   return !host.IsEmpty() &&
-         kStaleWhileRevalidateAllowHosts.Find(host) != kNotFound;
+         stale_while_revalidate_allow_hosts->Find(host) != kNotFound;
 }
 
 }  // namespace

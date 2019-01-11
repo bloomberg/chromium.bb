@@ -102,6 +102,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
       const ResourceResponse& redirect_response,
       ResourceType,
       const FetchInitiatorInfo& = FetchInitiatorInfo()) override;
+  // Resource* can be null for navigations.
   void DispatchDidReceiveResponse(unsigned long identifier,
                                   const ResourceRequest&,
                                   const ResourceResponse&,
