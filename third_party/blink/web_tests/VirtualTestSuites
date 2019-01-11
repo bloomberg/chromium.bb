@@ -623,44 +623,31 @@
     "args": ["--sampling-heap-profiler"]
   },
   {
-    "prefix": "sxg",
-    "base": "http/tests/loading/sxg",
-    "args": ["--enable-features=SignedHTTPExchange"]
-  },
-  {
-    "prefix": "sxg",
-    "base": "http/tests/devtools/sxg",
-    "args": ["--enable-features=SignedHTTPExchange"]
-  },
-  {
-    "prefix": "sxg",
-    "base": "external/wpt/signed-exchange",
-    "args": ["--enable-features=SignedHTTPExchange"]
-  },
-  {
     "prefix": "sxg-with-network-service",
     "base": "http/tests/loading/sxg",
-    "args": ["--enable-features=SignedHTTPExchange,NetworkService"]
+    "args": ["--enable-features=NetworkService"]
   },
   {
     "prefix": "sxg-with-network-service",
     "base": "http/tests/devtools/sxg",
-    "args": ["--enable-features=SignedHTTPExchange,NetworkService"]
+    "args": ["--enable-features=NetworkService"]
   },
   {
     "prefix": "sxg-with-network-service",
     "base": "external/wpt/signed-exchange",
-    "args": ["--enable-features=SignedHTTPExchange,NetworkService"]
+    "args": ["--enable-features=NetworkService"]
   },
   {
     "prefix": "sxg-origin-trial",
     "base": "http/tests/loading/sxg",
-    "args": ["--enable-features=SignedHTTPExchangeOriginTrial"]
+    "args": ["--stable-release-mode",
+             "--enable-features=SignedHTTPExchangeOriginTrial"]
   },
   {
     "prefix": "sxg-origin-trial-with-network-service",
     "base": "http/tests/loading/sxg",
-    "args": ["--enable-features=SignedHTTPExchangeOriginTrial,NetworkService"]
+    "args": ["--stable-release-mode",
+             "--enable-features=SignedHTTPExchangeOriginTrial,NetworkService"]
   },
   {
     "prefix": "disabled-service-worker-servicification",

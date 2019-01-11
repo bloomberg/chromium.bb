@@ -5209,14 +5209,9 @@ crbug.com/818154 [ Linux Debug ] virtual/gpu-rasterization/images/gif-loop-count
 # Sheriff 2018-03-05
 crbug.com/818650 [ Linux ] fast/speech/scripted/speechrecognition-restart-onend.html [ Crash Pass ]
 
-# These tests will pass once the --enable-features=SignedHTTPExchange flag is enabled by default.
-crbug.com/803774 http/tests/devtools/sxg/ [ Skip ]
-crbug.com/803774 http/tests/loading/sxg/ [ Skip ]
-crbug.com/803774 external/wpt/signed-exchange/ [ Skip ]
-
 # Prefetching Signed Exchange DevTools tests are flaky.
-crbug.com/851363 virtual/sxg/http/tests/devtools/sxg/sxg-prefetch-fail.js [ Pass Failure ]
-crbug.com/851363 virtual/sxg/http/tests/devtools/sxg/sxg-prefetch.js [ Pass Failure ]
+crbug.com/851363 http/tests/devtools/sxg/sxg-prefetch-fail.js [ Pass Failure ]
+crbug.com/851363 http/tests/devtools/sxg/sxg-prefetch.js [ Pass Failure ]
 
 # Sheriff 2018-03-22
 crbug.com/824775 [ Win ] media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]

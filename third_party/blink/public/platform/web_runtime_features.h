@@ -165,7 +165,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableSecMetadata(bool);
   BLINK_PLATFORM_EXPORT static void EnableSharedArrayBuffer(bool);
   BLINK_PLATFORM_EXPORT static void EnableSharedWorker(bool);
-  BLINK_PLATFORM_EXPORT static void EnableSignedHTTPExchange(bool);
   BLINK_PLATFORM_EXPORT static void EnableTouchEventFeatureDetection(bool);
   BLINK_PLATFORM_EXPORT static void EnableUserActivationV2(bool);
   BLINK_PLATFORM_EXPORT static void EnableV8IdleTasks(bool);

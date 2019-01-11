@@ -408,10 +408,6 @@ void WebRuntimeFeatures::EnableSharedWorker(bool enable) {
   RuntimeEnabledFeatures::SetSharedWorkerEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableSignedHTTPExchange(bool enable) {
-  RuntimeEnabledFeatures::SetSignedHTTPExchangeEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnablePreciseMemoryInfo(bool enable) {
   RuntimeEnabledFeatures::SetPreciseMemoryInfoEnabled(enable);
 }
