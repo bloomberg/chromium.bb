@@ -81,7 +81,7 @@ MATCHER_P(VectorEquals, expected, "") {
     return false;
   }
   for (size_t i = 0; i < expected.size(); ++i) {
-    if (!expected[i].Equals(arg[i])) {
+    if (!(expected[i] == arg[i])) {
       return false;
     }
   }

@@ -4,6 +4,11 @@
 
 #include "chrome/browser/ui/views/media_router/media_router_views_ui.h"
 
+#include <initializer_list>
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
@@ -15,6 +20,7 @@
 #include "chrome/common/media_router/route_request_result.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "content/public/browser/browser_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -345,6 +351,38 @@ TEST_F(MediaRouterViewsUITest, ShowDomainForHangouts) {
       }));
   ui_->OnResultsUpdated({available_hangout, connected_hangout});
   ui_->RemoveObserver(&observer);
+}
+
+class MediaRouterViewsUIIncognitoTest : public MediaRouterViewsUITest {
+ protected:
+  content::BrowserContext* GetBrowserContext() override {
+    return static_cast<Profile*>(MediaRouterViewsUITest::GetBrowserContext())
+        ->GetOffTheRecordProfile();
+  }
+};
+
+TEST_F(MediaRouterViewsUIIncognitoTest, HidesCloudSinksForIncognito) {
+  const std::string domain1 = "domain1.com";
+  MediaSinkWithCastModes hangout(
+      MediaSink("sink1", "Hangout", SinkIconType::HANGOUT));
+  MediaSinkWithCastModes meeting(
+      MediaSink("sink2", "Meeting", SinkIconType::MEETING));
+  MediaSinkWithCastModes eduReceiver(
+      MediaSink("sink3", "Cast for EDU", SinkIconType::EDUCATION));
+  MediaSinkWithCastModes chromeCast(
+      MediaSink("sink4", "Living Room TV", SinkIconType::CAST));
+  chromeCast.cast_modes = {MediaCastMode::TAB_MIRROR};
+  for (MediaSinkWithCastModes* sink :
+       std::initializer_list<MediaSinkWithCastModes*>{&hangout, &meeting,
+                                                      &eduReceiver}) {
+    sink->sink.set_domain(domain1);
+    sink->cast_modes = {MediaCastMode::TAB_MIRROR};
+  }
+
+  ui_->OnResultsUpdated({hangout, meeting, eduReceiver, chromeCast});
+
+  EXPECT_EQ(std::vector<MediaSinkWithCastModes>{chromeCast},
+            ui_->GetEnabledSinks());
 }
 
 }  // namespace media_router

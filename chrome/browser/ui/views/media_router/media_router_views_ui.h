@@ -30,6 +30,7 @@ class MediaRouterViewsUI : public MediaRouterUIBase,
       base::OnceCallback<void(const ui::SelectedFileInfo*)> callback) override;
 
   // MediaRouterUIBase:
+  // Also filters cloud sinks in incognito windows.
   std::vector<MediaSinkWithCastModes> GetEnabledSinks() const override;
 
  private:
@@ -41,6 +42,8 @@ class MediaRouterViewsUI : public MediaRouterUIBase,
   FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, DisconnectingState);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, AddAndRemoveIssue);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, ShowDomainForHangouts);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUIIncognitoTest,
+                           HidesCloudSinksForIncognito);
 
   // MediaRouterUIBase:
   void InitCommon(content::WebContents* initiator) override;
