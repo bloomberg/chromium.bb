@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
+#include "third_party/blink/renderer/core/loader/worker_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -140,8 +141,10 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
                 *fetch_client_settings_object)
           : &FetchContext::NullInstance(GetTaskRunner(TaskType::kNetworking));
   ConsoleLogger* console_logger = this;
-  auto* resource_fetcher =
-      MakeGarbageCollected<ResourceFetcher>(fetch_context, console_logger);
+  ResourceFetcherProperties* properties =
+      MakeGarbageCollected<WorkerResourceFetcherProperties>();
+  auto* resource_fetcher = MakeGarbageCollected<ResourceFetcher>(
+      *properties, fetch_context, console_logger);
   if (IsContextPaused())
     resource_fetcher->SetDefersLoading(true);
   resource_fetchers_.insert(resource_fetcher);

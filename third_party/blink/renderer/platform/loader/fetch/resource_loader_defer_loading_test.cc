@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
+#include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 namespace blink {
@@ -163,7 +164,8 @@ ResourceLoaderDefersLoadingTest::ResourceLoaderDefersLoadingTest()
 }
 
 TEST_F(ResourceLoaderDefersLoadingTest, CodeCacheFetchCheckDefers) {
-  ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(context_);
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(*properties, context_);
 
   ResourceRequest request;
   request.SetURL(test_url_);
@@ -190,7 +192,8 @@ TEST_F(ResourceLoaderDefersLoadingTest, CodeCacheFetchSyncReturn) {
         std::move(callback).Run(base::Time(), std::vector<uint8_t>());
       }));
 
-  ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(context_);
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(*properties, context_);
 
   ResourceRequest request;
   request.SetURL(test_url_);
@@ -207,7 +210,8 @@ TEST_F(ResourceLoaderDefersLoadingTest, CodeCacheFetchSyncReturn) {
 }
 
 TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersToFalse) {
-  ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(context_);
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(*properties, context_);
 
   ResourceRequest request;
   request.SetURL(test_url_);
@@ -228,7 +232,8 @@ TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersToFalse) {
 }
 
 TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersToTrue) {
-  ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(context_);
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(*properties, context_);
 
   ResourceRequest request;
   request.SetURL(test_url_);
@@ -253,7 +258,8 @@ TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersToTrue) {
 }
 
 TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersMultipleTimes) {
-  ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(context_);
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(*properties, context_);
 
   ResourceRequest request;
   request.SetURL(test_url_);

@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_resource.h"
+#include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 namespace blink {
@@ -118,7 +119,8 @@ class MemoryCacheCorrectnessTest : public testing::Test {
     MockFetchContext* context = MakeGarbageCollected<MockFetchContext>(
         MockFetchContext::kShouldNotLoadNewResource, nullptr, security_origin_);
 
-    fetcher_ = MakeGarbageCollected<ResourceFetcher>(context);
+    auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+    fetcher_ = MakeGarbageCollected<ResourceFetcher>(*properties, context);
   }
   void TearDown() override {
     GetMemoryCache()->EvictResources();

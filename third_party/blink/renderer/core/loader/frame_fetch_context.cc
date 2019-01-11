@@ -71,6 +71,7 @@
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/core/loader/frame_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
@@ -273,7 +274,6 @@ struct FrameFetchContext::FrozenState final
               const ClientHintsPreferences& client_hints_preferences,
               float device_pixel_ratio,
               const String& user_agent,
-              bool is_main_frame,
               bool is_svg_image_chrome_client)
       : url(url),
         parent_security_origin(std::move(parent_security_origin)),
@@ -284,7 +284,6 @@ struct FrameFetchContext::FrozenState final
         client_hints_preferences(client_hints_preferences),
         device_pixel_ratio(device_pixel_ratio),
         user_agent(user_agent),
-        is_main_frame(is_main_frame),
         is_svg_image_chrome_client(is_svg_image_chrome_client) {}
 
   const KURL url;
@@ -296,7 +295,6 @@ struct FrameFetchContext::FrozenState final
   const ClientHintsPreferences client_hints_preferences;
   const float device_pixel_ratio;
   const String user_agent;
-  const bool is_main_frame;
   const bool is_svg_image_chrome_client;
 
   void Trace(blink::Visitor* visitor) {
@@ -308,7 +306,9 @@ ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader) {
   DCHECK(loader);
   FrameFetchContext* context = MakeGarbageCollected<FrameFetchContext>(loader);
   ConsoleLogger* logger = &context->GetFrame()->Console();
-  return MakeGarbageCollected<ResourceFetcher>(context, logger);
+  ResourceFetcherProperties* properties =
+      MakeGarbageCollected<FrameResourceFetcherProperties>(loader->GetFrame());
+  return MakeGarbageCollected<ResourceFetcher>(*properties, context, logger);
 }
 
 ResourceFetcher* FrameFetchContext::CreateFetcherForImportedDocument(
@@ -319,7 +319,10 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForImportedDocument(
   // |document| is detached.
   DCHECK(!document->GetFrame());
   ConsoleLogger* logger = &context->GetFrame()->Console();
-  return MakeGarbageCollected<ResourceFetcher>(context, logger);
+  LocalFrame* frame = document->ImportsController()->Master()->GetFrame();
+  ResourceFetcherProperties* properties =
+      MakeGarbageCollected<FrameResourceFetcherProperties>(frame);
+  return MakeGarbageCollected<ResourceFetcher>(*properties, context, logger);
 }
 
 FrameFetchContext::FrameFetchContext(DocumentLoader* loader)
@@ -901,12 +904,6 @@ int64_t FrameFetchContext::ServiceWorkerID() const {
              : -1;
 }
 
-bool FrameFetchContext::IsMainFrame() const {
-  if (IsDetached())
-    return frozen_state_->is_main_frame;
-  return GetFrame()->IsMainFrame();
-}
-
 bool FrameFetchContext::DefersLoading() const {
   return IsDetached() ? false : GetFrame()->GetPage()->Paused();
 }
@@ -1435,7 +1432,7 @@ FetchContext* FrameFetchContext::Detach() {
         Url(), GetParentSecurityOrigin(), GetAddressSpace(),
         GetContentSecurityPolicy(), GetSiteForCookies(), GetTopFrameOrigin(),
         GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
-        IsMainFrame(), IsSVGImageChromeClient());
+        IsSVGImageChromeClient());
     SetFetchClientSettingsObject(
         MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
             *GetFetchClientSettingsObject()));
@@ -1445,7 +1442,7 @@ FetchContext* FrameFetchContext::Detach() {
         NullURL(), GetParentSecurityOrigin(), GetAddressSpace(),
         GetContentSecurityPolicy(), GetSiteForCookies(), GetTopFrameOrigin(),
         GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
-        IsMainFrame(), IsSVGImageChromeClient());
+        IsSVGImageChromeClient());
     SetFetchClientSettingsObject(
         MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
             NullURL(), nullptr, network::mojom::ReferrerPolicy::kDefault,

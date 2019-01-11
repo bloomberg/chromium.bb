@@ -375,10 +375,8 @@ ResourceLoadScheduler::ResourceLoadScheduler(FetchContext* context)
 }
 
 ResourceLoadScheduler* ResourceLoadScheduler::Create(FetchContext* context) {
-  return MakeGarbageCollected<ResourceLoadScheduler>(
-      context
-          ? context
-          : &FetchContext::NullInstance(Thread::Current()->GetTaskRunner()));
+  DCHECK(context);
+  return MakeGarbageCollected<ResourceLoadScheduler>(context);
 }
 
 ResourceLoadScheduler::~ResourceLoadScheduler() = default;

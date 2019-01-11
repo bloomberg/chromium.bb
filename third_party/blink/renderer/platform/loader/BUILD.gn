@@ -45,6 +45,7 @@ blink_platform_sources("loader") {
     "fetch/integrity_metadata.h",
     "fetch/memory_cache.cc",
     "fetch/memory_cache.h",
+    "fetch/null_resource_fetcher_properties.h",
     "fetch/preload_key.h",
     "fetch/raw_resource.cc",
     "fetch/raw_resource.h",
@@ -57,6 +58,7 @@ blink_platform_sources("loader") {
     "fetch/resource_error.h",
     "fetch/resource_fetcher.cc",
     "fetch/resource_fetcher.h",
+    "fetch/resource_fetcher_properties.h",
     "fetch/resource_finish_observer.h",
     "fetch/resource_load_info.h",
     "fetch/resource_load_priority.h",
@@ -161,6 +163,7 @@ jumbo_source_set("test_support") {
     "testing/mock_resource.cc",
     "testing/mock_resource.h",
     "testing/mock_resource_client.h",
+    "testing/test_resource_fetcher_properties.h",
     "testing/web_url_loader_factory_with_mock.cc",
     "testing/web_url_loader_factory_with_mock.h",
   ]

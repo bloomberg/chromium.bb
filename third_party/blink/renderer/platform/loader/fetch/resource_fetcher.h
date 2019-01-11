@@ -54,6 +54,7 @@ class ConsoleLogger;
 class MHTMLArchive;
 class KURL;
 class Resource;
+class ResourceFetcherProperties;
 class ResourceTimingInfo;
 enum class ResourceType : uint8_t;
 
@@ -75,10 +76,22 @@ class PLATFORM_EXPORT ResourceFetcher
   USING_PRE_FINALIZER(ResourceFetcher, ClearPreloads);
 
  public:
-  ResourceFetcher(FetchContext*);
-  ResourceFetcher(FetchContext*, ConsoleLogger*);
+  // The given ResourceFetcherProperties is kept until ClearContext() is called.
+  ResourceFetcher(const ResourceFetcherProperties&, FetchContext*);
+  ResourceFetcher(const ResourceFetcherProperties&,
+                  FetchContext*,
+                  ConsoleLogger*);
   virtual ~ResourceFetcher();
   virtual void Trace(blink::Visitor*);
+
+  // - This function returns the same object throughout this fetcher's
+  //   entire life.
+  // - The returned object remains valid after ClearContext() is called.
+  // - This function returns a different object from the corresponding
+  //   argument in the constructor.
+  // - This function should be used rather than the properties given
+  //   to the ResourceFetcher constructor.
+  const ResourceFetcherProperties& GetProperties() const;
 
   // Triggers a fetch based on the given FetchParameters (if there isn't a
   // suitable Resource already cached) and registers the given ResourceClient
@@ -195,6 +208,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
  private:
   friend class ResourceCacheValidationSuppressor;
+  class DetachableProperties;
   enum class StopFetchingTarget {
     kExcludingKeepaliveLoaders,
     kIncludingKeepaliveLoaders,
@@ -292,6 +306,7 @@ class PLATFORM_EXPORT ResourceFetcher
   void ScheduleStaleRevalidate(Resource* stale_resource);
   void RevalidateStaleResource(Resource* stale_resource);
 
+  Member<DetachableProperties> properties_;
   Member<FetchContext> context_;
   Member<ConsoleLogger> console_logger_;
   Member<ResourceLoadScheduler> scheduler_;

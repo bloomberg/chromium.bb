@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_scheduler.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
+#include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -156,10 +157,11 @@ TEST_F(ResourceLoaderTest, ResponseType) {
                  << ", original_response_type: "
                  << test.original_response_type);
 
+    auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
     FetchContext* context = MakeGarbageCollected<MockFetchContext>(
         MockFetchContext::kShouldLoadNewResource, nullptr, origin,
         std::make_unique<TestWebURLLoaderFactory>());
-    ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(context);
+    auto* fetcher = MakeGarbageCollected<ResourceFetcher>(*properties, context);
 
     ResourceRequest request;
     request.SetURL(test.url);
