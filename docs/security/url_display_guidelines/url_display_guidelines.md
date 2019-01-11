@@ -184,14 +184,14 @@ An attacker may abuse whitespace and line-wrapping characters in order to push t
 
 * Non-breaking spaces (U+00A0) and other invisible characters (e.g., U+2000 to U+200A inclusive).
 
-* Unicode line terminators (e.g., U+2028, U+2029, and U+0085)
+* Unicode line terminators (e.g., U+2028, U+2029, and U+0085).
 
-* Unicode explicit directional formatting commands (e.g., U+200E--U+200F, U+202A--U+202E, see the full [list](http://unicode.org/reports/tr9/#Directional_Formatting_Characters) and [`ShouldUnescapeCodePoint`](https://cs.chromium.org/chromium/src/net/base/escape.cc?l=172&rcl=dc22553340d5c4dda162f17a07d706748be44042)).
+* Unicode explicit directional formatting commands (e.g., U+200E--U+200F, U+202A--U+202E, see the full [list](https://unicode.org/reports/tr9/#Directional_Formatting_Characters) and [`ShouldUnescapeCodePoint`](https://cs.chromium.org/chromium/src/net/base/escape.cc?l=172&rcl=dc22553340d5c4dda162f17a07d706748be44042)).
 
 * Characters that look like security UI (e.g., U+1F512 🔒).
     - Emoji may be confusing because users are not accustomed to seeing graphics in URL displays and may be misled into believing that they represent claims on the browser’s part (e.g., the Lock emoji). See issue [746350](https://bugs.chromium.org/p/chromium/issues/detail?id=746350).
 
-* Use of [Combining characters](https://blog.emojipedia.org/fun-emoji-hacks/) to create look-alikes
+* Use of [Combining characters](https://blog.emojipedia.org/fun-emoji-hacks/) to create look-alikes.
 
 In Chromium, this is handled by routines in `net/base/escape.h`. Outside of Chromium, consult `ShouldUnescapeCodePoint` in `net/base/escape.cc` for guidance.
 
@@ -218,7 +218,7 @@ IPv6 literals use colons as a delimiter and the literal is wrapped in square bra
 
 If an IPv6 Literal contains a Zone component, the % delimiter must be [escaped to %25](https://en.wikipedia.org/wiki/IPv6_address#Use_of_zone_indices_in_URIs).
 
-http://[fe80::1ff:fe23:4567:890a%25eth0]/
+https://[fe80::1ff:fe23:4567:890a%25eth0]/
 
 Most surfaces will accept non-canonical forms of IPv6 literals:
 
@@ -244,7 +244,7 @@ filesystem URIs and blob URIs embed the origin from which they originated as the
 
 ![filesystem URI](filesystem_uri.png)
 
-In Chrome, file:// schemed URIs do not contain a host component; be sure that your UI accounts for this possibility
+In Chrome, file:// schemed URIs do not contain a host component; be sure that your UI accounts for this possibility.
 
 **view-source:** is a special URL scheme which wraps another scheme (e.g., `view-source:https://example.com`) and displays the document in a special Blink "view-source" mode. For security reasons, web content cannot navigate directly to view-source URLs.
 
@@ -270,11 +270,11 @@ A **homograph** (or **homoglyph**) **attack** occurs when an attacker uses looka
 
 **International Domain Names** is a mechanism for using Unicode characters for hostnames. Under the covers, the Unicode labels are encoded using **[punycode](https://tools.ietf.org/html/rfc3492)** and prefixed with **xn--**. The browser may display the label in Unicode, or in the underlying punycode form. Users are not expected to be able to decode the punycode form: display in this form is intended to foil spoofing attempts.
 
-<a id="label"></a>A **[label](http://en.wikipedia.org/wiki/DNS_label#Parts_of_a_domain_name)** is a single component of a [domain name](http://en.wikipedia.org/wiki/Domain_name) string, delimited by periods. For instance, "*www*", “*microsoft*”, and “*com*” are the three labels in the domain name “*www.microsoft.com*”.
+<a id="label"></a>A **[label](https://en.wikipedia.org/wiki/DNS_label#Parts_of_a_domain_name)** is a single component of a [domain name](https://en.wikipedia.org/wiki/Domain_name) string, delimited by periods. For instance, "*www*", “*microsoft*”, and “*com*” are the three labels in the domain name “*www.microsoft.com*”.
 
-A **plain hostname** is an unqualified, single label hostname like "*Payroll*", which typically refers to a server on a local intranet.
+A **plain hostname** is an unqualified, single-label hostname like "*payroll*", which typically refers to a server on a local intranet.
 
-A **[Public Suffix](http://publicsuffix.org/)** is the suffix portion of a FQDN under which independent entities may register subdomains. For example, *ltd.co.im* is a Public Suffix. A Public Suffix contains one or more labels. Sometimes the term "[effective TLD](https://wiki.mozilla.org/Gecko:Effective_TLD_List)" is used as a synonym.
+A **[Public Suffix](https://publicsuffix.org/)** is the suffix portion of a FQDN under which independent entities may register subdomains. For example, *ltd.co.im* is a Public Suffix. A Public Suffix contains one or more labels. Sometimes the term "[effective TLD](https://wiki.mozilla.org/Gecko:Effective_TLD_List)" is used as a synonym.
 
 <a id="registrabledomain"></a>The **registrable domain** is the public suffix plus one additional label. Sometimes eTLD+1 is used as a synonym.
 
