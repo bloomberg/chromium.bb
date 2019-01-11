@@ -1336,8 +1336,16 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
+// Flaky on windows, see htpp://crbug.com/919877
+#if defined(OS_WIN)
+#define MAYBE_MC_MergeSimpleBMHierarchyEqualSetsUnderBMBar \
+  DISABLED_MC_MergeSimpleBMHierarchyEqualSetsUnderBMBar
+#else
+#define MAYBE_MC_MergeSimpleBMHierarchyEqualSetsUnderBMBar \
+  MC_MergeSimpleBMHierarchyEqualSetsUnderBMBar
+#endif
 IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
-                       MC_MergeSimpleBMHierarchyEqualSetsUnderBMBar) {
+                       MAYBE_MC_MergeSimpleBMHierarchyEqualSetsUnderBMBar) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableVerifier();
 
