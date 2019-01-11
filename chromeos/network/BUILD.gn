@@ -172,7 +172,7 @@ source_set("unit_tests") {
     "//chromeos:chromeos_constants",
     "//chromeos:policy_certificate_provider",
     "//chromeos:test_support_source_set",
-    "//chromeos/dbus",
+    "//chromeos/dbus:test_support",
     "//chromeos/login/login_state",
     "//components/onc",
     "//components/prefs",
