@@ -10,6 +10,10 @@
 #include "chrome/common/chrome_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
+#if defined(OS_CHROMEOS)
+#include "extensions/browser/extension_registry_factory.h"
+#endif  // OS_CHROMEOS
+
 namespace apps {
 
 // static
@@ -39,7 +43,11 @@ bool AppServiceProxyFactory::IsEnabled() {
 AppServiceProxyFactory::AppServiceProxyFactory()
     : BrowserContextKeyedServiceFactory(
           "AppServiceProxy",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+#if defined(OS_CHROMEOS)
+  DependsOn(extensions::ExtensionRegistryFactory::GetInstance());
+#endif  // OS_CHROMEOS
+}
 
 AppServiceProxyFactory::~AppServiceProxyFactory() = default;
 

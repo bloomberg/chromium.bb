@@ -10,6 +10,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "chrome/browser/apps/app_service/arc_apps_factory.h"
 #include "chrome/browser/chromeos/apps/apk_web_app_service.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "chrome/browser/chromeos/arc/arc_play_store_enabled_preference_handler.h"
@@ -200,6 +201,9 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcWakeLockBridge::GetForBrowserContext(profile);
   ArcWallpaperService::GetForBrowserContext(profile);
   GpuArcVideoServiceHost::GetForBrowserContext(profile);
+  if (apps::ArcAppsFactory::IsEnabled()) {
+    apps::ArcAppsFactory::GetForProfile(profile);
+  }
   chromeos::ApkWebAppService::Get(profile);
 
   arc_session_manager_->Initialize();

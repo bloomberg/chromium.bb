@@ -2,39 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_APPS_APP_SERVICE_EXTENSION_APPS_H_
-#define CHROME_BROWSER_APPS_APP_SERVICE_EXTENSION_APPS_H_
+#ifndef CHROME_BROWSER_APPS_APP_SERVICE_ARC_APPS_H_
+#define CHROME_BROWSER_APPS_APP_SERVICE_ARC_APPS_H_
 
+#include <string>
+#include <vector>
+
+#include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
-#include "extensions/browser/extension_registry_observer.h"
+#include "components/arc/connection_observer.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 class Profile;
 
-namespace extensions {
-class ExtensionSet;
-}
-
 namespace apps {
 
-// An app publisher (in the App Service sense) of extension-backed apps,
-// including Chrome Apps (platform apps and legacy packaged apps) and hosted
-// apps (including desktop PWAs).
-//
-// In the future, desktop PWAs will be migrated to a new system.
+// An app publisher (in the App Service sense) of ARC++ apps,
 //
 // See chrome/services/app_service/README.md.
-class ExtensionApps : public apps::mojom::Publisher,
-                      public extensions::ExtensionRegistryObserver {
+class ArcApps : public KeyedService,
+                public apps::mojom::Publisher,
+                public arc::ConnectionObserver<arc::mojom::AppInstance>,
+                public ArcAppListPrefs::Observer {
  public:
-  ExtensionApps();
-  ~ExtensionApps() override;
+  using AppConnectionHolder =
+      arc::ConnectionHolder<arc::mojom::AppInstance, arc::mojom::AppHost>;
 
-  void Initialize(const apps::mojom::AppServicePtr& app_service,
-                  Profile* profile);
+  static ArcApps* Get(Profile* profile);
+
+  explicit ArcApps(Profile* profile);
+
+  ~ArcApps() override;
 
  private:
   // apps::mojom::Publisher overrides.
@@ -52,37 +54,34 @@ class ExtensionApps : public apps::mojom::Publisher,
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission) override;
 
-  // extensions::ExtensionRegistryObserver overrides.
+  // arc::ConnectionObserver<arc::mojom::AppInstance> overrides.
+  void OnConnectionReady() override;
+
+  // ArcAppListPrefs::Observer overrides.
   // TODO(crbug.com/826982): implement.
 
-  // Checks if extension is disabled and if enable flow should be started.
-  // Returns true if extension enable flow is started or there is already one
-  // running.
-  bool RunExtensionEnableFlow(const std::string& app_id);
+  void ObservePrefs();
 
-  apps::mojom::AppPtr Convert(const extensions::Extension* extension,
-                              apps::mojom::Readiness readiness);
-  void ConvertVector(const extensions::ExtensionSet& extensions,
-                     apps::mojom::Readiness readiness,
-                     std::vector<apps::mojom::AppPtr>* apps_out);
+  apps::mojom::AppPtr Convert(const std::string& app_id,
+                              const ArcAppListPrefs::AppInfo& app_info);
 
   mojo::Binding<apps::mojom::Publisher> binding_;
   mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_;
 
   Profile* profile_;
+  ArcAppListPrefs* prefs_;
+
+  std::vector<base::OnceCallback<void(AppConnectionHolder*)>>
+      pending_load_icon_calls_;
 
   // |next_u_key_| is incremented every time Convert returns a valid AppPtr, so
   // that when an app's icon has changed, this apps::mojom::Publisher sends a
   // different IconKey even though the IconKey's s_key hasn't changed.
   uint64_t next_u_key_;
 
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionApps);
+  DISALLOW_COPY_AND_ASSIGN(ArcApps);
 };
 
 }  // namespace apps
 
-#endif  // CHROME_BROWSER_APPS_APP_SERVICE_EXTENSION_APPS_H_
+#endif  // CHROME_BROWSER_APPS_APP_SERVICE_ARC_APPS_H_

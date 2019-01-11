@@ -41,6 +41,7 @@ class BuiltInChromeOsApps : public apps::mojom::Publisher {
                      apps::mojom::PermissionPtr permission) override;
 
   mojo::Binding<apps::mojom::Publisher> binding_;
+
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(BuiltInChromeOsApps);
