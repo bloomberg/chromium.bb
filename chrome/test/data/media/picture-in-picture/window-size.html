@@ -108,5 +108,11 @@
     .then(_ => { window.domAutomationController.send(true); })
     .catch(e => { window.domAutomationController.send(false); });
   }
+
+  function addVisibilityChangeEventListener() {
+   document.addEventListener('visibilitychange', () => {
+     document.title = document.visibilityState;
+   });
+  }
 </script>
 </html>

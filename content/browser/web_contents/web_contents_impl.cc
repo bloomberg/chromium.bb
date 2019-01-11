@@ -1668,9 +1668,8 @@ void WebContentsImpl::WasShown() {
 
 void WebContentsImpl::WasHidden() {
   // If there are entities capturing screenshots or video (e.g. mirroring),
-  // or in Picture-in-Picture mode, don't activate the "disable rendering"
-  // optimization.
-  if (!IsBeingCaptured() && !HasPictureInPictureVideo()) {
+  // don't activate the "disable rendering" optimization.
+  if (!IsBeingCaptured()) {
     // This hides the individual RenderWidgets before hiding the Page, as
     // RenderWidgets will work to produce compositor frames and handle input
     // until they are hidden. But the Page and other classes do not expect to
