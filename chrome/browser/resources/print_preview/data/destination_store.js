@@ -396,13 +396,15 @@ cr.define('print_preview', function() {
       }
 
       this.recentDestinations_ = recentDestinations;
-      let origin = null;
-      let id = '';
-      let account = '';
-      let name = '';
-      let capabilities = null;
-      let extensionId = '';
-      let extensionName = '';
+      const destinationParams = {
+        origin: this.platformOrigin_,
+        id: '',
+        account: '',
+        name: '',
+        capabilities: null,
+        extensionId: '',
+        extensionName: '',
+      };
       let foundDestination = false;
       // Run through the destinations forward. As soon as we find a
       // destination, don't select any future destinations, just mark
@@ -410,25 +412,31 @@ cr.define('print_preview', function() {
       // destinations/updating the print ticket and this selecting a new
       // destination that causes random print preview errors.
       for (const destination of recentDestinations) {
-        origin = destination.origin;
-        id = destination.id;
-        account = destination.account || '';
-        name = destination.displayName || '';
-        capabilities = destination.capabilities;
-        extensionId = destination.extensionId || '';
-        extensionName = destination.extensionName || '';
-        const candidate =
-            this.destinationMap_[this.getDestinationKey_(origin, id, account)];
+        destinationParams.origin = assert(destination.origin);
+        destinationParams.id = destination.id;
+        destinationParams.account = destination.account || '';
+        destinationParams.name = destination.displayName || '';
+        destinationParams.capabilities = destination.capabilities;
+        destinationParams.extensionId = destination.extensionId || '';
+        destinationParams.extensionName = destination.extensionName || '';
+        const candidate = this.destinationMap_[this.getDestinationKey_(
+            destinationParams.origin, destinationParams.id,
+            destinationParams.account)];
         if (candidate != null) {
           candidate.isRecent = true;
           if (!foundDestination && !this.useSystemDefaultAsDefault_) {
             this.selectDestination(candidate);
           }
           foundDestination = true;
-        } else if (!foundDestination && !this.useSystemDefaultAsDefault_) {
-          foundDestination = this.fetchPreselectedDestination_(
-              origin, id, account, name, capabilities, extensionId,
-              extensionName);
+        } else {
+          // Only automatically select the destination if we are not using the
+          // system default and we have not already found a destination to
+          // select.
+          const autoSelect =
+              !foundDestination && !this.useSystemDefaultAsDefault_;
+          const foundNewDestination =
+              this.fetchPreselectedDestination_(destinationParams, autoSelect);
+          foundDestination = foundDestination || foundNewDestination;
         }
       }
 
@@ -437,21 +445,23 @@ cr.define('print_preview', function() {
       }
 
       // Try the system default
-      id = this.systemDefaultDestinationId_;
-      origin = id == print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ?
+      destinationParams.id = this.systemDefaultDestinationId_;
+      destinationParams.origin = destinationParams.id ==
+              print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ?
           print_preview.DestinationOrigin.LOCAL :
           this.platformOrigin_;
-      account = '';
+      destinationParams.account = '';
       const systemDefaultCandidate =
-          this.destinationMap_[this.getDestinationKey_(origin, id, account)];
+          this.destinationMap_[this.getDestinationKey_(
+              destinationParams.origin, destinationParams.id,
+              destinationParams.account)];
       if (systemDefaultCandidate != null) {
         this.selectDestination(systemDefaultCandidate);
         return;
       }
 
       if (this.fetchPreselectedDestination_(
-              origin, id, account, name, capabilities, extensionId,
-              extensionName)) {
+              destinationParams, true /* autoSelect */)) {
         return;
       }
 
@@ -459,25 +469,29 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * Attempts to fetch capabilities of the destination identified by the
-     * provided origin, id and account.
-     * @param {print_preview.DestinationOrigin} origin Destination
-     *     origin.
-     * @param {string} id Destination id.
-     * @param {string} account User account destination is registered for.
-     * @param {string} name Destination display name.
-     * @param {?print_preview.Cdd} capabilities Destination capabilities.
-     * @param {string} extensionId Extension ID associated with this
-     *     destination.
-     * @param {string} extensionName Extension name associated with this
-     *     destination.
+     * Attempts to fetch capabilities of the destination identified by
+     * |destinationParams|.
+     * @param {!{
+     *   origin: !print_preview.DestinationOrigin,
+     *   id: string,
+     *   account: string,
+     *   name: string,
+     *   capabilities: ?print_preview.Cdd,
+     *   extensionId: string,
+     *   extensionName: string
+     * }} destinationParams Parameters identifying the destination.
+     * @param {boolean} autoSelect Whether to automatically select the
+     *     destination if it is fetched successfully.
      * @return {boolean} Whether capabilities fetch was successfully started.
      * @private
      */
-    fetchPreselectedDestination_(
-        origin, id, account, name, capabilities, extensionId, extensionName) {
-      this.autoSelectMatchingDestination_ =
-          this.createExactDestinationMatch_(origin, id);
+    fetchPreselectedDestination_(destinationParams, autoSelect) {
+      const id = destinationParams.id;
+      const origin = destinationParams.origin;
+      if (autoSelect) {
+        this.autoSelectMatchingDestination_ =
+            this.createExactDestinationMatch_(origin, id);
+      }
 
       const type = print_preview.originToType(origin);
       if (type == print_preview.PrinterType.LOCAL_PRINTER) {
@@ -490,7 +504,8 @@ cr.define('print_preview', function() {
       if (this.cloudPrintInterface_ &&
           (origin == print_preview.DestinationOrigin.COOKIES ||
            origin == print_preview.DestinationOrigin.DEVICE)) {
-        this.cloudPrintInterface_.printer(id, origin, account);
+        this.cloudPrintInterface_.printer(
+            id, origin, destinationParams.account);
         return true;
       }
 
@@ -500,23 +515,28 @@ cr.define('print_preview', function() {
         // privet or extension printers in this case.
         this.startLoadDestinations(type);
 
+        if (!autoSelect) {
+          return true;
+        }
+
         // Create a fake selectedDestination_ that is not actually in the
         // destination store. When the real destination is created, this
         // destination will be overwritten.
         const params =
             (origin === print_preview.DestinationOrigin.PRIVET) ? {} : {
               description: '',
-              extensionId: extensionId,
-              extensionName: extensionName,
+              extensionId: destinationParams.extensionId,
+              extensionName: destinationParams.extensionName,
               provisionalType: print_preview.DestinationProvisionalType.NONE
             };
         this.selectedDestination_ = new print_preview.Destination(
-            id, print_preview.DestinationType.LOCAL, origin, name,
-            false /*isRecent*/,
+            id, print_preview.DestinationType.LOCAL, origin,
+            destinationParams.name, false /*isRecent*/,
             print_preview.DestinationConnectionStatus.ONLINE, params);
 
-        if (capabilities) {
-          this.selectedDestination_.capabilities = capabilities;
+        if (destinationParams.capabilities) {
+          this.selectedDestination_.capabilities =
+              destinationParams.capabilities;
           this.dispatchEvent(
               new CustomEvent(DestinationStore.EventType
                                   .SELECTED_DESTINATION_CAPABILITIES_READY));
@@ -823,9 +843,16 @@ cr.define('print_preview', function() {
             !this.autoSelectMatchingDestination_.matchIdAndOrigin(
                 this.systemDefaultDestinationId_, this.platformOrigin_)) {
           if (this.fetchPreselectedDestination_(
-                  this.platformOrigin_, this.systemDefaultDestinationId_,
-                  '' /*account*/, '' /*name*/, null /*capabilities*/,
-                  '' /*extensionId*/, '' /*extensionName*/)) {
+                  {
+                    origin: this.platformOrigin_,
+                    id: this.systemDefaultDestinationId_,
+                    account: '',
+                    name: '',
+                    capabilities: null,
+                    extensionId: '',
+                    extensionName: ''
+                  },
+                  true /* autoSelect */)) {
             return;
           }
         }
