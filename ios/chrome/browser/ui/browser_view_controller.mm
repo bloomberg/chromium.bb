@@ -2558,6 +2558,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
   if (!NTPHelper || !NTPHelper->IsActive())
     return CGRectZero;
+  if (base::FeatureList::IsEnabled(
+          web::features::kBrowserContainerFullscreen) &&
+      !IsRegularXRegularSizeClass())
+    return self.contentArea.bounds;
   // NTP expects to be laid out behind the bottom toolbar.  It uses
   // |contentInset| to push content above the toolbar.
   UIEdgeInsets viewportInsets = [self viewportInsetsForView:self.contentArea];
