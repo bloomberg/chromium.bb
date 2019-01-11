@@ -36,6 +36,8 @@ message AutofillPageQueryRequest {
       optional string name = 2;
       // Type of the control (e.g., "email").
       optional string control_type = 3;
+      // Metadata around the field.
+      optional AutofillRandomizedFieldMetadata metadata = 4;
     };
     // Signature of the form that is made of:
     //  - URL scheme (e.g., "http")
@@ -45,6 +47,8 @@ message AutofillPageQueryRequest {
     optional fixed64 signature = 1;
     // Fields of the form for which we want suggestions.
     repeated Field fields = 2;
+    // Metadata around the form.
+    optional AutofillRandomizedFormMetadata metadata = 3;
   };
   // Version of the client. Do not use, deprecated.
   optional string client_version = 1 [deprecated = true];
