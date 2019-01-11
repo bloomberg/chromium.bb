@@ -16,6 +16,7 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_source_location.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -165,6 +166,11 @@ struct BLINK_EXPORT WebNavigationParams {
   WebHistoryItem history_item;
   // Whether this navigation is a result of client redirect.
   bool is_client_redirect = false;
+
+  // The origin in which a navigation should commit. When provided, Blink
+  // should use this origin directly and not compute locally the new document
+  // origin.
+  WebSecurityOrigin origin_to_commit;
 
   // The devtools token for this navigation. See DocumentLoader
   // for details.

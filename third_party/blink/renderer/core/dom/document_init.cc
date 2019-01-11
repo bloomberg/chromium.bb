@@ -168,7 +168,24 @@ DocumentInit& DocumentInit::WithURL(const KURL& url) {
 
 DocumentInit& DocumentInit::WithOwnerDocument(Document* owner_document) {
   DCHECK(!owner_document_);
+  DCHECK(!initiator_origin_ || !owner_document ||
+         owner_document->GetSecurityOrigin() == initiator_origin_);
   owner_document_ = owner_document;
+  return *this;
+}
+
+DocumentInit& DocumentInit::WithInitiatorOrigin(
+    scoped_refptr<const SecurityOrigin> initiator_origin) {
+  DCHECK(!initiator_origin_);
+  DCHECK(!initiator_origin || !owner_document_ ||
+         owner_document_->GetSecurityOrigin() == initiator_origin);
+  initiator_origin_ = std::move(initiator_origin);
+  return *this;
+}
+
+DocumentInit& DocumentInit::WithOriginToCommit(
+    scoped_refptr<SecurityOrigin> origin_to_commit) {
+  origin_to_commit_ = std::move(origin_to_commit);
   return *this;
 }
 

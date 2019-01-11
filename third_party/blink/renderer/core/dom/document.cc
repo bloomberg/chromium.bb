@@ -6450,36 +6450,62 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
   ContentSecurityPolicy* last_origin_document_csp_ =
       frame_ ? frame_->Loader().GetLastOriginDocumentCSP() : nullptr;
 
+  scoped_refptr<SecurityOrigin> document_origin;
+  cookie_url_ = url_;
+  if (initializer.OriginToCommit()) {
+    // Origin to commit is specified by the browser process, it must be taken
+    // and used directly. It is currently supplied only for session history
+    // navigations, where the origin was already calcuated previously and
+    // stored on the session history entry.
+    document_origin = initializer.OriginToCommit();
+  } else {
+    if (Document* owner_document = initializer.OwnerDocument()) {
+      // Alias certain security properties from |owner_document|. Used for
+      // the case of about:blank pages inheriting the security properties of
+      // their requestor context.
+      // Note that this is currently somewhat broken; Blink always inherits
+      // from the parent or opener, even though it should actually be
+      // inherited from the request initiator.
+      document_origin = owner_document->GetMutableSecurityOrigin();
+      cookie_url_ = owner_document->CookieURL();
+      if (url_.IsEmpty())
+        last_origin_document_csp_ = owner_document->GetContentSecurityPolicy();
+    } else {
+      // Otherwise, create an origin that propagates precursor information
+      // as needed. For non-opaque origins, this creates a standard tuple
+      // origin, but for opaque origins, it creates an origin with the
+      // initiator origin as the precursor.
+      document_origin = SecurityOrigin::CreateWithReferenceOrigin(
+          url_, initializer.InitiatorOrigin().get());
+    }
+  }
+
   if (IsSandboxed(kSandboxOrigin)) {
-    cookie_url_ = url_;
-    scoped_refptr<SecurityOrigin> security_origin =
-        SecurityOrigin::CreateUniqueOpaque();
+    DCHECK(!initializer.ContextDocument());
+    scoped_refptr<SecurityOrigin> sandboxed_origin =
+        initializer.OriginToCommit() ? initializer.OriginToCommit()
+                                     : document_origin->DeriveNewOpaqueOrigin();
+
     // If we're supposed to inherit our security origin from our
     // owner, but we're also sandboxed, the only things we inherit are
     // the origin's potential trustworthiness and the ability to
     // load local resources. The latter lets about:blank iframes in
     // file:// URL documents load images and other resources from
     // the file system.
-    Document* owner = initializer.OwnerDocument();
-    if (owner) {
-      if (owner->GetSecurityOrigin()->IsPotentiallyTrustworthy())
-        security_origin->SetOpaqueOriginIsPotentiallyTrustworthy(true);
-      if (owner->GetSecurityOrigin()->CanLoadLocalResources())
-        security_origin->GrantLoadLocalResources();
-      if (url_.IsEmpty())
-        last_origin_document_csp_ = owner->GetContentSecurityPolicy();
+    if (initializer.OwnerDocument()) {
+      if (document_origin->IsPotentiallyTrustworthy())
+        sandboxed_origin->SetOpaqueOriginIsPotentiallyTrustworthy(true);
+      if (document_origin->CanLoadLocalResources())
+        sandboxed_origin->GrantLoadLocalResources();
+      if (url_.IsEmpty()) {
+        last_origin_document_csp_ =
+            initializer.OwnerDocument()->GetContentSecurityPolicy();
+      }
     }
-    SetSecurityOrigin(std::move(security_origin));
-  } else if (Document* owner = initializer.OwnerDocument()) {
-    cookie_url_ = owner->CookieURL();
-    // We alias the SecurityOrigins to match Firefox, see Bug 15313
-    // https://bugs.webkit.org/show_bug.cgi?id=15313
-    SetSecurityOrigin(owner->GetMutableSecurityOrigin());
-    if (url_.IsEmpty())
-      last_origin_document_csp_ = owner->GetContentSecurityPolicy();
-  } else {
     cookie_url_ = url_;
-    SetSecurityOrigin(SecurityOrigin::Create(url_));
+    SetSecurityOrigin(std::move(sandboxed_origin));
+  } else {
+    SetSecurityOrigin(std::move(document_origin));
   }
 
   // Set the address space before setting up CSP, as the latter may override

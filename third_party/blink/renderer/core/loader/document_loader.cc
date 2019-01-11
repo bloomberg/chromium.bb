@@ -190,6 +190,11 @@ DocumentLoader::DocumentLoader(
   // where the redirects originated.
   if (is_client_redirect_)
     AppendRedirect(frame_->GetDocument()->Url());
+
+  if (!navigation_params->origin_to_commit.IsNull()) {
+    origin_to_commit_ =
+        navigation_params->origin_to_commit.Get()->IsolatedCopy();
+  }
 }
 
 FrameLoader& DocumentLoader::GetFrameLoader() const {
@@ -788,14 +793,19 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
   // Prepare a DocumentInit before clearing the frame, because it may need to
   // inherit an aliased security context.
   Document* owner_document = nullptr;
+  scoped_refptr<const SecurityOrigin> initiator_origin =
+      request_.RequestorOrigin();
+
   // TODO(dcheng): This differs from the behavior of both IE and Firefox: the
   // origin is inherited from the document that loaded the URL.
   if (Document::ShouldInheritSecurityOriginFromOwner(Url())) {
     Frame* owner_frame = frame_->Tree().Parent();
     if (!owner_frame)
       owner_frame = frame_->Loader().Opener();
-    if (owner_frame && owner_frame->IsLocalFrame())
+    if (owner_frame && owner_frame->IsLocalFrame()) {
       owner_document = ToLocalFrame(owner_frame)->GetDocument();
+      initiator_origin = owner_document->GetSecurityOrigin();
+    }
   }
   DCHECK(frame_->GetPage());
 
@@ -804,7 +814,7 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
     parsing_policy = kForceSynchronousParsing;
 
   InstallNewDocument(
-      Url(), owner_document,
+      Url(), initiator_origin, owner_document,
       frame_->ShouldReuseDefaultView(Url(), GetContentSecurityPolicy())
           ? WebGlobalObjectReusePolicy::kUseExisting
           : WebGlobalObjectReusePolicy::kCreateNew,
@@ -1213,6 +1223,7 @@ void MergeFeaturesFromOriginPolicy(WTF::String& feature_policy,
 
 void DocumentLoader::InstallNewDocument(
     const KURL& url,
+    const scoped_refptr<const SecurityOrigin> initiator_origin,
     Document* owner_document,
     WebGlobalObjectReusePolicy global_object_reuse_policy,
     const AtomicString& mime_type,
@@ -1252,6 +1263,8 @@ void DocumentLoader::InstallNewDocument(
           .WithDocumentLoader(this)
           .WithURL(url)
           .WithOwnerDocument(owner_document)
+          .WithInitiatorOrigin(initiator_origin)
+          .WithOriginToCommit(origin_to_commit_)
           .WithNewRegistrationContext(),
       false);
 
@@ -1354,7 +1367,7 @@ void DocumentLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
     Document* owner_document,
     WebGlobalObjectReusePolicy global_object_reuse_policy,
     const String& source) {
-  InstallNewDocument(url, owner_document, global_object_reuse_policy,
+  InstallNewDocument(url, nullptr, owner_document, global_object_reuse_policy,
                      MimeType(), response_.TextEncodingName(),
                      InstallNewDocumentReason::kJavascriptURL,
                      kForceSynchronousParsing, NullURL());
