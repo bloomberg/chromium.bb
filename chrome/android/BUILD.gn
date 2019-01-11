@@ -1485,7 +1485,10 @@ template("chrome_public_apk_or_module_tmpl") {
 chrome_public_apk_or_module_tmpl("chrome_public_apk") {
   target_type = "android_apk"
   apk_name = "ChromePublic"
-  if (!is_java_debug) {
+
+  # Having //clank present causes different flags because of how play services
+  # is wired up.
+  if (!is_java_debug && !enable_chrome_android_internal) {
     proguard_expectations_file =
         "//chrome/android/java/chrome_public_apk.proguard_flags.expected"
   }
@@ -1495,7 +1498,10 @@ chrome_public_apk_or_module_tmpl("chrome_modern_public_apk") {
   target_type = "android_apk"
   apk_name = "ChromeModernPublic"
   is_modern = true
-  if (!is_java_debug) {
+
+  # Having //clank present causes different flags because of how play services
+  # is wired up.
+  if (!is_java_debug && !enable_chrome_android_internal) {
     proguard_expectations_file =
         "//chrome/android/java/chrome_modern_public_apk.proguard_flags.expected"
   }
@@ -1590,7 +1596,10 @@ template("monochrome_public_apk_or_module_tmpl") {
 monochrome_public_apk_or_module_tmpl("monochrome_public_apk") {
   apk_name = "MonochromePublic"
   target_type = "android_apk"
-  if (!is_java_debug) {
+
+  # Having //clank present causes different flags because of how play services
+  # is wired up.
+  if (!is_java_debug && !enable_chrome_android_internal) {
     proguard_expectations_file =
         "//chrome/android/java/monochrome_public_apk.proguard_flags.expected"
   }

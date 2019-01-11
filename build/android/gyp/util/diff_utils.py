@@ -5,7 +5,6 @@
 # found in the LICENSE file.
 
 import difflib
-import itertools
 
 
 def DiffFileContents(expected_path, actual_path, description):
@@ -24,9 +23,16 @@ def DiffFileContents(expected_path, actual_path, description):
       tofile=actual_path,
       n=0)
 
-  return '\n'.join(
-      itertools.chain(
-          diff, ('Detected {} change.'.format(description),
-                 'If this is expected, please update the file by running:',
-                 'cp {} {}'.format(actual_path, expected_path),
-                 'Otherwise please fix the issue before submitting a CL')))
+  return """
+Detected change in {}.
+If change is expected, please update the expectations by running:
+
+    cd out/Release
+    cp {} {}
+
+If you have hit this error on a bot and the error is for a public target,
+build locally with enable_chrome_android_internal=false.
+
+Here is the diff:
+{}
+""".format(description, actual_path, expected_path, '\n'.join(diff))
