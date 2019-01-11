@@ -130,4 +130,8 @@ TelemetryService* ServicesDelegateAndroid::GetTelemetryService() const {
   return telemetry_service_.get();
 }
 
+std::string ServicesDelegateAndroid::GetSafetyNetId() const {
+  return database_manager_->GetSafetyNetId();
+}
+
 }  // namespace safe_browsing

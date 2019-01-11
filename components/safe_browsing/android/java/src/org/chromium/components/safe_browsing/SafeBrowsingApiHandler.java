@@ -57,6 +57,14 @@ public interface SafeBrowsingApiHandler {
     public boolean init(Observer result, boolean enableLocalBlacklists);
 
     /**
+     * Returns the Safety Net ID of the device. Checks to make sure that the feature to report
+     * telemetry for APK downloads is enabled. This should not be called for AW.
+     *
+     * @return the Safety Net ID of the device.
+     */
+    public String getSafetyNetId();
+
+    /**
      * Start a URI-lookup to determine if it matches one of the specified threats.
      * This is called on every URL resource Chrome loads, on the same sequence as |init|.
      */

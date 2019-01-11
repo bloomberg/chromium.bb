@@ -236,4 +236,9 @@ TelemetryService* ServicesDelegateDesktop::GetTelemetryService() const {
   return nullptr;
 }
 
+std::string ServicesDelegateDesktop::GetSafetyNetId() const {
+  NOTREACHED() << "Only implemented on Android";
+  return "";
+}
+
 }  // namespace safe_browsing

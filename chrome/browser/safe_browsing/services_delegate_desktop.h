@@ -76,6 +76,8 @@ class ServicesDelegateDesktop : public ServicesDelegate {
   void RemoveTelemetryService() override;
   TelemetryService* GetTelemetryService() const override;
 
+  std::string GetSafetyNetId() const override;
+
   std::unique_ptr<ClientSideDetectionService> csd_service_;
   std::unique_ptr<DownloadProtectionService> download_service_;
   std::unique_ptr<IncidentReportingService> incident_service_;

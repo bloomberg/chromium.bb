@@ -223,6 +223,28 @@ bool SafeBrowsingApiHandlerBridge::CheckApiIsSupported() {
   return j_api_handler_.obj() != nullptr;
 }
 
+std::string SafeBrowsingApiHandlerBridge::GetSafetyNetId() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  bool feature_enabled =
+      base::FeatureList::IsEnabled(kTelemetryForApkDownloads);
+  DCHECK(feature_enabled);
+
+  if (!feature_enabled)
+    return "";
+
+  static std::string safety_net_id;
+  if (safety_net_id.empty()) {
+    JNIEnv* env = AttachCurrentThread();
+    ScopedJavaLocalRef<jstring> jsafety_net_id =
+        Java_SafeBrowsingApiBridge_getSafetyNetId(env, j_api_handler_);
+    safety_net_id =
+        jsafety_net_id ? ConvertJavaStringToUTF8(env, jsafety_net_id) : "";
+    DVLOG(1) << __FUNCTION__ << ": safety_net_id: " << safety_net_id;
+  }
+
+  return safety_net_id;
+}
+
 void SafeBrowsingApiHandlerBridge::StartURLCheck(
     std::unique_ptr<SafeBrowsingApiHandler::URLCheckCallbackMeta> callback,
     const GURL& url,
