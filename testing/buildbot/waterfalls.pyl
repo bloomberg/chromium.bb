@@ -3423,7 +3423,7 @@
       },
       'WebRTC Chromium Linux Tester': {
         'test_suites': {
-          'gtest_tests': 'webrtc_chromium_tests_with_simple_baremetal_tests',
+          'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
         },
       },
       'WebRTC Chromium Mac Builder': {
