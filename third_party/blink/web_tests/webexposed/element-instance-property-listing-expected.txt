@@ -43,9 +43,12 @@ namespace http://www.w3.org/1999/xhtml
     property ariaDescribedBy
     property ariaDetails
     property ariaDisabled
+    property ariaErrorMessage
     property ariaExpanded
+    property ariaFlowTo
     property ariaHasPopup
     property ariaHidden
+    property ariaKeyShortcuts
     property ariaLabel
     property ariaLabelledBy
     property ariaLevel
@@ -1218,9 +1221,12 @@ namespace http://www.w3.org/2000/svg
     property ariaDescribedBy
     property ariaDetails
     property ariaDisabled
+    property ariaErrorMessage
     property ariaExpanded
+    property ariaFlowTo
     property ariaHasPopup
     property ariaHidden
+    property ariaKeyShortcuts
     property ariaLabel
     property ariaLabelledBy
     property ariaLevel
