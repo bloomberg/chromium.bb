@@ -17,7 +17,7 @@ const GROUP_INTERESTING_CHILD_THRESHOLD = 2;
  *    - isInterestingSubtree
  *    - isTextInput
  *    - isNotContainer
- *    - isContextMenu
+ *    - isSwitchAccessMenu
  *
  * In addition to these basic predicates, there are also methods to get the
  * restrictions required by TreeWalker for specific traversal situations.
@@ -164,11 +164,11 @@ const SwitchAccessPredicate = {
       node.role !== RoleType.WEB_VIEW,
 
   /**
-   * Returns true if |node| is the context menu.
+   * Returns true if |node| is the Switch Access menu.
    * @param {!chrome.automation.AutomationNode} node
    * @return {boolean}
    */
-  isContextMenu: (node) => node.htmlAttributes.id === ContextMenuManager.MenuId,
+  isSwitchAccessMenu: (node) => node.htmlAttributes.id === MenuManager.MenuId,
 
   /**
    * Returns a Restrictions object ready to be passed to AutomationTreeWalker.
@@ -221,13 +221,13 @@ const SwitchAccessPredicate = {
   },
 
   /**
-   * Returns a Restrictions object for finding the Context Menu root.
+   * Returns a Restrictions object for finding the Switch Access Menu root.
    * @return {!AutomationTreeWalkerRestriction}
    */
-  contextMenuDiscoveryRestrictions: () => {
+  switchAccessMenuDiscoveryRestrictions: () => {
     return {
       leaf: SwitchAccessPredicate.isNotContainer,
-      visit: SwitchAccessPredicate.isContextMenu
+      visit: SwitchAccessPredicate.isSwitchAccessMenu
     };
   },
 

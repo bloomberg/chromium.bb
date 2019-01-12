@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 /**
- * Class to handle the Switch Access Context Menu panel.
+ * Class to handle the Switch Access menu panel.
  * @constructor
  */
 function Panel() {}
 
-// This must be kept in sync with the div ID in panel.html
-Panel.MENU_ID = 'switchaccess_contextmenu_actions';
-// This must be kept in sync with the class name in panel.css
+// This must be kept in sync with the div ID in menu_panel.html
+Panel.MENU_ID = 'switchaccess_menu_actions';
+// This must be kept in sync with the class name in menu_panel.css
 Panel.FOCUS_CLASS = 'focus';
 
 Panel.readyReceived = false;

@@ -3,19 +3,19 @@
 // found in the LICENSE file.
 
 /**
- * Class to handle interactions with the context menu, including moving through
- * and selecting actions.
+ * Class to handle interactions with the Switch Access menu, including moving
+ * through and selecting actions.
  */
 
-class ContextMenuManager {
+class MenuManager {
   /**
    * @param {!NavigationManager} navigationManager
    * @param {!chrome.automation.AutomationNode} desktop
    */
   constructor(navigationManager, desktop) {
     /**
-     * A list of the ContextMenu actions that are currently enabled.
-     * @private {!Array<ContextMenuManager.Action>}
+     * A list of the Menu actions that are currently enabled.
+     * @private {!Array<MenuManager.Action>}
      */
     this.actions_ = [];
 
@@ -32,39 +32,39 @@ class ContextMenuManager {
     this.desktop_ = desktop;
 
     /**
-     * The root node of the context menu.
+     * The root node of the menu.
      * @private {chrome.automation.AutomationNode}
      */
     this.menuNode_;
 
     /**
-     * The current node of the context menu.
+     * The current node of the menu.
      * @private {chrome.automation.AutomationNode}
      */
     this.node_;
 
     /**
-     * Keeps track of when we're in the context menu.
+     * Keeps track of when we're in the Switch Access menu.
      * @private {boolean}
      */
-    this.inContextMenu_ = false;
+    this.inMenu_ = false;
 
     this.init_();
   }
 
   /**
-   * Enter the context menu and highlight the first available action.
+   * Enter the menu and highlight the first available action.
    *
    * @param {!chrome.automation.AutomationNode} navNode the currently selected
-   *        node, for which the context menu is being displayed.
+   *        node, for which the menu is to be displayed.
    */
   enter(navNode) {
     const actions = this.getActionsForNode_(navNode);
-    this.inContextMenu_ = true;
+    this.inMenu_ = true;
     if (actions !== this.actions_) {
       this.actions_ = actions;
       MessageHandler.sendMessage(
-          MessageHandler.Destination.PANEL, 'setActions', actions);
+          MessageHandler.Destination.MENU_PANEL, 'setActions', actions);
     }
 
     this.node_ = this.menuNode();
@@ -73,30 +73,30 @@ class ContextMenuManager {
       chrome.accessibilityPrivate.setSwitchAccessMenuState(
           true, navNode.location);
     else
-      console.log('Unable to show Switch Access context menu.');
+      console.log('Unable to show Switch Access menu.');
     this.moveForward();
   }
 
   /**
-   * Exits the context menu.
+   * Exits the menu.
    */
   exit() {
     this.clearFocusRing_();
-    this.inContextMenu_ = false;
+    this.inMenu_ = false;
     if (this.node_)
       this.node_ = null;
 
     chrome.accessibilityPrivate.setSwitchAccessMenuState(
-        false, ContextMenuManager.EmptyLocation);
+        false, MenuManager.EmptyLocation);
   }
 
   /**
    * Move to the next available action in the menu. If this is no next action,
-   * select the whole context menu to loop again.
+   * select the whole menu to loop again.
    * @return {boolean} Whether this function had any effect.
    */
   moveForward() {
-    if (!this.node_ || !this.inContextMenu_)
+    if (!this.node_ || !this.inMenu_)
       return false;
 
     this.clearFocusRing_();
@@ -113,12 +113,12 @@ class ContextMenuManager {
   }
 
   /**
-   * Move to the previous available action in the context menu. If we're at the
+   * Move to the previous available action in the menu. If we're at the
    * beginning of the list, start again at the end.
    * @return {boolean} Whether this function had any effect.
    */
   moveBackward() {
-    if (!this.node_ || !this.inContextMenu_)
+    if (!this.node_ || !this.inMenu_)
       return false;
 
     this.clearFocusRing_();
@@ -145,12 +145,12 @@ class ContextMenuManager {
 
   /**
    * Perform the action indicated by the current button (or no action if the
-   * entire menu is selected). Then exit the context menu and return to
-   * traditional navigation.
+   * entire menu is selected). Then exit the menu and return to traditional
+   * navigation.
    * @return {boolean} Whether this function had any effect.
    */
   selectCurrentNode() {
-    if (!this.node_ || !this.inContextMenu_)
+    if (!this.node_ || !this.inMenu_)
       return false;
 
     this.clearFocusRing_();
@@ -169,13 +169,13 @@ class ContextMenuManager {
 
     const treeWalker = new AutomationTreeWalker(
         this.desktop_, constants.Dir.FORWARD,
-        SwitchAccessPredicate.contextMenuDiscoveryRestrictions());
+        SwitchAccessPredicate.switchAccessMenuDiscoveryRestrictions());
     const node = treeWalker.next().node;
     if (node) {
       this.menuNode_ = node;
       return this.menuNode_;
     }
-    console.log('Unable to find the context menu.');
+    console.log('Unable to find the Switch Access menu.');
     return this.desktop_;
   }
 
@@ -190,27 +190,26 @@ class ContextMenuManager {
   /**
    * Determines which menu actions are relevant, given the current node.
    * @param {!chrome.automation.AutomationNode} node
-   * @return {!Array<ContextMenuManager.Action>}
+   * @return {!Array<MenuManager.Action>}
    * @private
    */
   getActionsForNode_(node) {
-    let actions =
-        [ContextMenuManager.Action.CLICK, ContextMenuManager.Action.OPTIONS];
+    let actions = [MenuManager.Action.CLICK, MenuManager.Action.OPTIONS];
 
     if (SwitchAccessPredicate.isTextInput(node))
-      actions.push(ContextMenuManager.Action.DICTATION);
+      actions.push(MenuManager.Action.DICTATION);
 
     if (node.scrollable) {
       // TODO(crbug/920659) This does not work for ARC++. Implement scroll
       // directions via standardActions.
       if (node.scrollX > node.scrollXMin)
-        actions.push(ContextMenuManager.Action.SCROLL_LEFT);
+        actions.push(MenuManager.Action.SCROLL_LEFT);
       if (node.scrollX < node.scrollXMax)
-        actions.push(ContextMenuManager.Action.SCROLL_RIGHT);
+        actions.push(MenuManager.Action.SCROLL_RIGHT);
       if (node.scrollY > node.scrollYMin)
-        actions.push(ContextMenuManager.Action.SCROLL_UP);
+        actions.push(MenuManager.Action.SCROLL_UP);
       if (node.scrollY < node.scrollYMax)
-        actions.push(ContextMenuManager.Action.SCROLL_DOWN);
+        actions.push(MenuManager.Action.SCROLL_DOWN);
     }
 
     return actions;
@@ -225,30 +224,30 @@ class ContextMenuManager {
   }
 
   /**
-   * Receive a message from the context menu, and perform the appropriate
+   * Receive a message from the Switch Access menu, and perform the appropriate
    * action.
    * @private
    */
   onMessageReceived_(event) {
     this.exit();
 
-    if (event.data === ContextMenuManager.Action.CLICK)
+    if (event.data === MenuManager.Action.CLICK)
       this.navigationManager_.selectCurrentNode();
-    else if (event.data === ContextMenuManager.Action.DICTATION)
+    else if (event.data === MenuManager.Action.DICTATION)
       chrome.accessibilityPrivate.toggleDictation();
-    else if (event.data === ContextMenuManager.Action.OPTIONS)
+    else if (event.data === MenuManager.Action.OPTIONS)
       window.switchAccess.showOptionsPage();
     else if (
-        event.data === ContextMenuManager.Action.SCROLL_DOWN ||
-        event.data === ContextMenuManager.Action.SCROLL_UP ||
-        event.data === ContextMenuManager.Action.SCROLL_LEFT ||
-        event.data === ContextMenuManager.Action.SCROLL_RIGHT)
+        event.data === MenuManager.Action.SCROLL_DOWN ||
+        event.data === MenuManager.Action.SCROLL_UP ||
+        event.data === MenuManager.Action.SCROLL_LEFT ||
+        event.data === MenuManager.Action.SCROLL_RIGHT)
       this.navigationManager_.scroll(event.data);
   }
 
   /**
-   * Send a message to the context menu to update the focus ring around the
-   * current node.
+   * Send a message to the menu to update the focus ring around the current
+   * node.
    * TODO(anastasi): Revisit focus rings before launch
    * @private
    * @param {boolean=} opt_clear If true, will clear the focus ring.
@@ -259,16 +258,16 @@ class ContextMenuManager {
     const id = this.node_.htmlAttributes.id;
     const onOrOff = opt_clear ? 'off' : 'on';
     MessageHandler.sendMessage(
-        MessageHandler.Destination.PANEL, 'setFocusRing', [id, onOrOff]);
+        MessageHandler.Destination.MENU_PANEL, 'setFocusRing', [id, onOrOff]);
   }
 }
 
 /**
- * Actions available in the Context Menu.
+ * Actions available in the Switch Access Menu.
  * @enum {string}
  * @const
  */
-ContextMenuManager.Action = {
+MenuManager.Action = {
   CLICK: 'click',
   DICTATION: 'dictation',
   OPTIONS: 'options',
@@ -281,16 +280,16 @@ ContextMenuManager.Action = {
 };
 
 /**
- * The ID for the div containing the context menu.
+ * The ID for the div containing the Switch Access menu.
  * @const
  */
-ContextMenuManager.MenuId = 'switchaccess_contextmenu_actions';
+MenuManager.MenuId = 'switchaccess_menu_actions';
 
 /**
  * Empty location, used for hiding the menu.
  * @const
  */
-ContextMenuManager.EmptyLocation = {
+MenuManager.EmptyLocation = {
   left: 0,
   top: 0,
   width: 0,

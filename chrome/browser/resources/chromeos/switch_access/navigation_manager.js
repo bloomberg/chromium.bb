@@ -12,9 +12,9 @@ class NavigationManager {
    */
   constructor(desktop) {
     /**
-     * Handles communication with and navigation within the context menu.
+     * Handles communication with and navigation within the Switch Access menu.
      */
-    this.contextMenuManager_ = new ContextMenuManager(this, desktop);
+    this.menuManager_ = new MenuManager(this, desktop);
 
     /**
      *
@@ -58,15 +58,15 @@ class NavigationManager {
   }
 
   /**
-   * Open the context menu for the currently highlighted node.
+   * Open the Switch Access menu for the currently highlighted node.
    */
-  enterContextMenu() {
-    // If we're currently visiting the context menu, this command should select
-    // the highlighted element.
-    if (this.contextMenuManager_.selectCurrentNode())
+  enterMenu() {
+    // If we're currently visiting the Switch Access menu, this command should
+    // select the highlighted element.
+    if (this.menuManager_.selectCurrentNode())
       return;
 
-    this.contextMenuManager_.enter(this.node_);
+    this.menuManager_.enter(this.node_);
   }
 
   /**
@@ -75,7 +75,7 @@ class NavigationManager {
    * SwitchAccess scope tree to loop again.
    */
   moveBackward() {
-    if (this.contextMenuManager_.moveBackward())
+    if (this.menuManager_.moveBackward())
       return;
 
     this.startAtValidNode_();
@@ -112,7 +112,7 @@ class NavigationManager {
    * next node, |this.node_| will be set equal to |this.scope_| to loop again.
    */
   moveForward() {
-    if (this.contextMenuManager_.moveForward())
+    if (this.menuManager_.moveForward())
       return;
 
     this.startAtValidNode_();
@@ -141,7 +141,7 @@ class NavigationManager {
 
   /**
    * Scrolls the current node in the direction indicated by |scrollAction|.
-   * @param {!ContextMenuManager.Action} scrollAction
+   * @param {!MenuManager.Action} scrollAction
    */
   scroll(scrollAction) {
     // Find the closest ancestor to the current node that is scrollable.
@@ -151,17 +151,17 @@ class NavigationManager {
     if (!scrollNode)
       return;
 
-    if (scrollAction === ContextMenuManager.Action.SCROLL_DOWN)
+    if (scrollAction === MenuManager.Action.SCROLL_DOWN)
       scrollNode.scrollDown(() => {});
-    else if (scrollAction === ContextMenuManager.Action.SCROLL_UP)
+    else if (scrollAction === MenuManager.Action.SCROLL_UP)
       scrollNode.scrollUp(() => {});
-    else if (scrollAction === ContextMenuManager.Action.SCROLL_LEFT)
+    else if (scrollAction === MenuManager.Action.SCROLL_LEFT)
       scrollNode.scrollLeft(() => {});
-    else if (scrollAction === ContextMenuManager.Action.SCROLL_RIGHT)
+    else if (scrollAction === MenuManager.Action.SCROLL_RIGHT)
       scrollNode.scrollRight(() => {});
-    else if (scrollAction === ContextMenuManager.Action.SCROLL_FORWARD)
+    else if (scrollAction === MenuManager.Action.SCROLL_FORWARD)
       scrollNode.scrollForward(() => {});
-    else if (scrollAction === ContextMenuManager.Action.SCROLL_BACKWARD)
+    else if (scrollAction === MenuManager.Action.SCROLL_BACKWARD)
       scrollNode.scrollBackward(() => {});
     else
       console.log('Unrecognized scroll action: ', scrollAction);
@@ -174,7 +174,7 @@ class NavigationManager {
    * interesting, perform the default action on it.
    */
   selectCurrentNode() {
-    if (this.contextMenuManager_.selectCurrentNode())
+    if (this.menuManager_.selectCurrentNode())
       return;
 
     if (!this.node_.role)
