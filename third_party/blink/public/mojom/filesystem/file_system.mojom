@@ -5,6 +5,7 @@
 module blink.mojom;
 
 import "components/services/filesystem/public/interfaces/types.mojom";
+import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 import "mojo/public/mojom/base/file_error.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
@@ -98,9 +99,9 @@ interface FileSystemManager {
   // filesystem and a success error code if the operation succeeds. If the
   // operation fails, |error_code| indicates the reason for failure.
   // TODO(https://crbug.com/873661): Make interface per frame/worker and remove
-  // |origin_url|.
+  // |origin|.
   [Sync]
-  Open(url.mojom.Url origin_url, blink.mojom.FileSystemType file_system_type) =>
+  Open(url.mojom.Origin origin, blink.mojom.FileSystemType file_system_type) =>
       (string name,
        url.mojom.Url root_url,
        mojo_base.mojom.FileError error_code);

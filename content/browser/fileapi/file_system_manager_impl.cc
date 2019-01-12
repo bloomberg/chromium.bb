@@ -156,7 +156,7 @@ void FileSystemManagerImpl::BindRequest(
   bindings_.AddBinding(this, std::move(request));
 }
 
-void FileSystemManagerImpl::Open(const GURL& origin_url,
+void FileSystemManagerImpl::Open(const url::Origin& origin,
                                  blink::mojom::FileSystemType file_system_type,
                                  OpenCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -166,11 +166,12 @@ void FileSystemManagerImpl::Open(const GURL& origin_url,
     RecordAction(base::UserMetricsAction("OpenFileSystemPersistent"));
   }
   context_->OpenFileSystem(
-      origin_url, mojo::ConvertTo<storage::FileSystemType>(file_system_type),
+      origin.GetURL(),
+      mojo::ConvertTo<storage::FileSystemType>(file_system_type),
       storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::BindOnce(&FileSystemManagerImpl::DidOpenFileSystem, GetWeakPtr(),
                      std::move(callback)));
-};
+}
 
 void FileSystemManagerImpl::ResolveURL(const GURL& filesystem_url,
                                        ResolveURLCallback callback) {

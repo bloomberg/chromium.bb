@@ -31,6 +31,8 @@
 #include "third_party/blink/renderer/modules/filesystem/local_file_system.h"
 
 #include <memory>
+#include <utility>
+
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -65,7 +67,7 @@ void ReportFailure(std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
 class CallbackWrapper final
     : public GarbageCollectedFinalized<CallbackWrapper> {
  public:
-  CallbackWrapper(std::unique_ptr<AsyncFileSystemCallbacks> c)
+  explicit CallbackWrapper(std::unique_ptr<AsyncFileSystemCallbacks> c)
       : callbacks_(std::move(c)) {}
   virtual ~CallbackWrapper() = default;
   std::unique_ptr<AsyncFileSystemCallbacks> Release() {
@@ -153,16 +155,14 @@ void LocalFileSystem::FileSystemAllowedInternal(
     mojom::blink::FileSystemType type,
     CallbackWrapper* callbacks,
     SynchronousType sync_type) {
-  KURL storage_partition =
-      KURL(NullURL(), context->GetSecurityOrigin()->ToString());
   std::unique_ptr<AsyncFileSystemCallbacks> async_callbacks =
       callbacks->Release();
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context);
   if (sync_type == kSynchronous) {
-    dispatcher.OpenFileSystemSync(storage_partition, type,
+    dispatcher.OpenFileSystemSync(context->GetSecurityOrigin(), type,
                                   std::move(async_callbacks));
   } else {
-    dispatcher.OpenFileSystem(storage_partition, type,
+    dispatcher.OpenFileSystem(context->GetSecurityOrigin(), type,
                               std::move(async_callbacks));
   }
 }

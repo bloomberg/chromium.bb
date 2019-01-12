@@ -12,6 +12,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
@@ -70,7 +71,7 @@ class CONTENT_EXPORT FileSystemManagerImpl
   void BindRequest(blink::mojom::FileSystemManagerRequest request);
 
   // blink::mojom::FileSystem
-  void Open(const GURL& origin_url,
+  void Open(const url::Origin& origin,
             blink::mojom::FileSystemType file_system_type,
             OpenCallback callback) override;
   void ResolveURL(const GURL& filesystem_url,

@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_SYSTEM_DISPATCHER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_SYSTEM_DISPATCHER_H_
 
+#include <memory>
+
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
@@ -20,6 +22,7 @@ namespace blink {
 
 class KURL;
 class ExecutionContext;
+class SecurityOrigin;
 
 // Sends messages via mojo to the blink::mojom::FileSystemManager service
 // running in the browser process. It is owned by ExecutionContext, and
@@ -43,10 +46,10 @@ class FileSystemDispatcher
 
   mojom::blink::FileSystemManager& GetFileSystemManager();
 
-  void OpenFileSystem(const KURL& url,
+  void OpenFileSystem(const SecurityOrigin* origin,
                       mojom::blink::FileSystemType type,
                       std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
-  void OpenFileSystemSync(const KURL& url,
+  void OpenFileSystemSync(const SecurityOrigin* origin,
                           mojom::blink::FileSystemType type,
                           std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
 
