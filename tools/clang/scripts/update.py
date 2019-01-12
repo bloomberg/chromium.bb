@@ -35,7 +35,7 @@ if use_head_revision:
   CLANG_REVISION = 'HEAD'
 
 # This is incremented when pushing a new build of Clang at the same revision.
-CLANG_SUB_REVISION=1
+CLANG_SUB_REVISION=2
 
 PACKAGE_VERSION = "%s-%s" % (CLANG_REVISION, CLANG_SUB_REVISION)
 
@@ -526,10 +526,12 @@ def UpdateClang(args):
   cxxflags = []
   ldflags = []
 
+  targets = 'AArch64;ARM;Mips;PowerPC;SystemZ;WebAssembly;X86'
   base_cmake_args = ['-GNinja',
                      '-DCMAKE_BUILD_TYPE=Release',
                      '-DLLVM_ENABLE_ASSERTIONS=ON',
                      '-DLLVM_ENABLE_TERMINFO=OFF',
+                     '-DLLVM_TARGETS_TO_BUILD=' + targets,
                      # Statically link MSVCRT to avoid DLL dependencies.
                      '-DLLVM_USE_CRT_RELEASE=MT',
                      '-DCLANG_PLUGIN_SUPPORT=OFF',
