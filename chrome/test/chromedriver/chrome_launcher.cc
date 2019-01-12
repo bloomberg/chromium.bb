@@ -89,6 +89,11 @@ const char* const kDesktopSwitches[] = {
     "use-mock-keychain",
     "test-type=webdriver",
     "force-fieldtrials=SiteIsolationExtensions/Control",
+    // TODO(yoichio): This is temporary switch to support chrome internal
+    // components migration from the old web APIs.
+    // After completion of the migration, we should remove this.
+    // See crbug.com/911943 for detail.
+    "enable-blink-features=ShadowDOMV0",
 };
 
 const char* const kAndroidSwitches[] = {
