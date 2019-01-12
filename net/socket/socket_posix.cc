@@ -248,14 +248,15 @@ bool SocketPosix::IsConnected() const {
   return true;
 
 #else   // OS_FUCHSIA
-  // Fuchsia currently doesn't support MSG_PEEK flag in recv(), so the code
-  // above doesn't work on Fuchsia. IsConnected() must return true if the
-  // connection is alive or if it was terminated but there is still data pending
-  // in the incoming buffer.
-  //   1. Check if the connection is alive using poll(POLLRDHUP).
-  //   2. If closed, then use ioctl(FIONREAD) to check if there is data to be
-  //   read.
   // TODO(crbug.com/887587): Remove once MSG_PEEK is implemented on Fuchsia.
+  // Fuchsia currently doesn't support MSG_PEEK flag in recv(), so the code
+  // above doesn't work on Fuchsia.
+
+  // If there is no peer address then this socket was never connected.
+  if (!HasPeerAddress())
+    return false;
+
+  // Use poll(POLLRDHUP) to check whether the socket is disconnected.
   struct pollfd pollfd;
   pollfd.fd = socket_fd_;
   pollfd.events = POLLRDHUP;
@@ -263,12 +264,14 @@ bool SocketPosix::IsConnected() const {
   const int poll_result = HANDLE_EINTR(poll(&pollfd, 1, 0));
 
   if (poll_result == 1) {
+    // The socket is disconnected, so check whether it has data to read.
     int bytes_available;
     int ioctl_result =
         HANDLE_EINTR(ioctl(socket_fd_, FIONREAD, &bytes_available));
     return ioctl_result == 0 && bytes_available > 0;
   }
 
+  // The socket is still connected, or poll() reported an error.
   return poll_result == 0;
 #endif  // OS_FUCHSIA
 }
@@ -290,14 +293,18 @@ bool SocketPosix::IsConnectedAndIdle() const {
     return false;
 
   return true;
-
 #else   // OS_FUCHSIA
-  // Fuchsia currently doesn't support MSG_PEEK flag in recv(), so the code
-  // above doesn't work on Fuchsia. Use poll(POLLIN) to check state of the
-  // socket. POLLIN is signaled if the socket is readable or if it was closed by
-  // the peer, i.e. the socket is connected and idle if and only if POLLIN is
-  // not signaled.
   // TODO(crbug.com/887587): Remove once MSG_PEEK is implemented.
+  // Fuchsia currently doesn't support MSG_PEEK flag in recv(), so the code
+  // above doesn't work on Fuchsia.
+
+  // If there is no peer address then this socket was never connected.
+  if (!HasPeerAddress())
+    return false;
+
+  // Use poll(POLLIN) to check state of the socket. POLLIN is signaled if the
+  // socket is readable or if it was closed by the peer, i.e. the socket is
+  // connected and idle if and only if POLLIN is not signaled.
   struct pollfd pollfd;
   pollfd.fd = socket_fd_;
   pollfd.events = POLLIN;
