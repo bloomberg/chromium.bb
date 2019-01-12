@@ -9,17 +9,21 @@ import android.content.res.ColorStateList;
 import android.support.v7.content.res.AppCompatResources;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider.IncognitoStateObserver;
 import org.chromium.chrome.browser.toolbar.ThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ThemeColorProvider.ThemeColorObserver;
 
-/** A ThemeColorProvider for the tab switcher UI elements. */
-public class TabSwitcherThemeColorProvider implements ThemeColorProvider, IncognitoStateObserver {
+/** A ThemeColorProvider for the bottom toolbar. */
+public class BottomToolbarThemeColorProvider implements ThemeColorProvider, IncognitoStateObserver {
     /** List of {@link ThemeColorObserver}s. These are used to broadcast events to listeners. */
     private final ObserverList<ThemeColorObserver> mThemeColorObservers;
 
@@ -38,21 +42,45 @@ public class TabSwitcherThemeColorProvider implements ThemeColorProvider, Incogn
     /** Used to know when incognito mode is entered or exited. */
     private IncognitoStateProvider mIncognitoStateProvider;
 
+    /** The overview mode manager. */
+    private OverviewModeBehavior mOverviewModeBehavior;
+
+    /** Observer to know when overview mode is entered/exited. */
+    private OverviewModeObserver mOverviewModeObserver;
+
     /** Whether theme is dark mode. */
     private boolean mIsUsingDarkBackground;
 
     /** Whether app is in incognito mode. */
     private boolean mIsIncognito;
 
-    public TabSwitcherThemeColorProvider(Context context) {
+    /** Whether app is in overview mode. */
+    private boolean mIsOverviewVisible;
+
+    public BottomToolbarThemeColorProvider() {
         mThemeColorObservers = new ObserverList<ThemeColorObserver>();
 
+        final Context context = ContextUtils.getApplicationContext();
         mDarkModeTint = AppCompatResources.getColorStateList(context, R.color.light_mode_tint);
         mLightModeTint = AppCompatResources.getColorStateList(context, R.color.dark_mode_tint);
         mLightPrimaryColor = ApiCompatibilityUtils.getColor(
                 context.getResources(), R.color.modern_primary_color);
         mDarkPrimaryColor = ApiCompatibilityUtils.getColor(
                 context.getResources(), R.color.incognito_modern_primary_color);
+
+        mOverviewModeObserver = new EmptyOverviewModeObserver() {
+            @Override
+            public void onOverviewModeStartedShowing(boolean showToolbar) {
+                mIsOverviewVisible = true;
+                updateTheme();
+            }
+
+            @Override
+            public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
+                mIsOverviewVisible = false;
+                updateTheme();
+            }
+        };
     }
 
     @Override
@@ -76,20 +104,18 @@ public class TabSwitcherThemeColorProvider implements ThemeColorProvider, Incogn
         updateTheme();
     }
 
-    /**
-     * Called when the accessibility enabled state changes.
-     * @param enabled Whether accessibility is enabled.
-     */
-    public void onAccessibilityStatusChanged(boolean enabled) {
-        updateTheme();
+    void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+        mOverviewModeBehavior = overviewModeBehavior;
+        mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
     }
 
     private void updateTheme() {
         final boolean isAccessibilityEnabled = DeviceClassManager.enableAccessibilityLayout();
         final boolean isHorizontalTabSwitcherEnabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
-        final boolean shouldUseDarkBackground =
-                mIsIncognito && (isAccessibilityEnabled || isHorizontalTabSwitcherEnabled);
+        final boolean shouldUseDarkBackground = mIsIncognito
+                && (isAccessibilityEnabled || isHorizontalTabSwitcherEnabled
+                        || !mIsOverviewVisible);
 
         if (shouldUseDarkBackground == mIsUsingDarkBackground) return;
         mIsUsingDarkBackground = shouldUseDarkBackground;
@@ -104,6 +130,10 @@ public class TabSwitcherThemeColorProvider implements ThemeColorProvider, Incogn
         if (mIncognitoStateProvider != null) {
             mIncognitoStateProvider.removeObserver(this);
             mIncognitoStateProvider = null;
+        }
+        if (mOverviewModeBehavior != null) {
+            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+            mOverviewModeBehavior = null;
         }
         mThemeColorObservers.clear();
     }
