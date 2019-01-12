@@ -1246,7 +1246,6 @@ test("browser_tests") {
 
     if (enable_extensions) {
       sources += [
-        "../browser/accessibility/accessibility_extension_api_browsertest.cc",
         "../browser/apps/platform_apps/api/browser/browser_apitest.cc",
         "../browser/apps/platform_apps/api/media_galleries/media_galleries_apitest.cc",
         "../browser/apps/platform_apps/api/media_galleries/media_galleries_watch_apitest.cc",
@@ -1479,6 +1478,7 @@ test("browser_tests") {
 
       if (is_chromeos) {
         sources += [
+          "../browser/accessibility/accessibility_extension_api_browsertest.cc",
           "../browser/apps/platform_apps/api/arc_apps_private/arc_apps_private_apitest.cc",
           "../browser/extensions/api/system_display/system_display_chromeos_apitest.cc",
         ]
