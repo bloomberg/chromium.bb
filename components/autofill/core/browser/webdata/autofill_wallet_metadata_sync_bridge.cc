@@ -18,6 +18,7 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
@@ -28,6 +29,8 @@ namespace autofill {
 namespace {
 
 using sync_pb::WalletMetadataSpecifics;
+using syncer::EntityChange;
+using syncer::EntityChangeList;
 using syncer::EntityData;
 using syncer::MetadataChangeList;
 
@@ -49,7 +52,16 @@ std::string GetClientTagForSpecificsId(WalletMetadataSpecifics::Type type,
 
 // Returns the wallet metadata specifics id for the specified |metadata_id|.
 std::string GetSpecificsIdForMetadataId(const std::string& metadata_id) {
+  // Metadata id is in the raw format (like profiles/cards from WalletData)
+  // whereas the specifics id is base64-encoded.
   return GetBase64EncodedId(metadata_id);
+}
+
+// Returns the wallet metadata id for the specified |specifics_id|.
+std::string GetMetadataIdForSpecificsId(const std::string& specifics_id) {
+  // The specifics id is base64-encoded whereas the metadata id is in the raw
+  // format (like profiles/cards from WalletData).
+  return GetBase64DecodedId(specifics_id);
 }
 
 // Returns the wallet metadata specifics storage key for the specified |type|
@@ -115,6 +127,91 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillMetadata(
   }
 
   return entity_data;
+}
+
+// Returns AutofillMetadata for |specifics|.
+AutofillMetadata CreateAutofillMetadataFromWalletMetadataSpecifics(
+    const WalletMetadataSpecifics& specifics) {
+  AutofillMetadata metadata;
+  metadata.id = GetMetadataIdForSpecificsId(specifics.id());
+  metadata.use_count = specifics.use_count();
+  metadata.use_date = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(specifics.use_date()));
+
+  switch (specifics.type()) {
+    case WalletMetadataSpecifics::ADDRESS:
+      metadata.has_converted = specifics.address_has_converted();
+      break;
+    case WalletMetadataSpecifics::CARD:
+      metadata.billing_address_id =
+          GetBase64DecodedId(specifics.card_billing_address_id());
+      break;
+    case WalletMetadataSpecifics::UNKNOWN:
+      break;
+  }
+
+  return metadata;
+}
+
+bool HasLocalBillingAddress(const AutofillMetadata& metadata) {
+  return metadata.billing_address_id.size() == kLocalGuidSize;
+}
+
+bool IsRemoteBillingAddressEqualOrBetter(const AutofillMetadata& local,
+                                         const AutofillMetadata& remote) {
+  // If local is empty, remote is better (or equal). Otherwise, if remote is
+  // empty, local is better.
+  if (local.billing_address_id.empty()) {
+    return true;
+  } else if (remote.billing_address_id.empty()) {
+    return false;
+  }
+  // Now we need to decide between non-empty profiles. Prefer id's pointing to
+  // local profiles over ids of non-local profiles.
+  if (HasLocalBillingAddress(local) != HasLocalBillingAddress(remote)) {
+    return HasLocalBillingAddress(remote);
+  }
+  // For both local / both remote, we prefer the more recently used.
+  return remote.use_date >= local.use_date;
+}
+
+AutofillMetadata MergeMetadata(WalletMetadataSpecifics::Type type,
+                               const AutofillMetadata& local,
+                               const AutofillMetadata& remote) {
+  AutofillMetadata merged;
+  DCHECK_EQ(local.id, remote.id);
+  merged.id = local.id;
+
+  switch (type) {
+    case WalletMetadataSpecifics::ADDRESS:
+      merged.has_converted = local.has_converted || remote.has_converted;
+      break;
+    case WalletMetadataSpecifics::CARD:
+      if (IsRemoteBillingAddressEqualOrBetter(local, remote)) {
+        merged.billing_address_id = remote.billing_address_id;
+      } else {
+        merged.billing_address_id = local.billing_address_id;
+      }
+      break;
+    case WalletMetadataSpecifics::UNKNOWN:
+      NOTREACHED();
+      break;
+  }
+
+  // Special case for local models with a use_count of one. This means the local
+  // model was only created, never used. The remote model should always be
+  // preferred.
+  // This situation can happen for new Chromium instances where there is no data
+  // yet on disk, making the use_date artificially high. Once the metadata sync
+  // kicks in, we should use that value.
+  if (local.use_count == 1) {
+    merged.use_count = remote.use_count;
+    merged.use_date = remote.use_date;
+  } else {
+    merged.use_count = std::max(local.use_count, remote.use_count);
+    merged.use_date = std::max(local.use_date, remote.use_date);
+  }
+  return merged;
 }
 
 // Metadata is worth updating if its value is "newer" then before; here "newer"
@@ -249,8 +346,8 @@ base::Optional<syncer::ModelError>
 AutofillWalletMetadataSyncBridge::ApplySyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
-  NOTIMPLEMENTED();
-  return base::nullopt;
+  return MergeRemoteChanges(std::move(metadata_change_list),
+                            std::move(entity_data));
 }
 
 void AutofillWalletMetadataSyncBridge::GetData(StorageKeyList storage_keys,
@@ -361,6 +458,68 @@ void AutofillWalletMetadataSyncBridge::GetDataImpl(
   }
 
   std::move(callback).Run(std::move(batch));
+}
+
+base::Optional<syncer::ModelError>
+AutofillWalletMetadataSyncBridge::MergeRemoteChanges(
+    std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
+    syncer::EntityChangeList entity_data) {
+  bool is_any_local_modified = false;
+
+  AutofillTable* table = GetAutofillTable();
+
+  for (const EntityChange& change : entity_data) {
+    TypeAndMetadataId parsed_storage_key =
+        ParseWalletMetadataStorageKey(change.storage_key());
+    switch (change.type()) {
+      case EntityChange::ACTION_ADD:
+      case EntityChange::ACTION_UPDATE: {
+        const WalletMetadataSpecifics& specifics =
+            change.data().specifics.wallet_metadata();
+        AutofillMetadata remote =
+            CreateAutofillMetadataFromWalletMetadataSpecifics(specifics);
+        auto it = cache_.find(change.storage_key());
+        base::Optional<AutofillMetadata> local = base::nullopt;
+        if (it != cache_.end()) {
+          local = it->second;
+        }
+
+        if (!local) {
+          cache_[change.storage_key()] = remote;
+          is_any_local_modified |= AddServerMetadata(
+              GetAutofillTable(), parsed_storage_key.type, remote);
+          continue;
+        }
+
+        // Resolve the conflict between the local and the newly received remote.
+        AutofillMetadata merged =
+            MergeMetadata(parsed_storage_key.type, *local, remote);
+        if (merged != *local) {
+          cache_[change.storage_key()] = merged;
+          is_any_local_modified |=
+              UpdateServerMetadata(table, parsed_storage_key.type, merged);
+        }
+        if (merged != remote) {
+          change_processor()->Put(change.storage_key(),
+                                  CreateEntityDataFromAutofillMetadata(
+                                      parsed_storage_key.type, merged),
+                                  metadata_change_list.get());
+        }
+        break;
+      }
+      case EntityChange::ACTION_DELETE: {
+        cache_.erase(change.storage_key());
+        is_any_local_modified |= RemoveServerMetadata(
+            table, parsed_storage_key.type, parsed_storage_key.metadata_id);
+        break;
+      }
+    }
+  }
+
+  if (is_any_local_modified) {
+    web_data_backend_->NotifyOfMultipleAutofillChanges();
+  }
+  return base::nullopt;
 }
 
 template <class DataType>

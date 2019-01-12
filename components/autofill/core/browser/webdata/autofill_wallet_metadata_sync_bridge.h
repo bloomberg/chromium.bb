@@ -95,6 +95,13 @@ class AutofillWalletMetadataSyncBridge
       base::Optional<std::unordered_set<std::string>> storage_keys_set,
       DataCallback callback);
 
+  // Merges remote changes, specified in |entity_data|, with the local DB and,
+  // potentially, writes changes to the local DB and/or commits updates of
+  // entities from |entity_data| up to sync.
+  base::Optional<syncer::ModelError> MergeRemoteChanges(
+      std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
+      syncer::EntityChangeList entity_data);
+
   // Reacts to a local |change| of an entry of type |type|.
   template <class DataType>
   void LocalMetadataChanged(sync_pb::WalletMetadataSpecifics::Type type,

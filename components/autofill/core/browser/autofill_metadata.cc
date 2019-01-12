@@ -13,6 +13,10 @@ bool AutofillMetadata::operator==(const AutofillMetadata& metadata) const {
          billing_address_id == metadata.billing_address_id;
 }
 
+bool AutofillMetadata::operator!=(const AutofillMetadata& metadata) const {
+  return !(*this == metadata);
+}
+
 std::ostream& operator<<(std::ostream& os, const AutofillMetadata& metadata) {
   return os << metadata.id << " " << metadata.use_count << " "
             << metadata.use_date << " " << metadata.has_converted << " "

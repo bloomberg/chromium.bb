@@ -18,8 +18,9 @@ class AutofillTable;
 class CreditCard;
 struct PaymentsCustomerData;
 
-// Returns the specified |id| encoded in base 64.
+// Returns the specified |id| encoded in / decoded from base 64.
 std::string GetBase64EncodedId(const std::string& id);
+std::string GetBase64DecodedId(const std::string& id);
 
 // Returns the storage key to be used for wallet metadata for the specified
 // wallet metadata |type| and |specifics_id|.

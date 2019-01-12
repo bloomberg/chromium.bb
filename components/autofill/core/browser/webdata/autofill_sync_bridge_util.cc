@@ -184,6 +184,12 @@ std::string GetBase64EncodedId(const std::string& id) {
   return encoded_id;
 }
 
+std::string GetBase64DecodedId(const std::string& id) {
+  std::string decoded_id;
+  base::Base64Decode(id, &decoded_id);
+  return decoded_id;
+}
+
 std::string GetStorageKeyForWalletMetadataTypeAndSpecificsId(
     sync_pb::WalletMetadataSpecifics::Type type,
     const std::string& specifics_id) {
