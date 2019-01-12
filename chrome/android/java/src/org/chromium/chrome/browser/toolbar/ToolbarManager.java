@@ -1189,9 +1189,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      */
     public void onAccessibilityStatusChanged(boolean enabled) {
         mToolbar.onAccessibilityStatusChanged(enabled);
-        if (mBottomToolbarCoordinator != null) {
-            mBottomToolbarCoordinator.onAccessibilityStatusChanged(enabled);
-        }
     }
 
     private void registerTemplateUrlObserver() {
