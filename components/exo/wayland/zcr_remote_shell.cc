@@ -368,6 +368,14 @@ void remote_surface_set_max_size(wl_client* client,
       gfx::Size(width, height));
 }
 
+void remote_surface_set_aspect_ratio(wl_client* client,
+                                     wl_resource* resource,
+                                     int32_t aspect_ratio_width,
+                                     int32_t aspect_ratio_height) {
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetAspectRatio(
+      gfx::SizeF(aspect_ratio_width, aspect_ratio_height));
+}
+
 void remote_surface_set_snapped_to_left(wl_client* client,
                                         wl_resource* resource) {
   GetUserDataAs<ClientControlledShellSurface>(resource)->SetSnappedToLeft();
@@ -500,7 +508,8 @@ const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_set_extra_title,
     remote_surface_set_orientation_lock,
     remote_surface_pip,
-    remote_surface_set_bounds};
+    remote_surface_set_bounds,
+    remote_surface_set_aspect_ratio};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:

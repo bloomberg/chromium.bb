@@ -209,7 +209,7 @@
     </event>
   </interface>
 
-  <interface name="zcr_remote_surface_v1" version="18">
+  <interface name="zcr_remote_surface_v1" version="19">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -945,6 +945,24 @@
       <arg name="display_id_lo" type="uint"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+    </request>
+
+    <!-- Version 19 additions -->
+
+    <request name="set_aspect_ratio" since="19">
+      <description summary="set the maximum size">
+	Set an aspect ratio of the surface.
+
+	Values set in this way are double-buffered. They will get
+	applied on the next commit.
+
+	Setting the aspect ratio of the surface. The ratio of the values is used
+	for the ratio of width to height of the surface. The size of surface is
+	restricted to the ratio. If any value is zero, the restriction on aspect
+	ratio is unset.
+      </description>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
     </request>

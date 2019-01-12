@@ -156,10 +156,10 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
 
   gfx::SizeF* aspect_ratio_size =
       GetTarget()->GetProperty(aura::client::kAspectRatio);
-  float aspect_ratio = aspect_ratio_size ? aspect_ratio_size->width() /
-                                               aspect_ratio_size->height()
-                                         : 0.0;
-  if (details().bounds_change & kBoundsChange_Resizes && aspect_ratio > 0.0) {
+  if (details().bounds_change & kBoundsChange_Resizes && aspect_ratio_size &&
+      !aspect_ratio_size->IsEmpty()) {
+    float aspect_ratio =
+        aspect_ratio_size->width() / aspect_ratio_size->height();
     CalculateBoundsWithAspectRatio(aspect_ratio, &new_bounds);
     return new_bounds;
   }
