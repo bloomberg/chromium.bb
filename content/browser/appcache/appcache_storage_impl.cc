@@ -490,7 +490,16 @@ void AppCacheStorageImpl::StoreOrLoadTask::CreateCacheAndGroupFromRecords(
   std::vector<GURL> urls =
       storage_->GetPendingForeignMarkingsForCache(cache->get()->cache_id());
   for (const auto& url : urls) {
-    DCHECK(cache->get()->GetEntry(url));
+    // Skip any entries that were marked as foreign but that don't actually
+    // exist. This shouldn't happen other than with misbehaving renderers, but
+    // we've always just ignored these when the cache already exists when
+    // MarkEntryAsForeign is called, so also ignore them here when the cache
+    // still had to be created.
+    // If AppCache wouldn't be in maintenance mode only, we might want to
+    // (async) ReportBadMessage here and in MarkEntryAsForeign, and deal
+    // with any resulting crashes, but for now just keep the existing behavior.
+    if (!cache->get()->GetEntry(url))
+      continue;
     cache->get()->GetEntry(url)->add_types(AppCacheEntry::FOREIGN);
   }
 
@@ -1685,7 +1694,6 @@ void AppCacheStorageImpl::MarkEntryAsForeign(const GURL& entry_url,
   AppCache* cache = working_set_.GetCache(cache_id);
   if (cache) {
     AppCacheEntry* entry = cache->GetEntry(entry_url);
-    DCHECK(entry);
     if (entry)
       entry->add_types(AppCacheEntry::FOREIGN);
   }
