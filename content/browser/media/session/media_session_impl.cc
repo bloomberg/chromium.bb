@@ -81,6 +81,8 @@ MediaSessionUserAction MediaSessionActionToUserAction(
       return MediaSessionUserAction::SeekBackward;
     case media_session::mojom::MediaSessionAction::kSeekForward:
       return MediaSessionUserAction::SeekForward;
+    case media_session::mojom::MediaSessionAction::kSkipAd:
+      return MediaSessionUserAction::SkipAd;
     case media_session::mojom::MediaSessionAction::kStop:
       break;
   }
@@ -835,6 +837,10 @@ void MediaSessionImpl::PreviousTrack() {
 
 void MediaSessionImpl::NextTrack() {
   DidReceiveAction(media_session::mojom::MediaSessionAction::kNextTrack);
+}
+
+void MediaSessionImpl::SkipAd() {
+  DidReceiveAction(media_session::mojom::MediaSessionAction::kSkipAd);
 }
 
 void MediaSessionImpl::AbandonSystemAudioFocusIfNeeded() {

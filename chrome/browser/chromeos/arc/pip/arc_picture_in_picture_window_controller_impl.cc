@@ -91,4 +91,8 @@ void ArcPictureInPictureWindowControllerImpl::SetAlwaysHidePlayPauseButton(
   // Should be a no-op on ARC. This is managed on the Android side.
 }
 
+void ArcPictureInPictureWindowControllerImpl::SkipAd() {
+  // Should be a no-op on ARC. This is managed on the Android side.
+}
+
 }  // namespace arc
