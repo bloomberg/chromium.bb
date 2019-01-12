@@ -5,9 +5,7 @@
 #ifndef CHROME_COMMON_MEDIA_ROUTER_MEDIA_SOURCE_H_
 #define CHROME_COMMON_MEDIA_ROUTER_MEDIA_SOURCE_H_
 
-#include <stddef.h>
-
-#include <ostream>
+#include <iosfwd>
 #include <string>
 
 #include "base/hash.h"
@@ -39,12 +37,9 @@ class MediaSource {
 
   bool operator<(const MediaSource& other) const;
 
-  // Used for logging.
-  std::string ToString() const;
-
   // Hash operator for hash containers.
   struct Hash {
-    size_t operator()(const MediaSource& source) const {
+    uint32_t operator()(const MediaSource& source) const {
       return base::Hash(source.id());
     }
   };
@@ -53,6 +48,14 @@ class MediaSource {
   MediaSource::Id id_;
   GURL url_;
 };
+
+// Only for debug logging.  This operator is defined inline so it doesn't add
+// any code in release builds.  (Omitting the definition entirely when NDEBUG is
+// defined causes linker errors on Android.)
+inline std::ostream& operator<<(std::ostream& stream,
+                                const MediaSource& source) {
+  return stream << "MediaSource[" << source.id() << "]";
+}
 
 }  // namespace media_router
 
