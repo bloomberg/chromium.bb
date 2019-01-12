@@ -1263,6 +1263,18 @@ static AtkObject* FindAtkObjectParentFrame(AtkObject* atk_object) {
   return nullptr;
 }
 
+static bool IsFrameAncestorOfAtkObject(AtkObject* frame,
+                                       AtkObject* atk_object) {
+  AtkObject* current_frame = FindAtkObjectParentFrame(atk_object);
+  while (current_frame) {
+    if (current_frame == frame)
+      return true;
+    current_frame =
+        FindAtkObjectParentFrame(atk_object_get_parent(current_frame));
+  }
+  return false;
+}
+
 // Returns a stack of AtkObjects of activated popup menus. Since each popup
 // menu and submenu has its own native window, we want to properly manage the
 // activated state for their containing frames.
@@ -2258,6 +2270,15 @@ void AXPlatformNodeAuraLinux::OnWindowActivated() {
 
   g_signal_emit_by_name(parent_frame, "activate");
   atk_object_notify_state_change(parent_frame, ATK_STATE_ACTIVE, TRUE);
+
+  // We also send a focus event for the currently focused element, so that
+  // the user knows where the focus is when the toplevel window regains focus.
+  if (g_current_focused &&
+      IsFrameAncestorOfAtkObject(parent_frame, g_current_focused)) {
+    g_signal_emit_by_name(g_current_focused, "focus-event", true);
+    atk_object_notify_state_change(ATK_OBJECT(g_current_focused),
+                                   ATK_STATE_FOCUSED, true);
+  }
 }
 
 void AXPlatformNodeAuraLinux::OnWindowDeactivated() {
