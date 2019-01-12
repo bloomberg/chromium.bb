@@ -43,10 +43,7 @@ enum WebFocusType {
   kWebFocusTypeForward,
   kWebFocusTypeBackward,
   // Spatial navigation.
-  kWebFocusTypeUp,
-  kWebFocusTypeDown,
-  kWebFocusTypeLeft,
-  kWebFocusTypeRight,
+  kWebFocusTypeSpatialNavigation,
   // Mouse press
   kWebFocusTypeMouse,
   // Re-focus by a page focus

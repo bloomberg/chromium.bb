@@ -966,10 +966,9 @@ bool FocusController::AdvanceFocus(
       return AdvanceFocusInDocumentOrder(starting_frame, nullptr, type,
                                          initial_focus, source_capabilities);
     }
-    case kWebFocusTypeLeft:
-    case kWebFocusTypeRight:
-    case kWebFocusTypeUp:
-    case kWebFocusTypeDown:
+    case kWebFocusTypeSpatialNavigation:
+      // Fallthrough - SpatialNavigation should use
+      // SpatialNavigationController.
     default:
       NOTREACHED();
   }
