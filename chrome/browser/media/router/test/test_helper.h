@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/test/values_test_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/issue_manager.h"
 #include "chrome/browser/media/router/issues_observer.h"
@@ -242,11 +241,6 @@ std::unique_ptr<DialInternalMessage> ParseDialInternalMessage(
     const std::string& message);
 
 #endif  // !defined(OS_ANDROID)
-
-MATCHER_P(IsCastMessage, json, "") {
-  return arg->is_message() && base::test::IsJsonMatcher(json).MatchAndExplain(
-                                  arg->get_message(), result_listener);
-}
 
 }  // namespace media_router
 

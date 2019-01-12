@@ -26,8 +26,6 @@ struct CastInternalMessage {
     kClientConnect,   // Initial message sent by SDK client to connect to MRP.
     kAppMessage,      // App messages to pass through between SDK client and the
                       // receiver.
-    kV2Message,       // Cast protocol messages between SDK client and the
-                      // receiver.
     kReceiverAction,  // Message sent by MRP to inform SDK client of action.
     kNewSession,      // Message sent by MRP to inform SDK client of new
                       // session.
@@ -41,57 +39,23 @@ struct CastInternalMessage {
   // a valid Cast internal message.
   static std::unique_ptr<CastInternalMessage> From(base::Value message);
 
+  CastInternalMessage(Type type, const std::string& client_id);
   ~CastInternalMessage();
 
-  const Type type;
-  const std::string client_id;
-  const base::Optional<int> sequence_number;
+  Type type;
+  std::string client_id;
+  int sequence_number = -1;
 
-  const std::string& session_id() const {
-    DCHECK(type == Type::kAppMessage || type == Type::kV2Message);
-    return session_id_;
-  }
-
-  const std::string& app_message_namespace() const {
-    DCHECK(type == Type::kAppMessage);
-    return namespace_or_v2_type_;
-  }
-
-  const std::string& v2_message_type() const {
-    DCHECK(type == Type::kV2Message);
-    return namespace_or_v2_type_;
-  }
-
-  const base::Value& app_message_body() const {
-    DCHECK(type == Type::kAppMessage);
-    return message_body_;
-  }
-
-  const base::Value& v2_message_body() const {
-    DCHECK(type == Type::kV2Message);
-    return message_body_;
-  }
-
- private:
-  CastInternalMessage(Type type,
-                      const std::string& client_id,
-                      base::Optional<int> sequence_number,
-                      const std::string& session_id,
-                      const std::string& namespace_or_v2_type_,
-                      base::Value message_body);
-
-  // Set if |type| is |kAppMessage| or |kV2Message|.
-  const std::string session_id_;
-  const std::string namespace_or_v2_type_;
-  const base::Value message_body_;
+  // The following are set if |type| is |kAppMessage|.
+  std::string app_message_namespace;
+  std::string app_message_session_id;
+  base::Value app_message_body;
 
   DISALLOW_COPY_AND_ASSIGN(CastInternalMessage);
 };
 
 // Represents a Cast session on a Cast device. Cast sessions are derived from
 // RECEIVER_STATUS messages sent by Cast devices.
-//
-// TODO(jrw): Rename either this class or ::CastSession to avoid confusion.
 class CastSession {
  public:
   // Returns a CastSession from |receiver_status| message sent by |sink|, or
@@ -108,9 +72,6 @@ class CastSession {
 
   // Partially updates the contents of this object using data in |from|.
   void UpdateSession(std::unique_ptr<CastSession> from);
-
-  // Sets the 'media' field of |value_| with a value received from the client.
-  void UpdateMedia(const base::Value& media);
 
   // ID of the session.
   const std::string& session_id() const { return session_id_; }
@@ -175,12 +136,6 @@ blink::mojom::PresentationConnectionMessagePtr CreateAppMessage(
     const std::string& session_id,
     const std::string& client_id,
     const cast_channel::CastMessage& cast_message);
-blink::mojom::PresentationConnectionMessagePtr CreateV2Message(
-    const std::string& client_id,
-    const base::Value& payload,
-    base::Optional<int> sequence_number);
-
-base::Value SupportedMediaRequestsToListValue(int media_requests);
 
 }  // namespace media_router
 
