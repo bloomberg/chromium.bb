@@ -708,10 +708,8 @@ bool ArcSessionManager::RequestEnableImpl() {
     return false;
   }
 
-  if (!pai_starter_ && IsPlayStoreAvailable()) {
-    pai_starter_ =
-        ArcPaiStarter::CreateIfNeeded(profile_, profile_->GetPrefs());
-  }
+  if (!pai_starter_ && IsPlayStoreAvailable())
+    pai_starter_ = ArcPaiStarter::CreateIfNeeded(profile_);
 
   if (!fast_app_reinstall_starter_ && IsPlayStoreAvailable()) {
     fast_app_reinstall_starter_ = ArcFastAppReinstallStarter::CreateIfNeeded(

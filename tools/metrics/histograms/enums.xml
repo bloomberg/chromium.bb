@@ -1804,6 +1804,20 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="8" label="No Auth code in response"/>
 </enum>
 
+<enum name="ArcPlayAutoInstallRequestState">
+  <summary>Defines PlayAutoInstal flow state aftert the request.</summary>
+  <int value="0" label="Succeeded"/>
+  <int value="1" label="Unknown"/>
+  <int value="2" label="No account provided"/>
+  <int value="3" label="No apps returned"/>
+  <int value="4" label="Interrupted"/>
+  <int value="5" label="No response from Play Store"/>
+  <int value="6" label="No access to Play Store"/>
+  <int value="7" label="No Gms Proxy"/>
+  <int value="8" label="No access to Gms Proxy"/>
+  <int value="9" label="Timeout"/>
+</enum>
+
 <enum name="ArcProvisioningResult">
   <summary>Defines Arc Provisioning success and failure reasons</summary>
   <int value="0" label="Success"/>

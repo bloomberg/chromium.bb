@@ -156,7 +156,8 @@ class FakeAppInstance : public mojom::AppInstance {
       GetAppShortcutGlobalQueryItemsCallback callback) override;
   void GetAppShortcutItems(const std::string& package_name,
                            GetAppShortcutItemsCallback callback) override;
-  void StartPaiFlow() override;
+  void StartPaiFlowDeprecated() override;
+  void StartPaiFlow(StartPaiFlowCallback callback) override;
   void StartFastAppReinstallFlow(
       const std::vector<std::string>& package_names) override;
   void RequestAssistStructure(RequestAssistStructureCallback callback) override;
@@ -214,6 +215,10 @@ class FakeAppInstance : public mojom::AppInstance {
     icon_response_type_ = icon_response_type;
   }
 
+  void set_pai_state_response(mojom::PaiFlowState pai_state_response) {
+    pai_state_response_ = pai_state_response;
+  }
+
   int launch_app_shortcut_item_count() const {
     return launch_app_shortcut_item_count_;
   }
@@ -243,6 +248,8 @@ class FakeAppInstance : public mojom::AppInstance {
   int refresh_app_list_count_ = 0;
   // Number of requests to start PAI flows.
   int start_pai_request_count_ = 0;
+  // Response for PAI flow state;
+  mojom::PaiFlowState pai_state_response_ = mojom::PaiFlowState::SUCCEEDED;
   // Number of requests to start Fast App Reinstall flows.
   int start_fast_app_reinstall_request_count_ = 0;
   // Keeps information about launch app shortcut requests.

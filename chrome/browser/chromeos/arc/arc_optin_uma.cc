@@ -112,6 +112,20 @@ void UpdateReauthorizationResultUMA(ProvisioningResult result,
       GetHistogramName("Arc.Reauthorization.Result.", profile), result);
 }
 
+void UpdatePlayAutoInstallRequestState(mojom::PaiFlowState state,
+                                       const Profile* profile) {
+  base::UmaHistogramEnumeration(
+      GetHistogramName("Arc.PlayAutoInstallRequest.State.", profile), state);
+}
+
+void UpdatePlayAutoInstallRequestTime(const base::TimeDelta& elapsed_time,
+                                      const Profile* profile) {
+  base::UmaHistogramCustomTimes(
+      GetHistogramName("Arc.PlayAutoInstallRequest.TimeDelta.", profile),
+      elapsed_time, base::TimeDelta::FromSeconds(1),
+      base::TimeDelta::FromMinutes(10), 50);
+}
+
 void UpdatePlayStoreShowTime(const base::TimeDelta& elapsed_time,
                              const Profile* profile) {
   base::UmaHistogramCustomTimes(
