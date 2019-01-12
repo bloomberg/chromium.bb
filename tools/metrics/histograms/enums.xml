@@ -17783,6 +17783,7 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Requested but denied"/>
   <int value="2" label="Requested but not found"/>
   <int value="3" label="Requested and included"/>
+  <int value="4" label="Requested but not supported"/>
 </enum>
 
 <enum name="ExtensionNotificationType">

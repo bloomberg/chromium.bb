@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/api/messaging/message_port.h"
-#include "extensions/browser/api/messaging/message_property_provider.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/lazy_context_id.h"
@@ -85,8 +84,7 @@ class MessageService : public BrowserContextKeyedAPI,
                               const std::string& source_extension_id,
                               const std::string& target_extension_id,
                               const GURL& source_url,
-                              const std::string& channel_name,
-                              bool include_tls_channel_id);
+                              const std::string& channel_name);
 
   // Same as above, but opens a channel to the tab with the given ID.  Messages
   // are restricted to that tab, so if there are multiple tabs in that process,
@@ -168,8 +166,6 @@ class MessageService : public BrowserContextKeyedAPI,
   // the connection.
   void OnOpenChannelAllowed(std::unique_ptr<OpenChannelParams> params,
                             bool allowed);
-  void GotChannelID(std::unique_ptr<OpenChannelParams> params,
-                    const std::string& tls_channel_id);
 
   // Enqueues a message on a pending channel.
   void EnqueuePendingMessage(const PortId& port_id,
@@ -241,17 +237,11 @@ class MessageService : public BrowserContextKeyedAPI,
   MessagingDelegate* messaging_delegate_;
 
   MessageChannelMap channels_;
-  // A set of channel IDs waiting for TLS channel IDs to complete opening, and
-  // any pending messages queued to be sent on those channels. This and the
-  // following two maps form a pipeline where messages are queued before the
-  // channel they are addressed to is ready.
-  PendingChannelMap pending_tls_channel_id_channels_;
   // A set of channel IDs waiting for user permission to cross the border
   // between an incognito page and an app or extension, and any pending messages
   // queued to be sent on those channels.
   PendingChannelMap pending_incognito_channels_;
   PendingLazyBackgroundPageChannelMap pending_lazy_background_page_channels_;
-  MessagePropertyProvider property_provider_;
 
   base::WeakPtrFactory<MessageService> weak_factory_;
 

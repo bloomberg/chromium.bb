@@ -406,13 +406,12 @@ void ExtensionFrameHelper::OnExtensionDispatchOnConnect(
     const PortId& target_port_id,
     const std::string& channel_name,
     const ExtensionMsg_TabConnectionInfo& source,
-    const ExtensionMsg_ExternalConnectionInfo& info,
-    const std::string& tls_channel_id) {
+    const ExtensionMsg_ExternalConnectionInfo& info) {
   extension_dispatcher_->bindings_system()
       ->GetMessagingService()
       ->DispatchOnConnect(extension_dispatcher_->script_context_set(),
                           target_port_id, channel_name, source, info,
-                          tls_channel_id, render_frame());
+                          render_frame());
 }
 
 void ExtensionFrameHelper::OnExtensionDeliverMessage(const PortId& target_id,

@@ -35,7 +35,6 @@ class JSRendererMessagingService : public RendererMessagingService {
       const std::string& channel_name,
       const ExtensionMsg_TabConnectionInfo* source,
       const ExtensionMsg_ExternalConnectionInfo& info,
-      const std::string& tls_channel_id,
       const std::string& event_name) override;
   void DispatchOnMessageToListeners(ScriptContext* script_context,
                                     const Message& message,

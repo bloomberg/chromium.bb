@@ -102,7 +102,6 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
   void OnOpenChannelToExtension(int routing_id,
                                 const ExtensionMsg_ExternalConnectionInfo& info,
                                 const std::string& channel_name,
-                                bool include_tls_channel_id,
                                 const extensions::PortId& port_id);
   void OnOpenChannelToNativeApp(int routing_id,
                                 const std::string& native_app_name,

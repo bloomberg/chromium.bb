@@ -13,8 +13,6 @@ source_set("messaging") {
     "extension_message_port.h",
     "message_port.cc",
     "message_port.h",
-    "message_property_provider.cc",
-    "message_property_provider.h",
     "message_service.cc",
     "message_service.h",
     "messaging_delegate.cc",
@@ -30,7 +28,6 @@ source_set("messaging") {
     "//content/public/common",
     "//extensions/common",
     "//extensions/common/api",
-    "//net",
   ]
 
   public_deps = [

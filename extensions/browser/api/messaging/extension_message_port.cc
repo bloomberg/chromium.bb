@@ -208,8 +208,7 @@ void ExtensionMessagePort::DispatchOnConnect(
     int guest_render_frame_routing_id,
     const std::string& source_extension_id,
     const std::string& target_extension_id,
-    const GURL& source_url,
-    const std::string& tls_channel_id) {
+    const GURL& source_url) {
   ExtensionMsg_TabConnectionInfo source;
   if (source_tab)
     source.tab.Swap(source_tab.get());
@@ -223,7 +222,7 @@ void ExtensionMessagePort::DispatchOnConnect(
   info.guest_render_frame_routing_id = guest_render_frame_routing_id;
 
   SendToPort(std::make_unique<ExtensionMsg_DispatchOnConnect>(
-      MSG_ROUTING_NONE, port_id_, channel_name, source, info, tls_channel_id));
+      MSG_ROUTING_NONE, port_id_, channel_name, source, info));
 }
 
 void ExtensionMessagePort::DispatchOnDisconnect(
