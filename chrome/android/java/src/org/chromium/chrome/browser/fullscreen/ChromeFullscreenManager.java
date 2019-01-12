@@ -60,14 +60,14 @@ public class ChromeFullscreenManager
     private boolean mControlsResizeView;
     private TabModelSelectorTabModelObserver mTabModelObserver;
 
-    private float mRendererTopControlOffset = Float.NaN;
-    private float mRendererBottomControlOffset = Float.NaN;
-    private float mRendererTopContentOffset;
-    private float mPreviousContentOffset = Float.NaN;
+    private int mRendererTopControlOffset;
+    private int mRendererBottomControlOffset;
+    private int mRendererTopContentOffset;
+    private int mPreviousContentOffset;
     private float mControlOffsetRatio;
-    private float mPreviousControlOffset;
     private boolean mIsEnteringPersistentModeState;
     private FullscreenOptions mPendingFullscreenOptions;
+    private boolean mOffsetsChanged;
 
     private boolean mInGesture;
     private boolean mContentViewScrolling;
@@ -397,26 +397,18 @@ public class ChromeFullscreenManager
     }
 
     @Override
-    public float getContentOffset() {
+    public int getContentOffset() {
         return mRendererTopContentOffset;
     }
 
-    /**
-     * @return The offset of the controls from the top of the screen.
-     */
-    public float getTopControlOffset() {
-        // This is to avoid a problem with -0f in tests.
-        if (mControlOffsetRatio == 0f) return 0f;
-        return mControlOffsetRatio * -getTopControlsHeight();
+    @Override
+    public int getTopControlOffset() {
+        return mRendererTopControlOffset;
     }
 
-    /**
-     * @return The offset of the controls from the bottom of the screen.
-     */
-    public float getBottomControlOffset() {
-        if (mControlOffsetRatio == 0f) return 0f;
-        return mControlOffsetRatio * getBottomControlsHeight();
-
+    @Override
+    public int getBottomControlOffset() {
+        return mRendererBottomControlOffset;
     }
 
     /**
@@ -430,12 +422,12 @@ public class ChromeFullscreenManager
     private void updateControlOffset() {
         if (mControlsPosition == ControlsPosition.NONE) return;
 
-        float rendererControlOffset = Math.abs(mRendererTopControlOffset / getTopControlsHeight());
-        final boolean isNaNRendererControlOffset = Float.isNaN(rendererControlOffset);
-
-        float topOffsetRatio = 0;
-        if (!isNaNRendererControlOffset) topOffsetRatio = rendererControlOffset;
-        mControlOffsetRatio = topOffsetRatio;
+        if (getTopControlsHeight() == 0) {
+            mControlOffsetRatio = 0;
+        } else {
+            mControlOffsetRatio =
+                    Math.abs((float) mRendererTopControlOffset / getTopControlsHeight());
+        }
     }
 
     @Override
@@ -521,17 +513,12 @@ public class ChromeFullscreenManager
     private void updateVisuals() {
         TraceEvent.begin("FullscreenManager:updateVisuals");
 
-        float offset = 0f;
-        if (mControlsPosition == ControlsPosition.TOP) {
-            offset = getTopControlOffset();
-        }
-
-        if (Float.compare(mPreviousControlOffset, offset) != 0) {
-            mPreviousControlOffset = offset;
+        if (mOffsetsChanged) {
+            mOffsetsChanged = false;
 
             scheduleVisibilityUpdate();
             if (shouldShowAndroidControls()) {
-                mControlContainer.getView().setTranslationY(offset);
+                mControlContainer.getView().setTranslationY(getTopControlOffset());
             }
 
             // Whether we need the compositor to draw again to update our animation.
@@ -553,8 +540,8 @@ public class ChromeFullscreenManager
 
         updateContentViewChildrenState();
 
-        float contentOffset = getContentOffset();
-        if (Float.compare(mPreviousContentOffset, contentOffset) != 0) {
+        int contentOffset = getContentOffset();
+        if (mPreviousContentOffset != contentOffset) {
             for (int i = 0; i < mListeners.size(); i++) {
                 mListeners.get(i).onContentOffsetChanged(contentOffset);
             }
@@ -672,19 +659,17 @@ public class ChromeFullscreenManager
     }
 
     @Override
-    public void setPositionsForTab(float topControlsOffset, float bottomControlsOffset,
-            float topContentOffset) {
-        float rendererTopControlOffset =
-                Math.round(Math.max(topControlsOffset, -getTopControlsHeight()));
-        float rendererBottomControlOffset =
-                Math.round(Math.min(bottomControlsOffset, getBottomControlsHeight()));
+    public void setPositionsForTab(
+            int topControlsOffset, int bottomControlsOffset, int topContentOffset) {
+        int rendererTopControlOffset = Math.max(topControlsOffset, -getTopControlsHeight());
+        int rendererBottomControlOffset = Math.min(bottomControlsOffset, getBottomControlsHeight());
 
-        float rendererTopContentOffset = Math.min(
-                Math.round(topContentOffset), rendererTopControlOffset + getTopControlsHeight());
+        int rendererTopContentOffset =
+                Math.min(topContentOffset, rendererTopControlOffset + getTopControlsHeight());
 
-        if (Float.compare(rendererTopControlOffset, mRendererTopControlOffset) == 0
-                && Float.compare(rendererBottomControlOffset, mRendererBottomControlOffset) == 0
-                && Float.compare(rendererTopContentOffset, mRendererTopContentOffset) == 0) {
+        if (rendererTopControlOffset == mRendererTopControlOffset
+                && rendererBottomControlOffset == mRendererBottomControlOffset
+                && rendererTopContentOffset == mRendererTopContentOffset) {
             return;
         }
 
@@ -692,6 +677,7 @@ public class ChromeFullscreenManager
         mRendererBottomControlOffset = rendererBottomControlOffset;
 
         mRendererTopContentOffset = rendererTopContentOffset;
+        mOffsetsChanged = true;
         updateControlOffset();
 
         updateVisuals();

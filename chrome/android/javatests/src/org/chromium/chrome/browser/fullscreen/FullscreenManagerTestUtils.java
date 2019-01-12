@@ -46,9 +46,9 @@ public class FullscreenManagerTestUtils {
         // the delay in a scroll start being sent.
         float dragStartY = browserControlsHeight * 3;
         float dragEndY = dragStartY - browserControlsHeight * 2;
-        float expectedPosition = -browserControlsHeight;
+        int expectedPosition = -browserControlsHeight;
         if (show) {
-            expectedPosition = 0f;
+            expectedPosition = 0;
             float tempDragStartY = dragStartY;
             dragStartY = dragEndY;
             dragEndY = tempDragStartY;
@@ -67,12 +67,12 @@ public class FullscreenManagerTestUtils {
      * @param position The desired top controls offset.
      */
     public static void waitForBrowserControlsPosition(
-            ChromeTabbedActivityTestRule testRule, float position) {
+            ChromeTabbedActivityTestRule testRule, int position) {
         final ChromeFullscreenManager fullscreenManager =
                 testRule.getActivity().getFullscreenManager();
-        CriteriaHelper.pollUiThread(Criteria.equals(position, new Callable<Float>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(position, new Callable<Integer>() {
             @Override
-            public Float call() {
+            public Integer call() {
                 return fullscreenManager.getTopControlOffset();
             }
         }));
@@ -105,7 +105,7 @@ public class FullscreenManagerTestUtils {
      */
     public static void waitForBrowserControlsToBeMoveable(
             ChromeTabbedActivityTestRule testRule, final Tab tab) throws InterruptedException {
-        waitForBrowserControlsPosition(testRule, 0f);
+        waitForBrowserControlsPosition(testRule, 0);
 
         final CallbackHelper contentMovedCallback = new CallbackHelper();
         final ChromeFullscreenManager fullscreenManager =

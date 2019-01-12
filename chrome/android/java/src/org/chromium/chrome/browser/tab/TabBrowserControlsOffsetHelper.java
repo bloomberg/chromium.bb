@@ -43,9 +43,10 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
     private final ObserverList<Observer> mObservers = new ObserverList<>();
     private final TabObserver mTabObserver;
 
-    private float mPreviousTopControlsOffsetY = Float.NaN;
-    private float mPreviousBottomControlsOffsetY = Float.NaN;
-    private float mPreviousContentOffsetY = Float.NaN;
+    private int mPreviousTopControlsOffsetY;
+    private int mPreviousBottomControlsOffsetY;
+    private int mPreviousContentOffsetY;
+    private boolean mAreOffsetsInitialized;
 
     /**
      * Whether the Android browser controls offset is overridden. This handles top controls only.
@@ -124,21 +125,17 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
      * Called when offset values related with fullscreen functionality has been changed by the
      * compositor.
      * @param topControlsOffsetY The Y offset of the top controls in physical pixels.
-     *    {@code Float.NaN} if the value is invalid and the cached value should be used.
      * @param bottomControlsOffsetY The Y offset of the bottom controls in physical pixels.
-     *    {@code Float.NaN} if the value is invalid and the cached value should be used.
      * @param contentOffsetY The Y offset of the content in physical pixels.
      */
-    void onOffsetsChanged(
-            float topControlsOffsetY, float bottomControlsOffsetY, float contentOffsetY) {
+    void onOffsetsChanged(int topControlsOffsetY, int bottomControlsOffsetY, int contentOffsetY) {
         // Cancel any animation on the Android controls and let compositor drive the offset updates.
         resetControlsOffsetOverridden();
 
-        if (!Float.isNaN(topControlsOffsetY)) mPreviousTopControlsOffsetY = topControlsOffsetY;
-        if (!Float.isNaN(bottomControlsOffsetY)) {
-            mPreviousBottomControlsOffsetY = bottomControlsOffsetY;
-        }
-        if (!Float.isNaN(contentOffsetY)) mPreviousContentOffsetY = contentOffsetY;
+        mPreviousTopControlsOffsetY = topControlsOffsetY;
+        mPreviousBottomControlsOffsetY = bottomControlsOffsetY;
+        mPreviousContentOffsetY = contentOffsetY;
+        mAreOffsetsInitialized = true;
 
         if (mTab.getFullscreenManager() == null) return;
         if (SadTab.isShowing(mTab) || mTab.isNativePage()) {
@@ -160,7 +157,8 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
         if (animate) {
             runBrowserDrivenShowAnimation();
         } else {
-            updateFullscreenManagerOffsets(true, Float.NaN, Float.NaN, Float.NaN);
+            updateFullscreenManagerOffsets(
+                    true, 0, 0, mTab.getFullscreenManager().getContentOffset());
         }
     }
 
@@ -171,11 +169,8 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
         resetControlsOffsetOverridden();
         if (mTab.getFullscreenManager() == null) return;
 
-        boolean topOffsetsInitialized =
-                !Float.isNaN(mPreviousTopControlsOffsetY) && !Float.isNaN(mPreviousContentOffsetY);
-
         // Make sure the dominant control offsets have been set.
-        if (topOffsetsInitialized) {
+        if (mAreOffsetsInitialized) {
             updateFullscreenManagerOffsets(false, mPreviousTopControlsOffsetY,
                     mPreviousBottomControlsOffsetY, mPreviousContentOffsetY);
         } else {
@@ -188,17 +183,17 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
      * Clears the cached browser controls positions.
      */
     private void clearPreviousPositions() {
-        mPreviousTopControlsOffsetY = Float.NaN;
-        mPreviousBottomControlsOffsetY = Float.NaN;
-        mPreviousContentOffsetY = Float.NaN;
+        mPreviousTopControlsOffsetY = 0;
+        mPreviousBottomControlsOffsetY = 0;
+        mPreviousContentOffsetY = 0;
     }
 
     /**
      * Helper method to update offsets in {@link FullscreenManager} and notify offset changes to
      * observers if necessary.
      */
-    private void updateFullscreenManagerOffsets(boolean toNonFullscreen, float topControlsOffset,
-            float bottomControlsOffset, float topContentOffset) {
+    private void updateFullscreenManagerOffsets(boolean toNonFullscreen, int topControlsOffset,
+            int bottomControlsOffset, int topContentOffset) {
         final FullscreenManager manager = mTab.getFullscreenManager();
         if (manager == null) return;
 
@@ -245,18 +240,18 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
 
         final FullscreenManager manager = mTab.getFullscreenManager();
         final float hiddenRatio = manager.getBrowserControlHiddenRatio();
-        final float topControlHeight = manager.getTopControlsHeight();
-        final float topControlOffset = hiddenRatio == 0f ? 0f : hiddenRatio * -topControlHeight;
+        final int topControlHeight = manager.getTopControlsHeight();
+        final int topControlOffset = manager.getTopControlOffset();
 
         // Set animation start value to current renderer controls offset.
-        mControlsAnimator = ValueAnimator.ofFloat(topControlOffset, 0f);
+        mControlsAnimator = ValueAnimator.ofInt(topControlOffset, 0);
         mControlsAnimator.setDuration(
                 (long) Math.abs(hiddenRatio * MAX_CONTROLS_ANIMATION_DURATION_MS));
         mControlsAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 mControlsAnimator = null;
-                mPreviousTopControlsOffsetY = 0f;
+                mPreviousTopControlsOffsetY = 0;
                 mPreviousContentOffsetY = topControlHeight;
             }
 
@@ -267,7 +262,7 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
         });
         mControlsAnimator.addUpdateListener((animator) -> {
             updateFullscreenManagerOffsets(
-                    false, (float) animator.getAnimatedValue(), 0, topControlHeight);
+                    false, (int) animator.getAnimatedValue(), 0, topControlHeight);
         });
         mControlsAnimator.start();
     }

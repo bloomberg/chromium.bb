@@ -49,7 +49,8 @@ public class BrowsingModeBottomToolbarViewBinder
     public final void bind(
             BrowsingModeBottomToolbarModel model, ViewHolder view, PropertyKey propertyKey) {
         if (BrowsingModeBottomToolbarModel.Y_OFFSET == propertyKey) {
-            assert view.sceneLayer != null;
+            // Native may not have completely initialized by the time this is set.
+            if (view.sceneLayer == null) return;
             view.sceneLayer.setYOffset(model.get(BrowsingModeBottomToolbarModel.Y_OFFSET));
         } else if (BrowsingModeBottomToolbarModel.ANDROID_VIEW_VISIBLE == propertyKey) {
             view.toolbarRoot.setVisibility(

@@ -334,7 +334,7 @@ public class ViewAndroidDelegate {
      * @param topContentOffsetY The Y offset of the content in physical pixels.
      */
     @CalledByNative
-    public void onTopControlsChanged(float topControlsOffsetY, float topContentOffsetY) {}
+    public void onTopControlsChanged(int topControlsOffsetY, int topContentOffsetY) {}
 
     /**
      * Notify the client of the position of the bottom controls.
@@ -342,7 +342,7 @@ public class ViewAndroidDelegate {
      * @param bottomContentOffsetY The Y offset of the content in physical pixels.
      */
     @CalledByNative
-    public void onBottomControlsChanged(float bottomControlsOffsetY, float bottomContentOffsetY) {}
+    public void onBottomControlsChanged(int bottomControlsOffsetY, int bottomContentOffsetY) {}
 
     /**
      * Returns the bottom system window inset in pixels. The system window inset represents the area
