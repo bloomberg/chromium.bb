@@ -92,7 +92,7 @@ class MenuManager {
 
   /**
    * Move to the next available action in the menu. If this is no next action,
-   * select the whole menu to loop again.
+   * focus the whole menu to loop again.
    * @return {boolean} Whether this function had any effect.
    */
   moveForward() {
@@ -194,7 +194,7 @@ class MenuManager {
    * @private
    */
   getActionsForNode_(node) {
-    let actions = [MenuManager.Action.CLICK, MenuManager.Action.OPTIONS];
+    let actions = [MenuManager.Action.SELECT, MenuManager.Action.OPTIONS];
 
     if (SwitchAccessPredicate.isTextInput(node))
       actions.push(MenuManager.Action.DICTATION);
@@ -231,7 +231,7 @@ class MenuManager {
   onMessageReceived_(event) {
     this.exit();
 
-    if (event.data === MenuManager.Action.CLICK)
+    if (event.data === MenuManager.Action.SELECT)
       this.navigationManager_.selectCurrentNode();
     else if (event.data === MenuManager.Action.DICTATION)
       chrome.accessibilityPrivate.toggleDictation();
@@ -268,15 +268,18 @@ class MenuManager {
  * @const
  */
 MenuManager.Action = {
-  CLICK: 'click',
   DICTATION: 'dictation',
+  // This opens the Switch Access settings in a new Chrome tab.
   OPTIONS: 'options',
   SCROLL_BACKWARD: 'scroll-backward',
   SCROLL_DOWN: 'scroll-down',
   SCROLL_FORWARD: 'scroll-forward',
   SCROLL_LEFT: 'scroll-left',
   SCROLL_RIGHT: 'scroll-right',
-  SCROLL_UP: 'scroll-up'
+  SCROLL_UP: 'scroll-up',
+  // This either performs the default action or enters a new scope, as
+  // applicable.
+  SELECT: 'select'
 };
 
 /**
