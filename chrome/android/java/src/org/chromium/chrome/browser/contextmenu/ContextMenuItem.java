@@ -25,7 +25,7 @@ public interface ContextMenuItem {
      * @param context The context required to get the title from resources.
      * @return The title of the menu item.
      */
-    String getTitle(Context context);
+    CharSequence getTitle(Context context);
 
     /**
      * Gets the {@link Drawable} icon of a context menu item asynchronously.
