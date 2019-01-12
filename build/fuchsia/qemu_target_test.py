@@ -41,8 +41,6 @@ with qemu_target.QemuTarget(tmpdir, 'x64') as target:
 
     def testRunCommand(self):
       self.assertEqual(0, target.RunCommand(['true']))
-
-      # This is a known bug: https://fuchsia.atlassian.net/browse/NET-349
       self.assertEqual(1, target.RunCommand(['false']))
 
     def testRunCommandPiped(self):
