@@ -845,7 +845,8 @@ TEST_F(LayoutObjectTest, UpdateVisualRectAfterAncestorLayout) {
 
   auto* target = GetDocument().getElementById("target");
   target->setAttribute(html_names::kStyleAttr, "height: 300px");
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   const auto* container = GetLayoutObjectByElementId("ancestor");
   EXPECT_EQ(LayoutRect(0, 0, 100, 300),
             ToLayoutBox(container)->VisualOverflowRect());
@@ -945,78 +946,6 @@ TEST_F(LayoutObjectSimTest, HitTestForOcclusionInIframe) {
       DocumentLifecycle::LifecycleUpdateReason::kTest);
   result = target->GetLayoutObject()->HitTestForOcclusion();
   EXPECT_EQ(result.InnerNode(), occluder);
-}
-
-TEST_F(LayoutObjectSimTest, FirstLineBackgroundImage) {
-  SimRequest main_resource("https://example.com/test.html", "text/html");
-  // SimRequest svg_resource("https://example.com/test.svg", "text/svg+xml");
-
-  LoadURL("https://example.com/test.html");
-  main_resource.Complete(R"HTML(
-    <style>
-      div::first-line {
-        background-image: url(data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==);
-      }
-      span { background: rgba(0, 255, 0, 0.3); }
-    </style>
-    <div id="target">
-      <span id="first-line1">Text</span><span id="first-line2">Text</span><br>
-      <span id="second-line">Text</span>
-    </div>
-    <div>To keep the image alive when target is set display: none</div>
-  )HTML");
-  /*
-  svg_resource.Complete(R"XML(
-    <?xml version="1.0"?>
-    <svg xmlns="http://www.w3.org/2000/svg"/>
-  )XML");
-  */
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
-
-  auto* target = GetDocument().getElementById("target");
-  auto* target_object = target->GetLayoutObject();
-  auto* image_resource_content = target_object->FirstLineStyleRef()
-                                     .BackgroundLayers()
-                                     .GetImage()
-                                     ->CachedImage();
-
-  // Simulate an image change notification, and we should invalidate the objects
-  // in the first line.
-  static_cast<ImageObserver*>(image_resource_content)
-      ->Changed(image_resource_content->GetImage());
-
-  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    // The block itself doesn't paint the first line, so we don't need to
-    // invalidate it for the image change in the first line style.
-    EXPECT_FALSE(target_object->ShouldDoFullPaintInvalidation());
-  } else {
-    // In legacy layout mode, the block is the layout object of the first line's
-    // root line box, so we invalidate it.
-    EXPECT_TRUE(target_object->ShouldDoFullPaintInvalidation());
-  }
-  auto* first_line1 =
-      GetDocument().getElementById("first-line1")->GetLayoutObject();
-  EXPECT_TRUE(first_line1->ShouldDoFullPaintInvalidation());
-  EXPECT_TRUE(first_line1->SlowFirstChild()->ShouldDoFullPaintInvalidation());
-  auto* first_line2 =
-      GetDocument().getElementById("first-line2")->GetLayoutObject();
-  EXPECT_TRUE(first_line2->ShouldDoFullPaintInvalidation());
-  EXPECT_TRUE(first_line2->SlowFirstChild()->ShouldDoFullPaintInvalidation());
-  auto* second_line =
-      GetDocument().getElementById("second-line")->GetLayoutObject();
-  EXPECT_FALSE(second_line->ShouldDoFullPaintInvalidation());
-  EXPECT_FALSE(second_line->SlowFirstChild()->ShouldDoFullPaintInvalidation());
-
-  target->setAttribute(html_names::kStyleAttr, "display: none");
-  GetDocument().View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
-  target_object = target->GetLayoutObject();
-  EXPECT_EQ(nullptr, target_object);
-  // The image is still alive because the other div's first line style still
-  // reference it. The following statement should not crash.
-  static_cast<ImageObserver*>(image_resource_content)
-      ->Changed(image_resource_content->GetImage());
 }
 
 }  // namespace blink

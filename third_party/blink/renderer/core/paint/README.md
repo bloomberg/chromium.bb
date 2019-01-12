@@ -574,7 +574,7 @@ If the first line contains any `LayoutInline`, we compute the style from the
 `::first-line` style and the style of the `LayoutInline` and apply the computed
 style to the first line part of the `LayoutInline`. In Blink's style
 implementation, the combined first line style of `LayoutInline` is identified
-with `kPseudoIdFirstLineInherited`.
+with `FIRST_LINE_INHERITED` pseudo ID.
 
 The normal paint invalidation of texts doesn't work for first line because
 *   `ComputedStyle::VisualInvalidationDiff()` can't detect first line style
