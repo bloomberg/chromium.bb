@@ -230,7 +230,7 @@ bool IsRenderedIconSufficientlyVisible(const SkBitmap& icon,
 
   // If any of a pixel's RGB values is greater than this number, the pixel is
   // considered visible.
-  constexpr unsigned int kThreshold = 15;
+  constexpr unsigned int kThreshold = 7;
   // The minimum "percent" of pixels that must be visible for the icon to be
   // considered OK.
   constexpr double kMinPercentVisiblePixels = 0.05;
