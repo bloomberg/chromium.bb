@@ -192,3 +192,10 @@ The perf benchmark runner can generate a CPU profile over the course of running 
     $ src/tools/perf/run_benchmark run <benchmark name> --interval-profiling-target=renderer:main --interval-profiling-period=interactions --interval-profiling-frequency=2000
 
 The profiling data will be written into the `artifacts/` sub-directory of your perf benchmark output directory (default is `src/tools/perf`), to files with the naming pattern `*.profile.pb`. You can use `pprof` to view the results, as described above.
+
+## Googlers Only
+
+If you use `pprof -proto chrome-profile-renderer-12345` to turn your perf data
+into a proto file, you can then use that resulting file with internal tools.
+See [http://go/cprof/user#fs-profiles](http://go/cprof/user#fs-profiles])
+for instructions on how to go about this.
