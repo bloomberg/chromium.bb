@@ -96,20 +96,21 @@ class ChromeCommitter(object):
     try:
       # Run 'git cl upload' with --bypass-hooks to skip running scripts that are
       # not part of the shallow checkout, -f to skip editing the CL message,
-      upload_args = ['cl', 'upload', '-v', '-m', self._commit_msg,
-                     '--bypass-hooks', '-f']
-      if not self._dryrun:
-        # Add the gardener(s) as TBR; fall-back to tbr-owners.
-        gardeners = tree_status.GetSheriffEmailAddresses('chrome')
-        if gardeners:
-          for tbr in gardeners:
-            upload_args += ['--tbrs', tbr]
-        else:
-          upload_args += ['--tbr-owners']
-        # Marks CL as ready.
-        upload_args += ['--send-mail']
-      git.RunGit(self._checkout_dir, self._git_committer_args + upload_args,
-                 print_cmd=True, redirect_stderr=True, capture_output=False)
+      upload_args = self._git_committer_args + [
+          'cl', 'upload', '-v', '-m', self._commit_msg, '--bypass-hooks', '-f']
+      # Add the gardener(s) as TBR; fall-back to tbr-owners.
+      gardeners = tree_status.GetGardenerEmailAddresses()
+      if gardeners:
+        for tbr in gardeners:
+          upload_args += ['--tbrs', tbr]
+      else:
+        upload_args += ['--tbr-owners']
+      # Marks CL as ready.
+      upload_args += ['--send-mail']
+      if self._dryrun:
+        upload_args += ['--dry-run']
+      git.RunGit(self._checkout_dir, upload_args, print_cmd=True,
+                 redirect_stderr=True, capture_output=False)
 
       # Flip the CQ commit bit.
       submit_args = ['cl', 'set-commit', '-v']

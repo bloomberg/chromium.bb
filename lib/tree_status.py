@@ -228,42 +228,19 @@ def GetExperimentalBuilders(status_url=None, timeout=1):
   return retry_util.GenericRetry(lambda _: True, 3, _get_status_dict, sleep=1)
 
 
-def _OpenSheriffURL(sheriff_url):
-  """Returns the content of |sheriff_url| or None if failed to open it."""
-  try:
-    response = urllib.urlopen(sheriff_url)
-    if response.getcode() == 200:
-      return response.read()
-  except IOError as e:
-    logging.error('Could not reach %s: %r', sheriff_url, e)
-
-
-def GetSheriffEmailAddresses(sheriff_type):
-  """Get the email addresses of the sheriffs or deputy.
-
-  Args:
-    sheriff_type: Type of the sheriff to look for. See the keys in
-    constants.SHERIFF_TYPE_TO_URL.
-      - 'tree': tree sheriffs
-      - 'chrome': chrome gardener
+def GetGardenerEmailAddresses():
+  """Get the email addresses of the gardeners.
 
   Returns:
-    A list of email addresses.
+    Gardener email addresses.
   """
-  if sheriff_type not in constants.SHERIFF_TYPE_TO_URL:
-    raise ValueError('Unknown sheriff type: %s' % sheriff_type)
-
-  urls = constants.SHERIFF_TYPE_TO_URL.get(sheriff_type)
-  sheriffs = []
-  for url in urls:
-    # The URL displays a line: document.write('taco, burrito')
-    raw_line = _OpenSheriffURL(url)
-    if raw_line is not None:
-      match = re.search(r'\'(.*)\'', raw_line)
-      if match and match.group(1) != 'None (channel is sheriff)':
-        sheriffs.extend(x.strip() for x in match.group(1).split(','))
-
-  return ['%s%s' % (x, constants.GOOGLE_EMAIL) for x in sheriffs]
+  try:
+    response = urllib.urlopen(constants.CHROME_GARDENER_URL)
+    if response.getcode() == 200:
+      return json.load(response)['emails']
+  except (IOError, ValueError, KeyError) as e:
+    logging.error('Could not get gardener emails: %r', e)
+  return None
 
 
 def GetHealthAlertRecipients(builder_run):
@@ -273,9 +250,9 @@ def GetHealthAlertRecipients(builder_run):
     if '@' in entry:
       # If the entry is an email address, add it to the list.
       recipients.append(entry)
-    else:
-      # Perform address lookup for a non-email entry.
-      recipients.extend(GetSheriffEmailAddresses(entry))
+    elif entry == constants.CHROME_GARDENER:
+      # Add gardener email address.
+      recipients.extend(GetGardenerEmailAddresses())
 
   return recipients
 

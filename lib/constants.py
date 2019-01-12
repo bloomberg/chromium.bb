@@ -1151,16 +1151,11 @@ LAB_STATUS_URL = 'http://chromiumos-lab.appspot.com/current?format=json'
 
 GOLO_SMTP_SERVER = 'mail.golo.chromium.org'
 
-# Valid sherrif types.
 CHROME_GARDENER = 'chrome'
-
-# URLs to retrieve sheriff names from the waterfall.
-CHROME_GARDENER_URL = 'https://go/legoland-chrome-pfq'
-
-SHERIFF_TYPE_TO_URL = {
-    CHROME_GARDENER: (CHROME_GARDENER_URL,)
-}
-
+# URL to retrieve gardener names from the waterfall.
+CHROME_GARDENER_URL = (
+    'https://rota-ng.appspot.com/legacy/sheriff_cr_cros_gardeners.json'
+)
 
 # Useful config targets.
 CQ_MASTER = 'master-paladin'

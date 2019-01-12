@@ -1035,7 +1035,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
       health_alert_recipients = config['health_alert_recipients']
       for recipient in health_alert_recipients:
         self.assertTrue(re.match(r'[^@]+@[^@]+\.[^@]+', recipient) or
-                        recipient in constants.SHERIFF_TYPE_TO_URL.keys(),
+                        recipient == constants.CHROME_GARDENER,
                         msg % (build_name, recipient))
 
   def testCheckBuilderClass(self):

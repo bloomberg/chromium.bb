@@ -204,27 +204,26 @@ class TestTreeStatus(cros_test_lib.MockTestCase):
         tree_status.GetExperimentalBuilders(self.status_url, timeout=1)
 
 
-class TestGettingSheriffEmails(cros_test_lib.MockTestCase):
-  """Tests functions related to retrieving the sheriff's email address."""
+class TestGettingGardenerEmails(cros_test_lib.MockTestCase):
+  """Tests functions related to retrieving the gardener's email address."""
 
-  def testParsingSheriffEmails(self):
-    """Tests parsing the raw data to get sheriff emails."""
-    # Test parsing when there is only one sheriff.
-    raw_line = "document.write('taco')"
-    self.PatchObject(tree_status, '_OpenSheriffURL', return_value=raw_line)
-    self.assertEqual(tree_status.GetSheriffEmailAddresses('chrome'),
-                     ['taco@google.com'])
+  def _SetEmails(self, emails):
+    gardener_json = ('{"updated_unix_timestamp":1547254144,'
+                     '"emails":[%s]}' % emails)
+    response = mock.MagicMock(json=gardener_json, getcode=lambda: 200,
+                              read=lambda: gardener_json)
+    self.PatchObject(urllib, 'urlopen', autospec=True,
+                     side_effect=[response])
 
-    # Test parsing when there are multiple sheriffs.
-    raw_line = "document.write('taco, burrito')"
-    self.PatchObject(tree_status, '_OpenSheriffURL', return_value=raw_line)
-    self.assertEqual(tree_status.GetSheriffEmailAddresses('chrome'),
-                     ['taco@google.com', 'burrito@google.com'])
+  def testParsingGardenerEmails(self):
+    self._SetEmails('"gardener@google.com"')
+    self.assertEqual(tree_status.GetGardenerEmailAddresses(),
+                     ['gardener@google.com'])
 
-    # Test parsing when sheriff is None.
-    raw_line = "document.write('None (channel is sheriff)')"
-    self.PatchObject(tree_status, '_OpenSheriffURL', return_value=raw_line)
-    self.assertEqual(tree_status.GetSheriffEmailAddresses('chrome'), [])
+    # Test multiple gardeners.
+    self._SetEmails('"gardener@google.com", "gardener2@chromium.org"')
+    self.assertEqual(tree_status.GetGardenerEmailAddresses(),
+                     ['gardener@google.com', 'gardener2@chromium.org'])
 
 
 class TestUrlConstruction(cros_test_lib.TestCase):
