@@ -1289,6 +1289,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-gpu-service-logging",
+    "owners": [ "vikassoni", "kbr" ],
+    "expiry_milestone": -1
+  },
+  {
     "name": "enable-hdr",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
