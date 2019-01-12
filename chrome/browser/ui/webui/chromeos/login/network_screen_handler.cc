@@ -86,6 +86,10 @@ void NetworkScreenHandler::ShowConnectingStatus(
     bool connecting,
     const base::string16& network_id) {}
 
+void NetworkScreenHandler::SetOfflineDemoModeEnabled(bool enabled) {
+  CallJSWithPrefix("setOfflineDemoModeEnabled", enabled);
+}
+
 void NetworkScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("networkSectionTitle", IDS_NETWORK_SELECTION_TITLE);
@@ -100,8 +104,6 @@ void NetworkScreenHandler::DeclareLocalizedValues(
 
 void NetworkScreenHandler::GetAdditionalParameters(
     base::DictionaryValue* dict) {
-  dict->SetBoolean("offlineDemoModeEnabled",
-                   DemoSetupController::IsOfflineDemoModeAllowed());
 }
 
 void NetworkScreenHandler::Initialize() {

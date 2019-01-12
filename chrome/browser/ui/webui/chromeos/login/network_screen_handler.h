@@ -32,6 +32,7 @@ class NetworkScreenHandler : public NetworkScreenView,
   void ClearErrors() override;
   void ShowConnectingStatus(bool connecting,
                             const base::string16& network_id) override;
+  void SetOfflineDemoModeEnabled(bool enabled) override;
 
   // BaseScreenHandler:
   void DeclareLocalizedValues(

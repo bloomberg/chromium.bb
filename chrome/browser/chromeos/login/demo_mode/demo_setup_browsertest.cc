@@ -421,6 +421,13 @@ class DemoSetupTest : public LoginManagerTest {
     base::RunLoop().RunUntilIdle();
   }
 
+  void SimulatePreinstalledOfflineResourcesAvailable() {
+    WizardController::default_controller()
+        ->demo_setup_controller()
+        ->SetPreinstalledOfflineResourcesPathForTesting(base::FilePath(
+            "/run/imageloader/offline-demo-mode-resources/0.0.1.1"));
+  }
+
   // Sets fake time in MultiTapDetector to remove dependency on real time in
   // test environment.
   void SetFakeTimeForMultiTapDetector(base::Time fake_time) {
@@ -736,6 +743,33 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowCrosComponentFailure) {
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
 }
 
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineDemoModeUnavailable) {
+  SimulateNetworkDisconnected();
+
+  InvokeDemoModeWithAccelerator();
+  ClickOkOnConfirmationDialog();
+
+  // It needs to be done after demo setup controller was created (demo setup
+  // flow was started).
+  SimulateOfflineEnvironment();
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
+  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
+
+  ClickOobeButton(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES, OobeButton::kText,
+                  JSExecution::kAsync);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_NETWORK));
+  EXPECT_FALSE(IsScreenDialogElementEnabled(OobeScreen::SCREEN_OOBE_NETWORK,
+                                            DemoSetupDialog::kNetwork,
+                                            ButtonToTag(OobeButton::kNext)));
+
+  // Offline Demo Mode is not available when there are no preinstalled demo
+  // resources.
+  EXPECT_FALSE(IsCustomNetworkListElementShown("offlineDemoSetupListItemName"));
+}
+
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowSuccess) {
   // Simulate offline setup success.
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
@@ -749,6 +783,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowSuccess) {
   // It needs to be done after demo setup controller was created (demo setup
   // flow was started).
   SimulateOfflineEnvironment();
+  SimulatePreinstalledOfflineResourcesAvailable();
 
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
   EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
@@ -803,6 +838,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowErrorDefault) {
   // It needs to be done after demo setup controller was created (demo setup
   // flow was started).
   SimulateOfflineEnvironment();
+  SimulatePreinstalledOfflineResourcesAvailable();
 
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
   EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
@@ -870,6 +906,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowErrorPowerwashRequired) {
   // It needs to be done after demo setup controller was created (demo setup
   // flow was started).
   SimulateOfflineEnvironment();
+  SimulatePreinstalledOfflineResourcesAvailable();
 
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
   EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
@@ -1011,6 +1048,9 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, RetryOnErrorScreen) {
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowOfflineSetupOptionOnNetworkList) {
+  auto* const wizard_controller = WizardController::default_controller();
+  wizard_controller->SimulateDemoModeSetupForTesting();
+  SimulatePreinstalledOfflineResourcesAvailable();
   SkipToScreen(OobeScreen::SCREEN_OOBE_NETWORK);
 
   EXPECT_TRUE(IsCustomNetworkListElementShown("offlineDemoSetupListItemName"));
@@ -1110,6 +1150,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, DeviceFromFactory) {
   // It needs to be done after demo setup controller was created (demo setup
   // flow was started).
   SimulateOfflineEnvironment();
+  SimulatePreinstalledOfflineResourcesAvailable();
   // Enrollment type is set in the part of the flow that is skipped, That is
   // why we need to set it here.
   wizard_controller->demo_setup_controller()->set_demo_config(
@@ -1144,6 +1185,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, NonEnterpriseDevice) {
   // It needs to be done after demo setup controller was created (demo setup
   // flow was started).
   SimulateOfflineEnvironment();
+  SimulatePreinstalledOfflineResourcesAvailable();
   // Enrollment type is set in the part of the flow that is skipped, That is
   // why we need to set it here.
   wizard_controller->demo_setup_controller()->set_demo_config(
@@ -1179,6 +1221,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, LegacyDemoModeDevice) {
   // It needs to be done after demo setup controller was created (demo setup
   // flow was started).
   SimulateOfflineEnvironment();
+  SimulatePreinstalledOfflineResourcesAvailable();
   // Enrollment type is set in the part of the flow that is skipped, That is
   // why we need to set it here.
   wizard_controller->demo_setup_controller()->set_demo_config(
@@ -1212,6 +1255,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, DeviceWithFRE) {
   // It needs to be done after demo setup controller was created (demo setup
   // flow was started).
   SimulateOfflineEnvironment();
+  SimulatePreinstalledOfflineResourcesAvailable();
   // Enrollment type is set in the part of the flow that is skipped, That is
   // why we need to set it here.
   wizard_controller->demo_setup_controller()->set_demo_config(

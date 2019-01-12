@@ -60,7 +60,7 @@ class DemoResourcesTest : public testing::Test {
   bool FinishResourcesComponentLoad(const base::FilePath& mount_path) {
     EXPECT_TRUE(
         cros_component_manager_->HasPendingInstall(kOfflineResourcesComponent));
-    EXPECT_FALSE(
+    EXPECT_TRUE(
         cros_component_manager_->UpdateRequested(kOfflineResourcesComponent));
 
     return cros_component_manager_->FinishLoadRequest(
@@ -138,7 +138,7 @@ TEST_F(DemoResourcesTest, LoadResourcesOffline) {
   EXPECT_FALSE(
       cros_component_manager_->HasPendingInstall(kOfflineResourcesComponent));
 
-  demo_resources.SetLoadedForTesting(
+  demo_resources.SetPreinstalledOfflineResourcesLoadedForTesting(
       base::FilePath(kTestDemoModeResourcesMountPoint));
   EXPECT_TRUE(demo_resources.loaded());
 }
@@ -208,7 +208,8 @@ TEST_F(DemoResourcesTest, EnsureLoadedRepeatedlyOffline) {
 
   const base::FilePath component_mount_point =
       base::FilePath(kTestDemoModeResourcesMountPoint);
-  demo_resources.SetLoadedForTesting(component_mount_point);
+  demo_resources.SetPreinstalledOfflineResourcesLoadedForTesting(
+      component_mount_point);
 
   EXPECT_TRUE(demo_resources.loaded());
   EXPECT_TRUE(first_callback_called);

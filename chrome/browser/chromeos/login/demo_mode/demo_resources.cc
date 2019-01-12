@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
@@ -30,12 +31,16 @@ const char DemoResources::kDemoModeResourcesComponentName[] =
     "demo-mode-resources";
 
 // static
+const char DemoResources::kOfflineDemoModeResourcesComponentName[] =
+    "offline-demo-mode-resources";
+
+// static
 base::FilePath DemoResources::GetPreInstalledPath() {
   base::FilePath preinstalled_components_root;
   base::PathService::Get(DIR_PREINSTALLED_COMPONENTS,
                          &preinstalled_components_root);
   return preinstalled_components_root.AppendASCII("cros-components")
-      .AppendASCII(kDemoModeResourcesComponentName);
+      .AppendASCII(kOfflineDemoModeResourcesComponentName);
 }
 
 DemoResources::DemoResources(DemoSession::DemoModeConfig config)
@@ -94,31 +99,34 @@ void DemoResources::EnsureLoaded(base::OnceClosure load_callback) {
   g_browser_process->platform_part()->cros_component_manager()->Load(
       kDemoModeResourcesComponentName,
       component_updater::CrOSComponentManager::MountPolicy::kMount,
-      component_updater::CrOSComponentManager::UpdatePolicy::kSkip,
+      component_updater::CrOSComponentManager::UpdatePolicy::kDontForce,
       base::BindOnce(&DemoResources::InstalledComponentLoaded,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DemoResources::SetLoadedForTesting(const base::FilePath& path) {
+void DemoResources::SetCrOSComponentLoadedForTesting(
+    const base::FilePath& path,
+    component_updater::CrOSComponentManager::Error error) {
+  InstalledComponentLoaded(error, path);
+}
+
+void DemoResources::SetPreinstalledOfflineResourcesLoadedForTesting(
+    const base::FilePath& path) {
   OnDemoResourcesLoaded(path);
 }
 
 void DemoResources::InstalledComponentLoaded(
     component_updater::CrOSComponentManager::Error error,
     const base::FilePath& path) {
-  if (error == component_updater::CrOSComponentManager::Error::NONE) {
-    OnDemoResourcesLoaded(base::make_optional(path));
-    return;
-  }
-
-  LoadPreinstalledOfflineResources();
+  component_error_ = error;
+  OnDemoResourcesLoaded(base::make_optional(path));
 }
 
 void DemoResources::LoadPreinstalledOfflineResources() {
   chromeos::DBusThreadManager::Get()
       ->GetImageLoaderClient()
       ->LoadComponentAtPath(
-          kDemoModeResourcesComponentName, GetPreInstalledPath(),
+          kOfflineDemoModeResourcesComponentName, GetPreInstalledPath(),
           base::BindOnce(&DemoResources::OnDemoResourcesLoaded,
                          weak_ptr_factory_.GetWeakPtr()));
 }

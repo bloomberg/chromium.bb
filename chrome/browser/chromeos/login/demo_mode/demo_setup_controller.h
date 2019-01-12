@@ -26,6 +26,8 @@ class DeviceCloudPolicyManagerChromeOS;
 
 namespace chromeos {
 
+class DemoResources;
+
 // Controlls enrollment flow for setting up Demo Mode.
 class DemoSetupController
     : public EnterpriseEnrollmentHelper::EnrollmentStatusConsumer,
@@ -155,6 +157,7 @@ class DemoSetupController
   // Demo mode setup callbacks.
   using OnSetupSuccess = base::OnceClosure;
   using OnSetupError = base::OnceCallback<void(const DemoSetupError&)>;
+  using HasPreinstalledDemoResourcesCallback = base::OnceCallback<void(bool)>;
 
   // Domain that demo mode devices are enrolled into.
   static constexpr char kDemoModeDomain[] = "cros-demo-mode.com";
@@ -197,7 +200,11 @@ class DemoSetupController
   // an error.
   void Enroll(OnSetupSuccess on_setup_success, OnSetupError on_setup_error);
 
-  // EnterpriseEnrollmentHelper::EnrollmentStatusConsumer:
+  // Tries to mount the preinstalled offline resources necessary for offline
+  // Demo Mode.
+  void TryMountPreinstalledDemoResources(
+      HasPreinstalledDemoResourcesCallback callback);
+
   void OnDeviceEnrolled() override;
   void OnEnrollmentError(policy::EnrollmentStatus status) override;
   void OnAuthError(const GoogleServiceAuthError& error) override;
@@ -210,6 +217,8 @@ class DemoSetupController
 
   void SetCrOSComponentLoadErrorForTest(
       component_updater::CrOSComponentManager::Error error);
+  void SetPreinstalledOfflineResourcesPathForTesting(
+      const base::FilePath& path);
   void SetDeviceLocalAccountPolicyStoreForTest(policy::CloudPolicyStore* store);
   void SetOfflineDataDirForTest(const base::FilePath& offline_dir);
 
@@ -220,11 +229,14 @@ class DemoSetupController
 
   // Callback to initiate online enrollment once the CrOS component has loaded.
   // If the component loaded successfully, registers and sets up the device in
-  // the demo mode domain. If |error| indicates the component couldn't be
-  // loaded, demo setup will fail.
-  void OnDemoResourcesCrOSComponentLoaded(
-      component_updater::CrOSComponentManager::Error error,
-      const base::FilePath& path);
+  // the demo mode domain. If the component couldn't be loaded, demo setup
+  // will fail.
+  void OnDemoResourcesCrOSComponentLoaded();
+
+  // Callback after attempting to load preinstalled demo resources. If the
+  // resources were loaded, offline Demo Mode should be available.
+  void OnPreinstalledDemoResourcesLoaded(
+      HasPreinstalledDemoResourcesCallback callback);
 
   // Initiates offline enrollment that locks the device and sets up offline
   // policies required by demo mode. It requires no network connectivity since
@@ -262,6 +274,9 @@ class DemoSetupController
   component_updater::CrOSComponentManager::Error component_error_for_tests_ =
       component_updater::CrOSComponentManager::Error::NONE;
 
+  // Path at which to mount preinstalled offline demo resources for tests.
+  base::FilePath preinstalled_offline_resources_path_for_tests_;
+
   // Callback to call when enrollment finishes with an error.
   OnSetupError on_setup_error_;
 
@@ -280,6 +295,12 @@ class DemoSetupController
   policy::CloudPolicyStore* device_local_account_policy_store_ = nullptr;
 
   std::unique_ptr<EnterpriseEnrollmentHelper> enrollment_helper_;
+
+  // The preinstalled Demo Mode Resources for offline Demo Mode.
+  std::unique_ptr<DemoResources> preinstalled_demo_resources_;
+
+  // The Demo Mode Resources CrOS Component downloaded for online Demo Mode.
+  std::unique_ptr<DemoResources> demo_resources_;
 
   base::WeakPtrFactory<DemoSetupController> weak_ptr_factory_;
 
