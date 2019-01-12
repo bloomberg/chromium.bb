@@ -26,7 +26,11 @@
 #ifndef CONTENT_COMMON_DRAG_MESSAGES_H_
 #error "Failed to include content/common/drag_messages.h"
 #endif
+#undef CONTENT_COMMON_DRAG_TRAITS_H_
 #include "content/common/drag_traits.h"
+#ifndef CONTENT_COMMON_DRAG_TRAITS_H_
+#error "Failed to include content/common/drag_traits.h"
+#endif
 #undef CONTENT_COMMON_FILEAPI_WEBBLOB_MESSAGES_H_
 #include "content/common/fileapi/webblob_messages.h"
 #ifndef CONTENT_COMMON_FILEAPI_WEBBLOB_MESSAGES_H_
