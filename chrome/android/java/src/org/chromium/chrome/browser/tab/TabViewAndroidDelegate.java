@@ -17,6 +17,10 @@ class TabViewAndroidDelegate extends ViewAndroidDelegate {
 
     private final Tab mTab;
 
+    private int mPreviousTopControlsOffset;
+    private int mPreviousBottomControlsOffset;
+    private int mPreviousTopContentOffset;
+
     TabViewAndroidDelegate(Tab tab, ViewGroup containerView) {
         super(containerView);
         mTab = tab;
@@ -28,15 +32,18 @@ class TabViewAndroidDelegate extends ViewAndroidDelegate {
     }
 
     @Override
-    public void onTopControlsChanged(float topControlsOffsetY, float topContentOffsetY) {
+    public void onTopControlsChanged(int topControlsOffsetY, int topContentOffsetY) {
+        mPreviousTopControlsOffset = topControlsOffsetY;
+        mPreviousTopContentOffset = topContentOffsetY;
         TabBrowserControlsOffsetHelper.from(mTab).onOffsetsChanged(
-                topControlsOffsetY, Float.NaN, topContentOffsetY);
+                topControlsOffsetY, mPreviousBottomControlsOffset, topContentOffsetY);
     }
 
     @Override
-    public void onBottomControlsChanged(float bottomControlsOffsetY, float bottomContentOffsetY) {
+    public void onBottomControlsChanged(int bottomControlsOffsetY, int bottomContentOffsetY) {
+        mPreviousBottomControlsOffset = bottomControlsOffsetY;
         TabBrowserControlsOffsetHelper.from(mTab).onOffsetsChanged(
-                Float.NaN, bottomControlsOffsetY, Float.NaN);
+                mPreviousTopControlsOffset, bottomControlsOffsetY, mPreviousTopContentOffset);
     }
 
     @Override
