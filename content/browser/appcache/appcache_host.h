@@ -184,9 +184,7 @@ class CONTENT_EXPORT AppCacheHost
   const GURL& first_party_url() const { return first_party_url_; }
   void SetFirstPartyUrlForTesting(const GURL& url) {
     first_party_url_ = url;
-#if DCHECK_IS_ON()
     first_party_url_initialized_ = true;
-#endif
   }
 
   // Returns a weak pointer reference to the host.
@@ -344,9 +342,7 @@ class CONTENT_EXPORT AppCacheHost
 
   // First party url to be used in policy checks.
   GURL first_party_url_;
-#if DCHECK_IS_ON()
   bool first_party_url_initialized_ = false;
-#endif
 
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheGroupTest, CleanupUnusedGroup);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheGroupTest, QueueUpdate);
