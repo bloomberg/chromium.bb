@@ -25,19 +25,19 @@ namespace blink {
 
 namespace {
 
-WebFocusType FocusDirectionForKey(KeyboardEvent* event) {
+SpatialNavigationDirection FocusDirectionForKey(KeyboardEvent* event) {
   if (event->ctrlKey() || event->metaKey() || event->shiftKey())
-    return kWebFocusTypeNone;
+    return SpatialNavigationDirection::kNone;
 
-  WebFocusType ret_val = kWebFocusTypeNone;
+  SpatialNavigationDirection ret_val = SpatialNavigationDirection::kNone;
   if (event->key() == "ArrowDown")
-    ret_val = kWebFocusTypeDown;
+    ret_val = SpatialNavigationDirection::kDown;
   else if (event->key() == "ArrowUp")
-    ret_val = kWebFocusTypeUp;
+    ret_val = SpatialNavigationDirection::kUp;
   else if (event->key() == "ArrowLeft")
-    ret_val = kWebFocusTypeLeft;
+    ret_val = SpatialNavigationDirection::kLeft;
   else if (event->key() == "ArrowRight")
-    ret_val = kWebFocusTypeRight;
+    ret_val = SpatialNavigationDirection::kRight;
 
   // TODO(bokan): We should probably assert that we don't get anything else but
   // currently KeyboardEventManager sends non-arrow keys here.
@@ -57,7 +57,7 @@ void ClearFocusInExitedFrames(LocalFrame* old_frame,
   }
 }
 
-static void UpdateFocusCandidateIfNeeded(WebFocusType direction,
+static void UpdateFocusCandidateIfNeeded(SpatialNavigationDirection direction,
                                          const FocusCandidate& current,
                                          FocusCandidate& candidate,
                                          FocusCandidate& closest) {
@@ -132,8 +132,8 @@ bool SpatialNavigationController::HandleArrowKeyboardEvent(
     KeyboardEvent* event) {
   DCHECK(page_->GetSettings().GetSpatialNavigationEnabled());
 
-  WebFocusType direction = FocusDirectionForKey(event);
-  if (direction == kWebFocusTypeNone)
+  SpatialNavigationDirection direction = FocusDirectionForKey(event);
+  if (direction == SpatialNavigationDirection::kNone)
     return false;
 
   return Advance(direction);
@@ -143,7 +143,8 @@ void SpatialNavigationController::Trace(blink::Visitor* visitor) {
   visitor->Trace(page_);
 }
 
-bool SpatialNavigationController::Advance(WebFocusType direction) {
+bool SpatialNavigationController::Advance(
+    SpatialNavigationDirection direction) {
   // FIXME: Directional focus changes don't yet work with RemoteFrames.
   Frame* focused_frame = page_->GetFocusController().FocusedOrMainFrame();
   if (!focused_frame->IsLocalFrame())
@@ -208,7 +209,7 @@ bool SpatialNavigationController::Advance(WebFocusType direction) {
 void SpatialNavigationController::FindCandidateInContainer(
     Node& container,
     const LayoutRect& starting_rect,
-    WebFocusType direction,
+    SpatialNavigationDirection direction,
     FocusCandidate& closest,
     Node* focused_element) {
   Element* element = ElementTraversal::FirstWithin(container);
@@ -243,7 +244,7 @@ void SpatialNavigationController::FindCandidateInContainer(
 bool SpatialNavigationController::AdvanceInContainer(
     Node* const container,
     const LayoutRect& starting_rect,
-    WebFocusType direction,
+    SpatialNavigationDirection direction,
     Node* focused_element) {
   DCHECK(container);
 
@@ -267,8 +268,8 @@ bool SpatialNavigationController::AdvanceInContainer(
   LocalFrame* old_frame = page_->GetFocusController().FocusedFrame();
   ClearFocusInExitedFrames(old_frame, element->GetDocument().GetFrame());
 
-  element->focus(
-      FocusParams(SelectionBehaviorOnFocus::kReset, direction, nullptr));
+  element->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
+                             kWebFocusTypeSpatialNavigation, nullptr));
   return true;
 }
 
