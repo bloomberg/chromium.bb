@@ -95,6 +95,11 @@ class AutofillWalletMetadataSyncBridge
       base::Optional<std::unordered_set<std::string>> storage_keys_set,
       DataCallback callback);
 
+  // Uploads local data that is not part of |entity_data| sent from the server
+  // during initial MergeSyncData().
+  void UploadInitialLocalData(syncer::MetadataChangeList* metadata_change_list,
+                              const syncer::EntityChangeList& entity_data);
+
   // Merges remote changes, specified in |entity_data|, with the local DB and,
   // potentially, writes changes to the local DB and/or commits updates of
   // entities from |entity_data| up to sync.
