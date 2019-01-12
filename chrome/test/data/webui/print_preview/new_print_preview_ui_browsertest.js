@@ -706,11 +706,13 @@ TEST_F('PrintPreviewDestinationDialogTest', 'PrinterList', function() {
   this.runMochaTest(destination_dialog_test.TestNames.PrinterList);
 });
 
+GEN('#if defined(OS_CHROMEOS)');
 TEST_F(
     'PrintPreviewDestinationDialogTest', 'ShowProvisionalDialog', function() {
       this.runMochaTest(
           destination_dialog_test.TestNames.ShowProvisionalDialog);
     });
+GEN('#endif');
 
 TEST_F('PrintPreviewDestinationDialogTest', 'ReloadPrinterList', function() {
   this.runMochaTest(destination_dialog_test.TestNames.ReloadPrinterList);

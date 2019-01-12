@@ -133,8 +133,7 @@ cr.define('destination_select_test', function() {
             assertPrinterDisplay('One');
 
             // Load all local destinations.
-            page.destinationStore_.startLoadDestinations(
-                print_preview.PrinterType.LOCAL_PRINTER);
+            page.destinationStore_.startLoadAllDestinations();
             return nativeLayer.whenCalled('getPrinters');
           })
           .then(function() {

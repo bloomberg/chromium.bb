@@ -219,6 +219,28 @@ cr.define('print_preview', function() {
     };
   }
 
+  /**
+   * @param {string} id Destination id.
+   * @param {!print_preview.DestinationOrigin} origin Destination origin.
+   * @param {string} account User account destination is registered for.
+   * @return {string} A key that maps to a destination with the selected |id|,
+   *     |origin|, and |account|.
+   */
+  function createDestinationKey(id, origin, account) {
+    return `${id}/${origin}/${account}`;
+  }
+
+  /**
+   * @param {!print_preview.RecentDestination} recentDestination
+   * @return {string} A key that maps to a destination with parameters matching
+   *     |recentDestination|.
+   */
+  function createRecentDestinationKey(recentDestination) {
+    return print_preview.createDestinationKey(
+        recentDestination.id, recentDestination.origin,
+        recentDestination.account);
+  }
+
   class Destination {
     /**
      * Print destination data object that holds data for both local and cloud
@@ -862,6 +884,11 @@ cr.define('print_preview', function() {
       });
       return defaultOptions.length != 0 ? defaultOptions[0] : null;
     }
+
+    /** @return {string} A unique identifier for this destination. */
+    get key() {
+      return `${this.id_}/${this.origin_}/${this.account_}`;
+    }
   }
 
   /**
@@ -885,5 +912,7 @@ cr.define('print_preview', function() {
   return {
     Destination: Destination,
     makeRecentDestination: makeRecentDestination,
+    createDestinationKey: createDestinationKey,
+    createRecentDestinationKey: createRecentDestinationKey,
   };
 });
