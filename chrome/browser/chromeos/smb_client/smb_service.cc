@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/smb_client/smb_service_helper.h"
 #include "chrome/browser/chromeos/smb_client/smb_url.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/webui/chromeos/smb_shares/smb_credentials_dialog.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -153,7 +154,32 @@ void SmbService::GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
 void SmbService::UpdateCredentials(int32_t mount_id,
                                    const std::string& username,
                                    const std::string& password) {
-  NOTREACHED();
+  DCHECK(temp_file_manager_);
+
+  std::string parsed_username = username;
+  std::string workgroup;
+  if (ContainsAt(username)) {
+    ParseUserPrincipalName(username, &parsed_username, &workgroup);
+  }
+  GetSmbProviderClient()->UpdateMountCredentials(
+      mount_id, workgroup, parsed_username,
+      temp_file_manager_->WritePasswordToFile(password),
+      base::BindOnce(&SmbService::OnUpdateCredentialsResponse, AsWeakPtr(),
+                     mount_id));
+}
+
+void SmbService::OnUpdateCredentialsResponse(int32_t mount_id,
+                                             smbprovider::ErrorType error) {
+  auto creds_reply_iter = update_credential_replies_.find(mount_id);
+  DCHECK(creds_reply_iter != update_credential_replies_.end());
+
+  if (error == smbprovider::ERROR_OK) {
+    std::move(creds_reply_iter->second).Run();
+  } else {
+    LOG(ERROR) << "Failed to update the credentials for mount id " << mount_id;
+  }
+
+  update_credential_replies_.erase(creds_reply_iter);
 }
 
 void SmbService::CallMount(const file_system_provider::MountOptions& options,
@@ -502,7 +528,7 @@ void SmbService::RequestCredentials(const std::string& share_path,
 
 void SmbService::OpenRequestCredentialsDialog(const std::string& share_path,
                                               int32_t mount_id) {
-  NOTREACHED();
+  smb_dialog::SmbCredentialsDialog::Show(mount_id, share_path);
 }
 
 void SmbService::RecordMountCount() const {
