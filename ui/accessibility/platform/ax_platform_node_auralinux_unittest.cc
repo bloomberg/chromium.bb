@@ -1004,13 +1004,36 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkWindowActive) {
   AXNodeData root;
   root.id = 1;
   root.role = ax::mojom::Role::kWindow;
-  Init(root);
+  root.child_ids.push_back(2);
+
+  AXNodeData child;
+  child.id = 2;
+  child.role = ax::mojom::Role::kCheckBox;
+
+  Init(root, child);
 
   AtkObject* root_atk_object(GetRootAtkObject());
   EXPECT_TRUE(ATK_IS_OBJECT(root_atk_object));
   g_object_ref(root_atk_object);
 
   EXPECT_TRUE(ATK_IS_WINDOW(root_atk_object));
+
+  AXNode* checkbox_node = GetRootNode()->children()[0];
+  AtkObject* checkbox_atk_obj = AtkObjectFromNode(checkbox_node);
+
+  // Focus the checkbox to ensure that it also gets new focus events when
+  // the toplevel window goes from unfocused to focused.
+  GetPlatformNode(checkbox_node)
+      ->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
+
+  bool saw_active_focus_state_change = false;
+  g_signal_connect(checkbox_atk_obj, "state-change",
+                   G_CALLBACK(+[](AtkObject* atkobject, gchar* state_changed,
+                                  gboolean new_value, bool* flag) {
+                     if (!g_strcmp0(state_changed, "focused") && new_value)
+                       *flag = true;
+                   }),
+                   &saw_active_focus_state_change);
 
   {
     ActivationTester tester(root_atk_object);
@@ -1020,15 +1043,19 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkWindowActive) {
     EXPECT_TRUE(tester.saw_activate_);
     EXPECT_FALSE(tester.saw_deactivate_);
     EXPECT_TRUE(tester.IsActivatedInStateSet());
+    EXPECT_TRUE(saw_active_focus_state_change);
   }
 
   {
+    saw_active_focus_state_change = false;
+
     ActivationTester tester(root_atk_object);
     static_cast<AXPlatformNodeAuraLinux*>(GetRootPlatformNode())
         ->NotifyAccessibilityEvent(ax::mojom::Event::kWindowDeactivated);
     EXPECT_FALSE(tester.saw_activate_);
     EXPECT_TRUE(tester.saw_deactivate_);
     EXPECT_FALSE(tester.IsActivatedInStateSet());
+    EXPECT_FALSE(saw_active_focus_state_change);
   }
 
   g_object_unref(root_atk_object);
