@@ -220,7 +220,7 @@ def RunPackage(output_dir, target, package_path, package_name, package_deps,
     serve_port = common.GetAvailableTcpPort()
     pm_serve_task = subprocess.Popen(
         [PM, 'serve', '-d', os.path.join(tuf_root, 'repository'), '-l',
-         ':%d' % serve_port])
+         ':%d' % serve_port, '-q'])
     remote_port = common.ConnectPortForwardingTask(target, serve_port, 0)
     _RegisterAmberRepository(target, tuf_root, remote_port)
 
