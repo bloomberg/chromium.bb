@@ -4262,7 +4262,7 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
       const int qthresh = (frame_is_intra_only(&cpi->common))
                               ? oxcf->superres_kf_qthresh
                               : oxcf->superres_qthresh;
-      if (q < qthresh) {
+      if (q <= qthresh) {
         new_denom = SCALE_NUMERATOR;
       } else {
         new_denom = get_superres_denom_for_qindex(cpi, q);
