@@ -158,8 +158,6 @@ void MediaNotificationItem::OnNotificationClicked(
     case MediaSessionAction::kStop:
       media_controller_ptr_->Stop();
       break;
-    case MediaSessionAction::kSkipAd:
-      break;
   }
 }
 

@@ -78,9 +78,6 @@ class MediaSession : public media_session::mojom::MediaSession {
   // no-op.
   void NextTrack() override = 0;
 
-  // Skip ad.
-  void SkipAd() override = 0;
-
   // Seek the media session. If the media cannot seek then this will be a no-op.
   // The |seek_time| is the time delta that the media will seek by and supports
   // both positive and negative values.

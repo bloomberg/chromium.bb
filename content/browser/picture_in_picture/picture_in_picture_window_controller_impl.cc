@@ -10,11 +10,9 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/media_session.h"
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
-#include "media/base/media_switches.h"
 
 namespace content {
 
@@ -54,8 +52,7 @@ PictureInPictureWindowControllerImpl::~PictureInPictureWindowControllerImpl() {
 
 PictureInPictureWindowControllerImpl::PictureInPictureWindowControllerImpl(
     WebContents* initiator)
-    : initiator_(static_cast<WebContentsImpl* const>(initiator)),
-      observer_binding_(this) {
+    : initiator_(static_cast<WebContentsImpl* const>(initiator)) {
   DCHECK(initiator_);
 
   media_web_contents_observer_ = initiator_->media_web_contents_observer();
@@ -69,16 +66,7 @@ gfx::Size PictureInPictureWindowControllerImpl::Show() {
   DCHECK(surface_id_.is_valid());
 
   window_->Show();
-  window_->SetSkipAdButtonVisibility(false);
   initiator_->SetHasPictureInPictureVideo(true);
-
-  if (observer_binding_.is_bound()) {
-    observer_binding_.Close();
-  }
-
-  media_session::mojom::MediaSessionObserverPtr observer;
-  observer_binding_.Bind(mojo::MakeRequest(&observer));
-  MediaSession::Get(initiator_)->AddObserver(std::move(observer));
 
   return window_->GetBounds().size();
 }
@@ -213,27 +201,6 @@ void PictureInPictureWindowControllerImpl::SetAlwaysHidePlayPauseButton(
   window_->SetAlwaysHidePlayPauseButton(is_visible);
 }
 
-void PictureInPictureWindowControllerImpl::SkipAd() {
-  if (base::FeatureList::IsEnabled(media::kSkipAd))
-    MediaSession::Get(initiator_)->SkipAd();
-}
-
-void PictureInPictureWindowControllerImpl::MediaSessionActionsChanged(
-    const std::vector<media_session::mojom::MediaSessionAction>& actions) {
-  if (!window_)
-    return;
-
-  // TODO(crbug.com/919842): Currently, the first Media Session to be created
-  // (independently of the frame) will be used. This means, we could show a
-  // Skip Ad button for a PiP video from another frame. Ideally, we should have
-  // a Media Session per frame, not per tab. This is not implemented yet.
-
-  auto result = std::find(std::begin(actions), std::end(actions),
-                          media_session::mojom::MediaSessionAction::kSkipAd);
-  bool show_skip_ad_button = result != actions.end();
-  window_->SetSkipAdButtonVisibility(show_skip_ad_button);
-}
-
 void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
     bool should_pause_video,
     bool should_reset_pip_player) {
@@ -264,10 +231,6 @@ void PictureInPictureWindowControllerImpl::CloseInternal(
 
   initiator_->SetHasPictureInPictureVideo(false);
   OnLeavingPictureInPicture(should_pause_video, should_reset_pip_player);
-
-  if (observer_binding_.is_bound()) {
-    observer_binding_.Close();
-  }
 }
 
 void PictureInPictureWindowControllerImpl::EnsureWindow() {

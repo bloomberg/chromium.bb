@@ -25,7 +25,6 @@ enum MediaSessionAction {
   kNextTrack,
   kSeekBackward,
   kSeekForward,
-  kSkipAd,
   kStop,
 };
 
@@ -111,7 +110,7 @@ interface MediaSessionObserver {
 // WebContents or ARC app.
 // TODO(https://crbug.com/875004): migrate media session from content/public
 // to mojo.
-// Next Method ID: 12
+// Next Method ID: 11
 interface MediaSession {
   [Extensible]
   enum SuspendType {
@@ -165,7 +164,4 @@ interface MediaSession {
   // Stop the media session.
   // |type| represents the origin of the request.
   Stop@10(SuspendType suspend_type);
-
-  // Skip ad.
-  SkipAd@11();
 };

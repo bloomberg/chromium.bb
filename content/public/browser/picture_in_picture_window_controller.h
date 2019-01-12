@@ -67,9 +67,6 @@ class PictureInPictureWindowController {
                                    bool reached_end_of_stream) = 0;
   virtual void SetAlwaysHidePlayPauseButton(bool is_visible) = 0;
 
-  // Called when the user interacts with the "Skip Ad" control.
-  virtual void SkipAd() = 0;
-
   // Commands.
   // Returns true if the player is active (i.e. currently playing) after this
   // call.
