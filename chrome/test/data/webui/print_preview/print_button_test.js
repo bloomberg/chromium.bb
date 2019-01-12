@@ -74,8 +74,7 @@ cr.define('print_button_test', function() {
     function waitForInitialPreview() {
       return nativeLayer.whenCalled('getInitialSettings')
           .then(function() {
-            page.destinationStore_.startLoadDestinations(
-                print_preview.PrinterType.LOCAL_PRINTER);
+            page.destinationStore_.startLoadAllDestinations();
             // Wait for the preview request.
             return Promise.all([
               nativeLayer.whenCalled('getPrinterCapabilities'),

@@ -70,7 +70,8 @@
                  type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_DATA_DESTINATION_STORE_JS"
                  file="data/destination_store.js"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_PRINT_PREVIEW_DATA_CLOUD_PARSERS_HTML"
                  file="data/cloud_parsers.html"
                  type="chrome_html" />

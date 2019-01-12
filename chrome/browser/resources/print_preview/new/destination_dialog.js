@@ -191,9 +191,8 @@ Polymer({
     const recentDestinations = [];
     const filterAccount = this.activeUser;
     this.recentDestinations.forEach((recentDestination) => {
-      const destination = this.destinationStore.getDestination(
-          recentDestination.origin, recentDestination.id,
-          recentDestination.account || '');
+      const destination = this.destinationStore.getDestinationByKey(
+          print_preview.createRecentDestinationKey(recentDestination));
       if (destination &&
           (!destination.account || destination.account == filterAccount)) {
         recentDestinations.push(destination);
