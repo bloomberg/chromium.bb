@@ -1154,10 +1154,11 @@ class PpdProviderImpl : public PpdProvider {
   CallbackResultCode ValidateAndGetResponseAsString(std::string* contents) {
     CallbackResultCode ret;
     if (fetcher_.get() != nullptr) {
-      if (response_body_.get() == nullptr) {
-        ret = PpdProvider::SERVER_ERROR;
-      } else if (fetcher_->NetError() != 0) {
-        // TODO(luum): confirm netError != 0 behavior === 404 not found
+      int net_error = fetcher_->NetError();
+      if (net_error != net::OK) {
+        ret = net_error == net::ERR_FILE_NOT_FOUND ? PpdProvider::NOT_FOUND
+                                                   : PpdProvider::SERVER_ERROR;
+      } else if (response_body_.get() == nullptr) {
         ret = PpdProvider::SERVER_ERROR;
       } else {
         *contents = std::move(*response_body_);
