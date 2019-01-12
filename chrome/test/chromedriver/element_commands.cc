@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
@@ -317,6 +318,16 @@ Status ExecuteClearElement(Session* session,
       return Status(kElementNotVisible);
     }
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
+  }
+  static bool isClearWarningNotified = false;
+  if (!isClearWarningNotified) {
+    std::string messageClearWarning =
+        "\n\t=== NOTE: ===\n"
+        "\tThe Clear command in ChromeDriver 2.43 and above\n"
+        "\thas been updated to conform to the current standard,\n"
+        "\tincluding raising blur event after clearing.\n";
+    VLOG(0) << messageClearWarning;
+    isClearWarningNotified = true;
   }
   base::ListValue args;
   args.Append(CreateElement(element_id));
