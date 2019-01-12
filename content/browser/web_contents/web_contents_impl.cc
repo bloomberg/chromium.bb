@@ -2779,6 +2779,9 @@ void WebContentsImpl::CreateNewWindow(
     AddDestructionObserver(new_contents_impl);
   }
 
+  // Track the delegate on which WebContentsCreated may be called.
+  // TODO(ericrk): Remove this once debugging complete. https://crbug.com/758186
+  web_contents_created_delegate_ = delegate_;
   if (delegate_) {
     delegate_->WebContentsCreated(this, render_process_id,
                                   opener->GetRoutingID(), params.frame_name,
@@ -2910,6 +2913,14 @@ void WebContentsImpl::ShowCreatedWindow(int process_id,
 
   // The delegate can be null in tests, so we must check for it :(.
   if (delegate) {
+    // TODO(ericrk): Remove this once debugging complete.
+    // https://crbug.com/758186
+    if (web_contents_created_delegate_ != delegate_) {
+      LOG(ERROR) << "AddNewContents called on different delegate from "
+                    "WebContentsCreated. "
+                 << delegate_ << " vs " << web_contents_created_delegate_;
+    }
+
     // Mark the web contents as pending resume, then immediately do
     // the resume if the delegate wants it.
     created->is_resume_pending_ = true;

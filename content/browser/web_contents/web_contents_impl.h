@@ -1835,6 +1835,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // WebContents can be found by using GetOuterWebContents().
   Portal* portal_ = nullptr;
 
+  // TODO(ericrk): Variable to debug https://crbug.com/758186. Remove when
+  // debugging concluded.
+  WebContentsDelegate* web_contents_created_delegate_ = nullptr;
+
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;
 
