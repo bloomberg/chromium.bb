@@ -450,6 +450,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool WasEverAudible() override;
   void GetManifest(GetManifestCallback callback) override;
   bool IsFullscreenForCurrentTab() override;
+  bool ShouldShowStaleContentOnEviction() override;
   void ExitFullscreen(bool will_cause_resize) override;
   void ResumeLoadingCreatedWebContents() override;
   void SetIsOverlayContent(bool is_overlay_content) override;
