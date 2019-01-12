@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/modules/filesystem/file_system_dispatcher.h"
 
+#include <memory>
+#include <utility>
+
 #include "build/build_config.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
@@ -105,23 +108,23 @@ mojom::blink::FileSystemManager& FileSystemDispatcher::GetFileSystemManager() {
 }
 
 void FileSystemDispatcher::OpenFileSystem(
-    const KURL& origin_url,
+    const SecurityOrigin* origin,
     mojom::blink::FileSystemType type,
     std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
   GetFileSystemManager().Open(
-      origin_url, type,
+      origin, type,
       WTF::Bind(&FileSystemDispatcher::DidOpenFileSystem,
                 WrapWeakPersistent(this), std::move(callbacks)));
 }
 
 void FileSystemDispatcher::OpenFileSystemSync(
-    const KURL& origin_url,
+    const SecurityOrigin* origin,
     mojom::blink::FileSystemType type,
     std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
   String name;
   KURL root_url;
   base::File::Error error_code = base::File::FILE_ERROR_FAILED;
-  GetFileSystemManager().Open(origin_url, type, &name, &root_url, &error_code);
+  GetFileSystemManager().Open(origin, type, &name, &root_url, &error_code);
   DidOpenFileSystem(std::move(callbacks), std::move(name), root_url,
                     error_code);
 }
