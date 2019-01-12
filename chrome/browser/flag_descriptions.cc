@@ -2649,6 +2649,13 @@ const char kReaderModeInCCTName[] = "Reader Mode in CCT";
 const char kReaderModeInCCTDescription[] =
     "Open Reader Mode in Chrome Custom Tabs.";
 
+const char kSafeBrowsingTelemetryForApkDownloadsName[] =
+    "Send some telemetry for APK downloads for extended reporting users";
+const char kSafeBrowsingTelemetryForApkDownloadsDescription[] =
+    "If enabled, sends some information about the source and hash of the "
+    "contents of any APK files downloaded by a user who has opted into Safe "
+    "Browsing Extended Reporting already.";
+
 const char kSafeBrowsingUseLocalBlacklistsV2Name[] =
     "Use local Safe Browsing blacklists";
 const char kSafeBrowsingUseLocalBlacklistsV2Description[] =

@@ -2901,6 +2901,11 @@
     "expiry_milestone": 75
   },
   {
+    "name": "safe-browsing-telemetry-for-apk-downloads",
+    "owners": [ "vakh" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "safe-browsing-use-local-blacklists-v2",
     "owners": [ "vakh" ],
     "expiry_milestone": 76
