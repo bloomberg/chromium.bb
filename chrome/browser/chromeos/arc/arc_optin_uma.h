@@ -7,6 +7,7 @@
 
 #include <ostream>
 
+#include "components/arc/common/app.mojom.h"
 #include "components/arc/common/auth.mojom.h"
 
 class Profile;
@@ -224,6 +225,10 @@ void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
                               const Profile* profile);
 void UpdateReauthorizationResultUMA(ProvisioningResult result,
                                     const Profile* profile);
+void UpdatePlayAutoInstallRequestState(mojom::PaiFlowState state,
+                                       const Profile* profile);
+void UpdatePlayAutoInstallRequestTime(const base::TimeDelta& elapsed_time,
+                                      const Profile* profile);
 void UpdatePlayStoreShowTime(const base::TimeDelta& elapsed_time,
                              const Profile* profile);
 void UpdateSilentAuthCodeUMA(OptInSilentAuthCode state);

@@ -402,14 +402,6 @@ void ShowTalkBackSettings() {
       kIntentHelperClassName, "{}");
 }
 
-void StartPaiFlow() {
-  DCHECK(!IsArcPlayAutoInstallDisabled());
-  arc::mojom::AppInstance* app_instance = GET_APP_INSTANCE(StartPaiFlow);
-  if (!app_instance)
-    return;
-  app_instance->StartPaiFlow();
-}
-
 std::vector<std::string> GetSelectedPackagesFromPrefs(
     content::BrowserContext* context) {
   std::vector<std::string> packages;

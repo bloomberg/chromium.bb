@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 39
+// Next MinVersion: 41
 
 module arc.mojom;
 
@@ -213,6 +213,30 @@ struct AppShortcutItem {
   [MinVersion=32] int32 rank;
 };
 
+[Extensible]
+enum PaiFlowState {
+    // PAI flow succeeded.
+    SUCCEEDED = 0,
+    // PAI flow state was not returned.
+    UNKNOWN = 1,
+    // PAI flow failed due to no account was provided.
+    NO_ACCOUNT = 2,
+    // PAI flow failed due Play Store returned no app to install.
+    NO_APPS = 3,
+    // PAI flow was interrupted.
+    INTERRUPTED = 4,
+    // PAI flow failed due to no response from Play Store.
+    PLAY_STORE_NOT_RESPONDED = 5,
+    // PAI flow failed due to no access to Play Store.
+    PLAY_STORE_NO_ACCESS = 6,
+    // PAI flow failed due to no ArcGmsProxy found.
+    PROXY_NOT_FOUND = 7,
+    // PAI flow failed due to no ArcGmsProxy access.
+    PROXY_NO_ACCESS = 8,
+    // PAI flow timeout occurred.
+    TIMEOUT = 9,
+};
+
 // Next method ID: 18
 interface AppHost {
   // Sends newly added ARC app to Chrome. This message is sent when ARC receives
@@ -295,7 +319,7 @@ interface AppHost {
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
-// Next method ID: 31
+// Next method ID: 33
 interface AppInstance {
   // DEPRECATED: Please use Init@21 instead.
   InitDeprecated@0(AppHost host_ptr);
@@ -400,7 +424,10 @@ interface AppInstance {
   [MinVersion=6] SetNotificationsEnabled@10(string package_name, bool enabled);
 
   // Sends a request to ARC to start PAI flow.
-  [MinVersion=21] StartPaiFlow@17();
+  [MinVersion=21] StartPaiFlowDeprecated@17();
+
+  // Sends a request to ARC to start PAI flow and receives result status.
+  [MinVersion=40] StartPaiFlow@32() => (PaiFlowState state);
 
   // Sends a request to ARC to start FastAppReinstall flow.
   [MinVersion=33] StartFastAppReinstallFlow@25(array<string> arc_package_names);

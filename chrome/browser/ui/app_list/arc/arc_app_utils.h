@@ -136,9 +136,6 @@ void CloseTask(int task_id);
 // Opens TalkBack settings window.
 void ShowTalkBackSettings();
 
-// Starts Play Auto Install flow.
-void StartPaiFlow();
-
 // Gets user selected package names.
 std::vector<std::string> GetSelectedPackagesFromPrefs(
     content::BrowserContext* context);

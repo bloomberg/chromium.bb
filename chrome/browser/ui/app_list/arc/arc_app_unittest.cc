@@ -1450,8 +1450,8 @@ TEST_P(ArcPlayStoreAppTest, PaiStarter) {
 
   bool pai_started = false;
 
-  arc::ArcPaiStarter starter1(profile_.get(), profile_->GetPrefs());
-  arc::ArcPaiStarter starter2(profile_.get(), profile_->GetPrefs());
+  arc::ArcPaiStarter starter1(profile_.get());
+  arc::ArcPaiStarter starter2(profile_.get());
   EXPECT_FALSE(starter1.started());
   EXPECT_FALSE(starter2.started());
   EXPECT_EQ(app_instance()->start_pai_request_count(), 0);
@@ -1493,7 +1493,7 @@ TEST_P(ArcPlayStoreAppTest, PaiStarter) {
   EXPECT_TRUE(starter2.started());
   EXPECT_EQ(app_instance()->start_pai_request_count(), 3);
 
-  arc::ArcPaiStarter starter3(profile_.get(), profile_->GetPrefs());
+  arc::ArcPaiStarter starter3(profile_.get());
   EXPECT_TRUE(starter3.started());
   EXPECT_EQ(app_instance()->start_pai_request_count(), 4);
 }
@@ -1557,6 +1557,44 @@ TEST_P(ArcPlayStoreAppTest, StartPaiDisabled) {
   EXPECT_FALSE(pai_starter->started());
   SendPlayStoreApp();
   EXPECT_FALSE(pai_starter->started());
+}
+
+TEST_P(ArcPlayStoreAppTest, PaiStarterOnError) {
+  // No PAI starter without Play Store.
+  if (GetParam() == ArcState::ARC_WITHOUT_PLAY_STORE)
+    return;
+
+  arc::ArcSessionManager* const session_manager = arc::ArcSessionManager::Get();
+  ASSERT_NE(nullptr, session_manager);
+  arc::ArcPaiStarter* const pai_starter = session_manager->pai_starter();
+  ASSERT_NE(nullptr, pai_starter);
+  EXPECT_FALSE(pai_starter->started());
+
+  app_instance()->set_pai_state_response(arc::mojom::PaiFlowState::NO_APPS);
+
+  SendPlayStoreApp();
+
+  EXPECT_FALSE(pai_starter->started());
+  int pai_request_expected = 1;
+  EXPECT_EQ(pai_request_expected, app_instance()->start_pai_request_count());
+
+  // Verify retry and all possible errors.
+  for (int error_state = static_cast<int>(arc::mojom::PaiFlowState::UNKNOWN);
+       error_state <= static_cast<int>(arc::mojom::PaiFlowState::kMaxValue);
+       ++error_state) {
+    app_instance()->set_pai_state_response(
+        static_cast<arc::mojom::PaiFlowState>(error_state));
+    pai_starter->TriggerRetryForTesting();
+    EXPECT_FALSE(pai_starter->started());
+    EXPECT_EQ(++pai_request_expected,
+              app_instance()->start_pai_request_count());
+  }
+
+  // Now return success and verify it is started.
+  app_instance()->set_pai_state_response(arc::mojom::PaiFlowState::SUCCEEDED);
+  pai_starter->TriggerRetryForTesting();
+  EXPECT_TRUE(pai_starter->started());
+  EXPECT_EQ(++pai_request_expected, app_instance()->start_pai_request_count());
 }
 
 TEST_P(ArcPlayStoreAppTest,
