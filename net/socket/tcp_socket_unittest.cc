@@ -596,6 +596,70 @@ TEST_F(TCPSocketTest, CancelPendingReadIfReady) {
   ASSERT_EQ(0, memcmp(&kMsg, read_buffer->data(), msg_size));
 }
 
+TEST_F(TCPSocketTest, IsConnected) {
+  ASSERT_NO_FATAL_FAILURE(SetUpListenIPv4());
+
+  TestCompletionCallback accept_callback;
+  std::unique_ptr<TCPSocket> accepted_socket;
+  IPEndPoint accepted_address;
+  EXPECT_THAT(socket_.Accept(&accepted_socket, &accepted_address,
+                             accept_callback.callback()),
+              IsError(ERR_IO_PENDING));
+
+  TestCompletionCallback connect_callback;
+  TCPClientSocket connecting_socket(local_address_list(), nullptr, nullptr,
+                                    NetLogSource());
+
+  // Immediately after creation, the socket should not be connected.
+  EXPECT_FALSE(connecting_socket.IsConnected());
+  EXPECT_FALSE(connecting_socket.IsConnectedAndIdle());
+
+  int connect_result = connecting_socket.Connect(connect_callback.callback());
+  EXPECT_THAT(accept_callback.WaitForResult(), IsOk());
+  EXPECT_THAT(connect_callback.GetResult(connect_result), IsOk());
+
+  // |connecting_socket| and |accepted_socket| should now both be reported as
+  // connected, and idle
+  EXPECT_TRUE(accepted_socket->IsConnected());
+  EXPECT_TRUE(accepted_socket->IsConnectedAndIdle());
+  EXPECT_TRUE(connecting_socket.IsConnected());
+  EXPECT_TRUE(connecting_socket.IsConnectedAndIdle());
+
+  // Write one byte to the |accepted_socket|, then close it.
+  const char kSomeData[] = "!";
+  scoped_refptr<IOBuffer> some_data_buffer =
+      base::MakeRefCounted<StringIOBuffer>(kSomeData);
+  TestCompletionCallback write_callback;
+  EXPECT_THAT(write_callback.GetResult(accepted_socket->Write(
+                  some_data_buffer.get(), 1, write_callback.callback(),
+                  TRAFFIC_ANNOTATION_FOR_TESTS)),
+              1);
+  accepted_socket.reset();
+
+  // |connecting_socket| should have data to read, so should still be reported
+  // as connected, but not idle.
+  EXPECT_TRUE(connecting_socket.IsConnected());
+  EXPECT_FALSE(connecting_socket.IsConnectedAndIdle());
+
+  // Read the message from |connecting_socket_|, then read the end-of-stream.
+  scoped_refptr<IOBufferWithSize> read_buffer =
+      base::MakeRefCounted<IOBufferWithSize>(2);
+  TestCompletionCallback read_callback;
+  EXPECT_THAT(
+      read_callback.GetResult(connecting_socket.Read(
+          read_buffer.get(), read_buffer->size(), read_callback.callback())),
+      1);
+  EXPECT_THAT(
+      read_callback.GetResult(connecting_socket.Read(
+          read_buffer.get(), read_buffer->size(), read_callback.callback())),
+      0);
+
+  // |connecting_socket| has no more data to read, so should noe be reported
+  // as disconnected.
+  EXPECT_FALSE(connecting_socket.IsConnected());
+  EXPECT_FALSE(connecting_socket.IsConnectedAndIdle());
+}
+
 // Tests that setting a socket option in the BeforeConnectCallback works. With
 // real sockets, socket options often have to be set before the connect() call,
 // and the BeforeConnectCallback is the only way to do that, with a
@@ -640,7 +704,8 @@ TEST_F(TCPSocketTest, BeforeConnectCallback) {
   EXPECT_EQ(2 * kReceiveBufferSize, actual_size);
 // Unfortunately, Apple platform behavior doesn't seem to be documented, and
 // doesn't match behavior on any other platforms.
-#elif !defined(OS_IOS) && !defined(OS_MACOSX)
+// Fuchsia doesn't currently implement SO_RCVBUF.
+#elif !defined(OS_IOS) && !defined(OS_MACOSX) && !defined(OS_FUCHSIA)
   EXPECT_EQ(kReceiveBufferSize, actual_size);
 #endif
 }
