@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "cc/input/touch_action.h"
 #include "content/public/common/console_message_level.h"
+#include "content/public/common/drop_data.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/web_preferences.h"
@@ -19,6 +20,7 @@
 #include "services/network/public/cpp/network_ipc_param_traits.h"
 #include "services/network/public/mojom/referrer_policy.mojom.h"
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_history_scroll_restoration_type.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -30,6 +32,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/accessibility/ax_tree_update.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
@@ -338,6 +341,49 @@ IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(arrow_bitmap_height_vertical_scroll_bar_in_dips)
   IPC_STRUCT_TRAITS_MEMBER(arrow_bitmap_width_horizontal_scroll_bar_in_dips)
 #endif
+IPC_STRUCT_TRAITS_END()
+
+IPC_ENUM_TRAITS(blink::WebDragOperation)  // Bitmask.
+IPC_ENUM_TRAITS_MAX_VALUE(ui::DragDropTypes::DragEventSource,
+                          ui::DragDropTypes::DRAG_EVENT_SOURCE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(content::DropData::Kind,
+                          content::DropData::Kind::LAST)
+
+IPC_STRUCT_TRAITS_BEGIN(ui::FileInfo)
+  IPC_STRUCT_TRAITS_MEMBER(path)
+  IPC_STRUCT_TRAITS_MEMBER(display_name)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::DropData)
+  IPC_STRUCT_TRAITS_MEMBER(key_modifiers)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(url_title)
+  IPC_STRUCT_TRAITS_MEMBER(download_metadata)
+  IPC_STRUCT_TRAITS_MEMBER(referrer_policy)
+  IPC_STRUCT_TRAITS_MEMBER(filenames)
+  IPC_STRUCT_TRAITS_MEMBER(filesystem_id)
+  IPC_STRUCT_TRAITS_MEMBER(file_system_files)
+  IPC_STRUCT_TRAITS_MEMBER(text)
+  IPC_STRUCT_TRAITS_MEMBER(html)
+  IPC_STRUCT_TRAITS_MEMBER(html_base_url)
+  IPC_STRUCT_TRAITS_MEMBER(file_contents)
+  IPC_STRUCT_TRAITS_MEMBER(file_contents_source_url)
+  IPC_STRUCT_TRAITS_MEMBER(file_contents_filename_extension)
+  IPC_STRUCT_TRAITS_MEMBER(file_contents_content_disposition)
+  IPC_STRUCT_TRAITS_MEMBER(custom_data)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::DropData::FileSystemFileInfo)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(size)
+  IPC_STRUCT_TRAITS_MEMBER(filesystem_id)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::DropData::Metadata)
+  IPC_STRUCT_TRAITS_MEMBER(kind)
+  IPC_STRUCT_TRAITS_MEMBER(mime_type)
+  IPC_STRUCT_TRAITS_MEMBER(filename)
+  IPC_STRUCT_TRAITS_MEMBER(file_system_url)
 IPC_STRUCT_TRAITS_END()
 
 #endif  // CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_MACROS_H_

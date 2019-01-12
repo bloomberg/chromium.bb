@@ -347,6 +347,7 @@ mojom("interfaces") {
 
   sources = [
     "appcache_info.mojom",
+    "drop_data.mojom",
     "fullscreen_video_element.mojom",
     "load_timing_info.mojom",
     "push_messaging_status.mojom",
