@@ -206,6 +206,15 @@ class CustomFrameView : public ash::NonClientFrameViewAsh,
     }
     return minimum_size;
   }
+  gfx::Size GetMaximumSize() const override {
+    gfx::Size maximum_size = shell_surface_->GetMaximumSize();
+    if (visible()) {
+      return ash::NonClientFrameViewAsh::GetWindowBoundsForClientBounds(
+                 gfx::Rect(maximum_size))
+          .size();
+    }
+    return maximum_size;
+  }
 
  private:
   ShellSurfaceBase* const shell_surface_;
@@ -514,6 +523,13 @@ void ShellSurfaceBase::SetMinimumSize(const gfx::Size& size) {
                size.ToString());
 
   pending_minimum_size_ = size;
+}
+
+void ShellSurfaceBase::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
+  TRACE_EVENT1("exo", "ShellSurfaceBase::SetAspectRatio", "aspect_ratio",
+               aspect_ratio.ToString());
+
+  pending_aspect_ratio_ = aspect_ratio;
 }
 
 void ShellSurfaceBase::SetCanMinimize(bool can_minimize) {
@@ -1096,6 +1112,13 @@ void ShellSurfaceBase::CommitWidget() {
 
   if (!widget_)
     return;
+
+  if (!pending_aspect_ratio_.IsEmpty()) {
+    widget_->SetAspectRatio(pending_aspect_ratio_);
+  } else if (widget_->GetNativeWindow()) {
+    // TODO(yoshiki): Move the logic to clear aspect ratio into view::Widget.
+    widget_->GetNativeWindow()->ClearProperty(aura::client::kAspectRatio);
+  }
 
   UpdateWidgetBounds();
   UpdateShadow();

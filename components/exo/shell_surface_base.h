@@ -122,6 +122,10 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Set the miniumum size for the surface.
   void SetMinimumSize(const gfx::Size& size);
 
+  // Set the aspect ratio for the surface.
+  void SetAspectRatio(const gfx::SizeF& aspect_ratio);
+
+  // Set the flag if the surface can maximize or not.
   void SetCanMinimize(bool can_minimize);
 
   // Prevents shell surface from being moved.
@@ -287,6 +291,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   gfx::Size pending_minimum_size_;
   gfx::Size maximum_size_;
   gfx::Size pending_maximum_size_;
+  gfx::SizeF pending_aspect_ratio_;
   ui::AXTreeID child_ax_tree_id_ = ui::AXTreeIDUnknown();
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurfaceBase);

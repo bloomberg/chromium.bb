@@ -682,13 +682,15 @@ bool ClientControlledShellSurface::GetSavedWindowPlacement(
 // views::View overrides:
 
 gfx::Size ClientControlledShellSurface::GetMaximumSize() const {
-  // On ChromeOS, a window with non empty maximum size is non-maximizable,
-  // even if CanMaximize() returns true. ClientControlledShellSurface
-  // sololy depends on |can_maximize_| to determine if it is maximizable,
-  // so just return empty size because the maximum size in
-  // ClientControlledShellSurface is used only to tell the resizability,
-  // but not real maximum size.
-  return gfx::Size();
+  if (can_maximize_) {
+    // On ChromeOS, a window with non empty maximum size is non-maximizable,
+    // even if CanMaximize() returns true. ClientControlledShellSurface
+    // sololy depends on |can_maximize_| to determine if it is maximizable,
+    // so just return empty size.
+    return gfx::Size();
+  } else {
+    return ShellSurfaceBase::GetMaximumSize();
+  }
 }
 
 void ClientControlledShellSurface::OnDeviceScaleFactorChanged(float old_dsf,
