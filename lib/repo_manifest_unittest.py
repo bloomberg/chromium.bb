@@ -237,6 +237,11 @@ class ManifestElementTest(XMLTestCase):
     EXPECTED = '<example name="new" other-attr="other"/>'
     self.AssertXMLAlmostEqual(repr(self.example), EXPECTED)
 
+  def testDel(self):
+    """Test _ManifestElement.__delattr__."""
+    del self.example.name
+    self.assertIsNone(self.example.name)
+
 
 class RemoteTest(cros_test_lib.TestCase):
   """Tests for repo_manifest.Remote."""

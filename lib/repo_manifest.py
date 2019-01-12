@@ -217,6 +217,12 @@ class _ManifestElement(object):
     else:
       self._el.set(self._XMLAttrName(name), value)
 
+  def __delattr__(self, name):
+    if name.startswith('_'):
+      super(_ManifestElement, self).__delattr__(name)
+    else:
+      self._el.attrib.pop(self._XMLAttrName(name))
+
   def __str__(self):
     s = self.__class__.__name__
     if 'name' in self.ATTRS:
