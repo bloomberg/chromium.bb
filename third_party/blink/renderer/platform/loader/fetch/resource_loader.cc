@@ -691,14 +691,6 @@ bool ResourceLoader::WillFollowRedirect(
 
   Context().PrepareRequest(*new_request,
                            FetchContext::RedirectType::kForRedirect);
-  if (Context().GetFrameScheduler()) {
-    WebScopedVirtualTimePauser virtual_time_pauser =
-        Context().GetFrameScheduler()->CreateWebScopedVirtualTimePauser(
-            resource_->Url().GetString(),
-            WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
-    virtual_time_pauser.PauseVirtualTime();
-    resource_->VirtualTimePauser() = std::move(virtual_time_pauser);
-  }
   Context().DispatchWillSendRequest(
       resource_->Identifier(), *new_request, redirect_response_to_pass,
       resource_->GetType(), options.initiator_info);
