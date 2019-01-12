@@ -134,9 +134,13 @@ bool AppCacheHost::SelectCache(const GURL& document_url,
 
   if (!manifest_url.is_empty() &&
       (manifest_url.GetOrigin() == document_url.GetOrigin())) {
-#if DCHECK_IS_ON()
-    DCHECK(first_party_url_initialized_);
-#endif
+    // If |first_party_url_| hasn't been initialized it means the renderer is
+    // somehow trying to select a Cache for a main resource that was never
+    // actually fetched. That is only possible if the renderer is misbehaving,
+    // so return false to trigger a mojo::ReportBadMessage.
+    if (!first_party_url_initialized_)
+      return false;
+
     AppCachePolicy* policy = service()->appcache_policy();
     if (policy &&
         !policy->CanCreateAppCache(manifest_url, first_party_url_)) {
@@ -310,9 +314,7 @@ std::unique_ptr<AppCacheRequestHandler> AppCacheHost::CreateRequestHandler(
     // Store the first party origin so that it can be used later in SelectCache
     // for checking whether the creation of the appcache is allowed.
     first_party_url_ = request->GetSiteForCookies();
-#if DCHECK_IS_ON()
     first_party_url_initialized_ = true;
-#endif
     return base::WrapUnique(new AppCacheRequestHandler(
         this, resource_type, should_reset_appcache, std::move(request)));
   }
