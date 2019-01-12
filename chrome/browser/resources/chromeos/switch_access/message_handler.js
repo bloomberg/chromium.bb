@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 /**
- * Handles sending messages between the background page and the context menu.
+ * Handles sending messages between the background page and the Switch Access
+ * menu.
  */
 const MessageHandler = {
   /**
@@ -23,10 +24,10 @@ const MessageHandler = {
    * @enum {string}
    * @const
    */
-  Destination: {BACKGROUND: 'background', PANEL: 'panel.html'},
+  Destination: {BACKGROUND: 'background', MENU_PANEL: 'menu_panel.html'},
 
   /**
-   * Sends a message to the Context Menu panel with the given name and
+   * Sends a message to the Switch Access menu panel with the given name and
    * parameters.
    *
    * @param {!MessageHandler.Destination} destination

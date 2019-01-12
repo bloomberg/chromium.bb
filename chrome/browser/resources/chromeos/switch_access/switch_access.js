@@ -69,12 +69,12 @@ class SwitchAccess {
   }
 
   /**
-   * Jump to the context menu.
+   * Open and jump to the Switch Access menu.
    * @override
    */
-  enterContextMenu() {
+  enterMenu() {
     if (this.navigationManager_)
-      this.navigationManager_.enterContextMenu();
+      this.navigationManager_.enterMenu();
   }
 
   /**

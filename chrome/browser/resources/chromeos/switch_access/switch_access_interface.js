@@ -8,9 +8,9 @@
  */
 class SwitchAccessInterface {
   /**
-   * Jump to the context menu.
+   * Open and jump to the Switch Access menu.
    */
-  enterContextMenu() {}
+  enterMenu() {}
 
   /**
    * Move to the next interesting node.

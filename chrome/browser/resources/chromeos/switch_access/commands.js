@@ -76,7 +76,7 @@ class Commands {
       },
       'menu': {
         'defaultKeyCode': 52, /* '4' key */
-        'binding': this.switchAccess_.enterContextMenu.bind(this.switchAccess_)
+        'binding': this.switchAccess_.enterMenu.bind(this.switchAccess_)
       }
     };
   }
