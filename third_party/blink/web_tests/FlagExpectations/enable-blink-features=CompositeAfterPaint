@@ -42,7 +42,18 @@ crbug.com/857501 compositing/gestures/gesture-tapHighlight-with-filter.html [ Pa
 
 Bug(none) virtual/scalefactor200withzoom/fast/hidpi/static/mousewheel-scroll-amount.html [ Failure ]
 
-Bug(none) accessibility/reach-and-scroll-overflow-div-without-mouse.html [ Timeout ]
+# Scroller can't be scrolled by keyboard or mouse wheel.
+crbug.com/921194 accessibility/reach-and-scroll-overflow-div-without-mouse.html [ Timeout ]
+crbug.com/921194 fast/events/remove-child-onscroll.html [ Timeout ]
+crbug.com/921194 fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Failure ]
+crbug.com/921194 fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Failure ]
+crbug.com/921194 fast/scroll-snap/snaps-for-different-key-granularity.html [ Failure ]
+crbug.com/921194 synthetic_gestures/animated-wheel-tiny-delta.html [ Pass Failure ]
+crbug.com/921194 http/tests/misc/scroll-cross-origin-iframes.html [ Timeout ]
+crbug.com/921194 http/tests/navigation/same-document-scroll-position-restore.html [ Timeout ]
+crbug.com/921194 virtual/outofblink-cors-ns/http/tests/navigation/same-document-scroll-position-restore.html [ Timeout ]
+crbug.com/921194 virtual/threaded/external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Timeout ]
+
 Bug(none) compositing/animation/hidden-composited.html [ Failure ]
 Bug(none) compositing/change-preferCompositingToLCDText-setting.html [ Failure ]
 Bug(none) compositing/contents-opaque/hidden-with-visible-child.html [ Failure ]
@@ -191,9 +202,7 @@ Bug(none) fast/sub-pixel/should-not-repaint-subpixel-composited-layer.html [ Fai
 Bug(none) fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Failure ]
 Bug(none) fragmentation/outline-crossing-columns.html [ Crash ]
 Bug(none) fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
-Bug(none) http/tests/misc/scroll-cross-origin-iframes.html [ Timeout ]
 Bug(none) http/tests/misc/slow-loading-mask.html [ Failure ]
-Bug(none) http/tests/navigation/same-document-scroll-position-restore.html [ Timeout ]
 Bug(none) ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Failure ]
 Bug(none) inspector-protocol/layers/paint-profiler.js [ Failure ]
 Bug(none) inspector-protocol/layers/get-layers.js [ Timeout ]
@@ -234,12 +243,6 @@ Bug(none) paint/invalidation/scroll/document-flipped-blocks-writing-mode-scroll.
 Bug(none) paint/invalidation/position/layout-state-only-positioned.html [ Failure ]
 Bug(none) paint/invalidation/position/relative-positioned-movement-repaint.html [ Failure ]
 Bug(none) paint/invalidation/svg/scrolling-embedded-svg-file-image-repaint-problem.html [ Failure ]
-
-# Under-invalidation of view fixed-attachment background.
-# We may need to create composited fixed background layer, or invalidate.
-Bug(none) paint/invalidation/background/full-viewport-repaint-for-background-attachment-fixed.html [ Crash ]
-
-# Different invalidation rect or corrupted rendering for filter and reflection.
 
 # Extra layer for fixed-position.
 Bug(none) paint/invalidation/scroll/fixed-after-scroll.html [ Failure ]
@@ -309,6 +312,8 @@ Bug(none) svg/wicd/test-rightsizing-b.xhtml [ Crash Failure ]
 Bug(none) paint/invalidation/scroll/scroll-in-transformed-layer.html [ Failure ]
 Bug(none) paint/invalidation/scroll/scroll-with-transformed-parent-layer.html [ Failure ]
 
+# Under-invalidations.
+crbug.com/644358 paint/invalidation/background/full-viewport-repaint-for-background-attachment-fixed.html [ Crash ]
 crbug.com/644358 fast/block/float/float-overhanging-grandparent-change-self-painting.html [ Crash ]
 
 Bug(none) fast/dom/vertical-scrollbar-in-rtl.html [ Failure ]
@@ -325,12 +330,7 @@ Bug(none) fast/forms/suggestion-picker/month-suggestion-picker-mouse-operations.
 Bug(none) fast/forms/suggestion-picker/time-suggestion-picker-mouse-operations.html [ Failure ]
 Bug(none) fast/forms/suggestion-picker/week-suggestion-picker-mouse-operations.html [ Failure ]
 
-crbug.com/913955 fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Failure ]
-crbug.com/913955 fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Failure ]
-crbug.com/913955 fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Failure ]
-crbug.com/913955 fast/scroll-snap/snaps-for-different-key-granularity.html [ Failure ]
 crbug.com/913955 fast/scroll-snap/snap-scrolls-visual-viewport.html [ Failure ]
-Bug(none) fast/events/remove-child-onscroll.html [ Timeout ]
 
 # Text failures due to layerization differences
 Bug(none) compositing/overflow/scroller-with-border-radius.html [ Failure ]
@@ -460,14 +460,11 @@ Bug(none) compositing/overflow/scrollbar-layer-placement-negative-z-index-child-
 
 Bug(none) paint/float/float-under-inline-self-painting-change.html [ Failure ]
 Bug(none) compositing/overflow/overlap-testing-ancestor-scroller-high-dpi.html [ Failure ]
-Bug(none) virtual/outofblink-cors-ns/http/tests/navigation/same-document-scroll-position-restore.html [ Timeout ]
-Bug(none) virtual/threaded/external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Timeout ]
 
 # These tests have additional hit test rects. These may correct and simply due
 # to different layerization decisions, but this needs investigation.
 crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-global.html [ Failure ]
 crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
 
+crbug.com/920224 fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Failure ]
 crbug.com/920224 fast/events/touch/gesture/gesture-scroll-by-page.html [ Failure ]
-
-Bug(none) synthetic_gestures/animated-wheel-tiny-delta.html [ Pass Failure ]
