@@ -619,6 +619,13 @@ class EnterpriseEnrollmentConfigurationTest
     controller->SetOfflineDataDirForTest(fake_policy_dir_.GetPath());
   }
 
+  void SimulateOfflineDemoModeResourcesAvailable() {
+    WizardController::default_controller()
+        ->demo_setup_controller()
+        ->SetPreinstalledOfflineResourcesPathForTesting(base::FilePath(
+            "/run/imageloader/offline-demo-mode-resources/0.0.1.1"));
+  }
+
   void SetUpInProcessBrowserTestFixture() override {
     OobeConfiguration::set_skip_check_for_testing(true);
     std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
@@ -1084,6 +1091,8 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
                        TestDemoModeOfflineNetwork) {
   LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
+  SimulateOfflineDemoModeResourcesAvailable();
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
 }
 
@@ -1092,6 +1101,8 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
                        TestDemoModeAcceptEula) {
   LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
+  SimulateOfflineDemoModeResourcesAvailable();
   OobeScreenWaiter(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE).Wait();
 }
 
@@ -1101,6 +1112,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
                        TestDemoModeAcceptArcTos) {
   LoadConfiguration();
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
+  SimulateOfflineDemoModeResourcesAvailable();
 
   test::OobeJS().Evaluate(
       "login.ArcTermsOfServiceScreen.setTosForTesting('Test "

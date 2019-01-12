@@ -63,7 +63,8 @@ class DemoModeResourcesRemoverTest : public testing::Test {
         std::move(cryptohome_client));
 
     demo_mode_test_helper_ = std::make_unique<DemoModeTestHelper>();
-    demo_resources_path_ = demo_mode_test_helper_->GetDemoResourcesPath();
+    demo_resources_path_ =
+        demo_mode_test_helper_->GetPreinstalledDemoResourcesPath();
 
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<FakeChromeUserManager>());

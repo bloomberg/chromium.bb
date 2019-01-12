@@ -1357,7 +1357,8 @@ void WizardController::StartDemoModeSetup() {
 
 void WizardController::SimulateDemoModeSetupForTesting(
     base::Optional<DemoSession::DemoModeConfig> demo_config) {
-  demo_setup_controller_ = std::make_unique<DemoSetupController>();
+  if (!demo_setup_controller_)
+    demo_setup_controller_ = std::make_unique<DemoSetupController>();
   if (demo_config.has_value())
     demo_setup_controller_->set_demo_config(*demo_config);
 }

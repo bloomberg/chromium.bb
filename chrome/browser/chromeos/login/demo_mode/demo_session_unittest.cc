@@ -82,7 +82,7 @@ class DemoSessionTest : public testing::Test {
   bool FinishResourcesComponentLoad(const base::FilePath& mount_path) {
     EXPECT_TRUE(
         cros_component_manager_->HasPendingInstall(kOfflineResourcesComponent));
-    EXPECT_FALSE(
+    EXPECT_TRUE(
         cros_component_manager_->UpdateRequested(kOfflineResourcesComponent));
 
     return cros_component_manager_->FinishLoadRequest(

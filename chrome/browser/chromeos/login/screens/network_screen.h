@@ -10,6 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
@@ -91,6 +92,9 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   // Called when continue button is clicked.
   void OnContinueButtonClicked();
 
+  // Called when the preinstalled demo resources check has completed.
+  void OnHasPreinstalledDemoResources(bool has_preinstalled_demo_resources);
+
   // Called when offline demo mode setup was selected.
   void OnOfflineDemoModeSetupSelected();
 
@@ -115,6 +119,8 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
 
   NetworkScreenView* view_ = nullptr;
   std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
+
+  base::WeakPtrFactory<NetworkScreen> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkScreen);
 };

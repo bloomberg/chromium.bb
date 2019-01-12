@@ -17,11 +17,17 @@
 
 namespace chromeos {
 
+// Loads Demo Mode Resources depending on the configuration:
+// - online demo mode: loads or installs the Demo Mode resources CrOS Component
+// - offline demo mode: loads the pre-installed Offline Demo Mode Resources
+//   image
 class DemoResources {
  public:
-  // The name of the demo mode resources CrOS component or preinstalled
-  // imageloader image.
+  // The name of the demo mode resources CrOS component.
   static const char kDemoModeResourcesComponentName[];
+
+  // The name of the preinstalled offline demo mode resources CrOS component.
+  static const char kOfflineDemoModeResourcesComponentName[];
 
   // Location on disk where pre-installed demo mode resources are expected to be
   // found.
@@ -49,15 +55,29 @@ class DemoResources {
   // |load_callback| will be run once the resources finish loading.
   void EnsureLoaded(base::OnceClosure load_callback);
 
-  // Fakes demo session resources having been requested and mounted at
-  // the given path (or not mounted if |path| is empty).
-  void SetLoadedForTesting(const base::FilePath& path);
+  // Fakes the demo mode resources CrOS component having been requested and
+  // mounted at the given path (or not mounted if |path| is empty).
+  void SetCrOSComponentLoadedForTesting(
+      const base::FilePath& path,
+      component_updater::CrOSComponentManager::Error);
+
+  // Fakes the offline demo mode resources image having been requested and
+  // mounted at the given path (or not mounted if |path| is empty).
+  void SetPreinstalledOfflineResourcesLoadedForTesting(
+      const base::FilePath& path);
 
   bool loaded() const { return loaded_; }
   const base::FilePath& path() const { return path_; }
 
+  // The error from trying to load the demo mode resources CrOS component from
+  // the CrOSComponentManager.
+  const base::Optional<component_updater::CrOSComponentManager::Error>&
+  component_error() const {
+    return component_error_;
+  }
+
  private:
-  // Called after load of a currently installed (if any) demo mode resources
+  // Called after attempting to load the installed demo mode resources CrOS
   // component has finished.
   // On success, |path| is expected to contain the path as which the component
   // is loaded.
@@ -72,12 +92,16 @@ class DemoResources {
   // |mount_path| is the path at which the resources were loaded.
   void OnDemoResourcesLoaded(base::Optional<base::FilePath> mounted_path);
 
-  // Which config the device is configured for. Determines which resources will
-  // be loaded.
+  // Which config to load resources for: online or offline.
   DemoSession::DemoModeConfig config_;
 
   bool load_requested_ = false;
   bool loaded_ = false;
+
+  // Last error (or NONE) seen when trying to load the CrOS component. Has no
+  // value until the load attempt has completed.
+  base::Optional<component_updater::CrOSComponentManager::Error>
+      component_error_;
 
   // Path at which demo mode resources were loaded.
   base::FilePath path_;

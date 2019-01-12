@@ -40,6 +40,9 @@ class NetworkScreenView {
   // Shows network connecting status or network selection otherwise.
   virtual void ShowConnectingStatus(bool connecting,
                                     const base::string16& network_id) = 0;
+
+  // Enables or disables offline Demo Mode during Demo Mode network selection.
+  virtual void SetOfflineDemoModeEnabled(bool enabled) = 0;
 };
 
 }  // namespace chromeos

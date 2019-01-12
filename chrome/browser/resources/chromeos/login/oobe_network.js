@@ -12,7 +12,7 @@ Polymer({
   behaviors: [I18nBehavior, OobeDialogHostBehavior],
 
   observers:
-      ['onDemoModeSetupChanged_(isDemoModeSetup, offlineDemoModeEnabled_)'],
+      ['onDemoModeSetupChanged_(isDemoModeSetup, offlineDemoModeEnabled)'],
 
   properties: {
     /**
@@ -20,30 +20,19 @@ Polymer({
      * Additional custom elements can be displayed on network list in demo mode
      * setup.
      */
-    isDemoModeSetup: {
-      type: Boolean,
-      value: false,
-    },
+    isDemoModeSetup: false,
+
+    /**
+     * Whether offline demo mode is enabled. If it is enabled offline setup
+     * option will be shown in UI.
+     */
+    offlineDemoModeEnabled: false,
 
     /**
      * Whether device is connected to the network.
      * @private
      */
-    isConnected_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
-     * Whether offline demo mode is enabled. If it is enabled offline setup
-     * option will be shown in UI.
-     * @private
-     */
-    offlineDemoModeEnabled_: {
-      type: Boolean,
-      value: false,
-    },
-
+    isConnected_: false,
   },
 
   /** Called when dialog is shown. */
@@ -67,8 +56,6 @@ Polymer({
   /** @override */
   ready: function() {
     this.updateLocalizedContent();
-    this.offlineDemoModeEnabled_ =
-        loadTimeData.getValue('offlineDemoModeEnabled');
   },
 
   /** Shows the dialog. */
@@ -129,6 +116,6 @@ Polymer({
    */
   onDemoModeSetupChanged_: function() {
     this.$.networkSelectLogin.isOfflineDemoModeSetup =
-        this.isDemoModeSetup && this.offlineDemoModeEnabled_;
+        this.isDemoModeSetup && this.offlineDemoModeEnabled;
   },
 });

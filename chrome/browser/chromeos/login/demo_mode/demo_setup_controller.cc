@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/strings/stringprintf.h"
@@ -531,35 +532,51 @@ void DemoSetupController::Enroll(OnSetupSuccess on_setup_success,
   }
 }
 
+void DemoSetupController::TryMountPreinstalledDemoResources(
+    HasPreinstalledDemoResourcesCallback callback) {
+  if (!preinstalled_demo_resources_) {
+    preinstalled_demo_resources_ =
+        std::make_unique<DemoResources>(DemoSession::DemoModeConfig::kOffline);
+  }
+
+  if (DBusThreadManager::Get()->IsUsingFakes()) {
+    preinstalled_demo_resources_
+        ->SetPreinstalledOfflineResourcesLoadedForTesting(
+            preinstalled_offline_resources_path_for_tests_);
+  }
+  preinstalled_demo_resources_->EnsureLoaded(
+      base::BindOnce(&DemoSetupController::OnPreinstalledDemoResourcesLoaded,
+                     base::Unretained(this), std::move(callback)));
+}
+
 void DemoSetupController::LoadDemoResourcesCrOSComponent() {
   VLOG(1) << "Loading demo resources component";
-  component_updater::CrOSComponentManager* cros_component_manager =
-      g_browser_process->platform_part()->cros_component_manager();
-  // In tests, use the desired error code.
-  if (!cros_component_manager || DBusThreadManager::Get()->IsUsingFakes()) {
+  if (!demo_resources_)
+    demo_resources_ = std::make_unique<DemoResources>(demo_config_);
+
+  if (DBusThreadManager::Get()->IsUsingFakes()) {
+    demo_resources_->SetCrOSComponentLoadedForTesting(
+        base::FilePath(), component_error_for_tests_);
+
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&DemoSetupController::OnDemoResourcesCrOSComponentLoaded,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       component_error_for_tests_, base::FilePath()));
+                       weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
-  cros_component_manager->Load(
-      DemoResources::kDemoModeResourcesComponentName,
-      component_updater::CrOSComponentManager::MountPolicy::kMount,
-      component_updater::CrOSComponentManager::UpdatePolicy::kDontForce,
+  demo_resources_->EnsureLoaded(
       base::BindOnce(&DemoSetupController::OnDemoResourcesCrOSComponentLoaded,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DemoSetupController::OnDemoResourcesCrOSComponentLoaded(
-    component_updater::CrOSComponentManager::Error error,
-    const base::FilePath& path) {
+void DemoSetupController::OnDemoResourcesCrOSComponentLoaded() {
   DCHECK_EQ(demo_config_, DemoSession::DemoModeConfig::kOnline);
 
-  if (error != component_updater::CrOSComponentManager::Error::NONE) {
-    SetupFailed(DemoSetupError::CreateFromComponentError(error));
+  if (demo_resources_->component_error().value() !=
+      component_updater::CrOSComponentManager::Error::NONE) {
+    SetupFailed(DemoSetupError::CreateFromComponentError(
+        demo_resources_->component_error().value()));
     return;
   }
 
@@ -577,6 +594,11 @@ void DemoSetupController::OnDemoResourcesCrOSComponentLoaded(
   enrollment_helper_ = EnterpriseEnrollmentHelper::Create(
       this, nullptr, config, DemoSetupController::kDemoModeDomain);
   enrollment_helper_->EnrollUsingAttestation();
+}
+
+void DemoSetupController::OnPreinstalledDemoResourcesLoaded(
+    HasPreinstalledDemoResourcesCallback callback) {
+  std::move(callback).Run(!preinstalled_demo_resources_->path().empty());
 }
 
 void DemoSetupController::EnrollOffline(const base::FilePath& policy_dir) {
@@ -683,6 +705,11 @@ void DemoSetupController::OnRestoreAfterRollbackCompleted() {
 void DemoSetupController::SetCrOSComponentLoadErrorForTest(
     component_updater::CrOSComponentManager::Error error) {
   component_error_for_tests_ = error;
+}
+
+void DemoSetupController::SetPreinstalledOfflineResourcesPathForTesting(
+    const base::FilePath& path) {
+  preinstalled_offline_resources_path_for_tests_ = path;
 }
 
 void DemoSetupController::SetDeviceLocalAccountPolicyStoreForTest(

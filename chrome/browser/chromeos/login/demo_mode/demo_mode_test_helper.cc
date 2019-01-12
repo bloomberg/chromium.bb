@@ -35,6 +35,7 @@ DemoModeTestHelper::DemoModeTestHelper()
       chromeos::DIR_PREINSTALLED_COMPONENTS, components_temp_dir_.GetPath());
 
   CHECK(base::CreateDirectory(GetDemoResourcesPath()));
+  CHECK(base::CreateDirectory(GetPreinstalledDemoResourcesPath()));
 }
 
 DemoModeTestHelper::~DemoModeTestHelper() {
@@ -72,6 +73,12 @@ base::FilePath DemoModeTestHelper::GetDemoResourcesPath() {
   return components_temp_dir_.GetPath()
       .AppendASCII("cros-components")
       .AppendASCII(DemoResources::kDemoModeResourcesComponentName);
+}
+
+base::FilePath DemoModeTestHelper::GetPreinstalledDemoResourcesPath() {
+  return components_temp_dir_.GetPath()
+      .AppendASCII("cros-components")
+      .AppendASCII(DemoResources::kOfflineDemoModeResourcesComponentName);
 }
 
 void DemoModeTestHelper::InitializeCrosComponentManager() {
