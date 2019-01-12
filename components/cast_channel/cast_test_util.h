@@ -167,18 +167,7 @@ class MockCastMessageHandler : public CastMessageHandler {
                void(int channel_id,
                     const std::string& session_id,
                     StopSessionCallback callback));
-  MOCK_METHOD2(SendAppMessage,
-               bool(int channel_id, const CastMessage& message));
-  MOCK_METHOD4(SendMediaRequest,
-               base::Optional<int>(int channel_id,
-                                   const base::Value& body,
-                                   const std::string& source_id,
-                                   const std::string& destination_id));
-  MOCK_METHOD4(SendSetVolumeRequest,
-               bool(int channel_id,
-                    const base::Value& body,
-                    const std::string& source_id,
-                    SetVolumeCallback callback));
+  MOCK_METHOD2(SendAppMessage, void(int, const CastMessage&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCastMessageHandler);

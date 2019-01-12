@@ -7,10 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/test/values_test_util.h"
 #include "components/cast_channel/cast_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
@@ -18,14 +15,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::test::IsJson;
-using base::test::ParseJson;
 using testing::_;
-using testing::AnyNumber;
-using testing::InSequence;
-using testing::Return;
 using testing::SaveArg;
-using testing::WithArg;
 
 namespace cast_channel {
 
@@ -56,14 +47,6 @@ CastMessageType GetMessageType(const CastMessage& message) {
     return CastMessageType::kOther;
 
   return CastMessageTypeFromString(message_type->GetString());
-}
-
-MATCHER_P(HasMessageType, type, "") {
-  return GetMessageType(arg) == type;
-}
-
-MATCHER_P(HasPayloadUtf8, payload, "") {
-  return arg.payload_utf8() == payload;
 }
 
 }  // namespace
@@ -113,58 +96,27 @@ class CastMessageHandlerTest : public testing::Test {
       EXPECT_TRUE(response.receiver_status);
   }
 
-  void ExpectEnsureConnection() {
-    EXPECT_CALL(*transport_,
-                SendMessage(HasMessageType(CastMessageType::kConnect), _));
-  }
-
-  void ExpectEnsureConnectionThen(CastMessageType next_type,
-                                  int request_count = 1) {
-    InSequence dummy;
-    ExpectEnsureConnection();
-    EXPECT_CALL(*transport_, SendMessage(HasMessageType(next_type), _))
-        .Times(request_count)
-        .WillRepeatedly(SaveArg<0>(&last_request_));
-  }
-
-  void CreatePendingRequests() {
-    EXPECT_CALL(*transport_, SendMessage(_, _)).Times(AnyNumber());
-    handler_.LaunchSession(channel_id_, "theAppId", base::TimeDelta::Max(),
-                           launch_session_callback_.Get());
-    for (int i = 0; i < 2; i++) {
-      handler_.RequestAppAvailability(&cast_socket_, "theAppId",
-                                      get_app_availability_callback_.Get());
-      EXPECT_TRUE(handler_.SendSetVolumeRequest(
-          channel_id_,
-          *ParseJson(R"({"sessionId": "theSessionId", "type": "SET_VOLUME"})"),
-          "theSourceId", set_volume_callback_.Get()));
-    }
-    handler_.StopSession(channel_id_, "theSessionId",
-                         stop_session_callback_.Get());
-  }
-
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  testing::NiceMock<MockCastSocketService> cast_socket_service_;
+  MockCastSocketService cast_socket_service_;
   data_decoder::TestingJsonParser::ScopedFactoryOverride parser_override_;
   CastMessageHandler handler_;
   MockCastSocket cast_socket_;
-  const int channel_id_ = cast_socket_.id();
-  MockCastTransport* const transport_ = cast_socket_.mock_transport();
   int session_launch_response_count_ = 0;
-  CastMessage last_request_;
-  base::MockCallback<LaunchSessionCallback> launch_session_callback_;
-  base::MockCallback<GetAppAvailabilityCallback> get_app_availability_callback_;
-  base::MockCallback<SetVolumeCallback> set_volume_callback_;
-  base::MockCallback<StopSessionCallback> stop_session_callback_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastMessageHandlerTest);
 };
 
 TEST_F(CastMessageHandlerTest, VirtualConnectionCreatedOnlyOnce) {
-  ExpectEnsureConnectionThen(CastMessageType::kGetAppAvailability, 2);
+  CastMessage virtual_connection_request;
+  CastMessage app_availability_request1;
+  CastMessage app_availability_request2;
+  EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _))
+      .WillOnce(SaveArg<0>(&virtual_connection_request))
+      .WillOnce(SaveArg<0>(&app_availability_request1))
+      .WillOnce(SaveArg<0>(&app_availability_request2));
 
   handler_.RequestAppAvailability(
       &cast_socket_, "AAAAAAAA",
@@ -174,27 +126,48 @@ TEST_F(CastMessageHandlerTest, VirtualConnectionCreatedOnlyOnce) {
       &cast_socket_, "BBBBBBBB",
       base::BindOnce(&CastMessageHandlerTest::OnAppAvailability,
                      base::Unretained(this)));
+
+  EXPECT_EQ(CastMessageType::kConnect,
+            GetMessageType(virtual_connection_request));
+  EXPECT_EQ(CastMessageType::kGetAppAvailability,
+            GetMessageType(app_availability_request1));
+  EXPECT_EQ(CastMessageType::kGetAppAvailability,
+            GetMessageType(app_availability_request2));
 }
 
 TEST_F(CastMessageHandlerTest, RecreateVirtualConnectionAfterError) {
-  ExpectEnsureConnectionThen(CastMessageType::kGetAppAvailability);
+  CastMessage virtual_connection_request;
+  CastMessage app_availability_request;
+  EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _))
+      .WillOnce(SaveArg<0>(&virtual_connection_request))
+      .WillOnce(SaveArg<0>(&app_availability_request));
 
   handler_.RequestAppAvailability(
       &cast_socket_, "AAAAAAAA",
       base::BindOnce(&CastMessageHandlerTest::OnAppAvailability,
                      base::Unretained(this)));
+  EXPECT_EQ(CastMessageType::kConnect,
+            GetMessageType(virtual_connection_request));
+  EXPECT_EQ(CastMessageType::kGetAppAvailability,
+            GetMessageType(app_availability_request));
 
   EXPECT_CALL(*this, DoOnAppAvailability("AAAAAAAA",
                                          GetAppAvailabilityResult::kUnknown));
   OnError(ChannelError::TRANSPORT_ERROR);
 
-  ExpectEnsureConnectionThen(CastMessageType::kGetAppAvailability);
+  EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _))
+      .WillOnce(SaveArg<0>(&virtual_connection_request))
+      .WillOnce(SaveArg<0>(&app_availability_request));
 
   handler_.RequestAppAvailability(
       &cast_socket_, "BBBBBBBB",
       base::BindOnce(&CastMessageHandlerTest::OnAppAvailability,
                      base::Unretained(this)));
 
+  EXPECT_EQ(CastMessageType::kConnect,
+            GetMessageType(virtual_connection_request));
+  EXPECT_EQ(CastMessageType::kGetAppAvailability,
+            GetMessageType(app_availability_request));
   // The callback is invoked with kUnknown before the PendingRequests is
   // destroyed.
   EXPECT_CALL(*this, DoOnAppAvailability("BBBBBBBB",
@@ -202,15 +175,24 @@ TEST_F(CastMessageHandlerTest, RecreateVirtualConnectionAfterError) {
 }
 
 TEST_F(CastMessageHandlerTest, RequestAppAvailability) {
-  ExpectEnsureConnectionThen(CastMessageType::kGetAppAvailability);
+  CastMessage virtual_connection_request;
+  CastMessage app_availability_request;
+  EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _))
+      .WillOnce(SaveArg<0>(&virtual_connection_request))
+      .WillOnce(SaveArg<0>(&app_availability_request));
 
   handler_.RequestAppAvailability(
       &cast_socket_, "ABCDEFAB",
       base::BindOnce(&CastMessageHandlerTest::OnAppAvailability,
                      base::Unretained(this)));
 
+  EXPECT_EQ(CastMessageType::kConnect,
+            GetMessageType(virtual_connection_request));
+  EXPECT_EQ(CastMessageType::kGetAppAvailability,
+            GetMessageType(app_availability_request));
+
   std::unique_ptr<base::Value> dict =
-      GetDictionaryFromCastMessage(last_request_);
+      GetDictionaryFromCastMessage(app_availability_request);
   ASSERT_TRUE(dict);
   const base::Value* request_id_value =
       dict->FindKeyOfType("requestId", base::Value::Type::INTEGER);
@@ -237,7 +219,7 @@ TEST_F(CastMessageHandlerTest, RequestAppAvailability) {
 }
 
 TEST_F(CastMessageHandlerTest, RequestAppAvailabilityTimesOut) {
-  EXPECT_CALL(*transport_, SendMessage(_, _)).Times(2);
+  EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _)).Times(2);
   handler_.RequestAppAvailability(
       &cast_socket_, "ABCDEFAB",
       base::BindOnce(&CastMessageHandlerTest::OnAppAvailability,
@@ -248,13 +230,13 @@ TEST_F(CastMessageHandlerTest, RequestAppAvailabilityTimesOut) {
 }
 
 TEST_F(CastMessageHandlerTest, AppAvailabilitySentOnlyOnceWhilePending) {
-  EXPECT_CALL(*transport_, SendMessage(_, _)).Times(2);
+  EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _)).Times(2);
   handler_.RequestAppAvailability(
       &cast_socket_, "ABCDEFAB",
       base::BindOnce(&CastMessageHandlerTest::OnAppAvailability,
                      base::Unretained(this)));
 
-  EXPECT_CALL(*transport_, SendMessage(_, _)).Times(0);
+  EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _)).Times(0);
   handler_.RequestAppAvailability(
       &cast_socket_, "ABCDEFAB",
       base::BindOnce(&CastMessageHandlerTest::OnAppAvailability,
@@ -262,18 +244,23 @@ TEST_F(CastMessageHandlerTest, AppAvailabilitySentOnlyOnceWhilePending) {
 }
 
 TEST_F(CastMessageHandlerTest, EnsureConnection) {
-  ExpectEnsureConnection();
+  CastMessage virtual_connection_request;
+  EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _))
+      .WillOnce(SaveArg<0>(&virtual_connection_request));
 
-  handler_.EnsureConnection(channel_id_, kSourceId, kDestinationId);
+  handler_.EnsureConnection(cast_socket_.id(), kSourceId, kDestinationId);
+  EXPECT_EQ(CastMessageType::kConnect,
+            GetMessageType(virtual_connection_request));
 
   // No-op because connection is already created the first time.
-  EXPECT_CALL(*transport_, SendMessage(_, _)).Times(0);
-  handler_.EnsureConnection(channel_id_, kSourceId, kDestinationId);
+  EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _)).Times(0);
+  handler_.EnsureConnection(cast_socket_.id(), kSourceId, kDestinationId);
 }
 
 TEST_F(CastMessageHandlerTest, CloseConnectionFromReceiver) {
-  ExpectEnsureConnection();
-  handler_.EnsureConnection(channel_id_, kSourceId, kDestinationId);
+  CastMessage virtual_connection_request;
+  EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _));
+  handler_.EnsureConnection(cast_socket_.id(), kSourceId, kDestinationId);
 
   CastMessage response;
   response.set_namespace_("urn:x-cast:com.google.cast.tp.connection");
@@ -289,21 +276,28 @@ TEST_F(CastMessageHandlerTest, CloseConnectionFromReceiver) {
   thread_bundle_.RunUntilIdle();
 
   // Re-open virtual connection should cause message to be sent.
-  EXPECT_CALL(*transport_, SendMessage(_, _));
-  handler_.EnsureConnection(channel_id_, kSourceId, kDestinationId);
+  EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _));
+  handler_.EnsureConnection(cast_socket_.id(), kSourceId, kDestinationId);
 }
 
 TEST_F(CastMessageHandlerTest, LaunchSession) {
-  ExpectEnsureConnectionThen(CastMessageType::kLaunch);
+  CastMessage virtual_connection_request;
+  CastMessage launch_session_request;
+  EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _))
+      .WillOnce(SaveArg<0>(&virtual_connection_request))
+      .WillOnce(SaveArg<0>(&launch_session_request));
 
   handler_.LaunchSession(
-      channel_id_, "AAAAAAAA", base::TimeDelta::FromSeconds(30),
+      cast_socket_.id(), "AAAAAAAA", base::TimeDelta::FromSeconds(30),
       base::BindOnce(&CastMessageHandlerTest::ExpectSessionLaunchResult,
                      base::Unretained(this),
                      LaunchSessionResponse::Result::kOk));
+  EXPECT_EQ(CastMessageType::kConnect,
+            GetMessageType(virtual_connection_request));
+  EXPECT_EQ(CastMessageType::kLaunch, GetMessageType(launch_session_request));
 
   std::unique_ptr<base::Value> dict =
-      GetDictionaryFromCastMessage(last_request_);
+      GetDictionaryFromCastMessage(launch_session_request);
   ASSERT_TRUE(dict);
   const base::Value* request_id_value =
       dict->FindKeyOfType("requestId", base::Value::Type::INTEGER);
@@ -332,188 +326,41 @@ TEST_F(CastMessageHandlerTest, LaunchSession) {
 }
 
 TEST_F(CastMessageHandlerTest, LaunchSessionTimedOut) {
-  ExpectEnsureConnectionThen(CastMessageType::kLaunch);
+  CastMessage virtual_connection_request;
+  CastMessage launch_session_request;
+  EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _))
+      .WillOnce(SaveArg<0>(&virtual_connection_request))
+      .WillOnce(SaveArg<0>(&launch_session_request));
 
   handler_.LaunchSession(
-      channel_id_, "AAAAAAAA", base::TimeDelta::FromSeconds(30),
+      cast_socket_.id(), "AAAAAAAA", base::TimeDelta::FromSeconds(30),
       base::BindOnce(&CastMessageHandlerTest::ExpectSessionLaunchResult,
                      base::Unretained(this),
                      LaunchSessionResponse::Result::kTimedOut));
+  EXPECT_EQ(CastMessageType::kConnect,
+            GetMessageType(virtual_connection_request));
+  EXPECT_EQ(CastMessageType::kLaunch, GetMessageType(launch_session_request));
 
   thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(30));
   EXPECT_EQ(1, session_launch_response_count_);
 }
 
 TEST_F(CastMessageHandlerTest, SendAppMessage) {
+  CastMessage virtual_connection_request;
+  CastMessage app_message;
+  EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _))
+      .WillOnce(SaveArg<0>(&virtual_connection_request))
+      .WillOnce(SaveArg<0>(&app_message));
+
   base::Value body(base::Value::Type::DICTIONARY);
   body.SetKey("foo", base::Value("bar"));
   CastMessage message =
       CreateCastMessage("namespace", body, kSourceId, kDestinationId);
-  {
-    InSequence dummy;
-    ExpectEnsureConnection();
-    EXPECT_CALL(*transport_,
-                SendMessage(HasPayloadUtf8(message.payload_utf8()), _));
-  }
+  handler_.SendAppMessage(cast_socket_.id(), message);
 
-  handler_.SendAppMessage(channel_id_, message);
-}
-
-// Check that SendMediaRequest sends a message created by CreateMediaRequest and
-// returns a request ID.
-TEST_F(CastMessageHandlerTest, SendMediaRequest) {
-  {
-    InSequence dummy;
-    ExpectEnsureConnection();
-    EXPECT_CALL(*transport_, SendMessage(_, _))
-        .WillOnce(WithArg<0>([&](const auto& message) {
-          std::string expected_body = R"({
-            "requestId": 1,
-            "type": "PLAY",
-          })";
-          auto expected = CreateMediaRequest(*ParseJson(expected_body), 1,
-                                             "theSourceId", "theDestinationId");
-          EXPECT_EQ(expected.namespace_(), message.namespace_());
-          EXPECT_EQ(expected.source_id(), message.source_id());
-          EXPECT_EQ(expected.destination_id(), message.destination_id());
-          EXPECT_EQ(expected.payload_utf8(), message.payload_utf8());
-
-          // Future-proofing. This matcher gives terrible error messages but it
-          // might catch errors the above matchers miss.
-          EXPECT_THAT(message, EqualsProto(expected));
-        }));
-  }
-
-  std::string message_str = R"({
-    "type": "PLAY",
-  })";
-  base::Optional<int> request_id = handler_.SendMediaRequest(
-      channel_id_, *ParseJson(message_str), "theSourceId", "theDestinationId");
-  EXPECT_EQ(1, request_id);
-}
-
-// Check that SendVolumeCommand sends a message created by CreateVolumeRequest
-// and registers a pending request.
-TEST_F(CastMessageHandlerTest, SendVolumeCommand) {
-  {
-    InSequence dummy;
-    ExpectEnsureConnection();
-    EXPECT_CALL(*transport_, SendMessage(_, _))
-        .WillOnce(WithArg<0>([&](const auto& message) {
-          std::string expected_body = R"({
-            "requestId": 1,
-            "type": "SET_VOLUME",
-          })";
-          auto expected = CreateSetVolumeRequest(*ParseJson(expected_body), 1,
-                                                 "theSourceId");
-          EXPECT_EQ(expected.namespace_(), message.namespace_());
-          EXPECT_EQ(expected.source_id(), message.source_id());
-          EXPECT_EQ(expected.destination_id(), message.destination_id());
-          EXPECT_EQ(expected.payload_utf8(), message.payload_utf8());
-
-          // Future-proofing. This matcher gives terrible error messages but it
-          // might catch errors the above matchers miss.
-          EXPECT_THAT(message, EqualsProto(expected));
-        }));
-  }
-
-  std::string message_str = R"({
-    "sessionId": "theSessionId",
-    "type": "SET_VOLUME",
-  })";
-  EXPECT_TRUE(handler_.SendSetVolumeRequest(
-      channel_id_, *ParseJson(message_str), "theSourceId",
-      base::DoNothing::Once<bool>()));
-}
-
-// Check that closing a socket removes pending requests, and that the pending
-// request callbacks are called appropriately.
-TEST_F(CastMessageHandlerTest, PendingRequestsDestructor) {
-  CreatePendingRequests();
-
-  // Set up expanctions for pending request callbacks.
-  EXPECT_CALL(launch_session_callback_, Run(_))
-      .WillOnce([&](LaunchSessionResponse response) {
-        EXPECT_EQ(LaunchSessionResponse::kError, response.result);
-        EXPECT_EQ(base::nullopt, response.receiver_status);
-      });
-  EXPECT_CALL(get_app_availability_callback_,
-              Run("theAppId", GetAppAvailabilityResult::kUnknown))
-      .Times(2);
-  EXPECT_CALL(set_volume_callback_, Run(false)).Times(2);
-  EXPECT_CALL(stop_session_callback_, Run(false));
-
-  // Force callbacks to be called through PendingRequests destructor by
-  // simulating a socket closing.
-  EXPECT_CALL(cast_socket_, ready_state()).WillOnce(Return(ReadyState::CLOSED));
-  handler_.OnReadyStateChanged(cast_socket_);
-}
-
-TEST_F(CastMessageHandlerTest, HandlePendingRequest) {
-  CreatePendingRequests();
-
-  // Set up expanctions for pending request callbacks.
-  EXPECT_CALL(launch_session_callback_, Run(_))
-      .WillOnce([&](LaunchSessionResponse response) {
-        EXPECT_EQ(LaunchSessionResponse::kOk, response.result);
-        EXPECT_THAT(response.receiver_status,
-                    testing::Optional(IsJson(R"({"foo": "bar"})")));
-      });
-  EXPECT_CALL(get_app_availability_callback_,
-              Run("theAppId", GetAppAvailabilityResult::kAvailable))
-      .Times(2);
-  EXPECT_CALL(set_volume_callback_, Run(true)).Times(2);
-  EXPECT_CALL(stop_session_callback_, Run(true));
-
-  // Handle pending launch session request.
-  handler_.HandleCastInternalMessage(channel_id_, "theSourceId",
-                                     "theDestinationId", ParseJson(R"(
-      {
-        "requestId": 1,
-        "type": "RECEIVER_STATUS",
-        "status": {"foo": "bar"},
-      })"));
-
-  // Handle both pending get app availability requests.
-  handler_.HandleCastInternalMessage(channel_id_, "theSourceId",
-                                     "theDestinationId", ParseJson(R"(
-      {
-        "requestId": 2,
-        "availability": {"theAppId": "APP_AVAILABLE"},
-      })"));
-
-  // Handle pending set volume request (1 of 2).
-  handler_.HandleCastInternalMessage(channel_id_, "theSourceId",
-                                     "theDestinationId",
-                                     ParseJson(R"({"requestId": 3})"));
-
-  // Skip request_id == 4, since it was used by the second get app availability
-  // request.
-
-  // Handle pending set volume request (2 of 2).
-  handler_.HandleCastInternalMessage(channel_id_, "theSourceId",
-                                     "theDestinationId",
-                                     ParseJson(R"({"requestId": 5})"));
-
-  // Handle pending stop session request.
-  handler_.HandleCastInternalMessage(channel_id_, "theSourceId",
-                                     "theDestinationId",
-                                     ParseJson(R"({"requestId": 6})"));
-}
-
-// Check that set volume requests time out correctly.
-TEST_F(CastMessageHandlerTest, SetVolumeTimedOut) {
-  EXPECT_CALL(*transport_, SendMessage(_, _)).Times(AnyNumber());
-
-  std::string message_str = R"({
-    "sessionId": "theSessionId",
-    "type": "SET_VOLUME",
-  })";
-  base::MockCallback<SetVolumeCallback> callback;
-  EXPECT_TRUE(handler_.SendSetVolumeRequest(
-      channel_id_, *ParseJson(message_str), "theSourceId", callback.Get()));
-  EXPECT_CALL(callback, Run(false));
-  thread_bundle_.FastForwardBy(kRequestTimeout);
+  EXPECT_EQ(CastMessageType::kConnect,
+            GetMessageType(virtual_connection_request));
+  EXPECT_EQ(message.payload_utf8(), app_message.payload_utf8());
 }
 
 }  // namespace cast_channel

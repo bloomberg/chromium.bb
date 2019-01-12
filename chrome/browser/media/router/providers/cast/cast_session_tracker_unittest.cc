@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
 
-#include "base/test/values_test_util.h"
+#include "base/json/json_reader.h"
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "chrome/common/media_router/test/test_helper.h"
 #include "components/cast_channel/cast_test_util.h"
@@ -14,15 +14,13 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::test::IsJson;
-using base::test::ParseJson;
 using testing::_;
-using testing::ByRef;
-using testing::Eq;
 
 namespace media_router {
 
 namespace {
+
+constexpr char kSessionId[] = "sessionId";
 
 constexpr char kReceiverStatus[] = R"({
     "status": {
@@ -33,9 +31,9 @@ constexpr char kReceiverStatus[] = R"({
             {"name": "urn:x-cast:com.google.cast.media"},
             {"name": "urn:x-cast:com.google.foo"}
           ],
-          "sessionId": "theSessionId",
+          "sessionId": "sessionId",
           "statusText":"App status",
-          "transportId":"theTransportId"
+          "transportId":"transportId"
         }]
   }
 })";
@@ -50,9 +48,9 @@ constexpr char kIdleReceiverStatus[] = R"({
             {"name": "urn:x-cast:com.google.cast.media"},
             {"name": "urn:x-cast:com.google.foo"}
           ],
-          "sessionId": "theSessionId",
+          "sessionId": "sessionId",
           "statusText":"App status",
-          "transportId":"theTransportId"
+          "transportId":"transportId"
         }]
   }
 })";
@@ -67,10 +65,6 @@ class MockCastSessionObserver : public CastSessionTracker::Observer {
   MOCK_METHOD2(OnSessionAddedOrUpdated,
                void(const MediaSinkInternal& sink, const CastSession& session));
   MOCK_METHOD1(OnSessionRemoved, void(const MediaSinkInternal& sink));
-  MOCK_METHOD3(OnMediaStatusUpdated,
-               void(const MediaSinkInternal& sink,
-                    const base::Value& media_status,
-                    base::Optional<int> request_id));
 };
 
 class CastSessionTrackerTest : public testing::Test {
@@ -94,15 +88,15 @@ class CastSessionTrackerTest : public testing::Test {
                 RequestReceiverStatus(sink_.cast_data().cast_channel_id));
     media_sink_service_.AddOrUpdateSink(sink_);
 
-    EXPECT_CALL(observer_, OnSessionAddedOrUpdated(sink_, _));
-    session_tracker_.OnInternalMessage(
-        sink_.cast_data().cast_channel_id,
-        cast_channel::InternalMessage(
-            cast_channel::CastMessageType::kReceiverStatus,
-            std::move(*ParseJson(kReceiverStatus))));
+    auto receiver_status = base::JSONReader::Read(kReceiverStatus);
+    ASSERT_TRUE(receiver_status);
+    cast_channel::InternalMessage receiver_status_message(
+        cast_channel::CastMessageType::kReceiverStatus,
+        std::move(*receiver_status));
 
-    session_ = session_tracker_.GetSessions().begin()->second.get();
-    ASSERT_TRUE(session_);
+    EXPECT_CALL(observer_, OnSessionAddedOrUpdated(sink_, _));
+    session_tracker_.OnInternalMessage(sink_.cast_data().cast_channel_id,
+                                       receiver_status_message);
   }
 
  protected:
@@ -117,7 +111,6 @@ class CastSessionTrackerTest : public testing::Test {
   MockCastSessionObserver observer_;
 
   MediaSinkInternal sink_ = CreateCastSink(1);
-  CastSession* session_;
 };
 
 TEST_F(CastSessionTrackerTest, QueryReceiverOnSinkAdded) {
@@ -140,210 +133,29 @@ TEST_F(CastSessionTrackerTest, RemoveSessionOnSinkRemoved) {
 TEST_F(CastSessionTrackerTest, RemoveSession) {
   AddSinkAndSendReceiverStatusResponse();
 
+  auto receiver_status = base::JSONReader::Read(kIdleReceiverStatus);
+  ASSERT_TRUE(receiver_status);
+  cast_channel::InternalMessage receiver_status_message(
+      cast_channel::CastMessageType::kReceiverStatus,
+      std::move(*receiver_status));
+
   EXPECT_CALL(observer_, OnSessionRemoved(sink_));
-  session_tracker_.OnInternalMessage(
-      sink_.cast_data().cast_channel_id,
-      cast_channel::InternalMessage(
-          cast_channel::CastMessageType::kReceiverStatus,
-          std::move(*ParseJson(kIdleReceiverStatus))));
+  session_tracker_.OnInternalMessage(sink_.cast_data().cast_channel_id,
+                                     receiver_status_message);
 }
 
-TEST_F(CastSessionTrackerTest, GetSessions) {
-  EXPECT_TRUE(session_tracker_.GetSessions().empty());
+TEST_F(CastSessionTrackerTest, sessions_by_sink_id) {
+  EXPECT_TRUE(session_tracker_.sessions_by_sink_id().empty());
 
   AddSinkAndSendReceiverStatusResponse();
 
-  const auto& sessions = session_tracker_.GetSessions();
+  const auto& sessions = session_tracker_.sessions_by_sink_id();
   EXPECT_EQ(1u, sessions.size());
   auto it = sessions.find(sink_.sink().id());
   ASSERT_TRUE(it != sessions.end());
-  EXPECT_EQ("theSessionId", it->second->session_id());
+  EXPECT_EQ(kSessionId, it->second->session_id());
 
-  EXPECT_TRUE(session_tracker_.GetSessionById("theSessionId"));
-}
-
-TEST_F(CastSessionTrackerTest, HandleMediaStatusMessageBasic) {
-  AddSinkAndSendReceiverStatusResponse();
-
-  // Expect that:
-  //
-  // - Any 'status' entries with 'playerState' equal to "IDLE" are filtered out.
-  //
-  // - The session ID is copied into the output message and all values in in the
-  //   'status' list.
-  //
-  // - A request ID is not required.
-  //
-  // - A 'supportedMediaRequests' field whose value is zero in the 'status'
-  //   objects is converted to an empty list.
-  //
-  EXPECT_CALL(observer_, OnMediaStatusUpdated(sink_, IsJson(R"({
-    "sessionId": "theSessionId",
-    "status": [{
-        "playerState": "anything but IDLE",
-        "sessionId": "theSessionId",
-        "supportedMediaRequests": [],
-      },
-    ],
-  })"),
-                                              base::Optional<int>()));
-
-  // This should call session_tracker_.HandleMediaStatusMessage(...).
-  session_tracker_.OnInternalMessage(
-      sink_.cast_data().cast_channel_id,
-      cast_channel::InternalMessage(cast_channel::CastMessageType::kMediaStatus,
-                                    std::move(*ParseJson(R"({
-    "status": [{
-        "playerState": "anything but IDLE",
-        "supportedMediaRequests": 0,
-      }, {
-        "playerState": "IDLE",
-      },
-    ],
-  })"))));
-
-  // Check that the stored media value is the same as the 'status' field in the
-  // outgoing message.
-  EXPECT_THAT(*session_->value().FindKey("media"), IsJson(R"([{
-    "playerState": "anything but IDLE",
-    "sessionId": "theSessionId",
-    "supportedMediaRequests": [],
-  }])"));
-}
-
-TEST_F(CastSessionTrackerTest, HandleMediaStatusMessageFancy) {
-  AddSinkAndSendReceiverStatusResponse();
-
-  // Expect that:
-  //
-  // - Any 'status' entries with 'playerState' equal to "IDLE" are filtered out.
-  //
-  // - The session ID is copied into the output message and all values in in the
-  //   'status' list.
-  //
-  // - The request ID is copied into the output message and passed as a separate
-  //   parameters to OnMediaStatusUpdated().
-  //
-  // - A nonzero numeric 'supportedMediaRequests' field in the 'status' objects
-  //   is converted to a non-empty list.
-  //
-  // - Extra fields are preserved in the message and the status objects.
-  //
-  EXPECT_CALL(observer_, OnMediaStatusUpdated(sink_, IsJson(R"({
-    "requestId": 12345,
-    "sessionId": "theSessionId",
-    "status": [{
-        "playerState": "anything but IDLE",
-        "sessionId": "theSessionId",
-        "supportedMediaRequests": ["pause"],
-        "xyzzy": "xyzzyValue1",
-      },
-    ],
-    "xyzzy": "xyzzyValue2",
-  })"),
-                                              base::make_optional(12345)));
-
-  // This should call session_tracker_.HandleMediaStatusMessage(...).
-  session_tracker_.OnInternalMessage(
-      sink_.cast_data().cast_channel_id,
-      cast_channel::InternalMessage(cast_channel::CastMessageType::kMediaStatus,
-                                    std::move(*ParseJson(R"({
-    "requestId": 12345,
-    "status": [{
-        "playerState": "anything but IDLE",
-        "supportedMediaRequests": 1,
-        "xyzzy": "xyzzyValue1",
-      }, {
-        "playerState": "IDLE",
-      },
-    ],
-    "xyzzy": "xyzzyValue2",
-  })"))));
-
-  // Check that the stored media value is the same as the 'status' field in the
-  // outgoing message.
-  EXPECT_THAT(*session_->value().FindKey("media"), IsJson(R"([{
-    "playerState": "anything but IDLE",
-    "sessionId": "theSessionId",
-    "supportedMediaRequests": ["pause"],
-    "xyzzy": "xyzzyValue1",
-  }])"));
-}
-
-TEST_F(CastSessionTrackerTest, CopySavedMediaFieldsToMediaList) {
-  AddSinkAndSendReceiverStatusResponse();
-
-  // Add media status information to the session with mediaSessionId = 345.
-  EXPECT_CALL(observer_, OnMediaStatusUpdated(sink_, _, _));
-  session_tracker_.OnInternalMessage(
-      sink_.cast_data().cast_channel_id,
-      cast_channel::InternalMessage(cast_channel::CastMessageType::kMediaStatus,
-                                    std::move(*ParseJson(R"({
-    "status": [{
-        "media": "theMedia",
-        "mediaSessionId": 345,
-        "playerState": "anything but IDLE",
-        "supportedMediaRequests": 0,
-        "xyzzy": "xyzzy1",
-      },
-    ],
-  })"))));
-
-  // Check that the stored media value is what we expected.
-  ASSERT_THAT(*session_->value().FindKey("media"), IsJson(R"([{
-    "mediaSessionId": 345,
-    "media": "theMedia",
-    "playerState": "anything but IDLE",
-    "sessionId": "theSessionId",
-    "supportedMediaRequests": [],
-    "xyzzy": "xyzzy1",
-  }])"));
-
-  // Not strictly needed, but makes this test easier to debug.
-  testing::Mock::VerifyAndClear(&observer_);
-
-  // Expect the outgoing status message to have a 'media' field filled in from
-  // the previously stored value.
-  EXPECT_CALL(observer_, OnMediaStatusUpdated(sink_, IsJson(R"({
-    "sessionId": "theSessionId",
-    "status": [{
-        "media": "theMedia",
-        "mediaSessionId": 345,
-        "playerState": "anything but IDLE",
-        "sessionId": "theSessionId",
-        "supportedMediaRequests": [],
-        "xyzzy": "xyzzy2",
-      },
-    ],
-  })"),
-                                              _));
-
-  // Receive a message referring to the previously stored mediaSessionId with a
-  // missing 'media' field.  This tests the logic in the
-  // CopySavedMediaFieldsToMediaList() method.
-  session_tracker_.OnInternalMessage(
-      sink_.cast_data().cast_channel_id,
-      cast_channel::InternalMessage(cast_channel::CastMessageType::kMediaStatus,
-                                    std::move(*ParseJson(R"({
-    "status": [{
-        "mediaSessionId": 345,
-        "playerState": "anything but IDLE",
-        "supportedMediaRequests": 0,
-        "xyzzy": "xyzzy2",
-      },
-    ],
-  })"))));
-
-  // Check that the stored media value is the same as the 'status' field in the
-  // outgoing message.
-  EXPECT_THAT(*session_->value().FindKey("media"), IsJson(R"([{
-    "media": "theMedia",
-    "mediaSessionId": 345,
-    "playerState": "anything but IDLE",
-    "sessionId": "theSessionId",
-    "supportedMediaRequests": [],
-    "xyzzy": "xyzzy2",
-  }])"));
+  EXPECT_TRUE(session_tracker_.GetSessionById(kSessionId));
 }
 
 }  // namespace media_router

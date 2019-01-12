@@ -4,7 +4,6 @@
 
 #include "chrome/common/media_router/media_source.h"
 
-#include <ostream>
 #include <string>
 
 #include "chrome/common/media_router/media_source_helper.h"
@@ -36,6 +35,10 @@ bool MediaSource::operator==(const MediaSource& other) const {
 
 bool MediaSource::operator<(const MediaSource& other) const {
   return id_ < other.id();
+}
+
+std::string MediaSource::ToString() const {
+  return "MediaSource[" + id_ + "]";
 }
 
 MediaSource::MediaSource() {}
