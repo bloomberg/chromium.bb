@@ -2052,6 +2052,57 @@ TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
   EXPECT_EQ(surface_id, surface->surface_id());
 }
 
+TEST_F(LayerWithDelegateTest, TransferableResourceMirroring) {
+  std::unique_ptr<Layer> layer(CreateLayer(LAYER_SOLID_COLOR));
+
+  auto resource = viz::TransferableResource::MakeGL(
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+  bool release_callback_run = false;
+
+  layer->SetTransferableResource(
+      resource,
+      viz::SingleReleaseCallback::Create(
+          base::BindOnce(ReturnMailbox, &release_callback_run)),
+      gfx::Size(10, 10));
+  EXPECT_FALSE(release_callback_run);
+  EXPECT_TRUE(layer->has_external_content());
+
+  auto mirror = layer->Mirror();
+  EXPECT_TRUE(mirror->has_external_content());
+
+  // Clearing the resource on a mirror layer should not release the source layer
+  // resource.
+  mirror.reset();
+  EXPECT_FALSE(release_callback_run);
+
+  mirror = layer->Mirror();
+  EXPECT_TRUE(mirror->has_external_content());
+
+  // Clearing the transferable resource on the source layer should clear it from
+  // the mirror layer as well.
+  layer->SetShowSolidColorContent();
+  EXPECT_TRUE(release_callback_run);
+  EXPECT_FALSE(layer->has_external_content());
+  EXPECT_FALSE(mirror->has_external_content());
+
+  resource = viz::TransferableResource::MakeGL(
+      gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken());
+  release_callback_run = false;
+
+  // Setting a transferable resource on the source layer should set it on the
+  // mirror layers as well.
+  layer->SetTransferableResource(
+      resource,
+      viz::SingleReleaseCallback::Create(
+          base::BindOnce(ReturnMailbox, &release_callback_run)),
+      gfx::Size(10, 10));
+  EXPECT_FALSE(release_callback_run);
+  EXPECT_TRUE(layer->has_external_content());
+  EXPECT_TRUE(mirror->has_external_content());
+
+  layer.reset();
+}
+
 // Verifies that layer filters still attached after changing implementation
 // layer.
 TEST_F(LayerWithDelegateTest, LayerFiltersSurvival) {

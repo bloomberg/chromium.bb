@@ -86,6 +86,10 @@ bool RenderWidgetHostDelegate::IsFullscreenForCurrentTab() {
   return false;
 }
 
+bool RenderWidgetHostDelegate::ShouldShowStaleContentOnEviction() {
+  return false;
+}
+
 blink::WebDisplayMode RenderWidgetHostDelegate::GetDisplayMode(
     RenderWidgetHostImpl* render_widget_host) const {
   return blink::kWebDisplayModeBrowser;
