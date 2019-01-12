@@ -181,6 +181,13 @@ class SmbService : public KeyedService,
   void OpenRequestCredentialsDialog(const std::string& share_path,
                                     int32_t mount_id);
 
+  // Handles the response from attempting to the update the credentials of an
+  // existing share. If |error| indicates success, the callback is run and
+  // removed from |update_credential_replies_|. Otherwise, the callback
+  // is removed from |update_credential_replies_| and the error is logged.
+  void OnUpdateCredentialsResponse(int32_t mount_id,
+                                   smbprovider::ErrorType error);
+
   // Records metrics on the number of SMB mounts a user has.
   void RecordMountCount() const;
 
