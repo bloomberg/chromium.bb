@@ -204,9 +204,6 @@ const base::Feature kPictureInPicture {
 #endif
 };
 
-// Show Skip Ad button in Picture-in-Picture window.
-const base::Feature kSkipAd{"SkipAd", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Only decode preload=metadata elements upon visibility?
 const base::Feature kPreloadMetadataLazyLoad{"PreloadMetadataLazyLoad",
                                              base::FEATURE_DISABLED_BY_DEFAULT};

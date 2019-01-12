@@ -242,9 +242,6 @@ class MediaSessionImpl : public MediaSession,
   // Skip to the next track.
   CONTENT_EXPORT void NextTrack() override;
 
-  // Skip ad.
-  CONTENT_EXPORT void SkipAd() override;
-
   const base::UnguessableToken& audio_focus_group_id() const {
     return audio_focus_group_id_;
   }
