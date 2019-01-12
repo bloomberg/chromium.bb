@@ -136,7 +136,14 @@ that computation by running `build/gdb-add-index out/Debug/chrome`.
 
 ### `--enable-gpu-service-logging`
 
-In a debug build, this will print all actual calls into the GL driver.
+In a debug build or a release build with dcheck_always_on=true in GN argument,
+this will print all actual calls into the GL driver.
+
+To use it in Release builds without dcheck_always_on = true, specify GN argument
+enable_gpu_service_logging=true.
+
+For non-rooted devices running production builds, we can not set the command
+line flags. Use about://flags 'Enable gpu service logging' instead.
 
 ```
 [5497:5497:1219/142413:ERROR:gles2_cmd_decoder.cc(3301)] [.WebGLRenderingContext]cmd: kEnableVertexAttribArray

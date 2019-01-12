@@ -17,6 +17,10 @@ declare_args() {
                        (target_cpu == "x86" || target_cpu == "x64" ||
                         target_cpu == "arm" || target_cpu == "arm64" ||
                         target_cpu == "mipsel" || target_cpu == "mips64el")
+
+  # Whether service side logging (actual calls into the GL driver) is enabled
+  # or not.
+  enable_gpu_service_logging = false
 }
 
 use_glx = use_x11 || ozone_platform_x11
@@ -143,6 +147,9 @@ jumbo_component("gl") {
 
   configs += [ "//build/config:precompiled_headers" ]
   defines = [ "GL_IMPLEMENTATION" ]
+  if (enable_gpu_service_logging) {
+    defines += [ "GPU_ENABLE_SERVICE_LOGGING" ]
+  }
 
   include_dirs = [ "//third_party/mesa_headers" ]
 

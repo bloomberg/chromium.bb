@@ -436,11 +436,12 @@
 #define GL_BINDING_CALL
 #endif
 
+#if defined(NDEBUG) && !defined(GPU_ENABLE_SERVICE_LOGGING)
 #define GL_SERVICE_LOG(args) DLOG(INFO) << args;
-#if defined(NDEBUG)
-  #define GL_SERVICE_LOG_CODE_BLOCK(code)
+#define GL_SERVICE_LOG_CODE_BLOCK(code)
 #else
-  #define GL_SERVICE_LOG_CODE_BLOCK(code) code
+#define GL_SERVICE_LOG(args) LOG(INFO) << args;
+#define GL_SERVICE_LOG_CODE_BLOCK(code) code
 #endif
 
 // ANGLE_multiview constants.

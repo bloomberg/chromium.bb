@@ -4286,6 +4286,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutocompleteRetentionPolicyEnabled)},
+    {"enable-gpu-service-logging",
+     flag_descriptions::kEnableGpuServiceLoggingName,
+     flag_descriptions::kEnableGpuServiceLoggingDescription, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kEnableGPUServiceLogging)},
 };
 
 class FlagsStateSingleton {

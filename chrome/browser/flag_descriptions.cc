@@ -571,6 +571,10 @@ const char kEnableGenericSensorExtraClassesDescription[] =
     "expose previously unavailable platform features, i.e. AmbientLightSensor "
     "and Magnetometer interfaces.";
 
+const char kEnableGpuServiceLoggingName[] = "Enable gpu service logging";
+const char kEnableGpuServiceLoggingDescription[] =
+    "Enable printing the actual GL driver calls.";
+
 const char kEnableHDRName[] = "HDR mode";
 const char kEnableHDRDescription[] =
     "Enables HDR support on compatible displays.";

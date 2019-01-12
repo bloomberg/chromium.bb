@@ -31046,6 +31046,7 @@ from previous Chrome versions.
   <int value="-715733307" label="force-effective-connection-type"/>
   <int value="-714712077" label="ClickToOpenPDFPlaceholder:disabled"/>
   <int value="-714710496" label="VideoFullscreenOrientationLock:disabled"/>
+  <int value="-714543772" label="enable-gpu-service-logging"/>
   <int value="-714043324" label="OutOfBlinkCORS:enabled"/>
   <int value="-711991950" label="SiteExplorationUi:enabled"/>
   <int value="-711890895" label="enable-website-settings-manager"/>
