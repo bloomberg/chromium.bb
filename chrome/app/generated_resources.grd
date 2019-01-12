@@ -5633,6 +5633,9 @@ the Bookmarks menu.">
       <message name="IDS_PICTURE_IN_PICTURE_BACK_TO_TAB_CONTROL_TEXT" desc="Text label of the back to tab control button. The button appears when the user hovers over the Picture-in-Picture window.">
         Back to tab
       </message>
+      <message name="IDS_PICTURE_IN_PICTURE_SKIP_AD_CONTROL_TEXT" desc="Text label of the skip ad control button. The button appears when the user hovers over the Picture-in-Picture window.">
+        Skip Ad
+      </message>
       <message name="IDS_PICTURE_IN_PICTURE_CLOSE_CONTROL_TEXT" desc="Text label of the close control button. The button appears when the user hovers over the Picture-in-Picture window.">
         Close
       </message>

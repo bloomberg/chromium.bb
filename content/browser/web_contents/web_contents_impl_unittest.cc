@@ -3272,6 +3272,7 @@ class TestOverlayWindow : public OverlayWindow {
   void UpdateVideoSize(const gfx::Size& natural_size) override {}
   void SetPlaybackState(PlaybackState playback_state) override {}
   void SetAlwaysHidePlayPauseButton(bool is_visible) override {}
+  void SetSkipAdButtonVisibility(bool is_visible) override {}
   ui::Layer* GetWindowBackgroundLayer() override { return nullptr; }
   ui::Layer* GetVideoLayer() override { return nullptr; }
   gfx::Rect GetVideoBounds() override { return gfx::Rect(); }

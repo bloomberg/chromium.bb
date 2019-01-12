@@ -41,7 +41,8 @@ class CONTENT_EXPORT MediaSessionUmaHelper {
     NextTrack = 6,
     SeekBackward = 7,
     SeekForward = 8,
-    kMaxValue = SeekForward,
+    SkipAd = 9,
+    kMaxValue = SkipAd,
   };
 
   MediaSessionUmaHelper();

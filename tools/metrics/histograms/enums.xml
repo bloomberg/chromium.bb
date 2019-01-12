@@ -34568,6 +34568,7 @@ Called by update_use_counter_css.py.-->
   <int value="6" label="Next track"/>
   <int value="7" label="Seek backward"/>
   <int value="8" label="Seek forward"/>
+  <int value="9" label="Skip ad"/>
 </enum>
 
 <enum name="MediaSinkType">
