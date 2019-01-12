@@ -338,8 +338,11 @@ base::Optional<syncer::ModelError>
 AutofillWalletMetadataSyncBridge::MergeSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
-  NOTIMPLEMENTED();
-  return base::nullopt;
+  // First upload local entities that are not mentioned in |entity_data|.
+  UploadInitialLocalData(metadata_change_list.get(), entity_data);
+
+  return MergeRemoteChanges(std::move(metadata_change_list),
+                            std::move(entity_data));
 }
 
 base::Optional<syncer::ModelError>
@@ -458,6 +461,31 @@ void AutofillWalletMetadataSyncBridge::GetDataImpl(
   }
 
   std::move(callback).Run(std::move(batch));
+}
+
+void AutofillWalletMetadataSyncBridge::UploadInitialLocalData(
+    syncer::MetadataChangeList* metadata_change_list,
+    const syncer::EntityChangeList& entity_data) {
+  // First, make a copy of all local storage keys.
+  std::set<std::string> local_keys_to_upload;
+  for (const auto& it : cache_) {
+    local_keys_to_upload.insert(it.first);
+  }
+  // Strip |local_keys_to_upload| of the keys of data provided by the server.
+  for (const EntityChange& change : entity_data) {
+    DCHECK_EQ(change.type(), EntityChange::ACTION_ADD)
+        << "Illegal change; can only be called during initial MergeSyncData()";
+    local_keys_to_upload.erase(change.storage_key());
+  }
+  // Upload the remaining storage keys
+  for (const std::string& storage_key : local_keys_to_upload) {
+    TypeAndMetadataId parsed_storage_key =
+        ParseWalletMetadataStorageKey(storage_key);
+    change_processor()->Put(storage_key,
+                            CreateEntityDataFromAutofillMetadata(
+                                parsed_storage_key.type, cache_[storage_key]),
+                            metadata_change_list);
+  }
 }
 
 base::Optional<syncer::ModelError>
