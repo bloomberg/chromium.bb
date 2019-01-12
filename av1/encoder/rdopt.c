@@ -6952,6 +6952,8 @@ static void setup_buffer_ref_mvs_inter(
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   const YV12_BUFFER_CONFIG *yv12 = get_ref_frame_yv12_buf(cm, ref_frame);
+  const YV12_BUFFER_CONFIG *scaled_ref_frame =
+      av1_get_scaled_ref_frame(cpi, ref_frame);
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const struct scale_factors *const sf =
@@ -6962,8 +6964,13 @@ static void setup_buffer_ref_mvs_inter(
 
   // TODO(jkoleszar): Is the UV buffer ever used here? If so, need to make this
   // use the UV scaling factors.
-  av1_setup_pred_block(xd, yv12_mb[ref_frame], yv12, mi_row, mi_col, sf, sf,
-                       num_planes);
+  if (scaled_ref_frame) {
+    av1_setup_pred_block(xd, yv12_mb[ref_frame], scaled_ref_frame, mi_row,
+                         mi_col, NULL, NULL, num_planes);
+  } else {
+    av1_setup_pred_block(xd, yv12_mb[ref_frame], yv12, mi_row, mi_col, sf, sf,
+                         num_planes);
+  }
 
   // Gets an initial list of candidate vectors from neighbours and orders them
   av1_find_mv_refs(cm, xd, mbmi, ref_frame, mbmi_ext->ref_mv_count,
