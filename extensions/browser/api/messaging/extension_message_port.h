@@ -63,8 +63,7 @@ class ExtensionMessagePort : public MessagePort {
                          int guest_render_frame_routing_id,
                          const std::string& source_extension_id,
                          const std::string& target_extension_id,
-                         const GURL& source_url,
-                         const std::string& tls_channel_id) override;
+                         const GURL& source_url) override;
   void DispatchOnDisconnect(const std::string& error_message) override;
   void DispatchOnMessage(const Message& message) override;
   void IncrementLazyKeepaliveCount() override;

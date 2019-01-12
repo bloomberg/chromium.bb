@@ -45,7 +45,6 @@ void JSRendererMessagingService::DispatchOnConnectToListeners(
     const std::string& channel_name,
     const ExtensionMsg_TabConnectionInfo* source,
     const ExtensionMsg_ExternalConnectionInfo& info,
-    const std::string& tls_channel_id,
     const std::string& event_name) {
   MessagingBindings* bindings = MessagingBindings::ForContext(script_context);
   ExtensionPort* port = bindings->CreateNewPortWithId(target_port_id);
@@ -69,11 +68,10 @@ void JSRendererMessagingService::DispatchOnConnectToListeners(
 
     ExternallyConnectableInfo* externally_connectable =
         ExternallyConnectableInfo::Get(extension);
+
     if (externally_connectable &&
         externally_connectable->accepts_tls_channel_id) {
-      v8::Local<v8::String> v8_tls_channel_id;
-      if (ToV8String(isolate, tls_channel_id.c_str(), &v8_tls_channel_id))
-        tls_channel_id_value = v8_tls_channel_id;
+      tls_channel_id_value = v8::String::Empty(isolate);
     }
 
     if (info.guest_process_id != content::ChildProcessHost::kInvalidUniqueID) {

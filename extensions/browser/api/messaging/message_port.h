@@ -60,8 +60,7 @@ class MessagePort {
       int guest_render_frame_routing_id,
       const std::string& source_extension_id,
       const std::string& target_extension_id,
-      const GURL& source_url,
-      const std::string& tls_channel_id);
+      const GURL& source_url);
 
   // Notifies the port that the channel has been closed. If |error_message| is
   // non-empty, it indicates an error occurred while opening the connection.

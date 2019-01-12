@@ -646,12 +646,11 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_ValidateMessagePort,
                     extensions::PortId /* port_id */)
 
 // Dispatch the Port.onConnect event for message channels.
-IPC_MESSAGE_ROUTED5(ExtensionMsg_DispatchOnConnect,
+IPC_MESSAGE_ROUTED4(ExtensionMsg_DispatchOnConnect,
                     extensions::PortId /* target_port_id */,
                     std::string /* channel_name */,
                     ExtensionMsg_TabConnectionInfo /* source */,
-                    ExtensionMsg_ExternalConnectionInfo,
-                    std::string /* tls_channel_id */)
+                    ExtensionMsg_ExternalConnectionInfo)
 
 // Deliver a message sent with ExtensionHostMsg_PostMessage.
 IPC_MESSAGE_ROUTED2(ExtensionMsg_DeliverMessage,
@@ -782,11 +781,10 @@ IPC_MESSAGE_ROUTED1(ExtensionHostMsg_EventAck, int /* message_id */)
 // Open a channel to all listening contexts owned by the extension with
 // the given ID. This responds asynchronously with ExtensionMsg_AssignPortId.
 // If an error occurred, the opener will be notified asynchronously.
-IPC_MESSAGE_CONTROL5(ExtensionHostMsg_OpenChannelToExtension,
+IPC_MESSAGE_CONTROL4(ExtensionHostMsg_OpenChannelToExtension,
                      int /* frame_routing_id */,
                      ExtensionMsg_ExternalConnectionInfo,
                      std::string /* channel_name */,
-                     bool /* include_tls_channel_id */,
                      extensions::PortId /* port_id */)
 
 IPC_MESSAGE_CONTROL3(ExtensionHostMsg_OpenChannelToNativeApp,

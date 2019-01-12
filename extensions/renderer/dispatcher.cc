@@ -907,13 +907,11 @@ void Dispatcher::OnDispatchOnConnect(
     const PortId& target_port_id,
     const std::string& channel_name,
     const ExtensionMsg_TabConnectionInfo& source,
-    const ExtensionMsg_ExternalConnectionInfo& info,
-    const std::string& tls_channel_id) {
+    const ExtensionMsg_ExternalConnectionInfo& info) {
   DCHECK(!target_port_id.is_opener);
 
   bindings_system_->GetMessagingService()->DispatchOnConnect(
       *script_context_set_, target_port_id, channel_name, source, info,
-      tls_channel_id,
       NULL);  // All render frames.
 }
 

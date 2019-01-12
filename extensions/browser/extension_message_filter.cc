@@ -384,15 +384,13 @@ void ExtensionMessageFilter::OnOpenChannelToExtension(
     int routing_id,
     const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& channel_name,
-    bool include_tls_channel_id,
     const PortId& port_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (browser_context_) {
     MessageService::Get(browser_context_)
         ->OpenChannelToExtension(render_process_id_, routing_id, port_id,
                                  info.source_id, info.target_id,
-                                 info.source_url, channel_name,
-                                 include_tls_channel_id);
+                                 info.source_url, channel_name);
   }
 }
 

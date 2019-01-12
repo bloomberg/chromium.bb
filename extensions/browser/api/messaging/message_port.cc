@@ -23,8 +23,7 @@ void MessagePort::DispatchOnConnect(
     int guest_render_frame_routing_id,
     const std::string& source_extension_id,
     const std::string& target_extension_id,
-    const GURL& source_url,
-    const std::string& tls_channel_id) {}
+    const GURL& source_url) {}
 
 void MessagePort::DispatchOnDisconnect(const std::string& error_message) {}
 

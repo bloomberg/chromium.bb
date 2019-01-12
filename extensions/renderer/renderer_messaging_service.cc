@@ -71,7 +71,6 @@ void RendererMessagingService::DispatchOnConnect(
     const std::string& channel_name,
     const ExtensionMsg_TabConnectionInfo& source,
     const ExtensionMsg_ExternalConnectionInfo& info,
-    const std::string& tls_channel_id,
     content::RenderFrame* restrict_to_render_frame) {
   DCHECK(!target_port_id.is_opener);
   int routing_id = restrict_to_render_frame
@@ -82,7 +81,7 @@ void RendererMessagingService::DispatchOnConnect(
       info.target_id, restrict_to_render_frame,
       base::Bind(&RendererMessagingService::DispatchOnConnectToScriptContext,
                  base::Unretained(this), target_port_id, channel_name, &source,
-                 info, tls_channel_id, &port_created));
+                 info, &port_created));
   // Note: |restrict_to_render_frame| may have been deleted at this point!
 
   IPCMessageSender* ipc_sender = bindings_system_->GetIPCMessageSender();
@@ -131,7 +130,6 @@ void RendererMessagingService::DispatchOnConnectToScriptContext(
     const std::string& channel_name,
     const ExtensionMsg_TabConnectionInfo* source,
     const ExtensionMsg_ExternalConnectionInfo& info,
-    const std::string& tls_channel_id,
     bool* port_created,
     ScriptContext* script_context) {
   // If the channel was opened by this same context, ignore it. This should only
@@ -165,7 +163,7 @@ void RendererMessagingService::DispatchOnConnectToScriptContext(
 
   DispatchOnConnectToListeners(script_context, target_port_id,
                                target_extension_id, channel_name, source, info,
-                               tls_channel_id, event_name);
+                               event_name);
 }
 
 void RendererMessagingService::DeliverMessageToScriptContext(

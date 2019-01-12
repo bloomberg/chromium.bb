@@ -177,8 +177,7 @@ class Dispatcher : public content::RenderThreadObserver,
   void OnDispatchOnConnect(const PortId& target_port_id,
                            const std::string& channel_name,
                            const ExtensionMsg_TabConnectionInfo& source,
-                           const ExtensionMsg_ExternalConnectionInfo& info,
-                           const std::string& tls_channel_id);
+                           const ExtensionMsg_ExternalConnectionInfo& info);
   void OnDispatchOnDisconnect(const PortId& port_id,
                               const std::string& error_message);
   void OnLoaded(

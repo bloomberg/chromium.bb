@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/guid.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/worker_thread.h"
@@ -21,6 +22,36 @@
 namespace extensions {
 
 namespace {
+
+// These values are logged to UMA. Entries should not be renumbered.
+enum class IncludeTlsChannelIdBehavior {
+  // The TLS channel ID was not requested.
+  kNotRequested = 0,
+
+  // DEPRECATED: The TLS channel ID was requested, but was not included because
+  // the target extension did not allow it.
+  // kRequestedButDenied = 1,
+  // DEPRECATED: The TLS channel ID was requested, but was not found.
+  // kRequestedButNotFound = 2,
+  // DEPRECATED: The TLS channel ID was requested, allowed, and included in the
+  // response.
+  // kRequestedAndIncluded = 3,
+
+  // The TLS channel ID was requested, but was not provided because Channel ID
+  // is no longer supported.
+  kRequestedButNotSupported = 4,
+
+  kMaxValue = kRequestedButNotSupported,
+};
+
+void RecordIncludeTlsChannelIdBehavior(bool include_tls_channel_id) {
+  auto tls_channel_id_behavior =
+      include_tls_channel_id
+          ? IncludeTlsChannelIdBehavior::kRequestedButNotSupported
+          : IncludeTlsChannelIdBehavior::kNotRequested;
+  UMA_HISTOGRAM_ENUMERATION("Extensions.Messaging.IncludeChannelIdBehavior",
+                            tls_channel_id_behavior);
+}
 
 class MainThreadIPCMessageSender : public IPCMessageSender {
  public:
@@ -118,6 +149,7 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
                               const MessageTarget& target,
                               const std::string& channel_name,
                               bool include_tls_channel_id) override {
+    RecordIncludeTlsChannelIdBehavior(include_tls_channel_id);
     content::RenderFrame* render_frame = script_context->GetRenderFrame();
     DCHECK(render_frame);
     int routing_id = render_frame->GetRoutingID();
@@ -132,7 +164,7 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
         info.source_url = script_context->url();
 
         render_thread_->Send(new ExtensionHostMsg_OpenChannelToExtension(
-            routing_id, info, channel_name, include_tls_channel_id, port_id));
+            routing_id, info, channel_name, port_id));
         break;
       }
       case MessageTarget::TAB: {

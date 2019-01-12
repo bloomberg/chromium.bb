@@ -48,7 +48,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/browser/api/messaging/message_property_provider.h"
 #include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
@@ -1364,120 +1363,6 @@ IN_PROC_BROWSER_TEST_P(MessagingApiTest, MessagingOnUnload) {
 // https://crbug.com/766713.
 IN_PROC_BROWSER_TEST_P(MessagingApiTest, LargeMessages) {
   ASSERT_TRUE(RunExtensionTest("messaging/large_messages"));
-}
-
-// Test that the TLS Channel ID for messages is correctly based on different
-// storage partitions.
-IN_PROC_BROWSER_TEST_P(MessagingApiTest,
-                       DifferentStoragePartitionTLSChannelID) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;  // Channel ID doesn't work with network service.
-
-  // Create a platform app (which will have a different storage partition).
-  TestExtensionDir platform_app_dir;
-  platform_app_dir.WriteManifest(
-      R"({
-           "name": "Messaging App",
-           "manifest_version": 2,
-           "version": "0.1",
-           "description": "Sends messages!",
-           "app": {
-             "background": { "scripts": ["background.js"] }
-           }
-         })");
-  platform_app_dir.WriteFile(
-      FILE_PATH_LITERAL("background.js"),
-      R"(chrome.test.sendMessage('app ready', function(targetId) {
-            chrome.runtime.sendMessage(
-                targetId, 'message from app', {includeTlsChannelId: true});
-          });)");
-
-  ExtensionTestMessageListener app_ready_listener("app ready", true);
-  const Extension* platform_app =
-      LoadExtension(platform_app_dir.UnpackedPath());
-  ASSERT_TRUE(platform_app);
-  EXPECT_TRUE(app_ready_listener.WaitUntilSatisfied());
-
-  ExtensionHost* app_background_host =
-      ProcessManager::Get(profile())->GetBackgroundHostForExtension(
-          platform_app->id());
-  ASSERT_TRUE(app_background_host);
-  content::RenderProcessHost* app_process =
-      app_background_host->render_process_host();
-
-  // Verify the app's storage partition is different from the default storage
-  // partition.
-  content::StoragePartition* default_storage_partition =
-      content::BrowserContext::GetDefaultStoragePartition(profile());
-  content::StoragePartition* app_storage_partition =
-      app_process->GetStoragePartition();
-  EXPECT_NE(default_storage_partition, app_storage_partition);
-
-  // Add a TLS channel id for the app's origin in the app's storage partition.
-  GURL background_url = platform_app->GetResourceURL("background.js");
-  std::string tls_channel_id("undefined");
-  ASSERT_FALSE(tls_channel_id.empty());
-
-  // Load up an extension that the app can message, which we will use to
-  // verify the TLS channel id sent to the message listener.
-  TestExtensionDir extension_dir;
-  extension_dir.WriteManifest(base::StringPrintf(
-      R"({
-               "name": "Connectable Extension",
-               "manifest_version": 2,
-               "version": "0.1",
-               "description": "connections ahead!",
-               "externally_connectable": {
-                 "ids": ["%s"],
-                 "accepts_tls_channel_id": true
-               },
-               "background": {"scripts": ["background.js"]}
-             })",
-      platform_app->id().c_str()));
-
-  extension_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
-                          R"(chrome.runtime.onMessageExternal.addListener(
-             function(message, sender) {
-           window.receivedChannelId = sender.tlsChannelId;
-           chrome.test.sendMessage('received message');
-         });
-         chrome.test.sendMessage('extension ready');)");
-
-  ExtensionTestMessageListener extension_ready_listener("extension ready",
-                                                        false);
-  const Extension* extension = LoadExtension(extension_dir.UnpackedPath());
-  ASSERT_TRUE(extension);
-  EXPECT_TRUE(extension_ready_listener.WaitUntilSatisfied());
-
-  ExtensionTestMessageListener received_message_listener("received message",
-                                                         false);
-  // Tell the app to message the extension.
-  app_ready_listener.Reply(extension->id());
-  EXPECT_TRUE(received_message_listener.WaitUntilSatisfied());
-
-  // Retrieve the tlsChannelId property the extension received.
-  std::string received_id = browsertest_util::ExecuteScriptInBackgroundPage(
-      profile(), extension->id(),
-      "domAutomationController.send("
-      "    window.receivedChannelId || 'undefined');");
-  EXPECT_EQ(tls_channel_id, received_id);
-
-  std::string browser_context_channel_id;
-  auto set_browser_context_channel_id = [](std::string* id_out,
-                                           base::OnceClosure quit_closure,
-                                           const std::string& id) {
-    *id_out = id;
-    std::move(quit_closure).Run();
-  };
-  base::RunLoop run_loop;
-  // Verify the the default storage partition does not have a TLS channel id
-  // for the app's origin.
-  MessagePropertyProvider().GetChannelID(
-      default_storage_partition, background_url,
-      base::BindRepeating(set_browser_context_channel_id,
-                          &browser_context_channel_id, run_loop.QuitClosure()));
-  run_loop.Run();
-  EXPECT_TRUE(browser_context_channel_id.empty());
 }
 
 INSTANTIATE_TEST_CASE_P(NativeBindings,

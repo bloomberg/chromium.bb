@@ -184,7 +184,6 @@ void NativeRendererMessagingService::DispatchOnConnectToListeners(
     const std::string& channel_name,
     const ExtensionMsg_TabConnectionInfo* source,
     const ExtensionMsg_ExternalConnectionInfo& info,
-    const std::string& tls_channel_id,
     const std::string& event_name) {
   v8::Isolate* isolate = script_context->isolate();
   v8::HandleScope handle_scope(isolate);
@@ -210,7 +209,7 @@ void NativeRendererMessagingService::DispatchOnConnectToListeners(
         ExternallyConnectableInfo::Get(extension);
     if (externally_connectable &&
         externally_connectable->accepts_tls_channel_id) {
-      sender_builder.Set("tlsChannelId", tls_channel_id);
+      sender_builder.Set("tlsChannelId", std::string());
     }
 
     if (info.guest_process_id != content::ChildProcessHost::kInvalidUniqueID) {
