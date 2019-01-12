@@ -26,6 +26,7 @@
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/window_properties.h"
 #include "services/ws/window_service.h"
+#include "services/ws/window_utils.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
@@ -66,7 +67,16 @@ class EmptyDraggableNonClientFrameView : public views::NonClientFrameView {
     return bounds();
   }
   int NonClientHitTest(const gfx::Point& point) override {
-    return FrameBorderNonClientHitTest(this, point);
+    int component = FrameBorderNonClientHitTest(this, point);
+
+    // For non-standard frame window, the located event in the non-client area
+    // in the window should be used for window dragging to allow dragging
+    // frameless app windows. See https://crbug.com/920469
+    if (component == HTCLIENT &&
+        ws::IsLocationInNonClientArea(GetWidget()->GetNativeWindow(), point)) {
+      return HTCAPTION;
+    }
+    return component;
   }
   void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override {}
   void ResetWindowControls() override {}

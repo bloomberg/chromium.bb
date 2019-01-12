@@ -23,6 +23,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/widget/widget.h"
 
@@ -101,6 +102,33 @@ TEST_F(NonClientFrameControllerTest, HonorsMinimumSizeWithoutFrame) {
           mojo::MapToFlatMap(properties)));
   ASSERT_TRUE(window->delegate());
   EXPECT_EQ(min_size, window->delegate()->GetMinimumSize());
+}
+
+TEST_F(NonClientFrameControllerTest, NonClientAreaShouldBeDraggable) {
+  using TransportType = std::vector<uint8_t>;
+  auto properties = CreatePropertiesForProxyWindow();
+  properties[ws::mojom::WindowManager::kRemoveStandardFrame_InitProperty] =
+      mojo::ConvertTo<TransportType>(true);
+  std::unique_ptr<aura::Window> window(
+      GetWindowTreeTestHelper()->NewTopLevelWindow(
+          mojo::MapToFlatMap(properties)));
+
+  const gfx::Point point(10, 10);
+  EXPECT_EQ(HTCLIENT, window->delegate()->GetNonClientComponent(point));
+  EXPECT_EQ(HTTOPLEFT,
+            window->delegate()->GetNonClientComponent(gfx::Point(-1, -1)));
+
+  std::vector<gfx::Rect> additional_areas = {
+      gfx::Rect(window->bounds().width() - 20, 0, 20, 20)};
+  GetWindowTreeTestHelper()->SetClientArea(
+      window.get(), gfx::Insets(20, 20, 20, 20), additional_areas);
+  EXPECT_EQ(HTCAPTION, window->delegate()->GetNonClientComponent(point));
+  EXPECT_EQ(HTTOPLEFT,
+            window->delegate()->GetNonClientComponent(gfx::Point(-1, -1)));
+  EXPECT_EQ(HTCLIENT,
+            window->delegate()->GetNonClientComponent(gfx::Point(30, 30)));
+  EXPECT_EQ(HTCLIENT, window->delegate()->GetNonClientComponent(
+                          gfx::Point(window->bounds().width() - 10, 10)));
 }
 
 }  // namespace ash
