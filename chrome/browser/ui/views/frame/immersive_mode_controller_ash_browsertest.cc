@@ -269,13 +269,6 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
 // tablet mode.
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
                        FrameLayoutToggleTabletMode) {
-  // For mash, the layout is handled in Ash and tested by
-  // FrameCaptionButtonContainerViewTest.
-  // TODO(estade): look into enabling for Mash now that the frame is
-  // client-side.
-  if (features::IsUsingWindowService())
-    return;
-
   LaunchAppBrowser();
   ASSERT_FALSE(controller()->IsEnabled());
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
