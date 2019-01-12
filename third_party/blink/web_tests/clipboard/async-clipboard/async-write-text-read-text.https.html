@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Async Clipboard writeText -> readText tests</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../http/tests/resources/permissions-helper.js"></script>
+<script>
+promise_test(async t => {
+  await PermissionsHelper.setPermission('clipboard-read', 'granted');
+  await PermissionsHelper.setPermission('clipboard-write', 'granted');
+
+  const input = "Clipboard writeText -> readText test data";
+
+  await navigator.clipboard.writeText(input);
+  const output = await navigator.clipboard.readText();
+
+  assert_equals(output, input);
+}, "Verify write and read clipboard (DOMString)");
+</script>
