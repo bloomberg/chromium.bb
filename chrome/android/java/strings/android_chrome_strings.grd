@@ -2031,7 +2031,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Open image in new tab
       </message>
       <message name="IDS_CONTEXTMENU_OPEN_IMAGE_IN_EPHEMERAL_TAB" desc="Context-sensitive menu item to open a quick preview of the selected image.  This is an 'image' variation of the plain 'Sneak peek' menu item.  In English we're currently calling this 'Sneak peek image' which implies that it's a quick preview without commitment (to making a new Tab).  We're also labeling it *New* to draw attention to it when first released. The selected image link will open in an overlay panel on top of the current tab which will go away easily too. [CHAR-LIMIT=30]">
-        *New* Sneak peek image
+        Sneak peek image <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>
       </message>
       <message name="IDS_CONTEXTMENU_LOAD_ORIGINAL_IMAGE" desc="Context sensitive menu item for Lite mode low fidelity placeholder images that loads the original version in place. [CHAR-LIMIT=30]">
         Load image
@@ -2058,7 +2058,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Open in private tab
       </message>
       <message name="IDS_CONTEXTMENU_OPEN_IN_EPHEMERAL_TAB" desc="Context-sensitive menu item to open a quick preview of the selected link.  In English we're currently calling this 'Sneak peek' which implies that it's a quick preview without commitment (to making a new Tab).  We're also labeling it *New* to draw attention to it when first released. The selected link will open in an overlay panel on top of the current tab which will go away easily too. [CHAR-LIMIT=30]">
-        *New* Sneak peek
+        Sneak peek <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>
       </message>
 
       <!-- Swipe refresh -->

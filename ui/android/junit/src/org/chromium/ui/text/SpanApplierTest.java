@@ -30,7 +30,7 @@ public class SpanApplierTest {
         SpanInfo span = new SpanInfo("<span>", "</span>", new QuoteSpan());
 
         SpannableString expectedOutput = new SpannableString(output);
-        expectedOutput.setSpan(span.mSpan, 12, 17, 0);
+        expectedOutput.setSpan(span.mSpans[0], 12, 17, 0);
         SpannableString actualOutput = SpanApplier.applySpans(input, span);
 
         assertSpannableStringEquality(expectedOutput, actualOutput);
@@ -47,10 +47,24 @@ public class SpanApplierTest {
         SpanInfo elitSpan = new SpanInfo("<elit>", "<endElit>", new ScaleXSpan(1));
 
         SpannableString expectedOutput = new SpannableString(output);
-        expectedOutput.setSpan(linkSpan.mSpan, 6, 11, 0);
-        expectedOutput.setSpan(consSpan.mSpan, 28, 50, 0);
-        expectedOutput.setSpan(elitSpan.mSpan, 51, 62, 0);
+        expectedOutput.setSpan(linkSpan.mSpans[0], 6, 11, 0);
+        expectedOutput.setSpan(consSpan.mSpans[0], 28, 50, 0);
+        expectedOutput.setSpan(elitSpan.mSpans[0], 51, 62, 0);
         SpannableString actualOutput = SpanApplier.applySpans(input, elitSpan, consSpan, linkSpan);
+
+        assertSpannableStringEquality(expectedOutput, actualOutput);
+    }
+
+    @Test
+    public void testVarargSpanInfoConstructor() {
+        String input = "Lorem ipsum <span>dolor</span> sit amet.";
+        String output = "Lorem ipsum dolor sit amet.";
+        SpanInfo multiSpan = new SpanInfo("<span>", "</span>", new QuoteSpan(), new BulletSpan());
+
+        SpannableString expectedOutput = new SpannableString(output);
+        expectedOutput.setSpan(multiSpan.mSpans[0], 12, 17, 0);
+        expectedOutput.setSpan(multiSpan.mSpans[1], 12, 17, 0);
+        SpannableString actualOutput = SpanApplier.applySpans(input, multiSpan);
 
         assertSpannableStringEquality(expectedOutput, actualOutput);
     }
@@ -113,11 +127,11 @@ public class SpanApplierTest {
     public void testNullSpan() {
         String input = "Lorem <link>ipsum</link> dolor <span>sit</span> amet.";
         SpanInfo linkSpan = new SpanInfo("<link>", "</link>", new QuoteSpan());
-        SpanInfo nullSpan = new SpanInfo("<span>", "</span>", null);
+        SpanInfo nullSpan = new SpanInfo("<span>", "</span>", (Object) null);
 
         String output = "Lorem ipsum dolor sit amet.";
         SpannableString expectedOutput = new SpannableString(output);
-        expectedOutput.setSpan(linkSpan.mSpan, 6, 11, 0);
+        expectedOutput.setSpan(linkSpan.mSpans[0], 6, 11, 0);
         SpannableString actualOutput = SpanApplier.applySpans(input, linkSpan, nullSpan);
 
         assertSpannableStringEquality(expectedOutput, actualOutput);

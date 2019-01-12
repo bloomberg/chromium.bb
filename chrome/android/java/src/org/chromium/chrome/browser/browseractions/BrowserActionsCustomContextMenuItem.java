@@ -48,7 +48,7 @@ public class BrowserActionsCustomContextMenuItem implements ContextMenuItem {
     }
 
     @Override
-    public String getTitle(Context context) {
+    public CharSequence getTitle(Context context) {
         return mTitle;
     }
 
