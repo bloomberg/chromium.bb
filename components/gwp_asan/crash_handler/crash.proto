@@ -33,4 +33,8 @@ message Crash {
 
   optional AllocationInfo allocation = 4;
   optional AllocationInfo deallocation = 5;
+
+  // Records the bounds of the GWP-ASan allocator region.
+  optional uint64 region_start = 6;
+  optional uint64 region_size = 7;
 }

@@ -127,6 +127,9 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
     ReadAllocationInfo(memory, slot.alloc, proto->mutable_allocation());
   if (slot.dealloc.tid != base::kInvalidThreadId || slot.dealloc.trace_len)
     ReadAllocationInfo(memory, slot.dealloc, proto->mutable_deallocation());
+  proto->set_region_start(valid_state.pages_base_addr);
+  proto->set_region_size(valid_state.pages_end_addr -
+                         valid_state.pages_base_addr);
 
   return GwpAsanCrashAnalysisResult::kGwpAsanCrash;
 }
