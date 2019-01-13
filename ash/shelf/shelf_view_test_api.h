@@ -21,7 +21,7 @@ class View;
 namespace ash {
 class OverflowBubble;
 class OverflowButton;
-class ShelfButton;
+class ShelfAppButton;
 class ShelfButtonPressedMetricTracker;
 class ShelfTooltipManager;
 class ShelfView;
@@ -36,8 +36,8 @@ class ShelfViewTestAPI {
   int GetButtonCount();
 
   // Retrieve the button at |index|, doesn't support the app list button,
-  // because the app list button is not a ShelfButton.
-  ShelfButton* GetButton(int index);
+  // because the app list button is not a ShelfAppButton.
+  ShelfAppButton* GetButton(int index);
 
   // Retrieve the view at |index|.
   views::View* GetViewAt(int index);

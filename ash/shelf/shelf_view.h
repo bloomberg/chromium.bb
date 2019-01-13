@@ -48,7 +48,7 @@ class OverflowBubble;
 class OverflowButton;
 class ScopedRootWindowForNewWindows;
 class Shelf;
-class ShelfButton;
+class ShelfAppButton;
 class ShelfModel;
 struct ShelfItem;
 class ShelfMenuModelAdapter;
@@ -136,7 +136,7 @@ class ASH_EXPORT ShelfView : public views::View,
   bool IsShowingMenu() const;
 
   // Returns true if we're showing a menu for |view|. |view| could be a
-  // ShelfButton or the ShelfView.
+  // ShelfAppButton or the ShelfView.
   bool IsShowingMenuForView(const views::View* view) const;
 
   // Returns true if overflow bubble is shown.
@@ -251,7 +251,7 @@ class ASH_EXPORT ShelfView : public views::View,
   void OnTabletModeChanged();
 
   // True if the current |drag_view_| is the given |drag_view|.
-  bool IsDraggedView(const ShelfButton* drag_view) const;
+  bool IsDraggedView(const ShelfAppButton* drag_view) const;
 
   // Returns the list of open windows that correspond to the app represented by
   // this shelf view.
@@ -267,7 +267,7 @@ class ASH_EXPORT ShelfView : public views::View,
   // the overflow shelf.
   ShelfView* main_shelf() { return main_shelf_; }
 
-  const ShelfButton* drag_view() const { return drag_view_; }
+  const ShelfAppButton* drag_view() const { return drag_view_; }
 
   // Returns true when this ShelfView is used for Overflow Bubble.
   // In this mode, it does not show app list and overflow button.
@@ -508,10 +508,10 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // The view being dragged. This is set immediately when the mouse is pressed.
   // |dragging_| is set only if the mouse is dragged far enough.
-  ShelfButton* drag_view_ = nullptr;
+  ShelfAppButton* drag_view_ = nullptr;
 
   // The view showing a context menu. This can be either a ShelfView or
-  // ShelfButton.
+  // ShelfAppButton.
   views::View* menu_owner_ = nullptr;
 
   // Position of the mouse down event in |drag_view_|'s coordinates.

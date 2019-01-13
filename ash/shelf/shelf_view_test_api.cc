@@ -6,7 +6,7 @@
 
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/overflow_button.h"
-#include "ash/shelf/shelf_button.h"
+#include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_menu_model_adapter.h"
 #include "ash/shelf/shelf_view.h"
@@ -46,13 +46,13 @@ int ShelfViewTestAPI::GetButtonCount() {
   return shelf_view_->view_model_->view_size();
 }
 
-ShelfButton* ShelfViewTestAPI::GetButton(int index) {
-  // App list and back button are not ShelfButtons.
+ShelfAppButton* ShelfViewTestAPI::GetButton(int index) {
+  // App list and back button are not ShelfAppButtons.
   if (shelf_view_->model_->items()[index].type == ash::TYPE_APP_LIST ||
       shelf_view_->model_->items()[index].type == ash::TYPE_BACK_BUTTON)
     return nullptr;
 
-  return static_cast<ShelfButton*>(GetViewAt(index));
+  return static_cast<ShelfAppButton*>(GetViewAt(index));
 }
 
 views::View* ShelfViewTestAPI::GetViewAt(int index) {

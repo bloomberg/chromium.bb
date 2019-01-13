@@ -27,14 +27,14 @@
 
 namespace ash {
 
-BackButton::BackButton() : ShelfControlButton() {
+BackButton::BackButton(ShelfView* shelf_view) : ShelfControlButton(shelf_view) {
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_BACK_BUTTON_TITLE));
 }
 
 BackButton::~BackButton() = default;
 
 void BackButton::OnGestureEvent(ui::GestureEvent* event) {
-  Button::OnGestureEvent(event);
+  ShelfButton::OnGestureEvent(event);
   if (event->type() == ui::ET_GESTURE_TAP ||
       event->type() == ui::ET_GESTURE_TAP_DOWN) {
     GenerateAndSendBackEvent(event->type());
@@ -42,13 +42,13 @@ void BackButton::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 bool BackButton::OnMousePressed(const ui::MouseEvent& event) {
-  Button::OnMousePressed(event);
+  ShelfButton::OnMousePressed(event);
   GenerateAndSendBackEvent(event.type());
   return true;
 }
 
 void BackButton::OnMouseReleased(const ui::MouseEvent& event) {
-  Button::OnMouseReleased(event);
+  ShelfButton::OnMouseReleased(event);
   GenerateAndSendBackEvent(event.type());
 }
 

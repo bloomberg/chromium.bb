@@ -58,15 +58,8 @@ bool IsTabletMode() {
 
 }  // namespace
 
-AppListButton::AppListButton(InkDropButtonListener* listener,
-                             ShelfView* shelf_view,
-                             Shelf* shelf)
-    : ShelfControlButton(),
-      listener_(listener),
-      shelf_view_(shelf_view),
-      shelf_(shelf) {
-  DCHECK(listener_);
-  DCHECK(shelf_view_);
+AppListButton::AppListButton(ShelfView* shelf_view, Shelf* shelf)
+    : ShelfControlButton(shelf_view), shelf_(shelf) {
   DCHECK(shelf_);
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
@@ -177,33 +170,6 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-bool AppListButton::OnMousePressed(const ui::MouseEvent& event) {
-  Button::OnMousePressed(event);
-  shelf_view_->PointerPressedOnButton(this, ShelfView::MOUSE, event);
-  return true;
-}
-
-void AppListButton::OnMouseReleased(const ui::MouseEvent& event) {
-  Button::OnMouseReleased(event);
-  shelf_view_->PointerReleasedOnButton(this, ShelfView::MOUSE, false);
-}
-
-void AppListButton::OnMouseCaptureLost() {
-  shelf_view_->PointerReleasedOnButton(this, ShelfView::MOUSE, true);
-  Button::OnMouseCaptureLost();
-}
-
-bool AppListButton::OnMouseDragged(const ui::MouseEvent& event) {
-  Button::OnMouseDragged(event);
-  shelf_view_->PointerDraggedOnButton(this, ShelfView::MOUSE, event);
-  return true;
-}
-
-void AppListButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kButton;
-  node_data->SetName(shelf_view_->GetTitleForView(this));
-}
-
 std::unique_ptr<views::InkDropRipple> AppListButton::CreateInkDropRipple()
     const {
   const int app_list_button_radius = ShelfConstants::control_border_radius();
@@ -215,30 +181,6 @@ std::unique_ptr<views::InkDropRipple> AppListButton::CreateInkDropRipple()
       size(), GetLocalBounds().InsetsFrom(bounds),
       GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
       ink_drop_visible_opacity());
-}
-
-void AppListButton::NotifyClick(const ui::Event& event) {
-  Button::NotifyClick(event);
-  if (listener_)
-    listener_->ButtonPressed(this, event, GetInkDrop());
-}
-
-bool AppListButton::ShouldEnterPushedState(const ui::Event& event) {
-  if (!shelf_view_->ShouldEventActivateButton(this, event))
-    return false;
-  return views::Button::ShouldEnterPushedState(event);
-}
-
-std::unique_ptr<views::InkDrop> AppListButton::CreateInkDrop() {
-  std::unique_ptr<views::InkDropImpl> ink_drop =
-      Button::CreateDefaultInkDropImpl();
-  ink_drop->SetShowHighlightOnHover(false);
-  return std::move(ink_drop);
-}
-
-std::unique_ptr<views::InkDropMask> AppListButton::CreateInkDropMask() const {
-  return std::make_unique<views::CircleInkDropMask>(
-      size(), GetCenterPoint(), ShelfConstants::control_border_radius());
 }
 
 void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {

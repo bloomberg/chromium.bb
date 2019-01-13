@@ -5,8 +5,10 @@
 #include "ash/shelf/shelf_control_button.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_view.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -17,14 +19,10 @@
 
 namespace ash {
 
-ShelfControlButton::ShelfControlButton() : views::Button(nullptr) {
-  SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
+ShelfControlButton::ShelfControlButton(ShelfView* shelf_view)
+    : ShelfButton(shelf_view), shelf_(shelf_view->shelf()) {
   set_has_ink_drop_action_on_click(true);
-  set_ink_drop_base_color(kShelfInkDropBaseColor);
-  set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
-
   SetSize(gfx::Size(kShelfControlSize, kShelfControlSize));
-  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
 }
 
 ShelfControlButton::~ShelfControlButton() = default;
@@ -43,17 +41,27 @@ std::unique_ptr<views::InkDropRipple> ShelfControlButton::CreateInkDropRipple()
       ink_drop_visible_opacity());
 }
 
-std::unique_ptr<views::InkDrop> ShelfControlButton::CreateInkDrop() {
-  std::unique_ptr<views::InkDropImpl> ink_drop =
-      Button::CreateDefaultInkDropImpl();
-  ink_drop->SetShowHighlightOnHover(false);
-  return std::move(ink_drop);
-}
-
 std::unique_ptr<views::InkDropMask> ShelfControlButton::CreateInkDropMask()
     const {
   return std::make_unique<views::CircleInkDropMask>(
       size(), GetCenterPoint(), ShelfConstants::control_border_radius());
+}
+
+gfx::Rect ShelfControlButton::CalculateButtonBounds() const {
+  ShelfAlignment alignment = shelf_->alignment();
+  gfx::Rect content_bounds = GetContentsBounds();
+  // Align the button to the top of a bottom-aligned shelf, to the right edge
+  // a left-aligned shelf, and to the left edge of a right-aligned shelf.
+  const int inset = (ShelfConstants::shelf_size() - kShelfControlSize) / 2;
+  const int x = alignment == SHELF_ALIGNMENT_LEFT
+                    ? content_bounds.right() - inset - kShelfControlSize
+                    : content_bounds.x() + inset;
+  return gfx::Rect(x, content_bounds.y() + inset, kShelfControlSize,
+                   kShelfControlSize);
+}
+
+void ShelfControlButton::PaintButtonContents(gfx::Canvas* canvas) {
+  PaintBackground(canvas, CalculateButtonBounds());
 }
 
 void ShelfControlButton::PaintBackground(gfx::Canvas* canvas,

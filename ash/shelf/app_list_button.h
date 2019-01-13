@@ -23,7 +23,6 @@ class OneShotTimer;
 namespace ash {
 
 class AssistantOverlay;
-class InkDropButtonListener;
 class Shelf;
 class ShelfView;
 
@@ -33,9 +32,7 @@ class ASH_EXPORT AppListButton : public ShelfControlButton,
                                  public SessionObserver,
                                  public DefaultVoiceInteractionObserver {
  public:
-  AppListButton(InkDropButtonListener* listener,
-                ShelfView* shelf_view,
-                Shelf* shelf);
+  AppListButton(ShelfView* shelf_view, Shelf* shelf);
   ~AppListButton() override;
 
   void OnAppListShown();
@@ -43,21 +40,12 @@ class ASH_EXPORT AppListButton : public ShelfControlButton,
 
   bool is_showing_app_list() const { return is_showing_app_list_; }
 
-  // views::ImageButton:
+  // views::Button:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
  protected:
-  // views::ImageButton:
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
-  void OnMouseCaptureLost() override;
-  bool OnMouseDragged(const ui::MouseEvent& event) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  // views::Button:
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  void NotifyClick(const ui::Event& event) override;
-  bool ShouldEnterPushedState(const ui::Event& event) override;
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
  private:
@@ -86,8 +74,6 @@ class ASH_EXPORT AppListButton : public ShelfControlButton,
   // This is useful because other app_list_visible functions aren't per-display.
   bool is_showing_app_list_ = false;
 
-  InkDropButtonListener* listener_;
-  ShelfView* shelf_view_;
   Shelf* shelf_;
 
   // Owned by the view hierarchy. Null if the voice interaction is not enabled.
