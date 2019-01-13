@@ -8304,6 +8304,7 @@ Called by update_net_error_codes.py.-->
   <int value="36" label="Open in Chrome (Fullscreen)"/>
   <int value="37" label="Share link"/>
   <int value="38" label="Sneak peek (Ephemeral tab)"/>
+  <int value="39" label="Sneak peek for image (Ephemeral tab)"/>
 </enum>
 
 <enum name="ContextMenuSaveImage">
