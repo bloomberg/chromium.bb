@@ -207,6 +207,39 @@ void ExtensionApps::SetPermission(const std::string& app_id,
       permission_value);
 }
 
+void ExtensionApps::OnExtensionInstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    bool is_update) {
+  // TODO(crbug.com/826982): Does the is_update case need to be handled
+  // differently? E.g. by only passing through fields that have changed.
+  apps::mojom::AppPtr app = Convert(extension, apps::mojom::Readiness::kReady);
+
+  subscribers_.ForAllPtrs([&app](apps::mojom::Subscriber* subscriber) {
+    std::vector<apps::mojom::AppPtr> apps;
+    apps.push_back(app.Clone());
+    subscriber->OnApps(std::move(apps));
+  });
+}
+
+void ExtensionApps::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UninstallReason reason) {
+  // Construct an App with only the information required to identify an
+  // uninstallation.
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = apps::mojom::AppType::kExtension;
+  app->app_id = extension->id();
+  app->readiness = apps::mojom::Readiness::kUninstalledByUser;
+
+  subscribers_.ForAllPtrs([&app](apps::mojom::Subscriber* subscriber) {
+    std::vector<apps::mojom::AppPtr> apps;
+    apps.push_back(app.Clone());
+    subscriber->OnApps(std::move(apps));
+  });
+}
+
 apps::mojom::AppPtr ExtensionApps::Convert(
     const extensions::Extension* extension,
     apps::mojom::Readiness readiness) {
