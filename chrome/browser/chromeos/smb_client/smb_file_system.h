@@ -296,6 +296,7 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
   void HandleStartReadDirectoryCallback(
       storage::AsyncFileUtil::ReadDirectoryCallback callback,
       OperationId operation_id,
+      const base::FilePath& directory_path,
       base::ElapsedTimer metrics_timer,
       smbprovider::ErrorType error,
       int32_t read_dir_token,
