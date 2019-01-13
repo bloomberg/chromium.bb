@@ -284,11 +284,11 @@ void FrameImpl::SetJavaScriptLogLevel(chromium::web::LogLevel level) {
   log_level_ = level;
 }
 
-void FrameImpl::LoadUrl(fidl::StringPtr url,
+void FrameImpl::LoadUrl(std::string url,
                         std::unique_ptr<chromium::web::LoadUrlParams> params) {
-  GURL validated_url(*url);
+  GURL validated_url(url);
   if (!validated_url.is_valid()) {
-    DLOG(WARNING) << "Invalid URL: " << *url;
+    DLOG(WARNING) << "Invalid URL: " << url;
     return;
   }
 
@@ -358,7 +358,7 @@ void FrameImpl::SetNavigationEventObserver(
   }
 }
 
-void FrameImpl::ExecuteJavaScript(fidl::VectorPtr<::fidl::StringPtr> origins,
+void FrameImpl::ExecuteJavaScript(std::vector<std::string> origins,
                                   fuchsia::mem::Buffer script,
                                   chromium::web::ExecuteMode mode,
                                   ExecuteJavaScriptCallback callback) {
@@ -367,13 +367,13 @@ void FrameImpl::ExecuteJavaScript(fidl::VectorPtr<::fidl::StringPtr> origins,
     return;
   }
 
-  if (origins->empty()) {
+  if (origins.empty()) {
     callback(false);
     return;
   }
 
   std::vector<std::string> origins_strings;
-  for (const auto& origin : *origins)
+  for (const auto& origin : origins)
     origins_strings.push_back(origin);
 
   base::string16 script_utf16;
@@ -529,18 +529,18 @@ FrameImpl::OriginScopedScript::OriginScopedScript(
 FrameImpl::OriginScopedScript::~OriginScopedScript() = default;
 
 void FrameImpl::PostMessage(chromium::web::WebMessage message,
-                            fidl::StringPtr target_origin,
+                            std::string target_origin,
                             PostMessageCallback callback) {
   constexpr char kWildcardOrigin[] = "*";
 
-  if (target_origin->empty()) {
+  if (target_origin.empty()) {
     callback(false);
     return;
   }
 
   base::Optional<base::string16> target_origin_utf16;
-  if (*target_origin != kWildcardOrigin)
-    target_origin_utf16 = base::UTF8ToUTF16(*target_origin);
+  if (target_origin != kWildcardOrigin)
+    target_origin_utf16 = base::UTF8ToUTF16(target_origin);
 
   base::string16 data_utf16;
   if (!ReadUTF8FromVMOAsUTF16(message.data, &data_utf16)) {

@@ -11,20 +11,18 @@ namespace castrunner {
 ApplicationConfigManager::ApplicationConfigManager() = default;
 ApplicationConfigManager::~ApplicationConfigManager() = default;
 
-void ApplicationConfigManager::GetConfig(fidl::StringPtr id,
+void ApplicationConfigManager::GetConfig(std::string id,
                                          GetConfigCallback callback) {
-  DCHECK(id);
-
   constexpr char kTestCastAppId[] = "00000000";
-  if (*id != kTestCastAppId) {
-    LOG(ERROR) << "Unknown Cast app Id: " << *id;
+  if (id != kTestCastAppId) {
+    LOG(ERROR) << "Unknown Cast app Id: " << id;
     callback(chromium::cast::ApplicationConfigPtr());
     return;
   }
 
   chromium::cast::ApplicationConfigPtr app_config =
       chromium::cast::ApplicationConfig::New();
-  app_config->id = *id;
+  app_config->id = id;
   app_config->display_name = "Dummy test app";
   app_config->web_url = "https://www.google.com";
   callback(std::move(app_config));

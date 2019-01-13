@@ -224,8 +224,8 @@ void ScenicWindow::OnScenicError(zx_status_t status) {
 }
 
 void ScenicWindow::OnScenicEvents(
-    fidl::VectorPtr<fuchsia::ui::scenic::Event> events) {
-  for (const auto& event : *events) {
+    std::vector<fuchsia::ui::scenic::Event> events) {
+  for (const auto& event : events) {
     if (event.is_gfx()) {
       if (!event.gfx().is_metrics())
         continue;

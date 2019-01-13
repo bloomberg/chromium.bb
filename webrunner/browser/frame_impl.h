@@ -67,12 +67,12 @@ class FrameImpl : public chromium::web::Frame,
   void SetNavigationEventObserver(
       fidl::InterfaceHandle<chromium::web::NavigationEventObserver> observer)
       override;
-  void ExecuteJavaScript(fidl::VectorPtr<::fidl::StringPtr> origins,
+  void ExecuteJavaScript(std::vector<std::string> origins,
                          fuchsia::mem::Buffer script,
                          chromium::web::ExecuteMode mode,
                          ExecuteJavaScriptCallback callback) override;
   void PostMessage(chromium::web::WebMessage message,
-                   fidl::StringPtr targetOrigin,
+                   std::string target_origin,
                    PostMessageCallback callback) override;
 
  private:
@@ -97,7 +97,7 @@ class FrameImpl : public chromium::web::Frame,
   };
 
   // chromium::web::NavigationController implementation.
-  void LoadUrl(fidl::StringPtr url,
+  void LoadUrl(std::string url,
                std::unique_ptr<chromium::web::LoadUrlParams> params) override;
   void GoBack() override;
   void GoForward() override;

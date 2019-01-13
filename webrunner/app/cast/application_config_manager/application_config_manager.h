@@ -21,8 +21,7 @@ class ApplicationConfigManager
   ~ApplicationConfigManager() override;
 
   // chromium::cast::ApplicationConfigManager interface.
-  void GetConfig(fidl::StringPtr id,
-                 GetConfigCallback config_callback) override;
+  void GetConfig(std::string id, GetConfigCallback config_callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationConfigManager);
 };

@@ -146,7 +146,7 @@ void URLLoaderImpl::Start(oldhttp::URLRequest request, Callback callback) {
   net_error_ = net::OK;
 
   // Create the URLRequest and set this object as the delegate.
-  net_request_ = context_->CreateRequest(GURL(request.url.get()),
+  net_request_ = context_->CreateRequest(GURL(request.url),
                                          net::RequestPriority::MEDIUM, this);
   net_request_->set_method(request.method);
 

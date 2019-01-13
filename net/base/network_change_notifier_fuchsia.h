@@ -40,7 +40,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierFuchsia
   // GetRouteTable() to OnRouteTableReceived().
   void ProcessInterfaceList(
       base::OnceClosure on_initialized_cb,
-      fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces);
+      std::vector<fuchsia::netstack::NetInterface> interfaces);
 
   // Computes network change notification state change from the list of
   // interfaces and routing table data, sending observer events if IP or
@@ -51,8 +51,8 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierFuchsia
   // finished executing.
   void OnRouteTableReceived(
       base::OnceClosure on_initialized_cb,
-      fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces,
-      fidl::VectorPtr<fuchsia::netstack::RouteTableEntry> table);
+      std::vector<fuchsia::netstack::NetInterface> interfaces,
+      std::vector<fuchsia::netstack::RouteTableEntry> table);
 
   // NetworkChangeNotifier implementation.
   ConnectionType GetCurrentConnectionType() const override;

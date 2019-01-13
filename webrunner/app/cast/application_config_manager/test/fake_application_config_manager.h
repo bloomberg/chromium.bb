@@ -25,8 +25,7 @@ class FakeApplicationConfigManager
   ~FakeApplicationConfigManager() override;
 
   // chromium::cast::ApplicationConfigManager interface.
-  void GetConfig(fidl::StringPtr id,
-                 GetConfigCallback config_callback) override;
+  void GetConfig(std::string id, GetConfigCallback config_callback) override;
 
  private:
   net::EmbeddedTestServer* embedded_test_server_;

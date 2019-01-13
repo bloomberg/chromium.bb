@@ -16,19 +16,17 @@ FakeApplicationConfigManager::FakeApplicationConfigManager(
     : embedded_test_server_(embedded_test_server) {}
 FakeApplicationConfigManager::~FakeApplicationConfigManager() = default;
 
-void FakeApplicationConfigManager::GetConfig(fidl::StringPtr id,
+void FakeApplicationConfigManager::GetConfig(std::string id,
                                              GetConfigCallback callback) {
-  DCHECK(id);
-
-  if (*id != kTestCastAppId) {
-    LOG(ERROR) << "Unknown Cast app Id: " << *id;
+  if (id != kTestCastAppId) {
+    LOG(ERROR) << "Unknown Cast app Id: " << id;
     callback(chromium::cast::ApplicationConfigPtr());
     return;
   }
 
   chromium::cast::ApplicationConfigPtr app_config =
       chromium::cast::ApplicationConfig::New();
-  app_config->id = *id;
+  app_config->id = id;
   app_config->display_name = "Dummy test app";
   app_config->web_url = embedded_test_server_->base_url().spec();
   callback(std::move(app_config));

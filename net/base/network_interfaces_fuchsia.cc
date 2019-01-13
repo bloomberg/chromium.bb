@@ -52,13 +52,13 @@ NetworkInterface NetworkInterfaceFromAddress(
     prefix_length =
         MaskPrefixLength(FuchsiaIpAddressToIPAddress(interface.netmask));
   } else {
-    CHECK_LE(address_index, interface.ipv6addrs->size());
+    CHECK_LE(address_index, interface.ipv6addrs.size());
     address = FuchsiaIpAddressToIPAddress(
-        interface.ipv6addrs->at(address_index - 1).addr);
-    prefix_length = interface.ipv6addrs->at(address_index - 1).prefix_len;
+        interface.ipv6addrs.at(address_index - 1).addr);
+    prefix_length = interface.ipv6addrs.at(address_index - 1).prefix_len;
   }
 
-  return NetworkInterface(*interface.name, interface.name, interface.id,
+  return NetworkInterface(interface.name, interface.name, interface.id,
                           ConvertConnectionType(interface), address,
                           prefix_length, attributes);
 }
@@ -90,7 +90,7 @@ std::vector<NetworkInterface> NetInterfaceToNetworkInterfaces(
   output.push_back(NetworkInterfaceFromAddress(iface_in, 0));
 
   // Append interface entries for all additional IPv6 addresses.
-  for (size_t i = 0; i < iface_in.ipv6addrs->size(); ++i) {
+  for (size_t i = 0; i < iface_in.ipv6addrs.size(); ++i) {
     output.push_back(NetworkInterfaceFromAddress(iface_in, i + 1));
   }
 
@@ -107,14 +107,14 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
           ->ConnectToServiceSync<fuchsia::netstack::Netstack>();
 
   // TODO(kmarshall): Use NetworkChangeNotifier's cached interface list.
-  fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces;
+  std::vector<fuchsia::netstack::NetInterface> interfaces;
   zx_status_t status = netstack->GetInterfaces(&interfaces);
   if (status != ZX_OK) {
     ZX_LOG(ERROR, status) << "fuchsia::netstack::GetInterfaces()";
     return false;
   }
 
-  for (auto& interface : interfaces.get()) {
+  for (auto& interface : interfaces) {
     auto converted = internal::NetInterfaceToNetworkInterfaces(interface);
     std::move(converted.begin(), converted.end(),
               std::back_inserter(*networks));
