@@ -205,6 +205,13 @@ class DemoSetupController
   void TryMountPreinstalledDemoResources(
       HasPreinstalledDemoResourcesCallback callback);
 
+  // Converts a relative path to an absolute path under the preinstalled demo
+  // resources mount. Returns an empty string if the preinstalled demo resources
+  // are not mounted.
+  base::FilePath GetPreinstalledDemoResourcesPath(
+      const base::FilePath& relative_path);
+
+  // EnterpriseEnrollmentHelper::EnrollmentStatusConsumer:
   void OnDeviceEnrolled() override;
   void OnEnrollmentError(policy::EnrollmentStatus status) override;
   void OnAuthError(const GoogleServiceAuthError& error) override;

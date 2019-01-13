@@ -549,6 +549,13 @@ void DemoSetupController::TryMountPreinstalledDemoResources(
                      base::Unretained(this), std::move(callback)));
 }
 
+base::FilePath DemoSetupController::GetPreinstalledDemoResourcesPath(
+    const base::FilePath& relative_path) {
+  if (preinstalled_demo_resources_)
+    return preinstalled_demo_resources_->GetAbsolutePath(relative_path);
+  return base::FilePath();
+}
+
 void DemoSetupController::LoadDemoResourcesCrOSComponent() {
   VLOG(1) << "Loading demo resources component";
   if (!demo_resources_)

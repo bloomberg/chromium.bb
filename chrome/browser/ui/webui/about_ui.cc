@@ -83,6 +83,8 @@
 #include "base/strings/strcat.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/language/core/common/locale_util.h"
 #endif
@@ -161,6 +163,16 @@ std::string ReadDeviceRegionFromVpd() {
   return base::ToLowerASCII(region);
 }
 
+// Returns an absolute path under the preinstalled demo resources directory.
+base::FilePath CreateDemoResourcesTermsPath(const base::FilePath& file_path) {
+  // Offline ARC TOS are only available during demo mode setup.
+  auto* wizard_controller = chromeos::WizardController::default_controller();
+  if (!wizard_controller || !wizard_controller->demo_setup_controller())
+    return base::FilePath();
+  return wizard_controller->demo_setup_controller()
+      ->GetPreinstalledDemoResourcesPath(file_path);
+}
+
 // Loads bundled terms of service contents (Eula, OEM Eula, Play Store Terms).
 // The online version of terms is fetched in OOBE screen javascript. This is
 // intentional because chrome://terms runs in a privileged webui context and
@@ -169,10 +181,9 @@ class ChromeOSTermsHandler
     : public base::RefCountedThreadSafe<ChromeOSTermsHandler> {
  public:
   static void Start(const std::string& path,
-                    const content::URLDataSource::GotDataCallback& callback,
-                    const base::FilePath& chromeos_assets_path) {
+                    const content::URLDataSource::GotDataCallback& callback) {
     scoped_refptr<ChromeOSTermsHandler> handler(
-        new ChromeOSTermsHandler(path, callback, chromeos_assets_path));
+        new ChromeOSTermsHandler(path, callback));
     handler->StartOnUIThread();
   }
 
@@ -180,13 +191,11 @@ class ChromeOSTermsHandler
   friend class base::RefCountedThreadSafe<ChromeOSTermsHandler>;
 
   ChromeOSTermsHandler(const std::string& path,
-                       const content::URLDataSource::GotDataCallback& callback,
-                       const base::FilePath& chromeos_assets_path)
+                       const content::URLDataSource::GotDataCallback& callback)
       : path_(path),
         callback_(callback),
         // Previously we were using "initial locale" http://crbug.com/145142
-        locale_(g_browser_process->GetApplicationLocale()),
-        chromeos_assets_path_(chromeos_assets_path) {}
+        locale_(g_browser_process->GetApplicationLocale()) {}
 
   virtual ~ChromeOSTermsHandler() {}
 
@@ -260,7 +269,10 @@ class ChromeOSTermsHandler
         base::BlockingType::MAY_BLOCK);
 
     for (const auto& locale : CreateArcLocaleLookupArray()) {
-      auto path = CreateArcPrivacyPolicyPath(locale.c_str());
+      // Offline ARC privacy policis are only available during demo mode setup.
+      auto path =
+          CreateDemoResourcesTermsPath(base::FilePath(base::StringPrintf(
+              chrome::kArcPrivacyPolicyPathFormat, locale.c_str())));
       std::string contents;
       if (base::ReadFileToString(path, &contents)) {
         base::Base64Encode(contents, &contents_);
@@ -279,9 +291,11 @@ class ChromeOSTermsHandler
         base::BlockingType::MAY_BLOCK);
 
     for (const auto& locale : CreateArcLocaleLookupArray()) {
-      auto path = CreateArcTermsPath(locale.c_str());
+      // Offline ARC TOS are only available during demo mode setup.
+      auto path = CreateDemoResourcesTermsPath(base::FilePath(
+          base::StringPrintf(chrome::kArcTermsPathFormat, locale.c_str())));
       std::string contents;
-      if (base::ReadFileToString(CreateArcTermsPath(locale), &contents_)) {
+      if (base::ReadFileToString(path, &contents_)) {
         VLOG(1) << "Read offline Play Store terms for: " << locale;
         return;
       }
@@ -315,16 +329,6 @@ class ChromeOSTermsHandler
     return locale_lookup_array;
   }
 
-  base::FilePath CreateArcTermsPath(const std::string& locale) const {
-    return chromeos_assets_path_.Append(
-        base::StringPrintf(chrome::kArcTermsPathFormat, locale.c_str()));
-  }
-
-  base::FilePath CreateArcPrivacyPolicyPath(const std::string& locale) const {
-    return chromeos_assets_path_.Append(base::StringPrintf(
-        chrome::kArcPrivacyPolicyPathFormat, locale.c_str()));
-  }
-
   void ResponseOnUIThread() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     // If we fail to load Chrome OS EULA from disk, load it from resources.
@@ -342,9 +346,6 @@ class ChromeOSTermsHandler
 
   // Locale of the EULA.
   const std::string locale_;
-
-  // Path to Chrome OS assets.
-  const base::FilePath chromeos_assets_path_;
 
   // EULA contents that was loaded from file.
   std::string contents_;
@@ -621,10 +622,7 @@ void AboutUIHTMLSource::StartDataRequest(
 #if !defined(OS_ANDROID)
   } else if (source_name_ == chrome::kChromeUITermsHost) {
 #if defined(OS_CHROMEOS)
-    std::string assets_dir = chromeos_assets_dir_for_tests_.empty()
-                                 ? chrome::kChromeOSAssetPath
-                                 : chromeos_assets_dir_for_tests_;
-    ChromeOSTermsHandler::Start(path, callback, base::FilePath(assets_dir));
+    ChromeOSTermsHandler::Start(path, callback);
     return;
 #else
     response = l10n_util::GetStringUTF8(IDS_TERMS_HTML);
