@@ -543,7 +543,7 @@ void SmbFileSystem::StartReadDirectory(
 
   auto reply = base::BindOnce(&SmbFileSystem::HandleStartReadDirectoryCallback,
                               AsWeakPtr(), std::move(callback), operation_id,
-                              std::move(metrics_timer));
+                              directory_path, std::move(metrics_timer));
 
   SmbTask task = base::BindOnce(&SmbProviderClient::StartReadDirectory,
                                 GetWeakSmbProviderClient(), GetMountId(),
@@ -683,11 +683,22 @@ void SmbFileSystem::HandleContinueCopyCallback(
 void SmbFileSystem::HandleStartReadDirectoryCallback(
     storage::AsyncFileUtil::ReadDirectoryCallback callback,
     OperationId operation_id,
+    const base::FilePath& directory_path,
     base::ElapsedTimer metrics_timer,
     smbprovider::ErrorType error,
     int32_t read_dir_token,
     const smbprovider::DirectoryEntryListProto& entries) {
   task_queue_.TaskFinished();
+
+  if (error == smbprovider::ERROR_ACCESS_DENIED) {
+    // Request updated credentials for share, then retry the read directory from
+    // the start.
+    base::OnceClosure retry =
+        base::BindOnce(&SmbFileSystem::StartReadDirectory, AsWeakPtr(),
+                       directory_path, operation_id, std::move(callback));
+    RequestUpdatedCredentials(std::move(retry));
+    return;
+  }
 
   int entries_count = 0;
   ProcessReadDirectoryResults(std::move(callback), operation_id, read_dir_token,
