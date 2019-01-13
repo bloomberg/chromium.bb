@@ -53,7 +53,12 @@ class ExtensionApps : public apps::mojom::Publisher,
                      apps::mojom::PermissionPtr permission) override;
 
   // extensions::ExtensionRegistryObserver overrides.
-  // TODO(crbug.com/826982): implement.
+  void OnExtensionInstalled(content::BrowserContext* browser_context,
+                            const extensions::Extension* extension,
+                            bool is_update) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const extensions::Extension* extension,
+                              extensions::UninstallReason reason) override;
 
   // Checks if extension is disabled and if enable flow should be started.
   // Returns true if extension enable flow is started or there is already one
