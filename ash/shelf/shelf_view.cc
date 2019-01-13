@@ -21,6 +21,7 @@
 #include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_application_menu_model.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_constants.h"
@@ -228,56 +229,21 @@ class FadeInAnimationDelegate : public gfx::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(FadeInAnimationDelegate);
 };
 
-void ReflectItemStatus(const ShelfItem& item, ShelfButton* button) {
-  ShelfID active_id = Shell::Get()->shelf_model()->active_shelf_id();
-  if (!active_id.IsNull() && item.id == active_id) {
-    // The active status trumps all other statuses.
-    button->AddState(ShelfButton::STATE_ACTIVE);
-    button->ClearState(ShelfButton::STATE_RUNNING);
-    button->ClearState(ShelfButton::STATE_ATTENTION);
-    return;
-  }
-
-  button->ClearState(ShelfButton::STATE_ACTIVE);
-
-  switch (item.status) {
-    case STATUS_CLOSED:
-      button->ClearState(ShelfButton::STATE_RUNNING);
-      button->ClearState(ShelfButton::STATE_ATTENTION);
-      break;
-    case STATUS_RUNNING:
-      button->AddState(ShelfButton::STATE_RUNNING);
-      button->ClearState(ShelfButton::STATE_ATTENTION);
-      break;
-    case STATUS_ATTENTION:
-      button->ClearState(ShelfButton::STATE_RUNNING);
-      button->AddState(ShelfButton::STATE_ATTENTION);
-      break;
-  }
-
-  if (features::IsNotificationIndicatorEnabled()) {
-    if (item.has_notification)
-      button->AddState(ShelfButton::STATE_NOTIFICATION);
-    else
-      button->ClearState(ShelfButton::STATE_NOTIFICATION);
-  }
-}
-
 // Returns the id of the display on which |view| is shown.
 int64_t GetDisplayIdForView(View* view) {
   aura::Window* window = view->GetWidget()->GetNativeWindow();
   return display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
 }
 
-// Whether |item_view| is a ShelfButton and its state is STATE_DRAGGING.
+// Whether |item_view| is a ShelfAppButton and its state is STATE_DRAGGING.
 bool ShelfButtonIsInDrag(const ShelfItemType item_type,
                          const views::View* item_view) {
   switch (item_type) {
     case TYPE_PINNED_APP:
     case TYPE_BROWSER_SHORTCUT:
     case TYPE_APP:
-      return static_cast<const ShelfButton*>(item_view)->state() &
-             ShelfButton::STATE_DRAGGING;
+      return static_cast<const ShelfAppButton*>(item_view)->state() &
+             ShelfAppButton::STATE_DRAGGING;
     case TYPE_DIALOG:
     case TYPE_BACK_BUTTON:
     case TYPE_APP_LIST:
@@ -430,12 +396,12 @@ gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(const ShelfID& id) {
 
   const gfx::Rect& ideal_bounds(view_model_->ideal_bounds(index));
   views::View* view = view_model_->view_at(index);
-  // The app list and back button are not ShelfButton subclass instances.
+  // The app list and back button are not ShelfAppButton subclass instances.
   if (view == GetAppListButton() || view == GetBackButton())
     return GetMirroredRect(ideal_bounds);
 
-  CHECK_EQ(ShelfButton::kViewClassName, view->GetClassName());
-  ShelfButton* button = static_cast<ShelfButton*>(view);
+  CHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
+  ShelfAppButton* button = static_cast<ShelfAppButton*>(view);
   gfx::Rect icon_bounds = button->GetIconBounds();
   return gfx::Rect(GetMirroredXWithWidthInView(
                        ideal_bounds.x() + icon_bounds.x(), icon_bounds.width()),
@@ -732,7 +698,7 @@ void ShelfView::UpdateDragIconProxyByLocation(
     drag_image_->SetScreenPosition(origin_in_screen_coordinates);
 }
 
-bool ShelfView::IsDraggedView(const ShelfButton* view) const {
+bool ShelfView::IsDraggedView(const ShelfAppButton* view) const {
   return drag_view_ == view;
 }
 
@@ -893,8 +859,8 @@ void ShelfView::PointerPressedOnButton(views::View* view,
   is_repost_event_on_same_item_ =
       IsRepostEvent(event) && (last_pressed_index_ == index);
 
-  CHECK_EQ(ShelfButton::kViewClassName, view->GetClassName());
-  drag_view_ = static_cast<ShelfButton*>(view);
+  CHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
+  drag_view_ = static_cast<ShelfAppButton*>(view);
   drag_origin_ = gfx::Point(event.x(), event.y());
   UMA_HISTOGRAM_ENUMERATION("Ash.ShelfAlignmentUsage",
                             static_cast<ShelfAlignmentUmaEnumValue>(
@@ -1215,20 +1181,20 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
     case TYPE_BROWSER_SHORTCUT:
     case TYPE_APP:
     case TYPE_DIALOG: {
-      ShelfButton* button = new ShelfButton(this, this);
+      ShelfAppButton* button = new ShelfAppButton(this);
       button->SetImage(item.image);
-      ReflectItemStatus(item, button);
+      button->ReflectItemStatus(item);
       view = button;
       break;
     }
 
     case TYPE_APP_LIST: {
-      view = new AppListButton(this, this, shelf_);
+      view = new AppListButton(this, shelf_);
       break;
     }
 
     case TYPE_BACK_BUTTON: {
-      view = new BackButton();
+      view = new BackButton(this);
       break;
     }
 
@@ -1544,7 +1510,7 @@ void ShelfView::FinalizeRipOffDrag(bool cancel) {
       // animation end the flag gets cleared if |snap_back_from_rip_off_view_|
       // is set.
       snap_back_from_rip_off_view_ = drag_view_;
-      drag_view_->AddState(ShelfButton::STATE_HIDDEN);
+      drag_view_->AddState(ShelfAppButton::STATE_HIDDEN);
       // When a canceling drag model is happening, the view model is diverged
       // from the menu model and movements / animations should not be done.
       model_->Move(current_index, start_drag_index_);
@@ -1958,9 +1924,9 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
     case TYPE_BROWSER_SHORTCUT:
     case TYPE_APP:
     case TYPE_DIALOG: {
-      CHECK_EQ(ShelfButton::kViewClassName, view->GetClassName());
-      ShelfButton* button = static_cast<ShelfButton*>(view);
-      ReflectItemStatus(item, button);
+      CHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
+      ShelfAppButton* button = static_cast<ShelfAppButton*>(view);
+      button->ReflectItemStatus(item);
       button->SetImage(item.image);
       button->SchedulePaint();
       break;
@@ -1992,10 +1958,10 @@ void ShelfView::ShelfItemStatusChanged(const ShelfID& id) {
 
   const ShelfItem item = model_->items()[index];
   views::View* view = view_model_->view_at(index);
-  CHECK_EQ(ShelfButton::kViewClassName, view->GetClassName());
+  CHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
   // TODO(manucornet): Add a helper to get the button.
-  ShelfButton* button = static_cast<ShelfButton*>(view);
-  ReflectItemStatus(item, button);
+  ShelfAppButton* button = static_cast<ShelfAppButton*>(view);
+  button->ReflectItemStatus(item);
   button->SchedulePaint();
 }
 
@@ -2129,7 +2095,7 @@ void ShelfView::OnMenuClosed(views::View* source) {
 
   const ShelfItem* item = ShelfItemForView(source);
   if (item && (item->type != TYPE_APP_LIST))
-    static_cast<ShelfButton*>(source)->OnMenuClosed();
+    static_cast<ShelfAppButton*>(source)->OnMenuClosed();
 
   shelf_menu_model_adapter_.reset();
 
@@ -2164,16 +2130,16 @@ void ShelfView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
 
   if (snap_back_from_rip_off_view_ && animator == bounds_animator_.get()) {
     if (!animator->IsAnimating(snap_back_from_rip_off_view_)) {
-      // Coming here the animation of the ShelfButton is finished and the
+      // Coming here the animation of the ShelfAppButton is finished and the
       // previously hidden status can be shown again. Since the button itself
       // might have gone away or changed locations we check that the button
       // is still in the shelf and show its status again.
       for (int index = 0; index < view_model_->view_size(); index++) {
         views::View* view = view_model_->view_at(index);
         if (view == snap_back_from_rip_off_view_) {
-          CHECK_EQ(ShelfButton::kViewClassName, view->GetClassName());
-          ShelfButton* button = static_cast<ShelfButton*>(view);
-          button->ClearState(ShelfButton::STATE_HIDDEN);
+          CHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
+          ShelfAppButton* button = static_cast<ShelfAppButton*>(view);
+          button->ClearState(ShelfAppButton::STATE_HIDDEN);
           break;
         }
       }

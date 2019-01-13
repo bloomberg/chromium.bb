@@ -8,7 +8,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_button.h"
+#include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
@@ -66,8 +66,8 @@ TEST_F(ShelfTest, StatusReflection) {
   item.status = STATUS_RUNNING;
   int index = shelf_model()->Add(item);
   ASSERT_EQ(++button_count, test_api()->GetButtonCount());
-  ShelfButton* button = test_api()->GetButton(index);
-  EXPECT_EQ(ShelfButton::STATE_RUNNING, button->state());
+  ShelfAppButton* button = test_api()->GetButton(index);
+  EXPECT_EQ(ShelfAppButton::STATE_RUNNING, button->state());
 
   // Remove it.
   shelf_model()->RemoveItemAt(index);
@@ -88,10 +88,10 @@ TEST_F(ShelfTest, CheckHoverAfterMenu) {
   int index = shelf_model()->Add(item);
 
   ASSERT_EQ(++button_count, test_api()->GetButtonCount());
-  ShelfButton* button = test_api()->GetButton(index);
-  button->AddState(ShelfButton::STATE_HOVERED);
+  ShelfAppButton* button = test_api()->GetButton(index);
+  button->AddState(ShelfAppButton::STATE_HOVERED);
   button->ShowContextMenu(gfx::Point(), ui::MENU_SOURCE_MOUSE);
-  EXPECT_FALSE(button->state() & ShelfButton::STATE_HOVERED);
+  EXPECT_FALSE(button->state() & ShelfAppButton::STATE_HOVERED);
 
   // Remove it.
   shelf_model()->RemoveItemAt(index);

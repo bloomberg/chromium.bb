@@ -9,7 +9,7 @@
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_button.h"
+#include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
 #include "base/macros.h"
@@ -331,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppDeferredLauncherBrowserTest,
 
   controller->FlushForTesting();
 
-  ash::ShelfButton* const button = test_api.GetButton(item_index);
+  ash::ShelfAppButton* const button = test_api.GetButton(item_index);
   ASSERT_TRUE(button);
 
   views::InkDrop* const ink_drop = button->GetInkDropForTesting();

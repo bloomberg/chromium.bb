@@ -14,7 +14,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_button.h"
+#include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
@@ -302,7 +302,7 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
                        ui::test::EventGenerator* generator,
                        ash::ShelfViewTestAPI* test,
                        RipOffCommand command) {
-    ash::ShelfButton* button = test->GetButton(index);
+    ash::ShelfAppButton* button = test->GetButton(index);
     gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
     gfx::Point rip_off_point(start_point.x(), 0);
     generator->MoveMouseTo(start_point.x(), start_point.y());
@@ -1600,8 +1600,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragOffShelf) {
   EXPECT_EQ(browser_index, GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT));
   // Make sure that the hide state has been unset after the snap back animation
   // finished.
-  ash::ShelfButton* button = test.GetButton(browser_index);
-  EXPECT_FALSE(button->state() & ash::ShelfButton::STATE_HIDDEN);
+  ash::ShelfAppButton* button = test.GetButton(browser_index);
+  EXPECT_FALSE(button->state() & ash::ShelfAppButton::STATE_HIDDEN);
 
   // Test #2: Ripping out the application and canceling the operation should
   // not change anything.

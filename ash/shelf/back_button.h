@@ -18,7 +18,7 @@ namespace ash {
 // in/out of the icon matches the movement of ShelfView's items.
 class ASH_EXPORT BackButton : public ShelfControlButton {
  public:
-  BackButton();
+  explicit BackButton(ShelfView* shelf_view);
   ~BackButton() override;
 
  protected:
