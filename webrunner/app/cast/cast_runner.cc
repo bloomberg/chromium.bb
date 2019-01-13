@@ -34,7 +34,7 @@ void CastRunner::StartComponent(
   constexpr char kCastPresentationUrlScheme[] = "cast";
   constexpr char kCastSecurePresentationUrlScheme[] = "casts";
 
-  GURL cast_url(*package.resolved_url);
+  GURL cast_url(package.resolved_url);
   if (!cast_url.is_valid() ||
       (!cast_url.SchemeIs(kCastPresentationUrlScheme) &&
        !cast_url.SchemeIs(kCastSecurePresentationUrlScheme)) ||
@@ -70,7 +70,7 @@ void CastRunner::GetConfigCallback(
   }
 
   // If a config was returned then use it to launch a component.
-  GURL cast_app_url(*app_config->web_url);
+  GURL cast_app_url(app_config->web_url);
   RegisterComponent(webrunner::WebComponent::ForUrlRequest(
       this, std::move(cast_app_url), std::move(startup_info),
       std::move(controller_request)));

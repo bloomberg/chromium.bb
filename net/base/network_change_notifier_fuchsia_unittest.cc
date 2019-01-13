@@ -81,11 +81,9 @@ fuchsia::netstack::NetInterface CreateNetInterface(
   output.features = features;
   output.addr = std::move(address);
   output.netmask = std::move(netmask);
-  output.hwaddr = fidl::VectorPtr<uint8_t>::New(0);
 
   output.addr.Clone(&output.broadaddr);
 
-  output.ipv6addrs = fidl::VectorPtr<fuchsia::net::Subnet>::New(0);
   for (auto& x : ipv6) {
     output.ipv6addrs.push_back(std::move(x));
   }
@@ -107,17 +105,17 @@ class FakeNetstack : public fuchsia::netstack::testing::Netstack_TestBase {
 
   // Adds |interface| to the interface query response list.
   void PushInterface(fuchsia::netstack::NetInterface&& interface) {
-    interfaces_->push_back(std::move(interface));
+    interfaces_.push_back(std::move(interface));
   }
 
   void PushRouteTableEntry(fuchsia::netstack::RouteTableEntry&& interface) {
-    route_table_->push_back(std::move(interface));
+    route_table_.push_back(std::move(interface));
   }
 
   // Sends the accumulated |interfaces_| to the OnInterfacesChanged event.
   void NotifyInterfaces() {
     binding_.events().OnInterfacesChanged(std::move(interfaces_));
-    interfaces_ = fidl::VectorPtr<fuchsia::netstack::NetInterface>::New(0);
+    interfaces_.clear();
   }
 
   fidl::Binding<fuchsia::netstack::Netstack>& binding() { return binding_; }
@@ -128,11 +126,9 @@ class FakeNetstack : public fuchsia::netstack::testing::Netstack_TestBase {
   }
 
   void GetRouteTable(GetRouteTableCallback callback) override {
-    fidl::VectorPtr<fuchsia::netstack::RouteTableEntry> table =
-        fidl::VectorPtr<fuchsia::netstack::RouteTableEntry>::New(2);
-    (*table)[0] = CreateRouteTableEntry(kDefaultNic, true);
-    (*table)[1] = CreateRouteTableEntry(kSecondaryNic, true);
-
+    std::vector<fuchsia::netstack::RouteTableEntry> table(2);
+    table[0] = CreateRouteTableEntry(kDefaultNic, true);
+    table[1] = CreateRouteTableEntry(kSecondaryNic, true);
     callback(std::move(table));
   }
 
@@ -140,10 +136,8 @@ class FakeNetstack : public fuchsia::netstack::testing::Netstack_TestBase {
     LOG(FATAL) << "Unimplemented function called: " << name;
   }
 
-  ::fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces_ =
-      fidl::VectorPtr<fuchsia::netstack::NetInterface>::New(0);
-  ::fidl::VectorPtr<fuchsia::netstack::RouteTableEntry> route_table_ =
-      fidl::VectorPtr<fuchsia::netstack::RouteTableEntry>::New(0);
+  std::vector<fuchsia::netstack::NetInterface> interfaces_;
+  std::vector<fuchsia::netstack::RouteTableEntry> route_table_;
 
   fidl::Binding<fuchsia::netstack::Netstack> binding_;
 

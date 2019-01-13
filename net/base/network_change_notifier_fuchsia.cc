@@ -51,18 +51,18 @@ NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
     ZX_LOG(ERROR, status) << "Lost connection to netstack.";
   });
   netstack_.events().OnInterfacesChanged =
-      [this](fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces) {
+      [this](std::vector<fuchsia::netstack::NetInterface> interfaces) {
         ProcessInterfaceList(base::OnceClosure(), std::move(interfaces));
       };
 
   // Fetch the interface list synchronously, so that an initial ConnectionType
   // is available before we return.
   base::RunLoop wait_for_interfaces;
-  netstack_->GetInterfaces([
-    this, quit_closure = wait_for_interfaces.QuitClosure()
-  ](fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces) {
-    ProcessInterfaceList(quit_closure, std::move(interfaces));
-  });
+  netstack_->GetInterfaces(
+      [this, quit_closure = wait_for_interfaces.QuitClosure()](
+          std::vector<fuchsia::netstack::NetInterface> interfaces) {
+        ProcessInterfaceList(quit_closure, std::move(interfaces));
+      });
   wait_for_interfaces.Run();
 }
 
@@ -79,7 +79,7 @@ NetworkChangeNotifierFuchsia::GetCurrentConnectionType() const {
 
 void NetworkChangeNotifierFuchsia::ProcessInterfaceList(
     base::OnceClosure on_initialized_cb,
-    fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces) {
+    std::vector<fuchsia::netstack::NetInterface> interfaces) {
   netstack_->GetRouteTable(WrapCallbackAsFunction(base::BindRepeating(
       &NetworkChangeNotifierFuchsia::OnRouteTableReceived,
       base::Unretained(this), base::Passed(std::move(on_initialized_cb)),
@@ -88,11 +88,11 @@ void NetworkChangeNotifierFuchsia::ProcessInterfaceList(
 
 void NetworkChangeNotifierFuchsia::OnRouteTableReceived(
     base::OnceClosure on_initialized_cb,
-    fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces,
-    fidl::VectorPtr<fuchsia::netstack::RouteTableEntry> route_table) {
+    std::vector<fuchsia::netstack::NetInterface> interfaces,
+    std::vector<fuchsia::netstack::RouteTableEntry> route_table) {
   // Find the default interface in the routing table.
   auto default_route_interface = std::find_if(
-      route_table->begin(), route_table->end(),
+      route_table.begin(), route_table.end(),
       [](const fuchsia::netstack::RouteTableEntry& rt) {
         return MaskPrefixLength(
                    internal::FuchsiaIpAddressToIPAddress(rt.netmask)) == 0;
@@ -100,8 +100,8 @@ void NetworkChangeNotifierFuchsia::OnRouteTableReceived(
 
   // Find the default interface in the NetInterface list.
   const fuchsia::netstack::NetInterface* default_interface = nullptr;
-  if (default_route_interface != route_table->end()) {
-    for (const auto& cur_interface : *interfaces) {
+  if (default_route_interface != route_table.end()) {
+    for (const auto& cur_interface : interfaces) {
       if (cur_interface.id == default_route_interface->nicid) {
         default_interface = &cur_interface;
       }

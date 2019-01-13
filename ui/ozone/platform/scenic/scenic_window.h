@@ -71,7 +71,7 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
 
   // Callbacks for |scenic_session_|.
   void OnScenicError(zx_status_t status);
-  void OnScenicEvents(fidl::VectorPtr<fuchsia::ui::scenic::Event> events);
+  void OnScenicEvents(std::vector<fuchsia::ui::scenic::Event> events);
 
   // InputEventDispatcher::Delegate interface.
   void DispatchEvent(ui::Event* event) override;

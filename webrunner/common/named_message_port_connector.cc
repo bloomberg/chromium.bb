@@ -110,9 +110,7 @@ void NamedMessagePortConnector::NotifyPageLoad(chromium::web::Frame* frame) {
 void NamedMessagePortConnector::InjectBindings(chromium::web::Frame* frame) {
   DCHECK(frame);
 
-  fidl::VectorPtr<fidl::StringPtr> origins =
-      fidl::VectorPtr<fidl::StringPtr>::New(0);
-  origins.push_back("*");
+  std::vector<std::string> origins = {"*"};
   frame->ExecuteJavaScript(
       std::move(origins), CloneBuffer(bindings_script_),
       chromium::web::ExecuteMode::ON_PAGE_LOAD,

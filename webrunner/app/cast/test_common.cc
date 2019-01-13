@@ -14,7 +14,7 @@ zx::channel StartCastComponent(
     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
         component_controller_request) {
   fuchsia::sys::LaunchInfo launch_info;
-  launch_info.url.reset(cast_url.as_string());
+  launch_info.url = cast_url.as_string();
 
   // Create a channel to pass to the Runner, through which to expose the new
   // component's ServiceDirectory.
@@ -31,7 +31,7 @@ zx::channel StartCastComponent(
   startup_info.flat_namespace.directories.resize(0);
 
   fuchsia::sys::Package package;
-  package.resolved_url.reset(cast_url.as_string());
+  package.resolved_url = cast_url.as_string();
 
   sys_runner->get()->StartComponent(std::move(package), std::move(startup_info),
                                     std::move(component_controller_request));

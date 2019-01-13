@@ -390,9 +390,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptImmediate) {
   chromium::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
   CheckLoadUrl(title1.spec(), kPage1Title, controller.get());
-  fidl::VectorPtr<fidl::StringPtr> origins =
-      fidl::VectorPtr<fidl::StringPtr>::New(0);
-  origins.push_back(title1.GetOrigin().spec());
+  std::vector<std::string> origins = {title1.GetOrigin().spec()};
 
   frame->ExecuteJavaScript(
       std::move(origins),
@@ -414,9 +412,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoad) {
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   chromium::web::FramePtr frame = CreateFrame();
 
-  fidl::VectorPtr<fidl::StringPtr> origins =
-      fidl::VectorPtr<fidl::StringPtr>::New(0);
-  origins.push_back(url.GetOrigin().spec());
+  std::vector<std::string> origins = {url.GetOrigin().spec()};
 
   frame->ExecuteJavaScript(std::move(origins),
                            MemBufferFromString("stashed_title = 'hello';"),
@@ -433,9 +429,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoadVmoDestroyed) {
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   chromium::web::FramePtr frame = CreateFrame();
 
-  fidl::VectorPtr<fidl::StringPtr> origins =
-      fidl::VectorPtr<fidl::StringPtr>::New(0);
-  origins.push_back(url.GetOrigin().spec());
+  std::vector<std::string> origins = {url.GetOrigin().spec()};
 
   frame->ExecuteJavaScript(std::move(origins),
                            MemBufferFromString("stashed_title = 'hello';"),
@@ -452,9 +446,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavascriptOnLoadWrongOrigin) {
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   chromium::web::FramePtr frame = CreateFrame();
 
-  fidl::VectorPtr<fidl::StringPtr> origins =
-      fidl::VectorPtr<fidl::StringPtr>::New(0);
-  origins.push_back("http://example.com");
+  std::vector<std::string> origins = {"http://example.com"};
 
   frame->ExecuteJavaScript(std::move(origins),
                            MemBufferFromString("stashed_title = 'hello';"),
@@ -475,9 +467,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoadWildcardOrigin) {
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   chromium::web::FramePtr frame = CreateFrame();
 
-  fidl::VectorPtr<fidl::StringPtr> origins =
-      fidl::VectorPtr<fidl::StringPtr>::New(0);
-  origins.push_back("*");
+  std::vector<std::string> origins = {"*"};
 
   frame->ExecuteJavaScript(std::move(origins),
                            MemBufferFromString("stashed_title = 'hello';"),
@@ -504,10 +494,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteMultipleJavaScriptsOnLoad) {
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   chromium::web::FramePtr frame = CreateFrame();
 
-  fidl::VectorPtr<fidl::StringPtr> origins =
-      fidl::VectorPtr<fidl::StringPtr>::New(0);
-  origins.push_back(url.GetOrigin().spec());
-  frame->ExecuteJavaScript(origins.Clone(),
+  std::vector<std::string> origins = {url.GetOrigin().spec()};
+  frame->ExecuteJavaScript(origins,
                            MemBufferFromString("stashed_title = 'hello';"),
                            chromium::web::ExecuteMode::ON_PAGE_LOAD,
                            [](bool success) { EXPECT_TRUE(success); });
@@ -527,11 +515,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteOnLoadEarlyAndLateRegistrations) {
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   chromium::web::FramePtr frame = CreateFrame();
 
-  fidl::VectorPtr<fidl::StringPtr> origins =
-      fidl::VectorPtr<fidl::StringPtr>::New(0);
-  origins.push_back(url.GetOrigin().spec());
+  std::vector<std::string> origins = {url.GetOrigin().spec()};
 
-  frame->ExecuteJavaScript(origins.Clone(),
+  frame->ExecuteJavaScript(origins,
                            MemBufferFromString("stashed_title = 'hello';"),
                            chromium::web::ExecuteMode::ON_PAGE_LOAD,
                            [](bool success) { EXPECT_TRUE(success); });
@@ -565,9 +551,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptBadEncoding) {
   base::RunLoop run_loop;
 
   // 0xFE is an illegal UTF-8 byte; it should cause UTF-8 conversion to fail.
-  fidl::VectorPtr<fidl::StringPtr> origins =
-      fidl::VectorPtr<fidl::StringPtr>::New(0);
-  origins.push_back(url.host());
+  std::vector<std::string> origins = {url.host()};
   frame->ExecuteJavaScript(std::move(origins), MemBufferFromString("true;\xfe"),
                            chromium::web::ExecuteMode::IMMEDIATE_ONCE,
                            [&run_loop](bool success) {

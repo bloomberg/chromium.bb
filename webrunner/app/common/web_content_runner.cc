@@ -69,7 +69,7 @@ void WebContentRunner::StartComponent(
     fuchsia::sys::StartupInfo startup_info,
     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
         controller_request) {
-  GURL url(*package.resolved_url);
+  GURL url(package.resolved_url);
   if (!url.is_valid()) {
     LOG(ERROR) << "Rejected invalid URL: " << url;
     return;
