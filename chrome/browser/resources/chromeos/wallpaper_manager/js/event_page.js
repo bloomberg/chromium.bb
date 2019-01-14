@@ -205,14 +205,21 @@ chrome.app.runtime.onLaunched.addListener(function() {
     chrome.wallpaperPrivate.minimizeInactiveWindows();
     window.onClosed.addListener(function() {
       wallpaperPickerWindow = null;
-      // In case the app exits unexpectedly during preview.
-      chrome.wallpaperPrivate.cancelPreviewWallpaper(() => {});
-      // If the app exits during preview, do not restore the previously active
-      // windows. Continue to show the new wallpaper.
-      if (!window.contentWindow.document.body.classList.contains(
-              'preview-mode')) {
+      const isDuringPreview =
+          window.contentWindow.document.body.classList.contains('preview-mode');
+      const isWallpaperSet =
+          window.contentWindow.document.body.classList.contains(
+              'wallpaper-set-successfully');
+      // Cancel preview if the app exits before user confirming the
+      // wallpaper (e.g. when the app is closed in overview mode).
+      if (isDuringPreview && !isWallpaperSet)
+        chrome.wallpaperPrivate.cancelPreviewWallpaper(() => {});
+      // Do not restore the minimized windows if the app exits because of
+      // confirming preview: prefer to continue showing the new wallpaper to
+      // user.
+      const isExitingAfterPreviewConfirm = isDuringPreview && isWallpaperSet;
+      if (!isExitingAfterPreviewConfirm)
         chrome.wallpaperPrivate.restoreMinimizedWindows();
-      }
     });
     // By design, the wallpaper picker should never be shown on top of
     // another window.

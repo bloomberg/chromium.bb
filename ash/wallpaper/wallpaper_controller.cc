@@ -1086,6 +1086,10 @@ void WallpaperController::ConfirmPreviewWallpaper() {
 }
 
 void WallpaperController::CancelPreviewWallpaper() {
+  if (!confirm_preview_wallpaper_callback_) {
+    DCHECK(!reload_preview_wallpaper_callback_);
+    return;
+  }
   confirm_preview_wallpaper_callback_.Reset();
   reload_preview_wallpaper_callback_.Reset();
   ReloadWallpaper(/*clear_cache=*/false);
