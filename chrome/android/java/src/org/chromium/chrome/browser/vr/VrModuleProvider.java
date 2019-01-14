@@ -4,13 +4,13 @@
 
 package org.chromium.chrome.browser.vr;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.modules.ModuleInstallUi;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.module_installer.ModuleInstaller;
 import org.chromium.components.module_installer.OnModuleInstallFinishedListener;
-import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,11 +20,12 @@ import java.util.List;
  * instantiate a fallback implementation.
  */
 @JNINamespace("vr")
-public class VrModuleProvider {
+public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
     private static VrDelegateProvider sDelegateProvider;
     private static final List<VrModeObserver> sVrModeObservers = new ArrayList<>();
 
     private long mNativeVrModuleProvider;
+    private Tab mTab;
 
     /**
      * Need to be called after native libraries are available. Has no effect if VR is not compiled
@@ -113,17 +114,22 @@ public class VrModuleProvider {
     }
 
     @CalledByNative
-    private static void showInstallResult(boolean success) {
-        // TODO(crbug.com/863064): This is a placeholder UI. Replace once proper UI is spec'd.
-        int toastTextRes = success ? R.string.module_install_success_text
-                                   : R.string.vr_module_install_failure_text;
-        Toast.makeText(ContextUtils.getApplicationContext(), toastTextRes, Toast.LENGTH_SHORT)
-                .show();
-    }
-
-    @CalledByNative
     /* package */ static boolean isModuleInstalled() {
         return !(getDelegateProvider() instanceof VrDelegateProviderFallback);
+    }
+
+    @Override
+    public void onRetry() {
+        if (mNativeVrModuleProvider != 0) {
+            installModule(mTab);
+        }
+    }
+
+    @Override
+    public void onCancel() {
+        if (mNativeVrModuleProvider != 0) {
+            nativeOnInstalledModule(mNativeVrModuleProvider, false);
+        }
     }
 
     private VrModuleProvider(long nativeVrModuleProvider) {
@@ -136,16 +142,20 @@ public class VrModuleProvider {
     }
 
     @CalledByNative
-    private void installModule() {
-        // TODO(crbug.com/863064): This is a placeholder UI. Replace once proper UI is spec'd.
-        Toast.makeText(ContextUtils.getApplicationContext(), R.string.vr_module_install_start_text,
-                     Toast.LENGTH_SHORT)
-                .show();
+    private void installModule(Tab tab) {
+        mTab = tab;
+        ModuleInstallUi ui = new ModuleInstallUi(mTab, R.string.vr_module_install_text_title, this);
+        ui.showInstallStartUi();
         installModule((success) -> {
             if (success) {
                 getDelegate().onNativeLibraryAvailable();
             }
             if (mNativeVrModuleProvider != 0) {
+                if (!success) {
+                    ui.showInstallFailureUi();
+                    return;
+                }
+                ui.showInstallSuccessUi();
                 nativeOnInstalledModule(mNativeVrModuleProvider, success);
             }
         });

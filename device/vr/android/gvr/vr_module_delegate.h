@@ -14,11 +14,6 @@ namespace device {
 // Delegates installation of the VR module.
 class DEVICE_VR_EXPORT VrModuleDelegate {
  public:
-  // Returns the global module delegate.
-  static VrModuleDelegate* Get();
-  // Sets the global module delegate.
-  static void Set(std::unique_ptr<VrModuleDelegate> delegate);
-
   VrModuleDelegate() = default;
   virtual ~VrModuleDelegate() = default;
   // Returns true if the VR module is installed.
@@ -28,11 +23,28 @@ class DEVICE_VR_EXPORT VrModuleDelegate {
   // install failed.
   virtual void InstallModule(
       base::OnceCallback<void(bool success)> on_finished) = 0;
-  // Shows UI to the user informing them about the module install result.
-  virtual void ShowInstallResult(bool success) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VrModuleDelegate);
+};
+
+// Create a VR module delegate.
+class DEVICE_VR_EXPORT VrModuleDelegateFactory {
+ public:
+  VrModuleDelegateFactory() = default;
+  virtual ~VrModuleDelegateFactory() = default;
+  // Returns the global module delegate factory.
+  static VrModuleDelegateFactory* Get();
+  // Sets the global module delegate factory.
+  static void Set(std::unique_ptr<VrModuleDelegateFactory> factory);
+  // Instantiates a VR module delegate. |render_process_id| and
+  // |render_frame_id| refer to the tab in which to show module install UI.
+  virtual std::unique_ptr<VrModuleDelegate> CreateDelegate(
+      int render_process_id,
+      int render_frame_id) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(VrModuleDelegateFactory);
 };
 
 }  // namespace device

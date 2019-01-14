@@ -180,7 +180,9 @@ void OculusDevice::RequestSession(
                      std::move(on_request_present_result)));
 }
 
-void OculusDevice::EnsureInitialized(EnsureInitializedCallback callback) {
+void OculusDevice::EnsureInitialized(int render_process_id,
+                                     int render_frame_id,
+                                     EnsureInitializedCallback callback) {
   EnsureValidDisplayInfo();
   std::move(callback).Run();
 }
