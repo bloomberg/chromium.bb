@@ -106,8 +106,7 @@ public class VrBrowserDialogTest {
         // Trying to grant permissions on file:// URLs ends up hitting DCHECKS, so load from a local
         // server instead.
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
-                mVrTestRule.getTestServer().getURL(
-                        VrBrowserTestFramework.getEmbeddedServerPathForHtmlTestFile(page)),
+                mVrBrowserTestFramework.getEmbeddedServerUrlForHtmlTestFile(page),
                 PAGE_LOAD_TIMEOUT_S);
 
         // Display the given permission prompt.
