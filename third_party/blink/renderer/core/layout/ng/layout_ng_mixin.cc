@@ -185,12 +185,13 @@ void LayoutNGMixin<Base>::AddScrollingOverflowFromChildren() {
     for (const auto& child : physical_fragment->Children()) {
       NGPhysicalOffsetRect child_scrollable_overflow;
       if (child->IsOutOfFlowPositioned()) {
-        child_scrollable_overflow = child->ScrollableOverflow();
+        child_scrollable_overflow =
+            child->ScrollableOverflowForPropagation(this);
       } else if (children_inline && child->IsLineBox()) {
         DCHECK(child->IsLineBox());
         child_scrollable_overflow =
             ToNGPhysicalLineBoxFragment(*child).ScrollableOverflow(
-                Base::Style(), physical_fragment->Size());
+                this, Base::Style(), physical_fragment->Size());
         if (padding_strut)
           child_scrollable_overflow.Expand(*padding_strut);
       } else {

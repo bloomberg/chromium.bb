@@ -73,13 +73,15 @@ NGPhysicalOffsetRect NGPhysicalLineBoxFragment::ContentsInkOverflow() const {
 }
 
 NGPhysicalOffsetRect NGPhysicalLineBoxFragment::ScrollableOverflow(
+    const LayoutObject* container,
     const ComputedStyle* container_style,
     NGPhysicalSize container_physical_size) const {
   WritingMode container_writing_mode = container_style->GetWritingMode();
   TextDirection container_direction = container_style->Direction();
   NGPhysicalOffsetRect overflow({}, Size());
   for (const auto& child : Children()) {
-    NGPhysicalOffsetRect child_scroll_overflow = child->ScrollableOverflow();
+    NGPhysicalOffsetRect child_scroll_overflow =
+        child->ScrollableOverflowForPropagation(container);
     child_scroll_overflow.offset += child.Offset();
     // If child has the same style as parent, parent will compute relative
     // offset.

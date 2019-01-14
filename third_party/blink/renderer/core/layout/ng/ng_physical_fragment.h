@@ -190,6 +190,10 @@ class CORE_EXPORT NGPhysicalFragment
   // Scrollable overflow. including contents, in the local coordinate.
   NGPhysicalOffsetRect ScrollableOverflow() const;
 
+  // ScrollableOverflow(), with transforms applied wrt container if needed.
+  NGPhysicalOffsetRect ScrollableOverflowForPropagation(
+      const LayoutObject* container) const;
+
   // Unite visual rect to propagate to parent's ContentsVisualRect.
   void PropagateContentsInkOverflow(NGPhysicalOffsetRect*,
                                     NGPhysicalOffset) const;

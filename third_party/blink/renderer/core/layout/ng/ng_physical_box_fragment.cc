@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 
 namespace blink {
 
@@ -115,9 +116,17 @@ NGPhysicalOffsetRect NGPhysicalBoxFragment::ScrollableOverflow() const {
   } else if (layout_object->IsLayoutInline()) {
     // Inline overflow is a union of child overflows.
     NGPhysicalOffsetRect overflow({}, Size());
+    WritingMode container_writing_mode = Style().GetWritingMode();
+    TextDirection container_direction = Style().Direction();
     for (const auto& child_fragment : Children()) {
       NGPhysicalOffsetRect child_overflow =
-          child_fragment->ScrollableOverflow();
+          child_fragment->ScrollableOverflowForPropagation(layout_object);
+      if (child_fragment->Style() != Style()) {
+        NGPhysicalOffset relative_offset = ComputeRelativeOffset(
+            child_fragment->Style(), container_writing_mode,
+            container_direction, Size());
+        child_overflow.offset += relative_offset;
+      }
       child_overflow.offset += child_fragment.Offset();
       overflow.Unite(child_overflow);
     }
