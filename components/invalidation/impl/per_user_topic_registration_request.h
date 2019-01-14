@@ -109,6 +109,7 @@ class PerUserTopicRegistrationRequest {
   // Full URL. Used in tests only.
   GURL url_;
   RequestType type_;
+  std::string topic_;
 
   base::WeakPtrFactory<PerUserTopicRegistrationRequest> weak_ptr_factory_;
 
