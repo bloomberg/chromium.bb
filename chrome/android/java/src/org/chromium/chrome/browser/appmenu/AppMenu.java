@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.appmenu;
 
 import android.animation.Animator;
 import android.animation.Animator.AnimatorListener;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.content.Context;
 import android.content.res.Resources;
@@ -26,6 +27,7 @@ import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageButton;
@@ -521,7 +523,21 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         }
 
         mMenuItemEnterAnimator.addListener(mAnimationHistogramRecorder);
+        mMenuItemEnterAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                focusHighlightedView();
+            }
+        });
         mMenuItemEnterAnimator.start();
+    }
+
+    private void focusHighlightedView() {
+        View highlightedView = mAdapter.getHighlightedView();
+        if (highlightedView == null) return;
+
+        highlightedView.requestFocus();
+        highlightedView.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
     }
 
     private int inflateFooter(
