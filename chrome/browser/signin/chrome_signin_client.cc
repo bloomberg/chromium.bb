@@ -150,8 +150,12 @@ bool ChromeSigninClient::IsFirstRun() const {
 }
 
 base::Time ChromeSigninClient::GetInstallDate() {
+  // metrics service might be nullptr in tests. TestingBrowserProcess returns
+  // nullptr for metrics_service().
   return base::Time::FromTimeT(
-      g_browser_process->metrics_service()->GetInstallDate());
+      g_browser_process->metrics_service()
+          ? g_browser_process->metrics_service()->GetInstallDate()
+          : 0);
 }
 
 bool ChromeSigninClient::AreSigninCookiesAllowed() {
