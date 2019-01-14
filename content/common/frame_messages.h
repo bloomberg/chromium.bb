@@ -671,13 +671,11 @@ IPC_STRUCT_BEGIN(FrameHostMsg_CreateChildFrame_Params)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(FrameHostMsg_CreateChildFrame_Params_Reply)
-  IPC_STRUCT_MEMBER(int32_t, child_routing_id)
   IPC_STRUCT_MEMBER(mojo::MessagePipeHandle, new_interface_provider)
   IPC_STRUCT_MEMBER(mojo::MessagePipeHandle,
                     document_interface_broker_content_handle)
   IPC_STRUCT_MEMBER(mojo::MessagePipeHandle,
                     document_interface_broker_blink_handle)
-  IPC_STRUCT_MEMBER(base::UnguessableToken, devtools_frame_token)
 IPC_STRUCT_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::CSPSource)
@@ -1168,12 +1166,18 @@ IPC_MESSAGE_ROUTED4(FrameHostMsg_DidAddMessageToConsole,
 //
 // Each of these messages will have a corresponding FrameHostMsg_Detach message
 // sent when the frame is detached from the DOM.
-// Note that |params_reply| is an out parameter. Browser process defines it for
-// the renderer process.
-IPC_SYNC_MESSAGE_CONTROL1_1(FrameHostMsg_CreateChildFrame,
+// Note that |new_routing_id|, |params_reply|, and |devtools_frame_token| are
+// out parameters. Browser process defines them for the renderer process.
+// TODO(crbug.com/718652): move |new_routing_id| and |devtools_frame_token| into
+// FrameHostMsg_CreateChildFrame_Params_Reply.
+IPC_SYNC_MESSAGE_CONTROL1_3(FrameHostMsg_CreateChildFrame,
                             FrameHostMsg_CreateChildFrame_Params,
+                            // new_routing_id
+                            int32_t,
                             // params_reply
-                            FrameHostMsg_CreateChildFrame_Params_Reply)
+                            FrameHostMsg_CreateChildFrame_Params_Reply,
+                            // devtools_frame_token
+                            base::UnguessableToken)
 
 // Sent by the renderer to the parent RenderFrameHost when a child frame is
 // detached from the DOM.
