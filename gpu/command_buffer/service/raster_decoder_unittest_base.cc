@@ -165,8 +165,7 @@ void RasterDecoderTestBase::CreateFakeTexture(
   // Consume texture to hold a permanent ref.
   cmds::CreateAndConsumeTextureINTERNALImmediate& cmd =
       *GetImmediateAs<cmds::CreateAndConsumeTextureINTERNALImmediate>();
-  cmd.Init(client_id, false /* use_buffer */, gfx::BufferUsage::GPU_READ,
-           resource_format, mailbox.name);
+  cmd.Init(client_id, mailbox.name);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
 
   // Check that client_texture_id has appropriate attributes.
@@ -399,7 +398,7 @@ void RasterDecoderTestBase::DoDeleteTexture(GLuint client_id,
         .Times(1)
         .RetiresOnSaturation();
 
-    GenHelper<cmds::DeleteTexturesImmediate>(client_id);
+    GenHelper<cmds::DeleteTexturesINTERNALImmediate>(client_id);
   }
 }
 

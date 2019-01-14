@@ -12,27 +12,6 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_RASTER_DECODER_UNITTEST_1_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_RASTER_DECODER_UNITTEST_1_AUTOGEN_H_
 
-TEST_P(RasterDecoderTest1, DeleteTexturesImmediateValidArgs) {
-  EXPECT_CALL(*gl_, DeleteTextures(1, Pointee(kServiceTextureId))).Times(1);
-  cmds::DeleteTexturesImmediate& cmd =
-      *GetImmediateAs<cmds::DeleteTexturesImmediate>();
-  SpecializedSetup<cmds::DeleteTexturesImmediate, 0>(true);
-  cmd.Init(1, &client_texture_id_);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(client_texture_id_)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(GetTexture(client_texture_id_) == nullptr);
-}
-
-TEST_P(RasterDecoderTest1, DeleteTexturesImmediateInvalidArgs) {
-  cmds::DeleteTexturesImmediate& cmd =
-      *GetImmediateAs<cmds::DeleteTexturesImmediate>();
-  SpecializedSetup<cmds::DeleteTexturesImmediate, 0>(false);
-  GLuint temp = kInvalidClientId;
-  cmd.Init(1, &temp);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
-}
-
 TEST_P(RasterDecoderTest1, FinishValidArgs) {
   EXPECT_CALL(*gl_, Finish());
   SpecializedSetup<cmds::Finish, 0>(true);

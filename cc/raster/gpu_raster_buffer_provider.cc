@@ -201,9 +201,7 @@ static void RasterizeSource(
     // valid by the time the consume command executes.
     ri->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   }
-  GLuint texture_id = ri->CreateAndConsumeTexture(
-      texture_is_overlay_candidate, gfx::BufferUsage::SCANOUT, resource_format,
-      mailbox->name);
+  GLuint texture_id = ri->CreateAndConsumeForGpuRaster(mailbox->name);
   {
     ScopedGrContextAccess gr_context_access(context_provider);
     base::Optional<viz::ClientResourceProvider::ScopedSkSurface> scoped_surface;
@@ -242,7 +240,7 @@ static void RasterizeSource(
                                     playback_settings);
   }
 
-  ri->DeleteTextures(1, &texture_id);
+  ri->DeleteGpuRasterTexture(texture_id);
 }
 
 }  // namespace

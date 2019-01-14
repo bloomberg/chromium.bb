@@ -152,7 +152,7 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DTwiceClearsUnclearedTexture) {
                                   GL_TEXTURE_2D, GL_TEXTURE_2D, 0, GL_RGBA,
                                   GL_UNSIGNED_BYTE, 0, 0, 2, 2, 0);
     SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
-    CopySubTexture cmd;
+    CopySubTextureINTERNAL cmd;
     cmd.Init(source_texture_id, client_texture_id_, 0, 0, 0, 0, 2, 1);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
@@ -165,7 +165,7 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DTwiceClearsUnclearedTexture) {
                                   GL_TEXTURE_2D, GL_TEXTURE_2D, 0, GL_RGBA,
                                   GL_UNSIGNED_BYTE, 0, 1, 2, 1, 0);
     SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
-    CopySubTexture cmd;
+    CopySubTextureINTERNAL cmd;
     cmd.Init(source_texture_id, client_texture_id_, 1, 1, 0, 0, 1, 1);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
@@ -189,7 +189,7 @@ TEST_P(RasterDecoderManualInitTest, CopyTexSubImage2DValidateColorFormat) {
                     /*width=*/2, /*height=*/2, /*cleared=*/true);
 
   SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
-  CopySubTexture copy_cmd;
+  CopySubTextureINTERNAL copy_cmd;
   copy_cmd.Init(client_texture_id_, dest_texture_id, 0, 0, 0, 0, 2, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(copy_cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());

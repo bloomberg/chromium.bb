@@ -404,12 +404,6 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
   DCHECK(ri);
   ri->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
-  GLuint mailbox_texture_id = ri->CreateAndConsumeTexture(
-      mailbox_texture_is_overlay_candidate, gfx::BufferUsage::SCANOUT,
-      resource_format, mailbox->name);
-  GLuint staging_texture_id = ri->CreateAndConsumeTexture(
-      true, StagingBufferUsage(), staging_buffer->format,
-      staging_buffer->mailbox.name);
 
   // Do not use queries unless COMMANDS_COMPLETED queries are supported, or
   // COMMANDS_ISSUED queries are sufficient.
@@ -456,8 +450,9 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
     int rows_to_copy = std::min(chunk_size_in_rows, height - y);
     DCHECK_GT(rows_to_copy, 0);
 
-    ri->CopySubTexture(staging_texture_id, mailbox_texture_id, 0, y, 0, y,
-                       rect_to_copy.width(), rows_to_copy);
+    ri->CopySubTexture(staging_buffer->mailbox, *mailbox,
+                       mailbox_texture_target, 0, y, 0, y, rect_to_copy.width(),
+                       rows_to_copy);
     y += rows_to_copy;
 
     // Increment |bytes_scheduled_since_last_flush_| by the amount of memory
@@ -472,9 +467,6 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
 
   if (query_target != GL_NONE)
     ri->EndQueryEXT(query_target);
-
-  GLuint textures_to_delete[] = {mailbox_texture_id, staging_texture_id};
-  ri->DeleteTextures(2, textures_to_delete);
 
   // Generate sync token on the worker context that will be sent to and waited
   // for by the display compositor before using the content generated here.
