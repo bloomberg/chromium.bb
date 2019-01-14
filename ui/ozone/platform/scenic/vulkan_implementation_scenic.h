@@ -40,8 +40,8 @@ class VulkanImplementationScenic : public gpu::VulkanImplementation {
   ScenicSurfaceFactory* const scenic_surface_factory_;
   gpu::VulkanInstance vulkan_instance_;
 
-  PFN_vkVoidFunction vkCreateMagmaSurfaceKHR_ = nullptr;
-  PFN_vkVoidFunction vkGetPhysicalDeviceMagmaPresentationSupportKHR_ = nullptr;
+  PFN_vkCreateImagePipeSurfaceFUCHSIA vkCreateImagePipeSurfaceFUCHSIA_ =
+      nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanImplementationScenic);
 };
