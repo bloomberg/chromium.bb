@@ -35,6 +35,9 @@ struct MEDIA_EXPORT OverlayInfo {
 
   // Is the player in fullscreen?
   bool is_fullscreen = false;
+
+  // Is the player persistent video (PiP)?
+  bool is_persistent_video = false;
 };
 
 using ProvideOverlayInfoCB = base::Callback<void(const OverlayInfo&)>;

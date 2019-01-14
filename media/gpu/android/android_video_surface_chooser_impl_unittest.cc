@@ -67,7 +67,12 @@ enum class IsSecure { No, Yes };
 enum class IsCCPromotable { No, Yes };
 enum class IsExpectingRelayout { No, Yes };
 enum class PromoteAggressively { No, Yes };
-enum class IsVideoRotated { No, Yes };
+// Since gtest only supports ten args, combine some uncommon ones.
+enum class MiscFlags { None, Rotated, Persistent };
+
+// Allow any misc flag values.
+#define AnyMisc \
+  Values(MiscFlags::None, MiscFlags::Rotated, MiscFlags::Persistent)
 
 using TestParams = std::tuple<ShouldUseOverlay,
                               ShouldBePowerEfficient,
@@ -78,7 +83,7 @@ using TestParams = std::tuple<ShouldUseOverlay,
                               IsCCPromotable,
                               IsExpectingRelayout,
                               PromoteAggressively,
-                              IsVideoRotated>;
+                              MiscFlags>;
 
 // Useful macro for instantiating tests.
 #define Either(x) Values(x::No, x::Yes)
@@ -88,6 +93,8 @@ using TestParams = std::tuple<ShouldUseOverlay,
 // c++14 can remove |n|, and std::get() by type.
 #define IsYes(type, n) (::testing::get<n>(GetParam()) == type::Yes)
 #define IsIgnored(type, n) (::testing::get<n>(GetParam()) == type::Ignored)
+// |v| is the value to check for equality.
+#define IsEqual(type, n, v) (::testing::get<n>(GetParam()) == type::v)
 
 }  // namespace
 
@@ -402,7 +409,8 @@ TEST_P(AndroidVideoSurfaceChooserImplTest, OverlayIsUsedOrNotBasedOnState) {
   chooser_state_.is_expecting_relayout = IsYes(IsExpectingRelayout, 7);
   chooser_state_.promote_aggressively = IsYes(PromoteAggressively, 8);
   chooser_state_.video_rotation =
-      IsYes(IsVideoRotated, 9) ? VIDEO_ROTATION_90 : VIDEO_ROTATION_0;
+      IsEqual(MiscFlags, 9, Rotated) ? VIDEO_ROTATION_90 : VIDEO_ROTATION_0;
+  chooser_state_.is_persistent_video = IsEqual(MiscFlags, 9, Persistent);
 
   MockAndroidOverlay* overlay = overlay_.get();
 
@@ -439,7 +447,7 @@ INSTANTIATE_TEST_CASE_P(NoFullscreenUsesTextureOwner,
                                 Either(IsCCPromotable),
                                 Either(IsExpectingRelayout),
                                 Values(PromoteAggressively::No),
-                                Either(IsVideoRotated)));
+                                AnyMisc));
 
 INSTANTIATE_TEST_CASE_P(FullscreenUsesOverlay,
                         AndroidVideoSurfaceChooserImplTest,
@@ -452,7 +460,7 @@ INSTANTIATE_TEST_CASE_P(FullscreenUsesOverlay,
                                 Values(IsCCPromotable::Yes),
                                 Values(IsExpectingRelayout::No),
                                 Either(PromoteAggressively),
-                                Values(IsVideoRotated::No)));
+                                Values(MiscFlags::None)));
 
 INSTANTIATE_TEST_CASE_P(RequiredUsesOverlay,
                         AndroidVideoSurfaceChooserImplTest,
@@ -465,7 +473,8 @@ INSTANTIATE_TEST_CASE_P(RequiredUsesOverlay,
                                 Either(IsCCPromotable),
                                 Either(IsExpectingRelayout),
                                 Either(PromoteAggressively),
-                                Values(IsVideoRotated::No)));
+                                Values(MiscFlags::None,
+                                       MiscFlags::Persistent)));
 
 // Secure textures should use an overlay if the compositor will promote them.
 // We don't care about relayout, since it's transient; either behavior is okay
@@ -481,7 +490,7 @@ INSTANTIATE_TEST_CASE_P(SecureUsesOverlayIfPromotable,
                                 Values(IsCCPromotable::Yes),
                                 Values(IsExpectingRelayout::No),
                                 Either(PromoteAggressively),
-                                Values(IsVideoRotated::No)));
+                                Values(MiscFlags::None)));
 
 // For all dynamic cases, we shouldn't use an overlay if the compositor won't
 // promote it, unless it's marked as required.  This includes secure surfaces,
@@ -499,7 +508,7 @@ INSTANTIATE_TEST_CASE_P(NotCCPromotableNotRequiredUsesTextureOwner,
                                 Values(IsCCPromotable::No),
                                 Either(IsExpectingRelayout),
                                 Either(PromoteAggressively),
-                                Either(IsVideoRotated)));
+                                AnyMisc));
 
 // If we're expecting a relayout, then we should never use an overlay unless
 // it's required.
@@ -514,7 +523,7 @@ INSTANTIATE_TEST_CASE_P(InsecureExpectingRelayoutUsesTextureOwner,
                                 Either(IsCCPromotable),
                                 Values(IsExpectingRelayout::Yes),
                                 Either(PromoteAggressively),
-                                Either(IsVideoRotated)));
+                                AnyMisc));
 
 // "is_fullscreen" should be enough to trigger an overlay pre-M.
 INSTANTIATE_TEST_CASE_P(NotDynamicInFullscreenUsesOverlay,
@@ -528,7 +537,8 @@ INSTANTIATE_TEST_CASE_P(NotDynamicInFullscreenUsesOverlay,
                                 Either(IsCCPromotable),
                                 Either(IsExpectingRelayout),
                                 Either(PromoteAggressively),
-                                Values(IsVideoRotated::No)));
+                                Values(MiscFlags::None,
+                                       MiscFlags::Persistent)));
 
 // "is_secure" should be enough to trigger an overlay pre-M.
 INSTANTIATE_TEST_CASE_P(NotDynamicSecureUsesOverlay,
@@ -542,7 +552,8 @@ INSTANTIATE_TEST_CASE_P(NotDynamicSecureUsesOverlay,
                                 Either(IsCCPromotable),
                                 Either(IsExpectingRelayout),
                                 Either(PromoteAggressively),
-                                Values(IsVideoRotated::No)));
+                                Values(MiscFlags::None,
+                                       MiscFlags::Persistent)));
 
 // "is_required" should be enough to trigger an overlay pre-M.
 INSTANTIATE_TEST_CASE_P(NotDynamicRequiredUsesOverlay,
@@ -556,7 +567,8 @@ INSTANTIATE_TEST_CASE_P(NotDynamicRequiredUsesOverlay,
                                 Either(IsCCPromotable),
                                 Either(IsExpectingRelayout),
                                 Either(PromoteAggressively),
-                                Values(IsVideoRotated::No)));
+                                Values(MiscFlags::None,
+                                       MiscFlags::Persistent)));
 
 // If we're promoting aggressively, then we should request power efficient.
 INSTANTIATE_TEST_CASE_P(AggressiveOverlayIsPowerEfficient,
@@ -570,7 +582,7 @@ INSTANTIATE_TEST_CASE_P(AggressiveOverlayIsPowerEfficient,
                                 Values(IsCCPromotable::Yes),
                                 Values(IsExpectingRelayout::No),
                                 Values(PromoteAggressively::Yes),
-                                Values(IsVideoRotated::No)));
+                                Values(MiscFlags::None)));
 
 // Rotated video is unsupported for overlays in all cases.
 INSTANTIATE_TEST_CASE_P(IsVideoRotatedUsesTextureOwner,
@@ -584,6 +596,20 @@ INSTANTIATE_TEST_CASE_P(IsVideoRotatedUsesTextureOwner,
                                 Either(IsCCPromotable),
                                 Either(IsExpectingRelayout),
                                 Either(PromoteAggressively),
-                                Values(IsVideoRotated::Yes)));
+                                Values(MiscFlags::Rotated)));
+
+// Persistent, non-required video should not use an overlay.
+INSTANTIATE_TEST_CASE_P(FullscreenPersistentVideoUsesSurfaceTexture,
+                        AndroidVideoSurfaceChooserImplTest,
+                        Combine(Values(ShouldUseOverlay::No),
+                                Values(ShouldBePowerEfficient::Ignored),
+                                Values(AllowDynamic::Yes),
+                                Values(IsRequired::No),
+                                Values(IsFullscreen::Yes),
+                                Either(IsSecure),
+                                Values(IsCCPromotable::Yes),
+                                Values(IsExpectingRelayout::No),
+                                Either(PromoteAggressively),
+                                Values(MiscFlags::Persistent)));
 
 }  // namespace media

@@ -378,6 +378,8 @@ void MediaCodecVideoDecoder::OnOverlayInfoChanged(
   bool overlay_changed = !overlay_info_.RefersToSameOverlayAs(overlay_info);
   overlay_info_ = overlay_info;
   surface_chooser_helper_.SetIsFullscreen(overlay_info_.is_fullscreen);
+  surface_chooser_helper_.SetIsPersistentVideo(
+      overlay_info_.is_persistent_video);
   surface_chooser_helper_.UpdateChooserState(
       overlay_changed ? base::make_optional(CreateOverlayFactoryCb())
                       : base::nullopt);

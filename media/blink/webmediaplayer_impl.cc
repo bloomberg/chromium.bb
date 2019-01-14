@@ -2336,6 +2336,8 @@ void WebMediaPlayerImpl::OnVolumeMultiplierUpdate(double multiplier) {
 
 void WebMediaPlayerImpl::OnBecamePersistentVideo(bool value) {
   client_->OnBecamePersistentVideo(value);
+  overlay_info_.is_persistent_video = value;
+  MaybeSendOverlayInfoToDecoder();
 }
 
 void WebMediaPlayerImpl::OnPictureInPictureModeEnded() {

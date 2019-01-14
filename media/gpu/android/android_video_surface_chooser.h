@@ -57,6 +57,9 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooser {
     // SurfaceControl where the TextureOwner can be promoted to an overlay
     // dynamically by the compositor.
     bool always_use_texture_owner = false;
+
+    // Is the video persistent (PIP)?
+    bool is_persistent_video = false;
   };
 
   // Notify the client that |overlay| is ready for use.  The client may get
