@@ -17,6 +17,8 @@
 
 namespace media_router {
 
+class MediaRoute;
+
 // Base class for discovering MediaSinks. Responsible for bookkeeping of
 // current set of discovered sinks, and notifying observers when there are
 // updates.
@@ -66,7 +68,10 @@ class MediaSinkServiceBase {
   void RemoveSinkById(const MediaSink::Id& sink_id);
 
   const base::flat_map<MediaSink::Id, MediaSinkInternal>& GetSinks() const;
+
+  // These methods return nullptr when no sink is found.
   const MediaSinkInternal* GetSinkById(const MediaSink::Id& sink_id) const;
+  const MediaSinkInternal* GetSinkByRoute(const MediaRoute& route) const;
 
   void SetTimerForTest(std::unique_ptr<base::OneShotTimer> timer);
 
