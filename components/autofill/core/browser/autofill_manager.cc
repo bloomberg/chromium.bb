@@ -1293,8 +1293,14 @@ AutofillManager::AutofillManager(
         new AutofillDownloadManager(driver, this, GetAPIKeyForUrl(channel)));
   }
   CountryNames::SetLocaleString(app_locale_);
-  if (personal_data_ && client_)
+  // Since we want Downstream to still work in incognito, only overwrite the
+  // PDM's sync service if this is not an incognito AutofillManager. However, if
+  // the opened window is in incognito, the sync service would be null. Unless
+  // there is a major refactor with the Autofill Sync interation, there is
+  // nothing we can do for that specific case.
+  if (personal_data_ && client_ && !driver->IsIncognito()) {
     personal_data_->OnSyncServiceInitialized(client_->GetSyncService());
+  }
 }
 
 bool AutofillManager::RefreshDataModels() {

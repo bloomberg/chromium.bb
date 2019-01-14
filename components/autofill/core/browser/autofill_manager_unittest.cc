@@ -60,6 +60,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_params_manager.h"
 #include "components/version_info/channel.h"
@@ -6311,6 +6312,47 @@ TEST_F(AutofillManagerTest,
   EXPECT_THAT(histograms, Not(AnyOf(HasSubstr("Autofill.UserHappiness"),
                                     HasSubstr("Autocomplete.Events"),
                                     HasSubstr("Autofill.FormEvents.Address"))));
+}
+
+// Tests that a call the the PDM's SyncServiceInitialized happens if in
+// incognito mode even if the sync service is null.
+TEST_F(AutofillManagerTest, CallingOnSyncServiceInitialized_NotOffTheRecord) {
+  // Setup the test PDM.
+  TestPersonalDataManager test_pdm;
+  ASSERT_FALSE(test_pdm.sync_service_initialized());
+
+  // Set the client to return a null sync service (default).
+  TestAutofillClient client;
+
+  // Create a new AutofillManager.
+  autofill_manager_.reset(
+      new TestAutofillManager(autofill_driver_.get(), &client, &test_pdm,
+                              autocomplete_history_manager_.get()));
+
+  // Make sure the PDM's sync service was initialized.
+  EXPECT_TRUE(test_pdm.sync_service_initialized());
+}
+
+// Tests that no call the the PDM's SyncServiceInitialized happens if in
+// incognito mode.
+TEST_F(AutofillManagerTest, CallingOnSyncServiceInitialized_OffTheRecord) {
+  // Setup the test PDM.
+  TestPersonalDataManager test_pdm;
+  ASSERT_FALSE(test_pdm.sync_service_initialized());
+
+  // Set the client to return a null sync service (default).
+  TestAutofillClient client;
+
+  // Set the driver to return that the user is off the record.
+  TestAutofillDriver driver;
+  driver.SetIsIncognito(true);
+
+  // Create a new AutofillManager.
+  autofill_manager_.reset(new TestAutofillManager(
+      &driver, &client, &test_pdm, autocomplete_history_manager_.get()));
+
+  // Make sure the PDM's sync service was not initialized.
+  EXPECT_FALSE(test_pdm.sync_service_initialized());
 }
 
 // Test param indicates if there is an active screen reader.
