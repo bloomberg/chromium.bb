@@ -1345,7 +1345,8 @@ class KioskUpdateTest : public KioskTest {
 
   void PreCacheApp(const std::string& app_id,
                    const std::string& version,
-                   const std::string& crx_file) {
+                   const std::string& crx_file,
+                   bool wait_for_app_data) {
     set_test_app_id(app_id);
     set_test_app_version(version);
     set_test_crx_file(crx_file);
@@ -1353,7 +1354,10 @@ class KioskUpdateTest : public KioskTest {
     KioskAppManager* manager = KioskAppManager::Get();
     AppDataLoadWaiter waiter(manager, app_id, version);
     ReloadKioskApps();
-    waiter.Wait();
+    if (wait_for_app_data)
+      waiter.WaitForAppData();
+    else
+      waiter.Wait();
     EXPECT_TRUE(waiter.loaded());
     std::string cached_version;
     base::FilePath file_path;
@@ -1415,7 +1419,8 @@ class KioskUpdateTest : public KioskTest {
       const TestAppInfo& primary_app,
       const std::vector<TestAppInfo>& secondary_apps) {
     // Pre-cache the primary app.
-    PreCacheApp(primary_app.id, primary_app.version, primary_app.crx_filename);
+    PreCacheApp(primary_app.id, primary_app.version, primary_app.crx_filename,
+                /*wait_for_app_data=*/false);
 
     set_test_app_id(primary_app.id);
     fake_cws()->SetNoUpdate(primary_app.id);
@@ -1593,7 +1598,8 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoNetwork) {
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
                        PRE_LaunchCachedOfflineEnabledAppNoNetwork) {
   PreCacheApp(kTestOfflineEnabledKioskApp, "1.0.0",
-              std::string(kTestOfflineEnabledKioskApp) + "_v1.crx");
+              std::string(kTestOfflineEnabledKioskApp) + "_v1.crx",
+              /*wait_for_app_data=*/true);
 }
 
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
@@ -1680,7 +1686,8 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppHasUpdate) {
 // plug in usb stick with a v2 app for offline updating.
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UsbStickUpdateAppNoNetwork) {
   PreCacheApp(kTestOfflineEnabledKioskApp, "1.0.0",
-              std::string(kTestOfflineEnabledKioskApp) + "_v1.crx");
+              std::string(kTestOfflineEnabledKioskApp) + "_v1.crx",
+              /*wait_for_app_data=*/true);
 
   set_test_app_id(kTestOfflineEnabledKioskApp);
   StartUIForAppLaunch();
