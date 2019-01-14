@@ -364,6 +364,7 @@ void DisplayLockContext::StartCommit() {
   // If we have just started to acquire, we can unlock immediately since we
   // didn't have a chance to lock yet.
   if (state_ == kPendingAcquire) {
+    FinishAcquireResolver(kReject);
     FinishCommitResolver(kResolve);
     state_ = kUnlocked;
     return;
