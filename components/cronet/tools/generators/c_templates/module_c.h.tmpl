@@ -160,6 +160,10 @@ void {{struct_name}}_{{packed_field.field.name}}_add({{struct_name}}Ptr self, {{
 {%-  else %}
 void {{struct_name}}_{{packed_field.field.name}}_set({{struct_name}}Ptr self, {{packed_field.field.kind|c_wrapper_type}} {{packed_field.field.name}});
 {%- endif %}
+{%-  if kind|is_struct_kind %}
+// Move data from |{{packed_field.field.name}}|. The caller retains ownership of |{{packed_field.field.name}}| and must destroy it.
+void {{struct_name}}_{{packed_field.field.name}}_move({{struct_name}}Ptr self, {{packed_field.field.kind|c_wrapper_type}} {{packed_field.field.name}});
+{%- endif %}
 {%- endfor %}
 // {{struct_name}} getters.
 {%- for packed_field in struct.packed.packed_fields_in_ordinal_order %}

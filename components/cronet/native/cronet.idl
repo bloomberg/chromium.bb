@@ -1310,6 +1310,17 @@ struct RequestFinishedInfo {
    * collected. Number of bytes does not include any previous redirects.
    */
   int64 received_byte_count = -1;
+
+  /**
+   * {@link UrlResponseInfo} for the request, if its response had started.
+   */
+  UrlResponseInfo? response_info;
+
+  /**
+   * If the request failed, will be equal to the same {@link Error} provided to
+   * {@link UrlRequestCallback.OnFailed}.
+   */
+  Error? error;
 };
 
 /**

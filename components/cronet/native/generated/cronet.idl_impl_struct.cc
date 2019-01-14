@@ -884,6 +884,38 @@ void Cronet_RequestFinishedInfo_received_byte_count_set(
   self->received_byte_count = received_byte_count;
 }
 
+void Cronet_RequestFinishedInfo_response_info_set(
+    Cronet_RequestFinishedInfoPtr self,
+    Cronet_UrlResponseInfoPtr response_info) {
+  DCHECK(self);
+  self->response_info.reset();
+  if (response_info != nullptr)
+    self->response_info.emplace(*response_info);
+}
+void Cronet_RequestFinishedInfo_response_info_move(
+    Cronet_RequestFinishedInfoPtr self,
+    Cronet_UrlResponseInfoPtr response_info) {
+  DCHECK(self);
+  self->response_info.reset();
+  if (response_info != nullptr)
+    self->response_info.emplace(std::move(*response_info));
+}
+
+void Cronet_RequestFinishedInfo_error_set(Cronet_RequestFinishedInfoPtr self,
+                                          Cronet_ErrorPtr error) {
+  DCHECK(self);
+  self->error.reset();
+  if (error != nullptr)
+    self->error.emplace(*error);
+}
+void Cronet_RequestFinishedInfo_error_move(Cronet_RequestFinishedInfoPtr self,
+                                           Cronet_ErrorPtr error) {
+  DCHECK(self);
+  self->error.reset();
+  if (error != nullptr)
+    self->error.emplace(std::move(*error));
+}
+
 // Struct Cronet_RequestFinishedInfo getters.
 int64_t Cronet_RequestFinishedInfo_request_start_get(
     Cronet_RequestFinishedInfoPtr self) {
@@ -979,4 +1011,20 @@ int64_t Cronet_RequestFinishedInfo_received_byte_count_get(
     Cronet_RequestFinishedInfoPtr self) {
   DCHECK(self);
   return self->received_byte_count;
+}
+
+Cronet_UrlResponseInfoPtr Cronet_RequestFinishedInfo_response_info_get(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  if (self->response_info == base::nullopt)
+    return nullptr;
+  return &self->response_info.value();
+}
+
+Cronet_ErrorPtr Cronet_RequestFinishedInfo_error_get(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  if (self->error == base::nullopt)
+    return nullptr;
+  return &self->error.value();
 }
