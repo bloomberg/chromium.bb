@@ -6,6 +6,8 @@
 #define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_ERROR_CONTROLLER_H_
 
 #include <set>
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -46,7 +48,10 @@ class SigninErrorController : public KeyedService,
   // KeyedService implementation:
   void Shutdown() override;
 
-  // True if there exists an error worth elevating to the user.
+  // True if there exists an error worth elevating to the user. Note that
+  // |SigninErrorController| can be running in |AccountMode::ANY_ACCOUNT| mode,
+  // in which case |HasError| can return an error for any account, not just the
+  // Primary Account. See |error_account_id()|.
   bool HasError() const;
 
   void AddObserver(Observer* observer);
