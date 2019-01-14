@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/paint/inline_flow_box_painter.h"
 
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/line/inline_flow_box.h"
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
@@ -315,6 +317,10 @@ LayoutRect InlineFlowBoxPainter::FrameRectClampedToLineTopAndBottomIfNeeded()
     } else {
       rect.SetX(logical_top);
       rect.SetWidth(logical_height);
+    }
+    if (rect != inline_flow_box_.FrameRect()) {
+      UseCounter::Count(inline_flow_box_.GetLineLayoutItem().GetDocument(),
+                        WebFeature::kQuirkyLineBoxBackgroundSize);
     }
   }
   return rect;
