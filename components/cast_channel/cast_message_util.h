@@ -28,7 +28,6 @@ static constexpr char kReceiverNamespace[] =
     "urn:x-cast:com.google.cast.receiver";
 static constexpr char kBroadcastNamespace[] =
     "urn:x-cast:com.google.cast.broadcast";
-static constexpr char kMediaNamespace[] = "urn:x-cast:com.google.cast.media";
 
 // Sender and receiver IDs to use for platform messages.
 static constexpr char kPlatformSenderId[] = "sender-0";
@@ -46,29 +45,7 @@ enum class CastMessageType {
   kLaunch,           // Session launch request
   kStop,             // Session stop request
   kReceiverStatus,
-  kMediaStatus,
   kLaunchError,
-  kOther  // Add new types above |kOther|.
-};
-
-enum class V2MessageType {
-  kEditTracksInfo,
-  kGetStatus,
-  kLoad,
-  kMediaGetStatus,
-  kMediaSetVolume,
-  kPause,
-  kPlay,
-  kPrecache,
-  kQueueInsert,
-  kQueueLoad,
-  kQueueRemove,
-  kQueueReorder,
-  kQueueUpdate,
-  kSeek,
-  kSetVolume,
-  kStop,
-  kStopMedia,
   kOther  // Add new types above |kOther|.
 };
 
@@ -84,16 +61,11 @@ bool IsCastInternalNamespace(const std::string& message_namespace);
 CastMessageType ParseMessageTypeFromPayload(const base::Value& payload);
 
 // Returns a human readable string for |message_type|.
-const char* ToString(CastMessageType message_type);
-const char* ToString(V2MessageType message_type);
+const char* CastMessageTypeToString(CastMessageType message_type);
 
 // Returns the CastMessageType for |type|, or |kOther| if it does not
 // correspond to a known type.
 CastMessageType CastMessageTypeFromString(const std::string& type);
-
-// Returns the V2MessageType for |type|, or |kOther| if it does not
-// correspond to a known type.
-V2MessageType V2MessageTypeFromString(const std::string& type);
 
 // Returns a human readable string for |message_proto|.
 std::string CastMessageToString(const CastMessage& message_proto);
@@ -182,17 +154,6 @@ CastMessage CreateCastMessage(const std::string& message_namespace,
                               const std::string& source_id,
                               const std::string& destination_id);
 
-CastMessage CreateMediaRequest(const base::Value& body,
-                               int request_id,
-                               const std::string& source_id,
-                               const std::string& destination_id);
-
-CastMessage CreateSetVolumeRequest(const base::Value& body,
-                                   int request_id,
-                                   const std::string& source_id);
-
-bool IsMediaRequestMessageType(V2MessageType v2_message_type);
-
 // Possible results of a GET_APP_AVAILABILITY request.
 enum class GetAppAvailabilityResult {
   kAvailable,
@@ -200,10 +161,12 @@ enum class GetAppAvailabilityResult {
   kUnknown,
 };
 
-const char* ToString(GetAppAvailabilityResult result);
+const char* GetAppAvailabilityResultToString(GetAppAvailabilityResult result);
 
 // Extracts request ID from |payload| corresponding to a Cast message response.
-base::Optional<int> GetRequestIdFromResponse(const base::Value& payload);
+// If request ID is available, assigns it to |request_id|. Return |true| if
+// request ID is found.
+bool GetRequestIdFromResponse(const base::Value& payload, int* request_id);
 
 // Returns the GetAppAvailabilityResult corresponding to |app_id| in |payload|.
 // Returns kUnknown if result is not found.
