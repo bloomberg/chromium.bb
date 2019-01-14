@@ -17,6 +17,8 @@
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -237,6 +239,34 @@ void ExtensionApps::Uninstall(const std::string& app_id) {
 
   if (!uninstalled) {
     LOG(ERROR) << "Couldn't uninstall app with id " << app_id << ". " << error;
+  }
+}
+
+void ExtensionApps::OpenNativeSettings(const std::string& app_id) {
+  if (!profile_) {
+    return;
+  }
+
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
+          app_id);
+
+  if (!extension) {
+    return;
+  }
+
+  if (extension->is_hosted_app()) {
+    chrome::ShowSiteSettings(
+        profile_, extensions::AppLaunchInfo::GetFullLaunchURL(extension));
+
+  } else if (extension->ShouldDisplayInExtensionSettings()) {
+    Browser* browser = chrome::FindTabbedBrowser(profile_, false);
+    if (browser) {
+      chrome::ShowExtensions(browser, extension->id());
+    }
+    // TODO(crbug.com/826982): Either create new browser if one isn't found, or
+    // make a version of chrome::ShowExtensions which accepts a Profile
+    // instead of a Browser, similar to chrome::ShowSiteSettings.
   }
 }
 

@@ -34,6 +34,11 @@ Polymer({
     this.updateFromStore();
   },
 
+  onClickSiteSettingsButton_: function() {
+    app_management.BrowserProxy.getInstance().handler.openNativeSettings(
+        this.app_.id);
+  },
+
   /**
    * @private
    */

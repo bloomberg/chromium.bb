@@ -47,6 +47,8 @@ class AppServiceImpl : public apps::mojom::AppService {
                      apps::mojom::PermissionPtr permission) override;
   void Uninstall(apps::mojom::AppType app_type,
                  const std::string& app_id) override;
+  void OpenNativeSettings(apps::mojom::AppType app_type,
+                          const std::string& app_id) override;
 
  private:
   void OnPublisherDisconnected(apps::mojom::AppType app_type);

@@ -64,6 +64,8 @@ class FakePublisher : public apps::mojom::Publisher {
 
   void Uninstall(const std::string& app_id) override {}
 
+  void OpenNativeSettings(const std::string& app_id) override {}
+
   void CallOnApps(apps::mojom::Subscriber* subscriber,
                   std::vector<std::string>& app_ids) {
     std::vector<apps::mojom::AppPtr> apps;

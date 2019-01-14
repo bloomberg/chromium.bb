@@ -149,4 +149,8 @@ void BuiltInChromeOsApps::Uninstall(const std::string& app_id) {
   NOTIMPLEMENTED();
 }
 
+void BuiltInChromeOsApps::OpenNativeSettings(const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace apps

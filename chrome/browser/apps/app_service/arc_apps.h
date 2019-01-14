@@ -54,6 +54,7 @@ class ArcApps : public KeyedService,
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission) override;
   void Uninstall(const std::string& app_id) override;
+  void OpenNativeSettings(const std::string& app_id) override;
 
   // arc::ConnectionObserver<arc::mojom::AppInstance> overrides.
   void OnConnectionReady() override;
