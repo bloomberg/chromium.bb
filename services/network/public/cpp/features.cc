@@ -15,8 +15,15 @@ const base::Feature kExpectCTReporting{"ExpectCTReporting",
 const base::Feature kNetworkErrorLogging{"NetworkErrorLogging",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 // Enables the network service.
-const base::Feature kNetworkService{"NetworkService",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNetworkService {
+  "NetworkService",
+#if defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+};
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+};
+#endif
 
 // Out of Blink CORS
 const base::Feature kOutOfBlinkCors{"OutOfBlinkCors",
