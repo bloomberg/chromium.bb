@@ -115,8 +115,6 @@ public class ModuleLoader {
             return;
         }
 
-        ModuleMetrics.registerLifecycleState(ModuleMetrics.LifecycleState.NOT_LOADED);
-
         mIsModuleLoading = true;
         new LoadClassTask(moduleContext).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
@@ -201,7 +199,6 @@ public class ModuleLoader {
         ModuleMetrics.recordDestruction(reason);
         mModuleEntryPoint.onDestroy();
         CrashKeys.getInstance().set(CrashKeyIndex.ACTIVE_DYNAMIC_MODULE, null);
-        ModuleMetrics.registerLifecycleState(ModuleMetrics.LifecycleState.DESTROYED);
         mModuleEntryPoint = null;
         mModuleUnusedTimeMs = -1;
     }
@@ -305,8 +302,6 @@ public class ModuleLoader {
                 CrashKeys crashKeys = CrashKeys.getInstance();
                 crashKeys.set(CrashKeyIndex.LOADED_DYNAMIC_MODULE, mModuleId);
                 crashKeys.set(CrashKeyIndex.ACTIVE_DYNAMIC_MODULE, mModuleId);
-
-                ModuleMetrics.registerLifecycleState(ModuleMetrics.LifecycleState.INSTANTIATED);
 
                 long entryPointInitStartTime = ModuleMetrics.now();
                 entryPoint.init(moduleHost);
