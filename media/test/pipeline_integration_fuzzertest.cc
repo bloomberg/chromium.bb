@@ -236,7 +236,7 @@ Environment* env = new Environment();
 // Entry points for LibFuzzer.
 
 extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
-  base::CommandLine::Init(*argc, *argv);
+  base::CommandLine::Init(0, nullptr);
 
   // |test| instances uses ScopedTaskEnvironment, which needs TestTimeouts.
   TestTimeouts::Initialize();
