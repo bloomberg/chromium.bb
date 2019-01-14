@@ -642,7 +642,7 @@ DesktopAutomationHandler.prototype = {
 
       // Some cases (e.g. in overview mode), require overriding the assumption
       // that focus is an ancestor of a selection target.
-      var override = evt.target.role == RoleType.MENU_ITEM ||
+      var override = AutomationPredicate.menuItem(evt.target) ||
           (evt.target.root == focus.root &&
            focus.root.role == RoleType.DESKTOP);
       if (override || AutomationUtil.isDescendantOf(evt.target, focus))
