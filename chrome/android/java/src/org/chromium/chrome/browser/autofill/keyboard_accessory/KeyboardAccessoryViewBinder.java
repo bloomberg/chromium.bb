@@ -19,7 +19,7 @@ import android.view.ViewParent;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BarItem;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -33,25 +33,27 @@ class KeyboardAccessoryViewBinder {
             super(barItemView);
         }
 
-        public static BarItemViewHolder create(ViewGroup parent, @AccessoryAction int viewType) {
+        public static BarItemViewHolder create(ViewGroup parent, @BarItem.Type int viewType) {
             switch (viewType) {
-                case AccessoryAction.GENERATE_PASSWORD_AUTOMATIC:
+                case BarItem.Type.ACTION_BUTTON:
                     return new BarItemViewHolder(
                             LayoutInflater.from(parent.getContext())
                                     .inflate(R.layout.keyboard_accessory_action, parent, false));
-                case AccessoryAction.AUTOFILL_SUGGESTION:
+                case BarItem.Type.SUGGESTION:
                     return new BarItemViewHolder(
                             LayoutInflater.from(parent.getContext())
                                     .inflate(R.layout.keyboard_accessory_chip, parent, false));
-                case AccessoryAction.MANAGE_PASSWORDS: // Intentional fallthrough.
-                case AccessoryAction.COUNT:
+                case BarItem.Type.TAB_SWITCHER: // Intentional fallthrough. Not supported.
+                case BarItem.Type.COUNT:
                     assert false : "Type " + viewType + " is not a valid accessory bar action!";
             }
             assert false : "Action type " + viewType + " was not handled!";
             return null;
         }
 
-        public void bind(Action action) {
+        public void bind(BarItem barItem) {
+            KeyboardAccessoryData.Action action = barItem.getAction();
+            assert action != null : "";
             getView().setText(action.getCaption());
             getView().setOnClickListener(view -> action.getCallback().onResult(action));
         }

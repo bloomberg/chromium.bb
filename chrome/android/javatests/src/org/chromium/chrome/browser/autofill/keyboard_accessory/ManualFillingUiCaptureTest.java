@@ -5,8 +5,12 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.matcher.ViewMatchers.isAssignableFrom;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
+
+import static org.hamcrest.core.AllOf.allOf;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.createTestCredentials;
@@ -83,7 +87,8 @@ public class ManualFillingUiCaptureTest {
 
         mHelper.sendCredentials(createTestCredentials());
 
-        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+        whenDisplayed(allOf(isDisplayed(), isAssignableFrom(KeyboardAccessoryTabLayoutView.class)))
+                .perform(selectTabAtPosition(0));
         waitForSuggestionsInSheet();
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessorySheetPasswords");
@@ -111,7 +116,8 @@ public class ManualFillingUiCaptureTest {
 
         mHelper.sendCredentials(createTestCredentials());
 
-        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+        whenDisplayed(allOf(isDisplayed(), isAssignableFrom(KeyboardAccessoryTabLayoutView.class)))
+                .perform(selectTabAtPosition(0));
         waitForSuggestionsInSheet();
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessorySheetPasswordsRTL");
@@ -140,7 +146,8 @@ public class ManualFillingUiCaptureTest {
 
         mHelper.sendCredentials(createTestCredentials());
 
-        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+        whenDisplayed(allOf(isDisplayed(), isAssignableFrom(KeyboardAccessoryTabLayoutView.class)))
+                .perform(selectTabAtPosition(0));
         waitForSuggestionsInSheet();
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessorySheetPasswordsV2");
@@ -169,7 +176,8 @@ public class ManualFillingUiCaptureTest {
 
         mHelper.sendCredentials(createTestCredentials());
 
-        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+        whenDisplayed(allOf(isDisplayed(), isAssignableFrom(KeyboardAccessoryTabLayoutView.class)))
+                .perform(selectTabAtPosition(0));
         waitForSuggestionsInSheet();
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessorySheetPasswordsV2RTL");

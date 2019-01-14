@@ -18,13 +18,14 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryCoordinator.TabSwitchingDelegate;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryCoordinator.VisibilityDelegate;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BarItem;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyObservable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -58,19 +59,43 @@ class KeyboardAccessoryMediator
     }
 
     @Override
-    public void onItemAvailable(int typeId, KeyboardAccessoryData.Action[] actions) {
+    public void onItemAvailable(@BarItem.Type int typeId, KeyboardAccessoryData.Action[] actions) {
         assert typeId != DEFAULT_TYPE : "Did not specify which Action type has been updated.";
         // If there is a new list, retain all actions that are of a different type than the provided
         // actions.
-        List<Action> retainedItems = new ArrayList<>();
-        for (Action a : mModel.get(BAR_ITEMS)) {
-            if (a.getActionType() == typeId) continue;
-            retainedItems.add(a);
+        List<BarItem> retainedItems = new ArrayList<>();
+        for (BarItem item : mModel.get(BAR_ITEMS)) {
+            if (item.getAction() == null) continue;
+            if (item.getAction().getActionType() == typeId) continue;
+            retainedItems.add(item);
         }
         // Append autofill suggestions to the end, right before the tab switcher.
         int insertPos = typeId == AccessoryAction.AUTOFILL_SUGGESTION ? retainedItems.size() : 0;
-        retainedItems.addAll(insertPos, Arrays.asList(actions));
+        retainedItems.addAll(insertPos, toBarItems(actions));
         mModel.get(BAR_ITEMS).set(retainedItems);
+    }
+
+    private Collection<BarItem> toBarItems(Action[] actions) {
+        List<BarItem> barItems = new ArrayList<>(actions.length);
+        for (Action action : actions) {
+            barItems.add(new BarItem(toBarItemType(action.getActionType()), action));
+        }
+        return barItems;
+    }
+
+    private @BarItem.Type int toBarItemType(@AccessoryAction int accessoryAction) {
+        switch (accessoryAction) {
+            case AccessoryAction.AUTOFILL_SUGGESTION:
+                return BarItem.Type.SUGGESTION;
+            case AccessoryAction.GENERATE_PASSWORD_AUTOMATIC:
+                return BarItem.Type.ACTION_BUTTON;
+            case AccessoryAction.MANAGE_PASSWORDS: // Intentional fallthrough - no view defined.
+            case AccessoryAction.COUNT:
+                assert false : "No view defined for :" + accessoryAction;
+                return BarItem.Type.COUNT;
+        }
+        assert false : "Unhandled action type:" + accessoryAction;
+        return BarItem.Type.COUNT;
     }
 
     void requestShowing() {

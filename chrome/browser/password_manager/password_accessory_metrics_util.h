@@ -57,7 +57,6 @@ enum class AccessoryAction {
   GENERATE_PASSWORD_AUTOMATIC = 0,
   MANAGE_PASSWORDS = 1,
   AUTOFILL_SUGGESTION = 2,
-  TAB_SWITCHER = 3,
   COUNT,
 };
 

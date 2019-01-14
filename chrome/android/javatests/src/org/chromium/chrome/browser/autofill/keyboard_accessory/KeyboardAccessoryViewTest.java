@@ -21,6 +21,7 @@ import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryA
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BAR_ITEMS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.VISIBLE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
@@ -42,6 +43,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BarItem;
 import org.chromium.chrome.browser.modelutil.LazyConstructionPropertyMcp;
 import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -72,9 +74,11 @@ public class KeyboardAccessoryViewTest {
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mModel = new PropertyModel.Builder(BAR_ITEMS, VISIBLE, BOTTOM_OFFSET_PX)
+            mModel = new PropertyModel
+                             .Builder(BAR_ITEMS, VISIBLE, KEYBOARD_TOGGLE_VISIBLE, BOTTOM_OFFSET_PX)
                              .with(BAR_ITEMS, new ListModel<>())
                              .with(VISIBLE, false)
+                             .with(KEYBOARD_TOGGLE_VISIBLE, false)
                              .build();
             ViewStub viewStub =
                     mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory_stub);
@@ -108,12 +112,13 @@ public class KeyboardAccessoryViewTest {
     @MediumTest
     public void testClickableActionAddedWhenChangingModel() {
         final AtomicReference<Boolean> buttonClicked = new AtomicReference<>();
-        final KeyboardAccessoryData.Action testAction = new KeyboardAccessoryData.Action(
-                "Test Button", GENERATE_PASSWORD_AUTOMATIC, action -> buttonClicked.set(true));
+        final BarItem testItem = new BarItem(BarItem.Type.ACTION_BUTTON,
+                new KeyboardAccessoryData.Action("Test Button", GENERATE_PASSWORD_AUTOMATIC,
+                        action -> buttonClicked.set(true)));
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.set(VISIBLE, true);
-            mModel.get(BAR_ITEMS).add(testAction);
+            mModel.get(BAR_ITEMS).add(testItem);
         });
 
         onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Test Button")));
@@ -127,20 +132,24 @@ public class KeyboardAccessoryViewTest {
     public void testCanAddSingleButtons() {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.set(VISIBLE, true);
-            mModel.get(BAR_ITEMS).set(new KeyboardAccessoryData.Action[] {
-                    new KeyboardAccessoryData.Action(
-                            "First", GENERATE_PASSWORD_AUTOMATIC, action -> {}),
-                    new KeyboardAccessoryData.Action("Second", AUTOFILL_SUGGESTION, action -> {})});
+            mModel.get(BAR_ITEMS).set(
+                    new BarItem[] {new BarItem(BarItem.Type.ACTION_BUTTON,
+                                           new KeyboardAccessoryData.Action("First",
+                                                   GENERATE_PASSWORD_AUTOMATIC, action -> {})),
+                            new BarItem(BarItem.Type.SUGGESTION,
+                                    new KeyboardAccessoryData.Action(
+                                            "Second", AUTOFILL_SUGGESTION, action -> {}))});
         });
 
         onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("First")));
         onView(withText("First")).check(matches(isDisplayed()));
         onView(withText("Second")).check(matches(isDisplayed()));
 
-        ThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> mModel.get(BAR_ITEMS).add(new KeyboardAccessoryData.Action(
-                                "Third", GENERATE_PASSWORD_AUTOMATIC, action -> {})));
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.get(BAR_ITEMS).add(new BarItem(BarItem.Type.ACTION_BUTTON,
+                    new KeyboardAccessoryData.Action(
+                            "Third", GENERATE_PASSWORD_AUTOMATIC, action -> {})));
+        });
 
         onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Third")));
         onView(withText("First")).check(matches(isDisplayed()));
@@ -153,13 +162,16 @@ public class KeyboardAccessoryViewTest {
     public void testCanRemoveSingleButtons() {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.set(VISIBLE, true);
-            mModel.get(BAR_ITEMS).set(new KeyboardAccessoryData.Action[] {
-                    new KeyboardAccessoryData.Action(
-                            "First", GENERATE_PASSWORD_AUTOMATIC, action -> {}),
-                    new KeyboardAccessoryData.Action(
-                            "Second", GENERATE_PASSWORD_AUTOMATIC, action -> {}),
-                    new KeyboardAccessoryData.Action(
-                            "Third", GENERATE_PASSWORD_AUTOMATIC, action -> {})});
+            mModel.get(BAR_ITEMS).set(
+                    new BarItem[] {new BarItem(BarItem.Type.ACTION_BUTTON,
+                                           new KeyboardAccessoryData.Action("First",
+                                                   GENERATE_PASSWORD_AUTOMATIC, action -> {})),
+                            new BarItem(BarItem.Type.ACTION_BUTTON,
+                                    new KeyboardAccessoryData.Action(
+                                            "Second", GENERATE_PASSWORD_AUTOMATIC, action -> {})),
+                            new BarItem(BarItem.Type.ACTION_BUTTON,
+                                    new KeyboardAccessoryData.Action(
+                                            "Third", GENERATE_PASSWORD_AUTOMATIC, action -> {}))});
         });
 
         onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("First")));

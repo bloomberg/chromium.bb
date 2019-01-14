@@ -17,6 +17,7 @@ import android.support.v4.view.ViewPager;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryModernViewBinder.ModernBarItemViewHolder;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BarItem;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.BarItemViewHolder;
 import org.chromium.chrome.browser.modelutil.LazyConstructionPropertyMcp;
 import org.chromium.chrome.browser.modelutil.ListModel;
@@ -142,20 +143,19 @@ public class KeyboardAccessoryCoordinator {
 
     /**
      * Creates an adapter to an {@link BarItemViewHolder} that is wired
-     * up to the model change processor which listens to the given action list.
-     * @param actions The list of actions shown represented by the adapter.
+     * up to the model change processor which listens to the given item list.
+     * @param barItems The list of shown items represented by the adapter.
      * @return Returns a fully initialized and wired adapter to an BarItemViewHolder.
      */
     static RecyclerViewAdapter<BarItemViewHolder, Void> createBarItemsAdapter(
-            ListModel<KeyboardAccessoryData.Action> actions) {
+            ListModel<BarItem> barItems) {
         RecyclerViewAdapter.ViewHolderFactory<BarItemViewHolder> factory =
                 BarItemViewHolder::create;
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
             factory = ModernBarItemViewHolder::create;
         }
-        return new RecyclerViewAdapter<>(
-                new SimpleRecyclerViewMcp<>(actions, KeyboardAccessoryData.Action::getActionType,
-                        BarItemViewHolder::bind),
+        return new RecyclerViewAdapter<>(new SimpleRecyclerViewMcp<>(barItems, BarItem::getViewType,
+                                                 BarItemViewHolder::bind),
                 factory);
     }
 
