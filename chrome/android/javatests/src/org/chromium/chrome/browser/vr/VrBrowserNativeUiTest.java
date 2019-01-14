@@ -92,9 +92,7 @@ public class VrBrowserNativeUiTest {
     public void testPaymentRequest() throws InterruptedException {
         // We can't request payment on file:// URLs, so use a local server.
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
-                mVrTestRule.getTestServer().getURL(
-                        VrBrowserTestFramework.getEmbeddedServerPathForHtmlTestFile(
-                                "test_payment_request")),
+                mVrBrowserTestFramework.getEmbeddedServerUrlForHtmlTestFile("test_payment_request"),
                 PAGE_LOAD_TIMEOUT_S);
         // Set up an observer so we'll know if the payment request is shown.
         AtomicBoolean requestShown = new AtomicBoolean(false);

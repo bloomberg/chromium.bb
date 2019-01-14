@@ -542,9 +542,8 @@ public class VrBrowserTransitionTest {
     public void testPermissionsPersistWhenEnteringVrBrowser() throws InterruptedException {
         // Permissions don't work on file:// URLs, so use a local server.
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
-                mTestRule.getTestServer().getURL(
-                        VrBrowserTestFramework.getEmbeddedServerPathForHtmlTestFile(
-                                "test_permissions_persist_when_entering_vr_browser")),
+                mVrBrowserTestFramework.getEmbeddedServerUrlForHtmlTestFile(
+                        "test_permissions_persist_when_entering_vr_browser"),
                 PAGE_LOAD_TIMEOUT_S);
         // Ensure that permission requests initially trigger a prompt.
         Assert.assertTrue("Camera permission would not trigger prompt",
@@ -560,9 +559,8 @@ public class VrBrowserTransitionTest {
         mVrBrowserTestFramework.waitOnJavaScriptStep();
         // Reload the page and ensure that the permissions are still granted.
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
-                mTestRule.getTestServer().getURL(
-                        VrBrowserTestFramework.getEmbeddedServerPathForHtmlTestFile(
-                                "test_permissions_persist_when_entering_vr_browser")),
+                mVrBrowserTestFramework.getEmbeddedServerUrlForHtmlTestFile(
+                        "test_permissions_persist_when_entering_vr_browser"),
                 PAGE_LOAD_TIMEOUT_S);
         Assert.assertFalse("Camera permission would trigger prompt after reload",
                 mVrBrowserTestFramework.permissionRequestWouldTriggerPrompt("camera"));

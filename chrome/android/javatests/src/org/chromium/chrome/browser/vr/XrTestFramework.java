@@ -95,16 +95,6 @@ public abstract class XrTestFramework {
     }
 
     /**
-     * Gets the path to pass to an EmbeddedTestServer.getURL to load the given HTML test file.
-     *
-     * @param testName The name of the test whose file will be retrieved.
-     * @param A path that can be passed to EmbeddedTestServer.getURL to load the test file.
-     */
-    public static String getEmbeddedServerPathForHtmlTestFile(String testName) {
-        return "/" + TEST_DIR + "/html/" + testName + ".html";
-    }
-
-    /**
      * Checks whether a request for the given permission would trigger a permission prompt.
      *
      * @param permission The name of the permission to check.
@@ -385,6 +375,15 @@ public abstract class XrTestFramework {
         mRule = rule;
         mFirstTabWebContents = mRule.getWebContents();
         mFirstTabContentView = mRule.getActivity().getActivityTab().getContentView();
+    }
+
+    /**
+     * Gets the URL that loads the given test file from the embedded test server.
+     *
+     * @param testName The name of the test whose file will be retrieved.
+     */
+    public String getEmbeddedServerUrlForHtmlTestFile(String testName) {
+        return mRule.getTestServer().getURL("/" + TEST_DIR + "/html/" + testName + ".html");
     }
 
     /**
