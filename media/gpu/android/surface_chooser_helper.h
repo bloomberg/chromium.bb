@@ -81,6 +81,9 @@ class MEDIA_GPU_EXPORT SurfaceChooserHelper {
   // Notify us about the default rotation for the video.
   void SetVideoRotation(VideoRotation video_rotation);
 
+  // Notify us about PIP state.
+  void SetIsPersistentVideo(bool is_persistent_video);
+
   // Update the chooser state using the given factory.
   void UpdateChooserState(base::Optional<AndroidOverlayFactoryCB> new_factory);
 

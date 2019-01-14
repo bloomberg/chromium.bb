@@ -86,6 +86,16 @@ TEST_F(SurfaceChooserHelperTest, SetVideoRotation) {
   ASSERT_EQ(chooser_->current_state_.video_rotation, VIDEO_ROTATION_90);
 }
 
+TEST_F(SurfaceChooserHelperTest, SetIsPersistentVideo) {
+  helper_->SetIsPersistentVideo(true);
+  UpdateChooserState();
+  ASSERT_TRUE(chooser_->current_state_.is_persistent_video);
+
+  helper_->SetIsPersistentVideo(false);
+  UpdateChooserState();
+  ASSERT_FALSE(chooser_->current_state_.is_persistent_video);
+}
+
 TEST_F(SurfaceChooserHelperTest, SetIsOverlayRequired) {
   // The default helper was created without |is_required|, so verify that.
   UpdateChooserState();
