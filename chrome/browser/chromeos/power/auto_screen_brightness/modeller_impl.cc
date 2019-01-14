@@ -165,7 +165,8 @@ void ModellerImpl::OnAmbientLightUpdated(int lux) {
   if (is_modeller_enabled_.has_value() && !*is_modeller_enabled_)
     return;
 
-  ambient_light_values_->SaveToBuffer({lux, tick_clock_->NowTicks()});
+  ambient_light_values_->SaveToBuffer(
+      {average_log_als_ ? ConvertToLog(lux) : lux, tick_clock_->NowTicks()});
 }
 
 void ModellerImpl::OnAlsReaderInitialized(AlsReader::AlsInitStatus status) {
@@ -200,7 +201,9 @@ void ModellerImpl::OnUserBrightnessChanged(double old_brightness_percent,
 
   const double average_ambient_lux = average_ambient_lux_opt.value();
   data_cache_.push_back({old_brightness_percent, new_brightness_percent,
-                         ConvertToLog(average_ambient_lux), now});
+                         average_log_als_ ? average_ambient_lux
+                                          : ConvertToLog(average_ambient_lux),
+                         now});
 
   ScheduleTrainerStart();
 }
@@ -321,6 +324,9 @@ ModellerImpl::ModellerImpl(
   ambient_light_values_ = std::make_unique<AmbientLightSampleBuffer>(
       base::TimeDelta::FromSeconds(model_als_horizon_seconds));
 
+  average_log_als_ = GetFieldTrialParamByFeatureAsBool(
+      features::kAutoScreenBrightness, "average_log_als", average_log_als_);
+
   als_reader_observer_.Add(als_reader);
   brightness_monitor_observer_.Add(brightness_monitor);
   user_activity_observer_.Add(user_activity_detector);
@@ -338,7 +344,6 @@ ModellerImpl::ModellerImpl(
     training_delay_ = base::TimeDelta::FromSeconds(training_delay_in_seconds);
   }
 }
-
 
 void ModellerImpl::HandleStatusUpdate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

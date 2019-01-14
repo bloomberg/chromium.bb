@@ -73,7 +73,8 @@ void Adapter::OnAmbientLightUpdated(int lux) {
 
   latest_als_time_ = now;
 
-  ambient_light_values_->SaveToBuffer({lux, now});
+  ambient_light_values_->SaveToBuffer(
+      {params_.average_log_als ? ConvertToLog(lux) : lux, now});
 
   MaybeAdjustBrightness(now);
 }
@@ -265,6 +266,10 @@ void Adapter::InitParams() {
       base::TimeDelta::FromSeconds(auto_brightness_als_horizon_seconds);
   ambient_light_values_ = std::make_unique<AmbientLightSampleBuffer>(
       params_.auto_brightness_als_horizon);
+
+  params_.average_log_als = GetFieldTrialParamByFeatureAsBool(
+      features::kAutoScreenBrightness, "average_log_als",
+      params_.average_log_als);
 }
 
 void Adapter::OnPowerManagerServiceAvailable(bool service_is_ready) {
@@ -360,8 +365,12 @@ void Adapter::MaybeAdjustBrightness(base::TimeTicks now) {
   if (!CanAdjustBrightness(average_ambient_lux))
     return;
 
-  const base::Optional<double> brightness =
-      GetBrightnessBasedOnAmbientLogLux(ConvertToLog(average_ambient_lux));
+  // If |params_.average_log_als| is true, then |average_ambient_lux| is
+  // the average of log-lux. Hence we don't need to convert it into log space
+  // again.
+  const base::Optional<double> brightness = GetBrightnessBasedOnAmbientLogLux(
+      params_.average_log_als ? average_ambient_lux
+                              : ConvertToLog(average_ambient_lux));
 
   // This could occur if curve isn't set up (e.g. when we want to use
   // personal only that's not yet available).

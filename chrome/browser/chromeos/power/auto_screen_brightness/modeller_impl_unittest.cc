@@ -424,6 +424,41 @@ TEST_F(ModellerImplTest, OnAmbientLightUpdated) {
             running_sum / horizon_in_seconds);
 }
 
+// Same as OnAmbientLightUpdated except we calculate average of log ALS.
+TEST_F(ModellerImplTest, AverageLogAmbient) {
+  const int horizon_in_seconds = 5;
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
+       true /* is_trainer_configured */, true /* is_personal_curve_valid */,
+       {
+           {"model_als_horizon_seconds",
+            base::NumberToString(horizon_in_seconds)},
+           {"average_log_als", "true"},
+       });
+
+  test_observer_->CheckStatus(true /* is_model_initialized */,
+                              modeller_->GetGlobalCurveForTesting(),
+                              base::nullopt /* personal_curve */);
+
+  const int first_lux = 1000;
+  double running_sum = 0.0;
+  for (int i = 0; i < horizon_in_seconds; ++i) {
+    thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+    const int lux = i == 0 ? first_lux : i;
+    fake_als_reader_.ReportAmbientLightUpdate(lux);
+    running_sum += ConvertToLog(lux);
+    EXPECT_EQ(modeller_->AverageAmbientForTesting(thread_bundle_.NowTicks()),
+              running_sum / (i + 1));
+  }
+
+  // Add another one should push the oldest |first_lux| out of the horizon.
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  fake_als_reader_.ReportAmbientLightUpdate(100);
+  running_sum = running_sum + ConvertToLog(100) - ConvertToLog(first_lux);
+  EXPECT_DOUBLE_EQ(
+      modeller_->AverageAmbientForTesting(thread_bundle_.NowTicks()).value(),
+      running_sum / horizon_in_seconds);
+}
+
 // User brightness changes are received, training example cache reaches
 // |max_training_data_points_| to trigger early training. This all happens
 // within a small window shorter than |training_delay_|.

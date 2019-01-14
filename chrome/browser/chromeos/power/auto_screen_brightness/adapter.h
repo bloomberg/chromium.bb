@@ -86,6 +86,11 @@ class Adapter : public AlsReader::Observer,
     // which can be different from the horizon used in model training.
     base::TimeDelta auto_brightness_als_horizon =
         base::TimeDelta::FromSeconds(5);
+
+    // If true, we take logs of lux values before averaging. If false, we take
+    // logs of averaged lux values. This should be the same as
+    // that used by the modeller.
+    bool average_log_als = false;
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
