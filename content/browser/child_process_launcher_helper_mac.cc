@@ -27,6 +27,7 @@
 #include "services/service_manager/sandbox/mac/common.sb.h"
 #include "services/service_manager/sandbox/mac/gpu_v2.sb.h"
 #include "services/service_manager/sandbox/mac/nacl_loader.sb.h"
+#include "services/service_manager/sandbox/mac/network.sb.h"
 #include "services/service_manager/sandbox/mac/pdf_compositor.sb.h"
 #include "services/service_manager/sandbox/mac/ppapi.sb.h"
 #include "services/service_manager/sandbox/mac/renderer.sb.h"
@@ -103,14 +104,12 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
       case service_manager::SANDBOX_TYPE_AUDIO:
         profile += service_manager::kSeatbeltPolicyString_audio;
         break;
+      case service_manager::SANDBOX_TYPE_NETWORK:
+        profile += service_manager::kSeatbeltPolicyString_network;
+        break;
       case service_manager::SANDBOX_TYPE_UTILITY:
       case service_manager::SANDBOX_TYPE_PROFILING:
         profile += service_manager::kSeatbeltPolicyString_utility;
-        break;
-      case service_manager::SANDBOX_TYPE_NETWORK:
-        // Put a separate CHECK() for the network sandbox so that crash reports
-        // will show which invalid case was hit.
-        CHECK(false);
         break;
       case service_manager::SANDBOX_TYPE_INVALID:
       case service_manager::SANDBOX_TYPE_FIRST_TYPE:
@@ -137,6 +136,9 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
       case service_manager::SANDBOX_TYPE_AUDIO:
         SetupCommonSandboxParameters(seatbelt_exec_client_.get());
         break;
+      case service_manager::SANDBOX_TYPE_NETWORK:
+        SetupNetworkSandboxParameters(seatbelt_exec_client_.get());
+        break;
       case service_manager::SANDBOX_TYPE_PPAPI:
         SetupPPAPISandboxParameters(seatbelt_exec_client_.get());
         break;
@@ -146,7 +148,8 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
                                       *command_line_.get());
         break;
       default:
-        CHECK(false);
+        CHECK(false) << "Unhandled parameters for sandbox_type "
+                     << sandbox_type;
     }
 
     int pipe = seatbelt_exec_client_->GetReadFD();

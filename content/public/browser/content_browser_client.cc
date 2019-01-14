@@ -764,6 +764,11 @@ network::mojom::NetworkContextPtr ContentBrowserClient::CreateNetworkContext(
   return network_context;
 }
 
+std::vector<base::FilePath>
+ContentBrowserClient::GetNetworkContextsParentDirectory() {
+  return {};
+}
+
 #if defined(OS_ANDROID)
 bool ContentBrowserClient::NeedURLRequestContext() {
   return true;
