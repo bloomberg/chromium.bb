@@ -5,6 +5,7 @@
 #ifndef NET_DNS_PUBLIC_DNS_QUERY_TYPE_H_
 #define NET_DNS_PUBLIC_DNS_QUERY_TYPE_H_
 
+#include "base/stl_util.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -14,12 +15,15 @@ namespace net {
 // https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-4
 //
 // TODO(crbug.com/846423): Add support for non-address types.
-enum class DnsQueryType {
-  UNSPECIFIED,
-  A,
-  AAAA,
-  TXT,
-};
+enum class DnsQueryType { UNSPECIFIED, A, AAAA, TXT, MAX = TXT };
+
+const DnsQueryType kDnsQueryTypes[] = {DnsQueryType::UNSPECIFIED,
+                                       DnsQueryType::A, DnsQueryType::AAAA,
+                                       DnsQueryType::TXT};
+
+static_assert(base::size(kDnsQueryTypes) ==
+                  static_cast<unsigned>(DnsQueryType::MAX) + 1,
+              "All DnsQueryType values should be in kDnsQueryTypes.");
 
 // |true| iff |dns_query_type| is an address-resulting type, convertable to and
 // from net::AddressFamily.
