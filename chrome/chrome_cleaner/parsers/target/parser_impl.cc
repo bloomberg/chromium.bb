@@ -6,6 +6,9 @@
 
 #include "base/json/json_reader.h"
 #include "base/values.h"
+#include "base/win/scoped_handle.h"
+#include "chrome/chrome_cleaner/parsers/shortcut_parser/target/lnk_parser.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace chrome_cleaner {
 
@@ -32,6 +35,40 @@ void ParserImpl::ParseJson(const std::string& json,
     std::move(callback).Run(base::nullopt,
                             base::make_optional(std::move(error)));
   }
+}
+
+void ParserImpl::ParseShortcut(mojo::ScopedHandle lnk_file_handle,
+                               ParserImpl::ParseShortcutCallback callback) {
+  HANDLE raw_shortcut_handle;
+  if (mojo::UnwrapPlatformFile(std::move(lnk_file_handle),
+                               &raw_shortcut_handle) != MOJO_RESULT_OK) {
+    LOG(ERROR) << "Unable to get raw file HANDLE from mojo.";
+    std::move(callback).Run(mojom::LnkParsingResult::INVALID_HANDLE,
+                            base::make_optional<base::string16>(),
+                            base::make_optional<base::string16>(),
+                            base::make_optional<base::string16>());
+    return;
+  }
+
+  base::win::ScopedHandle shortcut_handle(raw_shortcut_handle);
+
+  ParsedLnkFile parsed_shortcut;
+  mojom::LnkParsingResult result =
+      ParseLnk(std::move(shortcut_handle), &parsed_shortcut);
+
+  if (result != mojom::LnkParsingResult::SUCCESS) {
+    LOG(ERROR) << "Error parsing the shortcut";
+    std::move(callback).Run(result, base::make_optional<base::string16>(),
+                            base::make_optional<base::string16>(),
+                            base::make_optional<base::string16>());
+    return;
+  }
+
+  std::move(callback).Run(
+      result, base::make_optional<base::string16>(parsed_shortcut.target_path),
+      base::make_optional<base::string16>(
+          parsed_shortcut.command_line_arguments),
+      base::make_optional<base::string16>(parsed_shortcut.icon_location));
 }
 
 }  // namespace chrome_cleaner
