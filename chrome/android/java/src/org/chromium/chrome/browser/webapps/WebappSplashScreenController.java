@@ -49,6 +49,9 @@ class WebappSplashScreenController extends EmptyTabObserver {
     private ViewGroup mSplashScreen;
     private WebappUma mWebappUma;
 
+    /** The error code of the navigation. */
+    private int mErrorCode;
+
     private WebappOfflineDialog mOfflineDialog;
 
     /** Indicates whether reloading is allowed. */
@@ -164,7 +167,8 @@ class WebappSplashScreenController extends EmptyTabObserver {
             int httpStatusCode) {
         if (!mIsForWebApk || !isInMainFrame) return;
 
-        switch (errorCode) {
+        mErrorCode = errorCode;
+        switch (mErrorCode) {
             case ERROR_OK:
                 if (mOfflineDialog != null) {
                     mOfflineDialog.cancel();
@@ -182,11 +186,9 @@ class WebappSplashScreenController extends EmptyTabObserver {
     }
 
     protected boolean canHideSplashScreen() {
-        if (mOfflineDialog == null) return true;
-
-        // {@link mOfflineDialog} is not nulled out when the user closes the network error dialog
-        // via the <Back> key.
-        return !mOfflineDialog.isShowing();
+        if (!mIsForWebApk) return true;
+        return mErrorCode != NetError.ERR_INTERNET_DISCONNECTED
+                && mErrorCode != NetError.ERR_NETWORK_CHANGED;
     }
 
     private void onNetworkChanged(Tab tab) {
