@@ -3418,6 +3418,16 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self closeFindInPage];
 }
 
+- (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
+  [_toolbarUIUpdater updateState];
+  [self.tabModel saveSessionImmediately:NO];
+  if ([self canShowTabStrip]) {
+    UIUserInterfaceSizeClass sizeClass =
+        self.view.window.traitCollection.horizontalSizeClass;
+    [SizeClassRecorder pageLoadedWithHorizontalSizeClass:sizeClass];
+  }
+}
+
 #pragma mark - OverscrollActionsControllerDelegate methods.
 
 - (void)overscrollActionsController:(OverscrollActionsController*)controller
@@ -4450,16 +4460,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   DCHECK(tab && ([self.tabModel indexOfTab:tab] != NSNotFound));
   if (tab == self.tabModel.currentTab) {
     [self updateToolbar];
-  }
-}
-
-- (void)tabModel:(TabModel*)model didFinishLoadingTab:(Tab*)tab {
-  [_toolbarUIUpdater updateState];
-  [model saveSessionImmediately:NO];
-  if ([self canShowTabStrip]) {
-    UIUserInterfaceSizeClass sizeClass =
-        self.view.window.traitCollection.horizontalSizeClass;
-    [SizeClassRecorder pageLoadedWithHorizontalSizeClass:sizeClass];
   }
 }
 
