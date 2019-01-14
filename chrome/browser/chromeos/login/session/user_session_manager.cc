@@ -959,6 +959,8 @@ void UserSessionManager::OnSessionRestoreStateChanged(
       OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
 
   bool connection_error = false;
+  identity::IdentityManager* const identity_manager =
+      IdentityManagerFactory::GetForProfile(user_profile);
   switch (state) {
     case OAuth2LoginManager::SESSION_RESTORE_DONE:
       // Session restore done does not always mean valid token because the
@@ -967,7 +969,9 @@ void UserSessionManager::OnSessionRestoreStateChanged(
       // the token could still be invalid in some edge cases. See
       // http://crbug.com/760610
       user_status =
-          SigninErrorControllerFactory::GetForProfile(user_profile)->HasError()
+          (identity_manager &&
+           identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
+               identity_manager->GetPrimaryAccountInfo().account_id))
               ? user_manager::User::OAUTH2_TOKEN_STATUS_INVALID
               : user_manager::User::OAUTH2_TOKEN_STATUS_VALID;
       break;

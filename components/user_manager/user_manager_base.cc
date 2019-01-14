@@ -71,8 +71,8 @@ const char kLastActiveUser[] = "LastActiveUser";
 // one regular user logging out and a different regular user logging in.
 const int kLogoutToLoginDelayMaxSec = 1800;
 
-// This reads integer vaule from kUserType Local State preference and
-// interpretes it as UserType. It is used in initial users load.
+// This reads integer value from kUserType Local State preference and
+// interprets it as UserType. It is used in initial users load.
 UserType GetStoredUserType(const base::DictionaryValue* prefs_user_types,
                            const AccountId& account_id) {
   const base::Value* stored_user_type = prefs_user_types->FindKey(
