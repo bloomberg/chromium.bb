@@ -5,24 +5,33 @@
 #include "net/dns/fuzzed_host_resolver.h"
 
 #include <stdint.h>
-
+#include <algorithm>
 #include <limits>
+#include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/fuzzed_data_provider.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/address_list.h"
+#include "net/base/completion_once_callback.h"
+#include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_hosts.h"
+#include "net/dns/mdns_client.h"
+#include "net/log/net_log_with_source.h"
+#include "net/socket/datagram_server_socket.h"
 
 namespace net {
 
@@ -143,6 +152,148 @@ class FuzzedHostResolverProc : public HostResolverProc {
   DISALLOW_COPY_AND_ASSIGN(FuzzedHostResolverProc);
 };
 
+const Error kMdnsErrors[] = {ERR_FAILED,
+                             ERR_ACCESS_DENIED,
+                             ERR_INTERNET_DISCONNECTED,
+                             ERR_TIMED_OUT,
+                             ERR_CONNECTION_RESET,
+                             ERR_CONNECTION_ABORTED,
+                             ERR_CONNECTION_REFUSED,
+                             ERR_ADDRESS_UNREACHABLE};
+// Fuzzed socket implementation to handle the limited functionality used by
+// MDnsClientImpl. Uses a FuzzedDataProvider to generate errors or responses for
+// RecvFrom calls.
+class FuzzedMdnsSocket : public DatagramServerSocket {
+ public:
+  explicit FuzzedMdnsSocket(base::FuzzedDataProvider* data_provider)
+      : data_provider_(data_provider),
+        local_address_(FuzzIPAddress(data_provider_), 5353),
+        weak_factory_(this) {}
+
+  int Listen(const IPEndPoint& address) override { return OK; }
+
+  int RecvFrom(IOBuffer* buffer,
+               int buffer_length,
+               IPEndPoint* out_address,
+               CompletionOnceCallback callback) override {
+    if (data_provider_->ConsumeBool())
+      return GenerateResponse(buffer, buffer_length, out_address);
+
+    // Maybe never receive any responses.
+    if (data_provider_->ConsumeBool()) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&FuzzedMdnsSocket::CompleteRecv,
+                         weak_factory_.GetWeakPtr(), std::move(callback),
+                         base::RetainedRef(buffer), buffer_length,
+                         out_address));
+    }
+
+    return ERR_IO_PENDING;
+  }
+
+  int SendTo(IOBuffer* buf,
+             int buf_len,
+             const IPEndPoint& address,
+             CompletionOnceCallback callback) override {
+    if (data_provider_->ConsumeBool()) {
+      return data_provider_->ConsumeBool()
+                 ? OK
+                 : data_provider_->PickValueInArray(kMdnsErrors);
+    }
+
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&FuzzedMdnsSocket::CompleteSend,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
+    return ERR_IO_PENDING;
+  }
+
+  int SetReceiveBufferSize(int32_t size) override { return OK; }
+  int SetSendBufferSize(int32_t size) override { return OK; }
+
+  void AllowAddressReuse() override {}
+  void AllowBroadcast() override {}
+  void AllowAddressSharingForMulticast() override {}
+
+  int JoinGroup(const IPAddress& group_address) const override { return OK; }
+  int LeaveGroup(const IPAddress& group_address) const override { return OK; }
+  int SetMulticastInterface(uint32_t interface_index) override { return OK; }
+  int SetMulticastTimeToLive(int time_to_live) override { return OK; }
+  int SetMulticastLoopbackMode(bool loopback) override { return OK; }
+
+  int SetDiffServCodePoint(DiffServCodePoint dscp) override { return OK; }
+
+  void DetachFromThread() override {}
+
+  void Close() override {}
+  int GetPeerAddress(IPEndPoint* address) const override {
+    return ERR_SOCKET_NOT_CONNECTED;
+  }
+  int GetLocalAddress(IPEndPoint* address) const override {
+    *address = local_address_;
+    return OK;
+  }
+  void UseNonBlockingIO() override {}
+  int SetDoNotFragment() override { return OK; }
+  void SetMsgConfirm(bool confirm) override {}
+  const NetLogWithSource& NetLog() const override { return net_log_; }
+
+ private:
+  void CompleteRecv(CompletionOnceCallback callback,
+                    IOBuffer* buffer,
+                    int buffer_length,
+                    IPEndPoint* out_address) {
+    int rv = GenerateResponse(buffer, buffer_length, out_address);
+    std::move(callback).Run(rv);
+  }
+
+  int GenerateResponse(IOBuffer* buffer,
+                       int buffer_length,
+                       IPEndPoint* out_address) {
+    if (data_provider_->ConsumeBool()) {
+      std::string data =
+          data_provider_->ConsumeRandomLengthString(buffer_length);
+      std::copy(data.begin(), data.end(), buffer->data());
+      *out_address =
+          IPEndPoint(FuzzIPAddress(data_provider_), FuzzPort(data_provider_));
+      return data.size();
+    }
+
+    return data_provider_->PickValueInArray(kMdnsErrors);
+  }
+
+  void CompleteSend(CompletionOnceCallback callback) {
+    if (data_provider_->ConsumeBool())
+      std::move(callback).Run(OK);
+    else
+      std::move(callback).Run(data_provider_->PickValueInArray(kMdnsErrors));
+  }
+
+  base::FuzzedDataProvider* const data_provider_;
+  const IPEndPoint local_address_;
+  const NetLogWithSource net_log_;
+
+  base::WeakPtrFactory<FuzzedMdnsSocket> weak_factory_;
+};
+
+class FuzzedMdnsSocketFactory : public MDnsSocketFactory {
+ public:
+  explicit FuzzedMdnsSocketFactory(base::FuzzedDataProvider* data_provider)
+      : data_provider_(data_provider) {}
+
+  void CreateSockets(
+      std::vector<std::unique_ptr<DatagramServerSocket>>* sockets) override {
+    int num_sockets = data_provider_->ConsumeIntegralInRange(0, 4);
+    for (int i = 0; i < num_sockets; ++i)
+      sockets->push_back(std::make_unique<FuzzedMdnsSocket>(data_provider_));
+    MDnsSocketFactory::CreateDefault()->CreateSockets(sockets);
+  }
+
+ private:
+  base::FuzzedDataProvider* const data_provider_;
+};
+
 }  // namespace
 
 FuzzedHostResolver::FuzzedHostResolver(const Options& options,
@@ -161,6 +312,8 @@ FuzzedHostResolver::FuzzedHostResolver(const Options& options,
       0 /* max_retry_attempts */);
   set_proc_params_for_test(proc_task_params);
   SetTaskRunnerForTesting(base::SequencedTaskRunnerHandle::Get());
+  SetMdnsSocketFactoryForTesting(
+      std::make_unique<FuzzedMdnsSocketFactory>(data_provider_));
 }
 
 FuzzedHostResolver::~FuzzedHostResolver() = default;
