@@ -72,6 +72,17 @@ void AppManagementPageHandler::SetPermission(
   proxy->SetPermission(app_id, std::move(permission));
 }
 
+void AppManagementPageHandler::Uninstall(const std::string& app_id) {
+  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile_);
+
+  // TODO(crbug.com/826982): revisit pending decision on AppServiceProxy in
+  // incognito
+  if (!proxy)
+    return;
+
+  proxy->Uninstall(app_id);
+}
+
 void AppManagementPageHandler::OnAppUpdate(const apps::AppUpdate& update) {
   if (update.ReadinessChanged() &&
       update.Readiness() == apps::mojom::Readiness::kUninstalledByUser) {

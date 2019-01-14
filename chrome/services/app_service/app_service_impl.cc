@@ -99,6 +99,15 @@ void AppServiceImpl::SetPermission(apps::mojom::AppType app_type,
   iter->second->SetPermission(app_id, std::move(permission));
 }
 
+void AppServiceImpl::Uninstall(apps::mojom::AppType app_type,
+                               const std::string& app_id) {
+  auto iter = publishers_.find(app_type);
+  if (iter == publishers_.end()) {
+    return;
+  }
+  iter->second->Uninstall(app_id);
+}
+
 void AppServiceImpl::OnPublisherDisconnected(apps::mojom::AppType app_type) {
   publishers_.erase(app_type);
 }
