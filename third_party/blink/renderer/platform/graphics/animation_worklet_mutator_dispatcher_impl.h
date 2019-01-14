@@ -16,13 +16,14 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
 
 class CompositorMutatorClient;
 class MainThreadMutatorClient;
-class WaitableEvent;
 
 // Fans out requests to all of the registered AnimationWorkletMutators which can
 // then run worklet animations to produce mutation updates. Requests for
@@ -63,20 +64,20 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
   void SetClient(MutatorClient* client) { client_ = client; }
 
  private:
+  class OutputVectorRef;
+
+  using InputMap = HashMap<int, std::unique_ptr<AnimationWorkletInput>>;
+
   using AnimationWorkletMutatorToTaskRunnerMap =
       HashMap<CrossThreadPersistent<AnimationWorkletMutator>,
               scoped_refptr<base::SingleThreadTaskRunner>>;
 
-  class AutoSignal {
-   public:
-    explicit AutoSignal(WaitableEvent*);
-    ~AutoSignal();
+  InputMap CreateInputMap(AnimationWorkletDispatcherInput& mutator_input) const;
 
-   private:
-    WaitableEvent* event_;
-
-    DISALLOW_COPY_AND_ASSIGN(AutoSignal);
-  };
+  // Dispatches mutation update requests.  The callback is triggered once
+  // all mutation updates have been computed on the animation worklet thread
+  // associated with the last mutation to complete.
+  void RequestMutations(WTF::CrossThreadClosure done_callback);
 
   // The AnimationWorkletProxyClients are also owned by the WorkerClients
   // dictionary.
@@ -97,6 +98,21 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
   // The MutatorClient owns (std::unique_ptr) us, so this pointer is
   // valid as long as this class exists.
   MutatorClient* client_;
+
+  // Map of mutator scope IDs to mutator input. The Mutate methods safeguards
+  // against concurrent calls (important once async mutations are introduced) by
+  // checking that the map has been reset on entry. For this reason, it is
+  // important to reset the map at the end of the mutation cycle.
+  InputMap mutator_input_map_;
+
+  // Reference to a vector for collecting mutation output. The vector is
+  // accessed across threads, thus it must be guaranteed to persist until the
+  // last mutation update is complete, and updates must be done in a thread-safe
+  // manner. The Mutate method guards against concurrent calls (important once
+  // async mutations are introduced)  by checking that the output vector is
+  // empty. For this reason, it is important to clear the output at the end of
+  // the mutation cycle.
+  scoped_refptr<OutputVectorRef> outputs_;
 
   base::WeakPtrFactory<AnimationWorkletMutatorDispatcherImpl> weak_factory_;
 

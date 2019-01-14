@@ -8,6 +8,7 @@ include_rules = [
     # Dependencies.
     "+base/threading/sequenced_task_runner_handle.h",
     "+base/threading/thread_restrictions.h",
+    "+base/barrier_closure.h",
     "+cc",
     "+components/viz/client",
     "+components/viz/common",
