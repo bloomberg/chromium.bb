@@ -635,4 +635,13 @@ AutomationPredicate.shouldOnlyOutputSelectionChangeInBraille = function(node) {
       node.role == Role.LOG;
 };
 
+
+/**
+ * Matches against menu item like nodes.
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.menuItem = AutomationPredicate.roles(
+    [Role.MENU_ITEM, Role.MENU_ITEM_CHECK_BOX, Role.MENU_ITEM_RADIO]);
+
 });  // goog.scope
