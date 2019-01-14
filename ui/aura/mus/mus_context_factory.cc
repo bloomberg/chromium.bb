@@ -39,7 +39,12 @@ void MusContextFactory::OnEstablishedGpuChannel(
   WindowTreeHost* host =
       WindowTreeHost::GetForAcceleratedWidget(compositor->widget());
   WindowPortMus* window_port = WindowPortMus::Get(host->window());
-  DCHECK(window_port);
+  // There should always be a WindowPortMus for WindowTreeHost::window(). If
+  // there isn't, it likely means we got the wrong WindowTreeHost.
+  //
+  // TODO(sky): make Compositor extend SupportsUserData so that this code
+  // doesn't need to use GetForAcceleratedWidget().
+  CHECK(window_port);
 
   scoped_refptr<viz::ContextProvider> context_provider =
       gpu_->CreateContextProvider(gpu_channel);

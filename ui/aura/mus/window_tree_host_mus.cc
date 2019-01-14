@@ -4,6 +4,8 @@
 
 #include "ui/aura/mus/window_tree_host_mus.h"
 
+#include <limits>
+
 #include "ui/aura/env.h"
 #include "ui/aura/mus/input_method_mus.h"
 #include "ui/aura/mus/window_port_mus.h"
@@ -30,7 +32,10 @@ namespace {
 DEFINE_UI_CLASS_PROPERTY_KEY(
     WindowTreeHostMus*, kWindowTreeHostMusKey, nullptr);
 
-static uint32_t accelerated_widget_count = 1;
+// Start at the max and decrease as in SingleProcessMash these values must not
+// overlap with values assigned by Ozone's PlatformWindow (which starts at 1
+// and increases).
+uint32_t next_accelerated_widget_id = std::numeric_limits<uint32_t>::max();
 
 }  // namespace
 
@@ -67,10 +72,10 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
 // fit in the smallest sizeof(AcceleratedWidget) uint32_t has this property.
 #if defined(OS_WIN) || defined(OS_ANDROID)
   accelerated_widget =
-      reinterpret_cast<gfx::AcceleratedWidget>(accelerated_widget_count++);
+      reinterpret_cast<gfx::AcceleratedWidget>(next_accelerated_widget_id--);
 #else
   accelerated_widget =
-      static_cast<gfx::AcceleratedWidget>(accelerated_widget_count++);
+      static_cast<gfx::AcceleratedWidget>(next_accelerated_widget_id--);
 #endif
   OnAcceleratedWidgetAvailable(accelerated_widget);
 
