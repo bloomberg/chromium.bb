@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/environment.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/browser.h"
@@ -100,15 +101,14 @@ class XrBrowserTestBase : public InProcessBrowserTest {
                                    content::WebContents* web_contents);
 
   // Blocks until the given callback returns true or the timeout is reached.
-  // Returns true if the condition successfully resolved or false on timeout.
-  // This is unsafe because it relies on the provided callback checking a result
-  // from a different thread. This isn't an issue when blocking on some
-  // JavaScript condition to be true, but could be problematic if forced into
-  // use elsewhere.
-  bool BlockOnConditionUnsafe(
-      base::RepeatingCallback<bool()> condition,
-      const base::TimeDelta& timeout = kPollTimeoutLong,
-      const base::TimeDelta& period = kPollCheckIntervalLong);
+  // Fills the given bool with true if the condition successfully resolved or
+  // false on timeout.
+  void BlockOnCondition(base::RepeatingCallback<bool()> condition,
+                        bool* result,
+                        base::RunLoop* wait_loop,
+                        const base::Time& start_time,
+                        const base::TimeDelta& timeout = kPollTimeoutLong,
+                        const base::TimeDelta& period = kPollCheckIntervalLong);
 
   // Blocks until the JavaScript in the given WebContents signals that it is
   // finished.
