@@ -203,6 +203,15 @@ const MAX_NUM_TILES_CUSTOM_LINKS = 10;
  */
 var WHITE_BACKGROUND_COLORS = ['rgba(255,255,255,1)', 'rgba(0,0,0,0)'];
 
+
+/**
+ * Background color for Chrome dark mode.
+ * @type {string}
+ * @const
+ */
+const DARK_MODE_BACKGROUND_COLOR = 'rgba(50,54,57,1)';
+
+
 /**
  * Enum for keycodes.
  * @enum {number}
@@ -315,11 +324,13 @@ function renderTheme() {
     return;
   }
 
-  var background = [convertToRGBAColor(info.backgroundColorRgba),
-                    info.imageUrl,
-                    info.imageTiling,
-                    info.imageHorizontalAlignment,
-                    info.imageVerticalAlignment].join(' ').trim();
+  var background = [
+    (configData.isDarkModeEnabled ?
+         DARK_MODE_BACKGROUND_COLOR :
+         convertToRGBAColor(info.backgroundColorRgba)),
+    info.imageUrl, info.imageTiling, info.imageHorizontalAlignment,
+    info.imageVerticalAlignment
+  ].join(' ').trim();
 
   // If a custom background has been selected the image will be applied to the
   // custom-background element instead of the body.
@@ -1104,6 +1115,10 @@ function createIframes() {
       encodeURIComponent(configData.translatedStrings.mostVisitedTitle));
   args.push('removeTooltip=' +
       encodeURIComponent(configData.translatedStrings.removeThumbnailTooltip));
+
+  if (configData.isDarkModeEnabled) {
+    args.push('enableDarkMode=1');
+  }
 
   if (configData.isGooglePage) {
     args.push('enableCustomLinks=1');
