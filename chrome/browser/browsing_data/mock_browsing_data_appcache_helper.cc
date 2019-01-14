@@ -17,10 +17,10 @@ MockBrowsingDataAppCacheHelper::~MockBrowsingDataAppCacheHelper() {
 }
 
 void MockBrowsingDataAppCacheHelper::StartFetching(
-    const FetchCallback& completion_callback) {
+    FetchCallback completion_callback) {
   ASSERT_FALSE(completion_callback.is_null());
   ASSERT_TRUE(completion_callback_.is_null());
-  completion_callback_ = completion_callback;
+  completion_callback_ = std::move(completion_callback);
 }
 
 void MockBrowsingDataAppCacheHelper::DeleteAppCacheGroup(
@@ -47,5 +47,5 @@ void MockBrowsingDataAppCacheHelper::AddAppCacheSamples() {
 }
 
 void MockBrowsingDataAppCacheHelper::Notify() {
-  completion_callback_.Run(response_);
+  std::move(completion_callback_).Run(response_);
 }

@@ -53,7 +53,8 @@ class BrowsingDataFileSystemHelper
     std::map<storage::FileSystemType, int64_t> usage_map;
   };
 
-  using FetchCallback = base::Callback<void(const std::list<FileSystemInfo>&)>;
+  using FetchCallback =
+      base::OnceCallback<void(const std::list<FileSystemInfo>&)>;
 
   // Creates a BrowsingDataFileSystemHelper instance for the file systems
   // stored in |profile|'s user data directory. The BrowsingDataFileSystemHelper
@@ -72,7 +73,7 @@ class BrowsingDataFileSystemHelper
   //
   // BrowsingDataFileSystemHelper takes ownership of the Callback1, and is
   // responsible for deleting it once it's no longer needed.
-  virtual void StartFetching(const FetchCallback& callback) = 0;
+  virtual void StartFetching(FetchCallback callback) = 0;
 
   // Deletes any temporary or persistent file systems associated with |origin|
   // from the disk. Deletion will occur asynchronously on the FILE thread, but
@@ -119,7 +120,7 @@ class CannedBrowsingDataFileSystemHelper
   }
 
   // BrowsingDataFileSystemHelper implementation.
-  void StartFetching(const FetchCallback& callback) override;
+  void StartFetching(FetchCallback callback) override;
 
   // Note that this doesn't actually have an implementation for this canned
   // class. It hasn't been necessary for anything that uses the canned

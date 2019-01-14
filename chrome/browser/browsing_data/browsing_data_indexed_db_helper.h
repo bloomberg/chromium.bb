@@ -30,7 +30,7 @@ class BrowsingDataIndexedDBHelper
     : public base::RefCountedThreadSafe<BrowsingDataIndexedDBHelper> {
  public:
   using FetchCallback =
-      base::Callback<void(const std::list<content::StorageUsageInfo>&)>;
+      base::OnceCallback<void(const std::list<content::StorageUsageInfo>&)>;
 
   // Create a BrowsingDataIndexedDBHelper instance for the indexed databases
   // stored in |context|'s associated profile's user data directory.
@@ -38,7 +38,7 @@ class BrowsingDataIndexedDBHelper
 
   // Starts the fetching process, which will notify its completion via
   // |callback|. This must be called only on the UI thread.
-  virtual void StartFetching(const FetchCallback& callback);
+  virtual void StartFetching(FetchCallback callback);
   // Requests a single indexed database to be deleted in the IndexedDB thread.
   virtual void DeleteIndexedDB(const GURL& origin);
 
@@ -51,7 +51,7 @@ class BrowsingDataIndexedDBHelper
   friend class base::RefCountedThreadSafe<BrowsingDataIndexedDBHelper>;
 
   // Enumerates all indexed database files in the IndexedDB thread.
-  void FetchIndexedDBInfoInIndexedDBThread(const FetchCallback& callback);
+  void FetchIndexedDBInfoInIndexedDBThread(FetchCallback callback);
   // Delete a single indexed database in the IndexedDB thread.
   void DeleteIndexedDBInIndexedDBThread(const GURL& origin);
 
@@ -95,7 +95,7 @@ class CannedBrowsingDataIndexedDBHelper
       GetIndexedDBInfo() const;
 
   // BrowsingDataIndexedDBHelper methods.
-  void StartFetching(const FetchCallback& callback) override;
+  void StartFetching(FetchCallback callback) override;
   void DeleteIndexedDB(const GURL& origin) override;
 
  private:

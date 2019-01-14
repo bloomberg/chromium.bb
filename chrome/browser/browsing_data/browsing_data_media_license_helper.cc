@@ -33,7 +33,7 @@ class BrowsingDataMediaLicenseHelperImpl
   // BrowsingDataMediaLicenseHelper implementation
   explicit BrowsingDataMediaLicenseHelperImpl(
       storage::FileSystemContext* filesystem_context);
-  void StartFetching(const FetchCallback& callback) final;
+  void StartFetching(FetchCallback callback) final;
   void DeleteMediaLicenseOrigin(const GURL& origin) final;
 
  private:
@@ -42,7 +42,7 @@ class BrowsingDataMediaLicenseHelperImpl
   // Enumerates all filesystem files, storing the resulting list into
   // file_system_file_ for later use. This must be called on the file
   // task runner.
-  void FetchMediaLicenseInfoOnFileTaskRunner(const FetchCallback& callback);
+  void FetchMediaLicenseInfoOnFileTaskRunner(FetchCallback callback);
 
   // Deletes all file systems associated with |origin|. This must be called on
   // the file task runner.
@@ -68,14 +68,13 @@ BrowsingDataMediaLicenseHelperImpl::BrowsingDataMediaLicenseHelperImpl(
 
 BrowsingDataMediaLicenseHelperImpl::~BrowsingDataMediaLicenseHelperImpl() {}
 
-void BrowsingDataMediaLicenseHelperImpl::StartFetching(
-    const FetchCallback& callback) {
+void BrowsingDataMediaLicenseHelperImpl::StartFetching(FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   file_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&BrowsingDataMediaLicenseHelperImpl::
                                     FetchMediaLicenseInfoOnFileTaskRunner,
-                                this, callback));
+                                this, std::move(callback)));
 }
 
 void BrowsingDataMediaLicenseHelperImpl::DeleteMediaLicenseOrigin(
@@ -88,7 +87,7 @@ void BrowsingDataMediaLicenseHelperImpl::DeleteMediaLicenseOrigin(
 }
 
 void BrowsingDataMediaLicenseHelperImpl::FetchMediaLicenseInfoOnFileTaskRunner(
-    const FetchCallback& callback) {
+    FetchCallback callback) {
   DCHECK(file_task_runner()->RunsTasksInCurrentSequence());
   DCHECK(!callback.is_null());
 
@@ -114,7 +113,7 @@ void BrowsingDataMediaLicenseHelperImpl::FetchMediaLicenseInfoOnFileTaskRunner(
   }
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, result));
+                           base::BindOnce(std::move(callback), result));
 }
 
 void BrowsingDataMediaLicenseHelperImpl::

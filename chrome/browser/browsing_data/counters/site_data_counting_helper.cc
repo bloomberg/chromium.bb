@@ -36,10 +36,10 @@ using content::BrowserThread;
 SiteDataCountingHelper::SiteDataCountingHelper(
     Profile* profile,
     base::Time begin,
-    base::Callback<void(int)> completion_callback)
+    base::OnceCallback<void(int)> completion_callback)
     : profile_(profile),
       begin_(begin),
-      completion_callback_(completion_callback),
+      completion_callback_(std::move(completion_callback)),
       tasks_(0) {}
 
 SiteDataCountingHelper::~SiteDataCountingHelper() {}
@@ -82,10 +82,10 @@ void SiteDataCountingHelper::CountAndDestroySelfWhenFinished() {
   content::DOMStorageContext* dom_storage = partition->GetDOMStorageContext();
   if (dom_storage) {
     tasks_ += 1;
-    auto local_callback =
-        base::Bind(&SiteDataCountingHelper::GetLocalStorageUsageInfoCallback,
-                   base::Unretained(this), special_storage_policy);
-    dom_storage->GetLocalStorageUsage(local_callback);
+    auto local_callback = base::BindOnce(
+        &SiteDataCountingHelper::GetLocalStorageUsageInfoCallback,
+        base::Unretained(this), special_storage_policy);
+    dom_storage->GetLocalStorageUsage(std::move(local_callback));
     // TODO(772337): Enable session storage counting when deletion is fixed.
   }
 
@@ -95,8 +95,8 @@ void SiteDataCountingHelper::CountAndDestroySelfWhenFinished() {
   if (flash_lso_helper_) {
     tasks_ += 1;
     flash_lso_helper_->StartFetching(
-        base::Bind(&SiteDataCountingHelper::SitesWithFlashDataCallback,
-                   base::Unretained(this)));
+        base::BindOnce(&SiteDataCountingHelper::SitesWithFlashDataCallback,
+                       base::Unretained(this)));
   }
 #endif
 
@@ -232,6 +232,7 @@ void SiteDataCountingHelper::Done(const std::vector<GURL>& origins) {
   if (--tasks_ > 0)
     return;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(completion_callback_, unique_hosts_.size()));
+      FROM_HERE,
+      base::BindOnce(std::move(completion_callback_), unique_hosts_.size()));
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }

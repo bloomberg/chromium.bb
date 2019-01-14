@@ -50,9 +50,9 @@ void CacheCounter::Count() {
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   if (offline_pages::OfflinePageUtils::GetCachedOfflinePageSizeBetween(
           profile_,
-          base::Bind(&CacheCounter::OnCacheSizeCalculated,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     false /* is_upper_limit */),
+          base::BindOnce(&CacheCounter::OnCacheSizeCalculated,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         false /* is_upper_limit */),
           GetPeriodStart(), base::Time::Max())) {
     pending_sources_++;
   }

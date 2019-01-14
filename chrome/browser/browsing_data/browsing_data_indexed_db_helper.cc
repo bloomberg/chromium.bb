@@ -31,14 +31,14 @@ BrowsingDataIndexedDBHelper::BrowsingDataIndexedDBHelper(
 BrowsingDataIndexedDBHelper::~BrowsingDataIndexedDBHelper() {
 }
 
-void BrowsingDataIndexedDBHelper::StartFetching(const FetchCallback& callback) {
+void BrowsingDataIndexedDBHelper::StartFetching(FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   indexed_db_context_->TaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &BrowsingDataIndexedDBHelper::FetchIndexedDBInfoInIndexedDBThread,
-          this, callback));
+          this, std::move(callback)));
 }
 
 void BrowsingDataIndexedDBHelper::DeleteIndexedDB(const GURL& origin) {
@@ -51,7 +51,7 @@ void BrowsingDataIndexedDBHelper::DeleteIndexedDB(const GURL& origin) {
 }
 
 void BrowsingDataIndexedDBHelper::FetchIndexedDBInfoInIndexedDBThread(
-    const FetchCallback& callback) {
+    FetchCallback callback) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksInCurrentSequence());
   DCHECK(!callback.is_null());
   std::vector<StorageUsageInfo> origins =
@@ -63,7 +63,7 @@ void BrowsingDataIndexedDBHelper::FetchIndexedDBInfoInIndexedDBThread(
     result.push_back(origin);
   }
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, result));
+                           base::BindOnce(std::move(callback), result));
 }
 
 void BrowsingDataIndexedDBHelper::DeleteIndexedDBInIndexedDBThread(
@@ -116,8 +116,7 @@ CannedBrowsingDataIndexedDBHelper::GetIndexedDBInfo() const  {
   return pending_indexed_db_info_;
 }
 
-void CannedBrowsingDataIndexedDBHelper::StartFetching(
-    const FetchCallback& callback) {
+void CannedBrowsingDataIndexedDBHelper::StartFetching(FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
@@ -127,7 +126,7 @@ void CannedBrowsingDataIndexedDBHelper::StartFetching(
                         base::Time());
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, result));
+                           base::BindOnce(std::move(callback), result));
 }
 
 void CannedBrowsingDataIndexedDBHelper::DeleteIndexedDB(

@@ -23,7 +23,7 @@ using content::StorageUsageInfo;
 namespace {
 
 void GetAllOriginsInfoForServiceWorkerCallback(
-    const BrowsingDataServiceWorkerHelper::FetchCallback& callback,
+    BrowsingDataServiceWorkerHelper::FetchCallback callback,
     const std::vector<StorageUsageInfo>& origins) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
@@ -36,7 +36,7 @@ void GetAllOriginsInfoForServiceWorkerCallback(
   }
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, result));
+                           base::BindOnce(std::move(callback), result));
 }
 
 }  // namespace
@@ -49,15 +49,14 @@ BrowsingDataServiceWorkerHelper::BrowsingDataServiceWorkerHelper(
 
 BrowsingDataServiceWorkerHelper::~BrowsingDataServiceWorkerHelper() {}
 
-void BrowsingDataServiceWorkerHelper::StartFetching(
-    const FetchCallback& callback) {
+void BrowsingDataServiceWorkerHelper::StartFetching(FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&BrowsingDataServiceWorkerHelper::
                          FetchServiceWorkerUsageInfoOnIOThread,
-                     this, callback));
+                     this, std::move(callback)));
 }
 
 void BrowsingDataServiceWorkerHelper::DeleteServiceWorkers(const GURL& origin) {
@@ -70,12 +69,12 @@ void BrowsingDataServiceWorkerHelper::DeleteServiceWorkers(const GURL& origin) {
 }
 
 void BrowsingDataServiceWorkerHelper::FetchServiceWorkerUsageInfoOnIOThread(
-    const FetchCallback& callback) {
+    FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
 
-  service_worker_context_->GetAllOriginsInfo(
-      base::BindOnce(&GetAllOriginsInfoForServiceWorkerCallback, callback));
+  service_worker_context_->GetAllOriginsInfo(base::BindOnce(
+      &GetAllOriginsInfoForServiceWorkerCallback, std::move(callback)));
 }
 
 void BrowsingDataServiceWorkerHelper::DeleteServiceWorkersOnIOThread(
@@ -140,7 +139,7 @@ CannedBrowsingDataServiceWorkerHelper::GetServiceWorkerUsageInfo() const {
 }
 
 void CannedBrowsingDataServiceWorkerHelper::StartFetching(
-    const FetchCallback& callback) {
+    FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
@@ -152,7 +151,7 @@ void CannedBrowsingDataServiceWorkerHelper::StartFetching(
   }
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, result));
+                           base::BindOnce(std::move(callback), result));
 }
 
 void CannedBrowsingDataServiceWorkerHelper::DeleteServiceWorkers(

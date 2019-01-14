@@ -40,13 +40,13 @@ class BrowsingDataLocalStorageHelper
   };
 
   using FetchCallback =
-      base::Callback<void(const std::list<LocalStorageInfo>&)>;
+      base::OnceCallback<void(const std::list<LocalStorageInfo>&)>;
 
   explicit BrowsingDataLocalStorageHelper(Profile* profile);
 
   // Starts the fetching process, which will notify its completion via
   // callback. This must be called only in the UI thread.
-  virtual void StartFetching(const FetchCallback& callback);
+  virtual void StartFetching(FetchCallback callback);
 
   // Deletes the local storage for the |origin_url|. |callback| is called when
   // the deletion is sent to the database and |StartFetching()| doesn't return
@@ -88,7 +88,7 @@ class CannedBrowsingDataLocalStorageHelper
   const std::set<GURL>& GetLocalStorageInfo() const;
 
   // BrowsingDataLocalStorageHelper implementation.
-  void StartFetching(const FetchCallback& callback) override;
+  void StartFetching(FetchCallback callback) override;
   void DeleteOrigin(const GURL& origin_url,
                     base::OnceClosure callback) override;
 

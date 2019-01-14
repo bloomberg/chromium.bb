@@ -47,10 +47,10 @@ class SiteDataSizeCollector {
                         BrowsingDataFlashLSOHelper* flash_lso_helper);
   virtual ~SiteDataSizeCollector();
 
-  using FetchCallback = base::Callback<void(int64_t)>;
+  using FetchCallback = base::OnceCallback<void(int64_t)>;
 
   // Requests to fetch the total storage space used by site data.
-  void Fetch(const FetchCallback& callback);
+  void Fetch(FetchCallback callback);
 
  private:
   // Callback methods to be invoked when fetching the data is complete.
