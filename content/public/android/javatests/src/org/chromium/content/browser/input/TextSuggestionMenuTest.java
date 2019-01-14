@@ -291,8 +291,10 @@ public class TextSuggestionMenuTest {
         waitForMenuToHide(webContents);
     }
 
+    // Disabled for flakiness (crbug.com/1407832)
     @Test
     @LargeTest
+    @DisabledTest
     public void testAutoCorrectionSuggestionSpan() throws InterruptedException, Throwable {
         WebContents webContents = mRule.getWebContents();
 
@@ -314,6 +316,7 @@ public class TextSuggestionMenuTest {
     // correctly removed SuggestionSpan with SPAN_COMPOSING flag. If IME sets the SPAN_COMPOSING
     // flag for the span, the SuggestionSpan is in transition state, and we should remove it once we
     // done with composing.
+    // Disabled for flakiness (crbug.com/1407832)
     @Test
     @LargeTest
     @DisabledTest
@@ -346,8 +349,10 @@ public class TextSuggestionMenuTest {
                                 + "document.getElementById('div').firstChild, 'suggestion')"));
     }
 
+    // Disabled for flakiness (crbug.com/1407832)
     @Test
     @LargeTest
+    @DisabledTest
     public void testCommitTextRemovesAutoCorrectionSuggestionSpan()
             throws InterruptedException, Throwable {
         WebContents webContents = mRule.getWebContents();
@@ -377,8 +382,10 @@ public class TextSuggestionMenuTest {
                                 + "document.getElementById('div').firstChild, 'suggestion')"));
     }
 
+    // Disabled for flakiness (crbug.com/1407832)
     @Test
     @LargeTest
+    @DisabledTest
     public void testFinishComposingRemovesAutoCorrectionSuggestionSpan()
             throws InterruptedException, Throwable {
         WebContents webContents = mRule.getWebContents();
