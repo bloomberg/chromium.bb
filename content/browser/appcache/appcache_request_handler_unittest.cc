@@ -34,6 +34,7 @@
 #include "content/browser/appcache/appcache_url_request_job.h"
 #include "content/browser/appcache/mock_appcache_policy.h"
 #include "content/browser/appcache/mock_appcache_service.h"
+#include "content/common/appcache_interfaces.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/net_errors.h"
@@ -48,6 +49,8 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace content {
 
@@ -70,16 +73,18 @@ class AppCacheRequestHandlerTest
  public:
   class MockFrontend : public AppCacheFrontend {
    public:
-    void OnCacheSelected(int host_id, const AppCacheInfo& info) override {}
+    void OnCacheSelected(int host_id,
+                         const blink::mojom::AppCacheInfo& info) override {}
 
     void OnStatusChanged(const std::vector<int>& host_ids,
-                         AppCacheStatus status) override {}
+                         blink::mojom::AppCacheStatus status) override {}
 
     void OnEventRaised(const std::vector<int>& host_ids,
-                       AppCacheEventID event_id) override {}
+                       blink::mojom::AppCacheEventID event_id) override {}
 
-    void OnErrorEventRaised(const std::vector<int>& host_ids,
-                            const AppCacheErrorDetails& details) override {}
+    void OnErrorEventRaised(
+        const std::vector<int>& host_ids,
+        const blink::mojom::AppCacheErrorDetails& details) override {}
 
     void OnProgressEventRaised(const std::vector<int>& host_ids,
                                const GURL& url,
@@ -347,10 +352,10 @@ class AppCacheRequestHandlerTest
     EXPECT_FALSE(job()->IsWaiting());
     EXPECT_TRUE(job()->IsDeliveringNetworkResponse());
 
-    int64_t cache_id = kAppCacheNoCacheId;
+    int64_t cache_id = blink::mojom::kAppCacheNoCacheId;
     GURL manifest_url;
     handler_->GetExtraResponseInfo(&cache_id, &manifest_url);
-    EXPECT_EQ(kAppCacheNoCacheId, cache_id);
+    EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, cache_id);
     EXPECT_EQ(GURL(), manifest_url);
     EXPECT_EQ(0, handler_->found_group_id_);
 
@@ -393,7 +398,7 @@ class AppCacheRequestHandlerTest
     EXPECT_FALSE(job()->IsWaiting());
     EXPECT_TRUE(job()->IsDeliveringAppCacheResponse());
 
-    int64_t cache_id = kAppCacheNoCacheId;
+    int64_t cache_id = blink::mojom::kAppCacheNoCacheId;
     GURL manifest_url;
     handler_->GetExtraResponseInfo(&cache_id, &manifest_url);
     EXPECT_EQ(1, cache_id);
@@ -491,7 +496,7 @@ class AppCacheRequestHandlerTest
     EXPECT_TRUE(job());
     EXPECT_TRUE(job()->IsDeliveringAppCacheResponse());
 
-    int64_t cache_id = kAppCacheNoCacheId;
+    int64_t cache_id = blink::mojom::kAppCacheNoCacheId;
     GURL manifest_url;
     handler_->GetExtraResponseInfo(&cache_id, &manifest_url);
     EXPECT_EQ(1, cache_id);
@@ -561,10 +566,10 @@ class AppCacheRequestHandlerTest
     EXPECT_FALSE(job());
 
     // GetExtraResponseInfo should return no information.
-    int64_t cache_id = kAppCacheNoCacheId;
+    int64_t cache_id = blink::mojom::kAppCacheNoCacheId;
     GURL manifest_url;
     handler_->GetExtraResponseInfo(&cache_id, &manifest_url);
-    EXPECT_EQ(kAppCacheNoCacheId, cache_id);
+    EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, cache_id);
     EXPECT_TRUE(manifest_url.is_empty());
 
     TestFinished();

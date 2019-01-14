@@ -45,6 +45,7 @@
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/throttling/scoped_throttling_token.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "url/url_constants.h"
 
 using base::TimeDelta;
@@ -112,7 +113,7 @@ void PopulateResourceResponse(
       ServiceWorkerResponseInfo::ForRequest(request);
   if (service_worker_info)
     service_worker_info->GetExtraResponseInfo(&response->head);
-  response->head.appcache_id = kAppCacheNoCacheId;
+  response->head.appcache_id = blink::mojom::kAppCacheNoCacheId;
   AppCacheInterceptor::GetExtraResponseInfo(
       request, &response->head.appcache_id,
       &response->head.appcache_manifest_url);

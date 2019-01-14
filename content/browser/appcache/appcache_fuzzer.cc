@@ -18,6 +18,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/libprotobuf-mutator/src/src/libfuzzer/libfuzzer_macro.h"
 
 namespace content {
@@ -142,7 +143,7 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
   auto dispatch_context =
         std::make_unique<mojo::internal::MessageDispatchContext>(&message);
 
-  mojom::AppCacheBackendPtr host;
+  blink::mojom::AppCacheBackendPtr host;
   AppCacheDispatcherHost::Create(SingletonEnv().appcache_service.get(),
                                  /*process_id=*/1, mojo::MakeRequest(&host));
 

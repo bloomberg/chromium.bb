@@ -13,6 +13,7 @@
 #include "content/public/common/resource_type.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/net_adapters.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace content {
 
@@ -149,7 +150,7 @@ AppCacheURLLoaderJob::AppCacheURLLoaderJob(
     NavigationLoaderInterceptor::LoaderCallback loader_callback)
     : storage_(storage->GetWeakPtr()),
       start_time_tick_(base::TimeTicks::Now()),
-      cache_id_(kAppCacheNoCacheId),
+      cache_id_(blink::mojom::kAppCacheNoCacheId),
       is_fallback_(false),
       binding_(this),
       writable_handle_watcher_(FROM_HERE,

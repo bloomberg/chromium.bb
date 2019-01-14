@@ -12,6 +12,7 @@
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 
 namespace content {
 
@@ -44,8 +45,8 @@ void ChromeAppCacheService::InitializeOnIOThread(
 }
 
 void ChromeAppCacheService::Bind(
-    std::unique_ptr<mojom::AppCacheBackend> backend,
-    mojom::AppCacheBackendRequest request,
+    std::unique_ptr<blink::mojom::AppCacheBackend> backend,
+    blink::mojom::AppCacheBackendRequest request,
     int process_id) {
   DCHECK(process_bindings_.find(process_id) == process_bindings_.end());
   process_bindings_[process_id] =

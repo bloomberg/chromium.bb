@@ -29,6 +29,8 @@
 #include "net/base/escape.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/view_cache_helper.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace content {
 
@@ -52,8 +54,8 @@ int64_t ToInt64(const std::string& str) {
   return i;
 }
 
-bool SortByResourceUrl(const AppCacheResourceInfo& lhs,
-                       const AppCacheResourceInfo& rhs) {
+bool SortByResourceUrl(const blink::mojom::AppCacheResourceInfo& lhs,
+                       const blink::mojom::AppCacheResourceInfo& rhs) {
   return lhs.url.spec() < rhs.url.spec();
 }
 
@@ -71,7 +73,7 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryValueForResponseEnquiry(
 }
 
 std::unique_ptr<base::DictionaryValue> GetDictionaryValueForAppCacheInfo(
-    const content::AppCacheInfo& appcache_info) {
+    const blink::mojom::AppCacheInfo& appcache_info) {
   std::unique_ptr<base::DictionaryValue> dict_value(
       new base::DictionaryValue());
   dict_value->SetString("manifestURL", appcache_info.manifest_url.spec());
@@ -91,7 +93,7 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryValueForAppCacheInfo(
 std::unique_ptr<base::ListValue> GetListValueForAppCacheInfoVector(
     const AppCacheInfoVector& appcache_info_vector) {
   std::unique_ptr<base::ListValue> list(new base::ListValue());
-  for (const AppCacheInfo& info : appcache_info_vector)
+  for (const blink::mojom::AppCacheInfo& info : appcache_info_vector)
     list->Append(GetDictionaryValueForAppCacheInfo(info));
   return list;
 }
@@ -111,7 +113,7 @@ std::unique_ptr<base::ListValue> GetListValueFromAppCacheInfoCollection(
 
 std::unique_ptr<base::DictionaryValue>
 GetDictionaryValueForAppCacheResourceInfo(
-    const AppCacheResourceInfo& resource_info) {
+    const blink::mojom::AppCacheResourceInfo& resource_info) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetString("url", resource_info.url.spec());
   dict->SetString(
@@ -129,9 +131,10 @@ GetDictionaryValueForAppCacheResourceInfo(
 }
 
 std::unique_ptr<base::ListValue> GetListValueForAppCacheResourceInfoVector(
-    std::vector<AppCacheResourceInfo>* resource_info_vector) {
+    std::vector<blink::mojom::AppCacheResourceInfo>* resource_info_vector) {
   std::unique_ptr<base::ListValue> list(new base::ListValue);
-  for (const AppCacheResourceInfo& res_info : *resource_info_vector)
+  for (const blink::mojom::AppCacheResourceInfo& res_info :
+       *resource_info_vector)
     list->Append(GetDictionaryValueForAppCacheResourceInfo(res_info));
   return list;
 }
@@ -240,9 +243,11 @@ void AppCacheInternalsUI::Proxy::RequestAppCacheDetails(
 
 void AppCacheInternalsUI::Proxy::OnGroupLoaded(AppCacheGroup* appcache_group,
                                                const GURL& manifest_gurl) {
-  std::unique_ptr<std::vector<AppCacheResourceInfo>> resource_info_vector;
+  std::unique_ptr<std::vector<blink::mojom::AppCacheResourceInfo>>
+      resource_info_vector;
   if (appcache_group && appcache_group->newest_complete_cache()) {
-    resource_info_vector.reset(new std::vector<AppCacheResourceInfo>);
+    resource_info_vector.reset(
+        new std::vector<blink::mojom::AppCacheResourceInfo>);
     appcache_group->newest_complete_cache()->ToResourceInfoVector(
         resource_info_vector.get());
     std::sort(resource_info_vector->begin(), resource_info_vector->end(),
@@ -448,7 +453,8 @@ void AppCacheInternalsUI::OnAppCacheInfoDeleted(
 void AppCacheInternalsUI::OnAppCacheDetailsReady(
     const base::FilePath& partition_path,
     const std::string& manifest_url,
-    std::unique_ptr<std::vector<AppCacheResourceInfo>> resource_info_vector) {
+    std::unique_ptr<std::vector<blink::mojom::AppCacheResourceInfo>>
+        resource_info_vector) {
   if (resource_info_vector) {
     web_ui()->CallJavascriptFunctionUnsafe(
         kFunctionOnAppCacheDetailsReady, base::Value(manifest_url),

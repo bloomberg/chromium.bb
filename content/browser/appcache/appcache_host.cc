@@ -16,20 +16,25 @@
 #include "content/browser/appcache/appcache_request.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
+#include "content/common/appcache_interfaces.h"
+#include "content/public/common/appcache_info.h"
 #include "content/public/common/content_features.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace content {
 
 namespace {
 
-AppCacheInfo CreateCacheInfo(const AppCache* cache,
-                             const GURL& manifest_url,
-                             AppCacheStatus status) {
-  AppCacheInfo info;
+blink::mojom::AppCacheInfo CreateCacheInfo(
+    const AppCache* cache,
+    const GURL& manifest_url,
+    blink::mojom::AppCacheStatus status) {
+  blink::mojom::AppCacheInfo info;
   info.manifest_url = manifest_url;
   info.status = status;
 
@@ -60,8 +65,8 @@ AppCacheHost::AppCacheHost(int host_id,
       spawning_process_id_(0),
       parent_host_id_(kAppCacheNoHostId),
       parent_process_id_(0),
-      pending_main_resource_cache_id_(kAppCacheNoCacheId),
-      pending_selected_cache_id_(kAppCacheNoCacheId),
+      pending_main_resource_cache_id_(blink::mojom::kAppCacheNoCacheId),
+      pending_selected_cache_id_(blink::mojom::kAppCacheNoCacheId),
       was_select_cache_called_(false),
       is_cache_selection_enabled_(true),
       frontend_(frontend),
@@ -127,7 +132,7 @@ bool AppCacheHost::SelectCache(const GURL& document_url,
   // MarkAsForeignEntry is called in that case, so that detection
   // step is skipped here. See WebApplicationCacheHostImpl.cc
 
-  if (cache_document_was_loaded_from != kAppCacheNoCacheId) {
+  if (cache_document_was_loaded_from != blink::mojom::kAppCacheNoCacheId) {
     LoadSelectedCache(cache_document_was_loaded_from);
     return true;
   }
@@ -146,13 +151,14 @@ bool AppCacheHost::SelectCache(const GURL& document_url,
         !policy->CanCreateAppCache(manifest_url, first_party_url_)) {
       FinishCacheSelection(nullptr, nullptr);
       std::vector<int> host_ids(1, host_id_);
-      frontend_->OnEventRaised(host_ids,
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+      frontend_->OnEventRaised(
+          host_ids, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
       frontend_->OnErrorEventRaised(
-          host_ids, AppCacheErrorDetails(
-                        "Cache creation was blocked by the content policy",
-                        AppCacheErrorReason::APPCACHE_POLICY_ERROR, GURL(), 0,
-                        false /*is_cross_origin*/));
+          host_ids,
+          blink::mojom::AppCacheErrorDetails(
+              "Cache creation was blocked by the content policy",
+              blink::mojom::AppCacheErrorReason::APPCACHE_POLICY_ERROR, GURL(),
+              0, false /*is_cross_origin*/));
       frontend_->OnContentBlocked(host_id_, manifest_url);
       return true;
     }
@@ -180,7 +186,7 @@ bool AppCacheHost::SelectCacheForSharedWorker(int64_t appcache_id) {
          !is_selection_pending());
 
   was_select_cache_called_ = true;
-  if (appcache_id != kAppCacheNoCacheId) {
+  if (appcache_id != blink::mojom::kAppCacheNoCacheId) {
     LoadSelectedCache(appcache_id);
     return true;
   }
@@ -198,7 +204,7 @@ bool AppCacheHost::MarkAsForeignEntry(const GURL& document_url,
   storage()->MarkEntryAsForeign(
       main_resource_was_namespace_entry_ ? namespace_entry_url_ : document_url,
       cache_document_was_loaded_from);
-  SelectCache(document_url, kAppCacheNoCacheId, GURL());
+  SelectCache(document_url, blink::mojom::kAppCacheNoCacheId, GURL());
   return true;
 }
 
@@ -328,31 +334,31 @@ std::unique_ptr<AppCacheRequestHandler> AppCacheHost::CreateRequestHandler(
 }
 
 void AppCacheHost::GetResourceList(
-    std::vector<AppCacheResourceInfo>* resource_infos) {
+    std::vector<blink::mojom::AppCacheResourceInfo>* resource_infos) {
   if (associated_cache_.get() && associated_cache_->is_complete())
     associated_cache_->ToResourceInfoVector(resource_infos);
 }
 
-AppCacheStatus AppCacheHost::GetStatus() {
+blink::mojom::AppCacheStatus AppCacheHost::GetStatus() {
   // 6.9.8 Application cache API
   AppCache* cache = associated_cache();
   if (!cache)
-    return AppCacheStatus::APPCACHE_STATUS_UNCACHED;
+    return blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED;
 
   // A cache without an owning group represents the cache being constructed
   // during the application cache update process.
   if (!cache->owning_group())
-    return AppCacheStatus::APPCACHE_STATUS_DOWNLOADING;
+    return blink::mojom::AppCacheStatus::APPCACHE_STATUS_DOWNLOADING;
 
   if (cache->owning_group()->is_obsolete())
-    return AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
+    return blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
   if (cache->owning_group()->update_status() == AppCacheGroup::CHECKING)
-    return AppCacheStatus::APPCACHE_STATUS_CHECKING;
+    return blink::mojom::AppCacheStatus::APPCACHE_STATUS_CHECKING;
   if (cache->owning_group()->update_status() == AppCacheGroup::DOWNLOADING)
-    return AppCacheStatus::APPCACHE_STATUS_DOWNLOADING;
+    return blink::mojom::AppCacheStatus::APPCACHE_STATUS_DOWNLOADING;
   if (swappable_cache_.get())
-    return AppCacheStatus::APPCACHE_STATUS_UPDATE_READY;
-  return AppCacheStatus::APPCACHE_STATUS_IDLE;
+    return blink::mojom::AppCacheStatus::APPCACHE_STATUS_UPDATE_READY;
+  return blink::mojom::AppCacheStatus::APPCACHE_STATUS_IDLE;
 }
 
 void AppCacheHost::LoadOrCreateGroup(const GURL& manifest_url) {
@@ -369,17 +375,17 @@ void AppCacheHost::OnGroupLoaded(AppCacheGroup* group,
 }
 
 void AppCacheHost::LoadSelectedCache(int64_t cache_id) {
-  DCHECK(cache_id != kAppCacheNoCacheId);
+  DCHECK(cache_id != blink::mojom::kAppCacheNoCacheId);
   pending_selected_cache_id_ = cache_id;
   storage()->LoadCache(cache_id, this);
 }
 
 void AppCacheHost::OnCacheLoaded(AppCache* cache, int64_t cache_id) {
   if (cache_id == pending_main_resource_cache_id_) {
-    pending_main_resource_cache_id_ = kAppCacheNoCacheId;
+    pending_main_resource_cache_id_ = blink::mojom::kAppCacheNoCacheId;
     main_resource_cache_ = cache;
   } else if (cache_id == pending_selected_cache_id_) {
-    pending_selected_cache_id_ = kAppCacheNoCacheId;
+    pending_selected_cache_id_ = blink::mojom::kAppCacheNoCacheId;
     FinishCacheSelection(cache, nullptr);
   }
 }
@@ -474,8 +480,8 @@ void AppCacheHost::OnUpdateComplete(AppCacheGroup* group) {
 
   if (associated_cache_info_pending_ && associated_cache_.get() &&
       associated_cache_->is_complete()) {
-    AppCacheInfo info = CreateCacheInfo(associated_cache_.get(),
-                                        preferred_manifest_url_, GetStatus());
+    blink::mojom::AppCacheInfo info = CreateCacheInfo(
+        associated_cache_.get(), preferred_manifest_url_, GetStatus());
     associated_cache_info_pending_ = false;
     // In the network service world, we need to pass the URLLoaderFactory
     // instance to the renderer which it can use to request subresources.
@@ -498,7 +504,7 @@ void AppCacheHost::SetSwappableCache(AppCacheGroup* group) {
 }
 
 void AppCacheHost::LoadMainResourceCache(int64_t cache_id) {
-  DCHECK(cache_id != kAppCacheNoCacheId);
+  DCHECK(cache_id != blink::mojom::kAppCacheNoCacheId);
   if (pending_main_resource_cache_id_ == cache_id ||
       (main_resource_cache_.get() &&
        main_resource_cache_->cache_id() == cache_id)) {
@@ -574,7 +580,8 @@ void AppCacheHost::AssociateCacheHelper(AppCache* cache,
   if (cache)
     cache->AssociateHost(this);
 
-  AppCacheInfo info = CreateCacheInfo(cache, manifest_url, GetStatus());
+  blink::mojom::AppCacheInfo info =
+      CreateCacheInfo(cache, manifest_url, GetStatus());
   // In the network service world, we need to pass the URLLoaderFactory
   // instance to the renderer which it can use to request subresources.
   // This ensures that they can be served out of the AppCache.

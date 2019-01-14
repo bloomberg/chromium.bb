@@ -11,7 +11,8 @@
 #include "base/containers/id_map.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "content/common/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -57,11 +58,11 @@ WebApplicationCacheHostImpl* WebApplicationCacheHostImpl::FromId(int id) {
 
 WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
     WebApplicationCacheHostClient* client,
-    mojom::AppCacheBackend* backend,
+    blink::mojom::AppCacheBackend* backend,
     int appcache_host_id)
     : client_(client),
       backend_(backend),
-      status_(AppCacheStatus::APPCACHE_STATUS_UNCACHED),
+      status_(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED),
       is_scheme_supported_(false),
       is_get_method_(false),
       is_new_master_entry_(MAYBE_NEW_ENTRY),
@@ -85,23 +86,24 @@ WebApplicationCacheHostImpl::~WebApplicationCacheHostImpl() {
 }
 
 void WebApplicationCacheHostImpl::OnCacheSelected(
-    const AppCacheInfo& info) {
+    const blink::mojom::AppCacheInfo& info) {
   cache_info_ = info;
   client_->DidChangeCacheAssociation();
 }
 
 void WebApplicationCacheHostImpl::OnStatusChanged(
-    AppCacheStatus status) {
+    blink::mojom::AppCacheStatus status) {
   // TODO(michaeln): delete me, not used
 }
 
 void WebApplicationCacheHostImpl::OnEventRaised(
-    AppCacheEventID event_id) {
-  DCHECK_NE(
-      event_id,
-      AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // See OnProgressEventRaised.
+    blink::mojom::AppCacheEventID event_id) {
   DCHECK_NE(event_id,
-            AppCacheEventID::APPCACHE_ERROR_EVENT);  // See OnErrorEventRaised.
+            blink::mojom::AppCacheEventID::
+                APPCACHE_PROGRESS_EVENT);  // See OnProgressEventRaised.
+  DCHECK_NE(event_id,
+            blink::mojom::AppCacheEventID::
+                APPCACHE_ERROR_EVENT);  // See OnErrorEventRaised.
 
   // Emit logging output prior to calling out to script as we can get
   // deleted within the script event handler.
@@ -111,21 +113,21 @@ void WebApplicationCacheHostImpl::OnEventRaised(
   OnLogMessage(APPCACHE_LOG_INFO, message);
 
   switch (event_id) {
-    case AppCacheEventID::APPCACHE_CHECKING_EVENT:
-      status_ = AppCacheStatus::APPCACHE_STATUS_CHECKING;
+    case blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT:
+      status_ = blink::mojom::AppCacheStatus::APPCACHE_STATUS_CHECKING;
       break;
-    case AppCacheEventID::APPCACHE_DOWNLOADING_EVENT:
-      status_ = AppCacheStatus::APPCACHE_STATUS_DOWNLOADING;
+    case blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT:
+      status_ = blink::mojom::AppCacheStatus::APPCACHE_STATUS_DOWNLOADING;
       break;
-    case AppCacheEventID::APPCACHE_UPDATE_READY_EVENT:
-      status_ = AppCacheStatus::APPCACHE_STATUS_UPDATE_READY;
+    case blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT:
+      status_ = blink::mojom::AppCacheStatus::APPCACHE_STATUS_UPDATE_READY;
       break;
-    case AppCacheEventID::APPCACHE_CACHED_EVENT:
-    case AppCacheEventID::APPCACHE_NO_UPDATE_EVENT:
-      status_ = AppCacheStatus::APPCACHE_STATUS_IDLE;
+    case blink::mojom::AppCacheEventID::APPCACHE_CACHED_EVENT:
+    case blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT:
+      status_ = blink::mojom::AppCacheStatus::APPCACHE_STATUS_IDLE;
       break;
-    case AppCacheEventID::APPCACHE_OBSOLETE_EVENT:
-      status_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
+    case blink::mojom::AppCacheEventID::APPCACHE_OBSOLETE_EVENT:
+      status_ = blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
       break;
     default:
       NOTREACHED();
@@ -143,12 +145,12 @@ void WebApplicationCacheHostImpl::OnProgressEventRaised(
   std::string message = base::StringPrintf(kFormatString, num_complete,
                                            num_total, url.spec().c_str());
   OnLogMessage(APPCACHE_LOG_INFO, message);
-  status_ = AppCacheStatus::APPCACHE_STATUS_DOWNLOADING;
+  status_ = blink::mojom::AppCacheStatus::APPCACHE_STATUS_DOWNLOADING;
   client_->NotifyProgressEventListener(url, num_total, num_complete);
 }
 
 void WebApplicationCacheHostImpl::OnErrorEventRaised(
-    const AppCacheErrorDetails& details) {
+    const blink::mojom::AppCacheErrorDetails& details) {
   // Emit logging output prior to calling out to script as we can get
   // deleted within the script event handler.
   const char kFormatString[] = "Application Cache Error event: %s";
@@ -156,11 +158,13 @@ void WebApplicationCacheHostImpl::OnErrorEventRaised(
       base::StringPrintf(kFormatString, details.message.c_str());
   OnLogMessage(APPCACHE_LOG_ERROR, full_message);
 
-  status_ = cache_info_.is_complete ? AppCacheStatus::APPCACHE_STATUS_IDLE
-                                    : AppCacheStatus::APPCACHE_STATUS_UNCACHED;
+  status_ = cache_info_.is_complete
+                ? blink::mojom::AppCacheStatus::APPCACHE_STATUS_IDLE
+                : blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED;
   if (details.is_cross_origin) {
     // Don't leak detailed information to script for cross-origin resources.
-    DCHECK_EQ(AppCacheErrorReason::APPCACHE_RESOURCE_ERROR, details.reason);
+    DCHECK_EQ(blink::mojom::AppCacheErrorReason::APPCACHE_RESOURCE_ERROR,
+              details.reason);
     client_->NotifyErrorEventListener(static_cast<ErrorReason>(details.reason),
                                       details.url, 0, WebString());
   } else {
@@ -184,7 +188,7 @@ void WebApplicationCacheHostImpl::WillStartMainResourceRequest(
       static_cast<const WebApplicationCacheHostImpl*>(spawning_host);
   if (spawning_host_impl && (spawning_host_impl != this) &&
       (spawning_host_impl->status_ !=
-       AppCacheStatus::APPCACHE_STATUS_UNCACHED)) {
+       blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED)) {
     backend_->SetSpawningHostId(host_id_, spawning_host_impl->host_id());
   }
 }
@@ -194,9 +198,10 @@ void WebApplicationCacheHostImpl::SelectCacheWithoutManifest() {
     return;
   was_select_cache_called_ = true;
 
-  status_ = (document_response_.AppCacheID() == kAppCacheNoCacheId)
-                ? AppCacheStatus::APPCACHE_STATUS_UNCACHED
-                : AppCacheStatus::APPCACHE_STATUS_CHECKING;
+  status_ =
+      (document_response_.AppCacheID() == blink::mojom::kAppCacheNoCacheId)
+          ? blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED
+          : blink::mojom::AppCacheStatus::APPCACHE_STATUS_CHECKING;
   is_new_master_entry_ = OLD_ENTRY;
   backend_->SelectCache(host_id_, document_url_,
                         document_response_.AppCacheID(), GURL());
@@ -212,18 +217,18 @@ bool WebApplicationCacheHostImpl::SelectCacheWithManifest(
 
   // 6.9.6 The application cache selection algorithm
   // Check for new 'master' entries.
-  if (document_response_.AppCacheID() == kAppCacheNoCacheId) {
+  if (document_response_.AppCacheID() == blink::mojom::kAppCacheNoCacheId) {
     if (is_scheme_supported_ && is_get_method_ &&
         (manifest_gurl.GetOrigin() == document_url_.GetOrigin())) {
-      status_ = AppCacheStatus::APPCACHE_STATUS_CHECKING;
+      status_ = blink::mojom::AppCacheStatus::APPCACHE_STATUS_CHECKING;
       is_new_master_entry_ = NEW_ENTRY;
     } else {
-      status_ = AppCacheStatus::APPCACHE_STATUS_UNCACHED;
+      status_ = blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED;
       is_new_master_entry_ = OLD_ENTRY;
       manifest_gurl = GURL();
     }
-    backend_->SelectCache(
-        host_id_, document_url_, kAppCacheNoCacheId, manifest_gurl);
+    backend_->SelectCache(host_id_, document_url_,
+                          blink::mojom::kAppCacheNoCacheId, manifest_gurl);
     return true;
   }
 
@@ -235,11 +240,11 @@ bool WebApplicationCacheHostImpl::SelectCacheWithManifest(
   if (document_manifest_gurl != manifest_gurl) {
     backend_->MarkAsForeignEntry(host_id_, document_url_,
                                  document_response_.AppCacheID());
-    status_ = AppCacheStatus::APPCACHE_STATUS_UNCACHED;
+    status_ = blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED;
     return false;  // the navigation will be restarted
   }
 
-  status_ = AppCacheStatus::APPCACHE_STATUS_CHECKING;
+  status_ = blink::mojom::AppCacheStatus::APPCACHE_STATUS_CHECKING;
 
   // Its a 'master' entry thats already in the cache.
   backend_->SelectCache(host_id_, document_url_,
@@ -256,7 +261,7 @@ void WebApplicationCacheHostImpl::DidReceiveResponseForMainResource(
   original_main_resource_url_ = GURL();
 
   is_scheme_supported_ =  IsSchemeSupportedForAppCache(document_url_);
-  if ((document_response_.AppCacheID() != kAppCacheNoCacheId) ||
+  if ((document_response_.AppCacheID() != blink::mojom::kAppCacheNoCacheId) ||
       !is_scheme_supported_ || !is_get_method_)
     is_new_master_entry_ = OLD_ENTRY;
 }
@@ -270,11 +275,11 @@ bool WebApplicationCacheHostImpl::StartUpdate() {
   backend_->StartUpdate(host_id_, &result);
   if (!result)
     return false;
-  if (status_ == AppCacheStatus::APPCACHE_STATUS_IDLE ||
-      status_ == AppCacheStatus::APPCACHE_STATUS_UPDATE_READY) {
-    status_ = AppCacheStatus::APPCACHE_STATUS_CHECKING;
+  if (status_ == blink::mojom::AppCacheStatus::APPCACHE_STATUS_IDLE ||
+      status_ == blink::mojom::AppCacheStatus::APPCACHE_STATUS_UPDATE_READY) {
+    status_ = blink::mojom::AppCacheStatus::APPCACHE_STATUS_CHECKING;
   } else {
-    status_ = AppCacheStatus::APPCACHE_STATUS_UNCACHED;
+    status_ = blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED;
     backend_->GetStatus(host_id_, &status_);
   }
   return true;
@@ -307,9 +312,9 @@ void WebApplicationCacheHostImpl::GetResourceList(
     WebVector<ResourceInfo>* resources) {
   if (!cache_info_.is_complete)
     return;
-  std::vector<mojom::AppCacheResourceInfoPtr> boxed_infos;
+  std::vector<blink::mojom::AppCacheResourceInfoPtr> boxed_infos;
   backend_->GetResourceList(host_id_, &boxed_infos);
-  std::vector<AppCacheResourceInfo> resource_infos;
+  std::vector<blink::mojom::AppCacheResourceInfo> resource_infos;
   for (auto& b : boxed_infos) {
     resource_infos.emplace_back(std::move(*b));
   }

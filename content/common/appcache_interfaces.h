@@ -10,23 +10,17 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "content/common/appcache.mojom.h"
+#include "content/common/content_export.h"
 #include "content/public/common/appcache_info.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace net {
 class URLRequest;
 }
 
 namespace content {
-
-// Defines constants, types, and abstract classes used in the main
-// process and in child processes.
-
-using mojom::AppCacheEventID;
-using mojom::AppCacheErrorReason;
-using mojom::AppCacheResourceInfo;
-using mojom::AppCacheErrorDetails;
 
 // Temporarily renumber them in wierd way, to help remove LOG_TIP from WebKit
 enum AppCacheLogLevel {
@@ -59,18 +53,18 @@ struct CONTENT_EXPORT AppCacheNamespace {
 // Interface used by backend (browser-process) to talk to frontend (renderer).
 class CONTENT_EXPORT AppCacheFrontend {
  public:
-  virtual void OnCacheSelected(
-      int host_id, const AppCacheInfo& info) = 0;
+  virtual void OnCacheSelected(int host_id,
+                               const blink::mojom::AppCacheInfo& info) = 0;
   virtual void OnStatusChanged(const std::vector<int>& host_ids,
-                               AppCacheStatus status) = 0;
+                               blink::mojom::AppCacheStatus status) = 0;
   virtual void OnEventRaised(const std::vector<int>& host_ids,
-                             AppCacheEventID event_id) = 0;
+                             blink::mojom::AppCacheEventID event_id) = 0;
   virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
                                      const GURL& url,
                                      int num_total, int num_complete) = 0;
   virtual void OnErrorEventRaised(
       const std::vector<int>& host_ids,
-      const AppCacheErrorDetails& details) = 0;
+      const blink::mojom::AppCacheErrorDetails& details) = 0;
   virtual void OnContentBlocked(int host_id,
                                 const GURL& manifest_url) = 0;
   virtual void OnLogMessage(int host_id, AppCacheLogLevel log_level,

@@ -21,6 +21,8 @@
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -49,7 +51,8 @@ namespace appcache_update_job_unittest {
 class AppCacheUpdateJobTest;
 }
 
-using GetStatusCallback = base::OnceCallback<void(AppCacheStatus)>;
+using GetStatusCallback =
+    base::OnceCallback<void(blink::mojom::AppCacheStatus)>;
 using StartUpdateCallback = base::OnceCallback<void(bool)>;
 using SwapCacheCallback = base::OnceCallback<void(bool)>;
 
@@ -115,7 +118,8 @@ class CONTENT_EXPORT AppCacheHost
       bool should_reset_appcache);
 
   // Support for devtools inspecting appcache resources.
-  void GetResourceList(std::vector<AppCacheResourceInfo>* resource_infos);
+  void GetResourceList(
+      std::vector<blink::mojom::AppCacheResourceInfo>* resource_infos);
 
   // Breaks any existing association between this host and a cache.
   // 'manifest_url' is sent to DevTools as the manifest url that could have
@@ -177,7 +181,7 @@ class CONTENT_EXPORT AppCacheHost
   }
 
   bool is_selection_pending() const {
-    return pending_selected_cache_id_ != kAppCacheNoCacheId ||
+    return pending_selected_cache_id_ != blink::mojom::kAppCacheNoCacheId ||
            !pending_selected_manifest_url_.is_empty();
   }
 
@@ -205,7 +209,7 @@ class CONTENT_EXPORT AppCacheHost
   friend class content::AppCacheRequestHandlerTest;
   friend class content::appcache_update_job_unittest::AppCacheUpdateJobTest;
 
-  AppCacheStatus GetStatus();
+  blink::mojom::AppCacheStatus GetStatus();
   void LoadSelectedCache(int64_t cache_id);
   void LoadOrCreateGroup(const GURL& manifest_url);
 

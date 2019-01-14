@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 MockBrowsingDataAppCacheHelper::MockBrowsingDataAppCacheHelper(
     content::BrowserContext* browser_context)
@@ -30,9 +31,9 @@ void MockBrowsingDataAppCacheHelper::DeleteAppCacheGroup(
 void MockBrowsingDataAppCacheHelper::AddAppCacheSamples() {
   const GURL kOriginURL("http://hello/");
   const url::Origin kOrigin(url::Origin::Create(kOriginURL));
-  content::AppCacheInfo mock_manifest_1;
-  content::AppCacheInfo mock_manifest_2;
-  content::AppCacheInfo mock_manifest_3;
+  blink::mojom::AppCacheInfo mock_manifest_1;
+  blink::mojom::AppCacheInfo mock_manifest_2;
+  blink::mojom::AppCacheInfo mock_manifest_3;
   mock_manifest_1.manifest_url = kOriginURL.Resolve("manifest1");
   mock_manifest_1.size = 1;
   mock_manifest_2.manifest_url = kOriginURL.Resolve("manifest2");

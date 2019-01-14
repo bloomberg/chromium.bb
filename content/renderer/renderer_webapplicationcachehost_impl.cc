@@ -4,11 +4,12 @@
 
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 
-#include "content/common/appcache.mojom.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -21,7 +22,7 @@ namespace content {
 RendererWebApplicationCacheHostImpl::RendererWebApplicationCacheHostImpl(
     RenderViewImpl* render_view,
     WebApplicationCacheHostClient* client,
-    mojom::AppCacheBackend* backend,
+    blink::mojom::AppCacheBackend* backend,
     int appcache_host_id,
     int frame_routing_id)
     : WebApplicationCacheHostImpl(client, backend, appcache_host_id),
@@ -55,7 +56,7 @@ void RendererWebApplicationCacheHostImpl::OnContentBlocked(
 }
 
 void RendererWebApplicationCacheHostImpl::OnCacheSelected(
-    const AppCacheInfo& info) {
+    const blink::mojom::AppCacheInfo& info) {
   if (!info.manifest_url.is_empty()) {
     RenderThreadImpl::current()->Send(new ViewHostMsg_AppCacheAccessed(
         routing_id_, info.manifest_url, false));

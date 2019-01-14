@@ -29,6 +29,7 @@
 #include "content/browser/appcache/appcache_update_url_loader_request.h"
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "content/browser/url_loader_factory_getter.h"
+#include "content/common/appcache_interfaces.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -45,6 +46,8 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace content {
 namespace appcache_update_job_unittest {
@@ -248,16 +251,18 @@ class MockFrontend : public AppCacheFrontend {
         verify_progress_events_(false),
         last_progress_total_(-1),
         last_progress_complete_(-1),
-        start_update_trigger_(AppCacheEventID::APPCACHE_CHECKING_EVENT),
+        start_update_trigger_(
+            blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT),
         update_(nullptr) {}
 
-  void OnCacheSelected(int host_id, const AppCacheInfo& info) override {}
+  void OnCacheSelected(int host_id,
+                       const blink::mojom::AppCacheInfo& info) override {}
 
   void OnStatusChanged(const std::vector<int>& host_ids,
-                       AppCacheStatus status) override {}
+                       blink::mojom::AppCacheStatus status) override {}
 
   void OnEventRaised(const std::vector<int>& host_ids,
-                     AppCacheEventID event_id) override {
+                     blink::mojom::AppCacheEventID event_id) override {
     raised_events_.push_back(RaisedEvent(host_ids, event_id));
 
     // Trigger additional updates if requested.
@@ -270,10 +275,12 @@ class MockFrontend : public AppCacheFrontend {
     }
   }
 
-  void OnErrorEventRaised(const std::vector<int>& host_ids,
-                          const AppCacheErrorDetails& details) override {
+  void OnErrorEventRaised(
+      const std::vector<int>& host_ids,
+      const blink::mojom::AppCacheErrorDetails& details) override {
     error_message_ = details.message;
-    OnEventRaised(host_ids, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    OnEventRaised(host_ids,
+                  blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
   }
 
   void OnProgressEventRaised(const std::vector<int>& host_ids,
@@ -281,7 +288,8 @@ class MockFrontend : public AppCacheFrontend {
                              int num_total,
                              int num_complete) override {
     if (!ignore_progress_events_)
-      OnEventRaised(host_ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+      OnEventRaised(host_ids,
+                    blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
 
     if (verify_progress_events_) {
       EXPECT_GE(num_total, num_complete);
@@ -318,9 +326,9 @@ class MockFrontend : public AppCacheFrontend {
       network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
 
   void AddExpectedEvent(const std::vector<int>& host_ids,
-      AppCacheEventID event_id) {
+                        blink::mojom::AppCacheEventID event_id) {
     DCHECK(!ignore_progress_events_ ||
-           event_id != AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+           event_id != blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     expected_events_.push_back(RaisedEvent(host_ids, event_id));
   }
 
@@ -338,7 +346,7 @@ class MockFrontend : public AppCacheFrontend {
     verify_progress_events_ = verify;
   }
 
-  void TriggerAdditionalUpdates(AppCacheEventID trigger_event,
+  void TriggerAdditionalUpdates(blink::mojom::AppCacheEventID trigger_event,
                                 AppCacheUpdateJob* update) {
     start_update_trigger_ = trigger_event;
     update_ = update;
@@ -349,7 +357,7 @@ class MockFrontend : public AppCacheFrontend {
   }
 
   using HostIds = std::vector<int>;
-  using RaisedEvent = std::pair<HostIds, AppCacheEventID>;
+  using RaisedEvent = std::pair<HostIds, blink::mojom::AppCacheEventID>;
   using RaisedEvents = std::vector<RaisedEvent>;
   RaisedEvents raised_events_;
   std::string error_message_;
@@ -365,7 +373,7 @@ class MockFrontend : public AppCacheFrontend {
   int last_progress_complete_;
 
   // Add ability for frontend to add master entries to an inprogress update.
-  AppCacheEventID start_update_trigger_;
+  blink::mojom::AppCacheEventID start_update_trigger_;
   AppCacheUpdateJob* update_;
   std::vector<AppCacheHost*> update_hosts_;
 };
@@ -779,7 +787,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     EXPECT_EQ(expected, events.size());
     EXPECT_EQ(expected, events[0].first.size());
     EXPECT_EQ(host.host_id(), events[0].first[0]);
-    EXPECT_EQ(AppCacheEventID::APPCACHE_CHECKING_EVENT, events[0].second);
+    EXPECT_EQ(blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT,
+              events[0].second);
 
     // Abort as we're not testing actual URL fetches in this test.
     delete update;
@@ -834,14 +843,16 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
       MockFrontend::HostIds& host_ids = events[0].first;
       EXPECT_TRUE(base::ContainsValue(host_ids, host1.host_id()));
       EXPECT_TRUE(base::ContainsValue(host_ids, host3.host_id()));
-      EXPECT_EQ(AppCacheEventID::APPCACHE_CHECKING_EVENT, events[0].second);
+      EXPECT_EQ(blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT,
+                events[0].second);
 
       events = mock_frontend2.raised_events_;
       expected = 1;
       EXPECT_EQ(expected, events.size());
       EXPECT_EQ(expected, events[0].first.size());  // 1 host using frontend2
       EXPECT_EQ(host2.host_id(), events[0].first[0]);
-      EXPECT_EQ(AppCacheEventID::APPCACHE_CHECKING_EVENT, events[0].second);
+      EXPECT_EQ(blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT,
+                events[0].second);
 
       events = mock_frontend3.raised_events_;
       EXPECT_TRUE(events.empty());
@@ -870,8 +881,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        MockFrontend::HostIds(1, host->host_id()),
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -908,11 +920,15 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_newest_cache_ = cache;  // newest cache unaffected by update
     expect_full_update_time_equal_to_ = group_->last_full_update_check_time();
     MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -943,8 +959,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;  // redirect is like a failed request
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        MockFrontend::HostIds(1, host->host_id()),
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -978,13 +995,14 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     tested_manifest_ = EMPTY_MANIFEST;
     tested_manifest_path_override_ = "files/missing-mime-manifest";
     MockFrontend::HostIds ids(1, host->host_id());
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
     frontend->AddExpectedEvent(
-        ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1016,11 +1034,15 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = true;
     expect_newest_cache_ = cache;  // newest cache unaffected by update
     MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_OBSOLETE_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_OBSOLETE_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_OBSOLETE_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_OBSOLETE_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1044,8 +1066,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        MockFrontend::HostIds(1, host->host_id()),
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1069,8 +1092,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;  // treated like cache failure
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        MockFrontend::HostIds(1, host->host_id()),
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1108,13 +1132,15 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_evictable_error_ = false;   // should be reset
     expect_full_update_time_newer_than_ = group_->last_full_update_check_time();
     MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1148,13 +1174,15 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = true;
     expect_newest_cache_ = cache;  // newest cache unaffected by update
     MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
 
     // Seed storage with expected manifest data.
     const std::string seed_data(kManifest1Contents);
@@ -1197,8 +1225,10 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = true;
     expect_newest_cache_ = cache;  // newest cache unaffected by update
     MockFrontend::HostIds id(1, host->host_id());
-    frontend->AddExpectedEvent(id, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(id, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend->AddExpectedEvent(
+        id, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        id, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
     frontend->expected_error_message_ =
         "Manifest entry not found in existing cache";
     WaitForUpdateToFinish();
@@ -1238,8 +1268,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = true;
     expect_full_update_time_newer_than_ = base::Time::Now() - kOneHour;
     tested_manifest_ = MANIFEST1;
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        MockFrontend::HostIds(1, host->host_id()),
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1266,8 +1297,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
     tested_manifest_ = MANIFEST_WITH_INTERCEPT;
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        MockFrontend::HostIds(1, host->host_id()),
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1308,25 +1340,31 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     tested_manifest_ = MANIFEST1;
     expect_full_update_time_newer_than_ = group_->last_full_update_check_time();
     MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     // Seed storage with expected manifest data different from manifest1.
     const std::string seed_data("different");
@@ -1374,15 +1412,18 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         response_writer_->response_id()));
     tested_manifest_ = MANIFEST1;
     MockFrontend::HostIds ids(1, host->host_id());
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend->AddExpectedEvent(
-        ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     // Seed storage with expected http response info for entry. Allow reuse.
     const char data[] =
@@ -1439,15 +1480,18 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_old_cache_ = cache;
     tested_manifest_ = MANIFEST1;
     MockFrontend::HostIds ids(1, host->host_id());
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend->AddExpectedEvent(
-        ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     // Seed storage with expected http response info for entry. Do NOT
     // allow reuse by setting an expires header in the past.
@@ -1505,15 +1549,18 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_old_cache_ = cache;
     tested_manifest_ = MANIFEST1;
     MockFrontend::HostIds ids(1, host->host_id());
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend->AddExpectedEvent(
-        ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     // Seed storage with expected http response info for entry: a vary header.
     const char data[] =
@@ -1574,15 +1621,18 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         response_writer_->response_id()));
     tested_manifest_ = MANIFEST1;
     MockFrontend::HostIds ids(1, host->host_id());
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend->AddExpectedEvent(
-        ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        ids, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     // Seed storage with expected http response info for an entry
     // with a vary header for which we allow reuse.
@@ -1644,27 +1694,33 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_old_cache_ = cache;
     tested_manifest_ = MANIFEST_MERGED_TYPES;
     MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit1
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // manifest
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids1,
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit1
+    frontend1->AddExpectedEvent(
+        ids1,
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // manifest
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1688,8 +1744,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;  // 404 explicit url is cache failure
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        MockFrontend::HostIds(1, host->host_id()),
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1726,15 +1783,19 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_newest_cache_ = cache;  // newest cache unaffectd by failed update
     expect_eviction_ = true;
     MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1809,45 +1870,59 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_response_ids_.insert(std::map<GURL, int64_t>::value_type(
         MockHttpServer::GetMockUrl("files/notmodified"), 555));  // copied
     MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit1
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // fallback1a
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // notfound
+        ids1,
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit1
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit2
+        ids1,
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // fallback1a
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // servererror
+        ids1,
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // notfound
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // notmodified
+        ids1,
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit2
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids1,
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // servererror
+    frontend1->AddExpectedEvent(
+        ids1,
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // notmodified
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit1
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // fallback1a
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // notfound
+        ids2,
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit1
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit2
+        ids2,
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // fallback1a
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // servererror
+        ids2,
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // notfound
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // notmodified
+        ids2,
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit2
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids2,
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // servererror
+    frontend2->AddExpectedEvent(
+        ids2,
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // notmodified
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1882,21 +1957,23 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_old_cache_ = cache;
     tested_manifest_ = EMPTY_MANIFEST;
     MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1926,14 +2003,16 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = true;
     tested_manifest_ = EMPTY_FILE_MANIFEST;
     MockFrontend::HostIds ids1(1, host->host_id());
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids1,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend->AddExpectedEvent(ids1,
-                               AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1969,8 +2048,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        MockFrontend::HostIds(1, host->host_id()),
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2006,8 +2086,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        MockFrontend::HostIds(1, host->host_id()),
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2044,8 +2125,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        MockFrontend::HostIds(1, host->host_id()),
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2081,8 +2163,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        MockFrontend::HostIds(1, host->host_id()),
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2118,8 +2201,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        MockFrontend::HostIds(1, host->host_id()),
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2147,8 +2231,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;  // storage failed
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        MockFrontend::HostIds(1, host->host_id()),
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2184,19 +2269,27 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = true;
     expect_newest_cache_ = cache;  // unchanged
     MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2234,7 +2327,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     AppCacheHost* host = MakeHost(1, frontend);
     host->SetFirstPartyUrlForTesting(kManifestUrl);
     host->SelectCache(MockHttpServer::GetMockUrl("files/empty1"),
-                      kAppCacheNoCacheId, kManifestUrl);
+                      blink::mojom::kAppCacheNoCacheId, kManifestUrl);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -2244,7 +2337,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = true;
     expect_newest_cache_ = cache.get();  // unchanged
     MockFrontend::HostIds ids1(1, host->host_id());
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
     frontend->expected_error_message_ =
         "Failed to commit new cache to storage";
 
@@ -2282,11 +2376,15 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = true;
     expect_newest_cache_ = cache;  // newest cache unaffected by update
     MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2310,8 +2408,10 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;
     MockFrontend::HostIds ids1(1, host->host_id());
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2336,8 +2436,10 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;
     MockFrontend::HostIds ids1(1, host->host_id());
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2365,8 +2467,10 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;
     MockFrontend::HostIds ids1(1, host->host_id());
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2394,10 +2498,12 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;  // 404 fallback url is cache failure
     MockFrontend::HostIds ids1(1, host->host_id());
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids1,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2433,15 +2539,19 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;  // all pending masters failed
     MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2484,24 +2594,30 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_old_cache_ = cache;
     tested_manifest_ = MANIFEST1;
     MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
     MockFrontend::HostIds ids3(1, host3->host_id());
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend3->AddExpectedEvent(ids3,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend3->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend3->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend3->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2540,19 +2656,25 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         MockHttpServer::GetMockUrl("files/explicit2"),
         AppCacheEntry(AppCacheEntry::MASTER)));
     MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CACHED_EVENT);
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_CACHED_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2597,29 +2719,36 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         MockHttpServer::GetMockUrl("files/explicit2"),
         AppCacheEntry(AppCacheEntry::MASTER)));
     MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
     MockFrontend::HostIds ids3(1, host3->host_id());
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend3->AddExpectedEvent(ids3,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend3->AddExpectedEvent(
-        ids3, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend3->AddExpectedEvent(ids3,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend3->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend3->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend3->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend3->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend3->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2666,16 +2795,18 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_non_null_update_time_ = true;
     tested_manifest_ = PENDING_MASTER_NO_UPDATE;
     MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
     MockFrontend::HostIds ids3(1, host3->host_id());
-    frontend2->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
     MockFrontend::HostIds ids2and3;
     ids2and3.push_back(host2->host_id());
     ids2and3.push_back(host3->host_id());
-    frontend2->AddExpectedEvent(ids2and3,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2and3, blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2718,7 +2849,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     AppCacheHost* host5 = MakeHost(5, frontend5);  // no master entry url
 
     frontend1->TriggerAdditionalUpdates(
-        AppCacheEventID::APPCACHE_DOWNLOADING_EVENT, update);
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT, update);
     frontend1->AdditionalUpdateHost(host2);  // fetch will fail
     frontend1->AdditionalUpdateHost(host3);  // same as an explicit entry
     frontend1->AdditionalUpdateHost(host4);  // same as another master entry
@@ -2734,43 +2865,58 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         MockHttpServer::GetMockUrl("files/explicit2"),
         AppCacheEntry(AppCacheEntry::MASTER)));
     MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CACHED_EVENT);
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CACHED_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
     MockFrontend::HostIds ids3(1, host3->host_id());
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend3->AddExpectedEvent(ids3,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend3->AddExpectedEvent(
-        ids3, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_CACHED_EVENT);
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend3->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend3->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend3->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend3->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend3->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_CACHED_EVENT);
     MockFrontend::HostIds ids4(1, host4->host_id());
-    frontend4->AddExpectedEvent(ids4, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend4->AddExpectedEvent(ids4,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend4->AddExpectedEvent(ids4, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend4->AddExpectedEvent(ids4, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend4->AddExpectedEvent(
-        ids4, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend4->AddExpectedEvent(ids4, AppCacheEventID::APPCACHE_CACHED_EVENT);
+        ids4, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend4->AddExpectedEvent(
+        ids4, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend4->AddExpectedEvent(
+        ids4, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend4->AddExpectedEvent(
+        ids4, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend4->AddExpectedEvent(
+        ids4, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend4->AddExpectedEvent(
+        ids4, blink::mojom::AppCacheEventID::APPCACHE_CACHED_EVENT);
 
     // Host 5 is not associated with cache so no progress/cached events.
     MockFrontend::HostIds ids5(1, host5->host_id());
-    frontend5->AddExpectedEvent(ids5, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend5->AddExpectedEvent(ids5,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend5->AddExpectedEvent(
+        ids5, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend5->AddExpectedEvent(
+        ids5, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2822,8 +2968,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     host6->new_master_entry_url_ =
         MockHttpServer::GetMockUrl("files/explicit1");
 
-    frontend2->TriggerAdditionalUpdates(AppCacheEventID::APPCACHE_ERROR_EVENT,
-                                        update);
+    frontend2->TriggerAdditionalUpdates(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT, update);
     frontend2->AdditionalUpdateHost(host3);
     frontend2->AdditionalUpdateHost(nullptr);  // no host
     frontend2->AdditionalUpdateHost(host4);  // no master entry url
@@ -2837,25 +2983,31 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_newest_cache_ = cache;  // newest cache unaffected by update
     tested_manifest_ = PENDING_MASTER_NO_UPDATE;
     MockFrontend::HostIds ids1(1, host1->host_id());  // prior associated host
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
     MockFrontend::HostIds ids3(1, host3->host_id());
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend3->AddExpectedEvent(ids3,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+    frontend3->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend3->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
     MockFrontend::HostIds ids4(1, host4->host_id());  // unassociated w/cache
-    frontend4->AddExpectedEvent(ids4, AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend4->AddExpectedEvent(
+        ids4, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
     MockFrontend::HostIds ids5(1, host5->host_id());
-    frontend5->AddExpectedEvent(ids5, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend5->AddExpectedEvent(ids5,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+    frontend5->AddExpectedEvent(
+        ids5, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend5->AddExpectedEvent(
+        ids5, blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
     MockFrontend::HostIds ids6(1, host6->host_id());
-    frontend6->AddExpectedEvent(ids6, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend6->AddExpectedEvent(ids6,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+    frontend6->AddExpectedEvent(
+        ids6, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend6->AddExpectedEvent(
+        ids6, blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2899,7 +3051,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         MockHttpServer::GetMockUrl("files/explicit2");
 
     frontend1->TriggerAdditionalUpdates(
-        AppCacheEventID::APPCACHE_PROGRESS_EVENT, update);
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT, update);
     frontend1->AdditionalUpdateHost(host2);  // same as entry in manifest
     frontend1->AdditionalUpdateHost(nullptr);  // no host
     frontend1->AdditionalUpdateHost(host3);  // new master entry
@@ -2915,46 +3067,56 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         MockHttpServer::GetMockUrl("files/explicit2"),
         AppCacheEntry(AppCacheEntry::MASTER)));
     MockFrontend::HostIds ids1(1, host1->host_id());  // prior associated host
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend2->AddExpectedEvent(
+        ids2, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
     MockFrontend::HostIds ids3(1, host3->host_id());
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend3->AddExpectedEvent(ids3,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend3->AddExpectedEvent(
-        ids3, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend3->AddExpectedEvent(ids3,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend3->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend3->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend3->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend3->AddExpectedEvent(
+        ids3, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
     MockFrontend::HostIds ids4(1, host4->host_id());  // unassociated w/cache
-    frontend4->AddExpectedEvent(ids4, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend4->AddExpectedEvent(ids4,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend4->AddExpectedEvent(
+        ids4, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend4->AddExpectedEvent(
+        ids4, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
     MockFrontend::HostIds ids5(1, host5->host_id());
-    frontend5->AddExpectedEvent(ids5, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend5->AddExpectedEvent(ids5,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend5->AddExpectedEvent(ids5, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend5->AddExpectedEvent(
-        ids5, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend5->AddExpectedEvent(ids5,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids5, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend5->AddExpectedEvent(
+        ids5, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend5->AddExpectedEvent(
+        ids5, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend5->AddExpectedEvent(
+        ids5, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend5->AddExpectedEvent(
+        ids5, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2998,17 +3160,21 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_extra_entries_.insert(AppCache::EntryMap::value_type(
         host->new_master_entry_url_, AppCacheEntry(AppCacheEntry::MASTER)));
     MockFrontend::HostIds ids1(1, host->host_id());
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids1,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CACHED_EVENT);
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CACHED_EVENT);
 
-    // Group status will be AppCacheStatus::APPCACHE_STATUS_IDLE so cannot call
-    // WaitForUpdateToFinish.
+    // Group status will be blink::mojom::AppCacheStatus::APPCACHE_STATUS_IDLE
+    // so cannot call WaitForUpdateToFinish.
     group_->AddUpdateObserver(this);
   }
 
@@ -3201,15 +3367,18 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_old_cache_ = cache;
     tested_manifest_ = MANIFEST1;
     MockFrontend::HostIds ids1(1, host->host_id());
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids1,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend->AddExpectedEvent(ids1,
-                               AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     // Seed storage with expected manifest response info that will cause
     // an If-Modified-Since header to be put in the manifest fetch request.
@@ -3274,15 +3443,18 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_old_cache_ = cache;
     tested_manifest_ = MANIFEST1;
     MockFrontend::HostIds ids1(1, host->host_id());
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids1,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend->AddExpectedEvent(ids1,
-                               AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        ids1, blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     // Seed storage with expected manifest response info that will cause
     // an If-None-Match header to be put in the manifest fetch request.
@@ -3436,8 +3608,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = true;
     tested_manifest_ = NONE;
     MockFrontend::HostIds host_ids(1, host->host_id());
-    frontend->AddExpectedEvent(host_ids,
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        host_ids, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -3465,8 +3637,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = false;
     tested_manifest_ = NONE;
     MockFrontend::HostIds host_ids(1, host->host_id());
-    frontend->AddExpectedEvent(host_ids,
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        host_ids, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -3622,7 +3794,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
         // Check that all entries in the newest cache were stored.
         for (const auto& pair : group_->newest_complete_cache()->entries()) {
-          EXPECT_NE(kAppCacheNoResponseId, pair.second.response_id());
+          EXPECT_NE(blink::mojom::kAppCacheNoResponseId,
+                    pair.second.response_id());
 
           // Check that any copied entries have the expected response id
           // and that entries that are not copied have a different response id.
@@ -3934,7 +4107,8 @@ TEST_P(AppCacheUpdateJobTest, AlreadyChecking) {
   EXPECT_EQ(expected, events.size());
   EXPECT_EQ(expected, events[0].first.size());
   EXPECT_EQ(host.host_id(), events[0].first[0]);
-  EXPECT_EQ(AppCacheEventID::APPCACHE_CHECKING_EVENT, events[0].second);
+  EXPECT_EQ(blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT,
+            events[0].second);
   EXPECT_EQ(AppCacheGroup::CHECKING, group->update_status());
 }
 
@@ -3963,11 +4137,13 @@ TEST_P(AppCacheUpdateJobTest, AlreadyDownloading) {
   expected = 1;
   EXPECT_EQ(expected, events[0].first.size());
   EXPECT_EQ(host.host_id(), events[0].first[0]);
-  EXPECT_EQ(AppCacheEventID::APPCACHE_CHECKING_EVENT, events[0].second);
+  EXPECT_EQ(blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT,
+            events[0].second);
 
   EXPECT_EQ(expected, events[1].first.size());
   EXPECT_EQ(host.host_id(), events[1].first[0]);
-  EXPECT_EQ(AppCacheEventID::APPCACHE_DOWNLOADING_EVENT, events[1].second);
+  EXPECT_EQ(blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT,
+            events[1].second);
 
   EXPECT_EQ(AppCacheGroup::DOWNLOADING, group->update_status());
 }

@@ -31,6 +31,7 @@
 #include "chrome/browser/browsing_data/local_data_container.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "extensions/buildflags/buildflags.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "ui/base/models/tree_node_model.h"
 
 class BrowsingDataCookieHelper;
@@ -131,7 +132,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
         const BrowsingDataLocalStorageHelper::LocalStorageInfo*
         session_storage_info);
     DetailedInfo& InitAppCache(const GURL& origin,
-                               const content::AppCacheInfo* appcache_info);
+                               const blink::mojom::AppCacheInfo* appcache_info);
     DetailedInfo& InitIndexedDB(
         const content::StorageUsageInfo* indexed_db_info);
     DetailedInfo& InitFileSystem(
@@ -158,7 +159,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
         nullptr;
     const BrowsingDataLocalStorageHelper::LocalStorageInfo*
         session_storage_info = nullptr;
-    const content::AppCacheInfo* appcache_info = nullptr;
+    const blink::mojom::AppCacheInfo* appcache_info = nullptr;
     const content::StorageUsageInfo* indexed_db_info = nullptr;
     const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info =
         nullptr;
@@ -338,7 +339,7 @@ class CookieTreeAppCacheNode : public CookieTreeNode {
   // CookieTreeAppCacheNode is valid.
   explicit CookieTreeAppCacheNode(
       const url::Origin& origin,
-      std::list<content::AppCacheInfo>::iterator appcache_info);
+      std::list<blink::mojom::AppCacheInfo>::iterator appcache_info);
   ~CookieTreeAppCacheNode() override;
 
   void DeleteStoredObjects() override;
@@ -347,7 +348,7 @@ class CookieTreeAppCacheNode : public CookieTreeNode {
 
  private:
   url::Origin origin_;
-  std::list<content::AppCacheInfo>::iterator appcache_info_;
+  std::list<blink::mojom::AppCacheInfo>::iterator appcache_info_;
   DISALLOW_COPY_AND_ASSIGN(CookieTreeAppCacheNode);
 };
 

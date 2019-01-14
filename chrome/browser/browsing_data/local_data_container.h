@@ -25,6 +25,7 @@
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_shared_worker_helper.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 class BrowsingDataFlashLSOHelper;
 class CookiesTreeModel;
@@ -55,7 +56,8 @@ typedef std::list<content::StorageUsageInfo> ServiceWorkerUsageInfoList;
 typedef std::list<BrowsingDataSharedWorkerHelper::SharedWorkerInfo>
     SharedWorkerInfoList;
 typedef std::list<content::StorageUsageInfo> CacheStorageUsageInfoList;
-typedef std::map<url::Origin, std::list<content::AppCacheInfo>> AppCacheInfoMap;
+typedef std::map<url::Origin, std::list<blink::mojom::AppCacheInfo>>
+    AppCacheInfoMap;
 typedef std::vector<std::string> FlashLSODomainList;
 typedef std::list<BrowsingDataMediaLicenseHelper::MediaLicenseInfo>
     MediaLicenseInfoList;

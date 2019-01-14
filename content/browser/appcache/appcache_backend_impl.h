@@ -9,6 +9,7 @@
 
 #include "content/browser/appcache/appcache_host.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 
 namespace content {
 
@@ -36,7 +37,8 @@ class CONTENT_EXPORT AppCacheBackendImpl {
                    const int64_t cache_document_was_loaded_from,
                    const GURL& manifest_url);
   void GetResourceList(
-      int host_id, std::vector<AppCacheResourceInfo>* resource_infos);
+      int host_id,
+      std::vector<blink::mojom::AppCacheResourceInfo>* resource_infos);
   bool SelectCacheForSharedWorker(int host_id, int64_t appcache_id);
   bool MarkAsForeignEntry(int host_id,
                           const GURL& document_url,

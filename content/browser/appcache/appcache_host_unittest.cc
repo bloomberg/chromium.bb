@@ -16,9 +16,12 @@
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/mock_appcache_policy.h"
 #include "content/browser/appcache/mock_appcache_service.h"
+#include "content/common/appcache_interfaces.h"
 #include "net/url_request/url_request.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -35,37 +38,41 @@ class AppCacheHostTest : public testing::Test {
     MockFrontend()
         : last_host_id_(-222),
           last_cache_id_(-222),
-          last_status_(AppCacheStatus::APPCACHE_STATUS_OBSOLETE),
-          last_status_changed_(AppCacheStatus::APPCACHE_STATUS_OBSOLETE),
-          last_event_id_(AppCacheEventID::APPCACHE_OBSOLETE_EVENT),
+          last_status_(blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE),
+          last_status_changed_(
+              blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE),
+          last_event_id_(
+              blink::mojom::AppCacheEventID::APPCACHE_OBSOLETE_EVENT),
           content_blocked_(false) {}
 
-    void OnCacheSelected(int host_id, const AppCacheInfo& info) override {
+    void OnCacheSelected(int host_id,
+                         const blink::mojom::AppCacheInfo& info) override {
       last_host_id_ = host_id;
       last_cache_id_ = info.cache_id;
       last_status_ = info.status;
     }
 
     void OnStatusChanged(const std::vector<int>& host_ids,
-                         AppCacheStatus status) override {
+                         blink::mojom::AppCacheStatus status) override {
       last_status_changed_ = status;
     }
 
     void OnEventRaised(const std::vector<int>& host_ids,
-                       AppCacheEventID event_id) override {
+                       blink::mojom::AppCacheEventID event_id) override {
       last_event_id_ = event_id;
     }
 
-    void OnErrorEventRaised(const std::vector<int>& host_ids,
-                            const AppCacheErrorDetails& details) override {
-      last_event_id_ = AppCacheEventID::APPCACHE_ERROR_EVENT;
+    void OnErrorEventRaised(
+        const std::vector<int>& host_ids,
+        const blink::mojom::AppCacheErrorDetails& details) override {
+      last_event_id_ = blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT;
     }
 
     void OnProgressEventRaised(const std::vector<int>& host_ids,
                                const GURL& url,
                                int num_total,
                                int num_complete) override {
-      last_event_id_ = AppCacheEventID::APPCACHE_PROGRESS_EVENT;
+      last_event_id_ = blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT;
     }
 
     void OnLogMessage(int host_id,
@@ -82,9 +89,9 @@ class AppCacheHostTest : public testing::Test {
 
     int last_host_id_;
     int64_t last_cache_id_;
-    AppCacheStatus last_status_;
-    AppCacheStatus last_status_changed_;
-    AppCacheEventID last_event_id_;
+    blink::mojom::AppCacheStatus last_status_;
+    blink::mojom::AppCacheStatus last_status_changed_;
+    blink::mojom::AppCacheEventID last_event_id_;
     bool content_blocked_;
   };
 
@@ -131,7 +138,7 @@ class AppCacheHostTest : public testing::Test {
     ~MockQuotaManagerProxy() override {}
   };
 
-  void GetStatusCallback(AppCacheStatus status) {
+  void GetStatusCallback(blink::mojom::AppCacheStatus status) {
     last_status_result_ = status;
   }
 
@@ -148,7 +155,7 @@ class AppCacheHostTest : public testing::Test {
   // Mock callbacks we expect to receive from the 'host'
   content::GetStatusCallback get_status_callback_;
 
-  AppCacheStatus last_status_result_;
+  blink::mojom::AppCacheStatus last_status_result_;
   bool last_swap_result_;
   bool last_start_result_;
 };
@@ -164,9 +171,10 @@ TEST_F(AppCacheHostTest, Basic) {
 
   // See that the callbacks are delivered immediately
   // and respond as if there is no cache selected.
-  last_status_result_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
+  last_status_result_ = blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
   host.GetStatusWithCallback(std::move(get_status_callback_));
-  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED, last_status_result_);
+  EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
+            last_status_result_);
 
   last_start_result_ = true;
   host.StartUpdateWithCallback(base::BindOnce(
@@ -187,19 +195,21 @@ TEST_F(AppCacheHostTest, SelectNoCache) {
   // Reset our mock frontend
   mock_frontend_.last_cache_id_ = -333;
   mock_frontend_.last_host_id_ = -333;
-  mock_frontend_.last_status_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
+  mock_frontend_.last_status_ =
+      blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
 
   const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
   const url::Origin kOrigin(url::Origin::Create(kDocAndOriginUrl));
   {
     AppCacheHost host(1, &mock_frontend_, &service_);
-    host.SelectCache(kDocAndOriginUrl, kAppCacheNoCacheId, GURL());
+    host.SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
+                     GURL());
     EXPECT_EQ(1, mock_quota_proxy->GetInUseCount(kOrigin));
 
     // We should have received an OnCacheSelected msg
     EXPECT_EQ(1, mock_frontend_.last_host_id_);
-    EXPECT_EQ(kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
-    EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED,
+    EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
+    EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
               mock_frontend_.last_status_);
 
     // Otherwise, see that it respond as if there is no cache selected.
@@ -218,7 +228,8 @@ TEST_F(AppCacheHostTest, ForeignEntry) {
   // Reset our mock frontend
   mock_frontend_.last_cache_id_ = -333;
   mock_frontend_.last_host_id_ = -333;
-  mock_frontend_.last_status_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
+  mock_frontend_.last_status_ =
+      blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
 
   // Precondition, a cache with an entry that is not marked as foreign.
   const int kCacheId = 22;
@@ -231,8 +242,8 @@ TEST_F(AppCacheHostTest, ForeignEntry) {
 
   // We should have received an OnCacheSelected msg for kAppCacheNoCacheId.
   EXPECT_EQ(1, mock_frontend_.last_host_id_);
-  EXPECT_EQ(kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
-  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED,
+  EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
+  EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
             mock_frontend_.last_status_);
 
   // See that it respond as if there is no cache selected.
@@ -250,7 +261,8 @@ TEST_F(AppCacheHostTest, ForeignFallbackEntry) {
   // Reset our mock frontend
   mock_frontend_.last_cache_id_ = -333;
   mock_frontend_.last_host_id_ = -333;
-  mock_frontend_.last_status_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
+  mock_frontend_.last_status_ =
+      blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
 
   // Precondition, a cache with a fallback entry that is not marked as foreign.
   const int kCacheId = 22;
@@ -265,8 +277,8 @@ TEST_F(AppCacheHostTest, ForeignFallbackEntry) {
 
   // We should have received an OnCacheSelected msg for kAppCacheNoCacheId.
   EXPECT_EQ(1, mock_frontend_.last_host_id_);
-  EXPECT_EQ(kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
-  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED,
+  EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
+  EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
             mock_frontend_.last_status_);
 
   // See that the fallback entry was marked as foreign.
@@ -277,7 +289,8 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
   // Reset our mock frontend
   mock_frontend_.last_cache_id_ = -333;
   mock_frontend_.last_host_id_ = -333;
-  mock_frontend_.last_status_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
+  mock_frontend_.last_status_ =
+      blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
 
   AppCacheHost host(1, &mock_frontend_, &service_);
   EXPECT_FALSE(host.is_selection_pending());
@@ -290,9 +303,10 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
   EXPECT_TRUE(host.is_selection_pending());
 
   // The callback should not occur until we finish cache selection.
-  last_status_result_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
+  last_status_result_ = blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
   host.GetStatusWithCallback(std::move(get_status_callback_));
-  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_OBSOLETE, last_status_result_);
+  EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE,
+            last_status_result_);
 
   // Satisfy the load with NULL, a failure.
   host.OnCacheLoaded(nullptr, kMockCacheId);
@@ -300,12 +314,13 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
   // Cache selection should have finished
   EXPECT_FALSE(host.is_selection_pending());
   EXPECT_EQ(1, mock_frontend_.last_host_id_);
-  EXPECT_EQ(kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
-  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED,
+  EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
+  EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
             mock_frontend_.last_status_);
 
   // Callback should have fired upon completing the cache load too.
-  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED, last_status_result_);
+  EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
+            last_status_result_);
 }
 
 TEST_F(AppCacheHostTest, FailedGroupLoad) {
@@ -319,9 +334,10 @@ TEST_F(AppCacheHostTest, FailedGroupLoad) {
   EXPECT_TRUE(host.is_selection_pending());
 
   // The callback should not occur until we finish cache selection.
-  last_status_result_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
+  last_status_result_ = blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
   host.GetStatusWithCallback(std::move(get_status_callback_));
-  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_OBSOLETE, last_status_result_);
+  EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE,
+            last_status_result_);
 
   // Satisfy the load will NULL, a failure.
   host.OnGroupLoaded(nullptr, kMockManifestUrl);
@@ -329,12 +345,13 @@ TEST_F(AppCacheHostTest, FailedGroupLoad) {
   // Cache selection should have finished
   EXPECT_FALSE(host.is_selection_pending());
   EXPECT_EQ(1, mock_frontend_.last_host_id_);
-  EXPECT_EQ(kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
-  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED,
+  EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
+  EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
             mock_frontend_.last_status_);
 
   // Callback should have fired upon completing the group load.
-  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED, last_status_result_);
+  EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
+            last_status_result_);
 }
 
 TEST_F(AppCacheHostTest, SetSwappableCache) {
@@ -359,11 +376,13 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
 
   host.AssociateCompleteCache(cache1.get());
   EXPECT_FALSE(host.swappable_cache_.get());  // was same as associated cache
-  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_IDLE, host.GetStatus());
+  EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_IDLE,
+            host.GetStatus());
   // verify OnCacheSelected was called
   EXPECT_EQ(host.host_id(), mock_frontend_.last_host_id_);
   EXPECT_EQ(cache1->cache_id(), mock_frontend_.last_cache_id_);
-  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_IDLE, mock_frontend_.last_status_);
+  EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_IDLE,
+            mock_frontend_.last_status_);
 
   scoped_refptr<AppCache> cache2 =
       base::MakeRefCounted<AppCache>(service_.storage(), 222);
@@ -429,8 +448,10 @@ TEST_F(AppCacheHostTest, SelectCacheAllowed) {
   // Reset our mock frontend
   mock_frontend_.last_cache_id_ = -333;
   mock_frontend_.last_host_id_ = -333;
-  mock_frontend_.last_status_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
-  mock_frontend_.last_event_id_ = AppCacheEventID::APPCACHE_OBSOLETE_EVENT;
+  mock_frontend_.last_status_ =
+      blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
+  mock_frontend_.last_event_id_ =
+      blink::mojom::AppCacheEventID::APPCACHE_OBSOLETE_EVENT;
   mock_frontend_.content_blocked_ = false;
 
   const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
@@ -439,17 +460,18 @@ TEST_F(AppCacheHostTest, SelectCacheAllowed) {
   {
     AppCacheHost host(1, &mock_frontend_, &service_);
     host.SetFirstPartyUrlForTesting(kDocAndOriginUrl);
-    host.SelectCache(kDocAndOriginUrl, kAppCacheNoCacheId, kManifestUrl);
+    host.SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
+                     kManifestUrl);
     EXPECT_EQ(1, mock_quota_proxy->GetInUseCount(kOrigin));
 
     // MockAppCacheService::LoadOrCreateGroup is asynchronous, so we shouldn't
     // have received an OnCacheSelected msg yet.
     EXPECT_EQ(-333, mock_frontend_.last_host_id_);
     EXPECT_EQ(-333, mock_frontend_.last_cache_id_);
-    EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_OBSOLETE,
+    EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE,
               mock_frontend_.last_status_);
     // No error events either
-    EXPECT_EQ(AppCacheEventID::APPCACHE_OBSOLETE_EVENT,
+    EXPECT_EQ(blink::mojom::AppCacheEventID::APPCACHE_OBSOLETE_EVENT,
               mock_frontend_.last_event_id_);
     EXPECT_FALSE(mock_frontend_.content_blocked_);
 
@@ -470,8 +492,10 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
   // Reset our mock frontend
   mock_frontend_.last_cache_id_ = -333;
   mock_frontend_.last_host_id_ = -333;
-  mock_frontend_.last_status_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
-  mock_frontend_.last_event_id_ = AppCacheEventID::APPCACHE_OBSOLETE_EVENT;
+  mock_frontend_.last_status_ =
+      blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
+  mock_frontend_.last_event_id_ =
+      blink::mojom::AppCacheEventID::APPCACHE_OBSOLETE_EVENT;
   mock_frontend_.content_blocked_ = false;
 
   const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
@@ -480,17 +504,18 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
   {
     AppCacheHost host(1, &mock_frontend_, &service_);
     host.SetFirstPartyUrlForTesting(kDocAndOriginUrl);
-    host.SelectCache(kDocAndOriginUrl, kAppCacheNoCacheId, kManifestUrl);
+    host.SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
+                     kManifestUrl);
     EXPECT_EQ(1, mock_quota_proxy->GetInUseCount(kOrigin));
 
     // We should have received an OnCacheSelected msg
     EXPECT_EQ(1, mock_frontend_.last_host_id_);
-    EXPECT_EQ(kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
-    EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED,
+    EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
+    EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
               mock_frontend_.last_status_);
 
     // Also, an error event was raised
-    EXPECT_EQ(AppCacheEventID::APPCACHE_ERROR_EVENT,
+    EXPECT_EQ(blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT,
               mock_frontend_.last_event_id_);
     EXPECT_TRUE(mock_frontend_.content_blocked_);
 
@@ -510,12 +535,16 @@ TEST_F(AppCacheHostTest, SelectCacheTwice) {
   AppCacheHost host(1, &mock_frontend_, &service_);
   const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
 
-  EXPECT_TRUE(host.SelectCache(kDocAndOriginUrl, kAppCacheNoCacheId, GURL()));
+  EXPECT_TRUE(host.SelectCache(kDocAndOriginUrl,
+                               blink::mojom::kAppCacheNoCacheId, GURL()));
 
   // Select methods should bail if cache has already been selected.
-  EXPECT_FALSE(host.SelectCache(kDocAndOriginUrl, kAppCacheNoCacheId, GURL()));
-  EXPECT_FALSE(host.SelectCacheForSharedWorker(kAppCacheNoCacheId));
-  EXPECT_FALSE(host.MarkAsForeignEntry(kDocAndOriginUrl, kAppCacheNoCacheId));
+  EXPECT_FALSE(host.SelectCache(kDocAndOriginUrl,
+                                blink::mojom::kAppCacheNoCacheId, GURL()));
+  EXPECT_FALSE(
+      host.SelectCacheForSharedWorker(blink::mojom::kAppCacheNoCacheId));
+  EXPECT_FALSE(host.MarkAsForeignEntry(kDocAndOriginUrl,
+                                       blink::mojom::kAppCacheNoCacheId));
 }
 
 }  // namespace content

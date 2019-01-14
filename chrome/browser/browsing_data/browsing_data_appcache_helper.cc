@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/completion_callback.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -110,7 +111,7 @@ void CannedBrowsingDataAppCacheHelper::AddAppCache(const GURL& manifest_url) {
       return;
   }
 
-  content::AppCacheInfo info;
+  blink::mojom::AppCacheInfo info;
   info.manifest_url = manifest_url;
   appcache_infos.push_back(info);
 }

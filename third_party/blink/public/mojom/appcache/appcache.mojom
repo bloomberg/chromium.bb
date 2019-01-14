@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module blink.mojom;
 
-import "content/public/common/appcache_info.mojom";
+import "third_party/blink/public/mojom/appcache/appcache_info.mojom";
 import "url/mojom/url.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 
 enum AppCacheEventID {
-  APPCACHE_CHECKING_EVENT,
+  APPCACHE_CHECKING_EVENT = 0,
   APPCACHE_ERROR_EVENT,
   APPCACHE_NO_UPDATE_EVENT,
   APPCACHE_DOWNLOADING_EVENT,

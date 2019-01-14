@@ -20,6 +20,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "net/base/io_buffer.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 
 namespace base {
 class ListValue;
@@ -109,7 +110,8 @@ class AppCacheInternalsUI : public WebUIController {
   void OnAppCacheDetailsReady(
       const base::FilePath& partition_path,
       const std::string& manifest_url,
-      std::unique_ptr<std::vector<AppCacheResourceInfo>> resource_info_vector);
+      std::unique_ptr<std::vector<blink::mojom::AppCacheResourceInfo>>
+          resource_info_vector);
   void OnFileDetailsReady(const Proxy::ResponseEnquiry& response_enquiry,
                           scoped_refptr<AppCacheResponseInfo> response_info,
                           scoped_refptr<net::IOBuffer> response_data,

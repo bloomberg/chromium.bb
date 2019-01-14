@@ -29,6 +29,7 @@
 #include "content/common/content_export.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -137,7 +138,7 @@ class CONTENT_EXPORT AppCacheUpdateJob
   // Methods for AppCacheServiceImpl::Observer.
   void OnServiceReinitialized(AppCacheStorageReference* old_storage) override;
 
-  void HandleCacheFailure(const AppCacheErrorDetails& details,
+  void HandleCacheFailure(const blink::mojom::AppCacheErrorDetails& details,
                           ResultType result,
                           const GURL& failed_resource_url);
 
@@ -154,11 +155,12 @@ class CONTENT_EXPORT AppCacheUpdateJob
 
   void StoreGroupAndCache();
 
-  void NotifySingleHost(AppCacheHost* host, AppCacheEventID event_id);
-  void NotifyAllAssociatedHosts(AppCacheEventID event_id);
+  void NotifySingleHost(AppCacheHost* host,
+                        blink::mojom::AppCacheEventID event_id);
+  void NotifyAllAssociatedHosts(blink::mojom::AppCacheEventID event_id);
   void NotifyAllProgress(const GURL& url);
   void NotifyAllFinalProgress();
-  void NotifyAllError(const AppCacheErrorDetails& detals);
+  void NotifyAllError(const blink::mojom::AppCacheErrorDetails& detals);
   void LogConsoleMessageToAll(const std::string& message);
   void AddAllAssociatedHostsToNotifier(HostNotifier* notifier);
 
@@ -186,7 +188,8 @@ class CONTENT_EXPORT AppCacheUpdateJob
   void AddMasterEntryToFetchList(AppCacheHost* host, const GURL& url,
                                  bool is_new);
   void FetchMasterEntries();
-  void CancelAllMasterEntryFetches(const AppCacheErrorDetails& details);
+  void CancelAllMasterEntryFetches(
+      const blink::mojom::AppCacheErrorDetails& details);
 
   // Asynchronously loads the entry from the newest complete cache if the
   // HTTP caching semantics allow.

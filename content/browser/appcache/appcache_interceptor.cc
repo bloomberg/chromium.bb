@@ -18,6 +18,7 @@
 #include "content/browser/loader/resource_requester_info.h"
 #include "content/common/appcache_interfaces.h"
 #include "net/url_request/url_request.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 static int kHandlerKey;  // Value is not used.
 
@@ -74,7 +75,7 @@ void AppCacheInterceptor::SetExtraRequestInfoForHost(
 void AppCacheInterceptor::GetExtraResponseInfo(net::URLRequest* request,
                                                int64_t* cache_id,
                                                GURL* manifest_url) {
-  DCHECK(*cache_id == kAppCacheNoCacheId);
+  DCHECK(*cache_id == blink::mojom::kAppCacheNoCacheId);
   DCHECK(manifest_url->is_empty());
   AppCacheRequestHandler* handler = GetHandler(request);
   if (handler)

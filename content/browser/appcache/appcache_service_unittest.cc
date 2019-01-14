@@ -22,6 +22,7 @@
 #include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace content {
 namespace {
@@ -215,9 +216,9 @@ TEST_F(AppCacheServiceImplTest, DeleteAppCachesForOrigin) {
   scoped_refptr<AppCacheInfoCollection> info(new AppCacheInfoCollection);
 
   // Should succeed given a non-empty info collection.
-  AppCacheInfo mock_manifest_1;
-  AppCacheInfo mock_manifest_2;
-  AppCacheInfo mock_manifest_3;
+  blink::mojom::AppCacheInfo mock_manifest_1;
+  blink::mojom::AppCacheInfo mock_manifest_2;
+  blink::mojom::AppCacheInfo mock_manifest_3;
   mock_manifest_1.manifest_url = kOriginURL.Resolve("manifest1");
   mock_manifest_2.manifest_url = kOriginURL.Resolve("manifest2");
   mock_manifest_3.manifest_url = kOriginURL.Resolve("manifest3");

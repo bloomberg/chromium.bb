@@ -31,6 +31,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/url_request/url_request_context.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
@@ -218,7 +219,7 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitSessionStorage(
 
 CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitAppCache(
     const GURL& origin,
-    const content::AppCacheInfo* appcache_info) {
+    const blink::mojom::AppCacheInfo* appcache_info) {
   Init(TYPE_APPCACHE);
   this->appcache_info = appcache_info;
   this->origin = url::Origin::Create(origin);
@@ -331,7 +332,7 @@ CookieTreeNode::DetailedInfo CookieTreeCookieNode::GetDetailedInfo() const {
 
 CookieTreeAppCacheNode::CookieTreeAppCacheNode(
     const url::Origin& origin,
-    std::list<content::AppCacheInfo>::iterator appcache_info)
+    std::list<blink::mojom::AppCacheInfo>::iterator appcache_info)
     : CookieTreeNode(base::UTF8ToUTF16(appcache_info->manifest_url.spec())),
       origin_(origin),
       appcache_info_(appcache_info) {}
@@ -1360,7 +1361,6 @@ void CookiesTreeModel::PopulateAppCacheInfoWithFilter(
     LocalDataContainer* container,
     ScopedBatchUpdateNotifier* notifier,
     const base::string16& filter) {
-  using content::AppCacheInfo;
   CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
 
   if (container->appcache_info_.empty())

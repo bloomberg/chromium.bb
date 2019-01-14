@@ -9,6 +9,7 @@
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "net/cookies/canonical_cookie.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // LocalDataContainer, public:
@@ -145,7 +146,6 @@ void LocalDataContainer::Init(CookiesTreeModel* model) {
 
 void LocalDataContainer::OnAppCacheModelInfoLoaded(
     scoped_refptr<content::AppCacheInfoCollection> appcache_info) {
-  using content::AppCacheInfo;
   using content::AppCacheInfoCollection;
   using content::AppCacheInfoVector;
 
@@ -156,7 +156,8 @@ void LocalDataContainer::OnAppCacheModelInfoLoaded(
   }
 
   for (const auto& origin : appcache_info->infos_by_origin) {
-    std::list<AppCacheInfo>& info_list = appcache_info_[origin.first];
+    std::list<blink::mojom::AppCacheInfo>& info_list =
+        appcache_info_[origin.first];
     info_list.insert(info_list.begin(), origin.second.begin(),
                      origin.second.end());
   }
