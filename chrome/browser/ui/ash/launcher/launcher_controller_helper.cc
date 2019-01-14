@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
@@ -76,7 +77,8 @@ const extensions::Extension* GetExtensionForTab(Profile* profile,
   if (extensions::util::IsNewBookmarkAppsEnabled()) {
     for (const auto& i : extensions) {
       if (i.get()->from_bookmark() &&
-          extensions::AppLaunchInfo::GetLaunchWebURL(i.get()) == url &&
+          extensions::IsInNavigationScopeForLaunchUrl(
+              extensions::AppLaunchInfo::GetLaunchWebURL(i.get()), url) &&
           !extensions::LaunchesInWindow(profile, i.get())) {
         return i.get();
       }
