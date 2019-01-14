@@ -142,6 +142,7 @@ jumbo_component("cpp_base") {
     "//services/network/public/mojom:mutable_network_traffic_annotation_interface",
     "//url/ipc:url_ipc",
     "//url/mojom:url_mojom_gurl",
+    "//url/mojom:url_mojom_origin",
   ]
   deps = [
     "//base",
