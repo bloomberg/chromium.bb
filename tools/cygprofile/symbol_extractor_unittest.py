@@ -3,15 +3,36 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import symbol_extractor
 import unittest
+
+import symbol_extractor
 
 
 # The number of spaces that objdump prefixes each symbol with.
 SPACES = ' ' * 14
 
 
+class TestLlvmBitcodeSymbolExtractor(unittest.TestCase):
+
+  def testBasicParsing(self):
+    data = '''-------- T _ZN4base11GetFileSizeERKNS_8FilePathEPx
+aaaaaaaa W _ZNKSt3__19basic_iosIcNS_11char_traitsIcEEE5widenEc
+-------- T _ZN4base13ContentsEqualERKNS_8FilePathES2_
+00000000 W _ZNSt3__113basic_filebufIcNS_11char_traitsIcEEE11__read_modeEv'''
+    lines = data.split('\n')
+
+    symbol_names = symbol_extractor._SymbolInfosFromLlvmNm(lines)
+    self.assertEqual(4, len(symbol_names))
+    self.assertListEqual(
+        ['_ZN4base11GetFileSizeERKNS_8FilePathEPx',
+         '_ZNKSt3__19basic_iosIcNS_11char_traitsIcEEE5widenEc',
+         '_ZN4base13ContentsEqualERKNS_8FilePathES2_',
+         '_ZNSt3__113basic_filebufIcNS_11char_traitsIcEEE11__read_modeEv'],
+        symbol_names)
+
+
 class TestSymbolInfo(unittest.TestCase):
+
   def testIgnoresBlankLine(self):
     symbol_info = symbol_extractor._FromObjdumpLine('')
     self.assertIsNone(symbol_info)
@@ -33,7 +54,7 @@ class TestSymbolInfo(unittest.TestCase):
     self.assertRaises(AssertionError, symbol_extractor._FromObjdumpLine, line)
     # This line has the symbol name with spaces in it.
     line = ('00c1b228 l     F .text\t00000060' + SPACES +
-        '_ZN20trace_event too many')
+            '_ZN20trace_event too many')
     self.assertRaises(AssertionError, symbol_extractor._FromObjdumpLine, line)
     # This line has invalid characters in the symbol name.
     line = ('00c1b228 l     F .text\t00000060' + SPACES + '_ZN20trace_?bad')
@@ -59,7 +80,7 @@ class TestSymbolInfo(unittest.TestCase):
 
   def testStartOfText(self):
     line = ('00918000 l       .text\t00000000' + SPACES +
-        '.hidden linker_script_start_of_text')
+            '.hidden linker_script_start_of_text')
     symbol_info = symbol_extractor._FromObjdumpLine(line)
     self.assertIsNotNone(symbol_info)
     self.assertEquals(0x00918000, symbol_info.offset)
@@ -97,7 +118,7 @@ class TestSymbolInfo(unittest.TestCase):
     # A $ character elsewhere in the symbol name is fine.
     # This is an example of a lambda function name from Clang.
     line = ('00c1b228 l     F .text\t00000060' + SPACES +
-       '_ZZL11get_globalsvENK3$_1clEv')
+            '_ZZL11get_globalsvENK3$_1clEv')
     symbol_info = symbol_extractor._FromObjdumpLine(line)
     self.assertIsNotNone(symbol_info)
     self.assertEquals(0xc1b228, symbol_info.offset)
@@ -107,6 +128,7 @@ class TestSymbolInfo(unittest.TestCase):
 
 
 class TestSymbolInfosFromStream(unittest.TestCase):
+
   def testSymbolInfosFromStream(self):
     lines = ['Garbage',
              '',
@@ -123,6 +145,7 @@ class TestSymbolInfosFromStream(unittest.TestCase):
 
 
 class TestSymbolInfoMappings(unittest.TestCase):
+
   def setUp(self):
     self.symbol_infos = [
         symbol_extractor.SymbolInfo('firstNameAtOffset', 0x42, 42, '.text'),

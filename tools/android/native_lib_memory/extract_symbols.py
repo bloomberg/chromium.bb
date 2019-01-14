@@ -33,29 +33,35 @@ _PAGE_SIZE = 1 << 12
 _PAGE_MASK = ~(_PAGE_SIZE - 1)
 
 
-def GetSymbolNameToFilename(build_directory):
+def _GetSymbolNameToFilename(build_directory):
   """Parses object files in a directory, and maps mangled symbol names to files.
+
+  Object files are assumed to actually be LLVM bitcode files, that is this
+  assumes clang as the compiler and the use of LTO.
 
   Args:
     build_directory: (str) Build directory.
 
   Returns:
-    {symbol_info.name: (symbol_info, object filename)}. Filenames are stripped
-    of the output_directory part.
+    {symbol name (str): object filename (str)}. Filenames are stripped of the
+    output_directory part.
   """
+  symbol_extractor.CheckLlvmNmExists()
   path = os.path.join(build_directory, 'obj')
   object_filenames = cyglog_to_orderfile.GetObjectFilenames(path)
   pool = multiprocessing.Pool()
-  symbol_infos_filename = zip(
-      pool.map(symbol_extractor.SymbolInfosFromBinary, object_filenames),
+  symbol_names_filename = zip(
+      pool.map(symbol_extractor.SymbolNamesFromLlvmBitcodeFile,
+               object_filenames),
       object_filenames)
+  pool.close()
   result = {}
-  for (symbol_infos, filename) in symbol_infos_filename:
+  for (symbol_names, filename) in symbol_names_filename:
     stripped_filename = filename[len(build_directory):]
     if stripped_filename.startswith('/obj/'):
       stripped_filename = stripped_filename[len('/obj/'):]
-    for s in symbol_infos:
-      result[s.name] = (s, stripped_filename)
+    for s in symbol_names:
+      result[s] = stripped_filename
   return result
 
 
@@ -156,7 +162,7 @@ def CodePagesToObjectFiles(symbols_to_object_files, code_pages_to_symbols):
   object files.
 
   Args:
-    symbols_to_object_files: (dict) as returned by GetSymbolNameToFilename()
+    symbols_to_object_files: (dict) as returned by _GetSymbolNameToFilename()
     code_pages_to_symbols: (dict) as returned by CodePagesToMangledSymbols()
 
   Returns:
@@ -164,17 +170,20 @@ def CodePagesToObjectFiles(symbols_to_object_files, code_pages_to_symbols):
   """
   result = {}
   unmatched_symbols_count = 0
+  unmatched_symbols_size = 0
   for page_address in code_pages_to_symbols:
     result[page_address] = {}
     for name, size_in_page in code_pages_to_symbols[page_address]:
       if name not in symbols_to_object_files:
         unmatched_symbols_count += 1
+        unmatched_symbols_size += size_in_page
         continue
-      object_filename = symbols_to_object_files[name][1]
+      object_filename = symbols_to_object_files[name]
       if object_filename not in result[page_address]:
         result[page_address][object_filename] = 0
       result[page_address][object_filename] += size_in_page
-  logging.warning('%d unmatched symbols.', unmatched_symbols_count)
+  logging.warning('%d unmatched symbols (total size %d).',
+                  unmatched_symbols_count, unmatched_symbols_size)
   return result
 
 
@@ -236,7 +245,7 @@ def main():
 
   symbol_extractor.SetArchitecture(args.arch)
   logging.info('Parsing object files in %s', args.build_directory)
-  object_files_symbols = GetSymbolNameToFilename(args.build_directory)
+  object_files_symbols = _GetSymbolNameToFilename(args.build_directory)
   native_lib_filename = os.path.join(
       args.build_directory, 'lib.unstripped', args.native_library)
   if not os.path.exists(native_lib_filename):
@@ -249,14 +258,14 @@ def main():
       residency = json.load(f)
       offset = residency['offset']
 
-    logging.info('Extracting symbols from %s', native_lib_filename)
+  logging.info('Extracting symbols from %s', native_lib_filename)
   native_lib_symbols = symbol_extractor.SymbolInfosFromBinary(
       native_lib_filename)
+  logging.info('%d Symbols found', len(native_lib_symbols))
   logging.info('Mapping symbols and object files to code pages')
   page_to_symbols = CodePagesToMangledSymbols(native_lib_symbols, offset)
   page_to_object_files = CodePagesToObjectFiles(object_files_symbols,
                                                 page_to_symbols)
-
 
   if args.reached_symbols_file:
     logging.info('Mapping reached symbols to code pages')
