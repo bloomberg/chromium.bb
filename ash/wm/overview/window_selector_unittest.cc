@@ -1449,6 +1449,20 @@ TEST_F(WindowSelectorTest, ExitOverviewWithKey) {
   EXPECT_FALSE(window_selector_controller()->IsSelecting());
 }
 
+// Regression test for clusterfuzz crash. https://crbug.com/920568
+TEST_F(WindowSelectorTest, FilterThenPressEscapeTwice) {
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
+  ToggleOverview();
+
+  // Type some characters to show the filter list.
+  FilterItems("abc");
+  EXPECT_TRUE(showing_filter_widget());
+
+  // Pressing escape twice should not crash.
+  SendKey(ui::VKEY_ESCAPE);
+  SendKey(ui::VKEY_ESCAPE);
+}
+
 // Tests basic selection across multiple monitors.
 TEST_F(WindowSelectorTest, BasicMultiMonitorArrowKeyNavigation) {
   UpdateDisplay("400x400,400x400");

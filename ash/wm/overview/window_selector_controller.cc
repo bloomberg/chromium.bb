@@ -506,8 +506,10 @@ WindowSelectorController::GetWindowsListInOverviewGridsForTesting() {
 
 // TODO(flackr): Make WindowSelectorController observe the activation of
 // windows, so we can remove WindowSelectorDelegate.
+// TODO(sammiequon): Rename to something like EndOverview() and refactor to use
+// a single entry point for overview.
 void WindowSelectorController::OnSelectionEnded() {
-  if (is_shutting_down_)
+  if (!IsSelecting() || is_shutting_down_)
     return;
 
   if (!occlusion_tracker_pauser_) {
@@ -523,6 +525,7 @@ void WindowSelectorController::OnSelectionEnded() {
 
   window_selector_->UpdateMaskAndShadow(/*show=*/false);
   is_shutting_down_ = true;
+  // Shell observers may access |window_selector_|.
   Shell::Get()->NotifyOverviewModeEnding();
   auto* window_selector = window_selector_.release();
   window_selector->Shutdown();
