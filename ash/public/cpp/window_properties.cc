@@ -122,6 +122,9 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterWindowPtrProperty(
       kTabDraggingSourceWindowKey, mojom::kTabDraggingSourceWindow_Property);
+  property_converter->RegisterPrimitiveProperty(
+      kWindowPipTypeKey, mojom::kIsWindowPip_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterTimeDeltaProperty(
       wm::kWindowVisibilityAnimationDurationKey,
       ws::mojom::WindowManager::kWindowVisibilityAnimationDuration_Property);

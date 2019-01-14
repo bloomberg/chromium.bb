@@ -79,3 +79,6 @@ const string kRestoreWindowStateTypeOverride_Property  =
 // The height of the window header, i.e. the inset between the frame and client
 // view.
 const string kTopViewInset_Property = "ash:top-view-inset";
+
+// A boolean property to indicate a picture-in-picture window.
+const string kIsWindowPip_Property = "ash:is-window-pip";
