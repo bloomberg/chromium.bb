@@ -695,7 +695,7 @@ int UDPSocketPosix::AllowAddressSharingForMulticast() {
   int value = 1;
   rv = setsockopt(socket_, SOL_SOCKET, SO_REUSEPORT, &value, sizeof(value));
   // Ignore errors that the option does not exist.
-  if (rv != 0 && rv != ENOPROTOOPT)
+  if (rv != 0 && errno != ENOPROTOOPT)
     return MapSystemError(errno);
 #endif  // SO_REUSEPORT
 
