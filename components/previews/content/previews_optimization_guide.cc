@@ -70,12 +70,9 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
   std::unique_ptr<optimization_guide::proto::Configuration> manual_config =
       ParseHintsProtoFromCommandLine();
   if (manual_config) {
-    base::PostTaskAndReplyWithResult(
-        background_task_runner_.get(), FROM_HERE,
-        base::BindOnce(&PreviewsHints::CreateFromHintsConfiguration,
-                       *manual_config),
-        base::BindOnce(&PreviewsOptimizationGuide::UpdateHints,
-                       ui_weak_ptr_factory_.GetWeakPtr()));
+    // Allow |UpdateHints| to block startup so that the first navigation gets
+    // the hints.
+    UpdateHints(PreviewsHints::CreateFromHintsConfiguration(*manual_config));
   } else {
     optimization_guide_service_->AddObserver(this);
   }
