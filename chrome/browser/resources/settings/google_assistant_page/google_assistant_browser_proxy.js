@@ -24,6 +24,12 @@ cr.define('settings', function() {
 
     /** Launches into the Google Assistant app settings. */
     launchGoogleAssistantSettings() {}
+
+    /** Retrain the Assistant voice model. */
+    retrainAssistantVoiceModel() {}
+
+    /** Delete the Assistant voice model. */
+    deleteAssistantVoiceModel() {}
   }
 
   /** @implements {settings.GoogleAssistantBrowserProxy} */
@@ -41,6 +47,16 @@ cr.define('settings', function() {
     /** @override */
     showGoogleAssistantSettings() {
       chrome.send('showGoogleAssistantSettings');
+    }
+
+    /** @override */
+    retrainAssistantVoiceModel() {
+      chrome.send('retrainAssistantVoiceModel');
+    }
+
+    /** @override */
+    deleteAssistantVoiceModel() {
+      chrome.send('deleteAssistantVoiceModel');
     }
   }
 

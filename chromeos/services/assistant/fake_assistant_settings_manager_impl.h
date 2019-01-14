@@ -30,6 +30,8 @@ class FakeAssistantSettingsManagerImpl : public AssistantSettingsManager {
       mojom::SpeakerIdEnrollmentClientPtr client) override;
   void StopSpeakerIdEnrollment(
       StopSpeakerIdEnrollmentCallback callback) override;
+  void RemoveSpeakerIdEnrollmentData(
+      RemoveSpeakerIdEnrollmentDataCallback callback) override;
 
   // AssistantSettingsManager overrides:
   void BindRequest(mojom::AssistantSettingsManagerRequest request) override;

@@ -54,4 +54,14 @@ Polymer({
   onGoogleAssistantSettingsTapped_: function() {
     this.browserProxy_.showGoogleAssistantSettings();
   },
+
+  /** @private */
+  onRetrainVoiceModelTapped_: function() {
+    this.browserProxy_.retrainAssistantVoiceModel();
+  },
+
+  /** @private */
+  onDeleteVoiceModelTapped_: function() {
+    this.browserProxy_.deleteAssistantVoiceModel();
+  },
 });

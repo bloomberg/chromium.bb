@@ -23,7 +23,6 @@
     <template is="dom-if"
         if="[[prefs.settings.voice_interaction.enabled.value]]">
       <settings-toggle-button id="googleAssistantContextEnable"
-          class="continuation indented"
           pref="{{prefs.settings.voice_interaction.context.enabled}}"
           label="$i18n{googleAssistantEnableContext}"
           sub-label="$i18n{googleAssistantEnableContextDescription}"
@@ -31,19 +30,35 @@
       </settings-toggle-button>
       <template is="dom-if" if="[[assistantFeatureEnabled_]]">
         <settings-toggle-button id="googleAssistantHotwordEnable"
-            class="continuation indented"
             pref="{{prefs.settings.voice_interaction.hotword.enabled}}"
             label="$i18n{googleAssistantEnableHotword}"
             sub-label="$i18n{googleAssistantEnableHotwordDescription}">
         </settings-toggle-button>
+        <div class="settings-box" hidden=
+            "[[!prefs.settings.voice_interaction.hotword.enabled.value]]">
+          <div class="start text-area">
+            <div class="label">
+              $i18n{googleAssistantVoiceSettings}
+            </div>
+            <div class="secondary label">
+              $i18n{googleAssistantVoiceSettingsDescription}
+            </div>
+          </div>
+          <paper-button id="button" class="secondary-button"
+              on-click="onRetrainVoiceModelTapped_">
+            $i18n{googleAssistantVoiceSettingsRetrainButton}
+          </paper-button>
+          <paper-button id="button" class="secondary-button"
+              on-click="onDeleteVoiceModelTapped_">
+            $i18n{googleAssistantVoiceSettingsDeleteButton}
+          </paper-button>
+        </div>
         <settings-toggle-button id="googleAssistantNotificationEnable"
-            class="continuation indented"
             pref="{{prefs.settings.voice_interaction.notification.enabled}}"
             label="$i18n{googleAssistantEnableNotification}"
             sub-label="$i18n{googleAssistantEnableNotificationDescription}">
         </settings-toggle-button>
         <settings-toggle-button id="googleAssistantLaunchWithMicOpen"
-            class="continuation indented"
             pref="{{prefs.settings.voice_interaction.launch_with_mic_open}}"
             label="$i18n{googleAssistantLaunchWithMicOpen}"
             sub-label="$i18n{googleAssistantLaunchWithMicOpenDescription}">
