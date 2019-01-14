@@ -19,6 +19,15 @@ class AccountsMutator {
   AccountsMutator() = default;
   virtual ~AccountsMutator() = default;
 
+  // Updates the information of the account associated with |gaia_id|, first
+  // adding that account to the system if it is not known.
+  virtual std::string AddOrUpdateAccount(
+      const std::string& gaia_id,
+      const std::string& email,
+      const std::string& refresh_token,
+      bool is_under_advanced_protection,
+      signin_metrics::SourceForRefreshTokenOperation source) = 0;
+
   // Removes the account given by |account_id|. Also revokes the token
   // server-side if needed.
   virtual void RemoveAccount(

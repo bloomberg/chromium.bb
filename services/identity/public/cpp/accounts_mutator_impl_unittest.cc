@@ -33,14 +33,14 @@ class TestTokenServiceObserver : public OAuth2TokenService::Observer {
   }
   ~TestTokenServiceObserver() override { token_service_->RemoveObserver(this); }
 
-  void set_on_refresh_tokens_available_callback(
+  void set_on_refresh_token_available_callback(
       base::RepeatingCallback<void(const std::string&)> callback) {
-    on_refresh_tokens_available_callback_ = std::move(callback);
+    on_refresh_token_available_callback_ = std::move(callback);
   }
 
-  void set_on_refresh_tokens_revoked_callback(
+  void set_on_refresh_token_revoked_callback(
       base::RepeatingCallback<void(const std::string&)> callback) {
-    on_refresh_tokens_revoked_callback_ = std::move(callback);
+    on_refresh_token_revoked_callback_ = std::move(callback);
   }
 
   void set_on_refresh_tokens_loaded_callback(base::OnceClosure callback) {
@@ -50,13 +50,13 @@ class TestTokenServiceObserver : public OAuth2TokenService::Observer {
  private:
   // OAuth2TokenService::Observer:
   void OnRefreshTokenAvailable(const std::string& account_id) override {
-    if (on_refresh_tokens_available_callback_)
-      std::move(on_refresh_tokens_available_callback_).Run(account_id);
+    if (on_refresh_token_available_callback_)
+      std::move(on_refresh_token_available_callback_).Run(account_id);
   }
 
   void OnRefreshTokenRevoked(const std::string& account_id) override {
-    if (on_refresh_tokens_revoked_callback_)
-      std::move(on_refresh_tokens_revoked_callback_).Run(account_id);
+    if (on_refresh_token_revoked_callback_)
+      std::move(on_refresh_token_revoked_callback_).Run(account_id);
   }
 
   void OnRefreshTokensLoaded() override {
@@ -66,9 +66,9 @@ class TestTokenServiceObserver : public OAuth2TokenService::Observer {
 
   OAuth2TokenService* token_service_;
   base::RepeatingCallback<void(const std::string&)>
-      on_refresh_tokens_available_callback_;
+      on_refresh_token_available_callback_;
   base::RepeatingCallback<void(const std::string&)>
-      on_refresh_tokens_revoked_callback_;
+      on_refresh_token_revoked_callback_;
   base::OnceClosure on_refresh_tokens_loaded_callback_;
 };
 
@@ -81,7 +81,7 @@ class AccountsMutatorImplTest : public testing::Test {
       : signin_client_(&pref_service_),
         token_service_(&pref_service_),
         token_service_observer_(&token_service_),
-        accounts_mutator_(&token_service_) {
+        accounts_mutator_(&token_service_, &account_tracker_service_) {
     ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
 
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
@@ -132,21 +132,148 @@ TEST_F(AccountsMutatorImplTest, Basic) {
   // Should not crash.
 }
 
+// Test that a new account gets added to the AccountTrackerService when calling
+// AddOrUpdateAccount() and that a new refresh token becomes available for the
+// passed account_id when adding an account for the first time.
+TEST_F(AccountsMutatorImplTest, AddOrUpdateAccount_AddNewAccount) {
+  base::RunLoop run_loop;
+  std::string expected_account_id =
+      account_tracker_service()->PickAccountIdForAccount(kTestGaiaId,
+                                                         kTestEmail);
+
+  token_service_observer()->set_on_refresh_token_available_callback(
+      base::BindRepeating(
+          [](const base::RepeatingClosure& quit_closure,
+             const std::string& expected_account_id,
+             const std::string& account_id) {
+            EXPECT_EQ(account_id, expected_account_id);
+            quit_closure.Run();
+          },
+          run_loop.QuitClosure(), expected_account_id));
+
+  std::string account_id = accounts_mutator()->AddOrUpdateAccount(
+      kTestGaiaId, kTestEmail, kRefreshToken,
+      false, /* is_under_advanced_protection */
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  run_loop.Run();
+
+  EXPECT_EQ(account_id, expected_account_id);
+  EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(account_id));
+  EXPECT_FALSE(token_service()->RefreshTokenHasError(account_id));
+
+  AccountInfo account_info =
+      account_tracker_service()->GetAccountInfo(account_id);
+  EXPECT_EQ(account_info.account_id, expected_account_id);
+  EXPECT_EQ(account_info.email, kTestEmail);
+  EXPECT_EQ(account_tracker_service()->GetAccounts().size(), 1U);
+}
+
+// Test that no account gets added to the AccountTrackerService  when calling
+// AddOrUpdateAccount() if there's an account already tracked for a given id,
+// and that its refresh token gets updated if a different one is passed.
+TEST_F(AccountsMutatorImplTest, AddOrUpdateAccount_UpdateExistingAccount) {
+  // First of all add the account to the account tracker service.
+  base::RunLoop run_loop;
+  token_service_observer()->set_on_refresh_token_available_callback(
+      base::BindRepeating(
+          [](const base::RepeatingClosure& quit_closure,
+             const std::string& account_id) { quit_closure.Run(); },
+          run_loop.QuitClosure()));
+
+  std::string account_id = accounts_mutator()->AddOrUpdateAccount(
+      kTestGaiaId, kTestEmail, kRefreshToken,
+      false, /* is_under_advanced_protection */
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  run_loop.Run();
+
+  EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(account_id));
+  EXPECT_FALSE(token_service()->RefreshTokenHasError(account_id));
+
+  AccountInfo account_info =
+      account_tracker_service()->GetAccountInfo(account_id);
+  EXPECT_EQ(account_info.account_id, account_id);
+  EXPECT_EQ(account_info.email, kTestEmail);
+  EXPECT_EQ(account_tracker_service()->GetAccounts().size(), 1U);
+
+  // Now try adding the account again with the same account id but with
+  // different information, and check that the account gets updated.
+  base::RunLoop run_loop2;
+  token_service_observer()->set_on_refresh_token_available_callback(
+      base::BindRepeating(
+          [](const base::RepeatingClosure& quit_closure,
+             const std::string& expected_account_id,
+             const std::string& added_account_id) {
+            EXPECT_EQ(added_account_id, expected_account_id);
+            quit_closure.Run();
+          },
+          run_loop2.QuitClosure(), account_id));
+
+  // In platforms other than ChromeOS the account ID is the Gaia ID, so we can
+  // update the email for a given account without that triggering the seeding of
+  // a new account. In Chrome OS we can't change the email since it's the
+  // account ID, so we just update |is_under_advanced_protection| field.
+  accounts_mutator()->AddOrUpdateAccount(
+      kTestGaiaId,
+#if defined(OS_CHROMEOS)
+      kTestEmail,
+#else
+      kTestEmail2,
+#endif
+      kRefreshToken, true, /* is_under_advanced_protection */
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  run_loop2.Run();
+
+  // No new accounts should be created, just the information should be updated.
+  EXPECT_EQ(account_tracker_service()->GetAccounts().size(), 1U);
+  AccountInfo updated_account_info =
+      account_tracker_service()->GetAccountInfo(account_id);
+  EXPECT_EQ(account_info.account_id, updated_account_info.account_id);
+
+  EXPECT_EQ(account_info.gaia, updated_account_info.gaia);
+#if defined(OS_CHROMEOS)
+  EXPECT_EQ(account_info.email, updated_account_info.email);
+#else
+  EXPECT_NE(account_info.email, updated_account_info.email);
+  EXPECT_EQ(updated_account_info.email, kTestEmail2);
+#endif
+  EXPECT_NE(account_info.is_under_advanced_protection,
+            updated_account_info.is_under_advanced_protection);
+}
+
+// Test that attempting to remove a non-existing account should not result in
+// firing any callback from AccountTrackerService or ProfileOAuth2TokenService.
+TEST_F(AccountsMutatorImplTest, RemoveAccount_NonExistingAccount) {
+  base::RunLoop run_loop;
+  token_service_observer()->set_on_refresh_token_available_callback(
+      base::BindRepeating([](const std::string& account_id) {
+        // This callback should not be invoked now.
+        EXPECT_TRUE(false);
+      }));
+
+  accounts_mutator()->RemoveAccount(
+      kTestGaiaId, signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  run_loop.RunUntilIdle();
+
+  EXPECT_FALSE(token_service()->RefreshTokenIsAvailable(kTestGaiaId));
+  EXPECT_FALSE(token_service()->RefreshTokenHasError(kTestGaiaId));
+  EXPECT_EQ(account_tracker_service()->GetAccounts().size(), 0U);
+}
+
 // Test that attempting to remove an existing account should result in firing
 // the right callbacks from AccountTrackerService or ProfileOAuth2TokenService.
 TEST_F(AccountsMutatorImplTest, RemoveAccount_ExistingAccount) {
   // First of all add the account to the account tracker service.
   base::RunLoop run_loop;
-  token_service_observer()->set_on_refresh_tokens_available_callback(
-      base::BindRepeating([](base::RunLoop* loop,
-                             const std::string& account_id) { loop->Quit(); },
-                          base::Unretained(&run_loop)));
+  token_service_observer()->set_on_refresh_token_available_callback(
+      base::BindRepeating(
+          [](const base::RepeatingClosure& quit_closure,
+             const std::string& account_id) { quit_closure.Run(); },
+          run_loop.QuitClosure()));
 
-  // TODO(crbug.com/907901): Migrate this to
-  // AccountsMutator::AddOrUpdateAccount() once available.
-  std::string account_id =
-      account_tracker_service()->SeedAccountInfo(kTestGaiaId, kTestEmail);
-  token_service()->UpdateCredentials(account_id, kRefreshToken);
+  std::string account_id = accounts_mutator()->AddOrUpdateAccount(
+      kTestGaiaId, kTestEmail, kRefreshToken,
+      false, /* is_under_advanced_protection */
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   run_loop.Run();
 
   EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(account_id));
@@ -155,14 +282,15 @@ TEST_F(AccountsMutatorImplTest, RemoveAccount_ExistingAccount) {
 
   // Now remove the account that we just added.
   base::RunLoop run_loop2;
-  token_service_observer()->set_on_refresh_tokens_revoked_callback(
+  token_service_observer()->set_on_refresh_token_revoked_callback(
       base::BindRepeating(
-          [](base::RunLoop* loop, const std::string& expected_id,
+          [](const base::RepeatingClosure& quit_closure,
+             const std::string& expected_account_id,
              const std::string& removed_account_id) {
-            EXPECT_EQ(removed_account_id, expected_id);
-            loop->Quit();
+            EXPECT_EQ(removed_account_id, expected_account_id);
+            quit_closure.Run();
           },
-          base::Unretained(&run_loop2), account_id));
+          run_loop2.QuitClosure(), account_id));
 
   accounts_mutator()->RemoveAccount(
       account_id, signin_metrics::SourceForRefreshTokenOperation::kUnknown);
@@ -178,16 +306,16 @@ TEST_F(AccountsMutatorImplTest, RemoveAccount_ExistingAccount) {
 TEST_F(AccountsMutatorImplTest, RemoveAllAccounts) {
   // First of all the first account to the account tracker service.
   base::RunLoop run_loop;
-  token_service_observer()->set_on_refresh_tokens_available_callback(
-      base::BindRepeating([](base::RunLoop* loop,
-                             const std::string& account_id) { loop->Quit(); },
-                          base::Unretained(&run_loop)));
+  token_service_observer()->set_on_refresh_token_available_callback(
+      base::BindRepeating(
+          [](const base::RepeatingClosure& quit_closure,
+             const std::string& account_id) { quit_closure.Run(); },
+          run_loop.QuitClosure()));
 
-  // TODO(crbug.com/907901): Migrate this to
-  // AccountsMutator::AddOrUpdateAccount() once available.
-  std::string account_id =
-      account_tracker_service()->SeedAccountInfo(kTestGaiaId, kTestEmail);
-  token_service()->UpdateCredentials(account_id, kRefreshToken);
+  std::string account_id = accounts_mutator()->AddOrUpdateAccount(
+      kTestGaiaId, kTestEmail, kRefreshToken,
+      false, /* is_under_advanced_protection */
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   run_loop.Run();
 
   EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(account_id));
@@ -196,16 +324,16 @@ TEST_F(AccountsMutatorImplTest, RemoveAllAccounts) {
 
   // Now add the second account.
   base::RunLoop run_loop2;
-  token_service_observer()->set_on_refresh_tokens_available_callback(
-      base::BindRepeating([](base::RunLoop* loop,
-                             const std::string& account_id) { loop->Quit(); },
-                          base::Unretained(&run_loop2)));
+  token_service_observer()->set_on_refresh_token_available_callback(
+      base::BindRepeating(
+          [](const base::RepeatingClosure& quit_closure,
+             const std::string& account_id) { quit_closure.Run(); },
+          run_loop2.QuitClosure()));
 
-  // TODO(crbug.com/907901): Migrate this to
-  // AccountsMutator::AddOrUpdateAccount() once available.
-  std::string account_id2 =
-      account_tracker_service()->SeedAccountInfo(kTestGaiaId2, kTestEmail2);
-  token_service()->UpdateCredentials(account_id2, kRefreshToken2);
+  std::string account_id2 = accounts_mutator()->AddOrUpdateAccount(
+      kTestGaiaId2, kTestEmail2, kRefreshToken2,
+      false, /* is_under_advanced_protection */
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   run_loop2.Run();
 
   EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(account_id2));
