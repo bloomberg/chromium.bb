@@ -144,6 +144,12 @@ unsigned NextSequenceNumber() {
   static unsigned next = 0;
   return ++next;
 }
+
+double ToMilliseconds(base::Optional<base::TimeDelta> time) {
+  return time ? time->InMillisecondsF()
+              : std::numeric_limits<double>::quiet_NaN();
+}
+
 }  // namespace
 
 WorkletAnimation* WorkletAnimation::Create(
@@ -265,6 +271,12 @@ void WorkletAnimation::play(ExceptionState& exception_state) {
   }
 }
 
+double WorkletAnimation::currentTime(bool& is_null) {
+  base::Optional<base::TimeDelta> current_time = CurrentTime();
+  is_null = !current_time.has_value();
+  return ToMilliseconds(current_time);
+}
+
 void WorkletAnimation::cancel() {
   DCHECK(IsMainThread());
   if (play_state_ == Animation::kIdle)
@@ -347,9 +359,9 @@ bool WorkletAnimation::CheckCanStart(String* failure_message) {
 void WorkletAnimation::SetStartTimeToNow() {
   DCHECK(!start_time_);
   bool is_null;
-  double time = timeline_->currentTime(is_null);
+  double time_ms = timeline_->currentTime(is_null);
   if (!is_null)
-    start_time_ = base::TimeDelta::FromSecondsD(time);
+    start_time_ = base::TimeDelta::FromMillisecondsD(time_ms);
 }
 
 void WorkletAnimation::UpdateCompositingState() {
@@ -445,9 +457,9 @@ bool WorkletAnimation::StartOnCompositor() {
   SetPlayState(Animation::kRunning);
 
   bool is_null;
-  double time = timeline_->currentTime(is_null);
+  double time_ms = timeline_->currentTime(is_null);
   if (!is_null)
-    start_time_ = base::TimeDelta::FromSecondsD(time);
+    start_time_ = base::TimeDelta::FromMillisecondsD(time_ms);
 
   return true;
 }
@@ -511,15 +523,27 @@ bool WorkletAnimation::IsActiveAnimation() const {
   return IsActive(play_state_);
 }
 
-base::Optional<double> WorkletAnimation::CurrentTime() const {
+base::Optional<base::TimeDelta> WorkletAnimation::CurrentTime() const {
+  if (play_state_ == Animation::kIdle || play_state_ == Animation::kUnset)
+    return base::nullopt;
+
+  // TODO(majidvp): Animation has a hold time while it waits for animation
+  // to truly start and returns that instead. Replace with with hold time
+  // once pause logic is implemented.
+  if (play_state_ == Animation::kPending)
+    return base::TimeDelta();
+
   bool is_null;
-  double timeline_time = timeline_->currentTime(is_null);
+  double timeline_time_ms = timeline_->currentTime(is_null);
   if (is_null)
     return base::nullopt;
+
+  base::TimeDelta timeline_time =
+      base::TimeDelta::FromMillisecondsD(timeline_time_ms);
   if (timeline_->IsScrollTimeline())
     return timeline_time;
   DCHECK(start_time_);
-  return timeline_time - start_time_->InSecondsF();
+  return timeline_time - start_time_.value();
 }
 
 void WorkletAnimation::UpdateInputState(
@@ -534,25 +558,23 @@ void WorkletAnimation::UpdateInputState(
 
   // ScrollTimeline animation doesn't require start_time_ to be set.
   DCHECK(start_time_ || timeline_->IsScrollTimeline());
-  DCHECK(last_current_time_ || !was_active);
-  double current_time =
-      CurrentTime().value_or(std::numeric_limits<double>::quiet_NaN());
+  base::Optional<base::TimeDelta> current_time = CurrentTime();
+  double current_time_ms = ToMilliseconds(current_time);
 
-  bool did_time_change =
-      !last_current_time_ || current_time != last_current_time_->InSecondsF();
+  bool did_time_change = current_time != last_current_time_;
   // TODO(yigu): If current_time becomes newly unresolved and last_current_time_
   // is resolved, we apply the last current time to the animation if the scroll
   // timeline becomes newly inactive. See https://crbug.com/906050.
-  last_current_time_ = base::TimeDelta::FromSecondsD(current_time);
+  last_current_time_ = current_time;
   if (!was_active && is_active) {
     input_state->Add(
         {id_,
          std::string(animator_name_.Ascii().data(), animator_name_.length()),
-         current_time, CloneOptions(), effects_.size()});
+         current_time_ms, CloneOptions(), effects_.size()});
   } else if (was_active && is_active) {
     // Skip if the input time is not changed.
     if (did_time_change)
-      input_state->Update({id_, current_time});
+      input_state->Update({id_, current_time_ms});
   } else if (was_active && !is_active) {
     input_state->Remove(id_);
   }
