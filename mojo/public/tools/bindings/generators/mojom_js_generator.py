@@ -415,7 +415,8 @@ class Generator(generator.Generator):
     # property name. This is checked for map key types to allow most kinds of
     # mojom maps to be represented as either a Map or an Object.
     return (mojom.IsIntegralKind(kind) or mojom.IsFloatKind(kind) or
-        mojom.IsDoubleKind(kind) or mojom.IsStringKind(kind))
+        mojom.IsDoubleKind(kind) or mojom.IsStringKind(kind) or
+        mojom.IsEnumKind(kind))
 
   def _LiteClosureType(self, kind):
     if kind in mojom.PRIMITIVES:
@@ -423,9 +424,7 @@ class Generator(generator.Generator):
     if mojom.IsArrayKind(kind):
       return "Array<%s>" % self._LiteClosureTypeWithNullability(kind.kind)
     if mojom.IsMapKind(kind) and self._IsStringableKind(kind.key_kind):
-      return "(Map<%s, %s>|Object<%s, %s>)" % (
-          self._LiteClosureTypeWithNullability(kind.key_kind),
-          self._LiteClosureTypeWithNullability(kind.value_kind),
+      return "Object<%s, %s>" % (
           self._LiteClosureTypeWithNullability(kind.key_kind),
           self._LiteClosureTypeWithNullability(kind.value_kind))
     if mojom.IsMapKind(kind):
