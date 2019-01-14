@@ -776,13 +776,12 @@ void RTCVideoEncoder::Impl::ReturnEncodedImage(
       // Generate a header describing a single fragment.
       header.VerifyAndAllocateFragmentationHeader(1);
       header.fragmentationOffset[0] = 0;
-      header.fragmentationLength[0] = image._length;
+      header.fragmentationLength[0] = image.size();
       header.fragmentationPlType[0] = 0;
       header.fragmentationTimeDiff[0] = 0;
       break;
     case webrtc::kVideoCodecH264:
-      if (!GetRTPFragmentationHeaderH264(&header, image._buffer,
-                                         image._length)) {
+      if (!GetRTPFragmentationHeaderH264(&header, image.data(), image.size())) {
         DLOG(ERROR) << "Failed to get RTP fragmentation header for H264";
         NotifyError(
             (media::VideoEncodeAccelerator::Error)WEBRTC_VIDEO_CODEC_ERROR);
