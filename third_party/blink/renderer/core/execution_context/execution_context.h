@@ -33,7 +33,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/unguessable_token.h"
-#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_notifier.h"
@@ -51,6 +50,12 @@ class SingleThreadTaskRunner;
 namespace service_manager {
 class InterfaceProvider;
 }
+
+namespace network {
+namespace mojom {
+enum class ReferrerPolicy : int32_t;
+}  // namespace mojom
+}  // namespace network
 
 namespace blink {
 
