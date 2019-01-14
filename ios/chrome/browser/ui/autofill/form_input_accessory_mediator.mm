@@ -68,12 +68,6 @@
 // The observer to determine when the keyboard dissapears and when it stays.
 @property(nonatomic, strong) KeyboardObserverHelper* keyboardObserver;
 
-// Last seen provider. Used to reenable suggestions.
-@property(nonatomic, weak) id<FormInputSuggestionsProvider> lastProvider;
-
-// Last seen suggestions. Used to reenable suggestions.
-@property(nonatomic, strong) NSArray<FormSuggestion*>* lastSuggestions;
-
 // The objects that can provide a custom input accessory view while filling
 // forms.
 @property(nonatomic, copy) NSArray<id<FormInputSuggestionsProvider>>* providers;
@@ -118,6 +112,13 @@
 
   // Whether suggestions have previously been shown.
   BOOL _suggestionsHaveBeenShown;
+
+  // The last seen valid params of a form before retrieving suggestions. Or
+  // empty if |_hasLastSeenParams| is NO.
+  autofill::FormActivityParams _lastSeenParams;
+
+  // If YES |_lastSeenParams| is valid.
+  BOOL _hasLastSeenParams;
 }
 
 - (instancetype)
@@ -234,7 +235,7 @@
 
 - (void)keyboardWillShowWithHardwareKeyboardAttached:(BOOL)isHardwareKeyboard {
   self.hardwareKeyboard = isHardwareKeyboard;
-  [self updateWithProvider:self.lastProvider suggestions:self.lastSuggestions];
+  [self updateSuggestionsIfNeeded];
 }
 
 - (void)keyboardDidStayOnScreen {
@@ -300,7 +301,8 @@
       params.type == "form_changed") {
     return;
   }
-
+  _lastSeenParams = params;
+  _hasLastSeenParams = YES;
   [self retrieveSuggestionsForForm:params webState:webState];
 }
 
@@ -325,6 +327,7 @@
 - (void)webStateWasShown:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
   [self continueCustomKeyboardView];
+  [self updateSuggestionsIfNeeded];
 }
 
 - (void)webStateWasHidden:(web::WebState*)webState {
@@ -372,10 +375,7 @@
 
 - (void)enableSuggestions {
   self.suggestionsDisabled = NO;
-  if (self.lastProvider && self.lastSuggestions) {
-    [self updateWithProvider:self.lastProvider
-                 suggestions:self.lastSuggestions];
-  }
+  [self updateSuggestionsIfNeeded];
 }
 
 #pragma mark - Setters
@@ -390,6 +390,12 @@
 }
 
 #pragma mark - Private
+
+- (void)updateSuggestionsIfNeeded {
+  if (_hasLastSeenParams && _webState) {
+    [self retrieveSuggestionsForForm:_lastSeenParams webState:_webState];
+  }
+}
 
 // Tells the consumer to pause the custom keyboard view.
 - (void)pauseCustomKeyboardView {
@@ -461,8 +467,8 @@
 // Resets the current provider, the consumer view and the navigation handler. As
 // well as reenables suggestions.
 - (void)reset {
-  self.lastSuggestions = nil;
-  self.lastProvider = nil;
+  _lastSeenParams = autofill::FormActivityParams();
+  _hasLastSeenParams = NO;
 
   [self.consumer restoreOriginalKeyboardView];
   [self.formInputAccessoryHandler reset];
@@ -476,6 +482,7 @@
 - (void)retrieveSuggestionsForForm:(const autofill::FormActivityParams&)params
                           webState:(web::WebState*)webState {
   DCHECK_EQ(webState, self.webState);
+  DCHECK(_hasLastSeenParams);
 
   // TODO(crbug.com/845472): refactor this overly complex code. There is
   // always at max one provider in _providers.
@@ -542,12 +549,6 @@ queryViewBlockForProvider:(id<FormInputSuggestionsProvider>)provider
 // disabled, it's keep for later.
 - (void)updateWithProvider:(id<FormInputSuggestionsProvider>)provider
                suggestions:(NSArray<FormSuggestion*>*)suggestions {
-  // If the povider is valid, save the view and the provider for later. This is
-  // used to restore the state when re-enabling suggestions.
-  if (provider) {
-    self.lastSuggestions = suggestions;
-    self.lastProvider = provider;
-  }
   // If the suggestions are disabled, post this view with no suggestions to the
   // consumer. This allows the navigation buttons be in sync.
   if (self.suggestionsDisabled) {
