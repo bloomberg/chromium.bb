@@ -2096,4 +2096,19 @@ void ServiceWorkerVersion::NotifyControlleeRemoved(const std::string& uuid) {
   }
 }
 
+void ServiceWorkerVersion::set_compared_script_info_map(
+    std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
+        compared_script_info_map) {
+  compared_script_info_map_ = std::move(compared_script_info_map);
+};
+
+const std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>&
+ServiceWorkerVersion::compared_script_info_map() const {
+  return compared_script_info_map_;
+}
+
+std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
+ServiceWorkerVersion::TakePausedStateOfChangedScript(const GURL& script_url) {
+  return std::move(compared_script_info_map_[script_url].paused_state);
+}
 }  // namespace content

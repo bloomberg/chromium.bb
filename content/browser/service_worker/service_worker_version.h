@@ -35,6 +35,7 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_ping_controller.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
+#include "content/browser/service_worker/service_worker_update_checker.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message.h"
@@ -513,6 +514,17 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void IncrementPendingUpdateHintCount();
   void DecrementPendingUpdateHintCount();
 
+  void set_compared_script_info_map(
+      std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
+          compared_script_info_map);
+  const std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>&
+  compared_script_info_map() const;
+
+  // Take the ownership of the PausedState for changed script from the
+  // compared_script_info_map_.
+  std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
+  TakePausedStateOfChangedScript(const GURL& script_url);
+
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class EmbeddedWorkerInstanceTest;
@@ -952,6 +964,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::set<blink::mojom::WebFeature> used_features_;
 
   std::unique_ptr<blink::TrialTokenValidator> validator_;
+
+  // Stores the result of byte-to-byte update check for each script. Used only
+  // when ServiceWorkerImportedScriptUpdateCheck is enabled.
+  std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
+      compared_script_info_map_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
 
