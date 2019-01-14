@@ -1319,10 +1319,6 @@ std::unique_ptr<content::WebContents> Browser::SwapWebContents(
   return tab_strip_model_->ReplaceWebContentsAt(index, std::move(new_contents));
 }
 
-bool Browser::ShouldShowStaleContentOnEviction(content::WebContents* source) {
-  return source == tab_strip_model_->GetActiveWebContents();
-}
-
 bool Browser::IsMouseLocked() const {
   return exclusive_access_manager_->mouse_lock_controller()->IsMouseLocked();
 }

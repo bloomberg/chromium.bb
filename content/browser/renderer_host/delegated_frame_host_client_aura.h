@@ -35,7 +35,6 @@ class CONTENT_EXPORT DelegatedFrameHostClientAura
   float GetDeviceScaleFactor() const override;
   void InvalidateLocalSurfaceIdOnEviction() override;
   std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction() override;
-  bool ShouldShowStaleContentOnEviction() override;
 
  private:
   RenderWidgetHostViewAura* render_widget_host_view_;

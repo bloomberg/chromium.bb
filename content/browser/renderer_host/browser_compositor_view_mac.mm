@@ -358,10 +358,6 @@ BrowserCompositorMac::CollectSurfaceIdsForEviction() {
   return client_->CollectSurfaceIdsForEviction();
 }
 
-bool BrowserCompositorMac::ShouldShowStaleContentOnEviction() {
-  return false;
-}
-
 void BrowserCompositorMac::DidNavigate() {
   if (render_widget_host_is_hidden_) {
     // Navigating while hidden should not allocate a new LocalSurfaceID. Once

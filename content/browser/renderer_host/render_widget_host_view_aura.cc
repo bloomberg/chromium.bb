@@ -720,10 +720,6 @@ void RenderWidgetHostViewAura::WasOccluded() {
 #endif
 }
 
-bool RenderWidgetHostViewAura::ShouldShowStaleContentOnEviction() {
-  return host()->ShouldShowStaleContentOnEviction();
-}
-
 gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {
   return window_->GetBoundsInScreen();
 }

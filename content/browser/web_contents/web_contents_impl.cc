@@ -2508,10 +2508,6 @@ bool WebContentsImpl::IsFullscreenForCurrentTab() {
   return delegate_ ? delegate_->IsFullscreenForTabOrPending(this) : false;
 }
 
-bool WebContentsImpl::ShouldShowStaleContentOnEviction() {
-  return GetDelegate() && GetDelegate()->ShouldShowStaleContentOnEviction(this);
-}
-
 bool WebContentsImpl::IsFullscreen() {
   return IsFullscreenForCurrentTab();
 }
