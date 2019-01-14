@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/dbus/chrome_features_service_provider.h"
 
+#include <algorithm>
+#include <iterator>
 #include <memory>
 #include <utility>
 
@@ -62,6 +64,13 @@ void ChromeFeaturesServiceProvider::Start(
     scoped_refptr<dbus::ExportedObject> exported_object) {
   exported_object->ExportMethod(
       kChromeFeaturesServiceInterface,
+      kChromeFeaturesServiceIsFeatureEnabledMethod,
+      base::BindRepeating(&ChromeFeaturesServiceProvider::IsFeatureEnabled,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
+                          weak_ptr_factory_.GetWeakPtr()));
+  exported_object->ExportMethod(
+      kChromeFeaturesServiceInterface,
       kChromeFeaturesServiceIsCrostiniEnabledMethod,
       base::BindRepeating(&ChromeFeaturesServiceProvider::IsCrostiniEnabled,
                           weak_ptr_factory_.GetWeakPtr()),
@@ -98,6 +107,38 @@ void ChromeFeaturesServiceProvider::OnExported(
   if (!success) {
     LOG(ERROR) << "Failed to export " << interface_name << "." << method_name;
   }
+}
+
+void ChromeFeaturesServiceProvider::IsFeatureEnabled(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  static const base::Feature constexpr* kFeatureLookup[] = {
+      &features::kUsbguard, &features::kShillSandboxing};
+
+  dbus::MessageReader reader(method_call);
+  std::string feature_name;
+  if (!reader.PopString(&feature_name)) {
+    LOG(ERROR) << "Failed to pop feature_name from incoming message.";
+    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+        method_call, DBUS_ERROR_INVALID_ARGS,
+        "Missing or invalid feature_name string arg."));
+    return;
+  }
+
+  auto* const* it =
+      std::find_if(std::begin(kFeatureLookup), std::end(kFeatureLookup),
+                   [&feature_name](const base::Feature* feature) -> bool {
+                     return feature_name == feature->name;
+                   });
+  if (it == std::end(kFeatureLookup)) {
+    LOG(ERROR) << "Unexpected feature name.";
+    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+        method_call, DBUS_ERROR_INVALID_ARGS, "Unexpected feature name."));
+    return;
+  }
+
+  SendResponse(method_call, response_sender,
+               base::FeatureList::IsEnabled(**it));
 }
 
 void ChromeFeaturesServiceProvider::IsCrostiniEnabled(

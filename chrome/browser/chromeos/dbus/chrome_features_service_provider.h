@@ -53,6 +53,8 @@ class ChromeFeaturesServiceProvider
                   bool success);
 
   // Called on UI thread in response to a D-Bus request.
+  void IsFeatureEnabled(dbus::MethodCall* method_call,
+                        dbus::ExportedObject::ResponseSender response_sender);
   void IsCrostiniEnabled(dbus::MethodCall* method_call,
                          dbus::ExportedObject::ResponseSender response_sender);
   void IsPluginVmEnabled(dbus::MethodCall* method_call,
