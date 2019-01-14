@@ -116,6 +116,19 @@ class HostResolverMdnsTask::Transaction {
               OK, parsed->rdata<net::TxtRecordRdata>()->texts(),
               HostCache::Entry::SOURCE_UNKNOWN);
           break;
+        case DnsQueryType::PTR:
+          std::string pointer =
+              parsed->rdata<net::PtrRecordRdata>()->ptrdomain();
+          // Skip pointers to the root domain.
+          if (pointer.empty()) {
+            results_ = HostCache::Entry(ERR_NAME_NOT_RESOLVED,
+                                        HostCache::Entry::SOURCE_UNKNOWN);
+          } else {
+            results_ = HostCache::Entry(
+                OK, std::vector<HostPortPair>({HostPortPair(pointer, 0)}),
+                HostCache::Entry::SOURCE_UNKNOWN);
+          }
+          break;
       }
     } else {
       results_ = HostCache::Entry(error, HostCache::Entry::SOURCE_UNKNOWN);

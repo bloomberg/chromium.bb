@@ -1084,6 +1084,12 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   }
 
  private:
+  static const HostCache::Entry& GetMalformedResponseResult() {
+    static const base::NoDestructor<HostCache::Entry> kMalformedResponseResult(
+        ERR_DNS_MALFORMED_RESPONSE, HostCache::Entry::SOURCE_DNS);
+    return *kMalformedResponseResult;
+  }
+
   std::unique_ptr<DnsTransaction> CreateTransaction(
       DnsQueryType dns_query_type) {
     DCHECK_NE(DnsQueryType::UNSPECIFIED, dns_query_type);
@@ -1124,6 +1130,9 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         break;
       case DnsQueryType::TXT:
         parse_result = ParseTxtDnsResponse(response, &results);
+        break;
+      case DnsQueryType::PTR:
+        parse_result = ParsePointerDnsResponse(response, &results);
         break;
     }
     DCHECK_LT(parse_result, DnsResponse::DNS_PARSE_RESULT_MAX);
@@ -1192,8 +1201,7 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         response->ParseToAddressList(&addresses, &ttl);
 
     if (parse_result != DnsResponse::DNS_PARSE_OK) {
-      *out_results = HostCache::Entry(ERR_DNS_MALFORMED_RESPONSE, AddressList(),
-                                      HostCache::Entry::SOURCE_DNS);
+      *out_results = GetMalformedResponseResult();
     } else if (addresses.empty()) {
       *out_results = HostCache::Entry(ERR_NAME_NOT_RESOLVED, AddressList(),
                                       HostCache::Entry::SOURCE_DNS, ttl);
@@ -1206,52 +1214,93 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
   DnsResponse::Result ParseTxtDnsResponse(const DnsResponse* response,
                                           HostCache::Entry* out_results) {
+    std::vector<std::unique_ptr<const RecordParsed>> records;
+    base::Optional<base::TimeDelta> response_ttl;
+    DnsResponse::Result parse_result = ParseAndFilterResponseRecords(
+        response, dns_protocol::kTypeTXT, &records, &response_ttl);
+
+    if (parse_result != DnsResponse::DNS_PARSE_OK) {
+      *out_results = GetMalformedResponseResult();
+      return parse_result;
+    }
+
+    std::vector<std::string> text_records;
+    for (const auto& record : records) {
+      const TxtRecordRdata* rdata = record->rdata<net::TxtRecordRdata>();
+      text_records.insert(text_records.end(), rdata->texts().begin(),
+                          rdata->texts().end());
+    }
+
+    *out_results = HostCache::Entry(
+        text_records.empty() ? ERR_NAME_NOT_RESOLVED : OK,
+        std::move(text_records), HostCache::Entry::SOURCE_DNS, response_ttl);
+    return DnsResponse::DNS_PARSE_OK;
+  }
+
+  DnsResponse::Result ParsePointerDnsResponse(const DnsResponse* response,
+                                              HostCache::Entry* out_results) {
+    std::vector<std::unique_ptr<const RecordParsed>> records;
+    base::Optional<base::TimeDelta> response_ttl;
+    DnsResponse::Result parse_result = ParseAndFilterResponseRecords(
+        response, dns_protocol::kTypePTR, &records, &response_ttl);
+
+    if (parse_result != DnsResponse::DNS_PARSE_OK) {
+      *out_results = GetMalformedResponseResult();
+      return parse_result;
+    }
+
+    std::vector<HostPortPair> pointers;
+    for (const auto& record : records) {
+      const PtrRecordRdata* rdata = record->rdata<net::PtrRecordRdata>();
+      std::string pointer = rdata->ptrdomain();
+
+      // Skip pointers to the root domain.
+      if (!pointer.empty())
+        pointers.emplace_back(std::move(pointer), 0);
+    }
+
+    *out_results = HostCache::Entry(
+        pointers.empty() ? ERR_NAME_NOT_RESOLVED : OK, std::move(pointers),
+        HostCache::Entry::SOURCE_DNS, response_ttl);
+    return DnsResponse::DNS_PARSE_OK;
+  }
+
+  DnsResponse::Result ParseAndFilterResponseRecords(
+      const DnsResponse* response,
+      uint16_t filter_dns_type,
+      std::vector<std::unique_ptr<const RecordParsed>>* out_records,
+      base::Optional<base::TimeDelta>* out_response_ttl) {
+    out_records->clear();
+    out_response_ttl->reset();
+
     DnsRecordParser parser = response->Parser();
 
     // Expected to be validated by DnsTransaction.
-    DCHECK_EQ(dns_protocol::kTypeTXT, response->qtype());
+    DCHECK_EQ(filter_dns_type, response->qtype());
 
-    std::vector<std::string> text_records;
-    base::TimeDelta response_ttl = base::TimeDelta::Max();
     for (unsigned i = 0; i < response->answer_count(); ++i) {
       std::unique_ptr<const RecordParsed> record =
           RecordParsed::CreateFrom(&parser, base::Time::Now());
 
-      static const base::NoDestructor<HostCache::Entry> bad_response_result(
-          ERR_DNS_MALFORMED_RESPONSE, std::vector<std::string>(),
-          HostCache::Entry::SOURCE_DNS);
-      if (!record) {
-        *out_results = *bad_response_result;
+      if (!record)
         return DnsResponse::DNS_MALFORMED_RESPONSE;
-      }
       if (!base::EqualsCaseInsensitiveASCII(record->name(),
                                             response->GetDottedName())) {
-        *out_results = *bad_response_result;
         return DnsResponse::DNS_NAME_MISMATCH;
       }
 
-      // Ignore any non-internet and non-text records.
+      // Ignore any records that are not class Internet and type
+      // |filter_dns_type|.
       if (record->klass() == dns_protocol::kClassIN &&
-          record->type() == dns_protocol::kTypeTXT) {
-        const TxtRecordRdata* rdata = record->rdata<net::TxtRecordRdata>();
-
-        text_records.insert(text_records.end(), rdata->texts().begin(),
-                            rdata->texts().end());
-
+          record->type() == filter_dns_type) {
         base::TimeDelta ttl = base::TimeDelta::FromSeconds(record->ttl());
-        response_ttl = std::min(response_ttl, ttl);
+        *out_response_ttl =
+            std::min(out_response_ttl->value_or(base::TimeDelta::Max()), ttl);
+
+        out_records->push_back(std::move(record));
       }
     }
 
-    if (response_ttl < base::TimeDelta::Max()) {
-      *out_results = HostCache::Entry(
-          text_records.empty() ? ERR_NAME_NOT_RESOLVED : OK,
-          std::move(text_records), HostCache::Entry::SOURCE_DNS, response_ttl);
-    } else {
-      *out_results = HostCache::Entry(
-          text_records.empty() ? ERR_NAME_NOT_RESOLVED : OK,
-          std::move(text_records), HostCache::Entry::SOURCE_DNS);
-    }
     return DnsResponse::DNS_PARSE_OK;
   }
 

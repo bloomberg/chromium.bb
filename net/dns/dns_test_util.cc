@@ -135,6 +135,22 @@ DnsResourceRecord BuildTextRecord(std::string name,
   return record;
 }
 
+DnsResourceRecord BuildPointerRecord(std::string name,
+                                     std::string pointer_name) {
+  DCHECK(!name.empty());
+  DCHECK(!pointer_name.empty());
+
+  DnsResourceRecord record;
+  record.name = std::move(name);
+  record.type = dns_protocol::kTypePTR;
+  record.klass = dns_protocol::kClassIN;
+  record.ttl = base::TimeDelta::FromDays(1).InSeconds();
+  CHECK(DNSDomainFromDot(pointer_name, &record.owned_rdata));
+  record.rdata = record.owned_rdata;
+
+  return record;
+}
+
 // A DnsTransaction which uses MockDnsClientRuleList to determine the response.
 class MockTransaction : public DnsTransaction,
                         public base::SupportsWeakPtr<MockTransaction> {
@@ -319,6 +335,29 @@ std::unique_ptr<DnsResponse> BuildTestDnsResponse(
   CHECK(DNSDomainFromDot(name, &dns_name));
   base::Optional<DnsQuery> query(base::in_place, 0, dns_name,
                                  dns_protocol::kTypeTXT);
+
+  return std::make_unique<DnsResponse>(
+      0, false, std::move(answers),
+      std::vector<DnsResourceRecord>() /* authority_records */,
+      std::vector<DnsResourceRecord>() /* additional_records */, query);
+}
+
+std::unique_ptr<DnsResponse> BuildTestDnsPointerResponse(
+    std::string name,
+    std::vector<std::string> pointer_names,
+    std::string answer_name) {
+  if (answer_name.empty())
+    answer_name = name;
+
+  std::vector<DnsResourceRecord> answers;
+  for (std::string pointer_name : pointer_names) {
+    answers.push_back(BuildPointerRecord(answer_name, std::move(pointer_name)));
+  }
+
+  std::string dns_name;
+  CHECK(DNSDomainFromDot(name, &dns_name));
+  base::Optional<DnsQuery> query(base::in_place, 0, dns_name,
+                                 dns_protocol::kTypePTR);
 
   return std::make_unique<DnsResponse>(
       0, false, std::move(answers),

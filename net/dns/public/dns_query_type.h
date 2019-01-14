@@ -15,11 +15,11 @@ namespace net {
 // https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-4
 //
 // TODO(crbug.com/846423): Add support for non-address types.
-enum class DnsQueryType { UNSPECIFIED, A, AAAA, TXT, MAX = TXT };
+enum class DnsQueryType { UNSPECIFIED, A, AAAA, TXT, PTR, MAX = PTR };
 
 const DnsQueryType kDnsQueryTypes[] = {DnsQueryType::UNSPECIFIED,
                                        DnsQueryType::A, DnsQueryType::AAAA,
-                                       DnsQueryType::TXT};
+                                       DnsQueryType::TXT, DnsQueryType::PTR};
 
 static_assert(base::size(kDnsQueryTypes) ==
                   static_cast<unsigned>(DnsQueryType::MAX) + 1,
