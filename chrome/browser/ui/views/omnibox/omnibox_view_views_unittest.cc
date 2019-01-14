@@ -247,8 +247,8 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
   }
 
  private:
-  TestingProfile profile_;
-  TemplateURLServiceFactoryTestUtil util_;
+  std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<TemplateURLServiceFactoryTestUtil> util_;
   CommandUpdaterImpl command_updater_;
   TestLocationBarModel location_bar_model_;
   TestingOmniboxEditController omnibox_edit_controller_;
@@ -266,7 +266,6 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
 OmniboxViewViewsTest::OmniboxViewViewsTest(
     const std::vector<base::Feature>& enabled_features)
     : OmniboxViewViewsTestBase(enabled_features),
-      util_(&profile_),
       command_updater_(nullptr),
       omnibox_edit_controller_(&command_updater_, &location_bar_model_) {}
 
@@ -286,6 +285,9 @@ void OmniboxViewViewsTest::SetAndEmphasizeText(const std::string& new_text,
 void OmniboxViewViewsTest::SetUp() {
   ChromeViewsTestBase::SetUp();
 
+  profile_ = std::make_unique<TestingProfile>();
+  util_ = std::make_unique<TemplateURLServiceFactoryTestUtil>(profile_.get());
+
   // We need a widget so OmniboxView can be correctly focused and unfocused.
   widget_ = std::make_unique<views::Widget>();
   views::Widget::InitParams params =
@@ -300,11 +302,12 @@ void OmniboxViewViewsTest::SetUp() {
       new chromeos::input_method::MockInputMethodManagerImpl);
 #endif
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
-      &profile_,
+      profile_.get(),
       base::BindRepeating(&AutocompleteClassifierFactory::BuildInstanceFor));
-  omnibox_view_ = new TestingOmniboxView(
-      &omnibox_edit_controller_, std::make_unique<ChromeOmniboxClient>(
-                                     &omnibox_edit_controller_, &profile_));
+  omnibox_view_ =
+      new TestingOmniboxView(&omnibox_edit_controller_,
+                             std::make_unique<ChromeOmniboxClient>(
+                                 &omnibox_edit_controller_, profile_.get()));
   test_api_ = std::make_unique<views::TextfieldTestApi>(omnibox_view_);
   omnibox_view_->Init();
 
@@ -317,6 +320,8 @@ void OmniboxViewViewsTest::TearDown() {
     omnibox_view_->GetInputMethod()->DetachTextInputClient(omnibox_view_);
 
   widget_.reset();
+  util_.reset();
+  profile_.reset();
 
 #if defined(OS_CHROMEOS)
   chromeos::input_method::Shutdown();

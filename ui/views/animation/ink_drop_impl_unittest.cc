@@ -252,13 +252,6 @@ TEST_F(InkDropImplTest, LayersArentRemovedWhenPreemptingFadeOut) {
 
 TEST_F(InkDropImplTest,
        SettingHighlightStateDuringStateExitIsntAllowedDeathTest) {
-  // gtest death tests, such as EXPECT_DCHECK_DEATH(), can not work in the
-  // presence of fork() and other process launching. In views-mus, we have
-  // already launched additional processes for our service manager. Performing
-  // this test under mus is impossible.
-  if (PlatformTestHelper::IsMus())
-    return;
-
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 
   test::InkDropImplTestApi::SetStateOnExitHighlightState::Install(

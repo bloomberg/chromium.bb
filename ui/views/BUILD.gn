@@ -7,6 +7,8 @@ import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//components/vector_icons/vector_icons.gni")
+import("//services/catalog/public/tools/catalog.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/ozone/ozone.gni")
@@ -798,7 +800,7 @@ jumbo_component("views") {
   }
 }
 
-jumbo_source_set("test_support_internal") {
+jumbo_source_set("test_support") {
   testonly = true
   sources = [
     "animation/test/flood_fill_ink_drop_ripple_test_api.cc",
@@ -839,7 +841,11 @@ jumbo_source_set("test_support_internal") {
     "test/menu_runner_test_api.h",
     "test/menu_test_utils.cc",
     "test/menu_test_utils.h",
+    "test/native_widget_factory.cc",
     "test/native_widget_factory.h",
+    "test/platform_test_helper.cc",
+    "test/platform_test_helper.h",
+    "test/platform_test_helper_cocoa.mm",
     "test/scoped_views_test_helper.cc",
     "test/scoped_views_test_helper.h",
     "test/slider_test_api.cc",
@@ -874,15 +880,10 @@ jumbo_source_set("test_support_internal") {
     "views_test_suite.h",
   ]
 
-  # External code should depend upon "test_support".
-  visibility = [ "./*" ]
-
   configs += [ "//build/config:precompiled_headers" ]
 
-  public_deps = [
-    ":views",
-  ]
   deps = [
+    ":views",
     "//base",
     "//base/test:test_support",
     "//gpu/ipc/service",
@@ -904,11 +905,32 @@ jumbo_source_set("test_support_internal") {
     "//ui/gl:test_support",
   ]
 
-  sources += [
-    "test/platform_test_helper.cc",
-    "test/platform_test_helper.h",
-    "test/platform_test_helper_cocoa.mm",
-  ]
+  if (enable_mus) {
+    sources += [
+      "test/platform_test_helper_mus.cc",
+      "test/platform_test_helper_mus.h",
+    ]
+
+    deps += [
+      ":views_unittests_catalog_source",
+      "//services/catalog:lib",
+      "//services/service_manager/background:lib",
+      "//services/service_manager/public/cpp",
+      "//services/service_manager/public/mojom",
+      "//services/ws/common",
+      "//testing/gtest",
+      "//ui/compositor:test_support",
+      "//ui/gl:test_support",
+      "//ui/resources",
+      "//ui/resources:ui_test_pak",
+    ]
+
+    data_deps = [
+      ":views_unittests_catalog",
+      "//services/ws/ime/test_ime_driver",
+      "//ui/resources:ui_test_pak_data",
+    ]
+  }
 
   if (use_aura) {
     sources += [
@@ -954,21 +976,7 @@ jumbo_source_set("test_support_internal") {
   }
 }
 
-jumbo_static_library("test_support") {
-  testonly = true
-  public_deps = [
-    ":test_support_internal",
-  ]
-  sources = [
-    "test/native_widget_factory_desktop.cc",
-  ]
-}
-
-# This target contains the unit tests that are shared between views_unittests
-# and views_mus_unittests.
-source_set("views_unittests_sources") {
-  testonly = true
-
+test("views_unittests") {
   sources = [
     "accessible_pane_view_unittest.cc",
     "animation/bounds_animator_unittest.cc",
@@ -1023,6 +1031,7 @@ source_set("views_unittests_sources") {
     "controls/table/test_table_model.cc",
     "controls/table/test_table_model.h",
     "controls/textfield/textfield_model_unittest.cc",
+    "controls/textfield/textfield_unittest.cc",
     "controls/tree/tree_view_unittest.cc",
     "event_monitor_unittest.cc",
     "focus/focus_manager_unittest.cc",
@@ -1033,6 +1042,7 @@ source_set("views_unittests_sources") {
     "layout/grid_layout_unittest.cc",
     "paint_info_unittest.cc",
     "rect_based_targeting_utils_unittest.cc",
+    "run_all_unittests_main.cc",
     "selection_controller_unittest.cc",
     "test/widget_test_unittest.cc",
     "view_model_unittest.cc",
@@ -1042,6 +1052,7 @@ source_set("views_unittests_sources") {
     "view_unittest.cc",
     "view_unittest_mac.mm",
     "widget/ax_native_widget_mac_unittest.mm",
+    "widget/desktop_widget_unittest.cc",
     "widget/native_widget_mac_unittest.mm",
     "widget/native_widget_unittest.cc",
     "widget/root_view_unittest.cc",
@@ -1057,10 +1068,8 @@ source_set("views_unittests_sources") {
 
   configs += [ "//build/config:precompiled_headers" ]
 
-  # Make all deps in this target public so both views_unittests and
-  # views_mus_unittests will get them.
-  public_deps = [
-    ":test_support_internal",
+  deps = [
+    ":test_support",
     ":views",
     "//base",
     "//base:i18n",
@@ -1069,6 +1078,7 @@ source_set("views_unittests_sources") {
     "//cc/paint",
     "//components/vector_icons",
     "//components/viz/common",
+    "//mojo/core/embedder",
     "//services/ws/public/mojom",
     "//skia",
     "//testing/gtest",
@@ -1087,6 +1097,7 @@ source_set("views_unittests_sources") {
     "//ui/gl:test_support",
     "//ui/native_theme",
     "//ui/native_theme:test_support",
+    "//ui/platform_window/platform_window_handler",
     "//ui/resources",
     "//ui/resources:ui_test_pak",
     "//ui/strings",
@@ -1097,8 +1108,29 @@ source_set("views_unittests_sources") {
     "//ui/resources:ui_test_pak_data",
   ]
 
+  if (enable_mus) {
+    sources += [
+      "mus/ax_remote_host_unittest.cc",
+      "mus/ax_tree_source_mus_unittest.cc",
+      "mus/desktop_window_tree_host_mus_unittest.cc",
+      "mus/screen_mus_unittest.cc",
+    ]
+
+    deps += [
+      "//services/ws/test_ws:mojom",
+      "//ui/accessibility/mojom",
+      "//ui/views/mus",
+      "//ui/views/mus/remote_view:tests",
+    ]
+
+    data_deps += [
+      "//services/ws/ime/test_ime_driver",
+      "//services/ws/test_ws",
+    ]
+  }
+
   if (is_win) {
-    public_deps += [
+    public_deps = [
       "//build/win:default_exe_manifest",
       "//third_party/iaccessible2",
       "//third_party/wtl",
@@ -1116,22 +1148,12 @@ source_set("views_unittests_sources") {
     ]
   }
 
-  if (has_native_accessibility) {
-    sources += [
-      "accessibility/ax_virtual_view_unittest.cc",
-      "accessibility/view_ax_platform_node_delegate_unittest.cc",
-    ]
-  }
-
-  if (use_x11) {
-    configs += [
-      "//build/config/linux:x11",
-      "//build/config/linux:xext",
-    ]
-    public_deps += [
-      "//ui/events/devices",
-      "//ui/events/platform/x11",
-      "//ui/gfx/x",
+  if (is_mac) {
+    # views_unittests not yet compiling on Mac. http://crbug.com/378134
+    sources -= [ "controls/native/native_view_host_unittest.cc" ]
+    public_deps = [
+      "//ui/accelerated_widget_mac",
+      "//ui/views_bridge_mac:views_bridge_mac",
     ]
   }
 
@@ -1142,11 +1164,15 @@ source_set("views_unittests_sources") {
       "accessibility/ax_tree_source_views_unittest.cc",
       "controls/native/native_view_host_aura_unittest.cc",
       "corewm/tooltip_controller_unittest.cc",
+      "touchui/touch_selection_controller_impl_unittest.cc",
       "touchui/touch_selection_menu_runner_views_unittest.cc",
       "view_unittest_aura.cc",
+      "widget/desktop_aura/desktop_focus_rules_unittest.cc",
+      "widget/desktop_aura/desktop_native_widget_aura_unittest.cc",
+      "widget/native_widget_aura_unittest.cc",
       "widget/window_reorderer_unittest.cc",
     ]
-    public_deps += [
+    deps += [
       "//ui/accessibility:test_support",
       "//ui/aura",
       "//ui/aura:test_support",
@@ -1154,73 +1180,39 @@ source_set("views_unittests_sources") {
       "//ui/wm",
       "//ui/wm/public",
     ]
-  }
-
-  if (is_mac) {
-    # views_unittests not yet compiling on Mac. http://crbug.com/378134
-    sources -= [ "controls/native/native_view_host_unittest.cc" ]
-    public_deps += [
-      "//ui/accelerated_widget_mac",
-      "//ui/views_bridge_mac:views_bridge_mac",
-    ]
-  }
-}
-
-test("views_unittests") {
-  sources = [
-    "run_all_unittests_main.cc",
-
-    # EventGenerator doesn't work well with IME in mus so this must not be in
-    # the shared unit test sources.
-    # crbug.com/615033 crbug.com/548407
-    "controls/textfield/textfield_unittest.cc",
-  ]
-
-  if (use_aura) {
-    sources += [
-      # These tests are expecting a hierarchy as created by classic ash. They
-      # are only useful for views_unittests, and not in views_mus_unittests.
-      "touchui/touch_selection_controller_impl_unittest.cc",
-      "widget/native_widget_aura_unittest.cc",
-    ]
 
     if (is_mac) {
       # views_unittests not yet compiling on Mac. http://crbug.com/378134
       sources -= [ "widget/window_reorderer_unittest.cc" ]
     }
 
-    if (!is_chromeos) {
-      sources += [
-        "widget/desktop_aura/desktop_focus_rules_unittest.cc",
-        "widget/desktop_aura/desktop_native_widget_aura_unittest.cc",
+    if (use_x11) {
+      configs += [
+        "//build/config/linux:x11",
+        "//build/config/linux:xext",
       ]
+      deps += [
+        "//ui/events/devices",
+        "//ui/events/platform/x11",
+        "//ui/gfx/x",
+      ]
+    }
+
+    if (!is_chromeos) {
       if (use_x11) {
         sources += [
           "widget/desktop_aura/desktop_drag_drop_client_aurax11_unittest.cc",
           "widget/desktop_aura/desktop_screen_x11_unittest.cc",
           "widget/desktop_aura/desktop_window_tree_host_x11_unittest.cc",
         ]
+      } else if (is_linux) {
+        sources += [
+          "widget/desktop_aura/desktop_drag_drop_client_ozone_unittest.cc",
+          "widget/desktop_aura/desktop_window_tree_host_platform_unittest.cc",
+        ]
       }
     }
   }
-
-  if (is_linux && !is_chromeos && !use_x11) {
-    sources += [
-      "widget/desktop_aura/desktop_drag_drop_client_ozone_unittest.cc",
-      "widget/desktop_aura/desktop_window_tree_host_platform_unittest.cc",
-    ]
-  }
-
-  if (!is_chromeos) {
-    sources += [ "widget/desktop_widget_unittest.cc" ]
-  }
-
-  deps = [
-    ":test_support",
-    ":views_unittests_sources",
-    "//mojo/core/embedder",
-    "//ui/platform_window/platform_window_handler",
-  ]
 }
 
 # This target is added as a dependency of browser interactive_ui_tests. It must
@@ -1295,6 +1287,28 @@ source_set("views_interactive_ui_tests") {
   if (is_chromeos) {
     sources -= [ "corewm/desktop_capture_controller_unittest.cc" ]
   }
+
+  if (enable_mus) {
+    sources += [
+      "mus/clipboard_unittest.cc",
+      "mus/drag_interactive_uitest.cc",
+    ]
+
+    deps += [
+      "//mojo/core/embedder",
+      "//services/ws/public/mojom",
+      "//testing/gmock",
+      "//ui/base/ime",
+      "//ui/base/mojo:lib",
+      "//ui/events:events_base",
+      "//ui/touch_selection",
+      "//ui/views/mus",
+    ]
+
+    data_deps = [
+      "//services/ws/test_ws",
+    ]
+  }
 }
 
 test("views_perftests") {
@@ -1305,6 +1319,7 @@ test("views_perftests") {
 
   deps = [
     ":test_support",
+    ":views",
     "//base/test:test_support",
     "//cc/base:base",
     "//mojo/core/embedder",
@@ -1316,4 +1331,36 @@ test("views_perftests") {
     "//ui/resources:ui_test_pak_data",
     "//testing:run_perf_test",
   ]
+}
+
+if (enable_mus) {
+  service_manifest("unittests_manifest") {
+    name = "views_unittests"
+    source = "unittests_manifest.json"
+  }
+
+  service_manifest("interactive_ui_tests_manifest") {
+    name = "interactive_ui_tests"
+    source = "interactive_ui_tests_manifest.json"
+  }
+
+  catalog("views_unittests_catalog") {
+    testonly = true
+
+    embedded_services = [
+      ":unittests_manifest",
+      ":interactive_ui_tests_manifest",
+    ]
+
+    standalone_services = [
+      "//services/ws/test_ws:manifest",
+      "//services/ws/ime/test_ime_driver:manifest",
+    ]
+  }
+
+  catalog_cpp_source("views_unittests_catalog_source") {
+    testonly = true
+    catalog = ":views_unittests_catalog"
+    generated_function_name = "views::CreateViewsUnittestsCatalog"
+  }
 }

@@ -11,38 +11,31 @@
 
 namespace views {
 namespace test {
-namespace {
 
-Widget* CreateTopLevelPlatformWidgetWithStubbedCapture(
-    ViewsTestBase* test,
-    Widget::InitParams::Type type) {
+void WidgetTest::WidgetCloser::operator()(Widget* widget) const {
+  widget->CloseNow();
+}
+
+WidgetTest::WidgetTest() = default;
+WidgetTest::~WidgetTest() = default;
+
+Widget* WidgetTest::CreateTopLevelPlatformWidget() {
   Widget* widget = new Widget;
-  Widget::InitParams params = test->CreateParams(type);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.native_widget =
       CreatePlatformNativeWidgetImpl(params, widget, kStubCapture, nullptr);
   widget->Init(params);
   return widget;
 }
 
-}  // namespace
-
-void WidgetTest::WidgetCloser::operator()(Widget* widget) const {
-  widget->CloseNow();
-}
-
-WidgetTest::WidgetTest(
-    std::unique_ptr<ScopedTaskEnvironment> scoped_task_environment)
-    : ViewsTestBase(std::move(scoped_task_environment)) {}
-WidgetTest::~WidgetTest() {}
-
-Widget* WidgetTest::CreateTopLevelPlatformWidget() {
-  return CreateTopLevelPlatformWidgetWithStubbedCapture(
-      this, Widget::InitParams::TYPE_WINDOW);
-}
-
 Widget* WidgetTest::CreateTopLevelFramelessPlatformWidget() {
-  return CreateTopLevelPlatformWidgetWithStubbedCapture(
-      this, Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  Widget* widget = new Widget;
+  Widget::InitParams params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.native_widget =
+      CreatePlatformNativeWidgetImpl(params, widget, kStubCapture, nullptr);
+  widget->Init(params);
+  return widget;
 }
 
 Widget* WidgetTest::CreateChildPlatformWidget(
@@ -77,15 +70,6 @@ Widget* WidgetTest::CreateChildNativeWidget() {
   return CreateChildNativeWidgetWithParent(nullptr);
 }
 
-Widget* WidgetTest::CreateNativeDesktopWidget() {
-  Widget* widget = new Widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params.native_widget =
-      CreatePlatformDesktopNativeWidgetImpl(params, widget, nullptr);
-  widget->Init(params);
-  return widget;
-}
-
 View* WidgetTest::GetMousePressedHandler(internal::RootView* root_view) {
   return root_view->mouse_pressed_handler_;
 }
@@ -98,8 +82,15 @@ View* WidgetTest::GetGestureHandler(internal::RootView* root_view) {
   return root_view->gesture_handler_;
 }
 
-TestDesktopWidgetDelegate::TestDesktopWidgetDelegate() : widget_(new Widget) {
+DesktopWidgetTest::DesktopWidgetTest() = default;
+DesktopWidgetTest::~DesktopWidgetTest() = default;
+
+void DesktopWidgetTest::SetUp() {
+  set_native_widget_type(NativeWidgetType::kDesktop);
+  WidgetTest::SetUp();
 }
+
+TestDesktopWidgetDelegate::TestDesktopWidgetDelegate() : widget_(new Widget) {}
 
 TestDesktopWidgetDelegate::TestDesktopWidgetDelegate(Widget* widget)
     : widget_(widget) {}
@@ -112,10 +103,6 @@ TestDesktopWidgetDelegate::~TestDesktopWidgetDelegate() {
 
 void TestDesktopWidgetDelegate::InitWidget(Widget::InitParams init_params) {
   init_params.delegate = this;
-#if !defined(OS_CHROMEOS)
-  init_params.native_widget =
-      CreatePlatformDesktopNativeWidgetImpl(init_params, widget_, nullptr);
-#endif
   init_params.bounds = initial_bounds_;
   widget_->Init(init_params);
 }

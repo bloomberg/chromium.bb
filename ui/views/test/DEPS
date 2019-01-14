@@ -3,7 +3,9 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "views_interactive_ui_test_base\.cc": [
-    "+mojo/core/embedder",
+  "platform_test_helper_mus.cc": [
+    "+services/catalog/catalog.h",
+    "+services/service_manager/background/background_service_manager.h",
+    "+services/service_manager/public",
   ]
 }

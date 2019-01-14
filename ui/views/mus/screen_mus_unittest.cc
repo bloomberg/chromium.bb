@@ -6,10 +6,9 @@
 
 #include "base/command_line.h"
 #include "base/test/scoped_task_environment.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
-#include "ui/views/test/scoped_views_test_helper.h"
+#include "ui/views/test/views_test_base.h"
 
 namespace views {
 namespace {
@@ -27,34 +26,7 @@ std::vector<ws::mojom::WsDisplayPtr> ConvertDisplayToWsDisplays(
   return results;
 }
 
-TEST(ScreenMusScaleFactorTest, ConsistentDisplayInHighDPI) {
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
-  // Must be set before |test_helper| is constructed.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kForceDeviceScaleFactor, "2");
-  ScopedViewsTestHelper test_helper;
-  display::Screen* screen = display::Screen::GetScreen();
-  std::vector<display::Display> displays = screen->GetAllDisplays();
-  ASSERT_FALSE(displays.empty());
-  for (const display::Display& display : displays) {
-    EXPECT_EQ(2.f, display.device_scale_factor());
-    EXPECT_EQ(display.work_area(), display.bounds());
-  }
-}
-
-class ScreenMusTest : public testing::Test {
- public:
-  ScreenMusTest() = default;
-  ~ScreenMusTest() override = default;
-
- private:
-  base::test::ScopedTaskEnvironment task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
-  ScopedViewsTestHelper test_helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScreenMusTest);
-};
+using ScreenMusTest = ViewsTestWithDesktopNativeWidget;
 
 TEST_F(ScreenMusTest, PrimaryChangedToExisting) {
   ScreenMus* screen = static_cast<ScreenMus*>(display::Screen::GetScreen());
@@ -121,6 +93,31 @@ TEST_F(ScreenMusTest, SetDisplayForNewWindows) {
   screen->OnDisplaysChanged(ConvertDisplayToWsDisplays(displays), kDisplayId1,
                             kDisplayId1, 666 /* display_id_for_new_windows */);
   EXPECT_EQ(kDisplayId1, screen->GetDisplayForNewWindows().id());
+}
+
+class ScreenMusScaleFactorTest : public ScreenMusTest {
+ public:
+  ScreenMusScaleFactorTest() = default;
+  ~ScreenMusScaleFactorTest() override = default;
+
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kForceDeviceScaleFactor, "2");
+    ScreenMusTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScreenMusScaleFactorTest);
+};
+
+TEST_F(ScreenMusScaleFactorTest, ConsistentDisplayInHighDPI) {
+  display::Screen* screen = display::Screen::GetScreen();
+  std::vector<display::Display> displays = screen->GetAllDisplays();
+  ASSERT_FALSE(displays.empty());
+  for (const display::Display& display : displays) {
+    EXPECT_EQ(2.f, display.device_scale_factor());
+    EXPECT_EQ(display.work_area(), display.bounds());
+  }
 }
 
 }  // namespace

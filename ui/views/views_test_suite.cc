@@ -22,6 +22,11 @@
 #include "ui/aura/env.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "base/command_line.h"
+#include "ui/gl/gl_switches.h"
+#endif
+
 namespace views {
 
 ViewsTestSuite::ViewsTestSuite(int argc, char** argv)
@@ -43,6 +48,14 @@ int ViewsTestSuite::RunTestsSerially() {
 
 void ViewsTestSuite::Initialize() {
   base::TestSuite::Initialize();
+
+#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+  // Force software-gl. This is necessary for mus tests to avoid an msan warning
+  // in gl init.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kOverrideUseSoftwareGLForTests);
+#endif
+
   gl::GLSurfaceTestSupport::InitializeOneOff();
 
   ui::RegisterPathProvider();
@@ -50,20 +63,20 @@ void ViewsTestSuite::Initialize() {
   base::FilePath ui_test_pak_path;
   ASSERT_TRUE(base::PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
-#if defined(USE_AURA)
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
   InitializeEnv();
 #endif
 }
 
 void ViewsTestSuite::Shutdown() {
-#if defined(USE_AURA)
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
   DestroyEnv();
 #endif
   ui::ResourceBundle::CleanupSharedInstance();
   base::TestSuite::Shutdown();
 }
 
-#if defined(USE_AURA)
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
 void ViewsTestSuite::InitializeEnv() {
   env_ = aura::Env::CreateInstance();
 }

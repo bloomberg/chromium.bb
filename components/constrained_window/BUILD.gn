@@ -47,6 +47,7 @@ source_set("unit_tests") {
   deps = [
     ":constrained_window",
     "//components/web_modal:test_support",
+    "//ui/views",
     "//ui/views:test_support",
   ]
 }

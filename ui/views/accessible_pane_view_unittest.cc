@@ -137,19 +137,17 @@ TEST_F(AccessiblePaneViewTest, SetPaneFocusAndRestore) {
   EXPECT_EQ(test_view_bar->child_button(),
             test_view_bar->GetWidget()->GetFocusManager()->GetFocusedView());
 
-  if (!IsMus()) {
-    // Deactivate() is only reliable on Ash. On Windows it uses
-    // ::GetNextWindow() to simply activate another window, and which one is not
-    // predictable. On Mac, Deactivate() is not implemented. Note that
-    // TestBarView calls set_allow_deactivate_on_esc(true), which is only
-    // otherwise used in Ash.
+  // Deactivate() is only reliable on Ash. On Windows it uses
+  // ::GetNextWindow() to simply activate another window, and which one is not
+  // predictable. On Mac, Deactivate() is not implemented. Note that
+  // TestBarView calls set_allow_deactivate_on_esc(true), which is only
+  // otherwise used in Ash.
 #if !defined(OS_MACOSX) || defined(OS_CHROMEOS)
-    // Esc should deactivate the widget.
-    test_view_bar->AcceleratorPressed(test_view_bar->escape_key());
-    EXPECT_TRUE(widget_main->IsActive());
-    EXPECT_FALSE(widget_bar->IsActive());
+  // Esc should deactivate the widget.
+  test_view_bar->AcceleratorPressed(test_view_bar->escape_key());
+  EXPECT_TRUE(widget_main->IsActive());
+  EXPECT_FALSE(widget_bar->IsActive());
 #endif
-  }
 
   widget_bar->CloseNow();
   widget_bar.reset();

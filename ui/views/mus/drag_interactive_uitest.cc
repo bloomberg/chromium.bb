@@ -15,7 +15,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/mus/mus_client.h"
-#include "ui/views/test/widget_test.h"
+#include "ui/views/test/views_interactive_ui_test_base.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 
@@ -108,7 +108,7 @@ std::unique_ptr<ui::MouseEvent> CreateMouseUpEvent(int x, int y) {
 
 }  // namespace
 
-using DragTestInteractive = WidgetTest;
+using DragTestInteractive = ViewsInteractiveUITestBase;
 
 // Dispatch of events is asynchronous so most of DragTestInteractive.DragTest
 // consists of callback functions which will perform an action after the
@@ -151,7 +151,9 @@ TEST_F(DragTestInteractive, DragTest) {
   ws::mojom::EventInjectorPtr event_injector;
   MusClient::Get()->window_tree_client()->connector()->BindInterface(
       ws::mojom::kServiceName, &event_injector);
-  Widget* source_widget = CreateTopLevelFramelessPlatformWidget();
+
+  Widget* source_widget = new Widget;
+  source_widget->Init(CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS));
   View* source_view = new DraggableView;
   source_widget->SetContentsView(source_view);
   source_widget->Show();
@@ -161,7 +163,9 @@ TEST_F(DragTestInteractive, DragTest) {
   source_widget->SetBounds(gfx::Rect(0, 0, 20, 20));
   ASSERT_TRUE(source_waiter.Wait());
 
-  Widget* target_widget = CreateTopLevelFramelessPlatformWidget();
+  Widget* target_widget = new Widget;
+  target_widget->Init(CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS));
+
   TargetView* target_view = new TargetView;
   target_widget->SetContentsView(target_view);
   target_widget->Show();

@@ -17,6 +17,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view_test_helper.h"
+#include "chrome/browser/ui/views/native_widget_factory.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -377,13 +378,13 @@ TEST_F(BookmarkBarViewTest, UpdateTooltipText) {
   views::Widget widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
   // On Chrome OS, this always creates a NativeWidgetAura, but it should create
   // a DesktopNativeWidgetAura for Mash. We can get by without manually creating
   // it because AshTestViewsDelegate and MusClient will do the right thing
   // automatically.
-  params.native_widget = views::test::CreatePlatformDesktopNativeWidgetImpl(
-      params, &widget, nullptr);
+  params.native_widget = CreateNativeWidget(
+      NativeWidgetType::DESKTOP_NATIVE_WIDGET_AURA, &params, &widget);
 #endif
   widget.Init(params);
   widget.Show();

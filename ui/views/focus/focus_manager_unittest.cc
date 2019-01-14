@@ -1039,19 +1039,31 @@ TEST_F(FocusManagerTest, AnchoredDialogOnContainerView) {
   EXPECT_TRUE(parent3->HasFocus());
 }
 
-// Desktop native widget Aura tests are for non Chrome OS platforms.
 // This test is specifically for the permutation where the main
 // widget is a DesktopNativeWidgetAura and the bubble is a
 // NativeWidgetAura. When focus moves back from the bubble to the
 // parent widget, ensure that the DNWA's aura window is focused.
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
-TEST_F(FocusManagerTest, AnchoredDialogInDesktopNativeWidgetAura) {
+#if defined(USE_AURA)
+class DesktopWidgetFocusManagerTest : public FocusManagerTest {
+ public:
+  DesktopWidgetFocusManagerTest() = default;
+  ~DesktopWidgetFocusManagerTest() override = default;
+
+  // FocusManagerTest:
+  void SetUp() override {
+    set_native_widget_type(NativeWidgetType::kDesktop);
+    FocusManagerTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DesktopWidgetFocusManagerTest);
+};
+
+TEST_F(DesktopWidgetFocusManagerTest, AnchoredDialogInDesktopNativeWidgetAura) {
   Widget widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(0, 0, 1024, 768);
-  params.native_widget =
-      test::CreatePlatformDesktopNativeWidgetImpl(params, &widget, nullptr);
   widget.Init(params);
   widget.Show();
   widget.Activate();
@@ -1106,6 +1118,6 @@ TEST_F(FocusManagerTest, AnchoredDialogInDesktopNativeWidgetAura) {
   // Finally, the outer widget's window should be focused again.
   ASSERT_EQ(widget.GetNativeView(), focus_client->GetFocusedWindow());
 }
-#endif  // defined(USE_AURA) && !defined(OS_CHROMEOS)
+#endif  // defined(USE_AURA)
 
 }  // namespace views
