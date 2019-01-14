@@ -252,9 +252,9 @@ class ProfileSyncServiceTest : public ::testing::Test {
     sync_prefs.SetFirstSyncTime(base::Time::Now());
     sync_prefs.SetLastSyncedTime(base::Time::Now());
     sync_prefs.SetFirstSetupComplete();
-    sync_prefs.SetPreferredDataTypes(/*keep_everything_synced=*/true,
-                                     syncer::UserTypes(),
-                                     syncer::UserSelectableTypes());
+    sync_prefs.SetDataTypesConfiguration(/*keep_everything_synced=*/true,
+                                         syncer::UserTypes(),
+                                         syncer::UserSelectableTypes());
     service_->Initialize();
   }
 
@@ -393,9 +393,9 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest, NeedsConfirmation) {
   syncer::SyncPrefs sync_prefs(prefs());
   base::Time now = base::Time::Now();
   sync_prefs.SetLastSyncedTime(now);
-  sync_prefs.SetPreferredDataTypes(/*keep_everything_synced=*/true,
-                                   syncer::UserTypes(),
-                                   syncer::UserSelectableTypes());
+  sync_prefs.SetDataTypesConfiguration(/*keep_everything_synced=*/true,
+                                       syncer::UserTypes(),
+                                       syncer::UserSelectableTypes());
   service()->Initialize();
 
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
@@ -426,9 +426,9 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest, NeedsConfirmation) {
   syncer::SyncPrefs sync_prefs(prefs());
   base::Time now = base::Time::Now();
   sync_prefs.SetLastSyncedTime(now);
-  sync_prefs.SetPreferredDataTypes(/*keep_everything_synced=*/true,
-                                   syncer::UserTypes(),
-                                   syncer::UserSelectableTypes());
+  sync_prefs.SetDataTypesConfiguration(/*keep_everything_synced=*/true,
+                                       syncer::UserTypes(),
+                                       syncer::UserSelectableTypes());
   service()->Initialize();
 
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,

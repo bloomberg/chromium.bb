@@ -75,6 +75,7 @@ class MockSyncPrefObserver : public SyncPrefObserver {
  public:
   MOCK_METHOD1(OnSyncManagedPrefChange, void(bool));
   MOCK_METHOD1(OnFirstSetupCompletePrefChange, void(bool));
+  MOCK_METHOD2(OnPreferredDataTypesPrefChange, void(bool, ModelTypeSet));
 };
 
 TEST_F(SyncPrefsTest, ObservedPrefs) {
@@ -146,13 +147,14 @@ TEST_F(SyncPrefsTest, Basic) {
   EXPECT_EQ(now, sync_prefs_->GetLastSyncedTime());
 
   EXPECT_TRUE(sync_prefs_->HasKeepEverythingSynced());
-  sync_prefs_->SetPreferredDataTypes(/*keep_everything_synced=*/false,
-                                     /*registered_types=*/UserTypes(),
-                                     /*preferred_types=*/UserSelectableTypes());
+  sync_prefs_->SetDataTypesConfiguration(
+      /*keep_everything_synced=*/false,
+      /*registered_types=*/UserTypes(),
+      /*preferred_types=*/UserSelectableTypes());
   EXPECT_FALSE(sync_prefs_->HasKeepEverythingSynced());
-  sync_prefs_->SetPreferredDataTypes(/*keep_everything_synced=*/true,
-                                     /*registered_types=*/UserTypes(),
-                                     /*preferred_types=*/ModelTypeSet());
+  sync_prefs_->SetDataTypesConfiguration(/*keep_everything_synced=*/true,
+                                         /*registered_types=*/UserTypes(),
+                                         /*preferred_types=*/ModelTypeSet());
   EXPECT_TRUE(sync_prefs_->HasKeepEverythingSynced());
 
   EXPECT_TRUE(sync_prefs_->GetEncryptionBootstrapToken().empty());
@@ -171,9 +173,9 @@ TEST_F(SyncPrefsTest, DeleteDirectivesAndProxyTabsMigration) {
   registered_types.Remove(HISTORY_DELETE_DIRECTIVES);
 
   // Enable all other types.
-  sync_prefs_->SetPreferredDataTypes(/*keep_everything_synced=*/false,
-                                     /*registered_types=*/registered_types,
-                                     /*preferred_types=*/registered_types);
+  sync_prefs_->SetDataTypesConfiguration(/*keep_everything_synced=*/false,
+                                         /*registered_types=*/registered_types,
+                                         /*preferred_types=*/registered_types);
 
   // Manually enable typed urls (to simulate the old world).
   pref_service_.SetBoolean(prefs::kSyncTypedUrls, true);
@@ -204,15 +206,15 @@ TEST_F(SyncPrefsTest, PreferredTypesKeepEverythingSynced) {
   for (ModelType type : user_visible_types) {
     ModelTypeSet preferred_types;
     preferred_types.Put(type);
-    sync_prefs_->SetPreferredDataTypes(/*keep_everything_synced=*/true,
-                                       /*registered_types=*/user_types,
-                                       /*preferred_types=*/preferred_types);
+    sync_prefs_->SetDataTypesConfiguration(/*keep_everything_synced=*/true,
+                                           /*registered_types=*/user_types,
+                                           /*preferred_types=*/preferred_types);
     EXPECT_EQ(user_types, sync_prefs_->GetPreferredDataTypes(user_types));
   }
 }
 
 TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
-  sync_prefs_->SetPreferredDataTypes(
+  sync_prefs_->SetDataTypesConfiguration(
       /*keep_everything_synced=*/false,
       /*registered_types=*/UserTypes(),
       /*preferred_types=*/AlwaysPreferredUserTypes());
@@ -259,9 +261,9 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
 
     expected_preferred_types.PutAll(AlwaysPreferredUserTypes());
 
-    sync_prefs_->SetPreferredDataTypes(/*keep_everything_synced=*/false,
-                                       /*registered_types=*/user_types,
-                                       /*preferred_types=*/preferred_types);
+    sync_prefs_->SetDataTypesConfiguration(/*keep_everything_synced=*/false,
+                                           /*registered_types=*/user_types,
+                                           /*preferred_types=*/preferred_types);
     EXPECT_EQ(expected_preferred_types,
               sync_prefs_->GetPreferredDataTypes(user_types));
   }
@@ -270,15 +272,17 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
 // Device info should always be enabled.
 TEST_F(SyncPrefsTest, DeviceInfo) {
   EXPECT_TRUE(sync_prefs_->GetPreferredDataTypes(UserTypes()).Has(DEVICE_INFO));
-  sync_prefs_->SetPreferredDataTypes(/*keep_everything_synced=*/true,
-                                     /*registered_types=*/UserTypes(),
-                                     /*preferred_types=*/UserSelectableTypes());
+  sync_prefs_->SetDataTypesConfiguration(
+      /*keep_everything_synced=*/true,
+      /*registered_types=*/UserTypes(),
+      /*preferred_types=*/UserSelectableTypes());
   EXPECT_TRUE(sync_prefs_->GetPreferredDataTypes(UserTypes()).Has(DEVICE_INFO));
-  sync_prefs_->SetPreferredDataTypes(/*keep_everything_synced=*/false,
-                                     /*registered_types=*/UserTypes(),
-                                     /*preferred_types=*/UserSelectableTypes());
+  sync_prefs_->SetDataTypesConfiguration(
+      /*keep_everything_synced=*/false,
+      /*registered_types=*/UserTypes(),
+      /*preferred_types=*/UserSelectableTypes());
   EXPECT_TRUE(sync_prefs_->GetPreferredDataTypes(UserTypes()).Has(DEVICE_INFO));
-  sync_prefs_->SetPreferredDataTypes(
+  sync_prefs_->SetDataTypesConfiguration(
       /*keep_everything_synced=*/false,
       /*registered_types=*/ModelTypeSet(DEVICE_INFO),
       /*preferred_types=*/ModelTypeSet());
@@ -289,17 +293,19 @@ TEST_F(SyncPrefsTest, DeviceInfo) {
 TEST_F(SyncPrefsTest, UserConsents) {
   EXPECT_TRUE(
       sync_prefs_->GetPreferredDataTypes(UserTypes()).Has(USER_CONSENTS));
-  sync_prefs_->SetPreferredDataTypes(/*keep_everything_synced=*/true,
-                                     /*registered_types=*/UserTypes(),
-                                     /*preferred_types=*/UserSelectableTypes());
+  sync_prefs_->SetDataTypesConfiguration(
+      /*keep_everything_synced=*/true,
+      /*registered_types=*/UserTypes(),
+      /*preferred_types=*/UserSelectableTypes());
   EXPECT_TRUE(
       sync_prefs_->GetPreferredDataTypes(UserTypes()).Has(USER_CONSENTS));
-  sync_prefs_->SetPreferredDataTypes(/*keep_everything_synced=*/false,
-                                     /*registered_types=*/UserTypes(),
-                                     /*preferred_types=*/UserSelectableTypes());
+  sync_prefs_->SetDataTypesConfiguration(
+      /*keep_everything_synced=*/false,
+      /*registered_types=*/UserTypes(),
+      /*preferred_types=*/UserSelectableTypes());
   EXPECT_TRUE(
       sync_prefs_->GetPreferredDataTypes(UserTypes()).Has(USER_CONSENTS));
-  sync_prefs_->SetPreferredDataTypes(
+  sync_prefs_->SetDataTypesConfiguration(
       /*keep_everything_synced=*/false,
       /*registered_types=*/ModelTypeSet(USER_CONSENTS),
       /*preferred_types=*/ModelTypeSet());

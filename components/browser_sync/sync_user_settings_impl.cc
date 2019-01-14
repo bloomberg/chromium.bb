@@ -67,8 +67,9 @@ syncer::ModelTypeSet SyncUserSettingsImpl::GetChosenDataTypes() const {
 
 void SyncUserSettingsImpl::SetChosenDataTypes(bool sync_everything,
                                               syncer::ModelTypeSet types) {
-  // TODO(crbug.com/884159): Write to prefs directly.
-  service_->OnUserChoseDatatypes(sync_everything, types);
+  DCHECK(syncer::UserSelectableTypes().HasAll(types));
+
+  prefs_->SetDataTypesConfiguration(sync_everything, registered_types_, types);
 }
 
 bool SyncUserSettingsImpl::IsEncryptEverythingAllowed() const {
