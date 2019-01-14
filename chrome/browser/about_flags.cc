@@ -1239,6 +1239,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebrtcHwVP8EncodingName,
      flag_descriptions::kWebrtcHwVP8EncodingDescription, kOsAndroid | kOsCrOS,
      FEATURE_VALUE_TYPE(features::kWebRtcHWVP8Encoding)},
+#if defined(WEBRTC_USE_PIPEWIRE)
+    {"enable-webrtc-pipewire-capturer",
+     flag_descriptions::kWebrtcPipeWireCapturerName,
+     flag_descriptions::kWebrtcPipeWireCapturerDescription, kOsLinux,
+     FEATURE_VALUE_TYPE(features::kWebRtcPipeWireCapturer)},
+#endif  // defined(WEBRTC_USE_PIPEWIRE)
 #if !defined(OS_ANDROID)
     {"enable-webrtc-remote-event-log",
      flag_descriptions::kWebRtcRemoteEventLogName,
