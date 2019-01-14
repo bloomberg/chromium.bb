@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
@@ -148,7 +149,9 @@ TEST_F(DemoSetupControllerTest, OfflineSuccess) {
   tested_controller_->SetDeviceLocalAccountPolicyStoreForTest(&mock_store);
 
   tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOffline);
-  tested_controller_->SetOfflineDataDirForTest(temp_dir.GetPath());
+  tested_controller_->SetPreinstalledOfflineResourcesPathForTesting(
+      temp_dir.GetPath());
+  tested_controller_->TryMountPreinstalledDemoResources(base::DoNothing());
   tested_controller_->Enroll(
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
@@ -156,29 +159,6 @@ TEST_F(DemoSetupControllerTest, OfflineSuccess) {
                      base::Unretained(helper_.get())));
 
   EXPECT_TRUE(helper_->WaitResult(true));
-  EXPECT_EQ("", GetDeviceRequisition());
-}
-
-TEST_F(DemoSetupControllerTest, OfflineDeviceLocalAccountPolicyLoadFailure) {
-  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<
-          DemoModeSetupResult::SUCCESS>);
-
-  policy::MockCloudPolicyStore mock_store;
-  EXPECT_CALL(mock_store, Store(_)).Times(0);
-  tested_controller_->SetDeviceLocalAccountPolicyStoreForTest(&mock_store);
-
-  tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOffline);
-  tested_controller_->SetOfflineDataDirForTest(
-      base::FilePath(FILE_PATH_LITERAL("/no/such/path")));
-  tested_controller_->Enroll(
-      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
-                     base::Unretained(helper_.get())),
-      base::BindOnce(&DemoSetupControllerTestHelper::OnSetupError,
-                     base::Unretained(helper_.get())));
-
-  EXPECT_TRUE(helper_->WaitResult(false));
-  EXPECT_FALSE(helper_->RequiresPowerwash());
   EXPECT_EQ("", GetDeviceRequisition());
 }
 
@@ -196,7 +176,9 @@ TEST_F(DemoSetupControllerTest, OfflineDeviceLocalAccountPolicyStoreFailed) {
   tested_controller_->SetDeviceLocalAccountPolicyStoreForTest(&mock_store);
 
   tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOffline);
-  tested_controller_->SetOfflineDataDirForTest(temp_dir.GetPath());
+  tested_controller_->SetPreinstalledOfflineResourcesPathForTesting(
+      temp_dir.GetPath());
+  tested_controller_->TryMountPreinstalledDemoResources(base::DoNothing());
   tested_controller_->Enroll(
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
@@ -217,7 +199,9 @@ TEST_F(DemoSetupControllerTest, OfflineInvalidDeviceLocalAccountPolicyBlob) {
           DemoModeSetupResult::SUCCESS>);
 
   tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOffline);
-  tested_controller_->SetOfflineDataDirForTest(temp_dir.GetPath());
+  tested_controller_->SetPreinstalledOfflineResourcesPathForTesting(
+      temp_dir.GetPath());
+  tested_controller_->TryMountPreinstalledDemoResources(base::DoNothing());
   tested_controller_->Enroll(
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
@@ -242,7 +226,9 @@ TEST_F(DemoSetupControllerTest, OfflineErrorDefault) {
   tested_controller_->SetDeviceLocalAccountPolicyStoreForTest(&mock_store);
 
   tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOffline);
-  tested_controller_->SetOfflineDataDirForTest(temp_dir.GetPath());
+  tested_controller_->SetPreinstalledOfflineResourcesPathForTesting(
+      temp_dir.GetPath());
+  tested_controller_->TryMountPreinstalledDemoResources(base::DoNothing());
   tested_controller_->Enroll(
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
@@ -267,7 +253,9 @@ TEST_F(DemoSetupControllerTest, OfflineErrorPowerwashRequired) {
   tested_controller_->SetDeviceLocalAccountPolicyStoreForTest(&mock_store);
 
   tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOffline);
-  tested_controller_->SetOfflineDataDirForTest(temp_dir.GetPath());
+  tested_controller_->SetPreinstalledOfflineResourcesPathForTesting(
+      temp_dir.GetPath());
+  tested_controller_->TryMountPreinstalledDemoResources(base::DoNothing());
   tested_controller_->Enroll(
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
