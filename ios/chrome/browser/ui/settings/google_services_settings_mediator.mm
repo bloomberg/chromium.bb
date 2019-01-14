@@ -111,8 +111,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @synthesize nonPersonalizedItems = _nonPersonalizedItems;
 
-#pragma mark - Load model
-
 - (instancetype)initWithUserPrefService:(PrefService*)userPrefService
                        localPrefService:(PrefService*)localPrefService
                        syncSetupService:(SyncSetupService*)syncSetupService
@@ -158,6 +156,79 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return self;
 }
 
+#pragma mark - Load sync feedback section
+
+// Reloads the sync feedback section. If |notifyConsummer| is YES, the consomer
+// is notified to add or remove the sync error section.
+- (void)updateSyncErrorSectionAndNotifyConsumer:(BOOL)notifyConsummer {
+  TableViewModel* model = self.consumer.tableViewModel;
+  BOOL hasError = NO;
+  ItemType type;
+  if (self.isAuthenticated) {
+    switch (self.syncSetupService->GetSyncServiceState()) {
+      case SyncSetupService::kSyncServiceUnrecoverableError:
+        type = RestartAuthenticationFlowErrorItemType;
+        hasError = YES;
+        break;
+      case SyncSetupService::kSyncServiceSignInNeedsUpdate:
+        type = ReauthDialogAsSyncIsInAuthErrorItemType;
+        hasError = YES;
+        break;
+      case SyncSetupService::kSyncServiceNeedsPassphrase:
+        type = ShowPassphraseDialogErrorItemType;
+        hasError = YES;
+        break;
+      case SyncSetupService::kNoSyncServiceError:
+      case SyncSetupService::kSyncServiceCouldNotConnect:
+      case SyncSetupService::kSyncServiceServiceUnavailable:
+        break;
+    }
+  }
+  if (!hasError) {
+    // No action to do, therefore the sync error section should not be visibled.
+    if ([model hasSectionForSectionIdentifier:SyncFeedbackSectionIdentifier]) {
+      // Remove the sync error item if it exists.
+      NSUInteger sectionIndex =
+          [model sectionForSectionIdentifier:SyncFeedbackSectionIdentifier];
+      [model removeSectionWithIdentifier:SyncFeedbackSectionIdentifier];
+      if (notifyConsummer) {
+        NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:sectionIndex];
+        [self.consumer deleteSections:indexSet];
+      }
+    }
+    return;
+  }
+  // Add the sync error item and its section (if it doesn't already exist) and
+  // reload them.
+  BOOL sectionAdded = NO;
+  SettingsImageDetailTextItem* syncErrorItem =
+      [self createSyncErrorItemWithItemType:type];
+  if (![model hasSectionForSectionIdentifier:SyncFeedbackSectionIdentifier]) {
+    // Adding the sync error item and its section.
+    [model insertSectionWithIdentifier:SyncFeedbackSectionIdentifier atIndex:0];
+    [model addItem:syncErrorItem
+        toSectionWithIdentifier:SyncFeedbackSectionIdentifier];
+    sectionAdded = YES;
+  } else {
+    [model
+        deleteAllItemsFromSectionWithIdentifier:SyncFeedbackSectionIdentifier];
+    [model addItem:syncErrorItem
+        toSectionWithIdentifier:SyncFeedbackSectionIdentifier];
+  }
+  if (notifyConsummer) {
+    NSUInteger sectionIndex =
+        [model sectionForSectionIdentifier:SyncFeedbackSectionIdentifier];
+    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:sectionIndex];
+    if (sectionAdded) {
+      [self.consumer insertSections:indexSet];
+    } else {
+      [self.consumer reloadSections:indexSet];
+    }
+  }
+}
+
+#pragma mark - Load non personalized section
+
 // Loads NonPersonalizedSectionIdentifier section.
 - (void)loadNonPersonalizedSection {
   TableViewModel* model = self.consumer.tableViewModel;
@@ -167,6 +238,34 @@ typedef NS_ENUM(NSInteger, ItemType) {
         toSectionWithIdentifier:NonPersonalizedSectionIdentifier];
   }
   [self updateNonPersonalizedSection];
+}
+
+// Updates the non-personalized section according to the user consent.
+- (void)updateNonPersonalizedSection {
+  for (TableViewItem* item in self.nonPersonalizedItems) {
+    ItemType type = static_cast<ItemType>(item.type);
+    SyncSwitchItem* switchItem =
+        base::mac::ObjCCastStrict<SyncSwitchItem>(item);
+    switch (type) {
+      case AutocompleteSearchesAndURLsItemType:
+        switchItem.on = self.autocompleteSearchPreference.value;
+        break;
+      case PreloadPagesItemType:
+        switchItem.on = self.preloadPagesPreference.value;
+        break;
+      case ImproveChromeItemType:
+        switchItem.on = self.sendDataUsagePreference.value;
+        break;
+      case BetterSearchAndBrowsingItemType:
+        switchItem.on = self.anonymizedDataCollectionPreference.value;
+        break;
+      case RestartAuthenticationFlowErrorItemType:
+      case ReauthDialogAsSyncIsInAuthErrorItemType:
+      case ShowPassphraseDialogErrorItemType:
+        NOTREACHED();
+        break;
+    }
+  }
 }
 
 #pragma mark - Properties
@@ -246,103 +345,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     UIGraphicsEndImageContext();
   }
   return syncErrorItem;
-}
-
-// Reloads the sync feedback section. If |notifyConsummer| is YES, the consomer
-// is notified to add or remove the sync error section.
-- (void)updateSyncErrorSectionAndNotifyConsumer:(BOOL)notifyConsummer {
-  TableViewModel* model = self.consumer.tableViewModel;
-  BOOL hasError = NO;
-  ItemType type;
-  if (self.isAuthenticated) {
-    switch (self.syncSetupService->GetSyncServiceState()) {
-      case SyncSetupService::kSyncServiceUnrecoverableError:
-        type = RestartAuthenticationFlowErrorItemType;
-        hasError = YES;
-        break;
-      case SyncSetupService::kSyncServiceSignInNeedsUpdate:
-        type = ReauthDialogAsSyncIsInAuthErrorItemType;
-        hasError = YES;
-        break;
-      case SyncSetupService::kSyncServiceNeedsPassphrase:
-        type = ShowPassphraseDialogErrorItemType;
-        hasError = YES;
-        break;
-      case SyncSetupService::kNoSyncServiceError:
-      case SyncSetupService::kSyncServiceCouldNotConnect:
-      case SyncSetupService::kSyncServiceServiceUnavailable:
-        break;
-    }
-  }
-  if (!hasError) {
-    // No action to do, therefore the sync error section should not be visibled.
-    if ([model hasSectionForSectionIdentifier:SyncFeedbackSectionIdentifier]) {
-      // Remove the sync error item if it exists.
-      NSUInteger sectionIndex =
-          [model sectionForSectionIdentifier:SyncFeedbackSectionIdentifier];
-      [model removeSectionWithIdentifier:SyncFeedbackSectionIdentifier];
-      if (notifyConsummer) {
-        NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:sectionIndex];
-        [self.consumer deleteSections:indexSet];
-      }
-    }
-    return;
-  }
-  // Add the sync error item and its section (if it doesn't already exist) and
-  // reload them.
-  BOOL sectionAdded = NO;
-  SettingsImageDetailTextItem* syncErrorItem =
-      [self createSyncErrorItemWithItemType:type];
-  if (![model hasSectionForSectionIdentifier:SyncFeedbackSectionIdentifier]) {
-    // Adding the sync error item and its section.
-    [model insertSectionWithIdentifier:SyncFeedbackSectionIdentifier atIndex:0];
-    [model addItem:syncErrorItem
-        toSectionWithIdentifier:SyncFeedbackSectionIdentifier];
-    sectionAdded = YES;
-  } else {
-    [model
-        deleteAllItemsFromSectionWithIdentifier:SyncFeedbackSectionIdentifier];
-    [model addItem:syncErrorItem
-        toSectionWithIdentifier:SyncFeedbackSectionIdentifier];
-  }
-  if (notifyConsummer) {
-    NSUInteger sectionIndex =
-        [model sectionForSectionIdentifier:SyncFeedbackSectionIdentifier];
-    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:sectionIndex];
-    if (sectionAdded) {
-      [self.consumer insertSections:indexSet];
-    } else {
-      [self.consumer reloadSections:indexSet];
-    }
-  }
-}
-
-// Updates the non-personalized section according to the user consent.
-- (void)updateNonPersonalizedSection {
-  for (TableViewItem* item in self.nonPersonalizedItems) {
-    ItemType type = static_cast<ItemType>(item.type);
-    SyncSwitchItem* switchItem =
-        base::mac::ObjCCastStrict<SyncSwitchItem>(item);
-    switch (type) {
-      case AutocompleteSearchesAndURLsItemType:
-        switchItem.on = self.autocompleteSearchPreference.value;
-        break;
-      case PreloadPagesItemType:
-        switchItem.on = self.preloadPagesPreference.value;
-        break;
-      case ImproveChromeItemType:
-        switchItem.on = self.sendDataUsagePreference.value;
-        break;
-      case BetterSearchAndBrowsingItemType:
-        switchItem.on = self.anonymizedDataCollectionPreference.value;
-        break;
-      case RestartAuthenticationFlowErrorItemType:
-      case ReauthDialogAsSyncIsInAuthErrorItemType:
-      case ShowPassphraseDialogErrorItemType:
-        NOTREACHED();
-        break;
-    }
-  }
 }
 
 #pragma mark - GoogleServicesSettingsViewControllerModelDelegate
