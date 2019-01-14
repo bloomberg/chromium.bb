@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/c++/c++.gni")
+import("//build/config/chrome_build.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
@@ -55,9 +56,14 @@ config("runtime_library") {
     defines += [
       "CR_LIBCXX_REVISION=$libcxx_svn_revision",
       "CR_LIBCXXABI_REVISION=$libcxxabi_svn_revision",
-      "_LIBCPP_ABI_UNSTABLE",
       "_LIBCPP_ENABLE_NODISCARD",
     ]
+
+    # TODO(xiaohuic): https://crbug/917533 Crashes on internal ChromeOS build.
+    # Do unconditionally once the underlying problem is fixed.
+    if (!(is_chromeos && is_chrome_branded)) {
+      defines += [ "_LIBCPP_ABI_UNSTABLE" ]
+    }
 
     # Make sure we don't link against libc++ or libstdc++.
     if (is_clang) {
