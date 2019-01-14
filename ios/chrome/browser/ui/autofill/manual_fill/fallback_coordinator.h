@@ -7,14 +7,16 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
-@class ManualFillInjectionHandler;
 @class ChromeTableViewController;
+@class FallbackCoordinator;
+@class ManualFillInjectionHandler;
 
 // Delegate for the coordinator actions.
 @protocol FallbackCoordinatorDelegate<NSObject>
 
-// Resets the accessory view.
-- (void)resetAccessoryView;
+// Called when the when the user has taken action to dismiss a popover.
+- (void)fallbackCoordinatorDidDismissPopover:
+    (FallbackCoordinator*)fallbackCoordinator;
 
 @end
 

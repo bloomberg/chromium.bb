@@ -89,7 +89,7 @@ initWithBaseViewController:(UIViewController*)viewController
 - (void)popoverPresentationControllerDidDismissPopover:
     (UIPopoverPresentationController*)popoverPresentationController {
   base::RecordAction(base::UserMetricsAction("ManualFallback_ClosePopover"));
-  [self.delegate resetAccessoryView];
+  [self.delegate fallbackCoordinatorDidDismissPopover:self];
 }
 
 @end
