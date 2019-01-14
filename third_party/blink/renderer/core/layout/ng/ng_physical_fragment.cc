@@ -401,6 +401,20 @@ NGPhysicalOffsetRect NGPhysicalFragment::ScrollableOverflow() const {
   return {{}, Size()};
 }
 
+NGPhysicalOffsetRect NGPhysicalFragment::ScrollableOverflowForPropagation(
+    const LayoutObject* container) const {
+  DCHECK(container);
+  NGPhysicalOffsetRect overflow = ScrollableOverflow();
+  if (GetLayoutObject() &&
+      GetLayoutObject()->ShouldUseTransformFromContainer(container)) {
+    TransformationMatrix transform;
+    GetLayoutObject()->GetTransformFromContainer(container, LayoutSize(),
+                                                 transform);
+    overflow = NGPhysicalOffsetRect(transform.MapRect(overflow.ToLayoutRect()));
+  }
+  return overflow;
+}
+
 void NGPhysicalFragment::PropagateContentsInkOverflow(
     NGPhysicalOffsetRect* parent_ink_overflow,
     NGPhysicalOffset fragment_offset) const {

@@ -68,6 +68,7 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   // when LineBox is generated because it needs container dimensions to
   // resolve relative position of its children.
   NGPhysicalOffsetRect ScrollableOverflow(
+      const LayoutObject* container,
       const ComputedStyle* container_style,
       NGPhysicalSize container_physical_size) const;
 
