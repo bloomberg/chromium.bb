@@ -26,6 +26,7 @@
 
 #include <iosfwd>
 #include <string>
+#include <type_traits>
 
 #include "base/base_export.h"
 #include "base/logging.h"
@@ -206,8 +207,8 @@ template <typename STRING_TYPE> class BasicStringPiece {
   // typically a mistake to pass data() to a routine that expects a NUL
   // terminated string.
   constexpr const value_type* data() const { return ptr_; }
-  constexpr size_type size() const { return length_; }
-  constexpr size_type length() const { return length_; }
+  constexpr size_type size() const noexcept { return length_; }
+  constexpr size_type length() const noexcept { return length_; }
   bool empty() const { return length_ == 0; }
 
   void clear() {
@@ -386,62 +387,131 @@ extern template class BASE_EXPORT BasicStringPiece<std::string>;
 extern template class BASE_EXPORT BasicStringPiece<string16>;
 #endif
 
-// StringPiece operators -------------------------------------------------------
-
-BASE_EXPORT bool operator==(const StringPiece& x, const StringPiece& y);
-
-inline bool operator!=(const StringPiece& x, const StringPiece& y) {
-  return !(x == y);
+// Comparison operators --------------------------------------------------------
+// operator ==
+template <typename StringT>
+constexpr bool operator==(BasicStringPiece<StringT> lhs,
+                          BasicStringPiece<StringT> rhs) noexcept {
+  return lhs.size() == rhs.size() && lhs.compare(rhs) == 0;
 }
 
-inline bool operator<(const StringPiece& x, const StringPiece& y) {
-  const int r = CharTraits<StringPiece::value_type>::compare(
-      x.data(), y.data(), (x.size() < y.size() ? x.size() : y.size()));
-  return ((r < 0) || ((r == 0) && (x.size() < y.size())));
+// Here and below we make use of std::common_type_t to emulate an identity type
+// transformation. This creates a non-deduced context, so that we can compare
+// StringPieces with types that implicitly convert to StringPieces. See
+// https://wg21.link/n3766 for details.
+// Furthermore, we require dummy template parameters for these overloads to work
+// around a name mangling issue on Windows.
+template <typename StringT, int = 1>
+constexpr bool operator==(
+    BasicStringPiece<StringT> lhs,
+    std::common_type_t<BasicStringPiece<StringT>> rhs) noexcept {
+  return lhs.size() == rhs.size() && lhs.compare(rhs) == 0;
 }
 
-inline bool operator>(const StringPiece& x, const StringPiece& y) {
-  return y < x;
+template <typename StringT, int = 2>
+constexpr bool operator==(std::common_type_t<BasicStringPiece<StringT>> lhs,
+                          BasicStringPiece<StringT> rhs) noexcept {
+  return lhs.size() == rhs.size() && lhs.compare(rhs) == 0;
 }
 
-inline bool operator<=(const StringPiece& x, const StringPiece& y) {
-  return !(x > y);
+// operator !=
+template <typename StringT>
+constexpr bool operator!=(BasicStringPiece<StringT> lhs,
+                          BasicStringPiece<StringT> rhs) noexcept {
+  return !(lhs == rhs);
 }
 
-inline bool operator>=(const StringPiece& x, const StringPiece& y) {
-  return !(x < y);
+template <typename StringT, int = 1>
+constexpr bool operator!=(
+    BasicStringPiece<StringT> lhs,
+    std::common_type_t<BasicStringPiece<StringT>> rhs) noexcept {
+  return !(lhs == rhs);
 }
 
-// StringPiece16 operators -----------------------------------------------------
-
-inline bool operator==(const StringPiece16& x, const StringPiece16& y) {
-  if (x.size() != y.size())
-    return false;
-
-  return CharTraits<StringPiece16::value_type>::compare(x.data(), y.data(),
-                                                        x.size()) == 0;
+template <typename StringT, int = 2>
+constexpr bool operator!=(std::common_type_t<BasicStringPiece<StringT>> lhs,
+                          BasicStringPiece<StringT> rhs) noexcept {
+  return !(lhs == rhs);
 }
 
-inline bool operator!=(const StringPiece16& x, const StringPiece16& y) {
-  return !(x == y);
+// operator <
+template <typename StringT>
+constexpr bool operator<(BasicStringPiece<StringT> lhs,
+                         BasicStringPiece<StringT> rhs) noexcept {
+  return lhs.compare(rhs) < 0;
 }
 
-inline bool operator<(const StringPiece16& x, const StringPiece16& y) {
-  const int r = CharTraits<StringPiece16::value_type>::compare(
-      x.data(), y.data(), (x.size() < y.size() ? x.size() : y.size()));
-  return ((r < 0) || ((r == 0) && (x.size() < y.size())));
+template <typename StringT, int = 1>
+constexpr bool operator<(
+    BasicStringPiece<StringT> lhs,
+    std::common_type_t<BasicStringPiece<StringT>> rhs) noexcept {
+  return lhs.compare(rhs) < 0;
 }
 
-inline bool operator>(const StringPiece16& x, const StringPiece16& y) {
-  return y < x;
+template <typename StringT, int = 2>
+constexpr bool operator<(std::common_type_t<BasicStringPiece<StringT>> lhs,
+                         BasicStringPiece<StringT> rhs) noexcept {
+  return lhs.compare(rhs) < 0;
 }
 
-inline bool operator<=(const StringPiece16& x, const StringPiece16& y) {
-  return !(x > y);
+// operator >
+template <typename StringT>
+constexpr bool operator>(BasicStringPiece<StringT> lhs,
+                         BasicStringPiece<StringT> rhs) noexcept {
+  return rhs < lhs;
 }
 
-inline bool operator>=(const StringPiece16& x, const StringPiece16& y) {
-  return !(x < y);
+template <typename StringT, int = 1>
+constexpr bool operator>(
+    BasicStringPiece<StringT> lhs,
+    std::common_type_t<BasicStringPiece<StringT>> rhs) noexcept {
+  return rhs < lhs;
+}
+
+template <typename StringT, int = 2>
+constexpr bool operator>(std::common_type_t<BasicStringPiece<StringT>> lhs,
+                         BasicStringPiece<StringT> rhs) noexcept {
+  return rhs < lhs;
+}
+
+// operator <=
+template <typename StringT>
+constexpr bool operator<=(BasicStringPiece<StringT> lhs,
+                          BasicStringPiece<StringT> rhs) noexcept {
+  return !(rhs < lhs);
+}
+
+template <typename StringT, int = 1>
+constexpr bool operator<=(
+    BasicStringPiece<StringT> lhs,
+    std::common_type_t<BasicStringPiece<StringT>> rhs) noexcept {
+  return !(rhs < lhs);
+}
+
+template <typename StringT, int = 2>
+constexpr bool operator<=(std::common_type_t<BasicStringPiece<StringT>> lhs,
+                          BasicStringPiece<StringT> rhs) noexcept {
+  return !(rhs < lhs);
+}
+
+// operator >=
+template <typename StringT>
+constexpr bool operator>=(BasicStringPiece<StringT> lhs,
+                          BasicStringPiece<StringT> rhs) noexcept {
+  return !(lhs < rhs);
+}
+
+template <typename StringT, int = 1>
+constexpr bool operator>=(
+    BasicStringPiece<StringT> lhs,
+    std::common_type_t<BasicStringPiece<StringT>> rhs) noexcept {
+  return !(lhs < rhs);
+}
+
+template <typename StringT, int = 2>
+constexpr bool operator>=(std::common_type_t<BasicStringPiece<StringT>> lhs,
+                          BasicStringPiece<StringT> rhs) noexcept {
+  return !(lhs < rhs);
 }
 
 BASE_EXPORT std::ostream& operator<<(std::ostream& o,

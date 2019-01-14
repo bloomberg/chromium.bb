@@ -40,14 +40,6 @@ template class BasicStringPiece<std::string>;
 template class BasicStringPiece<string16>;
 #endif
 
-bool operator==(const StringPiece& x, const StringPiece& y) {
-  if (x.size() != y.size())
-    return false;
-
-  return CharTraits<StringPiece::value_type>::compare(x.data(), y.data(),
-                                                      x.size()) == 0;
-}
-
 std::ostream& operator<<(std::ostream& o, const StringPiece& piece) {
   o.write(piece.data(), static_cast<std::streamsize>(piece.size()));
   return o;
