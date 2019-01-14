@@ -2134,7 +2134,7 @@ void RenderViewImpl::SuspendVideoCaptureDevices(bool suspend) {
   if (!media_stream_device_observer)
     return;
 
-  MediaStreamDevices video_devices =
+  blink::MediaStreamDevices video_devices =
       media_stream_device_observer->GetNonScreenCaptureDevices();
   RenderThreadImpl::current()->video_capture_impl_manager()->SuspendDevices(
       video_devices, suspend);

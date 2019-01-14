@@ -180,7 +180,7 @@ void CastWebViewDefault::ActivateContents(content::WebContents* contents) {
 bool CastWebViewDefault::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    content::MediaStreamType type) {
+    blink::MediaStreamType type) {
   if (!chromecast::IsFeatureEnabled(kAllowUserMediaAccess) &&
       !allow_media_access_) {
     LOG(WARNING) << __func__ << ": media access is disabled.";
@@ -199,13 +199,13 @@ bool CastWebViewDefault::DidAddMessageToConsole(
                                                   source_id);
 }
 
-const content::MediaStreamDevice* GetRequestedDeviceOrDefault(
-    const content::MediaStreamDevices& devices,
+const blink::MediaStreamDevice* GetRequestedDeviceOrDefault(
+    const blink::MediaStreamDevices& devices,
     const std::string& requested_device_id) {
   if (!requested_device_id.empty()) {
     auto it = std::find_if(
         devices.begin(), devices.end(),
-        [requested_device_id](const content::MediaStreamDevice& device) {
+        [requested_device_id](const blink::MediaStreamDevice& device) {
           return device.id == requested_device_id;
         });
     return it != devices.end() ? &(*it) : nullptr;
@@ -224,8 +224,8 @@ void CastWebViewDefault::RequestMediaAccessPermission(
   if (!chromecast::IsFeatureEnabled(kAllowUserMediaAccess) &&
       !allow_media_access_) {
     LOG(WARNING) << __func__ << ": media access is disabled.";
-    std::move(callback).Run(content::MediaStreamDevices(),
-                            content::MEDIA_DEVICE_NOT_SUPPORTED,
+    std::move(callback).Run(blink::MediaStreamDevices(),
+                            blink::MEDIA_DEVICE_NOT_SUPPORTED,
                             std::unique_ptr<content::MediaStreamUI>());
     return;
   }
@@ -237,9 +237,9 @@ void CastWebViewDefault::RequestMediaAccessPermission(
   VLOG(2) << __func__ << " audio_devices=" << audio_devices.size()
           << " video_devices=" << video_devices.size();
 
-  content::MediaStreamDevices devices;
-  if (request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE) {
-    const content::MediaStreamDevice* device = GetRequestedDeviceOrDefault(
+  blink::MediaStreamDevices devices;
+  if (request.audio_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE) {
+    const blink::MediaStreamDevice* device = GetRequestedDeviceOrDefault(
         audio_devices, request.requested_audio_device_id);
     if (device) {
       VLOG(1) << __func__ << "Using audio device: id=" << device->id
@@ -248,8 +248,8 @@ void CastWebViewDefault::RequestMediaAccessPermission(
     }
   }
 
-  if (request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE) {
-    const content::MediaStreamDevice* device = GetRequestedDeviceOrDefault(
+  if (request.video_type == blink::MEDIA_DEVICE_VIDEO_CAPTURE) {
+    const blink::MediaStreamDevice* device = GetRequestedDeviceOrDefault(
         video_devices, request.requested_video_device_id);
     if (device) {
       VLOG(1) << __func__ << "Using video device: id=" << device->id
@@ -258,7 +258,7 @@ void CastWebViewDefault::RequestMediaAccessPermission(
     }
   }
 
-  std::move(callback).Run(devices, content::MEDIA_DEVICE_OK,
+  std::move(callback).Run(devices, blink::MEDIA_DEVICE_OK,
                           std::unique_ptr<content::MediaStreamUI>());
 }
 

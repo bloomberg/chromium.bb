@@ -12,7 +12,7 @@ namespace content {
 
 LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
     int consumer_render_frame_id,
-    const MediaStreamDevice& device,
+    const blink::MediaStreamDevice& device,
     bool hotword_enabled,
     bool disable_local_echo,
     const ConstraintsCallback& started_callback)
@@ -92,7 +92,7 @@ void LocalMediaStreamAudioSource::EnsureSourceIsStopped() {
 }
 
 void LocalMediaStreamAudioSource::OnCaptureStarted() {
-  started_callback_.Run(this, MEDIA_DEVICE_OK, "");
+  started_callback_.Run(this, blink::MEDIA_DEVICE_OK, "");
 }
 
 void LocalMediaStreamAudioSource::Capture(const media::AudioBus* audio_bus,
@@ -118,7 +118,7 @@ void LocalMediaStreamAudioSource::OnCaptureMuted(bool is_muted) {
 }
 
 void LocalMediaStreamAudioSource::ChangeSourceImpl(
-    const MediaStreamDevice& new_device) {
+    const blink::MediaStreamDevice& new_device) {
   WebRtcLogMessage(
       "LocalMediaStreamAudioSource::ChangeSourceImpl(new_device = " +
       new_device.id + ")");

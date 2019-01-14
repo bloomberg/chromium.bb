@@ -217,7 +217,7 @@ TEST_F(ServiceVideoCaptureProviderTest,
   auto device_launcher_1 = provider_->CreateDeviceLauncher();
   base::RunLoop wait_for_launch_1;
   device_launcher_1->LaunchDeviceAsync(
-      kStubDeviceId, content::MEDIA_DEVICE_VIDEO_CAPTURE, kArbitraryParams,
+      kStubDeviceId, blink::MEDIA_DEVICE_VIDEO_CAPTURE, kArbitraryParams,
       kNullReceiver, base::DoNothing(), &mock_callbacks,
       wait_for_launch_1.QuitClosure());
   wait_for_connection_to_service_.Run();
@@ -268,7 +268,7 @@ TEST_F(ServiceVideoCaptureProviderTest,
   auto device_launcher_2 = provider_->CreateDeviceLauncher();
   base::RunLoop wait_for_launch_2;
   device_launcher_2->LaunchDeviceAsync(
-      kStubDeviceId, content::MEDIA_DEVICE_VIDEO_CAPTURE, kArbitraryParams,
+      kStubDeviceId, blink::MEDIA_DEVICE_VIDEO_CAPTURE, kArbitraryParams,
       kNullReceiver, base::DoNothing(), &mock_callbacks,
       wait_for_launch_2.QuitClosure());
   wait_for_launch_2.Run();

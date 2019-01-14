@@ -38,6 +38,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/host_zoom_map.h"
+#include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -302,7 +303,7 @@ void ChromeAppDelegate::RequestMediaAccessPermission(
 bool ChromeAppDelegate::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    content::MediaStreamType type,
+    blink::MediaStreamType type,
     const extensions::Extension* extension) {
   return MediaCaptureDevicesDispatcher::GetInstance()
       ->CheckMediaAccessPermission(render_frame_host, security_origin, type,

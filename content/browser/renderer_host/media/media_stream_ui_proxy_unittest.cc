@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/media_stream_request.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_render_frame_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -39,14 +40,14 @@ class MockRenderFrameHostDelegate : public RenderFrameHostDelegate {
   MOCK_METHOD3(CheckMediaAccessPermission,
                bool(RenderFrameHost* render_frame_host,
                     const url::Origin& security_origin,
-                    MediaStreamType type));
+                    blink::MediaStreamType type));
 };
 
 class MockResponseCallback {
  public:
   MOCK_METHOD2(OnAccessRequestResponse,
-               void(const MediaStreamDevices& devices,
-               content::MediaStreamRequestResult result));
+               void(const blink::MediaStreamDevices& devices,
+                    blink::MediaStreamRequestResult result));
   MOCK_METHOD1(OnCheckResponse, void(bool have_access));
 };
 
@@ -110,9 +111,9 @@ MATCHER_P(SameRequest, expected, "") {
 
 TEST_F(MediaStreamUIProxyTest, Deny) {
   auto request = std::make_unique<MediaStreamRequest>(
-      0, 0, 0, GURL("http://origin/"), false, MEDIA_GENERATE_STREAM,
-      std::string(), std::string(), MEDIA_DEVICE_AUDIO_CAPTURE,
-      MEDIA_DEVICE_VIDEO_CAPTURE, false);
+      0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
+      std::string(), std::string(), blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+      blink::MEDIA_DEVICE_VIDEO_CAPTURE, false);
   MediaStreamRequest* request_ptr = request.get();
   proxy_->RequestAccess(
       std::move(request),
@@ -127,11 +128,11 @@ TEST_F(MediaStreamUIProxyTest, Deny) {
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(callback.is_null());
 
-  MediaStreamDevices devices;
-  std::move(callback).Run(devices, MEDIA_DEVICE_OK,
+  blink::MediaStreamDevices devices;
+  std::move(callback).Run(devices, blink::MEDIA_DEVICE_OK,
                           std::unique_ptr<MediaStreamUI>());
 
-  MediaStreamDevices response;
+  blink::MediaStreamDevices response;
   EXPECT_CALL(response_callback_, OnAccessRequestResponse(_, _))
     .WillOnce(SaveArg<0>(&response));
   base::RunLoop().RunUntilIdle();
@@ -141,9 +142,9 @@ TEST_F(MediaStreamUIProxyTest, Deny) {
 
 TEST_F(MediaStreamUIProxyTest, AcceptAndStart) {
   auto request = std::make_unique<MediaStreamRequest>(
-      0, 0, 0, GURL("http://origin/"), false, MEDIA_GENERATE_STREAM,
-      std::string(), std::string(), MEDIA_DEVICE_AUDIO_CAPTURE,
-      MEDIA_DEVICE_VIDEO_CAPTURE, false);
+      0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
+      std::string(), std::string(), blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+      blink::MEDIA_DEVICE_VIDEO_CAPTURE, false);
   MediaStreamRequest* request_ptr = request.get();
   proxy_->RequestAccess(
       std::move(request),
@@ -158,14 +159,14 @@ TEST_F(MediaStreamUIProxyTest, AcceptAndStart) {
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(callback.is_null());
 
-  MediaStreamDevices devices;
-  devices.push_back(
-      MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE, "Mic", "Mic"));
+  blink::MediaStreamDevices devices;
+  devices.push_back(blink::MediaStreamDevice(blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+                                             "Mic", "Mic"));
   auto ui = std::make_unique<MockMediaStreamUI>();
   EXPECT_CALL(*ui, MockOnStarted(_, _)).WillOnce(Return(0));
-  std::move(callback).Run(devices, MEDIA_DEVICE_OK, std::move(ui));
+  std::move(callback).Run(devices, blink::MEDIA_DEVICE_OK, std::move(ui));
 
-  MediaStreamDevices response;
+  blink::MediaStreamDevices response;
   EXPECT_CALL(response_callback_, OnAccessRequestResponse(_, _))
     .WillOnce(SaveArg<0>(&response));
   base::RunLoop().RunUntilIdle();
@@ -180,9 +181,9 @@ TEST_F(MediaStreamUIProxyTest, AcceptAndStart) {
 // Verify that the proxy can be deleted before the request is processed.
 TEST_F(MediaStreamUIProxyTest, DeleteBeforeAccepted) {
   auto request = std::make_unique<MediaStreamRequest>(
-      0, 0, 0, GURL("http://origin/"), false, MEDIA_GENERATE_STREAM,
-      std::string(), std::string(), MEDIA_DEVICE_AUDIO_CAPTURE,
-      MEDIA_DEVICE_VIDEO_CAPTURE, false);
+      0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
+      std::string(), std::string(), blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+      blink::MEDIA_DEVICE_VIDEO_CAPTURE, false);
   MediaStreamRequest* request_ptr = request.get();
   proxy_->RequestAccess(
       std::move(request),
@@ -199,16 +200,16 @@ TEST_F(MediaStreamUIProxyTest, DeleteBeforeAccepted) {
 
   proxy_.reset();
 
-  MediaStreamDevices devices;
+  blink::MediaStreamDevices devices;
   std::unique_ptr<MediaStreamUI> ui;
-  std::move(callback).Run(devices, MEDIA_DEVICE_OK, std::move(ui));
+  std::move(callback).Run(devices, blink::MEDIA_DEVICE_OK, std::move(ui));
 }
 
 TEST_F(MediaStreamUIProxyTest, StopFromUI) {
   auto request = std::make_unique<MediaStreamRequest>(
-      0, 0, 0, GURL("http://origin/"), false, MEDIA_GENERATE_STREAM,
-      std::string(), std::string(), MEDIA_DEVICE_AUDIO_CAPTURE,
-      MEDIA_DEVICE_VIDEO_CAPTURE, false);
+      0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
+      std::string(), std::string(), blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+      blink::MEDIA_DEVICE_VIDEO_CAPTURE, false);
   MediaStreamRequest* request_ptr = request.get();
   proxy_->RequestAccess(
       std::move(request),
@@ -225,15 +226,15 @@ TEST_F(MediaStreamUIProxyTest, StopFromUI) {
 
   base::Closure stop_callback;
 
-  MediaStreamDevices devices;
-  devices.push_back(
-      MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE, "Mic", "Mic"));
+  blink::MediaStreamDevices devices;
+  devices.push_back(blink::MediaStreamDevice(blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+                                             "Mic", "Mic"));
   auto ui = std::make_unique<MockMediaStreamUI>();
   EXPECT_CALL(*ui, MockOnStarted(_, _))
       .WillOnce(testing::DoAll(SaveArg<0>(&stop_callback), Return(0)));
-  std::move(callback).Run(devices, MEDIA_DEVICE_OK, std::move(ui));
+  std::move(callback).Run(devices, blink::MEDIA_DEVICE_OK, std::move(ui));
 
-  MediaStreamDevices response;
+  blink::MediaStreamDevices response;
   EXPECT_CALL(response_callback_, OnAccessRequestResponse(_, _))
     .WillOnce(SaveArg<0>(&response));
   base::RunLoop().RunUntilIdle();
@@ -255,9 +256,9 @@ TEST_F(MediaStreamUIProxyTest, StopFromUI) {
 
 TEST_F(MediaStreamUIProxyTest, WindowIdCallbackCalled) {
   auto request = std::make_unique<MediaStreamRequest>(
-      0, 0, 0, GURL("http://origin/"), false, MEDIA_GENERATE_STREAM,
-      std::string(), std::string(), MEDIA_NO_SERVICE,
-      MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, false);
+      0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
+      std::string(), std::string(), blink::MEDIA_NO_SERVICE,
+      blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, false);
   MediaStreamRequest* request_ptr = request.get();
 
   proxy_->RequestAccess(
@@ -276,7 +277,8 @@ TEST_F(MediaStreamUIProxyTest, WindowIdCallbackCalled) {
   auto ui = std::make_unique<MockMediaStreamUI>();
   EXPECT_CALL(*ui, MockOnStarted(_, _)).WillOnce(Return(kWindowId));
 
-  std::move(callback).Run(MediaStreamDevices(), MEDIA_DEVICE_OK, std::move(ui));
+  std::move(callback).Run(blink::MediaStreamDevices(), blink::MEDIA_DEVICE_OK,
+                          std::move(ui));
   EXPECT_CALL(response_callback_, OnAccessRequestResponse(_, _));
 
   MockStopStreamHandler handler;
@@ -292,9 +294,9 @@ TEST_F(MediaStreamUIProxyTest, WindowIdCallbackCalled) {
 
 TEST_F(MediaStreamUIProxyTest, ChangeSourceFromUI) {
   auto request = std::make_unique<MediaStreamRequest>(
-      0, 0, 0, GURL("http://origin/"), false, MEDIA_GENERATE_STREAM,
-      std::string(), std::string(), MEDIA_GUM_DESKTOP_AUDIO_CAPTURE,
-      MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, false);
+      0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
+      std::string(), std::string(), blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE,
+      blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, false);
   MediaStreamRequest* request_ptr = request.get();
   proxy_->RequestAccess(
       std::move(request),
@@ -311,16 +313,16 @@ TEST_F(MediaStreamUIProxyTest, ChangeSourceFromUI) {
 
   base::RepeatingClosure source_callback;
 
-  MediaStreamDevices devices;
-  devices.push_back(MediaStreamDevice(MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
-                                      "fake_desktop_video_device",
-                                      "Fake Desktop Video Device"));
+  blink::MediaStreamDevices devices;
+  devices.push_back(blink::MediaStreamDevice(
+      blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, "fake_desktop_video_device",
+      "Fake Desktop Video Device"));
   auto ui = std::make_unique<MockMediaStreamUI>();
   EXPECT_CALL(*ui, MockOnStarted(_, _))
       .WillOnce(testing::DoAll(SaveArg<1>(&source_callback), Return(0)));
-  std::move(callback).Run(devices, MEDIA_DEVICE_OK, std::move(ui));
+  std::move(callback).Run(devices, blink::MEDIA_DEVICE_OK, std::move(ui));
 
-  MediaStreamDevices response;
+  blink::MediaStreamDevices response;
   EXPECT_CALL(response_callback_, OnAccessRequestResponse(_, _))
       .WillOnce(SaveArg<0>(&response));
   base::RunLoop().RunUntilIdle();
@@ -370,8 +372,8 @@ class MediaStreamUIProxyFeaturePolicyTest
   }
 
   void GetResultForRequest(std::unique_ptr<MediaStreamRequest> request,
-                           MediaStreamDevices* devices_out,
-                           MediaStreamRequestResult* result_out) {
+                           blink::MediaStreamDevices* devices_out,
+                           blink::MediaStreamRequestResult* result_out) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
@@ -385,30 +387,31 @@ class MediaStreamUIProxyFeaturePolicyTest
     *result_out = result_;
   }
 
-  std::unique_ptr<MediaStreamRequest> CreateRequest(RenderFrameHost* rfh,
-                                                    MediaStreamType mic_type,
-                                                    MediaStreamType cam_type) {
+  std::unique_ptr<MediaStreamRequest> CreateRequest(
+      RenderFrameHost* rfh,
+      blink::MediaStreamType mic_type,
+      blink::MediaStreamType cam_type) {
     return std::make_unique<MediaStreamRequest>(
         rfh->GetProcess()->GetID(), rfh->GetRoutingID(), 0,
-        rfh->GetLastCommittedURL(), false, MEDIA_GENERATE_STREAM, std::string(),
-        std::string(), mic_type, cam_type, false);
+        rfh->GetLastCommittedURL(), false, blink::MEDIA_GENERATE_STREAM,
+        std::string(), std::string(), mic_type, cam_type, false);
   }
 
  private:
   class TestRFHDelegate : public RenderFrameHostDelegate {
     void RequestMediaAccessPermission(const MediaStreamRequest& request,
                                       MediaResponseCallback callback) override {
-      MediaStreamDevices devices;
-      if (request.audio_type == MEDIA_DEVICE_AUDIO_CAPTURE) {
-        devices.push_back(
-            MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE, "Mic", "Mic"));
+      blink::MediaStreamDevices devices;
+      if (request.audio_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE) {
+        devices.push_back(blink::MediaStreamDevice(
+            blink::MEDIA_DEVICE_AUDIO_CAPTURE, "Mic", "Mic"));
       }
-      if (request.video_type == MEDIA_DEVICE_VIDEO_CAPTURE) {
-        devices.push_back(
-            MediaStreamDevice(MEDIA_DEVICE_VIDEO_CAPTURE, "Camera", "Camera"));
+      if (request.video_type == blink::MEDIA_DEVICE_VIDEO_CAPTURE) {
+        devices.push_back(blink::MediaStreamDevice(
+            blink::MEDIA_DEVICE_VIDEO_CAPTURE, "Camera", "Camera"));
       }
       auto ui = std::make_unique<MockMediaStreamUI>();
-      std::move(callback).Run(devices, MEDIA_DEVICE_OK, std::move(ui));
+      std::move(callback).Run(devices, blink::MEDIA_DEVICE_OK, std::move(ui));
     }
   };
 
@@ -423,8 +426,8 @@ class MediaStreamUIProxyFeaturePolicyTest
             base::Unretained(this)));
   }
 
-  void FinishedGetResultOnIOThread(const MediaStreamDevices& devices,
-                                   MediaStreamRequestResult result) {
+  void FinishedGetResultOnIOThread(const blink::MediaStreamDevices& devices,
+                                   blink::MediaStreamRequestResult result) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     proxy_.reset();
     base::PostTaskWithTraits(
@@ -433,8 +436,8 @@ class MediaStreamUIProxyFeaturePolicyTest
                        base::Unretained(this), devices, result));
   }
 
-  void FinishedGetResult(const MediaStreamDevices& devices,
-                         MediaStreamRequestResult result) {
+  void FinishedGetResult(const blink::MediaStreamDevices& devices,
+                         blink::MediaStreamRequestResult result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     devices_ = devices;
     result_ = result;
@@ -442,8 +445,8 @@ class MediaStreamUIProxyFeaturePolicyTest
   }
 
   // These should only be accessed on the UI thread.
-  MediaStreamDevices devices_;
-  MediaStreamRequestResult result_;
+  blink::MediaStreamDevices devices_;
+  blink::MediaStreamRequestResult result_;
   base::Closure quit_closure_;
 
   // These should only be accessed on the IO thread.
@@ -452,48 +455,51 @@ class MediaStreamUIProxyFeaturePolicyTest
 };
 
 TEST_F(MediaStreamUIProxyFeaturePolicyTest, FeaturePolicy) {
-  MediaStreamDevices devices;
-  MediaStreamRequestResult result;
+  blink::MediaStreamDevices devices;
+  blink::MediaStreamRequestResult result;
 
   // Default FP.
-  GetResultForRequest(CreateRequest(main_rfh(), MEDIA_DEVICE_AUDIO_CAPTURE,
-                                    MEDIA_DEVICE_VIDEO_CAPTURE),
-                      &devices, &result);
-  EXPECT_EQ(MEDIA_DEVICE_OK, result);
+  GetResultForRequest(
+      CreateRequest(main_rfh(), blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+                    blink::MEDIA_DEVICE_VIDEO_CAPTURE),
+      &devices, &result);
+  EXPECT_EQ(blink::MEDIA_DEVICE_OK, result);
   ASSERT_EQ(2u, devices.size());
-  EXPECT_EQ(MEDIA_DEVICE_AUDIO_CAPTURE, devices[0].type);
-  EXPECT_EQ(MEDIA_DEVICE_VIDEO_CAPTURE, devices[1].type);
+  EXPECT_EQ(blink::MEDIA_DEVICE_AUDIO_CAPTURE, devices[0].type);
+  EXPECT_EQ(blink::MEDIA_DEVICE_VIDEO_CAPTURE, devices[1].type);
 
   // Mic disabled.
   RefreshPageAndSetHeaderPolicy(main_rfh(),
                                 blink::mojom::FeaturePolicyFeature::kMicrophone,
                                 /*enabled=*/false);
-  GetResultForRequest(CreateRequest(main_rfh(), MEDIA_DEVICE_AUDIO_CAPTURE,
-                                    MEDIA_DEVICE_VIDEO_CAPTURE),
-                      &devices, &result);
-  EXPECT_EQ(MEDIA_DEVICE_OK, result);
+  GetResultForRequest(
+      CreateRequest(main_rfh(), blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+                    blink::MEDIA_DEVICE_VIDEO_CAPTURE),
+      &devices, &result);
+  EXPECT_EQ(blink::MEDIA_DEVICE_OK, result);
   ASSERT_EQ(1u, devices.size());
-  EXPECT_EQ(MEDIA_DEVICE_VIDEO_CAPTURE, devices[0].type);
+  EXPECT_EQ(blink::MEDIA_DEVICE_VIDEO_CAPTURE, devices[0].type);
 
   // Camera disabled.
   RefreshPageAndSetHeaderPolicy(main_rfh(),
                                 blink::mojom::FeaturePolicyFeature::kCamera,
                                 /*enabled=*/false);
-  GetResultForRequest(CreateRequest(main_rfh(), MEDIA_DEVICE_AUDIO_CAPTURE,
-                                    MEDIA_DEVICE_VIDEO_CAPTURE),
-                      &devices, &result);
-  EXPECT_EQ(MEDIA_DEVICE_OK, result);
+  GetResultForRequest(
+      CreateRequest(main_rfh(), blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+                    blink::MEDIA_DEVICE_VIDEO_CAPTURE),
+      &devices, &result);
+  EXPECT_EQ(blink::MEDIA_DEVICE_OK, result);
   ASSERT_EQ(1u, devices.size());
-  EXPECT_EQ(MEDIA_DEVICE_AUDIO_CAPTURE, devices[0].type);
+  EXPECT_EQ(blink::MEDIA_DEVICE_AUDIO_CAPTURE, devices[0].type);
 
   // Camera disabled resulting in no devices being returned.
   RefreshPageAndSetHeaderPolicy(main_rfh(),
                                 blink::mojom::FeaturePolicyFeature::kCamera,
                                 /*enabled=*/false);
-  GetResultForRequest(
-      CreateRequest(main_rfh(), MEDIA_NO_SERVICE, MEDIA_DEVICE_VIDEO_CAPTURE),
-      &devices, &result);
-  EXPECT_EQ(MEDIA_DEVICE_PERMISSION_DENIED, result);
+  GetResultForRequest(CreateRequest(main_rfh(), blink::MEDIA_NO_SERVICE,
+                                    blink::MEDIA_DEVICE_VIDEO_CAPTURE),
+                      &devices, &result);
+  EXPECT_EQ(blink::MEDIA_DEVICE_PERMISSION_DENIED, result);
   ASSERT_EQ(0u, devices.size());
 }
 

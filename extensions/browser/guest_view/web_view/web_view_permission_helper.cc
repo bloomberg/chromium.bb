@@ -206,7 +206,7 @@ void WebViewPermissionHelper::RequestMediaAccessPermission(
 bool WebViewPermissionHelper::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    content::MediaStreamType type) {
+    blink::MediaStreamType type) {
   if (!web_view_guest()->attached() ||
       !web_view_guest()->embedder_web_contents()->GetDelegate()) {
     return false;
@@ -223,15 +223,15 @@ void WebViewPermissionHelper::OnMediaPermissionResponse(
     bool allow,
     const std::string& user_input) {
   if (!allow) {
-    std::move(callback).Run(content::MediaStreamDevices(),
-                            content::MEDIA_DEVICE_PERMISSION_DENIED,
+    std::move(callback).Run(blink::MediaStreamDevices(),
+                            blink::MEDIA_DEVICE_PERMISSION_DENIED,
                             std::unique_ptr<content::MediaStreamUI>());
     return;
   }
   if (!web_view_guest()->attached() ||
       !web_view_guest()->embedder_web_contents()->GetDelegate()) {
-    std::move(callback).Run(content::MediaStreamDevices(),
-                            content::MEDIA_DEVICE_INVALID_STATE,
+    std::move(callback).Run(blink::MediaStreamDevices(),
+                            blink::MEDIA_DEVICE_INVALID_STATE,
                             std::unique_ptr<content::MediaStreamUI>());
     return;
   }

@@ -7,7 +7,9 @@
 
 #include "base/callback_forward.h"
 #include "content/public/browser/media_request_state.h"
-#include "content/public/common/media_stream_request.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
+
+class GURL;
 
 namespace content {
 
@@ -22,13 +24,12 @@ class MediaObserver {
   virtual void OnVideoCaptureDevicesChanged() = 0;
 
   // Called when a media request changes state.
-  virtual void OnMediaRequestStateChanged(
-      int render_process_id,
-      int render_frame_id,
-      int page_request_id,
-      const GURL& security_origin,
-      MediaStreamType stream_type,
-      MediaRequestState state) = 0;
+  virtual void OnMediaRequestStateChanged(int render_process_id,
+                                          int render_frame_id,
+                                          int page_request_id,
+                                          const GURL& security_origin,
+                                          blink::MediaStreamType stream_type,
+                                          MediaRequestState state) = 0;
 
   // Called when an audio stream is being created.
   virtual void OnCreatingAudioStream(int render_process_id,
@@ -39,7 +40,7 @@ class MediaObserver {
   virtual void OnSetCapturingLinkSecured(int render_process_id,
                                          int render_frame_id,
                                          int page_request_id,
-                                         MediaStreamType stream_type,
+                                         blink::MediaStreamType stream_type,
                                          bool is_secure) = 0;
 
  protected:

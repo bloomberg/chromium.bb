@@ -108,7 +108,7 @@ void AppWebContentsHelper::RequestMediaAccessPermission(
 bool AppWebContentsHelper::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    content::MediaStreamType type) const {
+    blink::MediaStreamType type) const {
   const Extension* extension = GetExtension();
   if (!extension)
     return false;

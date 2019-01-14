@@ -31,7 +31,7 @@ class MediaClient : public ash::mojom::MediaClient,
   // MediaCaptureDevicesDispatcher::Observer:
   void OnRequestUpdate(int render_process_id,
                        int render_frame_id,
-                       content::MediaStreamType stream_type,
+                       blink::MediaStreamType stream_type,
                        const content::MediaRequestState state) override;
 
  private:

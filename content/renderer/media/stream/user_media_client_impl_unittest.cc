@@ -143,14 +143,14 @@ class MockLocalMediaStreamAudioSource : public MediaStreamAudioSource {
 
   MOCK_METHOD0(EnsureSourceIsStopped, void());
 
-  void ChangeSourceImpl(const MediaStreamDevice& new_device) {
+  void ChangeSourceImpl(const blink::MediaStreamDevice& new_device) {
     EnsureSourceIsStopped();
   }
 };
 
 class MockMediaStreamVideoCapturerSource : public MockMediaStreamVideoSource {
  public:
-  MockMediaStreamVideoCapturerSource(const MediaStreamDevice& device,
+  MockMediaStreamVideoCapturerSource(const blink::MediaStreamDevice& device,
                                      const SourceStoppedCallback& stop_callback,
                                      PeerConnectionDependencyFactory* factory)
       : MockMediaStreamVideoSource() {
@@ -158,7 +158,8 @@ class MockMediaStreamVideoCapturerSource : public MockMediaStreamVideoSource {
     SetStopCallback(stop_callback);
   }
 
-  MOCK_METHOD1(ChangeSourceImpl, void(const MediaStreamDevice& new_device));
+  MOCK_METHOD1(ChangeSourceImpl,
+               void(const blink::MediaStreamDevice& new_device));
 };
 
 const char kInvalidDeviceId[] = "invalid";
@@ -336,12 +337,12 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
     return VideoCaptureSettingsForTesting();
   }
 
-  content::MediaStreamRequestResult error_reason() const { return result_; }
+  blink::MediaStreamRequestResult error_reason() const { return result_; }
   blink::WebString constraint_name() const { return constraint_name_; }
 
   // UserMediaProcessor overrides.
   MediaStreamVideoSource* CreateVideoSource(
-      const MediaStreamDevice& device,
+      const blink::MediaStreamDevice& device,
       const MediaStreamSource::SourceStoppedCallback& stop_callback) override {
     video_source_ =
         new MockMediaStreamVideoCapturerSource(device, stop_callback, factory_);
@@ -349,7 +350,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   }
 
   MediaStreamAudioSource* CreateAudioSource(
-      const MediaStreamDevice& device,
+      const blink::MediaStreamDevice& device,
       const MediaStreamSource::ConstraintsCallback& source_ready) override {
     MediaStreamAudioSource* source;
     if (create_source_that_fails_) {
@@ -390,7 +391,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   }
 
   void GetUserMediaRequestFailed(
-      content::MediaStreamRequestResult result,
+      blink::MediaStreamRequestResult result,
       const blink::WebString& constraint_name) override {
     last_generated_stream_.Reset();
     *state_ = REQUEST_FAILED;
@@ -402,7 +403,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   static void SignalSourceReady(
       const MediaStreamSource::ConstraintsCallback& source_ready,
       MediaStreamSource* source) {
-    source_ready.Run(source, MEDIA_DEVICE_OK, "");
+    source_ready.Run(source, blink::MEDIA_DEVICE_OK, "");
   }
 
   PeerConnectionDependencyFactory* factory_;
@@ -411,7 +412,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   MockLocalMediaStreamAudioSource* local_audio_source_ = nullptr;
   bool create_source_that_fails_ = false;
   blink::WebMediaStream last_generated_stream_;
-  content::MediaStreamRequestResult result_ = NUM_MEDIA_REQUEST_RESULTS;
+  blink::MediaStreamRequestResult result_ = blink::NUM_MEDIA_REQUEST_RESULTS;
   blink::WebString constraint_name_;
   RequestState* state_;
 };
@@ -464,7 +465,7 @@ class UserMediaClientImplTest : public ::testing::Test {
     user_media_processor_ = new UserMediaProcessorUnderTest(
         dependency_factory_.get(), base::WrapUnique(msd_observer_),
         std::move(user_media_processor_host_proxy), &state_);
-    mojom::MediaStreamDispatcherHostPtr dispatcher_host =
+    blink::mojom::MediaStreamDispatcherHostPtr dispatcher_host =
         mock_dispatcher_host_.CreateInterfacePtrAndBind();
     user_media_processor_->set_media_stream_dispatcher_host_for_testing(
         std::move(dispatcher_host));
@@ -783,7 +784,7 @@ TEST_F(UserMediaClientImplTest, MediaVideoSourceFailToStart) {
   FailToStartMockedVideoSource();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(REQUEST_FAILED, request_state());
-  EXPECT_EQ(MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO,
+  EXPECT_EQ(blink::MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO,
             user_media_processor_->error_reason());
   blink::WebHeap::CollectAllGarbageForTesting();
   EXPECT_EQ(1, mock_dispatcher_host_.request_stream_counter());
@@ -798,7 +799,7 @@ TEST_F(UserMediaClientImplTest, MediaAudioSourceFailToInitialize) {
   StartMockedVideoSource();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(REQUEST_FAILED, request_state());
-  EXPECT_EQ(MEDIA_DEVICE_TRACK_START_FAILURE_AUDIO,
+  EXPECT_EQ(blink::MEDIA_DEVICE_TRACK_START_FAILURE_AUDIO,
             user_media_processor_->error_reason());
   blink::WebHeap::CollectAllGarbageForTesting();
   EXPECT_EQ(1, mock_dispatcher_host_.request_stream_counter());
@@ -1387,9 +1388,9 @@ TEST_F(UserMediaClientImplTest, DesktopCaptureChangeSource) {
   // Test changing video source.
   MockMediaStreamVideoCapturerSource* video_source =
       user_media_processor_->last_created_video_source();
-  MediaStreamDevice fake_video_device(MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
-                                      kFakeVideoInputDeviceId1,
-                                      "Fake Video Device");
+  blink::MediaStreamDevice fake_video_device(
+      blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, kFakeVideoInputDeviceId1,
+      "Fake Video Device");
   EXPECT_CALL(*video_source, ChangeSourceImpl(_));
   user_media_processor_->OnDeviceChanged(video_source->device(),
                                          fake_video_device);
@@ -1398,9 +1399,9 @@ TEST_F(UserMediaClientImplTest, DesktopCaptureChangeSource) {
   MockLocalMediaStreamAudioSource* audio_source =
       user_media_processor_->last_created_local_audio_source();
   EXPECT_NE(audio_source, nullptr);
-  MediaStreamDevice fake_audio_device(MEDIA_GUM_DESKTOP_AUDIO_CAPTURE,
-                                      kFakeVideoInputDeviceId1,
-                                      "Fake Audio Device");
+  blink::MediaStreamDevice fake_audio_device(
+      blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE, kFakeVideoInputDeviceId1,
+      "Fake Audio Device");
   EXPECT_CALL(*audio_source, EnsureSourceIsStopped()).Times(2);
   user_media_processor_->OnDeviceChanged(audio_source->device(),
                                          fake_audio_device);
@@ -1431,7 +1432,7 @@ TEST_F(UserMediaClientImplTest, DesktopCaptureChangeSourceWithoutAudio) {
       user_media_processor_->last_created_local_audio_source();
   EXPECT_NE(audio_source, nullptr);
   EXPECT_CALL(*audio_source, EnsureSourceIsStopped()).Times(1);
-  MediaStreamDevice fake_audio_device(MEDIA_NO_SERVICE, "", "");
+  blink::MediaStreamDevice fake_audio_device(blink::MEDIA_NO_SERVICE, "", "");
   user_media_processor_->OnDeviceChanged(audio_source->device(),
                                          fake_audio_device);
   base::RunLoop().RunUntilIdle();

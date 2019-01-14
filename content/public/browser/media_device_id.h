@@ -14,7 +14,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/common/media_stream_request.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "url/origin.h"
 
 namespace content {
@@ -34,7 +34,7 @@ CONTENT_EXPORT bool DoesMediaDeviceIDMatchHMAC(
     const std::string& device_guid,
     const std::string& raw_unique_id);
 
-CONTENT_EXPORT bool GetMediaDeviceIDForHMAC(MediaStreamType stream_type,
+CONTENT_EXPORT bool GetMediaDeviceIDForHMAC(blink::MediaStreamType stream_type,
                                             const std::string& salt,
                                             const url::Origin& security_origin,
                                             const std::string& source_id,

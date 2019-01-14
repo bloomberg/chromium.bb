@@ -23,7 +23,7 @@
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "content/public/common/media_stream_request.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
@@ -122,11 +122,11 @@ class ContentSettingBubbleModel {
     ~MediaMenu();
 
     base::string16 label;
-    content::MediaStreamDevice default_device;
-    content::MediaStreamDevice selected_device;
+    blink::MediaStreamDevice default_device;
+    blink::MediaStreamDevice selected_device;
     bool disabled;
   };
-  typedef std::map<content::MediaStreamType, MediaMenu> MediaMenuMap;
+  typedef std::map<blink::MediaStreamType, MediaMenu> MediaMenuMap;
 
   enum class ManageTextStyle {
     // No Manage button or checkbox is displayed.
@@ -180,7 +180,7 @@ class ContentSettingBubbleModel {
   virtual void OnManageButtonClicked() {}
   virtual void OnManageCheckboxChecked(bool is_checked) {}
   virtual void OnLearnMoreClicked() {}
-  virtual void OnMediaMenuClicked(content::MediaStreamType type,
+  virtual void OnMediaMenuClicked(blink::MediaStreamType type,
                                   const std::string& selected_device_id) {}
 
   // Called by the view code when the bubble is closed
@@ -249,10 +249,10 @@ class ContentSettingBubbleModel {
   void set_manage_text_style(ManageTextStyle manage_text_style) {
     bubble_content_.manage_text_style = manage_text_style;
   }
-  void add_media_menu(content::MediaStreamType type, const MediaMenu& menu) {
+  void add_media_menu(blink::MediaStreamType type, const MediaMenu& menu) {
     bubble_content_.media_menus[type] = menu;
   }
-  void set_selected_device(const content::MediaStreamDevice& device) {
+  void set_selected_device(const blink::MediaStreamDevice& device) {
     bubble_content_.media_menus[device.type].selected_device = device;
   }
   void set_show_learn_more(bool show_learn_more) {
@@ -367,11 +367,11 @@ class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
 
   // Updates the camera and microphone default device with the passed |type|
   // and device.
-  void UpdateDefaultDeviceForType(content::MediaStreamType type,
+  void UpdateDefaultDeviceForType(blink::MediaStreamType type,
                                   const std::string& device);
 
   // ContentSettingBubbleModel implementation.
-  void OnMediaMenuClicked(content::MediaStreamType type,
+  void OnMediaMenuClicked(blink::MediaStreamType type,
                           const std::string& selected_device) override;
 
   // The content settings that are associated with the individual radio

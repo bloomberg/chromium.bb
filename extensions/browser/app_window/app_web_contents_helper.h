@@ -6,7 +6,8 @@
 #define EXTENSIONS_BROWSER_APP_WINDOW_APP_WEB_CONTENTS_HELPER_H_
 
 #include "base/macros.h"
-#include "content/public/common/media_stream_request.h"
+#include "content/public/browser/media_stream_request.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 namespace blink {
 class WebGestureEvent;
@@ -53,7 +54,7 @@ class AppWebContentsHelper {
   // WebContentsDelegate.
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  content::MediaStreamType type) const;
+                                  blink::MediaStreamType type) const;
 
  private:
   const Extension* GetExtension() const;

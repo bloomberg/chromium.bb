@@ -12,7 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/status_icons/status_icon_menu_model.h"
-#include "content/public/common/media_stream_request.h"
+#include "content/public/browser/media_stream_request.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
@@ -57,7 +58,7 @@ class MediaStreamCaptureIndicator
   // |ui| is used to display custom UI while the stream is captured.
   std::unique_ptr<content::MediaStreamUI> RegisterMediaStream(
       content::WebContents* web_contents,
-      const content::MediaStreamDevices& devices,
+      const blink::MediaStreamDevices& devices,
       std::unique_ptr<MediaStreamUI> ui = nullptr);
 
   // Overrides from StatusIconMenuModel::Delegate implementation.

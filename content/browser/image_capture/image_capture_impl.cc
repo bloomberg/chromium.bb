@@ -14,12 +14,12 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/media_stream_request.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/mojom/image_capture_types.h"
 #include "media/capture/video/video_capture_device.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 namespace content {
 
@@ -33,7 +33,7 @@ void GetPhotoStateOnIOThread(const std::string& source_id,
   const int session_id =
       media_stream_manager->VideoDeviceIdToSessionId(source_id);
 
-  if (session_id == MediaStreamDevice::kNoId)
+  if (session_id == blink::MediaStreamDevice::kNoId)
     return;
   media_stream_manager->video_capture_manager()->GetPhotoState(
       session_id, std::move(callback));
@@ -48,7 +48,7 @@ void SetOptionsOnIOThread(const std::string& source_id,
   const int session_id =
       media_stream_manager->VideoDeviceIdToSessionId(source_id);
 
-  if (session_id == MediaStreamDevice::kNoId)
+  if (session_id == blink::MediaStreamDevice::kNoId)
     return;
   media_stream_manager->video_capture_manager()->SetPhotoOptions(
       session_id, std::move(settings), std::move(callback));
@@ -62,7 +62,7 @@ void TakePhotoOnIOThread(const std::string& source_id,
   const int session_id =
       media_stream_manager->VideoDeviceIdToSessionId(source_id);
 
-  if (session_id == MediaStreamDevice::kNoId)
+  if (session_id == blink::MediaStreamDevice::kNoId)
     return;
   media_stream_manager->video_capture_manager()->TakePhoto(session_id,
                                                            std::move(callback));

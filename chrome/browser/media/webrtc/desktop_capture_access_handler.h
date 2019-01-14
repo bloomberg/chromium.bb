@@ -37,12 +37,12 @@ class DesktopCaptureAccessHandler : public CaptureAccessHandlerBase,
 
   // MediaAccessHandler implementation.
   bool SupportsStreamType(content::WebContents* web_contents,
-                          const content::MediaStreamType type,
+                          const blink::MediaStreamType type,
                           const extensions::Extension* extension) override;
   bool CheckMediaAccessPermission(
       content::RenderFrameHost* render_frame_host,
       const GURL& security_origin,
-      content::MediaStreamType type,
+      blink::MediaStreamType type,
       const extensions::Extension* extension) override;
   void HandleRequest(content::WebContents* web_contents,
                      const content::MediaStreamRequest& request,
@@ -51,7 +51,7 @@ class DesktopCaptureAccessHandler : public CaptureAccessHandlerBase,
   void UpdateMediaRequestState(int render_process_id,
                                int render_frame_id,
                                int page_request_id,
-                               content::MediaStreamType stream_type,
+                               blink::MediaStreamType stream_type,
                                content::MediaRequestState state) override;
 
  private:

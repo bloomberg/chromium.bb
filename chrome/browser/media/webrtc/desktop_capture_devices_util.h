@@ -9,18 +9,19 @@
 
 #include "base/strings/string_util.h"
 #include "content/public/browser/desktop_media_id.h"
+#include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/media_stream_request.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 // Helper to get list of media stream devices for desktop capture in |devices|.
 // Registers to display notification if |display_notification| is true.
 // Returns an instance of MediaStreamUI to be passed to content layer.
 std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     content::WebContents* web_contents,
-    content::MediaStreamDevices* devices,
+    blink::MediaStreamDevices* devices,
     const content::DesktopMediaID& media_id,
-    content::MediaStreamType devices_video_type,
-    content::MediaStreamType devices_audio_type,
+    blink::MediaStreamType devices_video_type,
+    blink::MediaStreamType devices_audio_type,
     bool capture_audio,
     bool disable_local_echo,
     bool display_notification,

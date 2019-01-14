@@ -107,8 +107,8 @@ void ApplyConstraintsProcessor::ProcessVideoRequest() {
     return;
   }
 
-  const MediaStreamDevice& device_info = video_source_->device();
-  if (device_info.type == MEDIA_DEVICE_VIDEO_CAPTURE) {
+  const blink::MediaStreamDevice& device_info = video_source_->device();
+  if (device_info.type == blink::MEDIA_DEVICE_VIDEO_CAPTURE) {
     ProcessVideoDeviceRequest();
   } else {
     FinalizeVideoRequest();

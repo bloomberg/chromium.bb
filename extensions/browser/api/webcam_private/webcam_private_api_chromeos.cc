@@ -125,7 +125,7 @@ bool WebcamPrivateAPI::GetDeviceId(const std::string& extension_id,
       extensions::Extension::GetBaseURLFromExtensionId(extension_id));
 
   return content::GetMediaDeviceIDForHMAC(
-      content::MEDIA_DEVICE_VIDEO_CAPTURE,
+      blink::MEDIA_DEVICE_VIDEO_CAPTURE,
       browser_context_->GetMediaDeviceIDSalt(), security_origin, webcam_id,
       device_id);
 }

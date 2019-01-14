@@ -139,10 +139,10 @@ class MediaStreamRemoteVideoSourceTest
 
  private:
   void OnTrackStarted(MediaStreamSource* source,
-                      MediaStreamRequestResult result,
+                      blink::MediaStreamRequestResult result,
                       const blink::WebString& result_name) {
     ASSERT_EQ(source, remote_source_);
-    if (result == MEDIA_DEVICE_OK)
+    if (result == blink::MEDIA_DEVICE_OK)
       ++number_of_successful_track_starts_;
     else
       ++number_of_failed_track_starts_;

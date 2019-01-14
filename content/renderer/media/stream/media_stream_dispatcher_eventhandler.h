@@ -8,18 +8,18 @@
 #include <string>
 
 #include "content/common/content_export.h"
-#include "content/public/common/media_stream_request.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 namespace content {
 
 class CONTENT_EXPORT MediaStreamDispatcherEventHandler {
  public:
   // A device has been stopped in the browser process.
-  virtual void OnDeviceStopped(const MediaStreamDevice& device) = 0;
+  virtual void OnDeviceStopped(const blink::MediaStreamDevice& device) = 0;
 
   // Switch to the new device within the working session.
-  virtual void OnDeviceChanged(const MediaStreamDevice& old_device,
-                               const MediaStreamDevice& new_device) = 0;
+  virtual void OnDeviceChanged(const blink::MediaStreamDevice& old_device,
+                               const blink::MediaStreamDevice& new_device) = 0;
 
  protected:
   virtual ~MediaStreamDispatcherEventHandler() {}

@@ -14,7 +14,7 @@
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/media_stream_request.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -39,13 +39,13 @@ ScreenCaptureInfoBarDelegateAndroid::ScreenCaptureInfoBarDelegateAndroid(
     : web_contents_(web_contents),
       request_(request),
       callback_(std::move(callback)) {
-  DCHECK_EQ(content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, request.video_type);
+  DCHECK_EQ(blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, request.video_type);
 }
 
 ScreenCaptureInfoBarDelegateAndroid::~ScreenCaptureInfoBarDelegateAndroid() {
   if (!callback_.is_null()) {
-    std::move(callback_).Run(content::MediaStreamDevices(),
-                             content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
+    std::move(callback_).Run(blink::MediaStreamDevices(),
+                             blink::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
                              nullptr);
   }
 }
@@ -72,31 +72,31 @@ base::string16 ScreenCaptureInfoBarDelegateAndroid::GetButtonLabel(
 }
 
 bool ScreenCaptureInfoBarDelegateAndroid::Accept() {
-  RunCallback(content::MEDIA_DEVICE_OK);
+  RunCallback(blink::MEDIA_DEVICE_OK);
   return true;
 }
 
 bool ScreenCaptureInfoBarDelegateAndroid::Cancel() {
-  RunCallback(content::MEDIA_DEVICE_PERMISSION_DENIED);
+  RunCallback(blink::MEDIA_DEVICE_PERMISSION_DENIED);
   return true;
 }
 
 void ScreenCaptureInfoBarDelegateAndroid::InfoBarDismissed() {
-  RunCallback(content::MEDIA_DEVICE_PERMISSION_DISMISSED);
+  RunCallback(blink::MEDIA_DEVICE_PERMISSION_DISMISSED);
 }
 
 void ScreenCaptureInfoBarDelegateAndroid::RunCallback(
-    content::MediaStreamRequestResult result) {
+    blink::MediaStreamRequestResult result) {
   DCHECK(!callback_.is_null());
 
-  content::MediaStreamDevices devices;
+  blink::MediaStreamDevices devices;
   std::unique_ptr<content::MediaStreamUI> ui;
-  if (result == content::MEDIA_DEVICE_OK) {
+  if (result == blink::MEDIA_DEVICE_OK) {
     content::DesktopMediaID screen_id = content::DesktopMediaID(
         content::DesktopMediaID::TYPE_SCREEN, webrtc::kFullDesktopScreenId);
     devices.push_back(
-        content::MediaStreamDevice(content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
-                                   screen_id.ToString(), "Screen"));
+        blink::MediaStreamDevice(blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
+                                 screen_id.ToString(), "Screen"));
 
     ui = MediaCaptureDevicesDispatcher::GetInstance()
              ->GetMediaStreamCaptureIndicator()

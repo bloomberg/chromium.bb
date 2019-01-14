@@ -22,12 +22,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/common/media_stream_request.h"
 #include "media/audio/audio_system.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_facing.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "url/origin.h"
 
 namespace content {

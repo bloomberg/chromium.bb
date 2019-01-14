@@ -6,7 +6,8 @@
 #define EXTENSIONS_BROWSER_APP_WINDOW_APP_DELEGATE_H_
 
 #include "base/callback_forward.h"
-#include "content/public/common/media_stream_request.h"
+#include "content/public/browser/media_stream_request.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -81,7 +82,7 @@ class AppDelegate {
   virtual bool CheckMediaAccessPermission(
       content::RenderFrameHost* render_frame_host,
       const GURL& security_origin,
-      content::MediaStreamType type,
+      blink::MediaStreamType type,
       const Extension* extension) = 0;
   virtual int PreferredIconSize() const = 0;
 

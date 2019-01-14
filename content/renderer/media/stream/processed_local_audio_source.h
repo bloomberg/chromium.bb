@@ -41,7 +41,7 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
   // ID are derived from |device_info|. |factory| must outlive this instance.
   ProcessedLocalAudioSource(
       int consumer_render_frame_id,
-      const MediaStreamDevice& device,
+      const blink::MediaStreamDevice& device,
       bool hotword_enabled,
       bool disable_local_echo,
       const AudioProcessingProperties& audio_processing_properties,

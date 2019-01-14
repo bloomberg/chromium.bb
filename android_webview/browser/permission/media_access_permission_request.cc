@@ -9,9 +9,9 @@
 #include "android_webview/browser/permission/aw_permission_request.h"
 #include "content/public/browser/media_capture_devices.h"
 
+using blink::MediaStreamDevice;
+using blink::MediaStreamDevices;
 using content::MediaCaptureDevices;
-using content::MediaStreamDevice;
-using content::MediaStreamDevices;
 
 namespace android_webview {
 
@@ -48,12 +48,12 @@ void MediaAccessPermissionRequest::NotifyRequestResult(bool allowed) {
   std::unique_ptr<content::MediaStreamUI> ui;
   MediaStreamDevices devices;
   if (!allowed) {
-    std::move(callback_).Run(devices, content::MEDIA_DEVICE_PERMISSION_DENIED,
+    std::move(callback_).Run(devices, blink::MEDIA_DEVICE_PERMISSION_DENIED,
                              std::move(ui));
     return;
   }
 
-  if (request_.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE) {
+  if (request_.audio_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE) {
     const MediaStreamDevices& audio_devices =
         audio_test_devices_.empty()
             ? MediaCaptureDevices::GetInstance()->GetAudioCaptureDevices()
@@ -64,7 +64,7 @@ void MediaAccessPermissionRequest::NotifyRequestResult(bool allowed) {
       devices.push_back(*device);
   }
 
-  if (request_.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE) {
+  if (request_.video_type == blink::MEDIA_DEVICE_VIDEO_CAPTURE) {
     const MediaStreamDevices& video_devices =
         video_test_devices_.empty()
             ? MediaCaptureDevices::GetInstance()->GetVideoCaptureDevices()
@@ -75,8 +75,8 @@ void MediaAccessPermissionRequest::NotifyRequestResult(bool allowed) {
       devices.push_back(*device);
   }
   std::move(callback_).Run(devices,
-                           devices.empty() ? content::MEDIA_DEVICE_NO_HARDWARE
-                                           : content::MEDIA_DEVICE_OK,
+                           devices.empty() ? blink::MEDIA_DEVICE_NO_HARDWARE
+                                           : blink::MEDIA_DEVICE_OK,
                            std::move(ui));
 }
 
@@ -85,10 +85,10 @@ const GURL& MediaAccessPermissionRequest::GetOrigin() {
 }
 
 int64_t MediaAccessPermissionRequest::GetResources() {
-  return (request_.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE
+  return (request_.audio_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE
               ? AwPermissionRequest::AudioCapture
               : 0) |
-         (request_.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE
+         (request_.video_type == blink::MEDIA_DEVICE_VIDEO_CAPTURE
               ? AwPermissionRequest::VideoCapture
               : 0);
 }

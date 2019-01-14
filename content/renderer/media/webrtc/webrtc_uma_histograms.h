@@ -9,7 +9,7 @@
 #include "base/memory/singleton.h"
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
-#include "content/public/common/media_stream_request.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/platform/web_rtc_api_name.h"
 
 namespace content {
@@ -29,7 +29,7 @@ enum MediaStreamRequestState {
 };
 
 void LogUserMediaRequestWithNoResult(MediaStreamRequestState state);
-void LogUserMediaRequestResult(MediaStreamRequestResult result);
+void LogUserMediaRequestResult(blink::MediaStreamRequestResult result);
 
 // Helper method used to collect information about the number of times
 // different WebRTC APIs are called from JavaScript.

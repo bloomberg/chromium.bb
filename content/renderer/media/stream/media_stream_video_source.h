@@ -155,7 +155,7 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
 
  protected:
   // MediaStreamSource implementation.
-  void DoChangeSource(const MediaStreamDevice& new_device) override;
+  void DoChangeSource(const blink::MediaStreamDevice& new_device) override;
   void DoStopSource() override;
 
   // Sets ready state and notifies the ready state to all registered tracks.
@@ -170,7 +170,7 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
   // captured frames.
   virtual void StartSourceImpl(
       const VideoCaptureDeliverFrameCB& frame_callback) = 0;
-  void OnStartDone(MediaStreamRequestResult result);
+  void OnStartDone(blink::MediaStreamRequestResult result);
 
   // A subclass that supports restart must override this method such that it
   // immediately stop producing video frames after this method is called.
@@ -232,7 +232,7 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
   virtual void OnCapturingLinkSecured(bool is_secure) {}
 
   // Optionally overridden by subclasses to implement changing source.
-  virtual void ChangeSourceImpl(const MediaStreamDevice& new_device) {}
+  virtual void ChangeSourceImpl(const blink::MediaStreamDevice& new_device) {}
 
   enum State {
     NEW,

@@ -237,11 +237,11 @@ TEST_F(VideoCaptureImplManagerTest, NoLeak) {
 
 TEST_F(VideoCaptureImplManagerTest, SuspendAndResumeSessions) {
   std::array<base::Closure, kNumClients> release_callbacks;
-  MediaStreamDevices video_devices;
+  blink::MediaStreamDevices video_devices;
   for (size_t i = 0; i < kNumClients; ++i) {
     release_callbacks[i] =
         manager_->UseDevice(static_cast<media::VideoCaptureSessionId>(i));
-    MediaStreamDevice video_device;
+    blink::MediaStreamDevice video_device;
     video_device.session_id = static_cast<media::VideoCaptureSessionId>(i);
     video_devices.push_back(video_device);
   }

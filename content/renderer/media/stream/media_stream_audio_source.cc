@@ -104,7 +104,7 @@ void* MediaStreamAudioSource::GetClassIdentifier() const {
 }
 
 void MediaStreamAudioSource::DoChangeSource(
-    const MediaStreamDevice& new_device) {
+    const blink::MediaStreamDevice& new_device) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   if (is_stopped_)
@@ -132,7 +132,7 @@ void MediaStreamAudioSource::EnsureSourceIsStopped() {
 }
 
 void MediaStreamAudioSource::ChangeSourceImpl(
-    const MediaStreamDevice& new_device) {
+    const blink::MediaStreamDevice& new_device) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DVLOG(1) << "MediaStreamAudioSource@" << this << "::ChangeSourceImpl()";
   NOTIMPLEMENTED();

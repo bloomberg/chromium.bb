@@ -126,10 +126,10 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest, LaunchingDeviceSucceeds) {
           [&wait_for_done_cb]() { wait_for_done_cb.Quit(); }));
 
   // Exercise
-  launcher_->LaunchDeviceAsync(
-      kStubDeviceId, content::MEDIA_DEVICE_VIDEO_CAPTURE, kArbitraryParams,
-      kNullReceiver, connection_lost_cb_.Get(), &mock_callbacks_,
-      done_cb_.Get());
+  launcher_->LaunchDeviceAsync(kStubDeviceId, blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+                               kArbitraryParams, kNullReceiver,
+                               connection_lost_cb_.Get(), &mock_callbacks_,
+                               done_cb_.Get());
   wait_for_done_cb.Run();
 
   launcher_.reset();
@@ -192,10 +192,10 @@ void ServiceVideoCaptureDeviceLauncherTest::RunLaunchingDeviceIsAbortedTest(
   }));
 
   // Exercise
-  launcher_->LaunchDeviceAsync(
-      kStubDeviceId, content::MEDIA_DEVICE_VIDEO_CAPTURE, kArbitraryParams,
-      kNullReceiver, connection_lost_cb_.Get(), &mock_callbacks_,
-      done_cb_.Get());
+  launcher_->LaunchDeviceAsync(kStubDeviceId, blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+                               kArbitraryParams, kNullReceiver,
+                               connection_lost_cb_.Get(), &mock_callbacks_,
+                               done_cb_.Get());
   step_1_run_loop.Run();
   launcher_->AbortLaunch();
 
@@ -244,10 +244,10 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
   }));
 
   // Exercise
-  launcher_->LaunchDeviceAsync(
-      kStubDeviceId, content::MEDIA_DEVICE_VIDEO_CAPTURE, kArbitraryParams,
-      kNullReceiver, connection_lost_cb_.Get(), &mock_callbacks_,
-      done_cb_.Get());
+  launcher_->LaunchDeviceAsync(kStubDeviceId, blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+                               kArbitraryParams, kNullReceiver,
+                               connection_lost_cb_.Get(), &mock_callbacks_,
+                               done_cb_.Get());
   run_loop.Run();
 }
 
@@ -265,10 +265,10 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
 
   // Exercise
   device_factory_.reset();
-  launcher_->LaunchDeviceAsync(
-      kStubDeviceId, content::MEDIA_DEVICE_VIDEO_CAPTURE, kArbitraryParams,
-      kNullReceiver, connection_lost_cb_.Get(), &mock_callbacks_,
-      done_cb_.Get());
+  launcher_->LaunchDeviceAsync(kStubDeviceId, blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+                               kArbitraryParams, kNullReceiver,
+                               connection_lost_cb_.Get(), &mock_callbacks_,
+                               done_cb_.Get());
 
   run_loop.Run();
 }
@@ -301,10 +301,10 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
   }));
 
   // Exercise
-  launcher_->LaunchDeviceAsync(
-      kStubDeviceId, content::MEDIA_DEVICE_VIDEO_CAPTURE, kArbitraryParams,
-      kNullReceiver, connection_lost_cb_.Get(), &mock_callbacks_,
-      done_cb_.Get());
+  launcher_->LaunchDeviceAsync(kStubDeviceId, blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+                               kArbitraryParams, kNullReceiver,
+                               connection_lost_cb_.Get(), &mock_callbacks_,
+                               done_cb_.Get());
 
   run_loop.Run();
 
@@ -352,10 +352,10 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
     step_1_run_loop.Quit();
   }));
   // Exercise step 1
-  launcher_->LaunchDeviceAsync(
-      kStubDeviceId, content::MEDIA_DEVICE_VIDEO_CAPTURE, kArbitraryParams,
-      kNullReceiver, connection_lost_cb_.Get(), &mock_callbacks_,
-      done_cb_.Get());
+  launcher_->LaunchDeviceAsync(kStubDeviceId, blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+                               kArbitraryParams, kNullReceiver,
+                               connection_lost_cb_.Get(), &mock_callbacks_,
+                               done_cb_.Get());
   step_1_run_loop.Run();
 
   base::RunLoop step_2_run_loop;

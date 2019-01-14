@@ -233,13 +233,13 @@ void VideoCaptureImplManager::UnrefDevice(
 }
 
 void VideoCaptureImplManager::SuspendDevices(
-    const MediaStreamDevices& video_devices,
+    const blink::MediaStreamDevices& video_devices,
     bool suspend) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   if (is_suspending_all_ == suspend)
     return;
   is_suspending_all_ = suspend;
-  for (const MediaStreamDevice& device : video_devices) {
+  for (const blink::MediaStreamDevice& device : video_devices) {
     const media::VideoCaptureSessionId id = device.session_id;
     const auto it = std::find_if(
         devices_.begin(), devices_.end(),

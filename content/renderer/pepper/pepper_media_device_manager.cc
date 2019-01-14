@@ -161,9 +161,9 @@ int PepperMediaDeviceManager::OpenDevice(PP_DeviceType_Dev type,
                                         kPepperInsecureOriginMessage);
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&PepperMediaDeviceManager::OnDeviceOpened, AsWeakPtr(),
-                       request_id, false, std::string(), MediaStreamDevice()));
+        FROM_HERE, base::BindOnce(&PepperMediaDeviceManager::OnDeviceOpened,
+                                  AsWeakPtr(), request_id, false, std::string(),
+                                  blink::MediaStreamDevice()));
     return request_id;
   }
 
@@ -203,18 +203,18 @@ int PepperMediaDeviceManager::GetSessionID(PP_DeviceType_Dev type,
 }
 
 // static
-MediaStreamType PepperMediaDeviceManager::FromPepperDeviceType(
+blink::MediaStreamType PepperMediaDeviceManager::FromPepperDeviceType(
     PP_DeviceType_Dev type) {
   switch (type) {
     case PP_DEVICETYPE_DEV_INVALID:
-      return MEDIA_NO_SERVICE;
+      return blink::MEDIA_NO_SERVICE;
     case PP_DEVICETYPE_DEV_AUDIOCAPTURE:
-      return MEDIA_DEVICE_AUDIO_CAPTURE;
+      return blink::MEDIA_DEVICE_AUDIO_CAPTURE;
     case PP_DEVICETYPE_DEV_VIDEOCAPTURE:
-      return MEDIA_DEVICE_VIDEO_CAPTURE;
+      return blink::MEDIA_DEVICE_VIDEO_CAPTURE;
     default:
       NOTREACHED();
-      return MEDIA_NO_SERVICE;
+      return blink::MEDIA_NO_SERVICE;
   }
 }
 
@@ -228,10 +228,11 @@ void PepperMediaDeviceManager::OnDevicesChanged(
     subscription.second.Run(devices);
 }
 
-void PepperMediaDeviceManager::OnDeviceOpened(int request_id,
-                                              bool success,
-                                              const std::string& label,
-                                              const MediaStreamDevice& device) {
+void PepperMediaDeviceManager::OnDeviceOpened(
+    int request_id,
+    bool success,
+    const std::string& label,
+    const blink::MediaStreamDevice& device) {
   auto iter = open_callbacks_.find(request_id);
   if (iter == open_callbacks_.end()) {
     // The callback may have been unregistered.
@@ -256,7 +257,7 @@ void PepperMediaDeviceManager::DevicesEnumerated(
   client_callback.Run(FromMediaDeviceInfoArray(type, enumeration[type]));
 }
 
-const mojom::MediaStreamDispatcherHostPtr&
+const blink::mojom::MediaStreamDispatcherHostPtr&
 PepperMediaDeviceManager::GetMediaStreamDispatcherHost() {
   if (!dispatcher_host_) {
     CHECK(render_frame());

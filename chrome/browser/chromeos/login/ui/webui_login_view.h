@@ -160,7 +160,7 @@ class WebUILoginView : public views::View,
       content::MediaResponseCallback callback) override;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  content::MediaStreamType type) override;
+                                  blink::MediaStreamType type) override;
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) override;
 

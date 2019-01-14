@@ -189,17 +189,18 @@ void WebContentsDelegate::EnumerateDirectory(
 void WebContentsDelegate::RequestMediaAccessPermission(
     WebContents* web_contents,
     const MediaStreamRequest& request,
-    MediaResponseCallback callback) {
+    content::MediaResponseCallback callback) {
   LOG(ERROR) << "WebContentsDelegate::RequestMediaAccessPermission: "
              << "Not supported.";
-  std::move(callback).Run(MediaStreamDevices(), MEDIA_DEVICE_NOT_SUPPORTED,
-                          std::unique_ptr<MediaStreamUI>());
+  std::move(callback).Run(blink::MediaStreamDevices(),
+                          blink::MEDIA_DEVICE_NOT_SUPPORTED,
+                          std::unique_ptr<content::MediaStreamUI>());
 }
 
 bool WebContentsDelegate::CheckMediaAccessPermission(
     RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    MediaStreamType type) {
+    blink::MediaStreamType type) {
   LOG(ERROR) << "WebContentsDelegate::CheckMediaAccessPermission: "
              << "Not supported.";
   return false;
@@ -207,7 +208,7 @@ bool WebContentsDelegate::CheckMediaAccessPermission(
 
 std::string WebContentsDelegate::GetDefaultMediaDeviceID(
     WebContents* web_contents,
-    MediaStreamType type) {
+    blink::MediaStreamType type) {
   return std::string();
 }
 

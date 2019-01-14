@@ -10,9 +10,9 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_sets.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_video_device.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/platform/web_string.h"
 
 namespace content {

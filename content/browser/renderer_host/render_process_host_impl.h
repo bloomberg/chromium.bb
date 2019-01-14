@@ -37,7 +37,6 @@
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/child_control.mojom.h"
 #include "content/common/content_export.h"
-#include "content/common/media/media_stream.mojom.h"
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/renderer_host.mojom.h"
@@ -64,6 +63,7 @@
 #include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 #if defined(OS_ANDROID)
@@ -602,9 +602,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   void CreateMediaStreamDispatcherHost(
       MediaStreamManager* media_stream_manager,
-      mojom::MediaStreamDispatcherHostRequest request);
+      blink::mojom::MediaStreamDispatcherHostRequest request);
   void CreateMediaStreamTrackMetricsHost(
-      mojom::MediaStreamTrackMetricsHostRequest request);
+      blink::mojom::MediaStreamTrackMetricsHostRequest request);
 
 #if BUILDFLAG(ENABLE_MDNS)
   void CreateMdnsResponder(network::mojom::MdnsResponderRequest request);

@@ -132,10 +132,10 @@ base::string16 GetStopSharingUIString(
 
 std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     content::WebContents* web_contents,
-    content::MediaStreamDevices* devices,
+    blink::MediaStreamDevices* devices,
     const content::DesktopMediaID& media_id,
-    content::MediaStreamType devices_video_type,
-    content::MediaStreamType devices_audio_type,
+    blink::MediaStreamType devices_video_type,
+    blink::MediaStreamType devices_audio_type,
     bool capture_audio,
     bool disable_local_echo,
     bool display_notification,
@@ -151,7 +151,7 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
            << registered_extension_name;
 
   // Add selected desktop source to the list.
-  auto device = content::MediaStreamDevice(
+  auto device = blink::MediaStreamDevice(
       devices_video_type, media_id.ToString(), media_id.ToString());
   device.display_media_info = DesktopMediaIDToDisplayMediaInformation(media_id);
   devices->push_back(device);
@@ -159,17 +159,17 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     if (media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {
       content::WebContentsMediaCaptureId web_id = media_id.web_contents_id;
       web_id.disable_local_echo = disable_local_echo;
-      devices->push_back(content::MediaStreamDevice(
+      devices->push_back(blink::MediaStreamDevice(
           devices_audio_type, web_id.ToString(), "Tab audio"));
     } else if (disable_local_echo) {
       // Use the special loopback device ID for system audio capture.
-      devices->push_back(content::MediaStreamDevice(
+      devices->push_back(blink::MediaStreamDevice(
           devices_audio_type,
           media::AudioDeviceDescription::kLoopbackWithMuteDeviceId,
           "System Audio"));
     } else {
       // Use the special loopback device ID for system audio capture.
-      devices->push_back(content::MediaStreamDevice(
+      devices->push_back(blink::MediaStreamDevice(
           devices_audio_type,
           media::AudioDeviceDescription::kLoopbackInputDeviceId,
           "System Audio"));

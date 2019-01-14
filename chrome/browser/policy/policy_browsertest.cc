@@ -4340,8 +4340,8 @@ class MediaStreamDevicesControllerBrowserTest
   void TearDownOnMainThread() override { prompt_factory_.reset(); }
 
   content::MediaStreamRequest CreateRequest(
-      content::MediaStreamType audio_request_type,
-      content::MediaStreamType video_request_type) {
+      blink::MediaStreamType audio_request_type,
+      blink::MediaStreamType video_request_type) {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     EXPECT_EQ(request_url_,
@@ -4350,7 +4350,7 @@ class MediaStreamDevicesControllerBrowserTest
     int render_frame_id = web_contents->GetMainFrame()->GetRoutingID();
     return content::MediaStreamRequest(
         render_process_id, render_frame_id, 0, request_url_.GetOrigin(), false,
-        content::MEDIA_DEVICE_ACCESS, std::string(), std::string(),
+        blink::MEDIA_DEVICE_ACCESS, std::string(), std::string(),
         audio_request_type, video_request_type, false);
   }
 
@@ -4385,8 +4385,8 @@ class MediaStreamDevicesControllerBrowserTest
     }
   }
 
-  void Accept(const content::MediaStreamDevices& devices,
-              content::MediaStreamRequestResult result,
+  void Accept(const blink::MediaStreamDevices& devices,
+              blink::MediaStreamRequestResult result,
               std::unique_ptr<content::MediaStreamUI> ui) {
     if (policy_value_ || request_url_allowed_via_whitelist_) {
       ASSERT_EQ(1U, devices.size());
@@ -4398,7 +4398,7 @@ class MediaStreamDevicesControllerBrowserTest
 
   void FinishAudioTest() {
     content::MediaStreamRequest request(CreateRequest(
-        content::MEDIA_DEVICE_AUDIO_CAPTURE, content::MEDIA_NO_SERVICE));
+        blink::MEDIA_DEVICE_AUDIO_CAPTURE, blink::MEDIA_NO_SERVICE));
     // TODO(raymes): Test MEDIA_DEVICE_OPEN (Pepper) which grants both webcam
     // and microphone permissions at the same time.
     MediaStreamDevicesController::RequestPermissions(
@@ -4410,7 +4410,7 @@ class MediaStreamDevicesControllerBrowserTest
 
   void FinishVideoTest() {
     content::MediaStreamRequest request(CreateRequest(
-        content::MEDIA_NO_SERVICE, content::MEDIA_DEVICE_VIDEO_CAPTURE));
+        blink::MEDIA_NO_SERVICE, blink::MEDIA_DEVICE_VIDEO_CAPTURE));
     // TODO(raymes): Test MEDIA_DEVICE_OPEN (Pepper) which grants both webcam
     // and microphone permissions at the same time.
     MediaStreamDevicesController::RequestPermissions(
@@ -4429,9 +4429,9 @@ class MediaStreamDevicesControllerBrowserTest
 
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        AudioCaptureAllowed) {
-  content::MediaStreamDevices audio_devices;
-  content::MediaStreamDevice fake_audio_device(
-      content::MEDIA_DEVICE_AUDIO_CAPTURE, "fake_dev", "Fake Audio Device");
+  blink::MediaStreamDevices audio_devices;
+  blink::MediaStreamDevice fake_audio_device(blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+                                             "fake_dev", "Fake Audio Device");
   audio_devices.push_back(fake_audio_device);
 
   PolicyMap policies;
@@ -4452,9 +4452,9 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        AudioCaptureAllowedUrls) {
-  content::MediaStreamDevices audio_devices;
-  content::MediaStreamDevice fake_audio_device(
-      content::MEDIA_DEVICE_AUDIO_CAPTURE, "fake_dev", "Fake Audio Device");
+  blink::MediaStreamDevices audio_devices;
+  blink::MediaStreamDevice fake_audio_device(blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+                                             "fake_dev", "Fake Audio Device");
   audio_devices.push_back(fake_audio_device);
 
   const char* allow_pattern[] = {
@@ -4487,9 +4487,9 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        VideoCaptureAllowed) {
-  content::MediaStreamDevices video_devices;
-  content::MediaStreamDevice fake_video_device(
-      content::MEDIA_DEVICE_VIDEO_CAPTURE, "fake_dev", "Fake Video Device");
+  blink::MediaStreamDevices video_devices;
+  blink::MediaStreamDevice fake_video_device(blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+                                             "fake_dev", "Fake Video Device");
   video_devices.push_back(fake_video_device);
 
   PolicyMap policies;
@@ -4510,9 +4510,9 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        VideoCaptureAllowedUrls) {
-  content::MediaStreamDevices video_devices;
-  content::MediaStreamDevice fake_video_device(
-      content::MEDIA_DEVICE_VIDEO_CAPTURE, "fake_dev", "Fake Video Device");
+  blink::MediaStreamDevices video_devices;
+  blink::MediaStreamDevice fake_video_device(blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+                                             "fake_dev", "Fake Video Device");
   video_devices.push_back(fake_video_device);
 
   const char* allow_pattern[] = {

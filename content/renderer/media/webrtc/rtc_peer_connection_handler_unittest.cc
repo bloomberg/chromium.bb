@@ -319,11 +319,11 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     ProcessedLocalAudioSource* const audio_source =
         new ProcessedLocalAudioSource(
             -1 /* consumer_render_frame_id is N/A for non-browser tests */,
-            MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE, "mock_device_id",
-                              "Mock device",
-                              media::AudioParameters::kAudioCDSampleRate,
-                              media::CHANNEL_LAYOUT_STEREO,
-                              media::AudioParameters::kAudioCDSampleRate / 100),
+            blink::MediaStreamDevice(
+                blink::MEDIA_DEVICE_AUDIO_CAPTURE, "mock_device_id",
+                "Mock device", media::AudioParameters::kAudioCDSampleRate,
+                media::CHANNEL_LAYOUT_STEREO,
+                media::AudioParameters::kAudioCDSampleRate / 100),
             false /* hotword_enabled */, false /* disable_local_echo */,
             AudioProcessingProperties(),
             base::Bind(&RTCPeerConnectionHandlerTest::OnAudioSourceStarted),
@@ -390,7 +390,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   }
 
   static void OnAudioSourceStarted(MediaStreamSource* source,
-                                   MediaStreamRequestResult result,
+                                   blink::MediaStreamRequestResult result,
                                    const blink::WebString& result_name) {}
 
   bool AddStream(const blink::WebMediaStream& web_stream) {

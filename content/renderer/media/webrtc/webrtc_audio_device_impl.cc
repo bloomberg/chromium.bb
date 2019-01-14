@@ -416,7 +416,7 @@ int WebRtcAudioDeviceImpl::GetAuthorizedDeviceSessionIdForAudioRenderer() {
   if (capturers_.size() != 1)
     return 0;
 
-  const MediaStreamDevice& device = capturers_.back()->device();
+  const blink::MediaStreamDevice& device = capturers_.back()->device();
   if (device.session_id <= 0 || !device.matched_output_device_id)
     return 0;
 

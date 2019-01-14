@@ -12,7 +12,6 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
-#include "content/common/media/media_stream_controls.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/media/stream/media_stream_audio_processor_options.h"
 #include "content/renderer/media/stream/media_stream_audio_source.h"
@@ -23,6 +22,7 @@
 #include "media/audio/audio_features.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/limits.h"
+#include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
 
@@ -1431,26 +1431,26 @@ AudioCaptureSettings CONTENT_EXPORT
 SelectSettingsAudioCapture(MediaStreamAudioSource* source,
                            const blink::WebMediaConstraints& constraints) {
   DCHECK(source);
-  if (source->device().type != MEDIA_DEVICE_AUDIO_CAPTURE &&
-      source->device().type != MEDIA_GUM_TAB_AUDIO_CAPTURE &&
-      source->device().type != MEDIA_GUM_DESKTOP_AUDIO_CAPTURE) {
+  if (source->device().type != blink::MEDIA_DEVICE_AUDIO_CAPTURE &&
+      source->device().type != blink::MEDIA_GUM_TAB_AUDIO_CAPTURE &&
+      source->device().type != blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE) {
     return AudioCaptureSettings();
   }
 
   std::string media_stream_source = GetMediaStreamSource(constraints);
-  if (source->device().type == MEDIA_DEVICE_AUDIO_CAPTURE &&
+  if (source->device().type == blink::MEDIA_DEVICE_AUDIO_CAPTURE &&
       !media_stream_source.empty()) {
     return AudioCaptureSettings(
         constraints.Basic().media_stream_source.GetName());
   }
 
-  if (source->device().type == MEDIA_GUM_TAB_AUDIO_CAPTURE &&
+  if (source->device().type == blink::MEDIA_GUM_TAB_AUDIO_CAPTURE &&
       !media_stream_source.empty() &&
       media_stream_source != kMediaStreamSourceTab) {
     return AudioCaptureSettings(
         constraints.Basic().media_stream_source.GetName());
   }
-  if (source->device().type == MEDIA_GUM_DESKTOP_AUDIO_CAPTURE &&
+  if (source->device().type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE &&
       !media_stream_source.empty() &&
       media_stream_source != kMediaStreamSourceSystem &&
       media_stream_source != kMediaStreamSourceDesktop) {

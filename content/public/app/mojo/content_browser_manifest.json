@@ -45,6 +45,7 @@
           "blink.mojom.FileUtilitiesHost",
           "blink.mojom.FileSystemManager",
           "blink.mojom.Hyphenation",
+          "blink.mojom.MediaStreamTrackMetricsHost",
           "blink.mojom.MimeRegistry",
           "blink.mojom.PluginRegistry",
           "blink.mojom.ReportingServiceProxy",
@@ -54,7 +55,6 @@
           "content.mojom.ClipboardHost",
           "content.mojom.FieldTrialRecorder",
           "content.mojom.FrameSinkProvider",
-          "content.mojom.MediaStreamTrackMetricsHost",
           "content.mojom.PeerConnectionTrackerHost",
           "content.mojom.PushMessaging",
           "content.mojom.RendererHost",
@@ -175,6 +175,7 @@
           "blink.mojom.KeyboardLockService",
           "blink.mojom.LockManager",
           "blink.mojom.MediaDevicesDispatcherHost",
+          "blink.mojom.MediaStreamDispatcherHost",
           "blink.mojom.MediaSessionService",
           "blink.mojom.NotificationService",
           "blink.mojom.PermissionService",
@@ -199,7 +200,6 @@
           // InputInjector is only exposed when gpu benchmarking is enabled.
           "content.mojom.InputInjector",
 
-          "content.mojom.MediaStreamDispatcherHost",
           "content.mojom.RendererAudioInputStreamFactory",
           "content.mojom.RendererAudioOutputStreamFactory",
           "device.mojom.GamepadMonitor",

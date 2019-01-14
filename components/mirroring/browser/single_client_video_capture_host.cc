@@ -50,7 +50,7 @@ class DeviceLauncherCallbacks final
 
 SingleClientVideoCaptureHost::SingleClientVideoCaptureHost(
     const std::string& device_id,
-    content::MediaStreamType type,
+    blink::MediaStreamType type,
     DeviceLauncherCreateCallback callback)
     : device_id_(device_id),
       type_(type),

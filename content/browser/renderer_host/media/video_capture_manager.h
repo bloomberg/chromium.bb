@@ -28,6 +28,7 @@
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_device_info.h"
 #include "media/capture/video_capture_types.h"
+#include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
@@ -72,7 +73,7 @@ class CONTENT_EXPORT VideoCaptureManager
   // Implements MediaStreamProvider.
   void RegisterListener(MediaStreamProviderListener* listener) override;
   void UnregisterListener(MediaStreamProviderListener* listener) override;
-  int Open(const MediaStreamDevice& device) override;
+  int Open(const blink::MediaStreamDevice& device) override;
   void Close(int capture_session_id) override;
 
   // Called by VideoCaptureHost to locate a capture device for |capture_params|,
@@ -152,7 +153,7 @@ class CONTENT_EXPORT VideoCaptureManager
   // |stream_type|, |device_id| pair is not found. Returns in-use format of the
   // device otherwise.
   base::Optional<media::VideoCaptureFormat> GetDeviceFormatInUse(
-      MediaStreamType stream_type,
+      blink::MediaStreamType stream_type,
       const std::string& device_id);
 
   // Sets the platform-dependent window ID for the desktop capture notification
@@ -192,13 +193,14 @@ class CONTENT_EXPORT VideoCaptureManager
   // nullopt_t if the |device_id| is not found or camera calibration information
   // is not available for the device.  Camera calibration is cached during
   // device(s) enumeration.
-  base::Optional<CameraCalibration> GetCameraCalibration(
+  base::Optional<blink::CameraCalibration> GetCameraCalibration(
       const std::string& device_id);
 
  private:
   class CaptureDeviceStartRequest;
 
-  using SessionMap = std::map<media::VideoCaptureSessionId, MediaStreamDevice>;
+  using SessionMap =
+      std::map<media::VideoCaptureSessionId, blink::MediaStreamDevice>;
   using DeviceStartQueue = std::list<CaptureDeviceStartRequest>;
   using VideoCaptureDeviceDescriptor = media::VideoCaptureDeviceDescriptor;
   using VideoCaptureDeviceDescriptors = media::VideoCaptureDeviceDescriptors;
@@ -211,9 +213,9 @@ class CONTENT_EXPORT VideoCaptureManager
       const std::vector<media::VideoCaptureDeviceInfo>& device_infos);
 
   // Helpers to report an event to our Listener.
-  void OnOpened(MediaStreamType type,
+  void OnOpened(blink::MediaStreamType type,
                 media::VideoCaptureSessionId capture_session_id);
-  void OnClosed(MediaStreamType type,
+  void OnClosed(blink::MediaStreamType type,
                 media::VideoCaptureSessionId capture_session_id);
 
   // Checks to see if |controller| has no clients left. If so, remove it from
@@ -226,7 +228,7 @@ class CONTENT_EXPORT VideoCaptureManager
   // its |serial_id|. In all cases, if not found, nullptr is returned.
   VideoCaptureController* LookupControllerBySessionId(int session_id);
   VideoCaptureController* LookupControllerByMediaTypeAndDeviceId(
-      MediaStreamType type,
+      blink::MediaStreamType type,
       const std::string& device_id) const;
   bool IsControllerPointerValid(const VideoCaptureController* controller) const;
   scoped_refptr<VideoCaptureController> GetControllerSharedRef(
