@@ -2847,11 +2847,15 @@ action("build_date") {
 if (enable_nocompile_tests) {
   nocompile_test("base_nocompile_tests") {
     sources = [
+      "bind_unittest.nc",
       "callback_list_unittest.nc",
       "callback_unittest.nc",
+      "containers/span_unittest.nc",
       "memory/ref_counted_unittest.nc",
       "memory/weak_ptr_unittest.nc",
       "metrics/field_trial_params_unittest.nc",
+      "metrics/histogram_unittest.nc",
+      "observer_list_unittest.nc",
       "optional_unittest.nc",
       "strings/string16_unittest.nc",
       "task/task_traits_extension_unittest.nc",
