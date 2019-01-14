@@ -24,9 +24,8 @@ BluetoothBrailleDisplayListener.prototype = {
   /**
    * Called when a pincode is requested and a response can be made by calling
    * BluetoothBrailleDisplayManager.finishPairing.
-   * @param {!chrome.bluetooth.Device} display
    */
-  onPincodeRequested: function(display) {},
+  onPincodeRequested: function() {},
 };
 
 /**
@@ -48,22 +47,8 @@ BluetoothBrailleDisplayManager = function() {
   /** @private {!Array<BluetoothBrailleDisplayListener>} */
   this.listeners_ = [];
 
-  /**
-   * This list of braille display names was taken from other services that
-   * utilize Brltty (e.g. BrailleBack).
-   * @private {!Array<string|RegExp>}
-   */
-  this.displayNames_ = [
-    '"EL12-', 'Esys-', 'Focus 14 BT', 'Focus 40 BT', 'Brailliant BI',
-    /Hansone|HansoneXL|BrailleSense|BrailleEDGE|SmartBeetle/, 'Refreshabraille',
-    'Orbit', 'VarioConnect', 'VarioUltra', 'HWG Brailliant', 'braillex trio',
-    /Alva BC/i, 'TSM', 'TS5',
-    new RegExp(
-        '(Actilino.*|Active Star.*|Braille Wave( BRW)?|Braillino( BL2)?' +
-        '|Braille Star 40( BS4)?|Easy Braille( EBR)?|Active Braille( AB4)?' +
-        '|Basic Braille BB[3,4,6]?)\\/[a-zA-Z][0-9]-[0-9]{5}'),
-    new RegExp('(BRW|BL2|BS4|EBR|AB4|BB(3|4|6)?)\\/[a-zA-Z][0-9]-[0-9]{5}')
-  ];
+  /** @private {!Array<string>} */
+  this.displayNames_ = ['Focus 40 BT'];
 
   /**
    * The display explicitly preferred by a caller via connect. Only one such
@@ -102,10 +87,6 @@ BluetoothBrailleDisplayManager.prototype = {
    */
   start: function() {
     chrome.bluetooth.startDiscovery();
-
-    // Pick up any devices already in the system including previously paired,
-    // but out of range displays.
-    this.handleDevicesChanged();
   },
 
   /**
@@ -187,7 +168,7 @@ BluetoothBrailleDisplayManager.prototype = {
     chrome.bluetooth.getDevices((devices) => {
       var displayList = devices.filter((device) => {
         return this.displayNames_.some((name) => {
-          return device.name && device.name.search(name) == 0;
+          return device.name && device.name.indexOf(name) == 0;
         });
       });
       if (displayList.length == 0)
@@ -212,8 +193,7 @@ BluetoothBrailleDisplayManager.prototype = {
   handlePairing: function(pairingEvent) {
     if (pairingEvent.pairing ==
         chrome.bluetoothPrivate.PairingEventType.REQUEST_PINCODE)
-      this.listeners_.forEach(
-          (listener) => listener.onPincodeRequested(pairingEvent.device));
+      this.listeners_.forEach((listener) => listener.onPincodeRequested());
   },
 
   /**

@@ -9,7 +9,7 @@
 
 goog.provide('cvox.OptionsPage');
 
-goog.require('BluetoothBrailleDisplayUI');
+goog.require('BluetoothBrailleDisplayManager');
 goog.require('ConsoleTts');
 goog.require('EventStreamLogger');
 goog.require('Msgs');
@@ -47,7 +47,6 @@ cvox.OptionsPage.consoleTts;
  * Initialize the options page by setting the current value of all prefs, and
  * adding event listeners.
  * @suppress {missingProperties} Property prefs never defined on Window
- * @this {cvox.OptionsPage}
  */
 cvox.OptionsPage.init = function() {
   cvox.OptionsPage.prefs = chrome.extension.getBackgroundPage().prefs;
@@ -185,13 +184,6 @@ cvox.OptionsPage.init = function() {
       'virtual_braille_display_rows_input', 'virtualBrailleRows');
   handleNumericalInputPref(
       'virtual_braille_display_columns_input', 'virtualBrailleColumns');
-
-  /** @type {!BluetoothBrailleDisplayUI} */
-  cvox.OptionsPage.bluetoothBrailleDisplayUI = new BluetoothBrailleDisplayUI();
-
-  var bluetoothBraille = $('bluetoothBraille');
-  if (bluetoothBraille)
-    cvox.OptionsPage.bluetoothBrailleDisplayUI.attach(bluetoothBraille);
 };
 
 /**
@@ -465,7 +457,3 @@ cvox.OptionsPage.getBrailleTranslatorManager = function() {
 document.addEventListener('DOMContentLoaded', function() {
   cvox.OptionsPage.init();
 }, false);
-
-window.addEventListener('beforeunload', function(e) {
-  cvox.OptionsPage.bluetoothBrailleDisplayUI.detach();
-});
