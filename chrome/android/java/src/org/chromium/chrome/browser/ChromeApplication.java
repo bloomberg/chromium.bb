@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.components.embedder_support.application.FontPreloadingWorkaround;
 import org.chromium.components.module_installer.ModuleInstaller;
 
 /**
@@ -62,6 +63,7 @@ public class ChromeApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        FontPreloadingWorkaround.maybeInstallWorkaround(this);
         if (isBrowserProcess()) initDefaultNightMode();
     }
 
