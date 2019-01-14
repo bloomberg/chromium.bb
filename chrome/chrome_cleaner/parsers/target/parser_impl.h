@@ -20,6 +20,10 @@ class ParserImpl : public mojom::Parser {
   void ParseJson(const std::string& json,
                  ParserImpl::ParseJsonCallback callback) override;
 
+  // mojom:Parser
+  void ParseShortcut(mojo::ScopedHandle lnk_file_handle,
+                     ParserImpl::ParseShortcutCallback callback) override;
+
  private:
   mojo::Binding<mojom::Parser> binding_;
 };
