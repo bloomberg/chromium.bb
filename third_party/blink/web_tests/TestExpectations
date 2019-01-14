@@ -1724,6 +1724,7 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttw
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttwf-reftest-flex-order.html [ Failure ]
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/hittest-overlapping-margin.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/hittest-overlapping-order.html [ Failure ]
 
 ### virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-lines/
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-lines/multi-line-wrap-reverse-column-reverse.html [ Failure ]
@@ -2615,6 +2616,9 @@ crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-width-flex-items-007.
 # Not implemented yet
 crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse-line-wrapping.html [ Failure ]
 crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse.html [ Failure ]
+
+# Requires support for hit-testing based on flex order.
+crbug.com/844505 external/wpt/css/css-flexbox/hittest-overlapping-order.html [ Failure ]
 
 crbug.com/807497 external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/flexbox_justifycontent-center-overflow.html [ Failure ]
