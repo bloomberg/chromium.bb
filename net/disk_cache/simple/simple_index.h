@@ -222,6 +222,8 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
 
+  // Returns base::Time() if hash not known.
+  base::Time GetLastUsedTime(uint64_t entry_hash);
   void SetLastUsedTimeForTest(uint64_t entry_hash, const base::Time last_used);
 
 #if defined(OS_ANDROID)

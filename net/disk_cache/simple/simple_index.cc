@@ -323,6 +323,15 @@ size_t SimpleIndex::EstimateMemoryUsage() const {
          base::trace_event::EstimateMemoryUsage(removed_entries_);
 }
 
+base::Time SimpleIndex::GetLastUsedTime(uint64_t entry_hash) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_NE(cache_type_, net::APP_CACHE);
+  auto it = entries_set_.find(entry_hash);
+  if (it == entries_set_.end())
+    return base::Time();
+  return it->second.GetLastUsedTime();
+}
+
 void SimpleIndex::SetLastUsedTimeForTest(uint64_t entry_hash,
                                          const base::Time last_used) {
   auto it = entries_set_.find(entry_hash);

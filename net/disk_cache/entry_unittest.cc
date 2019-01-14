@@ -84,6 +84,7 @@ class DiskCacheEntryTest : public DiskCacheTestWithCache {
   bool SimpleCacheThirdStreamFileExists(const char* key);
   void SyncDoomEntry(const char* key);
   void UseAfterBackendDestruction();
+  void LastUsedTimePersists();
 };
 
 // This part of the test runs on the background thread.
@@ -5006,6 +5007,45 @@ TEST_F(DiskCacheEntryTest, MemoryOnlyUseAfterBackendDestruction) {
   SetMemoryOnlyMode();
   InitCache();
   UseAfterBackendDestruction();
+}
+
+void DiskCacheEntryTest::LastUsedTimePersists() {
+  // Make sure that SetLastUsedTimeForTest persists. When used with SimpleCache,
+  // this also checks that Entry::GetLastUsed is based on information in index,
+  // when available, not atime on disk, which can be inaccurate.
+  const char kKey[] = "a key";
+  InitCache();
+
+  disk_cache::Entry* entry1 = nullptr;
+  ASSERT_THAT(CreateEntry(kKey, &entry1), IsOk());
+  ASSERT_TRUE(nullptr != entry1);
+  base::Time modified_last_used =
+      entry1->GetLastUsed() - base::TimeDelta::FromMinutes(5);
+  entry1->SetLastUsedTimeForTest(modified_last_used);
+  entry1->Close();
+
+  disk_cache::Entry* entry2 = nullptr;
+  ASSERT_THAT(OpenEntry(kKey, &entry2), IsOk());
+  ASSERT_TRUE(nullptr != entry2);
+
+  base::TimeDelta diff = modified_last_used - entry2->GetLastUsed();
+  EXPECT_LT(diff, base::TimeDelta::FromSeconds(2));
+  EXPECT_GT(diff, -base::TimeDelta::FromSeconds(2));
+  entry2->Close();
+}
+
+TEST_F(DiskCacheEntryTest, LastUsedTimePersists) {
+  LastUsedTimePersists();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleLastUsedTimePersists) {
+  SetSimpleCacheMode();
+  LastUsedTimePersists();
+}
+
+TEST_F(DiskCacheEntryTest, MemoryOnlyLastUsedTimePersists) {
+  SetMemoryOnlyMode();
+  LastUsedTimePersists();
 }
 
 class DiskCacheSimplePrefetchTest : public DiskCacheEntryTest {

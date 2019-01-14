@@ -567,9 +567,7 @@ net::Error SimpleEntryImpl::ReadyForSparseIO(CompletionOnceCallback callback) {
 }
 
 void SimpleEntryImpl::SetLastUsedTimeForTest(base::Time time) {
-  // Note that we do not update |last_used_| here as it gets overwritten
-  // by UpdateDataFromEntryStat with the current time. It would be more involved
-  // to make that value stick and is not needed by the current tests.
+  last_used_ = time;
   backend_->index()->SetLastUsedTimeForTest(entry_hash_, time);
 }
 
@@ -736,10 +734,16 @@ void SimpleEntryImpl::OpenEntryInternal(bool have_index,
       new SimpleEntryCreationResults(SimpleEntryStat(
           last_used_, last_modified_, data_size_, sparse_data_size_)));
 
-  int32_t trailer_prefetch_size =
-      cache_type_ == net::APP_CACHE && backend_.get()
-          ? backend_->index()->GetTrailerPrefetchSize(entry_hash_)
-          : -1;
+  int32_t trailer_prefetch_size = -1;
+  base::Time last_used_time;
+  if (SimpleBackendImpl* backend = backend_.get()) {
+    if (cache_type_ == net::APP_CACHE) {
+      trailer_prefetch_size =
+          backend->index()->GetTrailerPrefetchSize(entry_hash_);
+    } else {
+      last_used_time = backend->index()->GetLastUsedTime(entry_hash_);
+    }
+  }
 
   base::OnceClosure task =
       base::BindOnce(&SimpleSynchronousEntry::OpenEntry, cache_type_, path_,
@@ -748,7 +752,7 @@ void SimpleEntryImpl::OpenEntryInternal(bool have_index,
 
   base::OnceClosure reply = base::BindOnce(
       &SimpleEntryImpl::CreationOperationComplete, this, std::move(callback),
-      start_time, base::Passed(&results), out_entry,
+      start_time, last_used_time, base::Passed(&results), out_entry,
       net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_END);
 
   prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
@@ -793,7 +797,7 @@ void SimpleEntryImpl::CreateEntryInternal(bool have_index,
       entry_hash_, have_index, start_time, file_tracker_, results.get());
   OnceClosure reply = base::BindOnce(
       &SimpleEntryImpl::CreationOperationComplete, this, std::move(callback),
-      start_time, base::Passed(&results), out_entry,
+      start_time, base::Time(), base::Passed(&results), out_entry,
       net::NetLogEventType::SIMPLE_CACHE_ENTRY_CREATE_END);
   prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
                                              std::move(reply), entry_priority_);
@@ -1259,6 +1263,7 @@ void SimpleEntryImpl::DoomEntryInternal(net::CompletionOnceCallback callback) {
 void SimpleEntryImpl::CreationOperationComplete(
     net::CompletionOnceCallback completion_callback,
     const base::TimeTicks& start_time,
+    const base::Time index_last_used_time,
     std::unique_ptr<SimpleEntryCreationResults> in_results,
     Entry** out_entry,
     net::NetLogEventType end_event_type) {
@@ -1328,6 +1333,11 @@ void SimpleEntryImpl::CreationOperationComplete(
     // in the synchronous entry.
     DCHECK_EQ(key_, synchronous_entry_->key());
   }
+
+  // Prefer index last used time to disk's, since that may be pretty inaccurate.
+  if (!index_last_used_time.is_null())
+    in_results->entry_stat.set_last_used(index_last_used_time);
+
   UpdateDataFromEntryStat(in_results->entry_stat);
   if (cache_type_ == net::APP_CACHE && backend_.get() && backend_->index()) {
     backend_->index()->SetTrailerPrefetchSize(
