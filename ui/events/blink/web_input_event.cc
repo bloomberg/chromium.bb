@@ -11,7 +11,6 @@
 #include "ui/events/event_target.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/events/keycodes/keyboard_code_conversion.h"
 
 #if defined(OS_WIN)
 #include "ui/events/blink/web_input_event_builders_win.h"
@@ -105,12 +104,7 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromUiEvent(const KeyEvent& event) {
 
   if (webkit_event.GetModifiers() & blink::WebInputEvent::kAltKey)
     webkit_event.is_system_key = true;
-
-  // TODO(dtapuska): crbug.com/570388. Ozone appears to deliver
-  // key_code events that aren't "located" for the keypad like
-  // Windows and X11 do and blink expects.
-  webkit_event.windows_key_code =
-      NonLocatedToLocatedKeypadKeyboardCode(event.key_code(), event.code());
+  webkit_event.windows_key_code = event.key_code();
   webkit_event.native_key_code =
       KeycodeConverter::DomCodeToNativeKeycode(event.code());
   webkit_event.dom_code = static_cast<int>(event.code());
