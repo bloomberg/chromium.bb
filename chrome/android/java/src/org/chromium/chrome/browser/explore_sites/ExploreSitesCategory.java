@@ -67,7 +67,7 @@ public class ExploreSitesCategory {
 
     public static ExploreSitesCategory createPlaceholder(
             @CategoryType int categoryType, String title) {
-        return new ExploreSitesCategory(PLACEHOLDER_ID, categoryType, title);
+        return new ExploreSitesCategory(PLACEHOLDER_ID, categoryType, title, 0, 0);
     }
 
     private int mCategoryId;
@@ -77,6 +77,8 @@ public class ExploreSitesCategory {
 
     // Populated only in NTP.
     private Drawable mDrawable;
+    private int mNtpShownCount;
+    private int mInteractionCount;
     // Populated only for ESP.
     private List<ExploreSitesSite> mSites;
     private int mNumBlacklisted;
@@ -88,10 +90,13 @@ public class ExploreSitesCategory {
      *         Catalog proto, or -1 if this represents the More button.
      * @param title The string to display as the caption for this tile.
      */
-    public ExploreSitesCategory(int categoryId, @CategoryType int categoryType, String title) {
+    public ExploreSitesCategory(int categoryId, @CategoryType int categoryType, String title,
+            int ntpShownCount, int interactionCount) {
         mCategoryId = categoryId;
         mCategoryType = categoryType;
         mCategoryTitle = title;
+        mNtpShownCount = ntpShownCount;
+        mInteractionCount = interactionCount;
         mSites = new ArrayList<>();
     }
 
@@ -124,6 +129,14 @@ public class ExploreSitesCategory {
 
     public Drawable getDrawable() {
         return mDrawable;
+    }
+
+    public int getNtpShownCount() {
+        return mNtpShownCount;
+    }
+
+    public int getInteractionCount() {
+        return mInteractionCount;
     }
 
     public void addSite(ExploreSitesSite site) {
@@ -198,9 +211,11 @@ public class ExploreSitesCategory {
     // Creates a new category and appends to the given list. Also returns the created category to
     // easily append sites to the category.
     @CalledByNative
-    private static ExploreSitesCategory createAndAppendToList(
-            int categoryId, int categoryType, String title, List<ExploreSitesCategory> list) {
-        ExploreSitesCategory category = new ExploreSitesCategory(categoryId, categoryType, title);
+    private static ExploreSitesCategory createAndAppendToList(int categoryId, int categoryType,
+            String title, int ntpShownCount, int interactionCount,
+            List<ExploreSitesCategory> list) {
+        ExploreSitesCategory category = new ExploreSitesCategory(
+                categoryId, categoryType, title, ntpShownCount, interactionCount);
         list.add(category);
         return category;
     }

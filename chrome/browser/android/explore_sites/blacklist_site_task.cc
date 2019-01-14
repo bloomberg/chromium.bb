@@ -19,6 +19,8 @@ static const char kBlacklistSiteSql[] = R"(INSERT INTO site_blacklist
 VALUES
 (?, ?);)";
 
+static const char kClearSiteFromActivitySql[] =
+    "DELETE FROM activity WHERE url = ?;";
 }  // namespace
 
 bool BlacklistSiteTaskSync(std::string url, sql::Database* db) {
@@ -45,6 +47,13 @@ bool BlacklistSiteTaskSync(std::string url, sql::Database* db) {
   blacklist_statement.BindString(col++, url);
   blacklist_statement.BindInt64(col++, unix_time);
   blacklist_statement.Run();
+
+  // Then clear all matching activity.
+  sql::Statement clear_activity_statement(
+      db->GetCachedStatement(SQL_FROM_HERE, kClearSiteFromActivitySql));
+
+  clear_activity_statement.BindString(0, url);
+  clear_activity_statement.Run();
 
   return transaction.Commit();
 }

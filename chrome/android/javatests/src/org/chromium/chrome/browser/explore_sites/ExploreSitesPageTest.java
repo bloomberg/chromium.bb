@@ -54,7 +54,8 @@ public class ExploreSitesPageTest {
         final ArrayList<ExploreSitesCategory> categoryList = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             ExploreSitesCategory category =
-                    new ExploreSitesCategory(i, i, "Category #" + Integer.toString(i));
+                    new ExploreSitesCategory(i, i, "Category #" + Integer.toString(i),
+                            /* ntpShownCount = */ 1, /* interactionCount = */ 0);
             // 0th category would be filtered out. Tests that row maximums are obeyed.
             int numSites = 4 * i + 1;
             for (int j = 0; j < numSites; j++) {
