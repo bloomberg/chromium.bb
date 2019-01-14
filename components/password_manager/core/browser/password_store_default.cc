@@ -232,6 +232,18 @@ std::vector<InteractionsStats> PasswordStoreDefault::GetSiteStatsImpl(
                    : std::vector<InteractionsStats>();
 }
 
+bool PasswordStoreDefault::BeginTransaction() {
+  if (login_db_)
+    return login_db_->BeginTransaction();
+  return false;
+}
+
+bool PasswordStoreDefault::CommitTransaction() {
+  if (login_db_)
+    return login_db_->CommitTransaction();
+  return false;
+}
+
 void PasswordStoreDefault::ResetLoginDB() {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   login_db_.reset();

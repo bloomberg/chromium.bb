@@ -188,6 +188,12 @@ class LoginDatabase : public syncer::SyncMetadataStore {
       const sync_pb::ModelTypeState& model_type_state) override;
   bool ClearModelTypeState(syncer::ModelType model_type) override;
 
+  // Callers that requires transaction support should call there methods to
+  // begin and commit transactions. They delegate to the transaction support of
+  // the underlying database. Only one transaction may exist at a time.
+  bool BeginTransaction();
+  bool CommitTransaction();
+
   // Returns the id for the specified |form|.  Returns -1 if the row for this
   // |form| is not found.
   // TODO(crbug.com/902349): consider migrating away from this method and make

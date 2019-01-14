@@ -65,6 +65,15 @@ class PasswordStoreSync {
   // Notifies observers that password store data may have been changed.
   virtual void NotifyLoginsChanged(const PasswordStoreChangeList& changes) = 0;
 
+  // The methods below adds transaction support to the password store that's
+  // required by sync to guarantee atomic writes of data and sync metadata.
+  // TODO(crbug.com/902349): The introduction of the two functions below
+  // question the existence of NotifyLoginsChanged() above and all the round
+  // trips with PasswordStoreChangeList in the earlier functions. Instead,
+  // observers could be notified inside CommitTransaction().
+  virtual bool BeginTransaction() = 0;
+  virtual bool CommitTransaction() = 0;
+
  protected:
   virtual ~PasswordStoreSync();
 

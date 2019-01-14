@@ -85,6 +85,10 @@ class TestPasswordStore : public PasswordStore {
   void RemoveSiteStatsImpl(const GURL& origin_domain) override;
   std::vector<InteractionsStats> GetAllSiteStatsImpl() override;
 
+  // PasswordStoreSync interface.
+  bool BeginTransaction() override;
+  bool CommitTransaction() override;
+
  private:
   PasswordMap stored_passwords_;
 

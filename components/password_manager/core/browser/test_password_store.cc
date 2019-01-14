@@ -212,4 +212,12 @@ std::vector<InteractionsStats> TestPasswordStore::GetAllSiteStatsImpl() {
   return std::vector<InteractionsStats>();
 }
 
+bool TestPasswordStore::BeginTransaction() {
+  return true;
+}
+
+bool TestPasswordStore::CommitTransaction() {
+  return true;
+}
+
 }  // namespace password_manager
