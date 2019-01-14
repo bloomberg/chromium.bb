@@ -13,6 +13,7 @@ group("all") {
     ":system_api-authpolicy-protos",
     ":system_api-biod-protos",
     ":system_api-login_manager-protos",
+    ":system_api-login_manager-goprotos",
     ":system_api-chaps-protos",
     ":system_api-metrics_event-protos",
     ":system_api-metrics_event-goprotos",
@@ -113,6 +114,14 @@ proto_library("system_api-login_manager-protos") {
     "${proto_in_dir}/policy_descriptor.proto",
   ]
   standalone = true
+}
+
+goproto_library("system_api-login_manager-goprotos") {
+  proto_in_dir = "dbus/login_manager"
+  proto_out_dir = "go/src/chromiumos/system_api/login_manager_proto"
+  sources = [
+    "${proto_in_dir}/policy_descriptor.proto",
+  ]
 }
 
 proto_library("system_api-chaps-protos") {
