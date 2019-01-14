@@ -87,7 +87,7 @@ public class MediaNotificationManagerNotificationTest extends MediaNotificationM
                            ChromeFeatureList.HIDE_USER_DATA_FROM_INCOGNITO_NOTIFICATIONS);
         if (userDataIsHidden) {
             assertNotEquals(info.metadata.getTitle(), shadowNotification.getContentTitle());
-            assertNull(shadowNotification.getContentText());
+            assertNotNull(shadowNotification.getContentText());
         } else {
             assertEquals(info.metadata.getTitle(), shadowNotification.getContentTitle());
             assertEquals(info.origin, shadowNotification.getContentText());
