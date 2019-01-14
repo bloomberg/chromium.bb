@@ -15,7 +15,6 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
@@ -147,17 +146,20 @@ bool XrBrowserTestBase::PollJavaScriptBoolean(
     const std::string& bool_expression,
     const base::TimeDelta& timeout,
     content::WebContents* web_contents) {
+  bool result = false;
+  base::RunLoop wait_loop(base::RunLoop::Type::kNestableTasksAllowed);
   // Lambda used because otherwise BindRepeating gets confused about which
   // version of RunJavaScriptAndExtractBoolOrFail to use.
-  return BlockOnConditionUnsafe(
-      base::BindRepeating(
-          [](XrBrowserTestBase* base, std::string expression,
-             content::WebContents* contents) {
-            return base->RunJavaScriptAndExtractBoolOrFail(expression,
-                                                           contents);
-          },
-          this, bool_expression, web_contents),
-      timeout);
+  BlockOnCondition(base::BindRepeating(
+                       [](XrBrowserTestBase* base, std::string expression,
+                          content::WebContents* contents) {
+                         return base->RunJavaScriptAndExtractBoolOrFail(
+                             expression, contents);
+                       },
+                       this, bool_expression, web_contents),
+                   &result, &wait_loop, base::Time::Now(), timeout);
+  wait_loop.Run();
+  return result;
 }
 
 void XrBrowserTestBase::PollJavaScriptBooleanOrFail(
@@ -168,24 +170,46 @@ void XrBrowserTestBase::PollJavaScriptBooleanOrFail(
       << "Timed out polling JavaScript boolean expression: " << bool_expression;
 }
 
-bool XrBrowserTestBase::BlockOnConditionUnsafe(
+void XrBrowserTestBase::BlockOnCondition(
     base::RepeatingCallback<bool()> condition,
+    bool* result,
+    base::RunLoop* wait_loop,
+    const base::Time& start_time,
     const base::TimeDelta& timeout,
     const base::TimeDelta& period) {
-  base::Time start = base::Time::Now();
-  bool successful = false;
-
-  // Poll until the timeout has elapsed, or never if a debugger is attached
-  // because that allows code to be slowly stepped through without breaking
-  // tests.
-  while (base::Time::Now() - start < timeout || base::debug::BeingDebugged()) {
-    successful = condition.Run();
-    if (successful) {
-      break;
-    }
-    base::PlatformThread::Sleep(period);
+  if (!*result) {
+    *result = condition.Run();
   }
-  return successful;
+
+  if (*result) {
+    if (wait_loop->running()) {
+      wait_loop->Quit();
+      return;
+    }
+    // In the case where the condition is met fast enough that the given
+    // RunLoop hasn't started yet, spin until it's available.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&XrBrowserTestBase::BlockOnCondition,
+                       base::Unretained(this), std::move(condition),
+                       base::Unretained(result), base::Unretained(wait_loop),
+                       start_time, timeout, period));
+    return;
+  }
+
+  if (base::Time::Now() - start_time > timeout &&
+      !base::debug::BeingDebugged()) {
+    wait_loop->Quit();
+    return;
+  }
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&XrBrowserTestBase::BlockOnCondition,
+                     base::Unretained(this), std::move(condition),
+                     base::Unretained(result), base::Unretained(wait_loop),
+                     start_time, timeout, period),
+      period);
 }
 
 void XrBrowserTestBase::WaitOnJavaScriptStep(
