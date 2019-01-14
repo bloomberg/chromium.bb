@@ -7,23 +7,31 @@ var allTests = [
     getUrlFromConfig('index.html', function(url) {
       chrome.tabs.create({'url': url}, function(tab) {
         chrome.automation.getTree(function(rootNode) {
-          var button = rootNode.find({role: 'button'});
-          assertEq(rootNode, button.root);
+          function doTestCloseTab() {
+            var button = rootNode.find({role: 'button'});
+            assertEq(rootNode, button.root);
 
-          rootNode.addEventListener('destroyed', function() {
-            // Poll until the root node doesn't have a role anymore
-            // indicating that it really did get cleaned up.
-            function checkSuccess() {
-              if (rootNode.role === undefined && rootNode.root === null) {
-                assertEq(null, button.root);
-                chrome.test.succeed();
+            rootNode.addEventListener('destroyed', function() {
+              // Poll until the root node doesn't have a role anymore
+              // indicating that it really did get cleaned up.
+              function checkSuccess() {
+                if (rootNode.role === undefined && rootNode.root === null) {
+                  assertEq(null, button.root);
+                  chrome.test.succeed();
+                }
+                else
+                  window.setTimeout(checkSuccess, 10);
               }
-              else
-                window.setTimeout(checkSuccess, 10);
-            }
-            checkSuccess();
-          });
-          chrome.tabs.remove(tab.id);
+              checkSuccess();
+            });
+            chrome.tabs.remove(tab.id);
+          }
+
+          if (rootNode.docLoaded) {
+            doTestCloseTab();
+            return;
+          }
+          rootNode.addEventListener('loadComplete', doTestCloseTab);
         });
       });
     });
