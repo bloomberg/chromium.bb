@@ -148,6 +148,7 @@ var kRTCMediaStreamTrackStats = new RTCStats_(null, {
   concealedSamples: 'number',
   concealmentEvents: 'number',
   jitterBufferDelay: 'number',
+  jitterBufferEmittedCount: 'number',
   priority: 'string'
 });
 gStatsWhitelist.set('track', kRTCMediaStreamTrackStats);
