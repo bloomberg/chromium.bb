@@ -5906,3 +5906,6 @@ crbug.com/921038 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_t
 # Fails because javascript: urls should execute in the document that is being
 # navigated, but we currently execute them in the source document.
 crbug.com/638435 external/wpt/content-security-policy/unsafe-hashes/javascript_src_allowed-href_blank.html [ Timeout ]
+
+# Sheriff 2019-01-14
+crbug.com/921583 http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
