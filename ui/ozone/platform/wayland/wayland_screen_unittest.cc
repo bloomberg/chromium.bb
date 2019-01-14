@@ -170,6 +170,7 @@ TEST_P(WaylandScreenTest, OutputPropertyChanges) {
                           0 /* transform */);
   wl_output_send_mode(output_->resource(), WL_OUTPUT_MODE_CURRENT,
                       new_rect.width(), new_rect.height(), 0 /* refresh */);
+  wl_output_send_done(output_->resource());
 
   Sync();
 
@@ -181,6 +182,7 @@ TEST_P(WaylandScreenTest, OutputPropertyChanges) {
 
   const float new_scale_value = 2.0f;
   wl_output_send_scale(output_->resource(), new_scale_value);
+  wl_output_send_done(output_->resource());
 
   Sync();
 

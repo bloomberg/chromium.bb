@@ -38,9 +38,9 @@ void WaylandOutputManager::AddWaylandOutput(const uint32_t output_id,
 
   OnWaylandOutputAdded(output_id);
 
-  // If WaylandScreen has already been created, the output can be initialized,
-  // which results in setting up a wl_listener and getting the geometry and the
-  // scaling factor from the Wayland Compositor.
+  // Even if WaylandScreen has not been created, the output still must be
+  // initialized, which results in setting up a wl_listener and getting the
+  // geometry and the scaling factor from the Wayland Compositor.
   wayland_output_ptr->Initialize(this);
 }
 
