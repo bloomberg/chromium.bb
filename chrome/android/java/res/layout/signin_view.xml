@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/signin_header_image"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginEnd="@dimen/signin_margin_end"
                 android:textAppearance="@style/TextAppearance.BlackHeadline"
                 tools:text="@string/signin_title"/>
@@ -48,7 +48,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/signin_title"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="27dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginEnd="@dimen/signin_margin_end"
                 android:background="@drawable/account_picker_background"
                 android:orientation="horizontal"
@@ -116,7 +116,7 @@
                 android:layout_below="@id/signin_account_picker"
                 android:layout_alignParentEnd="true"
                 android:layout_marginStart="@dimen/signin_drawable_padding"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="28dp"
                 android:layout_marginEnd="@dimen/signin_margin_end"
                 android:layout_toEndOf="@id/signin_sync_icon"
                 android:textAppearance="@style/TextAppearance.BlackTitle1"
@@ -206,7 +206,7 @@
                 style="@style/HorizontalDivider"
                 android:layout_below="@id/signin_safe_browsing_description"
                 android:layout_marginStart="@dimen/signin_margin_start"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="12dp"
                 android:layout_marginEnd="@dimen/signin_margin_end"/>
             <TextView
                 android:id="@+id/signin_details_description"
@@ -216,7 +216,7 @@
                 android:layout_alignParentStart="true"
                 android:layout_alignParentEnd="true"
                 android:layout_marginStart="@dimen/signin_drawable_padding"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginEnd="@dimen/signin_margin_end"
                 android:textAppearance="@style/TextAppearance.BlackBody"
                 tools:text="@string/signin_details_description"/>
