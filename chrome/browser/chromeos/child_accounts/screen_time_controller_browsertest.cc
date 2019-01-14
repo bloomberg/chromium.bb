@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/child_accounts/child_account_test_utils.h"
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller.h"
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller_factory.h"
+#include "chrome/browser/chromeos/child_accounts/time_limit_test_utils.h"
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -33,6 +34,8 @@ void WaitForScreenLock() {
 }
 
 }  // namespace
+
+namespace utils = time_limit_test_utils;
 
 class ScreenTimeControllerTest : public policy::LoginPolicyTestBase {
  public:
@@ -57,14 +60,10 @@ class ScreenTimeControllerTest : public policy::LoginPolicyTestBase {
 
   void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
     // A basic starting policy.
-    constexpr char kUsageTimeLimit[] = R"({
-      "time_usage_limit": {
-        "reset_at": {
-          "hour": 6, "minute": 0
-        }
-      }
-    })";
-    policy->SetKey("UsageTimeLimit", base::Value(kUsageTimeLimit));
+    std::unique_ptr<base::DictionaryValue> policy_content =
+        utils::CreateTimeLimitPolicy(utils::CreateTime(6, 0));
+    policy->SetKey("UsageTimeLimit",
+                   base::Value(utils::PolicyToString(policy_content.get())));
   }
 
   std::string GetIdToken() const override {
@@ -108,24 +107,14 @@ IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, LockOverride) {
   EXPECT_FALSE(session_manager::SessionManager::Get()->IsScreenLocked());
 
   // Set new policy.
-  int64_t created_at_millis =
-      (task_runner_->Now() - base::Time::UnixEpoch()).InMilliseconds();
-  std::string policy_value = base::StringPrintf(
-      R"(
-      {
-        "time_usage_limit": {
-          "reset_at": {
-            "hour": 6, "minute": 0
-          }
-        },
-        "overrides": [{
-          "action": "LOCK",
-          "created_at_millis": "%ld"
-        }]
-      })",
-      created_at_millis);
+  std::unique_ptr<base::DictionaryValue> policy_content =
+      utils::CreateTimeLimitPolicy(utils::CreateTime(6, 0));
+  utils::AddOverride(policy_content.get(), utils::kLock, task_runner_->Now());
+
   auto policy = std::make_unique<base::DictionaryValue>();
-  policy->SetKey("UsageTimeLimit", base::Value(policy_value));
+  policy->SetKey("UsageTimeLimit",
+                 base::Value(utils::PolicyToString(policy_content.get())));
+
   user_policy_helper()->UpdatePolicy(*policy, base::DictionaryValue(),
                                      child_profile_);
 

@@ -1662,6 +1662,7 @@ test("browser_tests") {
         "../browser/chromeos/child_accounts/child_account_test_utils.cc",
         "../browser/chromeos/child_accounts/child_account_test_utils.h",
         "../browser/chromeos/child_accounts/screen_time_controller_browsertest.cc",
+        "../browser/chromeos/child_accounts/time_limit_test_utils.cc",
         "../browser/chromeos/customization/customization_document_browsertest.cc",
         "../browser/chromeos/customization/customization_wallpaper_downloader_browsertest.cc",
         "../browser/chromeos/display/display_prefs_browsertest.cc",
