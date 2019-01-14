@@ -390,6 +390,7 @@ class PasswordFormMetricsRecorder
 
   void RecordFormChangeBitmask(uint32_t bitmask);
 
+  void RecordFirstFillingResult(int32_t result);
   void RecordFirstWaitForUsernameReason(WaitForUsernameReason reason);
 
   // Calculates FillingAssistance metric for |submitted_form|. The result is
@@ -502,9 +503,11 @@ class PasswordFormMetricsRecorder
 
   base::Optional<uint32_t> form_changes_bitmask_;
 
-  base::Optional<FillingAssistance> filling_assistance_;
+  bool recorded_first_filling_result_ = false;
 
   bool recorded_wait_for_username_reason_ = false;
+
+  base::Optional<FillingAssistance> filling_assistance_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormMetricsRecorder);
 };

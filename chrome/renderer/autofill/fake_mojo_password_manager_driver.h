@@ -166,6 +166,8 @@ class FakeMojoPasswordManagerDriver
       const autofill::PasswordForm& password_form) override;
   void HideManualFallbackForSaving() override;
   void FocusedInputChanged(bool is_fillable, bool is_password_field) override;
+  void LogFirstFillingResult(uint32_t form_renderer_id,
+                             int32_t result) override {}
 
   // Records whether ShowPasswordSuggestions() gets called.
   bool called_show_pw_suggestions_ = false;

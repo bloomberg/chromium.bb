@@ -207,6 +207,8 @@ class ChromePasswordManagerClient
   void CheckSafeBrowsingReputation(const GURL& form_action,
                                    const GURL& frame_url) override;
   void FocusedInputChanged(bool is_fillable, bool is_password_field) override;
+  void LogFirstFillingResult(uint32_t form_renderer_id,
+                             int32_t result) override;
 
   // content::WebContentsObserver overrides.
   void DidStartNavigation(

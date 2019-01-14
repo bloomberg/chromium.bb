@@ -466,7 +466,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // The logging is a bit conservative: It is possible that user-perceived
   // navigations (via dynamic HTML sites) not trigger any actual navigations
   // and therefore, the |recorded_first_filling_result_| never gets reset.
-  void LogFirstFillingResult(FillingResult result);
+  void LogFirstFillingResult(const PasswordFormFillData& form_data,
+                             FillingResult result);
 
   // Extracts information about form structure.
   static FormStructureInfo ExtractFormStructureInfo(const FormData& form_data);
