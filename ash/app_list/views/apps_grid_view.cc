@@ -2214,9 +2214,6 @@ bool AppsGridView::IsPointWithinBottomDragBuffer(
   GetTransform().TransformRect(&transformed_bounds_in_screen);
   const int kBottomDragBufferMin = transformed_bounds_in_screen.bottom();
 
-  DCHECK_GE(kBottomDragBufferMax - kBottomDragBufferMin,
-            AppListConfig::instance().page_flip_zone_size());
-
   return point_in_screen.y() > kBottomDragBufferMin &&
          point_in_screen.y() < kBottomDragBufferMax;
 }
