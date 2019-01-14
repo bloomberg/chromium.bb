@@ -317,7 +317,6 @@
 -keep class org.chromium.chrome.browser.preferences.Preferences { <init>(); }
 -keep class org.chromium.chrome.browser.preferences.SeekBarLinkedCheckBoxPreference { <init>(...); }
 -keep class org.chromium.chrome.browser.preferences.SignInPreference { <init>(...); }
--keep class org.chromium.chrome.browser.preferences.SigninExpandablePreferenceGroup { <init>(...); }
 -keep class org.chromium.chrome.browser.preferences.SpinnerPreference { <init>(...); }
 -keep class org.chromium.chrome.browser.preferences.SyncErrorCardPreference { <init>(...); }
 -keep class org.chromium.chrome.browser.preferences.SyncPreference { <init>(...); }

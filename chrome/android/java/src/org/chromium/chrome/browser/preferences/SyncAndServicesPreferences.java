@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
 import android.provider.Settings;
@@ -27,7 +28,6 @@ import android.text.style.ForegroundColorSpan;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.ListView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
@@ -88,11 +88,10 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     public static final String FRAGMENT_PASSPHRASE_TYPE = "password_type";
 
     private static final String PREF_SIGNIN = "sign_in";
-    private static final String PREF_SYNC_ERROR_CARD = "sync_error_card";
-    private static final String PREF_SYNC_ERROR_CARD_DIVIDER = "sync_error_card_divider";
-    private static final String PREF_USE_SYNC_AND_ALL_SERVICES = "use_sync_and_all_services";
 
-    private static final String PREF_SYNC_AND_PERSONALIZATION = "sync_and_personalization";
+    private static final String PREF_SYNC_CATEGORY = "sync_category";
+    private static final String PREF_SYNC_ERROR_CARD = "sync_error_card";
+    private static final String PREF_USE_SYNC_AND_ALL_SERVICES = "use_sync_and_all_services";
     private static final String PREF_SYNC_AUTOFILL = "sync_autofill";
     private static final String PREF_SYNC_BOOKMARKS = "sync_bookmarks";
     private static final String PREF_SYNC_PAYMENTS_INTEGRATION = "sync_payments_integration";
@@ -107,7 +106,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private static final String PREF_SYNC_MANAGE_DATA = "sync_manage_data";
     private static final String PREF_CONTEXTUAL_SUGGESTIONS = "contextual_suggestions";
 
-    private static final String PREF_NONPERSONALIZED_SERVICES = "nonpersonalized_services";
+    private static final String PREF_SERVICES_CATEGORY = "services_category";
     private static final String PREF_SEARCH_SUGGESTIONS = "search_suggestions";
     private static final String PREF_NETWORK_PREDICTIONS = "network_predictions";
     private static final String PREF_NAVIGATION_ERROR = "navigation_error";
@@ -142,11 +141,10 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private boolean mIsFromSigninScreen;
 
     private SignInPreference mSigninPreference;
-    private Preference mSyncErrorCard;
-    private Preference mSyncErrorCardDivider;
-    private ChromeSwitchPreference mUseSyncAndAllServices;
 
-    private SigninExpandablePreferenceGroup mSyncGroup;
+    private PreferenceCategory mSyncCategory;
+    private Preference mSyncErrorCard;
+    private ChromeSwitchPreference mUseSyncAndAllServices;
     private CheckBoxPreference mSyncAutofill;
     private CheckBoxPreference mSyncBookmarks;
     private CheckBoxPreference mSyncPaymentsIntegration;
@@ -163,7 +161,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private Preference mManageSyncData;
     private @Nullable Preference mContextualSuggestions;
 
-    private SigninExpandablePreferenceGroup mNonpersonalizedServices;
     private ChromeSwitchPreference mSearchSuggestions;
     private ChromeSwitchPreference mNetworkPredictions;
     private ChromeSwitchPreference mNavigationError;
@@ -211,18 +208,13 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mSigninPreference = (SignInPreference) findPreference(PREF_SIGNIN);
         mSigninPreference.setPersonalizedPromoEnabled(false);
 
+        mSyncCategory = (PreferenceCategory) findPreference(PREF_SYNC_CATEGORY);
         mSyncErrorCard = findPreference(PREF_SYNC_ERROR_CARD);
         mSyncErrorCard.setOnPreferenceClickListener(
                 toOnClickListener(this::onSyncErrorCardClicked));
-        mSyncErrorCardDivider = findPreference(PREF_SYNC_ERROR_CARD_DIVIDER);
-
         mUseSyncAndAllServices =
                 (ChromeSwitchPreference) findPreference(PREF_USE_SYNC_AND_ALL_SERVICES);
         mUseSyncAndAllServices.setOnPreferenceChangeListener(this);
-        mSyncGroup =
-                (SigninExpandablePreferenceGroup) findPreference(PREF_SYNC_AND_PERSONALIZATION);
-        mNonpersonalizedServices =
-                (SigninExpandablePreferenceGroup) findPreference(PREF_NONPERSONALIZED_SERVICES);
 
         mSyncAutofill = (CheckBoxPreference) findPreference(PREF_SYNC_AUTOFILL);
         mSyncBookmarks = (CheckBoxPreference) findPreference(PREF_SYNC_BOOKMARKS);
@@ -246,7 +238,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mContextualSuggestions = findPreference(PREF_CONTEXTUAL_SUGGESTIONS);
         if (!FeatureUtilities.areContextualSuggestionsEnabled(getActivity())
                 || !ContextualSuggestionsEnabledStateUtils.shouldShowSettings()) {
-            removePreference(mSyncGroup, mContextualSuggestions);
+            removePreference(mSyncCategory, mContextualSuggestions);
             mContextualSuggestions = null;
         }
 
@@ -290,7 +282,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
         mContextualSearch = findPreference(PREF_CONTEXTUAL_SEARCH);
         if (!ContextualSearchFieldTrial.isEnabled()) {
-            removePreference(mNonpersonalizedServices, mContextualSearch);
+            PreferenceCategory servicesCategory =
+                    (PreferenceCategory) findPreference(PREF_SERVICES_CATEGORY);
+            removePreference(servicesCategory, mContextualSearch);
             mContextualSearch = null;
         }
 
@@ -298,10 +292,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             mGoogleActivityControls.setSummary(
                     R.string.sign_in_google_activity_controls_summary_child_account);
         }
-
-        boolean useSyncAndAllServices = UnifiedConsentServiceBridge.isUnifiedConsentGiven();
-        mSyncGroup.setExpanded(!useSyncAndAllServices);
-        mNonpersonalizedServices.setExpanded(!useSyncAndAllServices);
 
         // Prevent sync settings changes from taking effect until the user leaves this screen.
         mSyncSetupInProgressHandle = mProfileSyncService.getSetupInProgressHandle();
@@ -325,14 +315,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             runnable.run();
             return false;
         };
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        ListView list = (ListView) getView().findViewById(android.R.id.list);
-        list.setDivider(null);
     }
 
     @Override
@@ -389,10 +371,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         String key = preference.getKey();
         if (PREF_USE_SYNC_AND_ALL_SERVICES.equals(key)) {
             boolean enabled = (boolean) newValue;
-            if (!enabled) {
-                mSyncGroup.setExpanded(true);
-                mNonpersonalizedServices.setExpanded(true);
-            }
             UnifiedConsentServiceBridge.setUnifiedConsentGiven(enabled);
             ThreadUtils.postOnUiThread(this::updateSyncStateFromSelectedModelTypes);
             ThreadUtils.postOnUiThread(this::updateDataTypeState);
@@ -737,13 +715,11 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private void updateSyncErrorCard() {
         mCurrentSyncError = getSyncError();
         if (mCurrentSyncError == SyncError.NO_ERROR) {
-            getPreferenceScreen().removePreference(mSyncErrorCard);
-            getPreferenceScreen().removePreference(mSyncErrorCardDivider);
+            mSyncCategory.removePreference(mSyncErrorCard);
         } else {
             String summary = getSyncErrorHint(mCurrentSyncError);
             mSyncErrorCard.setSummary(summary);
-            getPreferenceScreen().addPreference(mSyncErrorCard);
-            getPreferenceScreen().addPreference(mSyncErrorCardDivider);
+            mSyncCategory.addPreference(mSyncErrorCard);
         }
     }
 
@@ -865,20 +841,15 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         boolean useSyncAndAllServices = UnifiedConsentServiceBridge.isUnifiedConsentGiven();
         String signedInAccountName = ChromeSigninController.get().getSignedInAccountName();
         if (signedInAccountName != null) {
-            getPreferenceScreen().removePreference(mSigninPreference);
-            getPreferenceScreen().addPreference(mUseSyncAndAllServices);
+            getPreferenceScreen().addPreference(mSyncCategory);
 
             mUseSyncAndAllServices.setChecked(useSyncAndAllServices);
             mUseSyncAndAllServices.setEnabled(!hasCustomPassphrase());
-            mSyncGroup.setEnabled(true);
 
             mGoogleActivityControls.setOnPreferenceClickListener(
                     toOnClickListener(() -> onGoogleActivityControlsClicked(signedInAccountName)));
         } else {
-            getPreferenceScreen().addPreference(mSigninPreference);
-            getPreferenceScreen().removePreference(mUseSyncAndAllServices);
-            mSyncGroup.setExpanded(false);
-            mSyncGroup.setEnabled(false);
+            getPreferenceScreen().removePreference(mSyncCategory);
         }
 
         if (mContextualSuggestions != null) {
