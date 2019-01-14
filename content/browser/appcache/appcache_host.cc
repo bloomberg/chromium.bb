@@ -139,12 +139,15 @@ bool AppCacheHost::SelectCache(const GURL& document_url,
 
   if (!manifest_url.is_empty() &&
       (manifest_url.GetOrigin() == document_url.GetOrigin())) {
-    // If |first_party_url_| hasn't been initialized it means the renderer is
-    // somehow trying to select a Cache for a main resource that was never
-    // actually fetched. That is only possible if the renderer is misbehaving,
-    // so return false to trigger a mojo::ReportBadMessage.
-    if (!first_party_url_initialized_)
-      return false;
+    // TODO(mek): Technically we should be checking to make sure
+    // first_party_url_ was initialized, however in practice it appears often
+    // this isn't the case (even though that means the renderer is trying to
+    // select an AppCache for a document that wasn't fetched through this host
+    // in the first place, which shouldn't happen). Since the worst that can
+    // happen if it isn't is that AppCache isn't used when third party cookie
+    // blocking is enabled, we want to get rid of AppCache anyway, and this has
+    // been the behavior for a long time anyway, don't bother checking and just
+    // continue whether it was set or not.
 
     AppCachePolicy* policy = service()->appcache_policy();
     if (policy &&
