@@ -2270,7 +2270,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, LoadNetworkResourceForFrontend) {
   DevToolsWindowTesting::CloseDevToolsWindowSync(window_);
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, CreateBrowserContext) {
+// TODO(crbug.com/921608) Disabled for flakiness.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_CreateBrowserContext) {
   embedded_test_server()->ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/devtools/empty.html"));
