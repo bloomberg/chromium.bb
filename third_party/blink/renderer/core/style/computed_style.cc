@@ -445,18 +445,6 @@ const ComputedStyle* ComputedStyle::AddCachedPseudoStyle(
   return result;
 }
 
-void ComputedStyle::RemoveCachedPseudoStyle(PseudoId pid) {
-  if (!cached_pseudo_styles_)
-    return;
-  for (wtf_size_t i = 0; i < cached_pseudo_styles_->size(); ++i) {
-    const ComputedStyle* pseudo_style = cached_pseudo_styles_->at(i).get();
-    if (pseudo_style->StyleType() == pid) {
-      cached_pseudo_styles_->EraseAt(i);
-      return;
-    }
-  }
-}
-
 bool ComputedStyle::InheritedEqual(const ComputedStyle& other) const {
   return IndependentInheritedEqual(other) &&
          NonIndependentInheritedEqual(other);

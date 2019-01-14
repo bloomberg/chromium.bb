@@ -297,7 +297,6 @@ class ComputedStyle : public ComputedStyleBase,
 
   const ComputedStyle* GetCachedPseudoStyle(PseudoId) const;
   const ComputedStyle* AddCachedPseudoStyle(scoped_refptr<ComputedStyle>);
-  void RemoveCachedPseudoStyle(PseudoId);
 
   /**
    * ComputedStyle properties
