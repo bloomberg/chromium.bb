@@ -17,6 +17,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "content/public/common/url_constants.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "google_apis/gaia/ubertoken_fetcher.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -135,10 +136,11 @@ void ArcAuthContext::StartFetchers() {
     return;
   }
 
-  ubertoken_fetcher_.reset(new UbertokenFetcher(
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_), this,
-      gaia::GaiaSource::kChromeOS, profile_->GetURLLoaderFactory()));
-  ubertoken_fetcher_->StartFetchingToken(account_id_);
+  ubertoken_fetcher_ = std::make_unique<UbertokenFetcher>(
+      account_id_, ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
+      base::BindOnce(&ArcAuthContext::OnUbertokenFetchComplete,
+                     base::Unretained(this)),
+      gaia::GaiaSource::kChromeOS, profile_->GetURLLoaderFactory());
 }
 
 void ArcAuthContext::ResetFetchers() {
@@ -165,16 +167,18 @@ void ArcAuthContext::OnFetcherError(const GoogleServiceAuthError& error) {
   std::move(callback_).Run(false);
 }
 
-void ArcAuthContext::OnUbertokenSuccess(const std::string& token) {
+void ArcAuthContext::OnUbertokenFetchComplete(GoogleServiceAuthError error,
+                                              const std::string& token) {
+  if (error != GoogleServiceAuthError::AuthErrorNone()) {
+    LOG(WARNING) << "Failed to get ubertoken " << error.ToString() << ".";
+    OnFetcherError(error);
+    return;
+  }
+
   ResetFetchers();
   merger_fetcher_.reset(new GaiaAuthFetcher(this, gaia::GaiaSource::kChromeOS,
                                             profile_->GetURLLoaderFactory()));
   merger_fetcher_->StartMergeSession(token, std::string());
-}
-
-void ArcAuthContext::OnUbertokenFailure(const GoogleServiceAuthError& error) {
-  LOG(WARNING) << "Failed to get ubertoken " << error.ToString() << ".";
-  OnFetcherError(error);
 }
 
 void ArcAuthContext::OnMergeSessionSuccess(const std::string& data) {

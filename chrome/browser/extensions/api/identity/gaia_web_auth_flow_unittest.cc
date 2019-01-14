@@ -34,10 +34,11 @@ class TestGaiaWebAuthFlow : public GaiaWebAuthFlow {
         ubertoken_error_(ubertoken_error_state) {}
 
   void Start() override {
-    if (ubertoken_error_.state() == GoogleServiceAuthError::NONE)
-      OnUbertokenSuccess("fake_ubertoken");
-    else
-      OnUbertokenFailure(ubertoken_error_);
+    OnUbertokenFetchComplete(
+        ubertoken_error_,
+        ubertoken_error_.state() == GoogleServiceAuthError::NONE
+            ? "fake_ubertoken"
+            : std::string());
   }
 
  private:

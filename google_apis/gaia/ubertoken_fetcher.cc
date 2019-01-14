@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
-#include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -24,60 +23,61 @@ std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
   return std::make_unique<GaiaAuthFetcher>(consumer, source,
                                            url_loader_factory);
 }
-}
+}  // namespace
 
 const int UbertokenFetcher::kMaxRetries = 3;
 
 UbertokenFetcher::UbertokenFetcher(
+    const std::string& account_id,
     OAuth2TokenService* token_service,
-    UbertokenConsumer* consumer,
+    CompletionCallback ubertoken_callback,
     gaia::GaiaSource source,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : UbertokenFetcher(token_service,
-                       consumer,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    bool is_bound_to_channel_id)
+    : UbertokenFetcher(account_id,
+                       /*access_token=*/"",
+                       token_service,
+                       std::move(ubertoken_callback),
                        url_loader_factory,
-                       base::BindRepeating(CreateGaiaAuthFetcher, source)) {}
+                       base::BindRepeating(CreateGaiaAuthFetcher, source),
+                       is_bound_to_channel_id) {}
 
 UbertokenFetcher::UbertokenFetcher(
+    const std::string& account_id,
+    const std::string& access_token,
     OAuth2TokenService* token_service,
-    UbertokenConsumer* consumer,
+    CompletionCallback ubertoken_callback,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    GaiaAuthFetcherFactory factory)
+    GaiaAuthFetcherFactory factory,
+    bool is_bound_to_channel_id)
     : OAuth2TokenService::Consumer("uber_token_fetcher"),
       token_service_(token_service),
-      consumer_(consumer),
+      ubertoken_callback_(std::move(ubertoken_callback)),
       url_loader_factory_(url_loader_factory),
-      is_bound_to_channel_id_(true),
+      is_bound_to_channel_id_(is_bound_to_channel_id),
       gaia_auth_fetcher_factory_(factory),
+      account_id_(account_id),
+      access_token_(access_token),
       retry_number_(0),
       second_access_token_request_(false) {
+  DCHECK(!account_id.empty());
   DCHECK(token_service);
-  DCHECK(consumer);
+  DCHECK(!ubertoken_callback_.is_null());
   DCHECK(url_loader_factory);
-}
 
-UbertokenFetcher::~UbertokenFetcher() {
-}
+  if (access_token_.empty()) {
+    RequestAccessToken();
+    return;
+  }
 
-void UbertokenFetcher::StartFetchingToken(const std::string& account_id) {
-  DCHECK(!account_id.empty());
-  account_id_ = account_id;
-  second_access_token_request_ = false;
-  RequestAccessToken();
-}
-
-void UbertokenFetcher::StartFetchingTokenWithAccessToken(
-    const std::string& account_id, const std::string& access_token) {
-  DCHECK(!account_id.empty());
-  DCHECK(!access_token.empty());
-
-  account_id_ = account_id;
-  access_token_ = access_token;
   ExchangeTokens();
 }
 
+UbertokenFetcher::~UbertokenFetcher() {}
+
 void UbertokenFetcher::OnUberAuthTokenSuccess(const std::string& token) {
-  consumer_->OnUbertokenSuccess(token);
+  std::move(ubertoken_callback_)
+      .Run(GoogleServiceAuthError::AuthErrorNone(), token);
 }
 
 void UbertokenFetcher::OnUberAuthTokenFailure(
@@ -91,13 +91,11 @@ void UbertokenFetcher::OnUberAuthTokenFailure(
       // Calculate an exponential backoff with randomness of less than 1 sec.
       double backoff = base::RandDouble() + (1 << retry_number_);
       ++retry_number_;
-      UMA_HISTOGRAM_ENUMERATION("Signin.UberTokenRetry",
-          error.state(), GoogleServiceAuthError::NUM_STATES);
+      UMA_HISTOGRAM_ENUMERATION("Signin.UberTokenRetry", error.state(),
+                                GoogleServiceAuthError::NUM_STATES);
       retry_timer_.Stop();
-      retry_timer_.Start(FROM_HERE,
-                         base::TimeDelta::FromSecondsD(backoff),
-                         this,
-                         &UbertokenFetcher::ExchangeTokens);
+      retry_timer_.Start(FROM_HERE, base::TimeDelta::FromSecondsD(backoff),
+                         this, &UbertokenFetcher::ExchangeTokens);
       return;
     }
   } else {
@@ -114,9 +112,9 @@ void UbertokenFetcher::OnUberAuthTokenFailure(
     }
   }
 
-  UMA_HISTOGRAM_ENUMERATION("Signin.UberTokenFailure",
-      error.state(), GoogleServiceAuthError::NUM_STATES);
-  consumer_->OnUbertokenFailure(error);
+  UMA_HISTOGRAM_ENUMERATION("Signin.UberTokenFailure", error.state(),
+                            GoogleServiceAuthError::NUM_STATES);
+  std::move(ubertoken_callback_).Run(error, /*access_token=*/std::string());
 }
 
 void UbertokenFetcher::OnGetTokenSuccess(
@@ -132,7 +130,7 @@ void UbertokenFetcher::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
   access_token_request_.reset();
-  consumer_->OnUbertokenFailure(error);
+  std::move(ubertoken_callback_).Run(error, /*access_token=*/std::string());
 }
 
 void UbertokenFetcher::RequestAccessToken() {
