@@ -48,7 +48,8 @@ std::unique_ptr<identity::AccountsMutator> BuildAccountsMutator(
     Profile* profile) {
 #if !defined(OS_ANDROID)
   return std::make_unique<identity::AccountsMutatorImpl>(
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+      AccountTrackerServiceFactory::GetForProfile(profile));
 #else
   return nullptr;
 #endif
