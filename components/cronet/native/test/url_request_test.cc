@@ -993,7 +993,13 @@ TEST_P(UrlRequestTest, PerfTest) {
   cronet::TestServer::ReleaseBigDataURL();
 }
 
-TEST_P(UrlRequestTest, GetStatus) {
+// https://crbug.com/921713 Flaky crash on Fuchsia.
+#if defined(OS_FUCHSIA)
+#define MAYBE_GetStatus DISABLED_GetStatus
+#else
+#define MAYBE_GetStatus GetStatus
+#endif
+TEST_P(UrlRequestTest, MAYBE_GetStatus) {
   Cronet_EnginePtr engine = cronet::test::CreateTestEngine(0);
   Cronet_UrlRequestPtr request = Cronet_UrlRequest_Create();
   Cronet_UrlRequestParamsPtr request_params = Cronet_UrlRequestParams_Create();
