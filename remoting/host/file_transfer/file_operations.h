@@ -10,10 +10,12 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/files/file.h"
-#include "base/files/file_path.h"
 #include "base/optional.h"
 #include "remoting/proto/file_transfer.pb.h"
+
+namespace base {
+class FilePath;
+}
 
 namespace remoting {
 

@@ -8,14 +8,18 @@ source_set("file_transfer") {
   public = [
     "file_operations.h",
     "file_transfer_message_handler.h",
+    "ipc_file_operations.h",
     "local_file_operations.h",
+    "session_file_operations_handler.h",
   ]
 
   sources = [
     "buffered_file_writer.cc",
     "buffered_file_writer.h",
     "file_transfer_message_handler.cc",
+    "ipc_file_operations.cc",
     "local_file_operations.cc",
+    "session_file_operations_handler.cc",
   ]
 
   deps = [

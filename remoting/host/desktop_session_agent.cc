@@ -195,6 +195,18 @@ bool DesktopSessionAgent::OnMessageReceived(const IPC::Message& message) {
                           OnExecuteActionRequestEvent)
       IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_SetScreenResolution,
                           SetScreenResolution)
+      IPC_MESSAGE_FORWARD(ChromotingNetworkDesktopMsg_WriteFile,
+                          &*session_file_operations_handler_,
+                          SessionFileOperationsHandler::WriteFile)
+      IPC_MESSAGE_FORWARD(ChromotingNetworkDesktopMsg_WriteFileChunk,
+                          &*session_file_operations_handler_,
+                          SessionFileOperationsHandler::WriteChunk)
+      IPC_MESSAGE_FORWARD(ChromotingNetworkDesktopMsg_CloseFile,
+                          &*session_file_operations_handler_,
+                          SessionFileOperationsHandler::Close)
+      IPC_MESSAGE_FORWARD(ChromotingNetworkDesktopMsg_CancelFile,
+                          &*session_file_operations_handler_,
+                          SessionFileOperationsHandler::Cancel)
       IPC_MESSAGE_HANDLER(ChromotingNetworkToAnyMsg_StartProcessStatsReport,
                           StartProcessStatsReport)
       IPC_MESSAGE_HANDLER(ChromotingNetworkToAnyMsg_StopProcessStatsReport,
@@ -237,6 +249,7 @@ DesktopSessionAgent::~DesktopSessionAgent() {
   DCHECK(!screen_controls_);
   DCHECK(!video_capturer_);
   DCHECK(!stats_sender_);
+  DCHECK(!session_file_operations_handler_);
 }
 
 const std::string& DesktopSessionAgent::client_jid() const {
@@ -282,6 +295,7 @@ void DesktopSessionAgent::OnStartSessionAgent(
   DCHECK(!input_injector_);
   DCHECK(!screen_controls_);
   DCHECK(!video_capturer_);
+  DCHECK(!session_file_operations_handler_);
 
   started_ = true;
   client_jid_ = authenticated_jid;
@@ -329,6 +343,10 @@ void DesktopSessionAgent::OnStartSessionAgent(
           base::Bind(&DesktopSessionAgent::SendToNetwork, this))));
   mouse_cursor_monitor_ = desktop_environment_->CreateMouseCursorMonitor();
   mouse_cursor_monitor_->Init(this, webrtc::MouseCursorMonitor::SHAPE_ONLY);
+
+  // Set up the message handler for file transfers.
+  session_file_operations_handler_.emplace(
+      this, desktop_environment_->CreateFileOperations());
 }
 
 void DesktopSessionAgent::OnCaptureResult(
@@ -422,6 +440,15 @@ void DesktopSessionAgent::ProcessAudioPacket(
       serialized_packet));
 }
 
+void DesktopSessionAgent::OnResult(
+    uint64_t file_id,
+    base::Optional<protocol::FileTransfer_Error> error) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  SendToNetwork(
+      std::make_unique<ChromotingDesktopNetworkMsg_FileResult>(file_id, error));
+}
+
 mojo::ScopedMessagePipeHandle DesktopSessionAgent::Start(
     const base::WeakPtr<Delegate>& delegate) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
@@ -455,6 +482,8 @@ void DesktopSessionAgent::Stop() {
     client_jid_.clear();
 
     remote_input_filter_.reset();
+
+    session_file_operations_handler_.reset();
 
     // Ensure that any pressed keys or buttons are released.
     input_tracker_->ReleaseAll();

@@ -33,12 +33,15 @@ IpcDesktopEnvironment::IpcDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control,
     base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
-    const DesktopEnvironmentOptions& options) {
+    const DesktopEnvironmentOptions& options)
+    : desktop_session_proxy_(
+          base::MakeRefCounted<DesktopSessionProxy>(audio_task_runner,
+                                                    caller_task_runner,
+                                                    io_task_runner,
+                                                    client_session_control,
+                                                    desktop_session_connector,
+                                                    options)) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
-
-  desktop_session_proxy_ = new DesktopSessionProxy(
-      audio_task_runner, caller_task_runner, io_task_runner,
-      client_session_control, desktop_session_connector, options);
 }
 
 IpcDesktopEnvironment::~IpcDesktopEnvironment() = default;
@@ -70,8 +73,7 @@ IpcDesktopEnvironment::CreateVideoCapturer() {
 }
 
 std::unique_ptr<FileOperations> IpcDesktopEnvironment::CreateFileOperations() {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return desktop_session_proxy_->CreateFileOperations();
 }
 
 std::string IpcDesktopEnvironment::GetCapabilities() const {

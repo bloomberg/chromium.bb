@@ -5,10 +5,12 @@
 #include "remoting/host/chromoting_param_traits.h"
 
 #include <stdint.h>
+#include <sstream>
 
 #include "base/strings/stringprintf.h"
 #include "ipc/ipc_message_protobuf_utils.h"
 #include "ipc/ipc_message_utils.h"
+#include "remoting/protocol/file_transfer_helpers.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace IPC {
@@ -407,6 +409,40 @@ void ParamTraits<remoting::protocol::VideoLayout>::Log(
                                  track.height()));
   }
   l->append("])");
+}
+
+// remoting::protocol::FileTransfer_Error
+
+// static
+void IPC::ParamTraits<remoting::protocol::FileTransfer_Error>::Write(
+    base::Pickle* m,
+    const param_type& p) {
+  std::string serialized_file_transfer_error;
+  bool result = p.SerializeToString(&serialized_file_transfer_error);
+  DCHECK(result);
+  m->WriteString(serialized_file_transfer_error);
+}
+
+// static
+bool ParamTraits<remoting::protocol::FileTransfer_Error>::Read(
+    const base::Pickle* m,
+    base::PickleIterator* iter,
+    param_type* p) {
+  std::string serialized_file_transfer_error;
+  if (!iter->ReadString(&serialized_file_transfer_error))
+    return false;
+
+  return p->ParseFromString(serialized_file_transfer_error);
+}
+
+// static
+void ParamTraits<remoting::protocol::FileTransfer_Error>::Log(
+    const param_type& p,
+    std::string* l) {
+  std::ostringstream formatted;
+  formatted << p;
+  l->append(
+      base::StringPrintf("FileTransfer Error: %s", formatted.str().c_str()));
 }
 
 }  // namespace IPC
