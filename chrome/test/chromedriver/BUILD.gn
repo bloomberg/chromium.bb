@@ -81,6 +81,8 @@ source_set("automation_client_lib") {
     "chrome/adb_impl.h",
     "chrome/automation_extension.cc",
     "chrome/automation_extension.h",
+    "chrome/cast_tracker.cc",
+    "chrome/cast_tracker.h",
     "chrome/chrome.h",
     "chrome/chrome_android_impl.cc",
     "chrome/chrome_android_impl.h",
@@ -384,6 +386,7 @@ test("chromedriver_unittests") {
   sources = [
     "capabilities_unittest.cc",
     "chrome/browser_info_unittest.cc",
+    "chrome/cast_tracker_unittest.cc",
     "chrome/chrome_finder_unittest.cc",
     "chrome/console_logger_unittest.cc",
     "chrome/device_manager_unittest.cc",
