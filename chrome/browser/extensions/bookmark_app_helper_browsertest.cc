@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -105,6 +106,8 @@ class BookmarkAppHelperTest : public DialogBrowserTest,
   void OnExtensionInstalled(content::BrowserContext* browser_context,
                             const Extension* extension,
                             bool is_update) override {
+    if (expected_app_title_.size())
+      EXPECT_EQ(expected_app_title_, extension->name());
     quit_closure_.Run();
   }
 
@@ -134,12 +137,17 @@ class BookmarkAppHelperTest : public DialogBrowserTest,
     Wait();
   }
 
+  void SetExpectedAppTitle(const std::string& expected_title) {
+    expected_app_title_ = expected_title;
+  }
+
  protected:
   std::unique_ptr<TestBookmarkAppHelper> bookmark_app_helper_;
 
  private:
   base::Closure quit_closure_;
   content::WebContents* web_contents_ = nullptr;
+  std::string expected_app_title_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppHelperTest);
 };
@@ -158,7 +166,6 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, InvokeUi_CreateWindowedPWA) {
   ShowAndVerifyUi();
 }
 
-#if !defined(OS_MACOSX)
 // Runs through a complete installation of a PWA and ensures the tab is
 // reparented into an app window.
 IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, CreateWindowedPWAIntoAppWindow) {
@@ -166,6 +173,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, CreateWindowedPWAIntoAppWindow) {
   // the PWA check, but the kDesktopPWAWindowing flag must also be enabled.
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
+  SetExpectedAppTitle("Manifest test app");
 
   ShowUi("CreateWindowedPWA");
 
@@ -175,10 +183,12 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, CreateWindowedPWAIntoAppWindow) {
                                           bookmark_app_helper_->web_app_info_);
   Wait();  // Quits when the extension install completes.
 
+#if !defined(OS_MACOSX)
+  // We do not reparent the tab on OS X.
   Browser* app_browser = chrome::FindBrowserWithWebContents(web_contents());
   EXPECT_TRUE(app_browser->is_app());
   EXPECT_NE(app_browser, browser());
+#endif  // defined(OS_MACOSX)
 }
-#endif
 
 }  // namespace extensions
