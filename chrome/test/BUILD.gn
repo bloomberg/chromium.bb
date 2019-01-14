@@ -949,6 +949,8 @@ test("browser_tests") {
       "../browser/ui/views/chrome_cleaner_dialog_browsertest_win.cc",
       "../browser/ui/views/chrome_cleaner_reboot_dialog_browsertest_win.cc",
       "../browser/ui/views/content_setting_bubble_contents_browsertest.cc",
+      "../browser/ui/views/content_test_utils.cc",
+      "../browser/ui/views/content_test_utils.h",
       "../browser/ui/views/device_chooser_browsertest.cc",
       "../browser/ui/views/hats/hats_browsertest.cc",
       "../browser/ui/views/try_chrome_dialog_win/try_chrome_dialog_browsertest.cc",
@@ -1470,6 +1472,7 @@ test("browser_tests") {
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_model_browsertest_win.cc",
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.cc",
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h",
+        "../browser/ui/views/extensions/extension_dialog_browsertest.cc",
         "../browser/ui/webui/media_router/media_router_dialog_controller_webui_impl_browsertest.cc",
       ]
 
