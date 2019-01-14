@@ -1085,14 +1085,6 @@ bool NavigationControllerImpl::RendererDidNavigate(
     DCHECK(params.page_state == frame_entry->page_state());
   }
 
-  // Use histogram to track memory impact of redirect chain because it's now
-  // not cleared for committed entries.
-  size_t redirect_chain_size = 0;
-  for (size_t i = 0; i < params.redirects.size(); ++i) {
-    redirect_chain_size += params.redirects[i].spec().length();
-  }
-  UMA_HISTOGRAM_COUNTS_1M("Navigation.RedirectChainSize", redirect_chain_size);
-
   // Once it is committed, we no longer need to track several pieces of state on
   // the entry.
   active_entry->ResetForCommit(frame_entry);
