@@ -1143,11 +1143,17 @@ public class MediaNotificationManager {
         if (hideUserData) {
             // Notifications in incognito shouldn't show what is playing to avoid leaking
             // information.
-            builder.setContentTitle(
-                    getContext().getResources().getString(R.string.media_notification_incognito));
             if (isRunningAtLeastN()) {
+                builder.setContentTitle(getContext().getResources().getString(
+                        R.string.media_notification_incognito));
                 builder.setSubText(
                         getContext().getResources().getString(R.string.notification_incognito_tab));
+            } else {
+                // App name is automatically added to the title from Android N,
+                // but needs to be added explicitly for prior versions.
+                builder.setContentTitle(getContext().getString(R.string.app_name))
+                        .setContentText(getContext().getResources().getString(
+                                R.string.media_notification_incognito));
             }
             return;
         }
