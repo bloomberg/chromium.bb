@@ -94,13 +94,15 @@ void PDFiumDocument::ResetFPDFAvailability() {
   fpdf_availability_.reset();
 }
 
-void PDFiumDocument::LoadDocument(const char* password) {
+void PDFiumDocument::LoadDocument(const std::string& password) {
+  const char* password_cstr = password.empty() ? nullptr : password.c_str();
   if (doc_loader_->IsDocumentComplete() &&
       !FPDFAvail_IsLinearized(fpdf_availability_.get())) {
-    doc_handle_.reset(FPDF_LoadCustomDocument(file_access_.get(), password));
+    doc_handle_.reset(
+        FPDF_LoadCustomDocument(file_access_.get(), password_cstr));
   } else {
     doc_handle_.reset(
-        FPDFAvail_GetDocument(fpdf_availability_.get(), password));
+        FPDFAvail_GetDocument(fpdf_availability_.get(), password_cstr));
   }
 }
 

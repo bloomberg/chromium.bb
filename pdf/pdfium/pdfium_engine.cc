@@ -2645,12 +2645,9 @@ bool PDFiumEngine::TryLoadingDoc(const std::string& password,
     return true;
   }
 
-  const char* password_cstr = nullptr;
-  if (!password.empty()) {
-    password_cstr = password.c_str();
+  if (!password.empty())
     password_tries_remaining_--;
-  }
-  document_->LoadDocument(password_cstr);
+  document_->LoadDocument(password);
   if (!doc()) {
     if (FPDF_GetLastError() == FPDF_ERR_PASSWORD)
       *needs_password = true;
