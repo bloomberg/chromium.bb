@@ -947,8 +947,6 @@ class CORE_EXPORT Element : public ContainerNode {
   // don't have layoutObjects. e.g., HTMLOptionElement.
   virtual bool IsFocusableStyle() const;
 
-  virtual bool ChildrenCanHaveStyle() const { return true; }
-
   // classAttributeChanged() exists to share code between
   // parseAttribute (called via setAttribute()) and
   // svgAttributeChanged (called when element.className.baseValue is set)
