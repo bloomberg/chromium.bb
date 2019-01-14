@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Sun, 13 Jan 2019 16:12:08 -0800
+Subject: [PATCH 24/27] Fix integer overflow while running PRAGMA
+ integrity_check.
+
+This backports https://sqlite.org/src/info/395599116d801324
+
+Bug: 913235
+---
+ third_party/sqlite/src/src/btree.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/third_party/sqlite/src/src/btree.c b/third_party/sqlite/src/src/btree.c
+index 1f1c9e0402c8..eb7d8d0cb6bd 100644
+--- a/third_party/sqlite/src/src/btree.c
++++ b/third_party/sqlite/src/src/btree.c
+@@ -9414,7 +9414,7 @@ static void checkList(
+     }
+     pOvflData = (unsigned char *)sqlite3PagerGetData(pOvflPage);
+     if( isFreeList ){
+-      int n = get4byte(&pOvflData[4]);
++      u32 n = (u32)get4byte(&pOvflData[4]);
+ #ifndef SQLITE_OMIT_AUTOVACUUM
+       if( pCheck->pBt->autoVacuum ){
+         checkPtrmap(pCheck, iPage, PTRMAP_FREEPAGE, 0);
+@@ -9425,7 +9425,7 @@ static void checkList(
+            "freelist leaf count too big on page %d", iPage);
+         N--;
+       }else{
+-        for(i=0; i<n; i++){
++        for(i=0; i<(int)n; i++){
+           Pgno iFreePage = get4byte(&pOvflData[8+i*4]);
+ #ifndef SQLITE_OMIT_AUTOVACUUM
+           if( pCheck->pBt->autoVacuum ){
+--
+2.18.0
+

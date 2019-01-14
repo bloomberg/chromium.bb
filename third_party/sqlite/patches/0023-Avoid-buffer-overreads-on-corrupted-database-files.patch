@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Sun, 13 Jan 2019 15:17:27 -0800
+Subject: [PATCH 23/27] Avoid buffer overreads on corrupted database files.
+
+This backports https://sqlite.org/src/info/32754ca6f86da816
+
+Bug: 914022, 914023
+---
+ third_party/sqlite/src/src/pcache1.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/third_party/sqlite/src/src/pcache1.c b/third_party/sqlite/src/src/pcache1.c
+index 1986b22ca61c..4fd6cb7bed39 100644
+--- a/third_party/sqlite/src/src/pcache1.c
++++ b/third_party/sqlite/src/src/pcache1.c
+@@ -477,7 +477,10 @@ static void pcache1FreePage(PgHdr1 *p){
+ ** exists, this function falls back to sqlite3Malloc().
+ */
+ void *sqlite3PageMalloc(int sz){
+-  return pcache1Alloc(sz);
++  /* During rebalance operations on a corrupt database file, it is sometimes
++  ** (rarely) possible to overread the temporary page buffer by a few bytes.
++  ** Enlarge the allocation slightly so that this does not cause problems. */
++  return pcache1Alloc(sz + 32);
+ }
+
+ /*
+--
+2.18.0
+
