@@ -532,9 +532,31 @@ void ClientSession::OnDesktopDisplayChanged(
       dpi_y = track.y_dpi();
   }
 
+  // Calc desktop scaled geometry (in DIPs)
+  // See comment in OnVideoSizeChanged() for details.
+  int scaled_width = (max_x - min_x) * kDefaultDpi / dpi_x;
+  int scaled_height = (max_y - min_y) * kDefaultDpi / dpi_y;
+  webrtc::DesktopSize size_dips(scaled_width, scaled_height);
+  mouse_clamping_filter_.set_input_size(size_dips);
+
   // Generate and send VideoLayout message.
   protocol::VideoLayout layout;
-  protocol::VideoTrackLayout* video_track = layout.add_video_track();
+  protocol::VideoTrackLayout* video_track;
+
+  // Add scaled geometry for entire desktop (in DIPs).
+  // The first layout must be the scaled geometry for backwards compatibility
+  // with the VideoLayout message. The scaled geometry is used for mouse
+  // coordinates sent from the client.
+  video_track = layout.add_video_track();
+  video_track->set_position_x(0);
+  video_track->set_position_y(0);
+  video_track->set_width(scaled_width);
+  video_track->set_height(scaled_height);
+  video_track->set_x_dpi(dpi_x);
+  video_track->set_y_dpi(dpi_y);
+
+  // Add raw geometry for entire desktop (in pixels).
+  video_track = layout.add_video_track();
   video_track->set_position_x(0);
   video_track->set_position_y(0);
   video_track->set_width(max_x - min_x);
