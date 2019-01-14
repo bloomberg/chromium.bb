@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/format_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync/base/time.h"
@@ -343,7 +344,17 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
     return false;
   }
 
-  return response->ParseFromString(params.buffer_out);
+  if (!response->ParseFromString(params.buffer_out)) {
+    DLOG(WARNING) << "Error parsing response from sync server";
+    return false;
+  }
+
+  if (response->error_code() != sync_pb::SyncEnums::SUCCESS) {
+    base::UmaHistogramSparse("Sync.PostedClientToServerMessageError",
+                             response->error_code());
+  }
+
+  return true;
 }
 
 base::TimeDelta SyncerProtoUtil::GetThrottleDelay(
