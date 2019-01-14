@@ -193,7 +193,14 @@ const ShapeOutsideInfo* ShapeOutsideInfoForNode(Node* node,
   return shape_outside_info;
 }
 
-void AppendStyleInfo(Node* node, protocol::DictionaryValue* element_info) {
+String ToHEXA(const Color& color) {
+  return String::Format("#%02X%02X%02X%02X", color.Red(), color.Green(),
+                        color.Blue(), color.Alpha());
+}
+
+void AppendStyleInfo(Node* node,
+                     protocol::DictionaryValue* element_info,
+                     const InspectorHighlightContrastInfo& node_contrast) {
   std::unique_ptr<protocol::DictionaryValue> computed_style =
       protocol::DictionaryValue::create();
   CSSStyleDeclaration* style = CSSComputedStyleDeclaration::Create(node, true);
@@ -220,15 +227,24 @@ void AppendStyleInfo(Node* node, protocol::DictionaryValue* element_info) {
     const CSSValue* value = style->GetPropertyCSSValueInternal(properties[i]);
     if (!value)
       continue;
-    String text = value->CssText();
     if (value->IsColorValue()) {
       Color color = static_cast<const cssvalue::CSSColorValue*>(value)->Value();
-      if (!color.HasAlpha())
-        text = color.Serialized();  // This produces nice HEX.
+      computed_style->setString(properties[i], ToHEXA(color));
+    } else {
+      computed_style->setString(properties[i], value->CssText());
     }
-    computed_style->setString(properties[i], text);
   }
   element_info->setValue("style", std::move(computed_style));
+
+  if (!node_contrast.font_size.IsEmpty()) {
+    std::unique_ptr<protocol::DictionaryValue> contrast =
+        protocol::DictionaryValue::create();
+    contrast->setString("fontSize", node_contrast.font_size);
+    contrast->setString("fontWeight", node_contrast.font_weight);
+    contrast->setString("backgroundColor",
+                        ToHEXA(node_contrast.background_color));
+    element_info->setValue("contrast", std::move(contrast));
+  }
 }
 
 std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
@@ -385,6 +401,7 @@ InspectorHighlightConfig::InspectorHighlightConfig()
 InspectorHighlight::InspectorHighlight(
     Node* node,
     const InspectorHighlightConfig& highlight_config,
+    const InspectorHighlightContrastInfo& node_contrast,
     bool append_element_info)
     : highlight_paths_(protocol::ListValue::create()),
       show_rulers_(highlight_config.show_rulers),
@@ -400,7 +417,7 @@ InspectorHighlight::InspectorHighlight(
   else if (append_element_info && node->IsTextNode())
     element_info_ = BuildTextNodeInfo(ToText(node));
   if (element_info_ && highlight_config.show_styles)
-    AppendStyleInfo(node, element_info_.get());
+    AppendStyleInfo(node, element_info_.get(), node_contrast);
 }
 
 InspectorHighlight::~InspectorHighlight() = default;

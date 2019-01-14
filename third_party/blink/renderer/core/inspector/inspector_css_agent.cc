@@ -2302,17 +2302,40 @@ Response InspectorCSSAgent::getBackgroundColors(
     int node_id,
     Maybe<protocol::Array<String>>* background_colors,
     Maybe<String>* computed_font_size,
-    Maybe<String>* computed_font_weight,
-    Maybe<String>* computed_body_font_size) {
+    Maybe<String>* computed_font_weight) {
   Element* element = nullptr;
   Response response = dom_agent_->AssertElement(node_id, element);
   if (!response.isSuccess())
     return response;
 
+  Vector<Color> bgcolors;
+  String fs;
+  String fw;
+  InspectorCSSAgent::GetBackgroundColors(element, &bgcolors, &fs, &fw);
+
+  if (bgcolors.size()) {
+    *background_colors = protocol::Array<String>::create();
+    for (const auto& color : bgcolors) {
+      background_colors->fromJust()->addItem(
+          cssvalue::CSSColorValue::SerializeAsCSSComponentValue(color));
+    }
+  }
+  if (!fs.IsEmpty())
+    *computed_font_size = fs;
+  if (!fw.IsEmpty())
+    *computed_font_weight = fw;
+  return Response::OK();
+}
+
+// static
+void InspectorCSSAgent::GetBackgroundColors(Element* element,
+                                            Vector<Color>* colors,
+                                            String* computed_font_size,
+                                            String* computed_font_weight) {
   LayoutRect content_bounds;
   LayoutObject* element_layout = element->GetLayoutObject();
   if (!element_layout)
-    return Response::OK();
+    return;
 
   for (const Node* child = element->firstChild(); child;
        child = child->nextSibling()) {
@@ -2330,38 +2353,32 @@ Response InspectorCSSAgent::getBackgroundColors(
   }
 
   if (content_bounds.Size().IsEmpty())
-    return Response::OK();
+    return;
 
-  Vector<Color> colors;
   LocalFrameView* view = element->GetDocument().View();
   if (!view)
-    return Response::Error("No view.");
+    return;
+
   Document& document = element->GetDocument();
   bool is_main_frame = document.IsInMainFrame();
   bool found_opaque_color = false;
   if (is_main_frame) {
     // Start with the "default" page color (typically white).
     Color base_background_color = view->BaseBackgroundColor();
-    colors.push_back(view->BaseBackgroundColor());
+    colors->push_back(view->BaseBackgroundColor());
     found_opaque_color = !base_background_color.HasAlpha();
   }
 
   found_opaque_color = GetColorsFromRect(content_bounds, element->GetDocument(),
-                                         element, colors);
+                                         element, *colors);
 
   if (!found_opaque_color && !is_main_frame) {
     for (HTMLFrameOwnerElement* owner_element = document.LocalOwner();
          !found_opaque_color && owner_element;
          owner_element = owner_element->GetDocument().LocalOwner()) {
       found_opaque_color = GetColorsFromRect(
-          content_bounds, owner_element->GetDocument(), nullptr, colors);
+          content_bounds, owner_element->GetDocument(), nullptr, *colors);
     }
-  }
-
-  *background_colors = protocol::Array<String>::create();
-  for (auto color : colors) {
-    background_colors->fromJust()->addItem(
-        cssvalue::CSSColorValue::SerializeAsCSSComponentValue(color));
   }
 
   CSSComputedStyleDeclaration* computed_style_info =
@@ -2372,29 +2389,6 @@ Response InspectorCSSAgent::getBackgroundColors(
   const CSSValue* font_weight =
       computed_style_info->GetPropertyCSSValue(GetCSSPropertyFontWeight());
   *computed_font_weight = font_weight->CssText();
-
-  HTMLElement* body = element->GetDocument().body();
-  CSSComputedStyleDeclaration* computed_style_body =
-      CSSComputedStyleDeclaration::Create(body, true);
-  const CSSValue* body_font_size =
-      computed_style_body->GetPropertyCSSValue(GetCSSPropertyFontSize());
-  if (body_font_size) {
-    *computed_body_font_size = body_font_size->CssText();
-  } else {
-    // This is an extremely rare and pathological case -
-    // just return the baseline default to avoid a crash.
-    // crbug.com/738777
-    unsigned default_font_size_keyword =
-        FontSizeFunctions::InitialKeywordSize();
-    float default_font_size_pixels = FontSizeFunctions::FontSizeForKeyword(
-        &document, default_font_size_keyword, false);
-    *computed_body_font_size =
-        CSSPrimitiveValue::Create(default_font_size_pixels,
-                                  CSSPrimitiveValue::UnitType::kPixels)
-            ->CssText();
-  }
-
-  return Response::OK();
 }
 
 void InspectorCSSAgent::SetCoverageEnabled(bool enabled) {

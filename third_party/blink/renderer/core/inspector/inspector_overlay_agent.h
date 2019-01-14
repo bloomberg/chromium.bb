@@ -197,6 +197,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   Member<WebLocalFrameImpl> frame_impl_;
   Member<InspectedFrames> inspected_frames_;
   Member<Node> highlight_node_;
+  InspectorHighlightContrastInfo highlight_node_contrast_;
   Member<Node> event_target_node_;
   InspectorHighlightConfig node_highlight_config_;
   std::unique_ptr<FloatQuad> highlight_quad_;
