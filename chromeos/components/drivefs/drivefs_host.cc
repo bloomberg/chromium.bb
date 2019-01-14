@@ -10,9 +10,9 @@
 
 #include "base/strings/strcat.h"
 #include "base/unguessable_token.h"
+#include "chromeos/components/drivefs/drivefs_bootstrap.h"
 #include "chromeos/components/drivefs/drivefs_host_observer.h"
 #include "chromeos/components/drivefs/drivefs_search.h"
-#include "chromeos/components/drivefs/pending_connection_manager.h"
 #include "components/drive/drive_notification_manager.h"
 #include "components/drive/drive_notification_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -32,34 +32,11 @@ constexpr char kDataPath[] = "GCache/v2";
 constexpr char kIdentityConsumerId[] = "drivefs";
 constexpr base::TimeDelta kMountTimeout = base::TimeDelta::FromSeconds(20);
 
-class MojoConnectionDelegateImpl : public DriveFsHost::MojoConnectionDelegate {
- public:
-  MojoConnectionDelegateImpl() = default;
-
-  mojom::DriveFsBootstrapPtrInfo InitializeMojoConnection() override {
-    return mojom::DriveFsBootstrapPtrInfo(
-        invitation_.AttachMessagePipe("drivefs-bootstrap"),
-        mojom::DriveFsBootstrap::Version_);
-  }
-
-  void AcceptMojoConnection(base::ScopedFD handle) override {
-    mojo::OutgoingInvitation::Send(
-        std::move(invitation_), base::kNullProcessHandle,
-        mojo::PlatformChannelEndpoint(mojo::PlatformHandle(std::move(handle))));
-  }
-
- private:
-  // The underlying mojo connection.
-  mojo::OutgoingInvitation invitation_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoConnectionDelegateImpl);
-};
-
 }  // namespace
 
-std::unique_ptr<DriveFsHost::MojoConnectionDelegate>
-DriveFsHost::Delegate::CreateMojoConnectionDelegate() {
-  return std::make_unique<MojoConnectionDelegateImpl>();
+std::unique_ptr<DriveFsBootstrapListener>
+DriveFsHost::Delegate::CreateMojoListener() {
+  return std::make_unique<DriveFsBootstrapListener>();
 }
 
 class DriveFsHost::AccountTokenDelegate {
@@ -164,35 +141,21 @@ class DriveFsHost::MountState
  public:
   explicit MountState(DriveFsHost* host)
       : host_(host),
-        mojo_connection_delegate_(
-            host_->delegate_->CreateMojoConnectionDelegate()),
-        pending_token_(base::UnguessableToken::Create()),
-        binding_(this),
         weak_ptr_factory_(this) {
     host_->disk_mount_manager_->AddObserver(this);
-    source_path_ = base::StrCat({kMountScheme, pending_token_.ToString()});
-    std::string datadir_option =
-        base::StrCat({"datadir=", host_->GetDataPath().value()});
-    auto bootstrap =
-        mojo::MakeProxy(mojo_connection_delegate_->InitializeMojoConnection());
-    mojom::DriveFsDelegatePtr delegate;
-    binding_.Bind(mojo::MakeRequest(&delegate));
-    binding_.set_connection_error_handler(
-        base::BindOnce(&MountState::OnConnectionError, base::Unretained(this)));
 
     auto access_token = host_->account_token_delegate_->TakeCachedAccessToken();
     token_fetch_attempted_ = bool{access_token};
-    bootstrap->Init(
-        {base::in_place, host_->delegate_->GetAccountId().GetUserEmail(),
-         std::move(access_token)},
-        mojo::MakeRequest(&drivefs_), std::move(delegate));
-    drivefs_.set_connection_error_handler(
-        base::BindOnce(&MountState::OnConnectionError, base::Unretained(this)));
 
-    // If unconsumed, the registration is cleaned up when |this| is destructed.
-    PendingConnectionManager::Get().ExpectOpenIpcChannel(
-        pending_token_, base::BindOnce(&MountState::AcceptMojoConnection,
-                                       base::Unretained(this)));
+    mojo_connection_ = CreateMojoConnection(
+        {base::in_place, host_->delegate_->GetAccountId().GetUserEmail(),
+         std::move(access_token)});
+
+    auto pending_token = mojo_connection_->pending_token();
+    CHECK(pending_token);
+    source_path_ = base::StrCat({kMountScheme, pending_token.ToString()});
+    std::string datadir_option =
+        base::StrCat({"datadir=", host_->GetDataPath().value()});
 
     host_->disk_mount_manager_->MountPath(
         source_path_, "",
@@ -213,10 +176,6 @@ class DriveFsHost::MountState
     host_->disk_mount_manager_->RemoveObserver(this);
     host_->delegate_->GetDriveNotificationManager().RemoveObserver(this);
     host_->timer_->Stop();
-    if (pending_token_) {
-      PendingConnectionManager::Get().CancelExpectedOpenIpcChannel(
-          pending_token_);
-    }
     if (!mount_path_.empty()) {
       host_->disk_mount_manager_->UnmountPath(
           mount_path_.value(), chromeos::UNMOUNT_OPTIONS_NONE, {});
@@ -231,15 +190,8 @@ class DriveFsHost::MountState
   bool mounted() const { return drivefs_has_mounted_ && !mount_path_.empty(); }
   const base::FilePath& mount_path() const { return mount_path_; }
 
-  mojom::DriveFs* GetDriveFsInterface() const { return drivefs_.get(); }
-
-  // Accepts the mojo connection over |handle|, delegating to
-  // |mojo_connection_delegate_|.
-  void AcceptMojoConnection(base::ScopedFD handle) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    DCHECK(pending_token_);
-    pending_token_ = {};
-    mojo_connection_delegate_->AcceptMojoConnection(std::move(handle));
+  mojom::DriveFs* GetDriveFsInterface() const {
+    return mojo_connection_->drivefs_interface();
   }
 
   mojom::QueryParameters::QuerySource SearchDriveFs(
@@ -402,30 +354,30 @@ class DriveFsHost::MountState
       options.emplace_back(base::in_place, invalidation.second,
                            invalidation.first);
     }
-    drivefs_->FetchChangeLog(std::move(options));
+    GetDriveFsInterface()->FetchChangeLog(std::move(options));
   }
 
-  void OnNotificationTimerFired() override { drivefs_->FetchAllChangeLogs(); }
+  void OnNotificationTimerFired() override {
+    GetDriveFsInterface()->FetchAllChangeLogs();
+  }
+
+  std::unique_ptr<DriveFsConnection> CreateMojoConnection(
+      mojom::DriveFsConfigurationPtr config) {
+    return std::make_unique<DriveFsConnection>(
+        host_->delegate_->CreateMojoListener(), std::move(config), this,
+        base::BindOnce(&MountState::OnConnectionError, base::Unretained(this)));
+  }
 
   // Owns |this|.
   DriveFsHost* const host_;
 
-  const std::unique_ptr<DriveFsHost::MojoConnectionDelegate>
-      mojo_connection_delegate_;
-
-  // The token passed to DriveFS as part of |source_path_| used to match it to
-  // this DriveFsHost instance.
-  base::UnguessableToken pending_token_;
+  std::unique_ptr<DriveFsConnection> mojo_connection_;
 
   // The path passed to cros-disks to mount.
   std::string source_path_;
 
   // The path where DriveFS is mounted.
   base::FilePath mount_path_;
-
-  // Mojo connections to the DriveFS process.
-  mojom::DriveFsPtr drivefs_;
-  mojo::Binding<mojom::DriveFsDelegate> binding_;
 
   std::unique_ptr<DriveFsSearch> search_;
 

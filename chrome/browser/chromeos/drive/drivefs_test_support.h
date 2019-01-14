@@ -25,9 +25,8 @@ class FakeDriveFsHelper {
   FakeDriveFsHelper(Profile* profile, const base::FilePath& mount_path);
   ~FakeDriveFsHelper();
 
-  base::RepeatingCallback<
-      std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>()>
-  CreateFakeDriveFsConnectionDelegateFactory();
+  base::RepeatingCallback<std::unique_ptr<drivefs::DriveFsBootstrapListener>()>
+  CreateFakeDriveFsListenerFactory();
 
   const base::FilePath& mount_path() { return mount_path_; }
   drivefs::FakeDriveFs& fake_drivefs() { return fake_drivefs_; }

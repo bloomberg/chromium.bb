@@ -1025,7 +1025,7 @@ class DriveTestVolume : public TestVolume {
     EXPECT_FALSE(integration_service_);
     integration_service_ = new drive::DriveIntegrationService(
         profile, nullptr, fake_drive_service_, std::string(),
-        root_path().Append("v1"), nullptr, CreateDriveFsConnectionDelegate());
+        root_path().Append("v1"), nullptr, CreateDriveFsBootstrapListener());
 
     return integration_service_;
   }
@@ -1038,7 +1038,7 @@ class DriveTestVolume : public TestVolume {
       return false;
 
     integration_service_->SetEnabled(true);
-    CreateDriveFsConnectionDelegate();
+    CreateDriveFsBootstrapListener();
     return true;
   }
 
@@ -1046,8 +1046,8 @@ class DriveTestVolume : public TestVolume {
 
  private:
   virtual base::RepeatingCallback<
-      std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>()>
-  CreateDriveFsConnectionDelegate() {
+      std::unique_ptr<drivefs::DriveFsBootstrapListener>()>
+  CreateDriveFsBootstrapListener() {
     return {};
   }
 
@@ -1117,9 +1117,8 @@ class DriveFsTestVolume : public DriveTestVolume {
   }
 
  private:
-  base::RepeatingCallback<
-      std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>()>
-  CreateDriveFsConnectionDelegate() override {
+  base::RepeatingCallback<std::unique_ptr<drivefs::DriveFsBootstrapListener>()>
+  CreateDriveFsBootstrapListener() override {
     CHECK(base::CreateDirectory(GetMyDrivePath()));
     CHECK(base::CreateDirectory(GetTeamDriveGrandRoot()));
     CHECK(base::CreateDirectory(GetComputerGrandRoot()));
@@ -1129,7 +1128,7 @@ class DriveFsTestVolume : public DriveTestVolume {
           std::make_unique<drive::FakeDriveFsHelper>(profile_, mount_path());
     }
 
-    return fake_drivefs_helper_->CreateFakeDriveFsConnectionDelegateFactory();
+    return fake_drivefs_helper_->CreateFakeDriveFsListenerFactory();
   }
 
   // Updates the ModifiedTime of the entry, and its parent directories if

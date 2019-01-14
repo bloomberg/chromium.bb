@@ -192,8 +192,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
 
     integration_service_ = new drive::DriveIntegrationService(
         profile, nullptr, fake_drive_service_, "", test_cache_root_.GetPath(),
-        nullptr,
-        fake_drivefs_helper_->CreateFakeDriveFsConnectionDelegateFactory());
+        nullptr, fake_drivefs_helper_->CreateFakeDriveFsListenerFactory());
     return integration_service_;
   }
 
@@ -357,7 +356,7 @@ class FileSystemApiTestForRequestFileSystem : public PlatformAppBrowserTest {
 
     return new drive::DriveIntegrationService(
         profile, nullptr, nullptr, "", {}, nullptr,
-        fake_drivefs_helper_->CreateFakeDriveFsConnectionDelegateFactory());
+        fake_drivefs_helper_->CreateFakeDriveFsListenerFactory());
   }
 
   base::ScopedTempDir drivefs_root_;
