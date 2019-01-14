@@ -587,6 +587,7 @@
   amd64-generic-unittest-stress
   amd64-llvm-next-toolchain-tryjob
   arkham-compile-only-pre-cq
+  arkham-factory-arkham-7077.113.B-factorybranch-tryjob
   arkham-factory-tryjob
   arkham-full-tryjob
   arkham-llvm-next-toolchain-tryjob
@@ -634,6 +635,7 @@
   asuka-chrome-pfq-tryjob
   asuka-chromium-pfq-tryjob
   asuka-compile-only-pre-cq
+  asuka-factory-glados-7828.B-factorybranch-tryjob
   asuka-factory-tryjob
   asuka-full-tryjob
   asuka-llvm-next-toolchain-tryjob
@@ -672,6 +674,7 @@
   auron_paine-chrome-pfq-tryjob
   auron_paine-chromium-pfq-tryjob
   auron_paine-compile-only-pre-cq
+  auron_paine-factory-auron-6459.B-factorybranch-tryjob
   auron_paine-factory-tryjob
   auron_paine-full-tryjob
   auron_paine-llvm-next-toolchain-tryjob
@@ -691,6 +694,7 @@
   auron_yuna-chrome-pfq-tryjob
   auron_yuna-chromium-pfq-tryjob
   auron_yuna-compile-only-pre-cq
+  auron_yuna-factory-auron-6459.B-factorybranch-tryjob
   auron_yuna-factory-tryjob
   auron_yuna-full-tryjob
   auron_yuna-llvm-next-toolchain-tryjob
@@ -710,6 +714,7 @@
   banjo-chrome-pfq-tryjob
   banjo-chromium-pfq-tryjob
   banjo-compile-only-pre-cq
+  banjo-factory-rambi-6420.B-factorybranch-tryjob
   banjo-factory-tryjob
   banjo-full-tryjob
   banjo-llvm-next-toolchain-tryjob
@@ -729,6 +734,7 @@
   banon-chrome-pfq-tryjob
   banon-chromium-pfq-tryjob
   banon-compile-only-pre-cq
+  banon-factory-strago-7458.B-factorybranch-tryjob
   banon-factory-tryjob
   banon-full-tryjob
   banon-llvm-next-toolchain-tryjob
@@ -850,6 +856,7 @@
   bob-chrome-pfq-tryjob
   bob-chromium-pfq-tryjob
   bob-compile-only-pre-cq
+  bob-factory-gru-9017.B-factorybranch-tryjob
   bob-factory-tryjob
   bob-full-tryjob
   bob-llvm-next-toolchain-tryjob
@@ -871,6 +878,8 @@
   buddy-chrome-pfq-tryjob
   buddy-chromium-pfq-tryjob
   buddy-compile-only-pre-cq
+  buddy-factory-auron-6459.B-factorybranch-tryjob
+  buddy-factory-auron-6772.B-factorybranch-tryjob
   buddy-factory-tryjob
   buddy-full-tryjob
   buddy-llvm-next-toolchain-tryjob
@@ -890,6 +899,7 @@
   candy-chrome-pfq-tryjob
   candy-chromium-pfq-tryjob
   candy-compile-only-pre-cq
+  candy-factory-rambi-6420.B-factorybranch-tryjob
   candy-factory-tryjob
   candy-full-tryjob
   candy-llvm-next-toolchain-tryjob
@@ -960,6 +970,7 @@
   caroline-chrome-pfq-tryjob
   caroline-chromium-pfq-tryjob
   caroline-compile-only-pre-cq
+  caroline-factory-glados-7828.B-factorybranch-tryjob
   caroline-factory-tryjob
   caroline-full-tryjob
   caroline-llvm-next-toolchain-tryjob
@@ -1002,6 +1013,7 @@
   cave-chrome-pfq-tryjob
   cave-chromium-pfq-tryjob
   cave-compile-only-pre-cq
+  cave-factory-glados-7828.B-factorybranch-tryjob
   cave-factory-tryjob
   cave-full-tryjob
   cave-llvm-next-toolchain-tryjob
@@ -1022,6 +1034,7 @@
   celes-chrome-pfq-tryjob
   celes-chromium-pfq-tryjob
   celes-compile-only-pre-cq
+  celes-factory-strago-7458.B-factorybranch-tryjob
   celes-factory-tryjob
   celes-full-tryjob
   celes-llvm-next-toolchain-tryjob
@@ -1041,6 +1054,8 @@
   chell-chrome-pfq-tryjob
   chell-chromium-pfq-tryjob
   chell-compile-only-pre-cq
+  chell-factory-glados-7657.B-factorybranch-tryjob
+  chell-factory-glados-7828.B-factorybranch-tryjob
   chell-factory-tryjob
   chell-full-tryjob
   chell-incremental-tryjob
@@ -1098,6 +1113,7 @@
   clapper-chrome-pfq-tryjob
   clapper-chromium-pfq-tryjob
   clapper-compile-only-pre-cq
+  clapper-factory-rambi-5517.B-factorybranch-tryjob
   clapper-factory-tryjob
   clapper-full-tryjob
   clapper-llvm-next-toolchain-tryjob
@@ -1128,6 +1144,7 @@
   coral-chrome-pfq-tryjob
   coral-chromium-pfq-tryjob
   coral-compile-only-pre-cq
+  coral-factory-coral-10122.B-factorybranch-tryjob
   coral-factory-tryjob
   coral-full-tryjob
   coral-llvm-next-toolchain-tryjob
@@ -1147,6 +1164,7 @@
   cyan-chrome-pfq-tryjob
   cyan-chromium-pfq-tryjob
   cyan-compile-only-pre-cq
+  cyan-factory-strago-7458.B-factorybranch-tryjob
   cyan-factory-tryjob
   cyan-full-tryjob
   cyan-llvm-next-toolchain-tryjob
@@ -1245,6 +1263,7 @@
   edgar-chrome-pfq-tryjob
   edgar-chromium-pfq-tryjob
   edgar-compile-only-pre-cq
+  edgar-factory-strago-7458.B-factorybranch-tryjob
   edgar-factory-tryjob
   edgar-full-tryjob
   edgar-llvm-next-toolchain-tryjob
@@ -1264,6 +1283,7 @@
   elm-chrome-pfq-tryjob
   elm-chromium-pfq-tryjob
   elm-compile-only-pre-cq
+  elm-factory-oak-8182.B-factorybranch-tryjob
   elm-factory-tryjob
   elm-full-tryjob
   elm-llvm-next-toolchain-tryjob
@@ -1284,6 +1304,8 @@
   enguarde-chrome-pfq-tryjob
   enguarde-chromium-pfq-tryjob
   enguarde-compile-only-pre-cq
+  enguarde-factory-rambi-5517.B-factorybranch-tryjob
+  enguarde-factory-rambi-6420.B-factorybranch-tryjob
   enguarde-factory-tryjob
   enguarde-full-tryjob
   enguarde-llvm-next-toolchain-tryjob
@@ -1358,6 +1380,7 @@
   eve-chrome-pfq-tryjob
   eve-chromium-pfq-tryjob
   eve-compile-only-pre-cq
+  eve-factory-eve-9667.B-factorybranch-tryjob
   eve-factory-tryjob
   eve-full-tryjob
   eve-kvm-chromium-pfq-tryjob
@@ -1411,6 +1434,7 @@
   expresso-chrome-pfq-tryjob
   expresso-chromium-pfq-tryjob
   expresso-compile-only-pre-cq
+  expresso-factory-rambi-5517.B-factorybranch-tryjob
   expresso-factory-tryjob
   expresso-full-tryjob
   expresso-llvm-next-toolchain-tryjob
@@ -1427,36 +1451,126 @@
   expresso-tot-chrome-pfq-informational-tryjob
   expresso-tot-chromium-pfq-informational-tryjob
   expresso-unittest-stress
-  factory-arkham-7077.113.B-factorybranch-tryjob
-  factory-auron-6459.B-factorybranch-tryjob
-  factory-auron-6772.B-factorybranch-tryjob
-  factory-beltino-5140.14.B-factorybranch-tryjob
-  factory-coral-10122.B-factorybranch-tryjob
-  factory-eve-9667.B-factorybranch-tryjob
-  factory-fizz-10167.B-factorybranch-tryjob
-  factory-gale-8743.19.B-factorybranch-tryjob
-  factory-glados-7657.B-factorybranch-tryjob
-  factory-glados-7828.B-factorybranch-tryjob
-  factory-gru-8652.B-factorybranch-tryjob
-  factory-gru-9017.B-factorybranch-tryjob
-  factory-grunt-11164.B-factorybranch-tryjob
-  factory-nami-10715.B-factorybranch-tryjob
-  factory-nocturne-11066.B-factorybranch-tryjob
-  factory-nyan-5772.B-factorybranch-tryjob
-  factory-oak-8182.B-factorybranch-tryjob
-  factory-poppy-10504.B-factorybranch-tryjob
-  factory-rambi-5517.B-factorybranch-tryjob
-  factory-rambi-6420.B-factorybranch-tryjob
-  factory-rammus-11289.B-factorybranch-tryjob
-  factory-reef-8811.B-factorybranch-tryjob
-  factory-samus-6658.B-factorybranch-tryjob
-  factory-scarlet-10211.B-factorybranch-tryjob
-  factory-soraka-10323.39.B-factorybranch-tryjob
-  factory-strago-7458.B-factorybranch-tryjob
-  factory-veyron-6591.B-factorybranch-tryjob
-  factory-veyron-7505.B-factorybranch-tryjob
-  factory-whirlwind-6509.B-factorybranch-tryjob
-  factory-whirlwind-6812.41.B-factorybranch-tryjob
+  factory-arkham-7077.113.B-buildspec-tryjob
+    arkham-factory-arkham-7077.113.B-factorybranch
+  factory-auron-6459.B-buildspec-tryjob
+    auron_paine-factory-auron-6459.B-factorybranch
+    auron_yuna-factory-auron-6459.B-factorybranch
+    buddy-factory-auron-6459.B-factorybranch
+    gandof-factory-auron-6459.B-factorybranch
+    jecht-factory-auron-6459.B-factorybranch
+    lulu-factory-auron-6459.B-factorybranch
+  factory-auron-6772.B-buildspec-tryjob
+    buddy-factory-auron-6772.B-factorybranch
+    guado-factory-auron-6772.B-factorybranch
+    jecht-factory-auron-6772.B-factorybranch
+    rikku-factory-auron-6772.B-factorybranch
+    tidus-factory-auron-6772.B-factorybranch
+  factory-beltino-5140.14.B-buildspec-tryjob
+    mccloud-factory-beltino-5140.14.B-factorybranch
+    tricky-factory-beltino-5140.14.B-factorybranch
+  factory-coral-10122.B-buildspec-tryjob
+    coral-factory-coral-10122.B-factorybranch
+  factory-eve-9667.B-buildspec-tryjob
+    eve-factory-eve-9667.B-factorybranch
+  factory-fizz-10167.B-buildspec-tryjob
+    fizz-accelerator-factory-fizz-10167.B-factorybranch
+    fizz-factory-fizz-10167.B-factorybranch
+  factory-gale-8743.19.B-buildspec-tryjob
+    gale-factory-gale-8743.19.B-factorybranch
+  factory-glados-7657.B-buildspec-tryjob
+    chell-factory-glados-7657.B-factorybranch
+    glados-factory-glados-7657.B-factorybranch
+  factory-glados-7828.B-buildspec-tryjob
+    asuka-factory-glados-7828.B-factorybranch
+    caroline-factory-glados-7828.B-factorybranch
+    cave-factory-glados-7828.B-factorybranch
+    chell-factory-glados-7828.B-factorybranch
+    glados-factory-glados-7828.B-factorybranch
+    lars-factory-glados-7828.B-factorybranch
+    sentry-factory-glados-7828.B-factorybranch
+  factory-gru-8652.B-buildspec-tryjob
+    kevin-factory-gru-8652.B-factorybranch
+  factory-gru-9017.B-buildspec-tryjob
+    bob-factory-gru-9017.B-factorybranch
+    gru-factory-gru-9017.B-factorybranch
+  factory-grunt-11164.B-buildspec-tryjob
+    grunt-factory-grunt-11164.B-factorybranch
+  factory-nami-10715.B-buildspec-tryjob
+    kalista-factory-nami-10715.B-factorybranch
+    nami-factory-nami-10715.B-factorybranch
+  factory-nocturne-11066.B-buildspec-tryjob
+    nocturne-factory-nocturne-11066.B-factorybranch
+  factory-nyan-5772.B-buildspec-tryjob
+    nyan_big-factory-nyan-5772.B-factorybranch
+    nyan_blaze-factory-nyan-5772.B-factorybranch
+    nyan_kitty-factory-nyan-5772.B-factorybranch
+  factory-oak-8182.B-buildspec-tryjob
+    elm-factory-oak-8182.B-factorybranch
+    hana-factory-oak-8182.B-factorybranch
+  factory-poppy-10504.B-buildspec-tryjob
+    nautilus-factory-poppy-10504.B-factorybranch
+  factory-rambi-5517.B-buildspec-tryjob
+    clapper-factory-rambi-5517.B-factorybranch
+    enguarde-factory-rambi-5517.B-factorybranch
+    expresso-factory-rambi-5517.B-factorybranch
+    glimmer-factory-rambi-5517.B-factorybranch
+    kip-factory-rambi-5517.B-factorybranch
+    quawks-factory-rambi-5517.B-factorybranch
+    squawks-factory-rambi-5517.B-factorybranch
+    swanky-factory-rambi-5517.B-factorybranch
+    winky-factory-rambi-5517.B-factorybranch
+  factory-rambi-6420.B-buildspec-tryjob
+    banjo-factory-rambi-6420.B-factorybranch
+    candy-factory-rambi-6420.B-factorybranch
+    enguarde-factory-rambi-6420.B-factorybranch
+    gnawty-factory-rambi-6420.B-factorybranch
+    heli-factory-rambi-6420.B-factorybranch
+    ninja-factory-rambi-6420.B-factorybranch
+    orco-factory-rambi-6420.B-factorybranch
+    sumo-factory-rambi-6420.B-factorybranch
+  factory-rammus-11289.B-buildspec-tryjob
+    rammus-factory-rammus-11289.B-factorybranch
+  factory-reef-8811.B-buildspec-tryjob
+    pyro-factory-reef-8811.B-factorybranch
+    reef-factory-reef-8811.B-factorybranch
+    sand-factory-reef-8811.B-factorybranch
+    snappy-factory-reef-8811.B-factorybranch
+  factory-samus-6658.B-buildspec-tryjob
+    samus-factory-samus-6658.B-factorybranch
+  factory-scarlet-10211.B-buildspec-tryjob
+    scarlet-factory-scarlet-10211.B-factorybranch
+  factory-soraka-10323.39.B-buildspec-tryjob
+    soraka-factory-soraka-10323.39.B-factorybranch
+  factory-strago-7458.B-buildspec-tryjob
+    banon-factory-strago-7458.B-factorybranch
+    celes-factory-strago-7458.B-factorybranch
+    cyan-factory-strago-7458.B-factorybranch
+    edgar-factory-strago-7458.B-factorybranch
+    kefka-factory-strago-7458.B-factorybranch
+    kip-factory-strago-7458.B-factorybranch
+    reks-factory-strago-7458.B-factorybranch
+    relm-factory-strago-7458.B-factorybranch
+    setzer-factory-strago-7458.B-factorybranch
+    terra-factory-strago-7458.B-factorybranch
+    ultima-factory-strago-7458.B-factorybranch
+    wizpig-factory-strago-7458.B-factorybranch
+  factory-veyron-6591.B-buildspec-tryjob
+    veyron_jaq-factory-veyron-6591.B-factorybranch
+    veyron_jerry-factory-veyron-6591.B-factorybranch
+    veyron_mickey-factory-veyron-6591.B-factorybranch
+    veyron_mighty-factory-veyron-6591.B-factorybranch
+    veyron_minnie-factory-veyron-6591.B-factorybranch
+    veyron_speedy-factory-veyron-6591.B-factorybranch
+  factory-veyron-7505.B-buildspec-tryjob
+    veyron_fievel-factory-veyron-7505.B-factorybranch
+    veyron_mickey-factory-veyron-7505.B-factorybranch
+    veyron_rialto-factory-veyron-7505.B-factorybranch
+    veyron_tiger-factory-veyron-7505.B-factorybranch
+  factory-whirlwind-6509.B-buildspec-tryjob
+    whirlwind-factory-whirlwind-6509.B-factorybranch
+  factory-whirlwind-6812.41.B-buildspec-tryjob
+    whirlwind-factory-whirlwind-6812.41.B-factorybranch
   fail-build
   falco-chrome-pfq-tryjob
   falco-chromium-pfq-tryjob
@@ -1570,6 +1684,7 @@
   firmware-zako-5219.17.B-firmwarebranch-tryjob
   firmware-zako-5219.B-firmwarebranch-tryjob
   fizz-accelerator-compile-only-pre-cq
+  fizz-accelerator-factory-fizz-10167.B-factorybranch-tryjob
   fizz-accelerator-factory-tryjob
   fizz-accelerator-full-tryjob
   fizz-accelerator-llvm-next-toolchain-tryjob
@@ -1586,6 +1701,7 @@
   fizz-chrome-pfq-tryjob
   fizz-chromium-pfq-tryjob
   fizz-compile-only-pre-cq
+  fizz-factory-fizz-10167.B-factorybranch-tryjob
   fizz-factory-tryjob
   fizz-full-tryjob
   fizz-llvm-next-toolchain-tryjob
@@ -1639,6 +1755,7 @@
   flapjack-tot-chromium-pfq-informational-tryjob
   flapjack-unittest-stress
   gale-compile-only-pre-cq
+  gale-factory-gale-8743.19.B-factorybranch-tryjob
   gale-factory-tryjob
   gale-full-tryjob
   gale-llvm-next-toolchain-tryjob
@@ -1654,6 +1771,7 @@
   gandof-chrome-pfq-tryjob
   gandof-chromium-pfq-tryjob
   gandof-compile-only-pre-cq
+  gandof-factory-auron-6459.B-factorybranch-tryjob
   gandof-factory-tryjob
   gandof-full-tryjob
   gandof-llvm-next-toolchain-tryjob
@@ -1673,6 +1791,8 @@
   glados-chrome-pfq-tryjob
   glados-chromium-pfq-tryjob
   glados-compile-only-pre-cq
+  glados-factory-glados-7657.B-factorybranch-tryjob
+  glados-factory-glados-7828.B-factorybranch-tryjob
   glados-factory-tryjob
   glados-full-tryjob
   glados-llvm-next-toolchain-tryjob
@@ -1691,6 +1811,7 @@
   glimmer-chrome-pfq-tryjob
   glimmer-chromium-pfq-tryjob
   glimmer-compile-only-pre-cq
+  glimmer-factory-rambi-5517.B-factorybranch-tryjob
   glimmer-factory-tryjob
   glimmer-full-tryjob
   glimmer-llvm-next-toolchain-tryjob
@@ -1710,6 +1831,7 @@
   gnawty-chrome-pfq-tryjob
   gnawty-chromium-pfq-tryjob
   gnawty-compile-only-pre-cq
+  gnawty-factory-rambi-6420.B-factorybranch-tryjob
   gnawty-factory-tryjob
   gnawty-full-tryjob
   gnawty-llvm-next-toolchain-tryjob
@@ -1739,6 +1861,7 @@
   gru-chrome-pfq-tryjob
   gru-chromium-pfq-tryjob
   gru-compile-only-pre-cq
+  gru-factory-gru-9017.B-factorybranch-tryjob
   gru-factory-tryjob
   gru-full-tryjob
   gru-llvm-next-toolchain-tryjob
@@ -1759,6 +1882,7 @@
   grunt-chrome-pfq-tryjob
   grunt-chromium-pfq-tryjob
   grunt-compile-only-pre-cq
+  grunt-factory-grunt-11164.B-factorybranch-tryjob
   grunt-factory-tryjob
   grunt-full-tryjob
   grunt-llvm-next-toolchain-tryjob
@@ -1794,6 +1918,7 @@
   guado-chrome-pfq-tryjob
   guado-chromium-pfq-tryjob
   guado-compile-only-pre-cq
+  guado-factory-auron-6772.B-factorybranch-tryjob
   guado-factory-tryjob
   guado-full-tryjob
   guado-llvm-next-toolchain-tryjob
@@ -1860,6 +1985,7 @@
   hana-chrome-pfq-tryjob
   hana-chromium-pfq-tryjob
   hana-compile-only-pre-cq
+  hana-factory-oak-8182.B-factorybranch-tryjob
   hana-factory-tryjob
   hana-full-tryjob
   hana-llvm-next-toolchain-tryjob
@@ -1898,6 +2024,7 @@
   heli-chrome-pfq-tryjob
   heli-chromium-pfq-tryjob
   heli-compile-only-pre-cq
+  heli-factory-rambi-6420.B-factorybranch-tryjob
   heli-factory-tryjob
   heli-full-tryjob
   heli-llvm-next-toolchain-tryjob
@@ -1918,6 +2045,8 @@
   jecht-chrome-pfq-tryjob
   jecht-chromium-pfq-tryjob
   jecht-compile-only-pre-cq
+  jecht-factory-auron-6459.B-factorybranch-tryjob
+  jecht-factory-auron-6772.B-factorybranch-tryjob
   jecht-factory-tryjob
   jecht-full-tryjob
   jecht-llvm-next-toolchain-tryjob
@@ -1937,6 +2066,7 @@
   kalista-chrome-pfq-tryjob
   kalista-chromium-pfq-tryjob
   kalista-compile-only-pre-cq
+  kalista-factory-nami-10715.B-factorybranch-tryjob
   kalista-factory-tryjob
   kalista-full-tryjob
   kalista-llvm-next-toolchain-tryjob
@@ -1956,6 +2086,7 @@
   kefka-chrome-pfq-tryjob
   kefka-chromium-pfq-tryjob
   kefka-compile-only-pre-cq
+  kefka-factory-strago-7458.B-factorybranch-tryjob
   kefka-factory-tryjob
   kefka-full-tryjob
   kefka-llvm-next-toolchain-tryjob
@@ -1995,6 +2126,7 @@
   kevin-chrome-pfq-tryjob
   kevin-chromium-pfq-tryjob
   kevin-compile-only-pre-cq
+  kevin-factory-gru-8652.B-factorybranch-tryjob
   kevin-factory-tryjob
   kevin-full-tryjob
   kevin-llvm-next-toolchain-tryjob
@@ -2026,6 +2158,8 @@
   kip-chrome-pfq-tryjob
   kip-chromium-pfq-tryjob
   kip-compile-only-pre-cq
+  kip-factory-rambi-5517.B-factorybranch-tryjob
+  kip-factory-strago-7458.B-factorybranch-tryjob
   kip-factory-tryjob
   kip-full-tryjob
   kip-llvm-next-toolchain-tryjob
@@ -2119,6 +2253,7 @@
   lars-chrome-pfq-tryjob
   lars-chromium-pfq-tryjob
   lars-compile-only-pre-cq
+  lars-factory-glados-7828.B-factorybranch-tryjob
   lars-factory-tryjob
   lars-full-tryjob
   lars-llvm-next-toolchain-tryjob
@@ -2187,6 +2322,7 @@
   lulu-chrome-pfq-tryjob
   lulu-chromium-pfq-tryjob
   lulu-compile-only-pre-cq
+  lulu-factory-auron-6459.B-factorybranch-tryjob
   lulu-factory-tryjob
   lulu-full-tryjob
   lulu-llvm-next-toolchain-tryjob
@@ -2640,6 +2776,7 @@
   mccloud-chrome-pfq-tryjob
   mccloud-chromium-pfq-tryjob
   mccloud-compile-only-pre-cq
+  mccloud-factory-beltino-5140.14.B-factorybranch-tryjob
   mccloud-factory-tryjob
   mccloud-full-tryjob
   mccloud-llvm-next-toolchain-tryjob
@@ -2700,6 +2837,7 @@
   nami-chrome-pfq-tryjob
   nami-chromium-pfq-tryjob
   nami-compile-only-pre-cq
+  nami-factory-nami-10715.B-factorybranch-tryjob
   nami-factory-tryjob
   nami-full-tryjob
   nami-llvm-next-toolchain-tryjob
@@ -2719,6 +2857,7 @@
   nautilus-chrome-pfq-tryjob
   nautilus-chromium-pfq-tryjob
   nautilus-compile-only-pre-cq
+  nautilus-factory-poppy-10504.B-factorybranch-tryjob
   nautilus-factory-tryjob
   nautilus-full-tryjob
   nautilus-llvm-next-toolchain-tryjob
@@ -2738,6 +2877,7 @@
   ninja-chrome-pfq-tryjob
   ninja-chromium-pfq-tryjob
   ninja-compile-only-pre-cq
+  ninja-factory-rambi-6420.B-factorybranch-tryjob
   ninja-factory-tryjob
   ninja-full-tryjob
   ninja-llvm-next-toolchain-tryjob
@@ -2757,6 +2897,7 @@
   nocturne-chrome-pfq-tryjob
   nocturne-chromium-pfq-tryjob
   nocturne-compile-only-pre-cq
+  nocturne-factory-nocturne-11066.B-factorybranch-tryjob
   nocturne-factory-tryjob
   nocturne-full-tryjob
   nocturne-llvm-next-toolchain-tryjob
@@ -2813,6 +2954,7 @@
   nyan_big-chrome-pfq-tryjob
   nyan_big-chromium-pfq-tryjob
   nyan_big-compile-only-pre-cq
+  nyan_big-factory-nyan-5772.B-factorybranch-tryjob
   nyan_big-factory-tryjob
   nyan_big-full-tryjob
   nyan_big-llvm-next-toolchain-tryjob
@@ -2832,6 +2974,7 @@
   nyan_blaze-chrome-pfq-tryjob
   nyan_blaze-chromium-pfq-tryjob
   nyan_blaze-compile-only-pre-cq
+  nyan_blaze-factory-nyan-5772.B-factorybranch-tryjob
   nyan_blaze-factory-tryjob
   nyan_blaze-full-tryjob
   nyan_blaze-llvm-next-toolchain-tryjob
@@ -2851,6 +2994,7 @@
   nyan_kitty-chrome-pfq-tryjob
   nyan_kitty-chromium-pfq-tryjob
   nyan_kitty-compile-only-pre-cq
+  nyan_kitty-factory-nyan-5772.B-factorybranch-tryjob
   nyan_kitty-factory-tryjob
   nyan_kitty-full-compile-paladin-tryjob
   nyan_kitty-full-tryjob
@@ -2919,6 +3063,7 @@
   orco-chrome-pfq-tryjob
   orco-chromium-pfq-tryjob
   orco-compile-only-pre-cq
+  orco-factory-rambi-6420.B-factorybranch-tryjob
   orco-factory-tryjob
   orco-full-tryjob
   orco-llvm-next-toolchain-tryjob
@@ -3050,12 +3195,11 @@
   poppy-tot-chromium-pfq-informational-tryjob
   poppy-unittest-stress
   pre-cq-launcher-tryjob
-  prototype-buildspec-tryjob
-    prototype-factorybranch
   prototype-factorybranch-tryjob
   pyro-chrome-pfq-tryjob
   pyro-chromium-pfq-tryjob
   pyro-compile-only-pre-cq
+  pyro-factory-reef-8811.B-factorybranch-tryjob
   pyro-factory-tryjob
   pyro-full-tryjob
   pyro-llvm-next-toolchain-tryjob
@@ -3075,6 +3219,7 @@
   quawks-chrome-pfq-tryjob
   quawks-chromium-pfq-tryjob
   quawks-compile-only-pre-cq
+  quawks-factory-rambi-5517.B-factorybranch-tryjob
   quawks-factory-tryjob
   quawks-full-tryjob
   quawks-llvm-next-toolchain-tryjob
@@ -3094,6 +3239,7 @@
   rammus-chrome-pfq-tryjob
   rammus-chromium-pfq-tryjob
   rammus-compile-only-pre-cq
+  rammus-factory-rammus-11289.B-factorybranch-tryjob
   rammus-factory-tryjob
   rammus-full-tryjob
   rammus-llvm-next-toolchain-tryjob
@@ -3115,6 +3261,7 @@
   reef-chrome-pfq-tryjob
   reef-chromium-pfq-tryjob
   reef-compile-only-pre-cq
+  reef-factory-reef-8811.B-factorybranch-tryjob
   reef-factory-tryjob
   reef-full-tryjob
   reef-llvm-next-toolchain-tryjob
@@ -3135,6 +3282,7 @@
   reks-chrome-pfq-tryjob
   reks-chromium-pfq-tryjob
   reks-compile-only-pre-cq
+  reks-factory-strago-7458.B-factorybranch-tryjob
   reks-factory-tryjob
   reks-full-tryjob
   reks-llvm-next-toolchain-tryjob
@@ -3154,6 +3302,7 @@
   relm-chrome-pfq-tryjob
   relm-chromium-pfq-tryjob
   relm-compile-only-pre-cq
+  relm-factory-strago-7458.B-factorybranch-tryjob
   relm-factory-tryjob
   relm-full-tryjob
   relm-llvm-next-toolchain-tryjob
@@ -3173,6 +3322,7 @@
   rikku-chrome-pfq-tryjob
   rikku-chromium-pfq-tryjob
   rikku-compile-only-pre-cq
+  rikku-factory-auron-6772.B-factorybranch-tryjob
   rikku-factory-tryjob
   rikku-full-tryjob
   rikku-llvm-next-toolchain-tryjob
@@ -3203,6 +3353,7 @@
   samus-chrome-pre-flight-branch-tryjob
   samus-chromium-pfq-tryjob
   samus-compile-only-pre-cq
+  samus-factory-samus-6658.B-factorybranch-tryjob
   samus-factory-tryjob
   samus-full-tryjob
   samus-kernelnext-chromium-pfq-tryjob
@@ -3234,6 +3385,7 @@
   sand-chrome-pfq-tryjob
   sand-chromium-pfq-tryjob
   sand-compile-only-pre-cq
+  sand-factory-reef-8811.B-factorybranch-tryjob
   sand-factory-tryjob
   sand-full-tryjob
   sand-llvm-next-toolchain-tryjob
@@ -3276,6 +3428,7 @@
   scarlet-chrome-pfq-tryjob
   scarlet-chromium-pfq-tryjob
   scarlet-compile-only-pre-cq
+  scarlet-factory-scarlet-10211.B-factorybranch-tryjob
   scarlet-factory-tryjob
   scarlet-full-tryjob
   scarlet-llvm-next-toolchain-tryjob
@@ -3295,6 +3448,7 @@
   sentry-chrome-pfq-tryjob
   sentry-chromium-pfq-tryjob
   sentry-compile-only-pre-cq
+  sentry-factory-glados-7828.B-factorybranch-tryjob
   sentry-factory-tryjob
   sentry-full-tryjob
   sentry-llvm-next-toolchain-tryjob
@@ -3314,6 +3468,7 @@
   setzer-chrome-pfq-tryjob
   setzer-chromium-pfq-tryjob
   setzer-compile-only-pre-cq
+  setzer-factory-strago-7458.B-factorybranch-tryjob
   setzer-factory-tryjob
   setzer-full-tryjob
   setzer-llvm-next-toolchain-tryjob
@@ -3334,6 +3489,7 @@
   snappy-chrome-pfq-tryjob
   snappy-chromium-pfq-tryjob
   snappy-compile-only-pre-cq
+  snappy-factory-reef-8811.B-factorybranch-tryjob
   snappy-factory-tryjob
   snappy-full-tryjob
   snappy-llvm-next-toolchain-tryjob
@@ -3353,6 +3509,7 @@
   soraka-chrome-pfq-tryjob
   soraka-chromium-pfq-tryjob
   soraka-compile-only-pre-cq
+  soraka-factory-soraka-10323.39.B-factorybranch-tryjob
   soraka-factory-tryjob
   soraka-full-tryjob
   soraka-llvm-next-toolchain-tryjob
@@ -3372,6 +3529,7 @@
   squawks-chrome-pfq-tryjob
   squawks-chromium-pfq-tryjob
   squawks-compile-only-pre-cq
+  squawks-factory-rambi-5517.B-factorybranch-tryjob
   squawks-factory-tryjob
   squawks-full-tryjob
   squawks-llvm-next-toolchain-tryjob
@@ -3410,6 +3568,7 @@
   sumo-chrome-pfq-tryjob
   sumo-chromium-pfq-tryjob
   sumo-compile-only-pre-cq
+  sumo-factory-rambi-6420.B-factorybranch-tryjob
   sumo-factory-tryjob
   sumo-full-tryjob
   sumo-llvm-next-toolchain-tryjob
@@ -3429,6 +3588,7 @@
   swanky-chrome-pfq-tryjob
   swanky-chromium-pfq-tryjob
   swanky-compile-only-pre-cq
+  swanky-factory-rambi-5517.B-factorybranch-tryjob
   swanky-factory-tryjob
   swanky-full-tryjob
   swanky-llvm-next-toolchain-tryjob
@@ -3465,6 +3625,7 @@
   terra-chrome-pfq-tryjob
   terra-chromium-pfq-tryjob
   terra-compile-only-pre-cq
+  terra-factory-strago-7458.B-factorybranch-tryjob
   terra-factory-tryjob
   terra-full-tryjob
   terra-llvm-next-toolchain-tryjob
@@ -3485,6 +3646,7 @@
   tidus-chrome-pfq-tryjob
   tidus-chromium-pfq-tryjob
   tidus-compile-only-pre-cq
+  tidus-factory-auron-6772.B-factorybranch-tryjob
   tidus-factory-tryjob
   tidus-full-tryjob
   tidus-llvm-next-toolchain-tryjob
@@ -3504,6 +3666,7 @@
   tricky-chrome-pfq-tryjob
   tricky-chromium-pfq-tryjob
   tricky-compile-only-pre-cq
+  tricky-factory-beltino-5140.14.B-factorybranch-tryjob
   tricky-factory-tryjob
   tricky-full-tryjob
   tricky-llvm-next-toolchain-tryjob
@@ -3523,6 +3686,7 @@
   ultima-chrome-pfq-tryjob
   ultima-chromium-pfq-tryjob
   ultima-compile-only-pre-cq
+  ultima-factory-strago-7458.B-factorybranch-tryjob
   ultima-factory-tryjob
   ultima-full-tryjob
   ultima-llvm-next-toolchain-tryjob
@@ -3543,6 +3707,7 @@
   veyron_fievel-chromium-pfq-tryjob
   veyron_fievel-compile-only-pre-cq
   veyron_fievel-factory-tryjob
+  veyron_fievel-factory-veyron-7505.B-factorybranch-tryjob
   veyron_fievel-full-tryjob
   veyron_fievel-llvm-next-toolchain-tryjob
   veyron_fievel-llvm-toolchain-tryjob
@@ -3562,6 +3727,7 @@
   veyron_jaq-chromium-pfq-tryjob
   veyron_jaq-compile-only-pre-cq
   veyron_jaq-factory-tryjob
+  veyron_jaq-factory-veyron-6591.B-factorybranch-tryjob
   veyron_jaq-full-tryjob
   veyron_jaq-llvm-next-toolchain-tryjob
   veyron_jaq-llvm-toolchain-tryjob
@@ -3581,6 +3747,7 @@
   veyron_jerry-chromium-pfq-tryjob
   veyron_jerry-compile-only-pre-cq
   veyron_jerry-factory-tryjob
+  veyron_jerry-factory-veyron-6591.B-factorybranch-tryjob
   veyron_jerry-full-tryjob
   veyron_jerry-llvm-next-toolchain-tryjob
   veyron_jerry-llvm-toolchain-tryjob
@@ -3601,6 +3768,8 @@
   veyron_mickey-chromium-pfq-tryjob
   veyron_mickey-compile-only-pre-cq
   veyron_mickey-factory-tryjob
+  veyron_mickey-factory-veyron-6591.B-factorybranch-tryjob
+  veyron_mickey-factory-veyron-7505.B-factorybranch-tryjob
   veyron_mickey-full-tryjob
   veyron_mickey-llvm-next-toolchain-tryjob
   veyron_mickey-llvm-toolchain-tryjob
@@ -3620,6 +3789,7 @@
   veyron_mighty-chromium-pfq-tryjob
   veyron_mighty-compile-only-pre-cq
   veyron_mighty-factory-tryjob
+  veyron_mighty-factory-veyron-6591.B-factorybranch-tryjob
   veyron_mighty-full-tryjob
   veyron_mighty-llvm-next-toolchain-tryjob
   veyron_mighty-llvm-toolchain-tryjob
@@ -3639,6 +3809,7 @@
   veyron_minnie-chromium-pfq-tryjob
   veyron_minnie-compile-only-pre-cq
   veyron_minnie-factory-tryjob
+  veyron_minnie-factory-veyron-6591.B-factorybranch-tryjob
   veyron_minnie-full-tryjob
   veyron_minnie-llvm-next-toolchain-tryjob
   veyron_minnie-llvm-toolchain-tryjob
@@ -3659,6 +3830,7 @@
   veyron_rialto-chromium-pfq-tryjob
   veyron_rialto-compile-only-pre-cq
   veyron_rialto-factory-tryjob
+  veyron_rialto-factory-veyron-7505.B-factorybranch-tryjob
   veyron_rialto-full-tryjob
   veyron_rialto-llvm-next-toolchain-tryjob
   veyron_rialto-llvm-toolchain-tryjob
@@ -3678,6 +3850,7 @@
   veyron_speedy-chromium-pfq-tryjob
   veyron_speedy-compile-only-pre-cq
   veyron_speedy-factory-tryjob
+  veyron_speedy-factory-veyron-6591.B-factorybranch-tryjob
   veyron_speedy-full-tryjob
   veyron_speedy-llvm-next-toolchain-tryjob
   veyron_speedy-llvm-toolchain-tryjob
@@ -3698,6 +3871,7 @@
   veyron_tiger-chromium-pfq-tryjob
   veyron_tiger-compile-only-pre-cq
   veyron_tiger-factory-tryjob
+  veyron_tiger-factory-veyron-7505.B-factorybranch-tryjob
   veyron_tiger-full-tryjob
   veyron_tiger-llvm-next-toolchain-tryjob
   veyron_tiger-llvm-toolchain-tryjob
@@ -3715,6 +3889,8 @@
   veyron_tiger-unittest-stress
   whirlwind-compile-only-pre-cq
   whirlwind-factory-tryjob
+  whirlwind-factory-whirlwind-6509.B-factorybranch-tryjob
+  whirlwind-factory-whirlwind-6812.41.B-factorybranch-tryjob
   whirlwind-full-tryjob
   whirlwind-llvm-next-toolchain-tryjob
   whirlwind-llvm-toolchain-tryjob
@@ -3729,6 +3905,7 @@
   winky-chrome-pfq-tryjob
   winky-chromium-pfq-tryjob
   winky-compile-only-pre-cq
+  winky-factory-rambi-5517.B-factorybranch-tryjob
   winky-factory-tryjob
   winky-full-tryjob
   winky-llvm-next-toolchain-tryjob
@@ -3749,6 +3926,7 @@
   wizpig-chrome-pfq-tryjob
   wizpig-chromium-pfq-tryjob
   wizpig-compile-only-pre-cq
+  wizpig-factory-strago-7458.B-factorybranch-tryjob
   wizpig-factory-tryjob
   wizpig-full-tryjob
   wizpig-llvm-next-toolchain-tryjob

@@ -2852,7 +2852,6 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
   ]
 
   for interval, branch, boards in firmware_branch_builders:
-    # TODO: Remove when buildspecs go into production.
     site_config.Add(
         '%s-firmwarebranch' % branch,
         site_config.templates.firmwarebranch,
@@ -2957,28 +2956,30 @@ def FactoryBuilders(site_config, boards_dict, ge_build_config):
           'schedule': active,
       }
 
-    site_config.Add(
-        '%s-factorybranch' % branch,
-        site_config.templates.factorybranch,
-        boards=boards,
+    # Define the buildspec builder for the branch.
+    branch_master = site_config.Add(
+        '%s-buildspec' % branch,
+        site_config.templates.buildspec,
+        display_label=config_lib.DISPLAY_LABEL_FACTORY,
         workspace_branch=branch,
         **schedule
     )
 
-  spec_master = site_config.Add(
-      'prototype-buildspec',
-      site_config.templates.buildspec,
-      display_label=config_lib.DISPLAY_LABEL_FACTORY,
-      workspace_branch='factory-nami-10715.B',
-  )
+    # Define the per-board builders for the branch.
+    for board in boards:
+      branch_master.AddSlave(
+          site_config.Add(
+              '%s-%s-factorybranch' % (board, branch),
+              site_config.templates.factorybranch,
+              boards=[board],
+              workspace_branch=branch,
+          ))
 
-  spec_master.AddSlave(
-      site_config.Add(
-          'prototype-factorybranch',
-          site_config.templates.factorybranch,
-          boards=['nami'],
-          workspace_branch='factory-nami-10715.B',
-      )
+  site_config.Add(
+      'prototype-factorybranch',
+      site_config.templates.factorybranch,
+      boards=['nami'],
+      workspace_branch='factory-nami-10715.B',
   )
 
 
