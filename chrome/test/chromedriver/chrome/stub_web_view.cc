@@ -228,3 +228,11 @@ bool StubWebView::IsOOPIF(const std::string& frame_id) {
 FrameTracker* StubWebView::GetFrameTracker() const {
   return nullptr;
 }
+
+std::unique_ptr<base::Value> StubWebView::GetCastSinks() {
+  return std::make_unique<base::Value>();
+}
+
+std::unique_ptr<base::Value> StubWebView::GetCastIssueMessage() {
+  return std::make_unique<base::Value>();
+}
