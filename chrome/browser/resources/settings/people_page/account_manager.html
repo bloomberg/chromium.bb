@@ -24,13 +24,20 @@
       }
 
       #outer {
-        margin-left: auto;
-        margin-right: auto;
-        width: 90%;
+        margin-inline-end: var(--cr-section-padding);
+        margin-inline-start: 10%;
       }
 
-      #add-account-button {
-        cursor: pointer;
+      #account-list-header {
+        padding-bottom: 1em;
+      }
+
+      #add-account-icon {
+        -webkit-mask-image: url(chrome://resources/images/add.svg);
+        background-color: currentColor;
+        height: 24px;
+        margin-inline-end: 0.5em;
+        width: 24px;
       }
 
       #error-badge {
@@ -48,7 +55,13 @@
     <div class="settings-box first">$i18n{accountManagerDescription}</div>
 
     <div class="settings-box first">
-      <h2>$i18n{accountListHeader}</h2>
+      <div id="account-list-header" class="flex">
+        <h2>$i18n{accountListHeader}</h2>
+      </div>
+      <paper-button id="add-account-button" on-tap="addAccount_">
+        <div id="add-account-icon"></div>
+        $i18n{addAccountLabel}
+      </paper-button>
     </div>
 
     <div id="outer" class="layout vertical nowrap">
@@ -89,9 +102,6 @@
           </paper-icon-button-light>
         </div>
       </template>
-      <div id="add-account-button" class="settings-box" on-tap="addAccount_">
-        $i18n{addAccountLabel}
-      </div>
 
       <div class="clear settings-box"></div>
 
