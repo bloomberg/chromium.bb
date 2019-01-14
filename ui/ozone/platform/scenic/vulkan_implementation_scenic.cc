@@ -51,19 +51,15 @@ bool VulkanImplementationScenic::InitializeVulkanInstance() {
   std::vector<const char*> required_layers = {
       "VK_LAYER_FUCHSIA_imagepipe_swapchain",
   };
-  if (!vulkan_instance_.Initialize(required_extensions, required_layers)) {
-    vulkan_instance_.Destroy();
+  if (!vulkan_instance_.Initialize(required_extensions, required_layers))
     return false;
-  }
 
   vkCreateImagePipeSurfaceFUCHSIA_ =
       reinterpret_cast<PFN_vkCreateImagePipeSurfaceFUCHSIA>(
           vkGetInstanceProcAddr(vulkan_instance_.vk_instance(),
                                 "vkCreateImagePipeSurfaceFUCHSIA"));
-  if (!vkCreateImagePipeSurfaceFUCHSIA_) {
-    vulkan_instance_.Destroy();
+  if (!vkCreateImagePipeSurfaceFUCHSIA_)
     return false;
-  }
 
   return true;
 }

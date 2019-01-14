@@ -31,27 +31,21 @@ bool VulkanImplementationGbm::InitializeVulkanInstance() {
       "VK_KHR_external_fence_capabilities",
       "VK_KHR_get_physical_device_properties2",
   };
-  if (!vulkan_instance_.Initialize(required_extensions, {})) {
-    vulkan_instance_.Destroy();
+  if (!vulkan_instance_.Initialize(required_extensions, {}))
     return false;
-  }
 
   vkGetPhysicalDeviceExternalFencePropertiesKHR_ =
       reinterpret_cast<PFN_vkGetPhysicalDeviceExternalFencePropertiesKHR>(
           vkGetInstanceProcAddr(
               vulkan_instance_.vk_instance(),
               "vkGetPhysicalDeviceExternalFencePropertiesKHR"));
-  if (!vkGetPhysicalDeviceExternalFencePropertiesKHR_) {
-    vulkan_instance_.Destroy();
+  if (!vkGetPhysicalDeviceExternalFencePropertiesKHR_)
     return false;
-  }
 
   vkGetFenceFdKHR_ = reinterpret_cast<PFN_vkGetFenceFdKHR>(
       vkGetInstanceProcAddr(vulkan_instance_.vk_instance(), "vkGetFenceFdKHR"));
-  if (!vkGetFenceFdKHR_) {
-    vulkan_instance_.Destroy();
+  if (!vkGetFenceFdKHR_)
     return false;
-  }
 
   return true;
 }

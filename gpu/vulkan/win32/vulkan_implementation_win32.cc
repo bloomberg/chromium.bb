@@ -30,10 +30,8 @@ bool VulkanImplementationWin32::InitializeVulkanInstance() {
   if (!vulkan_function_pointers->vulkan_loader_library_)
     return false;
 
-  if (!vulkan_instance_.Initialize(required_extensions, {})) {
-    vulkan_instance_.Destroy();
+  if (!vulkan_instance_.Initialize(required_extensions, {}))
     return false;
-  }
 
   // Initialize platform function pointers
   vkGetPhysicalDeviceWin32PresentationSupportKHR_ =
@@ -43,7 +41,6 @@ bool VulkanImplementationWin32::InitializeVulkanInstance() {
               "vkGetPhysicalDeviceWin32PresentationSupportKHR"));
   if (!vkGetPhysicalDeviceWin32PresentationSupportKHR_) {
     LOG(ERROR) << "vkGetPhysicalDeviceWin32PresentationSupportKHR not found";
-    vulkan_instance_.Destroy();
     return false;
   }
 
@@ -52,7 +49,6 @@ bool VulkanImplementationWin32::InitializeVulkanInstance() {
           vulkan_instance_.vk_instance(), "vkCreateWin32SurfaceKHR"));
   if (!vkCreateWin32SurfaceKHR_) {
     LOG(ERROR) << "vkCreateWin32SurfaceKHR not found";
-    vulkan_instance_.Destroy();
     return false;
   }
 

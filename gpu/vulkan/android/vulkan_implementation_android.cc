@@ -35,20 +35,15 @@ bool VulkanImplementationAndroid::InitializeVulkanInstance() {
   if (!vulkan_function_pointers->vulkan_loader_library_)
     return false;
 
-  if (!vulkan_instance_.Initialize(required_extensions, {})) {
-    vulkan_instance_.Destroy();
+  if (!vulkan_instance_.Initialize(required_extensions, {}))
     return false;
-  }
 
   // Initialize platform function pointers
   vkCreateAndroidSurfaceKHR_ =
       reinterpret_cast<PFN_vkCreateAndroidSurfaceKHR>(vkGetInstanceProcAddr(
           vulkan_instance_.vk_instance(), "vkCreateAndroidSurfaceKHR"));
-  if (!vkCreateAndroidSurfaceKHR_) {
-    LOG(ERROR) << "vkCreateAndroidSurfaceKHR not found";
-    vulkan_instance_.Destroy();
+  if (!vkCreateAndroidSurfaceKHR_)
     return false;
-  }
 
   return true;
 }
