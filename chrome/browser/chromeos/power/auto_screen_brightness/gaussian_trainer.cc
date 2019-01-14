@@ -111,9 +111,8 @@ double ModelPredictionAdjustment(double brightness_old,
   // Model prediction is incorrect, calculate the change we need to make by
   // treating |model_brightness| as the old brightness and |target_brightness|
   // as the new brightness.
-  // TODO(jiameng): we currently use 2*step_size, revise.
   return BoundedBrightnessAdjustment(model_brightness, target_brightness,
-                                     2.0 * params.brightness_step_size);
+                                     params.model_brightness_step_size);
 }
 
 double Gaussian(double x, double sigma) {
@@ -148,6 +147,15 @@ GaussianTrainer::GaussianTrainer() {
       features::kAutoScreenBrightness, "brightness_step_size",
       params_.brightness_step_size);
   if (params_.brightness_step_size <= 0.0) {
+    valid_params_ = false;
+    LogParameterError(ParameterError::kModelError);
+    return;
+  }
+
+  params_.model_brightness_step_size = GetFieldTrialParamByFeatureAsDouble(
+      features::kAutoScreenBrightness, "model_brightness_step_size",
+      params_.model_brightness_step_size);
+  if (params_.model_brightness_step_size <= 0.0) {
     valid_params_ = false;
     LogParameterError(ParameterError::kModelError);
     return;
