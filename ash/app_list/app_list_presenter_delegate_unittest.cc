@@ -1255,16 +1255,29 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, BackgroundOpacity) {
   // Show app list in non-tablet mode. The background sheild opacity should be
   // 70%.
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
-  ui::Layer* background_layer =
+
+  // The opacity should be set on the color, not the layer. Setting opacity on
+  // the layer will change the opacity of the blur effect, which is not desired.
+  const U8CPU clamshell_background_opacity = static_cast<U8CPU>(255 * 0.7);
+  EXPECT_EQ(SkColorSetA(app_list::AppListView::kDefaultBackgroundColor,
+                        clamshell_background_opacity),
+            GetAppListView()->GetAppListBackgroundShieldColorForTest());
+  const ui::Layer* background_layer =
       GetAppListView()->GetAppListBackgroundShieldForTest()->layer();
-  EXPECT_EQ(0.7f, background_layer->opacity());
+  EXPECT_EQ(1, background_layer->opacity());
 
   // Turn on tablet mode. The background shield should be transparent.
   EnableTabletMode(true);
-  EXPECT_EQ(0.f, background_layer->opacity());
+
+  const U8CPU tablet_background_opacity = static_cast<U8CPU>(0);
+  EXPECT_EQ(SkColorSetA(app_list::AppListView::kDefaultBackgroundColor,
+                        tablet_background_opacity),
+            GetAppListView()->GetAppListBackgroundShieldColorForTest());
+  EXPECT_EQ(1, background_layer->opacity());
 }
 
-// Tests that the background blur is disabled for the app list.
+// Tests that the background blur which is present in clamshell mode does not
+// show in tablet mode.
 TEST_F(AppListPresenterDelegateHomeLauncherTest, BackgroundBlur) {
   // Show app list in non-tablet mode. The background blur should be enabled.
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
