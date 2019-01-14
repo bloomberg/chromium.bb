@@ -16,6 +16,9 @@ class CommitSharedPreferencesTestRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
+                // Clear app's SharedPreferences before each test to reduce flakiness.
+                // See https://crbug.com/908174, ttps://crbug.com/902774.
+                ContextUtils.getAppSharedPreferences().edit().clear().commit();
                 try {
                     statement.evaluate();
                 } finally {
