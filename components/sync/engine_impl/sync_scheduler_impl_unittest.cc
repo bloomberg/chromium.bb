@@ -153,7 +153,7 @@ class SyncSchedulerImplTest : public testing::Test {
     scheduler_ = std::make_unique<SyncSchedulerImpl>(
         "TestSyncScheduler", BackoffDelayProvider::FromDefaults(), context(),
         syncer_, false);
-    scheduler_->SetDefaultNudgeDelay(default_delay());
+    scheduler_->nudge_tracker_.SetDefaultNudgeDelay(default_delay());
   }
 
   SyncSchedulerImpl* scheduler() { return scheduler_.get(); }
@@ -279,7 +279,7 @@ class SyncSchedulerImplTest : public testing::Test {
     scheduler_ = std::make_unique<SyncSchedulerImpl>(
         "TestSyncScheduler", BackoffDelayProvider::FromDefaults(), context(),
         syncer_, true);
-    scheduler_->SetDefaultNudgeDelay(default_delay());
+    scheduler_->nudge_tracker_.SetDefaultNudgeDelay(default_delay());
   }
 
   bool BlockTimerIsRunning() const {

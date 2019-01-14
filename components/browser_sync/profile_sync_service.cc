@@ -131,8 +131,7 @@ EngineComponentsFactory::Switches EngineSwitchesFromCommandLine() {
         EngineComponentsFactory::FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE;
   }
   if (cl->HasSwitch(switches::kSyncShortNudgeDelayForTest)) {
-    factory_switches.nudge_delay =
-        EngineComponentsFactory::NudgeDelay::SHORT_NUDGE_DELAY;
+    factory_switches.force_short_nudge_delay_for_test = true;
   }
   return factory_switches;
 }

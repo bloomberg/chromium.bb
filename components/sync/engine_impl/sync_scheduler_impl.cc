@@ -444,10 +444,22 @@ const char* SyncSchedulerImpl::GetModeString(SyncScheduler::Mode mode) {
   return "";
 }
 
-void SyncSchedulerImpl::SetDefaultNudgeDelay(TimeDelta delay_ms) {
+void SyncSchedulerImpl::ForceShortNudgeDelayForTest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  nudge_tracker_.SetDefaultNudgeDelay(delay_ms);
+  // Set the default nudge delay to 0 because the default is used as a floor
+  // for override values, and we don't want the below override to be ignored.
+  nudge_tracker_.SetDefaultNudgeDelay(TimeDelta::FromMilliseconds(0));
+  // Only protocol types can have their delay customized.
+  const ModelTypeSet protocol_types = syncer::ProtocolTypes();
+  const base::TimeDelta short_nudge_delay = TimeDelta::FromMilliseconds(1);
+  std::map<ModelType, base::TimeDelta> nudge_delays;
+  for (ModelType type : protocol_types) {
+    nudge_delays[type] = short_nudge_delay;
+  }
+  nudge_tracker_.OnReceivedCustomNudgeDelays(nudge_delays);
+  // We should prevent further changing of nudge delays so if we use real server
+  // for integration test then server is not able to increase delays.
+  force_short_nudge_delay_for_test_ = true;
 }
 
 void SyncSchedulerImpl::DoNudgeSyncCycleJob(JobPriority priority) {
@@ -905,6 +917,9 @@ void SyncSchedulerImpl::OnReceivedLongPollIntervalUpdate(
 void SyncSchedulerImpl::OnReceivedCustomNudgeDelays(
     const std::map<ModelType, TimeDelta>& nudge_delays) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (force_short_nudge_delay_for_test_)
+    return;
 
   nudge_tracker_.OnReceivedCustomNudgeDelays(nudge_delays);
 }
