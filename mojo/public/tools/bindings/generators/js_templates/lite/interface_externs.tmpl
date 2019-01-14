@@ -13,7 +13,15 @@ goog.provide('{{module.namespace}}.{{interface.name}}CallbackRouter');
    * @param { {{parameter.kind|lite_closure_type_with_nullability}} } {{parameter.name|sanitize_identifier}}
 {%-   endfor -%}
 {%-   if method.response_parameters != None %}
+{%-     if method.response_parameters|length == 0 %}
    * @return {Promise}
+{%-     else %}
+   * @return {Promise<{
+{%-       for response_parameter in method.response_parameters %}
+        {{response_parameter.name}}: {{response_parameter.kind|lite_closure_type_with_nullability}},
+{%-       endfor %}
+   *  }>}
+{%-     endif %}
 {%-   endif %}
    */
   {{method.name}}(
