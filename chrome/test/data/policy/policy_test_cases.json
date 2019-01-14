@@ -4144,6 +4144,16 @@
     ]
   },
 
+  "PluginVmLicenseKey": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "PluginVmLicenseKey": "LICENSE_KEY"
+    },
+    "pref_mappings": [
+      { "pref": "cros.device.plugin_vm_license_key" }
+    ]
+  },
+
   "ParentAccessCodeConfig": {
     "os": ["chromeos"],
     "test_policy": { "ParentAccessCodeConfig": {

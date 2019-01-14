@@ -1155,6 +1155,18 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
           nullptr);
     }
   }
+
+  if (policy.has_plugin_vm_license_key()) {
+    const em::PluginVmLicenseKeyProto& container(
+        policy.plugin_vm_license_key());
+    if (container.has_plugin_vm_license_key()) {
+      policies->Set(
+          key::kPluginVmLicenseKey, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.plugin_vm_license_key()),
+          nullptr);
+    }
+  }
 }
 
 }  // namespace

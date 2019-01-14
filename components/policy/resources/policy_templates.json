@@ -721,6 +721,7 @@
       'caption': '''PluginVm''',
       'policies': [
         'PluginVmAllowed',
+        'PluginVmLicenseKey',
         'PluginVmImage',
       ],
       'desc': '''Configure <ph name="PLUGIN_VM_NAME">PluginVm</ph> related policies.''',
@@ -14078,11 +14079,26 @@
       },
       'example_value': True,
       'id': 503,
-      'caption': '''Allow devices to use a <ph name="PLUGIN_VM_NAME">PluginVm</ph> on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.''',
+      'caption': '''Allow devices to use a <ph name="PLUGIN_VM_NAME">PluginVm</ph> on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>''',
       'tags': [],
       'desc': '''Enable this device to run PluginVm.
 
-      If the policy is set to false or left unset, <ph name="PLUGIN_VM_NAME">PluginVm</ph> is not enabled for the device. If set to true, <ph name="PLUGIN_VM_NAME">PluginVm</ph> is enabled for the device as long as other settings also allow it. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME">PluginVmAllowed</ph> needs to be true and <ph name="PLUGIN_VM_IMAGE_POLICY_NAME">PluginVmImage</ph> needs to be set for <ph name="PLUGIN_VM_NAME">PluginVm</ph> to be allowed to run.''',
+      If the policy is set to false or left unset, <ph name="PLUGIN_VM_NAME">PluginVm</ph> is not enabled for the device. If set to true, <ph name="PLUGIN_VM_NAME">PluginVm</ph> is enabled for the device as long as other settings also allow it. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME">PluginVmAllowed</ph> needs to be true, <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME">PluginVmLicenseKey</ph> and <ph name="PLUGIN_VM_IMAGE_POLICY_NAME">PluginVmImage</ph> need to be set for <ph name="PLUGIN_VM_NAME">PluginVm</ph> to be allowed to run.''',
+    },
+    {
+      'name': 'PluginVmLicenseKey',
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'supported_on': ['chrome_os:73-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': "LICENSE_KEY",
+      'id': 515,
+      'caption': '''<ph name="PLUGIN_VM_NAME">PluginVm</ph> license key''',
+      'tags': [],
+      'desc': '''This policy specifies <ph name="PLUGIN_VM_NAME">PluginVm</ph> license key for this device.''',
     },
     {
       'name': 'PluginVmImage',
@@ -14110,7 +14126,7 @@
         "hash": "842841a4c75a55ad050d686f4ea5f77e83ae059877fe9b6946aa63d3d057ed32"
       },
       'id': 504,
-      'caption': '''PluginVm image''',
+      'caption': '''<ph name="PLUGIN_VM_NAME">PluginVm</ph> image''',
       'tags': [],
       'desc': '''This policy specifies the <ph name="PLUGIN_VM_NAME">PluginVm</ph> image for a user. The policy is set by specifying the URL from which the device can download the image and a SHA-256 hash used to verify the integrity of the download.
 
@@ -14359,5 +14375,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  514
+  'highest_id_currently_used':  515
 }
