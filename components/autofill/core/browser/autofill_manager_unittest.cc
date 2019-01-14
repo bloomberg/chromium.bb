@@ -6314,8 +6314,8 @@ TEST_F(AutofillManagerTest,
                                     HasSubstr("Autofill.FormEvents.Address"))));
 }
 
-// Tests that a call the the PDM's SyncServiceInitialized happens if in
-// incognito mode even if the sync service is null.
+// Tests that a call to the PDM's SyncServiceInitialized happens if in incognito
+// mode even if the sync service is null.
 TEST_F(AutofillManagerTest, CallingOnSyncServiceInitialized_NotOffTheRecord) {
   // Setup the test PDM.
   TestPersonalDataManager test_pdm;
@@ -6333,8 +6333,8 @@ TEST_F(AutofillManagerTest, CallingOnSyncServiceInitialized_NotOffTheRecord) {
   EXPECT_TRUE(test_pdm.sync_service_initialized());
 }
 
-// Tests that no call the the PDM's SyncServiceInitialized happens if in
-// incognito mode.
+// Tests that no call to the PDM's SyncServiceInitialized happens in incognito
+// mode.
 TEST_F(AutofillManagerTest, CallingOnSyncServiceInitialized_OffTheRecord) {
   // Setup the test PDM.
   TestPersonalDataManager test_pdm;
