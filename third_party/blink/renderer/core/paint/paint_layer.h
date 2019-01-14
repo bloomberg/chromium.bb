@@ -346,6 +346,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   void DirtyVisibleContentStatus();
 
+  // True if this layer paints box decorations or a background. Touch-action
+  // rects are painted as part of the background so these are included here.
   bool HasBoxDecorationsOrBackground() const;
   bool HasVisibleBoxDecorations() const;
   // True if this layer container layoutObjects that paint.

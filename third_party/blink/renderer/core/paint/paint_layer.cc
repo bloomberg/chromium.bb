@@ -2999,7 +2999,10 @@ bool PaintLayer::HasNonEmptyChildLayoutObjects() const {
 
 bool PaintLayer::HasBoxDecorationsOrBackground() const {
   return GetLayoutObject().StyleRef().HasBoxDecorations() ||
-         GetLayoutObject().StyleRef().HasBackground();
+         GetLayoutObject().StyleRef().HasBackground() ||
+         // Touch action rects paint as part of the background.
+         (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled() &&
+          GetLayoutObject().HasEffectiveWhitelistedTouchAction());
 }
 
 bool PaintLayer::HasVisibleBoxDecorations() const {
