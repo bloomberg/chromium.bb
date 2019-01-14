@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_extension_provider.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -34,7 +35,8 @@ namespace {
 
 constexpr char kExtensionId[] = "abc";
 constexpr char kFileSystemId[] = "test-filesystem";
-constexpr char kTestUrl[] = "externalfile:abc:test-filesystem:/hello.txt";
+constexpr char kTestUrl[] =
+    "externalfile:abc:test-filesystem:test-user-hash/hello.txt";
 constexpr char kExpectedFileContents[] =
     "This is a testing file. Lorem ipsum dolor sit amet est.";
 
@@ -56,8 +58,11 @@ class ExternalFileURLLoaderFactoryTest : public testing::Test {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
+    user_manager_ = std::make_unique<chromeos::FakeChromeUserManager>();
     Profile* const profile =
         profile_manager_->CreateTestingProfile("test-user");
+    user_manager_->AddUser(
+        AccountId::FromUserEmailGaiaId(profile->GetProfileUserName(), "12345"));
 
     auto* service = chromeos::file_system_provider::Service::Get(profile);
     service->RegisterProvider(
@@ -136,6 +141,7 @@ class ExternalFileURLLoaderFactoryTest : public testing::Test {
   std::unique_ptr<ExternalFileURLLoaderFactory> url_loader_factory_;
 
   std::unique_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<chromeos::FakeChromeUserManager> user_manager_;
   base::ScopedTempDir drive_cache_dir_;
 };
 
@@ -190,7 +196,8 @@ TEST_F(ExternalFileURLLoaderFactoryTest, HostedDocument) {
 TEST_F(ExternalFileURLLoaderFactoryTest, RootDirectory) {
   network::TestURLLoaderClient client;
   network::mojom::URLLoaderPtr loader = CreateURLLoaderAndStart(
-      &client, CreateRequest("externalfile:abc:test-filesystem:/"));
+      &client,
+      CreateRequest("externalfile:abc:test-filesystem:test-user-hash/"));
 
   client.RunUntilComplete();
 
@@ -200,8 +207,8 @@ TEST_F(ExternalFileURLLoaderFactoryTest, RootDirectory) {
 TEST_F(ExternalFileURLLoaderFactoryTest, NonExistingFile) {
   network::TestURLLoaderClient client;
   network::mojom::URLLoaderPtr loader = CreateURLLoaderAndStart(
-      &client,
-      CreateRequest("externalfile:abc:test-filesystem:/non-existing-file.txt"));
+      &client, CreateRequest("externalfile:abc:test-filesystem:test-user-hash/"
+                             "non-existing-file.txt"));
 
   client.RunUntilComplete();
 
