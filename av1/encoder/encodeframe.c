@@ -277,25 +277,24 @@ static void set_offsets_without_segment_id(const AV1_COMP *const cpi,
 
   // required by av1_append_sub8x8_mvs_for_idx() and av1_find_best_ref_mvs()
   xd->tile = *tile;
+
+  xd->cfl.mi_row = mi_row;
+  xd->cfl.mi_col = mi_col;
 }
 
 static void set_offsets(const AV1_COMP *const cpi, const TileInfo *const tile,
                         MACROBLOCK *const x, int mi_row, int mi_col,
                         BLOCK_SIZE bsize) {
   const AV1_COMMON *const cm = &cpi->common;
+  const struct segmentation *const seg = &cm->seg;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *mbmi;
-  const struct segmentation *const seg = &cm->seg;
 
   set_offsets_without_segment_id(cpi, tile, x, mi_row, mi_col, bsize);
 
-  mbmi = xd->mi[0];
-  xd->cfl.mi_row = mi_row;
-  xd->cfl.mi_col = mi_col;
-
-  mbmi->segment_id = 0;
-
   // Setup segment ID.
+  mbmi = xd->mi[0];
+  mbmi->segment_id = 0;
   if (seg->enabled) {
     if (seg->enabled && !cpi->vaq_refresh) {
       const uint8_t *const map =
