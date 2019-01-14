@@ -51,28 +51,28 @@ void LocalDataContainer::Init(CookiesTreeModel* model) {
   batches_started_ = 1;
   DCHECK(cookie_helper_.get());
   cookie_helper_->StartFetching(
-      base::Bind(&LocalDataContainer::OnCookiesModelInfoLoaded,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&LocalDataContainer::OnCookiesModelInfoLoaded,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   if (database_helper_.get()) {
     batches_started_++;
     database_helper_->StartFetching(
-        base::Bind(&LocalDataContainer::OnDatabaseModelInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&LocalDataContainer::OnDatabaseModelInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (local_storage_helper_.get()) {
     batches_started_++;
     local_storage_helper_->StartFetching(
-        base::Bind(&LocalDataContainer::OnLocalStorageModelInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&LocalDataContainer::OnLocalStorageModelInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (session_storage_helper_.get()) {
     batches_started_++;
     session_storage_helper_->StartFetching(
-        base::Bind(&LocalDataContainer::OnSessionStorageModelInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&LocalDataContainer::OnSessionStorageModelInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   // TODO(michaeln): When all of the UI implementations have been updated, make
@@ -80,64 +80,64 @@ void LocalDataContainer::Init(CookiesTreeModel* model) {
   if (appcache_helper_.get()) {
     batches_started_++;
     appcache_helper_->StartFetching(
-        base::Bind(&LocalDataContainer::OnAppCacheModelInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&LocalDataContainer::OnAppCacheModelInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (indexed_db_helper_.get()) {
     batches_started_++;
     indexed_db_helper_->StartFetching(
-        base::Bind(&LocalDataContainer::OnIndexedDBModelInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&LocalDataContainer::OnIndexedDBModelInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (file_system_helper_.get()) {
     batches_started_++;
     file_system_helper_->StartFetching(
-        base::Bind(&LocalDataContainer::OnFileSystemModelInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&LocalDataContainer::OnFileSystemModelInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (quota_helper_.get()) {
     batches_started_++;
     quota_helper_->StartFetching(
-        base::Bind(&LocalDataContainer::OnQuotaModelInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&LocalDataContainer::OnQuotaModelInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (service_worker_helper_.get()) {
     batches_started_++;
     service_worker_helper_->StartFetching(
-        base::Bind(&LocalDataContainer::OnServiceWorkerModelInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&LocalDataContainer::OnServiceWorkerModelInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (shared_worker_helper_.get()) {
     batches_started_++;
     shared_worker_helper_->StartFetching(
-        base::Bind(&LocalDataContainer::OnSharedWorkerInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&LocalDataContainer::OnSharedWorkerInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (cache_storage_helper_.get()) {
     batches_started_++;
     cache_storage_helper_->StartFetching(
-        base::Bind(&LocalDataContainer::OnCacheStorageModelInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&LocalDataContainer::OnCacheStorageModelInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (flash_lso_helper_.get()) {
     batches_started_++;
     flash_lso_helper_->StartFetching(
-        base::Bind(&LocalDataContainer::OnFlashLSOInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&LocalDataContainer::OnFlashLSOInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (media_license_helper_.get()) {
     batches_started_++;
     media_license_helper_->StartFetching(
-        base::Bind(&LocalDataContainer::OnMediaLicenseInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&LocalDataContainer::OnMediaLicenseInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   model_->SetBatchExpectation(batches_started_, true);

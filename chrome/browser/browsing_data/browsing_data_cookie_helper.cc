@@ -37,11 +37,11 @@ BrowsingDataCookieHelper::BrowsingDataCookieHelper(
 BrowsingDataCookieHelper::~BrowsingDataCookieHelper() {
 }
 
-void BrowsingDataCookieHelper::StartFetching(const FetchCallback& callback) {
+void BrowsingDataCookieHelper::StartFetching(FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   storage_partition_->GetCookieManagerForBrowserProcess()->GetAllCookies(
-      callback);
+      std::move(callback));
 }
 
 void BrowsingDataCookieHelper::DeleteCookie(
@@ -94,15 +94,14 @@ size_t CannedBrowsingDataCookieHelper::GetCookieCount() const {
   return count;
 }
 
-void CannedBrowsingDataCookieHelper::StartFetching(
-    const FetchCallback& callback) {
+void CannedBrowsingDataCookieHelper::StartFetching(FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   net::CookieList cookie_list;
   for (const auto& pair : origin_cookie_set_map_) {
     cookie_list.insert(cookie_list.begin(), pair.second->begin(),
                        pair.second->end());
   }
-  callback.Run(cookie_list);
+  std::move(callback).Run(cookie_list);
 }
 
 void CannedBrowsingDataCookieHelper::DeleteCookie(

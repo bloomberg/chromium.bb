@@ -40,7 +40,7 @@ class SiteDataCountingHelper {
   explicit SiteDataCountingHelper(
       Profile* profile,
       base::Time begin,
-      base::Callback<void(int)> completion_callback);
+      base::OnceCallback<void(int)> completion_callback);
   ~SiteDataCountingHelper();
 
   void CountAndDestroySelfWhenFinished();
@@ -68,7 +68,7 @@ class SiteDataCountingHelper {
 
   Profile* profile_;
   base::Time begin_;
-  base::Callback<void(int)> completion_callback_;
+  base::OnceCallback<void(int)> completion_callback_;
   int tasks_;
   std::set<std::string> unique_hosts_;
   scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper_;

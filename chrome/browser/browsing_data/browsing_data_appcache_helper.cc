@@ -21,7 +21,7 @@ using content::BrowserThread;
 namespace {
 
 void OnAppCacheInfoFetchComplete(
-    const BrowsingDataAppCacheHelper::FetchCallback& callback,
+    BrowsingDataAppCacheHelper::FetchCallback callback,
     scoped_refptr<content::AppCacheInfoCollection> info_collection,
     int /*rv*/) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -37,8 +37,9 @@ void OnAppCacheInfoFetchComplete(
       ++it;
   }
 
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, info_collection));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(std::move(callback), info_collection));
 }
 
 }  // namespace
@@ -49,14 +50,14 @@ BrowsingDataAppCacheHelper::BrowsingDataAppCacheHelper(
           BrowserContext::GetDefaultStoragePartition(browser_context)
               ->GetAppCacheService()) {}
 
-void BrowsingDataAppCacheHelper::StartFetching(const FetchCallback& callback) {
+void BrowsingDataAppCacheHelper::StartFetching(FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&BrowsingDataAppCacheHelper::StartFetchingOnIOThread, this,
-                     callback));
+                     std::move(callback)));
 }
 
 void BrowsingDataAppCacheHelper::DeleteAppCacheGroup(const GURL& manifest_url) {
@@ -70,7 +71,7 @@ void BrowsingDataAppCacheHelper::DeleteAppCacheGroup(const GURL& manifest_url) {
 BrowsingDataAppCacheHelper::~BrowsingDataAppCacheHelper() {}
 
 void BrowsingDataAppCacheHelper::StartFetchingOnIOThread(
-    const FetchCallback& callback) {
+    FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
 
@@ -79,7 +80,8 @@ void BrowsingDataAppCacheHelper::StartFetchingOnIOThread(
 
   appcache_service_->GetAllAppCacheInfo(
       info_collection.get(),
-      base::Bind(&OnAppCacheInfoFetchComplete, callback, info_collection));
+      base::BindOnce(&OnAppCacheInfoFetchComplete, std::move(callback),
+                     info_collection));
 }
 
 void BrowsingDataAppCacheHelper::DeleteAppCacheGroupOnIOThread(
@@ -135,8 +137,8 @@ CannedBrowsingDataAppCacheHelper::GetOriginAppCacheInfoMap() const {
 }
 
 void CannedBrowsingDataAppCacheHelper::StartFetching(
-    const FetchCallback& completion_callback) {
-  completion_callback.Run(info_collection_);
+    FetchCallback completion_callback) {
+  std::move(completion_callback).Run(info_collection_);
 }
 
 void CannedBrowsingDataAppCacheHelper::DeleteAppCacheGroup(

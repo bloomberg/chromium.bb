@@ -26,15 +26,14 @@ MockBrowsingDataServiceWorkerHelper::~MockBrowsingDataServiceWorkerHelper() {
 }
 
 void MockBrowsingDataServiceWorkerHelper::StartFetching(
-    const FetchCallback& callback) {
+    FetchCallback callback) {
   ASSERT_FALSE(callback.is_null());
   ASSERT_TRUE(callback_.is_null());
-  callback_ = callback;
+  callback_ = std::move(callback);
 }
 
 void MockBrowsingDataServiceWorkerHelper::DeleteServiceWorkers(
     const GURL& origin) {
-  ASSERT_FALSE(callback_.is_null());
   ASSERT_TRUE(base::ContainsKey(origins_, origin));
   origins_[origin] = false;
 }
@@ -51,7 +50,7 @@ void MockBrowsingDataServiceWorkerHelper::AddServiceWorkerSamples() {
 }
 
 void MockBrowsingDataServiceWorkerHelper::Notify() {
-  callback_.Run(response_);
+  std::move(callback_).Run(response_);
 }
 
 void MockBrowsingDataServiceWorkerHelper::Reset() {

@@ -21,7 +21,7 @@ class MockBrowsingDataFileSystemHelper : public BrowsingDataFileSystemHelper {
   explicit MockBrowsingDataFileSystemHelper(Profile* profile);
 
   // BrowsingDataFileSystemHelper implementation.
-  void StartFetching(const FetchCallback& callback) override;
+  void StartFetching(FetchCallback callback) override;
   void DeleteFileSystemOrigin(const GURL& origin) override;
 
   // Adds a specific filesystem.

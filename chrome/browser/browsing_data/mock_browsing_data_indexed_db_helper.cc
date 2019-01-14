@@ -23,16 +23,14 @@ MockBrowsingDataIndexedDBHelper::MockBrowsingDataIndexedDBHelper(
 MockBrowsingDataIndexedDBHelper::~MockBrowsingDataIndexedDBHelper() {
 }
 
-void MockBrowsingDataIndexedDBHelper::StartFetching(
-    const FetchCallback& callback) {
+void MockBrowsingDataIndexedDBHelper::StartFetching(FetchCallback callback) {
   ASSERT_FALSE(callback.is_null());
   ASSERT_TRUE(callback_.is_null());
-  callback_ = callback;
+  callback_ = std::move(callback);
 }
 
 void MockBrowsingDataIndexedDBHelper::DeleteIndexedDB(
     const GURL& origin) {
-  ASSERT_FALSE(callback_.is_null());
   ASSERT_TRUE(base::ContainsKey(origins_, origin));
   origins_[origin] = false;
 }
@@ -51,7 +49,7 @@ void MockBrowsingDataIndexedDBHelper::AddIndexedDBSamples() {
 }
 
 void MockBrowsingDataIndexedDBHelper::Notify() {
-  callback_.Run(response_);
+  std::move(callback_).Run(response_);
 }
 
 void MockBrowsingDataIndexedDBHelper::Reset() {

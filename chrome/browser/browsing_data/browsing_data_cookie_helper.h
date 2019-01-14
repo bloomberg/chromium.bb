@@ -33,14 +33,14 @@ class StoragePartition;
 class BrowsingDataCookieHelper
     : public base::RefCountedThreadSafe<BrowsingDataCookieHelper> {
  public:
-  using FetchCallback = base::Callback<void(const net::CookieList&)>;
+  using FetchCallback = base::OnceCallback<void(const net::CookieList&)>;
   explicit BrowsingDataCookieHelper(
       content::StoragePartition* storage_partition);
 
   // Starts the fetching process, which will notify its completion via
   // callback.
   // This must be called only in the UI thread.
-  virtual void StartFetching(const FetchCallback& callback);
+  virtual void StartFetching(FetchCallback callback);
 
   // Requests a single cookie to be deleted in the IO thread. This must be
   // called in the UI thread.
@@ -96,7 +96,7 @@ class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
   bool empty() const;
 
   // BrowsingDataCookieHelper methods.
-  void StartFetching(const FetchCallback& callback) override;
+  void StartFetching(FetchCallback callback) override;
   void DeleteCookie(const net::CanonicalCookie& cookie) override;
 
   // Returns the number of stored cookies.
