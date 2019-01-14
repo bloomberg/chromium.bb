@@ -6,7 +6,7 @@
     <item>
         <shape>
             <solid android:color="@android:color/white" />
-            <corners android:radius="@dimen/keyboard_accessory_action_height" />
+            <corners android:radius="@dimen/keyboard_accessory_bar_item_height" />
         </shape>
     </item>
 </layer-list>

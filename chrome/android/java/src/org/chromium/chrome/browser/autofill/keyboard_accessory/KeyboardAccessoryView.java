@@ -23,7 +23,7 @@ import org.chromium.chrome.R;
  * suggestions and manual entry points assisting the user in filling forms.
  */
 class KeyboardAccessoryView extends LinearLayout {
-    protected RecyclerView mActionsView;
+    protected RecyclerView mBarItemsView;
     private KeyboardAccessoryTabLayoutView mTabLayout;
 
     private static class HorizontalDividerItemDecoration extends RecyclerView.ItemDecoration {
@@ -50,15 +50,15 @@ class KeyboardAccessoryView extends LinearLayout {
         super.onFinishInflate();
         sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED);
 
-        mActionsView = findViewById(R.id.actions_view);
-        initializeHorizontalRecyclerView(mActionsView);
+        mBarItemsView = findViewById(R.id.bar_items_view);
+        initializeHorizontalRecyclerView(mBarItemsView);
 
         mTabLayout = findViewById(R.id.tabs);
 
         // Apply RTL layout changes to the view's children:
         ApiCompatibilityUtils.setLayoutDirection(findViewById(R.id.accessory_bar_contents),
                 isLayoutRtl() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
-        ApiCompatibilityUtils.setLayoutDirection(mActionsView,
+        ApiCompatibilityUtils.setLayoutDirection(mBarItemsView,
                 isLayoutRtl() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
 
         // Set listener's to touch/click events so they are not propagated to the page below.
@@ -89,8 +89,8 @@ class KeyboardAccessoryView extends LinearLayout {
         setLayoutParams(params);
     }
 
-    void setActionsAdapter(RecyclerView.Adapter adapter) {
-        mActionsView.setAdapter(adapter);
+    void setBarItemsAdapter(RecyclerView.Adapter adapter) {
+        mBarItemsView.setAdapter(adapter);
     }
 
     private void show() {

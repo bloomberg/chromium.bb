@@ -20,25 +20,25 @@ import org.chromium.ui.modelutil.PropertyModel;
  * the {@link KeyboardAccessoryViewBinder} which will modify the view accordingly.
  */
 class KeyboardAccessoryModernViewBinder {
-    static class ModernActionViewHolder extends KeyboardAccessoryViewBinder.ActionViewHolder {
-        public ModernActionViewHolder(View actionView) {
-            super(actionView);
+    static class ModernBarItemViewHolder extends KeyboardAccessoryViewBinder.BarItemViewHolder {
+        public ModernBarItemViewHolder(View barItemView) {
+            super(barItemView);
         }
 
-        public static KeyboardAccessoryViewBinder.ActionViewHolder create(
+        public static KeyboardAccessoryViewBinder.BarItemViewHolder create(
                 ViewGroup parent, @AccessoryAction int viewType) {
             switch (viewType) {
                 case AccessoryAction.AUTOFILL_SUGGESTION:
-                    return new ModernActionViewHolder(
+                    return new ModernBarItemViewHolder(
                             LayoutInflater.from(parent.getContext())
                                     .inflate(
                                             R.layout.keyboard_accessory_suggestion, parent, false));
                 case AccessoryAction.TAB_SWITCHER:
-                    return new ModernActionViewHolder((
+                    return new ModernBarItemViewHolder((
                             LayoutInflater.from(parent.getContext())
                                     .inflate(R.layout.keyboard_accessory_tabs, parent, false)));
             }
-            return KeyboardAccessoryViewBinder.ActionViewHolder.create(parent, viewType);
+            return KeyboardAccessoryViewBinder.BarItemViewHolder.create(parent, viewType);
         }
 
         @Override

@@ -18,8 +18,8 @@ import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
  * ModelChangeProcessor.
  */
 class KeyboardAccessoryProperties {
-    static final ReadableObjectPropertyKey<ListModel<KeyboardAccessoryData.Action>> ACTIONS =
-            new ReadableObjectPropertyKey<>("actions");
+    static final ReadableObjectPropertyKey<ListModel<KeyboardAccessoryData.Action>> BAR_ITEMS =
+            new ReadableObjectPropertyKey<>("bar_items");
     static final WritableBooleanPropertyKey VISIBLE = new WritableBooleanPropertyKey("visible");
     static final WritableIntPropertyKey BOTTOM_OFFSET_PX =
             new WritableIntPropertyKey("bottom_offset_px");

@@ -17,8 +17,8 @@ import org.chromium.chrome.R;
  * suggestions and manual entry points assisting the user in filling forms.
  */
 class KeyboardAccessoryModernView extends KeyboardAccessoryView {
-    private View mTabsActionsDivider;
-    private View mTabsActionsSpacer;
+    private View mTabsItemsDivider;
+    private View mTabsItemsSpacer;
     private ImageView mKeyboardToggle;
 
     /**
@@ -31,8 +31,8 @@ class KeyboardAccessoryModernView extends KeyboardAccessoryView {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mTabsActionsDivider = findViewById(R.id.tabs_actions_divider);
-        mTabsActionsSpacer = findViewById(R.id.tabs_actions_spacer);
+        mTabsItemsDivider = findViewById(R.id.tabs_items_divider);
+        mTabsItemsSpacer = findViewById(R.id.tabs_items_spacer);
         mKeyboardToggle = findViewById(R.id.show_keyboard);
         mKeyboardToggle.setImageDrawable(
                 AppCompatResources.getDrawable(getContext(), R.drawable.ic_keyboard));
@@ -40,9 +40,9 @@ class KeyboardAccessoryModernView extends KeyboardAccessoryView {
 
     void setKeyboardToggleVisibility(boolean hasActiveTab) {
         mKeyboardToggle.setVisibility(hasActiveTab ? VISIBLE : GONE);
-        mTabsActionsSpacer.setVisibility(hasActiveTab ? VISIBLE : GONE);
-        mTabsActionsDivider.setVisibility(hasActiveTab ? GONE : VISIBLE);
-        mActionsView.setVisibility(hasActiveTab ? GONE : VISIBLE);
+        mTabsItemsSpacer.setVisibility(hasActiveTab ? VISIBLE : GONE);
+        mTabsItemsDivider.setVisibility(hasActiveTab ? GONE : VISIBLE);
+        mBarItemsView.setVisibility(hasActiveTab ? GONE : VISIBLE);
     }
 
     void setShowKeyboardCallback(Runnable showKeyboardCallback) {

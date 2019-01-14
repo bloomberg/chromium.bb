@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTrigger.MANUAL_CLOSE;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIONS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BAR_ITEMS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
@@ -53,7 +53,7 @@ class KeyboardAccessoryMediator
 
         // Add mediator as observer so it can use model changes as signal for accessory visibility.
         mModel.set(SHOW_KEYBOARD_CALLBACK, this::closeSheet);
-        mModel.get(ACTIONS).addObserver(this);
+        mModel.get(BAR_ITEMS).addObserver(this);
         mModel.addObserver(this);
     }
 
@@ -62,15 +62,15 @@ class KeyboardAccessoryMediator
         assert typeId != DEFAULT_TYPE : "Did not specify which Action type has been updated.";
         // If there is a new list, retain all actions that are of a different type than the provided
         // actions.
-        List<Action> retainedActions = new ArrayList<>();
-        for (Action a : mModel.get(ACTIONS)) {
+        List<Action> retainedItems = new ArrayList<>();
+        for (Action a : mModel.get(BAR_ITEMS)) {
             if (a.getActionType() == typeId) continue;
-            retainedActions.add(a);
+            retainedItems.add(a);
         }
         // Append autofill suggestions to the end, right before the tab switcher.
-        int insertPos = typeId == AccessoryAction.AUTOFILL_SUGGESTION ? retainedActions.size() : 0;
-        retainedActions.addAll(insertPos, Arrays.asList(actions));
-        mModel.get(ACTIONS).set(retainedActions);
+        int insertPos = typeId == AccessoryAction.AUTOFILL_SUGGESTION ? retainedItems.size() : 0;
+        retainedItems.addAll(insertPos, Arrays.asList(actions));
+        mModel.get(BAR_ITEMS).set(retainedItems);
     }
 
     void requestShowing() {
@@ -95,20 +95,20 @@ class KeyboardAccessoryMediator
 
     @Override
     public void onItemRangeInserted(ListObservable source, int index, int count) {
-        assert source == mModel.get(ACTIONS);
+        assert source == mModel.get(BAR_ITEMS);
         updateVisibility();
     }
 
     @Override
     public void onItemRangeRemoved(ListObservable source, int index, int count) {
-        assert source == mModel.get(ACTIONS);
+        assert source == mModel.get(BAR_ITEMS);
         updateVisibility();
     }
 
     @Override
     public void onItemRangeChanged(
             ListObservable source, int index, int count, @Nullable Void payload) {
-        assert source == mModel.get(ACTIONS);
+        assert source == mModel.get(BAR_ITEMS);
         assert payload == null;
         updateVisibility();
     }
@@ -164,7 +164,7 @@ class KeyboardAccessoryMediator
     }
 
     boolean hasContents() {
-        return mModel.get(ACTIONS).size() > 0 || mTabSwitcher.hasTabs();
+        return mModel.get(BAR_ITEMS).size() > 0 || mTabSwitcher.hasTabs();
     }
 
     private boolean shouldShowAccessory() {

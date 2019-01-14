@@ -15,7 +15,7 @@ import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.AUTOFILL_SUGGESTION;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIONS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BAR_ITEMS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.VISIBLE;
 
 import org.junit.Before;
@@ -105,7 +105,7 @@ public class KeyboardAccessoryControllerTest {
 
     @Test
     public void testModelNotifiesAboutActionsChangedByProvider() {
-        mModel.get(ACTIONS).addObserver(mMockActionListObserver);
+        mModel.get(BAR_ITEMS).addObserver(mMockActionListObserver);
 
         PropertyProvider<Action[]> testProvider =
                 new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
@@ -115,20 +115,20 @@ public class KeyboardAccessoryControllerTest {
         mCoordinator.requestShowing();
         Action testAction = new Action(null, 0, null);
         testProvider.notifyObservers(new Action[] {testAction});
-        verify(mMockActionListObserver).onItemRangeInserted(mModel.get(ACTIONS), 0, 1);
-        assertThat(mModel.get(ACTIONS).size(), is(1));
-        assertThat(mModel.get(ACTIONS).get(0), is(equalTo(testAction)));
+        verify(mMockActionListObserver).onItemRangeInserted(mModel.get(BAR_ITEMS), 0, 1);
+        assertThat(mModel.get(BAR_ITEMS).size(), is(1));
+        assertThat(mModel.get(BAR_ITEMS).get(0), is(equalTo(testAction)));
 
         // If the coordinator receives a new set of actions, the model should report a change.
         testProvider.notifyObservers(new Action[] {testAction});
-        verify(mMockActionListObserver).onItemRangeChanged(mModel.get(ACTIONS), 0, 1, null);
-        assertThat(mModel.get(ACTIONS).size(), is(1));
-        assertThat(mModel.get(ACTIONS).get(0), is(equalTo(testAction)));
+        verify(mMockActionListObserver).onItemRangeChanged(mModel.get(BAR_ITEMS), 0, 1, null);
+        assertThat(mModel.get(BAR_ITEMS).size(), is(1));
+        assertThat(mModel.get(BAR_ITEMS).get(0), is(equalTo(testAction)));
 
         // If the coordinator receives an empty set of actions, the model should report a deletion.
         testProvider.notifyObservers(new Action[] {});
-        verify(mMockActionListObserver).onItemRangeRemoved(mModel.get(ACTIONS), 0, 1);
-        assertThat(mModel.get(ACTIONS).size(), is(0));
+        verify(mMockActionListObserver).onItemRangeRemoved(mModel.get(BAR_ITEMS), 0, 1);
+        assertThat(mModel.get(BAR_ITEMS).size(), is(0));
 
         // There should be no notification if no actions are reported repeatedly.
         testProvider.notifyObservers(new Action[] {});
@@ -159,7 +159,7 @@ public class KeyboardAccessoryControllerTest {
         mCoordinator.registerActionProvider(autofillSuggestionProvider);
 
         // Without suggestions, the accessory should remain invisible - even if the keyboard shows.
-        assertThat(mModel.get(ACTIONS).size(), is(0));
+        assertThat(mModel.get(BAR_ITEMS).size(), is(0));
         assertThat(mModel.get(VISIBLE), is(false));
         mCoordinator.requestShowing();
         assertThat(mModel.get(VISIBLE), is(false));
@@ -167,7 +167,7 @@ public class KeyboardAccessoryControllerTest {
 
         // Adding suggestions doesn't change the visibility by itself.
         autofillSuggestionProvider.notifyObservers(new Action[] {suggestion, suggestion});
-        assertThat(mModel.get(ACTIONS).size(), is(2));
+        assertThat(mModel.get(BAR_ITEMS).size(), is(2));
         assertThat(mModel.get(VISIBLE), is(false));
 
         // But as soon as the keyboard comes up, it should be showing.
@@ -184,7 +184,7 @@ public class KeyboardAccessoryControllerTest {
 
         // Without any suggestions, the accessory should remain invisible.
         assertThat(mModel.get(VISIBLE), is(false));
-        assertThat(mModel.get(ACTIONS).size(), is(0));
+        assertThat(mModel.get(BAR_ITEMS).size(), is(0));
 
         // If the keyboard comes up, but there are no suggestions set, keep the accessory hidden.
         mCoordinator.requestShowing();
@@ -192,19 +192,19 @@ public class KeyboardAccessoryControllerTest {
 
         // Adding suggestions while the keyboard is visible triggers the accessory.
         autofillSuggestionProvider.notifyObservers(new Action[] {suggestion, suggestion});
-        assertThat(mModel.get(ACTIONS).size(), is(2));
+        assertThat(mModel.get(BAR_ITEMS).size(), is(2));
         assertThat(mModel.get(VISIBLE), is(true));
     }
 
     @Test
     public void testIsVisibleWithActions() {
         // Without any actions, the accessory should remain invisible.
-        assertThat(mModel.get(ACTIONS).size(), is(0));
+        assertThat(mModel.get(BAR_ITEMS).size(), is(0));
         mCoordinator.requestShowing();
         assertThat(mModel.get(VISIBLE), is(false));
 
         // Adding actions while the keyboard is visible triggers the accessory.
-        mModel.get(ACTIONS).add(new Action(null, 0, null));
+        mModel.get(BAR_ITEMS).add(new Action(null, 0, null));
         assertThat(mModel.get(VISIBLE), is(true));
     }
 
@@ -225,10 +225,10 @@ public class KeyboardAccessoryControllerTest {
         generationProvider.notifyObservers(new Action[] {generationAction});
 
         // Autofill suggestions should always come last, independent of when they were added.
-        assertThat(mModel.get(ACTIONS).size(), is(3));
-        assertThat(mModel.get(ACTIONS).indexOf(generationAction), is(0));
-        assertThat(mModel.get(ACTIONS).indexOf(suggestion1), is(1));
-        assertThat(mModel.get(ACTIONS).indexOf(suggestion2), is(2));
+        assertThat(mModel.get(BAR_ITEMS).size(), is(3));
+        assertThat(mModel.get(BAR_ITEMS).indexOf(generationAction), is(0));
+        assertThat(mModel.get(BAR_ITEMS).indexOf(suggestion1), is(1));
+        assertThat(mModel.get(BAR_ITEMS).indexOf(suggestion2), is(2));
     }
 
     @Test
@@ -245,35 +245,35 @@ public class KeyboardAccessoryControllerTest {
         Action generationAction = new Action("Generate", GENERATE_PASSWORD_AUTOMATIC, (a) -> {});
         autofillSuggestionProvider.notifyObservers(new Action[] {suggestion, suggestion});
         generationProvider.notifyObservers(new Action[] {generationAction});
-        assertThat(mModel.get(ACTIONS).size(), is(3));
+        assertThat(mModel.get(BAR_ITEMS).size(), is(3));
 
         // Drop all Autofill suggestions. Only the generation action should remain.
         autofillSuggestionProvider.notifyObservers(new Action[0]);
-        assertThat(mModel.get(ACTIONS).size(), is(1));
-        assertThat(mModel.get(ACTIONS).indexOf(generationAction), is(0));
+        assertThat(mModel.get(BAR_ITEMS).size(), is(1));
+        assertThat(mModel.get(BAR_ITEMS).indexOf(generationAction), is(0));
 
         // Readd an Autofill suggestion and drop the generation. Only the suggestion should remain.
         autofillSuggestionProvider.notifyObservers(new Action[] {suggestion});
         generationProvider.notifyObservers(new Action[0]);
-        assertThat(mModel.get(ACTIONS).size(), is(1));
-        assertThat(mModel.get(ACTIONS).indexOf(suggestion), is(0));
+        assertThat(mModel.get(BAR_ITEMS).size(), is(1));
+        assertThat(mModel.get(BAR_ITEMS).indexOf(suggestion), is(0));
     }
 
     @Test
     public void testActionsRemovedWhenNotVisible() {
         // Make the accessory visible and add an action to it.
         mCoordinator.requestShowing();
-        mModel.get(ACTIONS).add(new Action(null, 0, null));
+        mModel.get(BAR_ITEMS).add(new Action(null, 0, null));
 
         // Hiding the accessory should also remove actions.
         mCoordinator.close();
-        assertThat(mModel.get(ACTIONS).size(), is(0));
+        assertThat(mModel.get(BAR_ITEMS).size(), is(0));
     }
 
     @Test
     public void testIsVisibleWithTabs() {
         // Without any actions, the accessory should remain invisible.
-        assertThat(mModel.get(ACTIONS).size(), is(0));
+        assertThat(mModel.get(BAR_ITEMS).size(), is(0));
         mCoordinator.requestShowing();
         assertThat(mModel.get(VISIBLE), is(false));
 
@@ -297,7 +297,7 @@ public class KeyboardAccessoryControllerTest {
 
         // Adding an action contributes to the actions bucket. Tabs and total are logged again.
         mCoordinator.close(); // Hide, so it's brought up again.
-        mModel.get(ACTIONS).add(new Action(null, 0, null));
+        mModel.get(BAR_ITEMS).add(new Action(null, 0, null));
         mCoordinator.requestShowing();
 
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
@@ -344,7 +344,7 @@ public class KeyboardAccessoryControllerTest {
         assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(1));
 
         // Adding a tabs doesn't change the total impression count but the specific bucket.
-        mModel.get(ACTIONS).add(new Action(null, 0, null));
+        mModel.get(BAR_ITEMS).add(new Action(null, 0, null));
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
         assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(1));
 
@@ -372,14 +372,14 @@ public class KeyboardAccessoryControllerTest {
         mCoordinator.requestShowing();
 
         // Adding an action fills the bar impression bucket and the actions set once.
-        mModel.get(ACTIONS).set(
+        mModel.get(BAR_ITEMS).set(
                 new Action[] {new Action("One", AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, null),
                         new Action("Two", AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, null)});
         assertThat(getActionImpressionCount(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC), is(1));
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
 
         // Adding another action leaves bar impressions unchanged but affects the actions bucket.
-        mModel.get(ACTIONS).set(
+        mModel.get(BAR_ITEMS).set(
                 new Action[] {new Action("Uno", AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, null),
                         new Action("Dos", AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, null)});
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
