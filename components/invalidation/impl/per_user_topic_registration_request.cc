@@ -41,6 +41,7 @@ enum class SubscriptionStatus {
 void RecordRequestStatus(
     SubscriptionStatus status,
     syncer::PerUserTopicRegistrationRequest::RequestType type,
+    const std::string& topic,
     int net_error = net::OK,
     int response_code = 200) {
   switch (type) {
@@ -69,6 +70,9 @@ void RecordRequestStatus(
     // Log a histogram to track response success vs. failure rates.
     base::UmaHistogramSparse("FCMInvalidations.SubscriptionResponseCode",
                              response_code);
+    base::UmaHistogramSparse(
+        "FCMInvalidations.SubscriptionResponseCodeForTopic." + topic,
+        response_code);
   }
 }
 
@@ -118,8 +122,8 @@ void PerUserTopicRegistrationRequest::OnURLFetchCompleteInternal(
                         : StatusCode::FAILED,
                     base::StringPrintf("HTTP Error: %d", response_code)),
              std::string());
-    RecordRequestStatus(SubscriptionStatus::kHttpFailure, type_, net_error,
-                        response_code);
+    RecordRequestStatus(SubscriptionStatus::kHttpFailure, type_, topic_,
+                        net_error, response_code);
     return;
   }
 
@@ -127,14 +131,14 @@ void PerUserTopicRegistrationRequest::OnURLFetchCompleteInternal(
     std::move(request_completed_callback_)
         .Run(Status(StatusCode::FAILED, base::StringPrintf("Network Error")),
              std::string());
-    RecordRequestStatus(SubscriptionStatus::kNetworkFailure, type_, net_error,
-                        response_code);
+    RecordRequestStatus(SubscriptionStatus::kNetworkFailure, type_, topic_,
+                        net_error, response_code);
     return;
   }
 
   if (type_ == UNSUBSCRIBE) {
     // No response body expected for DELETE requests.
-    RecordRequestStatus(SubscriptionStatus::kSuccess, type_, net_error,
+    RecordRequestStatus(SubscriptionStatus::kSuccess, type_, topic_, net_error,
                         response_code);
     std::move(request_completed_callback_)
         .Run(Status(StatusCode::SUCCESS, std::string()), std::string());
@@ -142,8 +146,8 @@ void PerUserTopicRegistrationRequest::OnURLFetchCompleteInternal(
   }
 
   if (!response_body || response_body->empty()) {
-    RecordRequestStatus(SubscriptionStatus::kParsingFailure, type_, net_error,
-                        response_code);
+    RecordRequestStatus(SubscriptionStatus::kParsingFailure, type_, topic_,
+                        net_error, response_code);
     std::move(request_completed_callback_)
         .Run(Status(StatusCode::FAILED, base::StringPrintf("Body parse error")),
              std::string());
@@ -162,7 +166,7 @@ void PerUserTopicRegistrationRequest::OnURLFetchCompleteInternal(
 
 void PerUserTopicRegistrationRequest::OnJsonParseFailure(
     const std::string& error) {
-  RecordRequestStatus(SubscriptionStatus::kParsingFailure, type_);
+  RecordRequestStatus(SubscriptionStatus::kParsingFailure, type_, topic_);
   std::move(request_completed_callback_)
       .Run(Status(StatusCode::FAILED, base::StringPrintf("Body parse error")),
            std::string());
@@ -172,13 +176,13 @@ void PerUserTopicRegistrationRequest::OnJsonParseSuccess(
     std::unique_ptr<base::Value> value) {
   const base::Value* private_topic_name_value =
       GetPrivateTopicName(value.get());
-  RecordRequestStatus(SubscriptionStatus::kSuccess, type_);
+  RecordRequestStatus(SubscriptionStatus::kSuccess, type_, topic_);
   if (private_topic_name_value) {
     std::move(request_completed_callback_)
         .Run(Status(StatusCode::SUCCESS, std::string()),
              private_topic_name_value->GetString());
   } else {
-    RecordRequestStatus(SubscriptionStatus::kParsingFailure, type_);
+    RecordRequestStatus(SubscriptionStatus::kParsingFailure, type_, topic_);
     std::move(request_completed_callback_)
         .Run(Status(StatusCode::FAILED, base::StringPrintf("Body parse error")),
              std::string());
@@ -214,6 +218,7 @@ PerUserTopicRegistrationRequest::Builder::Build() const {
 
   request->url_ = full_url;
   request->type_ = type_;
+  request->topic_ = topic_;
 
   std::string body;
   if (type_ == SUBSCRIBE)
