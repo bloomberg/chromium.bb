@@ -2744,6 +2744,21 @@ TEST_F(CompositedLayerMappingTest, ContentsNotOpaqueWithForegroundLayer) {
   EXPECT_FALSE(mapping->MainGraphicsLayer()->ContentsOpaque());
 }
 
+TEST_F(CompositedLayerMappingTest, DrawsContentWithTouchActionRects) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  SetBodyInnerHTML(
+      "<div id='target' style='will-change: transform; width: 100px;"
+      "    height: 100px; touch-action: none;'></div>");
+  auto* box = ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"));
+  auto* mapping = box->Layer()->GetCompositedLayerMapping();
+
+  // The only painted content for the main graphics layer is the touch-action
+  // rect but this should still be counted as drawn content.
+  EXPECT_TRUE(mapping->MainGraphicsLayer()->DrawsContent());
+}
+
 TEST_F(CompositedLayerMappingTest, ContentsOpaque) {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
