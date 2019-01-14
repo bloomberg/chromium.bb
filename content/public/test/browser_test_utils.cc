@@ -44,6 +44,7 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
+#include "content/browser/renderer_host/input/synthetic_touchscreen_pinch_gesture.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
@@ -921,6 +922,29 @@ void SimulateMouseWheelCtrlZoomEvent(WebContents* web_contents,
       web_contents->GetRenderViewHost()->GetWidget());
   widget_host->ForwardWheelEvent(wheel_event);
 }
+
+void SimulateTouchscreenPinch(WebContents* web_contents,
+                              const gfx::PointF& anchor,
+                              float scale_change,
+                              base::OnceClosure on_complete) {
+  SyntheticPinchGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.scale_factor = scale_change;
+  params.anchor = anchor;
+
+  auto pinch_gesture =
+      std::make_unique<SyntheticTouchscreenPinchGesture>(params);
+  RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(
+      web_contents->GetTopLevelRenderWidgetHostView()->GetRenderWidgetHost());
+  widget_host->QueueSyntheticGesture(
+      std::move(pinch_gesture),
+      base::BindOnce(
+          [](base::OnceClosure on_complete, SyntheticGesture::Result result) {
+            std::move(on_complete).Run();
+          },
+          std::move(on_complete)));
+}
+
 #endif  // !defined(OS_MACOSX)
 
 void SimulateGesturePinchSequence(WebContents* web_contents,

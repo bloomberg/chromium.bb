@@ -1853,6 +1853,14 @@ void EnsureCustomPinchZoomInvoked(WebContents* guest_contents,
   EXPECT_TRUE(got_update);
 
   zoom_watcher.Wait();
+
+  // Check that the browser's native pinch zoom was prevented.
+  double scale_factor;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractDouble(
+      contents,
+      "window.domAutomationController.send(window.visualViewport.scale);",
+      &scale_factor));
+  EXPECT_DOUBLE_EQ(1.0, scale_factor);
 }
 
 // Ensure that touchpad pinch events are handled by the PDF viewer.
@@ -1897,6 +1905,28 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, CtrlWheelInvokesCustomZoom) {
   EnsureCustomPinchZoomInvoked(guest_contents, GetActiveWebContents(),
                                std::move(send_ctrl_wheel));
 }
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TouchscreenPinchInvokesCustomZoom) {
+  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+
+  base::OnceClosure send_touchscreen_pinch = base::BindOnce(
+      [](WebContents* guest_contents) {
+        const gfx::Rect guest_rect = guest_contents->GetContainerBounds();
+        const gfx::PointF anchor_position(guest_rect.width() / 2,
+                                          guest_rect.height() / 2);
+        base::RunLoop run_loop;
+        content::SimulateTouchscreenPinch(guest_contents, anchor_position, 1.2f,
+                                          run_loop.QuitClosure());
+        run_loop.Run();
+      },
+      guest_contents);
+
+  EnsureCustomPinchZoomInvoked(guest_contents, GetActiveWebContents(),
+                               std::move(send_touchscreen_pinch));
+}
+
 #endif  // !defined(OS_MACOSX)
 
 // Flaky in nearly all configurations; see https://crbug.com/856169.
