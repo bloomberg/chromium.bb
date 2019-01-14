@@ -51,8 +51,6 @@ static void DeflateIfOverlapped(LayoutRect&, LayoutRect&);
 FocusCandidate::FocusCandidate(Node* node, SpatialNavigationDirection direction)
     : visible_node(nullptr),
       focusable_node(nullptr),
-      enclosing_scrollable_box(nullptr),
-      distance(MaxDistance()),
       is_offscreen(true),
       is_offscreen_after_scrolling(true) {
   DCHECK(node);
@@ -559,25 +557,26 @@ bool AreElementsOnSameLine(const FocusCandidate& first_candidate,
   return true;
 }
 
-void DistanceDataForNode(SpatialNavigationDirection direction,
-                         const FocusCandidate& current,
-                         FocusCandidate& candidate) {
-  if (!IsRectInDirection(direction, current.rect_in_root_frame,
+double ComputeDistanceDataForNode(SpatialNavigationDirection direction,
+                                  const FocusCandidate& current_interest,
+                                  const FocusCandidate& candidate) {
+  if (!IsRectInDirection(direction, current_interest.rect_in_root_frame,
                          candidate.rect_in_root_frame))
-    return;
+    return MaxDistance();
 
-  if (AreElementsOnSameLine(current, candidate)) {
+  if (AreElementsOnSameLine(current_interest, candidate)) {
     if ((direction == SpatialNavigationDirection::kUp &&
-         current.rect_in_root_frame.Y() > candidate.rect_in_root_frame.Y()) ||
+         current_interest.rect_in_root_frame.Y() >
+             candidate.rect_in_root_frame.Y()) ||
         (direction == SpatialNavigationDirection::kDown &&
-         candidate.rect_in_root_frame.Y() > current.rect_in_root_frame.Y())) {
-      candidate.distance = 0;
-      return;
+         candidate.rect_in_root_frame.Y() >
+             current_interest.rect_in_root_frame.Y())) {
+      return 0.0;
     }
   }
 
   LayoutRect node_rect = candidate.rect_in_root_frame;
-  LayoutRect current_rect = current.rect_in_root_frame;
+  LayoutRect current_rect = current_interest.rect_in_root_frame;
   DeflateIfOverlapped(current_rect, node_rect);
 
   LayoutPoint exit_point;
@@ -621,7 +620,7 @@ void DistanceDataForNode(SpatialNavigationDirection direction,
       break;
     default:
       NOTREACHED();
-      return;
+      return MaxDistance();
   }
 
   double euclidian_distance_pow2 =
@@ -631,9 +630,8 @@ void DistanceDataForNode(SpatialNavigationDirection direction,
       (intersection_rect.Width() * intersection_rect.Height()).ToDouble();
 
   // Distance calculation is based on http://www.w3.org/TR/WICD/#focus-handling
-  candidate.distance = sqrt(euclidian_distance_pow2) +
-                       navigation_axis_distance +
-                       weighted_orthogonal_axis_distance - sqrt(overlap);
+  return sqrt(euclidian_distance_pow2) + navigation_axis_distance +
+         weighted_orthogonal_axis_distance - sqrt(overlap);
 }
 
 // Returns a thin rectangle that represents one of box's sides.
@@ -677,7 +675,7 @@ LayoutRect StartEdgeForAreaElement(const HTMLAreaElement& area,
   return rect;
 }
 
-HTMLFrameOwnerElement* FrameOwnerElement(FocusCandidate& candidate) {
+HTMLFrameOwnerElement* FrameOwnerElement(const FocusCandidate& candidate) {
   return candidate.IsFrameOwnerElement()
              ? ToHTMLFrameOwnerElement(candidate.visible_node)
              : nullptr;

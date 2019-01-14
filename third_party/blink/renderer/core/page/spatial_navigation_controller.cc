@@ -57,10 +57,14 @@ void ClearFocusInExitedFrames(LocalFrame* old_frame,
   }
 }
 
-static void UpdateFocusCandidateIfNeeded(SpatialNavigationDirection direction,
-                                         const FocusCandidate& current,
-                                         FocusCandidate& candidate,
-                                         FocusCandidate& closest) {
+// Determines whether the given candidate is closer to the current interested
+// node (in the given direction) than the current best. If so, it'll replace
+// the current best.
+static void ConsiderForBestCandidate(SpatialNavigationDirection direction,
+                                     const FocusCandidate& current_interest,
+                                     const FocusCandidate& candidate,
+                                     FocusCandidate* best_candidate,
+                                     double* best_distance) {
   DCHECK(candidate.visible_node->IsElementNode());
   DCHECK(candidate.visible_node->GetLayoutObject());
 
@@ -75,19 +79,21 @@ static void UpdateFocusCandidateIfNeeded(SpatialNavigationDirection direction,
   if (candidate.is_offscreen && candidate.is_offscreen_after_scrolling)
     return;
 
-  DistanceDataForNode(direction, current, candidate);
-  if (candidate.distance == MaxDistance())
+  double distance =
+      ComputeDistanceDataForNode(direction, current_interest, candidate);
+  if (distance == MaxDistance())
     return;
 
-  if (closest.IsNull()) {
-    closest = candidate;
+  if (best_candidate->IsNull()) {
+    *best_candidate = candidate;
+    *best_distance = distance;
     return;
   }
 
-  LayoutRect intersection_rect =
-      Intersection(candidate.rect_in_root_frame, closest.rect_in_root_frame);
+  LayoutRect intersection_rect = Intersection(
+      candidate.rect_in_root_frame, best_candidate->rect_in_root_frame);
   if (!intersection_rect.IsEmpty() &&
-      !AreElementsOnSameLine(closest, candidate) &&
+      !AreElementsOnSameLine(*best_candidate, candidate) &&
       intersection_rect == candidate.rect_in_root_frame) {
     // If 2 nodes are intersecting, do hit test to find which node in on top.
     LayoutUnit x = intersection_rect.X() + intersection_rect.Width() / 2;
@@ -107,15 +113,18 @@ static void UpdateFocusCandidateIfNeeded(SpatialNavigationDirection direction,
                 location, HitTestRequest::kReadOnly | HitTestRequest::kActive |
                               HitTestRequest::kIgnoreClipping);
     if (candidate.visible_node->contains(result.InnerNode())) {
-      closest = candidate;
+      *best_candidate = candidate;
+      *best_distance = distance;
       return;
     }
-    if (closest.visible_node->contains(result.InnerNode()))
+    if (best_candidate->visible_node->contains(result.InnerNode()))
       return;
   }
 
-  if (candidate.distance < closest.distance)
-    closest = candidate;
+  if (distance < *best_distance) {
+    *best_candidate = candidate;
+    *best_distance = distance;
+  }
 }
 
 }  // namespace
@@ -145,51 +154,32 @@ void SpatialNavigationController::Trace(blink::Visitor* visitor) {
 
 bool SpatialNavigationController::Advance(
     SpatialNavigationDirection direction) {
-  // FIXME: Directional focus changes don't yet work with RemoteFrames.
-  Frame* focused_frame = page_->GetFocusController().FocusedOrMainFrame();
-  if (!focused_frame->IsLocalFrame())
-    return false;
-  const LocalFrame* current_frame = ToLocalFrame(focused_frame);
-  DCHECK(current_frame);
-
-  Document* focused_document = current_frame->GetDocument();
-  if (!focused_document)
+  Node* interest_node = StartingNode();
+  if (!interest_node)
     return false;
 
-  // TODO(bokan): Why do we only update the current document? We could move
-  // from an iframe to its parent so presumably we want to update the parent
-  // too? We update in the while loop below if we pop-out to a Document but if
-  // we pop-out to a container we won't.
-  focused_document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  interest_node->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  Node* focused_element = focused_document->FocusedElement();
-  if (!focused_element)  // An iframe's document is focused.
-    focused_element = focused_document;
-
-  Node* container = focused_document;
-  if (focused_element)
-    container = ScrollableAreaOrDocumentOf(focused_element);
+  Node* container = ScrollableAreaOrDocumentOf(interest_node);
 
   const LayoutRect visible_rect(page_->GetVisualViewport().VisibleRect());
   const LayoutRect start_box =
-      SearchOrigin(visible_rect, focused_element, direction);
+      SearchOrigin(visible_rect, interest_node, direction);
 
-  if (IsScrollableAreaOrDocument(focused_element) &&
-      !IsOffscreen(focused_element)) {
-    // A visible scroller is focused. Search inside of it from one of its edges.
+  if (IsScrollableAreaOrDocument(interest_node) &&
+      !IsOffscreen(interest_node)) {
+    // A visible scroller has interest. Search inside of it from one of its
+    // edges.
     LayoutRect edge = OppositeEdge(direction, start_box);
-    if (AdvanceInContainer(focused_element, edge, direction, nullptr))
+    if (AdvanceWithinContainer(*interest_node, edge, direction, nullptr))
       return true;
   }
 
-  // The focused scroller had nothing. Let's search outside of it.
-  Node* skipped_tree = focused_element;
-  bool consumed = false;
+  // The interested scroller had nothing. Let's search outside of it.
+  Node* skipped_tree = interest_node;
   while (container) {
-    consumed =
-        AdvanceInContainer(container, start_box, direction, skipped_tree);
-    if (consumed)
-      break;
+    if (AdvanceWithinContainer(*container, start_box, direction, skipped_tree))
+      return true;
 
     // Containers are not focused “on the way out”. This prevents containers
     // from acting as “focus traps”. Take <c> <a> </c> <b>. Focus can move from
@@ -199,31 +189,38 @@ bool SpatialNavigationController::Advance(
     skipped_tree = container;
     // Nothing found in |container| so search the parent container.
     container = ScrollableAreaOrDocumentOf(container);
+
+    // TODO(bokan): This needs to update the parent document when the _current_
+    // container is a document since we're crossing the document boundary.
+    // Currently this will fail if we're going from an inner document to a
+    // sub-scroller in a parent document.
     if (auto* document = DynamicTo<Document>(container))
       document->UpdateStyleAndLayoutIgnorePendingStylesheets();
   }
 
-  return consumed;
+  return false;
 }
 
-void SpatialNavigationController::FindCandidateInContainer(
+FocusCandidate SpatialNavigationController::FindNextCandidateInContainer(
     Node& container,
-    const LayoutRect& starting_rect,
+    const LayoutRect& starting_rect_in_root_frame,
     SpatialNavigationDirection direction,
-    FocusCandidate& closest,
-    Node* focused_element) {
+    Node* interest_child_in_container) {
   Element* element = ElementTraversal::FirstWithin(container);
-  FocusCandidate current;
-  current.rect_in_root_frame = starting_rect;
-  current.focusable_node = focused_element;
-  current.visible_node = focused_element;
 
+  FocusCandidate current_interest;
+  current_interest.rect_in_root_frame = starting_rect_in_root_frame;
+  current_interest.focusable_node = interest_child_in_container;
+  current_interest.visible_node = interest_child_in_container;
+
+  FocusCandidate best_candidate;
+  double best_distance = MaxDistance();
   for (; element;
        element =
            IsScrollableAreaOrDocument(element)
                ? ElementTraversal::NextSkippingChildren(*element, &container)
                : ElementTraversal::Next(*element, &container)) {
-    if (element == focused_element)
+    if (element == interest_child_in_container)
       continue;
 
     if (!element->IsKeyboardFocusable())
@@ -236,41 +233,68 @@ void SpatialNavigationController::FindCandidateInContainer(
     if (candidate.IsNull())
       continue;
 
-    candidate.enclosing_scrollable_box = &container;
-    UpdateFocusCandidateIfNeeded(direction, current, candidate, closest);
+    ConsiderForBestCandidate(direction, current_interest, candidate,
+                             &best_candidate, &best_distance);
   }
+
+  return best_candidate;
 }
 
-bool SpatialNavigationController::AdvanceInContainer(
-    Node* const container,
-    const LayoutRect& starting_rect,
+bool SpatialNavigationController::AdvanceWithinContainer(
+    Node& container,
+    const LayoutRect& starting_rect_in_root_frame,
     SpatialNavigationDirection direction,
-    Node* focused_element) {
-  DCHECK(container);
+    Node* interest_child_in_container) {
+  DCHECK(IsScrollableAreaOrDocument(&container));
 
-  FocusCandidate candidate;
-  FindCandidateInContainer(*container, starting_rect, direction, candidate,
-                           focused_element);
+  FocusCandidate candidate =
+      FindNextCandidateInContainer(container, starting_rect_in_root_frame,
+                                   direction, interest_child_in_container);
 
   if (candidate.IsNull()) {
     // Nothing to focus in this container, scroll if possible.
     // NOTE: If no scrolling is performed (i.e. ScrollInDirection returns
     // false), the spatial navigation algorithm will skip this container.
-    return ScrollInDirection(container, direction);
+    return ScrollInDirection(&container, direction);
   }
 
   Element* element = ToElement(candidate.focusable_node);
   DCHECK(element);
+  MoveInterestTo(element);
+  return true;
+}
 
+Node* SpatialNavigationController::StartingNode() {
+  // FIXME: Directional focus changes don't yet work with RemoteFrames.
+  Frame* focused_frame = page_->GetFocusController().FocusedOrMainFrame();
+  if (!focused_frame->IsLocalFrame())
+    return nullptr;
+
+  const LocalFrame* current_frame = ToLocalFrame(focused_frame);
+  DCHECK(current_frame);
+
+  Document* focused_document = current_frame->GetDocument();
+  if (!focused_document)
+    return nullptr;
+
+  Node* focused_element = focused_document->FocusedElement();
+  if (!focused_element)  // An iframe's document is focused.
+    focused_element = focused_document;
+
+  return focused_element;
+}
+
+void SpatialNavigationController::MoveInterestTo(Node* next_node) {
   // Before focusing the new element, check if we're leaving an iframe (= moving
   // focus out of an iframe). In this case, we want the exited [nested] iframes
-  // to loose focus. This is tested in snav-iframe-nested.html.
+  // to lose focus. This is tested in snav-iframe-nested.html.
   LocalFrame* old_frame = page_->GetFocusController().FocusedFrame();
-  ClearFocusInExitedFrames(old_frame, element->GetDocument().GetFrame());
+  ClearFocusInExitedFrames(old_frame, next_node->GetDocument().GetFrame());
 
-  element->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
-                             kWebFocusTypeSpatialNavigation, nullptr));
-  return true;
+  DCHECK(next_node->IsElementNode());
+  ToElement(next_node)->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
+                                          kWebFocusTypeSpatialNavigation,
+                                          nullptr));
 }
 
 }  // namespace blink
