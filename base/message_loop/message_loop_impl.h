@@ -5,6 +5,7 @@
 #ifndef BASE_MESSAGE_LOOP_MESSAGE_LOOP_IMPL_H_
 #define BASE_MESSAGE_LOOP_MESSAGE_LOOP_IMPL_H_
 
+#include <atomic>
 #include <memory>
 #include <queue>
 #include <string>
@@ -76,6 +77,7 @@ class BASE_EXPORT MessageLoopImpl : public MessageLoopBase,
   void BindToCurrentThread(std::unique_ptr<MessagePump> pump) override;
   void DeletePendingTasks() override;
   bool HasTasks() override;
+  unsigned int GetWorkId() const override;
 
   // Gets the TaskRunner associated with this message loop.
   const scoped_refptr<SingleThreadTaskRunner>& task_runner() const {
@@ -134,7 +136,12 @@ class BASE_EXPORT MessageLoopImpl : public MessageLoopBase,
   // <= 1 second. Details @ https://crrev.com/c/1142589.
   TimeTicks CapAtOneDay(TimeTicks next_run_time);
 
+  // Updates the id for the current work item. This function should be called
+  // before each distinct piece of work executed by the message loop.
+  void IncrementWorkId();
+
   // MessagePump::Delegate methods:
+  void BeforeDoInternalWork() override;
   bool DoWork() override;
   bool DoDelayedWork(TimeTicks* next_delayed_work_time) override;
   bool DoIdleWork() override;
@@ -199,6 +206,11 @@ class BASE_EXPORT MessageLoopImpl : public MessageLoopBase,
   // Instantiated in BindToCurrentThread().
   std::unique_ptr<internal::ScopedSetSequenceLocalStorageMapForCurrentThread>
       scoped_set_sequence_local_storage_map_for_current_thread_;
+
+  // The unique identifier for the current work item (task, event, etc.) being
+  // executed by the message loop. Atomic to support being read without locking
+  // from other threads.
+  std::atomic_uint work_id_;
 
   ObserverList<DestructionObserver>::Unchecked destruction_observers_;
 

@@ -21,6 +21,9 @@ class BASE_EXPORT MessagePump {
    public:
     virtual ~Delegate() = default;
 
+    // Called before work performed internal to the message pump is executed.
+    virtual void BeforeDoInternalWork();
+
     // Called from within Run in response to ScheduleWork or when the message
     // pump would otherwise call DoDelayedWork.  Returns true to indicate that
     // work was done.  DoDelayedWork will still be called if DoWork returns
