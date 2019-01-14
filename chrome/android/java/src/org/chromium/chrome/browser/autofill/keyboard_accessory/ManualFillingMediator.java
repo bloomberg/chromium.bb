@@ -240,11 +240,11 @@ class ManualFillingMediator extends EmptyTabObserver
         if (!isInitialized()) return;
         pause();
         mActivity.findViewById(android.R.id.content).removeOnLayoutChangeListener(this);
+        mTabModelObserver.destroy();
         LayoutManager manager = getLayoutManager();
         if (manager != null) manager.removeSceneChangeObserver(mTabSwitcherObserver);
         mWindowAndroid = null;
         mActivity = null;
-        mTabModelObserver.destroy();
     }
 
     boolean handleBackPress() {
@@ -324,7 +324,7 @@ class ManualFillingMediator extends EmptyTabObserver
 
     @Override
     public void onChangeAccessorySheet(int tabIndex) {
-        assert mActivity != null : "ManualFillingMediator needs initialization.";
+        if (mActivity == null) return; // Mediator not initialized or already destroyed.
         mAccessorySheet.setActiveTab(tabIndex);
         if (mPopup != null && mPopup.isShowing()) mPopup.dismiss();
         // If there is a keyboard, update the accessory sheet's height and hide the keyboard.

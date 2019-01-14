@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BarItem;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -26,25 +27,27 @@ class KeyboardAccessoryModernViewBinder {
         }
 
         public static KeyboardAccessoryViewBinder.BarItemViewHolder create(
-                ViewGroup parent, @AccessoryAction int viewType) {
+                ViewGroup parent, @BarItem.Type int viewType) {
             switch (viewType) {
-                case AccessoryAction.AUTOFILL_SUGGESTION:
+                case BarItem.Type.SUGGESTION:
                     return new ModernBarItemViewHolder(
                             LayoutInflater.from(parent.getContext())
                                     .inflate(
                                             R.layout.keyboard_accessory_suggestion, parent, false));
-                case AccessoryAction.TAB_SWITCHER:
+                case BarItem.Type.TAB_SWITCHER:
                     return new ModernBarItemViewHolder((
                             LayoutInflater.from(parent.getContext())
                                     .inflate(R.layout.keyboard_accessory_tabs, parent, false)));
+                case BarItem.Type.ACTION_BUTTON: // Intentional fallthrough. Use legacy handling.
+                case BarItem.Type.COUNT: // Intentional fallthrough. Use legacy handling.
+                    break;
             }
             return KeyboardAccessoryViewBinder.BarItemViewHolder.create(parent, viewType);
         }
 
         @Override
-        public void bind(KeyboardAccessoryData.Action action) {
-            if (action.getActionType() == AccessoryAction.TAB_SWITCHER) return;
-            super.bind(action);
+        public void bind(BarItem barItem) {
+            super.bind(barItem);
         }
     }
 

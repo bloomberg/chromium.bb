@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabModel.AccessorySheetDataPiece.Type.PASSWORD_INFO;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabModel.AccessorySheetDataPiece.getType;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTrigger.MANUAL_OPEN;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BAR_ITEMS;
 
 import android.support.annotation.Nullable;
 
@@ -14,6 +15,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabModel.AccessorySheetDataPiece;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.UserInfo;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BarItem;
 import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -93,36 +95,41 @@ public class KeyboardAccessoryMetricsRecorder {
         /**
          * If not done yet, this records an impression for the general type of list that was added.
          * In addition, it records impressions for each new action type that changed in the list.
-         * @param list A generic list with {@link KeyboardAccessoryData.Tab}s or
-         *             {@link KeyboardAccessoryData.Action}s.
+         * @param list A list of {@link BarItem}s.
          * @param first Index of the first element that changed.
          * @param count Number of elements starting with |first| that were added or changed.
          */
         private void recordUnrecordedList(ListObservable list, int first, int count) {
             if (!mModel.get(KeyboardAccessoryProperties.VISIBLE)) return;
-            if (list == mModel.get(KeyboardAccessoryProperties.BAR_ITEMS)) {
-                // Remove all actions that were changed, so changes are treated as new recordings.
-                for (int index = first; index < first + count; ++index) {
-                    KeyboardAccessoryData.Action action =
-                            mModel.get(KeyboardAccessoryProperties.BAR_ITEMS).get(index);
-                    mRecordedActionImpressions.remove(action.getActionType());
-                }
-                // Record any unrecorded type, but not more than once (i.e. one set of suggestion).
-                for (int index = first; index < first + count; ++index) {
-                    KeyboardAccessoryData.Action action =
-                            mModel.get(KeyboardAccessoryProperties.BAR_ITEMS).get(index);
-                    if (action.getActionType() == AccessoryAction.TAB_SWITCHER) continue; // Ignore!
-                    maybeRecordBarBucket(
-                            action.getActionType() == AccessoryAction.AUTOFILL_SUGGESTION
-                                    ? AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS
-                                    : AccessoryBarContents.WITH_ACTIONS);
-                    if (mRecordedActionImpressions.add(action.getActionType())) {
-                        recordActionImpression(action.getActionType());
-                    }
-                }
-                return;
+            if (list != mModel.get(BAR_ITEMS)) return;
+            // Remove all changed items, so changes are treated as new recordings.
+            for (int index = first; index < first + count; ++index) {
+                BarItem barItem = mModel.get(BAR_ITEMS).get(index);
+                mRecordedActionImpressions.remove(barItem.getViewType());
             }
-            assert false : "Tried to record metrics for unknown list " + list;
+            // Record any unrecorded type, but not more than once (i.e. one set of suggestion).
+            for (int index = first; index < first + count; ++index) {
+                KeyboardAccessoryData.Action action = mModel.get(BAR_ITEMS).get(index).getAction();
+                if (action == null) continue; // Ignore!
+                maybeRecordBarBucket(action.getActionType() == AccessoryAction.AUTOFILL_SUGGESTION
+                                ? AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS
+                                : AccessoryBarContents.WITH_ACTIONS);
+                if (mRecordedActionImpressions.add(action.getActionType())) {
+                    recordActionImpression(action.getActionType());
+                }
+            }
+        }
+
+        private void recordGeneralActionTypes() {
+            if (!mModel.get(KeyboardAccessoryProperties.VISIBLE)) return;
+            // Record any unrecorded type, but not more than once (i.e. one set of suggestion).
+            for (int index = 0; index < mModel.get(BAR_ITEMS).size(); ++index) {
+                KeyboardAccessoryData.Action action = mModel.get(BAR_ITEMS).get(index).getAction();
+                if (action == null) continue; // Item is no relevant action.
+                maybeRecordBarBucket(action.getActionType() == AccessoryAction.AUTOFILL_SUGGESTION
+                                ? AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS
+                                : AccessoryBarContents.WITH_ACTIONS);
+            }
         }
 
         /**
@@ -153,6 +160,12 @@ public class KeyboardAccessoryMetricsRecorder {
         @Override
         public void onItemRangeChanged(
                 ListObservable<Void> source, int index, int count, @Nullable Void payload) {
+            // Remove all actions that were changed, so changes are treated as new recordings.
+            for (int i = index; i < index + count; ++i) {
+                KeyboardAccessoryData.Action action = mModel.get(BAR_ITEMS).get(i).getAction();
+                if (action == null) continue; // Item is no recordable action.
+                mRecordedActionImpressions.remove(action.getActionType());
+            }
             recordUnrecordedList(source, index, count);
         }
 
@@ -178,14 +191,12 @@ public class KeyboardAccessoryMetricsRecorder {
             if (mRecordedBarBuckets.contains(bucket)) return false;
             switch (bucket) {
                 case AccessoryBarContents.WITH_ACTIONS:
-                    return hasAtLeastOneActionOfType(
-                            mModel.get(KeyboardAccessoryProperties.BAR_ITEMS),
+                    return hasAtLeastOneActionOfType(mModel.get(BAR_ITEMS),
                             AccessoryAction.MANAGE_PASSWORDS,
                             AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
                 case AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS:
                     return hasAtLeastOneActionOfType(
-                            mModel.get(KeyboardAccessoryProperties.BAR_ITEMS),
-                            AccessoryAction.AUTOFILL_SUGGESTION);
+                            mModel.get(BAR_ITEMS), AccessoryAction.AUTOFILL_SUGGESTION);
                 case AccessoryBarContents.WITH_TABS:
                     return mTabSwitcher.hasTabs();
                 case AccessoryBarContents.ANY_CONTENTS: // Intentional fallthrough.
@@ -206,7 +217,7 @@ public class KeyboardAccessoryMetricsRecorder {
         AccessoryBarObserver observer =
                 new AccessoryBarObserver(keyboardAccessoryModel, tabSwitcher);
         keyboardAccessoryModel.addObserver(observer);
-        keyboardAccessoryModel.get(KeyboardAccessoryProperties.BAR_ITEMS).addObserver(observer);
+        keyboardAccessoryModel.get(BAR_ITEMS).addObserver(observer);
     }
 
     /**
@@ -329,11 +340,12 @@ public class KeyboardAccessoryMetricsRecorder {
     }
 
     private static boolean hasAtLeastOneActionOfType(
-            ListModel<KeyboardAccessoryData.Action> actionList, @AccessoryAction int... types) {
+            ListModel<BarItem> itemList, @AccessoryAction int... types) {
         Set<Integer> typeList = new HashSet<>(types.length);
         for (@AccessoryAction int type : types) typeList.add(type);
-        for (KeyboardAccessoryData.Action action : actionList) {
-            if (typeList.contains(action.getActionType())) return true;
+        for (BarItem barItem : itemList) {
+            if (barItem.getAction() == null) continue; // Item irrelevant for recording.
+            if (typeList.contains(barItem.getAction().getActionType())) return true;
         }
         return false;
     }

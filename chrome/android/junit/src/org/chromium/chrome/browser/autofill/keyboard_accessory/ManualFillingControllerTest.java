@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessory
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.UserInfo;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BarItem;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.ListObservable;
@@ -224,7 +225,7 @@ public class ManualFillingControllerTest {
                 new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
         PropertyProvider<Action[]> secondTabProvider =
                 new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
-        ListModel<Action> keyboardActions =
+        ListModel<BarItem> keyboardActions =
                 mediator.getKeyboardAccessory().getMediatorForTesting().getModelForTesting().get(
                         KeyboardAccessoryProperties.BAR_ITEMS);
         keyboardActions.addObserver(mMockItemListObserver);
@@ -656,6 +657,7 @@ public class ManualFillingControllerTest {
                 .getModelForTesting()
                 .get(KeyboardAccessoryProperties.BAR_ITEMS)
                 .get(0)
+                .getAction()
                 .getCaption();
     }
 }
