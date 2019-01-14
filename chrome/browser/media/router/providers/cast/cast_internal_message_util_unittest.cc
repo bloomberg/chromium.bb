@@ -10,9 +10,6 @@
 #include "components/cast_channel/cast_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::test::IsJson;
-using base::test::ParseJson;
-
 namespace media_router {
 
 namespace {
@@ -39,21 +36,35 @@ std::unique_ptr<base::Value> ReceiverStatus() {
 void ExpectNoCastSession(const MediaSinkInternal& sink,
                          const std::string& receiver_status_str,
                          const std::string& reason) {
-  auto session = CastSession::From(sink, *ParseJson(receiver_status_str));
+  auto receiver_status = base::JSONReader::Read(receiver_status_str);
+  ASSERT_TRUE(receiver_status);
+  auto session = CastSession::From(sink, *receiver_status);
   EXPECT_FALSE(session) << "Shouldn't have created session because of "
                         << reason;
 }
 
+void ExpectJSONMessagesEqual(const std::string& expected_message,
+                             const std::string& message) {
+  auto expected_message_value = base::JSONReader::Read(expected_message);
+  ASSERT_TRUE(expected_message_value);
+
+  auto message_value = base::JSONReader::Read(message);
+  ASSERT_TRUE(message_value);
+
+  EXPECT_EQ(*expected_message_value, *message_value);
+}
+
 void ExpectInvalidCastInternalMessage(const std::string& message_str,
                                       const std::string& invalid_reason) {
-  EXPECT_FALSE(CastInternalMessage::From(std::move(*ParseJson(message_str))))
+  auto message_value = base::JSONReader::Read(message_str);
+  ASSERT_TRUE(message_value);
+  EXPECT_FALSE(CastInternalMessage::From(std::move(*message_value)))
       << "message expected to be invlaid: " << invalid_reason;
 }
 
 }  // namespace
 
-TEST(CastInternalMessageUtilDeathTest,
-     CastInternalMessageFromAppMessageString) {
+TEST(CastInternalMessageUtilTest, CastInternalMessageFromAppMessageString) {
   std::string message_str = R"({
     "type": "app_message",
     "clientId": "12345",
@@ -64,74 +75,38 @@ TEST(CastInternalMessageUtilDeathTest,
       "message": { "foo": "bar" }
     }
   })";
+  auto message_value = base::JSONReader::Read(message_str);
+  ASSERT_TRUE(message_value);
 
-  auto message = CastInternalMessage::From(std::move(*ParseJson(message_str)));
+  auto message = CastInternalMessage::From(std::move(*message_value));
   ASSERT_TRUE(message);
   EXPECT_EQ(CastInternalMessage::Type::kAppMessage, message->type);
   EXPECT_EQ("12345", message->client_id);
   EXPECT_EQ(999, message->sequence_number);
-  EXPECT_EQ("urn:x-cast:com.google.foo", message->app_message_namespace());
-  EXPECT_EQ("sessionId", message->session_id());
+  EXPECT_EQ("urn:x-cast:com.google.foo", message->app_message_namespace);
+  EXPECT_EQ("sessionId", message->app_message_session_id);
   base::Value message_body(base::Value::Type::DICTIONARY);
   message_body.SetKey("foo", base::Value("bar"));
-  EXPECT_EQ(message_body, message->app_message_body());
-
-  EXPECT_DEATH_IF_SUPPORTED(message->v2_message_type(), "Type::kV2Message");
-  EXPECT_DEATH_IF_SUPPORTED(message->v2_message_body(), "Type::kV2Message");
+  EXPECT_EQ(message_body, message->app_message_body);
 }
 
-TEST(CastInternalMessageUtilDeathTest, CastInternalMessageFromV2MessageString) {
-  std::string message_str = R"({
-    "type": "v2_message",
-    "clientId": "12345",
-    "sequenceNumber": 999,
-    "message": {
-      "type": "v2_message_type",
-      "sessionId": "sessionId",
-      "foo": "bar"
-    }
-  })";
-
-  auto message = CastInternalMessage::From(std::move(*ParseJson(message_str)));
-  ASSERT_TRUE(message);
-  EXPECT_EQ(CastInternalMessage::Type::kV2Message, message->type);
-  EXPECT_EQ("12345", message->client_id);
-  EXPECT_EQ(999, message->sequence_number);
-  EXPECT_EQ("sessionId", message->session_id());
-  EXPECT_EQ("v2_message_type", message->v2_message_type());
-  auto v2_body = ParseJson(R"({
-      "type": "v2_message_type",
-      "sessionId": "sessionId",
-      "foo": "bar"
-    })");
-  EXPECT_EQ(*v2_body, message->v2_message_body());
-
-  EXPECT_DEATH_IF_SUPPORTED(message->app_message_namespace(),
-                            "Type::kAppMessage");
-  EXPECT_DEATH_IF_SUPPORTED(message->app_message_body(), "Type::kAppMessage");
-}
-
-TEST(CastInternalMessageUtilDeathTest,
-     CastInternalMessageFromClientConnectString) {
+TEST(CastInternalMessageUtilTest, CastInternalMessageFromClientConnectString) {
   std::string message_str = R"({
       "type": "client_connect",
       "clientId": "12345",
       "message": {}
     })";
+  auto message_value = base::JSONReader::Read(message_str);
+  ASSERT_TRUE(message_value);
 
-  auto message = CastInternalMessage::From(std::move(*ParseJson(message_str)));
+  auto message = CastInternalMessage::From(std::move(*message_value));
   ASSERT_TRUE(message);
   EXPECT_EQ(CastInternalMessage::Type::kClientConnect, message->type);
   EXPECT_EQ("12345", message->client_id);
-  EXPECT_FALSE(message->sequence_number);
-
-  EXPECT_DEATH_IF_SUPPORTED(message->session_id(),
-                            "Type::kAppMessage.*Type::kV2Message");
-  EXPECT_DEATH_IF_SUPPORTED(message->v2_message_type(), "Type::kV2Message");
-  EXPECT_DEATH_IF_SUPPORTED(message->v2_message_body(), "Type::kV2Message");
-  EXPECT_DEATH_IF_SUPPORTED(message->app_message_namespace(),
-                            "Type::kAppMessage");
-  EXPECT_DEATH_IF_SUPPORTED(message->app_message_body(), "Type::kAppMessage");
+  EXPECT_EQ(-1, message->sequence_number);
+  EXPECT_TRUE(message->app_message_namespace.empty());
+  EXPECT_TRUE(message->app_message_session_id.empty());
+  EXPECT_EQ(base::Value(), message->app_message_body);
 }
 
 TEST(CastInternalMessageUtilTest, CastInternalMessageFromInvalidStrings) {
@@ -205,7 +180,9 @@ TEST(CastInternalMessageUtilTest, CastSessionFromReceiverStatusNoStatusText) {
         "transportId":"transportId"
       }]
   })";
-  auto session = CastSession::From(sink, *ParseJson(receiver_status_str));
+  auto receiver_status = base::JSONReader::Read(receiver_status_str);
+  ASSERT_TRUE(receiver_status);
+  auto session = CastSession::From(sink, *receiver_status);
   ASSERT_TRUE(session);
   EXPECT_EQ("sessionId", session->session_id());
   EXPECT_EQ("ABCDEFGH", session->app_id());
@@ -291,10 +268,7 @@ TEST(CastInternalMessageUtilTest, CastSessionFromInvalidReceiverStatuses) {
 TEST(CastInternalMessageUtilTest, CreateReceiverActionCastMessage) {
   std::string client_id = "clientId";
   MediaSinkInternal sink = CreateCastSink(1);
-
-  auto message =
-      CreateReceiverActionCastMessage(client_id, sink, kReceiverIdToken);
-  EXPECT_THAT(message, IsCastMessage(R"({
+  std::string expected_message = R"({
      "clientId": "clientId",
      "message": {
         "action": "cast",
@@ -308,18 +282,20 @@ TEST(CastInternalMessageUtilTest, CreateReceiverActionCastMessage) {
            "volume": null
         }
      },
+     "sequenceNumber": -1,
      "timeoutMillis": 0,
      "type": "receiver_action"
-    })"));
+  })";
+
+  auto message =
+      CreateReceiverActionCastMessage(client_id, sink, kReceiverIdToken);
+  ExpectJSONMessagesEqual(expected_message, message->get_message());
 }
 
 TEST(CastInternalMessageUtilTest, CreateReceiverActionStopMessage) {
   std::string client_id = "clientId";
   MediaSinkInternal sink = CreateCastSink(1);
-
-  auto message =
-      CreateReceiverActionStopMessage(client_id, sink, kReceiverIdToken);
-  EXPECT_THAT(message, IsCastMessage(R"({
+  std::string expected_message = R"({
      "clientId": "clientId",
      "message": {
         "action": "stop",
@@ -333,9 +309,14 @@ TEST(CastInternalMessageUtilTest, CreateReceiverActionStopMessage) {
            "volume": null
         }
      },
+     "sequenceNumber": -1,
      "timeoutMillis": 0,
      "type": "receiver_action"
-    })"));
+  })";
+
+  auto message =
+      CreateReceiverActionStopMessage(client_id, sink, kReceiverIdToken);
+  ExpectJSONMessagesEqual(expected_message, message->get_message());
 }
 
 TEST(CastInternalMessageUtilTest, CreateNewSessionMessage) {
@@ -346,9 +327,7 @@ TEST(CastInternalMessageUtilTest, CreateNewSessionMessage) {
   auto session = CastSession::From(sink, *receiver_status);
   ASSERT_TRUE(session);
 
-  auto message =
-      CreateNewSessionMessage(*session, client_id, sink, kReceiverIdToken);
-  EXPECT_THAT(message, IsCastMessage(R"({
+  std::string expected_message = R"({
    "clientId": "clientId",
    "message": {
       "appId": "ABCDEFGH",
@@ -373,9 +352,14 @@ TEST(CastInternalMessageUtilTest, CreateNewSessionMessage) {
       "statusText": "App status",
       "transportId": "transportId"
    },
+   "sequenceNumber": -1,
    "timeoutMillis": 0,
    "type": "new_session"
-  })"));
+  })";
+
+  auto message =
+      CreateNewSessionMessage(*session, client_id, sink, kReceiverIdToken);
+  ExpectJSONMessagesEqual(expected_message, message->get_message());
 }
 
 TEST(CastInternalMessageUtilTest, CreateUpdateSessionMessage) {
@@ -386,9 +370,7 @@ TEST(CastInternalMessageUtilTest, CreateUpdateSessionMessage) {
   auto session = CastSession::From(sink, *receiver_status);
   ASSERT_TRUE(session);
 
-  auto message =
-      CreateUpdateSessionMessage(*session, client_id, sink, kReceiverIdToken);
-  EXPECT_THAT(message, IsCastMessage(R"({
+  std::string expected_message = R"({
    "clientId": "clientId",
    "message": {
       "appId": "ABCDEFGH",
@@ -413,23 +395,30 @@ TEST(CastInternalMessageUtilTest, CreateUpdateSessionMessage) {
       "statusText": "App status",
       "transportId": "transportId"
    },
+   "sequenceNumber": -1,
    "timeoutMillis": 0,
    "type": "update_session"
-  })"));
+  })";
+
+  auto message =
+      CreateUpdateSessionMessage(*session, client_id, sink, kReceiverIdToken);
+  ExpectJSONMessagesEqual(expected_message, message->get_message());
 }
 
 TEST(CastInternalMessageUtilTest, CreateAppMessageAck) {
   std::string client_id = "clientId";
   int sequence_number = 12345;
 
-  auto message = CreateAppMessageAck(client_id, sequence_number);
-  EXPECT_THAT(message, IsCastMessage(R"({
+  std::string expected_message = R"({
    "clientId": "clientId",
    "message": null,
    "sequenceNumber": 12345,
    "timeoutMillis": 0,
    "type": "app_message"
-  })"));
+  })";
+
+  auto message = CreateAppMessageAck(client_id, sequence_number);
+  ExpectJSONMessagesEqual(expected_message, message->get_message());
 }
 
 TEST(CastInternalMessageUtilTest, CreateAppMessage) {
@@ -440,44 +429,20 @@ TEST(CastInternalMessageUtilTest, CreateAppMessage) {
   cast_channel::CastMessage cast_message = cast_channel::CreateCastMessage(
       "urn:x-cast:com.google.foo", message_body, "sourceId", "destinationId");
 
-  auto message = CreateAppMessage(session_id, client_id, cast_message);
-  EXPECT_THAT(message, IsCastMessage(R"({
+  std::string expected_message = R"({
    "clientId": "clientId",
    "message": {
       "message": "{\"foo\":\"bar\"}",
       "namespaceName": "urn:x-cast:com.google.foo",
       "sessionId": "sessionId"
    },
+   "sequenceNumber": -1,
    "timeoutMillis": 0,
    "type": "app_message"
-  })"));
-}
+  })";
 
-TEST(CastInternalMessageUtilTest, CreateV2Message) {
-  base::Value message_body(base::Value::Type::DICTIONARY);
-  message_body.SetKey("foo", base::Value("bar"));
-
-  auto message = CreateV2Message("client_id", message_body, 12345);
-  EXPECT_THAT(message, IsCastMessage(R"({
-   "clientId": "client_id",
-   "message": {"foo": "bar"},
-   "sequenceNumber": 12345,
-   "timeoutMillis": 0,
-   "type": "v2_message"
-  })"));
-}
-
-TEST(CastInternalMessageUtilTest, SupportedMediaRequestsToListValue) {
-  EXPECT_THAT(SupportedMediaRequestsToListValue(0), IsJson("[]"));
-  EXPECT_THAT(SupportedMediaRequestsToListValue(1), IsJson("[\"pause\"]"));
-  EXPECT_THAT(SupportedMediaRequestsToListValue(2), IsJson("[\"seek\"]"));
-  EXPECT_THAT(SupportedMediaRequestsToListValue(4),
-              IsJson("[\"stream_volume\"]"));
-  EXPECT_THAT(SupportedMediaRequestsToListValue(8),
-              IsJson("[\"stream_mute\"]"));
-  EXPECT_THAT(
-      SupportedMediaRequestsToListValue(15),
-      IsJson("[\"pause\", \"seek\", \"stream_volume\", \"stream_mute\"]"));
+  auto message = CreateAppMessage(session_id, client_id, cast_message);
+  ExpectJSONMessagesEqual(expected_message, message->get_message());
 }
 
 }  // namespace media_router

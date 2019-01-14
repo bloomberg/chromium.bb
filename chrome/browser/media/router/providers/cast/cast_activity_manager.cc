@@ -51,27 +51,6 @@ void CastSessionClient::SendMessageToClient(
   connection_->OnMessage(std::move(message));
 }
 
-void CastSessionClient::SendMediaStatusToClient(
-    const base::Value& media_status,
-    base::Optional<int> request_id) {
-  // Look up if there is a pending request from this client associated with this
-  // message. If so, send the media status message as a response by setting the
-  // sequence number.
-  base::Optional<int> sequence_number;
-  if (request_id) {
-    auto it = pending_media_requests_.find(*request_id);
-    if (it != pending_media_requests_.end()) {
-      DVLOG(2) << "Found matching request id: " << *request_id << " -> "
-               << it->second;
-      sequence_number = it->second;
-      pending_media_requests_.erase(it);
-    }
-  }
-
-  SendMessageToClient(
-      CreateV2Message(client_id_, media_status, sequence_number));
-}
-
 void CastSessionClient::OnMessage(
     blink::mojom::PresentationConnectionMessagePtr message) {
   if (!message->is_message())
@@ -99,20 +78,6 @@ void CastSessionClient::HandleParsedClientMessage(
   if (!cast_message) {
     ReportClientMessageParseError(activity_->route().media_route_id(),
                                   "Not a Cast message");
-    DVLOG(2) << "Received non-Cast message from client";
-    return;
-  }
-
-  if (cast_message->client_id != client_id_) {
-    DVLOG(2) << "Client ID mismatch: expected: " << client_id_
-             << ", got: " << cast_message->client_id;
-    return;
-  }
-
-  if (cast_message->session_id() != activity_->session_id()) {
-    DVLOG(2) << "Session ID mismatch: expected: "
-             << activity_->session_id().value_or("<missing>")
-             << ", got: " << cast_message->session_id();
     return;
   }
 
@@ -122,63 +87,12 @@ void CastSessionClient::HandleParsedClientMessage(
 
     // Send an ACK message back to SDK client to indicate it is handled.
     if (activity_->SendAppMessageToReceiver(*cast_message)) {
-      DCHECK(cast_message->sequence_number);
       SendMessageToClient(CreateAppMessageAck(cast_message->client_id,
-                                              *cast_message->sequence_number));
+                                              cast_message->sequence_number));
     }
-  } else if (cast_message->type == CastInternalMessage::Type::kV2Message) {
-    HandleV2ProtocolMessage(*cast_message);
   } else {
     DVLOG(2) << "Unhandled message type: "
              << static_cast<int>(cast_message->type);
-  }
-}
-
-void CastSessionClient::HandleV2ProtocolMessage(
-    const CastInternalMessage& cast_message) {
-  const std::string& type_str = cast_message.v2_message_type();
-  cast_channel::V2MessageType type =
-      cast_channel::V2MessageTypeFromString(type_str);
-  if (cast_channel::IsMediaRequestMessageType(type)) {
-    DVLOG(2) << "Got media command from client: " << type_str;
-    base::Optional<int> request_id =
-        activity_->SendMediaRequestToReceiver(cast_message);
-    if (request_id) {
-      DCHECK(cast_message.sequence_number);
-      if (pending_media_requests_.size() >= kMaxPendingMediaRequests) {
-        // Delete old pending requests.  Request IDs are generated sequentially,
-        // so this should always delete the oldest requests.  Deleting requests
-        // is O(n) in the size of the table, so we delete half the outstanding
-        // requests at once so the amortized deletion cost is O(1).
-        pending_media_requests_.erase(pending_media_requests_.begin(),
-                                      pending_media_requests_.begin() +
-                                          pending_media_requests_.size() / 2);
-      }
-      pending_media_requests_.emplace(*request_id,
-                                      *cast_message.sequence_number);
-    }
-  } else if (type == cast_channel::V2MessageType::kSetVolume) {
-    DVLOG(2) << "Got volume command from client";
-    DCHECK(cast_message.sequence_number);
-    activity_->SendSetVolumeRequestToReceiver(
-        cast_message, base::BindOnce(&CastSessionClient::SendSetVolumeResponse,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     *cast_message.sequence_number));
-  } else if (type == cast_channel::V2MessageType::kStop) {
-    // TODO(jrw): implement STOP_SESSION.
-    DVLOG(2) << "Ignoring stop-session (" << type_str << ") message";
-  } else {
-    DLOG(FATAL) << "Unknown v2 message type: " << type_str;
-  }
-}
-
-void CastSessionClient::SendSetVolumeResponse(int sequence_number,
-                                              bool success) {
-  // TODO(jrw): Send error message on failure.
-  if (success) {
-    // Send an empty message to let the client know the request succeeded.
-    SendMessageToClient(
-        CreateV2Message(client_id_, base::Value(), sequence_number));
   }
 }
 
@@ -232,12 +146,11 @@ void CastActivityRecord::SetOrUpdateSession(const CastSession& session,
                                             const MediaSinkInternal& sink,
                                             const std::string& hash_token) {
   DVLOG(2) << "CastActivityRecord::SetOrUpdateSession old session_id = "
-           << session_id_.value_or("<missing>")
-           << ", new session_id = " << session.session_id();
-  if (!session_id_) {
+           << session_id_ << ", new session_id = " << session.session_id();
+  if (session_id_.empty()) {
     session_id_ = session.session_id();
   } else {
-    DCHECK_EQ(*session_id_, session.session_id());
+    DCHECK_EQ(session_id_, session.session_id());
     for (auto& client : connected_clients_)
       client.second->SendMessageToClient(
           CreateUpdateSessionMessage(session, client.first, sink, hash_token));
@@ -247,38 +160,38 @@ void CastActivityRecord::SetOrUpdateSession(const CastSession& session,
 
 bool CastActivityRecord::SendAppMessageToReceiver(
     const CastInternalMessage& cast_message) {
-  const CastSession* session = GetSession();
-  if (!session)
-    return false;  // TODO(jrw): Send error code back to SDK client.
-  const std::string& message_namespace = cast_message.app_message_namespace();
-  if (!base::ContainsKey(session->message_namespaces(), message_namespace)) {
-    DVLOG(2) << "Disallowed message namespace: " << message_namespace;
-    // TODO(jrw): Send error code back to SDK client.
+  DCHECK_EQ(CastInternalMessage::Type::kAppMessage, cast_message.type);
+
+  const MediaSink::Id& sink_id = route_.media_sink_id();
+  const MediaSinkInternal* sink = media_sink_service_->GetSinkById(sink_id);
+  if (!sink) {
+    // TODO(crbug.com/905002): Add UMA metrics for this and other error
+    // conditions.
+    DVLOG(2) << "Sink not found";
     return false;
   }
-  return message_handler_->SendAppMessage(
-      GetCastChannelId(),
+
+  if (session_id_ != cast_message.app_message_session_id) {
+    DVLOG(2) << "Session ID mismatch: " << cast_message.app_message_session_id;
+    return false;
+  }
+  const CastSession* session = session_tracker_->GetSessionById(session_id_);
+  if (!session) {
+    DVLOG(2) << "Session not found: " << session_id_;
+    return false;
+  }
+  const std::string& message_namespace = cast_message.app_message_namespace;
+  if (!base::ContainsKey(session->message_namespaces(), message_namespace)) {
+    DVLOG(2) << "Disallowed message namespace: " << message_namespace;
+    // TODO(imcheng): Send error code back to SDK client.
+    return false;
+  }
+  message_handler_->SendAppMessage(
+      sink->cast_data().cast_channel_id,
       cast_channel::CreateCastMessage(
-          message_namespace, cast_message.app_message_body(),
+          message_namespace, cast_message.app_message_body,
           cast_message.client_id, session->transport_id()));
-}
-
-base::Optional<int> CastActivityRecord::SendMediaRequestToReceiver(
-    const CastInternalMessage& cast_message) {
-  CastSession* session = GetSession();
-  if (!session)
-    return base::nullopt;
-  return message_handler_->SendMediaRequest(
-      GetCastChannelId(), cast_message.v2_message_body(),
-      cast_message.client_id, session->transport_id());
-}
-
-void CastActivityRecord::SendSetVolumeRequestToReceiver(
-    const CastInternalMessage& cast_message,
-    cast_channel::SetVolumeCallback callback) {
-  message_handler_->SendSetVolumeRequest(
-      GetCastChannelId(), cast_message.v2_message_body(),
-      cast_message.client_id, std::move(callback));
+  return true;
 }
 
 void CastActivityRecord::SendMessageToClient(
@@ -303,28 +216,6 @@ void CastActivityRecord::TerminatePresentationConnections() {
     client.second->TerminateConnection();
 }
 
-CastSession* CastActivityRecord::GetSession() {
-  DCHECK(session_id_);
-  CastSession* session = session_tracker_->GetSessionById(*session_id_);
-  if (!session) {
-    // TODO(crbug.com/905002): Add UMA metrics for this and other error
-    // conditions.
-    LOG(ERROR) << "Session not found: " << session_id_.value_or("<missing>");
-  }
-  return session;
-}
-
-int CastActivityRecord::GetCastChannelId() {
-  const MediaSinkInternal* sink = media_sink_service_->GetSinkByRoute(route_);
-  if (!sink) {
-    // TODO(crbug.com/905002): Add UMA metrics for this and other error
-    // conditions.
-    LOG(ERROR) << "Sink not found for route: " << route_;
-    return -1;
-  }
-  return sink->cast_data().cast_channel_id;
-}
-
 CastActivityManager::CastActivityManager(
     MediaSinkServiceBase* media_sink_service,
     CastSessionTracker* session_tracker,
@@ -344,7 +235,7 @@ CastActivityManager::CastActivityManager(
   DCHECK(media_router_);
   DCHECK(session_tracker_);
   message_handler_->AddObserver(this);
-  for (const auto& sink_id_session : session_tracker_->GetSessions()) {
+  for (const auto& sink_id_session : session_tracker_->sessions_by_sink_id()) {
     const MediaSinkInternal* sink =
         media_sink_service_->GetSinkById(sink_id_session.first);
     if (!sink)
@@ -505,19 +396,20 @@ void CastActivityManager::TerminateSession(
   DVLOG(2) << "Terminating session with route ID: " << route_id;
 
   const auto& activity = activity_it->second;
-  const auto& session_id = activity->session_id();
+  const std::string& session_id = activity->session_id();
   const MediaRoute& route = activity->route();
 
   // There is no session associated with the route, e.g. the launch request is
   // still pending.
-  if (!session_id) {
+  if (session_id.empty()) {
     DVLOG(2) << "Terminated route has no session ID.";
     RemoveActivity(activity_it);
     std::move(callback).Run(base::nullopt, RouteRequestResult::OK);
     return;
   }
 
-  const MediaSinkInternal* sink = media_sink_service_->GetSinkByRoute(route);
+  const MediaSinkInternal* sink =
+      media_sink_service_->GetSinkById(route.media_sink_id());
   if (!sink) {
     RemoveActivity(activity_it);
     std::move(callback).Run(base::nullopt, RouteRequestResult::OK);
@@ -530,29 +422,20 @@ void CastActivityManager::TerminateSession(
   }
 
   message_handler_->StopSession(
-      sink->cast_data().cast_channel_id, *session_id,
+      sink->cast_data().cast_channel_id, session_id,
       base::BindOnce(&CastActivityManager::HandleStopSessionResponse,
                      weak_ptr_factory_.GetWeakPtr(), route_id,
                      std::move(callback)));
 }
 
 CastActivityManager::ActivityMap::iterator
-CastActivityManager::FindActivityByChannelId(int channel_id) {
+CastActivityManager::GetActivityByChannelId(int channel_id) {
   return std::find_if(
-      activities_.begin(), activities_.end(), [channel_id, this](auto& entry) {
+      activities_.begin(), activities_.end(), [&channel_id, this](auto& entry) {
         const MediaRoute& route = entry.second->route();
         const MediaSinkInternal* sink =
-            media_sink_service_->GetSinkByRoute(route);
+            media_sink_service_->GetSinkById(route.media_sink_id());
         return sink && sink->cast_data().cast_channel_id == channel_id;
-      });
-}
-
-CastActivityManager::ActivityMap::iterator
-CastActivityManager::FindActivityBySink(const MediaSinkInternal& sink) {
-  const MediaSink::Id& sink_id = sink.sink().id();
-  return std::find_if(
-      activities_.begin(), activities_.end(), [&sink_id](const auto& activity) {
-        return activity.second->route().media_sink_id() == sink_id;
       });
 }
 
@@ -561,15 +444,15 @@ void CastActivityManager::OnAppMessage(
     const cast_channel::CastMessage& message) {
   // Note: app messages are received only after session is created.
   DVLOG(2) << "Received app message on cast channel " << channel_id;
-  auto it = FindActivityByChannelId(channel_id);
+  auto it = GetActivityByChannelId(channel_id);
   if (it == activities_.end()) {
     DVLOG(2) << "No activity associated with channel!";
     return;
   }
 
   CastActivityRecord* activity = it->second.get();
-  const auto& session_id = activity->session_id();
-  if (!session_id) {
+  const std::string& session_id = activity->session_id();
+  if (session_id.empty()) {
     DVLOG(2) << "No session associated with activity!";
     return;
   }
@@ -577,44 +460,46 @@ void CastActivityManager::OnAppMessage(
   if (message.destination_id() == "*") {
     for (const auto& client : activity->connected_clients()) {
       activity->SendMessageToClient(
-          client.first, CreateAppMessage(*session_id, client.first, message));
+          client.first, CreateAppMessage(session_id, client.first, message));
     }
   } else {
     const std::string& client_id = message.destination_id();
     activity->SendMessageToClient(
-        client_id, CreateAppMessage(*session_id, client_id, message));
+        client_id, CreateAppMessage(session_id, client_id, message));
   }
 }
 
 void CastActivityManager::OnSessionAddedOrUpdated(const MediaSinkInternal& sink,
                                                   const CastSession& session) {
-  auto activity_it = FindActivityByChannelId(sink.cast_data().cast_channel_id);
+  const MediaSink::Id& sink_id = sink.sink().id();
+  auto activity_it = GetActivityByChannelId(sink.cast_data().cast_channel_id);
+  CastActivityRecord* activity =
+      activity_it == activities_.end() ? nullptr : activity_it->second.get();
+  DCHECK(!activity || activity->route().media_sink_id() == sink_id);
 
   // If |activity| is null, we have discovered a non-local activity.
-  if (activity_it == activities_.end()) {
+  if (!activity) {
     AddNonLocalActivityRecord(sink, session);
     NotifyAllOnRoutesUpdated();
     return;
   }
 
-  CastActivityRecord* activity = activity_it->second.get();
-  DCHECK(activity->route().media_sink_id() == sink.sink().id());
-
   DVLOG(2) << "Receiver status: update/replace activity: "
            << activity->route().media_route_id();
-  const auto& existing_session_id = activity->session_id();
+  const std::string& existing_session_id = activity->session_id();
 
   // This condition seems to always be true in practice, but if it's not, we
   // still try to handle them gracefully below.  TODO(jrw): Replace DCHECK with
   // an UMA metric.
-  DCHECK(existing_session_id);
+  DCHECK(!existing_session_id.empty());
 
   // If |existing_session_id| is empty, then most likely it's due to a pending
   // launch. Check the app ID to see if the existing activity should be updated
   // or replaced.  Otherwise, check the session ID to see if the existing
   // activity should be updated or replaced.
-  if (existing_session_id ? existing_session_id == session.session_id()
-                          : activity->app_id() == session.app_id()) {
+  if (existing_session_id.empty()
+          ? activity->app_id() == session.app_id()
+          : existing_session_id == session.session_id()) {
     activity->SetOrUpdateSession(session, sink, hash_token_);
   } else {
     // NOTE(jrw): This happens if a receiver switches to a new session (or app),
@@ -632,19 +517,13 @@ void CastActivityManager::OnSessionAddedOrUpdated(const MediaSinkInternal& sink,
 }
 
 void CastActivityManager::OnSessionRemoved(const MediaSinkInternal& sink) {
-  auto it = FindActivityBySink(sink);
+  const MediaSink::Id& sink_id = sink.sink().id();
+  auto it = std::find_if(
+      activities_.begin(), activities_.end(), [&sink_id](const auto& activity) {
+        return activity.second->route().media_sink_id() == sink_id;
+      });
   if (it != activities_.end())
     RemoveActivity(it);
-}
-
-void CastActivityManager::OnMediaStatusUpdated(const MediaSinkInternal& sink,
-                                               const base::Value& media_status,
-                                               base::Optional<int> request_id) {
-  auto it = FindActivityBySink(sink);
-  if (it != activities_.end()) {
-    for (auto& client : it->second->connected_clients())
-      client.second->SendMediaStatusToClient(media_status, request_id);
-  }
 }
 
 void CastActivityManager::AddNonLocalActivityRecord(

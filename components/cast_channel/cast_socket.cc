@@ -88,8 +88,6 @@ void ConnectOnUIThread(
 
 }  // namespace
 
-void CastSocket::Observer::OnReadyStateChanged(const CastSocket& socket) {}
-
 CastSocketImpl::CastSocketImpl(NetworkContextGetter network_context_getter,
                                const CastSocketOpenParams& open_params,
                                const scoped_refptr<Logger>& logger)
@@ -644,11 +642,8 @@ void CastSocketImpl::SetConnectState(ConnectionState connect_state) {
 }
 
 void CastSocketImpl::SetReadyState(ReadyState ready_state) {
-  if (ready_state_ != ready_state) {
+  if (ready_state_ != ready_state)
     ready_state_ = ready_state;
-    for (auto& observer : observers_)
-      observer.OnReadyStateChanged(*this);
-  }
 }
 
 void CastSocketImpl::SetErrorState(ChannelError error_state) {
