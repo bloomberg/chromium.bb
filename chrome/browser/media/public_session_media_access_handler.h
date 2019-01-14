@@ -9,9 +9,9 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/media/extension_media_access_handler.h"
 #include "chrome/browser/media/media_access_handler.h"
-#include "content/public/common/media_stream_request.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/permissions/api_permission_set.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 // MediaAccessHandler for extension capturing requests in Public Sessions. This
 // class is implemented as a wrapper around ExtensionMediaAccessHandler. It
@@ -32,12 +32,12 @@ class PublicSessionMediaAccessHandler : public MediaAccessHandler {
 
   // MediaAccessHandler implementation.
   bool SupportsStreamType(content::WebContents* web_contents,
-                          const content::MediaStreamType type,
+                          const blink::MediaStreamType type,
                           const extensions::Extension* extension) override;
   bool CheckMediaAccessPermission(
       content::RenderFrameHost* render_frame_host,
       const GURL& security_origin,
-      content::MediaStreamType type,
+      blink::MediaStreamType type,
       const extensions::Extension* extension) override;
   void HandleRequest(content::WebContents* web_contents,
                      const content::MediaStreamRequest& request,

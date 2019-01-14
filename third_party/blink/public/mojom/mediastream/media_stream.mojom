@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module blink.mojom;
 
 import "media/capture/mojom/video_capture_types.mojom";
 import "media/mojo/interfaces/audio_parameters.mojom";
 import "media/mojo/interfaces/display_media_information.mojom";
 
-// Types of media streams (see content/public/common/media_stream_request.h).
+// Types of media streams (see public/common/media_stream_request.h).
 enum MediaStreamType {
   MEDIA_NO_SERVICE,
   MEDIA_DEVICE_AUDIO_CAPTURE,
@@ -21,7 +21,7 @@ enum MediaStreamType {
   NUM_MEDIA_TYPES
 };
 
-// See content/public/common/media_stream_request.h.
+// See public/common/media_stream_request.h.
 enum MediaStreamRequestResult {
   OK,
   PERMISSION_DENIED,
@@ -40,7 +40,7 @@ enum MediaStreamRequestResult {
   KILL_SWITCH_ON
 };
 
-// See content/public/common/media_stream_request.h.
+// See public/common/media_stream_request.h.
 struct MediaStreamDevice {
   MediaStreamType type;
   string id;
@@ -54,14 +54,14 @@ struct MediaStreamDevice {
   media.mojom.DisplayMediaInformation? display_media_info;
 };
 
-// See content/common/media/media_stream_controls.h.
+// See common/media/media_stream_controls.h.
 struct TrackControls {
   bool requested;
   MediaStreamType stream_type;
   string device_id;
 };
 
-// See content/common/media/media_stream_controls.h.
+// See common/media/media_stream_controls.h.
 struct StreamControls {
   TrackControls audio;
   TrackControls video;

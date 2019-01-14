@@ -45,7 +45,7 @@ bool ApmInAudioServiceEnabled() {
 
 ProcessedLocalAudioSource::ProcessedLocalAudioSource(
     int consumer_render_frame_id,
-    const MediaStreamDevice& device,
+    const blink::MediaStreamDevice& device,
     bool hotword_enabled,
     bool disable_local_echo,
     const AudioProcessingProperties& audio_processing_properties,
@@ -109,7 +109,7 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
   WebRtcLogMessage(str);
   DVLOG(1) << str;
 
-  MediaStreamDevice modified_device(device());
+  blink::MediaStreamDevice modified_device(device());
   bool device_is_modified = false;
 
   // Disable system echo cancellation if specified by
@@ -306,7 +306,7 @@ int ProcessedLocalAudioSource::MaxVolume() const {
 }
 
 void ProcessedLocalAudioSource::OnCaptureStarted() {
-  started_callback_.Run(this, MEDIA_DEVICE_OK, "");
+  started_callback_.Run(this, blink::MEDIA_DEVICE_OK, "");
 }
 
 void ProcessedLocalAudioSource::Capture(const media::AudioBus* audio_bus,

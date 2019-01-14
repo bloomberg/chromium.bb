@@ -18,12 +18,13 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/invalidate_type.h"
+#include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/serial_chooser.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/media_stream_request.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/window_container_type.mojom.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/color_chooser/color_chooser.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_security_style.h"
@@ -497,22 +498,23 @@ class CONTENT_EXPORT WebContentsDelegate {
   // request is denied, a call should be made to |callback| with an empty list
   // of devices. |request| has the details of the request (e.g. which of audio
   // and/or video devices are requested, and lists of available devices).
-  virtual void RequestMediaAccessPermission(WebContents* web_contents,
-                                            const MediaStreamRequest& request,
-                                            MediaResponseCallback callback);
+  virtual void RequestMediaAccessPermission(
+      WebContents* web_contents,
+      const MediaStreamRequest& request,
+      content::MediaResponseCallback callback);
 
   // Checks if we have permission to access the microphone or camera. Note that
   // this does not query the user. |type| must be MEDIA_DEVICE_AUDIO_CAPTURE
   // or MEDIA_DEVICE_VIDEO_CAPTURE.
   virtual bool CheckMediaAccessPermission(RenderFrameHost* render_frame_host,
                                           const GURL& security_origin,
-                                          MediaStreamType type);
+                                          blink::MediaStreamType type);
 
   // Returns the ID of the default device for the given media device |type|.
   // If the returned value is an empty string, it means that there is no
   // default device for the given |type|.
   virtual std::string GetDefaultMediaDeviceID(WebContents* web_contents,
-                                              MediaStreamType type);
+                                              blink::MediaStreamType type);
 
 #if defined(OS_ANDROID)
   // Returns true if the given media should be blocked to load.

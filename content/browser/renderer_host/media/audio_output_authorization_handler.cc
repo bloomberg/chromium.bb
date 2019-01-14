@@ -163,7 +163,7 @@ void AudioOutputAuthorizationHandler::RequestDeviceAuthorization(
   // output device is found, reuse the input device permissions.
   if (media::AudioDeviceDescription::UseSessionIdToSelectDevice(session_id,
                                                                 device_id)) {
-    const MediaStreamDevice* device =
+    const blink::MediaStreamDevice* device =
         media_stream_manager_->audio_input_device_manager()
             ->GetOpenedDeviceById(session_id);
     if (device && device->matched_output_device_id) {

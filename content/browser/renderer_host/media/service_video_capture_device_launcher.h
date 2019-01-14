@@ -8,8 +8,8 @@
 #include "content/browser/renderer_host/media/video_capture_factory_delegate.h"
 #include "content/browser/renderer_host/media/video_capture_provider.h"
 #include "content/public/browser/video_capture_device_launcher.h"
-#include "content/public/common/media_stream_request.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 namespace content {
 
@@ -28,7 +28,7 @@ class CONTENT_EXPORT ServiceVideoCaptureDeviceLauncher
 
   // VideoCaptureDeviceLauncher implementation.
   void LaunchDeviceAsync(const std::string& device_id,
-                         MediaStreamType stream_type,
+                         blink::MediaStreamType stream_type,
                          const media::VideoCaptureParams& params,
                          base::WeakPtr<media::VideoFrameReceiver> receiver,
                          base::OnceClosure connection_lost_cb,

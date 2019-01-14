@@ -314,7 +314,7 @@ MediaStreamVideoSource::GetCurrentCaptureParams() const {
 }
 
 void MediaStreamVideoSource::DoChangeSource(
-    const MediaStreamDevice& new_device) {
+    const blink::MediaStreamDevice& new_device) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "MediaStreamVideoSource::DoChangeSource: "
            << ", new device id = " << new_device.id
@@ -337,13 +337,14 @@ void MediaStreamVideoSource::DoStopSource() {
   SetReadyState(blink::WebMediaStreamSource::kReadyStateEnded);
 }
 
-void MediaStreamVideoSource::OnStartDone(MediaStreamRequestResult result) {
+void MediaStreamVideoSource::OnStartDone(
+    blink::MediaStreamRequestResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(3) << "OnStartDone({result =" << result << "})";
   if (state_ == ENDED)
     return;
 
-  if (result == MEDIA_DEVICE_OK) {
+  if (result == blink::MEDIA_DEVICE_OK) {
     DCHECK_EQ(STARTING, state_);
     state_ = STARTED;
     SetReadyState(blink::WebMediaStreamSource::kReadyStateLive);
@@ -362,11 +363,11 @@ void MediaStreamVideoSource::FinalizeAddPendingTracks() {
   std::vector<PendingTrackInfo> pending_track_descriptors;
   pending_track_descriptors.swap(pending_tracks_);
   for (const auto& track_info : pending_track_descriptors) {
-    MediaStreamRequestResult result = MEDIA_DEVICE_OK;
+    blink::MediaStreamRequestResult result = blink::MEDIA_DEVICE_OK;
     if (state_ != STARTED)
-      result = MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO;
+      result = blink::MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO;
 
-    if (result == MEDIA_DEVICE_OK) {
+    if (result == blink::MEDIA_DEVICE_OK) {
       track_adapter_->AddTrack(track_info.track, track_info.frame_callback,
                                track_info.settings_callback,
                                track_info.format_callback,

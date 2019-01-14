@@ -37,13 +37,13 @@ MockMediaStreamVideoSource::~MockMediaStreamVideoSource() {}
 void MockMediaStreamVideoSource::StartMockedSource() {
   DCHECK(attempted_to_start_);
   attempted_to_start_ = false;
-  OnStartDone(MEDIA_DEVICE_OK);
+  OnStartDone(blink::MEDIA_DEVICE_OK);
 }
 
 void MockMediaStreamVideoSource::FailToStartMockedSource() {
   DCHECK(attempted_to_start_);
   attempted_to_start_ = false;
-  OnStartDone(MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO);
+  OnStartDone(blink::MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO);
 }
 
 void MockMediaStreamVideoSource::RequestRefreshFrame() {
@@ -62,7 +62,7 @@ void MockMediaStreamVideoSource::OnHasConsumers(bool has_consumers) {
 }
 
 void MockMediaStreamVideoSource::DoChangeSource(
-    const MediaStreamDevice& new_device) {
+    const blink::MediaStreamDevice& new_device) {
   ChangeSourceImpl(new_device);
 }
 

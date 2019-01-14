@@ -94,7 +94,7 @@ std::string GenerateGetUserMediaWithDisableLocalEcho(
 }
 
 bool VerifyDisableLocalEcho(bool expect_value,
-                            const content::StreamControls& controls) {
+                            const blink::StreamControls& controls) {
   return expect_value == controls.disable_local_echo;
 }
 

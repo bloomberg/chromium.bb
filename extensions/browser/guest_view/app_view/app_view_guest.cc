@@ -145,7 +145,7 @@ void AppViewGuest::RequestMediaAccessPermission(
 bool AppViewGuest::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    content::MediaStreamType type) {
+    blink::MediaStreamType type) {
   if (!app_delegate_) {
     return WebContentsDelegate::CheckMediaAccessPermission(
         render_frame_host, security_origin, type);

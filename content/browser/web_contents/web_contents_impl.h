@@ -42,6 +42,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
@@ -646,8 +647,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                     MediaResponseCallback callback) override;
   bool CheckMediaAccessPermission(RenderFrameHost* render_frame_host,
                                   const url::Origin& security_origin,
-                                  MediaStreamType type) override;
-  std::string GetDefaultMediaDeviceID(MediaStreamType type) override;
+                                  blink::MediaStreamType type) override;
+  std::string GetDefaultMediaDeviceID(blink::MediaStreamType type) override;
   SessionStorageNamespace* GetSessionStorageNamespace(
       SiteInstance* instance) override;
   SessionStorageNamespaceMap GetSessionStorageNamespaceMap() override;

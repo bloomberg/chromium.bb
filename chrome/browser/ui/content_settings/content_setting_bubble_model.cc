@@ -975,11 +975,11 @@ ContentSettingPopupBubbleModel::~ContentSettingPopupBubbleModel() = default;
 
 namespace {
 
-const content::MediaStreamDevice& GetMediaDeviceById(
+const blink::MediaStreamDevice& GetMediaDeviceById(
     const std::string& device_id,
-    const content::MediaStreamDevices& devices) {
+    const blink::MediaStreamDevices& devices) {
   DCHECK(!devices.empty());
-  for (const content::MediaStreamDevice& device : devices) {
+  for (const blink::MediaStreamDevice& device : devices) {
     if (device.id == device_id)
       return device;
   }
@@ -1204,13 +1204,13 @@ void ContentSettingMediaStreamBubbleModel::UpdateSettings(
 }
 
 void ContentSettingMediaStreamBubbleModel::UpdateDefaultDeviceForType(
-    content::MediaStreamType type,
+    blink::MediaStreamType type,
     const std::string& device) {
   PrefService* prefs = GetProfile()->GetPrefs();
-  if (type == content::MEDIA_DEVICE_AUDIO_CAPTURE) {
+  if (type == blink::MEDIA_DEVICE_AUDIO_CAPTURE) {
     prefs->SetString(prefs::kDefaultAudioCaptureDevice, device);
   } else {
-    DCHECK_EQ(content::MEDIA_DEVICE_VIDEO_CAPTURE, type);
+    DCHECK_EQ(blink::MEDIA_DEVICE_VIDEO_CAPTURE, type);
     prefs->SetString(prefs::kDefaultVideoCaptureDevice, device);
   }
 }
@@ -1227,7 +1227,7 @@ void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
   PrefService* prefs = GetProfile()->GetPrefs();
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaCaptureDevicesDispatcher::GetInstance();
-  const content::MediaStreamDevices& microphones =
+  const blink::MediaStreamDevices& microphones =
       dispatcher->GetAudioCaptureDevices();
 
   if (MicrophoneAccessed()) {
@@ -1249,11 +1249,11 @@ void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
       mic_menu.default_device = GetMediaDeviceById(preferred_mic, microphones);
       mic_menu.selected_device = mic_menu.default_device;
     }
-    add_media_menu(content::MEDIA_DEVICE_AUDIO_CAPTURE, mic_menu);
+    add_media_menu(blink::MEDIA_DEVICE_AUDIO_CAPTURE, mic_menu);
   }
 
   if (CameraAccessed()) {
-    const content::MediaStreamDevices& cameras =
+    const blink::MediaStreamDevices& cameras =
         dispatcher->GetVideoCaptureDevices();
     MediaMenu camera_menu;
     camera_menu.label =
@@ -1274,7 +1274,7 @@ void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
           GetMediaDeviceById(preferred_camera, cameras);
       camera_menu.selected_device = camera_menu.default_device;
     }
-    add_media_menu(content::MEDIA_DEVICE_VIDEO_CAPTURE, camera_menu);
+    add_media_menu(blink::MEDIA_DEVICE_VIDEO_CAPTURE, camera_menu);
   }
 }
 
@@ -1293,15 +1293,15 @@ void ContentSettingMediaStreamBubbleModel::SetCustomLink() {
 }
 
 void ContentSettingMediaStreamBubbleModel::OnMediaMenuClicked(
-    content::MediaStreamType type,
+    blink::MediaStreamType type,
     const std::string& selected_device_id) {
-  DCHECK(type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
-         type == content::MEDIA_DEVICE_VIDEO_CAPTURE);
+  DCHECK(type == blink::MEDIA_DEVICE_AUDIO_CAPTURE ||
+         type == blink::MEDIA_DEVICE_VIDEO_CAPTURE);
   DCHECK_EQ(1U, bubble_content().media_menus.count(type));
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaCaptureDevicesDispatcher::GetInstance();
-  const content::MediaStreamDevices& devices =
-      (type == content::MEDIA_DEVICE_AUDIO_CAPTURE)
+  const blink::MediaStreamDevices& devices =
+      (type == blink::MEDIA_DEVICE_AUDIO_CAPTURE)
           ? dispatcher->GetAudioCaptureDevices()
           : dispatcher->GetVideoCaptureDevices();
   set_selected_device(GetMediaDeviceById(selected_device_id, devices));

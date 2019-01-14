@@ -116,15 +116,15 @@ void BackgroundLoaderContents::RequestMediaAccessPermission(
     content::MediaResponseCallback callback) {
   // No permissions granted, act as if dismissed.
   std::move(callback).Run(
-      content::MediaStreamDevices(),
-      content::MediaStreamRequestResult::MEDIA_DEVICE_PERMISSION_DISMISSED,
+      blink::MediaStreamDevices(),
+      blink::MediaStreamRequestResult::MEDIA_DEVICE_PERMISSION_DISMISSED,
       std::unique_ptr<content::MediaStreamUI>());
 }
 
 bool BackgroundLoaderContents::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    content::MediaStreamType type) {
+    blink::MediaStreamType type) {
   return false;  // No permissions granted.
 }
 

@@ -22,12 +22,12 @@ class PermissionBubbleMediaAccessHandler
 
   // MediaAccessHandler implementation.
   bool SupportsStreamType(content::WebContents* web_contents,
-                          const content::MediaStreamType type,
+                          const blink::MediaStreamType type,
                           const extensions::Extension* extension) override;
   bool CheckMediaAccessPermission(
       content::RenderFrameHost* render_frame_host,
       const GURL& security_origin,
-      content::MediaStreamType type,
+      blink::MediaStreamType type,
       const extensions::Extension* extension) override;
   void HandleRequest(content::WebContents* web_contents,
                      const content::MediaStreamRequest& request,
@@ -36,7 +36,7 @@ class PermissionBubbleMediaAccessHandler
   void UpdateMediaRequestState(int render_process_id,
                                int render_frame_id,
                                int page_request_id,
-                               content::MediaStreamType stream_type,
+                               blink::MediaStreamType stream_type,
                                content::MediaRequestState state) override;
 
  private:
@@ -46,8 +46,8 @@ class PermissionBubbleMediaAccessHandler
 
   void ProcessQueuedAccessRequest(content::WebContents* web_contents);
   void OnAccessRequestResponse(content::WebContents* web_contents,
-                               const content::MediaStreamDevices& devices,
-                               content::MediaStreamRequestResult result,
+                               const blink::MediaStreamDevices& devices,
+                               blink::MediaStreamRequestResult result,
                                std::unique_ptr<content::MediaStreamUI> ui);
 
   // content::NotificationObserver implementation.

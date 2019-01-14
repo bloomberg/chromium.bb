@@ -37,8 +37,8 @@
 using content::BrowserThread;
 
 using RepeatingMediaResponseCallback =
-    base::RepeatingCallback<void(const content::MediaStreamDevices& devices,
-                                 content::MediaStreamRequestResult result,
+    base::RepeatingCallback<void(const blink::MediaStreamDevices& devices,
+                                 blink::MediaStreamRequestResult result,
                                  std::unique_ptr<content::MediaStreamUI> ui)>;
 
 struct PermissionBubbleMediaAccessHandler::PendingAccessRequest {
@@ -68,30 +68,30 @@ PermissionBubbleMediaAccessHandler::~PermissionBubbleMediaAccessHandler() {}
 
 bool PermissionBubbleMediaAccessHandler::SupportsStreamType(
     content::WebContents* web_contents,
-    const content::MediaStreamType type,
+    const blink::MediaStreamType type,
     const extensions::Extension* extension) {
 #if defined(OS_ANDROID)
-  return type == content::MEDIA_DEVICE_VIDEO_CAPTURE ||
-         type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
-         type == content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE ||
-         type == content::MEDIA_DISPLAY_VIDEO_CAPTURE;
+  return type == blink::MEDIA_DEVICE_VIDEO_CAPTURE ||
+         type == blink::MEDIA_DEVICE_AUDIO_CAPTURE ||
+         type == blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE ||
+         type == blink::MEDIA_DISPLAY_VIDEO_CAPTURE;
 #else
-  return type == content::MEDIA_DEVICE_VIDEO_CAPTURE ||
-         type == content::MEDIA_DEVICE_AUDIO_CAPTURE;
+  return type == blink::MEDIA_DEVICE_VIDEO_CAPTURE ||
+         type == blink::MEDIA_DEVICE_AUDIO_CAPTURE;
 #endif
 }
 
 bool PermissionBubbleMediaAccessHandler::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    content::MediaStreamType type,
+    blink::MediaStreamType type,
     const extensions::Extension* extension) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   ContentSettingsType content_settings_type =
-      type == content::MEDIA_DEVICE_AUDIO_CAPTURE
+      type == blink::MEDIA_DEVICE_AUDIO_CAPTURE
           ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
           : CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
 
@@ -117,8 +117,8 @@ void PermissionBubbleMediaAccessHandler::HandleRequest(
           chrome::android::kUserMediaScreenCapturing)) {
     // If screen capturing isn't enabled on Android, we'll use "invalid state"
     // as result, same as on desktop.
-    std::move(callback).Run(content::MediaStreamDevices(),
-                            content::MEDIA_DEVICE_INVALID_STATE, nullptr);
+    std::move(callback).Run(blink::MediaStreamDevices(),
+                            blink::MEDIA_DEVICE_INVALID_STATE, nullptr);
     return;
   }
 #endif  // defined(OS_ANDROID)
@@ -166,7 +166,7 @@ void PermissionBubbleMediaAccessHandler::UpdateMediaRequestState(
     int render_process_id,
     int render_frame_id,
     int page_request_id,
-    content::MediaStreamType stream_type,
+    blink::MediaStreamType stream_type,
     content::MediaRequestState state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (state != content::MEDIA_REQUEST_STATE_CLOSING)
@@ -192,8 +192,8 @@ void PermissionBubbleMediaAccessHandler::UpdateMediaRequestState(
 
 void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
     content::WebContents* web_contents,
-    const content::MediaStreamDevices& devices,
-    content::MediaStreamRequestResult result,
+    const blink::MediaStreamDevices& devices,
+    blink::MediaStreamRequestResult result,
     std::unique_ptr<content::MediaStreamUI> ui) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

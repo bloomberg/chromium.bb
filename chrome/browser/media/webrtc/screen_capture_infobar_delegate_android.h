@@ -39,7 +39,7 @@ class ScreenCaptureInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
 
   // Runs |callback_|, passing it the |result|, and (if permission was granted)
   // the appropriate stream device and UI object for video capture.
-  void RunCallback(content::MediaStreamRequestResult result);
+  void RunCallback(blink::MediaStreamRequestResult result);
 
   content::WebContents* web_contents_;
   const content::MediaStreamRequest request_;

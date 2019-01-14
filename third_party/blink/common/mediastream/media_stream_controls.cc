@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/media/media_stream_controls.h"
+#include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 
-namespace content {
+namespace blink {
 
 TrackControls::TrackControls() {}
 
@@ -25,4 +25,4 @@ StreamControls::StreamControls(bool request_audio, bool request_video)
 
 StreamControls::~StreamControls() {}
 
-}  // namespace content
+}  // namespace blink

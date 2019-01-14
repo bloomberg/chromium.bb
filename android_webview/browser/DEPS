@@ -74,6 +74,8 @@ include_rules = [
   # AwContentBrowserClient::GetDefaultFavicon
   "!ui/resources/grit/ui_resources.h",
 
+  # Required for MediaStreams.
+  "+third_party/blink/public/common/mediastream",
   # QuotaStatusCode required by AwQuotaManagerBridge.
   "+third_party/blink/public/mojom/quota",
   # Interface required for in-process input event handling.

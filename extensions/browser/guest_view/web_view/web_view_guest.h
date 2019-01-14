@@ -234,7 +234,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
       const base::Callback<void(bool)>& callback) final;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  content::MediaStreamType type) final;
+                                  blink::MediaStreamType type) final;
   void CanDownload(const GURL& url,
                    const std::string& request_method,
                    const base::Callback<void(bool)>& callback) final;

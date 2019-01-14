@@ -262,7 +262,7 @@ uint64_t MediaStreamTrackMetrics::MakeUniqueId(const std::string& track_id,
       direction);
 }
 
-mojom::MediaStreamTrackMetricsHostPtr&
+blink::mojom::MediaStreamTrackMetricsHostPtr&
 MediaStreamTrackMetrics::GetMediaStreamTrackMetricsHost() {
   if (!track_metrics_host_) {
     ChildThreadImpl::current()->GetConnector()->BindInterface(

@@ -651,10 +651,10 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectVideoTabs) {
   auto* tab = GetWebContentsAt(1);
 
   // Simulate that a video stream is now being captured.
-  content::MediaStreamDevices video_devices(1);
+  blink::MediaStreamDevices video_devices(1);
   video_devices[0] =
-      content::MediaStreamDevice(content::MEDIA_DEVICE_VIDEO_CAPTURE,
-                                 "fake_media_device", "fake_media_device");
+      blink::MediaStreamDevice(blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+                               "fake_media_device", "fake_media_device");
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaCaptureDevicesDispatcher::GetInstance();
   dispatcher->SetTestVideoCaptureDevices(video_devices);
@@ -724,10 +724,10 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, CanPurgeBackgroundedRenderer) {
 
   auto* tab = GetWebContentsAt(1);
   // Simulate that a video stream is now being captured.
-  content::MediaStreamDevices video_devices(1);
+  blink::MediaStreamDevices video_devices(1);
   video_devices[0] =
-      content::MediaStreamDevice(content::MEDIA_DEVICE_VIDEO_CAPTURE,
-                                 "fake_media_device", "fake_media_device");
+      blink::MediaStreamDevice(blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+                               "fake_media_device", "fake_media_device");
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaCaptureDevicesDispatcher::GetInstance();
   dispatcher->SetTestVideoCaptureDevices(video_devices);

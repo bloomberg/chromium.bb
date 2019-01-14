@@ -17,9 +17,9 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
-#include "content/public/common/media_stream_request.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "media/capture/video_capture_types.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 namespace content {
 
@@ -97,7 +97,8 @@ class CONTENT_EXPORT VideoCaptureImplManager {
   // PageHidden/Shown() event.
   // To suspend/resume an individual session, please call Suspend(id) or
   // Resume(id).
-  void SuspendDevices(const MediaStreamDevices& video_devices, bool suspend);
+  void SuspendDevices(const blink::MediaStreamDevices& video_devices,
+                      bool suspend);
 
   virtual std::unique_ptr<VideoCaptureImpl> CreateVideoCaptureImplForTesting(
       media::VideoCaptureSessionId session_id) const;

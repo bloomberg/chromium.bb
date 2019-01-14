@@ -9,11 +9,11 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/media_stream_request.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "url/origin.h"
 
 namespace content {
@@ -26,7 +26,7 @@ class TestWebContentsDelegate : public content::WebContentsDelegate {
 
   bool CheckMediaAccessPermission(RenderFrameHost* render_Frame_host,
                                   const GURL& security_origin,
-                                  MediaStreamType type) override {
+                                  blink::MediaStreamType type) override {
     return true;
   }
 };

@@ -17,7 +17,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "content/public/common/media_stream_request.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 namespace content {
 
@@ -37,14 +37,17 @@ enum { kInvalidMediaCaptureSessionId = 0xFFFFFFFF };
 class CONTENT_EXPORT MediaStreamProviderListener {
  public:
   // Called by a MediaStreamProvider when a stream has been opened.
-  virtual void Opened(MediaStreamType stream_type, int capture_session_id) = 0;
+  virtual void Opened(blink::MediaStreamType stream_type,
+                      int capture_session_id) = 0;
 
   // Called by a MediaStreamProvider when a stream has been closed.
-  virtual void Closed(MediaStreamType stream_type, int capture_session_id) = 0;
+  virtual void Closed(blink::MediaStreamType stream_type,
+                      int capture_session_id) = 0;
 
   // Called by a MediaStreamProvider when the device has been aborted due to
   // device error.
-  virtual void Aborted(MediaStreamType stream_type, int capture_session_id) = 0;
+  virtual void Aborted(blink::MediaStreamType stream_type,
+                       int capture_session_id) = 0;
 
  protected:
   virtual ~MediaStreamProviderListener() {}
@@ -64,7 +67,7 @@ class CONTENT_EXPORT MediaStreamProvider
   // possible for other applications to open the device before the device is
   // started. |Opened| is called when the device is opened.
   // kInvalidMediaCaptureSessionId is returned on error.
-  virtual int Open(const MediaStreamDevice& device) = 0;
+  virtual int Open(const blink::MediaStreamDevice& device) = 0;
 
   // Closes the specified device and calls |Closed| when done.
   virtual void Close(int capture_session_id) = 0;

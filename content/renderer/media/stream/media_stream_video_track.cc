@@ -408,7 +408,7 @@ void MediaStreamVideoTrack::GetSettings(
                       ? blink::WebMediaStreamTrack::kResizeModeRescale
                       : blink::WebMediaStreamTrack::kResizeModeNone));
 
-  const base::Optional<CameraCalibration> calibration =
+  const base::Optional<blink::CameraCalibration> calibration =
       source_->device().camera_calibration;
   if (calibration) {
     settings.depth_near = calibration->depth_near;

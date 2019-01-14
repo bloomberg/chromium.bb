@@ -3051,8 +3051,8 @@ void WebContentsImpl::RequestMediaAccessPermission(
   if (delegate_) {
     delegate_->RequestMediaAccessPermission(this, request, std::move(callback));
   } else {
-    std::move(callback).Run(MediaStreamDevices(),
-                            MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
+    std::move(callback).Run(blink::MediaStreamDevices(),
+                            blink::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
                             std::unique_ptr<MediaStreamUI>());
   }
 }
@@ -3060,14 +3060,15 @@ void WebContentsImpl::RequestMediaAccessPermission(
 bool WebContentsImpl::CheckMediaAccessPermission(
     RenderFrameHost* render_frame_host,
     const url::Origin& security_origin,
-    MediaStreamType type) {
-  DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
-         type == MEDIA_DEVICE_VIDEO_CAPTURE);
+    blink::MediaStreamType type) {
+  DCHECK(type == blink::MEDIA_DEVICE_AUDIO_CAPTURE ||
+         type == blink::MEDIA_DEVICE_VIDEO_CAPTURE);
   return delegate_ && delegate_->CheckMediaAccessPermission(
                           render_frame_host, security_origin.GetURL(), type);
 }
 
-std::string WebContentsImpl::GetDefaultMediaDeviceID(MediaStreamType type) {
+std::string WebContentsImpl::GetDefaultMediaDeviceID(
+    blink::MediaStreamType type) {
   if (!delegate_)
     return std::string();
   return delegate_->GetDefaultMediaDeviceID(this, type);

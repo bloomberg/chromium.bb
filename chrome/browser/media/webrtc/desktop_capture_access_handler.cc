@@ -29,13 +29,13 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_capture.h"
 #include "content/public/browser/desktop_streams_registry.h"
+#include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/media_stream_request.h"
 #include "content/public/common/origin_util.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -43,6 +43,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
 #include "net/base/url_util.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -141,10 +142,10 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
     const content::MediaStreamRequest& request,
     content::MediaResponseCallback callback,
     const extensions::Extension* extension) {
-  content::MediaStreamDevices devices;
+  blink::MediaStreamDevices devices;
   std::unique_ptr<content::MediaStreamUI> ui;
 
-  DCHECK_EQ(request.video_type, content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE);
+  DCHECK_EQ(request.video_type, blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE);
 
   UpdateExtensionTrusted(request, extension);
 
@@ -172,15 +173,14 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
   // it after checking permission.
   // TODO(grunell): It would be good to change this result for something else,
   // probably a new one.
-  content::MediaStreamRequestResult result =
-      content::MEDIA_DEVICE_INVALID_STATE;
+  blink::MediaStreamRequestResult result = blink::MEDIA_DEVICE_INVALID_STATE;
 
 #if defined(OS_CHROMEOS)
   if (features::IsMultiProcessMash()) {
     // TODO(crbug.com/806366): Screen capture support for mash.
     NOTIMPLEMENTED() << "Screen capture not yet implemented in --mash";
     screen_capture_enabled = false;
-    result = content::MEDIA_DEVICE_NOT_SUPPORTED;
+    result = blink::MEDIA_DEVICE_NOT_SUPPORTED;
   }
 #endif  // defined(OS_CHROMEOS)
 
@@ -212,7 +212,7 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
       if (extension)
         application_name = base::UTF8ToUTF16(extension->name());
       base::string16 confirmation_text = l10n_util::GetStringFUTF16(
-          request.audio_type == content::MEDIA_NO_SERVICE
+          request.audio_type == blink::MEDIA_NO_SERVICE
               ? IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TEXT
               : IDS_MEDIA_SCREEN_AND_AUDIO_CAPTURE_CONFIRMATION_TEXT,
           application_name);
@@ -236,7 +236,7 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
 #endif  // !defined(OS_CHROMEOS)
 
       bool capture_audio =
-          (request.audio_type == content::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE &&
+          (request.audio_type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE &&
            loopback_audio_supported);
 
       // Determine if the extension is required to display a notification.
@@ -245,8 +245,8 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
 
       ui = GetDevicesForDesktopCapture(
           web_contents, &devices, screen_id,
-          content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
-          content::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE, capture_audio,
+          blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
+          blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE, capture_audio,
           request.disable_local_echo, display_notification, application_title,
           application_title);
       DCHECK(!devices.empty());
@@ -254,8 +254,8 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
 
     // The only case when devices can be empty is if the user has denied
     // permission.
-    result = devices.empty() ? content::MEDIA_DEVICE_PERMISSION_DENIED
-                             : content::MEDIA_DEVICE_OK;
+    result = devices.empty() ? blink::MEDIA_DEVICE_PERMISSION_DENIED
+                             : blink::MEDIA_DEVICE_OK;
   }
 
   std::move(callback).Run(devices, result, std::move(ui));
@@ -271,16 +271,16 @@ bool DesktopCaptureAccessHandler::IsDefaultApproved(
 
 bool DesktopCaptureAccessHandler::SupportsStreamType(
     content::WebContents* web_contents,
-    const content::MediaStreamType type,
+    const blink::MediaStreamType type,
     const extensions::Extension* extension) {
-  return type == content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE ||
-         type == content::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE;
+  return type == blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE ||
+         type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE;
 }
 
 bool DesktopCaptureAccessHandler::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    content::MediaStreamType type,
+    blink::MediaStreamType type,
     const extensions::Extension* extension) {
   return false;
 }
@@ -290,16 +290,16 @@ void DesktopCaptureAccessHandler::HandleRequest(
     const content::MediaStreamRequest& request,
     content::MediaResponseCallback callback,
     const extensions::Extension* extension) {
-  content::MediaStreamDevices devices;
+  blink::MediaStreamDevices devices;
   std::unique_ptr<content::MediaStreamUI> ui;
 
-  if (request.video_type != content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE) {
-    std::move(callback).Run(devices, content::MEDIA_DEVICE_INVALID_STATE,
+  if (request.video_type != blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE) {
+    std::move(callback).Run(devices, blink::MEDIA_DEVICE_INVALID_STATE,
                             std::move(ui));
     return;
   }
 
-  if (request.request_type == content::MEDIA_DEVICE_UPDATE) {
+  if (request.request_type == blink::MEDIA_DEVICE_UPDATE) {
     ProcessChangeSourceRequest(web_contents, request, std::move(callback),
                                extension);
     return;
@@ -335,7 +335,7 @@ void DesktopCaptureAccessHandler::HandleRequest(
 
   // Received invalid device id.
   if (media_id.type == content::DesktopMediaID::TYPE_NONE) {
-    std::move(callback).Run(devices, content::MEDIA_DEVICE_INVALID_STATE,
+    std::move(callback).Run(devices, blink::MEDIA_DEVICE_INVALID_STATE,
                             std::move(ui));
     return;
   }
@@ -352,7 +352,7 @@ void DesktopCaptureAccessHandler::HandleRequest(
 
   // This value essentially from whether getUserMedia requests audio stream.
   const bool audio_requested =
-      request.audio_type == content::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE;
+      request.audio_type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE;
 
   // This value shows for a given capture type, whether the system or our code
   // can support audio sharing. Currently audio is only supported for screen and
@@ -374,14 +374,13 @@ void DesktopCaptureAccessHandler::HandleRequest(
       display_notification_ && ShouldDisplayNotification(extension);
 
   ui = GetDevicesForDesktopCapture(
-      web_contents, &devices, media_id,
-      content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
-      content::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE, capture_audio,
+      web_contents, &devices, media_id, blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
+      blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE, capture_audio,
       request.disable_local_echo, display_notification,
       GetApplicationTitle(web_contents, extension),
       GetApplicationTitle(web_contents, extension));
   UpdateExtensionTrusted(request, extension);
-  std::move(callback).Run(devices, content::MEDIA_DEVICE_OK, std::move(ui));
+  std::move(callback).Run(devices, blink::MEDIA_DEVICE_OK, std::move(ui));
 }
 
 void DesktopCaptureAccessHandler::ProcessChangeSourceRequest(
@@ -393,8 +392,8 @@ void DesktopCaptureAccessHandler::ProcessChangeSourceRequest(
 
   std::unique_ptr<DesktopMediaPicker> picker = picker_factory_->CreatePicker();
   if (!picker) {
-    std::move(callback).Run(content::MediaStreamDevices(),
-                            content::MEDIA_DEVICE_INVALID_STATE, nullptr);
+    std::move(callback).Run(blink::MediaStreamDevices(),
+                            blink::MEDIA_DEVICE_INVALID_STATE, nullptr);
     return;
   }
 
@@ -410,7 +409,7 @@ void DesktopCaptureAccessHandler::UpdateMediaRequestState(
     int render_process_id,
     int render_frame_id,
     int page_request_id,
-    content::MediaStreamType stream_type,
+    blink::MediaStreamType stream_type,
     content::MediaRequestState state) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -454,8 +453,8 @@ void DesktopCaptureAccessHandler::ProcessQueuedAccessRequest(
       GetApplicationTitle(web_contents, pending_request.extension);
   picker_params.target_name = picker_params.app_name;
   picker_params.request_audio =
-      (pending_request.request.audio_type == content::MEDIA_NO_SERVICE) ? false
-                                                                        : true;
+      (pending_request.request.audio_type == blink::MEDIA_NO_SERVICE) ? false
+                                                                      : true;
   pending_request.picker->Show(picker_params, std::move(source_lists),
                                done_callback);
 }
@@ -477,15 +476,15 @@ void DesktopCaptureAccessHandler::OnPickerDialogResults(
   }
 
   PendingAccessRequest& pending_request = *queue.front();
-  content::MediaStreamDevices devices;
-  content::MediaStreamRequestResult request_result =
-      content::MEDIA_DEVICE_PERMISSION_DENIED;
+  blink::MediaStreamDevices devices;
+  blink::MediaStreamRequestResult request_result =
+      blink::MEDIA_DEVICE_PERMISSION_DENIED;
   const extensions::Extension* extension = pending_request.extension;
   std::unique_ptr<content::MediaStreamUI> ui;
   if (media_id.is_null()) {
-    request_result = content::MEDIA_DEVICE_PERMISSION_DENIED;
+    request_result = blink::MEDIA_DEVICE_PERMISSION_DENIED;
   } else {
-    request_result = content::MEDIA_DEVICE_OK;
+    request_result = blink::MEDIA_DEVICE_OK;
     // Determine if the extension is required to display a notification.
     const bool display_notification =
         display_notification_ && ShouldDisplayNotification(extension);

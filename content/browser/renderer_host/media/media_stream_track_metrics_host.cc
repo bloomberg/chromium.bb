@@ -29,7 +29,7 @@ MediaStreamTrackMetricsHost::~MediaStreamTrackMetricsHost() {
 }
 
 void MediaStreamTrackMetricsHost::BindRequest(
-    mojom::MediaStreamTrackMetricsHostRequest request) {
+    blink::mojom::MediaStreamTrackMetricsHostRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 

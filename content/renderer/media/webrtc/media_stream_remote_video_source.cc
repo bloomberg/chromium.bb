@@ -233,7 +233,7 @@ void MediaStreamRemoteVideoSource::StartSourceImpl(
   scoped_refptr<webrtc::VideoTrackInterface> video_track(
       static_cast<webrtc::VideoTrackInterface*>(observer_->track().get()));
   video_track->AddOrUpdateSink(delegate_.get(), rtc::VideoSinkWants());
-  OnStartDone(MEDIA_DEVICE_OK);
+  OnStartDone(blink::MEDIA_DEVICE_OK);
 }
 
 void MediaStreamRemoteVideoSource::StopSourceImpl() {

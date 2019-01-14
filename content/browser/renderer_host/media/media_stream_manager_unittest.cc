@@ -137,12 +137,16 @@ class MockMediaObserver : public MediaObserver {
  public:
   MOCK_METHOD0(OnAudioCaptureDevicesChanged, void());
   MOCK_METHOD0(OnVideoCaptureDevicesChanged, void());
-  MOCK_METHOD6(
-      OnMediaRequestStateChanged,
-      void(int, int, int, const GURL&, MediaStreamType, MediaRequestState));
+  MOCK_METHOD6(OnMediaRequestStateChanged,
+               void(int,
+                    int,
+                    int,
+                    const GURL&,
+                    blink::MediaStreamType,
+                    MediaRequestState));
   MOCK_METHOD2(OnCreatingAudioStream, void(int, int));
   MOCK_METHOD5(OnSetCapturingLinkSecured,
-               void(int, int, int, MediaStreamType, bool));
+               void(int, int, int, blink::MediaStreamType, bool));
 };
 
 class TestBrowserClient : public ContentBrowserClient {
@@ -206,7 +210,7 @@ class MediaStreamManagerTest : public ::testing::Test {
 
   MOCK_METHOD1(Response, void(int index));
   void ResponseCallback(int index,
-                        const MediaStreamDevices& devices,
+                        const blink::MediaStreamDevices& devices,
                         std::unique_ptr<MediaStreamUIProxy> ui_proxy) {
     Response(index);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
@@ -223,7 +227,7 @@ class MediaStreamManagerTest : public ::testing::Test {
     MediaStreamManager::MediaAccessRequestCallback callback =
         base::BindOnce(&MediaStreamManagerTest::ResponseCallback,
                        base::Unretained(this), index);
-    StreamControls controls(true, true);
+    blink::StreamControls controls(true, true);
     return media_stream_manager_->MakeMediaAccessRequest(
         render_process_id, render_frame_id, requester_id, page_request_id,
         controls, security_origin, std::move(callback));
@@ -261,27 +265,34 @@ TEST_F(MediaStreamManagerTest, MakeAndCancelMediaAccessRequest) {
   std::string label = MakeMediaAccessRequest(0);
 
   // Request cancellation notifies closing of all stream types.
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_CLOSING));
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_CLOSING));
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_GUM_TAB_AUDIO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_CLOSING));
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_GUM_TAB_VIDEO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_CLOSING));
   EXPECT_CALL(*media_observer_,
-              OnMediaRequestStateChanged(_, _, _, _, MEDIA_DEVICE_AUDIO_CAPTURE,
+              OnMediaRequestStateChanged(_, _, _, _,
+                                         blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
                                          MEDIA_REQUEST_STATE_CLOSING));
   EXPECT_CALL(*media_observer_,
-              OnMediaRequestStateChanged(_, _, _, _, MEDIA_DEVICE_VIDEO_CAPTURE,
+              OnMediaRequestStateChanged(_, _, _, _,
+                                         blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE,
                                          MEDIA_REQUEST_STATE_CLOSING));
-  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
-                                    _, _, _, _, MEDIA_GUM_TAB_AUDIO_CAPTURE,
-                                    MEDIA_REQUEST_STATE_CLOSING));
-  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
-                                    _, _, _, _, MEDIA_GUM_TAB_VIDEO_CAPTURE,
-                                    MEDIA_REQUEST_STATE_CLOSING));
-  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
-                                    _, _, _, _, MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
-                                    MEDIA_REQUEST_STATE_CLOSING));
-  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
-                                    _, _, _, _, MEDIA_GUM_DESKTOP_AUDIO_CAPTURE,
-                                    MEDIA_REQUEST_STATE_CLOSING));
-  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
-                                    _, _, _, _, MEDIA_DISPLAY_VIDEO_CAPTURE,
-                                    MEDIA_REQUEST_STATE_CLOSING));
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_DISPLAY_VIDEO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_CLOSING));
   media_stream_manager_->CancelRequest(label);
   run_loop_.RunUntilIdle();
 }
@@ -296,7 +307,7 @@ TEST_F(MediaStreamManagerTest, MakeMultipleRequests) {
   int requester_id = 2;
   int page_request_id = 2;
   url::Origin security_origin;
-  StreamControls controls(true, true);
+  blink::StreamControls controls(true, true);
   MediaStreamManager::MediaAccessRequestCallback callback = base::BindOnce(
       &MediaStreamManagerTest::ResponseCallback, base::Unretained(this), 1);
   std::string label2 = media_stream_manager_->MakeMediaAccessRequest(
@@ -316,27 +327,34 @@ TEST_F(MediaStreamManagerTest, MakeAndCancelMultipleRequests) {
   std::string label2 = MakeMediaAccessRequest(1);
 
   // Cancelled request notifies closing of all stream types.
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_CLOSING));
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_CLOSING));
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_GUM_TAB_AUDIO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_CLOSING));
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_GUM_TAB_VIDEO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_CLOSING));
   EXPECT_CALL(*media_observer_,
-              OnMediaRequestStateChanged(_, _, _, _, MEDIA_DEVICE_AUDIO_CAPTURE,
+              OnMediaRequestStateChanged(_, _, _, _,
+                                         blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
                                          MEDIA_REQUEST_STATE_CLOSING));
   EXPECT_CALL(*media_observer_,
-              OnMediaRequestStateChanged(_, _, _, _, MEDIA_DEVICE_VIDEO_CAPTURE,
+              OnMediaRequestStateChanged(_, _, _, _,
+                                         blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE,
                                          MEDIA_REQUEST_STATE_CLOSING));
-  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
-                                    _, _, _, _, MEDIA_GUM_TAB_AUDIO_CAPTURE,
-                                    MEDIA_REQUEST_STATE_CLOSING));
-  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
-                                    _, _, _, _, MEDIA_GUM_TAB_VIDEO_CAPTURE,
-                                    MEDIA_REQUEST_STATE_CLOSING));
-  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
-                                    _, _, _, _, MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
-                                    MEDIA_REQUEST_STATE_CLOSING));
-  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
-                                    _, _, _, _, MEDIA_GUM_DESKTOP_AUDIO_CAPTURE,
-                                    MEDIA_REQUEST_STATE_CLOSING));
-  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
-                                    _, _, _, _, MEDIA_DISPLAY_VIDEO_CAPTURE,
-                                    MEDIA_REQUEST_STATE_CLOSING));
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_DISPLAY_VIDEO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_CLOSING));
 
   media_stream_manager_->CancelRequest(label1);
 
@@ -344,19 +362,23 @@ TEST_F(MediaStreamManagerTest, MakeAndCancelMultipleRequests) {
   // starting a device enumeration, and to MEDIA_REQUEST_STATE_PENDING_APPROVAL
   // when the enumeration is completed and also when the request is posted to
   // the UI.
-  EXPECT_CALL(*media_observer_,
-              OnMediaRequestStateChanged(_, _, _, _, MEDIA_DEVICE_AUDIO_CAPTURE,
-                                         MEDIA_REQUEST_STATE_REQUESTED));
-  EXPECT_CALL(*media_observer_,
-              OnMediaRequestStateChanged(_, _, _, _, MEDIA_DEVICE_VIDEO_CAPTURE,
-                                         MEDIA_REQUEST_STATE_REQUESTED));
-  EXPECT_CALL(*media_observer_,
-              OnMediaRequestStateChanged(_, _, _, _, MEDIA_DEVICE_AUDIO_CAPTURE,
-                                         MEDIA_REQUEST_STATE_PENDING_APPROVAL))
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_REQUESTED));
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_REQUESTED));
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_PENDING_APPROVAL))
       .Times(2);
-  EXPECT_CALL(*media_observer_,
-              OnMediaRequestStateChanged(_, _, _, _, MEDIA_DEVICE_VIDEO_CAPTURE,
-                                         MEDIA_REQUEST_STATE_PENDING_APPROVAL))
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_PENDING_APPROVAL))
       .Times(2);
 
   // Expecting the callback from the second request will be triggered and
@@ -404,20 +426,21 @@ TEST_F(MediaStreamManagerTest, GetDisplayMediaRequest) {
         /*tests_use_fake_render_frame_hosts=*/true);
   }));
 
-  StreamControls controls(false /* request_audio */, true /* request_video */);
-  controls.video.stream_type = MEDIA_DISPLAY_VIDEO_CAPTURE;
+  blink::StreamControls controls(false /* request_audio */,
+                                 true /* request_video */);
+  controls.video.stream_type = blink::MEDIA_DISPLAY_VIDEO_CAPTURE;
   const int render_process_id = 1;
   const int render_frame_id = 1;
   const int requester_id = 1;
   const int page_request_id = 1;
 
-  MediaStreamDevice video_device;
+  blink::MediaStreamDevice video_device;
   MediaStreamManager::GenerateStreamCallback generate_stream_callback =
       base::BindOnce(
-          [](base::RunLoop* wait_loop, MediaStreamDevice* video_device,
-             MediaStreamRequestResult result, const std::string& label,
-             const MediaStreamDevices& audio_devices,
-             const MediaStreamDevices& video_devices) {
+          [](base::RunLoop* wait_loop, blink::MediaStreamDevice* video_device,
+             blink::MediaStreamRequestResult result, const std::string& label,
+             const blink::MediaStreamDevices& audio_devices,
+             const blink::MediaStreamDevices& video_devices) {
             EXPECT_EQ(0u, audio_devices.size());
             ASSERT_EQ(1u, video_devices.size());
             *video_device = video_devices[0];
@@ -426,15 +449,18 @@ TEST_F(MediaStreamManagerTest, GetDisplayMediaRequest) {
           &run_loop_, &video_device);
   MediaStreamManager::DeviceStoppedCallback stopped_callback;
   MediaStreamManager::DeviceChangedCallback changed_callback;
-  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
-                                    _, _, _, _, MEDIA_DISPLAY_VIDEO_CAPTURE,
-                                    MEDIA_REQUEST_STATE_PENDING_APPROVAL));
-  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
-                                    _, _, _, _, MEDIA_DISPLAY_VIDEO_CAPTURE,
-                                    MEDIA_REQUEST_STATE_OPENING));
-  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
-                                    _, _, _, _, MEDIA_DISPLAY_VIDEO_CAPTURE,
-                                    MEDIA_REQUEST_STATE_DONE));
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_DISPLAY_VIDEO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_PENDING_APPROVAL));
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_DISPLAY_VIDEO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_OPENING));
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_DISPLAY_VIDEO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_DONE));
   media_stream_manager_->GenerateStream(
       render_process_id, render_frame_id, requester_id, page_request_id,
       controls, MediaDeviceSaltAndOrigin(), false /* user_gesture */,
@@ -442,11 +468,12 @@ TEST_F(MediaStreamManagerTest, GetDisplayMediaRequest) {
       std::move(changed_callback));
   run_loop_.Run();
 
-  EXPECT_EQ(MEDIA_DISPLAY_VIDEO_CAPTURE, video_device.type);
+  EXPECT_EQ(blink::MEDIA_DISPLAY_VIDEO_CAPTURE, video_device.type);
   EXPECT_TRUE(video_device.display_media_info.has_value());
-  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
-                                    _, _, _, _, MEDIA_DISPLAY_VIDEO_CAPTURE,
-                                    MEDIA_REQUEST_STATE_CLOSING));
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_DISPLAY_VIDEO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_CLOSING));
   media_stream_manager_->StopStreamDevice(render_process_id, render_frame_id,
                                           requester_id, video_device.id,
                                           video_device.session_id);
@@ -460,23 +487,26 @@ TEST_F(MediaStreamManagerTest, GetDisplayMediaRequestCallsUIProxy) {
             .WillOnce(testing::Invoke(
                 [run_loop](std::unique_ptr<MediaStreamRequest>& request,
                            testing::Unused) {
-                  EXPECT_EQ(MEDIA_DISPLAY_VIDEO_CAPTURE, request->video_type);
+                  EXPECT_EQ(blink::MEDIA_DISPLAY_VIDEO_CAPTURE,
+                            request->video_type);
                   run_loop->Quit();
                 }));
         return std::unique_ptr<FakeMediaStreamUIProxy>(std::move(mock_ui));
       },
       &run_loop_));
-  StreamControls controls(false /* request_audio */, true /* request_video */);
-  controls.video.stream_type = MEDIA_DISPLAY_VIDEO_CAPTURE;
+  blink::StreamControls controls(false /* request_audio */,
+                                 true /* request_video */);
+  controls.video.stream_type = blink::MEDIA_DISPLAY_VIDEO_CAPTURE;
 
   MediaStreamManager::GenerateStreamCallback generate_stream_callback =
-      base::BindOnce([](MediaStreamRequestResult result,
+      base::BindOnce([](blink::MediaStreamRequestResult result,
                         const std::string& label,
-                        const MediaStreamDevices& audio_devices,
-                        const MediaStreamDevices& video_devices) {});
-  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
-                                    _, _, _, _, MEDIA_DISPLAY_VIDEO_CAPTURE,
-                                    MEDIA_REQUEST_STATE_PENDING_APPROVAL));
+                        const blink::MediaStreamDevices& audio_devices,
+                        const blink::MediaStreamDevices& video_devices) {});
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_DISPLAY_VIDEO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_PENDING_APPROVAL));
   const int render_process_id = 0;
   const int render_frame_id = 0;
   const int requester_id = 0;
@@ -500,20 +530,21 @@ TEST_F(MediaStreamManagerTest, DesktopCaptureDeviceStopped) {
         /*tests_use_fake_render_frame_hosts=*/true);
   }));
 
-  StreamControls controls(false /* request_audio */, true /* request_video */);
-  controls.video.stream_type = MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
+  blink::StreamControls controls(false /* request_audio */,
+                                 true /* request_video */);
+  controls.video.stream_type = blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
   const int render_process_id = 1;
   const int render_frame_id = 1;
   const int requester_id = 1;
   const int page_request_id = 1;
 
-  MediaStreamDevice video_device;
+  blink::MediaStreamDevice video_device;
   MediaStreamManager::GenerateStreamCallback generate_stream_callback =
       base::BindOnce(
-          [](base::RunLoop* wait_loop, MediaStreamDevice* video_device,
-             MediaStreamRequestResult result, const std::string& label,
-             const MediaStreamDevices& audio_devices,
-             const MediaStreamDevices& video_devices) {
+          [](base::RunLoop* wait_loop, blink::MediaStreamDevice* video_device,
+             blink::MediaStreamRequestResult result, const std::string& label,
+             const blink::MediaStreamDevices& audio_devices,
+             const blink::MediaStreamDevices& video_devices) {
             EXPECT_EQ(0u, audio_devices.size());
             ASSERT_EQ(1u, video_devices.size());
             *video_device = video_devices[0];
@@ -522,8 +553,8 @@ TEST_F(MediaStreamManagerTest, DesktopCaptureDeviceStopped) {
           &run_loop_, &video_device);
   MediaStreamManager::DeviceStoppedCallback stopped_callback =
       base::BindRepeating(
-          [](const std::string& label, const MediaStreamDevice& device) {
-            EXPECT_EQ(MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, device.type);
+          [](const std::string& label, const blink::MediaStreamDevice& device) {
+            EXPECT_EQ(blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, device.type);
             EXPECT_NE(DesktopMediaID::TYPE_NONE,
                       DesktopMediaID::Parse(device.id).type);
           });
@@ -556,20 +587,21 @@ TEST_F(MediaStreamManagerTest, DesktopCaptureDeviceChanged) {
         /*tests_use_fake_render_frame_hosts=*/true);
   }));
 
-  StreamControls controls(false /* request_audio */, true /* request_video */);
-  controls.video.stream_type = MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
+  blink::StreamControls controls(false /* request_audio */,
+                                 true /* request_video */);
+  controls.video.stream_type = blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
   const int render_process_id = 1;
   const int render_frame_id = 1;
   const int requester_id = 1;
   const int page_request_id = 1;
 
-  MediaStreamDevice video_device;
+  blink::MediaStreamDevice video_device;
   MediaStreamManager::GenerateStreamCallback generate_stream_callback =
       base::BindOnce(
-          [](base::RunLoop* wait_loop, MediaStreamDevice* video_device,
-             MediaStreamRequestResult result, const std::string& label,
-             const MediaStreamDevices& audio_devices,
-             const MediaStreamDevices& video_devices) {
+          [](base::RunLoop* wait_loop, blink::MediaStreamDevice* video_device,
+             blink::MediaStreamRequestResult result, const std::string& label,
+             const blink::MediaStreamDevices& audio_devices,
+             const blink::MediaStreamDevices& video_devices) {
             EXPECT_EQ(0u, audio_devices.size());
             ASSERT_EQ(1u, video_devices.size());
             *video_device = video_devices[0];
@@ -579,13 +611,13 @@ TEST_F(MediaStreamManagerTest, DesktopCaptureDeviceChanged) {
   MediaStreamManager::DeviceStoppedCallback stopped_callback;
   MediaStreamManager::DeviceChangedCallback changed_callback =
       base::BindRepeating(
-          [](MediaStreamDevice* video_device, const std::string& label,
-             const MediaStreamDevice& old_device,
-             const MediaStreamDevice& new_device) {
-            EXPECT_EQ(MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, old_device.type);
+          [](blink::MediaStreamDevice* video_device, const std::string& label,
+             const blink::MediaStreamDevice& old_device,
+             const blink::MediaStreamDevice& new_device) {
+            EXPECT_EQ(blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, old_device.type);
             EXPECT_NE(DesktopMediaID::TYPE_NONE,
                       DesktopMediaID::Parse(old_device.id).type);
-            EXPECT_EQ(MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, new_device.type);
+            EXPECT_EQ(blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, new_device.type);
             EXPECT_NE(DesktopMediaID::TYPE_NONE,
                       DesktopMediaID::Parse(new_device.id).type);
             *video_device = new_device;

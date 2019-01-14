@@ -99,9 +99,10 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
       const AudioProcessingProperties& properties) {
     ProcessedLocalAudioSource* const source = new ProcessedLocalAudioSource(
         -1 /* consumer_render_frame_id is N/A for non-browser tests */,
-        MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE, "mock_audio_device_id",
-                          "Mock audio device", kSampleRate, kChannelLayout,
-                          kRequestedBufferSize),
+        blink::MediaStreamDevice(blink::MEDIA_DEVICE_AUDIO_CAPTURE,
+                                 "mock_audio_device_id", "Mock audio device",
+                                 kSampleRate, kChannelLayout,
+                                 kRequestedBufferSize),
         false /* hotword_enabled */, false /* disable_local_echo */, properties,
         base::Bind(&ProcessedLocalAudioSourceTest::OnAudioSourceStarted,
                    base::Unretained(this)),
@@ -140,7 +141,7 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
   }
 
   void OnAudioSourceStarted(MediaStreamSource* source,
-                            MediaStreamRequestResult result,
+                            blink::MediaStreamRequestResult result,
                             const blink::WebString& result_name) {}
 
  private:

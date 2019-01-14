@@ -8,7 +8,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
-#include "content/public/common/media_stream_request.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/origin.h"
 
@@ -43,7 +43,7 @@ struct CONTENT_EXPORT SpeechRecognitionSessionContext {
   std::string label;
 
   // A list of devices being used by the recognition session.
-  MediaStreamDevices devices;
+  blink::MediaStreamDevices devices;
 };
 
 }  // namespace content

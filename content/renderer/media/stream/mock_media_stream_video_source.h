@@ -63,7 +63,7 @@ class MockMediaStreamVideoSource : public MediaStreamVideoSource {
 
  protected:
   // Implements MediaStreamSource.
-  void DoChangeSource(const MediaStreamDevice& new_device) override;
+  void DoChangeSource(const blink::MediaStreamDevice& new_device) override;
 
   // Implements MediaStreamVideoSource.
   void StartSourceImpl(

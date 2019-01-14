@@ -28,7 +28,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/media_stream_request.h"
 #include "extensions/browser/app_window/app_delegate.h"
 #include "extensions/browser/app_window/app_web_contents_helper.h"
 #include "extensions/browser/app_window/app_window_client.h"
@@ -50,6 +49,7 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/display/display.h"
@@ -354,7 +354,7 @@ void AppWindow::RequestMediaAccessPermission(
 bool AppWindow::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    content::MediaStreamType type) {
+    blink::MediaStreamType type) {
   DCHECK_EQ(web_contents(),
             content::WebContents::FromRenderFrameHost(render_frame_host)
                 ->GetOutermostWebContents());

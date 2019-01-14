@@ -138,9 +138,12 @@ class MockMediaStreamProviderListener : public MediaStreamProviderListener {
   ~MockMediaStreamProviderListener() override {}
 
   MOCK_METHOD2(Opened,
-               void(MediaStreamType stream_type, int capture_session_id));
-  void Closed(MediaStreamType stream_type, int capture_session_id) override {}
-  void Aborted(MediaStreamType stream_type, int capture_session_id) override {}
+               void(blink::MediaStreamType stream_type,
+                    int capture_session_id));
+  void Closed(blink::MediaStreamType stream_type,
+              int capture_session_id) override {}
+  void Aborted(blink::MediaStreamType stream_type,
+               int capture_session_id) override {}
 };
 
 class AudioInputDelegateTest : public testing::Test {
@@ -174,11 +177,12 @@ class AudioInputDelegateTest : public testing::Test {
         &listener);
 
     int session_id = media_stream_manager_.audio_input_device_manager()->Open(
-        MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE, device_id, name));
+        blink::MediaStreamDevice(blink::MEDIA_DEVICE_AUDIO_CAPTURE, device_id,
+                                 name));
 
     // Block for completion.
     base::RunLoop loop;
-    EXPECT_CALL(listener, Opened(MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
+    EXPECT_CALL(listener, Opened(blink::MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
         .WillOnce(InvokeWithoutArgs(&loop, &base::RunLoop::Quit));
     loop.Run();
     media_stream_manager_.audio_input_device_manager()->UnregisterListener(

@@ -12,9 +12,9 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/stream/mock_mojo_media_stream_dispatcher_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 namespace content {
 
@@ -26,7 +26,7 @@ class MediaStreamDeviceObserverTest : public ::testing::Test {
   void OnDeviceOpened(base::Closure quit_closure,
                       bool success,
                       const std::string& label,
-                      const MediaStreamDevice& device) {
+                      const blink::MediaStreamDevice& device) {
     if (success) {
       stream_label_ = label;
       current_device_ = device;
@@ -41,7 +41,7 @@ class MediaStreamDeviceObserverTest : public ::testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   MockMojoMediaStreamDispatcherHost mock_dispatcher_host_;
   std::unique_ptr<MediaStreamDeviceObserver> observer_;
-  MediaStreamDevice current_device_;
+  blink::MediaStreamDevice current_device_;
 };
 
 TEST_F(MediaStreamDeviceObserverTest, GetNonScreenCaptureDevices) {
@@ -53,7 +53,7 @@ TEST_F(MediaStreamDeviceObserverTest, GetNonScreenCaptureDevices) {
   // OpenDevice request 1
   base::RunLoop run_loop1;
   mock_dispatcher_host_.OpenDevice(
-      kRequestId1, "device_path", MEDIA_DEVICE_VIDEO_CAPTURE,
+      kRequestId1, "device_path", blink::MEDIA_DEVICE_VIDEO_CAPTURE,
       base::BindOnce(&MediaStreamDeviceObserverTest::OnDeviceOpened,
                      base::Unretained(this), run_loop1.QuitClosure()));
   run_loop1.Run();
@@ -62,7 +62,7 @@ TEST_F(MediaStreamDeviceObserverTest, GetNonScreenCaptureDevices) {
   // OpenDevice request 2
   base::RunLoop run_loop2;
   mock_dispatcher_host_.OpenDevice(
-      kRequestId2, "screen_capture", MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
+      kRequestId2, "screen_capture", blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
       base::BindOnce(&MediaStreamDeviceObserverTest::OnDeviceOpened,
                      base::Unretained(this), run_loop2.QuitClosure()));
   run_loop2.Run();
@@ -70,20 +70,22 @@ TEST_F(MediaStreamDeviceObserverTest, GetNonScreenCaptureDevices) {
 
   EXPECT_EQ(observer_->label_stream_map_.size(), 2u);
 
-  // Only the device with type MEDIA_DEVICE_VIDEO_CAPTURE will be returned.
-  MediaStreamDevices video_devices = observer_->GetNonScreenCaptureDevices();
+  // Only the device with type blink::MEDIA_DEVICE_VIDEO_CAPTURE will be
+  // returned.
+  blink::MediaStreamDevices video_devices =
+      observer_->GetNonScreenCaptureDevices();
   EXPECT_EQ(video_devices.size(), 1u);
-  EXPECT_EQ(video_devices[0].type, MEDIA_DEVICE_VIDEO_CAPTURE);
+  EXPECT_EQ(video_devices[0].type, blink::MEDIA_DEVICE_VIDEO_CAPTURE);
 
   // Close the device from request 2.
   observer_->RemoveStream(stream_label2);
   EXPECT_EQ(observer_->video_session_id(stream_label2),
-            MediaStreamDevice::kNoId);
+            blink::MediaStreamDevice::kNoId);
 
   // Close the device from request 1.
   observer_->RemoveStream(stream_label1);
   EXPECT_EQ(observer_->video_session_id(stream_label1),
-            MediaStreamDevice::kNoId);
+            blink::MediaStreamDevice::kNoId);
 
   // Verify that the request have been completed.
   EXPECT_EQ(observer_->label_stream_map_.size(), 0u);
@@ -97,7 +99,7 @@ TEST_F(MediaStreamDeviceObserverTest, OnDeviceStopped) {
   // OpenDevice request.
   base::RunLoop run_loop1;
   mock_dispatcher_host_.OpenDevice(
-      kRequestId, "device_path", MEDIA_DEVICE_VIDEO_CAPTURE,
+      kRequestId, "device_path", blink::MEDIA_DEVICE_VIDEO_CAPTURE,
       base::BindOnce(&MediaStreamDeviceObserverTest::OnDeviceOpened,
                      base::Unretained(this), run_loop1.QuitClosure()));
   run_loop1.Run();
@@ -121,19 +123,21 @@ TEST_F(MediaStreamDeviceObserverTest, OnDeviceChanged) {
   // OpenDevice request.
   base::RunLoop run_loop1;
   mock_dispatcher_host_.OpenDevice(
-      kRequestId1, example_video_id1, MEDIA_DEVICE_VIDEO_CAPTURE,
+      kRequestId1, example_video_id1, blink::MEDIA_DEVICE_VIDEO_CAPTURE,
       base::BindOnce(&MediaStreamDeviceObserverTest::OnDeviceOpened,
                      base::Unretained(this), run_loop1.QuitClosure()));
   run_loop1.Run();
 
   EXPECT_EQ(observer_->label_stream_map_.size(), 1u);
-  MediaStreamDevices video_devices = observer_->GetNonScreenCaptureDevices();
+  blink::MediaStreamDevices video_devices =
+      observer_->GetNonScreenCaptureDevices();
   EXPECT_EQ(video_devices.size(), 1u);
   EXPECT_EQ(video_devices[0].id, example_video_id1);
 
   // OnDeviceChange request.
-  MediaStreamDevice fake_video_device(content::MEDIA_DEVICE_VIDEO_CAPTURE,
-                                      example_video_id2, "Fake Video Device");
+  blink::MediaStreamDevice fake_video_device(blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+                                             example_video_id2,
+                                             "Fake Video Device");
   fake_video_device.session_id = kRequestId2;
   observer_->OnDeviceChanged(stream_label_, current_device_, fake_video_device);
 
@@ -147,7 +151,7 @@ TEST_F(MediaStreamDeviceObserverTest, OnDeviceChanged) {
   // Close the device from request.
   observer_->RemoveStream(stream_label_);
   EXPECT_EQ(observer_->video_session_id(stream_label_),
-            MediaStreamDevice::kNoId);
+            blink::MediaStreamDevice::kNoId);
 
   // Verify that the request have been completed.
   EXPECT_EQ(observer_->label_stream_map_.size(), 0u);

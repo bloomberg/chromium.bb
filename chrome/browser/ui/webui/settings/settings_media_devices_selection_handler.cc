@@ -59,12 +59,12 @@ void MediaDevicesSelectionHandler::RegisterMessages() {
 }
 
 void MediaDevicesSelectionHandler::OnUpdateAudioDevices(
-    const content::MediaStreamDevices& devices) {
+    const blink::MediaStreamDevices& devices) {
   UpdateDevicesMenu(AUDIO, devices);
 }
 
 void MediaDevicesSelectionHandler::OnUpdateVideoDevices(
-    const content::MediaStreamDevices& devices) {
+    const blink::MediaStreamDevices& devices) {
   UpdateDevicesMenu(VIDEO, devices);
 }
 
@@ -106,7 +106,8 @@ void MediaDevicesSelectionHandler::SetDefaultCaptureDevice(
 }
 
 void MediaDevicesSelectionHandler::UpdateDevicesMenu(
-    DeviceType type, const content::MediaStreamDevices& devices) {
+    DeviceType type,
+    const blink::MediaStreamDevices& devices) {
   AllowJavascript();
 
   // Get the default device unique id from prefs.
@@ -148,7 +149,7 @@ void MediaDevicesSelectionHandler::UpdateDevicesMenu(
 }
 
 std::string MediaDevicesSelectionHandler::GetDeviceDisplayName(
-    const content::MediaStreamDevice& device) const {
+    const blink::MediaStreamDevice& device) const {
   std::string facing_info;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -173,7 +174,7 @@ std::string MediaDevicesSelectionHandler::GetDeviceDisplayName(
 }
 
 void MediaDevicesSelectionHandler::UpdateDevicesMenuForType(DeviceType type) {
-  content::MediaStreamDevices devices;
+  blink::MediaStreamDevices devices;
   switch (type) {
     case AUDIO:
       devices = MediaCaptureDevicesDispatcher::GetInstance()->

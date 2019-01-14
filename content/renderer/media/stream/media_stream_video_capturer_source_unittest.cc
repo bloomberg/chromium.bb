@@ -112,7 +112,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
         base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
                    base::Unretained(this)),
         std::move(delegate));
-    mojom::MediaStreamDispatcherHostPtr dispatcher_host =
+    blink::mojom::MediaStreamDispatcherHostPtr dispatcher_host =
         mock_dispatcher_host_.CreateInterfacePtrAndBind();
     source_->dispatcher_host_ = std::move(dispatcher_host);
     webkit_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
@@ -173,7 +173,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
 
  protected:
   void OnConstraintsApplied(MediaStreamSource* source,
-                            MediaStreamRequestResult result,
+                            blink::MediaStreamRequestResult result,
                             const blink::WebString& result_name) {}
 
   // A ChildProcess is needed to fool the Tracks and Sources into believing they
@@ -388,8 +388,9 @@ TEST_F(MediaStreamVideoCapturerSourceTest, ChangeSource) {
   // |ChangeSourceImpl()| will recreate the |delegate_|, so check the
   // |MockStartCapture()| invoking in the |RecreateVideoCapturerSource()|.
   EXPECT_CALL(mock_delegate(), MockStopCapture());
-  MediaStreamDevice fake_video_device(MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
-                                      "Fake_Video_Device", "Fake Video Device");
+  blink::MediaStreamDevice fake_video_device(
+      blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, "Fake_Video_Device",
+      "Fake Video Device");
   source_->ChangeSourceImpl(fake_video_device);
   EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
             webkit_source_.GetReadyState());

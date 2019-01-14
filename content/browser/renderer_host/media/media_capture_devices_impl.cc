@@ -34,7 +34,7 @@ MediaCaptureDevicesImpl* MediaCaptureDevicesImpl::GetInstance() {
   return base::Singleton<MediaCaptureDevicesImpl>::get();
 }
 
-const MediaStreamDevices&
+const blink::MediaStreamDevices&
 MediaCaptureDevicesImpl::GetAudioCaptureDevices() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!devices_enumerated_) {
@@ -44,7 +44,7 @@ MediaCaptureDevicesImpl::GetAudioCaptureDevices() {
   return audio_devices_;
 }
 
-const MediaStreamDevices&
+const blink::MediaStreamDevices&
 MediaCaptureDevicesImpl::GetVideoCaptureDevices() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!devices_enumerated_) {
@@ -82,7 +82,7 @@ void MediaCaptureDevicesImpl::RemoveAllVideoCaptureObservers() {
 }
 
 void MediaCaptureDevicesImpl::OnAudioCaptureDevicesChanged(
-    const MediaStreamDevices& devices) {
+    const blink::MediaStreamDevices& devices) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     UpdateAudioDevicesOnUIThread(devices);
   } else {
@@ -94,7 +94,7 @@ void MediaCaptureDevicesImpl::OnAudioCaptureDevicesChanged(
 }
 
 void MediaCaptureDevicesImpl::OnVideoCaptureDevicesChanged(
-    const MediaStreamDevices& devices) {
+    const blink::MediaStreamDevices& devices) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     UpdateVideoDevicesOnUIThread(devices);
   } else {
@@ -113,14 +113,14 @@ MediaCaptureDevicesImpl::~MediaCaptureDevicesImpl() {
 }
 
 void MediaCaptureDevicesImpl::UpdateAudioDevicesOnUIThread(
-    const MediaStreamDevices& devices) {
+    const blink::MediaStreamDevices& devices) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   devices_enumerated_ = true;
   audio_devices_ = devices;
 }
 
 void MediaCaptureDevicesImpl::UpdateVideoDevicesOnUIThread(
-    const MediaStreamDevices& devices) {
+    const blink::MediaStreamDevices& devices) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   devices_enumerated_ = true;
   video_devices_ = devices;

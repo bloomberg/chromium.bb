@@ -42,7 +42,7 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
         child_process_(new ChildProcess()),
         number_of_successful_constraints_applied_(0),
         number_of_failed_constraints_applied_(0),
-        result_(MEDIA_DEVICE_OK),
+        result_(blink::MEDIA_DEVICE_OK),
         result_name_(""),
         mock_source_(new MockMediaStreamVideoSource(
             media::VideoCaptureFormat(gfx::Size(1280, 720),
@@ -126,7 +126,7 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
     return number_of_failed_constraints_applied_;
   }
 
-  content::MediaStreamRequestResult error_type() const { return result_; }
+  blink::MediaStreamRequestResult error_type() const { return result_; }
   blink::WebString error_name() const { return result_name_; }
 
   MockMediaStreamVideoSource* mock_source() { return mock_source_; }
@@ -235,11 +235,11 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
 
  private:
   void OnConstraintsApplied(MediaStreamSource* source,
-                            MediaStreamRequestResult result,
+                            blink::MediaStreamRequestResult result,
                             const blink::WebString& result_name) {
     ASSERT_EQ(source, web_source().GetExtraData());
 
-    if (result == MEDIA_DEVICE_OK) {
+    if (result == blink::MEDIA_DEVICE_OK) {
       ++number_of_successful_constraints_applied_;
     } else {
       result_ = result;
@@ -258,7 +258,7 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
   blink::WebMediaStreamTrack track_to_release_;
   int number_of_successful_constraints_applied_;
   int number_of_failed_constraints_applied_;
-  content::MediaStreamRequestResult result_;
+  blink::MediaStreamRequestResult result_;
   blink::WebString result_name_;
   blink::WebMediaStreamSource web_source_;
   // |mock_source_| is owned by |web_source_|.

@@ -1796,7 +1796,7 @@ void Browser::RequestMediaAccessPermission(
 bool Browser::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    content::MediaStreamType type) {
+    blink::MediaStreamType type) {
   Profile* profile = Profile::FromBrowserContext(
       content::WebContents::FromRenderFrameHost(render_frame_host)
           ->GetBrowserContext());
@@ -1808,7 +1808,7 @@ bool Browser::CheckMediaAccessPermission(
 }
 
 std::string Browser::GetDefaultMediaDeviceID(content::WebContents* web_contents,
-                                             content::MediaStreamType type) {
+                                             blink::MediaStreamType type) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   return MediaCaptureDevicesDispatcher::GetInstance()

@@ -87,7 +87,7 @@ class BackgroundLoaderContents : public content::WebContentsDelegate {
       content::MediaResponseCallback callback) override;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  content::MediaStreamType type) override;
+                                  blink::MediaStreamType type) override;
   void AdjustPreviewsStateForNavigation(
       content::WebContents* web_contents,
       content::PreviewsState* previews_state) override;

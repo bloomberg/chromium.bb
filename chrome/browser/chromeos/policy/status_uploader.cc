@@ -22,7 +22,7 @@
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_request_state.h"
-#include "content/public/common/media_stream_request.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 
 namespace em = enterprise_management;
@@ -170,14 +170,14 @@ bool StatusUploader::IsSessionDataUploadAllowed() {
 
 void StatusUploader::OnRequestUpdate(int render_process_id,
                                      int render_frame_id,
-                                     content::MediaStreamType stream_type,
+                                     blink::MediaStreamType stream_type,
                                      const content::MediaRequestState state) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // If a video or audio capture stream is opened, set a flag so we disallow
   // upload of potentially sensitive data.
   if (state == content::MEDIA_REQUEST_STATE_OPENING &&
-      (stream_type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
-       stream_type == content::MEDIA_DEVICE_VIDEO_CAPTURE)) {
+      (stream_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE ||
+       stream_type == blink::MEDIA_DEVICE_VIDEO_CAPTURE)) {
     has_captured_media_ = true;
   }
 }

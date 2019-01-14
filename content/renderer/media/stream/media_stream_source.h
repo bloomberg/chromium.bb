@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/public/common/media_stream_request.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 
 namespace content {
@@ -29,7 +29,7 @@ class CONTENT_EXPORT MediaStreamSource
 
   using ConstraintsCallback =
       base::Callback<void(MediaStreamSource* source,
-                          MediaStreamRequestResult result,
+                          blink::MediaStreamRequestResult result,
                           const blink::WebString& result_name)>;
 
   // Source constraints key for
@@ -41,7 +41,7 @@ class CONTENT_EXPORT MediaStreamSource
 
   // Returns device information about a source that has been created by a
   // JavaScript call to GetUserMedia, e.g., a camera or microphone.
-  const MediaStreamDevice& device() const { return device_; }
+  const blink::MediaStreamDevice& device() const { return device_; }
 
   // Stops the source (by calling DoStopSource()) and runs FinalizeStopSource().
   void StopSource();
@@ -51,7 +51,7 @@ class CONTENT_EXPORT MediaStreamSource
 
   // Sets device information about a source that has been created by a
   // JavaScript call to GetUserMedia. F.E a camera or microphone.
-  void SetDevice(const MediaStreamDevice& device);
+  void SetDevice(const blink::MediaStreamDevice& device);
 
   // Sets a callback that will be triggered when StopSource is called.
   void SetStopCallback(const SourceStoppedCallback& stop_callback);
@@ -61,7 +61,7 @@ class CONTENT_EXPORT MediaStreamSource
   void ResetSourceStoppedCallback();
 
   // Change the source to the |new_device| by calling DoChangeSource().
-  void ChangeSource(const MediaStreamDevice& new_device);
+  void ChangeSource(const blink::MediaStreamDevice& new_device);
 
  protected:
   // Called when StopSource is called. It allows derived classes to implement
@@ -70,7 +70,7 @@ class CONTENT_EXPORT MediaStreamSource
 
   // Called when ChangeSource is called. It allows derived class to implement
   // it's own ChangeSource method.
-  virtual void DoChangeSource(const MediaStreamDevice& new_device) = 0;
+  virtual void DoChangeSource(const blink::MediaStreamDevice& new_device) = 0;
 
   // Runs the stop callback (if set) and sets the
   // WebMediaStreamSource::readyState to ended. This can be used by
@@ -78,7 +78,7 @@ class CONTENT_EXPORT MediaStreamSource
   void FinalizeStopSource();
 
  private:
-  MediaStreamDevice device_;
+  blink::MediaStreamDevice device_;
   SourceStoppedCallback stop_callback_;
 
   // In debug builds, check that all methods are being called on the main

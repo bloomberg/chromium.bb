@@ -11,11 +11,12 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/guest_view/common/guest_view_constants.h"
+#include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/media_stream_request.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_types.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 namespace extensions {
 
@@ -64,7 +65,7 @@ class WebViewPermissionHelper
                                     content::MediaResponseCallback callback);
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  content::MediaStreamType type);
+                                  blink::MediaStreamType type);
   void CanDownload(const GURL& url,
                    const std::string& request_method,
                    const base::Callback<void(bool)>& callback);

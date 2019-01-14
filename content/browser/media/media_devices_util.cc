@@ -21,8 +21,8 @@
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/media_stream_request.h"
 #include "media/base/media_switches.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 namespace content {
 
@@ -41,13 +41,13 @@ std::string GetDefaultMediaDeviceIDOnUIThread(MediaDeviceType device_type,
   if (!delegate)
     return std::string();
 
-  MediaStreamType media_stream_type;
+  blink::MediaStreamType media_stream_type;
   switch (device_type) {
     case MEDIA_DEVICE_TYPE_AUDIO_INPUT:
-      media_stream_type = MEDIA_DEVICE_AUDIO_CAPTURE;
+      media_stream_type = blink::MEDIA_DEVICE_AUDIO_CAPTURE;
       break;
     case MEDIA_DEVICE_TYPE_VIDEO_INPUT:
-      media_stream_type = MEDIA_DEVICE_VIDEO_CAPTURE;
+      media_stream_type = blink::MEDIA_DEVICE_VIDEO_CAPTURE;
       break;
     default:
       return std::string();

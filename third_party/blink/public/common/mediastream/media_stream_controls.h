@@ -2,24 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_MEDIA_MEDIA_STREAM_CONTROLS_H_
-#define CONTENT_COMMON_MEDIA_MEDIA_STREAM_CONTROLS_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_MEDIASTREAM_MEDIA_STREAM_CONTROLS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_MEDIASTREAM_MEDIA_STREAM_CONTROLS_H_
 
 #include <string>
 
-#include "content/common/content_export.h"
-#include "content/public/common/media_stream_request.h"
+#include "third_party/blink/public/common/common_export.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
-namespace content {
+namespace blink {
 
 // Names for media stream source capture types.
 // These are values set via the "chromeMediaSource" constraint.
-CONTENT_EXPORT extern const char kMediaStreamSourceTab[];
-CONTENT_EXPORT extern const char kMediaStreamSourceScreen[]; /* video only */
-CONTENT_EXPORT extern const char kMediaStreamSourceDesktop[];
-CONTENT_EXPORT extern const char kMediaStreamSourceSystem[]; /* audio only */
+BLINK_COMMON_EXPORT extern const char kMediaStreamSourceTab[];
+BLINK_COMMON_EXPORT extern const char
+    kMediaStreamSourceScreen[]; /* video only */
+BLINK_COMMON_EXPORT extern const char kMediaStreamSourceDesktop[];
+BLINK_COMMON_EXPORT extern const char
+    kMediaStreamSourceSystem[]; /* audio only */
 
-struct CONTENT_EXPORT TrackControls {
+struct BLINK_COMMON_EXPORT TrackControls {
   TrackControls();
   explicit TrackControls(bool request, MediaStreamType type);
   explicit TrackControls(const TrackControls& other);
@@ -40,7 +42,7 @@ struct CONTENT_EXPORT TrackControls {
 // pair. This may result in opening one audio and/or one video device.
 // This has to be a struct with public members in order to allow it to
 // be sent in the mojo IPC.
-struct CONTENT_EXPORT StreamControls {
+struct BLINK_COMMON_EXPORT StreamControls {
   StreamControls();
   StreamControls(bool request_audio, bool request_video);
   ~StreamControls();
@@ -53,6 +55,6 @@ struct CONTENT_EXPORT StreamControls {
   bool disable_local_echo = false;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_COMMON_MEDIA_MEDIA_STREAM_CONTROLS_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_MEDIASTREAM_MEDIA_STREAM_CONTROLS_H_

@@ -11,10 +11,12 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/media_stream_request.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace content {
 
+struct MediaStreamRequest;
 class RenderFrameHostDelegate;
 
 // MediaStreamUIProxy proxies calls to media stream UI between IO thread and UI
@@ -23,8 +25,8 @@ class RenderFrameHostDelegate;
 class CONTENT_EXPORT MediaStreamUIProxy {
  public:
   using ResponseCallback =
-      base::OnceCallback<void(const MediaStreamDevices& devices,
-                              content::MediaStreamRequestResult result)>;
+      base::OnceCallback<void(const blink::MediaStreamDevices& devices,
+                              blink::MediaStreamRequestResult result)>;
 
   using WindowIdCallback =
       base::OnceCallback<void(gfx::NativeViewId window_id)>;
@@ -62,9 +64,8 @@ class CONTENT_EXPORT MediaStreamUIProxy {
   friend class Core;
   friend class FakeMediaStreamUIProxy;
 
-  void ProcessAccessRequestResponse(
-      const MediaStreamDevices& devices,
-      content::MediaStreamRequestResult result);
+  void ProcessAccessRequestResponse(const blink::MediaStreamDevices& devices,
+                                    blink::MediaStreamRequestResult result);
   void ProcessStopRequestFromUI();
   void ProcessChangeSourceRequestFromUI();
   void OnWindowId(WindowIdCallback window_id_callback,
@@ -89,7 +90,7 @@ class CONTENT_EXPORT FakeMediaStreamUIProxy : public MediaStreamUIProxy {
   FakeMediaStreamUIProxy(bool tests_use_fake_render_frame_hosts);
   ~FakeMediaStreamUIProxy() override;
 
-  void SetAvailableDevices(const MediaStreamDevices& devices);
+  void SetAvailableDevices(const blink::MediaStreamDevices& devices);
   void SetMicAccess(bool access);
   void SetCameraAccess(bool access);
 
@@ -102,7 +103,7 @@ class CONTENT_EXPORT FakeMediaStreamUIProxy : public MediaStreamUIProxy {
 
  private:
   // This is used for RequestAccess().
-  MediaStreamDevices devices_;
+  blink::MediaStreamDevices devices_;
 
   // These are used for CheckAccess().
   bool mic_access_;

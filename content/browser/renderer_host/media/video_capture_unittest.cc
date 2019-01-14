@@ -155,7 +155,7 @@ class VideoCaptureTest : public testing::Test,
       base::RunLoop run_loop;
       media_stream_manager_->OpenDevice(
           render_process_id, render_frame_id, requester_id, page_request_id,
-          video_devices[0].device_id, MEDIA_DEVICE_VIDEO_CAPTURE,
+          video_devices[0].device_id, blink::MEDIA_DEVICE_VIDEO_CAPTURE,
           MediaDeviceSaltAndOrigin{browser_context_.GetMediaDeviceIDSalt(),
                                    browser_context_.GetMediaDeviceIDSalt(),
                                    security_origin},
@@ -164,7 +164,7 @@ class VideoCaptureTest : public testing::Test,
           MediaStreamManager::DeviceStoppedCallback());
       run_loop.Run();
     }
-    ASSERT_NE(MediaStreamDevice::kNoId, opened_session_id_);
+    ASSERT_NE(blink::MediaStreamDevice::kNoId, opened_session_id_);
   }
 
   void CloseSession() {
@@ -292,7 +292,7 @@ class VideoCaptureTest : public testing::Test,
   void OnDeviceOpened(base::Closure quit_closure,
                       bool success,
                       const std::string& label,
-                      const MediaStreamDevice& opened_device) {
+                      const blink::MediaStreamDevice& opened_device) {
     if (success) {
       opened_device_label_ = label;
       opened_session_id_ = opened_device.session_id;

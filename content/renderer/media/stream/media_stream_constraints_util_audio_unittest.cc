@@ -148,13 +148,13 @@ class MediaStreamConstraintsUtilAudioTest
   std::string GetMediaStreamSource() { return GetParam(); }
   bool IsDeviceCapture() { return GetMediaStreamSource().empty(); }
 
-  MediaStreamType GetMediaStreamType() {
+  blink::MediaStreamType GetMediaStreamType() {
     std::string media_source = GetMediaStreamSource();
     if (media_source.empty())
-      return MEDIA_DEVICE_AUDIO_CAPTURE;
+      return blink::MEDIA_DEVICE_AUDIO_CAPTURE;
     else if (media_source == kMediaStreamSourceTab)
-      return MEDIA_GUM_TAB_AUDIO_CAPTURE;
-    return MEDIA_GUM_DESKTOP_AUDIO_CAPTURE;
+      return blink::MEDIA_GUM_TAB_AUDIO_CAPTURE;
+    return blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE;
   }
 
   std::unique_ptr<ProcessedLocalAudioSource> GetProcessedLocalAudioSource(
@@ -163,7 +163,7 @@ class MediaStreamConstraintsUtilAudioTest
       bool disable_local_echo,
       bool render_to_associated_sink,
       int effects) {
-    MediaStreamDevice device;
+    blink::MediaStreamDevice device;
     device.id = "processed_source";
     device.type = GetMediaStreamType();
     if (render_to_associated_sink)
@@ -191,7 +191,7 @@ class MediaStreamConstraintsUtilAudioTest
       bool hotword_enabled,
       bool disable_local_echo,
       bool render_to_associated_sink) {
-    MediaStreamDevice device;
+    blink::MediaStreamDevice device;
     device.type = GetMediaStreamType();
     if (enable_system_echo_canceller)
       device.input.set_effects(media::AudioParameters::ECHO_CANCELLER);

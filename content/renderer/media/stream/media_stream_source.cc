@@ -46,7 +46,7 @@ void MediaStreamSource::SetSourceMuted(bool is_muted) {
                             : blink::WebMediaStreamSource::kReadyStateLive);
 }
 
-void MediaStreamSource::SetDevice(const MediaStreamDevice& device) {
+void MediaStreamSource::SetDevice(const blink::MediaStreamDevice& device) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   device_ = device;
 }
@@ -64,7 +64,8 @@ void MediaStreamSource::ResetSourceStoppedCallback() {
   stop_callback_.Reset();
 }
 
-void MediaStreamSource::ChangeSource(const MediaStreamDevice& new_device) {
+void MediaStreamSource::ChangeSource(
+    const blink::MediaStreamDevice& new_device) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DoChangeSource(new_device);
 }

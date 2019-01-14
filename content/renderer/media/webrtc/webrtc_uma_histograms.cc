@@ -14,9 +14,9 @@ void LogUserMediaRequestWithNoResult(MediaStreamRequestState state) {
                             NUM_MEDIA_STREAM_REQUEST_WITH_NO_RESULT);
 }
 
-void LogUserMediaRequestResult(MediaStreamRequestResult result) {
+void LogUserMediaRequestResult(blink::MediaStreamRequestResult result) {
   UMA_HISTOGRAM_ENUMERATION("WebRTC.UserMediaRequest.Result2", result,
-                            NUM_MEDIA_REQUEST_RESULTS);
+                            blink::NUM_MEDIA_REQUEST_RESULTS);
 }
 
 void UpdateWebRTCMethodCount(blink::WebRTCAPIName api_name) {

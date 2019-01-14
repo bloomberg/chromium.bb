@@ -18,9 +18,9 @@
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
 #include "content/public/browser/video_capture_device_launcher.h"
-#include "content/public/common/media_stream_request.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 namespace content {
 
@@ -43,7 +43,7 @@ class CONTENT_EXPORT VideoCaptureController
  public:
   VideoCaptureController(
       const std::string& device_id,
-      MediaStreamType stream_type,
+      blink::MediaStreamType stream_type,
       const media::VideoCaptureParams& params,
       std::unique_ptr<VideoCaptureDeviceLauncher> device_launcher,
       base::RepeatingCallback<void(const std::string&)> emit_log_message_cb);
@@ -146,7 +146,7 @@ class CONTENT_EXPORT VideoCaptureController
                                       base::OnceClosure done_cb);
   int serial_id() const { return serial_id_; }
   const std::string& device_id() const { return device_id_; }
-  MediaStreamType stream_type() const { return stream_type_; }
+  blink::MediaStreamType stream_type() const { return stream_type_; }
   const media::VideoCaptureParams& parameters() const { return parameters_; }
 
  private:
@@ -243,7 +243,7 @@ class CONTENT_EXPORT VideoCaptureController
 
   const int serial_id_;
   const std::string device_id_;
-  const MediaStreamType stream_type_;
+  const blink::MediaStreamType stream_type_;
   const media::VideoCaptureParams parameters_;
   std::unique_ptr<VideoCaptureDeviceLauncher> device_launcher_;
   base::RepeatingCallback<void(const std::string&)> emit_log_message_cb_;
