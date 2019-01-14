@@ -3916,6 +3916,8 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
 
   // Synchronously notify the browser of a child frame creation to get the
   // routing_id for the RenderFrame.
+  int child_routing_id = MSG_ROUTING_NONE;
+  base::UnguessableToken devtools_frame_token;
   FrameHostMsg_CreateChildFrame_Params params;
   FrameHostMsg_CreateChildFrame_Params_Reply params_reply;
   params.parent_routing_id = routing_id_;
@@ -3945,13 +3947,14 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
       ConvertWebFrameOwnerPropertiesToFrameOwnerProperties(
           frame_owner_properties);
   params.frame_owner_element_type = frame_owner_element_type;
-  Send(new FrameHostMsg_CreateChildFrame(params, &params_reply));
+  Send(new FrameHostMsg_CreateChildFrame(params, &child_routing_id,
+                                         &params_reply, &devtools_frame_token));
 
   // Allocation of routing id failed, so we can't create a child frame. This can
   // happen if the synchronous IPC message above has failed.  This can
   // legitimately happen when the browser process has already destroyed
   // RenderProcessHost, but the renderer process hasn't quit yet.
-  if (params_reply.child_routing_id == MSG_ROUTING_NONE)
+  if (child_routing_id == MSG_ROUTING_NONE)
     return nullptr;
 
   DCHECK(params_reply.new_interface_provider.is_valid());
@@ -3985,15 +3988,14 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
 
   // Tracing analysis uses this to find main frames when this value is
   // MSG_ROUTING_NONE, and build the frame tree otherwise.
-  TRACE_EVENT2("navigation,rail", "RenderFrameImpl::createChildFrame", "id",
-               routing_id_, "child", params_reply.child_routing_id);
+  TRACE_EVENT2("navigation,rail", "RenderFrameImpl::createChildFrame",
+               "id", routing_id_,
+               "child", child_routing_id);
 
   // Create the RenderFrame and WebLocalFrame, linking the two.
-  RenderFrameImpl* child_render_frame =
-      RenderFrameImpl::Create(render_view_, params_reply.child_routing_id,
-                              std::move(child_interface_provider),
-                              std::move(document_interface_broker_content),
-                              params_reply.devtools_frame_token);
+  RenderFrameImpl* child_render_frame = RenderFrameImpl::Create(
+      render_view_, child_routing_id, std::move(child_interface_provider),
+      std::move(document_interface_broker_content), devtools_frame_token);
   child_render_frame->unique_name_helper_.set_propagated_name(
       params.frame_unique_name);
   if (params.is_created_by_script)

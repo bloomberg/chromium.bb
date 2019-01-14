@@ -441,8 +441,10 @@ void RenderFrameMessageFilter::DownloadUrl(
 
 void RenderFrameMessageFilter::OnCreateChildFrame(
     const FrameHostMsg_CreateChildFrame_Params& params,
-    FrameHostMsg_CreateChildFrame_Params_Reply* params_reply) {
-  params_reply->child_routing_id = render_widget_helper_->GetNextRoutingID();
+    int* new_routing_id,
+    FrameHostMsg_CreateChildFrame_Params_Reply* params_reply,
+    base::UnguessableToken* devtools_frame_token) {
+  *new_routing_id = render_widget_helper_->GetNextRoutingID();
 
   service_manager::mojom::InterfaceProviderPtr interface_provider;
   auto interface_provider_request(mojo::MakeRequest(&interface_provider));
@@ -462,16 +464,16 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
   params_reply->document_interface_broker_blink_handle =
       document_interface_broker_blink.PassHandle().release();
 
-  params_reply->devtools_frame_token = base::UnguessableToken::Create();
+  *devtools_frame_token = base::UnguessableToken::Create();
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &CreateChildFrameOnUI, render_process_id_, params.parent_routing_id,
           params.scope, params.frame_name, params.frame_unique_name,
-          params.is_created_by_script, params_reply->devtools_frame_token,
+          params.is_created_by_script, *devtools_frame_token,
           params.frame_policy, params.frame_owner_properties,
-          params.frame_owner_element_type, params_reply->child_routing_id,
+          params.frame_owner_element_type, *new_routing_id,
           interface_provider_request.PassMessagePipe(),
           document_interface_broker_request_content.PassMessagePipe(),
           document_interface_broker_request_blink.PassMessagePipe()));
