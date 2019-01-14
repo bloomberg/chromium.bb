@@ -514,7 +514,8 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementAfterPageIsIdle) {
   WaitForElementRemove(selector);
 }
 
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementInIFrame) {
+// TODO(crbug.com/920948) Disabled for strong flakiness.
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, DISABLED_TapElementInIFrame) {
   Selector selector;
   selector.selectors.emplace_back("#iframe");
   selector.selectors.emplace_back("#touch_area");
