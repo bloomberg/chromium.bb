@@ -1278,8 +1278,14 @@ void RasterImplementation::SetActiveURLCHROMIUM(const char* url) {
 
 cc::ClientPaintCache* RasterImplementation::GetOrCreatePaintCache() {
   if (!paint_cache_) {
-    constexpr size_t kPaintCacheBudget = 4 * 1024 * 1024;
-    paint_cache_ = std::make_unique<cc::ClientPaintCache>(kPaintCacheBudget);
+    constexpr size_t kNormalPaintCacheBudget = 4 * 1024 * 1024;
+    constexpr size_t kLowEndPaintCacheBudget = 256 * 1024;
+    size_t paint_cache_budget = 0u;
+    if (base::SysInfo::IsLowEndDevice())
+      paint_cache_budget = kLowEndPaintCacheBudget;
+    else
+      paint_cache_budget = kNormalPaintCacheBudget;
+    paint_cache_ = std::make_unique<cc::ClientPaintCache>(paint_cache_budget);
   }
   return paint_cache_.get();
 }
