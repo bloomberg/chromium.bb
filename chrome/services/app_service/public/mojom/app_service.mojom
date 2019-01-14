@@ -42,6 +42,10 @@ interface AppService {
   Uninstall(
       AppType app_type,
       string app_id);
+
+  OpenNativeSettings(
+      AppType app_type,
+      string app_id);
 };
 
 interface Publisher {
@@ -67,6 +71,9 @@ interface Publisher {
       Permission permission);
 
   Uninstall(
+      string app_id);
+
+  OpenNativeSettings(
       string app_id);
 };
 

@@ -98,6 +98,12 @@ void AppServiceProxy::Uninstall(const std::string& app_id) {
   });
 }
 
+void AppServiceProxy::OpenNativeSettings(const std::string& app_id) {
+  cache_.ForOneApp(app_id, [this](const apps::AppUpdate& update) {
+    app_service_->OpenNativeSettings(update.AppType(), update.AppId());
+  });
+}
+
 void AppServiceProxy::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
   cache_.OnApps(std::move(deltas));
 }

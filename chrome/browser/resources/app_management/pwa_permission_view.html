@@ -50,7 +50,8 @@
     </style>
     <app-management-permission-view-header app="[[app_]]">
       <div slot="extra-right-buttons">
-        <paper-button id="site-settings-button">
+        <paper-button id="site-settings-button"
+            on-click="onClickSiteSettingsButton_">
           $i18n{openSiteSettings}
           <paper-icon-button-light id="site-settings-icon"
               class="icon-external">

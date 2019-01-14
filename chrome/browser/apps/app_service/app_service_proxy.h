@@ -53,6 +53,8 @@ class AppServiceProxy : public KeyedService, public apps::mojom::Subscriber {
 
   void Uninstall(const std::string& app_id);
 
+  void OpenNativeSettings(const std::string& app_id);
+
  private:
   // apps::mojom::Subscriber overrides.
   void OnApps(std::vector<apps::mojom::AppPtr> deltas) override;

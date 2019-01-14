@@ -29,6 +29,7 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission) override;
   void Uninstall(const std::string& app_id) override;
+  void OpenNativeSettings(const std::string& app_id) override;
 
  private:
   // apps::AppRegistryCache::Observer overrides:

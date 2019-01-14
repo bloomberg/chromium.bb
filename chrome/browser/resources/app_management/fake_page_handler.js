@@ -104,6 +104,11 @@ cr.define('app_management', function() {
     uninstall(appId) {
       this.page.onAppRemoved(appId);
     }
+
+    /**
+     * @param {string} appId
+     */
+    openNativeSettings(appId) {}
   }
 
   return {FakePageHandler: FakePageHandler};
