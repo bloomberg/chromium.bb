@@ -194,6 +194,10 @@ class ASH_EXPORT ShelfLayoutManager
     return user_work_area_bounds_;
   }
 
+  // Returns the stable work area which is the work area when the shelf is
+  // visible.
+  gfx::Rect ComputeStableWorkArea() const;
+
   ShelfVisibilityState visibility_state() const {
     return state_.visibility_state;
   }
@@ -287,8 +291,14 @@ class ASH_EXPORT ShelfLayoutManager
   // Stops any animations and progresses them to the end.
   void StopAnimating();
 
-  // Calculates the target bounds assuming visibility of |visible|.
-  void CalculateTargetBounds(const State& state, TargetBounds* target_bounds);
+  // Calculates the target bounds assuming visibility of
+  // |state.visibilty_state|, and returns the work area.
+  gfx::Rect CalculateTargetBounds(const State& state,
+                                  TargetBounds* target_bounds) const;
+
+  // Calculate the target bounds using |state_|, and updates the
+  // |user_work_area_bounds_|.
+  void CalculateTargetBoundsAndUpdateWorkArea(TargetBounds* target_bounds);
 
   // Updates the target bounds if a gesture-drag is in progress. This is only
   // used by |CalculateTargetBounds()|.
@@ -332,7 +342,7 @@ class ASH_EXPORT ShelfLayoutManager
   void UpdateShelfVisibilityAfterLoginUIChange();
 
   // Compute |target_bounds| opacity based on gesture and shelf visibility.
-  float ComputeTargetOpacity(const State& state);
+  float ComputeTargetOpacity(const State& state) const;
 
   // Returns true if there is a fullscreen window open that causes the shelf
   // to be hidden.
