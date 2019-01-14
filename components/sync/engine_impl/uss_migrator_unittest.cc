@@ -167,6 +167,9 @@ TEST_F(UssMigratorTest, MigrateMultiple) {
   EXPECT_EQ(kTag1, updates.at(0).entity.value().specifics.preference().name());
   EXPECT_EQ(kTag2, updates.at(1).entity.value().specifics.preference().name());
   EXPECT_EQ(kTag3, updates.at(2).entity.value().specifics.preference().name());
+
+  const sync_pb::ModelTypeState& state = processor()->GetNthUpdateState(0);
+  EXPECT_EQ(kToken1, state.progress_marker().token());
 }
 
 TEST_F(UssMigratorTest, MigrateMultipleBatches) {
@@ -194,6 +197,9 @@ TEST_F(UssMigratorTest, MigrateMultipleBatches) {
   EXPECT_EQ(kTag1, updates.at(0).entity.value().specifics.preference().name());
   EXPECT_EQ(kTag2, updates.at(1).entity.value().specifics.preference().name());
   EXPECT_EQ(kTag3, updates.at(2).entity.value().specifics.preference().name());
+
+  const sync_pb::ModelTypeState& state = processor()->GetNthUpdateState(0);
+  EXPECT_EQ(kToken1, state.progress_marker().token());
 }
 
 TEST_F(UssMigratorTest, MigrateIgnoresTombstone) {
@@ -210,6 +216,11 @@ TEST_F(UssMigratorTest, MigrateIgnoresTombstone) {
   EXPECT_EQ(1U, processor()->GetNumUpdateResponses());
   EXPECT_EQ(0U, processor()->GetNthUpdateResponse(0).size());
   EXPECT_EQ(0, migrated_entity_count);
+
+  // TODO(crbug.com/921495): The expectation below should be uncommented once
+  // the exception is removed for HISTORY_DELETE_DIRECTIVES.
+  // const sync_pb::ModelTypeState& state = processor()->GetNthUpdateState(0);
+  // EXPECT_EQ(kToken1, state.progress_marker().token());
 }
 
 TEST_F(UssMigratorTest, MigrateZero) {
@@ -225,6 +236,11 @@ TEST_F(UssMigratorTest, MigrateZero) {
   EXPECT_EQ(1U, processor()->GetNumUpdateResponses());
   EXPECT_EQ(0U, processor()->GetNthUpdateResponse(0).size());
   EXPECT_EQ(0, migrated_entity_count);
+
+  // TODO(crbug.com/921495): The expectation below should be uncommented once
+  // the exception is removed for HISTORY_DELETE_DIRECTIVES.
+  // const sync_pb::ModelTypeState& state = processor()->GetNthUpdateState(0);
+  // EXPECT_EQ(kToken1, state.progress_marker().token());
 }
 
 TEST_F(UssMigratorTest, MissingTypeRoot) {
