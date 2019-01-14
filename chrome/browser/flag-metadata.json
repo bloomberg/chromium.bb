@@ -1986,8 +1986,10 @@
   },
   {
     "name": "enable-ui-devtools",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//components/ui_devtools/OWNERS" ],
+    // Convenience debugging flag for non-stable ChromeOS Builds.
+    // Devtools spins up a server which is not appropriate in the default case.
+    "expiry_milestone": -1
   },
   {
     "name": "enable-usbguard",
