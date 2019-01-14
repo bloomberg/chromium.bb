@@ -170,10 +170,6 @@ class DemoSetupController
   // Utility method that returns whether demo mode is allowed on the device.
   static bool IsDemoModeAllowed();
 
-  // Utility method that returns whether offline demo mode is allowed on the
-  // device.
-  static bool IsOfflineDemoModeAllowed();
-
   // Utility method that returns whether demo mode setup flow is in progress in
   // OOBE.
   static bool IsOobeDemoSetupFlowInProgress();

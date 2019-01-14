@@ -451,13 +451,6 @@ bool DemoSetupController::IsDemoModeAllowed() {
 }
 
 // static
-bool DemoSetupController::IsOfflineDemoModeAllowed() {
-  // Offline demo mode can be only enabled when demo mode feature is enabled.
-  return IsDemoModeAllowed() &&
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableOfflineDemoMode);
-}
-
 // static
 bool DemoSetupController::IsOobeDemoSetupFlowInProgress() {
   const WizardController* const wizard_controller =

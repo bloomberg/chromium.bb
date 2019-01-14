@@ -148,7 +148,6 @@ class DemoSetupTest : public LoginManagerTest {
   // LoginTestManager:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(chromeos::switches::kEnableOfflineDemoMode);
     command_line->AppendSwitchASCII(switches::kArcAvailability,
                                     "officially-supported");
     ASSERT_TRUE(arc::IsArcAvailable());
@@ -1043,23 +1042,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowOfflineSetupOptionOnNetworkList) {
   EXPECT_TRUE(IsCustomNetworkListElementShown("offlineDemoSetupListItemName"));
 }
 
-class DemoSetupOfflineDisabledTest : public DemoSetupTest {
- public:
-  DemoSetupOfflineDisabledTest() = default;
-  ~DemoSetupOfflineDisabledTest() override = default;
-
-  // DemoSetupTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Don't add kEnableOfflineDemoMode.
-    LoginManagerTest::SetUpCommandLine(command_line);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DemoSetupOfflineDisabledTest);
-};
-
-IN_PROC_BROWSER_TEST_F(DemoSetupOfflineDisabledTest,
-                       NoOfflineSetupOptionOnNetworkList) {
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, NoOfflineSetupOptionOnNetworkList) {
   SkipToScreen(OobeScreen::SCREEN_OOBE_NETWORK);
   EXPECT_FALSE(IsCustomNetworkListElementShown("offlineDemoSetupListItemName"));
 }
@@ -1072,7 +1055,6 @@ class DemoSetupArcUnsupportedTest : public DemoSetupTest {
   // DemoSetupTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(chromeos::switches::kEnableOfflineDemoMode);
     command_line->AppendSwitchASCII(switches::kArcAvailability, "none");
     ASSERT_FALSE(arc::IsArcAvailable());
   }

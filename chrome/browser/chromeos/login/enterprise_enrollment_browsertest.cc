@@ -642,7 +642,6 @@ class EnterpriseEnrollmentConfigurationTest
     command_line->AppendSwitchPath(chromeos::switches::kFakeOobeConfiguration,
                                    file);
 
-    command_line->AppendSwitch(chromeos::switches::kEnableOfflineDemoMode);
     command_line->AppendSwitchASCII(switches::kArcAvailability,
                                     "officially-supported");
     EnterpriseEnrollmentTestBase::SetUpCommandLine(command_line);
