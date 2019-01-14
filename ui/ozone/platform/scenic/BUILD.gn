@@ -32,7 +32,10 @@ source_set("scenic") {
     "scenic_window_manager.h",
   ]
 
-  defines = [ "OZONE_IMPLEMENTATION" ]
+  defines = [
+    "OZONE_IMPLEMENTATION",
+    "VK_USE_PLATFORM_FUCHSIA",
+  ]
 
   deps = [
     "//base",
@@ -61,7 +64,6 @@ source_set("scenic") {
     sources += [
       "vulkan_implementation_scenic.cc",
       "vulkan_implementation_scenic.h",
-      "vulkan_magma.h",
     ]
     defines += [ "VK_USE_PLATFORM_MAGMA_KHR" ]
   }

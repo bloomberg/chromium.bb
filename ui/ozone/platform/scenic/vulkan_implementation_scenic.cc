@@ -7,6 +7,7 @@
 #include <lib/ui/scenic/cpp/commands.h>
 #include <lib/ui/scenic/cpp/session.h>
 #include <lib/zx/channel.h>
+#include <vulkan/vulkan.h>
 
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
@@ -22,7 +23,6 @@
 #include "ui/ozone/platform/scenic/scenic_surface_factory.h"
 #include "ui/ozone/platform/scenic/scenic_window.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
-#include "ui/ozone/platform/scenic/vulkan_magma.h"
 
 namespace ui {
 
@@ -45,27 +45,22 @@ bool VulkanImplementationScenic::InitializeVulkanInstance() {
       gpu::GetVulkanFunctionPointers();
   vulkan_function_pointers->vulkan_loader_library_ = handle;
   std::vector<const char*> required_extensions = {
-      VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_MAGMA_SURFACE_EXTENSION_NAME,
+      VK_KHR_SURFACE_EXTENSION_NAME,
+      VK_FUCHSIA_IMAGEPIPE_SURFACE_EXTENSION_NAME,
   };
   std::vector<const char*> required_layers = {
-      "VK_LAYER_GOOGLE_image_pipe_swapchain",
+      "VK_LAYER_FUCHSIA_imagepipe_swapchain",
   };
   if (!vulkan_instance_.Initialize(required_extensions, required_layers)) {
     vulkan_instance_.Destroy();
     return false;
   }
 
-  vkCreateMagmaSurfaceKHR_ = vkGetInstanceProcAddr(
-      vulkan_instance_.vk_instance(), "vkCreateMagmaSurfaceKHR");
-  if (!vkCreateMagmaSurfaceKHR_) {
-    vulkan_instance_.Destroy();
-    return false;
-  }
-
-  vkGetPhysicalDeviceMagmaPresentationSupportKHR_ =
-      vkGetInstanceProcAddr(vulkan_instance_.vk_instance(),
-                            "vkGetPhysicalDeviceMagmaPresentationSupportKHR");
-  if (!vkGetPhysicalDeviceMagmaPresentationSupportKHR_) {
+  vkCreateImagePipeSurfaceFUCHSIA_ =
+      reinterpret_cast<PFN_vkCreateImagePipeSurfaceFUCHSIA>(
+          vkGetInstanceProcAddr(vulkan_instance_.vk_instance(),
+                                "vkCreateImagePipeSurfaceFUCHSIA"));
+  if (!vkCreateImagePipeSurfaceFUCHSIA_) {
     vulkan_instance_.Destroy();
     return false;
   }
@@ -88,18 +83,19 @@ VulkanImplementationScenic::CreateViewSurface(gfx::AcceleratedWidget window) {
   scenic_surface->SetTextureToNewImagePipe(image_pipe.NewRequest());
 
   VkSurfaceKHR surface;
-  VkMagmaSurfaceCreateInfoKHR surface_create_info = {};
-  surface_create_info.sType = VK_STRUCTURE_TYPE_MAGMA_SURFACE_CREATE_INFO_KHR;
+  VkImagePipeSurfaceCreateInfoFUCHSIA surface_create_info = {};
+  surface_create_info.sType =
+      VK_STRUCTURE_TYPE_IMAGEPIPE_SURFACE_CREATE_INFO_FUCHSIA;
+  surface_create_info.flags = 0;
   surface_create_info.imagePipeHandle =
       image_pipe.Unbind().TakeChannel().release();
 
-  VkResult result =
-      reinterpret_cast<PFN_vkCreateMagmaSurfaceKHR>(vkCreateMagmaSurfaceKHR_)(
-          GetVulkanInstance(), &surface_create_info, nullptr, &surface);
+  VkResult result = vkCreateImagePipeSurfaceFUCHSIA_(
+      GetVulkanInstance(), &surface_create_info, nullptr, &surface);
   if (result != VK_SUCCESS) {
     // This shouldn't fail, and we don't know whether imagePipeHandle was closed
     // if it does.
-    LOG(FATAL) << "vkCreateMagmaSurfaceKHR failed: " << result;
+    LOG(FATAL) << "vkCreateImagePipeSurfaceFUCHSIA failed: " << result;
   }
 
   // Execute the initialization commands. Once this is done we won't need to
