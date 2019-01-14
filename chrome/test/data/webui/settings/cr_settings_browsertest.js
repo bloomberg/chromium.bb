@@ -236,8 +236,13 @@ CrSettingsAutofillPageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../fake_chrome_event.js',
     '../test_browser_proxy.js',
     'autofill_page_test.js',
+    'ensure_lazy_loaded.js',
+    'fake_settings_private.js',
+    'passwords_and_autofill_fake_data.js',
+    'test_password_manager_proxy.js',
   ]),
 };
 
@@ -298,6 +303,35 @@ TEST_F('CrSettingsAutofillSectionCompanyDisabledTest', 'All', function() {
   const loadTimeDataOverride = {};
   loadTimeDataOverride['EnableCompanyName'] = false;
   loadTimeData.overrideValues(loadTimeDataOverride);
+  mocha.run();
+});
+
+/**
+ * Test fixture for
+ * chrome/browser/resources/settings/autofill_page/passwords_section.html.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsPasswordsSectionTest() {}
+
+CrSettingsPasswordsSectionTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/autofill_page/passwords_section.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../mock_timer.js',
+    '../test_browser_proxy.js',
+    'passwords_and_autofill_fake_data.js',
+    'passwords_section_test.js',
+    'test_password_manager_proxy.js',
+    'test_util.js',
+  ]),
+};
+
+TEST_F('CrSettingsPasswordsSectionTest', 'All', function() {
   mocha.run();
 });
 

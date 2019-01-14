@@ -4,51 +4,8 @@
 
 /** @fileoverview Runs the Polymer Password Settings tests. */
 
-/** @const {string} Path to root from chrome/test/data/webui/settings/. */
-const ROOT_PATH = '../../../../../';
 
-// Polymer BrowserTest fixture.
-GEN_INCLUDE(
-    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
-
-// Fake data generator.
-GEN_INCLUDE(
-    [ROOT_PATH +
-     'chrome/test/data/webui/settings/passwords_and_autofill_fake_data.js']);
-
-// Mock timer.
-GEN_INCLUDE([ROOT_PATH + 'chrome/test/data/webui/mock_timer.js']);
-
-/**
- * @constructor
- * @extends {PolymerTest}
- */
-function SettingsPasswordSectionBrowserTest() {}
-
-SettingsPasswordSectionBrowserTest.prototype = {
-  __proto__: PolymerTest.prototype,
-
-  /** @override */
-  browsePreload: 'chrome://settings/autofill_page/passwords_section.html',
-
-  /** @override */
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-    'ensure_lazy_loaded.js',
-    'test_util.js',
-  ]),
-
-  /** @override */
-  setUp: function() {
-    PolymerTest.prototype.setUp.call(this);
-    // Test is run on an individual element that won't have a page language.
-    this.accessibilityAuditConfig.auditRulesToIgnore.push('humanLangMissing');
-
-    settings.ensureLazyLoaded();
-  },
-};
-
-/** This test will validate that the section is loaded with data. */
-TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
+cr.define('settings_passwords_section', function() {
   /**
    * Helper method that validates a that elements in the password list match
    * the expected data.
@@ -211,13 +168,13 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
   }
 
   suite('PasswordsSection', function() {
-    /** @type {TestPasswordManager} */
+    /** @type {TestPasswordManagerProxy} */
     let passwordManager = null;
 
     setup(function() {
       PolymerTest.clearBody();
       // Override the PasswordManagerImpl for testing.
-      passwordManager = new TestPasswordManager();
+      passwordManager = new TestPasswordManagerProxy();
       PasswordManagerImpl.instance_ = passwordManager;
     });
 
@@ -630,24 +587,30 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
     // Tests that invoking the plaintext password sets the corresponding
     // password.
-    test('onShowSavedPasswordEditDialog', function(done) {
-      const expectedItem = FakeDataMaker.passwordEntry('goo.gl', 'bart', 1);
+    test('onShowSavedPasswordEditDialog', function() {
+      const expectedItem = FakeDataMaker.passwordEntry('goo.gl', 'bart', 8, 1);
       const passwordDialog = createPasswordDialog(expectedItem);
       assertEquals('', passwordDialog.item.password);
 
+      passwordManager.setPlaintextPassword('password');
       passwordDialog.$.showPasswordButton.click();
-      assertEquals(1, passwordManager.actual_.requested.plaintextPassword);
-      done();
+      return passwordManager.whenCalled('getPlaintextPassword').then(id => {
+        assertEquals(1, id);
+        assertEquals('password', passwordDialog.item.password);
+      });
     });
 
-    test('onShowSavedPasswordListItem', function(done) {
-      const expectedItem = FakeDataMaker.passwordEntry('goo.gl', 'bart', 1);
+    test('onShowSavedPasswordListItem', function() {
+      const expectedItem = FakeDataMaker.passwordEntry('goo.gl', 'bart', 8, 1);
       const passwordListItem = createPasswordListItem(expectedItem);
       assertEquals('', passwordListItem.item.password);
 
+      passwordManager.setPlaintextPassword('password');
       passwordListItem.$$('#showPasswordButton').click();
-      assertEquals(1, passwordManager.actual_.requested.plaintextPassword);
-      done();
+      return passwordManager.whenCalled('getPlaintextPassword').then(id => {
+        assertEquals(1, id);
+        assertEquals('password', passwordListItem.item.password);
+      });
     });
 
     test('closingPasswordsSectionHidesUndoToast', function(done) {
@@ -926,6 +889,4 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       return wait;
     });
   });
-
-  mocha.run();
 });

@@ -79,20 +79,22 @@ js2gtest("browser_tests_js_webui") {
     "settings/a11y/sign_out_a11y_test.js",
     "settings/a11y/tts_subpage_a11y_test.js",
     "settings/advanced_page_browsertest.js",
-    "settings/autofill_browsertest.js",
     "settings/basic_page_browsertest.js",
     "settings/cr_settings_browsertest.js",
     "settings/help_page_browsertest.js",
-    "settings/passwords_and_autofill_fake_data.js",
     "settings/settings_idle_load_browsertest.js",
     "settings/settings_page_browsertest.js",
-    "settings/settings_passwords_section_browsertest.js",
     "settings/site_settings_page_browsertest.js",
     "text_defaults_browsertest.js",
     "webui_resource_async_browsertest.js",
   ]
 
-  extra_js_files = [ "//chrome/browser/resources/signin/dice_sync_confirmation/sync_confirmation_browser_proxy.js" ]
+  extra_js_files = [
+    "test_browser_proxy.js",
+    "settings/test_password_manager_proxy.js",
+    "settings/passwords_and_autofill_fake_data.js",
+    "//chrome/browser/resources/signin/dice_sync_confirmation/sync_confirmation_browser_proxy.js",
+  ]
 
   if (is_chromeos) {
     sources += [
