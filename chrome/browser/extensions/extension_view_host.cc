@@ -107,10 +107,10 @@ void ExtensionViewHost::SetAssociatedWebContents(WebContents* web_contents) {
   }
 }
 
-void ExtensionViewHost::UnhandledKeyboardEvent(
+bool ExtensionViewHost::UnhandledKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
-  view_->HandleKeyboardEvent(source, event);
+  return view_->HandleKeyboardEvent(source, event);
 }
 
 // ExtensionHost overrides:
@@ -203,8 +203,7 @@ bool ExtensionViewHost::HandleKeyboardEvent(
       return true;
     }
   }
-  UnhandledKeyboardEvent(source, event);
-  return true;
+  return UnhandledKeyboardEvent(source, event);
 }
 
 bool ExtensionViewHost::PreHandleGestureEvent(
