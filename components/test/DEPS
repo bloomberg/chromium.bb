@@ -13,6 +13,7 @@ include_rules = [
 specific_include_rules = {
   "components_test_suite\.cc": [
     "+mojo/core/embedder",
+    "+services/network/public/cpp/features.h",
   ],
   "ios_components_test_initializer\.cc": [
     "+services/network/test",

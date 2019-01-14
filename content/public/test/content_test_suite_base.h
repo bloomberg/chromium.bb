@@ -9,6 +9,12 @@
 #include "base/macros.h"
 #include "base/test/test_suite.h"
 
+namespace base {
+namespace test {
+class ScopedFeatureList;
+}
+}  // namespace base
+
 namespace content {
 class ContentClient;
 
@@ -23,6 +29,7 @@ class ContentTestSuiteBase : public base::TestSuite {
 
  protected:
   ContentTestSuiteBase(int argc, char** argv);
+  ~ContentTestSuiteBase() override;
 
   void Initialize() override;
 
@@ -30,6 +37,8 @@ class ContentTestSuiteBase : public base::TestSuite {
   void RegisterInProcessThreads();
 
  private:
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(ContentTestSuiteBase);
 };
 
