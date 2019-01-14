@@ -13,13 +13,17 @@
 namespace explore_sites {
 namespace {
 
+static const char kGetExistingCategorySql[] = R"(SELECT
+ type, ntp_click_count, ntp_shown_count
+FROM categories WHERE version_token = ?)";
+
 static const char kDeleteExistingCategorySql[] =
     "DELETE FROM categories WHERE version_token = ?";
 
 static const char kInsertCategorySql[] = R"(INSERT INTO categories
-(version_token, type, label, image)
+(version_token, type, label, image, ntp_click_count, ntp_shown_count)
 VALUES
-(?, ?, ?, ?);)";
+(?, ?, ?, ?, ?, ?);)";
 
 static const char kDeleteExistingSiteSql[] = R"(DELETE FROM sites
 WHERE (
@@ -30,6 +34,11 @@ static const char kInsertSiteSql[] = R"(INSERT INTO sites
 (url, category_id, title, favicon)
 VALUES
 (?, ?, ?, ?);)";
+
+struct CategoryInfo {
+  int ntp_click_count = 0;
+  int ntp_shown_count = 0;
+};
 
 }  // namespace
 
@@ -56,6 +65,18 @@ bool ImportCatalogSync(std::string version_token,
     return false;
   }
 
+  // Read certain catogory info we want to keep during the upgrade.
+  sql::Statement get_category_statement(
+      db->GetCachedStatement(SQL_FROM_HERE, kGetExistingCategorySql));
+  get_category_statement.BindString(0, version_token);
+  std::map<int, CategoryInfo> type_to_category_info_map;
+  while (get_category_statement.Step()) {
+    int type = get_category_statement.ColumnInt(0);
+    CategoryInfo category_info = {get_category_statement.ColumnInt(1),
+                                  get_category_statement.ColumnInt(2)};
+    type_to_category_info_map.emplace(type, category_info);
+  }
+
   // In case we get a duplicate timestamp for the downloading catalog, remove
   // the catalog with the timestamp that matches the catalog we are importing.
   sql::Statement site_clear_statement(
@@ -78,12 +99,20 @@ bool ImportCatalogSync(std::string version_token,
     sql::Statement category_statement(
         db->GetCachedStatement(SQL_FROM_HERE, kInsertCategorySql));
 
+    CategoryInfo old_category_info;
+    auto iter =
+        type_to_category_info_map.find(static_cast<int>(category.type()));
+    if (iter != type_to_category_info_map.end())
+      old_category_info = iter->second;
+
     int col = 0;
     category_statement.BindString(col++, version_token);
     category_statement.BindInt(col++, static_cast<int>(category.type()));
     category_statement.BindString(col++, category.localized_title());
     category_statement.BindBlob(col++, category.icon().data(),
                                 category.icon().length());
+    category_statement.BindInt(col++, old_category_info.ntp_click_count);
+    category_statement.BindInt(col++, old_category_info.ntp_shown_count);
 
     category_statement.Run();
 

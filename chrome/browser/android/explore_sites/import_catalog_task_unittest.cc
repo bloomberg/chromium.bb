@@ -29,9 +29,19 @@ const char kGoogleTitle[] = "Google Search";
 const char kGmailUrl[] = "https://mail.google.com/mail";
 const char kGmailTitle[] = "GMail";
 const char kGoogleCategoryTitle[] = "Goooogle";
+const char kGoogleCategoryTitle2[] = "Gooooooooogle";
+const char kTravelCategoryTitle[] = "Traveeeeel";
+const char kFoodCategoryTitle[] = "Fooooood";
 const char kIcon[] =
     "data:image/gif;"
     "base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+const char kIcon2[] =
+    "data:image/gif;"
+    "base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=";
+const int kGoogleCategoryNtpClickCount = 5;
+const int kGoogleCategoryNtpShownCount = 10;
+const int kTravelCategoryNtpClickCount = 12;
+const int kTravelCategoryNtpShownCount = 15;
 
 class ExploreSitesImportCatalogTaskTest : public TaskTestBase {
  public:
@@ -146,6 +156,95 @@ TEST_F(ExploreSitesImportCatalogTaskTest, CatalogAlreadyInUse) {
   RunTask(&task3);
   EXPECT_TRUE(task3.complete());
   EXPECT_FALSE(task3.result());
+}
+
+TEST_F(ExploreSitesImportCatalogTaskTest, UpdateCatalog) {
+  // Populate the catalog with 2 categories.
+  ExecuteSync(base::BindLambdaForTesting([&](sql::Database* db) {
+    sql::Statement add_category_1(
+        db->GetUniqueStatement("INSERT INTO categories (version_token, type, "
+                               "label, ntp_click_count, ntp_shown_count) "
+                               "VALUES(?, ?, ?, ?, ?)"));
+    add_category_1.BindString(0, kVersionToken);
+    add_category_1.BindInt(1, static_cast<int>(Category_CategoryType_GOOGLE));
+    add_category_1.BindString(2, kGoogleCategoryTitle);
+    add_category_1.BindInt(3, kGoogleCategoryNtpClickCount);
+    add_category_1.BindInt(4, kGoogleCategoryNtpShownCount);
+    EXPECT_TRUE(add_category_1.Run());
+
+    sql::Statement add_category_2(
+        db->GetUniqueStatement("INSERT INTO categories (version_token, type, "
+                               "label, ntp_click_count, ntp_shown_count) "
+                               "VALUES(?, ?, ?, ?, ?)"));
+    add_category_2.BindString(0, kVersionToken);
+    add_category_2.BindInt(1, static_cast<int>(Category_CategoryType_TRAVEL));
+    add_category_2.BindString(2, kTravelCategoryTitle);
+    add_category_2.BindInt(3, kTravelCategoryNtpClickCount);
+    add_category_2.BindInt(4, kTravelCategoryNtpShownCount);
+    EXPECT_TRUE(add_category_2.Run());
+
+    return true;
+  }));
+
+  // Import the catalog with 2 categories updated and 1 new category added.
+  auto catalog = std::make_unique<Catalog>();
+  auto* categories = catalog->mutable_categories();
+  Category* next = categories->Add();
+  next->set_type(Category_CategoryType_GOOGLE);
+  next->set_localized_title(kGoogleCategoryTitle2);
+  next->set_icon(kIcon2);
+  next = categories->Add();
+  next->set_type(Category_CategoryType_TRAVEL);
+  next->set_localized_title(kTravelCategoryTitle);
+  next = categories->Add();
+  next->set_type(Category_CategoryType_FOOD);
+  next->set_localized_title(kFoodCategoryTitle);
+
+  ImportCatalogTask task(
+      store(), kVersionToken, std::move(catalog),
+      base::BindOnce(&ExploreSitesImportCatalogTaskTest::OnImportTaskDone,
+                     base::Unretained(this)));
+  RunTask(&task);
+  ASSERT_TRUE(task.result());
+
+  // Verify.
+  ExecuteSync(base::BindLambdaForTesting([&](sql::Database* db) {
+    sql::Statement cat_count_s(
+        db->GetUniqueStatement("SELECT COUNT(*) FROM categories"));
+    cat_count_s.Step();
+    EXPECT_EQ(3, cat_count_s.ColumnInt(0));
+
+    sql::Statement cat_data_s(
+        db->GetUniqueStatement("SELECT version_token, type, label, image, "
+                               "ntp_click_count, ntp_shown_count "
+                               "FROM categories ORDER BY type"));
+    cat_data_s.Step();
+    EXPECT_EQ(kVersionToken, cat_data_s.ColumnString(0));
+    EXPECT_EQ(static_cast<int>(Category_CategoryType_TRAVEL),
+              cat_data_s.ColumnInt(1));
+    EXPECT_EQ(kTravelCategoryTitle, cat_data_s.ColumnString(2));
+    EXPECT_EQ("", cat_data_s.ColumnString(3));
+    EXPECT_EQ(kTravelCategoryNtpClickCount, cat_data_s.ColumnInt(4));
+    EXPECT_EQ(kTravelCategoryNtpShownCount, cat_data_s.ColumnInt(5));
+    cat_data_s.Step();
+    EXPECT_EQ(kVersionToken, cat_data_s.ColumnString(0));
+    EXPECT_EQ(static_cast<int>(Category_CategoryType_GOOGLE),
+              cat_data_s.ColumnInt(1));
+    EXPECT_EQ(kGoogleCategoryTitle2, cat_data_s.ColumnString(2));
+    EXPECT_EQ(kIcon2, cat_data_s.ColumnString(3));
+    EXPECT_EQ(kGoogleCategoryNtpClickCount, cat_data_s.ColumnInt(4));
+    EXPECT_EQ(kGoogleCategoryNtpShownCount, cat_data_s.ColumnInt(5));
+    cat_data_s.Step();
+    EXPECT_EQ(kVersionToken, cat_data_s.ColumnString(0));
+    EXPECT_EQ(static_cast<int>(Category_CategoryType_FOOD),
+              cat_data_s.ColumnInt(1));
+    EXPECT_EQ(kFoodCategoryTitle, cat_data_s.ColumnString(2));
+    EXPECT_EQ("", cat_data_s.ColumnString(3));
+    EXPECT_EQ(0, cat_data_s.ColumnInt(4));
+    EXPECT_EQ(0, cat_data_s.ColumnInt(5));
+
+    return true;
+  }));
 }
 
 TEST_F(ExploreSitesImportCatalogTaskTest, BasicCatalog) {
