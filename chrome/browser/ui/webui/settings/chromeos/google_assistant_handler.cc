@@ -11,7 +11,9 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -21,7 +23,7 @@ namespace chromeos {
 namespace settings {
 
 GoogleAssistantHandler::GoogleAssistantHandler(Profile* profile)
-    : profile_(profile) {}
+    : profile_(profile), weak_factory_(this) {}
 
 GoogleAssistantHandler::~GoogleAssistantHandler() {}
 
@@ -34,16 +36,60 @@ void GoogleAssistantHandler::RegisterMessages() {
       base::BindRepeating(
           &GoogleAssistantHandler::HandleShowGoogleAssistantSettings,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "retrainAssistantVoiceModel",
+      base::BindRepeating(&GoogleAssistantHandler::HandleRetrainVoiceModel,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "deleteAssistantVoiceModel",
+      base::BindRepeating(&GoogleAssistantHandler::HandleDeleteVoiceModel,
+                          base::Unretained(this)));
 }
 
 void GoogleAssistantHandler::HandleShowGoogleAssistantSettings(
     const base::ListValue* args) {
-  // Opens Google Assistant settings.
+  CHECK_EQ(0U, args->GetSize());
+  if (chromeos::switches::IsAssistantEnabled()) {
+    // Opens Google Assistant settings.
+    service_manager::Connector* connector =
+        content::BrowserContext::GetConnectorFor(profile_);
+    ash::mojom::AssistantControllerPtr assistant_controller;
+    connector->BindInterface(ash::mojom::kServiceName, &assistant_controller);
+    assistant_controller->OpenAssistantSettings();
+  }
+}
+
+void GoogleAssistantHandler::HandleRetrainVoiceModel(
+    const base::ListValue* args) {
+  CHECK_EQ(0U, args->GetSize());
+  chromeos::AssistantOptInDialog::Show(
+      ash::mojom::FlowType::SPEAKER_ID_ENROLLMENT, base::DoNothing());
+}
+
+void GoogleAssistantHandler::HandleDeleteVoiceModel(
+    const base::ListValue* args) {
+  CHECK_EQ(0U, args->GetSize());
+  if (!settings_manager_.is_bound())
+    BindAssistantSettingsManager();
+
+  settings_manager_->RemoveSpeakerIdEnrollmentData(
+      base::BindOnce(&GoogleAssistantHandler::DeleteVoiceModelCallback,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void GoogleAssistantHandler::BindAssistantSettingsManager() {
+  DCHECK(!settings_manager_.is_bound());
+
+  // Set up settings mojom.
   service_manager::Connector* connector =
       content::BrowserContext::GetConnectorFor(profile_);
-  ash::mojom::AssistantControllerPtr assistant_controller;
-  connector->BindInterface(ash::mojom::kServiceName, &assistant_controller);
-  assistant_controller->OpenAssistantSettings();
+  connector->BindInterface(assistant::mojom::kServiceName, &settings_manager_);
+}
+
+void GoogleAssistantHandler::DeleteVoiceModelCallback() {
+  // Disable hotword if voice model is deleted.
+  PrefService* prefs = profile_->GetPrefs();
+  prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, false);
 }
 
 }  // namespace settings

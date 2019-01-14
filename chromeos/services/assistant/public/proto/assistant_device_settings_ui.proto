@@ -36,4 +36,7 @@ message AssistantDeviceSettings {
   optional PersonalReadout personal_readout = 2;
 
   optional string locale = 5;
+
+  // Indicates whether the user has enabled speaker-id for this device.
+  optional bool speaker_id_enabled = 7;
 }
