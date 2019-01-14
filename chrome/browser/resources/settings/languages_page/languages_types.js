@@ -126,10 +126,18 @@ class LanguageHelper {
   disableLanguage(languageCode) {}
 
   /**
-   * @param {string} languageCode Language code for an enabled language.
+   * Returns true iff provided languageState is the only blocked language.
+   * @param {!LanguageState} languageState
    * @return {boolean}
    */
-  canDisableLanguage(languageCode) {}
+  isOnlyTranslateBlockedLanguage(languageState) {}
+
+  /**
+   * Returns true iff provided languageState can be disabled.
+   * @param {!LanguageState} languageState
+   * @return {boolean}
+   */
+  canDisableLanguage(languageState) {}
 
   /**
    * @param {!chrome.languageSettingsPrivate.Language} language

@@ -382,6 +382,7 @@ cr.define('languages_page_tests', function() {
         assertTrue(actionMenu.open);
         const removeMenuItem = getMenuItem('removeLanguage');
         assertFalse(removeMenuItem.disabled);
+        assertFalse(removeMenuItem.hidden);
         removeMenuItem.click();
         assertFalse(actionMenu.open);
 
@@ -389,9 +390,28 @@ cr.define('languages_page_tests', function() {
             initialLanguages, languageHelper.getPref(languagesPref).value);
       });
 
-      test('remove language when starting with 2 languages', function() {
+      test('remove last blocked language', function() {
         assertEquals(
             initialLanguages, languageHelper.getPref(languagesPref).value);
+        assertDeepEquals(
+            ['en-US'], languageHelper.prefs.translate_blocked_languages.value);
+
+        const items = languagesCollapse.querySelectorAll('.list-item');
+        const domRepeat = assert(languagesCollapse.querySelector(
+            Polymer.DomRepeat ? 'dom-repeat' : 'template[is="dom-repeat"]'));
+        const item = Array.from(items).find(function(el) {
+          return domRepeat.itemForElement(el) &&
+              domRepeat.itemForElement(el).language.code == 'en-US';
+        });
+        // Open the menu and select Remove.
+        item.querySelector('button').click();
+
+        assertTrue(actionMenu.open);
+        const removeMenuItem = getMenuItem('removeLanguage');
+        assertTrue(removeMenuItem.hidden);
+      });
+
+      test('remove language when starting with 2 languages', function() {
         const items = languagesCollapse.querySelectorAll('.list-item');
         const domRepeat = assert(languagesCollapse.querySelector(
             Polymer.DomRepeat ? 'dom-repeat' : 'template[is="dom-repeat"]'));
@@ -406,6 +426,7 @@ cr.define('languages_page_tests', function() {
         assertTrue(actionMenu.open);
         const removeMenuItem = getMenuItem('removeLanguage');
         assertFalse(removeMenuItem.disabled);
+        assertFalse(removeMenuItem.hidden);
         removeMenuItem.click();
         assertFalse(actionMenu.open);
 
