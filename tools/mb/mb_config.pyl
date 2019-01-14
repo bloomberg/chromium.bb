@@ -383,7 +383,9 @@
       'fuchsia-arm64-cast': 'release_bot_fuchsia_arm64_cast',
       'fuchsia-x64-cast': 'release_bot_fuchsia_cast',
       'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
-      'linux-jumbo-rel': 'jumbo_large_chunks_release_bot_minimal_symbols',
+      # linux-jumbo-rel is identical to linux_chromium_rel_ng for perf
+      # comparisons, except for the jumbo part.
+      'linux-jumbo-rel': 'gpu_tests_release_bot_jumbo_no_symbols_use_dummy_lastchange',
       'linux-ozone-rel': 'ozone_linux_release_bot',
       'linux-xenial-rel': 'release_bot',
     },
@@ -1456,6 +1458,11 @@
       'gpu_tests', 'release_trybot', 'no_symbols', 'use_dummy_lastchange',
     ],
 
+    'gpu_tests_release_bot_jumbo_no_symbols_use_dummy_lastchange': [
+      'gpu_tests', 'release_bot', 'jumbo_non_goma_chunks', 'no_symbols',
+      'use_dummy_lastchange',
+    ],
+
     'gpu_tests_release_trybot_minimal_symbols': [
       'gpu_tests', 'release_trybot', 'minimal_symbols',
     ],
@@ -1492,11 +1499,11 @@
     'ios': [ 'error'],
 
     'jumbo_release_bot_minimal_symbols': [
-      'jumbo', 'release_bot', 'minimal_symbols'
+      'jumbo', 'release_bot', 'compile_only',
     ],
 
     'jumbo_large_chunks_release_bot_minimal_symbols': [
-      'jumbo_non_goma_chunks', 'release_bot', 'minimal_symbols'
+      'jumbo_non_goma_chunks', 'release_bot', 'compile_only',
     ],
 
     'libfuzzer_asan_debug_bot': [
