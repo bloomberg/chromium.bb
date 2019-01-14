@@ -63,16 +63,15 @@ void WaylandOutput::OutputHandleMode(void* data,
                                      int32_t height,
                                      int32_t refresh) {
   WaylandOutput* wayland_output = static_cast<WaylandOutput*>(data);
-  if (wayland_output && (flags & WL_OUTPUT_MODE_CURRENT)) {
-    wayland_output->rect_in_physical_pixels_.set_width(width);
-    wayland_output->rect_in_physical_pixels_.set_height(height);
-    wayland_output->TriggerDelegateNotification();
-  }
+  if (wayland_output && (flags & WL_OUTPUT_MODE_CURRENT))
+    wayland_output->rect_in_physical_pixels_.set_size(gfx::Size(width, height));
 }
 
 // static
 void WaylandOutput::OutputHandleDone(void* data, struct wl_output* wl_output) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  WaylandOutput* wayland_output = static_cast<WaylandOutput*>(data);
+  if (wayland_output)
+    wayland_output->TriggerDelegateNotification();
 }
 
 // static
@@ -80,10 +79,8 @@ void WaylandOutput::OutputHandleScale(void* data,
                                       struct wl_output* wl_output,
                                       int32_t factor) {
   WaylandOutput* wayland_output = static_cast<WaylandOutput*>(data);
-  if (wayland_output) {
+  if (wayland_output)
     wayland_output->device_scale_factor_ = factor;
-    wayland_output->TriggerDelegateNotification();
-  }
 }
 
 }  // namespace ui
