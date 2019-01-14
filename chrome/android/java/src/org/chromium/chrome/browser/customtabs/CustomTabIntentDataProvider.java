@@ -131,11 +131,6 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     public static final String EXTRA_SEND_TO_EXTERNAL_DEFAULT_HANDLER =
             "android.support.customtabs.extra.SEND_TO_EXTERNAL_HANDLER";
 
-    /** Key for the intent extra used to define an array list of module managed hosts. */
-    @VisibleForTesting
-    public static final String EXTRA_MODULE_MANAGED_HOST_LIST =
-            "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_MANAGED_HOST_LIST";
-
     /** Extra that defines the module managed URLs regex. */
     @VisibleForTesting
     public static final String EXTRA_MODULE_MANAGED_URLS_REGEX =
@@ -179,8 +174,6 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     private final boolean mIsTrustedWebActivity;
     @Nullable
     private final ComponentName mModuleComponentName;
-    @Nullable
-    private final List<String> mModuleManagedHosts;
     @Nullable
     private final Pattern mModuleManagedUrlsPattern;
     private final boolean mHideCctHeaderOnModuleManagedUrls;
@@ -311,8 +304,6 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
         String moduleClassName = IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_CLASS_NAME);
         if (modulePackageName != null && moduleClassName != null) {
             mModuleComponentName = new ComponentName(modulePackageName, moduleClassName);
-            mModuleManagedHosts =
-                    IntentUtils.safeGetStringArrayListExtra(intent, EXTRA_MODULE_MANAGED_HOST_LIST);
             String moduleManagedUrlsRegex =
                     IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_MANAGED_URLS_REGEX);
             mModuleManagedUrlsPattern = (moduleManagedUrlsRegex != null)
@@ -322,7 +313,6 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
                     intent, EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS, false);
         } else {
             mModuleComponentName = null;
-            mModuleManagedHosts = null;
             mModuleManagedUrlsPattern = null;
             mHideCctHeaderOnModuleManagedUrls = false;
         }
@@ -838,15 +828,6 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     @Nullable
     public Pattern getExtraModuleManagedUrlsPattern() {
         return mModuleManagedUrlsPattern;
-    }
-
-    /**
-     * See {@link #EXTRA_MODULE_MANAGED_HOST_LIST}.
-     * @return The list of module managed hosts, or null if not specified.
-     */
-    @Nullable
-    public List<String> getExtraModuleManagedHosts() {
-        return mModuleManagedHosts;
     }
 
     /**

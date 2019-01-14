@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_CLASS_NAME;
-import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_HOST_LIST;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_PACKAGE_NAME;
 import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleNavigationEventObserver.PENDING_URL_KEY;
@@ -27,7 +26,6 @@ import org.chromium.chrome.browser.AppHooksModule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 
-import java.util.ArrayList;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -232,11 +230,6 @@ public class CustomTabsDynamicModuleTestUtils {
 
         IntentBuilder setModuleManagedUrlRegex(String urlRegex) {
             mIntent.putExtra(EXTRA_MODULE_MANAGED_URLS_REGEX, urlRegex);
-            return this;
-        }
-
-        IntentBuilder setModuleHostList(ArrayList<String> moduleHostList) {
-            mIntent.putStringArrayListExtra(EXTRA_MODULE_MANAGED_HOST_LIST, moduleHostList);
             return this;
         }
 
