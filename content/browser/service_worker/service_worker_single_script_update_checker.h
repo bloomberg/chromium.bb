@@ -29,13 +29,46 @@ class ServiceWorkerCacheWriter;
 class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
     : public network::mojom::URLLoaderClient {
  public:
-  using ResultCallback = base::OnceCallback<void(bool)>;
+  // Result of the comparison of a single script.
+  enum class Result {
+    kNotCompared,
+    kFailed,
+    kIdentical,
+    kDifferent,
+  };
+
+  // The paused state consists of Mojo endpoints and a cache writer
+  // detached/paused in the middle of loading script body and would be used in
+  // the left steps of the update process.
+  struct CONTENT_EXPORT PausedState {
+    PausedState(std::unique_ptr<ServiceWorkerCacheWriter> cache_writer,
+                network::mojom::URLLoaderPtr network_loader,
+                network::mojom::URLLoaderClientRequest network_client_request,
+                mojo::ScopedDataPipeConsumerHandle network_consumer);
+    PausedState(const PausedState& other) = delete;
+    PausedState& operator=(const PausedState& other) = delete;
+    ~PausedState();
+
+    std::unique_ptr<ServiceWorkerCacheWriter> cache_writer;
+    network::mojom::URLLoaderPtr network_loader;
+    network::mojom::URLLoaderClientRequest network_client_request;
+    mojo::ScopedDataPipeConsumerHandle network_consumer;
+  };
+
+  // This callback is only called after all of the work is done by the checker.
+  // It notifies the check result to the callback and the ownership of
+  // internal state variables (the cache writer and Mojo endpoints for loading)
+  // is transferred to the callback in the PausedState only when the result is
+  // Result::kDifferent. Otherwise it's set to nullptr.
+  using ResultCallback = base::OnceCallback<
+      void(const GURL&, int64_t, Result, std::unique_ptr<PausedState>)>;
 
   // Both |compare_reader| and |copy_reader| should be created from the same
   // resource ID, and this ID should locate where the script specified with
   // |url| is stored. |writer| should be created with a new resource ID.
   ServiceWorkerSingleScriptUpdateChecker(
       const GURL& url,
+      int64_t resource_id,
       bool is_main_script,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       std::unique_ptr<ServiceWorkerResponseReader> compare_reader,
@@ -84,7 +117,10 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
       scoped_refptr<network::MojoToNetPendingBuffer> pending_buffer,
       uint32_t bytes_written,
       net::Error error);
-  void Finish(bool is_script_changed);
+  void Finish(Result result);
+
+  const GURL script_url_;
+  const int64_t resource_id_;
 
   network::mojom::URLLoaderPtr network_loader_;
   mojo::Binding<network::mojom::URLLoaderClient> network_client_binding_;
@@ -134,6 +170,8 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   CacheWriterState body_writer_state_ = CacheWriterState::kNotStarted;
 
   base::WeakPtrFactory<ServiceWorkerSingleScriptUpdateChecker> weak_factory_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerSingleScriptUpdateChecker);
 };
 
 }  // namespace content
