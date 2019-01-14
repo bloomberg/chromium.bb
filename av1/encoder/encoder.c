@@ -4608,10 +4608,11 @@ static void finalize_encoded_frame(AV1_COMP *const cpi) {
     RefCntBuffer *const frame_to_show =
         cm->ref_frame_map[cpi->existing_fb_idx_to_show];
 
-    if (frame_to_show == NULL || frame_to_show->ref_count < 1) {
+    if (frame_to_show == NULL) {
       aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                          "Buffer does not contain a reconstructed frame");
     }
+    assert(frame_to_show->ref_count > 0);
     assign_frame_buffer_p(&cm->cur_frame, frame_to_show);
     if (cm->reset_decoder_state && frame_to_show->frame_type != KEY_FRAME) {
       aom_internal_error(

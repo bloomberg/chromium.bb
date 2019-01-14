@@ -4827,6 +4827,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       // Show an existing frame directly.
       const int existing_frame_idx = aom_rb_read_literal(rb, 3);
       RefCntBuffer *const frame_to_show = cm->ref_frame_map[existing_frame_idx];
+      if (frame_to_show == NULL) {
+        aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                           "Buffer does not contain a decoded frame");
+      }
       if (seq_params->decoder_model_info_present_flag &&
           cm->timing_info.equal_picture_interval == 0) {
         av1_read_temporal_point_info(cm, rb);
@@ -4842,11 +4846,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                              "Reference buffer frame ID mismatch");
       }
       lock_buffer_pool(pool);
-      if (frame_to_show == NULL || frame_to_show->ref_count < 1) {
-        unlock_buffer_pool(pool);
-        aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-                           "Buffer does not contain a decoded frame");
-      }
+      assert(frame_to_show->ref_count > 0);
       // cm->cur_frame should be the buffer referenced by the return value
       // of the get_free_fb() call in av1_receive_compressed_data(), and
       // generate_next_ref_frame_map() has not been called, so ref_count
