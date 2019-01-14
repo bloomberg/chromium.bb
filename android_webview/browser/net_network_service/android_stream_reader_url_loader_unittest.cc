@@ -146,8 +146,7 @@ class AndroidStreamReaderURLLoaderTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AndroidStreamReaderURLLoaderTest);
 };
 
-// crbug.com/919929
-TEST_F(AndroidStreamReaderURLLoaderTest, DISABLED_ReadFakeStream) {
+TEST_F(AndroidStreamReaderURLLoaderTest, ReadFakeStream) {
   network::ResourceRequest request = CreateRequest(kTestURL);
   std::unique_ptr<network::TestURLLoaderClient> client =
       std::make_unique<network::TestURLLoaderClient>();
@@ -171,8 +170,7 @@ TEST_F(AndroidStreamReaderURLLoaderTest, ReadFailingStream) {
   EXPECT_EQ(net::ERR_FAILED, client->completion_status().error_code);
 }
 
-// crbug.com/919929
-TEST_F(AndroidStreamReaderURLLoaderTest, DISABLED_ValidRangeRequest) {
+TEST_F(AndroidStreamReaderURLLoaderTest, ValidRangeRequest) {
   network::ResourceRequest request = CreateRequest(kTestURL);
   request.headers.SetHeader(net::HttpRequestHeaders::kRange, "bytes=10-200");
 
