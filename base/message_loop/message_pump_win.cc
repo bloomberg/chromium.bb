@@ -172,6 +172,7 @@ void MessagePumpForUI::DoRunLoop() {
     // work, then it is a good time to consider sleeping (waiting) for more
     // work.
 
+    state_->delegate->BeforeDoInternalWork();
     bool more_work_is_plausible = ProcessNextWindowsMessage();
     if (state_->should_quit)
       break;
