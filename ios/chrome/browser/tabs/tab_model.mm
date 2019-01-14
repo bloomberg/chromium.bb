@@ -575,11 +575,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   [_observers tabModel:self didChangeTab:tab];
 }
 
-- (void)notifyTabFinishedLoading:(Tab*)tab {
-  [self notifyTabChanged:tab];
-  [_observers tabModel:self didFinishLoadingTab:tab];
-}
-
 - (void)notifyNewTabWillOpen:(Tab*)tab inBackground:(BOOL)background {
   [_observers tabModel:self newTabWillOpen:tab inBackground:background];
 }
@@ -899,7 +894,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   DCHECK(!webState->IsLoading());
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  [self notifyTabFinishedLoading:tab];
+  [self notifyTabChanged:tab];
 
   RecordInterfaceOrientationMetric();
   RecordMainFrameNavigationMetric(webState);

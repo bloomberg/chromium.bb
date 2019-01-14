@@ -150,9 +150,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // Notifies observers that the given |tab| was changed.
 - (void)notifyTabChanged:(Tab*)tab;
 
-// Notifies observers that the given tab finished loading.
-- (void)notifyTabFinishedLoading:(Tab*)tab;
-
 // Notifies observers that the given tab will open. If it isn't the active tab,
 // |background| is YES, NO otherwise.
 - (void)notifyNewTabWillOpen:(Tab*)tab inBackground:(BOOL)background;
