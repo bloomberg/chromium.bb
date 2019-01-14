@@ -352,8 +352,10 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   void FinishWindowResizing(aura::Window* window);
 
   // Called by OnWindowDragEnded to do the actual work of finishing the window
-  // dragging.
+  // dragging. If |is_being_destroyed| equals true, the dragged window is to be
+  // destroyed, and SplitViewController should not try to put it in splitview.
   void EndWindowDragImpl(aura::Window* window,
+                         bool is_being_destroyed,
                          SnapPosition desired_snap_position,
                          const gfx::Point& last_location_in_screen);
 

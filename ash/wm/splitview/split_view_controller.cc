@@ -167,11 +167,7 @@ class SplitViewController::TabDraggedWindowObserver
   void OnWindowDestroying(aura::Window* window) override {
     // At this point we know the newly created dragged window is going to be
     // destroyed due to all of its tabs are attaching into another window.
-    dragged_window_->RemoveObserver(this);
-    dragged_window_ = nullptr;
-
-    // Update the source window's bounds if applicable.
-    UpdateSourceWindowBoundsAfterDragEnds(window);
+    EndTabDragging(window, /*is_being_destroyed=*/true);
   }
 
   void OnWindowPropertyChanged(aura::Window* window,
@@ -181,17 +177,25 @@ class SplitViewController::TabDraggedWindowObserver
     if (key == ash::kIsDraggingTabsKey && !wm::IsDraggingTabs(window)) {
       // At this point we know the newly created dragged window just finished
       // dragging.
-      dragged_window_->RemoveObserver(this);
-      dragged_window_ = nullptr;
-      split_view_controller_->EndWindowDragImpl(window, desired_snap_position_,
-                                                last_location_in_screen_);
-
-      // Update the source window's bounds if applicable.
-      UpdateSourceWindowBoundsAfterDragEnds(window);
+      EndTabDragging(window, /*is_being_destroyed=*/false);
     }
   }
 
  private:
+  // Called after the tab dragging is ended, the dragged window is either
+  // destroyed because of merging into another window, or stays as a separate
+  // window.
+  void EndTabDragging(aura::Window* window, bool is_being_destroyed) {
+    dragged_window_->RemoveObserver(this);
+    dragged_window_ = nullptr;
+    split_view_controller_->EndWindowDragImpl(window, is_being_destroyed,
+                                              desired_snap_position_,
+                                              last_location_in_screen_);
+
+    // Update the source window's bounds if applicable.
+    UpdateSourceWindowBoundsAfterDragEnds(window);
+  }
+
   // The source window might have been scaled down during dragging, we should
   // update its bounds to ensure it has the right bounds after the drag ends.
   void UpdateSourceWindowBoundsAfterDragEnds(aura::Window* window) {
@@ -624,8 +628,8 @@ void SplitViewController::OnWindowDragEnded(
     dragged_window_observer_.reset(new TabDraggedWindowObserver(
         this, dragged_window, desired_snap_position, last_location_in_screen));
   } else {
-    EndWindowDragImpl(dragged_window, desired_snap_position,
-                      last_location_in_screen);
+    EndWindowDragImpl(dragged_window, /*is_being_destroyed=*/false,
+                      desired_snap_position, last_location_in_screen);
   }
 }
 
@@ -1508,10 +1512,15 @@ void SplitViewController::FinishWindowResizing(aura::Window* window) {
 
 void SplitViewController::EndWindowDragImpl(
     aura::Window* window,
+    bool is_being_destroyed,
     SnapPosition desired_snap_position,
     const gfx::Point& last_location_in_screen) {
   if (IsSplitViewModeActive())
     split_view_divider_->OnWindowDragEnded();
+
+  // If the dragged window is to be destroyed, do not try to snap it.
+  if (is_being_destroyed)
+    return;
 
   // If dragged window was in overview before or it has been added to overview
   // window by dropping on the new selector item, do nothing.

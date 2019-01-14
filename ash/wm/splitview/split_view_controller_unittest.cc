@@ -3431,6 +3431,42 @@ TEST_F(SplitViewTabDraggingTest, DragActiveWindow) {
   EXPECT_TRUE(split_view_divider()->divider_widget()->IsAlwaysOnTop());
 }
 
+// Tests that the divider bar should be placed on top after the drag ends, no
+// matter the dragged window is destroyed during the drag or not.
+TEST_F(SplitViewTabDraggingTest, DividerBarOnTopAfterDragEnds) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> dragged_window(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+  std::unique_ptr<aura::Window> another_window(
+      CreateWindowWithType(bounds, AppType::BROWSER));
+  split_view_controller()->SnapWindow(dragged_window.get(),
+                                      SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(another_window.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+
+  // If the dragged window stays as a separate window after drag ends:
+  std::unique_ptr<WindowResizer> resizer =
+      StartDrag(dragged_window.get(), dragged_window.get());
+  DragWindowWithOffset(resizer.get(), 10, 10);
+  CompleteDrag(std::move(resizer));
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+  EXPECT_TRUE(split_view_divider()->divider_widget()->IsAlwaysOnTop());
+
+  // If the dragged window is destroyed after drag ends:
+  resizer = StartDrag(dragged_window.get(), dragged_window.get());
+  DragWindowWithOffset(resizer.get(), 10, 10);
+  resizer->CompleteDrag();
+  resizer.reset();
+  dragged_window.reset();
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::RIGHT_SNAPPED);
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(split_view_divider()->divider_widget()->IsAlwaysOnTop());
+}
+
 class TestWindowDelegateWithWidget : public views::WidgetDelegate {
  public:
   TestWindowDelegateWithWidget(bool can_activate)
