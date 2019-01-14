@@ -23,10 +23,10 @@
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/api/rtcerror.h"
 #include "third_party/webrtc/api/rtpreceiverinterface.h"
+#include "third_party/webrtc/api/scoped_refptr.h"
 #include "third_party/webrtc/api/setremotedescriptionobserverinterface.h"
 #include "third_party/webrtc/rtc_base/refcount.h"
 #include "third_party/webrtc/rtc_base/refcountedobject.h"
-#include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
 
 namespace content {
 

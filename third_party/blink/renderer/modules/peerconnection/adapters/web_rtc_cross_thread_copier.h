@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "third_party/blink/renderer/platform/cross_thread_copier.h"
-#include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
+#include "third_party/webrtc/api/scoped_refptr.h"
 
 namespace cricket {
 class Candidate;

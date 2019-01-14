@@ -18,7 +18,7 @@
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/api/rtpsenderinterface.h"
-#include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
+#include "third_party/webrtc/api/scoped_refptr.h"
 
 namespace content {
 
