@@ -161,16 +161,23 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
 //    // other functions.
 //
 //    MERGE_GARBAGE_COLLECTED_MIXINS();
-//    // The macro defines C::GetTraceDescriptor, etc. so that they are no
-//    // longer ambiguous. USING_GARBAGE_COLLECTED_MIXIN(TYPE) overrides them
-//    // later and provides the implementations.
+//    // The macro defines C::GetTraceDescriptor, similar to
+//    GarbageCollectedMixin,
+//    // so that they are no longer ambiguous.
+//    // USING_GARBAGE_COLLECTED_MIXIN(TYPE) overrides them later and provides
+//    // the implementations.
 //  };
-#define MERGE_GARBAGE_COLLECTED_MIXINS()                                 \
- public:                                                                 \
-  HeapObjectHeader* GetHeapObjectHeader() const override = 0;            \
-  TraceDescriptor GetTraceDescriptor() const override = 0;               \
-                                                                         \
- private:                                                                \
+#define MERGE_GARBAGE_COLLECTED_MIXINS()                          \
+ public:                                                          \
+  HeapObjectHeader* GetHeapObjectHeader() const override {        \
+    return reinterpret_cast<HeapObjectHeader*>(                   \
+        BlinkGC::kNotFullyConstructedObject);                     \
+  }                                                               \
+  TraceDescriptor GetTraceDescriptor() const override {           \
+    return {BlinkGC::kNotFullyConstructedObject, nullptr, false}; \
+  }                                                               \
+                                                                  \
+ private:                                                         \
   using merge_garbage_collected_mixins_requires_semicolon = void
 
 // Base class for objects allocated in the Blink garbage-collected heap.
