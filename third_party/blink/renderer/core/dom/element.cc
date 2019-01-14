@@ -3816,9 +3816,12 @@ const ComputedStyle* Element::EnsureComputedStyle(
   ComputedStyle* element_style = MutableComputedStyle();
   if (!element_style) {
     ElementRareData& rare_data = EnsureElementRareData();
-    if (!rare_data.GetComputedStyle())
-      rare_data.SetComputedStyle(
-          GetDocument().StyleForElementIgnoringPendingStylesheets(this));
+    if (!rare_data.GetComputedStyle()) {
+      scoped_refptr<ComputedStyle> new_style =
+          GetDocument().StyleForElementIgnoringPendingStylesheets(this);
+      new_style->SetIsEnsuredInDisplayNone();
+      rare_data.SetComputedStyle(std::move(new_style));
+    }
     element_style = rare_data.GetComputedStyle();
   }
 

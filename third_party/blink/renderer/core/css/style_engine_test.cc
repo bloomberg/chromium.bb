@@ -1749,4 +1749,55 @@ TEST_F(StyleEngineTest, CSSSelectorEmptyWhitespaceOnlyFail) {
   EXPECT_TRUE(is_counted(div_elements->item(4)));
 }
 
+TEST_F(StyleEngineTest, EnsuredComputedStyleRecalc) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <div style="display:none">
+      <div>
+        <div id="computed">
+          <span id="span"><span>XXX</span></span>
+        </div>
+      </div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  Element* computed = GetDocument().getElementById("computed");
+  Element* span_outer = GetDocument().getElementById("span");
+  Node* span_inner = span_outer->firstChild();
+
+  // Initially all null in display:none subtree.
+  EXPECT_FALSE(computed->GetComputedStyle());
+  EXPECT_FALSE(span_outer->GetComputedStyle());
+  EXPECT_FALSE(span_inner->GetComputedStyle());
+
+  // Force computed style down to #computed.
+  computed->EnsureComputedStyle();
+  UpdateAllLifecyclePhases();
+  EXPECT_TRUE(computed->GetComputedStyle());
+  EXPECT_FALSE(span_outer->GetComputedStyle());
+  EXPECT_FALSE(span_inner->GetComputedStyle());
+
+  // Setting span color should not create ComputedStyles during style recalc.
+  span_outer->SetInlineStyleProperty(CSSPropertyColor, "blue");
+  EXPECT_TRUE(span_outer->NeedsStyleRecalc());
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  GetStyleEngine().RecalcStyle(kNoChange);
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
+
+  EXPECT_FALSE(span_outer->NeedsStyleRecalc());
+  EXPECT_FALSE(span_outer->GetComputedStyle());
+  EXPECT_FALSE(span_inner->GetComputedStyle());
+  // #computed still non-null because #span_outer is the recalc root.
+  EXPECT_TRUE(computed->GetComputedStyle());
+
+  // Triggering style recalc which propagates the color down the tree should
+  // clear ComputedStyle objects in the display:none subtree.
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyColor, "pink");
+  UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(computed->GetComputedStyle());
+  EXPECT_FALSE(span_outer->GetComputedStyle());
+  EXPECT_FALSE(span_inner->GetComputedStyle());
+}
+
 }  // namespace blink
