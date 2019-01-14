@@ -15,6 +15,11 @@ void MockDeviceFactoryProvider::ConnectToDeviceFactory(
   DoConnectToDeviceFactory(request);
 }
 
+void MockDeviceFactoryProvider::ConnectToVideoSourceProvider(
+    video_capture::mojom::VideoSourceProviderRequest request) {
+  DoConnectToVideoSourceProvider(request);
+}
+
 void MockDeviceFactoryProvider::InjectGpuDependencies(
     video_capture::mojom::AcceleratorFactoryPtr accelerator_factory) {
   DoInjectGpuDependencies(accelerator_factory);

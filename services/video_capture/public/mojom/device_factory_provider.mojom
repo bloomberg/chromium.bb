@@ -6,6 +6,7 @@ module video_capture.mojom;
 
 import "media/mojo/interfaces/jpeg_decode_accelerator.mojom";
 import "services/video_capture/public/mojom/device_factory.mojom";
+import "services/video_capture/public/mojom/video_source_provider.mojom";
 
 interface AcceleratorFactory {
   // Creates a new JpegDecodeAccelerator and binds it to |jda|.
@@ -21,8 +22,13 @@ interface AcceleratorFactory {
 // to be called once before any call to ConnectToDeviceFactory() is made.
 // Calling InjectGpuDependencies() is optional. If it is not called, MJPEG
 // decoding will be performed without gpu acceleration.
+// TODO(chfremer): Consider renaming this to VideoCaptureService.
 interface DeviceFactoryProvider  {
   InjectGpuDependencies(AcceleratorFactory accelerator_factory);
 
+  // Legacy API. Supports one client per device.
   ConnectToDeviceFactory(DeviceFactory& request);
+
+  // Current API. Supports multiple clients per source.
+  ConnectToVideoSourceProvider(VideoSourceProvider& request);
 };
