@@ -142,7 +142,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         // Note: |isChromeSyncEnabled| maps to SyncRequested, and
         // |isMasterSyncEnabled| maps to *both* SyncRequested and
         // SyncAllowedByPlatform.
-        // TODO(crbug.com/867901): Don't mix these two concepts.
+        // TODO(crbug.com/921025): Don't mix these two concepts.
 
         mProfileSyncService.setSyncAllowedByPlatform(
                 AndroidSyncSettings.get().isMasterSyncEnabled());
@@ -185,7 +185,6 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
                 invalidationController.ensureStartedAndUpdateRegisteredTypes();
             }
             if (!AndroidSyncSettings.get().isSyncEnabled()) {
-                assert AndroidSyncSettings.get().isMasterSyncEnabled();
                 AndroidSyncSettings.get().enableChromeSync();
             }
         } else {
@@ -197,6 +196,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
                 // the Chrome sync setting to match isSyncRequested. We have to be careful not to
                 // disable it when isSyncRequested becomes false due to master sync being disabled
                 // so that sync will turn back on if master sync is re-enabled.
+                // TODO(crbug.com/921025): Master sync shouldn't influence isSyncRequested.
                 AndroidSyncSettings.get().disableChromeSync();
             }
         }

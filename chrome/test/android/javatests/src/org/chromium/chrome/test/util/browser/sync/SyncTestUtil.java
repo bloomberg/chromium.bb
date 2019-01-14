@@ -52,6 +52,18 @@ public final class SyncTestUtil {
     }
 
     /**
+     * Returns whether sync-the-feature can start.
+     */
+    public static boolean canSyncFeatureStart() {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return ProfileSyncService.get().canSyncFeatureStart();
+            }
+        });
+    }
+
+    /**
      * Returns whether sync is active.
      */
     public static boolean isSyncActive() {

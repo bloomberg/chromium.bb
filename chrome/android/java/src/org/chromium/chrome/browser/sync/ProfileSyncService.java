@@ -254,7 +254,8 @@ public class ProfileSyncService {
     }
 
     /**
-     * Checks if the all the data types are encrypted.
+     * Checks if the user has chosen to encrypt all data types. Note that some data types (e.g.
+     * DEVICE_INFO) are never encrypted.
      *
      * @return true if all data types are encrypted, false if only passwords are encrypted.
      */
@@ -379,12 +380,34 @@ public class ProfileSyncService {
         return nativeIsFirstSetupComplete(mNativeProfileSyncServiceAndroid);
     }
 
+    /**
+     * Checks whether syncing is "requested" by the user, i.e. the user has not disabled syncing
+     * in settings. Note that even if this is true, other reasons might prevent Sync from actually
+     * starting up.
+     *
+     * @return true if the user wants to sync, false otherwise.
+     */
     public boolean isSyncRequested() {
         return nativeIsSyncRequested(mNativeProfileSyncServiceAndroid);
     }
 
-    // TODO(maxbogue): Remove this annotation once this method is used outside of tests.
-    @VisibleForTesting
+    /**
+     * Checks whether Sync-the-feature can (attempt to) start. This means that there is a primary
+     * account and no disable reasons. Note that the Sync machinery may start up in transport-only
+     * mode even if this is false.
+     *
+     * @return true if Sync can start, false otherwise.
+     */
+    public boolean canSyncFeatureStart() {
+        return nativeCanSyncFeatureStart(mNativeProfileSyncServiceAndroid);
+    }
+
+    /**
+     * Checks whether Sync-the-feature is currently active. Note that Sync-the-transport may be
+     * active even if this is false.
+     *
+     * @return true if Sync is active, false otherwise.
+     */
     public boolean isSyncActive() {
         return nativeIsSyncActive(mNativeProfileSyncServiceAndroid);
     }
@@ -629,6 +652,7 @@ public class ProfileSyncService {
     private native void nativeSetFirstSetupComplete(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsFirstSetupComplete(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsSyncRequested(long nativeProfileSyncServiceAndroid);
+    private native boolean nativeCanSyncFeatureStart(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsSyncActive(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasKeepEverythingSynced(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasUnrecoverableError(long nativeProfileSyncServiceAndroid);
