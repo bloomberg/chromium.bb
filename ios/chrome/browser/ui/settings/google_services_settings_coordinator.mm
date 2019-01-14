@@ -17,7 +17,6 @@
 #import "ios/chrome/browser/ui/settings/google_services_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
-#include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "net/base/mac/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -51,13 +50,10 @@
   self.viewController = viewController;
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(self.browserState);
-  unified_consent::UnifiedConsentService* unifiedConsentService =
-      UnifiedConsentServiceFactory::GetForBrowserState(self.browserState);
   self.mediator = [[GoogleServicesSettingsMediator alloc]
       initWithUserPrefService:self.browserState->GetPrefs()
              localPrefService:GetApplicationContext()->GetLocalState()
-             syncSetupService:syncSetupService
-        unifiedConsentService:unifiedConsentService];
+             syncSetupService:syncSetupService];
   self.mediator.consumer = viewController;
   self.mediator.authService = self.authService;
   self.mediator.commandHandler = self;
