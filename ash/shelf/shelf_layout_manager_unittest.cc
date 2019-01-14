@@ -924,6 +924,7 @@ TEST_F(ShelfLayoutManagerTest, SetVisible) {
   gfx::Rect shelf_bounds(shelf_widget->GetWindowBoundsInScreen());
   int shelf_height = manager->GetIdealBounds().height();
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  const gfx::Rect stable_work_area = display.work_area();
   ASSERT_NE(-1, display.id());
   // Bottom inset should be the max of widget heights.
   EXPECT_EQ(shelf_height, display.GetWorkAreaInsets().bottom());
@@ -942,6 +943,7 @@ TEST_F(ShelfLayoutManagerTest, SetVisible) {
             display.bounds().bottom());
   EXPECT_GE(shelf_widget->status_area_widget()->GetNativeView()->bounds().y(),
             display.bounds().bottom());
+  EXPECT_EQ(stable_work_area, GetShelfLayoutManager()->ComputeStableWorkArea());
 
   // And show it again.
   SetState(manager, SHELF_VISIBLE);
@@ -951,6 +953,7 @@ TEST_F(ShelfLayoutManagerTest, SetVisible) {
   EXPECT_EQ(SHELF_VISIBLE, manager->visibility_state());
   display = display::Screen::GetScreen()->GetPrimaryDisplay();
   EXPECT_EQ(shelf_height, display.GetWorkAreaInsets().bottom());
+  EXPECT_EQ(stable_work_area, GetShelfLayoutManager()->ComputeStableWorkArea());
 
   // Make sure the bounds of the two widgets changed.
   shelf_bounds = shelf_widget->GetNativeView()->bounds();
@@ -1026,6 +1029,9 @@ TEST_F(ShelfLayoutManagerTest, ShelfUpdatedWhenStatusAreaChangesSize) {
 TEST_F(ShelfLayoutManagerTest, AutoHide) {
   ui::test::EventGenerator* generator = GetEventGenerator();
 
+  const gfx::Rect stable_work_area =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+
   Shelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -1034,15 +1040,17 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+
   // LayoutShelf() forces the animation to completion, at which point the
   // shelf should go off the screen.
   layout_manager->LayoutShelf();
 
-  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   const int display_bottom = display.bounds().bottom();
   EXPECT_EQ(display_bottom - kHiddenShelfInScreenPortion,
             GetShelfWidget()->GetWindowBoundsInScreen().y());
   EXPECT_EQ(display_bottom, display.work_area().bottom());
+  EXPECT_EQ(stable_work_area, GetShelfLayoutManager()->ComputeStableWorkArea());
 
   // Move the mouse to the bottom of the screen.
   generator->MoveMouseTo(0, display_bottom - 1);
@@ -1054,6 +1062,7 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   EXPECT_EQ(display_bottom - layout_manager->GetIdealBounds().height(),
             GetShelfWidget()->GetWindowBoundsInScreen().y());
   EXPECT_EQ(display_bottom, display.work_area().bottom());
+  EXPECT_EQ(stable_work_area, GetShelfLayoutManager()->ComputeStableWorkArea());
 
   // Tap the system tray when shelf is shown should open the system tray menu.
   generator->GestureTapAt(
@@ -1068,6 +1077,7 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   layout_manager->LayoutShelf();
   EXPECT_EQ(display_bottom - kHiddenShelfInScreenPortion,
             GetShelfWidget()->GetWindowBoundsInScreen().y());
+  EXPECT_EQ(stable_work_area, GetShelfLayoutManager()->ComputeStableWorkArea());
 
   // Drag mouse to bottom of screen.
   generator->PressLeftButton();
@@ -1639,6 +1649,8 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
   EXPECT_GE(shelf_bounds.width(),
             GetShelfWidget()->GetContentsView()->GetPreferredSize().width());
   EXPECT_EQ(SHELF_ALIGNMENT_LEFT, GetPrimaryShelf()->alignment());
+  EXPECT_EQ(display.work_area(), layout_manager->ComputeStableWorkArea());
+
   StatusAreaWidget* status_area_widget = GetShelfWidget()->status_area_widget();
   gfx::Rect status_bounds(status_area_widget->GetWindowBoundsInScreen());
   // TODO(estade): Re-enable this check. See crbug.com/660928.
@@ -1668,6 +1680,8 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
   EXPECT_GE(shelf_bounds.width(),
             GetShelfWidget()->GetContentsView()->GetPreferredSize().width());
   EXPECT_EQ(SHELF_ALIGNMENT_RIGHT, GetPrimaryShelf()->alignment());
+  EXPECT_EQ(display.work_area(), layout_manager->ComputeStableWorkArea());
+
   status_bounds = gfx::Rect(status_area_widget->GetWindowBoundsInScreen());
   // TODO(estade): Re-enable this check. See crbug.com/660928.
   //  EXPECT_GE(
@@ -1681,10 +1695,15 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
   EXPECT_EQ(display.work_area().right(), shelf_bounds.x());
   EXPECT_EQ(display.bounds().y(), shelf_bounds.y());
   EXPECT_EQ(display.bounds().height(), shelf_bounds.height());
+
+  const gfx::Rect stable_work_area =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   display = display::Screen::GetScreen()->GetPrimaryDisplay();
   EXPECT_EQ(0, display.GetWorkAreaInsets().right());
   EXPECT_EQ(0, display.bounds().right() - display.work_area().right());
+  EXPECT_EQ(stable_work_area, layout_manager->ComputeStableWorkArea());
 }
 
 TEST_F(ShelfLayoutManagerTest, GestureDrag) {

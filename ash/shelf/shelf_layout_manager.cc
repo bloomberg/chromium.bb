@@ -224,13 +224,13 @@ gfx::Rect ShelfLayoutManager::GetIdealBounds() const {
 
 gfx::Size ShelfLayoutManager::GetPreferredSize() {
   TargetBounds target_bounds;
-  CalculateTargetBounds(state_, &target_bounds);
+  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds);
   return target_bounds.shelf_bounds.size();
 }
 
 void ShelfLayoutManager::LayoutShelfAndUpdateBounds() {
   TargetBounds target_bounds;
-  CalculateTargetBounds(state_, &target_bounds);
+  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds);
   UpdateBoundsAndOpacity(target_bounds, false, nullptr);
 
   // Update insets in ShelfWindowTargeter when shelf bounds change.
@@ -617,7 +617,7 @@ void ShelfLayoutManager::OnSessionStateChanged(
     UpdateShelfVisibilityAfterLoginUIChange();
 
   TargetBounds target_bounds;
-  CalculateTargetBounds(state_, &target_bounds);
+  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds);
   UpdateBoundsAndOpacity(target_bounds, true /* animate */, nullptr);
   UpdateVisibilityState();
 }
@@ -639,7 +639,7 @@ void ShelfLayoutManager::OnDisplayMetricsChanged(
     uint32_t changed_metrics) {
   // Update |user_work_area_bounds_| for the new display arrangement.
   TargetBounds target_bounds;
-  CalculateTargetBounds(state_, &target_bounds);
+  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds);
 }
 
 void ShelfLayoutManager::OnLocaleChanged() {
@@ -718,7 +718,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   }
 
   TargetBounds target_bounds;
-  CalculateTargetBounds(state_, &target_bounds);
+  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds);
   UpdateBoundsAndOpacity(
       target_bounds, true /* animate */,
       delay_background_change ? update_shelf_observer_ : nullptr);
@@ -831,8 +831,16 @@ void ShelfLayoutManager::StopAnimating() {
   GetLayer(shelf_widget_->status_area_widget())->GetAnimator()->StopAnimating();
 }
 
-void ShelfLayoutManager::CalculateTargetBounds(const State& state,
-                                               TargetBounds* target_bounds) {
+gfx::Rect ShelfLayoutManager::ComputeStableWorkArea() const {
+  TargetBounds target_bounds;
+  State state = state_;
+  state.visibility_state = SHELF_VISIBLE;
+  return CalculateTargetBounds(state, &target_bounds);
+}
+
+gfx::Rect ShelfLayoutManager::CalculateTargetBounds(
+    const State& state,
+    TargetBounds* target_bounds) const {
   const int shelf_size = ShelfConstants::shelf_size();
   // By default, show the whole shelf on the screen.
   int shelf_in_screen_portion = shelf_size;
@@ -926,7 +934,12 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
 
   aura::Window* root = shelf_window->GetRootWindow();
   ::wm::ConvertRectToScreen(root, &available_bounds);
-  user_work_area_bounds_ = available_bounds;
+  return available_bounds;
+}
+
+void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea(
+    TargetBounds* target_bounds) {
+  user_work_area_bounds_ = CalculateTargetBounds(state_, target_bounds);
 }
 
 void ShelfLayoutManager::UpdateTargetBoundsForGesture(
@@ -1171,7 +1184,7 @@ void ShelfLayoutManager::UpdateShelfVisibilityAfterLoginUIChange() {
   LayoutShelf();
 }
 
-float ShelfLayoutManager::ComputeTargetOpacity(const State& state) {
+float ShelfLayoutManager::ComputeTargetOpacity(const State& state) const {
   if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS ||
       state.visibility_state == SHELF_VISIBLE) {
     return 1.0f;

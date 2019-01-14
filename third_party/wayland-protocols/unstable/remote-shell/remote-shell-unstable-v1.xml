@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="19">
+  <interface name="zcr_remote_shell_v1" version="20">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -148,7 +148,7 @@
 
     <event name="workspace" since="5">
       <description summary="area of remote shell">
-	Defines an area of the remote shell used for layout. Each series of
+	[Deprecated] Defines an area of the remote shell used for layout. Each series of
 	"workspace" events must be terminated by a "configure" event.
       </description>
       <arg name="display_id_hi" type="uint"/>
@@ -198,7 +198,7 @@
 
     <event name="display_info" since="19">
       <description summary="extra display information">
-	Sends display size in pixels and display identification data, typically
+	[Deprecated] Sends display size in pixels and display identification data, typically
 	in EDID format. Preceded by a "workspace" event for the same display.
       </description>
       <arg name="display_id_hi" type="uint"/>
@@ -207,6 +207,34 @@
       <arg name="height" type="int"/>
       <arg name="identification_data" type="array"/>
     </event>
+
+    <!-- Version 20 additions -->
+
+    <event name="workspace_info" since="20">
+      <description summary="area of remote shell in pixels">
+	Sends display information such as size, work area and its related information.
+	Each series of "workspace_info" events must be terminated by a "configure" event.
+      </description>
+      <arg name="display_id_hi" type="uint"/>
+      <arg name="display_id_lo" type="uint"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+      <arg name="inset_left" type="int"/>
+      <arg name="inset_top" type="int"/>
+      <arg name="inset_right" type="int"/>
+      <arg name="inset_bottom" type="int"/>
+      <arg name="stable_inset_left" type="int"/>
+      <arg name="stable_inset_top" type="int"/>
+      <arg name="stable_inset_right" type="int"/>
+      <arg name="stable_inset_bottom" type="int"/>
+      <arg name="systemui_visibility" type="int" summary="systemui_visibility_state"/>
+      <arg name="transform" type="int"/>
+      <arg name="is_internal" type="uint" summary="1 if screen is built-in"/>
+      <arg name="identification_data" type="array" summary="EDID blob data"/>
+    </event>
+
   </interface>
 
   <interface name="zcr_remote_surface_v1" version="19">
