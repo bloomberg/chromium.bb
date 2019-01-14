@@ -72,7 +72,6 @@ struct WebFontRenderStyle {
   // kNoPreference in |other|.
   void OverrideWith(const WebFontRenderStyle& other);
 
-  void ApplyToSkPaint(SkPaint&, float device_scale_factor) const;
   void ApplyToSkFont(SkFont*, float device_scale_factor) const;
 
   // Each of the use* members below can take one of three values:
