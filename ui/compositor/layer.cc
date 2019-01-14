@@ -219,17 +219,6 @@ std::unique_ptr<Layer> Layer::Clone() const {
 std::unique_ptr<Layer> Layer::Mirror() {
   auto mirror = Clone();
   mirrors_.emplace_back(std::make_unique<LayerMirror>(this, mirror.get()));
-
-  if (!transfer_resource_.mailbox_holder.mailbox.IsZero()) {
-    // Send an empty release callback because we don't want the resource to be
-    // freed up until the original layer releases it.
-    mirror->SetTransferableResource(
-        transfer_resource_,
-        viz::SingleReleaseCallback::Create(base::BindOnce(
-            [](const gpu::SyncToken& sync_token, bool is_lost) {})),
-        frame_size_in_dip_);
-  }
-
   return mirror;
 }
 
@@ -767,16 +756,6 @@ void Layer::SetTransferableResource(
   transfer_release_callback_ = std::move(release_callback);
   transfer_resource_ = resource;
   SetTextureSize(texture_size_in_dip);
-
-  for (const auto& mirror : mirrors_) {
-    // The release callbacks should be empty as only the source layer
-    // should be able to release the texture resource.
-    mirror->dest()->SetTransferableResource(
-        transfer_resource_,
-        viz::SingleReleaseCallback::Create(base::BindOnce(
-            [](const gpu::SyncToken& sync_token, bool is_lost) {})),
-        frame_size_in_dip_);
-  }
 }
 
 void Layer::SetTextureSize(gfx::Size texture_size_in_dip) {
@@ -881,9 +860,6 @@ void Layer::SetShowSolidColorContent() {
     transfer_release_callback_.reset();
   }
   RecomputeDrawsContentAndUVRect();
-
-  for (const auto& mirror : mirrors_)
-    mirror->dest()->SetShowSolidColorContent();
 }
 
 void Layer::UpdateNinePatchLayerImage(const gfx::ImageSkia& image) {

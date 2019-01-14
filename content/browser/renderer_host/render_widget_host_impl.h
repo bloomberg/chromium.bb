@@ -277,9 +277,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Initializes a RenderWidgetHost that is attached to a RenderFrameHost.
   void InitForFrame();
 
-  // Returns true if the frame content needs be stored before being evicted.
-  bool ShouldShowStaleContentOnEviction();
-
   // Signal whether this RenderWidgetHost is owned by a RenderFrameHost, in
   // which case it does not do self-deletion.
   void set_owned_by_render_frame_host(bool owned_by_rfh) {

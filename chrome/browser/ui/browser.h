@@ -538,7 +538,6 @@ class Browser : public TabStripModelObserver,
       std::unique_ptr<content::WebContents> new_contents,
       bool did_start_load,
       bool did_finish_load) override;
-  bool ShouldShowStaleContentOnEviction(content::WebContents* source) override;
 
   bool is_type_tabbed() const { return type_ == TYPE_TABBED; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }

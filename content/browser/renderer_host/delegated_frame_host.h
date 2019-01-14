@@ -52,7 +52,6 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
   virtual float GetDeviceScaleFactor() const = 0;
   virtual void InvalidateLocalSurfaceIdOnEviction() = 0;
   virtual std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction() = 0;
-  virtual bool ShouldShowStaleContentOnEviction() = 0;
 };
 
 // The DelegatedFrameHost is used to host all of the RenderWidgetHostView state
@@ -122,10 +121,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   bool HasSavedFrame() const;
   void AttachToCompositor(ui::Compositor* compositor);
   void DetachFromCompositor();
-
-  // Copies |src_subrect| from the compositing surface into a bitmap (first
-  // overload) or texture (second overload). |output_size| specifies the size of
-  // the output bitmap or texture.
   // Note: |src_subrect| is specified in DIP dimensions while |output_size|
   // expects pixels. If |src_subrect| is empty, the entire surface area is
   // copied.
@@ -133,11 +128,6 @@ class CONTENT_EXPORT DelegatedFrameHost
       const gfx::Rect& src_subrect,
       const gfx::Size& output_size,
       base::OnceCallback<void(const SkBitmap&)> callback);
-  void CopyFromCompositingSurfaceAsTexture(
-      const gfx::Rect& src_subrect,
-      const gfx::Size& output_size,
-      viz::CopyOutputRequest::CopyOutputRequestCallback callback);
-
   bool CanCopyFromCompositingSurface() const;
   const viz::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
@@ -187,30 +177,18 @@ class CONTENT_EXPORT DelegatedFrameHost
 
  private:
   friend class DelegatedFrameHostClient;
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraBrowserTest,
-                           StaleFrameContentOnEvictionNormal);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraBrowserTest,
-                           StaleFrameContentOnEvictionRejected);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraBrowserTest,
-                           StaleFrameContentOnEvictionNone);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
+                           SkippedDelegatedFrames);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
+                           DiscardDelegatedFramesWithLocking);
 
   // FrameEvictorClient implementation.
   void EvictDelegatedFrame() override;
-
-  void DidCopyStaleContent(std::unique_ptr<viz::CopyOutputResult> result);
-
-  void ContinueDelegatedFrameEviction();
 
   SkColor GetGutterColor() const;
 
   void CreateCompositorFrameSinkSupport();
   void ResetCompositorFrameSinkSupport();
-
-  void CopyFromCompositingSurfaceInternal(
-      const gfx::Rect& src_subrect,
-      const gfx::Size& output_size,
-      viz::CopyOutputRequest::ResultFormat format,
-      viz::CopyOutputRequest::CopyOutputRequestCallback callback);
 
   const viz::FrameSinkId frame_sink_id_;
   DelegatedFrameHostClient* const client_;
@@ -246,18 +224,6 @@ class CONTENT_EXPORT DelegatedFrameHost
 #ifdef OS_CHROMEOS
   bool seen_first_activation_ = false;
 #endif
-
-  enum class FrameEvictionState {
-    kNotStarted = 0,          // Frame eviction is ready.
-    kPendingEvictionRequests  // Frame eviction is paused with pending requests.
-  };
-
-  FrameEvictionState frame_eviction_state_ = FrameEvictionState::kNotStarted;
-
-  // Layer responsible for displaying the stale content for the DFHC when the
-  // actual web content frame has been evicted. This will be reset when a new
-  // compositor frame is submitted.
-  std::unique_ptr<ui::Layer> stale_content_layer_;
 
   base::WeakPtrFactory<DelegatedFrameHost> weak_factory_;
 

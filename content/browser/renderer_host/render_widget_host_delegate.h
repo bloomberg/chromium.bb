@@ -201,11 +201,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Returns whether the associated tab is in fullscreen mode.
   virtual bool IsFullscreenForCurrentTab();
 
-  // Returns true if the widget's frame content needs to be stored before
-  // eviction and displayed until a new frame is generated. If false, a white
-  // solid color is displayed instead.
-  virtual bool ShouldShowStaleContentOnEviction();
-
   // Returns the display mode for the view.
   virtual blink::WebDisplayMode GetDisplayMode(
       RenderWidgetHostImpl* render_widget_host) const;

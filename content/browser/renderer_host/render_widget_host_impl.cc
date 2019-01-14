@@ -674,10 +674,6 @@ void RenderWidgetHostImpl::InitForFrame() {
     view_->OnRenderWidgetInit();
 }
 
-bool RenderWidgetHostImpl::ShouldShowStaleContentOnEviction() {
-  return delegate_->ShouldShowStaleContentOnEviction();
-}
-
 void RenderWidgetHostImpl::ShutdownAndDestroyWidget(bool also_delete) {
   CancelKeyboardLock();
   RejectMouseLockOrUnlockIfNecessary();
