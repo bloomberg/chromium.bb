@@ -306,15 +306,6 @@ static void set_offsets(const AV1_COMP *const cpi, const TileInfo *const tile,
   }
 }
 
-static void reset_intmv_filter_type(MB_MODE_INFO *mbmi) {
-  InterpFilter filters[2];
-
-  for (int dir = 0; dir < 2; ++dir) {
-    filters[dir] = av1_extract_interp_filter(mbmi->interp_filters, dir);
-  }
-  mbmi->interp_filters = av1_make_interp_filters(filters[0], filters[1]);
-}
-
 static void update_filter_type_count(uint8_t allow_update_cdf,
                                      FRAME_COUNTS *counts,
                                      const MACROBLOCKD *xd,
@@ -388,8 +379,6 @@ static void update_state(const AV1_COMP *const cpi,
 
   *mi_addr = *mi;
   *x->mbmi_ext = ctx->mbmi_ext;
-
-  reset_intmv_filter_type(mi_addr);
 
   memcpy(x->blk_skip, ctx->blk_skip, sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
 
