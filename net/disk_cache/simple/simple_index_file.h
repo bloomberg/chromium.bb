@@ -181,7 +181,8 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
 
   // Scan the index directory for entries, returning an EntrySet of all entries
   // found.
-  static void SyncRestoreFromDisk(const base::FilePath& cache_directory,
+  static void SyncRestoreFromDisk(net::CacheType cache_type,
+                                  const base::FilePath& cache_directory,
                                   const base::FilePath& index_file_path,
                                   SimpleIndexLoadResult* out_result);
 

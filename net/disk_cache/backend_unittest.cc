@@ -667,6 +667,58 @@ TEST_F(DiskCacheBackendTest, CreateBackendPostCleanup) {
   EXPECT_GT(size, kBufSize);
 }
 
+TEST_F(DiskCacheBackendTest, SimpleCreateBackendRecoveryAppCache) {
+  // Tests index recovery in APP_CACHE mode. (This is harder to test for
+  // DISK_CACHE since post-cleanup callbacks aren't permitted there).
+  const int kBufSize = 4 * 1024;
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kBufSize);
+  CacheTestFillBuffer(buffer->data(), kBufSize, true);
+
+  SetSimpleCacheMode();
+  SetCacheType(net::APP_CACHE);
+  DisableFirstCleanup();
+  CleanupCacheDir();
+
+  base::RunLoop run_loop;
+  net::TestCompletionCallback cb;
+  std::unique_ptr<disk_cache::Backend> cache;
+
+  // Create a backend with post-cleanup callback specified, in order to know
+  // when the index has been written back (so it can be deleted race-free).
+  int rv = disk_cache::CreateCacheBackend(
+      net::APP_CACHE, net::CACHE_BACKEND_SIMPLE, cache_path_, 0, false, nullptr,
+      &cache, run_loop.QuitClosure(), cb.callback());
+  EXPECT_THAT(cb.GetResult(rv), IsOk());
+  ASSERT_TRUE(cache.get());
+
+  // Create an entry.
+  disk_cache::Entry* entry = nullptr;
+  rv = cache->CreateEntry("key", net::HIGHEST, &entry, cb.callback());
+  ASSERT_EQ(net::OK, cb.GetResult(rv));
+  EXPECT_EQ(kBufSize, WriteData(entry, 0, 0, buffer.get(), kBufSize, false));
+  entry->Close();
+
+  cache.reset();
+
+  // Wait till the post-cleanup callback.
+  run_loop.Run();
+
+  // Delete the index.
+  base::DeleteFile(
+      cache_path_.AppendASCII("index-dir").AppendASCII("the-real-index"),
+      false);
+
+  // Open the cache again. The fixture will also waits for index init.
+  InitCache();
+
+  // Entry should not have a trailer size, since can't tell what it should be
+  // when doing recovery (and definitely shouldn't interpret last use time as
+  // such).
+  EXPECT_EQ(0, simple_cache_impl_->index()->GetTrailerPrefetchSize(
+                   disk_cache::simple_util::GetEntryHashKey("key")));
+}
+
 // Tests that |BackendImpl| fails to initialize with a missing file.
 TEST_F(DiskCacheBackendTest, CreateBackend_MissingFile) {
   ASSERT_TRUE(CopyTestCache("bad_entry"));
