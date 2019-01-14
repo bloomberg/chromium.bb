@@ -65,14 +65,6 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(rtc::DiffServCodePoint,
                               rtc::DSCP_NO_CHANGE,
                               rtc::DSCP_CS7)
 
-IPC_STRUCT_TRAITS_BEGIN(net::NetworkInterface)
-  IPC_STRUCT_TRAITS_MEMBER(name)
-  IPC_STRUCT_TRAITS_MEMBER(type)
-  IPC_STRUCT_TRAITS_MEMBER(address)
-  IPC_STRUCT_TRAITS_MEMBER(prefix_length)
-  IPC_STRUCT_TRAITS_MEMBER(ip_address_attributes)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(rtc::PacketTimeUpdateParams)
   IPC_STRUCT_TRAITS_MEMBER(rtp_sendtime_extension_id)
   IPC_STRUCT_TRAITS_MEMBER(srtp_auth_key)
