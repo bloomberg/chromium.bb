@@ -604,44 +604,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   }
 }
 
-- (NSSet*)currentlyReferencedExternalFiles {
-  NSMutableSet* referencedFiles = [NSMutableSet set];
-  if (!_browserState)
-    return referencedFiles;
-  // Check the currently open tabs for external files.
-  for (int index = 0; index < _webStateList->count(); ++index) {
-    web::WebState* webState = _webStateList->GetWebStateAt(index);
-    const GURL& lastCommittedURL = webState->GetLastCommittedURL();
-    if (UrlIsExternalFileReference(lastCommittedURL)) {
-      [referencedFiles addObject:base::SysUTF8ToNSString(
-                                     lastCommittedURL.ExtractFileName())];
-    }
-    web::NavigationItem* pendingItem =
-        webState->GetNavigationManager()->GetPendingItem();
-    if (pendingItem && UrlIsExternalFileReference(pendingItem->GetURL())) {
-      [referencedFiles addObject:base::SysUTF8ToNSString(
-                                     pendingItem->GetURL().ExtractFileName())];
-    }
-  }
-  // Do the same for the recently closed tabs.
-  sessions::TabRestoreService* restoreService =
-      IOSChromeTabRestoreServiceFactory::GetForBrowserState(_browserState);
-  DCHECK(restoreService);
-  for (const auto& entry : restoreService->entries()) {
-    sessions::TabRestoreService::Tab* tab =
-        static_cast<sessions::TabRestoreService::Tab*>(entry.get());
-    int navigationIndex = tab->current_navigation_index;
-    sessions::SerializedNavigationEntry navigation =
-        tab->navigations[navigationIndex];
-    GURL URL = navigation.virtual_url();
-    if (UrlIsExternalFileReference(URL)) {
-      NSString* fileName = base::SysUTF8ToNSString(URL.ExtractFileName());
-      [referencedFiles addObject:fileName];
-    }
-  }
-  return referencedFiles;
-}
-
 // NOTE: This can be called multiple times, so must be robust against that.
 - (void)browserStateDestroyed {
   if (!_browserState)

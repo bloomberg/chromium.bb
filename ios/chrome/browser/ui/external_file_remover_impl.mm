@@ -19,6 +19,9 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_list.h"
 #import "ios/chrome/browser/ui/external_file_controller.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
+#include "ios/web/public/navigation_item.h"
+#include "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_thread.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -30,6 +33,47 @@ namespace {
 // part of the destructor of base::ScopedClosureRunner (which takes care of
 // checking for null closure).
 void RunCallback(base::ScopedClosureRunner closure_runner) {}
+
+NSSet* ComputeReferencedExternalFiles(ios::ChromeBrowserState* browser_state,
+                                      WebStateList* web_state_list) {
+  NSMutableSet* referenced_files = [NSMutableSet set];
+  if (!browser_state)
+    return referenced_files;
+  // Check the currently open tabs for external files.
+  for (int index = 0; index < web_state_list->count(); ++index) {
+    web::WebState* web_state = web_state_list->GetWebStateAt(index);
+    const GURL& last_committed_url = web_state->GetLastCommittedURL();
+    if (UrlIsExternalFileReference(last_committed_url)) {
+      [referenced_files addObject:base::SysUTF8ToNSString(
+                                      last_committed_url.ExtractFileName())];
+    }
+    web::NavigationItem* pending_item =
+        web_state->GetNavigationManager()->GetPendingItem();
+    if (pending_item && UrlIsExternalFileReference(pending_item->GetURL())) {
+      [referenced_files
+          addObject:base::SysUTF8ToNSString(
+                        pending_item->GetURL().ExtractFileName())];
+    }
+  }
+  // Do the same for the recently closed tabs.
+  sessions::TabRestoreService* restore_service =
+      IOSChromeTabRestoreServiceFactory::GetForBrowserState(browser_state);
+  DCHECK(restore_service);
+  for (const auto& entry : restore_service->entries()) {
+    sessions::TabRestoreService::Tab* tab =
+        static_cast<sessions::TabRestoreService::Tab*>(entry.get());
+    int navigation_index = tab->current_navigation_index;
+    sessions::SerializedNavigationEntry navigation =
+        tab->navigations[navigation_index];
+    GURL url = navigation.virtual_url();
+    if (UrlIsExternalFileReference(url)) {
+      NSString* file_name = base::SysUTF8ToNSString(url.ExtractFileName());
+      [referenced_files addObject:file_name];
+    }
+  }
+  return referenced_files;
+}
+
 }  // namespace
 
 ExternalFileRemoverImpl::ExternalFileRemoverImpl(
@@ -130,9 +174,10 @@ NSSet* ExternalFileRemoverImpl::GetReferencedExternalFiles() {
   NSMutableSet* referenced_external_files = [NSMutableSet set];
   for (TabModel* tab_model in TabModelList::GetTabModelsForChromeBrowserState(
            browser_state_)) {
-    NSSet* tab_model_files = [tab_model currentlyReferencedExternalFiles];
-    if (tab_model_files) {
-      [referenced_external_files unionSet:tab_model_files];
+    NSSet* files =
+        ComputeReferencedExternalFiles(browser_state_, tab_model.webStateList);
+    if (files) {
+      [referenced_external_files unionSet:files];
     }
   }
 
