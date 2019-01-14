@@ -24,6 +24,8 @@ static_library("shared") {
   sources = [
     "account_info.cc",
     "account_info.h",
+    "avatar_icon_util.cc",
+    "avatar_icon_util.h",
     "identity_utils.cc",
     "identity_utils.h",
     "signin_metrics.cc",
@@ -38,7 +40,9 @@ static_library("shared") {
     "//components/account_id",
     "//components/prefs:prefs",
     "//third_party/icu:icui18n",
+    "//third_party/re2",
     "//ui/gfx",
+    "//url",
   ]
   public_deps = [
     "//base",
@@ -58,8 +62,14 @@ static_library("internals") {
   sources = [
     "account_consistency_method.cc",
     "account_consistency_method.h",
+    "account_fetcher_service.cc",
+    "account_fetcher_service.h",
+    "account_info_fetcher.cc",
+    "account_info_fetcher.h",
     "account_tracker_service.cc",
     "account_tracker_service.h",
+    "child_account_info_fetcher_android.cc",
+    "child_account_info_fetcher_android.h",
     "device_id_helper.cc",
     "device_id_helper.h",
     "gaia_cookie_manager_service.cc",
@@ -87,6 +97,7 @@ static_library("internals") {
     ":signin_buildflags",
     "//base",
     "//components/data_use_measurement/core",
+    "//components/image_fetcher/core",
     "//components/keyed_service/core",
     "//components/prefs",
     "//google_apis",
@@ -105,20 +116,12 @@ static_library("browser") {
   sources = [
     "about_signin_internals.cc",
     "about_signin_internals.h",
-    "account_fetcher_service.cc",
-    "account_fetcher_service.h",
-    "account_info_fetcher.cc",
-    "account_info_fetcher.h",
     "account_investigator.cc",
     "account_investigator.h",
     "account_reconcilor.cc",
     "account_reconcilor.h",
     "account_reconcilor_delegate.cc",
     "account_reconcilor_delegate.h",
-    "avatar_icon_util.cc",
-    "avatar_icon_util.h",
-    "child_account_info_fetcher_android.cc",
-    "child_account_info_fetcher_android.h",
     "chrome_connected_header_helper.cc",
     "chrome_connected_header_helper.h",
     "cookie_settings_util.cc",
@@ -174,7 +177,6 @@ static_library("browser") {
     "//base:i18n",
     "//components/data_use_measurement/core",
     "//components/google/core/browser",
-    "//components/image_fetcher/core",
     "//components/metrics",
     "//components/os_crypt",
     "//components/webdata/common",
@@ -184,7 +186,6 @@ static_library("browser") {
     "//skia",
     "//sql",
     "//third_party/icu",
-    "//third_party/re2",
   ]
 
   if (is_chromeos) {
@@ -247,6 +248,8 @@ static_library("internals_test_support") {
 
 static_library("test_support") {
   testonly = true
+
+  # TODO(blundell): Move this to internals.
   sources = [
     "fake_account_fetcher_service.cc",
     "fake_account_fetcher_service.h",
