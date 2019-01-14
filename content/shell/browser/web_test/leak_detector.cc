@@ -31,10 +31,7 @@ const int kInitialNumberOfScriptPromises = 0;
 const int kInitialNumberOfLiveFrames = 1;
 const int kInitialNumberOfWorkerGlobalScopes = 0;
 const int kInitialNumberOfLiveResourceFetchers = 1;
-
-// In the initial state, there are two PausableObjects (FontFaceSet created
-// by HTMLDocument and PausableTimer created by DocumentLoader).
-const int kInitialNumberOfLivePausableObject = 2;
+const int kInitialNumberOfLivePausableObject = 0;
 
 // This includes not only about:blank's context but also ScriptRegexp (e.g.
 // created by isValidEmailAddress in EmailInputType.cpp). The leak detector
