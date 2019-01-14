@@ -274,16 +274,22 @@ ModelTypeSet SyncPrefs::GetPreferredDataTypes(
   return ResolvePrefGroups(registered_types, preferred_types);
 }
 
-void SyncPrefs::SetPreferredDataTypes(bool keep_everything_synced,
-                                      ModelTypeSet registered_types,
-                                      ModelTypeSet preferred_types) {
+void SyncPrefs::SetDataTypesConfiguration(bool keep_everything_synced,
+                                          ModelTypeSet registered_types,
+                                          ModelTypeSet chosen_types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pref_service_->SetBoolean(prefs::kSyncKeepEverythingSynced,
                             keep_everything_synced);
-  preferred_types = ResolvePrefGroups(registered_types, preferred_types);
+  ModelTypeSet preferred_types =
+      ResolvePrefGroups(registered_types, chosen_types);
   DCHECK(registered_types.HasAll(preferred_types));
   for (ModelType type : registered_types) {
     SetDataTypePreferred(type, preferred_types.Has(type));
+  }
+
+  for (SyncPrefObserver& observer : sync_pref_observers_) {
+    observer.OnPreferredDataTypesPrefChange(keep_everything_synced,
+                                            preferred_types);
   }
 }
 
@@ -419,13 +425,13 @@ void SyncPrefs::SetSpareBootstrapToken(const std::string& token) {
 
 void SyncPrefs::OnSyncManagedPrefChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : sync_pref_observers_)
+  for (SyncPrefObserver& observer : sync_pref_observers_)
     observer.OnSyncManagedPrefChange(*pref_sync_managed_);
 }
 
 void SyncPrefs::OnFirstSetupCompletePrefChange() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : sync_pref_observers_)
+  for (SyncPrefObserver& observer : sync_pref_observers_)
     observer.OnFirstSetupCompletePrefChange(*pref_first_setup_complete_);
 }
 

@@ -1348,20 +1348,15 @@ base::Time ProfileSyncService::GetLastSyncedTime() const {
   return sync_prefs_.GetLastSyncedTime();
 }
 
-void ProfileSyncService::OnUserChoseDatatypes(
+void ProfileSyncService::OnPreferredDataTypesPrefChange(
     bool sync_everything,
-    syncer::ModelTypeSet chosen_types) {
+    syncer::ModelTypeSet preferred_types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(syncer::UserSelectableTypes().HasAll(chosen_types));
 
   if (!engine_ && !HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR)) {
     NOTREACHED();
     return;
   }
-
-  const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
-  sync_prefs_.SetPreferredDataTypes(sync_everything, registered_types,
-                                    chosen_types);
 
   if (data_type_manager_)
     data_type_manager_->ResetDataTypeErrors();

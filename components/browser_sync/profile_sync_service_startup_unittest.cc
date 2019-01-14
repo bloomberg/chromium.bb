@@ -583,8 +583,9 @@ TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
 TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
   // Explicitly set Keep Everything Synced to false and have only bookmarks
   // enabled.
-  sync_prefs()->SetPreferredDataTypes(/*keep_everything_synced=*/false,
-                                      syncer::UserTypes(), {syncer::BOOKMARKS});
+  sync_prefs()->SetDataTypesConfiguration(/*keep_everything_synced=*/false,
+                                          syncer::UserTypes(),
+                                          {syncer::BOOKMARKS});
 
   sync_prefs()->SetFirstSetupComplete();
   CreateSyncService(ProfileSyncService::MANUAL_START);

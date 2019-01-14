@@ -34,6 +34,9 @@ class SyncPrefObserver {
  public:
   virtual void OnSyncManagedPrefChange(bool is_sync_managed) = 0;
   virtual void OnFirstSetupCompletePrefChange(bool is_first_setup_complete) = 0;
+  virtual void OnPreferredDataTypesPrefChange(
+      bool sync_everything,
+      syncer::ModelTypeSet preferred_types) = 0;
 
  protected:
   virtual ~SyncPrefObserver();
@@ -116,19 +119,23 @@ class SyncPrefs : public CryptoSyncPrefs,
   // Returns |registered_types| directly if HasKeepEverythingSynced() is true.
   ModelTypeSet GetPreferredDataTypes(ModelTypeSet registered_types) const;
 
+  // Sets the desired configuration for all data types, including the "keep
+  // everything synced" flag and the "preferred" state for each individual data
+  // type.
   // |keep_everything_synced| indicates that all current and future data types
   // should be synced. If this is set to true, then GetPreferredDataTypes() will
   // always return all available data types, even if not all of them are
   // individually marked as preferred.
-  // |preferred_types| should be a subset of |registered_types|. All types in
-  // |preferred_types| are marked preferred, and all types in
+  // The |chosen_types| should be a subset of the |registered_types|. The
+  // |preferred_types| are derived from |chosen_types| by resolving pref groups.
+  // Then all types in |preferred_types| are marked preferred, and all types in
   // |registered_types| \ |preferred_types| are marked not preferred.
   // Changes are still made to the individual data type prefs even if
   // |keep_everything_synced| is true, but won't be visible until it's set to
   // false.
-  void SetPreferredDataTypes(bool keep_everything_synced,
-                             ModelTypeSet registered_types,
-                             ModelTypeSet preferred_types);
+  void SetDataTypesConfiguration(bool keep_everything_synced,
+                                 ModelTypeSet registered_types,
+                                 ModelTypeSet chosen_types);
 
   // Whether Sync is forced off by enterprise policy. Note that this only covers
   // one out of two types of policy, "browser" policy. The second kind, "cloud"
