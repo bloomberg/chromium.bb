@@ -39,6 +39,8 @@ class BrowserProxy {
     // AutocompleteController.
     this.callbackRouter_.handleNewAutocompleteResult.addListener(
         omniboxOutput.addAutocompleteResponse.bind(omniboxOutput));
+    this.callbackRouter_.handleNewAutocompleteQuery.addListener(
+        omniboxOutput.clearAutocompleteResponses.bind(omniboxOutput));
     this.callbackRouter_.handleAnswerImageData.addListener(
         omniboxOutput.updateAnswerImage.bind(omniboxOutput));
 
@@ -71,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
   exportDelegate = new ExportDelegate(omniboxOutput, omniboxInput);
 
   omniboxInput.addEventListener('query-inputs-changed', event => {
-    omniboxOutput.clearAutocompleteResponses();
     omniboxOutput.updateQueryInputs(event.detail);
     browserProxy.makeRequest(
         event.detail.inputText, event.detail.resetAutocompleteController,
@@ -85,7 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
   omniboxInput.addEventListener(
       'filter-input-changed',
       event => omniboxOutput.updateFilterText(event.detail));
-
   omniboxInput.addEventListener(
       'import-json', event => exportDelegate.importJson(event.detail));
   omniboxInput.addEventListener('copy-text', () => exportDelegate.copyText());

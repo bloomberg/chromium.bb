@@ -57,6 +57,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/location_bar_model.h"
+#include "components/omnibox/browser/omnibox_controller_emitter.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
@@ -218,12 +219,16 @@ bookmarks::BookmarkModel* ChromeOmniboxClient::GetBookmarkModel() {
   return BookmarkModelFactory::GetForBrowserContext(profile_);
 }
 
+OmniboxControllerEmitter* ChromeOmniboxClient::GetOmniboxControllerEmitter() {
+  return OmniboxControllerEmitter::GetForBrowserContext(profile_);
+}
+
 TemplateURLService* ChromeOmniboxClient::GetTemplateURLService() {
   return TemplateURLServiceFactory::GetForProfile(profile_);
 }
 
-const AutocompleteSchemeClassifier&
-    ChromeOmniboxClient::GetSchemeClassifier() const {
+const AutocompleteSchemeClassifier& ChromeOmniboxClient::GetSchemeClassifier()
+    const {
   return scheme_classifier_;
 }
 
@@ -530,8 +535,8 @@ void ChromeOmniboxClient::DoPrerender(
   content::WebContents* web_contents = controller_->GetWebContents();
   gfx::Rect container_bounds = web_contents->GetContainerBounds();
 
-  predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_)->
-      StartPrerendering(
+  predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_)
+      ->StartPrerendering(
           match.destination_url,
           web_contents->GetController().GetDefaultSessionStorageNamespace(),
           container_bounds.size());

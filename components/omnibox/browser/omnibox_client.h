@@ -28,6 +28,8 @@ namespace gfx {
 class Image;
 }
 
+class OmniboxControllerEmitter;
+
 using BitmapFetchedCallback =
     base::RepeatingCallback<void(int result_index, const SkBitmap& bitmap)>;
 using FaviconFetchedCallback =
@@ -90,6 +92,7 @@ class OmniboxClient {
   virtual const SessionID& GetSessionID() const = 0;
 
   virtual bookmarks::BookmarkModel* GetBookmarkModel();
+  virtual OmniboxControllerEmitter* GetOmniboxControllerEmitter();
   virtual TemplateURLService* GetTemplateURLService();
   virtual const AutocompleteSchemeClassifier& GetSchemeClassifier() const = 0;
   virtual AutocompleteClassifier* GetAutocompleteClassifier();

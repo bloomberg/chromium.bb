@@ -68,6 +68,7 @@ interface OmniboxPageHandler {
 };
 
 interface OmniboxPage {
-  HandleNewAutocompleteResult(OmniboxResult result);
+  HandleNewAutocompleteResult(OmniboxResult result, bool isPageController);
+  HandleNewAutocompleteQuery(bool isPageController);
   HandleAnswerImageData(string image_url, string image_data);
 };
