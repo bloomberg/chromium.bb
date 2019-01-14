@@ -2600,6 +2600,9 @@ crbug.com/715148 external/wpt/pointerevents/pointerevent_touch-action-rotated-di
 # Disabled until v8 roll.
 crbug.com/906847 inspector-protocol/runtime/runtime-getProperties.js [ Skip ]
 crbug.com/906847 inspector-protocol/debugger/debugger-scope-skip-variables-with-empty-name.js [ Skip ]
+crbug.com/v8/8672 http/tests/devtools/bindings/suspendtarget-bindings.js [ Skip ]
+crbug.com/v8/8672 http/tests/devtools/bindings/suspendtarget-navigator.js [ Skip ]
+crbug.com/v8/8672 http/tests/devtools/tracing/decode-resize.js [ Skip ]
 
 # These testcases are incorrect, mark them as failing until they're fixed in the testsuite.
 # https://lists.w3.org/Archives/Public/www-style/2016Jan/0275.html
