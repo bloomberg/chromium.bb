@@ -180,8 +180,7 @@ class PersonalDataManagerTestBase {
     personal_data_->pref_service_->SetInteger(
         prefs::kAutofillLastVersionDeduped, 0);
     personal_data_->pref_service_->SetInteger(
-        prefs::kAutofillLastVersionValidated,
-        atoi(version_info::GetVersionNumber().c_str()));
+        prefs::kAutofillLastVersionValidated, CHROME_VERSION_MAJOR);
   }
 
   void TearDownTest() {
@@ -7063,8 +7062,7 @@ TEST_F(PersonalDataManagerTest, UpdateClientValidityStates_Version) {
                                           AutofillProfile::CLIENT));
 
   // Verify that the version of the last update is set to this version.
-  EXPECT_EQ(atoi(version_info::GetVersionNumber().c_str()),
-            GetLastVersionValidatedUpdate());
+  EXPECT_EQ(CHROME_VERSION_MAJOR, GetLastVersionValidatedUpdate());
 
   // Update should not update any validity state, because both the validity
   // state flag and the version are up to date.

@@ -4,6 +4,7 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/jumbo.gni")
+import("//build/util/version.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
 jumbo_static_library("browser") {
@@ -268,6 +269,8 @@ jumbo_static_library("browser") {
       "autofill_policy_handler.h",
     ]
   }
+
+  defines = [ "CHROME_VERSION_MAJOR=" + chrome_version_major ]
 
   configs += [ "//build/config:precompiled_headers" ]
 
@@ -552,6 +555,8 @@ source_set("unit_tests") {
       "autofill_policy_handler_unittest.cc",
     ]
   }
+
+  defines = [ "CHROME_VERSION_MAJOR=" + chrome_version_major ]
 
   deps = [
     ":browser",

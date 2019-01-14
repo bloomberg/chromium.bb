@@ -141,11 +141,6 @@ static bool CompareVotes(const std::pair<std::string, int>& a,
                          const std::pair<std::string, int>& b) {
   return a.second < b.second;
 }
-
-int GetCurrentMajorVersion() {
-  return atoi(version_info::GetVersionNumber().c_str());
-}
-
 }  // namespace
 
 // Helper class to abstract the switching between account and profile storage
@@ -321,7 +316,7 @@ void PersonalDataManager::Init(
   // Check if profile cleanup has already been performed this major version.
   is_autofill_profile_cleanup_pending_ =
       pref_service_->GetInteger(prefs::kAutofillLastVersionDeduped) >=
-      GetCurrentMajorVersion();
+      CHROME_VERSION_MAJOR;
   DVLOG(1) << "Autofill profile cleanup "
            << (is_autofill_profile_cleanup_pending_ ? "needs to be"
                                                     : "has already been")
@@ -1001,10 +996,9 @@ void PersonalDataManager::UpdateClientValidityStates(
 
   // The profiles' validity states need to be updated for each major version, to
   // keep up with the validation logic.
-  int current_major_version = GetCurrentMajorVersion();
   bool update_validation =
       pref_service_->GetInteger(prefs::kAutofillLastVersionValidated) <
-      current_major_version;
+      CHROME_VERSION_MAJOR;
   for (const auto* profile : profiles) {
     if (!profile->is_client_validity_states_updated() || update_validation) {
       client_profile_validator_->StartProfileValidation(
@@ -1015,7 +1009,7 @@ void PersonalDataManager::UpdateClientValidityStates(
   // Set the pref to the current major version if already not set.
   if (update_validation)
     pref_service_->SetInteger(prefs::kAutofillLastVersionValidated,
-                              current_major_version);
+                              CHROME_VERSION_MAJOR);
 }
 
 std::vector<AutofillProfile*> PersonalDataManager::GetServerProfiles() const {
@@ -2114,9 +2108,8 @@ bool PersonalDataManager::ApplyDedupingRoutine() {
   }
 
   // Check if de-duplication has already been performed this major version.
-  int current_major_version = GetCurrentMajorVersion();
   if (pref_service_->GetInteger(prefs::kAutofillLastVersionDeduped) >=
-      current_major_version) {
+      CHROME_VERSION_MAJOR) {
     DVLOG(1)
         << "Autofill profile de-duplication already performed for this version";
     return false;
@@ -2147,7 +2140,7 @@ bool PersonalDataManager::ApplyDedupingRoutine() {
 
   // Set the pref to the current major version.
   pref_service_->SetInteger(prefs::kAutofillLastVersionDeduped,
-                            current_major_version);
+                            CHROME_VERSION_MAJOR);
   return true;
 }
 
