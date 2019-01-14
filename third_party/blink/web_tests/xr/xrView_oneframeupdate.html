@@ -36,11 +36,15 @@ let testFunction = function(session, t, fakeDeviceController) {
       let counter = 0;
 
       function onFrame(time, xrFrame) {
+        let pose = xrFrame.getViewerPose(referenceSpace);
+        assert_not_equals(pose, null);
+        assert_not_equals(pose.views, null);
+        assert_equals(pose.views.length, 2);
         if (counter == 0) {
           session.requestAnimationFrame(onFrame);
 
-          assert_matrices_approx_equal(xrFrame.views[0].projectionMatrix, VALID_PROJECTION_MATRIX);
-          assert_matrices_approx_equal(xrFrame.views[1].projectionMatrix, VALID_PROJECTION_MATRIX);
+          assert_matrices_approx_equal(pose.views[0].projectionMatrix, VALID_PROJECTION_MATRIX);
+          assert_matrices_approx_equal(pose.views[1].projectionMatrix, VALID_PROJECTION_MATRIX);
 
           // Update the near and far depths for the session.
           session.depthNear = 1.0;
@@ -48,8 +52,8 @@ let testFunction = function(session, t, fakeDeviceController) {
 
           // The projection matrices the views report should not take into
           // account the new session depth values this frame.
-          assert_matrices_approx_equal(xrFrame.views[0].projectionMatrix, VALID_PROJECTION_MATRIX);
-          assert_matrices_approx_equal(xrFrame.views[1].projectionMatrix, VALID_PROJECTION_MATRIX);
+          assert_matrices_approx_equal(pose.views[0].projectionMatrix, VALID_PROJECTION_MATRIX);
+          assert_matrices_approx_equal(pose.views[1].projectionMatrix, VALID_PROJECTION_MATRIX);
         } else {
           // New depth values should be retained between frames.
           assert_equals(session.depthNear, 1.0);
@@ -57,8 +61,8 @@ let testFunction = function(session, t, fakeDeviceController) {
 
           // Projection matricies should now reflect the new depth values, i.e.
           // have changed.
-          assert_matrices_significantly_not_equal(xrFrame.views[0].projectionMatrix, VALID_PROJECTION_MATRIX);
-          assert_matrices_significantly_not_equal(xrFrame.views[1].projectionMatrix, VALID_PROJECTION_MATRIX);
+          assert_matrices_significantly_not_equal(pose.views[0].projectionMatrix, VALID_PROJECTION_MATRIX);
+          assert_matrices_significantly_not_equal(pose.views[1].projectionMatrix, VALID_PROJECTION_MATRIX);
           resolve();
         }
         counter++;

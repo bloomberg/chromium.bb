@@ -17,66 +17,90 @@ let fakeDeviceInitParams = { supportsImmersive: true };
 
 let requestSessionOptions =  [{ immersive: true }];
 
-let testFunction =
-  (session, t, fakeDeviceController) => new Promise((resolve, reject) => {
+let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or else frame requests will be ignored.
   let webglLayer = new XRWebGLLayer(session, gl);
   session.baseLayer = webglLayer;
 
-  let full_viewport;
+  // Need to have a valid pose or input event's don't process.
+  fakeDeviceController.setXRPresentationFrameData(VALID_POSE_MATRIX, [{
+      eye:"left",
+      projectionMatrix: VALID_PROJECTION_MATRIX,
+      viewMatrix: VALID_VIEW_MATRIX
+    }, {
+      eye:"right",
+      projectionMatrix: VALID_PROJECTION_MATRIX,
+      viewMatrix: VALID_VIEW_MATRIX
+    }]);
 
-  function onFirstFrame(time, xrFrame) {
-    full_viewport = webglLayer.getViewport(xrFrame.views[0]);
+  return session.requestReferenceSpace({ type: "stationary", subtype: "eye-level" }).then(
+    (referenceSpace) => new Promise(
+      (resolve) => {
+        let full_viewport;
 
-    webglLayer.requestViewportScaling(0.5);
+        function getCurrentViewport(xrFrame) {
+          let pose = xrFrame.getViewerPose(referenceSpace);
+          assert_not_equals(pose, null);
+          assert_not_equals(pose.views, null);
+          assert_greater_than(pose.views.length, 0);
+          return webglLayer.getViewport(pose.views[0]);
+        }
 
-    let new_viewport = webglLayer.getViewport(xrFrame.views[0]);
+        function onFirstFrame(time, xrFrame) {
+          full_viewport = getCurrentViewport(xrFrame);
 
-    t.step(() => {
-      // Viewport should not change within this frame!
-      assert_equals(full_viewport.x, new_viewport.x);
-      assert_equals(full_viewport.y, new_viewport.y);
-      assert_equals(full_viewport.width, new_viewport.width);
-      assert_equals(full_viewport.height, new_viewport.height);
-    });
+          webglLayer.requestViewportScaling(0.5);
 
-    // This should be clamped to some non-zero lower bounds.
-    webglLayer.requestViewportScaling(0.0);
+          let new_viewport = getCurrentViewport(xrFrame);
 
-    session.requestAnimationFrame(onSecondFrame);
-  }
+          t.step(() => {
+            // Viewport should not change within this frame!
+            assert_equals(full_viewport.x, new_viewport.x);
+            assert_equals(full_viewport.y, new_viewport.y);
+            assert_equals(full_viewport.width, new_viewport.width);
+            assert_equals(full_viewport.height, new_viewport.height);
+          });
 
-  function onSecondFrame(time, xrFrame) {
-    let new_viewport = webglLayer.getViewport(xrFrame.views[0]);
+          // This should be clamped to some non-zero lower bounds.
+          webglLayer.requestViewportScaling(0.0);
 
-    t.step(() => {
-      // Viewport should never be zero width or height.
-      assert_greater_than(new_viewport.width, 0);
-      assert_greater_than(new_viewport.height, 0);
-    });
+          session.requestAnimationFrame(onSecondFrame);
+        }
 
-    // This should be clamped to 1.0
-    webglLayer.requestViewportScaling(10.0);
+        function onSecondFrame(time, xrFrame) {
+          let new_viewport = getCurrentViewport(xrFrame);
 
-    session.requestAnimationFrame(onFinalFrame);
-  }
+          t.step(() => {
+            // Viewport should never be zero width or height.
+            assert_greater_than(new_viewport.width, 0);
+            assert_greater_than(new_viewport.height, 0);
+          });
 
-  function onFinalFrame(time, xrFrame) {
-    let new_viewport = webglLayer.getViewport(xrFrame.views[0]);
+          // This should be clamped to 1.0
+          webglLayer.requestViewportScaling(10.0);
 
-    t.step(() => {
-      // Should be the full viewport again.
-      assert_equals(full_viewport.x, new_viewport.x);
-      assert_equals(full_viewport.y, new_viewport.y);
-      assert_equals(full_viewport.width, new_viewport.width);
-      assert_equals(full_viewport.height, new_viewport.height);
-    });
+          session.requestAnimationFrame(onFinalFrame);
+        }
 
-    resolve();
-  }
+        function onFinalFrame(time, xrFrame) {
+          let new_viewport = getCurrentViewport(xrFrame);
 
-  session.requestAnimationFrame(onFirstFrame);
-});
+          t.step(() => {
+            // Should be the full viewport again.
+            assert_equals(full_viewport.x, new_viewport.x);
+            assert_equals(full_viewport.y, new_viewport.y);
+            assert_equals(full_viewport.width, new_viewport.width);
+            assert_equals(full_viewport.height, new_viewport.height);
+          });
+
+          resolve();
+        }
+
+        session.requestAnimationFrame(onFirstFrame);
+      }
+    )
+  );
+};
 
 xr_session_promise_test(
   testFunction, fakeDeviceInitParams, requestSessionOptions, testName);

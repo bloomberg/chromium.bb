@@ -9,7 +9,6 @@
     OriginTrialEnabled=WebXR
 ] interface XRFrame {
   readonly attribute XRSession session;
-  readonly attribute FrozenArray<XRView> views;
 
   XRViewerPose? getViewerPose(XRReferenceSpace referenceSpace);
   XRInputPose? getInputPose(XRInputSource inputSource,

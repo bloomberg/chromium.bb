@@ -32,14 +32,16 @@ let testFunction = function(session, t, fakeDeviceController) {
       viewMatrix: VALID_VIEW_MATRIX
     }]);
 
-  return session.requestReferenceSpace({ type: "stationary", subtype: "eye-level" }).then((referenceSpace) => new Promise((resolve) =>{
+  return session.requestReferenceSpace({ type: "stationary", subtype: "eye-level" }).then((referenceSpace) => new Promise((resolve) => {
     function onFrame(time, xrFrame) {
-      // Ensure that two views are provided.
-      assert_not_equals(xrFrame.views, null);
-      assert_equals(xrFrame.views.length, 2);
+      let pose = xrFrame.getViewerPose(referenceSpace);
+      assert_not_equals(pose, null);
+      assert_not_equals(pose.views, null);
+      assert_equals(pose.views.length, 2);
 
-      let leftView = xrFrame.views[0];
-      let rightView = xrFrame.views[1];
+      // Ensure that two views are provided.
+      let leftView = pose.views[0];
+      let rightView = pose.views[1];
 
       // Ensure that the views are the right type.
       assert_true(leftView instanceof XRView);

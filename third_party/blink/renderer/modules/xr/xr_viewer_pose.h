@@ -22,13 +22,14 @@ class XRViewerPose final : public ScriptWrappable {
   XRViewerPose(XRSession*, std::unique_ptr<TransformationMatrix>);
 
   DOMFloat32Array* poseModelMatrix() const;
-  DOMFloat32Array* getViewMatrix(XRView*);
+  const HeapVector<Member<XRView>>& views() const;
 
   void Trace(blink::Visitor*) override;
 
  private:
   const Member<XRSession> session_;
   std::unique_ptr<TransformationMatrix> pose_model_matrix_;
+  HeapVector<Member<XRView>> views_;
 };
 
 }  // namespace blink

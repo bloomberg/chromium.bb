@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_frame.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 
 namespace blink {
@@ -13,8 +14,55 @@ namespace blink {
 XRView::XRView(XRSession* session, XREye eye)
     : eye_(eye),
       session_(session),
-      projection_matrix_(DOMFloat32Array::Create(16)) {
+      projection_matrix_(DOMFloat32Array::Create(16)),
+      view_matrix_(DOMFloat32Array::Create(16)) {
   eye_string_ = (eye_ == kEyeLeft ? "left" : "right");
+}
+
+XRView::XRView()
+    : eye_(XREye::kEyeLeft),
+      eye_string_("left"),
+      session_(nullptr),
+      projection_matrix_(DOMFloat32Array::Create(16)),
+      view_matrix_(DOMFloat32Array::Create(16)) {}
+
+// deep copy
+XRView::XRView(const XRView& other)
+    : projection_matrix_(DOMFloat32Array::Create(16)),
+      view_matrix_(DOMFloat32Array::Create(16)) {
+  *this = other;
+}
+
+// deep copy
+XRView& XRView::operator=(const XRView& other) {
+  if (&other == this)
+    return *this;
+
+  eye_ = other.eye_;
+  eye_string_ = other.eye_string_;
+  session_ = other.session_;
+  AssignMatrices(other);
+  offset_ = other.offset_;
+
+  // Don't copy the inverse projection matrix because it is rarely used.
+  // Just set this flag so that if UnprojectPointer is called, this matrix
+  // gets computed.
+  inv_projection_dirty_ = true;
+
+  return *this;
+}
+
+void XRView::AssignMatrices(const XRView& other) {
+  const float* src_projection_data = other.projection_matrix_->Data();
+  const float* src_view_data = other.view_matrix_->Data();
+
+  float* dst_projection_data = projection_matrix_->Data();
+  float* dst_view_data = view_matrix_->Data();
+
+  for (int i = 0; i < 16; ++i) {
+    dst_projection_data[i] = src_projection_data[i];
+    dst_view_data[i] = src_view_data[i];
+  }
 }
 
 XRSession* XRView::session() const {
@@ -166,9 +214,19 @@ std::unique_ptr<TransformationMatrix> XRView::UnprojectPointer(
   return pointer;
 }
 
+// Pass inv_pose_matrix by value because this method modifies its offset, but
+// the calling code doesn't want it changed.
+void XRView::UpdateViewMatrix(TransformationMatrix inv_pose_matrix) {
+  // Transform by the negative offset, since we're operating on the inverted
+  // matrix
+  inv_pose_matrix.PostTranslate3d(-offset_.X(), -offset_.Y(), -offset_.Z());
+  view_matrix_ = transformationMatrixToDOMFloat32Array(inv_pose_matrix);
+}
+
 void XRView::Trace(blink::Visitor* visitor) {
   visitor->Trace(session_);
   visitor->Trace(projection_matrix_);
+  visitor->Trace(view_matrix_);
   ScriptWrappable::Trace(visitor);
 }
 

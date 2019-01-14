@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 207 tests; 170 PASS, 37 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 207 tests; 172 PASS, 35 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
@@ -96,7 +96,7 @@ PASS XRView interface: existence and properties of interface prototype object's 
 PASS XRView interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRView interface: attribute eye
 PASS XRView interface: attribute projectionMatrix
-FAIL XRView interface: attribute viewMatrix assert_true: The prototype object must have a property "viewMatrix" expected true got false
+PASS XRView interface: attribute viewMatrix
 FAIL XRView interface: attribute transform assert_true: The prototype object must have a property "transform" expected true got false
 PASS XRViewport interface: existence and properties of interface object
 PASS XRViewport interface object length
@@ -133,7 +133,7 @@ PASS XRViewerPose interface: existence and properties of interface prototype obj
 PASS XRViewerPose interface: existence and properties of interface prototype object's "constructor" property
 PASS XRViewerPose interface: existence and properties of interface prototype object's @@unscopables property
 FAIL XRViewerPose interface: attribute transform assert_true: The prototype object must have a property "transform" expected true got false
-FAIL XRViewerPose interface: attribute views assert_true: The prototype object must have a property "views" expected true got false
+PASS XRViewerPose interface: attribute views
 PASS XRInputSource interface: existence and properties of interface object
 PASS XRInputSource interface object length
 PASS XRInputSource interface object name
