@@ -50683,6 +50683,27 @@ would be helpful to identify which type is being sent.
   <int value="4" label="Unrecoverable error"/>
 </enum>
 
+<!-- This must be kept current with
+     //components/sync/protocol/sync_enums.proto's ErrorType. -->
+
+<enum name="SyncErrorType">
+  <summary>Possible errors that can be returned by the sync server.</summary>
+  <int value="1" label="DEPRECATED_ACCESS_DENIED"/>
+  <int value="2" label="NOT_MY_BIRTHDAY"/>
+  <int value="3" label="THROTTLED"/>
+  <int value="4" label="DEPRECATED_AUTH_EXPIRED"/>
+  <int value="5" label="DEPRECATED_USER_NOT_ACTIVATED"/>
+  <int value="6" label="DEPRECATED_AUTH_INVALID"/>
+  <int value="7" label="CLEAR_PENDING"/>
+  <int value="8" label="TRANSIENT_ERROR"/>
+  <int value="9" label="MIGRATION_DONE"/>
+  <int value="10" label="DISABLED_BY_ADMIN"/>
+  <int value="11" label="DEPRECATED_USER_ROLLBACK"/>
+  <int value="12" label="PARTIAL_FAILURE"/>
+  <int value="13" label="CLIENT_DATA_OBSOLETE"/>
+  <int value="100" label="UNKNOWN"/>
+</enum>
+
 <enum name="SyncEventCode">
   <summary>
     Sync UI events. The codes are listed in profile_syncer_service.h with more
