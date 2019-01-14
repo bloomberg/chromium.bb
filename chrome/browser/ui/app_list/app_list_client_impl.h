@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/ui/app_list/app_launch_event_logger.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
@@ -164,6 +165,8 @@ class AppListClientImpl
 
   bool app_list_target_visibility_ = false;
   bool app_list_visible_ = false;
+
+  app_list::AppLaunchEventLogger app_launch_event_logger_;
 
   base::WeakPtrFactory<AppListClientImpl> weak_ptr_factory_;
 

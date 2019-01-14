@@ -105,6 +105,8 @@ void AppListClientImpl::OpenSearchResult(const std::string& result_id,
       search_controller_->Train(
           static_cast<app_list::AppResult*>(result)->app_id());
     }
+
+    app_launch_event_logger_.OnSuggestionChipClicked(result);
   }
 }
 
@@ -171,6 +173,8 @@ void AppListClientImpl::ActivateItem(const std::string& id, int event_flags) {
 
   // Send training signal to search controller.
   search_controller_->Train(id);
+
+  app_launch_event_logger_.OnGridClicked(id);
 }
 
 void AppListClientImpl::GetContextMenuModel(

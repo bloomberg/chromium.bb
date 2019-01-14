@@ -13,7 +13,6 @@
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
-#include "ash/app_list/logging/app_launch_event_logger.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/pagination_controller.h"
@@ -2241,7 +2240,6 @@ void AppsGridView::ButtonPressed(views::Button* sender,
   }
   contents_view_->GetAppListMainView()->ActivateApp(pressed_item_view->item(),
                                                     event.flags());
-  AppLaunchEventLogger::GetInstance().OnGridClicked(*pressed_item_view->item());
 }
 
 void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {

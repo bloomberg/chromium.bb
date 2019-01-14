@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/logging/app_launch_event_logger.h"
+#include "chrome/browser/ui/app_list/app_launch_event_logger.h"
 
-#include "ash/app_list/model/app_list_item.h"
-#include "ash/app_list/model/search/search_result.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
@@ -15,6 +13,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/time/time.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "components/ukm/app_source_url_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -27,14 +26,12 @@ const base::Feature kUkmAppLaunchEventLogging{"UkmAppLaunchEventLogging",
 namespace {
 
 const char kExtensionSchemeWithDelimiter[] = "chrome-extension://";
-constexpr int kNoIndex = -1;
 
-AppLaunchEvent GetAppLaunchEvent(const SearchResult& item,
-                                 int index_in_suggestion_chip_container) {
+AppLaunchEvent GetAppLaunchEvent(const ChromeSearchResult* result) {
   AppLaunchEvent event;
   event.set_launched_from(AppLaunchEvent_LaunchedFrom_SUGGESTED);
-  std::string id = item.id();
-  // For chrome apps, item.id() returns "chrome-extension://|id|/" instead
+  std::string id = result->id();
+  // For chrome apps, result->id() returns "chrome-extension://|id|/" instead
   // of just |id|, so remove any leading "chrome-extension://" and trailing "/".
   if (!id.compare(0, strlen(kExtensionSchemeWithDelimiter),
                   kExtensionSchemeWithDelimiter)) {
@@ -44,15 +41,13 @@ AppLaunchEvent GetAppLaunchEvent(const SearchResult& item,
     id.pop_back();
   }
   event.set_app_id(id);
-  event.set_index(index_in_suggestion_chip_container);
   return event;
 }
 
-AppLaunchEvent GetAppLaunchEvent(const AppListItem& item) {
+AppLaunchEvent GetAppLaunchEvent(const std::string& id) {
   AppLaunchEvent event;
   event.set_launched_from(AppLaunchEvent_LaunchedFrom_GRID);
-  event.set_app_id(item.id());
-  event.set_index(kNoIndex);
+  event.set_app_id(id);
   return event;
 }
 
@@ -85,23 +80,21 @@ void AppLaunchEventLogger::CreateTaskRunner() {
 }
 
 void AppLaunchEventLogger::OnSuggestionChipClicked(
-    const SearchResult& item,
-    int index_in_suggestion_chip_container) {
-  if (base::FeatureList::IsEnabled(kUkmAppLaunchEventLogging)) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &AppLaunchEventLogger::OnAppLaunched, weak_factory_.GetWeakPtr(),
-            GetAppLaunchEvent(item, index_in_suggestion_chip_container)));
-  }
-}
-
-void AppLaunchEventLogger::OnGridClicked(const AppListItem& item) {
+    const ChromeSearchResult* result) {
   if (base::FeatureList::IsEnabled(kUkmAppLaunchEventLogging)) {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&AppLaunchEventLogger::OnAppLaunched,
-                       weak_factory_.GetWeakPtr(), GetAppLaunchEvent(item)));
+                       weak_factory_.GetWeakPtr(), GetAppLaunchEvent(result)));
+  }
+}
+
+void AppLaunchEventLogger::OnGridClicked(const std::string& id) {
+  if (base::FeatureList::IsEnabled(kUkmAppLaunchEventLogging)) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AppLaunchEventLogger::OnAppLaunched,
+                       weak_factory_.GetWeakPtr(), GetAppLaunchEvent(id)));
   }
 }
 
@@ -128,9 +121,6 @@ void AppLaunchEventLogger::OnAppLaunched(AppLaunchEvent app_launch_event) {
   }
 
   ukm::builders::AppListAppLaunch app_launch(source_id);
-  if (app_launch_event.index() != kNoIndex) {
-    app_launch.SetPositionIndex(app_launch_event.index());
-  }
   base::Time now(base::Time::Now());
   app_launch.SetAppType(app_type)
       .SetLaunchedFrom(app_launch_event.launched_from())
