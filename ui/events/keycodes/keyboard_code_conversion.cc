@@ -206,14 +206,6 @@ KeyboardCode NonLocatedToLocatedKeyboardCode(KeyboardCode key_code,
       return IsRightSideDomCode(dom_code) ? VKEY_RMENU : VKEY_LMENU;
     case VKEY_LWIN:
       return IsRightSideDomCode(dom_code) ? VKEY_RWIN : VKEY_LWIN;
-    default:
-      return NonLocatedToLocatedKeypadKeyboardCode(key_code, dom_code);
-  }
-}
-
-KeyboardCode NonLocatedToLocatedKeypadKeyboardCode(KeyboardCode key_code,
-                                                   DomCode dom_code) {
-  switch (key_code) {
     case VKEY_0:
       return (dom_code == DomCode::NUMPAD0) ? VKEY_NUMPAD0 : VKEY_0;
     case VKEY_1:

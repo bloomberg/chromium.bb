@@ -90,11 +90,6 @@ LocatedToNonLocatedKeyboardCode(KeyboardCode key_code);
 EVENTS_BASE_EXPORT KeyboardCode
 NonLocatedToLocatedKeyboardCode(KeyboardCode key_code, DomCode dom_code);
 
-// Determine the located VKEY corresponding to a non-located VKEY for
-// keypad vkeys. (eg. VKEY_1 (with DomCode::NUMPAD1 maps to VKEY_NUMPAD1).
-EVENTS_BASE_EXPORT KeyboardCode
-NonLocatedToLocatedKeypadKeyboardCode(KeyboardCode key_code, DomCode dom_code);
-
 // Returns a DOM Level 3 |code| from a Windows-based VKEY value.
 // This assumes a US layout and should only be used when |code| cannot be
 // determined from a physical scan code, for example when a key event was
