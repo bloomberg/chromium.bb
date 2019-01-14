@@ -28,6 +28,8 @@ class AssistantCardElementView : public views::View,
   const char* GetClassName() const override;
   void AddedToWidget() override;
   void ChildPreferredSizeChanged(views::View* child) override;
+  void AboutToRequestFocusFromTabTraversal(bool reverse) override;
+  void OnFocus() override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // content::NavigableContentsObserver:
