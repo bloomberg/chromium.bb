@@ -222,10 +222,6 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
     }
   }
 
-  // TODO(jimmyxgong): Remove once authenticated dormant shares are
-  // implemented.
-  const bool has_credentials = !username.empty() || !password.empty();
-
   SmbUrl parsed_url(share_path.value());
   if (!parsed_url.IsValid()) {
     FireMountCallback(
@@ -246,8 +242,8 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
       temp_file_manager_->WritePasswordToFile(password),
       base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
                      base::Passed(&callback), options, share_path,
-                     use_chromad_kerberos, should_open_file_manager_after_mount,
-                     has_credentials));
+                     use_chromad_kerberos,
+                     should_open_file_manager_after_mount));
 
   profile_->GetPrefs()->SetString(prefs::kMostRecentlyUsedNetworkFileShareURL,
                                   share_path.value());
@@ -259,7 +255,6 @@ void SmbService::OnMountResponse(
     const base::FilePath& share_path,
     bool is_kerberos_chromad,
     bool should_open_file_manager_after_mount,
-    bool has_credentials,
     smbprovider::ErrorType error,
     int32_t mount_id) {
   if (error != smbprovider::ERROR_OK) {
@@ -272,11 +267,6 @@ void SmbService::OnMountResponse(
   file_system_provider::MountOptions mount_options(options);
   mount_options.file_system_id =
       CreateFileSystemId(mount_id, share_path, is_kerberos_chromad);
-
-  // Do not remount shares that have credentials since there is not yet a way
-  // to reprompt users for credentials.
-  // TODO(jimmyxgong): Remove once authenticated dormant shares are implemented.
-  mount_options.persistent = !has_credentials;
 
   base::File::Error result =
       GetProviderService()->MountFileSystem(provider_id_, mount_options);
@@ -377,7 +367,11 @@ void SmbService::OnRemountResponse(const std::string& file_system_id,
                                    smbprovider::ErrorType error) {
   RecordRemountResult(TranslateErrorToMountResult(error));
 
-  if (error != smbprovider::ERROR_OK) {
+  if (error != smbprovider::ERROR_OK &&
+      error != smbprovider::ERROR_ACCESS_DENIED &&
+      error != smbprovider::ERROR_NOT_FOUND) {
+    // If the remount "fails" because the share is not found on the network or
+    // because authentication fails, the share is left in a dormant state.
     LOG(ERROR) << "SmbService: failed to restore filesystem: ";
     Unmount(file_system_id, file_system_provider::Service::UNMOUNT_REASON_USER);
   }
