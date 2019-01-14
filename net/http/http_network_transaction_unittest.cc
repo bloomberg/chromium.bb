@@ -30,7 +30,6 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_file_util.h"
-#include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/auth.h"
 #include "net/base/chunked_upload_data_stream.h"
@@ -367,7 +366,11 @@ class HttpNetworkTransactionTest : public PlatformTest,
 
  protected:
   HttpNetworkTransactionTest()
-      : ssl_(ASYNC, OK),
+      : WithScopedTaskEnvironment(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME,
+            base::test::ScopedTaskEnvironment::NowSource::
+                MAIN_THREAD_MOCK_TIME),
+        ssl_(ASYNC, OK),
         old_max_group_sockets_(ClientSocketPoolManager::max_sockets_per_group(
             HttpNetworkSession::NORMAL_SOCKET_POOL)),
         old_max_pool_sockets_(ClientSocketPoolManager::max_sockets_per_pool(
@@ -389,6 +392,9 @@ class HttpNetworkTransactionTest : public PlatformTest,
   void SetUp() override {
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     base::RunLoop().RunUntilIdle();
+    // Set an initial delay to ensure that the first call to TimeTicks::Now()
+    // before incrementing the counter does not return a null value.
+    FastForwardBy(TimeDelta::FromSeconds(1));
   }
 
   void TearDown() override {
@@ -1417,10 +1423,8 @@ TEST_F(HttpNetworkTransactionTest, Ignores1xx) {
   EXPECT_EQ("hello world", response_data);
 }
 
-// TODO(https://crbug.com/918726): Exhibits timing flakes.
-TEST_F(HttpNetworkTransactionTest,
-       DISABLED_LoadTimingMeasuresTimeToFirstByteForHttp) {
-  static const base::TimeDelta kSleepDuration =
+TEST_F(HttpNetworkTransactionTest, LoadTimingMeasuresTimeToFirstByteForHttp) {
+  static const base::TimeDelta kDelayAfterFirstByte =
       base::TimeDelta::FromMilliseconds(10);
 
   HttpRequestInfo request;
@@ -1459,7 +1463,7 @@ TEST_F(HttpNetworkTransactionTest,
 
   data.RunUntilPaused();
   ASSERT_TRUE(data.IsPaused());
-  base::PlatformThread::Sleep(kSleepDuration);
+  FastForwardBy(kDelayAfterFirstByte);
   data.Resume();
 
   rv = callback.WaitForResult();
@@ -1475,12 +1479,12 @@ TEST_F(HttpNetworkTransactionTest,
   EXPECT_TRUE(trans.GetLoadTimingInfo(&load_timing_info));
   EXPECT_FALSE(load_timing_info.receive_headers_start.is_null());
   EXPECT_FALSE(load_timing_info.connect_timing.connect_end.is_null());
-  // Ensure we didn't include the delay in the TTFB time via our prior call to
-  // PlatformThread::Sleep, which guarantees base::TimeTicks() has increased by
-  // kSleepDuration before returning the rest of the response.
-  EXPECT_LT(load_timing_info.receive_headers_start -
-                load_timing_info.connect_timing.connect_end,
-            kSleepDuration);
+  // Ensure we didn't include the delay in the TTFB time.
+  EXPECT_EQ(load_timing_info.receive_headers_start,
+            load_timing_info.connect_timing.connect_end);
+  // Ensure that the mock clock advanced at all.
+  EXPECT_EQ(base::TimeTicks::Now() - load_timing_info.receive_headers_start,
+            kDelayAfterFirstByte);
 
   std::string response_data;
   rv = ReadTransaction(&trans, &response_data);
@@ -1491,7 +1495,7 @@ TEST_F(HttpNetworkTransactionTest,
 // Tests that the time-to-first-byte reported in a transaction's load timing
 // info uses the first response, even if 1XX/informational.
 void HttpNetworkTransactionTest::Check100ResponseTiming(bool use_spdy) {
-  static const base::TimeDelta kSleepDuration =
+  static const base::TimeDelta kDelayAfter100Response =
       base::TimeDelta::FromMilliseconds(10);
 
   HttpRequestInfo request;
@@ -1562,7 +1566,7 @@ void HttpNetworkTransactionTest::Check100ResponseTiming(bool use_spdy) {
   // We should now have parsed the 100 response and hit ERR_IO_PENDING. Insert
   // the delay before parsing the 200 response.
   ASSERT_TRUE(data.IsPaused());
-  base::PlatformThread::Sleep(kSleepDuration);
+  FastForwardBy(kDelayAfter100Response);
   data.Resume();
 
   rv = callback.WaitForResult();
@@ -1575,9 +1579,12 @@ void HttpNetworkTransactionTest::Check100ResponseTiming(bool use_spdy) {
   EXPECT_TRUE(trans.GetLoadTimingInfo(&load_timing_info));
   EXPECT_FALSE(load_timing_info.receive_headers_start.is_null());
   EXPECT_FALSE(load_timing_info.connect_timing.connect_end.is_null());
-  EXPECT_LT(load_timing_info.receive_headers_start -
-                load_timing_info.connect_timing.connect_end,
-            kSleepDuration);
+  // Ensure we didn't include the delay in the TTFB time.
+  EXPECT_EQ(load_timing_info.receive_headers_start,
+            load_timing_info.connect_timing.connect_end);
+  // Ensure that the mock clock advanced at all.
+  EXPECT_EQ(base::TimeTicks::Now() - load_timing_info.receive_headers_start,
+            kDelayAfter100Response);
 
   std::string response_data;
   rv = ReadTransaction(&trans, &response_data);
@@ -1585,15 +1592,11 @@ void HttpNetworkTransactionTest::Check100ResponseTiming(bool use_spdy) {
   EXPECT_EQ("hello world", response_data);
 }
 
-// TODO(https://crbug.com/918726): Exhibits timing flakes.
-TEST_F(HttpNetworkTransactionTest,
-       DISABLED_MeasuresTimeToFirst100ResponseForHttp) {
+TEST_F(HttpNetworkTransactionTest, MeasuresTimeToFirst100ResponseForHttp) {
   Check100ResponseTiming(false /* use_spdy */);
 }
 
-// TODO(https://crbug.com/918726): Exhibits timing flakes.
-TEST_F(HttpNetworkTransactionTest,
-       DISABLED_MeasuresTimeToFirst100ResponseForSpdy) {
+TEST_F(HttpNetworkTransactionTest, MeasuresTimeToFirst100ResponseForSpdy) {
   Check100ResponseTiming(true /* use_spdy */);
 }
 
