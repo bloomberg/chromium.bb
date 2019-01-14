@@ -29,7 +29,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -43,12 +43,11 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
-#include "components/signin/core/browser/signin_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/escape.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
@@ -375,7 +374,7 @@ bool IsLockAvailable(Profile* profile) {
     AccountTrackerService* account_tracker =
         AccountTrackerServiceFactory::GetForProfile(profile);
     std::string account_id =
-      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedAccountId();
+        IdentityManagerFactory::GetForProfile(profile)->GetPrimaryAccountId();
     hosted_domain = account_tracker->GetAccountInfo(account_id).hosted_domain;
   }
   // TODO(mlerman): Prohibit only users who authenticate using SAML. Until then,
