@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIONS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BAR_ITEMS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
@@ -16,8 +16,8 @@ import android.support.v4.view.ViewPager;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryModernViewBinder.ModernActionViewHolder;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.ActionViewHolder;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryModernViewBinder.ModernBarItemViewHolder;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.BarItemViewHolder;
 import org.chromium.chrome.browser.modelutil.LazyConstructionPropertyMcp;
 import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
@@ -118,9 +118,9 @@ public class KeyboardAccessoryCoordinator {
     public KeyboardAccessoryCoordinator(VisibilityDelegate visibilityDelegate,
             ViewProvider<KeyboardAccessoryView> viewProvider) {
         PropertyModel model = new PropertyModel
-                                      .Builder(ACTIONS, VISIBLE, BOTTOM_OFFSET_PX,
+                                      .Builder(BAR_ITEMS, VISIBLE, BOTTOM_OFFSET_PX,
                                               KEYBOARD_TOGGLE_VISIBLE, SHOW_KEYBOARD_CALLBACK)
-                                      .with(ACTIONS, new ListModel<>())
+                                      .with(BAR_ITEMS, new ListModel<>())
                                       .with(VISIBLE, false)
                                       .with(KEYBOARD_TOGGLE_VISIBLE, false)
                                       .build();
@@ -141,20 +141,21 @@ public class KeyboardAccessoryCoordinator {
     }
 
     /**
-     * Creates an adapter to an {@link ActionViewHolder} that is wired
+     * Creates an adapter to an {@link BarItemViewHolder} that is wired
      * up to the model change processor which listens to the given action list.
      * @param actions The list of actions shown represented by the adapter.
-     * @return Returns a fully initialized and wired adapter to an ActionViewHolder.
+     * @return Returns a fully initialized and wired adapter to an BarItemViewHolder.
      */
-    static RecyclerViewAdapter<ActionViewHolder, Void> createActionsAdapter(
+    static RecyclerViewAdapter<BarItemViewHolder, Void> createBarItemsAdapter(
             ListModel<KeyboardAccessoryData.Action> actions) {
-        RecyclerViewAdapter.ViewHolderFactory<ActionViewHolder> factory = ActionViewHolder::create;
+        RecyclerViewAdapter.ViewHolderFactory<BarItemViewHolder> factory =
+                BarItemViewHolder::create;
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
-            factory = ModernActionViewHolder::create;
+            factory = ModernBarItemViewHolder::create;
         }
         return new RecyclerViewAdapter<>(
                 new SimpleRecyclerViewMcp<>(actions, KeyboardAccessoryData.Action::getActionType,
-                        ActionViewHolder::bind),
+                        BarItemViewHolder::bind),
                 factory);
     }
 

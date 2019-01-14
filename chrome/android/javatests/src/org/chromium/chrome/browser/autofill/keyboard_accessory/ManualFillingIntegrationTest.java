@@ -241,7 +241,7 @@ public class ManualFillingIntegrationTest {
     @SmallTest
     @Features.DisableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
     public void testSelectingNonPasswordInputDismissesAccessory()
-            throws InterruptedException, TimeoutException, ExecutionException {
+            throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
 
         // Focus the password field to bring up the accessory.
@@ -382,7 +382,7 @@ public class ManualFillingIntegrationTest {
     @Test
     @SmallTest
     public void testInfobarStaysHiddenWhenOpeningSheet()
-            throws InterruptedException, TimeoutException, ExecutionException {
+            throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
 
         InfoBarTestAnimationListener listener = new InfoBarTestAnimationListener();

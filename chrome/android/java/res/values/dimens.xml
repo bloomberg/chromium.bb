@@ -126,8 +126,8 @@
     <dimen name="overlay_panel_bar_height">56dp</dimen>
 
     <!-- Autofill keyboard accessory dimensions -->
-    <dimen name="keyboard_accessory_action_height">36dp</dimen>
-    <dimen name="keyboard_accessory_action_padding">16dp</dimen>
+    <dimen name="keyboard_accessory_bar_item_height">36dp</dimen>
+    <dimen name="keyboard_accessory_bar_item_padding">16dp</dimen>
     <dimen name="keyboard_accessory_half_padding">6dp</dimen>
     <dimen name="keyboard_accessory_height">48dp</dimen>
     <dimen name="keyboard_accessory_height_with_shadow">56dp</dimen>

@@ -19,7 +19,7 @@ import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.AUTOFILL_SUGGESTION;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIONS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BAR_ITEMS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.VISIBLE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
@@ -72,8 +72,8 @@ public class KeyboardAccessoryViewTest {
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mModel = new PropertyModel.Builder(ACTIONS, VISIBLE, BOTTOM_OFFSET_PX)
-                             .with(ACTIONS, new ListModel<>())
+            mModel = new PropertyModel.Builder(BAR_ITEMS, VISIBLE, BOTTOM_OFFSET_PX)
+                             .with(BAR_ITEMS, new ListModel<>())
                              .with(VISIBLE, false)
                              .build();
             ViewStub viewStub =
@@ -113,7 +113,7 @@ public class KeyboardAccessoryViewTest {
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.set(VISIBLE, true);
-            mModel.get(ACTIONS).add(testAction);
+            mModel.get(BAR_ITEMS).add(testAction);
         });
 
         onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Test Button")));
@@ -127,7 +127,7 @@ public class KeyboardAccessoryViewTest {
     public void testCanAddSingleButtons() {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.set(VISIBLE, true);
-            mModel.get(ACTIONS).set(new KeyboardAccessoryData.Action[] {
+            mModel.get(BAR_ITEMS).set(new KeyboardAccessoryData.Action[] {
                     new KeyboardAccessoryData.Action(
                             "First", GENERATE_PASSWORD_AUTOMATIC, action -> {}),
                     new KeyboardAccessoryData.Action("Second", AUTOFILL_SUGGESTION, action -> {})});
@@ -139,7 +139,7 @@ public class KeyboardAccessoryViewTest {
 
         ThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> mModel.get(ACTIONS).add(new KeyboardAccessoryData.Action(
+                        -> mModel.get(BAR_ITEMS).add(new KeyboardAccessoryData.Action(
                                 "Third", GENERATE_PASSWORD_AUTOMATIC, action -> {})));
 
         onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Third")));
@@ -153,7 +153,7 @@ public class KeyboardAccessoryViewTest {
     public void testCanRemoveSingleButtons() {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.set(VISIBLE, true);
-            mModel.get(ACTIONS).set(new KeyboardAccessoryData.Action[] {
+            mModel.get(BAR_ITEMS).set(new KeyboardAccessoryData.Action[] {
                     new KeyboardAccessoryData.Action(
                             "First", GENERATE_PASSWORD_AUTOMATIC, action -> {}),
                     new KeyboardAccessoryData.Action(
@@ -168,7 +168,7 @@ public class KeyboardAccessoryViewTest {
         onView(withText("Third")).check(matches(isDisplayed()));
 
         ThreadUtils.runOnUiThreadBlocking(
-                () -> mModel.get(ACTIONS).remove(mModel.get(ACTIONS).get(1)));
+                () -> mModel.get(BAR_ITEMS).remove(mModel.get(BAR_ITEMS).get(1)));
 
         onView(isRoot()).check((root, e)
                                        -> waitForView((ViewGroup) root, withText("Second"),

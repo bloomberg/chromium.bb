@@ -196,7 +196,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
                 () -> mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory));
         if (keyboardAccessory == null) return null; // It might still be loading, so don't assert!
 
-        final View recyclerView = keyboardAccessory.findViewById(R.id.actions_view);
+        final View recyclerView = keyboardAccessory.findViewById(R.id.bar_items_view);
         if (recyclerView == null) return null; // It might still be loading, so don't assert!
 
         return (RecyclerView) recyclerView;

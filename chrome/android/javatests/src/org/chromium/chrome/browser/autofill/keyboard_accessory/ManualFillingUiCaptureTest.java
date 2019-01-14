@@ -195,12 +195,12 @@ public class ManualFillingUiCaptureTest {
         Thread.sleep(scaleTimeout(50)); // Reduces flakiness due to delayed events.
     }
 
-    private void waitForActionsInAccessory() throws InterruptedException {
-        whenDisplayed(withId(R.id.actions_view));
-        onView(withId(R.id.actions_view)).check(this::waitUntilFilled);
+    private void waitForActionsInAccessory() {
+        whenDisplayed(withId(R.id.bar_items_view));
+        onView(withId(R.id.bar_items_view)).check(this::waitUntilFilled);
     }
 
-    private void waitForSuggestionsInSheet() throws InterruptedException {
+    private void waitForSuggestionsInSheet() {
         whenDisplayed(withId(R.id.keyboard_accessory_sheet));
         onView(withParent(withId(R.id.keyboard_accessory_sheet))).check(this::waitUntilFilled);
     }

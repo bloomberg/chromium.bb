@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIONS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BAR_ITEMS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
@@ -28,19 +28,19 @@ import org.chromium.ui.modelutil.PropertyModel;
  * the {@link KeyboardAccessoryViewBinder} which will modify the view accordingly.
  */
 class KeyboardAccessoryViewBinder {
-    static class ActionViewHolder extends RecyclerView.ViewHolder {
-        public ActionViewHolder(View actionView) {
-            super(actionView);
+    static class BarItemViewHolder extends RecyclerView.ViewHolder {
+        public BarItemViewHolder(View barItemView) {
+            super(barItemView);
         }
 
-        public static ActionViewHolder create(ViewGroup parent, @AccessoryAction int viewType) {
+        public static BarItemViewHolder create(ViewGroup parent, @AccessoryAction int viewType) {
             switch (viewType) {
                 case AccessoryAction.GENERATE_PASSWORD_AUTOMATIC:
-                    return new ActionViewHolder(
+                    return new BarItemViewHolder(
                             LayoutInflater.from(parent.getContext())
                                     .inflate(R.layout.keyboard_accessory_action, parent, false));
                 case AccessoryAction.AUTOFILL_SUGGESTION:
-                    return new ActionViewHolder(
+                    return new BarItemViewHolder(
                             LayoutInflater.from(parent.getContext())
                                     .inflate(R.layout.keyboard_accessory_chip, parent, false));
                 case AccessoryAction.MANAGE_PASSWORDS: // Intentional fallthrough.
@@ -77,9 +77,9 @@ class KeyboardAccessoryViewBinder {
      */
     protected static boolean bindInternal(
             PropertyModel model, KeyboardAccessoryView view, PropertyKey propertyKey) {
-        if (propertyKey == ACTIONS) {
-            view.setActionsAdapter(
-                    KeyboardAccessoryCoordinator.createActionsAdapter(model.get(ACTIONS)));
+        if (propertyKey == BAR_ITEMS) {
+            view.setBarItemsAdapter(
+                    KeyboardAccessoryCoordinator.createBarItemsAdapter(model.get(BAR_ITEMS)));
         } else if (propertyKey == VISIBLE) {
             view.setVisible(model.get(VISIBLE));
         } else if (propertyKey == BOTTOM_OFFSET_PX) {

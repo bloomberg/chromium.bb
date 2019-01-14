@@ -74,8 +74,8 @@ public class KeyboardAccessoryMetricsRecorder {
                     recordFirstImpression();
                     maybeRecordBarBucket(AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS);
                     maybeRecordBarBucket(AccessoryBarContents.WITH_TABS);
-                    recordUnrecordedList(mModel.get(KeyboardAccessoryProperties.ACTIONS), 0,
-                            mModel.get(KeyboardAccessoryProperties.ACTIONS).size());
+                    recordUnrecordedList(mModel.get(KeyboardAccessoryProperties.BAR_ITEMS), 0,
+                            mModel.get(KeyboardAccessoryProperties.BAR_ITEMS).size());
                 } else {
                     mRecordedBarBuckets.clear();
                     mRecordedActionImpressions.clear();
@@ -100,17 +100,17 @@ public class KeyboardAccessoryMetricsRecorder {
          */
         private void recordUnrecordedList(ListObservable list, int first, int count) {
             if (!mModel.get(KeyboardAccessoryProperties.VISIBLE)) return;
-            if (list == mModel.get(KeyboardAccessoryProperties.ACTIONS)) {
+            if (list == mModel.get(KeyboardAccessoryProperties.BAR_ITEMS)) {
                 // Remove all actions that were changed, so changes are treated as new recordings.
                 for (int index = first; index < first + count; ++index) {
                     KeyboardAccessoryData.Action action =
-                            mModel.get(KeyboardAccessoryProperties.ACTIONS).get(index);
+                            mModel.get(KeyboardAccessoryProperties.BAR_ITEMS).get(index);
                     mRecordedActionImpressions.remove(action.getActionType());
                 }
                 // Record any unrecorded type, but not more than once (i.e. one set of suggestion).
                 for (int index = first; index < first + count; ++index) {
                     KeyboardAccessoryData.Action action =
-                            mModel.get(KeyboardAccessoryProperties.ACTIONS).get(index);
+                            mModel.get(KeyboardAccessoryProperties.BAR_ITEMS).get(index);
                     if (action.getActionType() == AccessoryAction.TAB_SWITCHER) continue; // Ignore!
                     maybeRecordBarBucket(
                             action.getActionType() == AccessoryAction.AUTOFILL_SUGGESTION
@@ -179,12 +179,12 @@ public class KeyboardAccessoryMetricsRecorder {
             switch (bucket) {
                 case AccessoryBarContents.WITH_ACTIONS:
                     return hasAtLeastOneActionOfType(
-                            mModel.get(KeyboardAccessoryProperties.ACTIONS),
+                            mModel.get(KeyboardAccessoryProperties.BAR_ITEMS),
                             AccessoryAction.MANAGE_PASSWORDS,
                             AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
                 case AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS:
                     return hasAtLeastOneActionOfType(
-                            mModel.get(KeyboardAccessoryProperties.ACTIONS),
+                            mModel.get(KeyboardAccessoryProperties.BAR_ITEMS),
                             AccessoryAction.AUTOFILL_SUGGESTION);
                 case AccessoryBarContents.WITH_TABS:
                     return mTabSwitcher.hasTabs();
@@ -206,7 +206,7 @@ public class KeyboardAccessoryMetricsRecorder {
         AccessoryBarObserver observer =
                 new AccessoryBarObserver(keyboardAccessoryModel, tabSwitcher);
         keyboardAccessoryModel.addObserver(observer);
-        keyboardAccessoryModel.get(KeyboardAccessoryProperties.ACTIONS).addObserver(observer);
+        keyboardAccessoryModel.get(KeyboardAccessoryProperties.BAR_ITEMS).addObserver(observer);
     }
 
     /**
