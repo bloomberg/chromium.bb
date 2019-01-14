@@ -19,7 +19,6 @@
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_global_error_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -33,7 +32,6 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/identity_utils.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/user_manager/user_manager.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -152,7 +150,7 @@ void EnableSyncFromPromo(
   return;
 #endif
 
-  if (SigninManagerFactory::GetForProfile(profile)->IsAuthenticated()) {
+  if (IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount()) {
     DVLOG(1) << "There is already a primary account.";
     return;
   }
@@ -221,10 +219,9 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
       identity_manager->GetAccountsWithRefreshTokens();
 
   // Compute the default account.
-  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
   std::string default_account_id;
-  if (signin_manager->IsAuthenticated()) {
-    default_account_id = signin_manager->GetAuthenticatedAccountId();
+  if (identity_manager->HasPrimaryAccount()) {
+    default_account_id = identity_manager->GetPrimaryAccountId();
   } else {
     // Fetch accounts in the Gaia cookies.
     GaiaCookieManagerService* cookie_manager_service =
