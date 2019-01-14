@@ -24,7 +24,12 @@ function getApiPaths() {
         return;
       // Pieces of the module don't inherit from Array/Object.
       Array.prototype.forEach.call(section, function(entry) {
-        apiPaths.push(namespace + "." + entry.name);
+      // Skip idle.getAutoLockDelay(), since it's restricted to certain
+      // platforms.
+      // TODO(https://crbug.com/921466)
+        if (entry.name != "getAutoLockDelay") {
+          apiPaths.push(namespace + "." + entry.name);
+        }
       });
     });
 

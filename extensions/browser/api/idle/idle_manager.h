@@ -86,6 +86,12 @@ class IdleManager : public ExtensionRegistryObserver,
 
   ui::IdleState QueryState(int threshold);
   void SetThreshold(const std::string& extension_id, int threshold);
+  // Returns the maximum time in seconds until the screen lock automatically
+  // when idle.
+  // Note: Currently supported on Chrome OS only. Returns a zero duration for
+  // other operating systems.
+  base::TimeDelta GetAutoLockDelay() const;
+
   static std::unique_ptr<base::Value> CreateIdleValue(ui::IdleState idle_state);
 
   // Override default event class. Callee assumes ownership. Used for testing.

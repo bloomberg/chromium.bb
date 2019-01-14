@@ -17676,6 +17676,7 @@ Called by update_net_error_codes.py.-->
   <int value="1309"
       label="AUTOTESTPRIVATE_ENSUREWINDOWSERVICECLIENTHASDRAWNWINDOW"/>
   <int value="1310" label="ACCESSIBILITY_PRIVATE_GETBATTERYDESCRIPTION"/>
+  <int value="1311" label="IDLE_GETAUTOLOCKDELAY"/>
 </enum>
 
 <enum name="ExtensionIconState">
