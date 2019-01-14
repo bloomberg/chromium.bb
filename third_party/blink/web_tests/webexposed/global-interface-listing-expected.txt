@@ -10347,7 +10347,6 @@ interface XRDevice
 interface XRFrame
     attribute @@toStringTag
     getter session
-    getter views
     method constructor
     method getInputPose
     method getViewerPose
@@ -10438,12 +10437,13 @@ interface XRView
     attribute @@toStringTag
     getter eye
     getter projectionMatrix
+    getter viewMatrix
     method constructor
 interface XRViewerPose
     attribute @@toStringTag
     getter poseModelMatrix
+    getter views
     method constructor
-    method getViewMatrix
 interface XRViewport
     attribute @@toStringTag
     getter height

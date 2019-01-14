@@ -15,10 +15,6 @@ namespace blink {
 
 XRFrame::XRFrame(XRSession* session) : session_(session) {}
 
-const HeapVector<Member<XRView>>& XRFrame::views() const {
-  return session_->views();
-}
-
 XRViewerPose* XRFrame::getViewerPose(XRReferenceSpace* reference_space) const {
   session_->LogGetPose();
 
@@ -37,6 +33,11 @@ XRViewerPose* XRFrame::getViewerPose(XRReferenceSpace* reference_space) const {
       reference_space->TransformBasePose(*base_pose_matrix_);
 
   if (!pose) {
+    return nullptr;
+  }
+
+  // Can only update an XRViewerPose's views with an invertible matrix.
+  if (!pose->IsInvertible()) {
     return nullptr;
   }
 

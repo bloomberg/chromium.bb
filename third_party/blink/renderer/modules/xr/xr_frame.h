@@ -19,7 +19,6 @@ class XRInputPose;
 class XRInputSource;
 class XRReferenceSpace;
 class XRSession;
-class XRView;
 
 class XRFrame final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -29,7 +28,6 @@ class XRFrame final : public ScriptWrappable {
 
   XRSession* session() const { return session_; }
 
-  const HeapVector<Member<XRView>>& views() const;
   XRViewerPose* getViewerPose(XRReferenceSpace*) const;
   XRInputPose* getInputPose(XRInputSource*, XRReferenceSpace*) const;
 

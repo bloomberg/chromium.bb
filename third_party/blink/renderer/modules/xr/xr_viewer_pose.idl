@@ -10,6 +10,5 @@
     OriginTrialEnabled=WebXR
 ] interface XRViewerPose {
   readonly attribute Float32Array poseModelMatrix;
-
-  Float32Array getViewMatrix(XRView view);
+  readonly attribute FrozenArray<XRView> views;
 };
