@@ -2679,4 +2679,167 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertySimple) {
   EXPECT_UIA_BOOL_EQ(root_node, UIA_IsDataValidForFormPropertyId, true);
 }
 
+TEST_F(AXPlatformNodeWinTest, TestUIAErrorHandling) {
+  AXNodeData root;
+  Init(root);
+
+  ComPtr<IRawElementProviderSimple> simple_provider =
+      GetRootIRawElementProviderSimple();
+  ComPtr<IGridItemProvider> grid_item_provider =
+      QueryInterfaceFromNode<IGridItemProvider>(GetRootNode());
+  ComPtr<IGridProvider> grid_provider =
+      QueryInterfaceFromNode<IGridProvider>(GetRootNode());
+  ComPtr<IScrollItemProvider> scroll_item_provider =
+      QueryInterfaceFromNode<IScrollItemProvider>(GetRootNode());
+  ComPtr<IScrollProvider> scroll_provider =
+      QueryInterfaceFromNode<IScrollProvider>(GetRootNode());
+  ComPtr<ISelectionItemProvider> selection_item_provider =
+      QueryInterfaceFromNode<ISelectionItemProvider>(GetRootNode());
+  ComPtr<ISelectionProvider> selection_provider =
+      QueryInterfaceFromNode<ISelectionProvider>(GetRootNode());
+  ComPtr<ITableItemProvider> table_item_provider =
+      QueryInterfaceFromNode<ITableItemProvider>(GetRootNode());
+  ComPtr<ITableProvider> table_provider =
+      QueryInterfaceFromNode<ITableProvider>(GetRootNode());
+  ComPtr<IExpandCollapseProvider> expand_collapse_provider =
+      QueryInterfaceFromNode<IExpandCollapseProvider>(GetRootNode());
+  ComPtr<IToggleProvider> toggle_provider =
+      QueryInterfaceFromNode<IToggleProvider>(GetRootNode());
+  ComPtr<IValueProvider> value_provider =
+      QueryInterfaceFromNode<IValueProvider>(GetRootNode());
+  ComPtr<IRangeValueProvider> range_value_provider =
+      QueryInterfaceFromNode<IRangeValueProvider>(GetRootNode());
+
+  tree_.reset(new AXTree());
+
+  // IGridItemProvider
+  int int_result = 0;
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            grid_item_provider->get_Column(&int_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            grid_item_provider->get_ColumnSpan(&int_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            grid_item_provider->get_Row(&int_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            grid_item_provider->get_RowSpan(&int_result));
+
+  // IExpandCollapseProvider
+  ExpandCollapseState expand_collapse_state;
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            expand_collapse_provider->Collapse());
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            expand_collapse_provider->Expand());
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            expand_collapse_provider->get_ExpandCollapseState(
+                &expand_collapse_state));
+
+  // IGridProvider
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            grid_provider->GetItem(0, 0, simple_provider.GetAddressOf()));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            grid_provider->get_RowCount(&int_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            grid_provider->get_ColumnCount(&int_result));
+
+  // IScrollItemProvider
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            scroll_item_provider->ScrollIntoView());
+
+  // IScrollProvider
+  BOOL bool_result = TRUE;
+  double double_result = 3.14;
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            scroll_provider->SetScrollPercent(0, 0));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            scroll_provider->get_HorizontallyScrollable(&bool_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            scroll_provider->get_HorizontalScrollPercent(&double_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            scroll_provider->get_HorizontalViewSize(&double_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            scroll_provider->get_VerticallyScrollable(&bool_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            scroll_provider->get_VerticalScrollPercent(&double_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            scroll_provider->get_VerticalViewSize(&double_result));
+
+  // ISelectionItemProvider
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            selection_item_provider->AddToSelection());
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            selection_item_provider->RemoveFromSelection());
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            selection_item_provider->Select());
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            selection_item_provider->get_IsSelected(&bool_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            selection_item_provider->get_SelectionContainer(
+                simple_provider.GetAddressOf()));
+
+  // ISelectionProvider
+  SAFEARRAY* array_result = nullptr;
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            selection_provider->GetSelection(&array_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            selection_provider->get_CanSelectMultiple(&bool_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            selection_provider->get_IsSelectionRequired(&bool_result));
+
+  // ITableItemProvider
+  RowOrColumnMajor row_or_column_major_result;
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            table_item_provider->GetColumnHeaderItems(&array_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            table_item_provider->GetRowHeaderItems(&array_result));
+
+  // ITableProvider
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            table_provider->GetColumnHeaders(&array_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            table_provider->GetRowHeaders(&array_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            table_provider->get_RowOrColumnMajor(&row_or_column_major_result));
+
+  // IRawElementProviderSimple
+  ScopedVariant variant;
+  ComPtr<IUnknown> unknown;
+  ProviderOptions options;
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            simple_provider->GetPatternProvider(UIA_WindowPatternId,
+                                                unknown.GetAddressOf()));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            simple_provider->GetPropertyValue(UIA_FrameworkIdPropertyId,
+                                              variant.Receive()));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            simple_provider->get_ProviderOptions(&options));
+
+  // IValueProvider
+  ScopedBstr bstr_value;
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            value_provider->SetValue(L"3.14"));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            value_provider->get_Value(bstr_value.Receive()));
+
+  // IRangeValueProvider
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            range_value_provider->SetValue(double_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            range_value_provider->get_LargeChange(&double_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            range_value_provider->get_Maximum(&double_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            range_value_provider->get_Minimum(&double_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            range_value_provider->get_SmallChange(&double_result));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            range_value_provider->get_Value(&double_result));
+
+  // IToggleProvider
+  ToggleState toggle_state;
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            toggle_provider->Toggle());
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            toggle_provider->get_ToggleState(&toggle_state));
+}
+
 }  // namespace ui
