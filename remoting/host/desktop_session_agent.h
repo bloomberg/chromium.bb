@@ -23,6 +23,7 @@
 #include "remoting/host/current_process_stats_agent.h"
 #include "remoting/host/desktop_display_info.h"
 #include "remoting/host/desktop_environment_options.h"
+#include "remoting/host/file_transfer/session_file_operations_handler.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/process_stats_stub.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
@@ -61,7 +62,8 @@ class DesktopSessionAgent
       public webrtc::DesktopCapturer::Callback,
       public webrtc::MouseCursorMonitor::Callback,
       public ClientSessionControl,
-      public protocol::ProcessStatsStub {
+      public protocol::ProcessStatsStub,
+      public IpcFileOperations::ResultHandler {
  public:
   class Delegate {
    public:
@@ -101,6 +103,10 @@ class DesktopSessionAgent
 
   // Forwards an audio packet though the IPC channel to the network process.
   void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet);
+
+  // IpcFileOperations::ResultHandler implementation.
+  void OnResult(std::uint64_t file_id,
+                base::Optional<protocol::FileTransfer_Error> error) override;
 
   // Creates desktop integration components and a connected IPC channel to be
   // used to access them. The client end of the channel is returned.
@@ -219,6 +225,10 @@ class DesktopSessionAgent
   // Keep reference to the last frame sent to make sure shared buffer is alive
   // before it's received.
   std::unique_ptr<webrtc::DesktopFrame> last_frame_;
+
+  // Routes file-transfer messages to the corresponding reader/writer to be
+  // executed.
+  base::Optional<SessionFileOperationsHandler> session_file_operations_handler_;
 
   // Reports process statistic data to network process.
   std::unique_ptr<ProcessStatsSender> stats_sender_;

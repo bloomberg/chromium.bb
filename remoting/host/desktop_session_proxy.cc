@@ -100,6 +100,7 @@ DesktopSessionProxy::DesktopSessionProxy(
       io_task_runner_(io_task_runner),
       client_session_control_(client_session_control),
       desktop_session_connector_(desktop_session_connector),
+      ipc_file_operations_factory_(this),
       pending_capture_frame_requests_(0),
       is_desktop_session_connected_(false),
       options_(options) {
@@ -142,6 +143,10 @@ DesktopSessionProxy::CreateMouseCursorMonitor() {
   return std::make_unique<IpcMouseCursorMonitor>(this);
 }
 
+std::unique_ptr<FileOperations> DesktopSessionProxy::CreateFileOperations() {
+  return ipc_file_operations_factory_.CreateFileOperations();
+}
+
 std::string DesktopSessionProxy::GetCapabilities() const {
   std::string result = protocol::kRateLimitResizeRequests;
   // Ask the client to send its resolution unconditionally.
@@ -153,6 +158,11 @@ std::string DesktopSessionProxy::GetCapabilities() const {
   if (InputInjector::SupportsTouchEvents()) {
     result += " ";
     result += protocol::kTouchEventsCapability;
+  }
+
+  if (options_.enable_file_transfer()) {
+    result += " ";
+    result += protocol::kFileTransferCapability;
   }
 
   return result;
@@ -200,7 +210,10 @@ bool DesktopSessionProxy::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_InjectClipboardEvent,
                         OnInjectClipboardEvent)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_DisconnectSession,
-                        DisconnectSession);
+                        DisconnectSession)
+    IPC_MESSAGE_FORWARD(ChromotingDesktopNetworkMsg_FileResult,
+                        &ipc_file_operations_factory_,
+                        IpcFileOperations::ResultHandler::OnResult)
   IPC_END_MESSAGE_MAP()
 
   CHECK(handled) << "Received unexpected IPC type: " << message.type();
@@ -412,6 +425,31 @@ void DesktopSessionProxy::ExecuteAction(
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   SendToDesktop(new ChromotingNetworkDesktopMsg_ExecuteActionRequest(request));
+}
+
+void DesktopSessionProxy::WriteFile(uint64_t file_id,
+                                    const base::FilePath& filename) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  SendToDesktop(new ChromotingNetworkDesktopMsg_WriteFile(file_id, filename));
+}
+
+void DesktopSessionProxy::WriteChunk(uint64_t file_id, std::string data) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  SendToDesktop(new ChromotingNetworkDesktopMsg_WriteFileChunk(file_id, data));
+}
+
+void DesktopSessionProxy::Close(uint64_t file_id) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  SendToDesktop(new ChromotingNetworkDesktopMsg_CloseFile(file_id));
+}
+
+void DesktopSessionProxy::Cancel(uint64_t file_id) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  SendToDesktop(new ChromotingNetworkDesktopMsg_CancelFile(file_id));
 }
 
 DesktopSessionProxy::~DesktopSessionProxy() {

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/files/file_path.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/time/time.h"
 #include "ipc/ipc_channel_handle.h"
@@ -15,6 +16,7 @@
 #include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/screen_resolution.h"
 #include "remoting/proto/action.pb.h"
+#include "remoting/proto/file_transfer.pb.h"
 #include "remoting/proto/process_stats.pb.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/transport.h"
@@ -208,6 +210,12 @@ IPC_MESSAGE_CONTROL(ChromotingDesktopNetworkMsg_DisconnectSession,
 IPC_MESSAGE_CONTROL(ChromotingDesktopNetworkMsg_AudioPacket,
                     std::string /* serialized_packet */)
 
+// Informs the network process of the result of a file operation on the file
+// identified by |file_id|. If error is set, the file ID is no longer valid.
+IPC_MESSAGE_CONTROL(ChromotingDesktopNetworkMsg_FileResult,
+                    uint64_t /* file_id */,
+                    base::Optional<remoting::protocol::FileTransfer_Error>)
+
 //-----------------------------------------------------------------------------
 // Chromoting messages sent from the network to the desktop process.
 
@@ -252,6 +260,28 @@ IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_SetScreenResolution,
 // Carries an action request event from the client to the desktop session agent.
 IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_ExecuteActionRequest,
                     remoting::protocol::ActionRequest /* request */)
+
+// Requests that the desktop process create a new file for writing with the
+// provided file name, which will be identified by the provided ID.
+IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_WriteFile,
+                    uint64_t /* file_id */,
+                    base::FilePath /* filename */)
+
+// Requests that the desktop process append the provided data chunk to the
+// previously created file identified by |file_id|.
+IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_WriteFileChunk,
+                    uint64_t /* file_id */,
+                    std::string /* data */)
+
+// Requests that the desktop process close the file identified by |file_id|.
+// If the file is being written, it will be finalized.
+IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_CloseFile,
+                    uint64_t /* file_id */)
+
+// Requests that the desktop process cancel the file identified by |file_id|.
+// If the file is being written, it will be deleted.
+IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_CancelFile,
+                    uint64_t /* file_id */)
 
 //---------------------------------------------------------------------
 // Chromoting messages sent from the remote_security_key process to the
