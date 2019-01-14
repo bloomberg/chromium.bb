@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/input_alert_coordinator.h"
+#import "ios/chrome/browser/ui/dialogs/completion_block_util.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_blocking_state.h"
 #import "ios/chrome/browser/ui/dialogs/nsurl_protection_space_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -25,6 +26,15 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using completion_block_util::AlertCallback;
+using completion_block_util::ConfirmCallback;
+using completion_block_util::PromptCallback;
+using completion_block_util::HTTPAuthCallack;
+using completion_block_util::GetSafeJavaScriptAlertCompletion;
+using completion_block_util::GetSafeJavaScriptConfirmationCompletion;
+using completion_block_util::GetSafeJavaScriptPromptCompletion;
+using completion_block_util::GetSafeHTTPAuthCompletion;
 
 // Externed accessibility identifier.
 NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
@@ -138,6 +148,8 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
                                 requestURL:(const GURL&)requestURL
                                   webState:(web::WebState*)webState
                          completionHandler:(void (^)(void))completionHandler {
+  AlertCallback safeCallback =
+      GetSafeJavaScriptAlertCompletion(completionHandler);
   NSString* title = [DialogPresenter
       localizedTitleForJavaScriptAlertFromPage:requestURL
                                   mainFrameURL:webState->GetLastCommittedURL()];
@@ -150,8 +162,8 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
   __weak DialogPresenter* weakSelf = self;
   __weak AlertCoordinator* weakCoordinator = alertCoordinator;
   ProceduralBlock OKHandler = ^{
-    if (completionHandler)
-      completionHandler();
+    if (safeCallback)
+      safeCallback();
     [weakSelf dialogCoordinatorWasStopped:weakCoordinator];
   };
 
@@ -161,8 +173,8 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
                                style:UIAlertActionStyleDefault];
 
   // Add cancel handler.
-  alertCoordinator.cancelAction = completionHandler;
-  alertCoordinator.noInteractionAction = completionHandler;
+  alertCoordinator.cancelAction = safeCallback;
+  alertCoordinator.noInteractionAction = safeCallback;
 
   // Blocking option setup.
   [self setUpBlockingOptionForCoordinator:alertCoordinator webState:webState];
@@ -175,6 +187,8 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
                                     webState:(web::WebState*)webState
                            completionHandler:
                                (void (^)(BOOL isConfirmed))completionHandler {
+  ConfirmCallback safeCallback =
+      GetSafeJavaScriptConfirmationCompletion(completionHandler);
   NSString* title = [DialogPresenter
       localizedTitleForJavaScriptAlertFromPage:requestURL
                                   mainFrameURL:webState->GetLastCommittedURL()];
@@ -185,13 +199,13 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
 
   // Actions.
   ProceduralBlock confirmAction = ^{
-    if (completionHandler)
-      completionHandler(YES);
+    if (safeCallback)
+      safeCallback(YES);
   };
 
   ProceduralBlock cancelAction = ^{
-    if (completionHandler)
-      completionHandler(NO);
+    if (safeCallback)
+      safeCallback(NO);
   };
 
   // Coordinator Setup.
@@ -213,6 +227,8 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
                                      webState:(web::WebState*)webState
                             completionHandler:
                                 (void (^)(NSString* input))completionHandler {
+  PromptCallback safeCallback =
+      GetSafeJavaScriptPromptCompletion(completionHandler);
   NSString* title = [DialogPresenter
       localizedTitleForJavaScriptAlertFromPage:requestURL
                                   mainFrameURL:webState->GetLastCommittedURL()];
@@ -224,15 +240,15 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
   // Actions.
   __weak InputAlertCoordinator* weakCoordinator = alertCoordinator;
   ProceduralBlock confirmAction = ^{
-    if (completionHandler) {
+    if (safeCallback) {
       NSString* textInput = [weakCoordinator textFields].firstObject.text;
-      completionHandler(textInput ? textInput : @"");
+      safeCallback(textInput ? textInput : @"");
     }
   };
 
   ProceduralBlock cancelAction = ^{
-    if (completionHandler)
-      completionHandler(nil);
+    if (safeCallback)
+      safeCallback(nil);
   };
 
   // Coordinator Setup.
@@ -261,6 +277,7 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
                                webState:(web::WebState*)webState
                       completionHandler:(void (^)(NSString* user,
                                                   NSString* password))handler {
+  HTTPAuthCallack safeCallback = GetSafeHTTPAuthCompletion(handler);
   NSString* title = l10n_util::GetNSStringWithFixup(IDS_LOGIN_DIALOG_TITLE);
   NSString* message =
       nsurlprotectionspace_util::MessageForHTTPAuth(protectionSpace);
@@ -273,16 +290,16 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
   // Actions.
   __weak InputAlertCoordinator* weakCoordinator = alertCoordinator;
   ProceduralBlock confirmAction = ^{
-    if (handler) {
+    if (safeCallback) {
       NSString* username = [[weakCoordinator textFields] objectAtIndex:0].text;
       NSString* password = [[weakCoordinator textFields] objectAtIndex:1].text;
-      handler(username, password);
+      safeCallback(username, password);
     }
   };
 
   ProceduralBlock cancelAction = ^{
-    if (handler)
-      handler(nil, nil);
+    if (safeCallback)
+      safeCallback(nil, nil);
   };
 
   // Coordinator Setup.
