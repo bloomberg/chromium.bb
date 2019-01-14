@@ -11,6 +11,8 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/bad_message.h"
 #include "content/public/browser/render_process_host.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace content {
 
@@ -28,9 +30,10 @@ AppCacheDispatcherHost::AppCacheDispatcherHost(
 AppCacheDispatcherHost::~AppCacheDispatcherHost() = default;
 
 // static
-void AppCacheDispatcherHost::Create(ChromeAppCacheService* appcache_service,
-                                    int process_id,
-                                    mojom::AppCacheBackendRequest request) {
+void AppCacheDispatcherHost::Create(
+    ChromeAppCacheService* appcache_service,
+    int process_id,
+    blink::mojom::AppCacheBackendRequest request) {
   // The process_id is the id of the RenderProcessHost, which can be reused for
   // a new renderer process if the previous renderer process was shutdown.
   // It can take some time after shutdown for the pipe error to propagate
@@ -88,7 +91,7 @@ void AppCacheDispatcherHost::SelectCache(int32_t host_id,
       mojo::ReportBadMessage("ACDH_SELECT_CACHE");
     }
   } else {
-    frontend_proxy_.OnCacheSelected(host_id, AppCacheInfo());
+    frontend_proxy_.OnCacheSelected(host_id, blink::mojom::AppCacheInfo());
   }
 }
 
@@ -98,7 +101,7 @@ void AppCacheDispatcherHost::SelectCacheForSharedWorker(int32_t host_id,
     if (!backend_impl_.SelectCacheForSharedWorker(host_id, appcache_id))
       mojo::ReportBadMessage("ACDH_SELECT_CACHE_FOR_SHARED_WORKER");
   } else {
-    frontend_proxy_.OnCacheSelected(host_id, AppCacheInfo());
+    frontend_proxy_.OnCacheSelected(host_id, blink::mojom::AppCacheInfo());
   }
 }
 
@@ -116,8 +119,8 @@ void AppCacheDispatcherHost::MarkAsForeignEntry(
 
 void AppCacheDispatcherHost::GetResourceList(int32_t host_id,
                                              GetResourceListCallback callback) {
-  std::vector<AppCacheResourceInfo> params;
-  std::vector<mojom::AppCacheResourceInfoPtr> out;
+  std::vector<blink::mojom::AppCacheResourceInfo> params;
+  std::vector<blink::mojom::AppCacheResourceInfoPtr> out;
   if (appcache_service_) {
     backend_impl_.GetResourceList(host_id, &params);
 
@@ -139,7 +142,8 @@ void AppCacheDispatcherHost::GetStatus(int32_t host_id,
       mojo::ReportBadMessage("ACDH_GET_STATUS");
     }
   }
-  std::move(callback).Run(AppCacheStatus::APPCACHE_STATUS_UNCACHED);
+  std::move(callback).Run(
+      blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED);
 }
 
 void AppCacheDispatcherHost::StartUpdate(int32_t host_id,

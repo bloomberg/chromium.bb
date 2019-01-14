@@ -16,8 +16,8 @@
 #include "base/process/process.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_frontend_proxy.h"
-#include "content/common/appcache.mojom.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 
 namespace content {
 class ChromeAppCacheService;
@@ -26,7 +26,7 @@ class ChromeAppCacheService;
 // its child processes. There is a distinct host for each child process.
 // Messages are handled on the IO thread. The RenderProcessHostImpl creates
 // an instance and delegates calls to it.
-class AppCacheDispatcherHost : public mojom::AppCacheBackend {
+class AppCacheDispatcherHost : public blink::mojom::AppCacheBackend {
  public:
   AppCacheDispatcherHost(ChromeAppCacheService* appcache_service,
                          int process_id);
@@ -34,10 +34,10 @@ class AppCacheDispatcherHost : public mojom::AppCacheBackend {
 
   static void Create(ChromeAppCacheService* appcache_service,
                      int process_id,
-                     mojom::AppCacheBackendRequest request);
+                     blink::mojom::AppCacheBackendRequest request);
 
  private:
-  // mojom::AppCacheHost
+  // blink::mojom::AppCacheBackend
   void RegisterHost(int32_t host_id) override;
   void UnregisterHost(int32_t host_id) override;
   void SetSpawningHostId(int32_t host_id, int spawning_host_id) override;

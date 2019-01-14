@@ -8,6 +8,7 @@
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 
 namespace content {
 
@@ -117,7 +118,8 @@ bool AppCacheBackendImpl::SwapCacheWithCallback(int host_id,
 }
 
 void AppCacheBackendImpl::GetResourceList(
-    int host_id, std::vector<AppCacheResourceInfo>* resource_infos) {
+    int host_id,
+    std::vector<blink::mojom::AppCacheResourceInfo>* resource_infos) {
   AppCacheHost* host = GetHost(host_id);
   if (!host)
     return;

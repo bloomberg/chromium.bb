@@ -35,6 +35,7 @@
           "ws.mojom.Gpu"
         ],
         "renderer": [
+          "blink.mojom.AppCacheBackend",
           "blink.mojom.BackgroundSyncService",
           "blink.mojom.BlobRegistry",
           "blink.mojom.BroadcastChannelProvider",
@@ -51,7 +52,6 @@
           "blink.mojom.ReportingServiceProxy",
           "blink.mojom.StoragePartitionService",
           "blink.mojom.WebDatabaseHost",
-          "content.mojom.AppCacheBackend",
           "content.mojom.ClipboardHost",
           "content.mojom.FieldTrialRecorder",
           "content.mojom.FrameSinkProvider",

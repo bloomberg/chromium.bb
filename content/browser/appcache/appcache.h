@@ -20,6 +20,7 @@
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_manifest_parser.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -130,7 +131,8 @@ class CONTENT_EXPORT AppCache
       bool* found_network_namespace);
 
   // Populates the 'infos' vector with an element per entry in the appcache.
-  void ToResourceInfoVector(std::vector<AppCacheResourceInfo>* infos) const;
+  void ToResourceInfoVector(
+      std::vector<blink::mojom::AppCacheResourceInfo>* infos) const;
 
   static const AppCacheNamespace* FindNamespace(
       const std::vector<AppCacheNamespace>& namespaces,

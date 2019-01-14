@@ -7,9 +7,10 @@
 
 #include <string>
 
-#include "content/common/appcache.mojom.h"
 #include "content/common/appcache_interfaces.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_application_cache_host_client.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -24,19 +25,19 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost {
   static WebApplicationCacheHostImpl* FromId(int id);
 
   WebApplicationCacheHostImpl(blink::WebApplicationCacheHostClient* client,
-                              mojom::AppCacheBackend* backend,
+                              blink::mojom::AppCacheBackend* backend,
                               int appcache_host_id);
   ~WebApplicationCacheHostImpl() override;
 
   int host_id() const { return host_id_; }
-  mojom::AppCacheBackend* backend() const { return backend_; }
+  blink::mojom::AppCacheBackend* backend() const { return backend_; }
   blink::WebApplicationCacheHostClient* client() const { return client_; }
 
-  virtual void OnCacheSelected(const AppCacheInfo& info);
-  void OnStatusChanged(AppCacheStatus);
-  void OnEventRaised(AppCacheEventID);
+  virtual void OnCacheSelected(const blink::mojom::AppCacheInfo& info);
+  void OnStatusChanged(blink::mojom::AppCacheStatus);
+  void OnEventRaised(blink::mojom::AppCacheEventID);
   void OnProgressEventRaised(const GURL& url, int num_total, int num_complete);
-  void OnErrorEventRaised(const AppCacheErrorDetails& details);
+  void OnErrorEventRaised(const blink::mojom::AppCacheErrorDetails& details);
   virtual void OnLogMessage(AppCacheLogLevel log_level,
                             const std::string& message) {}
   virtual void OnContentBlocked(const GURL& manifest_url) {}
@@ -64,15 +65,15 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost {
   enum IsNewMasterEntry { MAYBE_NEW_ENTRY, NEW_ENTRY, OLD_ENTRY };
 
   blink::WebApplicationCacheHostClient* client_;
-  mojom::AppCacheBackend* backend_;
+  blink::mojom::AppCacheBackend* backend_;
   int host_id_;
-  AppCacheStatus status_;
+  blink::mojom::AppCacheStatus status_;
   blink::WebURLResponse document_response_;
   GURL document_url_;
   bool is_scheme_supported_;
   bool is_get_method_;
   IsNewMasterEntry is_new_master_entry_;
-  AppCacheInfo cache_info_;
+  blink::mojom::AppCacheInfo cache_info_;
   GURL original_main_resource_url_;  // Used to detect redirection.
   bool was_select_cache_called_;
 };

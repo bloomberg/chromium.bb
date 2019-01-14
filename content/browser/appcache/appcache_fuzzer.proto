@@ -10,8 +10,8 @@ message Session {
   repeated Command commands = 1;
 }
 
-// Based on content::AppCacheBackend interface
-// See content/common/appcache_interfaces.h
+// Based on blink::mojom::AppCacheBackend interface
+// See third_party/blink/public/mojom/appcache/appcache.mojom
 message Command {
   oneof command {
     RegisterHost register_host = 1;

@@ -14,6 +14,7 @@
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_storage.h"
 #include "content/common/appcache_interfaces.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -264,11 +265,11 @@ bool AppCache::FindResponseForRequest(const GURL& url,
 }
 
 void AppCache::ToResourceInfoVector(
-    std::vector<AppCacheResourceInfo>* infos) const {
+    std::vector<blink::mojom::AppCacheResourceInfo>* infos) const {
   DCHECK(infos && infos->empty());
   for (const auto& pair : entries_) {
-    infos->push_back(AppCacheResourceInfo());
-    AppCacheResourceInfo& info = infos->back();
+    infos->push_back(blink::mojom::AppCacheResourceInfo());
+    blink::mojom::AppCacheResourceInfo& info = infos->back();
     info.url = pair.first;
     info.is_master = pair.second.IsMaster();
     info.is_manifest = pair.second.IsManifest();

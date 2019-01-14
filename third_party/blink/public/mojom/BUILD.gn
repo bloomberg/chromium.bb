@@ -10,6 +10,8 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojom_platform") {
   sources = [
     "ad_tagging/ad_frame.mojom",
+    "appcache/appcache.mojom",
+    "appcache/appcache_info.mojom",
     "array_buffer/array_buffer_contents.mojom",
     "associated_interfaces/associated_interfaces.mojom",
     "background_fetch/background_fetch.mojom",

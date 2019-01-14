@@ -8,6 +8,7 @@
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_response.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace content {
 
@@ -32,7 +33,7 @@ void AppCacheWorkingSet::Disable() {
 void AppCacheWorkingSet::AddCache(AppCache* cache) {
   if (is_disabled_)
     return;
-  DCHECK(cache->cache_id() != kAppCacheNoCacheId);
+  DCHECK(cache->cache_id() != blink::mojom::kAppCacheNoCacheId);
   int64_t cache_id = cache->cache_id();
   DCHECK(caches_.find(cache_id) == caches_.end());
   caches_.insert(CacheMap::value_type(cache_id, cache));
@@ -68,7 +69,7 @@ void AppCacheWorkingSet::RemoveGroup(AppCacheGroup* group) {
 void AppCacheWorkingSet::AddResponseInfo(AppCacheResponseInfo* info) {
   if (is_disabled_)
     return;
-  DCHECK(info->response_id() != kAppCacheNoResponseId);
+  DCHECK(info->response_id() != blink::mojom::kAppCacheNoResponseId);
   int64_t response_id = info->response_id();
   DCHECK(response_infos_.find(response_id) == response_infos_.end());
   response_infos_.insert(ResponseInfoMap::value_type(response_id, info));

@@ -22,6 +22,7 @@
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_storage.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace content {
 FORWARD_DECLARE_TEST(AppCacheServiceImplTest, DeleteAppCachesForOrigin);
@@ -188,7 +189,8 @@ class MockAppCacheStorage : public AppCacheStorage {
     simulate_find_sub_resource_ = true;
     simulated_found_entry_ = entry;
     simulated_found_fallback_entry_ = fallback_entry;
-    simulated_found_cache_id_ = kAppCacheNoCacheId; // N/A to sub resource loads
+    simulated_found_cache_id_ =
+        blink::mojom::kAppCacheNoCacheId;    // N/A to sub resource loads
     simulated_found_manifest_url_ = GURL();  // N/A to sub resource loads
     simulated_found_group_id_ = 0;  // N/A to sub resource loads
     simulated_found_network_namespace_ = network_namespace;

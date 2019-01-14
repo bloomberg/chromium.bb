@@ -40,6 +40,7 @@
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 namespace content {
@@ -376,7 +377,7 @@ void AppCacheStorageImpl::GetAllInfoTask::Run() {
     for (const auto& group : groups) {
       AppCacheDatabase::CacheRecord cache_record;
       database_->FindCacheForGroup(group.group_id, &cache_record);
-      AppCacheInfo info;
+      blink::mojom::AppCacheInfo info;
       info.manifest_url = group.manifest_url;
       info.creation_time = group.creation_time;
       info.size = cache_record.cache_size;
@@ -923,9 +924,11 @@ class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
                        const GURL& url,
                        const GURL& preferred_manifest_url,
                        const AppCacheWorkingSet::GroupMap* groups_in_use)
-      : DatabaseTask(storage), url_(url),
+      : DatabaseTask(storage),
+        url_(url),
         preferred_manifest_url_(preferred_manifest_url),
-        cache_id_(kAppCacheNoCacheId), group_id_(0) {
+        cache_id_(blink::mojom::kAppCacheNoCacheId),
+        group_id_(0) {
     if (groups_in_use) {
       for (const auto& pair : *groups_in_use) {
         AppCacheGroup* group = pair.second;
@@ -979,7 +982,7 @@ void AppCacheStorageImpl::FindMainResponseTask::Run() {
   // TODO(michaeln): come up with a 'preferred_manifest_url' in more cases
   // - when navigating a frame whose current contents are from an appcache
   // - when clicking an href in a frame that is appcached
-  int64_t preferred_cache_id = kAppCacheNoCacheId;
+  int64_t preferred_cache_id = blink::mojom::kAppCacheNoCacheId;
   if (!preferred_manifest_url_.is_empty()) {
     AppCacheDatabase::GroupRecord preferred_group;
     AppCacheDatabase::CacheRecord preferred_cache;
@@ -994,14 +997,14 @@ void AppCacheStorageImpl::FindMainResponseTask::Run() {
   if (FindExactMatch(preferred_cache_id) ||
       FindNamespaceMatch(preferred_cache_id)) {
     // We found something.
-    DCHECK(cache_id_ != kAppCacheNoCacheId && !manifest_url_.is_empty() &&
-           group_id_ != 0);
+    DCHECK(cache_id_ != blink::mojom::kAppCacheNoCacheId &&
+           !manifest_url_.is_empty() && group_id_ != 0);
     return;
   }
 
   // We didn't find anything.
-  DCHECK(cache_id_ == kAppCacheNoCacheId && manifest_url_.is_empty() &&
-         group_id_ == 0);
+  DCHECK(cache_id_ == blink::mojom::kAppCacheNoCacheId &&
+         manifest_url_.is_empty() && group_id_ == 0);
 }
 
 bool AppCacheStorageImpl::FindMainResponseTask::FindExactMatch(
@@ -1641,10 +1644,9 @@ void AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse(
   if (delegate_ref->delegate) {
     DelegateReferenceVector delegates(1, delegate_ref);
     CallOnMainResponseFound(
-        &delegates, url, found_entry,
-        GURL(), AppCacheEntry(),
-        cache.get() ? cache->cache_id() : kAppCacheNoCacheId,
-        group.get() ? group->group_id() : kAppCacheNoCacheId,
+        &delegates, url, found_entry, GURL(), AppCacheEntry(),
+        cache.get() ? cache->cache_id() : blink::mojom::kAppCacheNoCacheId,
+        group.get() ? group->group_id() : blink::mojom::kAppCacheNoCacheId,
         group.get() ? group->manifest_url() : GURL());
   }
 }

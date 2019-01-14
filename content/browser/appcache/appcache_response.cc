@@ -24,6 +24,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "storage/common/storage_histograms.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace content {
 
@@ -64,7 +65,7 @@ AppCacheResponseInfo::AppCacheResponseInfo(
       response_data_size_(response_data_size),
       storage_(std::move(storage)) {
   DCHECK(http_response_info_);
-  DCHECK(response_id != kAppCacheNoResponseId);
+  DCHECK(response_id != blink::mojom::kAppCacheNoResponseId);
   storage_->working_set()->AddResponseInfo(this);
 }
 

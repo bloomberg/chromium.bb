@@ -114,7 +114,6 @@ jumbo_source_set("common_sources") {
   visibility = [ "//content/*" ]
 
   sources = [
-    "appcache_info.h",
     "bind_interface_helpers.h",
     "bindings_policy.h",
     "browser_controls_state.h",
@@ -349,7 +348,6 @@ mojom("interfaces") {
   ]
 
   sources = [
-    "appcache_info.mojom",
     "drop_data.mojom",
     "fullscreen_video_element.mojom",
     "load_timing_info.mojom",

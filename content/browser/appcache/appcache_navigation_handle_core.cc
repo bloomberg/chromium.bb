@@ -14,6 +14,8 @@
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace {
 
@@ -71,21 +73,22 @@ AppCacheServiceImpl* AppCacheNavigationHandleCore::GetAppCacheService() {
   return static_cast<AppCacheServiceImpl*>(appcache_service_.get());
 }
 
-void AppCacheNavigationHandleCore::OnCacheSelected(int host_id,
-                                                   const AppCacheInfo& info) {
+void AppCacheNavigationHandleCore::OnCacheSelected(
+    int host_id,
+    const blink::mojom::AppCacheInfo& info) {
   DCHECK(false);
 }
 
 void AppCacheNavigationHandleCore::OnStatusChanged(
     const std::vector<int>& host_ids,
-    AppCacheStatus status) {
+    blink::mojom::AppCacheStatus status) {
   // Should never be called.
   DCHECK(false);
 }
 
 void AppCacheNavigationHandleCore::OnEventRaised(
     const std::vector<int>& host_ids,
-    AppCacheEventID event_id) {
+    blink::mojom::AppCacheEventID event_id) {
   // Should never be called.
   DCHECK(false);
 }
@@ -101,7 +104,7 @@ void AppCacheNavigationHandleCore::OnProgressEventRaised(
 
 void AppCacheNavigationHandleCore::OnErrorEventRaised(
     const std::vector<int>& host_ids,
-    const AppCacheErrorDetails& details) {
+    const blink::mojom::AppCacheErrorDetails& details) {
   // Should never be called.
   DCHECK(false);
 }

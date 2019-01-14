@@ -5,12 +5,12 @@
     "service_manager:connector": {
       "provides": {
         "browser": [
+          "blink.mojom.AppCacheFrontend",
           "blink.mojom.CodeCacheHost",
           "blink.mojom.CrashMemoryMetricsReporter",
           "blink.mojom.LeakDetector",
           "blink.mojom.OomIntervention",
           "blink.mojom.WebDatabase",
-          "content.mojom.AppCacheFrontend",
           "content.mojom.Child",
           "content.mojom.ChildControl",
           "content.mojom.ChildHistogramFetcher",

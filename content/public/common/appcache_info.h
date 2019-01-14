@@ -10,8 +10,7 @@
 #include <vector>
 
 #include "base/time/time.h"
-#include "content/common/content_export.h"
-#include "content/public/common/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "url/gurl.h"
 
@@ -22,14 +21,7 @@ typedef base::OnceCallback<void(int)> OnceCompletionCallback;
 static const int kAppCacheNoHostId =
     blink::WebApplicationCacheHost::kAppCacheNoHostId;
 
-using mojom::kAppCacheNoCacheId;
-using mojom::kAppCacheNoResponseId;
-using mojom::kAppCacheUnknownCacheId;
-
-using mojom::AppCacheStatus;
-using mojom::AppCacheInfo;
-
-typedef std::vector<AppCacheInfo> AppCacheInfoVector;
+typedef std::vector<blink::mojom::AppCacheInfo> AppCacheInfoVector;
 
 }  // namespace
 
