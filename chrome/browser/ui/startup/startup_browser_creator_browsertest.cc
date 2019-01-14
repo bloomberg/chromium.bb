@@ -375,8 +375,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppUrlShortcut) {
             web_contents->GetLastCommittedURL().ExtractFileName());
 }
 
-// App shortcuts are not implemented on mac os.
-#if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutNoPref) {
   // Load an app with launch.container = 'tab'.
   const Extension* extension_app = NULL;
@@ -463,8 +461,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutTabPref) {
       new_browser->app_name_.find(extension_app->id()),
       std::string::npos) << new_browser->app_name_;
 }
-
-#endif  // !defined(OS_MACOSX)
 
 #endif  // !defined(OS_CHROMEOS)
 
