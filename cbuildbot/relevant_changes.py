@@ -208,15 +208,15 @@ class TriageRelevantChanges(object):
   STAGE_UPLOAD_PREBUILTS = (
       artifact_stages.UploadPrebuiltsStage.StageNamePrefix())
 
-  def __init__(self, master_build_id, db, builders_array, config, metadata,
-               version, build_root, changes, buildbucket_info_dict,
+  def __init__(self, master_build_id, buildstore, builders_array, config,
+               metadata, version, build_root, changes, buildbucket_info_dict,
                cidb_status_dict, completed_builds, dependency_map,
                buildbucket_client, dry_run=True):
     """Initialize an instance of TriageRelevantChanges.
 
     Args:
       master_build_id: The build_id of the master build.
-      db: An instance of cidb.CIDBConnection to fetch data from CIDB.
+      buildstore: A BuildStore instance to make DB calls.
       builders_array: A list of expected slave build config names (strings).
       config: An instance of config_lib.BuildConfig. Config dict of this build.
       metadata: Instance of metadata_lib.CBuildbotMetadata. Metadata of this
@@ -241,7 +241,8 @@ class TriageRelevantChanges(object):
       dry_run: Boolean indicating whether it's a dry run. Default to True.
     """
     self.master_build_id = master_build_id
-    self.db = db
+    self.buildstore = buildstore
+    self.db = buildstore.GetCIDBHandle()
     self.builders_array = builders_array
     self.config = config
     self.metadata = metadata
@@ -281,8 +282,7 @@ class TriageRelevantChanges(object):
 
   def _UpdateSlaveInfo(self):
     """Update slave infomation with stages, relevant_changes, and subsys."""
-    self.slave_stages_dict = self.GetSlaveStages(
-        self.db, self.buildbucket_info_dict)
+    self.slave_stages_dict = self.GetChildStages()
     self.slave_changes_dict = self._GetRelevantChanges(
         self.slave_stages_dict)
     self.change_relevant_slaves_dict = cros_collections.InvertDictionary(
@@ -310,35 +310,26 @@ class TriageRelevantChanges(object):
     return set().union(*[dependency_map.get(c, set()) for c in changes])
 
   # TODO(nxia): Consolidate with completion_stages._ShouldSubmitPartialPool
-  @staticmethod
-  def GetSlaveStages(db, buildbucket_info_dict):
-    """Get slave stages from CIDB.
-
-    Args:
-      db: An instance of cidb.CIDBConnection to fetch data from CIDB.
-      buildbucket_info_dict: A dict mapping all slave build config names to
-        their BuildbucketInfos (See SlaveStatus.GetAllSlaveBuildbucketInfo
-        for details).
+  def GetChildStages(self):
+    """Get child stages from buildstore.
 
     Returns:
-      A dict mapping all slave config names (strings) to their stages (a list
-        of dicts, see cidb.CIDBConnection.GetSlaveStages for details.)
+      A dict mapping all child config names (strings) to their stages (a list
+        of dicts, see cidb.CIDBConnection.GetBuildStages for details.)
     """
-    assert db, 'No database connection to use.'
-
     slave_stages_dict = {}
     slave_buildbucket_ids = []
 
-    if buildbucket_info_dict is not None:
-      for slave_config, buildbucket_info in buildbucket_info_dict.iteritems():
+    if self.buildbucket_info_dict is not None:
+      for slave_config, bb_info in self.buildbucket_info_dict.iteritems():
         # Set default value for all slaves, some may not have stages in CIDB.
         slave_stages_dict.setdefault(slave_config, [])
-        slave_buildbucket_ids.append(buildbucket_info.buildbucket_id)
+        slave_buildbucket_ids.append(bb_info.buildbucket_id)
 
     child_build_ids = [
         c['id']
-        for c in db.GetBuildStatusesWithBuildbucketIds(slave_buildbucket_ids)]
-    stages = db.GetBuildsStages(child_build_ids)
+        for c in self.buildstore.GetBuildStatuses(slave_buildbucket_ids)]
+    stages = self.db.GetBuildsStages(child_build_ids)
 
     for stage in stages:
       slave_stages_dict[stage['build_config']].append(stage)

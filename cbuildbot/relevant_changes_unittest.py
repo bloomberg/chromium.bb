@@ -22,6 +22,7 @@ from chromite.lib import fake_cidb
 from chromite.lib import metadata_lib
 from chromite.lib import patch_unittest
 from chromite.lib import triage_lib
+from chromite.lib.buildstore import FakeBuildStore
 
 
 # pylint: disable=protected-access
@@ -271,6 +272,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     self.site_config = config_lib.GetConfig()
     self.build_config = self.site_config[self._bot_id]
     self.fake_cidb = fake_cidb.FakeCIDBConnection()
+    self.buildstore = FakeBuildStore(self.fake_cidb)
     self.slaves = ['slave_1', 'slave_2', 'slave_3', 'slave_4']
     self.completed_builds = {}
     self.buildbucket_info_dict = self._GetDefaultSuccessBuildbucketInfoDict(
@@ -329,15 +331,15 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
       dependency_map = {}
 
     return relevant_changes.TriageRelevantChanges(
-        self.master_build_id, self.fake_cidb, builders_array, self.build_config,
-        metadata, self.version, self.build_root, changes, buildbucket_info_dict,
-        cidb_status_dict, completed_builds, dependency_map,
-        self.buildbucket_client, dry_run)
+        self.master_build_id, self.buildstore, builders_array,
+        self.build_config, metadata, self.version, self.build_root, changes,
+        buildbucket_info_dict, cidb_status_dict, completed_builds,
+        dependency_map, self.buildbucket_client, dry_run)
 
   def _MockSlaveInfo(self, slave_stages_dict, slave_changes_dict,
                      change_passed_slaves_dict):
     mock_get_stages = self.PatchObject(relevant_changes.TriageRelevantChanges,
-                                       'GetSlaveStages',
+                                       'GetChildStages',
                                        return_value=slave_stages_dict)
     mock_get_changes = self.PatchObject(relevant_changes.TriageRelevantChanges,
                                         '_GetRelevantChanges',
@@ -357,8 +359,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
      mock_get_passed_slaves) = (self._MockSlaveInfo(
          mock_stage_dict, mock_changes_dict, mock_passed_slaves_dict))
     self.GetTriageRelevantChanges()
-    mock_get_stages.assert_called_once_with(
-        self.fake_cidb, self.buildbucket_info_dict)
+    mock_get_stages.assert_called_once_with()
     mock_get_changes.assert_called_once_with(
         mock_stage_dict)
     mock_get_passed_slaves.assert_called_once_with(
@@ -428,13 +429,13 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     self.fake_cidb.InsertBuildStage(
         4, self.COMMIT_QUEUE_SYNC, builds[3], status=self.PASS)
 
-  def testGetSlaveStages(self):
-    """Test GetSlaveStages."""
+  def testGetChildStages(self):
+    """Test GetChildStages."""
     self._InsertSlaveBuilds(self.slaves, self.buildbucket_info_dict)
     self._InsertDefaultSlaveStages(self.slaves)
 
-    slave_stages = relevant_changes.TriageRelevantChanges.GetSlaveStages(
-        self.fake_cidb, self.buildbucket_info_dict)
+    triage_changes = self.GetTriageRelevantChanges()
+    slave_stages = triage_changes.GetChildStages()
 
     self.assertItemsEqual(slave_stages.keys(), self.slaves)
     self.assertEqual(len(slave_stages['slave_1']), 1)
@@ -449,8 +450,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     self._InsertSlaveBuilds(self.slaves, self.buildbucket_info_dict)
     self._InsertDefaultSlaveStages(self.slaves)
     triage_changes = self.GetTriageRelevantChanges()
-    slave_stages = relevant_changes.TriageRelevantChanges.GetSlaveStages(
-        self.fake_cidb, self.buildbucket_info_dict)
+    slave_stages = triage_changes.GetChildStages()
     passed_builds = triage_changes.GetBuildsPassedAnyOfStages(
         slave_stages, relevant_changes.TriageRelevantChanges.STAGE_SYNC)
 
@@ -463,8 +463,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     self._InsertSlaveBuilds(self.slaves, self.buildbucket_info_dict)
     self._InsertDefaultSlaveStages(self.slaves)
     triage_changes = self.GetTriageRelevantChanges()
-    slave_stages_dict = triage_changes.GetSlaveStages(
-        self.fake_cidb, self.buildbucket_info_dict)
+    slave_stages_dict = triage_changes.GetChildStages()
     slave_changes_dict = triage_changes._GetRelevantChanges(slave_stages_dict)
 
     self.assertEqual(len(slave_changes_dict.keys()), 4)
@@ -491,8 +490,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
                                   constants.CL_ACTION_IRRELEVANT_TO_SLAVE)
 
     triage_changes = self.GetTriageRelevantChanges()
-    slave_stages_dict = triage_changes.GetSlaveStages(
-        self.fake_cidb, self.buildbucket_info_dict)
+    slave_stages_dict = triage_changes.GetChildStages()
     slave_changes_dict = triage_changes._GetRelevantChanges(slave_stages_dict)
 
     self.assertEqual(len(slave_changes_dict.keys()), 4)
@@ -986,8 +984,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     triage_changes = self.GetTriageRelevantChanges(
         buildbucket_info_dict=self.buildbucket_info_dict,
         completed_builds=self.completed_builds)
-    triage_changes.slave_stages_dict = triage_changes.GetSlaveStages(
-        self.fake_cidb, self.buildbucket_info_dict)
+    triage_changes.slave_stages_dict = triage_changes.GetChildStages()
 
     self.assertFalse(
         triage_changes._AllCompletedSlavesPassedUploadPrebuiltsStage())
@@ -1006,8 +1003,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     triage_changes = self.GetTriageRelevantChanges(
         buildbucket_info_dict=self.buildbucket_info_dict,
         completed_builds=self.completed_builds)
-    triage_changes.slave_stages_dict = triage_changes.GetSlaveStages(
-        self.fake_cidb, self.buildbucket_info_dict)
+    triage_changes.slave_stages_dict = triage_changes.GetChildStages()
 
     self.assertTrue(
         triage_changes._AllCompletedSlavesPassedUploadPrebuiltsStage())
@@ -1032,8 +1028,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     triage_changes = self.GetTriageRelevantChanges(
         buildbucket_info_dict=self.buildbucket_info_dict,
         completed_builds=self.completed_builds)
-    triage_changes.slave_stages_dict = triage_changes.GetSlaveStages(
-        self.fake_cidb, self.buildbucket_info_dict)
+    triage_changes.slave_stages_dict = triage_changes.GetChildStages()
 
     self.assertTrue(
         triage_changes._AllUncompletedSlavesPassedUploadPrebuiltsStage())
@@ -1055,8 +1050,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     triage_changes = self.GetTriageRelevantChanges(
         buildbucket_info_dict=self.buildbucket_info_dict,
         completed_builds=self.completed_builds)
-    triage_changes.slave_stages_dict = triage_changes.GetSlaveStages(
-        self.fake_cidb, self.buildbucket_info_dict)
+    triage_changes.slave_stages_dict = triage_changes.GetChildStages()
 
     self.assertFalse(
         triage_changes._AllUncompletedSlavesPassedUploadPrebuiltsStage())

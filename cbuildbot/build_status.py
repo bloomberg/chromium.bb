@@ -613,7 +613,7 @@ class SlaveStatus(object):
 
     if self.pool is not None:
       triage_relevant_changes = relevant_changes.TriageRelevantChanges(
-          self.master_build_id, self.db, self._GetExpectedBuilders(),
+          self.master_build_id, self.buildstore, self._GetExpectedBuilders(),
           self.config, self.metadata, self.version, self.pool.build_root,
           self.pool.applied, self.all_buildbucket_info_dict,
           self.all_cidb_status_dict, self.completed_builds, self.dependency_map,
