@@ -1983,12 +1983,14 @@ struct AtkIntRelation {
 };
 
 static AtkIntRelation kIntRelations[] = {
-    {ax::mojom::IntAttribute::kDetailsId, ATK_RELATION_DETAILS,
-     ATK_RELATION_DETAILS_FOR},
     {ax::mojom::IntAttribute::kMemberOfId, ATK_RELATION_MEMBER_OF,
      base::nullopt},
+#if defined(ATK_226)
+    {ax::mojom::IntAttribute::kDetailsId, ATK_RELATION_DETAILS,
+     ATK_RELATION_DETAILS_FOR},
     {ax::mojom::IntAttribute::kErrormessageId, ATK_RELATION_ERROR_MESSAGE,
      ATK_RELATION_ERROR_FOR},
+#endif
 };
 
 struct AtkIntListRelation {
