@@ -107,13 +107,6 @@ if (is_android) {
       "log",  # Used by logging.cc.
     ]
   }
-
-  config("def_executable_start") {
-    inputs = [
-      "//base/android/def_executable_start.l",
-    ]
-    ldflags = [ "-Wl," + rebase_path(inputs[0], root_build_dir) ]
-  }
 }
 
 # Base and everything it depends on should be a static library rather than
@@ -1393,15 +1386,6 @@ jumbo_component("base") {
     # This is actually a linker script, but it can be added to the link in the
     # same way as a library.
     libs += [ "android/library_loader/anchor_functions.lds" ]
-
-    # TODO(thomasanderson): This works around a bug in lld.  Remove this config
-    # by reverting the CL that added this [1] once lld is rolled to at least
-    # rL350251.
-    #
-    # [1] https://chromium-review.googlesource.com/c/chromium/src/+/1393805
-    if (use_lld) {
-      all_dependent_configs += [ ":def_executable_start" ]
-    }
   }
 
   # Chromeos.
