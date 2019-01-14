@@ -61,6 +61,7 @@ ActionMappingEntry kActionMappings[] = {
     {MediaSessionAction::kNextTrack, MediaSessionUserAction::NextTrack},
     {MediaSessionAction::kSeekBackward, MediaSessionUserAction::SeekBackward},
     {MediaSessionAction::kSeekForward, MediaSessionUserAction::SeekForward},
+    {MediaSessionAction::kSkipAd, MediaSessionUserAction::SkipAd},
 };
 
 }  // anonymous namespace

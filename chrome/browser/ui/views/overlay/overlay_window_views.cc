@@ -17,10 +17,12 @@
 #include "chrome/browser/ui/views/overlay/control_image_button.h"
 #include "chrome/browser/ui/views/overlay/playback_image_button.h"
 #include "chrome/browser/ui/views/overlay/resize_handle_button.h"
+#include "chrome/browser/ui/views/overlay/skip_ad_label_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_util.h"
 #include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -115,6 +117,7 @@ class OverlayWindowFrameView : public views::NonClientFrameView {
     OverlayWindowViews* window = static_cast<OverlayWindowViews*>(widget_);
     if (window->AreControlsVisible() &&
         (window->GetBackToTabControlsBounds().Contains(point) ||
+         window->GetSkipAdControlsBounds().Contains(point) ||
          window->GetCloseControlsBounds().Contains(point) ||
          window->GetFirstCustomControlsBounds().Contains(point) ||
          window->GetSecondCustomControlsBounds().Contains(point) ||
@@ -186,6 +189,7 @@ OverlayWindowViews::OverlayWindowViews(
       controls_scrim_view_(new views::View()),
       controls_parent_view_(new views::View()),
       back_to_tab_controls_view_(new views::BackToTabImageButton(this)),
+      skip_ad_controls_view_(new views::SkipAdLabelButton(this)),
       close_controls_view_(new views::CloseImageButton(this)),
 #if defined(OS_CHROMEOS)
       resize_handle_view_(new views::ResizeHandleButton(this)),
@@ -332,7 +336,14 @@ void OverlayWindowViews::SetUpViews() {
   // views::View that closes the window and focuses initiator tab. ------------
   back_to_tab_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
   back_to_tab_controls_view_->layer()->SetFillsBoundsOpaquely(false);
+  back_to_tab_controls_view_->layer()->set_name("BackToTabControlsView");
   back_to_tab_controls_view_->set_owned_by_client();
+
+  // views::View that holds the skip-ad label button. -------------------------
+  skip_ad_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+  skip_ad_controls_view_->layer()->SetFillsBoundsOpaquely(true);
+  skip_ad_controls_view_->layer()->set_name("SkipAdControlsView");
+  skip_ad_controls_view_->set_owned_by_client();
 
   // views::View that closes the window. --------------------------------------
   close_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
@@ -357,10 +368,11 @@ void OverlayWindowViews::SetUpViews() {
   resize_handle_view_->set_owned_by_client();
 #endif
 
-  // Set up view::Views heirarchy. --------------------------------------------
+  // Set up view::Views hierarchy. --------------------------------------------
   controls_parent_view_->AddChildView(play_pause_controls_view_.get());
   GetContentsView()->AddChildView(controls_scrim_view_.get());
   GetContentsView()->AddChildView(controls_parent_view_.get());
+  GetContentsView()->AddChildView(skip_ad_controls_view_.get());
   GetContentsView()->AddChildView(back_to_tab_controls_view_.get());
   GetContentsView()->AddChildView(close_controls_view_.get());
 #if defined(OS_CHROMEOS)
@@ -405,6 +417,7 @@ void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
   GetControlsScrimLayer()->SetVisible(is_visible);
   GetControlsParentLayer()->SetVisible(is_visible);
   GetBackToTabControlsLayer()->SetVisible(is_visible);
+  GetSkipAdControlsLayer()->SetVisible(is_visible && show_skip_ad_button_);
   GetCloseControlsLayer()->SetVisible(is_visible);
 
 #if defined(OS_CHROMEOS)
@@ -422,6 +435,7 @@ void OverlayWindowViews::UpdateControlsBounds() {
 
   WindowQuadrant quadrant = GetCurrentWindowQuadrant(GetBounds(), controller_);
   back_to_tab_controls_view_->SetPosition(GetBounds().size(), quadrant);
+  skip_ad_controls_view_->SetPosition(GetBounds().size());
   close_controls_view_->SetPosition(GetBounds().size(), quadrant);
 #if defined(OS_CHROMEOS)
   resize_handle_view_->SetPosition(GetBounds().size(), quadrant);
@@ -614,6 +628,11 @@ void OverlayWindowViews::SetAlwaysHidePlayPauseButton(bool is_visible) {
   always_hide_play_pause_button_ = !is_visible;
 }
 
+void OverlayWindowViews::SetSkipAdButtonVisibility(bool is_visible) {
+  if (base::FeatureList::IsEnabled(media::kSkipAd))
+    show_skip_ad_button_ = is_visible;
+}
+
 void OverlayWindowViews::SetPictureInPictureCustomControls(
     const std::vector<blink::PictureInPictureControlInfo>& controls) {
   // Clear any existing controls.
@@ -789,6 +808,9 @@ void OverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
   if (GetBackToTabControlsBounds().Contains(event->location())) {
     controller_->CloseAndFocusInitiator();
     event->SetHandled();
+  } else if (GetSkipAdControlsBounds().Contains(event->location())) {
+    controller_->SkipAd();
+    event->SetHandled();
   } else if (GetCloseControlsBounds().Contains(event->location())) {
     controller_->Close(true /* should_pause_video */,
                        true /* should_reset_pip_player */);
@@ -803,6 +825,9 @@ void OverlayWindowViews::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
   if (sender == back_to_tab_controls_view_.get())
     controller_->CloseAndFocusInitiator();
+
+  if (sender == skip_ad_controls_view_.get())
+    controller_->SkipAd();
 
   if (sender == close_controls_view_.get())
     controller_->Close(true /* should_pause_video */,
@@ -820,6 +845,10 @@ void OverlayWindowViews::ButtonPressed(views::Button* sender,
 
 gfx::Rect OverlayWindowViews::GetBackToTabControlsBounds() {
   return back_to_tab_controls_view_->GetMirroredBounds();
+}
+
+gfx::Rect OverlayWindowViews::GetSkipAdControlsBounds() {
+  return skip_ad_controls_view_->GetMirroredBounds();
 }
 
 gfx::Rect OverlayWindowViews::GetCloseControlsBounds() {
@@ -862,6 +891,10 @@ ui::Layer* OverlayWindowViews::GetBackToTabControlsLayer() {
   return back_to_tab_controls_view_->layer();
 }
 
+ui::Layer* OverlayWindowViews::GetSkipAdControlsLayer() {
+  return skip_ad_controls_view_->layer();
+}
+
 ui::Layer* OverlayWindowViews::GetCloseControlsLayer() {
   return close_controls_view_->layer();
 }
@@ -889,6 +922,11 @@ OverlayWindowViews::play_pause_controls_view_for_testing() const {
 
 gfx::Point OverlayWindowViews::back_to_tab_image_position_for_testing() const {
   return back_to_tab_controls_view_->origin();
+}
+
+views::SkipAdLabelButton*
+OverlayWindowViews::skip_ad_controls_view_for_testing() const {
+  return skip_ad_controls_view_.get();
 }
 
 gfx::Point OverlayWindowViews::close_image_position_for_testing() const {

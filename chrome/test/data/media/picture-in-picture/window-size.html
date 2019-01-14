@@ -110,9 +110,19 @@
   }
 
   function addVisibilityChangeEventListener() {
-   document.addEventListener('visibilitychange', () => {
-     document.title = document.visibilityState;
-   });
+    document.addEventListener('visibilitychange', () => {
+      document.title = document.visibilityState;
+    });
+  }
+
+  function setMediaSessionSkipAdActionHandler() {
+    navigator.mediaSession.setActionHandler('skipad', _ => {
+      document.title = 'skipad';
+    });
+  }
+
+  function unsetMediaSessionSkipAdActionHandler() {
+    navigator.mediaSession.setActionHandler('skipad', null);
   }
 </script>
 </html>

@@ -40,6 +40,7 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
       media_session::mojom::MediaSessionObserverPtr observer) override {}
   void PreviousTrack() override {}
   void NextTrack() override {}
+  void SkipAd() override {}
   void Seek(base::TimeDelta seek_time) override {}
   void Stop(SuspendType suspend_type) override {}
 

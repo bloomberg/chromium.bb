@@ -9,6 +9,9 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "services/media_session/public/cpp/media_metadata.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 
 namespace content {
 class OverlaySurfaceEmbedder;
@@ -23,7 +26,8 @@ class MediaWebContentsObserver;
 // work with it. https://crbug.com/589840.
 class PictureInPictureWindowControllerImpl
     : public PictureInPictureWindowController,
-      public WebContentsUserData<PictureInPictureWindowControllerImpl> {
+      public WebContentsUserData<PictureInPictureWindowControllerImpl>,
+      public media_session::mojom::MediaSessionObserver {
  public:
   // Gets a reference to the controller associated with |initiator| and creates
   // one if it does not exist. The returned pointer is guaranteed to be
@@ -53,6 +57,16 @@ class PictureInPictureWindowControllerImpl
   CONTENT_EXPORT void UpdatePlaybackState(bool is_playing,
                                           bool reached_end_of_stream) override;
   CONTENT_EXPORT void SetAlwaysHidePlayPauseButton(bool is_visible) override;
+  CONTENT_EXPORT void SkipAd() override;
+
+  // media_session::mojom::MediaSessionObserver overrides.
+  CONTENT_EXPORT void MediaSessionInfoChanged(
+      media_session::mojom::MediaSessionInfoPtr session_info) override {}
+  CONTENT_EXPORT void MediaSessionMetadataChanged(
+      const base::Optional<media_session::MediaMetadata>& metadata) override {}
+  CONTENT_EXPORT void MediaSessionActionsChanged(
+      const std::vector<media_session::mojom::MediaSessionAction>& actions)
+      override;
 
  private:
   friend class WebContentsUserData<PictureInPictureWindowControllerImpl>;
@@ -77,6 +91,8 @@ class PictureInPictureWindowControllerImpl
   std::unique_ptr<OverlayWindow> window_;
   std::unique_ptr<OverlaySurfaceEmbedder> embedder_;
   WebContentsImpl* const initiator_;
+
+  mojo::Binding<media_session::mojom::MediaSessionObserver> observer_binding_;
 
   // Used to determine the state of the media player and route messages to
   // the corresponding media player with id |media_player_id_|.
