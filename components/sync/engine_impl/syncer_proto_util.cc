@@ -338,6 +338,8 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
                             msg.message_contents(),
                             ClientToServerMessage::Contents_MAX + 1);
 
+  const base::Time start_time = base::Time::Now();
+
   // Fills in params.buffer_out and params.response.
   if (!scm->PostBufferWithCachedAuth(&params)) {
     LOG(WARNING) << "Error posting from syncer:" << params.response;
@@ -348,6 +350,9 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
     DLOG(WARNING) << "Error parsing response from sync server";
     return false;
   }
+
+  UMA_HISTOGRAM_MEDIUM_TIMES("Sync.PostedClientToServerMessageLatency",
+                             base::Time::Now() - start_time);
 
   if (response->error_code() != sync_pb::SyncEnums::SUCCESS) {
     base::UmaHistogramSparse("Sync.PostedClientToServerMessageError",
