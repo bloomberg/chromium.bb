@@ -80,6 +80,7 @@ void WaylandPointer::Leave(void* data,
   if (surface) {
     WaylandWindow* window = WaylandWindow::FromSurface(surface);
     window->set_pointer_focus(false);
+    window->set_has_implicit_grab(false);
     pointer->window_with_pointer_focus_ = nullptr;
   }
 }
