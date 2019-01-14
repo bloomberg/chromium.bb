@@ -351,8 +351,7 @@ gfx::Image AvatarToolbarButton::GetIconImageFromProfile() const {
     std::vector<AccountInfo> promo_accounts =
         signin_ui_util::GetAccountsForDicePromos(profile_);
     if (!promo_accounts.empty()) {
-      return AccountTrackerServiceFactory::GetForProfile(profile_)
-          ->GetAccountImage(promo_accounts[0].account_id);
+      return promo_accounts.front().account_image;
     }
   }
 #endif  // !defined(OS_CHROMEOS)

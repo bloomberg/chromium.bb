@@ -44,12 +44,9 @@ gfx::ImageSkia SizeAndCircleIcon(const gfx::Image& icon) {
 }  // namespace
 
 DiceAccountsMenu::DiceAccountsMenu(const std::vector<AccountInfo>& accounts,
-                                   const std::vector<gfx::Image>& icons,
                                    Callback account_selected_callback)
     : accounts_(accounts),
-      icons_(icons),
       account_selected_callback_(std::move(account_selected_callback)) {
-  DCHECK_EQ(accounts.size(), icons.size());
 }
 
 void DiceAccountsMenu::Show(views::View* anchor_view,
@@ -96,7 +93,9 @@ views::MenuItemView* DiceAccountsMenu::BuildMenu() {
   for (size_t idx = 0; idx < accounts_.size(); idx++) {
     views::MenuItemView* item = menu->AppendMenuItemWithIcon(
         idx, base::UTF8ToUTF16(accounts_[idx].email),
-        SizeAndCircleIcon(icons_[idx].IsEmpty() ? default_icon : icons_[idx]));
+        SizeAndCircleIcon(accounts_[idx].account_image.IsEmpty()
+                              ? default_icon
+                              : accounts_[idx].account_image));
     item->SetMargins(kVerticalItemMargins, kVerticalItemMargins);
   }
   // Add the "Use another account" button.

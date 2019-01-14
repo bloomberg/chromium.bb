@@ -57,9 +57,7 @@ DiceBubbleSyncPromoView::DiceBubbleSyncPromoView(
     signin_button_view_ =
         new DiceSigninButtonView(this, signin_button_prominent);
   } else {
-    gfx::Image account_icon =
-        AccountTrackerServiceFactory::GetForProfile(profile)->GetAccountImage(
-            accounts[0].account_id);
+    gfx::Image account_icon = accounts[0].account_image;
     if (account_icon.IsEmpty()) {
       account_icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           profiles::GetPlaceholderAvatarIconResourceID());
@@ -70,12 +68,6 @@ DiceBubbleSyncPromoView::DiceBubbleSyncPromoView(
 
     // Store account information for submenu.
     accounts_for_submenu_.assign(accounts.begin() + 1, accounts.end());
-    AccountTrackerService* tracker_service =
-        AccountTrackerServiceFactory::GetForProfile(profile);
-    for (auto account : accounts_for_submenu_) {
-      images_for_submenu_.push_back(
-          tracker_service->GetAccountImage(account.account_id));
-    }
   }
   signin_metrics::RecordSigninImpressionUserActionForAccessPoint(access_point);
   signin_metrics::RecordSigninImpressionWithAccountUserActionForAccessPoint(
@@ -98,7 +90,7 @@ void DiceBubbleSyncPromoView::ButtonPressed(views::Button* sender,
     // Using base::Unretained(this) is safe here because |dice_accounts_menu_|
     // is owned by |DiceBubbleSyncPromoView|, i.e. |this|.
     dice_accounts_menu_ = std::make_unique<DiceAccountsMenu>(
-        accounts_for_submenu_, images_for_submenu_,
+        accounts_for_submenu_,
         base::BindOnce(&DiceBubbleSyncPromoView::EnableSync,
                        base::Unretained(this),
                        false /* is_default_promo_account */));

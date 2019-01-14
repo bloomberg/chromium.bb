@@ -34,7 +34,6 @@ class DiceAccountsMenu : public views::MenuDelegate {
   // item in the accounts menu is the "Use another accounts" button. The spacing
   // within the items is increased to match bubble |HoverButton|s.
   DiceAccountsMenu(const std::vector<AccountInfo>& accounts,
-                   const std::vector<gfx::Image>& icons,
                    Callback account_selected_callback);
   ~DiceAccountsMenu() override;
 
@@ -59,8 +58,6 @@ class DiceAccountsMenu : public views::MenuDelegate {
   std::unique_ptr<views::MenuRunner> runner_;
 
   std::vector<AccountInfo> accounts_;
-  std::vector<gfx::Image> icons_;
-
   Callback account_selected_callback_;
   base::OnceClosure signout_callback_;
 

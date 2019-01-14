@@ -196,18 +196,6 @@ BadgedProfilePhoto::BadgeType GetProfileBadgeType(Profile* profile) {
   return BadgedProfilePhoto::BADGE_TYPE_NONE;
 }
 
-std::vector<gfx::Image> GetImagesForAccounts(
-    const std::vector<AccountInfo>& accounts,
-    Profile* profile) {
-  AccountTrackerService* tracker_service =
-      AccountTrackerServiceFactory::GetForProfile(profile);
-  std::vector<gfx::Image> images;
-  for (auto account : accounts) {
-    images.push_back(tracker_service->GetAccountImage(account.account_id));
-  }
-  return images;
-}
-
 gfx::ImageSkia CreateVectorIcon(const gfx::VectorIcon& icon) {
   return gfx::CreateVectorIcon(
       icon, kIconSize,
@@ -761,9 +749,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     // Using base::Unretained(this) is safe here because |dice_accounts_menu_|
     // is owned by |ProfileChooserView|, i.e. |this|.
     dice_accounts_menu_ = std::make_unique<DiceAccountsMenu>(
-        accounts, GetImagesForAccounts(accounts, browser_->profile()),
-        base::BindOnce(&ProfileChooserView::EnableSync,
-                       base::Unretained(this)));
+        accounts, base::BindOnce(&ProfileChooserView::EnableSync,
+                                 base::Unretained(this)));
     // Add sign-out button.
     dice_accounts_menu_->SetSignOutButtonCallback(base::BindOnce(
         &ProfileChooserView::SignOutAllWebAccounts, base::Unretained(this)));
@@ -1239,9 +1226,7 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
   // Create a button to sign in the first account of
   // |dice_sync_promo_accounts_|.
   AccountInfo dice_promo_default_account = dice_sync_promo_accounts_[0];
-  gfx::Image account_icon =
-      AccountTrackerServiceFactory::GetForProfile(browser_->profile())
-          ->GetAccountImage(dice_promo_default_account.account_id);
+  gfx::Image account_icon = dice_promo_default_account.account_image;
   if (account_icon.IsEmpty()) {
     account_icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         profiles::GetPlaceholderAvatarIconResourceID());

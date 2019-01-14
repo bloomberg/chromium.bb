@@ -181,19 +181,16 @@ std::string GetSyncErrorAction(sync_ui_util::ActionType action_type) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // Returns the base::Value associated with the account, to use in the stored
 // accounts list.
-base::Value GetAccountValue(const AccountInfo& account,
-                            AccountTrackerService* account_tracker) {
+base::Value GetAccountValue(const AccountInfo& account) {
   DCHECK(!account.IsEmpty());
   base::Value dictionary(base::Value::Type::DICTIONARY);
   dictionary.SetKey("email", base::Value(account.email));
   dictionary.SetKey("fullName", base::Value(account.full_name));
   dictionary.SetKey("givenName", base::Value(account.given_name));
-  const gfx::Image& account_image =
-      account_tracker->GetAccountImage(account.account_id);
-  if (!account_image.IsEmpty()) {
+  if (!account.account_image.IsEmpty()) {
     dictionary.SetKey(
         "avatarImage",
-        base::Value(webui::GetBitmapDataUrl(account_image.AsBitmap())));
+        base::Value(webui::GetBitmapDataUrl(account.account_image.AsBitmap())));
   }
   return dictionary;
 }
@@ -499,38 +496,37 @@ void PeopleHandler::HandleGetStoredAccounts(const base::ListValue* args) {
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
 
-  ResolveJavascriptCallback(*callback_id, *GetStoredAccountsList());
+  ResolveJavascriptCallback(*callback_id, GetStoredAccountsList());
 }
 
 void PeopleHandler::OnAccountUpdated(const AccountInfo& info) {
-  FireWebUIListener("stored-accounts-updated", *GetStoredAccountsList());
+  FireWebUIListener("stored-accounts-updated", GetStoredAccountsList());
 }
 
 void PeopleHandler::OnAccountRemoved(const AccountInfo& info) {
-  FireWebUIListener("stored-accounts-updated", *GetStoredAccountsList());
+  FireWebUIListener("stored-accounts-updated", GetStoredAccountsList());
 }
 
-std::unique_ptr<base::ListValue> PeopleHandler::GetStoredAccountsList() {
-  std::unique_ptr<base::ListValue> accounts_list =
-      std::make_unique<base::ListValue>();
-  bool dice_enabled =
+base::Value PeopleHandler::GetStoredAccountsList() {
+  base::Value accounts(base::Value::Type::LIST);
+  const bool dice_enabled =
       AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_);
 
   // Dice and unified consent both disabled: do not show the list of accounts.
   if (!dice_enabled && !unified_consent::IsUnifiedConsentFeatureEnabled())
-    return accounts_list;
+    return accounts;
 
   AccountTrackerService* account_tracker =
       AccountTrackerServiceFactory::GetForProfile(profile_);
 
+  base::Value::ListStorage& accounts_list = accounts.GetList();
   if (dice_enabled) {
     // If dice is enabled, show all the accounts.
     std::vector<AccountInfo> accounts =
         signin_ui_util::GetAccountsForDicePromos(profile_);
-    accounts_list->Reserve(accounts.size());
+    accounts_list.reserve(accounts.size());
     for (auto const& account : accounts) {
-      accounts_list->GetList().push_back(
-          GetAccountValue(account, account_tracker));
+      accounts_list.push_back(GetAccountValue(account));
     }
   } else {
     // If dice is disabled (and unified consent enabled), show only the primary
@@ -538,12 +534,12 @@ std::unique_ptr<base::ListValue> PeopleHandler::GetStoredAccountsList() {
     std::string primary_account = SigninManagerFactory::GetForProfile(profile_)
                                       ->GetAuthenticatedAccountId();
     if (!primary_account.empty()) {
-      accounts_list->GetList().push_back(GetAccountValue(
-          account_tracker->GetAccountInfo(primary_account), account_tracker));
+      accounts_list.push_back(
+          GetAccountValue(account_tracker->GetAccountInfo(primary_account)));
     }
   }
 
-  return accounts_list;
+  return accounts;
 }
 
 void PeopleHandler::HandleStartSyncingWithEmail(const base::ListValue* args) {

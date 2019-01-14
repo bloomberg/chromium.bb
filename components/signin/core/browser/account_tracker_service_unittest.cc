@@ -462,16 +462,16 @@ TEST_F(AccountTrackerServiceTest, TokenAvailable_UserInfo_ImageSuccess) {
   }));
 
   EXPECT_TRUE(account_tracker()
-                  ->GetAccountImage(AccountKeyToAccountId(kAccountKeyAlpha))
-                  .IsEmpty());
+                  ->GetAccountInfo(AccountKeyToAccountId(kAccountKeyAlpha))
+                  .account_image.IsEmpty());
   ReturnAccountImageFetchSuccess(kAccountKeyAlpha);
   EXPECT_TRUE(observer()->CheckEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyAlpha),
                     AccountKeyToGaiaId(kAccountKeyAlpha)),
   }));
   EXPECT_FALSE(account_tracker()
-                   ->GetAccountImage(AccountKeyToAccountId(kAccountKeyAlpha))
-                   .IsEmpty());
+                   ->GetAccountInfo(AccountKeyToAccountId(kAccountKeyAlpha))
+                   .account_image.IsEmpty());
 }
 
 TEST_F(AccountTrackerServiceTest, TokenAvailable_UserInfo_ImageFailure) {
@@ -484,12 +484,12 @@ TEST_F(AccountTrackerServiceTest, TokenAvailable_UserInfo_ImageFailure) {
   }));
 
   EXPECT_TRUE(account_tracker()
-                  ->GetAccountImage(AccountKeyToAccountId(kAccountKeyAlpha))
-                  .IsEmpty());
+                  ->GetAccountInfo(AccountKeyToAccountId(kAccountKeyAlpha))
+                  .account_image.IsEmpty());
   ReturnAccountImageFetchFailure(kAccountKeyAlpha);
   EXPECT_TRUE(account_tracker()
-                  ->GetAccountImage(AccountKeyToAccountId(kAccountKeyAlpha))
-                  .IsEmpty());
+                  ->GetAccountInfo(AccountKeyToAccountId(kAccountKeyAlpha))
+                  .account_image.IsEmpty());
 }
 
 TEST_F(AccountTrackerServiceTest, TokenAvailable_UserInfo_Revoked) {
