@@ -260,7 +260,7 @@ void WorkspaceLayoutManager::OnWindowHierarchyChanged(
   if (params.new_parent && params.new_parent == settings_bubble_container_)
     settings_bubble_window_observer_.ObserveWindow(params.target);
 
-  if (!wm::GetWindowState(params.target)->IsActive())
+  if (!wm::IsActiveWindow(params.target))
     return;
   // If the window is already tracked by the workspace this update would be
   // redundant as the fullscreen and shelf state would have been handled in

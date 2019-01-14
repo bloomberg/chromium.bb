@@ -50,6 +50,9 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
       break;
     case ui::ET_MOUSE_PRESSED: {
       wm::WindowState* target_state = wm::GetWindowState(target);
+      // No action for windows that aren't managed by WindowState.
+      if (!target_state)
+        return;
 
       if (event->IsOnlyLeftMouseButton()) {
         if (event->flags() & ui::EF_IS_DOUBLE_CLICK) {

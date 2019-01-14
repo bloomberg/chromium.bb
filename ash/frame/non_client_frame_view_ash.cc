@@ -250,7 +250,10 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
   // NonClientFrameViewAshImmersiveHelper. This is the case for container apps
   // such as ARC++, and in some tests.
   wm::WindowState* window_state = wm::GetWindowState(frame_window);
-  if (!window_state->HasDelegate()) {
+  // A window may be created as a child window of the toplevel (captive portal).
+  // TODO(oshima): It should probably be a transient child rather than normal
+  // child. Investigate if we can remove this check.
+  if (window_state && !window_state->HasDelegate()) {
     immersive_helper_ =
         std::make_unique<NonClientFrameViewAshImmersiveHelper>(frame, this);
   }

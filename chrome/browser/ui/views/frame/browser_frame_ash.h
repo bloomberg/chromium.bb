@@ -23,6 +23,7 @@ class BrowserFrameAsh : public views::NativeWidgetAura,
   ~BrowserFrameAsh() override;
 
   // Overridden from views::NativeWidgetAura:
+  void OnWidgetInitDone() override;
   void OnWindowTargetVisibilityChanged(bool visible) override;
 
   // Overridden from NativeBrowserFrame:

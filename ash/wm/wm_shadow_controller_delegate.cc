@@ -42,9 +42,14 @@ bool WmShadowControllerDelegate::ShouldShowShadowForWindow(
     }
   }
 
+  // The shadow state will be updated when the window is added to a parent.
+  if (!window->parent())
+    return false;
+
   // Show the shadow if it's currently being dragged no matter of the window's
   // show state.
-  if (wm::GetWindowState(window)->is_dragged())
+  auto* window_state = wm::GetWindowState(window);
+  if (window_state && window_state->is_dragged())
     return ::wm::GetShadowElevationConvertDefault(window) > 0;
 
   // Hide the shadow if it's not being dragged and it's a maximized/fullscreen
