@@ -36,10 +36,8 @@ bool VulkanImplementationX11::InitializeVulkanInstance() {
   if (!vulkan_function_pointers->vulkan_loader_library_)
     return false;
 
-  if (!vulkan_instance_.Initialize(required_extensions, {})) {
-    vulkan_instance_.Destroy();
+  if (!vulkan_instance_.Initialize(required_extensions, {}))
     return false;
-  }
 
   // Initialize platform function pointers
   vkGetPhysicalDeviceXlibPresentationSupportKHR_ =
@@ -49,7 +47,6 @@ bool VulkanImplementationX11::InitializeVulkanInstance() {
               "vkGetPhysicalDeviceXlibPresentationSupportKHR"));
   if (!vkGetPhysicalDeviceXlibPresentationSupportKHR_) {
     LOG(ERROR) << "vkGetPhysicalDeviceXlibPresentationSupportKHR not found";
-    vulkan_instance_.Destroy();
     return false;
   }
 
@@ -58,7 +55,6 @@ bool VulkanImplementationX11::InitializeVulkanInstance() {
           vulkan_instance_.vk_instance(), "vkCreateXlibSurfaceKHR"));
   if (!vkCreateXlibSurfaceKHR_) {
     LOG(ERROR) << "vkCreateXlibSurfaceKHR not found";
-    vulkan_instance_.Destroy();
     return false;
   }
 

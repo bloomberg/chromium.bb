@@ -228,21 +228,25 @@ void VulkanInstance::Destroy() {
             vkGetInstanceProcAddr(vk_instance_,
                                   "vkDestroyDebugReportCallbackEXT"));
     DCHECK(vkDestroyDebugReportCallbackEXT);
-    if (error_callback_ != VK_NULL_HANDLE)
+    if (error_callback_ != VK_NULL_HANDLE) {
       vkDestroyDebugReportCallbackEXT(vk_instance_, error_callback_, nullptr);
-    if (warning_callback_ != VK_NULL_HANDLE)
+      error_callback_ = VK_NULL_HANDLE;
+    }
+    if (warning_callback_ != VK_NULL_HANDLE) {
       vkDestroyDebugReportCallbackEXT(vk_instance_, warning_callback_, nullptr);
+      warning_callback_ = VK_NULL_HANDLE;
+    }
   }
 #endif
   if (vk_instance_ != VK_NULL_HANDLE) {
     vkDestroyInstance(vk_instance_, nullptr);
+    vk_instance_ = VK_NULL_HANDLE;
   }
   VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
   if (vulkan_function_pointers->vulkan_loader_library_)
     base::UnloadNativeLibrary(vulkan_function_pointers->vulkan_loader_library_);
   vulkan_function_pointers->vulkan_loader_library_ = nullptr;
-  vk_instance_ = VK_NULL_HANDLE;
 }
 
 }  // namespace gpu
