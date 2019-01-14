@@ -91,6 +91,7 @@ class MockPasswordStore : public PasswordStore {
 
   MOCK_METHOD0(BeginTransaction, bool());
   MOCK_METHOD0(CommitTransaction, bool());
+  MOCK_METHOD0(GetMetadataStore, syncer::SyncMetadataStore*());
 
   PasswordStoreSync* GetSyncInterface() { return this; }
 
