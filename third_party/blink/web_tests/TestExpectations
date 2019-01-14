@@ -5909,3 +5909,6 @@ crbug.com/638435 external/wpt/content-security-policy/unsafe-hashes/javascript_s
 
 # Sheriff 2019-01-14
 crbug.com/921583 http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
+crbug.com/921151 [ Linux ] http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure Pass ]
+crbug.com/921151 [ Linux ] virtual/outofblink-cors/http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure Pass ]
+crbug.com/921151 [ Linux ] virtual/outofblink-cors-ns/http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure Pass ]
