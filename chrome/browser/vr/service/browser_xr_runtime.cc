@@ -6,6 +6,7 @@
 
 #include "chrome/browser/vr/service/xr_device_impl.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "device/vr/vr_device.h"
 
@@ -175,6 +176,7 @@ void BrowserXRRuntime::UpdateListeningForActivate(XRDeviceImpl* device) {
 }
 
 void BrowserXRRuntime::InitializeAndGetDisplayInfo(
+    content::RenderFrameHost* render_frame_host,
     device::mojom::XRDevice::GetImmersiveVRDisplayInfoCallback callback) {
   device::mojom::VRDisplayInfoPtr device_info = GetVRDisplayInfo();
   if (device_info) {
@@ -182,8 +184,13 @@ void BrowserXRRuntime::InitializeAndGetDisplayInfo(
     return;
   }
 
+  int render_process_id =
+      render_frame_host ? render_frame_host->GetProcess()->GetID() : -1;
+  int render_frame_id =
+      render_frame_host ? render_frame_host->GetRoutingID() : -1;
   pending_initialization_callbacks_.push_back(std::move(callback));
   runtime_->EnsureInitialized(
+      render_process_id, render_frame_id,
       base::BindOnce(&BrowserXRRuntime::OnInitialized, base::Unretained(this)));
 }
 

@@ -207,7 +207,8 @@ void XRDeviceImpl::GetImmersiveVRDisplayInfo(
     return;
   }
 
-  immersive_runtime->InitializeAndGetDisplayInfo(std::move(callback));
+  immersive_runtime->InitializeAndGetDisplayInfo(render_frame_host_,
+                                                 std::move(callback));
 }
 
 void XRDeviceImpl::SetInFocusedFrame(bool in_focused_frame) {

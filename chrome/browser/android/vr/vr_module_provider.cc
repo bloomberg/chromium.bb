@@ -6,12 +6,20 @@
 
 #include "chrome/browser/android/vr/register_jni.h"
 #include "chrome/browser/android/vr/vr_module_provider.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "device/vr/android/gvr/vr_module_delegate.h"
 #include "jni/VrModuleProvider_jni.h"
 
 namespace vr {
 
-VrModuleProvider::VrModuleProvider() = default;
+VrModuleProvider::VrModuleProvider(TabAndroid* tab)
+    : j_vr_module_provider_(
+          Java_VrModuleProvider_create(base::android::AttachCurrentThread(),
+                                       (jlong)this)),
+      tab_(tab) {
+  DCHECK(tab_);
+}
 
 VrModuleProvider::~VrModuleProvider() {
   if (!j_vr_module_provider_.obj()) {
@@ -34,16 +42,10 @@ void VrModuleProvider::InstallModule(
   if (on_finished_callbacks_.size() > 1) {
     return;
   }
-  DCHECK(!j_vr_module_provider_.obj());
-  j_vr_module_provider_.Reset(Java_VrModuleProvider_create(
-      base::android::AttachCurrentThread(), (jlong) this));
-  Java_VrModuleProvider_installModule(base::android::AttachCurrentThread(),
-                                      j_vr_module_provider_);
-}
 
-void VrModuleProvider::ShowInstallResult(bool success) {
-  Java_VrModuleProvider_showInstallResult(base::android::AttachCurrentThread(),
-                                          success);
+  Java_VrModuleProvider_installModule(base::android::AttachCurrentThread(),
+                                      j_vr_module_provider_,
+                                      tab_->GetJavaObject());
 }
 
 void VrModuleProvider::OnInstalledModule(
@@ -56,11 +58,28 @@ void VrModuleProvider::OnInstalledModule(
     std::move(on_finished_callbacks_.front()).Run(success);
     on_finished_callbacks_.pop();
   }
-  j_vr_module_provider_ = nullptr;
+}
+
+std::unique_ptr<device::VrModuleDelegate>
+VrModuleProviderFactory::CreateDelegate(int render_process_id,
+                                        int render_frame_id) {
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  DCHECK(render_frame_host);
+
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  DCHECK(web_contents);
+
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+  DCHECK(tab);
+
+  return std::make_unique<VrModuleProvider>(tab);
 }
 
 static void JNI_VrModuleProvider_Init(JNIEnv* env) {
-  device::VrModuleDelegate::Set(std::make_unique<VrModuleProvider>());
+  device::VrModuleDelegateFactory::Set(
+      std::make_unique<VrModuleProviderFactory>());
 }
 
 static void JNI_VrModuleProvider_RegisterJni(JNIEnv* env) {

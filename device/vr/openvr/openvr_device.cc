@@ -225,7 +225,9 @@ void OpenVRDevice::RequestSession(
                                 std::move(options), std::move(my_callback)));
 }
 
-void OpenVRDevice::EnsureInitialized(EnsureInitializedCallback callback) {
+void OpenVRDevice::EnsureInitialized(int render_process_id,
+                                     int render_frame_id,
+                                     EnsureInitializedCallback callback) {
   EnsureValidDisplayInfo();
   std::move(callback).Run();
 }
