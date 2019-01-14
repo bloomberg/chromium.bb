@@ -1513,6 +1513,14 @@ bool LoginDatabase::ClearModelTypeState(syncer::ModelType model_type) {
   return s.Run();
 }
 
+bool LoginDatabase::BeginTransaction() {
+  return db_.BeginTransaction();
+}
+
+bool LoginDatabase::CommitTransaction() {
+  return db_.CommitTransaction();
+}
+
 int LoginDatabase::GetIdForTesting(const PasswordForm& form) const {
   DCHECK(!id_statement_.empty());
   sql::Statement s(

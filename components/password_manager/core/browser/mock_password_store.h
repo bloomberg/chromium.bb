@@ -89,6 +89,9 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD0(ClearAllEnterprisePasswordHash, void());
 #endif
 
+  MOCK_METHOD0(BeginTransaction, bool());
+  MOCK_METHOD0(CommitTransaction, bool());
+
   PasswordStoreSync* GetSyncInterface() { return this; }
 
  protected:

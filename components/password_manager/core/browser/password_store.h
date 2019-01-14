@@ -499,9 +499,9 @@ class PasswordStore : protected PasswordStoreSync,
   PasswordStoreChangeList RemoveLoginSync(
       const autofill::PasswordForm& form) override;
 
-  // Called by WrapModificationTask() once the underlying data-modifying
-  // operation has been performed. Notifies observers that password store data
-  // may have been changed.
+  // Called by *Internal() methods once the underlying data-modifying operation
+  // has been performed. Notifies observers that password store data may have
+  // been changed.
   void NotifyLoginsChanged(const PasswordStoreChangeList& changes) override;
 
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
@@ -564,14 +564,9 @@ class PasswordStore : protected PasswordStoreSync,
   void Schedule(void (PasswordStore::*func)(std::unique_ptr<GetLoginsRequest>),
                 PasswordStoreConsumer* consumer);
 
-  // Wrapper method called on the destination sequence that invokes |task| and
-  // then calls back into the source sequence to notify observers that the
-  // password store may have been modified via NotifyLoginsChanged(). Note that
-  // there is no guarantee that the called method will actually modify the
-  // password store data.
-  void WrapModificationTask(ModificationTask task);
-
-  // Temporary specializations of WrapModificationTask for a better stack trace.
+  // The following methods notify observers that the password store may have
+  // been modified via NotifyLoginsChanged(). Note that there is no guarantee
+  // that the called method will actually modify the password store data.
   void AddLoginInternal(const autofill::PasswordForm& form);
   void UpdateLoginInternal(const autofill::PasswordForm& form);
   void RemoveLoginInternal(const autofill::PasswordForm& form);

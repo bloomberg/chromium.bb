@@ -84,6 +84,10 @@ class PasswordStoreDefault : public PasswordStore {
   std::vector<InteractionsStats> GetSiteStatsImpl(
       const GURL& origin_domain) override;
 
+  // Implements PasswordStoreSync interface.
+  bool BeginTransaction() override;
+  bool CommitTransaction() override;
+
   inline bool DeleteAndRecreateDatabaseFile() {
     return login_db_->DeleteAndRecreateDatabaseFile();
   }
