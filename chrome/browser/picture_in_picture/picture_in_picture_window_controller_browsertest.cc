@@ -6,6 +6,7 @@
 
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
@@ -24,15 +25,19 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "media/base/media_switches.h"
 #include "net/dns/mock_host_resolver.h"
+#include "services/media_session/public/cpp/features.h"
 #include "skia/ext/image_operations.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
 #include "ui/aura/window.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/gfx/codec/png_codec.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/views/overlay/overlay_window_views.h"
+#include "chrome/browser/ui/views/overlay/skip_ad_label_button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget_observer.h"
 #endif
@@ -73,6 +78,7 @@ class MockPictureInPictureWindowController
   MOCK_METHOD0(TogglePlayPause, bool());
   MOCK_METHOD1(CustomControlPressed, void(const std::string&));
   MOCK_METHOD1(SetAlwaysHidePlayPauseButton, void(bool));
+  MOCK_METHOD0(SkipAd, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPictureInPictureWindowController);
@@ -1764,4 +1770,98 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
       active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
   EXPECT_TRUE(in_picture_in_picture);
+}
+
+class MediaSessionPictureInPictureWindowControllerBrowserTest
+    : public PictureInPictureWindowControllerBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PictureInPictureWindowControllerBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "MediaSession");
+    scoped_feature_list_.InitWithFeatures(
+        {media_session::features::kMediaSessionService, media::kSkipAd}, {});
+  }
+
+#if !defined(OS_ANDROID)
+  void MoveMouseOver(OverlayWindowViews* window) {
+    gfx::Point p(window->GetBounds().x(), window->GetBounds().y());
+    ui::MouseEvent moved_over(ui::ET_MOUSE_MOVED, p, p, ui::EventTimeForNow(),
+                              ui::EF_NONE, ui::EF_NONE);
+    window->OnMouseEvent(&moved_over);
+  }
+#endif
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+#if !defined(OS_ANDROID)
+// Tests that a Skip Ad button is displayed in the Picture-in-Picture window
+// when Media Session Action "skipad" is handled by the website.
+IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
+                       SkipAdButtonVisibility) {
+  LoadTabAndEnterPictureInPicture(browser());
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+  ASSERT_TRUE(overlay_window);
+
+  // Skip Ad button is not displayed initially when mouse is hovering over the
+  // window.
+  MoveMouseOver(overlay_window);
+  EXPECT_FALSE(
+      overlay_window->skip_ad_controls_view_for_testing()->layer()->visible());
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents,
+                                     "setMediaSessionSkipAdActionHandler();"));
+
+  // Skip Ad button is not displayed if video is not playing even if mouse is
+  // hovering over the window and media session action handler has been set.
+  base::RunLoop().RunUntilIdle();
+  MoveMouseOver(overlay_window);
+  EXPECT_FALSE(
+      overlay_window->skip_ad_controls_view_for_testing()->layer()->visible());
+
+  EXPECT_FALSE(
+      overlay_window->skip_ad_controls_view_for_testing()->layer()->visible());
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+
+  // Set action handler and check that Skip Ad button is now displayed when
+  // video plays and mouse is hovering over the window.
+  base::RunLoop().RunUntilIdle();
+  MoveMouseOver(overlay_window);
+  EXPECT_TRUE(
+      overlay_window->skip_ad_controls_view_for_testing()->layer()->visible());
+
+  // Unset action handler and check that Skip Ad button is not displayed when
+  // video plays and mouse is hovering over the window.
+  ASSERT_TRUE(content::ExecuteScript(
+      active_web_contents, "unsetMediaSessionSkipAdActionHandler();"));
+  base::RunLoop().RunUntilIdle();
+  MoveMouseOver(overlay_window);
+  EXPECT_FALSE(
+      overlay_window->skip_ad_controls_view_for_testing()->layer()->visible());
+}
+#endif
+
+// Tests that clicking the Skip Ad button in the Picture-in-Picture window
+// calls the Media Session Action "skipad" handler function.
+IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
+                       SkipAdHandlerCalled) {
+  LoadTabAndEnterPictureInPicture(browser());
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents,
+                                     "setMediaSessionSkipAdActionHandler();"));
+  base::RunLoop().RunUntilIdle();
+
+  // Simulates user clicking "Skip Ad" and check the handler function is called.
+  window_controller()->SkipAd();
+  base::string16 expected_title = base::ASCIIToUTF16("skipad");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
 }
