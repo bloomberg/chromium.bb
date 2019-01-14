@@ -53,10 +53,20 @@ void {{struct_name}}_{{packed_field.field.name}}_add({{struct_name}}Ptr self, {{
 void {{struct_name}}_{{packed_field.field.name}}_set({{struct_name}}Ptr self, {{packed_field.field.kind|c_wrapper_type}} {{packed_field.field.name}}) {
   DCHECK(self);
 {%-   if kind|is_struct_kind %}
-  self->{{packed_field.field.name}}.reset({{packed_field.field.name}});
+  self->{{packed_field.field.name}}.reset();
+  if ({{packed_field.field.name}} != nullptr)
+    self->{{packed_field.field.name}}.emplace(*{{packed_field.field.name}});
 {%-   else %}
   self->{{packed_field.field.name}} = {{packed_field.field.name}};
 {%-   endif %}
+}
+{%- endif %}
+{%- if kind|is_struct_kind %}
+void {{struct_name}}_{{packed_field.field.name}}_move({{struct_name}}Ptr self, {{packed_field.field.kind|c_wrapper_type}} {{packed_field.field.name}}) {
+  DCHECK(self);
+  self->{{packed_field.field.name}}.reset();
+  if ({{packed_field.field.name}} != nullptr)
+    self->{{packed_field.field.name}}.emplace(std::move(*{{packed_field.field.name}}));
 }
 {%- endif %}
 {% endfor %}
@@ -88,7 +98,9 @@ void {{struct_name}}_{{packed_field.field.name}}_clear({{struct_name}}Ptr self) 
 {{packed_field.field.kind|c_wrapper_type}} {{struct_name}}_{{packed_field.field.name}}_get({{struct_name}}Ptr self) {
   DCHECK(self);
 {%-   if kind|is_struct_kind %}
-  return self->{{packed_field.field.name}}.get();
+  if (self->{{packed_field.field.name}} == base::nullopt)
+    return nullptr;
+  return &self->{{packed_field.field.name}}.value();
 {%-   elif kind|is_string_kind %}
   return self->{{packed_field.field.name}}.c_str();
 {%-   else %}

@@ -1073,6 +1073,22 @@ CRONET_EXPORT
 void Cronet_RequestFinishedInfo_received_byte_count_set(
     Cronet_RequestFinishedInfoPtr self,
     int64_t received_byte_count);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_response_info_set(
+    Cronet_RequestFinishedInfoPtr self,
+    Cronet_UrlResponseInfoPtr response_info);
+// Move data from |response_info|. The caller retains ownership of
+// |response_info| and must destroy it.
+void Cronet_RequestFinishedInfo_response_info_move(
+    Cronet_RequestFinishedInfoPtr self,
+    Cronet_UrlResponseInfoPtr response_info);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_error_set(Cronet_RequestFinishedInfoPtr self,
+                                          Cronet_ErrorPtr error);
+// Move data from |error|. The caller retains ownership of |error| and must
+// destroy it.
+void Cronet_RequestFinishedInfo_error_move(Cronet_RequestFinishedInfoPtr self,
+                                           Cronet_ErrorPtr error);
 // Cronet_RequestFinishedInfo getters.
 CRONET_EXPORT
 int64_t Cronet_RequestFinishedInfo_request_start_get(
@@ -1121,6 +1137,12 @@ int64_t Cronet_RequestFinishedInfo_sent_byte_count_get(
     Cronet_RequestFinishedInfoPtr self);
 CRONET_EXPORT
 int64_t Cronet_RequestFinishedInfo_received_byte_count_get(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+Cronet_UrlResponseInfoPtr Cronet_RequestFinishedInfo_response_info_get(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+Cronet_ErrorPtr Cronet_RequestFinishedInfo_error_get(
     Cronet_RequestFinishedInfoPtr self);
 
 #ifdef __cplusplus

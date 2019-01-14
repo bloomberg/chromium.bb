@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 
 // Struct Cronet_Error.
 struct Cronet_Error {
@@ -177,6 +178,8 @@ struct Cronet_RequestFinishedInfo {
   bool socket_reused = false;
   int64_t sent_byte_count = -1;
   int64_t received_byte_count = -1;
+  base::Optional<Cronet_UrlResponseInfo> response_info;
+  base::Optional<Cronet_Error> error;
 
  private:
   DISALLOW_ASSIGN(Cronet_RequestFinishedInfo);
