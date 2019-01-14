@@ -69,7 +69,7 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
                            base::Optional<int> right_margin = base::nullopt);
   ~HostedAppButtonContainer() override;
 
-  void UpdateContentSettingViewsVisibility();
+  void UpdateStatusIconsVisibility();
 
   // Sets the container to paints its buttons the active/inactive color.
   void SetPaintAsActive(bool active);

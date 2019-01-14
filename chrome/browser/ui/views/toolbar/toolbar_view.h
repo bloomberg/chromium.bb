@@ -22,8 +22,6 @@
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "components/prefs/pref_member.h"
-#include "components/translate/core/browser/translate_step.h"
-#include "components/translate/core/common/translate_errors.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/views/accessible_pane_view.h"
@@ -123,12 +121,6 @@ class ToolbarView : public views::AccessiblePaneView,
   void ShowBookmarkBubble(const GURL& url,
                           bool already_bookmarked,
                           bookmarks::BookmarkBubbleObserver* observer);
-
-  // Shows the translate bubble and anchors it appropriately.
-  void ShowTranslateBubble(content::WebContents* web_contents,
-                           translate::TranslateStep step,
-                           translate::TranslateErrors::Type error_type,
-                           bool is_user_gesture);
 
   // Accessors.
   Browser* browser() const { return browser_; }

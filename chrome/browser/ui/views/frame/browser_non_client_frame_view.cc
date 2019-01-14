@@ -233,7 +233,7 @@ int BrowserNonClientFrameView::NonClientHitTest(const gfx::Point& point) {
 
 void BrowserNonClientFrameView::ResetWindowControls() {
   if (hosted_app_button_container_)
-    hosted_app_button_container_->UpdateContentSettingViewsVisibility();
+    hosted_app_button_container_->UpdateStatusIconsVisibility();
 }
 
 void BrowserNonClientFrameView::OnSingleTabModeChanged() {

@@ -55,8 +55,6 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
-#include "chrome/browser/ui/views/translate/translate_bubble_view.h"
-#include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -218,6 +216,7 @@ void LocationBarView::Init() {
   // such as PresentationReceiverWindowView, which do not support page actions.
   if (browser_) {
     params.types_enabled.push_back(PageActionIconType::kFind);
+    params.types_enabled.push_back(PageActionIconType::kTranslate);
     params.types_enabled.push_back(PageActionIconType::kZoom);
   }
   params.icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
@@ -235,8 +234,6 @@ void LocationBarView::Init() {
         command_updater(), browser_, this, font_list);
     page_action_icons_.push_back(save_credit_card_icon_view_);
   }
-  translate_icon_view_ = new TranslateIconView(command_updater(), this);
-  page_action_icons_.push_back(translate_icon_view_);
   if (browser_) {
     local_card_migration_icon_view_ = new autofill::LocalCardMigrationIconView(
         command_updater(), browser_, this, font_list);
@@ -389,7 +386,6 @@ gfx::Size LocationBarView::CalculatePreferredSize() const {
 
   // Compute width of omnibox-trailing content.
   int trailing_width =
-      IncrementalMinimumWidth(translate_icon_view_) +
       IncrementalMinimumWidth(page_action_icon_container_view_);
   if (star_view_)
     trailing_width += IncrementalMinimumWidth(star_view_);
@@ -513,7 +509,6 @@ void LocationBarView::Layout() {
   if (intent_picker_view_)
     add_trailing_decoration(intent_picker_view_);
 #endif
-  add_trailing_decoration(translate_icon_view_);
   if (save_credit_card_icon_view_)
     add_trailing_decoration(save_credit_card_icon_view_);
   if (local_card_migration_icon_view_)

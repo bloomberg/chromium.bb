@@ -50,7 +50,6 @@ class PageActionIconContainerView;
 class Profile;
 class SelectedKeywordView;
 class StarView;
-class TranslateIconView;
 
 namespace autofill {
 class LocalCardMigrationIconView;
@@ -162,9 +161,6 @@ class LocationBarView : public LocationBar,
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view() {
     return local_card_migration_icon_view_;
   }
-
-  // The translate icon. It may not be visible.
-  TranslateIconView* translate_icon_view() { return translate_icon_view_; }
 
   PageActionIconContainerView* page_action_icon_container_view() {
     return page_action_icon_container_view_;
@@ -408,9 +404,6 @@ class LocationBarView : public LocationBar,
   // The icon for the local card migration prompt.
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view_ =
       nullptr;
-
-  // The icon for Translate.
-  TranslateIconView* translate_icon_view_ = nullptr;
 
 #if defined(OS_CHROMEOS)
   // The intent picker for accessing ARC's apps.  It will be null when

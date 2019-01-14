@@ -1070,6 +1070,23 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FindIcon) {
   EXPECT_TRUE(find_icon->visible());
 }
 
+// Test that the find icon appears in the title bar for hosted app windows.
+IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, TranslateIcon) {
+  SetUpHostedApp();
+  PageActionIconView* translate_icon =
+      GetPageActionIcon(PageActionIconType::kTranslate);
+
+  ASSERT_TRUE(translate_icon);
+  EXPECT_FALSE(translate_icon->visible());
+
+  chrome::Find(app_browser_);
+  browser_view_->ShowTranslateBubble(browser_view_->GetActiveWebContents(),
+                                     translate::TRANSLATE_STEP_AFTER_TRANSLATE,
+                                     translate::TranslateErrors::NONE, true);
+
+  EXPECT_TRUE(translate_icon->visible());
+}
+
 // Tests that the focus toolbar command focuses the app menu button in web app
 // windows.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,

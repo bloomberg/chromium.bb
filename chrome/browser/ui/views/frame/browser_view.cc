@@ -1440,8 +1440,16 @@ ShowTranslateBubbleResult BrowserView::ShowTranslateBubble(
   if (IsMinimized())
     return ShowTranslateBubbleResult::BROWSER_WINDOW_MINIMIZED;
 
-  toolbar_->ShowTranslateBubble(web_contents, step, error_type,
-                                is_user_gesture);
+  PageActionIconView* translate_icon =
+      toolbar_button_provider()
+          ->GetPageActionIconContainerView()
+          ->GetPageActionIconView(PageActionIconType::kTranslate);
+  TranslateBubbleView::ShowBubble(
+      toolbar_button_provider()->GetAnchorView(), translate_icon, gfx::Point(),
+      web_contents, step, error_type,
+      is_user_gesture ? TranslateBubbleView::USER_GESTURE
+                      : TranslateBubbleView::AUTOMATIC);
+
   return ShowTranslateBubbleResult::SUCCESS;
 }
 
