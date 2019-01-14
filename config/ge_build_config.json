@@ -2184,7 +2184,6 @@
           "test_suites": [
             "sanity",
             "bvt-inline",
-            "bvt-installer",
             "bvt-arc",
             "bvt-cq",
             "bvt-perbuild"
@@ -2213,7 +2212,6 @@
           "test_suites": [
             "sanity",
             "bvt-inline",
-            "bvt-installer",
             "bvt-arc",
             "au",
             "bvt-perbuild"
@@ -2239,7 +2237,6 @@
           "test_suites": [
             "sanity",
             "bvt-inline",
-            "bvt-installer",
             "bvt-arc",
             "au",
             "bvt-cq",
@@ -2254,7 +2251,6 @@
           "test_suites": [
             "sanity",
             "bvt-inline",
-            "bvt-installer",
             "bvt-arc",
             "au",
             "bvt-cq",
@@ -2269,7 +2265,6 @@
           "test_suites": [
             "sanity",
             "bvt-inline",
-            "bvt-installer",
             "bvt-arc",
             "au",
             "bvt-cq",
@@ -2284,7 +2279,6 @@
           "test_suites": [
             "sanity",
             "bvt-inline",
-            "bvt-installer",
             "bvt-arc",
             "au",
             "bvt-cq",
@@ -2320,7 +2314,6 @@
           "test_suites": [
             "sanity",
             "bvt-inline",
-            "bvt-installer",
             "bvt-arc",
             "bvt-cq",
             "bvt-perbuild"
