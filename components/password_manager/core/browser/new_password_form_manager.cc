@@ -178,6 +178,20 @@ bool NewPasswordFormManager::DoesManage(
 #endif
 }
 
+bool NewPasswordFormManager::DoesManageAccordingToRendererId(
+    uint32_t form_renderer_id,
+    const PasswordManagerDriver* driver) const {
+  if (driver != driver_.get())
+    return false;
+#if defined(OS_IOS)
+  NOTREACHED();
+  // On iOS form name is used as the form identifier.
+  return false;
+#else
+  return observed_form_.unique_renderer_id == form_renderer_id;
+#endif
+}
+
 bool NewPasswordFormManager::IsEqualToSubmittedForm(
     const autofill::FormData& form) const {
   if (!is_submitted_)

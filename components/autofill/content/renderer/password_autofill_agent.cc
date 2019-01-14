@@ -16,6 +16,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1414,7 +1415,7 @@ void PasswordAutofillAgent::FillUsingRendererIDs(
       FindUsernamePasswordElements(form_data);
   if (password_element.IsNull()) {
     MaybeStoreFallbackData(form_data);
-    LogFirstFillingResult(FillingResult::kNoPasswordElement);
+    LogFirstFillingResult(form_data, FillingResult::kNoPasswordElement);
     return;
   }
 
@@ -1424,7 +1425,7 @@ void PasswordAutofillAgent::FillUsingRendererIDs(
   // If wait_for_username is true, we don't want to initially fill the form
   // until the user types in a valid username.
   if (form_data.wait_for_username) {
-    LogFirstFillingResult(FillingResult::kWaitForUsername);
+    LogFirstFillingResult(form_data, FillingResult::kWaitForUsername);
     return;
   }
 
@@ -1452,12 +1453,12 @@ void PasswordAutofillAgent::FillPasswordForm(
   // If wait_for_username is true, we don't want to initially fill the form
   // until the user types in a valid username.
   if (form_data.wait_for_username) {
-    LogFirstFillingResult(FillingResult::kWaitForUsername);
+    LogFirstFillingResult(form_data, FillingResult::kWaitForUsername);
     return;
   }
 
   if (elements.empty())
-    LogFirstFillingResult(FillingResult::kNoFillableElementsFound);
+    LogFirstFillingResult(form_data, FillingResult::kNoFillableElementsFound);
 
   for (auto element : elements) {
     WebInputElement username_element = !element.IsPasswordFieldForAutofill()
@@ -1734,7 +1735,8 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
       logger->LogMessage(
           Logger::STRING_FAILED_TO_FILL_NO_AUTOCOMPLETEABLE_ELEMENT);
     }
-    LogFirstFillingResult(FillingResult::kPasswordElementIsNotAutocompleteable);
+    LogFirstFillingResult(fill_data,
+                          FillingResult::kPasswordElementIsNotAutocompleteable);
     return false;
   }
 
@@ -1791,14 +1793,15 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
       if (logger)
         logger->LogMessage(Logger::STRING_FAILED_TO_FILL_PREFILLED_USERNAME);
       LogFirstFillingResult(
-          FillingResult::kUsernamePrefilledWithIncompatibleValue);
+          fill_data, FillingResult::kUsernamePrefilledWithIncompatibleValue);
       return false;
     }
     if (logger) {
       logger->LogMessage(
           Logger::STRING_FAILED_TO_FILL_FOUND_NO_PASSWORD_FOR_USERNAME);
     }
-    LogFirstFillingResult(FillingResult::kFoundNoPasswordForUsername);
+    LogFirstFillingResult(fill_data,
+                          FillingResult::kFoundNoPasswordForUsername);
     return false;
   }
 
@@ -1852,7 +1855,7 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   autofilled_elements_cache_.emplace(
       password_element->UniqueRendererFormControlId(),
       WebString::FromUTF16(password));
-  LogFirstFillingResult(FillingResult::kSuccess);
+  LogFirstFillingResult(fill_data, FillingResult::kSuccess);
   return true;
 }
 
@@ -1885,7 +1888,7 @@ bool PasswordAutofillAgent::FillFormOnPasswordReceived(
             cur_frame->GetSecurityOrigin().ToString().Utf8())) {
       if (logger)
         logger->LogMessage(Logger::STRING_FAILED_TO_FILL_INTO_IFRAME);
-      LogFirstFillingResult(FillingResult::kBlockedByFrameHierarchy);
+      LogFirstFillingResult(fill_data, FillingResult::kBlockedByFrameHierarchy);
       return false;
     }
   }
@@ -1896,7 +1899,8 @@ bool PasswordAutofillAgent::FillFormOnPasswordReceived(
       logger->LogMessage(
           Logger::STRING_FAILED_TO_FILL_NO_AUTOCOMPLETEABLE_ELEMENT);
     }
-    LogFirstFillingResult(FillingResult::kPasswordElementIsNotAutocompleteable);
+    LogFirstFillingResult(fill_data,
+                          FillingResult::kPasswordElementIsNotAutocompleteable);
     return false;
   }
 
@@ -2053,11 +2057,17 @@ void PasswordAutofillAgent::MaybeStoreFallbackData(
   last_supplied_password_info_iter_ = web_input_to_password_info_.begin();
 }
 
-void PasswordAutofillAgent::LogFirstFillingResult(FillingResult result) {
+void PasswordAutofillAgent::LogFirstFillingResult(
+    const PasswordFormFillData& form_data,
+    FillingResult result) {
   if (recorded_first_filling_result_)
     return;
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.FirstRendererFillingResult",
                             result);
+  if (form_data.has_renderer_ids) {
+    GetPasswordManagerDriver()->LogFirstFillingResult(
+        form_data.form_renderer_id, base::strict_cast<int32_t>(result));
+  }
   recorded_first_filling_result_ = true;
 }
 

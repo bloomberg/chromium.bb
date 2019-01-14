@@ -281,6 +281,18 @@ NewPasswordFormManager* FindMatchedManager(
   return nullptr;
 }
 
+// Finds the matched form manager with id |form_renderer_id| in |form_managers|.
+NewPasswordFormManager* FindMatchedManagerByRendererId(
+    uint32_t form_renderer_id,
+    const std::vector<std::unique_ptr<NewPasswordFormManager>>& form_managers,
+    const PasswordManagerDriver* driver) {
+  for (const auto& form_manager : form_managers) {
+    if (form_manager->DoesManageAccordingToRendererId(form_renderer_id, driver))
+      return form_manager.get();
+  }
+  return nullptr;
+}
+
 // Records the difference between how |old_manager| and |new_manager| understood
 // the pending credentials.
 void RecordParsingOnSavingDifference(
@@ -920,6 +932,16 @@ void PasswordManager::ReportSpecPriorityForGeneratedPassword(
     form_manager->GetMetricsRecorder()->ReportSpecPriorityForGeneratedPassword(
         spec_priority);
   }
+}
+
+void PasswordManager::LogFirstFillingResult(PasswordManagerDriver* driver,
+                                            uint32_t form_renderer_id,
+                                            int32_t result) {
+  NewPasswordFormManager* matching_manager =
+      FindMatchedManagerByRendererId(form_renderer_id, form_managers_, driver);
+  if (!matching_manager)
+    return;
+  matching_manager->GetMetricsRecorder()->RecordFirstFillingResult(result);
 }
 
 void PasswordManager::ProvisionallySaveManager(

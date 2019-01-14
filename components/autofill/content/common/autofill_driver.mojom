@@ -130,6 +130,13 @@ interface PasswordManagerDriver {
   // The focus changed to a different input in the same frame (e.g. tabbed from
   // email to password field).
   FocusedInputChanged(bool is_fillable, bool is_password_field);
+
+  // Sends the success state of filling credentials into a form. This happens
+  // only if the form being filled has a renderer_id. |result| is an
+  // integer serialization of autofill::FillingResult. It is passed as an
+  // integer as no further interpretation of the value is necessary in the
+  // browser.
+  LogFirstFillingResult(uint32 form_renderer_id, int32 result);
 };
 
 // There is one instance of this interface per web contents in the browser

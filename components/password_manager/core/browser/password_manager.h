@@ -181,6 +181,13 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
       const autofill::PasswordForm& password_form,
       uint32_t spec_priority);
 
+  // Reports the success from the renderer's PasswordAutofillAgent to fill
+  // credentials into a site. This may be called multiple times, but only
+  // the first result will be recorded for each PasswordFormManager.
+  void LogFirstFillingResult(PasswordManagerDriver* driver,
+                             uint32_t form_renderer_id,
+                             int32_t result);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(
       PasswordManagerTest,

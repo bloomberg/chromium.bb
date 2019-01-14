@@ -379,12 +379,21 @@ void PasswordFormMetricsRecorder::RecordFormChangeBitmask(uint32_t bitmask) {
     *form_changes_bitmask_ |= bitmask;
 }
 
+void PasswordFormMetricsRecorder::RecordFirstFillingResult(int32_t result) {
+  if (recorded_first_filling_result_)
+    return;
+  ukm_entry_builder_.SetFill_FirstFillingResultInRenderer(result);
+  recorded_first_filling_result_ = true;
+}
+
 void PasswordFormMetricsRecorder::RecordFirstWaitForUsernameReason(
     WaitForUsernameReason reason) {
   if (recorded_wait_for_username_reason_)
     return;
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.FirstWaitForUsernameReason",
                             reason);
+  ukm_entry_builder_.SetFill_FirstWaitForUsernameReason(
+      static_cast<int64_t>(reason));
   recorded_wait_for_username_reason_ = true;
 }
 
