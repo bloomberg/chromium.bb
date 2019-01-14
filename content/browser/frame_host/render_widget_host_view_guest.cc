@@ -338,11 +338,6 @@ base::string16 RenderWidgetHostViewGuest::GetSelectedText() {
   return platform_view_->GetSelectedText();
 }
 
-void RenderWidgetHostViewGuest::SetNeedsBeginFrames(bool needs_begin_frames) {
-  if (platform_view_)
-    platform_view_->SetNeedsBeginFrames(needs_begin_frames);
-}
-
 TouchSelectionControllerClientManager*
 RenderWidgetHostViewGuest::GetTouchSelectionControllerClientManager() {
   RenderWidgetHostView* root_view = GetRootView(this);
