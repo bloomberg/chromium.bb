@@ -25,8 +25,8 @@ class SampledProfile;
 // pointer across threads safely.
 class MetricCollector : public base::SupportsWeakPtr<MetricCollector> {
  public:
-  explicit MetricCollector(const std::string& uma_histogram);
-  explicit MetricCollector(const std::string& uma_histogram,
+  explicit MetricCollector(const std::string& name);
+  explicit MetricCollector(const std::string& name,
                            const CollectionParams& collection_params);
   virtual ~MetricCollector();
 
@@ -61,10 +61,10 @@ class MetricCollector : public base::SupportsWeakPtr<MetricCollector> {
   };
 
   // Enumeration representing success and various failure modes for collecting
-  // and sending perf data.
+  // profile data. These values are persisted to logs. Entries should not be
+  // renumbered and numeric values should never be reused.
   enum class CollectionAttemptStatus {
     SUCCESS,
-    NOT_READY_TO_UPLOAD,
     NOT_READY_TO_COLLECT,
     INCOGNITO_ACTIVE,
     INCOGNITO_LAUNCHED,
@@ -153,8 +153,10 @@ class MetricCollector : public base::SupportsWeakPtr<MetricCollector> {
   base::TimeTicks last_session_restore_collection_time_;
 
   // Name of the histogram that represents the success and various failure modes
-  // for a collector.
-  std::string uma_histogram_;
+  // of collection attempts.
+  std::string collect_uma_histogram_;
+  // Name of the histogram that counts the number of uploaded reports.
+  std::string upload_uma_histogram_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricCollector);
 };

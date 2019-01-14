@@ -25,9 +25,9 @@ const char kCWPFieldTrialName[] = "ChromeOSWideProfilingCollection";
 // collecting further perf data. The current value is 4 MB.
 const size_t kCachedPerfDataProtobufSizeThreshold = 4 * 1024 * 1024;
 
-// Name of the histogram that represents the success and various failure modes
-// for the perf collector.
-const char kPerfCollectorOutcomeHistogram[] = "UMA.Perf.GetData";
+// Name of the perf events collector. It is appended to the UMA metric names
+// for reporting collection and upload status.
+const char kPerfCollectorName[] = "Perf";
 
 // Gets parameter named by |key| from the map. If it is present and is an
 // integer, stores the result in |out| and return true. Otherwise return false.
@@ -198,8 +198,7 @@ std::vector<RandomSelector::WeightAndValue> GetDefaultCommandsForCpu(
 
 }  // namespace internal
 
-PerfCollector::PerfCollector()
-    : MetricCollector(kPerfCollectorOutcomeHistogram) {}
+PerfCollector::PerfCollector() : MetricCollector(kPerfCollectorName) {}
 
 PerfCollector::~PerfCollector() {}
 
