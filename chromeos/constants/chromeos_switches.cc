@@ -327,9 +327,6 @@ const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
 // Enables the marketing opt-in screen in OOBE.
 const char kEnableMarketingOptInScreen[] = "enable-market-opt-in";
 
-// Enables offline demo mode. Demo mode still requires ARC++.
-const char kEnableOfflineDemoMode[] = "enable-offline-demo-mode";
-
 // Enables suggestions while typing on a physical keyboard.
 const char kEnablePhysicalKeyboardAutocorrect[] =
     "enable-physical-keyboard-autocorrect";
