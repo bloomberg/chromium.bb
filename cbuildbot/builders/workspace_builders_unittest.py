@@ -285,4 +285,7 @@ class BuildspecBuilderTest(cros_test_lib.MockTempDirTestCase):
         mock.call(workspace_stages.WorkspaceBuildPackagesStage,
                   build_root=self.workspace,
                   board='board'),
+        mock.call(workspace_stages.WorkspaceUnitTestStage,
+                  build_root=self.workspace,
+                  board='board'),
     ])

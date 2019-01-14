@@ -15,6 +15,7 @@ from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import workspace_stages
 from chromite.lib import constants
+from chromite.lib import osutils
 
 # pylint: disable=too-many-ancestors
 # pylint: disable=protected-access
@@ -32,6 +33,7 @@ class WorkspaceStageBase(
 
   def setUp(self):
     self.workspace = os.path.join(self.tempdir, 'workspace')
+    osutils.SafeMakedirs(os.path.join(self.workspace, '.repo'))
 
     self.from_repo_mock = self.PatchObject(
         manifest_version.VersionInfo, 'from_repo')
@@ -612,4 +614,34 @@ class WorkspaceBuildPackagesStageTest(WorkspaceStageBase):
             'CHROME_ORIGIN': 'LOCAL_SOURCE',
         },
         cwd=self.workspace,
+    )
+
+
+class WorkspaceUnitTestStageTest(WorkspaceStageBase):
+  """Test the workspace_stages classes."""
+
+  def ConstructStage(self):
+    return workspace_stages.WorkspaceUnitTestStage(
+        self._run, self.buildstore, build_root=self.workspace, board='board')
+
+  def testFactory(self):
+    self._Prepare(
+        'test-factorybranch',
+        site_config=workspace_builders_unittest.CreateMockSiteConfig(),
+        extra_cmd_args=['--cache-dir', '/cache'])
+
+    self.RunStage()
+
+    self.assertEqual(
+        self.rc.call_args_list,
+        [
+            mock.call(
+                [mock.ANY,   # cros_run_unit_tests path changes inside chroot.
+                 '--board=board'],
+                enter_chroot=True,
+                chroot_args=['--cache-dir', '/cache'],
+                extra_env={'USE': '-cros-debug chrome_internal'},
+                cwd=self.workspace,
+            ),
+        ]
     )

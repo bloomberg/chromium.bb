@@ -35,6 +35,7 @@ from chromite.lib import cros_sdk_lib
 from chromite.lib import failures_lib
 from chromite.lib import portage_util
 from chromite.lib import request_build
+from chromite.lib import timeout_util
 
 BUILD_PACKAGES_PREBUILTS = '10774.0.0'
 BUILD_PACKAGES_WITH_DEBUG_SYMBOLS = '6302.0.0'
@@ -461,3 +462,32 @@ class WorkspaceBuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
         enter_chroot=True,
         chroot_args=ChrootArgs(self._run.options),
         extra_env=self._portage_extra_env)
+
+class WorkspaceUnitTestStage(generic_stages.BoardSpecificBuilderStage,
+                             WorkspaceStageBase):
+  """Run unit tests."""
+  option_name = 'tests'
+  config_name = 'unittests'
+  category = constants.PRODUCT_OS_STAGE
+
+  # If the unit tests take longer than 90 minutes, abort. They usually take
+  # thirty minutes to run, but they can take twice as long if the machine is
+  # under load (e.g. in canary groups).
+  #
+  # If the processes hang, parallel_emerge will print a status report after 60
+  # minutes, so we picked 90 minutes because it gives us a little buffer time.
+  UNIT_TEST_TIMEOUT = 90 * 60
+
+  def PerformStage(self):
+    extra_env = {}
+    if self._run.config.useflags:
+      extra_env['USE'] = ' '.join(self._run.config.useflags)
+    r = ' Reached UnitTestStage timeout.'
+    with timeout_util.Timeout(self.UNIT_TEST_TIMEOUT, reason_message=r):
+      commands.RunUnitTests(
+          self._build_root,
+          self._current_board,
+          blacklist=self._run.config.unittest_blacklist,
+          build_stage=self._run.config.build_packages,
+          chroot_args=ChrootArgs(self._run.options),
+          extra_env=extra_env)

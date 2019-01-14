@@ -110,3 +110,7 @@ class FactoryBranchBuilder(BuildSpecBuilder):
     self._RunStage(workspace_stages.WorkspaceBuildPackagesStage,
                    build_root=self._run.options.workspace,
                    board=board)
+
+    self._RunStage(workspace_stages.WorkspaceUnitTestStage,
+                   build_root=self._run.options.workspace,
+                   board=board)

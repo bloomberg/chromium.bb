@@ -791,7 +791,7 @@ def RunSignerTests(_buildroot, board):
 
 
 def RunUnitTests(buildroot, board, blacklist=None, extra_env=None,
-                 build_stage=True):
+                 build_stage=True, chroot_args=None):
   cmd = ['cros_run_unit_tests', '--board=%s' % board]
 
   if blacklist:
@@ -801,7 +801,7 @@ def RunUnitTests(buildroot, board, blacklist=None, extra_env=None,
     cmd += ['--assume-empty-sysroot']
 
   RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True,
-                 extra_env=extra_env or {})
+                 extra_env=extra_env or {}, chroot_args=chroot_args)
 
 
 def BuildAndArchiveTestResultsTarball(src_dir, buildroot):
