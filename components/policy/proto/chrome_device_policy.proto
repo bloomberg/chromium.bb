@@ -1126,6 +1126,11 @@ message PluginVmAllowedProto {
   optional bool plugin_vm_allowed = 1;
 }
 
+// Setting that specifies PluginVm license key for this device.
+message PluginVmLicenseKeyProto {
+  optional string plugin_vm_license_key = 1;
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1225,4 +1230,5 @@ message ChromeDeviceSettingsProto {
   optional DeviceGpoCacheLifetimeProto device_gpo_cache_lifetime = 76;
   optional DeviceAuthDataCacheLifetimeProto device_auth_data_cache_lifetime =
       77;
+  optional PluginVmLicenseKeyProto plugin_vm_license_key = 78;
 }

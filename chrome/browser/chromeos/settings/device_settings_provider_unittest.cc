@@ -255,6 +255,13 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     BuildAndInstallDevicePolicy();
   }
 
+  void SetPluginVmLicenseKeySetting(const std::string& plugin_vm_license_key) {
+    em::PluginVmLicenseKeyProto* proto =
+        device_policy_.payload().mutable_plugin_vm_license_key();
+    proto->set_plugin_vm_license_key(plugin_vm_license_key);
+    BuildAndInstallDevicePolicy();
+  }
+
   ScopedTestingLocalState local_state_;
 
   std::unique_ptr<DeviceSettingsProvider> provider_;
@@ -680,6 +687,11 @@ TEST_F(DeviceSettingsProviderTest, DecodePluginVmAllowedSetting) {
 
   SetPluginVmAllowedSetting(false);
   EXPECT_EQ(base::Value(false), *provider_->Get(kPluginVmAllowed));
+}
+
+TEST_F(DeviceSettingsProviderTest, DecodePluginVmLicenseKeySetting) {
+  SetPluginVmLicenseKeySetting("LICENSE_KEY");
+  EXPECT_EQ(base::Value("LICENSE_KEY"), *provider_->Get(kPluginVmLicenseKey));
 }
 
 }  // namespace chromeos

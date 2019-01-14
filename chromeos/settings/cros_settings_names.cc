@@ -367,5 +367,7 @@ const char kDeviceUnaffiliatedCrostiniAllowed[] =
 // A boolean pref that indicates whether PluginVm is allowed to run on this
 // device.
 const char kPluginVmAllowed[] = "cros.device.plugin_vm_allowed";
+// A string pref that specifies PluginVm license key for this device.
+const char kPluginVmLicenseKey[] = "cros.device.plugin_vm_license_key";
 
 }  // namespace chromeos
