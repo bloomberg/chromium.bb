@@ -13,6 +13,18 @@ namespace metrics {
 
 namespace {
 
+// Name prefix of the histogram that represents the success and various failure
+// modes for a collector.
+const char kCollectionOutcomeHistogramPrefix[] = "ChromeOS.CWP.Collect";
+
+// Name prefix of the histogram that counts the number of reports uploaded by a
+// collector.
+const char kUploadCountHistogramPrefix[] = "ChromeOS.CWP.Upload";
+
+// An upper bound on the count of reports expected to be uploaded by an UMA
+// callback.
+const int kMaxValueUploadReports = 10;
+
 // This is used to space out session restore collections in the face of several
 // notifications in a short period of time. There should be no less than this
 // much time between collections.
@@ -62,28 +74,38 @@ void RemoveUnknownFieldsFromMessagesWithStrings(PerfDataProto* proto) {
 
 }  // namespace
 
-MetricCollector::MetricCollector(const std::string& uma_histogram)
-    : uma_histogram_(uma_histogram) {}
+MetricCollector::MetricCollector(const std::string& name)
+    : MetricCollector(name, CollectionParams()) {}
 
-MetricCollector::MetricCollector(const std::string& uma_histogram,
+MetricCollector::MetricCollector(const std::string& name,
                                  const CollectionParams& collection_params)
-    : collection_params_(collection_params), uma_histogram_(uma_histogram) {}
+    : collection_params_(collection_params) {
+  collect_uma_histogram_ =
+      std::string(kCollectionOutcomeHistogramPrefix) + name;
+  upload_uma_histogram_ = std::string(kUploadCountHistogramPrefix) + name;
+}
 
 MetricCollector::~MetricCollector() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void MetricCollector::AddToUmaHistogram(CollectionAttemptStatus outcome) const {
-  base::UmaHistogramEnumeration(uma_histogram_, outcome,
+  base::UmaHistogramEnumeration(collect_uma_histogram_, outcome,
                                 CollectionAttemptStatus::NUM_OUTCOMES);
 }
 
 bool MetricCollector::GetSampledProfiles(
     std::vector<SampledProfile>* sampled_profiles) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!ShouldUpload())
+  if (!ShouldUpload() || cached_profile_data_.empty()) {
+    base::UmaHistogramExactLinear(upload_uma_histogram_, 0,
+                                  kMaxValueUploadReports);
     return false;
+  }
 
+  base::UmaHistogramExactLinear(upload_uma_histogram_,
+                                cached_profile_data_.size(),
+                                kMaxValueUploadReports);
   sampled_profiles->insert(
       sampled_profiles->end(),
       std::make_move_iterator(cached_profile_data_.begin()),
@@ -93,12 +115,6 @@ bool MetricCollector::GetSampledProfiles(
 }
 
 bool MetricCollector::ShouldUpload() const {
-  if (cached_profile_data_.empty()) {
-    AddToUmaHistogram(CollectionAttemptStatus::NOT_READY_TO_UPLOAD);
-    return false;
-  }
-
-  AddToUmaHistogram(CollectionAttemptStatus::SUCCESS);
   return true;
 }
 

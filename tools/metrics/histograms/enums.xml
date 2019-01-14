@@ -6197,6 +6197,30 @@ histogram as enum -->
   <int value="5" label="Timeout"/>
 </enum>
 
+<enum name="ChromeOSProfileCollectionStatus">
+  <int value="0" label="Success">Profile was collected successfully.</int>
+  <int value="1" label="Collection timer triggered but buffer is full">
+    Profile timer triggered but the collector's buffer is full.
+  </int>
+  <int value="2" label="Collection timer triggered but incognito window active">
+    Profile timer triggered but an incognito window was open.
+  </int>
+  <int value="3" label="Incognito window launched during collection">
+    Profile was collected but an incognito window was opened during the
+    collection.
+  </int>
+  <int value="4" label="Protobuf cannot be deserialized">
+    Profile data was collected and sent to Chrome as a serialized protobuf but
+    it could not be deserialized by Chrome.
+  </int>
+  <int value="5" label="Illegal data returned by collector">
+    The profile data sent back to Chrome is invalid.
+  </int>
+  <int value="6" label="Already collecting">
+    Another profile collection was already active.
+  </int>
+</enum>
+
 <enum name="ChromeOSRecoveryReason">
   <summary>
     Reason for entering Recovery Mode. See
