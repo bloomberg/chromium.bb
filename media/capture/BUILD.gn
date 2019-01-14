@@ -395,6 +395,7 @@ test("capture_unittests") {
       "//build/config/linux/libdrm",
       "//chromeos/dbus:test_support",
       "//media/capture/video/chromeos/mojo:cros_camera",
+      "//media/capture/video/chromeos/public",
       "//mojo/core/embedder",
       "//third_party/libsync",
       "//third_party/minigbm",

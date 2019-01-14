@@ -52,6 +52,7 @@
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/local_gpu_memory_buffer_manager.h"
+#include "media/capture/video/chromeos/public/cros_features.h"
 #include "media/capture/video/chromeos/video_capture_device_chromeos_halv3.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #endif
@@ -657,6 +658,13 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_UsingRealWebcam_CaptureMjpeg) {
                              base::Unretained(this)));
 }
 void VideoCaptureDeviceTest::RunCaptureMjpegTestCase() {
+#if defined(OS_CHROMEOS)
+  if (media::ShouldUseCrosCameraService()) {
+    VLOG(1)
+        << "Skipped on Chrome OS device where HAL v3 camera service is used";
+    return;
+  }
+#endif
   std::unique_ptr<VideoCaptureDeviceDescriptor> device_descriptor =
       GetFirstDeviceDescriptorSupportingPixelFormat(PIXEL_FORMAT_MJPEG);
   ASSERT_TRUE(device_descriptor);
