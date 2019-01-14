@@ -537,6 +537,15 @@ void D3D11VideoDecoder::Reset(const base::RepeatingClosure& closure) {
   // TODO(liberato): how do we signal an error?
   accelerated_video_decoder_->Reset();
 
+  if (state_ == State::kWaitingForReset && config_.is_encrypted()) {
+    // On a hardware context loss event, a new swap chain has to be created (in
+    // the compositor). By clearing the picture buffers, next DoDecode() call
+    // will create a new texture. This makes the compositor to create a new swap
+    // chain.
+    // More detailed explanation at crbug.com/858286
+    picture_buffers_.clear();
+  }
+
   // Transition out of kWaitingForNewKey since the new buffer could be clear or
   // have a different key ID. Transition out of kWaitingForReset since reset
   // just happened.
