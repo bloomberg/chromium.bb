@@ -142,10 +142,9 @@ void AccountManagerUIHandler::GetAccountsCallbackHandler(
                      oauth_account_id));
     account.SetString("fullName", account_info.full_name);
     account.SetString("email", account_info.email);
-    gfx::Image icon =
-        account_tracker_service_->GetAccountImage(account_info.account_id);
-    if (!icon.IsEmpty()) {
-      account.SetString("pic", webui::GetBitmapDataUrl(icon.AsBitmap()));
+    if (!account_info.account_image.IsEmpty()) {
+      account.SetString("pic", webui::GetBitmapDataUrl(
+                                   account_info.account_image.AsBitmap()));
     } else {
       gfx::ImageSkia default_icon =
           *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(

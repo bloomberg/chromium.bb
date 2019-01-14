@@ -208,15 +208,6 @@ AccountInfo AccountTrackerService::FindAccountInfoByEmail(
   return AccountInfo();
 }
 
-gfx::Image AccountTrackerService::GetAccountImage(
-    const std::string& account_id) {
-  const auto iterator = accounts_.find(account_id);
-  if (iterator != accounts_.end())
-    return iterator->second.account_image;
-
-  return gfx::Image();
-}
-
 // static
 bool AccountTrackerService::IsMigrationSupported() {
 #if defined(OS_CHROMEOS)

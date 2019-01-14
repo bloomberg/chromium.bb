@@ -93,10 +93,6 @@ class AccountTrackerService : public KeyedService {
   AccountInfo FindAccountInfoByGaiaId(const std::string& gaia_id) const;
   AccountInfo FindAccountInfoByEmail(const std::string& email) const;
 
-  // Returns the account image associated to the account id |account_id|.
-  // If the account id is not known an empty image is returned.
-  gfx::Image GetAccountImage(const std::string& account_id);
-
   // Picks the correct account_id for the specified account depending on the
   // migration state.
   std::string PickAccountIdForAccount(const std::string& gaia,

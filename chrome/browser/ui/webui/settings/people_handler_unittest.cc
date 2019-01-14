@@ -1120,21 +1120,23 @@ TEST_P(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
   identity_test_env->SetPrimaryAccount(account_1.email);
 
   PeopleHandler handler(profile.get());
-  std::unique_ptr<base::ListValue> accounts_list =
-      handler.GetStoredAccountsList();
+  base::Value accounts = handler.GetStoredAccountsList();
+
+  ASSERT_TRUE(accounts.is_list());
+  const base::Value::ListStorage& accounts_list = accounts.GetList();
 
   if (dice_enabled) {
-    EXPECT_EQ(2u, accounts_list->GetSize());
-    EXPECT_EQ("a@gmail.com",
-              accounts_list->GetList()[0].FindKey("email")->GetString());
-    EXPECT_EQ("b@gmail.com",
-              accounts_list->GetList()[1].FindKey("email")->GetString());
+    ASSERT_EQ(2u, accounts_list.size());
+    ASSERT_TRUE(accounts_list[0].FindKey("email"));
+    ASSERT_TRUE(accounts_list[1].FindKey("email"));
+    EXPECT_EQ("a@gmail.com", accounts_list[0].FindKey("email")->GetString());
+    EXPECT_EQ("b@gmail.com", accounts_list[1].FindKey("email")->GetString());
   } else if (unified_consent_enabled) {
-    EXPECT_EQ(1u, accounts_list->GetSize());
-    EXPECT_EQ("a@gmail.com",
-              accounts_list->GetList()[0].FindKey("email")->GetString());
+    ASSERT_EQ(1u, accounts_list.size());
+    ASSERT_TRUE(accounts_list[0].FindKey("email"));
+    EXPECT_EQ("a@gmail.com", accounts_list[0].FindKey("email")->GetString());
   } else {
-    EXPECT_EQ(0u, accounts_list->GetSize());
+    EXPECT_EQ(0u, accounts_list.size());
   }
 }
 

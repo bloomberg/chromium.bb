@@ -191,7 +191,7 @@ class PeopleHandler : public SettingsPageUIHandler,
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   void HandleGetStoredAccounts(const base::ListValue* args);
   void HandleStartSyncingWithEmail(const base::ListValue* args);
-  std::unique_ptr<base::ListValue> GetStoredAccountsList();
+  base::Value GetStoredAccountsList();
 #endif
 
   // Displays spinner-only UI indicating that something is going on in the
