@@ -30,6 +30,10 @@ const char kStartLxdContainerMethod[] = "StartLxdContainer";
 const char kSetTimezoneMethod[] = "SetTimezone";
 const char kGetLxdContainerUsernameMethod[] = "GetLxdContainerUsername";
 const char kSetUpLxdContainerUserMethod[] = "SetUpLxdContainerUser";
+const char kInstallLinuxPackageFromAptMethod[] = "InstallLinuxPackageFromApt";
+const char kAppSearchMethod[] = "AppSearch";
+const char kGetLinuxPackageInfoFromAptMethod[] =
+    "GetLinuxPackageInfoFromAptMethod";
 
 // Methods to be called from debugd.
 const char kGetDebugInformationMethod[] = "GetDebugInformation";
