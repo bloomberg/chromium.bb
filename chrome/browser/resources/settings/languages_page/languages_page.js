@@ -357,18 +357,23 @@ Polymer({
   // </if>
 
   /**
-   * @param {!chrome.languageSettingsPrivate.Language} language
+   * @param {!LanguageState|undefined} languageState
    * @param {string} targetLanguageCode The default translate target language.
    * @return {boolean} True if the translate checkbox should be disabled.
    * @private
    */
-  disableTranslateCheckbox_: function(language, targetLanguageCode) {
-    if (language == undefined || !language.supportsTranslate) {
+  disableTranslateCheckbox_: function(languageState, targetLanguageCode) {
+    if (languageState == undefined || languageState.language == undefined ||
+        !languageState.language.supportsTranslate) {
       return true;
     }
 
-    return this.languageHelper.convertLanguageCodeForTranslate(language.code) ==
-        targetLanguageCode;
+    if (this.languageHelper.isOnlyTranslateBlockedLanguage(languageState)) {
+      return true;
+    }
+
+    return this.languageHelper.convertLanguageCodeForTranslate(
+               languageState.language.code) == targetLanguageCode;
   },
 
   /**

@@ -150,6 +150,8 @@ Polymer({
         'prefs.translate_blocked_languages.value.*, languages)',
     'updateRemovableLanguages_(' +
         'prefs.intl.app_locale.value, languages.enabled)',
+    'updateRemovableLanguages_(' +
+        'prefs.translate_blocked_languages.value.*)',
     // Observe Chrome OS prefs (ignored for non-Chrome OS).
     'updateRemovableLanguages_(' +
         'prefs.settings.language.preload_engines.value, ' +
@@ -695,7 +697,7 @@ Polymer({
       const languageState = this.languages.enabled[i];
       this.set(
           'languages.enabled.' + i + '.removable',
-          this.canDisableLanguage(languageState.language.code));
+          this.canDisableLanguage(languageState));
     }
   },
 
@@ -783,8 +785,6 @@ Polymer({
       return;
     }
 
-    assert(this.canDisableLanguage(languageCode));
-
     // Remove the language from spell check.
     this.deletePrefListItem('spellcheck.dictionaries', languageCode);
 
@@ -807,17 +807,32 @@ Polymer({
   },
 
   /**
-   * @param {string} languageCode Language code for an enabled language.
+   * @param {!LanguageState} languageState
    * @return {boolean}
    */
-  canDisableLanguage: function(languageCode) {
+  isOnlyTranslateBlockedLanguage: function(languageState) {
+    return !languageState.translateEnabled &&
+        this.languages.enabled.filter(lang => !lang.translateEnabled).length ==
+        1;
+  },
+
+  /**
+   * @param {!LanguageState} languageState
+   * @return {boolean}
+   */
+  canDisableLanguage: function(languageState) {
     // Cannot disable the prospective UI language.
-    if (languageCode == this.languages.prospectiveUILanguage) {
+    if (languageState.language.code == this.languages.prospectiveUILanguage) {
       return false;
     }
 
     // Cannot disable the only enabled language.
     if (this.languages.enabled.length == 1) {
+      return false;
+    }
+
+    // Cannot disable the last translate blocked language.
+    if (this.isOnlyTranslateBlockedLanguage(languageState)) {
       return false;
     }
 
@@ -828,9 +843,9 @@ Polymer({
     // If this is the only enabled language that is supported by all enabled
     // component IMEs, it cannot be disabled because we need those IMEs.
     const otherInputMethodsEnabled =
-        this.languages.enabled.some(function(languageState) {
-          const otherLanguageCode = languageState.language.code;
-          if (otherLanguageCode == languageCode) {
+        this.languages.enabled.some(function(otherLanguageState) {
+          const otherLanguageCode = otherLanguageState.language.code;
+          if (otherLanguageCode == languageState.language.code) {
             return false;
           }
           const inputMethods =
