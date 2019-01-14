@@ -7,7 +7,7 @@
 
 Sometimes a C++ API needs to ensure that various usages cannot compile. To
 enable unittesting of these assertions, we use this python script to
-invoke gcc on a source file and assert that compilation fails.
+invoke the compiler on a source file and assert that compilation fails.
 
 For more info, see:
   http://dev.chromium.org/developers/testing/no-compile-tests
@@ -81,8 +81,10 @@ NCTEST_KILL_TIMEOUT_SEC = NCTEST_TERMINATE_TIMEOUT_SEC + 2
 BUSY_LOOP_MAX_TIME_SEC = NCTEST_KILL_TIMEOUT_SEC * 2
 
 
-def ValidateInput(parallelism, sourcefile_path, cflags, resultfile_path):
+def ValidateInput(compiler, parallelism, sourcefile_path, cflags,
+                  resultfile_path):
   """Make sure the arguments being passed in are sane."""
+  assert os.path.isfile(compiler)
   assert parallelism >= 1
   assert type(sourcefile_path) is str
   assert type(cflags) is list
@@ -178,7 +180,7 @@ def ExtractTestConfigs(sourcefile_path, suite_name):
   return test_configs
 
 
-def StartTest(sourcefile_path, cflags, config):
+def StartTest(compiler, sourcefile_path, cflags, config):
   """Start one negative compile test.
 
   Args:
@@ -211,10 +213,7 @@ def StartTest(sourcefile_path, cflags, config):
                         ParseExpectation() for the structure.
         }
   """
-  # TODO(ajwong): Get the compiler from gyp.
-  cmdline = [os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                          '../third_party/llvm-build/Release+Asserts/bin',
-                          'clang++')]
+  cmdline = [compiler]
   cmdline.extend(cflags)
   name = config['name']
   expectations = config['expectations']
@@ -396,8 +395,9 @@ def CompleteAtLeastOneTest(executing_tests):
 
 
 def main():
-  if len(sys.argv) < 5 or sys.argv[4] != '--':
-    print ('Usage: %s <parallelism> <sourcefile> <resultfile> -- <cflags...>' %
+  if len(sys.argv) < 6 or sys.argv[5] != '--':
+    print ('Usage: %s <compiler> <parallelism> <sourcefile> <resultfile> '
+           '-- <cflags...>' %
            sys.argv[0])
     sys.exit(1)
 
@@ -406,14 +406,15 @@ def main():
   # locales.  This makes the expectation writing much easier.
   os.environ['LC_ALL'] = 'C'
 
-  parallelism = int(sys.argv[1])
-  sourcefile_path = sys.argv[2]
-  resultfile_path = sys.argv[3]
-  cflags = sys.argv[5:]
+  compiler = sys.argv[1]
+  parallelism = int(sys.argv[2])
+  sourcefile_path = sys.argv[3]
+  resultfile_path = sys.argv[4]
+  cflags = sys.argv[6:]
 
   timings = {'started': time.time()}
 
-  ValidateInput(parallelism, sourcefile_path, cflags, resultfile_path)
+  ValidateInput(compiler, parallelism, sourcefile_path, cflags, resultfile_path)
 
   # Convert filename from underscores to CamelCase.
   words = os.path.splitext(os.path.basename(sourcefile_path))[0].split('_')
@@ -435,6 +436,7 @@ def main():
 
   cflags.extend(['-MMD', '-MF', resultfile_path + '.d', '-MT', resultfile_path])
   test = StartTest(
+      compiler,
       sourcefile_path,
       cflags,
       { 'name': 'NCTEST_SANITY',
@@ -453,7 +455,7 @@ def main():
     if config['name'].startswith('DISABLED_'):
       PassTest(resultfile, resultlog, config)
     else:
-      test = StartTest(sourcefile_path, cflags, config)
+      test = StartTest(compiler, sourcefile_path, cflags, config)
       assert test['name'] not in executing_tests
       executing_tests[test['name']] = test
 
