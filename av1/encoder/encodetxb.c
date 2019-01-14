@@ -284,11 +284,6 @@ static INLINE int get_sign_bit_cost(tran_low_t qc, int coeff_idx,
   return av1_cost_literal(1);
 }
 
-static INLINE int get_br_cost(tran_low_t level, const int *coeff_lps) {
-  const int base_range = AOMMIN(level - 1 - NUM_BASE_LEVELS, COEFF_BASE_RANGE);
-  return coeff_lps[base_range];
-}
-
 static INLINE int get_golomb_cost(int abs_qc) {
   if (abs_qc >= 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
     const int r = abs_qc - COEFF_BASE_RANGE - NUM_BASE_LEVELS;
@@ -296,6 +291,11 @@ static INLINE int get_golomb_cost(int abs_qc) {
     return av1_cost_literal(2 * length - 1);
   }
   return 0;
+}
+
+static INLINE int get_br_cost(tran_low_t level, const int *coeff_lps) {
+  const int base_range = AOMMIN(level - 1 - NUM_BASE_LEVELS, COEFF_BASE_RANGE);
+  return coeff_lps[base_range] + get_golomb_cost(level);
 }
 
 static int get_coeff_cost(const tran_low_t qc, const int scan_idx,
@@ -322,7 +322,6 @@ static int get_coeff_cost(const tran_low_t qc, const int scan_idx,
       const int ctx =
           get_br_ctx(txb_info->levels, pos, txb_info->bwl, tx_class);
       cost += get_br_cost(abs_qc, txb_costs->lps_cost[ctx]);
-      cost += get_golomb_cost(abs_qc);
     }
   }
   return cost;
@@ -748,7 +747,6 @@ static AOM_FORCE_INLINE int warehouse_efficients_txb(
       if (level > NUM_BASE_LEVELS) {
         const int ctx = get_br_ctx_eob(pos, bwl, tx_class);
         cost += get_br_cost(level, lps_cost[ctx]);
-        cost += get_golomb_cost(level);
       }
       if (c) {
         cost += av1_cost_literal(1);
@@ -773,7 +771,6 @@ static AOM_FORCE_INLINE int warehouse_efficients_txb(
       if (level > NUM_BASE_LEVELS) {
         const int ctx = get_br_ctx(levels, pos, bwl, tx_class);
         cost += get_br_cost(level, lps_cost[ctx]);
-        cost += get_golomb_cost(level);
       }
     }
     cost += cost0;
@@ -794,7 +791,6 @@ static AOM_FORCE_INLINE int warehouse_efficients_txb(
       if (level > NUM_BASE_LEVELS) {
         const int ctx = get_br_ctx(levels, pos, bwl, tx_class);
         cost += get_br_cost(level, lps_cost[ctx]);
-        cost += get_golomb_cost(level);
       }
     }
   }
@@ -1279,7 +1275,6 @@ static AOM_FORCE_INLINE int get_coeff_cost_simple(
     if (abs_qc > NUM_BASE_LEVELS) {
       const int br_ctx = get_br_ctx(levels, ci, bwl, tx_class);
       cost += get_br_cost(abs_qc, txb_costs->lps_cost[br_ctx]);
-      cost += get_golomb_cost(abs_qc);
     }
   }
   return cost;
@@ -1301,7 +1296,6 @@ static INLINE int get_coeff_cost_eob(int ci, tran_low_t abs_qc, int sign,
       int br_ctx;
       br_ctx = get_br_ctx_eob(ci, bwl, tx_class);
       cost += get_br_cost(abs_qc, txb_costs->lps_cost[br_ctx]);
-      cost += get_golomb_cost(abs_qc);
     }
   }
   return cost;
@@ -1332,7 +1326,6 @@ static INLINE int get_coeff_cost_general(int is_last, int ci, tran_low_t abs_qc,
       else
         br_ctx = get_br_ctx(levels, ci, bwl, tx_class);
       cost += get_br_cost(abs_qc, txb_costs->lps_cost[br_ctx]);
-      cost += get_golomb_cost(abs_qc);
     }
   }
   return cost;
