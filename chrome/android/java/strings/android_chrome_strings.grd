@@ -346,17 +346,11 @@ CHAR-LIMIT guidelines:
       <message name="IDS_USE_SYNC_AND_ALL_SERVICES" desc="Title for switch preference which enables sync'ing of all data types and turns on all Chrome services that communicate with Google.">
         Use sync and all services
       </message>
-      <message name="IDS_SYNC_AND_PERSONALIZATION_TITLE" desc="Title for the expandable group of Sync-related entries in Settings. This group contains preferences for data tied to user's Google Account.">
-        Sync and personalization
+      <message name="IDS_SYNC_CATEGORY_TITLE" desc="Title for the group of Sync-related entries in Settings. This group contains preferences for data tied to user's Google Account.">
+        Sync
       </message>
-      <message name="IDS_SYNC_AND_PERSONALIZATION_SUMMARY" desc="Summary for the expandable group of Sync-related entries in Settings. This group contains preferences for data tied to user's Google Account.">
-        Your browsing data and activity, synced to your Google Account
-      </message>
-      <message name="IDS_PREFS_NONPERSONALIZED_SERVICES_SECTION_TITLE" desc="Title for the expandable group of preferences that control non-personalized Google services. This group contains preferences for data that is not tied to user's Google Account.">
+      <message name="IDS_SERVICES_CATEGORY_TITLE" desc="Title for the group of preferences that control non-personalized Google services. This group contains preferences for data that is not tied to user's Google Account.">
         Other Google services
-      </message>
-      <message name="IDS_PREFS_NONPERSONALIZED_SERVICES_SECTION_SUMMARY" desc="Summary for the expandable group of preferences that control non-personalized Google services. This group contains preferences for data that is not tied to user's Google Account.">
-        Communicates with Google to improve browsing and Chrome
       </message>
       <message name="IDS_AUTOCOMPLETE_SEARCHES_AND_URLS_TITLE" desc="Title for a checkbox in Settings that controls URL and search autocompletion and informs the user about the data shared by this feature.">
         Autocomplete searches and URLs

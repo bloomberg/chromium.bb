@@ -1293,7 +1293,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/SeekBarLinkedCheckBoxPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/SeekBarPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/SignInPreference.java",
-  "java/src/org/chromium/chrome/browser/preferences/SigninExpandablePreferenceGroup.java",
   "java/src/org/chromium/chrome/browser/preferences/SpinnerPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/SyncAndServicesPreferences.java",
   "java/src/org/chromium/chrome/browser/preferences/SyncErrorCardPreference.java",
