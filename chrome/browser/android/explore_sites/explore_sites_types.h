@@ -47,7 +47,9 @@ struct ExploreSitesCategory {
   ExploreSitesCategory(int category_id,
                        std::string version_token,
                        int category_type,
-                       std::string label);
+                       std::string label,
+                       int ntp_shown_count,
+                       int interaction_count);
   ExploreSitesCategory(ExploreSitesCategory&& other);
   virtual ~ExploreSitesCategory();
 
@@ -55,7 +57,9 @@ struct ExploreSitesCategory {
   std::string version_token;
   int category_type;
   std::string label;
-  int num_shown_on_ntp;  // Number of times this category was shown on NTP.
+  int ntp_shown_count;  // Number of times this category was shown on NTP.
+  // Number of times sites within this category was interacted with.
+  int interaction_count;
 
   std::vector<ExploreSitesSite> sites;
 

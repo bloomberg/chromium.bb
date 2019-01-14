@@ -52,6 +52,8 @@ class ExploreSitesBlacklistSiteTest : public TaskTestBase {
 
   bool callback_called() { return callback_called_; }
 
+  void PopulateActivity();
+
  private:
   std::unique_ptr<ExploreSitesStore> store_;
   bool success_;
@@ -59,6 +61,19 @@ class ExploreSitesBlacklistSiteTest : public TaskTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(ExploreSitesBlacklistSiteTest);
 };
+
+void ExploreSitesBlacklistSiteTest::PopulateActivity() {
+  ExecuteSync(base::BindLambdaForTesting([&](sql::Database* db) {
+    sql::Statement insert_activity(db->GetUniqueStatement(R"(
+INSERT INTO activity
+(time, category_type, url)
+VALUES
+(12345, 1, "https://www.google.com"),
+(23456, 1, "https://www.example.com/1");
+    )"));
+    return insert_activity.Run();
+  }));
+}
 
 TEST_F(ExploreSitesBlacklistSiteTest, StoreFailure) {
   store()->SetInitializationStatusForTest(InitializationStatus::FAILURE);
@@ -71,6 +86,7 @@ TEST_F(ExploreSitesBlacklistSiteTest, StoreFailure) {
 }
 
 TEST_F(ExploreSitesBlacklistSiteTest, EmptyUrlTask) {
+  PopulateActivity();
   BlacklistSiteTask task(store(), "");
   RunTask(&task);
 
@@ -78,18 +94,25 @@ TEST_F(ExploreSitesBlacklistSiteTest, EmptyUrlTask) {
   EXPECT_TRUE(task.complete());
   EXPECT_FALSE(task.result());
 
-  // Check that DB's site_blacklist table is empty.
+  // Check that DB's site_blacklist table is empty
+  // and that activity table is not modified.
   ExecuteSync(base::BindLambdaForTesting([&](sql::Database* db) {
     sql::Statement cat_count_s(
         db->GetUniqueStatement("SELECT COUNT(*) FROM site_blacklist"));
     cat_count_s.Step();
     EXPECT_EQ(0, cat_count_s.ColumnInt(0));
 
+    sql::Statement cat_activity_s(
+        db->GetUniqueStatement("SELECT COUNT(*) FROM activity"));
+    cat_activity_s.Step();
+    EXPECT_EQ(2, cat_activity_s.ColumnInt(0));
+
     return true;
   }));
 }
 
 TEST_F(ExploreSitesBlacklistSiteTest, ValidUrlTask) {
+  PopulateActivity();
   BlacklistSiteTask task(store(), kGoogleUrl);
   RunTask(&task);
 
@@ -97,7 +120,8 @@ TEST_F(ExploreSitesBlacklistSiteTest, ValidUrlTask) {
   EXPECT_TRUE(task.complete());
   EXPECT_TRUE(task.result());
 
-  // Check that DB's site_blacklist table contains kGoogleUrl.
+  // Check that DB's site_blacklist table contains kGoogleUrl and that
+  // kGoogleUrl-related activity is removed from the activity table.
   ExecuteSync(base::BindLambdaForTesting([&](sql::Database* db) {
     sql::Statement cat_count_s(
         db->GetUniqueStatement("SELECT COUNT(*) FROM site_blacklist"));
@@ -108,6 +132,11 @@ TEST_F(ExploreSitesBlacklistSiteTest, ValidUrlTask) {
         db->GetUniqueStatement("SELECT url FROM site_blacklist"));
     cat_data_s.Step();
     EXPECT_EQ(kGoogleUrl, cat_data_s.ColumnString(0));
+
+    sql::Statement cat_activity_s(
+        db->GetUniqueStatement("SELECT COUNT(*) FROM activity"));
+    cat_activity_s.Step();
+    EXPECT_EQ(1, cat_activity_s.ColumnInt(0));
 
     return true;
   }));

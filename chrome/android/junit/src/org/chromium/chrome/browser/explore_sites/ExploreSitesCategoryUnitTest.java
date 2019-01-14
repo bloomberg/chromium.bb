@@ -23,17 +23,22 @@ public class ExploreSitesCategoryUnitTest {
         final int id = 1;
         @ExploreSitesCategory.CategoryType
         final int type = ExploreSitesCategory.CategoryType.SCIENCE;
+        final int ntpShownCount = 2;
+        final int interactionCount = 3;
         final int siteId = 100;
         final String title = "test";
         final String url = "http://www.google.com";
         final String categoryTitle = "Movies";
 
-        ExploreSitesCategory category = new ExploreSitesCategory(id, type, categoryTitle);
+        ExploreSitesCategory category =
+                new ExploreSitesCategory(id, type, categoryTitle, ntpShownCount, interactionCount);
         category.addSite(new ExploreSitesSite(siteId, title, url, true)); // blacklisted
         category.addSite(new ExploreSitesSite(siteId, title, url, false)); // not blacklisted
 
         assertEquals(id, category.getId());
         assertEquals(type, category.getType());
+        assertEquals(ntpShownCount, category.getNtpShownCount());
+        assertEquals(interactionCount, category.getInteractionCount());
         assertEquals(2, category.getSites().size());
         assertEquals(1, category.getNumDisplayed());
         assertEquals(siteId, category.getSites().get(0).getModel().get(ExploreSitesSite.ID_KEY));
@@ -62,7 +67,8 @@ public class ExploreSitesCategoryUnitTest {
         final String url4 = "http://gmail.com";
         final String categoryTitle = "Science";
 
-        ExploreSitesCategory category = new ExploreSitesCategory(id, type, categoryTitle);
+        ExploreSitesCategory category = new ExploreSitesCategory(
+                id, type, categoryTitle, /* ntpShownCount = */ 2, /* interactionCount = */ 3);
         category.addSite(new ExploreSitesSite(siteId1, title1, url1, false)); // not blacklisted
         category.addSite(new ExploreSitesSite(siteId2, title2, url2, true)); // blacklisted
         category.addSite(new ExploreSitesSite(siteId3, title3, url3, false)); // not blacklisted

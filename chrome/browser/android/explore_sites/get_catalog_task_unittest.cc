@@ -33,6 +33,8 @@ void ValidateTestingCatalog(GetCatalogTask::CategoryList* catalog) {
   EXPECT_EQ("5678", cat->version_token);
   EXPECT_EQ(1, cat->category_type);
   EXPECT_EQ("label_1", cat->label);
+  EXPECT_EQ(4, cat->ntp_shown_count);
+  EXPECT_EQ(2, cat->interaction_count);
 
   EXPECT_EQ(1U, cat->sites.size());
   ExploreSitesSite* site = &cat->sites[0];
@@ -46,6 +48,8 @@ void ValidateTestingCatalog(GetCatalogTask::CategoryList* catalog) {
   EXPECT_EQ("5678", cat->version_token);
   EXPECT_EQ(2, cat->category_type);
   EXPECT_EQ("label_2", cat->label);
+  EXPECT_EQ(6, cat->ntp_shown_count);
+  EXPECT_EQ(0, cat->interaction_count);
 
   EXPECT_EQ(1U, cat->sites.size());
   site = &cat->sites[0];
@@ -65,6 +69,8 @@ void ValidateBlacklistTestingCatalog(GetCatalogTask::CategoryList* catalog) {
   EXPECT_EQ("5678", cat->version_token);
   EXPECT_EQ(1, cat->category_type);
   EXPECT_EQ("label_1", cat->label);
+  EXPECT_EQ(4, cat->ntp_shown_count);
+  EXPECT_EQ(2, cat->interaction_count);
 
   EXPECT_EQ(1U, cat->sites.size());
   ExploreSitesSite* site = &cat->sites[0];
@@ -78,6 +84,8 @@ void ValidateBlacklistTestingCatalog(GetCatalogTask::CategoryList* catalog) {
   EXPECT_EQ("5678", cat->version_token);
   EXPECT_EQ(2, cat->category_type);
   EXPECT_EQ("label_2", cat->label);
+  EXPECT_EQ(6, cat->ntp_shown_count);
+  EXPECT_EQ(0, cat->interaction_count);
 
   EXPECT_EQ(1U, cat->sites.size());
   site = &cat->sites[0];
@@ -161,14 +169,14 @@ void ExploreSitesGetCatalogTaskTest::PopulateTestingCatalog() {
     meta_table.DeleteKey("downloading_catalog");
     sql::Statement insert(db->GetUniqueStatement(R"(
 INSERT INTO categories
-(category_id, version_token, type, label)
+(category_id, version_token, type, label, ntp_shown_count)
 VALUES
-(1, "1234", 1, "label_1"), -- older catalog
-(2, "1234", 2, "label_2"), -- older catalog
-(3, "1234", 3, "label_3"), -- older catalog
-(4, "5678", 1, "label_1"), -- current catalog
-(5, "5678", 2, "label_2"), -- current catalog
-(6, "5678", 3, "label_3"); -- current catalog)"));
+(1, "1234", 1, "label_1", 5), -- older catalog
+(2, "1234", 2, "label_2", 2), -- older catalog
+(3, "1234", 3, "label_3", 9), -- older catalog
+(4, "5678", 1, "label_1", 4), -- current catalog
+(5, "5678", 2, "label_2", 6), -- current catalog
+(6, "5678", 3, "label_3", 7); -- current catalog)"));
     if (!insert.Run())
       return false;
 
@@ -181,7 +189,17 @@ VALUES
 (3, "https://www.example.com/1", 4, "example_1"),
 (4, "https://www.example.com/2", 5, "example_2");
     )"));
-    return insert_sites.Run();
+    if (!insert_sites.Run())
+      return false;
+
+    sql::Statement insert_activity(db->GetUniqueStatement(R"(
+INSERT INTO activity
+(time, category_type, url)
+VALUES
+(12345, 1, "https://www.example.com/1"),
+(23456, 1, "https://www.example.com/1");
+    )"));
+    return insert_activity.Run();
   }));
 }
 

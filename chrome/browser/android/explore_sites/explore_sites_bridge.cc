@@ -53,7 +53,8 @@ void CatalogReady(ScopedJavaGlobalRef<jobject>(j_result_obj),
     ScopedJavaLocalRef<jobject> j_category =
         Java_ExploreSitesCategory_createAndAppendToList(
             env, category.category_id, category.category_type,
-            ConvertUTF8ToJavaString(env, category.label), j_result_obj);
+            ConvertUTF8ToJavaString(env, category.label),
+            category.ntp_shown_count, category.interaction_count, j_result_obj);
     for (auto& site : category.sites) {
       Java_ExploreSitesSite_createSiteInCategory(
           env, site.site_id, ConvertUTF8ToJavaString(env, site.title),
