@@ -18,6 +18,7 @@
 #include "base/test/test_file_util.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -787,9 +788,17 @@ TEST_P(ExtensionProtocolsTest, MimeTypesForKnownFiles) {
   }
 }
 
+#if defined(OS_WIN)
+#define MAYBE_ExtensionRequestsNotAborted DISABLED_ExtensionRequestsNotAborted
+#else
+#define MAYBE_ExtensionRequestsNotAborted ExtensionRequestsNotAborted
+#endif
 // Tests that requests for extension resources (including the generated
 // background page) are not aborted on system suspend.
-TEST_P(ExtensionProtocolsTest, ExtensionRequestsNotAborted) {
+//
+// Flaky on Windows.
+// TODO(https://crbug.com/921687): Investigate and fix.
+TEST_P(ExtensionProtocolsTest, MAYBE_ExtensionRequestsNotAborted) {
   // Register a non-incognito extension protocol handler.
   SetProtocolHandler(false);
 
