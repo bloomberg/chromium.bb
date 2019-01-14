@@ -25,7 +25,6 @@ virtual void BeginQueryEXT(GLenum target, GLuint id) = 0;
 virtual void EndQueryEXT(GLenum target) = 0;
 virtual void GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) = 0;
 virtual void LoseContextCHROMIUM(GLenum current, GLenum other) = 0;
-virtual void GenSyncTokenCHROMIUM(GLbyte* sync_token) = 0;
 virtual void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) = 0;
 virtual void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) = 0;
 virtual void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) = 0;

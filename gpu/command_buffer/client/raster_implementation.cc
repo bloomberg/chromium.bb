@@ -884,24 +884,6 @@ void RasterImplementation::GetQueryObjectuivEXT(GLuint id,
     *params = base::saturated_cast<GLuint>(result);
 }
 
-void RasterImplementation::GenSyncTokenCHROMIUM(GLbyte* sync_token) {
-  if (!sync_token) {
-    SetGLError(GL_INVALID_VALUE, "glGenSyncTokenCHROMIUM", "empty sync_token");
-    return;
-  }
-
-  uint64_t fence_sync = gpu_control_->GenerateFenceSyncRelease();
-  helper_->InsertFenceSyncCHROMIUM(fence_sync);
-  helper_->CommandBufferHelper::OrderingBarrier();
-  gpu_control_->EnsureWorkVisible();
-
-  // Copy the data over after setting the data to ensure alignment.
-  SyncToken sync_token_data(gpu_control_->GetNamespaceID(),
-                            gpu_control_->GetCommandBufferID(), fence_sync);
-  sync_token_data.SetVerifyFlush();
-  memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
-}
-
 void RasterImplementation::GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) {
   if (!sync_token) {
     SetGLError(GL_INVALID_VALUE, "glGenUnverifiedSyncTokenCHROMIUM",

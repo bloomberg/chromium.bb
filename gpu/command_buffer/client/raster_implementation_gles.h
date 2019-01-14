@@ -37,7 +37,6 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   void OrderingBarrierCHROMIUM() override;
 
   // SyncTokens.
-  void GenSyncTokenCHROMIUM(GLbyte* sync_token) override;
   void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override;
   void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
   void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;

@@ -77,10 +77,6 @@ void RasterImplementationGLES::OrderingBarrierCHROMIUM() {
   gl_->OrderingBarrierCHROMIUM();
 }
 
-void RasterImplementationGLES::GenSyncTokenCHROMIUM(GLbyte* sync_token) {
-  gl_->GenSyncTokenCHROMIUM(sync_token);
-}
-
 void RasterImplementationGLES::GenUnverifiedSyncTokenCHROMIUM(
     GLbyte* sync_token) {
   gl_->GenUnverifiedSyncTokenCHROMIUM(sync_token);

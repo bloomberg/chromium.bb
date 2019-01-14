@@ -512,39 +512,6 @@ TEST_F(RasterImplementationManualInitTest, BadQueryTargets) {
   EXPECT_EQ(nullptr, GetQuery(id));
 }
 
-TEST_F(RasterImplementationTest, GenSyncTokenCHROMIUM) {
-  const CommandBufferNamespace kNamespaceId = CommandBufferNamespace::GPU_IO;
-  const CommandBufferId kCommandBufferId =
-      CommandBufferId::FromUnsafeValue(234u);
-  const GLuint64 kFenceSync = 123u;
-  SyncToken sync_token;
-
-  EXPECT_CALL(*gpu_control_, GetNamespaceID())
-      .WillRepeatedly(Return(kNamespaceId));
-  EXPECT_CALL(*gpu_control_, GetCommandBufferID())
-      .WillRepeatedly(Return(kCommandBufferId));
-
-  gl_->GenSyncTokenCHROMIUM(nullptr);
-  EXPECT_TRUE(NoCommandsWritten());
-  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
-
-  const void* commands = GetPut();
-  cmds::InsertFenceSyncCHROMIUM insert_fence_sync;
-  insert_fence_sync.Init(kFenceSync);
-
-  EXPECT_CALL(*gpu_control_, GenerateFenceSyncRelease())
-      .WillOnce(Return(kFenceSync));
-  EXPECT_CALL(*gpu_control_, EnsureWorkVisible());
-  gl_->GenSyncTokenCHROMIUM(sync_token.GetData());
-  EXPECT_EQ(0, memcmp(&insert_fence_sync, commands, sizeof(insert_fence_sync)));
-  EXPECT_EQ(GL_NO_ERROR, CheckError());
-
-  EXPECT_TRUE(sync_token.verified_flush());
-  EXPECT_EQ(kNamespaceId, sync_token.namespace_id());
-  EXPECT_EQ(kCommandBufferId, sync_token.command_buffer_id());
-  EXPECT_EQ(kFenceSync, sync_token.release_count());
-}
-
 TEST_F(RasterImplementationTest, GenUnverifiedSyncTokenCHROMIUM) {
   const CommandBufferNamespace kNamespaceId = CommandBufferNamespace::GPU_IO;
   const CommandBufferId kCommandBufferId =
@@ -722,10 +689,13 @@ TEST_F(RasterImplementationTest, WaitSyncTokenCHROMIUM) {
       .WillOnce(Return(kCommandBufferId));
   EXPECT_CALL(*gpu_control_, GenerateFenceSyncRelease())
       .WillOnce(Return(kFenceSync));
-  EXPECT_CALL(*gpu_control_, EnsureWorkVisible());
-  gl_->GenSyncTokenCHROMIUM(sync_token_data);
+  gl_->GenUnverifiedSyncTokenCHROMIUM(sync_token_data);
 
-  EXPECT_CALL(*gpu_control_, WaitSyncToken(sync_token));
+  EXPECT_CALL(*gpu_control_, CanWaitUnverifiedSyncToken(sync_token))
+      .WillOnce(Return(true));
+  gpu::SyncToken verified_sync_token = sync_token;
+  verified_sync_token.SetVerifyFlush();
+  EXPECT_CALL(*gpu_control_, WaitSyncToken(verified_sync_token));
   gl_->WaitSyncTokenCHROMIUM(sync_token_data);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
@@ -777,9 +747,8 @@ TEST_F(RasterImplementationTest, SignalSyncToken) {
 
   EXPECT_CALL(*gpu_control_, GenerateFenceSyncRelease())
       .WillOnce(Return(kFenceSync));
-  EXPECT_CALL(*gpu_control_, EnsureWorkVisible());
   gpu::SyncToken sync_token;
-  gl_->GenSyncTokenCHROMIUM(sync_token.GetData());
+  gl_->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
 
   int signaled_count = 0;
 
@@ -791,6 +760,8 @@ TEST_F(RasterImplementationTest, SignalSyncToken) {
                                          base::OnceClosure* callback) {
         signal_closure = std::move(*callback);
       }));
+  EXPECT_CALL(*gpu_control_, CanWaitUnverifiedSyncToken(sync_token))
+      .WillOnce(Return(true));
   gl_->SignalSyncToken(sync_token,
                        base::BindOnce(&CountCallback, &signaled_count));
   EXPECT_EQ(0, signaled_count);
@@ -811,9 +782,8 @@ TEST_F(RasterImplementationTest, SignalSyncTokenAfterContextLoss) {
       .WillOnce(Return(kCommandBufferId));
   EXPECT_CALL(*gpu_control_, GenerateFenceSyncRelease())
       .WillOnce(Return(kFenceSync));
-  EXPECT_CALL(*gpu_control_, EnsureWorkVisible());
   gpu::SyncToken sync_token;
-  gl_->GenSyncTokenCHROMIUM(sync_token.GetData());
+  gl_->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
 
   int signaled_count = 0;
 
@@ -825,6 +795,8 @@ TEST_F(RasterImplementationTest, SignalSyncTokenAfterContextLoss) {
                                          base::OnceClosure* callback) {
         signal_closure = std::move(*callback);
       }));
+  EXPECT_CALL(*gpu_control_, CanWaitUnverifiedSyncToken(sync_token))
+      .WillOnce(Return(true));
   gl_->SignalSyncToken(sync_token,
                        base::BindOnce(&CountCallback, &signaled_count));
   EXPECT_EQ(0, signaled_count);

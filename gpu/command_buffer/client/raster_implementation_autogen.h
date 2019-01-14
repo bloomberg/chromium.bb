@@ -37,8 +37,6 @@ void GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) override;
 
 void LoseContextCHROMIUM(GLenum current, GLenum other) override;
 
-void GenSyncTokenCHROMIUM(GLbyte* sync_token) override;
-
 void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) override;
 
 void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
