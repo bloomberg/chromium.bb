@@ -23,6 +23,7 @@ public class TaskRunnerImpl implements TaskRunner {
     protected long mNativeTaskRunnerAndroid;
     private final String mTraceEvent;
     protected final Runnable mRunPreNativeTaskClosure = this::runPreNativeTask;
+    private boolean mIsDestroying;
 
     @Nullable
     protected LinkedList<Runnable> mPreNativeTasks = new LinkedList<>();
@@ -48,7 +49,7 @@ public class TaskRunnerImpl implements TaskRunner {
         synchronized (mLock) {
             if (mNativeTaskRunnerAndroid != 0) nativeDestroy(mNativeTaskRunnerAndroid);
             mNativeTaskRunnerAndroid = 0;
-            mPreNativeTasks = null;
+            mIsDestroying = true;
         }
     }
 
@@ -65,7 +66,7 @@ public class TaskRunnerImpl implements TaskRunner {
     @Override
     public void postTask(Runnable task) {
         synchronized (mLock) {
-            assert mNativeTaskRunnerAndroid != 0 || mPreNativeTasks != null;
+            assert !mIsDestroying;
             if (mNativeTaskRunnerAndroid != 0) {
                 nativePostTask(mNativeTaskRunnerAndroid, task);
                 return;
