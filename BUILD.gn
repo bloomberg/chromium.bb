@@ -16,6 +16,7 @@ group("all") {
     ":system_api-chaps-protos",
     ":system_api-metrics_event-protos",
     ":system_api-metrics_event-goprotos",
+    ":system_api-plugin_vm_service-protos",
     ":system_api-smbprovider-protos",
     ":system_api-vm_cicerone-protos",
     ":system_api-vm_cicerone-goprotos",
@@ -141,6 +142,15 @@ goproto_library("system_api-metrics_event-goprotos") {
   sources = [
     "${proto_in_dir}/metrics_event.proto",
   ]
+}
+
+proto_library("system_api-plugin_vm_service-protos") {
+  proto_in_dir = "dbus/plugin_vm_service"
+  proto_out_dir = "include/plugin_vm_service/proto_bindings"
+  sources = [
+    "${proto_in_dir}/plugin_vm_service.proto",
+  ]
+  standalone = true
 }
 
 proto_library("system_api-smbprovider-protos") {

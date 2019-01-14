@@ -208,6 +208,13 @@ const char kUrlHandlerServiceInterface[] =
     "org.chromium.UrlHandlerServiceInterface";
 const char kUrlHandlerServiceOpenUrlMethod[] = "OpenUrl";
 
+const char kPluginVmServiceName[] = "org.chromium.PluginVmService";
+const char kPluginVmServicePath[] = "/org/chromium/PluginVmService";
+const char kPluginVmServiceInterface[] =
+    "org.chromium.PluginVmServiceInterface";
+const char kPluginVmServiceGetLicenseDataMethod[] =
+    "GetLicenseData";
+
 }  // namespace chromeos
 
 namespace cromo {
