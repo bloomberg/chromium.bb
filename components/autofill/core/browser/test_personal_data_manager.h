@@ -27,7 +27,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   // PersonalDataManager overrides.  These functions are overridden as needed
   // for various tests, whether to skip calls to uncreated databases/services,
   // or to make things easier in general to toggle.
-  void OnSyncServiceInitialized(syncer::SyncService* sync_service) override {}
+  void OnSyncServiceInitialized(syncer::SyncService* sync_service) override;
   void RecordUseOf(const AutofillDataModel& data_model) override;
   std::string SaveImportedProfile(
       const AutofillProfile& imported_profile) override;
@@ -90,6 +90,8 @@ class TestPersonalDataManager : public PersonalDataManager {
     return num_times_save_imported_credit_card_called_;
   }
 
+  bool sync_service_initialized() const { return sync_service_initialized_; }
+
   void SetAutofillEnabled(bool autofill_enabled) {
     autofill_enabled_ = autofill_enabled;
   }
@@ -127,6 +129,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   base::Optional<bool> autofill_credit_card_enabled_;
   base::Optional<bool> autofill_wallet_import_enabled_;
   bool sync_feature_enabled_ = false;
+  bool sync_service_initialized_ = false;
   AccountInfo account_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManager);
