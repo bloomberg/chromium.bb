@@ -324,6 +324,7 @@ input[type=text].input-icon-container {
 
 .arrow-container {
   --arrow-size: 5px;
+  display: flex;
   font-size: 0;
   margin-top: -5px;
 }
@@ -334,6 +335,7 @@ input:focus + .arrow-container {
 
 .arrow-padding {
   display: inline-block;
+  overflow: hidden;
   padding-left: 32px;
   visibility: hidden;
   white-space: pre;
@@ -430,6 +432,7 @@ input[type=checkbox] {
   flex-basis: 0;
   flex-direction: column;
   flex-grow: 1;
+  overflow: hidden;
   padding: 0 15px;
 }
 
