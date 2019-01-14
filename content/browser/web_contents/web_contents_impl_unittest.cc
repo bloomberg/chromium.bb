@@ -49,6 +49,7 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
+#include "content/test/navigation_simulator_impl.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "content/test/test_render_frame_host.h"
@@ -3037,6 +3038,8 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
   // RenderFrameHost to call into WebContents::DidStartLoading, which starts
   // the spinner.
   {
+    auto navigation =
+        NavigationSimulatorImpl::CreateBrowserInitiated(bar_url, contents());
     NavigationController::LoadURLParams load_params(bar_url);
     load_params.referrer = Referrer(GURL("http://referrer"),
                                     network::mojom::ReferrerPolicy::kDefault);
@@ -3047,7 +3050,8 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
     load_params.override_user_agent = NavigationController::UA_OVERRIDE_TRUE;
     load_params.frame_tree_node_id =
         subframe->frame_tree_node()->frame_tree_node_id();
-    controller().LoadURLWithParams(load_params);
+    navigation->SetLoadURLParams(&load_params);
+    navigation->Start();
     entry_id = controller().GetPendingEntry()->GetUniqueID();
 
     // Commit the navigation in the child frame and send the DidStopLoading

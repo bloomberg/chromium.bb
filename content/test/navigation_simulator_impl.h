@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
@@ -87,6 +88,9 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   NavigationThrottle::ThrottleCheckResult GetLastThrottleCheckResult() override;
   NavigationHandle* GetNavigationHandle() const override;
   content::GlobalRequestID GetGlobalRequestID() const override;
+
+  // Additional utilites usable only inside content/.
+  void SetLoadURLParams(NavigationController::LoadURLParams* load_url_params);
 
  private:
   NavigationSimulatorImpl(const GURL& original_url,
@@ -202,6 +206,10 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   blink::mojom::DocumentInterfaceBrokerRequest
       document_interface_broker_blink_request_;
   std::string contents_mime_type_;
+
+  // Generic params structure used for fully customized browser initiated
+  // navigation requests. Only valid if explicitely provided.
+  NavigationController::LoadURLParams* load_url_params_;
 
   bool auto_advance_ = true;
 

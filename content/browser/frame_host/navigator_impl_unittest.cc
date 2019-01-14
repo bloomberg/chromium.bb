@@ -27,6 +27,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_utils.h"
+#include "content/test/navigation_simulator_impl.h"
 #include "content/test/test_navigation_url_loader.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_web_contents.h"
@@ -58,27 +59,16 @@ class NavigatorTestWithBrowserSideNavigation
     return static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
   }
 
-  // Requests a navigation of the specified FrameTreeNode to the specified URL;
-  // returns the unique ID of the pending NavigationEntry.
+  // Requests a navigation of the specified FrameTreeNode to the specified URL.
+  // Returns the unique ID of the pending NavigationEntry.
+  // TODO(ahemery): Convert this usage to NavigationSimulator.
   int RequestNavigation(FrameTreeNode* node, const GURL& url) {
-    return RequestNavigationWithParameters(node, url, Referrer(),
-                                           ui::PAGE_TRANSITION_LINK);
-  }
+    NavigationController::LoadURLParams load_url_params(url);
+    load_url_params.frame_tree_node_id = node->frame_tree_node_id();
+    load_url_params.referrer = Referrer();
+    load_url_params.transition_type = ui::PAGE_TRANSITION_LINK;
 
-  // Requests a navigation of the specified FrameTreeNode to the specified URL,
-  // using other specified parameters; returns the unique ID of the pending
-  // NavigationEntry.
-  int RequestNavigationWithParameters(
-      FrameTreeNode* node,
-      const GURL& url,
-      const Referrer& referrer,
-      ui::PageTransition transition_type) {
-    NavigationController::LoadURLParams load_params(url);
-    load_params.frame_tree_node_id = node->frame_tree_node_id();
-    load_params.referrer = referrer;
-    load_params.transition_type = transition_type;
-
-    controller().LoadURLWithParams(load_params);
+    controller().LoadURLWithParams(load_url_params);
     return controller().GetPendingEntry()->GetUniqueID();
   }
 
