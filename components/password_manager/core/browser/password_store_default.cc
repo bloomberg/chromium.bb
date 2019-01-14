@@ -244,6 +244,10 @@ bool PasswordStoreDefault::CommitTransaction() {
   return false;
 }
 
+syncer::SyncMetadataStore* PasswordStoreDefault::GetMetadataStore() {
+  return login_db_.get();
+}
+
 void PasswordStoreDefault::ResetLoginDB() {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   login_db_.reset();

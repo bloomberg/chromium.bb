@@ -87,6 +87,7 @@ class PasswordStoreDefault : public PasswordStore {
   // Implements PasswordStoreSync interface.
   bool BeginTransaction() override;
   bool CommitTransaction() override;
+  syncer::SyncMetadataStore* GetMetadataStore() override;
 
   inline bool DeleteAndRecreateDatabaseFile() {
     return login_db_->DeleteAndRecreateDatabaseFile();

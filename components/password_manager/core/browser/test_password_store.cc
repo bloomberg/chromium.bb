@@ -220,4 +220,8 @@ bool TestPasswordStore::CommitTransaction() {
   return true;
 }
 
+syncer::SyncMetadataStore* TestPasswordStore::GetMetadataStore() {
+  return nullptr;
+}
+
 }  // namespace password_manager

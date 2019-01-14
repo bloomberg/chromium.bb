@@ -88,6 +88,7 @@ class TestPasswordStore : public PasswordStore {
   // PasswordStoreSync interface.
   bool BeginTransaction() override;
   bool CommitTransaction() override;
+  syncer::SyncMetadataStore* GetMetadataStore() override;
 
  private:
   PasswordMap stored_passwords_;

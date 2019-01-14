@@ -16,6 +16,10 @@ namespace autofill {
 struct PasswordForm;
 }
 
+namespace syncer {
+class SyncMetadataStore;
+}
+
 namespace password_manager {
 
 // This enum is used to determine result status when deleting undecryptable
@@ -73,6 +77,10 @@ class PasswordStoreSync {
   // observers could be notified inside CommitTransaction().
   virtual bool BeginTransaction() = 0;
   virtual bool CommitTransaction() = 0;
+
+  // Returns a SyncMetadataStore that sync machinery would use to persist the
+  // sync metadata.
+  virtual syncer::SyncMetadataStore* GetMetadataStore() = 0;
 
  protected:
   virtual ~PasswordStoreSync();
