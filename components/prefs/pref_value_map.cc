@@ -21,11 +21,10 @@ bool PrefValueMap::GetValue(const std::string& key,
   if (it == prefs_.end())
     return false;
 
-  const base::Value* got_value = it->second.get();
-  if (value && got_value)
-    *value = got_value;
+  if (value)
+    *value = &it->second;
 
-  return !!got_value;
+  return true;
 }
 
 bool PrefValueMap::GetValue(const std::string& key, base::Value** value) {
@@ -33,19 +32,21 @@ bool PrefValueMap::GetValue(const std::string& key, base::Value** value) {
   if (it == prefs_.end())
     return false;
 
-  base::Value* got_value = it->second.get();
-  if (value && got_value)
-    *value = got_value;
+  if (value)
+    *value = &it->second;
 
-  return !!got_value;
+  return true;
 }
 
 bool PrefValueMap::SetValue(const std::string& key,
                             std::unique_ptr<base::Value> value) {
   DCHECK(value);
+  return SetValue(key, base::Value::FromUniquePtrValue(std::move(value)));
+}
 
-  std::unique_ptr<base::Value>& existing_value = prefs_[key];
-  if (existing_value && value->Equals(existing_value.get()))
+bool PrefValueMap::SetValue(const std::string& key, base::Value value) {
+  base::Value& existing_value = prefs_[key];
+  if (value == existing_value)
     return false;
 
   existing_value = std::move(value);
@@ -91,7 +92,7 @@ bool PrefValueMap::GetBoolean(const std::string& key,
 }
 
 void PrefValueMap::SetBoolean(const std::string& key, bool value) {
-  SetValue(key, std::make_unique<base::Value>(value));
+  SetValue(key, base::Value(value));
 }
 
 bool PrefValueMap::GetString(const std::string& key,
@@ -102,7 +103,7 @@ bool PrefValueMap::GetString(const std::string& key,
 
 void PrefValueMap::SetString(const std::string& key,
                              const std::string& value) {
-  SetValue(key, std::make_unique<base::Value>(value));
+  SetValue(key, base::Value(value));
 }
 
 bool PrefValueMap::GetInteger(const std::string& key, int* value) const {
@@ -111,11 +112,11 @@ bool PrefValueMap::GetInteger(const std::string& key, int* value) const {
 }
 
 void PrefValueMap::SetInteger(const std::string& key, const int value) {
-  SetValue(key, std::make_unique<base::Value>(value));
+  SetValue(key, base::Value(value));
 }
 
 void PrefValueMap::SetDouble(const std::string& key, const double value) {
-  SetValue(key, std::make_unique<base::Value>(value));
+  SetValue(key, base::Value(value));
 }
 
 void PrefValueMap::GetDifferingKeys(
@@ -124,12 +125,12 @@ void PrefValueMap::GetDifferingKeys(
   differing_keys->clear();
 
   // Put everything into ordered maps.
-  std::map<std::string, base::Value*> this_prefs;
-  std::map<std::string, base::Value*> other_prefs;
+  std::map<std::string, const base::Value*> this_prefs;
+  std::map<std::string, const base::Value*> other_prefs;
   for (const auto& pair : prefs_)
-    this_prefs[pair.first] = pair.second.get();
+    this_prefs.emplace(pair.first, &pair.second);
   for (const auto& pair : other->prefs_)
-    other_prefs[pair.first] = pair.second.get();
+    other_prefs.emplace(pair.first, &pair.second);
 
   // Walk over the maps in lockstep, adding everything that is different.
   auto this_pref = this_prefs.begin();
@@ -152,15 +153,15 @@ void PrefValueMap::GetDifferingKeys(
 
   // Add the remaining entries.
   for ( ; this_pref != this_prefs.end(); ++this_pref)
-      differing_keys->push_back(this_pref->first);
+    differing_keys->push_back(this_pref->first);
   for ( ; other_pref != other_prefs.end(); ++other_pref)
-      differing_keys->push_back(other_pref->first);
+    differing_keys->push_back(other_pref->first);
 }
 
 std::unique_ptr<base::DictionaryValue> PrefValueMap::AsDictionaryValue() const {
   auto dictionary = std::make_unique<base::DictionaryValue>();
-  for (const auto& value : prefs_) {
-    dictionary->Set(value.first, value.second->CreateDeepCopy());
-  }
+  for (const auto& value : prefs_)
+    dictionary->Set(value.first, value.second.CreateDeepCopy());
+
   return dictionary;
 }

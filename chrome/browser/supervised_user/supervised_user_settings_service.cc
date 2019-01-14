@@ -418,16 +418,15 @@ void SupervisedUserSettingsService::OnInitializationCompleted(bool success) {
 base::DictionaryValue* SupervisedUserSettingsService::GetOrCreateDictionary(
     const std::string& key) const {
   base::Value* value = nullptr;
-  base::DictionaryValue* dict = nullptr;
-  if (store_->GetMutableValue(key, &value)) {
-    bool success = value->GetAsDictionary(&dict);
-    DCHECK(success);
-  } else {
-    dict = new base::DictionaryValue;
-    store_->SetValue(key, base::WrapUnique(dict),
-                     WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  if (!store_->GetMutableValue(key, &value)) {
+    store_->SetValue(
+        key, std::make_unique<base::Value>(base::Value::Type::DICTIONARY),
+        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+    store_->GetMutableValue(key, &value);
   }
-
+  base::DictionaryValue* dict = nullptr;
+  bool success = value->GetAsDictionary(&dict);
+  DCHECK(success);
   return dict;
 }
 

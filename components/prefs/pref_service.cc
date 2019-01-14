@@ -571,15 +571,9 @@ base::Value* PrefService::GetMutableUserPref(const std::string& path,
   base::Value* value = nullptr;
   if (!user_pref_store_->GetMutableValue(path, &value) ||
       value->type() != type) {
-    if (type == base::Value::Type::DICTIONARY) {
-      value = new base::DictionaryValue;
-    } else if (type == base::Value::Type::LIST) {
-      value = new base::ListValue;
-    } else {
-      NOTREACHED();
-    }
-    user_pref_store_->SetValueSilently(path, base::WrapUnique(value),
-                                       GetWriteFlags(pref));
+    user_pref_store_->SetValueSilently(
+        path, std::make_unique<base::Value>(type), GetWriteFlags(pref));
+    user_pref_store_->GetMutableValue(path, &value);
   }
   return value;
 }

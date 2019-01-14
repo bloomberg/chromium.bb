@@ -115,10 +115,10 @@ bool OverlayUserPrefStore::GetMutableValue(const std::string& key,
   if (!persistent_user_pref_store_->GetMutableValue(key, &persistent_value))
     return false;
 
-  *result = persistent_value->DeepCopy();
   ephemeral_user_pref_store_->SetValue(
-      key, base::WrapUnique(*result),
+      key, persistent_value->CreateDeepCopy(),
       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  ephemeral_user_pref_store_->GetMutableValue(key, result);
   return true;
 }
 
