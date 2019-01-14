@@ -76,7 +76,7 @@ Otherwise, file a bug (TODO: [Make this template automatic](https://github.com/c
 > Debugging size regressions is documented at:
 > https://chromium.googlesource.com/chromium/src/+/master/docs/speed/apk_size_regressions.md#Debugging-Apk-Size-Increase
 >
-> Based on the graph: **20kb of native code, 8kb of pngs.**
+> Based on the trybot result: **20kb of native code, 8kb of pngs. *(or some other explanation as to what caused the growth).***
 >
 > It's not clear to me whether or not this increase was expected.<br>
 > Please have a look and either:
@@ -84,10 +84,10 @@ Otherwise, file a bug (TODO: [Make this template automatic](https://github.com/c
 > 1. Close as "Won't Fix" with a short justification, or
 > 2. Land a revert / fix-up.
 >
-> _**Optional addition for commits > 75kb:**_
+> _**Optional addition:**_
 >
 > It typically takes about a week of engineering time to reduce binary size by
-> 100kb so we'd really appreciate you taking some time exploring options to
+> 50kb so we'd really appreciate you taking some time exploring options to
 > address this regression!
 
 If the regression is >50kb, add ReleaseBlock-Stable **M-##** (next branch cut).*
