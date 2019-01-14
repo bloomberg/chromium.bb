@@ -416,31 +416,40 @@ TEST(CanonicalCookieTest, IncludeForRequestURL) {
 
   std::unique_ptr<CanonicalCookie> cookie(
       CanonicalCookie::Create(url, "A=2", creation_time, options));
-  EXPECT_TRUE(cookie->IncludeForRequestURL(url, options));
-  EXPECT_TRUE(cookie->IncludeForRequestURL(
-      GURL("http://www.example.com/foo/bar"), options));
-  EXPECT_TRUE(cookie->IncludeForRequestURL(
-      GURL("https://www.example.com/foo/bar"), options));
-  EXPECT_FALSE(
-      cookie->IncludeForRequestURL(GURL("https://sub.example.com"), options));
-  EXPECT_FALSE(cookie->IncludeForRequestURL(GURL("https://sub.www.example.com"),
-                                            options));
+  EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+            CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  EXPECT_EQ(cookie->IncludeForRequestURL(GURL("http://www.example.com/foo/bar"),
+                                         options),
+            CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  EXPECT_EQ(cookie->IncludeForRequestURL(
+                GURL("https://www.example.com/foo/bar"), options),
+            CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  EXPECT_EQ(
+      cookie->IncludeForRequestURL(GURL("https://sub.example.com"), options),
+      CanonicalCookie::CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH);
+  EXPECT_EQ(cookie->IncludeForRequestURL(GURL("https://sub.www.example.com"),
+                                         options),
+            CanonicalCookie::CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH);
 
   // Test that cookie with a cookie path that does not match the url path are
   // not included.
   cookie = CanonicalCookie::Create(url, "A=2; Path=/foo/bar", creation_time,
                                    options);
-  EXPECT_FALSE(cookie->IncludeForRequestURL(url, options));
-  EXPECT_TRUE(cookie->IncludeForRequestURL(
-      GURL("http://www.example.com/foo/bar/index.html"), options));
+  EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+            CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH);
+  EXPECT_EQ(cookie->IncludeForRequestURL(
+                GURL("http://www.example.com/foo/bar/index.html"), options),
+            CanonicalCookie::CookieInclusionStatus::INCLUDE);
 
   // Test that a secure cookie is not included for a non secure URL.
   GURL secure_url("https://www.example.com");
   cookie = CanonicalCookie::Create(secure_url, "A=2; Secure", creation_time,
                                    options);
   EXPECT_TRUE(cookie->IsSecure());
-  EXPECT_TRUE(cookie->IncludeForRequestURL(secure_url, options));
-  EXPECT_FALSE(cookie->IncludeForRequestURL(url, options));
+  EXPECT_EQ(cookie->IncludeForRequestURL(secure_url, options),
+            CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+            CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY);
 
   // Test that http only cookies are only included if the include httponly flag
   // is set on the cookie options.
@@ -448,9 +457,11 @@ TEST(CanonicalCookieTest, IncludeForRequestURL) {
   cookie =
       CanonicalCookie::Create(url, "A=2; HttpOnly", creation_time, options);
   EXPECT_TRUE(cookie->IsHttpOnly());
-  EXPECT_TRUE(cookie->IncludeForRequestURL(url, options));
+  EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+            CanonicalCookie::CookieInclusionStatus::INCLUDE);
   options.set_exclude_httponly();
-  EXPECT_FALSE(cookie->IncludeForRequestURL(url, options));
+  EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+            CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY);
 }
 
 TEST(CanonicalCookieTest, IncludeSameSiteForSameSiteURL) {
@@ -466,13 +477,16 @@ TEST(CanonicalCookieTest, IncludeSameSiteForSameSiteURL) {
   EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie->SameSite());
   options.set_same_site_cookie_mode(
       CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE);
-  EXPECT_FALSE(cookie->IncludeForRequestURL(url, options));
+  EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+            CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT);
   options.set_same_site_cookie_mode(
       CookieOptions::SameSiteCookieMode::INCLUDE_LAX);
-  EXPECT_FALSE(cookie->IncludeForRequestURL(url, options));
+  EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+            CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT);
   options.set_same_site_cookie_mode(
       CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
-  EXPECT_TRUE(cookie->IncludeForRequestURL(url, options));
+  EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+            CanonicalCookie::CookieInclusionStatus::INCLUDE);
 
   // `SameSite=Lax` cookies are included for a URL only if the options'
   // SameSiteCookieMode is INCLUDE_STRICT_AND_LAX.
@@ -481,13 +495,16 @@ TEST(CanonicalCookieTest, IncludeSameSiteForSameSiteURL) {
   EXPECT_EQ(CookieSameSite::LAX_MODE, cookie->SameSite());
   options.set_same_site_cookie_mode(
       CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE);
-  EXPECT_FALSE(cookie->IncludeForRequestURL(url, options));
+  EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+            CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX);
   options.set_same_site_cookie_mode(
       CookieOptions::SameSiteCookieMode::INCLUDE_LAX);
-  EXPECT_TRUE(cookie->IncludeForRequestURL(url, options));
+  EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+            CanonicalCookie::CookieInclusionStatus::INCLUDE);
   options.set_same_site_cookie_mode(
       CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
-  EXPECT_TRUE(cookie->IncludeForRequestURL(url, options));
+  EXPECT_EQ(cookie->IncludeForRequestURL(url, options),
+            CanonicalCookie::CookieInclusionStatus::INCLUDE);
 }
 
 TEST(CanonicalCookieTest, PartialCompare) {

@@ -1107,7 +1107,8 @@ void CookieMonster::FindCookiesForKey(const std::string& key,
     // Filter out cookies that should not be included for a request to the
     // given |url|. HTTP only cookies are filtered depending on the passed
     // cookie |options|.
-    if (!cc->IncludeForRequestURL(url, options))
+    if (cc->IncludeForRequestURL(url, options) !=
+        CanonicalCookie::CookieInclusionStatus::INCLUDE)
       continue;
 
     // Add this cookie to the set of matching cookies. Update the access

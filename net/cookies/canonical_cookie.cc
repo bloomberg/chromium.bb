@@ -349,41 +349,42 @@ bool CanonicalCookie::IsDomainMatch(const std::string& host) const {
   return cookie_util::IsDomainMatch(domain_, host);
 }
 
-bool CanonicalCookie::IncludeForRequestURL(const GURL& url,
-                                           const CookieOptions& options) const {
+CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
+    const GURL& url,
+    const CookieOptions& options) const {
   // Filter out HttpOnly cookies, per options.
   if (options.exclude_httponly() && IsHttpOnly())
-    return false;
+    return CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY;
   // Secure cookies should not be included in requests for URLs with an
   // insecure scheme.
   if (IsSecure() && !url.SchemeIsCryptographic())
-    return false;
+    return CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY;
   // Don't include cookies for requests that don't apply to the cookie domain.
   if (!IsDomainMatch(url.host()))
-    return false;
+    return CanonicalCookie::CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH;
   // Don't include cookies for requests with a url path that does not path
   // match the cookie-path.
   if (!IsOnPath(url.path()))
-    return false;
+    return CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH;
   // Don't include same-site cookies for cross-site requests.
   switch (SameSite()) {
     case CookieSameSite::STRICT_MODE:
       if (options.same_site_cookie_mode() !=
           CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX) {
-        return false;
+        return CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT;
       }
       break;
     case CookieSameSite::LAX_MODE:
       if (options.same_site_cookie_mode() ==
           CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE) {
-        return false;
+        return CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX;
       }
       break;
     default:
       break;
   }
 
-  return true;
+  return CanonicalCookie::CookieInclusionStatus::INCLUDE;
 }
 
 std::string CanonicalCookie::DebugString() const {
