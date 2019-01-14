@@ -27,6 +27,32 @@ selection_test(
 
 selection_test(
     [
+        '<span>',
+          '<div contenteditable>',
+            '<div>',
+              '<span style="font-style: times; color: blue">This text should be blue times</span>',
+            '</div>',
+            '<span style="font-style: italic; color: green">|This text should be green italic</span>',
+          '</div>',
+        '</span>',
+    ],
+    'insertOrderedList',
+    [
+        '<span>',
+          '<div contenteditable>',
+            '<div>',
+              '<span style="font-style: times; color: blue">This text should be blue times</span>',
+            '</div>',
+            '<ol>',
+              '<li><span style="font-style: italic; color: green">|This text should be green italic</span></li>',
+            '</ol>',
+          '</div>',
+        '</span>',
+    ],
+    'insertOrderedList - A contaning span outside the editing boundaries shouldn not affect when listifying a styled paragraph.');
+
+selection_test(
+    [
         '<div contenteditable>',
           '<ol style="font-style: times; color: blue">',
             '<li>This text should be blue times</li>',
