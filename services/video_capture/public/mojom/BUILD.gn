@@ -13,6 +13,8 @@ mojom("mojom") {
     "receiver.mojom",
     "scoped_access_permission.mojom",
     "testing_controls.mojom",
+    "video_source.mojom",
+    "video_source_provider.mojom",
     "virtual_device.mojom",
   ]
 

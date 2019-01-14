@@ -33,16 +33,21 @@ class DeviceFactoryProviderImpl : public mojom::DeviceFactoryProvider {
   void InjectGpuDependencies(
       mojom::AcceleratorFactoryPtr accelerator_factory) override;
   void ConnectToDeviceFactory(mojom::DeviceFactoryRequest request) override;
+  void ConnectToVideoSourceProvider(
+      mojom::VideoSourceProviderRequest request) override;
 
  private:
   class GpuDependenciesContext;
 
   void LazyInitializeGpuDependenciesContext();
   void LazyInitializeDeviceFactory();
+  void LazyInitializeVideoSourceProvider();
   void OnFactoryClientDisconnected();
 
   mojo::BindingSet<mojom::DeviceFactory> factory_bindings_;
   std::unique_ptr<VirtualDeviceEnabledDeviceFactory> device_factory_;
+  mojo::BindingSet<mojom::VideoSourceProvider> video_source_provider_bindings_;
+  std::unique_ptr<mojom::VideoSourceProvider> video_source_provider_;
   std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   std::unique_ptr<GpuDependenciesContext> gpu_dependencies_context_;
 

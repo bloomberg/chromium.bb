@@ -19,6 +19,9 @@ class MockDeviceFactoryProvider
   void ConnectToDeviceFactory(
       video_capture::mojom::DeviceFactoryRequest request) override;
 
+  void ConnectToVideoSourceProvider(
+      video_capture::mojom::VideoSourceProviderRequest request) override;
+
   void InjectGpuDependencies(
       video_capture::mojom::AcceleratorFactoryPtr accelerator_factory) override;
 
@@ -28,6 +31,8 @@ class MockDeviceFactoryProvider
   MOCK_METHOD1(SetShutdownDelayInSeconds, void(float seconds));
   MOCK_METHOD1(DoConnectToDeviceFactory,
                void(video_capture::mojom::DeviceFactoryRequest& request));
+  MOCK_METHOD1(DoConnectToVideoSourceProvider,
+               void(video_capture::mojom::VideoSourceProviderRequest& request));
 };
 
 }  // namespace video_capture

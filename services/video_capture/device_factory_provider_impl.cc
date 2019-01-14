@@ -12,6 +12,7 @@
 #include "media/capture/video/video_capture_buffer_tracker.h"
 #include "media/capture/video/video_capture_system_impl.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
+#include "services/video_capture/video_source_provider_impl.h"
 #include "services/video_capture/virtual_device_enabled_device_factory.h"
 #include "services/ws/public/cpp/gpu/gpu.h"
 
@@ -109,6 +110,13 @@ void DeviceFactoryProviderImpl::ConnectToDeviceFactory(
   factory_bindings_.AddBinding(device_factory_.get(), std::move(request));
 }
 
+void DeviceFactoryProviderImpl::ConnectToVideoSourceProvider(
+    mojom::VideoSourceProviderRequest request) {
+  LazyInitializeVideoSourceProvider();
+  video_source_provider_bindings_.AddBinding(video_source_provider_.get(),
+                                             std::move(request));
+}
+
 void DeviceFactoryProviderImpl::LazyInitializeGpuDependenciesContext() {
   if (!gpu_dependencies_context_)
     gpu_dependencies_context_ = std::make_unique<GpuDependenciesContext>();
@@ -138,6 +146,16 @@ void DeviceFactoryProviderImpl::LazyInitializeDeviceFactory() {
               &GpuDependenciesContext::CreateJpegDecodeAccelerator,
               gpu_dependencies_context_->GetWeakPtr()),
           gpu_dependencies_context_->GetTaskRunner()));
+}
+
+void DeviceFactoryProviderImpl::LazyInitializeVideoSourceProvider() {
+  if (video_source_provider_)
+    return;
+
+  LazyInitializeDeviceFactory();
+
+  video_source_provider_ =
+      std::make_unique<VideoSourceProviderImpl>(device_factory_.get());
 }
 
 void DeviceFactoryProviderImpl::OnFactoryClientDisconnected() {

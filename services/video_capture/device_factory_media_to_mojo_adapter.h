@@ -11,7 +11,7 @@
 #include "media/capture/video/video_capture_system.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
-#include "services/video_capture/public/mojom/device_factory.mojom.h"
+#include "services/video_capture/device_factory.h"
 
 namespace video_capture {
 
@@ -21,7 +21,7 @@ class DeviceMediaToMojoAdapter;
 // mojom::DeviceFactory interface. Keeps track of device instances that have
 // been created to ensure that it does not create more than one instance of the
 // same media::VideoCaptureDevice at the same time.
-class DeviceFactoryMediaToMojoAdapter : public mojom::DeviceFactory {
+class DeviceFactoryMediaToMojoAdapter : public DeviceFactory {
  public:
   DeviceFactoryMediaToMojoAdapter(
       std::unique_ptr<media::VideoCaptureSystem> capture_system,
@@ -29,10 +29,9 @@ class DeviceFactoryMediaToMojoAdapter : public mojom::DeviceFactory {
       scoped_refptr<base::SequencedTaskRunner> jpeg_decoder_task_runner);
   ~DeviceFactoryMediaToMojoAdapter() override;
 
+  // DeviceFactory implementation.
   void SetServiceRef(
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
-
-  // mojom::DeviceFactory implementation.
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref) override;
   void GetDeviceInfos(GetDeviceInfosCallback callback) override;
   void CreateDevice(const std::string& device_id,
                     mojom::DeviceRequest device_request,

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "media/capture/video/video_capture_device_info.h"
-#include "services/video_capture/device_factory_media_to_mojo_adapter.h"
+#include "services/video_capture/device_factory.h"
 #include "services/video_capture/shared_memory_virtual_device_mojo_adapter.h"
 #include "services/video_capture/texture_virtual_device_mojo_adapter.h"
 
@@ -85,7 +85,7 @@ class VirtualDeviceEnabledDeviceFactory::VirtualDeviceEntry {
 };
 
 VirtualDeviceEnabledDeviceFactory::VirtualDeviceEnabledDeviceFactory(
-    std::unique_ptr<DeviceFactoryMediaToMojoAdapter> device_factory)
+    std::unique_ptr<DeviceFactory> device_factory)
     : device_factory_(std::move(device_factory)), weak_factory_(this) {}
 
 VirtualDeviceEnabledDeviceFactory::~VirtualDeviceEnabledDeviceFactory() =
