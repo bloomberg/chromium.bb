@@ -18,23 +18,24 @@ namespace {
 
 const char kTestAccountId[] = "test@gmail.com";
 
-class MockUbertokenConsumer : public UbertokenConsumer {
+class MockUbertokenConsumer {
  public:
   MockUbertokenConsumer()
       : nb_correct_token_(0),
         last_error_(GoogleServiceAuthError::AuthErrorNone()),
-        nb_error_(0) {
-  }
-  ~MockUbertokenConsumer() override {}
+        nb_error_(0) {}
+  virtual ~MockUbertokenConsumer() = default;
 
-  void OnUbertokenSuccess(const std::string& token) override {
+  void OnUbertokenFetchComplete(GoogleServiceAuthError error,
+                                const std::string& token) {
+    if (error != GoogleServiceAuthError::AuthErrorNone()) {
+      last_error_ = error;
+      ++nb_error_;
+      return;
+    }
+
     last_token_ = token;
-    ++ nb_correct_token_;
-  }
-
-  void OnUbertokenFailure(const GoogleServiceAuthError& error) override {
-    last_error_ = error;
-    ++nb_error_;
+    ++nb_correct_token_;
   }
 
   std::string last_token_;
@@ -52,15 +53,13 @@ class UbertokenFetcherTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &url_loader_factory_)) {}
-
-  void SetUp() override {
-    fetcher_ = std::make_unique<UbertokenFetcher>(&token_service_, &consumer_,
-                                                  gaia::GaiaSource::kChrome,
-                                                  test_shared_loader_factory_);
+                &url_loader_factory_)) {
+    fetcher_ = std::make_unique<UbertokenFetcher>(
+        kTestAccountId, &token_service_,
+        base::BindOnce(&MockUbertokenConsumer::OnUbertokenFetchComplete,
+                       base::Unretained(&consumer_)),
+        gaia::GaiaSource::kChrome, test_shared_loader_factory_);
   }
-
-  void TearDown() override { fetcher_.reset(); }
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -68,14 +67,12 @@ class UbertokenFetcherTest : public testing::Test {
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   MockUbertokenConsumer consumer_;
-  std::unique_ptr<UbertokenFetcher> fetcher_;
+  std::unique_ptr<::UbertokenFetcher> fetcher_;
 };
 
-TEST_F(UbertokenFetcherTest, Basic) {
-}
+TEST_F(UbertokenFetcherTest, Basic) {}
 
 TEST_F(UbertokenFetcherTest, Success) {
-  fetcher_->StartFetchingToken(kTestAccountId);
   fetcher_->OnGetTokenSuccess(NULL,
                               OAuth2AccessTokenConsumer::TokenResponse(
                                   "accessToken", base::Time(), std::string()));
@@ -87,7 +84,6 @@ TEST_F(UbertokenFetcherTest, Success) {
 }
 
 TEST_F(UbertokenFetcherTest, NoRefreshToken) {
-  fetcher_->StartFetchingToken(kTestAccountId);
   GoogleServiceAuthError error(GoogleServiceAuthError::USER_NOT_SIGNED_UP);
   fetcher_->OnGetTokenFailure(NULL, error);
 
@@ -96,7 +92,6 @@ TEST_F(UbertokenFetcherTest, NoRefreshToken) {
 }
 
 TEST_F(UbertokenFetcherTest, FailureToGetAccessToken) {
-  fetcher_->StartFetchingToken(kTestAccountId);
   GoogleServiceAuthError error(GoogleServiceAuthError::USER_NOT_SIGNED_UP);
   fetcher_->OnGetTokenFailure(NULL, error);
 
@@ -106,7 +101,6 @@ TEST_F(UbertokenFetcherTest, FailureToGetAccessToken) {
 }
 
 TEST_F(UbertokenFetcherTest, TransientFailureEventualFailure) {
-  fetcher_->StartFetchingToken(kTestAccountId);
   GoogleServiceAuthError error(GoogleServiceAuthError::CONNECTION_FAILED);
   fetcher_->OnGetTokenSuccess(NULL,
                               OAuth2AccessTokenConsumer::TokenResponse(
@@ -126,7 +120,6 @@ TEST_F(UbertokenFetcherTest, TransientFailureEventualFailure) {
 }
 
 TEST_F(UbertokenFetcherTest, TransientFailureEventualSuccess) {
-  fetcher_->StartFetchingToken(kTestAccountId);
   GoogleServiceAuthError error(GoogleServiceAuthError::CONNECTION_FAILED);
   fetcher_->OnGetTokenSuccess(NULL,
                               OAuth2AccessTokenConsumer::TokenResponse(
@@ -146,7 +139,6 @@ TEST_F(UbertokenFetcherTest, TransientFailureEventualSuccess) {
 }
 
 TEST_F(UbertokenFetcherTest, PermanentFailureEventualFailure) {
-  fetcher_->StartFetchingToken(kTestAccountId);
   fetcher_->OnGetTokenSuccess(NULL,
                               OAuth2AccessTokenConsumer::TokenResponse(
                                   "accessToken", base::Time(), std::string()));
@@ -167,7 +159,6 @@ TEST_F(UbertokenFetcherTest, PermanentFailureEventualFailure) {
 }
 
 TEST_F(UbertokenFetcherTest, PermanentFailureEventualSuccess) {
-  fetcher_->StartFetchingToken(kTestAccountId);
   GoogleServiceAuthError error(GoogleServiceAuthError::USER_NOT_SIGNED_UP);
   fetcher_->OnGetTokenSuccess(NULL,
                               OAuth2AccessTokenConsumer::TokenResponse(

@@ -33,15 +33,6 @@ using GaiaAuthFetcherFactory =
         GaiaAuthConsumer*,
         scoped_refptr<network::SharedURLLoaderFactory>)>;
 
-// Callback for the |UbertokenFetcher| class.
-class UbertokenConsumer {
- public:
-  UbertokenConsumer() {}
-  virtual ~UbertokenConsumer() {}
-  virtual void OnUbertokenSuccess(const std::string& token) {}
-  virtual void OnUbertokenFailure(const GoogleServiceAuthError& error) {}
-};
-
 // Allows to retrieve an uber-auth token.
 class UbertokenFetcher : public GaiaAuthConsumer,
                          public OAuth2TokenService::Consumer {
@@ -49,26 +40,30 @@ class UbertokenFetcher : public GaiaAuthConsumer,
   // Maximum number of retries to get the uber-auth token before giving up.
   static const int kMaxRetries;
 
+  using CompletionCallback =
+      base::OnceCallback<void(GoogleServiceAuthError error,
+                              const std::string& token)>;
+
+  // Constructs an instance and starts fetching the access token and ubertoken
+  // sequencially for |account_id|.
   UbertokenFetcher(
+      const std::string& account_id,
       OAuth2TokenService* token_service,
-      UbertokenConsumer* consumer,
+      CompletionCallback ubertoken_callback,
       gaia::GaiaSource source,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
-  UbertokenFetcher(
-      OAuth2TokenService* token_service,
-      UbertokenConsumer* consumer,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      GaiaAuthFetcherFactory factory);
+      bool is_bound_to_channel_id = true);
+
+  // Constructs an instance and starts fetching the ubertoken for |account_id|.
+  UbertokenFetcher(
+      const std::string& account_id,
+      const std::string& access_token,
+      OAuth2TokenService* token_service,
+      CompletionCallback ubertoken_callback,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      GaiaAuthFetcherFactory factory,
+      bool is_bound_to_channel_id = true);
   ~UbertokenFetcher() override;
-
-  void set_is_bound_to_channel_id(bool is_bound_to_channel_id) {
-    is_bound_to_channel_id_ = is_bound_to_channel_id;
-  }
-
-  // Start fetching the token for |account_id|.
-  virtual void StartFetchingToken(const std::string& account_id);
-  virtual void StartFetchingTokenWithAccessToken(const std::string& account_id,
-      const std::string& access_token);
 
   // Overriden from GaiaAuthConsumer
   void OnUberAuthTokenSuccess(const std::string& token) override;
@@ -89,7 +84,7 @@ class UbertokenFetcher : public GaiaAuthConsumer,
   void ExchangeTokens();
 
   OAuth2TokenService* token_service_;
-  UbertokenConsumer* consumer_;
+  CompletionCallback ubertoken_callback_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   bool is_bound_to_channel_id_;  // defaults to true
   GaiaAuthFetcherFactory gaia_auth_fetcher_factory_;

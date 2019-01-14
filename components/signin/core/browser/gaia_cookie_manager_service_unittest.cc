@@ -137,14 +137,15 @@ class GaiaCookieManagerServiceTest : public testing::Test {
   OAuth2TokenService* token_service() { return &token_service_; }
   TestSigninClient* signin_client() { return signin_client_.get(); }
 
-  void SimulateUbertokenSuccess(UbertokenConsumer* consumer,
+  void SimulateUbertokenSuccess(GaiaCookieManagerService* gcms,
                                 const std::string& uber_token) {
-    consumer->OnUbertokenSuccess(uber_token);
+    gcms->OnUbertokenFetchComplete(
+        GoogleServiceAuthError(GoogleServiceAuthError::NONE), uber_token);
   }
 
-  void SimulateUbertokenFailure(UbertokenConsumer* consumer,
+  void SimulateUbertokenFailure(GaiaCookieManagerService* gcms,
                                 const GoogleServiceAuthError& error) {
-    consumer->OnUbertokenFailure(error);
+    gcms->OnUbertokenFetchComplete(error, /*uber_token=*/std::string());
   }
 
   void SimulateAccessTokenFailure(OAuth2TokenService::Consumer* consumer,

@@ -23,6 +23,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/ubertoken_fetcher.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -701,8 +702,19 @@ void GaiaCookieManagerService::SignalSetAccountsComplete(
     observer.OnSetAccountsInCookieCompleted(error);
 }
 
-void GaiaCookieManagerService::OnUbertokenSuccess(
+void GaiaCookieManagerService::OnUbertokenFetchComplete(
+    GoogleServiceAuthError error,
     const std::string& uber_token) {
+  if (error != GoogleServiceAuthError::AuthErrorNone()) {
+    // Note that the UberToken fetcher already retries transient errors.
+    const std::string account_id = requests_.front().GetAccountID();
+    VLOG(1) << "Failed to retrieve ubertoken"
+            << " account=" << account_id << " error=" << error.ToString();
+    HandleNextRequest();
+    SignalComplete(account_id, error);
+    return;
+  }
+
   DCHECK(requests_.front().request_type() ==
          GaiaCookieRequestType::ADD_ACCOUNT);
   VLOG(1) << "GaiaCookieManagerService::OnUbertokenSuccess"
@@ -719,16 +731,6 @@ void GaiaCookieManagerService::OnUbertokenSuccess(
   signin_client_->DelayNetworkCall(
       base::Bind(&GaiaCookieManagerService::StartFetchingMergeSession,
                  base::Unretained(this)));
-}
-
-void GaiaCookieManagerService::OnUbertokenFailure(
-    const GoogleServiceAuthError& error) {
-  // Note that the UberToken fetcher already retries transient errors.
-  const std::string account_id = requests_.front().GetAccountID();
-  VLOG(1) << "Failed to retrieve ubertoken"
-          << " account=" << account_id << " error=" << error.ToString();
-  HandleNextRequest();
-  SignalComplete(account_id, error);
 }
 
 void GaiaCookieManagerService::OnTokenFetched(const std::string& account_id,
@@ -995,7 +997,10 @@ void GaiaCookieManagerService::StartFetchingUbertoken() {
   VLOG(1) << "GaiaCookieManagerService::StartFetchingUbertoken account_id="
           << requests_.front().GetAccountID();
   uber_token_fetcher_ = std::make_unique<UbertokenFetcher>(
-      token_service_, this, GetURLLoaderFactory(),
+      account_id, access_token_, token_service_,
+      base::BindOnce(&GaiaCookieManagerService::OnUbertokenFetchComplete,
+                     base::Unretained(this)),
+      GetURLLoaderFactory(),
       base::BindRepeating(
           [](SigninClient* client, GaiaAuthConsumer* consumer,
              scoped_refptr<network::SharedURLLoaderFactory> url_loader)
@@ -1004,12 +1009,6 @@ void GaiaCookieManagerService::StartFetchingUbertoken() {
                 consumer, gaia::GaiaSource::kChrome, url_loader);
           },
           base::Unretained(signin_client_)));
-  if (access_token_.empty()) {
-    uber_token_fetcher_->StartFetchingToken(account_id);
-  } else {
-    uber_token_fetcher_->StartFetchingTokenWithAccessToken(account_id,
-                                                           access_token_);
-  }
 }
 
 void GaiaCookieManagerService::StartFetchingMultiLogin(
