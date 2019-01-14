@@ -164,7 +164,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       }
       if (compositor_touch_action_enabled_ && !touch_action.has_value()) {
         static auto* crash_key = base::debug::AllocateCrashKeyString(
-            "scroll-gestures", base::debug::CrashKeySize::Size256);
+            "scrollbegin1-gestures", base::debug::CrashKeySize::Size256);
         base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
         base::debug::DumpWithoutCrashing();
         gesture_sequence_.clear();
@@ -209,6 +209,13 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
         static auto* crash_key = base::debug::AllocateCrashKeyString(
             "scrollupdate-gestures", base::debug::CrashKeySize::Size256);
         base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
+        gesture_sequence_.clear();
+      }
+      if (compositor_touch_action_enabled_ && !touch_action.has_value()) {
+        static auto* crash_key = base::debug::AllocateCrashKeyString(
+            "scrollupdate1-gestures", base::debug::CrashKeySize::Size256);
+        base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
+        base::debug::DumpWithoutCrashing();
         gesture_sequence_.clear();
       }
       if (IsYAxisActionDisallowed(touch_action.value())) {
@@ -296,13 +303,19 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
     case WebInputEvent::kGestureTapUnconfirmed: {
       DCHECK_EQ(1, gesture_event->data.tap.tap_count);
       gesture_sequence_.append("C");
-      if (!compositor_touch_action_enabled_) {
-        if (!active_touch_action_.has_value()) {
-          static auto* crash_key = base::debug::AllocateCrashKeyString(
-              "tapunconfirmed-gestures", base::debug::CrashKeySize::Size256);
-          base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
-          gesture_sequence_.clear();
-        }
+      if (!compositor_touch_action_enabled_ &&
+          !active_touch_action_.has_value()) {
+        static auto* crash_key = base::debug::AllocateCrashKeyString(
+            "tapunconfirmed-gestures", base::debug::CrashKeySize::Size256);
+        base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
+        gesture_sequence_.clear();
+      }
+      if (compositor_touch_action_enabled_ && !touch_action.has_value()) {
+        static auto* crash_key = base::debug::AllocateCrashKeyString(
+            "tapunconfirmed1-gestures", base::debug::CrashKeySize::Size256);
+        base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
+        base::debug::DumpWithoutCrashing();
+        gesture_sequence_.clear();
       }
       allow_current_double_tap_event_ =
           (touch_action.value() & cc::kTouchActionDoubleTapZoom) != 0;
