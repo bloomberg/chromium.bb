@@ -4,11 +4,12 @@
 
 #include "chrome/browser/ui/ash/network/mobile_data_notifications.h"
 
-#include <memory>
 #include <string>
 
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "base/bind.h"
+#include "base/time/time.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -20,11 +21,14 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using chromeos::NetworkHandler;
 using chromeos::NetworkState;
+using session_manager::SessionManager;
+using user_manager::UserManager;
 
 namespace {
 
@@ -36,59 +40,85 @@ void MobileDataNotificationClicked(const std::string& network_id) {
   SystemTrayClient::Get()->ShowNetworkSettings(network_id);
 }
 
+constexpr int kNotificationCheckDelayInSeconds = 2;
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // MobileDataNotifications
 
-MobileDataNotifications::MobileDataNotifications() {
+MobileDataNotifications::MobileDataNotifications() : weak_factory_(this) {
   NetworkHandler::Get()->network_state_handler()->AddObserver(this, FROM_HERE);
+  NetworkHandler::Get()->network_connection_handler()->AddObserver(this);
+  UserManager::Get()->AddSessionStateObserver(this);
+  SessionManager::Get()->AddObserver(this);
 }
 
 MobileDataNotifications::~MobileDataNotifications() {
   if (NetworkHandler::IsInitialized()) {
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
                                                                    FROM_HERE);
+    NetworkHandler::Get()->network_connection_handler()->RemoveObserver(this);
   }
-}
-
-// TODO(tonydeluna): Rethink which events should trigger the mobile data warning
-// notification. It should be enough to subscribe to default network changes and
-// session changes.
-void MobileDataNotifications::NetworkPropertiesUpdated(
-    const NetworkState* network) {
-  if (!network || (network->type() != shill::kTypeCellular))
-    return;
-  ShowOptionalMobileDataNotification();
+  UserManager::Get()->RemoveSessionStateObserver(this);
+  SessionManager::Get()->RemoveObserver(this);
 }
 
 void MobileDataNotifications::DefaultNetworkChanged(
-    const NetworkState* network) {
-  // Call NetworkPropertiesUpdated in case the Cellular network became the
-  // default network.
-  NetworkPropertiesUpdated(network);
+    const NetworkState* default_network) {
+  // No need to keep the timer running if we know default network is not
+  // cellular.
+  if (default_network && default_network->type() != shill::kTypeCellular) {
+    one_shot_notification_check_delay_.Stop();
+  }
+  ShowOptionalMobileDataNotification();
+}
+
+void MobileDataNotifications::ConnectSucceeded(
+    const std::string& service_path) {
+  // We delay because it might take some time before the default network
+  // changes after a connection is established.
+  DelayedShowOptionalMobileDataNotification();
+}
+
+void MobileDataNotifications::ConnectFailed(const std::string& service_path,
+                                            const std::string& error_name) {
+  // We delay because it might take some time before the default network
+  // changes after a connection request fails.
+  DelayedShowOptionalMobileDataNotification();
+}
+
+void MobileDataNotifications::ActiveUserChanged(
+    const user_manager::User* active_user) {
+  ShowOptionalMobileDataNotification();
+}
+
+void MobileDataNotifications::OnSessionStateChanged() {
+  ShowOptionalMobileDataNotification();
 }
 
 void MobileDataNotifications::ShowOptionalMobileDataNotification() {
-  // Do not show notifications to unauthenticated users, or when requesting a
-  // network connection, or if there's no default_network.
-  if (!chromeos::LoginState::Get()->IsUserAuthenticated())
-    return;
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   if (!default_network || default_network->type() != shill::kTypeCellular)
     return;
+  if (SessionManager::Get()->IsUserSessionBlocked())
+    return;
   if (NetworkHandler::Get()
           ->network_connection_handler()
-          ->HasPendingConnectRequest())
+          ->HasPendingConnectRequest()) {
     return;
+  }
 
+  // Check if we've shown this notification before.
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   if (!prefs->GetBoolean(prefs::kShowMobileDataNotification))
     return;
 
-  // Prevent the notification from showing up in the future.
+  // Prevent the notification from showing up in the future and stop any running
+  // timers.
   prefs->SetBoolean(prefs::kShowMobileDataNotification, false);
+  one_shot_notification_check_delay_.Stop();
 
   // Display a one-time notification on first use of Mobile Data connection.
   std::unique_ptr<message_center::Notification> notification =
@@ -108,4 +138,19 @@ void MobileDataNotifications::ShowOptionalMobileDataNotification() {
           message_center::SystemNotificationWarningLevel::NORMAL);
 
   SystemNotificationHelper::GetInstance()->Display(*notification);
+}
+
+void MobileDataNotifications::DelayedShowOptionalMobileDataNotification() {
+  if (one_shot_notification_check_delay_.IsRunning()) {
+    one_shot_notification_check_delay_.Reset();
+    return;
+  }
+  one_shot_notification_check_delay_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kNotificationCheckDelayInSeconds),
+      base::BindOnce(
+          &MobileDataNotifications::ShowOptionalMobileDataNotification,
+          // Callbacks won't run after this object is destroyed by using weak
+          // pointers. Weak pointers are not thread safe but it's safe to use
+          // here because timers run in a sequenced task runner.
+          weak_factory_.GetWeakPtr()));
 }

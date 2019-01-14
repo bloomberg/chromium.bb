@@ -22,10 +22,11 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_service_client.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
+#include "components/session_manager/session_manager_types.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -38,6 +39,7 @@ namespace {
 const char kCellularDevicePath[] = "/device/stub_cellular_device1";
 const char kCellularServicePath[] = "/service/cellular1";
 const char kCellularGuid[] = "cellular1_guid";
+
 const char kNotificationId[] = "chrome://settings/internet/mobile_data";
 const char kTestUserName[] = "test-user@example.com";
 
@@ -66,59 +68,47 @@ class MobileDataNotificationsTest : public testing::Test {
   ~MobileDataNotificationsTest() override {}
 
   void SetUp() override {
+    session_manager_.SetSessionState(session_manager::SessionState::ACTIVE);
     testing::Test::SetUp();
     DBusThreadManager::Initialize();
+    SetupUserManagerAndProfileManager();
+    SetupSystemNotifications();
+    AddUserAndSetActive(kTestUserName);
     chromeos::NetworkHandler::Initialize();
-    mobile_data_notifications_.reset(new MobileDataNotifications);
-    SetupUser();
     SetupNetworkShillState();
     base::RunLoop().RunUntilIdle();
     network_connect_delegate_.reset(new NetworkConnectTestDelegate);
     chromeos::NetworkConnect::Initialize(network_connect_delegate_.get());
+    mobile_data_notifications_ = std::make_unique<MobileDataNotifications>();
   }
 
   void TearDown() override {
+    mobile_data_notifications_.reset();
     chromeos::NetworkConnect::Shutdown();
     network_connect_delegate_.reset();
-    LoginState::Shutdown();
+    chromeos::NetworkHandler::Shutdown();
     profile_manager_.reset();
     user_manager_enabler_.reset();
-    mobile_data_notifications_.reset();
-    chromeos::NetworkHandler::Shutdown();
     DBusThreadManager::Shutdown();
     testing::Test::TearDown();
   }
 
  protected:
-  void SetupUser() {
-    // Add a user.
-    auto user_manager = std::make_unique<chromeos::FakeChromeUserManager>();
-    const AccountId test_account_id(AccountId::FromUserEmail(kTestUserName));
-    user_manager->AddUser(test_account_id);
-    user_manager->LoginUser(test_account_id);
-    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
-        std::move(user_manager));
-
-    // Set up notifications.
+  void SetupSystemNotifications() {
     TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
         std::make_unique<SystemNotificationHelper>());
     // Passing nullptr sets up |display_service_| with system notifications.
     display_service_ = std::make_unique<NotificationDisplayServiceTester>(
         nullptr /* profile */);
+  }
+  void SetupUserManagerAndProfileManager() {
+    user_manager_ = new chromeos::FakeChromeUserManager;
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        base::WrapUnique(user_manager_));
 
-    // Create a valid profile for the user.
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
-    TestingProfile* profile =
-        profile_manager_->CreateTestingProfile(test_account_id.GetUserEmail());
-    profile_manager_->SetLoggedIn(true);
-    ASSERT_TRUE(ProfileManager::GetActiveUserProfile() == profile);
-
-    // Set up login state.
-    LoginState::Initialize();
-    LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_ACTIVE,
-                                        LoginState::LOGGED_IN_USER_REGULAR);
   }
 
   void SetupNetworkShillState() {
@@ -155,14 +145,27 @@ class MobileDataNotificationsTest : public testing::Test {
     return ProfileManager::GetActiveUserProfile()->GetPrefs();
   }
 
+  void AddUserAndSetActive(std::string email) {
+    const AccountId test_account_id(AccountId::FromUserEmail(email));
+    TestingProfile* profile =
+        profile_manager_->CreateTestingProfile(test_account_id.GetUserEmail());
+    profile_manager_->SetLoggedIn(true);
+    user_manager_->AddUser(test_account_id);
+    user_manager_->LoginUser(test_account_id);
+    user_manager_->SwitchActiveUser(test_account_id);
+    ASSERT_TRUE(ProfileManager::GetActiveUserProfile() == profile);
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
+  session_manager::SessionManager session_manager_;
   std::unique_ptr<MobileDataNotifications> mobile_data_notifications_;
   std::unique_ptr<NetworkConnectTestDelegate> network_connect_delegate_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
+
+  chromeos::FakeChromeUserManager* user_manager_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(MobileDataNotificationsTest);
 };
 
@@ -204,6 +207,32 @@ TEST_F(MobileDataNotificationsTest, TogglesPref) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(pref_service()->GetBoolean(prefs::kShowMobileDataNotification));
+}
+
+// Verify that session changes display the notification if cellular is
+// connected.
+TEST_F(MobileDataNotificationsTest, SessionUpdateDisplayNotification) {
+  // Set up cellular network, don't trigger notification.
+  chromeos::NetworkConnect::Get()->ConnectToNetworkId(kCellularGuid);
+  pref_service()->SetBoolean(prefs::kShowMobileDataNotification, false);
+  // Process network observer update.
+  base::RunLoop().RunUntilIdle();
+  // Make sure notification hasn't been triggered.
+  EXPECT_FALSE(pref_service()->GetBoolean(prefs::kShowMobileDataNotification));
+
+  AddUserAndSetActive("other-user@example.com");
+
+  EXPECT_TRUE(display_service_->GetNotification(kNotificationId));
+}
+
+// Verify that session changes does not dispalay the notification if celluar is
+// not connected.
+TEST_F(MobileDataNotificationsTest, SessionUpdateNoNotification) {
+  pref_service()->SetBoolean(prefs::kShowMobileDataNotification, true);
+
+  AddUserAndSetActive("other-user@example.com");
+
+  EXPECT_FALSE(display_service_->GetNotification(kNotificationId));
 }
 
 }  // namespace

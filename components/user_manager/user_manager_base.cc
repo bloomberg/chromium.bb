@@ -956,6 +956,12 @@ void UserManagerBase::RegularUserLoggedInAsEphemeral(
   known_user::SetIsEphemeralUser(active_user_->GetAccountId(), true);
 }
 
+void UserManagerBase::NotifyActiveUserChanged(const User* active_user) {
+  DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
+  for (auto& observer : session_state_observer_list_)
+    observer.ActiveUserChanged(active_user);
+}
+
 void UserManagerBase::NotifyOnLogin() {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
 
@@ -1048,12 +1054,6 @@ User* UserManagerBase::RemoveRegularOrSupervisedUserFromList(
   if (notify)
     OnUserRemoved(account_id);
   return user;
-}
-
-void UserManagerBase::NotifyActiveUserChanged(const User* active_user) {
-  DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
-  for (auto& observer : session_state_observer_list_)
-    observer.ActiveUserChanged(active_user);
 }
 
 void UserManagerBase::NotifyUserAddedToSession(const User* added_user,

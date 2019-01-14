@@ -241,6 +241,7 @@ void FakeChromeUserManager::SwitchActiveUser(const AccountId& account_id) {
       }
     }
   }
+  NotifyActiveUserChanged(active_user_);
 }
 
 void FakeChromeUserManager::OnSessionStarted() {}
