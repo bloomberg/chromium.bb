@@ -85,10 +85,10 @@ class SyncSchedulerImpl : public SyncScheduler {
   bool IsGlobalThrottle() const;
   bool IsGlobalBackoff() const;
 
-  // Changes the default delay between nudge cycles. Model-type specific
-  // overrides will still apply. This is made public so that nudge cycles can be
-  // shortened in integration tests.
-  void SetDefaultNudgeDelay(base::TimeDelta delay_ms);
+  // Reduces nudge delays for all types to a very short value and prevents their
+  // further changing by the server. Used to speed up passing of integration
+  // tests.
+  void ForceShortNudgeDelayForTest();
 
  private:
   enum JobPriority {
@@ -290,6 +290,9 @@ class SyncSchedulerImpl : public SyncScheduler {
 
   // Dictates if the scheduler should wait for authentication to happen or not.
   bool ignore_auth_credentials_;
+
+  // Used to prevent changing nudge delays by the server in integration tests.
+  bool force_short_nudge_delay_for_test_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
