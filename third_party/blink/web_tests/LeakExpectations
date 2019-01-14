@@ -21,17 +21,6 @@ crbug.com/891575 virtual/android/rootscroller/remove-rootscroller-crash.html [ L
 crbug.com/891575 virtual/android/rootscroller/set-root-scroller.html [ Leak ]
 crbug.com/891575 virtual/android/fullscreen/video-overlay-scroll.html [ Leak Pass ]
 
-# -----------------------------------------------------------------
-# Untriaged but known leaks of PausableObject (fast).
-# -----------------------------------------------------------------
-crbug.com/661182 fast/loader/open-in-srcdoc-unload.html [ Leak ]
-
-# -----------------------------------------------------------------
-# Untriaged but known leaks of PausableObject (http).
-# -----------------------------------------------------------------
-crbug.com/506754 http/tests/serviceworker/resolve-after-window-close.html [ Leak ]
-crbug.com/506754 http/tests/serviceworker/window-close-during-registration.html [ Leak ]
-
 crbug.com/786995 virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Leak Pass ]
 crbug.com/859640 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js  [ Leak Pass ]
 
