@@ -30670,6 +30670,7 @@ from previous Chrome versions.
   <int value="-1433452630" label="AllowRemoteContextForNotifications:enabled"/>
   <int value="-1433087548" label="enable-app-install-alerts"/>
   <int value="-1431563697" label="WebPaymentsMethodSectionOrderV2:enabled"/>
+  <int value="-1428589407" label="WebRTCPipeWireCapturer:disabled"/>
   <int value="-1426817842" label="BlockTabUnders:enabled"/>
   <int value="-1426150007" label="ignore-previews-blacklist"/>
   <int value="-1426034869" label="NoCreditCardAbort:enabled"/>
@@ -31131,6 +31132,7 @@ from previous Chrome versions.
   <int value="-641719457" label="disable-compositor-touch-hit-testing"/>
   <int value="-639026783" label="disable-gpu-appcontainer"/>
   <int value="-638952203" label="RendererSideResourceScheduler:disabled"/>
+  <int value="-633274640" label="WebRTCPipeWireCapturer:enabled"/>
   <int value="-632030508" label="NativeWindowNavButtons:disabled"/>
   <int value="-631740127" label="inert-visual-viewport"/>
   <int value="-624221121" label="CommandLineOnNonRooted:enabled"/>

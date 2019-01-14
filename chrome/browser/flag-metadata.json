@@ -3381,5 +3381,10 @@
     "name": "xr-sandbox",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
+  },
+  {
+    "name": "enable-webrtc-pipewire-capturer",
+    // "owners": [ "tomas.popela@gmail.com" ],
+    "expiry_milestone": 76
   }
 ]

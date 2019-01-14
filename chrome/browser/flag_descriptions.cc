@@ -3740,6 +3740,15 @@ const char kReopenTabInProductHelpDescription[] =
 
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 
+#if defined(WEBRTC_USE_PIPEWIRE)
+
+extern const char kWebrtcPipeWireCapturerName[] = "WebRTC PipeWire support";
+extern const char kWebrtcPipeWireCapturerDescription[] =
+    "When enabled the WebRTC will use the PipeWire multimedia server for "
+    "capturing the desktop content on the Wayland display server.";
+
+#endif  // #if defined(WEBRTC_USE_PIPEWIRE)
+
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in
 // alphabetical order just like the header file.
