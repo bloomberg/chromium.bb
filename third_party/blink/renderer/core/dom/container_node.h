@@ -365,6 +365,8 @@ class CORE_EXPORT ContainerNode : public Node {
   // CDATA_SECTION_NODE, TEXT_NODE or COMMENT_NODE has changed its value.
   virtual void ChildrenChanged(const ChildrenChange&);
 
+  virtual bool ChildrenCanHaveStyle() const { return true; }
+
   void Trace(blink::Visitor*) override;
 
  protected:

@@ -7858,6 +7858,12 @@ void Document::SendViolationReport(
       nullptr /* Element */);
 }
 
+bool Document::ChildrenCanHaveStyle() const {
+  if (LayoutObject* view = GetLayoutView())
+    return view->CanHaveChildren();
+  return false;
+}
+
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;
 
 }  // namespace blink
