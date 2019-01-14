@@ -45,8 +45,9 @@ void SigninErrorController::Update() {
     }
 
     if (!identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
-            account_id))
+            account_id)) {
       continue;
+    }
 
     GoogleServiceAuthError error =
         identity_manager_->GetErrorStateOfRefreshTokenForAccount(account_id);
@@ -55,6 +56,11 @@ void SigninErrorController::Update() {
 
     // Prioritize this error if it matches the previous |auth_error_|.
     if (error.state() == prev_state && account_id == prev_account_id) {
+      // The previous error for the previous account still exists. This error is
+      // preferred to avoid UI churn, so |auth_error_| and |error_account_id_|
+      // must be updated to match the previous state. This is needed in case
+      // |auth_error_| and |error_account_id_| were updated to other values in
+      // a previous iteration via the if statement below.
       auth_error_ = error;
       error_account_id_ = account_id;
       error_changed = true;
@@ -77,11 +83,18 @@ void SigninErrorController::Update() {
     error_changed = true;
   }
 
-  if (error_changed) {
-    signin_metrics::LogAuthError(auth_error_);
-    for (auto& observer : observer_list_)
-      observer.OnErrorChanged();
+  if (!error_changed)
+    return;
+
+  if (auth_error_.state() == prev_state &&
+      error_account_id_ == prev_account_id) {
+    // Only fire notification if the auth error state or account were updated.
+    return;
   }
+
+  signin_metrics::LogAuthError(auth_error_);
+  for (auto& observer : observer_list_)
+    observer.OnErrorChanged();
 }
 
 bool SigninErrorController::HasError() const {
