@@ -29,7 +29,8 @@ const char kClearLitePageRedirectLocalBlacklist[] =
 // Overrides the Hints Protobuf that would come from the component updater. If
 // the value of this switch is invalid, regular hint processing is used.
 // The value of this switch should be a base64 encoding of a binary
-// Configuration message, found in optimization_guide's hints.proto.
+// Configuration message, found in optimization_guide's hints.proto. Providing a
+// valid value to this switch causes Chrome startup to block on hints parsing.
 const char kHintsProtoOverride[] = "optimization_guide_hints_override";
 
 }  // namespace switches
