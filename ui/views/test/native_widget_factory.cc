@@ -4,6 +4,7 @@
 
 #include "ui/views/test/native_widget_factory.h"
 
+#include "build/build_config.h"
 #include "ui/views/test/test_platform_native_widget.h"
 
 #if defined(USE_AURA)
@@ -27,27 +28,6 @@ NativeWidget* CreatePlatformNativeWidgetImpl(
 #else
   return new TestPlatformNativeWidget<NativeWidgetAura>(
       widget, type == kStubCapture, destroyed);
-#endif
-}
-
-NativeWidget* CreatePlatformDesktopNativeWidgetImpl(
-    const Widget::InitParams& init_params,
-    Widget* widget,
-    bool* destroyed) {
-#if defined(OS_MACOSX)
-  return new TestPlatformNativeWidget<NativeWidgetMac>(widget, false,
-                                                       destroyed);
-#elif defined(OS_CHROMEOS)
-  // Chromeos only has one NativeWidgetType. Chromeos with aura-mus does not
-  // compile this file.
-  return new TestPlatformNativeWidget<NativeWidgetAura>(widget, false,
-                                                        destroyed);
-#elif defined(USE_AURA)
-  return new TestPlatformNativeWidget<DesktopNativeWidgetAura>(widget, false,
-                                                               destroyed);
-#else
-  NOTREACHED();
-  return nullptr;
 #endif
 }
 

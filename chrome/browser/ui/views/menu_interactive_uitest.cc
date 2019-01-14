@@ -6,7 +6,9 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/views/native_widget_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/test_browser_window.h"
@@ -16,10 +18,6 @@
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/test/platform_test_helper.h"
 #include "ui/views/widget/widget.h"
-
-#if !defined(OS_CHROMEOS)
-#include "ui/views/test/native_widget_factory.h"
-#endif
 
 namespace views {
 namespace test {
@@ -78,11 +76,11 @@ IN_PROC_BROWSER_TEST_F(MenuControllerUITest, TestMouseOverShownMenu) {
   // Create a parent widget.
   Widget* widget = new views::Widget;
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
-#if !defined(OS_CHROMEOS)
-  params.native_widget = ::views::test::CreatePlatformDesktopNativeWidgetImpl(
-      params, widget, nullptr);
-#endif
   params.bounds = {0, 0, 200, 200};
+#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+  params.native_widget = CreateNativeWidget(
+      NativeWidgetType::DESKTOP_NATIVE_WIDGET_AURA, &params, widget);
+#endif
   widget->Init(params);
   widget->Show();
   widget->Activate();

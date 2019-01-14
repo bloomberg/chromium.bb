@@ -384,12 +384,6 @@ TEST_F(MenuButtonTest, InkDropCenterSetFromClickWithPressedLock) {
 
 // Test that the MenuButton stays pressed while there are any PressedLocks.
 TEST_F(MenuButtonTest, ButtonStateForMenuButtonsWithPressedLocks) {
-  // Similarly for aura-mus-client the location of the cursor is not updated by
-  // EventGenerator so that IsMouseHovered() checks the wrong thing.
-  // https://crbug.com/615033.
-  if (IsMus())
-    return;
-
   CreateMenuButtonWithNoListener();
 
   // Move the mouse over the button; the button should be in a hovered state.
@@ -578,10 +572,6 @@ TEST_F(MenuButtonTest,
 // Tests that the MenuButton does not become pressed if it can be dragged, and a
 // DragDropClient is processing the events.
 TEST_F(MenuButtonTest, DraggableMenuButtonDoesNotActivateOnDrag) {
-  // TODO(https://crbug.com/663809): test uses GetContext(), which is not
-  // applicable to aura-mus.
-  if (IsMus())
-    return;
   TestMenuButtonListener menu_button_listener;
   CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
   TestDragController drag_controller;
@@ -606,11 +596,6 @@ TEST_F(MenuButtonTest, DraggableMenuButtonDoesNotActivateOnDrag) {
 // Tests if the listener is notified correctly when a gesture tap happens on a
 // MenuButton that has a MenuButtonListener.
 TEST_F(MenuButtonTest, ActivateDropDownOnGestureTap) {
-  // Similarly for aura-mus-client the location of the cursor is not updated by
-  // EventGenerator so that IsMouseHovered() checks the wrong thing.
-  // https://crbug.com/615033.
-  if (IsMus())
-    return;
   TestMenuButtonListener menu_button_listener;
   CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
 

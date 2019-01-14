@@ -38,12 +38,21 @@ specific_include_rules = {
   "views_perftests\.cc": [
     "+mojo/core/embedder",
   ],
+  "views_test_base\.cc": [
+    "+mojo/core/embedder",
+    "+services/catalog",
+    "+services/service_manager/background",
+    "+services/service_manager/public",
+    "+services/ws",
+    "+ui/gl",
+  ],
   "view_unittest\.cc": [
     "+cc/playback",
     "+components/viz/common",
   ],
   "views_test_suite\.cc": [
     "+gpu/ipc/service",
+    "+ui/gl",
   ],
   ".*test\.cc": [
     "+cc/base",

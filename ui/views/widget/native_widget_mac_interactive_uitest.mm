@@ -15,7 +15,6 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/test_widget_observer.h"
-#include "ui/views/test/views_interactive_ui_test_base.h"
 #include "ui/views/test/widget_test.h"
 
 namespace views {
@@ -33,7 +32,7 @@ class NativeWidgetMacInteractiveUITest
 
   // WidgetTest:
   void SetUp() override {
-    ViewsInteractiveUITestBase::InteractiveSetUp();
+    SetUpForInteractiveTests();
     WidgetTest::SetUp();
   }
 
@@ -294,7 +293,7 @@ TEST_F(NativeWidgetMacInteractiveUITest, BubbleDismiss) {
 // away from any Widget when the window is torn down. This test ensures that
 // global references AppKit may have held on to are also updated.
 TEST_F(NativeWidgetMacInteractiveUITest, GlobalNSTextInputContextUpdates) {
-  Widget* widget = CreateNativeDesktopWidget();
+  Widget* widget = CreateTopLevelNativeWidget();
   Textfield* textfield = new Textfield;
   textfield->SetBounds(0, 0, 100, 100);
   widget->GetContentsView()->AddChildView(textfield);

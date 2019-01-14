@@ -19,7 +19,7 @@
 namespace views {
 namespace test {
 
-typedef ViewsTestBase RootViewTest;
+using RootViewTest = ViewsTestBase;
 
 class DeleteOnKeyEventView : public View {
  public:
@@ -582,11 +582,15 @@ TEST_F(RootViewTest, SingleLayoutDuringInit) {
       DialogDelegate::CreateDialogWidget(delegate, GetContext(), nullptr);
   EXPECT_EQ(1, delegate->layout_count());
   widget->CloseNow();
+}
 
-  // Also test Aura desktop Widget codepaths.
-  test_views_delegate()->set_use_desktop_native_widgets(true);
-  delegate = new RootViewTestDialogDelegate();
-  widget = DialogDelegate::CreateDialogWidget(delegate, GetContext(), nullptr);
+using RootViewDesktopNativeWidgetTest = ViewsTestWithDesktopNativeWidget;
+
+// Also test Aura desktop Widget codepaths.
+TEST_F(RootViewDesktopNativeWidgetTest, SingleLayoutDuringInit) {
+  RootViewTestDialogDelegate* delegate = new RootViewTestDialogDelegate();
+  Widget* widget =
+      DialogDelegate::CreateDialogWidget(delegate, GetContext(), nullptr);
   EXPECT_EQ(1, delegate->layout_count());
   widget->CloseNow();
 }

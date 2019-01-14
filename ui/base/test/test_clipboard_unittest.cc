@@ -4,6 +4,7 @@
 
 #include "ui/base/test/test_clipboard.h"
 
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_AURA)
@@ -12,6 +13,12 @@
 
 namespace ui {
 
+namespace {
+
+base::test::ScopedTaskEnvironment* g_task_environment = nullptr;
+
+}  // namespace
+
 struct TestClipboardTraits {
 #if defined(USE_AURA)
   static std::unique_ptr<PlatformEventSource> GetEventSource() {
@@ -19,15 +26,32 @@ struct TestClipboardTraits {
   }
 #endif
 
-  static Clipboard* Create() { return TestClipboard::CreateForCurrentThread(); }
+  static Clipboard* Create() {
+    DCHECK(!g_task_environment);
+    g_task_environment = new base::test::ScopedTaskEnvironment(
+        base::test::ScopedTaskEnvironment::MainThreadType::UI);
+    return TestClipboard::CreateForCurrentThread();
+  }
 
   static void Destroy(Clipboard* clipboard) {
     ASSERT_EQ(Clipboard::GetForCurrentThread(), clipboard);
     Clipboard::DestroyClipboardForCurrentThread();
+
+    delete g_task_environment;
+    g_task_environment = nullptr;
   }
 };
 
-typedef TestClipboardTraits TypesToTest;
+class TestClipboardTestName {
+ public:
+  template <typename T>
+  static std::string GetName(int index) {
+    return "TestClipboardTest";
+  }
+};
+
+using TypesToTest = TestClipboardTraits;
+using NamesOfTypesToTest = TestClipboardTestName;
 
 }  // namespace ui
 

@@ -1712,11 +1712,6 @@ TEST_F(MenuControllerTest, GrowingMenuMovesLaterallyNotVertically) {
 // This tests that mouse moved events from the initial position of the mouse
 // when the menu was shown don't select the menu item at the mouse position.
 TEST_F(MenuControllerTest, MouseAtMenuItemOnShow) {
-  // aura::Window::MoveCursorTo check fails in Mus due to null
-  // window_manager_client_.
-  if (IsMus())
-    return;
-
   // Most tests create an already shown menu but this test needs one that's
   // not shown, so it can show it. The mouse position is remembered when
   // the menu is shown.

@@ -507,7 +507,8 @@ void WrapperTestLauncherDelegate::GTestCallback(
   // parsing failed.
   if (have_test_results && !parsed_results.empty()) {
     // We expect only one test result here.
-    DCHECK_EQ(1U, parsed_results.size());
+    DCHECK_EQ(1U, parsed_results.size())
+        << "Unexpectedly ran test more than once: " << test_name;
     DCHECK_EQ(test_name, parsed_results.front().full_name);
 
     result = parsed_results.front();

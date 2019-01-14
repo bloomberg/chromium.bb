@@ -14,7 +14,6 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/table/table_view.h"
-#include "ui/views/test/native_widget_factory.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -35,8 +34,6 @@ class ChooserDialogViewTest : public ChromeViewsTestBase {
         CreateParams(views::Widget::InitParams::TYPE_WINDOW);
     params.bounds = gfx::Rect(10, 11, 200, 200);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.native_widget = views::test::CreatePlatformDesktopNativeWidgetImpl(
-        params, &parent_widget_, nullptr);
     parent_widget_.Init(params);
 
     widget_ = views::DialogDelegate::CreateDialogWidget(

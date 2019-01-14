@@ -1,6 +1,6 @@
 {
-  "name": "views_mus_unittests",
-  "display_name": "Views Mus Unittests",
+  "name": "views_unittests",
+  "display_name": "Views Unittests",
   "interface_provider_specs": {
     "service_manager:connector": {
       "requires": {

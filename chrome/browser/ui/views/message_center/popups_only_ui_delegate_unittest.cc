@@ -33,12 +33,12 @@ namespace {
 
 class PopupsOnlyUiDelegateTest : public views::test::WidgetTest {
  public:
-  PopupsOnlyUiDelegateTest() {}
-  ~PopupsOnlyUiDelegateTest() override {}
+  PopupsOnlyUiDelegateTest() = default;
+  ~PopupsOnlyUiDelegateTest() override = default;
 
   void SetUp() override {
+    set_native_widget_type(NativeWidgetType::kDesktop);
     views::test::WidgetTest::SetUp();
-    test_views_delegate()->set_use_desktop_native_widgets(true);
     MessageCenter::Initialize();
   }
 

@@ -138,6 +138,14 @@ class InteractiveUITestSuiteRunner : public ChromeTestSuiteRunner {
 
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
+
+#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+  // Force software-gl. This is necessary for mus tests to avoid an msan warning
+  // in gl init.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kOverrideUseSoftwareGLForTests);
+#endif
+
   // TODO(sky): this causes a crash in an autofill test on macosx, figure out
   // why: http://crbug.com/641969.
 #if !defined(OS_MACOSX)

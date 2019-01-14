@@ -148,11 +148,6 @@ TEST_F(MenuRunnerTest, AsynchronousRun) {
 // Tests that when a menu is run asynchronously, key events are handled properly
 // by testing that Escape key closes the menu.
 TEST_F(MenuRunnerTest, AsynchronousKeyEventHandling) {
-  // TODO: test uses GetContext(), which is not applicable to aura-mus.
-  // http://crbug.com/663809.
-  if (IsMus())
-    return;
-
   InitMenuRunner(0);
   MenuRunner* runner = menu_runner();
   runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
@@ -170,11 +165,6 @@ TEST_F(MenuRunnerTest, AsynchronousKeyEventHandling) {
 // Tests that a key press on a US keyboard layout activates the correct menu
 // item.
 TEST_F(MenuRunnerTest, LatinMnemonic) {
-  // TODO: test uses GetContext(), which is not applicable to aura-mus.
-  // http://crbug.com/663809.
-  if (IsMus())
-    return;
-
   // Menus that use prefix selection don't support mnemonics - the input is
   // always part of the prefix.
   if (MenuConfig::instance().all_menus_use_prefix_selection)
@@ -201,11 +191,6 @@ TEST_F(MenuRunnerTest, LatinMnemonic) {
 // Tests that a key press on a non-US keyboard layout activates the correct menu
 // item. Disabled on Windows because a WM_CHAR event does not activate an item.
 TEST_F(MenuRunnerTest, NonLatinMnemonic) {
-  // TODO: test uses GetContext(), which is not applicable to aura-mus.
-  // http://crbug.com/663809.
-  if (IsMus())
-    return;
-
   // Menus that use prefix selection don't support mnemonics - the input is
   // always part of the prefix.
   if (MenuConfig::instance().all_menus_use_prefix_selection)
@@ -385,8 +370,7 @@ class MenuRunnerWidgetTest : public MenuRunnerTest {
   std::unique_ptr<ui::test::EventGenerator> EventGeneratorForWidget(
       Widget* widget) {
     return std::make_unique<ui::test::EventGenerator>(
-        IsMus() ? GetRootWindow(widget) : GetContext(),
-        widget->GetNativeWindow());
+        GetContext(), widget->GetNativeWindow());
   }
 
   void AddMenuLauncherEventHandler(Widget* widget) {

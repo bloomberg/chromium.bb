@@ -7,20 +7,16 @@
 #include <wrl/client.h>
 
 #include "base/macros.h"
-#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_variant.h"
-#include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_paths.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gl/test/gl_surface_test_support.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
@@ -31,21 +27,16 @@ namespace views {
 
 namespace {
 
-class AXSystemCaretWinTest : public test::WidgetTest {
+class AXSystemCaretWinTest : public test::DesktopWidgetTest {
  public:
   AXSystemCaretWinTest() : self_(CHILDID_SELF) {}
   ~AXSystemCaretWinTest() override {}
 
   void SetUp() override {
-    mojo::core::Init();
-    gl::GLSurfaceTestSupport::InitializeOneOff();
-    ui::RegisterPathProvider();
-    base::FilePath ui_test_pak_path;
-    ASSERT_TRUE(base::PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
-    test::WidgetTest::SetUp();
+    SetUpForInteractiveTests();
+    test::DesktopWidgetTest::SetUp();
 
-    widget_ = CreateNativeDesktopWidget();
+    widget_ = CreateTopLevelNativeWidget();
     widget_->SetBounds(gfx::Rect(0, 0, 200, 200));
     textfield_ = new Textfield();
     textfield_->SetBounds(0, 0, 200, 20);
@@ -63,7 +54,7 @@ class AXSystemCaretWinTest : public test::WidgetTest {
 
   void TearDown() override {
     widget_->CloseNow();
-    test::WidgetTest::TearDown();
+    test::DesktopWidgetTest::TearDown();
     ui::ResourceBundle::CleanupSharedInstance();
   }
 
