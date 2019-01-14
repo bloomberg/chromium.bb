@@ -47,7 +47,7 @@ const base::Feature kDiscoverApp{"DiscoverApp",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, DriveFS will be used for Drive sync.
-const base::Feature kDriveFs{"DriveFS", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDriveFs{"DriveFS", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, MyFiles will be a root/volume and user can create other
 // sub-folders and files in addition to the Downloads folder inside MyFiles.
