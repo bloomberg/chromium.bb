@@ -155,6 +155,7 @@ class CORE_EXPORT NGPaintFragmentTraversal {
   static Vector<NGPaintFragmentWithContainerOffset> InlineDescendantsOf(
       const NGPaintFragment&);
 
+  // Deprecated. Use NGPaintFragment::InlineFragmentsFor() instead.
   static Vector<NGPaintFragmentWithContainerOffset> SelfFragmentsOf(
       const NGPaintFragment&,
       const LayoutObject* target);
