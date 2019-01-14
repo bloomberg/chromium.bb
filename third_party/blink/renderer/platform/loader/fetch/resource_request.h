@@ -33,6 +33,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/cors.mojom-blink.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
@@ -415,8 +416,10 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetClientDataHeader(const String& value) { client_data_header_ = value; }
   const String& GetClientDataHeader() const { return client_data_header_; }
 
-  void SetUkmSourceId(int64_t ukm_source_id) { ukm_source_id_ = ukm_source_id; }
-  int64_t GetUkmSourceId() const { return ukm_source_id_; }
+  void SetUkmSourceId(ukm::SourceId ukm_source_id) {
+    ukm_source_id_ = ukm_source_id;
+  }
+  ukm::SourceId GetUkmSourceId() const { return ukm_source_id_; }
 
   // https://fetch.spec.whatwg.org/#concept-request-window
   // See network::ResourceRequest::fetch_window_id for details.
@@ -502,7 +505,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   String requested_with_header_;
   String client_data_header_;
 
-  int64_t ukm_source_id_;
+  ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 
   base::UnguessableToken fetch_window_id_;
 };
