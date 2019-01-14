@@ -733,6 +733,9 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 
   state->SetDouble("opacity", Opacity());
 
+  // For backward-compatibility of DevTools front-end.
+  MathUtil::AddToTracedValue("position", gfx::PointF(), state);
+
   state->SetInteger("transform_tree_index", transform_tree_index());
   state->SetInteger("clip_tree_index", clip_tree_index());
   state->SetInteger("effect_tree_index", effect_tree_index());
