@@ -228,6 +228,7 @@ class AdapterTest : public testing::Test {
       {"min_seconds_between_brightness_changes", "10"},
       {"model_curve", "2"},
       {"auto_brightness_als_horizon_seconds", "5"},
+      {"average_log_als", "false"},
   };
 
   std::unique_ptr<Adapter> adapter_;
@@ -647,6 +648,54 @@ TEST_F(AdapterTest, UseGlobalCurve) {
       global_curve_->Interpolate(ConvertToLog(expected_average_ambient2));
   EXPECT_DOUBLE_EQ(test_observer_.GetBrightnessPercent(),
                    expected_brightness_percent2);
+}
+
+TEST_F(AdapterTest, AverageLogAmbient) {
+  std::map<std::string, std::string> params = default_params_;
+  // Ensure |min_seconds_between_brightness_changes| is shorter than als horizon
+  // in this test.
+  params["min_seconds_between_brightness_changes"] = "1";
+  params["average_log_als"] = "true";
+
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
+       global_curve_, personal_curve_, params);
+
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
+  EXPECT_TRUE(adapter_->GetGlobalCurveForTesting());
+  EXPECT_EQ(*adapter_->GetGlobalCurveForTesting(), *global_curve_);
+  EXPECT_TRUE(adapter_->GetPersonalCurveForTesting());
+  EXPECT_EQ(*adapter_->GetPersonalCurveForTesting(), *personal_curve_);
+
+  // Brightness is changed after the 1st ALS value, and the thresholds are
+  // changed.
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  fake_als_reader_.ReportAmbientLightUpdate(20);
+  thread_bundle_.RunUntilIdle();
+  EXPECT_EQ(test_observer_.num_changes(), 1);
+  double expected_average_ambient = ConvertToLog(20);
+  EXPECT_EQ(adapter_->GetAverageAmbientForTesting(thread_bundle_.NowTicks()),
+            expected_average_ambient);
+  EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(),
+                   expected_average_ambient * 1.1);
+  EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(),
+                   expected_average_ambient * 0.8);
+  EXPECT_DOUBLE_EQ(test_observer_.GetBrightnessPercent(),
+                   personal_curve_->Interpolate(expected_average_ambient));
+
+  // Second ALS value comes in that exceeds the thresholds.
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  fake_als_reader_.ReportAmbientLightUpdate(50);
+  thread_bundle_.RunUntilIdle();
+  EXPECT_EQ(2, test_observer_.num_changes());
+  expected_average_ambient = (expected_average_ambient + ConvertToLog(50)) / 2;
+  EXPECT_EQ(adapter_->GetAverageAmbientForTesting(thread_bundle_.NowTicks()),
+            expected_average_ambient);
+  EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(),
+                   expected_average_ambient * 1.1);
+  EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(),
+                   expected_average_ambient * 0.8);
+  EXPECT_DOUBLE_EQ(test_observer_.GetBrightnessPercent(),
+                   personal_curve_->Interpolate(expected_average_ambient));
 }
 
 TEST_F(AdapterTest, BrightnessSetByPolicy) {

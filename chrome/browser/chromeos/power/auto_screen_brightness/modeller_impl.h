@@ -217,6 +217,10 @@ class ModellerImpl : public Modeller,
   // Recent ambient values.
   std::unique_ptr<AmbientLightSampleBuffer> ambient_light_values_;
 
+  // Whether we calculate average log ALS values. This should be the same as
+  // that used by the adapter.
+  bool average_log_als_ = false;
+
   std::vector<TrainingDataPoint> data_cache_;
 
   base::ObserverList<Modeller::Observer> observers_;
