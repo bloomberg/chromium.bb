@@ -1300,7 +1300,7 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "internetNoNetworksMobileData",
       l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_INTERNET_NO_NETWORKS_MOBILE_DATA,
+          IDS_SETTINGS_INTERNET_LOOKING_FOR_MOBILE_NETWORK,
           GetHelpUrlWithBoard(chrome::kInstantTetheringLearnMoreURL)));
 }
 #endif
