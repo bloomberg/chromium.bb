@@ -146,7 +146,12 @@ PerformanceMark* UserTiming::MarkInternal(ScriptState* script_state,
     return nullptr;
   }
 
-  TRACE_EVENT_COPY_MARK("blink.user_timing", mark_name.Utf8().data());
+  if (performance_->timing()) {
+    TRACE_EVENT_COPY_MARK1("blink.user_timing", mark_name.Utf8().data(), "data",
+                           performance_->timing()->GetNavigationTracingData());
+  } else {
+    TRACE_EVENT_COPY_MARK("blink.user_timing", mark_name.Utf8().data());
+  }
   PerformanceMark* mark =
       PerformanceMark::Create(script_state, mark_name, start_time, detail);
   InsertPerformanceEntry(marks_map_, *mark);

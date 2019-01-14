@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -165,6 +166,8 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   void Trace(blink::Visitor*) override;
 
   unsigned long long MonotonicTimeToIntegerMilliseconds(TimeTicks) const;
+
+  std::unique_ptr<TracedValue> GetNavigationTracingData();
 
  private:
   const DocumentTiming* GetDocumentTiming() const;
