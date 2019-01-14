@@ -17,3 +17,21 @@ static_library("send_tab_to_self") {
     "//url",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "send_tab_to_self_bridge_unittest.cc",
+    "send_tab_to_self_entry_unittest.cc",
+  ]
+  deps = [
+    ":send_tab_to_self",
+    "//base",
+    "//base/test:test_support",
+    "//components/sync",
+    "//components/sync:test_support_driver",
+    "//components/sync:test_support_model",
+    "//testing/gtest",
+    "//url",
+  ]
+}
