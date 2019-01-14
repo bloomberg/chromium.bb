@@ -142,6 +142,13 @@ jboolean ProfileSyncServiceAndroid::IsSyncRequested(
   return sync_service_->GetUserSettings()->IsSyncRequested();
 }
 
+jboolean ProfileSyncServiceAndroid::CanSyncFeatureStart(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return sync_service_->CanSyncFeatureStart();
+}
+
 void ProfileSyncServiceAndroid::RequestStart(JNIEnv* env,
                                              const JavaParamRef<jobject>&) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

@@ -20,7 +20,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninHelper;
@@ -171,16 +170,15 @@ public class SyncTest {
         mSyncTestRule.startSyncAndWait();
     }
 
-    /*
-     * @LargeTest
-     * @Feature({"Sync"})
-     */
     @Test
-    @FlakyTest(message = "crbug.com/594558")
-    public void testStopAndStartSyncThroughAndroid() {
+    @LargeTest
+    @Feature({"Sync"})
+    public void testStopAndStartSyncThroughAndroidChromeSync() {
         Account account = mSyncTestRule.setUpTestAccountAndSignIn();
-
         String authority = AndroidSyncSettings.get().getContractAuthority();
+
+        Assert.assertTrue(AndroidSyncSettings.get().isSyncEnabled());
+        Assert.assertTrue(SyncTestUtil.isSyncRequested());
 
         // Disabling Android sync should turn Chrome sync engine off.
         mSyncTestRule.getSyncContentResolver().setSyncAutomatically(account, authority, false);
@@ -189,6 +187,16 @@ public class SyncTest {
         // Enabling Android sync should turn Chrome sync engine on.
         mSyncTestRule.getSyncContentResolver().setSyncAutomatically(account, authority, true);
         SyncTestUtil.waitForSyncActive();
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Sync"})
+    public void testStopAndStartSyncThroughAndroidMasterSync() {
+        mSyncTestRule.setUpTestAccountAndSignIn();
+
+        Assert.assertTrue(AndroidSyncSettings.get().isSyncEnabled());
+        Assert.assertTrue(SyncTestUtil.isSyncRequested());
 
         // Disabling Android's master sync should turn Chrome sync engine off.
         mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(false);
@@ -197,18 +205,74 @@ public class SyncTest {
         // Enabling Android's master sync should turn Chrome sync engine on.
         mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(true);
         SyncTestUtil.waitForSyncActive();
+    }
 
-        // Disabling both should definitely turn sync off.
+    @Test
+    @LargeTest
+    @Feature({"Sync"})
+    public void testReenableMasterSyncFirst() {
+        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
+        String authority = AndroidSyncSettings.get().getContractAuthority();
+
+        Assert.assertTrue(AndroidSyncSettings.get().isSyncEnabled());
+        Assert.assertTrue(SyncTestUtil.isSyncRequested());
+        Assert.assertTrue(SyncTestUtil.canSyncFeatureStart());
+
+        // Disable Chrome sync first. Sync should be off.
         mSyncTestRule.getSyncContentResolver().setSyncAutomatically(account, authority, false);
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
+        Assert.assertFalse(SyncTestUtil.canSyncFeatureStart());
+
+        // Also disable master sync.
         mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(false);
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
+        Assert.assertFalse(SyncTestUtil.canSyncFeatureStart());
 
         // Re-enabling master sync should not turn sync back on.
         mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(true);
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
+        Assert.assertFalse(SyncTestUtil.canSyncFeatureStart());
 
         // But then re-enabling Chrome sync should.
         mSyncTestRule.getSyncContentResolver().setSyncAutomatically(account, authority, true);
+        Assert.assertTrue(SyncTestUtil.canSyncFeatureStart());
+        SyncTestUtil.waitForSyncActive();
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Sync"})
+    public void testReenableChromeSyncFirst() {
+        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
+        String authority = AndroidSyncSettings.get().getContractAuthority();
+
+        Assert.assertTrue(AndroidSyncSettings.get().isSyncEnabled());
+        Assert.assertTrue(SyncTestUtil.isSyncRequested());
+        Assert.assertTrue(SyncTestUtil.canSyncFeatureStart());
+
+        // Disabling master sync first. Sync should be off.
+        mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(false);
+        // TODO(crbug.com/921025): Master sync shouldn't influence isSyncRequested, so at this point
+        // isSyncRequested should be true; only canSyncFeatureStart should be false.
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
+        Assert.assertFalse(SyncTestUtil.canSyncFeatureStart());
+
+        // Also disable Chrome sync.
+        mSyncTestRule.getSyncContentResolver().setSyncAutomatically(account, authority, false);
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
+        Assert.assertFalse(SyncTestUtil.canSyncFeatureStart());
+
+        // Re-enabling Chrome sync should not turn sync back on.
+        mSyncTestRule.getSyncContentResolver().setSyncAutomatically(account, authority, true);
+        // TODO(crbug.com/921025): Master sync (which is still disabled) shouldn't influence
+        // isSyncRequested, so at this point isSyncRequested should be true (but
+        // canSyncFeatureStart should remain false).
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
+        Assert.assertFalse(SyncTestUtil.canSyncFeatureStart());
+
+        // But then re-enabling master sync should.
+        mSyncTestRule.getSyncContentResolver().setMasterSyncAutomatically(true);
+        Assert.assertTrue(SyncTestUtil.canSyncFeatureStart());
         SyncTestUtil.waitForSyncActive();
     }
 
