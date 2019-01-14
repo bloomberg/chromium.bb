@@ -225,6 +225,7 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
       lock_ms < delays->idle_ms()) {
     delays->set_screen_lock_ms(lock_ms);
   }
+  auto_screen_lock_enabled_ = values.enable_auto_screen_lock;
 
   prefs_policy_.set_ac_idle_action(GetProtoAction(values.ac_idle_action));
   prefs_policy_.set_battery_idle_action(
@@ -258,6 +259,15 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
 
   prefs_were_set_ = true;
   SendCurrentPolicy();
+}
+
+base::TimeDelta PowerPolicyController::GetMaxPolicyAutoScreenLockDelay() {
+  if (!prefs_were_set_ || !auto_screen_lock_enabled_) {
+    return base::TimeDelta();
+  }
+  int ac_delay = prefs_policy_.ac_delays().screen_lock_ms();
+  int battery_delay = prefs_policy_.battery_delays().screen_lock_ms();
+  return base::TimeDelta::FromMilliseconds(std::max(ac_delay, battery_delay));
 }
 
 int PowerPolicyController::AddScreenWakeLock(WakeLockReason reason,

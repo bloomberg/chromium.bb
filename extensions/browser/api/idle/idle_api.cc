@@ -31,6 +31,8 @@ int ClampThreshold(int threshold) {
 
 }  // namespace
 
+IdleQueryStateFunction::~IdleQueryStateFunction() = default;
+
 ExtensionFunction::ResponseAction IdleQueryStateFunction::Run() {
   int threshold = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &threshold));
@@ -45,15 +47,25 @@ ExtensionFunction::ResponseAction IdleQueryStateFunction::Run() {
 void IdleQueryStateFunction::IdleStateCallback(ui::IdleState state) {
 }
 
+IdleSetDetectionIntervalFunction::~IdleSetDetectionIntervalFunction() = default;
+
 ExtensionFunction::ResponseAction IdleSetDetectionIntervalFunction::Run() {
   int threshold = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &threshold));
   threshold = ClampThreshold(threshold);
 
-  IdleManagerFactory::GetForBrowserContext(context_)
-      ->SetThreshold(extension_id(), threshold);
+  IdleManagerFactory::GetForBrowserContext(context_)->SetThreshold(
+      extension_id(), threshold);
 
   return RespondNow(NoArguments());
 }
 
+IdleGetAutoLockDelayFunction::~IdleGetAutoLockDelayFunction() = default;
+
+ExtensionFunction::ResponseAction IdleGetAutoLockDelayFunction::Run() {
+  const int delay = IdleManagerFactory::GetForBrowserContext(context_)
+                        ->GetAutoLockDelay()
+                        .InSeconds();
+  return RespondNow(OneArgument(std::make_unique<base::Value>(delay)));
+}
 }  // namespace extensions

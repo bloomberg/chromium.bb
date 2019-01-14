@@ -14,6 +14,10 @@
 #include "extensions/common/api/idle.h"
 #include "extensions/common/extension.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/power_policy_controller.h"
+#endif
+
 namespace keys = extensions::idle_api_constants;
 namespace idle = extensions::api::idle;
 
@@ -173,6 +177,15 @@ ui::IdleState IdleManager::QueryState(int threshold) {
 void IdleManager::SetThreshold(const std::string& extension_id, int threshold) {
   DCHECK(thread_checker_.CalledOnValidThread());
   GetMonitor(extension_id)->threshold = threshold;
+}
+
+base::TimeDelta IdleManager::GetAutoLockDelay() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+#if defined(OS_CHROMEOS)
+  return chromeos::PowerPolicyController::Get()
+      ->GetMaxPolicyAutoScreenLockDelay();
+#endif
+  return base::TimeDelta();
 }
 
 // static

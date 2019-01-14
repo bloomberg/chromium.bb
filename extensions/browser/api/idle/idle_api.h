@@ -16,7 +16,7 @@ class IdleQueryStateFunction : public UIThreadExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("idle.queryState", IDLE_QUERYSTATE)
 
  protected:
-  ~IdleQueryStateFunction() override {}
+  ~IdleQueryStateFunction() override;
 
   // UIThreadExtensionFunction:
   ResponseAction Run() override;
@@ -32,7 +32,18 @@ class IdleSetDetectionIntervalFunction : public UIThreadExtensionFunction {
                              IDLE_SETDETECTIONINTERVAL)
 
  protected:
-  ~IdleSetDetectionIntervalFunction() override {}
+  ~IdleSetDetectionIntervalFunction() override;
+
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
+};
+
+class IdleGetAutoLockDelayFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("idle.getAutoLockDelay", IDLE_GETAUTOLOCKDELAY)
+
+ protected:
+  ~IdleGetAutoLockDelayFunction() override;
 
   // UIThreadExtensionFunction:
   ResponseAction Run() override;

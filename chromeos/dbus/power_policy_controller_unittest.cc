@@ -386,4 +386,32 @@ TEST_F(PowerPolicyControllerTest, PerSessionScreenBrightnessOverride) {
   EXPECT_FALSE(fake_power_client_->policy().has_battery_brightness_percent());
 }
 
+TEST_F(PowerPolicyControllerTest, PolicyAutoScreenLockDelay) {
+  PowerPolicyController::PrefValues prefs;
+  policy_controller_->ApplyPrefs(prefs);
+
+  // Autolock disabled.
+  prefs.ac_screen_lock_delay_ms = 4000;
+  prefs.battery_screen_lock_delay_ms = 1000;
+  prefs.enable_auto_screen_lock = false;
+  policy_controller_->ApplyPrefs(prefs);
+  EXPECT_EQ(base::TimeDelta(),
+            policy_controller_->Get()->GetMaxPolicyAutoScreenLockDelay());
+
+  // Autolock enabled.
+
+  // Longer AC delay.
+  prefs.enable_auto_screen_lock = true;
+  policy_controller_->ApplyPrefs(prefs);
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(prefs.ac_screen_lock_delay_ms),
+            policy_controller_->Get()->GetMaxPolicyAutoScreenLockDelay());
+
+  // Longer battery delay.
+  prefs.ac_screen_lock_delay_ms = 1000;
+  prefs.battery_screen_lock_delay_ms = 4000;
+  policy_controller_->ApplyPrefs(prefs);
+  EXPECT_EQ(
+      base::TimeDelta::FromMilliseconds(prefs.battery_screen_lock_delay_ms),
+      policy_controller_->Get()->GetMaxPolicyAutoScreenLockDelay());
+}
 }  // namespace chromeos

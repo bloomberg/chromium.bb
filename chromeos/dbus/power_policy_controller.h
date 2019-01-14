@@ -131,6 +131,15 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerPolicyController
   void ScreenBrightnessChanged(
       const power_manager::BacklightBrightnessChange& change) override;
 
+  // Returns the maximum time set by policy for the screen to lock when idle
+  // between AC and battery power sources. Returns zero if screen autolock is
+  // disabled by policy.
+  // If delay is set to zero, Google Chrome OS does not lock the screen when
+  // the user becomes idle.
+  // Note: The actual screen lock delay on the OS may differ as it takes other
+  // factors into account, like wake locks.
+  base::TimeDelta GetMaxPolicyAutoScreenLockDelay();
+
  private:
   explicit PowerPolicyController(PowerManagerClient* client);
   ~PowerPolicyController() override;
@@ -200,6 +209,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerPolicyController
   // Whether brightness policy value was overridden by a user adjustment in the
   // current user session.
   bool per_session_brightness_override_ = false;
+
+  // Indicates if screen autolock is enabled or not by policy.
+  bool auto_screen_lock_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PowerPolicyController);
 };

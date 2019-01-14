@@ -226,6 +226,9 @@
     "dependencies": ["permission:idle"],
     "contexts": ["blessed_extension"]
   },
+  "idle.getAutoLockDelay": {
+    "platforms": ["chromeos"]
+  },
   "lockScreen.data": {
     "dependencies": ["permission:lockScreen"],
     "contexts": ["blessed_extension", "lock_screen_extension"]

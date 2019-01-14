@@ -1,7 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 [
   {
     "namespace": "idle",
@@ -10,7 +9,11 @@
       {
         "id": "IdleState",
         "type": "string",
-        "enum": ["active", "idle", "locked"]
+        "enum": [
+          "active",
+          "idle",
+          "locked"
+        ]
       }
     ],
     "functions": [
@@ -47,6 +50,24 @@
             "type": "integer",
             "minimum": 15,
             "description": "Threshold, in seconds, used to determine when the system is in an idle state."
+          }
+        ]
+      },
+      {
+        "name": "getAutoLockDelay",
+        "type": "function",
+        "description": "Gets the time, in seconds, it takes until the screen is locked automatically while idle. Returns a zero duration if the screen is never locked automatically. Currently supported on Chrome OS only.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "delay",
+                "type": "integer",
+                "description": "Time, in seconds, until the screen is locked automatically while idle. This is zero if the screen never locks automatically."
+              }
+            ]
           }
         ]
       }
