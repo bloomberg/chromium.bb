@@ -7,6 +7,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
+#include "base/test/test_timeouts.h"
 #include "content/public/test/blink_test_environment.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
@@ -25,6 +26,8 @@ BlinkFuzzerTestSupport::BlinkFuzzerTestSupport(int argc, char** argv) {
   CHECK(base::i18n::InitializeICU());
 
   base::CommandLine::Init(argc, argv);
+
+  TestTimeouts::Initialize();
 
   content::SetUpBlinkTestEnvironment();
 
