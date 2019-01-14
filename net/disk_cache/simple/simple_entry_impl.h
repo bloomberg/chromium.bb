@@ -268,6 +268,7 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   void CreationOperationComplete(
       CompletionOnceCallback completion_callback,
       const base::TimeTicks& start_time,
+      const base::Time index_last_used_time,
       std::unique_ptr<SimpleEntryCreationResults> in_results,
       Entry** out_entry,
       net::NetLogEventType end_event_type);

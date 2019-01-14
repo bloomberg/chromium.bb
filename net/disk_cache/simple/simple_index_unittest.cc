@@ -438,6 +438,8 @@ TEST_F(SimpleIndexTest, BasicInit) {
 
   EntryMetadata metadata;
   EXPECT_TRUE(GetEntryForTesting(hashes_.at<1>(), &metadata));
+  EXPECT_EQ(metadata.GetLastUsedTime(),
+            index()->GetLastUsedTime(hashes_.at<1>()));
   EXPECT_LT(
       now - base::TimeDelta::FromDays(2) - base::TimeDelta::FromSeconds(1),
       metadata.GetLastUsedTime());
@@ -446,6 +448,8 @@ TEST_F(SimpleIndexTest, BasicInit) {
       metadata.GetLastUsedTime());
   EXPECT_EQ(RoundSize(10u), metadata.GetEntrySize());
   EXPECT_TRUE(GetEntryForTesting(hashes_.at<2>(), &metadata));
+  EXPECT_EQ(metadata.GetLastUsedTime(),
+            index()->GetLastUsedTime(hashes_.at<2>()));
   EXPECT_LT(
       now - base::TimeDelta::FromDays(3) - base::TimeDelta::FromSeconds(1),
       metadata.GetLastUsedTime());
@@ -453,6 +457,7 @@ TEST_F(SimpleIndexTest, BasicInit) {
       now - base::TimeDelta::FromDays(3) + base::TimeDelta::FromSeconds(1),
       metadata.GetLastUsedTime());
   EXPECT_EQ(RoundSize(1000u), metadata.GetEntrySize());
+  EXPECT_EQ(base::Time(), index()->GetLastUsedTime(hashes_.at<3>()));
 }
 
 // Remove something that's going to come in from the loaded index.
