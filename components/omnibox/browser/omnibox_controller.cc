@@ -8,6 +8,7 @@
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_client.h"
+#include "components/omnibox/browser/omnibox_controller_emitter.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
@@ -32,12 +33,20 @@ void OmniboxController::StartAutocomplete(
     const AutocompleteInput& input) const {
   ClearPopupKeywordMode();
 
+  if (client_->GetOmniboxControllerEmitter())
+    client_->GetOmniboxControllerEmitter()->NotifyOmniboxQuery(
+        autocomplete_controller_.get());
+
   // We don't explicitly clear OmniboxPopupModel::manually_selected_match, as
   // Start ends up invoking OmniboxPopupModel::OnResultChanged which clears it.
   autocomplete_controller_->Start(input);
 }
 
 void OmniboxController::OnResultChanged(bool default_match_changed) {
+  if (client_->GetOmniboxControllerEmitter())
+    client_->GetOmniboxControllerEmitter()->NotifyOmniboxResultChanged(
+        default_match_changed, autocomplete_controller_.get());
+
   const bool was_open = popup_ && popup_->IsOpen();
   if (default_match_changed) {
     // The default match has changed, we need to let the OmniboxEditModel know

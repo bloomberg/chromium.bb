@@ -32,6 +32,7 @@
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/omnibox_controller_emitter.h"
 #include "components/search_engines/template_url.h"
 #include "content/public/browser/web_ui.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
@@ -204,15 +205,26 @@ struct TypeConverter<mojom::AutocompleteResultsForProviderPtr,
 OmniboxPageHandler::OmniboxPageHandler(
     Profile* profile,
     mojo::InterfaceRequest<mojom::OmniboxPageHandler> request)
-    : profile_(profile), binding_(this, std::move(request)) {
+    : profile_(profile), binding_(this, std::move(request)), observer_(this) {
+  observer_.Add(OmniboxControllerEmitter::GetForBrowserContext(profile_));
   ResetController();
 }
 
 OmniboxPageHandler::~OmniboxPageHandler() {}
 
 void OmniboxPageHandler::OnResultChanged(bool default_match_changed) {
+  OnOmniboxResultChanged(default_match_changed, controller_.get());
+}
+
+void OmniboxPageHandler::OnOmniboxQuery(AutocompleteController* controller) {
+  page_->HandleNewAutocompleteQuery(controller == controller_.get());
+}
+
+void OmniboxPageHandler::OnOmniboxResultChanged(
+    bool default_match_changed,
+    AutocompleteController* controller) {
   mojom::OmniboxResultPtr result(mojom::OmniboxResult::New());
-  result->done = controller_->done();
+  result->done = controller->done();
   result->time_since_omnibox_started_ms =
       (base::Time::Now() - time_omnibox_started_).InMilliseconds();
   const base::string16 host =
@@ -227,14 +239,13 @@ void OmniboxPageHandler::OnResultChanged(bool default_match_changed) {
   {
     // Copy to an ACMatches to make conversion easier. Since this isn't
     // performance critical we don't worry about the cost here.
-    ACMatches matches(controller_->result().begin(),
-                      controller_->result().end());
+    ACMatches matches(controller->result().begin(), controller->result().end());
     result->combined_results =
         mojo::ConvertTo<std::vector<mojom::AutocompleteMatchPtr>>(matches);
   }
   result->results_by_provider =
       mojo::ConvertTo<std::vector<mojom::AutocompleteResultsForProviderPtr>>(
-          controller_->providers());
+          controller->providers());
 
   // Fill AutocompleteMatch::starred.
   BookmarkModel* bookmark_model =
@@ -265,11 +276,14 @@ void OmniboxPageHandler::OnResultChanged(bool default_match_changed) {
       image_urls.push_back(result_by_provider.results[j]->image);
   }
 
-  page_->HandleNewAutocompleteResult(std::move(result));
+  page_->HandleNewAutocompleteResult(std::move(result),
+                                     controller == controller_.get());
 
   // Fill in image data
   BitmapFetcherService* image_service =
       BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
+  if (!image_service)
+    return;
   for (std::string image_url : image_urls) {
     const ImageReciever handleAnswerImageData = [this,
                                                  image_url](std::string data) {
@@ -356,6 +370,13 @@ void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,
   // actual results to not depend on the state of the previous request.
   if (reset_autocomplete_controller)
     ResetController();
+  // TODO (manukh): OmniboxPageHandler::StartOmniboxQuery is invoked only for
+  // queries from the debug page and not for queries from the browser omnibox.
+  // time_omnibox_started_ and input_ are therefore not set for browser omnibox
+  // queries, resulting in inaccurate time_since_omnibox_started_ms, host, type,
+  // and is_typed_host values in the result object being sent to the debug page.
+  // For the user, this means the 'details' section is mostly inaccurate for
+  // browser omnibox queries.
   time_omnibox_started_ = base::Time::Now();
   input_ = AutocompleteInput(
       base::UTF8ToUTF16(input_string), cursor_position,
@@ -370,6 +391,7 @@ void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,
   input_.set_prefer_keyword(prefer_keyword);
   input_.set_from_omnibox_focus(zero_suggest);
 
+  OnOmniboxQuery(controller_.get());
   controller_->Start(input_);
 }
 
