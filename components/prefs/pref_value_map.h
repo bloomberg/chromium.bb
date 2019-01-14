@@ -21,7 +21,7 @@ class Value;
 // A generic string to value map used by the PrefStore implementations.
 class COMPONENTS_PREFS_EXPORT PrefValueMap {
  public:
-  using Map = std::unordered_map<std::string, std::unique_ptr<base::Value>>;
+  using Map = std::unordered_map<std::string, base::Value>;
   using iterator = Map::iterator;
   using const_iterator = Map::const_iterator;
 
@@ -36,7 +36,11 @@ class COMPONENTS_PREFS_EXPORT PrefValueMap {
 
   // Sets a new |value| for |key|. |value| must be non-null. Returns true if the
   // value changed.
+  // DEPRECATED. Use |SetValue(const std::string&, base::Value)| instead.
   bool SetValue(const std::string& key, std::unique_ptr<base::Value> value);
+
+  // Sets a new |value| for |key|. Returns true if the value changed.
+  bool SetValue(const std::string& key, base::Value value);
 
   // Removes the value for |key| from the map. Returns true if a value was
   // removed.

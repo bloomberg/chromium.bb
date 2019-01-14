@@ -950,7 +950,7 @@ void DeviceSettingsProvider::UpdateValuesCache(
   for (; iter != new_values_cache.end(); ++iter) {
     const base::Value* old_value;
     if (!values_cache_.GetValue(iter->first, &old_value) ||
-        !old_value->Equals(iter->second.get())) {
+        *old_value != iter->second) {
       notifications.push_back(iter->first);
     }
   }

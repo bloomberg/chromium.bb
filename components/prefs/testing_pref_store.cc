@@ -203,9 +203,8 @@ void TestingPrefStore::set_read_error(
 }
 
 TestingPrefStore::~TestingPrefStore() {
-  for (auto& pref : prefs_) {
-    CheckPrefIsSerializable(pref.first, *pref.second);
-  }
+  for (auto& pref : prefs_)
+    CheckPrefIsSerializable(pref.first, pref.second);
 }
 
 void TestingPrefStore::CheckPrefIsSerializable(const std::string& key,
