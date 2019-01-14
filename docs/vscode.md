@@ -55,6 +55,19 @@ terminal. The argument to `code` is the base directory of the workspace. VS
 Code does not require project or solution files. However, it does store
 workspace settings in a `.vscode` folder in your base directory.
 
+### Git on Windows
+
+If you only have the `depot_tools` Git installed on your machine, even though it
+is in your PATH, VS Code will ignore it as it seems to be looking for `git.exe`.
+You will have to add the following to your settings in order for the Git
+integration to work:
+
+```
+{
+  "git.path": "C:\\src\\depot_tools\\git.bat"
+}
+```
+
 ### Useful Extensions
 
 Up to now, you have a basic version of VS Code without much language support.
