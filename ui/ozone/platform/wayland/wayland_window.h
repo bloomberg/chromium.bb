@@ -52,6 +52,8 @@ class WaylandWindow : public PlatformWindow,
   XDGSurfaceWrapper* xdg_surface() const { return xdg_surface_.get(); }
   XDGPopupWrapper* xdg_popup() const { return xdg_popup_.get(); }
 
+  gfx::AcceleratedWidget GetWidget() const;
+
   // Apply the bounds specified in the most recent configure event. This should
   // be called after processing all pending events in the wayland connection.
   void ApplyPendingBounds();

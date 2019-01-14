@@ -251,7 +251,7 @@ class Object : public std::unique_ptr<T, Deleter> {
   Object() {}
   explicit Object(T* obj) : std::unique_ptr<T, Deleter>(obj) {}
 
-  uint32_t id() {
+  uint32_t id() const {
     return wl_proxy_get_id(
         reinterpret_cast<wl_proxy*>(std::unique_ptr<T, Deleter>::get()));
   }

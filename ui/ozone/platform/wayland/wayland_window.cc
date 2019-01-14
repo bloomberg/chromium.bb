@@ -92,7 +92,7 @@ WaylandWindow::~WaylandWindow() {
   }
 
   PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
-  connection_->RemoveWindow(surface_.id());
+  connection_->RemoveWindow(GetWidget());
 
   if (parent_window_)
     parent_window_->set_child_window(nullptr);
@@ -140,11 +140,17 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
 
   connection_->ScheduleFlush();
 
-  connection_->AddWindow(surface_.id(), this);
+  connection_->AddWindow(GetWidget(), this);
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
-  delegate_->OnAcceleratedWidgetAvailable(surface_.id());
+  delegate_->OnAcceleratedWidgetAvailable(GetWidget());
 
   return true;
+}
+
+gfx::AcceleratedWidget WaylandWindow::GetWidget() const {
+  if (!surface_)
+    return gfx::kNullAcceleratedWidget;
+  return surface_.id();
 }
 
 void WaylandWindow::CreateXdgPopup() {

@@ -9,10 +9,15 @@
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/ozone/platform/wayland/wayland_connection.h"
+#include "ui/ozone/platform/wayland/wayland_window.h"
 
 namespace ui {
 
-WaylandScreen::WaylandScreen() : weak_factory_(this) {}
+WaylandScreen::WaylandScreen(WaylandConnection* connection)
+    : connection_(connection), weak_factory_(this) {
+  DCHECK(connection_);
+}
 
 WaylandScreen::~WaylandScreen() = default;
 
@@ -75,11 +80,11 @@ gfx::Point WaylandScreen::GetCursorScreenPoint() const {
 
 gfx::AcceleratedWidget WaylandScreen::GetAcceleratedWidgetAtScreenPoint(
     const gfx::Point& point) const {
-  // TODO(msisov): implement this once wl_surface_listener::enter and ::leave
-  // are used.
-  //
-  // https://crbug.com/890271
-  NOTIMPLEMENTED_LOG_ONCE();
+  // It is safe to check only for focused windows and test if they contain the
+  // point or not.
+  auto* window = connection_->GetCurrentFocusedWindow();
+  if (window && window->GetBounds().Contains(point))
+    return window->GetWidget();
   return gfx::kNullAcceleratedWidget;
 }
 
