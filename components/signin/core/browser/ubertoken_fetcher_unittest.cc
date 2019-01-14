@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "google_apis/gaia/ubertoken_fetcher.h"
+#include "components/signin/core/browser/ubertoken_fetcher.h"
 
 #include <memory>
 
@@ -54,7 +54,7 @@ class UbertokenFetcherTest : public testing::Test {
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &url_loader_factory_)) {
-    fetcher_ = std::make_unique<UbertokenFetcher>(
+    fetcher_ = std::make_unique<signin::UbertokenFetcher>(
         kTestAccountId, &token_service_,
         base::BindOnce(&MockUbertokenConsumer::OnUbertokenFetchComplete,
                        base::Unretained(&consumer_)),
@@ -67,7 +67,7 @@ class UbertokenFetcherTest : public testing::Test {
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   MockUbertokenConsumer consumer_;
-  std::unique_ptr<::UbertokenFetcher> fetcher_;
+  std::unique_ptr<signin::UbertokenFetcher> fetcher_;
 };
 
 TEST_F(UbertokenFetcherTest, Basic) {}
@@ -106,7 +106,7 @@ TEST_F(UbertokenFetcherTest, TransientFailureEventualFailure) {
                               OAuth2AccessTokenConsumer::TokenResponse(
                                   "accessToken", base::Time(), std::string()));
 
-  for (int i = 0; i < UbertokenFetcher::kMaxRetries; ++i) {
+  for (int i = 0; i < signin::UbertokenFetcher::kMaxRetries; ++i) {
     fetcher_->OnUberAuthTokenFailure(error);
     EXPECT_EQ(0, consumer_.nb_error_);
     EXPECT_EQ(0, consumer_.nb_correct_token_);
@@ -125,7 +125,7 @@ TEST_F(UbertokenFetcherTest, TransientFailureEventualSuccess) {
                               OAuth2AccessTokenConsumer::TokenResponse(
                                   "accessToken", base::Time(), std::string()));
 
-  for (int i = 0; i < UbertokenFetcher::kMaxRetries; ++i) {
+  for (int i = 0; i < signin::UbertokenFetcher::kMaxRetries; ++i) {
     fetcher_->OnUberAuthTokenFailure(error);
     EXPECT_EQ(0, consumer_.nb_error_);
     EXPECT_EQ(0, consumer_.nb_correct_token_);

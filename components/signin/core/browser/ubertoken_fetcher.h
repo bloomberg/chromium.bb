@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GOOGLE_APIS_GAIA_UBERTOKEN_FETCHER_H_
-#define GOOGLE_APIS_GAIA_UBERTOKEN_FETCHER_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_UBERTOKEN_FETCHER_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_UBERTOKEN_FETCHER_H_
 
 #include <memory>
 
@@ -27,6 +27,8 @@ class GoogleServiceAuthError;
 namespace network {
 class SharedURLLoaderFactory;
 }
+
+namespace signin {
 
 using GaiaAuthFetcherFactory =
     base::RepeatingCallback<std::unique_ptr<GaiaAuthFetcher>(
@@ -99,4 +101,6 @@ class UbertokenFetcher : public GaiaAuthConsumer,
   DISALLOW_COPY_AND_ASSIGN(UbertokenFetcher);
 };
 
-#endif  // GOOGLE_APIS_GAIA_UBERTOKEN_FETCHER_H_
+}  // namespace signin
+
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_UBERTOKEN_FETCHER_H_

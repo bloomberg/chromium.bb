@@ -20,10 +20,10 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/core/browser/ubertoken_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/oauth2_token_service.h"
-#include "google_apis/gaia/ubertoken_fetcher.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -996,7 +996,7 @@ void GaiaCookieManagerService::StartFetchingUbertoken() {
   const std::string account_id = requests_.front().GetAccountID();
   VLOG(1) << "GaiaCookieManagerService::StartFetchingUbertoken account_id="
           << requests_.front().GetAccountID();
-  uber_token_fetcher_ = std::make_unique<UbertokenFetcher>(
+  uber_token_fetcher_ = std::make_unique<signin::UbertokenFetcher>(
       account_id, access_token_, token_service_,
       base::BindOnce(&GaiaCookieManagerService::OnUbertokenFetchComplete,
                      base::Unretained(this)),
