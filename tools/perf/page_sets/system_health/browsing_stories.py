@@ -374,6 +374,30 @@ class GoogleDesktopStory(_ArticleBrowsingStory):
     action_runner.Wait(2)
     action_runner.ScrollPage()
 
+class GoogleAmpStory2018(_ArticleBrowsingStory):
+  """ Story for Google's Accelerated Mobile Pages (AMP).
+
+    The main thing we care about measuring here is load, so just query for
+    news articles and then load the first amp link.
+  """
+  NAME = 'browse:search:amp:2018'
+  URL = 'https://www.google.com/search?q=news&hl=en'
+  # Need to find the first card in the news section that has an amp
+  # indicator on it
+  ITEM_SELECTOR = '.sm62ie > a[class*="amp_r"]'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.YEAR_2018]
+
+  def _DidLoadDocument(self, action_runner):
+    # Click on the amp news link and then just wait for it to load.
+    element_function = js_template.Render(
+        'document.querySelectorAll({{ selector }})[{{ index }}]',
+        selector=self.ITEM_SELECTOR, index=0)
+    action_runner.WaitForElement(element_function=element_function)
+    action_runner.ClickElement(element_function=element_function)
+    action_runner.Wait(2)
+
+
 class GoogleDesktopStory2018(_ArticleBrowsingStory):
   """
   A typical google search story:
