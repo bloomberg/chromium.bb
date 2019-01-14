@@ -476,7 +476,9 @@ void ScriptExecutor::OnWaitForElement(base::OnceCallback<void(bool)> callback) {
 void ScriptExecutor::OnWaitForElementVisibleWithInterrupts(
     base::OnceCallback<void(ProcessedActionStatusProto)> callback,
     bool element_found,
-    const Result* interrupt_result) {
+    const Result* interrupt_result,
+    const std::set<std::string>& interrupt_paths) {
+  ran_interrupts_.insert(interrupt_paths.begin(), interrupt_paths.end());
   if (interrupt_result) {
     if (!interrupt_result->success) {
       std::move(callback).Run(INTERRUPT_FAILED);
@@ -527,6 +529,11 @@ void ScriptExecutor::WaitWithInterrupts::Run() {
       base::BindOnce(&WaitWithInterrupts::OnElementCheckDone,
                      base::Unretained(this)));
   for (const auto* interrupt : *main_script_->ordered_interrupts_) {
+    if (ran_interrupts_.find(interrupt->handle.path) != ran_interrupts_.end()) {
+      // Only run an interrupt once in a WaitWithInterrupts, to avoid loops.
+      continue;
+    }
+
     interrupt->precondition->Check(
         main_script_->delegate_->GetWebController()->GetUrl(),
         batch_element_checker_.get(), main_script_->delegate_->GetParameters(),
@@ -598,7 +605,7 @@ void ScriptExecutor::WaitWithInterrupts::OnAllDone() {
 void ScriptExecutor::WaitWithInterrupts::RunInterrupt(const Script* interrupt) {
   batch_element_checker_.reset();
   SavePreInterruptState();
-  main_script_->ran_interrupts_.emplace_back(interrupt->handle.path);
+  ran_interrupts_.insert(interrupt->handle.path);
   interrupt_executor_ = std::make_unique<ScriptExecutor>(
       interrupt->handle.path, main_script_->last_global_payload_,
       main_script_->initial_script_payload_,
@@ -634,7 +641,7 @@ void ScriptExecutor::WaitWithInterrupts::RunCallback(
     return;
 
   RestorePreInterruptScroll(found);
-  std::move(callback_).Run(found, result);
+  std::move(callback_).Run(found, result, ran_interrupts_);
 }
 
 void ScriptExecutor::WaitWithInterrupts::SavePreInterruptState() {

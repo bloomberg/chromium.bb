@@ -178,8 +178,12 @@ class ScriptExecutor : public ActionDelegate {
     //
     // If the given result is non-null, it should be forwarded as the result of
     // the main script.
-    using Callback =
-        base::OnceCallback<void(bool, const ScriptExecutor::Result*)>;
+    //
+    // The third argument contains the set of interrupts that were run while
+    // waiting.
+    using Callback = base::OnceCallback<void(bool,
+                                             const ScriptExecutor::Result*,
+                                             const std::set<std::string>&)>;
 
     // |main_script_| must not be null and outlive this instance.
     WaitWithInterrupts(ScriptExecutor* main_script,
@@ -242,6 +246,9 @@ class ScriptExecutor : public ActionDelegate {
     // The status message that was displayed when the interrupt started.
     std::string pre_interrupt_status_;
 
+    // Paths of the interrupts that were run during the current action.
+    std::set<std::string> ran_interrupts_;
+
     base::WeakPtrFactory<WaitWithInterrupts> weak_ptr_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(WaitWithInterrupts);
@@ -267,7 +274,8 @@ class ScriptExecutor : public ActionDelegate {
   void OnWaitForElementVisibleWithInterrupts(
       base::OnceCallback<void(ProcessedActionStatusProto)> callback,
       bool element_found,
-      const Result* interrupt_result);
+      const Result* interrupt_result,
+      const std::set<std::string>& ran_interrupts);
   void OnWaitForElementVisibleNoInterrupts(
       base::OnceCallback<void(ProcessedActionStatusProto)> callback,
       bool element_found);
@@ -293,8 +301,8 @@ class ScriptExecutor : public ActionDelegate {
   std::map<std::string, ScriptStatusProto>* scripts_state_;
   std::unique_ptr<BatchElementChecker> batch_element_checker_;
 
-  // Paths of the interrupts that were run during the current action.
-  std::vector<std::string> ran_interrupts_;
+  // Paths of the interrupts that were run during the current script.
+  std::set<std::string> ran_interrupts_;
 
   // Set of interrupts that might run during wait for dom actions with
   // allow_interrupt. Sorted by priority; an interrupt that appears on the

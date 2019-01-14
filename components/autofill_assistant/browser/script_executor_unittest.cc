@@ -141,12 +141,17 @@ class ScriptExecutorTest : public testing::Test,
     RegisterInterrupt(path, trigger);
 
     ActionsResponseProto interrupt_actions;
-    interrupt_actions.set_global_payload(
-        base::StrCat({"global payload for ", path}));
-    interrupt_actions.set_script_payload(base::StrCat({"payload for ", path}));
-    interrupt_actions.add_actions()->mutable_tell()->set_message(path);
+    InitInterruptActions(&interrupt_actions, path);
     EXPECT_CALL(mock_service_, OnGetActions(StrEq(path), _, _, _, _, _))
         .WillRepeatedly(RunOnceCallback<5>(true, Serialize(interrupt_actions)));
+  }
+
+  void InitInterruptActions(ActionsResponseProto* interrupt_actions,
+                            const std::string& path) {
+    interrupt_actions->set_global_payload(
+        base::StrCat({"global payload for ", path}));
+    interrupt_actions->set_script_payload(base::StrCat({"payload for ", path}));
+    interrupt_actions->add_actions()->mutable_tell()->set_message(path);
   }
 
   // Registers an interrupt, but do not define actions for it.
@@ -155,9 +160,6 @@ class ScriptExecutorTest : public testing::Test,
     interrupt->handle.path = path;
     ScriptPreconditionProto interrupt_preconditions;
     interrupt_preconditions.add_elements_exist()->add_selectors(trigger);
-    auto* run_once = interrupt_preconditions.add_script_status_match();
-    run_once->set_script(path);
-    run_once->set_status(SCRIPT_STATUS_NOT_RUN);
     interrupt->precondition =
         ScriptPrecondition::FromProto(path, interrupt_preconditions);
 
@@ -586,6 +588,34 @@ TEST_F(ScriptExecutorTest, RunMultipleInterruptInOrder) {
               Contains(Pair("interrupt1", SCRIPT_STATUS_SUCCESS)));
   EXPECT_THAT(scripts_state_,
               Contains(Pair("interrupt2", SCRIPT_STATUS_SUCCESS)));
+}
+
+TEST_F(ScriptExecutorTest, RunSameInterruptMultipleTimes) {
+  // In a main script with three wait_for_dom with allow_interrupt=true...
+  ActionsResponseProto interruptible;
+  for (int i = 0; i < 3; i++) {
+    auto* wait_action = interruptible.add_actions()->mutable_wait_for_dom();
+    wait_action->add_selectors("element");
+    wait_action->set_allow_interrupt(true);
+  }
+  EXPECT_CALL(mock_service_, OnGetActions(StrEq("script_path"), _, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<5>(true, Serialize(interruptible)));
+
+  // 'interrupt' with matching preconditions runs exactly three times.
+  RegisterInterrupt("interrupt", "interrupt_trigger");
+  ActionsResponseProto interrupt_actions;
+  InitInterruptActions(&interrupt_actions, "interrupt");
+  EXPECT_CALL(mock_service_, OnGetActions(StrEq("interrupt"), _, _, _, _, _))
+      .Times(3)
+      .WillRepeatedly(RunOnceCallback<5>(true, Serialize(interrupt_actions)));
+
+  // All scripts succeed with no more actions.
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
+      .WillRepeatedly(RunOnceCallback<3>(true, ""));
+
+  EXPECT_CALL(executor_callback_,
+              Run(Field(&ScriptExecutor::Result::success, true)));
+  executor_->Run(executor_callback_.Get());
 }
 
 TEST_F(ScriptExecutorTest, ForwardMainScriptPayloadWhenInterruptRuns) {
