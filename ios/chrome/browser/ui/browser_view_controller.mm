@@ -1067,7 +1067,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     return;
 
   _visible = visible;
-  [self updateBroadcastState];
 }
 
 - (void)setViewVisible:(BOOL)viewVisible {
@@ -1076,6 +1075,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   _viewVisible = viewVisible;
   self.visible = viewVisible;
   [self updateDialogPresenterActiveState];
+  [self updateBroadcastState];
 }
 
 - (void)setBroadcasting:(BOOL)broadcasting {
@@ -2535,7 +2535,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 }
 
 - (void)updateBroadcastState {
-  self.broadcasting = self.active && self.visible;
+  self.broadcasting = self.active && self.viewVisible;
 }
 
 - (void)updateDialogPresenterActiveState {
