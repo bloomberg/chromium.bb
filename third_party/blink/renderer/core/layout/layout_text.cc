@@ -2060,20 +2060,15 @@ LayoutRect LayoutText::LinesBoundingBox() const {
 }
 
 LayoutRect LayoutText::VisualOverflowRect() const {
-  const LayoutBlock* containing_block = ContainingBlock();
-  if (containing_block->IsLayoutNGBlockFlow()) {
-    const auto* block_flow = ToLayoutBlockFlow(containing_block);
+  if (IsInLayoutNGInlineFormattingContext()) {
     LayoutRect rect;
-    if (const auto* fragment = block_flow->PaintFragment()) {
-      auto children =
-          NGPaintFragmentTraversal::SelfFragmentsOf(*fragment, this);
-      for (const auto& child : children) {
-        LayoutRect child_rect = child.fragment->VisualRect();
-        child_rect.MoveBy(child.container_offset.ToLayoutPoint());
-        rect.Unite(child_rect);
-      }
-      containing_block->FlipForWritingMode(rect);
+    auto fragments = NGPaintFragment::InlineFragmentsFor(this);
+    for (const NGPaintFragment* fragment : fragments) {
+      LayoutRect child_rect = fragment->VisualRect();
+      child_rect.MoveBy(fragment->InlineOffsetToContainerBox().ToLayoutPoint());
+      rect.Unite(child_rect);
     }
+    ContainingBlock()->FlipForWritingMode(rect);
     return rect;
   }
 
