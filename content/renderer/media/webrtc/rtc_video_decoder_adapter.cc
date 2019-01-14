@@ -246,7 +246,7 @@ int32_t RTCVideoDecoderAdapter::Decode(
   // Convert to media::DecoderBuffer.
   // TODO(sandersd): What is |render_time_ms|?
   scoped_refptr<media::DecoderBuffer> buffer =
-      media::DecoderBuffer::CopyFrom(input_image._buffer, input_image._length);
+      media::DecoderBuffer::CopyFrom(input_image.data(), input_image.size());
   buffer->set_timestamp(
       base::TimeDelta::FromMicroseconds(input_image.Timestamp()));
 

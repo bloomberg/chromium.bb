@@ -257,7 +257,7 @@ int32_t RTCVideoDecoder::Decode(
 
   // Create buffer metadata.
   BufferData buffer_data(next_bitstream_buffer_id_, input_image.Timestamp(),
-                         input_image._length, gfx::Rect(frame_size_));
+                         input_image.size(), gfx::Rect(frame_size_));
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & ID_LAST;
 
@@ -266,7 +266,7 @@ int32_t RTCVideoDecoder::Decode(
   // immediately. Otherwise, save the buffer in the queue for later decode.
   std::unique_ptr<base::SharedMemory> shm_buffer;
   if (!need_to_reset_for_midstream_resize && pending_buffers_.empty())
-    shm_buffer = GetSHM_Locked(input_image._length);
+    shm_buffer = GetSHM_Locked(input_image.size());
   if (!shm_buffer) {
     if (!SaveToPendingBuffers_Locked(input_image, buffer_data)) {
       // We have exceeded the pending buffers count, we are severely behind.
@@ -631,7 +631,7 @@ void RTCVideoDecoder::SaveToDecodeBuffers_Locked(
     const webrtc::EncodedImage& input_image,
     std::unique_ptr<base::SharedMemory> shm_buffer,
     const BufferData& buffer_data) {
-  memcpy(shm_buffer->memory(), input_image._buffer, input_image._length);
+  memcpy(shm_buffer->memory(), input_image.data(), input_image.size());
 
   // Store the buffer and the metadata to the queue.
   decode_buffers_.emplace_back(std::move(shm_buffer), buffer_data);
@@ -651,13 +651,13 @@ bool RTCVideoDecoder::SaveToPendingBuffers_Locked(
   }
 
   // Clone the input image and save it to the queue.
-  uint8_t* buffer = new uint8_t[input_image._length];
+  uint8_t* buffer = new uint8_t[input_image.size()];
   // TODO(wuchengli): avoid memcpy. Extend webrtc::VideoDecoder::Decode()
   // interface to take a non-const ptr to the frame and add a method to the
   // frame that will swap buffers with another.
-  memcpy(buffer, input_image._buffer, input_image._length);
-  webrtc::EncodedImage encoded_image(
-      buffer, input_image._length, input_image._length);
+  memcpy(buffer, input_image.data(), input_image.size());
+  webrtc::EncodedImage encoded_image(buffer, input_image.size(),
+                                     input_image.size());
   std::pair<webrtc::EncodedImage, BufferData> buffer_pair =
       std::make_pair(encoded_image, buffer_data);
 
@@ -675,17 +675,17 @@ void RTCVideoDecoder::MovePendingBuffersToDecodeBuffers() {
     // Drop the frame if it comes before Release.
     if (!IsBufferAfterReset(buffer_data.bitstream_buffer_id,
                             reset_bitstream_buffer_id_)) {
-      delete[] input_image._buffer;
+      delete[] input_image.data();
       pending_buffers_.pop_front();
       continue;
     }
     // Get shared memory and save it to decode buffers.
     std::unique_ptr<base::SharedMemory> shm_buffer =
-        GetSHM_Locked(input_image._length);
+        GetSHM_Locked(input_image.size());
     if (!shm_buffer)
       return;
     SaveToDecodeBuffers_Locked(input_image, std::move(shm_buffer), buffer_data);
-    delete[] input_image._buffer;
+    delete[] input_image.data();
     pending_buffers_.pop_front();
   }
 }
