@@ -104,6 +104,7 @@ class AppMenuAdapter extends BaseAdapter {
     private final int mNumMenuItems;
     private final Integer mHighlightedItemId;
     private final float mDpToPx;
+    private View mHighlightedView;
 
     public AppMenuAdapter(AppMenu appMenu, List<MenuItem> menuItems, LayoutInflater inflater,
             Integer highlightedItemId) {
@@ -274,12 +275,19 @@ class AppMenuAdapter extends BaseAdapter {
         }
 
         if (mHighlightedItemId != null && item.getItemId() == mHighlightedItemId) {
+            mHighlightedView = convertView;
             ViewHighlighter.turnOnHighlight(convertView, false);
         } else {
+            if (mHighlightedView == convertView) mHighlightedView = null;
             ViewHighlighter.turnOffHighlight(convertView);
         }
 
         return convertView;
+    }
+
+    /** @return The view currently highlighted. */
+    public View getHighlightedView() {
+        return mHighlightedView;
     }
 
     private void setupCheckBox(AppMenuItemIcon button, final MenuItem item) {
@@ -324,8 +332,10 @@ class AppMenuAdapter extends BaseAdapter {
         button.setOnLongClickListener(v -> mAppMenu.onItemLongClick(item, v));
 
         if (mHighlightedItemId != null && item.getItemId() == mHighlightedItemId) {
+            mHighlightedView = button;
             ViewHighlighter.turnOnHighlight(button, true);
         } else {
+            if (mHighlightedView == button) mHighlightedView = null;
             ViewHighlighter.turnOffHighlight(button);
         }
 
