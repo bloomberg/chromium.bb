@@ -32,21 +32,21 @@
 body {
     margin: 0;
     padding: 0;
-}
-
-body.platform-mac {
-    font-size: 11px;
-    font-family: Menlo, Monaco;
-}
-
-body.platform-windows {
-    font-size: 12px;
-    font-family: Consolas, Lucida Console;
+    font-size: 13px;
+    color: #222;
 }
 
 body.platform-linux {
-    font-size: 11px;
-    font-family: dejavu sans mono;
+    font-family: Roboto, Ubuntu, Arial, sans-serif;
+}
+
+body.platform-mac {
+    color: rgb(48, 57, 66);
+    font-family: '.SFNSDisplay-Regular', 'Helvetica Neue', 'Lucida Grande', sans-serif;
+}
+
+body.platform-windows {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
 }
 
 .fill {
@@ -154,11 +154,8 @@ body.platform-linux {
 
 .tooltip-content {
     background-color: white;
-    font-size: 11px;
-    line-height: 14px;
     padding: 5px 8px;
     border-radius: 3px;
-    color: #333740;
     box-sizing: border-box;
     max-width: calc(100% - 4px);
     z-index: 1;
@@ -178,6 +175,7 @@ body.platform-linux {
 .element-info-header {
     display: flex;
     align-content: stretch;
+    line-height: 16px;
 }
 
 .element-info-body {
@@ -190,6 +188,7 @@ body.platform-linux {
 
 .element-info-row {
     display: flex;
+    line-height: 19px;
 }
 
 .element-info-row > * {
@@ -197,7 +196,7 @@ body.platform-linux {
 }
 
 .element-info-name {
-    color: rgb(200, 0, 0);
+    color: #666;
 }
 
 .element-info-gap {
@@ -241,6 +240,7 @@ body.platform-linux {
 
 .element-description {
     flex: 1 1;
+    font-weight: bold;
     word-wrap: break-word;
     word-break: break-all;
 }
@@ -267,6 +267,16 @@ body.platform-linux {
 .material-class-name, .material-node-id {
     /* Keep this in sync with inspectorSyntaxHighlight.css (.webkit-html-attribute-value) */
     color: rgb(26, 26, 166);
+}
+
+.contrast-text {
+    border-radius: 10px;
+    width: 20px;
+    height: 16px;
+    text-align: center;
+    line-height: 16px;
+    margin-right: 9px;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));
 }
 
 </style>
@@ -475,12 +485,98 @@ function reset(resetData)
     window._gridPainted = false;
 }
 
+/**
+ * @param {!String} hexa
+ * @return {!Array<number>}
+ */
+function parseHexa(hexa) {
+  return hexa.match(/#(\w\w)(\w\w)(\w\w)(\w\w)/).slice(1).map(c => parseInt(c, 16) / 255);
+}
+
+/**
+ * @param {!String} hexa
+ * @return {!Array<number>}
+ */
+function normalizeColorString(hexa) {
+  if (hexa.endsWith("FF"))
+    return hexa.substr(0, 7);
+  const [r, g, b, a] = parseHexa(hexa);
+  return `rgba(${(r * 255).toFixed()}, ${(g * 255).toFixed()}, ${(b * 255).toFixed()}, ${Math.round(a * 100) / 100})`;
+}
+
+/**
+* Calculate the contrast ratio between a foreground and a background color.
+* Returns the ratio to 1, for example for two colors with a contrast ratio of 21:1,
+* this function will return 21.
+* See http://www.w3.org/TR/2008/REC-WCAG20-20081211/#contrast-ratiodef
+* @param {!Array<number>} fgRGBA
+* @param {!Array<number>} bgRGBA
+* @return {number}
+*/
+function contrastRatio(fgRGBA, bgRGBA) {
+    // If we have a semi-transparent background color over an unknown
+    // background, draw the line for the "worst case" scenario: where
+    // the unknown background is the same color as the text.
+    bgRGBA = blendColors(bgRGBA, fgRGBA);
+    const fgLuminance = luminance(blendColors(fgRGBA, bgRGBA));
+    const bgLuminance = luminance(bgRGBA);
+    const result = (Math.max(fgLuminance, bgLuminance) + 0.05) / (Math.min(fgLuminance, bgLuminance) + 0.05);
+    return result.toFixed(2);
+
+    /**
+    * Calculate the luminance of this color using the WCAG algorithm.
+    * See http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef
+    * @param {!Array<number>} rgba
+    * @return {number}
+    */
+    function luminance(rgba) {
+        const rSRGB = rgba[0];
+        const gSRGB = rgba[1];
+        const bSRGB = rgba[2];
+
+        const r = rSRGB <= 0.03928 ? rSRGB / 12.92 : Math.pow(((rSRGB + 0.055) / 1.055), 2.4);
+        const g = gSRGB <= 0.03928 ? gSRGB / 12.92 : Math.pow(((gSRGB + 0.055) / 1.055), 2.4);
+        const b = bSRGB <= 0.03928 ? bSRGB / 12.92 : Math.pow(((bSRGB + 0.055) / 1.055), 2.4);
+
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    /**
+    * Combine the two given color according to alpha blending.
+    * @param {!Array<number>} fgRGBA
+    * @param {!Array<number>} bgRGBA
+    * @return {!Array<number>}
+    */
+    function blendColors(fgRGBA, bgRGBA) {
+        const alpha = fgRGBA[3];
+        return [
+          ((1 - alpha) * bgRGBA[0]) + (alpha * fgRGBA[0]),
+          ((1 - alpha) * bgRGBA[1]) + (alpha * fgRGBA[1]),
+          ((1 - alpha) * bgRGBA[2]) + (alpha * fgRGBA[2]),
+          alpha + (bgRGBA[3] * (1 - alpha))
+        ];
+    }
+}
+
+function computeIsLargeFont(contrast) {
+    const boldWeights = new Set(['bold', 'bolder', '600', '700', '800', '900']);
+
+    const fontSizePx = parseFloat(contrast.fontSize.replace('px', ''));
+    const isBold = boldWeights.has(contrast.fontWeight);
+
+    const fontSizePt = fontSizePx * 72 / 96;
+    if (isBold)
+      return fontSizePt >= 14;
+    else
+      return fontSizePt >= 18;
+}
+
 function _createElementDescription(elementInfo)
 {
     const elementInfoElement = createElement("div", "element-info");
     const elementInfoHeaderElement = elementInfoElement.createChild("div", "element-info-header");
     const descriptionElement = elementInfoHeaderElement.createChild("div", "element-description monospace");
-    const tagNameElement = descriptionElement.createChild("b").createChild("span", "material-tag-name");
+    const tagNameElement = descriptionElement.createChild("span", "material-tag-name");
     tagNameElement.textContent = elementInfo.tagName;
     const nodeIdElement = descriptionElement.createChild("span", "material-node-id");
     nodeIdElement.textContent = elementInfo.idValue ? "#" + elementInfo.idValue : "";
@@ -494,43 +590,70 @@ function _createElementDescription(elementInfo)
     dimensionsElement.createTextChild("\u00d7");
     dimensionsElement.createChild("span", "material-node-height").textContent = Math.round(elementInfo.nodeHeight * 100) / 100;
 
-    elementInfo.style = elementInfo.style || {};
-    const filteredStyles = {};
-    for (const style in elementInfo.style) {
-        const value = elementInfo.style[style];
-        if (style === "margin" && value === "0px")
-            continue;
-        if (style === "padding" && value === "0px")
-            continue;
-        if (value === "normal" || value === "rgba(0, 0, 0, 0)")
-            continue;
-        filteredStyles[style] = value;
+    const style = elementInfo.style || {};
+    let elementInfoBodyElement;
+
+    const color = style["color"];
+    if (color && color !== "#00000000")
+        addColorRow("Color", color);
+
+    const fontFamily = style["font-family"];
+    const fontSize = style["font-size"];
+    if (fontFamily && fontSize !== "0px")
+        addTextRow("Font", `${fontSize} ${fontFamily}`.trimEnd(20));
+
+    const bgcolor = style["background-color"];
+    if (bgcolor && bgcolor !== "#00000000")
+        addColorRow("Background", bgcolor);
+
+    const margin = style["margin"];
+    if (margin && margin !== "0px")
+        addTextRow("Margin", margin);
+
+    const padding = style["padding"];
+    if (padding && padding !== "0px")
+        addTextRow("Padding", padding);
+
+    const cbgColor = elementInfo.contrast ? elementInfo.contrast.backgroundColor : null;
+    if (color && color !== "#00000000" && cbgColor && cbgColor !== "#00000000")
+        addContrastRow(style["color"], elementInfo.contrast);
+
+    function addRow(name) {
+        if (!elementInfoBodyElement)
+            elementInfoBodyElement = elementInfoElement.createChild("div", "element-info-body")
+        const rowElement = elementInfoBodyElement.createChild("div", "element-info-row");
+        const nameElement = rowElement.createChild("div", "element-info-name");
+        nameElement.textContent = name;
+        rowElement.createChild("div", "element-info-gap");
+        return rowElement.createChild("div", "element-info-value");
     }
 
-    if (Object.keys(filteredStyles).length) {
-        const elementInfoBodyElement = elementInfoElement.createChild("div", "element-info-body");
-        for (const style in filteredStyles) {
-            let value = filteredStyles[style];
-            if (style === "margin" && value === "0px")
-                continue;
-            if (style === "padding" && value === "0px")
-                continue;
-            if (value === "normal" || value === "rgba(0, 0, 0, 0)")
-                continue;
-            const rowElement = elementInfoBodyElement.createChild("div", "element-info-row");
-            const nameElement = rowElement.createChild("div", "element-info-name");
-            nameElement.textContent = style;
-            rowElement.createChild("div", "element-info-gap").textContent = ":";
-            const valueElement = rowElement.createChild("div", "element-info-value");
-            if (style === "color" || style === "background-color") {
-                const swatch = valueElement.createChild("div", "color-swatch");
-                const inner = swatch.createChild("div", "color-swatch-inner");
-                inner.style.backgroundColor = value;
-            }
-            if (style === "font-family" && value.length > 20)
-                value = value.trimEnd(20);
-            valueElement.createTextChild(value);
-        }
+    function addTextRow(name, value) {
+        addRow(name).createTextChild(value);
+    }
+
+    function addColorRow(name, color) {
+        const valueElement = addRow(name);
+        const swatch = valueElement.createChild("div", "color-swatch");
+        const inner = swatch.createChild("div", "color-swatch-inner");
+        inner.style.backgroundColor = color;
+        valueElement.createTextChild(normalizeColorString(color));
+    }
+
+    function addContrastRow(fgColor, contrast) {
+        const ratio = contrastRatio(parseHexa(fgColor), parseHexa(contrast.backgroundColor));
+        const threshold = computeIsLargeFont(contrast) ? 3.0 : 4.5;
+        if (ratio >= threshold)
+            return;
+        const valueElement = addRow("Contrast");
+        const sampleText = valueElement.createChild("div", "contrast-text");
+        sampleText.style.color = fgColor;
+        sampleText.style.backgroundColor = contrast.backgroundColor;
+        sampleText.textContent = "Aa";
+        const icon = valueElement.createChild("div");
+        icon.textContent = "\u{1F6AB}";
+        icon.style.color = "red";
+        valueElement.createTextChild(ratio);
     }
 
     return elementInfoElement;
@@ -927,6 +1050,7 @@ Number.constrain = function(num, min, max) {
 };
 
 function test() {
+    document.body.classList.add("platform-mac");
     reset({
         viewportSize: {width: 800, height: 600},
         deviceScaleFactor: 1,
@@ -943,7 +1067,8 @@ function test() {
                 className:"class",
                 nodeWidth: 800,
                 nodeHeight: 600,
-                style: {"color": "red", "background-color": "rgba(10, 10, 10, 0.1)"}
+                style: {"color": "#FFFFFFFF", "background-color": "#FFFF107F", "font-family": "serif", "font-size": "12px", "font-weight": "normal"},
+                contrast: { fontWidth: "normal", fontSize: "12px", backgroundColor: "#FF0000FF" }
             }
         });
 }

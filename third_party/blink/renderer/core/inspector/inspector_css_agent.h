@@ -109,6 +109,11 @@ class CORE_EXPORT InspectorCSSAgent final
   static void CollectAllDocumentStyleSheets(Document*,
                                             HeapVector<Member<CSSStyleSheet>>&);
 
+  static void GetBackgroundColors(Element* element,
+                                  Vector<Color>* background_colors,
+                                  String* computed_font_size,
+                                  String* computed_font_weight);
+
   InspectorCSSAgent(InspectorDOMAgent*,
                     InspectedFrames*,
                     InspectorNetworkAgent*,
@@ -204,8 +209,7 @@ class CORE_EXPORT InspectorCSSAgent final
       int node_id,
       protocol::Maybe<protocol::Array<String>>* background_colors,
       protocol::Maybe<String>* computed_font_size,
-      protocol::Maybe<String>* computed_font_weight,
-      protocol::Maybe<String>* computed_body_font_size) override;
+      protocol::Maybe<String>* computed_font_weight) override;
 
   protocol::Response startRuleUsageTracking() override;
   protocol::Response takeCoverageDelta(

@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
+#include "third_party/blink/renderer/core/inspector/inspector_css_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_overlay_host.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -530,7 +531,8 @@ Response InspectorOverlayAgent::getHighlightObjectForTest(
   Response response = dom_agent_->AssertNode(node_id, node);
   if (!response.isSuccess())
     return response;
-  InspectorHighlight highlight(node, InspectorHighlight::DefaultConfig(), true);
+  InspectorHighlight highlight(node, InspectorHighlight::DefaultConfig(),
+                               InspectorHighlightContrastInfo(), true);
   *result = highlight.AsProtocolValue();
   return Response::OK();
 }
@@ -667,6 +669,7 @@ void InspectorOverlayAgent::InnerHideHighlight() {
   highlight_node_.Clear();
   event_target_node_.Clear();
   highlight_quad_.reset();
+  highlight_node_contrast_ = InspectorHighlightContrastInfo();
   ScheduleUpdate();
 }
 
@@ -679,6 +682,22 @@ void InspectorOverlayAgent::InnerHighlightNode(
   highlight_node_ = node;
   event_target_node_ = event_target;
   omit_tooltip_ = omit_tooltip;
+  highlight_node_contrast_ = InspectorHighlightContrastInfo();
+
+  if (node->IsElementNode()) {
+    // Compute the color contrast information here.
+    Vector<Color> bgcolors;
+    String font_size;
+    String font_weight;
+    InspectorCSSAgent::GetBackgroundColors(ToElement(node), &bgcolors,
+                                           &font_size, &font_weight);
+    if (bgcolors.size() == 1) {
+      highlight_node_contrast_.font_size = font_size;
+      highlight_node_contrast_.font_weight = font_weight;
+      highlight_node_contrast_.background_color = bgcolors[0];
+    }
+  }
+
   ScheduleUpdate();
 }
 
@@ -765,7 +784,8 @@ void InspectorOverlayAgent::DrawNodeHighlight() {
   if (elements && !exception_state.HadException()) {
     for (unsigned i = 0; i < elements->length(); ++i) {
       Element* element = elements->item(i);
-      InspectorHighlight highlight(element, node_highlight_config_, false);
+      InspectorHighlight highlight(element, node_highlight_config_,
+                                   highlight_node_contrast_, false);
       std::unique_ptr<protocol::DictionaryValue> highlight_json =
           highlight.AsProtocolValue();
       EvaluateInOverlay("drawHighlight", std::move(highlight_json));
@@ -778,7 +798,7 @@ void InspectorOverlayAgent::DrawNodeHighlight() {
       highlight_node_->GetLayoutObject() &&
       highlight_node_->GetDocument().GetFrame();
   InspectorHighlight highlight(highlight_node_.Get(), node_highlight_config_,
-                               append_element_info);
+                               highlight_node_contrast_, append_element_info);
   if (event_target_node_) {
     highlight.AppendEventTargetQuads(event_target_node_.Get(),
                                      node_highlight_config_);
