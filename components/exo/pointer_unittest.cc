@@ -620,7 +620,7 @@ TEST_F(MAYBE_PointerTest, IgnorePointerEventDuringModal) {
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(5, 5))));
   surface2->Attach(buffer2.get());
   surface2->Commit();
-  ash::wm::CenterWindow(surface2->window());
+  ash::wm::CenterWindow(shell_surface2->GetWidget()->GetNativeWindow());
   gfx::Point location2 = surface2->window()->GetBoundsInScreen().origin();
 
   // Make the window modal.

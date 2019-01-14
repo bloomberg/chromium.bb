@@ -175,9 +175,10 @@ void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
   // Update the restore bounds to make it relative to the display.
   wm::WindowState* state = wm::GetWindowState(window);
   gfx::Rect restore_bounds;
-  const bool has_restore_bounds = state->HasRestoreBounds();
+  const bool has_restore_bounds = state && state->HasRestoreBounds();
 
-  const bool update_bounds = state->IsNormalOrSnapped() || state->IsMinimized();
+  const bool update_bounds =
+      state && (state->IsNormalOrSnapped() || state->IsMinimized());
   gfx::Rect work_area_in_new_parent =
       screen_util::GetDisplayWorkAreaBoundsInParent(new_parent);
 

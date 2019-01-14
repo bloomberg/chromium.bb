@@ -66,26 +66,29 @@ BrowserFrameAsh::BrowserFrameAsh(BrowserFrame* browser_frame,
   DCHECK(!features::IsUsingWindowService());
   GetNativeWindow()->SetName("BrowserFrameAsh");
   Browser* browser = browser_view->browser();
-  ash::wm::WindowState* window_state =
-      ash::wm::GetWindowState(GetNativeWindow());
-  window_state->SetDelegate(std::unique_ptr<ash::wm::WindowStateDelegate>(
-      new BrowserWindowStateDelegate(browser)));
 
   // Turn on auto window management if we don't need an explicit bounds.
   // This way the requested bounds are honored.
   if (!browser->bounds_overridden() && !browser->is_session_restore())
     SetWindowAutoManaged();
-
-  // For legacy reasons v1 apps (like Secure Shell) are allowed to consume keys
-  // like brightness, volume, etc. Otherwise these keys are handled by the
-  // Ash window manager.
-  window_state->SetCanConsumeSystemKeys(browser->is_app());
 }
 
 BrowserFrameAsh::~BrowserFrameAsh() {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrameAsh, views::NativeWidgetAura overrides:
+
+void BrowserFrameAsh::OnWidgetInitDone() {
+  Browser* browser = browser_view_->browser();
+  ash::wm::WindowState* window_state =
+      ash::wm::GetWindowState(GetNativeWindow());
+  window_state->SetDelegate(
+      std::make_unique<BrowserWindowStateDelegate>(browser));
+  // For legacy reasons v1 apps (like Secure Shell) are allowed to consume keys
+  // like brightness, volume, etc. Otherwise these keys are handled by the
+  // Ash window manager.
+  window_state->SetCanConsumeSystemKeys(browser->is_app());
+}
 
 void BrowserFrameAsh::OnWindowTargetVisibilityChanged(bool visible) {
   if (visible) {

@@ -351,7 +351,6 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
   window->set_id(id);
   window->SetType(type);
   window->Init(ui::LAYER_TEXTURED);
-  window->Show();
 
   if (bounds.IsEmpty()) {
     ParentWindowInPrimaryRootWindow(window);
@@ -364,6 +363,8 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
     window->SetBounds(gfx::Rect(origin, bounds.size()));
     aura::client::ParentWindowWithContext(window, root, bounds);
   }
+  window->Show();
+
   window->SetProperty(aura::client::kResizeBehaviorKey,
                       ws::mojom::kResizeBehaviorCanMaximize |
                           ws::mojom::kResizeBehaviorCanMinimize |

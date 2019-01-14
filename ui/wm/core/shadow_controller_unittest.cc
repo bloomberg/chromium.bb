@@ -32,8 +32,7 @@ class ShadowControllerTest : public aura::test::AuraTestBase {
   void SetUp() override {
     AuraTestBase::SetUp();
     new wm::DefaultActivationClient(root_window());
-    ActivationClient* activation_client = GetActivationClient(root_window());
-    shadow_controller_.reset(new ShadowController(activation_client, nullptr));
+    InstallShadowController(nullptr);
   }
   void TearDown() override {
     shadow_controller_.reset();
@@ -47,6 +46,13 @@ class ShadowControllerTest : public aura::test::AuraTestBase {
     DCHECK(window);
     DCHECK(window->GetRootWindow());
     GetActivationClient(window->GetRootWindow())->ActivateWindow(window);
+  }
+
+  void InstallShadowController(
+      std::unique_ptr<ShadowControllerDelegate> delegate) {
+    ActivationClient* activation_client = GetActivationClient(root_window());
+    shadow_controller_ = std::make_unique<ShadowController>(
+        activation_client, std::move(delegate));
   }
 
  private:
@@ -223,6 +229,39 @@ TEST_F(ShadowControllerTest, TransientParentKeepsActiveShadow) {
 
   // window1 is now inactive, but its shadow should still appear active.
   EXPECT_EQ(kShadowElevationActiveWindow, shadow1->desired_elevation());
+}
+
+namespace {
+
+class TestShadowControllerDelegate : public wm::ShadowControllerDelegate {
+ public:
+  TestShadowControllerDelegate() {}
+  ~TestShadowControllerDelegate() override {}
+
+  bool ShouldShowShadowForWindow(const aura::Window* window) override {
+    return window->parent();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestShadowControllerDelegate);
+};
+
+}  // namespace
+
+TEST_F(ShadowControllerTest, UpdateShadowWhenAddedToParent) {
+  InstallShadowController(std::make_unique<TestShadowControllerDelegate>());
+  std::unique_ptr<aura::Window> window1(new aura::Window(NULL));
+  window1->SetType(aura::client::WINDOW_TYPE_NORMAL);
+  window1->Init(ui::LAYER_TEXTURED);
+  window1->SetBounds(gfx::Rect(10, 20, 300, 400));
+  window1->Show();
+  EXPECT_FALSE(ShadowController::GetShadowForWindow(window1.get()));
+
+  ParentWindow(window1.get());
+
+  ASSERT_TRUE(ShadowController::GetShadowForWindow(window1.get()));
+  EXPECT_TRUE(
+      ShadowController::GetShadowForWindow(window1.get())->layer()->visible());
 }
 
 }  // namespace wm

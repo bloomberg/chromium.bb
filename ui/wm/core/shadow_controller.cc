@@ -86,6 +86,8 @@ class ShadowController::Impl :
   void OnWindowInitialized(aura::Window* window) override;
 
   // aura::WindowObserver overrides:
+  void OnWindowParentChanged(aura::Window* window,
+                             aura::Window* parent) override;
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override;
@@ -162,6 +164,12 @@ void ShadowController::Impl::OnWindowInitialized(aura::Window* window) {
   DCHECK(!window->parent());
   DCHECK(!window->TargetVisibility());
   observer_manager_.Add(window);
+}
+
+void ShadowController::Impl::OnWindowParentChanged(aura::Window* window,
+                                                   aura::Window* parent) {
+  if (parent && window->IsVisible())
+    HandlePossibleShadowVisibilityChange(window);
 }
 
 void ShadowController::Impl::OnWindowPropertyChanged(aura::Window* window,

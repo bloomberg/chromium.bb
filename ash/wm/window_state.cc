@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/focus_cycler.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
@@ -52,6 +53,15 @@ bool IsTabletModeEnabled() {
   return Shell::Get()
       ->tablet_mode_controller()
       ->IsTabletModeWindowManagerEnabled();
+}
+
+bool IsToplevelContainer(aura::Window* window) {
+  DCHECK(window);
+  int container_id = window->id();
+  // ArcVirtualKeyboard is implemented as a exo window which requires
+  // WindowState to manage its state.
+  return IsActivatableShellWindowId(container_id) ||
+         container_id == kShellWindowId_ArcVirtualKeyboardContainer;
 }
 
 // A tentative class to set the bounds on the window.
@@ -221,7 +231,7 @@ bool WindowState::IsActive() const {
 }
 
 bool WindowState::IsUserPositionable() const {
-  return window_->type() == aura::client::WINDOW_TYPE_NORMAL;
+  return wm::IsWindowUserPositionable(window_);
 }
 
 bool WindowState::HasMaximumWidthOrHeight() const {
@@ -713,12 +723,22 @@ WindowState* GetActiveWindowState() {
 WindowState* GetWindowState(aura::Window* window) {
   if (!window)
     return nullptr;
-  WindowState* settings = window->GetProperty(kWindowStateKey);
-  if (!settings) {
-    settings = new WindowState(window);
-    window->SetProperty(kWindowStateKey, settings);
-  }
-  return settings;
+
+  WindowState* state = window->GetProperty(kWindowStateKey);
+  if (state)
+    return state;
+
+  if (window->type() == aura::client::WINDOW_TYPE_CONTROL)
+    return nullptr;
+
+  DCHECK(window->parent());
+
+  if (!IsToplevelContainer(window->parent()))
+    return nullptr;
+
+  state = new WindowState(window);
+  window->SetProperty(kWindowStateKey, state);
+  return state;
 }
 
 const WindowState* GetWindowState(const aura::Window* window) {

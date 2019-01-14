@@ -44,9 +44,12 @@ aura::Window* GetWindowForFullscreenMode(aura::Window* context) {
   }
   while (topmost_window) {
     if (GetWindowState(topmost_window)->IsFullscreen() ||
-        GetWindowState(topmost_window)->IsPinned())
+        GetWindowState(topmost_window)->IsPinned()) {
       return topmost_window;
+    }
     topmost_window = ::wm::GetTransientParent(topmost_window);
+    if (topmost_window)
+      topmost_window = topmost_window->GetToplevelWindow();
   }
   return nullptr;
 }
