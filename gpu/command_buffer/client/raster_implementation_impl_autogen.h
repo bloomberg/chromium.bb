@@ -13,28 +13,6 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_RASTER_IMPLEMENTATION_IMPL_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_CLIENT_RASTER_IMPLEMENTATION_IMPL_AUTOGEN_H_
 
-void RasterImplementation::DeleteTextures(GLsizei n, const GLuint* textures) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDeleteTextures(" << n << ", "
-                     << static_cast<const void*>(textures) << ")");
-  GPU_CLIENT_LOG_CODE_BLOCK({
-    for (GLsizei i = 0; i < n; ++i) {
-      GPU_CLIENT_LOG("  " << i << ": " << textures[i]);
-    }
-  });
-  GPU_CLIENT_DCHECK_CODE_BLOCK({
-    for (GLsizei i = 0; i < n; ++i) {
-      DCHECK(textures[i] != 0);
-    }
-  });
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDeleteTextures", "n < 0");
-    return;
-  }
-  DeleteTexturesHelper(n, textures);
-  CheckGLError();
-}
-
 void RasterImplementation::GenQueriesEXT(GLsizei n, GLuint* queries) {
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGenQueriesEXT(" << n << ", "
                      << static_cast<const void*>(queries) << ")");
@@ -84,32 +62,6 @@ void RasterImplementation::LoseContextCHROMIUM(GLenum current, GLenum other) {
                      << GLES2Util::GetStringResetStatus(current) << ", "
                      << GLES2Util::GetStringResetStatus(other) << ")");
   helper_->LoseContextCHROMIUM(current, other);
-  CheckGLError();
-}
-
-void RasterImplementation::CopySubTexture(GLuint source_id,
-                                          GLuint dest_id,
-                                          GLint xoffset,
-                                          GLint yoffset,
-                                          GLint x,
-                                          GLint y,
-                                          GLsizei width,
-                                          GLsizei height) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCopySubTexture(" << source_id
-                     << ", " << dest_id << ", " << xoffset << ", " << yoffset
-                     << ", " << x << ", " << y << ", " << width << ", "
-                     << height << ")");
-  if (width < 0) {
-    SetGLError(GL_INVALID_VALUE, "glCopySubTexture", "width < 0");
-    return;
-  }
-  if (height < 0) {
-    SetGLError(GL_INVALID_VALUE, "glCopySubTexture", "height < 0");
-    return;
-  }
-  helper_->CopySubTexture(source_id, dest_id, xoffset, yoffset, x, y, width,
-                          height);
   CheckGLError();
 }
 
