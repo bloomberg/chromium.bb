@@ -119,9 +119,15 @@ class SearchBoxFocusHost : public views::View {
   DISALLOW_COPY_AND_ASSIGN(SearchBoxFocusHost);
 };
 
-SkColor GetBackgroundShieldColor(const std::vector<SkColor>& prominent_colors) {
+SkColor GetBackgroundShieldColor(const std::vector<SkColor>& prominent_colors,
+                                 float color_opacity) {
+  const U8CPU sk_opacity_value = static_cast<U8CPU>(255 * color_opacity);
+
+  const SkColor default_color = SkColorSetA(
+      app_list::AppListView::kDefaultBackgroundColor, sk_opacity_value);
+
   if (prominent_colors.empty())
-    return app_list::AppListView::kDefaultBackgroundColor;
+    return default_color;
 
   DCHECK_EQ(static_cast<size_t>(ColorProfileType::NUM_OF_COLOR_PROFILES),
             prominent_colors.size());
@@ -129,10 +135,13 @@ SkColor GetBackgroundShieldColor(const std::vector<SkColor>& prominent_colors) {
   const SkColor dark_muted =
       prominent_colors[static_cast<int>(ColorProfileType::DARK_MUTED)];
   if (SK_ColorTRANSPARENT == dark_muted)
-    return app_list::AppListView::kDefaultBackgroundColor;
-  return color_utils::GetResultingPaintColor(
-      SkColorSetA(SK_ColorBLACK, AppListView::kAppListColorDarkenAlpha),
-      dark_muted);
+    return default_color;
+
+  return SkColorSetA(
+      color_utils::GetResultingPaintColor(
+          SkColorSetA(SK_ColorBLACK, AppListView::kAppListColorDarkenAlpha),
+          dark_muted),
+      sk_opacity_value);
 }
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kExcludeWindowFromEventHandling, false);
@@ -256,6 +265,8 @@ class AppListBackgroundShieldView : public views::View {
     flags.setColor(color_);
     canvas->DrawRoundRect(GetContentsBounds(), corner_radius_, flags);
   }
+
+  SkColor GetColorForTest() const { return color_; }
 
  private:
   SkColor color_;
@@ -485,14 +496,17 @@ views::View* AppListView::GetAppListBackgroundShieldForTest() {
   return app_list_background_shield_;
 }
 
+SkColor AppListView::GetAppListBackgroundShieldColorForTest() {
+  DCHECK(app_list_background_shield_);
+  return app_list_background_shield_->GetColorForTest();
+}
+
 void AppListView::InitContents(int initial_apps_page) {
   // The shield view that colors/blurs the background of the app list and
   // makes it transparent.
   bool use_background_blur = is_background_blur_enabled_ && !is_tablet_mode();
   app_list_background_shield_ = new AppListBackgroundShieldView(
       use_background_blur ? ui::LAYER_SOLID_COLOR : ui::LAYER_TEXTURED);
-  app_list_background_shield_->layer()->SetOpacity(
-      is_background_blur_enabled_ ? kAppListOpacityWithBlur : kAppListOpacity);
   SetBackgroundShieldColor();
   if (use_background_blur) {
     app_list_background_shield_mask_ = views::Painter::CreatePaintedLayer(
@@ -1119,8 +1133,8 @@ void AppListView::OnTabletModeChanged(bool started) {
   if (parent_window && !parent_window->Contains(window))
     parent_window->AddChild(window);
 
-  // Update background opacity.
-  app_list_background_shield_->layer()->SetOpacity(0.f);
+  // Update background color opacity.
+  SetBackgroundShieldColor();
 
   // Update background blur.
   if (is_background_blur_enabled_)
@@ -1350,7 +1364,7 @@ void AppListView::UpdateYPositionAndOpacity(int y_position_in_screen,
   }
 
   SetIsInDrag(true);
-  background_opacity_ = background_opacity;
+  background_opacity_in_drag_ = background_opacity;
   gfx::Rect new_widget_bounds = fullscreen_widget_->GetWindowBoundsInScreen();
   app_list_y_position_in_screen_ = std::min(
       std::max(y_position_in_screen, GetDisplayNearestView().work_area().y()),
@@ -1441,10 +1455,7 @@ void AppListView::UpdateChildViewsYPositionAndOpacity() {
   UpdateAppListBackgroundYPosition();
 
   // Update the opacity of the background shield.
-  const float shield_opacity =
-      is_background_blur_enabled_ ? kAppListOpacityWithBlur : kAppListOpacity;
-  app_list_background_shield_->layer()->SetOpacity(
-      is_in_drag_ ? background_opacity_ : shield_opacity);
+  SetBackgroundShieldColor();
 
   search_box_view_->UpdateOpacity();
   app_list_main_view_->contents_view()->UpdateYPositionAndOpacity();
@@ -1551,13 +1562,28 @@ void AppListView::SetBackgroundShieldColor() {
   if (!app_list_background_shield_)
     return;
 
+  // Opacity is set on the color instead of the layer because changing opacity
+  // of the layer changes opacity of the blur effect, which is not desired.
+  float color_opacity = kAppListOpacity;
+
+  if (is_tablet_mode_) {
+    // The Homecher background should have an opacity of 0.
+    color_opacity = 0;
+  } else if (is_in_drag_) {
+    // Allow a custom opacity while the AppListView is dragging to show a
+    // gradual opacity change when dragging from the shelf.
+    color_opacity = background_opacity_in_drag_;
+  } else if (is_background_blur_enabled_) {
+    color_opacity = kAppListOpacityWithBlur;
+  }
+
   GetWallpaperProminentColors(base::BindOnce(
-      [](base::WeakPtr<AppListView> self,
+      [](base::WeakPtr<AppListView> self, float color_opacity,
          const std::vector<SkColor>& prominent_colors) {
         self->app_list_background_shield_->UpdateColor(
-            GetBackgroundShieldColor(prominent_colors));
+            GetBackgroundShieldColor(prominent_colors, color_opacity));
       },
-      weak_ptr_factory_.GetWeakPtr()));
+      weak_ptr_factory_.GetWeakPtr(), color_opacity));
 }
 
 void AppListView::RecordFolderMetrics() {

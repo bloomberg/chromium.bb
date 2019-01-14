@@ -244,6 +244,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
 
   views::View* GetAppListBackgroundShieldForTest();
 
+  SkColor GetAppListBackgroundShieldColorForTest();
+
  private:
   // A widget observer that is responsible for keeping the AppListView state up
   // to date on closing.
@@ -367,8 +369,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // Y position of the app list in screen space coordinate during dragging.
   int app_list_y_position_in_screen_ = 0;
 
-  // The opacity of app list background during dragging.
-  float background_opacity_ = 0.f;
+  // The opacity of app list background during dragging. This ensures a gradual
+  // opacity shift from the shelf opacity while dragging to show the AppListView
+  // from the shelf.
+  float background_opacity_in_drag_ = 0.f;
 
   // The location of initial gesture event in screen coordinates.
   gfx::Point initial_drag_point_;
