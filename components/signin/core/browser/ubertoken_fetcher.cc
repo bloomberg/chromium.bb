@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "google_apis/gaia/ubertoken_fetcher.h"
+#include "components/signin/core/browser/ubertoken_fetcher.h"
 
 #include <vector>
 
@@ -24,6 +24,8 @@ std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
                                            url_loader_factory);
 }
 }  // namespace
+
+namespace signin {
 
 const int UbertokenFetcher::kMaxRetries = 3;
 
@@ -150,3 +152,5 @@ void UbertokenFetcher::ExchangeTokens() {
   gaia_auth_fetcher_->StartTokenFetchForUberAuthExchange(
       access_token_, is_bound_to_channel_id_);
 }
+
+}  // namespace signin

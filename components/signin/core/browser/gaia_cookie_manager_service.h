@@ -30,7 +30,6 @@
 class GaiaAuthFetcher;
 class GaiaCookieRequest;
 class GoogleServiceAuthError;
-class UbertokenFetcher;
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -38,6 +37,9 @@ class SimpleURLLoader;
 }  // namespace network
 
 namespace signin {
+
+class UbertokenFetcher;
+
 // The maximum number of retries for a fetcher used in this class.
 constexpr int kMaxFetcherRetries = 8;
 
@@ -386,7 +388,7 @@ class GaiaCookieManagerService : public KeyedService,
   OAuth2TokenService* token_service_;
   SigninClient* signin_client_;
   std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
-  std::unique_ptr<UbertokenFetcher> uber_token_fetcher_;
+  std::unique_ptr<signin::UbertokenFetcher> uber_token_fetcher_;
   ExternalCcResultFetcher external_cc_result_fetcher_;
 
   // If the GaiaAuthFetcher or SimpleURLLoader fails, retry with exponential
