@@ -45,7 +45,8 @@ bool ShouldIncludeForRequestUrl(NSHTTPCookie* cookie, const GURL& url) {
       net::CanonicalCookieFromSystemCookie(cookie, base::Time());
   net::CookieOptions options;
   options.set_include_httponly();
-  return canonical_cookie.IncludeForRequestURL(url, options);
+  return canonical_cookie.IncludeForRequestURL(url, options) ==
+         net::CanonicalCookie::CookieInclusionStatus::INCLUDE;
 }
 
 // Prioritizes queued WKHTTPCookieStore completion handlers to run as soon as

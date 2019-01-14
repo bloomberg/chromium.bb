@@ -141,12 +141,25 @@ class NET_EXPORT CanonicalCookie {
   // section 5.1.3 of RFC 6265.
   bool IsDomainMatch(const std::string& host) const;
 
-  // Returns true if the cookie should be included for the given request |url|.
-  // HTTP only cookies can be filter by using appropriate cookie |options|.
-  // PLEASE NOTE that this method does not check whether a cookie is expired or
-  // not!
-  bool IncludeForRequestURL(const GURL& url,
-                            const CookieOptions& options) const;
+  // This enum represents if a cookie was included or excluded, and if excluded
+  // why.
+  enum class CookieInclusionStatus {
+    INCLUDE = 0,
+    EXCLUDE_HTTP_ONLY,
+    EXCLUDE_SECURE_ONLY,
+    EXCLUDE_DOMAIN_MISMATCH,
+    EXCLUDE_NOT_ON_PATH,
+    EXCLUDE_SAMESITE_STRICT,
+    EXCLUDE_SAMESITE_LAX
+  };
+
+  // Returns if the cookie should be included (and if not, why) for the given
+  // request |url| using the CookieInclusionStatus enum. HTTP only cookies can
+  // be filter by using appropriate cookie |options|. PLEASE NOTE that this
+  // method does not check whether a cookie is expired or not!
+  CookieInclusionStatus IncludeForRequestURL(
+      const GURL& url,
+      const CookieOptions& options) const;
 
   std::string DebugString() const;
 
