@@ -95,11 +95,6 @@ class MockSuggestionsHandler
 
   DISALLOW_COPY_AND_ASSIGN(MockSuggestionsHandler);
 };
-
-int GetCurrentMajorVersion() {
-  return atoi(version_info::GetVersionNumber().c_str());
-}
-
 }  // namespace
 
 class AutocompleteHistoryManagerTest : public testing::Test {
@@ -111,7 +106,7 @@ class AutocompleteHistoryManagerTest : public testing::Test {
 
     // Mock such that we don't trigger the cleanup.
     prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
-                       GetCurrentMajorVersion());
+                       CHROME_VERSION_MAJOR);
 
     // Set time to some arbitrary date.
     test_clock.SetNow(base::Time::FromDoubleT(1546889367));
@@ -363,7 +358,7 @@ TEST_F(AutocompleteHistoryManagerTest, Init_TriggersCleanup) {
   scoped_features.InitAndEnableFeature(
       features::kAutocompleteRetentionPolicyEnabled);
   prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
-                     GetCurrentMajorVersion() - 1);
+                     CHROME_VERSION_MAJOR - 1);
 
   EXPECT_CALL(*web_data_service_,
               RemoveExpiredAutocompleteEntries(autocomplete_manager_.get()))
@@ -379,7 +374,7 @@ TEST_F(AutocompleteHistoryManagerTest, Init_OTR_Not_TriggersCleanup) {
   scoped_features.InitAndEnableFeature(
       features::kAutocompleteRetentionPolicyEnabled);
   prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
-                     GetCurrentMajorVersion() - 1);
+                     CHROME_VERSION_MAJOR - 1);
 
   EXPECT_CALL(*web_data_service_,
               RemoveExpiredAutocompleteEntries(autocomplete_manager_.get()))
@@ -396,7 +391,7 @@ TEST_F(AutocompleteHistoryManagerTest,
   scoped_features.InitAndDisableFeature(
       features::kAutocompleteRetentionPolicyEnabled);
   prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
-                     GetCurrentMajorVersion() - 1);
+                     CHROME_VERSION_MAJOR - 1);
 
   EXPECT_CALL(*web_data_service_,
               RemoveExpiredAutocompleteEntries(autocomplete_manager_.get()))
@@ -413,7 +408,7 @@ TEST_F(AutocompleteHistoryManagerTest,
   scoped_features.InitAndEnableFeature(
       features::kAutocompleteRetentionPolicyEnabled);
   prefs_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
-                     GetCurrentMajorVersion());
+                     CHROME_VERSION_MAJOR);
 
   EXPECT_CALL(*web_data_service_,
               RemoveExpiredAutocompleteEntries(autocomplete_manager_.get()))
@@ -1024,7 +1019,7 @@ TEST_F(AutocompleteHistoryManagerTest, EntriesCleanup_Success) {
       1, std::make_unique<WDResult<size_t>>(AUTOFILL_CLEANUP_RESULT,
                                             cleanup_result));
 
-  EXPECT_EQ(GetCurrentMajorVersion(),
+  EXPECT_EQ(CHROME_VERSION_MAJOR,
             prefs_->GetInteger(prefs::kAutocompleteLastVersionRetentionPolicy));
   histogram_tester.ExpectBucketCount("Autocomplete.Cleanup", cleanup_result, 1);
 }

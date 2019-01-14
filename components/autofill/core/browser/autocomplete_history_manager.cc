@@ -40,10 +40,6 @@ bool IsTextField(const FormFieldData& field) {
       field.form_control_type == "email";
 }
 
-int GetCurrentMajorVersion() {
-  return atoi(version_info::GetVersionNumber().c_str());
-}
-
 }  // namespace
 
 void AutocompleteHistoryManager::UMARecorder::OnGetAutocompleteSuggestions(
@@ -127,13 +123,11 @@ void AutocompleteHistoryManager::Init(
   if (!is_off_the_record_ &&
       base::FeatureList::IsEnabled(
           autofill::features::kAutocompleteRetentionPolicyEnabled)) {
-    int current_major_version = GetCurrentMajorVersion();
-
     // Upon successful cleanup, the last cleaned-up major version is being
     // stored in this pref.
     int last_cleaned_version = pref_service_->GetInteger(
         prefs::kAutocompleteLastVersionRetentionPolicy);
-    if (current_major_version > last_cleaned_version) {
+    if (CHROME_VERSION_MAJOR > last_cleaned_version) {
       // Trigger the cleanup.
       profile_database_->RemoveExpiredAutocompleteEntries(this);
     }
@@ -341,7 +335,7 @@ void AutocompleteHistoryManager::OnAutofillCleanupReturned(
 
   // Cleanup was successful, update the latest run milestone.
   pref_service_->SetInteger(prefs::kAutocompleteLastVersionRetentionPolicy,
-                            GetCurrentMajorVersion());
+                            CHROME_VERSION_MAJOR);
 }
 
 void AutocompleteHistoryManager::CancelAllPendingQueries() {
