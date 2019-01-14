@@ -885,7 +885,7 @@
 <translation id="230927227160767054">Puslapis prašo leidimo įdiegti paslaugos doroklę.</translation>
 <translation id="2309620859903500144">Ši svetainė užblokuota, kad nebūtų naudojami judesio ar šviesos jutikliai.</translation>
 <translation id="2315414688463285945">Konfigūruojant „Linux“ failus įvyko klaida. Bandykite dar kartą.</translation>
-<translation id="2316129865977710310">Ačiū, ne</translation>
+<translation id="2316129865977710310">Ne, ačiū</translation>
 <translation id="2317842250900878657">Atlikta: <ph name="PROGRESS_PERCENT" /> %</translation>
 <translation id="2318143611928805047">Popieriaus lapo dydis</translation>
 <translation id="2318817390901984578">Jei norite naudoti „Android“ programas, įkraukite ir atnaujinkite savo „<ph name="DEVICE_TYPE" />“.</translation>
@@ -1901,7 +1901,7 @@
 <translation id="3840053866656739575">Nutrūko ryšys su „Chromebox“. Priartinkite arba patikrinkite įrenginį. Bandoma prisijungti iš naujo.</translation>
 <translation id="3842552989725514455">Šriftas „Serif“</translation>
 <translation id="3846116211488856547">Gaukite svetainių, „Android“ programų ir kt. kūrimo įrankius. Įdiegiant „Linux“ bus atsisiųsta <ph name="DOWNLOAD_SIZE" /> duomenų.</translation>
-<translation id="385051799172605136">Grįžti</translation>
+<translation id="385051799172605136">Atgal</translation>
 <translation id="3851428669031642514">Įkelti nesaugius scenarijus</translation>
 <translation id="3854599674806204102">Pasirinkite parinktį</translation>
 <translation id="3855441664322950881">Paketo plėtinys</translation>

@@ -9,7 +9,7 @@
 <translation id="10614374240317010">ఎప్పటికి సేవ్ చెయ్యబడవు</translation>
 <translation id="1067922213147265141">ఇతర Google సేవలు</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" />లో ఉన్న పేజీలను ఎప్పుడూ అనువదించవద్దు</translation>
-<translation id="1080790410959514870">మీరు <ph name="DOMAIN_NAME" /> నిర్వహణలో ఉన్న ఖాతా నుండి సైన్ అవుట్ అవుతున్నారు. దీని వ‌ల్ల ఈ పరికరంలో నిల్వ చేయబడిన Chrome డేటా తొలగించబడుతుంది. కానీ మీ Google ఖాతాలో డేటా అలాగే ఉంటుంది.</translation>
+<translation id="1080790410959514870">మీరు <ph name="DOMAIN_NAME" /> నిర్వహణలో ఉన్న ఖాతా నుండి సైన్ అవుట్ అవుతున్నారు. దీని వలన ఈ పరికరంలో నిల్వ చేయబడిన Chrome డేటా తొలగించబడుతుంది, కానీ మీ Google ఖాతాలో డేటా అలాగే ఉంటుంది.</translation>
 <translation id="1099080783256647258">డేటా సేవర్‌ని ఆన్ చేసినప్పుడు, Chrome వేగవంతంగా పని చేయడం మరియు పేజీ లోడ్‌లను తగ్గించడం కోసం Google సర్వర్‌లను ఉపయోగిస్తుంది. ప్రత్యేకించి నెమ్మదిగా ఉన్న పేజీలలో, కేవలం అవసరమైన కంటెంట్‌ని మాత్రమే లోడ్ చేయడం కోసం డేటా సేవర్ ఆ పేజీలను తిరిగి వ్రాస్తుంది. అజ్ఞాత మోడ్‌లో లోడ్ చేయబడే పేజీలను డేటా సేవర్ ఆప్టిమైజ్ చేయదు.</translation>
 <translation id="1105960400813249514">స్క్రీన్ క్యాప్చర్</translation>
 <translation id="1111673857033749125">మీ ఇతర పరికరాల్లో సేవ్ చేసిన బుక్‌మార్క్‌లు ఇక్కడ చూపబడతాయి.</translation>
@@ -33,7 +33,7 @@
 <translation id="1206892813135768548">లింక్ వచనాన్ని కాపీ చేయి</translation>
 <translation id="1208340532756947324">మీ అన్ని పరికరాలలోనూ సమకాలీకరణ చేయాలన్నా లేదా మీ అభిరుచికి అనుగుణంగా సెట్ చేయాలన్నా, తప్పనిసరిగా సమకాలీకరణ ఎంపికను ఆన్ చేయాలి</translation>
 <translation id="1209206284964581585">ప్రస్తుతానికి దాచు</translation>
-<translation id="123724288017357924">కాష్ అయిన కంటెంట్‌ను విస్మరించి ప్రస్తుత పేజీని మళ్లీ లోడ్ చేయండి</translation>
+<translation id="123724288017357924">కాష్ కంటెంట్ విస్మరించి ప్రస్తుత పేజీ మళ్లీ లోడ్ చేయండి</translation>
 <translation id="124116460088058876">మరిన్ని భాషలు</translation>
 <translation id="124678866338384709">ప్రస్తుత ట్యాబ్‌ను మూసివేయండి</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
@@ -81,7 +81,7 @@
 <translation id="1516229014686355813">వెతకడానికి నొక్కండి ఫీచర్, ఎంచుకున్న పదాన్ని మరియు ప్రస్తుత పేజీని సంబంధిత సందర్భం లాగా Google శోధనకు పంపుతుంది. మీరు <ph name="BEGIN_LINK" />సెట్టింగ్‌లు<ph name="END_LINK" />లో దీన్ని ఆఫ్ చేయవచ్చు.</translation>
 <translation id="1539064842193522527">లింక్ Chromeలో తెరవబడింది</translation>
 <translation id="1549000191223877751">వేరే విండోకి తరలించు</translation>
-<translation id="1553358976309200471">Chromeని అప్‌డేట్ చేయి</translation>
+<translation id="1553358976309200471">Chromeని నవీకరించు</translation>
 <translation id="1566400915470565838"><ph name="APP_NAME" />ని ఉపయోగించాలంటే, దయచేసి ఇంటర్నెట్‌కు కనెక్ట్ చేయండి.</translation>
 <translation id="1569387923882100876">కనెక్ట్ చేసిన డివైజ్</translation>
 <translation id="1571304935088121812">వినియోగదారు పేరును కాపీ చేస్తుంది</translation>
@@ -100,7 +100,7 @@
 <translation id="1672586136351118594">మళ్లీ చూపవద్దు</translation>
 <translation id="1709438864123551175">డేటా సేవర్</translation>
 <translation id="1718835860248848330">చివరి గంట</translation>
-<translation id="1729516292547892356">వర్చువల్ రియాలిటీ కంటెంట్‌ను చూడడానికి, Google VR సేవలను అప్‌డేట్ చేయండి</translation>
+<translation id="1729516292547892356">వర్చువల్ రియాలిటీ కంటెంట్‌ను వీక్షించడానికి, Google VR సేవలను నవీకరించండి</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> అప్‌డేట్ అయింది</translation>
 <translation id="1736419249208073774">అన్వేషించండి</translation>
 <translation id="1743802530341753419">పరికరానికి కనెక్ట్ చేయడానికి సైట్‌లను అనుమతించే ముందు అడుగుతుంది (సిఫార్సు చేయడమైనది)</translation>
@@ -374,7 +374,7 @@
 <translation id="3963007978381181125">Google Payకి సంబంధించిన చెల్లింపు పద్ధతులు మరియు చిరునామాలు రహస్య పదబంధం ఎన్‌క్రిప్షన్‌లో ఉండవు. మీ రహస్య పదబంధాన్ని కలిగి ఉన్నవారు మాత్రమే మీ ఎన్‌క్రిప్ట్ చేసిన డేటాను చదవగలరు. రహస్య పదబంధం Google ద్వారా ఎవరికీ పంపబడదు లేదా నిల్వ చేయబడదు. మీరు మీ రహస్య పదబంధాన్ని మర్చిపోతే లేదా ఈ సెట్టింగ్‌ను మార్చాలనుకుంటే, సమకాలీకరణను రీసెట్ చేయాల్సి ఉంటుంది. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">డౌన్‌లోడ్ పూర్తయింది</translation>
 <translation id="397583555483684758">సమకాలీకరణ పని చేయడం ఆగిపోయింది</translation>
-<translation id="3976396876660209797">ఈ సత్వరమార్గాన్ని తీసివేసి, పునఃసృష్టించండి</translation>
+<translation id="3976396876660209797">ఈ షార్ట్‌కట్‌ని తీసివేసి, పునఃసృష్టించండి</translation>
 <translation id="3985215325736559418">మీరు <ph name="FILE_NAME" />ని మళ్లీ డౌన్‌లోడ్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="3987993985790029246">లింక్‌ను కాపీ చేయి</translation>
 <translation id="3988213473815854515">స్థానం అనుమతించబడింది</translation>
@@ -395,7 +395,7 @@
 <translation id="4084682180776658562">బుక్‌మార్క్ చెయ్యి</translation>
 <translation id="4084712963632273211"><ph name="PUBLISHER_ORIGIN" /> నుండి – <ph name="BEGIN_DEEMPHASIZED" />Google బట్వాడా చేస్తోంది<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB డౌన్‌లోడ్ చేయబడింది</translation>
-<translation id="4095146165863963773">అనువర్తన డేటాను తొలగించాలా?</translation>
+<translation id="4095146165863963773">యాప్ డేటాను తొలగించాలా?</translation>
 <translation id="4099578267706723511">Googleకు వినియోగ గణాంకాలు, క్రాష్ నివేదికలను పంపడం ద్వారా Chromeను మెరుగుపరచడంలో సహాయపడండి.</translation>
 <translation id="410351446219883937">స్వీయ ప్లే</translation>
 <translation id="4113030288477039509">మీ నిర్వాహకుడు ద్వారా నిర్వహించబడుతోంది</translation>
@@ -474,7 +474,7 @@
 <translation id="4719927025381752090">అనువదించమని ఆఫర్ చేయి</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" />లో తెరువు</translation>
 <translation id="4720982865791209136">Chromeని మెరుగుపరచడంలో సహాయపడండి. <ph name="BEGIN_LINK" />సర్వేలో పాల్గొనండి<ph name="END_LINK" /></translation>
-<translation id="4730876730346568982">మీరు సమకాలీకరణ ఖాతాలను <ph name="ACCOUNT_EMAIL_OLD" /> నుండి <ph name="ACCOUNT_EMAIL_NEW" />కి మారుస్తున్నారు. ఇప్పటికే ఉన్న మీ Chrome డేటా <ph name="MANAGED_DOMAIN" /> నిర్వహణలో ఉంది. దీని వలన మీ డేటా ఈ పరికరం నుండి తొలగించబడుతుంది, కానీ మీ డేటా <ph name="ACCOUNT_EMAIL_OLD" />లో అలాగే ఉంటుంది.</translation>
+<translation id="4730876730346568982">మీరు సింక్ ఖాతాలను <ph name="ACCOUNT_EMAIL_OLD" /> నుండి <ph name="ACCOUNT_EMAIL_NEW" />కి మారుస్తున్నారు. ఇప్పటికే ఉన్న మీ Chrome డేటా <ph name="MANAGED_DOMAIN" /> నిర్వహణలో ఉంది. దీని వలన మీ డేటా ఈ పరికరం నుండి తొలగించబడుతుంది, కానీ మీ డేటా <ph name="ACCOUNT_EMAIL_OLD" />లో అలాగే ఉంటుంది.</translation>
 <translation id="473775607612524610">అప్‌డేట్</translation>
 <translation id="4738836084190194332">చివరిగా సమకాలీకరించినది: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">కొత్త ట్యాబ్‌ను తెరవండి</translation>
@@ -511,7 +511,7 @@
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> మీ స్క్రీన్‌ని భాగస్వామ్యం చేస్తోంది</translation>
 <translation id="4961107849584082341">ఈ పేజీని ఏ భాషలోకైనా అనువదించుకోవచ్చు</translation>
 <translation id="4961334780091921942">అన్ని పరికరాల్లో మీ పాస్‌వర్డ్‌లు, చరిత్ర &amp; మరిన్ని</translation>
-<translation id="4961700429721424617">మీరు <ph name="MANAGED_DOMAIN" /> నిర్వహణలో ఉన్న ఖాతా నుండి సైన్ అవుట్ చేస్తున్నారు. దీని వ‌ల్ల మీ Chrome డేటా ఈ పరికరం నుండి తొలగించబడుతుంది. కానీ మీ డేటా మీ Google ఖాతాలో అలాగే ఉంటుంది.</translation>
+<translation id="4961700429721424617">మీరు <ph name="MANAGED_DOMAIN" /> నిర్వహణలో ఉన్న ఖాతా నుండి సైన్ అవుట్ చేస్తున్నారు. దీని వలన మీ Chrome డేటా ఈ పరికరం నుండి తొలగించబడుతుంది, కానీ మీ డేటా మీ Google ఖాతాలో అలాగే ఉంటుంది.</translation>
 <translation id="497421865427891073">ముందుకు వెళ్ళు</translation>
 <translation id="4988210275050210843">ఫైల్‌ను డౌన్‌లోడ్ చేస్తోంది (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">పేజీలు</translation>
@@ -590,7 +590,7 @@
 <translation id="5530766185686772672">అజ్ఞాత ట్యాబ్‌లను మూసివేయి</translation>
 <translation id="5534640966246046842">సైట్ కాపీ చేయబడింది</translation>
 <translation id="5537099431952529648"><ph name="BEGIN_LINK1" />సెట్టింగ్‌లు<ph name="END_LINK1" />లో మీరు మరియు మీ తల్లిదండ్రులు Chrome సమకాలీకరణ మరియు వ్యక్తిగతీకరణను నిర్వహించవచ్చు</translation>
-<translation id="5556459405103347317">రీలోడ్</translation>
+<translation id="5556459405103347317">మళ్లీ లోడ్ చేయి</translation>
 <translation id="5561549206367097665">నెట్‌వర్క్ కోసం వేచి ఉంది…</translation>
 <translation id="557283862590186398">ఈ సైట్ కోసం మీ మైక్రోఫోన్‌ను యాక్సెస్ చేయడానికి Chromeకు అనుమతి అవసరం.</translation>
 <translation id="55737423895878184">స్థానం మరియు నోటిఫికేషన్‌లు అనుమతించబడతాయి</translation>
@@ -824,7 +824,7 @@
 <translation id="7189372733857464326">Google Play సేవల నవీకరణ పూర్తి కావడానికి వేచి ఉంది</translation>
 <translation id="7189598951263744875">భాగస్వామ్యం చేయి...</translation>
 <translation id="7191430249889272776">బ్యాక్‌గ్రౌండ్‌లో ట్యాబ్ తెరవబడింది.</translation>
-<translation id="7221869452894271364">ఈ పేజీని రీలోడ్ చెయ్యి</translation>
+<translation id="7221869452894271364">ఈ పేజీని మళ్లీ లోడ్ చేయి</translation>
 <translation id="723171743924126238">చిత్రాలను ఎంచుకోండి</translation>
 <translation id="7243308994586599757">స్క్రీన్ దిగువభాగం సమీపంలో ఎంపికలు అందుబాటులో ఉంటాయి</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ఎంచుకోబడ్డాయి</translation>
@@ -1050,7 +1050,7 @@
 <translation id="8983677657449185470">సురక్షిత బ్రౌజింగ్‌ను మెరుగుపరచడంలో సహాయపడండి</translation>
 <translation id="8986494364107987395">Googleకు ఆటోమేటిక్‌గా వినియోగ‌ గణాంకాలను, క్రాష్ నివేదికలను పంపు</translation>
 <translation id="8993760627012879038">కొత్త ట్యాబ్‌ను అజ్ఞాత మోడ్‌లో తెరవండి</translation>
-<translation id="8998729206196772491">మీరు <ph name="MANAGED_DOMAIN" /> నిర్వహణలో ఉన్న ఖాతా నుండి సైన్ ఇన్ చేస్తున్నారు. దీని నిర్వాహకులకు మీ Chrome డేటాపై నియంత్రణను అందిస్తున్నారు. మీ డేటా శాశ్వతంగా ఈ ఖాతాకు అనుబంధించబడుతుంది. Chrome నుండి సైన్ అవుట్ చేయడం వ‌ల్ల ఈ పరికరం నుండి మీ డేటా తొలగించబడుతుంది. కానీ ఇది మీ Google ఖాతాలో అలాగే నిల్వ చేయబడి ఉంటుంది.</translation>
+<translation id="8998729206196772491">మీరు <ph name="MANAGED_DOMAIN" /> నిర్వహణలో ఉన్న ఖాతా నుండి సైన్ ఇన్ చేస్తున్నారు మరియు దీని నిర్వాహకులకు మీ Chrome డేటాపై నియంత్రణను అందిస్తున్నారు. మీ డేటా శాశ్వతంగా ఈ ఖాతాకు అనుబంధించబడుతుంది. Chrome నుండి సైన్ అవుట్ చేయడం వలన ఈ పరికరం నుండి మీ డేటా తొలగించబడుతుంది, కానీ ఇది మీ Google ఖాతాలో అలాగే నిల్వ చేయబడి ఉంటుంది.</translation>
 <translation id="9019902583201351841">మీ తల్లిదండ్రుల ద్వారా నిర్వహించబడుతోంది</translation>
 <translation id="9040142327097499898">నోటిఫికేషన్‌లు అనుమతించబడ్డాయి. ఈ పరికరానికి స్థానం ఆఫ్ చేయబడింది.</translation>
 <translation id="9050666287014529139">రహస్య పదబంధం</translation>

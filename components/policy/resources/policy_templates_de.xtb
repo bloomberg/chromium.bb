@@ -229,8 +229,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 <translation id="1541170838458414064">Druckseitengröße einschränken</translation>
 <translation id="1553684822621013552">Wenn diese Richtlinie auf "true" gesetzt ist, wird ARC für den Nutzer aktiviert.
       Dies unterliegt jedoch zusätzlichen Überprüfungen der Richtlinieneinstellungen
-      – ARC ist weiterhin nicht verfügbar, wenn entweder die sitzungsspezifischen
-      Profile oder die Mehrfachanmeldung in der aktuellen Nutzersitzung aktiviert
+      – ARC ist weiterhin nicht verfügbar, wenn entweder der flüchtige Modus oder die Mehrfachanmeldung in der aktuellen Nutzersitzung aktiviert
       sind.
 
       Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, können
@@ -2815,7 +2814,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
           Wenn Sie diese Richtlinie konfigurieren, können die Nutzer sie nicht ändern oder außer Kraft setzen.
 
           Wird die Richtlinie nicht konfiguriert, ist der Modus mit hohem Kontrast zunächst deaktiviert, kann aber von den Nutzern jederzeit aktiviert werden.</translation>
-<translation id="815061180603915310">Bei Aktivierung erzwingt diese Richtlinie die Nutzung von sitzungsspezifischen Profilen. Falls diese Richtlinie als BS-Richtlinie angegeben wird (wie GPO unter Windows), gilt sie für jedes Profil im System. Wird sie hingegen als Cloud-Richtlinie festgelegt, gilt sie nur für ein bei einem verwalteten Konto angemeldetes Profil.
+<translation id="815061180603915310">Bei Aktivierung erzwingt diese Richtlinie die Nutzung des flüchtigen Modus. Falls diese Richtlinie als BS-Richtlinie angegeben wird (wie GPO unter Windows), gilt sie für jedes Profil im System. Wird sie hingegen als Cloud-Richtlinie festgelegt, gilt sie nur für ein bei einem verwalteten Konto angemeldetes Profil.
 
       In diesem Modus werden die Profildaten nur für die Dauer der Nutzersitzung auf der Festplatte behalten. Elemente wie der Browserverlauf, Erweiterungen und ihre Daten, Webdaten wie Cookies und Webdatenbanken werden nach dem Schließen des Browsers nicht beibehalten. Dies hindert den Nutzer jedoch nicht daran, Daten manuell auf die Festplatte herunterzuladen, Seiten zu speichern oder zu drucken.
 
