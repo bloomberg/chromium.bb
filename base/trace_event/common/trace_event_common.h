@@ -374,6 +374,10 @@
   INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_MARK, category_group, name, \
                            TRACE_EVENT_FLAG_COPY)
 
+#define TRACE_EVENT_COPY_MARK1(category_group, name, arg1_name, arg1_val) \
+  INTERNAL_TRACE_EVENT_ADD(TRACE_EVENT_PHASE_MARK, category_group, name,  \
+                           TRACE_EVENT_FLAG_COPY, arg1_name, arg1_val)
+
 #define TRACE_EVENT_COPY_MARK_WITH_TIMESTAMP(category_group, name, timestamp) \
   INTERNAL_TRACE_EVENT_ADD_WITH_TIMESTAMP(                                    \
       TRACE_EVENT_PHASE_MARK, category_group, name, timestamp,                \

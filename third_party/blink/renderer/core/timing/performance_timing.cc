@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/dom/document_parser_timing.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
@@ -624,6 +625,13 @@ PaintTimingDetector* PerformanceTiming::GetPaintTimingDetector() const {
     return nullptr;
 
   return &view->GetPaintTimingDetector();
+}
+
+std::unique_ptr<TracedValue> PerformanceTiming::GetNavigationTracingData() {
+  std::unique_ptr<TracedValue> data = TracedValue::Create();
+  data->SetString("navigationId",
+                  IdentifiersFactory::LoaderId(GetDocumentLoader()));
+  return data;
 }
 
 ScriptValue PerformanceTiming::toJSONForBinding(
