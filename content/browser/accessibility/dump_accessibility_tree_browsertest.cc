@@ -1688,8 +1688,14 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityOffscreen) {
   RunHtmlTest(FILE_PATH_LITERAL("offscreen.html"));
 }
 
+// TODO(crbug.com/921523) Only flaky on Windows 7 builder.
+#if defined(OS_WIN)
+#define MAYBE_AccessibilityOffscreenScroll DISABLED_AccessibilityOffscreenScroll
+#else
+#define MAYBE_AccessibilityOffscreenScroll AccessibilityOffscreenScroll
+#endif
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityOffscreenScroll) {
+                       MAYBE_AccessibilityOffscreenScroll) {
   RunHtmlTest(FILE_PATH_LITERAL("offscreen-scroll.html"));
 }
 
