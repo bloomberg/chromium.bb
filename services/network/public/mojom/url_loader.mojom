@@ -4,12 +4,14 @@
 
 module network.mojom;
 
+import "mojo/public/mojom/base/unguessable_token.mojom";
+import "services/network/public/mojom/cors.mojom";
+import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
 import "services/network/public/mojom/network_param.mojom";
+import "services/network/public/mojom/request_context_frame_type.mojom";
 import "url/mojom/url.mojom";
-
-[Native]
-struct URLRequest;
+import "url/mojom/origin.mojom";
 
 [Native]
 struct URLRequestBody;
@@ -34,6 +36,260 @@ enum RequestPriority {
   kLow,
   kMedium,
   kHighest
+};
+
+// This enum corresponds to net::URLRequest::ReferrerPolicy. See its comments.
+enum URLRequestReferrerPolicy {
+  kClearReferrerOnTransitionFromSecureToInsecure,
+  kReduceReferrerGranularityOnTransitionCrossOrigin,
+  kOriginOnlyOnTransitionCrossOrigin,
+  kNeverClearReferrer,
+  kOrigin,
+  kClearReferrerOnTransitionCrossOrigin,
+  kOriginClearOnTransitionFromSecureToInsecure,
+  kNoReferrer
+};
+
+// Typemapped to network::ResourceRequest.
+struct URLRequest {
+  // The request method: GET, POST, etc.
+  string method;
+
+  // The absolute requested URL encoded in ASCII per the rules of RFC-2396.
+  url.mojom.Url url;
+
+  // URL representing the first-party origin for the request, which may be
+  // checked by the third-party cookie blocking policy. This is usually the URL
+  // of the document in the top-level window. Leaving it empty may lead to
+  // undesired cookie blocking. Third-party cookie blocking can be bypassed by
+  // setting site_for_cookies = url, but this should ideally only be
+  // done if there really is no way to determine the correct value.
+  url.mojom.Url site_for_cookies;
+
+  // A non-null |top_frame_origin| contains the origin of the top frame of the
+  // page making the request. Note that this is experimental and is only set for
+  // navigation and document subresource requests but not other cases such as
+  // workers.
+  url.mojom.Origin? top_frame_origin;
+
+  // Boolean indicating whether SameSite cookies are allowed to be attached
+  // to the request. It should be used as additional input to network side
+  // checks.
+  bool attach_same_site_cookies;
+
+  // First-party URL redirect policy: During server redirects, the first-party
+  // URL for cookies normally doesn't change. However, if this is true, the
+  // the first-party URL should be updated to the URL on every redirect.
+  bool update_first_party_url_on_redirect;
+
+  // The origin of the context which initiated the request, which will be used
+  // for cookie checks like 'First-Party-Only'.
+  url.mojom.Origin? request_initiator;
+
+  // The referrer to use (may be empty).
+  url.mojom.Url referrer;
+
+  // The referrer policy to use.
+  URLRequestReferrerPolicy referrer_policy;
+
+  // Whether the frame that initiated this request is used for prerendering.
+  bool is_prerendering;
+
+  // Additional HTTP request headers.
+  HttpRequestHeaders headers;
+
+  // 'X-Requested-With' header value. Some consumers want to set this header,
+  // but such internal headers must be ignored by CORS checks (which run inside
+  // Network Service), so the value is stored here (rather than in |headers|)
+  // and later populated in the headers after CORS check.
+  // TODO(toyoshim): Remove it once PPAPI is deprecated.
+  string requested_with_header;
+
+  // 'X-Client-Data' header value. See comments for |requested_with_header|
+  // above, too.
+  // TODO(toyoshim): Consider to rename this to have a chrome specific prefix
+  // such as 'Chrome-' instead of 'X-', and to add 'Chrome-' prefixed header
+  // names into the forbidden header name list.
+  string client_data_header;
+
+  // net::URLRequest load flags.
+  int32 load_flags;
+
+  // Whether to allow credentials for this request.
+  // See net::URLRequest::set_allow_credentials.
+  bool allow_credentials;
+
+  // If this request originated from a pepper plugin running in a child
+  // process, this identifies which process it came from. Otherwise, it
+  // is zero.
+  // -1 to match ChildProcessHost::kInvalidUniqueID
+  // TODO(jam): remove this from the struct since network service shouldn't know
+  // about this.
+  int32 plugin_child_id;
+
+  // What this resource load is for (main frame, sub-frame, sub-resource,
+  // object).
+  // Note: this is an enum of type content::ResourceType.
+  // TODO(jam): remove this from the struct since network service shouldn't know
+  // about this.
+  int32 resource_type;
+
+  // The priority of this request determined by Blink.
+  RequestPriority priority;
+
+  // Indicates which frame (or worker context) the request is being loaded into,
+  // or kAppCacheNoHostId.
+  int32 appcache_host_id;
+
+  // True if corresponding AppCache group should be reset.
+  bool should_reset_appcache;
+
+  // https://wicg.github.io/cors-rfc1918/#external-request
+  // TODO(toyoshim): The browser should know better than renderers do.
+  // This is used to plumb Blink decided information for legacy code path, but
+  // eventually we should remove this.
+  bool is_external_request;
+
+  // A policy to decide if CORS-preflight fetch should be performed.
+  CorsPreflightPolicy cors_preflight_policy;
+
+  // Indicates which frame (or worker context) the request is being loaded into.
+  // -1 corresponds to kInvalidServiceWorkerProviderId.
+  // TODO(jam): remove this from the struct since network service shouldn't know
+  // about this.
+  int32 service_worker_provider_id;
+
+  // True if the request originated from a Service Worker, e.g. due to a
+  // fetch() in the Service Worker script.
+  bool originated_from_service_worker;
+
+  // The service worker mode that indicates which service workers should get
+  // events for this request.
+  // TODO(jam): remove this from the struct since network service shouldn't know
+  // about this.
+  bool skip_service_worker;
+
+  // https://fetch.spec.whatwg.org/#concept-request-mode
+  // Used mainly by CORS handling (out-of-blink CORS), CORB, Service Worker.
+  // CORS handling needs a proper origin (including a unique opaque origin).
+  // Hence a request with kSameOrigin, kCors, or kCorsWithForcedPreflight should
+  // have a non-null request_initiator.
+  FetchRequestMode fetch_request_mode;
+
+  // https://fetch.spec.whatwg.org/#concept-request-credentials-mode
+  // Used mainly by CORS handling (out-of-blink CORS), Service Worker.
+  // If this member is kOmit, then DO_NOT_SAVE_COOKIES, DO_NOT_SEND_COOKIES,
+  // and DO_NOT_SEND_AUTH_DATA must be set on load_flags.
+  FetchCredentialsMode fetch_credentials_mode;
+
+  // https://fetch.spec.whatwg.org/#concept-request-redirect-mode
+  // Used mainly by CORS handling (out-of-blink CORS), Service Worker.
+  // This member must be kFollow as long as |fetch_request_mode| is kNoCors.
+  FetchRedirectMode fetch_redirect_mode;
+
+  // The integrity used in Fetch API.
+  string fetch_integrity;
+
+  // The request context passed to the ServiceWorker.
+  // Note: this is an enum of type content::RequestContextType.
+  // TODO(jam): remove this from the struct since network service shouldn't know
+  // about this.
+  int32 fetch_request_context_type;
+
+  // The frame type passed to the ServiceWorker.
+  RequestContextFrameType fetch_frame_type;
+
+  // Optional resource request body.
+  URLRequestBody? request_body;
+
+  // True if the request can work after the fetch group is terminated.
+  // https://fetch.spec.whatwg.org/#request-keepalive-flag
+  bool keepalive;
+
+  // True if the request was user initiated.
+  bool has_user_gesture;
+
+  // TODO(mmenke): Investigate if enable_load_timing is safe to remove.
+  //
+  // True if load timing data should be collected for request.
+  bool enable_load_timing;
+
+  // True if upload progress should be available for request.
+  bool enable_upload_progress;
+
+  // True if login prompts for this request should be suppressed. Cached
+  // credentials or default credentials may still be used for authentication.
+  bool do_not_prompt_for_login;
+
+  // The routing id of the RenderFrame.
+  int32 render_frame_id;
+
+  // True if |frame_id| is the main frame of a RenderView.
+  bool is_main_frame;
+
+  // Note: this is an enum of type ui::PageTransition.
+  // TODO(jam): remove this from the struct since network service shouldn't know
+  // about this.
+  int32 transition_type;
+
+  // Whether or not we should allow the URL to download.
+  bool allow_download;
+
+  // Whether to intercept headers to pass back to the renderer.
+  // This also enables reporting of SSLInfo in URLLoaderClient's
+  // OnResponseReceived and OnComplete, as well as invocation of
+  // OnTransferSizeUpdated().
+  bool report_raw_headers;
+
+  // Whether or not to request a Preview version of the resource or let the
+  // browser decide.
+  // Note: this is an enum of type PreviewsState.
+  // TODO(jam): remove this from the struct since network service shouldn't know
+  // about this.
+  int32 previews_state;
+
+  // Whether or not the initiator of this request is a secure context.
+  bool initiated_in_secure_context;
+
+  // Whether or not this request (including redirects) should be upgraded to
+  // HTTPS due to an Upgrade-Insecure-Requests requirement.
+  bool upgrade_if_insecure;
+
+  // True when the request is revalidating.
+  // Some users, notably blink, has its own cache. This flag is set to exempt
+  // some CORS logic for a revalidating request.
+  bool is_revalidating;
+
+  // The profile ID of network conditions to throttle the network request.
+  mojo_base.mojom.UnguessableToken? throttling_profile_id;
+
+  // Headers that will be added pre and post cache if the network context uses
+  // the custom proxy for this request. The custom proxy is used for requests
+  // that match the custom proxy config, and would otherwise be made direct.
+  HttpRequestHeaders custom_proxy_pre_cache_headers;
+  HttpRequestHeaders custom_proxy_post_cache_headers;
+
+  // Whether to use the alternate proxies set in the custom proxy config.
+  bool custom_proxy_use_alternate_proxy_list;
+
+  // See https://fetch.spec.whatwg.org/#concept-request-window
+  //
+  // This is an opaque id of the original requestor of the resource, which might
+  // be different to the current requestor which is |render_frame_id|. For
+  // example, if a navigation for window "abc" is intercepted by a service
+  // worker, which re-issues the request via fetch, the re-issued request has
+  // |render_frame_id| of MSG_ROUTING_NONE (the service worker) and |window_id|
+  // of "abc". This is used for, e.g., client certificate selection. It's
+  // important that this id be unguessable so renderers cannot impersonate
+  // other renderers.
+  //
+  // This may be empty when the original requestor is the current requestor or
+  // is not a window. When it's empty, use |render_frame_id| instead. In
+  // practical terms, it's empty for requests that didn't go through a service
+  // worker, or if the original requestor is not a window. When the request
+  // goes through a service worker, the id is
+  // ServiceWorkerProviderHost::fetch_request_window_id.
+  mojo_base.mojom.UnguessableToken? fetch_window_id;
 };
 
 // Destroying a URLLoader will cancel the associated request.

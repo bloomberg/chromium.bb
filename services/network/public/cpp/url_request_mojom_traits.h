@@ -8,6 +8,7 @@
 #include "base/component_export.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "net/base/request_priority.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
 
 namespace mojo {
@@ -18,6 +19,202 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static network::mojom::RequestPriority ToMojom(net::RequestPriority priority);
   static bool FromMojom(network::mojom::RequestPriority in,
                         net::RequestPriority* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    EnumTraits<network::mojom::URLRequestReferrerPolicy,
+               net::URLRequest::ReferrerPolicy> {
+  static network::mojom::URLRequestReferrerPolicy ToMojom(
+      net::URLRequest::ReferrerPolicy policy);
+  static bool FromMojom(network::mojom::URLRequestReferrerPolicy in,
+                        net::URLRequest::ReferrerPolicy* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::URLRequestDataView, network::ResourceRequest> {
+  static const std::string& method(const network::ResourceRequest& request) {
+    return request.method;
+  }
+  static const GURL& url(const network::ResourceRequest& request) {
+    return request.url;
+  }
+  static const GURL& site_for_cookies(const network::ResourceRequest& request) {
+    return request.site_for_cookies;
+  }
+  static const base::Optional<url::Origin>& top_frame_origin(
+      const network::ResourceRequest& request) {
+    return request.top_frame_origin;
+  }
+  static bool attach_same_site_cookies(
+      const network::ResourceRequest& request) {
+    return request.attach_same_site_cookies;
+  }
+  static bool update_first_party_url_on_redirect(
+      const network::ResourceRequest& request) {
+    return request.update_first_party_url_on_redirect;
+  }
+  static const base::Optional<url::Origin>& request_initiator(
+      const network::ResourceRequest& request) {
+    return request.request_initiator;
+  }
+  static const GURL& referrer(const network::ResourceRequest& request) {
+    return request.referrer;
+  }
+  static net::URLRequest::ReferrerPolicy referrer_policy(
+      const network::ResourceRequest& request) {
+    return request.referrer_policy;
+  }
+  static bool is_prerendering(const network::ResourceRequest& request) {
+    return request.is_prerendering;
+  }
+  static const net::HttpRequestHeaders& headers(
+      const network::ResourceRequest& request) {
+    return request.headers;
+  }
+  static const std::string& requested_with_header(
+      const network::ResourceRequest& request) {
+    return request.requested_with_header;
+  }
+  static const std::string& client_data_header(
+      const network::ResourceRequest& request) {
+    return request.client_data_header;
+  }
+  static int32_t load_flags(const network::ResourceRequest& request) {
+    return request.load_flags;
+  }
+  static bool allow_credentials(const network::ResourceRequest& request) {
+    return request.allow_credentials;
+  }
+  static int32_t plugin_child_id(const network::ResourceRequest& request) {
+    return request.plugin_child_id;
+  }
+  static int32_t resource_type(const network::ResourceRequest& request) {
+    return request.resource_type;
+  }
+  static net::RequestPriority priority(
+      const network::ResourceRequest& request) {
+    return request.priority;
+  }
+  static int32_t appcache_host_id(const network::ResourceRequest& request) {
+    return request.appcache_host_id;
+  }
+  static bool should_reset_appcache(const network::ResourceRequest& request) {
+    return request.should_reset_appcache;
+  }
+  static bool is_external_request(const network::ResourceRequest& request) {
+    return request.is_external_request;
+  }
+  static network::mojom::CorsPreflightPolicy cors_preflight_policy(
+      const network::ResourceRequest& request) {
+    return request.cors_preflight_policy;
+  }
+  static int32_t service_worker_provider_id(
+      const network::ResourceRequest& request) {
+    return request.service_worker_provider_id;
+  }
+  static bool originated_from_service_worker(
+      const network::ResourceRequest& request) {
+    return request.originated_from_service_worker;
+  }
+  static bool skip_service_worker(const network::ResourceRequest& request) {
+    return request.skip_service_worker;
+  }
+  static network::mojom::FetchRequestMode fetch_request_mode(
+      const network::ResourceRequest& request) {
+    return request.fetch_request_mode;
+  }
+  static network::mojom::FetchCredentialsMode fetch_credentials_mode(
+      const network::ResourceRequest& request) {
+    return request.fetch_credentials_mode;
+  }
+  static network::mojom::FetchRedirectMode fetch_redirect_mode(
+      const network::ResourceRequest& request) {
+    return request.fetch_redirect_mode;
+  }
+  static const std::string& fetch_integrity(
+      const network::ResourceRequest& request) {
+    return request.fetch_integrity;
+  }
+  static int32_t fetch_request_context_type(
+      const network::ResourceRequest& request) {
+    return request.fetch_request_context_type;
+  }
+  static network::mojom::RequestContextFrameType fetch_frame_type(
+      const network::ResourceRequest& request) {
+    return request.fetch_frame_type;
+  }
+  static const scoped_refptr<network::ResourceRequestBody>& request_body(
+      const network::ResourceRequest& request) {
+    return request.request_body;
+  }
+  static bool keepalive(const network::ResourceRequest& request) {
+    return request.keepalive;
+  }
+  static bool has_user_gesture(const network::ResourceRequest& request) {
+    return request.has_user_gesture;
+  }
+  static bool enable_load_timing(const network::ResourceRequest& request) {
+    return request.enable_load_timing;
+  }
+  static bool enable_upload_progress(const network::ResourceRequest& request) {
+    return request.enable_upload_progress;
+  }
+  static bool do_not_prompt_for_login(const network::ResourceRequest& request) {
+    return request.do_not_prompt_for_login;
+  }
+  static int32_t render_frame_id(const network::ResourceRequest& request) {
+    return request.render_frame_id;
+  }
+  static bool is_main_frame(const network::ResourceRequest& request) {
+    return request.is_main_frame;
+  }
+  static int32_t transition_type(const network::ResourceRequest& request) {
+    return request.transition_type;
+  }
+  static bool allow_download(const network::ResourceRequest& request) {
+    return request.allow_download;
+  }
+  static bool report_raw_headers(const network::ResourceRequest& request) {
+    return request.report_raw_headers;
+  }
+  static int32_t previews_state(const network::ResourceRequest& request) {
+    return request.previews_state;
+  }
+  static bool initiated_in_secure_context(
+      const network::ResourceRequest& request) {
+    return request.initiated_in_secure_context;
+  }
+  static bool upgrade_if_insecure(const network::ResourceRequest& request) {
+    return request.upgrade_if_insecure;
+  }
+  static bool is_revalidating(const network::ResourceRequest& request) {
+    return request.is_revalidating;
+  }
+  static const base::Optional<base::UnguessableToken>& throttling_profile_id(
+      const network::ResourceRequest& request) {
+    return request.throttling_profile_id;
+  }
+  static const net::HttpRequestHeaders& custom_proxy_pre_cache_headers(
+      const network::ResourceRequest& request) {
+    return request.custom_proxy_pre_cache_headers;
+  }
+  static const net::HttpRequestHeaders& custom_proxy_post_cache_headers(
+      const network::ResourceRequest& request) {
+    return request.custom_proxy_post_cache_headers;
+  }
+  static bool custom_proxy_use_alternate_proxy_list(
+      const network::ResourceRequest& request) {
+    return request.custom_proxy_use_alternate_proxy_list;
+  }
+  static const base::Optional<base::UnguessableToken>& fetch_window_id(
+      const network::ResourceRequest& request) {
+    return request.fetch_window_id;
+  }
+
+  static bool Read(network::mojom::URLRequestDataView data,
+                   network::ResourceRequest* out);
 };
 
 }  // namespace mojo
