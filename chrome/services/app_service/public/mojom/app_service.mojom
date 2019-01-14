@@ -38,6 +38,10 @@ interface AppService {
       AppType app_type,
       string app_id,
       Permission permission);
+
+  Uninstall(
+      AppType app_type,
+      string app_id);
 };
 
 interface Publisher {
@@ -61,6 +65,9 @@ interface Publisher {
   SetPermission(
       string app_id,
       Permission permission);
+
+  Uninstall(
+      string app_id);
 };
 
 interface Subscriber {

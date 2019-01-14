@@ -8,8 +8,10 @@
 #include <vector>
 
 #include "ash/public/cpp/shelf_types.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
@@ -20,6 +22,7 @@
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
 // TODO(crbug.com/826982): life cycle events. Extensions can be installed and
@@ -205,6 +208,36 @@ void ExtensionApps::SetPermission(const std::string& app_id,
   host_content_settings_map->SetContentSettingDefaultScope(
       url, url, permission_type, std::string() /* resource identifier */,
       permission_value);
+}
+
+void ExtensionApps::Uninstall(const std::string& app_id) {
+  if (!profile_) {
+    return;
+  }
+
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
+          app_id);
+
+  if (!extension) {
+    return;
+  }
+
+  // TODO(crbug.com/826982): The UninstallReason should eventually be passed
+  // through from the subscriber. This might involve generalising uninstall
+  // reason into an App Service concept.
+  base::string16 error;
+  bool uninstalled =
+      extensions::ExtensionSystem::Get(profile_)
+          ->extension_service()
+          ->UninstallExtension(
+              app_id,
+              extensions::UninstallReason::UNINSTALL_REASON_USER_INITIATED,
+              &error);
+
+  if (!uninstalled) {
+    LOG(ERROR) << "Couldn't uninstall app with id " << app_id << ". " << error;
+  }
 }
 
 void ExtensionApps::OnExtensionInstalled(

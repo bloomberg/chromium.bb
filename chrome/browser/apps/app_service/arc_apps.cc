@@ -214,6 +214,10 @@ void ArcApps::SetPermission(const std::string& app_id,
   NOTIMPLEMENTED();
 }
 
+void ArcApps::Uninstall(const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
 void ArcApps::OnConnectionReady() {
   if (!prefs_) {
     prefs_ = ArcAppListPrefs::Get(profile_);

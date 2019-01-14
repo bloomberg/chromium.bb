@@ -51,6 +51,8 @@ class AppServiceProxy : public KeyedService, public apps::mojom::Subscriber {
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission);
 
+  void Uninstall(const std::string& app_id);
+
  private:
   // apps::mojom::Subscriber overrides.
   void OnApps(std::vector<apps::mojom::AppPtr> deltas) override;

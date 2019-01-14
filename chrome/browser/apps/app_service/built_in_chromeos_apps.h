@@ -39,6 +39,7 @@ class BuiltInChromeOsApps : public apps::mojom::Publisher {
               int64_t display_id) override;
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission) override;
+  void Uninstall(const std::string& app_id) override;
 
   mojo::Binding<apps::mojom::Publisher> binding_;
 
