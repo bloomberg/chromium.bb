@@ -881,6 +881,7 @@ void LayoutBlock::LayoutPositionedObject(LayoutBox* positioned_object,
   bool needs_block_direction_location_set_before_layout =
       is_paginated &&
       positioned_object->GetPaginationBreakability() != kForbidBreaks;
+  bool bogus_logical_top_estimate = false;
   if (needs_block_direction_location_set_before_layout) {
     // Out-of-flow objects are normally positioned after layout (while in-flow
     // objects are positioned before layout). If the child object is paginated
@@ -899,6 +900,7 @@ void LayoutBlock::LayoutPositionedObject(LayoutBox* positioned_object,
       // fragmentainer, or decrease it if a descendant margin collides into a
       // fragmentainer boundary), and thus give us a bad block-start offset.
       logical_top_estimate = -OffsetFromLogicalTopOfFirstPage();
+      bogus_logical_top_estimate = true;
     } else {
       LogicalExtentComputedValues computed_values;
       positioned_object->ComputeLogicalHeight(
@@ -909,8 +911,13 @@ void LayoutBlock::LayoutPositionedObject(LayoutBox* positioned_object,
     positioned_object->SetLogicalTop(logical_top_estimate);
   }
 
-  if (!positioned_object->NeedsLayout())
+  if (!positioned_object->NeedsLayout()) {
     MarkChildForPaginationRelayoutIfNeeded(*positioned_object, layout_scope);
+    // If we're not able to set a decent block start estimate, we need to force
+    // layout to figure it out.
+    if (bogus_logical_top_estimate)
+      layout_scope.SetChildNeedsLayout(positioned_object);
+  }
 
   // FIXME: We should be able to do a r->setNeedsPositionedMovementLayout()
   // here instead of a full layout. Need to investigate why it does not
