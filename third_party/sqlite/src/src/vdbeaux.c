@@ -3734,6 +3734,13 @@ void sqlite3VdbeRecordUnpack(
     pMem++;
     if( (++u)>=p->nField ) break;
   }
+  if( d>nKey && u ){
+    assert( CORRUPT_DB );
+    /* In a corrupt record entry, the last pMem might have been set up using
+    ** uninitialized memory. Overwrite its value with NULL, to prevent
+    ** warnings from MSAN. */
+    sqlite3VdbeMemSetNull(pMem-1);
+  }
   assert( u<=pKeyInfo->nKeyField + 1 );
   p->nField = u;
 }
@@ -3799,8 +3806,8 @@ static int vdbeRecordCompareDebug(
     ** Use that approximation to avoid the more expensive call to
     ** sqlite3VdbeSerialTypeLen() in the common case.
     */
-    if( d1+serial_type1+2>(u32)nKey1
-     && d1+sqlite3VdbeSerialTypeLen(serial_type1)>(u32)nKey1
+    if( d1+(u64)serial_type1+2>(u64)nKey1
+     && d1+(u64)sqlite3VdbeSerialTypeLen(serial_type1)>(u64)nKey1
     ){
       break;
     }

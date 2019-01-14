@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Sat, 12 Jan 2019 12:36:35 -0800
+Subject: [PATCH 18/27] Fix a segfault in fts3 prompted by a corrupted
+ database.
+
+This backports https://www.sqlite.org/src/info/2d7b1d1d41ff69d5
+
+Bug: 915499
+---
+ third_party/sqlite/src/ext/fts3/fts3.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/sqlite/src/ext/fts3/fts3.c b/third_party/sqlite/src/ext/fts3/fts3.c
+index ef69a7b18681..005d8e50212e 100644
+--- a/third_party/sqlite/src/ext/fts3/fts3.c
++++ b/third_party/sqlite/src/ext/fts3/fts3.c
+@@ -2899,7 +2899,7 @@ static int fts3SegReaderCursor(
+
+       /* If zTerm is not NULL, and this segment is not stored entirely on its
+       ** root node, the range of leaves scanned can be reduced. Do this. */
+-      if( iStartBlock && zTerm ){
++      if( iStartBlock && zTerm && zRoot ){
+         sqlite3_int64 *pi = (isPrefix ? &iLeavesEndBlock : 0);
+         rc = fts3SelectLeaf(p, zTerm, nTerm, zRoot, nRoot, &iStartBlock, pi);
+         if( rc!=SQLITE_OK ) goto finished;
+--
+2.18.0
+

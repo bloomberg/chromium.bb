@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Mon, 14 Jan 2019 12:32:04 -0800
+Subject: [PATCH 27/27] Fix MSAN error in sqlite3VdbeRecordUnpack() on a
+ corrupt record.
+
+This backports https://www.sqlite.org/src/info/ddc3697efd61830f
+
+Bug: 914970
+---
+ third_party/sqlite/src/src/vdbeaux.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/third_party/sqlite/src/src/vdbeaux.c b/third_party/sqlite/src/src/vdbeaux.c
+index 9ba127360fea..1e9812288cfa 100644
+--- a/third_party/sqlite/src/src/vdbeaux.c
++++ b/third_party/sqlite/src/src/vdbeaux.c
+@@ -3734,6 +3734,13 @@ void sqlite3VdbeRecordUnpack(
+     pMem++;
+     if( (++u)>=p->nField ) break;
+   }
++  if( d>nKey && u ){
++    assert( CORRUPT_DB );
++    /* In a corrupt record entry, the last pMem might have been set up using
++    ** uninitialized memory. Overwrite its value with NULL, to prevent
++    ** warnings from MSAN. */
++    sqlite3VdbeMemSetNull(pMem-1);
++  }
+   assert( u<=pKeyInfo->nKeyField + 1 );
+   p->nField = u;
+ }
+--
+2.18.0
+

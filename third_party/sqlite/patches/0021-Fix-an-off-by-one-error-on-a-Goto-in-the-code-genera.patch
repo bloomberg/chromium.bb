@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Sat, 12 Jan 2019 18:04:58 -0800
+Subject: [PATCH 21/27] Fix an off-by-one error on a Goto in the code
+ generator.
+
+This backports https://www.sqlite.org/src/info/e35eb8776ed539af
+
+Bug: 914507, 914648
+---
+ third_party/sqlite/src/src/insert.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/sqlite/src/src/insert.c b/third_party/sqlite/src/src/insert.c
+index cd2eec12864e..a834f3918439 100644
+--- a/third_party/sqlite/src/src/insert.c
++++ b/third_party/sqlite/src/src/insert.c
+@@ -1824,7 +1824,7 @@ void sqlite3GenerateConstraintChecks(
+
+   /* If the IPK constraint is a REPLACE, run it last */
+   if( ipkTop ){
+-    sqlite3VdbeGoto(v, ipkTop+1);
++    sqlite3VdbeGoto(v, ipkTop);
+     VdbeComment((v, "Do IPK REPLACE"));
+     sqlite3VdbeJumpHere(v, ipkBottom);
+   }
+--
+2.18.0
+
