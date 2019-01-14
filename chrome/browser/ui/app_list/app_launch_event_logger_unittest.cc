@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/logging/app_launch_event_logger.h"
+#include "chrome/browser/ui/app_list/app_launch_event_logger.h"
 
-#include "ash/app_list/model/app_list_item.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/ukm/app_source_url_recorder.h"
@@ -42,8 +41,7 @@ class AppLaunchEventLoggerTest : public testing::Test {
 TEST_F(AppLaunchEventLoggerTest, CheckUkmCodePWA) {
   GURL url("https://photos.google.com/");
 
-  AppListItem item(kPhotosPWAApp);
-  AppLaunchEventLogger::GetInstance().OnGridClicked(item);
+  AppLaunchEventLogger::GetInstance().OnGridClicked(kPhotosPWAApp);
 
   scoped_task_environment_.RunUntilIdle();
 
@@ -60,8 +58,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeChrome) {
   test_ukm_recorder_.SetIsWebstoreExtensionCallback(
       base::BindRepeating(&TestIsWebstoreExtension));
 
-  AppListItem item(kGmailChromeApp);
-  AppLaunchEventLogger::GetInstance().OnGridClicked(item);
+  AppLaunchEventLogger::GetInstance().OnGridClicked(kGmailChromeApp);
 
   scoped_task_environment_.RunUntilIdle();
 

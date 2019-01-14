@@ -1,10 +1,8 @@
 include_rules = [
   "+components/keyed_service/core",
   "+components/sync",
-  "+components/ukm",
   "+mojo/public/cpp",
   "+net/http/http_response_headers.h",
-  "+services/metrics/public",
   "+services/ws/public",
   "+skia",
   "+third_party/google_toolbox_for_mac/src",

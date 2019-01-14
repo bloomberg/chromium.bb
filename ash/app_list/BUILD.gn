@@ -93,7 +93,6 @@ component("app_list") {
   defines = [ "APP_LIST_IMPLEMENTATION" ]
 
   deps = [
-    "//ash/app_list/logging",
     "//ash/app_list/resources",
     "//ash/app_menu",
     "//ash/assistant/ui:constants",
@@ -212,7 +211,6 @@ test("app_list_unittests") {
   deps = [
     ":app_list",
     ":test_support",
-    "//ash/app_list/logging:unit_tests",
     "//ash/public/cpp/app_list/vector_icons",
     "//base",
     "//base/test:test_support",

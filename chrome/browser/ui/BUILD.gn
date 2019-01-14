@@ -19,6 +19,7 @@ import("//extensions/buildflags/buildflags.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//rlz/buildflags/buildflags.gni")
+import("//third_party/protobuf/proto_library.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/views/features.gni")
 
@@ -3094,6 +3095,8 @@ jumbo_split_static_library("ui") {
       "app_list/app_context_menu.cc",
       "app_list/app_context_menu.h",
       "app_list/app_context_menu_delegate.h",
+      "app_list/app_launch_event_logger.cc",
+      "app_list/app_launch_event_logger.h",
       "app_list/app_list_client_impl.cc",
       "app_list/app_list_client_impl.h",
       "app_list/app_list_controller_delegate.cc",
@@ -3186,6 +3189,7 @@ jumbo_split_static_library("ui") {
       "//ash/app_list",
       "//ash/public/cpp/app_list/vector_icons",
       "//ash/resources/vector_icons",
+      "//chrome/browser/ui:app_launch_event_logger_proto",
       "//chrome/browser/ui/app_list/search/search_result_ranker:app_launch_predictor_proto",
       "//ui/views/mus/remote_view:remote_view_provider",
     ]
@@ -3719,4 +3723,10 @@ if (is_android) {
       "android/tab_model/tab_model.h",
     ]
   }
+}
+
+proto_library("app_launch_event_logger_proto") {
+  sources = [
+    "app_list/app_launch_event_logger.proto",
+  ]
 }

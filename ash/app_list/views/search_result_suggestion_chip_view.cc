@@ -8,7 +8,6 @@
 
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
-#include "ash/app_list/logging/app_launch_event_logger.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
@@ -81,8 +80,6 @@ void SearchResultSuggestionChipView::ButtonPressed(views::Button* sender,
                                                    const ui::Event& event) {
   DCHECK(item_);
   LogAppLaunch(index_in_suggestion_chip_container_);
-  AppLaunchEventLogger::GetInstance().OnSuggestionChipClicked(
-      *item_, index_in_suggestion_chip_container_);
   RecordSearchResultOpenSource(item_, view_delegate_->GetModel(),
                                view_delegate_->GetSearchModel());
   view_delegate_->OpenSearchResult(item_->id(), event.flags());
