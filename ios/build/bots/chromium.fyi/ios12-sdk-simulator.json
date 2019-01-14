@@ -2,9 +2,12 @@
   "comments": [
     "Runs tests on 64-bit iOS 11.4 and 12.1 tests",
     "on iPad, iPhone, @3x, and @2x on main and CQ ios12-beta-simulator.",
+    "TODO(crbug.com/919946): Migrate back to Xcode beta track from GM, ",
+    "once experiment is done.",
+    "TODO(crbug.com/920283): Revert test targets with unittests back.",
     "Note: Xcode 10 requires Mac OS 10.13.4 or higher, hence 'host os'."
   ],
-  "xcode build version": "10o45e",
+  "xcode build version": "10b61",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",
@@ -20,122 +23,104 @@
   "configuration": "Debug",
   "tests": [
     {
+      "xcode parallelization": true,
+      "include": "eg_cq_tests_ios12_simulator_fyi_experiment.json",
+      "device type": "iPhone X",
+      "os": "12.1",
+      "host os": "Mac-10.13.6",
+      "pool": "Chrome",
+      "shards": 4
+    },
+    {
+      "xcode parallelization": true,
       "include": "eg_cq_tests.json",
       "device type": "iPhone X",
       "os": "12.1",
-      "xcode build version": "10o45e",
       "host os": "Mac-10.13.6",
       "pool": "Chrome"
     },
     {
-      "include": "eg_tests.json",
-      "device type": "iPhone X",
-      "os": "12.1",
-      "xcode build version": "10o45e",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome"
-    },
-    {
-      "include": "eg_tests.json",
+      "xcode parallelization": true,
+      "include": "eg_cq_tests_ios12_simulator_fyi_experiment.json",
       "device type": "iPad Air 2",
       "os": "12.1",
-      "xcode build version": "10o45e",
+      "host os": "Mac-10.13.6",
+      "pool": "Chrome",
+      "shards": 4
+    },
+    {
+      "xcode parallelization": true,
+      "include": "eg_cq_tests.json",
+      "device type": "iPad Air 2",
+      "os": "12.1",
       "host os": "Mac-10.13.6",
       "pool": "Chrome"
     },
     {
-      "include": "eg_tests.json",
+      "xcode parallelization": true,
+      "include": "eg_cq_tests_ios12_simulator_fyi_experiment.json",
       "device type": "iPhone 7",
       "os": "12.1",
-      "xcode build version": "10o45e",
+      "host os": "Mac-10.13.6",
+      "pool": "Chrome",
+      "shards": 4
+    },
+    {
+      "xcode parallelization": true,
+      "include": "eg_cq_tests.json",
+      "device type": "iPhone 7",
+      "os": "12.1",
       "host os": "Mac-10.13.6",
       "pool": "Chrome"
     },
     {
-      "include": "eg_tests.json",
+      "xcode parallelization": true,
+      "include": "eg_cq_tests_ios12_simulator_fyi_experiment.json",
       "device type": "iPhone 7",
       "os": "11.4",
-      "xcode build version": "10o45e",
+      "host os": "Mac-10.13.6",
+      "pool": "Chrome",
+      "shards": 4
+    },
+    {
+      "xcode parallelization": true,
+      "include": "eg_cq_tests.json",
+      "device type": "iPhone 7",
+      "os": "11.4",
       "host os": "Mac-10.13.6",
       "pool": "Chrome"
     },
     {
-      "include": "eg_tests.json",
+      "xcode parallelization": true,
+      "include": "eg_cq_tests_ios12_simulator_fyi_experiment.json",
       "device type": "iPad Air 2",
       "os": "11.4",
-      "xcode build version": "10o45e",
+      "host os": "Mac-10.13.6",
+      "pool": "Chrome",
+      "shards": 4
+    },
+    {
+      "xcode parallelization": true,
+      "include": "eg_cq_tests.json",
+      "device type": "iPad Air 2",
+      "os": "11.4",
       "host os": "Mac-10.13.6",
       "pool": "Chrome"
     },
     {
-      "include": "eg_tests.json",
+      "xcode parallelization": true,
+      "include": "eg_cq_tests_ios12_simulator_fyi_experiment.json",
       "device type": "iPhone X",
       "os": "11.4",
-      "xcode build version": "10o45e",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool": "Chrome",
+      "shards": 4
     },
     {
+      "xcode parallelization": true,
       "include": "eg_cq_tests.json",
       "device type": "iPhone X",
       "os": "11.4",
-      "xcode build version": "10o45e",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome"
-    },
-    {
-      "include": "screen_size_dependent_tests.json",
-      "device type": "iPhone 6s Plus",
-      "os": "12.1",
-      "xcode build version": "10o45e",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome"
-    },
-    {
-      "include": "screen_size_dependent_tests.json",
-      "device type": "iPhone 6s",
-      "os": "12.1",
-      "xcode build version": "10o45e",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome"
-    },
-    {
-      "include": "screen_size_dependent_tests.json",
-      "device type": "iPad Air 2",
-      "os": "12.1",
-      "xcode build version": "10o45e",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome"
-    },
-    {
-      "include": "screen_size_dependent_tests.json",
-      "device type": "iPad Air 2",
-      "os": "11.4",
-      "xcode build version": "10o45e",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome"
-    },
-    {
-      "include": "common_tests.json",
-      "device type": "iPhone 6s",
-      "os": "11.4",
-      "xcode build version": "10o45e",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome"
-    },
-    {
-      "include": "eg_cq_tests.json",
-      "device type": "iPhone 6s",
-      "os": "12.1",
-      "xcode build version": "10o45e",
-      "host os": "Mac-10.13.6",
-      "pool": "Chrome"
-    },
-    {
-      "include": "eg_cq_tests.json",
-      "device type": "iPhone 6s",
-      "os": "11.4",
-      "xcode build version": "10o45e",
       "host os": "Mac-10.13.6",
       "pool": "Chrome"
     }
