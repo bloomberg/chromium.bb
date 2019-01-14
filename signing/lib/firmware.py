@@ -402,7 +402,7 @@ def WriteSignerNotes(keyset, outfile):
   outfile.write('Signed with keyset in %s\n' % recovery_key.keydir)
   outfile.write('recovery: %s\n' % recovery_key.GetSHA1sum())
 
-  root_keys = keyset.GetBuildtargetKeys('root_key')
+  root_keys = keyset.GetRootOfTrustKeys('root_key')
   if 'root_key' in root_keys and len(root_keys) == 1:
     outfile.write('root: %s\n' % (root_keys['root_key'].GetSHA1sum()))
   else:
