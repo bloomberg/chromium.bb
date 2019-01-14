@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -44,35 +45,10 @@ using ErrorCode = DemoSetupController::DemoSetupError::ErrorCode;
 using RecoveryMethod = DemoSetupController::DemoSetupError::RecoveryMethod;
 
 constexpr char kDemoRequisition[] = "cros-demo-mode";
+constexpr char kOfflinePolicyDirectoryName[] = "policy";
 constexpr char kOfflineDevicePolicyFileName[] = "device_policy";
 constexpr char kOfflineDeviceLocalAccountPolicyFileName[] =
     "local_account_policy";
-
-// The policy blob data for offline demo-mode is embedded into the filesystem.
-// TODO(mukai, agawronska): fix this when switching to dm-verity image.
-constexpr const base::FilePath::CharType kOfflineDemoModeDir[] =
-    FILE_PATH_LITERAL("/usr/share/demo_mode_resources/policy");
-
-bool CheckOfflinePolicyFilesExist(const base::FilePath& policy_dir,
-                                  std::string* message) {
-  base::FilePath device_policy_path =
-      policy_dir.AppendASCII(kOfflineDevicePolicyFileName);
-  if (!base::PathExists(device_policy_path)) {
-    *message = base::StringPrintf("Path %s does not exist",
-                                  device_policy_path.AsUTF8Unsafe().c_str());
-    return false;
-  }
-  base::FilePath local_account_policy_path =
-      policy_dir.AppendASCII(kOfflineDeviceLocalAccountPolicyFileName);
-  if (!base::PathExists(local_account_policy_path)) {
-    *message =
-        base::StringPrintf("Path %s does not exist",
-                           local_account_policy_path.AsUTF8Unsafe().c_str());
-    return false;
-  }
-
-  return true;
-}
 
 // Get the DeviceLocalAccountPolicyStore for the account_id.
 policy::CloudPolicyStore* GetDeviceLocalAccountPolicyStore(
@@ -350,9 +326,6 @@ DemoSetupController::DemoSetupError::~DemoSetupError() = default;
 base::string16 DemoSetupController::DemoSetupError::GetLocalizedErrorMessage()
     const {
   switch (error_code_) {
-    case ErrorCode::kNoOfflineResources:
-      return l10n_util::GetStringUTF16(
-          IDS_DEMO_SETUP_NO_OFFLINE_RESOURCES_ERROR);
     case ErrorCode::kOfflinePolicyError:
       return l10n_util::GetStringUTF16(IDS_DEMO_SETUP_OFFLINE_POLICY_ERROR);
     case ErrorCode::kOfflinePolicyStoreError:
@@ -521,10 +494,7 @@ void DemoSetupController::Enroll(OnSetupSuccess on_setup_success,
       LoadDemoResourcesCrOSComponent();
       return;
     case DemoSession::DemoModeConfig::kOffline: {
-      const base::FilePath offline_data_dir =
-          policy_dir_for_tests_.empty() ? base::FilePath(kOfflineDemoModeDir)
-                                        : policy_dir_for_tests_;
-      EnrollOffline(offline_data_dir);
+      EnrollOffline();
       return;
     }
     case DemoSession::DemoModeConfig::kNone:
@@ -608,10 +578,13 @@ void DemoSetupController::OnPreinstalledDemoResourcesLoaded(
   std::move(callback).Run(!preinstalled_demo_resources_->path().empty());
 }
 
-void DemoSetupController::EnrollOffline(const base::FilePath& policy_dir) {
+void DemoSetupController::EnrollOffline() {
   DCHECK_EQ(demo_config_, DemoSession::DemoModeConfig::kOffline);
-  DCHECK(policy_dir_.empty());
-  policy_dir_ = policy_dir;
+  DCHECK(!preinstalled_demo_resources_->path().empty());
+
+  const base::FilePath policy_dir =
+      preinstalled_demo_resources_->GetAbsolutePath(
+          base::FilePath(kOfflinePolicyDirectoryName));
 
   if (IsOnlineFreCheckRequired()) {
     SetupFailed(
@@ -622,34 +595,12 @@ void DemoSetupController::EnrollOffline(const base::FilePath& policy_dir) {
     return;
   }
 
-  VLOG(1) << "Checking if offline policy exists";
-  std::string* message = new std::string();
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&CheckOfflinePolicyFilesExist, policy_dir_, message),
-      base::BindOnce(&DemoSetupController::OnOfflinePolicyFilesExisted,
-                     weak_ptr_factory_.GetWeakPtr(), base::Owned(message)));
-}
-
-void DemoSetupController::OnOfflinePolicyFilesExisted(std::string* message,
-                                                      bool ok) {
-  DCHECK_EQ(demo_config_, DemoSession::DemoModeConfig::kOffline);
-  DCHECK(!policy_dir_.empty());
-
-  if (!ok) {
-    SetupFailed(DemoSetupError(DemoSetupError::ErrorCode::kNoOfflineResources,
-                               DemoSetupError::RecoveryMethod::kOnlineOnly,
-                               *message));
-    return;
-  }
-
   VLOG(1) << "Starting offline enrollment";
   policy::EnrollmentConfig config;
   config.mode = policy::EnrollmentConfig::MODE_OFFLINE_DEMO;
   config.management_domain = DemoSetupController::kDemoModeDomain;
   config.offline_policy_path =
-      policy_dir_.AppendASCII(kOfflineDevicePolicyFileName);
+      policy_dir.AppendASCII(kOfflineDevicePolicyFileName);
   enrollment_helper_ = EnterpriseEnrollmentHelper::Create(
       this, nullptr /* ad_join_delegate */, config,
       DemoSetupController::kDemoModeDomain);
@@ -675,9 +626,12 @@ void DemoSetupController::OnDeviceEnrolled() {
   // Try to load the policy for the device local account.
   if (demo_config_ == DemoSession::DemoModeConfig::kOffline) {
     VLOG(1) << "Loading offline policy";
-    DCHECK(!policy_dir_.empty());
+    DCHECK(!preinstalled_demo_resources_->path().empty());
+
     const base::FilePath file_path =
-        policy_dir_.AppendASCII(kOfflineDeviceLocalAccountPolicyFileName);
+        preinstalled_demo_resources_->GetAbsolutePath(
+            base::FilePath(kOfflinePolicyDirectoryName)
+                .AppendASCII(kOfflineDeviceLocalAccountPolicyFileName));
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
@@ -722,11 +676,6 @@ void DemoSetupController::SetPreinstalledOfflineResourcesPathForTesting(
 void DemoSetupController::SetDeviceLocalAccountPolicyStoreForTest(
     policy::CloudPolicyStore* store) {
   device_local_account_policy_store_ = store;
-}
-
-void DemoSetupController::SetOfflineDataDirForTest(
-    const base::FilePath& offline_dir) {
-  policy_dir_for_tests_ = offline_dir;
 }
 
 void DemoSetupController::OnDeviceLocalAccountPolicyLoaded(
@@ -797,12 +746,9 @@ void DemoSetupController::SetupFailed(const DemoSetupError& error) {
 
 void DemoSetupController::Reset() {
   DCHECK_NE(demo_config_, DemoSession::DemoModeConfig::kNone);
-  DCHECK_NE(demo_config_ == DemoSession::DemoModeConfig::kOffline,
-            policy_dir_.empty());
 
   // |demo_config_| is not reset here, because it is needed for retrying setup.
   enrollment_helper_.reset();
-  policy_dir_.clear();
   if (device_local_account_policy_store_) {
     device_local_account_policy_store_->RemoveObserver(this);
     device_local_account_policy_store_ = nullptr;

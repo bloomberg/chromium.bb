@@ -45,7 +45,6 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 
-using chromeos::test::SetupDummyOfflinePolicyDir;
 using testing::_;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
@@ -615,15 +614,10 @@ class EnterpriseEnrollmentConfigurationTest
         WizardController::default_controller()->demo_setup_controller();
 
     // Simulate offline data directory.
-    ASSERT_TRUE(test::SetupDummyOfflinePolicyDir("test", &fake_policy_dir_));
-    controller->SetOfflineDataDirForTest(fake_policy_dir_.GetPath());
-  }
-
-  void SimulateOfflineDemoModeResourcesAvailable() {
-    WizardController::default_controller()
-        ->demo_setup_controller()
-        ->SetPreinstalledOfflineResourcesPathForTesting(base::FilePath(
-            "/run/imageloader/offline-demo-mode-resources/0.0.1.1"));
+    ASSERT_TRUE(
+        chromeos::test::SetupDummyOfflinePolicyDir("test", &fake_policy_dir_));
+    controller->SetPreinstalledOfflineResourcesPathForTesting(
+        fake_policy_dir_.GetPath());
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -1092,7 +1086,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
                        TestDemoModeOfflineNetwork) {
   LoadConfiguration();
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
-  SimulateOfflineDemoModeResourcesAvailable();
+  SimulateOfflineEnvironment();
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
 }
 
@@ -1102,7 +1096,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
                        TestDemoModeAcceptEula) {
   LoadConfiguration();
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
-  SimulateOfflineDemoModeResourcesAvailable();
+  SimulateOfflineEnvironment();
   OobeScreenWaiter(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE).Wait();
 }
 
@@ -1112,12 +1106,11 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
                        TestDemoModeAcceptArcTos) {
   LoadConfiguration();
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
-  SimulateOfflineDemoModeResourcesAvailable();
+  SimulateOfflineEnvironment();
 
   test::OobeJS().Evaluate(
       "login.ArcTermsOfServiceScreen.setTosForTesting('Test "
       "Play Store Terms of Service');");
-  SimulateOfflineEnvironment();
   test::OobeJS().Evaluate(
       "$('demo-preferences-content').$$('oobe-dialog')."
       "querySelector('oobe-text-button').click();");

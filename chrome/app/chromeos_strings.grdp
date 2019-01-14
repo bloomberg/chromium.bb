@@ -537,9 +537,6 @@
     OK
   </message>
   <!-- Demo setup flow errors -->
-  <message name="IDS_DEMO_SETUP_NO_OFFLINE_RESOURCES_ERROR" desc="Error message shown on demo setup screen when offline demo resources are not available.">
-    Offline demo mode resources unavailable.
-  </message>
   <message name="IDS_DEMO_SETUP_OFFLINE_POLICY_ERROR" desc="Error message shown on demo setup screen when loading or parsing offline policy failed.">
     Could not read offline demo mode policy.
   </message>

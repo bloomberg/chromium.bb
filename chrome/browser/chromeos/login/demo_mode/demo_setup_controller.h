@@ -38,8 +38,6 @@ class DemoSetupController
    public:
     // Type of setup error.
     enum class ErrorCode {
-      // Offline resources not available on device.
-      kNoOfflineResources,
       // Cannot load or parse offline policy.
       kOfflinePolicyError,
       // Local account policy store error.
@@ -248,11 +246,8 @@ class DemoSetupController
   // Initiates offline enrollment that locks the device and sets up offline
   // policies required by demo mode. It requires no network connectivity since
   // all setup will be done locally. The policy files will be loaded from the
-  // |policy_dir|.
-  void EnrollOffline(const base::FilePath& policy_dir);
-
-  // Called when the checks of policy files for the offline demo mode is done.
-  void OnOfflinePolicyFilesExisted(std::string* message, bool ok);
+  // preinstalled demo resources.
+  void EnrollOffline();
 
   // Called when the device local account policy for the offline demo mode is
   // loaded.
@@ -289,14 +284,6 @@ class DemoSetupController
 
   // Callback to call when enrollment finishes successfully.
   OnSetupSuccess on_setup_success_;
-
-  // The directory which contains the policy blob files for the offline
-  // enrollment (i.e. device_policy and local_account_policy). Should be empty
-  // on the online enrollment.
-  base::FilePath policy_dir_;
-
-  // The directory containing policy blob files used for testing.
-  base::FilePath policy_dir_for_tests_;
 
   // The CloudPolicyStore for the device local account for the offline policy.
   policy::CloudPolicyStore* device_local_account_policy_store_ = nullptr;
