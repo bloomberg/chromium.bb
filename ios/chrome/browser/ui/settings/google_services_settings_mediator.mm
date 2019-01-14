@@ -62,9 +62,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   std::unique_ptr<SyncObserverBridge> _syncObserver;
 }
 
-// Unified consent service.
-@property(nonatomic, assign)
-    unified_consent::UnifiedConsentService* unifiedConsentService;
 // Returns YES if the user is authenticated.
 @property(nonatomic, assign, readonly) BOOL isAuthenticated;
 // Sync setup service.
@@ -95,13 +92,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* anonymizedDataCollectionPreference;
 
-// YES if at least one switch in the personalized section is currently animating
-// from one state to another.
-@property(nonatomic, assign) BOOL personalizedSectionBeingAnimated;
-// All the items for the personalized section.
-@property(nonatomic, strong, readonly) ItemArray personalizedItems;
-// Item for the autocomplete wallet feature.
-@property(nonatomic, strong, readonly) SyncSwitchItem* autocompleteWalletItem;
 // All the items for the non-personalized section.
 @property(nonatomic, strong, readonly) ItemArray nonPersonalizedItems;
 
@@ -113,18 +103,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (instancetype)initWithUserPrefService:(PrefService*)userPrefService
                        localPrefService:(PrefService*)localPrefService
-                       syncSetupService:(SyncSetupService*)syncSetupService
-                  unifiedConsentService:
-                      (unified_consent::UnifiedConsentService*)
-                          unifiedConsentService {
+                       syncSetupService:(SyncSetupService*)syncSetupService {
   self = [super init];
   if (self) {
     DCHECK(userPrefService);
     DCHECK(localPrefService);
     DCHECK(syncSetupService);
-    DCHECK(unifiedConsentService);
     _syncSetupService = syncSetupService;
-    _unifiedConsentService = unifiedConsentService;
     _autocompleteWalletPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
                    prefName:autofill::prefs::kAutofillWalletImportEnabled];
