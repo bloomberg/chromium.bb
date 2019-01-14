@@ -700,6 +700,10 @@ void PageHandler::CaptureScreenshot(
     modified_params.viewport_offset.x = clip.fromJust()->GetX();
     modified_params.viewport_offset.y = clip.fromJust()->GetY();
     modified_params.viewport_scale = clip.fromJust()->GetScale() * dpfactor;
+    if (IsUseZoomForDSFEnabled()) {
+      modified_params.viewport_offset.x *= screen_info.device_scale_factor;
+      modified_params.viewport_offset.y *= screen_info.device_scale_factor;
+    }
   }
 
   // We use WebDeviceEmulationParams to either emulate, set viewport or both.
