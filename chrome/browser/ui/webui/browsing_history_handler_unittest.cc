@@ -54,9 +54,7 @@ class TestSyncService : public browser_sync::TestProfileSyncService {
   explicit TestSyncService(Profile* profile)
       : browser_sync::TestProfileSyncService(
             CreateProfileSyncServiceParamsForTest(profile)),
-        state_(TransportState::ACTIVE) {
-    GetUserSettings()->SetFirstSetupComplete();
-  }
+        state_(TransportState::ACTIVE) {}
 
   TransportState GetTransportState() const override { return state_; }
 
@@ -134,8 +132,11 @@ class BrowsingHistoryHandlerTest : public ChromeRenderViewHostTestHarness {
  private:
   static std::unique_ptr<KeyedService> BuildFakeSyncService(
       content::BrowserContext* context) {
-    return std::make_unique<TestSyncService>(
+    auto service = std::make_unique<TestSyncService>(
         static_cast<TestingProfile*>(context));
+    service->Initialize();
+    service->GetUserSettings()->SetFirstSetupComplete();
+    return service;
   }
 
   static std::unique_ptr<KeyedService> BuildFakeWebHistoryService(
@@ -143,11 +144,11 @@ class BrowsingHistoryHandlerTest : public ChromeRenderViewHostTestHarness {
     std::unique_ptr<history::FakeWebHistoryService> service =
         std::make_unique<history::FakeWebHistoryService>();
     service->SetupFakeResponse(true /* success */, net::HTTP_OK);
-    return std::move(service);
+    return service;
   }
 
-  TestSyncService* sync_service_;
-  history::FakeWebHistoryService* web_history_service_;
+  TestSyncService* sync_service_ = nullptr;
+  history::FakeWebHistoryService* web_history_service_ = nullptr;
   std::unique_ptr<content::TestWebUI> web_ui_;
 };
 

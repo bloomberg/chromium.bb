@@ -12,7 +12,9 @@ namespace browser_sync {
 
 SyncUserSettingsImpl::SyncUserSettingsImpl(ProfileSyncService* service,
                                            syncer::SyncPrefs* prefs)
-    : service_(service), prefs_(prefs) {}
+    : service_(service),
+      prefs_(prefs),
+      registered_types_(service_->GetRegisteredDataTypes()) {}
 
 SyncUserSettingsImpl::~SyncUserSettingsImpl() = default;
 
@@ -58,15 +60,14 @@ bool SyncUserSettingsImpl::IsSyncEverythingEnabled() const {
 }
 
 syncer::ModelTypeSet SyncUserSettingsImpl::GetChosenDataTypes() const {
-  syncer::ModelTypeSet types = service_->GetPreferredDataTypes();
+  syncer::ModelTypeSet types = GetPreferredDataTypes();
   types.RetainAll(syncer::UserSelectableTypes());
   return types;
 }
 
 void SyncUserSettingsImpl::SetChosenDataTypes(bool sync_everything,
                                               syncer::ModelTypeSet types) {
-  // TODO(crbug.com/884159): Write to prefs directly (might be tricky because it
-  // needs the registered types).
+  // TODO(crbug.com/884159): Write to prefs directly.
   service_->OnUserChoseDatatypes(sync_everything, types);
 }
 
@@ -128,6 +129,17 @@ bool SyncUserSettingsImpl::SetDecryptionPassphrase(
     const std::string& passphrase) {
   // TODO(crbug.com/884159): Use SyncServiceCrypto.
   return service_->SetDecryptionPassphrase(passphrase);
+}
+
+syncer::ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
+  syncer::ModelTypeSet types = Union(
+      prefs_->GetPreferredDataTypes(registered_types_), syncer::ControlTypes());
+  if (prefs_->IsLocalSyncEnabled()) {
+    types.Remove(syncer::APP_LIST);
+    types.Remove(syncer::USER_CONSENTS);
+    types.Remove(syncer::USER_EVENTS);
+  }
+  return types;
 }
 
 }  // namespace browser_sync

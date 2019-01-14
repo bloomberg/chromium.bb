@@ -164,7 +164,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       local_device_(std::move(init_params.local_device_info_provider)),
       sync_prefs_(sync_client_->GetPrefService()),
       identity_manager_(init_params.identity_manager),
-      user_settings_(this, &sync_prefs_),
       auth_manager_(std::make_unique<SyncAuthManager>(
           &sync_prefs_,
           identity_manager_,
@@ -282,6 +281,8 @@ void ProfileSyncService::Initialize() {
               device_info_sync_bridge_->change_processor()
                   ->GetControllerDelegate()
                   .get()));
+
+  user_settings_ = std::make_unique<SyncUserSettingsImpl>(this, &sync_prefs_);
 
   sync_prefs_.AddSyncPrefObserver(this);
 
@@ -730,11 +731,11 @@ void ProfileSyncService::StopImpl(SyncStopDataFate data_fate) {
 }
 
 syncer::SyncUserSettings* ProfileSyncService::GetUserSettings() {
-  return &user_settings_;
+  return user_settings_.get();
 }
 
 const syncer::SyncUserSettings* ProfileSyncService::GetUserSettings() const {
-  return &user_settings_;
+  return user_settings_.get();
 }
 
 int ProfileSyncService::GetDisableReasons() const {
@@ -745,7 +746,7 @@ int ProfileSyncService::GetDisableReasons() const {
   DCHECK(IsSyncAllowedByFlag());
 
   int result = DISABLE_REASON_NONE;
-  if (!user_settings_.IsSyncAllowedByPlatform()) {
+  if (!user_settings_->IsSyncAllowedByPlatform()) {
     result = result | DISABLE_REASON_PLATFORM_OVERRIDE;
   }
   if (sync_prefs_.IsManaged() || sync_disabled_by_admin_) {
@@ -827,7 +828,7 @@ syncer::SyncService::TransportState ProfileSyncService::GetTransportState()
 
 bool ProfileSyncService::IsFirstSetupComplete() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return user_settings_.IsFirstSetupComplete();
+  return user_settings_->IsFirstSetupComplete();
 }
 
 void ProfileSyncService::UpdateLastSyncedTime() {
@@ -985,7 +986,7 @@ void ProfileSyncService::OnEngineInitialized(
   // Auto-start means IsFirstSetupComplete gets set automatically.
   if (start_behavior_ == AUTO_START && !IsFirstSetupComplete()) {
     // This will trigger a configure if it completes setup.
-    user_settings_.SetFirstSetupComplete();
+    user_settings_->SetFirstSetupComplete();
   } else if (CanConfigureDataTypes(/*bypass_setup_in_progress_check=*/false)) {
     // Datatype downloads on restart are generally due to newly supported
     // datatypes (although it's also possible we're picking up where a failed
@@ -1414,15 +1415,7 @@ syncer::ModelTypeSet ProfileSyncService::GetForcedDataTypes() const {
 
 syncer::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  syncer::ModelTypeSet preferred_types =
-      Union(sync_prefs_.GetPreferredDataTypes(GetRegisteredDataTypes()),
-            syncer::ControlTypes());
-  if (IsLocalSyncEnabled()) {
-    preferred_types.Remove(syncer::APP_LIST);
-    preferred_types.Remove(syncer::USER_CONSENTS);
-    preferred_types.Remove(syncer::USER_EVENTS);
-  }
-  return Union(preferred_types, GetForcedDataTypes());
+  return Union(user_settings_->GetPreferredDataTypes(), GetForcedDataTypes());
 }
 
 syncer::ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {

@@ -548,7 +548,7 @@ class ProfileSyncService : public syncer::SyncService,
   // email address and sign-out upon error.
   identity::IdentityManager* const identity_manager_;
 
-  SyncUserSettingsImpl user_settings_;
+  std::unique_ptr<SyncUserSettingsImpl> user_settings_;
 
   // Handles tracking of the authenticated account and acquiring access tokens.
   // Only null after Shutdown().

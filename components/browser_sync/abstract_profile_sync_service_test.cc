@@ -174,7 +174,7 @@ void AbstractProfileSyncServiceTest::CreateSyncService(
   EXPECT_CALL(*components, CreateSyncEngine(_, _, _, _))
       .WillOnce(Return(ByMove(std::move(engine))));
 
-  sync_service_->GetUserSettings()->SetFirstSetupComplete();
+  sync_service_->sync_prefs()->SetFirstSetupComplete();
 }
 
 CreateRootHelper::CreateRootHelper(AbstractProfileSyncServiceTest* test,

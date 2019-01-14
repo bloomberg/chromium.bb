@@ -51,9 +51,12 @@ class SyncUserSettingsImpl : public syncer::SyncUserSettings {
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
 
+  syncer::ModelTypeSet GetPreferredDataTypes() const;
+
  private:
   ProfileSyncService* const service_;
   syncer::SyncPrefs* const prefs_;
+  const syncer::ModelTypeSet registered_types_;
 
   // Whether sync is currently allowed on this platform.
   bool sync_allowed_by_platform_ = true;
