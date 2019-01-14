@@ -288,13 +288,6 @@ TEST_F(RasterImplementationGLESTest, OrderingBarrierCHROMIUM) {
   ri_->OrderingBarrierCHROMIUM();
 }
 
-TEST_F(RasterImplementationGLESTest, GenSyncTokenCHROMIUM) {
-  GLbyte sync_token_data[GL_SYNC_TOKEN_SIZE_CHROMIUM] = {};
-
-  EXPECT_CALL(*gl_, GenSyncTokenCHROMIUM(sync_token_data)).Times(1);
-  ri_->GenSyncTokenCHROMIUM(sync_token_data);
-}
-
 TEST_F(RasterImplementationGLESTest, GenUnverifiedSyncTokenCHROMIUM) {
   GLbyte sync_token_data[GL_SYNC_TOKEN_SIZE_CHROMIUM] = {};
 
