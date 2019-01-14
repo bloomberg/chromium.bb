@@ -28,7 +28,9 @@ class LayerTreeImplTestSettings : public LayerTreeSettings {
 
 class LayerTreeImplTest : public testing::Test {
  public:
-  LayerTreeImplTest() : impl_test_(LayerTreeImplTestSettings()) {}
+  LayerTreeImplTest(
+      const LayerTreeSettings& settings = LayerTreeImplTestSettings())
+      : impl_test_(settings) {}
 
   FakeLayerTreeHostImpl& host_impl() const { return *impl_test_.host_impl(); }
 
@@ -2361,6 +2363,142 @@ TEST_F(LayerTreeImplTest, StubSwapPromisesAreDroppedWhenSwapFails) {
         SwapPromise::DidNotSwapReason::SWAP_FAILS);
     EXPECT_FALSE(weak_promise);
   }
+}
+
+namespace {
+class CommitToPendingTreeLayerTreeImplTestSettings : public LayerTreeSettings {
+ public:
+  CommitToPendingTreeLayerTreeImplTestSettings() {
+    commit_to_active_tree = false;
+  }
+};
+
+class CommitToPendingTreeLayerTreeImplTest : public LayerTreeImplTest {
+ public:
+  CommitToPendingTreeLayerTreeImplTest()
+      : LayerTreeImplTest(CommitToPendingTreeLayerTreeImplTestSettings()) {}
+};
+}  // namespace
+
+TEST_F(CommitToPendingTreeLayerTreeImplTest,
+       ElementIdToAnimationMapsTrackOnlyOnSyncTree) {
+  ASSERT_FALSE(host_impl().CommitToActiveTree());
+
+  // When we have a pending tree (e.g. commit_to_active_tree is false), the
+  // various ElementId to animation maps should not track anything for the
+  // active tree (as they are only used on the sync tree).
+  LayerTreeImpl* active_tree = host_impl().active_tree();
+  active_tree->BuildPropertyTreesForTesting();
+  LayerImpl* active_root = active_tree->root_layer_for_testing();
+
+  auto& active_opacity_map =
+      active_tree->element_id_to_opacity_animations_for_testing();
+  ASSERT_EQ(active_opacity_map.size(), 0u);
+  active_tree->SetOpacityMutated(active_root->element_id(), 0.5f);
+  EXPECT_EQ(active_opacity_map.size(), 0u);
+
+  auto& active_transform_map =
+      active_tree->element_id_to_transform_animations_for_testing();
+  ASSERT_EQ(active_transform_map.size(), 0u);
+  active_tree->SetTransformMutated(active_root->element_id(), gfx::Transform());
+  EXPECT_EQ(active_transform_map.size(), 0u);
+
+  auto& active_filter_map =
+      active_tree->element_id_to_filter_animations_for_testing();
+  ASSERT_EQ(active_filter_map.size(), 0u);
+  active_tree->SetFilterMutated(active_root->element_id(), FilterOperations());
+  EXPECT_EQ(active_filter_map.size(), 0u);
+
+  // The pending/recycle tree however should track them. Here we need two nodes
+  // (the root and a child) as we will be adding entries for both the pending
+  // and recycle tree cases.
+  host_impl().CreatePendingTree();
+  LayerTreeImpl* pending_tree = host_impl().pending_tree();
+  std::unique_ptr<LayerImpl> pending_root_ptr =
+      LayerImpl::Create(pending_tree, 2);
+  LayerImpl* pending_root = pending_root_ptr.get();
+  pending_tree->SetRootLayerForTesting(std::move(pending_root_ptr));
+
+  std::unique_ptr<LayerImpl> child_ptr =
+      LayerImpl::Create(host_impl().pending_tree(), 3);
+  // The easiest way to force the child to have a TransformNode is to make it
+  // fixed position. Similarly a non-one opacity forces an EffectNode.
+  child_ptr->test_properties()->position_constraint.set_is_fixed_position(true);
+  child_ptr->test_properties()->opacity = 0.9f;
+  LayerImpl* child = child_ptr.get();
+  pending_root->test_properties()->AddChild(std::move(child_ptr));
+  pending_tree->BuildPropertyTreesForTesting();
+
+  auto& pending_opacity_map =
+      pending_tree->element_id_to_opacity_animations_for_testing();
+  ASSERT_EQ(pending_opacity_map.size(), 0u);
+  pending_tree->SetOpacityMutated(pending_root->element_id(), 0.5f);
+  EXPECT_EQ(pending_opacity_map.size(), 1u);
+
+  auto& pending_transform_map =
+      pending_tree->element_id_to_transform_animations_for_testing();
+  ASSERT_EQ(pending_transform_map.size(), 0u);
+  pending_tree->SetTransformMutated(pending_root->element_id(),
+                                    gfx::Transform());
+  EXPECT_EQ(pending_transform_map.size(), 1u);
+
+  auto& pending_filter_map =
+      pending_tree->element_id_to_filter_animations_for_testing();
+  ASSERT_EQ(pending_filter_map.size(), 0u);
+  pending_tree->SetFilterMutated(pending_root->element_id(),
+                                 FilterOperations());
+  EXPECT_EQ(pending_filter_map.size(), 1u);
+
+  // Finally, check the recycle tree - this should still track them.
+  host_impl().ActivateSyncTree();
+  LayerTreeImpl* recycle_tree = host_impl().recycle_tree();
+  ASSERT_TRUE(recycle_tree);
+
+  auto& recycle_opacity_map =
+      recycle_tree->element_id_to_opacity_animations_for_testing();
+  ASSERT_EQ(recycle_opacity_map.size(), 1u);
+  recycle_tree->SetOpacityMutated(child->element_id(), 0.5f);
+  EXPECT_EQ(recycle_opacity_map.size(), 2u);
+
+  auto& recycle_transform_map =
+      recycle_tree->element_id_to_transform_animations_for_testing();
+  ASSERT_EQ(recycle_transform_map.size(), 1u);
+  recycle_tree->SetTransformMutated(child->element_id(), gfx::Transform());
+  EXPECT_EQ(recycle_transform_map.size(), 2u);
+
+  auto& recycle_filter_map =
+      recycle_tree->element_id_to_filter_animations_for_testing();
+  ASSERT_EQ(recycle_filter_map.size(), 1u);
+  recycle_tree->SetFilterMutated(child->element_id(), FilterOperations());
+  EXPECT_EQ(recycle_filter_map.size(), 2u);
+}
+
+TEST_F(LayerTreeImplTest, ElementIdToAnimationMapsTrackOnlyOnSyncTree) {
+  ASSERT_TRUE(host_impl().CommitToActiveTree());
+
+  // When we are commiting directly to the active tree, the various ElementId to
+  // animation maps should track on the active tree (as it is the sync tree, and
+  // they are used on the sync tree).
+  LayerTreeImpl* active_tree = host_impl().active_tree();
+  active_tree->BuildPropertyTreesForTesting();
+  LayerImpl* root = active_tree->root_layer_for_testing();
+
+  auto& opacity_map =
+      active_tree->element_id_to_opacity_animations_for_testing();
+  ASSERT_EQ(opacity_map.size(), 0u);
+  active_tree->SetOpacityMutated(root->element_id(), 0.5f);
+  EXPECT_EQ(opacity_map.size(), 1u);
+
+  auto& transform_map =
+      active_tree->element_id_to_transform_animations_for_testing();
+  ASSERT_EQ(transform_map.size(), 0u);
+  active_tree->SetTransformMutated(root->element_id(), gfx::Transform());
+  EXPECT_EQ(transform_map.size(), 1u);
+
+  auto& filter_map = active_tree->element_id_to_filter_animations_for_testing();
+  ASSERT_EQ(filter_map.size(), 0u);
+  active_tree->SetFilterMutated(root->element_id(), FilterOperations());
+  EXPECT_EQ(filter_map.size(), 1u);
 }
 
 }  // namespace
