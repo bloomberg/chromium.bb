@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package com.android.webview.chromium;
+package org.chromium.components.embedder_support.application;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -19,12 +19,17 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 /**
- * WebView-side workaround for the Android O framework bug described in https://crbug.com/809636.
+ * Workaround for the Android O framework bug described in https://crbug.com/809636 and
+ * https://crbug.com/920692.
  *
  * If the application which uses WebView has a preloaded_fonts metadata key in its manifest, the
  * framework's font preloading code will attempt to use the application resource ID specified there
  * to do font preloading in the WebView renderer process, which will fail as the resource will not
  * exist in the WebView APK, resulting in a crash.
+ *
+ * If Chromium has a preloaded_fonts metadata key in its manifest and the framework's font
+ * preloading code attempts to use load it from a renderer process, it will fail on a
+ * SecurityException.
  *
  * However, Application.onCreate runs before the font preloading attempt, and can use reflection to
  * install a replacement implementation of IPackageManager into ActivityThread. This replacement
@@ -104,7 +109,7 @@ public class FontPreloadingWorkaround {
                 }
             } catch (InvocationTargetException e) {
                 throw e.getTargetException();
-            } catch (ReflectiveOperationException e) {
+            } catch (IllegalAccessException e) {
                 throw new RuntimeException("Reflection failed when proxying IPackageManager", e);
             }
             return result;

@@ -6,6 +6,8 @@ package com.android.webview.chromium;
 
 import android.app.Application;
 
+import org.chromium.components.embedder_support.application.FontPreloadingWorkaround;
+
 /**
  * Application subclass for standalone WebView, to allow installing the font preloading workaround
  * in renderer processes before the problematic code in ActivityThread runs.
