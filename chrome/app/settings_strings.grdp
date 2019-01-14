@@ -3427,7 +3427,7 @@
       Add account
     </message>
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_DESCRIPTION" desc="Description of the Account Manager Settings page. Shown just below the title of the page.">
-      All of your signed in Google accounts from apps and websites can be managed here.
+      All of your signed in Google Accounts from apps and websites can be managed here. Apps and websites that have your permission can access the account information they need to work properly.
     </message>
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_LIST_HEADER" desc="List header for Account List in Account Manager Settings page.">
       Accounts
