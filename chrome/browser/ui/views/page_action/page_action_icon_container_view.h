@@ -19,6 +19,7 @@ class Browser;
 class CommandUpdater;
 class FindBarIcon;
 class ManagePasswordsIconViews;
+class TranslateIconView;
 class ZoomView;
 
 class PageActionIconContainerView : public views::View,
@@ -75,6 +76,7 @@ class PageActionIconContainerView : public views::View,
   ZoomView* zoom_view_ = nullptr;
   FindBarIcon* find_bar_icon_ = nullptr;
   ManagePasswordsIconViews* manage_passwords_icon_ = nullptr;
+  TranslateIconView* translate_icon_ = nullptr;
   std::vector<PageActionIconView*> page_action_icons_;
 
   ScopedObserver<zoom::ZoomEventManager, zoom::ZoomEventManagerObserver>

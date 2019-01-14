@@ -44,8 +44,6 @@
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
-#include "chrome/browser/ui/views/translate/translate_bubble_view.h"
-#include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -378,22 +376,6 @@ void ToolbarView::ShowBookmarkBubble(
   BookmarkBubbleView::ShowBubble(anchor_view, star_view, gfx::Rect(), nullptr,
                                  observer, std::move(delegate),
                                  browser_->profile(), url, already_bookmarked);
-}
-
-void ToolbarView::ShowTranslateBubble(
-    content::WebContents* web_contents,
-    translate::TranslateStep step,
-    translate::TranslateErrors::Type error_type,
-    bool is_user_gesture) {
-  views::View* const anchor_view = location_bar();
-  PageActionIconView* translate_icon_view =
-      location_bar()->translate_icon_view();
-
-  TranslateBubbleView::ShowBubble(anchor_view, translate_icon_view,
-                                  gfx::Point(), web_contents, step, error_type,
-                                  is_user_gesture
-                                      ? TranslateBubbleView::USER_GESTURE
-                                      : TranslateBubbleView::AUTOMATIC);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

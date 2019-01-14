@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/page_action/zoom_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
+#include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "ui/views/layout/box_layout.h"
 
 PageActionIconContainerView::Params::Params() = default;
@@ -39,6 +40,12 @@ PageActionIconContainerView::PageActionIconContainerView(const Params& params)
         manage_passwords_icon_ = new ManagePasswordsIconViews(
             params.command_updater, params.page_action_icon_delegate);
         page_action_icons_.push_back(manage_passwords_icon_);
+        break;
+      case PageActionIconType::kTranslate:
+        DCHECK(params.command_updater);
+        translate_icon_ = new TranslateIconView(
+            params.command_updater, params.page_action_icon_delegate);
+        page_action_icons_.push_back(translate_icon_);
         break;
       case PageActionIconType::kZoom:
         zoom_view_ = new ZoomView(params.location_bar_delegate,
@@ -74,6 +81,8 @@ PageActionIconView* PageActionIconContainerView::GetPageActionIconView(
       return find_bar_icon_;
     case PageActionIconType::kManagePasswords:
       return manage_passwords_icon_;
+    case PageActionIconType::kTranslate:
+      return translate_icon_;
     case PageActionIconType::kZoom:
       return zoom_view_;
   }
