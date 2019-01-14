@@ -65,8 +65,9 @@ void WaylandOutputManager::RemoveWaylandOutput(const uint32_t output_id) {
   OnWaylandOutputRemoved(output_id);
 }
 
-std::unique_ptr<WaylandScreen> WaylandOutputManager::CreateWaylandScreen() {
-  auto wayland_screen = std::make_unique<WaylandScreen>();
+std::unique_ptr<WaylandScreen> WaylandOutputManager::CreateWaylandScreen(
+    WaylandConnection* connection) {
+  auto wayland_screen = std::make_unique<WaylandScreen>(connection);
   wayland_screen_ = wayland_screen->GetWeakPtr();
 
   // As long as |wl_output| sends geometry and other events asynchronously (that

@@ -115,7 +115,8 @@ class OzonePlatformWayland : public OzonePlatform {
     // The WaylandConnection and the WaylandOutputManager must be created before
     // PlatformScreen.
     DCHECK(connection_ && connection_->wayland_output_manager());
-    return connection_->wayland_output_manager()->CreateWaylandScreen();
+    return connection_->wayland_output_manager()->CreateWaylandScreen(
+        connection_.get());
   }
 
   PlatformClipboard* GetPlatformClipboard() override {
