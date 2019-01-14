@@ -476,4 +476,6 @@ if get_option('weston-launch')
 		include_directories: include_directories('..'),
 		install: true
 	)
+
+	meson.add_install_script('echo', 'REMINDER: You are installing weston-launch, please make it setuid-root.')
 endif
