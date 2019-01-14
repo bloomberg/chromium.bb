@@ -554,8 +554,7 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
         profile, drivefs_mount_point.DirName());
     return new drive::DriveIntegrationService(
         profile, nullptr, fake_drive_service_, "", test_cache_root_.GetPath(),
-        nullptr,
-        fake_drivefs_helper_->CreateFakeDriveFsConnectionDelegateFactory());
+        nullptr, fake_drivefs_helper_->CreateFakeDriveFsListenerFactory());
   }
 
   base::ScopedTempDir test_cache_root_;
@@ -655,7 +654,7 @@ class MultiProfileDriveFileSystemExtensionApiTest :
         std::make_unique<drive::FakeDriveFsHelper>(profile, drivefs_dir);
     return new drive::DriveIntegrationService(
         profile, nullptr, service, std::string(), cache_dir, nullptr,
-        drivefs_helper->CreateFakeDriveFsConnectionDelegateFactory());
+        drivefs_helper->CreateFakeDriveFsListenerFactory());
   }
 
   void AddTestHostedDocuments() {
@@ -753,8 +752,7 @@ class LocalAndDriveFileSystemExtensionApiTest
         profile, drivefs_mount_point.DirName());
     return new drive::DriveIntegrationService(
         profile, nullptr, fake_drive_service_, "", test_cache_root_.GetPath(),
-        nullptr,
-        fake_drivefs_helper_->CreateFakeDriveFsConnectionDelegateFactory());
+        nullptr, fake_drivefs_helper_->CreateFakeDriveFsListenerFactory());
   }
 
  private:

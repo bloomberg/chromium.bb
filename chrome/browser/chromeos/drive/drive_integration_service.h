@@ -101,8 +101,8 @@ class DriveIntegrationService : public KeyedService,
                                 public drivefs::DriveFsHost::MountObserver {
  public:
   class PreferenceWatcher;
-  using DriveFsMojoConnectionDelegateFactory = base::RepeatingCallback<
-      std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>()>;
+  using DriveFsMojoListenerFactory = base::RepeatingCallback<
+      std::unique_ptr<drivefs::DriveFsBootstrapListener>()>;
 
   // test_drive_service, test_mount_point_name, test_cache_root and
   // test_file_system are used by tests to inject customized instances.
@@ -117,8 +117,7 @@ class DriveIntegrationService : public KeyedService,
       const std::string& test_mount_point_name,
       const base::FilePath& test_cache_root,
       FileSystemInterface* test_file_system,
-      DriveFsMojoConnectionDelegateFactory
-          test_drivefs_mojo_connection_delegate_factory = {});
+      DriveFsMojoListenerFactory test_drivefs_mojo_listener_factory = {});
   ~DriveIntegrationService() override;
 
   // KeyedService override:

@@ -25,25 +25,6 @@
 namespace drivefs {
 namespace {
 
-class FakeDriveFsMojoConnectionDelegate
-    : public drivefs::DriveFsHost::MojoConnectionDelegate {
- public:
-  FakeDriveFsMojoConnectionDelegate(
-      drivefs::mojom::DriveFsBootstrapPtrInfo bootstrap)
-      : bootstrap_(std::move(bootstrap)) {}
-
-  drivefs::mojom::DriveFsBootstrapPtrInfo InitializeMojoConnection() override {
-    return std::move(bootstrap_);
-  }
-
-  void AcceptMojoConnection(base::ScopedFD handle) override { NOTREACHED(); }
-
- private:
-  drivefs::mojom::DriveFsBootstrapPtrInfo bootstrap_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeDriveFsMojoConnectionDelegate);
-};
-
 std::vector<std::pair<base::RepeatingCallback<std::string()>,
                       base::WeakPtr<FakeDriveFs>>>&
 GetRegisteredFakeDriveFsIntances() {
@@ -85,6 +66,18 @@ base::FilePath MaybeMountDriveFs(
 }
 
 }  // namespace
+
+FakeDriveFsBootstrapListener::FakeDriveFsBootstrapListener(
+    drivefs::mojom::DriveFsBootstrapPtrInfo bootstrap)
+    : bootstrap_(std::move(bootstrap)) {}
+
+FakeDriveFsBootstrapListener::~FakeDriveFsBootstrapListener() = default;
+
+void FakeDriveFsBootstrapListener::SendInvitationOverPipe(base::ScopedFD) {}
+
+mojom::DriveFsBootstrapPtr FakeDriveFsBootstrapListener::bootstrap() {
+  return mojo::MakeProxy(std::move(bootstrap_));
+}
 
 struct FakeDriveFs::FileMetadata {
   std::string mime_type;
@@ -255,16 +248,15 @@ void FakeDriveFs::RegisterMountingForAccountId(
                                                   weak_factory_.GetWeakPtr());
 }
 
-std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>
-FakeDriveFs::CreateConnectionDelegate() {
+std::unique_ptr<drivefs::DriveFsBootstrapListener>
+FakeDriveFs::CreateMojoListener() {
   drivefs::mojom::DriveFsBootstrapPtrInfo bootstrap;
   if (bootstrap_binding_.is_bound())
     bootstrap_binding_.Unbind();
   bootstrap_binding_.Bind(mojo::MakeRequest(&bootstrap));
   pending_delegate_request_ = mojo::MakeRequest(&delegate_);
   delegate_->OnMounted();
-  return std::make_unique<FakeDriveFsMojoConnectionDelegate>(
-      std::move(bootstrap));
+  return std::make_unique<FakeDriveFsBootstrapListener>(std::move(bootstrap));
 }
 
 void FakeDriveFs::SetMetadata(const base::FilePath& path,

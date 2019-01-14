@@ -39,6 +39,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/components/drivefs/drivefs_bootstrap.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/drive/chromeos/file_cache.h"
@@ -508,12 +509,11 @@ class DriveIntegrationService::DriveFsHolder
  public:
   DriveFsHolder(Profile* profile,
                 drivefs::DriveFsHost::MountObserver* mount_observer,
-                DriveFsMojoConnectionDelegateFactory
-                    test_drivefs_mojo_connection_delegate_factory)
+                DriveFsMojoListenerFactory test_drivefs_mojo_listener_factory)
       : profile_(profile),
         mount_observer_(mount_observer),
-        test_drivefs_mojo_connection_delegate_factory_(
-            std::move(test_drivefs_mojo_connection_delegate_factory)),
+        test_drivefs_mojo_listener_factory_(
+            std::move(test_drivefs_mojo_listener_factory)),
         drivefs_host_(profile_->GetPath(),
                       this,
                       this,
@@ -575,18 +575,17 @@ class DriveIntegrationService::DriveFsHolder
     return profile_salt_;
   }
 
-  std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>
-  CreateMojoConnectionDelegate() override {
-    if (test_drivefs_mojo_connection_delegate_factory_)
-      return test_drivefs_mojo_connection_delegate_factory_.Run();
-    return Delegate::CreateMojoConnectionDelegate();
+  std::unique_ptr<drivefs::DriveFsBootstrapListener> CreateMojoListener()
+      override {
+    if (test_drivefs_mojo_listener_factory_)
+      return test_drivefs_mojo_listener_factory_.Run();
+    return Delegate::CreateMojoListener();
   }
 
   Profile* const profile_;
   drivefs::DriveFsHost::MountObserver* const mount_observer_;
 
-  const DriveFsMojoConnectionDelegateFactory
-      test_drivefs_mojo_connection_delegate_factory_;
+  const DriveFsMojoListenerFactory test_drivefs_mojo_listener_factory_;
 
   drivefs::DriveFsHost drivefs_host_;
 
@@ -627,8 +626,7 @@ DriveIntegrationService::DriveIntegrationService(
     const std::string& test_mount_point_name,
     const base::FilePath& test_cache_root,
     FileSystemInterface* test_file_system,
-    DriveFsMojoConnectionDelegateFactory
-        test_drivefs_mojo_connection_delegate_factory)
+    DriveFsMojoListenerFactory test_drivefs_mojo_listener_factory)
     : profile_(profile),
       state_(NOT_INITIALIZED),
       enabled_(false),
@@ -636,13 +634,12 @@ DriveIntegrationService::DriveIntegrationService(
       cache_root_directory_(!test_cache_root.empty()
                                 ? test_cache_root
                                 : util::GetCacheRootPath(profile)),
-      drivefs_holder_(
-          base::FeatureList::IsEnabled(chromeos::features::kDriveFs)
-              ? std::make_unique<DriveFsHolder>(
-                    profile_,
-                    this,
-                    std::move(test_drivefs_mojo_connection_delegate_factory))
-              : nullptr),
+      drivefs_holder_(base::FeatureList::IsEnabled(chromeos::features::kDriveFs)
+                          ? std::make_unique<DriveFsHolder>(
+                                profile_,
+                                this,
+                                std::move(test_drivefs_mojo_listener_factory))
+                          : nullptr),
       preference_watcher_(preference_watcher),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

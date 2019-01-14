@@ -39,10 +39,9 @@ FakeDriveFsHelper::FakeDriveFsHelper(Profile* profile,
 }
 FakeDriveFsHelper::~FakeDriveFsHelper() = default;
 
-base::RepeatingCallback<
-    std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>()>
-FakeDriveFsHelper::CreateFakeDriveFsConnectionDelegateFactory() {
-  return base::BindRepeating(&drivefs::FakeDriveFs::CreateConnectionDelegate,
+base::RepeatingCallback<std::unique_ptr<drivefs::DriveFsBootstrapListener>()>
+FakeDriveFsHelper::CreateFakeDriveFsListenerFactory() {
+  return base::BindRepeating(&drivefs::FakeDriveFs::CreateMojoListener,
                              base::Unretained(&fake_drivefs_));
 }
 

@@ -18,6 +18,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/drivefs/drivefs_host_observer.h"
+#include "chromeos/components/drivefs/fake_drivefs.h"
 #include "chromeos/components/drivefs/pending_connection_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "components/drive/drive_notification_manager.h"
@@ -40,23 +41,6 @@ namespace {
 
 using testing::_;
 using MountFailure = DriveFsHost::MountObserver::MountFailure;
-
-class TestingMojoConnectionDelegate
-    : public DriveFsHost::MojoConnectionDelegate {
- public:
-  TestingMojoConnectionDelegate(
-      mojom::DriveFsBootstrapPtrInfo pending_bootstrap)
-      : pending_bootstrap_(std::move(pending_bootstrap)) {}
-
-  mojom::DriveFsBootstrapPtrInfo InitializeMojoConnection() override {
-    return std::move(pending_bootstrap_);
-  }
-
-  void AcceptMojoConnection(base::ScopedFD handle) override {}
-
- private:
-  mojom::DriveFsBootstrapPtrInfo pending_bootstrap_;
-};
 
 class MockDriveFs : public mojom::DriveFsInterceptorForTesting,
                     public mojom::SearchQuery {
@@ -147,10 +131,9 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
     return "salt-" + account_id_.GetAccountIdKey();
   }
 
-  std::unique_ptr<DriveFsHost::MojoConnectionDelegate>
-  CreateMojoConnectionDelegate() override {
+  std::unique_ptr<DriveFsBootstrapListener> CreateMojoListener() override {
     DCHECK(pending_bootstrap_);
-    return std::make_unique<TestingMojoConnectionDelegate>(
+    return std::make_unique<FakeDriveFsBootstrapListener>(
         std::move(pending_bootstrap_));
   }
 
@@ -388,6 +371,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
     delegate_ptr_.reset();
     base::RunLoop().RunUntilIdle();
     testing::Mock::VerifyAndClearExpectations(disk_manager_.get());
+    testing::Mock::VerifyAndClearExpectations(host_delegate_.get());
   }
 
   void ExpectAccessToken(mojom::AccessTokenStatus expected_status,
@@ -659,8 +643,7 @@ TEST_F(DriveFsHostTest, BreakConnectionAfterMount) {
 }
 
 TEST_F(DriveFsHostTest, BreakConnectionBeforeMount) {
-  auto token = StartMount();
-  DispatchMountSuccessEvent(token);
+  ASSERT_NO_FATAL_FAILURE(EstablishConnection());
   EXPECT_FALSE(host_->IsMounted());
 
   base::Optional<base::TimeDelta> empty;

@@ -40,6 +40,7 @@ class DiskMountManager;
 
 namespace drivefs {
 
+class DriveFsBootstrapListener;
 class DriveFsHostObserver;
 
 // A host for a DriveFS process. In addition to managing its lifetime via
@@ -47,20 +48,6 @@ class DriveFsHostObserver;
 // file manager.
 class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
  public:
-  // Public for overriding in tests. A default implementation is used under
-  // normal conditions.
-  class MojoConnectionDelegate {
-   public:
-    virtual ~MojoConnectionDelegate() = default;
-
-    // Prepare the mojo connection to be used to communicate with the DriveFS
-    // process. Returns the mojo handle to use for bootstrapping.
-    virtual mojom::DriveFsBootstrapPtrInfo InitializeMojoConnection() = 0;
-
-    // Accepts the mojo connection over |handle|.
-    virtual void AcceptMojoConnection(base::ScopedFD handle) = 0;
-  };
-
   class MountObserver {
    public:
     enum class MountFailure {
@@ -94,8 +81,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
     virtual const AccountId& GetAccountId() = 0;
     virtual std::string GetObfuscatedAccountId() = 0;
     virtual drive::DriveNotificationManager& GetDriveNotificationManager() = 0;
-    virtual std::unique_ptr<MojoConnectionDelegate>
-    CreateMojoConnectionDelegate();
+    virtual std::unique_ptr<DriveFsBootstrapListener> CreateMojoListener();
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
