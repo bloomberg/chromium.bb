@@ -22,13 +22,14 @@
         on-play="onPlayCurrentTrack"></track-list>
     <control-panel id="audioController"
         playing="{{playing}}"
-        time="{{time}}"
+        time="[[time]]"
         duration="[[duration]]"
         shuffle="{{shuffle}}"
         repeat-mode="{{repeatMode}}"
         volume="{{volume}}"
         playlist-expanded="{{playlistExpanded}}"
         aria-labels="[[ariaLabels]]"
+        on-update-time="onUpdateTime_"
         on-next-clicked="onControllerNextClicked"
         on-previous-clicked="onControllerPreviousClicked"></control-panel>
     <audio id="audio"

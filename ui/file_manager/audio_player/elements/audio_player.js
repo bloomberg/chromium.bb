@@ -29,10 +29,7 @@ Polymer({
     /**
      * Current elapsed time in the current music in millisecond.
      */
-    time: {
-      type: Number,
-      observer: 'onTimeChanged_',
-    },
+    time: Number,
 
     /**
      * Whether the shuffle button is ON.
@@ -430,11 +427,13 @@ Polymer({
     }
   },
 
-  /** @private */
-  onTimeChanged_: function() {
-    const newTime = this.time / 1000;
-    if (this.$.audio.currentTime != newTime)
-      this.$.audio.currentTime = newTime;
+  /**
+   * @param {!{detail: number}} e
+   * @private
+   */
+  onUpdateTime_: function(e) {
+    this.$.audio.currentTime = e.detail / 1000;
+    this.time = e.detail;
   },
 
   /**
