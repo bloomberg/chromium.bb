@@ -171,6 +171,10 @@ std::unique_ptr<DnsResponse> BuildTestDnsResponse(
     std::string name,
     std::vector<std::vector<std::string>> text_records,
     std::string answer_name = "");
+std::unique_ptr<DnsResponse> BuildTestDnsPointerResponse(
+    std::string name,
+    std::vector<std::string> pointer_names,
+    std::string answer_name = "");
 
 struct MockDnsClientRule {
   enum ResultType {
