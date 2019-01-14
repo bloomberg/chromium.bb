@@ -53,7 +53,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
         return gfx::kGoogleGrey200;
       case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
       case NativeTheme::kColorId_FocusedHighlightedMenuItemBackgroundColor:
-        return SkColorSetA(gfx::kGoogleGrey800, 0x99);
+        return SkColorSetA(SK_ColorWHITE, 0x20);
       case NativeTheme::kColorId_MenuBackgroundColor:
       case NativeTheme::kColorId_BubbleBackground:
       case NativeTheme::kColorId_DialogBackground:
@@ -83,7 +83,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_LinkEnabled:
       case NativeTheme::kColorId_LinkPressed:
         return gfx::kGoogleBlue300;
-
+      case NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
+        return gfx::kGoogleGrey700;
       default:
         break;
     }
