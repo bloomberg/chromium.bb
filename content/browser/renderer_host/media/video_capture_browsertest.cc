@@ -252,7 +252,8 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
 }
 
 // Flaky on MSAN. https://crbug.com/840294
-#if defined(MEMORY_SANITIZER)
+// Flaky on Linux Tests (dbg). https://crbug.com/921694
+#if defined(MEMORY_SANITIZER) || defined(OS_LINUX)
 #define MAYBE_ReceiveFramesFromFakeCaptureDevice \
   DISABLED_ReceiveFramesFromFakeCaptureDevice
 #else
