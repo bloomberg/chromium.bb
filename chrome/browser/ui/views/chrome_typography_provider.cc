@@ -241,9 +241,8 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
     case STYLE_SECONDARY_MONOSPACED:
     case STYLE_EMPHASIZED_SECONDARY:
     case STYLE_HINT:
-      return native_theme->SystemDarkModeEnabled()
-                 ? SkColorSetA(SK_ColorWHITE, 0x99)
-                 : gfx::kGoogleGrey700;
+      return native_theme->SystemDarkModeEnabled() ? gfx::kGoogleGrey500
+                                                   : gfx::kGoogleGrey700;
     case STYLE_RED:
       return gfx::kGoogleRed700;
     case STYLE_GREEN:

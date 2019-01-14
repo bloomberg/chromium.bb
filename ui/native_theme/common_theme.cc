@@ -45,7 +45,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_LabelEnabledColor:
       case NativeTheme::kColorId_TextfieldDefaultColor:
       case NativeTheme::kColorId_SelectedMenuItemForegroundColor:
-        return SkColorSetA(SK_ColorWHITE, 0xDD);
+        return gfx::kGoogleGrey200;
       case NativeTheme::kColorId_UnfocusedBorderColor:
         return SK_ColorTRANSPARENT;
       case NativeTheme::kColorId_ButtonEnabledColor:
