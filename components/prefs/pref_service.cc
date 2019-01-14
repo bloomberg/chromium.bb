@@ -567,14 +567,18 @@ base::Value* PrefService::GetMutableUserPref(const std::string& path,
   }
 
   // Look for an existing preference in the user store. If it doesn't
-  // exist or isn't the correct type, create a new user preference.
+  // exist, create a new user preference.
   base::Value* value = nullptr;
-  if (!user_pref_store_->GetMutableValue(path, &value) ||
-      value->type() != type) {
-    user_pref_store_->SetValueSilently(
-        path, std::make_unique<base::Value>(type), GetWriteFlags(pref));
-    user_pref_store_->GetMutableValue(path, &value);
-  }
+  if (user_pref_store_->GetMutableValue(path, &value))
+    return value;
+
+  // If no user preference exists, clone default value.
+  const base::Value* default_value = nullptr;
+  pref_registry_->defaults()->GetValue(path, &default_value);
+  DCHECK_EQ(default_value->type(), type);
+  user_pref_store_->SetValueSilently(path, default_value->CreateDeepCopy(),
+                                     GetWriteFlags(pref));
+  user_pref_store_->GetMutableValue(path, &value);
   return value;
 }
 
