@@ -1281,6 +1281,11 @@ class CONTENT_EXPORT ContentBrowserClient {
       bool in_memory,
       const base::FilePath& relative_partition_path);
 
+  // Returns the parent paths that contain all the network service's
+  // BrowserContexts' storage. Multiple paths can be returned, e.g. in case the
+  // persistent storage location differs from the cache storage location.
+  virtual std::vector<base::FilePath> GetNetworkContextsParentDirectory();
+
 #if defined(OS_ANDROID)
   // Configures whether StoragePartition needs to create a
   // net::URLRequestContext in the browser when the network service is enabled.

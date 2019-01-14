@@ -480,6 +480,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* context,
       bool in_memory,
       const base::FilePath& relative_partition_path) override;
+  std::vector<base::FilePath> GetNetworkContextsParentDirectory() override;
 #if defined(OS_ANDROID)
   bool NeedURLRequestContext() override;
 #endif

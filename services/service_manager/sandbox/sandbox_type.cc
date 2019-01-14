@@ -32,13 +32,8 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
       return true;
 #endif
     case SANDBOX_TYPE_NETWORK:
-#if defined(OS_WIN)
       return !base::FeatureList::IsEnabled(
-          service_manager::features::kNetworkServiceWindowsSandbox);
-#else
-      return true;
-#endif
-
+          service_manager::features::kNetworkServiceSandbox);
     default:
       return false;
   }
