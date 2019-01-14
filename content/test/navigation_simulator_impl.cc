@@ -294,6 +294,7 @@ NavigationSimulatorImpl::NavigationSimulatorImpl(
       transition_(browser_initiated ? ui::PAGE_TRANSITION_TYPED
                                     : ui::PAGE_TRANSITION_LINK),
       contents_mime_type_("text/html"),
+      load_url_params_(nullptr),
       weak_factory_(this) {
   // For renderer-initiated navigation, the RenderFrame must be initialized. Do
   // it if it hasn't happened yet.
@@ -804,6 +805,11 @@ void NavigationSimulatorImpl::SetContentsMimeType(
   contents_mime_type_ = contents_mime_type;
 }
 
+void NavigationSimulatorImpl::SetLoadURLParams(
+    NavigationController::LoadURLParams* load_url_params) {
+  load_url_params_ = load_url_params;
+}
+
 void NavigationSimulatorImpl::SetAutoAdvance(bool auto_advance) {
   auto_advance_ = auto_advance;
 }
@@ -889,8 +895,13 @@ bool NavigationSimulatorImpl::SimulateBrowserInitiatedStart() {
   } else if (session_history_offset_) {
     web_contents_->GetController().GoToOffset(session_history_offset_);
   } else {
-    web_contents_->GetController().LoadURL(navigation_url_, referrer_,
-                                           transition_, std::string());
+    if (load_url_params_) {
+      web_contents_->GetController().LoadURLWithParams(*load_url_params_);
+      load_url_params_ = nullptr;
+    } else {
+      web_contents_->GetController().LoadURL(navigation_url_, referrer_,
+                                             transition_, std::string());
+    }
   }
 
   // The navigation url might have been rewritten by the NavigationController.

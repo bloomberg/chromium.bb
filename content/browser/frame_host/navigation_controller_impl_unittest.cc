@@ -47,6 +47,7 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_navigation_ui_data.h"
 #include "content/public/test/test_utils.h"
+#include "content/test/navigation_simulator_impl.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
@@ -615,6 +616,7 @@ TEST_F(NavigationControllerTest, LoadURLWithParams) {
   // Start a navigation in order to have enough state to fake a transfer.
   const GURL url1("http://foo");
   const GURL url2("http://bar");
+  const GURL url3("http://foo/2");
 
   contents()->NavigateAndCommit(url1);
   auto navigation =
@@ -623,78 +625,88 @@ TEST_F(NavigationControllerTest, LoadURLWithParams) {
 
   NavigationControllerImpl& controller = controller_impl();
 
-  NavigationController::LoadURLParams load_params(GURL("http://foo/2"));
-  load_params.initiator_origin = url::Origin::Create(url1);
-  load_params.referrer = Referrer(GURL("http://referrer"),
-                                  network::mojom::ReferrerPolicy::kDefault);
-  load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
-  load_params.extra_headers = "content-type: text/plain;\nX-Foo: Bar";
-  load_params.load_type = NavigationController::LOAD_TYPE_DEFAULT;
-  load_params.is_renderer_initiated = true;
-  load_params.override_user_agent = NavigationController::UA_OVERRIDE_TRUE;
+  auto navigation2 =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url3, contents());
+  NavigationController::LoadURLParams load_url_params(url3);
+  load_url_params.initiator_origin = url::Origin::Create(url1);
+  load_url_params.referrer = Referrer(GURL("http://referrer"),
+                                      network::mojom::ReferrerPolicy::kDefault);
+  load_url_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
+  load_url_params.extra_headers = "content-type: text/plain;\nX-Foo: Bar";
+  load_url_params.load_type = NavigationController::LOAD_TYPE_DEFAULT;
+  load_url_params.is_renderer_initiated = true;
+  load_url_params.override_user_agent = NavigationController::UA_OVERRIDE_TRUE;
+  navigation2->SetLoadURLParams(&load_url_params);
+  navigation2->Start();
 
-  controller.LoadURLWithParams(load_params);
   NavigationEntryImpl* entry = controller.GetPendingEntry();
 
   // The timestamp should not have been set yet.
   ASSERT_TRUE(entry);
   EXPECT_TRUE(entry->GetTimestamp().is_null());
 
-  CheckNavigationEntryMatchLoadParams(load_params, entry);
+  CheckNavigationEntryMatchLoadParams(load_url_params, entry);
 }
 
 TEST_F(NavigationControllerTest, LoadURLWithExtraParams_Data) {
   NavigationControllerImpl& controller = controller_impl();
+  GURL url("data:text/html,dataurl");
 
-  NavigationController::LoadURLParams load_params(
-      GURL("data:text/html,dataurl"));
-  load_params.load_type = NavigationController::LOAD_TYPE_DATA;
-  load_params.base_url_for_data_url = GURL("http://foo");
-  load_params.virtual_url_for_data_url = GURL(url::kAboutBlankURL);
-  load_params.override_user_agent = NavigationController::UA_OVERRIDE_FALSE;
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url, contents());
+  NavigationController::LoadURLParams load_url_params(url);
+  load_url_params.load_type = NavigationController::LOAD_TYPE_DATA;
+  load_url_params.base_url_for_data_url = GURL("http://foo");
+  load_url_params.virtual_url_for_data_url = GURL(url::kAboutBlankURL);
+  load_url_params.override_user_agent = NavigationController::UA_OVERRIDE_FALSE;
+  navigation->SetLoadURLParams(&load_url_params);
+  navigation->Start();
 
-  controller.LoadURLWithParams(load_params);
   NavigationEntryImpl* entry = controller.GetPendingEntry();
-
-  CheckNavigationEntryMatchLoadParams(load_params, entry);
+  CheckNavigationEntryMatchLoadParams(load_url_params, entry);
 }
 
 #if defined(OS_ANDROID)
 TEST_F(NavigationControllerTest, LoadURLWithExtraParams_Data_Android) {
   NavigationControllerImpl& controller = controller_impl();
+  GURL url("data:,");
 
-  NavigationController::LoadURLParams load_params(GURL("data:,"));
-  load_params.load_type = NavigationController::LOAD_TYPE_DATA;
-  load_params.base_url_for_data_url = GURL("http://foo");
-  load_params.virtual_url_for_data_url = GURL(url::kAboutBlankURL);
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url, contents());
+  NavigationController::LoadURLParams load_url_params(url);
+  load_url_params.load_type = NavigationController::LOAD_TYPE_DATA;
+  load_url_params.base_url_for_data_url = GURL("http://foo");
+  load_url_params.virtual_url_for_data_url = GURL(url::kAboutBlankURL);
   std::string s("data:,data");
-  load_params.data_url_as_string = base::RefCountedString::TakeString(&s);
-  load_params.override_user_agent = NavigationController::UA_OVERRIDE_FALSE;
+  load_url_params.data_url_as_string = base::RefCountedString::TakeString(&s);
+  load_url_params.override_user_agent = NavigationController::UA_OVERRIDE_FALSE;
+  navigation->SetLoadURLParams(&load_url_params);
+  navigation->Start();
 
-  controller.LoadURLWithParams(load_params);
   NavigationEntryImpl* entry = controller.GetPendingEntry();
-
-  CheckNavigationEntryMatchLoadParams(load_params, entry);
+  CheckNavigationEntryMatchLoadParams(load_url_params, entry);
 }
 #endif
 
 TEST_F(NavigationControllerTest, LoadURLWithExtraParams_HttpPost) {
   NavigationControllerImpl& controller = controller_impl();
+  GURL url("https://posturl");
 
-  NavigationController::LoadURLParams load_params(GURL("https://posturl"));
-  load_params.transition_type = ui::PAGE_TRANSITION_TYPED;
-  load_params.load_type = NavigationController::LOAD_TYPE_HTTP_POST;
-  load_params.override_user_agent = NavigationController::UA_OVERRIDE_TRUE;
-
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url, contents());
+  NavigationController::LoadURLParams load_url_params(url);
+  load_url_params.transition_type = ui::PAGE_TRANSITION_TYPED;
+  load_url_params.load_type = NavigationController::LOAD_TYPE_HTTP_POST;
+  load_url_params.override_user_agent = NavigationController::UA_OVERRIDE_TRUE;
   const char* raw_data = "d\n\0a2";
   const int length = 5;
-  load_params.post_data =
+  load_url_params.post_data =
       network::ResourceRequestBody::CreateFromBytes(raw_data, length);
+  navigation->SetLoadURLParams(&load_url_params);
+  navigation->Start();
 
-  controller.LoadURLWithParams(load_params);
   NavigationEntryImpl* entry = controller.GetPendingEntry();
-
-  CheckNavigationEntryMatchLoadParams(load_params, entry);
+  CheckNavigationEntryMatchLoadParams(load_url_params, entry);
 }
 
 // Tests what happens when the same page is loaded again.  Should not create a
@@ -3410,32 +3422,32 @@ TEST_F(NavigationControllerTest, DontShowRendererURLUntilCommit) {
 
   // For typed navigations (browser-initiated), both pending and visible entries
   // should update before commit.
-  controller.LoadURL(
-      url0, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry_id = controller.GetPendingEntry()->GetUniqueID();
-  EXPECT_EQ(url0, controller.GetPendingEntry()->GetURL());
-  EXPECT_EQ(url0, controller.GetVisibleEntry()->GetURL());
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(entry_id, true, url0);
+  {
+    auto navigation =
+        NavigationSimulator::CreateBrowserInitiated(url0, contents());
+    navigation->Start();
+    EXPECT_EQ(url0, controller.GetPendingEntry()->GetURL());
+    EXPECT_EQ(url0, controller.GetVisibleEntry()->GetURL());
+    navigation->Commit();
+  }
 
-  // For link clicks (renderer-initiated navigations), the pending entry should
-  // update before commit but the visible should not.
-  NavigationController::LoadURLParams load_url_params(url1);
-  load_url_params.initiator_origin = url::Origin::Create(url0);
-  load_url_params.is_renderer_initiated = true;
-  controller.LoadURLWithParams(load_url_params);
-  entry_id = controller.GetPendingEntry()->GetUniqueID();
-  EXPECT_EQ(url0, controller.GetVisibleEntry()->GetURL());
-  EXPECT_EQ(url1, controller.GetPendingEntry()->GetURL());
-  EXPECT_TRUE(controller.GetPendingEntry()->is_renderer_initiated());
+  // For renderer-initiated navigations, the pending entry should update before
+  // commit but the visible should not.
+  {
+    auto navigation =
+        NavigationSimulator::CreateRendererInitiated(url1, main_test_rfh());
+    navigation->Start();
+    EXPECT_EQ(url0, controller.GetVisibleEntry()->GetURL());
+    EXPECT_EQ(url1, controller.GetPendingEntry()->GetURL());
+    EXPECT_TRUE(controller.GetPendingEntry()->is_renderer_initiated());
 
-  // After commit, both visible should be updated, there should be no pending
-  // entry, and we should no longer treat the entry as renderer-initiated.
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(entry_id, true, url1);
-  EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
-  EXPECT_FALSE(controller.GetPendingEntry());
-  EXPECT_FALSE(controller.GetLastCommittedEntry()->is_renderer_initiated());
+    // After commit, both visible should be updated, there should be no pending
+    // entry, and we should no longer treat the entry as renderer-initiated.
+    navigation->Commit();
+    EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
+    EXPECT_FALSE(controller.GetPendingEntry());
+    EXPECT_FALSE(controller.GetLastCommittedEntry()->is_renderer_initiated());
+  }
 }
 
 // Tests that the URLs for renderer-initiated navigations in new tabs are
@@ -3450,11 +3462,15 @@ TEST_F(NavigationControllerTest, ShowRendererURLInNewTabUntilModified) {
   // For renderer-initiated navigations in new tabs (with no committed entries),
   // we show the pending entry's URL as long as the about:blank page is not
   // modified.
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url, contents());
   NavigationController::LoadURLParams load_url_params(url);
   load_url_params.initiator_origin = url::Origin();
   load_url_params.transition_type = ui::PAGE_TRANSITION_LINK;
   load_url_params.is_renderer_initiated = true;
-  controller.LoadURLWithParams(load_url_params);
+  navigation->SetLoadURLParams(&load_url_params);
+  navigation->Start();
+
   EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
   EXPECT_EQ(url, controller.GetPendingEntry()->GetURL());
   EXPECT_TRUE(controller.GetPendingEntry()->is_renderer_initiated());
@@ -3485,10 +3501,14 @@ TEST_F(NavigationControllerTest, ShowBrowserURLAfterFailUntilModified) {
   // we show the pending entry's URL as long as the about:blank page is not
   // modified.  This is possible in cases that the user types a URL into a popup
   // tab created with a slow URL.
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url, contents());
   NavigationController::LoadURLParams load_url_params(url);
   load_url_params.transition_type = ui::PAGE_TRANSITION_TYPED;
   load_url_params.is_renderer_initiated = false;
-  controller.LoadURLWithParams(load_url_params);
+  navigation->SetLoadURLParams(&load_url_params);
+  navigation->Start();
+
   EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
   EXPECT_EQ(url, controller.GetPendingEntry()->GetURL());
   EXPECT_FALSE(controller.GetPendingEntry()->is_renderer_initiated());
@@ -3524,11 +3544,15 @@ TEST_F(NavigationControllerTest, ShowRendererURLAfterFailUntilModified) {
   // For renderer-initiated navigations in new tabs (with no committed entries),
   // we show the pending entry's URL as long as the about:blank page is not
   // modified.
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url, contents());
   NavigationController::LoadURLParams load_url_params(url);
   load_url_params.initiator_origin = url::Origin();
   load_url_params.transition_type = ui::PAGE_TRANSITION_LINK;
   load_url_params.is_renderer_initiated = true;
-  controller.LoadURLWithParams(load_url_params);
+  navigation->SetLoadURLParams(&load_url_params);
+  navigation->Start();
+
   EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
   EXPECT_EQ(url, controller.GetPendingEntry()->GetURL());
   EXPECT_TRUE(controller.GetPendingEntry()->is_renderer_initiated());
@@ -3566,32 +3590,42 @@ TEST_F(NavigationControllerTest, DontShowRendererURLInNewTabAfterCommit) {
   // For renderer-initiated navigations in new tabs (with no committed entries),
   // we show the pending entry's URL as long as the about:blank page is not
   // modified.
-  NavigationController::LoadURLParams load_url_params(url1);
-  load_url_params.initiator_origin = url::Origin();
-  load_url_params.transition_type = ui::PAGE_TRANSITION_LINK;
-  load_url_params.is_renderer_initiated = true;
-  controller.LoadURLWithParams(load_url_params);
-  int entry_id = controller.GetPendingEntry()->GetUniqueID();
-  EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
-  EXPECT_TRUE(controller.GetPendingEntry()->is_renderer_initiated());
-  EXPECT_TRUE(controller.IsInitialNavigation());
-  EXPECT_FALSE(contents()->HasAccessedInitialDocument());
+  {
+    auto navigation =
+        NavigationSimulatorImpl::CreateBrowserInitiated(url1, contents());
+    NavigationController::LoadURLParams load_url_params(url1);
+    load_url_params.initiator_origin = url::Origin();
+    load_url_params.transition_type = ui::PAGE_TRANSITION_LINK;
+    load_url_params.is_renderer_initiated = true;
+    navigation->SetLoadURLParams(&load_url_params);
+    navigation->Start();
 
-  // Simulate a commit and then starting a new pending navigation.
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(entry_id, true, url1);
-  NavigationController::LoadURLParams load_url2_params(url2);
-  load_url2_params.initiator_origin = url::Origin::Create(url1);
-  load_url2_params.transition_type = ui::PAGE_TRANSITION_LINK;
-  load_url2_params.is_renderer_initiated = true;
-  controller.LoadURLWithParams(load_url2_params);
+    EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
+    EXPECT_TRUE(controller.GetPendingEntry()->is_renderer_initiated());
+    EXPECT_TRUE(controller.IsInitialNavigation());
+    EXPECT_FALSE(contents()->HasAccessedInitialDocument());
 
-  // We should not consider this an initial navigation, and thus should
-  // not show the pending URL.
-  EXPECT_FALSE(contents()->HasAccessedInitialDocument());
-  EXPECT_FALSE(controller.IsInitialNavigation());
-  EXPECT_TRUE(controller.GetVisibleEntry());
-  EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
+    navigation->Commit();
+  }
+
+  // Now start a new pending navigation.
+  {
+    auto navigation =
+        NavigationSimulatorImpl::CreateBrowserInitiated(url2, contents());
+    NavigationController::LoadURLParams load_url_params(url2);
+    load_url_params.initiator_origin = url::Origin::Create(url1);
+    load_url_params.transition_type = ui::PAGE_TRANSITION_LINK;
+    load_url_params.is_renderer_initiated = true;
+    navigation->SetLoadURLParams(&load_url_params);
+    navigation->Start();
+
+    // We should not consider this an initial navigation, and thus should
+    // not show the pending URL.
+    EXPECT_FALSE(contents()->HasAccessedInitialDocument());
+    EXPECT_FALSE(controller.IsInitialNavigation());
+    EXPECT_TRUE(controller.GetVisibleEntry());
+    EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
+  }
 }
 
 // Tests that IsURLSameDocumentNavigation returns appropriate results.
@@ -4801,9 +4835,12 @@ TEST_F(NavigationControllerTest, ClearHistoryList) {
 
   // Create a new pending navigation, and indicate that the session history
   // should be cleared.
-  NavigationController::LoadURLParams params(url4);
-  params.should_clear_history_list = true;
-  controller.LoadURLWithParams(params);
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url4, contents());
+  NavigationController::LoadURLParams load_url_params(url4);
+  load_url_params.should_clear_history_list = true;
+  navigation->SetLoadURLParams(&load_url_params);
+  navigation->Start();
 
   // Verify that the pending entry correctly indicates that the session history
   // should be cleared.
@@ -5158,24 +5195,15 @@ TEST_F(NavigationControllerTest, PendingEntryIndexUpdatedWithTransient) {
 
 // Tests that NavigationUIData has been passed to the NavigationHandle.
 TEST_F(NavigationControllerTest, MainFrameNavigationUIData) {
-  NavigationControllerImpl& controller = controller_impl();
   LoadCommittedDetailsObserver observer(contents());
   const GURL url1("http://foo1");
 
-  NavigationController::LoadURLParams params(url1);
-  params.navigation_ui_data = std::make_unique<TestNavigationUIData>();
-  controller.LoadURLWithParams(params);
-  int entry_id = controller.GetPendingEntry()->GetUniqueID();
-
-  NavigationRequest* request =
-      main_test_rfh()->frame_tree_node()->navigation_request();
-  CHECK(request);
-
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SimulateCommitProcessed(
-      request->navigation_handle()->GetNavigationId(),
-      true /* was_successful */);
-  main_test_rfh()->SendNavigate(entry_id, true, url1);
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url1, contents());
+  NavigationController::LoadURLParams load_url_params(url1);
+  load_url_params.navigation_ui_data = std::make_unique<TestNavigationUIData>();
+  navigation->SetLoadURLParams(&load_url_params);
+  navigation->Commit();
 
   EXPECT_TRUE(observer.is_main_frame());
   EXPECT_TRUE(observer.has_navigation_ui_data());
@@ -5206,13 +5234,16 @@ TEST_F(NavigationControllerTest, SubFrameNavigationUIData) {
   LoadCommittedDetailsObserver observer(contents());
 
   // Navigate sub frame.
-  NavigationController::LoadURLParams params(url1);
-  params.navigation_ui_data = std::make_unique<TestNavigationUIData>();
-  params.frame_tree_node_id = subframe->GetFrameTreeNodeId();
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url1, contents());
+  NavigationController::LoadURLParams load_url_params(url1);
+  load_url_params.navigation_ui_data = std::make_unique<TestNavigationUIData>();
+  load_url_params.frame_tree_node_id = subframe->GetFrameTreeNodeId();
+  navigation->SetLoadURLParams(&load_url_params);
 
 #if DCHECK_IS_ON()
   // We DCHECK to prevent misuse of the API.
-  EXPECT_DEATH_IF_SUPPORTED(controller_impl().LoadURLWithParams(params), "");
+  EXPECT_DEATH_IF_SUPPORTED(navigation->Start(), "");
 #endif
 }
 
