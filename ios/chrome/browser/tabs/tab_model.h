@@ -171,10 +171,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // Sets whether the user is primarily interacting with this tab model.
 - (void)setPrimary:(BOOL)primary;
 
-// Returns a set with the names of the files received from other applications
-// that are still referenced by an open or recently closed tab.
-- (NSSet*)currentlyReferencedExternalFiles;
-
 // Called when the browser state provided to this instance is being destroyed.
 // At this point the tab model will no longer ever be active, and will likely be
 // deallocated soon.
