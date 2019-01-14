@@ -9,6 +9,7 @@
 
 # Unknown failure.
 -BrowserTabRestoreTest.*
+-ExtensionApiTest.IdleGetAutoLockDelay
 -MediaRouterIntegrationOneUABrowserTest.Basic
 -MediaRouterIntegrationOneUABrowserTest.Fail_SendMessage
 -MediaRouterIntegrationOneUABrowserTest.ReconnectSession
@@ -17,6 +18,8 @@
 -MediaRouterIntegrationOneUANoReceiverBrowserTest.Fail_SendMessage
 -MediaRouterIntegrationOneUANoReceiverBrowserTest.ReconnectSession
 -MediaRouterIntegrationOneUANoReceiverBrowserTest.ReconnectSessionSameTab
+-MediaSessionPictureInPictureWindowControllerBrowserTest.SkipAdButtonVisibility
+-MediaSessionPictureInPictureWindowControllerBrowserTest.SkipAdHandlerCalled
 -NoBestEffortTasksTest.LoadAndPaintAboutBlank
 -NoBestEffortTasksTest.LoadAndPaintFromNetwork
 -ProcessMemoryMetricsEmitterTest.FetchDuringTrace
@@ -250,6 +253,8 @@
 -KeyboardEndToEndFormTest.*
 -KeyboardEndToEndOverscrollTest.*
 -SelectFileDialogExtensionBrowserTest.SelectFileVirtualKeyboard_TabletMode
+-SelectFileDialogExtensionBrowserTest/SelectFileDialogExtensionBrowserTest.SelectFileVirtualKeyboard_TabletMode/1
+-SelectFileDialogExtensionBrowserTest/SelectFileDialogExtensionBrowserTest.SelectFileVirtualKeyboard_TabletMode/0
 
 # Chrome keyboard window -> root -> host -> input method is null in Mash.
 # https://crbug.com/756059
