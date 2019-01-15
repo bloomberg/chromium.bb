@@ -23,6 +23,12 @@ class FrameResourceFetcherProperties final : public ResourceFetcherProperties {
 
   // ResourceFetcherProperties implementation
   bool IsMainFrame() const override;
+  ControllerServiceWorkerMode GetControllerServiceWorkerMode() const override;
+  int64_t ServiceWorkerId() const override;
+  bool IsPaused() const override;
+  bool IsLoadComplete() const override;
+  bool ShouldBlockLoadingMainResource() const override;
+  bool ShouldBlockLoadingSubResource() const override;
 
  private:
   const Member<FrameOrImportedDocument> frame_or_imported_document_;

@@ -64,8 +64,9 @@ class ResourceLoadSchedulerTest : public testing::Test {
   void SetUp() override {
     DCHECK(RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled());
     auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
-    auto* context = MakeGarbageCollected<MockFetchContext>(
-        MockFetchContext::kShouldNotLoadNewResource);
+    properties->SetShouldBlockLoadingMainResource(true);
+    properties->SetShouldBlockLoadingSubResource(true);
+    auto* context = MakeGarbageCollected<MockFetchContext>();
     MakeGarbageCollected<ResourceFetcher>(*properties, context);
     scheduler_ = MakeGarbageCollected<ResourceLoadScheduler>(
         ResourceLoadScheduler::ThrottlingPolicy::kTight, context);

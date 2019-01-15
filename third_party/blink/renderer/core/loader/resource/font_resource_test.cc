@@ -46,8 +46,7 @@ TEST_F(FontResourceTest,
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, WrappedResourceResponse(response), "");
 
-  MockFetchContext* context = MakeGarbageCollected<MockFetchContext>(
-      MockFetchContext::kShouldLoadNewResource);
+  MockFetchContext* context = MakeGarbageCollected<MockFetchContext>();
   auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
   auto* fetcher = MakeGarbageCollected<ResourceFetcher>(*properties, context);
 
@@ -62,7 +61,7 @@ TEST_F(FontResourceTest,
   EXPECT_FALSE(resource1->ErrorOccurred());
 
   // Set the context as it is on reloads.
-  context->SetLoadComplete(true);
+  properties->SetIsLoadComplete(true);
 
   // Revalidate the resource.
   ResourceRequest request2(url);

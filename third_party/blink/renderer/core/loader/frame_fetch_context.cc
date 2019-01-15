@@ -784,19 +784,6 @@ void FrameFetchContext::DispatchDidFail(const KURL& url,
   }
 }
 
-bool FrameFetchContext::ShouldLoadNewResource(ResourceType type) const {
-  if (IsDetached())
-    return false;
-
-  if (!GetDocumentLoader())
-    return true;
-
-  FrameLoader& loader = GetDocumentLoader()->GetFrame()->Loader();
-  if (type == ResourceType::kMainResource)
-    return GetDocumentLoader() == loader.GetProvisionalDocumentLoader();
-  return GetDocumentLoader() == loader.GetDocumentLoader();
-}
-
 void FrameFetchContext::RecordLoadingActivity(
     const ResourceRequest& request,
     ResourceType type,
@@ -865,43 +852,6 @@ bool FrameFetchContext::AllowImage(bool images_enabled, const KURL& url) const {
   if (auto* settings_client = GetContentSettingsClient())
     images_enabled = settings_client->AllowImage(images_enabled, url);
   return images_enabled;
-}
-
-blink::mojom::ControllerServiceWorkerMode
-FrameFetchContext::IsControlledByServiceWorker() const {
-  if (IsDetached())
-    return blink::mojom::ControllerServiceWorkerMode::kNoController;
-
-  DCHECK(MasterDocumentLoader());
-
-  auto* service_worker_network_provider =
-      MasterDocumentLoader()->GetServiceWorkerNetworkProvider();
-  if (!service_worker_network_provider)
-    return blink::mojom::ControllerServiceWorkerMode::kNoController;
-  return service_worker_network_provider->IsControlledByServiceWorker();
-}
-
-int64_t FrameFetchContext::ServiceWorkerID() const {
-  DCHECK(IsControlledByServiceWorker() !=
-         blink::mojom::ControllerServiceWorkerMode::kNoController);
-  DCHECK(MasterDocumentLoader());
-  auto* service_worker_network_provider =
-      MasterDocumentLoader()->GetServiceWorkerNetworkProvider();
-  return service_worker_network_provider
-             ? service_worker_network_provider->ControllerServiceWorkerID()
-             : -1;
-}
-
-bool FrameFetchContext::DefersLoading() const {
-  return IsDetached() ? false : GetFrame()->GetPage()->Paused();
-}
-
-bool FrameFetchContext::IsLoadComplete() const {
-  if (IsDetached())
-    return true;
-
-  Document* document = frame_or_imported_document_->GetDocument();
-  return document && document->LoadEventFinished();
 }
 
 void FrameFetchContext::ModifyRequestForCSP(ResourceRequest& resource_request) {

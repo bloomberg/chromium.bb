@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_FETCHER_PROPERTIES_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_FETCHER_PROPERTIES_H_
 
+#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-shared.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
@@ -25,14 +26,40 @@ namespace blink {
 // FetchClientSettingsObject when the property is clearly defined in the spec.
 // Otherwise, put it to this class.
 class PLATFORM_EXPORT ResourceFetcherProperties
-    : public GarbageCollected<ResourceFetcherProperties> {
+    : public GarbageCollectedFinalized<ResourceFetcherProperties> {
  public:
+  using ControllerServiceWorkerMode = mojom::ControllerServiceWorkerMode;
+
   ResourceFetcherProperties() = default;
   virtual ~ResourceFetcherProperties() = default;
   virtual void Trace(Visitor*) {}
 
   // Returns whether this global context is a top-level frame.
   virtual bool IsMainFrame() const = 0;
+
+  // Returns whether a controller service worker exists and if it has a fetch
+  // handler.
+  virtual ControllerServiceWorkerMode GetControllerServiceWorkerMode()
+      const = 0;
+
+  // Returns an identifier for the service worker controlling this global
+  // context. This function cannot be called when
+  // GetControllerServiceWorkerMode returns kNoController.
+  virtual int64_t ServiceWorkerId() const = 0;
+
+  // Returns whether this global context is suspended, which means we should
+  // defer making a new request.
+  // https://html.spec.whatwg.org/C/webappapis.html#pause
+  virtual bool IsPaused() const = 0;
+
+  // Returns whether the main resource for this global context is loaded.
+  virtual bool IsLoadComplete() const = 0;
+
+  // Returns whether we should disallow a main resource loading.
+  virtual bool ShouldBlockLoadingMainResource() const = 0;
+
+  // Returns whether we should disallow a sub resource loading.
+  virtual bool ShouldBlockLoadingSubResource() const = 0;
 };
 
 }  // namespace blink

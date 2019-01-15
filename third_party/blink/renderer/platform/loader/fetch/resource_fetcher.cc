@@ -397,6 +397,8 @@ class ResourceFetcher::DetachableProperties final
     }
 
     is_main_frame_ = properties_->IsMainFrame();
+    paused_ = properties_->IsPaused();
+    load_complete_ = properties_->IsLoadComplete();
 
     properties_ = nullptr;
   }
@@ -406,8 +408,33 @@ class ResourceFetcher::DetachableProperties final
     ResourceFetcherProperties::Trace(visitor);
   }
 
+  // ResourceFetcherProperties implementation
   bool IsMainFrame() const override {
     return properties_ ? properties_->IsMainFrame() : is_main_frame_;
+  }
+  ControllerServiceWorkerMode GetControllerServiceWorkerMode() const override {
+    return properties_ ? properties_->GetControllerServiceWorkerMode()
+                       : ControllerServiceWorkerMode::kNoController;
+  }
+  int64_t ServiceWorkerId() const override {
+    // When detached, GetControllerServiceWorkerMode returns kNoController, so
+    // this function must not be called.
+    DCHECK(properties_);
+    return properties_->ServiceWorkerId();
+  }
+  bool IsPaused() const override {
+    return properties_ ? properties_->IsPaused() : paused_;
+  }
+  bool IsLoadComplete() const override {
+    return properties_ ? properties_->IsLoadComplete() : load_complete_;
+  }
+  bool ShouldBlockLoadingMainResource() const override {
+    // Returns true when detached in order to preserve the existing behavior.
+    return properties_ ? properties_->ShouldBlockLoadingMainResource() : true;
+  }
+  bool ShouldBlockLoadingSubResource() const override {
+    // Returns true when detached in order to preserve the existing behavior.
+    return properties_ ? properties_->ShouldBlockLoadingSubResource() : true;
   }
 
  private:
@@ -416,6 +443,8 @@ class ResourceFetcher::DetachableProperties final
 
   // The following members are used when detached.
   bool is_main_frame_ = false;
+  bool paused_ = false;
+  bool load_complete_ = false;
 };
 
 ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)

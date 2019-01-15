@@ -29,13 +29,7 @@ struct ResourceLoaderOptions;
 // Mocked FetchContext for testing.
 class MockFetchContext : public FetchContext {
  public:
-  enum LoadPolicy {
-    kShouldLoadNewResource,
-    kShouldNotLoadNewResource,
-  };
-
   MockFetchContext(
-      LoadPolicy load_policy,
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner = nullptr,
       scoped_refptr<const SecurityOrigin> security_origin = nullptr,
       std::unique_ptr<WebURLLoaderFactory> url_loader_factory = nullptr)
@@ -50,14 +44,11 @@ class MockFetchContext : public FetchContext {
                          String(),
                          HttpsState::kNone,
                          AllowedByNosniff::MimeTypeCheck::kStrict)),
-        load_policy_(load_policy),
         frame_scheduler_(new MockFrameScheduler(GetLoadingTaskRunner())),
         url_loader_factory_(std::move(url_loader_factory)),
-        complete_(false),
         transfer_size_(-1) {}
   ~MockFetchContext() override = default;
 
-  void SetLoadComplete(bool complete) { complete_ = complete; }
   long long GetTransferSize() const { return transfer_size_; }
 
   void CountUsage(mojom::WebFeature) const override {}
@@ -97,10 +88,6 @@ class MockFetchContext : public FetchContext {
       ResourceRequest::RedirectStatus redirect_status) const override {
     return base::nullopt;
   }
-  bool ShouldLoadNewResource(ResourceType) const override {
-    return load_policy_ == kShouldLoadNewResource;
-  }
-  bool IsLoadComplete() const override { return complete_; }
   void AddResourceTiming(
       const ResourceTimingInfo& resource_timing_info) override {
     transfer_size_ = resource_timing_info.TransferSize();
@@ -139,10 +126,8 @@ class MockFetchContext : public FetchContext {
     scoped_refptr<base::SingleThreadTaskRunner> runner_;
   };
 
-  enum LoadPolicy load_policy_;
   std::unique_ptr<FrameScheduler> frame_scheduler_;
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
-  bool complete_;
   long long transfer_size_;
   base::Optional<ResourceRequest> will_send_request_;
 };

@@ -225,11 +225,6 @@ std::unique_ptr<CodeCacheLoader> WorkerFetchContext::CreateCodeCacheLoader() {
   return web_context_->CreateCodeCacheLoader();
 }
 
-blink::mojom::ControllerServiceWorkerMode
-WorkerFetchContext::IsControlledByServiceWorker() const {
-  return web_context_->IsControlledByServiceWorker();
-}
-
 void WorkerFetchContext::PrepareRequest(ResourceRequest& request,
                                         RedirectType) {
   String user_agent = global_scope_->UserAgent();
@@ -342,10 +337,6 @@ void WorkerFetchContext::PopulateResourceRequest(
 void WorkerFetchContext::SetFirstPartyCookie(ResourceRequest& out_request) {
   if (out_request.SiteForCookies().IsNull())
     out_request.SetSiteForCookies(GetSiteForCookies());
-}
-
-bool WorkerFetchContext::DefersLoading() const {
-  return global_scope_->IsContextPaused();
 }
 
 std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>

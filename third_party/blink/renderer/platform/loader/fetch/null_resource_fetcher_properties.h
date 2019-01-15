@@ -22,6 +22,17 @@ class PLATFORM_EXPORT NullResourceFetcherProperties final
 
   // ResourceFetcherProperties implementation
   bool IsMainFrame() const override { return false; }
+  ControllerServiceWorkerMode GetControllerServiceWorkerMode() const override {
+    return ControllerServiceWorkerMode::kNoController;
+  }
+  int64_t ServiceWorkerId() const override {
+    NOTREACHED();
+    return 0;
+  }
+  bool IsPaused() const override { return false; }
+  bool IsLoadComplete() const override { return true; }
+  bool ShouldBlockLoadingMainResource() const override { return true; }
+  bool ShouldBlockLoadingSubResource() const override { return true; }
 };
 
 }  // namespace blink
