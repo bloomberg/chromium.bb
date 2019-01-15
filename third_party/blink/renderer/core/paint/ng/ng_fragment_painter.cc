@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_fragment_painter.h"
 
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -75,6 +76,28 @@ void NGFragmentPainter::AddPDFURLRectIfNeeded(const PaintInfo& paint_info,
     return;
   }
   paint_info.context.SetURLForRect(url, rect);
+}
+
+bool NGFragmentPainter::ShouldRecordHitTestData(
+    const PaintInfo& paint_info,
+    const NGPhysicalFragment& fragment) {
+  if (!RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
+    return false;
+
+  // Hit test display items are only needed for compositing. This flag is used
+  // for for printing and drag images which do not need hit testing.
+  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
+    return false;
+
+  // If an object is not visible, it does not participate in hit testing.
+  if (fragment.Style().Visibility() != EVisibility::kVisible)
+    return false;
+
+  auto touch_action = fragment.EffectiveWhitelistedTouchAction();
+  if (touch_action == TouchAction::kTouchActionAuto)
+    return false;
+
+  return true;
 }
 
 }  // namespace blink
