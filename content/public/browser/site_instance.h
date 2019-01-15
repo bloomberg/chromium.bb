@@ -82,7 +82,7 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // Whether this SiteInstance has a running process associated with it.
   // This may return true before the first call to GetProcess(), in cases where
   // we use process-per-site and there is an existing process available.
-  virtual bool HasProcess() const = 0;
+  virtual bool HasProcess() = 0;
 
   // Returns the current RenderProcessHost being used to render pages for this
   // SiteInstance.  If there is no RenderProcessHost (because either none has

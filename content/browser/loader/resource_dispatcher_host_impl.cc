@@ -40,6 +40,7 @@
 #include "content/browser/browsing_data/clear_site_data_throttle.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/navigation_request_info.h"
+#include "content/browser/isolation_context.h"
 #include "content/browser/loader/cross_site_document_resource_handler.h"
 #include "content/browser/loader/detachable_resource_handler.h"
 #include "content/browser/loader/intercepting_resource_handler.h"
@@ -928,7 +929,12 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   if (report_raw_headers) {
     bool is_isolated =
         SiteIsolationPolicy::UseDedicatedProcessesForAllSites() ||
-        policy->IsIsolatedOrigin(url::Origin::Create(request_data.url));
+        // TODO(alexmos): get BrowsingInstance ID from the child_id's
+        // SecurityState.  One way is to expose a version of IsIsolatedOrigin
+        // that can take child_id instead of IsolationContext, and look up
+        // the BrowsingInstance ID internally in ChildProcessSecurityPolicy.
+        policy->IsIsolatedOrigin(IsolationContext(),
+                                 url::Origin::Create(request_data.url));
     if (is_isolated &&
         !policy->CanAccessDataForOrigin(child_id, request_data.url))
       report_raw_headers = false;

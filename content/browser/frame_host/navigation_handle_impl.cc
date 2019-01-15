@@ -210,15 +210,14 @@ NavigationHandleImpl::NavigationHandleImpl(
   DCHECK(!navigation_start.is_null());
   DCHECK(!IsRendererDebugURL(url));
 
-  site_url_ = SiteInstance::GetSiteForURL(frame_tree_node_->current_frame_host()
-                                              ->GetSiteInstance()
-                                              ->GetBrowserContext(),
-                                          url_);
-  if (redirect_chain_.empty())
-    redirect_chain_.push_back(url);
-
   starting_site_instance_ =
       frame_tree_node_->current_frame_host()->GetSiteInstance();
+
+  site_url_ = SiteInstanceImpl::GetSiteForURL(
+      starting_site_instance_->GetBrowserContext(),
+      starting_site_instance_->GetIsolationContext(), url_);
+  if (redirect_chain_.empty())
+    redirect_chain_.push_back(url);
 
   if (method != "POST")
     DCHECK(!resource_request_body);
@@ -309,7 +308,7 @@ const GURL& NavigationHandleImpl::GetURL() {
   return url_;
 }
 
-SiteInstance* NavigationHandleImpl::GetStartingSiteInstance() {
+SiteInstanceImpl* NavigationHandleImpl::GetStartingSiteInstance() {
   return starting_site_instance_.get();
 }
 
@@ -1336,9 +1335,11 @@ bool NavigationHandleImpl::IsSelfReferentialURL() {
 
 void NavigationHandleImpl::UpdateSiteURL(
     RenderProcessHost* post_redirect_process) {
-  GURL new_site_url = SiteInstance::GetSiteForURL(
+  // TODO(alexmos): Using |starting_site_instance_|'s IsolationContext may not
+  // be correct for cross-BrowsingInstance redirects.
+  GURL new_site_url = SiteInstanceImpl::GetSiteForURL(
       frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
-      url_);
+      starting_site_instance_->GetIsolationContext(), url_);
   int post_redirect_process_id = post_redirect_process
                                      ? post_redirect_process->GetID()
                                      : ChildProcessHost::kInvalidUniqueID;

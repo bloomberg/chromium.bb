@@ -430,7 +430,8 @@ base::Optional<url::Origin> GetOriginForURLLoaderFactory(
     // |request_initiator| for requests from b.com should NOT be locked to
     // a.com.
     if (!SiteInstanceImpl::ShouldLockToOrigin(
-            site_instance->GetBrowserContext(), site_instance->GetSiteURL()))
+            site_instance->GetBrowserContext(),
+            site_instance->GetIsolationContext(), site_instance->GetSiteURL()))
       return base::nullopt;
 
     return SiteInstanceImpl::GetRequestInitiatorSiteLock(
@@ -5904,12 +5905,11 @@ void RenderFrameHostImpl::BeforeUnloadTimeout() {
 }
 
 void RenderFrameHostImpl::SetLastCommittedSiteUrl(const GURL& url) {
-  GURL site_url =
-      url.is_empty() ? GURL()
-                     : SiteInstance::GetSiteForURL(frame_tree_node_->navigator()
-                                                       ->GetController()
-                                                       ->GetBrowserContext(),
-                                                   url);
+  GURL site_url = url.is_empty()
+                      ? GURL()
+                      : SiteInstanceImpl::GetSiteForURL(
+                            GetSiteInstance()->GetBrowserContext(),
+                            GetSiteInstance()->GetIsolationContext(), url);
 
   if (last_committed_site_url_ == site_url)
     return;

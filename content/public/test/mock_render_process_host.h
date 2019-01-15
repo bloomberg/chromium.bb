@@ -157,7 +157,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   void SetIsUsed() override;
 
   bool HostHasNotBeenUsed() override;
-  void LockToOrigin(const GURL& lock_url) override;
+  void LockToOrigin(const IsolationContext& isolation_context,
+                    const GURL& lock_url) override;
   void BindCacheStorage(blink::mojom::CacheStorageRequest request,
                         const url::Origin& origin) override;
   void BindIndexedDB(blink::mojom::IDBFactoryRequest request,
