@@ -23,8 +23,6 @@ enum class AccountType { UNKNOWN, GOOGLE, ACTIVE_DIRECTORY };
 // accounts. (see crbug.com/672253)
 class AccountId {
  public:
-  struct EmptyAccountId;
-
   // Creates an empty account id.
   //
   // Note: This constructor is public as it is required for mojo serialization
