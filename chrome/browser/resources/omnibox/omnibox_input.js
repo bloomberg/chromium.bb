@@ -218,6 +218,11 @@ class OmniboxInput extends OmniboxElement {
     }
   }
 
+  /** @return {boolean} */
+  get connectWindowOmnibox() {
+    return this.$$('#connect-window-omnibox').checked;
+  }
+
   /** @private @return {number} */
   get cursorPosition_() {
     return this.$$('#lock-cursor-position').checked ?

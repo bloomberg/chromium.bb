@@ -335,6 +335,7 @@ input:focus + .arrow-container {
 
 .arrow-padding {
   display: inline-block;
+  height: 0;
   overflow: hidden;
   padding-left: 32px;
   visibility: hidden;

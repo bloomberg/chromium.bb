@@ -27,6 +27,15 @@
  */
 let OmniboxExport;
 
+/** @type {!BrowserProxy} */
+let browserProxy;
+/** @type {!OmniboxInput} */
+let omniboxInput;
+/** @type {!omnibox_output.OmniboxOutput} */
+let omniboxOutput;
+/** @type {!ExportDelegate} */
+let exportDelegate;
+
 class BrowserProxy {
   /** @param {!omnibox_output.OmniboxOutput} omniboxOutput */
   constructor(omniboxOutput) {
@@ -38,9 +47,24 @@ class BrowserProxy {
     // match. Response refers to the data returned from the C++
     // AutocompleteController.
     this.callbackRouter_.handleNewAutocompleteResult.addListener(
-        omniboxOutput.addAutocompleteResponse.bind(omniboxOutput));
+        (response, isPageController) => {
+          // When unfocusing the browser omnibox, the autocomplete controller
+          // sends a response with no combined results. This response is ignored
+          // in order to prevent the previous non-empty response from being
+          // hidden and because these results wouldn't normally be displayed by
+          // the browser window omnibox.
+          if (isPageController ||
+              (omniboxInput.connectWindowOmnibox &&
+               response.combinedResults.length)) {
+            omniboxOutput.addAutocompleteResponse(response);
+          }
+        });
     this.callbackRouter_.handleNewAutocompleteQuery.addListener(
-        omniboxOutput.clearAutocompleteResponses.bind(omniboxOutput));
+        isPageController => {
+          if (isPageController || omniboxInput.connectWindowOmnibox) {
+            omniboxOutput.clearAutocompleteResponses();
+          }
+        });
     this.callbackRouter_.handleAnswerImageData.addListener(
         omniboxOutput.updateAnswerImage.bind(omniboxOutput));
 
@@ -55,15 +79,6 @@ class BrowserProxy {
     this.makeRequest = this.handler_.startOmniboxQuery.bind(this.handler_);
   }
 }
-
-/** @type {!BrowserProxy} */
-let browserProxy;
-/** @type {!OmniboxInput} */
-let omniboxInput;
-/** @type {!omnibox_output.OmniboxOutput} */
-let omniboxOutput;
-/** @type {!ExportDelegate} */
-let exportDelegate;
 
 document.addEventListener('DOMContentLoaded', () => {
   omniboxInput = /** @type {!OmniboxInput} */ ($('omnibox-input'));

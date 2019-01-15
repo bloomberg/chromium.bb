@@ -30,6 +30,15 @@
           <span class="arrow-padding"></span>
           <span class="arrow-up">▲</span>
         </div>
+        <div class="row">
+          <label class="checkbox-container"
+                 title="When checked, interacting with the real omnibox of any browser window will update the debug page's output. Incognito window omnibox results will update only debug pages open in incognito windows. Likewise, normal window omnibox results will update only debug pages open in normal windows. When unfocusing the browser omnibox, the autocomplete controller sends a response with no combined results. This response is ignored in order to prevent the previous non-empty response from being hidden and because these results wouldn't normally be displayed by the browser window omnibox.">
+            <input id="connect-window-omnibox" type="checkbox" accesskey="w">
+            <span>
+              Connect <span class="accesskey">w</span>indow omnibox
+            </span>
+          </label>
+        </div>
       </div>
 
       <div class="top-column">
