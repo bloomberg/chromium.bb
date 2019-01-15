@@ -56,16 +56,9 @@ Polymer({
       value: false,
     },
 
-    /** @type {!Array<!print_preview.RecentDestination>} */
-    recentDestinations: Array,
-
-    /** @private {!Array<!print_preview.Destination>} */
-    recentDestinationList_: {
+    /** @type {!Array<!print_preview.Destination>} */
+    recentDestinationList: {
       type: Array,
-      notify: true,
-      computed: 'computeRecentDestinationList_(' +
-          'destinationStore, recentDestinations, recentDestinations.*, ' +
-          'activeUser, destinations_.*)',
       observer: 'onRecentDestinationListChange_',
     },
 
@@ -179,31 +172,9 @@ Polymer({
         this.destinationStore.isPrintDestinationSearchInProgress;
   },
 
-  /**
-   * @return {!Array<!print_preview.Destination>}
-   * @private
-   */
-  computeRecentDestinationList_: function() {
-    if (!observerDepsDefined(Array.from(arguments))) {
-      return [];
-    }
-
-    const recentDestinations = [];
-    const filterAccount = this.activeUser;
-    this.recentDestinations.forEach((recentDestination) => {
-      const destination = this.destinationStore.getDestinationByKey(
-          print_preview.createRecentDestinationKey(recentDestination));
-      if (destination &&
-          (!destination.account || destination.account == filterAccount)) {
-        recentDestinations.push(destination);
-      }
-    });
-    return recentDestinations;
-  },
-
   /** @private */
   onRecentDestinationListChange_: function() {
-    const numRecent = Math.max(2, this.recentDestinationList_.length);
+    const numRecent = Math.max(2, this.recentDestinationList.length);
     this.$.recentList.style.maxHeight = `calc(${numRecent} *
             var(--destination-item-height) + 10px + 20 / 13 * 1rem)`;
   },

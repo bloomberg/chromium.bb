@@ -57,7 +57,7 @@ cr.define('destination_dialog_test', function() {
       dialog.users = [];
       dialog.destinationStore = destinationStore;
       dialog.invitationStore = new print_preview.InvitationStore();
-      dialog.recentDestinations = recentDestinations;
+      dialog.recentDestinationList = [destinations[4]];
       document.body.appendChild(dialog);
       return nativeLayer.whenCalled('getPrinterCapabilities')
           .then(function() {
