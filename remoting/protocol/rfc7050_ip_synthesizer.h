@@ -9,8 +9,8 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
-#include "third_party/webrtc/rtc_base/ipaddress.h"
-#include "third_party/webrtc/rtc_base/socketaddress.h"
+#include "third_party/webrtc/rtc_base/ip_address.h"
+#include "third_party/webrtc/rtc_base/socket_address.h"
 
 namespace remoting {
 namespace protocol {

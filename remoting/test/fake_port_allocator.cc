@@ -9,7 +9,7 @@
 #include "remoting/test/fake_network_dispatcher.h"
 #include "remoting/test/fake_network_manager.h"
 #include "remoting/test/fake_socket_factory.h"
-#include "third_party/webrtc/p2p/client/basicportallocator.h"
+#include "third_party/webrtc/p2p/client/basic_port_allocator.h"
 
 namespace remoting {
 

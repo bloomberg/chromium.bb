@@ -16,10 +16,10 @@
 // TODO(zhihuang):Replace #include by forward declaration once proper
 // inheritance is defined for cricket::IceTransportInternal and
 // cricket::P2PTransportChannel.
-#include "third_party/webrtc/p2p/base/icetransportinternal.h"
+#include "third_party/webrtc/p2p/base/ice_transport_internal.h"
 // TODO(johan): Replace #include by forward declaration once proper inheritance
 // is defined for rtc::PacketTransportInterface and cricket::TransportChannel.
-#include "third_party/webrtc/p2p/base/packettransportinterface.h"
+#include "third_party/webrtc/p2p/base/packet_transport_interface.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 
 namespace cricket {
