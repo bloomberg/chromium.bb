@@ -14,11 +14,14 @@
   <template>
     <style
         include="paper-button-style action-link-style splash-pages-shared-css">
+      h1 {
+        outline: none;
+      }
     </style>
     <onboarding-background></onboarding-background>
     <div id="container">
       <h2>$i18n{landingDescription}</h2>
-      <h1>$i18n{landingTitle}</h1>
+      <h1 tabindex="-1">$i18n{landingTitle}</h1>
       <paper-button class="action-button" on-click="onNewUserClick_">
         $i18n{landingNewUser}
       </paper-button>

@@ -81,6 +81,8 @@ cr.define('welcome', function() {
     if (currentRouteElement) {
       (/** @type {{onRouteEnter: Function}} */ (currentRouteElement))
           .onRouteEnter();
+      (/** @type {{updateFocusForA11y: Function}} */ (currentRouteElement))
+          .updateFocusForA11y();
     }
   }
 
@@ -153,6 +155,15 @@ cr.define('welcome', function() {
       if (this.id == `step-${step}`) {
         currentRouteElement = this;
         this.onRouteEnter();
+        this.updateFocusForA11y();
+      }
+    },
+
+    /** Called to update focus when progressing through the modules. */
+    updateFocusForA11y: function() {
+      const header = this.$$('h1');
+      if (header) {
+        Polymer.RenderStatus.afterNextRender(this, () => header.focus());
       }
     },
 

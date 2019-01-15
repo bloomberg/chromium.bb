@@ -37,6 +37,12 @@ Polymer({
     });
   },
 
+  /** @override */
+  attached: function() {
+    // Focus heading for accessibility.
+    this.$$('h1').focus();
+  },
+
   /** @private */
   onContinueClick_: function() {
     this.finalized_ = true;

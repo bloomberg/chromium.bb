@@ -35,11 +35,12 @@
 
           h1 {
             margin-top: 0;
+            outline: none;
           }
         </style>
         <onboarding-background></onboarding-background>
         <div id="container">
-          <h1>$i18n{emailInterstitialTitle}</h1>
+          <h1 tabindex="-1">$i18n{emailInterstitialTitle}</h1>
           <paper-button class="action-button" on-click="onContinueClick_">
             $i18n{emailInterstitialContinue}
           </paper-button>
