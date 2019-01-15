@@ -3579,7 +3579,7 @@ crbug.com/626703 external/wpt/screen-orientation/orientation-reading.html [ Time
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/float-retry-push-image.html [ Failure ]
 crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_parent [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_top [ Timeout ]
-crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_self [ Timeout ]
+crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_self [ Failure ]
 crbug.com/626703 external/wpt/html/browsers/browsing-the-web/unloading-documents/prompt-and-unload-script-closeable.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-min-content-size-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-animations/CSSAnimation-effect.tentative.html [ Timeout ]
@@ -3932,7 +3932,6 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/logical-physical-mapping-001.html [ Failure ]
 crbug.com/626703 external/wpt/encoding/eof-utf-8-three.html [ Failure ]
 crbug.com/626703 external/wpt/encoding/eof-utf-8-two.html [ Failure ]
-crbug.com/626703 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/javascript-url-global-scope.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/windows/noreferrer-window-name.html [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-16be.html [ Timeout Crash ]
@@ -4398,6 +4397,12 @@ crbug.com/670024 external/wpt/webmessaging/broadcastchannel/sandbox.html [ Failu
 crbug.com/660384 external/wpt/webmessaging/with-ports/001.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/without-ports/001.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/with-options/broken-origin.html [ Failure ]
+
+# These tests used to pass because javascript urls would commit synchronously.
+# Now they need PostMessageTimer to not be cancelled when a javascript: url
+# replaces the existing document.
+crbug.com/914587 external/wpt/webmessaging/with-ports/018.html [ Timeout ]
+crbug.com/914587 external/wpt/webmessaging/without-ports/018.html [ Timeout ]
 
 # Added 2016-12-12
 crbug.com/610835 http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
@@ -5909,10 +5914,6 @@ crbug.com/919587 [ Linux ] virtual/threaded/fast/idle-callback/idle_periods.html
 
 # Sheriff 2019-01-11
 crbug.com/921038 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/legacy-performance-memory-counters-enabled.html [ Skip ]
-
-# Fails because javascript: urls should execute in the document that is being
-# navigated, but we currently execute them in the source document.
-crbug.com/638435 external/wpt/content-security-policy/unsafe-hashes/javascript_src_allowed-href_blank.html [ Timeout ]
 
 # Sheriff 2019-01-14
 crbug.com/921583 http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
