@@ -17,6 +17,26 @@ using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Property;
 
+// Makes an arbitrary field metadata proto to be used for testing.
+AutofillRandomizedFieldMetadata GetFieldMetadata() {
+  AutofillRandomizedFieldMetadata metadata;
+  AutofillRandomizedValue random_value;
+  random_value.set_encoding_type(AutofillRandomizedValue::BIT_0);
+  random_value.set_encoded_bits("1234");
+  *metadata.mutable_id() = std::move(random_value);
+  return metadata;
+}
+
+// Makes an arbitrary form metadata proto to be used for testing.
+AutofillRandomizedFormMetadata GetformMetadata() {
+  AutofillRandomizedFormMetadata metadata;
+  AutofillRandomizedValue random_value;
+  random_value.set_encoding_type(AutofillRandomizedValue::BIT_1);
+  random_value.set_encoded_bits("5678");
+  *metadata.mutable_id() = std::move(random_value);
+  return metadata;
+}
+
 AutofillQueryContents::Form::Field MakeLegacyField(uint32_t signature,
                                                    const std::string& name,
                                                    const std::string& type) {
@@ -24,6 +44,7 @@ AutofillQueryContents::Form::Field MakeLegacyField(uint32_t signature,
   field.set_signature(signature);
   field.set_name(name);
   field.set_type(type);
+  *field.mutable_field_metadata() = GetFieldMetadata();
   return field;
 }
 
@@ -51,11 +72,13 @@ TEST(ProtoBridgeTest, TestCreateApiRequestFromLegacyRequest) {
   legacy_request.set_client_version("dummy client v1");
   AutofillQueryContents::Form* new_form = legacy_request.add_form();
   new_form->set_signature(1234U);
+  *new_form->mutable_form_metadata() = GetformMetadata();
   *new_form->add_field() = MakeLegacyField(1234U, "First Name", "text");
   *new_form->add_field() = MakeLegacyField(5678U, "Last Name", "text");
 
   new_form = legacy_request.add_form();
   new_form->set_signature(5678U);
+  *new_form->mutable_form_metadata() = GetformMetadata();
   *new_form->add_field() = MakeLegacyField(1234U, "Street Address", "text");
   *new_form->add_field() = MakeLegacyField(5678U, "Zip Code", "text");
 
@@ -63,20 +86,44 @@ TEST(ProtoBridgeTest, TestCreateApiRequestFromLegacyRequest) {
       CreateApiRequestFromLegacyRequest(legacy_request);
 
   EXPECT_EQ(api_request.client_version(), "dummy client v1");
+  EXPECT_EQ(api_request.forms(0).signature(), 1234U);
+  EXPECT_EQ(api_request.forms(0).metadata().id().encoding_type(),
+            AutofillRandomizedValue::BIT_1);
+  EXPECT_EQ(api_request.forms(0).metadata().id().encoded_bits(), "5678");
+  EXPECT_EQ(api_request.forms(1).signature(), 5678U);
+  EXPECT_EQ(api_request.forms(1).metadata().id().encoding_type(),
+            AutofillRandomizedValue::BIT_1);
+  EXPECT_EQ(api_request.forms(1).metadata().id().encoded_bits(), "5678");
   // Assert fields of form 0.
   EXPECT_EQ(api_request.forms(0).fields(0).signature(), 1234U);
   EXPECT_EQ(api_request.forms(0).fields(0).name(), "First Name");
   EXPECT_EQ(api_request.forms(0).fields(0).control_type(), "text");
+  EXPECT_EQ(api_request.forms(0).fields(0).metadata().id().encoding_type(),
+            AutofillRandomizedValue::BIT_0);
+  EXPECT_EQ(api_request.forms(0).fields(0).metadata().id().encoded_bits(),
+            "1234");
   EXPECT_EQ(api_request.forms(0).fields(1).signature(), 5678U);
   EXPECT_EQ(api_request.forms(0).fields(1).name(), "Last Name");
   EXPECT_EQ(api_request.forms(0).fields(1).control_type(), "text");
-  // Assert field of form 1.
+  EXPECT_EQ(api_request.forms(0).fields(1).metadata().id().encoding_type(),
+            AutofillRandomizedValue::BIT_0);
+  EXPECT_EQ(api_request.forms(0).fields(1).metadata().id().encoded_bits(),
+            "1234");
+  // Assert fields of form 1.
   EXPECT_EQ(api_request.forms(1).fields(0).signature(), 1234U);
   EXPECT_EQ(api_request.forms(1).fields(0).name(), "Street Address");
   EXPECT_EQ(api_request.forms(1).fields(0).control_type(), "text");
+  EXPECT_EQ(api_request.forms(1).fields(0).metadata().id().encoding_type(),
+            AutofillRandomizedValue::BIT_0);
+  EXPECT_EQ(api_request.forms(1).fields(0).metadata().id().encoded_bits(),
+            "1234");
   EXPECT_EQ(api_request.forms(1).fields(1).signature(), 5678U);
   EXPECT_EQ(api_request.forms(1).fields(1).name(), "Zip Code");
   EXPECT_EQ(api_request.forms(1).fields(1).control_type(), "text");
+  EXPECT_EQ(api_request.forms(1).fields(1).metadata().id().encoding_type(),
+            AutofillRandomizedValue::BIT_0);
+  EXPECT_EQ(api_request.forms(1).fields(1).metadata().id().encoded_bits(),
+            "1234");
 }
 
 TEST(ProtoBridgeTest, CreateLegacyResponseFromApiResponse) {

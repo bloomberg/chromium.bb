@@ -505,7 +505,8 @@ TEST_F(AutofillDownloadManagerTest, QueryAPITest) {
   // used by the download manager.
   const std::string expected_url = {
       "https://clients1.google.com/v1/pages/"
-      "Chc2LjEuMTcxNS4xNDQyL2VuIChHR0xMKRIWEgkNeuFP4BIAGgASCQ2cTkrQEgAaAA==?"
+      "Chc2LjEuMTcxNS4xNDQyL2VuIChHR0xMKRIlCU9O84MyjH9NEgsNeu"
+      "FP4BIAGgAiABILDZxOStASABoAIgAaAA==?"
       "alt=proto"};
   EXPECT_EQ(request->request.url, expected_url);
   std::string api_key_header_value;
