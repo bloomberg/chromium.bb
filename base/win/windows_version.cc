@@ -33,50 +33,6 @@ namespace win {
 
 namespace {
 
-// Helper to map a major.minor.x.build version (e.g. 6.1) to a Windows release.
-Version MajorMinorBuildToVersion(int major, int minor, int build) {
-  if ((major == 5) && (minor > 0)) {
-    // Treat XP Pro x64, Home Server, and Server 2003 R2 as Server 2003.
-    return (minor == 1) ? VERSION_XP : VERSION_SERVER_2003;
-  } else if (major == 6) {
-    switch (minor) {
-      case 0:
-        // Treat Windows Server 2008 the same as Windows Vista.
-        return VERSION_VISTA;
-      case 1:
-        // Treat Windows Server 2008 R2 the same as Windows 7.
-        return VERSION_WIN7;
-      case 2:
-        // Treat Windows Server 2012 the same as Windows 8.
-        return VERSION_WIN8;
-      default:
-        DCHECK_EQ(minor, 3);
-        return VERSION_WIN8_1;
-    }
-  } else if (major == 10) {
-    if (build < 10586) {
-      return VERSION_WIN10;
-    } else if (build < 14393) {
-      return VERSION_WIN10_TH2;
-    } else if (build < 15063) {
-      return VERSION_WIN10_RS1;
-    } else if (build < 16299) {
-      return VERSION_WIN10_RS2;
-    } else if (build < 17134) {
-      return VERSION_WIN10_RS3;
-    } else if (build < 17763) {
-      return VERSION_WIN10_RS4;
-    } else {
-      return VERSION_WIN10_RS5;
-    }
-  } else if (major > 6) {
-    NOTREACHED();
-    return VERSION_WIN_LAST;
-  }
-
-  return VERSION_PRE_XP;
-}
-
 // Returns the the "UBR" value from the registry. Introduced in Windows 10,
 // this undocumented value appears to be similar to a patch number.
 // Returns 0 if the value does not exist or it could not be read.
@@ -287,6 +243,55 @@ OSInfo::WOW64Status OSInfo::GetWOW64StatusForProcess(HANDLE process_handle) {
   if (!(*is_wow64_process)(process_handle, &is_wow64))
     return WOW64_UNKNOWN;
   return is_wow64 ? WOW64_ENABLED : WOW64_DISABLED;
+}
+
+// With the exception of Server 2003, server variants are treated the same as
+// the corresponding workstation release.
+// static
+Version OSInfo::MajorMinorBuildToVersion(int major, int minor, int build) {
+  if (major == 10) {
+    if (build >= 17763)
+      return VERSION_WIN10_RS5;
+    if (build >= 17134)
+      return VERSION_WIN10_RS4;
+    if (build >= 16299)
+      return VERSION_WIN10_RS3;
+    if (build >= 15063)
+      return VERSION_WIN10_RS2;
+    if (build >= 14393)
+      return VERSION_WIN10_RS1;
+    if (build >= 10586)
+      return VERSION_WIN10_TH2;
+    return VERSION_WIN10;
+  }
+
+  if (major > 6) {
+    // Hitting this likely means that it's time for a >10 block above.
+    NOTREACHED() << major << "." << minor << "." << build;
+    return VERSION_WIN_LAST;
+  }
+
+  if (major == 6) {
+    switch (minor) {
+      case 0:
+        return VERSION_VISTA;
+      case 1:
+        return VERSION_WIN7;
+      case 2:
+        return VERSION_WIN8;
+      default:
+        DCHECK_EQ(minor, 3);
+        return VERSION_WIN8_1;
+    }
+  }
+
+  if (major == 5 && minor != 0) {
+    // Treat XP Pro x64, Home Server, and Server 2003 R2 as Server 2003.
+    return minor == 1 ? VERSION_XP : VERSION_SERVER_2003;
+  }
+
+  // Win 2000 or older.
+  return VERSION_PRE_XP;
 }
 
 Version GetVersion() {
