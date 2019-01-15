@@ -238,14 +238,14 @@ class AbstractStageTestCase(StageTestCase):
   default values for testing BuilderStage and its derivatives.
   """
 
-  def ConstructStage(self):
+  def ConstructStage(self, **kwargs):
     """Returns an instance of the stage to be tested.
 
     Note: Must be implemented in subclasses.
     """
     raise NotImplementedError(self, "ConstructStage: Implement in your test")
 
-  def RunStage(self):
+  def RunStage(self, **kwargs):
     """Creates and runs an instance of the stage to be tested.
 
     Note: Requires ConstructStage() to be implemented.
@@ -257,7 +257,7 @@ class AbstractStageTestCase(StageTestCase):
     # Stage construction is usually done as late as possible because the tests
     # set up the build configuration and options used in constructing the stage.
     results_lib.Results.Clear()
-    stage = self.ConstructStage()
+    stage = self.ConstructStage(**kwargs)
     stage.Run()
     self.assertTrue(results_lib.Results.BuildSucceededSoFar())
 

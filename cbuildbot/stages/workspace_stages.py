@@ -391,8 +391,10 @@ class WorkspaceBuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     packages = self.GetListOfPackagesToBuild()
 
     cmd = ['./build_packages', '--board=%s' % self._current_board,
-           '--accept_licenses=@CHROMEOS', '--skip_chroot_upgrade',
-           '--nowithautotest', ]
+           '--accept_licenses=@CHROMEOS', '--skip_chroot_upgrade']
+
+    if not self._run.options.tests:
+      cmd.append('--nowithautotest')
 
     if self.AfterLimit(BUILD_PACKAGES_WITH_DEBUG_SYMBOLS):
       cmd.append('--withdebugsymbols')
@@ -405,7 +407,7 @@ class WorkspaceBuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
 
     chroot_args = ['--cache-dir', self._run.options.cache_dir]
     if self._run.options.chrome_root:
-      chroot_args.append('--chrome_root=%s' % self._run.options.chrome_root)
+      chroot_args += ['--chrome_root', self._run.options.chrome_root]
 
     # TODO: Add event file handling, for build package performance tracking.
     #if self.AfterLimit(BUILD_PACKAGES_EVENTS):
