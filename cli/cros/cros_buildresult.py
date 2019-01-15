@@ -36,7 +36,7 @@ def FetchBuildStatuses(db, options):
   """
   if options.buildbucket_id:
     build_status = db.GetBuildStatusesWithBuildbucketIds(
-        [options.buildbucket_id])
+        [options.buildbucket_id])[0]
     if build_status:
       return [build_status]
   elif options.cidb_id:
