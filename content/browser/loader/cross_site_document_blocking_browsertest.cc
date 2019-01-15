@@ -415,6 +415,11 @@ class CrossSiteDocumentBlockingTestBase : public ContentBrowserTest {
         network::switches::kHostResolverRules,
         "MAP * " + embedded_test_server()->host_port_pair().ToString() +
             ",EXCLUDE localhost");
+    // TODO(yoichio): This is temporary switch to support chrome internal
+    // components migration from the old web APIs.
+    // After completion of the migration, we should remove this.
+    // See crbug.com/911943 for detail.
+    command_line->AppendSwitchASCII("enable-blink-features", "HTMLImports");
   }
 
   void VerifyImgRequest(std::string resource, CorbExpectations expectations) {
