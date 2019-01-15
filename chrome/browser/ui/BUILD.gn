@@ -104,6 +104,7 @@ jumbo_split_static_library("ui") {
     "browser_ui_prefs.h",
     "chrome_select_file_policy.cc",
     "chrome_select_file_policy.h",
+    "color_chooser.h",
     "confirm_bubble.h",
     "crypto_module_password_dialog.h",
     "cryptuiapi_shim.h",
