@@ -31,6 +31,8 @@
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom-blink.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
@@ -194,14 +196,14 @@ void ApplicationCacheHost::DetachFromDocumentLoader() {
 }
 
 void ApplicationCacheHost::NotifyApplicationCache(
-    EventID id,
+    mojom::AppCacheEventID id,
     int progress_total,
     int progress_done,
-    WebApplicationCacheHost::ErrorReason error_reason,
+    mojom::AppCacheErrorReason error_reason,
     const String& error_url,
     int error_status,
     const String& error_message) {
-  if (id != kProgressEvent) {
+  if (id != mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT) {
     probe::updateApplicationCacheStatus(document_loader_->GetFrame());
   }
 
@@ -260,10 +262,10 @@ void ApplicationCacheHost::StopDeferringEvents() {
 }
 
 void ApplicationCacheHost::DispatchDOMEvent(
-    EventID id,
+    mojom::AppCacheEventID id,
     int progress_total,
     int progress_done,
-    WebApplicationCacheHost::ErrorReason error_reason,
+    mojom::AppCacheErrorReason error_reason,
     const String& error_url,
     int error_status,
     const String& error_message) {
@@ -275,10 +277,10 @@ void ApplicationCacheHost::DispatchDOMEvent(
   if (event_type.IsEmpty())
     return;
   Event* event = nullptr;
-  if (id == kProgressEvent) {
+  if (id == mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT) {
     event =
         ProgressEvent::Create(event_type, true, progress_done, progress_total);
-  } else if (id == kErrorEvent) {
+  } else if (id == mojom::AppCacheEventID::APPCACHE_ERROR_EVENT) {
     event = ApplicationCacheErrorEvent::Create(error_reason, error_url,
                                                error_status, error_message);
   } else {
@@ -287,8 +289,9 @@ void ApplicationCacheHost::DispatchDOMEvent(
   dom_application_cache_->DispatchEvent(*event);
 }
 
-ApplicationCacheHost::Status ApplicationCacheHost::GetStatus() const {
-  return host_ ? static_cast<Status>(host_->GetStatus()) : kUncached;
+mojom::AppCacheStatus ApplicationCacheHost::GetStatus() const {
+  return host_ ? host_->GetStatus()
+               : mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED;
 }
 
 bool ApplicationCacheHost::Update() {
@@ -322,60 +325,33 @@ void ApplicationCacheHost::DidChangeCacheAssociation() {
 }
 
 void ApplicationCacheHost::NotifyEventListener(
-    WebApplicationCacheHost::EventID event_id) {
-  NotifyApplicationCache(static_cast<ApplicationCacheHost::EventID>(event_id),
-                         0, 0, WebApplicationCacheHost::kUnknownError, String(),
-                         0, String());
+    mojom::AppCacheEventID event_id) {
+  NotifyApplicationCache(event_id, 0, 0,
+                         mojom::AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR,
+                         String(), 0, String());
 }
 
 void ApplicationCacheHost::NotifyProgressEventListener(const WebURL&,
                                                        int progress_total,
                                                        int progress_done) {
-  NotifyApplicationCache(kProgressEvent, progress_total, progress_done,
-                         WebApplicationCacheHost::kUnknownError, String(), 0,
-                         String());
+  NotifyApplicationCache(mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT,
+                         progress_total, progress_done,
+                         mojom::AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR,
+                         String(), 0, String());
 }
 
 void ApplicationCacheHost::NotifyErrorEventListener(
-    WebApplicationCacheHost::ErrorReason reason,
+    mojom::AppCacheErrorReason reason,
     const WebURL& url,
     int status,
     const WebString& message) {
-  NotifyApplicationCache(kErrorEvent, 0, 0, reason, url.GetString(), status,
-                         message);
+  NotifyApplicationCache(mojom::AppCacheEventID::APPCACHE_ERROR_EVENT, 0, 0,
+                         reason, url.GetString(), status, message);
 }
 
 void ApplicationCacheHost::Trace(blink::Visitor* visitor) {
   visitor->Trace(dom_application_cache_);
   visitor->Trace(document_loader_);
 }
-
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUncached,
-                   ApplicationCacheHost::kUncached);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kIdle, ApplicationCacheHost::kIdle);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kChecking,
-                   ApplicationCacheHost::kChecking);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kDownloading,
-                   ApplicationCacheHost::kDownloading);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUpdateReady,
-                   ApplicationCacheHost::kUpdateready);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kObsolete,
-                   ApplicationCacheHost::kObsolete);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kCheckingEvent,
-                   ApplicationCacheHost::kCheckingEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kErrorEvent,
-                   ApplicationCacheHost::kErrorEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kNoUpdateEvent,
-                   ApplicationCacheHost::kNoupdateEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kDownloadingEvent,
-                   ApplicationCacheHost::kDownloadingEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kProgressEvent,
-                   ApplicationCacheHost::kProgressEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUpdateReadyEvent,
-                   ApplicationCacheHost::kUpdatereadyEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kCachedEvent,
-                   ApplicationCacheHost::kCachedEvent);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kObsoleteEvent,
-                   ApplicationCacheHost::kObsoleteEvent);
 
 }  // namespace blink

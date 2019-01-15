@@ -121,53 +121,6 @@ void AppCacheFrontendImpl::SetSubresourceFactory(
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatched enum: " #a)
 
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUncached,
-                   blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kIdle,
-                   blink::mojom::AppCacheStatus::APPCACHE_STATUS_IDLE);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kChecking,
-                   blink::mojom::AppCacheStatus::APPCACHE_STATUS_CHECKING);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kDownloading,
-                   blink::mojom::AppCacheStatus::APPCACHE_STATUS_DOWNLOADING);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUpdateReady,
-                   blink::mojom::AppCacheStatus::APPCACHE_STATUS_UPDATE_READY);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kObsolete,
-                   blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE);
-
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kCheckingEvent,
-                   blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kErrorEvent,
-                   blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kNoUpdateEvent,
-                   blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kDownloadingEvent,
-                   blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kProgressEvent,
-                   blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUpdateReadyEvent,
-                   blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kCachedEvent,
-                   blink::mojom::AppCacheEventID::APPCACHE_CACHED_EVENT);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kObsoleteEvent,
-                   blink::mojom::AppCacheEventID::APPCACHE_OBSOLETE_EVENT);
-
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kManifestError,
-                   blink::mojom::AppCacheErrorReason::APPCACHE_MANIFEST_ERROR);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kSignatureError,
-                   blink::mojom::AppCacheErrorReason::APPCACHE_SIGNATURE_ERROR);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kResourceError,
-                   blink::mojom::AppCacheErrorReason::APPCACHE_RESOURCE_ERROR);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kChangedError,
-                   blink::mojom::AppCacheErrorReason::APPCACHE_CHANGED_ERROR);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kAbortError,
-                   blink::mojom::AppCacheErrorReason::APPCACHE_ABORT_ERROR);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kQuotaError,
-                   blink::mojom::AppCacheErrorReason::APPCACHE_QUOTA_ERROR);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kPolicyError,
-                   blink::mojom::AppCacheErrorReason::APPCACHE_POLICY_ERROR);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUnknownError,
-                   blink::mojom::AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR);
-
 STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelVerbose, APPCACHE_LOG_VERBOSE);
 STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelInfo, APPCACHE_LOG_INFO);
 STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelWarning, APPCACHE_LOG_WARNING);

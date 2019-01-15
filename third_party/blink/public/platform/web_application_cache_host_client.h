@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_APPLICATION_CACHE_HOST_CLIENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_APPLICATION_CACHE_HOST_CLIENT_H_
 
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-shared.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_common.h"
 
@@ -44,11 +45,11 @@ class WebApplicationCacheHostClient {
   virtual void DidChangeCacheAssociation() = 0;
 
   // Called to fire events in the scriptable interface.
-  virtual void NotifyEventListener(WebApplicationCacheHost::EventID) = 0;
+  virtual void NotifyEventListener(mojom::AppCacheEventID) = 0;
   virtual void NotifyProgressEventListener(const WebURL&,
                                            int num_total,
                                            int num_complete) = 0;
-  virtual void NotifyErrorEventListener(WebApplicationCacheHost::ErrorReason,
+  virtual void NotifyErrorEventListener(mojom::AppCacheErrorReason,
                                         const WebURL&,
                                         int status,
                                         const WebString& message) = 0;
