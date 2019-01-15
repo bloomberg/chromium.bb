@@ -683,7 +683,8 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 
 #if defined(OS_CHROMEOS)
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<ChromeOSMetricsProvider>());
+      std::make_unique<ChromeOSMetricsProvider>(
+          metrics::MetricsLogUploader::UMA));
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<SigninStatusMetricsProviderChromeOS>());
@@ -742,7 +743,8 @@ void ChromeMetricsServiceClient::RegisterUKMProviders() {
 
 #if defined(OS_CHROMEOS)
   ukm_service_->RegisterMetricsProvider(
-      std::make_unique<ChromeOSMetricsProvider>());
+      std::make_unique<ChromeOSMetricsProvider>(
+          metrics::MetricsLogUploader::UKM));
 #endif  // !defined(OS_CHROMEOS)
 
   metrics_service_->RegisterMetricsProvider(
