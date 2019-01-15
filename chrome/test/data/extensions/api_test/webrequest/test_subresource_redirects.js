@@ -46,129 +46,137 @@ function assertRedirectFails(url, callback) {
   });
 }
 
-runTests([
-  function subresourceRedirectToDataUrlOnHeadersReceived() {
-    var url = getServerURL('echo');
-    var listener = function(details) {
-      return {redirectUrl: dataURL};
-    };
-    chrome.webRequest.onHeadersReceived.addListener(listener,
-        {urls: [url]}, ['blocking']);
+chrome.test.getConfig(function(config) {
+  var onHeadersReceivedExtraInfoSpec = ['blocking'];
+  if (config.customArg === 'useExtraHeaders')
+    onHeadersReceivedExtraInfoSpec.push('extraHeaders');
 
-    assertRedirectSucceeds(url, dataURL, function() {
-      chrome.webRequest.onHeadersReceived.removeListener(listener);
-    });
-  },
+  runTests([
+    function subresourceRedirectToDataUrlOnHeadersReceived() {
+      var url = getServerURL('echo');
+      var listener = function(details) {
+        return {redirectUrl: dataURL};
+      };
+      chrome.webRequest.onHeadersReceived.addListener(listener,
+          {urls: [url]}, onHeadersReceivedExtraInfoSpec);
 
-  function subresourceRedirectToNonWebAccessibleUrlOnHeadersReceived() {
-    var url = getServerURL('echo');
-    var listener = function(details) {
-      return {redirectUrl: getURLNonWebAccessible()};
-    };
-    chrome.webRequest.onHeadersReceived.addListener(listener,
-        {urls: [url]}, ['blocking']);
+      assertRedirectSucceeds(url, dataURL, function() {
+        chrome.webRequest.onHeadersReceived.removeListener(listener);
+      });
+    },
 
-    assertRedirectSucceeds(url, getURLNonWebAccessible(), function() {
-      chrome.webRequest.onHeadersReceived.removeListener(listener);
-    });
-  },
+    function subresourceRedirectToNonWebAccessibleUrlOnHeadersReceived() {
+      var url = getServerURL('echo');
+      var listener = function(details) {
+        return {redirectUrl: getURLNonWebAccessible()};
+      };
+      chrome.webRequest.onHeadersReceived.addListener(listener,
+          {urls: [url]}, onHeadersReceivedExtraInfoSpec);
 
-  function subresourceRedirectToServerRedirectOnHeadersReceived() {
-    var url = getServerURL('echo');
-    var redirectURL = getServerURL('server-redirect?' + getURLWebAccessible());
-    var listener = function(details) {
-      return {redirectUrl: redirectURL};
-    };
-    chrome.webRequest.onHeadersReceived.addListener(listener,
-        {urls: [url]}, ['blocking']);
+      assertRedirectSucceeds(url, getURLNonWebAccessible(), function() {
+        chrome.webRequest.onHeadersReceived.removeListener(listener);
+      });
+    },
 
-    assertRedirectSucceeds(url, getURLWebAccessible(), function() {
-      chrome.webRequest.onHeadersReceived.removeListener(listener);
-    });
-  },
+    function subresourceRedirectToServerRedirectOnHeadersReceived() {
+      var url = getServerURL('echo');
+      var redirectURL = getServerURL('server-redirect?' +
+          getURLWebAccessible());
+      var listener = function(details) {
+        return {redirectUrl: redirectURL};
+      };
+      chrome.webRequest.onHeadersReceived.addListener(listener,
+          {urls: [url]}, onHeadersReceivedExtraInfoSpec);
 
-  function subresourceRedirectToUnallowedServerRedirectOnHeadersReceived() {
-    var url = getServerURL('echo');
-    var redirectURL = getServerURL('server-redirect?' +
-        getURLNonWebAccessible());
-    var listener = function(details) {
-      return {redirectUrl: redirectURL};
-    };
-    chrome.webRequest.onHeadersReceived.addListener(listener,
-        {urls: [url]}, ['blocking']);
+      assertRedirectSucceeds(url, getURLWebAccessible(), function() {
+        chrome.webRequest.onHeadersReceived.removeListener(listener);
+      });
+    },
 
-    assertRedirectFails(url, function() {
-      chrome.webRequest.onHeadersReceived.removeListener(listener);
-    });
-  },
+    function subresourceRedirectToUnallowedServerRedirectOnHeadersReceived() {
+      var url = getServerURL('echo');
+      var redirectURL = getServerURL('server-redirect?' +
+          getURLNonWebAccessible());
+      var listener = function(details) {
+        return {redirectUrl: redirectURL};
+      };
+      chrome.webRequest.onHeadersReceived.addListener(listener,
+          {urls: [url]}, onHeadersReceivedExtraInfoSpec);
 
-  function subresourceRedirectToDataUrlOnBeforeRequest() {
-    var url = getServerURL('echo');
-    var listener = function(details) {
-      return {redirectUrl: dataURL};
-    };
-    chrome.webRequest.onBeforeRequest.addListener(listener,
-        {urls: [url]}, ['blocking']);
+      assertRedirectFails(url, function() {
+        chrome.webRequest.onHeadersReceived.removeListener(listener);
+      });
+    },
 
-    assertRedirectSucceeds(url, dataURL, function() {
-      chrome.webRequest.onBeforeRequest.removeListener(listener);
-    });
-  },
+    function subresourceRedirectToDataUrlOnBeforeRequest() {
+      var url = getServerURL('echo');
+      var listener = function(details) {
+        return {redirectUrl: dataURL};
+      };
+      chrome.webRequest.onBeforeRequest.addListener(listener,
+          {urls: [url]}, ['blocking']);
 
-  function subresourceRedirectToNonWebAccessibleUrlOnBeforeRequest() {
-    var url = getServerURL('echo');
-    var listener = function(details) {
-      return {redirectUrl: getURLNonWebAccessible()};
-    };
-    chrome.webRequest.onBeforeRequest.addListener(listener,
-        {urls: [url]}, ['blocking']);
+      assertRedirectSucceeds(url, dataURL, function() {
+        chrome.webRequest.onBeforeRequest.removeListener(listener);
+      });
+    },
 
-    assertRedirectSucceeds(url, getURLNonWebAccessible(), function() {
-      chrome.webRequest.onBeforeRequest.removeListener(listener);
-    });
-  },
+    function subresourceRedirectToNonWebAccessibleUrlOnBeforeRequest() {
+      var url = getServerURL('echo');
+      var listener = function(details) {
+        return {redirectUrl: getURLNonWebAccessible()};
+      };
+      chrome.webRequest.onBeforeRequest.addListener(listener,
+          {urls: [url]}, ['blocking']);
 
-  function subresourceRedirectToServerRedirectOnBeforeRequest() {
-    var url = getServerURL('echo');
-    var redirectURL = getServerURL('server-redirect?' + getURLWebAccessible());
-    var listener = function(details) {
-      return {redirectUrl: redirectURL};
-    };
-    chrome.webRequest.onBeforeRequest.addListener(listener,
-        {urls: [url]}, ['blocking']);
+      assertRedirectSucceeds(url, getURLNonWebAccessible(), function() {
+        chrome.webRequest.onBeforeRequest.removeListener(listener);
+      });
+    },
 
-    assertRedirectSucceeds(url, getURLWebAccessible(), function() {
-      chrome.webRequest.onBeforeRequest.removeListener(listener);
-    });
-  },
+    function subresourceRedirectToServerRedirectOnBeforeRequest() {
+      var url = getServerURL('echo');
+      var redirectURL = getServerURL('server-redirect?' +
+          getURLWebAccessible());
+      var listener = function(details) {
+        return {redirectUrl: redirectURL};
+      };
+      chrome.webRequest.onBeforeRequest.addListener(listener,
+          {urls: [url]}, ['blocking']);
 
-  function subresourceRedirectToUnallowedServerRedirectOnBeforeRequest() {
-    var url = getServerURL('echo');
-    var redirectURL = getServerURL('server-redirect?' +
-        getURLNonWebAccessible());
-    var listener = function(details) {
-      return {redirectUrl: redirectURL};
-    };
-    chrome.webRequest.onBeforeRequest.addListener(listener,
-        {urls: [url]}, ['blocking']);
+      assertRedirectSucceeds(url, getURLWebAccessible(), function() {
+        chrome.webRequest.onBeforeRequest.removeListener(listener);
+      });
+    },
 
-    assertRedirectFails(url, function() {
-      chrome.webRequest.onBeforeRequest.removeListener(listener);
-    });
-  },
+    function subresourceRedirectToUnallowedServerRedirectOnBeforeRequest() {
+      var url = getServerURL('echo');
+      var redirectURL = getServerURL('server-redirect?' +
+          getURLNonWebAccessible());
+      var listener = function(details) {
+        return {redirectUrl: redirectURL};
+      };
+      chrome.webRequest.onBeforeRequest.addListener(listener,
+          {urls: [url]}, ['blocking']);
 
-  function subresourceRedirectToDataUrlWithServerRedirect() {
-    assertRedirectFails(getServerURL('server-redirect?' + dataURL));
-  },
+      assertRedirectFails(url, function() {
+        chrome.webRequest.onBeforeRequest.removeListener(listener);
+      });
+    },
 
-  function subresourceRedirectToNonWebAccessibleWithServerRedirect() {
-    assertRedirectFails(
-        getServerURL('server-redirect?' + getURLNonWebAccessible()));
-  },
+    function subresourceRedirectToDataUrlWithServerRedirect() {
+      assertRedirectFails(getServerURL('server-redirect?' + dataURL));
+    },
 
-  function subresourceRedirectToWebAccessibleWithServerRedirect() {
-    assertRedirectSucceeds(
-        getServerURL('server-redirect?' + getURLWebAccessible()),
-        getURLWebAccessible());
-  },
-]);
+    function subresourceRedirectToNonWebAccessibleWithServerRedirect() {
+      assertRedirectFails(
+          getServerURL('server-redirect?' + getURLNonWebAccessible()));
+    },
+
+    function subresourceRedirectToWebAccessibleWithServerRedirect() {
+      assertRedirectSucceeds(
+          getServerURL('server-redirect?' + getURLWebAccessible()),
+          getURLWebAccessible());
+    },
+  ]);
+});
