@@ -77,5 +77,8 @@ void FakeAssistantManagerServiceImpl::CacheScreenContext(
 void FakeAssistantManagerServiceImpl::OnAccessibilityStatusChanged(
     bool spoken_feedback_enabled) {}
 
+void FakeAssistantManagerServiceImpl::SendAssistantFeedback(
+    mojom::AssistantFeedbackPtr feedback) {}
+
 }  // namespace assistant
 }  // namespace chromeos

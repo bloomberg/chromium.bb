@@ -48,6 +48,7 @@ enum FeedbackSource {
   kFeedbackSourceProfileErrorDialog,
   kFeedbackSourceSadTabPage,
   kFeedbackSourceSupervisedUserInterstitial,
+  kFeedbackSourceAssistant,
 
   // Must be last.
   kFeedbackSourceCount,

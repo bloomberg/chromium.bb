@@ -68,9 +68,9 @@ void NewWindowController::ShowTaskManager() {
     client_->ShowTaskManager();
 }
 
-void NewWindowController::OpenFeedbackPage() {
+void NewWindowController::OpenFeedbackPage(bool from_assistant) {
   if (client_)
-    client_->OpenFeedbackPage();
+    client_->OpenFeedbackPage(from_assistant);
 }
 
 }  // namespace ash

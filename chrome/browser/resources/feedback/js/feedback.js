@@ -227,6 +227,16 @@ function sendReport() {
   if ($('sys-info-checkbox') != null && $('sys-info-checkbox').checked) {
     useSystemInfo = true;
   }
+
+  // <if expr="chromeos">
+  if ($('assistant-info-checkbox') != null &&
+      $('assistant-info-checkbox').checked &&
+      !$('assistant-checkbox-container').hidden) {
+    // User consent to link Assistant debug info on Assistant server.
+    feedbackInfo.assistantDebugInfoAllowed = true;
+  }
+  // </if>
+
   // <if expr="chromeos">
   if ($('bluetooth-logs-checkbox') != null &&
       $('bluetooth-logs-checkbox').checked &&
@@ -383,6 +393,13 @@ function initialize() {
         $('srt-prompt').hidden = true;
       } else {
         $('srt-prompt').hidden = true;
+      }
+
+      if ($('assistant-checkbox-container') != null &&
+          feedbackInfo.flow ==
+              chrome.feedbackPrivate.FeedbackFlow.GOOGLE_INTERNAL &&
+          feedbackInfo.fromAssistant) {
+        $('assistant-checkbox-container').hidden = false;
       }
 
       $('description-text').textContent = feedbackInfo.description;

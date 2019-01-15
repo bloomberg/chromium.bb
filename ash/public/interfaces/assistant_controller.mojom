@@ -27,6 +27,12 @@ interface AssistantController {
 
   // Show speaker id enrollment flow.
   StartSpeakerIdEnrollmentFlow();
+
+  // Send Assistant feedback to Assistant server. If |pii_allowed| is
+  // true then the user gives permission to attach Assistant debug info.
+  // |feedback_description| is user's feedback input.
+  SendAssistantFeedback(
+    bool pii_allowed, string feedback_description);
 };
 
 // Interface to the AssistantAlarmTimerController which is owned by the

@@ -138,10 +138,8 @@ void AssistantController::OnDeepLinkReceived(
       break;
     }
     case DeepLinkType::kFeedback:
-      // TODO(dmblack): Possibly use a new FeedbackSource (this method defaults
-      // to kFeedbackSourceAsh). This may be useful for differentiating feedback
-      // UI and behavior for Assistant.
-      Shell::Get()->new_window_controller()->OpenFeedbackPage();
+      Shell::Get()->new_window_controller()->OpenFeedbackPage(
+          /*from_assistant=*/true);
       break;
     case DeepLinkType::kScreenshot:
       // We close the UI before taking the screenshot as it's probably not the
@@ -275,6 +273,17 @@ void AssistantController::OnVoiceInteractionStatusChanged(
     mojom::VoiceInteractionState state) {
   if (state == mojom::VoiceInteractionState::NOT_READY)
     assistant_ui_controller_.CloseUi(AssistantExitPoint::kUnspecified);
+}
+
+void AssistantController::SendAssistantFeedback(
+    bool assistant_debug_info_allowed,
+    const std::string& feedback_description) {
+  chromeos::assistant::mojom::AssistantFeedbackPtr assistant_feedback =
+      chromeos::assistant::mojom::AssistantFeedback::New();
+  assistant_feedback->assistant_debug_info_allowed =
+      assistant_debug_info_allowed;
+  assistant_feedback->description = feedback_description;
+  assistant_->SendAssistantFeedback(std::move(assistant_feedback));
 }
 
 base::WeakPtr<AssistantController> AssistantController::GetWeakPtr() {
