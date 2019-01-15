@@ -90,8 +90,6 @@ void LookalikeUrlService::GetEngagedSites(EngagedSitesCallback callback) {
       return;
     }
   }
-
-  last_engagement_fetch_time_ = now;
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::TaskPriority::BEST_EFFORT,
@@ -126,5 +124,7 @@ void LookalikeUrlService::OnFetchEngagedSites(
     }
     engaged_sites_.push_back(detail.origin);
   }
+
+  last_engagement_fetch_time_ = clock_->Now();
   std::move(callback).Run(engaged_sites_);
 }
