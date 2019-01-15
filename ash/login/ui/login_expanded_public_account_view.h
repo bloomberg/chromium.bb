@@ -17,7 +17,6 @@
 namespace ash {
 
 class ArrowButtonView;
-class LoginBubble;
 class LoginUserView;
 class RightPaneView;
 class PublicAccountWarningDialog;
@@ -39,8 +38,8 @@ class ASH_EXPORT LoginExpandedPublicAccountView : public NonAccessibleView {
     views::StyledLabel* learn_more_label();
     views::View* language_selection_button();
     views::View* keyboard_selection_button();
-    LoginBubble* language_menu();
-    LoginBubble* keyboard_menu();
+    LoginMenuView* language_menu_view();
+    LoginMenuView* keyboard_menu_view();
     LoginMenuView::Item selected_language_item();
     LoginMenuView::Item selected_keyboard_item();
     views::ImageView* monitoring_warning_icon();

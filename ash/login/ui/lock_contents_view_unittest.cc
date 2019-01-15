@@ -15,7 +15,6 @@
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_auth_user_view.h"
 #include "ash/login/ui/login_big_user_view.h"
-#include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_expanded_public_account_view.h"
 #include "ash/login/ui/login_keyboard_test_base.h"
