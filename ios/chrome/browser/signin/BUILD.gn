@@ -128,7 +128,8 @@ source_set("test_support") {
   deps = [
     ":signin",
     "//base",
-    "//components/signin/core/browser:test_support",
+    "//components/keyed_service/core",
+    "//components/signin/core/browser:internals_test_support",
     "//components/signin/ios/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:test_support",
@@ -158,7 +159,7 @@ source_set("unit_tests") {
     "//components/pref_registry",
     "//components/prefs",
     "//components/signin/core/browser",
-    "//components/signin/core/browser:test_support",
+    "//components/signin/core/browser:internals_test_support",
     "//components/signin/ios/browser",
     "//components/signin/ios/browser:test_support",
     "//components/sync_preferences",
