@@ -126,7 +126,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
                        int64_t encoded_data_length,
                        bool is_internal_request) override;
 
-  bool ShouldLoadNewResource(ResourceType) const override;
   void RecordLoadingActivity(const ResourceRequest&,
                              ResourceType,
                              const AtomicString& fetch_initiator_name) override;
@@ -135,12 +134,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   void AddResourceTiming(const ResourceTimingInfo&) override;
   bool AllowImage(bool images_enabled, const KURL&) const override;
-  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
-      const override;
-  int64_t ServiceWorkerID() const override;
-
-  bool DefersLoading() const override;
-  bool IsLoadComplete() const override;
 
   void PopulateResourceRequest(ResourceType,
                                const ClientHintsPreferences&,

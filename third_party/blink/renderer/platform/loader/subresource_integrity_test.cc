@@ -85,14 +85,10 @@ class SubresourceIntegrityTest : public testing::Test {
  public:
   SubresourceIntegrityTest()
       : sec_url("https://example.test:443"),
-        insec_url("http://example.test:80") {}
+        insec_url("http://example.test:80"),
+        context(MakeGarbageCollected<MockFetchContext>()) {}
 
  protected:
-  void SetUp() override {
-    context = MakeGarbageCollected<MockFetchContext>(
-        MockFetchContext::kShouldLoadNewResource);
-  }
-
   SubresourceIntegrity::IntegrityFeatures Features() const {
     return RuntimeEnabledFeatures::SignatureBasedIntegrityEnabledByRuntimeFlag()
                ? SubresourceIntegrity::IntegrityFeatures::kSignatures

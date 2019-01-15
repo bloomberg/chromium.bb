@@ -23,10 +23,7 @@ class CountUsageMockFetchContext : public MockFetchContext {
  public:
   explicit CountUsageMockFetchContext(
       scoped_refptr<const SecurityOrigin> security_origin)
-      : MockFetchContext(MockFetchContext::kShouldLoadNewResource,
-                         nullptr,
-                         std::move(security_origin),
-                         nullptr) {}
+      : MockFetchContext(nullptr, std::move(security_origin), nullptr) {}
   static CountUsageMockFetchContext* Create(
       scoped_refptr<const SecurityOrigin> security_origin) {
     return MakeGarbageCollected<

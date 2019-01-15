@@ -161,7 +161,7 @@ class PLATFORM_EXPORT FetchContext
                                int64_t encoded_data_length,
                                bool is_internal_request);
 
-  virtual bool ShouldLoadNewResource(ResourceType) const { return false; }
+  bool ShouldLoadNewResource(ResourceType) const;
 
   // Called when a resource load is first requested, which may not be when the
   // load actually begins.
@@ -192,15 +192,12 @@ class PLATFORM_EXPORT FetchContext
     return ResourceRequestBlockedReason::kOther;
   }
 
-  virtual blink::mojom::ControllerServiceWorkerMode
-  IsControlledByServiceWorker() const {
-    return blink::mojom::ControllerServiceWorkerMode::kNoController;
-  }
-  virtual int64_t ServiceWorkerID() const { return -1; }
+  mojom::ControllerServiceWorkerMode IsControlledByServiceWorker() const;
+  int64_t ServiceWorkerID() const;
 
   bool IsMainFrame() const;
-  virtual bool DefersLoading() const { return false; }
-  virtual bool IsLoadComplete() const { return false; }
+  bool DefersLoading() const;
+  bool IsLoadComplete() const;
 
   virtual void CountUsage(mojom::WebFeature) const = 0;
   virtual void CountDeprecation(mojom::WebFeature) const = 0;

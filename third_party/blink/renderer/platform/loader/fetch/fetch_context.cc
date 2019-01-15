@@ -141,6 +141,12 @@ void FetchContext::DispatchDidFail(const KURL&,
                                    int64_t,
                                    bool) {}
 
+bool FetchContext::ShouldLoadNewResource(ResourceType type) const {
+  if (type == ResourceType::kMainResource)
+    return !GetResourceFetcherProperties().ShouldBlockLoadingMainResource();
+  return !GetResourceFetcherProperties().ShouldBlockLoadingSubResource();
+}
+
 void FetchContext::RecordLoadingActivity(
     const ResourceRequest&,
     ResourceType,
@@ -152,8 +158,25 @@ void FetchContext::DidObserveLoadingBehavior(WebLoadingBehaviorFlag) {}
 
 void FetchContext::AddResourceTiming(const ResourceTimingInfo&) {}
 
+mojom::ControllerServiceWorkerMode FetchContext::IsControlledByServiceWorker()
+    const {
+  return GetResourceFetcherProperties().GetControllerServiceWorkerMode();
+}
+
+int64_t FetchContext::ServiceWorkerID() const {
+  return GetResourceFetcherProperties().ServiceWorkerId();
+}
+
 bool FetchContext::IsMainFrame() const {
   return GetResourceFetcherProperties().IsMainFrame();
+}
+
+bool FetchContext::DefersLoading() const {
+  return GetResourceFetcherProperties().IsPaused();
+}
+
+bool FetchContext::IsLoadComplete() const {
+  return GetResourceFetcherProperties().IsLoadComplete();
 }
 
 const SecurityOrigin* FetchContext::GetSecurityOrigin() const {

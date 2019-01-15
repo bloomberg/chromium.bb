@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
+#include "third_party/blink/renderer/platform/loader/fetch/null_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -134,15 +135,21 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
   DCHECK(IsContextThread());
   DCHECK(fetch_client_settings_object);
   InitializeWebFetchContextIfNeeded();
-  ResourceFetcherInit init(
-      *MakeGarbageCollected<WorkerResourceFetcherProperties>(),
-      web_worker_fetch_context_
-          ? MakeGarbageCollected<WorkerFetchContext>(
-                *this, web_worker_fetch_context_, subresource_filter_,
-                *fetch_client_settings_object)
-          : &FetchContext::NullInstance(GetTaskRunner(TaskType::kNetworking)),
-      *this);
-  auto* resource_fetcher = MakeGarbageCollected<ResourceFetcher>(init);
+  ResourceFetcherProperties* properties = nullptr;
+  FetchContext* context = nullptr;
+  if (web_worker_fetch_context_) {
+    properties = MakeGarbageCollected<WorkerResourceFetcherProperties>(
+        *this, web_worker_fetch_context_);
+    context = MakeGarbageCollected<WorkerFetchContext>(
+        *this, web_worker_fetch_context_, subresource_filter_,
+        *fetch_client_settings_object);
+  } else {
+    // This code path is for unittests.
+    properties = MakeGarbageCollected<NullResourceFetcherProperties>();
+    context = &FetchContext::NullInstance(GetTaskRunner(TaskType::kNetworking));
+  }
+  auto* resource_fetcher = MakeGarbageCollected<ResourceFetcher>(
+      ResourceFetcherInit(*properties, context, *this));
   if (IsContextPaused())
     resource_fetcher->SetDefersLoading(true);
   resource_fetchers_.insert(resource_fetcher);

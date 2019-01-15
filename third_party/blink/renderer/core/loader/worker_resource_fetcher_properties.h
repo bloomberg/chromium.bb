@@ -10,15 +10,40 @@
 
 namespace blink {
 
+class WebWorkerFetchContext;
+class WorkerOrWorkletGlobalScope;
+
 // WorkerResourceFetcherProperties is a ResourceFetcherProperties implementation
 // for workers and worklets.
 class WorkerResourceFetcherProperties final : public ResourceFetcherProperties {
  public:
-  WorkerResourceFetcherProperties() = default;
+  WorkerResourceFetcherProperties(
+      WorkerOrWorkletGlobalScope&,
+      scoped_refptr<WebWorkerFetchContext> web_context);
   ~WorkerResourceFetcherProperties() override = default;
+
+  void Trace(Visitor* visitor) override;
 
   // ResourceFetcherProperties implementation
   bool IsMainFrame() const override { return false; }
+  ControllerServiceWorkerMode GetControllerServiceWorkerMode() const override;
+  int64_t ServiceWorkerId() const override {
+    DCHECK_NE(GetControllerServiceWorkerMode(),
+              mojom::ControllerServiceWorkerMode::kNoController);
+    // Currently ServiceWorkerId is used only with MemoryCache which is disabled
+    // on a non-main thread. Hence this value doesn't matter.
+    // TODO(nhiroki): Return the valid service worker ID and make this function
+    // available also on a non-main thread.
+    return -1;
+  }
+  bool IsPaused() const override;
+  bool IsLoadComplete() const override { return false; }
+  bool ShouldBlockLoadingMainResource() const override { return false; }
+  bool ShouldBlockLoadingSubResource() const override { return false; }
+
+ private:
+  const Member<WorkerOrWorkletGlobalScope> global_scope_;
+  const scoped_refptr<WebWorkerFetchContext> web_context_;
 };
 
 }  // namespace blink

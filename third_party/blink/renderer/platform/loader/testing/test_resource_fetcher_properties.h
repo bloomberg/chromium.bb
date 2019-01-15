@@ -19,6 +19,34 @@ class TestResourceFetcherProperties final : public ResourceFetcherProperties {
 
   // ResourceFetcherProperties implementation
   bool IsMainFrame() const override { return false; }
+  ControllerServiceWorkerMode GetControllerServiceWorkerMode() const override {
+    return ControllerServiceWorkerMode::kNoController;
+  }
+  int64_t ServiceWorkerId() const override {
+    NOTREACHED();
+    return 0;
+  }
+  bool IsPaused() const override { return false; }
+  bool IsLoadComplete() const override { return load_complete_; }
+  bool ShouldBlockLoadingMainResource() const override {
+    return should_block_loading_main_resource_;
+  }
+  bool ShouldBlockLoadingSubResource() const override {
+    return should_block_loading_sub_resource_;
+  }
+
+  void SetIsLoadComplete(bool value) { load_complete_ = value; }
+  void SetShouldBlockLoadingMainResource(bool value) {
+    should_block_loading_main_resource_ = value;
+  }
+  void SetShouldBlockLoadingSubResource(bool value) {
+    should_block_loading_sub_resource_ = value;
+  }
+
+ private:
+  bool load_complete_ = false;
+  bool should_block_loading_main_resource_ = false;
+  bool should_block_loading_sub_resource_ = false;
 };
 
 }  // namespace blink

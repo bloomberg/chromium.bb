@@ -28,10 +28,7 @@ class ResourceLoaderDefersLoadingTest : public testing::Test {
 
   ResourceLoaderDefersLoadingTest();
 
-  void SetUp() override {
-    context_ = MakeGarbageCollected<MockFetchContext>(
-        MockFetchContext::kShouldLoadNewResource);
-  }
+  void SetUp() override { context_ = MakeGarbageCollected<MockFetchContext>(); }
 
   void SaveCodeCacheCallback(CodeCacheLoader::FetchCodeCacheCallback callback) {
     // Store the callback to send back a response.

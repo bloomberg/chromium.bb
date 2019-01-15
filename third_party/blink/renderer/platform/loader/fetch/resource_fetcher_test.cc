@@ -107,9 +107,8 @@ class ResourceFetcherTest : public testing::Test {
  protected:
   MockFetchContext* CreateFetchContext(
       const scoped_refptr<const SecurityOrigin> security_origin = nullptr) {
-    return MakeGarbageCollected<MockFetchContext>(
-        MockFetchContext::kShouldLoadNewResource, nullptr,
-        std::move(security_origin));
+    return MakeGarbageCollected<MockFetchContext>(nullptr,
+                                                  std::move(security_origin));
   }
   void AddResourceToMemoryCache(Resource* resource) {
     GetMemoryCache()->Add(resource);
@@ -311,8 +310,8 @@ class RequestSameResourceOnComplete
   void NotifyFinished(Resource* resource) override {
     EXPECT_EQ(GetResource(), resource);
     auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
-    MockFetchContext* context = MakeGarbageCollected<MockFetchContext>(
-        MockFetchContext::kShouldLoadNewResource, nullptr, source_origin_);
+    MockFetchContext* context =
+        MakeGarbageCollected<MockFetchContext>(nullptr, source_origin_);
     auto* fetcher2 =
         MakeGarbageCollected<ResourceFetcher>(*properties, context);
     ResourceRequest resource_request2(GetResource()->Url());

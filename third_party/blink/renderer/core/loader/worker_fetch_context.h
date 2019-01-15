@@ -61,7 +61,6 @@ class WorkerFetchContext final : public BaseFetchContext {
       SecurityViolationReportingPolicy) const override;
   bool ShouldBlockFetchAsCredentialedSubresource(const ResourceRequest&,
                                                  const KURL&) const override;
-  bool ShouldLoadNewResource(ResourceType) const override { return true; }
   const KURL& Url() const override;
   const SecurityOrigin* GetParentSecurityOrigin() const override;
   base::Optional<mojom::IPAddressSpace> GetAddressSpace() const override;
@@ -74,8 +73,6 @@ class WorkerFetchContext final : public BaseFetchContext {
       const ResourceLoaderOptions&) override;
   std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() override;
   void PrepareRequest(ResourceRequest&, RedirectType) override;
-  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
-      const override;
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
   void DispatchWillSendRequest(unsigned long,
@@ -108,7 +105,6 @@ class WorkerFetchContext final : public BaseFetchContext {
                                const ClientHintsPreferences&,
                                const FetchParameters::ResourceWidth&,
                                ResourceRequest&) override;
-  bool DefersLoading() const override;
 
   // TODO(altimin): This is used when creating a URLLoader, and
   // FetchContext::GetLoadingTaskRunner is used whenever asynchronous tasks
