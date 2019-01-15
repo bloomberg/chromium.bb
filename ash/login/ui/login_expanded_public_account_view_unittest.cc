@@ -5,7 +5,6 @@
 #include "ash/login/ui/login_expanded_public_account_view.h"
 #include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/arrow_button_view.h"
-#include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
 #include "ash/login/ui/public_account_warning_dialog.h"
@@ -217,38 +216,36 @@ TEST_F(LoginExpandedPublicAccountViewTest, ShowLanguageAndKeyboardMenu) {
   EXPECT_TRUE(test_api.advanced_view()->visible());
 
   // Tap on language selection button should bring up the language menu.
-  EXPECT_FALSE(test_api.language_menu()->IsVisible());
+  // Before the first show, language_menu_view is not initialized to anything.
+  EXPECT_EQ(nullptr, test_api.language_menu_view());
   TapOnView(test_api.language_selection_button());
-  EXPECT_TRUE(test_api.language_menu()->IsVisible());
+  EXPECT_TRUE(test_api.language_menu_view()->IsVisible());
 
   // First language item is selected, and selected item should have focus.
   EXPECT_EQ(test_api.selected_language_item().value, kEnglishLanguageCode);
-  auto* language_menu_view =
-      static_cast<LoginMenuView*>(test_api.language_menu()->bubble_view());
-  LoginMenuView::TestApi language_test_api(language_menu_view);
+  LoginMenuView::TestApi language_test_api(test_api.language_menu_view());
   EXPECT_TRUE(language_test_api.contents()->child_count() == 2);
   EXPECT_TRUE(language_test_api.contents()->child_at(0)->HasFocus());
 
   // Select language item should close the language menu.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
-  EXPECT_FALSE(test_api.language_menu()->IsVisible());
+  EXPECT_EQ(nullptr, test_api.language_menu_view());
 
   // Tap on keyboard selection button should bring up the keyboard menu.
-  EXPECT_FALSE(test_api.keyboard_menu()->IsVisible());
+  // Before the first show, keyboard_menu_view is not initialized to anything.
+  EXPECT_EQ(nullptr, test_api.keyboard_menu_view());
   TapOnView(test_api.keyboard_selection_button());
-  EXPECT_TRUE(test_api.keyboard_menu()->IsVisible());
+  EXPECT_TRUE(test_api.keyboard_menu_view()->IsVisible());
 
   // Second keyboard item is selected, and selected item should have focus.
   EXPECT_EQ(test_api.selected_keyboard_item().value, kKeyboardIdForItem2);
-  auto* keyboard_menu_view =
-      static_cast<LoginMenuView*>(test_api.keyboard_menu()->bubble_view());
-  LoginMenuView::TestApi keyboard_test_api(keyboard_menu_view);
+  LoginMenuView::TestApi keyboard_test_api(test_api.keyboard_menu_view());
   EXPECT_TRUE(keyboard_test_api.contents()->child_count() == 2);
   EXPECT_TRUE(keyboard_test_api.contents()->child_at(1)->HasFocus());
 
   // Select keyboard item should close the keyboard menu.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
-  EXPECT_FALSE(test_api.keyboard_menu()->IsVisible());
+  EXPECT_EQ(nullptr, test_api.keyboard_menu_view());
 }
 
 TEST_F(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
@@ -260,7 +257,7 @@ TEST_F(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
   // Try to change language selection.
   // Open language menu.
   TapOnView(test_api.language_selection_button());
-  EXPECT_TRUE(test_api.language_menu()->IsVisible());
+  EXPECT_TRUE(test_api.language_menu_view()->IsVisible());
 
   // Select second language item:
   // 1. Language menu will be closed automatically.
@@ -273,28 +270,24 @@ TEST_F(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
                   user_->basic_user_info->account_id, kFrenchLanguageCode));
 
   EXPECT_EQ(test_api.selected_language_item().value, kEnglishLanguageCode);
-  auto* language_menu_view =
-      static_cast<LoginMenuView*>(test_api.language_menu()->bubble_view());
-  LoginMenuView::TestApi language_test_api(language_menu_view);
+  LoginMenuView::TestApi language_test_api(test_api.language_menu_view());
   TapOnView(language_test_api.contents()->child_at(1));
-  EXPECT_FALSE(test_api.language_menu()->IsVisible());
+  EXPECT_EQ(nullptr, test_api.language_menu_view());
   EXPECT_EQ(test_api.selected_language_item().value, kFrenchLanguageCode);
   base::RunLoop().RunUntilIdle();
 
   // Try to change keyboard selection.
   // Open keyboard menu.
   TapOnView(test_api.keyboard_selection_button());
-  EXPECT_TRUE(test_api.keyboard_menu()->IsVisible());
+  EXPECT_TRUE(test_api.keyboard_menu_view()->IsVisible());
 
   // Select first keyboard item:
   // 1. Keyboard menu will be closed automatically.
   // 2. Selected keyboard item will change.
   EXPECT_EQ(test_api.selected_keyboard_item().value, kKeyboardIdForItem2);
-  auto* keyboard_menu_view =
-      static_cast<LoginMenuView*>(test_api.keyboard_menu()->bubble_view());
-  LoginMenuView::TestApi keyboard_test_api(keyboard_menu_view);
+  LoginMenuView::TestApi keyboard_test_api(test_api.keyboard_menu_view());
   TapOnView(keyboard_test_api.contents()->child_at(0));
-  EXPECT_FALSE(test_api.keyboard_menu()->IsVisible());
+  EXPECT_EQ(nullptr, test_api.keyboard_menu_view());
   EXPECT_EQ(test_api.selected_keyboard_item().value, kKeyboardIdForItem1);
 }
 
