@@ -51,6 +51,7 @@ class CheckActiveWebContentsMenuModel : public ui::MenuModel {
   }
   bool IsEnabledAt(int index) const override { return false; }
   ui::MenuModel* GetSubmenuModelAt(int index) const override { return nullptr; }
+  void HighlightChangedTo(int index) override {}
   void ActivatedAt(int index) override {}
   void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) override {}
   ui::MenuModelDelegate* GetMenuModelDelegate() const override {

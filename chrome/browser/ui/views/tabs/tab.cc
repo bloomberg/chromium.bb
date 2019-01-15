@@ -55,6 +55,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/clip_recorder.h"
+#include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
@@ -118,8 +119,10 @@ int Center(int size, int item_size) {
 // static
 const char Tab::kViewClassName[] = "Tab";
 
-Tab::Tab(TabController* controller)
+Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
     : controller_(controller),
+      pulse_animation_(this),
+      animation_container_(container),
       title_(new views::Label()),
       title_animation_(this),
       hover_controller_(this) {
@@ -161,7 +164,14 @@ Tab::Tab(TabController* controller)
 
   set_context_menu_controller(this);
 
+  constexpr int kPulseDurationMs = 200;
+  pulse_animation_.SetSlideDuration(kPulseDurationMs);
+  pulse_animation_.SetContainer(animation_container_.get());
+
   title_animation_.SetDuration(base::TimeDelta::FromMilliseconds(100));
+  title_animation_.SetContainer(animation_container_.get());
+
+  hover_controller_.SetAnimationContainer(animation_container_.get());
 
   // Enable keyboard focus.
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
@@ -185,6 +195,11 @@ void Tab::AnimationProgressed(const gfx::Animation* animation) {
         start_title_bounds_, target_title_bounds_));
     return;
   }
+
+  // Ignore if the pulse animation is being performed on active tab because
+  // it repaints the same image. See PaintTab().
+  if (animation == &pulse_animation_ && IsActive())
+    return;
 
   SchedulePaint();
 }
@@ -738,6 +753,14 @@ bool Tab::ShowingLoadingAnimation() const {
   return icon_->ShowingLoadingAnimation();
 }
 
+void Tab::StartPulse() {
+  pulse_animation_.StartThrobbing(std::numeric_limits<int>::max());
+}
+
+void Tab::StopPulse() {
+  pulse_animation_.Stop();
+}
+
 void Tab::SetTabNeedsAttention(bool attention) {
   icon_->SetAttention(TabIcon::AttentionType::kTabWantsAttentionStatus,
                       attention);
@@ -825,7 +848,9 @@ float Tab::GetThrobValue() const {
     return is_selected ? (kSelectedTabThrobScale * opacity) : opacity;
   };
 
-  if (hover_controller_.ShouldDraw())
+  if (pulse_animation_.is_animating())
+    val += pulse_animation_.GetCurrentValue() * offset();
+  else if (hover_controller_.ShouldDraw())
     val += hover_controller_.GetAnimationValue() * offset();
 
   return val;

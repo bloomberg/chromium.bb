@@ -185,6 +185,8 @@ class Combobox::ComboboxMenuModel : public ui::MenuModel,
     return model_->IsItemEnabledAt(index);
   }
 
+  void HighlightChangedTo(int index) override {}
+
   void ActivatedAt(int index) override {
     owner_->selected_index_ = index;
     owner_->OnPerformAction();

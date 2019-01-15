@@ -66,6 +66,7 @@ class BackForwardMenuModel : public ui::MenuModel {
   ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override;
   bool IsEnabledAt(int index) const override;
   MenuModel* GetSubmenuModelAt(int index) const override;
+  void HighlightChangedTo(int index) override;
   void ActivatedAt(int index) override;
   void ActivatedAt(int index, int event_flags) override;
   void MenuWillShow() override;
