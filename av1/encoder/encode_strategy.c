@@ -132,7 +132,7 @@ static int get_ref_frame_flags(const AV1_COMP *const cpi) {
 
 int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                         uint8_t *const dest, unsigned int *frame_flags) {
-  EncodeFrameParams frame_params = { 0 };
+  EncodeFrameParams frame_params = { 0, 0, 0 };
   EncodeFrameResults frame_results = { 0 };
 
   frame_params.frame_flags = frame_flags;
