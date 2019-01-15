@@ -418,7 +418,7 @@ const base::Feature kOfflinePageDownloadSuggestionsFeature{
 #if defined(OS_ANDROID)
 // Enables or disabled the OOM intervention.
 const base::Feature kOomIntervention{"OomIntervention",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_CHROMEOS)
