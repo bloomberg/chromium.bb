@@ -81,6 +81,19 @@ bool SQLiteDatabase::Open(const String& filename) {
     return false;
   }
 
+  // Defensive mode is a layer of defense in depth for applications that must
+  // run SQL queries from an untrusted source, such as WebDatabase. Refuse to
+  // proceed if this layer cannot be enabled.
+  open_error_ = sqlite3_db_config(db_, SQLITE_DBCONFIG_DEFENSIVE, 1, nullptr);
+  if (open_error_ != SQLITE_OK) {
+    open_error_message_ = sqlite3_errmsg(db_);
+    DLOG(ERROR) << "SQLite database error when enabling defensive mode - "
+                << open_error_message_.data();
+    sqlite3_close(db_);
+    db_ = nullptr;
+    return false;
+  }
+
   if (IsOpen())
     opening_thread_ = CurrentThread();
   else
