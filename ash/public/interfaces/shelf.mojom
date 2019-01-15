@@ -17,6 +17,7 @@ enum ShelfAction {
   WINDOW_ACTIVATED,  // An existing inactive window was activated.
   WINDOW_MINIMIZED,  // The currently active window was minimized.
   APP_LIST_SHOWN,    // The app list launcher menu was shown.
+  APP_LIST_DISMISSED,// The app list launcher menu was dismissed.
 };
 
 // Represents the status of items in the shelf.

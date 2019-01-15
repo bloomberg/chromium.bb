@@ -1976,7 +1976,10 @@ void ShelfView::AfterItemSelected(
   shelf_button_pressed_metric_tracker_.ButtonPressed(*event, sender, action);
 
   // The app list handles its own ink drop effect state changes.
-  if (action != SHELF_ACTION_APP_LIST_SHOWN) {
+  if (action == SHELF_ACTION_APP_LIST_DISMISSED) {
+    ink_drop->SnapToActivated();
+    ink_drop->AnimateToState(views::InkDropState::HIDDEN);
+  } else if (action != SHELF_ACTION_APP_LIST_SHOWN) {
     if (action != SHELF_ACTION_NEW_WINDOW_CREATED && menu_items &&
         menu_items->size() > 1) {
       // Show the app menu with 2 or more items, if no window was created.

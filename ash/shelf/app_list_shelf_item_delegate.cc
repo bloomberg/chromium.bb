@@ -22,9 +22,10 @@ void AppListShelfItemDelegate::ItemSelected(std::unique_ptr<ui::Event> event,
                                             int64_t display_id,
                                             ShelfLaunchSource source,
                                             ItemSelectedCallback callback) {
-  Shell::Get()->app_list_controller()->OnAppListButtonPressed(
-      display_id, app_list::kShelfButton, event->time_stamp());
-  std::move(callback).Run(SHELF_ACTION_APP_LIST_SHOWN, base::nullopt);
+  std::move(callback).Run(
+      Shell::Get()->app_list_controller()->OnAppListButtonPressed(
+          display_id, app_list::kShelfButton, event->time_stamp()),
+      base::nullopt);
 }
 
 void AppListShelfItemDelegate::ExecuteCommand(bool from_context_menu,

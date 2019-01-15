@@ -19,6 +19,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/app_list.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/session/session_observer.h"
@@ -132,9 +133,9 @@ class ASH_EXPORT AppListControllerImpl
                                  float background_opacity);
   void EndDragFromShelf(app_list::AppListViewState app_list_state);
   void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event);
-  void ToggleAppList(int64_t display_id,
-                     app_list::AppListShowSource show_source,
-                     base::TimeTicks event_time_stamp);
+  ash::ShelfAction ToggleAppList(int64_t display_id,
+                                 app_list::AppListShowSource show_source,
+                                 base::TimeTicks event_time_stamp);
   app_list::AppListViewState GetAppListViewState();
   HomeLauncherGestureHandler* home_launcher_gesture_handler() {
     return home_launcher_gesture_handler_.get();
@@ -222,9 +223,10 @@ class ASH_EXPORT AppListControllerImpl
   // |display_id| is the id of display where app list should toggle.
   // |show_source| is the source of the event. |event_time_stamp| records the
   // event timestamp.
-  void OnAppListButtonPressed(int64_t display_id,
-                              app_list::AppListShowSource show_source,
-                              base::TimeTicks event_time_stamp);
+  ash::ShelfAction OnAppListButtonPressed(
+      int64_t display_id,
+      app_list::AppListShowSource show_source,
+      base::TimeTicks event_time_stamp);
 
  private:
   syncer::StringOrdinal GetOemFolderPos();
