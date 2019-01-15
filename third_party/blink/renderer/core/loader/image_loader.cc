@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
-#include "third_party/blink/renderer/core/html/html_dimension.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/lazy_load_image_observer.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -69,23 +68,9 @@ namespace blink {
 
 namespace {
 
-bool GetAbsoluteDimensionValue(const AtomicString& attribute_value,
-                               double* value) {
-  HTMLDimension dimension;
-  if (ParseDimensionValue(attribute_value, dimension) &&
-      dimension.IsAbsolute()) {
-    *value = dimension.Value();
-    return true;
-  }
-  return false;
-}
-
 bool IsLazyLoadableImage(const LocalFrame* frame,
                          HTMLImageElement* html_image,
                          const KURL& url) {
-  // Minimum width or height attribute of the image to start lazyloading.
-  const unsigned kMinDimensionToLazyLoad = 10;
-
   // Do not lazyload image elements created from javascript.
   if (!html_image->ElementCreatedByParser())
     return false;
@@ -100,32 +85,16 @@ bool IsLazyLoadableImage(const LocalFrame* frame,
   }
   // Avoid lazyloading if width and height attributes are small. This
   // heuristic helps avoid double fetching tracking pixels.
-  double width, height;
-  if (GetAbsoluteDimensionValue(
-          html_image->getAttribute(html_names::kWidthAttr), &width) &&
-      GetAbsoluteDimensionValue(
-          html_image->getAttribute(html_names::kHeightAttr), &height) &&
-      width <= kMinDimensionToLazyLoad && height <= kMinDimensionToLazyLoad) {
+  if (HTMLImageElement::IsDimensionSmallAndAbsoluteForLazyLoad(
+          html_image->getAttribute(html_names::kWidthAttr)) &&
+      HTMLImageElement::IsDimensionSmallAndAbsoluteForLazyLoad(
+          html_image->getAttribute(html_names::kHeightAttr))) {
     return false;
   }
   // Avoid lazyloading if width or height is specified in inline style and is
   // small enough. This heuristic helps avoid double fetching tracking pixels.
-  if (const auto* property_set = html_image->InlineStyle()) {
-    const CSSValue* width = property_set->GetPropertyCSSValue(CSSPropertyWidth);
-    const CSSValue* height =
-        property_set->GetPropertyCSSValue(CSSPropertyHeight);
-    if (width && width->IsPrimitiveValue() && height &&
-        height->IsPrimitiveValue()) {
-      const CSSPrimitiveValue* width_prim = ToCSSPrimitiveValue(width);
-      const CSSPrimitiveValue* height_prim = ToCSSPrimitiveValue(height);
-      if (height_prim->IsPx() &&
-          (height_prim->GetDoubleValue() <= kMinDimensionToLazyLoad) &&
-          width_prim->IsPx() &&
-          (width_prim->GetDoubleValue() <= kMinDimensionToLazyLoad)) {
-        return false;
-      }
-    }
-  }
+  if (HTMLImageElement::IsInlineStyleDimensionsSmall(html_image->InlineStyle()))
+    return false;
   return true;
 }
 

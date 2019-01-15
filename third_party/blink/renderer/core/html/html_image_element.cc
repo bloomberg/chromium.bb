@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/forms/form_associated.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/html_dimension.h"
 #include "third_party/blink/renderer/core/html/html_image_fallback_helper.h"
 #include "third_party/blink/renderer/core/html/html_picture_element.h"
 #include "third_party/blink/renderer/core/html/html_source_element.h"
@@ -863,6 +864,33 @@ void HTMLImageElement::AssociateWith(HTMLFormElement* form) {
     form_->Associate(*this);
     form_->DidAssociateByParser();
   }
+}
+
+// Minimum height or width of the image to start lazyloading.
+constexpr int kMinDimensionToLazyLoad = 10;
+
+bool HTMLImageElement::IsDimensionSmallAndAbsoluteForLazyLoad(
+    const String& attribute_value) {
+  HTMLDimension dimension;
+  return ParseDimensionValue(attribute_value, dimension) &&
+         dimension.IsAbsolute() && dimension.Value() <= kMinDimensionToLazyLoad;
+}
+
+bool HTMLImageElement::IsInlineStyleDimensionsSmall(
+    const CSSPropertyValueSet* property_set) {
+  if (!property_set)
+    return false;
+  const CSSValue* height = property_set->GetPropertyCSSValue(CSSPropertyHeight);
+  const CSSValue* width = property_set->GetPropertyCSSValue(CSSPropertyWidth);
+  if (!height || !height->IsPrimitiveValue() || !width ||
+      !width->IsPrimitiveValue())
+    return false;
+  const CSSPrimitiveValue* width_prim = ToCSSPrimitiveValue(width);
+  const CSSPrimitiveValue* height_prim = ToCSSPrimitiveValue(height);
+  return height_prim->IsPx() &&
+         (height_prim->GetDoubleValue() <= kMinDimensionToLazyLoad) &&
+         width_prim->IsPx() &&
+         (width_prim->GetDoubleValue() <= kMinDimensionToLazyLoad);
 }
 
 }  // namespace blink

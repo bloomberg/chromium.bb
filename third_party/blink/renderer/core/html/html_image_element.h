@@ -166,6 +166,10 @@ class CORE_EXPORT HTMLImageElement final
     return *visible_load_time_metrics_;
   }
 
+  static bool IsDimensionSmallAndAbsoluteForLazyLoad(
+      const String& attribute_value);
+  static bool IsInlineStyleDimensionsSmall(const CSSPropertyValueSet*);
+
  protected:
   // Controls how an image element appears in the layout. See:
   // https://html.spec.whatwg.org/multipage/embedded-content.html#image-request
