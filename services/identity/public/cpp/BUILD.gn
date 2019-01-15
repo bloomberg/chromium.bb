@@ -78,6 +78,7 @@ source_set("test_support") {
 source_set("tests") {
   testonly = true
   sources = [
+    "accounts_mutator_unittest.cc",
     "primary_account_mutator_unittest.cc",
   ]
 
