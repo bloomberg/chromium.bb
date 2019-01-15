@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
-#include "third_party/blink/renderer/core/streams/writable_stream.h"
+#include "third_party/blink/renderer/core/streams/writable_stream_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
@@ -240,7 +240,7 @@ bool TransformStream::InitInternal(ScriptState* script_state,
     return false;
 
   DCHECK(writable->IsObject());
-  writable_ = WritableStream::CreateFromInternalStream(
+  writable_ = WritableStreamWrapper::CreateFromInternalStream(
       script_state, writable.As<v8::Object>(), exception_state);
 
   if (!writable_)

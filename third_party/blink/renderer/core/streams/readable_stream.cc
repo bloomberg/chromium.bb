@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_writable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
 #include "third_party/blink/renderer/core/streams/retain_wrapper_during_construction.h"
+#include "third_party/blink/renderer/core/streams/writable_stream_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 
@@ -317,6 +318,12 @@ ScriptValue ReadableStream::pipeThrough(ScriptState* script_state,
     return ScriptValue();
   }
 
+  // This cast is safe because the following code will only be run when the
+  // native version of WritableStream is not in use.
+  // TODO(ricea): Add a CHECK() for the feature flag here.
+  WritableStreamWrapper* writable_wrapper =
+      static_cast<WritableStreamWrapper*>(dom_writable);
+
   // 8. Let _promise_ be ! ReadableStreamPipeTo(*this*, _writable_,
   //    _preventClose_, _preventAbort_, _preventCancel_,
   //   _signal_).
@@ -326,7 +333,8 @@ ScriptValue ReadableStream::pipeThrough(ScriptState* script_state,
   // standard?
   ScriptPromise promise = ReadableStreamOperations::PipeTo(
       script_state, GetInternalStream(script_state),
-      dom_writable->GetInternalStream(script_state), options, exception_state);
+      writable_wrapper->GetInternalStream(script_state), options,
+      exception_state);
   if (exception_state.HadException()) {
     return ScriptValue();
   }
@@ -373,9 +381,16 @@ ScriptPromise ReadableStream::pipeTo(ScriptState* script_state,
   if (exception_state.HadException())
     return ScriptPromise();
 
+  // This cast is safe because the following code will only be run when the
+  // native version of WritableStream is not in use.
+  // TODO(ricea): Add a CHECK() for the feature flag here.
+  WritableStreamWrapper* destination_wrapper =
+      static_cast<WritableStreamWrapper*>(destination);
+
   return ReadableStreamOperations::PipeTo(
       script_state, GetInternalStream(script_state),
-      destination->GetInternalStream(script_state), options, exception_state);
+      destination_wrapper->GetInternalStream(script_state), options,
+      exception_state);
 }
 
 ScriptValue ReadableStream::tee(ScriptState* script_state,
