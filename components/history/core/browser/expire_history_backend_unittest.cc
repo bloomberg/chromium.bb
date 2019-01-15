@@ -1199,12 +1199,15 @@ TEST_F(ExpireHistoryTest, DeleteVisitAndRedirects) {
   VisitRow visit_row1;
   visit_row1.url_id = url1;
   visit_row1.visit_time = now - base::TimeDelta::FromDays(1);
+  visit_row1.transition = ui::PAGE_TRANSITION_CHAIN_START;
+
   main_db_->AddVisit(&visit_row1, SOURCE_BROWSED);
 
   VisitRow visit_row2;
   visit_row2.url_id = url2;
   visit_row2.visit_time = now;
   visit_row2.referring_visit = visit_row1.visit_id;
+  visit_row1.transition = ui::PAGE_TRANSITION_CHAIN_END;
   main_db_->AddVisit(&visit_row2, SOURCE_BROWSED);
 
   // Expiring visit_row2 should also expire visit_row1 which is its redirect
@@ -1238,12 +1241,14 @@ TEST_F(ExpireHistoryTest, DeleteVisitAndRedirectsWithLoop) {
   VisitRow visit_row1;
   visit_row1.url_id = url1;
   visit_row1.visit_time = now - base::TimeDelta::FromDays(1);
+  visit_row1.transition = ui::PAGE_TRANSITION_CHAIN_START;
   main_db_->AddVisit(&visit_row1, SOURCE_BROWSED);
 
   VisitRow visit_row2;
   visit_row2.url_id = url2;
   visit_row2.visit_time = now;
   visit_row2.referring_visit = visit_row1.visit_id;
+  visit_row1.transition = ui::PAGE_TRANSITION_CHAIN_END;
   main_db_->AddVisit(&visit_row2, SOURCE_BROWSED);
 
   // Set the first visit to be redirect parented to the second visit.
@@ -1259,6 +1264,50 @@ TEST_F(ExpireHistoryTest, DeleteVisitAndRedirectsWithLoop) {
   EXPECT_FALSE(main_db_->GetRowForVisit(visit_row2.visit_id, &v));
   URLRow u;
   EXPECT_FALSE(main_db_->GetURLRow(url1, &u));
+  EXPECT_FALSE(main_db_->GetURLRow(url2, &u));
+}
+
+// Test that visits that are referers but not part of a redirect chain don't
+// get deleted. See crbug.com/919488.
+TEST_F(ExpireHistoryTest, DeleteVisitButNotActualReferers) {
+  // Set up the example data.
+  base::Time now = PretendNow();
+  URLRow url_row1(GURL("http://google.com/1"));
+  url_row1.set_last_visit(now - base::TimeDelta::FromDays(1));
+  url_row1.set_visit_count(1);
+  URLID url1 = main_db_->AddURL(url_row1);
+
+  URLRow url_row2(GURL("http://www.google.com/1"));
+  url_row2.set_last_visit(now);
+  url_row2.set_visit_count(1);
+  URLID url2 = main_db_->AddURL(url_row2);
+
+  // Add a visit to "http://google.com/1" that is a referer to
+  // "http://www.google.com/1". But both are separate redirect chains.
+  VisitRow visit_row1;
+  visit_row1.url_id = url1;
+  visit_row1.visit_time = now - base::TimeDelta::FromDays(1);
+  visit_row1.transition = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_CHAIN_START | ui::PAGE_TRANSITION_CHAIN_END);
+  main_db_->AddVisit(&visit_row1, SOURCE_BROWSED);
+
+  VisitRow visit_row2;
+  visit_row2.url_id = url2;
+  visit_row2.visit_time = now;
+  visit_row2.referring_visit = visit_row1.visit_id;
+  visit_row2.transition = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_CHAIN_START | ui::PAGE_TRANSITION_CHAIN_END);
+  main_db_->AddVisit(&visit_row2, SOURCE_BROWSED);
+
+  // Expiring visit_row2 should not expire visit_row1 which is its referer
+  // parent.
+  expirer_.ExpireVisits({visit_row2});
+
+  VisitRow v;
+  EXPECT_TRUE(main_db_->GetRowForVisit(visit_row1.visit_id, &v));
+  EXPECT_FALSE(main_db_->GetRowForVisit(visit_row2.visit_id, &v));
+  URLRow u;
+  EXPECT_TRUE(main_db_->GetURLRow(url1, &u));
   EXPECT_FALSE(main_db_->GetURLRow(url2, &u));
 }
 
