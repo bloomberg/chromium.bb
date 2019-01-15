@@ -63,10 +63,6 @@ source_set("tests") {
     "public/cpp/identity_test_environment_unittest.cc",
     "public/cpp/primary_account_access_token_fetcher_unittest.cc",
   ]
-
-  if (!is_android && !is_ios) {
-    sources += [ "public/cpp/accounts_mutator_impl_unittest.cc" ]
-  }
 }
 
 if (is_android) {
