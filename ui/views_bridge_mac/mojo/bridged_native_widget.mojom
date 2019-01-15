@@ -79,7 +79,7 @@ struct BridgedNativeWidgetInitParams {
 };
 
 // The interface through which a NativeWidgetMac may interact with an NSWindow
-// in another process.
+// (possibly in a process separate from the browser process).
 interface BridgedNativeWidget {
   // Create and set the NSWindow for the bridge.
   CreateWindow(CreateWindowParams params);
