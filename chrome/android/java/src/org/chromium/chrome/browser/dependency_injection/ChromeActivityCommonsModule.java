@@ -11,13 +11,16 @@ import android.content.res.Resources;
 
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.ui.base.ActivityWindowAndroid;
 
 import javax.inject.Named;
 
@@ -100,5 +103,20 @@ public class ChromeActivityCommonsModule {
     @Provides
     public ActivityTabProvider provideActivityTabProvider() {
         return mActivity.getActivityTabProvider();
+    }
+
+    @Provides
+    public TabContentManager provideTabContentManager() {
+        return mActivity.getTabContentManager();
+    }
+
+    @Provides
+    public ActivityWindowAndroid provideActivityWindowAndroid() {
+        return mActivity.getWindowAndroid();
+    }
+
+    @Provides
+    public CompositorViewHolder provideCompositorViewHolder() {
+        return mActivity.getCompositorViewHolder();
     }
 }

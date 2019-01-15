@@ -679,7 +679,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     /**
      * @return See {@link #EXTRA_IS_OPENED_BY_CHROME}.
      */
-    boolean isOpenedByChrome() {
+    public boolean isOpenedByChrome() {
         return mIsOpenedByChrome;
     }
 
@@ -705,7 +705,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     /**
      * @return See {@link #EXTRA_ENABLE_EMBEDDED_MEDIA_EXPERIENCE}
      */
-    boolean shouldEnableEmbeddedMediaExperience() {
+    public boolean shouldEnableEmbeddedMediaExperience() {
         return mEnableEmbeddedMediaExperience;
     }
 
@@ -728,7 +728,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
      * See {@link #EXTRA_INITIAL_BACKGROUND_COLOR}.
      * @return The color if it was specified in the Intent, Color.TRANSPARENT otherwise.
      */
-    int getInitialBackgroundColor() {
+    public int getInitialBackgroundColor() {
         return mInitialBackgroundColor;
     }
 
@@ -749,7 +749,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     /**
      * @return Whether the Custom Tab was opened from a WebAPK.
      */
-    boolean isOpenedByWebApk() {
+    public boolean isOpenedByWebApk() {
         return mIsOpenedByWebApk;
     }
 
@@ -763,7 +763,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     /**
      * @return Whether the custom Tab should be opened in incognito mode.
      */
-    boolean isIncognito() {
+    public boolean isIncognito() {
         return mIsIncognito;
     }
 

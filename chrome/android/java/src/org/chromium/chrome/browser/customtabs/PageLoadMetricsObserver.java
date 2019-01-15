@@ -16,12 +16,12 @@ import org.chromium.content_public.browser.WebContents;
  * Notifies the provided {@link CustomTabsConnection} of page load metrics, such as time until first
  * contentful paint.
  */
-class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
+public class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
     private final CustomTabsConnection mConnection;
     private final CustomTabsSessionToken mSession;
     private final Tab mTab;
 
-    /* package */ PageLoadMetricsObserver(CustomTabsConnection connection,
+    public PageLoadMetricsObserver(CustomTabsConnection connection,
             CustomTabsSessionToken session, Tab tab) {
         mConnection = connection;
         mSession = session;

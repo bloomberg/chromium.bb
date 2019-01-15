@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import android.app.Application;
+import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.APP_CONTEXT;
+
+import android.content.Context;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.SystemClock;
@@ -14,6 +16,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -27,10 +30,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 /**
  * A {@link TabObserver} that also handles custom tabs specific logging and messaging.
  */
-class CustomTabObserver extends EmptyTabObserver {
+@ActivityScope
+public class CustomTabObserver extends EmptyTabObserver {
     private final CustomTabsConnection mCustomTabsConnection;
     private final CustomTabsSessionToken mSession;
     private final boolean mOpenedByChrome;
@@ -53,16 +60,19 @@ class CustomTabObserver extends EmptyTabObserver {
 
     private @State int mCurrentState;
 
-    public CustomTabObserver(
-            Application application, CustomTabsSessionToken session, boolean openedByChrome) {
-        mCustomTabsConnection = openedByChrome ? null : CustomTabsConnection.getInstance();
-        mSession = session;
-        if (!openedByChrome && mCustomTabsConnection.shouldSendNavigationInfoForSession(mSession)) {
-            float desiredWidth = application.getResources().getDimensionPixelSize(
+    @Inject
+    public CustomTabObserver(@Named(APP_CONTEXT) Context appContext,
+            CustomTabIntentDataProvider intentDataProvider, CustomTabsConnection connection) {
+        mOpenedByChrome = intentDataProvider.isOpenedByChrome();
+        mCustomTabsConnection = mOpenedByChrome ? null : connection;
+        mSession = intentDataProvider.getSession();
+        if (!mOpenedByChrome
+                && mCustomTabsConnection.shouldSendNavigationInfoForSession(mSession)) {
+            float desiredWidth = appContext.getResources().getDimensionPixelSize(
                     R.dimen.custom_tabs_screenshot_width);
-            float desiredHeight = application.getResources().getDimensionPixelSize(
+            float desiredHeight = appContext.getResources().getDimensionPixelSize(
                     R.dimen.custom_tabs_screenshot_height);
-            Rect bounds = ExternalPrerenderHandler.estimateContentSize(application, false);
+            Rect bounds = ExternalPrerenderHandler.estimateContentSize(appContext, false);
             if (bounds.width() == 0 || bounds.height() == 0) {
                 mContentBitmapWidth = Math.round(desiredWidth);
                 mContentBitmapHeight = Math.round(desiredHeight);
@@ -75,7 +85,6 @@ class CustomTabObserver extends EmptyTabObserver {
                 mContentBitmapHeight = Math.round(bounds.height() * scale);
             }
         }
-        mOpenedByChrome = openedByChrome;
         resetPageLoadTracking();
     }
 

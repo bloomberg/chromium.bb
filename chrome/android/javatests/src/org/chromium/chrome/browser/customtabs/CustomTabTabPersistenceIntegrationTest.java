@@ -46,13 +46,13 @@ public class CustomTabTabPersistenceIntegrationTest {
     public void testTabFilesDeletedOnClose() {
         Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
         String expectedTabFileName = TabState.getTabStateFilename(tab.getId(), false);
-        String expectedMetadataFileName = mCustomTabActivityTestRule.getActivity()
-                                                  .getTabPersistencePolicyForTest()
-                                                  .getStateFileName();
 
-        File stateDir = mCustomTabActivityTestRule.getActivity()
-                                .getTabPersistencePolicyForTest()
-                                .getOrCreateStateDirectory();
+        CustomTabTabPersistencePolicy tabPersistencePolicy = mCustomTabActivityTestRule
+                .getActivity().getComponent().resolveTabPersistencePolicy();
+
+        String expectedMetadataFileName = tabPersistencePolicy.getStateFileName();
+        File stateDir = tabPersistencePolicy.getOrCreateStateDirectory();
+
         waitForFileExistState(true, expectedTabFileName, stateDir);
         waitForFileExistState(true, expectedMetadataFileName, stateDir);
 
