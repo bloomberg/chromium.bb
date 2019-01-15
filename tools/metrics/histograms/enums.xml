@@ -44522,6 +44522,27 @@ Called by update_net_trust_anchors.py.-->
   <int value="98" label="STREAM_LENGTH_OVERFLOW"/>
   <int value="99" label="CONNECTION_MIGRATION_DISABLED_BY_CONFIG"/>
   <int value="100" label="CONNECTION_MIGRATION_INTERNAL_ERROR"/>
+  <int value="101" label="QUIC_INVALID_APPLICATION_CLOSE_DATA"/>
+  <int value="102" label="QUIC_INVALID_MAX_DATA_FRAME_DATA"/>
+  <int value="103" label="QUIC_INVALID_MAX_STREAM_DATA_FRAME_DATA"/>
+  <int value="104" label="QUIC_MAX_STREAM_ID_DATA"/>
+  <int value="105" label="QUIC_STREAM_ID_BLOCKED_DATA"/>
+  <int value="106" label="QUIC_INVALID_STREAM_BLOCKED_DATA"/>
+  <int value="107" label="QUIC_INVALID_NEW_CONNECTION_ID_DATA"/>
+  <int value="108" label="QUIC_INVALID_STOP_SENDING_FRAME_DATA"/>
+  <int value="109" label="QUIC_INVALID_PATH_CHALLENGE_DATA"/>
+  <int value="110" label="QUIC_INVALID_PATH_RESPONSE_DATA"/>
+  <int value="111" label="QUIC_CONNECTION_MIGRATION_HANDSHAKE_UNCONFIRMED"/>
+  <int value="112" label="QUIC_INVALID_MESSAGE_DATA"/>
+  <int value="113" label="IETF_QUIC_PROTOCOL_VIOLATION"/>
+  <int value="114" label="QUIC_INVALID_NEW_TOKEN"/>
+  <int value="115" label="QUIC_DATA_RECEIVED_ON_WRITE_UNIDIRECTIONAL_STREAM"/>
+  <int value="116"
+      label="QUIC_TRY_TO_WRITE_DATA_ON_READ_UNIDIRECTIONAL_STREAM"/>
+  <int value="117" label="QUIC_INVALID_RETIRE_CONNECTION_ID_DATA"/>
+  <int value="118" label="QUIC_STREAM_ID_BLOCKED_ERROR"/>
+  <int value="119" label="QUIC_MAX_STREAM_ID_ERROR"/>
+  <int value="120" label="QUIC_HTTP_DECODER_ERROR"/>
 </enum>
 
 <enum name="QuicHandshakeFailureReason">
