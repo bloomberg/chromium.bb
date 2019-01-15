@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -42,6 +43,7 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #endif
 
 namespace extensions {
@@ -58,6 +60,9 @@ const char* const kPublicSessionAllowedOrigins[] = {
     "chrome-extension://gbchcmhmhahfdphkhkmpfmihenigjmpp/"};
 #endif
 
+const char* const kExtensionsIdentityAPIOAuthConsumerName =
+    "extensions_identity_api";
+
 bool IsBrowserSigninAllowed(Profile* profile) {
   return profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed);
 }
@@ -67,7 +72,7 @@ bool IsBrowserSigninAllowed(Profile* profile) {
 IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
     :
 #if defined(OS_CHROMEOS)
-      OAuth2TokenService::Consumer("extensions_identity_api"),
+      OAuth2TokenService::Consumer(kExtensionsIdentityAPIOAuthConsumerName),
 #endif
       interactive_(false),
       should_prompt_for_scopes_(false),
@@ -266,11 +271,11 @@ bool IdentityGetAuthTokenFunction::ShouldStartSigninFlow() {
   if (!should_prompt_for_signin_)
     return false;
 
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(GetProfile());
   bool account_needs_reauth =
-      !token_service->RefreshTokenIsAvailable(token_key_->account_id) ||
-      token_service->RefreshTokenHasError(token_key_->account_id);
+      !identity_manager->HasAccountWithRefreshToken(token_key_->account_id) ||
+      identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
+          token_key_->account_id);
 
   return account_needs_reauth;
 }
@@ -379,9 +384,9 @@ void IdentityGetAuthTokenFunction::StartMintToken(
               g_browser_process->platform_part()
                   ->browser_policy_connector_chromeos();
           if (connector->IsEnterpriseManaged()) {
-            StartDeviceLoginAccessTokenRequest();
+            StartDeviceAccessTokenRequest();
           } else {
-            StartLoginAccessTokenRequest();
+            StartTokenKeyAccountAccessTokenRequest();
           }
           return;
         }
@@ -394,7 +399,7 @@ void IdentityGetAuthTokenFunction::StartMintToken(
           gaia_mint_token_mode_ = OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE;
         else
           gaia_mint_token_mode_ = OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE;
-        StartLoginAccessTokenRequest();
+        StartTokenKeyAccountAccessTokenRequest();
         break;
 
       case IdentityTokenCacheValue::CACHE_STATUS_TOKEN:
@@ -583,10 +588,10 @@ void IdentityGetAuthTokenFunction::OnGetAccessTokenComplete(
     const base::Optional<std::string>& access_token,
     base::Time expiration_time,
     const GoogleServiceAuthError& error) {
-  // By the time we get here we should no longer have an outstanding O2TS
-  // request (either because we never made a request to O2TS directly or because
-  // the request was already fulfilled).
-  DCHECK(!login_token_request_);
+  // By the time we get here we should no longer have an outstanding access
+  // token request.
+  DCHECK(!device_access_token_request_);
+  DCHECK(!token_key_account_access_token_fetcher_);
   if (access_token) {
     TRACE_EVENT_ASYNC_STEP_PAST1("identity", "IdentityGetAuthTokenFunction",
                                  this, "OnGetAccessTokenComplete", "account",
@@ -607,7 +612,7 @@ void IdentityGetAuthTokenFunction::OnGetAccessTokenComplete(
 void IdentityGetAuthTokenFunction::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
-  login_token_request_.reset();
+  device_access_token_request_.reset();
   OnGetAccessTokenComplete(token_response.access_token,
                            token_response.expiration_time,
                            GoogleServiceAuthError::AuthErrorNone());
@@ -616,14 +621,28 @@ void IdentityGetAuthTokenFunction::OnGetTokenSuccess(
 void IdentityGetAuthTokenFunction::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
-  login_token_request_.reset();
+  device_access_token_request_.reset();
   OnGetAccessTokenComplete(base::nullopt, base::Time(), error);
+}
+
+void IdentityGetAuthTokenFunction::OnAccessTokenFetchCompleted(
+    GoogleServiceAuthError error,
+    identity::AccessTokenInfo access_token_info) {
+  token_key_account_access_token_fetcher_.reset();
+  if (error.state() == GoogleServiceAuthError::NONE) {
+    OnGetAccessTokenComplete(access_token_info.token,
+                             access_token_info.expiration_time,
+                             GoogleServiceAuthError::AuthErrorNone());
+  } else {
+    OnGetAccessTokenComplete(base::nullopt, base::Time(), error);
+  }
 }
 #endif
 
 void IdentityGetAuthTokenFunction::OnIdentityAPIShutdown() {
   gaia_web_auth_flow_.reset();
-  login_token_request_.reset();
+  device_access_token_request_.reset();
+  token_key_account_access_token_fetcher_.reset();
   mojo_identity_manager_.reset();
 
   // Note that if |token_key_| hasn't yet been populated then this instance has
@@ -639,17 +658,15 @@ void IdentityGetAuthTokenFunction::OnIdentityAPIShutdown() {
 }
 
 #if defined(OS_CHROMEOS)
-void IdentityGetAuthTokenFunction::StartDeviceLoginAccessTokenRequest() {
+void IdentityGetAuthTokenFunction::StartDeviceAccessTokenRequest() {
   chromeos::DeviceOAuth2TokenService* service =
       chromeos::DeviceOAuth2TokenServiceFactory::Get();
   // Since robot account refresh tokens are scoped down to [any-api] only,
   // request access token for [any-api] instead of login.
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kAnyApiOAuth2Scope);
-  login_token_request_ =
-      service->StartRequest(service->GetRobotAccountId(),
-                            scopes,
-                            this);
+  device_access_token_request_ =
+      service->StartRequest(service->GetRobotAccountId(), scopes, this);
 }
 
 bool IdentityGetAuthTokenFunction::IsOriginWhitelistedInPublicSession() {
@@ -666,7 +683,7 @@ bool IdentityGetAuthTokenFunction::IsOriginWhitelistedInPublicSession() {
 }
 #endif
 
-void IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
+void IdentityGetAuthTokenFunction::StartTokenKeyAccountAccessTokenRequest() {
 #if defined(OS_CHROMEOS)
   if (chrome::IsRunningInForcedAppMode()) {
     std::string app_client_id;
@@ -674,21 +691,24 @@ void IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
     if (chromeos::UserSessionManager::GetInstance()->
             GetAppModeChromeClientOAuthInfo(&app_client_id,
                                             &app_client_secret)) {
-      ProfileOAuth2TokenService* service =
-          ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
-      login_token_request_ =
-          service->StartRequestForClient(token_key_->account_id,
-                                         app_client_id,
-                                         app_client_secret,
-                                         OAuth2TokenService::ScopeSet(),
-                                         this);
+      token_key_account_access_token_fetcher_ =
+          IdentityManagerFactory::GetForProfile(GetProfile())
+              ->CreateAccessTokenFetcherForClient(
+                  token_key_->account_id, app_client_id, app_client_secret,
+                  kExtensionsIdentityAPIOAuthConsumerName,
+                  OAuth2TokenService::ScopeSet(),
+                  base::BindOnce(&IdentityGetAuthTokenFunction::
+                                     OnAccessTokenFetchCompleted,
+                                 base::Unretained(this)),
+                  identity::AccessTokenFetcher::Mode::kImmediate);
       return;
     }
   }
 #endif
 
   GetMojoIdentityManager()->GetAccessToken(
-      token_key_->account_id, ::identity::ScopeSet(), "extensions_identity_api",
+      token_key_->account_id, ::identity::ScopeSet(),
+      kExtensionsIdentityAPIOAuthConsumerName,
       base::BindOnce(&IdentityGetAuthTokenFunction::OnGetAccessTokenComplete,
                      base::Unretained(this)));
 }
@@ -731,10 +751,9 @@ OAuth2MintTokenFlow* IdentityGetAuthTokenFunction::CreateMintTokenFlow() {
   return mint_token_flow;
 }
 
-bool IdentityGetAuthTokenFunction::HasLoginToken() const {
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
-  return token_service->RefreshTokenIsAvailable(token_key_->account_id);
+bool IdentityGetAuthTokenFunction::HasRefreshTokenForTokenKeyAccount() const {
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(GetProfile());
+  return identity_manager->HasAccountWithRefreshToken(token_key_->account_id);
 }
 
 std::string IdentityGetAuthTokenFunction::MapOAuth2ErrorToDescription(
