@@ -51,7 +51,7 @@ inline EBlockAlignment BlockAlignment(const ComputedStyle& style,
   }
 }
 
-inline bool InlineLengthMayChange(Length length,
+inline bool InlineLengthMayChange(const Length& length,
                                   const NGConstraintSpace& new_space,
                                   const NGConstraintSpace& old_space) {
   // Percentage inline margins will affect the size if the size is unspecified
@@ -72,7 +72,7 @@ inline bool InlineLengthMayChange(Length length,
   return false;
 }
 
-inline bool BlockLengthMayChange(Length length,
+inline bool BlockLengthMayChange(const Length& length,
                                  const NGConstraintSpace& new_space,
                                  const NGConstraintSpace& old_space) {
   if (length.IsFillAvailable()) {
@@ -371,9 +371,9 @@ MinMaxSize ComputeMinAndMaxContentContribution(
       min_and_max ? min_and_max->max_size : NGSizeIndefinite;
 
   MinMaxSize computed_sizes;
-  Length inline_size = writing_mode == WritingMode::kHorizontalTb
-                           ? style.Width()
-                           : style.Height();
+  const Length& inline_size = writing_mode == WritingMode::kHorizontalTb
+                                  ? style.Width()
+                                  : style.Height();
   if (inline_size.IsAuto() || inline_size.IsPercentOrCalc() ||
       inline_size.GetType() == kFillAvailable ||
       inline_size.GetType() == kFitContent) {
@@ -391,9 +391,9 @@ MinMaxSize ComputeMinAndMaxContentContribution(
     }
   }
 
-  Length max_length = writing_mode == WritingMode::kHorizontalTb
-                          ? style.MaxWidth()
-                          : style.MaxHeight();
+  const Length& max_length = writing_mode == WritingMode::kHorizontalTb
+                                 ? style.MaxWidth()
+                                 : style.MaxHeight();
   LayoutUnit max;
   if (IsParallelWritingMode(writing_mode, style.GetWritingMode())) {
     max = ResolveInlineLength(space, style, min_and_max, max_length,
@@ -406,9 +406,9 @@ MinMaxSize ComputeMinAndMaxContentContribution(
   }
   computed_sizes.Constrain(max);
 
-  Length min_length = writing_mode == WritingMode::kHorizontalTb
-                          ? style.MinWidth()
-                          : style.MinHeight();
+  const Length& min_length = writing_mode == WritingMode::kHorizontalTb
+                                 ? style.MinWidth()
+                                 : style.MinHeight();
   LayoutUnit min;
   if (IsParallelWritingMode(writing_mode, style.GetWritingMode())) {
     min = ResolveInlineLength(space, style, min_and_max, min_length,
@@ -600,8 +600,8 @@ NGLogicalSize ComputeReplacedSize(
                      &aspect_ratio);
 
   const ComputedStyle& style = node.Style();
-  Length inline_length = style.LogicalWidth();
-  Length block_length = style.LogicalHeight();
+  const Length& inline_length = style.LogicalWidth();
+  const Length& block_length = style.LogicalHeight();
 
   // Compute inline size
   if (inline_length.IsAuto()) {
@@ -802,9 +802,10 @@ NGBoxStrut ComputeMinMaxMargins(const ComputedStyle& parent_style,
   if (child.IsInline())
     return NGBoxStrut();
 
-  Length inline_start_margin_length =
+  const Length& inline_start_margin_length =
       child.Style().MarginStartUsing(parent_style);
-  Length inline_end_margin_length = child.Style().MarginEndUsing(parent_style);
+  const Length& inline_end_margin_length =
+      child.Style().MarginEndUsing(parent_style);
 
   // TODO(ikilpatrick): We may want to re-visit calculated margins at some
   // point. Currently "margin-left: calc(10px + 50%)" will resolve to 0px, but

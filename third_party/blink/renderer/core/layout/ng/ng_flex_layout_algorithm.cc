@@ -113,17 +113,17 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         child_style.GetWritingMode(), *layout_result->PhysicalFragment());
 
     LayoutUnit flex_base_border_box;
-    Length length_in_main_axis =
+    const Length& length_in_main_axis =
         is_horizontal_flow ? child_style.Width() : child_style.Height();
-    if (child_style.FlexBasis().IsAuto() && length_in_main_axis.IsAuto()) {
+    const Length& flex_basis = child_style.FlexBasis();
+    if (flex_basis.IsAuto() && length_in_main_axis.IsAuto()) {
       if (MainAxisIsInlineAxis(child))
         flex_base_border_box = min_max_sizes_border_box.max_size;
       else
         flex_base_border_box = fragment_in_child_writing_mode.BlockSize();
     } else {
-      Length length_to_resolve = child_style.FlexBasis();
-      if (length_to_resolve.IsAuto())
-        length_to_resolve = length_in_main_axis;
+      const Length& length_to_resolve =
+          flex_basis.IsAuto() ? length_in_main_axis : flex_basis;
       DCHECK(!length_to_resolve.IsAuto());
 
       if (MainAxisIsInlineAxis(child)) {
@@ -156,8 +156,8 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
 
     MinMaxSize min_max_sizes_in_main_axis_direction{LayoutUnit(),
                                                     LayoutUnit::Max()};
-    Length max = is_horizontal_flow ? child.Style().MaxWidth()
-                                    : child.Style().MaxHeight();
+    const Length& max = is_horizontal_flow ? child.Style().MaxWidth()
+                                           : child.Style().MaxHeight();
     if (MainAxisIsInlineAxis(child)) {
       min_max_sizes_in_main_axis_direction.max_size = ResolveInlineLength(
           child_space, child_style, min_max_sizes_border_box, max,
@@ -169,8 +169,8 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
           LengthResolveType::kMaxSize, LengthResolvePhase::kLayout);
     }
 
-    Length min = is_horizontal_flow ? child.Style().MinWidth()
-                                    : child.Style().MinHeight();
+    const Length& min = is_horizontal_flow ? child.Style().MinWidth()
+                                           : child.Style().MinHeight();
     if (min.IsAuto()) {
       if (algorithm.ShouldApplyMinSizeAutoForChild(*child.GetLayoutBox())) {
         // TODO(dgrogan): Port logic from
