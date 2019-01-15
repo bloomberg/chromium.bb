@@ -184,7 +184,7 @@ void LocalPrinterHandlerChromeos::HandlePrinterSetup(
       printers_manager_->PrinterInstalled(*printer, true /*is_automatic*/);
 
       // populate |policies| with policies for native printers.
-      base::Value policies;
+      base::Value policies(base::Value::Type::DICTIONARY);
       const PrefService* prefs = profile_->GetPrefs();
       policies.SetKey(
           kAllowedColorModes,
