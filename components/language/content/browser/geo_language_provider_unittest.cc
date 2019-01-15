@@ -9,9 +9,12 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/timer/timer.h"
 #include "components/language/content/browser/test_utils.h"
+#include "components/language/core/common/language_experiments.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -72,6 +75,7 @@ class GeoLanguageProviderTest : public testing::Test {
     }
     return languages;
   }
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
@@ -96,6 +100,28 @@ TEST_F(GeoLanguageProviderTest, GetCurrentGeoLanguages) {
   EXPECT_EQ(expected_langs, result);
   EXPECT_EQ(1, GetQueryNextPositionCalledTimes());
   EXPECT_EQ(expected_langs, GetCachedLanguages());
+}
+
+TEST_F(GeoLanguageProviderTest, GetCurrentGeoLanguagesImproved_India) {
+  scoped_feature_list_.InitAndEnableFeature(kImprovedGeoLanguageData);
+  // Setup a random place in Madhya Pradesh, India.
+  MoveToLocation(23.0, 80.0);
+  StartGeoLanguageProvider();
+  scoped_task_environment_.RunUntilIdle();
+
+  std::vector<std::string> expected_langs = {"hi"};
+  EXPECT_EQ(expected_langs, GetCurrentGeoLanguages());
+}
+
+TEST_F(GeoLanguageProviderTest, GetCurrentGeoLanguagesImproved_OutsideIndia) {
+  scoped_feature_list_.InitAndEnableFeature(kImprovedGeoLanguageData);
+  // Setup a random place in Montreal, Canada.
+  MoveToLocation(45.5, 73.5);
+  StartGeoLanguageProvider();
+  scoped_task_environment_.RunUntilIdle();
+
+  std::vector<std::string> expected_langs = {};
+  EXPECT_EQ(expected_langs, GetCurrentGeoLanguages());
 }
 
 TEST_F(GeoLanguageProviderTest, NoFrequentCalls) {
