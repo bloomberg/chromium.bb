@@ -3949,7 +3949,6 @@ static void set_size_independent_vars(AV1_COMP *cpi) {
   cpi->global_motion_search_done = 0;
   av1_set_speed_features_framesize_independent(cpi);
   av1_set_rd_speed_thresholds(cpi);
-  av1_set_rd_speed_thresholds_sub8x8(cpi);
   cm->interp_filter = SWITCHABLE;
   cm->switchable_motion_mode = 1;
 

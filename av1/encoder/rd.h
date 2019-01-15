@@ -283,7 +283,6 @@ typedef struct RD_OPT {
   // is used in combination with the current block size, and thresh_freq_fact
   // to pick a threshold.
   int thresh_mult[MAX_MODES];
-  int thresh_mult_sub8x8[MAX_REFS];
 
   int threshes[MAX_SEGMENTS][BLOCK_SIZES_ALL][MAX_MODES];
 
@@ -683,8 +682,6 @@ void av1_get_entropy_contexts(BLOCK_SIZE bsize,
                               ENTROPY_CONTEXT t_left[MAX_MIB_SIZE]);
 
 void av1_set_rd_speed_thresholds(struct AV1_COMP *cpi);
-
-void av1_set_rd_speed_thresholds_sub8x8(struct AV1_COMP *cpi);
 
 void av1_update_rd_thresh_fact(const AV1_COMMON *const cm,
                                int (*fact)[MAX_MODES], int rd_thresh, int bsize,

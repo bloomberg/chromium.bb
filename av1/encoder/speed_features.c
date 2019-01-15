@@ -414,8 +414,6 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
 void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi) {
   SPEED_FEATURES *const sf = &cpi->sf;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
-  RD_OPT *const rd = &cpi->rd;
-  int i;
 
   if (oxcf->mode == GOOD) {
     set_good_speed_feature_framesize_dependent(cpi, sf, oxcf->speed);
@@ -423,13 +421,6 @@ void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi) {
 
   if (sf->disable_split_mask == DISABLE_ALL_SPLIT) {
     sf->adaptive_pred_interp_filter = 0;
-  }
-
-  // Check for masked out split cases.
-  for (i = 0; i < MAX_REFS; ++i) {
-    if (sf->disable_split_mask & (1 << i)) {
-      rd->thresh_mult_sub8x8[i] = INT_MAX;
-    }
   }
 
   // This is only used in motion vector unit test.

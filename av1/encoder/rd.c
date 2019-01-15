@@ -1495,15 +1495,6 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_D45_PRED] += 2500;
 }
 
-void av1_set_rd_speed_thresholds_sub8x8(AV1_COMP *cpi) {
-  static const int thresh_mult[MAX_REFS] = { 2500, 2500, 2500, 2500, 2500,
-                                             2500, 2500, 4500, 4500, 4500,
-                                             4500, 4500, 4500, 4500, 4500,
-                                             4500, 4500, 4500, 4500, 2500 };
-  RD_OPT *const rd = &cpi->rd;
-  memcpy(rd->thresh_mult_sub8x8, thresh_mult, sizeof(thresh_mult));
-}
-
 void av1_update_rd_thresh_fact(const AV1_COMMON *const cm,
                                int (*factor_buf)[MAX_MODES], int rd_thresh,
                                int bsize, int best_mode_index) {
