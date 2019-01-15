@@ -13,14 +13,14 @@
 namespace ash {
 
 class AssistantCardElement;
-class AssistantController;
+class AssistantViewDelegate;
 
 // AssistantCardElementView is the visual representation of an
 // AssistantCardElement. It is a child view of UiElementContainerView.
 class AssistantCardElementView : public views::View,
                                  public content::NavigableContentsObserver {
  public:
-  AssistantCardElementView(AssistantController* assistant_controller,
+  AssistantCardElementView(AssistantViewDelegate* delegate,
                            const AssistantCardElement* card_element);
   ~AssistantCardElementView() override;
 
@@ -47,7 +47,7 @@ class AssistantCardElementView : public views::View,
  private:
   void InitLayout(const AssistantCardElement* card_element);
 
-  AssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantViewDelegate* const delegate_;
 
   // Owned by AssistantCardElement.
   content::NavigableContents* const contents_;

@@ -6,16 +6,16 @@
 
 #include <string>
 
-#include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/main_stage/assistant_card_element_view.h"
 #include "ash/assistant/ui/main_stage/assistant_text_element_view.h"
 #include "ash/assistant/util/animation_util.h"
 #include "base/callback.h"
 #include "base/time/time.h"
+#include "ui/aura/window.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
@@ -43,14 +43,12 @@ constexpr base::TimeDelta kUiElementAnimationFadeInDuration =
     base::TimeDelta::FromMilliseconds(250);
 constexpr base::TimeDelta kUiElementAnimationFadeOutDuration =
     base::TimeDelta::FromMilliseconds(167);
-
 }  // namespace
 
 // UiElementContainerView ------------------------------------------------------
 
-UiElementContainerView::UiElementContainerView(
-    AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller),
+UiElementContainerView::UiElementContainerView(AssistantViewDelegate* delegate)
+    : delegate_(delegate),
       ui_elements_exit_animation_observer_(
           std::make_unique<ui::CallbackLayerAnimationObserver>(
               /*animation_ended_callback=*/base::BindRepeating(
@@ -58,13 +56,12 @@ UiElementContainerView::UiElementContainerView(
                   base::Unretained(this)))) {
   InitLayout();
 
-  // The Assistant controller indirectly owns the view hierarchy to which
-  // UiElementContainerView belongs so is guaranteed to outlive it.
-  assistant_controller_->interaction_controller()->AddModelObserver(this);
+  // The AssistantViewDelegate should outlive UiElementContainerView.
+  delegate_->AddInteractionModelObserver(this);
 }
 
 UiElementContainerView::~UiElementContainerView() {
-  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
+  delegate_->RemoveInteractionModelObserver(this);
 }
 
 const char* UiElementContainerView::GetClassName() const {
@@ -228,8 +225,7 @@ void UiElementContainerView::OnCardElementAdded(
     return;
 
   auto* card_element_view =
-      new AssistantCardElementView(assistant_controller_, card_element);
-
+      new AssistantCardElementView(delegate_, card_element);
   if (is_first_card_) {
     is_first_card_ = false;
 
@@ -307,7 +303,7 @@ void UiElementContainerView::OnAllUiElementsAdded() {
   // and the card fallback text, but webview result is not included.
   // We don't read when there is TTS to avoid speaking over the server response.
   const AssistantResponse* response =
-      assistant_controller_->interaction_controller()->model()->response();
+      delegate_->GetInteractionModel()->response();
   if (!response->has_tts())
     NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }

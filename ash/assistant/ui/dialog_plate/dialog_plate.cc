@@ -4,16 +4,12 @@
 
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 
-#include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/assistant_interaction_controller.h"
-#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/assistant/util/views_util.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -49,20 +45,12 @@ constexpr base::TimeDelta kAnimationTransformInDuration =
     base::TimeDelta::FromMilliseconds(333);
 constexpr int kAnimationTranslationDip = 30;
 
-// Helpers ---------------------------------------------------------------------
-
-bool IsTabletMode() {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
-}
-
 }  // namespace
 
 // DialogPlate -----------------------------------------------------------------
 
-DialogPlate::DialogPlate(AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller),
+DialogPlate::DialogPlate(AssistantViewDelegate* delegate)
+    : delegate_(delegate),
       animation_observer_(std::make_unique<ui::CallbackLayerAnimationObserver>(
           /*start_animation_callback=*/base::BindRepeating(
               &DialogPlate::OnAnimationStarted,
@@ -70,21 +58,18 @@ DialogPlate::DialogPlate(AssistantController* assistant_controller)
           /*end_animation_callback=*/base::BindRepeating(
               &DialogPlate::OnAnimationEnded,
               base::Unretained(this)))),
-      query_history_iterator_(assistant_controller_->interaction_controller()
-                                  ->model()
-                                  ->query_history()
-                                  .GetIterator()) {
+      query_history_iterator_(
+          delegate_->GetInteractionModel()->query_history().GetIterator()) {
   InitLayout();
 
-  // The Assistant controller indirectly owns the view hierarchy to which
-  // DialogPlate belongs so is guaranteed to outlive it.
-  assistant_controller_->interaction_controller()->AddModelObserver(this);
-  assistant_controller_->ui_controller()->AddModelObserver(this);
+  // The AssistantViewDelegate should outlive DialogPlate.
+  delegate_->AddInteractionModelObserver(this);
+  delegate_->AddUiModelObserver(this);
 }
 
 DialogPlate::~DialogPlate() {
-  assistant_controller_->ui_controller()->RemoveModelObserver(this);
-  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
+  delegate_->RemoveUiModelObserver(this);
+  delegate_->RemoveInteractionModelObserver(this);
 }
 
 void DialogPlate::AddObserver(DialogPlateObserver* observer) {
@@ -120,7 +105,7 @@ bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,
     case ui::KeyboardCode::VKEY_RETURN: {
       // In tablet mode the virtual keyboard should not be sticky, so we hide it
       // when committing a query.
-      if (IsTabletMode())
+      if (delegate_->IsTabletMode())
         textfield_->GetFocusManager()->ClearFocus();
 
       const base::StringPiece16& trimmed_text = base::TrimWhitespace(
@@ -254,15 +239,12 @@ void DialogPlate::OnUiVisibilityChanged(
 }
 
 void DialogPlate::RequestFocus() {
-  SetFocus(assistant_controller_->interaction_controller()
-               ->model()
-               ->input_modality());
+  SetFocus(delegate_->GetInteractionModel()->input_modality());
 }
 
 views::View* DialogPlate::FindFirstFocusableView() {
-  InputModality input_modality = assistant_controller_->interaction_controller()
-                                     ->model()
-                                     ->input_modality();
+  InputModality input_modality =
+      delegate_->GetInteractionModel()->input_modality();
 
   // The first focusable view depends entirely on current input modality.
   switch (input_modality) {
@@ -309,9 +291,7 @@ void DialogPlate::InitLayout() {
   AddChildView(settings_button_);
 
   // Artificially trigger event to set initial state.
-  OnInputModalityChanged(assistant_controller_->interaction_controller()
-                             ->model()
-                             ->input_modality());
+  OnInputModalityChanged(delegate_->GetInteractionModel()->input_modality());
 }
 
 void DialogPlate::InitKeyboardLayoutContainer() {
@@ -391,8 +371,8 @@ void DialogPlate::InitVoiceLayoutContainer() {
   layout_manager->SetFlexForView(spacer, 1);
 
   // Animated voice input toggle.
-  animated_voice_input_toggle_ = new ActionView(
-      this, assistant_controller_, AssistantButtonId::kVoiceInputToggle);
+  animated_voice_input_toggle_ =
+      new ActionView(this, delegate_, AssistantButtonId::kVoiceInputToggle);
   animated_voice_input_toggle_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME));
   voice_layout_container_->AddChildView(animated_voice_input_toggle_);
@@ -421,9 +401,8 @@ void DialogPlate::OnAnimationStarted(
 
 bool DialogPlate::OnAnimationEnded(
     const ui::CallbackLayerAnimationObserver& observer) {
-  InputModality input_modality = assistant_controller_->interaction_controller()
-                                     ->model()
-                                     ->input_modality();
+  InputModality input_modality =
+      delegate_->GetInteractionModel()->input_modality();
 
   switch (input_modality) {
     case InputModality::kKeyboard:

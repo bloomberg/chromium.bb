@@ -498,7 +498,8 @@ AssistantContainerView* AssistantUiController::GetViewForTest() {
 }
 
 void AssistantUiController::CreateContainerView() {
-  container_view_ = new AssistantContainerView(assistant_controller_);
+  container_view_ =
+      new AssistantContainerView(assistant_controller_->view_delegate());
   container_view_->GetWidget()->AddObserver(this);
 
   // To save resources, only watch these events while Assistant UI exists.

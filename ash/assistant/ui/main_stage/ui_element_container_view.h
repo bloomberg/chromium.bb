@@ -21,10 +21,10 @@ class CallbackLayerAnimationObserver;
 
 namespace ash {
 
-class AssistantController;
 class AssistantResponse;
 class AssistantCardElement;
 class AssistantTextElement;
+class AssistantViewDelegate;
 
 // UiElementContainerView is the child of AssistantMainView concerned with
 // laying out text views and embedded card views in response to Assistant
@@ -32,7 +32,7 @@ class AssistantTextElement;
 class UiElementContainerView : public AssistantScrollView,
                                public AssistantInteractionModelObserver {
  public:
-  explicit UiElementContainerView(AssistantController* assistant_controller);
+  explicit UiElementContainerView(AssistantViewDelegate* delegate);
   ~UiElementContainerView() override;
 
   // AssistantScrollView:
@@ -62,7 +62,7 @@ class UiElementContainerView : public AssistantScrollView,
   // Sets whether or not PreferredSizeChanged events should be propagated.
   void SetPropagatePreferredSizeChanged(bool propagate);
 
-  AssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantViewDelegate* const delegate_;
 
   // Shared pointers to the response that is currently on stage as well as the
   // pending response to be presented following the former's animated exit. We

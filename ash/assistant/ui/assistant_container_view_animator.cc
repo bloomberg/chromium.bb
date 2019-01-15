@@ -4,17 +4,16 @@
 
 #include "ash/assistant/ui/assistant_container_view_animator.h"
 
-#include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/ui/assistant_container_view.h"
 #include "ash/assistant/ui/assistant_container_view_animator_legacy_impl.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
 
 namespace ash {
 
 AssistantContainerViewAnimator::AssistantContainerViewAnimator(
-    AssistantController* assistant_controller,
+    AssistantViewDelegate* delegate,
     AssistantContainerView* assistant_container_view)
-    : assistant_controller_(assistant_controller),
-      assistant_container_view_(assistant_container_view) {
+    : delegate_(delegate), assistant_container_view_(assistant_container_view) {
   static_cast<views::View*>(assistant_container_view_)->AddObserver(this);
 }
 
@@ -25,11 +24,11 @@ AssistantContainerViewAnimator::~AssistantContainerViewAnimator() {
 // static
 std::unique_ptr<AssistantContainerViewAnimator>
 AssistantContainerViewAnimator::Create(
-    AssistantController* assistant_controller,
+    AssistantViewDelegate* delegate,
     AssistantContainerView* assistant_container_view) {
   // TODO(wutao): Conditionally provide an alternative implementation.
   return std::make_unique<AssistantContainerViewAnimatorLegacyImpl>(
-      assistant_controller, assistant_container_view);
+      delegate, assistant_container_view);
 }
 
 void AssistantContainerViewAnimator::Init() {}
