@@ -35,6 +35,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/platform/web_application_cache_host_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -59,27 +60,6 @@ class CORE_EXPORT ApplicationCacheHost final
   explicit ApplicationCacheHost(DocumentLoader*);
   ~ApplicationCacheHost() override;
   void DetachFromDocumentLoader();
-
-  // The Status numeric values are specified in the HTML5 spec.
-  enum Status {
-    kUncached = 0,
-    kIdle = 1,
-    kChecking = 2,
-    kDownloading = 3,
-    kUpdateready = 4,
-    kObsolete = 5
-  };
-
-  enum EventID {
-    kCheckingEvent = 0,
-    kErrorEvent,
-    kNoupdateEvent,
-    kDownloadingEvent,
-    kProgressEvent,
-    kUpdatereadyEvent,
-    kCachedEvent,
-    kObsoleteEvent  // Must remain the last value, this is used to size arrays.
-  };
 
   struct CacheInfo {
     STACK_ALLOCATED();
@@ -137,16 +117,16 @@ class CORE_EXPORT ApplicationCacheHost final
   void DidReceiveResponseForMainResource(const ResourceResponse&);
   void MainResourceDataReceived(const char* data, size_t length);
 
-  Status GetStatus() const;
+  mojom::AppCacheStatus GetStatus() const;
   bool Update();
   bool SwapCache();
   void Abort();
 
   void SetApplicationCache(ApplicationCache*);
-  void NotifyApplicationCache(EventID,
+  void NotifyApplicationCache(mojom::AppCacheEventID,
                               int progress_total,
                               int progress_done,
-                              WebApplicationCacheHost::ErrorReason,
+                              mojom::AppCacheErrorReason,
                               const String& error_url,
                               int error_status,
                               const String& error_message);
@@ -165,11 +145,11 @@ class CORE_EXPORT ApplicationCacheHost final
 
   // WebApplicationCacheHostClient implementation
   void DidChangeCacheAssociation() final;
-  void NotifyEventListener(WebApplicationCacheHost::EventID) final;
+  void NotifyEventListener(mojom::AppCacheEventID) final;
   void NotifyProgressEventListener(const WebURL&,
                                    int progress_total,
                                    int progress_done) final;
-  void NotifyErrorEventListener(WebApplicationCacheHost::ErrorReason,
+  void NotifyErrorEventListener(mojom::AppCacheErrorReason,
                                 const WebURL&,
                                 int status,
                                 const WebString& message) final;
@@ -178,17 +158,17 @@ class CORE_EXPORT ApplicationCacheHost final
   DocumentLoader* GetDocumentLoader() const { return document_loader_; }
 
   struct DeferredEvent {
-    EventID event_id;
+    mojom::AppCacheEventID event_id;
     int progress_total;
     int progress_done;
-    WebApplicationCacheHost::ErrorReason error_reason;
+    mojom::AppCacheErrorReason error_reason;
     String error_url;
     int error_status;
     String error_message;
-    DeferredEvent(EventID id,
+    DeferredEvent(mojom::AppCacheEventID id,
                   int progress_total,
                   int progress_done,
-                  WebApplicationCacheHost::ErrorReason error_reason,
+                  mojom::AppCacheErrorReason error_reason,
                   const String& error_url,
                   int error_status,
                   const String& error_message)
@@ -206,10 +186,10 @@ class CORE_EXPORT ApplicationCacheHost final
   bool defers_events_;  // Events are deferred until after document onload.
   Vector<DeferredEvent> deferred_events_;
 
-  void DispatchDOMEvent(EventID,
+  void DispatchDOMEvent(mojom::AppCacheEventID,
                         int progress_total,
                         int progress_done,
-                        WebApplicationCacheHost::ErrorReason,
+                        mojom::AppCacheErrorReason,
                         const String& error_url,
                         int error_status,
                         const String& error_message);

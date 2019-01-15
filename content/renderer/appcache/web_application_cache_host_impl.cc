@@ -134,7 +134,7 @@ void WebApplicationCacheHostImpl::OnEventRaised(
       break;
   }
 
-  client_->NotifyEventListener(static_cast<EventID>(event_id));
+  client_->NotifyEventListener(event_id);
 }
 
 void WebApplicationCacheHostImpl::OnProgressEventRaised(
@@ -165,11 +165,11 @@ void WebApplicationCacheHostImpl::OnErrorEventRaised(
     // Don't leak detailed information to script for cross-origin resources.
     DCHECK_EQ(blink::mojom::AppCacheErrorReason::APPCACHE_RESOURCE_ERROR,
               details.reason);
-    client_->NotifyErrorEventListener(static_cast<ErrorReason>(details.reason),
-                                      details.url, 0, WebString());
+    client_->NotifyErrorEventListener(details.reason, details.url, 0,
+                                      WebString());
   } else {
-    client_->NotifyErrorEventListener(static_cast<ErrorReason>(details.reason),
-                                      details.url, details.status,
+    client_->NotifyErrorEventListener(details.reason, details.url,
+                                      details.status,
                                       WebString::FromUTF8(details.message));
   }
 }
@@ -266,8 +266,8 @@ void WebApplicationCacheHostImpl::DidReceiveResponseForMainResource(
     is_new_master_entry_ = OLD_ENTRY;
 }
 
-WebApplicationCacheHost::Status WebApplicationCacheHostImpl::GetStatus() {
-  return static_cast<WebApplicationCacheHost::Status>(status_);
+blink::mojom::AppCacheStatus WebApplicationCacheHostImpl::GetStatus() {
+  return status_;
 }
 
 bool WebApplicationCacheHostImpl::StartUpdate() {

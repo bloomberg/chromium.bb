@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/inspector/inspector_application_cache_agent.h"
 
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
@@ -72,7 +73,7 @@ void InspectorApplicationCacheAgent::UpdateApplicationCacheStatus(
     return;
 
   ApplicationCacheHost* host = document_loader->GetApplicationCacheHost();
-  ApplicationCacheHost::Status status = host->GetStatus();
+  mojom::AppCacheStatus status = host->GetStatus();
   ApplicationCacheHost::CacheInfo info = host->ApplicationCacheInfo();
 
   String manifest_url = info.manifest_.GetString();

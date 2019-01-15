@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_APPLICATION_CACHE_HOST_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_APPLICATION_CACHE_HOST_H_
 
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -46,39 +47,6 @@ class WebURLResponse;
 // instances, and calls delete when the instance is no longer needed.
 class WebApplicationCacheHost {
  public:
-  // These values must match blink::ApplicationCacheHost::Status values
-  enum Status {
-    kUncached,
-    kIdle,
-    kChecking,
-    kDownloading,
-    kUpdateReady,
-    kObsolete
-  };
-
-  // These values must match blink::ApplicationCacheHost::EventID values
-  enum EventID {
-    kCheckingEvent,
-    kErrorEvent,
-    kNoUpdateEvent,
-    kDownloadingEvent,
-    kProgressEvent,
-    kUpdateReadyEvent,
-    kCachedEvent,
-    kObsoleteEvent
-  };
-
-  enum ErrorReason {
-    kManifestError,
-    kSignatureError,
-    kResourceError,
-    kChangedError,
-    kAbortError,
-    kQuotaError,
-    kPolicyError,
-    kUnknownError
-  };
-
   static const int kAppCacheNoHostId = 0;
 
   virtual ~WebApplicationCacheHost() = default;
@@ -102,7 +70,9 @@ class WebApplicationCacheHost {
   virtual void DidReceiveResponseForMainResource(const WebURLResponse&) {}
 
   // Called on behalf of the scriptable interface.
-  virtual Status GetStatus() { return kUncached; }
+  virtual mojom::AppCacheStatus GetStatus() {
+    return mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED;
+  }
   virtual bool StartUpdate() { return false; }
   virtual bool SwapCache() { return false; }
   virtual void Abort() {}
