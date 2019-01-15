@@ -119,9 +119,15 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   }
   bool IsActiveAnimation() const override;
 
+  bool NeedsPeek(base::TimeDelta current_time);
+
   void UpdateInputState(AnimationWorkletDispatcherInput* input_state) override;
   void SetOutputState(
       const AnimationWorkletOutput::AnimationState& state) override;
+
+  void SetRunningOnMainThreadForTesting(bool running_on_main_thread) {
+    running_on_main_thread_ = running_on_main_thread;
+  }
 
   void Trace(blink::Visitor*) override;
 
@@ -160,6 +166,8 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   // We use this to skip updating if current time has not changed since last
   // update.
   base::Optional<base::TimeDelta> last_current_time_;
+  // Time the main thread sends a peek request.
+  base::Optional<base::TimeDelta> last_peek_request_time_;
 
   Member<Document> document_;
 

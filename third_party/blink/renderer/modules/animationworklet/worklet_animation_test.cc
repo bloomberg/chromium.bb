@@ -181,4 +181,64 @@ TEST_F(WorkletAnimationTest,
   EXPECT_NEAR(70, input->updated_animations[0].current_time, error);
 }
 
+TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
+  GetDocument().GetAnimationClock().ResetTimeForTesting();
+  WorkletAnimationId id = worklet_animation_->GetWorkletAnimationId();
+  base::TimeTicks first_ticks =
+      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111);
+  base::TimeTicks second_ticks =
+      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111 + 123.4);
+
+  GetDocument().GetAnimationClock().UpdateTime(first_ticks);
+  DummyExceptionStateForTesting exception_state;
+  worklet_animation_->play(exception_state);
+  worklet_animation_->UpdateCompositingState();
+
+  // Only peek if animation is running on compositor.
+  worklet_animation_->SetRunningOnMainThreadForTesting(false);
+
+  std::unique_ptr<AnimationWorkletDispatcherInput> state =
+      std::make_unique<AnimationWorkletDispatcherInput>();
+  worklet_animation_->UpdateInputState(state.get());
+  std::unique_ptr<AnimationWorkletInput> input =
+      state->TakeWorkletState(id.scope_id);
+  EXPECT_EQ(input->peeked_animations.size(), 1u);
+  EXPECT_EQ(input->added_and_updated_animations.size(), 0u);
+  EXPECT_EQ(input->updated_animations.size(), 0u);
+  EXPECT_EQ(input->removed_animations.size(), 0u);
+  state.reset(new AnimationWorkletDispatcherInput);
+
+  // Local times not set yet. Need to peek again.
+  AnimationWorkletOutput::AnimationState output(id);
+  worklet_animation_->SetOutputState(output);
+  worklet_animation_->UpdateInputState(state.get());
+  input = state->TakeWorkletState(id.scope_id);
+  EXPECT_EQ(input->peeked_animations.size(), 1u);
+  EXPECT_EQ(input->added_and_updated_animations.size(), 0u);
+  EXPECT_EQ(input->updated_animations.size(), 0u);
+  EXPECT_EQ(input->removed_animations.size(), 0u);
+  state.reset(new AnimationWorkletDispatcherInput);
+
+  // Last peek request fulfilled. No need to peek.
+  std::vector<base::Optional<TimeDelta>> local_times;
+  local_times.push_back(TimeDelta());
+  AnimationWorkletOutput::AnimationState output_with_value(id);
+  output_with_value.local_times = local_times;
+  worklet_animation_->SetOutputState(output_with_value);
+  worklet_animation_->UpdateInputState(state.get());
+  input = state->TakeWorkletState(id.scope_id);
+  EXPECT_FALSE(input);
+  state.reset(new AnimationWorkletDispatcherInput);
+
+  // Input time changes. Need to peek again.
+  GetDocument().GetAnimationClock().UpdateTime(second_ticks);
+  worklet_animation_->UpdateInputState(state.get());
+  input = state->TakeWorkletState(id.scope_id);
+  EXPECT_EQ(input->peeked_animations.size(), 1u);
+  EXPECT_EQ(input->added_and_updated_animations.size(), 0u);
+  EXPECT_EQ(input->updated_animations.size(), 0u);
+  EXPECT_EQ(input->removed_animations.size(), 0u);
+  state.reset(new AnimationWorkletDispatcherInput);
+}
+
 }  //  namespace blink

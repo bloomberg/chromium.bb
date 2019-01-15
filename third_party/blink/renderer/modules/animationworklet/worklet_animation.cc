@@ -546,9 +546,32 @@ base::Optional<base::TimeDelta> WorkletAnimation::CurrentTime() const {
   return timeline_time - start_time_.value();
 }
 
+bool WorkletAnimation::NeedsPeek(base::TimeDelta current_time) {
+  bool local_time_is_set = false;
+  for (auto& time : local_times_) {
+    if (time) {
+      local_time_is_set = true;
+      break;
+    }
+  }
+
+  // If any of the local times has been set, a previous peek must have
+  // completed. Request a new peek only if the input time changes.
+  if (local_time_is_set)
+    return last_peek_request_time_ != current_time;
+
+  return true;
+}
+
 void WorkletAnimation::UpdateInputState(
     AnimationWorkletDispatcherInput* input_state) {
   if (!running_on_main_thread_) {
+    if (!CurrentTime())
+      return;
+    base::TimeDelta current_time = CurrentTime().value();
+    if (!NeedsPeek(current_time))
+      return;
+    last_peek_request_time_ = current_time;
     input_state->Peek(id_);
     return;
   }
