@@ -127,7 +127,8 @@ class ChromeOSMetricsProviderTest : public testing::Test {
 // Bluetooth and hardware class in the constructor.
 class TestChromeOSMetricsProvider : public ChromeOSMetricsProvider {
  public:
-  TestChromeOSMetricsProvider() {
+  TestChromeOSMetricsProvider()
+      : ChromeOSMetricsProvider(metrics::MetricsLogUploader::UMA) {
     AsyncInit(base::Bind(&TestChromeOSMetricsProvider::GetIdleCallback,
                          base::Unretained(this)));
     base::RunLoop().Run();
