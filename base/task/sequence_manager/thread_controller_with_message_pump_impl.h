@@ -87,7 +87,9 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   friend class DoWorkScope;
   friend class RunScope;
 
-  bool DoWorkImpl(base::TimeTicks* next_run_time);
+  // Returns the delay till the next task. If there's no delay TimeDelta::Max()
+  // will be returned.
+  TimeDelta DoWorkImpl(LazyNow* continuation_lazy_now, bool* ran_task);
 
   bool InTopLevelDoWork() const;
 
