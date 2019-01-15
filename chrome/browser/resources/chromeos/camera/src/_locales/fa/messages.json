@@ -1,0 +1,206 @@
+{
+  "name": {
+    "message": "دوربین",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "با دوربینتان عکس بگیرید و فیلم‌برداری کنید.",
+    "description": "Short description of the Camera App."
+  },
+  "errorMsgFileSystemFailed": {
+    "message": "خطاهایی در سیستم فایل وجود دارد.",
+    "description": "Error message shown when failing to read or write the file system."
+  },
+  "errorMsgNoCamera": {
+    "message": "درحال‌حاضر دوربینتان دردسترس نیست.\nلطفاً بررسی کنید که دوربین به‌درستی متصل شده است یا نه.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "صادر کردن $file$ امکان‌پذیر نیست",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg"
+      }
+    }
+  },
+  "errorMsgSaveFileFailed": {
+    "message": "ذخیره کردن فایل امکان‌پذیر نیست",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "عکس‌برداری امکان‌پذیر نیست",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "شروع ضبط امکان‌پذیر نیست",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "errorMsgEmptyRecording": {
+    "message": "چیزی ضبط نشد",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "ضبط متوقف شد",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ فعال است",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
+  },
+  "galleryButton": {
+    "message": "رفتن به گالری",
+    "description": "Label for the gallery button."
+  },
+  "deleteButton": {
+    "message": "حذف",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "صادر کردن به دیسک",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "چاپ",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "برگشت",
+    "description": "Label for the back button."
+  },
+  "galleryImages": {
+    "message": "تصاویر گالری",
+    "description": "Text to speech label for the gallery list."
+  },
+  "settingsButton": {
+    "message": "تنظیمات",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "نوع شبکه",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "مدت تایمر",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "ارسال بازخورد",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "راهنما",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "۳ × ۳",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "۳ در ۳",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "۴ × ۴",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "۴ در ۴",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "نسبت طلایی",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "۳ ثانیه",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "۱۰ ثانیه",
+    "description": "Label for timer-duration: 10 seconds."
+  },
+  "takePhotoButton": {
+    "message": "عکس گرفتن",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "توقف عکس‌برداری",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
+  },
+  "recordVideoStartButton": {
+    "message": "شروع ضبط",
+    "description": "Label for the shutter button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "توقف ضبط",
+    "description": "Label for the shutter button to stop recording."
+  },
+  "switchCameraButton": {
+    "message": "جابه‌جایی به دوربین بعدی",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "switchRecordVideoButton": {
+    "message": "رفتن به حالت فیلم‌برداری",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "switchTakePhotoButton": {
+    "message": "رفتن به حالت عکس‌برداری",
+    "description": "Label for the button to switch to take photo mode."
+  },
+  "toggleTimerButton": {
+    "message": "تایمر",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
+  "toggleMirrorButton": {
+    "message": "نمایش صفحه‌نمایش روی دستگاه دیگر",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
+  },
+  "toggleGridButton": {
+    "message": "شطرنجی",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
+  },
+  "toggleMicButton": {
+    "message": "میکروفون",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
+  },
+  "dialogOKButton": {
+    "message": "تأیید",
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "لغو",
+    "description": "Label for the dismissing button in the dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "واقعاً می‌خواهید $file$ حذف شود؟",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "واقعاً می‌خواهید $count$ مورد حذف شود؟",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
+  },
+  "migratePicturesMsg": {
+    "message": "عکس‌ها و ویدیوهایی که با دوربین گرفته شده است، به پوشه «بارگیری‌ها» منتقل خواهد شد. می‌توانید در Files به آن‌ها دسترسی داشته باشید.\n\nبرنامه‌هایی که مجوز فضای ذخیره‌سازی دارند، به عکس‌ها و ویدیوهای شما دسترسی خواهند داشت.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  }
+}

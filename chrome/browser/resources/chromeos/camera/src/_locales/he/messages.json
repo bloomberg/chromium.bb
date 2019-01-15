@@ -1,0 +1,206 @@
+{
+  "name": {
+    "message": "מצלמה",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "צילום תמונות וסרטונים באמצעות המצלמה.",
+    "description": "Short description of the Camera App."
+  },
+  "errorMsgFileSystemFailed": {
+    "message": "שגיאות במערכת הקבצים.",
+    "description": "Error message shown when failing to read or write the file system."
+  },
+  "errorMsgNoCamera": {
+    "message": "המצלמה לא זמינה כרגע.\nיש לבדוק אם היא מחוברת כראוי.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "לא ניתן לייצא את $file$",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg"
+      }
+    }
+  },
+  "errorMsgSaveFileFailed": {
+    "message": "לא ניתן לשמור את הקובץ",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "לא ניתן לצלם את התמונה",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "לא ניתן להתחיל בצילום סרטון",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "errorMsgEmptyRecording": {
+    "message": "לא צולם סרטון",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "צילום הסרטון הופסק",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ פעילה",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
+  },
+  "galleryButton": {
+    "message": "מעבר אל הגלריה",
+    "description": "Label for the gallery button."
+  },
+  "deleteButton": {
+    "message": "מחיקה",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "ייצוא לדיסק",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "הדפסה",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "חזרה",
+    "description": "Label for the back button."
+  },
+  "galleryImages": {
+    "message": "תמונות בגלריה",
+    "description": "Text to speech label for the gallery list."
+  },
+  "settingsButton": {
+    "message": "הגדרות",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "סוג הרשת",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "משך זמן בטיימר",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "שליחת משוב",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "עזרה",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "‎3 x 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3 על 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "‎4 x 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 על 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "יחס הזהב",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 שניות",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 שניות",
+    "description": "Label for timer-duration: 10 seconds."
+  },
+  "takePhotoButton": {
+    "message": "צילום התמונה",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "הפסקת הצילום",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
+  },
+  "recordVideoStartButton": {
+    "message": "התחלת צילום סרטון",
+    "description": "Label for the shutter button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "הפסקת צילום הסרטון",
+    "description": "Label for the shutter button to stop recording."
+  },
+  "switchCameraButton": {
+    "message": "מעבר למצלמה הבאה",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "switchRecordVideoButton": {
+    "message": "מעבר לצילום סרטון",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "switchTakePhotoButton": {
+    "message": "מעבר לצילום תמונה",
+    "description": "Label for the button to switch to take photo mode."
+  },
+  "toggleTimerButton": {
+    "message": "טיימר",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
+  "toggleMirrorButton": {
+    "message": "שיקוף",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
+  },
+  "toggleGridButton": {
+    "message": "רשת",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
+  },
+  "toggleMicButton": {
+    "message": "מיקרופון",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
+  },
+  "dialogOKButton": {
+    "message": "אישור",
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "ביטול",
+    "description": "Label for the dismissing button in the dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "להסיר את $file$?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "להסיר את $count$ הפריטים?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
+  },
+  "migratePicturesMsg": {
+    "message": "תמונות וסרטונים שצולמו באמצעות המצלמה יועברו אל התיקייה 'הורדות'. אפשר לגשת אליהם דרך 'קבצים'.\n\nאפליקציות עם הרשאות אחסון יקבלו גישה אל התמונות והסרטונים.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  }
+}
