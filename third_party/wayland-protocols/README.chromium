@@ -1,6 +1,6 @@
 Name: wayland-protocols
 URL: http://wayland.freedesktop.org/
-Version: 4f789286e4ab7f6fecc2ccb895d79362a9b2382a
+Version: 57423eac60cc234ebfad15f394488a47f69afe16
 License: MIT
 License File: src/COPYING
 Security Critical: yes
@@ -13,6 +13,6 @@ protocol either in Wayland core, or some other protocol in
 wayland-protocols.
 
 To import a new snapshot of wayland-protocols:
-- Checkout the latest version: git checkout 4f789286e4ab7f6fecc2ccb895d79362a9b2382a
+- Checkout the latest version: git checkout 57423eac60cc234ebfad15f394488a47f69afe16
 - Change the DEPS entry to the newly checked out commit.
 - Update this README to reflect the new version number.
