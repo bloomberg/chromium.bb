@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/public/task/task_manager.h"
+#include "components/download/public/task/task_manager_impl.h"
 
 #include <stdint.h>
 #include <memory>
@@ -36,16 +36,16 @@ class MockTaskWaiter {
   MOCK_METHOD1(TaskFinished, void(bool));
 };
 
-class TaskManagerTest : public testing::Test {
+class TaskManagerImplTest : public testing::Test {
  public:
-  TaskManagerTest()
+  TaskManagerImplTest()
       : task_runner_(new base::TestMockTimeTaskRunner), handle_(task_runner_) {
     auto scheduler = std::make_unique<MockTaskScheduler>();
     task_scheduler_ = scheduler.get();
-    task_manager_ = std::make_unique<TaskManager>(std::move(scheduler));
+    task_manager_ = std::make_unique<TaskManagerImpl>(std::move(scheduler));
   }
 
-  ~TaskManagerTest() override = default;
+  ~TaskManagerImplTest() override = default;
 
  protected:
   TaskManager::TaskParams CreateTaskParams() {
@@ -74,15 +74,15 @@ class TaskManagerTest : public testing::Test {
   base::ThreadTaskRunnerHandle handle_;
 
   MockTaskScheduler* task_scheduler_;
-  std::unique_ptr<TaskManager> task_manager_;
+  std::unique_ptr<TaskManagerImpl> task_manager_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerImplTest);
 };
 
 }  // namespace
 
-TEST_F(TaskManagerTest, ScheduleTask) {
+TEST_F(TaskManagerImplTest, ScheduleTask) {
   auto params = CreateTaskParams();
 
   // Schedule a task.
@@ -102,7 +102,7 @@ TEST_F(TaskManagerTest, ScheduleTask) {
   task_runner_->RunUntilIdle();
 }
 
-TEST_F(TaskManagerTest, UnscheduleTask) {
+TEST_F(TaskManagerImplTest, UnscheduleTask) {
   auto params = CreateTaskParams();
   task_manager_->ScheduleTask(DownloadTaskType::DOWNLOAD_TASK, params);
 
@@ -123,7 +123,7 @@ TEST_F(TaskManagerTest, UnscheduleTask) {
   task_runner_->RunUntilIdle();
 }
 
-TEST_F(TaskManagerTest, NotifyTaskFinished) {
+TEST_F(TaskManagerImplTest, NotifyTaskFinished) {
   auto params = CreateTaskParams();
 
   task_manager_->ScheduleTask(DownloadTaskType::DOWNLOAD_TASK, params);
@@ -139,7 +139,7 @@ TEST_F(TaskManagerTest, NotifyTaskFinished) {
   task_runner_->RunUntilIdle();
 }
 
-TEST_F(TaskManagerTest, DifferentTasksCanBeRunIndependently) {
+TEST_F(TaskManagerImplTest, DifferentTasksCanBeRunIndependently) {
   auto params = CreateTaskParams();
 
   ExpectCallToScheduleTask(DownloadTaskType::DOWNLOAD_TASK, params, 1);
@@ -167,7 +167,7 @@ TEST_F(TaskManagerTest, DifferentTasksCanBeRunIndependently) {
   task_runner_->RunUntilIdle();
 }
 
-TEST_F(TaskManagerTest, ScheduleTaskWithDifferentParamsWhileRunningTask) {
+TEST_F(TaskManagerImplTest, ScheduleTaskWithDifferentParamsWhileRunningTask) {
   auto params = CreateTaskParams();
   task_manager_->ScheduleTask(DownloadTaskType::DOWNLOAD_TASK, params);
 
@@ -187,7 +187,7 @@ TEST_F(TaskManagerTest, ScheduleTaskWithDifferentParamsWhileRunningTask) {
   task_runner_->RunUntilIdle();
 }
 
-TEST_F(TaskManagerTest, ScheduleTaskWithSameParamsWhileRunningTask) {
+TEST_F(TaskManagerImplTest, ScheduleTaskWithSameParamsWhileRunningTask) {
   auto params = CreateTaskParams();
   task_manager_->ScheduleTask(DownloadTaskType::DOWNLOAD_TASK, params);
 
@@ -205,7 +205,7 @@ TEST_F(TaskManagerTest, ScheduleTaskWithSameParamsWhileRunningTask) {
   task_runner_->RunUntilIdle();
 }
 
-TEST_F(TaskManagerTest, StopTaskWillClearTheCallback) {
+TEST_F(TaskManagerImplTest, StopTaskWillClearTheCallback) {
   auto params = CreateTaskParams();
   task_manager_->ScheduleTask(DownloadTaskType::DOWNLOAD_TASK, params);
 
@@ -223,7 +223,7 @@ TEST_F(TaskManagerTest, StopTaskWillClearTheCallback) {
   task_runner_->RunUntilIdle();
 }
 
-TEST_F(TaskManagerTest, StopTaskWillSchedulePendingParams) {
+TEST_F(TaskManagerImplTest, StopTaskWillSchedulePendingParams) {
   auto params = CreateTaskParams();
   task_manager_->ScheduleTask(DownloadTaskType::DOWNLOAD_TASK, params);
 

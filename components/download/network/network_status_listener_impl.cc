@@ -36,6 +36,7 @@ network::mojom::ConnectionType NetworkStatusListenerImpl::GetConnectionType() {
 void NetworkStatusListenerImpl::OnConnectionChanged(
     network::mojom::ConnectionType type) {
   DCHECK(observer_);
+  connection_type_ = type;
   observer_->OnNetworkChanged(type);
 }
 
