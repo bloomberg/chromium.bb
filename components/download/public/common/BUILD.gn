@@ -140,3 +140,21 @@ source_set("test_support") {
     "//url",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "auto_resumption_handler_unittest.cc",
+  ]
+
+  deps = [
+    ":public",
+    ":test_support",
+    "//base/test:test_support",
+    "//components/download/public/task:test_support",
+    "//services/network:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

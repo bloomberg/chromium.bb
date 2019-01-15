@@ -30,6 +30,7 @@
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_item_impl.h"
 #include "components/download/public/common/download_url_loader_factory_getter_impl.h"
+#include "components/download/public/task/task_manager_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_request_utils.h"
@@ -78,7 +79,7 @@ void DownloadManagerService::CreateAutoResumptionHandler() {
   auto task_scheduler =
       std::make_unique<download::android::DownloadTaskScheduler>();
   auto task_manager =
-      std::make_unique<download::TaskManager>(std::move(task_scheduler));
+      std::make_unique<download::TaskManagerImpl>(std::move(task_scheduler));
   auto config = std::make_unique<download::AutoResumptionHandler::Config>();
   config->auto_resumption_size_limit =
       DownloadUtils::GetAutoResumptionSizeLimit();

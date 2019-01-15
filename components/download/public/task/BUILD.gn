@@ -14,6 +14,8 @@ source_set("public") {
     "empty_task_scheduler.h",
     "task_manager.cc",
     "task_manager.h",
+    "task_manager_impl.cc",
+    "task_manager_impl.h",
     "task_scheduler.h",
   ]
 
@@ -39,6 +41,20 @@ if (is_android) {
       "download_task_types.h",
     ]
   }
+}
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "mock_task_manager.cc",
+    "mock_task_manager.h",
+  ]
+
+  public_deps = [
+    ":public",
+    "//testing/gmock",
+  ]
 }
 
 source_set("unit_tests") {
