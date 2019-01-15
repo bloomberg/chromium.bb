@@ -1104,10 +1104,6 @@ void PeopleHandler::MarkFirstSetupComplete() {
   if (!service || service->GetUserSettings()->IsFirstSetupComplete())
     return;
 
-  // This is the first time configuring sync, so log it.
-  base::FilePath profile_file_path = profile_->GetPath();
-  ProfileMetrics::LogProfileSyncSignIn(profile_file_path);
-
   // We're done configuring, so notify SyncService that it is OK to start
   // syncing.
   sync_blocker_.reset();

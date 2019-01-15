@@ -521,12 +521,6 @@ void ProfileMetrics::LogProfileLaunch(Profile* profile) {
   }
 }
 
-void ProfileMetrics::LogProfileSyncSignIn(const base::FilePath& profile_path) {
-  UMA_HISTOGRAM_ENUMERATION("Profile.SyncSignIn",
-                            GetProfileType(profile_path),
-                            NUM_PROFILE_TYPE_METRICS);
-}
-
 void ProfileMetrics::LogProfileUpdate(const base::FilePath& profile_path) {
   UMA_HISTOGRAM_ENUMERATION("Profile.Update",
                             GetProfileType(profile_path),
