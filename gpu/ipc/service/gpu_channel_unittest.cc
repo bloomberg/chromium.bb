@@ -243,7 +243,7 @@ TEST_F(GpuChannelExitForContextLostTest, CreateFailsDuringLostContextShutdown) {
   ASSERT_TRUE(channel);
 
   // Put channel manager into shutdown state.
-  channel_manager()->OnContextLost(false /* synthetic_loss */);
+  channel_manager()->MaybeExitOnContextLost();
 
   // Try to create a context.
   int32_t kRouteId =
