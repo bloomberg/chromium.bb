@@ -453,15 +453,6 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     }
   }
 
-  // If we're executing JavaScript to create a new document (e.g. '<iframe
-  // src="javascript:...">') then continue loading 'about:blank' so that the
-  // frame is populated with something reasonable.
-  if (url.ProtocolIsJavaScript()) {
-    ResourceRequest blank_request(BlankURL());
-    child_frame->Loader().StartNavigation(
-        FrameLoadRequest(&GetDocument(), blank_request), child_load_type);
-  }
-
   child_frame->Loader().StartNavigation(
       FrameLoadRequest(&GetDocument(), request), child_load_type);
 

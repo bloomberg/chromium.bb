@@ -476,10 +476,8 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kFormDisabledAttributePresentAndSubmit);
     }
-    GetDocument()
-        .GetFrame()
-        ->GetScriptController()
-        .ExecuteScriptIfJavaScriptURL(submission->Action(), this);
+    GetDocument().ProcessJavaScriptUrl(submission->Action(),
+                                       kCheckContentSecurityPolicy);
     return;
   }
 
