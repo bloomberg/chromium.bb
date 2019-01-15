@@ -8,7 +8,7 @@
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
-#include "ash/media_controller.h"
+#include "ash/media/media_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"

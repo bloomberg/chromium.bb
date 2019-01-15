@@ -16,7 +16,7 @@
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/magnifier/magnification_controller.h"
-#include "ash/media_controller.h"
+#include "ash/media/media_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -38,6 +38,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/user_action_tester.h"
@@ -63,6 +64,8 @@
 #include "ui/wm/core/accelerator_filter.h"
 
 namespace ash {
+
+using media_session::mojom::MediaSessionAction;
 
 namespace {
 
@@ -1518,11 +1521,27 @@ TEST_F(MagnifiersAcceleratorsTester, TestToggleDockedMagnifier) {
   RemoveAllNotifications();
 }
 
+namespace {
+
+struct MediaSessionAcceleratorTestConfig {
+  // Runs the test with the media session service enabled.
+  bool service_enabled;
+
+  // Runs the test with the supplied action enabled.
+  base::Optional<MediaSessionAction> with_action_enabled;
+
+  // If true then we should expect the action will handle the media keys.
+  bool eligible_action = false;
+};
+
+}  // namespace
+
 // MediaSessionAcceleratorTest tests media key handling with media session
-// service integration. The parameter is a boolean as to whether the feature is
-// enabled or disabled.
-class MediaSessionAcceleratorTest : public AcceleratorControllerTest,
-                                    public testing::WithParamInterface<bool> {
+// service integration. The parameter is a struct that configures different
+// settings to run the test under.
+class MediaSessionAcceleratorTest
+    : public AcceleratorControllerTest,
+      public testing::WithParamInterface<MediaSessionAcceleratorTestConfig> {
  public:
   MediaSessionAcceleratorTest() = default;
   ~MediaSessionAcceleratorTest() override = default;
@@ -1546,6 +1565,23 @@ class MediaSessionAcceleratorTest : public AcceleratorControllerTest,
     media_controller->SetClient(client_->CreateAssociatedPtrInfo());
     media_controller->SetMediaSessionControllerForTest(
         controller_->CreateMediaControllerPtr());
+    media_controller->FlushForTesting();
+  }
+
+  void MaybeEnableAction() {
+    if (!GetParam().with_action_enabled)
+      return;
+    SimulateActionsChanged(GetParam().with_action_enabled);
+  }
+
+  void SimulateActionsChanged(base::Optional<MediaSessionAction> action) {
+    std::vector<MediaSessionAction> actions;
+
+    if (action)
+      actions.push_back(*action);
+
+    controller()->SimulateMediaSessionActionsChanged(actions);
+    controller()->Flush();
   }
 
   TestMediaClient* client() const { return client_.get(); }
@@ -1554,7 +1590,9 @@ class MediaSessionAcceleratorTest : public AcceleratorControllerTest,
     return controller_.get();
   }
 
-  bool service_enabled() const { return GetParam(); }
+  bool service_enabled() const { return GetParam().service_enabled; }
+
+  bool eligible_action() const { return GetParam().eligible_action; }
 
  private:
   std::unique_ptr<TestMediaClient> client_;
@@ -1565,7 +1603,34 @@ class MediaSessionAcceleratorTest : public AcceleratorControllerTest,
   DISALLOW_COPY_AND_ASSIGN(MediaSessionAcceleratorTest);
 };
 
-INSTANTIATE_TEST_CASE_P(, MediaSessionAcceleratorTest, testing::Bool());
+INSTANTIATE_TEST_CASE_P(
+    ,
+    MediaSessionAcceleratorTest,
+    testing::Values(
+        MediaSessionAcceleratorTestConfig{true, MediaSessionAction::kPlay,
+                                          true},
+        MediaSessionAcceleratorTestConfig{true, MediaSessionAction::kPause,
+                                          true},
+        MediaSessionAcceleratorTestConfig{
+            true, MediaSessionAction::kPreviousTrack, true},
+        MediaSessionAcceleratorTestConfig{true, MediaSessionAction::kNextTrack,
+                                          true},
+        MediaSessionAcceleratorTestConfig{true,
+                                          MediaSessionAction::kSeekBackward},
+        MediaSessionAcceleratorTestConfig{true,
+                                          MediaSessionAction::kSeekForward},
+        MediaSessionAcceleratorTestConfig{true, MediaSessionAction::kStop},
+        MediaSessionAcceleratorTestConfig{false, MediaSessionAction::kPlay},
+        MediaSessionAcceleratorTestConfig{false, MediaSessionAction::kPause},
+        MediaSessionAcceleratorTestConfig{false,
+                                          MediaSessionAction::kPreviousTrack},
+        MediaSessionAcceleratorTestConfig{false,
+                                          MediaSessionAction::kNextTrack},
+        MediaSessionAcceleratorTestConfig{false,
+                                          MediaSessionAction::kSeekBackward},
+        MediaSessionAcceleratorTestConfig{false,
+                                          MediaSessionAction::kSeekForward},
+        MediaSessionAcceleratorTestConfig{false, MediaSessionAction::kStop}));
 
 TEST_P(MediaSessionAcceleratorTest, MediaPlaybackAcceleratorsBehavior) {
   const ui::KeyboardCode media_keys[] = {ui::VKEY_MEDIA_NEXT_TRACK,
@@ -1604,13 +1669,15 @@ TEST_P(MediaSessionAcceleratorTest, MediaPlaybackAcceleratorsBehavior) {
 }
 
 TEST_P(MediaSessionAcceleratorTest, MediaGlobalAccelerators_NextTrack) {
+  MaybeEnableAction();
+
   EXPECT_EQ(0, client()->handle_media_next_track_count());
   EXPECT_EQ(0, controller()->next_track_count());
 
   ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE));
   Shell::Get()->media_controller()->FlushForTesting();
 
-  if (service_enabled()) {
+  if (service_enabled() && eligible_action()) {
     EXPECT_EQ(0, client()->handle_media_next_track_count());
     EXPECT_EQ(1, controller()->next_track_count());
   } else {
@@ -1620,13 +1687,15 @@ TEST_P(MediaSessionAcceleratorTest, MediaGlobalAccelerators_NextTrack) {
 }
 
 TEST_P(MediaSessionAcceleratorTest, MediaGlobalAccelerators_PlayPause) {
+  MaybeEnableAction();
+
   EXPECT_EQ(0, client()->handle_media_play_pause_count());
   EXPECT_EQ(0, controller()->toggle_suspend_resume_count());
 
   ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE));
   Shell::Get()->media_controller()->FlushForTesting();
 
-  if (service_enabled()) {
+  if (service_enabled() && eligible_action()) {
     EXPECT_EQ(0, client()->handle_media_play_pause_count());
     EXPECT_EQ(1, controller()->toggle_suspend_resume_count());
   } else {
@@ -1636,18 +1705,77 @@ TEST_P(MediaSessionAcceleratorTest, MediaGlobalAccelerators_PlayPause) {
 }
 
 TEST_P(MediaSessionAcceleratorTest, MediaGlobalAccelerators_PrevTrack) {
+  MaybeEnableAction();
+
   EXPECT_EQ(0, client()->handle_media_prev_track_count());
   EXPECT_EQ(0, controller()->previous_track_count());
 
   ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_PREV_TRACK, ui::EF_NONE));
   Shell::Get()->media_controller()->FlushForTesting();
 
-  if (service_enabled()) {
+  if (service_enabled() && eligible_action()) {
     EXPECT_EQ(0, client()->handle_media_prev_track_count());
     EXPECT_EQ(1, controller()->previous_track_count());
   } else {
     EXPECT_EQ(1, client()->handle_media_prev_track_count());
     EXPECT_EQ(0, controller()->previous_track_count());
+  }
+}
+
+TEST_P(MediaSessionAcceleratorTest,
+       MediaGlobalAccelerators_UpdateAction_Disable) {
+  MaybeEnableAction();
+
+  EXPECT_EQ(0, client()->handle_media_play_pause_count());
+  EXPECT_EQ(0, controller()->toggle_suspend_resume_count());
+
+  ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE));
+  Shell::Get()->media_controller()->FlushForTesting();
+
+  if (service_enabled() && eligible_action()) {
+    EXPECT_EQ(0, client()->handle_media_play_pause_count());
+    EXPECT_EQ(1, controller()->toggle_suspend_resume_count());
+  } else {
+    EXPECT_EQ(1, client()->handle_media_play_pause_count());
+    EXPECT_EQ(0, controller()->toggle_suspend_resume_count());
+  }
+
+  SimulateActionsChanged(base::nullopt);
+
+  ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE));
+  Shell::Get()->media_controller()->FlushForTesting();
+
+  if (service_enabled() && eligible_action()) {
+    EXPECT_EQ(1, client()->handle_media_play_pause_count());
+    EXPECT_EQ(1, controller()->toggle_suspend_resume_count());
+  } else {
+    EXPECT_EQ(2, client()->handle_media_play_pause_count());
+    EXPECT_EQ(0, controller()->toggle_suspend_resume_count());
+  }
+}
+
+TEST_P(MediaSessionAcceleratorTest,
+       MediaGlobalAccelerators_UpdateAction_Enable) {
+  EXPECT_EQ(0, client()->handle_media_play_pause_count());
+  EXPECT_EQ(0, controller()->toggle_suspend_resume_count());
+
+  ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE));
+  Shell::Get()->media_controller()->FlushForTesting();
+
+  EXPECT_EQ(1, client()->handle_media_play_pause_count());
+  EXPECT_EQ(0, controller()->toggle_suspend_resume_count());
+
+  MaybeEnableAction();
+
+  ProcessInController(ui::Accelerator(ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE));
+  Shell::Get()->media_controller()->FlushForTesting();
+
+  if (service_enabled() && eligible_action()) {
+    EXPECT_EQ(1, client()->handle_media_play_pause_count());
+    EXPECT_EQ(1, controller()->toggle_suspend_resume_count());
+  } else {
+    EXPECT_EQ(2, client()->handle_media_play_pause_count());
+    EXPECT_EQ(0, controller()->toggle_suspend_resume_count());
   }
 }
 

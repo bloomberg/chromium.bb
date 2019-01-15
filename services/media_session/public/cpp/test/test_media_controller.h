@@ -7,6 +7,7 @@
 
 #include "base/component_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
 namespace media_session {
@@ -26,7 +27,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
   void Resume() override;
   void Stop() override {}
   void ToggleSuspendResume() override;
-  void AddObserver(mojom::MediaSessionObserverPtr) override;
+  void AddObserver(mojom::MediaSessionObserverPtr observer) override;
   void PreviousTrack() override;
   void NextTrack() override;
   void Seek(base::TimeDelta seek_time) override;
@@ -43,6 +44,10 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
   int seek_backward_count() const { return seek_backward_count_; }
   int seek_forward_count() const { return seek_forward_count_; }
 
+  void SimulateMediaSessionActionsChanged(
+      const std::vector<mojom::MediaSessionAction>& actions);
+  void Flush();
+
  private:
   int toggle_suspend_resume_count_ = 0;
   int suspend_count_ = 0;
@@ -52,6 +57,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
   int next_track_count_ = 0;
   int seek_backward_count_ = 0;
   int seek_forward_count_ = 0;
+
+  mojo::InterfacePtrSet<mojom::MediaSessionObserver> observers_;
 
   mojo::Binding<mojom::MediaController> binding_{this};
 

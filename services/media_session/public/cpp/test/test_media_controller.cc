@@ -31,6 +31,7 @@ void TestMediaController::ToggleSuspendResume() {
 
 void TestMediaController::AddObserver(mojom::MediaSessionObserverPtr observer) {
   ++add_observer_count_;
+  observers_.AddPtr(std::move(observer));
 }
 
 void TestMediaController::PreviousTrack() {
@@ -49,6 +50,17 @@ void TestMediaController::Seek(base::TimeDelta seek_time) {
   } else if (seek_time < base::TimeDelta()) {
     ++seek_backward_count_;
   }
+}
+
+void TestMediaController::SimulateMediaSessionActionsChanged(
+    const std::vector<mojom::MediaSessionAction>& actions) {
+  observers_.ForAllPtrs([&actions](mojom::MediaSessionObserver* observer) {
+    observer->MediaSessionActionsChanged(actions);
+  });
+}
+
+void TestMediaController::Flush() {
+  observers_.FlushForTesting();
 }
 
 }  // namespace test
