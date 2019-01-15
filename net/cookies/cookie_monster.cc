@@ -1092,6 +1092,8 @@ void CookieMonster::FindCookiesForKey(const std::string& key,
                                       std::vector<CanonicalCookie*>* cookies) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  std::vector<CanonicalCookie*> full_cookie_list;
+
   for (CookieMapItPair its = cookies_.equal_range(key);
        its.first != its.second;) {
     auto curit = its.first;
@@ -1103,7 +1105,10 @@ void CookieMonster::FindCookiesForKey(const std::string& key,
       InternalDeleteCookie(curit, true, DELETE_COOKIE_EXPIRED);
       continue;
     }
+    full_cookie_list.push_back(cc);
+  }
 
+  for (CanonicalCookie* cc : full_cookie_list) {
     // Filter out cookies that should not be included for a request to the
     // given |url|. HTTP only cookies are filtered depending on the passed
     // cookie |options|.
