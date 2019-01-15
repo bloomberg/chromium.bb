@@ -4,8 +4,7 @@
 
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 
-#import <OCHamcrest/OCHamcrest.h>
-
+#import <EarlGrey/EarlGrey.h>
 #import <WebKit/WebKit.h>
 
 #include "base/mac/foundation_util.h"
@@ -246,8 +245,19 @@ id<GREYMatcher> PageSecurityInfoIndicator() {
 }
 
 id<GREYMatcher> OmniboxText(std::string text) {
-  return grey_allOf(Omnibox(),
-                    hasProperty(@"text", base::SysUTF8ToNSString(text)), nil);
+  GREYElementMatcherBlock* matcher = [GREYElementMatcherBlock
+      matcherWithMatchesBlock:^BOOL(id element) {
+        OmniboxTextFieldIOS* omnibox =
+            base::mac::ObjCCast<OmniboxTextFieldIOS>(element);
+        return [omnibox.text isEqualToString:base::SysUTF8ToNSString(text)];
+      }
+      descriptionBlock:^void(id<GREYDescription> description) {
+        [description
+            appendText:[NSString
+                           stringWithFormat:@"Omnibox contains text \"%@\"",
+                                            base::SysUTF8ToNSString(text)]];
+      }];
+  return matcher;
 }
 
 id<GREYMatcher> OmniboxContainingText(std::string text) {
