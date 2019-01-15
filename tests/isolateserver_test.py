@@ -35,7 +35,7 @@ from utils import fs
 from utils import logging_utils
 from utils import threading_utils
 
-import isolateserver_mock
+import isolateserver_fake
 
 
 CONTENTS = {
@@ -115,7 +115,7 @@ class TestZipCompression(TestCase):
 class FakeItem(isolate_storage.Item):
   def __init__(self, data, high_priority=False):
     super(FakeItem, self).__init__(
-      isolateserver_mock.hash_content(data), len(data), high_priority)
+      isolateserver_fake.hash_content(data), len(data), high_priority)
     self.data = data
 
   def content(self):
@@ -615,7 +615,7 @@ class IsolateServerStorageApiTest(TestCase):
   def test_fetch_success(self):
     server_ref = isolate_storage.ServerRef('http://example.com', 'default')
     data = ''.join(str(x) for x in xrange(1000))
-    item = isolateserver_mock.hash_content(data)
+    item = isolateserver_fake.hash_content(data)
     self.expected_requests([self.mock_fetch_request(server_ref, item, data)])
     storage = isolate_storage.IsolateServer(server_ref)
     fetched = ''.join(storage.fetch(item, 0, 0))
@@ -623,7 +623,7 @@ class IsolateServerStorageApiTest(TestCase):
 
   def test_fetch_failure(self):
     server_ref = isolate_storage.ServerRef('http://example.com', 'default')
-    item = isolateserver_mock.hash_content('something')
+    item = isolateserver_fake.hash_content('something')
     self.expected_requests(
         [self.mock_fetch_request(server_ref, item)[:-1] + (None,)])
     storage = isolate_storage.IsolateServer(server_ref)
@@ -633,7 +633,7 @@ class IsolateServerStorageApiTest(TestCase):
   def test_fetch_offset_success(self):
     server_ref = isolate_storage.ServerRef('http://example.com', 'default')
     data = ''.join(str(x) for x in xrange(1000))
-    item = isolateserver_mock.hash_content(data)
+    item = isolateserver_fake.hash_content(data)
     offset = 200
     size = len(data)
 
@@ -652,7 +652,7 @@ class IsolateServerStorageApiTest(TestCase):
   def test_fetch_offset_bad_header(self):
     server_ref = isolate_storage.ServerRef('http://example.com', 'default')
     data = ''.join(str(x) for x in xrange(1000))
-    item = isolateserver_mock.hash_content(data)
+    item = isolateserver_fake.hash_content(data)
     offset = 200
     size = len(data)
 
@@ -827,7 +827,7 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
   def setUp(self):
     super(IsolateServerStorageSmokeTest, self).setUp()
     self.tempdir = tempfile.mkdtemp(prefix=u'isolateserver')
-    self.server = isolateserver_mock.MockIsolateServer()
+    self.server = isolateserver_fake.FakeIsolateServer()
 
   def tearDown(self):
     try:
@@ -1058,12 +1058,12 @@ class IsolateServerDownloadTest(TestCase):
       'relative_cwd': 'a',
       'files': {
         os.path.join('a', 'foo'): {
-          'h': isolateserver_mock.hash_content('Content'),
+          'h': isolateserver_fake.hash_content('Content'),
           's': len('Content'),
           'm': 0700,
         },
         'b': {
-          'h': isolateserver_mock.hash_content('More content'),
+          'h': isolateserver_fake.hash_content('More content'),
           's': len('More content'),
           'm': 0600,
         },
@@ -1075,7 +1075,7 @@ class IsolateServerDownloadTest(TestCase):
       'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     isolated_data = json.dumps(isolated, sort_keys=True, separators=(',',':'))
-    isolated_hash = isolateserver_mock.hash_content(isolated_data)
+    isolated_hash = isolateserver_fake.hash_content(isolated_data)
     requests = [
       (v['h'], files[k]) for k, v in isolated['files'].iteritems()
       if 'h' in v
@@ -1154,12 +1154,12 @@ class IsolateServerDownloadTest(TestCase):
       'relative_cwd': 'a',
       'files': {
         'archive1': {
-          'h': isolateserver_mock.hash_content(archive),
+          'h': isolateserver_fake.hash_content(archive),
           's': len(archive),
           't': 'tar',
         },
         'c': {
-          'h': isolateserver_mock.hash_content(files['c'][0]),
+          'h': isolateserver_fake.hash_content(files['c'][0]),
           's': len(files['c'][0]),
         },
       },
@@ -1167,7 +1167,7 @@ class IsolateServerDownloadTest(TestCase):
       'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     isolated_data = json.dumps(isolated, sort_keys=True, separators=(',',':'))
-    isolated_hash = isolateserver_mock.hash_content(isolated_data)
+    isolated_hash = isolateserver_fake.hash_content(isolated_data)
     requests = [
       (isolated['files']['archive1']['h'], archive),
       (isolated['files']['c']['h'], files['c'][0]),
@@ -1275,13 +1275,13 @@ class TestArchive(TestCase):
     }
     for k, v in CONTENTS.iteritems():
       isolated['files'][k] = {
-        'h': isolateserver_mock.hash_content(v),
+        'h': isolateserver_fake.hash_content(v),
         's': len(v),
       }
       if sys.platform != 'win32':
         isolated['files'][k]['m'] = 0600
     isolated_data = json.dumps(isolated, sort_keys=True, separators=(',',':'))
-    isolated_hash = isolateserver_mock.hash_content(isolated_data)
+    isolated_hash = isolateserver_fake.hash_content(isolated_data)
     self.checkOutput(
         '%s %s\n' % (isolated_hash, self.tempdir),
         '')

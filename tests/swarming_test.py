@@ -7,7 +7,6 @@ import datetime
 import json
 import logging
 import os
-import re
 import StringIO
 import sys
 import tempfile
@@ -33,8 +32,9 @@ from utils import logging_utils
 from utils import subprocess42
 from utils import tools
 
-import httpserver_mock
-import isolateserver_mock
+import httpserver
+import isolateserver_fake
+import swarmingserver_fake
 
 
 FILE_HASH = u'1' * 40
@@ -181,40 +181,6 @@ class NonBlockingEvent(threading._Event):  # pylint: disable=W0212
     return super(NonBlockingEvent, self).wait(0)
 
 
-class SwarmingServerHandler(httpserver_mock.MockHandler):
-  """An extremely minimal implementation of the swarming server API v1.0."""
-
-  def do_GET(self):
-    logging.info('S GET %s', self.path)
-    if self.path == '/auth/api/v1/server/oauth_config':
-      self.send_json({
-          'client_id': 'c',
-          'client_not_so_secret': 's',
-          'primary_url': self.server.url})
-    elif self.path == '/auth/api/v1/accounts/self':
-      self.send_json({'identity': 'user:joe', 'xsrf_token': 'foo'})
-    else:
-      m = re.match(r'/_ah/api/swarming/v1/task/(\d+)/request', self.path)
-      if m:
-        logging.info('%s', m.group(1))
-        self.send_json(self.server.tasks[int(m.group(1))])
-      else:
-        self.send_json( {'a': 'b'})
-        #raise NotImplementedError(self.path)
-
-  def do_POST(self):
-    logging.info('POST %s', self.path)
-    raise NotImplementedError(self.path)
-
-
-class MockSwarmingServer(httpserver_mock.MockServer):
-  _HANDLER_CLS = SwarmingServerHandler
-
-  def __init__(self):
-    super(MockSwarmingServer, self).__init__()
-    self._server.tasks = {}
-
-
 class Common(object):
   def setUp(self):
     self._tempdir = None
@@ -275,8 +241,8 @@ class TestIsolated(auto_stub.TestCase, Common):
   def setUp(self):
     auto_stub.TestCase.setUp(self)
     Common.setUp(self)
-    self._isolate = isolateserver_mock.MockIsolateServer()
-    self._swarming = MockSwarmingServer()
+    self._isolate = isolateserver_fake.FakeIsolateServer()
+    self._swarming = swarmingserver_fake.FakeSwarmingServer()
 
   def tearDown(self):
     try:
@@ -1447,7 +1413,7 @@ class TestMain(NetTestCase):
     with open(isolated, 'wb') as f:
       f.write(content)
 
-    isolated_hash = isolateserver_mock.hash_content(content)
+    isolated_hash = isolateserver_fake.hash_content(content)
     request = gen_request_data(
         task_slices=[
           {

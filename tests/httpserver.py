@@ -9,10 +9,11 @@ import logging
 import threading
 
 
-_STOP_EVENT = '/mockserver/__stop__'
+_STOP_EVENT = '/fakeserver/__stop__'
 
 
-class MockHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
+  """Handlers implements utility functions to help implementing a fake."""
 
   ### Public methods
 
@@ -55,11 +56,12 @@ class MockHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         fmt % args)
 
 
-class MockServer(object):
+class Server(object):
+  """Server implements a simple HTTP server to implement a fake."""
   _HANDLER_CLS = None
 
   def __init__(self):
-    assert issubclass(self._HANDLER_CLS, MockHandler), self._HANDLER_CLS
+    assert issubclass(self._HANDLER_CLS, Handler), self._HANDLER_CLS
     self._closed = False
     self._stopped = False
     self._server = BaseHTTPServer.HTTPServer(

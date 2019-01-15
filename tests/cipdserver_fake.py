@@ -5,13 +5,13 @@
 import logging
 import urlparse
 
-import httpserver_mock
+import httpserver
 
 
-class CipdServerHandler(httpserver_mock.MockHandler):
+class FakeCipdServerHandler(httpserver.Handler):
   """An extremely minimal implementation of the cipd server API v1.0."""
 
-  ### Mocked HTTP Methods
+  ### HTTP Methods
 
   def do_GET(self):
     logging.info('GET %s', self.path)
@@ -53,5 +53,5 @@ class CipdServerHandler(httpserver_mock.MockHandler):
       raise NotImplementedError(self.path)
 
 
-class MockCipdServer(httpserver_mock.MockServer):
-  _HANDLER_CLS = CipdServerHandler
+class FakeCipdServer(httpserver.Server):
+  _HANDLER_CLS = FakeCipdServerHandler

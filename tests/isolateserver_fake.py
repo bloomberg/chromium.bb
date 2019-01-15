@@ -9,7 +9,7 @@ import logging
 import re
 import zlib
 
-import httpserver_mock
+import httpserver
 
 ALGO = hashlib.sha1
 
@@ -32,7 +32,7 @@ class FakeSigner(object):
     return json.loads(a.groups()[0])
 
 
-class IsolateServerHandler(httpserver_mock.MockHandler):
+class FakeIsolateServerHandler(httpserver.Handler):
   """An extremely minimal implementation of the isolate server API v1.0."""
 
   def _should_push_to_gs(self, isolated, size):
@@ -76,7 +76,7 @@ class IsolateServerHandler(httpserver_mock.MockHandler):
       self.server.contents.setdefault(namespace, {})[d] = content
     self.send_json({'ok': True})
 
-  ### Mocked HTTP Methods
+  ### Faked HTTP Methods
 
   def do_GET(self):
     logging.info('GET %s', self.path)
@@ -109,7 +109,7 @@ class IsolateServerHandler(httpserver_mock.MockHandler):
           if self._should_push_to_gs(entry['i'], entry['s']):
             status['gs_upload_url'] = self._generate_signed_url(entry['d'])
           li.append(status)
-        # Don't use finalize url for the mock.
+        # Don't use finalize url for the fake.
 
       request = json.loads(body)
       namespace = request['namespace']['namespace']
@@ -155,11 +155,11 @@ class IsolateServerHandler(httpserver_mock.MockHandler):
       raise NotImplementedError(self.path)
 
 
-class MockIsolateServer(httpserver_mock.MockServer):
-  _HANDLER_CLS = IsolateServerHandler
+class FakeIsolateServer(httpserver.Server):
+  _HANDLER_CLS = FakeIsolateServerHandler
 
   def __init__(self):
-    super(MockIsolateServer, self).__init__()
+    super(FakeIsolateServer, self).__init__()
     self._server.contents = {}
     self._server.store_hash_instead = False
 

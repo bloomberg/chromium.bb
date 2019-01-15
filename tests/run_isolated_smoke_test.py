@@ -20,7 +20,7 @@ import run_isolated
 from depot_tools import fix_encoding
 from utils import file_path
 
-import isolateserver_mock
+import isolateserver_fake
 import test_utils
 
 
@@ -103,7 +103,7 @@ CONTENTS = {
 
 def file_meta(filename):
   return {
-    'h': isolateserver_mock.hash_content(CONTENTS[filename]),
+    'h': isolateserver_fake.hash_content(CONTENTS[filename]),
     's': len(CONTENTS[filename]),
   }
 
@@ -136,7 +136,7 @@ CONTENTS['manifest2.isolated'] = json.dumps(
     {
       'files': {'file2.txt': file_meta('file2.txt')},
       'includes': [
-        isolateserver_mock.hash_content(CONTENTS['manifest1.isolated']),
+        isolateserver_fake.hash_content(CONTENTS['manifest1.isolated']),
       ],
     })
 
@@ -146,7 +146,7 @@ CONTENTS['tar_archive.isolated'] = json.dumps(
       'command': ['python', 'archive_files.py'],
       'files': {
         'archive': {
-          'h': isolateserver_mock.hash_content(CONTENTS['tar_archive']),
+          'h': isolateserver_fake.hash_content(CONTENTS['tar_archive']),
           's': len(CONTENTS['tar_archive']),
           't': 'tar',
         },
@@ -185,7 +185,7 @@ CONTENTS['check_files.isolated'] = json.dumps(
         'file2.txt': file_meta('file3.txt'),
       },
       'includes': [
-        isolateserver_mock.hash_content(CONTENTS[i])
+        isolateserver_fake.hash_content(CONTENTS[i])
         for i in ('manifest2.isolated', 'repeated_files.isolated')
       ]
     })
@@ -239,7 +239,7 @@ class RunIsolatedTest(unittest.TestCase):
         self.run_isolated_zip, compress=False)
     # The run_isolated local cache.
     self._isolated_cache_dir = os.path.join(self.tempdir, 'i')
-    self._isolated_server = isolateserver_mock.MockIsolateServer()
+    self._isolated_server = isolateserver_fake.FakeIsolateServer()
     self._named_cache_dir = os.path.join(self.tempdir, 'n')
 
   def tearDown(self):

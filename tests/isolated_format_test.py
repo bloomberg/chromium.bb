@@ -21,7 +21,7 @@ from utils import file_path
 from utils import fs
 from utils import tools
 
-import isolateserver_mock
+import isolateserver_fake
 
 
 ALGO = hashlib.sha1
@@ -142,7 +142,7 @@ class SymlinkTest(unittest.TestCase):
 
 class TestIsolated(auto_stub.TestCase):
   def test_load_isolated_empty(self):
-    m = isolated_format.load_isolated('{}', isolateserver_mock.ALGO)
+    m = isolated_format.load_isolated('{}', isolateserver_fake.ALGO)
     self.assertEqual({}, m)
 
   def test_load_isolated_good(self):
@@ -163,7 +163,7 @@ class TestIsolated(auto_stub.TestCase):
       u'relative_cwd': u'somewhere_else',
       u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
-    m = isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
+    m = isolated_format.load_isolated(json.dumps(data), isolateserver_fake.ALGO)
     self.assertEqual(data, m)
 
   def test_load_isolated_bad(self):
@@ -177,7 +177,7 @@ class TestIsolated(auto_stub.TestCase):
       u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     with self.assertRaises(isolated_format.IsolatedError):
-      isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
+      isolated_format.load_isolated(json.dumps(data), isolateserver_fake.ALGO)
 
   def test_load_isolated_bad_abs(self):
     for i in ('/a', 'a/..', 'a/', '\\\\a'):
@@ -186,7 +186,7 @@ class TestIsolated(auto_stub.TestCase):
         u'version': isolated_format.ISOLATED_FILE_VERSION,
       }
       with self.assertRaises(isolated_format.IsolatedError):
-        isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
+        isolated_format.load_isolated(json.dumps(data), isolateserver_fake.ALGO)
 
   def test_load_isolated_os_only(self):
     # Tolerate 'os' on older version.
@@ -194,7 +194,7 @@ class TestIsolated(auto_stub.TestCase):
       u'os': 'HP/UX',
       u'version': '1.3',
     }
-    m = isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
+    m = isolated_format.load_isolated(json.dumps(data), isolateserver_fake.ALGO)
     self.assertEqual(data, m)
 
   def test_load_isolated_os_only_bad(self):
@@ -203,7 +203,7 @@ class TestIsolated(auto_stub.TestCase):
       u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     with self.assertRaises(isolated_format.IsolatedError):
-      isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
+      isolated_format.load_isolated(json.dumps(data), isolateserver_fake.ALGO)
 
   def test_load_isolated_path(self):
     # Automatically convert the path case.
@@ -222,7 +222,7 @@ class TestIsolated(auto_stub.TestCase):
 
     data = gen_data(wrong_path_sep)
     actual = isolated_format.load_isolated(
-        json.dumps(data), isolateserver_mock.ALGO)
+        json.dumps(data), isolateserver_fake.ALGO)
     expected = gen_data(os.path.sep)
     self.assertEqual(expected, actual)
 
