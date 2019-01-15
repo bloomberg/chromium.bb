@@ -8,9 +8,11 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedW
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
 import org.chromium.chrome.browser.customtabs.CloseButtonNavigator;
 import org.chromium.chrome.browser.customtabs.CustomTabBottomBarDelegate;
-import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
+import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
 import org.chromium.chrome.browser.customtabs.CustomTabTopBarDelegate;
 import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
@@ -30,8 +32,11 @@ public interface CustomTabActivityComponent extends ChromeActivityComponent {
     DynamicModuleCoordinator resolveDynamicModuleCoordinator();
 
     CloseButtonNavigator resolveCloseButtonNavigator();
-    CustomTabDelegateFactory resolveTabDelegateFactory();
     TabObserverRegistrar resolveTabObserverRegistrar();
     CustomTabTopBarDelegate resolveTobBarDelegate();
     CustomTabBottomBarDelegate resolveBottomBarDelegate();
+    CustomTabActivityTabController resolveTabController();
+    CustomTabActivityTabFactory resolveTabFactory();
+
+    CustomTabTabPersistencePolicy resolveTabPersistencePolicy(); // For testing
 }

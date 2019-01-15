@@ -334,9 +334,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     public void preInflationStartup() {
-        super.preInflationStartup();
-
+        // Create component before calling super to give its members a chance to catch
+        // onPreInflationStartup event.
         mComponent = createComponent();
+
+        super.preInflationStartup();
 
         VrModuleProvider.getDelegate().doPreInflationStartup(this, getSavedInstanceState());
 
@@ -386,13 +388,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * and include all modules for ChromeActivityComponent, such as
      * {@link ChromeActivityCommonsModule}, along with any additional modules.
      *
-     * Example:
-     *
-     * @Subcomponent(modules = {ChromeActivityCommonsModule.class, ChromeTabbedActivityModule.class})
-     * @ActivityScope
-     * public interface ChromeTabbedActivityComponent extends ChromeActivityComponent {
-     *     SomeTabbedActivityClass getSomeTabbedActivityClass();
-     * }
+     * You may immediately resolve some of the classes belonging to the component in this method.
      */
     @SuppressWarnings("unchecked")
     protected C createComponent(ChromeActivityCommonsModule commonsModule,
@@ -665,7 +661,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * {@link org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator} needed by
      * this activity.
      */
-    protected final void initializeTabModels() {
+    public final void initializeTabModels() {
         if (mTabModelsInitialized) return;
 
         mTabModelSelector = createTabModelSelector();
@@ -2313,7 +2309,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         return -1;
     }
 
-    protected final void postDeferredStartupIfNeeded() {
+    public final void postDeferredStartupIfNeeded() {
         if (!mNativeInitialized) {
             // Native hasn't loaded yet.  Queue it up for later.
             mDeferredStartupQueued = true;

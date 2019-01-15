@@ -123,18 +123,7 @@ import java.util.List;
 
 /**
  * The basic Java representation of a tab.  Contains and manages a {@link ContentView}.
- * <p>
- * This class is intended to be extended either on Java or both Java and C++, with ownership managed
- * by this base class.
- * <p>
- * Extending just Java:
- *  - Just extend the class normally.  Do not override initializeNative().
- * Extending Java and C++:
- *  - Because of the inner-workings of JNI, the subclass is responsible for constructing the native
- *    subclass, which in turn constructs TabAndroid (the native counterpart to Tab), which in
- *    turn sets the native pointer for Tab.  For destruction, subclasses in Java must clear
- *    their own native pointer reference, but Tab#destroy() will handle deleting the native
- *    object.
+ * This class is not intended to be extended.
  */
 public class Tab
         implements ViewGroup.OnHierarchyChangeListener, View.OnSystemUiVisibilityChangeListener {
@@ -1174,7 +1163,7 @@ public class Tab
      * @param unfreeze          Whether there should be an attempt to restore state at the end of
      *                          the initialization.
      */
-    public final void initialize(WebContents webContents, TabContentManager tabContentManager,
+    public void initialize(WebContents webContents, TabContentManager tabContentManager,
             TabDelegateFactory delegateFactory, boolean initiallyHidden, boolean unfreeze) {
         try {
             TraceEvent.begin("Tab.initialize");

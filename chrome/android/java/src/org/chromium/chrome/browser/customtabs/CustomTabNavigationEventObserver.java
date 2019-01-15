@@ -21,46 +21,44 @@ public class CustomTabNavigationEventObserver extends EmptyTabObserver {
     private static final int NET_ERROR_ABORTED = -3;
 
     private final CustomTabsSessionToken mSessionToken;
+    private final CustomTabsConnection mConnection;
 
-    public CustomTabNavigationEventObserver(CustomTabsSessionToken sessionToken) {
+    public CustomTabNavigationEventObserver(CustomTabsSessionToken sessionToken,
+            CustomTabsConnection connection) {
         mSessionToken = sessionToken;
+        mConnection = connection;
     }
 
     @Override
     public void onPageLoadStarted(Tab tab, String url) {
-        CustomTabsConnection.getInstance().notifyNavigationEvent(
-                mSessionToken, CustomTabsCallback.NAVIGATION_STARTED);
+        mConnection.notifyNavigationEvent(mSessionToken, CustomTabsCallback.NAVIGATION_STARTED);
     }
 
     @Override
     public void onPageLoadFinished(Tab tab, String url) {
-        CustomTabsConnection.getInstance().notifyNavigationEvent(
-                mSessionToken, CustomTabsCallback.NAVIGATION_FINISHED);
+        mConnection.notifyNavigationEvent(mSessionToken, CustomTabsCallback.NAVIGATION_FINISHED);
     }
 
     @Override
     public void onPageLoadFailed(Tab tab, int errorCode) {
         int navigationEvent = errorCode == NET_ERROR_ABORTED ? CustomTabsCallback.NAVIGATION_ABORTED
                                                              : CustomTabsCallback.NAVIGATION_FAILED;
-        CustomTabsConnection.getInstance().notifyNavigationEvent(mSessionToken, navigationEvent);
+        mConnection.notifyNavigationEvent(mSessionToken, navigationEvent);
     }
 
     @Override
     public void onShown(Tab tab, @TabSelectionType int type) {
-        CustomTabsConnection.getInstance().notifyNavigationEvent(
-                mSessionToken, CustomTabsCallback.TAB_SHOWN);
+        mConnection.notifyNavigationEvent(mSessionToken, CustomTabsCallback.TAB_SHOWN);
     }
 
     @Override
     public void onHidden(Tab tab, @TabHidingType int type) {
-        CustomTabsConnection.getInstance().notifyNavigationEvent(
-                mSessionToken, CustomTabsCallback.TAB_HIDDEN);
+        mConnection.notifyNavigationEvent(mSessionToken, CustomTabsCallback.TAB_HIDDEN);
     }
 
     @Override
     public void onDidAttachInterstitialPage(Tab tab) {
         if (tab.getSecurityLevel() != ConnectionSecurityLevel.DANGEROUS) return;
-        CustomTabsConnection.getInstance().notifyNavigationEvent(
-                mSessionToken, CustomTabsCallback.NAVIGATION_FAILED);
+        mConnection.notifyNavigationEvent(mSessionToken, CustomTabsCallback.NAVIGATION_FAILED);
     }
 }

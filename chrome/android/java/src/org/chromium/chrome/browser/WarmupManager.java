@@ -50,7 +50,7 @@ import java.util.concurrent.TimeUnit;
  *
  * This class is not thread-safe and must only be used on the UI thread.
  */
-public final class WarmupManager {
+public class WarmupManager {
     private static final String TAG = "WarmupManager";
 
     @VisibleForTesting
@@ -335,7 +335,7 @@ public final class WarmupManager {
                 || SysUtils.isLowEndDevice()) {
             return;
         }
-        mSpareWebContents = WebContentsFactory.createWebContentsWithWarmRenderer(
+        mSpareWebContents = new WebContentsFactory().createWebContentsWithWarmRenderer(
                 false /* incognito */, true /* initiallyHidden */);
         mObserver = new RenderProcessGoneObserver();
         mSpareWebContents.addObserver(mObserver);

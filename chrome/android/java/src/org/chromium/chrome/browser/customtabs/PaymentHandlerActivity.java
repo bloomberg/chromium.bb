@@ -11,6 +11,7 @@ import android.view.WindowManager;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.display.DisplayUtil;
 
 /**
@@ -20,26 +21,33 @@ import org.chromium.ui.display.DisplayUtil;
 public class PaymentHandlerActivity extends CustomTabActivity {
     private static final double BOTTOM_SHEET_HEIGHT_RATIO = 0.7;
     private boolean mHaveNotifiedServiceWorker;
-
-    @Override
-    protected void initializeMainTab(Tab tab) {
-        super.initializeMainTab(tab);
-        ServiceWorkerPaymentAppBridge.addTabObserverForPaymentRequestTab(tab);
-    }
+    private boolean mTabObserverAdded;
 
     @Override
     public void preInflationStartup() {
         super.preInflationStartup();
         updateHeight();
+        getComponent().resolveTabController().addObserver(this::addTabObserverIfTabReady);
+        addTabObserverIfTabReady();
+    }
+
+    private void addTabObserverIfTabReady() {
+        if (mTabObserverAdded) return;
+        Tab tab = getComponent().resolveTabController().getTab();
+        if (tab != null) {
+            ServiceWorkerPaymentAppBridge.addTabObserverForPaymentRequestTab(tab);
+            mTabObserverAdded = true;
+        }
     }
 
     @Override
     protected void handleFinishAndClose() {
         // Notify the window is closing so as to abort invoking payment app early.
-        if (!mHaveNotifiedServiceWorker && getActivityTab().getWebContents() != null) {
+        Tab tab = getActivityTab();
+        WebContents webContents = tab == null ? null : tab.getWebContents();
+        if (!mHaveNotifiedServiceWorker && webContents != null) {
             mHaveNotifiedServiceWorker = true;
-            ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(
-                    getActivityTab().getWebContents());
+            ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(webContents);
         }
 
         super.handleFinishAndClose();

@@ -16,8 +16,11 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -40,11 +43,13 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
+import javax.inject.Inject;
+
 /**
  * Handles the Custom Tab specific behaviors of tab persistence.
  */
+@ActivityScope
 public class CustomTabTabPersistencePolicy implements TabPersistencePolicy {
-
     static final String SAVED_STATE_DIRECTORY = "custom_tabs";
 
     /** Threshold where old state files should be deleted (30 days). */
@@ -95,14 +100,21 @@ public class CustomTabTabPersistencePolicy implements TabPersistencePolicy {
     private AsyncTask<Void> mInitializationTask;
     private boolean mDestroyed;
 
+    @Inject
+    public CustomTabTabPersistencePolicy(ChromeActivity activity) {
+        mTaskId = activity.getTaskId();
+        mShouldRestore = (activity.getSavedInstanceState() != null);
+    }
+
     /**
-     * Constructs a persistence policy for a given Custom Tab.
+     * Constructor for slightly simplifying testing.
      *
      * @param taskId The task ID that the owning Custom Tab is in.
      * @param shouldRestore Whether an attempt to restore tab state information should be done on
      *                      startup.
      */
-    public CustomTabTabPersistencePolicy(int taskId, boolean shouldRestore) {
+    @VisibleForTesting
+    CustomTabTabPersistencePolicy(int taskId, boolean shouldRestore) {
         mTaskId = taskId;
         mShouldRestore = shouldRestore;
     }

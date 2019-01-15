@@ -10,6 +10,7 @@ import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQuali
 import android.content.Context;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitor;
 import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitorImpl;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -56,5 +57,10 @@ public class ChromeAppModule {
     @Provides
     public ChromeBrowserInitializer provideChromeBrowserInitializer() {
         return ChromeBrowserInitializer.getInstance();
+    }
+
+    @Provides
+    public WarmupManager provideWarmupManager() {
+        return WarmupManager.getInstance();
     }
 }

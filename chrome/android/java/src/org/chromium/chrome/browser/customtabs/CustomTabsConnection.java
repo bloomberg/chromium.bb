@@ -375,8 +375,8 @@ public class CustomTabsConnection {
     /**
      * @return Whether {@link CustomTabsConnection#warmup(long)} has been called.
      */
-    public static boolean hasWarmUpBeenFinished() {
-        return getInstance().mWarmupHasBeenFinished.get();
+    public boolean hasWarmUpBeenFinished() {
+        return mWarmupHasBeenFinished.get();
     }
 
     /**
@@ -759,8 +759,7 @@ public class CustomTabsConnection {
         mClientManager.registerLaunch(session, url);
     }
 
-    @VisibleForTesting
-    @Nullable String getSpeculatedUrl(CustomTabsSessionToken session) {
+    @Nullable public String getSpeculatedUrl(CustomTabsSessionToken session) {
         return mHiddenTabHolder.getSpeculatedUrl(session);
     }
 
@@ -773,7 +772,7 @@ public class CustomTabsConnection {
      * @param referrer The referrer to use for |url|.
      * @return The hidden tab, or null.
      */
-    @Nullable Tab takeHiddenTab(@Nullable CustomTabsSessionToken session, String url,
+    @Nullable public Tab takeHiddenTab(@Nullable CustomTabsSessionToken session, String url,
             @Nullable String referrer) {
         return mHiddenTabHolder.takeHiddenTab(session,
                 mClientManager.getIgnoreFragmentsForSession(session), url, referrer);
@@ -1342,7 +1341,7 @@ public class CustomTabsConnection {
     }
 
     /** Cancels the speculation for a given session, or any session if null. */
-    void cancelSpeculation(@Nullable CustomTabsSessionToken session) {
+    public void cancelSpeculation(@Nullable CustomTabsSessionToken session) {
         ThreadUtils.assertOnUiThread();
         mHiddenTabHolder.destroyHiddenTab(session);
     }
@@ -1399,7 +1398,7 @@ public class CustomTabsConnection {
      * @param intent intent to inspect for referrer header.
      * @return referrer URL as a string if any was found, empty string otherwise.
      */
-    String getReferrer(CustomTabsSessionToken session, Intent intent) {
+    public String getReferrer(CustomTabsSessionToken session, Intent intent) {
         String referrer = IntentHandler.getReferrerUrlIncludingExtraHeaders(intent);
         if (referrer == null && getReferrerForSession(session) != null) {
             referrer = getReferrerForSession(session).getUrl();
