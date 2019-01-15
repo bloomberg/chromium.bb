@@ -66,6 +66,7 @@ enum CupsResult {
   CUPS_INVALID_PPD = 2,
   CUPS_LPADMIN_FAILURE = 3,
   CUPS_AUTOCONF_FAILURE = 4,
+  CUPS_BAD_URI = 5,
 };
 
 // Debug log keys which should be substituted in the system info dialog.
