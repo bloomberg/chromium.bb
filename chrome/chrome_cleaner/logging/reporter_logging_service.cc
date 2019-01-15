@@ -147,7 +147,7 @@ void ReporterLoggingService::Initialize(RegistryLogger* registry_logger) {
     FoilReporterLogs_EnvironmentData* env_data =
         reporter_logs_.mutable_environment();
     env_data->set_windows_version(base::win::GetVersion());
-    env_data->set_reporter_version(CHROME_VERSION_UTF8_STRING);
+    env_data->set_reporter_version(CHROME_CLEANER_VERSION_UTF8_STRING);
     if (version_string_succeeded)
       env_data->set_chrome_version(base::WideToUTF8(version_string));
     if (has_chrome_channel)

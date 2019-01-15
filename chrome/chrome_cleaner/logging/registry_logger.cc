@@ -41,7 +41,7 @@ static const size_t kMaxRegistryLength = 0x3FFF;
 // chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.cc
 // TODO(joenotcharles): Move the shared code to components/chrome_cleaner.
 uint32_t GetVersionNumber() {
-  base::Version version(CHROME_VERSION_UTF8_STRING);
+  base::Version version(CHROME_CLEANER_VERSION_UTF8_STRING);
   DCHECK(!version.components().empty());
   // The version number for X.Y.Z is X*256^3+Y*256+Z. If there are additional
   // components, only the first three count, and if there are less than 3, the

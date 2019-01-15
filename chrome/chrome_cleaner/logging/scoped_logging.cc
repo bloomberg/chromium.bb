@@ -57,7 +57,7 @@ ScopedLogging::ScopedLogging(base::FilePath::StringPieceType suffix) {
 
   bool success = logging::InitLogging(logging_settings);
   DCHECK(success);
-  LOG(INFO) << "Starting logs for version: " << CHROME_VERSION_STRING;
+  LOG(INFO) << "Starting logs for version: " << CHROME_CLEANER_VERSION_STRING;
 
   logging_service->EnableUploads(
       chrome_cleaner::Settings::GetInstance()->logs_upload_allowed(), nullptr);
