@@ -106,6 +106,10 @@ class CORE_EXPORT DisplayLockContext final
   bool ShouldPaint() const;
   void DidPaint();
 
+  // Returns true if the contents of the associated element should be visible
+  // for find-in-page and tab order.
+  bool IsSearchable() const;
+
   // Called when the layout tree is attached. This is used to verify
   // containment.
   void DidAttachLayoutTree();

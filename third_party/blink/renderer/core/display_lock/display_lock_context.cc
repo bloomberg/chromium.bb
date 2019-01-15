@@ -293,6 +293,12 @@ void DisplayLockContext::DidPaint() {
   // This is here for symmetry, but could be removed if necessary.
 }
 
+bool DisplayLockContext::IsSearchable() const {
+  // TODO(vmpstr): Support "searchable: true" option, which allows locked
+  // elements to be searched.
+  return state_ == kUnlocked;
+}
+
 void DisplayLockContext::DidAttachLayoutTree() {
   if (state_ == kUnlocked)
     return;

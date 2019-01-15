@@ -174,6 +174,11 @@ bool ShouldHandleChildren(const Node& node,
   // |EntersTextControls| flag is set.
   if (!behavior.EntersTextControls() && IsTextControl(node))
     return false;
+
+  if (node.IsElementNode()) {
+    if (auto* context = ToElement(node).GetDisplayLockContext())
+      return context->IsSearchable();
+  }
   return true;
 }
 
