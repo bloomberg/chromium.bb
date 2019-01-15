@@ -11,7 +11,7 @@ class MyControl extends HTMLElement {
     this.resetCalled_ = false;
   }
 
-  set value(v) {}
+  restoreValueCallback(v) {}
 
   formResetCallback() {
     this.resetCalled_ = true;
