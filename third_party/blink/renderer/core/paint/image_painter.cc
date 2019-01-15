@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/image_element_timing.h"
@@ -202,7 +203,7 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
       image.get(), decode_mode, FloatRect(pixel_snapped_dest_rect), &src_rect,
       SkBlendMode::kSrcOver,
       LayoutObject::ShouldRespectImageOrientation(&layout_image_));
-  if (RuntimeEnabledFeatures::ElementTimingEnabled() &&
+  if (origin_trials::ElementTimingEnabled(&layout_image_.GetDocument()) &&
       IsHTMLImageElement(node) && !context.ContextDisabled()) {
     LocalDOMWindow* window = layout_image_.GetDocument().domWindow();
     DCHECK(window);

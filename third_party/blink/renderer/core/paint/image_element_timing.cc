@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -40,7 +41,7 @@ ImageElementTiming& ImageElementTiming::From(LocalDOMWindow& window) {
 
 ImageElementTiming::ImageElementTiming(LocalDOMWindow& window)
     : Supplement<LocalDOMWindow>(window) {
-  DCHECK(RuntimeEnabledFeatures::ElementTimingEnabled());
+  DCHECK(origin_trials::ElementTimingEnabled(GetSupplementable()->document()));
 }
 
 void ImageElementTiming::NotifyImagePainted(const HTMLImageElement* element,
