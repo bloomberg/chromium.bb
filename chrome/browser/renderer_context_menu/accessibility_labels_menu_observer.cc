@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/accessibility/accessibility_state_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/accessibility_labels_bubble_model.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
@@ -26,11 +27,6 @@
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#else
-#include "content/public/browser/browser_accessibility_state.h"
-#endif  // defined(OS_CHROMEOS)
 
 using content::BrowserThread;
 
@@ -109,13 +105,5 @@ bool AccessibilityLabelsMenuObserver::ShouldShowLabelsItem() {
     return false;
   }
 
-  // Check if a screen reader is running.
-#if defined(OS_CHROMEOS)
-  return chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled();
-#else
-  // TODO(katie): Can we use AXMode in Chrome OS as well?
-  ui::AXMode mode =
-      content::BrowserAccessibilityState::GetInstance()->GetAccessibilityMode();
-  return mode.has_mode(ui::AXMode::kScreenReader);
-#endif  // defined(OS_CHROMEOS)
+  return accessibility_state_utils::IsScreenReaderEnabled();
 }

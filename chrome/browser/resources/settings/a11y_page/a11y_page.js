@@ -11,6 +11,8 @@
 Polymer({
   is: 'settings-a11y-page',
 
+  behaviors: [WebUIListenerBehavior],
+
   properties: {
     /**
      * The current active route.
@@ -28,6 +30,14 @@ Polymer({
       notify: true,
     },
 
+    /**
+     * Whether to show accessibility labels settings.
+     */
+    showAccessibilityLabelsSetting_: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
@@ -40,17 +50,6 @@ Polymer({
         }
         // </if>
         return map;
-      },
-    },
-
-    /**
-     * Whether to show experimental accessibility label features.
-     * @private {boolean}
-     */
-    showExperimentalAccessibilityLabels_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('showExperimentalA11yLabels');
       },
     },
 
@@ -67,6 +66,24 @@ Polymer({
       },
     },
     // </if>
+  },
+
+  /** @override */
+  ready: function() {
+    this.addWebUIListener(
+        'screen-reader-state-changed',
+        this.onScreenReaderStateChanged_.bind(this));
+    chrome.send('getScreenReaderState');
+  },
+
+  /**
+   * @private
+   * @param {boolean} hasScreenReader Whether a screen reader is enabled.
+   */
+  onScreenReaderStateChanged_: function(hasScreenReader) {
+    // TODO(katie): Remove showExperimentalA11yLabels flag before launch.
+    this.showAccessibilityLabelsSetting_ = hasScreenReader &&
+        loadTimeData.getBoolean('showExperimentalA11yLabels');
   },
 
   // <if expr="chromeos">
