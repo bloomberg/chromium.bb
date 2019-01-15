@@ -20,7 +20,10 @@ Polymer({
     destination: Object,
 
     /** @type {?print_preview.DestinationStore} */
-    destinationStore: Object,
+    destinationStore: {
+      type: Object,
+      observer: 'onDestinationStoreSet_',
+    },
 
     disabled: Boolean,
 
@@ -47,15 +50,74 @@ Polymer({
       value: true,
     },
 
+    /** @private {!Array<!print_preview.Destination>} */
+    recentDestinationList_: Array,
+
     /** @private {boolean} */
     stale_: {
       type: Boolean,
       computed: 'computeStale_(destination)',
       reflectToAttribute: true,
     },
+
+    /** @private {string} */
+    statusText_: {
+      type: String,
+      computed: 'computeStatusText_(destination.connectionStatus, ' +
+          'destination.shouldShowInvalidCertificateError)',
+    },
   },
 
-  observers: ['onDestinationSet_(destination, destination.id)'],
+  observers: [
+    'onDestinationSet_(destination, destination.id)',
+    'updateRecentDestinationList_(' +
+        'recentDestinations.*, activeUser, destinationStore)',
+  ],
+
+  /** @private {!EventTracker} */
+  tracker_: new EventTracker(),
+
+  /** @private */
+  onDestinationStoreSet_: function() {
+    if (!this.destinationStore) {
+      return;
+    }
+
+    // Need to update the recent list when the destination store inserts
+    // destinations, in case any recent destinations have been added to the
+    // store. At startup, recent destinations can be in the sticky settings,
+    // but they should not be displayed in the dialog's recent list until
+    // they have been fetched by the DestinationStore, to ensure that they
+    // still exist.
+    this.tracker_.add(
+        assert(this.destinationStore),
+        print_preview.DestinationStore.EventType.DESTINATIONS_INSERTED,
+        this.updateRecentDestinationList_.bind(this));
+  },
+
+  /** @private */
+  updateRecentDestinationList_: function() {
+    if (!this.recentDestinations || !this.destinationStore) {
+      return;
+    }
+
+    const recentDestinations = [];
+    let filterAccount = this.activeUser;
+    // Fallback to the account for the current destination, in case activeUser
+    // is not known yet from cloudprint.
+    if (!filterAccount) {
+      filterAccount = this.destination ? this.destination.account : '';
+    }
+    this.recentDestinations.forEach(recentDestination => {
+      const destination = this.destinationStore.getDestinationByKey(
+          print_preview.createRecentDestinationKey(recentDestination));
+      if (destination &&
+          (!destination.account || destination.account == filterAccount)) {
+        recentDestinations.push(destination);
+      }
+    });
+    this.recentDestinationList_ = recentDestinations;
+  },
 
   /**
    * @return {boolean} Whether the destination change button should be disabled.
@@ -99,7 +161,7 @@ Polymer({
    * @return {string} The connection status text to display.
    * @private
    */
-  getStatusText_: function() {
+  computeStatusText_: function() {
     // |destination| can be either undefined, or null here.
     if (!this.destination) {
       return '';

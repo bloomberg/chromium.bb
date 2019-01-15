@@ -103,10 +103,7 @@
           <div class="destination-info-wrapper">
             <div class="destination-name">[[destination.displayName]]</div>
             <div class="destination-location">[[destination.hint]]</div>
-            <div class="destination-connection-status">
-              [[getStatusText_(destination.connectionStatusText,
-                  destination.shouldShowInvalidCertificateError)]]
-            </div>
+            <div class="destination-connection-status">[[statusText_]]</div>
           </div>
         </div>
       </div>
@@ -128,7 +125,7 @@
             cloud-print-state="[[cloudPrintState]]"
             destination-store="[[destinationStore]]"
             invitation-store="[[invitationStore]]"
-            recent-destinations="[[recentDestinations]]"
+            recent-destination-list="[[recentDestinationList_]]"
             active-user="[[activeUser]]" users="[[users]]"
             on-close="onDialogClose_">
         </print-preview-destination-dialog>
