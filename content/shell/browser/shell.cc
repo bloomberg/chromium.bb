@@ -565,6 +565,11 @@ bool Shell::DidAddMessageToConsole(WebContents* source,
   return switches::IsRunWebTestsSwitchPresent();
 }
 
+void Shell::PortalWebContentsCreated(WebContents* portal_web_contents) {
+  if (switches::IsRunWebTestsSwitchPresent())
+    SecondaryTestWindowObserver::CreateForWebContents(portal_web_contents);
+}
+
 void Shell::RendererUnresponsive(
     WebContents* source,
     RenderWidgetHost* render_widget_host,

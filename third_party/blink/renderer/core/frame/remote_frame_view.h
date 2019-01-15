@@ -76,6 +76,12 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
  private:
   LocalFrameView* ParentFrameView() const;
 
+  // This function returns the LocalFrameView associated with the parent frame's
+  // local root, or nullptr if the parent frame is not a local frame. For
+  // portals, this will return the local root associated with the portal's
+  // owner.
+  LocalFrameView* ParentLocalRootFrameView() const;
+
   void UpdateRenderThrottlingStatus(bool hidden, bool subtree_throttled);
   bool CanThrottleRendering() const;
   void SetupRenderThrottling();

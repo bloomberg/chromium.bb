@@ -70,6 +70,8 @@
 #include "third_party/blink/renderer/core/html/html_frame_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/core/html/portal/document_portals.h"
+#include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
@@ -306,6 +308,14 @@ void LocalFrameView::ForAllChildViewsAndPlugins(const Function& function) {
 
   for (const auto& plugin : plugins_) {
     function(*plugin);
+  }
+
+  if (Document* document = frame_->GetDocument()) {
+    for (HTMLPortalElement* portal :
+         DocumentPortals::From(*document).GetPortals()) {
+      if (Frame* frame = portal->ContentFrame())
+        function(*frame->View());
+    }
   }
 }
 
@@ -3802,6 +3812,12 @@ void LocalFrameView::UpdateViewportIntersectionsForSubtree() {
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
     child->View()->UpdateViewportIntersectionsForSubtree();
+  }
+
+  for (HTMLPortalElement* portal :
+       DocumentPortals::From(*frame_->GetDocument()).GetPortals()) {
+    if (portal->ContentFrame())
+      portal->ContentFrame()->View()->UpdateViewportIntersectionsForSubtree();
   }
 
   intersection_observation_state_ = kNotNeeded;
