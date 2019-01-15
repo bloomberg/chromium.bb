@@ -1187,9 +1187,100 @@ associated with anything else.
 
 ## Synchronous Calls
 
-See [this document](https://www.chromium.org/developers/design-documents/mojo/synchronous-calls)
+### Think carefully before you decide to use sync calls
 
-TODO: Move the above doc into the repository markdown docs.
+Although sync calls are convenient, you should avoid them whenever they
+are not absolutely necessary:
+
+* Sync calls hurt parallelism and therefore hurt performance.
+* Re-entrancy changes message order and produces call stacks that you
+probably never think about while you are coding. It has always been a
+huge pain.
+* Sync calls may lead to deadlocks.
+
+### Mojom changes
+
+A new attribute `[Sync]` (or `[Sync=true]`) is introduced for methods.
+For example:
+
+``` cpp
+interface Foo {
+  [Sync]
+  SomeSyncCall() => (Bar result);
+};
+```
+
+It indicates that when `SomeSyncCall()` is called, the control flow of
+the calling thread is blocked until the response is received.
+
+It is not allowed to use this attribute with functions that don’t have
+responses. If you just need to wait until the service side finishes
+processing the call, you can use an empty response parameter list:
+
+``` cpp
+[Sync]
+SomeSyncCallWithNoResult() => ();
+```
+
+### Generated bindings (C++)
+
+The generated C++ interface of the Foo interface above is:
+
+``` cpp
+class Foo {
+ public:
+  // The service side implements this signature. The client side can
+  // also use this signature if it wants to call the method asynchronously.
+  virtual void SomeSyncCall(SomeSyncCallCallback callback) = 0;
+
+  // The client side uses this signature to call the method synchronously.
+  virtual bool SomeSyncCall(BarPtr* result);
+};
+```
+
+As you can see, the client side and the service side use different
+signatures. At the client side, response is mapped to output parameters
+and the boolean return value indicates whether the operation is
+successful. (Returning false usually means a connection error has
+occurred.)
+
+At the service side, a signature with callback is used. The reason is
+that in some cases the implementation may need to do some asynchronous
+work which the sync method’s result depends on.
+
+*** note
+**NOTE:** you can also use the signature with callback at the client side to
+call the method asynchronously.
+***
+
+### Re-entrancy
+
+What happens on the calling thread while waiting for the response of a
+sync method call? It continues to process incoming sync request messages
+(i.e., sync method calls); block other messages, including async
+messages and sync response messages that don’t match the ongoing sync
+call.
+
+![Diagram illustrating sync call flow](
+https://docs.google.com/a/google.com/drawings/d/e/2PACX-1vRvsmrmZBszFl_OX9AhCn2Cqwx63K0GC7cYrDNPoRYRuHzxS30OZ4ygMBpeU_cThuQY2lYZkYpvSCdM/pub?w=960&h=560)
+
+Please note that sync response messages that don’t match the ongoing
+sync call cannot re-enter. That is because they correspond to sync calls
+down in the call stack. Therefore, they need to be queued and processed
+while the stack unwinds.
+
+### Avoid deadlocks
+
+Please note that the re-entrancy behavior doesn’t prevent deadlocks
+involving async calls. You need to avoid call sequences such as:
+
+![Diagram illustrating a sync call deadlock](
+https://docs.google.com/a/google.com/drawings/d/e/2PACX-1vTBl5XPA8K-kVPt0oByMNSSoxpCKh1p2_atIDR9Me4xGfa6nf0fNAKkJ-Hg5utllY5ghXtoS1haHL6d/pub?w=960&h=480)
+
+### Read more
+
+* [Design Proposal: Mojo Sync Methods](
+https://docs.google.com/document/d/1dixzFzZQW8e3ldjdM8Adbo8klXDDE4pVekwo5aLgUsE)
 
 ## Type Mapping
 
