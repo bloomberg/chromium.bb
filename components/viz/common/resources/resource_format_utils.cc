@@ -123,26 +123,26 @@ unsigned int GLDataType(ResourceFormat format) {
 unsigned int GLDataFormat(ResourceFormat format) {
   DCHECK_LE(format, RESOURCE_FORMAT_MAX);
   static const GLenum format_gl_data_format[] = {
-      GL_RGBA,           // RGBA_8888
-      GL_RGBA,           // RGBA_4444
-      GL_BGRA_EXT,       // BGRA_8888
-      GL_ALPHA,          // ALPHA_8
-      GL_LUMINANCE,      // LUMINANCE_8
-      GL_RGB,            // RGB_565
-      GL_ZERO,           // BGR_565
-      GL_ETC1_RGB8_OES,  // ETC1
-      GL_RED_EXT,        // RED_8
-      GL_RG_EXT,         // RG_88
-      GL_LUMINANCE,      // LUMINANCE_F16
-      GL_RGBA,           // RGBA_F16
-      GL_RED_EXT,        // R16_EXT
-      GL_RGB,            // RGBX_8888
-      GL_ZERO,           // BGRX_8888
-      GL_RGBA,           // RGBX_1010102
-      GL_ZERO,           // BGRX_1010102
-      GL_ZERO,           // YVU_420
-      GL_ZERO,           // YUV_420_BIPLANAR
-      GL_ZERO,           // UYVY_422
+      GL_RGBA,       // RGBA_8888
+      GL_RGBA,       // RGBA_4444
+      GL_BGRA_EXT,   // BGRA_8888
+      GL_ALPHA,      // ALPHA_8
+      GL_LUMINANCE,  // LUMINANCE_8
+      GL_RGB,        // RGB_565
+      GL_ZERO,       // BGR_565
+      GL_RGB,        // ETC1
+      GL_RED_EXT,    // RED_8
+      GL_RG_EXT,     // RG_88
+      GL_LUMINANCE,  // LUMINANCE_F16
+      GL_RGBA,       // RGBA_F16
+      GL_RED_EXT,    // R16_EXT
+      GL_RGB,        // RGBX_8888
+      GL_ZERO,       // BGRX_8888
+      GL_RGBA,       // RGBX_1010102
+      GL_ZERO,       // BGRX_1010102
+      GL_ZERO,       // YVU_420
+      GL_ZERO,       // YUV_420_BIPLANAR
+      GL_ZERO,       // UYVY_422
   };
   static_assert(base::size(format_gl_data_format) == (RESOURCE_FORMAT_MAX + 1),
                 "format_gl_data_format does not handle all cases.");
@@ -159,6 +159,8 @@ unsigned int GLInternalFormat(ResourceFormat format) {
     return GL_R16_EXT;
   else if (format == RG_88)
     return GL_RG8_EXT;
+  else if (format == ETC1)
+    return GL_ETC1_RGB8_OES;
 
   return GLDataFormat(format);
 }

@@ -632,7 +632,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
       const char* error_message = "unspecified";
       if (!gles2::ValidateCompressedTexDimensions(
               target, 0 /* level */, size.width(), size.height(), 1 /* depth */,
-              format_info.gl_format, false /* restrict_for_webgl */,
+              format_info.image_internal_format, false /* restrict_for_webgl */,
               &error_message)) {
         LOG(ERROR) << "CreateSharedImage: "
                       "ValidateCompressedTexDimensionsFailed with error: "
@@ -643,7 +643,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
       GLsizei bytes_required = 0;
       if (!gles2::GetCompressedTexSizeInBytes(
               nullptr /* function_name */, size.width(), size.height(),
-              1 /* depth */, format_info.gl_format, &bytes_required,
+              1 /* depth */, format_info.image_internal_format, &bytes_required,
               nullptr /* error_state */)) {
         LOG(ERROR) << "CreateSharedImage: Unable to compute required size for "
                       "initial texture upload.";
@@ -711,7 +711,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     ScopedResetAndRestoreUnpackState scoped_unpack_state(
         api, es3_capable_, desktop_gl_, supports_unpack_subimage_,
         !pixel_data.empty());
-    api->glCompressedTexImage2DFn(target, 0, format_info.gl_format,
+    api->glCompressedTexImage2DFn(target, 0, format_info.image_internal_format,
                                   size.width(), size.height(), 0,
                                   pixel_data.size(), pixel_data.data());
   } else {
