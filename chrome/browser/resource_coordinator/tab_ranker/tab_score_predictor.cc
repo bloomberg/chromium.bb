@@ -65,7 +65,8 @@ TabRankerResult TabScorePredictor::ScoreTab(const TabFeatures& tab,
 
     // Process the RankerExample with the tab ranker config to vectorize the
     // feature list for inference.
-    int preprocessor_error = preprocessor_->Process(&example);
+    int preprocessor_error = assist_ranker::ExamplePreprocessor::Process(
+        *preprocessor_config_, &example, true);
     if (preprocessor_error) {
       // kNoFeatureIndexFound can occur normally (e.g., when the domain name
       // isn't known to the model or a rarely seen enum value is used).
@@ -88,7 +89,7 @@ TabRankerResult TabScorePredictor::ScoreTab(const TabFeatures& tab,
     tfnative_model::Inference(vectorized_features.data(), score,
                               model_alloc_.get());
 
-    if (preprocessor_error &&
+    if (preprocessor_error != assist_ranker::ExamplePreprocessor::kSuccess &&
         preprocessor_error !=
             assist_ranker::ExamplePreprocessor::kNoFeatureIndexFound) {
       // May indicate something is wrong with how we create the RankerExample.
@@ -104,12 +105,7 @@ TabRankerResult TabScorePredictor::ScoreTab(const TabFeatures& tab,
 void TabScorePredictor::LazyInitialize() {
   if (preprocessor_config_)
     return;
-
   preprocessor_config_ = LoadExamplePreprocessorConfig();
-  if (preprocessor_config_) {
-    preprocessor_ = std::make_unique<assist_ranker::ExamplePreprocessor>(
-        *preprocessor_config_);
-  }
 }
 
 }  // namespace tab_ranker

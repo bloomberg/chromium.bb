@@ -31,17 +31,21 @@ std::string ExamplePreprocessor::FeatureFullname(
              : base::StrCat({feature_name, "_", feature_value});
 }
 
-int ExamplePreprocessor::Process(RankerExample* const example,
-                                 const bool clear_other_features) const {
-  return AddMissingFeatures(example) | NormalizeFeatures(example) |
-         AddBucketizedFeatures(example) | ConvertToStringFeatures(example) |
-         Vectorization(example, clear_other_features);
+int ExamplePreprocessor::Process(const ExamplePreprocessorConfig& config,
+                                 RankerExample* const example,
+                                 const bool clear_other_features) {
+  return AddMissingFeatures(config, example) |
+         NormalizeFeatures(config, example) |
+         AddBucketizedFeatures(config, example) |
+         ConvertToStringFeatures(config, example) |
+         Vectorization(config, example, clear_other_features);
 }
 
 int ExamplePreprocessor::AddMissingFeatures(
-    RankerExample* const example) const {
+    const ExamplePreprocessorConfig& config,
+    RankerExample* const example) {
   Map<std::string, Feature>& feature_map = *example->mutable_features();
-  for (const std::string& feature_name : config_.missing_features()) {
+  for (const std::string& feature_name : config.missing_features()) {
     // If a feature is missing in the example, set the place.
     if (feature_map.find(feature_name) == feature_map.end()) {
       feature_map[kMissingFeatureDefaultName]
@@ -53,11 +57,12 @@ int ExamplePreprocessor::AddMissingFeatures(
 }
 
 int ExamplePreprocessor::AddBucketizedFeatures(
-    RankerExample* const example) const {
+    const ExamplePreprocessorConfig& config,
+    RankerExample* const example) {
   int error_code = kSuccess;
   Map<std::string, Feature>& feature_map = *example->mutable_features();
   for (const MapPair<std::string, ExamplePreprocessorConfig::Boundaries>&
-           bucketizer : config_.bucketizers()) {
+           bucketizer : config.bucketizers()) {
     const std::string& feature_name = bucketizer.first;
     // Simply continue if the feature is missing. The missing feature will later
     // on be handled as missing one_hot feature, and it's up to the user how to
@@ -95,9 +100,11 @@ int ExamplePreprocessor::AddBucketizedFeatures(
   return error_code;
 }
 
-int ExamplePreprocessor::NormalizeFeatures(RankerExample* example) const {
+int ExamplePreprocessor::NormalizeFeatures(
+    const ExamplePreprocessorConfig& config,
+    RankerExample* example) {
   int error_code = kSuccess;
-  for (const MapPair<std::string, float>& pair : config_.normalizers()) {
+  for (const MapPair<std::string, float>& pair : config.normalizers()) {
     const std::string& feature_name = pair.first;
     float feature_value = 0.0f;
     if (GetFeatureValueAsFloat(feature_name, *example, &feature_value)) {
@@ -117,9 +124,11 @@ int ExamplePreprocessor::NormalizeFeatures(RankerExample* example) const {
   return error_code;
 }
 
-int ExamplePreprocessor::ConvertToStringFeatures(RankerExample* example) const {
+int ExamplePreprocessor::ConvertToStringFeatures(
+    const ExamplePreprocessorConfig& config,
+    RankerExample* example) {
   int error_code = kSuccess;
-  for (const std::string& feature_name : config_.convert_to_string_features()) {
+  for (const std::string& feature_name : config.convert_to_string_features()) {
     const auto find_feature = example->mutable_features()->find(feature_name);
     if (find_feature != example->features().end()) {
       auto& feature = find_feature->second;
@@ -144,15 +153,16 @@ int ExamplePreprocessor::ConvertToStringFeatures(RankerExample* example) const {
   return error_code;
 }
 
-int ExamplePreprocessor::Vectorization(RankerExample* example,
-                                       const bool clear_other_features) const {
-  if (config_.feature_indices().empty()) {
+int ExamplePreprocessor::Vectorization(const ExamplePreprocessorConfig& config,
+                                       RankerExample* example,
+                                       const bool clear_other_features) {
+  if (config.feature_indices().empty()) {
     DVLOG(2) << "Feature indices are empty, can't vectorize.";
     return kSuccess;
   }
   Feature vectorized_features;
   vectorized_features.mutable_float_list()->mutable_float_value()->Resize(
-      config_.feature_indices().size(), 0.0);
+      config.feature_indices().size(), 0.0);
 
   int error_code = kSuccess;
 
@@ -161,9 +171,9 @@ int ExamplePreprocessor::Vectorization(RankerExample* example,
     if (field.error != kSuccess) {
       continue;
     }
-    const auto find_index = config_.feature_indices().find(field.fullname);
+    const auto find_index = config.feature_indices().find(field.fullname);
     // If the feature_fullname is inside the indices map, then set the place.
-    if (find_index != config_.feature_indices().end()) {
+    if (find_index != config.feature_indices().end()) {
       vectorized_features.mutable_float_list()->set_float_value(
           find_index->second, field.value);
     } else {

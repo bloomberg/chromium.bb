@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/power/ml/smart_dim/model.h"
 
 namespace assist_ranker {
-class ExamplePreprocessor;
 class ExamplePreprocessorConfig;
 }  // namespace assist_ranker
 
@@ -110,7 +109,6 @@ class SmartDimModelImpl : public SmartDimModel {
 
   std::unique_ptr<assist_ranker::ExamplePreprocessorConfig>
       preprocessor_config_;
-  std::unique_ptr<assist_ranker::ExamplePreprocessor> preprocessor_;
 
   // Fixed-size working memory provided to the inferencing function. Lazily
   // initialized once so it isn't reallocated for every inference.
