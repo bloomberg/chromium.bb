@@ -50,7 +50,10 @@ class CORE_EXPORT SystemClipboard {
   String ReadRTF();
 
   SkBitmap ReadImage(mojom::ClipboardBuffer);
-  void WriteImage(Image*, const KURL&, const String& title);
+  // Write the image and its associated tag (bookmark/HTML types).
+  void WriteImageWithTag(Image*, const KURL&, const String& title);
+  // Write the image only.
+  void WriteImage(const SkBitmap&);
 
   String ReadCustomData(const String& type);
   void WriteDataObject(DataObject*);
@@ -58,6 +61,7 @@ class CORE_EXPORT SystemClipboard {
  private:
   SystemClipboard();
   bool IsValidBufferType(mojom::ClipboardBuffer);
+  void WriteImageNoCommit(const SkBitmap&);
 
   mojom::blink::ClipboardHostPtr clipboard_;
   mojom::ClipboardBuffer buffer_ = mojom::ClipboardBuffer::kStandard;
