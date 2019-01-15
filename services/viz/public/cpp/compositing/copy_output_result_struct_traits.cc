@@ -100,8 +100,10 @@ base::Optional<gpu::Mailbox>
 StructTraits<viz::mojom::CopyOutputResultDataView,
              std::unique_ptr<viz::CopyOutputResult>>::
     mailbox(const std::unique_ptr<viz::CopyOutputResult>& result) {
-  if (result->format() != viz::CopyOutputResult::Format::RGBA_TEXTURE)
+  if (result->format() != viz::CopyOutputResult::Format::RGBA_TEXTURE ||
+      result->IsEmpty()) {
     return base::nullopt;
+  }
   return result->GetTextureResult()->mailbox;
 }
 
@@ -110,8 +112,10 @@ base::Optional<gpu::SyncToken>
 StructTraits<viz::mojom::CopyOutputResultDataView,
              std::unique_ptr<viz::CopyOutputResult>>::
     sync_token(const std::unique_ptr<viz::CopyOutputResult>& result) {
-  if (result->format() != viz::CopyOutputResult::Format::RGBA_TEXTURE)
+  if (result->format() != viz::CopyOutputResult::Format::RGBA_TEXTURE ||
+      result->IsEmpty()) {
     return base::nullopt;
+  }
   return result->GetTextureResult()->sync_token;
 }
 
@@ -120,8 +124,10 @@ base::Optional<gfx::ColorSpace>
 StructTraits<viz::mojom::CopyOutputResultDataView,
              std::unique_ptr<viz::CopyOutputResult>>::
     color_space(const std::unique_ptr<viz::CopyOutputResult>& result) {
-  if (result->format() != viz::CopyOutputResult::Format::RGBA_TEXTURE)
+  if (result->format() != viz::CopyOutputResult::Format::RGBA_TEXTURE ||
+      result->IsEmpty()) {
     return base::nullopt;
+  }
   return result->GetTextureResult()->color_space;
 }
 
