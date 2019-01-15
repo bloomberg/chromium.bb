@@ -1,4 +1,5 @@
 include_rules = [
+    "+media/base",
     "+mojo/public/cpp/bindings/binding.h",
     "-third_party/blink/renderer/modules",
     "+third_party/blink/renderer/modules/event_modules.h",
