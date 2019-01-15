@@ -535,6 +535,19 @@ static void alloc_context_buffers_ext(AV1_COMP *cpi) {
                   aom_calloc(mi_size, sizeof(*cpi->mbmi_ext_base)));
 }
 
+static void reset_film_grain_chroma_params(aom_film_grain_t *pars) {
+  pars->num_cr_points = 0;
+  pars->cr_mult = 0;
+  pars->cr_luma_mult = 0;
+  memset(pars->scaling_points_cr, 0, sizeof(pars->scaling_points_cr));
+  memset(pars->ar_coeffs_cr, 0, sizeof(pars->ar_coeffs_cr));
+  pars->num_cb_points = 0;
+  pars->cb_mult = 0;
+  pars->cb_luma_mult = 0;
+  memset(pars->scaling_points_cb, 0, sizeof(pars->scaling_points_cb));
+  memset(pars->ar_coeffs_cb, 0, sizeof(pars->ar_coeffs_cb));
+}
+
 static void update_film_grain_parameters(struct AV1_COMP *cpi,
                                          const AV1EncoderConfig *oxcf) {
   AV1_COMMON *const cm = &cpi->common;
@@ -552,7 +565,8 @@ static void update_film_grain_parameters(struct AV1_COMP *cpi,
       memcpy(&cm->film_grain_params,
              film_grain_test_vectors + oxcf->film_grain_test_vector - 1,
              sizeof(cm->film_grain_params));
-
+      if (oxcf->monochrome)
+        reset_film_grain_chroma_params(&cm->film_grain_params);
       cm->film_grain_params.bit_depth = cm->seq_params.bit_depth;
       if (cm->seq_params.color_range == AOM_CR_FULL_RANGE) {
         cm->film_grain_params.clip_to_restricted_range = 0;
