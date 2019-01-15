@@ -69,10 +69,11 @@ public class TestWebServer extends WebServer {
      * Create and start a local HTTP server instance.
      * @param port Port number the server must use, or 0 to automatically choose a free port.
      * @param ssl True if the server should be using secure sockets.
+     * @param additional True if creating an additional server instance.
      * @throws Exception
      */
-    private TestWebServer(int port, boolean ssl) throws Exception {
-        super(port, ssl);
+    private TestWebServer(int port, boolean ssl, boolean additional) throws Exception {
+        super(port, ssl, additional);
         setRequestHandler(new Handler());
     }
 
@@ -91,20 +92,78 @@ public class TestWebServer extends WebServer {
         }
     }
 
+    /**
+     * Create and start a local HTTP server instance. This function must only
+     * be called if no other instances were created. You are responsible for
+     * calling shutdown() on each instance you create.
+     *
+     * @param port Port number the server must use, or 0 to automatically choose a free port.
+     */
     public static TestWebServer start(int port) throws Exception {
-        return new TestWebServer(port, false);
+        return new TestWebServer(port, false, false);
     }
 
+    /**
+     * Same as start(int) but chooses a free port.
+     */
     public static TestWebServer start() throws Exception {
         return start(0);
     }
 
-    public static TestWebServer startSsl(int port) throws Exception {
-        return new TestWebServer(port, true);
+    /**
+     * Create and start a local HTTP server instance. This function must only
+     * be called if you need more than one server instance and the first one
+     * was already created using start() or start(int). You are responsible for
+     * calling shutdown() on each instance you create.
+     *
+     * @param port Port number the server must use, or 0 to automatically choose a free port.
+     */
+    public static TestWebServer startAdditional(int port) throws Exception {
+        return new TestWebServer(port, false, true);
     }
 
+    /**
+     * Same as startAdditional(int) but chooses a free port.
+     */
+    public static TestWebServer startAdditional() throws Exception {
+        return startAdditional(0);
+    }
+
+    /**
+     * Create and start a local secure HTTP server instance. This function must
+     * only be called if no other secure instances were created. You are
+     * responsible for calling shutdown() on each instance you create.
+     *
+     * @param port Port number the server must use, or 0 to automatically choose a free port.
+     */
+    public static TestWebServer startSsl(int port) throws Exception {
+        return new TestWebServer(port, true, false);
+    }
+
+    /**
+     * Same as startSsl(int) but chooses a free port.
+     */
     public static TestWebServer startSsl() throws Exception {
         return startSsl(0);
+    }
+
+    /**
+     * Create and start a local secure HTTP server instance. This function must
+     * only be called if you need more than one secure server instance and the
+     * first one was already created using startSsl() or startSsl(int). You are
+     * responsible for calling shutdown() on each instance you create.
+     *
+     * @param port Port number the server must use, or 0 to automatically choose a free port.
+     */
+    public static TestWebServer startAdditionalSsl(int port) throws Exception {
+        return new TestWebServer(port, true, true);
+    }
+
+    /**
+     * Same as startAdditionalSsl(int) but chooses a free port.
+     */
+    public static TestWebServer startAdditionalSsl() throws Exception {
+        return startAdditionalSsl(0);
     }
 
     private static final int RESPONSE_STATUS_NORMAL = 0;
