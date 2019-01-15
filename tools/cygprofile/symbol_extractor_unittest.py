@@ -18,15 +18,17 @@ class TestLlvmBitcodeSymbolExtractor(unittest.TestCase):
     data = '''-------- T _ZN4base11GetFileSizeERKNS_8FilePathEPx
 aaaaaaaa W _ZNKSt3__19basic_iosIcNS_11char_traitsIcEEE5widenEc
 -------- T _ZN4base13ContentsEqualERKNS_8FilePathES2_
+---------------- T _SymbolWithA64BitAddress_
 00000000 W _ZNSt3__113basic_filebufIcNS_11char_traitsIcEEE11__read_modeEv'''
     lines = data.split('\n')
 
     symbol_names = symbol_extractor._SymbolInfosFromLlvmNm(lines)
-    self.assertEqual(4, len(symbol_names))
+    self.assertEqual(5, len(symbol_names))
     self.assertListEqual(
         ['_ZN4base11GetFileSizeERKNS_8FilePathEPx',
          '_ZNKSt3__19basic_iosIcNS_11char_traitsIcEEE5widenEc',
          '_ZN4base13ContentsEqualERKNS_8FilePathES2_',
+         '_SymbolWithA64BitAddress_',
          '_ZNSt3__113basic_filebufIcNS_11char_traitsIcEEE11__read_modeEv'],
         symbol_names)
 

@@ -201,7 +201,7 @@ def SymbolInfosFromBinary(binary_filename):
 
 
 _LLVM_NM_LINE_RE = re.compile(
-    r'^[\-0-9a-f]{8}[ ](?P<symbol_type>.)[ ](?P<name>.*)$', re.VERBOSE)
+    r'^[\-0-9a-f]{8,16}[ ](?P<symbol_type>.)[ ](?P<name>.*)$', re.VERBOSE)
 
 
 def _SymbolInfosFromLlvmNm(lines):
