@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 701 tests; 648 PASS, 53 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 693 tests; 640 PASS, 53 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testInterpolation function
 PASS align-content uses discrete animation when animating between "flex-start" and "flex-end" with linear easing
@@ -381,14 +381,6 @@ PASS grid-template-areas (type: discrete) has testInterpolation function
 FAIL grid-template-areas uses discrete animation when animating between "". . a b" ". .a b"" and "none" with linear easing assert_equals: The value should be ". . a b" ". .a b" at 0ms expected "\". . a b\" \". .a b\"" but got "\". . a b\" \". . a b\""
 FAIL grid-template-areas uses discrete animation when animating between "". . a b" ". .a b"" and "none" with effect easing assert_equals: The value should be ". . a b" ". .a b" at 0ms expected "\". . a b\" \". .a b\"" but got "\". . a b\" \". . a b\""
 FAIL grid-template-areas uses discrete animation when animating between "". . a b" ". .a b"" and "none" with keyframe easing assert_equals: The value should be ". . a b" ". .a b" at 0ms expected "\". . a b\" \". .a b\"" but got "\". . a b\" \". . a b\""
-PASS grid-template-columns (type: discrete) has testInterpolation function
-PASS grid-template-columns uses discrete animation when animating between "1px" and "5px" with linear easing
-PASS grid-template-columns uses discrete animation when animating between "1px" and "5px" with effect easing
-PASS grid-template-columns uses discrete animation when animating between "1px" and "5px" with keyframe easing
-PASS grid-template-rows (type: discrete) has testInterpolation function
-PASS grid-template-rows uses discrete animation when animating between "1px" and "5px" with linear easing
-PASS grid-template-rows uses discrete animation when animating between "1px" and "5px" with effect easing
-PASS grid-template-rows uses discrete animation when animating between "1px" and "5px" with keyframe easing
 PASS hyphens (type: discrete) has testInterpolation function
 PASS hyphens uses discrete animation when animating between "manual" and "none" with linear easing
 PASS hyphens uses discrete animation when animating between "manual" and "none" with effect easing
