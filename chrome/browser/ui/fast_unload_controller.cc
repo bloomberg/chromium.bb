@@ -13,7 +13,6 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "content/public/browser/notification_service.h"
@@ -230,9 +229,6 @@ bool FastUnloadController::HasCompletedUnloadProcessing() const {
 
 void FastUnloadController::CancelTabNeedingBeforeUnloadAck() {
   if (tab_needing_before_unload_ack_ != NULL) {
-    CoreTabHelper* core_tab_helper =
-        CoreTabHelper::FromWebContents(tab_needing_before_unload_ack_);
-    core_tab_helper->OnCloseCanceled();
     DevToolsWindow::OnPageCloseCanceled(tab_needing_before_unload_ack_);
     tab_needing_before_unload_ack_ = NULL;
   }
@@ -246,9 +242,6 @@ void FastUnloadController::CancelWindowClose() {
   for (auto it = tabs_needing_unload_.begin(); it != tabs_needing_unload_.end();
        it++) {
     content::WebContents* contents = *it;
-
-    CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(contents);
-    core_tab_helper->OnCloseCanceled();
     DevToolsWindow::OnPageCloseCanceled(contents);
   }
   tabs_needing_unload_.clear();
@@ -377,8 +370,6 @@ bool FastUnloadController::DetachWebContents(content::WebContents* contents) {
     web_contents_waiting_for_deletion_[contents] =
         browser_->tab_strip_model()->DetachWebContentsAt(index);
     contents->SetDelegate(this);
-    CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(contents);
-    core_tab_helper->OnUnloadDetachedStarted();
     return true;
   }
   return false;
@@ -418,10 +409,6 @@ void FastUnloadController::ProcessPendingTabs(bool skip_beforeunload) {
       if (contents->GetRenderViewHost()) {
         tab_needing_before_unload_ack_ = contents;
 
-        CoreTabHelper* core_tab_helper =
-            CoreTabHelper::FromWebContents(contents);
-        core_tab_helper->OnCloseStarted();
-
         // If there's a devtools window attached to |contents|,
         // we would like devtools to call its own beforeunload handlers first,
         // and then call beforeunload handlers for |contents|.
@@ -460,9 +447,6 @@ void FastUnloadController::ProcessPendingTabs(bool skip_beforeunload) {
       // Null check render_view_host here as this gets called on a PostTask
       // and the tab's render_view_host may have been nulled out.
       if (contents->GetRenderViewHost()) {
-        CoreTabHelper* core_tab_helper =
-            CoreTabHelper::FromWebContents(contents);
-        core_tab_helper->OnUnloadStarted();
         DetachWebContents(contents);
         contents->ClosePage();
       }
