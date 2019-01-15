@@ -203,20 +203,7 @@ void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
 
 void NGBoxFragmentPainter::RecordHitTestData(const PaintInfo& paint_info,
                                              const LayoutPoint& paint_offset) {
-  // Hit test display items are only needed for compositing. This flag is used
-  // for for printing and drag images which do not need hit testing.
-  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
-    return;
-
-  // If an object is not visible, it does not participate in hit testing.
-  if (box_fragment_.Style().Visibility() != EVisibility::kVisible)
-    return;
-
   const NGPhysicalFragment& physical_fragment = PhysicalFragment();
-  auto touch_action = physical_fragment.EffectiveWhitelistedTouchAction();
-  if (touch_action == TouchAction::kTouchActionAuto)
-    return;
-
   // TODO(pdr): If we are painting the background into the scrolling contents
   // layer, we need to use the overflow rect instead of the border box rect. We
   // may want to move the call to RecordHitTestRect into
@@ -228,7 +215,20 @@ void NGBoxFragmentPainter::RecordHitTestData(const PaintInfo& paint_info,
   border_box.offset += NGPhysicalOffset(paint_offset);
   HitTestDisplayItem::Record(
       paint_info.context, box_fragment_,
-      HitTestRect(border_box.ToLayoutRect(), touch_action));
+      HitTestRect(border_box.ToLayoutRect(),
+                  physical_fragment.EffectiveWhitelistedTouchAction()));
+}
+
+void NGBoxFragmentPainter::RecordHitTestDataForLine(
+    const PaintInfo& paint_info,
+    const LayoutPoint& paint_offset,
+    const NGPaintFragment& line) {
+  NGPhysicalOffsetRect border_box = line.PhysicalFragment().LocalRect();
+  border_box.offset += NGPhysicalOffset(paint_offset);
+  HitTestDisplayItem::Record(
+      paint_info.context, line,
+      HitTestRect(border_box.ToLayoutRect(),
+                  PhysicalFragment().EffectiveWhitelistedTouchAction()));
 }
 
 void NGBoxFragmentPainter::PaintObject(
@@ -247,7 +247,8 @@ void NGBoxFragmentPainter::PaintObject(
     if (!suppress_box_decoration_background && is_visible)
       PaintBoxDecorationBackground(paint_info, paint_offset);
 
-    if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
+    if (NGFragmentPainter::ShouldRecordHitTestData(paint_info,
+                                                   PhysicalFragment()))
       RecordHitTestData(paint_info, paint_offset);
 
     // Record the scroll hit test after the background so background squashing
@@ -742,6 +743,12 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
     }
     DCHECK(line->PhysicalFragment().IsLineBox())
         << line->PhysicalFragment().ToString();
+
+    if (paint_info.phase == PaintPhase::kForeground &&
+        NGFragmentPainter::ShouldRecordHitTestData(paint_info,
+                                                   PhysicalFragment()))
+      RecordHitTestDataForLine(paint_info, child_offset, *line);
+
     PaintInlineChildren(line->Children(), paint_info, child_offset);
   }
 }

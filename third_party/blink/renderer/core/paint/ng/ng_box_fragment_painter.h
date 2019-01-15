@@ -112,6 +112,10 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void RecordHitTestData(const PaintInfo& paint_info,
                          const LayoutPoint& paint_offset);
 
+  void RecordHitTestDataForLine(const PaintInfo& paint_info,
+                                const LayoutPoint& paint_offset,
+                                const NGPaintFragment& line);
+
   bool IsInSelfHitTestingPhase(HitTestAction) const;
   bool VisibleToHitTestRequest(const HitTestRequest&) const;
 
