@@ -5,9 +5,11 @@
 #ifndef IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_
 #define IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_
 
+#import <Foundation/Foundation.h>
+
 #include <string>
 
-#import <EarlGrey/EarlGrey.h>
+@protocol GREYMatcher;
 
 namespace chrome_test_util {
 
