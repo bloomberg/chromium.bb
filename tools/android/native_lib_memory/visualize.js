@@ -187,6 +187,32 @@ function getOffsetToData(flatData) {
 }
 
 /**
+ * Returns: [startOfOrderedText, EndOfOrderedText].
+ */
+function getStartAndEndOfOrderedText(codePages) {
+  let startEnd = [];
+
+  for (const page of codePages) {
+    let hasAnchorFunctions = false;
+    for (const sizeAndFilename of page.size_and_filenames) {
+      // anchor_functions.o contains two dummy anchor functions which are placed
+      // at the beginning and end of the ordered part of text by the
+      // orderfile. These anchor functions are ~10 bytes long on ARM. All other
+      // functions in anchor_functions.o are at least 100 bytes long. So, to
+      // find the ordered text section all code pages are scanned to find these
+      // two small functions.
+      if (sizeAndFilename[0] < 20
+          && sizeAndFilename[1].endsWith("anchor_functions.o")) {
+        startEnd.push(page.offset);
+        break;
+      }
+    }
+  }
+  console.assert(startEnd.length == 2);
+  return startEnd;
+}
+
+/**
  * Creates the graph, and adds it to the DOM.
  *
  * reachedData can be undefined. In this case, only the code page data is shown.
@@ -200,6 +226,7 @@ function createGraph(codePages, reachedPerPage, residency) {
   let offsets = codePages.map((x) => x.offset).sort((a, b) => a - b);
   let minOffset = +offsets[0];
   let maxOffset = +offsets[offsets.length - 1] + PAGE_SIZE;
+  let startEndOfOrderedText = getStartAndEndOfOrderedText(codePages);
 
   const labels = ["Component", "Reached", "Residency"];
   const lanes = labels.length;
@@ -334,6 +361,17 @@ function createGraph(codePages, reachedPerPage, residency) {
       .attr("width", (d) => globalScalePageWidth)
       .attr("height", 10)
       .style("fill", getFillColor);
+
+  mini.append("g").selectAll(".orderedTextMarkers")
+      .data(startEndOfOrderedText)
+      .enter().append("rect")
+      .attr("x", globalXScale(startEndOfOrderedText[0]))
+      .attr("y", miniYScale(0))
+      .attr("width", (globalXScale(startEndOfOrderedText[1])
+                      - globalXScale(startEndOfOrderedText[0])))
+      .attr("height", miniYScale(3))
+      .attr("fill", "red")
+      .attr("opacity", .2);
 
   let brush = d3.svg.brush().x(globalXScale).on("brush", display);
   mini.append("g")
