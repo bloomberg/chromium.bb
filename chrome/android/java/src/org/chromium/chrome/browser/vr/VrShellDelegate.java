@@ -22,8 +22,6 @@ import android.os.Handler;
 import android.os.StrictMode;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
-import android.util.DisplayMetrics;
-import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -36,7 +34,6 @@ import com.google.vr.ndk.base.GvrUiLayout;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PackageUtils;
@@ -62,13 +59,11 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.content_public.browser.ScreenOrientationDelegate;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
-import org.chromium.ui.display.DisplayAndroidManager;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
@@ -110,13 +105,6 @@ public class VrShellDelegate
     private static final String GVR_KEYBOARD_PACKAGE_ID = "com.google.android.vr.inputmethod";
     private static final String GVR_KEYBOARD_MARKET_URI =
             "market://details?id=" + GVR_KEYBOARD_PACKAGE_ID;
-
-    private static final String SAMSUNG_GALAXY_PREFIX = "SM-";
-    private static final Set<String> SAMSUNG_GALAXY_8_MODELS =
-            Collections.unmodifiableSet(CollectionUtil.newHashSet("G950", "N950", "G955", "G892"));
-
-    private static final Set<String> SAMSUNG_GALAXY_8_ALT_MODELS = Collections.unmodifiableSet(
-            CollectionUtil.newHashSet("SC-02J", "SCV36", "SC-03J", "SCV35", "SC-01K", "SCV37"));
 
     // This value is intentionally probably overkill. This is the time we need to wait from when
     // Chrome is resumed, to when Chrome actually renders a black frame, so that we can cancel the
@@ -698,6 +686,10 @@ public class VrShellDelegate
         return sVrModeEnabledActivitys.contains(activity);
     }
 
+    /* package */ static boolean expectedDensityChange() {
+        return sInstance != null && sInstance.mExpectedDensityChange != 0;
+    }
+
     private static boolean activitySupportsPresentation(Activity activity) {
         return activity instanceof ChromeTabbedActivity || activity instanceof CustomTabActivity
                 || activity instanceof WebappActivity;
@@ -763,7 +755,8 @@ public class VrShellDelegate
 
     private static boolean isVrBrowsingSupported(ChromeActivity activity) {
         return VrModuleProvider.getDelegate().activitySupportsVrBrowsing(activity)
-                && !willChangeDensityInVr(activity) && isDaydreamCurrentViewer();
+                && !VrModuleProvider.getDelegate().willChangeDensityInVr(activity)
+                && isDaydreamCurrentViewer();
     }
 
     /**
@@ -783,64 +776,6 @@ public class VrShellDelegate
             Log.e(TAG, "Unable to check if in VR session", ex);
             return false;
         }
-    }
-
-    /* package */ static boolean willChangeDensityInVr(ChromeActivity activity) {
-        // Only N+ support launching in VR at all, other OS versions don't care about this.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return false;
-
-        // If the screen density changed while in VR, we have to disable the VR browser as java UI
-        // used or created by VR browsing will be broken.
-        if (sInstance != null && sInstance.mExpectedDensityChange != 0) return true;
-        if (getVrSupportLevel() != VrSupportLevel.VR_DAYDREAM) return false;
-
-        Display display = DisplayAndroidManager.getDefaultDisplayForContext(
-                ContextUtils.getApplicationContext());
-        DisplayMetrics metrics = new DisplayMetrics();
-        display.getRealMetrics(metrics);
-
-        if (activity.getLastActiveDensity() != 0
-                && (int) activity.getLastActiveDensity() != metrics.densityDpi) {
-            return true;
-        }
-
-        if (!deviceCanChangeResolutionForVr()) return false;
-
-        Display.Mode[] modes = display.getSupportedModes();
-        // Devices with only one mode won't switch modes while in VR.
-        if (modes.length <= 1) return false;
-        Display.Mode vr_mode = modes[0];
-        for (int i = 1; i < modes.length; ++i) {
-            if (modes[i].getPhysicalWidth() > vr_mode.getPhysicalWidth()) vr_mode = modes[i];
-        }
-
-        // If we're currently in the mode supported by VR the density won't change.
-        // We actually can't use display.getMode() to get the current mode as that just always
-        // returns the same mode ignoring the override, so we just check that our current display
-        // size is not equal to the vr mode size.
-        if (vr_mode.getPhysicalWidth() != metrics.widthPixels
-                && vr_mode.getPhysicalWidth() != metrics.heightPixels) {
-            return true;
-        }
-        if (vr_mode.getPhysicalHeight() != metrics.widthPixels
-                && vr_mode.getPhysicalHeight() != metrics.heightPixels) {
-            return true;
-        }
-        return false;
-    }
-
-    private static boolean deviceCanChangeResolutionForVr() {
-        // Samsung devices no longer change density when entering VR on O+.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) return false;
-        String model = android.os.Build.MODEL;
-        if (SAMSUNG_GALAXY_8_ALT_MODELS.contains(model)) return true;
-
-        // Only Samsung devices change resolution in VR.
-        if (!model.startsWith(SAMSUNG_GALAXY_PREFIX)) return false;
-        CharSequence modelNumber = model.subSequence(3, 7);
-        // Only S8(+) and Note 8 models change resolution in VR.
-        if (!SAMSUNG_GALAXY_8_MODELS.contains(modelNumber)) return false;
-        return true;
     }
 
     private static boolean isVrCoreCompatible() {

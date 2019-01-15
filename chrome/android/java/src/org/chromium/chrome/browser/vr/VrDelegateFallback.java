@@ -163,14 +163,12 @@ import org.chromium.ui.widget.Toast;
     }
 
     @Override
-    public boolean willChangeDensityInVr(ChromeActivity activity) {
-        // TODO(tiborg): Handle density changes if VR module not installed.
-        assert false;
-        return false;
-    }
+    public void onSaveInstanceState(Bundle outState) {}
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {}
+    protected boolean expectedDensityChange() {
+        return false;
+    }
 
     private void onVrModuleInstallFinished(boolean success) {
         Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();

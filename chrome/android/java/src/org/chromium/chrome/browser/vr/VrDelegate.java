@@ -11,24 +11,35 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.CollectionUtil;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.ui.display.DisplayAndroid;
+import org.chromium.ui.display.DisplayAndroidManager;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Set;
 
 /** Delegate to call into VR. */
 public abstract class VrDelegate {
     private static final String TAG = "VrDelegate";
     private static final String VR_BOOT_SYSTEM_PROPERTY = "ro.boot.vr";
+    private static final String SAMSUNG_GALAXY_PREFIX = "SM-";
+    private static final Set<String> SAMSUNG_GALAXY_8_MODELS =
+            Collections.unmodifiableSet(CollectionUtil.newHashSet("G950", "N950", "G955", "G892"));
+    private static final Set<String> SAMSUNG_GALAXY_8_ALT_MODELS = Collections.unmodifiableSet(
+            CollectionUtil.newHashSet("SC-02J", "SCV36", "SC-03J", "SCV35", "SC-01K", "SCV37"));
     /* package */ static final boolean DEBUG_LOGS = false;
     /* package */ static final int VR_SYSTEM_UI_FLAGS = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
             | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -82,7 +93,52 @@ public abstract class VrDelegate {
 
     public abstract boolean isDaydreamReadyDevice();
     public abstract boolean isDaydreamCurrentViewer();
-    public abstract boolean willChangeDensityInVr(ChromeActivity activity);
+
+    public boolean willChangeDensityInVr(ChromeActivity activity) {
+        // Only N+ support launching in VR at all, other OS versions don't care about this.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return false;
+
+        // If the screen density changed while in VR, we have to disable the VR browser as java UI
+        // used or created by VR browsing will be broken.
+        // TODO: make work.
+        if (expectedDensityChange()) return true;
+        if (!isDaydreamReadyDevice()) return false;
+
+        Display display = DisplayAndroidManager.getDefaultDisplayForContext(
+                ContextUtils.getApplicationContext());
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getRealMetrics(metrics);
+
+        if (activity.getLastActiveDensity() != 0
+                && (int) activity.getLastActiveDensity() != metrics.densityDpi) {
+            return true;
+        }
+
+        if (!deviceCanChangeResolutionForVr()) return false;
+
+        Display.Mode[] modes = display.getSupportedModes();
+        // Devices with only one mode won't switch modes while in VR.
+        if (modes.length <= 1) return false;
+        Display.Mode vr_mode = modes[0];
+        for (int i = 1; i < modes.length; ++i) {
+            if (modes[i].getPhysicalWidth() > vr_mode.getPhysicalWidth()) vr_mode = modes[i];
+        }
+
+        // If we're currently in the mode supported by VR the density won't change.
+        // We actually can't use display.getMode() to get the current mode as that just always
+        // returns the same mode ignoring the override, so we just check that our current display
+        // size is not equal to the vr mode size.
+        if (vr_mode.getPhysicalWidth() != metrics.widthPixels
+                && vr_mode.getPhysicalWidth() != metrics.heightPixels) {
+            return true;
+        }
+        if (vr_mode.getPhysicalHeight() != metrics.widthPixels
+                && vr_mode.getPhysicalHeight() != metrics.heightPixels) {
+            return true;
+        }
+        return false;
+    }
+
     public abstract void onSaveInstanceState(Bundle outState);
 
     /* package */ void setSystemUiVisibilityForVr(Activity activity) {
@@ -155,6 +211,8 @@ public abstract class VrDelegate {
         return false;
     }
 
+    protected abstract boolean expectedDensityChange();
+
     private int getIntSystemProperty(String key, int defaultValue) {
         try {
             final Class<?> systemProperties = Class.forName("android.os.SystemProperties");
@@ -165,5 +223,19 @@ public abstract class VrDelegate {
                     defaultValue, e);
             return defaultValue;
         }
+    }
+
+    private boolean deviceCanChangeResolutionForVr() {
+        // Samsung devices no longer change density when entering VR on O+.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) return false;
+        String model = android.os.Build.MODEL;
+        if (SAMSUNG_GALAXY_8_ALT_MODELS.contains(model)) return true;
+
+        // Only Samsung devices change resolution in VR.
+        if (!model.startsWith(SAMSUNG_GALAXY_PREFIX)) return false;
+        CharSequence modelNumber = model.subSequence(3, 7);
+        // Only S8(+) and Note 8 models change resolution in VR.
+        if (!SAMSUNG_GALAXY_8_MODELS.contains(modelNumber)) return false;
+        return true;
     }
 }
