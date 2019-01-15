@@ -96,6 +96,10 @@
       status: "experimental",
     },
     {
+      name: "AsyncClipboardImages",
+      status: "test",
+    },
+    {
       name: "AudioOutputDevices",
       status: "stable",
     },

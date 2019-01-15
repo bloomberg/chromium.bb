@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/clipboard/clipboard_promise.h"
 
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -19,7 +20,14 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
+#include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
+#include "third_party/blink/renderer/platform/scheduler/public/background_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 // And now, a brief note about clipboard permissions.
@@ -39,6 +47,8 @@ namespace blink {
 using mojom::blink::PermissionStatus;
 using mojom::blink::PermissionService;
 
+ClipboardPromise::~ClipboardPromise() = default;
+
 ScriptPromise ClipboardPromise::CreateForRead(ScriptState* script_state) {
   ClipboardPromise* clipboard_promise =
       MakeGarbageCollected<ClipboardPromise>(script_state);
@@ -53,6 +63,15 @@ ScriptPromise ClipboardPromise::CreateForReadText(ScriptState* script_state) {
       MakeGarbageCollected<ClipboardPromise>(script_state);
   clipboard_promise->GetTaskRunner()->PostTask(
       FROM_HERE, WTF::Bind(&ClipboardPromise::HandleReadText,
+                           WrapPersistent(clipboard_promise)));
+  return clipboard_promise->script_promise_resolver_->Promise();
+}
+
+ScriptPromise ClipboardPromise::CreateForReadImage(ScriptState* script_state) {
+  ClipboardPromise* clipboard_promise =
+      MakeGarbageCollected<ClipboardPromise>(script_state);
+  clipboard_promise->GetTaskRunner()->PostTask(
+      FROM_HERE, WTF::Bind(&ClipboardPromise::HandleReadImage,
                            WrapPersistent(clipboard_promise)));
   return clipboard_promise->script_promise_resolver_->Promise();
 }
@@ -75,6 +94,17 @@ ScriptPromise ClipboardPromise::CreateForWriteText(ScriptState* script_state,
   clipboard_promise->GetTaskRunner()->PostTask(
       FROM_HERE, WTF::Bind(&ClipboardPromise::HandleWriteText,
                            WrapPersistent(clipboard_promise), data));
+  return clipboard_promise->script_promise_resolver_->Promise();
+}
+
+ScriptPromise ClipboardPromise::CreateForWriteImage(ScriptState* script_state,
+                                                    Blob* data) {
+  ClipboardPromise* clipboard_promise =
+      MakeGarbageCollected<ClipboardPromise>(script_state);
+  clipboard_promise->GetTaskRunner()->PostTask(
+      FROM_HERE,
+      WTF::Bind(&ClipboardPromise::HandleWriteImage,
+                WrapPersistent(clipboard_promise), WrapPersistent(data)));
   return clipboard_promise->script_promise_resolver_->Promise();
 }
 
@@ -181,6 +211,41 @@ void ClipboardPromise::HandleReadTextWithPermission(PermissionStatus status) {
   script_promise_resolver_->Resolve(text);
 }
 
+void ClipboardPromise::HandleReadImage() {
+  RequestReadPermission(WTF::Bind(
+      &ClipboardPromise::HandleReadImageWithPermission, WrapPersistent(this)));
+}
+
+void ClipboardPromise::HandleReadImageWithPermission(PermissionStatus status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
+  if (status != PermissionStatus::GRANTED) {
+    script_promise_resolver_->Reject();
+    return;
+  }
+
+  SkBitmap bitmap = SystemClipboard::GetInstance().ReadImage(buffer_);
+
+  SkPixmap pixmap;
+  bitmap.peekPixels(&pixmap);
+
+  Vector<uint8_t> png_data;
+  SkPngEncoder::Options options;
+  if (!ImageEncoder::Encode(&png_data, pixmap, options)) {
+    script_promise_resolver_->Reject();
+    return;
+  }
+
+  std::unique_ptr<BlobData> data = BlobData::Create();
+  data->SetContentType(kMimeTypeImagePng);
+  data->AppendBytes(png_data.data(), png_data.size());
+  const uint64_t length = data->length();
+  scoped_refptr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create(std::move(data), length);
+
+  Blob* blob = Blob::Create(blob_data_handle);
+  script_promise_resolver_->Resolve(blob);
+}
+
 // TODO(garykac): This currently only handles plain text.
 void ClipboardPromise::HandleWrite(DataTransfer* data) {
   // Scan DataTransfer and extract data types that we support.
@@ -214,20 +279,100 @@ void ClipboardPromise::HandleWriteText(const String& data) {
       &ClipboardPromise::HandleWriteTextWithPermission, WrapPersistent(this)));
 }
 
+void ClipboardPromise::HandleWriteImage(Blob* data) {
+  write_image_data_ = data;
+
+  CheckWritePermission(WTF::Bind(
+      &ClipboardPromise::HandleWriteImageWithPermission, WrapPersistent(this)));
+}
+
+void ClipboardPromise::HandleWriteImageWithPermission(PermissionStatus status) {
+  if (status != PermissionStatus::GRANTED) {
+    script_promise_resolver_->Reject();
+    return;
+  }
+
+  file_reader_ = std::make_unique<ClipboardFileReader>(write_image_data_, this);
+}
+
 void ClipboardPromise::HandleWriteTextWithPermission(PermissionStatus status) {
   if (status != PermissionStatus::GRANTED) {
     script_promise_resolver_->Reject();
     return;
   }
 
-  DCHECK(script_promise_resolver_);
   SystemClipboard::GetInstance().WritePlainText(write_data_);
   script_promise_resolver_->Resolve();
+}
+
+void ClipboardPromise::OnLoadComplete(DOMArrayBuffer* array_buffer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
+  file_reader_.reset();
+
+  // Schedule async image decode on another thread.
+  background_scheduler::PostOnBackgroundThread(
+      FROM_HERE,
+      CrossThreadBind(&ClipboardPromise::DecodeImageOnBackgroundThread,
+                      WrapCrossThreadPersistent(this), GetTaskRunner(),
+                      WrapCrossThreadPersistent(array_buffer)));
+}
+
+// Reference: third_party/blink/renderer/core/imagebitmap/
+// TODO (crbug.com/916821): Ask ImageBitmapFactory owners if they can help
+// refactor and merge this very similar image decoding logic.
+void ClipboardPromise::DecodeImageOnBackgroundThread(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    DOMArrayBuffer* png_data) {
+  DCHECK(!IsMainThread());
+
+  std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
+      SegmentReader::CreateFromSkData(
+          SkData::MakeWithoutCopy(png_data->Data(), png_data->ByteLength())),
+      true, ImageDecoder::kAlphaPremultiplied, ImageDecoder::kDefaultBitDepth,
+      ColorBehavior::Tag());
+
+  if (!decoder) {
+    PostCrossThreadTask(*task_runner, FROM_HERE,
+                        CrossThreadBind(&ClipboardPromise::Reject,
+                                        WrapCrossThreadPersistent(this)));
+    return;
+  }
+
+  sk_sp<SkImage> image = ImageBitmap::GetSkImageFromDecoder(std::move(decoder));
+
+  if (!image) {
+    PostCrossThreadTask(*task_runner, FROM_HERE,
+                        CrossThreadBind(&ClipboardPromise::Reject,
+                                        WrapCrossThreadPersistent(this)));
+    return;
+  }
+
+  PostCrossThreadTask(
+      *task_runner, FROM_HERE,
+      CrossThreadBind(&ClipboardPromise::ResolveAndWriteImage,
+                      WrapCrossThreadPersistent(this), std::move(image)));
+}
+
+void ClipboardPromise::ResolveAndWriteImage(sk_sp<SkImage> image) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
+
+  SkBitmap bitmap;
+  image->asLegacyBitmap(&bitmap);
+
+  SystemClipboard::GetInstance().WriteImage(std::move(bitmap));
+  script_promise_resolver_->Resolve();
+}
+
+void ClipboardPromise::Reject() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
+
+  script_promise_resolver_->Reject();
 }
 
 void ClipboardPromise::Trace(blink::Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(script_promise_resolver_);
+  visitor->Trace(write_image_data_);
   ContextLifecycleObserver::Trace(visitor);
 }
 

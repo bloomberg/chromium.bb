@@ -1072,8 +1072,10 @@ interface Clipboard : EventTarget
     attribute @@toStringTag
     method constructor
     method read
+    method readImageExperimental
     method readText
     method write
+    method writeImageExperimental
     method writeText
 interface ClipboardEvent : Event
     attribute @@toStringTag

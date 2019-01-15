@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
@@ -26,9 +27,11 @@ class Clipboard : public EventTargetWithInlineData,
 
   ScriptPromise read(ScriptState*);
   ScriptPromise readText(ScriptState*);
+  ScriptPromise readImageExperimental(ScriptState*);
 
   ScriptPromise write(ScriptState*, DataTransfer*);
   ScriptPromise writeText(ScriptState*, const String&);
+  ScriptPromise writeImageExperimental(ScriptState*, Blob*);
 
   // EventTarget
   const AtomicString& InterfaceName() const override;

@@ -1705,7 +1705,8 @@ void WriteImageNodeToClipboard(const Node& node, const String& title) {
     return;
   const KURL url_string = node.GetDocument().CompleteURL(
       StripLeadingAndTrailingHTMLSpaces(GetUrlStringFromNode(node)));
-  SystemClipboard::GetInstance().WriteImage(image.get(), url_string, title);
+  SystemClipboard::GetInstance().WriteImageWithTag(image.get(), url_string,
+                                                   title);
 }
 
 Element* FindEventTargetFrom(LocalFrame& frame,

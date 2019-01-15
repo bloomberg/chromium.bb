@@ -17,6 +17,12 @@
      CallWith=ScriptState
     ] Promise<DOMString> readText();
 
+    [
+     CallWith=ScriptState,
+     RuntimeEnabled=AsyncClipboardImages
+    ] Promise<Blob> readImageExperimental();
+
+
     [MeasureAs=AsyncClipboardAPIWrite,
      CallWith=ScriptState,
      RuntimeEnabled=AsyncClipboard
@@ -25,4 +31,9 @@
     [MeasureAs=AsyncClipboardAPIWriteText,
      CallWith=ScriptState
     ] Promise<void> writeText(DOMString data);
+
+    [
+     CallWith=ScriptState,
+     RuntimeEnabled=AsyncClipboardImages
+    ] Promise<void> writeImageExperimental(Blob data);
 };
