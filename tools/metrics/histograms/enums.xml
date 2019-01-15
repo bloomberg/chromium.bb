@@ -29547,8 +29547,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="LaunchMode">
-  <int value="1" label="LM_AS_WEBAPP">
-    Launched as an installed web application
+  <int value="1" label="LM_AS_WEBAPP_WINDOW">
+    Launched as an installed web application in a standalone window
   </int>
   <int value="2" label="LM_WITH_URLS">Launched with urls in the cmd line</int>
   <int value="3" label="LM_OTHER">
@@ -29605,6 +29605,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="20" label="LM_GCPW_LOGON">
     Launched as a logon stub for the Google Credential Provider for Windows
     (Windows).
+  </int>
+  <int value="21" label="LM_AS_WEBAPP_TAB">
+    Launched as an installed web application in a browser tab
   </int>
 </enum>
 

@@ -380,6 +380,10 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutNoPref) {
   const Extension* extension_app = NULL;
   ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_tab_container", &extension_app));
 
+  // When we start, the browser should already have an open tab.
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  EXPECT_EQ(1, tab_strip->count());
+
   // Add --app-id=<extension->id()> to the command line.
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
@@ -389,16 +393,17 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutNoPref) {
   StartupBrowserCreatorImpl launch(base::FilePath(), command_line, first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
 
-  // No pref was set, so the app should have opened in a tab in a new window.
-  // The launch should have created a new browser.
-  Browser* new_browser = FindOneOtherBrowser(browser());
-  ASSERT_TRUE(new_browser);
+  // No pref was set, so the app should have opened in a tab in the existing
+  // window.
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
+  EXPECT_EQ(2, tab_strip->count());
+  EXPECT_EQ(tab_strip->GetActiveWebContents(), tab_strip->GetWebContentsAt(1));
 
   // If new bookmark apps are enabled, it should be a standard tabbed window,
   // not an app window; otherwise the reverse should be true.
   bool new_bookmark_apps_enabled = extensions::util::IsNewBookmarkAppsEnabled();
-  EXPECT_EQ(!new_bookmark_apps_enabled, new_browser->is_app());
-  EXPECT_EQ(new_bookmark_apps_enabled, new_browser->is_type_tabbed());
+  EXPECT_EQ(!new_bookmark_apps_enabled, browser()->is_app());
+  EXPECT_EQ(new_bookmark_apps_enabled, browser()->is_type_tabbed());
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutWindowPref) {
@@ -431,11 +436,15 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutWindowPref) {
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutTabPref) {
+  // When we start, the browser should already have an open tab.
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  EXPECT_EQ(1, tab_strip->count());
+
   // Load an app with launch.container = 'tab'.
   const Extension* extension_app = NULL;
   ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_tab_container", &extension_app));
 
-  // Set a pref indicating that the user wants to open this app in a window.
+  // Set a pref indicating that the user wants to open this app in a tab.
   SetAppLaunchPref(extension_app->id(), extensions::LAUNCH_TYPE_REGULAR);
 
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
@@ -445,21 +454,16 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutTabPref) {
   StartupBrowserCreatorImpl launch(base::FilePath(), command_line, first_run);
   ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
 
-  // When an app shortcut is open and the pref indicates a tab should
-  // open, the tab is open in a new browser window.  Expect a new window.
-  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
+  // When an app shortcut is open and the pref indicates a tab should open, the
+  // tab is open in the existing browser window.
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
+  EXPECT_EQ(2, tab_strip->count());
+  EXPECT_EQ(tab_strip->GetActiveWebContents(), tab_strip->GetWebContentsAt(1));
 
-  Browser* new_browser = FindOneOtherBrowser(browser());
-  ASSERT_TRUE(new_browser);
-
-  // The tab should be in a tabbed window.
-  EXPECT_TRUE(new_browser->is_type_tabbed());
-
-  // The browser's app_name should not include the app's ID: It is in a
-  // normal browser.
-  EXPECT_EQ(
-      new_browser->app_name_.find(extension_app->id()),
-      std::string::npos) << new_browser->app_name_;
+  // The browser's app_name should not include the app's ID: it is in a normal
+  // tabbed browser.
+  EXPECT_EQ(browser()->app_name_.find(extension_app->id()), std::string::npos)
+      << browser()->app_name_;
 }
 
 #endif  // !defined(OS_CHROMEOS)
