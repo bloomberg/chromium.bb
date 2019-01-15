@@ -7,9 +7,9 @@
 // This file contains code to parse WebM file elements. It was created
 // from information in the Matroska spec.
 // http://www.matroska.org/technical/specs/index.html
-// This file contains code for encrypted WebM. Current WebM
-// encrypted request for comments specification is here
-// http://wiki.webmproject.org/encryption/webm-encryption-rfc
+//
+// WebM Container Guidelines is at https://www.webmproject.org/docs/container/
+// WebM Encryption spec is at: https://www.webmproject.org/docs/webm-encryption/
 
 #include <stddef.h>
 
@@ -50,6 +50,11 @@ struct ListElementInfo {
 // appear in the list, a parsing error is signalled. Some elements are
 // marked as SKIP because they are valid, but we don't care about them
 // right now.
+//
+// TODO(xhwang): There are many Matroska elements listed here which are not
+// supported by WebM. Since this is a WebM parser, maybe we should not list them
+// here so that the parsing clients doesn't need to handle them.
+
 static const ElementIdInfo kEBMLHeaderIds[] = {
   {UINT, kWebMIdEBMLVersion},
   {UINT, kWebMIdEBMLReadVersion},
