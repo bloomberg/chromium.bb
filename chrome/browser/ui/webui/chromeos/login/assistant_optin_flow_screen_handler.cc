@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 
+#include <utility>
+
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
@@ -289,7 +291,8 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
                       time_since_request_sent);
 
   assistant::SettingsUi settings_ui;
-  settings_ui.ParseFromString(settings);
+  if (!settings_ui.ParseFromString(settings))
+    return;
 
   DCHECK(settings_ui.has_consent_flow_ui());
 

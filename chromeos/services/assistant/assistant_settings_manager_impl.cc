@@ -54,15 +54,13 @@ void AssistantSettingsManagerImpl::GetSettings(const std::string& selector,
             // This callback may be called from server multiple times. We should
             // only process non-empty response.
             std::string settings = UnwrapGetSettingsUiResponse(response);
-            if (!settings.empty()) {
-              task_runner->PostTask(
-                  FROM_HERE,
-                  base::BindOnce(
-                      [](base::RepeatingCallback<void(const std::string&)>
-                             callback,
-                         const std::string& result) { callback.Run(result); },
-                      repeating_callback, settings));
-            }
+            task_runner->PostTask(
+                FROM_HERE,
+                base::BindOnce(
+                    [](base::RepeatingCallback<void(const std::string&)>
+                           callback,
+                       const std::string& result) { callback.Run(result); },
+                    repeating_callback, settings));
           });
 }
 
@@ -85,15 +83,13 @@ void AssistantSettingsManagerImpl::UpdateSettings(
             // This callback may be called from server multiple times. We should
             // only process non-empty response.
             std::string update = UnwrapUpdateSettingsUiResponse(response);
-            if (!update.empty()) {
-              task_runner->PostTask(
-                  FROM_HERE,
-                  base::BindOnce(
-                      [](base::RepeatingCallback<void(const std::string&)>
-                             callback,
-                         const std::string& result) { callback.Run(result); },
-                      repeating_callback, update));
-            }
+            task_runner->PostTask(
+                FROM_HERE,
+                base::BindOnce(
+                    [](base::RepeatingCallback<void(const std::string&)>
+                           callback,
+                       const std::string& result) { callback.Run(result); },
+                    repeating_callback, update));
           });
 }
 
