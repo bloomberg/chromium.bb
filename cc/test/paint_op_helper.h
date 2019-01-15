@@ -354,20 +354,6 @@ class PaintOpHelper {
     return "<SkPath>";
   }
 
-  static std::string SkiaTypeToString(PaintFlags::Hinting hinting) {
-    switch (hinting) {
-      case PaintFlags::kNo_Hinting:
-        return "kNo_Hinting";
-      case PaintFlags::kSlight_Hinting:
-        return "kSlight_Hinting";
-      case PaintFlags::kNormal_Hinting:
-        return "kNormal_Hinting";
-      case PaintFlags::kFull_Hinting:
-        return "kFull_Hinting";
-    }
-    return "<unknown PaintFlags::Hinting>";
-  }
-
   static std::string SkiaTypeToString(SkFilterQuality quality) {
     switch (quality) {
       case kNone_SkFilterQuality:
@@ -404,10 +390,6 @@ class PaintOpHelper {
         return "kBevel_Join";
     }
     return "<unknown PaintFlags::Join>";
-  }
-
-  static std::string SkiaTypeToString(const sk_sp<SkTypeface>& typeface) {
-    return typeface ? "<SkTypeface>" : "(nil)";
   }
 
   static std::string SkiaTypeToString(const sk_sp<SkColorFilter>& filter) {
@@ -593,13 +575,7 @@ class PaintOpHelper {
     str << ", blendMode="
         << PaintOpHelper::SkiaTypeToString(flags.getBlendMode());
     str << ", isAntiAlias=" << flags.isAntiAlias();
-    str << ", isSubpixelText=" << flags.isSubpixelText();
-    str << ", isLCDRenderText=" << flags.isLCDRenderText();
-    str << ", hinting=" << PaintOpHelper::SkiaTypeToString(flags.getHinting());
-    str << ", isAutohinted=" << flags.isAutohinted();
     str << ", isDither=" << flags.isDither();
-    str << ", textSize="
-        << PaintOpHelper::SkiaTypeToString(flags.getTextSize());
     str << ", filterQuality="
         << PaintOpHelper::SkiaTypeToString(flags.getFilterQuality());
     str << ", strokeWidth="
@@ -610,8 +586,6 @@ class PaintOpHelper {
         << PaintOpHelper::SkiaTypeToString(flags.getStrokeCap());
     str << ", strokeJoin="
         << PaintOpHelper::SkiaTypeToString(flags.getStrokeJoin());
-    str << ", typeface="
-        << PaintOpHelper::SkiaTypeToString(flags.getTypeface());
     str << ", colorFilter="
         << PaintOpHelper::SkiaTypeToString(flags.getColorFilter());
     str << ", maskFilter="

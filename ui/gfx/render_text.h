@@ -21,6 +21,7 @@
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/break_list.h"
 #include "ui/gfx/font_list.h"
@@ -80,6 +81,7 @@ class GFX_EXPORT SkiaTextRenderer {
   Canvas* canvas_;
   cc::PaintCanvas* canvas_skia_;
   cc::PaintFlags flags_;
+  SkFont font_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaTextRenderer);
 };
@@ -166,10 +168,10 @@ sk_sp<SkTypeface> CreateSkiaTypeface(const Font& font,
                                      bool italic,
                                      Font::Weight weight);
 
-// Applies the given FontRenderParams to the PaintFlags.
+// Applies the given FontRenderParams to the SkFont.
 void ApplyRenderParams(const FontRenderParams& params,
                        bool subpixel_rendering_suppressed,
-                       cc::PaintFlags* flags);
+                       SkFont* font);
 
 }  // namespace internal
 

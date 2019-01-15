@@ -18,9 +18,13 @@ class RenderTextTestApi {
  public:
   RenderTextTestApi(RenderText* render_text) : render_text_(render_text) {}
 
-  static cc::PaintFlags& GetRendererPaint(
+  static const cc::PaintFlags& GetRendererPaint(
       internal::SkiaTextRenderer* renderer) {
     return renderer->flags_;
+  }
+
+  static const SkFont& GetRendererFont(internal::SkiaTextRenderer* renderer) {
+    return renderer->font_;
   }
 
   // Callers must ensure that the associated RenderText object is a

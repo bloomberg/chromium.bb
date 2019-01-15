@@ -333,8 +333,12 @@ class RenderTextTest : public testing::Test {
         renderer_(canvas()) {}
 
  protected:
-  cc::PaintFlags& GetRendererPaint() {
+  const cc::PaintFlags& GetRendererPaint() {
     return test::RenderTextTestApi::GetRendererPaint(renderer());
+  }
+
+  const SkFont& GetRendererFont() {
+    return test::RenderTextTestApi::GetRendererFont(renderer());
   }
 
   void DrawVisualText() { test_api_->DrawVisualText(renderer()); }
@@ -4460,21 +4464,21 @@ TEST_F(RenderTextTest, StylePropagated) {
 
   DrawVisualText();
   EXPECT_EQ(SkFontStyle::Normal(),
-            GetRendererPaint().getTypeface()->fontStyle());
+            GetRendererFont().getTypeface()->fontStyle());
 
   render_text->SetWeight(Font::Weight::BOLD);
   DrawVisualText();
-  EXPECT_EQ(SkFontStyle::Bold(), GetRendererPaint().getTypeface()->fontStyle());
+  EXPECT_EQ(SkFontStyle::Bold(), GetRendererFont().getTypeface()->fontStyle());
 
   render_text->SetStyle(TextStyle::ITALIC, true);
   DrawVisualText();
   EXPECT_EQ(SkFontStyle::BoldItalic(),
-            GetRendererPaint().getTypeface()->fontStyle());
+            GetRendererFont().getTypeface()->fontStyle());
 
   render_text->SetWeight(Font::Weight::NORMAL);
   DrawVisualText();
   EXPECT_EQ(SkFontStyle::Italic(),
-            GetRendererPaint().getTypeface()->fontStyle());
+            GetRendererFont().getTypeface()->fontStyle());
 }
 
 // Ensure the painter adheres to RenderText::subpixel_rendering_suppressed().
@@ -4493,7 +4497,7 @@ TEST_F(RenderTextTest, SubpixelRenderingSuppressed) {
       FontRenderParams::SUBPIXEL_RENDERING_RGB;
   DrawVisualText();
 #endif
-  EXPECT_TRUE(GetRendererPaint().isLCDRenderText());
+  EXPECT_EQ(GetRendererFont().getEdging(), SkFont::Edging::kSubpixelAntiAlias);
 
   render_text->set_subpixel_rendering_suppressed(true);
   DrawVisualText();
@@ -4501,21 +4505,19 @@ TEST_F(RenderTextTest, SubpixelRenderingSuppressed) {
   // For Linux, runs shouldn't be re-calculated, and the suppression of the
   // SUBPIXEL_RENDERING_RGB set above should now take effect. But, after
   // checking, apply the override anyway to be explicit that it is suppressed.
-  EXPECT_FALSE(GetRendererPaint().isLCDRenderText());
+  EXPECT_NE(GetRendererFont().getEdging(), SkFont::Edging::kSubpixelAntiAlias);
   GetHarfBuzzRunList()
       ->runs()[0]
       ->font_params.render_params.subpixel_rendering =
       FontRenderParams::SUBPIXEL_RENDERING_RGB;
   DrawVisualText();
 #endif
-  EXPECT_FALSE(GetRendererPaint().isLCDRenderText());
+  EXPECT_NE(GetRendererFont().getEdging(), SkFont::Edging::kSubpixelAntiAlias);
 }
 
 // Ensure the SkFont Edging is computed accurately.
 TEST_F(RenderTextTest, SkFontEdging) {
-  const auto edging = [this]() {
-    return GetRendererPaint().ToSkFont().getEdging();
-  };
+  const auto edging = [this]() { return GetRendererFont().getEdging(); };
 
   FontRenderParams params;
   EXPECT_TRUE(params.antialiasing);

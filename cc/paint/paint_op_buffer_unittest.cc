@@ -1042,7 +1042,6 @@ std::vector<PaintFlags> test_flags = {
     PaintFlags(),
     [] {
       PaintFlags flags;
-      flags.setTextSize(82.7f);
       flags.setColor(SK_ColorMAGENTA);
       flags.setStrokeWidth(4.2f);
       flags.setStrokeMiter(5.91f);
@@ -1050,14 +1049,12 @@ std::vector<PaintFlags> test_flags = {
       flags.setStrokeCap(PaintFlags::kSquare_Cap);
       flags.setStrokeJoin(PaintFlags::kBevel_Join);
       flags.setStyle(PaintFlags::kStrokeAndFill_Style);
-      flags.setHinting(PaintFlags::kNormal_Hinting);
       flags.setFilterQuality(SkFilterQuality::kMedium_SkFilterQuality);
       flags.setShader(PaintShader::MakeColor(SkColorSetARGB(1, 2, 3, 4)));
       return flags;
     }(),
     [] {
       PaintFlags flags;
-      flags.setTextSize(0.0f);
       flags.setColor(SK_ColorCYAN);
       flags.setAlpha(103);
       flags.setStrokeWidth(0.32f);
@@ -1066,7 +1063,6 @@ std::vector<PaintFlags> test_flags = {
       flags.setStrokeCap(PaintFlags::kRound_Cap);
       flags.setStrokeJoin(PaintFlags::kRound_Join);
       flags.setStyle(PaintFlags::kFill_Style);
-      flags.setHinting(PaintFlags::kSlight_Hinting);
       flags.setFilterQuality(SkFilterQuality::kHigh_SkFilterQuality);
 
       SkScalar intervals[] = {1.f, 1.f};
