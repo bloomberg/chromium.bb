@@ -60,6 +60,7 @@ void OpenNewTab() {
     [GetMainController().tabSwitcher
         dismissWithNewTabAnimationToModel:tabModel
                                   withURL:GURL(kChromeUINewTabURL)
+                               virtualURL:GURL::EmptyGURL()
                                   atIndex:NSNotFound
                                transition:ui::PAGE_TRANSITION_TYPED];
   }
@@ -80,6 +81,7 @@ void OpenNewIncognitoTab() {
     [GetMainController().tabSwitcher
         dismissWithNewTabAnimationToModel:tabModel
                                   withURL:GURL(kChromeUINewTabURL)
+                               virtualURL:GURL::EmptyGURL()
                                   atIndex:NSNotFound
                                transition:ui::PAGE_TRANSITION_TYPED];
   }

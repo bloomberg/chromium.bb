@@ -52,6 +52,7 @@
 
 - (Tab*)dismissWithNewTabAnimationToModel:(TabModel*)targetModel
                                   withURL:(const GURL&)URL
+                               virtualURL:(const GURL&)virtualURL
                                   atIndex:(NSUInteger)position
                                transition:(ui::PageTransition)transition {
   NSUInteger tabIndex = position;
@@ -60,6 +61,7 @@
 
   web::NavigationManager::WebLoadParams loadParams(URL);
   loadParams.transition_type = transition;
+  loadParams.virtual_url = virtualURL;
 
   // Create the new tab.
   Tab* tab = [targetModel insertTabWithLoadParams:loadParams
