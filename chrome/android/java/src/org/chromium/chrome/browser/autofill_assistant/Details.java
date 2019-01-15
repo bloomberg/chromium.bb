@@ -4,73 +4,55 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Java side equivalent of autofill_assistant::DetailsProto.
  */
 class Details {
-    @IntDef({DetailsField.TITLE, DetailsField.URL, DetailsField.DATE, DetailsField.DESCRIPTION,
-            DetailsField.MID, DetailsField.IS_FINAL})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface DetailsField {
-        int TITLE = 0;
-        int URL = 1;
-        int DATE = 2;
-        int DESCRIPTION = 3;
-        int MID = 4;
-        int IS_FINAL = 5;
-        int PRICE = 6;
-    }
-
     private final String mTitle;
     private final String mUrl;
     @Nullable
     private final Date mDate;
     private final String mDescription;
     private final String mMid;
-    private final boolean mIsFinal;
+    /** Whether user approval is required (i.e., due to changes). */
+    private boolean mUserApprovalRequired;
+    /** Whether the title should be highlighted. */
+    private boolean mHighlightTitle;
+    /** Whether the date should be highlighted. */
+    private boolean mHighlightDate;
     /**
      * The correctly formatted price for the client locale, including the currency.
      * Example: '$20.50' or '20.50 €'.
      */
     @Nullable
     private final String mPrice;
-
-    /** Contains the fields that have changed when merging with other Details object. */
-    private final Set<Integer> mFieldsChanged;
-    // NOTE: When adding a new field, update the isEmpty and toJSONObject methods.
-
-    static final Details EMPTY_DETAILS =
-            new Details("", "", null, "", "", null, false, Collections.emptySet());
+    // NOTE: When adding a new field, update the clearChangedFlags and toJSONObject methods.
 
     private static final String RFC_3339_FORMAT_WITHOUT_TIMEZONE = "yyyy'-'MM'-'dd'T'HH':'mm':'ss";
 
     Details(String title, String url, @Nullable Date date, String description, String mId,
-            @Nullable String price, boolean isFinal, Set<Integer> fieldsChanged) {
+            @Nullable String price, boolean userApprovalRequired, boolean highlightTitle,
+            boolean highlightDate) {
         this.mTitle = title;
         this.mUrl = url;
         this.mDate = date;
         this.mDescription = description;
         this.mMid = mId;
         this.mPrice = price;
-        this.mIsFinal = isFinal;
-        this.mFieldsChanged = fieldsChanged;
+        this.mUserApprovalRequired = userApprovalRequired;
+        this.mHighlightTitle = highlightTitle;
+        this.mHighlightDate = highlightDate;
     }
 
     String getTitle() {
@@ -99,54 +81,70 @@ class Details {
         return mPrice;
     }
 
-    JSONObject toJSONObject() {
+    JSONObject toJSONObject() throws JSONException {
         // Details are part of the feedback form, hence they need a JSON representation.
-        Map<String, String> movieDetails = new HashMap<>();
-        movieDetails.put("title", mTitle);
-        movieDetails.put("url", mUrl);
-        movieDetails.put("mId", mMid);
-        if (mPrice != null) movieDetails.put("price", mPrice);
-        if (mDate != null) movieDetails.put("date", mDate.toString());
-        movieDetails.put("description", mDescription);
-        return new JSONObject(movieDetails);
+        JSONObject jsonRepresentation = new JSONObject();
+        jsonRepresentation.put("title", mTitle);
+        jsonRepresentation.put("url", mUrl);
+        jsonRepresentation.put("mId", mMid);
+        if (mPrice != null) jsonRepresentation.put("price", mPrice);
+        if (mDate != null) jsonRepresentation.put("date", mDate.toString());
+        jsonRepresentation.put("description", mDescription);
+        jsonRepresentation.put("user_approval_required", mUserApprovalRequired);
+        jsonRepresentation.put("highlight_title", mHighlightTitle);
+        jsonRepresentation.put("highlight_date", mHighlightDate);
+        return jsonRepresentation;
+    }
+
+    boolean getUserApprovalRequired() {
+        return mUserApprovalRequired;
+    }
+
+    boolean getHighlightTitle() {
+        return mHighlightTitle;
+    }
+
+    boolean getHighlightDate() {
+        return mHighlightDate;
     }
 
     /**
-     * Whether the details are not subject to change anymore. If set to false the animated
-     * placeholders will be displayed in place of missing data.
+     * Clears all flags that indicate that this Details object has been changed.
      */
-    boolean isFinal() {
-        return mIsFinal;
+    void clearChangedFlags() {
+        mUserApprovalRequired = false;
+        mHighlightTitle = false;
+        mHighlightDate = false;
     }
 
-    Set<Integer> getFieldsChanged() {
-        return mFieldsChanged;
-    }
-
-    boolean isEmpty() {
-        return mTitle.isEmpty() && mUrl.isEmpty() && mDescription.isEmpty() && mDate == null
-                && mMid.isEmpty();
-    }
-
-    // TODO(crbug.com/806868): Create a fallback when there are no parameters for details.
+    /**
+     * Creates a new Details object by inferring field values from parameters.
+     * @param parameters The script parameters from which to infer field values.
+     * @return A new instance or null if no field could be inferred.
+     */
+    @Nullable
     static Details makeFromParameters(Map<String, String> parameters) {
         String title = "";
         String description = "";
         Date date = null;
         String mId = "";
+        boolean empty = true;
         for (String key : parameters.keySet()) {
             if (key.endsWith("E_NAME")) {
                 title = parameters.get(key);
+                empty = false;
                 continue;
             }
 
             if (key.endsWith("R_NAME")) {
                 description = parameters.get(key);
+                empty = false;
                 continue;
             }
 
             if (key.endsWith("MID")) {
                 mId = parameters.get(key);
+                empty = false;
                 continue;
             }
 
@@ -156,71 +154,17 @@ class Details {
                     // don't care about.
                     date = new SimpleDateFormat(RFC_3339_FORMAT_WITHOUT_TIMEZONE, Locale.ROOT)
                                    .parse(parameters.get(key));
+                    empty = false;
                 } catch (ParseException e) {
                     // Ignore.
                 }
             }
         }
 
+        if (empty) return null;
+
         return new Details(title, /* url= */ "", date, description, mId, /* price= */ null,
-                /* isFinal= */ false,
-                /* fieldsChanged= */ Collections.emptySet());
-    }
-
-    /**
-     * Merges {@param oldDetails} with the {@param newDetails} filling the missing fields.
-     *
-     * <p>The distinction is important, as the fields from old version take precedence, with the
-     * exception of date and isFinal fields.
-     *
-     * <p>If {@param oldDetails} are empty copy of {@param newDetails} with empty
-     * {@code changedFields} is returned
-     */
-    static Details merge(Details oldDetails, Details newDetails) {
-        if (oldDetails.isEmpty()) {
-            return new Details(newDetails.getTitle(), newDetails.getUrl(), newDetails.getDate(),
-                    newDetails.getDescription(), newDetails.getMid(), newDetails.getPrice(),
-                    newDetails.isFinal(), Collections.emptySet());
-        }
-
-        Set<Integer> changedFields = new HashSet<>();
-
-        String title = oldDetails.getTitle();
-        String mId = oldDetails.getMid();
-        // Title and mId are tightly connected. If mId is different then title should also be
-        // different, but it's not true the other way (titles might slightly differ).
-        if (!oldDetails.getMid().isEmpty() && !newDetails.getMid().isEmpty()
-                && !oldDetails.getMid().equals(newDetails.getMid())
-                && !oldDetails.getTitle().equals(newDetails.getTitle())) {
-            changedFields.add(DetailsField.TITLE);
-            title = newDetails.getTitle();
-            mId = newDetails.getMid();
-        }
-        String url = oldDetails.getUrl().isEmpty() ? newDetails.getUrl() : oldDetails.getUrl();
-
-        Date date = oldDetails.getDate();
-        if (oldDetails.getDate() == null) {
-            // There was no date. Use the new one unconditionally.
-            date = newDetails.getDate();
-        } else if (newDetails.getDate() != null
-                && !oldDetails.getDate().equals(newDetails.getDate())) {
-            // Only if new date is different than old (which wasn't null) mark it as changedField.
-            date = newDetails.getDate();
-            changedFields.add(DetailsField.DATE);
-        }
-
-        String description = oldDetails.getDescription().isEmpty() ? newDetails.getDescription()
-                                                                   : oldDetails.getDescription();
-
-        String price = oldDetails.getPrice();
-        if (price == null) {
-            price = newDetails.getPrice();
-        } else if (newDetails.getPrice() != null && !newDetails.getPrice().equals(price)) {
-            price = newDetails.getPrice();
-            changedFields.add(DetailsField.PRICE);
-        }
-
-        boolean isFinal = newDetails.isFinal();
-        return new Details(title, url, date, description, mId, price, isFinal, changedFields);
+                /* userApprovalRequired= */ false, /* highlightTitle= */ false,
+                /* highlightDate= */ false);
     }
 }

@@ -159,7 +159,7 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD1(StopCurrentScriptAndShutdown, void(const std::string& message));
   MOCK_METHOD0(HideDetails, void());
   MOCK_METHOD2(ShowDetails,
-               void(const DetailsProto& details,
+               void(const ShowDetailsProto& details,
                     base::OnceCallback<void(bool)> callback));
   MOCK_METHOD2(ShowProgressBar, void(int progress, const std::string& message));
   MOCK_METHOD0(HideProgressBar, void());

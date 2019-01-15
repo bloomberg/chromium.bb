@@ -17,7 +17,7 @@
 
 namespace autofill_assistant {
 struct ScriptHandle;
-class DetailsProto;
+class ShowDetailsProto;
 
 // Controller to control autofill assistant UI.
 class UiController {
@@ -109,7 +109,7 @@ class UiController {
   // not similar to the current one.
   // TODO(806868): Pass details to the native side instead of comparing on the
   // Java side.
-  virtual void ShowDetails(const DetailsProto& details,
+  virtual void ShowDetails(const ShowDetailsProto& details,
                            base::OnceCallback<void(bool)> callback) = 0;
 
   // Show the progress bar with |message| and set it at |progress|%.

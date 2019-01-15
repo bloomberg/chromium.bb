@@ -45,7 +45,6 @@ import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.concurrent.GuardedBy;
@@ -91,7 +90,7 @@ public class AutofillAssistantUiTest {
                 "components/test/data/autofill_assistant/autofill_assistant_target_website.html"));
         PathUtils.setPrivateDataDirectorySuffix("chrome");
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
-        when(mControllerMock.getDetails()).thenReturn(Details.EMPTY_DETAILS);
+        when(mControllerMock.getDetails()).thenReturn(null);
     }
 
     @After
@@ -195,7 +194,8 @@ public class AutofillAssistantUiTest {
                                         Calendar.getInstance().getTime(), movieDescription,
                                         /* mId = */ "",
                                         /* price = */ null,
-                                        /* isFinal= */ true, Collections.emptySet()))));
+                                        /* changed= */ false, /*highlightTitle=*/false,
+                                        /*highlightDate=*/false))));
         TextView detailsTitle = (TextView) bottomSheet.findViewById(R.id.details_title);
         TextView detailsText = (TextView) bottomSheet.findViewById(R.id.details_text);
         Assert.assertEquals(detailsTitle.getText(), movieTitle);

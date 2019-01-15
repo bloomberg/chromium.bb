@@ -330,9 +330,11 @@ void UiControllerAndroid::HideDetails() {
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 
-void UiControllerAndroid::ShowDetails(const DetailsProto& details,
+void UiControllerAndroid::ShowDetails(const ShowDetailsProto& show_details,
                                       base::OnceCallback<void(bool)> callback) {
   show_details_callback_ = std::move(callback);
+  const DetailsProto& details = show_details.details();
+  const DetailsChanges& change_flags = show_details.change_flags();
   int year = details.datetime().date().year();
   int month = details.datetime().date().month();
   int day = details.datetime().date().day();
@@ -348,7 +350,8 @@ void UiControllerAndroid::ShowDetails(const DetailsProto& details,
       base::android::ConvertUTF8ToJavaString(env, details.description()),
       base::android::ConvertUTF8ToJavaString(env, details.m_id()),
       base::android::ConvertUTF8ToJavaString(env, details.total_price()), year,
-      month, day, hour, minute, second);
+      month, day, hour, minute, second, change_flags.user_approval_required(),
+      change_flags.highlight_title(), change_flags.highlight_date());
 }
 
 void UiControllerAndroid::ShowProgressBar(int progress,

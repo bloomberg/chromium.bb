@@ -29,7 +29,7 @@ class WebContents;
 
 namespace autofill_assistant {
 class ClientMemory;
-class DetailsProto;
+class ShowDetailsProto;
 struct PaymentInformation;
 
 // Action delegate called when processing actions.
@@ -198,7 +198,7 @@ class ActionDelegate {
   virtual void HideDetails() = 0;
 
   // Show contextual information.
-  virtual void ShowDetails(const DetailsProto& details,
+  virtual void ShowDetails(const ShowDetailsProto& details,
                            base::OnceCallback<void(bool)> callback) = 0;
 
   // Show the progress bar with |message| and set it at |progress|%.

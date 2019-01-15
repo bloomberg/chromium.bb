@@ -310,9 +310,9 @@ void ScriptExecutor::HideDetails() {
   delegate_->GetUiController()->HideDetails();
 }
 
-void ScriptExecutor::ShowDetails(const DetailsProto& details,
+void ScriptExecutor::ShowDetails(const ShowDetailsProto& show_details,
                                  base::OnceCallback<void(bool)> callback) {
-  return delegate_->GetUiController()->ShowDetails(details,
+  return delegate_->GetUiController()->ShowDetails(show_details,
                                                    std::move(callback));
 }
 
