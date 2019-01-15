@@ -20,7 +20,7 @@ class ZipArchiverImpl : public mojom::ZipArchiver {
 
   void Archive(mojo::ScopedHandle src_file_handle,
                mojo::ScopedHandle zip_file_handle,
-               const std::string& filename,
+               const std::string& filename_in_zip,
                const std::string& password,
                ArchiveCallback callback) override;
 
