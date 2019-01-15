@@ -88,7 +88,7 @@ Status SendKeysToElement(
     const base::ListValue* key_list) {
   Status status = FocusToElement(session, web_view, element_id);
   if (status.IsError())
-    return status;
+        return Status(kElementNotInteractable);
   return SendKeysOnWindow(web_view, key_list, true, &session->sticky_modifiers);
 }
 
