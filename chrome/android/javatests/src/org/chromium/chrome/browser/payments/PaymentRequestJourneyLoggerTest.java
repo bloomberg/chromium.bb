@@ -24,6 +24,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.CardType;
@@ -206,10 +207,16 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 R.id.payments_add_option_button, mPaymentRequestTestRule.getReadyToEdit());
         mPaymentRequestTestRule.setSpinnerSelectionInEditorAndWait(
                 0 /* Afghanistan */, mPaymentRequestTestRule.getReadyToEdit());
-        mPaymentRequestTestRule.setTextInEditorAndWait(
-                new String[] {
-                        "Alice", "Supreme Court", "Airport Road", "Kabul", "1043", "020-253-0000"},
-                mPaymentRequestTestRule.getEditorTextUpdate());
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_COMPANY_NAME)) {
+            mPaymentRequestTestRule.setTextInEditorAndWait(
+                    new String[] {"Alice", "Supreme Court", "Airport Road", "Kabul", "1043",
+                            "020-253-0000"},
+                    mPaymentRequestTestRule.getEditorTextUpdate());
+        } else {
+            mPaymentRequestTestRule.setTextInEditorAndWait(
+                    new String[] {"Alice", "Airport Road", "Kabul", "1043", "020-253-0000"},
+                    mPaymentRequestTestRule.getEditorTextUpdate());
+        }
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
 
