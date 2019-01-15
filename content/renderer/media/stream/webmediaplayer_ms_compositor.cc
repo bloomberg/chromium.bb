@@ -161,7 +161,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
                        weak_ptr_factory_.GetWeakPtr()));
     update_submission_state_callback_ = media::BindToLoop(
         video_frame_compositor_task_runner_,
-        base::BindRepeating(&WebMediaPlayerMSCompositor::UpdateSubmissionState,
+        base::BindRepeating(&WebMediaPlayerMSCompositor::SetIsSurfaceVisible,
                             weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -203,9 +203,9 @@ void WebMediaPlayerMSCompositor::InitializeSubmitter() {
   submitter_->Initialize(this);
 }
 
-void WebMediaPlayerMSCompositor::UpdateSubmissionState(bool state) {
+void WebMediaPlayerMSCompositor::SetIsSurfaceVisible(bool state) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
-  submitter_->UpdateSubmissionState(state);
+  submitter_->SetIsSurfaceVisible(state);
 }
 
 // TODO(https://crbug/879424): Rename, since it really doesn't enable
@@ -239,6 +239,12 @@ void WebMediaPlayerMSCompositor::EnableSubmission(
 void WebMediaPlayerMSCompositor::SetForceSubmit(bool force_submit) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
   submitter_->SetForceSubmit(force_submit);
+}
+
+void WebMediaPlayerMSCompositor::SetIsPageVisible(bool is_visible) {
+  DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
+  if (submitter_)
+    submitter_->SetIsPageVisible(is_visible);
 }
 
 gfx::Size WebMediaPlayerMSCompositor::GetCurrentSize() {

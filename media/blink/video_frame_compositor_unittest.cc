@@ -38,7 +38,8 @@ class MockWebVideoFrameSubmitter : public blink::WebVideoFrameSubmitter {
   MOCK_METHOD1(Initialize, void(cc::VideoFrameProvider*));
   MOCK_METHOD1(SetRotation, void(media::VideoRotation));
   MOCK_METHOD1(SetIsOpaque, void(bool));
-  MOCK_METHOD1(UpdateSubmissionState, void(bool));
+  MOCK_METHOD1(SetIsSurfaceVisible, void(bool));
+  MOCK_METHOD1(SetIsPageVisible, void(bool));
   MOCK_METHOD1(SetForceSubmit, void(bool));
   void DidReceiveFrame() override { ++did_receive_frame_count_; }
 
@@ -148,6 +149,32 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
 
 TEST_P(VideoFrameCompositorTest, InitialValues) {
   EXPECT_FALSE(compositor()->GetCurrentFrame().get());
+}
+
+TEST_P(VideoFrameCompositorTest, SetIsSurfaceVisible) {
+  if (!IsSurfaceLayerForVideoEnabled())
+    return;
+
+  auto cb = compositor()->GetUpdateSubmissionStateCallback();
+
+  EXPECT_CALL(*submitter_, SetIsSurfaceVisible(true));
+  cb.Run(true);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(*submitter_, SetIsSurfaceVisible(false));
+  cb.Run(false);
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_P(VideoFrameCompositorTest, SetIsPageVisible) {
+  if (!IsSurfaceLayerForVideoEnabled())
+    return;
+
+  EXPECT_CALL(*submitter_, SetIsPageVisible(true));
+  compositor()->SetIsPageVisible(true);
+
+  EXPECT_CALL(*submitter_, SetIsPageVisible(false));
+  compositor()->SetIsPageVisible(false);
 }
 
 TEST_P(VideoFrameCompositorTest, PaintSingleFrame) {

@@ -863,6 +863,10 @@ void WebMediaPlayerMS::OnFrameHidden() {
                        base::Unretained(frame_deliverer_.get()), true));
   }
 
+  compositor_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&WebMediaPlayerMSCompositor::SetIsPageVisible,
+                                base::Unretained(compositor_.get()), false));
+
 // On Android, substitute the displayed VideoFrame with a copy to avoid holding
 // onto it unnecessarily.
 #if defined(OS_ANDROID)
@@ -901,6 +905,10 @@ void WebMediaPlayerMS::OnFrameShown() {
         base::BindOnce(&FrameDeliverer::SetRenderFrameSuspended,
                        base::Unretained(frame_deliverer_.get()), false));
   }
+
+  compositor_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&WebMediaPlayerMSCompositor::SetIsPageVisible,
+                                base::Unretained(compositor_.get()), true));
 
 // On Android, resume playback on visibility. play() clears
 // |should_play_upon_shown_|.

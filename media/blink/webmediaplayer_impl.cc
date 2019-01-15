@@ -353,9 +353,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   always_enable_overlays_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kForceVideoOverlays);
 
-  if (base::FeatureList::IsEnabled(media::kOverlayFullscreenVideo)) {
-    bool use_android_overlay =
-        base::FeatureList::IsEnabled(media::kUseAndroidOverlay);
+  if (base::FeatureList::IsEnabled(kOverlayFullscreenVideo)) {
+    bool use_android_overlay = base::FeatureList::IsEnabled(kUseAndroidOverlay);
     overlay_mode_ = use_android_overlay ? OverlayMode::kUseAndroidOverlay
                                         : OverlayMode::kUseContentVideoView;
   } else {
@@ -974,8 +973,8 @@ void WebMediaPlayerImpl::SetSinkId(
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << __func__;
 
-  media::OutputDeviceStatusCB callback =
-      media::ConvertToOutputDeviceStatusCB(std::move(web_callback));
+  OutputDeviceStatusCB callback =
+      ConvertToOutputDeviceStatusCB(std::move(web_callback));
   media_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SetSinkIdOnMediaThread, audio_source_provider_,
                                 sink_id.Utf8(), std::move(callback)));
@@ -1887,10 +1886,8 @@ void WebMediaPlayerImpl::ActivateSurfaceLayerForVideo() {
   // TODO(872056): the surface should be activated but for some reasons, it
   // does not. It is possible that this will no longer be needed after 872056
   // is fixed.
-  if (client_->DisplayType() ==
-      WebMediaPlayer::DisplayType::kPictureInPicture) {
+  if (IsInPictureInPicture())
     OnSurfaceIdUpdated(bridge_->GetSurfaceId());
-  }
 }
 
 void WebMediaPlayerImpl::OnFrameSinkDestroyed() {
@@ -2085,7 +2082,7 @@ void WebMediaPlayerImpl::OnAddTextTrack(const TextTrackConfig& config,
   std::unique_ptr<WebInbandTextTrackImpl> web_inband_text_track(
       new WebInbandTextTrackImpl(web_kind, web_label, web_language, web_id));
 
-  std::unique_ptr<media::TextTrack> text_track(new TextTrackImpl(
+  std::unique_ptr<TextTrack> text_track(new TextTrackImpl(
       main_task_runner_, client_, std::move(web_inband_text_track)));
 
   done_cb.Run(std::move(text_track));
@@ -2249,6 +2246,12 @@ void WebMediaPlayerImpl::OnFrameHidden() {
   // Schedule suspended playing media to be paused if the user doesn't come back
   // to it within some timeout period to avoid any autoplay surprises.
   ScheduleIdlePauseTimer();
+
+  // Notify the compositor of our page visibility status.
+  vfc_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VideoFrameCompositor::SetIsPageVisible,
+                     base::Unretained(compositor_.get()), !IsHidden()));
 }
 
 void WebMediaPlayerImpl::OnFrameClosed() {
@@ -2269,6 +2272,12 @@ void WebMediaPlayerImpl::OnFrameShown() {
 
   if (video_decode_stats_reporter_)
     video_decode_stats_reporter_->OnShown();
+
+  // Notify the compositor of our page visibility status.
+  vfc_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VideoFrameCompositor::SetIsPageVisible,
+                     base::Unretained(compositor_.get()), !IsHidden()));
 
   // Only track the time to the first frame if playing or about to play because
   // of being shown and only for videos we would optimize background playback
@@ -2853,7 +2862,7 @@ void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state,
         delegate_->DidPlayerSizeChange(delegate_id_, NaturalSize());
       delegate_->DidPlay(
           delegate_id_, HasVideo(), has_audio,
-          media::DurationToMediaContentType(GetPipelineMediaDuration()));
+          DurationToMediaContentType(GetPipelineMediaDuration()));
       break;
     }
     case DelegateState::PAUSED:

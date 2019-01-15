@@ -338,6 +338,7 @@ class MockVideoFrameCompositor : public VideoFrameCompositor {
 
   // MOCK_METHOD doesn't like OnceCallback.
   void SetOnNewProcessedFrameCallback(OnNewProcessedFrameCB cb) override {}
+  MOCK_METHOD1(SetIsPageVisible, void(bool));
   MOCK_METHOD0(GetCurrentFrameAndUpdateIfStale, scoped_refptr<VideoFrame>());
   MOCK_METHOD6(EnableSubmission,
                void(const viz::SurfaceId&,
@@ -587,12 +588,14 @@ class WebMediaPlayerImplTest : public testing::Test {
   }
 
   void BackgroundPlayer() {
+    EXPECT_CALL(*compositor_, SetIsPageVisible(false));
     delegate_.SetFrameHiddenForTesting(true);
     delegate_.SetFrameClosedForTesting(false);
     wmpi_->OnFrameHidden();
   }
 
   void ForegroundPlayer() {
+    EXPECT_CALL(*compositor_, SetIsPageVisible(true));
     delegate_.SetFrameHiddenForTesting(false);
     delegate_.SetFrameClosedForTesting(false);
     wmpi_->OnFrameShown();

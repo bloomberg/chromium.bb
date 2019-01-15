@@ -428,7 +428,8 @@ class MockWebVideoFrameSubmitter : public blink::WebVideoFrameSubmitter {
   MOCK_METHOD1(MockInitialize, void(cc::VideoFrameProvider*));
   MOCK_METHOD1(SetRotation, void(media::VideoRotation));
   MOCK_METHOD1(MockSetIsOpaque, void(bool));
-  MOCK_METHOD1(UpdateSubmissionState, void(bool));
+  MOCK_METHOD1(SetIsSurfaceVisible, void(bool));
+  MOCK_METHOD1(SetIsPageVisible, void(bool));
   MOCK_METHOD1(SetForceSubmit, void(bool));
   MOCK_CONST_METHOD0(IsDrivingFrameUpdates, bool());
 
