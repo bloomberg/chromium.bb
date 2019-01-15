@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.browserservices;
 
-import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -16,14 +15,11 @@ import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
-import android.util.SparseArray;
 import android.widget.RemoteViews;
 
-import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
@@ -36,15 +32,8 @@ import org.chromium.content_public.browser.LoadUrlParams;
  */
 public class BrowserSessionContentUtils {
     private static final String TAG = "BrowserSession_Utils";
-
-    private static final SparseArray<CustomTabsSessionToken> sTaskIdToSession = new SparseArray<>();
-
     @Nullable
     private static BrowserSessionContentHandler sActiveContentHandler;
-
-
-    @Nullable
-    private static Callback<CustomTabsSessionToken> sSessionDisconnectCallback;
 
     /** Extra that is passed to intent to trigger a certain action within a running activity. */
     private static final String EXTRA_INTERNAL_ACTION =
@@ -59,9 +48,6 @@ public class BrowserSessionContentUtils {
     public static void setActiveContentHandler(
             @NonNull BrowserSessionContentHandler contentHandler) {
         sActiveContentHandler = contentHandler;
-        sTaskIdToSession.append(sActiveContentHandler.getTaskId(),
-                sActiveContentHandler.getSession());
-        ensureSessionCleanUpOnDisconnects();
     }
 
     /**
@@ -71,23 +57,6 @@ public class BrowserSessionContentUtils {
         if (sActiveContentHandler == contentHandler) {
             sActiveContentHandler = null;
         } // else this contentHandler has already been replaced.
-
-        // Intentionally not removing from sTaskIdToSession to handle cases when the task is
-        // brought to foreground by a new intent - the CCT might not be able to call
-        // setActiveContentHandler in time.
-    }
-
-    /**
-     * @return whether there is an active content handler with a matching session running in the
-     * same task as the given intent is being launched from.
-     */
-    public static boolean canHandleIntentInCurrentTask(Intent intent, Context context) {
-        if (!(context instanceof Activity)) return false;
-        int taskId = ((Activity) context).getTaskId();
-        CustomTabsSessionToken sessionInCurrentTask = sTaskIdToSession.get(taskId);
-        return sessionInCurrentTask != null
-            && sessionInCurrentTask.equals(
-                    CustomTabsSessionToken.getSessionTokenFromIntent(intent));
     }
 
     /**
@@ -233,18 +202,5 @@ public class BrowserSessionContentUtils {
                 .putExtra(EXTRA_INTERNAL_ACTION, INTERNAL_ACTION_SHARE);
         IntentHandler.addTrustedIntentExtras(intent);
         return intent;
-    }
-
-    private static void ensureSessionCleanUpOnDisconnects() {
-        if (sSessionDisconnectCallback != null) return;
-        sSessionDisconnectCallback = (session) -> {
-            for (int i = 0; i < sTaskIdToSession.size(); i++) {
-                if (sTaskIdToSession.valueAt(i).equals(session)) {
-                    sTaskIdToSession.removeAt(i);
-                }
-            }
-        };
-        ChromeApplication.getComponent().resolveCustomTabsConnection()
-                .setDisconnectCallback(sSessionDisconnectCallback);
     }
 }
