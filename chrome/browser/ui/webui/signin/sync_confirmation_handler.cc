@@ -13,7 +13,7 @@
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
@@ -24,10 +24,10 @@
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/avatar_icon_util.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/unified_consent/feature.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "url/gurl.h"
 
 const int kProfileImageSize = 128;
@@ -40,7 +40,8 @@ SyncConfirmationHandler::SyncConfirmationHandler(
       browser_(browser),
       did_user_explicitly_interact(false),
       string_to_grd_id_map_(string_to_grd_id_map),
-      consent_feature_(consent_feature) {
+      consent_feature_(consent_feature),
+      identity_manager_(IdentityManagerFactory::GetForProfile(profile_)) {
   DCHECK(profile_);
   DCHECK(browser_);
   BrowserList::AddObserver(this);
@@ -103,8 +104,7 @@ void SyncConfirmationHandler::HandleUndo(const base::ListValue* args) {
 
 void SyncConfirmationHandler::HandleAccountImageRequest(
     const base::ListValue* args) {
-  std::string account_id = SigninManagerFactory::GetForProfile(profile_)
-                               ->GetAuthenticatedAccountId();
+  std::string account_id = identity_manager_->GetPrimaryAccountId();
   AccountInfo account_info =
       AccountTrackerServiceFactory::GetForProfile(profile_)->GetAccountInfo(
           account_id);
@@ -142,8 +142,7 @@ void SyncConfirmationHandler::RecordConsent(const base::ListValue* args) {
 
   consent_auditor::ConsentAuditor* consent_auditor =
       ConsentAuditorFactory::GetForProfile(profile_);
-  const std::string& account_id = SigninManagerFactory::GetForProfile(profile_)
-                                      ->GetAuthenticatedAccountId();
+  const std::string& account_id = identity_manager_->GetPrimaryAccountId();
   // TODO(markusheintz): Use a bool unified_consent_enabled instead of a
   // consent_auditor::Feature type variable.
   if (consent_feature_ == consent_auditor::Feature::CHROME_UNIFIED_CONSENT) {
@@ -193,8 +192,7 @@ void SyncConfirmationHandler::OnAccountUpdated(const AccountInfo& info) {
   if (!info.IsValid())
     return;
 
-  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
-  if (info.account_id != signin_manager->GetAuthenticatedAccountId())
+  if (info.account_id != identity_manager_->GetPrimaryAccountId())
     return;
 
   AccountTrackerServiceFactory::GetForProfile(profile_)->RemoveObserver(this);
@@ -227,8 +225,7 @@ void SyncConfirmationHandler::HandleInitializedWithSize(
   if (!browser_)
     return;
 
-  std::string account_id = SigninManagerFactory::GetForProfile(profile_)
-                               ->GetAuthenticatedAccountId();
+  std::string account_id = identity_manager_->GetPrimaryAccountId();
   if (account_id.empty()) {
     // No account is signed in, so there is nothing to be displayed in the sync
     // confirmation dialog.
