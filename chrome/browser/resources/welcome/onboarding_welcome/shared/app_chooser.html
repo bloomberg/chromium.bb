@@ -82,6 +82,7 @@
 
     <template is="dom-repeat" items="[[appList_]]">
       <button active$="[[item.selected]]"
+          aria-pressed$="[[getAriaPressed_(item.selected)]]"
           on-click="onAppClick_" on-pointerdown="onAppPointerDown_"
           on-keyup="onAppKeyUp_" class="option">
         <div class="option-icon-shadow">
