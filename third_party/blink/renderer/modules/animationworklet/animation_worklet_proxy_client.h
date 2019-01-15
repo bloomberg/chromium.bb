@@ -45,7 +45,6 @@ class MODULES_EXPORT AnimationWorkletProxyClient
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_mutatee_runner);
   void Trace(blink::Visitor*) override;
 
-  virtual void SynchronizeAnimatorName(const String& animator_name);
   virtual void SetGlobalScope(WorkletGlobalScope*);
   void Dispose();
 

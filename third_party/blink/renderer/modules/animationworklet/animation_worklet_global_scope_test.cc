@@ -44,7 +44,6 @@ class MockAnimationWorkletProxyClient : public AnimationWorkletProxyClient {
   void SetGlobalScope(WorkletGlobalScope*) override {
     did_set_global_scope_ = true;
   }
-  void SynchronizeAnimatorName(const String&) override{};
   bool did_set_global_scope() { return did_set_global_scope_; }
 
  private:
