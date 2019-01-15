@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/network/network_handler.h"
 #include "content/public/browser/notification_service.h"
@@ -32,7 +33,14 @@ void NetworkPrefStateObserver::Observe(
   DCHECK_EQ(chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED, type);
   Profile* profile = content::Details<Profile>(details).ptr();
   DCHECK(profile);
-  InitializeNetworkPrefServices(profile);
+
+  // Reinitialize the NetworkHandler's pref service when the primary user logs
+  // in. Other profiles are ignored because only the primary user's network
+  // configuration is used on Chrome OS.
+  if (ProfileHelper::IsPrimaryProfile(profile)) {
+    InitializeNetworkPrefServices(profile);
+    notification_registrar_.RemoveAll();
+  }
 }
 
 void NetworkPrefStateObserver::InitializeNetworkPrefServices(Profile* profile) {
