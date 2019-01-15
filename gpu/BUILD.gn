@@ -613,6 +613,7 @@ fuzzer_test("gpu_fuzzer") {
     ":gles2",
     ":gpu",
     "//base",
+    "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//ui/gfx/geometry",
     "//ui/gl",

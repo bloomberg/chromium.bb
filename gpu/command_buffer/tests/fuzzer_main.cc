@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
@@ -297,11 +298,12 @@ GpuPreferences GetGpuPreferences() {
 class CommandBufferSetup {
  public:
   CommandBufferSetup()
-      : atexit_manager_(),
+      : at_exit_manager_(),
         gpu_preferences_(GetGpuPreferences()),
         share_group_(new gl::GLShareGroup),
         translator_cache_(gpu_preferences_) {
     logging::SetMinLogLevel(logging::LOG_FATAL);
+    CHECK(base::i18n::InitializeICU());
     base::CommandLine::Init(0, nullptr);
 
     auto* command_line = base::CommandLine::ForCurrentProcess();
@@ -523,7 +525,7 @@ class CommandBufferSetup {
     LOG_IF(FATAL, (id != GL_OUT_OF_MEMORY)) << "GL Driver Message: " << message;
   }
 
-  base::AtExitManager atexit_manager_;
+  base::AtExitManager at_exit_manager_;
 
   GpuPreferences gpu_preferences_;
 
