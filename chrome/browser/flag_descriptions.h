@@ -826,6 +826,9 @@ extern const char kOfflineAutoReloadVisibleOnlyDescription[];
 extern const char kOmniboxDisplayTitleForCurrentUrlName[];
 extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 
+extern const char kOmniboxNewAnswerLayoutName[];
+extern const char kOmniboxNewAnswerLayoutDescription[];
+
 extern const char kOmniboxSpareRendererName[];
 extern const char kOmniboxSpareRendererDescription[];
 
@@ -1676,9 +1679,6 @@ extern const char kInfiniteSessionRestoreDescription[];
 
 extern const char kOmniboxDriveSuggestionsName[];
 extern const char kOmniboxDriveSuggestionsDescriptions[];
-
-extern const char kOmniboxNewAnswerLayoutName[];
-extern const char kOmniboxNewAnswerLayoutDescription[];
 
 extern const char kOmniboxPedalSuggestionsName[];
 extern const char kOmniboxPedalSuggestionsDescription[];

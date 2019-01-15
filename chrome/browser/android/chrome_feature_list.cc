@@ -78,6 +78,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kWebPayments,
     &feed::kInterestFeedContentSuggestions,
     &invalidation::switches::kFCMInvalidations,
+    &omnibox::kOmniboxNewAnswerLayout,
     &kAdjustWebApkInstallationSpace,
     &kAllowRemoteContextForNotifications,
     &kAndroidNightMode,

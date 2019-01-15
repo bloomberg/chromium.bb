@@ -1345,6 +1345,10 @@ const char kOmniboxDisplayTitleForCurrentUrlDescription[] =
     "the current page is provided as the first suggestion without a title. "
     "Enabling this flag causes the title to be displayed.";
 
+const char kOmniboxNewAnswerLayoutName[] = "Omnibox new answer layout";
+const char kOmniboxNewAnswerLayoutDescription[] =
+    "Modernize omnibox answers using an enhanced layout with larger icons.";
+
 const char kOmniboxSpareRendererName[] =
     "Start spare renderer on omnibox focus";
 const char kOmniboxSpareRendererDescription[] =
@@ -2820,12 +2824,6 @@ const char kOmniboxDriveSuggestionsName[] =
 const char kOmniboxDriveSuggestionsDescriptions[] =
     "Display suggestions for Google Drive documents in the omnibox when Google "
     "is the default search engine.";
-
-const char kOmniboxNewAnswerLayoutName[] = "Omnibox new answer layout";
-const char kOmniboxNewAnswerLayoutDescription[] =
-    "Display answers using an enhanced layout with larger images. Has no "
-    "effect unless either the #upcoming-ui-features flag is Enabled or the "
-    "#top-chrome-md flag is set to Refresh or Touchable Refresh.";
 
 const char kOmniboxPedalSuggestionsName[] = "Omnibox Pedal suggestions";
 const char kOmniboxPedalSuggestionsDescription[] =
