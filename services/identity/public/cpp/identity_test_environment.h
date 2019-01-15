@@ -239,6 +239,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Resets to the state where accounts have not yet been loaded from disk.
   void ResetToAccountsNotYetLoadedFromDiskState();
 
+  // Simulates the reloading of the accounts from disk.
+  void ReloadAccountsFromDisk();
+
   // Sets whether the list of accounts in Gaia cookie jar is fresh and does not
   // need to be updated.
   void SetFreshnessOfAccountsInGaiaCookie(bool accounts_are_fresh);

@@ -12,11 +12,15 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace base {
 class DictionaryValue;
 class ListValue;
+}
+
+namespace identity {
+class AccessTokenFetcher;
 }
 
 namespace network {
@@ -27,8 +31,7 @@ class SharedURLLoaderFactory;
 // Fetches information about the family of the signed-in user. It can get
 // information about the family itself (e.g. a name), as well as a list of
 // family members and their properties.
-class FamilyInfoFetcher : public OAuth2TokenService::Observer,
-                          public OAuth2TokenService::Consumer {
+class FamilyInfoFetcher : public identity::IdentityManager::Observer {
  public:
   enum ErrorCode {
     TOKEN_ERROR,    // Failed to get OAuth2 token.
@@ -81,8 +84,7 @@ class FamilyInfoFetcher : public OAuth2TokenService::Observer,
   // methods below. |consumer| must outlive us.
   FamilyInfoFetcher(
       Consumer* consumer,
-      const std::string& account_id,
-      OAuth2TokenService* token_service,
+      identity::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~FamilyInfoFetcher() override;
 
@@ -101,16 +103,15 @@ class FamilyInfoFetcher : public OAuth2TokenService::Observer,
                                       const std::string& response_body);
 
  private:
-  // OAuth2TokenService::Observer implementation:
-  void OnRefreshTokenAvailable(const std::string& account_id) override;
+  // IdentityManager::Observer implementation:
+  void OnRefreshTokenUpdatedForAccount(
+      const AccountInfo& account_info) override;
   void OnRefreshTokensLoaded() override;
 
-  // OAuth2TokenService::Consumer implementation:
-  void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
-      const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
+  void OnAccessTokenFetchCompleteForAccount(
+      std::string account_id,
+      GoogleServiceAuthError error,
+      identity::AccessTokenInfo access_token_info);
 
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
@@ -127,12 +128,12 @@ class FamilyInfoFetcher : public OAuth2TokenService::Observer,
   void FamilyMembersFetched(const std::string& response);
 
   Consumer* consumer_;
-  const std::string account_id_;
-  OAuth2TokenService* token_service_;
+  const std::string primary_account_id_;
+  identity::IdentityManager* identity_manager_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   std::string request_path_;
-  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
+  std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher_;
   std::string access_token_;
   bool access_token_expired_;
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;

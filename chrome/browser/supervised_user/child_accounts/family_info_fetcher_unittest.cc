@@ -15,11 +15,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "components/prefs/testing_pref_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -109,17 +108,18 @@ std::string BuildGetFamilyMembersResponse(
 
 } // namespace
 
-class FamilyInfoFetcherTest : public testing::Test,
-                              public FamilyInfoFetcher::Consumer {
+class FamilyInfoFetcherTest
+    : public testing::Test,
+      public identity::IdentityManager::DiagnosticsObserver,
+      public FamilyInfoFetcher::Consumer {
  public:
-  FamilyInfoFetcherTest()
-      : token_service_(&pref_service_),
-        fetcher_(
-            this,
-            kAccountId,
-            &token_service_,
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {}
+  FamilyInfoFetcherTest() : access_token_requested_(false) {
+    identity_test_env_.identity_manager()->AddDiagnosticsObserver(this);
+  }
+
+  ~FamilyInfoFetcherTest() {
+    identity_test_env_.identity_manager()->RemoveDiagnosticsObserver(this);
+  }
 
   MOCK_METHOD1(OnGetFamilyProfileSuccess,
                void(const FamilyInfoFetcher::FamilyProfile& family));
@@ -128,24 +128,52 @@ class FamilyInfoFetcherTest : public testing::Test,
                         members));
   MOCK_METHOD1(OnFailure, void(FamilyInfoFetcher::ErrorCode error));
 
+ private:
+  void EnsureFamilyInfoFetcher() {
+    DCHECK(!fetcher_);
+    fetcher_.reset(new FamilyInfoFetcher(
+        this, identity_test_env_.identity_manager(),
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &test_url_loader_factory_)));
+  }
+
+  void OnAccessTokenRequested(const std::string& account_id,
+                              const std::string& consumer_id,
+                              const identity::ScopeSet& scopes) override {
+    access_token_requested_ = true;
+  }
+
+  bool access_token_requested_;
+
  protected:
+  bool AccessTokenRequested() { return access_token_requested_; }
+
+  void StartGetFamilyProfile() {
+    EnsureFamilyInfoFetcher();
+    fetcher_->StartGetFamilyProfile();
+  }
+
+  void StartGetFamilyMembers() {
+    EnsureFamilyInfoFetcher();
+    fetcher_->StartGetFamilyMembers();
+  }
+
   void IssueRefreshToken() {
-    token_service_.UpdateCredentials(kAccountId, "refresh_token");
+    identity_test_env_.MakePrimaryAccountAvailable(kAccountId);
   }
 
   void IssueRefreshTokenForDifferentAccount() {
-    token_service_.UpdateCredentials(kDifferentAccountId, "refresh_token");
+    identity_test_env_.MakeAccountAvailable(kDifferentAccountId);
   }
 
-  void IssueAccessToken() {
-    token_service_.IssueAllTokensForAccount(
-        kAccountId,
-        "access_token",
-        base::Time::Now() + base::TimeDelta::FromHours(1));
+  void WaitForAccessTokenRequestAndIssueToken() {
+    identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+        identity_test_env_.identity_manager()->GetPrimaryAccountId(),
+        "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
   }
 
   void SendResponse(net::Error error, const std::string& response) {
-    fetcher_.OnSimpleLoaderCompleteInternal(error, net::HTTP_OK, response);
+    fetcher_->OnSimpleLoaderCompleteInternal(error, net::HTTP_OK, response);
   }
 
   void SendValidGetFamilyProfileResponse(
@@ -167,23 +195,17 @@ class FamilyInfoFetcherTest : public testing::Test,
   }
 
   base::MessageLoop message_loop_;
-  TestingPrefServiceSimple pref_service_;
-  FakeProfileOAuth2TokenService token_service_;
+  identity::IdentityTestEnvironment identity_test_env_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  FamilyInfoFetcher fetcher_;
+  std::unique_ptr<FamilyInfoFetcher> fetcher_;
 };
-
 
 TEST_F(FamilyInfoFetcherTest, GetFamilyProfileSuccess) {
   IssueRefreshToken();
 
-  fetcher_.StartGetFamilyProfile();
+  StartGetFamilyProfile();
 
-  // Since a refresh token is already available, we should immediately get a
-  // request for an access token.
-  EXPECT_EQ(1U, token_service_.GetPendingRequests().size());
-
-  IssueAccessToken();
+  WaitForAccessTokenRequestAndIssueToken();
 
   FamilyInfoFetcher::FamilyProfile family("test", "My Test Family");
   EXPECT_CALL(*this, OnGetFamilyProfileSuccess(family));
@@ -193,13 +215,9 @@ TEST_F(FamilyInfoFetcherTest, GetFamilyProfileSuccess) {
 TEST_F(FamilyInfoFetcherTest, GetFamilyMembersSuccess) {
   IssueRefreshToken();
 
-  fetcher_.StartGetFamilyMembers();
+  StartGetFamilyMembers();
 
-  // Since a refresh token is already available, we should immediately get a
-  // request for an access token.
-  EXPECT_EQ(1U, token_service_.GetPendingRequests().size());
-
-  IssueAccessToken();
+  WaitForAccessTokenRequestAndIssueToken();
 
   std::vector<FamilyInfoFetcher::FamilyMember> members;
   members.push_back(
@@ -244,19 +262,23 @@ TEST_F(FamilyInfoFetcherTest, GetFamilyMembersSuccess) {
 
 
 TEST_F(FamilyInfoFetcherTest, SuccessAfterWaitingForRefreshToken) {
-  fetcher_.StartGetFamilyProfile();
+  // Early set the primary account so that the fetcher is created with a proper
+  // account_id. We don't use IssueRefreshToken() as it also sets a refresh
+  // token for the primary account and that's something we don't want for this
+  // test.
+  identity_test_env_.SetPrimaryAccount(kAccountId);
+  StartGetFamilyProfile();
 
   // Since there is no refresh token yet, we should not get a request for an
   // access token at this point.
-  EXPECT_EQ(0U, token_service_.GetPendingRequests().size());
+  EXPECT_FALSE(AccessTokenRequested());
 
-  IssueRefreshToken();
+  // In this case we don't directly call IssueRefreshToken() as it calls
+  // MakePrimaryAccountAvailable(). Since we already have a primary account set
+  // we cannot set another one without clearing it before.
+  identity_test_env_.SetRefreshTokenForPrimaryAccount();
 
-  // Now there is a refresh token and we should have got a request for an
-  // access token.
-  EXPECT_EQ(1U, token_service_.GetPendingRequests().size());
-
-  IssueAccessToken();
+  WaitForAccessTokenRequestAndIssueToken();
 
   FamilyInfoFetcher::FamilyProfile family("test", "My Test Family");
   EXPECT_CALL(*this, OnGetFamilyProfileSuccess(family));
@@ -264,38 +286,43 @@ TEST_F(FamilyInfoFetcherTest, SuccessAfterWaitingForRefreshToken) {
 }
 
 TEST_F(FamilyInfoFetcherTest, NoRefreshToken) {
-  fetcher_.StartGetFamilyProfile();
+  // Set the primary account before creating the fetcher to allow it to properly
+  // retrieve the primary account_id from IdentityManager. We don't call
+  // IssueRefreshToken because we don't want it to precisely issue a refresh
+  // token for the primary account, just set it.
+  identity_test_env_.SetPrimaryAccount(kAccountId);
+  StartGetFamilyProfile();
 
   IssueRefreshTokenForDifferentAccount();
 
   // Credentials for a different user should be ignored, i.e. not result in a
   // request for an access token.
-  EXPECT_EQ(0U, token_service_.GetPendingRequests().size());
+  EXPECT_FALSE(AccessTokenRequested());
 
   // After all refresh tokens have been loaded, there is still no token for our
   // user, so we expect a token error.
   EXPECT_CALL(*this, OnFailure(FamilyInfoFetcher::TOKEN_ERROR));
-  token_service_.LoadCredentials("");
+  identity_test_env_.ReloadAccountsFromDisk();
 }
 
 TEST_F(FamilyInfoFetcherTest, GetTokenFailure) {
   IssueRefreshToken();
 
-  fetcher_.StartGetFamilyProfile();
+  StartGetFamilyProfile();
 
   // On failure to get an access token we expect a token error.
   EXPECT_CALL(*this, OnFailure(FamilyInfoFetcher::TOKEN_ERROR));
-  token_service_.IssueErrorForAllPendingRequestsForAccount(
-      kAccountId,
+  identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
+      identity_test_env_.identity_manager()->GetPrimaryAccountId(),
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 }
 
 TEST_F(FamilyInfoFetcherTest, InvalidResponse) {
   IssueRefreshToken();
 
-  fetcher_.StartGetFamilyProfile();
+  StartGetFamilyProfile();
 
-  IssueAccessToken();
+  WaitForAccessTokenRequestAndIssueToken();
 
   // Invalid response data should result in a service error.
   EXPECT_CALL(*this, OnFailure(FamilyInfoFetcher::SERVICE_ERROR));
@@ -305,9 +332,9 @@ TEST_F(FamilyInfoFetcherTest, InvalidResponse) {
 TEST_F(FamilyInfoFetcherTest, FailedResponse) {
   IssueRefreshToken();
 
-  fetcher_.StartGetFamilyProfile();
+  StartGetFamilyProfile();
 
-  IssueAccessToken();
+  WaitForAccessTokenRequestAndIssueToken();
 
   // Failed API call should result in a network error.
   EXPECT_CALL(*this, OnFailure(FamilyInfoFetcher::NETWORK_ERROR));
