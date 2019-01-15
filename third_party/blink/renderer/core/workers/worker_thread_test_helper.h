@@ -91,8 +91,7 @@ class WorkerThreadForTest : public WorkerThread {
     Vector<CSPHeaderAndType> headers{
         {"contentSecurityPolicy", kContentSecurityPolicyHeaderTypeReport}};
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-        script_url, mojom::ScriptType::kClassic,
-        OffMainThreadWorkerScriptFetchOption::kDisabled, "fake user agent",
+        script_url, mojom::ScriptType::kClassic, "fake user agent",
         nullptr /* web_worker_fetch_context */, headers,
         network::mojom::ReferrerPolicy::kDefault, security_origin,
         false /* starter_secure_context */,
