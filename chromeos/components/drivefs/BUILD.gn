@@ -6,6 +6,8 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 component("drivefs") {
   sources = [
+    "drivefs_auth.cc",
+    "drivefs_auth.h",
     "drivefs_bootstrap.cc",
     "drivefs_bootstrap.h",
     "drivefs_host.cc",
@@ -57,6 +59,7 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "drivefs_auth_unittest.cc",
     "drivefs_bootstrap_unittest.cc",
     "drivefs_host_unittest.cc",
     "drivefs_search_unittest.cc",

@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
+#include "chromeos/components/drivefs/drivefs_auth.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/account_id/account_id.h"
@@ -23,14 +24,6 @@
 namespace drive {
 class DriveNotificationManager;
 }
-
-namespace network {
-class SharedURLLoaderFactory;
-}  // namespace network
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace chromeos {
 namespace disks {
@@ -70,16 +63,11 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
     DISALLOW_COPY_AND_ASSIGN(MountObserver);
   };
 
-  class Delegate {
+  class Delegate : public DriveFsAuth::Delegate {
    public:
     Delegate() = default;
-    virtual ~Delegate() = default;
+    ~Delegate() override = default;
 
-    virtual scoped_refptr<network::SharedURLLoaderFactory>
-    GetURLLoaderFactory() = 0;
-    virtual service_manager::Connector* GetConnector() = 0;
-    virtual const AccountId& GetAccountId() = 0;
-    virtual std::string GetObfuscatedAccountId() = 0;
     virtual drive::DriveNotificationManager& GetDriveNotificationManager() = 0;
     virtual std::unique_ptr<DriveFsBootstrapListener> CreateMojoListener();
 
@@ -136,7 +124,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
   chromeos::disks::DiskMountManager* const disk_mount_manager_;
   std::unique_ptr<base::OneShotTimer> timer_;
 
-  std::unique_ptr<AccountTokenDelegate> account_token_delegate_;
+  std::unique_ptr<DriveFsAuth> account_token_delegate_;
 
   // State specific to the current mount, or null if not mounted.
   std::unique_ptr<MountState> mount_state_;
