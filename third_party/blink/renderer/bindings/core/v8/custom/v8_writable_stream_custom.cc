@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_writable_stream.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/core/streams/writable_stream.h"
+#include "third_party/blink/renderer/core/streams/writable_stream_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
@@ -30,7 +30,8 @@ void V8WritableStream::ConstructorCustom(
   ScriptValue strategy = ScriptValue(ScriptState::Current(info.GetIsolate()),
                                      v8::Undefined(info.GetIsolate()));
   int num_args = info.Length();
-  auto* impl = MakeGarbageCollected<WritableStream>();
+  // TODO(ricea): Switch on Blink feature.
+  auto* impl = MakeGarbageCollected<WritableStreamWrapper>();
   v8::Local<v8::Object> wrapper = info.Holder();
   wrapper = impl->AssociateWithWrapper(
       info.GetIsolate(), V8WritableStream::GetWrapperTypeInfo(), wrapper);

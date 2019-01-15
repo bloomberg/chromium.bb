@@ -22,5 +22,7 @@ blink_core_sources("streams") {
     "underlying_source_base.h",
     "writable_stream.cc",
     "writable_stream.h",
+    "writable_stream_wrapper.cc",
+    "writable_stream_wrapper.h",
   ]
 }
