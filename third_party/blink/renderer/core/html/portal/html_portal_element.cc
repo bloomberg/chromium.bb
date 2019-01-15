@@ -129,4 +129,9 @@ void HTMLPortalElement::ParseAttribute(
     Navigate();
 }
 
+LayoutObject* HTMLPortalElement::CreateLayoutObject(
+    const ComputedStyle& style) {
+  return new LayoutIFrame(this);
+}
+
 }  // namespace blink

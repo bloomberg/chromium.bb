@@ -1868,11 +1868,6 @@ std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
 }
 
 void WebContentsImpl::ReattachToOuterWebContentsFrame() {
-  // TODO(lfg): Portals still don't support rendering, so we don't attach their
-  // RenderWidgetHostView.
-  if (portal_)
-    return;
-
   DCHECK(node_.outer_web_contents());
   auto* render_manager = GetRenderManager();
   auto* parent_frame =

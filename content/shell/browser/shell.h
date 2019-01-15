@@ -179,6 +179,7 @@ class Shell : public WebContentsDelegate,
                               const base::string16& message,
                               int32_t line_no,
                               const base::string16& source_id) override;
+  void PortalWebContentsCreated(WebContents* portal_web_contents) override;
   void RendererUnresponsive(
       WebContents* source,
       RenderWidgetHost* render_widget_host,

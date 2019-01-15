@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
 
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -32,11 +34,26 @@ LocalFrameView* RemoteFrameView::ParentFrameView() const {
   if (!is_attached_)
     return nullptr;
 
-  Frame* parent_frame = remote_frame_->Tree().Parent();
-  if (parent_frame && parent_frame->IsLocalFrame())
-    return ToLocalFrame(parent_frame)->View();
+  HTMLFrameOwnerElement* owner = remote_frame_->DeprecatedLocalOwner();
+  if (owner && owner->OwnerType() == FrameOwnerElementType::kPortal)
+    return owner->GetDocument().GetFrame()->View();
 
-  return nullptr;
+  // |is_attached_| is only set from AttachToLayout(), which ensures that the
+  // parent is a local frame.
+  return ToLocalFrame(remote_frame_->Tree().Parent())->View();
+}
+
+LocalFrameView* RemoteFrameView::ParentLocalRootFrameView() const {
+  if (!is_attached_)
+    return nullptr;
+
+  HTMLFrameOwnerElement* owner = remote_frame_->DeprecatedLocalOwner();
+  if (owner && owner->OwnerType() == FrameOwnerElementType::kPortal)
+    return owner->GetDocument().GetFrame()->LocalFrameRoot().View();
+
+  // |is_attached_| is only set from AttachToLayout(), which ensures that the
+  // parent is a local frame.
+  return ToLocalFrame(remote_frame_->Tree().Parent())->LocalFrameRoot().View();
 }
 
 void RemoteFrameView::AttachToLayout() {
@@ -68,8 +85,7 @@ void RemoteFrameView::UpdateViewportIntersectionsForSubtree() {
   if (!owner)
     return;
 
-  LocalFrameView* local_root_view =
-      ToLocalFrame(remote_frame_->Tree().Parent())->LocalFrameRoot().View();
+  LocalFrameView* local_root_view = ParentLocalRootFrameView();
   if (!local_root_view)
     return;
 
@@ -139,8 +155,7 @@ void RemoteFrameView::UpdateViewportIntersectionsForSubtree() {
 }
 
 IntRect RemoteFrameView::GetCompositingRect() {
-  LocalFrameView* local_root_view =
-      ToLocalFrame(remote_frame_->Tree().Parent())->LocalFrameRoot().View();
+  LocalFrameView* local_root_view = ParentLocalRootFrameView();
   if (!local_root_view || !remote_frame_->OwnerLayoutObject())
     return IntRect();
 
