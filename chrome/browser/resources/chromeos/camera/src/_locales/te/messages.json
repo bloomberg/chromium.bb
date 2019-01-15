@@ -1,0 +1,206 @@
+{
+  "name": {
+    "message": "కెమెరా",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "మీ కెమెరాతో ఫోటోలను తీయండి, వీడియోలను రికార్డ్ చేయండి.",
+    "description": "Short description of the Camera App."
+  },
+  "errorMsgFileSystemFailed": {
+    "message": "ఫైల్ సిస్టమ్ ఎర్రర్‌లు.",
+    "description": "Error message shown when failing to read or write the file system."
+  },
+  "errorMsgNoCamera": {
+    "message": "మీ కెమెరా ప్రస్తుతం అందుబాటులో లేదు.\nకెమెరా సరిగ్గా కనెక్ట్ చేయబడిందో లేదో తనిఖీ చేయండి.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "$file$ను ఎగుమతి చేయడం సాధ్యం కాలేదు",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg"
+      }
+    }
+  },
+  "errorMsgSaveFileFailed": {
+    "message": "ఫైల్‌ను సేవ్ చేయడం సాధ్యం కాలేదు",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "ఫోటోను తీయడం సాధ్యం కాలేదు",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "రికార్డింగ్‌ను ప్రారంభించడం సాధ్యం కాలేదు",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "errorMsgEmptyRecording": {
+    "message": "ఏదీ రికార్డ్ చేయబడలేదు",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "రికార్డింగ్ ఆపివేయబడింది",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ యాక్టివ్‌గా ఉంది",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
+  },
+  "galleryButton": {
+    "message": "గ్యాలరీకి వెళ్లు",
+    "description": "Label for the gallery button."
+  },
+  "deleteButton": {
+    "message": "తొలగించు",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "డిస్క్‌కి ఎగుమతి చేయి",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "ముద్రించు",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "వెనుకకు వెళ్లు",
+    "description": "Label for the back button."
+  },
+  "galleryImages": {
+    "message": "గ్యాలరీ చిత్రాలు",
+    "description": "Text to speech label for the gallery list."
+  },
+  "settingsButton": {
+    "message": "సెట్టింగ్‌లు",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "గ్రిడ్ రకం",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "టైమర్ వ్యవధి",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "అభిప్రాయాన్ని పంపు",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "సహాయం",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "గోల్డెన్ రేషియో‌",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 సెకన్లు",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 సెకన్లు",
+    "description": "Label for timer-duration: 10 seconds."
+  },
+  "takePhotoButton": {
+    "message": "ఫోటోను తీయి",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "ఫోటోను తీయడం ఆపివేయి",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
+  },
+  "recordVideoStartButton": {
+    "message": "రికార్డింగ్‌ను ప్రారంభించు",
+    "description": "Label for the shutter button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "రికార్డ్ చేయడం ఆపివేయి",
+    "description": "Label for the shutter button to stop recording."
+  },
+  "switchCameraButton": {
+    "message": "తర్వాతి కెమెరాకు మారండి",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "switchRecordVideoButton": {
+    "message": "వీడియో రికార్డింగ్ మోడ్‌కు మారండి",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "switchTakePhotoButton": {
+    "message": "ఫోటో మోడ్‌కు మారండి",
+    "description": "Label for the button to switch to take photo mode."
+  },
+  "toggleTimerButton": {
+    "message": "టైమర్",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
+  "toggleMirrorButton": {
+    "message": "మిర్రరింగ్",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
+  },
+  "toggleGridButton": {
+    "message": "గ్రిడ్",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
+  },
+  "toggleMicButton": {
+    "message": "మైక్రోఫోన్",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
+  },
+  "dialogOKButton": {
+    "message": "సరే",
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "రద్దు చేయి",
+    "description": "Label for the dismissing button in the dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "మీరు $file$ని నిజంగా తీసివేయాలనుకుంటున్నారా?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "మీరు $count$ అంశాలను నిజంగా తీసివేయాలనుకుంటున్నారా?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
+  },
+  "migratePicturesMsg": {
+    "message": "కెమెరాతో తీసిన ఫోటోలు మరియు వీడియోలు, డౌన్‌లోడ్‌లు ఫోల్డర్‌కు తరలించబడతాయి. మీరు వాటిని ఫైల్స్‌లో యాక్సెస్ చేయవచ్చు. నిల్వ అనుమతులు కలిగిన యాప్‌లు మీ ఫోటోలు మరియు వీడియోలను యాక్సెస్ చేయగలుగుతాయి.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  }
+}

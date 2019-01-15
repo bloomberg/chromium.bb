@@ -1,0 +1,206 @@
+{
+  "name": {
+    "message": "카메라",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "카메라로 사진을 찍고 동영상을 녹화합니다.",
+    "description": "Short description of the Camera App."
+  },
+  "errorMsgFileSystemFailed": {
+    "message": "파일 시스템 오류가 발생했습니다.",
+    "description": "Error message shown when failing to read or write the file system."
+  },
+  "errorMsgNoCamera": {
+    "message": "현재 카메라를 사용할 수 없습니다.\n카메라가 제대로 연결되어 있는지 확인하세요.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "$file$ 파일을 내보낼 수 없습니다.",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg"
+      }
+    }
+  },
+  "errorMsgSaveFileFailed": {
+    "message": "파일을 저장할 수 없습니다.",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "사진을 찍을 수 없습니다.",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "녹화를 시작할 수 없습니다.",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "errorMsgEmptyRecording": {
+    "message": "녹화된 동영상이 없습니다.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "녹화가 중지되었습니다.",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ 활성화",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
+  },
+  "galleryButton": {
+    "message": "갤러리로 이동",
+    "description": "Label for the gallery button."
+  },
+  "deleteButton": {
+    "message": "삭제",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "디스크로 내보내기",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "인쇄",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "뒤로",
+    "description": "Label for the back button."
+  },
+  "galleryImages": {
+    "message": "갤러리 이미지",
+    "description": "Text to speech label for the gallery list."
+  },
+  "settingsButton": {
+    "message": "설정",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "그리드 유형",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "타이머 시간",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "의견 보내기",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "도움말",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3x3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3x3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4x4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4x4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "황금 비율",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3초",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10초",
+    "description": "Label for timer-duration: 10 seconds."
+  },
+  "takePhotoButton": {
+    "message": "사진 촬영",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "사진 촬영 중지",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
+  },
+  "recordVideoStartButton": {
+    "message": "녹화 시작",
+    "description": "Label for the shutter button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "녹화 중지",
+    "description": "Label for the shutter button to stop recording."
+  },
+  "switchCameraButton": {
+    "message": "다음 카메라로 전환",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "switchRecordVideoButton": {
+    "message": "동영상 녹화 모드로 전환",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "switchTakePhotoButton": {
+    "message": "사진 촬영 모드로 전환",
+    "description": "Label for the button to switch to take photo mode."
+  },
+  "toggleTimerButton": {
+    "message": "타이머",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
+  "toggleMirrorButton": {
+    "message": "미러링",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
+  },
+  "toggleGridButton": {
+    "message": "그리드",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
+  },
+  "toggleMicButton": {
+    "message": "마이크",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
+  },
+  "dialogOKButton": {
+    "message": "확인",
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "취소",
+    "description": "Label for the dismissing button in the dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "$file$ 파일을 삭제하시겠습니까?",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "항목 $count$개를 삭제하시겠습니까?",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
+  },
+  "migratePicturesMsg": {
+    "message": "카메라로 촬영된 사진 및 동영상은 다운로드 폴더로 이동되며, 파일 앱에서 액세스할 수 있습니다.\n\n저장용량 사용 권한이 있는 앱은 사진 및 동영상에 액세스할 수 있습니다.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  }
+}

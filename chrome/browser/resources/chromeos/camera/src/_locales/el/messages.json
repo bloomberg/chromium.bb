@@ -1,0 +1,206 @@
+{
+  "name": {
+    "message": "Κάμερα",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Τραβήξτε φωτογραφίες και βίντεο με την κάμερά σας.",
+    "description": "Short description of the Camera App."
+  },
+  "errorMsgFileSystemFailed": {
+    "message": "Αρχειοθετήστε σφάλματα συστήματος.",
+    "description": "Error message shown when failing to read or write the file system."
+  },
+  "errorMsgNoCamera": {
+    "message": "Η κάμερά σας δεν είναι διαθέσιμη προς το παρόν.\nΕλέγξτε αν η κάμερα έχει συνδεθεί σωστά.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Δεν είναι δυνατή η εξαγωγή του αρχείου $file$",
+    "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg"
+      }
+    }
+  },
+  "errorMsgSaveFileFailed": {
+    "message": "Δεν είναι δυνατή η αποθήκευση του αρχείου",
+    "description": "Error message shown when saving/adding a image or video to the file system failed."
+  },
+  "errorMsgTakePhotoFailed": {
+    "message": "Δεν είναι δυνατή η λήψη φωτογραφίας",
+    "description": "Error message shown when failing to take photo."
+  },
+  "errorMsgRecordStartFailed": {
+    "message": "Δεν είναι δυνατή η έναρξη της εγγραφής",
+    "description": "Error message shown when failing to start recording video."
+  },
+  "errorMsgEmptyRecording": {
+    "message": "Καμία εγγραφή",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "Η εγγραφή διακόπηκε",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ ενεργή",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
+  },
+  "galleryButton": {
+    "message": "Μετάβαση στο gallery",
+    "description": "Label for the gallery button."
+  },
+  "deleteButton": {
+    "message": "Διαγραφή",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Εξαγωγή σε δίσκο",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Εκτύπωση",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Πίσω",
+    "description": "Label for the back button."
+  },
+  "galleryImages": {
+    "message": "Εικόνες gallery",
+    "description": "Text to speech label for the gallery list."
+  },
+  "settingsButton": {
+    "message": "Ρυθμίσεις",
+    "description": "Label for the settings button."
+  },
+  "gridTypeButton": {
+    "message": "Τύπος πλέγματος",
+    "description": "Label for the button of grid-type options."
+  },
+  "timerDurationButton": {
+    "message": "Διάρκεια χρονομέτρου",
+    "description": "Label for the button of timer-duration options."
+  },
+  "feedbackButton": {
+    "message": "Αποστολή σχολίων",
+    "description": "Label for the feedback button."
+  },
+  "helpButton": {
+    "message": "Βοήθεια",
+    "description": "Label for the help button."
+  },
+  "labelGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for for grid-type: 3x3."
+  },
+  "ariaGrid3x3": {
+    "message": "3 x 3",
+    "description": "Label for spoken feedback to read out grid-type: 3x3."
+  },
+  "labelGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
+  "labelGridGolden": {
+    "message": "Ιδανικός λόγος διαστάσεων",
+    "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 δευτερόλεπτα",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 δευτερόλεπτα",
+    "description": "Label for timer-duration: 10 seconds."
+  },
+  "takePhotoButton": {
+    "message": "Λήψη φωτογραφίας",
+    "description": "Label for the shutter button to take photo."
+  },
+  "takePhotoCancelButton": {
+    "message": "Διακοπή λήψης φωτογραφίας",
+    "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
+  },
+  "recordVideoStartButton": {
+    "message": "Έναρξη εγγραφής",
+    "description": "Label for the shutter button to start recording."
+  },
+  "recordVideoStopButton": {
+    "message": "Διακοπή εγγραφής",
+    "description": "Label for the shutter button to stop recording."
+  },
+  "switchCameraButton": {
+    "message": "Μετάβαση στην επόμενη κάμερα",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  },
+  "switchRecordVideoButton": {
+    "message": "Μετάβαση στη λειτουργία εγγραφής βίντεο",
+    "description": "Label for the button to switch to record video mode."
+  },
+  "switchTakePhotoButton": {
+    "message": "Μετάβαση στη λειτουργία λήψης φωτογραφίας",
+    "description": "Label for the button to switch to take photo mode."
+  },
+  "toggleTimerButton": {
+    "message": "Χρονόμετρο",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
+  "toggleMirrorButton": {
+    "message": "Κατοπτρισμός",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
+  },
+  "toggleGridButton": {
+    "message": "Πλέγμα",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
+  },
+  "toggleMicButton": {
+    "message": "Μικρόφωνο",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
+  },
+  "dialogOKButton": {
+    "message": "ΟΚ",
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "Ακύρωση",
+    "description": "Label for the dismissing button in the dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Είστε βέβαιοι ότι θέλετε να καταργήσετε το αρχείο $file$;",
+    "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "deleteMultiConfirmationMsg": {
+    "message": "Είστε βέβαιοι ότι θέλετε να καταργήσετε $count$ στοιχεία;",
+    "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "20."
+      }
+    }
+  },
+  "migratePicturesMsg": {
+    "message": "Οι φωτογραφίες και τα βίντεο που λήφθηκαν με την κάμερα θα μετακινηθούν στον φάκελο \"Λήψεις\". Μπορείτε να τα δείτε στα Αρχεία.\n\nΟι εφαρμογές με άδειες αποθηκευτικού χώρου θα έχουν πρόσβαση στις φωτογραφίες και τα βίντεό σας.",
+    "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
+  }
+}
