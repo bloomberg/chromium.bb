@@ -31,8 +31,7 @@ class WorkerFetchContext final : public BaseFetchContext {
  public:
   WorkerFetchContext(WorkerOrWorkletGlobalScope&,
                      scoped_refptr<WebWorkerFetchContext>,
-                     SubresourceFilter*,
-                     FetchClientSettingsObject&);
+                     SubresourceFilter*);
   ~WorkerFetchContext() override;
 
   // BaseFetchContext implementation:

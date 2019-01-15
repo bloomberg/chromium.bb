@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class FetchClientSettingsObject;
+
 // ResourceFetcherProperties consists of properties of the global context (e.g.,
 // Frame, Worker) necessary to fetch resources. FetchClientSettingsObject
 // implementing https://html.spec.whatwg.org/C/webappapis.html#settings-object
@@ -33,6 +35,10 @@ class PLATFORM_EXPORT ResourceFetcherProperties
   ResourceFetcherProperties() = default;
   virtual ~ResourceFetcherProperties() = default;
   virtual void Trace(Visitor*) {}
+
+  // Returns the client settings object bound to this global context.
+  virtual const FetchClientSettingsObject& GetFetchClientSettingsObject()
+      const = 0;
 
   // Returns whether this global context is a top-level frame.
   virtual bool IsMainFrame() const = 0;

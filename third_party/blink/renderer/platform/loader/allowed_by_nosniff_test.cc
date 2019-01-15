@@ -7,8 +7,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
+#include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -21,14 +23,10 @@ using ::testing::_;
 
 class CountUsageMockFetchContext : public MockFetchContext {
  public:
-  explicit CountUsageMockFetchContext(
-      scoped_refptr<const SecurityOrigin> security_origin)
-      : MockFetchContext(nullptr, std::move(security_origin), nullptr) {}
-  static CountUsageMockFetchContext* Create(
-      scoped_refptr<const SecurityOrigin> security_origin) {
+  CountUsageMockFetchContext() : MockFetchContext(nullptr, nullptr) {}
+  static CountUsageMockFetchContext* Create() {
     return MakeGarbageCollected<
-        ::testing::StrictMock<CountUsageMockFetchContext>>(
-        std::move(security_origin));
+        ::testing::StrictMock<CountUsageMockFetchContext>>();
   }
   MOCK_CONST_METHOD1(CountUsage, void(mojom::WebFeature));
 };
@@ -99,8 +97,12 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
                  << (testcase.strict_allowed ? "true" : "false"));
 
     const KURL url("https://bla.com/");
-    auto* context =
-        CountUsageMockFetchContext::Create(SecurityOrigin::Create(url));
+    auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>(
+        SecurityOrigin::Create(url));
+    auto* context = CountUsageMockFetchContext::Create();
+    // Bind |properties| to |context| through a ResourceFetcher.
+    MakeGarbageCollected<ResourceFetcher>(
+        ResourceFetcherInit(*properties, context));
     Persistent<MockConsoleLogger> logger =
         MakeGarbageCollected<MockConsoleLogger>();
     ResourceResponse response(url);
@@ -206,8 +208,12 @@ TEST_F(AllowedByNosniffTest, Counters) {
                                     << "\n  origin: " << testcase.origin
                                     << "\n  mime type: " << testcase.mimetype
                                     << "\n  webfeature: " << testcase.expected);
-    auto* context = CountUsageMockFetchContext::Create(
+    auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>(
         SecurityOrigin::Create(KURL(testcase.origin)));
+    auto* context = CountUsageMockFetchContext::Create();
+    // Bind |properties| to |context| through a ResourceFetcher.
+    MakeGarbageCollected<ResourceFetcher>(
+        ResourceFetcherInit(*properties, context));
     Persistent<MockConsoleLogger> logger =
         MakeGarbageCollected<MockConsoleLogger>();
     ResourceResponse response(KURL(testcase.url));
@@ -248,7 +254,11 @@ TEST_F(AllowedByNosniffTest, AllTheSchemes) {
   };
 
   for (auto& testcase : data) {
-    auto* context = CountUsageMockFetchContext::Create(nullptr);
+    auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+    auto* context = CountUsageMockFetchContext::Create();
+    // Bind |properties| to |context| through a ResourceFetcher.
+    MakeGarbageCollected<ResourceFetcher>(
+        ResourceFetcherInit(*properties, context));
     Persistent<MockConsoleLogger> logger =
         MakeGarbageCollected<MockConsoleLogger>();
     EXPECT_CALL(*logger, AddErrorMessage(_, _)).Times(::testing::AnyNumber());

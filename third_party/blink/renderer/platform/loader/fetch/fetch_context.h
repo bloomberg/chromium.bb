@@ -85,8 +85,8 @@ class PLATFORM_EXPORT FetchContext
   WTF_MAKE_NONCOPYABLE(FetchContext);
 
  public:
-  FetchContext(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-               FetchClientSettingsObject&);
+  explicit FetchContext(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   static FetchContext& NullInstance(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -99,8 +99,6 @@ class PLATFORM_EXPORT FetchContext
   void Unbind() { fetcher_ = nullptr; }
 
   virtual void Trace(blink::Visitor*);
-
-  virtual bool IsFrameFetchContext() const { return false; }
 
   virtual void AddAdditionalRequestHeaders(ResourceRequest&, FetchResourceType);
 
@@ -265,7 +263,6 @@ class PLATFORM_EXPORT FetchContext
   virtual void DispatchNetworkQuiet() {}
 
  protected:
-  void SetFetchClientSettingsObject(FetchClientSettingsObject*);
   // This is needed to make FetchContext cleanup smoother. Do not use this
   // function for other purposes.
   ResourceFetcher* GetFetcher() { return fetcher_; }
@@ -273,7 +270,6 @@ class PLATFORM_EXPORT FetchContext
  private:
   Member<PlatformProbeSink> platform_probe_sink_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  Member<FetchClientSettingsObject> fetch_client_settings_object_;
   Member<ResourceFetcher> fetcher_;
 };
 
