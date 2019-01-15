@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
-#include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/common/buildflags.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/feature_engagement/buildflags.h"
@@ -349,17 +348,11 @@ class BrowserWindow : public ui::BaseWindow {
       bool is_user_gesture) = 0;
 
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
-  // Callback type used with the ShowOneClickSigninConfirmation() method. If the
-  // user chooses to accept the sign in, the callback is called to start the
-  // sync process.
-  typedef base::Callback<void(OneClickSigninSyncStarter::StartSyncMode)>
-      StartSyncCallback;
-
   // Shows the one-click sign in confirmation UI. |email| holds the full email
   // address of the account that has signed in.
   virtual void ShowOneClickSigninConfirmation(
       const base::string16& email,
-      const StartSyncCallback& start_sync_callback) = 0;
+      base::OnceCallback<void(bool)> confirmed_callback) = 0;
 #endif
 
   // Whether or not the shelf view is visible.

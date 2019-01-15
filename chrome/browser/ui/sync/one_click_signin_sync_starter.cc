@@ -433,13 +433,12 @@ void OneClickSigninSyncStarter::ConfirmAndSignin() {
   }
 }
 
-void OneClickSigninSyncStarter::UntrustedSigninConfirmed(
-    StartSyncMode response) {
-  if (response == UNDO_SYNC) {
+void OneClickSigninSyncStarter::UntrustedSigninConfirmed(bool confirmed) {
+  if (confirmed) {
+    primary_account_mutator_->LegacyCompletePendingPrimaryAccountSignin();
+  } else {
     base::RecordAction(base::UserMetricsAction("Signin_Undo_Signin"));
     CancelSigninAndDelete();  // This statement frees this object.
-  } else {
-    primary_account_mutator_->LegacyCompletePendingPrimaryAccountSignin();
   }
 }
 
