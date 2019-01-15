@@ -102,7 +102,6 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   void DidRunInsecureContent(const blink::WebSecurityOrigin&,
                              const blink::WebURL& insecure_url) override;
   void SetApplicationCacheHostID(int id) override;
-  int ApplicationCacheHostID() const override;
   void SetSubresourceFilterBuilder(
       std::unique_ptr<blink::WebDocumentSubresourceFilter::Builder>) override;
   std::unique_ptr<blink::WebDocumentSubresourceFilter> TakeSubresourceFilter()
