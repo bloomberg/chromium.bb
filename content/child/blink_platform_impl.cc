@@ -108,10 +108,10 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_MEDIA_ENTER_PICTURE_IN_PICTURE_BUTTON;
     case WebLocalizedString::kAXMediaExitPictureInPictureButton:
       return IDS_AX_MEDIA_EXIT_PICTURE_IN_PICTURE_BUTTON;
-    case WebLocalizedString::kAXMediaShowClosedCaptionsButton:
-      return IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_BUTTON;
-    case WebLocalizedString::kAXMediaHideClosedCaptionsButton:
-      return IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_BUTTON;
+    case WebLocalizedString::kAXMediaShowClosedCaptionsMenuButton:
+      return IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_MENU_BUTTON;
+    case WebLocalizedString::kAXMediaHideClosedCaptionsMenuButton:
+      return IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_MENU_BUTTON;
     case WebLocalizedString::kAXMediaCastOffButton:
       return IDS_AX_MEDIA_CAST_OFF_BUTTON;
     case WebLocalizedString::kAXMediaCastOnButton:
