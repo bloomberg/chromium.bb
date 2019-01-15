@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/printing/external_printers_policies.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class Profile;
@@ -19,13 +20,6 @@ class PrefRegistrySyncable;
 namespace chromeos {
 
 class ExternalPrinters;
-
-// A collection of preference names representing the external printer fields.
-struct ExternalPrinterPolicies {
-  std::string access_mode;
-  std::string blacklist;
-  std::string whitelist;
-};
 
 // Observe preference changes and propogate changes to ExternalPrinters.
 class ExternalPrintersPrefBridge {

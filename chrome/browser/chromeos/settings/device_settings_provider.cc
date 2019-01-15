@@ -727,6 +727,39 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
           std::make_unique<base::Value>(container.plugin_vm_license_key()));
     }
   }
+
+  // Default value of the policy in case it's missing.
+  int access_mode = em::DeviceNativePrintersAccessModeProto::ACCESS_MODE_ALL;
+  if (policy.has_native_device_printers_access_mode() &&
+      policy.native_device_printers_access_mode().has_access_mode()) {
+    access_mode = policy.native_device_printers_access_mode().access_mode();
+    if (!em::DeviceNativePrintersAccessModeProto::AccessMode_IsValid(
+            access_mode)) {
+      LOG(ERROR) << "Unrecognized device native printers access mode";
+      // If the policy is outside the range of allowed values, default to
+      // AllowAll.
+      access_mode = em::DeviceNativePrintersAccessModeProto::ACCESS_MODE_ALL;
+    }
+  }
+  new_values_cache->SetInteger(kDeviceNativePrintersAccessMode, access_mode);
+
+  if (policy.has_native_device_printers_blacklist()) {
+    base::Value list(base::Value::Type::LIST);
+    const em::DeviceNativePrintersBlacklistProto& proto(
+        policy.native_device_printers_blacklist());
+    for (const auto& id : proto.blacklist())
+      list.GetList().emplace_back(id);
+    new_values_cache->SetValue(kDeviceNativePrintersBlacklist, std::move(list));
+  }
+
+  if (policy.has_native_device_printers_whitelist()) {
+    base::Value list(base::Value::Type::LIST);
+    const em::DeviceNativePrintersWhitelistProto& proto(
+        policy.native_device_printers_whitelist());
+    for (const auto& id : proto.whitelist())
+      list.GetList().emplace_back(id);
+    new_values_cache->SetValue(kDeviceNativePrintersWhitelist, std::move(list));
+  }
 }
 
 void DecodeLogUploadPolicies(const em::ChromeDeviceSettingsProto& policy,
