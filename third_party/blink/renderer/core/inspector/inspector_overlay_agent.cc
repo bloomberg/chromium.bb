@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -1153,22 +1154,27 @@ bool InspectorOverlayAgent::HandleMouseUp(const WebMouseEvent& event) {
       scale = frame->GetPage()->PageScaleFactor();
       p1 = frame->View()->ConvertFromRootFrame(p1);
       p2 = frame->View()->ConvertFromRootFrame(p2);
+      if (const RootFrameViewport* root_frame_viewport =
+              frame->View()->GetRootFrameViewport()) {
+        IntSize scroll_offset = FlooredIntSize(
+            root_frame_viewport->LayoutViewport().GetScrollOffset());
+        p1 += scroll_offset;
+        p2 += scroll_offset;
+      }
     }
     float dp_to_dip = 1.f / WindowToViewportScale();
     p1.Scale(dp_to_dip, dp_to_dip);
     p2.Scale(dp_to_dip, dp_to_dip);
     // Points are in device independent pixels (dip) now.
-    int min_x = std::min(p1.X(), p2.X());
-    int max_x = std::max(p1.X(), p2.X());
-    int min_y = std::min(p1.Y(), p2.Y());
-    int max_y = std::max(p1.Y(), p2.Y());
-    if (max_x - min_x < 5 || max_y - min_y < 5)
+    IntRect rect =
+        UnionRectEvenIfEmpty(IntRect(p1, IntSize()), IntRect(p2, IntSize()));
+    if (rect.Width() < 5 || rect.Height() < 5)
       return true;
     GetFrontend()->screenshotRequested(protocol::Page::Viewport::create()
-                                           .setX(min_x)
-                                           .setY(min_y)
-                                           .setWidth(max_x - min_x)
-                                           .setHeight(max_y - min_y)
+                                           .setX(rect.X())
+                                           .setY(rect.Y())
+                                           .setWidth(rect.Width())
+                                           .setHeight(rect.Height())
                                            .setScale(scale)
                                            .build());
     return true;
