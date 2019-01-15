@@ -1593,7 +1593,7 @@ def CMDdownload(parser, args):
   if args:
     parser.error('Unsupported arguments: %s' % args)
   if not file_path.enable_symlink():
-    logging.error('Symlink support is not enabled')
+    logging.warning('Symlink support is not enabled')
 
   process_isolate_server_options(parser, options, True, True)
   if bool(options.isolated) == bool(options.file):

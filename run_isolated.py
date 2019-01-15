@@ -1243,7 +1243,7 @@ def main(args):
   (parser, options, args) = parse_args(args)
 
   if not file_path.enable_symlink():
-    logging.error('Symlink support is not enabled')
+    logging.warning('Symlink support is not enabled')
 
   named_cache = process_named_cache_options(parser, options)
   # hint is 0 if there's no named cache.
