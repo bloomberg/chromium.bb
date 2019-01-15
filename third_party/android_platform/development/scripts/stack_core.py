@@ -169,6 +169,18 @@ def StreamingConvertTrace(input, load_vaddrs, more_info, fallback_monochrome, ar
   useful_lines = []
   so_dirs = []
   in_stack = False
+  def ConvertStreamingChunk():
+    print "Stack found. Symbolizing..."
+    if so_dirs:
+      UpdateLibrarySearchPath(so_dirs)
+    # if arch isn't defined in command line, find it from log
+    if not arch_defined:
+      arch = _FindAbi(useful_lines)
+      if arch:
+        print ('Find ABI:' + arch)
+        symbol.ARCH = arch
+    ResolveCrashSymbol(list(useful_lines), more_info, llvm_symbolizer)
+
   for line in iter(sys.stdin.readline, b''):
     print line,
     maybe_line, maybe_so_dir = PreProcessLog(load_vaddrs)([line])
@@ -176,22 +188,16 @@ def StreamingConvertTrace(input, load_vaddrs, more_info, fallback_monochrome, ar
     so_dirs.extend(maybe_so_dir)
     if in_stack:
       if not maybe_line:
-        print "Stack found. Symbolizing..."
-        if so_dirs:
-          UpdateLibrarySearchPath(so_dirs)
-        # if arch isn't defined in command line, find it from log
-        if not arch_defined:
-          arch = _FindAbi(useful_lines)
-          if arch:
-            print ('Find ABI:' + arch)
-            symbol.ARCH = arch
-        ResolveCrashSymbol(list(useful_lines), more_info, llvm_symbolizer)
+        ConvertStreamingChunk()
         so_dirs = []
         useful_lines = []
         in_stack = False
     else:
-      if _TRACE_LINE.search(line):
+      if _TRACE_LINE.match(line) or _DEBUG_TRACE_LINE.match(line) or \
+          _VALUE_LINE.match(line) or _CODE_LINE.match(line):
         in_stack = True
+  if in_stack:
+    ConvertStreamingChunk()
 
 def ConvertTrace(lines, load_vaddrs, more_info, fallback_monochrome, arch_defined, llvm_symbolizer):
   """Convert strings containing native crash to a stack."""
