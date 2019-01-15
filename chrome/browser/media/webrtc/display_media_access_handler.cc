@@ -77,6 +77,20 @@ void DisplayMediaAccessHandler::HandleRequest(
     const extensions::Extension* extension) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+#if defined(OS_MACOSX)
+  // Do not allow picker UI to be shown on a page that isn't in the foreground
+  // in Mac, because the UI implementation in Mac pops a window over any content
+  // which might be confusing for the users. See https://crbug.com/1407733 for
+  // details.
+  // TODO(emircan): Remove this once Mac UI doesn't use a window.
+  if (web_contents->GetVisibility() != content::Visibility::VISIBLE) {
+    LOG(ERROR) << "Do not allow getDisplayMedia() on a backgrounded page.";
+    std::move(callback).Run(content::MediaStreamDevices(),
+                            content::MEDIA_DEVICE_INVALID_STATE, nullptr);
+    return;
+  }
+#endif  // defined(OS_MACOSX)
+
   std::unique_ptr<DesktopMediaPicker> picker = picker_factory_->CreatePicker();
   if (!picker) {
     std::move(callback).Run(content::MediaStreamDevices(),
