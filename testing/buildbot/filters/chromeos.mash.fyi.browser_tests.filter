@@ -33,6 +33,9 @@
 -SwitchAccessAutoScanManagerTest.RestartIfRunningWhenOff
 -SwitchAccessAutoScanManagerTest.EnableAndDisable
 -SwitchAccessAutoScanManagerTest.SetScanTime
+-SwitchAccessContextMenuManagerTest.EnterMenu
+-SwitchAccessContextMenuManagerTest.NavigationInMenu
+-SwitchAccessContextMenuManagerTest.ExitMenu
 -SwitchAccessNavigationManagerTest.MoveForward
 -SwitchAccessNavigationManagerTest.MoveBackward
 -SwitchAccessNavigationManagerTest.MoveBackAndForth

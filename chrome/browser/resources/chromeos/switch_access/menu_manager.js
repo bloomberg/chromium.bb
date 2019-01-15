@@ -67,14 +67,12 @@ class MenuManager {
           MessageHandler.Destination.MENU_PANEL, 'setActions', actions);
     }
 
-    this.node_ = this.menuNode();
-
-    if (navNode.location)
+    if (navNode.location) {
       chrome.accessibilityPrivate.setSwitchAccessMenuState(
           true, navNode.location);
-    else
+    } else {
       console.log('Unable to show Switch Access menu.');
-    this.moveForward();
+    }
   }
 
   /**
@@ -96,7 +94,9 @@ class MenuManager {
    * @return {boolean} Whether this function had any effect.
    */
   moveForward() {
-    if (!this.node_ || !this.inMenu_)
+    // Checking this.node_ is a formality for the benefit of the closure
+    // type compiler.
+    if (!this.inMenu_ || !this.calculateCurrentNode() || !this.node_)
       return false;
 
     this.clearFocusRing_();
@@ -105,7 +105,7 @@ class MenuManager {
         SwitchAccessPredicate.restrictions(this.menuNode()));
     const node = treeWalker.next().node;
     if (!node)
-      this.node_ = this.menuNode();
+      this.node_ = null;
     else
       this.node_ = node;
     this.updateFocusRing_();
@@ -118,7 +118,9 @@ class MenuManager {
    * @return {boolean} Whether this function had any effect.
    */
   moveBackward() {
-    if (!this.node_ || !this.inMenu_)
+    // Checking this.node_ is a formality for the benefit of the closure
+    // type compiler.
+    if (!this.inMenu_ || !this.calculateCurrentNode() || !this.node_)
       return false;
 
     this.clearFocusRing_();
@@ -150,7 +152,7 @@ class MenuManager {
    * @return {boolean} Whether this function had any effect.
    */
   selectCurrentNode() {
-    if (!this.node_ || !this.inMenu_)
+    if (!this.inMenu_ || !this.calculateCurrentNode())
       return false;
 
     this.clearFocusRing_();
@@ -253,12 +255,34 @@ class MenuManager {
    * @param {boolean=} opt_clear If true, will clear the focus ring.
    */
   updateFocusRing_(opt_clear) {
-    if (!this.node_)
+    if (!this.inMenu_ || !this.calculateCurrentNode())
       return;
     const id = this.node_.htmlAttributes.id;
     const onOrOff = opt_clear ? 'off' : 'on';
     MessageHandler.sendMessage(
         MessageHandler.Destination.MENU_PANEL, 'setFocusRing', [id, onOrOff]);
+  }
+
+  /**
+   * Updates the value of |this.node_|.
+   *
+   * - If it has a value, change nothing.
+   * - Otherwise, if menu node has a reasonable value, set |this.node_| to menu
+   *   node.
+   * - If not, set it to null.
+   *
+   * Return |this.node_|'s value after the update.
+   *
+   * @private
+   * @return {chrome.automation.AutomationNode}
+   */
+  calculateCurrentNode() {
+    if (this.node_)
+      return this.node_;
+    this.node_ = this.menuNode();
+    if (this.node_ === this.desktop_)
+      this.node_ = null;
+    return this.node_;
   }
 }
 

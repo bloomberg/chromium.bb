@@ -1,0 +1,164 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+GEN_INCLUDE(['switch_access_e2e_test_base.js']);
+
+/**
+ * @constructor
+ * @extends {SwitchAccessE2ETest}
+ */
+function SwitchAccessMenuManagerTest() {
+  SwitchAccessE2ETest.call(this);
+}
+
+SwitchAccessMenuManagerTest.prototype = {
+  __proto__: SwitchAccessE2ETest.prototype,
+
+  /** @override */
+  setUp: function() {
+    this.menuManager =
+        switchAccess.navigationManager_.menuManager_;
+  },
+
+  runAndWaitForMenuLoad: function(website, callback) {
+    console.log("##### In runAndWaitForMenuLoad");
+    callback = this.newCallback(callback);
+
+    this.runWithLoadedTree(website, (desktop) => {
+      console.log("@@@@@ In runWithLoadedTree");
+      this.navigateToWebpage(desktop);
+
+      const onMenuReady = (e) => {
+        console.log("$$$$$ In onMenuReady");
+        if (e.target.role === chrome.automation.RoleType.MENU &&
+            e.target.name === 'Switch Access Menu') {
+          return;
+        }
+
+        assertNotEquals(this.menuManager.desktop_,
+                        this.menuManager.menuNode());
+        callback(desktop);
+      };
+
+      assertFalse(this.menuManager.inMenu_);
+
+      // Prepare to wait for the Switch Access menu to load.
+      desktop.addEventListener('childrenChanged', onMenuReady);
+
+      // Enter the menu.
+      switchAccess.enterMenu();
+      assertTrue(this.menuManager.inMenu_);
+      console.log("@@@@@ Done with runWithLoadedTree");
+    });
+  }
+}
+
+function currentNode() {
+  return switchAccess.navigationManager_.node_;
+}
+
+function currentMenuItemNode() {
+  return switchAccess.navigationManager_
+                    .menuManager_.calculateCurrentNode();
+}
+
+TEST_F_WITH_PREAMBLE(`
+// Disable the test on debug builds, as the childrenChanged events are not being
+// generated.
+#if defined(NDEBUG) && !defined(MEMORY_SANITIZER) && !defined(ADDRESS_SANITIZER)
+#define MAYBE_EnterMenu EnterMenu
+#else
+#define MAYBE_EnterMenu DISABLED_EnterMenu
+#endif
+`, 'SwitchAccessMenuManagerTest', 'MAYBE_EnterMenu', function() {
+  const website = `data:text/html;charset=utf-8,
+                  <button>button1</button>`;
+  this.runAndWaitForMenuLoad(website, (desktop) => {
+    assertTrue(this.menuManager.inMenu_);
+    assertNotEquals(desktop, this.menuManager.menuNode());
+  });
+});
+
+TEST_F_WITH_PREAMBLE(`
+// Disable the test on debug builds, as the childrenChanged events are not being
+// generated.
+#if defined(NDEBUG) && !defined(MEMORY_SANITIZER) && !defined(ADDRESS_SANITIZER)
+#define MAYBE_NavigationInMenu NavigationInMenu
+#else
+#define MAYBE_NavigationInMenu DISABLED_NavigationInMenu
+#endif
+`, 'SwitchAccessMenuManagerTest', 'MAYBE_NavigationInMenu', function() {
+  console.log("!!!!! In test NavigationInMenu");
+  const website = `data:text/html;charset=utf-8,
+                  <button>button1</button>`;
+
+  this.runAndWaitForMenuLoad(website, (desktop) => {
+    console.log("^^^^^ In callback from runAndWaitForMenuLoad");
+    assertTrue(this.menuManager.inMenu_);
+    const startNode = currentNode();
+    let menuRoot = currentMenuItemNode();
+    assertEquals(this.menuManager.menuNode(), menuRoot);
+
+    // Because we are in the Switch Access menu, navigation commands should be
+    // forwarded to the MenuManager.
+    switchAccess.moveForward();
+    // The NavigationManager should still be on the node we opened the menu on
+    // while we navigate within the menu.
+    assertEquals(startNode, currentNode());
+
+    let firstMenuItem = currentMenuItemNode();
+    assertNotEquals(menuRoot, currentMenuItemNode());
+
+    // Move to the second menu item.
+    switchAccess.moveForward();
+    assertEquals(startNode, currentNode());
+    assertNotEquals(menuRoot, currentMenuItemNode());
+    assertNotEquals(firstMenuItem, currentMenuItemNode());
+
+    // Move back to the first menu item.
+    switchAccess.moveBackward();
+    assertEquals(startNode, currentNode());
+    assertEquals(firstMenuItem, currentMenuItemNode());
+
+    // Move back to the menu itself.
+    switchAccess.moveBackward();
+    assertEquals(startNode, currentNode());
+    assertEquals(menuRoot, currentMenuItemNode());
+
+    // Move back to the final item.
+    switchAccess.moveBackward();
+    assertEquals(startNode, currentNode());
+    assertNotEquals(menuRoot, currentMenuItemNode());
+    assertNotEquals(firstMenuItem, currentMenuItemNode());
+
+    // Move forward to the menu itself.
+    switchAccess.moveForward();
+    assertEquals(startNode, currentNode());
+    assertEquals(menuRoot, currentMenuItemNode());
+  });
+});
+
+TEST_F_WITH_PREAMBLE(`
+// Disable the test on debug builds, as the childrenChanged events are not being
+// generated.
+#if defined(NDEBUG) && !defined(MEMORY_SANITIZER) && !defined(ADDRESS_SANITIZER)
+#define MAYBE_ExitMenu ExitMenu
+#else
+#define MAYBE_ExitMenu DISABLED_ExitMenu
+#endif
+`, 'SwitchAccessMenuManagerTest', 'MAYBE_ExitMenu', function() {
+  const website = `data:text/html;charset=utf-8,
+                  <button>button1</button>`;
+
+  this.runAndWaitForMenuLoad(website, (desktop) => {
+    assertTrue(this.menuManager.inMenu_);
+    assertNotEquals(desktop, currentMenuItemNode());
+
+    // Switch Access users exit the menu without performing an action by
+    // selecting the whole menu.
+    assertEquals(this.menuManager.menuNode(), currentMenuItemNode());
+    switchAccess.selectCurrentNode();
+    assertFalse(this.menuManager.inMenu_);
+  });
+});
