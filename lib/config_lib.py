@@ -698,11 +698,6 @@ def DefaultSettings():
       # specify 'buildtools'.
       manifest=constants.DEFAULT_MANIFEST,
 
-      # The name of the manifest to use if we're building on a local trybot.
-      # This should only require elevated access if it's really needed to
-      # build this config.
-      dev_manifest=constants.DEFAULT_MANIFEST,
-
       # Applies only to paladin builders. If true, Sync to the manifest
       # without applying any test patches, then do a fresh build in a new
       # chroot. Then, apply the patches and build in the existing chroot.
