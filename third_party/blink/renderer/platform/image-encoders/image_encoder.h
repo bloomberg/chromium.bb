@@ -23,7 +23,8 @@ class VectorWStream : public SkWStream {
   }
 
   bool write(const void* buffer, size_t size) override {
-    dst_->Append((const unsigned char*)buffer, size);
+    DCHECK_LE(size, std::numeric_limits<wtf_size_t>::max());
+    dst_->Append((const unsigned char*)buffer, static_cast<wtf_size_t>(size));
     return true;
   }
 
