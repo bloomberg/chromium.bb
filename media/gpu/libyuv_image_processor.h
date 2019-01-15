@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
@@ -95,6 +96,13 @@ class MEDIA_GPU_EXPORT LibYUVImageProcessor : public ImageProcessor {
 
   // Thread to process frame format conversion.
   base::Thread process_thread_;
+
+  // CancelableTaskTracker for ProcessTask().
+  // Because ProcessTask is posted from |client_task_runner_|'s thread to
+  // another sequence, |process_thread_|, it is unsafe to cancel the posted task
+  // from |client_task_runner_|'s thread using CancelableCallback and WeakPtr
+  // binding. CancelableTaskTracker is designed to deal with this scenario.
+  base::CancelableTaskTracker process_task_tracker_;
 
   // Checker for the thread |client_task_runner_| belongs to.
   THREAD_CHECKER(thread_checker_);

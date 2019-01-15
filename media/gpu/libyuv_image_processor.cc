@@ -39,6 +39,7 @@ LibYUVImageProcessor::LibYUVImageProcessor(
 
 LibYUVImageProcessor::~LibYUVImageProcessor() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  Reset();
 
   weak_this_factory_.InvalidateWeakPtrs();
   process_thread_.Stop();
@@ -127,10 +128,14 @@ bool LibYUVImageProcessor::Process(scoped_refptr<VideoFrame> input_frame,
   DCHECK(output_frame->layout().coded_size() == output_layout_.coded_size());
   DCHECK(VideoFrame::IsStorageTypeMappable(input_frame->storage_type()));
   DCHECK(VideoFrame::IsStorageTypeMappable(output_frame->storage_type()));
-  process_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&LibYUVImageProcessor::ProcessTask,
-                                base::Unretained(this), std::move(input_frame),
-                                std::move(output_frame), std::move(cb)));
+
+  // Since process_thread_ is owned by this class. base::Unretained(this) and
+  // the raw pointer of that task runner are safe.
+  process_task_tracker_.PostTask(
+      process_thread_.task_runner().get(), FROM_HERE,
+      base::BindOnce(&LibYUVImageProcessor::ProcessTask, base::Unretained(this),
+                     std::move(input_frame), std::move(output_frame),
+                     std::move(cb)));
   return true;
 }
 
@@ -154,6 +159,7 @@ void LibYUVImageProcessor::ProcessTask(scoped_refptr<VideoFrame> input_frame,
   if (result != 0) {
     VLOGF(1) << "libyuv::I420ToNV12 returns non-zero code: " << result;
     NotifyError();
+    return;
   }
   client_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&LibYUVImageProcessor::FrameReady, weak_this_,
@@ -169,14 +175,7 @@ void LibYUVImageProcessor::FrameReady(FrameReadyCB cb,
 bool LibYUVImageProcessor::Reset() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  weak_this_factory_.InvalidateWeakPtrs();
-  process_thread_.Stop();
-
-  weak_this_ = weak_this_factory_.GetWeakPtr();
-  if (!process_thread_.Start()) {
-    VLOGF(1) << "process_thread_ failed to start";
-    return false;
-  }
+  process_task_tracker_.TryCancelAll();
   return true;
 }
 

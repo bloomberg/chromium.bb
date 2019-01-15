@@ -431,9 +431,12 @@ bool V4L2ImageProcessor::Process(scoped_refptr<VideoFrame> frame,
   if (!job_record->output_frame)
     return false;
 
-  device_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2ImageProcessor::ProcessTask,
-                                base::Unretained(this), std::move(job_record)));
+  // Since device_thread_ is owned by this class. base::Unretained(this) and the
+  // raw pointer of that task runner are safe.
+  process_task_tracker_.PostTask(
+      device_thread_.task_runner().get(), FROM_HERE,
+      base::BindOnce(&V4L2ImageProcessor::ProcessTask, base::Unretained(this),
+                     std::move(job_record)));
   return true;
 }
 
@@ -459,20 +462,7 @@ bool V4L2ImageProcessor::Reset() {
   DCHECK(client_task_runner_->BelongsToCurrentThread());
   DCHECK(device_thread_.IsRunning());
 
-  weak_this_factory_.InvalidateWeakPtrs();
-  device_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&V4L2ImageProcessor::StopDevicePoll, base::Unretained(this)));
-  device_thread_.Stop();
-
-  weak_this_ = weak_this_factory_.GetWeakPtr();
-  if (!device_thread_.Start()) {
-    VLOGF(1) << "device thread failed to start";
-    return false;
-  }
-  device_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&V4L2ImageProcessor::StartDevicePoll, base::Unretained(this)));
+  process_task_tracker_.TryCancelAll();
   return true;
 }
 
@@ -480,10 +470,10 @@ void V4L2ImageProcessor::Destroy() {
   VLOGF(2);
   DCHECK(client_task_runner_->BelongsToCurrentThread());
 
-  weak_this_factory_.InvalidateWeakPtrs();
 
   // If the device thread is running, destroy using posted task.
   if (device_thread_.IsRunning()) {
+    process_task_tracker_.TryCancelAll();
     device_thread_.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&V4L2ImageProcessor::StopDevicePoll,
                                   base::Unretained(this)));

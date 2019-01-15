@@ -2655,8 +2655,27 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(
   DVLOGF(4) << "output_buffer_index=" << output_buffer_index
             << ", bitstream_buffer_id=" << bitstream_buffer_id;
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
-  DCHECK(!image_processor_bitstream_buffer_ids_.empty());
-  DCHECK(image_processor_bitstream_buffer_ids_.front() == bitstream_buffer_id);
+  // TODO(crbug.com/921825): Remove this workaround once reset callback is
+  // implemented.
+  if (image_processor_bitstream_buffer_ids_.empty() ||
+      image_processor_bitstream_buffer_ids_.front() != bitstream_buffer_id ||
+      output_buffer_map_.empty()) {
+    // This can happen if image processor is reset.
+    // V4L2VideoDecodeAccelerator::Reset() makes
+    // |image_processor_bitstream_buffer_ids| empty.
+    // During ImageProcessor::Reset(), some FrameProcessed() can have been
+    // posted to |decoder_thread|. |bitsream_buffer_id| is pushed to
+    // |image_processor_bitstream_buffer_ids_| in ProcessFrame(). Although we
+    // are not sure a new bitstream buffer id is pushed after Reset() and before
+    // FrameProcessed(), We should skip the case of mismatch of bitstream buffer
+    // id for safety.
+    // For |output_buffer_map_|, it is cleared in Destroy(). Destroy() destroys
+    // ImageProcessor which may call FrameProcessed() in parallel similar to
+    // Reset() case.
+    DVLOGF(4) << "Ignore processed frame for bitstream_buffer_id="
+              << bitstream_buffer_id;
+    return;
+  }
   DCHECK_GE(output_buffer_index, 0);
   DCHECK_LT(output_buffer_index, static_cast<int>(output_buffer_map_.size()));
 
