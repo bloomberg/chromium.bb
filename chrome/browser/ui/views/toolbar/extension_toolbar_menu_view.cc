@@ -130,7 +130,7 @@ void ExtensionToolbarMenuView::CloseAppMenu() {
 
 void ExtensionToolbarMenuView::UpdateMargins() {
   SetProperty(views::kMarginsKey, new gfx::Insets(0, start_padding()));
-  InvalidateLayout();
+  menu_item_->Layout();
 }
 
 int ExtensionToolbarMenuView::start_padding() const {
