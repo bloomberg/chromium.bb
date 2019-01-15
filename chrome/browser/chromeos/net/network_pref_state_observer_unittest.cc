@@ -63,6 +63,7 @@ class NetworkPrefStateObserverTest : public testing::Test {
  protected:
   Profile* LoginAndReturnProfile() {
     fake_user_manager_->AddUser(AccountId::FromUserEmail(kUserId));
+    fake_user_manager_->LoginUser(AccountId::FromUserEmail(kUserId));
     Profile* profile = profile_manager_.CreateTestingProfile(kUserId);
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
