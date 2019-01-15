@@ -14,7 +14,7 @@
 
 namespace {
 
-const char kWidgetName[] = "SwitchAccessPanel";
+const char kWidgetName[] = "SwitchAccessMenu";
 const int kFocusRingBuffer = 5;
 const int kPanelHeight = 200;
 const int kPanelWidth = 400;
@@ -24,7 +24,7 @@ const int kPanelWidth = 400;
 // static
 const std::string urlForContent = std::string(EXTENSION_PREFIX) +
                                   extension_misc::kSwitchAccessExtensionId +
-                                  "/panel.html";
+                                  "/menu_panel.html";
 
 SwitchAccessPanel::SwitchAccessPanel(content::BrowserContext* browser_context)
     : AccessibilityPanel(browser_context, urlForContent, kWidgetName) {
