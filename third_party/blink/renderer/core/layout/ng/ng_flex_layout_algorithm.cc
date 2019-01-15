@@ -101,11 +101,11 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         is_horizontal_flow ? physical_border_padding.HorizontalSum()
                            : physical_border_padding.VerticalSum();
 
-    // ComputeMinMaxSize will layout the child if it has an orthogonal writing
-    // mode. MinMaxSize will be in the container's inline direction.
+    // We want the child's min/max size in its writing mode, not ours. We'll
+    // only ever use it if the child's inline axis is our main axis.
     MinMaxSizeInput zero_input;
     MinMaxSize min_max_sizes_border_box = child.ComputeMinMaxSize(
-        ConstraintSpace().GetWritingMode(), zero_input, &child_space);
+        child_style.GetWritingMode(), zero_input, &child_space);
     // TODO(dgrogan): Don't layout every time, just when you need to.
     scoped_refptr<NGLayoutResult> layout_result =
         child.Layout(child_space, nullptr /*break token*/);
