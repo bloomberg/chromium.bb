@@ -589,8 +589,10 @@ def ParseApkResources(aapt_path, apk_path):
         # Should not happen
         sys.stderr.write('WARNING: Missing value for string ID 0x%08x "%s"' %
                          (current_resource_id, current_resource_name))
+        resource_value = '<MISSING_STRING_%08x>' % current_resource_id
+      else:
+        resource_value = UnquoteString(m.group(1))
 
-      resource_value = UnquoteString(m.group(1))
       res_map.AddValue(current_resource_id, current_resource_name,
                        'config %s' % current_locale, resource_value)
       need_value = False
