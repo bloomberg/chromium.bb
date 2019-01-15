@@ -27,7 +27,7 @@
 #include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/magnifier/docked_magnifier_controller.h"
-#include "ash/media_controller.h"
+#include "ash/media/media_controller.h"
 #include "ash/metrics/time_to_first_present_recorder.h"
 #include "ash/new_window_controller.h"
 #include "ash/note_taking_controller.h"

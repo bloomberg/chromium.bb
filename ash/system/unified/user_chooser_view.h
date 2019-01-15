@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_UNIFIED_USER_CHOOSER_VIEW_H_
 #define ASH_SYSTEM_UNIFIED_USER_CHOOSER_VIEW_H_
 
-#include "ash/media_controller.h"
+#include "ash/media/media_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 

@@ -7,7 +7,7 @@
 #include <set>
 #include <vector>
 
-#include "ash/media_controller.h"
+#include "ash/media/media_controller.h"
 #include "ash/multi_user/multi_user_window_manager.h"
 #include "ash/multi_user/multi_user_window_manager_delegate_classic.h"
 #include "ash/multi_user/user_switch_animator.h"
