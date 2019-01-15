@@ -364,10 +364,6 @@ const char kShowAutofillTypePredictionsDescription[] =
     "Annotates web forms with Autofill field type predictions as placeholder "
     "text.";
 
-const char kSSOWithWKWebViewName[] = "SSO with WKWebView";
-const char kSSOWithWKWebViewDescription[] =
-    "Using WKWebView instead of UIWebView in SSO";
-
 const char kToolbarContainerName[] = "Use Toolbar Containers";
 const char kToolbarContainerDescription[] =
     "When enabled, the toolbars and their fullscreen animations will be "

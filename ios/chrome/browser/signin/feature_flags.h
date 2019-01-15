@@ -7,13 +7,7 @@
 
 #include "base/feature_list.h"
 
-// Feature flag to enable WKWebView in SSO.
-extern const base::Feature kSSOWithWKWebView;
-
 // Feature flag to enable NSURLSession for GAIAAuthFetcherIOS.
 extern const base::Feature kUseNSURLSessionForGaiaSigninRequests;
-
-// Returns true if the WKWebView should be enabled in SSO.
-bool ShouldEnableWKWebViewWithSSO();
 
 #endif  // IOS_CHROME_BROWSER_SIGNIN_FEATURE_FLAGS_H_

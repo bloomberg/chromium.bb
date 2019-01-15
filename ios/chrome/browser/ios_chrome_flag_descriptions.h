@@ -295,10 +295,6 @@ extern const char kSlimNavigationManagerDescription[];
 extern const char kShowAutofillTypePredictionsName[];
 extern const char kShowAutofillTypePredictionsDescription[];
 
-// Title and description for the flag to enable WKWebView in SSO.
-extern const char kSSOWithWKWebViewName[];
-extern const char kSSOWithWKWebViewDescription[];
-
 // Title and description for the flag to enable the toolbar container
 // implementation.
 extern const char kToolbarContainerName[];
