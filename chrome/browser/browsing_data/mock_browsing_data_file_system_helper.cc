@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 MockBrowsingDataFileSystemHelper::MockBrowsingDataFileSystemHelper(
     Profile* profile) {
@@ -23,17 +24,20 @@ void MockBrowsingDataFileSystemHelper::StartFetching(FetchCallback callback) {
 }
 
 void MockBrowsingDataFileSystemHelper::DeleteFileSystemOrigin(
-    const GURL& origin) {
-  std::string key = origin.spec();
+    const url::Origin& origin) {
+  std::string key = origin.Serialize();
   ASSERT_TRUE(base::ContainsKey(file_systems_, key));
   last_deleted_origin_ = origin;
   file_systems_[key] = false;
 }
 
-void MockBrowsingDataFileSystemHelper::AddFileSystem(
-    const GURL& origin, bool has_persistent, bool has_temporary,
-    bool has_syncable, int64_t size_persistent, int64_t size_temporary,
-    int64_t size_syncable) {
+void MockBrowsingDataFileSystemHelper::AddFileSystem(const url::Origin& origin,
+                                                     bool has_persistent,
+                                                     bool has_temporary,
+                                                     bool has_syncable,
+                                                     int64_t size_persistent,
+                                                     int64_t size_temporary,
+                                                     int64_t size_syncable) {
   BrowsingDataFileSystemHelper::FileSystemInfo info(origin);
   if (has_persistent)
     info.usage_map[storage::kFileSystemTypePersistent] = size_persistent;
@@ -42,13 +46,16 @@ void MockBrowsingDataFileSystemHelper::AddFileSystem(
   if (has_syncable)
     info.usage_map[storage::kFileSystemTypeSyncable] = size_syncable;
   response_.push_back(info);
-  file_systems_[origin.spec()] = true;
+  file_systems_[origin.Serialize()] = true;
 }
 
 void MockBrowsingDataFileSystemHelper::AddFileSystemSamples() {
-  AddFileSystem(GURL("http://fshost1:1/"), false, true, false, 0, 1, 0);
-  AddFileSystem(GURL("http://fshost2:2/"), true, false, true, 2, 0, 2);
-  AddFileSystem(GURL("http://fshost3:3/"), true, true, true, 3, 3, 3);
+  AddFileSystem(url::Origin::Create(GURL("http://fshost1:1")), false, true,
+                false, 0, 1, 0);
+  AddFileSystem(url::Origin::Create(GURL("http://fshost2:2")), true, false,
+                true, 2, 0, 2);
+  AddFileSystem(url::Origin::Create(GURL("http://fshost3:3")), true, true, true,
+                3, 3, 3);
 }
 
 void MockBrowsingDataFileSystemHelper::Notify() {

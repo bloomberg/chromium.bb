@@ -166,7 +166,7 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   const FileSystemInfoList& file_system_info =
       file_systems()->GetFileSystemInfo();
   for (auto it = file_system_info.begin(); it != file_system_info.end(); ++it) {
-    if (SameDomainOrHost(origin, it->origin))
+    if (SameDomainOrHost(origin, it->origin.GetURL()))
       ++count;
   }
 

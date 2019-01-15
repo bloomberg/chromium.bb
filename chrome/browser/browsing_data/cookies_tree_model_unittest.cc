@@ -291,8 +291,10 @@ class CookiesTreeModelTest : public testing::Test {
         return node->GetDetailedInfo().indexed_db_info->origin.GetURL().spec() +
                ",";
       case CookieTreeNode::DetailedInfo::TYPE_FILE_SYSTEM:
-        return node->GetDetailedInfo().file_system_info->origin.spec() +
-            ",";
+        return node->GetDetailedInfo()
+                   .file_system_info->origin.GetURL()
+                   .spec() +
+               ",";
       case CookieTreeNode::DetailedInfo::TYPE_QUOTA:
         return node->GetDetailedInfo().quota_info->host + ",";
       case CookieTreeNode::DetailedInfo::TYPE_SERVICE_WORKER:

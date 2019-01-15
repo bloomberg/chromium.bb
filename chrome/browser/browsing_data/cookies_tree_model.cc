@@ -238,7 +238,7 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitFileSystem(
     const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info) {
   Init(TYPE_FILE_SYSTEM);
   this->file_system_info = file_system_info;
-  this->origin = url::Origin::Create(file_system_info->origin);
+  this->origin = file_system_info->origin;
   return *this;
 }
 
@@ -494,10 +494,8 @@ void CookieTreeIndexedDBNode::RetrieveSize(
 CookieTreeFileSystemNode::CookieTreeFileSystemNode(
     std::list<BrowsingDataFileSystemHelper::FileSystemInfo>::iterator
         file_system_info)
-    : CookieTreeNode(base::UTF8ToUTF16(
-          file_system_info->origin.spec())),
-      file_system_info_(file_system_info) {
-}
+    : CookieTreeNode(base::UTF8ToUTF16(file_system_info->origin.Serialize())),
+      file_system_info_(file_system_info) {}
 
 CookieTreeFileSystemNode::~CookieTreeFileSystemNode() {}
 
@@ -1613,7 +1611,7 @@ void CookiesTreeModel::PopulateFileSystemInfoWithFilter(
   for (auto file_system_info = container->file_system_info_list_.begin();
        file_system_info != container->file_system_info_list_.end();
        ++file_system_info) {
-    GURL origin(file_system_info->origin);
+    GURL origin = file_system_info->origin.GetURL();
 
     if (filter.empty() || (CookieTreeHostNode::TitleForUrl(origin)
                                .find(filter) != base::string16::npos)) {
