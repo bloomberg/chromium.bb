@@ -310,7 +310,9 @@ using is incorrectly thread-affine (i.e. using
 [`base::ThreadChecker`](https://cs.chromium.org/chromium/src/base/threading/thread_checker.h)
 when it’s merely thread-unsafe and should use
 [`base::SequenceChecker`](https://cs.chromium.org/chromium/src/base/sequence_checker.h)),
-please consider fixing it instead of making things worse by also making your API thread-affine.
+please consider
+[`fixing it`](threading_and_tasks_faq.md#How-to-migrate-from-SingleThreadTaskRunner-to-SequencedTaskRunner)
+instead of making things worse by also making your API thread-affine.
 ***
 
 ### Posting to the Current Thread
