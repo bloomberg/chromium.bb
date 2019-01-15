@@ -70,6 +70,7 @@ void RecordMainFrameNavigation(const GURL& url,
 
     base::RecordAction(base::UserMetricsAction("PageLoadInIncognito"));
   }
+  base::RecordAction(base::UserMetricsAction("PageLoad"));
 }
 
 void RecordOmniboxURLNavigation(const GURL& url) {
