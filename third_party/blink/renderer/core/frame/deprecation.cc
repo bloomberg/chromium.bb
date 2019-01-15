@@ -592,12 +592,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                          "5687444770914304 for more details",
                          MilestoneString(kM71))};
 
-    case WebFeature::kPPAPIWebSocket:
-      // TODO(ricea): Update once we have an expected release date for M74.
-      return {"PPAPIWebSocket", kUnknown,
-              "The Native Client Pepper WebSocket API is deprecated and will "
-              "be disabled in M74, mid-2019"};
-
     case WebFeature::kCacheStorageAddAllSuccessWithDuplicate:
       return {"CacheStorageAddAllSuccessWithDuplicate", kM72,
               WillBeRemoved("Cache.addAll() with duplicate requests", kM72,
