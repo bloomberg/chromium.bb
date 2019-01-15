@@ -148,13 +148,6 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
     bool emphasize_label,
     base::string16* accessible_content);
 
-// Computes a readable foreground color given |background_color| and returns it.
-// This reimplements the algorithm specified by Clank's
-// ColorUtils.shouldUseLightForegroundOnBackground rather than use
-// color_utils::GetReadableColor to provide Payment Handlers with a consistent
-// experience across platforms.
-SkColor GetForegroundColorForBackground(SkColor background_color);
-
 }  // namespace payments
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_VIEWS_UTIL_H_

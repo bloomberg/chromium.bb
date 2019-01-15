@@ -219,7 +219,7 @@ void PopulateSheetHeaderView(bool show_back_arrow,
     views::ImageButton* back_arrow = views::CreateVectorImageButton(listener);
     views::SetImageFromVectorIcon(
         back_arrow, vector_icons::kBackArrowIcon,
-        GetForegroundColorForBackground(background_color));
+        color_utils::GetColorWithMaxContrast(background_color));
     constexpr int kBackArrowSize = 16;
     back_arrow->SetSize(gfx::Size(kBackArrowSize, kBackArrowSize));
     back_arrow->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
@@ -411,17 +411,6 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
   }
 
   return container;
-}
-
-SkColor GetForegroundColorForBackground(SkColor background_color) {
-  constexpr float kLightForegroundRatioThreshold = 3;
-  if (background_color != 0 &&
-      color_utils::GetContrastRatio(background_color, SK_ColorWHITE) >=
-          kLightForegroundRatioThreshold) {
-    return SK_ColorWHITE;
-  }
-  views::Label label;
-  return label.enabled_color();
 }
 
 }  // namespace payments
