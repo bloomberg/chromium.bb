@@ -156,21 +156,21 @@ void WebContentsViewMac::SizeContents(const gfx::Size& size) {
   // previous implementation.
 }
 
-gfx::NativeView WebContentsViewMac::GetNativeViewForFocus() const {
-  RenderWidgetHostView* rwhv =
-      web_contents_->GetFullscreenRenderWidgetHostView();
-  if (!rwhv)
-    rwhv = web_contents_->GetRenderWidgetHostView();
-  return rwhv ? rwhv->GetNativeView() : nil;
-}
-
 void WebContentsViewMac::Focus() {
   if (delegate())
     delegate()->ResetStoredFocus();
 
-  gfx::NativeView native_view = GetNativeViewForFocus();
-  NSWindow* window = [native_view.GetNativeNSView() window];
-  [window makeFirstResponder:native_view.GetNativeNSView()];
+  // Focus the the fullscreen view, if one exists; otherwise, focus the content
+  // native view. This ensures that the view currently attached to a NSWindow is
+  // being used to query or set first responder state.
+  RenderWidgetHostView* rwhv =
+      web_contents_->GetFullscreenRenderWidgetHostView();
+  if (!rwhv)
+    rwhv = web_contents_->GetRenderWidgetHostView();
+  if (!rwhv)
+    return;
+
+  static_cast<RenderWidgetHostViewBase*>(rwhv)->Focus();
 }
 
 void WebContentsViewMac::SetInitialFocus() {
