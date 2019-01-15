@@ -651,11 +651,11 @@ bool MixedContentChecker::IsMixedFormAction(
   return true;
 }
 
-bool MixedContentChecker::ShouldAutoupgrade(KURL frame_url,
+bool MixedContentChecker::ShouldAutoupgrade(HttpsState context_https_state,
                                             WebMixedContentContextType type) {
   if (!base::FeatureList::IsEnabled(
           blink::features::kMixedContentAutoupgrade) ||
-      !frame_url.ProtocolIs("https") ||
+      context_https_state == HttpsState::kNone ||
       type == WebMixedContentContextType::kNotMixedContent) {
     return false;
   }

@@ -1741,7 +1741,7 @@ void FrameLoader::UpgradeInsecureRequest(ResourceRequest& resource_request,
         resource_request.Url().ProtocolIs("http") &&
         !origin_context->GetSecurityContext().GetMixedAutoUpgradeOptOut() &&
         MixedContentChecker::ShouldAutoupgrade(
-            origin_context->Url(),
+            origin_context->GetHttpsState(),
             WebMixedContent::ContextTypeFromRequestContext(context, false))) {
       if (origin_context->IsDocument()) {
         Document* document = static_cast<Document*>(origin_context);

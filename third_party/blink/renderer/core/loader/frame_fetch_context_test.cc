@@ -370,7 +370,7 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
     resource_request.SetFrameType(
         network::mojom::RequestContextFrameType::kNone);
 
-    document->SetURL(main_frame_url);
+    document->SetSecurityOrigin(SecurityOrigin::Create(KURL(main_frame_url)));
     fetch_context->ModifyRequestForCSP(resource_request);
 
     EXPECT_EQ(expected_value, resource_request.IsAutomaticUpgrade());

@@ -312,7 +312,7 @@ void DOMWebSocket::Connect(const String& url,
 
   if ((upgrade_insecure_requests_set ||
        MixedContentChecker::ShouldAutoupgrade(
-           GetExecutionContext()->Url(),
+           GetExecutionContext()->GetHttpsState(),
            WebMixedContentContextType::kBlockable)) &&
       url_.Protocol() == "ws" &&
       !SecurityOrigin::Create(url_)->IsPotentiallyTrustworthy()) {
