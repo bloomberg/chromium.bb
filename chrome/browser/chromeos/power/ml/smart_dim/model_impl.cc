@@ -249,7 +249,7 @@ SmartDimModelImpl::SmartDimModelImpl()
     : blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       use_ml_service_(base::FeatureList::IsEnabled(
-          features::kUserActivityPredictionMlService)){};
+          features::kUserActivityPredictionMlService)) {}
 
 SmartDimModelImpl::~SmartDimModelImpl() = default;
 
@@ -268,10 +268,11 @@ SmartDimModelResult SmartDimModelImpl::PreprocessInput(
     return SmartDimModelResult::kOtherError;
   }
 
-  int preprocessor_error = preprocessor_->Process(&ranker_example);
+  int preprocessor_error = assist_ranker::ExamplePreprocessor::Process(
+      *preprocessor_config_, &ranker_example, true);
   // kNoFeatureIndexFound can occur normally (e.g., when the domain name
   // isn't known to the model or a rarely seen enum value is used).
-  if (preprocessor_error &&
+  if (preprocessor_error != assist_ranker::ExamplePreprocessor::kSuccess &&
       preprocessor_error !=
           assist_ranker::ExamplePreprocessor::kNoFeatureIndexFound) {
     return SmartDimModelResult::kPreprocessorOtherError;
@@ -440,10 +441,6 @@ void SmartDimModelImpl::LazyInitialize() {
     return;
 
   preprocessor_config_ = LoadExamplePreprocessorConfig(use_ml_service_);
-  if (preprocessor_config_) {
-    preprocessor_ = std::make_unique<assist_ranker::ExamplePreprocessor>(
-        *preprocessor_config_);
-  }
 }
 
 }  // namespace ml

@@ -70,7 +70,7 @@ TEST_F(ExamplePreprocessorTest, AddMissingFeatures) {
 
   // Adding missing feature label to an existing feature has no effect.
   config.add_missing_features(bool_name_);
-  EXPECT_EQ(ExamplePreprocessor(config).Process(&example_),
+  EXPECT_EQ(ExamplePreprocessor::Process(config, &example_),
             ExamplePreprocessor::kSuccess);
   EXPECT_EQUALS_EXAMPLE(example_, expected);
   config.Clear();
@@ -79,7 +79,7 @@ TEST_F(ExamplePreprocessorTest, AddMissingFeatures) {
   // "_MissingFeature" feature with a list of feature names.
   const std::string foo = "foo";
   config.add_missing_features(foo);
-  EXPECT_EQ(ExamplePreprocessor(config).Process(&example_),
+  EXPECT_EQ(ExamplePreprocessor::Process(config, &example_),
             ExamplePreprocessor::kSuccess);
   (*expected
         .mutable_features())[ExamplePreprocessor::kMissingFeatureDefaultName]
@@ -98,21 +98,21 @@ TEST_F(ExamplePreprocessorTest, AddBucketizeFeatures) {
   // Adding bucketized feature to non-existing feature returns the same example.
   const std::string foo = "foo";
   bucketizers[foo].add_boundaries(0.5);
-  EXPECT_EQ(ExamplePreprocessor(config).Process(&example_),
+  EXPECT_EQ(ExamplePreprocessor::Process(config, &example_),
             ExamplePreprocessor::kSuccess);
   EXPECT_EQUALS_EXAMPLE(example_, expected);
   config.Clear();
 
   // Bucketizing a bool feature returns same proto.
   bucketizers[bool_name_].add_boundaries(0.5);
-  EXPECT_EQ(ExamplePreprocessor(config).Process(&example_),
+  EXPECT_EQ(ExamplePreprocessor::Process(config, &example_),
             ExamplePreprocessor::kNonbucketizableFeatureType);
   EXPECT_EQUALS_EXAMPLE(example_, expected);
   config.Clear();
 
   // Bucketizing a string feature returns same proto.
   bucketizers[one_hot_name_].add_boundaries(0.5);
-  EXPECT_EQ(ExamplePreprocessor(config).Process(&example_),
+  EXPECT_EQ(ExamplePreprocessor::Process(config, &example_),
             ExamplePreprocessor::kNonbucketizableFeatureType);
   EXPECT_EQUALS_EXAMPLE(example_, expected);
   config.Clear();
@@ -121,7 +121,7 @@ TEST_F(ExamplePreprocessorTest, AddBucketizeFeatures) {
   bucketizers[int32_name_].add_boundaries(int32_value_ - 2);
   bucketizers[int32_name_].add_boundaries(int32_value_ - 1);
   bucketizers[int32_name_].add_boundaries(int32_value_ + 1);
-  EXPECT_EQ(ExamplePreprocessor(config).Process(&example_),
+  EXPECT_EQ(ExamplePreprocessor::Process(config, &example_),
             ExamplePreprocessor::kSuccess);
   (*expected.mutable_features())[int32_name_].set_string_value("2");
   EXPECT_EQUALS_EXAMPLE(example_, expected);
@@ -131,7 +131,7 @@ TEST_F(ExamplePreprocessorTest, AddBucketizeFeatures) {
   bucketizers[float_name_].add_boundaries(float_value_ - 0.2);
   bucketizers[float_name_].add_boundaries(float_value_ - 0.1);
   bucketizers[float_name_].add_boundaries(float_value_ + 0.1);
-  EXPECT_EQ(ExamplePreprocessor(config).Process(&example_),
+  EXPECT_EQ(ExamplePreprocessor::Process(config, &example_),
             ExamplePreprocessor::kSuccess);
   (*expected.mutable_features())[float_name_].set_string_value("2");
   EXPECT_EQUALS_EXAMPLE(example_, expected);
@@ -143,7 +143,7 @@ TEST_F(ExamplePreprocessorTest, AddBucketizeFeatures) {
   bucketizers[float_name_].add_boundaries(float_value_ - 0.1);
   bucketizers[float_name_].add_boundaries(float_value_);
   bucketizers[float_name_].add_boundaries(float_value_ + 0.1);
-  EXPECT_EQ(ExamplePreprocessor(config).Process(&example_),
+  EXPECT_EQ(ExamplePreprocessor::Process(config, &example_),
             ExamplePreprocessor::kSuccess);
   (*expected.mutable_features())[float_name_].set_string_value("3");
   EXPECT_EQUALS_EXAMPLE(example_, expected);
@@ -162,22 +162,21 @@ TEST_F(ExamplePreprocessorTest, NormalizeFeatures) {
   (*expected.mutable_features())[float_name_].set_float_value(
       float_value_ / (float_value_ + 1.0f));
 
-  EXPECT_EQ(ExamplePreprocessor(config).Process(&example_),
+  EXPECT_EQ(ExamplePreprocessor::Process(config, &example_),
             ExamplePreprocessor::kSuccess);
   EXPECT_EQUALS_EXAMPLE(example_, expected);
 
   // Zero normalizer returns an error.
   normalizers[float_name_] = 0.0f;
-  EXPECT_EQ(ExamplePreprocessor(config).Process(&example_),
+  EXPECT_EQ(ExamplePreprocessor::Process(config, &example_),
             ExamplePreprocessor::kNormalizerIsZero);
 }
 
 // Zero normalizer returns an error.
 TEST_F(ExamplePreprocessorTest, ZeroNormalizerReturnsError) {
-  RankerExample expected = example_;
   ExamplePreprocessorConfig config;
   (*config.mutable_normalizers())[float_name_] = 0.0f;
-  EXPECT_EQ(ExamplePreprocessor(config).Process(&example_),
+  EXPECT_EQ(ExamplePreprocessor::Process(config, &example_),
             ExamplePreprocessor::kNormalizerIsZero);
 }
 
@@ -190,7 +189,7 @@ TEST_F(ExamplePreprocessorTest, ConvertToStringFeatures) {
   *features_list.Add() = int32_name_;
   *features_list.Add() = one_hot_name_;
 
-  EXPECT_EQ(ExamplePreprocessor(config).Process(&example_),
+  EXPECT_EQ(ExamplePreprocessor::Process(config, &example_),
             ExamplePreprocessor::kSuccess);
 
   (*expected.mutable_features())[bool_name_].set_string_value(
@@ -203,10 +202,9 @@ TEST_F(ExamplePreprocessorTest, ConvertToStringFeatures) {
 // Float features can't be convert to string features.
 TEST_F(ExamplePreprocessorTest,
        ConvertFloatFeatureToStringFeatureReturnsError) {
-  RankerExample expected = example_;
   ExamplePreprocessorConfig config;
   config.add_convert_to_string_features(float_name_);
-  EXPECT_EQ(ExamplePreprocessor(config).Process(&example_),
+  EXPECT_EQ(ExamplePreprocessor::Process(config, &example_),
             ExamplePreprocessor::kNonConvertibleToStringFeatureType);
 }
 
@@ -259,21 +257,21 @@ TEST_F(ExamplePreprocessorTest, Vectorization) {
 
   // Verify the propressing result.
   RankerExample example = example_;
-  EXPECT_EQ(ExamplePreprocessor(config).Process(&example),
+  EXPECT_EQ(ExamplePreprocessor::Process(config, &example),
             ExamplePreprocessor::kSuccess);
   EXPECT_EQUALS_EXAMPLE(example, example_vec_expected);
 
   // Example with extra numeric feature gets kNoFeatureIndexFound error;
   RankerExample example_with_extra_numeric = example_;
   (*example_with_extra_numeric.mutable_features())["foo"].set_float_value(1.0);
-  EXPECT_EQ(ExamplePreprocessor(config).Process(&example_with_extra_numeric),
+  EXPECT_EQ(ExamplePreprocessor::Process(config, &example_with_extra_numeric),
             ExamplePreprocessor::ExamplePreprocessor::kNoFeatureIndexFound);
 
   // Example with extra one-hot feature gets kNoFeatureIndexFound error;
   RankerExample example_with_extra_one_hot = example_;
   (*example_with_extra_one_hot.mutable_features())["foo"].set_string_value(
       "bar");
-  EXPECT_EQ(ExamplePreprocessor(config).Process(&example_with_extra_one_hot),
+  EXPECT_EQ(ExamplePreprocessor::Process(config, &example_with_extra_one_hot),
             ExamplePreprocessor::ExamplePreprocessor::kNoFeatureIndexFound);
 
   // Example with extra sparse feature value gets kNoFeatureIndexFound error;
@@ -281,7 +279,7 @@ TEST_F(ExamplePreprocessorTest, Vectorization) {
   (*example_with_extra_sparse.mutable_features())[sparse_name_]
       .mutable_string_list()
       ->add_string_value("bar");
-  EXPECT_EQ(ExamplePreprocessor(config).Process(&example_with_extra_sparse),
+  EXPECT_EQ(ExamplePreprocessor::Process(config, &example_with_extra_sparse),
             ExamplePreprocessor::ExamplePreprocessor::kNoFeatureIndexFound);
 }
 
@@ -301,7 +299,7 @@ TEST_F(ExamplePreprocessorTest, MultipleErrorCode) {
   feature_vector.Add(int32_value_);
   feature_vector.Add(float_value_);
 
-  const int error_code = ExamplePreprocessor(config).Process(&example_);
+  const int error_code = ExamplePreprocessor::Process(config, &example_);
   // Error code contains features in example_ but not in feature_indices.
   EXPECT_TRUE(error_code & ExamplePreprocessor::kNoFeatureIndexFound);
   // Error code contains features that are not bucketizable.
