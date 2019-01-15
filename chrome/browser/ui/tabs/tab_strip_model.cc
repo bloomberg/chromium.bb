@@ -1201,27 +1201,6 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
   }
 }
 
-std::vector<int> TabStripModel::GetIndicesClosedByCommand(
-    int index,
-    ContextMenuCommand id) const {
-  DCHECK(ContainsIndex(index));
-  DCHECK(id == CommandCloseTabsToRight || id == CommandCloseOtherTabs);
-  bool is_selected = IsTabSelected(index);
-  int last_unclosed_tab = -1;
-  if (id == CommandCloseTabsToRight) {
-    last_unclosed_tab =
-        is_selected ? selection_model_.selected_indices().back() : index;
-  }
-
-  // NOTE: callers expect the vector to be sorted in descending order.
-  std::vector<int> indices;
-  for (int i = count() - 1; i > last_unclosed_tab; --i) {
-    if (i != index && !IsTabPinned(i) && (!is_selected || !IsTabSelected(i)))
-      indices.push_back(i);
-  }
-  return indices;
-}
-
 bool TabStripModel::WillContextMenuMute(int index) {
   std::vector<int> indices = GetIndicesForCommand(index);
   return !chrome::AreAllTabsMuted(*this, indices);
@@ -1336,6 +1315,27 @@ std::vector<int> TabStripModel::GetIndicesForCommand(int index) const {
     return indices;
   }
   return selection_model_.selected_indices();
+}
+
+std::vector<int> TabStripModel::GetIndicesClosedByCommand(
+    int index,
+    ContextMenuCommand id) const {
+  DCHECK(ContainsIndex(index));
+  DCHECK(id == CommandCloseTabsToRight || id == CommandCloseOtherTabs);
+  bool is_selected = IsTabSelected(index);
+  int last_unclosed_tab = -1;
+  if (id == CommandCloseTabsToRight) {
+    last_unclosed_tab =
+        is_selected ? selection_model_.selected_indices().back() : index;
+  }
+
+  // NOTE: callers expect the vector to be sorted in descending order.
+  std::vector<int> indices;
+  for (int i = count() - 1; i > last_unclosed_tab; --i) {
+    if (i != index && !IsTabPinned(i) && (!is_selected || !IsTabSelected(i)))
+      indices.push_back(i);
+  }
+  return indices;
 }
 
 bool TabStripModel::IsNewTabAtEndOfTabStrip(WebContents* contents) const {

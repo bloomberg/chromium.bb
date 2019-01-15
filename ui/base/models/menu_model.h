@@ -112,10 +112,6 @@ class UI_BASE_EXPORT MenuModel {
   // Returns the model for the submenu at the specified index.
   virtual MenuModel* GetSubmenuModelAt(int index) const = 0;
 
-  // Called when the highlighted menu item changes to the item at the specified
-  // index.
-  virtual void HighlightChangedTo(int index) = 0;
-
   // Called when the item at the specified index has been activated.
   virtual void ActivatedAt(int index) = 0;
 

@@ -73,8 +73,6 @@ class CommonMenuModel : public ui::MenuModel {
 
   ui::MenuModel* GetSubmenuModelAt(int index) const override { return nullptr; }
 
-  void HighlightChangedTo(int index) override {}
-
   void ActivatedAt(int index) override {}
 
   void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) override {}

@@ -427,20 +427,6 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
     return actual;
   }
 
-  std::string GetIndicesClosedByCommandAsString(
-      const TabStripModel& model,
-      int index,
-      TabStripModel::ContextMenuCommand id) const {
-    std::vector<int> indices = model.GetIndicesClosedByCommand(index, id);
-    std::string result;
-    for (size_t i = 0; i < indices.size(); ++i) {
-      if (i != 0)
-        result += " ";
-      result += base::IntToString(indices[i]);
-    }
-    return result;
-  }
-
   void PrepareTabstripForSelectionTest(TabStripModel* model,
                                        int tab_count,
                                        int pinned_count,
@@ -1342,34 +1328,46 @@ TEST_F(TabStripModelTest, GetIndicesClosedByCommand) {
   TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
+  const auto indicesClosedAsString =
+      [&tabstrip](int index, TabStripModel::ContextMenuCommand id) {
+        std::vector<int> indices =
+            tabstrip.GetIndicesClosedByCommand(index, id);
+        std::string result;
+        for (size_t i = 0; i < indices.size(); ++i) {
+          if (i != 0)
+            result += " ";
+          result += base::IntToString(indices[i]);
+        }
+        return result;
+      };
+
   for (int i = 0; i < 5; ++i)
     tabstrip.AppendWebContents(CreateWebContents(), true);
 
   EXPECT_EQ("4 3 2 1",
-            GetIndicesClosedByCommandAsString(
-                tabstrip, 0, TabStripModel::CommandCloseTabsToRight));
-  EXPECT_EQ("4 3 2", GetIndicesClosedByCommandAsString(
-                         tabstrip, 1, TabStripModel::CommandCloseTabsToRight));
+            indicesClosedAsString(0, TabStripModel::CommandCloseTabsToRight));
+  EXPECT_EQ("4 3 2",
+            indicesClosedAsString(1, TabStripModel::CommandCloseTabsToRight));
 
-  EXPECT_EQ("4 3 2 1", GetIndicesClosedByCommandAsString(
-                           tabstrip, 0, TabStripModel::CommandCloseOtherTabs));
-  EXPECT_EQ("4 3 2 0", GetIndicesClosedByCommandAsString(
-                           tabstrip, 1, TabStripModel::CommandCloseOtherTabs));
+  EXPECT_EQ("4 3 2 1",
+            indicesClosedAsString(0, TabStripModel::CommandCloseOtherTabs));
+  EXPECT_EQ("4 3 2 0",
+            indicesClosedAsString(1, TabStripModel::CommandCloseOtherTabs));
 
   // Pin the first two tabs. Pinned tabs shouldn't be closed by the close other
   // commands.
   tabstrip.SetTabPinned(0, true);
   tabstrip.SetTabPinned(1, true);
 
-  EXPECT_EQ("4 3 2", GetIndicesClosedByCommandAsString(
-                         tabstrip, 0, TabStripModel::CommandCloseTabsToRight));
-  EXPECT_EQ("4 3", GetIndicesClosedByCommandAsString(
-                       tabstrip, 2, TabStripModel::CommandCloseTabsToRight));
+  EXPECT_EQ("4 3 2",
+            indicesClosedAsString(0, TabStripModel::CommandCloseTabsToRight));
+  EXPECT_EQ("4 3",
+            indicesClosedAsString(2, TabStripModel::CommandCloseTabsToRight));
 
-  EXPECT_EQ("4 3 2", GetIndicesClosedByCommandAsString(
-                         tabstrip, 0, TabStripModel::CommandCloseOtherTabs));
-  EXPECT_EQ("4 3", GetIndicesClosedByCommandAsString(
-                       tabstrip, 2, TabStripModel::CommandCloseOtherTabs));
+  EXPECT_EQ("4 3 2",
+            indicesClosedAsString(0, TabStripModel::CommandCloseOtherTabs));
+  EXPECT_EQ("4 3",
+            indicesClosedAsString(2, TabStripModel::CommandCloseOtherTabs));
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
