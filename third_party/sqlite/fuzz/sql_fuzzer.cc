@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -35,7 +36,7 @@ using namespace sql_query_grammar;
 // 5. Temp-file database, for better fuzzing of VACUUM and journalling.
 
 DEFINE_BINARY_PROTO_FUZZER(const SQLQueries& sql_queries) {
-  char* skip_queries = getenv("SQL_SKIP_QUERIES");
+  char* skip_queries = ::getenv("SQL_SKIP_QUERIES");
   if (skip_queries) {
     sql_fuzzer::SetDisabledQueries(
         sql_fuzzer::ParseDisabledQueries(skip_queries));
@@ -43,7 +44,7 @@ DEFINE_BINARY_PROTO_FUZZER(const SQLQueries& sql_queries) {
 
   std::vector<std::string> queries = sql_fuzzer::SQLQueriesToVec(sql_queries);
 
-  if (getenv("LPM_DUMP_NATIVE_INPUT") && queries.size() != 0) {
+  if (::getenv("LPM_DUMP_NATIVE_INPUT") && queries.size() != 0) {
     std::cout << "_________________________" << std::endl;
     for (std::string query : queries) {
       if (query == ";")
@@ -53,5 +54,5 @@ DEFINE_BINARY_PROTO_FUZZER(const SQLQueries& sql_queries) {
     std::cout << "------------------------" << std::endl;
   }
 
-  sql_fuzzer::RunSqlQueries(queries);
+  sql_fuzzer::RunSqlQueries(queries, ::getenv("LPM_SQLITE_TRACE"));
 }

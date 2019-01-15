@@ -4,6 +4,7 @@
 
 // Adapted from sqlite's ossfuzz.c
 
+#include <cstdlib>
 #include <iostream>  // TODO(mpdenton) remove
 #include <string>
 #include <vector>
@@ -77,6 +78,10 @@ sqlite3* InitConnectionForFuzzing() {
   return db;
 }
 
+void EnableSqliteTracing(sqlite3* db) {
+  sqlite3_exec(db, "PRAGMA vdbe_debug=ON", 0, 0, 0);
+}
+
 void CloseConnection(sqlite3* db) {
   // Cleanup and return.
   sqlite3_exec(db, "PRAGMA temp_store_directory=''", 0, 0, 0);
@@ -92,7 +97,7 @@ void RunSqlQueriesOnConnection(sqlite3* db, std::vector<std::string> queries) {
     const char* pzTail;
     rc = sqlite3_prepare_v2(db, queries[i].c_str(), -1, &stmt, &pzTail);
     if (rc != SQLITE_OK) {
-      if (getenv("PRINT_SQLITE_ERRORS")) {
+      if (::getenv("PRINT_SQLITE_ERRORS")) {
         std::cerr << "Could not compile: " << queries[i] << std::endl;
         std::cerr << "Error message from db: " << sqlite3_errmsg(db)
                   << std::endl;
@@ -119,7 +124,7 @@ void RunSqlQueriesOnConnection(sqlite3* db, std::vector<std::string> queries) {
     while (rc == SQLITE_ROW && count++ <= kMaxNumRows) {
       rc = sqlite3_step(stmt);
       if (rc != SQLITE_DONE && rc != SQLITE_ROW) {
-        if (getenv("PRINT_SQLITE_ERRORS")) {
+        if (::getenv("PRINT_SQLITE_ERRORS")) {
           std::cerr << "Step problem: " << queries[i] << std::endl;
           std::cerr << "Error message from db: " << sqlite3_errmsg(db)
                     << std::endl;
@@ -154,8 +159,10 @@ void RunSqlQueriesOnConnection(sqlite3* db, std::vector<std::string> queries) {
   }
 }
 
-void RunSqlQueries(std::vector<std::string> queries) {
+void RunSqlQueries(std::vector<std::string> queries, bool enable_tracing) {
   sqlite3* db = InitConnectionForFuzzing();
+  if (enable_tracing)
+    EnableSqliteTracing(db);
 
   RunSqlQueriesOnConnection(db, queries);
 

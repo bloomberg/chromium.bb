@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -26,5 +27,5 @@ DEFINE_BINARY_PROTO_FUZZER(const StrftimeFn& sql_strftime) {
 
   std::vector<std::string> queries;
   queries.push_back(strftime_str);
-  sql_fuzzer::RunSqlQueries(queries);
+  sql_fuzzer::RunSqlQueries(queries, ::getenv("LPM_SQLITE_TRACE"));
 }
