@@ -77,7 +77,6 @@ const char* const kKnownSettings[] = {
     kDeviceLoginScreenLocales,
     kDeviceOffHours,
     kDeviceOwner,
-    kDeviceNativePrinters,
     kDeviceNativePrintersAccessMode,
     kDeviceNativePrintersBlacklist,
     kDeviceNativePrintersWhitelist,

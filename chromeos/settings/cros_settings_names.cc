@@ -305,8 +305,6 @@ const char kFineGrainedTimeZoneResolveEnabled[] =
 // }
 const char kDeviceOffHours[] = "cros.device_off_hours";
 
-// An external data pref for the printer configurations download.
-const char kDeviceNativePrinters[] = "cros.device.native_printers";
 // An enum specifying the access policy device printers should observe.
 const char kDeviceNativePrintersAccessMode[] =
     "cros.device.native_printers_access_mode";

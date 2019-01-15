@@ -3851,11 +3851,7 @@
         "url": "https://example.com/policyfile",
         "hash": "deadbeefdeadbeefdeadbeef"
       }
-    },
-    "pref_mappings": [{
-      "pref": "cros.device.native_printers",
-      "local_state": true
-    }]
+    }
   },
 
   "DeviceNativePrintersAccessMode": {
