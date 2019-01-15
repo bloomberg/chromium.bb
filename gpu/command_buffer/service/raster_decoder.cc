@@ -95,6 +95,42 @@ namespace {
 
 base::AtomicSequenceNumber g_raster_decoder_id;
 
+class TextureMetadata {
+ public:
+  TextureMetadata(bool use_buffer,
+                  gfx::BufferUsage buffer_usage,
+                  viz::ResourceFormat format,
+                  const Capabilities& caps)
+      : use_buffer_(use_buffer),
+        buffer_usage_(buffer_usage),
+        format_(format),
+        target_(CalcTarget(use_buffer, buffer_usage, format, caps)) {}
+  TextureMetadata(const TextureMetadata& other) = default;
+
+  bool use_buffer() const { return use_buffer_; }
+  gfx::BufferUsage buffer_usage() const { return buffer_usage_; }
+  viz::ResourceFormat format() const { return format_; }
+  GLenum target() const { return target_; }
+
+ private:
+  static GLenum CalcTarget(bool use_buffer,
+                           gfx::BufferUsage buffer_usage,
+                           viz::ResourceFormat format,
+                           const Capabilities& caps) {
+    if (use_buffer) {
+      gfx::BufferFormat buffer_format = viz::BufferFormat(format);
+      return GetBufferTextureTarget(buffer_usage, buffer_format, caps);
+    } else {
+      return GL_TEXTURE_2D;
+    }
+  }
+
+  bool use_buffer_;
+  gfx::BufferUsage buffer_usage_;
+  viz::ResourceFormat format_;
+  GLenum target_;
+};
+
 // This class prevents any GL errors that occur when it is in scope from
 // being reported to the client.
 class ScopedGLErrorSuppressor {
@@ -367,6 +403,13 @@ class RasterDecoderImpl final : public RasterDecoder,
   scoped_refptr<Buffer> GetShmBuffer(uint32_t shm_id) override;
 
  private:
+  base::flat_map<GLuint, TextureMetadata> texture_metadata_;
+  TextureMetadata* GetTextureMetadata(GLuint client_id) {
+    auto it = texture_metadata_.find(client_id);
+    DCHECK(it != texture_metadata_.end()) << "Undefined texture id";
+    return &it->second;
+  }
+
   gles2::ContextState* state() const {
     return raster_decoder_context_state_->context_state();
   }
@@ -422,6 +465,11 @@ class RasterDecoderImpl final : public RasterDecoder,
   // Deletes the texture info for the given texture.
   void RemoveTexture(GLuint client_id) {
     texture_manager()->RemoveTexture(client_id);
+
+    auto texture_iter = texture_metadata_.find(client_id);
+    DCHECK(texture_iter != texture_metadata_.end());
+
+    texture_metadata_.erase(texture_iter);
   }
 
   // Set remaining commands to process to 0 to force DoCommands to return
@@ -436,9 +484,11 @@ class RasterDecoderImpl final : public RasterDecoder,
                               int* entries_processed);
 
   void DoCreateAndConsumeTextureINTERNAL(GLuint client_id,
+                                         bool use_buffer,
+                                         gfx::BufferUsage buffer_usage,
+                                         viz::ResourceFormat resource_format,
                                          const volatile GLbyte* key);
-  void DeleteTexturesINTERNALHelper(GLsizei n,
-                                    const volatile GLuint* client_ids);
+  void DeleteTexturesHelper(GLsizei n, const volatile GLuint* client_ids);
   bool GenQueriesEXTHelper(GLsizei n, const GLuint* client_ids);
   void DeleteQueriesEXTHelper(GLsizei n, const volatile GLuint* client_ids);
   void DoFinish();
@@ -447,14 +497,14 @@ class RasterDecoderImpl final : public RasterDecoder,
   void DoTraceEndCHROMIUM();
   bool InitializeCopyTexImageBlitter();
   bool InitializeCopyTextureCHROMIUM();
-  void DoCopySubTextureINTERNAL(GLuint source_id,
-                                GLuint dest_id,
-                                GLint xoffset,
-                                GLint yoffset,
-                                GLint x,
-                                GLint y,
-                                GLsizei width,
-                                GLsizei height);
+  void DoCopySubTexture(GLuint source_id,
+                        GLuint dest_id,
+                        GLint xoffset,
+                        GLint yoffset,
+                        GLint x,
+                        GLint y,
+                        GLsizei width,
+                        GLsizei height);
   // If the texture has an image but that image is not bound or copied to the
   // texture, this will first attempt to bind it, and if that fails
   // CopyTexImage on it.
@@ -1582,6 +1632,9 @@ void RasterDecoderImpl::DoFlush() {
 
 void RasterDecoderImpl::DoCreateAndConsumeTextureINTERNAL(
     GLuint client_id,
+    bool use_buffer,
+    gfx::BufferUsage buffer_usage,
+    viz::ResourceFormat resource_format,
     const volatile GLbyte* key) {
   TRACE_EVENT2("gpu", "RasterDecoderImpl::DoCreateAndConsumeTextureINTERNAL",
                "context", logger_.GetLogPrefix(), "key[0]",
@@ -1608,6 +1661,10 @@ void RasterDecoderImpl::DoCreateAndConsumeTextureINTERNAL(
     return;
   }
 
+  texture_metadata_.emplace(
+      client_id, TextureMetadata(use_buffer, buffer_usage, resource_format,
+                                 GetCapabilities()));
+
   gles2::Texture* texture = gles2::Texture::CheckedCast(
       group_->mailbox_manager()->ConsumeTexture(mailbox));
   if (!texture) {
@@ -1629,7 +1686,7 @@ void RasterDecoderImpl::DoCreateAndConsumeTextureINTERNAL(
   // TextureMetadata.
 }
 
-void RasterDecoderImpl::DeleteTexturesINTERNALHelper(
+void RasterDecoderImpl::DeleteTexturesHelper(
     GLsizei n,
     const volatile GLuint* client_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
@@ -1757,14 +1814,14 @@ bool RasterDecoderImpl::InitializeCopyTextureCHROMIUM() {
   return true;
 }
 
-void RasterDecoderImpl::DoCopySubTextureINTERNAL(GLuint source_id,
-                                                 GLuint dest_id,
-                                                 GLint xoffset,
-                                                 GLint yoffset,
-                                                 GLint x,
-                                                 GLint y,
-                                                 GLsizei width,
-                                                 GLsizei height) {
+void RasterDecoderImpl::DoCopySubTexture(GLuint source_id,
+                                         GLuint dest_id,
+                                         GLint xoffset,
+                                         GLint yoffset,
+                                         GLint x,
+                                         GLint y,
+                                         GLsizei width,
+                                         GLsizei height) {
   gles2::TextureRef* source_texture_ref = GetTexture(source_id);
   gles2::TextureRef* dest_texture_ref = GetTexture(dest_id);
   if (!source_texture_ref || !dest_texture_ref) {
@@ -1781,9 +1838,21 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(GLuint source_id,
     return;
   }
 
-  GLenum source_target = source_texture->target();
+  TextureMetadata* source_texture_metadata = GetTextureMetadata(source_id);
+  if (!source_texture_metadata) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture", "unknown texture");
+    return;
+  }
+
+  TextureMetadata* dest_texture_metadata = GetTextureMetadata(dest_id);
+  if (!dest_texture_metadata) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture", "unknown texture");
+    return;
+  }
+
+  GLenum source_target = source_texture_metadata->target();
   GLint source_level = 0;
-  GLenum dest_target = dest_texture->target();
+  GLenum dest_target = dest_texture_metadata->target();
   GLint dest_level = 0;
 
   ScopedTextureBinder binder(

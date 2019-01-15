@@ -244,10 +244,15 @@ class RasterImplementationGLESTest : public testing::Test {
 
   void SetUp() override {
     gl_ = std::make_unique<RasterMockGLES2Interface>();
-    ri_ = std::make_unique<RasterImplementationGLES>(gl_.get());
+    ri_ = std::make_unique<RasterImplementationGLES>(gl_.get(),
+                                                     gpu::Capabilities());
   }
 
   void TearDown() override {}
+
+  void SetUpWithCapabilities(const gpu::Capabilities& capabilities) {
+    ri_.reset(new RasterImplementationGLES(gl_.get(), capabilities));
+  }
 
   void ExpectBindTexture(GLenum target, GLuint texture_id) {
     if (bound_texture_ != texture_id) {
@@ -373,28 +378,36 @@ TEST_F(RasterImplementationGLESTest, GetQueryObjectuivEXT) {
   ri_->GetQueryObjectuivEXT(kQueryId, kQueryParam, &result);
 }
 
-TEST_F(RasterImplementationGLESTest, DeleteGpuRasterTexture) {
-  GLuint texture_id = 3;
+TEST_F(RasterImplementationGLESTest, DeleteTextures) {
+  const GLsizei kNumTextures = 2;
+  GLuint texture_ids[kNumTextures] = {2, 3};
   gpu::Mailbox mailbox;
 
   EXPECT_CALL(*gl_, CreateAndConsumeTextureCHROMIUM(mailbox.name))
-      .WillOnce(Return(texture_id))
+      .WillOnce(Return(texture_ids[0]))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, CreateAndConsumeTextureCHROMIUM(mailbox.name))
+      .WillOnce(Return(texture_ids[1]))
       .RetiresOnSaturation();
 
-  EXPECT_EQ(texture_id, ri_->CreateAndConsumeForGpuRaster(mailbox.name));
+  ri_->CreateAndConsumeTexture(false, gfx::BufferUsage::GPU_READ,
+                               viz::RGBA_8888, mailbox.name);
+  ri_->CreateAndConsumeTexture(false, gfx::BufferUsage::GPU_READ,
+                               viz::RGBA_8888, mailbox.name);
 
-  EXPECT_CALL(*gl_, DeleteTextures(1, _)).Times(1);
-  ri_->DeleteGpuRasterTexture(texture_id);
+  EXPECT_CALL(*gl_, DeleteTextures(kNumTextures, texture_ids)).Times(1);
+  ri_->DeleteTextures(kNumTextures, texture_ids);
 }
 
-TEST_F(RasterImplementationGLESTest, CreateAndConsumeForGpuRaster) {
+TEST_F(RasterImplementationGLESTest, CreateAndConsumeTexture) {
   const GLuint kTextureId = 23;
   GLuint texture_id = 0;
   gpu::Mailbox mailbox;
 
   EXPECT_CALL(*gl_, CreateAndConsumeTextureCHROMIUM(mailbox.name))
       .WillOnce(Return(kTextureId));
-  texture_id = ri_->CreateAndConsumeForGpuRaster(mailbox.name);
+  texture_id = ri_->CreateAndConsumeTexture(false, gfx::BufferUsage::GPU_READ,
+                                            viz::RGBA_8888, mailbox.name);
   EXPECT_EQ(kTextureId, texture_id);
 }
 

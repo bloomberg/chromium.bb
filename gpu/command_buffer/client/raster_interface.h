@@ -29,9 +29,6 @@ extern "C" typedef struct _ClientBuffer* ClientBuffer;
 extern "C" typedef struct _GLColorSpace* GLColorSpace;
 
 namespace gpu {
-
-struct Mailbox;
-
 namespace raster {
 
 enum RasterTexStorageFlags { kNone = 0, kOverlay = (1 << 0) };
@@ -41,15 +38,6 @@ class RasterInterface {
   RasterInterface() {}
   virtual ~RasterInterface() {}
 
-  virtual void CopySubTexture(const gpu::Mailbox& source_mailbox,
-                              const gpu::Mailbox& dest_mailbox,
-                              GLenum dest_target,
-                              GLint xoffset,
-                              GLint yoffset,
-                              GLint x,
-                              GLint y,
-                              GLsizei width,
-                              GLsizei height) = 0;
   // OOP-Raster
   virtual void BeginRasterCHROMIUM(
       GLuint sk_color,
@@ -77,8 +65,6 @@ class RasterInterface {
       bool needs_mips) = 0;
 
   // Raster via GrContext.
-  virtual GLuint CreateAndConsumeForGpuRaster(const GLbyte* mailbox) = 0;
-  virtual void DeleteGpuRasterTexture(GLuint texture) = 0;
   virtual void BeginGpuRaster() = 0;
   virtual void EndGpuRaster() = 0;
 

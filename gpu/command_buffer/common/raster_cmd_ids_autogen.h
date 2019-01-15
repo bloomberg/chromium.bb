@@ -12,27 +12,27 @@
 #define GPU_COMMAND_BUFFER_COMMON_RASTER_CMD_IDS_AUTOGEN_H_
 
 #define RASTER_COMMAND_LIST(OP)                            \
-  OP(Finish)                                     /* 256 */ \
-  OP(Flush)                                      /* 257 */ \
-  OP(GetError)                                   /* 258 */ \
-  OP(GenQueriesEXTImmediate)                     /* 259 */ \
-  OP(DeleteQueriesEXTImmediate)                  /* 260 */ \
-  OP(BeginQueryEXT)                              /* 261 */ \
-  OP(EndQueryEXT)                                /* 262 */ \
-  OP(LoseContextCHROMIUM)                        /* 263 */ \
-  OP(InsertFenceSyncCHROMIUM)                    /* 264 */ \
-  OP(BeginRasterCHROMIUMImmediate)               /* 265 */ \
-  OP(RasterCHROMIUM)                             /* 266 */ \
-  OP(EndRasterCHROMIUM)                          /* 267 */ \
-  OP(CreateTransferCacheEntryINTERNAL)           /* 268 */ \
-  OP(DeleteTransferCacheEntryINTERNAL)           /* 269 */ \
-  OP(UnlockTransferCacheEntryINTERNAL)           /* 270 */ \
-  OP(DeletePaintCacheTextBlobsINTERNALImmediate) /* 271 */ \
-  OP(DeletePaintCachePathsINTERNALImmediate)     /* 272 */ \
-  OP(ClearPaintCacheINTERNAL)                    /* 273 */ \
-  OP(CreateAndConsumeTextureINTERNALImmediate)   /* 274 */ \
-  OP(CopySubTextureINTERNAL)                     /* 275 */ \
-  OP(DeleteTexturesINTERNALImmediate)            /* 276 */ \
+  OP(DeleteTexturesImmediate)                    /* 256 */ \
+  OP(Finish)                                     /* 257 */ \
+  OP(Flush)                                      /* 258 */ \
+  OP(GetError)                                   /* 259 */ \
+  OP(GenQueriesEXTImmediate)                     /* 260 */ \
+  OP(DeleteQueriesEXTImmediate)                  /* 261 */ \
+  OP(BeginQueryEXT)                              /* 262 */ \
+  OP(EndQueryEXT)                                /* 263 */ \
+  OP(LoseContextCHROMIUM)                        /* 264 */ \
+  OP(InsertFenceSyncCHROMIUM)                    /* 265 */ \
+  OP(BeginRasterCHROMIUMImmediate)               /* 266 */ \
+  OP(RasterCHROMIUM)                             /* 267 */ \
+  OP(EndRasterCHROMIUM)                          /* 268 */ \
+  OP(CreateTransferCacheEntryINTERNAL)           /* 269 */ \
+  OP(DeleteTransferCacheEntryINTERNAL)           /* 270 */ \
+  OP(UnlockTransferCacheEntryINTERNAL)           /* 271 */ \
+  OP(DeletePaintCacheTextBlobsINTERNALImmediate) /* 272 */ \
+  OP(DeletePaintCachePathsINTERNALImmediate)     /* 273 */ \
+  OP(ClearPaintCacheINTERNAL)                    /* 274 */ \
+  OP(CreateAndConsumeTextureINTERNALImmediate)   /* 275 */ \
+  OP(CopySubTexture)                             /* 276 */ \
   OP(TraceBeginCHROMIUM)                         /* 277 */ \
   OP(TraceEndCHROMIUM)                           /* 278 */ \
   OP(SetActiveURLCHROMIUM)                       /* 279 */

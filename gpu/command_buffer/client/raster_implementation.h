@@ -111,16 +111,6 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
 #include "gpu/command_buffer/client/raster_implementation_autogen.h"
 
   // RasterInterface implementation.
-  void CopySubTexture(const gpu::Mailbox& source_mailbox,
-                      const gpu::Mailbox& dest_mailbox,
-                      GLenum dest_target,
-                      GLint xoffset,
-                      GLint yoffset,
-                      GLint x,
-                      GLint y,
-                      GLsizei width,
-                      GLsizei height) override;
-
   void BeginRasterCHROMIUM(GLuint sk_color,
                            GLuint msaa_sample_count,
                            GLboolean can_use_lcd_text,
@@ -139,8 +129,6 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
                                 uint32_t transfer_cache_entry_id,
                                 const gfx::ColorSpace& target_color_space,
                                 bool needs_mips) override;
-  GLuint CreateAndConsumeForGpuRaster(const GLbyte* mailbox) override;
-  void DeleteGpuRasterTexture(GLuint texture) override;
   void BeginGpuRaster() override;
   void EndGpuRaster() override;
 
@@ -256,6 +244,7 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   void GenQueriesEXTHelper(GLsizei n, const GLuint* queries);
 
   void DeleteTexturesHelper(GLsizei n, const GLuint* textures);
+  void UnbindTexturesHelper(GLsizei n, const GLuint* textures);
   void DeleteQueriesEXTHelper(GLsizei n, const GLuint* queries);
 
   // IdAllocators for objects that can't be shared among contexts.
@@ -302,6 +291,11 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   gles2::DebugMarkerManager debug_marker_manager_;
   std::string this_in_hex_;
 
+  std::unique_ptr<TextureUnit[]> texture_units_;
+
+  // 0 to capabilities_.max_combined_texture_image_units.
+  GLuint active_texture_unit_;
+
   // Current GL error bits.
   uint32_t error_bits_;
 
@@ -324,6 +318,7 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   // whether it should aggressively free them.
   bool aggressively_free_resources_;
 
+  IdAllocator texture_id_allocator_;
   IdAllocator query_id_allocator_;
 
   ClientFontManager font_manager_;

@@ -14,6 +14,26 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_RASTER_CMD_FORMAT_TEST_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_COMMON_RASTER_CMD_FORMAT_TEST_AUTOGEN_H_
 
+TEST_F(RasterFormatTest, DeleteTexturesImmediate) {
+  static GLuint ids[] = {
+      12,
+      23,
+      34,
+  };
+  cmds::DeleteTexturesImmediate& cmd =
+      *GetBufferAs<cmds::DeleteTexturesImmediate>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::DeleteTexturesImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
+            cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd,
+      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
+  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
+}
+
 TEST_F(RasterFormatTest, Finish) {
   cmds::Finish& cmd = *GetBufferAs<cmds::Finish>();
   void* next_cmd = cmd.Set(&cmd);
@@ -318,26 +338,32 @@ TEST_F(RasterFormatTest, CreateAndConsumeTextureINTERNALImmediate) {
   };
   cmds::CreateAndConsumeTextureINTERNALImmediate& cmd =
       *GetBufferAs<cmds::CreateAndConsumeTextureINTERNALImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11), data);
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<bool>(12),
+                           static_cast<gfx::BufferUsage>(13),
+                           static_cast<viz::ResourceFormat>(14), data);
   EXPECT_EQ(static_cast<uint32_t>(
                 cmds::CreateAndConsumeTextureINTERNALImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)),
             cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLuint>(11), cmd.texture_id);
+  EXPECT_EQ(static_cast<bool>(12), static_cast<bool>(cmd.use_buffer));
+  EXPECT_EQ(static_cast<gfx::BufferUsage>(13),
+            static_cast<gfx::BufferUsage>(cmd.buffer_usage));
+  EXPECT_EQ(static_cast<viz::ResourceFormat>(14),
+            static_cast<viz::ResourceFormat>(cmd.format));
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
 }
 
-TEST_F(RasterFormatTest, CopySubTextureINTERNAL) {
-  cmds::CopySubTextureINTERNAL& cmd =
-      *GetBufferAs<cmds::CopySubTextureINTERNAL>();
+TEST_F(RasterFormatTest, CopySubTexture) {
+  cmds::CopySubTexture& cmd = *GetBufferAs<cmds::CopySubTexture>();
   void* next_cmd =
       cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLuint>(12),
               static_cast<GLint>(13), static_cast<GLint>(14),
               static_cast<GLint>(15), static_cast<GLint>(16),
               static_cast<GLsizei>(17), static_cast<GLsizei>(18));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::CopySubTextureINTERNAL::kCmdId),
+  EXPECT_EQ(static_cast<uint32_t>(cmds::CopySubTexture::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLuint>(11), cmd.source_id);
@@ -349,27 +375,6 @@ TEST_F(RasterFormatTest, CopySubTextureINTERNAL) {
   EXPECT_EQ(static_cast<GLsizei>(17), cmd.width);
   EXPECT_EQ(static_cast<GLsizei>(18), cmd.height);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(RasterFormatTest, DeleteTexturesINTERNALImmediate) {
-  static GLuint ids[] = {
-      12,
-      23,
-      34,
-  };
-  cmds::DeleteTexturesINTERNALImmediate& cmd =
-      *GetBufferAs<cmds::DeleteTexturesINTERNALImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
-  EXPECT_EQ(
-      static_cast<uint32_t>(cmds::DeleteTexturesINTERNALImmediate::kCmdId),
-      cmd.header.command);
-  EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
-            cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
-  CheckBytesWrittenMatchesExpectedSize(
-      next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
-  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(RasterFormatTest, TraceBeginCHROMIUM) {

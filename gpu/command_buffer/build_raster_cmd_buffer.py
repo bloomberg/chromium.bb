@@ -181,6 +181,10 @@ _NAMED_TYPE_INFO = {
 # not_shared:   For GENn types, True if objects can't be shared between contexts
 
 _FUNCTION_INFO = {
+  'CreateAndConsumeTexture': {
+    'type': 'NoCommand',
+    'trace_level': 2,
+  },
   'CreateAndConsumeTextureINTERNAL': {
     'decoder_func': 'DoCreateAndConsumeTextureINTERNAL',
     'internal': True,
@@ -189,18 +193,15 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'trace_level': 2,
   },
-  'CopySubTextureINTERNAL': {
-    'decoder_func': 'DoCopySubTextureINTERNAL',
-    'internal': True,
+  'CopySubTexture': {
+    'decoder_func': 'DoCopySubTexture',
     'unit_test': False,
     'trace_level': 2,
   },
-  'DeleteTexturesINTERNAL': {
+  'DeleteTextures': {
     'type': 'DELn',
-    'internal': True,
     'resource_type': 'Texture',
     'resource_types': 'Textures',
-    'unit_test': False,
   },
   'Finish': {
     'impl_func': False,

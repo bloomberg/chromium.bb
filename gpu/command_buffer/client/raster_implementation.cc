@@ -296,6 +296,7 @@ RasterImplementation::RasterImplementation(
     ImageDecodeAcceleratorInterface* image_decode_accelerator)
     : ImplementationBase(helper, transfer_buffer, gpu_control),
       helper_(helper),
+      active_texture_unit_(0),
       error_bits_(0),
       lose_context_when_out_of_memory_(lose_context_when_out_of_memory),
       use_count_(0),
@@ -324,6 +325,9 @@ gpu::ContextResult RasterImplementation::Initialize(
     return result;
   }
 
+  texture_units_ = std::make_unique<TextureUnit[]>(
+      capabilities_.max_combined_texture_image_units);
+
   return gpu::ContextResult::kSuccess;
 }
 
@@ -345,8 +349,15 @@ RasterCmdHelper* RasterImplementation::helper() const {
 }
 
 IdAllocator* RasterImplementation::GetIdAllocator(IdNamespaces namespace_id) {
-  DCHECK_EQ(namespace_id, IdNamespaces::kQueries);
-  return &query_id_allocator_;
+  switch (namespace_id) {
+    case IdNamespaces::kQueries:
+      return &query_id_allocator_;
+    case IdNamespaces::kTextures:
+      return &texture_id_allocator_;
+    default:
+      DCHECK(false);
+      return nullptr;
+  }
 }
 
 void RasterImplementation::OnGpuControlLostContext() {
@@ -772,6 +783,28 @@ void RasterImplementation::FinishHelper() {
 void RasterImplementation::GenQueriesEXTHelper(GLsizei /* n */,
                                                const GLuint* /* queries */) {}
 
+void RasterImplementation::DeleteTexturesHelper(GLsizei n,
+                                                const GLuint* textures) {
+  helper_->DeleteTexturesImmediate(n, textures);
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    texture_id_allocator_.FreeID(textures[ii]);
+  }
+  UnbindTexturesHelper(n, textures);
+}
+
+void RasterImplementation::UnbindTexturesHelper(GLsizei n,
+                                                const GLuint* textures) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    for (GLint tt = 0; tt < capabilities_.max_combined_texture_image_units;
+         ++tt) {
+      TextureUnit& unit = texture_units_[tt];
+      if (textures[ii] == unit.bound_texture_2d) {
+        unit.bound_texture_2d = 0;
+      }
+    }
+  }
+}
+
 GLenum RasterImplementation::GetGraphicsResetStatusKHR() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetGraphicsResetStatusKHR()");
@@ -1007,39 +1040,23 @@ void RasterImplementation::UnmapRasterCHROMIUM(uint32_t raster_written_size,
 // instead of having to edit some template or the code generator.
 #include "gpu/command_buffer/client/raster_implementation_impl_autogen.h"
 
-void RasterImplementation::CopySubTexture(const gpu::Mailbox& source_mailbox,
-                                          const gpu::Mailbox& dest_mailbox,
-                                          GLenum dest_target,
-                                          GLint xoffset,
-                                          GLint yoffset,
-                                          GLint x,
-                                          GLint y,
-                                          GLsizei width,
-                                          GLsizei height) {
+GLuint RasterImplementation::CreateAndConsumeTexture(
+    bool use_buffer,
+    gfx::BufferUsage buffer_usage,
+    viz::ResourceFormat format,
+    const GLbyte* mailbox) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCopySubTexture("
-                     << source_mailbox.ToDebugString() << ", "
-                     << dest_mailbox.ToDebugString() << ", " << xoffset << ", "
-                     << yoffset << ", " << x << ", " << y << ", " << width
-                     << ", " << height << ")");
-  if (width < 0) {
-    SetGLError(GL_INVALID_VALUE, "glCopySubTexture", "width < 0");
-    return;
-  }
-  if (height < 0) {
-    SetGLError(GL_INVALID_VALUE, "glCopySubTexture", "height < 0");
-    return;
-  }
-  // TODO(piman): coalesce all these commands.
-  GLuint texture_ids[2] = {1, 2};
-  helper_->CreateAndConsumeTextureINTERNALImmediate(texture_ids[0],
-                                                    source_mailbox.name);
-  helper_->CreateAndConsumeTextureINTERNALImmediate(texture_ids[1],
-                                                    dest_mailbox.name);
-  helper_->CopySubTextureINTERNAL(texture_ids[0], texture_ids[1], xoffset,
-                                  yoffset, x, y, width, height);
-  helper_->DeleteTexturesINTERNALImmediate(2, texture_ids);
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCreateAndConsumeTexture("
+                     << use_buffer << ", "
+                     << static_cast<uint32_t>(buffer_usage) << ", "
+                     << static_cast<uint32_t>(format) << ", "
+                     << static_cast<const void*>(mailbox) << ")");
+  GLuint client_id = texture_id_allocator_.AllocateID();
+  helper_->CreateAndConsumeTextureINTERNALImmediate(
+      client_id, use_buffer, buffer_usage, format, mailbox);
+  GPU_CLIENT_LOG("returned " << client_id);
   CheckGLError();
+  return client_id;
 }
 
 void RasterImplementation::BeginRasterCHROMIUM(
@@ -1183,16 +1200,6 @@ void RasterImplementation::IssueImageDecodeCacheEntryCreation(
       encoded_data, output_size, gpu_control_->GetCommandBufferID(),
       transfer_cache_entry_id, handle.shm_id(), handle.byte_offset(),
       target_color_space, needs_mips);
-}
-
-GLuint RasterImplementation::CreateAndConsumeForGpuRaster(
-    const GLbyte* mailbox) {
-  NOTREACHED();
-  return 0;
-}
-
-void RasterImplementation::DeleteGpuRasterTexture(GLuint texture) {
-  NOTREACHED();
 }
 
 void RasterImplementation::BeginGpuRaster() {

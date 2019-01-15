@@ -13,6 +13,48 @@
 
 #define GL_SCANOUT_CHROMIUM 0x6000
 
+struct DeleteTexturesImmediate {
+  typedef DeleteTexturesImmediate ValueType;
+  static const CommandId kCmdId = kDeleteTexturesImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(_n));  // NOLINT
+  }
+
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
+  }
+
+  void Init(GLsizei _n, const GLuint* _textures) {
+    SetHeader(_n);
+    n = _n;
+    memcpy(ImmediateDataAddress(this), _textures, ComputeDataSize(_n));
+  }
+
+  void* Set(void* cmd, GLsizei _n, const GLuint* _textures) {
+    static_cast<ValueType*>(cmd)->Init(_n, _textures);
+    const uint32_t size = ComputeSize(_n);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t n;
+};
+
+static_assert(sizeof(DeleteTexturesImmediate) == 8,
+              "size of DeleteTexturesImmediate should be 8");
+static_assert(offsetof(DeleteTexturesImmediate, header) == 0,
+              "offset of DeleteTexturesImmediate header should be 0");
+static_assert(offsetof(DeleteTexturesImmediate, n) == 4,
+              "offset of DeleteTexturesImmediate n should be 4");
+
 struct Finish {
   typedef Finish ValueType;
   static const CommandId kCmdId = kFinish;
@@ -803,24 +845,40 @@ struct CreateAndConsumeTextureINTERNALImmediate {
 
   void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
 
-  void Init(GLuint _texture_id, const GLbyte* _mailbox) {
+  void Init(GLuint _texture_id,
+            bool _use_buffer,
+            gfx::BufferUsage _buffer_usage,
+            viz::ResourceFormat _format,
+            const GLbyte* _mailbox) {
     SetHeader();
     texture_id = _texture_id;
+    use_buffer = _use_buffer;
+    buffer_usage = static_cast<uint32_t>(_buffer_usage);
+    format = static_cast<uint32_t>(_format);
     memcpy(ImmediateDataAddress(this), _mailbox, ComputeDataSize());
   }
 
-  void* Set(void* cmd, GLuint _texture_id, const GLbyte* _mailbox) {
-    static_cast<ValueType*>(cmd)->Init(_texture_id, _mailbox);
+  void* Set(void* cmd,
+            GLuint _texture_id,
+            bool _use_buffer,
+            gfx::BufferUsage _buffer_usage,
+            viz::ResourceFormat _format,
+            const GLbyte* _mailbox) {
+    static_cast<ValueType*>(cmd)->Init(_texture_id, _use_buffer, _buffer_usage,
+                                       _format, _mailbox);
     const uint32_t size = ComputeSize();
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
   gpu::CommandHeader header;
   uint32_t texture_id;
+  uint32_t use_buffer;
+  uint32_t buffer_usage;
+  uint32_t format;
 };
 
-static_assert(sizeof(CreateAndConsumeTextureINTERNALImmediate) == 8,
-              "size of CreateAndConsumeTextureINTERNALImmediate should be 8");
+static_assert(sizeof(CreateAndConsumeTextureINTERNALImmediate) == 20,
+              "size of CreateAndConsumeTextureINTERNALImmediate should be 20");
 static_assert(
     offsetof(CreateAndConsumeTextureINTERNALImmediate, header) == 0,
     "offset of CreateAndConsumeTextureINTERNALImmediate header should be 0");
@@ -828,10 +886,21 @@ static_assert(offsetof(CreateAndConsumeTextureINTERNALImmediate, texture_id) ==
                   4,
               "offset of CreateAndConsumeTextureINTERNALImmediate texture_id "
               "should be 4");
+static_assert(offsetof(CreateAndConsumeTextureINTERNALImmediate, use_buffer) ==
+                  8,
+              "offset of CreateAndConsumeTextureINTERNALImmediate use_buffer "
+              "should be 8");
+static_assert(offsetof(CreateAndConsumeTextureINTERNALImmediate,
+                       buffer_usage) == 12,
+              "offset of CreateAndConsumeTextureINTERNALImmediate buffer_usage "
+              "should be 12");
+static_assert(
+    offsetof(CreateAndConsumeTextureINTERNALImmediate, format) == 16,
+    "offset of CreateAndConsumeTextureINTERNALImmediate format should be 16");
 
-struct CopySubTextureINTERNAL {
-  typedef CopySubTextureINTERNAL ValueType;
-  static const CommandId kCmdId = kCopySubTextureINTERNAL;
+struct CopySubTexture {
+  typedef CopySubTexture ValueType;
+  static const CommandId kCmdId = kCopySubTexture;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
@@ -885,68 +954,26 @@ struct CopySubTextureINTERNAL {
   int32_t height;
 };
 
-static_assert(sizeof(CopySubTextureINTERNAL) == 36,
-              "size of CopySubTextureINTERNAL should be 36");
-static_assert(offsetof(CopySubTextureINTERNAL, header) == 0,
-              "offset of CopySubTextureINTERNAL header should be 0");
-static_assert(offsetof(CopySubTextureINTERNAL, source_id) == 4,
-              "offset of CopySubTextureINTERNAL source_id should be 4");
-static_assert(offsetof(CopySubTextureINTERNAL, dest_id) == 8,
-              "offset of CopySubTextureINTERNAL dest_id should be 8");
-static_assert(offsetof(CopySubTextureINTERNAL, xoffset) == 12,
-              "offset of CopySubTextureINTERNAL xoffset should be 12");
-static_assert(offsetof(CopySubTextureINTERNAL, yoffset) == 16,
-              "offset of CopySubTextureINTERNAL yoffset should be 16");
-static_assert(offsetof(CopySubTextureINTERNAL, x) == 20,
-              "offset of CopySubTextureINTERNAL x should be 20");
-static_assert(offsetof(CopySubTextureINTERNAL, y) == 24,
-              "offset of CopySubTextureINTERNAL y should be 24");
-static_assert(offsetof(CopySubTextureINTERNAL, width) == 28,
-              "offset of CopySubTextureINTERNAL width should be 28");
-static_assert(offsetof(CopySubTextureINTERNAL, height) == 32,
-              "offset of CopySubTextureINTERNAL height should be 32");
-
-struct DeleteTexturesINTERNALImmediate {
-  typedef DeleteTexturesINTERNALImmediate ValueType;
-  static const CommandId kCmdId = kDeleteTexturesINTERNALImmediate;
-  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
-
-  static uint32_t ComputeDataSize(GLsizei _n) {
-    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT
-  }
-
-  static uint32_t ComputeSize(GLsizei _n) {
-    return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(_n));  // NOLINT
-  }
-
-  void SetHeader(GLsizei _n) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
-  }
-
-  void Init(GLsizei _n, const GLuint* _textures) {
-    SetHeader(_n);
-    n = _n;
-    memcpy(ImmediateDataAddress(this), _textures, ComputeDataSize(_n));
-  }
-
-  void* Set(void* cmd, GLsizei _n, const GLuint* _textures) {
-    static_cast<ValueType*>(cmd)->Init(_n, _textures);
-    const uint32_t size = ComputeSize(_n);
-    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
-  }
-
-  gpu::CommandHeader header;
-  int32_t n;
-};
-
-static_assert(sizeof(DeleteTexturesINTERNALImmediate) == 8,
-              "size of DeleteTexturesINTERNALImmediate should be 8");
-static_assert(offsetof(DeleteTexturesINTERNALImmediate, header) == 0,
-              "offset of DeleteTexturesINTERNALImmediate header should be 0");
-static_assert(offsetof(DeleteTexturesINTERNALImmediate, n) == 4,
-              "offset of DeleteTexturesINTERNALImmediate n should be 4");
+static_assert(sizeof(CopySubTexture) == 36,
+              "size of CopySubTexture should be 36");
+static_assert(offsetof(CopySubTexture, header) == 0,
+              "offset of CopySubTexture header should be 0");
+static_assert(offsetof(CopySubTexture, source_id) == 4,
+              "offset of CopySubTexture source_id should be 4");
+static_assert(offsetof(CopySubTexture, dest_id) == 8,
+              "offset of CopySubTexture dest_id should be 8");
+static_assert(offsetof(CopySubTexture, xoffset) == 12,
+              "offset of CopySubTexture xoffset should be 12");
+static_assert(offsetof(CopySubTexture, yoffset) == 16,
+              "offset of CopySubTexture yoffset should be 16");
+static_assert(offsetof(CopySubTexture, x) == 20,
+              "offset of CopySubTexture x should be 20");
+static_assert(offsetof(CopySubTexture, y) == 24,
+              "offset of CopySubTexture y should be 24");
+static_assert(offsetof(CopySubTexture, width) == 28,
+              "offset of CopySubTexture width should be 28");
+static_assert(offsetof(CopySubTexture, height) == 32,
+              "offset of CopySubTexture height should be 32");
 
 struct TraceBeginCHROMIUM {
   typedef TraceBeginCHROMIUM ValueType;
