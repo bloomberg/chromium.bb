@@ -32,28 +32,28 @@ const storage::FileSystemType kTemporary = storage::kFileSystemTypeTemporary;
 const storage::FileSystemType kPersistent = storage::kFileSystemTypePersistent;
 
 // We'll use these three distinct origins for testing, both as strings and as
-// GURLs in appropriate contexts.
-const char kTestOrigin1[] = "http://host1:1/";
-const char kTestOrigin2[] = "http://host2:2/";
-const char kTestOrigin3[] = "http://host3:3/";
+// Origins in appropriate contexts.
+const char kTestOrigin1[] = "http://host1:1";
+const char kTestOrigin2[] = "http://host2:2";
+const char kTestOrigin3[] = "http://host3:3";
 
 // Extensions and Devtools should be ignored.
-const char kTestOriginExt[] = "chrome-extension://abcdefghijklmnopqrstuvwxyz/";
-const char kTestOriginDevTools[] = "chrome-devtools://abcdefghijklmnopqrstuvw/";
+const char kTestOriginExt[] = "chrome-extension://abcdefghijklmnopqrstuvwxyz";
+const char kTestOriginDevTools[] = "chrome-devtools://abcdefghijklmnopqrstuvw";
 
-const GURL kOrigin1(kTestOrigin1);
-const GURL kOrigin2(kTestOrigin2);
-const GURL kOrigin3(kTestOrigin3);
-const GURL kOriginExt(kTestOriginExt);
-const GURL kOriginDevTools(kTestOriginDevTools);
+const url::Origin kOrigin1 = url::Origin::Create(GURL(kTestOrigin1));
+const url::Origin kOrigin2 = url::Origin::Create(GURL(kTestOrigin2));
+const url::Origin kOrigin3 = url::Origin::Create(GURL(kTestOrigin3));
+const url::Origin kOriginExt = url::Origin::Create(GURL(kTestOriginExt));
+const url::Origin kOriginDevTools =
+    url::Origin::Create(GURL(kTestOriginDevTools));
 
 // TODO(mkwst): Update this size once the discussion in http://crbug.com/86114
 // is concluded.
 const int kEmptyFileSystemSize = 0;
 
-typedef std::list<BrowsingDataFileSystemHelper::FileSystemInfo>
-    FileSystemInfoList;
-typedef std::unique_ptr<FileSystemInfoList> ScopedFileSystemInfoList;
+using FileSystemInfoList =
+    std::list<BrowsingDataFileSystemHelper::FileSystemInfo>;
 
 // The FileSystem APIs are all asynchronous; this testing class wraps up the
 // boilerplate code necessary to deal with waiting for responses. In a nutshell,
@@ -97,14 +97,14 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
     run_loop->Quit();
   }
 
-  bool OpenFileSystem(const GURL& origin,
+  bool OpenFileSystem(const url::Origin& origin,
                       storage::FileSystemType type,
                       storage::OpenFileSystemMode open_mode) {
     base::RunLoop run_loop;
     BrowserContext::GetDefaultStoragePartition(profile_.get())
         ->GetFileSystemContext()
         ->OpenFileSystem(
-            origin, type, open_mode,
+            origin.GetURL(), type, open_mode,
             base::Bind(
                 &BrowsingDataFileSystemHelperTest::OpenFileSystemCallback,
                 base::Unretained(this), &run_loop));
@@ -117,7 +117,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   // to verify the existence of a file system for a specified type and origin,
   // blocks until a response is available, then returns the result
   // synchronously to it's caller.
-  bool FileSystemContainsOriginAndType(const GURL& origin,
+  bool FileSystemContainsOriginAndType(const url::Origin& origin,
                                        storage::FileSystemType type) {
     return OpenFileSystem(
         origin, type, storage::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT);
@@ -173,7 +173,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
 
   // Calls OpenFileSystem with OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT
   // to create a filesystem of a given type for a specified origin.
-  void CreateDirectoryForOriginAndType(const GURL& origin,
+  void CreateDirectoryForOriginAndType(const url::Origin& origin,
                                        storage::FileSystemType type) {
     OpenFileSystem(
         origin, type, storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT);
@@ -192,7 +192,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
 
   // Temporary storage to pass information back from callbacks.
   base::File::Error open_file_system_result_;
-  ScopedFileSystemInfoList file_system_info_list_;
+  std::unique_ptr<FileSystemInfoList> file_system_info_list_;
 
   scoped_refptr<BrowsingDataFileSystemHelper> helper_;
   scoped_refptr<CannedBrowsingDataFileSystemHelper> canned_helper_;
@@ -234,7 +234,7 @@ TEST_F(BrowsingDataFileSystemHelperTest, FetchData) {
       EXPECT_EQ(kEmptyFileSystemSize, info.usage_map.at(kPersistent));
       EXPECT_EQ(kEmptyFileSystemSize, info.usage_map.at(kTemporary));
     } else {
-      ADD_FAILURE() << info.origin.spec() << " isn't an origin we added.";
+      ADD_FAILURE() << info.origin.Serialize() << " isn't an origin we added.";
     }
   }
   for (size_t i = 0; i < base::size(test_hosts_found); i++) {

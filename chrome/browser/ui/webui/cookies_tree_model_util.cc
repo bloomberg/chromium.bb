@@ -190,7 +190,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       const storage::FileSystemType kPerm = storage::kFileSystemTypePersistent;
       const storage::FileSystemType kTemp = storage::kFileSystemTypeTemporary;
 
-      dict->SetString(kKeyOrigin, file_system_info.origin.spec());
+      dict->SetString(kKeyOrigin, file_system_info.origin.Serialize());
       dict->SetString(
           kKeyPersistent,
           base::ContainsKey(file_system_info.usage_map, kPerm)
