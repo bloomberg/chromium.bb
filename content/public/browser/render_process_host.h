@@ -53,6 +53,7 @@ class ProcessResourceCoordinator;
 namespace content {
 class BrowserContext;
 class BrowserMessageFilter;
+class IsolationContext;
 class RenderProcessHostObserver;
 class RendererAudioOutputStreamFactoryContext;
 class StoragePartition;
@@ -457,7 +458,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // MockRenderProcessHost. It isn't meant to be called outside of content.
   // TODO(creis): Rename LockToOrigin to LockToPrincipal. See
   // https://crbug.com/846155.
-  virtual void LockToOrigin(const GURL& lock_url) = 0;
+  virtual void LockToOrigin(const IsolationContext& isolation_context,
+                            const GURL& lock_url) = 0;
 
   // Binds |request| to the CacheStorageDispatcherHost instance. The binding is
   // sent to the IO thread. This is for internal use only, and is only exposed

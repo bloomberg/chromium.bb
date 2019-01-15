@@ -12,6 +12,7 @@
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/fake_leveldb_database.h"
 #include "content/test/gmock_util.h"
@@ -74,9 +75,9 @@ class SessionStorageNamespaceImplMojoTest
     security_policy->Add(kTestProcessIdOrigin3);
     security_policy->AddIsolatedOrigins(
         {test_origin1_, test_origin2_, test_origin3_});
-    security_policy->LockToOrigin(kTestProcessIdOrigin1,
+    security_policy->LockToOrigin(IsolationContext(), kTestProcessIdOrigin1,
                                   test_origin1_.GetURL());
-    security_policy->LockToOrigin(kTestProcessIdOrigin3,
+    security_policy->LockToOrigin(IsolationContext(), kTestProcessIdOrigin3,
                                   test_origin3_.GetURL());
 
     mojo::core::SetDefaultProcessErrorCallback(

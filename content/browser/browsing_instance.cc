@@ -15,23 +15,31 @@
 
 namespace content {
 
+// Start the BrowsingInstance ID counter from 1 to avoid a conflict with the
+// invalid BrowsingInstanceId value, which is 0 in its underlying IdType32.
+int BrowsingInstance::next_browsing_instance_id_ = 1;
+
 BrowsingInstance::BrowsingInstance(BrowserContext* browser_context)
     : browser_context_(browser_context),
+      isolation_context_(
+          BrowsingInstanceId::FromUnsafeValue(next_browsing_instance_id_++)),
       active_contents_count_(0u) {
   DCHECK(browser_context);
 }
 
 bool BrowsingInstance::HasSiteInstance(const GURL& url) {
-  std::string site = SiteInstance::GetSiteForURL(browser_context_, url)
-                         .possibly_invalid_spec();
+  std::string site =
+      SiteInstanceImpl::GetSiteForURL(browser_context_, isolation_context_, url)
+          .possibly_invalid_spec();
 
   return site_instance_map_.find(site) != site_instance_map_.end();
 }
 
 scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURL(
     const GURL& url) {
-  std::string site = SiteInstance::GetSiteForURL(browser_context_, url)
-                         .possibly_invalid_spec();
+  std::string site =
+      SiteInstanceImpl::GetSiteForURL(browser_context_, isolation_context_, url)
+          .possibly_invalid_spec();
 
   auto i = site_instance_map_.find(site);
   if (i != site_instance_map_.end())
@@ -76,6 +84,11 @@ void BrowsingInstance::UnregisterSiteInstance(SiteInstanceImpl* site_instance) {
     // Matches, so erase it.
     site_instance_map_.erase(i);
   }
+}
+
+// static
+BrowsingInstanceId BrowsingInstance::NextBrowsingInstanceId() {
+  return BrowsingInstanceId::FromUnsafeValue(next_browsing_instance_id_);
 }
 
 BrowsingInstance::~BrowsingInstance() {

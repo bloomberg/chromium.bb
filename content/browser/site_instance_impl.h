@@ -10,6 +10,7 @@
 
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "content/browser/isolation_context.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -57,13 +58,14 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // avoiding OOPIFs when otherwise same-site URLs may look cross-site via
   // their effective URLs.
   static bool IsSameWebSite(content::BrowserContext* browser_context,
+                            const IsolationContext& isolation_context,
                             const GURL& src_url,
                             const GURL& dest_url,
                             bool should_compare_effective_urls);
 
   // SiteInstance interface overrides.
   int32_t GetId() override;
-  bool HasProcess() const override;
+  bool HasProcess() override;
   RenderProcessHost* GetProcess() override;
   BrowserContext* GetBrowserContext() const override;
   const GURL& GetSiteURL() const override;
@@ -131,12 +133,13 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
 
   // Returns the site for the given URL, which includes only the scheme and
   // registered domain.  Returns an empty GURL if the URL has no host.
-  // |should_use_effective_urls| specifies whether to resolve |url| to an
-  // effective URL (via ContentBrowserClient::GetEffectiveURL()) before
-  // determining the site.
+  // |should_use_effective_urls| defaults to true and specifies whether to
+  // resolve |url| to an effective URL (via
+  // ContentBrowserClient::GetEffectiveURL()) before determining the site.
   static GURL GetSiteForURL(BrowserContext* context,
+                            const IsolationContext& isolation_context,
                             const GURL& url,
-                            bool should_use_effective_urls);
+                            bool should_use_effective_urls = true);
 
   // Returns the site of a given |origin|.  Unlike GetSiteForURL(), this does
   // not utilize effective URLs, isolated origins, or other special logic.  It
@@ -148,7 +151,9 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // Returns the URL to which a process should be locked for the given URL.
   // This is computed similarly to the site URL (see GetSiteForURL), but
   // without resolving effective URLs.
-  static GURL DetermineProcessLockURL(BrowserContext* context, const GURL& url);
+  static GURL DetermineProcessLockURL(BrowserContext* context,
+                                      const IsolationContext& isolation_context,
+                                      const GURL& url);
 
   // Set the web site that this SiteInstance is rendering pages for.
   // This includes the scheme and registered domain, but not the port.  If the
@@ -218,11 +223,13 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
                               const GURL& url);
 
   // Returns true if pages loaded from |url| ought to be handled only by a
-  // renderer process isolated from other sites. If --site-per-process is on the
-  // command line, this is true for all sites. In other site isolation modes,
-  // only a subset of sites will require dedicated processes.
-  static bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
-                                              const GURL& url);
+  // renderer process isolated from other sites. If --site-per-process is used,
+  // this is true for all sites. In other site isolation modes, only a subset
+  // of sites will require dedicated processes.
+  static bool DoesSiteRequireDedicatedProcess(
+      BrowserContext* browser_context,
+      const IsolationContext& isolation_context,
+      const GURL& url);
 
   // Returns true if a process can be locked to a site |site_url|. Returning
   // true here also implies that |site_url| requires a dedicated process.
@@ -235,6 +242,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // this function should become equivalent to
   // DoesSiteRequireDedicatedProcess().
   static bool ShouldLockToOrigin(BrowserContext* browser_context,
+                                 const IsolationContext& isolation_context,
                                  GURL site_url);
 
   // Converts |site_url| into an origin that can be used as
@@ -246,6 +254,18 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // |request_initiator_site_lock| (e.g. in case of site_url =
   // chrome-guest://...).
   static base::Optional<url::Origin> GetRequestInitiatorSiteLock(GURL site_url);
+
+  // Return an ID of the next BrowsingInstance to be created.  This ID is
+  // guaranteed to be higher than any ID of an existing BrowsingInstance.
+  // This is useful when process model decisions need to be scoped only to
+  // future BrowsingInstances.  In particular, this can determine the cutoff in
+  // BrowsingInstance IDs when adding a new isolated origin dynamically.
+  static BrowsingInstanceId NextBrowsingInstanceId();
+
+  // Return the IsolationContext associated with this SiteInstance.  This
+  // specifies context for making process model decisions, such as information
+  // about the current BrowsingInstance.
+  const IsolationContext& GetIsolationContext();
 
  private:
   friend class BrowsingInstance;

@@ -73,7 +73,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // NavigationHandle implementation:
   int64_t GetNavigationId() const override;
   const GURL& GetURL() override;
-  SiteInstance* GetStartingSiteInstance() override;
+  SiteInstanceImpl* GetStartingSiteInstance() override;
   bool IsInMainFrame() override;
   bool IsParentMainFrame() override;
   bool IsRendererInitiated() override;
@@ -459,7 +459,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // See NavigationHandle for a description of those member variables.
   GURL url_;
-  scoped_refptr<SiteInstance> starting_site_instance_;
+  scoped_refptr<SiteInstanceImpl> starting_site_instance_;
   base::Optional<url::Origin> initiator_origin_;
   Referrer sanitized_referrer_;
   bool has_user_gesture_;

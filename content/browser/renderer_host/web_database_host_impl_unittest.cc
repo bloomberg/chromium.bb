@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/isolation_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/core/embedder/embedder.h"
 #include "storage/common/database/database_identifier.h"
@@ -115,7 +116,8 @@ TEST_F(WebDatabaseHostImplTest, BadMessagesUnauthorized) {
   auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
   security_policy->Add(process_id());
   security_policy->AddIsolatedOrigins({correct_origin, incorrect_origin});
-  security_policy->LockToOrigin(process_id(), correct_origin.GetURL());
+  security_policy->LockToOrigin(IsolationContext(), process_id(),
+                                correct_origin.GetURL());
   ASSERT_TRUE(security_policy->CanAccessDataForOrigin(process_id(),
                                                       correct_origin.GetURL()));
   ASSERT_FALSE(security_policy->CanAccessDataForOrigin(

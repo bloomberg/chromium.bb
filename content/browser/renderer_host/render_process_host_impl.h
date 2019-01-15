@@ -85,6 +85,7 @@ class ChildConnection;
 class FileSystemManagerImpl;
 class IndexedDBDispatcherHost;
 class InProcessChildThreadParams;
+class IsolationContext;
 class MediaStreamTrackMetricsHost;
 class P2PSocketDispatcherHost;
 class PermissionServiceContext;
@@ -231,7 +232,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void SetIsUsed() override;
 
   bool HostHasNotBeenUsed() override;
-  void LockToOrigin(const GURL& lock_url) override;
+  void LockToOrigin(const IsolationContext& isolation_context,
+                    const GURL& lock_url) override;
   void BindCacheStorage(blink::mojom::CacheStorageRequest request,
                         const url::Origin& origin) override;
   void BindIndexedDB(blink::mojom::IDBFactoryRequest request,
@@ -287,6 +289,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // hosted apps.
   static bool IsSuitableHost(RenderProcessHost* host,
                              BrowserContext* browser_context,
+                             const IsolationContext& isolation_context,
                              const GURL& site_url,
                              const GURL& lock_url);
 
@@ -299,12 +302,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Important: |url| should be a full URL and *not* a site URL.
   static RenderProcessHost* GetSoleProcessHostForURL(
       BrowserContext* browser_context,
+      const IsolationContext& isolation_context,
       const GURL& url);
 
   // Variant of the above that takes in a SiteInstance site URL and the
   // process's origin lock URL, when they are known.
   static RenderProcessHost* GetSoleProcessHostForSite(
       BrowserContext* browser_context,
+      const IsolationContext& isolation_context,
       const GURL& site_url,
       const GURL& lock_url);
 
