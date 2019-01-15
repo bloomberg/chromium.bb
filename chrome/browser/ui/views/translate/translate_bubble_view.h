@@ -61,7 +61,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // action.
   static views::Widget* ShowBubble(views::View* anchor_view,
                                    views::Button* highlighted_button,
-                                   const gfx::Point& anchor_point,
                                    content::WebContents* web_contents,
                                    translate::TranslateStep step,
                                    translate::TranslateErrors::Type error_type,
@@ -172,7 +171,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
                            CheckNeverTranslateThisSiteBlacklist);
 
   TranslateBubbleView(views::View* anchor_view,
-                      const gfx::Point& anchor_point,
                       std::unique_ptr<TranslateBubbleModel> model,
                       translate::TranslateErrors::Type error_type,
                       content::WebContents* web_contents);

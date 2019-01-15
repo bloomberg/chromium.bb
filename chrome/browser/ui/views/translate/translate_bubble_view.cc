@@ -86,7 +86,6 @@ TranslateBubbleView::~TranslateBubbleView() {
 views::Widget* TranslateBubbleView::ShowBubble(
     views::View* anchor_view,
     views::Button* highlighted_button,
-    const gfx::Point& anchor_point,
     content::WebContents* web_contents,
     translate::TranslateStep step,
     translate::TranslateErrors::Type error_type,
@@ -127,7 +126,7 @@ views::Widget* TranslateBubbleView::ShowBubble(
   std::unique_ptr<TranslateBubbleModel> model(
       new TranslateBubbleModelImpl(step, std::move(ui_delegate)));
   TranslateBubbleView* view = new TranslateBubbleView(
-      anchor_view, anchor_point, std::move(model), error_type, web_contents);
+      anchor_view, std::move(model), error_type, web_contents);
 
   if (highlighted_button)
     view->SetHighlightedButton(highlighted_button);
@@ -436,11 +435,10 @@ TranslateBubbleModel::ViewState TranslateBubbleView::GetViewState() const {
 
 TranslateBubbleView::TranslateBubbleView(
     views::View* anchor_view,
-    const gfx::Point& anchor_point,
     std::unique_ptr<TranslateBubbleModel> model,
     translate::TranslateErrors::Type error_type,
     content::WebContents* web_contents)
-    : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), web_contents),
       before_translate_view_(NULL),
       translating_view_(NULL),
       after_translate_view_(NULL),
@@ -458,6 +456,7 @@ TranslateBubbleView::TranslateBubbleView(
       is_in_incognito_window_(
           web_contents && web_contents->GetBrowserContext()->IsOffTheRecord()),
       should_always_translate_(false) {
+  DCHECK(anchor_view);
   translate_bubble_view_ = this;
   if (web_contents)  // web_contents can be null in unit_tests.
     mouse_handler_.reset(new WebContentMouseHandler(this, web_contents));

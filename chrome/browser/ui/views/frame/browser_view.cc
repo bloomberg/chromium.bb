@@ -1445,8 +1445,8 @@ ShowTranslateBubbleResult BrowserView::ShowTranslateBubble(
           ->GetPageActionIconContainerView()
           ->GetPageActionIconView(PageActionIconType::kTranslate);
   TranslateBubbleView::ShowBubble(
-      toolbar_button_provider()->GetAnchorView(), translate_icon, gfx::Point(),
-      web_contents, step, error_type,
+      toolbar_button_provider()->GetAnchorView(), translate_icon, web_contents,
+      step, error_type,
       is_user_gesture ? TranslateBubbleView::USER_GESTURE
                       : TranslateBubbleView::AUTOMATIC);
 
