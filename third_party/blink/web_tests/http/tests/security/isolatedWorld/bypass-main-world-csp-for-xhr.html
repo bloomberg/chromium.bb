@@ -22,13 +22,12 @@ var tests = [
     },
     function() {
         debug('XHR from isolated world with same security origin as XHR target.');
-        testRunner.setIsolatedWorldSecurityOrigin(2, 'http://localhost:8000');
+        testRunner.setIsolatedWorldInfo(2, 'http://localhost:8000', null);
         runTestInWorld(2, 'xhr', 'true');
     },
     function() {
         debug('XHR from isolated world with same security origin as XHR target, and looser CSP.');
-        testRunner.setIsolatedWorldContentSecurityPolicy(3, 'connect-src *');
-        testRunner.setIsolatedWorldSecurityOrigin(3, 'http://localhost:8000');
+        testRunner.setIsolatedWorldInfo(3, 'http://localhost:8000', 'connect-src *');
         runTestInWorld(3, 'xhr', 'false');
     },
     function() {
@@ -48,12 +47,9 @@ if (window.testRunner) {
                 case 'test-done':
                     currentTest++;
                     if (currentTest == tests.length) {
-                        testRunner.setIsolatedWorldSecurityOrigin(1, null);
-                        testRunner.setIsolatedWorldSecurityOrigin(2, null);
-                        testRunner.setIsolatedWorldSecurityOrigin(3, null);
-                        testRunner.setIsolatedWorldContentSecurityPolicy(1, '');
-                        testRunner.setIsolatedWorldContentSecurityPolicy(2, '');
-                        testRunner.setIsolatedWorldContentSecurityPolicy(3, '');
+                        testRunner.setIsolatedWorldInfo(1, null, null);
+                        testRunner.setIsolatedWorldInfo(2, null, null);
+                        testRunner.setIsolatedWorldInfo(3, null, null);
                         finishJSTest();
                     }
                     else

@@ -8,7 +8,7 @@
   await TestRunner.evaluateInPagePromise(`
     window.whereAmI = "main world";
 
-    testRunner.setIsolatedWorldSecurityOrigin(632, "http://devtools-extensions.oopif.test:8000");
+    testRunner.setIsolatedWorldInfo(632, "http://devtools-extensions.oopif.test:8000", null);
     testRunner.evaluateScriptInIsolatedWorld(632, "window.whereAmI = 'brave new world'");
   `);
   await ExtensionsTestRunner.runExtensionTests([

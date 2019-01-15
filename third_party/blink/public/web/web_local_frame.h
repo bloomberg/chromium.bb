@@ -55,6 +55,7 @@ enum class WebTreeScopeType;
 struct WebAssociatedURLLoaderOptions;
 struct WebConsoleMessage;
 struct WebContentSecurityPolicyViolation;
+struct WebIsolatedWorldInfo;
 struct WebMediaPlayerAction;
 struct WebPoint;
 struct WebPrintParams;
@@ -302,36 +303,22 @@ class WebLocalFrame : public WebFrame {
   // gets its own wrappers for all DOM nodes and DOM constructors.
   //
   // worldID must be > 0 (as 0 represents the main world).
-  // worldID must be < EmbedderWorldIdLimit, high number used internally.
+  // worldID must be < kEmbedderWorldIdLimit, high number used internally.
   virtual void ExecuteScriptInIsolatedWorld(int world_id,
                                             const WebScriptSource&) = 0;
 
   // worldID must be > 0 (as 0 represents the main world).
-  // worldID must be < EmbedderWorldIdLimit, high number used internally.
+  // worldID must be < kEmbedderWorldIdLimit, high number used internally.
   // DEPRECATED: Use WebLocalFrame::requestExecuteScriptInIsolatedWorld.
   WARN_UNUSED_RESULT virtual v8::Local<v8::Value>
   ExecuteScriptInIsolatedWorldAndReturnValue(int world_id,
                                              const WebScriptSource&) = 0;
 
-  // Associates an isolated world (see above for description) with a security
-  // origin. XMLHttpRequest instances used in that world will be considered
-  // to come from that origin, not the frame's.
-  //
-  // Currently the origin shouldn't be aliased, because IsolatedCopy() is
-  // taken before associating it to an isolated world and aliased relationship,
-  // if any, is broken. crbug.com/779730
-  virtual void SetIsolatedWorldSecurityOrigin(int world_id,
-                                              const WebSecurityOrigin&) = 0;
-
-  // Associates a content security policy with an isolated world. This policy
-  // should be used when evaluating script in the isolated world, and should
-  // also replace a protected resource's CSP when evaluating resources
-  // injected into the DOM.
-  //
-  // FIXME: Setting this simply bypasses the protected resource's CSP. It
-  //     doesn't yet restrict the isolated world to the provided policy.
-  virtual void SetIsolatedWorldContentSecurityPolicy(int world_id,
-                                                     const WebString&) = 0;
+  // Sets up an isolated world by associating a |world_id| with |info|.
+  // worldID must be > 0 (as 0 represents the main world).
+  // worldID must be < kEmbedderWorldIdLimit, high number used internally.
+  virtual void SetIsolatedWorldInfo(int world_id,
+                                    const WebIsolatedWorldInfo& info) = 0;
 
   // Executes script in the context of the current page and returns the value
   // that the script evaluated to.
@@ -398,7 +385,7 @@ class WebLocalFrame : public WebFrame {
   };
 
   // worldID must be > 0 (as 0 represents the main world).
-  // worldID must be < EmbedderWorldIdLimit, high number used internally.
+  // worldID must be < kEmbedderWorldIdLimit, high number used internally.
   virtual void RequestExecuteScriptInIsolatedWorld(
       int world_id,
       const WebScriptSource* source_in,
@@ -406,11 +393,6 @@ class WebLocalFrame : public WebFrame {
       bool user_gesture,
       ScriptExecutionType,
       WebScriptExecutionCallback*) = 0;
-
-  // Associates an isolated world with human-readable name which is useful for
-  // extension debugging.
-  virtual void SetIsolatedWorldHumanReadableName(int world_id,
-                                                 const WebString&) = 0;
 
   // Logs to the console associated with this frame.
   virtual void AddMessageToConsole(const WebConsoleMessage&) = 0;

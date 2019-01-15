@@ -12,8 +12,9 @@ WebUIInjectionHost::WebUIInjectionHost(const HostID& host_id)
 WebUIInjectionHost::~WebUIInjectionHost() {
 }
 
-std::string WebUIInjectionHost::GetContentSecurityPolicy() const {
-  return std::string();
+const std::string* WebUIInjectionHost::GetContentSecurityPolicy() const {
+  // Use the main world CSP.
+  return nullptr;
 }
 
 const GURL& WebUIInjectionHost::url() const {

@@ -103,11 +103,11 @@ CSPInfo::~CSPInfo() {
 }
 
 // static
-const std::string& CSPInfo::GetContentSecurityPolicy(
+const std::string* CSPInfo::GetContentSecurityPolicy(
     const Extension* extension) {
   CSPInfo* csp_info = static_cast<CSPInfo*>(
           extension->GetManifestData(keys::kContentSecurityPolicy));
-  return csp_info ? csp_info->content_security_policy : base::EmptyString();
+  return csp_info ? &csp_info->content_security_policy : nullptr;
 }
 
 // static
@@ -123,9 +123,11 @@ const std::string& CSPInfo::GetSandboxContentSecurityPolicy(
 const std::string& CSPInfo::GetResourceContentSecurityPolicy(
     const Extension* extension,
     const std::string& relative_path) {
-  return SandboxedPageInfo::IsSandboxedPage(extension, relative_path)
-             ? GetSandboxContentSecurityPolicy(extension)
-             : GetContentSecurityPolicy(extension);
+  if (SandboxedPageInfo::IsSandboxedPage(extension, relative_path))
+    return GetSandboxContentSecurityPolicy(extension);
+
+  const std::string* csp = GetContentSecurityPolicy(extension);
+  return csp ? *csp : base::EmptyString();
 }
 
 CSPHandler::CSPHandler() = default;
@@ -275,6 +277,7 @@ void CSPHandler::SetSandboxCSP(Extension* extension, std::string sandbox_csp) {
 }
 
 bool CSPHandler::AlwaysParseForType(Manifest::Type type) const {
+  // TODO(karandeepb): Check if TYPE_USER_SCRIPT needs to be included here.
   return type == Manifest::TYPE_PLATFORM_APP ||
          type == Manifest::TYPE_EXTENSION ||
          type == Manifest::TYPE_LEGACY_PACKAGED_APP;

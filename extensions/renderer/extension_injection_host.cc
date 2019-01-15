@@ -33,7 +33,7 @@ std::unique_ptr<const InjectionHost> ExtensionInjectionHost::Create(
       new ExtensionInjectionHost(extension));
 }
 
-std::string ExtensionInjectionHost::GetContentSecurityPolicy() const {
+const std::string* ExtensionInjectionHost::GetContentSecurityPolicy() const {
   return CSPInfo::GetContentSecurityPolicy(extension_);
 }
 

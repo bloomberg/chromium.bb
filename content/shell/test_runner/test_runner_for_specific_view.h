@@ -206,10 +206,9 @@ class TestRunnerForSpecificView {
       int world_id,
       const std::string& script);
   void EvaluateScriptInIsolatedWorld(int world_id, const std::string& script);
-  void SetIsolatedWorldSecurityOrigin(int world_id,
-                                      v8::Local<v8::Value> origin);
-  void SetIsolatedWorldContentSecurityPolicy(int world_id,
-                                             const std::string& policy);
+  void SetIsolatedWorldInfo(int world_id,
+                            v8::Local<v8::Value> security_origin,
+                            v8::Local<v8::Value> content_security_policy);
   bool FindString(const std::string& search_text,
                   const std::vector<std::string>& options_array);
   std::string SelectionAsMarkup();

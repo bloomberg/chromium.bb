@@ -26,19 +26,20 @@ function test(message) {
     }
 
     var permissiveCSP = "script-src: * 'unsafe-eval' 'unsafe-inline'";
+    var securityOrigin = "chrome-extension://123";
 
     switch (tests) {
         case 3:
-            testRunner.setIsolatedWorldContentSecurityPolicy(1, permissiveCSP);
+            testRunner.setIsolatedWorldInfo(1, securityOrigin, permissiveCSP);
             testRunner.evaluateScriptInIsolatedWorld(1, String(injectInlineScript) + "\ninjectInlineScript('try { alert(\"PASS: Case " + tests + " was not blocked by a CSP.\"); } catch (e) { alert(\"FAIL: Case " + tests + " should not be blocked by a CSP.\"); }');");
             break;
         case 2:
-            testRunner.setIsolatedWorldContentSecurityPolicy(1, permissiveCSP);
+            testRunner.setIsolatedWorldInfo(1, securityOrigin, permissiveCSP);
             testRunner.evaluateScriptInIsolatedWorld(1, String(injectInlineScript) + "\ninjectInlineScript('try { eval(\"alert(\\\'FAIL: Case " + tests + " should have been blocked by a CSP.\\\');\"); } catch( e) { console.log(e); alert(\\\'PASS: Case " + tests + " was blocked by a CSP.\\\'); }');");
             break;
         case 1:
             if (message != "done") {
-                testRunner.setIsolatedWorldContentSecurityPolicy(1, permissiveCSP);
+                testRunner.setIsolatedWorldInfo(1, securityOrigin, permissiveCSP);
                 document.clickMessage = "PASS: Case " + tests + " was not evaluated in main world.";
                 // The listener defined inline by injectButtonWithInlineClickHandler should be evaluated in the main world instead of an isolated world.
                 testRunner.evaluateScriptInIsolatedWorld(1, String(injectButtonWithInlineClickHandler) + "\ninjectButtonWithInlineClickHandler('document.clickMessage =\"FAIL: Case " + tests + " was evaluated in isolated world.\"');");
@@ -50,7 +51,7 @@ function test(message) {
             }
             break;
         case 0:
-            testRunner.setIsolatedWorldContentSecurityPolicy(1, '');
+            testRunner.setIsolatedWorldInfo(1, null, null);
             testRunner.notifyDone();
             break;
     }

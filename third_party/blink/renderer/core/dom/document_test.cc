@@ -1020,8 +1020,9 @@ TEST_P(IsolatedWorldCSPTest, CSPForWorld) {
   ASSERT_TRUE(world_with_csp->IsIsolatedWorld());
   ScriptState* isolated_world_with_csp_script_state =
       ToScriptState(frame, *world_with_csp);
-  IsolatedWorldCSP::Get().SetContentSecurityPolicy(kIsolatedWorldWithCSPId,
-                                                   kIsolatedWorldCSP);
+  IsolatedWorldCSP::Get().SetContentSecurityPolicy(
+      kIsolatedWorldWithCSPId, kIsolatedWorldCSP,
+      SecurityOrigin::Create(KURL("chrome-extension://123")));
 
   // Returns the csp headers being used for the current world.
   auto get_csp_headers = [this]() {
@@ -1093,7 +1094,8 @@ TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
   scoped_refptr<DOMWrapperWorld> world_with_csp =
       DOMWrapperWorld::EnsureIsolatedWorld(isolate, kIsolatedWorldWithCSPId);
   IsolatedWorldCSP::Get().SetContentSecurityPolicy(
-      kIsolatedWorldWithCSPId, String::FromUTF8("script-src *"));
+      kIsolatedWorldWithCSPId, String::FromUTF8("script-src *"),
+      SecurityOrigin::Create(KURL("chrome-extension://123")));
   ScriptState* isolated_world_with_csp_script_state =
       ToScriptState(frame, *world_with_csp);
   ASSERT_TRUE(world_with_csp->IsIsolatedWorld());

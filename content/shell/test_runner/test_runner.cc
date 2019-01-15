@@ -237,10 +237,9 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetEffectiveConnectionType(const std::string& connection_type);
   void SetMockSpellCheckerEnabled(bool enabled);
   void SetImagesAllowed(bool allowed);
-  void SetIsolatedWorldContentSecurityPolicy(int world_id,
-                                             const std::string& policy);
-  void SetIsolatedWorldSecurityOrigin(int world_id,
-                                      v8::Local<v8::Value> origin);
+  void SetIsolatedWorldInfo(int world_id,
+                            v8::Local<v8::Value> security_origin,
+                            v8::Local<v8::Value> content_security_policy);
   void SetJavaScriptCanAccessClipboard(bool can_access);
   void SetMockScreenOrientation(const std::string& orientation);
   void SetPOSIXLocale(const std::string& locale);
@@ -550,10 +549,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetMockSpellCheckerEnabled)
       .SetMethod("setIconDatabaseEnabled", &TestRunnerBindings::NotImplemented)
       .SetMethod("setImagesAllowed", &TestRunnerBindings::SetImagesAllowed)
-      .SetMethod("setIsolatedWorldContentSecurityPolicy",
-                 &TestRunnerBindings::SetIsolatedWorldContentSecurityPolicy)
-      .SetMethod("setIsolatedWorldSecurityOrigin",
-                 &TestRunnerBindings::SetIsolatedWorldSecurityOrigin)
+      .SetMethod("setIsolatedWorldInfo",
+                 &TestRunnerBindings::SetIsolatedWorldInfo)
       .SetMethod("setJavaScriptCanAccessClipboard",
                  &TestRunnerBindings::SetJavaScriptCanAccessClipboard)
       .SetMethod("setMainFrameIsFirstResponder",
@@ -795,18 +792,14 @@ void TestRunnerBindings::EvaluateScriptInIsolatedWorld(
     view_runner_->EvaluateScriptInIsolatedWorld(world_id, script);
 }
 
-void TestRunnerBindings::SetIsolatedWorldSecurityOrigin(
+void TestRunnerBindings::SetIsolatedWorldInfo(
     int world_id,
-    v8::Local<v8::Value> origin) {
-  if (view_runner_)
-    view_runner_->SetIsolatedWorldSecurityOrigin(world_id, origin);
-}
-
-void TestRunnerBindings::SetIsolatedWorldContentSecurityPolicy(
-    int world_id,
-    const std::string& policy) {
-  if (view_runner_)
-    view_runner_->SetIsolatedWorldContentSecurityPolicy(world_id, policy);
+    v8::Local<v8::Value> security_origin,
+    v8::Local<v8::Value> content_security_policy) {
+  if (view_runner_) {
+    view_runner_->SetIsolatedWorldInfo(world_id, security_origin,
+                                       content_security_policy);
+  }
 }
 
 void TestRunnerBindings::AddOriginAccessAllowListEntry(

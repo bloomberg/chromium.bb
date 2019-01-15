@@ -20,7 +20,10 @@ class InjectionHost {
   InjectionHost(const HostID& host_id);
   virtual ~InjectionHost();
 
-  virtual std::string GetContentSecurityPolicy() const = 0;
+  // Returns the CSP to be used for the isolated world. Currently this only
+  // bypasses the main world CSP. If null is returned, the main world CSP is not
+  // bypassed.
+  virtual const std::string* GetContentSecurityPolicy() const = 0;
 
   // The base url for the host.
   virtual const GURL& url() const = 0;

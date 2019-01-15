@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -28,7 +29,11 @@ class CORE_EXPORT IsolatedWorldCSP {
   // TODO(crbug.com/896041): Right now, resource injection simply bypasses the
   // main world's CSP. More work is necessary to allow the isolated world's
   // policy to be applied correctly.
-  void SetContentSecurityPolicy(int world_id, const String& policy);
+  // Note: If |policy| is null, the PolicyInfo for |world_id| is cleared. If
+  // |policy| is specified, |self_origin| must not be null.
+  void SetContentSecurityPolicy(int world_id,
+                                const String& policy,
+                                scoped_refptr<SecurityOrigin> self_origin);
   bool HasContentSecurityPolicy(int world_id) const;
 
   // Creates a ContentSecurityPolicy instance for the given isolated |world_id|
@@ -38,10 +43,15 @@ class CORE_EXPORT IsolatedWorldCSP {
                                                 int world_id);
 
  private:
+  struct PolicyInfo {
+    String policy;
+    scoped_refptr<SecurityOrigin> self_origin;
+  };
+
   IsolatedWorldCSP();
 
-  // Map from the isolated world |world_id| to its content security policy.
-  HashMap<int, String> csp_map_;
+  // Map from the isolated world |world_id| to its PolicyInfo.
+  HashMap<int, PolicyInfo> csp_map_;
 
   DISALLOW_COPY_AND_ASSIGN(IsolatedWorldCSP);
 };

@@ -26,6 +26,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/web_isolated_world_info.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_language_detection_details.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -320,12 +321,11 @@ void TranslateHelper::Translate(const std::string& translate_script,
 
   // Set up v8 isolated world with proper content-security-policy and
   // security-origin.
-  main_frame->SetIsolatedWorldContentSecurityPolicy(
-      world_id_, WebString::FromUTF8(kContentSecurityPolicy));
-
-  GURL security_origin = GetTranslateSecurityOrigin();
-  main_frame->SetIsolatedWorldSecurityOrigin(
-      world_id_, WebSecurityOrigin::Create(security_origin));
+  blink::WebIsolatedWorldInfo info;
+  info.security_origin =
+      WebSecurityOrigin::Create(GetTranslateSecurityOrigin());
+  info.content_security_policy = WebString::FromUTF8(kContentSecurityPolicy);
+  main_frame->SetIsolatedWorldInfo(world_id_, info);
 
   if (!IsTranslateLibAvailable()) {
     // Evaluate the script to add the translation related method to the global

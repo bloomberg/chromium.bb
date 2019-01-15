@@ -12,7 +12,7 @@ window.addEventListener("message", function(message) {
 // This is needed because isolated worlds are not reset between test runs and a
 // previous test's CSP may interfere with this test. See
 // https://crbug.com/415845.
-testRunner.setIsolatedWorldContentSecurityPolicy(1, '');
+testRunner.setIsolatedWorldInfo(1, null, null);
 
 function test() {
     function injectInlineScript(isolated) {
@@ -41,7 +41,7 @@ function test() {
             break;
         case 2:
             console.log("Starting to bypass main world's CSP: this should pass!");
-            testRunner.setIsolatedWorldContentSecurityPolicy(1, 'script-src \'unsafe-inline\' *');
+            testRunner.setIsolatedWorldInfo(1, 'chrome-extension://123',  'script-src \'unsafe-inline\' *');
             testRunner.evaluateScriptInIsolatedWorld(1, String(eval("injectInlineScript")) + "\ninjectInlineScript(true);");
             testRunner.evaluateScriptInIsolatedWorld(1, String(eval("injectInlineEventHandler")) + "\injectInlineEventHandler(true);");
             break;
@@ -51,7 +51,7 @@ function test() {
             injectInlineEventHandler(false);
             break;
         case 0:
-            testRunner.setIsolatedWorldContentSecurityPolicy(1, '');
+            testRunner.setIsolatedWorldInfo(1, null, null);
             testRunner.notifyDone();
             break;
     }

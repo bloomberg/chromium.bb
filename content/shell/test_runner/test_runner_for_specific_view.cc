@@ -34,6 +34,7 @@
 #include "gin/wrappable.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/public/platform/web_isolated_world_info.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/blink.h"
@@ -589,26 +590,31 @@ void TestRunnerForSpecificView::EvaluateScriptInIsolatedWorld(
   web_view()->FocusedFrame()->ExecuteScriptInIsolatedWorld(world_id, source);
 }
 
-void TestRunnerForSpecificView::SetIsolatedWorldSecurityOrigin(
+void TestRunnerForSpecificView::SetIsolatedWorldInfo(
     int world_id,
-    v8::Local<v8::Value> origin) {
-  if (!(origin->IsString() || !origin->IsNull()))
-    return;
+    v8::Local<v8::Value> security_origin,
+    v8::Local<v8::Value> content_security_policy) {
+  CHECK(security_origin->IsString() || security_origin->IsNull());
+  CHECK(content_security_policy->IsString() ||
+        content_security_policy->IsNull());
 
-  blink::WebSecurityOrigin web_origin;
-  if (origin->IsString()) {
-    web_origin = blink::WebSecurityOrigin::CreateFromString(V8StringToWebString(
-        blink::MainThreadIsolate(), origin.As<v8::String>()));
+  // If |content_security_policy| is specified, |security_origin| must also be
+  // specified.
+  CHECK(content_security_policy->IsNull() || security_origin->IsString());
+
+  blink::WebIsolatedWorldInfo info;
+  if (security_origin->IsString()) {
+    info.security_origin =
+        blink::WebSecurityOrigin::CreateFromString(V8StringToWebString(
+            blink::MainThreadIsolate(), security_origin.As<v8::String>()));
   }
-  web_view()->FocusedFrame()->SetIsolatedWorldSecurityOrigin(world_id,
-                                                             web_origin);
-}
 
-void TestRunnerForSpecificView::SetIsolatedWorldContentSecurityPolicy(
-    int world_id,
-    const std::string& policy) {
-  web_view()->FocusedFrame()->SetIsolatedWorldContentSecurityPolicy(
-      world_id, blink::WebString::FromUTF8(policy));
+  if (content_security_policy->IsString()) {
+    info.content_security_policy = V8StringToWebString(
+        blink::MainThreadIsolate(), content_security_policy.As<v8::String>());
+  }
+
+  web_view()->FocusedFrame()->SetIsolatedWorldInfo(world_id, info);
 }
 
 void TestRunner::InsertStyleSheet(const std::string& source_code) {

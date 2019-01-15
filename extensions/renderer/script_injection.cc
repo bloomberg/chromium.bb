@@ -24,6 +24,7 @@
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/script_injection_callback.h"
 #include "extensions/renderer/scripts_run_info.h"
+#include "third_party/blink/public/platform/web_isolated_world_info.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -69,13 +70,16 @@ int GetIsolatedWorldIdForInstance(const InjectionHost* injection_host,
   // We need to set the isolated world origin and CSP even if it's not a new
   // world since these are stored per frame, and we might not have used this
   // isolated world in this frame before.
-  frame->SetIsolatedWorldSecurityOrigin(
-      id, blink::WebSecurityOrigin::Create(injection_host->url()));
-  frame->SetIsolatedWorldContentSecurityPolicy(
-      id,
-      blink::WebString::FromUTF8(injection_host->GetContentSecurityPolicy()));
-  frame->SetIsolatedWorldHumanReadableName(
-      id, blink::WebString::FromUTF8(injection_host->name()));
+  blink::WebIsolatedWorldInfo info;
+  info.security_origin =
+      blink::WebSecurityOrigin::Create(injection_host->url());
+  info.human_readable_name = blink::WebString::FromUTF8(injection_host->name());
+
+  const std::string* csp = injection_host->GetContentSecurityPolicy();
+  if (csp)
+    info.content_security_policy = blink::WebString::FromUTF8(*csp);
+
+  frame->SetIsolatedWorldInfo(id, info);
 
   return id;
 }

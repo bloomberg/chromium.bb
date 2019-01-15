@@ -112,12 +112,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   WARN_UNUSED_RESULT v8::Local<v8::Value>
   ExecuteScriptInIsolatedWorldAndReturnValue(int world_id,
                                              const WebScriptSource&) override;
-  void SetIsolatedWorldSecurityOrigin(int world_id,
-                                      const WebSecurityOrigin&) override;
-  void SetIsolatedWorldContentSecurityPolicy(int world_id,
-                                             const WebString&) override;
-  void SetIsolatedWorldHumanReadableName(int world_id,
-                                         const WebString&) override;
+  void SetIsolatedWorldInfo(int world_id, const WebIsolatedWorldInfo&) override;
   void AddMessageToConsole(const WebConsoleMessage&) override;
   void Alert(const WebString& message) override;
   bool Confirm(const WebString& message) override;

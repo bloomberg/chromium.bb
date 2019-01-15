@@ -5,7 +5,7 @@
 if (window.testRunner) {
   // Testing with "http" scheme than "chrome-extension://" since content_shell
   // doesn't register the extension scheme as a web safe isolated scheme.
-  testRunner.setIsolatedWorldSecurityOrigin(1, 'http://example.com');
+  testRunner.setIsolatedWorldInfo(1, 'http://example.com', null);
 }
 
 function runTest() {

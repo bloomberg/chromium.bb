@@ -100,6 +100,7 @@
 #include "third_party/blink/public/platform/web_double_size.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
+#include "third_party/blink/public/platform/web_isolated_world_info.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -688,7 +689,7 @@ void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
     int world_id,
     const WebScriptSource& source_in) {
   DCHECK(GetFrame());
-  CHECK_GT(world_id, 0);
+  CHECK_GT(world_id, DOMWrapperWorld::kMainWorldId);
   CHECK_LT(world_id, DOMWrapperWorld::kDOMWrapperWorldEmbedderWorldIdLimit);
 
   // Note: An error event in an isolated world will never be dispatched to
@@ -703,7 +704,7 @@ WebLocalFrameImpl::ExecuteScriptInIsolatedWorldAndReturnValue(
     int world_id,
     const WebScriptSource& source_in) {
   DCHECK(GetFrame());
-  CHECK_GT(world_id, 0);
+  CHECK_GT(world_id, DOMWrapperWorld::kMainWorldId);
   CHECK_LT(world_id, DOMWrapperWorld::kDOMWrapperWorldEmbedderWorldIdLimit);
 
   // Note: An error event in an isolated world will never be dispatched to
@@ -712,28 +713,23 @@ WebLocalFrameImpl::ExecuteScriptInIsolatedWorldAndReturnValue(
       world_id, source_in, KURL(), SanitizeScriptErrors::kDoNotSanitize);
 }
 
-void WebLocalFrameImpl::SetIsolatedWorldSecurityOrigin(
-    int world_id,
-    const WebSecurityOrigin& security_origin) {
+void WebLocalFrameImpl::SetIsolatedWorldInfo(int world_id,
+                                             const WebIsolatedWorldInfo& info) {
   DCHECK(GetFrame());
-  DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(
-      world_id,
-      security_origin.Get() ? security_origin.Get()->IsolatedCopy() : nullptr);
-}
+  CHECK_GT(world_id, DOMWrapperWorld::kMainWorldId);
+  CHECK_LT(world_id, DOMWrapperWorld::kDOMWrapperWorldEmbedderWorldIdLimit);
 
-void WebLocalFrameImpl::SetIsolatedWorldContentSecurityPolicy(
-    int world_id,
-    const WebString& policy) {
-  DCHECK(GetFrame());
-  IsolatedWorldCSP::Get().SetContentSecurityPolicy(world_id, policy);
-}
+  scoped_refptr<SecurityOrigin> security_origin =
+      info.security_origin.Get() ? info.security_origin.Get()->IsolatedCopy()
+                                 : nullptr;
 
-void WebLocalFrameImpl::SetIsolatedWorldHumanReadableName(
-    int world_id,
-    const WebString& human_readable_name) {
-  DCHECK(GetFrame());
+  CHECK(info.content_security_policy.IsNull() || security_origin);
+
+  DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(world_id, security_origin);
   DOMWrapperWorld::SetNonMainWorldHumanReadableName(world_id,
-                                                    human_readable_name);
+                                                    info.human_readable_name);
+  IsolatedWorldCSP::Get().SetContentSecurityPolicy(
+      world_id, info.content_security_policy, security_origin);
 }
 
 void WebLocalFrameImpl::AddMessageToConsole(const WebConsoleMessage& message) {
@@ -850,7 +846,7 @@ void WebLocalFrameImpl::RequestExecuteScriptInIsolatedWorld(
     ScriptExecutionType option,
     WebScriptExecutionCallback* callback) {
   DCHECK(GetFrame());
-  CHECK_GT(world_id, 0);
+  CHECK_GT(world_id, DOMWrapperWorld::kMainWorldId);
   CHECK_LT(world_id, DOMWrapperWorld::kDOMWrapperWorldEmbedderWorldIdLimit);
 
   scoped_refptr<DOMWrapperWorld> isolated_world =
