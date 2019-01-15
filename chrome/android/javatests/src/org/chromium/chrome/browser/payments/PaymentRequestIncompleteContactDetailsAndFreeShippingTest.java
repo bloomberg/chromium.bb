@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -69,10 +70,17 @@ public class PaymentRequestIncompleteContactDetailsAndFreeShippingTest
                 "Phone number required"));
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_first_radio_button, mPaymentRequestTestRule.getReadyToEdit());
-        mPaymentRequestTestRule.setTextInEditorAndWait(
-                new String[] {"Jon Doe", "Google", "340 Main St", "Los Angeles", "CA", "90291",
-                        "650-253-0000"},
-                mPaymentRequestTestRule.getEditorTextUpdate());
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_COMPANY_NAME)) {
+            mPaymentRequestTestRule.setTextInEditorAndWait(
+                    new String[] {"Jon Doe", "Google", "340 Main St", "Los Angeles", "CA", "90291",
+                            "650-253-0000"},
+                    mPaymentRequestTestRule.getEditorTextUpdate());
+        } else {
+            mPaymentRequestTestRule.setTextInEditorAndWait(
+                    new String[] {
+                            "Jon Doe", "340 Main St", "Los Angeles", "CA", "90291", "650-253-0000"},
+                    mPaymentRequestTestRule.getEditorTextUpdate());
+        }
         // The contact is now complete, but not selected.
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyForInput());
@@ -107,10 +115,17 @@ public class PaymentRequestIncompleteContactDetailsAndFreeShippingTest
         // Add a new Shipping Address and see that the contact section updates.
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
                 R.id.payments_add_option_button, mPaymentRequestTestRule.getReadyToEdit());
-        mPaymentRequestTestRule.setTextInEditorAndWait(
-                new String[] {"Jane Doe", "Edge Corp.", "111 Wall St.", "New York", "NY", "10110",
-                        "650-253-0000"},
-                mPaymentRequestTestRule.getEditorTextUpdate());
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_COMPANY_NAME)) {
+            mPaymentRequestTestRule.setTextInEditorAndWait(
+                    new String[] {"Jane Doe", "Edge Corp.", "111 Wall St.", "New York", "NY",
+                            "10110", "650-253-0000"},
+                    mPaymentRequestTestRule.getEditorTextUpdate());
+        } else {
+            mPaymentRequestTestRule.setTextInEditorAndWait(
+                    new String[] {
+                            "Jane Doe", "111 Wall St.", "New York", "NY", "10110", "650-253-0000"},
+                    mPaymentRequestTestRule.getEditorTextUpdate());
+        }
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals("Jon Doe\njon.doe@google.com\nPhone number required",
