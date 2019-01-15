@@ -325,7 +325,7 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
 
   std::string login_access_token() const { return login_access_token_; }
 
-  void StartLoginAccessTokenRequest() override {
+  void StartTokenKeyAccountAccessTokenRequest() override {
     if (auto_login_access_token_) {
       base::Optional<std::string> access_token("access_token");
       GoogleServiceAuthError error = GoogleServiceAuthError::AuthErrorNone();
@@ -338,15 +338,17 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
           access_token, base::Time::Now() + base::TimeDelta::FromHours(1LL),
           error);
     } else {
-      // Make a request to the token service. The test now must tell
-      // the token service to issue an access token (or an error).
-      IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest();
+      // Make a request to the IdentityManager. The test now must tell the
+      // service to issue an access token (or an error).
+      IdentityGetAuthTokenFunction::StartTokenKeyAccountAccessTokenRequest();
     }
   }
 
 #if defined(OS_CHROMEOS)
-  void StartDeviceLoginAccessTokenRequest() override {
-    StartLoginAccessTokenRequest();
+  void StartDeviceAccessTokenRequest() override {
+    // In these tests requests for the device account just funnel through to
+    // requests for the token key account.
+    StartTokenKeyAccountAccessTokenRequest();
   }
 #endif
 
