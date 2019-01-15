@@ -552,6 +552,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestRedirects) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       WebRequestRedirectsWithExtraHeaders) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionSubtestWithArg("webrequest", "test_redirects.html",
+                                         "useExtraHeaders"))
+      << message_;
+}
+
 // Tests that redirects from secure to insecure don't send the referrer header.
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestRedirectsToInsecure) {
@@ -581,6 +589,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       RunExtensionSubtest("webrequest", "test_subresource_redirects.html"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       WebRequestSubresourceRedirectsWithExtraHeaders) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionSubtestWithArg(
+      "webrequest", "test_subresource_redirects.html", "useExtraHeaders"))
       << message_;
 }
 
