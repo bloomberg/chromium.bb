@@ -133,7 +133,6 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
-#import "ios/chrome/browser/web/web_navigation_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/common/app_group/app_group_utils.h"
 #include "ios/net/cookies/cookie_store_ios.h"
@@ -458,6 +457,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // |tabDisplayedCompletion| will be called on the new tab (if not nil).
 - (Tab*)openOrReuseTabInMode:(ApplicationMode)targetMode
                      withURL:(const GURL&)url
+                  virtualURL:(const GURL&)virtualURL
                   transition:(ui::PageTransition)transition
          tabOpenedCompletion:(ProceduralBlock)tabOpenedCompletion;
 // Returns whether the restore infobar should be displayed.
@@ -1988,6 +1988,7 @@ enum class EnterTabSwitcherSnapshotResult {
 
   [_tabSwitcher dismissWithNewTabAnimationToModel:self.mainTabModel
                                           withURL:GURL(kChromeUINewTabURL)
+                                       virtualURL:GURL::EmptyGURL()
                                           atIndex:self.mainTabModel.count
                                        transition:ui::PAGE_TRANSITION_TYPED];
   return YES;
@@ -2180,6 +2181,7 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (Tab*)openOrReuseTabInMode:(ApplicationMode)targetMode
                      withURL:(const GURL&)URL
+                  virtualURL:(const GURL&)virtualURL
                   transition:(ui::PageTransition)transition
          tabOpenedCompletion:(ProceduralBlock)tabOpenedCompletion {
   BrowserViewController* targetBVC =
@@ -2190,8 +2192,9 @@ enum class EnterTabSwitcherSnapshotResult {
   if (!(currentTabInTargetBVC.webState &&
         IsURLNtp(currentTabInTargetBVC.webState->GetVisibleURL()))) {
     [targetBVC appendTabAddedCompletion:tabOpenedCompletion];
-    auto params = web_navigation_util::CreateWebLoadParams(
-        URL, transition, /*post_data=*/nullptr);
+    web::NavigationManager::WebLoadParams params(URL);
+    params.transition_type = transition;
+    params.virtual_url = virtualURL;
     return [targetTabModel insertTabWithLoadParams:params
                                             opener:nil
                                        openedByDOM:NO
@@ -2203,6 +2206,7 @@ enum class EnterTabSwitcherSnapshotResult {
   // Don't call loadWithParams for chrome://newtab, it's already loaded.
   if (!(IsURLNtp(URL))) {
     web::NavigationManager::WebLoadParams params(URL);
+    params.virtual_url = virtualURL;
     [newTab webState]->GetNavigationManager()->LoadURLWithParams(params);
   }
   if (tabOpenedCompletion) {
@@ -2272,8 +2276,9 @@ enum class EnterTabSwitcherSnapshotResult {
               ? TabSwitcherDismissalMode::NORMAL
               : TabSwitcherDismissalMode::INCOGNITO;
       [targetInterface.bvc appendTabAddedCompletion:tabOpenedCompletion];
-      auto params = web_navigation_util::CreateWebLoadParams(
-          url, transition, /*post_data=*/nullptr);
+      web::NavigationManager::WebLoadParams params(url);
+      params.transition_type = transition;
+      params.virtual_url = virtualURL;
       tab = [targetInterface.tabModel insertTabWithLoadParams:params
                                                        opener:nil
                                                   openedByDOM:NO
@@ -2288,6 +2293,7 @@ enum class EnterTabSwitcherSnapshotResult {
       tab = [_tabSwitcher
           dismissWithNewTabAnimationToModel:targetInterface.tabModel
                                     withURL:url
+                                 virtualURL:virtualURL
                                     atIndex:tabIndex
                                  transition:transition];
     }
@@ -2298,6 +2304,7 @@ enum class EnterTabSwitcherSnapshotResult {
     [self setCurrentInterfaceForMode:targetMode];
     tab = [self openOrReuseTabInMode:targetMode
                              withURL:url
+                          virtualURL:virtualURL
                           transition:transition
                  tabOpenedCompletion:tabOpenedCompletion];
   }
@@ -2311,10 +2318,6 @@ enum class EnterTabSwitcherSnapshotResult {
     });
   }
 
-  if (!virtualURL.is_empty()) {
-    tab.webState->GetNavigationManager()->GetPendingItem()->SetVirtualURL(
-        virtualURL);
-  }
   return tab;
 }
 

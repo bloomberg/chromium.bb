@@ -59,16 +59,16 @@
 // Returns the view controller that displays the tab switcher.
 - (UIViewController*)viewController;
 
-// Create a new tab in |targetModel| with the url |url| at |position|, using
-// page transition |transition|. Implementors are expected to also
-// perform an animation from the selected tab in the tab switcher to the
-// newly created tab in the content area. Objects adopting this protocol should
-// call the following delegate methods:
+// Create a new tab in |targetModel|. Implementors are expected to also perform
+// an animation from the selected tab in the tab switcher to the newly created
+// tab in the content area. Objects adopting this protocol should call the
+// following delegate methods:
 //   |-tabSwitcher:shouldFinishWithActiveModel:|
 //   |-tabSwitcherDismissTransitionDidEnd:|
 // to inform the delegate when this animation begins and ends.
 - (Tab*)dismissWithNewTabAnimationToModel:(TabModel*)targetModel
                                   withURL:(const GURL&)url
+                               virtualURL:(const GURL&)virtualURL
                                   atIndex:(NSUInteger)position
                                transition:(ui::PageTransition)transition;
 
