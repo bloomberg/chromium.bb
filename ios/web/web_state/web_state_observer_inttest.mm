@@ -152,10 +152,11 @@ ACTION_P5(VerifyAbortedNavigationStartedContext,
 // Verifies correctness of |NavigationContext| (|arg1|) for new page navigation
 // passed to |DidFinishNavigation|. Asserts that |NavigationContext| the same as
 // |context|.
-ACTION_P5(VerifyNewPageFinishedContext,
+ACTION_P6(VerifyNewPageFinishedContext,
           web_state,
           url,
           mime_type,
+          content_is_html,
           context,
           nav_id) {
   ASSERT_EQ(*context, arg1);
@@ -179,6 +180,7 @@ ACTION_P5(VerifyNewPageFinishedContext,
   (*context)->GetResponseHeaders()->GetMimeType(&actual_mime_type);
   ASSERT_TRUE(web_state->IsLoading());
   EXPECT_EQ(mime_type, actual_mime_type);
+  ASSERT_EQ(content_is_html, web_state->ContentIsHTML());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();
   EXPECT_TRUE(!item->GetTimestamp().is_null());
@@ -244,6 +246,7 @@ ACTION_P5(VerifyErrorFinishedContext,
   EXPECT_FALSE((*context)->IsRendererInitiated());
   EXPECT_FALSE((*context)->GetResponseHeaders());
   ASSERT_TRUE(web_state->IsLoading());
+  ASSERT_FALSE(web_state->ContentIsHTML());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();
   EXPECT_FALSE(item->GetTimestamp().is_null());
@@ -278,6 +281,7 @@ ACTION_P4(VerifyResponseRejectedFinishedContext,
   EXPECT_FALSE((*context)->IsRendererInitiated());
   EXPECT_FALSE((*context)->GetResponseHeaders());
   ASSERT_FALSE(web_state->IsLoading());
+  ASSERT_FALSE(web_state->ContentIsHTML());
 }
 
 // Verifies correctness of |NavigationContext| (|arg1|) for navigations via POST
@@ -802,7 +806,8 @@ TEST_P(WebStateObserverTest, NewPageNavigation) {
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
-          web_state(), url, kExpectedMimeType, &context, &nav_id));
+          web_state(), url, kExpectedMimeType, /*content_is_html=*/true,
+          &context, &nav_id));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
       .WillOnce(VerifyTitle(url.GetContent()));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
@@ -839,7 +844,8 @@ TEST_P(WebStateObserverTest, EnableWebUsageTwice) {
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
-          web_state(), url, kExpectedMimeType, &context, &nav_id));
+          web_state(), url, kExpectedMimeType, /*content_is_html=*/true,
+          &context, &nav_id));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
       .WillOnce(VerifyTitle(url.GetContent()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
@@ -1069,7 +1075,8 @@ TEST_P(WebStateObserverTest, UserInitiatedHashChangeNavigation) {
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
-          web_state(), url, kExpectedMimeType, &context, &nav_id));
+          web_state(), url, kExpectedMimeType, /*content_is_html=*/true,
+          &context, &nav_id));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
       .WillOnce(VerifyTitle(url.GetContent()));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
@@ -1166,7 +1173,8 @@ TEST_P(WebStateObserverTest, RendererInitiatedHashChangeNavigation) {
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
-          web_state(), url, kExpectedMimeType, &context, &nav_id));
+          web_state(), url, kExpectedMimeType, /*content_is_html=*/true,
+          &context, &nav_id));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
       .WillOnce(VerifyTitle(url.GetContent()));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
@@ -1227,7 +1235,8 @@ TEST_P(WebStateObserverTest, StateNavigation) {
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
-          web_state(), url, kExpectedMimeType, &context, &nav_id));
+          web_state(), url, kExpectedMimeType, /*content_is_html=*/true,
+          &context, &nav_id));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
       .WillOnce(VerifyTitle(url.GetContent()));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
@@ -1373,7 +1382,8 @@ TEST_P(WebStateObserverTest, GoBackToNativeContent) {
   }
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
-          web_state(), web_url, kExpectedMimeType, &context, &nav_id));
+          web_state(), web_url, kExpectedMimeType, /*content_is_html=*/true,
+          &context, &nav_id));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
       .WillOnce(VerifyTitle(web_url.GetContent()));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
@@ -1442,7 +1452,8 @@ TEST_P(WebStateObserverTest, UserInitiatedPostNavigation) {
         .WillOnce(Return(true));
     EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
         .WillOnce(VerifyNewPageFinishedContext(
-            web_state(), url, kExpectedMimeType, &context, &nav_id));
+            web_state(), url, kExpectedMimeType, /*content_is_html=*/true,
+            &context, &nav_id));
     EXPECT_CALL(observer_, TitleWasSet(web_state()))
         .WillOnce(VerifyTitle(url.GetContent()));
     EXPECT_CALL(observer_, TitleWasSet(web_state()))
@@ -1806,7 +1817,8 @@ TEST_P(WebStateObserverTest, RedirectNavigation) {
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
-          web_state(), redirect_url, kExpectedMimeType, &context, &nav_id));
+          web_state(), redirect_url, kExpectedMimeType,
+          /*content_is_html=*/true, &context, &nav_id));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
       .WillOnce(VerifyTitle(redirect_url.GetContent()));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
@@ -1873,6 +1885,7 @@ TEST_P(WebStateObserverTest, FLAKY_FailedLoad) {
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(web_state(), url, /*mime_type=*/"",
+                                             /*content_is_html=*/false,
                                              &context, &nav_id));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
       .WillOnce(VerifyTitle(url.GetContent()));
@@ -2005,6 +2018,7 @@ TEST_P(WebStateObserverTest, StopFinishedNavigation) {
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(web_state(), url, /*mime_type=*/"",
+                                             /*content_is_html=*/false,
                                              &context, &nav_id));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
       .WillOnce(VerifyTitle(url.GetContent()));
