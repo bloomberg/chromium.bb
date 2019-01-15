@@ -202,6 +202,10 @@ ScriptPromise LockManager::request(ScriptState* script_state,
                                    const LockOptions* options,
                                    V8LockGrantedCallback* callback,
                                    ExceptionState& exception_state) {
+  // Observed context may be gone if frame is detached.
+  if (!GetExecutionContext())
+    return ScriptPromise();
+
   ExecutionContext* context = ExecutionContext::From(script_state);
   DCHECK(context->IsContextThread());
 
@@ -317,6 +321,10 @@ ScriptPromise LockManager::request(ScriptState* script_state,
 
 ScriptPromise LockManager::query(ScriptState* script_state,
                                  ExceptionState& exception_state) {
+  // Observed context may be gone if frame is detached.
+  if (!GetExecutionContext())
+    return ScriptPromise();
+
   ExecutionContext* context = ExecutionContext::From(script_state);
   DCHECK(context->IsContextThread());
 
