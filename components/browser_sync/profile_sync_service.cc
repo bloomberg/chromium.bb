@@ -1981,20 +1981,17 @@ void ProfileSyncService::RequestStop(SyncStopDataFate data_fate) {
 
 void ProfileSyncService::RequestStart() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (HasDisableReason(DISABLE_REASON_PLATFORM_OVERRIDE) ||
-      HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY)) {
-    // Sync cannot be requested if it's not allowed.
-    return;
-  }
-  DCHECK(sync_client_);
   if (!sync_prefs_.IsSyncRequested()) {
     sync_prefs_.SetSyncRequested(true);
     NotifyObservers();
   }
-  // If Sync-the-transport was already running, just reconfigure.
+  // If the Sync engine was already initialized (probably running in transport
+  // mode), just reconfigure.
   if (IsStandaloneTransportEnabled() && engine_initialized_) {
     ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
   } else {
+    // Otherwise try to start up. Note that there might still be other disable
+    // reasons remaining, in which case this will effectively do nothing.
     startup_controller_->TryStart(/*force_immediate=*/true);
   }
 }
