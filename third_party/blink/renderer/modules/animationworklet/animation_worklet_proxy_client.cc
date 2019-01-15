@@ -38,27 +38,6 @@ void AnimationWorkletProxyClient::Trace(blink::Visitor* visitor) {
   AnimationWorkletMutator::Trace(visitor);
 }
 
-void AnimationWorkletProxyClient::SynchronizeAnimatorName(
-    const String& animator_name) {
-  if (state_ == RunState::kDisposed)
-    return;
-
-  // Animator registration is processed before the loading promise being
-  // resolved which is also done with a posted task (See
-  // WorkletModuleTreeClient::NotifyModuleTreeLoadFinished). Since both are
-  // posted task and a SequencedTaskRunner is used, we are guaranteed that
-  // registered names are synced before resolving the load promise therefore it
-  // is safe to use a post task here.
-  for (auto& mutator_item : mutator_items_) {
-    DCHECK(mutator_item.mutator_runner);
-    PostCrossThreadTask(
-        *mutator_item.mutator_runner, FROM_HERE,
-        CrossThreadBind(
-            &AnimationWorkletMutatorDispatcherImpl::SynchronizeAnimatorName,
-            mutator_item.mutator_dispatcher, animator_name));
-  }
-}
-
 void AnimationWorkletProxyClient::SetGlobalScope(
     WorkletGlobalScope* global_scope) {
   DCHECK(global_scope);

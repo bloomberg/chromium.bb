@@ -63,8 +63,6 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
 
   void SetClient(MutatorClient* client) { client_ = client; }
 
-  void SynchronizeAnimatorName(const String& animator_name);
-
  private:
   class OutputVectorRef;
 

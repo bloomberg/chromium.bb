@@ -21,7 +21,6 @@ class PLATFORM_EXPORT CompositorMutatorClient : public cc::LayerTreeMutator,
       std::unique_ptr<AnimationWorkletMutatorDispatcherImpl>);
   ~CompositorMutatorClient() override;
 
-  void SynchronizeAnimatorName(const String& animator_name) override {}
   void SetMutationUpdate(std::unique_ptr<cc::MutatorOutputState>) override;
 
   // cc::LayerTreeMutator

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
-
 #include "base/barrier_closure.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
@@ -142,11 +141,6 @@ void AnimationWorkletMutatorDispatcherImpl::UnregisterAnimationWorkletMutator(
   DCHECK(host_queue_->BelongsToCurrentThread());
 
   mutator_map_.erase(mutator);
-}
-
-void AnimationWorkletMutatorDispatcherImpl::SynchronizeAnimatorName(
-    const String& animator_name) {
-  client_->SynchronizeAnimatorName(animator_name);
 }
 
 bool AnimationWorkletMutatorDispatcherImpl::HasMutators() {
