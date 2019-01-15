@@ -68,6 +68,9 @@ EntityData& EntityData::operator=(EntityData&& other) {
 }
 
 EntityDataPtr EntityData::PassToPtr() {
+  // Check the entity is valid before passing it out.
+  DCHECK(base::IsStringUTF8(non_unique_name));
+
   EntityDataPtr target;
   target.swap_value(this);
   return target;
