@@ -37,7 +37,6 @@
 #include "chrome/browser/printing/printer_manager_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -63,7 +62,6 @@
 #include "components/printing/common/cloud_print_cdd_conversion.h"
 #include "components/printing/common/print_messages.h"
 #include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
@@ -76,7 +74,6 @@
 #include "printing/backend/print_backend_consts.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/print_settings.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "services/identity/public/cpp/scope_set.h"
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
@@ -566,7 +563,7 @@ PrintPreviewHandler::PrintPreviewHandler()
       manage_printers_dialog_request_count_(0),
       reported_failed_preview_(false),
       has_logged_printers_count_(false),
-      gaia_cookie_manager_service_(nullptr),
+      identity_manager_(nullptr),
       weak_factory_(this) {
   ReportUserActionHistogram(PREVIEW_STARTED);
 }
@@ -1407,19 +1404,19 @@ void PrintPreviewHandler::OnPrintResult(const std::string& callback_id,
 }
 
 void PrintPreviewHandler::RegisterForGaiaCookieChanges() {
-  DCHECK(!gaia_cookie_manager_service_);
+  DCHECK(!identity_manager_);
   Profile* profile = Profile::FromWebUI(web_ui());
   if (AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile)) {
-    gaia_cookie_manager_service_ =
-        GaiaCookieManagerServiceFactory::GetForProfile(profile);
-    if (gaia_cookie_manager_service_)
-      gaia_cookie_manager_service_->AddObserver(this);
+    identity_manager_ = IdentityManagerFactory::GetForProfile(profile);
+    identity_manager_->AddObserver(this);
   }
 }
 
 void PrintPreviewHandler::UnregisterForGaiaCookieChanges() {
-  if (gaia_cookie_manager_service_)
-    gaia_cookie_manager_service_->RemoveObserver(this);
+  if (identity_manager_) {
+    identity_manager_->RemoveObserver(this);
+    identity_manager_ = nullptr;
+  }
 }
 
 void PrintPreviewHandler::BadMessageReceived() {
