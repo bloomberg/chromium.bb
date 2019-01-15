@@ -194,7 +194,6 @@ void PaintOpWriter::Write(const SkPath& path) {
 }
 
 void PaintOpWriter::Write(const PaintFlags& flags) {
-  Write(flags.text_size_);
   WriteSimple(flags.color_);
   Write(flags.width_);
   Write(flags.miter_limit_);

@@ -243,7 +243,6 @@ void PaintOpReader::Read(SkPath* path) {
 }
 
 void PaintOpReader::Read(PaintFlags* flags) {
-  Read(&flags->text_size_);
   ReadSimple(&flags->color_);
   Read(&flags->width_);
   Read(&flags->miter_limit_);

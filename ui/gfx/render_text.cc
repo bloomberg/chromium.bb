@@ -149,20 +149,20 @@ sk_sp<cc::PaintShader> CreateFadeShader(const FontList& font_list,
 }
 
 // Converts a FontRenderParams::Hinting value to the corresponding
-// cc::PaintFlags::Hinting value.
-cc::PaintFlags::Hinting FontRenderParamsHintingToPaintFlagsHinting(
+// SkFontHinting value.
+SkFontHinting FontRenderParamsHintingToSkFontHinting(
     FontRenderParams::Hinting params_hinting) {
   switch (params_hinting) {
     case FontRenderParams::HINTING_NONE:
-      return cc::PaintFlags::kNo_Hinting;
+      return SkFontHinting::kNone;
     case FontRenderParams::HINTING_SLIGHT:
-      return cc::PaintFlags::kSlight_Hinting;
+      return SkFontHinting::kSlight;
     case FontRenderParams::HINTING_MEDIUM:
-      return cc::PaintFlags::kNormal_Hinting;
+      return SkFontHinting::kNormal;
     case FontRenderParams::HINTING_FULL:
-      return cc::PaintFlags::kFull_Hinting;
+      return SkFontHinting::kFull;
   }
-  return cc::PaintFlags::kNo_Hinting;
+  return SkFontHinting::kNone;
 }
 
 // Make sure ranges don't break text graphemes.  If a range in |break_list|
@@ -192,10 +192,10 @@ SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
     : canvas_(canvas), canvas_skia_(canvas->sk_canvas()) {
   DCHECK(canvas_skia_);
   flags_.setStyle(cc::PaintFlags::kFill_Style);
-  flags_.setAntiAlias(true);
-  flags_.setSubpixelText(true);
-  flags_.setLCDRenderText(true);
-  flags_.setHinting(cc::PaintFlags::kNormal_Hinting);
+
+  font_.setEdging(SkFont::Edging::kSubpixelAntiAlias);
+  font_.setSubpixel(true);
+  font_.setHinting(SkFontHinting::kNormal);
 }
 
 SkiaTextRenderer::~SkiaTextRenderer() {
@@ -207,15 +207,15 @@ void SkiaTextRenderer::SetDrawLooper(sk_sp<SkDrawLooper> draw_looper) {
 
 void SkiaTextRenderer::SetFontRenderParams(const FontRenderParams& params,
                                            bool subpixel_rendering_suppressed) {
-  ApplyRenderParams(params, subpixel_rendering_suppressed, &flags_);
+  ApplyRenderParams(params, subpixel_rendering_suppressed, &font_);
 }
 
 void SkiaTextRenderer::SetTypeface(sk_sp<SkTypeface> typeface) {
-  flags_.setTypeface(std::move(typeface));
+  font_.setTypeface(std::move(typeface));
 }
 
 void SkiaTextRenderer::SetTextSize(SkScalar size) {
-  flags_.setTextSize(size);
+  font_.setSize(size);
 }
 
 void SkiaTextRenderer::SetForegroundColor(SkColor foreground) {
@@ -230,7 +230,7 @@ void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
                                    const uint16_t* glyphs,
                                    size_t glyph_count) {
   SkTextBlobBuilder builder;
-  const auto& run_buffer = builder.allocRunPos(flags_.ToSkFont(), glyph_count);
+  const auto& run_buffer = builder.allocRunPos(font_, glyph_count);
 
   static_assert(sizeof(*glyphs) == sizeof(*run_buffer.glyphs), "");
   memcpy(run_buffer.glyphs, glyphs, glyph_count * sizeof(*glyphs));
@@ -246,7 +246,7 @@ void SkiaTextRenderer::DrawUnderline(int x,
                                      int width,
                                      SkScalar thickness_factor) {
   SkScalar x_scalar = SkIntToScalar(x);
-  const SkScalar text_size = flags_.getTextSize();
+  const SkScalar text_size = font_.getSize();
   SkRect r = SkRect::MakeLTRB(
       x_scalar, y + text_size * kUnderlineOffset, x_scalar + width,
       y + (text_size *
@@ -258,7 +258,7 @@ void SkiaTextRenderer::DrawStrike(int x,
                                   int y,
                                   int width,
                                   SkScalar thickness_factor) {
-  const SkScalar text_size = flags_.getTextSize();
+  const SkScalar text_size = font_.getSize();
   const SkScalar height = text_size * thickness_factor;
   const SkScalar top = y - text_size * kStrikeThroughOffset - height / 2;
   SkScalar x_scalar = SkIntToScalar(x);
@@ -318,14 +318,20 @@ Line::~Line() {}
 
 void ApplyRenderParams(const FontRenderParams& params,
                        bool subpixel_rendering_suppressed,
-                       cc::PaintFlags* flags) {
-  flags->setAntiAlias(params.antialiasing);
-  flags->setLCDRenderText(!subpixel_rendering_suppressed &&
-                          params.subpixel_rendering !=
-                              FontRenderParams::SUBPIXEL_RENDERING_NONE);
-  flags->setSubpixelText(params.subpixel_positioning);
-  flags->setAutohinted(params.autohinter);
-  flags->setHinting(FontRenderParamsHintingToPaintFlagsHinting(params.hinting));
+                       SkFont* font) {
+  if (!params.antialiasing) {
+    font->setEdging(SkFont::Edging::kAlias);
+  } else if (subpixel_rendering_suppressed ||
+             params.subpixel_rendering ==
+                 FontRenderParams::SUBPIXEL_RENDERING_NONE) {
+    font->setEdging(SkFont::Edging::kAntiAlias);
+  } else {
+    font->setEdging(SkFont::Edging::kSubpixelAntiAlias);
+  }
+
+  font->setSubpixel(params.subpixel_positioning);
+  font->setForceAutoHinting(params.autohinter);
+  font->setHinting(FontRenderParamsHintingToSkFontHinting(params.hinting));
 }
 
 }  // namespace internal

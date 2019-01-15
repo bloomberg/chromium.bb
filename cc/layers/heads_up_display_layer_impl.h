@@ -98,14 +98,14 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   void UpdateHudContents();
   void DrawHudContents(PaintCanvas* canvas);
   void DrawText(PaintCanvas* canvas,
-                PaintFlags* flags,
+                const PaintFlags& flags,
                 const std::string& text,
                 TextAlign align,
                 int size,
                 int x,
                 int y) const;
   void DrawText(PaintCanvas* canvas,
-                PaintFlags* flags,
+                const PaintFlags& flags,
                 const std::string& text,
                 TextAlign align,
                 int size,
