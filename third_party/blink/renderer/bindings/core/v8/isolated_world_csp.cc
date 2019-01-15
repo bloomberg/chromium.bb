@@ -33,7 +33,9 @@ class IsolatedWorldCSPDelegate final
                            bool apply_policy)
       : document_(&document),
         security_origin_(std::move(security_origin)),
-        apply_policy_(apply_policy) {}
+        apply_policy_(apply_policy) {
+    DCHECK(security_origin_);
+  }
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(document_);
@@ -83,11 +85,12 @@ class IsolatedWorldCSPDelegate final
   }
 
   void Count(WebFeature feature) override {
-    // Log the features used by isolated world CSPs on the underlying document.
+    // Log the features used by isolated world CSPs on the underlying Document.
     UseCounter::Count(document_, feature);
   }
 
   void AddConsoleMessage(ConsoleMessage* console_message) override {
+    // Add console messages on the underlying Document.
     document_->AddConsoleMessage(console_message);
   }
 
@@ -123,18 +126,23 @@ IsolatedWorldCSP& IsolatedWorldCSP::Get() {
   return g_isolated_world_csp;
 }
 
-void IsolatedWorldCSP::SetContentSecurityPolicy(int world_id,
-                                                const String& policy) {
+void IsolatedWorldCSP::SetContentSecurityPolicy(
+    int world_id,
+    const String& policy,
+    scoped_refptr<SecurityOrigin> self_origin) {
   DCHECK(IsMainThread());
   DCHECK(DOMWrapperWorld::IsIsolatedWorldId(world_id));
 
-  // TODO(crbug.com/896041): We should allow clients to use an empty
-  // ContentSecurityPolicy. Introduce a ClearContentSecurityPolicy method if
-  // needed.
-  if (policy.IsEmpty())
+  if (!policy) {
     csp_map_.erase(world_id);
-  else
-    csp_map_.Set(world_id, policy);
+    return;
+  }
+
+  DCHECK(self_origin);
+  PolicyInfo policy_info;
+  policy_info.policy = policy;
+  policy_info.self_origin = std::move(self_origin);
+  csp_map_.Set(world_id, policy_info);
 }
 
 bool IsolatedWorldCSP::HasContentSecurityPolicy(int world_id) const {
@@ -155,17 +163,16 @@ ContentSecurityPolicy* IsolatedWorldCSP::CreateIsolatedWorldCSP(
   if (it == csp_map_.end())
     return nullptr;
 
-  const String& policy = it->value;
+  const String& policy = it->value.policy;
+  scoped_refptr<SecurityOrigin> self_origin = it->value.self_origin;
+
   const bool apply_policy = RuntimeEnabledFeatures::IsolatedWorldCSPEnabled();
 
   ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
 
-  // TODO(crbug.com/896041): Plumb the correct security origin.
-  scoped_refptr<SecurityOrigin> csp_security_origin =
-      SecurityOrigin::CreateUniqueOpaque();
   IsolatedWorldCSPDelegate* delegate =
       MakeGarbageCollected<IsolatedWorldCSPDelegate>(
-          document, std::move(csp_security_origin), apply_policy);
+          document, std::move(self_origin), apply_policy);
   csp->BindToDelegate(*delegate);
 
   if (apply_policy) {

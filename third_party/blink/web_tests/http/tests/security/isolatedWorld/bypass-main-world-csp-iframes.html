@@ -38,7 +38,7 @@
                 break;
             case 4:
                 alert("Starting to bypass main world's CSP:");
-                testRunner.setIsolatedWorldContentSecurityPolicy(1, "frame-src 'none'");
+                testRunner.setIsolatedWorldInfo(1, "chrome-extension://123", "frame-src 'none'");
                 testRunner.evaluateScriptInIsolatedWorld(1, String(eval("setIframeSrc")) + "\nsetIframeSrc(true, " + tests + ");");
                 break;
             case 3:
@@ -55,7 +55,7 @@
                 setIframeSrc(false, tests);
                 break;
             case 0:
-                testRunner.setIsolatedWorldContentSecurityPolicy(1, '');
+                testRunner.setIsolatedWorldInfo(1, null, null);
                 testRunner.notifyDone();
                 break;
         }

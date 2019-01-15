@@ -29,7 +29,11 @@ struct CSPInfo : public Extension::ManifestData {
   // "allow-same-origin" token).
   std::string sandbox_content_security_policy;
 
-  static const std::string& GetContentSecurityPolicy(
+  // Returns the CSP for the extension, or null if there is no defined CSP. Note
+  // that for extensions, platform apps and legacy packaged apps, a default CSP
+  // is used even if the manifest didn't specify one, so this will never be null
+  // for those types.
+  static const std::string* GetContentSecurityPolicy(
       const Extension* extension);
 
   // Returns the extension's Content Security Policy for the sandboxed pages.

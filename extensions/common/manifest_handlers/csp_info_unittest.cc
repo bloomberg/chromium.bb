@@ -102,8 +102,9 @@ TEST_F(CSPInfoUnitTest, CSPStringKey) {
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("csp_string_valid.json");
   ASSERT_TRUE(extension);
-  EXPECT_EQ("script-src 'self'; default-src 'none';",
-            CSPInfo::GetContentSecurityPolicy(extension.get()));
+  const std::string* csp = CSPInfo::GetContentSecurityPolicy(extension.get());
+  ASSERT_TRUE(csp);
+  EXPECT_EQ("script-src 'self'; default-src 'none';", *csp);
 
   RunTestcase(Testcase("csp_invalid_1.json", GetInvalidManifestKeyError(
                                                  keys::kContentSecurityPolicy)),
@@ -132,8 +133,10 @@ TEST_F(CSPInfoUnitTest, CSPDictionary_ExtensionPages) {
       scoped_refptr<Extension> extension =
           LoadAndExpectSuccess(test_case.file_name);
       ASSERT_TRUE(extension.get());
-      EXPECT_EQ(test_case.csp,
-                CSPInfo::GetContentSecurityPolicy(extension.get()));
+      const std::string* csp =
+          CSPInfo::GetContentSecurityPolicy(extension.get());
+      ASSERT_TRUE(csp);
+      EXPECT_EQ(test_case.csp, *csp);
     }
   }
 
