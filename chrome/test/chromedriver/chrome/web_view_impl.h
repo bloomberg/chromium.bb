@@ -33,7 +33,6 @@ struct KeyEvent;
 struct MouseEvent;
 class PageLoadStrategy;
 class Status;
-class CastTracker;
 
 class WebViewImpl : public WebView {
  public:
@@ -136,9 +135,6 @@ class WebViewImpl : public WebView {
   Status DeleteScreenOrientation() override;
   bool IsOOPIF(const std::string& frame_id) override;
   FrameTracker* GetFrameTracker() const override;
-  std::unique_ptr<base::Value> GetCastSinks() override;
-  std::unique_ptr<base::Value> GetCastIssueMessage() override;
-
   const WebViewImpl* GetParent() const;
   bool Lock();
   void Unlock();
@@ -184,7 +180,6 @@ class WebViewImpl : public WebView {
       network_conditions_override_manager_;
   std::unique_ptr<HeapSnapshotTaker> heap_snapshot_taker_;
   std::unique_ptr<DebuggerTracker> debugger_;
-  std::unique_ptr<CastTracker> cast_tracker_;
 };
 
 // Responsible for locking a WebViewImpl and its associated data structure to

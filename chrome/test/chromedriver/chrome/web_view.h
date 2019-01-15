@@ -230,10 +230,6 @@ class WebView {
   virtual bool IsOOPIF(const std::string& frame_id) = 0;
 
   virtual FrameTracker* GetFrameTracker() const = 0;
-
-  virtual std::unique_ptr<base::Value> GetCastSinks() = 0;
-
-  virtual std::unique_ptr<base::Value> GetCastIssueMessage() = 0;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_WEB_VIEW_H_

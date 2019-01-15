@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/browser_info.h"
-#include "chrome/test/chromedriver/chrome/cast_tracker.h"
 #include "chrome/test/chromedriver/chrome/debugger_tracker.h"
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 #include "chrome/test/chromedriver/chrome/dom_tracker.h"
@@ -979,20 +978,6 @@ void WebViewImpl::SetDetached() {
 
 bool WebViewImpl::IsDetached() const {
   return is_detached_;
-}
-
-std::unique_ptr<base::Value> WebViewImpl::GetCastSinks() {
-  if (!cast_tracker_)
-    cast_tracker_ = std::make_unique<CastTracker>(client_.get());
-  HandleReceivedEvents();
-  return std::unique_ptr<base::Value>(cast_tracker_->sinks().DeepCopy());
-}
-
-std::unique_ptr<base::Value> WebViewImpl::GetCastIssueMessage() {
-  if (!cast_tracker_)
-    cast_tracker_ = std::make_unique<CastTracker>(client_.get());
-  HandleReceivedEvents();
-  return std::unique_ptr<base::Value>(cast_tracker_->issue().DeepCopy());
 }
 
 WebViewImplHolder::WebViewImplHolder(WebViewImpl* web_view)
