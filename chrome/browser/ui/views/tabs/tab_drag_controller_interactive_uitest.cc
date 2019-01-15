@@ -1815,7 +1815,7 @@ class DraggedWindowObserver : public aura::WindowObserver {
         // another browser's tabstrip.
         test_->MoveInputTo(end_point_);
 
-        // Change window's bounds to simulate what might happened in ash. If
+        // Change window's bounds to simulate what might happen in ash. If
         // TabDragController is still an observer of the dragged tabstrip's
         // widget, OnWidgetBoundsChanged() will calls into ContinueDragging()
         // to attach the dragged tabstrip into another browser, which might
