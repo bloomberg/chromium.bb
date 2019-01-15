@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "media/base/sample_format.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/modules/mediastream/media_track_capabilities.h"
 
@@ -90,12 +91,11 @@ MediaTrackCapabilities* InputDeviceInfo::getCapabilities() const {
     capabilities->setAutoGainControl({true, false});
     capabilities->setNoiseSuppression({true, false});
     // Sample size.
-    // TODO(crbug/704136): Replace the magic-constant "16" with the appropriate
-    // call to media:: when dependencies to media in blink are fixed as for
-    // onion souping.
     LongRange* sample_size = LongRange::Create();
-    sample_size->setMin(16);
-    sample_size->setMax(16);
+    sample_size->setMin(
+        media::SampleFormatToBitsPerChannel(media::kSampleFormatS16));
+    sample_size->setMax(
+        media::SampleFormatToBitsPerChannel(media::kSampleFormatS16));
     capabilities->setSampleSize(sample_size);
   }
 
