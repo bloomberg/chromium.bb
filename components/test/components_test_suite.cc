@@ -12,13 +12,11 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/test/launcher/unit_test_launcher.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "mojo/core/embedder/embedder.h"
-#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -59,11 +57,6 @@ class ComponentsTestSuite : public base::TestSuite {
     base::TestSuite::Initialize();
 
     mojo::core::Init();
-
-    // Disable the network service since a lot of unit tests don't work with it.
-    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
-    scoped_feature_list_->InitAndDisableFeature(
-        network::features::kNetworkService);
 
     // Before registering any schemes, clear GURL's internal state.
     url::Shutdown();
@@ -112,7 +105,6 @@ class ComponentsTestSuite : public base::TestSuite {
     base::TestSuite::Shutdown();
   }
 
-  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 #if defined(OS_WIN)
   base::win::ScopedCOMInitializer com_initializer_;
 #endif
