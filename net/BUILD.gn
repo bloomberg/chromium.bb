@@ -1076,6 +1076,8 @@ component("net") {
       "socket/websocket_endpoint_lock_manager.h",
       "socket/websocket_transport_client_socket_pool.cc",
       "socket/websocket_transport_client_socket_pool.h",
+      "socket/websocket_transport_connect_job.cc",
+      "socket/websocket_transport_connect_job.h",
       "socket/websocket_transport_connect_sub_job.cc",
       "socket/websocket_transport_connect_sub_job.h",
       "spdy/bidirectional_stream_spdy_impl.cc",
