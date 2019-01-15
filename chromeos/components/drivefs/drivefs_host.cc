@@ -29,7 +29,6 @@ namespace {
 
 constexpr char kMountScheme[] = "drivefs://";
 constexpr char kDataPath[] = "GCache/v2";
-constexpr char kIdentityConsumerId[] = "drivefs";
 constexpr base::TimeDelta kMountTimeout = base::TimeDelta::FromSeconds(20);
 
 }  // namespace
@@ -38,99 +37,6 @@ std::unique_ptr<DriveFsBootstrapListener>
 DriveFsHost::Delegate::CreateMojoListener() {
   return std::make_unique<DriveFsBootstrapListener>();
 }
-
-class DriveFsHost::AccountTokenDelegate {
- public:
-  explicit AccountTokenDelegate(DriveFsHost* host) : host_(host) {}
-
-  void GetAccessToken(bool use_cached,
-                      mojom::DriveFsDelegate::GetAccessTokenCallback callback) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    if (get_access_token_callback_) {
-      std::move(callback).Run(mojom::AccessTokenStatus::kTransientError, "");
-      return;
-    }
-    const std::string& token = MaybeGetCachedToken(use_cached);
-    if (!token.empty()) {
-      std::move(callback).Run(mojom::AccessTokenStatus::kSuccess, token);
-      return;
-    }
-    get_access_token_callback_ = std::move(callback);
-    GetIdentityManager().GetPrimaryAccountWhenAvailable(base::BindOnce(
-        &AccountTokenDelegate::AccountReady, base::Unretained(this)));
-  }
-
-  base::Optional<std::string> TakeCachedAccessToken() {
-    const auto& token = MaybeGetCachedToken(true);
-    if (token.empty()) {
-      return base::nullopt;
-    }
-    return token;
-  }
-
- private:
-  void AccountReady(const AccountInfo& info,
-                    const identity::AccountState& state) {
-    GetIdentityManager().GetAccessToken(
-        host_->delegate_->GetAccountId().GetUserEmail(),
-        {"https://www.googleapis.com/auth/drive"}, kIdentityConsumerId,
-        base::BindOnce(&AccountTokenDelegate::GotChromeAccessToken,
-                       base::Unretained(this)));
-  }
-
-  void GotChromeAccessToken(const base::Optional<std::string>& access_token,
-                            base::Time expiration_time,
-                            const GoogleServiceAuthError& error) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    if (!access_token) {
-      std::move(get_access_token_callback_)
-          .Run(error.IsPersistentError()
-                   ? mojom::AccessTokenStatus::kAuthError
-                   : mojom::AccessTokenStatus::kTransientError,
-               "");
-      return;
-    }
-    UpdateCachedToken(*access_token, expiration_time);
-    std::move(get_access_token_callback_)
-        .Run(mojom::AccessTokenStatus::kSuccess, *access_token);
-  }
-
-  const std::string& MaybeGetCachedToken(bool use_cached) {
-    // Return value from cache at most once per mount.
-    if (!use_cached || host_->clock_->Now() >= last_token_expiry_) {
-      last_token_.clear();
-    }
-    return last_token_;
-  }
-
-  void UpdateCachedToken(const std::string& token, const base::Time& expiry) {
-    last_token_ = token;
-    last_token_expiry_ = expiry;
-  }
-
-  identity::mojom::IdentityManager& GetIdentityManager() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    if (!identity_manager_) {
-      host_->delegate_->GetConnector()->BindInterface(
-          identity::mojom::kServiceName, mojo::MakeRequest(&identity_manager_));
-    }
-    return *identity_manager_;
-  }
-
-  // Owns |this|.
-  DriveFsHost* const host_;
-
-  // The connection to the identity service. Access via |GetIdentityManager()|.
-  identity::mojom::IdentityManagerPtr identity_manager_;
-
-  // Pending callback for an in-flight GetAccessToken request.
-  mojom::DriveFsDelegate::GetAccessTokenCallback get_access_token_callback_;
-
-  std::string last_token_;
-  base::Time last_token_expiry_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccountTokenDelegate);
-};
 
 // A container of state tied to a particular mounting of DriveFS. None of this
 // should be shared between mounts.
@@ -404,7 +310,8 @@ DriveFsHost::DriveFsHost(const base::FilePath& profile_path,
       clock_(clock),
       disk_mount_manager_(disk_mount_manager),
       timer_(std::move(timer)),
-      account_token_delegate_(std::make_unique<AccountTokenDelegate>(this)) {
+      account_token_delegate_(
+          std::make_unique<DriveFsAuth>(clock, profile_path, delegate)) {
   DCHECK(delegate_);
   DCHECK(mount_observer_);
   DCHECK(clock_);
