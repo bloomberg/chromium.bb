@@ -92,9 +92,8 @@ const char* GetDestinationFromContext(mojom::RequestContextType context) {
 }  // namespace
 
 BaseFetchContext::BaseFetchContext(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    FetchClientSettingsObject& fetch_client_settings_object)
-    : FetchContext(std::move(task_runner), fetch_client_settings_object) {}
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : FetchContext(std::move(task_runner)) {}
 
 void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
                                                    FetchResourceType type) {

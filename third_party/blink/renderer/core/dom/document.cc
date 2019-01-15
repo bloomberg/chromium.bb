@@ -710,7 +710,9 @@ Document::Document(const DocumentInit& initializer,
     ProvideContextFeaturesToDocumentFrom(*this, *frame_->GetPage());
 
     fetcher_ = frame_->Loader().GetDocumentLoader()->Fetcher();
-    To<FrameFetchContext>(fetcher_->Context()).ProvideDocumentToContext(this);
+    frame_->Loader()
+        .GetDocumentLoader()
+        ->ProvideDocumentToResourceFetcherProperties(*this);
     fetcher_->SetConsoleLogger(this);
 
     // TODO(dcheng): Why does this need to check that DOMWindow is non-null?

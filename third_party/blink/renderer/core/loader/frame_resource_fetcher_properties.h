@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class Document;
 class FrameOrImportedDocument;
 
 // FrameResourceFetcherProperties is a ResourceFetcherProperties implementation
@@ -21,7 +22,17 @@ class FrameResourceFetcherProperties final : public ResourceFetcherProperties {
 
   void Trace(Visitor*) override;
 
+  const FrameOrImportedDocument& GetFrameOrImportedDocument() const {
+    return *frame_or_imported_document_;
+  }
+  // Provides a committed document to |this|.
+  void UpdateDocument(Document& document);
+
   // ResourceFetcherProperties implementation
+  const FetchClientSettingsObject& GetFetchClientSettingsObject()
+      const override {
+    return *fetch_client_settings_object_;
+  }
   bool IsMainFrame() const override;
   ControllerServiceWorkerMode GetControllerServiceWorkerMode() const override;
   int64_t ServiceWorkerId() const override;
@@ -31,7 +42,11 @@ class FrameResourceFetcherProperties final : public ResourceFetcherProperties {
   bool ShouldBlockLoadingSubResource() const override;
 
  private:
+  static const FetchClientSettingsObject& CreateFetchClientSettingsObject(
+      const FrameOrImportedDocument&);
+
   const Member<FrameOrImportedDocument> frame_or_imported_document_;
+  Member<const FetchClientSettingsObject> fetch_client_settings_object_;
 };
 
 }  // namespace blink

@@ -166,18 +166,18 @@ void ModuleScriptLoaderTest::SetUp() {
 }
 
 void ModuleScriptLoaderTest::InitializeForDocument() {
-  auto* fetch_context =
-      MakeGarbageCollected<MockFetchContext>(nullptr, security_origin_);
-  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  auto* fetch_context = MakeGarbageCollected<MockFetchContext>(nullptr);
+  auto* properties =
+      MakeGarbageCollected<TestResourceFetcherProperties>(security_origin_);
   fetcher_ = MakeGarbageCollected<ResourceFetcher>(*properties, fetch_context);
   modulator_ = MakeGarbageCollected<ModuleScriptLoaderTestModulator>(
       ToScriptStateForMainWorld(&GetFrame()));
 }
 
 void ModuleScriptLoaderTest::InitializeForWorklet() {
-  auto* fetch_context =
-      MakeGarbageCollected<MockFetchContext>(nullptr, security_origin_);
-  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  auto* fetch_context = MakeGarbageCollected<MockFetchContext>(nullptr);
+  auto* properties =
+      MakeGarbageCollected<TestResourceFetcherProperties>(security_origin_);
   fetcher_ = MakeGarbageCollected<ResourceFetcher>(*properties, fetch_context);
   reporting_proxy_ = std::make_unique<MockWorkerReportingProxy>();
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(

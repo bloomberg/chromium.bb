@@ -36,6 +36,8 @@
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
@@ -44,9 +46,7 @@ class MockBaseFetchContext final : public BaseFetchContext {
  public:
   explicit MockBaseFetchContext(ExecutionContext* execution_context)
       : BaseFetchContext(
-            execution_context->GetTaskRunner(blink::TaskType::kInternalTest),
-            *MakeGarbageCollected<FetchClientSettingsObjectImpl>(
-                *execution_context)),
+            execution_context->GetTaskRunner(blink::TaskType::kInternalTest)),
         execution_context_(execution_context) {}
   ~MockBaseFetchContext() override = default;
 
@@ -109,7 +109,10 @@ class MockBaseFetchContext final : public BaseFetchContext {
   }
 
   bool IsDetached() const override { return is_detached_; }
-  void SetIsDetached(bool is_detached) { is_detached_ = is_detached; }
+  FetchContext* Detach() override {
+    is_detached_ = true;
+    return this;
+  }
 
  private:
   Member<ExecutionContext> execution_context_;
@@ -125,10 +128,16 @@ class BaseFetchContextTest : public testing::Test {
         ->SetUpSecurityContext();
     fetch_context_ =
         MakeGarbageCollected<MockBaseFetchContext>(execution_context_);
+    auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>(
+        *MakeGarbageCollected<FetchClientSettingsObjectImpl>(
+            *execution_context_));
+    resource_fetcher_ =
+        MakeGarbageCollected<ResourceFetcher>(*properties, fetch_context_);
   }
 
   Persistent<ExecutionContext> execution_context_;
   Persistent<MockBaseFetchContext> fetch_context_;
+  Persistent<ResourceFetcher> resource_fetcher_;
 };
 
 TEST_F(BaseFetchContextTest, SetIsExternalRequestForPublicContext) {
@@ -368,7 +377,7 @@ TEST_F(BaseFetchContextTest, CanRequestWhenDetached) {
           SecurityViolationReportingPolicy::kSuppressReporting,
           ResourceRequest::RedirectStatus::kFollowedRedirect));
 
-  fetch_context_->SetIsDetached(true);
+  resource_fetcher_->ClearContext();
 
   EXPECT_EQ(ResourceRequestBlockedReason::kOther,
             fetch_context_->CanRequest(

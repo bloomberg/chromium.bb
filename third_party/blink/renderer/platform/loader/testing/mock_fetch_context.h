@@ -31,19 +31,10 @@ class MockFetchContext : public FetchContext {
  public:
   MockFetchContext(
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner = nullptr,
-      scoped_refptr<const SecurityOrigin> security_origin = nullptr,
       std::unique_ptr<WebURLLoaderFactory> url_loader_factory = nullptr)
       : FetchContext(loading_task_runner
                          ? std::move(loading_task_runner)
-                         : base::MakeRefCounted<scheduler::FakeTaskRunner>(),
-                     *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-                         KURL(),
-                         security_origin ? std::move(security_origin)
-                                         : SecurityOrigin::CreateUniqueOpaque(),
-                         network::mojom::ReferrerPolicy::kDefault,
-                         String(),
-                         HttpsState::kNone,
-                         AllowedByNosniff::MimeTypeCheck::kStrict)),
+                         : base::MakeRefCounted<scheduler::FakeTaskRunner>()),
         frame_scheduler_(new MockFrameScheduler(GetLoadingTaskRunner())),
         url_loader_factory_(std::move(url_loader_factory)),
         transfer_size_(-1) {}
