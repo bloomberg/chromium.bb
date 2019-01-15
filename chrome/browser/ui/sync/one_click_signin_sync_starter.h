@@ -47,27 +47,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
     NEW_PROFILE
   };
 
-  enum StartSyncMode {
-    // Starts the process of signing the user in with the SigninManager, and
-    // once completed automatically starts sync with all data types enabled.
-    SYNC_WITH_DEFAULT_SETTINGS,
-
-    // Starts the process of signing the user in with the SigninManager, and
-    // once completed shows an inline confirmation UI for sync settings. If the
-    // user dismisses the confirmation UI, sync will start immediately. If the
-    // user clicks the settings link, Chrome will reidrect to the sync settings
-    // page.
-    CONFIRM_SYNC_SETTINGS_FIRST,
-
-    // Starts the process of signing the user in with the SigninManager, and
-    // once completed redirects the user to the settings page to allow them
-    // to configure which data types to sync before sync is enabled.
-    CONFIGURE_SYNC_FIRST,
-
-    // The process should be aborted because the undo button has been pressed.
-    UNDO_SYNC
-  };
-
   enum ConfirmationRequired {
     // No need to display a "post-signin" confirmation bubble (for example, if
     // the user was doing a re-auth flow).
@@ -195,7 +174,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // Callback invoked once the user has responded to the signin confirmation UI.
   // If response == UNDO_SYNC, the signin is cancelled, otherwise the pending
   // signin is completed.
-  void UntrustedSigninConfirmed(StartSyncMode response);
+  void UntrustedSigninConfirmed(bool confirmed);
 
   // GetSyncService returns non-NULL pointer if sync is enabled.
   syncer::SyncService* GetSyncService();
