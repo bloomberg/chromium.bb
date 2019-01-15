@@ -30,6 +30,8 @@ class TestGpuChannelManagerDelegate;
 class GpuChannelTestCommon : public testing::Test {
  public:
   GpuChannelTestCommon();
+  // Constructor which allows a custom set of GPU driver bug workarounds.
+  explicit GpuChannelTestCommon(std::vector<int32_t> enabled_workarounds);
   ~GpuChannelTestCommon() override;
 
  protected:

@@ -7,6 +7,7 @@
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel.h"
+#include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_test_common.h"
 
 namespace gpu {
@@ -228,6 +229,39 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
                 new GpuChannelMsg_DestroyCommandBuffer(kFriendlyRouteId));
   HandleMessage(channel,
                 new GpuChannelMsg_DestroyCommandBuffer(kSharedRouteId));
+}
+
+class GpuChannelExitForContextLostTest : public GpuChannelTestCommon {
+ public:
+  GpuChannelExitForContextLostTest()
+      : GpuChannelTestCommon({EXIT_ON_CONTEXT_LOST}) {}
+};
+
+TEST_F(GpuChannelExitForContextLostTest, CreateFailsDuringLostContextShutdown) {
+  int32_t kClientId = 1;
+  GpuChannel* channel = CreateChannel(kClientId, false);
+  ASSERT_TRUE(channel);
+
+  // Put channel manager into shutdown state.
+  channel_manager()->OnContextLost(false /* synthetic_loss */);
+
+  // Try to create a context.
+  int32_t kRouteId =
+      static_cast<int32_t>(GpuChannelReservedRoutes::kMaxValue) + 1;
+  GPUCreateCommandBufferConfig init_params;
+  init_params.surface_handle = kNullSurfaceHandle;
+  init_params.share_group_id = MSG_ROUTING_NONE;
+  init_params.stream_id = 0;
+  init_params.stream_priority = SchedulingPriority::kNormal;
+  init_params.attribs = ContextCreationAttribs();
+  init_params.active_url = GURL();
+  gpu::ContextResult result = gpu::ContextResult::kSuccess;
+  gpu::Capabilities capabilities;
+  HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
+                             init_params, kRouteId, GetSharedMemoryRegion(),
+                             &result, &capabilities));
+  EXPECT_EQ(result, gpu::ContextResult::kTransientFailure);
+  EXPECT_FALSE(channel->LookupCommandBuffer(kRouteId));
 }
 
 }  // namespace gpu
