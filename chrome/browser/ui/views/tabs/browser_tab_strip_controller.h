@@ -126,13 +126,6 @@ class BrowserTabStripController : public TabStripController,
   // Invokes tabstrip_->SetTabData.
   void SetTabDataAt(content::WebContents* web_contents, int model_index);
 
-  void StartHighlightTabsForCommand(
-      TabStripModel::ContextMenuCommand command_id,
-      Tab* tab);
-  void StopHighlightTabsForCommand(
-      TabStripModel::ContextMenuCommand command_id,
-      Tab* tab);
-
   // Adds a tab.
   void AddTab(content::WebContents* contents, int index, bool is_active);
 

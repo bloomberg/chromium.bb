@@ -194,10 +194,6 @@ class VIEWS_EXPORT MenuDelegate {
   // Views that are not MenuItemViews.
   virtual bool ShouldCloseOnDragComplete();
 
-  // Notification that the user has highlighted the specified item.
-  virtual void SelectionChanged(MenuItemView* menu) {
-  }
-
   // Notification the menu has closed. This will not be called if MenuRunner is
   // deleted during calls to ExecuteCommand().
   virtual void OnMenuClosed(MenuItemView* menu) {}
