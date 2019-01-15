@@ -29,6 +29,8 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
       content::WebUIDataSource::Create(chrome::kChromeUIAppLauncherPageHost);
 
   source->AddLocalizedString("appListTitle", IDS_APP_MANAGEMENT_APP_LIST_TITLE);
+  source->AddLocalizedString("appNoPermission",
+                             IDS_APPLICATION_INFO_APP_NO_PERMISSIONS_TEXT);
   source->AddLocalizedString("back", IDS_APP_MANAGEMENT_BACK);
   source->AddLocalizedString("camera", IDS_APP_MANAGEMENT_CAMERA);
   source->AddLocalizedString("lessApps", IDS_APP_MANAGEMENT_LESS_APPS);

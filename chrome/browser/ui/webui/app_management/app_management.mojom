@@ -22,6 +22,14 @@ struct App {
   map<uint32, apps.mojom.Permission> permissions;
 };
 
+// Extension-based apps primarily use install-time permissions that cannot be
+// changed after installation. This struct is used for the page to receive
+// string descriptions of those permissions to display to the user.
+struct ExtensionAppPermissionMessage {
+  string message;
+  array<string> submessages;
+};
+
 interface PageHandlerFactory {
   CreatePageHandler(Page page, PageHandler& handler);
 };
@@ -29,6 +37,8 @@ interface PageHandlerFactory {
 // Browser interface.
 interface PageHandler {
   GetApps() => (array<App> apps);
+  GetExtensionAppPermissionMessages(string app_id) =>
+      (array<ExtensionAppPermissionMessage> messages);
   SetPermission(string app_id,
                 apps.mojom.Permission permission);
   Uninstall(string app_id);

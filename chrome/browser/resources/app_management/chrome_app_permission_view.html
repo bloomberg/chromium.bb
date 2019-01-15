@@ -8,9 +8,55 @@
 <dom-module id="app-management-chrome-app-permission-view">
   <template>
     <style include="app-management-shared-css">
+      ul {
+        list-style: none;
+        margin: 0;
+        padding-inline-start: 24px;
+      }
+
+      li::before {
+        content: '- ';
+      }
+
+      #app-info {
+        padding: 24px;
+      }
+
+      #app-description {
+        padding-bottom: 12px;
+      }
+
+      #no-permissions {
+        padding-inline-start: 24px;
+      }
     </style>
     <app-management-permission-view-header app="[[app_]]">
     </app-management-permission-view-header>
+    <div class="card-container">
+      <div id="app-info">
+        <div id="app-description" class="secondary-text">
+          [[app_.description]]
+        </div>
+        <div>$i18n{permissions}</div>
+        <template is="dom-if" if="[[!hasPermissions_(messages_)]]">
+          <div id="no-permissions">$i18n{appNoPermission}</div>
+        </template>
+        <ul>
+          <template is="dom-repeat"
+              items="[[getPermissionMessages_(messages_)]]"
+              as="message">
+            <li>[[message]]</li>
+            <ul>
+              <template is="dom-repeat"
+                  items="[[getPermissionSubmessagesByMessage_(index, messages_)]]"
+                  as="submessage">
+                <li>[[submessage]]</li>
+              </template>
+            </ul>
+          </template>
+        </ul>
+      </div>
+    </div>
     <app-management-metadata-view app="[[app_]]"></app-management-metadata-view>
   </template>
   <script src="chrome_app_permission_view.js"></script>

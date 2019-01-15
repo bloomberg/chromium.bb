@@ -11,6 +11,7 @@ if (!is_android) {
       ":actions",
       ":app",
       ":browser_proxy",
+      ":chrome_app_permission_view",
       ":constants",
       ":fake_page_handler",
       ":item",
