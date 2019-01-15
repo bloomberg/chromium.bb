@@ -54,7 +54,9 @@ const base::Time kEvenLaterTime = base::Time::FromDoubleT(6000);
 
 class TwoClientWalletSyncTest : public UssWalletSwitchToggler, public SyncTest {
  public:
-  TwoClientWalletSyncTest() : SyncTest(TWO_CLIENT) {}
+  TwoClientWalletSyncTest() : SyncTest(TWO_CLIENT) {
+    InitWithDefaultFeatures();
+  }
   ~TwoClientWalletSyncTest() override {}
 
   bool TestUsesSelfNotifications() override { return false; }
@@ -86,8 +88,6 @@ class TwoClientWalletSyncTest : public UssWalletSwitchToggler, public SyncTest {
 };
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest, UpdateCreditCardMetadata) {
-  InitWithDefaultFeatures();
-
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
@@ -121,8 +121,6 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest, UpdateCreditCardMetadata) {
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
                        UpdateCreditCardMetadataWhileNotSyncing) {
-  InitWithDefaultFeatures();
-
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
@@ -164,8 +162,6 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
                        UpdateCreditCardMetadataConflictsWhileNotSyncing) {
-  InitWithDefaultFeatures();
-
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
@@ -213,8 +209,6 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest, UpdateServerAddressMetadata) {
-  InitWithDefaultFeatures();
-
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
@@ -249,8 +243,6 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest, UpdateServerAddressMetadata) {
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
                        UpdateServerAddressMetadataWhileNotSyncing) {
-  InitWithDefaultFeatures();
-
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateDefaultSyncPaymentsCustomerData()});
@@ -291,8 +283,6 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
                        UpdateServerAddressMetadataConflictsWhileNotSyncing) {
-  InitWithDefaultFeatures();
-
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateDefaultSyncPaymentsCustomerData()});
@@ -340,8 +330,6 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
                        UpdateCreditCardMetadataWithNewBillingAddressId) {
-  InitWithDefaultFeatures();
-
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             /*billing_address_id=*/""),
@@ -371,8 +359,6 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
                        UpdateCreditCardMetadataWithChangedBillingAddressId) {
-  InitWithDefaultFeatures();
-
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
@@ -403,8 +389,6 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
 IN_PROC_BROWSER_TEST_P(
     TwoClientWalletSyncTest,
     UpdateCreditCardMetadataWithChangedBillingAddressId_RemoteToLocal) {
-  InitWithDefaultFeatures();
-
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
@@ -436,8 +420,6 @@ IN_PROC_BROWSER_TEST_P(
 IN_PROC_BROWSER_TEST_P(
     TwoClientWalletSyncTest,
     UpdateCreditCardMetadataWithChangedBillingAddressId_RemoteToLocalConflict) {
-  InitWithDefaultFeatures();
-
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
@@ -492,8 +474,6 @@ IN_PROC_BROWSER_TEST_P(
 IN_PROC_BROWSER_TEST_P(
     TwoClientWalletSyncTest,
     UpdateCreditCardMetadataWithChangedBillingAddressId_LocalToRemote) {
-  InitWithDefaultFeatures();
-
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kLocalBillingAddressId),
@@ -525,8 +505,6 @@ IN_PROC_BROWSER_TEST_P(
 IN_PROC_BROWSER_TEST_P(
     TwoClientWalletSyncTest,
     UpdateCreditCardMetadataWithChangedBillingAddressId_LocalToRemoteOffline) {
-  InitWithDefaultFeatures();
-
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kLocalBillingAddressId),
@@ -566,8 +544,6 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
                        ServerAddressConvertsToSameLocalAddress) {
-  InitWithDefaultFeatures();
-
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateDefaultSyncPaymentsCustomerData()});
@@ -594,8 +570,6 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
                        DeleteServerCardMetadataWhenDataGetsRemoved) {
-  InitWithDefaultFeatures();
-
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
@@ -652,8 +626,6 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
                        DeleteServerAddressMetadataWhenDataGetsRemoved) {
-  InitWithDefaultFeatures();
-
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
