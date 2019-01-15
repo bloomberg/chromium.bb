@@ -31,6 +31,10 @@ class ASH_EXPORT OverflowBubbleView : public views::BubbleDialogDelegateView,
   // has been consumed.
   bool ProcessGestureEvent(const ui::GestureEvent& event);
 
+  // These return the actual offset (sometimes reduced by the clamping).
+  int ScrollByXOffset(int x_offset);
+  int ScrollByYOffset(int y_offset);
+
   // views::BubbleDialogDelegateView:
   int GetDialogButtons() const override;
   gfx::Rect GetBubbleBounds() override;
@@ -40,9 +44,6 @@ class ASH_EXPORT OverflowBubbleView : public views::BubbleDialogDelegateView,
 
  private:
   friend class OverflowBubbleViewTestAPI;
-
-  void ScrollByXOffset(int x_offset);
-  void ScrollByYOffset(int y_offset);
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;

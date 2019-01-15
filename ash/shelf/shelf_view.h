@@ -20,6 +20,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/animation/ink_drop_state.h"
@@ -332,6 +333,15 @@ class ASH_EXPORT ShelfView : public views::View,
   // Invoked when the mouse is dragged. Updates the models as appropriate.
   void ContinueDrag(const ui::LocatedEvent& event);
 
+  // Scroll the view to show more content in the direction of the user's drag.
+  void ScrollForUserDrag(int offset);
+
+  // Increase the speed of an existing scroll.
+  void SpeedUpDragScrolling();
+
+  // Reorder |drag_view_| according to the latest dragging coordinate.
+  void MoveDragViewTo(int primary_axis_coordinate);
+
   // Ends the drag on the other shelf. (ie if we are on main shelf, ends drag on
   // the overflow shelf). Invoked when a shelf item is being dragged from one
   // shelf to the other.
@@ -609,6 +619,15 @@ class ASH_EXPORT ShelfView : public views::View,
   // A view to draw a background behind the app list and back buttons.
   // Owned by the view hierarchy.
   views::View* back_and_app_list_background_ = nullptr;
+
+  // For dragging: -1 if scrolling back, 1 if scrolling forward, 0 if neither.
+  int drag_scroll_dir_ = 0;
+
+  // Used to periodically call ScrollForUserDrag.
+  base::RepeatingTimer scrolling_timer_;
+
+  // Used to call SpeedUpDragScrolling.
+  base::OneShotTimer speed_up_drag_scrolling_;
 
   base::WeakPtrFactory<ShelfView> weak_factory_;
 

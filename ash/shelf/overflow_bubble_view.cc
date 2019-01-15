@@ -100,28 +100,33 @@ bool OverflowBubbleView::ProcessGestureEvent(const ui::GestureEvent& event) {
     ScrollByXOffset(static_cast<int>(-event.details().scroll_x()));
   else
     ScrollByYOffset(static_cast<int>(-event.details().scroll_y()));
-  Layout();
   return true;
 }
 
-void OverflowBubbleView::ScrollByXOffset(int x_offset) {
+int OverflowBubbleView::ScrollByXOffset(int x_offset) {
   const gfx::Rect visible_bounds(GetContentsBounds());
   const gfx::Size contents_size(shelf_view_->GetPreferredSize());
 
   DCHECK_GE(contents_size.width(), visible_bounds.width());
-  int x = std::min(contents_size.width() - visible_bounds.width(),
-                   std::max(0, scroll_offset_.x() + x_offset));
+  const int old_x = scroll_offset_.x();
+  const int x = std::min(contents_size.width() - visible_bounds.width(),
+                         std::max(0, old_x + x_offset));
   scroll_offset_.set_x(x);
+  Layout();
+  return x - old_x;
 }
 
-void OverflowBubbleView::ScrollByYOffset(int y_offset) {
+int OverflowBubbleView::ScrollByYOffset(int y_offset) {
   const gfx::Rect visible_bounds(GetContentsBounds());
   const gfx::Size contents_size(shelf_view_->GetPreferredSize());
 
-  DCHECK_GE(contents_size.width(), visible_bounds.width());
-  int y = std::min(contents_size.height() - visible_bounds.height(),
-                   std::max(0, scroll_offset_.y() + y_offset));
+  DCHECK_GE(contents_size.height(), visible_bounds.height());
+  const int old_y = scroll_offset_.y();
+  const int y = std::min(contents_size.height() - visible_bounds.height(),
+                         std::max(0, old_y + y_offset));
   scroll_offset_.set_y(y);
+  Layout();
+  return y - old_y;
 }
 
 gfx::Size OverflowBubbleView::CalculatePreferredSize() const {
@@ -160,7 +165,6 @@ void OverflowBubbleView::ChildPreferredSizeChanged(views::View* child) {
     ScrollByXOffset(0);
   else
     ScrollByYOffset(0);
-  Layout();
 }
 
 bool OverflowBubbleView::OnMouseWheel(const ui::MouseWheelEvent& event) {
@@ -172,7 +176,6 @@ bool OverflowBubbleView::OnMouseWheel(const ui::MouseWheelEvent& event) {
     ScrollByXOffset(-event.y_offset());
   else
     ScrollByYOffset(-event.y_offset());
-  Layout();
 
   return true;
 }
@@ -182,7 +185,6 @@ void OverflowBubbleView::OnScrollEvent(ui::ScrollEvent* event) {
     ScrollByXOffset(static_cast<int>(-event->x_offset()));
   else
     ScrollByYOffset(static_cast<int>(-event->y_offset()));
-  Layout();
   event->SetHandled();
 }
 

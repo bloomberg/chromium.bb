@@ -41,6 +41,7 @@
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/timer/timer.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -98,6 +99,22 @@ constexpr float kDragAndDropProxyScale = 1.2f;
 constexpr float kDraggedImageOpacity = 0.5f;
 
 namespace {
+
+// Inset from the bubble bounds to the bounds beyond which dragging triggers
+// scrolling.
+constexpr int kScrollTriggerBoundsInsetDips = 28;
+
+// Time delay after which the scrolling speed will be increased.
+constexpr base::TimeDelta kDragScrollSpeedIncreaseDelay =
+    base::TimeDelta::FromSeconds(1);
+
+// Time interval at which to scroll the overflow bubble for dragging.
+constexpr base::TimeDelta kDragScrollInterval =
+    base::TimeDelta::FromMilliseconds(17);
+
+// How far to scroll the overflow bubble each time.
+constexpr int kDragSlowScrollDeltaDips = 3;
+constexpr int kDragFastScrollDeltaDips = 6;
 
 // Helper to check if tablet mode is enabled.
 bool IsTabletModeEnabled() {
@@ -791,6 +808,10 @@ bool ShelfView::Drag(const gfx::Point& location_in_screen_coordinates) {
 }
 
 void ShelfView::EndDrag(bool cancel) {
+  drag_scroll_dir_ = 0;
+  scrolling_timer_.Stop();
+  speed_up_drag_scrolling_.Stop();
+
   if (drag_and_drop_shelf_id_.IsNull())
     return;
 
@@ -884,6 +905,10 @@ void ShelfView::PointerDraggedOnButton(views::View* view,
 void ShelfView::PointerReleasedOnButton(views::View* view,
                                         Pointer pointer,
                                         bool canceled) {
+  drag_scroll_dir_ = 0;
+  scrolling_timer_.Stop();
+  speed_up_drag_scrolling_.Stop();
+
   is_repost_event_on_same_item_ = false;
 
   if (canceled) {
@@ -1223,6 +1248,7 @@ void ShelfView::PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event) {
   DCHECK(drag_view_);
   drag_pointer_ = pointer;
   start_drag_index_ = view_model_->GetIndexOfView(drag_view_);
+  drag_scroll_dir_ = 0;
 
   if (start_drag_index_ == -1) {
     CancelDrag(-1);
@@ -1239,48 +1265,110 @@ void ShelfView::PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event) {
 void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
   DCHECK(dragging());
   DCHECK(drag_view_);
-  // Due to a syncing operation the application might have been removed.
-  // Bail if it is gone.
-  int current_index = view_model_->GetIndexOfView(drag_view_);
-  DCHECK_NE(-1, current_index);
+  DCHECK_NE(-1, view_model_->GetIndexOfView(drag_view_));
 
   // If this is not a drag and drop host operation and not the app list item,
   // check if the item got ripped off the shelf - if it did we are done.
   if (drag_and_drop_shelf_id_.IsNull() &&
-      RemovableByRipOff(current_index) != NOT_REMOVABLE) {
-    if (HandleRipOffDrag(event))
-      return;
-    // The rip off handler could have changed the location of the item.
-    current_index = view_model_->GetIndexOfView(drag_view_);
+      RemovableByRipOff(view_model_->GetIndexOfView(drag_view_)) !=
+          NOT_REMOVABLE &&
+      HandleRipOffDrag(event)) {
+    drag_scroll_dir_ = 0;
+    scrolling_timer_.Stop();
+    speed_up_drag_scrolling_.Stop();
+    return;
+  }
+
+  // Scroll the overflow bubble as the user drags near either end. There could
+  // be nowhere to scroll to in that direction (for that matter, the overflow
+  // bubble may not even span the screen), but for simplicity, ignore that
+  // possibility here and just let ScrollForUserDrag repeatedly do nothing.
+  if (is_overflow_mode()) {
+    const gfx::Rect bubble_bounds =
+        owner_overflow_bubble_->bubble_view()->GetBubbleBounds();
+    gfx::Point screen_location(event.location());
+    ConvertPointToScreen(drag_view_, &screen_location);
+    const int primary_coordinate =
+        shelf_->PrimaryAxisValue(screen_location.x(), screen_location.y());
+
+    int new_drag_scroll_dir = 0;
+    if (primary_coordinate <
+        shelf_->PrimaryAxisValue(bubble_bounds.x(), bubble_bounds.y()) +
+            kScrollTriggerBoundsInsetDips) {
+      new_drag_scroll_dir = -1;
+    } else if (primary_coordinate >
+               shelf_->PrimaryAxisValue(bubble_bounds.right(),
+                                        bubble_bounds.bottom()) -
+                   kScrollTriggerBoundsInsetDips) {
+      new_drag_scroll_dir = 1;
+    }
+
+    if (new_drag_scroll_dir != drag_scroll_dir_) {
+      drag_scroll_dir_ = new_drag_scroll_dir;
+      scrolling_timer_.Stop();
+      speed_up_drag_scrolling_.Stop();
+      if (new_drag_scroll_dir != 0) {
+        scrolling_timer_.Start(
+            FROM_HERE, kDragScrollInterval,
+            base::BindRepeating(
+                &ShelfView::ScrollForUserDrag, base::Unretained(this),
+                new_drag_scroll_dir * kDragSlowScrollDeltaDips));
+        speed_up_drag_scrolling_.Start(FROM_HERE, kDragScrollSpeedIncreaseDelay,
+                                       this, &ShelfView::SpeedUpDragScrolling);
+      }
+    }
   }
 
   gfx::Point drag_point(event.location());
   ConvertPointToTarget(drag_view_, this, &drag_point);
+  MoveDragViewTo(shelf_->PrimaryAxisValue(drag_point.x() - drag_origin_.x(),
+                                          drag_point.y() - drag_origin_.y()));
+}
 
-  // Constrain the location to the range of valid indices for the type.
-  std::pair<int, int> indices(GetDragRange(current_index));
-  int first_drag_index = indices.first;
-  int last_drag_index = indices.second;
-  // If the last index isn't valid, we're overflowing. Constrain to the app list
-  // (which is the last visible item).
-  if (first_drag_index < model_->item_count() - 1 &&
-      last_drag_index > last_visible_index_)
-    last_drag_index = last_visible_index_;
-  int x = 0, y = 0;
+void ShelfView::ScrollForUserDrag(int offset) {
+  DCHECK(dragging());
+  DCHECK(drag_view_);
+  DCHECK(is_overflow_mode());
+
+  const gfx::Point position(drag_view_->origin());
+  const int new_primary_coordinate =
+      shelf_->IsHorizontalAlignment()
+          ? position.x() +
+                owner_overflow_bubble_->bubble_view()->ScrollByXOffset(offset)
+          : position.y() +
+                owner_overflow_bubble_->bubble_view()->ScrollByYOffset(offset);
+  bounds_animator_->StopAnimatingView(drag_view_);
+  MoveDragViewTo(new_primary_coordinate);
+}
+
+void ShelfView::SpeedUpDragScrolling() {
+  DCHECK(dragging());
+  DCHECK(drag_view_);
+  DCHECK(is_overflow_mode());
+
+  scrolling_timer_.Start(
+      FROM_HERE, kDragScrollInterval,
+      base::BindRepeating(&ShelfView::ScrollForUserDrag, base::Unretained(this),
+                          drag_scroll_dir_ * kDragFastScrollDeltaDips));
+}
+
+void ShelfView::MoveDragViewTo(int primary_axis_coordinate) {
+  const int current_index = view_model_->GetIndexOfView(drag_view_);
+  const std::pair<int, int> indices(GetDragRange(current_index));
   if (shelf_->IsHorizontalAlignment()) {
-    int new_x = GetMirroredXWithWidthInView(drag_point.x() - drag_origin_.x(),
-                                            drag_view_->width());
-    x = std::max(view_model_->ideal_bounds(indices.first).x(), new_x);
-    x = std::min(view_model_->ideal_bounds(last_drag_index).right() -
+    int x = GetMirroredXWithWidthInView(primary_axis_coordinate,
+                                        drag_view_->width());
+    x = std::max(view_model_->ideal_bounds(indices.first).x(), x);
+    x = std::min(view_model_->ideal_bounds(indices.second).right() -
                      view_model_->ideal_bounds(current_index).width(),
                  x);
     if (drag_view_->x() == x)
       return;
     drag_view_->SetX(x);
   } else {
-    y = std::max(view_model_->ideal_bounds(indices.first).y(),
-                 drag_point.y() - drag_origin_.y());
-    y = std::min(view_model_->ideal_bounds(last_drag_index).bottom() -
+    int y = std::max(view_model_->ideal_bounds(indices.first).y(),
+                     primary_axis_coordinate);
+    y = std::min(view_model_->ideal_bounds(indices.second).bottom() -
                      view_model_->ideal_bounds(current_index).height(),
                  y);
     if (drag_view_->y() == y)
@@ -1292,16 +1380,9 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
       *view_model_, drag_view_,
       shelf_->IsHorizontalAlignment() ? views::ViewModelUtils::HORIZONTAL
                                       : views::ViewModelUtils::VERTICAL,
-      x, y);
+      drag_view_->x(), drag_view_->y());
   target_index =
       std::min(indices.second, std::max(target_index, indices.first));
-
-  // The back button and app list button are always first, and they are the
-  // only non-draggable items.
-  int first_draggable_item = model_->GetItemIndexForType(TYPE_APP_LIST) + 1;
-  DCHECK_EQ(2, first_draggable_item);
-  target_index = std::max(target_index, first_draggable_item);
-  DCHECK_LT(target_index, model_->item_count());
 
   if (target_index == current_index)
     return;
@@ -1565,6 +1646,12 @@ std::pair<int, int> ShelfView::GetDragRange(int index) {
       max_index = i;
     }
   }
+  DCHECK_EQ(1, model_->GetItemIndexForType(TYPE_APP_LIST));
+  min_index =
+      std::max(min_index, is_overflow_mode()
+                              ? first_visible_index_
+                              : model_->GetItemIndexForType(TYPE_APP_LIST) + 1);
+  max_index = std::min(max_index, last_visible_index_);
   return std::pair<int, int>(min_index, max_index);
 }
 
@@ -1689,6 +1776,10 @@ gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
 }
 
 int ShelfView::CancelDrag(int modified_index) {
+  drag_scroll_dir_ = 0;
+  scrolling_timer_.Stop();
+  speed_up_drag_scrolling_.Stop();
+
   FinalizeRipOffDrag(true);
   if (!drag_view_)
     return modified_index;
