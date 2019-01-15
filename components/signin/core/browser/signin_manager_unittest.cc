@@ -500,8 +500,7 @@ TEST_F(SigninManagerTest, GaiaIdMigration) {
     PrefService* client_prefs = signin_client()->GetPrefs();
     client_prefs->SetInteger(prefs::kAccountIdMigrationState,
                              AccountTrackerService::MIGRATION_NOT_STARTED);
-    ListPrefUpdate update(client_prefs,
-                          AccountTrackerService::kAccountInfoPref);
+    ListPrefUpdate update(client_prefs, prefs::kAccountInfo);
     update->Clear();
     auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetString("account_id", email);
@@ -530,8 +529,7 @@ TEST_F(SigninManagerTest, VeryOldProfileGaiaIdMigration) {
     PrefService* client_prefs = signin_client()->GetPrefs();
     client_prefs->SetInteger(prefs::kAccountIdMigrationState,
                              AccountTrackerService::MIGRATION_NOT_STARTED);
-    ListPrefUpdate update(client_prefs,
-                          AccountTrackerService::kAccountInfoPref);
+    ListPrefUpdate update(client_prefs, prefs::kAccountInfo);
     update->Clear();
     auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetString("account_id", email);
@@ -560,8 +558,7 @@ TEST_F(SigninManagerTest, GaiaIdMigrationCrashInTheMiddle) {
     PrefService* client_prefs = signin_client()->GetPrefs();
     client_prefs->SetInteger(prefs::kAccountIdMigrationState,
                              AccountTrackerService::MIGRATION_NOT_STARTED);
-    ListPrefUpdate update(client_prefs,
-                          AccountTrackerService::kAccountInfoPref);
+    ListPrefUpdate update(client_prefs, prefs::kAccountInfo);
     update->Clear();
     auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetString("account_id", email);

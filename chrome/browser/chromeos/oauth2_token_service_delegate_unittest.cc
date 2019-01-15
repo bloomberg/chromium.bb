@@ -115,12 +115,8 @@ class CrOSOAuthDelegateTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
+    AccountTrackerService::RegisterPrefs(pref_service_.registry());
 
-    pref_service_.registry()->RegisterListPref(
-        AccountTrackerService::kAccountInfoPref);
-    pref_service_.registry()->RegisterIntegerPref(
-        prefs::kAccountIdMigrationState,
-        AccountTrackerService::MIGRATION_NOT_STARTED);
     client_ = std::make_unique<TestSigninClient>(&pref_service_);
     account_manager_.Initialize(tmp_dir_.GetPath(),
                                 client_->GetURLLoaderFactory(),

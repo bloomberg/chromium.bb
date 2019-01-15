@@ -17,6 +17,10 @@ const char kAccountConsistencyMirrorRequired[] =
 // for possible values.
 const char kAccountIdMigrationState[] = "account_id_migration_state";
 
+// Name of the preference property that persists the account information
+// tracked by this signin.
+const char kAccountInfo[] = "account_info";
+
 // Boolean identifying whether reverse auto-login is enabled.
 const char kAutologinEnabled[] = "autologin.enabled";
 
