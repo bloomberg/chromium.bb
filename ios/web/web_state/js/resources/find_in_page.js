@@ -235,13 +235,6 @@ let replacements_ = [];
 let replacementsIndex_ = 0;
 
 /**
- * The total number of visible matches found.
- * @type {Number}
- */
-let visibleFound_ = 0;
-
-
-/**
  * Process all PartialMatches inside current Section. For current Section's
  * node.textContent, all texts that are match results will be wrapped in
  * <chrome_find>, and other texts will be put inside plain TEXT Nodes. All
@@ -293,10 +286,30 @@ function processPartialMatchesInCurrentSection() {
 }
 
 /**
+ * The list of frame documents.
+ * TODO(crbug.com/895529): x-domain frames won't work.
+ * @type {Array<Document>}
+ */
+let frameDocs_ = [];
+
+/**
  * The style DOM element that we add.
  * @type {Element}
  */
 let styleElement_ = null;
+
+/**
+ * Width we expect the page to be.  For example (320/480) for iphone,
+ * (1024/768) for ipad.
+ * @type {number}
+ */
+let pageWidth_ = 320;
+
+/**
+ * Height we expect the page to be.
+ * @type {number}
+ */
+let pageHeight_ = 480;
 
 /**
  * Maximum number of visible elements to count
@@ -314,8 +327,8 @@ let searchInProgress_ = false;
  * Node names that are not going to be processed.
  * @type {Object}
  */
-const IGNORE_NODE_NAMES = new Set(['SCRIPT', 'STYLE', 'EMBED',
-  'OBJECT', 'SELECT', 'TEXTAREA', 'IFRAME']);
+const IGNORE_NODE_NAMES =
+    new Set(['SCRIPT', 'STYLE', 'EMBED', 'OBJECT', 'SELECT', 'TEXTAREA']);
 
 /**
  * Class name of CSS element.
@@ -330,10 +343,16 @@ const CSS_CLASS_NAME = 'find_in_page';
 const CSS_STYLE_ID = '__gCrWeb.findInPageStyle';
 
 /**
- * Result passed back to app to indicate pumpSearch has reached timeout.
- * @type {number}
+ * Result passed back to app to indicate no results for the query.
+ * @type {string}
  */
-const TIMEOUT = -1;
+const NO_RESULTS = '[0,[0,0,0]]';
+
+/**
+ * Result passed back to app to indicate pumpSearch has reached timeout.
+ * @type {string}
+ */
+const TIMEOUT = '[false]';
 
 /**
  * Regex to escape regex special characters in a string.
@@ -378,38 +397,40 @@ class Timer {
   }
 }
 
- /**
-  * Looks for a phrase in the DOM.
-  * @param {string} string Phrase to look for like "ben franklin".
-  * @param {number} timeout Maximum time to run.
-  * @return {number} that represents the total matches found.
-  */
-__gCrWeb.findInPage.findString = function(string, timeout) {
-  // Enable findInPage module if hasn't been done yet.
-  if (!__gCrWeb.findInPage.hasInitialized) {
-    enable_();
-    __gCrWeb.findInPage.hasInitialized = true;
-  }
-
+/**
+ * Looks for a phrase in the DOM.
+ * @param {string} findText Phrase to look for like "ben franklin".
+ * @param {number} timeout Maximum time to run.
+ * @return {string} How many results there are in the page in the form of
+       [highlightedWordsCount, [index, pageLocationX, pageLocationY]].
+ */
+__gCrWeb.findInPage.highlightWord = function(findText, timeout) {
   if (__gCrWeb.findInPage.matches && __gCrWeb.findInPage.matches.length) {
     // Clean up a previous run.
     cleanUp_();
   }
-  if (!string) {
+  if (!findText) {
     // No searching for emptyness.
-    return 0;
+    return NO_RESULTS;
   }
 
   // Holds what nodes we have not processed yet.
-  __gCrWeb.findInPage.stack = [document.body];
+  __gCrWeb.findInPage.stack = [];
+
+  // Push frames into stack too.
+  for (let i = frameDocs_.length - 1; i >= 0; i--) {
+    let doc = frameDocs_[i];
+    __gCrWeb.findInPage.stack.push(doc);
+  }
+  __gCrWeb.findInPage.stack.push(document.body);
 
   // Number of visible elements found.
-  visibleFound_ = 0;
+  __gCrWeb.findInPage.visibleFound = 0;
 
   // Index tracking variables so search can be broken up into multiple calls.
-  visibleIndex_ = 0;
+  __gCrWeb.findInPage.visibleIndex = 0;
 
-  __gCrWeb.findInPage.regex = getRegex_(string);
+  __gCrWeb.findInPage.regex = getRegex_(findText);
 
   searchInProgress_ = true;
 
@@ -422,23 +443,24 @@ __gCrWeb.findInPage.findString = function(string, timeout) {
  *      |allText_|, and create |sections_| to record which part of |allText_|
  *      belongs to which Node;
  *   2. Do regex match in |allText_| to find all matches, create |replacements_|
- *      for highlighting all results and |matches_| for
+ *      for highlighting all results and |__gCrWeb.findInPage.matches| for
  *      highlighting selected result;
  *   3. Execute |replacements_| to highlight all results;
  *   4. Check the visibility of each Match;
+ *   5. Call __gCrWeb.findInPage.goNext.
  *
  * If |timeout| has been reached, the function will return TIMEOUT, and the
  * caller need to call this function again to continue searching. This prevents
  * the Js thread from blocking the WebView's UI.
  *
  * @param {number} timeout Only run find in page until timeout.
- * @return {number} that represents the total matches found.
+ * @return {string} string in the form of "[bool, int]", where bool indicates
+                    whether the text was found and int indicates text position.
  */
 __gCrWeb.findInPage.pumpSearch = function(timeout) {
   // TODO(crbug.com/895531): It would be better if this DCHECKed.
-  if (searchInProgress_ == false) {
-    return 0;
-  }
+  if (searchInProgress_ == false)
+    return NO_RESULTS;
 
   let timer = new Timer(timeout);
 
@@ -459,14 +481,13 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
 
     // Build up |allText_| and |sections_|.
     if (node.nodeType == 3 && node.parentNode) {
-      sections_.push(new Section(allText_.length, allText_.length +
-          node.textContent.length, node));
+      sections_.push(new Section(
+          allText_.length, allText_.length + node.textContent.length, node));
       allText_ += node.textContent.toLowerCase();
     }
 
-    if (timer.overtime()) {
+    if (timer.overtime())
       return TIMEOUT;
-    }
   }
 
   // Do regex match in |allText_|, create |matches| and |replacements|. The
@@ -493,8 +514,9 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
       // Create all PartialMatches of current Match.
       while (true) {
         let section = sections_[sectionsIndex_];
-        partialMatches_.push(new PartialMatch(matchId_, Math.max(
-            section.begin, begin), Math.min(section.end, end)));
+        partialMatches_.push(new PartialMatch(
+            matchId_, Math.max(section.begin, begin),
+            Math.min(section.end, end)));
         // If current Match.end exceeds current Section.end, process current
         // Section and move to next Section.
         if (section.end < end) {
@@ -507,9 +529,8 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
       }
       ++matchId_;
 
-      if (timer.overtime()) {
+      if (timer.overtime())
         return TIMEOUT;
-      }
     }
     // Process remaining PartialMatches.
     processPartialMatchesInCurrentSection();
@@ -528,28 +549,33 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
   // Count visible elements.
   let max = __gCrWeb.findInPage.matches.length;
   let maxVisible = MAX_VISIBLE_ELEMENTS;
-  for (let index = visibleIndex_; index < max; index++) {
+  for (let index = __gCrWeb.findInPage.visibleIndex; index < max; index++) {
     let match = __gCrWeb.findInPage.matches[index];
     if (timer.overtime()) {
-      visibleIndex_ = index;
+      __gCrWeb.findInPage.visibleIndex = index;
       return TIMEOUT;
     }
 
     // Stop after |maxVisible| elements.
-    if (visibleFound_ > maxVisible) {
+    if (__gCrWeb.findInPage.visibleFound > maxVisible) {
       match.visibleIndex = maxVisible;
       continue;
     }
 
     if (match.visible()) {
-      visibleFound_++;
-      match.visibleIndex = visibleFound_;
+      __gCrWeb.findInPage.visibleFound++;
+      match.visibleIndex = __gCrWeb.findInPage.visibleFound;
     }
   }
 
   searchInProgress_ = false;
 
-  return visibleFound_;
+  let pos = __gCrWeb.findInPage.goNext();
+  if (pos) {
+    return '[' + __gCrWeb.findInPage.visibleFound + ',' + pos + ']';
+  } else {
+    return NO_RESULTS;
+  }
 };
 
 /**
@@ -715,6 +741,23 @@ function findScrollDimensions_() {
 };
 
 /**
+ * Initialize the __gCrWeb.findInPage module.
+ * @param {number} width Width of page.
+ * @param {number} height Height of page.
+
+ */
+__gCrWeb.findInPage.init = function(width, height) {
+  if (__gCrWeb.findInPage.hasInitialized) {
+    return;
+  }
+  pageWidth_ = width;
+  pageHeight_ = height;
+  frameDocs_ = getFrameDocuments_();
+  enable_();
+  __gCrWeb.findInPage.hasInitialized = true;
+};
+
+/**
  * Enable the __gCrWeb.findInPage module.
  * Mainly just adds the style for the classes.
  */
@@ -723,7 +766,7 @@ function enable_() {
     // Already enabled.
     return;
   }
-  addDocumentStyle_(document);
+  addStyle_();
 };
 
 /**
@@ -737,6 +780,14 @@ function getPageScale_() {
 /**
  * Adds the appropriate style element to the page.
  */
+function addStyle_() {
+  addDocumentStyle_(document);
+  for (let i = frameDocs_.length - 1; i >= 0; i--) {
+    let doc = frameDocs_[i];
+    addDocumentStyle_(doc);
+  }
+};
+
 function addDocumentStyle_(thisDocument) {
   let styleContent = [];
   function addCSSRule(name, style) {
@@ -767,10 +818,18 @@ function addDocumentStyle_(thisDocument) {
  */
 function removeStyle_() {
   if (styleElement_) {
-    let style = document.getElementById(CSS_STYLE_ID);
-    document.body.removeChild(style);
+    removeDocumentStyle_(document);
+    for (let i = frameDocs_.length - 1; i >= 0; i--) {
+      let doc = frameDocs_[i];
+      removeDocumentStyle_(doc);
+    }
     styleElement_ = null;
   }
+};
+
+function removeDocumentStyle_(thisDocument) {
+  let style = thisDocument.getElementById(CSS_STYLE_ID);
+  thisDocument.body.removeChild(style);
 };
 
 /**
@@ -912,6 +971,37 @@ function escapeHTML_(text) {
  */
 function escapeRegex_(text) {
   return text.replace(REGEX_ESCAPER, '\\$1');
+};
+
+/**
+ * Gather all iframes in the main window.
+ * @return {Array<Document>} frames.
+ */
+function getFrameDocuments_() {
+  let windowsToSearch = [window];
+  let documents = [];
+  while (windowsToSearch.length != 0) {
+    let win = windowsToSearch.pop();
+    for (let i = win.frames.length - 1; i >= 0; i--) {
+      // The following try/catch catches a webkit error when searching a page
+      // with iframes. See crbug.com/702566 for details.
+      // To verify that this is still necessary:
+      // 1. Remove this try/catch.
+      // 2. Go to a page with iframes.
+      // 3. Search for anything.
+      // 4. Check if the webkit debugger spits out SecurityError (DOM Exception)
+      // and the search fails. If it doesn't, feel free to remove this.
+      try {
+        if (win.frames[i].document) {
+          documents.push(win.frames[i].document);
+          windowsToSearch.push(win.frames[i]);
+        }
+      } catch (e) {
+        // Do nothing.
+      }
+    }
+  }
+  return documents;
 };
 
 window.addEventListener('pagehide', __gCrWeb.findInPage.disable);
