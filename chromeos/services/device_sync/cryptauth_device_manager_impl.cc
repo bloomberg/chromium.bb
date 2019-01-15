@@ -783,12 +783,6 @@ void CryptAuthDeviceManagerImpl::OnSyncRequested(
   int reason_stored_in_prefs =
       pref_service_->GetInteger(prefs::kCryptAuthDeviceSyncReason);
 
-  // If the sync attempt is not forced, it is acceptable for CryptAuth to return
-  // a cached copy of the user's devices, rather taking a database hit for the
-  // freshest data.
-  bool is_sync_speculative =
-      reason_stored_in_prefs != cryptauth::INVOCATION_REASON_UNKNOWN;
-
   if (cryptauth::InvocationReason_IsValid(reason_stored_in_prefs) &&
       reason_stored_in_prefs != cryptauth::INVOCATION_REASON_UNKNOWN) {
     invocation_reason =
@@ -801,9 +795,18 @@ void CryptAuthDeviceManagerImpl::OnSyncRequested(
     invocation_reason = cryptauth::INVOCATION_REASON_PERIODIC;
   }
 
+  // Syncs due to toggled features, server-initiated requests, and manual
+  // "forced" udpates require that fresh data is requested. For all other sync
+  // requests, stale reads are allowed. Note that stale reads are allowed in
+  // other cases because they are less taxing on the server.
+  bool allow_stale_read =
+      invocation_reason != cryptauth::INVOCATION_REASON_FEATURE_TOGGLED &&
+      invocation_reason != cryptauth::INVOCATION_REASON_SERVER_INITIATED &&
+      invocation_reason != cryptauth::INVOCATION_REASON_MANUAL;
+
   cryptauth::GetMyDevicesRequest request;
   request.set_invocation_reason(invocation_reason);
-  request.set_allow_stale_read(is_sync_speculative);
+  request.set_allow_stale_read(allow_stale_read);
   net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
       net::DefinePartialNetworkTrafficAnnotation("cryptauth_get_my_devices",
                                                  "oauth2_api_call_flow", R"(

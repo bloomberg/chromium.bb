@@ -556,8 +556,11 @@ class DeviceSyncCryptAuthDeviceManagerImplTest
 
     // The allow_stale_read flag is set if the sync was not forced.
     bool allow_stale_read =
-        pref_service_.GetInteger(prefs::kCryptAuthDeviceSyncReason) !=
-        cryptauth::INVOCATION_REASON_UNKNOWN;
+        expected_invocation_reason !=
+            cryptauth::INVOCATION_REASON_FEATURE_TOGGLED &&
+        expected_invocation_reason !=
+            cryptauth::INVOCATION_REASON_SERVER_INITIATED &&
+        expected_invocation_reason != cryptauth::INVOCATION_REASON_MANUAL;
     EXPECT_EQ(allow_stale_read, get_my_devices_request_.allow_stale_read());
   }
 
