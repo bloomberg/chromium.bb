@@ -57,9 +57,6 @@ class WebServiceWorkerNetworkProvider {
   // request made.
   virtual void WillSendRequest(WebURLRequest&) {}
 
-  // Returns an identifier of this provider.
-  virtual int ProviderID() const { return -1; }
-
   // For service worker clients.
   virtual blink::mojom::ControllerServiceWorkerMode
   IsControlledByServiceWorker() {

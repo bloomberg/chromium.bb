@@ -141,8 +141,6 @@ class WebServiceWorkerNetworkProviderImpl
     return script_loader_factory_.get();
   }
 
-  int ProviderID() const override { return provider_id_; }
-
  private:
   static bool IsScriptRequest(const WebURLRequest& request) {
     auto request_context = request.GetRequestContext();

@@ -87,8 +87,6 @@ class WebServiceWorkerNetworkProviderImplForFrame
       request.SetFetchWindowId(provider_->context()->fetch_request_window_id());
   }
 
-  int ProviderID() const override { return provider_->provider_id(); }
-
   blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
       override {
     return provider_->IsControlledByServiceWorker();

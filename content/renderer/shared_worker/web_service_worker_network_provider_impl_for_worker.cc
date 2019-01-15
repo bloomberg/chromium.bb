@@ -56,10 +56,6 @@ void WebServiceWorkerNetworkProviderImplForWorker::WillSendRequest(
   }
 }
 
-int WebServiceWorkerNetworkProviderImplForWorker::ProviderID() const {
-  return provider_->provider_id();
-}
-
 blink::mojom::ControllerServiceWorkerMode
 WebServiceWorkerNetworkProviderImplForWorker::IsControlledByServiceWorker() {
   return provider_->IsControlledByServiceWorker();

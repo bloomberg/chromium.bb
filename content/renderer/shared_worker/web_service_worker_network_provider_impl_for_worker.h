@@ -28,8 +28,6 @@ class WebServiceWorkerNetworkProviderImplForWorker final
   // we tag them with the provider id.
   void WillSendRequest(blink::WebURLRequest& request) override;
 
-  int ProviderID() const override;
-
   blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
       override;
 
