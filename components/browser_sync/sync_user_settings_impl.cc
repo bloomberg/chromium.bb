@@ -14,14 +14,15 @@ SyncUserSettingsImpl::SyncUserSettingsImpl(ProfileSyncService* service,
                                            syncer::SyncPrefs* prefs)
     : service_(service),
       prefs_(prefs),
-      registered_types_(service_->GetRegisteredDataTypes()) {}
+      registered_types_(service_->GetRegisteredDataTypes()) {
+  DCHECK(service_);
+  DCHECK(prefs_);
+}
 
 SyncUserSettingsImpl::~SyncUserSettingsImpl() = default;
 
 bool SyncUserSettingsImpl::IsSyncRequested() const {
-  // TODO(crbug.com/884159): Query prefs directly.
-  return !service_->HasDisableReason(
-      syncer::SyncService::DISABLE_REASON_USER_CHOICE);
+  return prefs_->IsSyncRequested();
 }
 
 void SyncUserSettingsImpl::SetSyncRequested(bool requested) {

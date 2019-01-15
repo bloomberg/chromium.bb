@@ -757,7 +757,7 @@ int ProfileSyncService::GetDisableReasons() const {
   }
   // When local sync is on sync should be considered requsted or otherwise it
   // will not resume after the policy or the flag has been removed.
-  if (!sync_prefs_.IsSyncRequested() && !IsLocalSyncEnabled()) {
+  if (!user_settings_->IsSyncRequested() && !IsLocalSyncEnabled()) {
     result = result | DISABLE_REASON_USER_CHOICE;
   }
   if (unrecoverable_error_reason_ != ERROR_REASON_UNSET) {
