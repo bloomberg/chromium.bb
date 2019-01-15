@@ -1338,8 +1338,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void SetLastCommittedOrigin(const url::Origin& origin);
 
   // Called when a navigation commits succesfully to |url|. This will update
-  // |last_committed_site_url_| if it's not equal to the site url corresponding
-  // to |url|.
+  // |last_committed_site_url_| with the site URL corresponding to |url|.
+  // Note that this will recompute the site URL from |url| rather than using
+  // GetSiteInstance()->GetSiteURL(), so that |last_committed_site_url_| is
+  // always meaningful: e.g., without site isolation, b.com could commit in a
+  // SiteInstance for a.com, but this function will still compute the last
+  // committed site URL as b.com.  For example, this can be used to track which
+  // sites have committed in which process.
   void SetLastCommittedSiteUrl(const GURL& url);
 
   // Clears any existing policy and constructs a new policy for this frame,
