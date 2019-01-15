@@ -22,11 +22,18 @@
 
 namespace vr {
 
+VRBrowserRendererThreadWin* VRBrowserRendererThreadWin::instance_for_testing_ =
+    nullptr;
+
 VRBrowserRendererThreadWin::VRBrowserRendererThreadWin()
-    : MaybeThread("VRBrowserRenderThread") {}
+    : MaybeThread("VRBrowserRenderThread") {
+  DCHECK(instance_for_testing_ == nullptr);
+  instance_for_testing_ = this;
+}
 
 VRBrowserRendererThreadWin::~VRBrowserRendererThreadWin() {
   Stop();
+  instance_for_testing_ = nullptr;
 }
 
 void VRBrowserRendererThreadWin::SetVRDisplayInfo(
@@ -74,10 +81,19 @@ void VRBrowserRendererThreadWin::SetLocationInfoOnRenderThread(GURL gurl) {
 void VRBrowserRendererThreadWin::
     SetVisibleExternalPromptNotificationOnRenderThread(
         ExternalPromptNotificationType prompt) {
+  // TODO(https://crbug.com/921739): Remove this early return after switching
+  // to weak pointers instead of unretained raw pointers.
+  if (!browser_renderer_)
+    return;
   bool currently_showing_ui = ShouldPauseWebXrAndDrawUI();
   current_external_prompt_notification_type_ = prompt;
   ui_->SetVisibleExternalPromptNotification(prompt);
   bool show_ui = ShouldPauseWebXrAndDrawUI();
+
+  // This can happen if the browser is closed while displaying a notification.
+  if (!overlay_.is_bound()) {
+    return;
+  }
 
   if (!show_ui && currently_showing_ui) {
     // Draw WebXR instead of UI.
@@ -88,6 +104,15 @@ void VRBrowserRendererThreadWin::
     overlay_->RequestNextOverlayPose(base::BindOnce(
         &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
   }
+}
+
+VRBrowserRendererThreadWin*
+VRBrowserRendererThreadWin::GetInstanceForTesting() {
+  return instance_for_testing_;
+}
+
+BrowserRenderer* VRBrowserRendererThreadWin::GetBrowserRendererForTesting() {
+  return browser_renderer_.get();
 }
 
 void VRBrowserRendererThreadWin::StartOverlay(
@@ -213,6 +238,8 @@ void VRBrowserRendererThreadWin::StartOverlayOnRenderThread(
 }
 
 void VRBrowserRendererThreadWin::StopOverlayOnRenderThread() {
+  if (!overlay_.is_bound())
+    return;
   overlay_->SetOverlayAndWebXRVisibility(false, true);
   CleanUp();
 }

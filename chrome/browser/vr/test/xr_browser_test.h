@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
 namespace vr {
@@ -45,6 +46,8 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   static constexpr char kVrConfigPathVal[] = "./";
   static constexpr char kVrLogPathEnvVar[] = "VR_LOG_PATH";
   static constexpr char kVrLogPathVal[] = "./";
+  static constexpr char kTestFileDir[] =
+      "chrome/test/data/xr/e2e_test_files/html/";
   enum class TestStatus {
     STATUS_RUNNING = 0,
     STATUS_PASSED = 1,
@@ -59,7 +62,15 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   // Returns a GURL to the XR test HTML file of the given name, e.g.
   // GetHtmlTestFile("foo") returns a GURL for the foo.html file in the XR
   // test HTML directory.
-  GURL GetHtmlTestFile(const std::string& test_name);
+  GURL GetFileUrlForHtmlTestFile(const std::string& test_name);
+
+  // Returns a GURL to the XR test HTML file of the given name served through
+  // the local server.
+  GURL GetEmbeddedServerUrlForHtmlTestFile(const std::string& test_name);
+
+  // Returns a pointer to the embedded test server capable of serving test
+  // HTML files, initializing and starting the server if necessary.
+  net::EmbeddedTestServer* GetEmbeddedServer();
 
   // Convenience function for accessing the WebContents belonging to the first
   // tab open in the browser.
@@ -180,6 +191,7 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   std::vector<std::string> append_switches_;
 
  private:
+  std::unique_ptr<net::EmbeddedTestServer> server_;
   base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(XrBrowserTestBase);
 };
