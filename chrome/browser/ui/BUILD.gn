@@ -1168,6 +1168,8 @@ jumbo_split_static_library("ui") {
       "webui/set_as_default_browser_ui_win.h",
       "webui/settings/about_handler.cc",
       "webui/settings/about_handler.h",
+      "webui/settings/accessibility_main_handler.cc",
+      "webui/settings/accessibility_main_handler.h",
       "webui/settings/appearance_handler.cc",
       "webui/settings/appearance_handler.h",
       "webui/settings/browser_lifetime_handler.cc",
