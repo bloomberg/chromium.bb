@@ -146,12 +146,24 @@ TEST_F(ProcessTest, CreationTimeCurrentProcess) {
 TEST_F(ProcessTest, CreationTimeOtherProcess) {
   // The creation time of a process should be between a time recorded before it
   // was spawned and a time recorded after it was spawned. However, since the
-  // base::Time and process creation clocks don't match, tolerate a 1 second
-  // range. (On Linux, process creation time is relative to boot time which as a
-  // 1-second resolution. On Windows, process creation time is based on the
-  // system clock while Time::Now() can be a combination of system clock and
-  // QueryPerformanceCounter().)
-  constexpr base::TimeDelta kTolerance = base::TimeDelta::FromSeconds(1);
+  // base::Time and process creation clocks don't match, tolerate some error.
+  constexpr base::TimeDelta kTolerance =
+#if defined(OS_LINUX)
+      // On Linux, process creation time is relative to boot time which has a
+      // 1-second resolution. Tolerate 1 second for the imprecise boot time and
+      // 100 ms for the imprecise clock.
+      TimeDelta::FromMilliseconds(1100);
+#elif defined(OS_WIN)
+      // On Windows, process creation time is based on the system clock while
+      // Time::Now() is a combination of system clock and
+      // QueryPerformanceCounter(). Tolerate 100 ms for the clock mismatch.
+      TimeDelta::FromMilliseconds(100);
+#elif defined(OS_MACOSX)
+      // On Mac, process creation time should be very precise.
+      TimeDelta::FromMilliseconds(0);
+#else
+#error Unsupported platform
+#endif
   const Time before_creation = Time::Now();
   Process process(SpawnChild("SleepyChildProcess"));
   const Time after_creation = Time::Now();
