@@ -12,13 +12,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/possibly_associated_wrapper_shared_url_loader_factory.h"
 #include "content/public/common/appcache_info.h"
-#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/renderer_preferences.h"
-#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/appcache/appcache_frontend_impl.h"
 #include "content/renderer/appcache/web_application_cache_host_impl.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
@@ -275,44 +273,21 @@ scoped_refptr<blink::WebWorkerFetchContext>
 EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
     blink::WebServiceWorkerNetworkProvider* web_network_provider) {
   DCHECK(web_network_provider);
-  ServiceWorkerProviderContext* context =
-      static_cast<WebServiceWorkerNetworkProviderImplForWorker*>(
+  ServiceWorkerProviderContext* provider_context =
+      ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
           web_network_provider)
-          ->provider()
           ->context();
-
-  blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
-      worker_client_registry_ptr_info;
-  context->CloneWorkerClientRegistry(
-      mojo::MakeRequest(&worker_client_registry_ptr_info));
-
-  blink::mojom::ServiceWorkerWorkerClientPtr worker_client_ptr;
-  blink::mojom::ServiceWorkerWorkerClientRequest worker_client_request =
-      mojo::MakeRequest(&worker_client_ptr);
-  context->RegisterWorkerClient(std::move(worker_client_ptr));
-
-  blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-    container_host_ptr_info = context->CloneContainerHostPtrInfo();
 
   // Make the factory used for service worker network fallback (that should
   // skip AppCache if it is provided).
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory =
       subresource_loader_factories_->CloneWithoutAppCacheFactory();
 
-  auto worker_fetch_context = base::MakeRefCounted<WebWorkerFetchContextImpl>(
-      std::move(renderer_preferences_), std::move(preference_watcher_request_),
-      std::move(worker_client_request),
-      std::move(worker_client_registry_ptr_info),
-      std::move(container_host_ptr_info),
-      subresource_loader_factories_->Clone(), std::move(fallback_factory),
-      GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
-          URLLoaderThrottleProviderType::kWorker),
-      GetContentClient()
-          ->renderer()
-          ->CreateWebSocketHandshakeThrottleProvider(),
-      ChildThreadImpl::current()->thread_safe_sender(),
-      ChildThreadImpl::current()->GetConnector()->Clone());
+  scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
+      WebWorkerFetchContextImpl::Create(
+          provider_context, std::move(renderer_preferences_),
+          std::move(preference_watcher_request_),
+          subresource_loader_factories_->Clone(), std::move(fallback_factory));
 
   // TODO(horo): To get the correct first_party_to_cookies for the shared
   // worker, we need to check the all documents bounded by the shared worker.
@@ -326,12 +301,13 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   // https://w3c.github.io/webappsec-secure-contexts/#examples-shared-workers
   worker_fetch_context->set_is_secure_context(IsOriginSecure(url_));
   worker_fetch_context->set_origin_url(url_.GetOrigin());
-  worker_fetch_context->set_service_worker_provider_id(context->provider_id());
+  worker_fetch_context->set_service_worker_provider_id(
+      provider_context->provider_id());
   worker_fetch_context->set_is_controlled_by_service_worker(
-      context->IsControlledByServiceWorker());
-  worker_fetch_context->set_client_id(context->client_id());
+      provider_context->IsControlledByServiceWorker());
+  worker_fetch_context->set_client_id(provider_context->client_id());
 
-  return std::move(worker_fetch_context);
+  return worker_fetch_context;
 }
 
 void EmbeddedSharedWorkerStub::ConnectToChannel(
