@@ -120,37 +120,6 @@ static bool MediaAttributeMatches(const MediaValuesCached& media_values,
   return media_query_evaluator.Eval(*media_queries);
 }
 
-static bool IsDimensionSmallAndAbsoluteForLazyLoad(
-    const String& attribute_value) {
-  // Minimum height or width of the image to start lazyloading.
-  const unsigned kMinDimensionToLazyLoad = 10;
-  HTMLDimension dimension;
-  return ParseDimensionValue(attribute_value, dimension) &&
-         dimension.IsAbsolute() && dimension.Value() <= kMinDimensionToLazyLoad;
-}
-
-static bool IsInlineStyleDimensionsSmall(const String& style_value,
-                                         bool strict_mode) {
-  // Minimum height or width of the image to start lazyloading.
-  const unsigned kMinDimensionToLazyLoad = 10;
-  CSSParserMode mode = strict_mode ? kHTMLStandardMode : kHTMLQuirksMode;
-  const ImmutableCSSPropertyValueSet* property_set =
-      CSSParser::ParseInlineStyleDeclaration(
-          style_value, mode, SecureContextMode::kInsecureContext);
-  const CSSValue* height = property_set->GetPropertyCSSValue(CSSPropertyHeight);
-  const CSSValue* width = property_set->GetPropertyCSSValue(CSSPropertyWidth);
-
-  if (!height || !height->IsPrimitiveValue() || !width ||
-      !width->IsPrimitiveValue())
-    return false;
-  const CSSPrimitiveValue* width_prim = ToCSSPrimitiveValue(width);
-  const CSSPrimitiveValue* height_prim = ToCSSPrimitiveValue(height);
-  return height_prim->IsPx() &&
-         (height_prim->GetDoubleValue() <= kMinDimensionToLazyLoad) &&
-         width_prim->IsPx() &&
-         (width_prim->GetDoubleValue() <= kMinDimensionToLazyLoad);
-}
-
 class TokenPreloadScanner::StartTagScanner {
   STACK_ALLOCATED();
 
@@ -398,17 +367,24 @@ class TokenPreloadScanner::StartTagScanner {
                Match(attribute_name, kWidthAttr) &&
                RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
       width_attr_small_absolute_ =
-          IsDimensionSmallAndAbsoluteForLazyLoad(attribute_value);
+          HTMLImageElement::IsDimensionSmallAndAbsoluteForLazyLoad(
+              attribute_value);
     } else if (!height_attr_small_absolute_ &&
                Match(attribute_name, kHeightAttr) &&
                RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
       height_attr_small_absolute_ =
-          IsDimensionSmallAndAbsoluteForLazyLoad(attribute_value);
+          HTMLImageElement::IsDimensionSmallAndAbsoluteForLazyLoad(
+              attribute_value);
     } else if (!inline_style_dimensions_small_ &&
                Match(attribute_name, kStyleAttr) &&
                RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
-      inline_style_dimensions_small_ = IsInlineStyleDimensionsSmall(
-          attribute_value, media_values_->StrictMode());
+      CSSParserMode mode =
+          media_values_->StrictMode() ? kHTMLStandardMode : kHTMLQuirksMode;
+      const ImmutableCSSPropertyValueSet* property_set =
+          CSSParser::ParseInlineStyleDeclaration(
+              attribute_value, mode, SecureContextMode::kInsecureContext);
+      inline_style_dimensions_small_ =
+          HTMLImageElement::IsInlineStyleDimensionsSmall(property_set);
     }
   }
 
