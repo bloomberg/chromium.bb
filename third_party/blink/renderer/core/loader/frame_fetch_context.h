@@ -37,8 +37,10 @@ n * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/loader/base_fetch_context.h"
+#include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -53,7 +55,6 @@ class CoreProbeSink;
 class Document;
 class DocumentLoader;
 class FrameOrImportedDocument;
-class FrameResourceFetcherProperties;
 class LocalFrame;
 class LocalFrameClient;
 class ResourceError;
@@ -64,15 +65,19 @@ struct WebEnabledClientHints;
 
 class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
  public:
-  static ResourceFetcher* CreateFetcher(const FrameResourceFetcherProperties&);
+  static ResourceFetcher* CreateFetcher(DocumentLoader* loader);
   // Used for creating a FrameFetchContext for an imported Document.
   // |document_loader_| will be set to nullptr.
   static ResourceFetcher* CreateFetcherForImportedDocument(Document* document);
 
+  void ProvideDocumentToContext(Document*);
+
   FrameFetchContext(
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
-      const FrameOrImportedDocument&);
+      FrameOrImportedDocument&);
   ~FrameFetchContext() override = default;
+
+  bool IsFrameFetchContext() const override { return true; }
 
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
@@ -245,7 +250,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   CoreProbeSink* Probe() const;
 
-  Member<const FrameOrImportedDocument> frame_or_imported_document_;
+  Member<FrameOrImportedDocument> frame_or_imported_document_;
 
   // The value of |save_data_enabled_| is read once per frame from
   // NetworkStateNotifier, which is guarded by a mutex lock, and cached locally
@@ -254,6 +259,13 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   // Non-null only when detached.
   Member<const FrozenState> frozen_state_;
+};
+
+template <>
+struct DowncastTraits<FrameFetchContext> {
+  static bool AllowFrom(const FetchContext& context) {
+    return context.IsFrameFetchContext();
+  }
 };
 
 }  // namespace blink

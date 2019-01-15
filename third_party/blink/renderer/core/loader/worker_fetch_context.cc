@@ -38,8 +38,10 @@ WorkerFetchContext::~WorkerFetchContext() = default;
 WorkerFetchContext::WorkerFetchContext(
     WorkerOrWorkletGlobalScope& global_scope,
     scoped_refptr<WebWorkerFetchContext> web_context,
-    SubresourceFilter* subresource_filter)
-    : BaseFetchContext(global_scope.GetTaskRunner(TaskType::kInternalLoading)),
+    SubresourceFilter* subresource_filter,
+    FetchClientSettingsObject& fetch_client_settings_object)
+    : BaseFetchContext(global_scope.GetTaskRunner(TaskType::kInternalLoading),
+                       fetch_client_settings_object),
       global_scope_(global_scope),
       web_context_(std::move(web_context)),
       subresource_filter_(subresource_filter),

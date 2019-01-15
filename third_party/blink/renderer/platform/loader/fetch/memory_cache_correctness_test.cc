@@ -116,9 +116,9 @@ class MemoryCacheCorrectnessTest : public testing::Test {
         MemoryCache::Create(platform_->test_task_runner()));
 
     security_origin_ = SecurityOrigin::CreateUniqueOpaque();
-    MockFetchContext* context = MakeGarbageCollected<MockFetchContext>(nullptr);
-    auto* properties =
-        MakeGarbageCollected<TestResourceFetcherProperties>(security_origin_);
+    MockFetchContext* context =
+        MakeGarbageCollected<MockFetchContext>(nullptr, security_origin_);
+    auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
     properties->SetShouldBlockLoadingMainResource(true);
     properties->SetShouldBlockLoadingSubResource(true);
     fetcher_ = MakeGarbageCollected<ResourceFetcher>(*properties, context);

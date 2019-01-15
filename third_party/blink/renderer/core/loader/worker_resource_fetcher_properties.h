@@ -19,17 +19,12 @@ class WorkerResourceFetcherProperties final : public ResourceFetcherProperties {
  public:
   WorkerResourceFetcherProperties(
       WorkerOrWorkletGlobalScope&,
-      const FetchClientSettingsObject& fetch_client_settings_object,
       scoped_refptr<WebWorkerFetchContext> web_context);
   ~WorkerResourceFetcherProperties() override = default;
 
   void Trace(Visitor* visitor) override;
 
   // ResourceFetcherProperties implementation
-  const FetchClientSettingsObject& GetFetchClientSettingsObject()
-      const override {
-    return *fetch_client_settings_object_;
-  }
   bool IsMainFrame() const override { return false; }
   ControllerServiceWorkerMode GetControllerServiceWorkerMode() const override;
   int64_t ServiceWorkerId() const override {
@@ -48,7 +43,6 @@ class WorkerResourceFetcherProperties final : public ResourceFetcherProperties {
 
  private:
   const Member<WorkerOrWorkletGlobalScope> global_scope_;
-  const Member<const FetchClientSettingsObject> fetch_client_settings_object_;
   const scoped_refptr<WebWorkerFetchContext> web_context_;
 };
 

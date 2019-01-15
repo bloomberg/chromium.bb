@@ -105,8 +105,10 @@ class ResourceFetcherTest : public testing::Test {
   }
 
  protected:
-  MockFetchContext* CreateFetchContext() {
-    return MakeGarbageCollected<MockFetchContext>(nullptr);
+  MockFetchContext* CreateFetchContext(
+      const scoped_refptr<const SecurityOrigin> security_origin = nullptr) {
+    return MakeGarbageCollected<MockFetchContext>(nullptr,
+                                                  std::move(security_origin));
   }
   void AddResourceToMemoryCache(Resource* resource) {
     GetMemoryCache()->Add(resource);
@@ -168,9 +170,8 @@ TEST_F(ResourceFetcherTest, WillSendRequestAdBit) {
   // Add a resource to the memory cache.
   scoped_refptr<const SecurityOrigin> source_origin =
       SecurityOrigin::CreateUniqueOpaque();
-  auto* properties =
-      MakeGarbageCollected<TestResourceFetcherProperties>(source_origin);
-  MockFetchContext* context = CreateFetchContext();
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  MockFetchContext* context = CreateFetchContext(source_origin);
   KURL url("http://127.0.0.1:8000/foo.html");
   Resource* resource =
       RawResource::CreateForTest(url, source_origin, ResourceType::kRaw);
@@ -201,9 +202,8 @@ TEST_F(ResourceFetcherTest, WillSendRequestAdBit) {
 TEST_F(ResourceFetcherTest, Vary) {
   scoped_refptr<const SecurityOrigin> source_origin =
       SecurityOrigin::CreateUniqueOpaque();
-  auto* properties =
-      MakeGarbageCollected<TestResourceFetcherProperties>(source_origin);
-  MockFetchContext* context = CreateFetchContext();
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  MockFetchContext* context = CreateFetchContext(source_origin);
 
   KURL url("http://127.0.0.1:8000/foo.html");
   Resource* resource =
@@ -244,9 +244,8 @@ TEST_F(ResourceFetcherTest, ResourceTimingInfo) {
 TEST_F(ResourceFetcherTest, VaryOnBack) {
   scoped_refptr<const SecurityOrigin> source_origin =
       SecurityOrigin::CreateUniqueOpaque();
-  auto* properties =
-      MakeGarbageCollected<TestResourceFetcherProperties>(source_origin);
-  MockFetchContext* context = CreateFetchContext();
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  MockFetchContext* context = CreateFetchContext(source_origin);
 
   auto* fetcher = MakeGarbageCollected<ResourceFetcher>(*properties, context);
 
@@ -310,9 +309,9 @@ class RequestSameResourceOnComplete
 
   void NotifyFinished(Resource* resource) override {
     EXPECT_EQ(GetResource(), resource);
-    auto* properties =
-        MakeGarbageCollected<TestResourceFetcherProperties>(source_origin_);
-    MockFetchContext* context = MakeGarbageCollected<MockFetchContext>(nullptr);
+    auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+    MockFetchContext* context =
+        MakeGarbageCollected<MockFetchContext>(nullptr, source_origin_);
     auto* fetcher2 =
         MakeGarbageCollected<ResourceFetcher>(*properties, context);
     ResourceRequest resource_request2(GetResource()->Url());
@@ -339,7 +338,7 @@ class RequestSameResourceOnComplete
 TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading) {
   scoped_refptr<const SecurityOrigin> source_origin =
       SecurityOrigin::CreateUniqueOpaque();
-  MockFetchContext* context = CreateFetchContext();
+  MockFetchContext* context = CreateFetchContext(source_origin);
 
   KURL url("http://127.0.0.1:8000/foo.png");
 
@@ -349,8 +348,7 @@ TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading) {
   response.SetHTTPHeaderField(http_names::kETag, "1234567890");
   RegisterMockedURLLoadWithCustomResponse(url, response);
 
-  auto* properties =
-      MakeGarbageCollected<TestResourceFetcherProperties>(source_origin);
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
   ResourceFetcher* fetcher1 =
       MakeGarbageCollected<ResourceFetcher>(*properties, context);
   ResourceRequest request1(url);
@@ -797,9 +795,8 @@ TEST_F(ResourceFetcherTest, SpeculativePreloadShouldBePromotedToLinkePreload) {
 TEST_F(ResourceFetcherTest, Revalidate304) {
   scoped_refptr<const SecurityOrigin> source_origin =
       SecurityOrigin::CreateUniqueOpaque();
-  auto* properties =
-      MakeGarbageCollected<TestResourceFetcherProperties>(source_origin);
-  MockFetchContext* context = CreateFetchContext();
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  MockFetchContext* context = CreateFetchContext(source_origin);
 
   KURL url("http://127.0.0.1:8000/foo.html");
   Resource* resource =
@@ -915,9 +912,8 @@ TEST_F(ResourceFetcherTest, ContentIdURL) {
 TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
   scoped_refptr<const SecurityOrigin> source_origin =
       SecurityOrigin::CreateUniqueOpaque();
-  auto* properties =
-      MakeGarbageCollected<TestResourceFetcherProperties>(source_origin);
-  MockFetchContext* context = CreateFetchContext();
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  MockFetchContext* context = CreateFetchContext(source_origin);
   auto* fetcher = MakeGarbageCollected<ResourceFetcher>(*properties, context);
 
   KURL url("http://127.0.0.1:8000/foo.html");

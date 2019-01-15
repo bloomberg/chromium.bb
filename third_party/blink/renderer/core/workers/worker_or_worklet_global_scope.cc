@@ -139,9 +139,10 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
   FetchContext* context = nullptr;
   if (web_worker_fetch_context_) {
     properties = MakeGarbageCollected<WorkerResourceFetcherProperties>(
-        *this, *fetch_client_settings_object, web_worker_fetch_context_);
+        *this, web_worker_fetch_context_);
     context = MakeGarbageCollected<WorkerFetchContext>(
-        *this, web_worker_fetch_context_, subresource_filter_);
+        *this, web_worker_fetch_context_, subresource_filter_,
+        *fetch_client_settings_object);
   } else {
     // This code path is for unittests.
     properties = MakeGarbageCollected<NullResourceFetcherProperties>();

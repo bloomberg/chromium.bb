@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
@@ -397,9 +396,6 @@ class ResourceFetcher::DetachableProperties final
       return;
     }
 
-    fetch_client_settings_object_ =
-        MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-            properties_->GetFetchClientSettingsObject());
     is_main_frame_ = properties_->IsMainFrame();
     paused_ = properties_->IsPaused();
     load_complete_ = properties_->IsLoadComplete();
@@ -409,16 +405,10 @@ class ResourceFetcher::DetachableProperties final
 
   void Trace(Visitor* visitor) override {
     visitor->Trace(properties_);
-    visitor->Trace(fetch_client_settings_object_);
     ResourceFetcherProperties::Trace(visitor);
   }
 
   // ResourceFetcherProperties implementation
-  const FetchClientSettingsObject& GetFetchClientSettingsObject()
-      const override {
-    return properties_ ? properties_->GetFetchClientSettingsObject()
-                       : *fetch_client_settings_object_;
-  }
   bool IsMainFrame() const override {
     return properties_ ? properties_->IsMainFrame() : is_main_frame_;
   }
@@ -452,7 +442,6 @@ class ResourceFetcher::DetachableProperties final
   Member<const ResourceFetcherProperties> properties_;
 
   // The following members are used when detached.
-  Member<const FetchClientSettingsObject> fetch_client_settings_object_;
   bool is_main_frame_ = false;
   bool paused_ = false;
   bool load_complete_ = false;
