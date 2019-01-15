@@ -50,6 +50,7 @@
 
     <template is="dom-repeat" items="[[emailList_]]">
       <button active$="[[getSelected_(item, selectedEmailProvider_)]]"
+          aria-pressed$="[[getAriaPressed_(item, selectedEmailProvider_)]]"
           on-click="onEmailClick_" on-pointerdown="onEmailPointerDown_"
           on-keyup="onEmailKeyUp_" class="option">
         <div class="option-icon-shadow">

@@ -237,4 +237,14 @@ Polymer({
     if (!this.hasAppsSelected_)
       this.bookmarkBarManager_.setShown(this.wasBookmarkBarShownOnInit_);
   },
+
+  /**
+   * Converts a boolean to a string because aria-pressed needs a string value.
+   * @param {boolean} value
+   * @return {string}
+   * @private
+   */
+  getAriaPressed_: function(value) {
+    return value ? 'true' : 'false';
+  }
 });

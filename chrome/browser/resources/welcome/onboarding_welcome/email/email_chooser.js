@@ -253,4 +253,14 @@ Polymer({
     if (this.$$('.action-button').disabled)
       this.metricsManager_.recordClickedDisabledButton();
   },
+
+  /**
+   * Converts a boolean to a string because aria-pressed needs a string value.
+   * @param {!nuxEmail.EmailProviderModel} item
+   * @return {string}
+   * @private
+   */
+  getAriaPressed_: function(item) {
+    return this.getSelected_(item) ? 'true' : 'false';
+  }
 });
