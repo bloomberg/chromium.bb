@@ -24,13 +24,7 @@ const char DecryptingVideoDecoder::kDecoderName[] = "DecryptingVideoDecoder";
 DecryptingVideoDecoder::DecryptingVideoDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     MediaLog* media_log)
-    : task_runner_(task_runner),
-      media_log_(media_log),
-      state_(kUninitialized),
-      decryptor_(NULL),
-      key_added_while_decode_pending_(false),
-      support_clear_content_(false),
-      weak_factory_(this) {}
+    : task_runner_(task_runner), media_log_(media_log), weak_factory_(this) {}
 
 std::string DecryptingVideoDecoder::GetDisplayName() const {
   return kDecoderName;
