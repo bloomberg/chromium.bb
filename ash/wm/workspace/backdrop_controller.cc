@@ -161,7 +161,7 @@ void BackdropController::OnOverviewModeStarting() {
   Hide();
 }
 
-void BackdropController::OnOverviewModeEnding() {
+void BackdropController::OnOverviewModeEnding(WindowSelector* window_selector) {
   pause_update_ = true;
 }
 

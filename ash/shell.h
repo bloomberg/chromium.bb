@@ -200,6 +200,7 @@ class WaylandServerController;
 class WindowServiceOwner;
 class WindowCycleController;
 class WindowPositioner;
+class WindowSelector;
 class WindowSelectorController;
 class WindowTreeHostManager;
 
@@ -608,8 +609,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   void NotifyOverviewModeStartingAnimationComplete(bool canceled);
 
   // Notifies observers that overview mode is about to end (before the windows
-  // restore themselves).
-  void NotifyOverviewModeEnding();
+  // restore themselves). |window_selector| must not be null.
+  void NotifyOverviewModeEnding(WindowSelector* window_selector);
 
   // Notifies observers that overview mode has ended.
   void NotifyOverviewModeEnded();

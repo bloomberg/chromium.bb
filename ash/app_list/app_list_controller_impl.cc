@@ -508,7 +508,8 @@ void AppListControllerImpl::OnOverviewModeStarting() {
           WindowSelector::EnterExitOverviewType::kWindowsMinimized);
 }
 
-void AppListControllerImpl::OnOverviewModeEnding() {
+void AppListControllerImpl::OnOverviewModeEnding(
+    WindowSelector* window_selector) {
   if (!IsTabletMode())
     return;
 
@@ -518,10 +519,7 @@ void AppListControllerImpl::OnOverviewModeEnding() {
   // time the animations are finished, so we need to check the animation type
   // here.
   use_slide_to_exit_overview_mode_ =
-      Shell::Get()
-          ->window_selector_controller()
-          ->window_selector()
-          ->enter_exit_overview_type() ==
+      window_selector->enter_exit_overview_type() ==
       WindowSelector::EnterExitOverviewType::kWindowsMinimized;
 }
 

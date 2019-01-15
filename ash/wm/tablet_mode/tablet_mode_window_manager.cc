@@ -88,9 +88,8 @@ void TabletModeWindowManager::OnOverviewModeStarting() {
     SetDeferBoundsUpdates(pair.first, /*defer_bounds_updates=*/true);
 }
 
-void TabletModeWindowManager::OnOverviewModeEnding() {
-  WindowSelector* window_selector =
-      Shell::Get()->window_selector_controller()->window_selector();
+void TabletModeWindowManager::OnOverviewModeEnding(
+    WindowSelector* window_selector) {
   exit_overview_by_window_drag_ =
       window_selector->enter_exit_overview_type() ==
       WindowSelector::EnterExitOverviewType::kWindowDragged;

@@ -163,7 +163,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
 
   // ShellObserver:
   void OnOverviewModeStarting() override;
-  void OnOverviewModeEnding() override;
+  void OnOverviewModeEnding(WindowSelector* window_selector) override;
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
