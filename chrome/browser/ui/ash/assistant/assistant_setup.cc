@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/ash/assistant/assistant_setup.h"
 
+#include <string>
+#include <utility>
+
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
@@ -164,7 +167,9 @@ void AssistantSetup::SyncActivityControlState() {
 
 void AssistantSetup::OnGetSettingsResponse(const std::string& settings) {
   chromeos::assistant::SettingsUi settings_ui;
-  settings_ui.ParseFromString(settings);
+  if (!settings_ui.ParseFromString(settings))
+    return;
+
   if (!settings_ui.has_consent_flow_ui()) {
     LOG(ERROR) << "Failed to get activity control status.";
     return;
