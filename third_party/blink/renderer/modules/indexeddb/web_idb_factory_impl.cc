@@ -22,14 +22,16 @@ void WebIDBFactoryImpl::GetDatabaseInfo(
     WebIDBCallbacks* callbacks,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   callbacks->SetState(nullptr, WebIDBCallbacksImpl::kNoTransaction);
-  factory_->GetDatabaseInfo(GetCallbacksProxy(base::WrapUnique(callbacks)));
+  factory_->GetDatabaseInfo(
+      GetCallbacksProxy(base::WrapUnique(callbacks), std::move(task_runner)));
 }
 
 void WebIDBFactoryImpl::GetDatabaseNames(
     WebIDBCallbacks* callbacks,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   callbacks->SetState(nullptr, WebIDBCallbacksImpl::kNoTransaction);
-  factory_->GetDatabaseNames(GetCallbacksProxy(base::WrapUnique(callbacks)));
+  factory_->GetDatabaseNames(
+      GetCallbacksProxy(base::WrapUnique(callbacks), std::move(task_runner)));
 }
 
 void WebIDBFactoryImpl::Open(
@@ -44,8 +46,9 @@ void WebIDBFactoryImpl::Open(
       std::make_unique<IndexedDBDatabaseCallbacksImpl>(
           base::WrapUnique(database_callbacks));
   DCHECK(!name.IsNull());
-  factory_->Open(GetCallbacksProxy(base::WrapUnique(callbacks)),
-                 GetDatabaseCallbacksProxy(std::move(database_callbacks_impl)),
+  factory_->Open(GetCallbacksProxy(base::WrapUnique(callbacks), task_runner),
+                 GetDatabaseCallbacksProxy(std::move(database_callbacks_impl),
+                                           task_runner),
                  name, version, transaction_id);
 }
 
@@ -56,25 +59,30 @@ void WebIDBFactoryImpl::DeleteDatabase(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   callbacks->SetState(nullptr, WebIDBCallbacksImpl::kNoTransaction);
   DCHECK(!name.IsNull());
-  factory_->DeleteDatabase(GetCallbacksProxy(base::WrapUnique(callbacks)), name,
-                           force_close);
+  factory_->DeleteDatabase(
+      GetCallbacksProxy(base::WrapUnique(callbacks), std::move(task_runner)),
+      name, force_close);
 }
 
 mojom::blink::IDBCallbacksAssociatedPtrInfo
 WebIDBFactoryImpl::GetCallbacksProxy(
-    std::unique_ptr<WebIDBCallbacks> callbacks) {
+    std::unique_ptr<WebIDBCallbacks> callbacks,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   mojom::blink::IDBCallbacksAssociatedPtrInfo ptr_info;
   auto request = mojo::MakeRequest(&ptr_info);
-  mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request));
+  mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request),
+                                    std::move(task_runner));
   return ptr_info;
 }
 
 mojom::blink::IDBDatabaseCallbacksAssociatedPtrInfo
 WebIDBFactoryImpl::GetDatabaseCallbacksProxy(
-    std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks) {
+    std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   mojom::blink::IDBDatabaseCallbacksAssociatedPtrInfo ptr_info;
   auto request = mojo::MakeRequest(&ptr_info);
-  mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request));
+  mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request),
+                                    std::move(task_runner));
   return ptr_info;
 }
 
