@@ -975,9 +975,6 @@ def DefaultSettings():
       # canary runs.
       use_chrome_lkgm=False,
 
-      # True if this build config is critical for the chrome_lkgm decision.
-      critical_for_chrome=False,
-
       # Upload prebuilts for this build. Valid values are PUBLIC, PRIVATE, or
       # False.
       prebuilts=False,

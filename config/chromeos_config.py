@@ -3029,12 +3029,6 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
   ### Release configs.
 
-  # These currently do not support unified build boards.
-  _critical_for_chrome_boards = frozenset([
-      'daisy',
-      'eve',
-  ])
-
   _release_experimental_boards = frozenset([
       'coral',
   ])
@@ -3064,14 +3058,6 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
     return False
 
-  site_config.AddForBoards(
-      config_lib.CONFIG_TYPE_RELEASE,
-      _critical_for_chrome_boards,
-      board_configs,
-      site_config.templates.release,
-      critical_for_chrome=True,
-  )
-
   builder_to_boards_dict = config_lib.GroupBoardsByBuilder(
       ge_build_config[config_lib.CONFIG_TEMPLATE_BOARDS])
 
@@ -3080,8 +3066,8 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
   site_config.AddForBoards(
       config_lib.CONFIG_TYPE_RELEASE,
-      (((boards_dict['all_release_boards'] | _all_release_builder_boards)
-        - _critical_for_chrome_boards) - unified_board_names),
+      ((boards_dict['all_release_boards'] | _all_release_builder_boards)
+       - unified_board_names),
       board_configs,
       site_config.templates.release,
   )
