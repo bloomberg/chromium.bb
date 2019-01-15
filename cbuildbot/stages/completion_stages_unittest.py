@@ -890,6 +890,7 @@ class PublishUprevChangesStageTest(
         completion_stages.PublishUprevChangesStage,
         '_GetSlaveConfigs',
         return_value=slave_configs_a)
+    self.PatchObject(FakeBuildStore, 'GetBuildStatuses', return_value=[])
     self.PatchObject(mock_cidb, 'GetBuildsStages', return_value=slave_stages_a)
 
     # All important slaves are covered

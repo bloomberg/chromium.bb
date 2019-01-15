@@ -715,13 +715,13 @@ class ManifestVersionedSyncStage(SyncStage):
       logging.info('%s until timeout...', remaining)
 
     def _GetPlatformVersion():
-      return db.GetBuildStatus(master_id)['platform_version']
+      status = self.buildstore.GetBuildStatuses(build_ids=[master_id])[0]
+      return status['platform_version']
 
     # Retry until non-None version is returned.
     def _ShouldRetry(x):
       return not x
 
-    _, db = self._run.GetCIDBHandle()
     return timeout_util.WaitForSuccess(
         _ShouldRetry,
         _GetPlatformVersion,
@@ -736,9 +736,10 @@ class ManifestVersionedSyncStage(SyncStage):
       master_id: Our master build id.
     """
     _, db = self._run.GetCIDBHandle()
-    if db and master_id:
+    if self.buildstore.AreClientsReady() and master_id:
       assert not self._run.options.force_version
-      master_build_status = db.GetBuildStatus(master_id)
+      master_build_status = self.buildstore.GetBuildStatuses(
+          build_ids=[master_id])[0]
       latest = db.GetBuildHistory(
           master_build_status['build_config'],
           1,
@@ -1686,11 +1687,10 @@ class PreCQLauncherStage(SyncStage):
             'current status: %s', buildbucket_id, cancel_status)
         metrics.Counter(constants.MON_BB_CANCEL_PRE_CQ_BUILD_COUNT).increment()
 
-        if db:
-          old_build_list = db.GetBuildStatusesWithBuildbucketIds(
-              [buildbucket_id])
-          if old_build_list:
-            old_build = old_build_list[0]
+        if self.buildstore.AreClientsReady():
+          status_list = self.buildstore.GetBuildStatuses(
+              buildbucket_ids=[buildbucket_id])
+          old_build = status_list[0] if status_list else None
           if old_build is not None:
             cancel_action = old_build_action._replace(
                 action=constants.CL_ACTION_TRYBOT_CANCELLED)

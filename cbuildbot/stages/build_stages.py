@@ -184,11 +184,12 @@ class CleanUpStage(generic_stages.BuilderStage):
     if not previous_state.master_build_id:
       return None, None
 
-    _, db = self._run.GetCIDBHandle()
-    if not db:
+    if not self.buildstore.AreClientsReady():
       return None, None
 
-    master_status = db.GetBuildStatus(previous_state.master_build_id)
+    status_list = self.buildstore.GetBuildStatuses(
+        build_ids=[previous_state.master_build_id])
+    master_status = status_list[0] if status_list else None
     if not master_status:
       logging.warning('Previous master build id %s not found.',
                       previous_state.master_build_id)

@@ -59,14 +59,20 @@ class BuildStore(object):
     Returns:
       self.cidb_conn if initialized.
     """
-    self.InitializeClients()
+    if not self.InitializeClients():
+      return
+
     if self.cidb_conn:
       return self.cidb_conn
     else:
       raise BuildStoreException('CIDBConnection not found.')
 
   def InitializeClients(self):
-    """Check if underlying clients are initialized."""
+    """Check if underlying clients are initialized.
+
+    Returns:
+      A boolean indicating the client statuses.
+    """
     pid_mismatch = (self.process_id != os.getpid())
     if self._IsCIDBClientMissing() or pid_mismatch:
       self.process_id = os.getpid()
@@ -76,8 +82,11 @@ class BuildStore(object):
         self.cidb_conn = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder(
         )
 
-    if self._IsCIDBClientMissing():
-      raise BuildStoreException('CIDB Connection could not be initialized.')
+    return not self._IsCIDBClientMissing()
+
+  def AreClientsReady(self):
+    """A front-end function for InitializeClients()."""
+    return self.InitializeClients()
 
   def InsertBuild(self,
                   builder_name,
@@ -108,7 +117,8 @@ class BuildStore(object):
     Returns:
       build_id: incremental primary ID of the build in CIDB.
     """
-    self.InitializeClients()
+    if not self.InitializeClients():
+      return
     if self._write_to_cidb:
       return self.cidb_conn.InsertBuild(
           builder_name, build_number, build_config, bot_hostname,
@@ -129,7 +139,8 @@ class BuildStore(object):
       keys build_id, build_config, builder_name, build_number, message_type,
       message_subtype, message_value, timestamp, board.
     """
-    self.InitializeClients()
+    if not self.InitializeClients():
+      return
     if not self._read_from_bb:
       return self.cidb_conn.GetBuildMessages(build_id, message_type,
                                              message_subtype)
@@ -142,7 +153,7 @@ class BuildStore(object):
     """Insert a build stage entry into database.
 
     Args:
-      build_id: primary key of the build in buildTable
+      build_id: primary key of the build in buildTable.
       name: Full name of build stage.
       board: (Optional) board name, if this is a board-specific stage.
       status: (Optional) stage status, one of constants.BUILDER_ALL_STATUSES.
@@ -151,9 +162,34 @@ class BuildStore(object):
     Returns:
       Integer primary key of inserted stage, i.e. build_stage_id
     """
-    self.InitializeClients()
+    if not self.InitializeClients():
+      return
     if self._write_to_cidb:
       return self.cidb_conn.InsertBuildStage(build_id, name, board, status)
+
+  def GetBuildStatuses(self, buildbucket_ids=None, build_ids=None):
+    """Retrieve the build statuses of list of builds.
+
+    Args:
+      buildbucket_ids: list of buildbucket_id's to query.
+      build_ids: list of CIDB id's to query.
+
+    Returns:
+      A list of Dictionaries with keys (id, build_config, start_time,
+      finish_time, status, platform_version, full_version,
+      milestone_version, important).
+    """
+    if not self.InitializeClients():
+      return
+    if not self._read_from_bb:
+      if buildbucket_ids:
+        return self.cidb_conn.GetBuildStatusesWithBuildbucketIds(
+            buildbucket_ids)
+      elif build_ids:
+        return self.cidb_conn.GetBuildStatuses(build_ids)
+      else:
+        raise BuildStoreException('GetBuildStatuses needs either build_ids'
+                                  'or buildbucket_ids.')
 
 
 class FakeBuildStore(object):
@@ -167,7 +203,10 @@ class FakeBuildStore(object):
       self.fake_cidb = fake_cidb.FakeCIDBConnection()
 
   def InitializeClients(self):
-    return
+    return True
+
+  def AreClientsReady(self):
+    return True
 
   def InsertBuild(self,
                   builder_name,
@@ -198,3 +237,9 @@ class FakeBuildStore(object):
     build_stage_id = self.fake_cidb.InsertBuildStage(build_id, name, board,
                                                      status)
     return build_stage_id
+
+  def GetBuildStatuses(self, buildbucket_ids=None, build_ids=None):
+    if buildbucket_ids:
+      return self.fake_cidb.GetBuildStatusesWithBuildbucketIds(buildbucket_ids)
+    elif build_ids:
+      return self.fake_cidb.GetBuildStatuses(build_ids)
