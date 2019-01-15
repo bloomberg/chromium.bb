@@ -2603,7 +2603,8 @@ TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenVisible) {
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTION_PENDING,
-                          views::InkDropState::DEACTIVATED));
+                          views::InkDropState::DEACTIVATED,
+                          views::InkDropState::HIDDEN));
 
   // Dragging mouse out and back and releasing the button should not change the
   // ink drop state.
@@ -2665,7 +2666,8 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenVisible) {
   EXPECT_EQ(views::InkDropState::HIDDEN,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
-              ElementsAre(views::InkDropState::DEACTIVATED));
+              ElementsAre(views::InkDropState::DEACTIVATED,
+                          views::InkDropState::HIDDEN));
 }
 
 // Tests that when the app list is hidden, tapping down on the app list button

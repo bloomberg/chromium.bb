@@ -181,13 +181,15 @@ bool AppListPresenterImpl::CloseOpenedPage() {
   return view_->CloseOpenedPage();
 }
 
-void AppListPresenterImpl::ToggleAppList(int64_t display_id,
-                                         base::TimeTicks event_time_stamp) {
+ash::ShelfAction AppListPresenterImpl::ToggleAppList(
+    int64_t display_id,
+    base::TimeTicks event_time_stamp) {
   if (IsVisible()) {
     Dismiss(event_time_stamp);
-    return;
+    return ash::SHELF_ACTION_APP_LIST_DISMISSED;
   }
   Show(display_id, event_time_stamp);
+  return ash::SHELF_ACTION_APP_LIST_SHOWN;
 }
 
 bool AppListPresenterImpl::IsVisible() const {

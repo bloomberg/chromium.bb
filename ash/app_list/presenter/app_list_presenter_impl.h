@@ -13,6 +13,7 @@
 #include "ash/app_list/pagination_model_observer.h"
 #include "ash/app_list/presenter/app_list_presenter_delegate.h"
 #include "ash/app_list/presenter/app_list_presenter_export.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -73,7 +74,8 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // Show the app list if it is visible, hide it if it is hidden. If
   // |event_time_stamp| is not 0, it means |ToggleAppList()| was triggered by
   // one of the AppListShowSources: kSearchKey or kShelfButton.
-  void ToggleAppList(int64_t display_id, base::TimeTicks event_time_stamp);
+  ash::ShelfAction ToggleAppList(int64_t display_id,
+                                 base::TimeTicks event_time_stamp);
 
   // Returns current visibility of the app list.
   bool IsVisible() const;

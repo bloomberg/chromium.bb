@@ -101,6 +101,9 @@ enum ShelfAction {
 
   // The app list launcher menu was shown.
   SHELF_ACTION_APP_LIST_SHOWN,
+
+  // The app list launcher menu was dismissed.
+  SHELF_ACTION_APP_LIST_DISMISSED,
 };
 
 // The type of a shelf item.

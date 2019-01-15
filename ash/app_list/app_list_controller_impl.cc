@@ -463,7 +463,7 @@ void AppListControllerImpl::ProcessMouseWheelEvent(
   presenter_.ProcessMouseWheelOffset(event.offset());
 }
 
-void AppListControllerImpl::ToggleAppList(
+ash::ShelfAction AppListControllerImpl::ToggleAppList(
     int64_t display_id,
     app_list::AppListShowSource show_source,
     base::TimeTicks event_time_stamp) {
@@ -471,7 +471,7 @@ void AppListControllerImpl::ToggleAppList(
     UMA_HISTOGRAM_ENUMERATION(app_list::kAppListToggleMethodHistogram,
                               show_source, app_list::kMaxAppListToggleMethod);
   }
-  presenter_.ToggleAppList(display_id, event_time_stamp);
+  return presenter_.ToggleAppList(display_id, event_time_stamp);
 }
 
 app_list::AppListViewState AppListControllerImpl::GetAppListViewState() {
@@ -609,14 +609,12 @@ void AppListControllerImpl::Back() {
   presenter_.GetView()->Back();
 }
 
-void AppListControllerImpl::OnAppListButtonPressed(
+ash::ShelfAction AppListControllerImpl::OnAppListButtonPressed(
     int64_t display_id,
     app_list::AppListShowSource show_source,
     base::TimeTicks event_time_stamp) {
-  if (!IsTabletMode()) {
-    ToggleAppList(display_id, show_source, event_time_stamp);
-    return;
-  }
+  if (!IsTabletMode())
+    return ToggleAppList(display_id, show_source, event_time_stamp);
 
   // Whether the this action is handled.
   bool handled = false;
@@ -662,6 +660,8 @@ void AppListControllerImpl::OnAppListButtonPressed(
   // Perform the "back" action for the app list.
   if (!handled)
     Back();
+
+  return ash::SHELF_ACTION_APP_LIST_SHOWN;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
