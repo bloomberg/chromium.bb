@@ -44,9 +44,11 @@ class WebIDBFactoryImpl : public WebIDBFactory {
 
  private:
   mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
-      std::unique_ptr<WebIDBCallbacks> callbacks);
+      std::unique_ptr<WebIDBCallbacks> callbacks,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   mojom::blink::IDBDatabaseCallbacksAssociatedPtrInfo GetDatabaseCallbacksProxy(
-      std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks);
+      std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   mojom::blink::IDBFactoryPtr factory_;
 };
