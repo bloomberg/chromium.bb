@@ -59,7 +59,7 @@ USER_BASELINE_LAKITU = dict((e.user, e) for e in (
 ))
 
 USER_BASELINE_JETSTREAM = dict((e.user, e) for e in (
-    UserEntry(user='ap-monitor', uid=1102, gid=1103),
+    UserEntry(user='ap-monitor', uid=1103, gid=1103),
 ))
 
 USER_BASELINE_TERMINA = dict((e.user, e) for e in (
