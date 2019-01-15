@@ -24,6 +24,7 @@
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -45,7 +46,7 @@ class ReadOnlyOriginView : public views::View {
                      views::ButtonListener* site_settings_listener) {
     std::unique_ptr<views::View> title_origin_container =
         std::make_unique<views::View>();
-    SkColor foreground = GetForegroundColorForBackground(background_color);
+    SkColor foreground = color_utils::GetColorWithMaxContrast(background_color);
     views::GridLayout* title_origin_layout =
         title_origin_container->SetLayoutManager(
             std::make_unique<views::GridLayout>(title_origin_container.get()));
