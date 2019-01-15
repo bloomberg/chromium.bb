@@ -95,7 +95,7 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
     def getMetric(results, name):
       metrics = results.FindAllPageSpecificValuesNamed(name)
       self.assertEquals(1, len(metrics))
-      return metrics[0].GetBuildbotValue()
+      return metrics[0].values
 
     data = self._GenerateDataForParsingOldFormat()
 
@@ -128,7 +128,7 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
     def getMetric(results, name):
       metrics = results.FindAllPageSpecificValuesNamed(name)
       self.assertEquals(1, len(metrics))
-      return metrics[0].GetBuildbotValue()
+      return metrics[0].values
 
     data = self._GenerateDataForParsing()
 
