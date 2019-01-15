@@ -5,7 +5,7 @@
 #include <windows.h>
 
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/color_chooser.h"
 #include "chrome/browser/ui/views/color_chooser_dialog.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/render_view_host.h"

@@ -32,7 +32,6 @@ class FilePath;
 
 namespace content {
 class BrowserContext;
-class ColorChooser;
 class WebContents;
 }
 
@@ -123,10 +122,6 @@ void ShowPWAInstallDialog(content::WebContents* web_contents,
 // Sets whether |ShowPWAInstallDialog| should accept immediately without any
 // user interaction.
 void SetAutoAcceptPWAInstallDialogForTesting(bool auto_accept);
-
-// Shows a color chooser that reports to the given WebContents.
-content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
-                                        SkColor initial_color);
 
 #if defined(OS_MACOSX)
 

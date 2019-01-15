@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/color_chooser.h"
 
 // The actual android color chooser is at
 // components/embedder_support/android/delegate/color_chooser_android.cc

@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/color_chooser_mac.h"
 
 #include "base/logging.h"
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/color_chooser.h"
 #include "skia/ext/skia_utils_mac.h"
 
 ColorChooserMac* ColorChooserMac::current_color_chooser_ = NULL;
