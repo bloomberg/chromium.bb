@@ -314,6 +314,8 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   net::HttpNetworkSession::Params network_session_params;
   ApplyCmdlineOverridesToNetworkSessionParams(&network_session_params);
   builder.set_http_network_session_params(network_session_params);
+
+  // Quic is not currently supported in WebView (http://crbug.com/763187).
   builder.SetSpdyAndQuicEnabled(true, false);
 
   std::unique_ptr<net::MappedHostResolver> host_resolver(

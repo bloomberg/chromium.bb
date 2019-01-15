@@ -281,7 +281,7 @@ network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
   content::GetNetworkService()->CreateNetworkContext(
       MakeRequest(&network_context), std::move(context_params));
 
-  // Quic is not currently supported in WebView.
+  // Quic is not currently supported in WebView (http://crbug.com/763187).
   content::GetNetworkService()->DisableQuic();
 
   return network_context;
@@ -312,7 +312,8 @@ AwContentBrowserClient::GetNetworkContextParams() {
   // defer to the Android system.
   context_params->initial_ssl_config->symantec_enforcement_disabled = true;
 
-  // WebView does not currently support Certificate Transparency.
+  // WebView does not currently support Certificate Transparency
+  // (http://crbug.com/921750).
   context_params->enforce_chrome_ct_policy = false;
 
   // WebView does not support ftp yet.
