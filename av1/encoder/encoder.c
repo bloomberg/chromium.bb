@@ -5817,6 +5817,9 @@ static void adjust_frame_rate(AV1_COMP *cpi,
   int64_t this_duration;
   int step = 0;
 
+  // Clear down mmx registers
+  aom_clear_system_state();
+
   if (source->ts_start == cpi->first_time_stamp_ever) {
     this_duration = source->ts_end - source->ts_start;
     step = 1;
@@ -6793,6 +6796,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 #endif
 
   cm->showable_frame = 0;
+  *size = 0;
   aom_usec_timer_start(&cmptimer);
 
   set_high_precision_mv(cpi, ALTREF_HIGH_PRECISION_MV, 0);
@@ -6811,15 +6815,13 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   cpi->no_show_kf = 0;
   cm->reset_decoder_state = 0;
 
-  if (oxcf->pass == 2 && cm->show_existing_frame && allow_show_existing(cpi)) {
+  cm->show_existing_frame &= allow_show_existing(cpi);
+  if (cm->show_existing_frame) {
     // Manage the source buffer and flush out the source frame that has been
     // coded already; Also get prepared for PSNR calculation if needed.
     struct lookahead_entry *const source =
         av1_lookahead_pop(cpi->lookahead, flush);
-    if (source == NULL) {
-      *size = 0;
-      return -1;
-    }
+    if (source == NULL) return -1;
     av1_apply_encoding_flags(cpi, source->flags);
     cpi->source = &source->img;
     // TODO(zoeliu): To track down to determine whether it's needed to adjust
@@ -6831,12 +6833,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     if (cpi->rc.is_src_frame_alt_ref) adjust_frame_rate(cpi, source);
 
     if (assign_cur_frame_new_fb(cm) == NULL) return -1;
-
-    // Clear down mmx registers
-    aom_clear_system_state();
-
-    // Start with a 0 size frame.
-    *size = 0;
 
     // We need to update the gf_group for show_existing overlay frame
     if (cpi->rc.is_src_frame_alt_ref) av1_rc_get_second_pass_params(cpi);
@@ -6850,9 +6846,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     compute_internal_stats(cpi, (int)(*size));
 #endif  // CONFIG_INTERNAL_STATS
 
-    // Clear down mmx registers
-    aom_clear_system_state();
-
     cm->show_existing_frame = 0;
     return 0;
   }
@@ -6862,9 +6855,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   struct lookahead_entry *const source =
       choose_frame_source(cpi, &temporal_filtered, &flush, &last_source);
 
-  if (source == NULL) {
-    // If no source has been found, we can't encode a frame.
-    *size = 0;
+  if (source == NULL) {  // If no source was found, we can't encode a frame.
     if (flush && oxcf->pass == 1 && !cpi->twopass.first_pass_done) {
       av1_end_first_pass(cpi); /* get last stats packet */
       cpi->twopass.first_pass_done = 1;
@@ -6891,9 +6882,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     cpi->last_end_time_stamp_seen = source->ts_start;
   }
 
-  // Clear down mmx registers
-  aom_clear_system_state();
-
   // adjust frame rates based on timestamps given
   if (cm->show_frame) adjust_frame_rate(cpi, source);
 
@@ -6902,8 +6890,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   // Retain the RF_LEVEL for the current newly coded frame.
   cm->cur_frame->frame_rf_level =
       cpi->twopass.gf_group.rf_level[cpi->twopass.gf_group.index];
-
-  cm->cur_frame->buf.buf_8bit_valid = 0;
 
   if (cpi->film_grain_table) {
     cm->seq_params.film_grain_params_present = aom_film_grain_table_lookup(
@@ -6917,9 +6903,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   const int64_t pts64 = ticks_to_timebase_units(timebase, *time_stamp);
   if (pts64 < 0 || pts64 > UINT32_MAX) return AOM_CODEC_ERROR;
   cpi->common.frame_presentation_time = (uint32_t)pts64;
-
-  // Start with a 0 size frame.
-  *size = 0;
 
   cpi->frame_flags = *frame_flags;
 
