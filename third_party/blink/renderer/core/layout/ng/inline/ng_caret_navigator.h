@@ -119,19 +119,6 @@ class CORE_EXPORT NGCaretNavigator {
   VisualCaretMovementResult RightPositionOf(const Position&) const;
 
  private:
-  enum class MoveDirection { kTowardsLeft, kTowardsRight };
-  static MoveDirection OppositeDirectionOf(MoveDirection);
-  static bool TowardsSameDirection(MoveDirection, TextDirection);
-  static base::Optional<unsigned> MoveVisualIndex(unsigned index,
-                                                  unsigned length,
-                                                  MoveDirection);
-
-  Position EdgeOfInternal(unsigned index, MoveDirection) const;
-  VisualCharacterMovementResult MoveCharacterInternal(unsigned index,
-                                                      MoveDirection) const;
-  VisualCaretMovementResult MoveCaretInternal(const Position&,
-                                              MoveDirection) const;
-
   String text_;
 
   // TODO(xiaochengh): Add line-aware index.
