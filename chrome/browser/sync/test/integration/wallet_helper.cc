@@ -510,6 +510,52 @@ void AutofillWalletChecker::OnPersonalDataChanged() {
   CheckExitCondition();
 }
 
+AutofillWalletMetadataSizeChecker::AutofillWalletMetadataSizeChecker(
+    int profile_a,
+    int profile_b)
+    : profile_a_(profile_a), profile_b_(profile_b) {
+  wallet_helper::GetPersonalDataManager(profile_a_)->AddObserver(this);
+  wallet_helper::GetPersonalDataManager(profile_b_)->AddObserver(this);
+}
+
+AutofillWalletMetadataSizeChecker::~AutofillWalletMetadataSizeChecker() {
+  wallet_helper::GetPersonalDataManager(profile_a_)->RemoveObserver(this);
+  wallet_helper::GetPersonalDataManager(profile_b_)->RemoveObserver(this);
+}
+
+bool AutofillWalletMetadataSizeChecker::IsExitConditionSatisfied() {
+  // There could be trailing metadata left on one of the clients. Check that
+  // metadata.size() is the same on both clients.
+  std::map<std::string, AutofillMetadata> addresses_metadata_a,
+      addresses_metadata_b;
+  wallet_helper::GetServerAddressesMetadata(profile_a_, &addresses_metadata_a);
+  wallet_helper::GetServerAddressesMetadata(profile_b_, &addresses_metadata_b);
+  if (addresses_metadata_a.size() != addresses_metadata_b.size()) {
+    LOG(WARNING) << "Server addresses metadata mismatch, expected "
+                 << addresses_metadata_a.size()
+                 << ", found: " << addresses_metadata_b.size();
+    return false;
+  }
+  std::map<std::string, AutofillMetadata> cards_metadata_a, cards_metadata_b;
+  wallet_helper::GetServerCardsMetadata(profile_a_, &cards_metadata_a);
+  wallet_helper::GetServerCardsMetadata(profile_b_, &cards_metadata_b);
+  if (cards_metadata_a.size() != cards_metadata_b.size()) {
+    LOG(WARNING) << "Server cards metadata mismatch, expected "
+                 << cards_metadata_a.size() << ", found "
+                 << cards_metadata_b.size();
+    return false;
+  }
+  return true;
+}
+
+std::string AutofillWalletMetadataSizeChecker::GetDebugMessage() const {
+  return "Waiting for matching autofill wallet metadata sizes";
+}
+
+void AutofillWalletMetadataSizeChecker::OnPersonalDataChanged() {
+  CheckExitCondition();
+}
+
 UssWalletSwitchToggler::UssWalletSwitchToggler() {}
 
 void UssWalletSwitchToggler::InitWithDefaultFeatures() {
