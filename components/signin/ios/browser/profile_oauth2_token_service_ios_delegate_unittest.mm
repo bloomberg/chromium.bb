@@ -43,11 +43,7 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
         last_access_token_error_(GoogleServiceAuthError::NONE) {}
 
   void SetUp() override {
-    prefs_.registry()->RegisterListPref(
-        AccountTrackerService::kAccountInfoPref);
-    prefs_.registry()->RegisterIntegerPref(
-        prefs::kAccountIdMigrationState,
-        AccountTrackerService::MIGRATION_NOT_STARTED);
+    AccountTrackerService::RegisterPrefs(prefs_.registry());
     account_tracker_.Initialize(&prefs_, base::FilePath());
 
     prefs_.registry()->RegisterBooleanPref(

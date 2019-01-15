@@ -11,6 +11,7 @@ namespace prefs {
 extern const char kAccountConsistencyMirrorRequired[];
 #endif
 extern const char kAccountIdMigrationState[];
+extern const char kAccountInfo[];
 extern const char kAutologinEnabled[];
 extern const char kGaiaCookieHash[];
 extern const char kGaiaCookieChangedTime[];

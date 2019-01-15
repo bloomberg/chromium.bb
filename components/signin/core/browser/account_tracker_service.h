@@ -37,10 +37,6 @@ class DictionaryValue;
 // information about Google Accounts.
 class AccountTrackerService : public KeyedService {
  public:
-  // Name of the preference property that persists the account information
-  // tracked by this service.
-  static const char kAccountInfoPref[];
-
   // Value representing no hosted domain in the kGoogleServicesHostedDomain
   // preference.
   static const char kNoHostedDomainFound[];

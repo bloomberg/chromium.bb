@@ -58,7 +58,7 @@ const base::FilePath::CharType kAvatarImagesFolder[] =
 const char kAccountServiceFlagsPath[] = "service_flags";
 
 void RemoveDeprecatedServiceFlags(PrefService* pref_service) {
-  ListPrefUpdate update(pref_service, AccountTrackerService::kAccountInfoPref);
+  ListPrefUpdate update(pref_service, prefs::kAccountInfo);
   for (size_t i = 0; i < update->GetSize(); ++i) {
     base::DictionaryValue* dict = nullptr;
     if (update->GetDictionary(i, &dict))
@@ -106,8 +106,6 @@ void RemoveImage(const base::FilePath& image_path) {
 
 }  // namespace
 
-const char AccountTrackerService::kAccountInfoPref[] = "account_info";
-
 // This must be a string which can never be a valid domain.
 const char AccountTrackerService::kNoHostedDomainFound[] = "NO_HOSTED_DOMAIN";
 
@@ -129,7 +127,7 @@ AccountTrackerService::~AccountTrackerService() {
 
 // static
 void AccountTrackerService::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterListPref(AccountTrackerService::kAccountInfoPref);
+  registry->RegisterListPref(prefs::kAccountInfo);
   registry->RegisterIntegerPref(prefs::kAccountIdMigrationState,
                                 AccountTrackerService::MIGRATION_NOT_STARTED);
 }
@@ -478,7 +476,7 @@ void AccountTrackerService::RemoveAccountImageFromDisk(
 }
 
 void AccountTrackerService::LoadFromPrefs() {
-  const base::ListValue* list = pref_service_->GetList(kAccountInfoPref);
+  const base::ListValue* list = pref_service_->GetList(prefs::kAccountInfo);
   std::set<std::string> to_remove;
   bool contains_deprecated_service_flags = false;
   for (size_t i = 0; i < list->GetSize(); ++i) {
@@ -589,7 +587,7 @@ void AccountTrackerService::SaveToPrefs(const AccountInfo& account_info) {
 
   base::DictionaryValue* dict = nullptr;
   base::string16 account_id_16 = base::UTF8ToUTF16(account_info.account_id);
-  ListPrefUpdate update(pref_service_, kAccountInfoPref);
+  ListPrefUpdate update(pref_service_, prefs::kAccountInfo);
   for (size_t i = 0; i < update->GetSize(); ++i, dict = nullptr) {
     if (update->GetDictionary(i, &dict)) {
       base::string16 value;
@@ -624,7 +622,7 @@ void AccountTrackerService::RemoveFromPrefs(const AccountInfo& account_info) {
     return;
 
   base::string16 account_id_16 = base::UTF8ToUTF16(account_info.account_id);
-  ListPrefUpdate update(pref_service_, kAccountInfoPref);
+  ListPrefUpdate update(pref_service_, prefs::kAccountInfo);
   for (size_t i = 0; i < update->GetSize(); ++i) {
     base::DictionaryValue* dict = nullptr;
     if (update->GetDictionary(i, &dict)) {

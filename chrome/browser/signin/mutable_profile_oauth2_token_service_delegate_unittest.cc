@@ -101,11 +101,7 @@ class MutableProfileOAuth2TokenServiceDelegateTest
 
     MutableProfileOAuth2TokenServiceDelegate::RegisterProfilePrefs(
         pref_service_.registry());
-    pref_service_.registry()->RegisterListPref(
-        AccountTrackerService::kAccountInfoPref);
-    pref_service_.registry()->RegisterIntegerPref(
-        prefs::kAccountIdMigrationState,
-        AccountTrackerService::MIGRATION_NOT_STARTED);
+    AccountTrackerService::RegisterPrefs(pref_service_.registry());
     SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
     client_.reset(new TestSigninClient(&pref_service_));
     client_->test_url_loader_factory()->AddResponse(
@@ -1168,8 +1164,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, GaiaIdMigration) {
     pref_service_.SetInteger(prefs::kAccountIdMigrationState,
                              AccountTrackerService::MIGRATION_NOT_STARTED);
 
-    ListPrefUpdate update(&pref_service_,
-                          AccountTrackerService::kAccountInfoPref);
+    ListPrefUpdate update(&pref_service_, prefs::kAccountInfo);
     update->Clear();
     auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetString("account_id", email);
@@ -1226,8 +1221,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
     pref_service_.SetInteger(prefs::kAccountIdMigrationState,
                              AccountTrackerService::MIGRATION_NOT_STARTED);
 
-    ListPrefUpdate update(&pref_service_,
-                          AccountTrackerService::kAccountInfoPref);
+    ListPrefUpdate update(&pref_service_, prefs::kAccountInfo);
     update->Clear();
     auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetString("account_id", email1);
