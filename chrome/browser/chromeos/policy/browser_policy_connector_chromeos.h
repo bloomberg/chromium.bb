@@ -47,6 +47,7 @@ class DeviceNetworkConfigurationUpdater;
 struct EnrollmentConfig;
 class HostnameHandler;
 class MinimumVersionPolicyHandler;
+class DeviceNativePrintersHandler;
 class ProxyPolicyProvider;
 class ServerBackedStateKeysBroker;
 
@@ -224,6 +225,7 @@ class BrowserPolicyConnectorChromeOS
   std::unique_ptr<BluetoothPolicyHandler> bluetooth_policy_handler_;
   std::unique_ptr<HostnameHandler> hostname_handler_;
   std::unique_ptr<MinimumVersionPolicyHandler> minimum_version_policy_handler_;
+  std::unique_ptr<DeviceNativePrintersHandler> device_native_printers_handler_;
 
   // This policy provider is used on Chrome OS to feed user policy into the
   // global PolicyService instance. This works by installing the cloud policy

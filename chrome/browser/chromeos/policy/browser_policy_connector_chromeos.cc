@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
+#include "chrome/browser/chromeos/policy/device_native_printers_handler.h"
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/device_policy_cloud_external_data_manager.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
@@ -224,6 +225,9 @@ void BrowserPolicyConnectorChromeOS::Init(
   minimum_version_policy_handler_ =
       std::make_unique<MinimumVersionPolicyHandler>(
           chromeos::CrosSettings::Get());
+
+  device_native_printers_handler_ =
+      std::make_unique<DeviceNativePrintersHandler>(GetPolicyService());
 }
 
 void BrowserPolicyConnectorChromeOS::PreShutdown() {
@@ -254,6 +258,9 @@ void BrowserPolicyConnectorChromeOS::Shutdown() {
 
   if (hostname_handler_)
     hostname_handler_->Shutdown();
+
+  if (device_native_printers_handler_)
+    device_native_printers_handler_->Shutdown();
 
   ChromeBrowserPolicyConnector::Shutdown();
 }

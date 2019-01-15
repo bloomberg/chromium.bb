@@ -20,6 +20,8 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/printing/device_external_printers_factory.h"
+#include "chrome/browser/chromeos/printing/device_external_printers_settings_bridge.h"
 #include "chrome/browser/chromeos/printing/external_printers.h"
 #include "chrome/browser/chromeos/printing/external_printers_factory.h"
 #include "chrome/browser/chromeos/printing/external_printers_pref_bridge.h"
@@ -31,6 +33,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/printing/printer_translator.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/policy_constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -46,6 +49,15 @@ ExternalPrinterPolicies UserPolicyNames() {
   user_policy_names.blacklist = prefs::kRecommendedNativePrintersBlacklist;
   user_policy_names.whitelist = prefs::kRecommendedNativePrintersWhitelist;
   return user_policy_names;
+}
+
+// Returns the collection policies for device printers.
+ExternalPrinterPolicies DevicePolicyNames() {
+  ExternalPrinterPolicies device_policy_names;
+  device_policy_names.access_mode = kDeviceNativePrintersAccessMode;
+  device_policy_names.blacklist = kDeviceNativePrintersBlacklist;
+  device_policy_names.whitelist = kDeviceNativePrintersWhitelist;
+  return device_policy_names;
 }
 
 // Inserts |printer| into |new_printers| if the id does not already exist.
@@ -74,13 +86,23 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
         base::Bind(&SyncedPrintersManagerImpl::UpdateRecommendedPrinters,
                    base::Unretained(this)));
     if (base::FeatureList::IsEnabled(features::kBulkPrinters)) {
-      printers_observer_ = std::make_unique<ExternalPrintersPrefBridge>(
-          UserPolicyNames(), profile_);
-      external_printers_ =
+      user_external_printers_observer_ =
+          std::make_unique<ExternalPrintersPrefBridge>(UserPolicyNames(),
+                                                       profile_);
+      user_external_printers_ =
           ExternalPrintersFactory::Get()->GetForProfile(profile_);
-      if (external_printers_) {
-        external_printers_->AddObserver(this);
+      if (user_external_printers_) {
+        user_external_printers_->AddObserver(this);
       }
+    }
+
+    device_external_printers_observer_ =
+        std::make_unique<DeviceExternalPrintersSettingsBridge>(
+            DevicePolicyNames(), CrosSettings::Get());
+    device_external_printers_ =
+        DeviceExternalPrintersFactory::Get()->GetForDevice();
+    if (device_external_printers_) {
+      device_external_printers_->AddObserver(this);
     }
 
     UpdateRecommendedPrinters();
@@ -88,8 +110,11 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
   }
 
   ~SyncedPrintersManagerImpl() override {
-    if (external_printers_) {
-      external_printers_->RemoveObserver(this);
+    if (user_external_printers_) {
+      user_external_printers_->RemoveObserver(this);
+    }
+    if (device_external_printers_) {
+      device_external_printers_->RemoveObserver(this);
     }
     sync_bridge_->RemoveObserver(this);
   }
@@ -259,17 +284,17 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
     }
   }
 
-  // Reads printers provided by NativePrintersBulkConfigurations policy.
-  // Appends ids to |new_ids| in the order they were received. Appends printers
-  // to |new_printers| indexed by id.  Discards printers with duplicate ids.
-  void BulkPolicyPrinters(
+  // Reads printers provided by NativePrintersBulkConfigurations and
+  // DeviceNativePrinters policies. Appends ids to |new_ids| in the order they
+  // were received. Appends printers to |new_printers| indexed by id. Discards
+  // printers with duplicate ids.
+  void ReadPolicyPrinters(
+      base::WeakPtr<ExternalPrinters> external_printers,
       std::vector<std::string>* new_ids,
       std::unordered_map<std::string, Printer>* new_printers) {
     DCHECK(new_ids);
     DCHECK(new_printers);
 
-    base::WeakPtr<ExternalPrinters> external_printers =
-        ExternalPrintersFactory::Get()->GetForProfile(profile_);
     if (!external_printers || !external_printers->IsPolicySet())
       return;
 
@@ -289,6 +314,22 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
     }
   }
 
+  // Reads printers provided by NativePrintersBulkConfigurations policy.
+  void BulkPolicyPrinters(
+      std::vector<std::string>* new_ids,
+      std::unordered_map<std::string, Printer>* new_printers) {
+    ReadPolicyPrinters(ExternalPrintersFactory::Get()->GetForProfile(profile_),
+                       new_ids, new_printers);
+  }
+
+  // Reads printers provided by DeviceNativePrinters policy.
+  void DevicePolicyPrinters(
+      std::vector<std::string>* new_ids,
+      std::unordered_map<std::string, Printer>* new_printers) {
+    ReadPolicyPrinters(DeviceExternalPrintersFactory::Get()->GetForDevice(),
+                       new_ids, new_printers);
+  }
+
   void UpdateRecommendedPrinters() {
     // Parse the policy JSON into new structures outside the lock.
     std::vector<std::string> new_ids;
@@ -298,6 +339,7 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
     if (base::FeatureList::IsEnabled(features::kBulkPrinters)) {
       BulkPolicyPrinters(&new_ids, &new_printers);
     }
+    DevicePolicyPrinters(&new_ids, &new_printers);
 
     // Objects not in the most recent update get deallocated after method
     // exit.
@@ -326,13 +368,20 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
   PrefChangeRegistrar pref_change_registrar_;
 
   // Bulk user printers. Unowned.
-  base::WeakPtr<ExternalPrinters> external_printers_;
+  base::WeakPtr<ExternalPrinters> user_external_printers_;
+
+  // Device printers. Unowned.
+  base::WeakPtr<ExternalPrinters> device_external_printers_;
 
   // The backend for profile printers.
   std::unique_ptr<PrintersSyncBridge> sync_bridge_;
 
   // Connects external printers preferences with the tracking object.
-  std::unique_ptr<ExternalPrintersPrefBridge> printers_observer_;
+  std::unique_ptr<ExternalPrintersPrefBridge> user_external_printers_observer_;
+
+  // Connects external printers device settings with the tracking object.
+  std::unique_ptr<DeviceExternalPrintersSettingsBridge>
+      device_external_printers_observer_;
 
   // Enterprise printers as of the last time we got a policy update.  The ids
   // vector is used to preserve the received ordering.
