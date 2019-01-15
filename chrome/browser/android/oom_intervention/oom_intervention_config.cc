@@ -111,6 +111,7 @@ enum class OomInterventionBrowserMonitorStatus {
 
 OomInterventionConfig::OomInterventionConfig()
     : is_intervention_enabled_(
+          base::SysInfo::IsLowEndDevice() &&
           base::FeatureList::IsEnabled(subresource_filter::kAdTagging) &&
           base::FeatureList::IsEnabled(features::kOomIntervention)),
       renderer_detection_args_(blink::mojom::DetectionArgs::New()) {
@@ -127,17 +128,17 @@ OomInterventionConfig::OomInterventionConfig()
   use_components_callback_ = base::GetFieldTrialParamByFeatureAsBool(
       features::kOomIntervention, kUseComponentCallbacks, true);
 
-  // Enable intervention only if at least one threshold is set for detection
-  // in each process.
   OomInterventionBrowserMonitorStatus status =
       OomInterventionBrowserMonitorStatus::kEnabledWithValidConfig;
   if (!GetSwapFreeThreshold(&swapfree_threshold_)) {
     is_swap_monitor_enabled_ = false;
     status = OomInterventionBrowserMonitorStatus::kEnabledWithNoSwap;
   }
+  // If no threshold is specified, set blink_workload_threshold to 10 by
+  // default, meaning that 10% of the RAM size is set to blink memory usage
+  // threshold to trigger intervention.
   if (!GetRendererMemoryThresholds(&renderer_detection_args_)) {
-    is_intervention_enabled_ = false;
-    status = OomInterventionBrowserMonitorStatus::kDisabledWithInvalidParam;
+    renderer_detection_args_->blink_workload_threshold = 10;
   }
 }
 
