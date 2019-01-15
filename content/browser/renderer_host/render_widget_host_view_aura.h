@@ -367,6 +367,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   friend class DelegatedFrameHostClientAura;
   friend class InputMethodAuraTestBase;
   friend class RenderWidgetHostViewAuraTest;
+  friend class RenderWidgetHostViewAuraBrowserTest;
   friend class RenderWidgetHostViewAuraCopyRequestTest;
   friend class TestInputMethodObserver;
 #if defined(OS_WIN)
@@ -462,6 +463,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;
 
   void CreateAuraWindow(aura::client::WindowType type);
+
+  // Returns true if a stale frame content needs to be set for the current RWHV.
+  // This is primarily useful during various CrOS animations to prevent showing
+  // a white screen and instead showing a snapshot of the frame content that
+  // was most recently evicted.
+  bool ShouldShowStaleContentOnEviction();
 
   void CreateDelegatedFrameHostClient();
 

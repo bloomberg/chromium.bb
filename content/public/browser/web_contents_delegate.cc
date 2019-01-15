@@ -301,4 +301,8 @@ std::unique_ptr<WebContents> WebContentsDelegate::SwapWebContents(
   return new_contents;
 }
 
+bool WebContentsDelegate::ShouldShowStaleContentOnEviction(
+    WebContents* source) {
+  return false;
+}
 }  // namespace content

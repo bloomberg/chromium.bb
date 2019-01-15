@@ -129,6 +129,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   float GetDeviceScaleFactor() const override;
   void InvalidateLocalSurfaceIdOnEviction() override;
   std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction() override;
+  bool ShouldShowStaleContentOnEviction() override;
 
   base::WeakPtr<BrowserCompositorMac> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
