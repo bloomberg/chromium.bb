@@ -7,6 +7,7 @@
 
 #include "base/ip_address.h"
 #include "platform/api/network_interface.h"
+#include "third_party/abseil/src/absl/types/optional.h"
 
 namespace openscreen {
 namespace platform {
@@ -35,15 +36,15 @@ bool JoinUdpMulticastGroup(UdpSocketPtr socket,
                            const IPAddress& address,
                            InterfaceIndex ifindex);
 
-int64_t ReceiveUdp(UdpSocketPtr socket,
-                   void* data,
-                   int64_t length,
-                   IPEndpoint* src,
-                   IPEndpoint* original_destination);
-int64_t SendUdp(UdpSocketPtr socket,
-                const void* data,
-                int64_t length,
-                const IPEndpoint& dest);
+absl::optional<int64_t> ReceiveUdp(UdpSocketPtr socket,
+                                   void* data,
+                                   int64_t length,
+                                   IPEndpoint* src,
+                                   IPEndpoint* original_destination);
+absl::optional<int64_t> SendUdp(UdpSocketPtr socket,
+                                const void* data,
+                                int64_t length,
+                                const IPEndpoint& dest);
 
 }  // namespace platform
 }  // namespace openscreen

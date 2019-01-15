@@ -99,7 +99,7 @@ void GetInterfaceAttributes(struct rtattr* rta,
   info->type = GetInterfaceType(info->name);
 }
 
-InterfaceAddresses* GetAddressesForIndex(
+InterfaceAddresses* FindOrAddAddressesForIndex(
     std::vector<InterfaceAddresses>* address_list,
     const std::vector<InterfaceInfo>& info_list,
     InterfaceIndex index) {
@@ -360,7 +360,7 @@ std::vector<InterfaceAddresses> GetAddressInfo(
 
         struct ifaddrmsg* interface_address =
             static_cast<struct ifaddrmsg*>(NLMSG_DATA(netlink_header));
-        InterfaceAddresses* addresses = GetAddressesForIndex(
+        InterfaceAddresses* addresses = FindOrAddAddressesForIndex(
             &address_list, info_list, interface_address->ifa_index);
         if (!addresses) {
           OSP_DVLOG(1) << "skipping address for interface "

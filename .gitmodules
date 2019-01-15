@@ -15,3 +15,6 @@
 [submodule "third_party/tinycbor/src"]
 	path = third_party/tinycbor/src
 	url = https://github.com/intel/tinycbor.git
+[submodule "third_party/abseil/src"]
+	path = third_party/abseil/src
+	url = https://github.com/abseil/abseil-cpp.git

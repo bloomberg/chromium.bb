@@ -28,6 +28,7 @@ source_set("fakes_unittests") {
 
   deps = [
     ":testing",
+    "//third_party/abseil",
     "//third_party/googletest:gtest",
   ]
 }

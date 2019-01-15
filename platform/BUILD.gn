@@ -12,4 +12,8 @@ source_set("platform") {
   } else if (is_mac) {
     deps += [ "mac" ]
   }
+
+  public_deps = [
+    "//third_party/abseil",
+  ]
 }

@@ -17,6 +17,10 @@ source_set("base") {
     "with_destruction_callback.cc",
     "with_destruction_callback.h",
   ]
+
+  deps = [
+    "//third_party/abseil",
+  ]
 }
 
 source_set("base_unittests") {

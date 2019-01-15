@@ -11,6 +11,7 @@ group("gn_all") {
     "//discovery/mdns:embedder_demo",
     "//platform",
     "//sample:hello",
+    "//third_party/abseil",
     "//third_party/chromium_quic",
     "//third_party/chromium_quic:demo_client",
     "//third_party/chromium_quic:demo_server",
@@ -52,6 +53,7 @@ executable("unittests") {
     "//discovery/mdns:mdns_unittests",
     "//msgs:unittests",
     "//sample:hello_unittests",
+    "//third_party/abseil",
     "//third_party/googletest:gtest_main",
   ]
 }

@@ -17,6 +17,8 @@
 #include "platform/api/logging.h"
 #include "platform/posix/socket.h"
 
+#include "third_party/abseil/src/absl/types/optional.h"
+
 namespace openscreen {
 namespace platform {
 namespace {
@@ -31,16 +33,16 @@ static_assert(IsPowerOf2(alignof(struct cmsghdr)),
 using IPv4InterfaceIndex = decltype(ip_mreqn().imr_ifindex);
 using IPv6InterfaceIndex = decltype(ipv6_mreq().ipv6mr_interface);
 
-int CreateNonBlockingUdpSocket(int domain) {
+absl::optional<int> CreateNonBlockingUdpSocket(int domain) {
   const int fd = socket(domain, SOCK_DGRAM, 0);
   if (fd == -1) {
-    return -1;
+    return absl::nullopt;
   }
   // On non-Linux, the SOCK_NONBLOCK option is not available, so use the
   // more-portable method of calling fcntl() to set this behavior.
   if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK) == -1) {
     close(fd);
-    return -1;
+    return absl::nullopt;
   }
   return fd;
 }
@@ -48,15 +50,15 @@ int CreateNonBlockingUdpSocket(int domain) {
 }  // namespace
 
 UdpSocketPtr CreateUdpSocketIPv4() {
-  const int fd = CreateNonBlockingUdpSocket(AF_INET);
-  return fd == -1 ? nullptr
-                  : new UdpSocketPrivate{fd, UdpSocketPrivate::Version::kV4};
+  const absl::optional<int> fd = CreateNonBlockingUdpSocket(AF_INET);
+  return fd ? new UdpSocketPrivate{fd.value(), UdpSocketPrivate::Version::kV4}
+            : nullptr;
 }
 
 UdpSocketPtr CreateUdpSocketIPv6() {
-  const int fd = CreateNonBlockingUdpSocket(AF_INET6);
-  return fd == -1 ? nullptr
-                  : new UdpSocketPrivate{fd, UdpSocketPrivate::Version::kV6};
+  const absl::optional<int> fd = CreateNonBlockingUdpSocket(AF_INET6);
+  return fd ? new UdpSocketPrivate{fd.value(), UdpSocketPrivate::Version::kV6}
+            : nullptr;
 }
 
 bool IsIPv4Socket(UdpSocketPtr socket) {
@@ -183,11 +185,11 @@ bool JoinUdpMulticastGroup(UdpSocketPtr socket,
   }
 }
 
-int64_t ReceiveUdp(UdpSocketPtr socket,
-                   void* data,
-                   int64_t length,
-                   IPEndpoint* src,
-                   IPEndpoint* original_destination) {
+absl::optional<int64_t> ReceiveUdp(UdpSocketPtr socket,
+                                   void* data,
+                                   int64_t length,
+                                   IPEndpoint* src,
+                                   IPEndpoint* original_destination) {
   OSP_DCHECK_GE(socket->fd, 0);
   struct iovec iov = {data, static_cast<size_t>(length)};
   char control_buf[1024];
@@ -207,7 +209,7 @@ int64_t ReceiveUdp(UdpSocketPtr socket,
 
     int64_t len = recvmsg(socket->fd, &msg, 0);
     if (len < 0)
-      return len;
+      return absl::nullopt;
 
     src->address =
         IPAddress(IPAddress::Version::kV4,
@@ -245,7 +247,7 @@ int64_t ReceiveUdp(UdpSocketPtr socket,
       }
     }
 
-    return len;
+    return absl::optional<int>(len);
   } else {
     struct sockaddr_in6 sa;
     struct msghdr msg;
@@ -302,44 +304,45 @@ int64_t ReceiveUdp(UdpSocketPtr socket,
   }
 }
 
-int64_t SendUdp(UdpSocketPtr socket,
-                const void* data,
-                int64_t length,
-                const IPEndpoint& dest) {
+absl::optional<int64_t> SendUdp(UdpSocketPtr socket,
+                                const void* data,
+                                int64_t length,
+                                const IPEndpoint& dest) {
   OSP_DCHECK_GE(socket->fd, 0);
+
+  struct msghdr msg;
+  msg.msg_iovlen = 1;
+  msg.msg_control = nullptr;
+  msg.msg_controllen = 0;
+  msg.msg_flags = 0;
+
   if (socket->version == UdpSocketPrivate::Version::kV4) {
     struct sockaddr_in sa = {
         .sin_family = AF_INET,
         .sin_port = htons(dest.port),
     };
-    dest.address.CopyToV4(reinterpret_cast<uint8_t*>(&sa.sin_addr.s_addr));
-    struct iovec iov = {const_cast<void*>(data), static_cast<size_t>(length)};
-    struct msghdr msg;
     msg.msg_name = &sa;
     msg.msg_namelen = sizeof(sa);
+
+    dest.address.CopyToV4(reinterpret_cast<uint8_t*>(&sa.sin_addr.s_addr));
+    struct iovec iov = {const_cast<void*>(data), static_cast<size_t>(length)};
     msg.msg_iov = &iov;
-    msg.msg_iovlen = 1;
-    msg.msg_control = nullptr;
-    msg.msg_controllen = 0;
-    msg.msg_flags = 0;
-    return sendmsg(socket->fd, &msg, 0);
   } else {
     struct sockaddr_in6 sa = {
         .sin6_family = AF_INET6,
         .sin6_port = htons(dest.port),
     };
-    dest.address.CopyToV6(reinterpret_cast<uint8_t*>(&sa.sin6_addr.s6_addr));
-    struct iovec iov = {const_cast<void*>(data), static_cast<size_t>(length)};
-    struct msghdr msg;
     msg.msg_name = &sa;
     msg.msg_namelen = sizeof(sa);
+
+    dest.address.CopyToV6(reinterpret_cast<uint8_t*>(&sa.sin6_addr.s6_addr));
+    struct iovec iov = {const_cast<void*>(data), static_cast<size_t>(length)};
     msg.msg_iov = &iov;
-    msg.msg_iovlen = 1;
-    msg.msg_control = nullptr;
-    msg.msg_controllen = 0;
-    msg.msg_flags = 0;
-    return sendmsg(socket->fd, &msg, 0);
   }
+
+  const int64_t return_value = sendmsg(socket->fd, &msg, 0);
+  return (return_value >= 0) ? absl::optional<int>(return_value)
+                             : absl::optional<int>();
 }
 
 }  // namespace platform

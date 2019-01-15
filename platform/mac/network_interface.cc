@@ -21,6 +21,7 @@
 
 #include "base/ip_address.h"
 #include "base/scoped_pipe.h"
+#include "platform/api/logging.h"
 
 namespace openscreen {
 namespace platform {
@@ -35,27 +36,32 @@ template <size_t N>
 uint8_t ToPrefixLength(const uint8_t (&netmask)[N]) {
   uint8_t result = 0;
   size_t i = 0;
+
+  // Ensure all of the leftmost bits are set.
   while (i < N && netmask[i] == UINT8_C(0xff)) {
     result += 8;
     ++i;
   }
-  if (i < N) {
+
+  // Check the intermediate byte, the first that is not 0xFF,
+  // e.g. 0b11100000 or 0x00
+  if (i < N && netmask[i] != UINT8_C(0x00)) {
     uint8_t last_byte = netmask[i];
+    // Check the left most bit, bitshifting as we go.
     while (last_byte & UINT8_C(0x80)) {
       ++result;
       last_byte <<= 1;
     }
-    if (last_byte != UINT8_C(0x00)) {
-      return -1;
-    }
+    OSP_CHECK(last_byte == UINT8_C(0x00));
     ++i;
   }
+
+  // Ensure the rest of the bytes are zeroed out.
   while (i < N) {
-    if (netmask[i] != 0) {
-      return -1;
-    }
+    OSP_CHECK(netmask[i] == UINT8_C(0x00));
     ++i;
   }
+
   return result;
 }
 

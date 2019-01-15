@@ -8,6 +8,7 @@
 #include <iomanip>
 
 #include "platform/api/logging.h"
+#include "third_party/abseil/src/absl/types/optional.h"
 
 namespace openscreen {
 
@@ -146,12 +147,12 @@ bool IPAddress::ParseV6(const std::string& s, IPAddress* address) {
   uint8_t values[16];
   int i = 0;
   int num_previous_colons = 0;
-  int double_colon_index = -1;
+  absl::optional<int> double_colon_index = absl::nullopt;
   for (auto c : s) {
     if (c == ':') {
       ++num_previous_colons;
       if (num_previous_colons == 2) {
-        if (double_colon_index != -1) {
+        if (double_colon_index) {
           return false;
         }
         double_colon_index = i;
@@ -189,12 +190,11 @@ bool IPAddress::ParseV6(const std::string& s, IPAddress* address) {
 
   values[i++] = static_cast<uint8_t>(next_value >> 8);
   values[i] = static_cast<uint8_t>(next_value & 0xff);
-  if (!((i == 15 && double_colon_index == -1) ||
-        (i < 14 && double_colon_index != -1))) {
+  if (!((i == 15 && !double_colon_index) || (i < 14 && double_colon_index))) {
     return false;
   }
   for (int j = 15; j >= 0;) {
-    if (i == double_colon_index) {
+    if (double_colon_index && (i == double_colon_index)) {
       address->bytes_[j--] = values[i--];
       while (j > i)
         address->bytes_[j--] = 0;

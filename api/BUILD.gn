@@ -40,6 +40,7 @@ source_set("api_unittests") {
     "impl/quic:test_support",
     "impl/testing",
     "impl/testing:fakes_unittests",
+    "//third_party/abseil",
     "//third_party/googletest:gmock",
     "//third_party/googletest:gtest",
   ]
