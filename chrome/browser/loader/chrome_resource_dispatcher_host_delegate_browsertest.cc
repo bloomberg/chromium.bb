@@ -367,20 +367,18 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateMirrorBrowserTest,
   // Neither should have the header.
   // Note we need to replace the port of the redirect's URL.
   base::StringPairs replacement_text;
-  std::string replacement_path;
   replacement_text.push_back(std::make_pair(
       "{{PORT}}", base::UintToString(embedded_test_server()->port())));
-  net::test_server::GetFilePathWithReplacements(
-      "/mirror_request_header/http.www.google.com.html", replacement_text,
-      &replacement_path);
+  std::string replacement_path = net::test_server::GetFilePathWithReplacements(
+      "/mirror_request_header/http.www.google.com.html", replacement_text);
   all_tests.push_back(
       {embedded_test_server()->GetURL("www.google.com", replacement_path),
        "/simple.html", false, false, false});
 
   // First one adds the header and transfers it to the second.
-  net::test_server::GetFilePathWithReplacements(
-      "/mirror_request_header/http.www.header_adder.com.html", replacement_text,
-      &replacement_path);
+  replacement_path = net::test_server::GetFilePathWithReplacements(
+      "/mirror_request_header/http.www.header_adder.com.html",
+      replacement_text);
   all_tests.push_back(
       {embedded_test_server()->GetURL("www.header_adder.com", replacement_path),
        "/simple.html", true, true, true});
@@ -389,9 +387,8 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateMirrorBrowserTest,
   replacement_text.clear();
   replacement_text.push_back(
       std::make_pair("{{PORT}}", base::UintToString(https_server.port())));
-  net::test_server::GetFilePathWithReplacements(
-      "/mirror_request_header/https.www.google.com.html", replacement_text,
-      &replacement_path);
+  replacement_path = net::test_server::GetFilePathWithReplacements(
+      "/mirror_request_header/https.www.google.com.html", replacement_text);
   all_tests.push_back({https_server.GetURL("www.google.com", replacement_path),
                        "/simple.html", false, true, false});
 

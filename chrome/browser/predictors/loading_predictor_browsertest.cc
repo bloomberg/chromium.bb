@@ -61,10 +61,8 @@ const std::string kHtmlSubresourcesHosts[] = {"test.com", "baz.com", "foo.com",
 
 std::string GetPathWithPortReplacement(const std::string& path, uint16_t port) {
   std::string string_port = base::StringPrintf("%d", port);
-  std::string path_with_replacements;
-  net::test_server::GetFilePathWithReplacements(
-      path, {{"REPLACE_WITH_PORT", string_port}}, &path_with_replacements);
-  return path_with_replacements;
+  return net::test_server::GetFilePathWithReplacements(
+      path, {{"REPLACE_WITH_PORT", string_port}});
 }
 
 GURL GetDataURLWithContent(const std::string& content) {

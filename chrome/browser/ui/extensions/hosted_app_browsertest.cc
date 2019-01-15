@@ -197,12 +197,8 @@ std::string GetPathWithHostAndPortReplaced(const std::string& original_path,
                                            net::HostPortPair host_port_pair) {
   base::StringPairs replacement_text = {
       {"REPLACE_WITH_HOST_AND_PORT", host_port_pair.ToString()}};
-
-  std::string path_with_replaced_text;
-  net::test_server::GetFilePathWithReplacements(original_path, replacement_text,
-                                                &path_with_replaced_text);
-
-  return path_with_replaced_text;
+  return net::test_server::GetFilePathWithReplacements(original_path,
+                                                       replacement_text);
 }
 
 // Tries to load an image at |image_url| and returns whether or not it loaded
