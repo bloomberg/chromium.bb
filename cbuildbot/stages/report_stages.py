@@ -252,47 +252,47 @@ class BuildStartStage(generic_stages.BuilderStage):
     # do that here.
     if cidb.CIDBConnectionFactory.IsCIDBSetup():
       db_type = cidb.CIDBConnectionFactory.GetCIDBConnectionType()
-      try:
-        build_id = self.buildstore.InsertBuild(
-            builder_name=d['builder-name'],
-            build_number=d['build-number'],
-            build_config=d['bot-config'],
-            bot_hostname=d['bot-hostname'],
-            master_build_id=d['master_build_id'],
-            timeout_seconds=self._GetBuildTimeoutSeconds(),
-            important=d['important'],
-            buildbucket_id=self._run.options.buildbucket_id,
-            branch=self._run.manifest_branch)
-      except Exception as e:
-        logging.error('Error: %s\n If the buildbucket_id to insert is '
-                      'duplicated to the buildbucket_id of an old build and '
-                      'the old build was canceled because of a waterfall '
-                      'master restart, please ignore this error. Else, '
-                      'the error needs more investigation. More context: '
-                      'crbug.com/679974 and crbug.com/685889', e)
-        raise e
+      db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
+      if db:
+        try:
+          build_id = self.buildstore.InsertBuild(
+              builder_name=d['builder-name'],
+              build_number=d['build-number'],
+              build_config=d['bot-config'],
+              bot_hostname=d['bot-hostname'],
+              master_build_id=d['master_build_id'],
+              timeout_seconds=self._GetBuildTimeoutSeconds(),
+              important=d['important'],
+              buildbucket_id=self._run.options.buildbucket_id,
+              branch=self._run.manifest_branch)
+        except Exception as e:
+          logging.error('Error: %s\n If the buildbucket_id to insert is '
+                        'duplicated to the buildbucket_id of an old build and '
+                        'the old build was canceled because of a waterfall '
+                        'master restart, please ignore this error. Else, '
+                        'the error needs more investigation. More context: '
+                        'crbug.com/679974 and crbug.com/685889', e)
+          raise e
 
-      self._run.attrs.metadata.UpdateWithDict({'build_id': build_id,
-                                               'db_type': db_type})
-      logging.info('Inserted build_id %s into cidb database type %s.',
-                   build_id, db_type)
-      logging.PrintBuildbotStepText('database: %s, build_id: %s' %
-                                    (db_type, build_id))
+        self._run.attrs.metadata.UpdateWithDict({'build_id': build_id,
+                                                 'db_type': db_type})
+        logging.info('Inserted build_id %s into cidb database type %s.',
+                     build_id, db_type)
+        logging.PrintBuildbotStepText('database: %s, build_id: %s' %
+                                      (db_type, build_id))
 
-      master_build_id = d['master_build_id']
-      if master_build_id is not None:
-        master_build_status = self.buildstore.GetBuildStatuses(
-            build_ids=[master_build_id])[0]
-
-        if master_build_status['buildbucket_id']:
-          master_url = tree_status.ConstructLegolandBuildURL(
-              master_build_status['buildbucket_id'])
-        else:
-          master_url = tree_status.ConstructDashboardURL(
-              master_build_status['waterfall'],
-              master_build_status['builder_name'],
-              master_build_status['build_number'])
-        logging.PrintBuildbotLink('Link to master build', master_url)
+        master_build_id = d['master_build_id']
+        if master_build_id is not None:
+          master_build_status = db.GetBuildStatus(master_build_id)
+          if master_build_status['buildbucket_id']:
+            master_url = tree_status.ConstructLegolandBuildURL(
+                master_build_status['buildbucket_id'])
+          else:
+            master_url = tree_status.ConstructDashboardURL(
+                master_build_status['waterfall'],
+                master_build_status['builder_name'],
+                master_build_status['build_number'])
+          logging.PrintBuildbotLink('Link to master build', master_url)
 
     # Write the tag metadata last so that a build_id is available.
     WriteTagMetadata(self._run)

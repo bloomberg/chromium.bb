@@ -233,7 +233,6 @@ class CommitQueueHandleChangesStageTests(
         slave_stages.append({'name': stage_name,
                              'build_config': slave,
                              'status': constants.BUILDER_STATUS_PASSED})
-    self.PatchObject(self.buildstore, 'GetBuildStatuses', return_value=[])
     self.PatchObject(mock_cidb, 'GetBuildsStages', return_value=slave_stages)
 
     # Set up SubmitPartialPool to provide a list of changes to look at.

@@ -411,7 +411,7 @@ class FakeCIDBConnection(object):
 
   def GetBuildStatuses(self, build_ids):
     """Gets the status of the builds."""
-    return [self.GetBuildStatus(x) for x in build_ids]
+    return [self._TrimStatus(self.buildTable[x]) for x in build_ids]
 
   def GetSlaveStatuses(self, master_build_id, buildbucket_ids=None):
     """Gets the slaves of given build."""
