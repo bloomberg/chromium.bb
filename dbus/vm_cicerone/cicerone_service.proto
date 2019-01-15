@@ -575,6 +575,9 @@ message StartLxdContainerRequest {
   // has started. This field will be required to be true once all clients are
   // migrated to use async.
   bool async = 4;
+
+  // Full path where drivefs is mounted (/media/fuse/drivefs-<drivefs-hash>).
+  string drivefs_mount_path = 5;
 }
 
 // Response for starting an LXD container.
