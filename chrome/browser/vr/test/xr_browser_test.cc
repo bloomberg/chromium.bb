@@ -39,10 +39,27 @@ constexpr char XrBrowserTestBase::kVrConfigPathEnvVar[];
 constexpr char XrBrowserTestBase::kVrConfigPathVal[];
 constexpr char XrBrowserTestBase::kVrLogPathEnvVar[];
 constexpr char XrBrowserTestBase::kVrLogPathVal[];
+constexpr char XrBrowserTestBase::kTestFileDir[];
 
 XrBrowserTestBase::XrBrowserTestBase() : env_(base::Environment::Create()) {}
 
 XrBrowserTestBase::~XrBrowserTestBase() = default;
+
+base::FilePath::StringType UTF8ToWideIfNecessary(std::string input) {
+#ifdef OS_WIN
+  return base::UTF8ToWide(input);
+#else
+  return input;
+#endif  // OS_WIN
+}
+
+std::string WideToUTF8IfNecessary(base::FilePath::StringType input) {
+#ifdef OS_WIN
+  return base::WideToUTF8(input);
+#else
+  return input;
+#endif  // OS_Win
+}
 
 // Returns an std::string consisting of the given path relative to the test
 // executable's path, e.g. if the executable is in out/Debug and the given path
@@ -55,16 +72,10 @@ std::string MakeExecutableRelative(const char* path) {
   // We need an std::string that is an absolute file path, which requires
   // platform-specific logic since Windows uses std::wstring instead of
   // std::string for FilePaths, but SetVar only accepts std::string.
-#ifdef OS_WIN
-  return base::WideToUTF8(
+  return WideToUTF8IfNecessary(
       base::MakeAbsoluteFilePath(
-          executable_path.Append(base::FilePath(base::UTF8ToWide(path))))
+          executable_path.Append(base::FilePath(UTF8ToWideIfNecessary(path))))
           .value());
-#else
-  return base::MakeAbsoluteFilePath(
-             executable_path.Append(base::FilePath(path)))
-      .value();
-#endif
 }
 
 void XrBrowserTestBase::SetUp() {
@@ -89,15 +100,30 @@ void XrBrowserTestBase::SetUp() {
   InProcessBrowserTest::SetUp();
 }
 
-GURL XrBrowserTestBase::GetHtmlTestFile(const std::string& test_name) {
+GURL XrBrowserTestBase::GetFileUrlForHtmlTestFile(
+    const std::string& test_name) {
   return ui_test_utils::GetTestUrl(
       base::FilePath(FILE_PATH_LITERAL("xr/e2e_test_files/html")),
-#ifdef OS_WIN
-      base::FilePath(base::UTF8ToWide(test_name + ".html"))
-#else
-      base::FilePath(test_name + ".html")
-#endif
-          );
+      base::FilePath(UTF8ToWideIfNecessary(test_name + ".html")));
+}
+
+GURL XrBrowserTestBase::GetEmbeddedServerUrlForHtmlTestFile(
+    const std::string& test_name) {
+  // GetURL requires that the path start with /.
+  return GetEmbeddedServer()->GetURL(std::string("/") + kTestFileDir +
+                                     test_name + ".html");
+}
+
+net::EmbeddedTestServer* XrBrowserTestBase::GetEmbeddedServer() {
+  if (server_ == nullptr) {
+    server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::Type::TYPE_HTTPS);
+    // We need to serve from the root in order for the inclusion of the
+    // test harness from //third_party to work.
+    server_->ServeFilesFromSourceDirectory(".");
+    EXPECT_TRUE(server_->Start()) << "Failed to start embedded test server";
+  }
+  return server_.get();
 }
 
 content::WebContents* XrBrowserTestBase::GetFirstTabWebContents() {

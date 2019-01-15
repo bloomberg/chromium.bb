@@ -38,8 +38,11 @@ enum class UserFriendlyElementName : int {
                          // is in use.
   kWebXrHostedContent,   // Hosted content in a WebXR immersive session, e.g.
                          // permission prompts.
-  kMicrophonePermissionIndicator,  // The microphone icon that appears when a
-                                   // page is using the microphone permission.
+  kMicrophonePermissionIndicator,    // The microphone icon that appears when a
+                                     // page is using the microphone permission.
+  kWebXrExternalPromptNotification,  // The notification shown in the headset
+                                     // if a permission is requested while in
+                                     // immersive WebXR session.
 };
 
 // These are the types of actions that Java can request callbacks for once

@@ -164,7 +164,7 @@ void TestPresentationPosesImpl(WebXrVrBrowserTestBase* t,
   MyOpenVRMock my_mock;
 
   // Load the test page, and enter presentation.
-  t->LoadUrlAndAwaitInitialization(t->GetHtmlTestFile(filename));
+  t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(filename));
   t->EnterSessionWithUserGestureOrFail();
 
   // Wait for JavaScript to submit at least one frame.
