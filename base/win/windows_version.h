@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/base_export.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/version.h"
 
@@ -128,12 +129,16 @@ class BASE_EXPORT OSInfo {
 
  private:
   friend class base::test::ScopedOSInfoOverride;
+  FRIEND_TEST_ALL_PREFIXES(OSInfo, MajorMinorBuildToVersion);
   static OSInfo** GetInstanceStorage();
 
   OSInfo(const _OSVERSIONINFOEXW& version_info,
          const _SYSTEM_INFO& system_info,
          int os_type);
   ~OSInfo();
+
+  // Returns a Version value for a given OS version tuple.
+  static Version MajorMinorBuildToVersion(int major, int minor, int build);
 
   Version version_;
   VersionNumber version_number_;
