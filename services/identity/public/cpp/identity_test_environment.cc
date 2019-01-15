@@ -447,6 +447,10 @@ void IdentityTestEnvironment::ResetToAccountsNotYetLoadedFromDiskState() {
   token_service_->set_all_credentials_loaded_for_testing(false);
 }
 
+void IdentityTestEnvironment::ReloadAccountsFromDisk() {
+  token_service_->LoadCredentials("");
+}
+
 void IdentityTestEnvironment::SetFreshnessOfAccountsInGaiaCookie(
     bool accounts_are_fresh) {
   gaia_cookie_manager_service_->set_list_accounts_stale_for_testing(
