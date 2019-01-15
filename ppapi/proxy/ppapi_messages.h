@@ -11,11 +11,19 @@
 #include <string>
 #include <vector>
 
+#include "base/sync_socket.h"
+
+#ifdef WIN32
+// base/sync_socket.h will define MemoryBarrier (a Win32 macro) that
+// would clash with MemoryBarrier in base/atomicops.h if someone uses
+// that together with this header.
+#undef MemoryBarrier
+#endif  // WIN32
+
 #include "base/files/file_path.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
-#include "base/sync_socket.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_id.h"
