@@ -157,7 +157,7 @@ static_library("test_support") {
     "//components/safe_browsing/db:v4_test_util",
     "//components/search_engines:test_support",
     "//components/sessions:test_support",
-    "//components/signin/core/browser:test_support",
+    "//components/signin/core/browser:internals_test_support",
     "//components/subresource_filter/content/browser:test_support",
     "//components/subresource_filter/core/common",
     "//components/sync",

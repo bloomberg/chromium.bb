@@ -217,6 +217,8 @@ static_library("browser") {
 static_library("internals_test_support") {
   testonly = true
   sources = [
+    "fake_account_fetcher_service.cc",
+    "fake_account_fetcher_service.h",
     "fake_gaia_cookie_manager_service.cc",
     "fake_gaia_cookie_manager_service.h",
     "fake_profile_oauth2_token_service.cc",
@@ -234,8 +236,10 @@ static_library("internals_test_support") {
 
   deps = [
     "//base/test:test_support",
+    "//components/image_fetcher/core",
     "//components/prefs",
     "//google_apis:test_support",
+    "//ui/gfx:test_support",
   ]
 
   public_deps = [
@@ -243,32 +247,6 @@ static_library("internals_test_support") {
     ":shared",
     "//base",
     "//services/network:test_support",
-  ]
-}
-
-static_library("test_support") {
-  testonly = true
-
-  # TODO(blundell): Move this to internals.
-  sources = [
-    "fake_account_fetcher_service.cc",
-    "fake_account_fetcher_service.h",
-  ]
-
-  deps = [
-    "//ui/gfx:test_support",
-  ]
-
-  public_deps = [
-    ":browser",
-
-    # This public_dep is present to avoid requiring all consumers of this
-    # target to also depend on the below target. Once there are no direct
-    # consumers of the internals_test_support target, this dep should be
-    # removed. See https://crbug.com/796544.
-    ":internals_test_support",
-    "//base",
-    "//components/image_fetcher/core/",
   ]
 }
 
@@ -297,10 +275,12 @@ source_set("unit_tests") {
   ]
 
   deps = [
+    ":browser",
+    ":internals_test_support",
     ":signin_buildflags",
-    ":test_support",
     "//base/test:test_support",
     "//components/content_settings/core/browser",
+    "//components/image_fetcher/core",
     "//components/os_crypt:test_support",
     "//components/prefs",
     "//components/prefs:test_support",
