@@ -487,14 +487,20 @@ void V8TestInterfaceConstructorConstructor::NamedConstructorAttributeGetter(
       private_value->IsUndefined()) {
     v8::Local<v8::Function> interface =
         per_context_data->ConstructorForType(V8TestInterfaceConstructor::GetWrapperTypeInfo());
-    v8::Local<v8::Value> interfacePrototype =
+    v8::Local<v8::Value> interface_prototype =
         interface->Get(current_context, V8AtomicString(info.GetIsolate(), "prototype"))
         .ToLocalChecked();
-    bool result = named_constructor->Set(
+    // https://heycam.github.io/webidl/#named-constructors
+    // 8. Perform ! DefinePropertyOrThrow(F, "prototype",
+    //        PropertyDescriptor{[[Value]]: proto, [[Writable]]: false,
+    //                           [[Enumerable]]: false,
+    //                           [Configurable]]: false}).
+    const v8::PropertyAttribute prototype_attributes =
+        static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum | v8::DontDelete);
+    bool result = named_constructor->DefineOwnProperty(
         current_context, V8AtomicString(info.GetIsolate(), "prototype"),
-        interfacePrototype).ToChecked();
-    if (!result)
-      return;
+        interface_prototype, prototype_attributes).ToChecked();
+    CHECK(result);
     private_property.Set(named_constructor, v8::True(info.GetIsolate()));
   }
 
