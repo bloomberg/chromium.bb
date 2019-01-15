@@ -219,9 +219,13 @@ void WebUIDataSourceImpl::DisableDenyXFrameOptions() {
   deny_xframe_options_ = false;
 }
 
+void WebUIDataSourceImpl::UseGzip() {
+  use_gzip_ = true;
+}
+
 void WebUIDataSourceImpl::UseGzip(
     const std::vector<std::string>& excluded_paths) {
-  use_gzip_ = true;
+  UseGzip();
   for (const auto& path : excluded_paths)
     excluded_paths_.insert(path);
 }

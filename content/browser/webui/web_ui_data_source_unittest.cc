@@ -214,6 +214,12 @@ TEST_F(WebUIDataSourceTest, MimeType) {
 
 TEST_F(WebUIDataSourceTest, IsGzipped) {
   EXPECT_FALSE(source()->IsGzipped("foobar"));
+  source()->UseGzip();
+  EXPECT_TRUE(source()->IsGzipped("foobar"));
+}
+
+TEST_F(WebUIDataSourceTest, IsGzippedWithExclusions) {
+  EXPECT_FALSE(source()->IsGzipped("foobar"));
 
   source()->AddResourcePath("foobar", kDummyResourceId);
   source()->SetDefaultResource(kDummyDefaultResourceId);

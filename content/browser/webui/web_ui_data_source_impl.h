@@ -49,6 +49,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   void OverrideContentSecurityPolicyObjectSrc(const std::string& data) override;
   void OverrideContentSecurityPolicyChildSrc(const std::string& data) override;
   void DisableDenyXFrameOptions() override;
+  void UseGzip() override;
   void UseGzip(const std::vector<std::string>& excluded_paths) override;
   std::string GetSource() const override;
 
@@ -78,6 +79,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   friend class WebUIDataSourceTest;
 
   FRIEND_TEST_ALL_PREFIXES(WebUIDataSourceTest, IsGzipped);
+  FRIEND_TEST_ALL_PREFIXES(WebUIDataSourceTest, IsGzippedWithExclusions);
 
   // Methods that match URLDataSource which are called by
   // InternalDataSource.

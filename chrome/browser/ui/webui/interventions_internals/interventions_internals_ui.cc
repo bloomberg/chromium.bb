@@ -28,7 +28,7 @@ content::WebUIDataSource* GetSource() {
       IDR_INTERVENTIONS_INTERNALS_MOJO_INDEX_JS);
   source->AddResourcePath("url/mojom/url.mojom.js", IDR_URL_MOJO_JS);
   source->SetDefaultResource(IDR_INTERVENTIONS_INTERNALS_INDEX_HTML);
-  source->UseGzip(std::vector<std::string>());
+  source->UseGzip();
   return source;
 }
 
@@ -36,7 +36,7 @@ content::WebUIDataSource* GetUnsupportedSource() {
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUIInterventionsInternalsHost);
   source->SetDefaultResource(IDR_INTERVENTIONS_INTERNALS_UNSUPPORTED_PAGE_HTML);
-  source->UseGzip(std::vector<std::string>());
+  source->UseGzip();
   return source;
 }
 
