@@ -91,14 +91,12 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillServerProfile(
     const AutofillProfile& address,
     bool enforce_utf8) {
   auto entity_data = std::make_unique<EntityData>();
-
-  std::string specifics_id = GetSpecificsIdFromAutofillProfile(address);
   entity_data->non_unique_name =
-      GetClientTagForWalletDataSpecificsId(specifics_id);
+      "Server profile " +
+      GetBase64EncodedId(GetSpecificsIdFromAutofillProfile(address));
 
   AutofillWalletSpecifics* wallet_specifics =
       entity_data->specifics.mutable_autofill_wallet();
-
   SetAutofillWalletSpecificsFromServerProfile(address, wallet_specifics,
                                               enforce_utf8);
 
@@ -108,15 +106,12 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillServerProfile(
 // Creates a EntityData object corresponding to the specified |card|.
 std::unique_ptr<EntityData> CreateEntityDataFromCard(const CreditCard& card,
                                                      bool enforce_utf8) {
-  std::string specifics_id = GetSpecificsIdFromCreditCard(card);
-
   auto entity_data = std::make_unique<EntityData>();
   entity_data->non_unique_name =
-      GetClientTagForWalletDataSpecificsId(specifics_id);
+      "Server card " + GetBase64EncodedId(GetSpecificsIdFromCreditCard(card));
 
   AutofillWalletSpecifics* wallet_specifics =
       entity_data->specifics.mutable_autofill_wallet();
-
   SetAutofillWalletSpecificsFromServerCard(card, wallet_specifics,
                                            enforce_utf8);
 
@@ -126,12 +121,10 @@ std::unique_ptr<EntityData> CreateEntityDataFromCard(const CreditCard& card,
 // Creates a EntityData object corresponding to the specified |customer_data|.
 std::unique_ptr<EntityData> CreateEntityDataFromPaymentsCustomerData(
     const PaymentsCustomerData& customer_data) {
-  std::string specifics_id =
-      GetSpecificsIdFromPaymentsCustomerData(customer_data);
-
   auto entity_data = std::make_unique<EntityData>();
   entity_data->non_unique_name =
-      GetClientTagForWalletDataSpecificsId(specifics_id);
+      "Payments customer data " +
+      GetBase64EncodedId(GetSpecificsIdFromPaymentsCustomerData(customer_data));
 
   AutofillWalletSpecifics* wallet_specifics =
       entity_data->specifics.mutable_autofill_wallet();
