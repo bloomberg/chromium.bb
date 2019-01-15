@@ -17,10 +17,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "chrome/common/buildflags.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "printing/backend/print_backend.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace base {
 class DictionaryValue;
@@ -48,9 +48,8 @@ enum PrinterType {
 };
 
 // The handler for Javascript messages related to the print preview dialog.
-class PrintPreviewHandler
-    : public content::WebUIMessageHandler,
-      public GaiaCookieManagerService::Observer {
+class PrintPreviewHandler : public content::WebUIMessageHandler,
+                            public identity::IdentityManager::Observer {
  public:
   PrintPreviewHandler();
   ~PrintPreviewHandler() override;
@@ -60,7 +59,7 @@ class PrintPreviewHandler
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
 
-  // GaiaCookieManagerService::Observer implementation.
+  // IdentityManager::Observer implementation.
   void OnAddAccountToCookieCompleted(
       const std::string& account_id,
       const GoogleServiceAuthError& error) override;
@@ -318,9 +317,9 @@ class PrintPreviewHandler
   // Holds token service to get OAuth2 access tokens.
   std::unique_ptr<AccessTokenService> token_service_;
 
-  // Pointer to cookie manager service so that print preview can listen for GAIA
-  // cookie changes.
-  GaiaCookieManagerService* gaia_cookie_manager_service_;
+  // Pointer to the identity manager service so that print preview can listen
+  // for GAIA cookie changes.
+  identity::IdentityManager* identity_manager_;
 
   // Handles requests for cloud printers. Created lazily by calling
   // GetPrinterHandler().
