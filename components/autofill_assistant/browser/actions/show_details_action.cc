@@ -25,7 +25,7 @@ void ShowDetailsAction::InternalProcessAction(ActionDelegate* delegate,
     UpdateProcessedAction(ACTION_APPLIED);
     std::move(callback).Run(std::move(processed_action_proto_));
   } else {
-    delegate->ShowDetails(proto_.show_details().details(),
+    delegate->ShowDetails(proto_.show_details(),
                           base::BindOnce(&ShowDetailsAction::OnShowDetails,
                                          weak_ptr_factory_.GetWeakPtr(),
                                          std::move(callback), delegate));

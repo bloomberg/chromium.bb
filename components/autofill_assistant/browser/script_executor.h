@@ -160,7 +160,7 @@ class ScriptExecutor : public ActionDelegate {
   content::WebContents* GetWebContents() override;
   void StopCurrentScriptAndShutdown(const std::string& message) override;
   void HideDetails() override;
-  void ShowDetails(const DetailsProto& details,
+  void ShowDetails(const ShowDetailsProto& show_details,
                    base::OnceCallback<void(bool)> callback) override;
   void ShowProgressBar(int progress, const std::string& message) override;
   void HideProgressBar() override;

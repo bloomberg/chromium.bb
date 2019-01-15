@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.support.annotation.Nullable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,8 +16,8 @@ import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiDelegat
  * Automatically extracts context information and serializes it in JSON form.
  */
 class FeedbackContext extends JSONObject {
-    static String buildContextString(ChromeActivity activity, Client client, Details details,
-            String statusMessage, int indentSpaces) {
+    static String buildContextString(ChromeActivity activity, Client client,
+            @Nullable Details details, String statusMessage, int indentSpaces) {
         try {
             return new FeedbackContext(activity, client, details, statusMessage)
                     .toString(indentSpaces);
@@ -26,11 +28,11 @@ class FeedbackContext extends JSONObject {
         }
     }
 
-    private FeedbackContext(ChromeActivity activity, Client client, Details details,
+    private FeedbackContext(ChromeActivity activity, Client client, @Nullable Details details,
             String statusMessage) throws JSONException {
         addActivityInformation(activity);
         addClientContext(client);
-        put("movie", details.toJSONObject());
+        if (details != null) put("movie", details.toJSONObject());
         put("status", statusMessage);
     }
 

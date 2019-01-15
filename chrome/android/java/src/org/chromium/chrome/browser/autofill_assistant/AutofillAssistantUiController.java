@@ -17,7 +17,6 @@ import org.chromium.payments.mojom.PaymentOptions;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -30,7 +29,8 @@ public class AutofillAssistantUiController extends AbstractAutofillAssistantUiCo
     private final WebContents mWebContents;
 
     // TODO(crbug.com/806868): Move mCurrentDetails and mStatusMessage to a Model (refactor to MVC).
-    private Details mCurrentDetails = Details.EMPTY_DETAILS;
+    @Nullable
+    private Details mCurrentDetails;
     private String mStatusMessage;
 
     /** Native pointer to the UIController. */
@@ -77,6 +77,7 @@ public class AutofillAssistantUiController extends AbstractAutofillAssistantUiCo
     }
 
     @Override
+    @Nullable
     public Details getDetails() {
         return mCurrentDetails;
     }
@@ -280,21 +281,13 @@ public class AutofillAssistantUiController extends AbstractAutofillAssistantUiCo
     }
 
     /**
-     * Updates the currently shown details.
+     * Displays |newDetails| and asks for user approval if necessary. If approval is granted,
+     * |mCurrentDetails| will be updated.
      *
      * @param newDetails details to display.
      */
-    void maybeUpdateDetails(Details newDetails) {
-        if (mCurrentDetails.isEmpty() && newDetails.isEmpty()) {
-            // No update on UI needed.
-            if (mNativeUiController != 0) {
-                nativeOnShowDetails(mNativeUiController, /* canContinue= */ true);
-            }
-            return;
-        }
-
-        Details mergedDetails = Details.merge(mCurrentDetails, newDetails);
-        mUiDelegateHolder.performUiOperation(uiDelegate -> uiDelegate.showDetails(mergedDetails));
+    void showDetailsForApproval(Details newDetails) {
+        mUiDelegateHolder.performUiOperation(uiDelegate -> uiDelegate.showDetails(newDetails));
     }
 
     @CalledByNative
@@ -304,7 +297,8 @@ public class AutofillAssistantUiController extends AbstractAutofillAssistantUiCo
 
     @CalledByNative
     private void onShowDetails(String title, String url, String description, String mId,
-            String price, int year, int month, int day, int hour, int minute, int second) {
+            String price, int year, int month, int day, int hour, int minute, int second,
+            boolean userApprovalRequired, boolean highlightTitle, boolean highlightDate) {
         Date date;
         if (year > 0 && month > 0 && day > 0 && hour >= 0 && minute >= 0 && second >= 0) {
             Calendar calendar = Calendar.getInstance();
@@ -318,8 +312,8 @@ public class AutofillAssistantUiController extends AbstractAutofillAssistantUiCo
 
         if (price.length() == 0) price = null;
 
-        maybeUpdateDetails(new Details(title, url, date, description, mId, price,
-                /* isFinal= */ true, Collections.emptySet()));
+        showDetailsForApproval(new Details(title, url, date, description, mId, price,
+                userApprovalRequired, highlightTitle, highlightDate));
     }
 
     @CalledByNative

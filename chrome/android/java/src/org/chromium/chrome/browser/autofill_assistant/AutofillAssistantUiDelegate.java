@@ -174,6 +174,7 @@ class AutofillAssistantUiDelegate {
         /**
          * Returns current details.
          */
+        @Nullable
         Details getDetails();
 
         /**
@@ -265,7 +266,7 @@ class AutofillAssistantUiDelegate {
                 new AutofillAssistantUiDelegate(activity, controller), controller);
         initForCustomTab(activity, delegateHolder);
         Details initialDetails = controller.getDetails();
-        if (!initialDetails.isEmpty()) {
+        if (initialDetails != null) {
             delegateHolder.performUiOperation(
                     (uiDelegate) -> uiDelegate.showDetails(initialDetails));
         }
@@ -588,7 +589,7 @@ class AutofillAssistantUiDelegate {
     /**
      * Shows the details.
      *
-     * <p>If some fields changed compared to the old details, the diff mode is entered.
+     * <p>If the details have changed, the diff mode is entered.
      * */
     public void showDetails(Details details) {
         Drawable defaultImage = AppCompatResources.getDrawable(
@@ -612,19 +613,15 @@ class AutofillAssistantUiDelegate {
                 }
             });
         } else {
-            mDetailsImage.setVisibility(View.GONE);
-            if (!details.isFinal()) {
-                mDetailsImage.setImageDrawable(defaultImage);
-                mDetailsImage.setVisibility(View.VISIBLE);
-            }
+            mDetailsImage.setImageDrawable(defaultImage);
+            mDetailsImage.setVisibility(View.VISIBLE);
         }
 
         // Make sure the Autofill Assistant is visible.
         show();
         mBottomBarAnimations.showDetails();
 
-        boolean shouldShowDiffMode = details.getFieldsChanged().size() > 0;
-        if (shouldShowDiffMode) {
+        if (details.getUserApprovalRequired()) {
             enableDiffModeForDetails(details);
         } else {
             mClient.onDetailsAcknowledged(details, /* canContinue= */ true);
@@ -638,15 +635,15 @@ class AutofillAssistantUiDelegate {
      */
     private void enableDiffModeForDetails(Details details) {
         enableProgressBarPulsing();
-        // For detailsText we compare only Date.
-        if (details.getFieldsChanged().contains(Details.DetailsField.DATE)) {
+        // Highlight entire details text if date has changed.
+        if (details.getHighlightDate()) {
             mDetailsText.setTypeface(mDetailsText.getTypeface(), Typeface.BOLD_ITALIC);
         } else {
             mDetailsText.setTextColor(ApiCompatibilityUtils.getColor(
                     mActivity.getResources(), R.color.modern_grey_300));
         }
 
-        if (!details.getFieldsChanged().contains(Details.DetailsField.TITLE)) {
+        if (!details.getHighlightTitle()) {
             mDetailsTitle.setTextColor(ApiCompatibilityUtils.getColor(
                     mActivity.getResources(), R.color.modern_grey_300));
         }
@@ -669,6 +666,7 @@ class AutofillAssistantUiDelegate {
             showStatusMessage(oldMessage);
             disableProgressBarPulsing();
 
+            details.clearChangedFlags();
             mClient.onDetailsAcknowledged(details, /* canContinue= */ true);
         });
         childViews.add(continueChip);
@@ -682,7 +680,7 @@ class AutofillAssistantUiDelegate {
     }
 
     private void updateDetailsAnimation(Details details, GradientDrawable defaultImage) {
-        if (details.isFinal()) {
+        if (!details.getUserApprovalRequired()) {
             if (mDetailsPulseAnimation != null) {
                 mDetailsPulseAnimation.cancel();
             }

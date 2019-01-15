@@ -615,6 +615,17 @@ message DateTimeProto {
   optional TimeProto time = 2;
 }
 
+message DetailsChanges {
+  // Whether the changes require user approval.
+  optional bool user_approval_required = 1;
+
+  // Whether the title should be highlighted.
+  optional bool highlight_title = 2;
+
+  // Whether the date should be highlighted.
+  optional bool highlight_date = 3;
+}
+
 message DetailsProto {
   optional string title = 1;
 
@@ -636,6 +647,9 @@ message DetailsProto {
 // Show contextual information.
 message ShowDetailsProto {
   optional DetailsProto details = 1;
+
+  // Flags indicating which parts of the details (if any) have changed.
+  optional DetailsChanges change_flags = 2;
 }
 
 // Set the value of an form element.
