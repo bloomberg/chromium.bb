@@ -160,12 +160,15 @@ class UssWalletSwitchToggler : public testing::WithParamInterface<bool> {
  public:
   UssWalletSwitchToggler();
 
-  // Sets up feature overrides, based on the parameter of the test.
+  // Sets up feature overrides, based on the parameter of the test. Must be
+  // called before the test body is entered (otherwise TSan complains about a
+  // data race).
   void InitWithDefaultFeatures();
 
   // Sets up feature overrides, adds the toggled feature on top of specified
   // |enabled_features| and |disabled_features|. Vectors are passed by value
-  // because we need to alter them anyway.
+  // because we need to alter them anyway. Must be called before the test body
+  // is entered (otherwise TSan complains about a data race).
   void InitWithFeatures(std::vector<base::Feature> enabled_features,
                         std::vector<base::Feature> disabled_features);
 
