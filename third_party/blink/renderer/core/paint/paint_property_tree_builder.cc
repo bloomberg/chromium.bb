@@ -212,9 +212,27 @@ class FragmentPaintPropertyTreeBuilder {
     full_context_.clip_changed |=
         !(result.Unchanged() || only_updated_hit_test_values);
   }
+  // Like |OnUpdate| but forces a piercing subtree update if the scroll tree
+  // hierarchy changes because the scroll tree does not have isolation nodes
+  // and non-piercing updates can fail to update scroll descendants.
+  void OnUpdateScroll(const ObjectPaintProperties::UpdateResult& result) {
+    OnUpdate(result);
+    if (result.NewNodeCreated()) {
+      full_context_.force_subtree_update_reasons |=
+          PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationPiercing;
+    }
+  }
   void OnClear(bool cleared) {
     property_added_or_removed_ |= cleared;
     property_changed_ |= cleared;
+  }
+  // See: |OnUpdateScroll|.
+  void OnClearScroll(bool cleared) {
+    OnClear(cleared);
+    if (cleared) {
+      full_context_.force_subtree_update_reasons |=
+          PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationPiercing;
+    }
   }
   void OnClearClip(bool cleared) {
     OnClear(cleared);
@@ -1736,8 +1754,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
         state.snap_container_data = snap_coordinator->GetSnapContainerData(box);
       }
 
-      OnUpdate(properties_->UpdateScroll(*context_.current.scroll,
-                                         std::move(state)));
+      OnUpdateScroll(properties_->UpdateScroll(*context_.current.scroll,
+                                               std::move(state)));
 
       if (scrollable_area->VerticalScrollbar() ||
           scrollable_area->HasLayerForVerticalScrollbar()) {
@@ -1767,7 +1785,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
         OnClear(properties_->ClearHorizontalScrollbarEffect());
       }
     } else {
-      OnClear(properties_->ClearScroll());
+      OnClearScroll(properties_->ClearScroll());
       OnClear(properties_->ClearVerticalScrollbarEffect());
       OnClear(properties_->ClearHorizontalScrollbarEffect());
     }
