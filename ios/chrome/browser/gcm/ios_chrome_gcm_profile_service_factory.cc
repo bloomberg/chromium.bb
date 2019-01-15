@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "components/gcm_driver/gcm_client_factory.h"
@@ -59,7 +59,8 @@ gcm::GCMProfileService* IOSChromeGCMProfileServiceFactory::GetForBrowserState(
 // static
 IOSChromeGCMProfileServiceFactory*
 IOSChromeGCMProfileServiceFactory::GetInstance() {
-  return base::Singleton<IOSChromeGCMProfileServiceFactory>::get();
+  static base::NoDestructor<IOSChromeGCMProfileServiceFactory> instance;
+  return instance.get();
 }
 
 // static
