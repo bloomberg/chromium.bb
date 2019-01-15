@@ -194,6 +194,7 @@ std::vector<gfx::Rect> WideFrameView::GetVisibleBoundsInScreen() const {
 void WideFrameView::OnOverviewModeStarting() {
   header_view_->SetShouldPaintHeader(false);
 }
+
 void WideFrameView::OnOverviewModeEnded() {
   header_view_->SetShouldPaintHeader(true);
 }

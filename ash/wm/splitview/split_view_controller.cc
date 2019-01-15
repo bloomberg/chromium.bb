@@ -691,10 +691,10 @@ void SplitViewController::OnOverviewModeStarting() {
   UpdateSplitViewStateAndNotifyObservers();
 }
 
-void SplitViewController::OnOverviewModeEnding() {
+void SplitViewController::OnOverviewModeEnding(
+    WindowSelector* window_selector) {
   DCHECK(IsSplitViewModeActive());
 
-  WindowSelector* window_selector = GetWindowSelector();
   // Early exit if overview is ended while swiping up on the shelf to avoid
   // snapping a window or showing a toast.
   if (window_selector->enter_exit_overview_type() ==

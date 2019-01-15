@@ -36,10 +36,10 @@ bool WmShadowControllerDelegate::ShouldShowShadowForWindow(
   if (window_selector_controller && window_selector_controller->IsSelecting()) {
     WindowSelector* window_selector =
         window_selector_controller->window_selector();
-    if (!window_selector->IsShuttingDown() &&
-        window_selector->IsWindowInOverview(window)) {
+    // IsSelecting() being true implies |window_selector| exists.
+    DCHECK(window_selector);
+    if (window_selector->IsWindowInOverview(window))
       return false;
-    }
   }
 
   // The shadow state will be updated when the window is added to a parent.

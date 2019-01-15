@@ -398,9 +398,13 @@ void WindowGrid::Shutdown() {
   for (const auto& window : window_list_)
     window->Shutdown();
 
+  // Shutdown() implies |window_selector_| is about to be deleted, so reset it.
+  auto exit_overview_type = window_selector_->enter_exit_overview_type();
+  window_selector_ = nullptr;
+
   // HomeLauncherGestureHandler will handle fading/sliding |shield_widget_| in
   // this exit mode.
-  if (window_selector_->enter_exit_overview_type() ==
+  if (exit_overview_type ==
       WindowSelector::EnterExitOverviewType::kSwipeFromShelf) {
     return;
   }
@@ -425,7 +429,7 @@ void WindowGrid::PositionWindows(
     bool animate,
     WindowSelectorItem* ignored_item,
     WindowSelector::OverviewTransition transition) {
-  if (window_selector_->IsShuttingDown())
+  if (!window_selector_)
     return;
 
   DCHECK_NE(transition, WindowSelector::OverviewTransition::kExit);
@@ -838,7 +842,8 @@ void WindowGrid::OnWindowDestroying(aura::Window* window) {
     selection_widget_.reset();
     // If the grid is now empty, notify the window selector so that it erases us
     // from its grid list.
-    window_selector_->OnGridEmpty(this);
+    if (window_selector_)
+      window_selector_->OnGridEmpty(this);
     return;
   }
 

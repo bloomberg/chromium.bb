@@ -509,7 +509,7 @@ WindowSelectorController::GetWindowsListInOverviewGridsForTesting() {
 // TODO(sammiequon): Rename to something like EndOverview() and refactor to use
 // a single entry point for overview.
 void WindowSelectorController::OnSelectionEnded() {
-  if (!IsSelecting() || is_shutting_down_)
+  if (!IsSelecting())
     return;
 
   if (!occlusion_tracker_pauser_) {
@@ -524,16 +524,15 @@ void WindowSelectorController::OnSelectionEnded() {
   start_animations_.clear();
 
   window_selector_->UpdateMaskAndShadow(/*show=*/false);
-  is_shutting_down_ = true;
-  // Shell observers may access |window_selector_|.
-  Shell::Get()->NotifyOverviewModeEnding();
+
   auto* window_selector = window_selector_.release();
+  Shell::Get()->NotifyOverviewModeEnding(window_selector);
   window_selector->Shutdown();
   // Don't delete |window_selector_| yet since the stack is still using it.
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, window_selector);
   last_selection_time_ = base::Time::Now();
   Shell::Get()->NotifyOverviewModeEnded();
-  is_shutting_down_ = false;
+
   // There may be no delayed animations in tests, so unblur right away.
   if (delayed_animations_.empty()) {
     if (IsBlurAllowed())

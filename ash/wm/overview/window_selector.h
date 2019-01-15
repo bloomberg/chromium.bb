@@ -182,9 +182,6 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   void PositionWindows(bool animate,
                        WindowSelectorItem* ignored_item = nullptr);
 
-  // If we are in middle of ending overview mode.
-  bool IsShuttingDown() const;
-
   // Checks if the grid associated with a given |root_window| needs to have the
   // wallpaper animated. Returns false if one of the grids windows covers the
   // the entire workspace, true otherwise.

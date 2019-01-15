@@ -47,8 +47,13 @@ class TestShellObserver : public ShellObserver {
   ~TestShellObserver() override { Shell::Get()->RemoveShellObserver(this); }
 
   // ShellObserver:
-  void OnOverviewModeStarting() override { UpdateLastAnimationWasSlide(); }
-  void OnOverviewModeEnding() override { UpdateLastAnimationWasSlide(); }
+  void OnOverviewModeStarting() override {
+    UpdateLastAnimationWasSlide(
+        Shell::Get()->window_selector_controller()->window_selector());
+  }
+  void OnOverviewModeEnding(WindowSelector* window_selector) override {
+    UpdateLastAnimationWasSlide(window_selector);
+  }
   void OnOverviewModeStartingAnimationComplete(bool canceled) override {
     if (!should_monitor_animation_state_)
       return;
@@ -98,9 +103,7 @@ class TestShellObserver : public ShellObserver {
   bool last_animation_was_slide() const { return last_animation_was_slide_; }
 
  private:
-  void UpdateLastAnimationWasSlide() {
-    WindowSelector* selector =
-        Shell::Get()->window_selector_controller()->window_selector();
+  void UpdateLastAnimationWasSlide(WindowSelector* selector) {
     DCHECK(selector);
     last_animation_was_slide_ =
         selector->enter_exit_overview_type() ==

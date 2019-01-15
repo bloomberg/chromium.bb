@@ -72,9 +72,7 @@ class OverviewStatesObserver : public ShellObserver {
     // Reset the value to true.
     overview_animate_when_exiting_ = true;
   }
-  void OnOverviewModeEnding() override {
-    WindowSelector* window_selector =
-        Shell::Get()->window_selector_controller()->window_selector();
+  void OnOverviewModeEnding(WindowSelector* window_selector) override {
     WindowGrid* grid = window_selector->GetGridWithRootWindow(root_window_);
     if (!grid)
       return;

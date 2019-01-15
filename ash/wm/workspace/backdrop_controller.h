@@ -69,7 +69,7 @@ class BackdropController : public ShellObserver,
 
   // ShellObserver:
   void OnOverviewModeStarting() override;
-  void OnOverviewModeEnding() override;
+  void OnOverviewModeEnding(WindowSelector* window_selector) override;
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
   void OnAppListVisibilityChanged(bool shown,
                                   aura::Window* root_window) override;

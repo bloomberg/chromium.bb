@@ -586,9 +586,10 @@ void Shell::NotifyOverviewModeStartingAnimationComplete(bool canceled) {
     observer.OnOverviewModeStartingAnimationComplete(canceled);
 }
 
-void Shell::NotifyOverviewModeEnding() {
+void Shell::NotifyOverviewModeEnding(WindowSelector* window_selector) {
+  DCHECK(window_selector);
   for (auto& observer : shell_observers_)
-    observer.OnOverviewModeEnding();
+    observer.OnOverviewModeEnding(window_selector);
 }
 
 void Shell::NotifyOverviewModeEnded() {
