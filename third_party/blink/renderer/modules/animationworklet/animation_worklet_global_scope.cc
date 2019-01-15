@@ -195,6 +195,13 @@ void AnimationWorkletGlobalScope::registerAnimator(
       MakeGarbageCollected<AnimatorDefinition>(isolate, constructor, animate);
 
   animator_definitions_.Set(name, definition);
+  // TODO(yigu): Currently one animator name is synced back per registration.
+  // Eventually all registered names should be synced in batch once a module
+  // completes its loading in the worklet scope. https://crbug.com/920722.
+  if (AnimationWorkletProxyClient* proxy_client =
+          AnimationWorkletProxyClient::From(Clients())) {
+    proxy_client->SynchronizeAnimatorName(name);
+  }
 }
 
 Animator* AnimationWorkletGlobalScope::CreateInstance(

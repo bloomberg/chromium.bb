@@ -15,6 +15,11 @@ MainThreadMutatorClient::MainThreadMutatorClient(
   mutator_->SetClient(this);
 }
 
+void MainThreadMutatorClient::SynchronizeAnimatorName(
+    const String& animator_name) {
+  delegate_->SynchronizeAnimatorName(animator_name);
+}
+
 void MainThreadMutatorClient::SetMutationUpdate(
     std::unique_ptr<AnimationWorkletOutput> output_state) {
   delegate_->SetMutationUpdate(std::move(output_state));
