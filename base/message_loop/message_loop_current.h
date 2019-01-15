@@ -187,11 +187,6 @@ class BASE_EXPORT MessageLoopCurrent {
   // level.
   bool IsIdleForTesting();
 
-  // Gets the unique id for the current work item executed by the message
-  // loop. Provides lock-free access to the current work id from threads other
-  // than the message loop's thread.
-  unsigned int GetWorkId() const;
-
  protected:
   // Binds |current| to the current thread. It will from then on be the
   // MessageLoop driven by MessageLoopCurrent on this thread. This is only meant

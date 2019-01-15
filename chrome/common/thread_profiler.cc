@@ -4,14 +4,12 @@
 
 #include "chrome/common/thread_profiler.h"
 
-#include <atomic>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/rand_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
@@ -67,6 +65,14 @@ CallStackProfileParams::Process GetProcess() {
   return CallStackProfileParams::UNKNOWN_PROCESS;
 }
 
+std::unique_ptr<base::StackSamplingProfiler::ProfileBuilder>
+CreateProfileBuilder(
+    const CallStackProfileParams& params,
+    base::OnceClosure completed_callback = base::OnceClosure()) {
+  return std::make_unique<CallStackProfileBuilder>(
+      params, std::move(completed_callback));
+}
+
 }  // namespace
 
 // The scheduler works by splitting execution time into repeated periods such
@@ -118,57 +124,7 @@ base::TimeTicks PeriodicSamplingScheduler::Now() const {
   return base::TimeTicks::Now();
 }
 
-// Records the current unique id for the work item being executed in the target
-// thread's message loop.
-class ThreadProfiler::WorkIdRecorder : public metrics::WorkIdRecorder {
- public:
-  WorkIdRecorder()
-      : received_message_loop_(base::MessageLoopCurrent::GetNull()),
-        message_loop_present_(false),
-        message_loop_(base::MessageLoopCurrent::GetNull()) {}
-
-  // Invoked by the profiled thread.
-  void SetMessageLoop(base::MessageLoopCurrent message_loop) {
-    DCHECK(message_loop);
-    DCHECK(!received_message_loop_);
-    DCHECK(!message_loop_present_.load(std::memory_order_relaxed));
-
-    received_message_loop_ = message_loop;
-    message_loop_present_.store(true, std::memory_order_release);
-  }
-
-  // Invoked on the profiler thread while the target thread is suspended.
-  unsigned int RecordWorkId() const override {
-    // If we don't have a message loop yet, check the boolean to see if one was
-    // assigned.
-    if (!message_loop_ &&
-        message_loop_present_.load(std::memory_order_acquire)) {
-      message_loop_ = received_message_loop_;
-    }
-    // If we still don't have a message loop, return 0 to indicate the message
-    // loop hasn't been started yet.
-    if (!message_loop_)
-      return 0;
-
-    return message_loop_.GetWorkId();
-  }
-
-  WorkIdRecorder(const WorkIdRecorder&) = delete;
-  WorkIdRecorder& operator=(const WorkIdRecorder&) = delete;
-
- private:
-  // The message loop copy received on the profiled thread and read on the
-  // profiler thread subject to seeing |message_loop_present_|.
-  base::MessageLoopCurrent received_message_loop_;
-  // True after received_message_loop_ is set to a non-null message loop. Set on
-  // the profiled thread and accessed on the profiler thread. Atomic since the
-  // profiler accesses the state while the profiled thread is suspended.
-  std::atomic_bool message_loop_present_;
-  // The message loop copy accessed only on the profiler thread.
-  mutable base::MessageLoopCurrent message_loop_;
-};
-
-ThreadProfiler::~ThreadProfiler() = default;
+ThreadProfiler::~ThreadProfiler() {}
 
 // static
 std::unique_ptr<ThreadProfiler> ThreadProfiler::CreateAndStartOnMainThread() {
@@ -187,7 +143,6 @@ void ThreadProfiler::SetMainThreadTaskRunner(
   // constructor.
   DCHECK(!owning_thread_task_runner_);
   owning_thread_task_runner_ = task_runner;
-  work_id_recorder_->SetMessageLoop(base::MessageLoopCurrent::Get());
   ScheduleNextPeriodicCollection();
 }
 
@@ -246,17 +201,14 @@ ThreadProfiler::ThreadProfiler(
     scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner)
     : thread_(thread),
       owning_thread_task_runner_(owning_thread_task_runner),
-      work_id_recorder_(std::make_unique<WorkIdRecorder>()),
       weak_factory_(this) {
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 
   startup_profiler_ = std::make_unique<StackSamplingProfiler>(
       base::PlatformThread::CurrentId(), kSamplingParams,
-      std::make_unique<CallStackProfileBuilder>(
-          CallStackProfileParams(GetProcess(), thread,
-                                 CallStackProfileParams::PROCESS_STARTUP),
-          work_id_recorder_.get()));
+      CreateProfileBuilder(CallStackProfileParams(
+          GetProcess(), thread, CallStackProfileParams::PROCESS_STARTUP)));
 
   startup_profiler_->Start();
 
@@ -272,10 +224,8 @@ ThreadProfiler::ThreadProfiler(
       kSamplingParams.samples_per_profile * kSamplingParams.sampling_interval,
       kFractionOfExecutionTimeToSample, startup_profiling_completion_time);
 
-  if (owning_thread_task_runner_) {
-    work_id_recorder_->SetMessageLoop(base::MessageLoopCurrent::Get());
+  if (owning_thread_task_runner_)
     ScheduleNextPeriodicCollection();
-  }
 }
 
 // static
@@ -301,10 +251,9 @@ void ThreadProfiler::StartPeriodicSamplingCollection() {
   // NB: Destroys the previous profiler as side effect.
   periodic_profiler_ = std::make_unique<StackSamplingProfiler>(
       base::PlatformThread::CurrentId(), kSamplingParams,
-      std::make_unique<CallStackProfileBuilder>(
+      CreateProfileBuilder(
           CallStackProfileParams(GetProcess(), thread_,
                                  CallStackProfileParams::PERIODIC_COLLECTION),
-          work_id_recorder_.get(),
           base::BindOnce(&ThreadProfiler::OnPeriodicCollectionCompleted,
                          owning_thread_task_runner_,
                          weak_factory_.GetWeakPtr())));

@@ -198,8 +198,7 @@ MessageLoopImpl::MessageLoopImpl(MessageLoopBase::Type type)
       underlying_task_runner_(MakeRefCounted<internal::MessageLoopTaskRunner>(
           WrapUnique(message_loop_controller_))),
       sequenced_task_source_(underlying_task_runner_.get()),
-      task_runner_(underlying_task_runner_),
-      work_id_(0) {
+      task_runner_(underlying_task_runner_) {
   // Bound in BindToCurrentThread();
   DETACH_FROM_THREAD(bound_thread_checker_);
 }
@@ -341,8 +340,6 @@ bool MessageLoopImpl::ProcessNextDelayedNonNestableTask() {
 void MessageLoopImpl::RunTask(PendingTask* pending_task) {
   DCHECK(task_execution_allowed_);
 
-  IncrementWorkId();
-
   // Execute the task and assume the worst: It is probably not reentrant.
   task_execution_allowed_ = false;
 
@@ -410,10 +407,6 @@ bool MessageLoopImpl::HasTasks() {
   return sequenced_task_source_->HasTasks();
 }
 
-unsigned int MessageLoopImpl::GetWorkId() const {
-  return work_id_.load(std::memory_order_acquire);
-}
-
 void MessageLoopImpl::SetTaskExecutionAllowed(bool allowed) {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
   if (allowed)
@@ -432,22 +425,6 @@ void MessageLoopImpl::ScheduleWork() {
 
 TimeTicks MessageLoopImpl::CapAtOneDay(TimeTicks next_run_time) {
   return std::min(next_run_time, recent_time_ + TimeDelta::FromDays(1));
-}
-
-void MessageLoopImpl::IncrementWorkId() {
-  DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
-
-  unsigned int next_id = work_id_.load(std::memory_order_relaxed) + 1;
-  // Reserve 0 to mean no work items have been executed.
-  if (next_id == 0)
-    ++next_id;
-  // Release order ensures this state is visible to other threads prior to the
-  // following task/event execution.
-  work_id_.store(std::memory_order_release);
-}
-
-void MessageLoopImpl::BeforeDoInternalWork() {
-  IncrementWorkId();
 }
 
 bool MessageLoopImpl::DoWork() {

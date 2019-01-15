@@ -105,7 +105,6 @@ SequenceManagerImpl::SequenceManagerImpl(
       type_(settings.message_loop_type),
       metric_recording_settings_(InitializeMetricRecordingSettings(
           settings.randomised_sampling_enabled)),
-      work_id_(0),
       memory_corruption_sentinel_(kMemoryCorruptionSentinelValue),
       main_thread_only_(associated_thread_,
                         settings.randomised_sampling_enabled),
@@ -438,14 +437,6 @@ Optional<PendingTask> SequenceManagerImpl::TakeTask() {
                      "SequenceManager::RunTask", "queue_type",
                      executing_task.task_queue->GetName(), "task_type",
                      executing_task.task_type);
-
-  unsigned int next_id = work_id_.load(std::memory_order_relaxed) + 1;
-  // Reserve 0 to mean no work items have been executed.
-  if (next_id == 0)
-    ++next_id;
-  // Release order ensures this state is visible to other threads prior to the
-  // following task/event execution.
-  work_id_.store(std::memory_order_release);
 
   return task;
 }
@@ -882,10 +873,6 @@ bool SequenceManagerImpl::HasTasks() {
       return true;
   }
   return false;
-}
-
-unsigned int SequenceManagerImpl::GetWorkId() const {
-  return work_id_.load(std::memory_order_acquire);
 }
 
 void SequenceManagerImpl::SetTaskExecutionAllowed(bool allowed) {
