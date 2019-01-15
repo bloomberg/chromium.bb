@@ -63,7 +63,8 @@ void ShapeOutsideInfo::SetReferenceBoxLogicalSize(
                                       layout_box_.MarginWidth());
   }
 
-  switch (ReferenceBox(*layout_box_.StyleRef().ShapeOutside())) {
+  const ShapeValue& shape_value = *layout_box_.StyleRef().ShapeOutside();
+  switch (ReferenceBox(shape_value)) {
     case CSSBoxType::kMargin:
       UseCounter::Count(document, WebFeature::kShapeOutsideMarginBox);
       if (is_horizontal_writing_mode)
@@ -91,8 +92,12 @@ void ShapeOutsideInfo::SetReferenceBoxLogicalSize(
             WebFeature::kShapeOutsidePaddingBoxDifferentFromMarginBox);
       }
       break;
-    case CSSBoxType::kContent:
-      UseCounter::Count(document, WebFeature::kShapeOutsideContentBox);
+    case CSSBoxType::kContent: {
+      bool is_shape_image = shape_value.GetType() == ShapeValue::kImage;
+
+      if (!is_shape_image)
+        UseCounter::Count(document, WebFeature::kShapeOutsideContentBox);
+
       if (is_horizontal_writing_mode)
         new_reference_box_logical_size.Shrink(
             layout_box_.BorderAndPaddingWidth(),
@@ -102,12 +107,14 @@ void ShapeOutsideInfo::SetReferenceBoxLogicalSize(
             layout_box_.BorderAndPaddingHeight(),
             layout_box_.BorderAndPaddingWidth());
 
-      if (new_reference_box_logical_size != margin_box_for_use_counter) {
+      if (!is_shape_image &&
+          new_reference_box_logical_size != margin_box_for_use_counter) {
         UseCounter::Count(
             document,
             WebFeature::kShapeOutsideContentBoxDifferentFromMarginBox);
       }
       break;
+    }
     case CSSBoxType::kMissing:
       NOTREACHED();
       break;
