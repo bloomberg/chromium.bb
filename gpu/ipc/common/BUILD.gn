@@ -163,6 +163,7 @@ if (is_android) {
       "android/android_image_reader_utils.cc",
       "android/android_image_reader_utils.h",
     ]
+    configs += [ "//gpu:gpu_implementation" ]
     deps = [
       "//base",
       "//ui/gl",

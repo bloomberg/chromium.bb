@@ -27,14 +27,14 @@ struct VulkanFunctionPointers {
   VulkanFunctionPointers();
   ~VulkanFunctionPointers();
 
-  bool BindUnassociatedFunctionPointers();
+  VULKAN_EXPORT bool BindUnassociatedFunctionPointers();
 
   // These functions assume that vkGetInstanceProcAddr has been populated.
-  bool BindInstanceFunctionPointers(VkInstance vk_instance);
-  bool BindPhysicalDeviceFunctionPointers(VkInstance vk_instance);
+  VULKAN_EXPORT bool BindInstanceFunctionPointers(VkInstance vk_instance);
+  VULKAN_EXPORT bool BindPhysicalDeviceFunctionPointers(VkInstance vk_instance);
 
   // These functions assume that vkGetDeviceProcAddr has been populated.
-  bool BindDeviceFunctionPointers(VkDevice vk_device);
+  VULKAN_EXPORT bool BindDeviceFunctionPointers(VkDevice vk_device);
   bool BindSwapchainFunctionPointers(VkDevice vk_device);
 
   base::NativeLibrary vulkan_loader_library_ = nullptr;
