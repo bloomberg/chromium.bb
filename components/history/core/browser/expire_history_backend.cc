@@ -403,6 +403,7 @@ VisitVector ExpireHistoryBackend::GetVisitsAndRedirectParents(
 
       visits_and_redirects.push_back(current_visit);
     } while (current_visit.referring_visit &&
+             !(current_visit.transition & ui::PAGE_TRANSITION_CHAIN_START) &&
              main_db_->GetRowForVisit(current_visit.referring_visit,
                                       &current_visit));
   }
