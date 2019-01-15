@@ -8,10 +8,16 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/permissions/permission_message.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 namespace {
 
@@ -29,6 +35,16 @@ app_management::mojom::AppPtr CreateUIAppPtr(const apps::AppUpdate& update) {
       std::move(permissions));
 }
 
+app_management::mojom::ExtensionAppPermissionMessagePtr
+CreateExtensionAppPermissionMessage(
+    const extensions::PermissionMessage& message) {
+  std::vector<std::string> submessages;
+  for (const auto& submessage : message.submessages()) {
+    submessages.push_back(base::UTF16ToUTF8(submessage));
+  }
+  return app_management::mojom::ExtensionAppPermissionMessage::New(
+      base::UTF16ToUTF8(message.message()), std::move(submessages));
+}
 }  // namespace
 
 AppManagementPageHandler::AppManagementPageHandler(
@@ -104,4 +120,23 @@ void AppManagementPageHandler::OnAppUpdate(const apps::AppUpdate& update) {
   } else {
     page_->OnAppChanged(CreateUIAppPtr(update));
   }
+}
+
+void AppManagementPageHandler::GetExtensionAppPermissionMessages(
+    const std::string& app_id,
+    GetExtensionAppPermissionMessagesCallback callback) {
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  const extensions::Extension* extension = registry->GetExtensionById(
+      app_id, extensions::ExtensionRegistry::ENABLED |
+                  extensions::ExtensionRegistry::DISABLED |
+                  extensions::ExtensionRegistry::BLACKLISTED);
+  std::vector<app_management::mojom::ExtensionAppPermissionMessagePtr> messages;
+  if (extension) {
+    for (const auto& message :
+         extension->permissions_data()->GetPermissionMessages()) {
+      messages.push_back(CreateExtensionAppPermissionMessage(message));
+    }
+  }
+  std::move(callback).Run(std::move(messages));
 }

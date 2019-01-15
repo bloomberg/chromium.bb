@@ -48,7 +48,7 @@ Polymer({
 
     /**
      * List of apps with the notification permission.
-     * @private {Array<appManagement.mojom.App>}
+     * @private {Array<App>}
      */
     notificationApps_: {
       type: Array,

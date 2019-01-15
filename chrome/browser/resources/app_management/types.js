@@ -12,6 +12,11 @@
 let App;
 
 /**
+ * @typedef {appManagement.mojom.ExtensionAppPermissionMessage}
+ */
+let ExtensionAppPermissionMessage;
+
+/**
  * @typedef {apps.mojom.Permission}
  */
 let Permission;

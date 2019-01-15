@@ -70,10 +70,17 @@ cr.define('app_management', function() {
       this.apps_ = [];
     }
 
-    getApps() {
-      return Promise.resolve({apps: this.apps_});
+    async getApps() {
+      return {apps: this.apps_};
     }
 
+    /**
+     * @param {string} appId
+     * @return {!Promise}
+     */
+    async getExtensionAppPermissionMessages(appId) {
+      return [];
+    }
     /**
      * @param {!Array<App>} appList
      */

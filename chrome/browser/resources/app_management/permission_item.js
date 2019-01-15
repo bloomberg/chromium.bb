@@ -60,7 +60,9 @@ Polymer({
    * @private
    */
   getPermissionValue_: function(app, permissionType) {
-    if (!app) {
+    // TODO(@rekanorman) Remove the second one in if statement when PWA's are
+    // sent thorough with the correct app type.
+    if (!app || !(app.permissions)[PwaPermissionType[permissionType]]) {
       return null;
     }
 
