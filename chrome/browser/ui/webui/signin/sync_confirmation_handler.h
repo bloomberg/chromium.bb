@@ -19,6 +19,10 @@ namespace base {
 class ListValue;
 }
 
+namespace identity {
+class IdentityManager;
+}
+
 class SyncConfirmationHandler : public content::WebUIMessageHandler,
                                 public AccountTrackerService::Observer,
                                 public BrowserListObserver {
@@ -102,6 +106,8 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
 
   // Contains the features to use when the user consent decision is recorded.
   consent_auditor::Feature consent_feature_;
+
+  identity::IdentityManager* identity_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncConfirmationHandler);
 };
