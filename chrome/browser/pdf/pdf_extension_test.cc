@@ -633,9 +633,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TouchHandling) {
   RunTestsInFile("touch_handling_test.js", "test.pdf");
 }
 
-// Flaky on ASan/LSan bots and linux-chromeos-dbg: https://crbug.com/915555.
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) || \
-    defined(OS_CHROMEOS)
+// Flaky on ASan/LSan bots: https://crbug.com/915555.
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
 #define MAYBE_Elements DISABLED_Elements
 #else
 #define MAYBE_Elements Elements
@@ -646,13 +645,6 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_Elements) {
   RunTestsInFile("material_elements_test.js", "test.pdf");
 }
 
-// Flaky on ASan/LSan bots and linux-chromeos-dbg: https://crbug.com/915555.
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) || \
-    defined(OS_CHROMEOS)
-#define MAYBE_ToolbarManager DISABLED_ToolbarManager
-#else
-#define MAYBE_ToolbarManager ToolbarManager
-#endif
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ToolbarManager) {
   RunTestsInFile("toolbar_manager_test.js", "test.pdf");
 }
