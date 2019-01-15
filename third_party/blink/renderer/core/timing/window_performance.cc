@@ -404,7 +404,7 @@ void WindowPerformance::ReportEventTimings(WebLayerTreeView::SwapResult result,
 void WindowPerformance::AddElementTiming(const AtomicString& name,
                                          const IntRect& rect,
                                          TimeTicks timestamp) {
-  DCHECK(RuntimeEnabledFeatures::ElementTimingEnabled());
+  DCHECK(origin_trials::ElementTimingEnabled(GetExecutionContext()));
   PerformanceElementTiming* entry = PerformanceElementTiming::Create(
       name, rect, MonotonicTimeToDOMHighResTimeStamp(timestamp));
   if (HasObserverFor(PerformanceEntry::kElement)) {

@@ -53,9 +53,9 @@ interface Performance : EventTarget {
 
     // Element Timing
     // https://github.com/npm1/Element-Timing
-    [MeasureAs=ElementTimingExplicitlyRequested, RuntimeEnabled=ElementTiming] void clearElementTimings();
-    [MeasureAs=ElementTimingExplicitlyRequested, RuntimeEnabled=ElementTiming] void setElementTimingBufferMaxSize(unsigned long maxSize);
-    [MeasureAs=ElementTimingExplicitlyRequested, RuntimeEnabled=ElementTiming] attribute EventHandler onelementtimingbufferfull;
+    [MeasureAs=ElementTimingExplicitlyRequested, OriginTrialEnabled=ElementTiming] void clearElementTimings();
+    [MeasureAs=ElementTimingExplicitlyRequested, OriginTrialEnabled=ElementTiming] void setElementTimingBufferMaxSize(unsigned long maxSize);
+    [MeasureAs=ElementTimingExplicitlyRequested, OriginTrialEnabled=ElementTiming] attribute EventHandler onelementtimingbufferfull;
 
 
     // Event Timing

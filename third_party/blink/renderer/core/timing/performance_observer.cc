@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/performance_entry_names.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
@@ -52,12 +53,10 @@ PerformanceObserver* PerformanceObserver::Create(
 // static
 Vector<AtomicString> PerformanceObserver::supportedEntryTypes() {
   Vector<AtomicString> supportedEntryTypes;
-  if (RuntimeEnabledFeatures::ElementTimingEnabled())
-    supportedEntryTypes.push_back(performance_entry_names::kElement);
-  // TODO(npm): add "event" and "firstInput" when they ship. Currently, the
-  // support for event timing relies on origin trials, and thus depends on the
-  // execution context. This cannot be queried from a static method. See
-  // https://crbug.com/841224
+  // TODO(npm): add "element", "event" and "firstInput" when they ship.
+  // Currently, the support for element timing and event timing relies on origin
+  // trials, and thus depends on the execution context. This cannot be queried
+  // from a static method. See https://crbug.com/841224
   if (RuntimeEnabledFeatures::LayoutJankAPIEnabled())
     supportedEntryTypes.push_back(performance_entry_names::kLayoutJank);
   supportedEntryTypes.AppendVector(Vector<AtomicString>(
