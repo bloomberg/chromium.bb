@@ -221,6 +221,15 @@ void RootView::ThemeChanged() {
   View::PropagateThemeChanged();
 }
 
+void RootView::ResetEventHandlers() {
+  explicit_mouse_handler_ = false;
+  mouse_pressed_handler_ = nullptr;
+  mouse_move_handler_ = nullptr;
+  gesture_handler_ = nullptr;
+  event_dispatch_target_ = nullptr;
+  old_dispatch_target_ = nullptr;
+}
+
 void RootView::DeviceScaleFactorChanged(float old_device_scale_factor,
                                         float new_device_scale_factor) {
   View::PropagateDeviceScaleFactorChanged(old_device_scale_factor,
@@ -633,12 +642,7 @@ void RootView::VisibilityChanged(View* /*starting_from*/, bool is_visible) {
     // When the root view is being hidden (e.g. when widget is minimized)
     // handlers are reset, so that after it is reshown, events are not captured
     // by old handlers.
-    explicit_mouse_handler_ = false;
-    mouse_pressed_handler_ = NULL;
-    mouse_move_handler_ = NULL;
-    gesture_handler_ = NULL;
-    event_dispatch_target_ = NULL;
-    old_dispatch_target_ = NULL;
+    ResetEventHandlers();
   }
 }
 
