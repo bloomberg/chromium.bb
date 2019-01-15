@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "content/browser/gpu/gpu_main_thread_factory.h"
@@ -19,7 +18,6 @@
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/utility/in_process_utility_thread.h"
 #include "net/base/network_change_notifier.h"
-#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_paths.h"
@@ -76,19 +74,12 @@ ContentTestSuiteBase::ContentTestSuiteBase(int argc, char** argv)
     : base::TestSuite(argc, argv) {
 }
 
-ContentTestSuiteBase::~ContentTestSuiteBase() = default;
-
 void ContentTestSuiteBase::Initialize() {
   base::TestSuite::Initialize();
 
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new NetworkChangeNotifierDisabler());
-
-  // Disable the network service since a lot of unit tests don't work with it.
-  scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list_->InitAndDisableFeature(
-      network::features::kNetworkService);
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);

@@ -510,17 +510,6 @@
       },
       {
         "args": [
-          "--disable-features=NetworkService"
-        ],
-        "name": "non_network_service_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--enable-features=SingleProcessMash",
           "--override-use-software-gl-for-tests"
         ],
@@ -612,16 +601,6 @@
         "test": "components_browsertests"
       },
       {
-        "args": [
-          "--disable-features=NetworkService"
-        ],
-        "name": "non_network_service_components_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "components_browsertests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -637,16 +616,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 6
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--disable-features=NetworkService"
-        ],
-        "name": "non_network_service_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "content_browsertests"
       },
@@ -763,16 +732,6 @@
         "test": "extensions_browsertests"
       },
       {
-        "args": [
-          "--disable-features=NetworkService"
-        ],
-        "name": "non_network_service_extensions_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "extensions_browsertests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -821,17 +780,6 @@
         "test": "gpu_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=NetworkService"
-        ],
-        "name": "non_network_service_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
@@ -1256,17 +1204,6 @@
       },
       {
         "args": [
-          "--disable-features=NetworkService"
-        ],
-        "name": "non_network_service_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--enable-features=SingleProcessMash",
           "--override-use-software-gl-for-tests"
         ],
@@ -1358,16 +1295,6 @@
         "test": "components_browsertests"
       },
       {
-        "args": [
-          "--disable-features=NetworkService"
-        ],
-        "name": "non_network_service_components_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "components_browsertests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1383,16 +1310,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 6
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--disable-features=NetworkService"
-        ],
-        "name": "non_network_service_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "content_browsertests"
       },
@@ -1509,16 +1426,6 @@
         "test": "extensions_browsertests"
       },
       {
-        "args": [
-          "--disable-features=NetworkService"
-        ],
-        "name": "non_network_service_extensions_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "extensions_browsertests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1567,17 +1474,6 @@
         "test": "gpu_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=NetworkService"
-        ],
-        "name": "non_network_service_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
