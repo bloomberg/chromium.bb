@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
@@ -182,6 +183,13 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   base::Thread device_thread_;
   // Thread used to poll the V4L2 for events only.
   base::Thread device_poll_thread_;
+
+  // CancelableTaskTracker for ProcessTask().
+  // Because ProcessTask is posted from |client_task_runner_|'s thread to
+  // another sequence, |device_thread_|, it is unsafe to cancel the posted tasks
+  // from |client_task_runner_|'s thread using CancelableCallback and WeakPtr
+  // binding. CancelableTaskTracker is designed to deal with this scenario.
+  base::CancelableTaskTracker process_task_tracker_;
 
   // All the below members are to be accessed from device_thread_ only
   // (if it's running).
