@@ -247,11 +247,6 @@ void BrowserRenderer::AcceptDoffPromptForTesting() {
   ui_->AcceptDoffPromptForTesting();
 }
 
-void BrowserRenderer::SetBrowserRendererBrowserInterfaceForTesting(
-    BrowserRendererBrowserInterface* interface) {
-  browser_ = interface;
-}
-
 void BrowserRenderer::UpdateUi(const RenderInfo& render_info,
                                base::TimeTicks current_time,
                                FrameType frame_type) {

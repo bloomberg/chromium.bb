@@ -61,9 +61,6 @@ class VR_EXPORT VRBrowserRendererThreadWin : public MaybeThread {
   void SetVisibleExternalPromptNotification(
       ExternalPromptNotificationType prompt);
 
-  static VRBrowserRendererThreadWin* GetInstanceForTesting();
-  BrowserRenderer* GetBrowserRendererForTesting();
-
  private:
   // base::Thread overrides
   void CleanUp() override;
@@ -104,11 +101,6 @@ class VR_EXPORT VRBrowserRendererThreadWin : public MaybeThread {
 
   device::mojom::ImmersiveOverlayPtr overlay_;
   device::mojom::VRDisplayInfoPtr display_info_;
-
-  // This class is effectively a singleton, although it's not actually
-  // implemented as one. Since tests need to access the thread to post tasks,
-  // just keep a static reference to the existing instance.
-  static VRBrowserRendererThreadWin* instance_for_testing_;
 };
 
 }  // namespace vr

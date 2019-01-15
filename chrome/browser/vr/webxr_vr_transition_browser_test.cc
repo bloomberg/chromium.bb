@@ -19,7 +19,7 @@ namespace vr {
 // an immersive session.
 void TestPresentationEntryImpl(WebXrVrBrowserTestBase* t,
                                std::string filename) {
-  t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(filename));
+  t->LoadUrlAndAwaitInitialization(t->GetHtmlTestFile(filename));
   t->EnterSessionWithUserGestureOrFail();
   t->AssertNoJavaScriptErrors();
 }
@@ -35,7 +35,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestRequestSessionEntersVr) {
 // WebVR/WebXR presentation since the tab is still visible.
 void TestWindowRafFiresWhilePresentingImpl(WebXrVrBrowserTestBase* t,
                                            std::string filename) {
-  t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(filename));
+  t->LoadUrlAndAwaitInitialization(t->GetHtmlTestFile(filename));
   t->ExecuteStepAndWait("stepVerifyBeforePresent()");
   t->EnterSessionWithUserGestureOrFail();
   t->ExecuteStepAndWait("stepVerifyDuringPresent()");
@@ -60,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
 // remove the GPU requirement.
 void TestApiDisabledWithoutFlagSetImpl(WebXrVrBrowserTestBase* t,
                                        std::string filename) {
-  t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(filename));
+  t->LoadUrlAndAwaitInitialization(t->GetHtmlTestFile(filename));
   t->WaitOnJavaScriptStep();
   t->EndTest();
 }
@@ -80,8 +80,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestWebXrDisabled,
 // Since WebVR isn't actually used, we can remove the GPU requirement.
 IN_PROC_BROWSER_TEST_F(WebVrBrowserTestOpenVrDisabled,
                        TestWebVrNoDevicesWithoutOpenVr) {
-  LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("generic_webvr_page"));
+  LoadUrlAndAwaitInitialization(GetHtmlTestFile("generic_webvr_page"));
   EXPECT_FALSE(XrDeviceFound())
       << "Found a VRDisplay even with OpenVR disabled";
   AssertNoJavaScriptErrors();
@@ -92,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(WebVrBrowserTestOpenVrDisabled,
 IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestOpenVrDisabled,
                        TestWebXrNoDevicesWithoutOpenVr) {
   LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("test_webxr_does_not_return_device"));
+      GetHtmlTestFile("test_webxr_does_not_return_device"));
   WaitOnJavaScriptStep();
   EndTest();
 }
@@ -101,8 +100,8 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestOpenVrDisabled,
 // non-immersive WebXR session.
 IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
                        TestWindowRafFiresDuringNonImmersiveSession) {
-  LoadUrlAndAwaitInitialization(GetFileUrlForHtmlTestFile(
-      "test_window_raf_fires_during_non_immersive_session"));
+  LoadUrlAndAwaitInitialization(
+      GetHtmlTestFile("test_window_raf_fires_during_non_immersive_session"));
   WaitOnJavaScriptStep();
   EndTest();
 }
@@ -112,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
 IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
                        TestNonImmersiveStopsDuringImmersive) {
   LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("test_non_immersive_stops_during_immersive"));
+      GetHtmlTestFile("test_non_immersive_stops_during_immersive"));
   ExecuteStepAndWait("stepBeforeImmersive()");
   EnterSessionWithUserGestureOrFail();
   ExecuteStepAndWait("stepDuringImmersive()");
