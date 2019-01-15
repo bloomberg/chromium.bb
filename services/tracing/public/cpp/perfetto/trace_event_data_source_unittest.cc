@@ -146,6 +146,10 @@ class DummyTraceWriter : public perfetto::TraceWriter {
     return perfetto::WriterID(0);
   }
 
+  uint64_t written() const override {
+    return 0u;
+  }
+
  private:
   perfetto::protos::pbzero::TracePacket trace_packet_;
   protozero::ScatteredStreamWriterNullDelegate delegate_;
@@ -166,6 +170,10 @@ class MockTraceWriter : public perfetto::TraceWriter {
 
   perfetto::WriterID writer_id() const override {
     return perfetto::WriterID(0);
+  }
+
+  uint64_t written() const override {
+    return 0u;
   }
 
  private:
