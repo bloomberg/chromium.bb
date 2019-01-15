@@ -20,7 +20,7 @@ class V8CustomElementAttributeChangedCallback;
 class V8CustomElementConstructor;
 class V8CustomElementDisabledStateChangedCallback;
 class V8CustomElementFormAssociatedCallback;
-class V8CustomElementValueSetter;
+class V8CustomElementRestoreValueCallback;
 class V8VoidFunction;
 
 class ScriptCustomElementDefinitionData {
@@ -40,7 +40,7 @@ class ScriptCustomElementDefinitionData {
   Member<V8VoidFunction> form_reset_callback_;
   Member<V8CustomElementDisabledStateChangedCallback>
       disabled_state_changed_callback_;
-  Member<V8CustomElementValueSetter> value_setter_;
+  Member<V8CustomElementRestoreValueCallback> restore_value_callback_;
   HashSet<AtomicString> observed_attributes_;
   Vector<String> disabled_features_;
   bool is_form_associated_ = false;

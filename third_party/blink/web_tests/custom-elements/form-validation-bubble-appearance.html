@@ -11,8 +11,8 @@ class MyControl extends HTMLElement {
   }
   get i() { return this.internals_; }
 
-  // Must provide ‘value’ setter.
-  set value(v) {}
+  // Must provide ‘restoreValueCallback’.
+  restoreValueCallback(v) {}
 }
 
 customElements.define('my-control', MyControl);

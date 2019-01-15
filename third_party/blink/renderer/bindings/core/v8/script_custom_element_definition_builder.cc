@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_constructor.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_disabled_state_changed_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_form_associated_callback.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_value_setter.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_restore_value_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
 #include "third_party/blink/renderer/platform/bindings/callback_method_retriever.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
@@ -23,45 +23,6 @@
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
 
 namespace blink {
-
-namespace {
-
-// Returns false if GetOwnPropertyDescriptor() or Get() failed and the callsite
-// needs to rethrow an exception.  Returns true otherwise.
-// |result_desc| is not updated if property_name is not found in the prototype
-// chain.
-bool GetPropertyDescriptorOnPrototypeChain(
-    v8::Local<v8::Object> start_prototype,
-    const char* property_name,
-    v8::Isolate* isolate,
-    v8::Local<v8::Value>* result_desc) {
-  DCHECK(isolate);
-  DCHECK(result_desc);
-  v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
-  v8::Local<v8::Value> prototype = start_prototype;
-  v8::Local<v8::String> v8_prototype = V8AtomicString(isolate, "__proto__");
-  v8::Local<v8::String> v8_name = V8AtomicString(isolate, property_name);
-  while (prototype->IsObject()) {
-    v8::Local<v8::Value> desc;
-    if (!prototype.As<v8::Object>()
-             ->GetOwnPropertyDescriptor(current_context, v8_name)
-             .ToLocal(&desc))
-      return false;
-    if (desc->IsObject()) {
-      *result_desc = desc;
-      return true;
-    }
-    v8::Local<v8::Value> parent_prototype;
-    if (!prototype.As<v8::Object>()
-             ->Get(current_context, v8_prototype)
-             .ToLocal(&parent_prototype))
-      return false;
-    prototype = parent_prototype;
-  }
-  return true;
-}
-
-}  // anonymous namespace
 
 ScriptCustomElementDefinitionBuilder::ScriptCustomElementDefinitionBuilder(
     ScriptState* script_state,
@@ -102,8 +63,7 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
   // step 10. Run the following substeps while catching any exceptions:
   CallbackMethodRetriever retriever(Constructor());
 
-  v8::Local<v8::Object> prototype =
-      retriever.GetPrototypeObject(exception_state_);
+  retriever.GetPrototypeObject(exception_state_);
   if (exception_state_.HadException())
     return false;
 
@@ -244,37 +204,19 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
               v8_disabled_state_changed_callback_.As<v8::Function>());
     }
 
-    auto* isolate = Isolate();
-    v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
-    v8::TryCatch try_catch(isolate);
-    v8::Local<v8::Value> value_desc;
-    if (!GetPropertyDescriptorOnPrototypeChain(prototype, "value", isolate,
-                                               &value_desc)) {
-      exception_state_.RethrowV8Exception(try_catch.Exception());
+    v8_restore_value_callback_ = retriever.GetMethodOrUndefined(
+        "restoreValueCallback", exception_state_);
+    if (exception_state_.HadException())
       return false;
-    }
-    if (value_desc.IsEmpty() || !value_desc->IsObject()) {
+    if (!v8_restore_value_callback_->IsFunction()) {
       exception_state_.ThrowDOMException(
           DOMExceptionCode::kTypeMismatchError,
-          "A class for form-associated custom elements must have a 'value' "
-          "property setter.");
+          "A class for form-associated custom elements must have a "
+          "'restoreValueCallback'.");
       return false;
     }
-    if (!value_desc.As<v8::Object>()
-             ->Get(current_context, V8AtomicString(isolate, "set"))
-             .ToLocal(&v8_value_setter_)) {
-      exception_state_.RethrowV8Exception(try_catch.Exception());
-      return false;
-    }
-    if (!v8_value_setter_->IsFunction()) {
-      exception_state_.ThrowDOMException(
-          DOMExceptionCode::kTypeMismatchError,
-          "A class for form-associated custom elements must have a 'value' "
-          "property setter.");
-      return false;
-    }
-    data_.value_setter_ =
-        V8CustomElementValueSetter::Create(v8_value_setter_.As<v8::Function>());
+    data_.restore_value_callback_ = V8CustomElementRestoreValueCallback::Create(
+        v8_restore_value_callback_.As<v8::Function>());
   }
 
   return true;

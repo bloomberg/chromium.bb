@@ -13,7 +13,7 @@ class MyControl extends HTMLElement {
   }
   get i() { return this.internals_; }
 
-  set value(v) {}
+  restoreValueCallback(v) {}
 }
 customElements.define('my-control', MyControl);
 

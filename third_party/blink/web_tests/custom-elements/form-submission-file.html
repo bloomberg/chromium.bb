@@ -31,6 +31,8 @@ class MyControl extends HTMLElement {
     }
     this.internals_.setFormValue(this.value_, formData);
   }
+
+  restoreValueCallback(v) { this.value = v; }
 }
 customElements.define('my-control', MyControl);
 
