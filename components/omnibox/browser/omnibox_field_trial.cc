@@ -100,10 +100,15 @@ const base::Feature kSimplifyHttpsIndicator{"SimplifyHttpsIndicator",
 const base::Feature kOmniboxRichEntitySuggestions{
     "OmniboxRichEntitySuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to enable enhanced presentation showing larger images, currently
-// only used on desktop platforms.
-const base::Feature kOmniboxNewAnswerLayout{"OmniboxNewAnswerLayout",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
+// Feature used to enable enhanced presentation showing larger images.
+const base::Feature kOmniboxNewAnswerLayout {
+  "OmniboxNewAnswerLayout",
+#if defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Feature used to enable swapping the rows on answers.
 const base::Feature kOmniboxReverseAnswers{"OmniboxReverseAnswers",
@@ -764,8 +769,8 @@ bool OmniboxFieldTrial::IsRichEntitySuggestionsEnabled() {
 }
 
 bool OmniboxFieldTrial::IsNewAnswerLayoutEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxNewAnswerLayout) ||
-         base::FeatureList::IsEnabled(features::kExperimentalUi);
+  // TODO(orinj): The call is now obsolete and can be removed.
+  return true;
 }
 
 bool OmniboxFieldTrial::IsReverseAnswersEnabled() {
