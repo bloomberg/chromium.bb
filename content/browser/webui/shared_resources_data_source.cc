@@ -273,6 +273,10 @@ std::string SharedResourcesDataSource::GetMimeType(
   return "text/plain";
 }
 
+bool SharedResourcesDataSource::ShouldServeMimeTypeAsContentTypeHeader() const {
+  return true;
+}
+
 scoped_refptr<base::SingleThreadTaskRunner>
 SharedResourcesDataSource::TaskRunnerForRequestPath(
     const std::string& path) const {

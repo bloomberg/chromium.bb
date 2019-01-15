@@ -238,4 +238,8 @@ TEST_F(WebUIDataSourceTest, IsGzippedWithExclusions) {
   EXPECT_FALSE(source()->IsGzipped("strings.js?query"));
 }
 
+TEST_F(WebUIDataSourceTest, ShouldServeMimeTypeAsContentTypeHeader) {
+  EXPECT_TRUE(source()->source()->ShouldServeMimeTypeAsContentTypeHeader());
+}
+
 }  // namespace content

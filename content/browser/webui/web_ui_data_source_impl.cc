@@ -98,6 +98,7 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
   bool ShouldDenyXFrameOptions() const override {
     return parent_->deny_xframe_options_;
   }
+  bool ShouldServeMimeTypeAsContentTypeHeader() const override { return true; }
   bool IsGzipped(const std::string& path) const override {
     return parent_->IsGzipped(path);
   }
