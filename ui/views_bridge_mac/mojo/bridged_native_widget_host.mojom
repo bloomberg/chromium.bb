@@ -36,8 +36,8 @@ struct ValidateUserInterfaceItemResult {
   bool new_toggle_state;
 };
 
-// The interface through which a NativeWidgetMac may interact with an NSWindow
-// in another process.
+// The interface through which an NSWindow (possibly in a process separate from
+// the browser process) may interact with a NativeWidgetMac.
 interface BridgedNativeWidgetHost {
   // Update the views::Widget, ui::Compositor and ui::Layer's visibility.
   OnVisibilityChanged(bool visible);
