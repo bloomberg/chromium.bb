@@ -52,8 +52,7 @@ WebMParserClient* WebMContentEncodingsClient::OnListStart(int id) {
     return this;
   }
 
-  // This should not happen if WebMListParser is working properly.
-  DCHECK(false);
+  MEDIA_LOG(ERROR, media_log_) << "Unsupported element " << id;
   return NULL;
 }
 
@@ -130,8 +129,7 @@ bool WebMContentEncodingsClient::OnListEnd(int id) {
     return true;
   }
 
-  // This should not happen if WebMListParser is working properly.
-  DCHECK(false);
+  MEDIA_LOG(ERROR, media_log_) << "Unsupported element " << id;
   return false;
 }
 
@@ -240,8 +238,7 @@ bool WebMContentEncodingsClient::OnUInt(int id, int64_t val) {
     return true;
   }
 
-  // This should not happen if WebMListParser is working properly.
-  DCHECK(false);
+  MEDIA_LOG(ERROR, media_log_) << "Unsupported element " << id;
   return false;
 }
 
@@ -254,18 +251,18 @@ bool WebMContentEncodingsClient::OnBinary(int id,
   DCHECK(data);
   DCHECK_GT(size, 0);
 
-  if (id == kWebMIdContentEncKeyID) {
-    if (!cur_content_encoding_->encryption_key_id().empty()) {
-      MEDIA_LOG(ERROR, media_log_) << "Unexpected multiple ContentEncKeyID";
-      return false;
-    }
-    cur_content_encoding_->SetEncryptionKeyId(data, size);
-    return true;
+  if (id != kWebMIdContentEncKeyID) {
+    MEDIA_LOG(ERROR, media_log_) << "Unsupported element " << id;
+    return false;
   }
 
-  // This should not happen if WebMListParser is working properly.
-  DCHECK(false);
-  return false;
+  if (!cur_content_encoding_->encryption_key_id().empty()) {
+    MEDIA_LOG(ERROR, media_log_) << "Unexpected multiple ContentEncKeyID";
+    return false;
+  }
+
+  cur_content_encoding_->SetEncryptionKeyId(data, size);
+  return true;
 }
 
 }  // namespace media
