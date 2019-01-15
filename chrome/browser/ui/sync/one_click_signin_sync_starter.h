@@ -47,19 +47,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
     NEW_PROFILE
   };
 
-  enum ConfirmationRequired {
-    // No need to display a "post-signin" confirmation bubble (for example, if
-    // the user was doing a re-auth flow).
-    NO_CONFIRMATION,
-
-    // Signin flow redirected outside of trusted domains, so ask the user to
-    // confirm before signing in.
-    CONFIRM_UNTRUSTED_SIGNIN,
-
-    // Display a confirmation after signing in.
-    CONFIRM_AFTER_SIGNIN
-  };
-
   // Result of the sync setup.
   enum SyncSetupResult {
     SYNC_SETUP_SUCCESS,
@@ -83,7 +70,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
                             signin_metrics::AccessPoint signin_access_point,
                             signin_metrics::Reason signin_reason,
                             ProfileMode profile_mode,
-                            ConfirmationRequired display_confirmation,
                             Callback callback);
 
   // BrowserListObserver override.
@@ -167,15 +153,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // confirmation is required (in which case we have to prompt the user first).
   void ConfirmSignin(ProfileMode profile_mode, const std::string& oauth_token);
 
-  // Displays confirmation UI to the user if confirmation_required_ ==
-  // CONFIRM_UNTRUSTED_SIGNIN, otherwise completes the pending signin process.
-  void ConfirmAndSignin();
-
-  // Callback invoked once the user has responded to the signin confirmation UI.
-  // If response == UNDO_SYNC, the signin is cancelled, otherwise the pending
-  // signin is completed.
-  void UntrustedSigninConfirmed(bool confirmed);
-
   // GetSyncService returns non-NULL pointer if sync is enabled.
   syncer::SyncService* GetSyncService();
 
@@ -195,7 +172,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   signin_metrics::Reason signin_reason_;
   identity::PrimaryAccountMutator* primary_account_mutator_;
   std::unique_ptr<SigninTracker> signin_tracker_;
-  ConfirmationRequired confirmation_required_;
 
   // Callback executed when sync setup succeeds or fails.
   Callback sync_setup_completed_callback_;

@@ -39,6 +39,7 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
@@ -171,22 +172,34 @@ void CloseModalSigninIfNeeded(InlineLoginHandlerImpl* handler) {
   }
 }
 
-void UnlockProfileAndHideLoginUI(const base::FilePath profile_path,
-                                 InlineLoginHandlerImpl* handler) {
+void SetProfileLocked(const base::FilePath profile_path, bool locked) {
   if (!profile_path.empty()) {
     ProfileManager* profile_manager = g_browser_process->profile_manager();
     if (profile_manager) {
       ProfileAttributesEntry* entry;
       if (profile_manager->GetProfileAttributesStorage()
               .GetProfileAttributesWithPath(profile_path, &entry)) {
-        entry->SetIsSigninRequired(false);
+        if (locked)
+          entry->LockForceSigninProfile(true);
+        else
+          entry->SetIsSigninRequired(false);
       }
     }
   }
+}
+
+void UnlockProfileAndHideLoginUI(const base::FilePath profile_path,
+                                 InlineLoginHandlerImpl* handler) {
+  SetProfileLocked(profile_path, false);
   if (handler)
     handler->CloseDialogFromJavascript();
-
   UserManager::Hide();
+}
+
+void LockProfileAndShowUserManager(const base::FilePath& profile_path) {
+  SetProfileLocked(profile_path, true);
+  UserManager::Show(profile_path,
+                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
 }
 
 // Returns true if the showAccountManagement parameter in the given url is set
@@ -259,10 +272,9 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     const ClientOAuthResult& result,
     Profile* profile,
     Profile::CreateStatus status) {
-  Browser* browser = NULL;
-  if (handler_) {
+  Browser* browser = nullptr;
+  if (handler_)
     browser = handler_->GetDesktopBrowser();
-  }
 
   signin_metrics::Reason reason =
       signin::GetSigninReasonForPromoURL(current_url_);
@@ -343,27 +355,52 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
 
     if (reason == signin_metrics::Reason::REASON_REAUTHENTICATION ||
         reason == signin_metrics::Reason::REASON_UNLOCK) {
-      // GetPrimaryAccountMutator() returns nullptr on platforms not supporting
-      // mutation of the primary account (e.g. ChromeOS).
       auto* account_mutator = identity_manager->GetPrimaryAccountMutator();
-      if (account_mutator)
-        account_mutator->LegacyMergeSigninCredentialIntoCookieJar();
+      DCHECK(account_mutator);
+      account_mutator->LegacyMergeSigninCredentialIntoCookieJar();
     }
     LogSigninReason(reason);
   } else {
-    OneClickSigninSyncStarter::ConfirmationRequired confirmation_required =
-        confirm_untrusted_signin_
-            ? OneClickSigninSyncStarter::CONFIRM_UNTRUSTED_SIGNIN
-            : OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
-
-    bool start_signin =
-        !HandleCrossAccountError(result.refresh_token, confirmation_required);
-    if (start_signin) {
-      CreateSyncStarter(browser, current_url_, result.refresh_token,
-                        OneClickSigninSyncStarter::CURRENT_PROFILE,
-                        confirmation_required);
-      base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+    if (HandleCrossAccountError(result.refresh_token))
+      return;
+    if (confirm_untrusted_signin_) {
+      // Display a confirmation dialog to the user.
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Show_UntrustedSigninPrompt"));
+      if (!browser)
+        browser = chrome::FindLastActiveWithProfile(profile_);
+      browser->window()->ShowOneClickSigninConfirmation(
+          base::UTF8ToUTF16(email_),
+          base::BindOnce(&InlineSigninHelper::UntrustedSigninConfirmed,
+                         base::Unretained(this), result.refresh_token));
+      return;
     }
+    CreateSyncStarter(browser, current_url_, result.refresh_token,
+                      OneClickSigninSyncStarter::CURRENT_PROFILE);
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  }
+}
+
+void InlineSigninHelper::UntrustedSigninConfirmed(
+    const std::string& refresh_token,
+    bool confirmed) {
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  if (confirmed) {
+    CreateSyncStarter(nullptr, current_url_, refresh_token,
+                      OneClickSigninSyncStarter::CURRENT_PROFILE);
+    return;
+  }
+
+  base::RecordAction(base::UserMetricsAction("Signin_Undo_Signin"));
+  if (handler_) {
+    handler_->SyncStarterCallback(
+        OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
+  } else if (signin_util::IsForceSigninEnabled()) {
+    BrowserList::CloseAllBrowsersWithProfile(
+        profile_, base::Bind(&LockProfileAndShowUserManager),
+        // Cannot be called because  skip_beforeunload is true.
+        BrowserList::CloseCallback(),
+        /*skip_beforeunload=*/true);
   }
 }
 
@@ -371,20 +408,17 @@ void InlineSigninHelper::CreateSyncStarter(
     Browser* browser,
     const GURL& current_url,
     const std::string& refresh_token,
-    OneClickSigninSyncStarter::ProfileMode profile_mode,
-    OneClickSigninSyncStarter::ConfirmationRequired confirmation_required) {
+    OneClickSigninSyncStarter::ProfileMode profile_mode) {
   // OneClickSigninSyncStarter will delete itself once the job is done.
   new OneClickSigninSyncStarter(
       profile_, browser, gaia_id_, email_, password_, refresh_token,
       signin::GetAccessPointForPromoURL(current_url),
       signin::GetSigninReasonForPromoURL(current_url), profile_mode,
-      confirmation_required,
       base::Bind(&InlineLoginHandlerImpl::SyncStarterCallback, handler_));
 }
 
 bool InlineSigninHelper::HandleCrossAccountError(
-    const std::string& refresh_token,
-    OneClickSigninSyncStarter::ConfirmationRequired confirmation_required) {
+    const std::string& refresh_token) {
   // With force sign in enabled, cross account
   // sign in will be rejected in the early stage so there is no need to show the
   // warning page here.
@@ -405,31 +439,30 @@ bool InlineSigninHelper::HandleCrossAccountError(
   SigninEmailConfirmationDialog::AskForConfirmation(
       web_contents, profile_, last_email, email_,
       base::Bind(&InlineSigninHelper::ConfirmEmailAction,
-                 base::Unretained(this), web_contents, refresh_token,
-                 confirmation_required));
+                 base::Unretained(this), web_contents, refresh_token));
   return true;
 }
 
 void InlineSigninHelper::ConfirmEmailAction(
     content::WebContents* web_contents,
     const std::string& refresh_token,
-    OneClickSigninSyncStarter::ConfirmationRequired confirmation_required,
     SigninEmailConfirmationDialog::Action action) {
+  // There is no need to show the untrusted signin prompt, because the
+  // SigninEmailConfirmationDialog already displays the account that is being
+  // signed in.
   Browser* browser = chrome::FindLastActiveWithProfile(profile_);
   switch (action) {
     case SigninEmailConfirmationDialog::CREATE_NEW_USER:
       base::RecordAction(
           base::UserMetricsAction("Signin_ImportDataPrompt_DontImport"));
       CreateSyncStarter(browser, current_url_, refresh_token,
-                        OneClickSigninSyncStarter::NEW_PROFILE,
-                        confirmation_required);
+                        OneClickSigninSyncStarter::NEW_PROFILE);
       break;
     case SigninEmailConfirmationDialog::START_SYNC:
       base::RecordAction(
           base::UserMetricsAction("Signin_ImportDataPrompt_ImportData"));
       CreateSyncStarter(browser, current_url_, refresh_token,
-                        OneClickSigninSyncStarter::CURRENT_PROFILE,
-                        confirmation_required);
+                        OneClickSigninSyncStarter::CURRENT_PROFILE);
       break;
     case SigninEmailConfirmationDialog::CLOSE:
       base::RecordAction(
@@ -439,8 +472,6 @@ void InlineSigninHelper::ConfirmEmailAction(
             OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
       }
       break;
-    default:
-      DCHECK(false) << "Invalid action";
   }
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }

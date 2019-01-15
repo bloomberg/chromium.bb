@@ -980,7 +980,6 @@ test("browser_tests") {
       "../browser/ui/webui/profile_helper_browsertest.cc",
       "../browser/ui/webui/set_as_default_browser_ui_browsertest_win.cc",
       "../browser/ui/webui/settings/md_settings_ui_browsertest.cc",
-      "../browser/ui/webui/signin/inline_login_ui_browsertest.cc",
       "../browser/ui/webui/signin/user_manager_ui_browsertest.cc",
       "../browser/ui/webui/task_scheduler_internals/task_scheduler_internals_ui_browsertest.cc",
       "../browser/ui/webui/webui_browsertest.cc",
@@ -1604,6 +1603,7 @@ test("browser_tests") {
         "../browser/ui/views/status_bubble_views_browsertest.cc",
         "../browser/ui/views/status_bubble_views_browsertest_mac.h",
         "../browser/ui/views/status_bubble_views_browsertest_mac.mm",
+        "../browser/ui/views/sync/inline_login_ui_browsertest.cc",
         "../browser/ui/views/sync/profile_signin_confirmation_dialog_views_browsertest.cc",
         "../browser/ui/views/task_manager_view_browsertest.cc",
         "../browser/ui/views/toolbar/browser_actions_container_browsertest.cc",
@@ -1888,9 +1888,9 @@ test("browser_tests") {
         "../browser/ui/views/profiles/profile_chooser_view_browsertest.cc",
 
         # inline login UI is disabled on chromeos
+        "../browser/ui/views/sync/inline_login_ui_browsertest.cc",
         "../browser/ui/views/sync/profile_signin_confirmation_dialog_views_browsertest.cc",
         "../browser/ui/webui/profile_helper_browsertest.cc",
-        "../browser/ui/webui/signin/inline_login_ui_browsertest.cc",
 
         # chromeos does not use the desktop user manager
         "../browser/ui/webui/signin/user_manager_ui_browsertest.cc",
