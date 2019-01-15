@@ -33,6 +33,7 @@
 #include "ui/views/test/views_interactive_ui_test_base.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/touchui/touch_selection_controller_impl.h"
+#include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_utils.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -1444,6 +1445,26 @@ TEST_F(DesktopWidgetTestInteractive, RestoreAndMinimizeVisibility) {
   widget->CloseNow();
 }
 #endif  // defined(OS_WIN)
+
+// Tests that minimizing a widget causes the gesture_handler
+// to be cleared when the widget is minimized.
+TEST_F(DesktopWidgetTestInteractive, EventHandlersClearedOnWidgetMinimize) {
+  Widget* widget = CreateWidget();
+  ShowSync(widget);
+  ASSERT_FALSE(widget->IsMinimized());
+  View mouse_handler_view;
+  internal::RootView* root_view =
+      static_cast<internal::RootView*>(widget->GetRootView());
+  // This also sets the gesture_handler, and we'll verify that it
+  // gets cleared when the widget is minimized.
+  root_view->SetMouseHandler(&mouse_handler_view);
+  EXPECT_TRUE(GetGestureHandler(root_view));
+
+  widget->Minimize();
+  EXPECT_FALSE(GetGestureHandler(root_view));
+
+  widget->CloseNow();
+}
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Tests that when a desktop native widget has modal transient child, it should

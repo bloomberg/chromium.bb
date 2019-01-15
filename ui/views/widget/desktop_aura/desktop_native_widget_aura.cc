@@ -848,6 +848,9 @@ void DesktopNativeWidgetAura::Maximize() {
 void DesktopNativeWidgetAura::Minimize() {
   if (content_window_)
     desktop_window_tree_host_->Minimize();
+  internal::RootView* root_view =
+      static_cast<internal::RootView*>(GetWidget()->GetRootView());
+  root_view->ResetEventHandlers();
 }
 
 bool DesktopNativeWidgetAura::IsMaximized() const {
