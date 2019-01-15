@@ -5,12 +5,26 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_DRAW_FN_IMPL_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_DRAW_FN_IMPL_H_
 
+#include <deque>
+
 #include "android_webview/browser/compositor_frame_consumer.h"
 #include "android_webview/browser/render_thread_manager.h"
 #include "android_webview/public/browser/draw_fn.h"
 #include "base/android/jni_weak_ref.h"
+#include "gpu/vulkan/init/vulkan_factory.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/gpu/vk/GrVkTypes.h"
+#include "third_party/vulkan/include/vulkan/vulkan.h"
+
+class GrContext;
+class GrVkSecondaryCBDrawContext;
+
+namespace gl {
+class GLImageAHardwareBuffer;
+}
 
 namespace android_webview {
+class GLNonOwnedCompatibilityContext;
 
 class AwDrawFnImpl {
  public:
@@ -34,12 +48,44 @@ class AwDrawFnImpl {
   void PostDrawVk(AwDrawFn_PostDrawVkParams* params);
 
  private:
+  // Struct which represents one in-flight draw for the Vk interop path.
+  struct InFlightDraw {
+    InFlightDraw();
+    ~InFlightDraw();
+    sk_sp<GrVkSecondaryCBDrawContext> draw_context;
+    VkFence post_draw_fence = VK_NULL_HANDLE;
+    VkSemaphore post_draw_semaphore = VK_NULL_HANDLE;
+    base::ScopedFD sync_fd;
+    scoped_refptr<gl::GLImageAHardwareBuffer> ahb_image;
+    sk_sp<SkImage> ahb_skimage;
+    uint32_t texture_id = 0;
+    uint32_t framebuffer_id = 0;
+    GrVkImageInfo image_info;
+    VkDevice device;  // Used to clean up |image_info|
+  };
+
   CompositorFrameConsumer* GetCompositorFrameConsumer() {
     return &render_thread_manager_;
   }
 
+  std::unique_ptr<InFlightDraw> TakeInFlightDrawForReUse();
+
   int functor_handle_;
   RenderThreadManager render_thread_manager_;
+
+  // Members for the GL-interop path.
+  VkQueue queue_ = VK_NULL_HANDLE;
+  VkDevice device_ = VK_NULL_HANDLE;
+  VkPhysicalDevice physical_device_ = VK_NULL_HANDLE;
+  std::unique_ptr<gpu::VulkanImplementation> vk_implementation_;
+  sk_sp<GrContext> gr_context_;
+
+  // GL context used to draw via GL in interop path.
+  scoped_refptr<GLNonOwnedCompatibilityContext> gl_context_;
+
+  // Queue of draw contexts pending cleanup.
+  std::deque<std::unique_ptr<InFlightDraw>> in_flight_draws_;
+  std::unique_ptr<InFlightDraw> pending_draw_;
 };
 
 }  // namespace android_webview
