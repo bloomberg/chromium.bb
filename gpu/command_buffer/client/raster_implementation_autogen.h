@@ -13,6 +13,8 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_RASTER_IMPLEMENTATION_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_CLIENT_RASTER_IMPLEMENTATION_AUTOGEN_H_
 
+void DeleteTextures(GLsizei n, const GLuint* textures) override;
+
 void Finish() override;
 
 void Flush() override;
@@ -44,6 +46,20 @@ void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
 GLenum GetGraphicsResetStatusKHR() override;
 
 void EndRasterCHROMIUM() override;
+
+GLuint CreateAndConsumeTexture(bool use_buffer,
+                               gfx::BufferUsage buffer_usage,
+                               viz::ResourceFormat format,
+                               const GLbyte* mailbox) override;
+
+void CopySubTexture(GLuint source_id,
+                    GLuint dest_id,
+                    GLint xoffset,
+                    GLint yoffset,
+                    GLint x,
+                    GLint y,
+                    GLsizei width,
+                    GLsizei height) override;
 
 void TraceBeginCHROMIUM(const char* category_name,
                         const char* trace_name) override;

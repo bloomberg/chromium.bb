@@ -11,6 +11,16 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_RASTER_CMD_HELPER_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_CLIENT_RASTER_CMD_HELPER_AUTOGEN_H_
 
+void DeleteTexturesImmediate(GLsizei n, const GLuint* textures) {
+  const uint32_t size = raster::cmds::DeleteTexturesImmediate::ComputeSize(n);
+  raster::cmds::DeleteTexturesImmediate* c =
+      GetImmediateCmdSpaceTotalSize<raster::cmds::DeleteTexturesImmediate>(
+          size);
+  if (c) {
+    c->Init(n, textures);
+  }
+}
+
 void Finish() {
   raster::cmds::Finish* c = GetCmdSpace<raster::cmds::Finish>();
   if (c) {
@@ -183,6 +193,9 @@ void ClearPaintCacheINTERNAL() {
 }
 
 void CreateAndConsumeTextureINTERNALImmediate(GLuint texture_id,
+                                              bool use_buffer,
+                                              gfx::BufferUsage buffer_usage,
+                                              viz::ResourceFormat format,
                                               const GLbyte* mailbox) {
   const uint32_t size =
       raster::cmds::CreateAndConsumeTextureINTERNALImmediate::ComputeSize();
@@ -190,33 +203,21 @@ void CreateAndConsumeTextureINTERNALImmediate(GLuint texture_id,
       GetImmediateCmdSpaceTotalSize<
           raster::cmds::CreateAndConsumeTextureINTERNALImmediate>(size);
   if (c) {
-    c->Init(texture_id, mailbox);
+    c->Init(texture_id, use_buffer, buffer_usage, format, mailbox);
   }
 }
 
-void CopySubTextureINTERNAL(GLuint source_id,
-                            GLuint dest_id,
-                            GLint xoffset,
-                            GLint yoffset,
-                            GLint x,
-                            GLint y,
-                            GLsizei width,
-                            GLsizei height) {
-  raster::cmds::CopySubTextureINTERNAL* c =
-      GetCmdSpace<raster::cmds::CopySubTextureINTERNAL>();
+void CopySubTexture(GLuint source_id,
+                    GLuint dest_id,
+                    GLint xoffset,
+                    GLint yoffset,
+                    GLint x,
+                    GLint y,
+                    GLsizei width,
+                    GLsizei height) {
+  raster::cmds::CopySubTexture* c = GetCmdSpace<raster::cmds::CopySubTexture>();
   if (c) {
     c->Init(source_id, dest_id, xoffset, yoffset, x, y, width, height);
-  }
-}
-
-void DeleteTexturesINTERNALImmediate(GLsizei n, const GLuint* textures) {
-  const uint32_t size =
-      raster::cmds::DeleteTexturesINTERNALImmediate::ComputeSize(n);
-  raster::cmds::DeleteTexturesINTERNALImmediate* c =
-      GetImmediateCmdSpaceTotalSize<
-          raster::cmds::DeleteTexturesINTERNALImmediate>(size);
-  if (c) {
-    c->Init(n, textures);
   }
 }
 
