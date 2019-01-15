@@ -182,6 +182,7 @@ x86_external_boards = frozenset([
 brillo_boards = frozenset([
     'arkham',
     'gale',
+    'mistral',
     'whirlwind',
 ])
 

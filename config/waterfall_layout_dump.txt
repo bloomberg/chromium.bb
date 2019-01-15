@@ -2796,7 +2796,6 @@
   mccloud-tot-chrome-pfq-informational-tryjob
   mccloud-tot-chromium-pfq-informational-tryjob
   mccloud-unittest-stress
-  mistral-chromium-pfq-tryjob
   mistral-compile-only-pre-cq
   mistral-full-tryjob
   mistral-llvm-next-toolchain-tryjob
@@ -2805,7 +2804,6 @@
   mistral-paladin-tryjob
   mistral-pre-cq
   mistral-release-tryjob
-  mistral-tot-chromium-pfq-informational-tryjob
   mistral-unittest-stress
   mixed-wificell-pre-cq
   moblab-generic-vm-chromium-pfq-tryjob
