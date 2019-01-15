@@ -150,6 +150,8 @@ namespace autotestPrivate {
   callback EnsureWindowServiceClientHasDrawnWindowCallback =
       void(boolean success);
 
+  callback GetPrimaryDisplayScaleFactorCallback = void (double scaleFactor);
+
   callback VoidCallback = void ();
 
   interface Functions {
@@ -306,5 +308,10 @@ namespace autotestPrivate {
         DOMString clientName,
         long timeout_ms,
         EnsureWindowServiceClientHasDrawnWindowCallback callback);
+
+    // Get the primary display scale factor.
+    // |callback| is invoked with the scale factor.
+    static void getPrimaryDisplayScaleFactor(
+        GetPrimaryDisplayScaleFactorCallback callback);
   };
 };
