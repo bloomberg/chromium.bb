@@ -156,6 +156,9 @@ ui::MenuModel* BackForwardMenuModel::GetSubmenuModelAt(int index) const {
   return nullptr;
 }
 
+void BackForwardMenuModel::HighlightChangedTo(int index) {
+}
+
 void BackForwardMenuModel::ActivatedAt(int index) {
   ActivatedAt(index, 0);
 }

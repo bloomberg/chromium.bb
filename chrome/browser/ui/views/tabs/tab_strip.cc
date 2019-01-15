@@ -56,6 +56,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
@@ -418,6 +419,15 @@ void TabStrip::SetStackedLayout(bool stacked_layout) {
     tab_at(i)->Layout();
 }
 
+void TabStrip::StartHighlight(int model_index) {
+  tab_at(model_index)->StartPulse();
+}
+
+void TabStrip::StopAllHighlighting() {
+  for (int i = 0; i < tab_count(); ++i)
+    tab_at(i)->StopPulse();
+}
+
 void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
   const bool was_single_tab_mode = SingleTabMode();
 
@@ -427,7 +437,7 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
     view_index = GetIndexOf(tab_at(model_index - 1)) + 1;
   }
 
-  Tab* tab = new Tab(this);
+  Tab* tab = new Tab(this, animation_container_.get());
   AddChildViewAt(tab, view_index);
   const bool pinned = data.pinned;
   tab->SetData(std::move(data));
