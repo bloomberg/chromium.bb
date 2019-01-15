@@ -25,6 +25,7 @@ class SharedResourcesDataSource : public URLDataSource {
       const URLDataSource::GotDataCallback& callback) override;
   bool AllowCaching() const override;
   std::string GetMimeType(const std::string& path) const override;
+  bool ShouldServeMimeTypeAsContentTypeHeader() const override;
   scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerForRequestPath(
       const std::string& path) const override;
   std::string GetAccessControlAllowOriginForOrigin(
