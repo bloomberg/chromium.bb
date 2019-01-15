@@ -275,6 +275,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
 
     sf->disable_wedge_search_var_thresh = 0;
     sf->disable_wedge_search_edge_thresh = 0;
+    sf->disable_interinter_wedge_newmv_search = boosted ? 0 : 1;
     sf->prune_comp_type_by_comp_avg = 1;
     sf->prune_motion_mode_level = 2;
     sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3_ARF2;
@@ -302,7 +303,6 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->allow_partition_search_skip = 1;
     sf->disable_wedge_search_var_thresh = 100;
     sf->disable_wedge_search_edge_thresh = 0;
-    // TODO(any): evaluate this speed feature for speed 1
     sf->disable_interinter_wedge_newmv_search = 1;
     sf->fast_wedge_sign_estimate = 1;
     sf->disable_dual_filter = 1;
