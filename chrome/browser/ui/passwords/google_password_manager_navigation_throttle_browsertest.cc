@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -149,9 +150,17 @@ IN_PROC_BROWSER_TEST_F(GooglePasswordManagerNavigationThrottleTest,
 
 IN_PROC_BROWSER_TEST_F(GooglePasswordManagerNavigationThrottleTest,
                        PasswordsWithGPMAndSyncUserClickedLink) {
+  base::HistogramTester tester;
   std::unique_ptr<ProfileSyncServiceHarness> harness =
       EnableGooglePasswordManagerAndSync(browser()->profile());
   EXPECT_EQ(chrome::GetSettingsUrl(chrome::kPasswordManagerSubPage),
             NavigateToURL(browser(), GetGooglePasswordManagerURL(),
                           ui::PageTransition::PAGE_TRANSITION_LINK));
+  tester.ExpectUniqueSample(
+      "PasswordManager.GooglePasswordManager.NavigationResult",
+      GooglePasswordManagerNavigationThrottle::NavigationResult::kFailure, 1);
+  tester.ExpectTotalCount("PasswordManager.GooglePasswordManager.TimeToFailure",
+                          1);
+  tester.ExpectTotalCount("PasswordManager.GooglePasswordManager.TimeToSuccess",
+                          0);
 }

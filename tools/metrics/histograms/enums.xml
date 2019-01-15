@@ -24820,6 +24820,12 @@ Called by update_net_error_codes.py.-->
   <int value="13" label="GOOGLE_NOW_DISABLED"/>
 </enum>
 
+<enum name="GooglePasswordManagerNavigationResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failure"/>
+  <int value="2" label="Timeout"/>
+</enum>
+
 <enum name="GooglePlayServicesConnectionResult">
   <summary>
     Results of attempting a connection to Google Play Services. See Javadoc for
