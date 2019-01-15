@@ -17,7 +17,7 @@
 #include "chrome/browser/policy/cloud/user_policy_signin_service_internal.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -31,8 +31,9 @@
 #include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/identity_utils.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace signin_util {
@@ -210,12 +211,12 @@ void EnsurePrimaryAccountAllowedForProfile(Profile* profile) {
 // All primary accounts are allowed on ChromeOS, so this method is a no-op on
 // ChromeOS.
 #if !defined(OS_CHROMEOS)
-  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
-  if (!signin_manager->IsAuthenticated())
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  if (!identity_manager->HasPrimaryAccount())
     return;
 
-  AccountInfo primary_account = signin_manager->GetAuthenticatedAccountInfo();
-  if (signin_manager->IsSigninAllowed() &&
+  AccountInfo primary_account = identity_manager->GetPrimaryAccountInfo();
+  if (profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed) &&
       identity::LegacyIsUsernameAllowedByPatternFromPrefs(
           g_browser_process->local_state(), primary_account.email,
           prefs::kGoogleServicesUsernamePattern)) {
@@ -228,13 +229,17 @@ void EnsurePrimaryAccountAllowedForProfile(Profile* profile) {
     case UserSignoutSetting::State::kUndefined:
       NOTREACHED();
       break;
-    case UserSignoutSetting::State::kAllowed:
+    case UserSignoutSetting::State::kAllowed: {
       // Force clear the primary account if it is no longer allowed and if sign
       // out is allowed.
-      signin_manager->SignOut(
+      auto* primary_account_mutator =
+          identity_manager->GetPrimaryAccountMutator();
+      primary_account_mutator->ClearPrimaryAccount(
+          identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
           signin_metrics::SIGNIN_NOT_ALLOWED_ON_PROFILE_INIT,
           signin_metrics::SignoutDelete::IGNORE_METRIC);
       break;
+    }
     case UserSignoutSetting::State::kDisallowed:
 #if defined(CAN_DELETE_PROFILE)
       // Force remove the profile if sign out is not allowed and if the
