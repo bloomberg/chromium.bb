@@ -11,9 +11,9 @@
 #include "remoting/protocol/audio_source.h"
 #include "remoting/protocol/webrtc_audio_source_adapter.h"
 #include "remoting/protocol/webrtc_transport.h"
-#include "third_party/webrtc/api/mediastreaminterface.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
-#include "third_party/webrtc/rtc_base/refcount.h"
+#include "third_party/webrtc/api/media_stream_interface.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
+#include "third_party/webrtc/rtc_base/ref_count.h"
 
 namespace remoting {
 namespace protocol {

@@ -14,9 +14,9 @@
 #include "remoting/protocol/fake_audio_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/webrtc/api/mediastreaminterface.h"
-#include "third_party/webrtc/rtc_base/refcount.h"
-#include "third_party/webrtc/rtc_base/refcountedobject.h"
+#include "third_party/webrtc/api/media_stream_interface.h"
+#include "third_party/webrtc/rtc_base/ref_count.h"
+#include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
 namespace remoting {
 namespace protocol {

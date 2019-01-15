@@ -12,7 +12,7 @@
 #include "remoting/base/url_request.h"
 #include "remoting/protocol/ice_config.h"
 #include "remoting/protocol/transport_context.h"
-#include "third_party/webrtc/p2p/client/basicportallocator.h"
+#include "third_party/webrtc/p2p/client/basic_port_allocator.h"
 
 namespace remoting {
 namespace protocol {

@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "remoting/protocol/port_allocator_factory.h"
-#include "third_party/webrtc/p2p/client/basicportallocator.h"
+#include "third_party/webrtc/p2p/client/basic_port_allocator.h"
 
 namespace remoting {
 

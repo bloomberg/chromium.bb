@@ -17,7 +17,7 @@
 #include "content/renderer/p2p/empty_network_manager.h"
 #include "media/base/media_permission.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/webrtc/rtc_base/ipaddress.h"
+#include "third_party/webrtc/rtc_base/ip_address.h"
 
 using NetworkList = rtc::NetworkManager::NetworkList;
 

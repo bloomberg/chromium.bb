@@ -8,14 +8,15 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "third_party/libjingle_xmpp/task_runner/task.h"
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/libjingle_xmpp/task_runner/task.h"
 #include "third_party/libjingle_xmpp/task_runner/taskrunner.h"
 #include "third_party/webrtc/rtc_base/thread.h"
-#include "third_party/webrtc/rtc_base/timeutils.h"
+#include "third_party/webrtc/rtc_base/time_utils.h"
 
 namespace rtc {
 

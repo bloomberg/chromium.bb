@@ -16,9 +16,9 @@
 #include "remoting/protocol/channel_socket_adapter.h"
 #include "remoting/protocol/port_allocator_factory.h"
 #include "remoting/protocol/transport_context.h"
-#include "third_party/webrtc/p2p/base/p2pconstants.h"
-#include "third_party/webrtc/p2p/base/p2ptransportchannel.h"
-#include "third_party/webrtc/p2p/base/packettransportinterface.h"
+#include "third_party/webrtc/p2p/base/p2p_constants.h"
+#include "third_party/webrtc/p2p/base/p2p_transport_channel.h"
+#include "third_party/webrtc/p2p/base/packet_transport_interface.h"
 #include "third_party/webrtc/p2p/base/port.h"
 #include "third_party/webrtc/rtc_base/network.h"
 

@@ -14,7 +14,7 @@
 #include "remoting/protocol/http_ice_config_request.h"
 #include "remoting/protocol/jingle_info_request.h"
 #include "remoting/protocol/port_allocator_factory.h"
-#include "third_party/webrtc/rtc_base/socketaddress.h"
+#include "third_party/webrtc/rtc_base/socket_address.h"
 
 #if !defined(OS_NACL)
 #include "jingle/glue/thread_wrapper.h"

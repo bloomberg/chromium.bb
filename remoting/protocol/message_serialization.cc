@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
-#include "third_party/webrtc/rtc_base/byteorder.h"
+#include "third_party/webrtc/rtc_base/byte_order.h"
 
 namespace remoting {
 namespace protocol {

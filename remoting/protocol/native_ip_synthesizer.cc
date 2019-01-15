@@ -9,8 +9,8 @@
 #include "net/base/sys_addrinfo.h"
 #include "remoting/protocol/rfc7050_ip_synthesizer.h"
 #include "remoting/protocol/rfc7050_prefix_refresher.h"
-#include "third_party/webrtc/rtc_base/ipaddress.h"
-#include "third_party/webrtc/rtc_base/socketaddress.h"
+#include "third_party/webrtc/rtc_base/ip_address.h"
+#include "third_party/webrtc/rtc_base/socket_address.h"
 
 namespace remoting {
 namespace protocol {

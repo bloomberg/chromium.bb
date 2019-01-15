@@ -14,7 +14,7 @@
 #include "remoting/signaling/iq_sender.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
-#include "third_party/webrtc/rtc_base/socketaddress.h"
+#include "third_party/webrtc/rtc_base/socket_address.h"
 
 namespace remoting {
 namespace protocol {
