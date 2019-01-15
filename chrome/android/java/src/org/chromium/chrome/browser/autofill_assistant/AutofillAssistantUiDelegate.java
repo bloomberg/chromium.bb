@@ -349,12 +349,6 @@ class AutofillAssistantUiDelegate {
         mIsRightToLeftLayout = TextUtilsCompat.getLayoutDirectionFromLocale(Locale.getDefault())
                 == ViewCompat.LAYOUT_DIRECTION_RTL;
 
-        // Finch experiment to adjust overlay color
-        Integer overlayColor = AutofillAssistantStudy.getOverlayColor();
-        if (overlayColor != null) {
-            mTouchEventFilter.setGrayOutColor(overlayColor);
-        }
-
         mKeyboardDelegate = activity.getWindowAndroid().getKeyboardDelegate();
         // TODO(crbug.com/806868): Listen for contextual search shown so as to hide this UI.
     }
