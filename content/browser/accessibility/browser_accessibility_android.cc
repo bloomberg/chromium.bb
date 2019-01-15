@@ -1659,35 +1659,4 @@ int BrowserAccessibilityAndroid::CountChildrenWithRole(
   return count;
 }
 
-base::string16 BrowserAccessibilityAndroid::GetContentInvalidErrorMessage()
-    const {
-  content::ContentClient* content_client = content::GetContentClient();
-  int message_id = -1;
-
-  switch (GetData().GetInvalidState()) {
-    case ax::mojom::InvalidState::kNone:
-    case ax::mojom::InvalidState::kFalse:
-      // No error message necessary
-      break;
-
-    case ax::mojom::InvalidState::kTrue:
-    case ax::mojom::InvalidState::kOther:
-      message_id = CONTENT_INVALID_TRUE;
-      break;
-
-    case ax::mojom::InvalidState::kSpelling:
-      message_id = CONTENT_INVALID_SPELLING;
-      break;
-
-    case ax::mojom::InvalidState::kGrammar:
-      message_id = CONTENT_INVALID_GRAMMAR;
-      break;
-  }
-
-  if (message_id != -1)
-    return content_client->GetLocalizedString(message_id);
-
-  return base::string16();
-}
-
 }  // namespace content

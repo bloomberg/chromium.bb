@@ -1210,15 +1210,14 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     @CalledByNative
     protected void setAccessibilityNodeInfoKitKatAttributes(AccessibilityNodeInfo node,
             boolean isRoot, boolean isEditableText, String role, String roleDescription,
-            String hint, int selectionStartIndex, int selectionEndIndex, boolean hasImage,
-            boolean contentInvalid) {
+            String hint, int selectionStartIndex, int selectionEndIndex, boolean hasImage) {
         // Requires KitKat or higher.
     }
 
     @CalledByNative
     protected void setAccessibilityNodeInfoLollipopAttributes(AccessibilityNodeInfo node,
             boolean canOpenPopup, boolean contentInvalid, boolean dismissable, boolean multiLine,
-            int inputType, int liveRegion, String errorMessage) {
+            int inputType, int liveRegion) {
         // Requires Lollipop or higher.
     }
 

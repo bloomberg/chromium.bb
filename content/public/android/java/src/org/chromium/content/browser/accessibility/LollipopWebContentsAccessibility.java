@@ -56,14 +56,13 @@ public class LollipopWebContentsAccessibility extends KitKatWebContentsAccessibi
     @Override
     protected void setAccessibilityNodeInfoLollipopAttributes(AccessibilityNodeInfo node,
             boolean canOpenPopup, boolean contentInvalid, boolean dismissable, boolean multiLine,
-            int inputType, int liveRegion, String errorMessage) {
+            int inputType, int liveRegion) {
         node.setCanOpenPopup(canOpenPopup);
         node.setContentInvalid(contentInvalid);
         node.setDismissable(contentInvalid);
         node.setMultiLine(multiLine);
         node.setInputType(inputType);
         node.setLiveRegion(liveRegion);
-        node.setError(errorMessage);
     }
 
     @Override

@@ -41,11 +41,9 @@ public class OWebContentsAccessibility extends LollipopWebContentsAccessibility 
     @Override
     protected void setAccessibilityNodeInfoKitKatAttributes(AccessibilityNodeInfo node,
             boolean isRoot, boolean isEditableText, String role, String roleDescription,
-            String hint, int selectionStartIndex, int selectionEndIndex, boolean hasImage,
-            boolean contentInvalid) {
+            String hint, int selectionStartIndex, int selectionEndIndex, boolean hasImage) {
         super.setAccessibilityNodeInfoKitKatAttributes(node, isRoot, isEditableText, role,
-                roleDescription, hint, selectionStartIndex, selectionEndIndex, hasImage,
-                contentInvalid);
+                roleDescription, hint, selectionStartIndex, selectionEndIndex, hasImage);
         node.setHintText(hint);
     }
 
