@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/win/scoped_handle.h"
+#include "chrome/chrome_cleaner/constants/quarantine_constants.h"
 #include "chrome/chrome_cleaner/interfaces/zip_archiver.mojom.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/zip_archiver/test_zip_archiver_util.h"
@@ -122,7 +123,22 @@ TEST_F(ZipArchiverImplTest, EmptyPassword) {
   EXPECT_EQ(test_result_code, ZipArchiverResultCode::kErrorInvalidParameter);
 }
 
-// TODO(veranika): Add a test with a too big source file once the limit is
-// determined.
+TEST_F(ZipArchiverImplTest, SourceIsTooBig) {
+  base::File src_file(test_file_.GetSourceFilePath(),
+                      base::File::FLAG_OPEN | base::File::FLAG_WRITE);
+  ASSERT_TRUE(src_file.IsValid());
+  // Increase the size of source file to one byte more than limit.
+  ASSERT_TRUE(src_file.SetLength(kQuarantineSourceSizeLimit + 1));
+  src_file.Close();
+
+  ZipArchiverResultCode test_result_code;
+  base::RunLoop loop;
+  BindArchiverThenRun(
+      std::move(src_file_handle_), std::move(zip_file_handle_),
+      kTestFilenameInZip, kTestPassword,
+      base::BindOnce(OnArchiveDone, &test_result_code, loop.QuitClosure()));
+  loop.Run();
+  EXPECT_EQ(test_result_code, ZipArchiverResultCode::kErrorSourceFileTooBig);
+}
 
 }  // namespace chrome_cleaner

@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
+#include "chrome/chrome_cleaner/constants/quarantine_constants.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/zlib/contrib/minizip/ioapi.h"
 #include "third_party/zlib/contrib/minizip/zip.h"
@@ -139,7 +140,10 @@ ZipArchiverResultCode AddToArchive(zipFile zip_object,
 
   const int64_t src_length = file_info.size;
 
-  // TODO(veranika): Check the source file size once the limit is determined.
+  if (src_length > kQuarantineSourceSizeLimit) {
+    LOG(ERROR) << "Source file is too big.";
+    return ZipArchiverResultCode::kErrorSourceFileTooBig;
+  }
 
   uint32_t src_crc32 = 0;
   if (!CalculateFileCrc32(&src_file, src_length, &src_crc32)) {
