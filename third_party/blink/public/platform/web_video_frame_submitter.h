@@ -63,9 +63,13 @@ class BLINK_PLATFORM_EXPORT WebVideoFrameSubmitter
                                 base::TimeTicks,
                                 WebFrameSinkDestroyedCallback) = 0;
 
-  // Updates whether we should submit frames or not based on whether the video
-  // is visible on screen.
-  virtual void UpdateSubmissionState(bool) = 0;
+  // Set whether the surface is visible within the current view port. Stops
+  // submission if not unless SetForceSubmit(true) has been called.
+  virtual void SetIsSurfaceVisible(bool) = 0;
+
+  // Set whether the page containing the video element is visible. Stops
+  // submission if not unless SetForceSubmit(true) has been called.
+  virtual void SetIsPageVisible(bool) = 0;
 
   // Set whether frames should always be submitted regardless of visibility.
   virtual void SetForceSubmit(bool) = 0;

@@ -76,8 +76,13 @@ void VideoFrameSubmitter::EnableSubmission(
     StartSubmitting();
 }
 
-void VideoFrameSubmitter::UpdateSubmissionState(bool should_submit) {
-  should_submit_internal_ = should_submit;
+void VideoFrameSubmitter::SetIsSurfaceVisible(bool is_visible) {
+  is_surface_visible_ = is_visible;
+  UpdateSubmissionStateInternal();
+}
+
+void VideoFrameSubmitter::SetIsPageVisible(bool is_visible) {
+  is_page_visible_ = is_visible;
   UpdateSubmissionStateInternal();
 }
 
@@ -136,7 +141,7 @@ void VideoFrameSubmitter::SubmitSingleFrame() {
 }
 
 bool VideoFrameSubmitter::ShouldSubmit() const {
-  return should_submit_internal_ || force_submit_;
+  return (is_surface_visible_ && is_page_visible_) || force_submit_;
 }
 
 bool VideoFrameSubmitter::IsDrivingFrameUpdates() const {
@@ -404,7 +409,11 @@ void VideoFrameSubmitter::OnContextLost() {
   // We need to trigger another submit so that surface_id's get propagated
   // correctly. If we don't, we don't get any more signals to update the
   // submission state.
-  should_submit_internal_ = true;
+  //
+  // TODO(dalecurtis, liberato): This isn't sufficient to get video working
+  // again, instead when the new context comes in the old frame should be
+  // submitted or if rendering is in progress, nothing should be done.
+  is_surface_visible_ = true;
 }
 
 void VideoFrameSubmitter::DidReceiveCompositorFrameAck(

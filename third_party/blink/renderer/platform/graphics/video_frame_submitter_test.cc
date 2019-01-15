@@ -170,7 +170,7 @@ class VideoFrameSubmitterTest : public testing::Test {
 
     // By setting the submission state before we set the sink, we can make
     // testing easier without having to worry about the first sent frame.
-    submitter_->UpdateSubmissionState(true);
+    submitter_->SetIsSurfaceVisible(true);
     submitter_->SetCompositorFrameSinkPtrForTesting(&submitter_sink);
     mojom::blink::SurfaceEmbedderPtr embedder;
     mojo::MakeRequest(&embedder);
@@ -182,6 +182,17 @@ class VideoFrameSubmitterTest : public testing::Test {
                 11, base::UnguessableToken::Deserialize(0x111111, 0))),
         base::TimeTicks::Now());
   }
+
+  bool ShouldSubmit() const { return submitter_->ShouldSubmit(); }
+
+  void SubmitSingleFrame() { submitter_->SubmitSingleFrame(); }
+
+  const viz::ChildLocalSurfaceIdAllocator& child_local_surface_id_allocator()
+      const {
+    return submitter_->child_local_surface_id_allocator_;
+  }
+
+  gfx::Size frame_size() const { return submitter_->frame_size_; }
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -272,10 +283,10 @@ TEST_F(VideoFrameSubmitterTest, DidReceiveFrameSubmitsFrame) {
 
 TEST_F(VideoFrameSubmitterTest, ShouldSubmitPreventsSubmission) {
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
-  submitter_->UpdateSubmissionState(false);
+  submitter_->SetIsSurfaceVisible(false);
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_FALSE(submitter_->ShouldSubmit());
+  EXPECT_FALSE(ShouldSubmit());
 
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
   submitter_->StartRendering();
@@ -291,18 +302,18 @@ TEST_F(VideoFrameSubmitterTest, ShouldSubmitPreventsSubmission) {
   EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _, _));
   EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
   EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
-  submitter_->UpdateSubmissionState(true);
+  submitter_->SetIsSurfaceVisible(true);
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(submitter_->ShouldSubmit());
+  EXPECT_TRUE(ShouldSubmit());
 
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
   EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _)).Times(1);
   EXPECT_CALL(*video_frame_provider_, GetCurrentFrame()).Times(0);
-  submitter_->UpdateSubmissionState(false);
+  submitter_->SetIsSurfaceVisible(false);
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_FALSE(submitter_->ShouldSubmit());
+  EXPECT_FALSE(ShouldSubmit());
 
   EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
       .WillOnce(Return(media::VideoFrame::CreateFrame(
@@ -310,17 +321,17 @@ TEST_F(VideoFrameSubmitterTest, ShouldSubmitPreventsSubmission) {
           gfx::Size(8, 8), base::TimeDelta())));
   EXPECT_CALL(*video_frame_provider_, PutCurrentFrame());
 
-  submitter_->SubmitSingleFrame();
+  SubmitSingleFrame();
 }
 
 // Tests that when set to true SetForceSubmit forces frame submissions.
 // regardless of the internal submit state.
 TEST_F(VideoFrameSubmitterTest, SetForceSubmitForcesSubmission) {
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
-  submitter_->UpdateSubmissionState(false);
+  submitter_->SetIsSurfaceVisible(false);
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_FALSE(submitter_->ShouldSubmit());
+  EXPECT_FALSE(ShouldSubmit());
 
   EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
       .WillOnce(Return(media::VideoFrame::CreateFrame(
@@ -328,7 +339,7 @@ TEST_F(VideoFrameSubmitterTest, SetForceSubmitForcesSubmission) {
           gfx::Size(8, 8), base::TimeDelta())));
   EXPECT_CALL(*video_frame_provider_, PutCurrentFrame());
   submitter_->SetForceSubmit(true);
-  EXPECT_TRUE(submitter_->ShouldSubmit());
+  EXPECT_TRUE(ShouldSubmit());
 
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
   EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _)).Times(1);
@@ -349,10 +360,10 @@ TEST_F(VideoFrameSubmitterTest, SetForceSubmitForcesSubmission) {
   EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _, _));
   EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
   EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
-  submitter_->UpdateSubmissionState(true);
+  submitter_->SetIsSurfaceVisible(true);
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(submitter_->ShouldSubmit());
+  EXPECT_TRUE(ShouldSubmit());
 
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
   EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _)).Times(1);
@@ -364,10 +375,10 @@ TEST_F(VideoFrameSubmitterTest, SetForceSubmitForcesSubmission) {
   EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _, _));
   EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
   EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
-  submitter_->UpdateSubmissionState(false);
+  submitter_->SetIsSurfaceVisible(false);
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(submitter_->ShouldSubmit());
+  EXPECT_TRUE(ShouldSubmit());
 
   EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
       .WillOnce(Return(media::VideoFrame::CreateFrame(
@@ -375,7 +386,7 @@ TEST_F(VideoFrameSubmitterTest, SetForceSubmitForcesSubmission) {
           gfx::Size(8, 8), base::TimeDelta())));
   EXPECT_CALL(*video_frame_provider_, PutCurrentFrame());
 
-  submitter_->SubmitSingleFrame();
+  SubmitSingleFrame();
 }
 
 TEST_F(VideoFrameSubmitterTest, RotationInformationPassedToResourceProvider) {
@@ -733,7 +744,7 @@ TEST_F(VideoFrameSubmitterTest, ContextLostDuringSubmit) {
 
   // This will post a task that will later call SubmitFrame(). The call will
   // happen after OnContextLost().
-  submitter_->SubmitSingleFrame();
+  SubmitSingleFrame();
 
   submitter_->OnContextLost();
 
@@ -765,7 +776,7 @@ TEST_F(VideoFrameSubmitterTest, StopUsingProviderDuringContextLost) {
 
   // OnReceivedContextProvider returns. We don't run the actual function
   // because it would overwrite our fake |sink_| with a real one.
-  submitter_->SubmitSingleFrame();
+  SubmitSingleFrame();
 
   scoped_task_environment_.RunUntilIdle();
 }
@@ -776,14 +787,14 @@ TEST_F(VideoFrameSubmitterTest, StopUsingProviderDuringContextLost) {
 TEST_F(VideoFrameSubmitterTest, FrameSizeChangeUpdatesLocalSurfaceId) {
   {
     viz::LocalSurfaceId local_surface_id =
-        submitter_->child_local_surface_id_allocator_
+        child_local_surface_id_allocator()
             .GetCurrentLocalSurfaceIdAllocation()
             .local_surface_id();
     EXPECT_TRUE(local_surface_id.is_valid());
     EXPECT_EQ(11u, local_surface_id.parent_sequence_number());
     EXPECT_EQ(viz::kInitialChildSequenceNumber,
               local_surface_id.child_sequence_number());
-    EXPECT_TRUE(submitter_->frame_size_.IsEmpty());
+    EXPECT_TRUE(frame_size().IsEmpty());
   }
 
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
@@ -801,19 +812,19 @@ TEST_F(VideoFrameSubmitterTest, FrameSizeChangeUpdatesLocalSurfaceId) {
   EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
   EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
 
-  submitter_->SubmitSingleFrame();
+  SubmitSingleFrame();
   scoped_task_environment_.RunUntilIdle();
 
   {
     viz::LocalSurfaceId local_surface_id =
-        submitter_->child_local_surface_id_allocator_
+        child_local_surface_id_allocator()
             .GetCurrentLocalSurfaceIdAllocation()
             .local_surface_id();
     EXPECT_TRUE(local_surface_id.is_valid());
     EXPECT_EQ(11u, local_surface_id.parent_sequence_number());
     EXPECT_EQ(viz::kInitialChildSequenceNumber,
               local_surface_id.child_sequence_number());
-    EXPECT_EQ(gfx::Size(8, 8), submitter_->frame_size_);
+    EXPECT_EQ(gfx::Size(8, 8), frame_size());
   }
 
   EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
@@ -826,19 +837,19 @@ TEST_F(VideoFrameSubmitterTest, FrameSizeChangeUpdatesLocalSurfaceId) {
   EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
   EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
 
-  submitter_->SubmitSingleFrame();
+  SubmitSingleFrame();
   scoped_task_environment_.RunUntilIdle();
 
   {
     viz::LocalSurfaceId local_surface_id =
-        submitter_->child_local_surface_id_allocator_
+        child_local_surface_id_allocator()
             .GetCurrentLocalSurfaceIdAllocation()
             .local_surface_id();
     EXPECT_TRUE(local_surface_id.is_valid());
     EXPECT_EQ(11u, local_surface_id.parent_sequence_number());
     EXPECT_EQ(viz::kInitialChildSequenceNumber + 1,
               local_surface_id.child_sequence_number());
-    EXPECT_EQ(gfx::Size(2, 2), submitter_->frame_size_);
+    EXPECT_EQ(gfx::Size(2, 2), frame_size());
   }
 }
 
@@ -945,6 +956,41 @@ TEST_F(VideoFrameSubmitterTest, VideoRotationOutputRect) {
     EXPECT_CALL(*resource_provider_, ReceiveReturnsFromParent(_));
     submitter_->DidReceiveCompositorFrameAck(resources);
   }
+}
+
+TEST_F(VideoFrameSubmitterTest, PageVisibilityControlsSubmission) {
+  // Hide the page and ensure no begin frames are issued.
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
+  submitter_->SetIsPageVisible(false);
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_FALSE(ShouldSubmit());
+
+  // Start rendering, but since page is hidden nothing should start yet.
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
+  submitter_->StartRendering();
+  scoped_task_environment_.RunUntilIdle();
+
+  // Mark the page as visible and confirm frame submission.
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
+  EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
+      .WillOnce(Return(media::VideoFrame::CreateFrame(
+          media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
+          gfx::Size(8, 8), base::TimeDelta())));
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _)).Times(1);
+  EXPECT_CALL(*video_frame_provider_, PutCurrentFrame());
+  EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _, _));
+  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
+  EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
+  submitter_->SetIsPageVisible(true);
+  scoped_task_environment_.RunUntilIdle();
+
+  // Transition back to the page being hidden and ensure begin frames stop.
+  EXPECT_TRUE(ShouldSubmit());
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _)).Times(1);
+  EXPECT_CALL(*video_frame_provider_, GetCurrentFrame()).Times(0);
+  submitter_->SetIsPageVisible(false);
+  scoped_task_environment_.RunUntilIdle();
 }
 
 }  // namespace blink

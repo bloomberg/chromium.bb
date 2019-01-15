@@ -65,7 +65,8 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   void EnableSubmission(viz::SurfaceId,
                         base::TimeTicks local_surface_id_allocation_time,
                         WebFrameSinkDestroyedCallback) override;
-  void UpdateSubmissionState(bool is_visible) override;
+  void SetIsSurfaceVisible(bool is_visible) override;
+  void SetIsPageVisible(bool is_visible) override;
   void SetForceSubmit(bool) override;
 
   // viz::ContextLostObserver implementation.
@@ -98,15 +99,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   void SetSurfaceIdForTesting(const viz::SurfaceId&, base::TimeTicks);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(VideoFrameSubmitterTest, ContextLostDuringSubmit);
-  FRIEND_TEST_ALL_PREFIXES(VideoFrameSubmitterTest,
-                           ShouldSubmitPreventsSubmission);
-  FRIEND_TEST_ALL_PREFIXES(VideoFrameSubmitterTest,
-                           SetForceSubmitForcesSubmission);
-  FRIEND_TEST_ALL_PREFIXES(VideoFrameSubmitterTest,
-                           FrameSizeChangeUpdatesLocalSurfaceId);
-  FRIEND_TEST_ALL_PREFIXES(VideoFrameSubmitterTest,
-                           StopUsingProviderDuringContextLost);
+  friend class VideoFrameSubmitterTest;
 
   void StartSubmitting();
   void UpdateSubmissionStateInternal();
@@ -135,10 +128,17 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   bool waiting_for_compositor_ack_ = false;
 
   bool is_rendering_ = false;
-  // If we are not on screen, we should not submit.
-  bool should_submit_internal_ = false;
+
+  // If the surface is not visible within in the current view port, we should
+  // not submit.
+  bool is_surface_visible_ = false;
+
+  // Likewise, if the entire page is not visible, we should not submit.
+  bool is_page_visible_ = true;
+
   // Whether frames should always be submitted, even if we're not visible.
   bool force_submit_ = false;
+
   // Needs to be initialized in implementation because media isn't a public_dep
   // of blink/platform.
   media::VideoRotation rotation_;
