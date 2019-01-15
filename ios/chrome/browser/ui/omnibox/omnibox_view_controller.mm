@@ -8,6 +8,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_container_view.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
@@ -82,13 +83,17 @@ const CGFloat kClearButtonSize = 28.0f;
   // Add Paste and Go option to the editing menu
   UIMenuController* menu = [UIMenuController sharedMenuController];
   if (base::FeatureList::IsEnabled(kCopiedContentBehavior)) {
+    UIMenuItem* searchCopiedImage = [[UIMenuItem alloc]
+        initWithTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_IMAGE)
+               action:@selector(searchCopiedImage:)];
     UIMenuItem* visitCopiedLink = [[UIMenuItem alloc]
         initWithTitle:l10n_util::GetNSString(IDS_IOS_VISIT_COPIED_LINK)
                action:@selector(visitCopiedLink:)];
     UIMenuItem* searchCopiedText = [[UIMenuItem alloc]
         initWithTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_TEXT)
                action:@selector(searchCopiedText:)];
-    [menu setMenuItems:@[ visitCopiedLink, searchCopiedText ]];
+    [menu
+        setMenuItems:@[ searchCopiedImage, visitCopiedLink, searchCopiedText ]];
   } else {
     UIMenuItem* pasteAndGo = [[UIMenuItem alloc]
         initWithTitle:l10n_util::GetNSString(IDS_IOS_PASTE_AND_GO)
@@ -248,18 +253,35 @@ const CGFloat kClearButtonSize = 28.0f;
     DCHECK(!base::FeatureList::IsEnabled(kCopiedContentBehavior));
     return UIPasteboard.generalPasteboard.string.length > 0;
   }
-  ClipboardRecentContent* clipboardRecentContent =
-      ClipboardRecentContent::GetInstance();
-  if (action == @selector(visitCopiedLink:)) {
-    DCHECK(base::FeatureList::IsEnabled(kCopiedContentBehavior));
-    return clipboardRecentContent->GetRecentURLFromClipboard().has_value();
-  }
-  if (action == @selector(searchCopiedText:)) {
-    DCHECK(base::FeatureList::IsEnabled(kCopiedContentBehavior));
-    return !clipboardRecentContent->GetRecentURLFromClipboard().has_value() &&
-           clipboardRecentContent->GetRecentTextFromClipboard().has_value();
+
+  if (action == @selector(searchCopiedImage:) ||
+      action == @selector(visitCopiedLink:) ||
+      action == @selector(searchCopiedText:)) {
+    ClipboardRecentContent* clipboardRecentContent =
+        ClipboardRecentContent::GetInstance();
+    if (clipboardRecentContent->GetRecentImageFromClipboard().has_value()) {
+      return action == @selector(searchCopiedImage:);
+    }
+    if (clipboardRecentContent->GetRecentURLFromClipboard().has_value()) {
+      return action == @selector(visitCopiedLink:);
+    }
+    if (clipboardRecentContent->GetRecentTextFromClipboard().has_value()) {
+      return action == @selector(searchCopiedText:);
+    }
+    return NO;
   }
   return NO;
+}
+
+- (void)searchCopiedImage:(id)sender {
+  DCHECK(base::FeatureList::IsEnabled(kCopiedContentBehavior));
+  if (base::Optional<gfx::Image> optionalImage =
+          ClipboardRecentContent::GetInstance()
+              ->GetRecentImageFromClipboard()) {
+    UIImage* image = optionalImage.value().ToUIImage();
+    [self.dispatcher searchByImage:image];
+    [self.dispatcher cancelOmniboxEdit];
+  }
 }
 
 - (void)visitCopiedLink:(id)sender {
@@ -277,12 +299,12 @@ const CGFloat kClearButtonSize = 28.0f;
   if (base::FeatureList::IsEnabled(kCopiedContentBehavior)) {
     ClipboardRecentContent* clipboardRecentContent =
         ClipboardRecentContent::GetInstance();
-    if (base::Optional<GURL> optional_url =
+    if (base::Optional<GURL> optionalUrl =
             clipboardRecentContent->GetRecentURLFromClipboard()) {
-      query = base::SysUTF8ToNSString(optional_url.value().spec());
-    } else if (base::Optional<base::string16> optional_text =
+      query = base::SysUTF8ToNSString(optionalUrl.value().spec());
+    } else if (base::Optional<base::string16> optionalText =
                    clipboardRecentContent->GetRecentTextFromClipboard()) {
-      query = base::SysUTF16ToNSString(optional_text.value());
+      query = base::SysUTF16ToNSString(optionalText.value());
     }
   } else {
     query = UIPasteboard.generalPasteboard.string;

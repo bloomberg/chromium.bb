@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/orchestrator/edit_view_animatee.h"
 #import "ios/chrome/browser/ui/orchestrator/location_bar_offset_provider.h"
 
+@protocol BrowserCommands;
 @protocol LoadQueryCommands;
 @protocol OmniboxFocuser;
 
@@ -34,7 +35,9 @@
 - (instancetype)initWithIncognito:(BOOL)isIncognito;
 
 // The dispatcher for the paste and go action.
-@property(nonatomic, weak) id<LoadQueryCommands, OmniboxFocuser> dispatcher;
+@property(nonatomic, weak)
+    id<BrowserCommands, LoadQueryCommands, OmniboxFocuser>
+        dispatcher;
 
 @end
 

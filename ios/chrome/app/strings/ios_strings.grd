@@ -1295,6 +1295,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SEARCH_COPIED" desc="The message displayed when the search is copied via long press (contextual search) [Length: 10em] [iOS only]">
         Copied
       </message>
+      <message name="IDS_IOS_SEARCH_COPIED_IMAGE" desc="Text in the search accelerator menu shown when long-pressing the omnibox with copied image. Enables pasting the current contents of the clipboard and searching the image. [iOS only]">
+          Search Copied Image
+      </message>
       <message name="IDS_IOS_SEARCH_COPIED_TEXT" desc="Text in the search accelerator menu shown when long-pressing the omnibox with copied text. Enables pasting the current contents of the clipboard and searching the text. [iOS only]">
           Search Copied Text
       </message>
