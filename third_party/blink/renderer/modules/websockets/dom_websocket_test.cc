@@ -280,7 +280,8 @@ TEST(DOMWebSocketTest, mixedContentAutoUpgrade) {
                 Connect(KURL("wss://example.com/endpoint"), String()))
         .WillOnce(Return(true));
   }
-  scope.GetDocument().SetURL(KURL("https://example.com"));
+  scope.GetDocument().SetSecurityOrigin(
+      SecurityOrigin::Create(KURL("https://example.com")));
   scope.GetDocument().SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
   websocket_scope.Socket().Connect("ws://example.com/endpoint",
                                    Vector<String>(), scope.GetExceptionState());

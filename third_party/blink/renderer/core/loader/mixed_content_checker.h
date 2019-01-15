@@ -37,6 +37,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -93,7 +94,7 @@ class CORE_EXPORT MixedContentChecker final {
                                 SecurityViolationReportingPolicy =
                                     SecurityViolationReportingPolicy::kReport);
 
-  static bool ShouldAutoupgrade(KURL frame_url,
+  static bool ShouldAutoupgrade(HttpsState context_https_state,
                                 WebMixedContentContextType type);
 
   static void CheckMixedPrivatePublic(LocalFrame*,
