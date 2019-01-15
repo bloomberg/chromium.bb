@@ -643,6 +643,11 @@ class CONTENT_EXPORT WebContentsDelegate {
       bool did_start_load,
       bool did_finish_load);
 
+  // Returns true if the widget's frame content needs to be stored before
+  // eviction and displayed until a new frame is generated. If false, a white
+  // solid color is displayed instead.
+  virtual bool ShouldShowStaleContentOnEviction(WebContents* source);
+
  protected:
   virtual ~WebContentsDelegate();
 
