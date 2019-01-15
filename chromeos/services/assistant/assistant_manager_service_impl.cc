@@ -1177,5 +1177,19 @@ void AssistantManagerServiceImpl::RecordQueryResponseTypeUMA() {
   receive_url_response_.clear();
 }
 
+void AssistantManagerServiceImpl::SendAssistantFeedback(
+    mojom::AssistantFeedbackPtr assistant_feedback) {
+  const std::string interaction = CreateSendFeedbackInteraction(
+      assistant_feedback->assistant_debug_info_allowed,
+      assistant_feedback->description);
+  assistant_client::VoicelessOptions voiceless_options;
+
+  voiceless_options.is_user_initiated = false;
+
+  assistant_manager_internal_->SendVoicelessInteraction(
+      interaction, "send feedback with details", voiceless_options,
+      [](auto) {});
+}
+
 }  // namespace assistant
 }  // namespace chromeos

@@ -52,6 +52,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
       mojom::AssistantNotificationPtr notification) override;
   void CacheScreenContext(CacheScreenContextCallback callback) override;
   void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
+  void SendAssistantFeedback(mojom::AssistantFeedbackPtr feedback) override;
 
  private:
   State state_ = State::STOPPED;

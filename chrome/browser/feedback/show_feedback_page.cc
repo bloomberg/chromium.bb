@@ -35,6 +35,7 @@ bool IsFromUserInteraction(FeedbackSource source) {
   switch (source) {
     case kFeedbackSourceArcApp:
     case kFeedbackSourceAsh:
+    case kFeedbackSourceAssistant:
     case kFeedbackSourceBrowserCommand:
     case kFeedbackSourceMdSettingsAboutPage:
     case kFeedbackSourceOldSettingsAboutPage:
@@ -94,9 +95,9 @@ void ShowFeedbackPage(Browser* browser,
   }
 #endif
 
-  api->RequestFeedbackForFlow(description_template,
-                              description_placeholder_text, category_tag,
-                              extra_diagnostics, page_url, flow);
+  api->RequestFeedbackForFlow(
+      description_template, description_placeholder_text, category_tag,
+      extra_diagnostics, page_url, flow, source == kFeedbackSourceAssistant);
 }
 
 }  // namespace chrome

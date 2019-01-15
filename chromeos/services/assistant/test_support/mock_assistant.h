@@ -55,6 +55,9 @@ class MockAssistant : public mojom::Assistant {
 
   MOCK_METHOD1(OnAccessibilityStatusChanged, void(bool));
 
+  MOCK_METHOD1(SendAssistantFeedback,
+               void(chromeos::assistant::mojom::AssistantFeedbackPtr));
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAssistant);
 };

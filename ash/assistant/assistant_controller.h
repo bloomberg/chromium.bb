@@ -84,6 +84,8 @@ class ASH_EXPORT AssistantController
       mojom::AssistantImageDownloaderPtr assistant_image_downloader) override;
   void OpenAssistantSettings() override;
   void StartSpeakerIdEnrollmentFlow() override;
+  void SendAssistantFeedback(bool assistant_debug_info_allowed,
+                             const std::string& feedback_description) override;
 
   // AssistantControllerObserver:
   void OnDeepLinkReceived(

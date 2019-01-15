@@ -71,6 +71,8 @@ ChromeFeedbackPrivateDelegate::GetStrings(
   SET_STRING("user-email", IDS_FEEDBACK_USER_EMAIL_LABEL);
   SET_STRING("anonymous-user", IDS_FEEDBACK_ANONYMOUS_EMAIL_OPTION);
   SET_STRING("sys-info", GetSysInfoCheckboxStringId(browser_context));
+  SET_STRING("assistant-info",
+             IDS_FEEDBACK_INCLUDE_ASSISTANT_INFORMATION_CHKBOX);
   SET_STRING("attach-file-label", IDS_FEEDBACK_ATTACH_FILE_LABEL);
   SET_STRING("attach-file-note", IDS_FEEDBACK_ATTACH_FILE_NOTE);
   SET_STRING("attach-file-to-big", IDS_FEEDBACK_ATTACH_FILE_TO_BIG);

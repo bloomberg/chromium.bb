@@ -29,7 +29,10 @@
 #include "extensions/common/constants.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/interfaces/assistant_controller.mojom.h"
+#include "ash/public/interfaces/constants.mojom.h"
 #include "extensions/browser/api/feedback_private/log_source_access_manager.h"
+#include "services/service_manager/public/cpp/connector.h"
 #endif  // defined(OS_CHROMEOS)
 
 using extensions::api::feedback_private::SystemInformation;
@@ -123,7 +126,8 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
     const std::string& category_tag,
     const std::string& extra_diagnostics,
     const GURL& page_url,
-    api::feedback_private::FeedbackFlow flow) {
+    api::feedback_private::FeedbackFlow flow,
+    bool from_assistant) {
   if (browser_context_ && EventRouter::Get(browser_context_)) {
     FeedbackInfo info;
     info.description = description_template;
@@ -132,6 +136,9 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
     info.category_tag = std::make_unique<std::string>(category_tag);
     info.page_url = std::make_unique<std::string>(page_url.spec());
     info.system_information = std::make_unique<SystemInformationList>();
+#if defined(OS_CHROMEOS)
+    info.from_assistant = std::make_unique<bool>(from_assistant);
+#endif  // defined(OS_CHROMEOS)
 
     // Any extra diagnostics information should be added to the sys info.
     if (!extra_diagnostics.empty()) {
@@ -315,6 +322,17 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
   }
 
 #if defined(OS_CHROMEOS)
+  // Send feedback to Assistant server if triggered from Google Assistant.
+  if (feedback_info.from_assistant && *feedback_info.from_assistant) {
+    ash::mojom::AssistantControllerPtr assistant_controller;
+    content::BrowserContext::GetConnectorFor(browser_context())
+        ->BindInterface(ash::mojom::kServiceName, &assistant_controller);
+    assistant_controller->SendAssistantFeedback(
+        feedback_info.assistant_debug_info_allowed &&
+            *feedback_info.assistant_debug_info_allowed,
+        feedback_data->description());
+  }
+
   delegate->FetchAndMergeIwlwifiDumpLogsIfPresent(
       std::move(sys_logs), browser_context(),
       base::Bind(&FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched, this,

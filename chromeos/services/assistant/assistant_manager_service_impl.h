@@ -115,6 +115,8 @@ class AssistantManagerServiceImpl
       mojom::AssistantNotificationPtr notification) override;
   void CacheScreenContext(CacheScreenContextCallback callback) override;
   void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
+  void SendAssistantFeedback(
+      mojom::AssistantFeedbackPtr assistant_feedback) override;
 
   // AssistantActionObserver overrides:
   void OnShowContextualQueryFallback() override;

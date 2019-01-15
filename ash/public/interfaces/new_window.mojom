@@ -44,6 +44,7 @@ interface NewWindowClient {
   // Shows the task manager window.
   ShowTaskManager();
 
-  // Opens the feedback page for "Report Issue".
-  OpenFeedbackPage();
+  // Opens the feedback page for "Report Issue". If |from_assistant| is
+  // true then the page is triggered from Assistant.
+  OpenFeedbackPage(bool from_assistant);
 };

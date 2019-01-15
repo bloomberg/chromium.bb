@@ -39,6 +39,8 @@ class TestAssistantService : public chromeos::assistant::mojom::Assistant {
                                notification) override {}
   void CacheScreenContext(CacheScreenContextCallback callback) override;
   void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override {}
+  void SendAssistantFeedback(
+      chromeos::assistant::mojom::AssistantFeedbackPtr feedback) override {}
 
  private:
   mojo::Binding<chromeos::assistant::mojom::Assistant> binding_;
