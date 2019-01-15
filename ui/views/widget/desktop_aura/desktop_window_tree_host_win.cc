@@ -734,6 +734,11 @@ bool DesktopWindowTreeHostWin::GetClientAreaInsets(gfx::Insets* insets,
   return false;
 }
 
+bool DesktopWindowTreeHostWin::GetDwmFrameInsetsInPixels(
+    gfx::Insets* insets) const {
+  return false;
+}
+
 void DesktopWindowTreeHostWin::GetMinMaxSize(gfx::Size* min_size,
                                              gfx::Size* max_size) const {
   *min_size = native_widget_delegate_->GetMinimumSize();
