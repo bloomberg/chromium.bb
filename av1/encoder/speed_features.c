@@ -399,6 +399,8 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->mv.search_method = FAST_HEX;
     sf->partition_search_type = REFERENCE_PARTITION;
     sf->mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
+    // TODO(any): evaluate adaptive_mode_search=1 for speed 7 & 8
+    sf->adaptive_mode_search = 2;
   }
   if (speed >= 8) {
     sf->mv.search_method = FAST_DIAMOND;
