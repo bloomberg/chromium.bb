@@ -622,6 +622,11 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
 
   // Wait for the change to propagate.
   EXPECT_TRUE(AutofillWalletChecker(0, 1).Wait());
+  // Equal data does not mean equal metadata, there can be a metadata entity
+  // without a data entity that gets ignored by the PDM-based
+  // AutofillWalletChecker; we need to wait until the count of metadata entities
+  // converges.
+  EXPECT_TRUE(AutofillWalletMetadataSizeChecker(0, 1).Wait());
 
   EXPECT_EQ(0U, GetServerCreditCards(0).size());
   EXPECT_EQ(0U, GetServerCreditCards(1).size());
@@ -676,6 +681,11 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
 
   // Wait for the change to propagate.
   EXPECT_TRUE(AutofillWalletChecker(0, 1).Wait());
+  // Equal data does not mean equal metadata, there can be a metadata entity
+  // without a data entity that gets ignored by the PDM-based
+  // AutofillWalletChecker; we need to wait until the count of metadata entities
+  // converges.
+  EXPECT_TRUE(AutofillWalletMetadataSizeChecker(0, 1).Wait());
 
   EXPECT_EQ(0U, GetServerProfiles(0).size());
   EXPECT_EQ(0U, GetServerProfiles(1).size());

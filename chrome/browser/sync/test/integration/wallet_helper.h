@@ -132,6 +132,26 @@ class AutofillWalletChecker : public StatusChangeChecker,
   const int profile_b_;
 };
 
+// Checker to block until autofill wallet metadata sizes match on both profiles.
+class AutofillWalletMetadataSizeChecker
+    : public StatusChangeChecker,
+      public autofill::PersonalDataManagerObserver {
+ public:
+  AutofillWalletMetadataSizeChecker(int profile_a, int profile_b);
+  ~AutofillWalletMetadataSizeChecker() override;
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
+
+  // autofill::PersonalDataManager implementation.
+  void OnPersonalDataChanged() override;
+
+ private:
+  const int profile_a_;
+  const int profile_b_;
+};
+
 // Class that enables or disables USS based on test parameter. Must be the first
 // base class of the test fixture.
 // TODO(jkrcal): When the new implementation fully launches, remove this class,
