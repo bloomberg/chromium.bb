@@ -1327,6 +1327,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                                  LayoutObject* parent);
   void SetStyleWithWritingModeOfParent(scoped_refptr<ComputedStyle>);
 
+  void FirstLineStyleDidChange(const ComputedStyle& old_style,
+                               const ComputedStyle& new_style);
+
   void ClearBaseComputedStyle();
 
   // This function returns an enclosing non-anonymous LayoutBlock for this
@@ -2385,7 +2388,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void UpdateShapeImage(const ShapeValue*, const ShapeValue*);
   void UpdateFillImages(const FillLayer* old_layers,
-                        const FillLayer* new_layers);
+                        const FillLayer& new_layers);
   void UpdateCursorImages(const CursorList* old_cursors,
                           const CursorList* new_cursors);
   void CheckCounterChanges(const ComputedStyle* old_style,
@@ -2431,13 +2434,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // LayoutView to return the owning LayoutObject in the containing frame.
   inline LayoutObject* ParentCrossingFrames() const;
 
-  void UpdateImageObservers(const ComputedStyle* old_style,
-                            const ComputedStyle* new_style);
-  void UpdateFirstLineImageObservers(const ComputedStyle* old_style,
-                                     const ComputedStyle* new_style);
-
-  void ApplyPseudoStyleChanges(const ComputedStyle* old_style);
-  void ApplyFirstLineChanges(const ComputedStyle* old_style);
+  void ApplyPseudoStyleChanges(const ComputedStyle& old_style);
+  void ApplyFirstLineChanges(const ComputedStyle& old_style);
 
   LayoutRect VisualRectForInlineBox() const {
     return AdjustVisualRectForInlineBox(VisualRect());
@@ -2562,7 +2560,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           descendant_effective_whitelisted_touch_action_changed_(false),
           is_effective_root_scroller_(false),
           is_global_root_scroller_(false),
-          pending_update_first_line_image_observers_(false),
           positioned_state_(kIsStaticallyPositioned),
           selection_state_(static_cast<unsigned>(SelectionState::kNone)),
           background_obscuration_state_(kBackgroundObscurationStatusInvalid),
@@ -2797,12 +2794,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // it works.
     ADD_BOOLEAN_BITFIELD(is_effective_root_scroller_, IsEffectiveRootScroller);
     ADD_BOOLEAN_BITFIELD(is_global_root_scroller_, IsGlobalRootScroller);
-
-    // First line style is resolvable only after the object is inserted into
-    // the tree, so we should set this flag when the object set a style having
-    // first line style before it is inserted into the tree.
-    ADD_BOOLEAN_BITFIELD(pending_update_first_line_image_observers_,
-                         PendingUpdateFirstLineImageObservers);
 
    private:
     // This is the cached 'position' value of this object
