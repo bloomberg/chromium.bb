@@ -379,8 +379,9 @@ String CSSComputedStyleDeclaration::GetPropertyValue(
     CSSPropertyID property_id) const {
   // allow_visited_style_ is true only for access from DevTools.
   if (!allow_visited_style_ && property_id == CSSPropertyWebkitAppearance) {
-    UseCounter::Count(node_->GetDocument(),
-                      WebFeature::kGetComputedStyleWebkitAppearance);
+    UseCounter::Count(
+        node_->GetDocument(),
+        WebFeature::kGetComputedStyleForWebkitAppearanceExcludeDevTools);
   }
   const CSSValue* value = GetPropertyCSSValue(CSSProperty::Get(property_id));
   if (value)
