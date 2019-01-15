@@ -1175,7 +1175,7 @@ class ArchivingStageMixin(object):
           self.archive_path,
           upload_urls,
           filename,
-          self._run.options.debug,
+          self._run.options.debug_forced,
           update_list=True,
           acl=self.acl)
     except failures_lib.GSUploadFailure as e:
