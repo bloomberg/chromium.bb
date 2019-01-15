@@ -854,6 +854,7 @@ public class WebXrVrInputTest {
                     WebXrVrTestFramework.runJavaScriptOrFail("requestPermission({audio:true})",
                             POLL_TIMEOUT_SHORT_MS, mTestRule.getWebContents());
                 });
+        NativeUiUtils.waitForUiQuiescence();
         NativeUiUtils.clickElement(
                 UserFriendlyElementName.WEB_XR_HOSTED_CONTENT, new PointF(0.4f, -0.4f));
         WebXrVrTestFramework.waitOnJavaScriptStep(mTestRule.getWebContents());
