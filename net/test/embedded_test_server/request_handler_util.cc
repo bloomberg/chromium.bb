@@ -96,9 +96,9 @@ RequestQuery ParseQuery(const GURL& url) {
   return queries;
 }
 
-void GetFilePathWithReplacements(const std::string& original_file_path,
-                                 const base::StringPairs& text_to_replace,
-                                 std::string* replacement_path) {
+std::string GetFilePathWithReplacements(
+    const std::string& original_file_path,
+    const base::StringPairs& text_to_replace) {
   std::string new_file_path = original_file_path;
   for (const auto& replacement : text_to_replace) {
     const std::string& old_text = replacement.first;
@@ -117,7 +117,7 @@ void GetFilePathWithReplacements(const std::string& original_file_path,
     new_file_path += base64_new;
   }
 
-  *replacement_path = new_file_path;
+  return new_file_path;
 }
 
 // Returns false if there were errors, otherwise true.
