@@ -7,9 +7,6 @@
 
 
   await self.runtime.loadModulePromise('color_picker');
-  var contrastInfo = new ColorPicker.ContrastInfo();
-  var contrastLineBuilder = new ColorPicker.ContrastRatioLineBuilder(contrastInfo);
-  TestRunner.assertTrue(contrastLineBuilder != null);
 
   var colorPairs = [
     // Boring black on white
@@ -29,9 +26,9 @@
       computedFontWeight: '400',
       computedBodyFontSize: '16px'
     };
-    contrastInfo.update(contrastInfoData);
-    var fgColor = Common.Color.parse(fgColorString);
-    contrastInfo.setColor(fgColor.hsva(), fgColorString);
+    var contrastInfo = new ColorPicker.ContrastInfo(contrastInfoData);
+    contrastInfo.setColor(Common.Color.parse(fgColorString));
+    var contrastLineBuilder = new ColorPicker.ContrastRatioLineBuilder(contrastInfo);
     var d = contrastLineBuilder.drawContrastRatioLine(100, 100, level);
 
     TestRunner.addResult('');
