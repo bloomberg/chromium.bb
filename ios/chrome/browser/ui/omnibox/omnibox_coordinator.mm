@@ -65,7 +65,8 @@
   self.viewController.emptyTextLeadingImage = GetOmniboxSuggestionIcon(SEARCH);
 
   self.viewController.dispatcher =
-      static_cast<id<LoadQueryCommands, OmniboxFocuser>>(self.dispatcher);
+      static_cast<id<BrowserCommands, LoadQueryCommands, OmniboxFocuser>>(
+          self.dispatcher);
   self.mediator = [[OmniboxMediator alloc] init];
   self.mediator.consumer = self.viewController;
 
