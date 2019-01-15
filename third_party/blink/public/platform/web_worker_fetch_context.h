@@ -118,9 +118,6 @@ class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
                                      const WebURL& insecure_url) {}
 
   virtual void SetApplicationCacheHostID(int id) {}
-  virtual int ApplicationCacheHostID() const {
-    return WebApplicationCacheHost::kAppCacheNoHostId;
-  }
 
   // Sets the builder object of WebDocumentSubresourceFilter on the main thread
   // which will be used in TakeSubresourceFilter() to create a

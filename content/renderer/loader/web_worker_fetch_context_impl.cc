@@ -423,10 +423,6 @@ void WebWorkerFetchContextImpl::SetApplicationCacheHostID(int id) {
   appcache_host_id_ = id;
 }
 
-int WebWorkerFetchContextImpl::ApplicationCacheHostID() const {
-  return appcache_host_id_;
-}
-
 void WebWorkerFetchContextImpl::OnControllerChanged(
     blink::mojom::ControllerServiceWorkerMode mode) {
   set_is_controlled_by_service_worker(mode);
