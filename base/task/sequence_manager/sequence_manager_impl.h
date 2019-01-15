@@ -5,7 +5,6 @@
 #ifndef BASE_TASK_SEQUENCE_MANAGER_SEQUENCE_MANAGER_IMPL_H_
 #define BASE_TASK_SEQUENCE_MANAGER_SEQUENCE_MANAGER_IMPL_H_
 
-#include <atomic>
 #include <list>
 #include <map>
 #include <memory>
@@ -165,7 +164,6 @@ class BASE_EXPORT SequenceManagerImpl
   void BindToCurrentThread(std::unique_ptr<MessagePump> pump) override;
   void DeletePendingTasks() override;
   bool HasTasks() override;
-  unsigned int GetWorkId() const override;
 
   // Requests that a task to process work is posted on the main task runner.
   // These tasks are de-duplicated in two buckets: main-thread and all other
@@ -393,11 +391,6 @@ class BASE_EXPORT SequenceManagerImpl
 
   // Whether to add the queue time to tasks.
   base::subtle::Atomic32 add_queue_time_to_tasks_ = 0;
-
-  // The unique identifier for the current work item (task, event, etc.) being
-  // executed by the message loop. Atomic to support being read without locking
-  // from other threads.
-  std::atomic_uint work_id_;
 
   // A check to bail out early during memory corruption.
   // https://crbug.com/757940

@@ -77,11 +77,6 @@ bool MessageLoopCurrent::IsIdleForTesting() {
   return current_->IsIdleForTesting();
 }
 
-unsigned int MessageLoopCurrent::GetWorkId() const {
-  // This function may be called on any thread.
-  return current_->GetWorkId();
-}
-
 void MessageLoopCurrent::AddTaskObserver(TaskObserver* task_observer) {
   DCHECK(current_->IsBoundToCurrentThread());
   current_->AddTaskObserver(task_observer);

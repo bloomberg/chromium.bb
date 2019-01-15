@@ -188,12 +188,6 @@ class BASE_EXPORT MessageLoopBase {
   // can post other tasks when destructed.
   virtual void DeletePendingTasks() = 0;
 
-  // Gets the unique id for the current work item executed by the message loop.
-  // Implementations of this function must support being invoked from other
-  // threads *while the current thread is suspended*, so must not take any locks
-  // including indirectly through use of heap allocation, LOG, CHECK, or DCHECK.
-  virtual unsigned int GetWorkId() const = 0;
-
  protected:
   friend class MessageLoop;
   friend class MessageLoopForUI;
