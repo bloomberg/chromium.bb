@@ -160,15 +160,12 @@ class InlineSigninHelper : public GaiaAuthConsumer {
   // the last signed in email of the current profile, then Chrome will show a
   // confirmation dialog before starting sync. It returns true if there is a
   // cross account error, and false otherwise.
-  bool HandleCrossAccountError(
-      const std::string& refresh_token,
-      OneClickSigninSyncStarter::ConfirmationRequired confirmation_required);
+  bool HandleCrossAccountError(const std::string& refresh_token);
 
   // Callback used with ConfirmEmailDialogDelegate.
   void ConfirmEmailAction(
       content::WebContents* web_contents,
       const std::string& refresh_token,
-      OneClickSigninSyncStarter::ConfirmationRequired confirmation_required,
       SigninEmailConfirmationDialog::Action action);
 
   // Overridden from GaiaAuthConsumer.
@@ -180,14 +177,18 @@ class InlineSigninHelper : public GaiaAuthConsumer {
                                             Profile* profile,
                                             Profile::CreateStatus status);
 
+  // Callback invoked once the user has responded to the signin confirmation UI.
+  // If confirmed is false, the signin is aborted.
+  void UntrustedSigninConfirmed(const std::string& refresh_token,
+                                bool confirmed);
+
   // Creates the sync starter.  Virtual for tests. Call to exchange oauth code
   // for tokens.
   virtual void CreateSyncStarter(
       Browser* browser,
       const GURL& current_url,
       const std::string& refresh_token,
-      OneClickSigninSyncStarter::ProfileMode profile_mode,
-      OneClickSigninSyncStarter::ConfirmationRequired confirmation_required);
+      OneClickSigninSyncStarter::ProfileMode profile_mode);
 
   GaiaAuthFetcher gaia_auth_fetcher_;
   base::WeakPtr<InlineLoginHandlerImpl> handler_;

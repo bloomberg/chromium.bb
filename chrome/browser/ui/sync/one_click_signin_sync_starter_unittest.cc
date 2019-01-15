@@ -64,8 +64,7 @@ class OneClickSigninSyncStarterTest : public ChromeRenderViewHostTestHarness {
         std::string(), refresh_token,
         signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
         signin_metrics::Reason::REASON_UNKNOWN_REASON,
-        OneClickSigninSyncStarter::CURRENT_PROFILE,
-        OneClickSigninSyncStarter::NO_CONFIRMATION, callback);
+        OneClickSigninSyncStarter::CURRENT_PROFILE, callback);
   }
 
   // Deletes itself when SigninFailed() or SigninSuccess() is called.

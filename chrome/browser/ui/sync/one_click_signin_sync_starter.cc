@@ -84,12 +84,10 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     signin_metrics::AccessPoint signin_access_point,
     signin_metrics::Reason signin_reason,
     ProfileMode profile_mode,
-    ConfirmationRequired confirmation_required,
     Callback sync_setup_completed_callback)
     : profile_(nullptr),
       signin_access_point_(signin_access_point),
       signin_reason_(signin_reason),
-      confirmation_required_(confirmation_required),
       sync_setup_completed_callback_(sync_setup_completed_callback),
       first_account_added_to_cookie_(false),
       weak_pointer_factory_(this) {
@@ -224,7 +222,7 @@ void OneClickSigninSyncStarter::OnRegisteredForPolicy(
   // finish signing in.
   if (dm_token.empty()) {
     DVLOG(1) << "Policy registration failed";
-    ConfirmAndSignin();
+    primary_account_mutator_->LegacyCompletePendingPrimaryAccountSignin();
     return;
   }
 
@@ -415,33 +413,6 @@ void OneClickSigninSyncStarter::CancelSigninAndDelete() {
   // after this point.
 }
 
-void OneClickSigninSyncStarter::ConfirmAndSignin() {
-  if (confirmation_required_ == CONFIRM_UNTRUSTED_SIGNIN) {
-    browser_ = EnsureBrowser(browser_, profile_);
-    base::RecordAction(
-        base::UserMetricsAction("Signin_Show_UntrustedSigninPrompt"));
-    // Display a confirmation dialog to the user.
-    browser_->window()->ShowOneClickSigninConfirmation(
-        base::UTF8ToUTF16(
-            primary_account_mutator_->LegacyPrimaryAccountForAuthInProgress()
-                .email),
-        base::Bind(&OneClickSigninSyncStarter::UntrustedSigninConfirmed,
-                   weak_pointer_factory_.GetWeakPtr()));
-  } else {
-    // No confirmation required - just sign in the user.
-    primary_account_mutator_->LegacyCompletePendingPrimaryAccountSignin();
-  }
-}
-
-void OneClickSigninSyncStarter::UntrustedSigninConfirmed(bool confirmed) {
-  if (confirmed) {
-    primary_account_mutator_->LegacyCompletePendingPrimaryAccountSignin();
-  } else {
-    base::RecordAction(base::UserMetricsAction("Signin_Undo_Signin"));
-    CancelSigninAndDelete();  // This statement frees this object.
-  }
-}
-
 void OneClickSigninSyncStarter::OnSyncConfirmationUIClosed(
     LoginUIService::SyncConfirmationUIClosedResult result) {
   // We didn't run this callback in AccountAddedToCookie so do it now.
@@ -484,20 +455,18 @@ void OneClickSigninSyncStarter::SigninFailed(
     sync_setup_completed_callback_.Run(SYNC_SETUP_FAILURE);
 
   FinishSyncServiceSetup();
-  if (confirmation_required_ == CONFIRM_AFTER_SIGNIN) {
-    switch (error.state()) {
-      case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
-        DisplayFinalConfirmationBubble(l10n_util::GetStringUTF16(
-            IDS_SYNC_UNRECOVERABLE_ERROR));
-        break;
-      case GoogleServiceAuthError::REQUEST_CANCELED:
-        // No error notification needed if the user manually cancelled signin.
-        break;
-      default:
-        DisplayFinalConfirmationBubble(l10n_util::GetStringUTF16(
-            IDS_SYNC_ERROR_SIGNING_IN));
-        break;
-    }
+  switch (error.state()) {
+    case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
+      DisplayFinalConfirmationBubble(
+          l10n_util::GetStringUTF16(IDS_SYNC_UNRECOVERABLE_ERROR));
+      break;
+    case GoogleServiceAuthError::REQUEST_CANCELED:
+      // No error notification needed if the user manually cancelled signin.
+      break;
+    default:
+      DisplayFinalConfirmationBubble(
+          l10n_util::GetStringUTF16(IDS_SYNC_ERROR_SIGNING_IN));
+      break;
   }
   delete this;
 }
