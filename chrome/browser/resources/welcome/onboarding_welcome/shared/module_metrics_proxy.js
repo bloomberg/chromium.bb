@@ -251,7 +251,7 @@ nux.GoogleAppsMetricsProxyImpl = class extends nux.ModuleMetricsProxyImpl {
     };
 
     super(
-        'FirstRun.NewUserExperience.GoogleAppsProvidersInteraction',
+        'FirstRun.NewUserExperience.GoogleAppsInteraction',
         NuxGoogleAppsInteractions);
   }
 };
