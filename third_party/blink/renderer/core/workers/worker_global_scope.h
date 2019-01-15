@@ -205,10 +205,6 @@ class CORE_EXPORT WorkerGlobalScope
 
   void SetWorkerSettings(std::unique_ptr<WorkerSettings>);
 
-  // Returns true if this worker script is supposed to be fetched on the main
-  // thread and passed to the worker thread.
-  bool IsScriptFetchedOnMainThread();
-
   void DidReceiveResponseForClassicScript(
       WorkerClassicScriptLoader* classic_script_loader);
   void DidImportClassicScript(WorkerClassicScriptLoader* classic_script_loader,

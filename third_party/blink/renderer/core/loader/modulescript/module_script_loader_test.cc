@@ -181,7 +181,8 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
   fetcher_ = MakeGarbageCollected<ResourceFetcher>(*properties, fetch_context);
   reporting_proxy_ = std::make_unique<MockWorkerReportingProxy>();
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-      url_, mojom::ScriptType::kModule, "UserAgent",
+      url_, mojom::ScriptType::kModule,
+      OffMainThreadWorkerScriptFetchOption::kEnabled, "UserAgent",
       nullptr /* web_worker_fetch_context */, Vector<CSPHeaderAndType>(),
       network::mojom::ReferrerPolicy::kDefault, security_origin_.get(),
       true /* is_secure_context */, HttpsState::kModern,

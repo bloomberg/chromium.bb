@@ -395,6 +395,13 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   String source_code;
   std::unique_ptr<Vector<uint8_t>> cached_meta_data;
 
+  // TODO(nhiroki): Implement off-the-main-thread worker script fetch for
+  // service workers (https://crbug.com/835717).
+  const OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option =
+      worker_start_data_.script_type == mojom::ScriptType::kModule
+          ? OffMainThreadWorkerScriptFetchOption::kEnabled
+          : OffMainThreadWorkerScriptFetchOption::kDisabled;
+
   // |main_script_loader_| isn't created if the InstalledScriptsManager had the
   // script.
   if (main_script_loader_) {
@@ -409,7 +416,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     }
     global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, worker_start_data_.script_type,
-        worker_start_data_.user_agent, std::move(web_worker_fetch_context),
+        off_main_thread_fetch_option, worker_start_data_.user_agent,
+        std::move(web_worker_fetch_context),
         content_security_policy ? content_security_policy->Headers()
                                 : Vector<CSPHeaderAndType>(),
         referrer_policy, starter_origin, starter_secure_context,
@@ -428,12 +436,12 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     // served by the installed scripts manager on the worker thread.
     global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, worker_start_data_.script_type,
-        worker_start_data_.user_agent, std::move(web_worker_fetch_context),
-        Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
-        starter_origin, starter_secure_context, starter_https_state,
-        worker_clients, worker_start_data_.address_space,
-        nullptr /* OriginTrialTokens */, devtools_worker_token_,
-        std::move(worker_settings),
+        off_main_thread_fetch_option, worker_start_data_.user_agent,
+        std::move(web_worker_fetch_context), Vector<CSPHeaderAndType>(),
+        network::mojom::ReferrerPolicy::kDefault, starter_origin,
+        starter_secure_context, starter_https_state, worker_clients,
+        worker_start_data_.address_space, nullptr /* OriginTrialTokens */,
+        devtools_worker_token_, std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
         nullptr /* worklet_module_respones_map */,
         std::move(interface_provider_info_));
