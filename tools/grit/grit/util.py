@@ -318,19 +318,6 @@ def PathFromRoot(path):
   return os.path.normpath(os.path.join(_root_dir, path))
 
 
-# TODO(thestig): Remove this to finish fixing https://crbug.com/915681
-_parsing_for_unittest = False
-
-def IsParsingGrdForUnittest():
-  return _parsing_for_unittest
-
-
-def SetIsParsingGrdForUnittest(is_parsing):
-  global _parsing_for_unittest
-  assert _parsing_for_unittest != is_parsing
-  _parsing_for_unittest = is_parsing
-
-
 def ParseGrdForUnittest(body, base_dir=None, predetermined_ids_file=None,
                         run_gatherers=False):
   '''Parse a skeleton .grd file and return it, for use in unit tests.
@@ -356,11 +343,7 @@ def ParseGrdForUnittest(body, base_dir=None, predetermined_ids_file=None,
     lines.append(body)
     lines.append('  </release>')
   lines.append('</grit>')
-  SetIsParsingGrdForUnittest(True)
-  try:
-    ret = grd_reader.Parse(StringIO.StringIO('\n'.join(lines)), dir=".")
-  finally:
-    SetIsParsingGrdForUnittest(False)
+  ret = grd_reader.Parse(StringIO.StringIO('\n'.join(lines)), dir=".")
   ret.SetOutputLanguage('en')
   if run_gatherers:
     ret.RunGatherers()

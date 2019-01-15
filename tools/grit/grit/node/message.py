@@ -20,12 +20,35 @@ from grit import util
 # Matches exactly three dots ending a line or followed by whitespace.
 _ELLIPSIS_PATTERN = lazy_re.compile(r'(?<!\.)\.\.\.(?=$|\s)')
 _ELLIPSIS_SYMBOL = u'\u2026'  # Ellipsis
+
 # Finds whitespace at the start and end of a string which can be multiline.
 _WHITESPACE = lazy_re.compile(r'(?P<start>\s*)(?P<body>.+?)(?P<end>\s*)\Z',
                               re.DOTALL | re.MULTILINE)
-_PLACEHOLDER = lazy_re.compile(r'\$\d')
-_BAD_PLACEHOLDER_MSG = ('WARNING: Placeholder found outside of <ph> tag in '
-                        'message "%s" in %s.')
+
+# <ph> placeholder elements should contain the special character formatters
+# used to format <ph> element content.
+# Android format.
+_ANDROID_FORMAT = (r'%[1-9]+\$'
+                   r'([-#+ 0,(]*)([0-9]+)?(\.[0-9]+)?'
+                   r'([bBhHsScCdoxXeEfgGaAtT%n])')
+# Chrome l10n format.
+_CHROME_FORMAT = r'\$+\d'
+# Windows EWT numeric and GRIT %s %d formats.
+_OTHER_FORMAT = r'%[0-9sd]'
+
+# Finds formatters that must be in a placeholder (<ph>) element.
+_FORMATTERS = lazy_re.compile(
+    '(%s)|(%s)|(%s)' % (_ANDROID_FORMAT, _CHROME_FORMAT, _OTHER_FORMAT))
+_BAD_PLACEHOLDER_MSG = ('ERROR: Placeholder formatter found outside of <ph> '
+                        'tag in message "%s" in %s.')
+_INVALID_PH_CHAR_MSG = ('ERROR: Invalid format characters found in message '
+                        '"%s" <ph> tag in %s.')
+
+# Finds HTML tag tokens.
+_HTMLTOKEN = lazy_re.compile(r'<[/]?[a-z][a-z0-9]*[^>]*>', re.I)
+
+# Finds HTML entities.
+_HTMLENTITY = lazy_re.compile(r'&[^\s]*;')
 
 
 class MessageNode(base.ContentNode):
@@ -134,28 +157,51 @@ class MessageNode(base.ContentNode):
     super(MessageNode, self).EndParsing()
 
     # Make the text (including placeholder references) and list of placeholders,
-    # then strip and store leading and trailing whitespace and create the
-    # tclib.Message() and a clique to contain it.
+    # verify placeholder formats, then strip and store leading and trailing
+    # whitespace and create the tclib.Message() and a clique to contain it.
 
     text = ''
     placeholders = []
+
     for item in self.mixed_content:
       if isinstance(item, types.StringTypes):
-        if _PLACEHOLDER.search(item):
-          # TODO(thestig): Remove this conditional to finish fixing
-          # https://crbug.com/915681
-          # This condition should always raise an exception.
-          if util.IsParsingGrdForUnittest():
-            print _BAD_PLACEHOLDER_MSG % (item, self.source)
-            raise exception.PlaceholderNotInsidePhNode
+        # Not a <ph> element: fail if any <ph> formatters are detected.
+        if _FORMATTERS.search(item):
+          print _BAD_PLACEHOLDER_MSG % (item, self.source)
+          raise exception.PlaceholderNotInsidePhNode
         text += item
       else:
+        # Extract the <ph> element components.
         presentation = item.attrs['name'].upper()
         text += presentation
-        ex = ' '
+        ex = ' '  # <ex> example element cdata if present.
         if len(item.children):
           ex = item.children[0].GetCdata()
         original = item.GetCdata()
+
+        # Sanity check the <ph> element content.
+        cdata = original
+        # Replace all HTML tag tokens in cdata.
+        match = _HTMLTOKEN.search(cdata)
+        while match:
+          cdata = cdata.replace(match.group(0), '_')
+          match = _HTMLTOKEN.search(cdata)
+        # Replace all HTML entities in cdata.
+        match = _HTMLENTITY.search(cdata)
+        while match:
+          cdata = cdata.replace(match.group(0), '_')
+          match = _HTMLENTITY.search(cdata)
+        # Remove first matching formatter from cdata.
+        match = _FORMATTERS.search(cdata)
+        if match:
+          cdata = cdata.replace(match.group(0), '')
+        # Fail if <ph> special chars remain in cdata.
+        if re.search(r'[%\$]', cdata):
+          message_id = self.attrs['name'] + ' ' + original;
+          print _INVALID_PH_CHAR_MSG % (message_id, self.source)
+          raise exception.InvalidCharactersInsidePhNode
+
+        # Otherwise, accept this <ph> placeholder.
         placeholders.append(tclib.Placeholder(presentation, original, ex))
 
     m = _WHITESPACE.match(text)
