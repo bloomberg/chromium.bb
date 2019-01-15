@@ -22,11 +22,35 @@ BluetoothLEScan::BluetoothLEScan(
       bluetooth_(bluetooth),
       keep_repeated_devices_(options ? options->keep_repeated_devices : false),
       accept_all_advertisements_(options ? options->accept_all_advertisements
-                                         : false) {}
+                                         : false) {
+  DCHECK(options->filters.has_value() ^ options->accept_all_advertisements);
+
+  if (options && options->filters.has_value()) {
+    for (const auto& filter : options->filters.value()) {
+      auto* filter_init = BluetoothLEScanFilterInit::Create();
+
+      if (filter->name)
+        filter_init->setName(filter->name);
+
+      if (filter->name_prefix)
+        filter_init->setNamePrefix(filter->name_prefix);
+
+      if (filter->services && filter->services.has_value()) {
+        HeapVector<blink::StringOrUnsignedLong> services;
+        for (const auto& uuid : filter->services.value()) {
+          blink::StringOrUnsignedLong uuid_string;
+          uuid_string.SetString(uuid);
+          services.push_back(uuid_string);
+        }
+        filter_init->setServices(services);
+      }
+      filters_.push_back(std::move(filter_init));
+    }
+  }
+}
 
 const HeapVector<Member<BluetoothLEScanFilterInit>>& BluetoothLEScan::filters()
     const {
-  // TODO(dougt) We need to support filters.
   return filters_;
 }
 

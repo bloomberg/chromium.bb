@@ -8,14 +8,16 @@
 <script>
 'use strict';
 const test_desc = 'requestLEScan with uuid filter.';
+let scan_result;
 
 bluetooth_test(async (t) => {
   const fake_central =
     await navigator.bluetooth.test.simulateCentral({state: 'powered-on'});
 
   await callWithTrustedClick(async () => {
-    await navigator.bluetooth.requestLEScan({filters: [{services: [health_uuid]}]})
+    scan_result = await navigator.bluetooth.requestLEScan({filters: [{services: [health_uuid]}]})
   });
+  assert_array_equals(scan_result.filters[0].services, [health_uuid]);
 
   const eventWatcher = new EventWatcher(t,
     navigator.bluetooth, ['advertisementreceived']);

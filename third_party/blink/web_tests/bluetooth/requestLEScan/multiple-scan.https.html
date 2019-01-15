@@ -21,7 +21,11 @@ bluetooth_test(async (t) => {
     scan2 = await navigator.bluetooth.requestLEScan({acceptAllAdvertisements: true});
   });
 
+  assert_true(scan.active);
+  assert_true(scan2.active);
   scan2.stop()
+  assert_true(scan.active);
+  assert_false(scan2.active);
 
   // We should still get an event because we called requestLEScan twice.
   const eventWatcher = new EventWatcher(t,
