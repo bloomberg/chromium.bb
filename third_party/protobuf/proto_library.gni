@@ -329,10 +329,16 @@ template("proto_library") {
   # use relative paths starting at |cc_out_dir|.
   # However there is no necessity to add an additional directory, if all protos
   # are located in the same directory which is in the search path by default.
-  if (has_nested_dirs) {
-    config_name = "${target_name}_config"
-    config(config_name) {
-      include_dirs = [ cc_out_dir ]
+  config_name = "${target_name}_config"
+  config(config_name) {
+    include_dirs = []
+    if (has_nested_dirs) {
+      include_dirs += [ cc_out_dir ]
+    }
+    if (defined(invoker.import_dirs)) {
+      foreach(path, invoker.import_dirs) {
+        include_dirs += [ "$root_gen_dir/" + rebase_path(path, "//") ]
+      }
     }
   }
 
@@ -361,7 +367,7 @@ template("proto_library") {
 
     if (generate_cc || generate_with_plugin) {
       # Not necessary if all protos are located in the same directory.
-      if (has_nested_dirs) {
+      if (has_nested_dirs || defined(invoker.import_dirs)) {
         # It's not enough to set |include_dirs| for target since public imports
         # expose corresponding includes to header files as well.
         public_configs += [ ":$config_name" ]
