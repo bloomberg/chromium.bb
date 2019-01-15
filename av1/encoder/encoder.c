@@ -6816,44 +6816,15 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   cm->reset_decoder_state = 0;
 
   cm->show_existing_frame &= allow_show_existing(cpi);
-  if (cm->show_existing_frame) {
-    // Manage the source buffer and flush out the source frame that has been
-    // coded already; Also get prepared for PSNR calculation if needed.
-    struct lookahead_entry *const source =
-        av1_lookahead_pop(cpi->lookahead, flush);
-    if (source == NULL) return -1;
-    av1_apply_encoding_flags(cpi, source->flags);
-    cpi->source = &source->img;
-    // TODO(zoeliu): To track down to determine whether it's needed to adjust
-    // the frame rate.
-    *time_stamp = source->ts_start;
-    *time_end = source->ts_end;
-
-    // We need to adjust frame rate for an overlay frame
-    if (cpi->rc.is_src_frame_alt_ref) adjust_frame_rate(cpi, source);
-
-    if (assign_cur_frame_new_fb(cm) == NULL) return -1;
-
-    // We need to update the gf_group for show_existing overlay frame
-    if (cpi->rc.is_src_frame_alt_ref) av1_rc_get_second_pass_params(cpi);
-
-    if (Pass2Encode(cpi, size, dest, frame_flags) != AOM_CODEC_OK)
-      return AOM_CODEC_ERROR;
-
-    if (cpi->b_calculate_psnr) generate_psnr_packet(cpi);
-
-#if CONFIG_INTERNAL_STATS
-    compute_internal_stats(cpi, (int)(*size));
-#endif  // CONFIG_INTERNAL_STATS
-
-    cm->show_existing_frame = 0;
-    return 0;
-  }
 
   int temporal_filtered = 0;
+  struct lookahead_entry *source = NULL;
   struct lookahead_entry *last_source = NULL;
-  struct lookahead_entry *const source =
-      choose_frame_source(cpi, &temporal_filtered, &flush, &last_source);
+  if (cm->show_existing_frame) {
+    source = av1_lookahead_pop(cpi->lookahead, flush);
+  } else {
+    source = choose_frame_source(cpi, &temporal_filtered, &flush, &last_source);
+  }
 
   if (source == NULL) {  // If no source was found, we can't encode a frame.
     if (flush && oxcf->pass == 1 && !cpi->twopass.first_pass_done) {
@@ -6874,51 +6845,60 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
   *time_stamp = source->ts_start;
   *time_end = source->ts_end;
-  av1_apply_encoding_flags(cpi, source->flags);
-  *frame_flags = (source->flags & AOM_EFLAG_FORCE_KF) ? FRAMEFLAGS_KEY : 0;
-
   if (source->ts_start < cpi->first_time_stamp_ever) {
     cpi->first_time_stamp_ever = source->ts_start;
     cpi->last_end_time_stamp_seen = source->ts_start;
   }
 
-  // adjust frame rates based on timestamps given
-  if (cm->show_frame) adjust_frame_rate(cpi, source);
+  av1_apply_encoding_flags(cpi, source->flags);
+  if (!cm->show_existing_frame)
+    *frame_flags = (source->flags & AOM_EFLAG_FORCE_KF) ? FRAMEFLAGS_KEY : 0;
+  cpi->frame_flags = *frame_flags;
+
+  if (cm->show_frame ||
+      (cm->show_existing_frame && cpi->rc.is_src_frame_alt_ref)) {
+    // Shown frames and arf-overlay frames need frame-rate considering
+    adjust_frame_rate(cpi, source);
+  }
 
   if (assign_cur_frame_new_fb(cm) == NULL) return -1;
 
-  // Retain the RF_LEVEL for the current newly coded frame.
-  cm->cur_frame->frame_rf_level =
-      cpi->twopass.gf_group.rf_level[cpi->twopass.gf_group.index];
+  if (!cm->show_existing_frame) {
+    // Retain the RF_LEVEL for the current newly coded frame.
+    cm->cur_frame->frame_rf_level =
+        cpi->twopass.gf_group.rf_level[cpi->twopass.gf_group.index];
 
-  if (cpi->film_grain_table) {
-    cm->seq_params.film_grain_params_present = aom_film_grain_table_lookup(
-        cpi->film_grain_table, *time_stamp, *time_end, 0 /* =erase */,
-        &cm->film_grain_params);
+    if (cpi->film_grain_table) {
+      cm->seq_params.film_grain_params_present = aom_film_grain_table_lookup(
+          cpi->film_grain_table, *time_stamp, *time_end, 0 /* =erase */,
+          &cm->film_grain_params);
+    }
+    cm->cur_frame->film_grain_params_present =
+        cm->seq_params.film_grain_params_present;
+
+    // only one operating point supported now
+    const int64_t pts64 = ticks_to_timebase_units(timebase, *time_stamp);
+    if (pts64 < 0 || pts64 > UINT32_MAX) return AOM_CODEC_ERROR;
+    cpi->common.frame_presentation_time = (uint32_t)pts64;
   }
-  cm->cur_frame->film_grain_params_present =
-      cm->seq_params.film_grain_params_present;
-
-  // only one operating point supported now
-  const int64_t pts64 = ticks_to_timebase_units(timebase, *time_stamp);
-  if (pts64 < 0 || pts64 > UINT32_MAX) return AOM_CODEC_ERROR;
-  cpi->common.frame_presentation_time = (uint32_t)pts64;
-
-  cpi->frame_flags = *frame_flags;
 
   if (oxcf->pass == 2) {
-    av1_rc_get_second_pass_params(cpi);
+    // GF_GROUP needs updating for arf overlays as well as non-show-existing
+    if (!cm->show_existing_frame || cpi->rc.is_src_frame_alt_ref) {
+      av1_rc_get_second_pass_params(cpi);
+    }
   } else if (oxcf->pass == 1) {
     setup_frame_size(cpi);
   }
 
-  cm->using_qmatrix = cpi->oxcf.using_qm;
-  cm->min_qmlevel = cpi->oxcf.qm_minlevel;
-  cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
-
-  if (cpi->twopass.gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
-    set_frame_size(cpi, cm->width, cm->height);
-    setup_tpl_stats(cpi);
+  if (!cm->show_existing_frame) {
+    cm->using_qmatrix = cpi->oxcf.using_qm;
+    cm->min_qmlevel = cpi->oxcf.qm_minlevel;
+    cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
+    if (cpi->twopass.gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
+      set_frame_size(cpi, cm->width, cm->height);
+      setup_tpl_stats(cpi);
+    }
   }
 
   if (oxcf->pass == 1) {
@@ -6940,8 +6920,11 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   aom_usec_timer_mark(&cmptimer);
   cpi->time_compress_data += aom_usec_timer_elapsed(&cmptimer);
 
-  if (cpi->b_calculate_psnr && oxcf->pass != 1 && cm->show_frame)
-    generate_psnr_packet(cpi);
+  if (cpi->b_calculate_psnr) {
+    if (cm->show_existing_frame || (oxcf->pass != 1 && cm->show_frame)) {
+      generate_psnr_packet(cpi);
+    }
+  }
 
 #if CONFIG_INTERNAL_STATS
   if (oxcf->pass != 1) {
@@ -6949,7 +6932,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   }
 #endif  // CONFIG_INTERNAL_STATS
 #if CONFIG_SPEED_STATS
-  if (cpi->oxcf.pass != 1) {
+  if (cpi->oxcf.pass != 1 && !cm->show_existing_frame) {
     cpi->tx_search_count += cpi->td.mb.tx_search_count;
     cpi->td.mb.tx_search_count = 0;
   }
