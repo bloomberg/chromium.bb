@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/passwords/google_password_manager_navigation_throttle.h"
 
+#include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
@@ -14,6 +16,49 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
+
+namespace {
+
+using NavigationResult =
+    GooglePasswordManagerNavigationThrottle::NavigationResult;
+
+constexpr base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(2);
+
+void NavigateToChromeSettingsPasswordsPage(
+    content::NavigationHandle* navigation_handle) {
+  navigation_handle->GetWebContents()->OpenURL(content::OpenURLParams(
+      chrome::GetSettingsUrl(chrome::kPasswordManagerSubPage),
+      navigation_handle->GetReferrer(), navigation_handle->GetFrameTreeNodeId(),
+      WindowOpenDisposition::CURRENT_TAB,
+      navigation_handle->GetPageTransition(),
+      false /* is_renderer_initiated */));
+}
+
+void RecordNavigationResult(NavigationResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.GooglePasswordManager.NavigationResult", result);
+}
+
+void RecordSuccessOrFailure(NavigationResult result,
+                            base::TimeTicks navigation_start) {
+  RecordNavigationResult(result);
+  switch (result) {
+    case NavigationResult::kSuccess:
+      UMA_HISTOGRAM_TIMES("PasswordManager.GooglePasswordManager.TimeToSuccess",
+                          base::TimeTicks::Now() - navigation_start);
+      return;
+    case NavigationResult::kFailure:
+      UMA_HISTOGRAM_TIMES("PasswordManager.GooglePasswordManager.TimeToFailure",
+                          base::TimeTicks::Now() - navigation_start);
+      return;
+    case NavigationResult::kTimeout:
+      break;
+  }
+
+  NOTREACHED();
+}
+
+}  // namespace
 
 // static
 std::unique_ptr<content::NavigationThrottle>
@@ -46,17 +91,39 @@ GooglePasswordManagerNavigationThrottle::
     ~GooglePasswordManagerNavigationThrottle() = default;
 
 content::NavigationThrottle::ThrottleCheckResult
+GooglePasswordManagerNavigationThrottle::WillStartRequest() {
+  timer_.Start(FROM_HERE, kTimeout, this,
+               &GooglePasswordManagerNavigationThrottle::OnTimeout);
+  navigation_start_ = base::TimeTicks::Now();
+  return NavigationThrottle::PROCEED;
+}
+
+content::NavigationThrottle::ThrottleCheckResult
 GooglePasswordManagerNavigationThrottle::WillFailRequest() {
-  navigation_handle()->GetWebContents()->OpenURL(content::OpenURLParams(
-      chrome::GetSettingsUrl(chrome::kPasswordManagerSubPage),
-      navigation_handle()->GetReferrer(),
-      navigation_handle()->GetFrameTreeNodeId(),
-      WindowOpenDisposition::CURRENT_TAB,
-      navigation_handle()->GetPageTransition(),
-      false /* is_renderer_initiated */));
+  if (timer_.IsRunning()) {
+    timer_.Stop();
+    RecordSuccessOrFailure(NavigationResult::kFailure, navigation_start_);
+    NavigateToChromeSettingsPasswordsPage(navigation_handle());
+  }
+  return content::NavigationThrottle::CANCEL_AND_IGNORE;
+}
+
+content::NavigationThrottle::ThrottleCheckResult
+GooglePasswordManagerNavigationThrottle::WillProcessResponse() {
+  if (timer_.IsRunning()) {
+    timer_.Stop();
+    RecordSuccessOrFailure(NavigationResult::kSuccess, navigation_start_);
+    return content::NavigationThrottle::PROCEED;
+  }
+
   return content::NavigationThrottle::CANCEL_AND_IGNORE;
 }
 
 const char* GooglePasswordManagerNavigationThrottle::GetNameForLogging() {
   return "GooglePasswordManagerNavigationThrottle";
+}
+
+void GooglePasswordManagerNavigationThrottle::OnTimeout() {
+  RecordNavigationResult(NavigationResult::kTimeout);
+  NavigateToChromeSettingsPasswordsPage(navigation_handle());
 }
