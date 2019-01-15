@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,6 +56,9 @@ chrome.accessibilityPrivate.Gesture = {
   SWIPE_UP4: 'swipeUp4',
   SWIPE_RIGHT4: 'swipeRight4',
   SWIPE_DOWN4: 'swipeDown4',
+  TAP2: 'tap2',
+  TAP3: 'tap3',
+  TAP4: 'tap4',
 };
 
 /**
@@ -64,14 +67,6 @@ chrome.accessibilityPrivate.Gesture = {
 chrome.accessibilityPrivate.SyntheticKeyboardEventType = {
   KEYUP: 'keyup',
   KEYDOWN: 'keydown',
-};
-
-/**
- * @enum {string}
- */
-chrome.accessibilityPrivate.SyntheticMouseEventType = {
-  PRESS: 'press',
-  RELEASE: 'release'
 };
 
 /**
@@ -94,6 +89,18 @@ chrome.accessibilityPrivate.SyntheticKeyboardModifiers;
 chrome.accessibilityPrivate.SyntheticKeyboardEvent;
 
 /**
+ * @enum {string}
+ */
+chrome.accessibilityPrivate.SyntheticMouseEventType = {
+  PRESS: 'press',
+  RELEASE: 'release',
+  DRAG: 'drag',
+  MOVE: 'move',
+  ENTER: 'enter',
+  EXIT: 'exit',
+};
+
+/**
  * @typedef {{
  *   type: !chrome.accessibilityPrivate.SyntheticMouseEventType,
  *   x: number,
@@ -105,19 +112,18 @@ chrome.accessibilityPrivate.SyntheticMouseEvent;
 /**
  * @enum {string}
  */
-chrome.accessibilityPrivate.KeyboardMode = {
-  FULL_WIDTH: 'FULL_WIDTH',
-  FLOATING: 'FLOATING',
-};
-
-/**
- * @enum {string}
- */
 chrome.accessibilityPrivate.SelectToSpeakState = {
   SELECTING: 'selecting',
   SPEAKING: 'speaking',
   INACTIVE: 'inactive',
 };
+
+/**
+ * Called to request battery status from Chrome OS system.
+ * @param {function(string):void} callback Returns battery description as a
+ *     string.
+ */
+chrome.accessibilityPrivate.getBatteryDescription = function(callback) {};
 
 /**
  * Enables or disables native accessibility support. Once disabled, it is up to
@@ -172,18 +178,19 @@ chrome.accessibilityPrivate.darkenScreen = function(enabled) {};
 chrome.accessibilityPrivate.setSwitchAccessKeys = function(key_codes) {};
 
 /**
- * Show or hide the Switch Access menu in a position appropriate for an element
- * with location |element_bounds|.
- * @param {boolean} show
- * @param {chrome.accessibilityPrivate.ScreenRect} element_bounds
+ * Shows or hides the Switch Access menu. If shown, it is at the indicated
+ * location.
+ * @param {boolean} show If true, show the menu. If false, hide the menu.
+ * @param {!chrome.accessibilityPrivate.ScreenRect} element_bounds Position of
+ *     an element, in global screen coordinates, to place the menu next to.
  */
 chrome.accessibilityPrivate.setSwitchAccessMenuState = function(show, element_bounds) {};
 
 /**
- * When enabled, forwards key events to the Switch Access extension.
- * @param {boolean} should_forward
+ * When enabled, forwards key events to the Switch Access extension
+ * @param {boolean} shouldForward
  */
-chrome.accessibilityPrivate.forwardKeyEventsToSwitchAccess = function(should_forward) {};
+chrome.accessibilityPrivate.forwardKeyEventsToSwitchAccess = function(shouldForward) {};
 
 /**
  * Sets current ARC app to use native ARC support.
@@ -212,6 +219,18 @@ chrome.accessibilityPrivate.enableChromeVoxMouseEvents = function(enabled) {};
 chrome.accessibilityPrivate.sendSyntheticMouseEvent = function(mouseEvent) {};
 
 /**
+ * Called by the Select-to-Speak extension when Select-to-Speak has changed
+ * states, between selecting with the mouse, speaking, and inactive.
+ * @param {!chrome.accessibilityPrivate.SelectToSpeakState} state
+ */
+chrome.accessibilityPrivate.onSelectToSpeakStateChanged = function(state) {};
+
+/**
+ * Toggles dictation between active and inactive states.
+ */
+chrome.accessibilityPrivate.toggleDictation = function() {};
+
+/**
  * Fired whenever ChromeVox should output introduction.
  * @type {!ChromeEvent}
  */
@@ -232,36 +251,15 @@ chrome.accessibilityPrivate.onAccessibilityGesture;
 chrome.accessibilityPrivate.onTwoFingerTouchStart;
 
 /**
- * Fired when  the user is no longer holding down two fingers (including
+ * Fired when the user is no longer holding down two fingers (including
  * releasing one, holding down three, or moving them).
  * @type {!ChromeEvent}
  */
 chrome.accessibilityPrivate.onTwoFingerTouchStop;
 
 /**
- * Called by the Select-to-Speak extension when Select-to-Speak has changed states,
- * between selecting with the mouse, speaking, and inactive.
- * @param {!chrome.accessibilityPrivate.SelectToSpeakState} state The current
- *    state of the Select-to-Speak extension
- */
-chrome.accessibilityPrivate.onSelectToSpeakStateChanged = function(state) {};
-
-/**
- * Called when Chrome OS wants to toggle the Select-to-Speak state, between selecting
- * with the mouse, speaking, and inactive
+ * Called when Chrome OS wants to change the Select-to-Speak state, between
+ * selecting with the mouse, speaking, and inactive.
  * @type {!ChromeEvent}
  */
 chrome.accessibilityPrivate.onSelectToSpeakStateChangeRequested;
-
-/**
- * Called when a Switch Access user activates dictation from the context menu.
- */
-chrome.accessibilityPrivate.toggleDictation = function() {};
-
-/**
- * Called to request battery status from Chrome OS system.
- * @param {function(string):void} callback Returns battery description as a
- *     string.
- */
-chrome.accessibilityPrivate.getBatteryDescription = function(callback) {};
-
