@@ -305,6 +305,7 @@
     falco-postsubmit
     falco_li-postsubmit
     fizz-postsubmit
+    flapjack-postsubmit
     gale-postsubmit
     gandof-postsubmit
     glimmer-postsubmit
@@ -1746,6 +1747,7 @@
   flapjack-no-vmtest-pre-cq
   flapjack-paladin-tryjob
   flapjack-payloads-tryjob
+  flapjack-postsubmit-tryjob
   flapjack-pre-cq
   flapjack-release-afdo-generate-tryjob
   flapjack-release-afdo-tryjob
@@ -2555,6 +2557,7 @@
     falco-postsubmit
     falco_li-postsubmit
     fizz-postsubmit
+    flapjack-postsubmit
     gale-postsubmit
     gandof-postsubmit
     glimmer-postsubmit
