@@ -154,11 +154,16 @@ TEST_F(ThreadControllerWithMessagePumpTest, ScheduleDelayedWork) {
   MockCallback<OnceClosure> task3;
   task_source_.AddTask(PendingTask(FROM_HERE, task3.Get(), Seconds(20)));
 
-  // Call a no-op DoWork. Expect that it doesn't do any work, but
-  // schedules a delayed wake-up appropriately.
+  // Call a no-op DoWork. Expect that it doesn't do any work.
   clock_.SetNowTicks(Seconds(5));
-  EXPECT_CALL(*message_pump_, ScheduleDelayedWork(Seconds(10)));
+  EXPECT_CALL(*message_pump_, ScheduleDelayedWork(_)).Times(0);
   EXPECT_FALSE(thread_controller_.DoWork());
+  testing::Mock::VerifyAndClearExpectations(message_pump_);
+
+  // DoDelayedWork is always called after DoWork. Expect that it doesn't do
+  // any work, but schedules a delayed wake-up appropriately.
+  EXPECT_FALSE(thread_controller_.DoDelayedWork(&next_run_time));
+  EXPECT_EQ(next_run_time, Seconds(10));
   testing::Mock::VerifyAndClearExpectations(message_pump_);
 
   // Call DoDelayedWork after the expiration of the delay.
@@ -166,6 +171,8 @@ TEST_F(ThreadControllerWithMessagePumpTest, ScheduleDelayedWork) {
   // TimeTicks() as we have immediate work to do.
   clock_.SetNowTicks(Seconds(11));
   EXPECT_CALL(task1, Run()).Times(1);
+  // There's no pending DoWork so a ScheduleWork gets called.
+  EXPECT_CALL(*message_pump_, ScheduleWork());
   EXPECT_TRUE(thread_controller_.DoDelayedWork(&next_run_time));
   EXPECT_EQ(next_run_time, TimeTicks());
   testing::Mock::VerifyAndClearExpectations(message_pump_);
@@ -174,10 +181,14 @@ TEST_F(ThreadControllerWithMessagePumpTest, ScheduleDelayedWork) {
   // Call DoWork immediately after the previous call. Expect a new task
   // to be run.
   EXPECT_CALL(task2, Run()).Times(1);
-  EXPECT_CALL(*message_pump_, ScheduleDelayedWork(Seconds(20)));
   EXPECT_TRUE(thread_controller_.DoWork());
   testing::Mock::VerifyAndClearExpectations(message_pump_);
   testing::Mock::VerifyAndClearExpectations(&task2);
+
+  // DoDelayedWork is always called after DoWork.
+  EXPECT_FALSE(thread_controller_.DoDelayedWork(&next_run_time));
+  EXPECT_EQ(next_run_time, Seconds(20));
+  testing::Mock::VerifyAndClearExpectations(message_pump_);
 
   // Call DoDelayedWork for the last task and expect to be told
   // about the lack of further delayed work (next run time being TimeTicks()).
@@ -207,7 +218,16 @@ TEST_F(ThreadControllerWithMessagePumpTest, DelayedWork_CapAtOneDay) {
   MockCallback<OnceClosure> task1;
   task_source_.AddTask(PendingTask(FROM_HERE, task1.Get(), Days(10)));
 
-  EXPECT_CALL(*message_pump_, ScheduleDelayedWork(Days(1)));
+  TimeTicks next_run_time;
+  EXPECT_FALSE(thread_controller_.DoDelayedWork(&next_run_time));
+  EXPECT_EQ(next_run_time, Days(1));
+}
+
+TEST_F(ThreadControllerWithMessagePumpTest, DoWorkDoesntScheduleDelayedWork) {
+  MockCallback<OnceClosure> task1;
+  task_source_.AddTask(PendingTask(FROM_HERE, task1.Get(), Seconds(10)));
+
+  EXPECT_CALL(*message_pump_, ScheduleDelayedWork(_)).Times(0);
   EXPECT_FALSE(thread_controller_.DoWork());
 }
 
