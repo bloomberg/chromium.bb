@@ -18,7 +18,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.CardType;
@@ -150,16 +149,10 @@ public class PaymentRequestBillingAddressWithoutPhoneTest implements MainActivit
         mPaymentRequestTestRule.setSpinnerSelectionsInCardEditorAndWait(
                 new int[] {DECEMBER, NEXT_YEAR, ADD_BILLING_ADDRESS},
                 mPaymentRequestTestRule.getReadyToEdit());
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_COMPANY_NAME)) {
-            mPaymentRequestTestRule.setTextInEditorAndWait(
-                    new String[] {
-                            "Seb Doe", "Google", "340 Main St", "Los Angeles", "CA", "90291", ""},
-                    mPaymentRequestTestRule.getEditorTextUpdate());
-        } else {
-            mPaymentRequestTestRule.setTextInEditorAndWait(
-                    new String[] {"Seb Doe", "340 Main St", "Los Angeles", "CA", "90291", ""},
-                    mPaymentRequestTestRule.getEditorTextUpdate());
-        }
+        mPaymentRequestTestRule.setTextInEditorAndWait(
+                new String[] {"Seb Doe", "Google", "340 Main St", "Los Angeles", "CA", "90291", ""},
+                mPaymentRequestTestRule.getEditorTextUpdate());
+
         // Trying to add the address without a phone number should fail.
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.editor_dialog_done_button, mPaymentRequestTestRule.getEditorValidationError());

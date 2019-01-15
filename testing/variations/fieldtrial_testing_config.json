@@ -646,26 +646,6 @@
             ]
         }
     ],
-    "AutofillEnableCompanyName": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "AutofillEnableCompanyName"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillFieldMetadata": [
         {
             "platforms": [
