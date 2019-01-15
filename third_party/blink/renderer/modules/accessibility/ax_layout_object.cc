@@ -664,10 +664,12 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   // Find out if this element is inside of a label element.  If so, it may be
   // ignored because it's the label for a checkbox or radio button.
   AXObject* control_object = CorrespondingControlForLabelElement();
+  HTMLLabelElement* label = LabelElementContainer();
   if (control_object && control_object->IsCheckboxOrRadio() &&
-      control_object->NameFromLabelElement()) {
+      control_object->NameFromLabelElement() &&
+      AccessibleNode::GetPropertyOrARIAAttribute(
+          label, AOMStringProperty::kRole) == g_null_atom) {
     if (ignored_reasons) {
-      HTMLLabelElement* label = LabelElementContainer();
       if (label && label != GetNode()) {
         AXObject* label_ax_object = AXObjectCache().GetOrCreate(label);
         ignored_reasons->push_back(

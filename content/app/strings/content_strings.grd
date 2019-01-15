@@ -672,12 +672,12 @@ below:
         exit picture-in-picture
       </message>
 
-      <message name="IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_BUTTON" desc="Accessibility role description for show closed captions button">
-        show closed captions
+      <message name="IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_MENU_BUTTON" desc="Accessibility role description for show closed captions menu button">
+        show closed captions menu
       </message>
 
-      <message name="IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_BUTTON" desc="Accessibility role description for hide closed captions button">
-        hide closed captions
+      <message name="IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_MENU_BUTTON" desc="Accessibility role description for hide closed captions menu button">
+        hide closed captions menu
       </message>
 
       <message name="IDS_AX_MEDIA_CAST_OFF_BUTTON" desc="Accessibility role description for remote playback button">
