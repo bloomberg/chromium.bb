@@ -7,11 +7,9 @@
 #include <algorithm>
 #include <map>
 
-#include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/assistant_interaction_controller.h"
-#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/main_stage/assistant_footer_view.h"
 #include "ash/assistant/ui/main_stage/assistant_header_view.h"
 #include "ash/assistant/ui/main_stage/assistant_progress_indicator.h"
@@ -197,9 +195,8 @@ class StackLayout : public views::LayoutManager {
 
 // AssistantMainStage ----------------------------------------------------------
 
-AssistantMainStage::AssistantMainStage(
-    AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller),
+AssistantMainStage::AssistantMainStage(AssistantViewDelegate* delegate)
+    : delegate_(delegate),
       active_query_exit_animation_observer_(
           std::make_unique<ui::CallbackLayerAnimationObserver>(
               /*animation_ended_callback=*/base::BindRepeating(
@@ -216,15 +213,15 @@ AssistantMainStage::AssistantMainStage(
   InitLayout();
 
   // The view hierarchy will be destructed before Shell, which owns
-  // AssistantController, so AssistantController is guaranteed to outlive the
-  // AssistantMainStage.
-  assistant_controller_->interaction_controller()->AddModelObserver(this);
-  assistant_controller_->ui_controller()->AddModelObserver(this);
+  // AssistantViewDelegate, so AssistantViewDelegate is guaranteed to outlive
+  // the AssistantMainStage.
+  delegate_->AddInteractionModelObserver(this);
+  delegate_->AddUiModelObserver(this);
 }
 
 AssistantMainStage::~AssistantMainStage() {
-  assistant_controller_->ui_controller()->RemoveModelObserver(this);
-  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
+  delegate_->RemoveUiModelObserver(this);
+  delegate_->RemoveInteractionModelObserver(this);
 }
 
 const char* AssistantMainStage::GetClassName() const {
@@ -285,11 +282,11 @@ void AssistantMainStage::InitContentLayoutContainer() {
               views::BoxLayout::Orientation::kVertical));
 
   // Header.
-  header_ = new AssistantHeaderView(assistant_controller_);
+  header_ = new AssistantHeaderView(delegate_);
   content_layout_container_->AddChildView(header_);
 
   // UI element container.
-  ui_element_container_ = new UiElementContainerView(assistant_controller_);
+  ui_element_container_ = new UiElementContainerView(delegate_);
   ui_element_container_->AddObserver(this);
   content_layout_container_->AddChildView(ui_element_container_);
 
@@ -304,7 +301,7 @@ void AssistantMainStage::InitContentLayoutContainer() {
   views::View* footer_container = new views::View();
   footer_container->SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  footer_ = new AssistantFooterView(assistant_controller_);
+  footer_ = new AssistantFooterView(delegate_);
   footer_->AddObserver(this);
 
   // The footer will be animated on its own layer.
@@ -618,9 +615,7 @@ void AssistantMainStage::OnUiVisibilityChanged(
     footer_->layer()->SetOpacity(0.f);
 
     const AssistantQuery& pending_query =
-        assistant_controller_->interaction_controller()
-            ->model()
-            ->pending_query();
+        delegate_->GetInteractionModel()->pending_query();
 
     // We only animate in the footer when a pending query is absent. Otherwise
     // the footer should be hidden to make room for the pending query view.

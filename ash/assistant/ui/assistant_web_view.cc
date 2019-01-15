@@ -7,9 +7,8 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "base/callback.h"
 #include "services/content/public/cpp/navigable_contents_view.h"
@@ -61,15 +60,15 @@ class ContentsMaskPainter : public views::Painter {
 
 // AssistantWebView ------------------------------------------------------------
 
-AssistantWebView::AssistantWebView(AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller), weak_factory_(this) {
+AssistantWebView::AssistantWebView(AssistantViewDelegate* delegate)
+    : delegate_(delegate), weak_factory_(this) {
   InitLayout();
 
-  assistant_controller_->AddObserver(this);
+  delegate_->AddViewDelegateObserver(this);
 }
 
 AssistantWebView::~AssistantWebView() {
-  assistant_controller_->RemoveObserver(this);
+  delegate_->RemoveViewDelegateObserver(this);
 
   RemoveContents();
 }
@@ -85,8 +84,7 @@ gfx::Size AssistantWebView::CalculatePreferredSize() const {
 int AssistantWebView::GetHeightForWidth(int width) const {
   // |height| <= |kMaxHeightDip|.
   // |height| should not exceed the height of the usable work area.
-  gfx::Rect usable_work_area =
-      assistant_controller_->ui_controller()->model()->usable_work_area();
+  gfx::Rect usable_work_area = delegate_->GetUiModel()->usable_work_area();
 
   return std::min(kMaxHeightDip, usable_work_area.height());
 }
@@ -151,7 +149,7 @@ bool AssistantWebView::OnCaptionButtonPressed(AssistantButtonId id) {
           // If we can't navigate back in the web contents' history stack we
           // defer back to our primary caption button delegate.
           if (!success && assistant_web_view) {
-            assistant_web_view->assistant_controller_->ui_controller()
+            assistant_web_view->delegate_->GetCaptionBarDelegate()
                 ->OnCaptionButtonPressed(AssistantButtonId::kBack);
           }
         },
@@ -160,7 +158,7 @@ bool AssistantWebView::OnCaptionButtonPressed(AssistantButtonId id) {
   }
 
   // For all other buttons we defer to our primary caption button delegate.
-  return assistant_controller_->ui_controller()->OnCaptionButtonPressed(id);
+  return delegate_->GetCaptionBarDelegate()->OnCaptionButtonPressed(id);
 }
 
 void AssistantWebView::OnDeepLinkReceived(
@@ -171,7 +169,7 @@ void AssistantWebView::OnDeepLinkReceived(
 
   RemoveContents();
 
-  assistant_controller_->GetNavigableContentsFactory(
+  delegate_->GetNavigableContentsFactoryForView(
       mojo::MakeRequest(&contents_factory_));
 
   const gfx::Size preferred_size =
@@ -223,12 +221,13 @@ void AssistantWebView::DidSuppressNavigation(const GURL& url,
   if (!from_user_gesture)
     return;
 
-  // Deep links are always handled by AssistantController. If the |disposition|
-  // indicates a desire to open a new foreground tab, we also defer to the
-  // AssistantController so that it can open the |url| in the browser.
+  // Deep links are always handled by AssistantViewDelegate. If the
+  // |disposition| indicates a desire to open a new foreground tab, we also
+  // defer to the AssistantViewDelegate so that it can open the |url| in the
+  // browser.
   if (assistant::util::IsDeepLinkUrl(url) ||
       disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB) {
-    assistant_controller_->OpenUrl(url);
+    delegate_->OpenUrlFromView(url);
     return;
   }
 

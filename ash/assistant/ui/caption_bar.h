@@ -15,6 +15,8 @@ enum class AssistantButtonId;
 
 // CaptionBarDelegate ----------------------------------------------------------
 
+// TODO(wutao): Remove this class and call methods on AssistantViewDelegate
+// derectly.
 class CaptionBarDelegate {
  public:
   // Invoked when the caption button identified by |id| is pressed. Return

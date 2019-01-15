@@ -32,7 +32,7 @@ class AssistantContainerViewAnimatorLegacyImpl
       public gfx::AnimationDelegate {
  public:
   AssistantContainerViewAnimatorLegacyImpl(
-      AssistantController* assistant_controller,
+      AssistantViewDelegate* delegate,
       AssistantContainerView* assistant_container_view);
 
   ~AssistantContainerViewAnimatorLegacyImpl() override;

@@ -6,8 +6,7 @@
 
 #include <memory>
 
-#include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/assistant_interaction_controller.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/logo_view/base_logo_view.h"
 #include "ash/assistant/util/views_util.h"
 #include "ui/views/layout/box_layout.h"
@@ -28,19 +27,17 @@ constexpr int kPreferredSizeDip = 32;
 }  // namespace
 
 ActionView::ActionView(views::ButtonListener* listener,
-                       AssistantController* assistant_controller,
+                       AssistantViewDelegate* delegate,
                        AssistantButtonId button_id)
-    : AssistantButton(listener, button_id),
-      assistant_controller_(assistant_controller) {
+    : AssistantButton(listener, button_id), delegate_(delegate) {
   InitLayout();
 
-  // The Assistant controller indirectly owns the view hierarchy to which
-  // ActionView belongs so is guaranteed to outlive it.
-  assistant_controller_->interaction_controller()->AddModelObserver(this);
+  // The AssistantViewDelegate should outlive ActionView.
+  delegate_->AddInteractionModelObserver(this);
 }
 
 ActionView::~ActionView() {
-  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
+  delegate_->RemoveInteractionModelObserver(this);
 }
 
 const char* ActionView::GetClassName() const {
@@ -102,7 +99,7 @@ void ActionView::OnSpeechLevelChanged(float speech_level_db) {
 
 void ActionView::UpdateState(bool animate) {
   const AssistantInteractionModel* interaction_model =
-      assistant_controller_->interaction_controller()->model();
+      delegate_->GetInteractionModel();
 
   BaseLogoView::State mic_state;
   switch (interaction_model->mic_state()) {

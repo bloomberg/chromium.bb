@@ -20,10 +20,12 @@ class Label;
 
 namespace ash {
 
-class AssistantController;
+class AssistantViewDelegate;
 
 // AssistantMiniViewDelegate ---------------------------------------------------
 
+// TODO(wutao): Remove this class and call methods on AssistantViewDelegate
+// derectly.
 class AssistantMiniViewDelegate {
  public:
   // Invoked when the AssistantMiniView is pressed.
@@ -40,7 +42,7 @@ class AssistantMiniView : public views::Button,
                           public AssistantInteractionModelObserver,
                           public AssistantUiModelObserver {
  public:
-  explicit AssistantMiniView(AssistantController* assistant_controller);
+  explicit AssistantMiniView(AssistantViewDelegate* delegate);
   ~AssistantMiniView() override;
 
   // views::View:
@@ -64,18 +66,18 @@ class AssistantMiniView : public views::Button,
       base::Optional<AssistantEntryPoint> entry_point,
       base::Optional<AssistantExitPoint> exit_point) override;
 
-  void set_delegate(AssistantMiniViewDelegate* delegate) {
-    delegate_ = delegate;
+  void set_mini_view_delegate(AssistantMiniViewDelegate* delegate) {
+    mini_view_delegate_ = delegate;
   }
 
  private:
   void InitLayout();
   void UpdatePrompt();
 
-  AssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantViewDelegate* const delegate_;
   views::Label* label_;                              // Owned by view hierarchy.
 
-  AssistantMiniViewDelegate* delegate_ = nullptr;
+  AssistantMiniViewDelegate* mini_view_delegate_ = nullptr;
 
   // The most recent active query for the current Assistant UI session. If there
   // has been no active query for the current UI session, this is empty.

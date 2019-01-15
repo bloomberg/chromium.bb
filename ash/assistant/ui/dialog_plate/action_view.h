@@ -12,7 +12,7 @@
 namespace ash {
 
 class ActionView;
-class AssistantController;
+class AssistantViewDelegate;
 class BaseLogoView;
 
 // A stateful view belonging to DialogPlate which indicates current user input
@@ -21,7 +21,7 @@ class ActionView : public AssistantButton,
                    public AssistantInteractionModelObserver {
  public:
   ActionView(views::ButtonListener* listener,
-             AssistantController* assistant_controller,
+             AssistantViewDelegate* delegate,
              AssistantButtonId button_id);
   ~ActionView() override;
 
@@ -41,7 +41,7 @@ class ActionView : public AssistantButton,
   // enter animation of the next state of the LogoView.
   void UpdateState(bool animate);
 
-  AssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantViewDelegate* const delegate_;
 
   BaseLogoView* voice_action_view_;         // Owned by view hierarchy.
 

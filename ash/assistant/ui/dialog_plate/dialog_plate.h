@@ -28,8 +28,8 @@ class ImageButton;
 
 namespace ash {
 
-class AssistantController;
 class ActionView;
+class AssistantViewDelegate;
 
 // DialogPlateObserver ---------------------------------------------------------
 
@@ -58,7 +58,7 @@ class DialogPlate : public views::View,
                     public AssistantUiModelObserver,
                     public views::ButtonListener {
  public:
-  explicit DialogPlate(AssistantController* assistant_controller);
+  explicit DialogPlate(AssistantViewDelegate* delegate);
   ~DialogPlate() override;
 
   // Adds/removes the specified |observer|.
@@ -104,7 +104,7 @@ class DialogPlate : public views::View,
 
   void SetFocus(InputModality modality);
 
-  AssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantViewDelegate* const delegate_;
 
   views::View* input_modality_layout_container_;     // Owned by view hierarchy.
   views::View* keyboard_layout_container_;           // Owned by view hierarchy.

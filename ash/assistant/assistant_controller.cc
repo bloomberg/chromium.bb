@@ -32,6 +32,7 @@ AssistantController::AssistantController()
       assistant_screen_context_controller_(this),
       assistant_setup_controller_(this),
       assistant_ui_controller_(this),
+      view_delegate_(this),
       weak_factory_(this) {
   Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
@@ -258,8 +259,11 @@ void AssistantController::NotifyDeepLinkReceived(const GURL& deep_link) {
   const std::map<std::string, std::string> params =
       assistant::util::GetDeepLinkParams(deep_link);
 
+  // TODO(wutao): Remove AssistantControllerObserver::OnDeepLinkReceived.
   for (AssistantControllerObserver& observer : observers_)
     observer.OnDeepLinkReceived(type, params);
+
+  view_delegate_.NotifyDeepLinkReceived(type, params);
 }
 
 void AssistantController::NotifyUrlOpened(const GURL& url, bool from_server) {

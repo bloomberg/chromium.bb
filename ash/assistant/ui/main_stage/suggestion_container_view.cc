@@ -8,12 +8,9 @@
 #include <memory>
 #include <utility>
 
-#include "ash/assistant/assistant_cache_controller.h"
-#include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/assistant_interaction_controller.h"
-#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/layout/box_layout.h"
@@ -30,22 +27,20 @@ constexpr int kPreferredHeightDip = 48;
 // SuggestionContainerView -----------------------------------------------------
 
 SuggestionContainerView::SuggestionContainerView(
-    AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller),
-      download_request_weak_factory_(this) {
+    AssistantViewDelegate* delegate)
+    : delegate_(delegate), download_request_weak_factory_(this) {
   InitLayout();
 
-  // The Assistant controller indirectly owns the view hierarchy to which
-  // SuggestionContainerView belongs so is guaranteed to outlive it.
-  assistant_controller_->cache_controller()->AddModelObserver(this);
-  assistant_controller_->interaction_controller()->AddModelObserver(this);
-  assistant_controller_->ui_controller()->AddModelObserver(this);
+  // The AssistantViewDelegate should outlive SuggestionContainerView.
+  delegate_->AddCacheModelObserver(this);
+  delegate_->AddInteractionModelObserver(this);
+  delegate_->AddUiModelObserver(this);
 }
 
 SuggestionContainerView::~SuggestionContainerView() {
-  assistant_controller_->ui_controller()->RemoveModelObserver(this);
-  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
-  assistant_controller_->cache_controller()->RemoveModelObserver(this);
+  delegate_->RemoveUiModelObserver(this);
+  delegate_->RemoveInteractionModelObserver(this);
+  delegate_->RemoveCacheModelObserver(this);
 }
 
 const char* SuggestionContainerView::GetClassName() const {
@@ -127,7 +122,7 @@ void SuggestionContainerView::OnSuggestionsChanged(
     if (!suggestion.second->icon_url.is_empty()) {
       // Initiate a request to download the image for the suggestion chip icon.
       // Note that the request is identified by the suggestion id.
-      assistant_controller_->DownloadImage(
+      delegate_->DownloadImage(
           suggestion.second->icon_url,
           base::BindOnce(
               &SuggestionContainerView::OnSuggestionChipIconDownloaded,
@@ -177,20 +172,17 @@ void SuggestionContainerView::ButtonPressed(views::Button* sender,
   // If we haven't yet received a query response, the suggestion chip that was
   // pressed was a conversation starter.
   if (!has_received_response_) {
-    suggestion = assistant_controller_->cache_controller()
-                     ->model()
-                     ->GetConversationStarterById(sender->id());
+    suggestion =
+        delegate_->GetCacheModel()->GetConversationStarterById(sender->id());
   } else {
     // Otherwise, the suggestion chip belonged to the interaction response.
-    suggestion = assistant_controller_->interaction_controller()
-                     ->model()
-                     ->response()
-                     ->GetSuggestionById(sender->id());
+    suggestion =
+        delegate_->GetInteractionModel()->response()->GetSuggestionById(
+            sender->id());
   }
 
   // TODO(dmblack): Use a delegate pattern here similar to CaptionBar.
-  assistant_controller_->interaction_controller()->OnSuggestionChipPressed(
-      suggestion);
+  delegate_->OnSuggestionChipPressed(suggestion);
 }
 
 void SuggestionContainerView::OnUiVisibilityChanged(
@@ -200,9 +192,8 @@ void SuggestionContainerView::OnUiVisibilityChanged(
     base::Optional<AssistantExitPoint> exit_point) {
   if (assistant::util::IsStartingSession(new_visibility, old_visibility)) {
     // Show conversation starters at the start of a new Assistant session.
-    OnConversationStartersChanged(assistant_controller_->cache_controller()
-                                      ->model()
-                                      ->GetConversationStarters());
+    OnConversationStartersChanged(
+        delegate_->GetCacheModel()->GetConversationStarters());
     return;
   }
 

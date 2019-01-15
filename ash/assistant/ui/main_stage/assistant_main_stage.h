@@ -23,11 +23,11 @@ class Label;
 
 namespace ash {
 
-class AssistantController;
 class AssistantFooterView;
 class AssistantHeaderView;
 class AssistantProgressIndicator;
 class AssistantQueryView;
+class AssistantViewDelegate;
 class UiElementContainerView;
 
 // AssistantMainStage is the child of AssistantMainView responsible for
@@ -38,7 +38,7 @@ class AssistantMainStage : public views::View,
                            public AssistantInteractionModelObserver,
                            public AssistantUiModelObserver {
  public:
-  explicit AssistantMainStage(AssistantController* assistant_controller);
+  explicit AssistantMainStage(AssistantViewDelegate* delegate);
   ~AssistantMainStage() override;
 
   // views::View:
@@ -84,7 +84,7 @@ class AssistantMainStage : public views::View,
   bool OnFooterAnimationEnded(
       const ui::CallbackLayerAnimationObserver& observer);
 
-  AssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantViewDelegate* const delegate_;  // Owned by Shell.
 
   // Content layout container and children. Owned by view hierarchy.
   AssistantHeaderView* header_;

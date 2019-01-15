@@ -23,7 +23,7 @@ class BoxLayout;
 
 namespace ash {
 
-class AssistantController;
+class AssistantViewDelegate;
 
 // SuggestionContainerView is the child of AssistantMainView concerned with
 // laying out SuggestionChipViews in response to Assistant interaction model
@@ -38,7 +38,7 @@ class SuggestionContainerView : public AssistantScrollView,
   using AssistantSuggestionPtr =
       chromeos::assistant::mojom::AssistantSuggestionPtr;
 
-  explicit SuggestionContainerView(AssistantController* assistant_controller);
+  explicit SuggestionContainerView(AssistantViewDelegate* delegate);
   ~SuggestionContainerView() override;
 
   // AssistantScrollView:
@@ -77,7 +77,7 @@ class SuggestionContainerView : public AssistantScrollView,
   // Invoked on suggestion chip icon downloaded event.
   void OnSuggestionChipIconDownloaded(int id, const gfx::ImageSkia& icon);
 
-  AssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantViewDelegate* const delegate_;  // Owned by Shell.
 
   views::BoxLayout* layout_manager_;  // Owned by view hierarchy.
 
