@@ -546,14 +546,13 @@ cr.define('cloudprint', function() {
       // Special handling of the first printer request. It does not matter at
       // this point, whether printer was found or not.
       if (request.origin == print_preview.DestinationOrigin.COOKIES &&
-          request.result && request.account &&
-          request.result['request']['user'] &&
+          request.result && request.result['request']['user'] &&
           request.result['request']['users'] &&
           request.account != request.result['request']['user']) {
         this.setUsers_(request);
         // In case the user account is known, but not the primary one,
         // activate it.
-        if (this.userSessionIndex_[request.account] > 0) {
+        if (request.account && this.userSessionIndex_[request.account] > 0) {
           this.dispatchUserUpdateEvent_(request.result['request']['user']);
           // Repeat the request for the newly activated account.
           this.printer(

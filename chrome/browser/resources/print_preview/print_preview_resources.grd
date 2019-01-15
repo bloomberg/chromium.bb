@@ -218,6 +218,12 @@
       <structure name="IDR_PRINT_PREVIEW_NEW_SETTINGS_SELECT_JS"
                  file="new/settings_select.js"
                  type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_DESTINATION_SELECT_HTML"
+                 file="new/destination_select.html"
+                 type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_DESTINATION_SELECT_JS"
+                 file="new/destination_select.js"
+                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_DESTINATION_SETTINGS_HTML"
                  file="new/destination_settings.html"
                  type="chrome_html" />

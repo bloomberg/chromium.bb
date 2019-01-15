@@ -91,12 +91,8 @@ cr.define('settings_sections_tests', function() {
     }
 
     function setPdfDestination() {
-      const saveAsPdfDestination = new print_preview.Destination(
-          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
-          print_preview.DestinationType.LOCAL,
-          print_preview.DestinationOrigin.LOCAL,
-          loadTimeData.getString('printToPDF'), false /*isRecent*/,
-          print_preview.DestinationConnectionStatus.ONLINE);
+      const saveAsPdfDestination =
+          print_preview_test_utils.getSaveAsPdfDestination();
       saveAsPdfDestination.capabilities =
           print_preview_test_utils.getCddTemplate(saveAsPdfDestination.id)
               .capabilities;
@@ -267,13 +263,8 @@ cr.define('settings_sections_tests', function() {
       // Check that the Save to Google Drive printer does not show the color
       // capability, but sets the value as true by default.
       const colorElement = page.$$('print-preview-color-settings');
-      const googleDrivePrinter = new print_preview.Destination(
-          print_preview.Destination.GooglePromotedId.DOCS,
-          print_preview.DestinationType.GOOGLE,
-          print_preview.DestinationOrigin.COOKIES,
-          print_preview.Destination.GooglePromotedId.DOCS, true /* isRecent */,
-          print_preview.DestinationConnectionStatus.ONLINE, {});
-      page.set('destination_', googleDrivePrinter);
+      page.set(
+          'destination_', print_preview_test_utils.getGoogleDriveDestination());
       const capabilities =
           print_preview_test_utils
               .getCddTemplate(print_preview.Destination.GooglePromotedId.DOCS)
