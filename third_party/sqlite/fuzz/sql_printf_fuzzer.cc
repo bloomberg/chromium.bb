@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -18,7 +19,7 @@ DEFINE_BINARY_PROTO_FUZZER(const Printf& sql_printf) {
   // Convert printf command into runnable SQL query.
   printf_str = "SELECT " + printf_str + ";";
 
-  if (getenv("LPM_DUMP_NATIVE_INPUT")) {
+  if (::getenv("LPM_DUMP_NATIVE_INPUT")) {
     std::cout << "_________________________" << std::endl;
     std::cout << printf_str << std::endl;
     std::cout << "------------------------" << std::endl;
@@ -26,5 +27,5 @@ DEFINE_BINARY_PROTO_FUZZER(const Printf& sql_printf) {
 
   std::vector<std::string> queries;
   queries.push_back(printf_str);
-  sql_fuzzer::RunSqlQueries(queries);
+  sql_fuzzer::RunSqlQueries(queries, ::getenv("LPM_SQLITE_TRACE"));
 }

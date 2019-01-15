@@ -6,6 +6,7 @@
 // really wouldn't test anything.
 
 #include <condition_variable>
+#include <cstdlib>
 #include <iostream>
 #include <mutex>
 #include <string>
@@ -26,7 +27,7 @@ constexpr int kNumThreads = 4;  // Must change with MultipleSQLQueries protobuf.
 }
 
 DEFINE_BINARY_PROTO_FUZZER(const MultipleSQLQueries& multiple_sql_queries) {
-  char* skip_queries = getenv("SQL_SKIP_QUERIES");
+  char* skip_queries = ::getenv("SQL_SKIP_QUERIES");
   if (skip_queries) {
     sql_fuzzer::SetDisabledQueries(
         sql_fuzzer::ParseDisabledQueries(skip_queries));
@@ -38,13 +39,17 @@ DEFINE_BINARY_PROTO_FUZZER(const MultipleSQLQueries& multiple_sql_queries) {
   if (!db)
     return;
 
+  if (::getenv("LPM_SQLITE_TRACE")) {
+    sql_fuzzer::EnableSqliteTracing(db);
+  }
+
   std::vector<std::string> query_strs[kNumThreads];
   query_strs[0] = sql_fuzzer::SQLQueriesToVec(multiple_sql_queries.queries1());
   query_strs[1] = sql_fuzzer::SQLQueriesToVec(multiple_sql_queries.queries2());
   query_strs[2] = sql_fuzzer::SQLQueriesToVec(multiple_sql_queries.queries3());
   query_strs[3] = sql_fuzzer::SQLQueriesToVec(multiple_sql_queries.queries4());
 
-  if (getenv("LPM_DUMP_NATIVE_INPUT")) {
+  if (::getenv("LPM_DUMP_NATIVE_INPUT")) {
     std::cout << "_________________________" << std::endl;
     for (int i = 0; i < kNumThreads; i++) {
       std::cout << "Thread " << i << ":" << std::endl;

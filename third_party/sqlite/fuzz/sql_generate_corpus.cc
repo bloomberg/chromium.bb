@@ -1,4 +1,6 @@
 #include <unistd.h>
+
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -930,12 +932,12 @@ int main(int argc, char** argv) {
     for (int i = 0; i < queries.extra_queries_size(); i++) {
       queries_str.push_back(
           sql_fuzzer::SQLQueryToString(queries.extra_queries(i)));
-      if (to_stdout || getenv("LPM_DUMP_NATIVE_INPUT"))
+      if (to_stdout || ::getenv("LPM_DUMP_NATIVE_INPUT"))
         std::cout << queries_str[i] << std::endl;
     }
 
     if (getenv("PRINT_SQLITE_ERRORS"))
-      sql_fuzzer::RunSqlQueries(queries_str);
+      sql_fuzzer::RunSqlQueries(queries_str, ::getenv("LPM_SQLITE_TRACE"));
 
     // If we just want to print to stdout, skip the directory stuff below.
     if (to_stdout)
