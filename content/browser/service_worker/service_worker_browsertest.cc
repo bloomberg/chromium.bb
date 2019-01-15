@@ -3151,13 +3151,11 @@ class CacheStorageSideDataSizeChecker
     : public base::RefCountedThreadSafe<CacheStorageSideDataSizeChecker> {
  public:
   static int GetSize(CacheStorageContextImpl* cache_storage_context,
-                     storage::FileSystemContext* file_system_context,
                      const GURL& origin,
                      const std::string& cache_name,
                      const GURL& url) {
     scoped_refptr<CacheStorageSideDataSizeChecker> checker(
-        new CacheStorageSideDataSizeChecker(cache_storage_context,
-                                            file_system_context, origin,
+        new CacheStorageSideDataSizeChecker(cache_storage_context, origin,
                                             cache_name, url));
     return checker->GetSizeImpl();
   }
@@ -3168,12 +3166,10 @@ class CacheStorageSideDataSizeChecker
 
   CacheStorageSideDataSizeChecker(
       CacheStorageContextImpl* cache_storage_context,
-      storage::FileSystemContext* file_system_context,
       const GURL& origin,
       const std::string& cache_name,
       const GURL& url)
       : cache_storage_context_(cache_storage_context),
-        file_system_context_(file_system_context),
         origin_(origin),
         cache_name_(cache_name),
         url_(url) {}
@@ -3237,7 +3233,6 @@ class CacheStorageSideDataSizeChecker
   }
 
   CacheStorageContextImpl* cache_storage_context_;
-  storage::FileSystemContext* file_system_context_;
   const GURL origin_;
   const std::string cache_name_;
   const GURL url_;
@@ -3303,8 +3298,8 @@ class ServiceWorkerV8CodeCacheForCacheStorageTest
     return CacheStorageSideDataSizeChecker::GetSize(
         static_cast<CacheStorageContextImpl*>(
             partition->GetCacheStorageContext()),
-        partition->GetFileSystemContext(), embedded_test_server()->base_url(),
-        std::string("cache_name"), embedded_test_server()->GetURL(kScriptUrl));
+        embedded_test_server()->base_url(), std::string("cache_name"),
+        embedded_test_server()->GetURL(kScriptUrl));
   }
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerV8CodeCacheForCacheStorageTest);
@@ -3411,12 +3406,9 @@ class ServiceWorkerCodeCacheStrategyTestBase : public ServiceWorkerBrowserTest {
   }
 
   bool HasSideData(const std::string& path) {
-    StoragePartition* partition = BrowserContext::GetDefaultStoragePartition(
-        shell()->web_contents()->GetBrowserContext());
     int size = CacheStorageSideDataSizeChecker::GetSize(
-        GetCacheStorageContextImpl(), partition->GetFileSystemContext(),
-        embedded_test_server()->base_url(), std::string("cache_name"),
-        embedded_test_server()->GetURL(path));
+        GetCacheStorageContextImpl(), embedded_test_server()->base_url(),
+        std::string("cache_name"), embedded_test_server()->GetURL(path));
     return size > 0;
   }
 
