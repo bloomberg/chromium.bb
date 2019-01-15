@@ -61,8 +61,6 @@
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 #include "third_party/blink/renderer/core/loader/frame_fetch_context.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
-#include "third_party/blink/renderer/core/loader/frame_or_imported_document.h"
-#include "third_party/blink/renderer/core/loader/frame_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/loader/network_hints_interface.h"
@@ -112,10 +110,7 @@ DocumentLoader::DocumentLoader(
     std::unique_ptr<WebNavigationParams> navigation_params)
     : request_(navigation_params->request.ToResourceRequest()),
       frame_(frame),
-      resource_fetcher_properties_(
-          MakeGarbageCollected<FrameResourceFetcherProperties>(
-              *MakeGarbageCollected<FrameOrImportedDocument>(*this))),
-      fetcher_(FrameFetchContext::CreateFetcher(*resource_fetcher_properties_)),
+      fetcher_(FrameFetchContext::CreateFetcher(this)),
       original_url_(request_.Url()),
       original_referrer_(request_.HttpReferrer()),
       load_type_(navigation_params->frame_load_type),
@@ -227,7 +222,6 @@ DocumentLoader::~DocumentLoader() {
 
 void DocumentLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
-  visitor->Trace(resource_fetcher_properties_);
   visitor->Trace(fetcher_);
   visitor->Trace(history_item_);
   visitor->Trace(parser_);
@@ -1433,11 +1427,6 @@ void DocumentLoader::ResumeParser() {
     parser_->Finish();
     parser_.Clear();
   }
-}
-
-void DocumentLoader::ProvideDocumentToResourceFetcherProperties(
-    Document& document) {
-  resource_fetcher_properties_->UpdateDocument(document);
 }
 
 void DocumentLoader::ReportPreviewsIntervention() const {

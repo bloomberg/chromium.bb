@@ -5,31 +5,19 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_TESTING_TEST_RESOURCE_FETCHER_PROPERTIES_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_TESTING_TEST_RESOURCE_FETCHER_PROPERTIES_H_
 
-#include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 
 namespace blink {
 
-class FetchClientSettingsObject;
-class SecurityOrigin;
-
 // TestResourceFetcherProperties is a ResourceFetcherProperties implementation
 // for tests.
 class TestResourceFetcherProperties final : public ResourceFetcherProperties {
  public:
-  TestResourceFetcherProperties();
-  explicit TestResourceFetcherProperties(scoped_refptr<const SecurityOrigin>);
-  explicit TestResourceFetcherProperties(const FetchClientSettingsObject&);
+  TestResourceFetcherProperties() = default;
   ~TestResourceFetcherProperties() override = default;
 
-  void Trace(Visitor* visitor) override;
-
   // ResourceFetcherProperties implementation
-  const FetchClientSettingsObject& GetFetchClientSettingsObject()
-      const override {
-    return *fetch_client_settings_object_;
-  }
   bool IsMainFrame() const override { return false; }
   ControllerServiceWorkerMode GetControllerServiceWorkerMode() const override {
     return ControllerServiceWorkerMode::kNoController;
@@ -56,7 +44,6 @@ class TestResourceFetcherProperties final : public ResourceFetcherProperties {
   }
 
  private:
-  const Member<const FetchClientSettingsObject> fetch_client_settings_object_;
   bool load_complete_ = false;
   bool should_block_loading_main_resource_ = false;
   bool should_block_loading_sub_resource_ = false;

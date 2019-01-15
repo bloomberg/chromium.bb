@@ -17,16 +17,10 @@ namespace blink {
 class PLATFORM_EXPORT NullResourceFetcherProperties final
     : public ResourceFetcherProperties {
  public:
-  NullResourceFetcherProperties();
+  NullResourceFetcherProperties() = default;
   ~NullResourceFetcherProperties() override = default;
 
-  void Trace(Visitor*) override;
-
   // ResourceFetcherProperties implementation
-  const FetchClientSettingsObject& GetFetchClientSettingsObject()
-      const override {
-    return *fetch_client_settings_object_;
-  }
   bool IsMainFrame() const override { return false; }
   ControllerServiceWorkerMode GetControllerServiceWorkerMode() const override {
     return ControllerServiceWorkerMode::kNoController;
@@ -39,9 +33,6 @@ class PLATFORM_EXPORT NullResourceFetcherProperties final
   bool IsLoadComplete() const override { return true; }
   bool ShouldBlockLoadingMainResource() const override { return true; }
   bool ShouldBlockLoadingSubResource() const override { return true; }
-
- private:
-  const Member<const FetchClientSettingsObject> fetch_client_settings_object_;
 };
 
 }  // namespace blink
