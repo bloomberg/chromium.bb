@@ -129,5 +129,10 @@ class ReservedHeaderCollision(Base):
 
 
 class PlaceholderNotInsidePhNode(Base):
-  '''Placeholder should be inside <ph> element.'''
+  '''Placeholder formatters should be inside <ph> element.'''
+  pass
+
+
+class InvalidCharactersInsidePhNode(Base):
+  '''Invalid characters found inside <ph> element.'''
   pass

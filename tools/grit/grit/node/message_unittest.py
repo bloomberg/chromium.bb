@@ -122,15 +122,234 @@ class MessageUnittest(unittest.TestCase):
       return
     self.fail('Should have gotten exception')
 
-  def testPlaceholderIsInsidePhNode(self):
+  def testChromeLocalizedFormatIsInsidePhNode(self):
     try:
       util.ParseGrdForUnittest("""\
         <messages>
-        <message name="IDS_FOO" desc="foo">
-          This message is missing the ph node: $1!
+        <message name="IDS_CHROME_L10N" desc="l10n format">
+          This message is missing the ph node: $1
         </message>
         </messages>""")
     except exception.PlaceholderNotInsidePhNode:
+      return
+    self.fail('Should have gotten exception')
+
+  def testAndroidStringFormatIsInsidePhNode(self):
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_ANDROID" desc="string format">
+          This message is missing a ph node: %1$s
+        </message>
+        </messages>""")
+    except exception.PlaceholderNotInsidePhNode:
+      return
+    self.fail('Should have gotten exception')
+
+  def testAndroidIntegerFormatIsInsidePhNode(self):
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_ANDROID" desc="integer format">
+          This message is missing a ph node: %2$d
+        </message>
+        </messages>""")
+    except exception.PlaceholderNotInsidePhNode:
+      return
+    self.fail('Should have gotten exception')
+
+  def testAndroidIntegerWidthFormatIsInsidePhNode(self):
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_ANDROID" desc="integer width format">
+          This message is missing a ph node: %2$3d
+        </message>
+        </messages>""")
+    except exception.PlaceholderNotInsidePhNode:
+      return
+    self.fail('Should have gotten exception')
+
+  def testValidAndroidIntegerWidthFormatInPhNode(self):
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_ANDROID_WIDTH">
+          <ph name="VALID">%2$3d<ex>042</ex></ph>
+        </message>
+        </messages>""")
+    except:
+      self.fail('Should not have gotten exception')
+
+  def testAndroidFloatFormatIsInsidePhNode(self):
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_ANDROID" desc="float number format">
+          This message is missing a ph node: %3$4.5f
+        </message>
+        </messages>""")
+    except exception.PlaceholderNotInsidePhNode:
+      return
+    self.fail('Should have gotten exception')
+
+  def testGritStringFormatIsInsidePhNode(self):
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_GRIT_STRING" desc="grit string format">
+          This message is missing the ph node: %s
+        </message>
+        </messages>""")
+    except exception.PlaceholderNotInsidePhNode:
+      return
+    self.fail('Should have gotten exception')
+
+  def testGritIntegerFormatIsInsidePhNode(self):
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_GRIT_INTEGER" desc="grit integer format">
+          This message is missing the ph node: %d
+        </message>
+        </messages>""")
+    except exception.PlaceholderNotInsidePhNode:
+      return
+    self.fail('Should have gotten exception')
+
+  def testWindowsETWIntegerFormatIsInsidePhNode(self):
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_WINDOWS_ETW" desc="ETW tracing integer">
+          This message is missing the ph node: %1
+        </message>
+        </messages>""")
+    except exception.PlaceholderNotInsidePhNode:
+      return
+    self.fail('Should have gotten exception')
+
+  def testValidMultipleFormattersInsidePhNodes(self):
+    root = util.ParseGrdForUnittest("""\
+      <messages>
+      <message name="IDS_MULTIPLE_FORMATTERS">
+        <ph name="ERROR_COUNT">%1$d<ex>1</ex></ph> error, <ph name="WARNING_COUNT">%2$d<ex>1</ex></ph> warning
+      </message>
+      </messages>""")
+    msg, = root.GetChildrenOfType(message.MessageNode)
+    cliques = msg.GetCliques()
+    content = cliques[0].GetMessage().GetPresentableContent()
+    self.failUnless(content == 'ERROR_COUNT error, WARNING_COUNT warning')
+
+  def testMultipleFormattersAreInsidePhNodes(self):
+    failed = True
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_MULTIPLE_FORMATTERS">
+          %1$d error, %2$d warning
+        </message>
+        </messages>""")
+    except exception.PlaceholderNotInsidePhNode:
+      failed = False
+    if failed:
+      self.fail('Should have gotten exception')
+      return
+
+    failed = True
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_MULTIPLE_FORMATTERS">
+          <ph name="ERROR_COUNT">%1$d<ex>1</ex></ph> error, %2$d warning
+        </message>
+        </messages>""")
+    except exception.PlaceholderNotInsidePhNode:
+      failed = False
+    if failed:
+      self.fail('Should have gotten exception')
+      return
+
+    failed = True
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_MULTIPLE_FORMATTERS">
+          <ph name="INVALID">%1$d %2$d</ph>
+        </message>
+        </messages>""")
+    except exception.InvalidCharactersInsidePhNode:
+      failed = False
+    if failed:
+      self.fail('Should have gotten exception')
+      return
+
+  def testValidHTMLFormatInsidePhNode(self):
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_HTML">
+          <ph name="VALID">&lt;span&gt;$1&lt;/span&gt;<ex>1</ex></ph>
+        </message>
+        </messages>""")
+    except:
+      self.fail('Should not have gotten exception')
+
+  def testValidHTMLEntityFormatInsidePhNode(self):
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_ENTITY">
+          <ph name="VALID">&gt;%1$d&lt;<ex>1</ex></ph>
+        </message>
+        </messages>""")
+    except:
+      self.fail('Should not have gotten exception')
+
+  def testValidMultipleDollarFormatInsidePhNode(self):
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_DOLLARS" desc="l10n dollars format">
+          <ph name="VALID">$$1</ph>
+        </message>
+        </messages>""")
+    except:
+      self.fail('Should not have gotten exception')
+
+  def testInvalidDollarCharacterInsidePhNode(self):
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_BAD_DOLLAR">
+          <ph name="INVALID">%1$d $</ph>
+        </message>
+        </messages>""")
+    except exception.InvalidCharactersInsidePhNode:
+      return
+    self.fail('Should have gotten exception')
+
+  def testInvalidPercentCharacterInsidePhNode(self):
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_BAD_PERCENT">
+          <ph name="INVALID">%1$d %</ph>
+        </message>
+        </messages>""")
+    except exception.InvalidCharactersInsidePhNode:
+      return
+    self.fail('Should have gotten exception')
+
+  def testInvalidMixedFormatCharactersInsidePhNode(self):
+    try:
+      util.ParseGrdForUnittest("""\
+        <messages>
+        <message name="IDS_MIXED_FORMATS">
+          <ph name="INVALID">%1$2</ph>
+        </message>
+        </messages>""")
+    except exception.InvalidCharactersInsidePhNode:
       return
     self.fail('Should have gotten exception')
 
