@@ -24,11 +24,11 @@ namespace {
 
 // The amount of time the promo should stay onscreen if the user
 // never hovers over it.
-constexpr base::TimeDelta kDelayDefault = base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kDelayDefault = base::TimeDelta::FromSeconds(10);
 
 // The amount of time the promo should stay onscreen after the
 // user stops hovering over it.
-constexpr base::TimeDelta kDelayShort = base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kDelayShort = base::TimeDelta::FromSeconds(3);
 
 // The insets from the bubble border to the text inside.
 constexpr gfx::Insets kBubbleContentsInsets(12, 16);
