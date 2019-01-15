@@ -1154,6 +1154,9 @@ PrintPreviewDestinationSettingsTest = class extends NewPrintPreviewTest {
     return super.extraLibraries.concat([
       ROOT_PATH + 'ui/webui/resources/js/web_ui_listener_behavior.js',
       '../test_browser_proxy.js',
+      '../settings/test_util.js',
+      'cloud_print_interface_stub.js',
+      'print_preview_test_utils.js',
       'native_layer_stub.js',
       'print_preview_test_utils.js',
       'destination_settings_test.js',
@@ -1166,6 +1169,45 @@ PrintPreviewDestinationSettingsTest = class extends NewPrintPreviewTest {
   }
 };
 
-TEST_F('PrintPreviewDestinationSettingsTest', 'ChangeButtonState', function() {
-  this.runMochaTest(destination_settings_test.TestNames.ChangeButtonState);
+TEST_F(
+    'PrintPreviewDestinationSettingsTest', 'ChangeDropdownState', function() {
+      this.runMochaTest(
+          destination_settings_test.TestNames.ChangeDropdownState);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationSettingsTest', 'NoRecentDestinations', function() {
+      this.runMochaTest(
+          destination_settings_test.TestNames.NoRecentDestinations);
+    });
+
+TEST_F('PrintPreviewDestinationSettingsTest', 'RecentDestinations', function() {
+  this.runMochaTest(destination_settings_test.TestNames.RecentDestinations);
+});
+
+TEST_F('PrintPreviewDestinationSettingsTest', 'SaveAsPdfRecent', function() {
+  this.runMochaTest(destination_settings_test.TestNames.SaveAsPdfRecent);
+});
+
+TEST_F('PrintPreviewDestinationSettingsTest', 'GoogleDriveRecent', function() {
+  this.runMochaTest(destination_settings_test.TestNames.GoogleDriveRecent);
+});
+
+TEST_F('PrintPreviewDestinationSettingsTest', 'SelectSaveAsPdf', function() {
+  this.runMochaTest(destination_settings_test.TestNames.SelectSaveAsPdf);
+});
+
+TEST_F('PrintPreviewDestinationSettingsTest', 'SelectGoogleDrive', function() {
+  this.runMochaTest(destination_settings_test.TestNames.SelectGoogleDrive);
+});
+
+TEST_F(
+    'PrintPreviewDestinationSettingsTest', 'SelectRecentDestination',
+    function() {
+      this.runMochaTest(
+          destination_settings_test.TestNames.SelectRecentDestination);
+    });
+
+TEST_F('PrintPreviewDestinationSettingsTest', 'OpenDialog', function() {
+  this.runMochaTest(destination_settings_test.TestNames.OpenDialog);
 });

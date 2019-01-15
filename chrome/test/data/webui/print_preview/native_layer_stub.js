@@ -143,6 +143,12 @@ cr.define('print_preview', function() {
       this.methodCalled(
           'getPrinterCapabilities',
           {destinationId: printerId, printerType: type});
+      if (printerId == print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
+        return Promise.resolve({
+          deviceName: 'Save as PDF',
+          capabilities: print_preview_test_utils.getPdfPrinter(),
+        });
+      }
       if (type != print_preview.PrinterType.LOCAL_PRINTER) {
         return Promise.reject();
       }
