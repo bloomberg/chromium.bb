@@ -39,6 +39,8 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system_logs/debug_log_writer.h"
 #include "chrome/browser/net/nss_context.h"
+#include "chrome/browser/policy/policy_conversions.h"
+#include "chrome/common/logging_chrome.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
@@ -118,6 +120,8 @@ class NetInternalsMessageHandler
   void OnCloseIdleSockets(const base::ListValue* list);
   void OnFlushSocketPools(const base::ListValue* list);
 #if defined(OS_CHROMEOS)
+  void OnDumpPolicyLogsCompleted(const base::FilePath& path,
+                                 bool should_compress);
   void OnImportONCFile(const base::ListValue* list);
   void OnStoreDebugLogs(const base::ListValue* list);
   void OnStoreDebugLogsCompleted(const base::FilePath& log_path,
@@ -402,6 +406,20 @@ void NetInternalsMessageHandler::OnImportONCFile(
                  onc_blob, passcode));
 }
 
+void DumpPolicyLogs(base::FilePath file_path, std::string json_policies) {
+  file_path = logging::GenerateTimestampedName(file_path, base::Time::Now());
+  base::WriteFile(file_path, json_policies.data(), json_policies.size());
+}
+
+void NetInternalsMessageHandler::OnDumpPolicyLogsCompleted(
+    const base::FilePath& path,
+    bool should_compress) {
+  chromeos::DebugLogWriter::StoreLogs(
+      path, should_compress,
+      base::Bind(&NetInternalsMessageHandler::OnStoreDebugLogsCompleted,
+                 AsWeakPtr()));
+}
+
 void NetInternalsMessageHandler::OnStoreDebugLogs(const base::ListValue* list) {
   DCHECK(list);
 
@@ -412,11 +430,17 @@ void NetInternalsMessageHandler::OnStoreDebugLogs(const base::ListValue* list) {
   base::FilePath path = prefs->DownloadPath();
   if (file_manager::util::IsUnderNonNativeLocalPath(profile, path))
     path = prefs->GetDefaultDownloadDirectoryForProfile();
-  chromeos::DebugLogWriter::StoreLogs(
-      path,
-      true,  // should_compress
-      base::Bind(&NetInternalsMessageHandler::OnStoreDebugLogsCompleted,
-                 AsWeakPtr()));
+  base::FilePath policies_path = path.Append("policies.json");
+  std::string json_policies = policy::GetAllPolicyValuesAsJSON(
+      web_ui()->GetWebContents()->GetBrowserContext(),
+      true /* with_user_policies */, false /* with device identity */);
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+      base::BindOnce(DumpPolicyLogs, policies_path, json_policies),
+      base::BindOnce(&NetInternalsMessageHandler::OnDumpPolicyLogsCompleted,
+                     AsWeakPtr(), path, true /* should_compress */));
 }
 
 void NetInternalsMessageHandler::OnStoreDebugLogsCompleted(
