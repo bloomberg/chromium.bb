@@ -34,6 +34,7 @@ namespace content {
 
 class FrameRequestBlocker;
 class ResourceDispatcher;
+class ServiceWorkerProviderContext;
 class ThreadSafeSender;
 class URLLoaderThrottleProvider;
 class WebSocketHandshakeThrottleProvider;
@@ -47,11 +48,14 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       public blink::mojom::ServiceWorkerWorkerClient,
       public mojom::RendererPreferenceWatcher {
  public:
-  // |service_worker_client_request| is bound to |this| to receive
-  // OnControllerChanged() notifications.
-  // |service_worker_worker_client_registry_info| is a host pointer to register
-  // a new ServiceWorkerWorkerClient, which is needed when creating a nested
-  // worker. |loader_factory_info| is used for regular loading by the worker.
+  // Creates a new fetch context for a worker.
+  //
+  // |provider_context| is the ServiceWorkerProviderContext of the worker and is
+  // used to route requests to its controller service worker. It can be null if
+  // this worker is never associated with service workers, for example, when a
+  // dedicated worker is created from a sandboxed iframe that doesn't have a
+  // service worker provider context.
+  // |loader_factory_info| is used for regular loading by the worker.
   //
   // S13nServiceWorker:
   // If the worker is controlled by a service worker, this class makes another
@@ -65,23 +69,13 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // |fallback_factory_info| might not be simply the direct network factory,
   // because it might additionally support non-NetworkService schemes (e.g.,
   // chrome-extension://).
-  WebWorkerFetchContextImpl(
+  static scoped_refptr<WebWorkerFetchContextImpl> Create(
+      ServiceWorkerProviderContext* provider_context,
       RendererPreferences renderer_preferences,
       mojom::RendererPreferenceWatcherRequest watcher_request,
-      blink::mojom::ServiceWorkerWorkerClientRequest
-          service_worker_client_request,
-      blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
-          service_worker_worker_client_registry_info,
-      blink::mojom::ServiceWorkerContainerHostPtrInfo
-          service_worker_container_host_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          fallback_factory_info,
-      std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
-      std::unique_ptr<WebSocketHandshakeThrottleProvider>
-          websocket_handshake_throttle_provider,
-      ThreadSafeSender* thread_safe_sender,
-      std::unique_ptr<service_manager::Connector> service_manager_connection);
+          fallback_factory_info);
 
   // blink::WebWorkerFetchContext implementation:
   scoped_refptr<blink::WebWorkerFetchContext> CloneForNestedWorker() override;
@@ -136,6 +130,31 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
 
  private:
   class Factory;
+
+  // - |service_worker_client_request| is bound to |this| to receive
+  //   OnControllerChanged() notifications.
+  // - |service_worker_worker_client_registry_info| is a host pointer to
+  //   register a new ServiceWorkerWorkerClient, which is needed when creating a
+  //   nested worker.
+  //
+  // Regarding the rest of params, see the comments on Create().
+  WebWorkerFetchContextImpl(
+      RendererPreferences renderer_preferences,
+      mojom::RendererPreferenceWatcherRequest watcher_request,
+      blink::mojom::ServiceWorkerWorkerClientRequest
+          service_worker_client_request,
+      blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
+          service_worker_worker_client_registry_info,
+      blink::mojom::ServiceWorkerContainerHostPtrInfo
+          service_worker_container_host_info,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          fallback_factory_info,
+      std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
+      std::unique_ptr<WebSocketHandshakeThrottleProvider>
+          websocket_handshake_throttle_provider,
+      ThreadSafeSender* thread_safe_sender,
+      std::unique_ptr<service_manager::Connector> service_manager_connection);
 
   ~WebWorkerFetchContextImpl() override;
 

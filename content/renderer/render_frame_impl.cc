@@ -3762,43 +3762,18 @@ RenderFrameImpl::CreateWorkerFetchContext() {
   ServiceWorkerNetworkProvider* provider =
       ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
           web_provider);
-  blink::mojom::ServiceWorkerWorkerClientRequest service_worker_client_request;
-  blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
-      service_worker_worker_client_registry_ptr_info;
-  blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
   ServiceWorkerProviderContext* provider_context = provider->context();
-  // Some sandboxed iframes are not allowed to use service worker so don't have
-  // a real service worker provider, so the provider context is null.
-  if (provider_context) {
-    provider_context->CloneWorkerClientRegistry(
-        mojo::MakeRequest(&service_worker_worker_client_registry_ptr_info));
-
-    blink::mojom::ServiceWorkerWorkerClientPtr worker_client_ptr;
-    service_worker_client_request = mojo::MakeRequest(&worker_client_ptr);
-    provider_context->RegisterWorkerClient(std::move(worker_client_ptr));
-
-    if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-      container_host_ptr_info = provider_context->CloneContainerHostPtrInfo();
-  }
 
   mojom::RendererPreferenceWatcherPtr watcher;
   mojom::RendererPreferenceWatcherRequest watcher_request =
       mojo::MakeRequest(&watcher);
   render_view()->RegisterRendererPreferenceWatcherForWorker(std::move(watcher));
 
-  auto worker_fetch_context = base::MakeRefCounted<WebWorkerFetchContextImpl>(
-      render_view_->renderer_preferences(), std::move(watcher_request),
-      std::move(service_worker_client_request),
-      std::move(service_worker_worker_client_registry_ptr_info),
-      std::move(container_host_ptr_info), GetLoaderFactoryBundle()->Clone(),
-      GetLoaderFactoryBundle()->CloneWithoutAppCacheFactory(),
-      GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
-          URLLoaderThrottleProviderType::kWorker),
-      GetContentClient()
-          ->renderer()
-          ->CreateWebSocketHandshakeThrottleProvider(),
-      ChildThreadImpl::current()->thread_safe_sender(),
-      ChildThreadImpl::current()->GetConnector()->Clone());
+  scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
+      WebWorkerFetchContextImpl::Create(
+          provider_context, render_view_->renderer_preferences(),
+          std::move(watcher_request), GetLoaderFactoryBundle()->Clone(),
+          GetLoaderFactoryBundle()->CloneWithoutAppCacheFactory());
 
   worker_fetch_context->set_ancestor_frame_id(routing_id_);
   worker_fetch_context->set_frame_request_blocker(frame_request_blocker_);

@@ -13,9 +13,11 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
 #include "content/renderer/loader/code_cache_loader_impl.h"
@@ -25,6 +27,7 @@
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/loader/web_url_request_util.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
+#include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/service_worker_subresource_loader.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -147,6 +150,47 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
   DISALLOW_COPY_AND_ASSIGN(Factory);
 };
 
+scoped_refptr<WebWorkerFetchContextImpl> WebWorkerFetchContextImpl::Create(
+    ServiceWorkerProviderContext* provider_context,
+    RendererPreferences renderer_preferences,
+    mojom::RendererPreferenceWatcherRequest watcher_request,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+        fallback_factory_info) {
+  blink::mojom::ServiceWorkerWorkerClientRequest service_worker_client_request;
+  blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
+      service_worker_worker_client_registry_ptr_info;
+  blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
+
+  // Some sandboxed iframes are not allowed to use service worker so don't have
+  // a real service worker provider, so the provider context is null.
+  if (provider_context) {
+    provider_context->CloneWorkerClientRegistry(
+        mojo::MakeRequest(&service_worker_worker_client_registry_ptr_info));
+
+    blink::mojom::ServiceWorkerWorkerClientPtr worker_client_ptr;
+    service_worker_client_request = mojo::MakeRequest(&worker_client_ptr);
+    provider_context->RegisterWorkerClient(std::move(worker_client_ptr));
+
+    if (blink::ServiceWorkerUtils::IsServicificationEnabled())
+      container_host_ptr_info = provider_context->CloneContainerHostPtrInfo();
+  }
+
+  return base::AdoptRef(new WebWorkerFetchContextImpl(
+      std::move(renderer_preferences), std::move(watcher_request),
+      std::move(service_worker_client_request),
+      std::move(service_worker_worker_client_registry_ptr_info),
+      std::move(container_host_ptr_info), std::move(loader_factory_info),
+      std::move(fallback_factory_info),
+      GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
+          URLLoaderThrottleProviderType::kWorker),
+      GetContentClient()
+          ->renderer()
+          ->CreateWebSocketHandshakeThrottleProvider(),
+      ChildThreadImpl::current()->thread_safe_sender(),
+      ChildThreadImpl::current()->GetConnector()->Clone()));
+}
+
 WebWorkerFetchContextImpl::WebWorkerFetchContextImpl(
     RendererPreferences renderer_preferences,
     mojom::RendererPreferenceWatcherRequest preference_watcher_request,
@@ -208,7 +252,7 @@ WebWorkerFetchContextImpl::CloneForNestedWorker() {
   }
 
   mojom::RendererPreferenceWatcherPtr preference_watcher;
-  auto new_context = base::MakeRefCounted<WebWorkerFetchContextImpl>(
+  auto new_context = base::AdoptRef(new WebWorkerFetchContextImpl(
       renderer_preferences_, mojo::MakeRequest(&preference_watcher),
       std::move(service_worker_client_request),
       std::move(service_worker_worker_client_registry_ptr_info),
@@ -218,7 +262,7 @@ WebWorkerFetchContextImpl::CloneForNestedWorker() {
       websocket_handshake_throttle_provider_
           ? websocket_handshake_throttle_provider_->Clone()
           : nullptr,
-      thread_safe_sender_.get(), service_manager_connection_->Clone());
+      thread_safe_sender_.get(), service_manager_connection_->Clone()));
   new_context->service_worker_provider_id_ = service_worker_provider_id_;
   new_context->is_controlled_by_service_worker_ =
       is_controlled_by_service_worker_;
