@@ -133,6 +133,10 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
                     gfx::XObjectDeleter<XRROutputInfo, void, XRRFreeOutputInfo>>
         output_info(XRRGetOutputInfo(xdisplay, resources.get(), output_id));
 
+    // XRRGetOutputInfo returns null in some cases: https://crbug.com/921490
+    if (!output_info)
+      continue;
+
     bool is_connected = (output_info->connection == RR_Connected);
     if (!is_connected)
       continue;
