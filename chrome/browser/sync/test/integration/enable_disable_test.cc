@@ -155,10 +155,23 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
       ASSERT_FALSE(ModelTypeExists(sgt)) << " for " << ModelTypeToString(st);
     }
 
+    base::HistogramTester histogram_tester;
     EXPECT_TRUE(GetClient(0)->EnableSyncForDatatype(st));
 
     for (ModelType gt : grouped_types) {
       EXPECT_TRUE(ModelTypeExists(gt)) << " for " << ModelTypeToString(st);
+
+      if (syncer::CommitOnlyTypes().Has(gt)) {
+        EXPECT_EQ(0, histogram_tester.GetBucketCount(
+                         "Sync.PostedDataTypeGetUpdatesRequest",
+                         ModelTypeToHistogramInt(gt)))
+            << " for " << ModelTypeToString(gt);
+      } else {
+        EXPECT_NE(0, histogram_tester.GetBucketCount(
+                         "Sync.PostedDataTypeGetUpdatesRequest",
+                         ModelTypeToHistogramInt(gt)))
+            << " for " << ModelTypeToString(gt);
+      }
     }
   }
 }
