@@ -464,8 +464,6 @@ void av1_txb_init_levels_c(const tran_low_t *const coeff, const int width,
   const int stride = width + TX_PAD_HOR;
   uint8_t *ls = levels;
 
-  memset(levels - TX_PAD_TOP * stride, 0,
-         sizeof(*levels) * TX_PAD_TOP * stride);
   memset(levels + stride * height, 0,
          sizeof(*levels) * (TX_PAD_BOTTOM * stride + TX_PAD_END));
 
