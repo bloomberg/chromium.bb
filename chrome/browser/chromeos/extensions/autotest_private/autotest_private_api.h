@@ -549,6 +549,17 @@ class AutotestPrivateAPI : public BrowserContextKeyedAPI {
   bool test_mode_;  // true for AutotestPrivateApiTest.AutotestPrivate test.
 };
 
+// Get the primary display's scale factor.
+class AutotestPrivateGetPrimaryDisplayScaleFactorFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getPrimaryDisplayScaleFactor",
+                             AUTOTESTPRIVATE_GETPRIMARYDISPLAYSCALEFACTOR)
+ private:
+  ~AutotestPrivateGetPrimaryDisplayScaleFactorFunction() override;
+  ResponseAction Run() override;
+};
+
 template <>
 KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(

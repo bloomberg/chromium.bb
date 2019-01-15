@@ -71,6 +71,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/public/cpp/notification.h"
 
@@ -1368,6 +1369,23 @@ void AutotestPrivateEnsureWindowServiceClientHasDrawnWindowFunction::
     return;
 
   Respond(Error("EnsureWindowServiceClientHasDrawnWindowFunction timeout."));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetPrimaryDisplayScaleFactorFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetPrimaryDisplayScaleFactorFunction::
+    ~AutotestPrivateGetPrimaryDisplayScaleFactorFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetPrimaryDisplayScaleFactorFunction::Run() {
+  DVLOG(1) << "AutotestPrivateGetPrimaryDisplayScaleFactorFunction";
+
+  display::Display primary_display =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
+  float scale_factor = primary_display.device_scale_factor();
+  return RespondNow(OneArgument(std::make_unique<base::Value>(scale_factor)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -266,6 +266,15 @@ var defaultTests = [
           chrome.test.succeed();
         });
   },
+  // This gets the primary display's scale factor.
+  function getPrimaryDisplayScaleFactor() {
+    chrome.autotestPrivate.getPrimaryDisplayScaleFactor(
+        function(scaleFactor) {
+          chrome.test.assertNoLastError();
+          chrome.test.assertTrue(scaleFactor >= 1.0);
+          chrome.test.succeed();
+        });
+  },
 ];
 
 var arcEnabledTests = [
