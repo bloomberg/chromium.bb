@@ -107,7 +107,18 @@ ScheduledAction::~ScheduledAction() {
 void ScheduledAction::Dispose() {
   script_state_->Reset();
   script_state_.Clear();
-  function_.Clear();
+  if (function_) {
+    // setTimeout is pretty common and heavily used, and we need a special
+    // optimization to let V8 Scavenger GC collect the function object as
+    // soon as possible in order to reduce the memory usage.
+    // See also https://crbug.com/919474 and https://crbug.com/919475 .
+    //
+    // This optimization is safe because this ScheduledAction *owns* |function_|
+    // (i.e. no other objects reference |function_|) and this ScheduledAction
+    // immediately discards |function_| (so never uses it).
+    function_->DisposeV8FunctionImmediatelyToReduceMemoryFootprint();
+    function_.Clear();
+  }
   arguments_.clear();
   code_ = String();
 }
