@@ -149,18 +149,21 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
                            drag_data) override;
   void OnDragEnter(Id window,
                    uint32_t key_state,
-                   const gfx::Point& position,
+                   const gfx::PointF& location_in_root,
+                   const gfx::PointF& location,
                    uint32_t effect_bitmask,
                    OnDragEnterCallback callback) override;
   void OnDragOver(Id window,
                   uint32_t key_state,
-                  const gfx::Point& position,
+                  const gfx::PointF& location_in_root,
+                  const gfx::PointF& location,
                   uint32_t effect_bitmask,
                   OnDragOverCallback callback) override;
   void OnDragLeave(Id window) override;
   void OnCompleteDrop(Id window,
                       uint32_t key_state,
-                      const gfx::Point& position,
+                      const gfx::PointF& location_in_root,
+                      const gfx::PointF& location,
                       uint32_t effect_bitmask,
                       OnCompleteDropCallback callback) override;
   void OnPerformDragDropCompleted(uint32_t change_id,

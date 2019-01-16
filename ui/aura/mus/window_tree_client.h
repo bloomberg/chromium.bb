@@ -436,18 +436,21 @@ class AURA_EXPORT WindowTreeClient
                            mime_data) override;
   void OnDragEnter(ws::Id window_id,
                    uint32_t event_flags,
-                   const gfx::Point& position,
+                   const gfx::PointF& location_in_root,
+                   const gfx::PointF& location,
                    uint32_t effect_bitmask,
                    OnDragEnterCallback callback) override;
   void OnDragOver(ws::Id window_id,
                   uint32_t event_flags,
-                  const gfx::Point& position,
+                  const gfx::PointF& location_in_root,
+                  const gfx::PointF& location,
                   uint32_t effect_bitmask,
                   OnDragOverCallback callback) override;
   void OnDragLeave(ws::Id window_id) override;
   void OnCompleteDrop(ws::Id window_id,
                       uint32_t event_flags,
-                      const gfx::Point& position,
+                      const gfx::PointF& location_in_root,
+                      const gfx::PointF& location,
                       uint32_t effect_bitmask,
                       OnCompleteDropCallback callback) override;
   void OnPerformDragDropCompleted(uint32_t change_id,

@@ -233,7 +233,8 @@ void TestWindowTreeClient::OnDragDropStart(
 
 void TestWindowTreeClient::OnDragEnter(Id window,
                                        uint32_t key_state,
-                                       const gfx::Point& position,
+                                       const gfx::PointF& location_in_root,
+                                       const gfx::PointF& location,
                                        uint32_t effect_bitmask,
                                        OnDragEnterCallback callback) {
   tracker_.OnDragEnter(window);
@@ -241,7 +242,8 @@ void TestWindowTreeClient::OnDragEnter(Id window,
 
 void TestWindowTreeClient::OnDragOver(Id window,
                                       uint32_t key_state,
-                                      const gfx::Point& position,
+                                      const gfx::PointF& location_in_root,
+                                      const gfx::PointF& location,
                                       uint32_t effect_bitmask,
                                       OnDragOverCallback callback) {
   tracker_.OnDragOver(window);
@@ -253,7 +255,8 @@ void TestWindowTreeClient::OnDragLeave(Id window) {
 
 void TestWindowTreeClient::OnCompleteDrop(Id window,
                                           uint32_t key_state,
-                                          const gfx::Point& position,
+                                          const gfx::PointF& location_in_root,
+                                          const gfx::PointF& location,
                                           uint32_t effect_bitmask,
                                           OnCompleteDropCallback callback) {
   tracker_.OnCompleteDrop(window);

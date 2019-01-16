@@ -198,21 +198,15 @@ void WindowTree::SendEventToClient(aura::Window* window,
 
   std::unique_ptr<ui::Event> event_to_send = ui::Event::Clone(event);
   if (event.IsLocatedEvent()) {
+    ui::LocatedEvent* located_event = event_to_send->AsLocatedEvent();
     // Translate the root location for located events. Event's root location
     // should be in the coordinate of the root window, however the root for the
     // target window in the client can be different from the one in the server,
     // thus the root location needs to be converted from the original coordinate
     // to the one used in the client. See also 'WindowTreeTest.EventLocation'
     // test case.
-    ClientRoot* client_root = FindClientRootContaining(window);
-    // The |client_root| may have been removed on shutdown.
-    if (client_root) {
-      gfx::PointF root_location =
-          event_to_send->AsLocatedEvent()->root_location_f();
-      aura::Window::ConvertPointToTarget(window->GetRootWindow(),
-                                         client_root->window(), &root_location);
-      event_to_send->AsLocatedEvent()->set_root_location_f(root_location);
-    }
+    located_event->set_root_location_f(
+        ConvertRootLocationForClient(window, located_event->root_location_f()));
   }
   DVLOG(4) << "SendEventToClient window="
            << ProxyWindow::GetMayBeNull(window)->GetIdForDebugging()
@@ -337,6 +331,19 @@ ClientWindowId WindowTree::ClientWindowIdForWindow(aura::Window* window) const {
 ClientRoot* WindowTree::GetClientRootForWindow(aura::Window* window) {
   auto iter = FindClientRootWithRoot(window);
   return iter == client_roots_.end() ? nullptr : iter->get();
+}
+
+gfx::PointF WindowTree::ConvertRootLocationForClient(
+    aura::Window* window,
+    const gfx::PointF& root_location) {
+  ClientRoot* client_root = FindClientRootContaining(window);
+  // The |client_root| may have been removed on shutdown.
+  if (!client_root)
+    return root_location;
+  gfx::PointF client_root_location = root_location;
+  aura::Window::ConvertPointToTarget(
+      window->GetRootWindow(), client_root->window(), &client_root_location);
+  return client_root_location;
 }
 
 ClientRoot* WindowTree::CreateClientRoot(aura::Window* window,
@@ -1657,7 +1664,7 @@ void WindowTree::SetCanAcceptDrops(Id window_id, bool accepts_drops) {
   DCHECK(proxy_window);  // Must exist because of preceding conditionals.
   if (accepts_drops && !proxy_window->HasDragDropDelegate()) {
     auto drag_drop_delegate = std::make_unique<DragDropDelegate>(
-        window_tree_client_, window, window_id);
+        this, window_tree_client_, window, window_id);
     aura::client::SetDragDropDelegate(window, drag_drop_delegate.get());
     proxy_window->SetDragDropDelegate(std::move(drag_drop_delegate));
   } else if (!accepts_drops && proxy_window->HasDragDropDelegate()) {

@@ -27,6 +27,10 @@ namespace aura {
 class Window;
 }
 
+namespace gfx {
+class PointF;
+}
+
 namespace ui {
 class Event;
 }
@@ -155,6 +159,12 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // If |window| is a client root, the ClientRoot is returned. This does not
   // recurse.
   ClientRoot* GetClientRootForWindow(aura::Window* window);
+
+  // Converts an Event's root_location as supplied to the window service to be
+  // relative to the nearest client root of |window|. The returned value should
+  // used as the root_location() for Events supplied to clients.
+  gfx::PointF ConvertRootLocationForClient(aura::Window* window,
+                                           const gfx::PointF& root_location);
 
  private:
   friend class ClientRoot;
