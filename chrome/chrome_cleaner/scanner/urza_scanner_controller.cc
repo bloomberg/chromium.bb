@@ -13,8 +13,9 @@ namespace chrome_cleaner {
 UrzaScannerController::UrzaScannerController(
     MatchingOptions* options,
     std::unique_ptr<SignatureMatcherAPI> signature_matcher,
-    RegistryLogger* registry_logger)
-    : ScannerController(registry_logger),
+    RegistryLogger* registry_logger,
+    ShortcutParserAPI* shortcut_parser)
+    : ScannerController(registry_logger, shortcut_parser),
       signature_matcher_(std::move(signature_matcher)),
       scanner_(*options, signature_matcher_.get(), registry_logger) {
   DCHECK(signature_matcher_);
