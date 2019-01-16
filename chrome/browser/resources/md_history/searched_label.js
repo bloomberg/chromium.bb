@@ -21,7 +21,10 @@ Polymer({
    * @private
    */
   setSearchedTextToBold_: function() {
-    let i = 0;
+    if (this.title === undefined) {
+      return;
+    }
+
     const titleText = this.title;
 
     if (this.searchTerm == '' || this.searchTerm == null) {
@@ -30,6 +33,7 @@ Polymer({
     }
 
     const re = new RegExp(quoteString(this.searchTerm), 'gim');
+    let i = 0;
     let match;
     this.textContent = '';
     while (match = re.exec(titleText)) {

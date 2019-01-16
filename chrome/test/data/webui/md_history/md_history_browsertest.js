@@ -232,3 +232,17 @@ MaterialHistoryToolbarTest.prototype = {
 TEST_F('MaterialHistoryToolbarTest', 'All', function() {
   mocha.run();
 });
+
+function MaterialHistorySearchedLabelTest() {}
+
+MaterialHistorySearchedLabelTest.prototype = {
+  __proto__: MaterialHistoryBrowserTest.prototype,
+
+  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+    'searched_label_test.js',
+  ]),
+};
+
+TEST_F('MaterialHistorySearchedLabelTest', 'All', function() {
+  mocha.run();
+});
