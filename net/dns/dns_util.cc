@@ -244,6 +244,8 @@ uint16_t DnsQueryTypeToQtype(DnsQueryType dns_query_type) {
       return dns_protocol::kTypeTXT;
     case DnsQueryType::PTR:
       return dns_protocol::kTypePTR;
+    case DnsQueryType::SRV:
+      return dns_protocol::kTypeSRV;
   }
 }
 
