@@ -2287,6 +2287,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       kForwardButtonGuide,
       kToolsMenuGuide,
       kTabSwitcherGuide,
+      kTranslateInfobarOptionsGuide,
       kSearchButtonGuide,
       kSecondaryToolbarGuide,
       kVoiceSearchButtonGuide,

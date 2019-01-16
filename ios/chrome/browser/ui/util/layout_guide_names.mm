@@ -19,4 +19,6 @@ GuideName* const kSearchButtonGuide = @"kSearchButtonGuide";
 GuideName* const kTabSwitcherGuide = @"kTabSwitcherGuide";
 GuideName* const kTabStripTabSwitcherGuide = @"kTabStripTabSwitcherGuide";
 GuideName* const kToolsMenuGuide = @"kToolsMenuGuide";
+GuideName* const kTranslateInfobarOptionsGuide =
+    @"kTranslateInfobarOptionsGuide";
 GuideName* const kVoiceSearchButtonGuide = @"kVoiceSearchButtonGuide";
