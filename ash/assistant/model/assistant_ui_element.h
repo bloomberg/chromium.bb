@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "services/content/public/cpp/navigable_contents.h"
 
@@ -24,7 +25,7 @@ enum class AssistantUiElementType {
 // AssistantUiElement ----------------------------------------------------------
 
 // Base class for a UI element that will be rendered inside of Assistant UI.
-class AssistantUiElement {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiElement {
  public:
   virtual ~AssistantUiElement() = default;
 
@@ -42,7 +43,8 @@ class AssistantUiElement {
 // AssistantCardElement --------------------------------------------------------
 
 // An Assistant UI element that will be rendered as an HTML card.
-class AssistantCardElement : public AssistantUiElement {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantCardElement
+    : public AssistantUiElement {
  public:
   using ProcessingCallback = base::OnceCallback<void(bool)>;
 
@@ -103,7 +105,8 @@ class AssistantCardElement : public AssistantUiElement {
 // AssistantTextElement --------------------------------------------------------
 
 // An Assistant UI element that will be rendered as text.
-class AssistantTextElement : public AssistantUiElement {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantTextElement
+    : public AssistantUiElement {
  public:
   explicit AssistantTextElement(const std::string& text)
       : AssistantUiElement(AssistantUiElementType::kText), text_(text) {}

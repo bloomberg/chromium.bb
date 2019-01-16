@@ -5,6 +5,7 @@
 #ifndef ASH_ASSISTANT_MODEL_ASSISTANT_NOTIFICATION_MODEL_OBSERVER_H_
 #define ASH_ASSISTANT_MODEL_ASSISTANT_NOTIFICATION_MODEL_OBSERVER_H_
 
+#include "base/component_export.h"
 #include "base/observer_list_types.h"
 
 namespace chromeos {
@@ -19,7 +20,8 @@ namespace ash {
 
 // A checked observer which receives notification of changes to the Assistant
 // notification model.
-class AssistantNotificationModelObserver : public base::CheckedObserver {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNotificationModelObserver
+    : public base::CheckedObserver {
  public:
   using AssistantNotification =
       chromeos::assistant::mojom::AssistantNotification;

@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
@@ -20,7 +21,7 @@ enum class AlarmTimerType {
   kTimer,
 };
 
-struct AlarmTimer {
+struct COMPONENT_EXPORT(ASSISTANT_MODEL) AlarmTimer {
   std::string id;
   AlarmTimerType type;
   base::TimeTicks end_time;
@@ -31,7 +32,7 @@ struct AlarmTimer {
 
 // The model belonging to AssistantAlarmTimerController which tracks alarm/timer
 // state and notifies a pool of observers.
-class AssistantAlarmTimerModel {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantAlarmTimerModel {
  public:
   AssistantAlarmTimerModel();
   ~AssistantAlarmTimerModel();
