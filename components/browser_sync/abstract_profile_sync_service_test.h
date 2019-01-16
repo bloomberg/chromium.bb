@@ -5,10 +5,7 @@
 #ifndef COMPONENTS_BROWSER_SYNC_ABSTRACT_PROFILE_SYNC_SERVICE_TEST_H_
 #define COMPONENTS_BROWSER_SYNC_ABSTRACT_PROFILE_SYNC_SERVICE_TEST_H_
 
-#include <stdint.h>
-
 #include <memory>
-#include <string>
 
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
@@ -22,22 +19,6 @@
 namespace browser_sync {
 
 class TestProfileSyncService;
-
-class ProfileSyncServiceTestHelper {
- public:
-  static syncer::ImmutableChangeRecordList MakeSingletonChangeRecordList(
-      int64_t node_id,
-      syncer::ChangeRecord::Action action);
-
-  // Deletions must provide an EntitySpecifics for the deleted data.
-  static syncer::ImmutableChangeRecordList
-  MakeSingletonDeletionChangeRecordList(
-      int64_t node_id,
-      const sync_pb::EntitySpecifics& specifics);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceTestHelper);
-};
 
 class AbstractProfileSyncServiceTest : public testing::Test {
  public:
