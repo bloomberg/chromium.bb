@@ -55,8 +55,8 @@ const automation_helper = (function() {
               // As coordinates, use the center of the element, minus the
               // window offset in case the element is outside the view.
               rect.left + rect.width / 2, rect.top + rect.height / 2);
-          isReady &= target.contains(topElement) ||
-                     target.isSameNode(topElement);
+          isReady = target.contains(topElement) ||
+                      target.isSameNode(topElement);
         }
       }
 
