@@ -1220,7 +1220,7 @@ void Shell::Init(
   // since AshTouchTransformController listens on
   // WindowTreeHostManager::Observer::OnDisplaysInitialized().
   touch_transformer_controller_ = std::make_unique<AshTouchTransformController>(
-      display_configurator_.get(), display_manager_.get(),
+      display_manager_.get(),
       std::make_unique<display::DefaultTouchTransformSetter>());
 
   // |system_tray_model_| should be available before

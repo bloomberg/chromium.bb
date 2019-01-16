@@ -126,7 +126,7 @@ class TouchTransformControllerTest : public testing::Test {
     display_manager_ = std::make_unique<DisplayManager>(std::move(screen));
     touch_device_manager_ = display_manager_->touch_device_manager();
     touch_transform_controller_ = std::make_unique<TouchTransformController>(
-        nullptr, display_manager_.get(),
+        display_manager_.get(),
         std::make_unique<DefaultTouchTransformSetter>());
   }
 
