@@ -33,6 +33,7 @@
 #include <memory>
 
 #include "build/build_config.h"
+#include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
@@ -1156,7 +1157,13 @@ Response InspectorPageAgent::getLayoutMetrics(
 
   LocalFrameView* frame_view = main_frame->View();
   ScrollOffset page_offset = frame_view->GetScrollableArea()->GetScrollOffset();
+  // page_zoom is either CSS-to-DP or CSS-to-DIP depending on
+  // enable-use-zoom-for-dsf flag.
   float page_zoom = main_frame->PageZoomFactor();
+  // page_zoom_factor is CSS to DIP (device independent pixels).
+  float page_zoom_factor =
+      page_zoom /
+      main_frame->GetPage()->GetChromeClient().WindowToViewportScalar(1);
   FloatRect visible_rect = visual_viewport.VisibleRect();
   float scale = visual_viewport.Scale();
 
@@ -1180,6 +1187,7 @@ Response InspectorPageAgent::getLayoutMetrics(
                              .setClientWidth(visible_rect.Width())
                              .setClientHeight(visible_rect.Height())
                              .setScale(scale)
+                             .setZoom(page_zoom_factor)
                              .build();
   return Response::OK();
 }
