@@ -739,7 +739,7 @@ enum class EnterTabSwitcherSnapshotResult {
       ->NotifyEvent(feature_engagement::events::kChromeOpened);
 
   // Ensure the main tab model is created.
-  [_browserViewWrangler createMainTabModel];
+  [_browserViewWrangler createMainBrowser];
 
   _spotlightManager =
       [SpotlightManager spotlightManagerWithBrowserState:_mainBrowserState];
@@ -866,7 +866,7 @@ enum class EnterTabSwitcherSnapshotResult {
   // be destroyed.
   [_tabSwitcher setOtrTabModel:nil];
 
-  [_browserViewWrangler destroyAndRebuildIncognitoTabModel];
+  [_browserViewWrangler destroyAndRebuildIncognitoBrowser];
 
   if (otrBVCIsCurrent) {
     [self activateBVCAndMakeCurrentBVCPrimary];
