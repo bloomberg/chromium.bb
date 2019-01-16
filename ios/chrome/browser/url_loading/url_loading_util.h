@@ -15,10 +15,11 @@ class GURL;
 namespace ios {
 class ChromeBrowserState;
 }
-@class TabModel;
+@protocol SessionWindowRestoring;
 namespace web {
 class WebState;
 }
+class WebStateList;
 
 // Possible results from calling LoadURL().
 enum class URLLoadResult {
@@ -60,9 +61,11 @@ void RestoreTab(const SessionID session_id,
 
 // Returns the result (as defined in the enum definition above) of initiating a
 // URL load as defined in |chrome_params|, using |browser_state| and the active
-// tab in |tab_model|.
+// webState in |web_state_list|. |restorer| is provied for dependencies which
+// may need to save the current session window.
 URLLoadResult LoadURL(const ChromeLoadParams& chrome_params,
                       ios::ChromeBrowserState* browser_state,
-                      TabModel* tab_model);
+                      WebStateList* web_state_list,
+                      id<SessionWindowRestoring> restorer);
 
 #endif  // IOS_CHROME_BROWSER_URL_LOADING_URL_LOADING_UTIL_H_

@@ -13,15 +13,14 @@
 
 @class PreloadController;
 @protocol PreloadControllerDelegate;
-@class TabModel;
-
+@protocol SessionWindowRestoring;
 namespace ios {
 class ChromeBrowserState;
 }
-
 namespace web {
 class WebState;
 }
+class WebStateList;
 
 // PrerenderService manages a prerendered WebState.
 class PrerenderService : public KeyedService {
@@ -51,14 +50,16 @@ class PrerenderService : public KeyedService {
                       ui::PageTransition transition,
                       bool immediately);
 
-  // If |url| is prerendered, loads the prerendered web state into |tab_model|
-  // at the active index, replacing the existing active web state. If not, or if
-  // it isn't possible to replace the active web state, cancels the active
-  // preload. Metrics and snapshots are appropriately updated. Returns true if
-  // the active webstate was replaced, false otherwise.
+  // If |url| is prerendered, loads the prerendered web state into
+  // |web_state_list| at the active index, replacing the existing active web
+  // state and saving the session (via |restorer|). If not, or if it isn't
+  // possible to replace the active web state, cancels the active preload.
+  // Metrics and snapshots are appropriately updated. Returns true if the active
+  // webstate was replaced, false otherwise.
   bool MaybeLoadPrerenderedURL(const GURL& url,
                                ui::PageTransition transition,
-                               TabModel* tab_model);
+                               WebStateList* web_state_list,
+                               id<SessionWindowRestoring> restorer);
 
   // |true| while a prerendered webstate is being inserted into a webStateList.
   bool IsLoadingPrerender() { return loading_prerender_; }

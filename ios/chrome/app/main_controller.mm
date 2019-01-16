@@ -796,7 +796,11 @@ enum class EnterTabSwitcherSnapshotResult {
     // The startup parameters may create new tabs or navigations. If the restore
     // infobar is displayed now, it may be dismissed immediately and the user
     // will never be able to restore the session.
-    [_restoreHelper showRestoreIfNeeded:[self currentTabModel]];
+    TabModel* currentTabModel = [self currentTabModel];
+    [_restoreHelper
+        showRestoreIfNeededUsingWebState:currentTabModel.webStateList
+                                             ->GetActiveWebState()
+                         sessionRestorer:currentTabModel];
     _restoreHelper = nil;
   }
 
@@ -2313,7 +2317,11 @@ enum class EnterTabSwitcherSnapshotResult {
     // Now that all the operations on the tabs have been done, display the
     // restore infobar if needed.
     dispatch_async(dispatch_get_main_queue(), ^{
-      [_restoreHelper showRestoreIfNeeded:[self currentTabModel]];
+      TabModel* currentTabModel = [self currentTabModel];
+      [_restoreHelper
+          showRestoreIfNeededUsingWebState:currentTabModel.webStateList
+                                               ->GetActiveWebState()
+                           sessionRestorer:currentTabModel];
       _restoreHelper = nil;
     });
   }
