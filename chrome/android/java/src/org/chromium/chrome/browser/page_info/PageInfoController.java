@@ -12,12 +12,14 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
+import android.support.v4.view.ViewCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.TextAppearanceSpan;
+import android.view.Window;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.StrictModeContext;
@@ -537,6 +539,12 @@ public class PageInfoController
      */
     public static void show(final Activity activity, final Tab tab, final String contentPublisher,
             @OpenedFromSource int source) {
+        // If the activity's decor view is not attached to window, we don't show the dialog because
+        // the window manager might have revoked the window token for this activity. See
+        // https://crbug.com/921450.
+        Window window = activity.getWindow();
+        if (window == null || !ViewCompat.isAttachedToWindow(window.getDecorView())) return;
+
         if (source == OpenedFromSource.MENU) {
             RecordUserAction.record("MobileWebsiteSettingsOpenedFromMenu");
         } else if (source == OpenedFromSource.TOOLBAR) {
