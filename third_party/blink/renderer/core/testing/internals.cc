@@ -1698,7 +1698,8 @@ static unsigned EventHandlerCount(
 unsigned Internals::wheelEventHandlerCount(Document* document) const {
   DCHECK(document);
   return EventHandlerCount(*document,
-                           EventHandlerRegistry::kWheelEventBlocking);
+                           EventHandlerRegistry::kWheelEventBlocking) +
+         EventHandlerCount(*document, EventHandlerRegistry::kWheelEventPassive);
 }
 
 unsigned Internals::scrollEventHandlerCount(Document* document) const {
