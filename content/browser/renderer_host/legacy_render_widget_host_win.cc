@@ -339,7 +339,12 @@ LRESULT LegacyRenderWidgetHostHWND::OnMouseLeave(UINT message,
     // has moved outside the bounds of the parent.
     POINT cursor_pos;
     ::GetCursorPos(&cursor_pos);
-    if (::WindowFromPoint(cursor_pos) != GetParent()) {
+
+    // WindowFromPoint returns the top-most HWND. As hwnd() may not
+    // respond with HTTRANSPARENT to a WM_NCHITTEST message,
+    // it may be returned.
+    HWND window_from_point = ::WindowFromPoint(cursor_pos);
+    if (window_from_point != hwnd() && window_from_point != GetParent()) {
       bool msg_handled = false;
       ret = GetWindowEventTarget(GetParent())->HandleMouseMessage(
           message, w_param, l_param, &msg_handled);
