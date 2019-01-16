@@ -90,11 +90,10 @@ TEST(VideoDecodeAcceleratorTest, FlushAtEndOfStream) {
   tvp->SetStream(g_env->video_);
 
   tvp->Play();
-  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushDone));
+  EXPECT_TRUE(tvp->WaitForFlushDone());
 
-  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFlushDone), 1u);
-  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded),
-            g_env->video_->NumFrames());
+  EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
   EXPECT_EQ(0u, g_env->frame_validator_->GetMismatchedFramesCount());
 }
 
@@ -104,13 +103,12 @@ TEST(VideoDecodeAcceleratorTest, FlushAfterInitialize) {
   tvp->SetStream(g_env->video_);
 
   tvp->Flush();
-  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushDone));
+  EXPECT_TRUE(tvp->WaitForFlushDone());
   tvp->Play();
-  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushDone));
+  EXPECT_TRUE(tvp->WaitForFlushDone());
 
-  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFlushDone), 2u);
-  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded),
-            g_env->video_->NumFrames());
+  EXPECT_EQ(tvp->GetFlushDoneCount(), 2u);
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
   EXPECT_EQ(0u, g_env->frame_validator_->GetMismatchedFramesCount());
 }
 
@@ -121,21 +119,19 @@ TEST(VideoDecodeAcceleratorTest, FlushBeforeResetDone) {
   tvp->SetStream(g_env->video_);
 
   tvp->Play();
-  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFrameDecoded,
-                                g_env->video_->NumFrames() / 2));
+  EXPECT_TRUE(tvp->WaitForFrameDecoded(g_env->video_->NumFrames() / 2));
   tvp->Reset();
   tvp->Flush();
-  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kResetDone));
-  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushDone));
+  EXPECT_TRUE(tvp->WaitForResetDone());
+  EXPECT_TRUE(tvp->WaitForFlushDone());
 
   // As flush doesn't cancel reset, we should have received a single kResetDone
   // and kFlushDone event. We didn't decode the entire video, but more frames
   // might be decoded by the time we called reset, so we can only check whether
   // the decoded frame count is <= the total number of frames.
-  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kResetDone), 1u);
-  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFlushDone), 1u);
-  EXPECT_LE(tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded),
-            g_env->video_->NumFrames());
+  EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
+  EXPECT_LE(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
   EXPECT_EQ(0u, g_env->frame_validator_->GetMismatchedFramesCount());
 }
 
@@ -145,14 +141,13 @@ TEST(VideoDecodeAcceleratorTest, ResetAfterInitialize) {
   tvp->SetStream(g_env->video_);
 
   tvp->Reset();
-  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kResetDone));
+  EXPECT_TRUE(tvp->WaitForResetDone());
   tvp->Play();
-  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushDone));
+  EXPECT_TRUE(tvp->WaitForFlushDone());
 
-  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kResetDone), 1u);
-  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFlushDone), 1u);
-  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded),
-            g_env->video_->NumFrames());
+  EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
   EXPECT_EQ(0u, g_env->frame_validator_->GetMismatchedFramesCount());
 }
 
@@ -162,17 +157,16 @@ TEST(VideoDecodeAcceleratorTest, ResetMidStream) {
   tvp->SetStream(g_env->video_);
 
   tvp->Play();
-  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFrameDecoded,
-                                g_env->video_->NumFrames() / 2));
+  EXPECT_TRUE(tvp->WaitForFrameDecoded(g_env->video_->NumFrames() / 2));
   tvp->Reset();
-  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kResetDone));
-  size_t numFramesDecoded = tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded);
+  EXPECT_TRUE(tvp->WaitForResetDone());
+  size_t numFramesDecoded = tvp->GetFrameDecodedCount();
   tvp->Play();
-  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushDone));
+  EXPECT_TRUE(tvp->WaitForFlushDone());
 
-  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kResetDone), 1u);
-  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFlushDone), 1u);
-  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded),
+  EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFrameDecodedCount(),
             numFramesDecoded + g_env->video_->NumFrames());
   EXPECT_EQ(0u, g_env->frame_validator_->GetMismatchedFramesCount());
 }
@@ -183,18 +177,16 @@ TEST(VideoDecodeAcceleratorTest, ResetEndOfStream) {
   tvp->SetStream(g_env->video_);
 
   tvp->Play();
-  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushDone));
-  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded),
-            g_env->video_->NumFrames());
+  EXPECT_TRUE(tvp->WaitForFlushDone());
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
   tvp->Reset();
-  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kResetDone));
+  EXPECT_TRUE(tvp->WaitForResetDone());
   tvp->Play();
-  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushDone));
+  EXPECT_TRUE(tvp->WaitForFlushDone());
 
-  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kResetDone), 1u);
-  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFlushDone), 2u);
-  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded),
-            g_env->video_->NumFrames() * 2);
+  EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFlushDoneCount(), 2u);
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames() * 2);
   EXPECT_EQ(0u, g_env->frame_validator_->GetMismatchedFramesCount());
 }
 
@@ -206,19 +198,18 @@ TEST(VideoDecodeAcceleratorTest, ResetBeforeFlushDone) {
 
   // Reset when a kFlushing event is received.
   tvp->Play();
-  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushing));
+  EXPECT_TRUE(tvp->WaitForFlushDone());
   tvp->Reset();
-  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kResetDone));
+  EXPECT_TRUE(tvp->WaitForResetDone());
 
   // Reset will cause the decoder to drop everything it's doing, including the
   // ongoing flush operation. However the flush might have been completed
   // already by the time reset is called. So depending on the timing of the
   // calls we should see 0 or 1 flushes, and the last few video frames might
   // have been dropped.
-  EXPECT_LE(tvp->GetEventCount(VideoPlayerEvent::kFlushDone), 1u);
-  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kResetDone), 1u);
-  EXPECT_LE(tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded),
-            g_env->video_->NumFrames());
+  EXPECT_LE(tvp->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
+  EXPECT_LE(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
   EXPECT_EQ(0u, g_env->frame_validator_->GetMismatchedFramesCount());
 }
 
