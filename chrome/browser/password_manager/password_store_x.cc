@@ -384,6 +384,10 @@ void PasswordStoreX::CheckMigration() {
     } else {
       UpdateMigrationToLoginDBStep(POSTPONED);
     }
+
+    base::UmaHistogramEnumeration(
+        "PasswordManager.LinuxBackendMigration.AttemptResult",
+        StepForMetrics(migration_to_login_db_step_));
   }
 }
 
