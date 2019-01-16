@@ -1245,6 +1245,14 @@ GetStoragePartitionServiceRequestHandler() {
   return *instance;
 }
 
+RenderProcessHostImpl::BroadcastChannelProviderRequestHandler&
+GetBroadcastChannelProviderRequestHandler() {
+  static base::NoDestructor<
+      RenderProcessHostImpl::BroadcastChannelProviderRequestHandler>
+      instance;
+  return *instance;
+}
+
 void RemoveCorbExceptionForPluginOnIOThread(int process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -1686,6 +1694,11 @@ void RenderProcessHostImpl::SetStoragePartitionServiceRequestHandlerForTesting(
   GetStoragePartitionServiceRequestHandler() = handler;
 }
 
+void RenderProcessHostImpl::SetBroadcastChannelProviderRequestHandlerForTesting(
+    BroadcastChannelProviderRequestHandler handler) {
+  GetBroadcastChannelProviderRequestHandler() = handler;
+}
+
 RenderProcessHostImpl::~RenderProcessHostImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #ifndef NDEBUG
@@ -2122,41 +2135,45 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       base::Unretained(service_worker_dispatcher_host_.get())));
 
   AddUIThreadInterface(
-      registry.get(), base::Bind(&ForwardRequest<device::mojom::BatteryMonitor>,
-                                 device::mojom::kServiceName));
+      registry.get(),
+      base::BindRepeating(&ForwardRequest<device::mojom::BatteryMonitor>,
+                          device::mojom::kServiceName));
 
   AddUIThreadInterface(
       registry.get(),
-      base::Bind(&RenderProcessHostImpl::CreateEmbeddedFrameSinkProvider,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &RenderProcessHostImpl::CreateEmbeddedFrameSinkProvider,
+          base::Unretained(this)));
+
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(&RenderProcessHostImpl::BindFrameSinkProvider,
+                          base::Unretained(this)));
+
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(&RenderProcessHostImpl::BindCompositingModeReporter,
+                          base::Unretained(this)));
+
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(
+          &BackgroundSyncContext::CreateService,
+          base::Unretained(
+              storage_partition_impl_->GetBackgroundSyncContext())));
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(&RenderProcessHostImpl::CreateStoragePartitionService,
+                          base::Unretained(this)));
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(
+          &RenderProcessHostImpl::CreateBroadcastChannelProvider,
+          base::Unretained(this)));
 
   AddUIThreadInterface(registry.get(),
-                       base::Bind(&RenderProcessHostImpl::BindFrameSinkProvider,
-                                  base::Unretained(this)));
-
-  AddUIThreadInterface(
-      registry.get(),
-      base::Bind(&RenderProcessHostImpl::BindCompositingModeReporter,
-                 base::Unretained(this)));
-
-  AddUIThreadInterface(
-      registry.get(),
-      base::Bind(&BackgroundSyncContext::CreateService,
-                 base::Unretained(
-                     storage_partition_impl_->GetBackgroundSyncContext())));
-  AddUIThreadInterface(
-      registry.get(),
-      base::Bind(&RenderProcessHostImpl::CreateStoragePartitionService,
-                 base::Unretained(this)));
-  AddUIThreadInterface(
-      registry.get(),
-      base::Bind(&BroadcastChannelProvider::Connect,
-                 base::Unretained(
-                     storage_partition_impl_->GetBroadcastChannelProvider())));
-
-  AddUIThreadInterface(
-      registry.get(),
-      base::Bind(&CreateProcessResourceCoordinator, base::Unretained(this)));
+                       base::BindRepeating(&CreateProcessResourceCoordinator,
+                                           base::Unretained(this)));
 
   AddUIThreadInterface(registry.get(),
                        base::BindRepeating(&ClipboardHostImpl::Create));
@@ -2169,13 +2186,14 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                           base::Unretained(video_perf_history)));
 
   registry->AddInterface(
-      base::Bind(&MimeRegistryImpl::Create),
+      base::BindRepeating(&MimeRegistryImpl::Create),
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
            base::TaskPriority::USER_BLOCKING}));
 #if BUILDFLAG(USE_MINIKIN_HYPHENATION)
-  registry->AddInterface(base::Bind(&hyphenation::HyphenationImpl::Create),
-                         hyphenation::HyphenationImpl::GetTaskRunner());
+  registry->AddInterface(
+      base::BindRepeating(&hyphenation::HyphenationImpl::Create),
+      hyphenation::HyphenationImpl::GetTaskRunner());
 #endif
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kFontSrcLocalMatching)) {
@@ -2185,11 +2203,12 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   }
 #endif
 
-  registry->AddInterface(base::Bind(&device::GamepadHapticsManager::Create));
+  registry->AddInterface(
+      base::BindRepeating(&device::GamepadHapticsManager::Create));
 
   registry->AddInterface(
-      base::Bind(&PushMessagingManager::BindRequest,
-                 base::Unretained(push_messaging_manager_.get())));
+      base::BindRepeating(&PushMessagingManager::BindRequest,
+                          base::Unretained(push_messaging_manager_.get())));
 
   file_system_manager_impl_.reset(new FileSystemManagerImpl(
       GetID(), MSG_ROUTING_NONE,
@@ -2216,7 +2235,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   }
 
   registry->AddInterface(
-      base::Bind(
+      base::BindRepeating(
           &WebDatabaseHostImpl::Create, GetID(),
           base::WrapRefCounted(storage_partition_impl_->GetDatabaseTracker())),
       storage_partition_impl_->GetDatabaseTracker()->task_runner());
@@ -2224,11 +2243,11 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   MediaStreamManager* media_stream_manager =
       BrowserMainLoop::GetInstance()->media_stream_manager();
 
-  registry->AddInterface(
-      base::Bind(&VideoCaptureHost::Create, GetID(), media_stream_manager));
+  registry->AddInterface(base::BindRepeating(&VideoCaptureHost::Create, GetID(),
+                                             media_stream_manager));
 
   registry->AddInterface(
-      base::Bind(&FileUtilitiesHostImpl::Create, GetID()),
+      base::BindRepeating(&FileUtilitiesHostImpl::Create, GetID()),
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
 
@@ -2237,7 +2256,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       base::Unretained(this)));
 
   registry->AddInterface(
-      base::Bind(&metrics::CreateSingleSampleMetricsProvider));
+      base::BindRepeating(&metrics::CreateSingleSampleMetricsProvider));
 
   registry->AddInterface(base::BindRepeating(
       &CodeCacheHostImpl::Create, GetID(),
@@ -2268,15 +2287,16 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                           base::Unretained(this)));
 #endif  // BUILDFLAG(ENABLE_MDNS)
 
-  AddUIThreadInterface(registry.get(), base::Bind(&FieldTrialRecorder::Create));
+  AddUIThreadInterface(registry.get(),
+                       base::BindRepeating(&FieldTrialRecorder::Create));
 
   associated_interfaces_ =
       std::make_unique<blink::AssociatedInterfaceRegistry>();
   blink::AssociatedInterfaceRegistry* associated_registry =
       associated_interfaces_.get();
-  associated_registry->AddInterface(base::Bind(
+  associated_registry->AddInterface(base::BindRepeating(
       &RenderProcessHostImpl::BindRouteProvider, base::Unretained(this)));
-  associated_registry->AddInterface(base::Bind(
+  associated_registry->AddInterface(base::BindRepeating(
       &RenderProcessHostImpl::CreateRendererHost, base::Unretained(this)));
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
@@ -2391,6 +2411,17 @@ void RenderProcessHostImpl::CreateStoragePartitionService(
   }
 
   storage_partition_impl_->Bind(id_, std::move(request));
+}
+
+void RenderProcessHostImpl::CreateBroadcastChannelProvider(
+    blink::mojom::BroadcastChannelProviderRequest request) {
+  if (!GetBroadcastChannelProviderRequestHandler().is_null()) {
+    GetBroadcastChannelProviderRequestHandler().Run(this, std::move(request));
+    return;
+  }
+
+  storage_partition_impl_->GetBroadcastChannelProvider()->Connect(
+      id_, std::move(request));
 }
 
 void RenderProcessHostImpl::BindVideoDecoderService(
