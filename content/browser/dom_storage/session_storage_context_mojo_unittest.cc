@@ -17,6 +17,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/services/leveldb/public/cpp/util.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dom_storage/session_storage_database.h"
 #include "content/browser/dom_storage/test/fake_leveldb_database_error_on_write.h"
 #include "content/browser/dom_storage/test/fake_leveldb_service.h"
@@ -62,9 +63,13 @@ class SessionStorageContextMojoTest : public test::MojoTestWithFileService {
     features_.InitAndEnableFeature(blink::features::kOnionSoupDOMStorage);
     mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
         &SessionStorageContextMojoTest::OnBadMessage, base::Unretained(this)));
+
+    ChildProcessSecurityPolicyImpl::GetInstance()->Add(kTestProcessId);
   }
 
   void TearDown() override {
+    ChildProcessSecurityPolicyImpl::GetInstance()->Remove(kTestProcessId);
+
     mojo::core::SetDefaultProcessErrorCallback(
         mojo::core::ProcessErrorCallback());
   }

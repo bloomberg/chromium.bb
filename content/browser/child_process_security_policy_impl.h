@@ -170,6 +170,13 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // Upon destruction, child processess should unregister themselves by caling
   // this method exactly once.
+  //
+  // Note: Pre-Remove() permissions remain in effect until the task posted
+  // to the IO thread by this call runs AND the task posted, by that IO thread
+  // task, to the UI thread removes the entry from |pending_remove_state_|.
+  // This UI -> IO -> UI task sequence ensures that any pending tasks on either
+  // thread for this |child_id| are allowed to run before access is completely
+  // revoked.
   void Remove(int child_id);
 
   // Whenever the browser processes commands the child process to commit a URL,
@@ -433,6 +440,11 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
       const std::string& filesystem_id,
       int permission);
 
+  // Gets the SecurityState object associated with |child_id|.
+  // Note: Returned object is only valid for the duration the caller holds
+  // |lock_|.
+  SecurityState* GetSecurityState(int child_id) EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
   // You must acquire this lock before reading or writing any members of this
   // class, except for isolated_origins_ which uses its own lock.  You must not
   // block while holding this lock.
@@ -454,6 +466,15 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // owned by this object and are protected by |lock_|.  References to them must
   // not escape this class.
   SecurityStateMap security_state_ GUARDED_BY(lock_);
+
+  // This map holds the SecurityState for a child process after Remove()
+  // is called on the UI thread. An entry stays in this map until a task has
+  // run on the IO thread and then a task posted from there runs on the UI
+  // thread. This is necessary to provide consistent security decisions and
+  // avoid races between the UI & IO threads during child process shutdown.
+  // This separate map is used to preserve SecurityState info AND
+  // preventing mutation of that state after Remove() is called.
+  SecurityStateMap pending_remove_state_ GUARDED_BY(lock_);
 
   FileSystemPermissionPolicyMap file_system_policy_map_ GUARDED_BY(lock_);
 
