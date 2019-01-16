@@ -10,8 +10,6 @@ source_set("browser") {
     "manage_accounts_delegate.h",
     "merge_session_observer_bridge.h",
     "merge_session_observer_bridge.mm",
-    "oauth2_token_service_observer_bridge.h",
-    "oauth2_token_service_observer_bridge.mm",
     "profile_oauth2_token_service_ios_delegate.h",
     "profile_oauth2_token_service_ios_delegate.mm",
     "profile_oauth2_token_service_ios_provider.h",
