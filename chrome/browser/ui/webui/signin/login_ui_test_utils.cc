@@ -129,28 +129,10 @@ void RunLoopFor(base::TimeDelta duration) {
   run_loop.Run();
 }
 
-// Returns true if the Dice signin page is used, and false if the embedded
-// signin flow is used.
-// The Dice signin page is shown in a full tab, whereas the embedded signin flow
-// runs inside a WebUI.
-bool IsDiceSigninPageEnabled(Profile* profile) {
-  signin::AccountConsistencyMethod account_consistency =
-      AccountConsistencyModeManager::GetMethodForProfile(profile);
-  return (account_consistency != signin::AccountConsistencyMethod::kMirror) &&
-         signin::DiceMethodGreaterOrEqual(
-             account_consistency,
-             signin::AccountConsistencyMethod::kDiceMigration);
-}
-
 // Returns the render frame host where Gaia credentials can be filled in.
 content::RenderFrameHost* GetSigninFrame(content::WebContents* web_contents) {
-  if (IsDiceSigninPageEnabled(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
-    // Dice displays the Gaia page directly in a tab.
-    return web_contents->GetMainFrame();
-  }
-  // Embedded signin flow, uses a sub-frame in WebUI.
-  return signin::GetAuthFrame(web_contents, "signin-frame");
+  // Dice displays the Gaia page directly in a tab.
+  return web_contents->GetMainFrame();
 }
 
 // Waits until the condition is met, by polling.
@@ -271,21 +253,15 @@ void SigninInNewGaiaFlow(Browser* browser,
   ASSERT_TRUE(content::ExecuteScript(GetSigninFrame(web_contents), js));
 
   // Fill the password input field.
-  if (IsDiceSigninPageEnabled(browser->profile())) {
-    std::string password_script = kGetPasswordFieldFromDiceSigninPage;
-    // Wait until the password field exists.
-    WaitUntilCondition(
-        base::BindLambdaForTesting([&browser, &password_script]() -> bool {
-          return EvaluateBooleanScriptInSigninFrame(
-              browser, password_script + " != null");
-        }),
-        "Could not find Dice password field");
-    js = password_script + ".value = '" + password + "';";
-  } else {
-    WaitUntilAnyElementExistsInSigninFrame(browser, {"password"});
-    js = "document.getElementById('password').value = '" + password + "';";
-  }
-
+  std::string password_script = kGetPasswordFieldFromDiceSigninPage;
+  // Wait until the password field exists.
+  WaitUntilCondition(
+      base::BindLambdaForTesting([&browser, &password_script]() -> bool {
+        return EvaluateBooleanScriptInSigninFrame(browser,
+                                                  password_script + " != null");
+      }),
+      "Could not find Dice password field");
+  js = password_script + ".value = '" + password + "';";
   js += "document.getElementById('passwordNext').click();";
   ASSERT_TRUE(content::ExecuteScript(GetSigninFrame(web_contents), js));
 }
@@ -328,37 +304,13 @@ bool SignInWithUI(Browser* browser,
 
   signin_metrics::AccessPoint access_point =
       signin_metrics::AccessPoint::ACCESS_POINT_MENU;
-
-  if (IsDiceSigninPageEnabled(browser->profile())) {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    chrome::ShowBrowserSignin(browser, access_point);
-    content::WebContents* active_contents =
-        browser->tab_strip_model()->GetActiveWebContents();
-    DCHECK(active_contents);
-    content::TestNavigationObserver observer(
-        active_contents, 1, content::MessageLoopRunner::QuitMode::DEFERRED);
-    observer.Wait();
-#else
-    NOTREACHED();
-#endif
-  } else {
-    GURL signin_url = signin::GetPromoURLForTab(
-        access_point, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
-        false);
-    DVLOG(1) << "Navigating to " << signin_url;
-    // For some tests, the window is not shown yet and this might be the first
-    // tab navigation, so GetActiveWebContents() for CURRENT_TAB is NULL. That's
-    // why we use NEW_FOREGROUND_TAB rather than the CURRENT_TAB used by default
-    // in ui_test_utils::NavigateToURL().
-    ui_test_utils::NavigateToURLWithDisposition(
-        browser, signin_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-
-    // Wait for the WebUI embedding the signin flow to be ready.
-    DVLOG(1) << "Wait for login UI to be ready.";
-    WaitUntilUIReady(browser);
-  }
-
+  chrome::ShowBrowserSignin(browser, access_point);
+  content::WebContents* active_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  DCHECK(active_contents);
+  content::TestNavigationObserver observer(
+      active_contents, 1, content::MessageLoopRunner::QuitMode::DEFERRED);
+  observer.Wait();
   DVLOG(1) << "Sign in user: " << username;
   ExecuteJsToSigninInSigninFrame(browser, username, password);
   signin_observer.Wait();
