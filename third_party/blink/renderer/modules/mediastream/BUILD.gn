@@ -41,8 +41,4 @@ blink_modules_sources("mediastream") {
     "user_media_request.cc",
     "user_media_request.h",
   ]
-
-  deps = [
-    "//third_party/blink/public:media_devices_mojo_bindings_blink",
-  ]
 }

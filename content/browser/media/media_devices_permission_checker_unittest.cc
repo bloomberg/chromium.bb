@@ -59,7 +59,7 @@ class MediaDevicesPermissionCheckerTest : public RenderViewHostImplTestHarness {
         ->SimulateFeaturePolicyHeader(feature, whitelist);
   }
 
-  bool CheckPermission(MediaDeviceType device_type) {
+  bool CheckPermission(blink::MediaDeviceType device_type) {
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
     checker_.CheckPermission(
@@ -101,18 +101,18 @@ class MediaDevicesPermissionCheckerTest : public RenderViewHostImplTestHarness {
 TEST_F(MediaDevicesPermissionCheckerTest, CheckPermissionWithFeaturePolicy) {
   // Mic and Camera should be enabled by default for a frame (if permission is
   // granted).
-  EXPECT_TRUE(CheckPermission(MEDIA_DEVICE_TYPE_AUDIO_INPUT));
-  EXPECT_TRUE(CheckPermission(MEDIA_DEVICE_TYPE_VIDEO_INPUT));
+  EXPECT_TRUE(CheckPermission(blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT));
+  EXPECT_TRUE(CheckPermission(blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT));
 
   RefreshPageAndSetHeaderPolicy(blink::mojom::FeaturePolicyFeature::kMicrophone,
                                 /*enabled=*/false);
-  EXPECT_FALSE(CheckPermission(MEDIA_DEVICE_TYPE_AUDIO_INPUT));
-  EXPECT_TRUE(CheckPermission(MEDIA_DEVICE_TYPE_VIDEO_INPUT));
+  EXPECT_FALSE(CheckPermission(blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT));
+  EXPECT_TRUE(CheckPermission(blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT));
 
   RefreshPageAndSetHeaderPolicy(blink::mojom::FeaturePolicyFeature::kCamera,
                                 /*enabled=*/false);
-  EXPECT_TRUE(CheckPermission(MEDIA_DEVICE_TYPE_AUDIO_INPUT));
-  EXPECT_FALSE(CheckPermission(MEDIA_DEVICE_TYPE_VIDEO_INPUT));
+  EXPECT_TRUE(CheckPermission(blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT));
+  EXPECT_FALSE(CheckPermission(blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT));
 }
 
 }  // namespace

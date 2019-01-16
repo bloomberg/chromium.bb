@@ -12,14 +12,14 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/media/media_devices.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "ppapi/c/pp_instance.h"
+#include "third_party/blink/public/common/mediastream/media_devices.h"
+#include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_devices.mojom.h"
 
 namespace content {
 class MediaStreamDeviceObserver;
@@ -44,8 +44,9 @@ class PepperMediaDeviceManager
                              size_t subscription_id) override;
 
   // blink::mojom::MediaDevicesListener implementation.
-  void OnDevicesChanged(MediaDeviceType type,
-                        const MediaDeviceInfoArray& device_infos) override;
+  void OnDevicesChanged(
+      blink::MediaDeviceType type,
+      const blink::WebMediaDeviceInfoArray& device_infos) override;
 
   typedef base::Callback<void(int /* request_id */,
                               bool /* succeeded */,
@@ -88,8 +89,8 @@ class PepperMediaDeviceManager
 
   void DevicesEnumerated(
       const DevicesCallback& callback,
-      MediaDeviceType type,
-      const std::vector<MediaDeviceInfoArray>& enumeration,
+      blink::MediaDeviceType type,
+      const std::vector<blink::WebMediaDeviceInfoArray>& enumeration,
       std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr>
           video_input_capabilities);
 
@@ -105,7 +106,7 @@ class PepperMediaDeviceManager
 
   using Subscription = std::pair<size_t, DevicesCallback>;
   using SubscriptionList = std::vector<Subscription>;
-  SubscriptionList device_change_subscriptions_[NUM_MEDIA_DEVICE_TYPES];
+  SubscriptionList device_change_subscriptions_[blink::NUM_MEDIA_DEVICE_TYPES];
 
   blink::mojom::MediaStreamDispatcherHostPtr dispatcher_host_;
   blink::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;

@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "content/common/content_export.h"
-#include "content/common/media/media_devices.h"
+#include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "url/origin.h"
 
 namespace content {
@@ -18,7 +18,7 @@ namespace content {
 // Returns the ID of the user-default device ID via |callback|.
 // If no such device ID can be found, |callback| receives an empty string.
 CONTENT_EXPORT void GetDefaultMediaDeviceID(
-    MediaDeviceType device_type,
+    blink::MediaDeviceType device_type,
     int render_process_id,
     int render_frame_id,
     const base::Callback<void(const std::string&)>& callback);
@@ -47,17 +47,17 @@ MediaDeviceSaltAndOrigin GetMediaDeviceSaltAndOrigin(int render_process_id,
 // The |device_id| field is hashed using |device_id_salt| and |security_origin|.
 // The |group_id| field is hashed using |group_id_salt| and |security_origin|.
 // The |label| field is removed if |has_permission| is false.
-MediaDeviceInfo TranslateMediaDeviceInfo(
+blink::WebMediaDeviceInfo TranslateMediaDeviceInfo(
     bool has_permission,
     const MediaDeviceSaltAndOrigin& salt_and_origin,
-    const MediaDeviceInfo& device_info);
+    const blink::WebMediaDeviceInfo& device_info);
 
 // Returns a translated version of |device_infos|, with each element translated
 // using TranslateMediaDeviceInfo().
-MediaDeviceInfoArray TranslateMediaDeviceInfoArray(
+blink::WebMediaDeviceInfoArray TranslateMediaDeviceInfoArray(
     bool has_permission,
     const MediaDeviceSaltAndOrigin& salt_and_origin,
-    const MediaDeviceInfoArray& device_infos);
+    const blink::WebMediaDeviceInfoArray& device_infos);
 
 // Type definition to make it easier to use mock alternatives to
 // GetMediaDeviceSaltAndOrigin.

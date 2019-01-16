@@ -65,6 +65,8 @@ source_set("headers") {
     "manifest/manifest.h",
     "manifest/manifest_icon_selector.h",
     "manifest/web_display_mode.h",
+    "mediastream/media_devices.h",
+    "mediastream/media_devices_mojom_traits.h",
     "mediastream/media_stream_controls.h",
     "mediastream/media_stream_mojom_traits.h",
     "mediastream/media_stream_request.h",

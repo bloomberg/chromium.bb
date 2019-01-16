@@ -138,7 +138,8 @@ class MockMediaDevicesListener : public blink::mojom::MediaDevicesListener {
   MockMediaDevicesListener() {}
 
   MOCK_METHOD2(OnDevicesChanged,
-               void(MediaDeviceType, const MediaDeviceInfoArray&));
+               void(blink::MediaDeviceType,
+                    const blink::WebMediaDeviceInfoArray&));
 
   blink::mojom::MediaDevicesListenerPtr CreateInterfacePtrAndBind() {
     blink::mojom::MediaDevicesListenerPtr listener;
@@ -153,14 +154,15 @@ class MockMediaDevicesListener : public blink::mojom::MediaDevicesListener {
 class MockMediaDevicesManagerClient {
  public:
   MOCK_METHOD2(StopRemovedInputDevice,
-               void(MediaDeviceType type,
-                    const MediaDeviceInfo& media_device_info));
+               void(blink::MediaDeviceType type,
+                    const blink::WebMediaDeviceInfo& media_device_info));
   MOCK_METHOD2(InputDevicesChangedUI,
-               void(MediaDeviceType stream_type,
-                    const MediaDeviceInfoArray& devices));
+               void(blink::MediaDeviceType stream_type,
+                    const blink::WebMediaDeviceInfoArray& devices));
 };
 
-void VerifyDeviceAndGroupID(const std::vector<MediaDeviceInfoArray>& array) {
+void VerifyDeviceAndGroupID(
+    const std::vector<blink::WebMediaDeviceInfoArray>& array) {
   for (const auto& device_infos : array) {
     for (const auto& device_info : device_infos) {
       EXPECT_FALSE(device_info.device_id.empty());
@@ -182,7 +184,7 @@ class MediaDevicesManagerTest : public ::testing::Test {
 
   void EnumerateCallback(base::RunLoop* run_loop,
                          const MediaDeviceEnumeration& result) {
-    for (int i = 0; i < NUM_MEDIA_DEVICE_TYPES; ++i) {
+    for (int i = 0; i < blink::NUM_MEDIA_DEVICE_TYPES; ++i) {
       for (const auto& device_info : result[i]) {
         EXPECT_FALSE(device_info.device_id.empty());
         EXPECT_FALSE(device_info.group_id.empty());
@@ -196,7 +198,7 @@ class MediaDevicesManagerTest : public ::testing::Test {
       const std::vector<media::FakeVideoCaptureDeviceSettings>&
           expected_video_capture_device_settings,
       base::RunLoop* run_loop,
-      const std::vector<MediaDeviceInfoArray>& devices,
+      const std::vector<blink::WebMediaDeviceInfoArray>& devices,
       std::vector<VideoInputDeviceCapabilitiesPtr> capabilities) {
     EXPECT_EQ(capabilities.size(),
               expected_video_capture_device_settings.size());
@@ -243,7 +245,7 @@ class MediaDevicesManagerTest : public ::testing::Test {
         std::make_unique<MediaDevicesPermissionChecker>(true));
   }
 
-  void EnableCache(MediaDeviceType type) {
+  void EnableCache(blink::MediaDeviceType type) {
     media_devices_manager_->SetCachePolicy(
         type, MediaDevicesManager::CachePolicy::SYSTEM_MONITOR);
   }
@@ -273,7 +275,7 @@ TEST_F(MediaDevicesManagerTest, EnumerateNoCacheAudioInput) {
   EXPECT_CALL(*this, MockCallback(_)).Times(kNumCalls);
   EXPECT_CALL(media_devices_manager_client_, InputDevicesChangedUI(_, _));
   MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
@@ -292,7 +294,7 @@ TEST_F(MediaDevicesManagerTest, EnumerateNoCacheVideoInput) {
   EXPECT_CALL(*this, MockCallback(_)).Times(kNumCalls);
   EXPECT_CALL(media_devices_manager_client_, InputDevicesChangedUI(_, _));
   MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
@@ -311,7 +313,7 @@ TEST_F(MediaDevicesManagerTest, EnumerateNoCacheAudioOutput) {
       .Times(kNumCalls);
   EXPECT_CALL(*this, MockCallback(_)).Times(kNumCalls);
   MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
@@ -330,8 +332,8 @@ TEST_F(MediaDevicesManagerTest, EnumerateNoCacheAudio) {
   EXPECT_CALL(*this, MockCallback(_)).Times(kNumCalls);
   EXPECT_CALL(media_devices_manager_client_, InputDevicesChangedUI(_, _));
   MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
@@ -349,11 +351,11 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAudio) {
   EXPECT_CALL(*audio_manager_, MockGetAudioOutputDeviceNames(_)).Times(1);
   EXPECT_CALL(*this, MockCallback(_)).Times(kNumCalls);
   EXPECT_CALL(media_devices_manager_client_, InputDevicesChangedUI(_, _));
-  EnableCache(MEDIA_DEVICE_TYPE_AUDIO_INPUT);
-  EnableCache(MEDIA_DEVICE_TYPE_AUDIO_OUTPUT);
+  EnableCache(blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT);
+  EnableCache(blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT);
   MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
@@ -371,9 +373,9 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheVideo) {
   EXPECT_CALL(*audio_manager_, MockGetAudioOutputDeviceNames(_)).Times(0);
   EXPECT_CALL(*this, MockCallback(_)).Times(kNumCalls);
   EXPECT_CALL(media_devices_manager_client_, InputDevicesChangedUI(_, _));
-  EnableCache(MEDIA_DEVICE_TYPE_VIDEO_INPUT);
+  EnableCache(blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT);
   MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
@@ -398,11 +400,11 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAudioWithDeviceChanges) {
   size_t num_audio_output_devices = 3;
   audio_manager_->SetNumAudioInputDevices(num_audio_input_devices);
   audio_manager_->SetNumAudioOutputDevices(num_audio_output_devices);
-  EnableCache(MEDIA_DEVICE_TYPE_AUDIO_INPUT);
-  EnableCache(MEDIA_DEVICE_TYPE_AUDIO_OUTPUT);
+  EnableCache(blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT);
+  EnableCache(blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT);
   MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
@@ -411,9 +413,9 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAudioWithDeviceChanges) {
                        base::Unretained(this), &run_loop));
     run_loop.Run();
     EXPECT_EQ(num_audio_input_devices,
-              enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT].size());
+              enumeration[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT].size());
     EXPECT_EQ(num_audio_output_devices,
-              enumeration[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].size());
+              enumeration[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].size());
   }
 
   // Simulate removal of devices.
@@ -438,9 +440,9 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAudioWithDeviceChanges) {
                        base::Unretained(this), &run_loop));
     run_loop.Run();
     EXPECT_EQ(num_audio_input_devices,
-              enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT].size());
+              enumeration[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT].size());
     EXPECT_EQ(num_audio_output_devices,
-              enumeration[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].size());
+              enumeration[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].size());
   }
 
   // Simulate addition of devices.
@@ -461,9 +463,9 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAudioWithDeviceChanges) {
                        base::Unretained(this), &run_loop));
     run_loop.Run();
     EXPECT_EQ(num_audio_input_devices,
-              enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT].size());
+              enumeration[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT].size());
     EXPECT_EQ(num_audio_output_devices,
-              enumeration[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].size());
+              enumeration[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].size());
   }
 }
 
@@ -482,9 +484,9 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheVideoWithDeviceChanges) {
   size_t num_video_input_devices = 5;
   video_capture_device_factory_->SetToDefaultDevicesConfig(
       num_video_input_devices);
-  EnableCache(MEDIA_DEVICE_TYPE_VIDEO_INPUT);
+  EnableCache(blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT);
   MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
@@ -493,7 +495,7 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheVideoWithDeviceChanges) {
                        base::Unretained(this), &run_loop));
     run_loop.Run();
     EXPECT_EQ(num_video_input_devices,
-              enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT].size());
+              enumeration[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT].size());
   }
 
   // Simulate addition of devices.
@@ -514,7 +516,7 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheVideoWithDeviceChanges) {
                        base::Unretained(this), &run_loop));
     run_loop.Run();
     EXPECT_EQ(num_video_input_devices,
-              enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT].size());
+              enumeration[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT].size());
   }
 
   // Simulate removal of devices.
@@ -539,7 +541,7 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheVideoWithDeviceChanges) {
                        base::Unretained(this), &run_loop));
     run_loop.Run();
     EXPECT_EQ(num_video_input_devices,
-              enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT].size());
+              enumeration[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT].size());
   }
 }
 
@@ -562,13 +564,13 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAllWithDeviceChanges) {
   video_capture_device_factory_->SetToDefaultDevicesConfig(
       num_video_input_devices);
   audio_manager_->SetNumAudioOutputDevices(num_audio_output_devices);
-  EnableCache(MEDIA_DEVICE_TYPE_AUDIO_INPUT);
-  EnableCache(MEDIA_DEVICE_TYPE_AUDIO_OUTPUT);
-  EnableCache(MEDIA_DEVICE_TYPE_VIDEO_INPUT);
+  EnableCache(blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT);
+  EnableCache(blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT);
+  EnableCache(blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT);
   MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
@@ -577,11 +579,11 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAllWithDeviceChanges) {
                        base::Unretained(this), &run_loop));
     run_loop.Run();
     EXPECT_EQ(num_audio_input_devices,
-              enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT].size());
+              enumeration[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT].size());
     EXPECT_EQ(num_video_input_devices,
-              enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT].size());
+              enumeration[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT].size());
     EXPECT_EQ(num_audio_output_devices,
-              enumeration[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].size());
+              enumeration[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].size());
   }
 
   // Simulate device changes
@@ -615,11 +617,11 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAllWithDeviceChanges) {
                        base::Unretained(this), &run_loop));
     run_loop.Run();
     EXPECT_EQ(num_audio_input_devices,
-              enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT].size());
+              enumeration[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT].size());
     EXPECT_EQ(num_video_input_devices,
-              enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT].size());
+              enumeration[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT].size());
     EXPECT_EQ(num_audio_output_devices,
-              enumeration[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].size());
+              enumeration[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].size());
   }
 }
 
@@ -643,9 +645,9 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
   // configuration.
   EXPECT_CALL(*this, MockCallback(_));
   MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
   base::RunLoop run_loop;
   media_devices_manager_->EnumerateDevices(
       devices_to_enumerate,
@@ -656,7 +658,7 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
   // Add device-change event listeners.
   MockMediaDevicesListener listener_audio_input;
   MediaDevicesManager::BoolDeviceTypes audio_input_devices_to_subscribe;
-  audio_input_devices_to_subscribe[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
+  audio_input_devices_to_subscribe[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
   uint32_t audio_input_subscription_id =
       media_devices_manager_->SubscribeDeviceChangeNotifications(
           kRenderProcessId, kRenderFrameId, audio_input_devices_to_subscribe,
@@ -664,7 +666,7 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
 
   MockMediaDevicesListener listener_video_input;
   MediaDevicesManager::BoolDeviceTypes video_input_devices_to_subscribe;
-  video_input_devices_to_subscribe[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+  video_input_devices_to_subscribe[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
   uint32_t video_input_subscription_id =
       media_devices_manager_->SubscribeDeviceChangeNotifications(
           kRenderProcessId, kRenderFrameId, video_input_devices_to_subscribe,
@@ -672,7 +674,8 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
 
   MockMediaDevicesListener listener_audio_output;
   MediaDevicesManager::BoolDeviceTypes audio_output_devices_to_subscribe;
-  audio_output_devices_to_subscribe[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
+  audio_output_devices_to_subscribe[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] =
+      true;
   uint32_t audio_output_subscription_id =
       media_devices_manager_->SubscribeDeviceChangeNotifications(
           kRenderProcessId, kRenderFrameId, audio_output_devices_to_subscribe,
@@ -680,38 +683,41 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
 
   MockMediaDevicesListener listener_all;
   MediaDevicesManager::BoolDeviceTypes all_devices_to_subscribe;
-  all_devices_to_subscribe[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
-  all_devices_to_subscribe[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
-  all_devices_to_subscribe[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
+  all_devices_to_subscribe[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
+  all_devices_to_subscribe[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+  all_devices_to_subscribe[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
   media_devices_manager_->SubscribeDeviceChangeNotifications(
       kRenderProcessId, kRenderFrameId, all_devices_to_subscribe,
       listener_all.CreateInterfacePtrAndBind());
 
-  MediaDeviceInfoArray notification_audio_input;
-  MediaDeviceInfoArray notification_video_input;
-  MediaDeviceInfoArray notification_audio_output;
-  MediaDeviceInfoArray notification_all_audio_input;
-  MediaDeviceInfoArray notification_all_video_input;
-  MediaDeviceInfoArray notification_all_audio_output;
+  blink::WebMediaDeviceInfoArray notification_audio_input;
+  blink::WebMediaDeviceInfoArray notification_video_input;
+  blink::WebMediaDeviceInfoArray notification_audio_output;
+  blink::WebMediaDeviceInfoArray notification_all_audio_input;
+  blink::WebMediaDeviceInfoArray notification_all_video_input;
+  blink::WebMediaDeviceInfoArray notification_all_audio_output;
   EXPECT_CALL(listener_audio_input,
-              OnDevicesChanged(MEDIA_DEVICE_TYPE_AUDIO_INPUT, _))
+              OnDevicesChanged(blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT, _))
       .Times(1)
       .WillOnce(SaveArg<1>(&notification_audio_input));
   EXPECT_CALL(listener_video_input,
-              OnDevicesChanged(MEDIA_DEVICE_TYPE_VIDEO_INPUT, _))
+              OnDevicesChanged(blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT, _))
       .Times(1)
       .WillOnce(SaveArg<1>(&notification_video_input));
   EXPECT_CALL(listener_audio_output,
-              OnDevicesChanged(MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, _))
+              OnDevicesChanged(blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, _))
       .Times(1)
       .WillOnce(SaveArg<1>(&notification_audio_output));
-  EXPECT_CALL(listener_all, OnDevicesChanged(MEDIA_DEVICE_TYPE_AUDIO_INPUT, _))
+  EXPECT_CALL(listener_all,
+              OnDevicesChanged(blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT, _))
       .Times(2)
       .WillRepeatedly(SaveArg<1>(&notification_all_audio_input));
-  EXPECT_CALL(listener_all, OnDevicesChanged(MEDIA_DEVICE_TYPE_VIDEO_INPUT, _))
+  EXPECT_CALL(listener_all,
+              OnDevicesChanged(blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT, _))
       .Times(2)
       .WillRepeatedly(SaveArg<1>(&notification_all_video_input));
-  EXPECT_CALL(listener_all, OnDevicesChanged(MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, _))
+  EXPECT_CALL(listener_all,
+              OnDevicesChanged(blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, _))
       .Times(2)
       .WillRepeatedly(SaveArg<1>(&notification_all_audio_output));
 
@@ -792,10 +798,10 @@ TEST_F(MediaDevicesManagerTest, EnumerateDevicesWithCapabilities) {
   // Audio is enumerated due to heuristics to compute video group IDs.
   EXPECT_CALL(*audio_manager_, MockGetAudioInputDeviceNames(_));
   EXPECT_CALL(media_devices_manager_client_,
-              InputDevicesChangedUI(MEDIA_DEVICE_TYPE_AUDIO_INPUT, _));
+              InputDevicesChangedUI(blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT, _));
   EXPECT_CALL(*video_capture_device_factory_, MockGetDeviceDescriptors());
   EXPECT_CALL(media_devices_manager_client_,
-              InputDevicesChangedUI(MEDIA_DEVICE_TYPE_VIDEO_INPUT, _));
+              InputDevicesChangedUI(blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT, _));
   // Configure fake devices with video formats different from the fallback
   // formats to make sure that expected capabilities are what devices actually
   // report.
@@ -821,7 +827,7 @@ TEST_F(MediaDevicesManagerTest, EnumerateDevicesWithCapabilities) {
       fake_capture_device_settings);
 
   MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-  devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
   base::RunLoop run_loop;
   media_devices_manager_->EnumerateDevices(
       -1, -1, devices_to_enumerate, true,
@@ -832,7 +838,7 @@ TEST_F(MediaDevicesManagerTest, EnumerateDevicesWithCapabilities) {
 }
 
 TEST_F(MediaDevicesManagerTest, GuessVideoGroupID) {
-  MediaDeviceInfoArray audio_devices = {
+  blink::WebMediaDeviceInfoArray audio_devices = {
       {media::AudioDeviceDescription::kDefaultDeviceId,
        "Default - Unique USB Mic (1234:5678)", "group_1"},
       {media::AudioDeviceDescription::kCommunicationsDeviceId,
@@ -860,33 +866,33 @@ TEST_F(MediaDevicesManagerTest, GuessVideoGroupID) {
        "communications - Unique USB Mic (1234:5678)", "group_1"},
   };
 
-  MediaDeviceInfo logitech_video("logitech_video",
-                                 "Logitech Webcam C930e (046d:0843)", "");
-  MediaDeviceInfo hd_pro_video("hd_pro_video", "HD Pro Webcam C920 (046d:082d)",
-                               "");
-  MediaDeviceInfo lifecam_video(
+  blink::WebMediaDeviceInfo logitech_video(
+      "logitech_video", "Logitech Webcam C930e (046d:0843)", "");
+  blink::WebMediaDeviceInfo hd_pro_video("hd_pro_video",
+                                         "HD Pro Webcam C920 (046d:082d)", "");
+  blink::WebMediaDeviceInfo lifecam_video(
       "lifecam_video", "Microsoft® LifeCam Cinema(TM) (045e:075d)", "");
-  MediaDeviceInfo repeated_webcam1_video("repeated_webcam_1", "Repeated webcam",
-                                         "");
-  MediaDeviceInfo repeated_webcam2_video("repeated_webcam_2", "Repeated webcam",
-                                         "");
-  MediaDeviceInfo dual_mic_video("dual_mic_video",
-                                 "Dual-mic webcam device (1111:1111)", "");
-  MediaDeviceInfo webcam_only_video("webcam_only_video", "Webcam-only device",
-                                    "");
-  MediaDeviceInfo repeated_dual_mic1_video(
+  blink::WebMediaDeviceInfo repeated_webcam1_video("repeated_webcam_1",
+                                                   "Repeated webcam", "");
+  blink::WebMediaDeviceInfo repeated_webcam2_video("repeated_webcam_2",
+                                                   "Repeated webcam", "");
+  blink::WebMediaDeviceInfo dual_mic_video(
+      "dual_mic_video", "Dual-mic webcam device (1111:1111)", "");
+  blink::WebMediaDeviceInfo webcam_only_video("webcam_only_video",
+                                              "Webcam-only device", "");
+  blink::WebMediaDeviceInfo repeated_dual_mic1_video(
       "repeated_dual_mic1_video", "Repeated dual-mic webcam device", "");
-  MediaDeviceInfo repeated_dual_mic2_video(
+  blink::WebMediaDeviceInfo repeated_dual_mic2_video(
       "repeated_dual_mic2_video", "Repeated dual-mic webcam device", "");
-  MediaDeviceInfo short_label_video("short_label_video", " ()", "");
-  MediaDeviceInfo unique_usb_video("unique_usb_video",
-                                   "Unique USB webcam (1234:5678)", "");
-  MediaDeviceInfo another_unique_usb_video(
+  blink::WebMediaDeviceInfo short_label_video("short_label_video", " ()", "");
+  blink::WebMediaDeviceInfo unique_usb_video(
+      "unique_usb_video", "Unique USB webcam (1234:5678)", "");
+  blink::WebMediaDeviceInfo another_unique_usb_video(
       "another_unique_usb_video", "Another Unique USB webcam (5678:9abc)", "");
-  MediaDeviceInfo repeated_usb1_video("repeated_usb1_video",
-                                      "Repeated USB webcam (8765:4321)", "");
-  MediaDeviceInfo repeated_usb2_video("repeated_usb2_video",
-                                      "Repeated USB webcam (8765:4321)", "");
+  blink::WebMediaDeviceInfo repeated_usb1_video(
+      "repeated_usb1_video", "Repeated USB webcam (8765:4321)", "");
+  blink::WebMediaDeviceInfo repeated_usb2_video(
+      "repeated_usb2_video", "Repeated USB webcam (8765:4321)", "");
 
   EXPECT_EQ(GuessVideoGroupID(audio_devices, logitech_video), "group_1");
   EXPECT_EQ(GuessVideoGroupID(audio_devices, hd_pro_video), "group_2");

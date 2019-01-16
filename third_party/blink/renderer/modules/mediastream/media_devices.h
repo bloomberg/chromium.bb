@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_devices.mojom-blink.h"
+#include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
