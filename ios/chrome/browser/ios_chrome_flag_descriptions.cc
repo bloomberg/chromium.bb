@@ -55,6 +55,13 @@ const char kCompactTranslateInfobarDescription[] =
     "When enabled, replaces the exisitng translate infobars with a new compact "
     "one.";
 
+#if defined(DCHECK_IS_CONFIGURABLE)
+const char kDcheckIsFatalName[] = "DCHECKs are fatal";
+const char kDcheckIsFatalDescription[] =
+    "By default Chrome will evaluate in this build, but only log failures, "
+    "rather than crashing. If enabled, DCHECKs will crash the calling process.";
+#endif  // defined(DCHECK_IS_CONFIGURABLE)
+
 const char kEnableAutofillCreditCardUploadUpdatePromptExplanationName[] =
     "Enable updated prompt explanation when offering credit card upload";
 const char kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[] =

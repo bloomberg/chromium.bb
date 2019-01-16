@@ -515,6 +515,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutocompleteRetentionPolicyEnabled)},
+#if defined(DCHECK_IS_CONFIGURABLE)
+    {"dcheck-is-fatal", flag_descriptions::kDcheckIsFatalName,
+     flag_descriptions::kDcheckIsFatalDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(base::kDCheckIsFatalFeature)},
+#endif  // defined(DCHECK_IS_CONFIGURABLE)
 };
 
 // Add all switches from experimental flags to |command_line|.
