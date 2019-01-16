@@ -53,12 +53,11 @@ PerformanceObserver* PerformanceObserver::Create(
 // static
 Vector<AtomicString> PerformanceObserver::supportedEntryTypes() {
   Vector<AtomicString> supportedEntryTypes;
-  // TODO(npm): add "element", "event" and "firstInput" when they ship.
-  // Currently, the support for element timing and event timing relies on origin
-  // trials, and thus depends on the execution context. This cannot be queried
-  // from a static method. See https://crbug.com/841224
-  if (RuntimeEnabledFeatures::LayoutJankAPIEnabled())
-    supportedEntryTypes.push_back(performance_entry_names::kLayoutJank);
+  // TODO(npm): add the following entry types once they have shipped:
+  //   "element", "event", "firstInput", "layoutJank"
+  // Some of these are enabled in origin trials, but the origin trial status
+  // depends on the execution context, so it cannot be queried from a static
+  // method. See crbug.com/922195
   supportedEntryTypes.AppendVector(Vector<AtomicString>(
       {performance_entry_names::kLongtask, performance_entry_names::kMark,
        performance_entry_names::kMeasure, performance_entry_names::kNavigation,

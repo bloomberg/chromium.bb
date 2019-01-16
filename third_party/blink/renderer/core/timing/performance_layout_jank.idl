@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // https://docs.google.com/document/d/1723wu4GZa8x8zSK0vb4NYg9xGtyVISEtGSGHcyL1tko/edit
-[RuntimeEnabled=LayoutJankAPI]
+[OriginTrialEnabled=LayoutJankAPI]
 interface PerformanceLayoutJank : PerformanceEntry {
     readonly attribute double fraction;
     serializer = {inherit, attribute};

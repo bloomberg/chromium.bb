@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/frame/location.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
@@ -209,17 +210,19 @@ void JankTracker::NotifyPrePaintFinished() {
   DVLOG(1) << "viewport " << (jank_fraction * 100)
            << "% janked, raising score to " << score_;
 
+  LocalFrame& frame = frame_view_->GetFrame();
+
   TRACE_EVENT_INSTANT2("loading", "FrameLayoutJank", TRACE_EVENT_SCOPE_THREAD,
                        "data",
                        PerFrameTraceData(jank_fraction, granularity_scale),
-                       "frame", ToTraceValue(&frame_view_->GetFrame()));
+                       "frame", ToTraceValue(&frame));
 
-  frame_view_->GetFrame().Client()->DidObserveLayoutJank(jank_fraction);
+  frame.Client()->DidObserveLayoutJank(jank_fraction);
 
-  if (RuntimeEnabledFeatures::LayoutJankAPIEnabled() &&
-      frame_view_->GetFrame().DomWindow()) {
+  if (origin_trials::LayoutJankAPIEnabled(frame.GetDocument()) &&
+      frame.DomWindow()) {
     WindowPerformance* performance =
-        DOMWindowPerformance::performance(*frame_view_->GetFrame().DomWindow());
+        DOMWindowPerformance::performance(*frame.DomWindow());
     if (performance &&
         performance->HasObserverFor(PerformanceEntry::kLayoutJank)) {
       performance->AddLayoutJankFraction(jank_fraction);

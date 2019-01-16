@@ -648,6 +648,7 @@
       // between animation frames (see crbug.com/581518).
       name: "JankTracking",
       implied_by: ["LayoutJankAPI", "JankTrackingSweepLine"],
+      origin_trial_feature_name: "LayoutJankAPI",
       status: "experimental",
     },
     {
@@ -670,7 +671,8 @@
       // Exposes layout jank fractions to Javascript. See explainer:
       // http://bit.ly/lsm-explainer.
       name: "LayoutJankAPI",
-      status: "test",
+      origin_trial_feature_name: "LayoutJankAPI",
+      status: "experimental",
     },
     {
       name: "LayoutNG",

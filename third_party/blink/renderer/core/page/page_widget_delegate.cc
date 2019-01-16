@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/layout/jank_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
@@ -123,7 +124,7 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
     if (interactive_detector)
       interactive_detector->HandleForInputDelay(event);
 
-    if (RuntimeEnabledFeatures::JankTrackingEnabled()) {
+    if (origin_trials::JankTrackingEnabled(document)) {
       if (LocalFrameView* view = document->View())
         view->GetJankTracker().NotifyInput(event);
     }
