@@ -715,6 +715,7 @@ class PolicyDeciderMock : public WebStatePolicyDecider {
 
 }  // namespace
 
+using net::test_server::EmbeddedTestServer;
 using testing::Return;
 using testing::StrictMock;
 using testing::_;
@@ -751,7 +752,7 @@ class WebStateObserverTest
     WebStateImpl* web_state_impl = reinterpret_cast<WebStateImpl*>(web_state());
     web_state_impl->GetWebController().nativeProvider = provider_;
 
-    test_server_ = std::make_unique<net::test_server::EmbeddedTestServer>();
+    test_server_ = std::make_unique<EmbeddedTestServer>();
     test_server_->RegisterRequestHandler(
         base::BindRepeating(&net::test_server::HandlePrefixedRequest, "/form",
                             base::BindRepeating(&testing::HandleForm)));
@@ -774,7 +775,7 @@ class WebStateObserverTest
   TestNativeContent* content_;
   std::unique_ptr<StrictMock<PolicyDeciderMock>> decider_;
   StrictMock<WebStateObserverMock> observer_;
-  std::unique_ptr<net::test_server::EmbeddedTestServer> test_server_;
+  std::unique_ptr<EmbeddedTestServer> test_server_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -1903,6 +1904,34 @@ TEST_P(WebStateObserverTest, FLAKY_FailedLoad) {
   // wait until web state stop loading.
   ASSERT_TRUE(test_server_->ShutdownAndWaitUntilComplete());
   ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+}
+
+// Tests navigation to a page with self signed SSL cert.
+TEST_P(WebStateObserverTest, FailedSslConnection) {
+  EmbeddedTestServer https_server(EmbeddedTestServer::TYPE_HTTPS);
+  ASSERT_TRUE(https_server.Start());
+
+  const GURL url = https_server.GetURL("/");
+  NavigationContext* context = nullptr;
+  int32_t nav_id = 0;
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  WebStatePolicyDecider::RequestInfo request_info(
+      ui::PageTransition::PAGE_TRANSITION_TYPED,
+      /*target_main_frame=*/true, /*has_user_gesture=*/false);
+  EXPECT_CALL(*decider_, ShouldAllowRequest(_, RequestInfoMatch(request_info)))
+      .WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
+          &nav_id));
+  // TODO(crbug.com/921916): DidFinishNavigation is not called for SSL errors.
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+
+  test::LoadUrl(web_state(), url);
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return !web_state()->IsLoading();
+  }));
 }
 
 // Tests rejecting the navigation from ShouldAllowRequest. The load should stop,
