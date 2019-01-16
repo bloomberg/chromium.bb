@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "components/prefs/pref_member.h"
@@ -22,12 +23,11 @@ struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_ScriptedPrint_Params;
 class Profile;
 
-namespace base {
-class DictionaryValue;
 #if defined(OS_ANDROID)
+namespace base {
 struct FileDescriptor;
-#endif
 }
+#endif
 
 namespace printing {
 
@@ -88,7 +88,7 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
   // handled by the print worker thread and the UI thread. The reply occurs on
   // the IO thread.
   void OnUpdatePrintSettings(int document_cookie,
-                             const base::DictionaryValue& job_settings,
+                             base::Value job_settings,
                              IPC::Message* reply_msg);
   void OnUpdatePrintSettingsReply(scoped_refptr<PrinterQuery> printer_query,
                                   IPC::Message* reply_msg);

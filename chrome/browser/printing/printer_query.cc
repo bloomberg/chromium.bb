@@ -97,9 +97,8 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
                      has_selection, margin_type, is_scripted, is_modifiable));
 }
 
-void PrinterQuery::SetSettings(
-    std::unique_ptr<base::DictionaryValue> new_settings,
-    base::OnceClosure callback) {
+void PrinterQuery::SetSettings(base::Value new_settings,
+                               base::OnceClosure callback) {
   StartWorker(std::move(callback));
 
   worker_->PostTask(FROM_HERE, base::BindOnce(&PrintJobWorker::SetSettings,

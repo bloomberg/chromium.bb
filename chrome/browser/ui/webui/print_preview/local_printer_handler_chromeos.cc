@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind_helpers.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
@@ -239,9 +240,10 @@ void LocalPrinterHandlerChromeos::StartPrint(
     PrintCallback callback) {
   size_t size_in_kb = print_data->size() / 1024;
   UMA_HISTOGRAM_MEMORY_KB("Printing.CUPS.PrintDocumentSize", size_in_kb);
-
-  StartLocalPrint(ticket_json, print_data, preview_web_contents_,
-                  std::move(callback));
+  std::unique_ptr<base::Value> job_settings =
+      base::JSONReader::Read(ticket_json);
+  StartLocalPrint(base::Value::FromUniquePtrValue(std::move(job_settings)),
+                  print_data, preview_web_contents_, std::move(callback));
 }
 
 }  // namespace printing

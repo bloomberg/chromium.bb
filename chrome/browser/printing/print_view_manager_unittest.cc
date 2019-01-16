@@ -135,17 +135,13 @@ TEST_F(PrintViewManagerTest, PostScriptHasCorrectOffsets) {
   print_view_manager->PrintPreviewNow(web_contents->GetMainFrame(), false);
 
   base::Value print_ticket = GetPrintTicket(printing::kLocalPrinter, false);
-  std::unique_ptr<base::DictionaryValue> job_settings =
-      base::DictionaryValue::From(
-          base::Value::ToUniquePtrValue(std::move(print_ticket)));
-
   const char kTestData[] = "abc";
   auto print_data = base::MakeRefCounted<base::RefCountedStaticMemory>(
       kTestData, sizeof(kTestData));
   PrinterHandler::PrintCallback callback =
       base::BindOnce(&TestPrintViewManager::FakePrintCallback,
                      base::Unretained(print_view_manager.get()));
-  print_view_manager->PrintForPrintPreview(std::move(job_settings), print_data,
+  print_view_manager->PrintForPrintPreview(std::move(print_ticket), print_data,
                                            web_contents->GetMainFrame(),
                                            std::move(callback));
   print_view_manager->WaitForCallback();

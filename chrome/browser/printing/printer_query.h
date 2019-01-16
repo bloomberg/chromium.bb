@@ -10,12 +10,12 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/values.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
 #include "printing/printing_context.h"
 
 namespace base {
-class DictionaryValue;
 class Location;
 class SequencedTaskRunner;
 }
@@ -60,7 +60,7 @@ class PrinterQuery : public base::RefCountedThreadSafe<PrinterQuery> {
                    base::OnceClosure callback);
 
   // Updates the current settings with |new_settings| dictionary values.
-  virtual void SetSettings(std::unique_ptr<base::DictionaryValue> new_settings,
+  virtual void SetSettings(base::Value new_settings,
                            base::OnceClosure callback);
 
 #if defined(OS_CHROMEOS)

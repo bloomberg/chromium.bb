@@ -55,11 +55,10 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // |job_settings|. Runs |callback| with an error string on failure and with an
   // empty string if the print job is started successfully. |rfh| is the render
   // frame host for the preview initiator contents respectively.
-  void PrintForPrintPreview(
-      std::unique_ptr<base::DictionaryValue> job_settings,
-      const scoped_refptr<base::RefCountedMemory>& print_data,
-      content::RenderFrameHost* rfh,
-      PrinterHandler::PrintCallback callback);
+  void PrintForPrintPreview(base::Value job_settings,
+                            scoped_refptr<base::RefCountedMemory> print_data,
+                            content::RenderFrameHost* rfh,
+                            PrinterHandler::PrintCallback callback);
 #endif
 
   // Whether printing is enabled or not.
