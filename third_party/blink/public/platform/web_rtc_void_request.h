@@ -34,7 +34,7 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/webrtc/api/rtcerror.h"
+#include "third_party/webrtc/api/rtc_error.h"
 
 namespace blink {
 

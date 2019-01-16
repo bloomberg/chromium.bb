@@ -118,10 +118,10 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
-#include "third_party/webrtc/api/dtlstransportinterface.h"
+#include "third_party/webrtc/api/dtls_transport_interface.h"
 #include "third_party/webrtc/api/jsep.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
-#include "third_party/webrtc/pc/sessiondescription.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
+#include "third_party/webrtc/pc/session_description.h"
 
 namespace blink {
 

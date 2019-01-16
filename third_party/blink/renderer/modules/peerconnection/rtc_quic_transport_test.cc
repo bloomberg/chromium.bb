@@ -11,7 +11,7 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/adapters/test/mock_p2p_quic_packet_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_gather_options.h"
-#include "third_party/webrtc/rtc_base/rtccertificategenerator.h"
+#include "third_party/webrtc/rtc_base/rtc_certificate_generator.h"
 
 namespace blink {
 namespace {

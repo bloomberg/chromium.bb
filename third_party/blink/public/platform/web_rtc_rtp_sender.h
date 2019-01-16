@@ -9,7 +9,7 @@
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_rtc_void_request.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/webrtc/api/rtpparameters.h"
+#include "third_party/webrtc/api/rtp_parameters.h"
 
 namespace blink {
 

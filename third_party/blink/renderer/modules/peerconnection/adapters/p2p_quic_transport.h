@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_P2P_QUIC_TRANSPORT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_P2P_QUIC_TRANSPORT_H_
 
-#include "third_party/webrtc/rtc_base/sslfingerprint.h"
+#include "third_party/webrtc/rtc_base/ssl_fingerprint.h"
 
 namespace blink {
 
