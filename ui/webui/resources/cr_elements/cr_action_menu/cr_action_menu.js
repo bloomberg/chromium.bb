@@ -50,6 +50,10 @@ const AnchorAlignment = {
 const DROPDOWN_ITEM_CLASS = 'dropdown-item';
 
 (function() {
+
+/** @const {number} */
+const AFTER_END_OFFSET = 10;
+
 /**
  * Returns the point to start along the X or Y axis given a start and end
  * point to anchor to, the length of the target and the direction to anchor
@@ -244,7 +248,7 @@ Polymer({
     if (e.key == 'Enter') {
       // If a menu item has focus, don't change focus or close menu on 'Enter'.
       const options = this.querySelectorAll('.dropdown-item');
-      let focusedIndex =
+      const focusedIndex =
           Array.prototype.indexOf.call(options, getDeepActiveElement());
       if (focusedIndex != -1) {
         return;
@@ -359,11 +363,22 @@ Polymer({
     this.anchorElement_.scrollIntoViewIfNeeded();
 
     const rect = this.anchorElement_.getBoundingClientRect();
+
+    let height = rect.height;
+    if (opt_config &&
+        opt_config.anchorAlignmentY == AnchorAlignment.AFTER_END) {
+      // When an action menu is positioned after the end of an element, the
+      // action menu can appear too far away from the anchor element, typically
+      // because anchors tend to have padding. So we offset the height a bit
+      // so the menu shows up slightly closer to the content of anchor.
+      height -= AFTER_END_OFFSET;
+    }
+
     this.showAtPosition(/** @type {ShowAtPositionConfig} */ (Object.assign(
         {
           top: rect.top,
           left: rect.left,
-          height: rect.height,
+          height: height,
           width: rect.width,
           // Default to anchoring towards the left.
           anchorAlignmentX: AnchorAlignment.BEFORE_END,
