@@ -3363,6 +3363,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="Experimental.PaintTiming.NavigationToLargestImagePaint.BeforeUserInput">
+    <obsolete>
+      Deprecated 01/2019
+    </obsolete>
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time when the page first paints the largest image within
@@ -3380,6 +3383,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="Experimental.PaintTiming.NavigationToLargestTextPaint.BeforeUserInput">
+    <obsolete>
+      Deprecated 01/2019
+    </obsolete>
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time when the page first paints the largest text within
