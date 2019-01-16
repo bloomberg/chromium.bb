@@ -317,8 +317,10 @@ int RectsClient::Run(const ClientBase::InitParams& params,
   wp_presentation_feedback_listener feedback_listener = {
       FeedbackSyncOutput, FeedbackPresented, FeedbackDiscarded};
 
+  SkFont font;
+  font.setSize(32);
+  font.setEdging(SkFont::Edging::kAlias);
   SkPaint text_paint;
-  text_paint.setTextSize(32.0f);
   text_paint.setColor(SK_ColorWHITE);
   text_paint.setStyle(SkPaint::kFill_Style);
 
@@ -398,7 +400,9 @@ int RectsClient::Run(const ClientBase::InitParams& params,
                                        (event_time_msec & 0xff0000) >> 16));
           canvas->drawIRect(rect, paint);
           std::string text = base::NumberToString(event_time.InMicroseconds());
-          canvas->drawText(text.c_str(), text.length(), 8, y + 32, text_paint);
+          canvas->drawSimpleText(text.c_str(), text.length(),
+                                 kUTF8_SkTextEncoding, 8, y + 32, font,
+                                 text_paint);
           frame->event_times.push_back(event_times.motion_timestamps.back());
           event_times.motion_timestamps.pop_back();
           y += h;
@@ -427,8 +431,9 @@ int RectsClient::Run(const ClientBase::InitParams& params,
 
       // Draw FPS counter.
       if (show_fps_counter) {
-        canvas->drawText(fps_counter_text.c_str(), fps_counter_text.length(),
-                         size_.width() - 48, 32, text_paint);
+        canvas->drawSimpleText(fps_counter_text.c_str(),
+                               fps_counter_text.length(), kUTF8_SkTextEncoding,
+                               size_.width() - 48, 32, font, text_paint);
       }
       GrContext* gr_context = gr_context_.get();
       if (gr_context) {
