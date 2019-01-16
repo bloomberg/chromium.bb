@@ -34,6 +34,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/platform/modules/broadcastchannel/broadcast_channel.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -1053,7 +1054,7 @@ class StoragePartitonInterceptor
     delete this;
   }
 
-  // Allow all methods that aren't explicitly overriden to pass through
+  // Allow all methods that aren't explicitly overridden to pass through
   // unmodified.
   blink::mojom::StoragePartitionService* GetForwardingInterface() override {
     return storage_partition_service_;
@@ -1791,6 +1792,107 @@ IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest,
   // bar.com cookies.
   EXPECT_TRUE(ExecuteScript(child, "document.cookie = 'foo=bar';"));
   EXPECT_EQ("foo=bar", EvalJs(child, "document.cookie"));
+}
+
+// This class allows intercepting the BroadcastChannelProvider::ConnectToChannel
+// method and changing the |origin| parameter before passing the call to the
+// real implementation of BroadcastChannelProvider.
+class BroadcastChannelProviderInterceptor
+    : public blink::mojom::BroadcastChannelProviderInterceptorForTesting,
+      public RenderProcessHostObserver {
+ public:
+  BroadcastChannelProviderInterceptor(
+      RenderProcessHostImpl* rph,
+      blink::mojom::BroadcastChannelProviderRequest request,
+      const url::Origin& origin_to_inject)
+      : origin_to_inject_(origin_to_inject) {
+    StoragePartitionImpl* storage_partition =
+        static_cast<StoragePartitionImpl*>(rph->GetStoragePartition());
+
+    // Bind the real BroadcastChannelProvider implementation.
+    mojo::BindingId binding_id =
+        storage_partition->GetBroadcastChannelProvider()->Connect(
+            rph->GetID(), std::move(request));
+
+    // Now replace it with this object and keep a pointer to the real
+    // implementation.
+    original_broadcast_channel_provider_ =
+        storage_partition->GetBroadcastChannelProvider()
+            ->bindings_for_testing()
+            .SwapImplForTesting(binding_id, this);
+
+    // Register the |this| as a RenderProcessHostObserver, so it can be
+    // correctly cleaned up when the process exits.
+    rph->AddObserver(this);
+  }
+
+  // Ensure this object is cleaned up when the process goes away, since it
+  // is not owned by anyone else.
+  void RenderProcessExited(RenderProcessHost* host,
+                           const ChildProcessTerminationInfo& info) override {
+    host->RemoveObserver(this);
+    delete this;
+  }
+
+  // Allow all methods that aren't explicitly overridden to pass through
+  // unmodified.
+  blink::mojom::BroadcastChannelProvider* GetForwardingInterface() override {
+    return original_broadcast_channel_provider_;
+  }
+
+  // Override this method to allow changing the origin. It simulates a
+  // renderer process sending incorrect data to the browser process, so
+  // security checks can be tested.
+  void ConnectToChannel(
+      const url::Origin& origin,
+      const std::string& name,
+      blink::mojom::BroadcastChannelClientAssociatedPtrInfo client,
+      blink::mojom::BroadcastChannelClientAssociatedRequest connection)
+      override {
+    GetForwardingInterface()->ConnectToChannel(
+        origin_to_inject_, name, std::move(client), std::move(connection));
+  }
+
+ private:
+  // Keep a pointer to the original implementation of the service, so all
+  // calls can be forwarded to it.
+  blink::mojom::BroadcastChannelProvider* original_broadcast_channel_provider_;
+
+  url::Origin origin_to_inject_;
+
+  DISALLOW_COPY_AND_ASSIGN(BroadcastChannelProviderInterceptor);
+};
+
+void CreateTestBroadcastChannelProvider(
+    const url::Origin& origin_to_inject,
+    RenderProcessHostImpl* rph,
+    blink::mojom::BroadcastChannelProviderRequest request) {
+  // This object will register as RenderProcessHostObserver, so it will
+  // clean itself automatically on process exit.
+  new BroadcastChannelProviderInterceptor(rph, std::move(request),
+                                          origin_to_inject);
+}
+
+// Test verifying that a compromised renderer can't lie about |origin| argument
+// passed in the BroadcastChannelProvider::ConnectToChannel IPC message.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, BroadcastChannelOriginEnforcement) {
+  auto mismatched_origin = url::Origin::Create(GURL("http://abc.foo.com"));
+  EXPECT_FALSE(IsIsolatedOrigin(mismatched_origin));
+  RenderProcessHostImpl::SetBroadcastChannelProviderRequestHandlerForTesting(
+      base::BindRepeating(&CreateTestBroadcastChannelProvider,
+                          mismatched_origin));
+
+  GURL isolated_url(
+      embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));
+  EXPECT_TRUE(IsIsolatedOrigin(url::Origin::Create(isolated_url)));
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
+
+  content::RenderProcessHostKillWaiter kill_waiter(
+      shell()->web_contents()->GetMainFrame()->GetProcess());
+  ExecuteScriptAsync(
+      shell()->web_contents()->GetMainFrame(),
+      "window.test_channel = new BroadcastChannel('test_channel');");
+  EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
 }  // namespace content

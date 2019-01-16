@@ -64,6 +64,7 @@
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
+#include "third_party/blink/public/platform/modules/broadcastchannel/broadcast_channel.mojom.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 #if defined(OS_ANDROID)
@@ -380,6 +381,15 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static void SetStoragePartitionServiceRequestHandlerForTesting(
       StoragePartitionServiceRequestHandler handler);
 
+  // Allows external code to supply a callback which handles a
+  // BroadcastChannelProviderRequest. Used for supplying test versions of the
+  // service.
+  using BroadcastChannelProviderRequestHandler = base::RepeatingCallback<void(
+      RenderProcessHostImpl* rph,
+      blink::mojom::BroadcastChannelProviderRequest request)>;
+  static void SetBroadcastChannelProviderRequestHandlerForTesting(
+      BroadcastChannelProviderRequestHandler handler);
+
   RenderFrameMessageFilter* render_frame_message_filter_for_testing() const {
     return render_frame_message_filter_.get();
   }
@@ -543,6 +553,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       viz::mojom::CompositingModeReporterRequest request);
   void CreateStoragePartitionService(
       blink::mojom::StoragePartitionServiceRequest request);
+  void CreateBroadcastChannelProvider(
+      blink::mojom::BroadcastChannelProviderRequest request);
   void CreateRendererHost(mojom::RendererHostAssociatedRequest request);
   void BindVideoDecoderService(media::mojom::InterfaceFactoryRequest request);
 

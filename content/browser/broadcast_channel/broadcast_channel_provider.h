@@ -8,18 +8,23 @@
 #include <map>
 
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/blink/public/platform/modules/broadcastchannel/broadcast_channel.mojom.h"
 #include "url/origin.h"
 
 namespace content {
 
-class BroadcastChannelProvider
+class CONTENT_EXPORT BroadcastChannelProvider
     : public base::RefCountedThreadSafe<BroadcastChannelProvider>,
-  public blink::mojom::BroadcastChannelProvider {
+      public blink::mojom::BroadcastChannelProvider {
  public:
   BroadcastChannelProvider();
-  void Connect(blink::mojom::BroadcastChannelProviderRequest request);
+
+  using RenderProcessHostId = int;
+  mojo::BindingId Connect(
+      RenderProcessHostId render_process_host_id,
+      blink::mojom::BroadcastChannelProviderRequest request);
 
   void ConnectToChannel(
       const url::Origin& origin,
@@ -27,6 +32,8 @@ class BroadcastChannelProvider
       blink::mojom::BroadcastChannelClientAssociatedPtrInfo client,
       blink::mojom::BroadcastChannelClientAssociatedRequest connection)
       override;
+
+  auto& bindings_for_testing() { return bindings_; }
 
  private:
   friend class base::RefCountedThreadSafe<BroadcastChannelProvider>;
@@ -38,7 +45,8 @@ class BroadcastChannelProvider
   void ReceivedMessageOnConnection(Connection*,
                                    const blink::CloneableMessage& message);
 
-  mojo::BindingSet<blink::mojom::BroadcastChannelProvider> bindings_;
+  mojo::BindingSet<blink::mojom::BroadcastChannelProvider, RenderProcessHostId>
+      bindings_;
   std::map<url::Origin, std::multimap<std::string, std::unique_ptr<Connection>>>
       connections_;
 };
