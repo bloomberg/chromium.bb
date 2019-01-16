@@ -2182,6 +2182,8 @@ jumbo_split_static_library("browser") {
       "android/explore_sites/blacklist_site_task.h",
       "android/explore_sites/catalog.cc",
       "android/explore_sites/catalog.h",
+      "android/explore_sites/clear_activities_task.cc",
+      "android/explore_sites/clear_activities_task.h",
       "android/explore_sites/clear_catalog_task.cc",
       "android/explore_sites/clear_catalog_task.h",
       "android/explore_sites/explore_sites_bridge.cc",

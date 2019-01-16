@@ -100,6 +100,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/customtabs/origin_verifier.h"
+#include "chrome/browser/android/explore_sites/explore_sites_service_factory.h"
 #include "chrome/browser/android/feed/feed_lifecycle_bridge.h"
 #include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
@@ -590,6 +591,16 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     }
 
     device_event_log::Clear(delete_begin_, delete_end_);
+
+#if defined(OS_ANDROID)
+    explore_sites::ExploreSitesService* explore_sites_service =
+        explore_sites::ExploreSitesServiceFactory::GetForBrowserContext(
+            profile_);
+    if (explore_sites_service) {
+      explore_sites_service->ClearActivities(
+          delete_begin_, delete_end_, CreatePendingTaskCompletionClosure());
+    }
+#endif
   }
 
   //////////////////////////////////////////////////////////////////////////////
