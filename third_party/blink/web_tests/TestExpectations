@@ -3085,7 +3085,6 @@ crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/css/css-grid/animation/grid-template-columns-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-grid/animation/grid-template-rows-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-backgrounds/background-image-first-line.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/tab-size/tab-size-spacing-001.html [ Failure ]
 crbug.com/626703 external/wpt/referrer-policy/generic/iframe-inheritance.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/referrer-policy/generic/iframe-inheritance.html [ Timeout ]
