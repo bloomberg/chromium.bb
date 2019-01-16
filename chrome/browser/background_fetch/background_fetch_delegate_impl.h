@@ -166,6 +166,10 @@ class BackgroundFetchDelegateImpl
     // far.
     uint64_t GetProcessedBytes() const;
 
+    // Returns the number of downloaded bytes, including for the in progress
+    // requests.
+    uint64_t GetDownloadedBytes() const;
+
     void UpdateInProgressBytes(const std::string& download_guid,
                                uint64_t bytes_uploaded,
                                uint64_t bytes_downloaded);
