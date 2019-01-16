@@ -93,7 +93,7 @@ class ASH_EXPORT SplitViewDragIndicators {
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SplitViewWindowSelectorTest,
+  FRIEND_TEST_ALL_PREFIXES(SplitViewDragIndicatorsTest,
                            SplitViewDragIndicatorsWidgetReparenting);
   class RotatedImageLabelView;
   class SplitViewDragIndicatorsView;
