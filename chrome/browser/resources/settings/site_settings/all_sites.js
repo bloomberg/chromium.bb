@@ -116,6 +116,10 @@ Polymer({
         settings.LocalDataBrowserProxyImpl.getInstance();
   },
 
+  listeners: {
+    'delete-current-entry': 'onDeleteCurrentEntry_',
+  },
+
   /** @override */
   ready: function() {
     this.addWebUIListener(
@@ -383,6 +387,16 @@ Polymer({
    */
   noSearchResultFound_: function() {
     return !this.filteredList_.length && !this.siteGroupMapEmpty_();
+  },
+
+  /**
+   * Delete an entry from |siteGroupMap| for given etldPlus1.
+   * @param {!{detail: !{etldPlus1: string}}} e
+   * @private
+   */
+  onDeleteCurrentEntry_: function(e) {
+    this.siteGroupMap.delete(e.detail.etldPlus1);
+    this.forceListUpdate_();
   }
 
 });

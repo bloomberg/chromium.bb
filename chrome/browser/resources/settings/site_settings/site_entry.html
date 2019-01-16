@@ -137,7 +137,11 @@
         <cr-action-menu>
           <button class="dropdown-item" role="menuitem"
               on-click="onConfirmResetSettings_">
-            Reset permissions
+            $i18n{siteSettingsSiteGroupReset}
+          </button>
+          <button class="dropdown-item" role="menuitem"
+              on-click="onConfirmClearData_">
+            $i18n{siteSettingsSiteGroupDelete}
           </button>
         </cr-action-menu>
       </template>
@@ -159,6 +163,26 @@
         </paper-button>
         <paper-button class="action-button" on-click="onResetSettings_">
           $i18n{siteSettingsSiteResetAll}
+        </paper-button>
+      </div>
+    </cr-dialog>
+
+    <!-- Confirm clear data dialog. -->
+    <cr-dialog id="confirmClearData" close-text="$i18n{close}">
+      <div slot="title">
+        $i18n{siteSettingsSiteGroupDeleteDialogTitle}
+      </div>
+      <div slot="body">
+        [[getFormatString_(
+            '$i18nPolymer{siteSettingsSiteGroupDeleteConfirmation}',
+            displayName_)]]
+      </div>
+      <div slot="button-container">
+        <paper-button class="cancel-button" on-click="onCloseDialog_">
+          $i18n{cancel}
+        </paper-button>
+        <paper-button class="action-button" on-click="onClearData_">
+          $i18n{siteSettingsSiteClearStorage}
         </paper-button>
       </div>
     </cr-dialog>
