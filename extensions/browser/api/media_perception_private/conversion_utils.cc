@@ -536,6 +536,8 @@ Feature FeatureProtoToIdl(int feature) {
       return FEATURE_OCCUPANCY_DETECTION;
     case mri::State::FEATURE_EDGE_EMBEDDINGS:
       return FEATURE_EDGE_EMBEDDINGS;
+    case mri::State::FEATURE_SOFTWARE_CROPPING:
+      return FEATURE_SOFTWARE_CROPPING;
     case mri::State::FEATURE_UNSET:
       return FEATURE_NONE;
   }
@@ -553,6 +555,8 @@ mri::State::Feature FeatureIdlToProto(const Feature& feature) {
       return mri::State::FEATURE_OCCUPANCY_DETECTION;
     case FEATURE_EDGE_EMBEDDINGS:
       return mri::State::FEATURE_EDGE_EMBEDDINGS;
+    case FEATURE_SOFTWARE_CROPPING:
+      return mri::State::FEATURE_SOFTWARE_CROPPING;
     case FEATURE_NONE:
       return mri::State::FEATURE_UNSET;
   }
