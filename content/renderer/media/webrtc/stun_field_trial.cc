@@ -16,12 +16,12 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "third_party/webrtc/p2p/base/packetsocketfactory.h"
-#include "third_party/webrtc/rtc_base/asyncpacketsocket.h"
-#include "third_party/webrtc/rtc_base/asyncresolverinterface.h"
-#include "third_party/webrtc/rtc_base/ipaddress.h"
+#include "third_party/webrtc/p2p/base/packet_socket_factory.h"
+#include "third_party/webrtc/rtc_base/async_packet_socket.h"
+#include "third_party/webrtc/rtc_base/async_resolver_interface.h"
+#include "third_party/webrtc/rtc_base/ip_address.h"
 #include "third_party/webrtc/rtc_base/network.h"
-#include "third_party/webrtc/rtc_base/socketaddress.h"
+#include "third_party/webrtc/rtc_base/socket_address.h"
 #include "third_party/webrtc/rtc_base/thread.h"
 
 using stunprober::StunProber;

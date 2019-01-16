@@ -17,8 +17,8 @@
 #include "third_party/webrtc/api/video_codecs/video_encoder_software_fallback_wrapper.h"
 #include "third_party/webrtc/media/base/codec.h"
 #include "third_party/webrtc/media/engine/encoder_simulcast_proxy.h"
-#include "third_party/webrtc/media/engine/internaldecoderfactory.h"
-#include "third_party/webrtc/media/engine/internalencoderfactory.h"
+#include "third_party/webrtc/media/engine/internal_decoder_factory.h"
+#include "third_party/webrtc/media/engine/internal_encoder_factory.h"
 #include "third_party/webrtc/media/engine/simulcast_encoder_adapter.h"
 
 #if defined(OS_ANDROID)

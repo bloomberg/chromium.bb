@@ -20,7 +20,7 @@
 #include "media/base/video_util.h"
 #include "third_party/webrtc/api/video/i420_buffer.h"
 #include "third_party/webrtc/api/video/video_sink_interface.h"
-#include "third_party/webrtc/rtc_base/timeutils.h"  // for TimeMicros
+#include "third_party/webrtc/rtc_base/time_utils.h"  // for TimeMicros
 
 namespace content {
 

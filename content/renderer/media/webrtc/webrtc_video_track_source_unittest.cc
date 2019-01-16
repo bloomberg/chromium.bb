@@ -10,7 +10,7 @@
 #include "content/renderer/media/webrtc/webrtc_video_track_source.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/webrtc/rtc_base/refcountedobject.h"
+#include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
 namespace content {
 

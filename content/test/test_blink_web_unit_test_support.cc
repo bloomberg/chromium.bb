@@ -49,7 +49,7 @@
 #include "gin/v8_initializer.h"  // nogncheck
 #endif
 
-#include "third_party/webrtc/rtc_base/rtccertificate.h"  // nogncheck
+#include "third_party/webrtc/rtc_base/rtc_certificate.h"  // nogncheck
 
 using blink::WebString;
 

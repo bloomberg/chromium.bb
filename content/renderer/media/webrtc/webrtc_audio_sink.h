@@ -22,8 +22,8 @@
 #include "content/renderer/media/stream/media_stream_audio_processor.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_push_fifo.h"
-#include "third_party/webrtc/api/mediastreaminterface.h"
-#include "third_party/webrtc/pc/mediastreamtrack.h"
+#include "third_party/webrtc/api/media_stream_interface.h"
+#include "third_party/webrtc/pc/media_stream_track.h"
 
 namespace content {
 

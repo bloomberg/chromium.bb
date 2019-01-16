@@ -9,9 +9,9 @@
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
-#include "third_party/webrtc/api/stats/rtcstats.h"
-#include "third_party/webrtc/api/stats/rtcstatscollectorcallback.h"
-#include "third_party/webrtc/api/stats/rtcstatsreport.h"
+#include "third_party/webrtc/api/stats/rtc_stats.h"
+#include "third_party/webrtc/api/stats/rtc_stats_collector_callback.h"
+#include "third_party/webrtc/api/stats/rtc_stats_report.h"
 
 namespace content {
 

@@ -15,8 +15,8 @@
 #include "content/renderer/render_thread_impl.h"
 #include "media/media_buildflags.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
-#include "third_party/webrtc/rtc_base/rtccertificate.h"
-#include "third_party/webrtc/rtc_base/rtccertificategenerator.h"
+#include "third_party/webrtc/rtc_base/rtc_certificate.h"
+#include "third_party/webrtc/rtc_base/rtc_certificate_generator.h"
 #include "url/gurl.h"
 
 namespace content {

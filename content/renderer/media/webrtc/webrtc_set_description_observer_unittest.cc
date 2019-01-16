@@ -22,9 +22,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/web_heap.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/test/mock_peerconnectioninterface.h"
-#include "third_party/webrtc/media/base/fakemediaengine.h"
+#include "third_party/webrtc/media/base/fake_media_engine.h"
 
 using ::testing::Return;
 

@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_impl.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/webrtc/api/mediastreaminterface.h"
+#include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 
 using webrtc::AudioSourceInterface;

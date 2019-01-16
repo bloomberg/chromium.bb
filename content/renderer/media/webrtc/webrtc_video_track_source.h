@@ -9,8 +9,8 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "media/base/video_frame_pool.h"
-#include "third_party/webrtc/media/base/adaptedvideotracksource.h"
-#include "third_party/webrtc/rtc_base/timestampaligner.h"
+#include "third_party/webrtc/media/base/adapted_video_track_source.h"
+#include "third_party/webrtc/rtc_base/timestamp_aligner.h"
 
 namespace content {
 
