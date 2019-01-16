@@ -1157,6 +1157,20 @@ void Cronet_RequestFinishedInfo_metrics_move(Cronet_RequestFinishedInfoPtr self,
     self->metrics.emplace(std::move(*metrics));
 }
 
+void Cronet_RequestFinishedInfo_annotations_add(
+    Cronet_RequestFinishedInfoPtr self,
+    Cronet_RawDataPtr element) {
+  DCHECK(self);
+  self->annotations.push_back(element);
+}
+
+void Cronet_RequestFinishedInfo_finished_reason_set(
+    Cronet_RequestFinishedInfoPtr self,
+    Cronet_RequestFinishedInfo_FINISHED_REASON finished_reason) {
+  DCHECK(self);
+  self->finished_reason = finished_reason;
+}
+
 void Cronet_RequestFinishedInfo_response_info_set(
     Cronet_RequestFinishedInfoPtr self,
     Cronet_UrlResponseInfoPtr response_info) {
@@ -1196,6 +1210,31 @@ Cronet_MetricsPtr Cronet_RequestFinishedInfo_metrics_get(
   if (self->metrics == base::nullopt)
     return nullptr;
   return &self->metrics.value();
+}
+
+uint32_t Cronet_RequestFinishedInfo_annotations_size(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  return self->annotations.size();
+}
+Cronet_RawDataPtr Cronet_RequestFinishedInfo_annotations_at(
+    Cronet_RequestFinishedInfoPtr self,
+    uint32_t index) {
+  DCHECK(self);
+  DCHECK(index < self->annotations.size());
+  return self->annotations[index];
+}
+void Cronet_RequestFinishedInfo_annotations_clear(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  self->annotations.clear();
+}
+
+Cronet_RequestFinishedInfo_FINISHED_REASON
+Cronet_RequestFinishedInfo_finished_reason_get(
+    Cronet_RequestFinishedInfoPtr self) {
+  DCHECK(self);
+  return self->finished_reason;
 }
 
 Cronet_UrlResponseInfoPtr Cronet_RequestFinishedInfo_response_info_get(

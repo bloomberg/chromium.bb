@@ -1173,6 +1173,14 @@ void Cronet_RequestFinishedInfo_metrics_set(Cronet_RequestFinishedInfoPtr self,
 void Cronet_RequestFinishedInfo_metrics_move(Cronet_RequestFinishedInfoPtr self,
                                              Cronet_MetricsPtr metrics);
 CRONET_EXPORT
+void Cronet_RequestFinishedInfo_annotations_add(
+    Cronet_RequestFinishedInfoPtr self,
+    Cronet_RawDataPtr element);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_finished_reason_set(
+    Cronet_RequestFinishedInfoPtr self,
+    Cronet_RequestFinishedInfo_FINISHED_REASON finished_reason);
+CRONET_EXPORT
 void Cronet_RequestFinishedInfo_response_info_set(
     Cronet_RequestFinishedInfoPtr self,
     Cronet_UrlResponseInfoPtr response_info);
@@ -1191,6 +1199,20 @@ void Cronet_RequestFinishedInfo_error_move(Cronet_RequestFinishedInfoPtr self,
 // Cronet_RequestFinishedInfo getters.
 CRONET_EXPORT
 Cronet_MetricsPtr Cronet_RequestFinishedInfo_metrics_get(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+uint32_t Cronet_RequestFinishedInfo_annotations_size(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+Cronet_RawDataPtr Cronet_RequestFinishedInfo_annotations_at(
+    Cronet_RequestFinishedInfoPtr self,
+    uint32_t index);
+CRONET_EXPORT
+void Cronet_RequestFinishedInfo_annotations_clear(
+    Cronet_RequestFinishedInfoPtr self);
+CRONET_EXPORT
+Cronet_RequestFinishedInfo_FINISHED_REASON
+Cronet_RequestFinishedInfo_finished_reason_get(
     Cronet_RequestFinishedInfoPtr self);
 CRONET_EXPORT
 Cronet_UrlResponseInfoPtr Cronet_RequestFinishedInfo_response_info_get(
