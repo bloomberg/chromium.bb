@@ -169,6 +169,11 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   void OnSizeConstraintsChanged() override;
   std::string GetName() const override;
 
+  // Calls |callback| with the newly created NativeWidget whenever a
+  // NativeWidget is created.
+  static void SetInitNativeWidgetCallback(
+      const base::RepeatingCallback<void(NativeWidgetMac*)>& callback);
+
  protected:
   virtual void PopulateCreateWindowParams(
       const Widget::InitParams& widget_params,

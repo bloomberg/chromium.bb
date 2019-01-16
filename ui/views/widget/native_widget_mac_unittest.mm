@@ -2409,6 +2409,33 @@ TEST_F(NativeWidgetMacTest, TouchBar) {
   delegate->GetWidget()->CloseNow();
 }
 
+TEST_F(NativeWidgetMacTest, InitCallback) {
+  NativeWidget* observed_native_widget = nullptr;
+  const auto callback = base::BindRepeating(
+      [](NativeWidget** observed, NativeWidgetMac* native_widget) {
+        *observed = native_widget;
+      },
+      &observed_native_widget);
+  NativeWidgetMac::SetInitNativeWidgetCallback(callback);
+
+  Widget* widget_a = CreateTopLevelPlatformWidget();
+  EXPECT_EQ(observed_native_widget, widget_a->native_widget());
+  Widget* widget_b = CreateTopLevelPlatformWidget();
+  EXPECT_EQ(observed_native_widget, widget_b->native_widget());
+
+  auto empty = base::RepeatingCallback<void(NativeWidgetMac*)>();
+  DCHECK(empty.is_null());
+  NativeWidgetMac::SetInitNativeWidgetCallback(empty);
+  observed_native_widget = nullptr;
+  Widget* widget_c = CreateTopLevelPlatformWidget();
+  // The original callback from above should no longer be firing.
+  EXPECT_EQ(observed_native_widget, nullptr);
+
+  widget_a->CloseNow();
+  widget_b->CloseNow();
+  widget_c->CloseNow();
+}
+
 }  // namespace test
 }  // namespace views
 
