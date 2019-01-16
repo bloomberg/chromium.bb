@@ -169,7 +169,6 @@ class LayerTreeView : public blink::WebLayerTreeView,
   void SetHaveScrollEventHandlers(bool) override;
   bool HaveScrollEventHandlers() const override;
   int LayerTreeId() const override;
-  void SetShowFPSCounter(bool show) override;
   void SetShowPaintRects(bool show) override;
   void SetShowDebugBorders(bool show) override;
   void SetShowScrollBottleneckRects(bool show) override;

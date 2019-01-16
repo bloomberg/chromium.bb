@@ -348,6 +348,7 @@ class CONTENT_EXPORT RenderWidget
 
   // blink::WebWidgetClient
   void ScheduleAnimation() override;
+  void SetShowFPSCounter(bool show) override;
   void IntrinsicSizingInfoChanged(
       const blink::WebIntrinsicSizingInfo&) override;
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;

@@ -42,7 +42,6 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings,
                                  DevToolsEmulator* dev_tools_emulator)
     : settings_(settings),
       dev_tools_emulator_(dev_tools_emulator),
-      show_fps_counter_(false),
       show_paint_rects_(false),
       render_v_sync_notification_enabled_(false),
       auto_zoom_focused_node_to_legible_scale_(false),
@@ -453,10 +452,6 @@ void WebSettingsImpl::SetSmoothScrollForFindEnabled(bool enabled) {
 
 void WebSettingsImpl::SetShowContextMenuOnMouseUp(bool enabled) {
   settings_->SetShowContextMenuOnMouseUp(enabled);
-}
-
-void WebSettingsImpl::SetShowFPSCounter(bool show) {
-  show_fps_counter_ = show;
 }
 
 void WebSettingsImpl::SetShowPaintRects(bool show) {

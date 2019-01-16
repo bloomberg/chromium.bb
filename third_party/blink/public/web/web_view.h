@@ -394,7 +394,6 @@ class WebView {
   BLINK_EXPORT static void DidExitModalLoop();
 
   virtual void SetShowPaintRects(bool) = 0;
-  virtual void SetShowFPSCounter(bool) = 0;
   virtual void SetShowScrollBottleneckRects(bool) = 0;
 
   // Scheduling -----------------------------------------------------------

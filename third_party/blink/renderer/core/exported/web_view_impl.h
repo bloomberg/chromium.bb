@@ -190,7 +190,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebPageImportanceSignals* PageImportanceSignals() override;
   void SetShowPaintRects(bool) override;
   void SetShowDebugBorders(bool);
-  void SetShowFPSCounter(bool) override;
   void SetShowScrollBottleneckRects(bool) override;
   void SetShowHitTestBorders(bool);
   void AcceptLanguagesChanged() override;

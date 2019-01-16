@@ -380,8 +380,10 @@ void ApplyFontsFromMap(const ScriptFontFamilyMap& map,
   }
 }
 
-void ApplyCommandLineToSettings(const base::CommandLine& command_line,
-                                WebSettings* settings) {
+void ApplyCommandLineToSettings(WebSettings* settings) {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+
   settings->SetThreadedScrollingEnabled(
       !command_line.HasSwitch(switches::kDisableThreadedScrolling));
 
@@ -515,15 +517,10 @@ void RenderViewImpl::Initialize(
   g_view_map.Get().insert(std::make_pair(webview(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(GetRoutingID(), this));
 
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-
   webview()->SetDisplayMode(params->visual_properties.display_mode);
-  webview()->SetShowFPSCounter(
-      command_line.HasSwitch(cc::switches::kShowFPSCounter));
 
   ApplyWebPreferences(webkit_preferences_, webview());
-  ApplyCommandLineToSettings(command_line, webview()->GetSettings());
+  ApplyCommandLineToSettings(webview()->GetSettings());
 
   // We have either a main frame or a proxy routing id.
   DCHECK_NE(params->main_frame_routing_id != MSG_ROUTING_NONE,
@@ -1525,6 +1522,14 @@ void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
   // The previous WebFrameWidget must already be detached by CloseForFrame().
   DCHECK(!frame_widget_);
   frame_widget_ = frame_widget;
+
+  // Initialization for the WebFrameWidget that should only occur for the main
+  // frame, and that uses types not allowed in blink. This should maybe be
+  // passed to the creation of the WebFrameWidget or the main RenderFrame.
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  WidgetClient()->SetShowFPSCounter(
+      command_line.HasSwitch(cc::switches::kShowFPSCounter));
 }
 
 void RenderViewImpl::DetachWebFrameWidget() {

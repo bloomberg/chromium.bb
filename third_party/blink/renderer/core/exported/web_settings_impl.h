@@ -150,7 +150,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetShouldClearDocumentBackground(bool) override;
   void SetShouldRespectImageOrientation(bool) override;
   void SetShowContextMenuOnMouseUp(bool) override;
-  void SetShowFPSCounter(bool) override;
   void SetShowPaintRects(bool) override;
   void SetShrinksViewportContentToFit(bool) override;
   void SetSmartInsertDeleteEnabled(bool) override;
@@ -219,7 +218,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetLazyImageLoadingDistanceThresholdPx3G(int) override;
   void SetLazyImageLoadingDistanceThresholdPx4G(int) override;
 
-  bool ShowFPSCounter() const { return show_fps_counter_; }
   bool ShowPaintRects() const { return show_paint_rects_; }
   bool RenderVSyncNotificationEnabled() const {
     return render_v_sync_notification_enabled_;
@@ -249,7 +247,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
  private:
   Settings* settings_;
   UntracedMember<DevToolsEmulator> dev_tools_emulator_;
-  bool show_fps_counter_;
   bool show_paint_rects_;
   bool render_v_sync_notification_enabled_;
   bool auto_zoom_focused_node_to_legible_scale_;

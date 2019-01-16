@@ -717,13 +717,6 @@ void WebViewImpl::EnableFakePageScaleAnimationForTesting(bool enable) {
   fake_page_scale_animation_page_scale_factor_ = 0;
 }
 
-void WebViewImpl::SetShowFPSCounter(bool show) {
-  if (layer_tree_view_) {
-    TRACE_EVENT0("blink", "WebViewImpl::setShowFPSCounter");
-    layer_tree_view_->SetShowFPSCounter(show);
-  }
-}
-
 void WebViewImpl::SetShowPaintRects(bool show) {
   if (layer_tree_view_) {
     TRACE_EVENT0("blink", "WebViewImpl::setShowPaintRects");
