@@ -94,7 +94,19 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, I18nProcessCssTest) {
   LoadResource(IDR_WEBUI_TEST_I18N_PROCESS_CSS_TEST);
 }
 
-IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, I18nProcessTest) {
+class WebUIResourceBrowserTestV0 : public WebUIResourceBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // TODO(yoichio): This is temporary switch to support chrome internal
+    // components migration from the old web APIs.
+    // After completion of the migration, we should remove this.
+    // See crbug.com/911943 for detail.
+    command_line->AppendSwitchASCII("enable-blink-features", "HTMLImports");
+    command_line->AppendSwitchASCII("enable-blink-features", "ShadowDOMV0");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTestV0, I18nProcessTest) {
   AddLibrary(IDR_WEBUI_JS_LOAD_TIME_DATA);
   AddLibrary(IDR_WEBUI_JS_I18N_TEMPLATE_NO_PROCESS);
   AddLibrary(IDR_WEBUI_JS_UTIL);
