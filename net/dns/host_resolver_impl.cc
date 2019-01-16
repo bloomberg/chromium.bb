@@ -40,6 +40,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/numerics/checked_math.h"
+#include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1134,6 +1136,9 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       case DnsQueryType::PTR:
         parse_result = ParsePointerDnsResponse(response, &results);
         break;
+      case DnsQueryType::SRV:
+        parse_result = ParseServiceDnsResponse(response, &results);
+        break;
     }
     DCHECK_LT(parse_result, DnsResponse::DNS_PARSE_RESULT_MAX);
 
@@ -1263,6 +1268,94 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         pointers.empty() ? ERR_NAME_NOT_RESOLVED : OK, std::move(pointers),
         HostCache::Entry::SOURCE_DNS, response_ttl);
     return DnsResponse::DNS_PARSE_OK;
+  }
+
+  DnsResponse::Result ParseServiceDnsResponse(const DnsResponse* response,
+                                              HostCache::Entry* out_results) {
+    std::vector<std::unique_ptr<const RecordParsed>> records;
+    base::Optional<base::TimeDelta> response_ttl;
+    DnsResponse::Result parse_result = ParseAndFilterResponseRecords(
+        response, dns_protocol::kTypeSRV, &records, &response_ttl);
+
+    if (parse_result != DnsResponse::DNS_PARSE_OK) {
+      *out_results = GetMalformedResponseResult();
+      return parse_result;
+    }
+
+    std::vector<const SrvRecordRdata*> fitered_rdatas;
+    for (const auto& record : records) {
+      const SrvRecordRdata* rdata = record->rdata<net::SrvRecordRdata>();
+
+      // Skip pointers to the root domain.
+      if (!rdata->target().empty())
+        fitered_rdatas.push_back(rdata);
+    }
+
+    std::vector<HostPortPair> ordered_service_targets =
+        SortServiceTargets(fitered_rdatas);
+
+    *out_results = HostCache::Entry(
+        ordered_service_targets.empty() ? ERR_NAME_NOT_RESOLVED : OK,
+        std::move(ordered_service_targets), HostCache::Entry::SOURCE_DNS,
+        response_ttl);
+    return DnsResponse::DNS_PARSE_OK;
+  }
+
+  // Sort service targets per RFC2782.  In summary, sort first by |priority|,
+  // lowest first.  For targets with the same priority, secondary sort randomly
+  // using |weight| with higher weighted objects more likely to go first.
+  std::vector<HostPortPair> SortServiceTargets(
+      const std::vector<const SrvRecordRdata*>& rdatas) {
+    std::map<uint16_t, std::unordered_set<const SrvRecordRdata*>>
+        ordered_by_priority;
+    for (const SrvRecordRdata* rdata : rdatas)
+      ordered_by_priority[rdata->priority()].insert(rdata);
+
+    std::vector<HostPortPair> sorted_targets;
+    for (auto& priority : ordered_by_priority) {
+      // With (num results) <= UINT16_MAX (and in practice, much less) and
+      // (weight per result) <= UINT16_MAX, then it should be the case that
+      // (total weight) <= UINT32_MAX, but use CheckedNumeric for extra safety.
+      auto total_weight = base::MakeCheckedNum<uint32_t>(0);
+      for (const SrvRecordRdata* rdata : priority.second)
+        total_weight += rdata->weight();
+
+      // Add 1 to total weight because, to deal with 0-weight targets, we want
+      // our random selection to be inclusive [0, total].
+      total_weight++;
+
+      // Order by weighted random. Make such random selections, removing from
+      // |priority.second| until |priority.second| only contains 1 rdata.
+      while (priority.second.size() >= 2) {
+        uint32_t random_selection =
+            base::RandGenerator(total_weight.ValueOrDie());
+        const SrvRecordRdata* selected_rdata = nullptr;
+        for (const SrvRecordRdata* rdata : priority.second) {
+          // >= to always select the first target on |random_selection| == 0,
+          // even if its weight is 0.
+          if (rdata->weight() >= random_selection) {
+            selected_rdata = rdata;
+            break;
+          }
+          random_selection -= rdata->weight();
+        }
+
+        DCHECK(selected_rdata);
+        sorted_targets.emplace_back(selected_rdata->target(),
+                                    selected_rdata->port());
+        total_weight -= selected_rdata->weight();
+        size_t removed = priority.second.erase(selected_rdata);
+        DCHECK_EQ(1u, removed);
+      }
+
+      DCHECK_EQ(1u, priority.second.size());
+      DCHECK_EQ((total_weight - 1).ValueOrDie(),
+                (*priority.second.begin())->weight());
+      const SrvRecordRdata* rdata = *priority.second.begin();
+      sorted_targets.emplace_back(rdata->target(), rdata->port());
+    }
+
+    return sorted_targets;
   }
 
   DnsResponse::Result ParseAndFilterResponseRecords(

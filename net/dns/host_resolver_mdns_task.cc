@@ -101,33 +101,28 @@ class HostResolverMdnsTask::Transaction {
           results_ = HostCache::Entry(
               OK,
               AddressList(
-                  IPEndPoint(parsed->rdata<net::ARecordRdata>()->address(), 0)),
+                  IPEndPoint(parsed->rdata<ARecordRdata>()->address(), 0)),
               HostCache::Entry::SOURCE_UNKNOWN);
           break;
         case DnsQueryType::AAAA:
           results_ = HostCache::Entry(
               OK,
-              AddressList(IPEndPoint(
-                  parsed->rdata<net::AAAARecordRdata>()->address(), 0)),
+              AddressList(
+                  IPEndPoint(parsed->rdata<AAAARecordRdata>()->address(), 0)),
               HostCache::Entry::SOURCE_UNKNOWN);
           break;
         case DnsQueryType::TXT:
-          results_ = HostCache::Entry(
-              OK, parsed->rdata<net::TxtRecordRdata>()->texts(),
-              HostCache::Entry::SOURCE_UNKNOWN);
+          results_ =
+              HostCache::Entry(OK, parsed->rdata<TxtRecordRdata>()->texts(),
+                               HostCache::Entry::SOURCE_UNKNOWN);
           break;
         case DnsQueryType::PTR:
-          std::string pointer =
-              parsed->rdata<net::PtrRecordRdata>()->ptrdomain();
-          // Skip pointers to the root domain.
-          if (pointer.empty()) {
-            results_ = HostCache::Entry(ERR_NAME_NOT_RESOLVED,
-                                        HostCache::Entry::SOURCE_UNKNOWN);
-          } else {
-            results_ = HostCache::Entry(
-                OK, std::vector<HostPortPair>({HostPortPair(pointer, 0)}),
-                HostCache::Entry::SOURCE_UNKNOWN);
-          }
+          ParseHostnameResult(parsed->rdata<PtrRecordRdata>()->ptrdomain(),
+                              0 /* port */);
+          break;
+        case DnsQueryType::SRV:
+          ParseHostnameResult(parsed->rdata<SrvRecordRdata>()->target(),
+                              parsed->rdata<SrvRecordRdata>()->port());
           break;
       }
     } else {
@@ -138,6 +133,19 @@ class HostResolverMdnsTask::Transaction {
     // invoked inline in MDnsTransaction::Start. Callbacks will need to be
     // invoked via post.
     task_->CheckCompletion(!async_transaction_);
+  }
+
+  void ParseHostnameResult(const std::string& host, uint16_t port) {
+    // Filter out root domain. Depending on the type, it either means no-result
+    // or is simply not a result important to any expected Chrome usecases.
+    if (host.empty()) {
+      results_ = HostCache::Entry(ERR_NAME_NOT_RESOLVED,
+                                  HostCache::Entry::SOURCE_UNKNOWN);
+    } else {
+      results_ = HostCache::Entry(
+          OK, std::vector<HostPortPair>({HostPortPair(host, port)}),
+          HostCache::Entry::SOURCE_UNKNOWN);
+    }
   }
 
   const DnsQueryType query_type_;

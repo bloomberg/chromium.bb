@@ -176,6 +176,18 @@ std::unique_ptr<DnsResponse> BuildTestDnsPointerResponse(
     std::vector<std::string> pointer_names,
     std::string answer_name = "");
 
+struct TestServiceRecord {
+  uint16_t priority;
+  uint16_t weight;
+  uint16_t port;
+  std::string target;
+};
+
+std::unique_ptr<DnsResponse> BuildTestDnsResponse(
+    std::string name,
+    std::vector<TestServiceRecord> service_records,
+    std::string answer_name = "");
+
 struct MockDnsClientRule {
   enum ResultType {
     NODOMAIN,   // Fail asynchronously with ERR_NAME_NOT_RESOLVED and NXDOMAIN.
