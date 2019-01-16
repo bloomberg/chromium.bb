@@ -1192,6 +1192,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action
+    name="Accessibility.ChromeVox.BluetoothBrailleDisplayConnectedButtonClick">
+  <owner>dtseng@chromium.org</owner>
+  <description>
+    A Chrome OS user with spoken feedback enabled has connected a bluetooth
+    braille display by clicking the connect button or selected one from a
+    select.
+  </description>
+</action>
+
 <action name="Accessibility.ChromeVox.Jump">
   <owner>dmazzoni@chromium.org</owner>
   <description>

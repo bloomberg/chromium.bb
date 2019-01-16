@@ -24,6 +24,8 @@ chrome.bluetoothPrivate = {};
 chrome.bluetoothPrivate.onPairing = new FakeChromeEvent();
 /** Fake chrome.accessibilityPrivate object. */
 chrome.accessibilityPrivate = {};
+chrome.metricsPrivate = {};
+chrome.metricsPrivate.recordUserAction = function() {};
 
 /**
  * Test fixture.

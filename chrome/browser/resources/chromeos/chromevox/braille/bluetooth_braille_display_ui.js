@@ -32,6 +32,9 @@ BluetoothBrailleDisplayUI = function() {
 
   /** @private {Element} */
   this.controls_;
+
+  /** @private {string|undefined} */
+  this.selectedAndConnectedDisplayAddress_;
 };
 
 BluetoothBrailleDisplayUI.prototype = {
@@ -179,10 +182,27 @@ BluetoothBrailleDisplayUI.prototype = {
   updateControls_: function() {
     // Only update controls if there is a selected display.
     var sel = this.displaySelect_.options[this.displaySelect_.selectedIndex];
-    if (!sel)
+    if (!sel) {
+      this.selectedAndConnectedDisplayAddress_ = undefined;
       return;
+    }
 
     chrome.bluetooth.getDevice(sel.id, (display) => {
+      // Record metrics if the display is connected for the first time either
+      // via a click of the Connect button or re-connection by selection via the
+      // select.
+      if (display.connected) {
+        if (this.selectedAndConnectedDisplayAddress_ != sel.id) {
+          this.selectedAndConnectedDisplayAddress_ = sel.id;
+          chrome.metricsPrivate.recordUserAction(
+              BluetoothBrailleDisplayUI.CONNECTED_METRIC_NAME_);
+        }
+      } else {
+        // The display is no longer connected.
+        if (this.selectedAndConnectedDisplayAddress_ == sel.id)
+          this.selectedAndConnectedDisplayAddress_ = undefined;
+      }
+
       var connectOrDisconnect =
           this.controls_.querySelector('#connectOrDisconnect');
       connectOrDisconnect.disabled = display.connecting;
@@ -208,3 +228,7 @@ BluetoothBrailleDisplayUI.prototype = {
     });
   }
 };
+
+/** @private {string} */
+BluetoothBrailleDisplayUI.CONNECTED_METRIC_NAME_ =
+    'Accessibility.ChromeVox.BluetoothBrailleDisplayConnectedButtonClick';
