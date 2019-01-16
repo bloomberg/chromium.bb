@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 
 #include <utility>
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -41,7 +41,8 @@ bookmarks::BookmarkModel* BookmarkModelFactory::GetForBrowserStateIfExists(
 
 // static
 BookmarkModelFactory* BookmarkModelFactory::GetInstance() {
-  return base::Singleton<BookmarkModelFactory>::get();
+  static base::NoDestructor<BookmarkModelFactory> instance;
+  return instance.get();
 }
 
 BookmarkModelFactory::BookmarkModelFactory()

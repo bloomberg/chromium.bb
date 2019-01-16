@@ -5,13 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_BOOKMARKS_BOOKMARK_SYNC_SERVICE_FACTORY_H_
 #define IOS_CHROME_BROWSER_BOOKMARKS_BOOKMARK_SYNC_SERVICE_FACTORY_H_
 
-#include "base/memory/singleton.h"
+#include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 namespace sync_bookmarks {
 class BookmarkSyncService;
@@ -33,7 +29,7 @@ class BookmarkSyncServiceFactory : public BrowserStateKeyedServiceFactory {
   static BookmarkSyncServiceFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<BookmarkSyncServiceFactory>;
+  friend class base::NoDestructor<BookmarkSyncServiceFactory>;
 
   BookmarkSyncServiceFactory();
   ~BookmarkSyncServiceFactory() override;

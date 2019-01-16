@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/search_engines/template_url_fetcher_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/search_engines/template_url_fetcher.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
@@ -22,7 +22,8 @@ TemplateURLFetcher* TemplateURLFetcherFactory::GetForBrowserState(
 
 // static
 TemplateURLFetcherFactory* TemplateURLFetcherFactory::GetInstance() {
-  return base::Singleton<TemplateURLFetcherFactory>::get();
+  static base::NoDestructor<TemplateURLFetcherFactory> instance;
+  return instance.get();
 }
 
 TemplateURLFetcherFactory::TemplateURLFetcherFactory()

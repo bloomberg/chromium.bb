@@ -7,14 +7,10 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/refcounted_browser_state_keyed_service_factory.h"
 
 class HostContentSettingsMap;
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
 
 namespace ios {
 
@@ -30,7 +26,7 @@ class HostContentSettingsMapFactory
   static HostContentSettingsMapFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<HostContentSettingsMapFactory>;
+  friend class base::NoDestructor<HostContentSettingsMapFactory>;
 
   HostContentSettingsMapFactory();
   ~HostContentSettingsMapFactory() override;

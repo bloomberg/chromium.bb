@@ -8,12 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 class BookmarkUndoService;
 
@@ -32,7 +28,7 @@ class BookmarkUndoServiceFactory : public BrowserStateKeyedServiceFactory {
   static BookmarkUndoServiceFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<BookmarkUndoServiceFactory>;
+  friend class base::NoDestructor<BookmarkUndoServiceFactory>;
 
   BookmarkUndoServiceFactory();
   ~BookmarkUndoServiceFactory() override;

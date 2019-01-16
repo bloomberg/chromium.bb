@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/google/google_url_tracker_factory.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -26,7 +26,8 @@ GoogleURLTracker* GoogleURLTrackerFactory::GetForBrowserState(
 
 // static
 GoogleURLTrackerFactory* GoogleURLTrackerFactory::GetInstance() {
-  return base::Singleton<GoogleURLTrackerFactory>::get();
+  static base::NoDestructor<GoogleURLTrackerFactory> instance;
+  return instance.get();
 }
 
 GoogleURLTrackerFactory::GoogleURLTrackerFactory()
