@@ -1413,11 +1413,11 @@ IN_PROC_BROWSER_TEST_P(
 
 INSTANTIATE_TEST_CASE_P(USS,
                         SingleClientWalletSyncTestWithoutAccountStorage,
-                        ::testing::Values(false));
+                        ::testing::Values(false, true));
 
 INSTANTIATE_TEST_CASE_P(USS,
                         SingleClientWalletWithAccountStorageSyncTest,
-                        ::testing::Values(false));
+                        ::testing::Values(false, true));
 
 INSTANTIATE_TEST_CASE_P(USS,
                         SingleClientWalletSyncTestWithDefaultFeatures,
@@ -1425,4 +1425,4 @@ INSTANTIATE_TEST_CASE_P(USS,
 
 INSTANTIATE_TEST_CASE_P(USS,
                         SingleClientWalletSecondaryAccountSyncTest,
-                        ::testing::Values(false));
+                        ::testing::Values(false, true));
