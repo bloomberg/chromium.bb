@@ -513,27 +513,4 @@ TEST(unstarted_task_test, DoNotDeleteTask1) {
   // Never run the tasks
 }
 
-#if defined(ADDRESS_SANITIZER)
-// https://crbug.com/843731
-#define MAYBE_DoNotDeleteTask2 DISABLED_DoNotDeleteTask2
-#else
-#define MAYBE_DoNotDeleteTask2 DoNotDeleteTask2
-#endif
-TEST(unstarted_task_test, MAYBE_DoNotDeleteTask2) {
-  // This test ensures that we don't
-  // crash if a taskrunner is delete with a
-  // task that has never been started.
-  DeleteTestTaskRunner task_runner;
-  HappyTask* happy_task = new HappyTask(&task_runner);
-  happy_task->Start();
-
-  // Do not start the task.
-  // Note: this leaks memory, so don't do this.
-  // Instead, always run your tasks or delete them.
-  new HappyTask(happy_task);
-
-  // run the unblocked tasks
-  task_runner.RunTasks();
-}
-
 }  // namespace rtc
