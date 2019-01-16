@@ -90,7 +90,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       parent_(nullptr),
       mask_layer_(nullptr),
       contents_clipping_mask_layer_(nullptr),
-      paint_count_(0),
       contents_layer_(nullptr),
       contents_layer_id_(0),
       rendering_context3d_(0),
@@ -150,6 +149,18 @@ void GraphicsLayer::SetIsResizedByBrowserControls(
 
 void GraphicsLayer::SetIsContainerForFixedPositionLayers(bool is_container) {
   CcLayer()->SetIsContainerForFixedPositionLayers(is_container);
+}
+
+void GraphicsLayer::SetCompositingReasons(CompositingReasons reasons) {
+  CcLayer()->set_compositing_reasons(reasons);
+}
+
+CompositingReasons GraphicsLayer::GetCompositingReasons() const {
+  return CcLayer()->compositing_reasons();
+}
+
+void GraphicsLayer::SetOwnerNodeId(int node_id) {
+  CcLayer()->set_owner_node_id(node_id);
 }
 
 void GraphicsLayer::SetParent(GraphicsLayer* layer) {
@@ -356,8 +367,6 @@ bool GraphicsLayer::PaintWithoutCommit(
 
   if (client_.ShouldThrottleRendering())
     return false;
-
-  IncrementPaintCount();
 
   IntRect new_interest_rect;
   if (!interest_rect) {
@@ -963,7 +972,7 @@ std::unique_ptr<base::trace_event::TracedValue> GraphicsLayer::TakeDebugInfo(
 
   traced_value->BeginArray("compositing_reasons");
   for (const char* description :
-       CompositingReason::Descriptions(compositing_reasons_))
+       CompositingReason::Descriptions(GetCompositingReasons()))
     traced_value->AppendString(description);
   traced_value->EndArray();
 
@@ -973,8 +982,8 @@ std::unique_ptr<base::trace_event::TracedValue> GraphicsLayer::TakeDebugInfo(
     traced_value->AppendString(description);
   traced_value->EndArray();
 
-  if (owner_node_id_)
-    traced_value->SetInteger("owner_node", owner_node_id_);
+  if (auto node_id = layer_->owner_node_id())
+    traced_value->SetInteger("owner_node", node_id);
 
   if (auto* tracking = GetRasterInvalidationTracking()) {
     tracking->AddToTracedValue(*traced_value);

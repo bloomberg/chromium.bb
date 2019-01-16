@@ -59,8 +59,8 @@
     canvas = UI.panels.layers._layers3DView._canvasElement;
     var canvasWidth = canvas.offsetWidth;
     var canvasHeight = canvas.offsetHeight;
-    var rootWidth = contentRoot.width();
-    var rootHeight = contentRoot.height();
+    var rootWidth = 800;
+    var rootHeight = 600;
     var paddingX = canvasWidth * 0.1;
     var paddingY = canvasHeight * 0.1;
     var scaleX = rootWidth / (canvasWidth - paddingX);

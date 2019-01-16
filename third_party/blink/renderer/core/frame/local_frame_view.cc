@@ -2695,6 +2695,20 @@ void LocalFrameView::PaintTree() {
   }
 }
 
+const cc::Layer* LocalFrameView::RootCcLayer() const {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    return paint_artifact_compositor_ ? paint_artifact_compositor_->RootLayer()
+                                      : nullptr;
+  }
+
+  if (const auto* root_graphics_layer =
+          frame_->GetPage()->GetVisualViewport().RootGraphicsLayer()) {
+    return root_graphics_layer->CcLayer();
+  }
+  return nullptr;
+}
+
 void LocalFrameView::PushPaintArtifactToCompositor(
     CompositorElementIdSet& composited_element_ids) {
   TRACE_EVENT0("blink", "LocalFrameView::pushPaintArtifactToCompositor");

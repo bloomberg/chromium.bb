@@ -7,7 +7,7 @@ selected layer: content root
 
 Hovering content root
 State of layers:
-hovered layer: content root
+hovered layer: none
 selected layer: content root
 
 Selecting layer b
