@@ -57,26 +57,6 @@ SwitchAccessE2ETest.prototype = {
     `);
   },
 
-  navigateToWebpage: function(desktop) {
-    assertTrue(desktop != null);
-    // Find the node for the desired root web area.
-    const node = new AutomationTreeWalker(desktop, constants.Dir.FORWARD, {
-                   visit: (node) =>
-                       node.role === chrome.automation.RoleType.ROOT_WEB_AREA &&
-                       SwitchAccessPredicate.isInterestingSubtree(node, node)
-                 })
-                     .next()
-                     .node;
-
-    assertTrue(node != null);
-
-    // Set the node and scope in the navigation manager.
-    switchAccess.navigationManager_.scope_ = node;
-    switchAccess.navigationManager_.node_ = node;
-    // Move to the next node (first node inside the root web area).
-    switchAccess.moveForward();
-  },
-
   /**
    * Creates a callback that optionally calls {@code opt_callback} when
    * called.  If this method is called one or more times, then

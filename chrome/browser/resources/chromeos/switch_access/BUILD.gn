@@ -79,7 +79,6 @@ js2gtest("switch_access_extjs_tests") {
   test_type = "extension"
   sources = [
     "auto_scan_manager_test.extjs",
-    "menu_manager_test.extjs",
     "navigation_manager_test.extjs",
     "switch_access_predicate_test.extjs",
   ]
