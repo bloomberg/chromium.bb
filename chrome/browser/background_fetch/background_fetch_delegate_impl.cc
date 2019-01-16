@@ -124,12 +124,15 @@ void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
 
   if (ShouldReportProgressBySize()) {
     offline_item.progress.value = GetProcessedBytes();
-    // If we have completed all downloads, update progress max to
-    // |downloaded_bytes| in case |download_total_bytes| was set too high. This
-    // avoid unnecessary jumping in the progress bar.
-    offline_item.progress.max = job_state == State::kDownloadsComplete
-                                    ? fetch_description->downloaded_bytes
-                                    : fetch_description->download_total_bytes;
+    // If we have completed all downloads, update progress max to the processed
+    // bytes in case the provided totals were set too high. This avoids
+    // unnecessary jumping in the progress bar.
+    uint64_t completed_bytes =
+        fetch_description->downloaded_bytes + fetch_description->uploaded_bytes;
+    uint64_t total_bytes = fetch_description->download_total_bytes +
+                           fetch_description->upload_total_bytes;
+    offline_item.progress.max =
+        job_state == State::kDownloadsComplete ? completed_bytes : total_bytes;
   } else {
     offline_item.progress.value = fetch_description->completed_requests;
     offline_item.progress.max = fetch_description->total_requests;
@@ -168,13 +171,23 @@ void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
 }
 
 uint64_t BackgroundFetchDelegateImpl::JobDetails::GetProcessedBytes() const {
-  return fetch_description->downloaded_bytes + GetInProgressBytes();
+  return fetch_description->downloaded_bytes +
+         fetch_description->uploaded_bytes + GetInProgressBytes();
+}
+
+uint64_t BackgroundFetchDelegateImpl::JobDetails::GetDownloadedBytes() const {
+  uint64_t bytes = fetch_description->downloaded_bytes;
+  for (const auto& current_fetch : current_fetch_guids)
+    bytes += current_fetch.second.in_progress_downloaded_bytes;
+  return bytes;
 }
 
 uint64_t BackgroundFetchDelegateImpl::JobDetails::GetInProgressBytes() const {
   uint64_t bytes = 0u;
-  for (const auto& current_fetch : current_fetch_guids)
-    bytes += current_fetch.second.in_progress_downloaded_bytes;
+  for (const auto& current_fetch : current_fetch_guids) {
+    bytes += current_fetch.second.in_progress_downloaded_bytes +
+             current_fetch.second.in_progress_uploaded_bytes;
+  }
   return bytes;
 }
 
@@ -203,7 +216,7 @@ bool BackgroundFetchDelegateImpl::JobDetails::ShouldReportProgressBySize() {
 
   if (fetch_description->completed_requests <
           fetch_description->total_requests &&
-      GetProcessedBytes() > fetch_description->download_total_bytes) {
+      GetDownloadedBytes() > fetch_description->download_total_bytes) {
     // |download_total_bytes| was set too low.
     return false;
   }
@@ -476,7 +489,7 @@ void BackgroundFetchDelegateImpl::OnDownloadUpdated(
                                     bytes_downloaded);
   if (job_details.fetch_description->download_total_bytes &&
       job_details.fetch_description->download_total_bytes <
-          job_details.GetProcessedBytes()) {
+          job_details.GetDownloadedBytes()) {
     // Fail the fetch if total download size was set too low.
     // We only do this if total download size is specified. If not specified,
     // this check is skipped. This is to allow for situations when the
