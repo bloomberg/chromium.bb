@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_UBERTOKEN_FETCHER_H_
-#define COMPONENTS_SIGNIN_CORE_BROWSER_UBERTOKEN_FETCHER_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_UBERTOKEN_FETCHER_IMPL_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_UBERTOKEN_FETCHER_IMPL_H_
 
 #include <memory>
 
@@ -36,8 +36,8 @@ using GaiaAuthFetcherFactory =
         scoped_refptr<network::SharedURLLoaderFactory>)>;
 
 // Allows to retrieve an uber-auth token.
-class UbertokenFetcher : public GaiaAuthConsumer,
-                         public OAuth2TokenService::Consumer {
+class UbertokenFetcherImpl : public GaiaAuthConsumer,
+                             public OAuth2TokenService::Consumer {
  public:
   // Maximum number of retries to get the uber-auth token before giving up.
   static const int kMaxRetries;
@@ -48,7 +48,7 @@ class UbertokenFetcher : public GaiaAuthConsumer,
 
   // Constructs an instance and starts fetching the access token and ubertoken
   // sequencially for |account_id|.
-  UbertokenFetcher(
+  UbertokenFetcherImpl(
       const std::string& account_id,
       OAuth2TokenService* token_service,
       CompletionCallback ubertoken_callback,
@@ -57,7 +57,7 @@ class UbertokenFetcher : public GaiaAuthConsumer,
       bool is_bound_to_channel_id = true);
 
   // Constructs an instance and starts fetching the ubertoken for |account_id|.
-  UbertokenFetcher(
+  UbertokenFetcherImpl(
       const std::string& account_id,
       const std::string& access_token,
       OAuth2TokenService* token_service,
@@ -65,7 +65,7 @@ class UbertokenFetcher : public GaiaAuthConsumer,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       GaiaAuthFetcherFactory factory,
       bool is_bound_to_channel_id = true);
-  ~UbertokenFetcher() override;
+  ~UbertokenFetcherImpl() override;
 
   // Overriden from GaiaAuthConsumer
   void OnUberAuthTokenSuccess(const std::string& token) override;
@@ -98,9 +98,9 @@ class UbertokenFetcher : public GaiaAuthConsumer,
   base::OneShotTimer retry_timer_;
   bool second_access_token_request_;
 
-  DISALLOW_COPY_AND_ASSIGN(UbertokenFetcher);
+  DISALLOW_COPY_AND_ASSIGN(UbertokenFetcherImpl);
 };
 
 }  // namespace signin
 
-#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_UBERTOKEN_FETCHER_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_UBERTOKEN_FETCHER_IMPL_H_
