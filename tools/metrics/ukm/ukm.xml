@@ -1964,6 +1964,36 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Media.EME.RequestMediaKeySystemAccess">
+  <owner>xhwang@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Event recorded when RequestMediaKeySystemAccess() is called as part of
+    Encrypted Media Extensions (EME) API.
+  </summary>
+  <metric name="KeySystem">
+    <summary>
+      The key system passed in requestMediaKeySystemAccess() call.
+    </summary>
+  </metric>
+  <metric name="VideoCapabilities">
+    <summary>
+      Whether there are any &quot;videoCapabilities&quot;.
+    </summary>
+  </metric>
+  <metric name="VideoCapabilities.HasEmptyRobustness">
+    <summary>
+      Whether there are any &quot;videoCapabilities&quot; with empty robustness.
+    </summary>
+  </metric>
+  <metric name="VideoCapabilities.HasHwSecureAllRobustness">
+    <summary>
+      Whether there are any &quot;videoCapabilities&quot; with robustness being
+      &quot;HW_SECURE_ALL&quot;.
+    </summary>
+  </metric>
+</event>
+
 <event name="Media.Engagement.ShortPlaybackIgnored">
   <owner>beccahughes@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
