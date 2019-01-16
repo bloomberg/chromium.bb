@@ -12,8 +12,8 @@
 #include "build/buildflag.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
-#include "chrome/browser/signin/signin_tracker_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
@@ -28,6 +28,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 using content::MessageLoopRunner;
 
@@ -43,13 +44,11 @@ const char kGetPasswordFieldFromDiceSigninPage[] =
     "  return e.querySelector('input[type=password]');"
     "})()";
 
-// The SignInObserver observes the signin manager and blocks until a
-// GoogleSigninSucceeded or a GoogleSigninFailed notification is fired.
-class SignInObserver : public SigninTracker::Observer {
+// The SignInObserver observes the signin manager and blocks until a signin
+// success or failure notification is fired.
+class SignInObserver : public identity::IdentityManager::Observer {
  public:
   SignInObserver() : seen_(false), running_(false), signed_in_(false) {}
-
-  virtual ~SignInObserver() {}
 
   // Returns whether a GoogleSigninSucceeded event has happened.
   bool DidSignIn() {
@@ -68,14 +67,13 @@ class SignInObserver : public SigninTracker::Observer {
     EXPECT_TRUE(seen_);
   }
 
-  void SigninFailed(const GoogleServiceAuthError& error) override {
+  void OnPrimaryAccountSigninFailed(
+      const GoogleServiceAuthError& error) override {
     DVLOG(1) << "Google signin failed.";
     QuitLoopRunner();
   }
 
-  void AccountAddedToCookie(const GoogleServiceAuthError& error) override {}
-
-  void SigninSuccess() override {
+  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override {
     DVLOG(1) << "Google signin succeeded.";
     signed_in_ = true;
     QuitLoopRunner();
@@ -323,9 +321,11 @@ bool SignInWithUI(Browser* browser,
                   const std::string& username,
                   const std::string& password) {
   SignInObserver signin_observer;
-  std::unique_ptr<SigninTracker> tracker =
-      SigninTrackerFactory::CreateForProfile(browser->profile(),
-                                             &signin_observer);
+  ScopedObserver<identity::IdentityManager, SignInObserver>
+      scoped_signin_observer(&signin_observer);
+  scoped_signin_observer.Add(
+      IdentityManagerFactory::GetForProfile(browser->profile()));
+
   signin_metrics::AccessPoint access_point =
       signin_metrics::AccessPoint::ACCESS_POINT_MENU;
 
