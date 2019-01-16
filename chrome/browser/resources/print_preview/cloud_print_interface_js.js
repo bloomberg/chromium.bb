@@ -59,6 +59,7 @@ cr.define('cloudprint', function() {
        */
       this.outstandingCloudSearchRequests_ = [];
 
+      // <if expr="chromeos">
       /**
        * Promise that will be resolved when the access token for
        * DestinationOrigin.DEVICE is available. Null if there is no request
@@ -66,6 +67,7 @@ cr.define('cloudprint', function() {
        * @private {?Promise<string>}
        */
       this.accessTokenRequestPromise_ = null;
+      // </if>
 
       /** @private {!cr.EventTarget} */
       this.eventTarget_ = new cr.EventTarget();
@@ -84,7 +86,7 @@ cr.define('cloudprint', function() {
     /** @override */
     search(opt_account, opt_origin) {
       const account = opt_account || '';
-      let origins = opt_origin && [opt_origin] || CLOUD_ORIGINS_;
+      let origins = opt_origin ? [opt_origin] : print_preview.CloudOrigins;
       if (this.isInAppKioskMode_) {
         origins = origins.filter(function(origin) {
           return origin != print_preview.DestinationOrigin.COOKIES;
@@ -259,13 +261,15 @@ cr.define('cloudprint', function() {
         return;
       }
 
+      // <if expr="chromeos">
+      assert(request.origin == print_preview.DestinationOrigin.DEVICE);
       if (this.accessTokenRequestPromise_ == null) {
-        this.accessTokenRequestPromise_ =
-            this.nativeLayer_.getAccessToken(request.origin);
+        this.accessTokenRequestPromise_ = this.nativeLayer_.getAccessToken();
       }
 
       this.accessTokenRequestPromise_.then(
           this.onAccessTokenReady_.bind(this, request));
+      // </if>
     }
 
     /**
@@ -349,6 +353,7 @@ cr.define('cloudprint', function() {
           });
     }
 
+    // <if expr="chromeos">
     /**
      * Called when a native layer receives access token. Assumes that the
      * destination type for this token is DestinationOrigin.DEVICE.
@@ -369,6 +374,7 @@ cr.define('cloudprint', function() {
       }
       this.accessTokenRequestPromise_ = null;
     }
+    // </if>
 
     /**
      * Called when the ready-state of a XML http request changes.
@@ -620,16 +626,6 @@ cr.define('cloudprint', function() {
    * @private
    */
   const VERSION_REGEXP_ = /.*Chrome\/([\d\.]+)/i;
-
-  /**
-   * Could Print origins used to search printers.
-   * @const {!Array<!print_preview.DestinationOrigin>}
-   * @private
-   */
-  const CLOUD_ORIGINS_ = [
-    print_preview.DestinationOrigin.COOKIES,
-    print_preview.DestinationOrigin.DEVICE
-  ];
 
   class CloudPrintRequest {
     /**

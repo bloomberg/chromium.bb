@@ -469,8 +469,7 @@ cr.define('print_preview', function() {
       }
 
       if (this.cloudPrintInterface_ &&
-          (origin == print_preview.DestinationOrigin.COOKIES ||
-           origin == print_preview.DestinationOrigin.DEVICE)) {
+          print_preview.CloudOrigins.includes(origin)) {
         this.cloudPrintInterface_.printer(
             id, origin, serializedDestination.account);
         return true;
@@ -524,11 +523,9 @@ cr.define('print_preview', function() {
       types.forEach(type => {
         if (type != null) {  // Local, extension, or privet printer
           this.startLoadDestinations_(type);
-        } else if (
-            destinationMatch.matchOrigin(
-                print_preview.DestinationOrigin.COOKIES) ||
-            destinationMatch.matchOrigin(
-                print_preview.DestinationOrigin.DEVICE)) {
+        } else if (print_preview.CloudOrigins.some(origin => {
+                     return destinationMatch.matchOrigin(origin);
+                   })) {
           this.startLoadCloudDestinations();
         }
       });
@@ -570,8 +567,7 @@ cr.define('print_preview', function() {
         origins.push(print_preview.DestinationOrigin.CROS);
       }
       if (isCloud) {
-        origins.push(print_preview.DestinationOrigin.COOKIES);
-        origins.push(print_preview.DestinationOrigin.DEVICE);
+        origins.push(...print_preview.CloudOrigins);
       }
 
       let idRegExp = null;

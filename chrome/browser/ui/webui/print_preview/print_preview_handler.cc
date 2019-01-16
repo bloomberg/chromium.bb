@@ -75,13 +75,13 @@
 #include "printing/buildflags/buildflags.h"
 #include "printing/print_settings.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
-#include "services/identity/public/cpp/scope_set.h"
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "services/identity/public/cpp/scope_set.h"
 #endif
 
 using content::RenderFrameHost;
@@ -458,60 +458,26 @@ StickySettings* GetStickySettings() {
 
 }  // namespace
 
+#if defined(OS_CHROMEOS)
 class PrintPreviewHandler::AccessTokenService
-#if defined(OS_CHROMEOS)
-    : public OAuth2TokenService::Consumer
-#endif
-{
+    : public OAuth2TokenService::Consumer {
  public:
-  explicit AccessTokenService(PrintPreviewHandler* handler)
-      :
-#if defined(OS_CHROMEOS)
-        OAuth2TokenService::Consumer("print_preview"),
-#endif
-        handler_(handler) {
-  }
+  AccessTokenService() : OAuth2TokenService::Consumer("print_preview") {}
 
-  void RequestToken(const std::string& type, const std::string& callback_id) {
-    // There can only be one pending request per type at the same time. See
-    // cloud_print_interface.js.
-
+  void RequestToken(base::OnceCallback<void(const std::string&)> callback) {
+    // There can only be one pending request at a time. See
+    // cloud_print_interface_js.js.
     const identity::ScopeSet scopes{cloud_devices::kCloudPrintAuthScope};
-    if (type == "profile") {
-      DCHECK(access_token_fetcher_ == nullptr);
+    DCHECK(!device_request_callback_);
 
-      Profile* profile = Profile::FromWebUI(handler_->web_ui());
-      if (profile) {
-        identity::IdentityManager* identity_manager =
-            IdentityManagerFactory::GetForProfile(profile);
-        access_token_fetcher_ =
-            std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
-                "print_preview_handler", identity_manager, scopes,
-                base::BindOnce(&PrintPreviewHandler::AccessTokenService::
-                                   OnAccessTokenAvailable,
-                               base::Unretained(this), callback_id),
-                identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
-        return;
-      }
-    } else if (type == "device") {
-#if defined(OS_CHROMEOS)
-      DCHECK(device_request_callback_id_.empty());
+    chromeos::DeviceOAuth2TokenService* token_service =
+        chromeos::DeviceOAuth2TokenServiceFactory::Get();
+    std::string account_id = token_service->GetRobotAccountId();
 
-      chromeos::DeviceOAuth2TokenService* token_service =
-          chromeos::DeviceOAuth2TokenServiceFactory::Get();
-      std::string account_id = token_service->GetRobotAccountId();
-
-      device_request_ = token_service->StartRequest(account_id, scopes, this);
-      device_request_callback_id_ = callback_id;
-      return;
-#endif
-    }
-
-    // Unknown type.
-    handler_->SendAccessToken(callback_id, std::string());
+    device_request_ = token_service->StartRequest(account_id, scopes, this);
+    device_request_callback_ = std::move(callback);
   }
 
-#if defined(OS_CHROMEOS)
   void OnGetTokenSuccess(
       const OAuth2TokenService::Request* request,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response) override {
@@ -522,41 +488,21 @@ class PrintPreviewHandler::AccessTokenService
                          const GoogleServiceAuthError& error) override {
     OnServiceResponse(request, std::string());
   }
-#endif
 
  private:
-  void OnAccessTokenAvailable(const std::string& callback_id,
-                              GoogleServiceAuthError error,
-                              identity::AccessTokenInfo access_token_info) {
-    access_token_fetcher_.reset();
-
-    std::string token;
-    if (error.state() == GoogleServiceAuthError::NONE)
-      token = access_token_info.token;
-
-    handler_->SendAccessToken(callback_id, token);
-  }
-
-#if defined(OS_CHROMEOS)
   void OnServiceResponse(const OAuth2TokenService::Request* request,
                          const std::string& access_token) {
     DCHECK_EQ(request, device_request_.get());
-    handler_->SendAccessToken(device_request_callback_id_, access_token);
+    std::move(device_request_callback_).Run(access_token);
     device_request_.reset();
-    device_request_callback_id_.clear();
   }
 
   std::unique_ptr<OAuth2TokenService::Request> device_request_;
-  std::string device_request_callback_id_;
-#endif
-
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
-      access_token_fetcher_;
-
-  PrintPreviewHandler* const handler_;
+  base::OnceCallback<void(const std::string&)> device_request_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessTokenService);
 };
+#endif  // defined(OS_CHROMEOS)
 
 PrintPreviewHandler::PrintPreviewHandler()
     : regenerate_preview_request_count_(0),
@@ -602,10 +548,12 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "signIn", base::BindRepeating(&PrintPreviewHandler::HandleSignin,
                                     base::Unretained(this)));
+#if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "getAccessToken",
       base::BindRepeating(&PrintPreviewHandler::HandleGetAccessToken,
                           base::Unretained(this)));
+#endif
   web_ui()->RegisterMessageCallback(
       "closePrintPreviewDialog",
       base::BindRepeating(&PrintPreviewHandler::HandleClosePreviewDialog,
@@ -971,18 +919,20 @@ void PrintPreviewHandler::HandleSignin(const base::ListValue* args) {
                  weak_factory_.GetWeakPtr(), callback_id));
 }
 
+#if defined(OS_CHROMEOS)
 void PrintPreviewHandler::HandleGetAccessToken(const base::ListValue* args) {
   std::string callback_id;
-  std::string type;
 
-  bool ok = args->GetString(0, &callback_id) && args->GetString(1, &type) &&
-            !callback_id.empty();
+  bool ok = args->GetString(0, &callback_id) && !callback_id.empty();
   DCHECK(ok);
 
   if (!token_service_)
-    token_service_ = std::make_unique<AccessTokenService>(this);
-  token_service_->RequestToken(type, callback_id);
+    token_service_ = std::make_unique<AccessTokenService>();
+  token_service_->RequestToken(
+      base::BindOnce(&PrintPreviewHandler::SendAccessToken,
+                     weak_factory_.GetWeakPtr(), callback_id));
 }
+#endif
 
 #if BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
 void PrintPreviewHandler::HandleShowSystemDialog(
@@ -1103,12 +1053,14 @@ void PrintPreviewHandler::ClosePreviewDialog() {
   print_preview_ui()->OnClosePrintPreviewDialog();
 }
 
+#if defined(OS_CHROMEOS)
 void PrintPreviewHandler::SendAccessToken(const std::string& callback_id,
                                           const std::string& access_token) {
   VLOG(1) << "Get getAccessToken finished";
   ResolveJavascriptCallback(base::Value(callback_id),
                             base::Value(access_token));
 }
+#endif
 
 void PrintPreviewHandler::SendPrinterCapabilities(
     const std::string& callback_id,

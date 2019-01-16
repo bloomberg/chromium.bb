@@ -156,7 +156,9 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerFailingTest,
                            GetPrinterCapabilities);
 
+#if defined(OS_CHROMEOS)
   class AccessTokenService;
+#endif
 
   content::WebContents* preview_web_contents() const;
 
@@ -225,8 +227,10 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // |args| is unused.
   void HandleSignin(const base::ListValue* args);
 
+#if defined(OS_CHROMEOS)
   // Generates new token and sends back to UI.
   void HandleGetAccessToken(const base::ListValue* args);
+#endif
 
   // Gathers UMA stats when the print preview dialog is about to close.
   // |args| is unused.
@@ -239,9 +243,11 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   void SendInitialSettings(const std::string& callback_id,
                            const std::string& default_printer);
 
+#if defined(OS_CHROMEOS)
   // Send OAuth2 access token.
   void SendAccessToken(const std::string& callback_id,
                        const std::string& access_token);
+#endif
 
   // Sends the printer capabilities to the Web UI. |settings_info| contains
   // printer capabilities information. If |settings_info| is empty, sends
@@ -314,8 +320,10 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // The settings used for the most recent preview request.
   std::unique_ptr<base::DictionaryValue> last_preview_settings_;
 
+#if defined(OS_CHROMEOS)
   // Holds token service to get OAuth2 access tokens.
   std::unique_ptr<AccessTokenService> token_service_;
+#endif
 
   // Pointer to the identity manager service so that print preview can listen
   // for GAIA cookie changes.

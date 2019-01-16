@@ -22,11 +22,24 @@ print_preview.DestinationType = {
 print_preview.DestinationOrigin = {
   LOCAL: 'local',
   COOKIES: 'cookies',
+  // <if expr="chromeos">
   DEVICE: 'device',
+  // </if>
   PRIVET: 'privet',
   EXTENSION: 'extension',
   CROS: 'chrome_os',
 };
+
+/**
+ * Cloud Print origins.
+ * @const {!Array<!print_preview.DestinationOrigin>}
+ */
+print_preview.CloudOrigins = [
+  print_preview.DestinationOrigin.COOKIES,
+  // <if expr="chromeos">
+  print_preview.DestinationOrigin.DEVICE
+  // </if>
+];
 
 /**
  * Enumeration of the connection statuses of printer destinations.

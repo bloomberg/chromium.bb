@@ -539,14 +539,14 @@ Polymer({
   // <if expr="not chromeos">
   /** @private */
   onPrintWithSystemDialog_: function() {
-    assert(!cr.isChromeOS);
-    if (cr.isWindows) {
-      this.showSystemDialogBeforePrint_ = true;
-      this.onPrintRequested_();
-      return;
-    }
+    // <if expr="is_win">
+    this.showSystemDialogBeforePrint_ = true;
+    this.onPrintRequested_();
+    // </if>
+    // <if expr="not is_win">
     this.nativeLayer_.showSystemDialog();
     this.$.state.transitTo(print_preview_new.State.SYSTEM_DIALOG);
+    // </if>
   },
   // </if>
 
