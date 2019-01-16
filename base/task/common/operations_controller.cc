@@ -8,9 +8,7 @@
 namespace base {
 namespace internal {
 
-OperationsController::OperationsController() {
-  DETACH_FROM_SEQUENCE(owning_sequence_checker_);
-}
+OperationsController::OperationsController() = default;
 
 OperationsController::~OperationsController() {
 #if DCHECK_IS_ON()
@@ -26,7 +24,6 @@ OperationsController::~OperationsController() {
 }
 
 bool OperationsController::StartAcceptingOperations() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_checker_);
   // Release semantics are required to ensure that all memory accesses made on
   // this thread happen-before any others done on a thread which is later
   // allowed to perform an operation.
@@ -59,7 +56,6 @@ OperationsController::OperationToken OperationsController::TryBeginOperation() {
 }
 
 void OperationsController::ShutdownAndWaitForZeroOperations() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_checker_);
   // Acquire semantics are required to guarantee that all memory side-effects
   // made by other threads that were allowed to perform operations are
   // synchronized with this thread before it returns from this method.
