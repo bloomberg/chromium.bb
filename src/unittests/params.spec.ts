@@ -3,10 +3,10 @@ Unit tests for parameterization system.
 `;
 
 import {
-  TestGroup,
+  DefaultFixture,
   pcombine,
   poptions,
-  DefaultFixture,
+  TestGroup,
 } from "../framework/index.js";
 
 export const group = new TestGroup();
@@ -22,7 +22,6 @@ for (const params of [ {hello: 1}, {hello: 2} ]) {
 for (const params of poptions("hello", [1, 2, 3])) {
   group.testp("options", params, print);
 }
-
 
 for (const params of pcombine([])) {
   group.testp("combine/none", params, function() { this.fail(); });

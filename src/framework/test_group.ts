@@ -1,4 +1,4 @@
-import { GroupRecorder, CaseRecorder, IResult } from "./logger";
+import { CaseRecorder, GroupRecorder, IResult } from "./logger";
 import { ParamIterable } from "./params";
 
 type TestFn<F extends Fixture> = (this: F) => (Promise<void> | void);
@@ -7,18 +7,22 @@ interface ICase {
   params?: object;
   run: (log: CaseRecorder) => (Promise<void> | void);
 }
-interface RunCase {
+interface IRunCase {
   name: string;
   params?: object;
   run: () => Promise<IResult>;
 }
-interface IFixtureClass<F extends Fixture> {
-  new(log: CaseRecorder, params?: object): F;
-}
+type IFixtureClass<F extends Fixture> = new(log: CaseRecorder, params?: object) => F;
 
 export abstract class Fixture {
-  protected _rec: CaseRecorder;
   public params?: object;
+  // TODO: This is called _rec because it's supposed to be invisible to tests,
+  // but can't actually be since tests have 'this' bound to the fixture.
+  // Probably should not bind, and instead just pass an arg.
+  //
+  // TODO: If that, then also remove only-arrow-functions from tslint.json.
+  // tslint:disable-next-line variable-name
+  protected _rec: CaseRecorder;
 
   public constructor(log: CaseRecorder, params?: object) {
     this._rec = log;
@@ -49,7 +53,7 @@ export class DefaultFixture extends Fixture {
 
   public expect(cond: boolean, msg?: string) {
     if (cond) {
-      this.ok(msg)
+      this.ok(msg);
     } else {
       this._rec.fail(msg);
     }
@@ -62,7 +66,8 @@ export class TestGroup {
   public constructor() {
   }
 
-  public testpf<F extends Fixture>(name: string, params: (object | undefined), fixture: IFixtureClass<F>, fn: TestFn<F>): void {
+  public testpf<F extends Fixture>(
+      name: string, params: (object | undefined), fixture: IFixtureClass<F>, fn: TestFn<F>): void {
     const n = params ? (name + "/" + JSON.stringify(params)) : name;
     this.tests.push({ name: n, run: (log) => {
       const inst = new fixture(log, params);
@@ -82,7 +87,7 @@ export class TestGroup {
     return this.testpf(name, undefined, DefaultFixture, fn);
   }
 
-  public * iterate(log: GroupRecorder): Iterable<RunCase> {
+  public * iterate(log: GroupRecorder): Iterable<IRunCase> {
     for (const t of this.tests) {
       const [res, rec] = log.record(t.name, t.params);
       yield {name: t.name, params: t.params, run: async () => {

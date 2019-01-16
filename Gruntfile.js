@@ -78,6 +78,7 @@ module.exports = function(grunt) {
   publishTask("check", "Check Typescript build", [
     "ts:check",
   ]);
+  publishedTasks.push({name: "tslint", desc: "Run tslint"});
   publishTask("build", "Build out/", [
     "ts:out/",
     "run:list-cts",

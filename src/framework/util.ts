@@ -7,12 +7,9 @@ export function getStackTrace(): string {
   }
 }
 
+// tslint:disable-next-line no-var-requires
+const perf = typeof performance !== "undefined" ? performance : require("perf_hooks").performance;
+
 export function now(): number {
-  let p;
-  if (typeof(performance) !== "undefined") {
-    p = performance;
-  } else {
-    p = require('perf_hooks').performance;
-  }
-  return p.now();
+  return perf.now();
 }

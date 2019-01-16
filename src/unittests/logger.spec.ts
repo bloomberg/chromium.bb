@@ -15,7 +15,7 @@ group.test("construct", function() {
   const params2 = {};
   const [res2, rec2] = testrec.record("qux", params2);
 
-  this.expect(testres.path == "foo/bar");
+  this.expect(testres.path === "foo/bar");
   this.expect(testres.cases.length === 2);
   this.expect(testres.cases[0] === res1);
   this.expect(testres.cases[1] === res2);

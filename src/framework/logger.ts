@@ -2,17 +2,15 @@ import { getStackTrace, now } from "./util.js";
 
 type Status = "running" | "pass" | "warn" | "fail";
 interface ITestLog {
-  path: string,
-  cases: IResult[],
+  path: string;
+  cases: IResult[];
 }
 export interface IResult {
-  name: string,
-  params?: object,
-  status: Status,
-  logs?: ILogEntry[],
-  timems: number,
-}
-interface ILogEntry {
+  name: string;
+  params?: object;
+  status: Status;
+  logs?: string[];
+  timems: number;
 }
 
 export class Logger {
@@ -51,7 +49,7 @@ export class CaseRecorder {
   private failed: boolean = false;
   private warned: boolean = false;
   private startTime: number = -1;
-  private logs: ILogEntry[] = [];
+  private logs: string[] = [];
 
   constructor(result: IResult) {
     this.result = result;

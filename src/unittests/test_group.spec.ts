@@ -20,7 +20,7 @@ group.test("test", print);
 group.testp("testp", {a: 1}, print);
 
 class Printer extends Fixture {
-  print() {
+  public print() {
     this.log(JSON.stringify(this.params));
   }
 }

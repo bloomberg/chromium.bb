@@ -8,6 +8,7 @@
     "no-empty": false,
     "max-classes-per-file": false,
     "max-line-length": [true, 100],
+    "only-arrow-functions": false,
     "no-implicit-dependencies": [true, ["framework"]]
   },
   "rulesDirectory": [],
