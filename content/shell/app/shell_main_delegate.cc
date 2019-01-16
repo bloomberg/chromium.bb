@@ -359,7 +359,7 @@ int ShellMainDelegate::RunProcess(
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventBrowserProcessSortIndex);
 
-  browser_runner_.reset(BrowserMainRunner::Create());
+  browser_runner_ = BrowserMainRunner::Create();
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   return command_line.HasSwitch(switches::kRunWebTests)
              ? WebTestBrowserMain(main_function_params, browser_runner_)

@@ -92,7 +92,7 @@ int ChromeMainDelegateAndroid::RunProcess(
     if (!browser_runner_.get()) {
       startup_metric_utils::RecordMainEntryPointTime(
           chrome::android::GetMainEntryPointTimeTicks());
-      browser_runner_.reset(content::BrowserMainRunner::Create());
+      browser_runner_ = content::BrowserMainRunner::Create();
     }
     return browser_runner_->Initialize(main_function_params);
   }

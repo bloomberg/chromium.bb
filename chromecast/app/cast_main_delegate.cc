@@ -177,7 +177,7 @@ int CastMainDelegate::RunProcess(
 
   // Note: Android must handle running its own browser process.
   // See ChromeMainDelegateAndroid::RunProcess.
-  browser_runner_.reset(content::BrowserMainRunner::Create());
+  browser_runner_ = content::BrowserMainRunner::Create();
   return browser_runner_->Initialize(main_function_params);
 #else
   return -1;
