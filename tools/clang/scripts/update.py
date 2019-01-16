@@ -509,6 +509,14 @@ def UpdateClang(args):
 
   print 'Locally building Clang %s...' % PACKAGE_VERSION
 
+  if use_head_revision:
+    # TODO(hans): Trunk version was updated; remove after the next roll.
+    # Remove the old lib dir.
+    old_lib_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang', '8.0.0')
+    if (os.path.isdir(old_lib_dir)):
+      print 'Removing old lib dir: %s' % old_lib_dir
+      RmTree(old_lib_dir)
+
   AddCMakeToPath(args)
   AddGnuWinToPath()
 
@@ -980,7 +988,7 @@ def main():
   if use_head_revision:
     # TODO(hans): Trunk version was updated; remove after the next roll.
     global VERSION
-    VERSION = '8.0.0'
+    VERSION = '9.0.0'
 
   if args.verify_version and args.verify_version != VERSION:
     print 'VERSION is %s but --verify-version argument was %s, exiting.' % (
