@@ -60,6 +60,8 @@ std::unique_ptr<Entry> MakeEntryFromManifest(
       manifest.options.can_connect_to_instances_with_any_id;
   options.can_create_other_service_instances =
       manifest.options.can_register_other_service_instances;
+  options.interfaces_bindable_on_any_service =
+      manifest.interfaces_bindable_on_any_service;
   entry->AddOptions(options);
 
   service_manager::InterfaceProviderSpec main_spec;

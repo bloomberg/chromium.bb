@@ -57,3 +57,7 @@ interface ExposedInterface {
 interface BlockedInterface {
   GetTitleBlocked() => (string blocked_title);
 };
+
+interface AlwaysAllowedInterface {
+  GetTitleAlwaysAllowed() => (string title);
+};

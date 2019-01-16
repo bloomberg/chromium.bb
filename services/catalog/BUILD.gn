@@ -30,6 +30,7 @@ component("lib") {
     "entry_cache.h",
     "instance.cc",
     "instance.h",
+    "service_options.cc",
     "service_options.h",
   ]
 

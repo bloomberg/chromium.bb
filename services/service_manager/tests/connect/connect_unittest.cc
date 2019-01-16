@@ -151,6 +151,9 @@ const std::vector<Manifest>& GetTestManifests() {
            .RequireCapability(kTestAppAName, kStandaloneAppControlCapability)
            .RequireCapability(kTestAppAName, kIdentityTestCapability)
            .RequireCapability(kTestPackageName, kConnectTestServiceCapability)
+           .WithInterfacesBindableOnAnyService(
+               Manifest::InterfaceList<test::mojom::AlwaysAllowedInterface>())
+
            .Build()}};
 
   return *manifests;
@@ -468,6 +471,19 @@ TEST_F(ConnectTest, MAYBE_BlockedInterface) {
   blocked->GetTitleBlocked(base::Bind(&ReceiveOneString, &title, &run_loop));
   run_loop.Run();
   EXPECT_EQ("unchanged", title);
+}
+
+TEST_F(ConnectTest, AlwaysAllowedInterface) {
+  base::RunLoop run_loop;
+  test::mojom::AlwaysAllowedInterfacePtr always_allowed;
+  connector()->BindInterface(ServiceFilter::ByName(kTestAppAName),
+                             &always_allowed);
+  always_allowed.set_connection_error_handler(base::Bind(&QuitLoop, &run_loop));
+  std::string title = "unchanged";
+  always_allowed->GetTitleAlwaysAllowed(
+      base::Bind(&ReceiveOneString, &title, &run_loop));
+  run_loop.Run();
+  EXPECT_EQ("always_allowed", title);
 }
 
 // Connects to an app provided by a package.
