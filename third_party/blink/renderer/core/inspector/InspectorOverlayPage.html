@@ -34,6 +34,14 @@ body {
     padding: 0;
     font-size: 13px;
     color: #222;
+    --arrow-width: 15px;
+    --arrow-height: 8px;
+    --shadow-up: 5px;
+    --shadow-down: -5px;
+    --shadow-direction: var(--shadow-up);
+    --arrow-up: polygon(0 0, 100% 0, 50% 100%);
+    --arrow-down: polygon(50% 0, 0 100%, 100% 100%);
+    --arrow: var(--arrow-up);
 }
 
 body.platform-linux {
@@ -145,8 +153,7 @@ body.platform-windows {
     display: none !important;
 }
 
-.tooltip-content,
-.material-tooltip-arrow {
+.tooltip-content {
     position: absolute;
     z-index: 10;
     -webkit-user-select: none;
@@ -164,6 +171,18 @@ body.platform-windows {
     text-rendering: optimizeLegibility;
     pointer-events: none;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
+}
+
+.tooltip-content::after {
+    content: "";
+    background: white;
+    width: var(--arrow-width);
+    height: var(--arrow-height);
+    clip-path: var(--arrow);
+    position: absolute;
+    top: var(--arrow-top);
+    left: var(--arrow-left);
+    visibility: var(--arrow-visibility);
 }
 
 .element-info {
@@ -223,19 +242,6 @@ body.platform-windows {
 .color-swatch-inner {
     flex: auto;
     border: 1px solid rgba(128, 128, 128, 0.6);
-}
-
-.material-tooltip-arrow {
-    border: solid;
-    border-color: white transparent;
-    border-width: 0 8px 8px 8px;
-    z-index: 2;
-    margin-top: 1px;
-}
-
-.material-tooltip-arrow.tooltip-arrow-top {
-    border-width: 8px 8px 0 8px;
-    margin-top: -1px;
 }
 
 .element-description {
@@ -694,7 +700,7 @@ function _createMaterialTooltip(parentElement, bounds, contentElement, withArrow
             arrowX = Number.constrain(containerMinX, xFromLeftBound, xFromRightBound);
     }
     // Hide arrow if element is completely off the sides of the page.
-    const arrowHidden = arrowX < containerMinX || arrowX > containerMaxX;
+    const arrowHidden = !withArrow || arrowX < containerMinX || arrowX > containerMaxX;
 
     let boxX = arrowX - arrowInset;
     boxX = Number.constrain(boxX, pageMargin, canvasWidth - titleWidth - pageMargin);
@@ -710,16 +716,14 @@ function _createMaterialTooltip(parentElement, bounds, contentElement, withArrow
 
     tooltipContent.style.top = boxY + "px";
     tooltipContent.style.left = boxX + "px";
-    if (!withArrow)
+    tooltipContent.style.setProperty('--arrow-visibility', arrowHidden ? 'hidden' : 'visible');
+    if (arrowHidden)
         return;
 
-    const tooltipArrow = tooltipContainer.createChild("div", "material-tooltip-arrow");
-    tooltipArrow.classList.toggle("hidden", arrowHidden);
-    if (!arrowHidden) {
-        tooltipArrow.classList.toggle("tooltip-arrow-top", onTop);
-        tooltipArrow.style.top = (onTop ? boxY + titleHeight : boxY - arrowHalfWidth) + "px";
-        tooltipArrow.style.left = arrowX + "px";
-    }
+    tooltipContent.style.setProperty('--arrow', onTop ? 'var(--arrow-up)' : 'var(--arrow-down)');
+    tooltipContent.style.setProperty('--shadow-direction', onTop ? 'var(--shadow-up)' : 'var(--shadow-down)');
+    tooltipContent.style.setProperty('--arrow-top', (onTop ? titleHeight : -arrowHalfWidth) + 'px');
+    tooltipContent.style.setProperty('--arrow-left', (arrowX - boxX) + 'px');
 }
 
 function _drawRulers(context, bounds, rulerAtRight, rulerAtBottom)
@@ -1057,17 +1061,9 @@ function test() {
         scrollY: 0
     });
     drawHighlight(
-        {
-            paths: [{path: []}],
-            elementInfo: {
-                tagName:"a",
-                className:"class",
-                nodeWidth: 800,
-                nodeHeight: 600,
-                style: {"color": "#FF0000FF", "background-color": "#FFFF107F", "font-family": "serif", "font-size": "12px", "font-weight": "normal"},
-                contrast: { fontWidth: "normal", fontSize: "12px", backgroundColor: "#FFFFFFFF" }
-            }
-        });
+        {"paths":[{"path":["M",122,133.796875,"L",822,133.796875,"L",822,208.796875,"L",122,208.796875,"Z"], "fillColor":"rgba(111, 168, 220, 0.658823529411765)","name":"content"},
+        {"path":["M",122,113.796875,"L",822,113.796875,"L",822,228.796875,"L",122,228.796875,"Z"],"fillColor":"rgba(246, 178, 107, 0.66)","name":"margin"}],"showRulers":false,"showExtensionLines":false,
+        "elementInfo":{"tagName":"p","idValue":"","nodeWidth":"700","nodeHeight":"75","style":{"color":"#FFFFFFFF","font-family":"\"Product Sans\", \"Open Sans\", Roboto, Arial","font-size":"20px","line-height":"25px","padding":"0px","margin":"20px 0px","background-color":"#00000000"},"contrast":{"fontSize":"20px","fontWeight":"400","backgroundColor":"#F9B826BF"}}});
 }
 
 window.addEventListener("DOMContentLoaded", onLoaded);
