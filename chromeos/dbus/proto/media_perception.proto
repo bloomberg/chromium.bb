@@ -95,6 +95,7 @@ message State {
     FEATURE_HOTWORD_DETECTION = 2;
     FEATURE_OCCUPANCY_DETECTION = 3;
     FEATURE_EDGE_EMBEDDINGS = 4;
+    FEATURE_SOFTWARE_CROPPING = 5;
   }
 
   // A list of enabled media perception features.
