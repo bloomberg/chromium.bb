@@ -101,7 +101,6 @@ LoginHandler::LoginHandler(
     : handled_auth_(false),
       auth_info_(auth_info),
       web_contents_getter_(web_contents_getter),
-      login_model_(NULL),
       auth_required_callback_(std::move(auth_required_callback)),
       has_shown_login_handler_(false),
       release_soon_has_been_called_(false) {
@@ -282,21 +281,7 @@ bool LoginHandler::WasAuthHandled() const {
   return was_handled;
 }
 
-LoginHandler::~LoginHandler() {
-  ResetModel();
-}
-
-void LoginHandler::SetModel(LoginModelData model_data) {
-  ResetModel();
-  login_model_ = model_data.model;
-  login_model_->AddObserverAndDeliverCredentials(this, model_data.form);
-}
-
-void LoginHandler::ResetModel() {
-  if (login_model_)
-    login_model_->RemoveObserver(this);
-  login_model_ = nullptr;
-}
+LoginHandler::~LoginHandler() = default;
 
 void LoginHandler::NotifyAuthNeeded() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
