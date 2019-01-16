@@ -12,6 +12,7 @@ GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
+GEN('#include "components/omnibox/browser/omnibox_field_trial.h"');
 
 /**
  * Test fixture for Polymer Settings elements.
@@ -576,6 +577,12 @@ CrSettingsPeoplePageTest.prototype = {
   /** @override */
   browsePreload: 'chrome://settings/people_page/people_page.html',
 
+  // Omnibox's Document Provider adds a dynamic setting to a list which is
+  // length-checked in this test. The feature is defaulted on here during
+  // rollout, reflecting its value in fieldtrial_testing_config.json.
+  // See crbug.com/908435.
+  featureList: ['omnibox::kDocumentProvider', ''],
+
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
@@ -660,6 +667,12 @@ CrSettingsPeoplePageSyncPageTest.prototype = {
 
   /** @override */
   browsePreload: 'chrome://settings/people_page/sync_page.html',
+
+  // Omnibox's Document Provider adds a dynamic setting to a list which is
+  // length-checked in this test. The feature is defaulted on here during
+  // rollout, reflecting its value in fieldtrial_testing_config.json.
+  // See crbug.com/908435.
+  featureList: ['omnibox::kDocumentProvider', ''],
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
