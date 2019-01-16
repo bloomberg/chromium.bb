@@ -547,7 +547,11 @@ void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
     scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
         params.Options().initiator_info.name, CurrentTimeTicks(),
         resource->GetType() == ResourceType::kMainResource);
-    info->SetInitialURL(resource->GetResourceRequest().Url());
+    // TODO(yoav): Setting to the original URL is only needed until Out-of-Blink
+    // CORS lands: https://crbug.com/736308
+    info->SetInitialURL(resource->GetResourceRequest().GetOriginalUrl().IsNull()
+                            ? resource->GetResourceRequest().Url()
+                            : resource->GetResourceRequest().GetOriginalUrl());
     ResourceResponse final_response = resource->GetResponse();
     final_response.SetResourceLoadTiming(nullptr);
     info->SetFinalResponse(final_response);
@@ -1690,7 +1694,10 @@ void ResourceFetcher::HandleLoaderFinish(
           resource_timing_info_map_.Take(resource)) {
     if (resource->GetResponse().IsHTTP() &&
         resource->GetResponse().HttpStatusCode() < 400) {
-      info->SetInitialURL(resource->GetResourceRequest().Url());
+      info->SetInitialURL(
+          resource->GetResourceRequest().GetOriginalUrl().IsNull()
+              ? resource->GetResourceRequest().Url()
+              : resource->GetResourceRequest().GetOriginalUrl());
       info->SetFinalResponse(resource->GetResponse());
       info->SetLoadFinishTime(finish_time);
       // encodedDataLength == -1 means "not available".
