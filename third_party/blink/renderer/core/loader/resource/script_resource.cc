@@ -291,27 +291,27 @@ void ScriptResource::StreamingFinished() {
   TextResource::NotifyFinished();
 }
 
-bool ScriptResource::StartStreaming(
+void ScriptResource::StartStreaming(
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner) {
   CheckStreamingState();
 
   if (streamer_) {
-    return !streamer_->IsStreamingFinished();
+    return;
   }
 
   if (streaming_state_ != StreamingState::kCanStartStreaming) {
-    return false;
+    return;
   }
 
   // Don't bother streaming if there was an error, it won't work anyway.
   if (ErrorOccurred()) {
-    return false;
+    return;
   }
 
   static bool script_streaming_enabled =
       base::FeatureList::IsEnabled(features::kScriptStreaming);
   if (!script_streaming_enabled) {
-    return false;
+    return;
   }
 
   CHECK(!IsCacheValidator());
@@ -344,7 +344,7 @@ bool ScriptResource::StartStreaming(
   }
 
   CheckStreamingState();
-  return streamer_ && !streamer_->IsStreamingFinished();
+  return;
 }
 
 void ScriptResource::SetClientIsWaitingForFinished() {

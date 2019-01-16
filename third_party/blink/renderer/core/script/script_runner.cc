@@ -49,7 +49,9 @@ void ScriptRunner::QueueScriptForExecution(PendingScript* pending_script) {
   switch (pending_script->GetSchedulingType()) {
     case ScriptSchedulingType::kAsync:
       pending_async_scripts_.insert(pending_script);
-      TryStream(pending_script);
+      if (!is_suspended_) {
+        pending_script->StartStreamingIfPossible();
+      }
       break;
 
     case ScriptSchedulingType::kInOrder:
@@ -116,7 +118,6 @@ void ScriptRunner::NotifyScriptReady(PendingScript* pending_script) {
       async_scripts_to_execute_soon_.push_back(pending_script);
 
       PostTask(FROM_HERE);
-      TryStreamAny();
       break;
 
     case ScriptSchedulingType::kInOrder:
@@ -142,11 +143,6 @@ bool ScriptRunner::RemovePendingInOrderScript(PendingScript* pending_script) {
   SECURITY_CHECK(number_of_in_order_scripts_with_pending_notification_ > 0);
   number_of_in_order_scripts_with_pending_notification_--;
   return true;
-}
-
-void ScriptRunner::NotifyScriptStreamerFinished() {
-  PostTask(FROM_HERE);
-  TryStreamAny();
 }
 
 void ScriptRunner::MovePendingScript(Document& old_document,
@@ -223,20 +219,11 @@ bool ScriptRunner::ExecuteInOrderTask() {
 
 bool ScriptRunner::ExecuteAsyncTask() {
   TRACE_EVENT0("blink", "ScriptRunner::ExecuteAsyncTask");
-  // Find an async script loader which is not currently streaming.
-  auto it = std::find_if(async_scripts_to_execute_soon_.begin(),
-                         async_scripts_to_execute_soon_.end(),
-                         [](PendingScript* pending_script) {
-                           DCHECK(pending_script);
-                           return !pending_script->IsCurrentlyStreaming();
-                         });
-  if (it == async_scripts_to_execute_soon_.end()) {
+  if (async_scripts_to_execute_soon_.IsEmpty())
     return false;
-  }
 
   // Remove the async script loader from the ready-to-exec set and execute.
-  PendingScript* pending_script = *it;
-  async_scripts_to_execute_soon_.erase(it);
+  PendingScript* pending_script = async_scripts_to_execute_soon_.TakeFirst();
 
   DCHECK_EQ(pending_script->GetSchedulingType(), ScriptSchedulingType::kAsync)
       << "Async scripts queue should not contain any in-order script.";
@@ -258,68 +245,10 @@ void ScriptRunner::ExecuteTask() {
     return;
 
 #ifndef NDEBUG
-  // Extra tasks should be posted only when we resume after suspending,
-  // or when we stream a script. These should all be accounted for in
-  // number_of_extra_tasks_.
+  // Extra tasks should be posted only when we resume after suspending. These
+  // should all be accounted for in number_of_extra_tasks_.
   DCHECK_GT(number_of_extra_tasks_--, 0);
 #endif
-}
-
-void ScriptRunner::TryStreamAny() {
-  if (is_suspended_)
-    return;
-
-  if (!RuntimeEnabledFeatures::WorkStealingInScriptRunnerEnabled())
-    return;
-
-  // Look through async_scripts_to_execute_soon_, and stream any one of them.
-  for (auto pending_script : async_scripts_to_execute_soon_) {
-    if (DoTryStream(pending_script))
-      return;
-  }
-}
-
-void ScriptRunner::TryStream(PendingScript* pending_script) {
-  if (!is_suspended_)
-    DoTryStream(pending_script);
-}
-
-bool ScriptRunner::DoTryStream(PendingScript* pending_script) {
-  // Checks that all callers should have already done.
-  DCHECK(!is_suspended_);
-  DCHECK(pending_script);
-
-  // Currently, we stream only async scripts in this function.
-  // Note: HTMLParserScriptRunner kicks streaming for deferred or blocking
-  // scripts.
-  DCHECK(pending_async_scripts_.find(pending_script) !=
-             pending_async_scripts_.end() ||
-         std::find(async_scripts_to_execute_soon_.begin(),
-                   async_scripts_to_execute_soon_.end(),
-                   pending_script) != async_scripts_to_execute_soon_.end());
-
-  if (!pending_script)
-    return false;
-
-  DCHECK_EQ(pending_script->GetSchedulingType(), ScriptSchedulingType::kAsync);
-
-#ifndef NDEBUG
-  bool was_already_streaming = pending_script->IsCurrentlyStreaming();
-#endif
-
-  bool success = pending_script->StartStreamingIfPossible(
-      WTF::Bind(&ScriptRunner::NotifyScriptStreamerFinished,
-                WrapWeakPersistent(this)));
-#ifndef NDEBUG
-  if (was_already_streaming) {
-    DCHECK(!success);
-  } else {
-    DCHECK_EQ(success, pending_script->IsCurrentlyStreaming());
-  }
-  if (success)
-    number_of_extra_tasks_++;
-#endif
-  return success;
 }
 
 void ScriptRunner::Trace(blink::Visitor* visitor) {

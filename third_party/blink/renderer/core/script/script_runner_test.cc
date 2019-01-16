@@ -49,40 +49,9 @@ class MockPendingScript : public PendingScript {
   MOCK_METHOD0(RemoveFromMemoryCache, void());
   MOCK_METHOD1(ExecuteScriptBlock, void(const KURL&));
 
-  enum class State {
-    kStreamingNotReady,
-    kReadyToBeStreamed,
-    kStreaming,
-    kStreamingFinished,
-  };
+  void StartStreamingIfPossible() override {}
 
-  bool IsCurrentlyStreaming() const override {
-    return state_ == State::kStreaming;
-  }
-
-  void PrepareForStreaming() {
-    DCHECK_EQ(state_, State::kStreamingNotReady);
-    state_ = State::kReadyToBeStreamed;
-  }
-
-  bool StartStreamingIfPossible(base::OnceClosure closure) override {
-    if (state_ != State::kReadyToBeStreamed)
-      return false;
-
-    state_ = State::kStreaming;
-    streaming_finished_callback_ = std::move(closure);
-    return true;
-  }
-
-  void SimulateStreamingEnd() {
-    DCHECK_EQ(state_, State::kStreaming);
-    state_ = State::kStreamingFinished;
-    std::move(streaming_finished_callback_).Run();
-  }
-
-  State state() const { return state_; }
-
-  bool IsReady() const { return is_ready_; }
+  bool IsReady() const override { return is_ready_; }
   void SetIsReady(bool is_ready) { is_ready_ = is_ready; }
 
  protected:
@@ -101,7 +70,6 @@ class MockPendingScript : public PendingScript {
     return pending_script;
   }
 
-  State state_ = State::kStreamingNotReady;
   bool is_ready_ = false;
   base::OnceClosure streaming_finished_callback_;
 };
@@ -447,32 +415,6 @@ TEST_F(ScriptRunnerTest, TryStreamWhenEnqueingScript) {
   auto* pending_script1 = MockPendingScript::CreateAsync(document_);
   pending_script1->SetIsReady(true);
   QueueScriptForExecution(pending_script1);
-}
-
-TEST_F(ScriptRunnerTest, DontExecuteWhileStreaming) {
-  auto* pending_script = MockPendingScript::CreateAsync(document_);
-
-  // Enqueue script.
-  QueueScriptForExecution(pending_script);
-
-  // Simulate script load and mark the pending script as streaming ready.
-  pending_script->SetIsReady(true);
-  pending_script->PrepareForStreaming();
-  NotifyScriptReady(pending_script);
-
-  // ScriptLoader should have started streaming by now.
-  EXPECT_EQ(pending_script->state(), MockPendingScript::State::kStreaming);
-
-  // Note that there is no expectation for ScriptLoader::Execute() yet,
-  // so the mock will fail if it's called anyway.
-  platform_->RunUntilIdle();
-
-  // Finish streaming.
-  pending_script->SimulateStreamingEnd();
-
-  // Now that streaming is finished, expect Execute() to be called.
-  EXPECT_CALL(*pending_script, ExecuteScriptBlock(_)).Times(1);
-  platform_->RunUntilIdle();
 }
 
 }  // namespace blink

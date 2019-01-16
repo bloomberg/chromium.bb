@@ -139,7 +139,6 @@ CONTENT_EXPORT extern const base::Feature kWebXrGamepadSupport;
 CONTENT_EXPORT extern const base::Feature kWebXrHitTest;
 CONTENT_EXPORT extern const base::Feature kWebXrOrientationSensorDevice;
 CONTENT_EXPORT extern const base::Feature kWipeCorruptV2IDBDatabases;
-CONTENT_EXPORT extern const base::Feature kWorkStealingInScriptRunner;
 CONTENT_EXPORT extern const base::Feature kScheduledScriptStreaming;
 CONTENT_EXPORT extern const base::Feature kScriptStreamingOnPreload;
 

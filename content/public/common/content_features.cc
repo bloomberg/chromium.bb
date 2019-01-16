@@ -624,10 +624,6 @@ const base::Feature kWebXrOrientationSensorDevice{
 const base::Feature kWipeCorruptV2IDBDatabases{
     "WipeCorruptV2IDBDatabases", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enabled "work stealing" in the script runner.
-const base::Feature kWorkStealingInScriptRunner{
-    "WorkStealingInScriptRunner", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enabled scheduler use for script streaming.
 const base::Feature kScheduledScriptStreaming{"ScheduledScriptStreaming",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
