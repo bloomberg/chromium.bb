@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/history/core/browser/default_top_sites_provider.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/top_sites_impl.h"
@@ -30,7 +30,8 @@ scoped_refptr<history::TopSites> TopSitesFactory::GetForBrowserState(
 
 // static
 TopSitesFactory* TopSitesFactory::GetInstance() {
-  return base::Singleton<TopSitesFactory>::get();
+  static base::NoDestructor<TopSitesFactory> instance;
+  return instance.get();
 }
 
 TopSitesFactory::TopSitesFactory()

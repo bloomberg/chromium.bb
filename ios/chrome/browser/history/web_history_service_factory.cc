@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -45,7 +45,8 @@ history::WebHistoryService* WebHistoryServiceFactory::GetForBrowserState(
 
 // static
 WebHistoryServiceFactory* WebHistoryServiceFactory::GetInstance() {
-  return base::Singleton<WebHistoryServiceFactory>::get();
+  static base::NoDestructor<WebHistoryServiceFactory> instance;
+  return instance.get();
 }
 
 WebHistoryServiceFactory::WebHistoryServiceFactory()
