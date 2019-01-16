@@ -135,6 +135,14 @@ void OfflineAudioDestinationHandler::StopRendering() {
   NOTREACHED();
 }
 
+void OfflineAudioDestinationHandler::Pause() {
+  NOTREACHED();
+}
+
+void OfflineAudioDestinationHandler::Resume() {
+  NOTREACHED();
+}
+
 void OfflineAudioDestinationHandler::InitializeOfflineRenderThread(
     AudioBuffer* render_target) {
   DCHECK(IsMainThread());

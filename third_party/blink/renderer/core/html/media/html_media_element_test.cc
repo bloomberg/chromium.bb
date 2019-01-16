@@ -131,6 +131,10 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
     return !!Media()->lazy_load_visibility_observer_;
   }
 
+  ExecutionContext* GetExecutionContext() const {
+    return &dummy_page_holder_->GetDocument();
+  }
+
  private:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
   Persistent<HTMLMediaElement> media_;
@@ -465,6 +469,20 @@ TEST_P(HTMLMediaElementTest, VisibilityObserverCreatedForLazyLoad) {
 
 TEST_P(HTMLMediaElementTest, DomInteractive) {
   EXPECT_FALSE(Media()->GetDocument().GetTiming().DomInteractive().is_null());
+}
+
+TEST_P(HTMLMediaElementTest, ContextPaused) {
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  Media()->Play();
+
+  test::RunPendingTasks();
+  SetReadyState(HTMLMediaElement::kHaveFutureData);
+
+  EXPECT_FALSE(Media()->paused());
+  GetExecutionContext()->PausePausableObjects(PauseState::kFrozen);
+  EXPECT_TRUE(Media()->paused());
+  GetExecutionContext()->UnpausePausableObjects();
+  EXPECT_FALSE(Media()->paused());
 }
 
 }  // namespace blink

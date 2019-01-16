@@ -126,6 +126,20 @@ void DefaultAudioDestinationHandler::StopRendering() {
   StopPlatformDestination();
 }
 
+void DefaultAudioDestinationHandler::Pause() {
+  DCHECK(IsMainThread());
+  if (platform_destination_) {
+    platform_destination_->Pause();
+  }
+}
+
+void DefaultAudioDestinationHandler::Resume() {
+  DCHECK(IsMainThread());
+  if (platform_destination_) {
+    platform_destination_->Resume();
+  }
+}
+
 void DefaultAudioDestinationHandler::RestartRendering() {
   DCHECK(IsMainThread());
 

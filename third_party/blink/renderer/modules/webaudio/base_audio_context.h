@@ -119,6 +119,8 @@ class MODULES_EXPORT BaseAudioContext
   }
 
   // Document notification
+  void ContextPaused(PauseState) override;
+  void ContextUnpaused() override;
   void ContextDestroyed(ExecutionContext*) override;
   bool HasPendingActivity() const override;
 

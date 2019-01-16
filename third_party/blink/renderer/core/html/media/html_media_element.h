@@ -383,6 +383,8 @@ class CORE_EXPORT HTMLMediaElement
   bool IsInteractiveContent() const final;
 
   // PausableObject functions.
+  void ContextPaused(PauseState) override;
+  void ContextUnpaused() override;
   void ContextDestroyed(ExecutionContext*) override;
 
   virtual void UpdateDisplayState() {}
@@ -654,6 +656,7 @@ class CORE_EXPORT HTMLMediaElement
   bool muted_ : 1;
   bool paused_ : 1;
   bool seeking_ : 1;
+  bool paused_by_context_paused_ : 1;
 
   // data has not been loaded since sending a "stalled" event
   bool sent_stalled_event_ : 1;
