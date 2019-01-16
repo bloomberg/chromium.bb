@@ -4717,6 +4717,7 @@ static void generate_next_ref_frame_map(AV1Decoder *const pbi) {
 // If the refresh_frame_flags bitmask is set, update reference frame id values
 // and mark frames as valid for reference.
 static void update_ref_frame_id(AV1_COMMON *const cm, int frame_id) {
+  assert(cm->seq_params.frame_id_numbers_present_flag);
   int refresh_frame_flags = cm->current_frame.refresh_frame_flags;
   for (int i = 0; i < REF_FRAMES; i++) {
     if ((refresh_frame_flags >> i) & 1) {
