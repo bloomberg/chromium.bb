@@ -28,7 +28,7 @@
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version. Otherwise, existing data may
     // continue to be used and updates made here will not always appear.
-    "kCurrentDataVersion": 109
+    "kCurrentDataVersion": 110
   },
 
   // The following engines are included in country lists and are added to the
@@ -79,8 +79,8 @@
     "coccoc": {
       "name": "Cốc Cốc",
       "keyword": "coccoc.com",
-      "favicon_url": "http://coccoc.com/favicon.ico",
-      "search_url": "http://coccoc.com/search#query={searchTerms}",
+      "favicon_url": "https://coccoc.com/favicon.ico",
+      "search_url": "https://coccoc.com/search#query={searchTerms}",
       "type": "SEARCH_ENGINE_COCCOC",
       "id": 91
     },
@@ -153,8 +153,8 @@
     "parsijoo": {
       "name": "پارسی جو",
       "keyword": "parsijoo.ir",
-      "favicon_url": "http://cdn.parsijoo.ir/content3/images/1.0/favicon.ico",
-      "search_url": "http://parsijoo.ir/web?q={searchTerms}",
+      "favicon_url": "https://cdn.parsijoo.ir/content3/images/1.0/favicon.ico",
+      "search_url": "https://parsijoo.ir/web?q={searchTerms}",
       "type": "SEARCH_ENGINE_PARSIJOO",
       "id": 93
     },

@@ -401,8 +401,8 @@ TEST_F(TemplateURLPrepopulateDataTest, HttpsUrls) {
   // Since Chrome and the Internet are trying to transition from HTTP to HTTPS,
   // please get approval from a PM before entering new HTTP exceptions here.
   std::set<int> exceptions{
-      4,  6,  16, 17, 21, 27, 35, 36, 43, 44, 45, 50, 54, 55, 56, 60, 61, 62,
-      63, 64, 65, 66, 68, 70, 74, 75, 76, 77, 78, 79, 80, 81, 85, 90, 91, 93,
+      4,  6,  16, 17, 21, 27, 35, 36, 43, 44, 45, 50, 54, 55, 56, 60, 61,
+      62, 63, 64, 65, 66, 68, 70, 74, 75, 76, 77, 78, 79, 80, 81, 85, 90,
   };
   using PrepopulatedEngine = TemplateURLPrepopulateData::PrepopulatedEngine;
   const std::vector<const PrepopulatedEngine*> all_engines =
