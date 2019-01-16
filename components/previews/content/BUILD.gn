@@ -6,6 +6,9 @@ static_library("content") {
   sources = [
     "hint_cache.cc",
     "hint_cache.h",
+    "hint_cache_leveldb_store.cc",
+    "hint_cache_leveldb_store.h",
+    "hint_cache_store.h",
     "previews_content_util.cc",
     "previews_content_util.h",
     "previews_decider_impl.cc",
@@ -25,6 +28,7 @@ static_library("content") {
     "//components/blacklist/opt_out_blacklist",
     "//components/optimization_guide",
     "//components/optimization_guide/proto:optimization_guide_proto",
+    "//components/previews/content/proto:hint_cache_proto",
     "//components/previews/core",
     "//components/url_matcher",
     "//components/variations",
@@ -37,6 +41,7 @@ static_library("content") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "hint_cache_leveldb_store_unittest.cc",
     "hint_cache_unittest.cc",
     "previews_content_util_unittest.cc",
     "previews_decider_impl_unittest.cc",
@@ -50,8 +55,10 @@ source_set("unit_tests") {
     ":content",
     "//base",
     "//components/blacklist/opt_out_blacklist",
+    "//components/leveldb_proto:test_support",
     "//components/optimization_guide",
     "//components/optimization_guide/proto:optimization_guide_proto",
+    "//components/previews/content/proto:hint_cache_proto",
     "//components/previews/core",
     "//components/variations",
     "//content/public/common",
