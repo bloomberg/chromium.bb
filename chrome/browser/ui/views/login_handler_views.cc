@@ -39,14 +39,6 @@ class LoginHandlerViews : public LoginHandler, public views::DialogDelegate {
     chrome::RecordDialogCreation(chrome::DialogIdentifier::LOGIN_HANDLER);
   }
 
-  // LoginModelObserver:
-  void OnAutofillDataAvailableInternal(
-      const base::string16& username,
-      const base::string16& password) override {
-    // Nothing to do here since LoginView takes care of autofill for win.
-  }
-  void OnLoginModelDestroying() override {}
-
   // views::DialogDelegate:
   bool ShouldShowCloseButton() const override { return false; }
 
@@ -73,7 +65,6 @@ class LoginHandlerViews : public LoginHandler, public views::DialogDelegate {
 
     // The widget is going to delete itself; clear our pointer.
     dialog_ = NULL;
-    ResetModel();
 
     // This Release is the counter-point to the AddRef() in BuildViewImpl().
     Release();

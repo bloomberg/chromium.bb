@@ -33,17 +33,6 @@ class LoginHandlerAndroid : public LoginHandler {
                      std::move(auth_required_callback)) {}
 
   // LoginHandler methods:
-
-  void OnAutofillDataAvailableInternal(
-      const base::string16& username,
-      const base::string16& password) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    DCHECK(chrome_http_auth_handler_.get() != NULL);
-    chrome_http_auth_handler_->OnAutofillDataAvailable(
-        username, password);
-  }
-  void OnLoginModelDestroying() override {}
-
   void BuildViewImpl(const base::string16& authority,
                      const base::string16& explanation,
                      LoginModelData* login_model_data) override {
@@ -65,16 +54,11 @@ class LoginHandlerAndroid : public LoginHandler {
     if (view_helper->GetViewAndroid() &&
         view_helper->GetViewAndroid()->GetWindowAndroid()) {
       chrome_http_auth_handler_.reset(
-          new ChromeHttpAuthHandler(authority, explanation));
+          new ChromeHttpAuthHandler(authority, explanation, login_model_data));
       chrome_http_auth_handler_->Init();
       chrome_http_auth_handler_->SetObserver(this);
       chrome_http_auth_handler_->ShowDialog(
           view_helper->GetViewAndroid()->GetWindowAndroid()->GetJavaObject());
-
-      if (login_model_data)
-        SetModel(*login_model_data);
-      else
-        ResetModel();
 
       NotifyAuthNeeded();
     } else {

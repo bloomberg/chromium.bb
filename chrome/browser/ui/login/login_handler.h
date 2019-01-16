@@ -39,7 +39,6 @@ class AuthChallengeInfo;
 // authentication info to the net::URLRequest that needs it. These functions
 // must be implemented in a thread safe manner.
 class LoginHandler : public content::LoginDelegate,
-                     public password_manager::LoginModelObserver,
                      public content::NotificationObserver {
  public:
   // The purpose of this struct is to enforce that BuildViewImpl receives either
@@ -122,17 +121,10 @@ class LoginHandler : public content::LoginDelegate,
 
   // Implement this to initialize the underlying platform specific view. If
   // |login_model_data| is not null, the contained LoginModel and PasswordForm
-  // can be used to register the view.
+  // should be used to register the view with the password manager.
   virtual void BuildViewImpl(const base::string16& authority,
                              const base::string16& explanation,
                              LoginModelData* login_model_data) = 0;
-
-  // Sets |model_data.model| as |login_model_| and registers |this| as an
-  // observer for |model_data.form|-related events.
-  void SetModel(LoginModelData model_data);
-
-  // Clears |login_model_| and removes |this| as an observer.
-  void ResetModel();
 
   // Notify observers that authentication is needed.
   void NotifyAuthNeeded();
@@ -254,10 +246,6 @@ class LoginHandler : public content::LoginDelegate,
 
   // Cached from the net::URLRequest, in case it goes NULL on us.
   content::ResourceRequestInfo::WebContentsGetter web_contents_getter_;
-
-  // If not null, points to a model we need to notify of our own destruction
-  // so it doesn't try and access this when its too late.
-  password_manager::LoginModel* login_model_;
 
   // Observes other login handlers so this login handler can respond.
   // This is only accessed on the UI thread.
