@@ -113,8 +113,10 @@ def generate_commit_message(
   # internal -> external rollers. Please do not remove or break it.
   if not no_log and should_show_log(upstream_url):
     if len(cleaned_lines) > log_limit:
-      # Keep the first N log entries.
-      logs = ''.join(logs.splitlines(True)[:log_limit]) + '(...)\n'
+      # Keep the first N/2 log entries and last N/2 entries.
+      lines = logs.splitlines(True)
+      lines = lines[:log_limit/2] + ['(...)\n'] + lines[-log_limit/2:]
+      logs = ''.join(lines)
     log_section += logs
   return header + log_section
 
