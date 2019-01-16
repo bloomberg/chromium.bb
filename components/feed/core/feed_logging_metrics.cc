@@ -222,8 +222,9 @@ void FeedLoggingMetrics::OnMoreButtonClicked(int position) {
 }
 
 void FeedLoggingMetrics::OnSpinnerShown(base::TimeDelta shown_time) {
-  base::UmaHistogramLongTimes(
-      "ContentSuggestions.FetchPendingSpinner.VisibleDuration", shown_time);
+  base::UmaHistogramTimes(
+      "ContentSuggestions.Feed.FetchPendingSpinner.VisibleDuration",
+      shown_time);
 }
 
 void FeedLoggingMetrics::ReportScrolledAfterOpen() {

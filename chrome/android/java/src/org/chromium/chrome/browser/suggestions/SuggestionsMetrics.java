@@ -139,7 +139,7 @@ public abstract class SuggestionsMetrics {
     public static DurationTracker getSpinnerVisibilityReporter() {
         return new DurationTracker((duration) -> {
             RecordHistogram.recordTimesHistogram(
-                    "ContentSuggestions.FetchPendingSpinner.VisibleDuration", duration,
+                    "ContentSuggestions.Feed.FetchPendingSpinner.VisibleDuration", duration,
                     TimeUnit.MILLISECONDS);
         });
     }
