@@ -28,6 +28,7 @@ source_set("prerender") {
     "//ios/chrome/browser/history:tab_helper",
     "//ios/chrome/browser/itunes_urls:itunes_urls",
     "//ios/chrome/browser/net",
+    "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/tabs",

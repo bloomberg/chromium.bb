@@ -16,7 +16,6 @@
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -47,9 +46,9 @@ bool IsURLAllowedInIncognito(const GURL& url) {
 
 void LoadJavaScriptURL(const GURL& url,
                        ios::ChromeBrowserState* browser_state,
-                       web::WebState* webState) {
+                       web::WebState* web_state) {
   DCHECK(url.SchemeIs(url::kJavaScriptScheme));
-  DCHECK(webState);
+  DCHECK(web_state);
   PrerenderService* prerenderService =
       PrerenderServiceFactory::GetForBrowserState(browser_state);
   if (prerenderService) {
@@ -57,8 +56,8 @@ void LoadJavaScriptURL(const GURL& url,
   }
   NSString* jsToEval = [base::SysUTF8ToNSString(url.GetContent())
       stringByRemovingPercentEncoding];
-  if (webState)
-    webState->ExecuteUserJavaScript(jsToEval);
+  if (web_state)
+    web_state->ExecuteUserJavaScript(jsToEval);
 }
 
 void RestoreTab(const SessionID session_id,
@@ -75,7 +74,8 @@ void RestoreTab(const SessionID session_id,
 
 URLLoadResult LoadURL(const ChromeLoadParams& chrome_params,
                       ios::ChromeBrowserState* browser_state,
-                      TabModel* tab_model) {
+                      WebStateList* web_state_list,
+                      id<SessionWindowRestoring> restorer) {
   web::NavigationManager::WebLoadParams params = chrome_params.web_params;
   if (chrome_params.disposition == WindowOpenDisposition::SWITCH_TO_TAB) {
     return URLLoadResult::SWITCH_TO_TAB;
@@ -86,8 +86,7 @@ URLLoadResult LoadURL(const ChromeLoadParams& chrome_params,
                    transition:params.transition_type
                  browserState:browser_state];
 
-  WebStateList* webStateList = tab_model.webStateList;
-  web::WebState* current_web_state = webStateList->GetActiveWebState();
+  web::WebState* current_web_state = web_state_list->GetActiveWebState();
   DCHECK(current_web_state);
   if (params.transition_type & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) {
     bool isExpectingVoiceSearch =
@@ -112,8 +111,9 @@ URLLoadResult LoadURL(const ChromeLoadParams& chrome_params,
   // so.
   PrerenderService* prerenderService =
       PrerenderServiceFactory::GetForBrowserState(browser_state);
-  if (prerenderService && prerenderService->MaybeLoadPrerenderedURL(
-                              params.url, params.transition_type, tab_model)) {
+  if (prerenderService &&
+      prerenderService->MaybeLoadPrerenderedURL(
+          params.url, params.transition_type, web_state_list, restorer)) {
     return URLLoadResult::LOADED_PRERENDER;
   }
 
@@ -145,7 +145,7 @@ URLLoadResult LoadURL(const ChromeLoadParams& chrome_params,
   current_web_state->GetNavigationManager()->LoadURLWithParams(params);
 
   // Deactivate the NTP immediately on a load to hide the NTP quickly, but after
-  // calling -LoadURLWithParams.  Otherwise, if the webState has never been
+  // calling -LoadURLWithParams. Otherwise, if the webState has never been
   // visible (such as during startup with an NTP), it's possible the webView can
   // trigger a unnecessary load for chrome://newtab.
   if (params.url.GetOrigin() != kChromeUINewTabURL) {

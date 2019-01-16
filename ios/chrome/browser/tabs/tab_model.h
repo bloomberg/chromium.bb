@@ -10,7 +10,9 @@
 
 #include <memory>
 
+#import "ios/chrome/browser/sessions/session_window_restoring.h"
 #import "ios/web/public/navigation_manager.h"
+
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -45,7 +47,7 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // The model knows about the currently selected tab in order to maintain
 // consistency between multiple views that need the current tab to be
 // synchronized.
-@interface TabModel : NSObject
+@interface TabModel : NSObject <SessionWindowRestoring>
 
 // Currently active tab.
 @property(nonatomic, weak) Tab* currentTab;
@@ -85,16 +87,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
-
-// Restores the given session window after a crash. If there is only one tab,
-// showing the NTP, then this tab is clobberred, otherwise, the tab from the
-// sessions are added at the end of the tab model.
-// Returns YES if the single NTP tab is closed.
-- (BOOL)restoreSessionWindow:(SessionWindowIOS*)window;
-
-// Uses the SessionServiceIOS to persist the tab model to disk, either
-// immediately or deferred based on the value of |immediately|.
-- (void)saveSessionImmediately:(BOOL)immediately;
 
 // Accesses the tab at the given index.
 - (Tab*)tabAtIndex:(NSUInteger)index;

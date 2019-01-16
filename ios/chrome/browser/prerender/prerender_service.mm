@@ -6,10 +6,8 @@
 
 #include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/prerender/preload_controller.h"
+#import "ios/chrome/browser/sessions/session_window_restoring.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
-#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -55,9 +53,11 @@ void PrerenderService::StartPrerender(const GURL& url,
                 immediately:immediately];
 }
 
-bool PrerenderService::MaybeLoadPrerenderedURL(const GURL& url,
-                                               ui::PageTransition transition,
-                                               TabModel* tab_model) {
+bool PrerenderService::MaybeLoadPrerenderedURL(
+    const GURL& url,
+    ui::PageTransition transition,
+    WebStateList* web_state_list,
+    id<SessionWindowRestoring> restorer) {
   if (!HasPrerenderForUrl(url)) {
     CancelPrerender();
     return false;
@@ -65,8 +65,6 @@ bool PrerenderService::MaybeLoadPrerenderedURL(const GURL& url,
 
   std::unique_ptr<web::WebState> new_web_state =
       [controller_ releasePrerenderContents];
-  DCHECK(new_web_state);
-  WebStateList* web_state_list = tab_model.webStateList;
   DCHECK_NE(WebStateList::kInvalidIndex, web_state_list->active_index());
 
   web::NavigationManager* active_navigation_manager =
@@ -106,7 +104,7 @@ bool PrerenderService::MaybeLoadPrerenderedURL(const GURL& url,
           ->DidPromotePrerenderTab();
     }
 
-    [tab_model saveSessionImmediately:NO];
+    [restorer saveSessionImmediately:NO];
     return true;
   }
 

@@ -42,7 +42,6 @@
 #include "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #import "ios/chrome/browser/language/url_language_histogram_factory.h"
-#import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/metrics/size_class_recorder.h"
 #include "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
@@ -161,7 +160,6 @@
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
-#import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
 #import "ios/chrome/browser/web/image_fetch_tab_helper.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
@@ -3937,7 +3935,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)loadURLWithParams:(const ChromeLoadParams&)chromeParams {
   [_bookmarkInteractionController dismissBookmarkModalControllerAnimated:YES];
 
-  switch (LoadURL(chromeParams, self.browserState, self.tabModel)) {
+  URLLoadResult result =
+      LoadURL(chromeParams, self.browserState, self.tabModel.webStateList,
+              /* SessionWindowRestoring */ self.tabModel);
+  switch (result) {
     case URLLoadResult::SWITCH_TO_TAB: {
       [self switchToTabWithParams:chromeParams.web_params];
       break;

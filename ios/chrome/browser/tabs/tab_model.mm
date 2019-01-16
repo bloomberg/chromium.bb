@@ -435,26 +435,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   return self;
 }
 
-- (BOOL)restoreSessionWindow:(SessionWindowIOS*)window {
-  return [self restoreSessionWindow:window persistState:YES];
-}
-
-- (void)saveSessionImmediately:(BOOL)immediately {
-  // Do nothing if there are tabs in the model but no selected tab. This is
-  // a transitional state.
-  if ((!self.currentTab && _webStateList->count()) || !_browserState)
-    return;
-  NSString* statePath =
-      base::SysUTF8ToNSString(_browserState->GetStatePath().AsUTF8Unsafe());
-  __weak TabModel* weakSelf = self;
-  SessionIOSFactory sessionFactory = ^{
-    return weakSelf.sessionForSaving;
-  };
-  [_sessionService saveSession:sessionFactory
-                     directory:statePath
-                   immediately:immediately];
-}
-
 - (Tab*)tabAtIndex:(NSUInteger)index {
   DCHECK_LE(index, static_cast<NSUInteger>(INT_MAX));
   return LegacyTabHelper::GetTabForWebState(
@@ -636,6 +616,28 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   _clearPoliciesTaskTracker.TryCancelAll();
   _tabUsageRecorder.reset();
   _webStateObserver.reset();
+}
+
+#pragma mark - SessionWindowRestoring(public)
+
+- (BOOL)restoreSessionWindow:(SessionWindowIOS*)window {
+  return [self restoreSessionWindow:window persistState:YES];
+}
+
+- (void)saveSessionImmediately:(BOOL)immediately {
+  // Do nothing if there are tabs in the model but no selected tab. This is
+  // a transitional state.
+  if ((!self.currentTab && _webStateList->count()) || !_browserState)
+    return;
+  NSString* statePath =
+      base::SysUTF8ToNSString(_browserState->GetStatePath().AsUTF8Unsafe());
+  __weak TabModel* weakSelf = self;
+  SessionIOSFactory sessionFactory = ^{
+    return weakSelf.sessionForSaving;
+  };
+  [_sessionService saveSession:sessionFactory
+                     directory:statePath
+                   immediately:immediately];
 }
 
 #pragma mark - Private methods
