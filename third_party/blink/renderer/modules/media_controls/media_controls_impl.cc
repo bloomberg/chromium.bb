@@ -2030,6 +2030,9 @@ void MediaControlsImpl::NotifyElementSizeChanged(DOMRectReadOnly* new_size) {
 
 void MediaControlsImpl::ElementSizeChangedTimerFired(TimerBase*) {
   ComputeWhichControlsFit();
+
+  // Rerender timeline bar segments when size changed.
+  timeline_->RenderBarSegments();
 }
 
 void MediaControlsImpl::OnLoadingProgress() {
