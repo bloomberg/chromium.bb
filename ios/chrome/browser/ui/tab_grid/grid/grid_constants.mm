@@ -69,10 +69,12 @@ const int kGridDarkThemeCellSeparatorColor = 0x535354;
 const CGSize kGridCellSizeSmall = CGSize{144.0f, 168.0f};
 const CGSize kGridCellSizeMedium = CGSize{168.0f, 202.0f};
 const CGSize kGridCellSizeLarge = CGSize{228.0f, 256.0f};
+const CGSize kGridCellSizeAccessibility = CGSize{288.0f, 336.0f};
 const CGFloat kGridCellCornerRadius = 13.0f;
 const CGFloat kGridCellIconCornerRadius = 3.0f;
 // The cell header contains the icon, title, and close button.
 const CGFloat kGridCellHeaderHeight = 32.0f;
+const CGFloat kGridCellHeaderAccessibilityHeight = 108.0f;
 const CGFloat kGridCellHeaderLeadingInset = 9.0f;
 const CGFloat kGridCellCloseTapTargetWidthHeight = 44.0f;
 const CGFloat kGridCellCloseButtonContentInset = 8.5f;
