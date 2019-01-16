@@ -163,7 +163,8 @@ id<GREYMatcher> NavigationBarEditButton() {
 }
 
 // Test that the page for viewing Autofill profile details is as expected.
-- (void)testAutofillProfileViewPage {
+// TODO(crbug.com/922117): Reenable test.
+- (void)FLAKY_testAutofillProfileViewPage {
   autofill::AutofillProfile profile = [self addAutofillProfile];
   [self openEditProfile:kProfileLabel];
 
