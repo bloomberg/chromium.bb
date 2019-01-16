@@ -306,9 +306,10 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
   about_signin_internals->OnRefreshTokenReceived("Successful");
 
   // Prime the account tracker with this combination of gaia id/display email.
+  AccountTrackerService* account_tracker_service =
+      AccountTrackerServiceFactory::GetForProfile(profile_);
   std::string account_id =
-      AccountTrackerServiceFactory::GetForProfile(profile_)->SeedAccountInfo(
-          gaia_id_, email_);
+      account_tracker_service->SeedAccountInfo(gaia_id_, email_);
 
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
@@ -337,6 +338,8 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
   if (reason == signin_metrics::Reason::REASON_REAUTHENTICATION ||
       reason == signin_metrics::Reason::REASON_UNLOCK ||
       reason == signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT) {
+    account_tracker_service->SetIsAdvancedProtectionAccount(
+        account_id, result.is_under_advanced_protection);
     ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
         ->UpdateCredentials(account_id, result.refresh_token,
                             signin_metrics::SourceForRefreshTokenOperation::
