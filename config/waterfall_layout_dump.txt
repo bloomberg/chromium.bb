@@ -310,7 +310,6 @@
     gandof-postsubmit
     glimmer-postsubmit
     gnawty-postsubmit
-    gru-postsubmit
     grunt-postsubmit
     guado-postsubmit
     hana-postsubmit
@@ -448,7 +447,6 @@
     glimmer-release
     gnawty-release
     gonzo-release
-    gru-release
     grunt-release
     guado-macrophage-release
     guado-release
@@ -1871,7 +1869,6 @@
   gru-no-vmtest-pre-cq
   gru-paladin-tryjob
   gru-payloads-tryjob
-  gru-postsubmit-tryjob
   gru-pre-cq
   gru-release-afdo-generate-tryjob
   gru-release-afdo-tryjob
@@ -2562,7 +2559,6 @@
     gandof-postsubmit
     glimmer-postsubmit
     gnawty-postsubmit
-    gru-postsubmit
     grunt-postsubmit
     guado-postsubmit
     hana-postsubmit
@@ -2689,7 +2685,6 @@
     glimmer-release
     gnawty-release
     gonzo-release
-    gru-release
     grunt-release
     guado-macrophage-release
     guado-release
