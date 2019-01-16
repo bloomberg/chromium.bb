@@ -40,9 +40,6 @@ namespace ash {
 
 namespace {
 
-// Opacity for dimmed items.
-constexpr float kDimmedItemOpacity = 0.3f;
-
 // Opacity for fading out during closing a window.
 constexpr float kClosingItemOpacity = 0.8f;
 
@@ -429,64 +426,10 @@ void WindowSelectorItem::ScaleUpSelectedItem(
   SetBounds(scaled_bounds, animation_type);
 }
 
-void WindowSelectorItem::SetDimmed(bool dimmed) {
-  dimmed_ = dimmed;
-  SetOpacity(dimmed ? kDimmedItemOpacity : 1.0f);
-}
-
 void WindowSelectorItem::RestackItemWidget() {
   aura::Window* widget_window = item_widget_->GetNativeWindow();
   widget_window->parent()->StackChildAbove(widget_window,
                                            GetWindowForStacking());
-}
-
-void WindowSelectorItem::ButtonPressed(views::Button* sender,
-                                       const ui::Event& event) {
-  if (IsSlidingOutOverviewFromShelf())
-    return;
-
-  if (sender == caption_container_view_->GetCloseButton()) {
-    base::RecordAction(
-        base::UserMetricsAction("WindowSelector_OverviewCloseButton"));
-    if (Shell::Get()
-            ->tablet_mode_controller()
-            ->IsTabletModeWindowManagerEnabled()) {
-      base::RecordAction(
-          base::UserMetricsAction("Tablet_WindowCloseFromOverviewButton"));
-    }
-    CloseWindow();
-    return;
-  }
-
-  CHECK(sender == caption_container_view_->GetListenerButton());
-
-  // For other cases, the event is handled in OverviewWindowDragController.
-  if (!ShouldAllowSplitView())
-    window_selector_->SelectWindow(this);
-}
-
-void WindowSelectorItem::OnWindowBoundsChanged(
-    aura::Window* window,
-    const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds,
-    ui::PropertyChangeReason reason) {
-  if (reason == ui::PropertyChangeReason::NOT_FROM_ANIMATION)
-    transform_window_.ResizeMinimizedWidgetIfNeeded();
-}
-
-void WindowSelectorItem::OnWindowDestroying(aura::Window* window) {
-  window->RemoveObserver(this);
-  transform_window_.OnWindowDestroyed();
-}
-
-void WindowSelectorItem::OnWindowTitleChanged(aura::Window* window) {
-  // TODO(flackr): Maybe add the new title to a vector of titles so that we can
-  // filter any of the titles the window had while in the overview session.
-  caption_container_view_->SetTitle(window->GetTitle());
-}
-
-void WindowSelectorItem::OnImplicitAnimationsCompleted() {
-  transform_window_.Close();
 }
 
 void WindowSelectorItem::HandlePressEvent(
@@ -660,6 +603,55 @@ OverviewAnimationType WindowSelectorItem::GetExitOverviewAnimationType() {
 OverviewAnimationType WindowSelectorItem::GetExitTransformAnimationType() {
   return should_animate_when_exiting_ ? OVERVIEW_ANIMATION_RESTORE_WINDOW
                                       : OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO;
+}
+
+void WindowSelectorItem::ButtonPressed(views::Button* sender,
+                                       const ui::Event& event) {
+  if (IsSlidingOutOverviewFromShelf())
+    return;
+
+  if (sender == caption_container_view_->GetCloseButton()) {
+    base::RecordAction(
+        base::UserMetricsAction("WindowSelector_OverviewCloseButton"));
+    if (Shell::Get()
+            ->tablet_mode_controller()
+            ->IsTabletModeWindowManagerEnabled()) {
+      base::RecordAction(
+          base::UserMetricsAction("Tablet_WindowCloseFromOverviewButton"));
+    }
+    CloseWindow();
+    return;
+  }
+
+  CHECK_EQ(sender, caption_container_view_->GetListenerButton());
+
+  // For other cases, the event is handled in OverviewWindowDragController.
+  if (!ShouldAllowSplitView())
+    window_selector_->SelectWindow(this);
+}
+
+void WindowSelectorItem::OnWindowBoundsChanged(
+    aura::Window* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds,
+    ui::PropertyChangeReason reason) {
+  if (reason == ui::PropertyChangeReason::NOT_FROM_ANIMATION)
+    transform_window_.ResizeMinimizedWidgetIfNeeded();
+}
+
+void WindowSelectorItem::OnWindowDestroying(aura::Window* window) {
+  window->RemoveObserver(this);
+  transform_window_.OnWindowDestroyed();
+}
+
+void WindowSelectorItem::OnWindowTitleChanged(aura::Window* window) {
+  // TODO(flackr): Maybe add the new title to a vector of titles so that we can
+  // filter any of the titles the window had while in the overview session.
+  caption_container_view_->SetTitle(window->GetTitle());
+}
+
+void WindowSelectorItem::OnImplicitAnimationsCompleted() {
+  transform_window_.Close();
 }
 
 float WindowSelectorItem::GetCloseButtonVisibilityForTesting() const {

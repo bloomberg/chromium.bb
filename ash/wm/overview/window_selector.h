@@ -19,7 +19,7 @@
 #include "base/time/time.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
-#include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/events/event_handler.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace gfx {
@@ -27,8 +27,11 @@ class Point;
 class Rect;
 }  // namespace gfx
 
+namespace ui {
+class KeyEvent;
+}  // namespace ui
+
 namespace views {
-class Textfield;
 class Widget;
 }  // namespace views
 
@@ -47,7 +50,7 @@ enum class IndicatorState;
 // one by clicking or tapping on it.
 class ASH_EXPORT WindowSelector : public display::DisplayObserver,
                                   public aura::WindowObserver,
-                                  public views::TextfieldController,
+                                  public ui::EventHandler,
                                   public SplitViewController::Observer {
  public:
   enum Direction { LEFT, UP, RIGHT, DOWN };
@@ -224,15 +227,14 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
       aura::Window* gained_active,
       aura::Window* lost_active);
 
+  // Gets the window which keeps focus for the duration of overview mode.
+  aura::Window* GetOverviewFocusWindow();
+
   WindowSelectorDelegate* delegate() { return delegate_; }
 
   SplitViewDragIndicators* split_view_drag_indicators() {
     return split_view_drag_indicators_.get();
   }
-
-  views::Widget* text_filter_widget() { return text_filter_widget_.get(); }
-
-  int text_filter_bottom() const { return text_filter_bottom_; }
 
   EnterExitOverviewType enter_exit_overview_type() const {
     return enter_exit_overview_type_;
@@ -259,11 +261,8 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
   void OnWindowDestroying(aura::Window* window) override;
 
-  // views::TextfieldController:
-  void ContentsChanged(views::Textfield* sender,
-                       const base::string16& new_contents) override;
-  bool HandleKeyEvent(views::Textfield* sender,
-                      const ui::KeyEvent& key_event) override;
+  // ui::EventHandler:
+  void OnKeyEvent(ui::KeyEvent* event) override;
 
   // SplitViewController::Observer:
   void OnSplitViewStateChanged(SplitViewController::State previous_state,
@@ -272,13 +271,6 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
 
  private:
   friend class WindowSelectorTest;
-
-  // Returns the aura::Window for |text_filter_widget_|.
-  aura::Window* GetTextFilterWidgetWindow();
-
-  // Repositions and resizes |text_filter_widget_| on
-  // DisplayMetricsChanged event.
-  void RepositionTextFilterOnDisplayMetricsChange();
 
   // |focus|, restores focus to the stored window.
   void ResetFocusRestoreWindow(bool focus);
@@ -307,7 +299,17 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // A weak pointer to the window which was focused on beginning window
   // selection. If window selection is canceled the focus should be restored to
   // this window.
-  aura::Window* restore_focus_window_;
+  aura::Window* restore_focus_window_ = nullptr;
+
+  // A hidden window that receives focus while in overview mode. It is needed
+  // because accessibility needs something focused for it to work and we cannot
+  // use one of the overview windows otherwise ::wm::ActivateWindow will not
+  // work.
+  // TODO(sammiequon): Investigate if we can focus the |selection_widget_| in
+  // WindowGrid when it is created, or if we can focus a widget from the virtual
+  // desks UI when that is complete, or we may be able to add some mechanism to
+  // trigger accessibility events without a focused window.
+  std::unique_ptr<views::Widget> overview_focus_widget_;
 
   // True when performing operations that may cause window activations. This is
   // used to prevent handling the resulting expected activation. This is
@@ -334,25 +336,6 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
 
   // The number of items in the overview.
   size_t num_items_ = 0;
-
-  // Indicates if the text filter is shown on screen (rather than above it).
-  bool showing_text_filter_ = false;
-
-  // Window text filter widget. As the user writes on it, we filter the items
-  // in the overview. It is also responsible for handling overview key events,
-  // such as enter key to select.
-  std::unique_ptr<views::Widget> text_filter_widget_;
-
-  // The current length of the string entered into the text filtering textfield.
-  size_t text_filter_string_length_ = 0;
-
-  // The number of times the text filtering textfield has been cleared of text
-  // during this overview mode session.
-  size_t num_times_textfield_cleared_ = 0;
-
-  // The distance between the top edge of the screen and the bottom edge of
-  // the text filtering textfield.
-  int text_filter_bottom_ = 0;
 
   // Stores the overview enter/exit type. See the enum declaration for
   // information on how these types affect overview mode.

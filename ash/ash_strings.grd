@@ -689,11 +689,6 @@ This file contains the strings for ash.
         No recent items
       </message>
 
-      <!-- Window Selector -->
-      <message name="IDS_ASH_WINDOW_SELECTOR_INPUT_FILTER_ACCESSIBLE_NAME" desc="The accessible name for the window selector filter search input box.">
-        Type the name of an app or document
-      </message>
-
       <!-- Status tray charging strings. -->
       <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE" desc="The title of a notification indicating that a low-current USB charger has been connected.">
         Low-power charger connected
