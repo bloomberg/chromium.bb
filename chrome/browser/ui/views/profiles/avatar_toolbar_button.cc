@@ -15,9 +15,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -61,7 +59,7 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
 #endif  // !defined(OS_CHROMEOS)
       browser_list_observer_(this),
       profile_observer_(this),
-      cookie_manager_service_observer_(this),
+      identity_manager_observer_(this),
       account_tracker_service_observer_(this) {
 
   if (IsIncognitoCounterActive())
@@ -71,8 +69,8 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
       &g_browser_process->profile_manager()->GetProfileAttributesStorage());
 
   if (!IsIncognito() && !profile_->IsGuestSession()) {
-    cookie_manager_service_observer_.Add(
-        GaiaCookieManagerServiceFactory::GetForProfile(profile_));
+    identity_manager_observer_.Add(
+        IdentityManagerFactory::GetForProfile(profile_));
     account_tracker_service_observer_.Add(
         AccountTrackerServiceFactory::GetForProfile(profile_));
   }
@@ -218,9 +216,8 @@ void AvatarToolbarButton::OnProfileNameChanged(
   UpdateText();
 }
 
-void AvatarToolbarButton::OnGaiaAccountsInCookieUpdated(
-    const std::vector<gaia::ListedAccount>& accounts,
-    const std::vector<gaia::ListedAccount>& signed_out_accounts,
+void AvatarToolbarButton::OnAccountsInCookieUpdated(
+    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   UpdateIcon();
 }
