@@ -40,6 +40,8 @@ class ClientTelemetryLogger {
                    ChromotingEvent::Os host_os,
                    const std::string& host_os_version);
 
+  void SetSignalStrategyType(ChromotingEvent::SignalStrategyType type);
+
   void SetTransportRoute(const protocol::TransportRoute& route);
 
   void LogSessionStateChange(ChromotingEvent::SessionState state,
@@ -105,6 +107,9 @@ class ClientTelemetryLogger {
   ChromotingEvent::Mode mode_;
 
   ChromotingEvent::SessionEntryPoint entry_point_;
+
+  ChromotingEvent::SignalStrategyType signal_strategy_type_ =
+      ChromotingEvent::SignalStrategyType::NOT_SET;
 
   std::unique_ptr<HostInfo> host_info_;
   std::unique_ptr<protocol::TransportRoute> transport_route_;

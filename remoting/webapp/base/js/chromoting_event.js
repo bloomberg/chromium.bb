@@ -439,7 +439,9 @@ remoting.ChromotingEvent.Mode = {
 /** @enum {number} */
 remoting.ChromotingEvent.SignalStrategyType = {
   XMPP: 1,
-  WCS: 2
+  WCS: 2,
+  LCS: 3,
+  FTL: 4,
 };
 
 /** @enum {number} */
