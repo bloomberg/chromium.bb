@@ -146,6 +146,7 @@ PASS oldChildWindow.onpointerover is newChildWindow.onpointerover
 PASS oldChildWindow.onpointerrawmove is newChildWindow.onpointerrawmove
 PASS oldChildWindow.onpointerup is newChildWindow.onpointerup
 PASS oldChildWindow.onpopstate is newChildWindow.onpopstate
+PASS oldChildWindow.onportalactivate is newChildWindow.onportalactivate
 PASS oldChildWindow.onprogress is newChildWindow.onprogress
 PASS oldChildWindow.onratechange is newChildWindow.onratechange
 PASS oldChildWindow.onrejectionhandled is newChildWindow.onrejectionhandled

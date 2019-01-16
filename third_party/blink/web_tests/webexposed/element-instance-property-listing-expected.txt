@@ -440,6 +440,7 @@ html element body
     property onpagehide
     property onpageshow
     property onpopstate
+    property onportalactivate
     property onrejectionhandled
     property onstorage
     property onunhandledrejection
@@ -591,6 +592,7 @@ html element frameset
     property onpagehide
     property onpageshow
     property onpopstate
+    property onportalactivate
     property onrejectionhandled
     property onstorage
     property onunhandledrejection
