@@ -3872,7 +3872,10 @@
             }
           ]
         },
-        "test": "base_unittests"
+        "test": "base_unittests",
+        "trigger_script": {
+          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
+        }
       },
       {
         "swarming": {
@@ -3885,7 +3888,10 @@
             }
           ]
         },
-        "test": "chrome_kevin_tast_tests"
+        "test": "chrome_kevin_tast_tests",
+        "trigger_script": {
+          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
+        }
       },
       {
         "swarming": {
@@ -3898,7 +3904,10 @@
             }
           ]
         },
-        "test": "cros_vm_sanity_test"
+        "test": "cros_vm_sanity_test",
+        "trigger_script": {
+          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
+        }
       }
     ]
   },
