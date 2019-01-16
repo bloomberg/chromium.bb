@@ -115,9 +115,11 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("managedByOrg", IDS_MANAGED_BY_ORG_WITH_HYPERLINK);
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  source->UseGzip({"1x/incognito_marker.png", "1x/no_downloads.png",
-                   "2x/incognito_marker.png", "2x/no_downloads.png",
-                   "md_downloads.mojom-lite.js"});
+  source->UseGzip(base::BindRepeating([](const std::string& path) {
+    return path != "1x/incognito_marker.png" && path != "1x/no_downloads.png" &&
+           path != "2x/incognito_marker.png" && path != "2x/no_downloads.png" &&
+           path != "md_downloads.mojom-lite.js";
+  }));
 
   source->AddResourcePath("crisper.js", IDR_MD_DOWNLOADS_CRISPER_JS);
   source->SetDefaultResource(

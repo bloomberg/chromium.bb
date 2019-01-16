@@ -108,10 +108,13 @@ class WebUIDataSource {
       const std::string& data) = 0;
   virtual void DisableDenyXFrameOptions() = 0;
 
-  // Tells the loading code that resources are gzipped on disk. |excluded_paths|
-  // are uncompressed paths, and therefore should not be decompressed.
+  // Tells the loading code that resources are gzipped on disk.
   virtual void UseGzip() = 0;
-  virtual void UseGzip(const std::vector<std::string>& excluded_paths) = 0;
+
+  // Same as UseGzip() above, but |is_gzipped_callback| is used to dynamically
+  // determine whether a given |const std::string& path| argument is gzipped.
+  virtual void UseGzip(base::RepeatingCallback<bool(const std::string&)>
+                           is_gzipped_callback) = 0;
 
   // The |source_name| this WebUIDataSource was created with.
   virtual std::string GetSource() const = 0;

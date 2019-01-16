@@ -14,6 +14,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -400,7 +401,12 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   html_source->SetDefaultResource(use_polymer_2
                                       ? IDR_MD_SETTINGS_VULCANIZED_P2_HTML
                                       : IDR_MD_SETTINGS_VULCANIZED_HTML);
-  html_source->UseGzip(exclude_from_gzip);
+  html_source->UseGzip(base::BindRepeating(
+      [](const std::vector<std::string>& excluded_paths,
+         const std::string& path) {
+        return !base::ContainsValue(excluded_paths, path);
+      },
+      std::move(exclude_from_gzip)));
 #if defined(OS_CHROMEOS)
   html_source->AddResourcePath("manifest.json", IDR_MD_SETTINGS_MANIFEST);
 #endif  // defined (OS_CHROMEOS)

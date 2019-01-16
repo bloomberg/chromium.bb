@@ -9,7 +9,6 @@
 
 #include <map>
 #include <string>
-#include <unordered_set>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -50,7 +49,8 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   void OverrideContentSecurityPolicyChildSrc(const std::string& data) override;
   void DisableDenyXFrameOptions() override;
   void UseGzip() override;
-  void UseGzip(const std::vector<std::string>& excluded_paths) override;
+  void UseGzip(base::RepeatingCallback<bool(const std::string&)>
+                   is_gzipped_callback) override;
   std::string GetSource() const override;
 
   // URLDataSourceImpl:
@@ -79,7 +79,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   friend class WebUIDataSourceTest;
 
   FRIEND_TEST_ALL_PREFIXES(WebUIDataSourceTest, IsGzipped);
-  FRIEND_TEST_ALL_PREFIXES(WebUIDataSourceTest, IsGzippedWithExclusions);
+  FRIEND_TEST_ALL_PREFIXES(WebUIDataSourceTest, IsGzippedWithCallback);
 
   // Methods that match URLDataSource which are called by
   // InternalDataSource.
@@ -103,7 +103,6 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   int default_resource_;
   std::string json_path_;
   std::map<std::string, int> path_to_idr_map_;
-  std::unordered_set<std::string> excluded_paths_;
   // The replacements are initiallized in the main thread and then used in the
   // IO thread. The map is safe to read from multiple threads as long as no
   // futher changes are made to it after initialization.
@@ -124,6 +123,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   bool add_load_time_data_defaults_;
   bool replace_existing_source_;
   bool use_gzip_;
+  base::RepeatingCallback<bool(const std::string&)> is_gzipped_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIDataSourceImpl);
 };
