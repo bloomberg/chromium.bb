@@ -1414,7 +1414,7 @@ syncer::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
 
 syncer::ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!data_type_manager_)
+  if (!data_type_manager_ || GetAuthError().IsPersistentError())
     return syncer::ModelTypeSet();
   return data_type_manager_->GetActiveDataTypes();
 }

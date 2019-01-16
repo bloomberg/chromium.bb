@@ -170,6 +170,17 @@ void ProfileSyncServiceHarness::SignOutPrimaryAccount() {
 }
 #endif  // !OS_CHROMEOS
 
+void ProfileSyncServiceHarness::EnterSyncPausedStateForPrimaryAccount() {
+  DCHECK(service_->IsSyncFeatureActive());
+  identity::SetInvalidRefreshTokenForPrimaryAccount(
+      IdentityManagerFactory::GetForProfile(profile_));
+}
+
+void ProfileSyncServiceHarness::ExitSyncPausedStateForPrimaryAccount() {
+  identity::SetRefreshTokenForPrimaryAccount(
+      IdentityManagerFactory::GetForProfile(profile_));
+}
+
 bool ProfileSyncServiceHarness::SetupSync() {
   bool result = SetupSync(syncer::UserSelectableTypes());
   if (!result) {
