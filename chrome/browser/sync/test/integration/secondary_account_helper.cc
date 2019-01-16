@@ -27,20 +27,23 @@ namespace secondary_account_helper {
 
 namespace {
 
-void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
+void OnWillCreateBrowserContextServices(
+    network::TestURLLoaderFactory* test_url_loader_factory,
+    content::BrowserContext* context) {
   GaiaCookieManagerServiceFactory::GetInstance()->SetTestingFactory(
       context,
-      base::BindRepeating(
-          &BuildFakeGaiaCookieManagerServiceWithOptions,
-          /*create_fake_url_loader_factory_for_cookie_requests=*/true));
+      base::BindRepeating(&BuildFakeGaiaCookieManagerServiceWithURLLoader,
+                          test_url_loader_factory));
 }
 
 }  // namespace
 
-ScopedFakeGaiaCookieManagerServiceFactory SetUpFakeGaiaCookieManagerService() {
+ScopedFakeGaiaCookieManagerServiceFactory SetUpFakeGaiaCookieManagerService(
+    network::TestURLLoaderFactory* test_url_loader_factory) {
   return BrowserContextDependencyManager::GetInstance()
       ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
-          base::BindRepeating(&OnWillCreateBrowserContextServices));
+          base::BindRepeating(&OnWillCreateBrowserContextServices,
+                              test_url_loader_factory));
 }
 
 #if defined(OS_CHROMEOS)

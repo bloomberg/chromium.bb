@@ -341,7 +341,8 @@ class UkmBrowserTestWithSyncTransport : public UkmBrowserTest {
     // cookies) in tests. Without this, the real GaiaCookieManagerService would
     // try talking to Google servers which of course wouldn't work in tests.
     fake_gaia_cookie_manager_factory_ =
-        secondary_account_helper::SetUpFakeGaiaCookieManagerService();
+        secondary_account_helper::SetUpFakeGaiaCookieManagerService(
+            &test_url_loader_factory_);
     UkmBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 

@@ -17,6 +17,10 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
+namespace network {
+class TestURLLoaderFactory;
+}
+
 namespace secondary_account_helper {
 
 using ScopedFakeGaiaCookieManagerServiceFactory = std::unique_ptr<
@@ -26,7 +30,8 @@ using ScopedFakeGaiaCookieManagerServiceFactory = std::unique_ptr<
 // called from SetUpInProcessBrowserTestFixture. The caller should hold on to
 // the returned object for the duration of the test, e.g. store it in a member
 // of the test fixture class.
-ScopedFakeGaiaCookieManagerServiceFactory SetUpFakeGaiaCookieManagerService();
+ScopedFakeGaiaCookieManagerServiceFactory SetUpFakeGaiaCookieManagerService(
+    network::TestURLLoaderFactory* test_url_loader_factory);
 
 #if defined(OS_CHROMEOS)
 // Sets up necessary fakes for fake network responses to work. Meant to be

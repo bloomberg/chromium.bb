@@ -1079,7 +1079,8 @@ class SingleClientWalletSecondaryAccountSyncTest
 
   void SetUpInProcessBrowserTestFixture() override {
     fake_gaia_cookie_manager_factory_ =
-        secondary_account_helper::SetUpFakeGaiaCookieManagerService();
+        secondary_account_helper::SetUpFakeGaiaCookieManagerService(
+            &test_url_loader_factory_);
   }
 
   void SetUpOnMainThread() override {
