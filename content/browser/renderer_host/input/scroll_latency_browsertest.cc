@@ -21,6 +21,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/hit_test_region_observer.h"
 #include "content/shell/browser/shell.h"
 
 namespace {
@@ -80,12 +81,6 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
     run_loop.Run();
   }
 
-  void WaitAFrame() {
-    while (!GetWidgetHost()->RequestRepaintForTesting())
-      GiveItSomeTime();
-    frame_observer_->Wait();
-  }
-
   void OnSyntheticGestureCompleted(SyntheticGesture::Result result) {
     EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
     run_loop_->Quit();
@@ -99,12 +94,10 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
     RenderWidgetHostImpl* host = GetWidgetHost();
     host->GetView()->SetSize(gfx::Size(400, 400));
 
-    frame_observer_ = std::make_unique<MainThreadFrameObserver>(
-        shell()->web_contents()->GetRenderViewHost()->GetWidget());
+    HitTestRegionObserver observer(host->GetFrameSinkId());
 
-    // Wait a frame to make sure the page has renderered.
-    WaitAFrame();
-    frame_observer_.reset();
+    // Wait for the hit test data to be ready
+    observer.WaitForHitTestData();
   }
 
   // Generate a single wheel tick, scrolling by |distance|. This will perform a
@@ -140,7 +133,6 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
 
  private:
   base::HistogramTester histogram_tester_;
-  std::unique_ptr<MainThreadFrameObserver> frame_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollLatencyBrowserTest);
 };
