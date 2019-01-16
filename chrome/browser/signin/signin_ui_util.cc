@@ -176,8 +176,8 @@ void EnableSyncFromPromo(
           account.account_id);
   if (needs_reauth_before_enable_sync) {
     browser->signin_view_controller()->ShowDiceSigninTab(
-        profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser, access_point,
-        promo_action, account.email);
+        browser, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
+        access_point, promo_action, account.email);
     return;
   }
 

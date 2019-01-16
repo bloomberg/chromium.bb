@@ -73,12 +73,6 @@ void OpenBookmarkManagerForNode(Browser* browser, int64_t node_id) {
   ShowSingletonTabOverwritingNTP(browser, std::move(params));
 }
 
-void NavigateToSingletonTab(Browser* browser, const GURL& url) {
-  NavigateParams params(GetSingletonTabNavigateParams(browser, url));
-  params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
-  ShowSingletonTabOverwritingNTP(browser, std::move(params));
-}
-
 // Shows either the help app or the appropriate help page for |source|. If
 // |browser| is NULL and the help page is used (vs the app), the help page is
 // shown in the last active browser. If there is no such browser, a new browser
@@ -396,45 +390,22 @@ void ShowBrowserSignin(Browser* browser,
 
 #if defined(OS_CHROMEOS)
   // ChromeOS always loads the chrome://chrome-signin in a tab.
-  const bool show_full_tab_chrome_signin_page = true;
+  GURL url = signin::GetPromoURLForTab(
+      access_point, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
+      false);
+  NavigateParams params(GetSingletonTabNavigateParams(browser, url));
+  params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
+  ShowSingletonTabOverwritingNTP(browser, std::move(params));
+  DCHECK_GT(browser->tab_strip_model()->count(), 0);
 #else
-  // When Desktop Identity Consistency (aka DICE) is not enabled, Chrome uses
-  // a modal sign-in dialog for signing in. This sign-in modal dialog is
-  // presented as a tab-modal dialog (which is automatically dismissed when
-  // the page navigates). Displaying the dialog on a new tab that loads any
-  // page will lead to it being dismissed as soon as the new tab is loaded.
-  // So the sign-in dialog must only be presented on top of an existing tab.
-  //
-  // If ScopedTabbedBrowserDisplayer had to create a (non-incognito) Browser*,
-  // it won't have any tabs yet. Fallback to the full-tab sign-in flow in this
-  // case.
-  const bool show_full_tab_chrome_signin_page =
-      !signin::DiceMethodGreaterOrEqual(
-          AccountConsistencyModeManager::GetMethodForProfile(
-              browser->profile()),
-          signin::AccountConsistencyMethod::kDiceMigration) &&
-      browser->tab_strip_model()->empty();
-#endif  // defined(OS_CHROMEOS)
-  if (show_full_tab_chrome_signin_page) {
-    NavigateToSingletonTab(
-        browser,
-        signin::GetPromoURLForTab(
-            access_point, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
-            false));
-    DCHECK_GT(browser->tab_strip_model()->count(), 0);
-  } else {
-#if defined(OS_CHROMEOS)
-    NOTREACHED();
-#else
-    profiles::BubbleViewMode bubble_view_mode =
-        IdentityManagerFactory::GetForProfile(original_profile)
-                ->HasPrimaryAccount()
-            ? profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH
-            : profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN;
-    browser->signin_view_controller()->ShowSignin(bubble_view_mode, browser,
-                                                  access_point);
+  profiles::BubbleViewMode bubble_view_mode =
+      IdentityManagerFactory::GetForProfile(original_profile)
+              ->HasPrimaryAccount()
+          ? profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH
+          : profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN;
+  browser->signin_view_controller()->ShowSignin(bubble_view_mode, browser,
+                                                access_point);
 #endif
-  }
 }
 
 void ShowBrowserSigninOrSettings(Browser* browser,
