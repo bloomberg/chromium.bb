@@ -25,7 +25,7 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
-#include "third_party/webrtc/api/mediastreaminterface.h"
+#include "third_party/webrtc/api/media_stream_interface.h"
 
 using testing::Return;
 using testing::_;

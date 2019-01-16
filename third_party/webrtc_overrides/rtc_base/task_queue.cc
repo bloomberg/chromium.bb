@@ -17,8 +17,8 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_local.h"
 #include "build/build_config.h"
-#include "third_party/webrtc/rtc_base/refcount.h"
-#include "third_party/webrtc/rtc_base/refcountedobject.h"
+#include "third_party/webrtc/rtc_base/ref_count.h"
+#include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
 using base::WaitableEvent;
 

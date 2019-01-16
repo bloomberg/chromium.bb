@@ -5,7 +5,7 @@
 #include "content/renderer/media/webrtc/transceiver_state_surfacer.h"
 
 #include "content/renderer/media/webrtc/webrtc_util.h"
-#include "third_party/webrtc/api/rtptransceiverinterface.h"
+#include "third_party/webrtc/api/rtp_transceiver_interface.h"
 
 namespace content {
 

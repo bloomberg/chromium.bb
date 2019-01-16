@@ -13,9 +13,9 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/webrtc/api/dtlstransportinterface.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
-#include "third_party/webrtc/api/stats/rtcstatsreport.h"
+#include "third_party/webrtc/api/dtls_transport_interface.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
+#include "third_party/webrtc/api/stats/rtc_stats_report.h"
 
 namespace content {
 

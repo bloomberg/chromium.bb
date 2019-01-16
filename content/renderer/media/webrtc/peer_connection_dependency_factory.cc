@@ -61,12 +61,12 @@
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/webrtc/api/create_peerconnection_factory.h"
-#include "third_party/webrtc/api/mediaconstraintsinterface.h"
-#include "third_party/webrtc/api/videosourceproxy.h"
-#include "third_party/webrtc/media/engine/multiplexcodecfactory.h"
+#include "third_party/webrtc/api/media_constraints_interface.h"
+#include "third_party/webrtc/api/video_track_source_proxy.h"
+#include "third_party/webrtc/media/engine/multiplex_codec_factory.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
-#include "third_party/webrtc/rtc_base/refcountedobject.h"
-#include "third_party/webrtc/rtc_base/ssladapter.h"
+#include "third_party/webrtc/rtc_base/ref_counted_object.h"
+#include "third_party/webrtc/rtc_base/ssl_adapter.h"
 
 namespace content {
 

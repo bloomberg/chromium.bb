@@ -18,8 +18,8 @@
 #include "media/base/audio_point.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
-#include "third_party/webrtc/api/mediastreaminterface.h"
-#include "third_party/webrtc/media/base/mediachannel.h"
+#include "third_party/webrtc/api/media_stream_interface.h"
+#include "third_party/webrtc/media/base/media_channel.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "third_party/webrtc/rtc_base/task_queue.h"
 

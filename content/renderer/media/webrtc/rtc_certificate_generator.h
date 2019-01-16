@@ -9,7 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_rtc_key_params.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
 
 namespace content {
 

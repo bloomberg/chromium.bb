@@ -13,7 +13,7 @@
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
 
 namespace content {
 

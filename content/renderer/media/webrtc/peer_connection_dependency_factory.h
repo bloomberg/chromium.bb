@@ -17,8 +17,8 @@
 #include "content/renderer/media/webrtc/stun_field_trial.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "ipc/ipc_platform_file.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
-#include "third_party/webrtc/p2p/stunprober/stunprober.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
+#include "third_party/webrtc/p2p/stunprober/stun_prober.h"
 
 namespace base {
 class WaitableEvent;

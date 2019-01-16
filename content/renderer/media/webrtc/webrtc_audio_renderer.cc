@@ -25,7 +25,7 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/sample_rates.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/webrtc/api/mediastreaminterface.h"
+#include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace content {
 

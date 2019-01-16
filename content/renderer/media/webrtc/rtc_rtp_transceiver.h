@@ -12,7 +12,7 @@
 #include "content/renderer/media/webrtc/rtc_rtp_sender.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
-#include "third_party/webrtc/api/rtptransceiverinterface.h"
+#include "third_party/webrtc/api/rtp_transceiver_interface.h"
 
 namespace content {
 

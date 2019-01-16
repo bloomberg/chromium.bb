@@ -54,8 +54,8 @@
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_rtc_void_request.h"
 #include "third_party/blink/public/platform/web_url.h"
-#include "third_party/webrtc/api/rtceventlogoutput.h"
-#include "third_party/webrtc/pc/mediasession.h"
+#include "third_party/webrtc/api/rtc_event_log_output.h"
+#include "third_party/webrtc/pc/media_session.h"
 
 using webrtc::DataChannelInterface;
 using webrtc::IceCandidateInterface;

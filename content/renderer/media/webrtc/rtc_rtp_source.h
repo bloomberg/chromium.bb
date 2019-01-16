@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_source.h"
-#include "third_party/webrtc/api/rtpreceiverinterface.h"
+#include "third_party/webrtc/api/rtp_receiver_interface.h"
 
 namespace content {
 

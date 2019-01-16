@@ -13,7 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/renderer/media/stream/media_stream_video_source.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
-#include "third_party/webrtc/api/mediastreaminterface.h"
+#include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace content {
 

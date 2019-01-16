@@ -18,7 +18,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
-#include "third_party/webrtc/rtc_base/stringutils.h"
+#include "third_party/webrtc/rtc_base/string_utils.h"
 
 // This needs to be included after base/logging.h.
 #include "third_party/webrtc_overrides/rtc_base/diagnostic_logging.h"
