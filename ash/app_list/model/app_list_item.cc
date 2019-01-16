@@ -18,7 +18,6 @@ AppListItem::AppListItem(const std::string& id)
                                                      false,
                                                      gfx::ImageSkia(),
                                                      false)),
-      highlighted_(false),
       is_installing_(false),
       percent_downloaded_(-1) {}
 

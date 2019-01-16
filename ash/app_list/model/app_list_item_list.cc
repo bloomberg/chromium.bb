@@ -164,7 +164,6 @@ void AppListItemList::HighlightItemInstalledFromUI(const std::string& id) {
   // folder initially). So just search the top-level list.
   size_t index;
   if (FindItemIndex(highlighted_id_, &index)) {
-    item_at(index)->set_highlighted(false);
     for (auto& observer : observers_)
       observer.OnAppListItemHighlight(index, false);
   }
@@ -175,7 +174,6 @@ void AppListItemList::HighlightItemInstalledFromUI(const std::string& id) {
     return;
   }
 
-  item_at(index)->set_highlighted(true);
   for (auto& observer : observers_)
     observer.OnAppListItemHighlight(index, true);
 }
@@ -219,7 +217,6 @@ AppListItem* AppListItemList::AddItem(std::unique_ptr<AppListItem> item_ptr) {
 
   if (item->id() == highlighted_id_) {
     // Item not present when highlight requested, so highlight it now.
-    item->set_highlighted(true);
     for (auto& observer : observers_)
       observer.OnAppListItemHighlight(index, true);
   }

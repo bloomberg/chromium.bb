@@ -20,7 +20,6 @@ namespace app_list {
 // TODO(crbug.com/854836): Move everything here to app_list_config.h.
 ASH_PUBLIC_EXPORT extern const SkColor kContentsBackgroundColor;
 
-ASH_PUBLIC_EXPORT extern const SkColor kLabelBackgroundColor;
 ASH_PUBLIC_EXPORT extern const SkColor kBottomSeparatorColor;
 ASH_PUBLIC_EXPORT extern const SkColor kDialogSeparatorColor;
 

@@ -1076,7 +1076,6 @@ void AppsGridView::SetSelectedItemByIndex(const GridIndex& index) {
 
   EnsureViewVisible(index);
   selected_view_ = new_selection;
-  selected_view_->SetTitleSubpixelAA();
   selected_view_->SchedulePaint();
   selected_view_->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
 }
@@ -2306,11 +2305,10 @@ void AppsGridView::OnListItemMoved(size_t from_index,
 }
 
 void AppsGridView::OnAppListItemHighlight(size_t index, bool highlight) {
-  int model_index = GetModelIndexOfItem(item_list_->item_at(index));
-  AppListItemView* view = GetItemViewAt(model_index);
-  view->SetItemIsHighlighted(highlight);
-  if (highlight)
+  if (highlight) {
+    const int model_index = GetModelIndexOfItem(item_list_->item_at(index));
     EnsureViewVisible(GetIndexFromModelIndex(model_index));
+  }
 }
 
 void AppsGridView::TotalPagesChanged() {}

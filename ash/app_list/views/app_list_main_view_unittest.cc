@@ -269,59 +269,6 @@ TEST_F(AppListMainViewTest, DISABLED_ModelChanged) {
   EXPECT_EQ(kReplacementItems, RootViewModel()->view_size());
 }
 
-// Tests that mouse hovering over an app item highlights it
-TEST_F(AppListMainViewTest, DISABLED_MouseHoverToHighlight) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  delegate_->GetTestModel()->PopulateApps(2);
-  main_widget_->Show();
-
-  ui::test::EventGenerator generator(GetContext(),
-                                     main_widget_->GetNativeWindow());
-  AppListItemView* item0 = RootViewModel()->view_at(0);
-  AppListItemView* item1 = RootViewModel()->view_at(1);
-
-  // Switch to All Apps page.
-  GetContentsView()->SetActiveState(ash::AppListState::kStateApps);
-  GetContentsView()->Layout();
-
-  generator.MoveMouseTo(item0->GetBoundsInScreen().CenterPoint());
-  EXPECT_TRUE(item0->is_highlighted());
-  EXPECT_FALSE(item1->is_highlighted());
-
-  generator.MoveMouseTo(item1->GetBoundsInScreen().CenterPoint());
-  EXPECT_FALSE(item0->is_highlighted());
-  EXPECT_TRUE(item1->is_highlighted());
-
-  generator.MoveMouseTo(gfx::Point(-1, -1));
-  EXPECT_FALSE(item0->is_highlighted());
-  EXPECT_FALSE(item1->is_highlighted());
-}
-
-// Tests that tap gesture on app item highlights it
-TEST_F(AppListMainViewTest, DISABLED_TapGestureToHighlight) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  delegate_->GetTestModel()->PopulateApps(1);
-  main_widget_->Show();
-
-  ui::test::EventGenerator generator(GetContext(),
-                                     main_widget_->GetNativeWindow());
-  AppListItemView* item = RootViewModel()->view_at(0);
-
-  // Switch to All Apps page.
-  GetContentsView()->SetActiveState(ash::AppListState::kStateApps);
-  GetContentsView()->Layout();
-
-  generator.set_current_screen_location(
-      item->GetBoundsInScreen().CenterPoint());
-  generator.PressTouch();
-  EXPECT_TRUE(item->is_highlighted());
-
-  generator.ReleaseTouch();
-  EXPECT_FALSE(item->is_highlighted());
-}
-
 // Tests dragging an item out of a single item folder and drop it at the last
 // slot.
 TEST_F(AppListMainViewTest, DISABLED_DragLastItemFromFolderAndDropAtLastSlot) {
