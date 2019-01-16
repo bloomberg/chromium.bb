@@ -6,7 +6,6 @@
 
 import optparse
 import os
-import re
 import shutil
 import sys
 import tempfile
@@ -101,28 +100,21 @@ def _ParseOptions(args):
   return options
 
 
-def _NormalizeMergedConfig(merged_config_str):
-  stripped_config = re.sub(
-      r'(^\-(injars|libraryjars|print).*\n)|(#.*\n)',
-      '',
-      merged_config_str,
-      flags=re.MULTILINE)
-
-  config_groups = re.findall(
-      r'^(\-.*?(\n|(\{.*?\})))',
-      stripped_config,
-      flags=re.DOTALL | re.MULTILINE)
-
-  return '\n'.join(sorted(g[0].strip() for g in config_groups))
-
-
 def _VerifyExpectedConfigs(expected_path, actual_path, fail_on_exit):
-  diff = diff_utils.DiffFileContents(expected_path, actual_path,
-                                     'Proguard Flags')
+  diff = diff_utils.DiffFileContents(expected_path, actual_path)
   if not diff:
     return
 
-  print diff
+  print """
+{}
+
+Detected Proguard flags change. Please update by running:
+
+cp {} {}
+
+See https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md#fixing-build-failures
+for more info.
+""".format(diff, os.path.abspath(actual_path), os.path.abspath(expected_path))
   if fail_on_exit:
     sys.exit(1)
 
@@ -147,7 +139,7 @@ def _MoveTempDexFile(tmp_dex_dir, dex_path):
 
 
 def _CreateR8Command(options, map_output_path, output_dir, tmp_config_path,
-                     tmp_printconfiguration_path, libraries):
+                     libraries):
   cmd = [
     'java', '-jar', options.r8_path,
     '--no-data-resources',
@@ -161,12 +153,9 @@ def _CreateR8Command(options, map_output_path, output_dir, tmp_config_path,
   for config_file in options.proguard_configs:
     cmd += ['--pg-conf', config_file]
 
-  if options.apply_mapping or options.output_config:
+  if options.apply_mapping:
     with open(tmp_config_path, 'w') as f:
-      if options.apply_mapping:
-        f.write('-applymapping ' + options.apply_mapping)
-      if options.output_config:
-        f.write('-printconfiguration ' + tmp_printconfiguration_path)
+      f.write('-applymapping ' + options.apply_mapping)
     cmd += ['--pg-conf', tmp_config_path]
 
   if options.min_api:
@@ -195,19 +184,16 @@ def main(args):
     with build_utils.TempDir() as tmp_dir:
       tmp_mapping_path = os.path.join(tmp_dir, 'mapping.txt')
       tmp_proguard_config_path = os.path.join(tmp_dir, 'proguard_config.txt')
-      tmp_merged_config_path = os.path.join(tmp_dir, 'merged_config.txt')
 
       if options.output_path.endswith('.dex'):
         with build_utils.TempDir() as tmp_dex_dir:
           cmd = _CreateR8Command(options, tmp_mapping_path, tmp_dex_dir,
-                                 tmp_proguard_config_path,
-                                 tmp_merged_config_path, libraries)
+                                 tmp_proguard_config_path, libraries)
           build_utils.CheckOutput(cmd)
           _MoveTempDexFile(tmp_dex_dir, options.output_path)
       else:
         cmd = _CreateR8Command(options, tmp_mapping_path, options.output_path,
-                               tmp_proguard_config_path, tmp_merged_config_path,
-                               libraries)
+                               tmp_proguard_config_path, libraries)
         build_utils.CheckOutput(cmd)
 
       # Copy output files to correct locations.
@@ -217,11 +203,9 @@ def main(args):
         with open(tmp_mapping_path) as tmp:
           mapping.writelines(l for l in tmp if not l.startswith("#"))
 
-      with build_utils.AtomicOutput(options.output_config) as merged_config:
-        with open(tmp_merged_config_path) as tmp:
-          # Sort flags alphabetically to make diffs more stable and easier to
-          # consume. Also strip out lines with build specific paths in them.
-          merged_config.write(_NormalizeMergedConfig(tmp.read()))
+    with build_utils.AtomicOutput(options.output_config) as merged_config:
+      proguard_util.WriteFlagsFile(
+          options.proguard_configs, merged_config, exclude_generated=True)
 
     if options.expected_configs_file:
       _VerifyExpectedConfigs(options.expected_configs_file,
