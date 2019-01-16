@@ -886,6 +886,12 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private static final long kNanosecondsPer100Microsecond = 100000;
     private static final String TAG = "VideoCapture";
 
+    private static final String[] AE_TARGET_FPS_RANGE_BUGGY_DEVICE_LIST = {
+            // See https://crbug.com/913203 for more info.
+            "Pixel 3",
+            "Pixel 3 XL",
+    };
+
     // Map of the equivalent color temperature in Kelvin for the White Balance setting. The
     // values are a mixture of educated guesses and data from Android's Camera2 API. The
     // temperatures must be ordered increasingly.
@@ -1085,7 +1091,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
         } else {
             requestBuilder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
             requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_ON);
-            requestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, mAeFpsRange);
+            if (!shouldSkipSettingAeTargetFpsRange()) {
+                requestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, mAeFpsRange);
+            }
         }
 
         if (mTorch) {
@@ -1163,6 +1171,15 @@ public class VideoCaptureCamera2 extends VideoCapture {
             mCameraState = state;
             mCameraStateLock.notifyAll();
         }
+    }
+
+    private static boolean shouldSkipSettingAeTargetFpsRange() {
+        for (String buggyDevice : AE_TARGET_FPS_RANGE_BUGGY_DEVICE_LIST) {
+            if (buggyDevice.contentEquals(android.os.Build.MODEL)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // Finds the closest Size to (|width|x|height|) in |sizes|, and returns it or null.
