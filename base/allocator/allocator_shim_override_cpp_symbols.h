@@ -123,9 +123,8 @@ ALIGN_DEL_NOTHROW(void* p, ALIGN_VAL_T, const std::nothrow_t&) __THROW {
   ShimCppDelete(p);
 }
 
-SHIM_ALWAYS_EXPORT ALIGN_LINKAGE void* ALIGN_NEW_ARR(
-    std::size_t size,
-    ALIGN_VAL_T alignment) __THROW {
+SHIM_ALWAYS_EXPORT ALIGN_LINKAGE void* ALIGN_NEW_ARR(std::size_t size,
+                                                     ALIGN_VAL_T alignment) {
   return ShimCppAlignedNew(size, static_cast<size_t>(alignment));
 }
 
