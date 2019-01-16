@@ -134,7 +134,6 @@ void KioskExternalUpdateNotification::CreateAndShowNotificationView(
   params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
   params.accept_events = false;
   params.keep_on_top = true;
-  params.remove_standard_frame = true;
   params.delegate = view_;
   params.bounds = bounds;
   // The notification is shown on the primary display.
