@@ -159,6 +159,9 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   // This is used to always process contentOffset changes on specific cases like
   // when playing the bounce back animation if no actions has been triggered.
   BOOL _forceStateUpdate;
+  // Instructs the controller to ignore the scroll event resulting from setting
+  // |disablingFullscreen| to YES.
+  BOOL _ignoreScrollForDisabledFullscreen;
   // True when the overscroll actions are disabled for loading.
   BOOL _isOverscrollActionsDisabledForLoading;
   // True when the pull gesture started close enough from the top and the
@@ -221,6 +224,9 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 @property(nonatomic, assign) BOOL scrollViewDragged;
 // Whether the scroll view's viewport is being adjusted by the content inset.
 @property(nonatomic, readonly) BOOL viewportAdjustsContentInset;
+// Whether fullscreen is disabled.
+@property(nonatomic, assign, getter=isDisablingFullscreen)
+    BOOL disablingFullscreen;
 
 // Registers notifications to lock the overscroll actions on certain UI states.
 - (void)registerNotifications;
@@ -369,8 +375,10 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 
 - (void)scrollViewDidScroll {
   if (!_forceStateUpdate && (![self isOverscrollActionEnabled] ||
-                             _performingScrollViewIndependentAnimation))
+                             _performingScrollViewIndependentAnimation ||
+                             _ignoreScrollForDisabledFullscreen)) {
     return;
+  }
 
   const UIEdgeInsets insets =
       TopContentInset(self.scrollView, -[self scrollView].contentOffset.y);
@@ -779,7 +787,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
           postNotificationName:kOverscrollActionsDidEnd
                         object:self];
       [self resetScrollViewTopContentInset];
-      _fullscreenDisabler = nullptr;
+      self.disablingFullscreen = NO;
       if (_shouldInvalidate) {
         [self invalidate];
       }
@@ -792,13 +800,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
           [[NSNotificationCenter defaultCenter]
               postNotificationName:kOverscrollActionsWillStart
                             object:self];
-          if (self.browserState) {
-            FullscreenController* fullscreenController =
-                FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-                    self.browserState);
-            _fullscreenDisabler = std::make_unique<ScopedFullscreenDisabler>(
-                fullscreenController);
-          }
+          self.disablingFullscreen = YES;
         }
         [CATransaction begin];
         [CATransaction setDisableActions:YES];
@@ -874,6 +876,32 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   return [self.delegate overscrollActionsControllerHeaderInset:self];
 }
 
+- (BOOL)isDisablingFullscreen {
+  return _fullscreenDisabler.get() != nullptr;
+}
+
+- (void)setDisablingFullscreen:(BOOL)disablingFullscreen {
+  if (self.disablingFullscreen == disablingFullscreen)
+    return;
+  _fullscreenDisabler = nullptr;
+  // Don't try to disable fullscreen if the BrowserState has been detached, such
+  // as when an overscroll that begins just as the last incognito tab is closed.
+  if (!disablingFullscreen || !self.browserState)
+    return;
+  FullscreenController* fullscreenController =
+      FullscreenControllerFactory::GetInstance()->GetForBrowserState(
+          self.browserState);
+  // Disabling fullscreen will show the toolbars, which may potentially produce
+  // a |-scrollViewDidScroll| event if the browser viewport insets need to be
+  // updated.  |_ignoreScrollForDisabledFullscreen| is set to YES while the
+  // viewport insets are being updated for the disabled state so that this
+  // scroll event can be ignored.
+  _ignoreScrollForDisabledFullscreen = YES;
+  _fullscreenDisabler =
+      std::make_unique<ScopedFullscreenDisabler>(fullscreenController);
+  _ignoreScrollForDisabledFullscreen = NO;
+}
+
 #pragma mark - Bounce dynamic
 
 - (void)startBounceWithInitialVelocity:(CGPoint)velocity {
@@ -884,7 +912,6 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   CADisplayLink* dpLink =
       [CADisplayLink displayLinkWithTarget:self
                                   selector:@selector(updateBounce)];
-  [dpLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
   _dpLink = dpLink;
   memset(&_bounceState, 0, sizeof(_bounceState));
   if (self.overscrollState == OverscrollState::ACTION_READY) {
@@ -900,6 +927,16 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   _bounceState.headerInset = self.initialContentInset;
   _bounceState.time = CACurrentMediaTime();
   _bounceState.velocityInset = -velocity.y * 1000.0;
+
+  if (fabs(_bounceState.yInset - _bounceState.headerInset) < 0.5) {
+    // If no bounce is required, then clear state, as the necessary
+    // |-scrollViewDidScroll| callback will not be triggered to reset
+    // |overscrollState| to NO_PULL_STARTED.
+    [self stopBounce];
+    [self clear];
+  } else {
+    [dpLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+  }
 }
 
 - (void)stopBounce {
