@@ -9,6 +9,7 @@
 #include "base/native_library.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/ipc/common/android/android_image_reader_utils.h"
@@ -90,31 +91,39 @@ namespace {
 AwDrawFnFunctionTable* g_draw_fn_function_table = nullptr;
 
 void OnSyncWrapper(int functor, void* data, AwDrawFn_OnSyncParams* params) {
+  TRACE_EVENT1("android_webview,toplevel", "DrawFn_OnSync", "functor", functor);
   CHECK_EQ(static_cast<AwDrawFnImpl*>(data)->functor_handle(), functor);
   static_cast<AwDrawFnImpl*>(data)->OnSync(params);
 }
 
 void OnContextDestroyedWrapper(int functor, void* data) {
+  TRACE_EVENT1("android_webview,toplevel", "DrawFn_OnContextDestroyed",
+               "functor", functor);
   CHECK_EQ(static_cast<AwDrawFnImpl*>(data)->functor_handle(), functor);
   static_cast<AwDrawFnImpl*>(data)->OnContextDestroyed();
 }
 
 void OnDestroyedWrapper(int functor, void* data) {
+  TRACE_EVENT1("android_webview,toplevel", "DrawFn_OnDestroyed", "functor",
+               functor);
   CHECK_EQ(static_cast<AwDrawFnImpl*>(data)->functor_handle(), functor);
   delete static_cast<AwDrawFnImpl*>(data);
 }
 
 void DrawGLWrapper(int functor, void* data, AwDrawFn_DrawGLParams* params) {
+  TRACE_EVENT1("android_webview,toplevel", "DrawFn_DrawGL", "functor", functor);
   CHECK_EQ(static_cast<AwDrawFnImpl*>(data)->functor_handle(), functor);
   static_cast<AwDrawFnImpl*>(data)->DrawGL(params);
 }
 
 void InitVkWrapper(int functor, void* data, AwDrawFn_InitVkParams* params) {
+  TRACE_EVENT1("android_webview,toplevel", "DrawFn_InitVk", "functor", functor);
   CHECK_EQ(static_cast<AwDrawFnImpl*>(data)->functor_handle(), functor);
   static_cast<AwDrawFnImpl*>(data)->InitVk(params);
 }
 
 void DrawVkWrapper(int functor, void* data, AwDrawFn_DrawVkParams* params) {
+  TRACE_EVENT1("android_webview,toplevel", "DrawFn_DrawVk", "functor", functor);
   CHECK_EQ(static_cast<AwDrawFnImpl*>(data)->functor_handle(), functor);
   static_cast<AwDrawFnImpl*>(data)->DrawVk(params);
 }
@@ -122,6 +131,8 @@ void DrawVkWrapper(int functor, void* data, AwDrawFn_DrawVkParams* params) {
 void PostDrawVkWrapper(int functor,
                        void* data,
                        AwDrawFn_PostDrawVkParams* params) {
+  TRACE_EVENT1("android_webview,toplevel", "DrawFn_PostDrawVk", "functor",
+               functor);
   CHECK_EQ(static_cast<AwDrawFnImpl*>(data)->functor_handle(), functor);
   static_cast<AwDrawFnImpl*>(data)->PostDrawVk(params);
 }
