@@ -55,7 +55,8 @@ class TestBuildStore(cros_test_lib.MockTestCase):
 
   def testInsertBuild(self):
     """Tests the redirect for InsertBuild function."""
-    self.PatchObject(BuildStore, 'InitializeClients')
+    self.PatchObject(BuildStore, 'InitializeClients',
+                     return_value=True)
     bs = BuildStore()
     bs.cidb_conn = mock.MagicMock()
     self.PatchObject(bs.cidb_conn, 'InsertBuild',
@@ -70,7 +71,8 @@ class TestBuildStore(cros_test_lib.MockTestCase):
 
   def testInsertBuildStage(self):
     """Tests the redirect for InsertBuildStage function."""
-    self.PatchObject(BuildStore, 'InitializeClients')
+    self.PatchObject(BuildStore, 'InitializeClients',
+                     return_value=True)
     bs = BuildStore()
     bs.cidb_conn = mock.MagicMock()
     self.PatchObject(bs.cidb_conn, 'InsertBuildStage',
@@ -81,3 +83,15 @@ class TestBuildStore(cros_test_lib.MockTestCase):
         constants.MOCK_BUILD_ID, 'stage_name', None,
         constants.BUILDER_STATUS_PLANNED)
     self.assertEqual(build_stage_id, constants.MOCK_STAGE_ID)
+
+  def testUpdateMetadata(self):
+    """Tests the redirect for UpdateMetadata function."""
+    self.PatchObject(BuildStore, 'InitializeClients',
+                     return_value=True)
+    bs = BuildStore()
+    bs.cidb_conn = mock.MagicMock()
+    fake_metadata = {}
+    self.PatchObject(bs.cidb_conn, 'UpdateMetadata')
+    bs.UpdateMetadata(constants.MOCK_BUILD_ID, fake_metadata)
+    bs.cidb_conn.UpdateMetadata.assert_called_once_with(
+        constants.MOCK_BUILD_ID, fake_metadata)

@@ -1231,11 +1231,11 @@ class ArchivingStageMixin(object):
       logging.info('Uploading metadata file %s now.', metadata_json)
       self.UploadArtifact(filename, archive=False)
 
-    build_id, db = self._run.GetCIDBHandle()
-    if db:
+    build_id, _ = self._run.GetCIDBHandle()
+    if self.buildstore.AreClientsReady():
       logging.info('Writing updated metadata to database for build_id %s.',
                    build_id)
-      db.UpdateMetadata(build_id, self._run.attrs.metadata)
+      self.buildstore.UpdateMetadata(build_id, self._run.attrs.metadata)
       if export:
         d = self._run.attrs.metadata.GetDict()
         if constants.METADATA_TAGS in d:

@@ -170,6 +170,18 @@ class BuildStore(object):
     if self._write_to_cidb:
       return self.cidb_conn.InsertBuildStage(build_id, name, board, status)
 
+  def UpdateMetadata(self, build_id, metadata):
+    """Update the given metadata row in database.
+
+    Args:
+      build_id: CIDB id of the build to update.
+      metadata: CBuildbotMetadata instance to update with.
+    """
+    if not self.InitializeClients():
+      return
+    if self._write_to_cidb:
+      return self.cidb_conn.UpdateMetadata(build_id, metadata)
+
   def GetBuildStatuses(self, buildbucket_ids=None, build_ids=None):
     """Retrieve the build statuses of list of builds.
 
@@ -243,6 +255,9 @@ class FakeBuildStore(object):
     build_stage_id = self.fake_cidb.InsertBuildStage(build_id, name, board,
                                                      status)
     return build_stage_id
+
+  def UpdateMetadata(self, build_id, metadata): #pylint: disable=unused-argument
+    return
 
   def GetBuildStatuses(self, buildbucket_ids=None, build_ids=None):
     if buildbucket_ids:
