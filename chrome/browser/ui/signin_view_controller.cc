@@ -119,30 +119,25 @@ void SigninViewController::ShowSignin(profiles::BubbleViewMode mode,
 
 #if defined(OS_CHROMEOS)
   ShowModalSigninDialog(mode, browser, access_point);
-#else   // defined(OS_CHROMEOS)
+#else
   Profile* profile = browser->profile();
   signin::AccountConsistencyMethod account_consistency =
       AccountConsistencyModeManager::GetMethodForProfile(profile);
-  if (signin::DiceMethodGreaterOrEqual(
-          account_consistency,
-          signin::AccountConsistencyMethod::kDiceMigration)) {
-    std::string email;
-    if (GetSigninReasonFromMode(mode) ==
-        signin_metrics::Reason::REASON_REAUTHENTICATION) {
-      auto* manager = IdentityManagerFactory::GetForProfile(profile);
-      email = manager->GetPrimaryAccountInfo().email;
-    }
-    signin_metrics::PromoAction promo_action = GetPromoActionForNewAccount(
-        AccountTrackerServiceFactory::GetForProfile(profile),
-        account_consistency);
-    ShowDiceSigninTab(mode, browser, access_point, promo_action, email,
-                      redirect_url);
-  } else {
-    ShowModalSigninDialog(mode, browser, access_point);
+  std::string email;
+  signin_metrics::Reason signin_reason = GetSigninReasonFromMode(mode);
+  if (signin_reason == signin_metrics::Reason::REASON_REAUTHENTICATION) {
+    auto* manager = IdentityManagerFactory::GetForProfile(profile);
+    email = manager->GetPrimaryAccountInfo().email;
   }
-#endif  // defined(OS_CHROMEOS)
+  signin_metrics::PromoAction promo_action = GetPromoActionForNewAccount(
+      AccountTrackerServiceFactory::GetForProfile(profile),
+      account_consistency);
+  ShowDiceSigninTab(browser, signin_reason, access_point, promo_action, email,
+                    redirect_url);
+#endif
 }
 
+#if defined(OS_CHROMEOS)
 void SigninViewController::ShowModalSigninDialog(
     profiles::BubbleViewMode mode,
     Browser* browser,
@@ -159,6 +154,7 @@ void SigninViewController::ShowModalSigninDialog(
   delegate_->AttachDialogManager();
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGN_IN);
 }
+#endif  // defined(OS_CHROMEOS)
 
 void SigninViewController::ShowModalSyncConfirmationDialog(Browser* browser) {
   CloseModalSignin();
@@ -206,13 +202,12 @@ void SigninViewController::ResetModalSigninDelegate() {
 
 #if !defined(OS_CHROMEOS)
 void SigninViewController::ShowDiceSigninTab(
-    profiles::BubbleViewMode mode,
     Browser* browser,
+    signin_metrics::Reason signin_reason,
     signin_metrics::AccessPoint access_point,
     signin_metrics::PromoAction promo_action,
     const std::string& email,
     const GURL& redirect_url) {
-  signin_metrics::Reason signin_reason = GetSigninReasonFromMode(mode);
   GURL signin_url = signin::GetSigninURLForDice(browser->profile(), email);
   content::WebContents* active_contents = nullptr;
   if (access_point == signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE) {
