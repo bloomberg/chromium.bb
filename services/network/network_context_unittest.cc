@@ -97,6 +97,7 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_service_buildflags.h"
+#include "services/network/public/cpp/resolve_host_client_base.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -2559,7 +2560,7 @@ net::IPEndPoint CreateExpectedEndPoint(const std::string& address,
   return net::IPEndPoint(ip_address, port);
 }
 
-class TestResolveHostClient : public mojom::ResolveHostClient {
+class TestResolveHostClient : public ResolveHostClientBase {
  public:
   TestResolveHostClient(mojom::ResolveHostClientPtr* interface_ptr,
                         base::RunLoop* run_loop)

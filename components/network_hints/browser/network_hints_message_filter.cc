@@ -19,6 +19,7 @@
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_with_source.h"
+#include "services/network/public/cpp/resolve_host_client_base.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
@@ -32,7 +33,7 @@ const int kDefaultPort = 80;
 // This class contains a std::unique_ptr of itself, it is passed in through
 // Start() method, and will be freed by the OnComplete() method when resolving
 // has completed or mojo connection error has happened.
-class DnsLookupRequest : public network::mojom::ResolveHostClient {
+class DnsLookupRequest : public network::ResolveHostClientBase {
  public:
   DnsLookupRequest(int render_process_id, const std::string& hostname)
       : binding_(this),

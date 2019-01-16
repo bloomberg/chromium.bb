@@ -11,6 +11,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
+#include "services/network/public/cpp/resolve_host_client_base.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 
 class GURL;
@@ -27,7 +28,7 @@ using ResolveHostCallback = base::OnceCallback<void(bool success)>;
 
 // This class helps perform the host resolution using the NetworkContext.
 // An instance of this class must be deleted after the callback is invoked.
-class ResolveHostClientImpl : public network::mojom::ResolveHostClient {
+class ResolveHostClientImpl : public network::ResolveHostClientBase {
  public:
   // Starts the host resolution for |url|. |callback| is called when the host is
   // resolved or when an error occurs.

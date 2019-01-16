@@ -36,6 +36,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/resolve_host_client_base.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
@@ -154,7 +155,7 @@ net::NetworkTrafficAnnotationTag kPortForwardingControllerTrafficAnnotation =
 using ResolveHostCallback = base::OnceCallback<void(net::AddressList)>;
 
 // This class is created and runs on BrowserThread::UI thread.
-class PortForwardingHostResolver : public network::mojom::ResolveHostClient {
+class PortForwardingHostResolver : public network::ResolveHostClientBase {
  public:
   PortForwardingHostResolver(Profile* profile,
                              const std::string& host,
