@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/time/default_clock.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -40,7 +40,8 @@ ReadingListModel* ReadingListModelFactory::GetForBrowserStateIfExists(
 
 // static
 ReadingListModelFactory* ReadingListModelFactory::GetInstance() {
-  return base::Singleton<ReadingListModelFactory>::get();
+  static base::NoDestructor<ReadingListModelFactory> instance;
+  return instance.get();
 }
 
 ReadingListModelFactory::ReadingListModelFactory()
