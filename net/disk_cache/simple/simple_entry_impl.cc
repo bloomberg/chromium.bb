@@ -805,6 +805,13 @@ void SimpleEntryImpl::CreateEntryInternal(bool have_index,
 
 void SimpleEntryImpl::CloseInternal() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+
+  if (open_count_ != 0) {
+    // Entry got resurrected in between Close and CloseInternal, nothing to do
+    // for now.
+    return;
+  }
+
   typedef SimpleSynchronousEntry::CRCRecord CRCRecord;
   std::unique_ptr<std::vector<CRCRecord>> crc32s_to_write(
       new std::vector<CRCRecord>());
