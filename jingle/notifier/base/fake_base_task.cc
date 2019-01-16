@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/compiler_specific.h"
+#include "net/base/host_port_pair.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "jingle/notifier/base/weak_xmpp_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -22,7 +23,7 @@ class MockAsyncSocket : public buzz::AsyncSocket {
   MOCK_METHOD0(state, State());
   MOCK_METHOD0(error, Error());
   MOCK_METHOD0(GetError, int());
-  MOCK_METHOD1(Connect, bool(const rtc::SocketAddress&));
+  MOCK_METHOD1(Connect, bool(const net::HostPortPair&));
   MOCK_METHOD3(Read, bool(char*, size_t, size_t*));
   MOCK_METHOD2(Write, bool(const char*, size_t));
   MOCK_METHOD0(Close, bool());

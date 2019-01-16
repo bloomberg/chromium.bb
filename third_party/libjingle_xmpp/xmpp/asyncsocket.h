@@ -13,11 +13,8 @@
 
 #include <string>
 
+#include "net/base/host_port_pair.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
-
-namespace rtc {
-  class SocketAddress;
-}
 
 namespace buzz {
 
@@ -45,7 +42,7 @@ public:
   virtual Error error() = 0;
   virtual int GetError() = 0;    // winsock error code
 
-  virtual bool Connect(const rtc::SocketAddress& addr) = 0;
+  virtual bool Connect(const net::HostPortPair& addr) = 0;
   virtual bool Read(char * data, size_t len, size_t* len_read) = 0;
   virtual bool Write(const char * data, size_t len) = 0;
   virtual bool Close() = 0;
