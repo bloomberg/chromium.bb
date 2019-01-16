@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/supervision_transition_screen_handler.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -78,6 +79,8 @@ void SupervisionTransitionScreenHandler::Show() {
     return;
   }
 
+  screen_shown_time_ = base::TimeTicks::Now();
+
   timer_.Start(
       FROM_HERE, kWaitingTimeout,
       base::BindOnce(
@@ -122,6 +125,7 @@ void SupervisionTransitionScreenHandler::OnSupervisionTransitionFailed() {
   // Prevent ARC++ data removal below from triggering the success flow (since it
   // will reset the supervision transition pref).
   registrar_.RemoveAll();
+  timed_out_ = true;
   arc::ArcSessionManager::Get()->RequestArcDataRemoval();
   arc::ArcSessionManager::Get()->StopAndEnableArc();
   if (screen_) {
@@ -139,6 +143,15 @@ void SupervisionTransitionScreenHandler::OnSupervisionTransitionFinished() {
   SystemTrayClient::Get()->SetPrimaryTrayEnabled(true);
   if (screen_)
     screen_->OnSupervisionTransitionFinished();
+
+  UMA_HISTOGRAM_BOOLEAN("Arc.Supervision.Transition.Screen.Successful",
+                        !timed_out_);
+  if (!timed_out_) {
+    base::TimeDelta timeDelta = base::TimeTicks::Now() - screen_shown_time_;
+    DVLOG(1) << "Transition succeeded in: " << timeDelta.InSecondsF();
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "Arc.Supervision.Transition.Screen.Success.TimeDelta", timeDelta);
+  }
 }
 
 }  // namespace chromeos
