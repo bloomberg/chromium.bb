@@ -126,9 +126,8 @@ suffix). Consider whether composition could solve the problem instead.
 
 Simple accessors should generally be the only inline functions. These should be
 named `unix_hacker_style()`. Virtual functions should never be declared this way.
-For more detail, consult the [C++ Dos and
-Don'ts](https://www.chromium.org/developers/coding-style/cpp-dos-and-donts)
-section on inlining.
+For more detail, consult the [C++ Dos and Don'ts](c++-dos-and-donts.md) section
+on inlining.
 
 ## Logging
 
@@ -355,6 +354,5 @@ these:
   * Unit tests and performance tests should be placed in the same directory as
     the functionality they're testing.
 
-  * The [C++ do's and
-    don'ts](https://sites.google.com/a/chromium.org/dev/developers/coding-style/cpp-dos-and-donts)
-    page has more helpful information.
+  * The [C++ Dos and Don'ts](c++-dos-and-donts.md) page has more helpful
+    information.
