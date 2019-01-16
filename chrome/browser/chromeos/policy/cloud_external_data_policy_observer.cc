@@ -284,10 +284,9 @@ void CloudExternalDataPolicyObserver::HandleExternalDataPolicyUpdate(
   std::unique_ptr<WeakPtrFactory>& weak_ptr_factory = fetch_weak_ptrs_[user_id];
   weak_ptr_factory.reset(new WeakPtrFactory(this));
   if (entry->external_data_fetcher) {
-    entry->external_data_fetcher->Fetch(base::Bind(
-        &CloudExternalDataPolicyObserver::OnExternalDataFetched,
-        weak_ptr_factory->GetWeakPtr(),
-        user_id));
+    entry->external_data_fetcher->Fetch(
+        base::BindOnce(&CloudExternalDataPolicyObserver::OnExternalDataFetched,
+                       weak_ptr_factory->GetWeakPtr(), user_id));
   } else {
     NOTREACHED();
   }

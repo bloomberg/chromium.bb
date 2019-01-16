@@ -112,10 +112,9 @@ IN_PROC_BROWSER_TEST_F(UserCloudExternalDataManagerTest, FetchExternalData) {
 
   base::RunLoop run_loop;
   std::unique_ptr<std::string> fetched_external_data;
-  policy_entry->external_data_fetcher->Fetch(base::Bind(
-      &test::ExternalDataFetchCallback,
-      &fetched_external_data,
-      run_loop.QuitClosure()));
+  policy_entry->external_data_fetcher->Fetch(
+      base::BindOnce(&test::ExternalDataFetchCallback, &fetched_external_data,
+                     run_loop.QuitClosure()));
   run_loop.Run();
 
   ASSERT_TRUE(fetched_external_data);

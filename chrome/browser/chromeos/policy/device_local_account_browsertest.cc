@@ -1415,10 +1415,9 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
   // the retrieval should succeed because the data has been cached.
   run_loop.reset(new base::RunLoop);
   std::unique_ptr<std::string> fetched_external_data;
-  policy_entry->external_data_fetcher->Fetch(base::Bind(
-      &test::ExternalDataFetchCallback,
-      &fetched_external_data,
-      run_loop->QuitClosure()));
+  policy_entry->external_data_fetcher->Fetch(
+      base::BindOnce(&test::ExternalDataFetchCallback, &fetched_external_data,
+                     run_loop->QuitClosure()));
   run_loop->Run();
 
   ASSERT_TRUE(fetched_external_data);
@@ -1443,10 +1442,9 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
   // should succeed because the data has been cached.
   run_loop.reset(new base::RunLoop);
   fetched_external_data.reset();
-  policy_entry->external_data_fetcher->Fetch(base::Bind(
-      &test::ExternalDataFetchCallback,
-      &fetched_external_data,
-      run_loop->QuitClosure()));
+  policy_entry->external_data_fetcher->Fetch(
+      base::BindOnce(&test::ExternalDataFetchCallback, &fetched_external_data,
+                     run_loop->QuitClosure()));
   run_loop->Run();
 
   ASSERT_TRUE(fetched_external_data);
