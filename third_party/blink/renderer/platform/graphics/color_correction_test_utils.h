@@ -73,6 +73,9 @@ class ColorCorrectionTestUtils {
   static bool MatchColorSpace(sk_sp<SkColorSpace> src_color_space,
                               sk_sp<SkColorSpace> dst_color_space);
 
+  // Compares size, colorspace and pixel values of two images
+  // If the colorspace of either image is null the colorspaces are assumed
+  // to be equal
   static bool MatchSkImages(sk_sp<SkImage> src_image,
                             sk_sp<SkImage> dst_image,
                             unsigned uint8_tolerance,

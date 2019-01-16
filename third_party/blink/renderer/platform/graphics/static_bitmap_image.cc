@@ -84,6 +84,7 @@ scoped_refptr<StaticBitmapImage> StaticBitmapImage::ConvertToColorSpace(
     SkColorType color_type) {
   DCHECK(color_space);
   sk_sp<SkImage> skia_image = PaintImageForCurrentFrame().GetSkImage();
+
   // If we don't need to change the color type, use SkImage::makeColorSpace()
   if (skia_image->colorType() == color_type) {
     skia_image = skia_image->makeColorSpace(color_space);
@@ -92,23 +93,17 @@ scoped_refptr<StaticBitmapImage> StaticBitmapImage::ConvertToColorSpace(
                                                      : nullptr);
   }
 
-  // Otherwise, create a surface and draw on that to avoid GPU readback.
-  sk_sp<SkColorSpace> src_color_space = skia_image->refColorSpace();
-  if (!src_color_space.get())
-    src_color_space = SkColorSpace::MakeSRGB();
-  sk_sp<SkColorSpace> dst_color_space = color_space;
-  if (!dst_color_space.get())
-    dst_color_space = SkColorSpace::MakeSRGB();
-
+  // Otherwise we need to create a surface and redraw the image as it is a
+  // different size in memory
   SkImageInfo info =
       SkImageInfo::Make(skia_image->width(), skia_image->height(), color_type,
-                        skia_image->alphaType(), dst_color_space);
+                        skia_image->alphaType(), color_space);
   sk_sp<SkSurface> surface = nullptr;
   if (skia_image->isTextureBacked()) {
     GrContext* gr = ContextProviderWrapper()->ContextProvider()->GetGrContext();
     surface = SkSurface::MakeRenderTarget(gr, SkBudgeted::kNo, info);
   } else {
-      surface = SkSurface::MakeRaster(info);
+    surface = SkSurface::MakeRaster(info);
   }
   SkPaint paint;
   surface->getCanvas()->drawImage(skia_image, 0, 0, &paint);
