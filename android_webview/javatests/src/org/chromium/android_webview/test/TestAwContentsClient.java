@@ -39,7 +39,7 @@ public class TestAwContentsClient extends NullContentsClient {
     private final OnReceivedErrorHelper mOnReceivedErrorHelper;
     private final OnReceivedError2Helper mOnReceivedError2Helper;
     private final OnReceivedHttpErrorHelper mOnReceivedHttpErrorHelper;
-    private final CallbackHelper mOnReceivedSslErrorHelper;
+    private final OnReceivedSslErrorHelper mOnReceivedSslErrorHelper;
     private final OnDownloadStartHelper mOnDownloadStartHelper;
     private final OnReceivedLoginRequestHelper mOnReceivedLoginRequestHelper;
     private final OnEvaluateJavaScriptResultHelper mOnEvaluateJavaScriptResultHelper;
@@ -62,7 +62,7 @@ public class TestAwContentsClient extends NullContentsClient {
         mOnReceivedErrorHelper = new OnReceivedErrorHelper();
         mOnReceivedError2Helper = new OnReceivedError2Helper();
         mOnReceivedHttpErrorHelper = new OnReceivedHttpErrorHelper();
-        mOnReceivedSslErrorHelper = new CallbackHelper();
+        mOnReceivedSslErrorHelper = new OnReceivedSslErrorHelper();
         mOnDownloadStartHelper = new OnDownloadStartHelper();
         mOnReceivedLoginRequestHelper = new OnReceivedLoginRequestHelper();
         mOnEvaluateJavaScriptResultHelper = new OnEvaluateJavaScriptResultHelper();
@@ -103,7 +103,7 @@ public class TestAwContentsClient extends NullContentsClient {
         return mOnReceivedHttpErrorHelper;
     }
 
-    public CallbackHelper getOnReceivedSslErrorHelper() {
+    public OnReceivedSslErrorHelper getOnReceivedSslErrorHelper() {
         return mOnReceivedSslErrorHelper;
     }
 
@@ -244,7 +244,7 @@ public class TestAwContentsClient extends NullContentsClient {
     public void onReceivedSslError(Callback<Boolean> callback, SslError error) {
         if (TRACE) Log.i(TAG, "onReceivedSslError");
         callback.onResult(mAllowSslError);
-        mOnReceivedSslErrorHelper.notifyCalled();
+        mOnReceivedSslErrorHelper.notifyCalled(error);
     }
 
     public void setAllowSslError(boolean allow) {
@@ -567,6 +567,23 @@ public class TestAwContentsClient extends NullContentsClient {
     public void doUpdateVisitedHistory(String url, boolean isReload) {
         if (TRACE) Log.i(TAG, "doUpdateVisitedHistory " + url);
         getDoUpdateVisitedHistoryHelper().notifyCalled(url, isReload);
+    }
+
+    /**
+     * CallbackHelper for onReceivedSslError.
+     */
+    public static class OnReceivedSslErrorHelper extends CallbackHelper {
+        private SslError mSslError;
+
+        public void notifyCalled(SslError error) {
+            mSslError = error;
+            notifyCalled();
+        }
+
+        public SslError getError() {
+            assert getCallCount() > 0;
+            return mSslError;
+        }
     }
 
     /**

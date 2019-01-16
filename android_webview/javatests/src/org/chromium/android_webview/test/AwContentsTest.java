@@ -510,63 +510,6 @@ public class AwContentsTest {
         Assert.assertTrue(testContainer.isBackedByHardwareView());
     }
 
-    // TODO(hush): more ssl tests. And put the ssl tests into a separate test
-    // class.
-    @Test
-    @Feature({"AndroidWebView"})
-    @SmallTest
-    // If the user allows the ssl error, the same ssl error will not trigger
-    // the onReceivedSslError callback; If the user denies it, the same ssl
-    // error will still trigger the onReceivedSslError callback.
-    public void testSslPreferences() throws Throwable {
-        final AwTestContainerView testContainer =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
-        final AwContents awContents = testContainer.getAwContents();
-        TestWebServer webServer = TestWebServer.startSsl();
-        final String pagePath = "/hello.html";
-        final String pageUrl =
-                webServer.setResponse(pagePath, "<html><body>hello world</body></html>", null);
-        final CallbackHelper onReceivedSslErrorHelper =
-                mContentsClient.getOnReceivedSslErrorHelper();
-        int onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
-
-        mActivityTestRule.loadUrlSync(
-                awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
-
-        Assert.assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
-        Assert.assertEquals(1, webServer.getRequestCount(pagePath));
-
-        // Now load the page again. This time, we expect no ssl error, because
-        // user's decision should be remembered.
-        onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
-        mActivityTestRule.loadUrlSync(
-                awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
-        Assert.assertEquals(onSslErrorCallCount, onReceivedSslErrorHelper.getCallCount());
-
-        // Now clear the ssl preferences then load the same url again. Expect to see
-        // onReceivedSslError getting called again.
-        awContents.clearSslPreferences();
-        onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
-        mActivityTestRule.loadUrlSync(
-                awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
-        Assert.assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
-
-        // Now clear the stored decisions and tell the client to deny ssl errors.
-        awContents.clearSslPreferences();
-        mContentsClient.setAllowSslError(false);
-        onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
-        mActivityTestRule.loadUrlSync(
-                awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
-        Assert.assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
-
-        // Now load the same page again. This time, we still expect onReceivedSslError,
-        // because we only remember user's decision if it is "allow".
-        onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
-        mActivityTestRule.loadUrlSync(
-                awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
-        Assert.assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
-    }
-
     /**
      * Verifies that Web Notifications and the Push API are not exposed in WebView.
      */
