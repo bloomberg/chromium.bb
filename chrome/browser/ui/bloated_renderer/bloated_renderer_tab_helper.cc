@@ -132,25 +132,13 @@ void BloatedRendererTabHelper::OnRendererIsBloated(
   }
 
   if (CanReloadBloatedTab()) {
-    const size_t expected_page_count = 1u;
-    const bool skip_unload_handlers = true;
-    content::RenderProcessHost* renderer =
-        web_contents()->GetMainFrame()->GetProcess();
-    if (renderer->FastShutdownIfPossible(expected_page_count,
-                                         skip_unload_handlers)) {
-      const bool check_for_repost = true;
-      // Clear the state and the saved navigation id.
-      state_ = State::kRequestingReload;
-      saved_navigation_id_ = 0;
-      web_contents()->GetController().Reload(content::ReloadType::NORMAL,
-                                             check_for_repost);
-      DCHECK_EQ(State::kStartedNavigation, state_);
-      RecordBloatedRendererHandling(
-          BloatedRendererHandlingInBrowser::kReloaded);
-    } else {
-      RecordBloatedRendererHandling(
-          BloatedRendererHandlingInBrowser::kCannotShutdown);
-    }
+    const bool check_for_repost = true;
+    // Clear the state and the saved navigation id.
+    state_ = State::kRequestingReload;
+    saved_navigation_id_ = 0;
+    web_contents()->GetController().Reload(content::ReloadType::NORMAL,
+                                           check_for_repost);
+    RecordBloatedRendererHandling(BloatedRendererHandlingInBrowser::kReloaded);
   } else {
     RecordBloatedRendererHandling(
         BloatedRendererHandlingInBrowser::kCannotReload);
