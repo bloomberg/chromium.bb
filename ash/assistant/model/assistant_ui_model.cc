@@ -5,7 +5,6 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 
 #include "ash/assistant/model/assistant_ui_model_observer.h"
-#include "ash/assistant/util/histogram_util.h"
 
 namespace ash {
 

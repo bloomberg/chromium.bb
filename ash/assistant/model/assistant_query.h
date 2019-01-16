@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -36,7 +37,7 @@ enum class AssistantQuerySource {
 // AssistantQuery --------------------------------------------------------------
 
 // Base class for an Assistant query.
-class AssistantQuery {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantQuery {
  public:
   virtual ~AssistantQuery() = default;
 
@@ -64,7 +65,8 @@ class AssistantQuery {
 // AssistantNullQuery ----------------------------------------------------------
 
 // An null Assistant query used to signify the absence of an Assistant query.
-class AssistantNullQuery : public AssistantQuery {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNullQuery
+    : public AssistantQuery {
  public:
   AssistantNullQuery()
       : AssistantQuery(AssistantQueryType::kNull,
@@ -82,7 +84,8 @@ class AssistantNullQuery : public AssistantQuery {
 // AssistantTextQuery ----------------------------------------------------------
 
 // An Assistant text query.
-class AssistantTextQuery : public AssistantQuery {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantTextQuery
+    : public AssistantQuery {
  public:
   AssistantTextQuery(
       const std::string& text = std::string(),
@@ -111,7 +114,8 @@ class AssistantTextQuery : public AssistantQuery {
 // recognition improves, both the high and low confidence portions of the query
 // will be non-empty. When speech is fully recognized, only the high confidence
 // portion will be populated.
-class AssistantVoiceQuery : public AssistantQuery {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantVoiceQuery
+    : public AssistantQuery {
  public:
   AssistantVoiceQuery() : AssistantVoiceQuery(std::string(), std::string()) {}
 

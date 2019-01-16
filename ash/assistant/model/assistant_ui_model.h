@@ -5,6 +5,7 @@
 #ifndef ASH_ASSISTANT_MODEL_ASSISTANT_UI_MODEL_H_
 #define ASH_ASSISTANT_MODEL_ASSISTANT_UI_MODEL_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/gfx/geometry/rect.h"
@@ -62,7 +63,7 @@ enum class AssistantVisibility {
 };
 
 // Models the Assistant UI.
-class AssistantUiModel {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiModel {
  public:
   AssistantUiModel();
   ~AssistantUiModel();

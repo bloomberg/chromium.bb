@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list_types.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -15,7 +16,8 @@ namespace ash {
 
 // A checked observer which receives notification of changes to the Assistant
 // cache.
-class AssistantCacheModelObserver : public base::CheckedObserver {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantCacheModelObserver
+    : public base::CheckedObserver {
  public:
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
 

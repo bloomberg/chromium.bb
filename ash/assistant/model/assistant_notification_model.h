@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -18,7 +19,7 @@ class AssistantNotificationModelObserver;
 
 // The model belonging to AssistantNotificationController which tracks
 // notification state and notifies a pool of observers.
-class AssistantNotificationModel {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNotificationModel {
  public:
   using AssistantNotification =
       chromeos::assistant::mojom::AssistantNotification;

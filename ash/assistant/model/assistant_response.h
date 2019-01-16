@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "services/content/public/cpp/navigable_contents.h"
@@ -18,7 +19,7 @@ namespace ash {
 class AssistantUiElement;
 
 // Models a renderable Assistant response.
-class AssistantResponse {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse {
  public:
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
   using AssistantSuggestionPtr =
