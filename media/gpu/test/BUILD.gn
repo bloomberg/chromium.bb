@@ -133,6 +133,7 @@ if (is_chromeos) {
     ]
     deps = [
       ":decode_helpers",
+      ":frame_validator",
       "//media/gpu",
     ]
     if (use_ozone) {

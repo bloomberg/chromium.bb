@@ -30,15 +30,15 @@ VideoPlayer::~VideoPlayer() {
 
 // static
 std::unique_ptr<VideoPlayer> VideoPlayer::Create(
-    FrameRenderer* frame_renderer) {
+    FrameRenderer* frame_renderer,
+    VideoFrameValidator* frame_validator) {
   auto video_player = base::WrapUnique(new VideoPlayer());
-  if (!video_player->Initialize(frame_renderer)) {
-    return nullptr;
-  }
+  video_player->Initialize(frame_renderer, frame_validator);
   return video_player;
 }
 
-bool VideoPlayer::Initialize(FrameRenderer* frame_renderer) {
+void VideoPlayer::Initialize(FrameRenderer* frame_renderer,
+                             VideoFrameValidator* frame_validator) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(video_player_state_, VideoPlayerState::kUninitialized);
   DCHECK(frame_renderer);
@@ -47,12 +47,11 @@ bool VideoPlayer::Initialize(FrameRenderer* frame_renderer) {
   EventCallback event_cb =
       base::BindRepeating(&VideoPlayer::NotifyEvent, base::Unretained(this));
 
-  decoder_client_ = VideoDecoderClient::Create(event_cb, frame_renderer);
+  decoder_client_ =
+      VideoDecoderClient::Create(event_cb, frame_renderer, frame_validator);
   CHECK(decoder_client_) << "Failed to create decoder client";
 
   video_player_state_ = VideoPlayerState::kIdle;
-
-  return true;
 }
 
 void VideoPlayer::Destroy() {
@@ -80,7 +79,8 @@ void VideoPlayer::SetStream(const Video* const video) {
   VideoDecodeAccelerator::Config decoder_config(video->Profile());
   decoder_config.output_mode =
       VideoDecodeAccelerator::Config::OutputMode::IMPORT;
-  decoder_client_->CreateDecoder(decoder_config, video->Data());
+  decoder_client_->CreateDecoder(decoder_config, video->Data(),
+                                 video->FrameChecksums());
 
   video_ = video;
 }

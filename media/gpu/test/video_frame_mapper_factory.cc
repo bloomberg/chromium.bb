@@ -19,6 +19,15 @@ namespace media {
 namespace test {
 
 // static
+std::unique_ptr<VideoFrameMapper> VideoFrameMapperFactory::CreateMapper() {
+#if BUILDFLAG(USE_VAAPI)
+  return CreateMapper(false);
+#else
+  return CreateMapper(true);
+#endif
+}
+
+// static
 std::unique_ptr<VideoFrameMapper> VideoFrameMapperFactory::CreateMapper(
     bool linear_buffer_mapper) {
 #if defined(OS_CHROMEOS)

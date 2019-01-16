@@ -11,10 +11,27 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "media/base/video_frame.h"
+#include "media/gpu/buildflags.h"
 #include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
+#include "media/gpu/test/video_frame_mapper.h"
+#include "media/gpu/test/video_frame_mapper_factory.h"
 
 namespace media {
 namespace test {
+
+// static
+std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create() {
+  auto video_frame_mapper = VideoFrameMapperFactory::CreateMapper();
+  if (!video_frame_mapper) {
+    LOG(ERROR) << "Failed to create VideoFrameMapper.";
+    return nullptr;
+  }
+
+  return base::WrapUnique(new VideoFrameValidator(
+      VideoFrameValidator::CHECK, base::FilePath(), std::vector<std::string>(),
+      base::File(), std::move(video_frame_mapper)));
+}
 
 // static
 std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
@@ -98,6 +115,7 @@ void VideoFrameValidator::EvaluateVideoFrame(
         << "Frame number is over than the number of read md5 values in file.";
     const auto& expected_md5 = md5_of_frames_[frame_index];
     if (computed_md5 != expected_md5) {
+      base::AutoLock auto_lock(mismatched_frames_lock_);
       mismatched_frames_.push_back(
           MismatchedFrameInfo{frame_index, computed_md5, expected_md5});
     }
@@ -111,7 +129,24 @@ void VideoFrameValidator::EvaluateVideoFrame(
 
 std::vector<VideoFrameValidator::MismatchedFrameInfo>
 VideoFrameValidator::GetMismatchedFramesInfo() const {
+  base::AutoLock auto_lock(mismatched_frames_lock_);
   return mismatched_frames_;
+}
+
+size_t VideoFrameValidator::GetMismatchedFramesCount() const {
+  base::AutoLock auto_lock(mismatched_frames_lock_);
+  return mismatched_frames_.size();
+}
+
+void VideoFrameValidator::SetFrameChecksums(
+    const std::vector<std::string>& frame_checksums) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  md5_of_frames_ = frame_checksums;
+  // TODO(dstaessens@) Setting a different stream happens at the start of a
+  // test, and we don't want test results to influence each-other. This should
+  // be removed when 'SetFrameChecksums' is moved to the constructor.
+  base::AutoLock auto_lock(mismatched_frames_lock_);
+  mismatched_frames_.clear();
 }
 
 scoped_refptr<VideoFrame> VideoFrameValidator::CreateStandardizedFrame(

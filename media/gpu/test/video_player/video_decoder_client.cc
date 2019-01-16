@@ -14,6 +14,7 @@
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
 #include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
 #include "media/gpu/test/video_frame_helpers.h"
+#include "media/gpu/test/video_frame_validator.h"
 #include "media/gpu/test/video_player/frame_renderer.h"
 
 #define DVLOGF(level) DVLOG(level) << __func__ << "(): "
@@ -24,9 +25,11 @@ namespace test {
 
 VideoDecoderClient::VideoDecoderClient(
     const VideoPlayer::EventCallback& event_cb,
-    FrameRenderer* renderer)
+    FrameRenderer* renderer,
+    VideoFrameValidator* frame_validator)
     : event_cb_(event_cb),
       frame_renderer_(renderer),
+      frame_validator_(frame_validator),
       decoder_client_thread_("VDAClientDecoderThread"),
       decoder_client_state_(VideoDecoderClientState::kUninitialized),
       weak_this_factory_(this) {
@@ -42,9 +45,10 @@ VideoDecoderClient::~VideoDecoderClient() {
 // static
 std::unique_ptr<VideoDecoderClient> VideoDecoderClient::Create(
     const VideoPlayer::EventCallback& event_cb,
-    FrameRenderer* frame_renderer) {
-  auto decoder_client =
-      base::WrapUnique(new VideoDecoderClient(event_cb, frame_renderer));
+    FrameRenderer* frame_renderer,
+    VideoFrameValidator* frame_validator) {
+  auto decoder_client = base::WrapUnique(
+      new VideoDecoderClient(event_cb, frame_renderer, frame_validator));
   if (!decoder_client->Initialize()) {
     return nullptr;
   }
@@ -80,13 +84,15 @@ void VideoDecoderClient::Destroy() {
 
 void VideoDecoderClient::CreateDecoder(
     const VideoDecodeAccelerator::Config& config,
-    const std::vector<uint8_t>& stream) {
+    const std::vector<uint8_t>& stream,
+    const std::vector<std::string>& frame_checksums) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(video_player_sequence_checker_);
 
   base::WaitableEvent done;
   decoder_client_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&VideoDecoderClient::CreateDecoderTask,
-                                weak_this_, config, &stream, &done));
+      FROM_HERE,
+      base::BindOnce(&VideoDecoderClient::CreateDecoderTask, weak_this_, config,
+                     &stream, &frame_checksums, &done));
   done.Wait();
 }
 
@@ -183,6 +189,8 @@ void VideoDecoderClient::PictureReady(const Picture& picture) {
   wrapped_video_frame->AddDestructionObserver(std::move(delete_cb));
 
   frame_renderer_->RenderFrame(wrapped_video_frame);
+
+  frame_validator_->EvaluateVideoFrame(video_frame, current_frame_index_++);
 }
 
 void VideoDecoderClient::NotifyEndOfBitstreamBuffer(
@@ -211,6 +219,11 @@ void VideoDecoderClient::NotifyFlushDone() {
 
 void VideoDecoderClient::NotifyResetDone() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
+
+  // We finished resetting to a different point in the stream, so we should
+  // update the frame index. Currently only resetting to the start of the stream
+  // is supported, so we can set the frame index to zero here.
+  current_frame_index_ = 0;
 
   decoder_client_state_ = VideoDecoderClientState::kIdle;
   event_cb_.Run(VideoPlayerEvent::kResetDone);
@@ -265,6 +278,7 @@ void VideoDecoderClient::CreateDecoderFactoryTask(base::WaitableEvent* done) {
 void VideoDecoderClient::CreateDecoderTask(
     VideoDecodeAccelerator::Config config,
     const std::vector<uint8_t>* stream,
+    const std::vector<std::string>* frame_checksums,
     base::WaitableEvent* done) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
   LOG_ASSERT(decoder_factory_) << "Decoder factory not created yet";
@@ -273,6 +287,7 @@ void VideoDecoderClient::CreateDecoderTask(
 
   encoded_data_helper_ =
       std::make_unique<EncodedDataHelper>(*stream, config.profile);
+  frame_validator_->SetFrameChecksums(*frame_checksums);
 
   gpu::GpuDriverBugWorkarounds gpu_driver_bug_workarounds;
   gpu::GpuPreferences gpu_preferences;

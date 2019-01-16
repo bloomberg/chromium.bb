@@ -8,8 +8,10 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_gpu_test_helper.h"
 #include "ui/ozone/public/ozone_platform.h"
+#endif
 
 #define VLOGF(level) VLOG(level) << __func__ << "(): "
 
@@ -34,7 +36,7 @@ std::unique_ptr<FrameRendererDummy> FrameRendererDummy::Create() {
 }
 
 bool FrameRendererDummy::Initialize() {
-#ifdef USE_OZONE
+#if defined(USE_OZONE)
   // Initialize Ozone. This is necessary even though we are not doing any actual
   // rendering. If not initialized a crash will occur when assigning picture
   // buffers, even when passing 0 as texture ID.
@@ -60,7 +62,7 @@ bool FrameRendererDummy::Initialize() {
 }
 
 void FrameRendererDummy::Destroy() {
-#ifdef USE_OZONE
+#if defined(USE_OZONE)
   gpu_helper_.reset();
 #endif
 }
