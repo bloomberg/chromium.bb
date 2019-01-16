@@ -9,19 +9,6 @@
 
 namespace content {
 
-TEST(MediaDevicesTest, MediaDeviceInfoFromAudioDescription) {
-  const std::string kFakeDeviceID = "fake_device_id";
-  const std::string kFakeLabel = "fake_label";
-  const std::string kFakeGroupID = "fake_group_id";
-
-  media::AudioDeviceDescription description(kFakeLabel, kFakeDeviceID,
-                                            kFakeGroupID);
-  MediaDeviceInfo device_info(description);
-  EXPECT_EQ(kFakeDeviceID, device_info.device_id);
-  EXPECT_EQ(kFakeLabel, device_info.label);
-  EXPECT_EQ(kFakeGroupID, device_info.group_id);
-}
-
 TEST(MediaDevicesTest, MediaDeviceInfoFromVideoDescriptor) {
   media::VideoCaptureDeviceDescriptor descriptor(
       "display_name", "device_id", "model_id", media::VideoCaptureApi::UNKNOWN);

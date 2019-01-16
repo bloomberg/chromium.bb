@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "content/common/media/media_devices.h"
-#include "media/audio/audio_device_description.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
 
 namespace content {
@@ -23,13 +22,6 @@ MediaDeviceInfo::MediaDeviceInfo(const std::string& device_id,
       label(label),
       group_id(group_id),
       video_facing(video_facing) {}
-
-MediaDeviceInfo::MediaDeviceInfo(
-    const media::AudioDeviceDescription& device_description)
-    : device_id(device_description.unique_id),
-      label(device_description.device_name),
-      group_id(device_description.group_id),
-      video_facing(media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE) {}
 
 MediaDeviceInfo::MediaDeviceInfo(
     const media::VideoCaptureDeviceDescriptor& descriptor)
