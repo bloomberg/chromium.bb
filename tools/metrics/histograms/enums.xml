@@ -28158,6 +28158,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Error"/>
   <int value="2" label="Credentials Rejected"/>
   <int value="3" label="Shutting Down"/>
+  <int value="4" label="Subscription Failure"/>
 </enum>
 
 <enum name="IOSExternalURLRequestStatus">
