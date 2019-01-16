@@ -315,10 +315,6 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
   # Don't bother enabling incremental compilation for non-chromium code.
   incremental = options.incremental and options.chromium_code
 
-  # Compiles with Error Prone take twice as long to run as pure javac. Thus GN
-  # rules run both in parallel, with Error Prone only used for checks.
-  save_outputs = not options.use_errorprone_path
-
   with build_utils.TempDir() as temp_dir:
     srcjars = options.java_srcjars
 
@@ -352,11 +348,7 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
       # (by not extracting them).
       javac_cmd = _ConvertToJMakeArgs(javac_cmd, pdb_path)
 
-    if save_outputs:
-      generated_java_dir = options.generated_dir
-    else:
-      generated_java_dir = os.path.join(temp_dir, 'gen')
-
+    generated_java_dir = options.generated_dir
     # Incremental means not all files will be extracted, so don't bother
     # clearing out stale generated files.
     if not incremental:
@@ -444,30 +436,22 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
         attempt_build()
       logging.info('Finished build command')
 
-    if options.incremental or save_outputs:
-      # Creating the jar file takes the longest, start it first on a separate
-      # process to unblock the rest of the post-processing steps.
-      jar_file_worker = multiprocessing.Process(
-          target=_CreateJarFile,
-          args=(options.jar_path, options.provider_configurations,
-                options.additional_jar_files, classes_dir))
-      jar_file_worker.start()
-    else:
-      jar_file_worker = None
-      build_utils.Touch(options.jar_path)
+    # Creating the jar file takes the longest, start it first on a separate
+    # process to unblock the rest of the post-processing steps.
+    jar_file_worker = multiprocessing.Process(
+        target=_CreateJarFile,
+        args=(options.jar_path, options.provider_configurations,
+              options.additional_jar_files, classes_dir))
+    jar_file_worker.start()
 
-    if save_outputs:
-      _CreateInfoFile(java_files, options.jar_path, options.chromium_code,
-                      srcjar_files, classes_dir, generated_java_dir)
-    else:
-      build_utils.Touch(options.jar_path + '.info')
+    _CreateInfoFile(java_files, options.jar_path, options.chromium_code,
+                    srcjar_files, classes_dir, generated_java_dir)
 
     if options.incremental and (not java_files or not incremental):
       # Make sure output exists.
       build_utils.Touch(pdb_path)
 
-    if jar_file_worker:
-      jar_file_worker.join()
+    jar_file_worker.join()
     logging.info('Completed all steps in _OnStaleMd5')
 
 
@@ -671,7 +655,7 @@ def main(argv):
   output_paths = [
       options.jar_path,
       options.jar_path + '.info',
-      ]
+  ]
   if options.incremental:
     output_paths.append(options.jar_path + '.pdb')
 
