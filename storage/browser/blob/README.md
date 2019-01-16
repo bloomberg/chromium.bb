@@ -4,7 +4,7 @@ Elaboration of the blob storage system in Chrome.
 
 # What are blobs?
 
-Please see the [FileAPI Spec](https://www.w3.org/TR/FileAPI/) for the full
+Please see the [FileAPI Spec](https://w3c.github.io/FileAPI/) for the full
 specification for Blobs, or [Mozilla's Blob documentation](
 https://developer.mozilla.org/en-US/docs/Web/API/Blob) for a description of how
 Blobs are used in the Web Platform in general. For the purposes of this
@@ -22,8 +22,8 @@ or other tabs.
 
 In Chrome, after blob creation the actual blob 'data' gets transported to and
 lives in the browser process. The renderer just holds a reference -
-specifically a string UUID - to the blob, which it can use to read the blob or
-pass it to other processes.
+a mojom BlobPtr (and for now a string UUID) - to the blob, which it can use to
+read the blob or pass it to other processes.
 
 # Summary & Terminology
 
@@ -38,9 +38,10 @@ If the in-memory space for blobs is getting full, or a new blob is too large to
 be in-memory, then the blob system uses the disk. This can either be paging old
 blobs to disk, or saving the new too-large blob straight to disk.
 
-Blob reading goes through the network layer, where the renderer dispatches a
-network request for the blob and the browser responds with the
-`BlobURLRequestJob`.
+Blob reading goes through the mojom [Blob interface](../../../third_party/blink/public/mojom/blob/blob.mojom),
+where the renderer or browser calls the `ReadAll` or `ReadRange` methods to read
+the blob through a data pipe. This is implemented in the browser process in the
+`MojoBlobReader` class.
 
 General Chrome terminology:
 
@@ -54,7 +55,7 @@ Blob system terminology:
 
 * **Blob**: This is a blob object, which can consist of bytes or files, as
 described above.
-* **BlobItem**:
+* **BlobDataItem**:
 This is a primitive element that can basically be a File, Bytes, or another
 Blob. It also stores an offset and size, so this can be a part of a file. (This
 can also represent a "future" file and "future" bytes, which is used to signify
@@ -65,13 +66,13 @@ constructed. As in, a blob is constructed with a dependency on another blob
 blob can be constructed it might need to wait for the "dependent" blobs to
 complete. (This can sound backwards, but it's how it's referenced in the code.
 So think "I am dependent on these other blobs")
-* **transportation strategy**: a method for sending the data in a BlobItem from
+* **transport strategy**: a method for sending the data in a BlobItem from
 a renderer to the browser. The system currently implements three strategies:
-IPC, Shared Memory, and Files.
+Reply, Data Pipe, and Files.
 * **blob description**: the inital data sychronously sent to the browser that
 describes the items (content and sizes) of the new blob. This can
-optimistically include the blob data if the size is less than the maximimum IPC
-size.
+optimistically include the blob data if the size is less than the maximimum mojo
+message size.
 
 # Blob Storage Limits
 
@@ -132,12 +133,93 @@ dereference blob objects if they are no longer needed.
 
 Similarily if a URL is created for a blob, this will keep the blob data around
 until the URL is revoked (and the blob object is dereferenced). However, the
-URL is automatically revoked when the browser context is destroyed.
+URL is automatically revoked when the browser context that created it is
+destroyed.
+
+# How to use Blobs (mojo interface)
+
+The primary API to interact with the blob system is through its mojo interface.
+This is how the renderer process interacts with the blob systems and creates and
+transports blobs, but also how other subsystems in the browser process interact
+with the blob system, for example to read blobs they received.
+
+## Blob Creation & Transportation
+
+New blobs are created through the [BlobRegistry](../../../third_party/blink/public/mojom/blob/blob_registry.mojom)
+mojo interface. In blink you can get a reference to this interface via
+`blink::BlobDataHandle::GetBlobRegistry()`. This interface has two methods to
+create a new blob. The `Register` method takes a blob description in the form of an array of
+`DataElement`s, while the `RegisterFromStream` method creates a blob by reading
+data from a mojo `DataPipe`. Furthermore `Register` will call its callback as
+soon as possible after the request has been received, at which point the uuid is
+valid and known to the blob sytem. It will then asynchronously request the data
+and actually create the blob. On the other hand the `RegisterFromStream` method
+won't call its callback until all the data for the blob has been received and
+the blob has been entirely completed.
+
+## Accessing / Reading
+
+To read the data for a blob, the `Blob` mojom interface provides `ReadAll`,
+`ReadRange` and `ReadSideData` methods. These methods will wait until the blob
+has finished building before they start reading data, and if for whatever reason
+the blob failed to build or reading data failed, will report back an error
+through the (optional) `BlobReaderClient`.
+
+# How to use Blobs (blink)
+
+## Blob Creation
+
+Within blink creating blobs is done through the `BlobData` and `BlobDataHandle`
+classes. The `BlobData` class can be seen as a builder for an array of mojom
+`DataElement`s. While doing so it also tries to consolidate all **adjacent**
+memory blob items into one. This is done since blobs are often constructed with
+arrays with single bytes.
+The implementation tries to avoid doing any copying or allocating of new memory
+buffers. Instead it facilitates the transformation between the 'consolidated'
+blob items and the underlying bytes items. This way we don't waste any memory.
+
+## Blob Transportation
+
+After the blob has been 'consolidated' and its data has been assembled in a
+`BlobData` object, it is passed to the `blink::BlobDataHandle` constructor. This
+then passes the consolidated data to the mojo `BlobRegistry.Register` method.
+
+Any `DataElementByte` elements in the blob description will have an associated
+`BytesProvider`, as implemented by the `blink::BlobBytesProvider` class. This
+class is owned by the mojo message pipe it is bound to, and is what the browser
+uses to request data for the blob when quota for it becomes available. Depending
+on the transport strategy chosen by the browser one of the `Request*` methods
+on this interface will be called (or if the blob goes out of scope before the
+data has been requested, the `BytesProvider` pipe is simply dropped, destroying
+the `BlobBytesProvider` instance and the data it owned.
+
+`BlobBytesProvider` instances also try to keep the renderer alive while we are
+sending blobs, as if the renderer is closed then we would lose any pending blob
+data. It does this by calling `blink::Platform::SuddenTerminationChanged`.
+
+## Accessing / Reading
+
+In blink, in addition to going through the mojo `Blob` interface as exposed
+`through blink::Blob::GetBlobDataHandle`, you can also use `FileReaderLoader`
+as an abstraction around the mojo interface. This class for example can convert
+the resulting bytes to a `String` or `ArrayBuffer`, and generally just wraps the
+mojo `DataPipe` functionality in an easier to use interface.
 
 # How to use Blobs (Browser-side)
 
+Generally even in the browser process it should be preferred to go through the
+mojo `Blob` interface to interact with blobs. This results in a cleaner
+separation between the blob system and the rest of chrome. However in some cases
+it might still be needed to directly interact with the guts of the blob system,
+so for now it is at least possible to interact with the blob system more
+directly.
+
+But keep in mind that everything in this section is really for legacy code only.
+New code should strongly prefer to use the mojo interfaces described above.
+
 ## Building
-All blob interaction should go through the `BlobStorageContext`. Blobs are
+
+Blob interaction in C++ should go through the `BlobStorageContext`. Blobs are
 built using a `BlobDataBuilder` to populate the data and then calling
 `BlobStorageContext::AddFinishedBlob` or `::BuildBlob`. This returns a
 `BlobDataHandle`, which manages reading, lifetime, and metadata access for the
@@ -162,74 +244,10 @@ error, etc).
 The `BlobReader` class is for reading blobs, and is accessible off of the
 `BlobDataHandle` at any time.
 
-Updated Recommendations:
-- In `blink::` you'll probably have a `blink::BlobDataHandle`, so use
-`FileReaderLoader`/`FileReaderLoaderClient` as an abstraction around the mojom
-Blob interface.
-- Outside of `blink` (in both browser and renderer): you'll probably have a
-`blink::mojom::BlobPtr`, so just call `ReadAll`/`ReadRange` on that directly.
-- In legacy cases, only in the browser process, only on the IO thread, where
-you only have a `storage::BlobDataHandle` use
-`CreateReader/storage::BlobReader`.
-
-# Blob Creation & Transportation (Renderer)
-
-**This process is outlined with diagrams and illustrations [here](
-https://docs.google.com/presentation/d/1MOm-8kacXAon1L2tF6VthesNjXgx0fp5AP17L7XDPSM/edit#slide=id.g75c319281_0_681).**
-
-This outlines the renderer-side responsabilities of the blob system. The
-renderer needs to:
-
- 1. Consolidate small bytes items into larger chunks (avoiding a huge array of
- 1 byte items).
- 2. Communicate the blob description to the browser immediately on
- construction.
- 3. Populate shared memory or files sent from the browser with the consolidated
- blob data items.
- 4. Hold the blob data until the browser is finished requesting it.
-
-The meat of blob construction starts in the [WebBlobRegistryImpl](
-https://cs.chromium.org/chromium/src/content/renderer/blob_storage/webblobregistry_impl.h)'s
-`createBuilder(uuid, content_type)`.
-
-## Blob Data Consolidation
-
-Since blobs are often constructed with arrays with single bytes, we try to
-consolidate all **adjacent** memory blob items into one. This is done in
-[BlobConsolidation](https://cs.chromium.org/chromium/src/content/renderer/blob_storage/blob_consolidation.h).
-The implementation doesn't actually do any copying or allocating of new memory
-buffers, instead it facilitates the transformation between the 'consolidated'
-blob items and the underlying bytes items. This way we don't waste any memory.
-
-## Blob Transportation (Renderer)
-
-After the blob has been 'consolidated', it is given to the
-[BlobTransportController](https://cs.chromium.org/chromium/src/content/renderer/blob_storage/blob_transport_controller.h).
-This class:
-
-1. Immediately communicates the blob description to the Browser. We also
-[optimistically send](https://cs.chromium.org/chromium/src/content/renderer/blob_storage/blob_transport_controller.cc?l=325)
-the blob data if the total memory is less than our IPC threshold.
-2. Stores the blob consolidation for data requests from the browser.
-3. Answers requests from the browser to populate or send the blob data. The
-browser can request the renderer:
-  1. Send items and populate the data in IPC ([code](
-https://cs.chromium.org/chromium/src/content/renderer/blob_storage/blob_transport_controller.cc?q="case+IPCBlobItemRequestStrategy::IPC")).
-  2. Populate items in shared memory and notify the browser when population is
-complete ([code](https://cs.chromium.org/chromium/src/content/renderer/blob_storage/blob_transport_controller.cc?q="case+IPCBlobItemRequestStrategy::SHARED_MEMORY")).
-  3. Populate items in files and notify the browser when population is complete
-([code](https://cs.chromium.org/chromium/src/content/renderer/blob_storage/blob_transport_controller.cc?q="case+IPCBlobItemRequestStrategy::FILE")).
-4. Destroys the blob consolidation when the browser says it's done.
-
-The transport controller also tries to keep the renderer alive while we are
-sending blobs, as if the renderer is closed then we would lose any pending blob
-data. It does this the [incrementing and decrementing the process reference
-count](https://cs.chromium.org/chromium/src/content/renderer/blob_storage/blob_transport_controller.cc?l=62),
-which should prevent fast shutdown.
-
 # Blob Transportation & Storage (Browser)
 
-The browser side is a little more complicated. We are thinking about:
+The browser side is a little more complicated than the renderer side.
+We are thinking about:
 
 1. Do we have enough space for this blob?
 2. Pick transportation strategy for blob's components.
@@ -250,9 +268,9 @@ memory, and allow for the dependent blob items to be not populated yet.
 manages our blob storage limits. Quota is necessary for both transportation and
 any copies we have to do from dependent blobs.
 4. If transporation quota is needed and when it is granted:
-  1. Tell the BlobTransportHost to start asking for blob data given the earlier
-  decision of strategy.
-    * The BlobTransportHost populates the browser-side blob data item.
+  1. Tell the `BlobRegistryImpl` and its `BlobUnderConstruction` instance to
+  start asking for blob data given the earlier decision of strategy.
+    * The `BlobTransportStrategy` populates the browser-side blob data item.
   2. When transportation is done we notify the BlobStorageContext
 5. When transportation is done, copy quota is granted, and dependent blobs are
 complete, we finish the blob.
@@ -263,13 +281,15 @@ Note: The transportation sections (steps 1, 2, 3) of this process are described
 (without accounting for blob dependencies) with diagrams and details in [this
 presentation](https://docs.google.com/presentation/d/1MOm-8kacXAon1L2tF6VthesNjXgx0fp5AP17L7XDPSM/edit#slide=id.g75d5729ce_0_105).
 
-## BlobTransportHost
+## BlobUnderConstruction
 
-The `BlobTransportHost` is in charge of the actual transportation of the data
-from the renderer to the browser. When the initial description of the blob is
-sent to the browser, the BlobTransportHost asks the BlobMemoryController which
+The `BlobUnderConstruction` (inside `BlobRegistryImpl`) is in charge of the
+actual construction of a blob and manages the transportation of the data from
+the renderer to the browser. When the initial description of the blob is
+sent to the browser, the BlobUnderConstruction asks the BlobMemoryController which
 strategy (IPC, Shared Memory, or File) it should use to transport the file.
-Based on this strategy it can translate the memory items sent from the renderer
+Based on this strategy it creates a `BlobTransportStrategy` instance. That
+instance will then translate the memory items sent from the renderer
 into a browser represetation to facilitate the transportation. See [this](
 https://docs.google.com/presentation/d/1MOm-8kacXAon1L2tF6VthesNjXgx0fp5AP17L7XDPSM/edit#slide=id.g75d5729ce_0_145)
 slide, which illustrates how the browser might segment or split up the
@@ -281,9 +301,9 @@ segment representation. Then it will tell the `BlobStorageContext` that it is
 ready to build the blob.
 
 When the `BlobStorageContext` tells the transport host that it is ready to
-transport the blob data, the transport host requests all of the data from the
-renderer, populates the data in the `BlobDataBuilder`, and then signals the
-storage context that it is done.
+transport the blob data, the `BlobTransportStrategy` requests all of the data
+from the renderer, populates the data in the `BlobDataBuilder`, and then signals
+the storage context that it is done.
 
 ## BlobStorageContext
 
@@ -327,22 +347,22 @@ in `PENDING_REFERENCED_BLOBS`.
 Once a blob is finished constructing, the status is set to `DONE` or any of
 the `ERR_*` values.
 
-### BlobSlice
+### BlobDataBuilder::SliceBlob
 
 During construction, slices are created for dependent blobs using the given
 offset and size of the reference. This slice consists of the relevant blob
 items, and metadata about possible copies from either end. If blob items can
 entirely be used by the new blob, then we just share the item between the. But
-if there is a 'slice' of the first or last item, then our resulting BlobSlice
-representation will create a new bytes item for the new blob, and store
-necessary copy data for later.
+if there is a 'slice' of the first or last item, then BlobDataBuilder
+will create a new bytes item for the new blob, and store necessary copy data for
+later.
 
-### BlobFlattener
+### Blob Flattening
 
-The `BlobFlattener` takes the new blob description (including blob references),
-creates blob slices for all the referenced blobs, and constructs a 'flat'
-representation of the new blob, where all blob references are replaced with the
-`BlobSlice` items. It also stores any copy data from the slices.
+While a blob is build in `BlobDataBuilder` a 'flat' representation of the new
+blob is created, replacing all blob references with the actual elements those
+blobs are made up off, possibly slicing them in the process. It also stores any
+copy data from the slices.
 
 ## BlobMemoryController
 
