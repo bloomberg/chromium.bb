@@ -263,8 +263,9 @@ void ChromeKeyboardWebContents::OnWindowBoundsChanged(
 }
 
 void ChromeKeyboardWebContents::MaybeRunLoadCallback() {
-  if (!load_callback_.is_null() && !contents_size_.IsEmpty() &&
-      !token_.is_empty()) {
+  // Note: |contents_size_| may still be empty, in which case
+  // AshKeyboardUI::AshKeyboardView::OnWindowBoundsChanged should get called
+  // with the correct contents size.
+  if (!load_callback_.is_null() && !token_.is_empty())
     std::move(load_callback_).Run(token_, contents_size_);
-  }
 }

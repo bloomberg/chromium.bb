@@ -64,8 +64,9 @@ class AshKeyboardUI::AshKeyboardView : public views::WidgetDelegateView,
   }
 
   void Embed(base::UnguessableToken token, const gfx::Size& size) {
-    DVLOG(1) << "Embed contents. Size: " << size.ToString();
-    window()->SetBounds(gfx::Rect(size));
+    VLOG(1) << "Embed contents. Size: " << size.ToString();
+    if (!size.IsEmpty())
+      window()->SetBounds(gfx::Rect(size));
     if (!server_remote_view_host_) {
       server_remote_view_host_ = new ws::ServerRemoteViewHost(
           Shell::Get()->window_service_owner()->window_service());
@@ -101,6 +102,8 @@ class AshKeyboardUI::AshKeyboardView : public views::WidgetDelegateView,
                              ui::PropertyChangeReason reason) override {
     if (window == server_remote_view_host_->embedding_root())
       return;
+
+    VLOG(1) << "OnWindowBoundsChanged: " << new_bounds.ToString();
 
     // This happens when the client requests to resize the keyboard window,
     // typically through window.resizeTo in JS. Ash keyboard window bounds
