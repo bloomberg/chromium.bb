@@ -90,10 +90,18 @@ class WebView {
   // TODO(danakj): This field should go away as WebWidgets always composite
   // their output.
   BLINK_EXPORT static WebView* Create(WebViewClient*,
-                                      WebWidgetClient*,
                                       bool is_hidden,
                                       bool compositing_enabled,
                                       WebView* opener);
+
+  // Called on WebView once a WebWidgetClient is ready. This method should be
+  // called during init of the WebView before completing it by creating the
+  // local or proxy main frame. If the WebViewClient passed to Create() was
+  // null, then this need not be called since it would have to be passed null
+  // also.
+  // TODO(danakj): Move this to WebWidget and merge with SetLayerTreeView, have
+  // it be null/not set when the main frame is remote.
+  virtual void SetWebWidgetClient(WebWidgetClient*) = 0;
 
   // Initializes the various client interfaces.
   virtual void SetPrerendererClient(WebPrerendererClient*) = 0;

@@ -491,7 +491,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   frame_test_helpers::TestWebViewClient web_view_client;
   frame_test_helpers::TestWebWidgetClient web_widget_client;
   WebViewImpl* web_view = static_cast<WebViewImpl*>(
-      WebView::Create(&web_view_client, &web_widget_client,
+      WebView::Create(&web_view_client,
                       /*is_hidden=*/false,
                       /*compositing_enabled=*/true, nullptr));
   EXPECT_NE(SK_ColorBLUE, web_view->BackgroundColor());
@@ -499,6 +499,10 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   // background color.
   web_view->SetBaseBackgroundColor(SK_ColorBLUE);
   EXPECT_EQ(SK_ColorBLUE, web_view->BackgroundColor());
+
+  // TODO(danakj): Make this part of attaching the main frame's WebFrameWidget.
+  web_view->SetWebWidgetClient(&web_widget_client);
+
   frame_test_helpers::TestWebFrameClient web_frame_client;
   mojom::blink::DocumentInterfaceBrokerPtrInfo document_interface_broker;
   WebLocalFrame* frame = WebLocalFrame::CreateMainFrame(
@@ -2561,7 +2565,7 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
   // Note: this test doesn't use WebViewHelper since WebViewHelper creates an
   // internal WebViewClient on demand if the supplied WebViewClient is null.
   WebViewImpl* web_view = static_cast<WebViewImpl*>(
-      WebView::Create(nullptr, nullptr, /*is_hidden=*/false,
+      WebView::Create(nullptr, /*is_hidden=*/false,
                       /*compositing_enabled=*/false, nullptr));
   frame_test_helpers::TestWebFrameClient web_frame_client;
   frame_test_helpers::TestWebWidgetClient web_widget_client;

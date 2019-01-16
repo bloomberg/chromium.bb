@@ -30,7 +30,6 @@ WorkerShadowPage::WorkerShadowPage(
     PrivacyPreferences preferences)
     : client_(client),
       web_view_(WebViewImpl::Create(nullptr,
-                                    nullptr,
                                     /*is_hidden=*/false,
                                     /*compositing_enabled=*/false,
                                     nullptr)),

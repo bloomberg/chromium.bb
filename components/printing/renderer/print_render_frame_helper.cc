@@ -670,7 +670,7 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
                                page_layout.content_height);
 
   blink::WebView* web_view = blink::WebView::Create(
-      /*client=*/nullptr, /*widget_client=*/nullptr,
+      /*client=*/nullptr,
       /*is_hidden=*/false, /*compositing_enabled=*/false, /*opener=*/nullptr);
   web_view->GetSettings()->SetJavaScriptEnabled(true);
 
@@ -922,12 +922,15 @@ void PrepareFrameAndViewForPrint::CopySelection(
   prefs.javascript_enabled = false;
 
   blink::WebView* web_view = blink::WebView::Create(
-      /*client=*/this, /*widget_client=*/this,
+      /*client=*/this,
       /*is_hidden=*/false,
       /*compositing_enabled=*/false,
       /*opener=*/nullptr);
-  owns_web_view_ = true;
   content::RenderView::ApplyWebPreferences(prefs, web_view);
+
+  // TODO(danakj): Make this part of attaching the main frame's WebFrameWidget.
+  web_view->SetWebWidgetClient(this);
+
   blink::mojom::DocumentInterfaceBrokerPtrInfo document_interface_broker;
   blink::WebLocalFrame* main_frame = blink::WebLocalFrame::CreateMainFrame(
       web_view, this, nullptr,
@@ -935,6 +938,8 @@ void PrepareFrameAndViewForPrint::CopySelection(
   frame_.Reset(main_frame);
   blink::WebFrameWidget::CreateForMainFrame(this, main_frame);
   node_to_print_.Reset();
+
+  owns_web_view_ = true;
 
   // When loading is done this will call didStopLoading() and that will do the
   // actual printing.

@@ -312,7 +312,6 @@ class WebViewHelper {
 
  private:
   void InitializeWebView(TestWebViewClient*,
-                         TestWebWidgetClient*,
                          class WebView* opener);
 
   WebViewImpl* web_view_;

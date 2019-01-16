@@ -311,8 +311,7 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
     void (*update_settings_func)(WebSettings*)) {
   Reset();
 
-  InitializeWebView(web_view_client, web_widget_client,
-                    opener ? opener->View() : nullptr);
+  InitializeWebView(web_view_client, opener ? opener->View() : nullptr);
   if (update_settings_func)
     update_settings_func(web_view_->GetSettings());
 
@@ -325,9 +324,16 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
       mojo::MakeRequest(&document_interface_broker).PassMessagePipe(), opener);
   web_frame_client->Bind(frame, std::move(owned_web_frame_client));
 
+  test_web_widget_client_ = CreateDefaultClientIfNeeded(
+      web_widget_client, owned_test_web_widget_client_);
   // TODO(dcheng): The main frame widget currently has a special case.
   // Eliminate this once WebView is no longer a WebWidget.
   blink::WebFrameWidget::CreateForMainFrame(test_web_widget_client_, frame);
+  // TODO(danakj): Make this part of attaching the main frame's WebFrameWidget.
+  web_view_->SetWebWidgetClient(test_web_widget_client_);
+  web_view_->MainFrameWidget()->SetLayerTreeView(
+      test_web_widget_client_->layer_tree_view());
+
   // Set an initial size for subframes.
   if (frame->Parent())
     frame->FrameWidget()->Resize(WebSize());
@@ -371,7 +377,7 @@ WebViewImpl* WebViewHelper::InitializeRemote(
     TestWebWidgetClient* web_widget_client) {
   Reset();
 
-  InitializeWebView(web_view_client, web_widget_client, nullptr);
+  InitializeWebView(web_view_client, nullptr);
 
   std::unique_ptr<TestWebRemoteFrameClient> owned_web_remote_frame_client;
   web_remote_frame_client = CreateDefaultClientIfNeeded(
@@ -384,6 +390,13 @@ WebViewImpl* WebViewHelper::InitializeRemote(
     security_origin = SecurityOrigin::CreateUniqueOpaque();
   frame->GetFrame()->GetSecurityContext()->SetReplicatedOrigin(
       std::move(security_origin));
+
+  test_web_widget_client_ = CreateDefaultClientIfNeeded(
+      web_widget_client, owned_test_web_widget_client_);
+  // TODO(danakj): Remove this! Make WebViewImpl not need a WebWidgetClient when
+  // the main frame is remote.
+  web_view_->SetWebWidgetClient(test_web_widget_client_);
+
   return web_view_;
 }
 
@@ -419,15 +432,13 @@ void WebViewHelper::Resize(WebSize size) {
 }
 
 void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
-                                      TestWebWidgetClient* widget_client,
                                       class WebView* opener) {
   test_web_view_client_ =
       CreateDefaultClientIfNeeded(web_view_client, owned_test_web_view_client_);
-  test_web_widget_client_ =
-      CreateDefaultClientIfNeeded(widget_client, owned_test_web_widget_client_);
-  web_view_ = static_cast<WebViewImpl*>(WebView::Create(
-      test_web_view_client_, test_web_widget_client_, /*is_hidden=*/false,
-      /*compositing_enabled=*/true, opener));
+  web_view_ = static_cast<WebViewImpl*>(
+      WebView::Create(test_web_view_client_,
+                      /*is_hidden=*/false,
+                      /*compositing_enabled=*/true, opener));
   web_view_->GetSettings()->SetJavaScriptEnabled(true);
   web_view_->GetSettings()->SetPluginsEnabled(true);
   // Enable (mocked) network loads of image URLs, as this simplifies
@@ -437,8 +448,6 @@ void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
   // Consequently, all external image resources must be mocked.
   web_view_->GetSettings()->SetLoadsImagesAutomatically(true);
 
-  web_view_->MainFrameWidget()->SetLayerTreeView(
-      test_web_widget_client_->layer_tree_view());
   web_view_->SetDeviceScaleFactor(
       test_web_view_client_->GetScreenInfo().device_scale_factor);
   web_view_->SetDefaultPageScaleLimits(1, 4);
