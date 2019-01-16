@@ -18,7 +18,10 @@ import android.widget.RemoteViews;
 public interface ChromeNotificationBuilder {
     ChromeNotificationBuilder setAutoCancel(boolean autoCancel);
 
+    @Deprecated
     ChromeNotificationBuilder setContentIntent(PendingIntent contentIntent);
+
+    ChromeNotificationBuilder setContentIntent(PendingIntentProvider contentIntent);
 
     ChromeNotificationBuilder setContentTitle(CharSequence title);
 

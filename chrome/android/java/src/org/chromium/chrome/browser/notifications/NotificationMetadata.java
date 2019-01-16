@@ -30,6 +30,7 @@ public class NotificationMetadata {
 
     public NotificationMetadata(
             int notificationType, @Nullable String notificationTag, int notificationId) {
+        // TODO(xingliu): NotificationMetadata should have the channel information as well.
         type = notificationType;
         tag = notificationTag;
         id = notificationId;
