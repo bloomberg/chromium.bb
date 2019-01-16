@@ -27,21 +27,13 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
-#include "third_party/blink/renderer/platform/wtf/doubly_linked_list.h"
 
 namespace blink {
 
 class FormControlState;
 
-class HTMLFormControlElementWithState;
-// Cannot use eager tracing as HTMLFormControlElementWithState objects are part
-// of a HeapDoublyLinkedList and have pointers to the previous and next elements
-// in the list, which can cause very deep stacks in eager tracing.
-WILL_NOT_BE_EAGERLY_TRACED_CLASS(HTMLFormControlElementWithState);
-
 class CORE_EXPORT HTMLFormControlElementWithState
-    : public HTMLFormControlElement,
-      public DoublyLinkedListNode<HTMLFormControlElementWithState> {
+    : public HTMLFormControlElement {
  public:
   ~HTMLFormControlElementWithState() override;
 
@@ -58,7 +50,6 @@ class CORE_EXPORT HTMLFormControlElementWithState
   virtual void RestoreFormControlState(const FormControlState&) {}
   void NotifyFormStateChanged();
 
-  void Trace(Visitor*) override;
   bool UserHasEditedTheField() const { return user_has_edited_the_field_; }
   // This is only used in tests, to fake the user's action
   void SetUserHasEditedTheFieldForTest() { user_has_edited_the_field_ = true; }
@@ -77,14 +68,6 @@ class CORE_EXPORT HTMLFormControlElementWithState
 
   // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofill-anchor-mantle
   bool IsWearingAutofillAnchorMantle() const;
-
-  // Pointers for DoublyLinkedListNode<HTMLFormControlElementWithState>. This
-  // is used for adding an instance to a list of form controls stored in
-  // DocumentState. Each instance is only added to its containing document's
-  // DocumentState list.
-  friend class WTF::DoublyLinkedListNode<HTMLFormControlElementWithState>;
-  Member<HTMLFormControlElementWithState> prev_;
-  Member<HTMLFormControlElementWithState> next_;
 };
 
 DEFINE_TYPE_CASTS(HTMLFormControlElementWithState,

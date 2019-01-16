@@ -123,7 +123,7 @@ HTMLFormControlElementWithState::~HTMLFormControlElementWithState() = default;
 Node::InsertionNotificationRequest
 HTMLFormControlElementWithState::InsertedInto(ContainerNode& insertion_point) {
   if (insertion_point.isConnected() && !ContainingShadowRoot())
-    GetDocument().GetFormController().RegisterStatefulFormControl(*this);
+    GetDocument().GetFormController().InvalidateStatefulFormControlList();
   return HTMLFormControlElement::InsertedInto(insertion_point);
 }
 
@@ -131,7 +131,7 @@ void HTMLFormControlElementWithState::RemovedFrom(
     ContainerNode& insertion_point) {
   if (insertion_point.isConnected() && !ContainingShadowRoot() &&
       !insertion_point.ContainingShadowRoot())
-    GetDocument().GetFormController().UnregisterStatefulFormControl(*this);
+    GetDocument().GetFormController().InvalidateStatefulFormControlList();
   HTMLFormControlElement::RemovedFrom(insertion_point);
 }
 
@@ -309,12 +309,6 @@ void HTMLFormControlElementWithState::FinishParsingChildren() {
 
 bool HTMLFormControlElementWithState::IsFormControlElementWithState() const {
   return true;
-}
-
-void HTMLFormControlElementWithState::Trace(Visitor* visitor) {
-  visitor->Trace(prev_);
-  visitor->Trace(next_);
-  HTMLFormControlElement::Trace(visitor);
 }
 
 }  // namespace blink
