@@ -127,6 +127,11 @@ class OmniboxInput extends OmniboxElement {
     this.$$('#input-text')
         .addEventListener(
             'input', this.positionCursorPositionIndicators_.bind(this));
+
+    this.$$('#response-selection')
+        .addEventListener('input', this.onResponseSelectionChanged_.bind(this));
+    this.$$('#response-selection')
+        .addEventListener('blur', this.onResponseSelectionBlur_.bind(this));
   }
 
   /**
@@ -216,6 +221,32 @@ class OmniboxInput extends OmniboxElement {
     } catch (error) {
       console.error('error during import, invalid json:', error);
     }
+  }
+
+  /** @private */
+  onResponseSelectionChanged_() {
+    const {value, max} = this.$$('#response-selection');
+    this.$$('#history-warning').hidden = value === '0' || value === max;
+    this.dispatchEvent(new CustomEvent('response-select', {detail: value - 1}));
+  }
+
+  /** @private */
+  onResponseSelectionBlur_() {
+    const {value, min, max} = this.$$('#response-selection');
+    this.$$('#response-selection').value = Math.max(Math.min(value, max), min);
+    this.onResponseSelectionChanged_();
+  }
+
+  /** @param {number} value */
+  set responsesCount(value) {
+    if (this.$$('#response-selection').value ===
+        this.$$('#response-selection').max) {
+      this.$$('#response-selection').value = value;
+    }
+    this.$$('#response-selection').max = value;
+    this.$$('#response-selection').min = value ? 1 : 0;
+    this.$$('#responses-count').textContent = value;
+    this.onResponseSelectionBlur_();
   }
 
   /** @return {boolean} */

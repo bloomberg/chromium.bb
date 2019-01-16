@@ -22,7 +22,7 @@
  * @typedef {{
  *   queryInputs: QueryInputs,
  *   displayInputs: DisplayInputs,
- *   responses: !Array<!mojom.OmniboxResult>,
+ *   responsesHistory: !Array<!Array<!mojom.OmniboxResult>>,
  * }}
  */
 let OmniboxExport;
@@ -62,7 +62,7 @@ class BrowserProxy {
     this.callbackRouter_.handleNewAutocompleteQuery.addListener(
         isPageController => {
           if (isPageController || omniboxInput.connectWindowOmnibox) {
-            omniboxOutput.clearAutocompleteResponses();
+            omniboxOutput.prepareNewQuery();
           }
         });
     this.callbackRouter_.handleAnswerImageData.addListener(
@@ -106,6 +106,13 @@ document.addEventListener('DOMContentLoaded', () => {
   omniboxInput.addEventListener('copy-text', () => exportDelegate.copyText());
   omniboxInput.addEventListener(
       'download-json', () => exportDelegate.downloadJson());
+  omniboxInput.addEventListener(
+      'response-select',
+      event => omniboxOutput.updateSelectedResponseIndex(event.detail));
+
+  omniboxOutput.addEventListener(
+      'responses-count-changed',
+      event => omniboxInput.responsesCount = event.detail);
 });
 
 class ExportDelegate {
@@ -127,20 +134,23 @@ class ExportDelegate {
     // best-attempt; e.g. if responses are missing 'relevance' values, then
     // those cells will be left blank.
     const valid = importData && importData.queryInputs &&
-        importData.displayInputs && Array.isArray(importData.responses) &&
-        importData.responses.every(
-            response => Array.isArray(response.combinedResults) &&
-                Array.isArray(response.resultsByProvider));
+        importData.displayInputs &&
+        Array.isArray(importData.responsesHistory) &&
+        importData.responsesHistory.every(
+            responses => Array.isArray(responses) &&
+                responses.every(
+                    response => Array.isArray(response.combinedResults) &&
+                        Array.isArray(response.resultsByProvider)));
     if (!valid) {
       return console.error(
           'invalid import format:',
-          'expected {queryInputs: {}, displayInputs: {}, responses: []}');
+          'expected {queryInputs: {}, displayInputs: {}, responsesHistory: []}');
     }
     this.omniboxInput_.queryInputs = importData.queryInputs;
     this.omniboxInput_.displayInputs = importData.displayInputs;
     this.omniboxOutput_.updateQueryInputs(importData.queryInputs);
     this.omniboxOutput_.updateDisplayInputs(importData.displayInputs);
-    this.omniboxOutput_.setAutocompleteResponses(importData.responses);
+    this.omniboxOutput_.setResponsesHistory(importData.responsesHistory);
   }
 
   copyText() {
@@ -152,7 +162,7 @@ class ExportDelegate {
     const exportObj = {
       queryInputs: this.omniboxInput_.queryInputs,
       displayInputs: this.omniboxInput_.displayInputs,
-      responses: this.omniboxOutput_.responses,
+      responsesHistory: this.omniboxOutput_.responsesHistory,
     };
     const fileName = `omnibox_debug_export_${exportObj.queryInputs.inputText}_${
         new Date().toISOString()}.json`;
