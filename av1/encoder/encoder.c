@@ -544,6 +544,7 @@ static void reset_film_grain_chroma_params(aom_film_grain_t *pars) {
   pars->num_cb_points = 0;
   pars->cb_mult = 0;
   pars->cb_luma_mult = 0;
+  pars->chroma_scaling_from_luma = 0;
   memset(pars->scaling_points_cb, 0, sizeof(pars->scaling_points_cb));
   memset(pars->ar_coeffs_cb, 0, sizeof(pars->ar_coeffs_cb));
 }
