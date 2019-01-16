@@ -1436,10 +1436,7 @@ int AXNodeObject::PosInSet() const {
     uint32_t pos_in_set;
     if (HasAOMPropertyOrARIAAttribute(AOMUIntProperty::kPosInSet, pos_in_set))
       return pos_in_set;
-
-    return AutoPosInSet();
   }
-
   return 0;
 }
 
@@ -1448,86 +1445,8 @@ int AXNodeObject::SetSize() const {
     int32_t set_size;
     if (HasAOMPropertyOrARIAAttribute(AOMIntProperty::kSetSize, set_size))
       return set_size;
-
-    return AutoSetSize();
   }
-
   return 0;
-}
-
-int AXNodeObject::AutoPosInSet() const {
-  AXObject* parent = ParentObjectUnignored();
-
-  // Do not continue if the children will need updating soon, because
-  // the calculation requires all the siblings to remain stable.
-  if (!parent || parent->NeedsToUpdateChildren())
-    return 0;
-
-  int pos_in_set = 1;
-  const AXObject::AXObjectVector siblings = parent->Children();
-
-  ax::mojom::Role role = RoleValue();
-  int level = HierarchicalLevel();
-  int index_in_parent = IndexInParent();
-
-  for (int index = index_in_parent - 1; index >= 0; index--) {
-    const AXObject* sibling = siblings[index];
-    ax::mojom::Role sibling_role = sibling->RoleValue();
-    if (sibling_role == ax::mojom::Role::kSplitter ||
-        sibling_role == ax::mojom::Role::kGroup)
-      break;  // Set stops at a separator or an optgroup.
-    if (sibling_role != role || sibling->AccessibilityIsIgnored())
-      continue;
-
-    int sibling_level = sibling->HierarchicalLevel();
-    if (sibling_level < level)
-      break;
-
-    if (sibling_level > level)
-      continue;  // Skip subset
-
-    ++pos_in_set;
-  }
-
-  return pos_in_set;
-}
-
-int AXNodeObject::AutoSetSize() const {
-  AXObject* parent = ParentObjectUnignored();
-
-  // Do not continue if the children will need updating soon, because
-  // the calculation requires all the siblings to remain stable.
-  if (!parent || parent->NeedsToUpdateChildren())
-    return 0;
-
-  int set_size = AutoPosInSet();
-  auto siblings = parent->Children();
-
-  ax::mojom::Role role = RoleValue();
-  int level = HierarchicalLevel();
-  int index_in_parent = IndexInParent();
-  int sibling_count = siblings.size();
-
-  for (int index = index_in_parent + 1; index < sibling_count; index++) {
-    const auto sibling = siblings[index];
-    ax::mojom::Role sibling_role = sibling->RoleValue();
-    if (sibling_role == ax::mojom::Role::kSplitter ||
-        sibling_role == ax::mojom::Role::kGroup)
-      break;  // Set stops at a separator or an optgroup.
-    if (sibling_role != role || sibling->AccessibilityIsIgnored())
-      continue;
-
-    int sibling_level = sibling->HierarchicalLevel();
-    if (sibling_level < level)
-      break;
-
-    if (sibling_level > level)
-      continue;  // Skip subset
-
-    ++set_size;
-  }
-
-  return set_size;
 }
 
 String AXNodeObject::AriaInvalidValue() const {
