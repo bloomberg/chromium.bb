@@ -171,6 +171,14 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/wayland:wayland_client",
   ]
+
+  if (is_chromeos) {
+    sources += [ "server_util_unittest.cc" ]
+    deps += [
+      "//ui/display",
+      "//ui/gfx",
+    ]
+  }
 }
 
 config("client_support_config") {

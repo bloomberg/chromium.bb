@@ -97,11 +97,11 @@ gfx::Insets GetWorkAreaInsetsInClientPixel(
     float default_dsf,
     const gfx::Size& size_in_client_pixel,
     const gfx::Rect& work_area_in_dp) {
-  gfx::Rect work_area_in_p = display.work_area();
-  work_area_in_p.Offset(-display.bounds().x(), -display.bounds().y());
+  gfx::Rect work_area_in_display = display.work_area();
+  work_area_in_display.Offset(-display.bounds().x(), -display.bounds().y());
   gfx::Rect work_area_in_client_pixel = ScaleBoundsToPixelSnappedToParent(
       size_in_client_pixel, display.bounds().size(), default_dsf,
-      work_area_in_dp);
+      work_area_in_display);
   gfx::Insets insets_in_client_pixel =
       gfx::Rect(size_in_client_pixel).InsetsFrom(work_area_in_client_pixel);
 
