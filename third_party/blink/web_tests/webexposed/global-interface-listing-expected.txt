@@ -2491,6 +2491,7 @@ interface HTMLBodyElement : HTMLElement
     getter onpagehide
     getter onpageshow
     getter onpopstate
+    getter onportalactivate
     getter onrejectionhandled
     getter onresize
     getter onscroll
@@ -2520,6 +2521,7 @@ interface HTMLBodyElement : HTMLElement
     setter onpagehide
     setter onpageshow
     setter onpopstate
+    setter onportalactivate
     setter onrejectionhandled
     setter onresize
     setter onscroll
@@ -2952,6 +2954,7 @@ interface HTMLFrameSetElement : HTMLElement
     getter onpagehide
     getter onpageshow
     getter onpopstate
+    getter onportalactivate
     getter onrejectionhandled
     getter onresize
     getter onscroll
@@ -2977,6 +2980,7 @@ interface HTMLFrameSetElement : HTMLElement
     setter onpagehide
     setter onpageshow
     setter onpopstate
+    setter onportalactivate
     setter onrejectionhandled
     setter onresize
     setter onscroll
@@ -10772,6 +10776,7 @@ interface webkitURL
     getter onpointerrawmove
     getter onpointerup
     getter onpopstate
+    getter onportalactivate
     getter onprogress
     getter onratechange
     getter onrejectionhandled
@@ -10966,6 +10971,7 @@ interface webkitURL
     setter onpointerrawmove
     setter onpointerup
     setter onpopstate
+    setter onportalactivate
     setter onprogress
     setter onratechange
     setter onrejectionhandled

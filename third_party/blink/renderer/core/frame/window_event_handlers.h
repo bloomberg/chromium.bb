@@ -52,6 +52,8 @@ class WindowEventHandlers {
   DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(pagehide, kPagehide);
   DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(pageshow, kPageshow);
   DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(popstate, kPopstate);
+  DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(portalactivate,
+                                                kPortalactivate);
   DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(rejectionhandled,
                                                 kRejectionhandled);
   DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(storage, kStorage);

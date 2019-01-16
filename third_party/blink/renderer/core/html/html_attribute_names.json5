@@ -225,6 +225,7 @@
     "onpointerrawmove",
     "onpointerup",
     "onpopstate",
+    "onportalactivate",
     "onprogress",
     "onratechange",
     "onreset",
