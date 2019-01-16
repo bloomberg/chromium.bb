@@ -22,6 +22,7 @@
 #include "media/capture/mojom/image_capture_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -326,6 +327,8 @@ void PacmanFramePainter::DrawPacman(base::TimeDelta elapsed_time,
   bitmap.setPixels(target_buffer);
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
+  SkFont font;
+  font.setEdging(SkFont::Edging::kAlias);
   SkCanvas canvas(bitmap);
 
   const SkScalar unscaled_zoom = fake_device_state_->zoom / 100.f;
@@ -362,7 +365,8 @@ void PacmanFramePainter::DrawPacman(base::TimeDelta elapsed_time,
       base::StringPrintf("%d:%02d:%02d:%03d %d", hours, minutes, seconds,
                          milliseconds, frame_count);
   canvas.scale(3, 3);
-  canvas.drawText(time_string.data(), time_string.length(), 30, 20, paint);
+  canvas.drawSimpleText(time_string.data(), time_string.length(),
+                        kUTF8_SkTextEncoding, 30, 20, font, paint);
 
   if (pixel_format_ == Format::Y16) {
     // Use 8 bit bitmap rendered to first half of the buffer as high byte values
