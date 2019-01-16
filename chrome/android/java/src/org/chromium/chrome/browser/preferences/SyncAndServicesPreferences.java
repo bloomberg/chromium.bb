@@ -159,7 +159,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private Preference mGoogleActivityControls;
     private Preference mSyncEncryption;
     private Preference mManageSyncData;
-    private @Nullable Preference mContextualSuggestions;
 
     private ChromeSwitchPreference mSearchSuggestions;
     private ChromeSwitchPreference mNetworkPredictions;
@@ -169,6 +168,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private ChromeSwitchPreference mUsageAndCrashReporting;
     private ChromeSwitchPreference mUrlKeyedAnonymizedData;
     private @Nullable Preference mContextualSearch;
+    private @Nullable Preference mContextualSuggestions;
 
     private boolean mIsEngineInitialized;
     private boolean mIsPassphraseRequired;
@@ -235,13 +235,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mManageSyncData.setOnPreferenceClickListener(
                 toOnClickListener(this::openDashboardTabInNewActivityStack));
 
-        mContextualSuggestions = findPreference(PREF_CONTEXTUAL_SUGGESTIONS);
-        if (!FeatureUtilities.areContextualSuggestionsEnabled(getActivity())
-                || !ContextualSuggestionsEnabledStateUtils.shouldShowSettings()) {
-            removePreference(mSyncCategory, mContextualSuggestions);
-            mContextualSuggestions = null;
-        }
-
         mSyncAllTypes = new CheckBoxPreference[] {mSyncAutofill, mSyncBookmarks,
                 mSyncPaymentsIntegration, mSyncHistory, mSyncPasswords, mSyncRecentTabs,
                 mSyncSettings, mSyncActivityAndInteractions};
@@ -280,12 +273,19 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mUrlKeyedAnonymizedData.setOnPreferenceChangeListener(this);
         mUrlKeyedAnonymizedData.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
+        PreferenceCategory servicesCategory =
+                (PreferenceCategory) findPreference(PREF_SERVICES_CATEGORY);
         mContextualSearch = findPreference(PREF_CONTEXTUAL_SEARCH);
         if (!ContextualSearchFieldTrial.isEnabled()) {
-            PreferenceCategory servicesCategory =
-                    (PreferenceCategory) findPreference(PREF_SERVICES_CATEGORY);
             removePreference(servicesCategory, mContextualSearch);
             mContextualSearch = null;
+        }
+
+        mContextualSuggestions = findPreference(PREF_CONTEXTUAL_SUGGESTIONS);
+        if (!FeatureUtilities.areContextualSuggestionsEnabled(getActivity())
+                || !ContextualSuggestionsEnabledStateUtils.shouldShowSettings()) {
+            removePreference(servicesCategory, mContextualSuggestions);
+            mContextualSuggestions = null;
         }
 
         if (Profile.getLastUsedProfile().isChild()) {
