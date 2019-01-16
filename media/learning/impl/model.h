@@ -18,10 +18,15 @@ namespace learning {
 // can support it.
 class COMPONENT_EXPORT(LEARNING_IMPL) Model {
  public:
+  // Callback for asynchronous predictions.
+  using PredictionCB = base::OnceCallback<void(TargetDistribution predicted)>;
+
   virtual ~Model() = default;
 
   virtual TargetDistribution PredictDistribution(
       const FeatureVector& instance) = 0;
+
+  // TODO(liberato): Consider adding an async prediction helper.
 };
 
 }  // namespace learning

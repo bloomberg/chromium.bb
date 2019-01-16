@@ -17,7 +17,10 @@ LearningTask::LearningTask(
     : name(name),
       model(model),
       feature_descriptions(std::move(feature_init_list)),
-      target_description(target_description) {}
+      target_description(target_description) {
+  // Default this to something sane.
+  uma_name = std::string("Media.Learning.") + name;
+}
 
 LearningTask::LearningTask(const LearningTask&) = default;
 
