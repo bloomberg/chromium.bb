@@ -36,7 +36,8 @@ void OomInterventionImpl::StartDetection(
     mojom::blink::OomInterventionHostPtr host,
     mojom::blink::DetectionArgsPtr detection_args,
     bool renderer_pause_enabled,
-    bool navigate_ads_enabled) {
+    bool navigate_ads_enabled,
+    bool purge_v8_memory_enabled) {
   host_ = std::move(host);
 
   // Disable intervention if we cannot get memory details of current process.
@@ -46,6 +47,7 @@ void OomInterventionImpl::StartDetection(
   detection_args_ = std::move(detection_args);
   renderer_pause_enabled_ = renderer_pause_enabled;
   navigate_ads_enabled_ = navigate_ads_enabled;
+  purge_v8_memory_enabled_ = purge_v8_memory_enabled;
 
   timer_.Start(TimeDelta(), TimeDelta::FromSeconds(1), FROM_HERE);
 }
@@ -77,12 +79,14 @@ void OomInterventionImpl::Check(TimerBase*) {
   ReportMemoryStats(current_memory);
 
   if (oom_detected) {
-    if (navigate_ads_enabled_) {
+    if (navigate_ads_enabled_ || purge_v8_memory_enabled_) {
       for (const auto& page : Page::OrdinaryPages()) {
         if (page->MainFrame()->IsLocalFrame()) {
-          ToLocalFrame(page->MainFrame())
-              ->GetDocument()
-              ->NavigateLocalAdsFrames();
+          LocalFrame* frame = ToLocalFrame(page->MainFrame());
+          if (navigate_ads_enabled_)
+            frame->GetDocument()->NavigateLocalAdsFrames();
+          if (purge_v8_memory_enabled_)
+            frame->ForciblyPurgeV8Memory();
         }
       }
     }
@@ -92,6 +96,7 @@ void OomInterventionImpl::Check(TimerBase*) {
       // mojo strong binding is disconnected.
       pauser_.reset(new ScopedPagePauser);
     }
+
     host_->OnHighMemoryUsage();
     timer_.Stop();
     // Notify V8GCForContextDispose that page navigation gc is needed when

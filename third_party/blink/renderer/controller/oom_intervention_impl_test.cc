@@ -80,11 +80,13 @@ class OomInterventionImplTest : public testing::Test {
     WebViewImpl* web_view = web_view_helper_.InitializeAndLoad("about:blank");
     Page* page = web_view->MainFrameImpl()->GetFrame()->GetPage();
     EXPECT_FALSE(page->Paused());
-    RunDetection(true, false);
+    RunDetection(true, false, false);
     return page;
   }
 
-  void RunDetection(bool renderer_pause_enabled, bool navigate_ads_enabled) {
+  void RunDetection(bool renderer_pause_enabled,
+                    bool navigate_ads_enabled,
+                    bool purge_v8_memory_enabled) {
     mojom::blink::OomInterventionHostPtr host_ptr;
     MockOomInterventionHost mock_host(mojo::MakeRequest(&host_ptr));
 
@@ -95,7 +97,8 @@ class OomInterventionImplTest : public testing::Test {
     args->virtual_memory_thresold = kTestVmSizeThreshold;
 
     intervention_->StartDetection(std::move(host_ptr), std::move(args),
-                                  renderer_pause_enabled, navigate_ads_enabled);
+                                  renderer_pause_enabled, navigate_ads_enabled,
+                                  purge_v8_memory_enabled);
     test::RunDelayedTasks(TimeDelta::FromSeconds(1));
   }
 
@@ -241,9 +244,9 @@ TEST_F(OomInterventionImplTest, CalculateProcessFootprint) {
   mojom::blink::OomInterventionHostPtr host_ptr;
   MockOomInterventionHost mock_host(mojo::MakeRequest(&host_ptr));
   mojom::blink::DetectionArgsPtr args(mojom::blink::DetectionArgs::New());
-  intervention_->StartDetection(std::move(host_ptr), std::move(args),
-                                true /*renderer_pause_enabled*/,
-                                true /*navigate_ads_enabled*/);
+  intervention_->StartDetection(
+      std::move(host_ptr), std::move(args), true /*renderer_pause_enabled*/,
+      true /*navigate_ads_enabled*/, true /*purge_v8_memory_enabled*/);
   // Create unsafe shared memory region to write metrics in reporter.
   base::UnsafeSharedMemoryRegion shm =
       base::UnsafeSharedMemoryRegion::Create(sizeof(OomInterventionMetrics));
@@ -297,11 +300,28 @@ TEST_F(OomInterventionImplTest, V1DetectionAdsNavigation) {
   EXPECT_TRUE(local_adframe->IsAdSubframe());
   EXPECT_FALSE(local_non_adframe->IsAdSubframe());
 
-  RunDetection(true, true);
+  RunDetection(true, true, false);
 
   EXPECT_EQ(local_adframe->GetDocument()->Url().GetString(), "about:blank");
   EXPECT_NE(local_non_adframe->GetDocument()->Url().GetString(), "about:blank");
   EXPECT_TRUE(page->Paused());
+}
+
+TEST_F(OomInterventionImplTest, V2DetectionV8PurgeMemory) {
+  OomInterventionMetrics mock_metrics = {};
+  mock_metrics.current_blink_usage_kb = (kTestBlinkThreshold / 1024) - 1;
+  mock_metrics.current_private_footprint_kb = (kTestPMFThreshold / 1024) - 1;
+  mock_metrics.current_swap_kb = (kTestSwapThreshold / 1024) - 1;
+  // Set value more than the threshold to trigger intervention.
+  mock_metrics.current_vm_size_kb = (kTestVmSizeThreshold / 1024) + 1;
+  intervention_->SetMetrics(mock_metrics);
+
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad("about:blank");
+  Page* page = web_view->MainFrameImpl()->GetFrame()->GetPage();
+  LocalFrame* frame = ToLocalFrame(page->MainFrame());
+  EXPECT_FALSE(frame->GetDocument()->ExecutionContext::IsContextDestroyed());
+  RunDetection(true, true, true);
+  EXPECT_TRUE(frame->GetDocument()->ExecutionContext::IsContextDestroyed());
 }
 
 }  // namespace blink

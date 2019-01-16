@@ -78,7 +78,8 @@ OomInterventionTabHelper::~OomInterventionTabHelper() = default;
 void OomInterventionTabHelper::OnHighMemoryUsage() {
   auto* config = OomInterventionConfig::GetInstance();
   if (config->is_renderer_pause_enabled() ||
-      config->is_navigate_ads_enabled()) {
+      config->is_navigate_ads_enabled() ||
+      config->is_purge_v8_memory_enabled()) {
     NearOomReductionInfoBar::Show(web_contents(), this);
     intervention_state_ = InterventionState::UI_SHOWN;
     if (!last_navigation_timestamp_.is_null()) {
@@ -290,8 +291,11 @@ void OomInterventionTabHelper::StartDetectionInRenderer() {
   auto* config = OomInterventionConfig::GetInstance();
   bool renderer_pause_enabled = config->is_renderer_pause_enabled();
   bool navigate_ads_enabled = config->is_navigate_ads_enabled();
+  bool purge_v8_memory_enabled = config->is_purge_v8_memory_enabled();
 
-  if ((renderer_pause_enabled || navigate_ads_enabled) && decider_) {
+  if ((renderer_pause_enabled || navigate_ads_enabled ||
+       purge_v8_memory_enabled) &&
+      decider_) {
     DCHECK(!web_contents()->GetBrowserContext()->IsOffTheRecord());
     const std::string& host = web_contents()->GetVisibleURL().host();
     if (!decider_->CanTriggerIntervention(host)) {
@@ -311,7 +315,8 @@ void OomInterventionTabHelper::StartDetectionInRenderer() {
   blink::mojom::DetectionArgsPtr detection_args =
       config->GetRendererOomDetectionArgs();
   intervention_->StartDetection(std::move(host), std::move(detection_args),
-                                renderer_pause_enabled, navigate_ads_enabled);
+                                renderer_pause_enabled, navigate_ads_enabled,
+                                purge_v8_memory_enabled);
 }
 
 void OomInterventionTabHelper::OnNearOomDetected() {

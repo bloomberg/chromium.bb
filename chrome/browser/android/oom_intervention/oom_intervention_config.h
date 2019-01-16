@@ -29,6 +29,11 @@ class OomInterventionConfig {
   // navigated.
   bool is_navigate_ads_enabled() const { return is_navigate_ads_enabled_; }
 
+  // True if on detection of near OOM condition V8 memory should be purged.
+  bool is_purge_v8_memory_enabled() const {
+    return is_purge_v8_memory_enabled_;
+  }
+
   // True if detection should be enabled on renderers.
   bool should_detect_in_renderer() const { return should_detect_in_renderer_; }
 
@@ -49,6 +54,7 @@ class OomInterventionConfig {
 
   bool is_renderer_pause_enabled_ = false;
   bool is_navigate_ads_enabled_ = false;
+  bool is_purge_v8_memory_enabled_ = false;
   bool should_detect_in_renderer_ = false;
 
   uint64_t swapfree_threshold_ = 0;
