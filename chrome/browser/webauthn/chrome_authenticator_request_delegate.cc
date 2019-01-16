@@ -161,9 +161,14 @@ void ChromeAuthenticatorRequestDelegate::RegisterActionCallbacks(
 
 bool ChromeAuthenticatorRequestDelegate::ShouldPermitIndividualAttestation(
     const std::string& relying_party_id) {
-  // If the RP ID is listed in the policy, signal that individual attestation is
-  // permitted.
-  return IsWebauthnRPIDListedInEnterprisePolicy(browser_context(),
+  constexpr char kGoogleCorpAppId[] =
+      "https://www.gstatic.com/securitykey/a/google.com/origins.json";
+
+  // If the RP ID is actually the Google corp App ID (because the request is
+  // actually a U2F request originating from cryptotoken), or is listed in the
+  // enterprise policy, signal that individual attestation is permitted.
+  return relying_party_id == kGoogleCorpAppId ||
+         IsWebauthnRPIDListedInEnterprisePolicy(browser_context(),
                                                 relying_party_id);
 }
 
