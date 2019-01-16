@@ -42,7 +42,7 @@ def GetBaseUploadURI(config, archive_base=None, bot_id=None):
   if archive_base:
     gs_base = archive_base
   elif config.gs_path == config_lib.GS_PATH_DEFAULT:
-    gs_base = config_lib.GetConfig().params.ARCHIVE_URL
+    gs_base = config_lib.GetSiteParams().ARCHIVE_URL
   else:
     gs_base = config.gs_path
 

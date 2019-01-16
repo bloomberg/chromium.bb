@@ -109,7 +109,7 @@ class GetBaseUploadURITest(cros_test_lib.TestCase):
 
   def testBotId(self):
     expected_result = ('%s/%s' %
-                       (config_lib.GetConfig().params.ARCHIVE_URL,
+                       (config_lib.GetSiteParams().ARCHIVE_URL,
                         self.BOT_ID))
     result = self._GetBaseUploadURI(bot_id=self.BOT_ID)
     self.assertEqual(expected_result, result)
@@ -120,14 +120,14 @@ class GetBaseUploadURITest(cros_test_lib.TestCase):
 
     # Test without bot_id.
     expected_result = ('%s/%s' %
-                       (config_lib.GetConfig().params.ARCHIVE_URL,
+                       (config_lib.GetSiteParams().ARCHIVE_URL,
                         DEFAULT_BOT_NAME))
     result = self._GetBaseUploadURI()
     self.assertEqual(expected_result, result)
 
     # Test with bot_id.
     expected_result = ('%s/%s' %
-                       (config_lib.GetConfig().params.ARCHIVE_URL,
+                       (config_lib.GetSiteParams().ARCHIVE_URL,
                         self.BOT_ID))
     result = self._GetBaseUploadURI(bot_id=self.BOT_ID)
     self.assertEqual(expected_result, result)

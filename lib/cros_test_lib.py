@@ -1319,16 +1319,10 @@ class GerritTestCase(MockTempDirTestCase):
 
     site_params.update(self.patched_params)
 
-    # site_config.params shouldn't be being used, but just to be safe...
-    site_config = config_lib.GetConfig()
-    site_config._site_params.update(self.patched_params)
-
   def tearDown(self):
     # Restore the 'patched' site parameters.
     site_params = config_lib.GetSiteParams()
     site_params.update(self.saved_params)
-    site_config = config_lib.GetConfig()
-    site_config._site_params.update(self.saved_params)
 
   def createProject(self, suffix, description='Test project', owners=None,
                     submit_type='CHERRY_PICK'):

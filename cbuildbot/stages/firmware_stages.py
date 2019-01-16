@@ -74,7 +74,7 @@ class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
   def dummy_archive_url(self):
     """Uniqify the name across boards."""
     return os.path.join(
-        config_lib.GetConfig().params.ARCHIVE_URL,
+        config_lib.GetSiteParams().ARCHIVE_URL,
         self.dummy_firmware_config,
         self.firmware_version)
 

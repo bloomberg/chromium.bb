@@ -71,7 +71,7 @@ class WorkspaceStageBase(generic_stages.BuilderStage):
     """
     # TODO: Properly select the manifest. Currently hard coded to internal
     # branch checkouts.
-    manifest_url = config_lib.GetConfig().params['MANIFEST_INT_URL']
+    manifest_url = config_lib.GetSiteParams().MANIFEST_INT_URL
 
     # Workspace repos use the workspace URL / branch.
     return self.GetRepoRepository(

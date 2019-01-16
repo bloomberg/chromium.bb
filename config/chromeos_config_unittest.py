@@ -18,7 +18,6 @@ from chromite.cbuildbot import builders
 from chromite.config import chromeos_config
 from chromite.config import chromeos_config_test as chromeos_test
 from chromite.lib import config_lib
-from chromite.lib import config_lib_unittest
 from chromite.lib import constants
 from chromite.cbuildbot.builders import generic_builders
 from chromite.lib import cros_build_lib
@@ -258,10 +257,8 @@ class UnifiedBuildConfigTestCase(object):
     '''
     self._fake_ge_build_config = json.loads(self._fake_ge_build_config_json)
 
-    site_params = config_lib.DefaultSiteParameters()
-    defaults = chromeos_config.DefaultSettings(site_params)
-    self._site_config = config_lib.SiteConfig(defaults=defaults,
-                                              site_params=site_params)
+    defaults = chromeos_config.DefaultSettings()
+    self._site_config = config_lib.SiteConfig(defaults=defaults)
     self._ge_build_config = config_lib.LoadGEBuildConfigFromFile()
     self._boards_dict = chromeos_config.GetBoardTypeToBoardsDict(
         self._ge_build_config)
@@ -1225,20 +1222,3 @@ class BoardConfigsTest(ChromeosConfigTestBase):
       else:
         # Was not updated.
         self.assertEqual(result[b], pre_test[b], 'Failed in %s' % b)
-
-
-class SiteInterfaceTest(ChromeosConfigTestBase):
-  """Test enforcing site parameters for a chromeos SiteConfig."""
-
-  def testAssertSiteParameters(self):
-    """Test that a chromeos SiteConfig contains the necessary parameters."""
-    # Check that our config contains site-independent parameters.
-    self.assertTrue(
-        config_lib_unittest.AssertSiteIndependentParameters(self.site_config))
-
-    # Enumerate the necessary chromeos site parameter keys.
-    chromeos_params = config_lib.DefaultSiteParameters().keys()
-
-    # Check that our config contains all chromeos specific site parameters.
-    site_params = self.site_config.params
-    self.assertTrue(all([x in site_params for x in chromeos_params]))

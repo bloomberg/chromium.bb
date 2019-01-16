@@ -122,11 +122,8 @@ def GetBoardTypeToBoardsDict(ge_build_config):
   return boards_dict
 
 
-def DefaultSettings(site_params):
+def DefaultSettings():
   """Create the default build config values for this site.
-
-  Args:
-    site_params: A populated config_lib.SiteParameters instance.
 
   Returns:
     dict: of default config_lib.BuildConfig values to use for this site.
@@ -137,7 +134,7 @@ def DefaultSettings(site_params):
   # Git repository URL for our manifests.
   #  https://chromium.googlesource.com/chromiumos/manifest
   #  https://chrome-internal.googlesource.com/chromeos/manifest-internal
-  defaults['manifest_repo_url'] = site_params['MANIFEST_URL']
+  defaults['manifest_repo_url'] = config_lib.GetSiteParams().MANIFEST_URL
 
   return defaults
 
@@ -232,7 +229,7 @@ def GeneralTemplates(site_config, ge_build_config):
       'external',
       internal=False,
       overlays=constants.PUBLIC_OVERLAYS,
-      manifest_repo_url=site_config.params['MANIFEST_URL'],
+      manifest_repo_url=config_lib.GetSiteParams().MANIFEST_URL,
       manifest=constants.DEFAULT_MANIFEST,
   )
 
@@ -241,7 +238,7 @@ def GeneralTemplates(site_config, ge_build_config):
       'internal',
       internal=True,
       overlays=constants.BOTH_OVERLAYS,
-      manifest_repo_url=site_config.params['MANIFEST_INT_URL'],
+      manifest_repo_url=config_lib.GetSiteParams().MANIFEST_INT_URL,
   )
 
   site_config.AddTemplate(
@@ -1613,7 +1610,7 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.full,
       site_config.templates.build_external_chrome,
       internal=False,
-      manifest_repo_url=site_config.params['MANIFEST_URL'],
+      manifest_repo_url=config_lib.GetSiteParams().MANIFEST_URL,
       overlays=constants.PUBLIC_OVERLAYS,
       prebuilts=constants.PUBLIC)
 
@@ -2579,7 +2576,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.chromium_pfq_informational,
       site_config.templates.build_external_chrome,
       internal=False,
-      manifest_repo_url=site_config.params['MANIFEST_URL'],
+      manifest_repo_url=config_lib.GetSiteParams().MANIFEST_URL,
       overlays=constants.PUBLIC_OVERLAYS,
   )
 
@@ -3805,14 +3802,12 @@ def GetConfig():
   Returns:
     A config_lib.SiteConfig.
   """
-  site_params = config_lib.DefaultSiteParameters()
-  defaults = DefaultSettings(site_params)
+  defaults = DefaultSettings()
 
   ge_build_config = config_lib.LoadGEBuildConfigFromFile()
 
   # site_config with no templates or build configurations.
-  site_config = config_lib.SiteConfig(defaults=defaults,
-                                      site_params=site_params)
+  site_config = config_lib.SiteConfig(defaults=defaults)
   boards_dict = GetBoardTypeToBoardsDict(ge_build_config)
 
   GeneralTemplates(site_config, ge_build_config)
