@@ -38,15 +38,22 @@
       .website-icon {
         background-repeat: no-repeat;
         background-size: 16px;
+        flex: none;
         height: 16px;
         width: 16px;
       }
 
-      .website-title {
+      .website-link {
+        align-items: center;
         color: var(--cr-primary-text-color);
-        margin-inline-start: 16px;
+        display: flex;
         overflow: hidden;
         text-decoration: none;
+      }
+
+      .website-title {
+        margin-inline-start: 16px;
+        overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }

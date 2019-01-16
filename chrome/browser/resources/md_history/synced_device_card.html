@@ -109,11 +109,12 @@
           <template is="dom-repeat" items="[[tabs]]" as="tab" id="tab-list"
               notify-dom-change>
             <div class="item-container">
-              <div class="website-icon"></div>
-              <a href="[[tab.url]]" class="website-title" title="[[tab.title]]"
+              <a href="[[tab.url]]" class="website-link" title="[[tab.title]]"
                   on-click="openTab_" on-contextmenu="onLinkRightClick_">
-                <history-searched-label title="[[tab.title]]"
-                    search-term="[[searchTerm]]"></history-searched-label>
+              <div class="website-icon"></div>
+              <history-searched-label class="website-title"
+                  title="[[tab.title]]"
+                  search-term="[[searchTerm]]"></history-searched-label>
               </a>
             </div>
             <div class="window-separator"

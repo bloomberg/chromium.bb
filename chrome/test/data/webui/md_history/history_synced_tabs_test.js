@@ -45,7 +45,6 @@ suite('<history-synced-device-manager>', function() {
           'http://www.google.com',
           Polymer.dom(card.root)
               .querySelectorAll('.website-title')[0]
-              .children[0]
               .textContent.trim());
       assertEquals(2, card.tabs.length);
     });
@@ -111,7 +110,6 @@ suite('<history-synced-device-manager>', function() {
               'http://crbug.com/new',
               Polymer.dom(cards[0].root)
                   .querySelectorAll('.website-title')[1]
-                  .children[0]
                   .textContent.trim());
         });
   });
@@ -160,7 +158,6 @@ suite('<history-synced-device-manager>', function() {
               'http://www.google.com',
               Polymer.dom(cards[0].root)
                   .querySelectorAll('.website-title')[0]
-                  .children[0]
                   .textContent.trim());
 
           element.searchTerm = 'Sans';

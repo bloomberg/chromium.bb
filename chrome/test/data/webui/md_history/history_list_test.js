@@ -269,14 +269,14 @@ suite('<history-list>', function() {
       const item = element.$$('history-item');
       assertTrue(item.isCardStart);
       const heading = item.$$('#date-accessed').textContent;
-      const title = item.$.title;
+      const title = item.$.link;
 
       // Check that the card title displays the search term somewhere.
       const index = heading.indexOf('Google');
       assertTrue(index != -1);
 
       // Check that the search term is bolded correctly in the history-item.
-      assertGT(title.children[0].innerHTML.indexOf('<b>google</b>'), -1);
+      assertGT(title.children[1].innerHTML.indexOf('<b>google</b>'), -1);
     });
   });
 
@@ -562,7 +562,7 @@ suite('<history-list>', function() {
 
           return new Promise(resolve => {
             registerMessageCallback('navigateToUrl', this, resolve);
-            items[0].$.title.click();
+            items[0].$.link.click();
           });
         })
         .then(function(info) {
