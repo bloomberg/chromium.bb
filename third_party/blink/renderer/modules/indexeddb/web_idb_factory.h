@@ -29,12 +29,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_FACTORY_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_FACTORY_H_
 
-#include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace WTF {
 class String;
@@ -49,21 +44,16 @@ class MODULES_EXPORT WebIDBFactory {
  public:
   virtual ~WebIDBFactory() = default;
 
-  virtual void GetDatabaseInfo(WebIDBCallbacks*,
-                               scoped_refptr<base::SingleThreadTaskRunner>) = 0;
-  virtual void GetDatabaseNames(
-      WebIDBCallbacks*,
-      scoped_refptr<base::SingleThreadTaskRunner>) = 0;
+  virtual void GetDatabaseInfo(std::unique_ptr<WebIDBCallbacks>) = 0;
+  virtual void GetDatabaseNames(std::unique_ptr<WebIDBCallbacks>) = 0;
   virtual void Open(const WTF::String& name,
                     long long version,
                     long long transaction_id,
-                    WebIDBCallbacks*,
-                    WebIDBDatabaseCallbacks*,
-                    scoped_refptr<base::SingleThreadTaskRunner>) = 0;
+                    std::unique_ptr<WebIDBCallbacks>,
+                    std::unique_ptr<WebIDBDatabaseCallbacks>) = 0;
   virtual void DeleteDatabase(const WTF::String& name,
-                              WebIDBCallbacks*,
-                              bool force_close,
-                              scoped_refptr<base::SingleThreadTaskRunner>) = 0;
+                              std::unique_ptr<WebIDBCallbacks>,
+                              bool force_close) = 0;
 };
 
 }  // namespace blink

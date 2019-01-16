@@ -5,16 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_MOCK_WEB_IDB_FACTORY_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_MOCK_WEB_IDB_FACTORY_H_
 
-#include <gmock/gmock.h>
 #include <memory>
 
-#include "base/single_thread_task_runner.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_factory.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace WTF {
 class String;
@@ -22,36 +19,30 @@ class String;
 
 namespace blink {
 
-class WebIDBCallbacks;
-class WebIDBDatabaseCallbacks;
-
 class MockWebIDBFactory : public testing::StrictMock<blink::WebIDBFactory> {
  public:
   ~MockWebIDBFactory() override;
 
   static std::unique_ptr<MockWebIDBFactory> Create();
 
-  MOCK_METHOD2(GetDatabaseInfo,
-               void(WebIDBCallbacks*,
-                    scoped_refptr<base::SingleThreadTaskRunner>));
-  MOCK_METHOD2(GetDatabaseNames,
-               void(WebIDBCallbacks*,
-                    scoped_refptr<base::SingleThreadTaskRunner>));
-  MOCK_METHOD6(Open,
+  void GetDatabaseInfo(std::unique_ptr<WebIDBCallbacks>);
+  MOCK_METHOD1(GetDatabaseNames, void(std::unique_ptr<WebIDBCallbacks>));
+  MOCK_METHOD5(Open,
                void(const WTF::String& name,
                     long long version,
                     long long transaction_id,
-                    WebIDBCallbacks*,
-                    WebIDBDatabaseCallbacks*,
-                    scoped_refptr<base::SingleThreadTaskRunner>));
-  MOCK_METHOD4(DeleteDatabase,
+                    std::unique_ptr<WebIDBCallbacks>,
+                    std::unique_ptr<WebIDBDatabaseCallbacks>));
+  MOCK_METHOD3(DeleteDatabase,
                void(const WTF::String& name,
-                    WebIDBCallbacks*,
-                    bool force_close,
-                    scoped_refptr<base::SingleThreadTaskRunner>));
+                    std::unique_ptr<WebIDBCallbacks>,
+                    bool force_close));
+
+  void SetCallbacksPointer(std::unique_ptr<WebIDBCallbacks>* callbacks);
 
  private:
   MockWebIDBFactory();
+  std::unique_ptr<WebIDBCallbacks>* callbacks_ptr_;
 };
 
 }  // namespace blink

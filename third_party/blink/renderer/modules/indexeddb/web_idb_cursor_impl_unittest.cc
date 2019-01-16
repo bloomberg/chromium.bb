@@ -112,7 +112,9 @@ class WebIDBCursorImplTest : public testing::Test {
     mojom::blink::IDBCursorAssociatedPtr ptr;
     mock_cursor_ = std::make_unique<MockCursorImpl>(
         mojo::MakeRequestAssociatedWithDedicatedPipe(&ptr));
-    cursor_ = std::make_unique<WebIDBCursorImpl>(ptr.PassInterface(), 1);
+    cursor_ = std::make_unique<WebIDBCursorImpl>(
+        ptr.PassInterface(), 1,
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
  protected:

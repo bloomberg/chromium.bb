@@ -102,6 +102,7 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
   Persistent<IDBRequest> request_;
   base::WeakPtr<WebIDBCursorImpl> cursor_;
   int64_t transaction_id_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace blink

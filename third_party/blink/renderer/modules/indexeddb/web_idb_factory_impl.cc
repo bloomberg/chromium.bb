@@ -13,76 +13,69 @@
 namespace blink {
 
 WebIDBFactoryImpl::WebIDBFactoryImpl(
-    mojom::blink::IDBFactoryPtrInfo factory_info)
-    : factory_(std::move(factory_info)) {}
+    mojom::blink::IDBFactoryPtrInfo factory_info,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : task_runner_(std::move(task_runner)) {
+  factory_.Bind(std::move(factory_info), task_runner_);
+}
 
 WebIDBFactoryImpl::~WebIDBFactoryImpl() = default;
 
 void WebIDBFactoryImpl::GetDatabaseInfo(
-    WebIDBCallbacks* callbacks,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    std::unique_ptr<WebIDBCallbacks> callbacks) {
   callbacks->SetState(nullptr, WebIDBCallbacksImpl::kNoTransaction);
-  factory_->GetDatabaseInfo(
-      GetCallbacksProxy(base::WrapUnique(callbacks), std::move(task_runner)));
+  factory_->GetDatabaseInfo(GetCallbacksProxy(std::move(callbacks)));
 }
 
 void WebIDBFactoryImpl::GetDatabaseNames(
-    WebIDBCallbacks* callbacks,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    std::unique_ptr<WebIDBCallbacks> callbacks) {
   callbacks->SetState(nullptr, WebIDBCallbacksImpl::kNoTransaction);
-  factory_->GetDatabaseNames(
-      GetCallbacksProxy(base::WrapUnique(callbacks), std::move(task_runner)));
+  factory_->GetDatabaseNames(GetCallbacksProxy(std::move(callbacks)));
 }
 
 void WebIDBFactoryImpl::Open(
     const String& name,
     long long version,
     long long transaction_id,
-    WebIDBCallbacks* callbacks,
-    WebIDBDatabaseCallbacks* database_callbacks,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    std::unique_ptr<WebIDBCallbacks> callbacks,
+    std::unique_ptr<WebIDBDatabaseCallbacks> database_callbacks) {
   callbacks->SetState(nullptr, WebIDBCallbacksImpl::kNoTransaction);
   auto database_callbacks_impl =
       std::make_unique<IndexedDBDatabaseCallbacksImpl>(
-          base::WrapUnique(database_callbacks));
+          std::move(database_callbacks));
   DCHECK(!name.IsNull());
-  factory_->Open(GetCallbacksProxy(base::WrapUnique(callbacks), task_runner),
-                 GetDatabaseCallbacksProxy(std::move(database_callbacks_impl),
-                                           task_runner),
+  factory_->Open(GetCallbacksProxy(std::move(callbacks)),
+                 GetDatabaseCallbacksProxy(std::move(database_callbacks_impl)),
                  name, version, transaction_id);
 }
 
 void WebIDBFactoryImpl::DeleteDatabase(
     const String& name,
-    WebIDBCallbacks* callbacks,
-    bool force_close,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    std::unique_ptr<WebIDBCallbacks> callbacks,
+    bool force_close) {
   callbacks->SetState(nullptr, WebIDBCallbacksImpl::kNoTransaction);
   DCHECK(!name.IsNull());
-  factory_->DeleteDatabase(
-      GetCallbacksProxy(base::WrapUnique(callbacks), std::move(task_runner)),
-      name, force_close);
+  factory_->DeleteDatabase(GetCallbacksProxy(std::move(callbacks)), name,
+                           force_close);
 }
 
 mojom::blink::IDBCallbacksAssociatedPtrInfo
 WebIDBFactoryImpl::GetCallbacksProxy(
-    std::unique_ptr<WebIDBCallbacks> callbacks,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    std::unique_ptr<WebIDBCallbacks> callbacks) {
   mojom::blink::IDBCallbacksAssociatedPtrInfo ptr_info;
   auto request = mojo::MakeRequest(&ptr_info);
   mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request),
-                                    std::move(task_runner));
+                                    task_runner_);
   return ptr_info;
 }
 
 mojom::blink::IDBDatabaseCallbacksAssociatedPtrInfo
 WebIDBFactoryImpl::GetDatabaseCallbacksProxy(
-    std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks) {
   mojom::blink::IDBDatabaseCallbacksAssociatedPtrInfo ptr_info;
   auto request = mojo::MakeRequest(&ptr_info);
   mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request),
-                                    std::move(task_runner));
+                                    task_runner_);
   return ptr_info;
 }
 

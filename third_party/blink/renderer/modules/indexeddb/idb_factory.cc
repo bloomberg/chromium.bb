@@ -218,7 +218,8 @@ WebIDBFactory* IDBFactory::GetFactory(ExecutionContext* execution_context) {
     interface_provider->GetInterface(
         mojo::MakeRequest(&web_idb_factory_host_info));
     web_idb_factory_ = std::make_unique<WebIDBFactoryImpl>(
-        std::move(web_idb_factory_host_info));
+        std::move(web_idb_factory_host_info),
+        execution_context->GetTaskRunner(TaskType::kInternalIndexedDB));
   }
   return web_idb_factory_.get();
 }
@@ -243,9 +244,7 @@ ScriptPromise IDBFactory::GetDatabaseInfo(ScriptState* script_state,
     resolver->Reject();
     return resolver->Promise();
   }
-  factory->GetDatabaseInfo(
-      WebIDBGetDBNamesCallbacksImpl::Create(resolver).release(),
-      execution_context->GetTaskRunner(TaskType::kInternalIndexedDB));
+  factory->GetDatabaseInfo(WebIDBGetDBNamesCallbacksImpl::Create(resolver));
   ScriptPromise promise = resolver->Promise();
   return promise;
 }
@@ -285,9 +284,7 @@ IDBRequest* IDBFactory::GetDatabaseNames(ScriptState* script_state,
     exception_state.ThrowSecurityError("An internal error occurred.");
     return nullptr;
   }
-  factory->GetDatabaseNames(
-      request->CreateWebCallbacks().release(),
-      execution_context->GetTaskRunner(TaskType::kInternalIndexedDB));
+  factory->GetDatabaseNames(request->CreateWebCallbacks());
   return request;
 }
 
@@ -343,10 +340,8 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
     exception_state.ThrowSecurityError("An internal error occurred.");
     return nullptr;
   }
-  factory->Open(name, version, transaction_id,
-                request->CreateWebCallbacks().release(),
-                database_callbacks->CreateWebCallbacks().release(),
-                execution_context->GetTaskRunner(TaskType::kInternalIndexedDB));
+  factory->Open(name, version, transaction_id, request->CreateWebCallbacks(),
+                database_callbacks->CreateWebCallbacks());
   return request;
 }
 
@@ -412,9 +407,7 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
     exception_state.ThrowSecurityError("An internal error occurred.");
     return nullptr;
   }
-  factory->DeleteDatabase(
-      name, request->CreateWebCallbacks().release(), force_close,
-      execution_context->GetTaskRunner(TaskType::kInternalIndexedDB));
+  factory->DeleteDatabase(name, request->CreateWebCallbacks(), force_close);
   return request;
 }
 

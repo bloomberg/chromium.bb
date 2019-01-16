@@ -16,8 +16,11 @@
 namespace blink {
 
 WebIDBDatabaseImpl::WebIDBDatabaseImpl(
-    mojom::blink::IDBDatabaseAssociatedPtrInfo database_info)
-    : database_(std::move(database_info)) {}
+    mojom::blink::IDBDatabaseAssociatedPtrInfo database_info,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : task_runner_(std::move(task_runner)) {
+  database_.Bind(std::move(database_info), task_runner_);
+}
 
 WebIDBDatabaseImpl::~WebIDBDatabaseImpl() = default;
 
@@ -266,7 +269,8 @@ WebIDBDatabaseImpl::GetCallbacksProxy(
     std::unique_ptr<WebIDBCallbacks> callbacks) {
   mojom::blink::IDBCallbacksAssociatedPtrInfo ptr_info;
   auto request = mojo::MakeRequest(&ptr_info);
-  mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request));
+  mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request),
+                                    task_runner_);
   return ptr_info;
 }
 
