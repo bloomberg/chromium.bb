@@ -64,6 +64,7 @@
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/core/SkTypes.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
@@ -107,13 +108,14 @@ Float4 UVClampRect(gfx::RectF uv_visible_rect,
 }
 
 Float4 PremultipliedColor(SkColor color, float opacity) {
-  const float factor = 1.0f / 255.0f;
-  const float alpha = opacity * SkColorGetA(color) * factor;
-
-  Float4 result = {{SkColorGetR(color) * factor * alpha,
-                    SkColorGetG(color) * factor * alpha,
-                    SkColorGetB(color) * factor * alpha, alpha}};
-  return result;
+  const U8CPU alpha255 = SkColorGetA(color);
+  const unsigned int alpha256 = alpha255 + 1;
+  const unsigned int premultiplied_red = (SkColorGetR(color) * alpha256) >> 8;
+  const unsigned int premultiplied_green = (SkColorGetG(color) * alpha256) >> 8;
+  const unsigned int premultiplied_blue = (SkColorGetB(color) * alpha256) >> 8;
+  const float factor = opacity / 255.0f;
+  return {{premultiplied_red * factor, premultiplied_green * factor,
+           premultiplied_blue * factor, alpha255 * factor}};
 }
 
 SamplerType SamplerTypeFromTextureTarget(GLenum target) {
