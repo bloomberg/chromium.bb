@@ -5,7 +5,7 @@ cd cts-experiment/
 npm install
 
 npm install -g grunt-cli
-grunt
+grunt  # shows available grunt commands
 ```
 
 After `build` and `serve`, open:

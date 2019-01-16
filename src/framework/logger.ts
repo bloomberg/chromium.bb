@@ -80,31 +80,7 @@ export class CaseRecorder {
     this.logs.push(msg);
   }
 
-  public fail(msg?: string) {
-    this.failImpl(msg);
-  }
-
   public warn(msg?: string) {
-    this.warnImpl(msg);
-  }
-
-  public ok(msg?: string) {
-    if (msg) {
-      this.log("PASS: " + msg);
-    } else {
-      this.log("PASS");
-    }
-  }
-
-  public expect(cond: boolean, msg?: string) {
-    if (cond) {
-      this.ok(msg)
-    } else {
-      this.failImpl(msg);
-    }
-  }
-
-  private warnImpl(msg?: string) {
     this.warned = true;
     let m = "WARN";
     if (msg) {
@@ -114,7 +90,7 @@ export class CaseRecorder {
     this.log(m);
   }
 
-  private failImpl(msg?: string) {
+  public fail(msg?: string) {
     this.failed = true;
     let m = "FAIL";
     if (msg) {

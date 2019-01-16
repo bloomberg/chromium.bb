@@ -5,38 +5,30 @@ Unit tests for parameterization system.
 
 import {
   CaseRecorder,
-  TestClass,
+  Fixture,
   TestGroup,
 } from "../framework/index.js";
 
 export const group = new TestGroup();
 
-function print(log: CaseRecorder, p: object) {
-  log.log(JSON.stringify(p));
+function print(this: Fixture) {
+  this.log(JSON.stringify(this.params));
 }
 
-group.test("noclass_noparams", {
-}, print);
+group.test("test", print);
 
-group.test("noclass_params", {
-  cases: [{a: 1}, {a: 2}],
-}, print);
+group.testp("testp", {a: 1}, print);
 
-class Printer extends TestClass {
+class Printer extends Fixture {
   print() {
-    this.log.log(JSON.stringify(this.params));
+    this.log(JSON.stringify(this.params));
   }
 }
 
-group.test("class_noparams", {
-  class: Printer,
-}, function(this: Printer) {
+group.testf("testf", Printer, function() {
   this.print();
 });
 
-group.test("class_params", {
-  class: Printer,
-  cases: [{a: 1}, {a: 2}],
-}, function(this: Printer) {
+group.testpf("testpf", {a: 1}, Printer, function() {
   this.print();
 });

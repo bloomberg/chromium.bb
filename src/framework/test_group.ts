@@ -1,7 +1,7 @@
 import { GroupRecorder, CaseRecorder, IResult } from "./logger";
 import { ParamIterable } from "./params";
 
-type TestFn = (log: CaseRecorder, param: object) => (Promise<void> | void);
+type TestFn<F extends Fixture> = (this: F) => (Promise<void> | void);
 interface ICase {
   name: string;
   params?: object;
@@ -12,20 +12,47 @@ interface RunCase {
   params?: object;
   run: () => Promise<IResult>;
 }
-interface TestOptions {
-  class?: ITestClass;
-  cases?: ParamIterable;
-}
-interface ITestClass {
-  new(log: CaseRecorder, params: object): TestClass;
+interface IFixtureClass<F extends Fixture> {
+  new(log: CaseRecorder, params?: object): F;
 }
 
-export abstract class TestClass {
-  log: CaseRecorder;
-  params: object;
-  constructor(log: CaseRecorder, params: object) {
-    this.log = log;
+export abstract class Fixture {
+  protected _rec: CaseRecorder;
+  public params?: object;
+
+  public constructor(log: CaseRecorder, params?: object) {
+    this._rec = log;
     this.params = params;
+  }
+
+  public log(msg: string) {
+    this._rec.log(msg);
+  }
+}
+
+export class DefaultFixture extends Fixture {
+  public warn(msg?: string) {
+    this._rec.warn(msg);
+  }
+
+  public fail(msg?: string) {
+    this._rec.fail(msg);
+  }
+
+  public ok(msg?: string) {
+    if (msg) {
+      this.log("OK: " + msg);
+    } else {
+      this.log("OK");
+    }
+  }
+
+  public expect(cond: boolean, msg?: string) {
+    if (cond) {
+      this.ok(msg)
+    } else {
+      this._rec.fail(msg);
+    }
   }
 }
 
@@ -35,15 +62,24 @@ export class TestGroup {
   public constructor() {
   }
 
-  public test(name: string, options: TestOptions, fn: TestFn): void {
-    const opt = Object.assign({}, options);
-    opt.cases = opt.cases || [{}];
-    for (const p of opt.cases) {
-      this.tests.push({ name, params: p, run: (log) => {
-        const inst = opt.class ? new opt.class(log, p) : undefined;
-        return fn.call(inst, log, p);
-       }});
-    }
+  public testpf<F extends Fixture>(name: string, params: (object | undefined), fixture: IFixtureClass<F>, fn: TestFn<F>): void {
+    const n = params ? (name + "/" + JSON.stringify(params)) : name;
+    this.tests.push({ name: n, run: (log) => {
+      const inst = new fixture(log, params);
+      return fn.call(inst);
+      }});
+  }
+
+  public testf<F extends Fixture>(name: string, fixture: IFixtureClass<F>, fn: TestFn<F>): void {
+    return this.testpf(name, undefined, fixture, fn);
+  }
+
+  public testp(name: string, params: object, fn: TestFn<DefaultFixture>): void {
+    return this.testpf(name, params, DefaultFixture, fn);
+  }
+
+  public test(name: string, fn: TestFn<DefaultFixture>): void {
+    return this.testpf(name, undefined, DefaultFixture, fn);
   }
 
   public * iterate(log: GroupRecorder): Iterable<RunCase> {
