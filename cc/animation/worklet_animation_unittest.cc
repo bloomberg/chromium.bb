@@ -123,7 +123,7 @@ TEST_F(WorkletAnimationTest, CurrentTimeCorrectlyUsesScrollTimeline) {
 }
 
 TEST_F(WorkletAnimationTest,
-       DISABLED_CurrentTimeFromDocumentTimelineIsOffsetByStartTime) {
+       CurrentTimeFromRegularTimelineIsOffsetByStartTime) {
   scoped_refptr<WorkletAnimation> worklet_animation = WorkletAnimation::Create(
       worklet_animation_id_, "test_name", nullptr, nullptr);
 

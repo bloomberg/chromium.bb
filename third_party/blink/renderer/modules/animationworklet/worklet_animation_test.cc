@@ -103,15 +103,18 @@ TEST_F(WorkletAnimationTest, StyleHasCurrentAnimation) {
 
 TEST_F(WorkletAnimationTest,
        CurrentTimeFromDocumentTimelineIsOffsetByStartTime) {
-  GetDocument().GetAnimationClock().ResetTimeForTesting();
-  double error = base::TimeDelta::FromMicrosecondsD(1).InMillisecondsF();
+  // Only expect precision up to 1 microsecond with an additional smaller
+  // component to account for double rounding/conversion error.
+  double error =
+      base::TimeDelta::FromMicrosecondsD(1).InMillisecondsF() + 1e-13;
+
   WorkletAnimationId id = worklet_animation_->GetWorkletAnimationId();
   base::TimeTicks first_ticks =
       base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111);
   base::TimeTicks second_ticks =
       base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111 + 123.4);
 
-  GetDocument().GetAnimationClock().UpdateTime(first_ticks);
+  GetDocument().GetAnimationClock().ResetTimeForTesting(first_ticks);
   DummyExceptionStateForTesting exception_state;
   worklet_animation_->play(exception_state);
   worklet_animation_->UpdateCompositingState();
@@ -124,7 +127,7 @@ TEST_F(WorkletAnimationTest,
       state->TakeWorkletState(id.scope_id);
   EXPECT_NEAR(0, input->added_and_updated_animations[0].current_time, error);
   state.reset(new AnimationWorkletDispatcherInput);
-  GetDocument().GetAnimationClock().UpdateTime(second_ticks);
+  GetDocument().GetAnimationClock().ResetTimeForTesting(second_ticks);
   worklet_animation_->UpdateInputState(state.get());
   input = state->TakeWorkletState(id.scope_id);
   EXPECT_NEAR(123.4, input->updated_animations[0].current_time, error);
@@ -164,7 +167,10 @@ TEST_F(WorkletAnimationTest,
   worklet_animation->play(exception_state);
   worklet_animation->UpdateCompositingState();
 
-  double error = base::TimeDelta::FromMicrosecondsD(1).InMillisecondsF();
+  // Only expect precision up to 1 microsecond with an additional smaller
+  // component to account for double rounding/conversion error.
+  double error =
+      base::TimeDelta::FromMicrosecondsD(1).InMillisecondsF() + 1e-13;
   scrollable_area->SetScrollOffset(ScrollOffset(0, 40), kProgrammaticScroll);
   std::unique_ptr<AnimationWorkletDispatcherInput> state =
       std::make_unique<AnimationWorkletDispatcherInput>();
@@ -182,14 +188,13 @@ TEST_F(WorkletAnimationTest,
 }
 
 TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
-  GetDocument().GetAnimationClock().ResetTimeForTesting();
   WorkletAnimationId id = worklet_animation_->GetWorkletAnimationId();
   base::TimeTicks first_ticks =
       base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111);
   base::TimeTicks second_ticks =
       base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111 + 123.4);
 
-  GetDocument().GetAnimationClock().UpdateTime(first_ticks);
+  GetDocument().GetAnimationClock().ResetTimeForTesting(first_ticks);
   DummyExceptionStateForTesting exception_state;
   worklet_animation_->play(exception_state);
   worklet_animation_->UpdateCompositingState();
@@ -231,7 +236,7 @@ TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
   state.reset(new AnimationWorkletDispatcherInput);
 
   // Input time changes. Need to peek again.
-  GetDocument().GetAnimationClock().UpdateTime(second_ticks);
+  GetDocument().GetAnimationClock().ResetTimeForTesting(second_ticks);
   worklet_animation_->UpdateInputState(state.get());
   input = state->TakeWorkletState(id.scope_id);
   EXPECT_EQ(input->peeked_animations.size(), 1u);
