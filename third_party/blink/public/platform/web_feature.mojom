@@ -2169,6 +2169,7 @@ enum WebFeature {
   kElementTimingExplicitlyRequested = 2728,
   kV8HTMLMediaElement_CaptureStream_Method = 2729,
   kQuirkyLineBoxBackgroundSize = 2730,
+  kDirectlyCompositedImage = 2731,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

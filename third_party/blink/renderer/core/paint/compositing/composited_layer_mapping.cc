@@ -2824,6 +2824,8 @@ bool CompositedLayerMapping::IsDirectlyCompositedImage() const {
     if (!image->IsBitmapImage())
       return false;
 
+    UseCounter::Count(GetLayoutObject().GetDocument(),
+                      WebFeature::kDirectlyCompositedImage);
     return true;
   }
 
