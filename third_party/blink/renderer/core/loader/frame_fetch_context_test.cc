@@ -55,11 +55,13 @@
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/loader/frame_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
@@ -140,7 +142,7 @@ class FrameFetchContextTest : public testing::Test {
     fetch_context =
         static_cast<FrameFetchContext*>(&document->Fetcher()->Context());
     owner = DummyFrameOwner::Create();
-    fetch_context->ProvideDocumentToContext(document.Get());
+    document->Loader()->ProvideDocumentToResourceFetcherProperties(*document);
   }
 
   void TearDown() override {
@@ -158,7 +160,8 @@ class FrameFetchContextTest : public testing::Test {
     child_document = child_frame->GetDocument();
     FrameFetchContext* child_fetch_context = static_cast<FrameFetchContext*>(
         &child_frame->Loader().GetDocumentLoader()->Fetcher()->Context());
-    child_fetch_context->ProvideDocumentToContext(child_document.Get());
+    child_document->Loader()->ProvideDocumentToResourceFetcherProperties(
+        *document);
     return child_fetch_context;
   }
 
@@ -290,7 +293,7 @@ class FrameFetchContextMockedLocalFrameClientTest
     fetch_context =
         static_cast<FrameFetchContext*>(&document->Fetcher()->Context());
     owner = DummyFrameOwner::Create();
-    fetch_context->ProvideDocumentToContext(document.Get());
+    document->Loader()->ProvideDocumentToResourceFetcherProperties(*document);
   }
 
   KURL url;
@@ -431,7 +434,7 @@ TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
        "ftp://example.test:1212/image.png"},
   };
 
-  fetch_context->ProvideDocumentToContext(document.Get());
+  document->Loader()->ProvideDocumentToResourceFetcherProperties(*document);
   document->SetInsecureRequestPolicy(kUpgradeInsecureRequests);
 
   for (const auto& test : tests) {
@@ -479,7 +482,7 @@ TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
 
 TEST_F(FrameFetchContextModifyRequestTest,
        DoNotUpgradeInsecureResourceRequests) {
-  fetch_context->ProvideDocumentToContext(document.Get());
+  document->Loader()->ProvideDocumentToResourceFetcherProperties(*document);
   document->SetSecurityOrigin(secure_origin);
   document->SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
 
@@ -564,7 +567,7 @@ TEST_F(FrameFetchContextModifyRequestTest, SendUpgradeInsecureRequestHeader) {
                                        test.should_prefer);
   }
 
-  fetch_context->ProvideDocumentToContext(document.Get());
+  document->Loader()->ProvideDocumentToResourceFetcherProperties(*document);
 
   for (const auto& test : tests) {
     document->SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);

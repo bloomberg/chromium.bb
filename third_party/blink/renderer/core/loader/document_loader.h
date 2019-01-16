@@ -69,6 +69,7 @@ class ApplicationCacheHost;
 class Document;
 class DocumentParser;
 class FrameLoader;
+class FrameResourceFetcherProperties;
 class HistoryItem;
 class LocalFrame;
 class LocalFrameClient;
@@ -265,6 +266,8 @@ class CORE_EXPORT DocumentLoader
   UseCounter& GetUseCounter() { return use_counter_; }
   Dactyloscoper& GetDactyloscoper() { return dactyloscoper_; }
 
+  void ProvideDocumentToResourceFetcherProperties(Document&);
+
  protected:
   static bool ShouldClearWindowName(
       const LocalFrame&,
@@ -352,6 +355,10 @@ class CORE_EXPORT DocumentLoader
   void ReportPreviewsIntervention() const;
 
   Member<LocalFrame> frame_;
+  // This member is held so that we can update the document later. Do not use
+  // this member outside ProvideDocumentToResourceFetcherProperties.
+  // TODO(yhirano): Remove this once https://crbug.com/855189 is done.
+  const Member<FrameResourceFetcherProperties> resource_fetcher_properties_;
   Member<ResourceFetcher> fetcher_;
 
   Member<HistoryItem> history_item_;

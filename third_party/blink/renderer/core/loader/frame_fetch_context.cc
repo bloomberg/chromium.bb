@@ -225,51 +225,6 @@ mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame,
                             MainResourceType::kIsNotMainResource, load_type);
 }
 
-FetchClientSettingsObject& CreateFetchClientSettingsObject(
-    FrameOrImportedDocument& frame_or_imported_document) {
-  if (frame_or_imported_document.GetDocument()) {
-    // HTML imports case
-    DCHECK(!frame_or_imported_document.GetDocumentLoader());
-    return *MakeGarbageCollected<FetchClientSettingsObjectImpl>(
-        *frame_or_imported_document.GetDocument());
-  }
-
-  // This FetchClientSettingsObject can be used only for navigation, as
-  // at the creation of the corresponding Document a new
-  // FetchClientSettingsObject is set.
-  // Also, currently all the members except for SecurityOrigin are not
-  // used in FrameFetchContext, and therefore we set some safe default
-  // values here.
-  // Once PlzNavigate removes ResourceFetcher usage in navigations, we
-  // might be able to remove this FetchClientSettingsObject at all.
-  return *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-      KURL(),
-
-      // SecurityOrigin. This is actually used via
-      // FetchContext::GetSecurityOrigin().
-      // TODO(hiroshige): Assign non-nullptr SecurityOrigin.
-      nullptr,
-
-      // Currently this is not used, and referrer for navigation request
-      // is set based on previous Document's referrer policy, for example
-      // in FrameLoader::SetReferrerForFrameRequest().
-      // If we want to set referrer based on FetchClientSettingsObject,
-      // it should refer to the FetchClientSettingsObject of the previous
-      // Document, probably not this one.
-      network::mojom::ReferrerPolicy::kDefault, String(),
-
-      // MixedContentChecker::ShouldBlockFetch() doesn't check mixed
-      // contents if frame type is not kNone, which is always true in
-      // RawResource::FetchMainResource().
-      // Therefore HttpsState here isn't (and isn't expected to be)
-      // used and thus it's safe to pass a safer default value.
-      HttpsState::kModern,
-
-      // This is only for workers and this value is not (and isn't
-      // expected to be) used.
-      AllowedByNosniff::MimeTypeCheck::kStrict);
-}
-
 }  // namespace
 
 struct FrameFetchContext::FrozenState final
@@ -311,18 +266,16 @@ struct FrameFetchContext::FrozenState final
   }
 };
 
-ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader) {
-  DCHECK(loader);
-  auto* frame_or_imported_document =
-      MakeGarbageCollected<FrameOrImportedDocument>(*loader);
-  LocalFrame& frame = frame_or_imported_document->GetFrame();
-  ResourceFetcherInit init(
-      *MakeGarbageCollected<FrameResourceFetcherProperties>(
-          *frame_or_imported_document),
-      MakeGarbageCollected<FrameFetchContext>(
-          frame.GetTaskRunner(TaskType::kNetworking),
-          *frame_or_imported_document),
-      frame.Console());
+ResourceFetcher* FrameFetchContext::CreateFetcher(
+    const FrameResourceFetcherProperties& properties) {
+  const FrameOrImportedDocument& frame_or_imported_document =
+      properties.GetFrameOrImportedDocument();
+  LocalFrame& frame = frame_or_imported_document.GetFrame();
+  ResourceFetcherInit init(properties,
+                           MakeGarbageCollected<FrameFetchContext>(
+                               frame.GetTaskRunner(TaskType::kNetworking),
+                               frame_or_imported_document),
+                           frame.Console());
   // Frame loading should normally start with |kTight| throttling, as the
   // frame will be in layout-blocking state until the <body> tag is inserted
   init.initial_throttling_policy =
@@ -361,19 +314,11 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForImportedDocument(
 
 FrameFetchContext::FrameFetchContext(
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
-    FrameOrImportedDocument& frame_or_imported_document)
-    : BaseFetchContext(
-          loading_task_runner,
-          CreateFetchClientSettingsObject(frame_or_imported_document)),
+    const FrameOrImportedDocument& frame_or_imported_document)
+    : BaseFetchContext(loading_task_runner),
       frame_or_imported_document_(frame_or_imported_document),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled() &&
                          !GetSettings()->GetDataSaverHoldbackWebApi()) {}
-void FrameFetchContext::ProvideDocumentToContext(Document* document) {
-  DCHECK(document);
-  frame_or_imported_document_->UpdateDocument(*document);
-  SetFetchClientSettingsObject(
-      MakeGarbageCollected<FetchClientSettingsObjectImpl>(*document));
-}
 
 std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>
 FrameFetchContext::CreateResourceLoadingTaskRunnerHandle() {
@@ -1368,9 +1313,6 @@ FetchContext* FrameFetchContext::Detach() {
         GetContentSecurityPolicy(), GetSiteForCookies(), GetTopFrameOrigin(),
         GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
         IsSVGImageChromeClient());
-    SetFetchClientSettingsObject(
-        MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-            *GetFetchClientSettingsObject()));
   } else {
     // Some getters are unavailable in this case.
     frozen_state_ = MakeGarbageCollected<FrozenState>(
@@ -1378,11 +1320,6 @@ FetchContext* FrameFetchContext::Detach() {
         GetContentSecurityPolicy(), GetSiteForCookies(), GetTopFrameOrigin(),
         GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
         IsSVGImageChromeClient());
-    SetFetchClientSettingsObject(
-        MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-            NullURL(), nullptr, network::mojom::ReferrerPolicy::kDefault,
-            String(), HttpsState::kNone,
-            AllowedByNosniff::MimeTypeCheck::kStrict));
   }
 
   frame_or_imported_document_ = nullptr;

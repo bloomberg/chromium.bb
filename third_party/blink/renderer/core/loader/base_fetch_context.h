@@ -62,8 +62,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
 
  protected:
   explicit BaseFetchContext(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      FetchClientSettingsObject&);
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Used for security checks.
   virtual bool AllowScriptFromSource(const KURL&) const = 0;
