@@ -1007,6 +1007,7 @@ class ChromeSDKCommand(command.CliCommand):
       gn_args.pop('is_chrome_branded', None)
       gn_args.pop('is_official_build', None)
       gn_args.pop('internal_gles2_conform_tests', None)
+      gn_args.pop('use_lld', None)
 
     # For SimpleChrome, we use the binutils that comes bundled within Chrome.
     # We should not use the binutils from the host system.
