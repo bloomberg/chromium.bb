@@ -216,6 +216,9 @@ InvalidatorState FCMInvalidationListener::GetState() const {
     // enabled, return INVALIDATIONS_ENABLED.
     return INVALIDATIONS_ENABLED;
   }
+  if (subscription_channel_state_ == SUBSCRIPTION_FAILURE) {
+    return SUBSCRIPTION_FAILURE;
+  }
   // Otherwise, we have a transient error.
   return TRANSIENT_INVALIDATION_ERROR;
 }

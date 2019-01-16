@@ -13,10 +13,12 @@
 #include <string>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
+#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/public/identity_provider.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -159,6 +161,8 @@ void PerUserTopicRegistrationManager::Init() {
     keys_to_remove.push_back(topic);
   }
 
+  LOG(ERROR) << "Reg. size " << topic_to_private_topic_.size();
+
   // Delete prefs, which weren't decoded successfully.
   DictionaryPrefUpdate update(local_state_, kTypeRegisteredForInvalidation);
   base::DictionaryValue* pref_update = update.Get();
@@ -250,6 +254,7 @@ void PerUserTopicRegistrationManager::RegistrationFinishedForTopic(
     std::string private_topic_name,
     PerUserTopicRegistrationRequest::RequestType type) {
   if (code.IsSuccess()) {
+    LOG(ERROR) << topic;
     auto it = registration_statuses_.find(topic);
     registration_statuses_.erase(it);
     if (type == PerUserTopicRegistrationRequest::SUBSCRIBE) {
@@ -258,11 +263,29 @@ void PerUserTopicRegistrationManager::RegistrationFinishedForTopic(
       topic_to_private_topic_[topic] = private_topic_name;
       local_state_->CommitPendingWrite();
     }
+    bool all_subscription_completed = true;
+    for (const auto& entry : registration_statuses_) {
+      if (entry.second->type == PerUserTopicRegistrationRequest::SUBSCRIBE) {
+        all_subscription_completed = false;
+      }
+    }
+    // Emit ENABLED once we recovered from failed request.
+    if (all_subscription_completed &&
+        base::FeatureList::IsEnabled(
+            invalidation::switches::kFCMInvalidationsConservativeEnabling)) {
+      NotifySubscriptionChannelStateChange(INVALIDATIONS_ENABLED);
+    }
   } else {
     if (code.IsAuthFailure()) {
       // Re-request access token and fire registrations again.
       RequestAccessToken();
     } else {
+      // If one of the registration requests failed emit SUBSCRIPTION_FAILURE.
+      if (type == PerUserTopicRegistrationRequest::SUBSCRIBE &&
+          base::FeatureList::IsEnabled(
+              invalidation::switches::kFCMInvalidationsConservativeEnabling)) {
+        NotifySubscriptionChannelStateChange(SUBSCRIPTION_FAILURE);
+      }
       auto completition_callback = base::BindOnce(
           &PerUserTopicRegistrationManager::RegistrationFinishedForTopic,
           base::Unretained(this));
@@ -333,6 +356,7 @@ void PerUserTopicRegistrationManager::OnAccessTokenRequestSucceeded(
   // Reset backoff time after successful response.
   request_access_token_backoff_.Reset();
   access_token_ = access_token;
+  // Emit ENABLED when successfully got the token.
   NotifySubscriptionChannelStateChange(INVALIDATIONS_ENABLED);
   DoRegistrationUpdate();
 }

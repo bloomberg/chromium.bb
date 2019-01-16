@@ -22,5 +22,8 @@ const char kSyncAllowInsecureXmppConnection[] =
 const base::Feature kFCMInvalidations = {"FCMInvalidations",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kFCMInvalidationsConservativeEnabling = {
+    "FCMInvalidationsConservativeEnabling", base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace switches
 }  // namespace invalidation

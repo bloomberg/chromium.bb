@@ -10,8 +10,10 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
+#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/json_unsafe_parser.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/public/invalidation_util.h"
@@ -89,6 +91,19 @@ network::URLLoaderCompletionStatus CreateStatusForTest(
 
 };  // namespace
 
+class RegistrationManagerStateObserver
+    : public PerUserTopicRegistrationManager::Observer {
+ public:
+  void OnSubscriptionChannelStateChanged(InvalidatorState state) override {
+    state_ = state;
+  }
+
+  InvalidatorState observed_state() const { return state_; }
+
+ private:
+  InvalidatorState state_ = TRANSIENT_INVALIDATION_ERROR;
+};
+
 class PerUserTopicRegistrationManagerTest : public testing::Test {
  protected:
   PerUserTopicRegistrationManagerTest() {}
@@ -112,6 +127,7 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
         identity_provider_.get(), &pref_service_, url_loader_factory(),
         base::BindRepeating(&syncer::JsonUnsafeParser::Parse));
     reg_manager->Init();
+    reg_manager->AddObserver(&state_observer_);
     return reg_manager;
   }
 
@@ -120,6 +136,8 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
   }
 
   TestingPrefServiceSimple* pref_service() { return &pref_service_; }
+
+  InvalidatorState observed_state() { return state_observer_.observed_state(); }
 
   void AddCorrectSubscriptionResponce(
       const std::string& private_topic = std::string(),
@@ -149,6 +167,8 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
 
   identity::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<invalidation::ProfileIdentityProvider> identity_provider_;
+
+  RegistrationManagerStateObserver state_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PerUserTopicRegistrationManagerTest);
 };
@@ -335,6 +355,90 @@ TEST_F(PerUserTopicRegistrationManagerTest,
         topics->FindKeyOfType(id, base::Value::Type::STRING);
     ASSERT_NE(private_topic_value, nullptr);
   }
+}
+
+TEST_F(
+    PerUserTopicRegistrationManagerTest,
+    ShouldNotChangeStatusToDisabledWhenTopicsRegistrationFailedFeatureDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      invalidation::switches::kFCMInvalidationsConservativeEnabling);
+
+  TopicSet ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
+
+  AddCorrectSubscriptionResponce();
+
+  auto per_user_topic_registration_manager = BuildRegistrationManager();
+  ASSERT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+
+  per_user_topic_registration_manager->UpdateRegisteredTopics(
+      ids, kFakeInstanceIdToken);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(ids, per_user_topic_registration_manager->GetRegisteredIds());
+  EXPECT_EQ(observed_state(), INVALIDATIONS_ENABLED);
+
+  // Disable some ids.
+  TopicSet disabled_ids = GetSequenceOfTopics(3);
+  TopicSet enabled_ids =
+      GetSequenceOfTopicsStartingAt(3, kInvalidationObjectIdsCount - 3);
+  per_user_topic_registration_manager->UpdateRegisteredTopics(
+      enabled_ids, kFakeInstanceIdToken);
+  base::RunLoop().RunUntilIdle();
+
+  // Clear previously configured correct response. So next requests will fail.
+  url_loader_factory()->ClearResponses();
+  per_user_topic_registration_manager->UpdateRegisteredTopics(
+      ids, kFakeInstanceIdToken);
+  url_loader_factory()->AddResponse(
+      FullSubscriptionUrl(kFakeInstanceIdToken).spec(),
+      std::string() /* content */, net::HTTP_NOT_FOUND);
+
+  EXPECT_EQ(observed_state(), INVALIDATIONS_ENABLED);
+}
+
+TEST_F(PerUserTopicRegistrationManagerTest,
+       ShouldChangeStatusToDisabledWhenTopicsRegistrationFailed) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      invalidation::switches::kFCMInvalidationsConservativeEnabling);
+  TopicSet ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
+
+  AddCorrectSubscriptionResponce();
+
+  auto per_user_topic_registration_manager = BuildRegistrationManager();
+  ASSERT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+
+  per_user_topic_registration_manager->UpdateRegisteredTopics(
+      ids, kFakeInstanceIdToken);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(ids, per_user_topic_registration_manager->GetRegisteredIds());
+  EXPECT_EQ(observed_state(), INVALIDATIONS_ENABLED);
+
+  // Disable some ids.
+  TopicSet disabled_ids = GetSequenceOfTopics(3);
+  TopicSet enabled_ids =
+      GetSequenceOfTopicsStartingAt(3, kInvalidationObjectIdsCount - 3);
+  per_user_topic_registration_manager->UpdateRegisteredTopics(
+      enabled_ids, kFakeInstanceIdToken);
+  base::RunLoop().RunUntilIdle();
+
+  // Clear previously configured correct response. So next requests will fail.
+  url_loader_factory()->ClearResponses();
+  url_loader_factory()->AddResponse(
+      FullSubscriptionUrl(kFakeInstanceIdToken).spec(),
+      std::string() /* content */, net::HTTP_NOT_FOUND);
+
+  per_user_topic_registration_manager->UpdateRegisteredTopics(
+      ids, kFakeInstanceIdToken);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(observed_state(), SUBSCRIPTION_FAILURE);
+
+  // Configure correct response and retry.
+  AddCorrectSubscriptionResponce();
+  per_user_topic_registration_manager->UpdateRegisteredTopics(
+      ids, kFakeInstanceIdToken);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(observed_state(), INVALIDATIONS_ENABLED);
 }
 
 }  // namespace syncer
