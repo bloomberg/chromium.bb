@@ -36,21 +36,29 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
     // Neither started nor failed.
     NOT_ATTEMPTED = 0,
     // The last attempt was not completed.
-    FAILED,
+    DEPRECATED_FAILED,
     // All the data is in the temporary encrypted loginDB.
     COPIED_ALL,
     // The standard login database is encrypted.
     LOGIN_DB_REPLACED,
-    // The migration is about to be attempted.
+    // The migration is about to be attempted. This value was deprecated and
+    // replaced by more price entries. It may still be store in users'
+    // preferences.
     STARTED,
     // No access to the native backend.
     POSTPONED,
     // Could not create or write into the temporary file.
-    FAILED_CREATE_ENCRYPTED,
+    DEPRECATED_FAILED_CREATE_ENCRYPTED,
     // Could not read from the native backend.
     FAILED_ACCESS_NATIVE,
     // Could not replace old database.
     FAILED_REPLACE,
+    // Could not initialise the temporary encrypted database.
+    FAILED_INIT_ENCRYPTED,
+    // Could not reset th temporary encrypted database.
+    FAILED_RECREATE_ENCRYPTED,
+    // Could not add entries into the temporary encrypted database.
+    FAILED_WRITE_TO_ENCRYPTED,
   };
 
   // NativeBackends more or less implement the PaswordStore interface, but

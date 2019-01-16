@@ -82,8 +82,8 @@ password_manager::metrics_util::LinuxBackendMigrationStatus StepForMetrics(
   switch (step) {
     case PasswordStoreX::NOT_ATTEMPTED:
       return LinuxBackendMigrationStatus::kNotAttempted;
-    case PasswordStoreX::FAILED:
-      return LinuxBackendMigrationStatus::kFailed;
+    case PasswordStoreX::DEPRECATED_FAILED:
+      return LinuxBackendMigrationStatus::kDeprecatedFailed;
     case PasswordStoreX::COPIED_ALL:
       return LinuxBackendMigrationStatus::kCopiedAll;
     case PasswordStoreX::LOGIN_DB_REPLACED:
@@ -92,12 +92,18 @@ password_manager::metrics_util::LinuxBackendMigrationStatus StepForMetrics(
       return LinuxBackendMigrationStatus::kStarted;
     case PasswordStoreX::POSTPONED:
       return LinuxBackendMigrationStatus::kPostponed;
-    case PasswordStoreX::FAILED_CREATE_ENCRYPTED:
-      return LinuxBackendMigrationStatus::kFailedCreatedEncrypted;
+    case PasswordStoreX::DEPRECATED_FAILED_CREATE_ENCRYPTED:
+      return LinuxBackendMigrationStatus::kDeprecatedFailedCreatedEncrypted;
     case PasswordStoreX::FAILED_ACCESS_NATIVE:
       return LinuxBackendMigrationStatus::kFailedAccessNative;
     case PasswordStoreX::FAILED_REPLACE:
       return LinuxBackendMigrationStatus::kFailedReplace;
+    case PasswordStoreX::FAILED_INIT_ENCRYPTED:
+      return LinuxBackendMigrationStatus::kFailedInitEncrypted;
+    case PasswordStoreX::FAILED_RECREATE_ENCRYPTED:
+      return LinuxBackendMigrationStatus::kFailedRecreateEncrypted;
+    case PasswordStoreX::FAILED_WRITE_TO_ENCRYPTED:
+      return LinuxBackendMigrationStatus::kFailedWriteToEncrypted;
   }
   NOTREACHED();
   return LinuxBackendMigrationStatus::kNotAttempted;
@@ -444,7 +450,7 @@ void PasswordStoreX::MigrateToEncryptedLoginDB() {
   if (!encrypted_login_db->Init()) {
     VLOG(1) << "Failed to init the encrypted database file. Migration "
                "aborted.";
-    UpdateMigrationToLoginDBStep(FAILED_CREATE_ENCRYPTED);
+    UpdateMigrationToLoginDBStep(FAILED_INIT_ENCRYPTED);
     return;  // Serve from the native backend.
   }
 
@@ -502,7 +508,7 @@ PasswordStoreX::MigrationToLoginDBStep PasswordStoreX::CopyBackendToLoginDB(
 
   if (!login_db->DeleteAndRecreateDatabaseFile()) {
     LOG(ERROR) << "Failed to create the encrypted login database file";
-    return FAILED_CREATE_ENCRYPTED;
+    return FAILED_RECREATE_ENCRYPTED;
   }
 
   std::vector<std::unique_ptr<PasswordForm>> forms;
@@ -512,7 +518,7 @@ PasswordStoreX::MigrationToLoginDBStep PasswordStoreX::CopyBackendToLoginDB(
   for (auto& form : forms) {
     PasswordStoreChangeList changes = login_db->AddLogin(*form);
     if (changes.empty() || changes.back().type() != PasswordStoreChange::ADD) {
-      return FAILED_CREATE_ENCRYPTED;
+      return FAILED_WRITE_TO_ENCRYPTED;
     }
   }
 
