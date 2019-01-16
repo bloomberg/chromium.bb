@@ -501,6 +501,17 @@ var ENTRIES = {
     typeText: 'OGG video'
   }),
 
+  video: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'video_long.ogv',
+    targetPath: 'video_long.ogv',
+    mimeType: 'video/ogg',
+    lastModifiedTime: 'Jan 14, 2019, 16:01 PM',
+    nameText: 'video_long.ogv',
+    sizeText: '166 KB',
+    typeText: 'OGG video'
+  }),
+
   unsupported: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'random.bin',

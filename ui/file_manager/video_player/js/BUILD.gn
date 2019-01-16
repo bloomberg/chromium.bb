@@ -22,6 +22,7 @@ js_library("closure_compile_externs") {
     "$externs_path/chrome_extensions.js",
     "$externs_path/media_player_private.js",
     "$externs_path/metrics_private.js",
+    "$externs_path/mediasession.js",
     "../../externs/chrome_cast.js",
     "../../externs/platform.js",
   ]
@@ -58,6 +59,7 @@ js_library("video_player") {
     "cast:cast_video_element",
     "cast:media_manager",
     "//ui/file_manager/base/js:filtered_volume_manager",
+    "//ui/file_manager/base/js:mediasession_types",
     "//ui/file_manager/file_manager/common/js:metrics_base",
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/file_manager/image_loader:image_loader_client",

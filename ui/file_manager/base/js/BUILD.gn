@@ -78,3 +78,6 @@ js_unit_tests("unit_tests") {
     ":volume_manager_types_unittest",
   ]
 }
+
+js_library("mediasession_types") {
+}

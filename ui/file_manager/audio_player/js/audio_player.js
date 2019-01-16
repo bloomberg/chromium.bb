@@ -95,6 +95,9 @@ function AudioPlayer(container) {
     this.onTrackInfoExpandedChanged_(event.detail.value);
   }.bind(this));
 
+  this.player_.addEventListener(
+      'playing-changed', this.updateMediaSessionPlaybackState_.bind(this));
+
   // Run asynchronously after an event of model change is delivered.
   setTimeout(function() {
     this.errorString_ = '';
@@ -439,6 +442,22 @@ AudioPlayer.prototype.onKeyDown_ = function(event) {
       // TODO: Define "Stop" behavior.
       break;
   }
+};
+
+/**
+ * Updates the Media Session API with the current playback state of the audio
+ * player.
+ * @param {Event} event The playing event.
+ * @private
+ */
+AudioPlayer.prototype.updateMediaSessionPlaybackState_ = function(event) {
+  if (!navigator.mediaSession) {
+    return;
+  }
+
+  navigator.mediaSession.playbackState = event.detail.value ?
+      MediaSessionPlaybackState.PLAYING :
+      MediaSessionPlaybackState.PAUSED;
 };
 
 /* Keep the below constants in sync with the CSS. */
