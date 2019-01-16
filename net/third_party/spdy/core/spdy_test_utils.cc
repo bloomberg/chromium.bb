@@ -33,7 +33,7 @@ SpdyString HexDumpWithMarks(const unsigned char* data,
   }
 
   SpdyString hex;
-  for (const unsigned char *row = data; length > 0;
+  for (const unsigned char* row = data; length > 0;
        row += kColumns, length -= kColumns) {
     for (const unsigned char* p = row; p < row + 4; ++p) {
       if (p < row + length) {

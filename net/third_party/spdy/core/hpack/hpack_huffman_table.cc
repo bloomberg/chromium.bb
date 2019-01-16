@@ -6,10 +6,10 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <memory>
 
 #include "base/logging.h"
-#include "base/numerics/safe_conversions.h"
 #include "net/third_party/spdy/core/hpack/hpack_output_stream.h"
 #include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
 
@@ -37,7 +37,7 @@ HpackHuffmanTable::~HpackHuffmanTable() = default;
 bool HpackHuffmanTable::Initialize(const HpackHuffmanSymbol* input_symbols,
                                    size_t symbol_count) {
   CHECK(!IsInitialized());
-  DCHECK(base::IsValueInRangeForNumericType<uint16_t>(symbol_count));
+  DCHECK_LE(symbol_count, std::numeric_limits<uint16_t>::max());
 
   std::vector<Symbol> symbols(symbol_count);
   // Validate symbol id sequence, and copy into |symbols|.

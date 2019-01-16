@@ -16,7 +16,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "build/build_config.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_status.h"
 #include "net/third_party/quiche/src/http2/decoder/http2_frame_decoder.h"
@@ -28,7 +27,6 @@
 #include "net/third_party/spdy/core/hpack/hpack_header_table.h"
 #include "net/third_party/spdy/core/spdy_alt_svc_wire_format.h"
 #include "net/third_party/spdy/core/spdy_bug_tracker.h"
-#include "net/third_party/spdy/core/spdy_frame_builder.h"
 #include "net/third_party/spdy/core/spdy_header_block.h"
 #include "net/third_party/spdy/core/spdy_headers_handler_interface.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
@@ -57,9 +55,6 @@ using ::spdy::SpdySettingsId;
 namespace http2 {
 namespace {
 
-using SpdyFramerError = Http2DecoderAdapter::SpdyFramerError;
-using SpdyState = Http2DecoderAdapter::SpdyState;
-
 const bool kHasPriorityFields = true;
 const bool kNotHasPriorityFields = false;
 
@@ -75,7 +70,7 @@ SpdyFrameType ToSpdyFrameType(Http2FrameType type) {
 uint64_t ToSpdyPingId(const Http2PingFields& ping) {
   uint64_t v;
   std::memcpy(&v, ping.opaque_bytes, Http2PingFields::EncodedSize());
-  return base::NetToHost64(v);
+  return spdy::SpdyNetToHost64(v);
 }
 
 // Overwrites the fields of the header with invalid values, for the purpose

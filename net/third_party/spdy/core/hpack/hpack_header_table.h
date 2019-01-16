@@ -6,9 +6,9 @@
 #define NET_THIRD_PARTY_SPDY_CORE_HPACK_HPACK_HEADER_TABLE_H_
 
 #include <cstddef>
+#include <cstdint>
 #include <deque>
 #include <memory>
-#include <utility>
 
 #include "base/macros.h"
 #include "net/third_party/spdy/core/hpack/hpack_entry.h"

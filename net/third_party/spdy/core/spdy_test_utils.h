@@ -5,9 +5,8 @@
 #ifndef NET_THIRD_PARTY_SPDY_CORE_SPDY_TEST_UTILS_H_
 #define NET_THIRD_PARTY_SPDY_CORE_SPDY_TEST_UTILS_H_
 
-#include <stddef.h>
-#include <stdint.h>
-
+#include <cstddef>
+#include <cstdint>
 #include <map>
 #include <memory>
 

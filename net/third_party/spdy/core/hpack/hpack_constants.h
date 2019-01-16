@@ -7,7 +7,6 @@
 
 #include <cstddef>
 #include <cstdint>
-
 #include <vector>
 
 #include "net/third_party/spdy/platform/api/spdy_export.h"

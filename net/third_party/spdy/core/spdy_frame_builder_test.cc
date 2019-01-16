@@ -4,10 +4,12 @@
 
 #include "net/third_party/spdy/core/spdy_frame_builder.h"
 
+#include <memory>
+
 #include "net/third_party/spdy/core/array_output_buffer.h"
 #include "net/third_party/spdy/core/spdy_framer.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
-#include "testing/platform_test.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace spdy {
 

@@ -5,16 +5,12 @@
 #include "net/third_party/spdy/core/spdy_framer.h"
 
 #include <algorithm>
-#include <cctype>
-#include <ios>
+#include <cstdint>
 #include <iterator>
 #include <list>
 #include <new>
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/strings/string_util.h"
 #include "net/third_party/spdy/core/hpack/hpack_constants.h"
 #include "net/third_party/spdy/core/spdy_bitmasks.h"
 #include "net/third_party/spdy/core/spdy_bug_tracker.h"
@@ -1265,7 +1261,7 @@ size_t SpdyFramer::SerializeFrame(const SpdyFrameIR& frame,
 }
 
 HpackEncoder* SpdyFramer::GetHpackEncoder() {
-  if (hpack_encoder_.get() == nullptr) {
+  if (hpack_encoder_ == nullptr) {
     hpack_encoder_ = SpdyMakeUnique<HpackEncoder>(ObtainHpackHuffmanTable());
     if (!compression_enabled()) {
       hpack_encoder_->DisableCompression();

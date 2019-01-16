@@ -6,6 +6,7 @@
 
 #include "net/third_party/spdy/core/spdy_prefixed_buffer_reader.h"
 #include "net/third_party/spdy/platform/api/spdy_string.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace spdy {

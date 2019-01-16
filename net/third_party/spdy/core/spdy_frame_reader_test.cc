@@ -4,13 +4,11 @@
 
 #include "net/third_party/spdy/core/spdy_frame_reader.h"
 
-#include <algorithm>
-#include <iostream>
-#include <memory>
+#include <cstdint>
 
 #include "net/third_party/spdy/platform/api/spdy_arraysize.h"
 #include "net/third_party/spdy/platform/api/spdy_endianness_util.h"
-#include "testing/platform_test.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace spdy {
 

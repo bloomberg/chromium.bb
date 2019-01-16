@@ -7,14 +7,13 @@
 #include <stdlib.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <limits>
 #include <tuple>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/strings/string_number_conversions.h"
 #include "net/third_party/spdy/core/array_output_buffer.h"
 #include "net/third_party/spdy/core/hpack/hpack_constants.h"
 #include "net/third_party/spdy/core/mock_spdy_framer_visitor.h"
@@ -30,7 +29,6 @@
 #include "net/third_party/spdy/platform/api/spdy_string_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
 
 using ::http2::Http2DecoderAdapter;
 using ::testing::_;
@@ -1595,7 +1593,6 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
 
   {
     const char kDescription[] = "RST_STREAM frame with max stream ID";
-    // clang-format off
     const unsigned char kH2FrameData[] = {
         0x00, 0x00, 0x04,        // Length: 4
         0x03,                    //   Type: RST_STREAM
@@ -3819,7 +3816,7 @@ TEST_P(SpdyFramerTest, DataFrameFlagsV4) {
   uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message()
-                 << "Flags " << flags << std::hex << static_cast<int>(flags));
+                 << "Flags " << std::hex << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
 
@@ -3875,7 +3872,7 @@ TEST_P(SpdyFramerTest, RstStreamFrameFlags) {
   uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message()
-                 << "Flags " << flags << std::hex << static_cast<int>(flags));
+                 << "Flags " << std::hex << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     deframer_.set_visitor(&visitor);
@@ -3904,7 +3901,7 @@ TEST_P(SpdyFramerTest, SettingsFrameFlags) {
   uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message()
-                 << "Flags " << flags << std::hex << static_cast<int>(flags));
+                 << "Flags " << std::hex << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     deframer_.set_visitor(&visitor);
@@ -3950,7 +3947,7 @@ TEST_P(SpdyFramerTest, GoawayFrameFlags) {
   uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message()
-                 << "Flags " << flags << std::hex << static_cast<int>(flags));
+                 << "Flags " << std::hex << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
 
@@ -3981,7 +3978,7 @@ TEST_P(SpdyFramerTest, HeadersFrameFlags) {
   uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message()
-                 << "Flags " << flags << std::hex << static_cast<int>(flags));
+                 << "Flags " << std::hex << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
@@ -4041,7 +4038,7 @@ TEST_P(SpdyFramerTest, PingFrameFlags) {
   uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message()
-                 << "Flags " << flags << std::hex << static_cast<int>(flags));
+                 << "Flags " << std::hex << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     deframer_.set_visitor(&visitor);
@@ -4064,7 +4061,7 @@ TEST_P(SpdyFramerTest, WindowUpdateFrameFlags) {
   uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message()
-                 << "Flags " << flags << std::hex << static_cast<int>(flags));
+                 << "Flags " << std::hex << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
 
@@ -4091,7 +4088,7 @@ TEST_P(SpdyFramerTest, PushPromiseFrameFlags) {
   uint8_t flags = 0;
   do {
     SCOPED_TRACE(testing::Message()
-                 << "Flags " << flags << std::hex << static_cast<int>(flags));
+                 << "Flags " << std::hex << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     testing::StrictMock<test::MockDebugVisitor> debug_visitor;
@@ -4137,7 +4134,7 @@ TEST_P(SpdyFramerTest, ContinuationFrameFlags) {
       output_.Reset();
     }
     SCOPED_TRACE(testing::Message()
-                 << "Flags " << flags << std::hex << static_cast<int>(flags));
+                 << "Flags " << std::hex << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     testing::StrictMock<test::MockDebugVisitor> debug_visitor;

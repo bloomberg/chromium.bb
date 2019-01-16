@@ -6,7 +6,6 @@
 #define NET_THIRD_PARTY_SPDY_CORE_HPACK_HPACK_OUTPUT_STREAM_H_
 
 #include <cstdint>
-
 #include <map>
 
 #include "base/macros.h"

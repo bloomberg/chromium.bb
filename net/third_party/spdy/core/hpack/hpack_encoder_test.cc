@@ -4,6 +4,7 @@
 
 #include "net/third_party/spdy/core/hpack/hpack_encoder.h"
 
+#include <cstdint>
 #include <map>
 
 #include "net/third_party/quiche/src/http2/test_tools/http2_random.h"
