@@ -332,11 +332,36 @@ ListContainer.prototype.focus = function() {
 };
 
 /**
+ * Check if our context menu has any items that can be activated
+ * @return {boolean} True if the menu has action item. Otherwise, false.
+ * @private
+ */
+ListContainer.prototype.contextMenuHasActions_ = function() {
+  const menu = document.querySelector('#file-context-menu');
+  const menuItems = menu.querySelectorAll('cr-menu-item, hr');
+  for (const item of menuItems) {
+    if (!item.hasAttribute('hidden') && !item.hasAttribute('disabled') &&
+        (window.getComputedStyle(item).display != 'none')) {
+      return true;
+    }
+  }
+  return false;
+};
+
+/**
  * Contextmenu event handler to prevent change of focus on long-tapping the
  * header of the file list.
+ * @param {!Event} e Menu event.
  * @private
  */
 ListContainer.prototype.onContextMenu_ = function(e) {
+  // Inhibit the context menu being shown if it only hosts
+  // disabled items https://crbug.com/917975
+  if (this.contextMenuHasActions_() === false) {
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
   if (!this.allowContextMenuByTouch_ && e.sourceCapabilities &&
       e.sourceCapabilities.firesTouchEvents) {
     this.focus();

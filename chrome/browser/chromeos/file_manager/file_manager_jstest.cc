@@ -193,3 +193,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, UtilTest) {
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, Crostini) {
   RunGeneratedTest("/background/js/crostini_unittest.html");
 }
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ListContainer) {
+  RunGeneratedTest("/foreground/js/ui/list_container_unittest.html");
+}
