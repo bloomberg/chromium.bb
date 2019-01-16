@@ -12,7 +12,9 @@ import android.support.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.util.HashMap;
@@ -57,8 +59,22 @@ public class AutofillAssistantFacade {
     /** Starts Autofill Assistant on the given {@code activity}. */
     public static void start(ChromeActivity activity) {
         startWithCallback(activity, (canStart) -> {
-            if (canStart) {
-                initiateAutofillAssistant(activity);
+            if (!canStart) return;
+
+            Tab tab = activity.getActivityTab();
+            if (tab != null) {
+                initiateAutofillAssistant(activity, tab);
+            } else {
+                // The tab is not yet available. We need to register as listener and wait for it.
+                activity.getActivityTabProvider().addObserverAndTrigger(
+                        new ActivityTabProvider.HintlessActivityTabObserver() {
+                            @Override
+                            public void onActivityTabChanged(Tab tab) {
+                                if (tab == null) return;
+                                activity.getActivityTabProvider().removeObserver(this);
+                                initiateAutofillAssistant(activity, tab);
+                            }
+                        });
             }
         });
     }
@@ -84,13 +100,13 @@ public class AutofillAssistantFacade {
     /**
      * Instantiates all essential Autofill Assistant components and starts it.
      */
-    private static void initiateAutofillAssistant(ChromeActivity activity) {
+    private static void initiateAutofillAssistant(ChromeActivity activity, Tab tab) {
         Map<String, String> parameters = extractParameters(activity.getInitialIntent().getExtras());
         parameters.remove(PARAMETER_ENABLED);
         String initialUrl = activity.getInitialIntent().getDataString();
 
         AutofillAssistantClient client =
-                AutofillAssistantClient.fromWebContents(activity.getActivityTab().getWebContents());
+                AutofillAssistantClient.fromWebContents(tab.getWebContents());
         client.start(initialUrl, parameters, activity.getInitialIntent().getExtras());
     }
 
