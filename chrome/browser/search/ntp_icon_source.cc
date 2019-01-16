@@ -48,6 +48,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/native_theme/native_theme.h"
 #include "url/gurl.h"
 
 namespace {
@@ -211,9 +212,12 @@ std::vector<unsigned char> RenderIconBitmap(const GURL& icon_url,
   canvas.DrawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
 
   // Draw the gray background.
-  constexpr SkColor kFaviconBackground = gfx::kGoogleGrey100;
+  SkColor favicon_bg =
+      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
+          ? gfx::kGoogleGrey900
+          : gfx::kGoogleGrey100;
   DrawCircleInCanvas(&canvas, icon_size, /*offset=*/0,
-                     /*background_color=*/kFaviconBackground);
+                     /*background_color=*/favicon_bg);
   DrawFavicon(favicon, &canvas, icon_size);
 
   // If necessary, draw the colored fallback monogram.
