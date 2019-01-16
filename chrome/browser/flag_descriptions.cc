@@ -1014,11 +1014,6 @@ const char kExtensionsOnChromeUrlsDescription[] =
     "Enables running extensions on chrome:// URLs, where extensions explicitly "
     "request this permission.";
 
-const char kFastUnloadName[] = "Fast tab/window close";
-const char kFastUnloadDescription[] =
-    "Enables fast tab/window closing - runs a tab's onunload js handler "
-    "independently of the GUI.";
-
 const char kFeaturePolicyName[] = "Feature Policy";
 const char kFeaturePolicyDescription[] =
     "Enables granting and removing access to features through the "

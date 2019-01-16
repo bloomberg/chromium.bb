@@ -1324,9 +1324,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExtensionsOnChromeUrlsDescription, kOsAll,
      SINGLE_VALUE_TYPE(extensions::switches::kExtensionsOnChromeURLs)},
 #endif  // ENABLE_EXTENSIONS
-    {"enable-fast-unload", flag_descriptions::kFastUnloadName,
-     flag_descriptions::kFastUnloadDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableFastUnload)},
     {"enable-history-entry-requires-user-gesture",
      flag_descriptions::kHistoryRequiresUserGestureName,
      flag_descriptions::kHistoryRequiresUserGestureDescription, kOsAll,

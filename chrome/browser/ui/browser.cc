@@ -123,7 +123,6 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/mouse_lock_controller.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
-#include "chrome/browser/ui/fast_unload_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -146,7 +145,6 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
-#include "chrome/browser/ui/unload_controller.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
@@ -261,12 +259,6 @@ const int kUIUpdateCoalescingTimeMS = 200;
 BrowserWindow* CreateBrowserWindow(std::unique_ptr<Browser> browser,
                                    bool user_gesture) {
   return BrowserWindow::CreateBrowserWindow(std::move(browser), user_gesture);
-}
-
-// Is the fast tab unload experiment enabled?
-bool IsFastTabUnloadEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableFastUnload);
 }
 
 const extensions::Extension* GetExtensionForOrigin(
@@ -407,6 +399,7 @@ Browser::Browser(const CreateParams& params)
       initial_show_state_(params.initial_show_state),
       initial_workspace_(params.initial_workspace),
       is_session_restore_(params.is_session_restore),
+      unload_controller_(this),
       content_setting_bubble_model_delegate_(
           new BrowserContentSettingBubbleModelDelegate(this)),
       location_bar_model_delegate_(new BrowserLocationBarModelDelegate(this)),
@@ -426,12 +419,6 @@ Browser::Browser(const CreateParams& params)
       << "Only off the record browser may be opened in guest mode";
   CHECK(!profile_->IsSystemProfile())
       << "The system profile should never have a real browser.";
-
-  // TODO(jeremy): Move to initializer list once flag is removed.
-  if (IsFastTabUnloadEnabled())
-    fast_unload_controller_.reset(new FastUnloadController(this));
-  else
-    unload_controller_.reset(new UnloadController(this));
 
   tab_strip_model_->AddObserver(this);
 
@@ -737,54 +724,34 @@ bool Browser::ShouldCloseWindow() {
   if (result == WarnBeforeClosingResult::kDoNotClose)
     return false;
 
-  if (IsFastTabUnloadEnabled())
-    return fast_unload_controller_->ShouldCloseWindow();
-  return unload_controller_->ShouldCloseWindow();
+  return unload_controller_.ShouldCloseWindow();
 }
 
 bool Browser::TryToCloseWindow(
     bool skip_beforeunload,
     const base::Callback<void(bool)>& on_close_confirmed) {
   cancel_download_confirmation_state_ = RESPONSE_RECEIVED;
-  if (IsFastTabUnloadEnabled()) {
-    return fast_unload_controller_->TryToCloseWindow(skip_beforeunload,
-                                                     on_close_confirmed);
-  }
-  return unload_controller_->TryToCloseWindow(skip_beforeunload,
-                                              on_close_confirmed);
+  return unload_controller_.TryToCloseWindow(skip_beforeunload,
+                                             on_close_confirmed);
 }
 
 void Browser::ResetTryToCloseWindow() {
   cancel_download_confirmation_state_ = NOT_PROMPTED;
-  if (IsFastTabUnloadEnabled())
-    fast_unload_controller_->ResetTryToCloseWindow();
-  else
-    unload_controller_->ResetTryToCloseWindow();
-}
-
-bool Browser::HasCompletedUnloadProcessing() const {
-  DCHECK(IsFastTabUnloadEnabled());
-  return fast_unload_controller_->HasCompletedUnloadProcessing();
+  unload_controller_.ResetTryToCloseWindow();
 }
 
 bool Browser::IsAttemptingToCloseBrowser() const {
-  if (IsFastTabUnloadEnabled())
-    return fast_unload_controller_->is_attempting_to_close_browser();
-  return unload_controller_->is_attempting_to_close_browser();
+  return unload_controller_.is_attempting_to_close_browser();
 }
 
 bool Browser::ShouldRunUnloadListenerBeforeClosing(
     content::WebContents* web_contents) {
-  if (IsFastTabUnloadEnabled())
-    return fast_unload_controller_->ShouldRunUnloadEventsHelper(web_contents);
-  return unload_controller_->ShouldRunUnloadEventsHelper(web_contents);
+  return unload_controller_.ShouldRunUnloadEventsHelper(web_contents);
 }
 
 bool Browser::RunUnloadListenerBeforeClosing(
     content::WebContents* web_contents) {
-  if (IsFastTabUnloadEnabled())
-    return fast_unload_controller_->RunUnloadEventsHelper(web_contents);
-  return unload_controller_->RunUnloadEventsHelper(web_contents);
+  return unload_controller_.RunUnloadEventsHelper(web_contents);
 }
 
 void Browser::SetIsInTabDragging(bool is_in_tab_dragging) {
@@ -826,8 +793,7 @@ void Browser::OnWindowClosing() {
 
   BrowserList::NotifyBrowserCloseStarted(this);
 
-  if (!IsFastTabUnloadEnabled())
-    tab_strip_model_->CloseAllTabs();
+  tab_strip_model_->CloseAllTabs();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1162,9 +1128,7 @@ bool Browser::HandleKeyboardEvent(content::WebContents* source,
 }
 
 bool Browser::TabsNeedBeforeUnloadFired() {
-  if (IsFastTabUnloadEnabled())
-    return fast_unload_controller_->TabsNeedBeforeUnloadFired();
-  return unload_controller_->TabsNeedBeforeUnloadFired();
+  return unload_controller_.TabsNeedBeforeUnloadFired();
 }
 
 bool Browser::PreHandleGestureEvent(content::WebContents* source,
@@ -1458,13 +1422,7 @@ void Browser::LoadingStateChanged(WebContents* source,
 }
 
 void Browser::CloseContents(WebContents* source) {
-  bool can_close_contents;
-  if (IsFastTabUnloadEnabled())
-    can_close_contents = fast_unload_controller_->CanCloseContents(source);
-  else
-    can_close_contents = unload_controller_->CanCloseContents(source);
-
-  if (can_close_contents)
+  if (unload_controller_.CanCloseContents(source))
     chrome::CloseWebContents(this, source, true);
 }
 
@@ -1519,14 +1477,8 @@ void Browser::BeforeUnloadFired(WebContents* web_contents,
         proceed, proceed_to_fire_unload))
     return;
 
-  if (IsFastTabUnloadEnabled()) {
-    *proceed_to_fire_unload =
-        fast_unload_controller_->BeforeUnloadFiredForContents(web_contents,
-                                                              proceed);
-  } else {
-    *proceed_to_fire_unload =
-        unload_controller_->BeforeUnloadFired(web_contents, proceed);
-  }
+  *proceed_to_fire_unload =
+      unload_controller_.BeforeUnloadFired(web_contents, proceed);
 }
 
 bool Browser::ShouldFocusLocationBarByDefault(WebContents* source) {
@@ -2518,11 +2470,7 @@ void Browser::FinishWarnBeforeClosing(WarnBeforeClosingResult result) {
     case WarnBeforeClosingResult::kDoNotClose:
       // Reset UnloadController::is_attempting_to_close_browser_ so that we
       // don't prompt every time any tab is closed. http://crbug.com/305516
-      if (IsFastTabUnloadEnabled())
-        fast_unload_controller_->CancelWindowClose();
-      else
-        unload_controller_->CancelWindowClose();
-      break;
+      unload_controller_.CancelWindowClose();
   }
 }
 

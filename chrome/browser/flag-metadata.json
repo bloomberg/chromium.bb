@@ -1214,11 +1214,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-fast-unload",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-first-run-ui-transitions",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
