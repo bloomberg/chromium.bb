@@ -47,7 +47,8 @@ class FCMInvalidatorTestDelegate {
     invalidator_.reset(new FCMInvalidator(
         std::move(network_channel), identity_provider_.get(), &pref_service_,
         &url_loader_factory_,
-        base::BindRepeating(&syncer::JsonUnsafeParser::Parse)));
+        base::BindRepeating(&syncer::JsonUnsafeParser::Parse),
+        "fake_sender_id"));
   }
 
   Invalidator* GetInvalidator() { return invalidator_.get(); }

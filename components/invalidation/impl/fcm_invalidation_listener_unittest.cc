@@ -184,7 +184,8 @@ class MockRegistrationManager : public PerUserTopicRegistrationManager {
             nullptr /* identity_provider */,
             nullptr /* pref_service */,
             nullptr /* loader_factory */,
-            base::BindRepeating(&syncer::JsonUnsafeParser::Parse)) {}
+            base::BindRepeating(&syncer::JsonUnsafeParser::Parse),
+            "fake_sender_id") {}
   ~MockRegistrationManager() override {}
   MOCK_METHOD2(UpdateRegisteredTopics,
                void(const TopicSet& topics, const std::string& token));

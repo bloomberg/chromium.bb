@@ -38,8 +38,6 @@ const char kActiveRegistrationToken[] =
 const char kInvalidationRegistrationScope[] =
     "https://firebaseperusertopics-pa.googleapis.com";
 
-const char kProjectId[] = "8181035976";
-
 const char kFCMOAuthScope[] =
     "https://www.googleapis.com/auth/firebase.messaging";
 
@@ -134,12 +132,14 @@ PerUserTopicRegistrationManager::PerUserTopicRegistrationManager(
     invalidation::IdentityProvider* identity_provider,
     PrefService* local_state,
     network::mojom::URLLoaderFactory* url_loader_factory,
-    const ParseJSONCallback& parse_json)
+    const ParseJSONCallback& parse_json,
+    const std::string& project_id)
     : local_state_(local_state),
       identity_provider_(identity_provider),
       request_access_token_backoff_(&kBackoffPolicy),
       parse_json_(parse_json),
-      url_loader_factory_(url_loader_factory) {}
+      url_loader_factory_(url_loader_factory),
+      project_id_(project_id) {}
 
 PerUserTopicRegistrationManager::~PerUserTopicRegistrationManager() {}
 
@@ -160,8 +160,6 @@ void PerUserTopicRegistrationManager::Init() {
     // Remove saved pref.
     keys_to_remove.push_back(topic);
   }
-
-  LOG(ERROR) << "Reg. size " << topic_to_private_topic_.size();
 
   // Delete prefs, which weren't decoded successfully.
   DictionaryPrefUpdate update(local_state_, kTypeRegisteredForInvalidation);
@@ -238,7 +236,7 @@ void PerUserTopicRegistrationManager::StartRegistrationRequest(
                             .SetPublicTopicName(topic)
                             .SetAuthenticationHeader(base::StringPrintf(
                                 "Bearer %s", access_token_.c_str()))
-                            .SetProjectId(kProjectId)
+                            .SetProjectId(project_id_)
                             .SetType(it->second->type)
                             .Build();
   it->second->request->Start(
@@ -254,7 +252,6 @@ void PerUserTopicRegistrationManager::RegistrationFinishedForTopic(
     std::string private_topic_name,
     PerUserTopicRegistrationRequest::RequestType type) {
   if (code.IsSuccess()) {
-    LOG(ERROR) << topic;
     auto it = registration_statuses_.find(topic);
     registration_statuses_.erase(it);
     if (type == PerUserTopicRegistrationRequest::SUBSCRIBE) {

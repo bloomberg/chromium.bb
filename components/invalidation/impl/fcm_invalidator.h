@@ -32,7 +32,8 @@ class FCMInvalidator : public Invalidator,
                  invalidation::IdentityProvider* identity_provider,
                  PrefService* pref_service,
                  network::mojom::URLLoaderFactory* loader_factory,
-                 const ParseJSONCallback& parse_json);
+                 const ParseJSONCallback& parse_json,
+                 const std::string& project_id);
 
   ~FCMInvalidator() override;
 

@@ -125,7 +125,7 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
   std::unique_ptr<PerUserTopicRegistrationManager> BuildRegistrationManager() {
     auto reg_manager = std::make_unique<PerUserTopicRegistrationManager>(
         identity_provider_.get(), &pref_service_, url_loader_factory(),
-        base::BindRepeating(&syncer::JsonUnsafeParser::Parse));
+        base::BindRepeating(&syncer::JsonUnsafeParser::Parse), kProjectId);
     reg_manager->Init();
     reg_manager->AddObserver(&state_observer_);
     return reg_manager;

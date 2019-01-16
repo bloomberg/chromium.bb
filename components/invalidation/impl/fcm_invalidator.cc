@@ -19,10 +19,11 @@ FCMInvalidator::FCMInvalidator(
     invalidation::IdentityProvider* identity_provider,
     PrefService* pref_service,
     network::mojom::URLLoaderFactory* loader_factory,
-    const ParseJSONCallback& parse_json)
+    const ParseJSONCallback& parse_json,
+    const std::string& project_id)
     : invalidation_listener_(std::move(network_channel)) {
   auto registration_manager = std::make_unique<PerUserTopicRegistrationManager>(
-      identity_provider, pref_service, loader_factory, parse_json);
+      identity_provider, pref_service, loader_factory, parse_json, project_id);
   invalidation_listener_.Start(
       base::BindOnce(&CreatePerUserTopicInvalidationClient), this,
       std::move(registration_manager));
