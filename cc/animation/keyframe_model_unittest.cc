@@ -1358,6 +1358,21 @@ TEST(KeyframeModelTest, InEffectReverseWithIterations) {
   EXPECT_FALSE(keyframe_model->InEffect(TicksFromSecondsF(2.0)));
 }
 
+// CalculatePhase uses -time_offset_ which may cause integer overflow when
+// time_offset_ is set to min(). This test makes sure that the code handles it
+// correctly. See https://crbug.com/921454.
+TEST(KeyframeModelTest, CalculatePhaseWithMinTimeOffset) {
+  std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(1));
+  keyframe_model->set_time_offset(
+      TimeDelta::FromMilliseconds(std::numeric_limits<int64_t>::min()));
+
+  // Setting the time_offset_ to min implies that the effect has a max start
+  // delay and any local time will fall into the BEFORE phase.
+  EXPECT_EQ(
+      keyframe_model->CalculatePhaseForTesting(TimeDelta::FromSecondsD(1.0)),
+      KeyframeModel::Phase::BEFORE);
+}
+
 TEST(KeyframeModelTest, ToString) {
   std::unique_ptr<KeyframeModel> keyframe_model =
       KeyframeModel::Create(std::make_unique<FakeFloatAnimationCurve>(15), 42,
