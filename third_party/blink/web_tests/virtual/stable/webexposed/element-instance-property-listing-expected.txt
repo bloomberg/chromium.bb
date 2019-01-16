@@ -687,6 +687,8 @@ html element link
     property disabled
     property href
     property hreflang
+    property imageSizes
+    property imageSrcset
     property import
     property integrity
     property media
