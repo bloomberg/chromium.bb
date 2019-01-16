@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_TASKS_TASK_TAB_HELPER_H_
-#define CHROME_BROWSER_ANDROID_TASKS_TASK_TAB_HELPER_H_
+#ifndef CHROME_BROWSER_COMPLEX_TASKS_TASK_TAB_HELPER_H_
+#define CHROME_BROWSER_COMPLEX_TASKS_TASK_TAB_HELPER_H_
 
 #include <map>
 
@@ -14,6 +14,8 @@
 
 namespace tasks {
 
+// This is a tab helper that collects navigation state information of a
+// complex task.
 class TaskTabHelper : public content::WebContentsObserver,
                       public content::WebContentsUserData<TaskTabHelper> {
  public:
@@ -52,4 +54,4 @@ class TaskTabHelper : public content::WebContentsObserver,
 
 }  // namespace tasks
 
-#endif  // CHROME_BROWSER_ANDROID_TASKS_TASK_TAB_HELPER_H_
+#endif  // CHROME_BROWSER_COMPLEX_TASKS_TASK_TAB_HELPER_H_

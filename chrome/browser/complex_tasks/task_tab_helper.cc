@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/tasks/task_tab_helper.h"
+#include "chrome/browser/complex_tasks/task_tab_helper.h"
 
 #include <string>
 
@@ -87,7 +87,9 @@ void TaskTabHelper::RecordHubAndSpokeNavigationUsage(int spokes) {
       histogram_name = "Tabs.Tasks.HubAndSpokeNavigationUsage.FromOther";
       break;
     }
-    default: { NOTREACHED() << "Unknown HubType"; }
+    default: {
+      NOTREACHED() << "Unknown HubType";
+    }
   }
 
   base::UmaHistogramExactLinear(histogram_name, spokes, 100);

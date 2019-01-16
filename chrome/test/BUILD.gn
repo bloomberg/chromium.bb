@@ -2430,6 +2430,7 @@ test("unit_tests") {
     "../browser/chrome_process_singleton_win_unittest.cc",
     "../browser/client_hints/client_hints_unittest.cc",
     "../browser/command_updater_impl_unittest.cc",
+    "../browser/complex_tasks/task_tab_helper_unittest.cc",
     "../browser/component_updater/chrome_component_updater_configurator_unittest.cc",
     "../browser/component_updater/optimization_hints_component_installer_unittest.cc",
     "../browser/component_updater/origin_trials_component_installer_unittest.cc",
@@ -3038,7 +3039,6 @@ test("unit_tests") {
   if (is_android) {
     sources += [
       "../browser/android/search_permissions/search_permissions_service_unittest.cc",
-      "../browser/android/tasks/task_tab_helper_unittest.cc",
       "../browser/autofill/autofill_credit_card_filling_infobar_delegate_mobile_unittest.cc",
       "../browser/autofill/autofill_save_card_infobar_delegate_mobile_unittest.cc",
       "../browser/autofill/manual_filling_controller_impl_unittest.cc",

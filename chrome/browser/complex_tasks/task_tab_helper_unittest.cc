@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/tasks/task_tab_helper.h"
+#include "chrome/browser/complex_tasks/task_tab_helper.h"
 
 #include <string>
 
@@ -53,7 +53,7 @@ class TaskTabHelperUnitTest : public ChromeRenderViewHostTestHarness {
       MockTaskTabHelper::HubType::OTHER;
 
   void SetUp() override {
-    content::RenderViewHostTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
     MockTaskTabHelper::CreateForWebContents(web_contents());
     task_tab_helper_ = MockTaskTabHelper::FromWebContents(web_contents());
     NavigateAndCommit(URL);
@@ -61,8 +61,6 @@ class TaskTabHelperUnitTest : public ChromeRenderViewHostTestHarness {
     ON_CALL(*task_tab_helper_, GetSpokeEntryHubType())
         .WillByDefault(testing::Return(DEFAULT_SEARCH_ENGINE_HUB_TYPE));
   }
-
-  void TearDown() override {}
 
   void GoBackNTimes(int times) {
     while (times--) {
