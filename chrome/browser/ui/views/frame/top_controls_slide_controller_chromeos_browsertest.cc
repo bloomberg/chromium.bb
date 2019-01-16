@@ -575,6 +575,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestScrollingPage) {
                                TopChromeShownState::kFullyShown);
 }
 
+// TODO(https://crbug.com/911949): Times out on CrOS on the waterfall.
 IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
                        DISABLED_TestScrollingPageAndSwitchingToNTP) {
   ToggleTabletMode();
