@@ -27,8 +27,8 @@
 #include "services/network/p2p/socket.h"
 #include "services/network/proxy_resolving_client_socket_factory.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
-#include "third_party/webrtc/media/base/rtputils.h"
-#include "third_party/webrtc/media/base/turnutils.h"
+#include "third_party/webrtc/media/base/rtp_utils.h"
+#include "third_party/webrtc/media/base/turn_utils.h"
 
 namespace network {
 

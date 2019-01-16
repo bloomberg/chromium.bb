@@ -16,7 +16,7 @@
 #include "net/log/net_log_source.h"
 #include "services/network/p2p/socket_throttler.h"
 #include "services/network/public/mojom/p2p.mojom.h"
-#include "third_party/webrtc/media/base/rtputils.h"
+#include "third_party/webrtc/media/base/rtp_utils.h"
 
 namespace {
 
