@@ -12,7 +12,6 @@
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/update_client/update_query_params.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
@@ -62,7 +61,7 @@ ChromeExtensionDownloaderFactory::CreateForProfile(
       delegate, connector, profile->GetPath());
 
   // NOTE: It is not obvious why it is OK to pass raw pointers to the token
-  // service and signin manager here. The logic is as follows:
+  // service and identity manager here. The logic is as follows:
   // ExtensionDownloader is owned by ExtensionUpdater.
   // ExtensionUpdater is owned by ExtensionService.
   // ExtensionService is owned by ExtensionSystemImpl::Shared.
