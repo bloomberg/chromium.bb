@@ -8,16 +8,6 @@ import {
 
 export const group = new TestGroup();
 
-// These are intended to test the display of failing tests.
-// TODO: These tests should be skipped, once there is a mechanism to do so.
-group.test("test_fail", function() {
-  this.fail();
-});
-
-group.test("test_warn", function() {
-  this.warn();
-});
-
 group.test("test_sync", function() {
 });
 

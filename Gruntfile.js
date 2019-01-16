@@ -23,6 +23,8 @@ module.exports = function(grunt) {
       "run-cts": mkRun("src/cts", "--run"),
       "list-unittests": mkRun("src/unittests", "--generate-listing=out/unittests/listing.json"),
       "run-unittests": mkRun("src/unittests", "--run"),
+      "list-demos": mkRun("src/demos", "--generate-listing=out/demos/listing.json"),
+      "run-demos": mkRun("src/demos", "--run"),
     },
 
     "http-server": {
@@ -83,6 +85,7 @@ module.exports = function(grunt) {
     "ts:out/",
     "run:list-cts",
     "run:list-unittests",
+    "run:list-demos",
   ]);
   publishTask("serve", "Serve out/ on 127.0.0.1:8080", [
     "http-server:.",
@@ -91,6 +94,7 @@ module.exports = function(grunt) {
 
   publishTask("run-cts", "(Node) Run CTS", [ "run:run-cts" ]);
   publishTask("run-unittests", "(Node) Run unittests", [ "run:run-unittests" ]);
+  publishTask("run-demos", "(Node) Run demos", [ "run:run-demos" ]);
 
   grunt.registerTask("default", "", () => {
     console.log("Available tasks (see grunt --help for more):");
