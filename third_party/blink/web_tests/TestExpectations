@@ -5921,3 +5921,7 @@ crbug.com/921719 virtual/layout_ng_experimental/printing/offscreencanvas-2d-prin
 crbug.com/921719 virtual/layout_ng_experimental/printing/offscreencanvas-webgl-printing.html [ Skip ]
 crbug.com/921719 virtual/threaded/printing/offscreencanvas-2d-printing.html [ Skip ]
 crbug.com/921719 virtual/threaded/printing/offscreencanvas-webgl-printing.html [ Skip ]
+
+# Sheriff 2019-01-15
+# Fails on Linux Tests (dbg) bot.
+crbug.com/922508 [ Linux Debug ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad-zoom-in-slow.html [ Failure Pass ]
