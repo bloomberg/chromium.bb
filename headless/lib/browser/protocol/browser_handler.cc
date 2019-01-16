@@ -78,7 +78,7 @@ Response BrowserHandler::Close() {
 Response BrowserHandler::SetWindowBounds(
     int window_id,
     std::unique_ptr<Browser::Bounds> window_bounds) {
-  HeadlessWebContentsImpl* web_contents = web_contents =
+  HeadlessWebContentsImpl* web_contents =
       browser()->GetWebContentsForWindowId(window_id);
   if (!web_contents)
     return Response::Error("Browser window not found");

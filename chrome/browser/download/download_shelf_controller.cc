@@ -65,7 +65,7 @@ void DownloadShelfController::OnItemUpdated(const OfflineItem& item) {
 
 void DownloadShelfController::OnNewOfflineItemReady(
     DownloadUIModel::DownloadUIModelPtr model) {
-  Browser* browser = browser = chrome::FindLastActiveWithProfile(profile_);
+  Browser* browser = chrome::FindLastActiveWithProfile(profile_);
 
   if (browser && browser->window()) {
     // Add the offline item to DownloadShelf in the browser window.
