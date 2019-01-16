@@ -100,7 +100,7 @@ class TestShellDelegateChromeOS : public ash::TestShellDelegate {
  public:
   TestShellDelegateChromeOS() {}
 
-  bool CanShowWindowForUser(aura::Window* window) const override {
+  bool CanShowWindowForUser(const aura::Window* window) const override {
     return ::CanShowWindowForUser(window,
                                   base::BindRepeating(&GetActiveContext));
   }

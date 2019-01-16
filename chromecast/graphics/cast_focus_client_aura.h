@@ -40,9 +40,10 @@ class CastFocusClientAura : public aura::WindowObserver,
   void ActivateWindow(aura::Window* window) override;
   void DeactivateWindow(aura::Window* window) override;
   const aura::Window* GetActiveWindow() const override;
-  aura::Window* GetActivatableWindow(aura::Window* window) override;
-  aura::Window* GetToplevelWindow(aura::Window* window) override;
-  bool CanActivateWindow(aura::Window* window) const override;
+  aura::Window* GetActivatableWindow(aura::Window* window) const override;
+  const aura::Window* GetToplevelWindow(
+      const aura::Window* window) const override;
+  bool CanActivateWindow(const aura::Window* window) const override;
 
  private:
   // aura::WindowObserver implementation:
@@ -57,7 +58,11 @@ class CastFocusClientAura : public aura::WindowObserver,
   // Get the top-most window in a window's hierarchy to determine z order.
   // This is the window directly under the root window (a child window of the
   // root window).
-  aura::Window* GetZOrderWindow(aura::Window* window);
+  aura::Window* GetZOrderWindow(aura::Window* window) const {
+    return const_cast<aura::Window*>(
+        GetZOrderWindow(const_cast<const aura::Window*>(window)));
+  }
+  const aura::Window* GetZOrderWindow(const aura::Window* window) const;
 
   base::ObserverList<aura::client::FocusChangeObserver>::Unchecked
       focus_observers_;

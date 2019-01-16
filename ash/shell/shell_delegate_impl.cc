@@ -16,7 +16,7 @@ ShellDelegateImpl::ShellDelegateImpl() = default;
 
 ShellDelegateImpl::~ShellDelegateImpl() = default;
 
-bool ShellDelegateImpl::CanShowWindowForUser(aura::Window* window) const {
+bool ShellDelegateImpl::CanShowWindowForUser(const aura::Window* window) const {
   return true;
 }
 

@@ -3867,7 +3867,7 @@ class WidgetShadowTest : public WidgetTest {
    public:
     TestFocusRules() = default;
 
-    bool SupportsChildActivation(aura::Window* window) const override {
+    bool SupportsChildActivation(const aura::Window* window) const override {
       return true;
     }
 

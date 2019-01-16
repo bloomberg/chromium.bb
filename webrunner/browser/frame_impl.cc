@@ -117,13 +117,13 @@ class FrameFocusRules : public wm::BaseFocusRules {
   ~FrameFocusRules() override = default;
 
   // wm::BaseFocusRules implementation.
-  bool SupportsChildActivation(aura::Window*) const override;
+  bool SupportsChildActivation(const aura::Window*) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FrameFocusRules);
 };
 
-bool FrameFocusRules::SupportsChildActivation(aura::Window*) const {
+bool FrameFocusRules::SupportsChildActivation(const aura::Window*) const {
   // TODO(crbug.com/878439): Return a result based on window properties such as
   // visibility.
   return true;

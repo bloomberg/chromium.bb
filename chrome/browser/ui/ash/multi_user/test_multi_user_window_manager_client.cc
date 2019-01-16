@@ -37,7 +37,7 @@ void TestMultiUserWindowManagerClient::SetWindowOwner(
 }
 
 const AccountId& TestMultiUserWindowManagerClient::GetWindowOwner(
-    aura::Window* window) const {
+    const aura::Window* window) const {
   // No matter which window will get queried - all browsers belong to the
   // original browser's user.
   return browser_owner_;
@@ -81,7 +81,7 @@ bool TestMultiUserWindowManagerClient::IsWindowOnDesktopOfUser(
 }
 
 const AccountId& TestMultiUserWindowManagerClient::GetUserPresentingWindow(
-    aura::Window* window) const {
+    const aura::Window* window) const {
   if (window == browser_window_)
     return desktop_owner_;
   if (created_window_ && window == created_window_)

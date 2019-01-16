@@ -29,7 +29,7 @@ class TestFocusRules : public wm::BaseFocusRules {
   ~TestFocusRules() override = default;
 
   // wm::BaseFocusRules:
-  bool SupportsChildActivation(aura::Window* window) const override {
+  bool SupportsChildActivation(const aura::Window* window) const override {
     return window == window->GetRootWindow();
   }
 

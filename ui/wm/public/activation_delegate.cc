@@ -18,7 +18,7 @@ void SetActivationDelegate(aura::Window* window, ActivationDelegate* delegate) {
   window->SetProperty(kActivationDelegateKey, delegate);
 }
 
-ActivationDelegate* GetActivationDelegate(aura::Window* window) {
+ActivationDelegate* GetActivationDelegate(const aura::Window* window) {
   return window->GetProperty(kActivationDelegateKey);
 }
 

@@ -37,7 +37,8 @@ ChromeShellDelegate::ChromeShellDelegate() = default;
 
 ChromeShellDelegate::~ChromeShellDelegate() = default;
 
-bool ChromeShellDelegate::CanShowWindowForUser(aura::Window* window) const {
+bool ChromeShellDelegate::CanShowWindowForUser(
+    const aura::Window* window) const {
   return ::CanShowWindowForUser(window,
                                 base::BindRepeating(&GetActiveBrowserContext));
 }

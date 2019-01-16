@@ -24,8 +24,10 @@ class TestFocusRules : public wm::BaseFocusRules {
   ~TestFocusRules() override = default;
 
   // wm::BaseFocusRules overrides:
-  bool SupportsChildActivation(Window* window) const override { return true; }
-  bool CanActivateWindow(Window* window) const override { return true; }
+  bool SupportsChildActivation(const Window* window) const override {
+    return true;
+  }
+  bool CanActivateWindow(const Window* window) const override { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestFocusRules);

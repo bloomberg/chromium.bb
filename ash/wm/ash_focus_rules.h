@@ -20,12 +20,12 @@ class ASH_EXPORT AshFocusRules : public ::wm::BaseFocusRules {
 
  private:
   // ::wm::BaseFocusRules:
-  bool IsToplevelWindow(aura::Window* window) const override;
-  bool SupportsChildActivation(aura::Window* window) const override;
+  bool IsToplevelWindow(const aura::Window* window) const override;
+  bool SupportsChildActivation(const aura::Window* window) const override;
   bool IsWindowConsideredVisibleForActivation(
-      aura::Window* window) const override;
-  bool CanActivateWindow(aura::Window* window) const override;
-  bool CanFocusWindow(aura::Window* window,
+      const aura::Window* window) const override;
+  bool CanActivateWindow(const aura::Window* window) const override;
+  bool CanFocusWindow(const aura::Window* window,
                       const ui::Event* event) const override;
   aura::Window* GetNextActivatableWindow(aura::Window* ignore) const override;
 

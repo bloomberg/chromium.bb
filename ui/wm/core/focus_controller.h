@@ -56,9 +56,10 @@ class WM_CORE_EXPORT FocusController : public ActivationClient,
   void ActivateWindow(aura::Window* window) override;
   void DeactivateWindow(aura::Window* window) override;
   const aura::Window* GetActiveWindow() const override;
-  aura::Window* GetActivatableWindow(aura::Window* window) override;
-  aura::Window* GetToplevelWindow(aura::Window* window) override;
-  bool CanActivateWindow(aura::Window* window) const override;
+  aura::Window* GetActivatableWindow(aura::Window* window) const override;
+  const aura::Window* GetToplevelWindow(
+      const aura::Window* window) const override;
+  bool CanActivateWindow(const aura::Window* window) const override;
 
   // Overridden from aura::client::FocusClient:
   void AddObserver(aura::client::FocusChangeObserver* observer) override;

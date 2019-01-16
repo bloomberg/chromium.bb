@@ -33,7 +33,7 @@ class ASH_EXPORT ShellDelegate {
 
   // Returns true if |window| can be shown for the delegate's concept of current
   // user.
-  virtual bool CanShowWindowForUser(aura::Window* window) const = 0;
+  virtual bool CanShowWindowForUser(const aura::Window* window) const = 0;
 
   // TODO(jamescook): Replace with a mojo-compatible interface.
   virtual std::unique_ptr<ScreenshotDelegate> CreateScreenshotDelegate() = 0;
