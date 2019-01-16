@@ -66,7 +66,8 @@ void PrepareLanguageModels(ios::ChromeBrowserState* const chrome_state,
 
 // static
 LanguageModelManagerFactory* LanguageModelManagerFactory::GetInstance() {
-  return base::Singleton<LanguageModelManagerFactory>::get();
+  static base::NoDestructor<LanguageModelManagerFactory> instance;
+  return instance.get();
 }
 
 // static

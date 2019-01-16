@@ -7,7 +7,8 @@
 
 #include <memory>
 
-#include "base/memory/singleton.h"
+#include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
@@ -30,7 +31,7 @@ class UrlLanguageHistogramFactory : public BrowserStateKeyedServiceFactory {
       ios::ChromeBrowserState* browser_state);
 
  private:
-  friend struct base::DefaultSingletonTraits<UrlLanguageHistogramFactory>;
+  friend class base::NoDestructor<UrlLanguageHistogramFactory>;
 
   UrlLanguageHistogramFactory();
   ~UrlLanguageHistogramFactory() override;
