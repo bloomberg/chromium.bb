@@ -531,12 +531,6 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OverviewMode) {
   EXPECT_TRUE(PerformAcceleratorAction(ash::TOGGLE_OVERVIEW));
   while (true) {
     std::string utterance = speech_monitor_.GetNextUtterance();
-    if (base::MatchPattern(utterance, "Edit text"))
-      break;
-  }
-
-  while (true) {
-    std::string utterance = speech_monitor_.GetNextUtterance();
     if (utterance == "Entered window overview mode")
       break;
   }
