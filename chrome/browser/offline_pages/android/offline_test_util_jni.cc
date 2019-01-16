@@ -66,6 +66,43 @@ void OnDeletePageDone(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
                                        static_cast<int>(result));
 }
 
+std::string RequestListToString(
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
+  std::stringstream ss;
+  ss << "[\n";
+  for (std::unique_ptr<SavePageRequest>& request : requests) {
+    ss << " " << request->ToString() << "\n";
+  }
+  ss << "\n]";
+  return ss.str();
+}
+
+void DumpRequestCoordinatorState(
+    base::OnceCallback<void(std::string)> callback) {
+  auto convert_and_return =
+      [](base::OnceCallback<void(std::string)> callback,
+         std::vector<std::unique_ptr<SavePageRequest>> requests) {
+        std::move(callback).Run(RequestListToString(std::move(requests)));
+      };
+  GetRequestCoordinator()->GetAllRequests(
+      base::BindOnce(convert_and_return, std::move(callback)));
+}
+
+class Interceptor {
+ public:
+  void InterceptWithOfflineError(const GURL& url, base::OnceClosure callback) {
+    interceptors_.push_back(
+        content::URLLoaderInterceptor::SetupRequestFailForURL(
+            url, net::Error::ERR_INTERNET_DISCONNECTED, std::move(callback)));
+  }
+
+ private:
+  std::vector<std::unique_ptr<content::URLLoaderInterceptor>> interceptors_;
+};
+
+// This is a raw pointer because global destructors are disallowed.
+Interceptor* g_interceptor = nullptr;
+
 }  // namespace
 
 void JNI_OfflineTestUtil_GetRequestsInQueue(
@@ -110,6 +147,43 @@ void JNI_OfflineTestUtil_DeletePagesByOfflineId(
   GetOfflinePageModel()->DeletePagesByOfflineId(
       offline_ids,
       base::BindOnce(&OnDeletePageDone, std::move(j_callback_ref)));
+}
+
+JNI_EXPORT void JNI_OfflineTestUtil_StartRequestCoordinatorProcessing(
+    JNIEnv* env) {
+  GetRequestCoordinator()->StartImmediateProcessing(base::DoNothing());
+}
+
+void JNI_OfflineTestUtil_InterceptWithOfflineError(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& j_url,
+    const JavaParamRef<jobject>& j_ready_callback) {
+  if (!g_interceptor)
+    g_interceptor = new Interceptor;
+  const std::string url = base::android::ConvertJavaStringToUTF8(env, j_url);
+  g_interceptor->InterceptWithOfflineError(
+      GURL(url), base::BindOnce(base::android::RunRunnableAndroid,
+                                base::android::ScopedJavaGlobalRef<jobject>(
+                                    env, j_ready_callback)));
+}
+
+void JNI_OfflineTestUtil_ClearIntercepts(JNIEnv* env) {
+  delete g_interceptor;
+  g_interceptor = nullptr;
+}
+
+void JNI_OfflineTestUtil_DumpRequestCoordinatorState(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& j_callback) {
+  auto wrap_callback = base::BindOnce(
+      [](base::android::ScopedJavaGlobalRef<jobject> j_callback,
+         std::string dump) {
+        JNIEnv* env = base::android::AttachCurrentThread();
+        base::android::RunObjectCallbackAndroid(
+            j_callback, base::android::ConvertUTF8ToJavaString(env, dump));
+      },
+      base::android::ScopedJavaGlobalRef<jobject>(env, j_callback));
+  DumpRequestCoordinatorState(std::move(wrap_callback));
 }
 
 }  // namespace offline_pages

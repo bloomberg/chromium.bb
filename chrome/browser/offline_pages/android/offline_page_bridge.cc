@@ -365,7 +365,8 @@ ScopedJavaLocalRef<jobjectArray> OfflinePageBridge::CreateJavaSavePageRequests(
     ScopedJavaLocalRef<jobject> j_save_page_request =
         Java_SavePageRequest_create(
             env, static_cast<int>(request.request_state()),
-            request.request_id(), url, name_space, id, origin);
+            request.request_id(), url, name_space, id, origin,
+            static_cast<int>(request.auto_fetch_notification_state()));
     env->SetObjectArrayElement(joa, i, j_save_page_request.obj());
   }
 
