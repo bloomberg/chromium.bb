@@ -370,9 +370,8 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
     // password token, the user must perform a full online reauth.
     RecordAuthenticatedLaunchUserEvent(
         AuthenticatedLaunchUserEvent::GAIA_REAUTH_DIALOG);
-    UserManagerProfileDialog::ShowReauthDialogWithProfilePath(
-        browser_context, email_address_, profile_path,
-        signin_metrics::Reason::REASON_UNLOCK);
+    UserManagerProfileDialog::ShowUnlockDialogWithProfilePath(
+        browser_context, email_address_, profile_path);
   } else if (entry->IsSigninRequired() && entry->IsSupervised()) {
     // Supervised profile will only be locked when force-sign-in is enabled
     // and it shouldn't be unlocked. Display the error message directly via
@@ -398,13 +397,11 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
         web_ui()->GetWebContents()->GetBrowserContext());
   } else {
     // Fresh sign in via user manager without existing email address.
+    DCHECK(signin_util::IsForceSigninEnabled());
     RecordAuthenticatedLaunchUserEvent(
         AuthenticatedLaunchUserEvent::FORCED_PRIMARY_SIGNIN_DIALOG);
-    UserManagerProfileDialog::ShowSigninDialog(
-        browser_context, profile_path,
-        signin_util::IsForceSigninEnabled()
-            ? signin_metrics::Reason::REASON_FORCED_SIGNIN_PRIMARY_ACCOUNT
-            : signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT);
+    UserManagerProfileDialog::ShowForceSigninDialog(browser_context,
+                                                    profile_path);
   }
 }
 
@@ -564,9 +561,8 @@ void UserManagerScreenHandler::OnOAuthError() {
   // Password has changed.  Go through online signin flow.
   DCHECK(!email_address_.empty());
   oauth_client_.reset();
-  UserManagerProfileDialog::ShowReauthDialog(
-      web_ui()->GetWebContents()->GetBrowserContext(), email_address_,
-      signin_metrics::Reason::REASON_UNLOCK);
+  UserManagerProfileDialog::ShowUnlockDialog(
+      web_ui()->GetWebContents()->GetBrowserContext(), email_address_);
 }
 
 void UserManagerScreenHandler::OnNetworkError(int response_code) {

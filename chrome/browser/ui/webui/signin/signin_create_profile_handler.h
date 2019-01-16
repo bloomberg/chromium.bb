@@ -101,7 +101,7 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
                                        Profile::CreateStatus status);
 
   // Opens a new signin dialog for |profile|.
-  virtual void OpenSigninDialogForProfile(Profile* profile);
+  virtual void OpenForceSigninDialogForProfile(Profile* profile);
 
   // This callback is run after a new browser (but not the window) has been
   // created for the new profile.

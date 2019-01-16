@@ -277,7 +277,7 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     browser = handler_->GetDesktopBrowser();
 
   signin_metrics::Reason reason =
-      signin::GetSigninReasonForPromoURL(current_url_);
+      signin::GetSigninReasonForEmbeddedPromoURL(current_url_);
   if (reason == signin_metrics::Reason::REASON_FETCH_LST_ONLY) {
 // Constants are only available on Windows for the Google Credential
 // Provider for Windows. Other platforms will just close the dialog here.
@@ -345,7 +345,7 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
                             signin_metrics::SourceForRefreshTokenOperation::
                                 kInlineLoginHandler_Signin);
 
-    if (signin::IsAutoCloseEnabledInURL(current_url_)) {
+    if (signin::IsAutoCloseEnabledInEmbeddedURL(current_url_)) {
       // Close the gaia sign in tab via a task to make sure we aren't in the
       // middle of any webui handler code.
       bool show_account_management = ShouldShowAccountManagement(
@@ -415,8 +415,8 @@ void InlineSigninHelper::CreateSyncStarter(
   // OneClickSigninSyncStarter will delete itself once the job is done.
   new OneClickSigninSyncStarter(
       profile_, browser, gaia_id_, email_, password_, refresh_token,
-      signin::GetAccessPointForPromoURL(current_url),
-      signin::GetSigninReasonForPromoURL(current_url), profile_mode,
+      signin::GetAccessPointForEmbeddedPromoURL(current_url),
+      signin::GetSigninReasonForEmbeddedPromoURL(current_url), profile_mode,
       base::Bind(&InlineLoginHandlerImpl::SyncStarterCallback, handler_));
 }
 
@@ -485,7 +485,7 @@ void InlineSigninHelper::OnClientOAuthFailure(
     handler_->HandleLoginError(error.ToString(), base::string16());
 
   signin_metrics::Reason reason =
-      signin::GetSigninReasonForPromoURL(current_url_);
+      signin::GetSigninReasonForEmbeddedPromoURL(current_url_);
   if (reason != signin_metrics::Reason::REASON_FETCH_LST_ONLY) {
     AboutSigninInternals* about_signin_internals =
         AboutSigninInternalsFactory::GetForProfile(profile_);
@@ -540,7 +540,7 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
   content::WebContents* contents = web_ui()->GetWebContents();
   const GURL& current_url = contents->GetURL();
   signin_metrics::Reason reason =
-      signin::GetSigninReasonForPromoURL(current_url);
+      signin::GetSigninReasonForEmbeddedPromoURL(current_url);
 
 #if defined(OS_WIN)
   if (reason == signin_metrics::Reason::REASON_FETCH_LST_ONLY) {
@@ -618,7 +618,7 @@ void InlineLoginHandlerImpl::CompleteLogin(const std::string& email,
   // find the right profile to reauthenticate.  Otherwise the profile can be
   // taken from web_ui().
   signin_metrics::Reason reason =
-      signin::GetSigninReasonForPromoURL(current_url);
+      signin::GetSigninReasonForEmbeddedPromoURL(current_url);
 
   Profile* profile = Profile::FromWebUI(web_ui());
   if (reason != signin_metrics::Reason::REASON_FETCH_LST_ONLY &&
@@ -707,7 +707,7 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
     Profile* profile,
     Profile::CreateStatus status) {
   signin_metrics::Reason reason =
-      signin::GetSigninReasonForPromoURL(params.url);
+      signin::GetSigninReasonForEmbeddedPromoURL(params.url);
 
   std::string default_email;
   net::GetValueForKeyInQuery(params.url, "email", &default_email);
@@ -759,7 +759,7 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
   }
 
   signin_metrics::AccessPoint access_point =
-      signin::GetAccessPointForPromoURL(params.url);
+      signin::GetAccessPointForEmbeddedPromoURL(params.url);
   LogHistogramValue(signin_metrics::HISTOGRAM_ACCEPTED);
   bool switch_to_advanced =
       params.choose_what_to_sync &&
@@ -833,7 +833,7 @@ void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg,
   content::WebContents* contents = web_ui()->GetWebContents();
   const GURL& current_url = contents->GetURL();
   signin_metrics::Reason reason =
-      signin::GetSigninReasonForPromoURL(current_url);
+      signin::GetSigninReasonForEmbeddedPromoURL(current_url);
 
   if (reason == signin_metrics::Reason::REASON_FETCH_LST_ONLY) {
     base::Value error_value(base::Value::Type::DICTIONARY);
@@ -890,8 +890,8 @@ void InlineLoginHandlerImpl::SyncStarterCallback(
 
   const GURL& current_url = contents->GetLastCommittedURL();
   signin_metrics::AccessPoint access_point =
-      signin::GetAccessPointForPromoURL(current_url);
-  bool auto_close = signin::IsAutoCloseEnabledInURL(current_url);
+      signin::GetAccessPointForEmbeddedPromoURL(current_url);
+  bool auto_close = signin::IsAutoCloseEnabledInEmbeddedURL(current_url);
 
   if (result == OneClickSigninSyncStarter::SYNC_SETUP_FAILURE) {
     RedirectToNtpOrAppsPage(contents, access_point);

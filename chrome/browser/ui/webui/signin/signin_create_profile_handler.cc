@@ -218,7 +218,7 @@ void SigninCreateProfileHandler::CreateShortcutAndShowSuccess(
     // have been run, to give them a chance to initialize the profile.
     OpenNewWindowForProfile(profile, Profile::CREATE_STATUS_INITIALIZED);
   } else if (is_force_signin_enabled) {
-    OpenSigninDialogForProfile(profile);
+    OpenForceSigninDialogForProfile(profile);
   }
   profile_creation_type_ = NO_CREATION_IN_PROGRESS;
 }
@@ -237,12 +237,10 @@ void SigninCreateProfileHandler::OpenNewWindowForProfile(
       profile, status);
 }
 
-void SigninCreateProfileHandler::OpenSigninDialogForProfile(Profile* profile) {
-  UserManagerProfileDialog::ShowSigninDialog(
-      web_ui()->GetWebContents()->GetBrowserContext(), profile->GetPath(),
-      signin_util::IsForceSigninEnabled()
-          ? signin_metrics::Reason::REASON_FORCED_SIGNIN_PRIMARY_ACCOUNT
-          : signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT);
+void SigninCreateProfileHandler::OpenForceSigninDialogForProfile(
+    Profile* profile) {
+  UserManagerProfileDialog::ShowForceSigninDialog(
+      web_ui()->GetWebContents()->GetBrowserContext(), profile->GetPath());
 }
 
 void SigninCreateProfileHandler::ShowProfileCreationError(

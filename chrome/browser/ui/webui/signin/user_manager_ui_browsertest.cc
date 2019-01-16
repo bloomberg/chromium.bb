@@ -197,6 +197,7 @@ IN_PROC_BROWSER_TEST_F(UserManagerUIAuthenticatedUserBrowserTest,
 IN_PROC_BROWSER_TEST_F(UserManagerUIAuthenticatedUserBrowserTest,
                        ForcedPrimarySignin) {
   Init();
+  signin_util::SetForceSigninForTesting(true);
 
   LaunchAuthenticatedUser("");
 

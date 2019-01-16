@@ -231,48 +231,40 @@ base::FilePath UserManager::GetSigninProfilePath() {
 // -------------------------------------------------------------
 
 // static
-void UserManagerProfileDialog::ShowReauthDialog(
+void UserManagerProfileDialog::ShowUnlockDialog(
     content::BrowserContext* browser_context,
-    const std::string& email,
-    signin_metrics::Reason reason) {
-  ShowReauthDialogWithProfilePath(browser_context, email, base::FilePath(),
-                                  reason);
+    const std::string& email) {
+  ShowUnlockDialogWithProfilePath(browser_context, email, base::FilePath());
 }
 
 // static
-void UserManagerProfileDialog::ShowReauthDialogWithProfilePath(
+void UserManagerProfileDialog::ShowUnlockDialogWithProfilePath(
     content::BrowserContext* browser_context,
     const std::string& email,
-    const base::FilePath& profile_path,
-    signin_metrics::Reason reason) {
-  CHECK(signin_util::IsForceSigninEnabled() ||
-        reason != signin_metrics::Reason::REASON_UNLOCK)
-      << "Legacy supervised users are no longer supported.";
+    const base::FilePath& profile_path) {
   // This method should only be called if the user manager is already showing.
   if (!UserManager::IsShowing())
     return;
   // Load the re-auth URL, prepopulated with the user's email address.
   // Add the index of the profile to the URL so that the inline login page
   // knows which profile to load and update the credentials.
-  GURL url = signin::GetReauthURLWithEmailForDialog(
-      signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER, reason, email);
+  GURL url = signin::GetEmbeddedReauthURLWithEmail(
+      signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
+      signin_metrics::Reason::REASON_UNLOCK, email);
   g_user_manager_view->SetSigninProfilePath(profile_path);
   g_user_manager_view->ShowDialog(browser_context, email, url);
 }
 
 // static
-void UserManagerProfileDialog::ShowSigninDialog(
+void UserManagerProfileDialog::ShowForceSigninDialog(
     content::BrowserContext* browser_context,
-    const base::FilePath& profile_path,
-    signin_metrics::Reason reason) {
+    const base::FilePath& profile_path) {
   if (!UserManager::IsShowing())
     return;
-  DCHECK(reason ==
-             signin_metrics::Reason::REASON_FORCED_SIGNIN_PRIMARY_ACCOUNT ||
-         reason == signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT);
   g_user_manager_view->SetSigninProfilePath(profile_path);
-  GURL url = signin::GetPromoURLForDialog(
-      signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER, reason, true);
+  GURL url = signin::GetEmbeddedPromoURL(
+      signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
+      signin_metrics::Reason::REASON_FORCED_SIGNIN_PRIMARY_ACCOUNT, true);
   g_user_manager_view->ShowDialog(browser_context, std::string(), url);
 }
 

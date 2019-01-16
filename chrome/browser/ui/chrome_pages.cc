@@ -390,7 +390,7 @@ void ShowBrowserSignin(Browser* browser,
 
 #if defined(OS_CHROMEOS)
   // ChromeOS always loads the chrome://chrome-signin in a tab.
-  GURL url = signin::GetPromoURLForTab(
+  GURL url = signin::GetEmbeddedPromoURLForTab(
       access_point, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
       false);
   NavigateParams params(GetSingletonTabNavigateParams(browser, url));

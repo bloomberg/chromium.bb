@@ -104,9 +104,9 @@ void InlineLoginHandler::ContinueHandleInitializeMessage() {
 
   const GURL& current_url = web_ui()->GetWebContents()->GetURL();
   signin_metrics::AccessPoint access_point =
-      signin::GetAccessPointForPromoURL(current_url);
+      signin::GetAccessPointForEmbeddedPromoURL(current_url);
   signin_metrics::Reason reason =
-      signin::GetSigninReasonForPromoURL(current_url);
+      signin::GetSigninReasonForEmbeddedPromoURL(current_url);
 
   if (reason != signin_metrics::Reason::REASON_REAUTHENTICATION &&
       reason != signin_metrics::Reason::REASON_UNLOCK &&

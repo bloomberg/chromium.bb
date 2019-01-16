@@ -9,35 +9,32 @@
 
 namespace signin {
 
-class SigninPromoTest : public ::testing::Test {};
-
-TEST_F(SigninPromoTest, TestPromoURL) {
+TEST(SigninPromoTest, TestForceSigninURL) {
   GURL expected_url_1(
       "chrome://chrome-signin/?access_point=0&reason=0&auto_close=1");
   EXPECT_EQ(expected_url_1,
-            GetPromoURLForDialog(
+            GetEmbeddedPromoURL(
                 signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
                 signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT, true));
   GURL expected_url_2("chrome://chrome-signin/?access_point=15&reason=3");
   EXPECT_EQ(expected_url_2,
-            GetPromoURLForDialog(
+            GetEmbeddedPromoURL(
                 signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO,
                 signin_metrics::Reason::REASON_UNLOCK, false));
 }
 
-TEST_F(SigninPromoTest, TestReauthURL) {
+TEST(SigninPromoTest, TestReauthURL) {
   GURL expected_url_1(
       "chrome://chrome-signin/"
-      "?access_point=0&reason=0&auto_close=1&email=example%40domain.com"
+      "?access_point=0&reason=3&auto_close=1&email=example%40domain.com"
       "&validateEmail=1&readOnlyEmail=1");
   EXPECT_EQ(expected_url_1,
-            GetReauthURLWithEmailForDialog(
+            GetEmbeddedReauthURLWithEmail(
                 signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
-                signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
-                "example@domain.com"));
+                signin_metrics::Reason::REASON_UNLOCK, "example@domain.com"));
 }
 
-TEST_F(SigninPromoTest, TestLandingURL) {
+TEST(SigninPromoTest, TestLandingURL) {
   GURL expected_url_1(
       "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/"
       "success.html?access_point=1&source=13");
