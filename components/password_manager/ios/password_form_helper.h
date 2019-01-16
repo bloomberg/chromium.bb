@@ -66,6 +66,16 @@ class WebState;
 - (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData
        completionHandler:(nullable void (^)(BOOL))completionHandler;
 
+// Fills new password field for (optional as @"") |newPasswordIdentifier| and
+// for (optional as @"") confirm password field |confirmPasswordIdentifier| in
+// the form identified by |formData|. Invokes |completionHandler| with true if
+// any fields were filled, false otherwise.
+- (void)fillPasswordForm:(NSString*)formName
+        newPasswordIdentifier:(NSString*)newPasswordIdentifier
+    confirmPasswordIdentifier:(NSString*)confirmPasswordIdentifier
+            generatedPassword:(NSString*)generatedPassword
+            completionHandler:(nullable void (^)(BOOL))completionHandler;
+
 // Autofills credentials into the page. Credentials and input fields are
 // specified by |fillData|. Invokes |completionHandler| when finished with YES
 // if successful and NO otherwise.

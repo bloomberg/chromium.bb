@@ -73,7 +73,10 @@
 #endif
 
 using autofill::FormData;
+using autofill::NewPasswordFormGenerationData;
 using autofill::PasswordForm;
+using base::SysNSStringToUTF16;
+using base::SysUTF16ToNSString;
 using password_manager::AccountSelectFillData;
 using password_manager::FillData;
 using password_manager::GetPageURLAndCheckTrustLevel;
@@ -180,8 +183,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   std::unique_ptr<autofill::PasswordForm> _pendingAutoSigninPasswordForm;
 
   // Form data for password generation on this page.
-  std::vector<const autofill::NewPasswordFormGenerationData*>
-      _formGenerationData;
+  std::map<base::string16, NewPasswordFormGenerationData> _formGenerationData;
 }
 
 - (instancetype)initWithWebState:(web::WebState*)webState {
@@ -432,11 +434,11 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       return;
     }
     case autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY: {
-      [self generatePasswordForForm:formName
-                  completionHandler:^(BOOL injected) {
-                    if (injected)
-                      completion();
-                  }];
+      [self generatePasswordForFormName:formName
+                      completionHandler:^(BOOL injected) {
+                        if (injected)
+                          completion();
+                      }];
       // TODO(crbug.com/886583): add metrics.
       return;
     }
@@ -505,12 +507,12 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   }
 
   // Creates view controller then shows the subview.
-  self.notifyAutoSigninViewController = [
-      [NotifyUserAutoSigninViewController alloc]
-      initWithUsername:base::SysUTF16ToNSString(formSignedIn->username_value)
-               iconURL:formSignedIn->icon_url
-      URLLoaderFactory:_webState->GetBrowserState()
-                           ->GetSharedURLLoaderFactory()];
+  self.notifyAutoSigninViewController =
+      [[NotifyUserAutoSigninViewController alloc]
+          initWithUsername:SysUTF16ToNSString(formSignedIn->username_value)
+                   iconURL:formSignedIn->icon_url
+          URLLoaderFactory:_webState->GetBrowserState()
+                               ->GetSharedURLLoaderFactory()];
   TabIdTabHelper* tabIdHelper = TabIdTabHelper::FromWebState(_webState);
   if (![_delegate displaySignInNotification:self.notifyAutoSigninViewController
                                   fromTabId:tabIdHelper->tab_id()]) {
@@ -548,9 +550,8 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 }
 
 - (void)formEligibleForGenerationFound:
-    (const autofill::NewPasswordFormGenerationData&)form {
-  _formGenerationData.push_back(
-      new autofill::NewPasswordFormGenerationData(form));
+    (const NewPasswordFormGenerationData&)form {
+  _formGenerationData[form.form_name] = form;
 }
 
 #pragma mark - PasswordFormHelperDelegate
@@ -656,14 +657,45 @@ void LogSuggestionShown(PasswordSuggestionType type) {
     return NO;
   if (![fieldType isEqualToString:@"password"])
     return NO;
+  if (![self hasFormForGenerationForFormName:formName])
+    return NO;
 
   // TODO(crbug.com/886583): validate field against _formGenerationData
 
   return YES;
 }
 
-- (void)generatePasswordForForm:(NSString*)formName
-              completionHandler:(void (^)(BOOL))completionHandler {
+- (BOOL)hasFormForGenerationForFormName:(NSString*)formName {
+  const base::string16 name = SysNSStringToUTF16(formName);
+  return _formGenerationData.find(name) != _formGenerationData.end();
+}
+
+- (const NewPasswordFormGenerationData)getFormForGenerationFromFormName:
+    (NSString*)formName {
+  const base::string16 name = SysNSStringToUTF16(formName);
+  return _formGenerationData[name];
+}
+
+- (void)generatePasswordForFormName:(NSString*)formName
+                  completionHandler:(void (^)(BOOL))completionHandler {
+  if (![self hasFormForGenerationForFormName:formName])
+    return;
+  const NewPasswordFormGenerationData form =
+      [self getFormForGenerationFromFormName:formName];
+  NSString* newPasswordIdentifier =
+      SysUTF16ToNSString(form.new_password_element);
+  NSString* confirmPasswordIdentifier =
+      SysUTF16ToNSString(form.confirmation_password_element);
+  [self generatePasswordForFormName:formName
+              newPasswordIdentifier:newPasswordIdentifier
+          confirmPasswordIdentifier:confirmPasswordIdentifier
+                  completionHandler:completionHandler];
+}
+
+- (void)generatePasswordForFormName:(NSString*)formName
+              newPasswordIdentifier:(NSString*)newPasswordIdentifier
+          confirmPasswordIdentifier:(NSString*)confirmPasswordIdentifier
+                  completionHandler:(void (^)(BOOL))completionHandler {
   // TODO(crbug.com/886583): form_signature, field_signature, max_length and
   // spec_priority in PGM::GeneratePassword are being refactored, passing 0 for
   // now to get a generic random password.
@@ -671,7 +703,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       _passwordGenerationManager->GeneratePassword([self lastCommittedURL], 0,
                                                    0, 0, nullptr);
 
-  NSString* displayPassword = base::SysUTF16ToNSString(generatedPassword);
+  NSString* displayPassword = SysUTF16ToNSString(generatedPassword);
 
   // TODO(crbug.com/886583): i18n
   NSString* title = [NSString
@@ -679,6 +711,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   NSString* message = @"Chrome will remember this password for you. You don't "
                       @"have to remember it.";
 
+  // TODO(crbug.com/886583): add eg tests
   self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.baseViewController
                            title:title
@@ -690,14 +723,29 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       IsIPadIdiom() ? UIAlertControllerStyleAlert
                     : UIAlertControllerStyleActionSheet;
 
-  [self.actionSheetCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_SUGGEST_PASSWORD)
-                action:^{
-                  // TODO(crbug.com/886583): inject in password form
-                  if (completionHandler)
-                    completionHandler(YES);
-                }
-                 style:UIAlertActionStyleDefault];
+  auto generatedPasswordInjected = ^(BOOL success) {
+    if (success) {
+      // TODO(crbug.com/886583) do not call presaved if username hasn't been
+      // filled in.
+      // TODO(crbug.com/886583) call _pM::OnPresaveGeneratedPassword once it has
+      // been refactored not to need a full form.
+    }
+    if (completionHandler)
+      completionHandler(YES);
+  };
+
+  auto injectGeneratedPassword = ^{
+    [self.formHelper fillPasswordForm:formName
+                newPasswordIdentifier:newPasswordIdentifier
+            confirmPasswordIdentifier:confirmPasswordIdentifier
+                    generatedPassword:displayPassword
+                    completionHandler:generatedPasswordInjected];
+  };
+
+  // TODO(crbug.com/886583): i18n
+  [self.actionSheetCoordinator addItemWithTitle:@"Use Suggested Password"
+                                         action:injectGeneratedPassword
+                                          style:UIAlertActionStyleDefault];
 
   [self.actionSheetCoordinator
       addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)

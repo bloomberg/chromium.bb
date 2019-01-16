@@ -456,9 +456,15 @@ TEST_F(NewPasswordFormManagerTest, AutofillSignUpForm) {
   constexpr uint32_t kNoID = FormFieldData::kNotSetFormControlRendererId;
   EXPECT_EQ(kNoID, fill_data.password_field.unique_renderer_id);
   EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
+#if defined(OS_IOS)
+  EXPECT_EQ(ASCIIToUTF16("sign-in"), generation_data.form_name);
+  EXPECT_EQ(ASCIIToUTF16("password"), generation_data.new_password_element);
+  EXPECT_EQ(base::string16(), generation_data.confirmation_password_element);
+#else
   EXPECT_EQ(observed_form_.fields.back().unique_renderer_id,
             generation_data.new_password_renderer_id);
   EXPECT_EQ(kNoID, generation_data.confirmation_password_renderer_id);
+#endif
 }
 
 // Check that generation signal is sent the the renderer when new password
@@ -485,9 +491,15 @@ TEST_F(NewPasswordFormManagerTest, GenerationOnNewAndConfirmPasswordFields) {
   fetcher_->SetNonFederated({}, 0u);
 
   task_runner_->FastForwardUntilNoTasksRemain();
+#if defined(OS_IOS)
+  EXPECT_EQ(ASCIIToUTF16("sign-in"), generation_data.form_name);
+  EXPECT_EQ(ASCIIToUTF16("password"), generation_data.new_password_element);
+  EXPECT_EQ(base::string16(), generation_data.confirmation_password_element);
+#else
   EXPECT_EQ(new_password_render_id, generation_data.new_password_renderer_id);
   EXPECT_EQ(confirm_password_render_id,
             generation_data.confirmation_password_renderer_id);
+#endif
 }
 
 TEST_F(NewPasswordFormManagerTest, AutofillWithBlacklistedMatch) {

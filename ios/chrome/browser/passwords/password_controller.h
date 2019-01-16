@@ -79,10 +79,14 @@ class PasswordManagerClient;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Generates and offers a password to the user based on given |formName|.
-// |completionHandler| called with YES if user accepted the generated password.
-- (void)generatePasswordForForm:(NSString*)formName
-              completionHandler:(void (^)(BOOL))completionHandler;
+// Generates and offers a password to the user based on given |formName| for the
+// given (optional) fields |newPasswordIdentfier| and
+// |confirmPasswordIdentfier|. |completionHandler| called with YES if user
+// accepted the generated password.
+- (void)generatePasswordForFormName:(NSString*)formName
+              newPasswordIdentifier:(NSString*)newPasswordIdentifier
+          confirmPasswordIdentifier:(NSString*)confirmPasswordIdentifier
+                  completionHandler:(void (^)(BOOL))completionHandler;
 
 @end
 

@@ -125,9 +125,12 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
 }
 
 - (void)generateAndOfferPassword {
+  if (![self isLastFocusedElementPasswordField])
+    return;
   web::WebState* webState = self.webStateList->GetActiveWebState();
   PasswordTabHelper::FromWebState(webState)->GenerateAndOfferPassword(
-      base::SysUTF8ToNSString(self.lastFocusedFormName));
+      base::SysUTF8ToNSString(self.lastFocusedFormName),
+      base::SysUTF8ToNSString(self.lastFocusedElementIdentifier), nil);
 }
 
 #pragma mark - FormActivityObserver

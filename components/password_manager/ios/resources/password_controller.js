@@ -202,6 +202,36 @@ __gCrWeb.passwords['fillPasswordForm'] = function(
 };
 
 /**
+ * Fills all password fields in the form identified by |formName|
+ * with |password|.
+ *
+ * @param {string} formName The name of the form to fill.
+ * @param {string} newPasswordIdentifier The id of password element to fill.
+ * @param {string} confirmPasswordIdentifier The id of confirm password element
+ *   to fill.
+ * @param {string} password The password to fill.
+ * @return {boolean} Whether a password field has been filled.
+*/
+__gCrWeb.passwords['fillPasswordFormWithGeneratedPassword'] = function(
+    formName, newPasswordIdentifier, confirmPasswordIdentifier, password) {
+  var form = __gCrWeb.form.getFormElementFromIdentifier(formName);
+  if (!form)
+    return false;
+  var inputs = getFormInputElements_(form);
+  var newPasswordField =
+      findInputByFieldIdentifier_(inputs, newPasswordIdentifier);
+  if (newPasswordField) {
+    newPasswordField.value = password;
+  }
+  var confirmPasswordField =
+      findInputByFieldIdentifier_(inputs, confirmPasswordIdentifier);
+  if (confirmPasswordField) {
+    confirmPasswordField.value = password;
+  }
+  return !!newPasswordField || !!confirmPasswordField;
+};
+
+/**
  * Given a description of a form (origin, action and input fields),
  * finds that form on the page and fills in the specified username
  * and password.
