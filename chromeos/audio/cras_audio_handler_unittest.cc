@@ -42,8 +42,6 @@ const uint64_t kMicJackId = 10010;
 const uint64_t kKeyboardMicId = 10011;
 const uint64_t kFrontMicId = 10012;
 const uint64_t kRearMicId = 10013;
-const uint64_t kOtherTypeOutputId = 90001;
-const uint64_t kOtherTypeInputId = 90002;
 const uint64_t kUSBJabraSpeakerOutputId1 = 90003;
 const uint64_t kUSBJabraSpeakerOutputId2 = 90004;
 const uint64_t kUSBJabraSpeakerInputId1 = 90005;
@@ -85,15 +83,6 @@ const AudioNodeInfo kFrontMic[] = {
 
 const AudioNodeInfo kRearMic[] = {
     {true, kRearMicId, "Fake Rear Mic", "REAR_MIC", "Rear Mic"}};
-
-const AudioNodeInfo kOtherTypeOutput[] = {{false, kOtherTypeOutputId,
-                                           "Output Device", "SOME_OTHER_TYPE",
-                                           "Other Type Output Device"}};
-
-const AudioNodeInfo kOtherTypeInput[] = {{true, kOtherTypeInputId,
-                                          "Input Device", "SOME_OTHER_TYPE",
-                                          "Other Type Input Device"}};
-
 const AudioNodeInfo kBluetoothHeadset[] = {{false, kBluetoothHeadsetId,
                                             "Bluetooth Headset", "BLUETOOTH",
                                             "Bluetooth Headset 1"}};
@@ -2271,10 +2260,10 @@ TEST_P(CrasAudioHandlerTest, SetVolumeGainPercentForDevice) {
             audio_pref_handler_->GetInputGainValue(&internal_mic));
 }
 
-TEST_P(CrasAudioHandlerTest, HandleOtherDeviceType) {
-  const size_t kNumValidAudioDevices = 4;
-  AudioNodeList audio_nodes = GenerateAudioNodeList(
-      {kInternalSpeaker, kOtherTypeOutput, kInternalMic, kOtherTypeInput});
+TEST_P(CrasAudioHandlerTest, TreatDualInternalMicNotAsAlternativeDevice) {
+  const size_t kNumValidAudioDevices = 3;
+  AudioNodeList audio_nodes =
+      GenerateAudioNodeList({kInternalSpeaker, kFrontMic, kRearMic});
   SetUpCrasAudioHandler(audio_nodes);
 
   // Verify the audio devices size.
@@ -2283,20 +2272,23 @@ TEST_P(CrasAudioHandlerTest, HandleOtherDeviceType) {
   EXPECT_EQ(kNumValidAudioDevices, audio_devices.size());
 
   // Verify the internal speaker has been selected as the active output,
-  // and the output device with some randown unknown type is handled gracefully.
+  // and there are no alternative output devices
   AudioDevice active_output;
   EXPECT_TRUE(
       cras_audio_handler_->GetPrimaryActiveOutputDevice(&active_output));
   EXPECT_EQ(kInternalSpeaker->id, active_output.id);
   EXPECT_EQ(kInternalSpeaker->id,
             cras_audio_handler_->GetPrimaryActiveOutputNode());
-  EXPECT_TRUE(cras_audio_handler_->has_alternative_output());
+  EXPECT_FALSE(cras_audio_handler_->has_alternative_output());
 
-  // Ensure the internal microphone has been selected as the active input,
-  // and the input device with some random unknown type is handled gracefully.
+  // Ensure the front microphone has been selected as the primary active input,
+  // and there are no alternative input devices.
+  // Note: For the device with both internal front and rear mic, we only show
+  // one internal mic in UI and none of front or rear mic should be treated
+  // as alternative input device.
   AudioDevice active_input;
-  EXPECT_EQ(kInternalMic->id, cras_audio_handler_->GetPrimaryActiveInputNode());
-  EXPECT_TRUE(cras_audio_handler_->has_alternative_input());
+  EXPECT_EQ(kFrontMic->id, cras_audio_handler_->GetPrimaryActiveInputNode());
+  EXPECT_FALSE(cras_audio_handler_->has_alternative_input());
 }
 
 TEST_P(CrasAudioHandlerTest, ActiveDeviceSelectionWithStableDeviceId) {

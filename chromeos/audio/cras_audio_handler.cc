@@ -1387,15 +1387,10 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
     AudioDevice device(nodes[i]);
     audio_devices_[device.id] = device;
     if (!has_alternative_input_ && device.is_input &&
-        device.type != AUDIO_TYPE_INTERNAL_MIC &&
-        device.type != AUDIO_TYPE_KEYBOARD_MIC &&
-        device.type != AUDIO_TYPE_HOTWORD &&
-        device.type != AUDIO_TYPE_POST_MIX_LOOPBACK &&
-        device.type != AUDIO_TYPE_POST_DSP_LOOPBACK) {
+        device.IsExternalDevice()) {
       has_alternative_input_ = true;
-    } else if (!has_alternative_output_ &&
-               !device.is_input &&
-               device.type != AUDIO_TYPE_INTERNAL_SPEAKER) {
+    } else if (!has_alternative_output_ && !device.is_input &&
+               device.IsExternalDevice()) {
       has_alternative_output_ = true;
     }
 
