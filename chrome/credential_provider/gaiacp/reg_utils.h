@@ -68,6 +68,16 @@ HRESULT GetIdFromSid(const wchar_t* sid, base::string16* id);
 // Returns the root registry key that needs to be verified in unit tests.
 const wchar_t* GetUsersRootKeyForTesting();
 
+// Gets a specific account picture registry key in HKEY_LOCAL_MACHINE
+HRESULT GetAccountPictureRegString(const base::string16& user_sid,
+                                   int image_size,
+                            wchar_t* value,
+                            ULONG* length);
+
+// Sets a specific account picture registry key in HKEY_LOCAL_MACHINE
+HRESULT SetAccountPictureRegString(const base::string16& user_sid,
+                                   int image_size,
+                            const base::string16& value);
 }  // namespace credential_provider
 
 #endif  // CHROME_CREDENTIAL_PROVIDER_GAIACP_REG_UTILS_H_

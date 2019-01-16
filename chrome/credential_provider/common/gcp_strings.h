@@ -40,6 +40,7 @@ enum UiExitCodes {
 
 // Names of keys returned on json data from UI process.
 extern const char kKeyEmail[];
+extern const char kKeyPicture[];
 extern const char kKeyFullname[];
 extern const char kKeyId[];
 extern const char kKeyMdmUrl[];
@@ -56,6 +57,7 @@ extern const char kKeyExitCode[];
 extern const wchar_t kUserTokenHandle[];
 extern const wchar_t kUserEmail[];
 extern const wchar_t kUserId[];
+extern const wchar_t kUserPictureUrl[];
 
 // Username and password key for special GAIA account to run GLS.
 extern const wchar_t kDefaultGaiaAccountName[];

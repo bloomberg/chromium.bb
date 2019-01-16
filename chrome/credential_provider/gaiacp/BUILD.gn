@@ -81,6 +81,8 @@ source_set("gaiacp_lib") {
     "scoped_user_profile.cc",
     "scoped_user_profile.h",
     "stdafx.h",
+    "win_http_url_fetcher.cc",
+    "win_http_url_fetcher.h",
   ]
   public_configs = [ ":gaiacp_config" ]
   public_deps = [
