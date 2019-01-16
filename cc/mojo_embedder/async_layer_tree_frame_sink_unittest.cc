@@ -76,8 +76,6 @@ TEST(AsyncLayerTreeFrameSinkTest,
   init_params.gpu_memory_buffer_manager = &test_gpu_memory_buffer_manager;
   init_params.pipes.compositor_frame_sink_info = std::move(sink_info);
   init_params.pipes.client_request = std::move(client_request);
-  init_params.local_surface_id_provider =
-      std::make_unique<viz::DefaultLocalSurfaceIdProvider>();
   init_params.enable_surface_synchronization = true;
   auto layer_tree_frame_sink = std::make_unique<AsyncLayerTreeFrameSink>(
       std::move(provider), nullptr, &init_params);
@@ -143,8 +141,6 @@ class AsyncLayerTreeFrameSinkSimpleTest : public testing::Test {
     init_params_.gpu_memory_buffer_manager = &test_gpu_memory_buffer_manager_;
     init_params_.pipes.compositor_frame_sink_info = std::move(sink_info);
     init_params_.pipes.client_request = std::move(client_request);
-    init_params_.local_surface_id_provider =
-        std::make_unique<viz::DefaultLocalSurfaceIdProvider>();
     init_params_.enable_surface_synchronization = true;
     init_params_.hit_test_data_provider =
         std::make_unique<viz::HitTestDataProviderDrawQuad>(

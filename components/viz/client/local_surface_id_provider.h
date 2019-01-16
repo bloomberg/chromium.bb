@@ -30,21 +30,6 @@ class VIZ_CLIENT_EXPORT LocalSurfaceIdProvider {
   DISALLOW_COPY_AND_ASSIGN(LocalSurfaceIdProvider);
 };
 
-class VIZ_CLIENT_EXPORT DefaultLocalSurfaceIdProvider
-    : public LocalSurfaceIdProvider {
- public:
-  DefaultLocalSurfaceIdProvider();
-
-  const LocalSurfaceIdAllocation&
-  GetLocalSurfaceIdAllocationForFrame(const CompositorFrame& frame) override;
-
- private:
-  gfx::Size surface_size_;
-  float device_scale_factor_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(DefaultLocalSurfaceIdProvider);
-};
-
 }  //  namespace viz
 
 #endif  // COMPONENTS_VIZ_CLIENT_LOCAL_SURFACE_ID_PROVIDER_H_

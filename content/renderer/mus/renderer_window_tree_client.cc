@@ -139,8 +139,6 @@ void RendererWindowTreeClient::RequestLayerTreeFrameSinkInternal(
   params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
   params.pipes.compositor_frame_sink_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
-  params.local_surface_id_provider =
-      std::make_unique<viz::DefaultLocalSurfaceIdProvider>();
   params.enable_surface_synchronization = true;
   if (features::IsVizHitTestingDrawQuadEnabled()) {
     params.hit_test_data_provider =
