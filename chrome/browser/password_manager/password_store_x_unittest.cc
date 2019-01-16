@@ -740,11 +740,19 @@ TEST_P(PasswordStoreXTest, MigrationToEncryption) {
     EXPECT_TRUE(stored_forms.empty());
     EXPECT_EQ(PasswordStoreX::LOGIN_DB_REPLACED,
               migration_step_pref_.GetValue());
+
+    histogram_tester_.ExpectBucketCount(
+        "PasswordManager.LinuxBackendMigration.AttemptResult",
+        LinuxBackendMigrationStatus::kLoginDBReplaced, 1);
   } else if (GetParam() == FAILING_BACKEND) {
     // No values should be written if we can't read the backend.
     auto stored_forms = ReadLoginDB(test_encrypted_login_db_file_path(), true);
     EXPECT_TRUE(stored_forms.empty());
     EXPECT_THAT(migration_step_pref_.GetValue(), PasswordStoreX::POSTPONED);
+
+    histogram_tester_.ExpectBucketCount(
+        "PasswordManager.LinuxBackendMigration.AttemptResult",
+        LinuxBackendMigrationStatus::kPostponed, 1);
   } else {  // NO_BACKEND
     // No values should be moved without a working backend.
     auto stored_forms = ReadLoginDB(test_encrypted_login_db_file_path(), true);
@@ -823,6 +831,8 @@ TEST_P(PasswordStoreXTest, MigrationToEncryption_OnlyOnce) {
   histogram_tester_.ExpectBucketCount(
       "PasswordManager.LinuxBackendMigration.Adoption",
       LinuxBackendMigrationStatus::kLoginDBReplaced, 1);
+  histogram_tester_.ExpectTotalCount(
+      "PasswordManager.LinuxBackendMigration.AttemptResult", 0);
 }
 
 INSTANTIATE_TEST_CASE_P(NoBackend,
