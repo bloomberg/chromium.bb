@@ -1258,6 +1258,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   _webStateImpl->OnNavigationStarted(context.get());
   self.navigationManagerImpl->AddPushStateItemIfNecessary(pageURL, stateObject,
                                                           transition);
+  context->SetHasCommitted(true);
   _webStateImpl->OnNavigationFinished(context.get());
   self.userInteractionRegistered = NO;
 }
@@ -1274,6 +1275,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   _webStateImpl->OnNavigationStarted(context.get());
   self.navigationManagerImpl->UpdateCurrentItemForReplaceState(pageURL,
                                                                stateObject);
+  context->SetHasCommitted(true);
   _webStateImpl->OnNavigationFinished(context.get());
 }
 
@@ -4971,6 +4973,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   _webStateImpl->OnNavigationStarted(context.get());
   [self updateHTML5HistoryState];
   [self setDocumentURL:URL context:context.get()];
+  context->SetHasCommitted(true);
   _webStateImpl->OnNavigationFinished(context.get());
   [self didFinishWithURL:URL loadSuccess:YES context:context.get()];
 }
@@ -5665,6 +5668,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     _webStateImpl->OnNavigationStarted(navigationContext);
     [self didStartLoading];
     self.navigationManagerImpl->CommitPendingItem();
+    navigationContext->SetHasCommitted(true);
     _webStateImpl->OnNavigationFinished(navigationContext);
 
     [self updateSSLStatusForCurrentNavigationItem];
