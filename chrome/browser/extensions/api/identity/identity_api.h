@@ -33,8 +33,6 @@
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
-#include "google_apis/gaia/oauth2_mint_token_flow.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace content {
