@@ -13,6 +13,7 @@
 #include <input-timestamps-unstable-v1-server-protocol.h>
 #include <keyboard-configuration-unstable-v1-server-protocol.h>
 #include <keyboard-extension-unstable-v1-server-protocol.h>
+#include <linux-explicit-synchronization-unstable-v1-server-protocol.h>
 #include <linux/input.h>
 #include <notification-shell-unstable-v1-server-protocol.h>
 #include <pointer-gestures-unstable-v1-server-protocol.h>
@@ -111,6 +112,7 @@
 #include "components/exo/wayland/zcr_remote_shell.h"
 #include "components/exo/wayland/zcr_stylus_tools.h"
 #include "components/exo/wayland/zwp_input_timestamps_manager.h"
+#include "components/exo/wayland/zwp_linux_explicit_synchronization.h"
 #include "components/exo/wayland/zwp_pointer_gestures.h"
 #include "components/exo/wayland/zwp_text_input_manager.h"
 #include "components/exo/wayland/zxdg_shell.h"
@@ -1865,6 +1867,9 @@ Server::Server(Display* display)
                    display_, bind_text_input_manager);
   wl_global_create(wl_display_.get(), &zxdg_shell_v6_interface, 1, display_,
                    bind_xdg_shell_v6);
+  wl_global_create(wl_display_.get(),
+                   &zwp_linux_explicit_synchronization_v1_interface, 1,
+                   display_, bind_linux_explicit_synchronization);
 #endif
 
 #if defined(USE_FULLSCREEN_SHELL)
