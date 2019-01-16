@@ -14,7 +14,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_global_error.h"
@@ -30,7 +29,6 @@
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/identity_utils.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/user_manager/user_manager.h"
@@ -224,15 +222,16 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
     default_account_id = identity_manager->GetPrimaryAccountId();
   } else {
     // Fetch accounts in the Gaia cookies.
-    GaiaCookieManagerService* cookie_manager_service =
-        GaiaCookieManagerServiceFactory::GetForProfile(profile);
-    std::vector<gaia::ListedAccount> cookie_accounts;
-    bool cookie_accounts_valid =
-        cookie_manager_service->ListAccounts(&cookie_accounts, nullptr);
+    auto accounts_in_cookie_jar_info =
+        identity_manager->GetAccountsInCookieJar();
+    std::vector<AccountInfo> signed_in_accounts =
+        accounts_in_cookie_jar_info.signed_in_accounts;
     UMA_HISTOGRAM_BOOLEAN("Profile.DiceUI.GaiaAccountsStale",
-                          !cookie_accounts_valid);
-    if (cookie_accounts_valid && !cookie_accounts.empty())
-      default_account_id = cookie_accounts[0].id;
+                          !accounts_in_cookie_jar_info.accounts_are_fresh);
+
+    if (accounts_in_cookie_jar_info.accounts_are_fresh &&
+        !signed_in_accounts.empty())
+      default_account_id = signed_in_accounts[0].account_id;
   }
 
   // Fetch account information for each id and make sure that the first account
