@@ -177,6 +177,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   // TODO(wjmaclean): When we remove BrowserPlugin, delete this code.
   // http://crbug.com/533069
   void MaybeSendSyntheticTapGesture(
+      RenderWidgetHostViewBase* owner_view,
       const blink::WebFloatPoint& position,
       const blink::WebFloatPoint& screen_position) const;
 
