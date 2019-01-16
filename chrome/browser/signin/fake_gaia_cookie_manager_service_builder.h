@@ -13,10 +13,21 @@ namespace content {
 class BrowserContext;
 }
 
+namespace network {
+class TestURLLoaderFactory;
+}
+
 // Helper functions to be used with KeyedService::SetTestingFactory().
 std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerService(
     content::BrowserContext* context);
 
+// Builds a FakeGaiaCookieManagerService which uses the provided
+// |test_url_loader_factory| for cookie-related requests.
+std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerServiceWithURLLoader(
+    network::TestURLLoaderFactory* test_url_loader_factory,
+    content::BrowserContext* context);
+
+// TODO(https://crbug.com/907782): Remove all references and delete this method.
 std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerServiceWithOptions(
     bool create_fake_url_loader_factory_for_cookie_requests,
     content::BrowserContext* context);
