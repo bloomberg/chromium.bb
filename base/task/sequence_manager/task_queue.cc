@@ -10,8 +10,6 @@
 #include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
-#include "base/task/sequence_manager/task_queue_proxy.h"
-#include "base/task/sequence_manager/task_queue_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 
@@ -20,12 +18,32 @@ namespace sequence_manager {
 
 namespace {
 
+class NullTaskRunner final : public SingleThreadTaskRunner {
+ public:
+  NullTaskRunner() {}
+
+  bool PostDelayedTask(const Location& location,
+                       OnceClosure callback,
+                       TimeDelta delay) override {
+    return false;
+  }
+
+  bool PostNonNestableDelayedTask(const Location& location,
+                                  OnceClosure callback,
+                                  TimeDelta delay) override {
+    return false;
+  }
+
+  bool RunsTasksInCurrentSequence() const override { return false; }
+
+ private:
+  // Ref-counted
+  ~NullTaskRunner() override = default;
+};
+
 // TODO(kraynov): Move NullTaskRunner from //base/test to //base.
 scoped_refptr<SingleThreadTaskRunner> CreateNullTaskRunner() {
-  return MakeRefCounted<internal::TaskQueueTaskRunner>(
-      MakeRefCounted<internal::TaskQueueProxy>(
-          nullptr, MakeRefCounted<internal::AssociatedThreadId>()),
-      kTaskTypeNone);
+  return MakeRefCounted<NullTaskRunner>();
 }
 
 }  // namespace
