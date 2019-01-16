@@ -342,8 +342,6 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->tx_type_search.fast_intra_tx_type_search = 1;
     sf->use_square_partition_only_threshold =
         boosted ? BLOCK_128X128 : BLOCK_4X4;
-    sf->tx_size_search_method =
-        frame_is_intra_only(cm) ? USE_FULL_RD : USE_LARGESTALL;
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
     sf->adaptive_pred_interp_filter = 0;
     sf->adaptive_mode_search = 1;
