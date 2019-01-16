@@ -25,6 +25,11 @@ import java.util.concurrent.atomic.AtomicReference;
 /** Test utility functions for OfflinePages. */
 @JNINamespace("offline_pages")
 public class OfflineTestUtil {
+    // Forces request coordinator to process the requests in the queue.
+    public static void startRequestCoordinatorProcessing() {
+        ThreadUtils.runOnUiThreadBlocking(() -> nativeStartRequestCoordinatorProcessing());
+    }
+
     // Gets all the URLs in the request queue.
     public static SavePageRequest[] getRequestsInQueue()
             throws TimeoutException, InterruptedException {
@@ -49,6 +54,22 @@ public class OfflineTestUtil {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             nativeGetAllPages(new ArrayList<OfflinePageItem>(), (List<OfflinePageItem> items) -> {
                 result.set(items);
+                callbackHelper.notifyCalled();
+            });
+        });
+        callbackHelper.waitForCallback(0);
+        return result.get();
+    }
+
+    // Returns a string representation of the requests contained in the RequestCoordinator.
+    // For logging out to debug test failures.
+    public static String dumpRequestCoordinatorState()
+            throws TimeoutException, InterruptedException {
+        final CallbackHelper callbackHelper = new CallbackHelper();
+        final AtomicReference<String> result = new AtomicReference<String>();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            nativeDumpRequestCoordinatorState((String dump) -> {
+                result.set(dump);
                 callbackHelper.notifyCalled();
             });
         });
@@ -113,7 +134,26 @@ public class OfflineTestUtil {
         return result.get();
     }
 
+    // Intercepts future HTTP requests for |url| with an offline net error.
+    public static void interceptWithOfflineError(String url)
+            throws TimeoutException, InterruptedException {
+        final CallbackHelper callbackHelper = new CallbackHelper();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            nativeInterceptWithOfflineError(url, () -> callbackHelper.notifyCalled());
+        });
+        callbackHelper.waitForCallback(0);
+    }
+
+    // Clears all previous intercepts installed by interceptWithOfflineError.
+    public static void clearIntercepts() {
+        ThreadUtils.runOnUiThreadBlocking(() -> nativeClearIntercepts());
+    }
+
     private static native void nativeGetRequestsInQueue(Callback<SavePageRequest[]> callback);
     private static native void nativeGetAllPages(
             List<OfflinePageItem> offlinePages, final Callback<List<OfflinePageItem>> callback);
+    private static native void nativeStartRequestCoordinatorProcessing();
+    private static native void nativeInterceptWithOfflineError(String url, Runnable readyRunnable);
+    private static native void nativeClearIntercepts();
+    private static native void nativeDumpRequestCoordinatorState(Callback<String> callback);
 }

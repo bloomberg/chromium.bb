@@ -18,6 +18,8 @@ public class SavePageRequest {
     private String mUrl;
     private ClientId mClientId;
     private OfflinePageOrigin mOrigin;
+    // Int representation of SavePageRequest::AutoFetchNotificationState
+    private int mAutoFetchNotificationState;
 
     /**
      * Creates a SavePageRequest that's a copy of the C++ side version.
@@ -35,18 +37,21 @@ public class SavePageRequest {
      */
     @CalledByNative
     public static SavePageRequest create(int state, long requestId, String url,
-            String clientIdNamespace, String clientIdId, String originString) {
+            String clientIdNamespace, String clientIdId, String originString,
+            int autoFetchNotificationState) {
         return new SavePageRequest(state, requestId, url,
-                new ClientId(clientIdNamespace, clientIdId), new OfflinePageOrigin(originString));
+                new ClientId(clientIdNamespace, clientIdId), new OfflinePageOrigin(originString),
+                autoFetchNotificationState);
     }
 
-    private SavePageRequest(
-            int state, long requestId, String url, ClientId clientId, OfflinePageOrigin origin) {
+    private SavePageRequest(int state, long requestId, String url, ClientId clientId,
+            OfflinePageOrigin origin, int autoFetchNotificationState) {
         mRequestState = state;
         mRequestId = requestId;
         mUrl = url;
         mClientId = clientId;
         mOrigin = origin;
+        mAutoFetchNotificationState = autoFetchNotificationState;
     }
 
     public int getRequestState() {
@@ -67,5 +72,9 @@ public class SavePageRequest {
 
     public OfflinePageOrigin getOrigin() {
         return mOrigin;
+    }
+
+    public int getAutoFetchNotificationState() {
+        return mAutoFetchNotificationState;
     }
 }
