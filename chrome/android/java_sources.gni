@@ -1650,6 +1650,15 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/upgrade/PackageReplacedBroadcastReceiver.java",
   "java/src/org/chromium/chrome/browser/upgrade/UpgradeActivity.java",
   "java/src/org/chromium/chrome/browser/upgrade/UpgradeIntentService.java",
+  "java/src/org/chromium/chrome/browser/usage_stats/EventTracker.java",
+  "java/src/org/chromium/chrome/browser/usage_stats/PageViewObserver.java",
+  "java/src/org/chromium/chrome/browser/usage_stats/SuspensionTracker.java",
+  "java/src/org/chromium/chrome/browser/usage_stats/TokenGenerator.java",
+  "java/src/org/chromium/chrome/browser/usage_stats/TokenTracker.java",
+  "java/src/org/chromium/chrome/browser/usage_stats/UsageStatsBridge.java",
+  "java/src/org/chromium/chrome/browser/usage_stats/UsageStatsConsentActivity.java",
+  "java/src/org/chromium/chrome/browser/usage_stats/UsageStatsService.java",
+  "java/src/org/chromium/chrome/browser/usage_stats/WebsiteEvent.java",
   "java/src/org/chromium/chrome/browser/util/AccessibilityUtil.java",
   "java/src/org/chromium/chrome/browser/util/ChromeContextUtil.java",
   "java/src/org/chromium/chrome/browser/util/ChromeFileProvider.java",
@@ -1844,19 +1853,6 @@ if (enable_vr) {
   chrome_java_sources += [
     "java/src/org/chromium/chrome/browser/component_updater/VrAssetsComponentInstaller.java",
     "java/src/org/chromium/chrome/browser/vr/SilenceLintErrors.java",
-  ]
-}
-
-if (enable_usage_stats) {
-  chrome_java_sources += [
-    "java/src/org/chromium/chrome/browser/usage_stats/EventTracker.java",
-    "java/src/org/chromium/chrome/browser/usage_stats/PageViewObserver.java",
-    "java/src/org/chromium/chrome/browser/usage_stats/SuspensionTracker.java",
-    "java/src/org/chromium/chrome/browser/usage_stats/TokenGenerator.java",
-    "java/src/org/chromium/chrome/browser/usage_stats/TokenTracker.java",
-    "java/src/org/chromium/chrome/browser/usage_stats/UsageStatsBridge.java",
-    "java/src/org/chromium/chrome/browser/usage_stats/UsageStatsService.java",
-    "java/src/org/chromium/chrome/browser/usage_stats/WebsiteEvent.java",
   ]
 }
 

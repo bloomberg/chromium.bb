@@ -9,7 +9,12 @@
 #include "chrome/browser/android/usage_stats/usage_stats_database.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/common/pref_names.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "jni/UsageStatsBridge_jni.h"
+
+using base::android::JavaParamRef;
+using base::android::JavaRef;
 
 namespace usage_stats {
 
@@ -88,4 +93,11 @@ void UsageStatsBridge::SetTokenMappings(JNIEnv* j_env,
                                         const JavaRef<jobject>& j_this,
                                         const JavaRef<jobject>& j_mappings,
                                         const JavaRef<jobject>& j_callback) {}
+
+// static
+void UsageStatsBridge::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kUsageStatsEnabled, false);
+}
+
 }  // namespace usage_stats

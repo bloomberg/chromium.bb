@@ -10,6 +10,10 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/weak_ptr.h"
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace usage_stats {
 
 using base::android::JavaParamRef;
@@ -76,6 +80,8 @@ class UsageStatsBridge {
                         const JavaRef<jobject>& j_this,
                         const JavaRef<jobject>& j_mappings,
                         const JavaRef<jobject>& j_callback);
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
   std::unique_ptr<UsageStatsDatabase> usage_stats_database_;

@@ -1249,7 +1249,11 @@ const char kMigratedToSiteNotificationChannels[] =
 // TODO(https://crbug.com/837614): Remove this after a few releases (M69?).
 const char kClearedBlockedSiteNotificationChannels[] =
     "notifications.cleared_blocked_channels";
-#endif
+
+// Usage stats reporting opt-in.
+const char kUsageStatsEnabled[] = "usage_stats_reporting.enabled";
+
+#endif  // defined(OS_ANDROID)
 
 // Maps from app ids to origin + Service Worker registration ID.
 const char kPushMessagingAppIdentifierMap[] =
