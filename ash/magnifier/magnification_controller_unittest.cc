@@ -964,7 +964,8 @@ TEST_F(MagnificationControllerTest, KeyboardOverscrollDisabled) {
             old_keyboard_overscroll_value);
 }
 
-TEST_F(MagnificationControllerTest, TextfieldFocusedWithKeyboard) {
+// Disabled due to https://crbug.com/917113.
+TEST_F(MagnificationControllerTest, DISABLED_TextfieldFocusedWithKeyboard) {
   // Set up text input view.
   text_input_helper_.CreateAndShowTextInputView(gfx::Rect(500, 200, 80, 80));
   gfx::Rect text_input_bounds = text_input_helper_.GetTextInputViewBounds();

@@ -294,7 +294,8 @@ TEST_F(HighlighterControllerTest, HighlighterGestures) {
   controller_->RemoveObserver(&observer);
 }
 
-TEST_F(HighlighterControllerTest, HighlighterGesturesScaled) {
+// Disabled due to https://crbug.com/917113.
+TEST_F(HighlighterControllerTest, DISABLED_HighlighterGesturesScaled) {
   controller_test_api_->SetEnabled(true);
   ui::test::EventGenerator* event_generator = GetEventGenerator();
   event_generator->EnterPenPointerMode();
@@ -413,7 +414,9 @@ TEST_F(HighlighterControllerTest, InterruptedStroke) {
 }
 
 // Test that the selection is never crossing the screen bounds.
-TEST_F(HighlighterControllerTest, SelectionInsideScreen) {
+//
+// Disabled due to https://crbug.com/917113.
+TEST_F(HighlighterControllerTest, DISABLED_SelectionInsideScreen) {
   controller_test_api_->SetEnabled(true);
   ui::test::EventGenerator* event_generator = GetEventGenerator();
   event_generator->EnterPenPointerMode();
