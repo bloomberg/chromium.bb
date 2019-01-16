@@ -167,6 +167,20 @@ test("url_unittests") {
   }
 }
 
+test("url_perftests") {
+  sources = [
+    "run_all_perftests.cc",
+    "url_parse_perftest.cc",
+  ]
+
+  deps = [
+    ":url",
+    "//base",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
+}
+
 fuzzer_test("gurl_fuzzer") {
   sources = [
     "gurl_fuzzer.cc",

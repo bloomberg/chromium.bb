@@ -5217,7 +5217,6 @@ if (!is_android && !is_chromecast) {
       "../browser/extensions/updater/extension_cache_fake.cc",
       "../browser/extensions/updater/extension_cache_fake.h",
       "base/browser_perf_tests_main.cc",
-      "perf/url_parse_perftest.cc",
     ]
 
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
