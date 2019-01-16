@@ -433,7 +433,7 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   float app_list_opacity = 1.f;
   const bool is_final_state_show = IsFinalStateShow();
   if (Shell::Get()->window_selector_controller()->IsSelecting()) {
-    if (is_final_state_show) {
+    if (overview_active_on_gesture_start_ && is_final_state_show) {
       // Exit overview if event is released on the top half. This will also
       // end splitview if it is active as SplitViewController observes
       // overview mode ends.
@@ -547,7 +547,7 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
   // Update the overview grid if needed.
   WindowSelectorController* controller =
       Shell::Get()->window_selector_controller();
-  if (controller->IsSelecting()) {
+  if (overview_active_on_gesture_start_ && controller->IsSelecting()) {
     DCHECK_EQ(mode_, Mode::kSlideUpToShow);
     controller->window_selector()->UpdateGridAtLocationYPositionAndOpacity(
         display_.id(), y_position - work_area.height(), 1.f - opacity,
@@ -583,7 +583,8 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
       UpdateSettings(
           settings.get(),
           this->GetWindow1() == window &&
-              !Shell::Get()->window_selector_controller()->IsSelecting());
+              !(overview_active_on_gesture_start_ &&
+                Shell::Get()->window_selector_controller()->IsSelecting()));
     }
     window->layer()->SetOpacity(opacity);
     window->SetTransform(transform);
@@ -649,7 +650,8 @@ bool HomeLauncherGestureHandler::IsAnimating() {
   if (window2_ && window2_->IsAnimating())
     return true;
 
-  if (Shell::Get()->window_selector_controller()->IsSelecting() &&
+  if (overview_active_on_gesture_start_ &&
+      Shell::Get()->window_selector_controller()->IsSelecting() &&
       Shell::Get()
           ->window_selector_controller()
           ->window_selector()
@@ -685,12 +687,12 @@ bool HomeLauncherGestureHandler::IsFinalStateShow() {
 bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
-  const bool overview_active =
+  overview_active_on_gesture_start_ =
       Shell::Get()->window_selector_controller()->IsSelecting();
   const bool split_view_active = split_view_controller->IsSplitViewModeActive();
   auto windows = Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
-  if (window && (mode != Mode::kSlideDownToHide || overview_active ||
-                 split_view_active)) {
+  if (window && (mode != Mode::kSlideDownToHide ||
+                 overview_active_on_gesture_start_ || split_view_active)) {
     window1_.reset();
     return false;
   }
@@ -706,7 +708,8 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
     return false;
   }
 
-  if (IsTabletMode() && overview_active && !split_view_active) {
+  if (IsTabletMode() && overview_active_on_gesture_start_ &&
+      !split_view_active) {
     DCHECK_EQ(Mode::kSlideUpToShow, mode);
     window1_.reset();
     return true;
@@ -814,7 +817,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
   // scroll, the home launcher will be visible. This is only needed when
   // swiping up, and not when overview mode is active.
   hidden_windows_.clear();
-  if (mode == Mode::kSlideUpToShow && !overview_active) {
+  if (mode == Mode::kSlideUpToShow && !overview_active_on_gesture_start_) {
     for (auto* window : windows) {
       if (window->IsVisible()) {
         hidden_windows_.push_back(window);

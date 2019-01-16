@@ -161,6 +161,12 @@ class ASH_EXPORT HomeLauncherGestureHandler
   // |last_event_location_| is in a different half.
   float last_scroll_y_ = 0.f;
 
+  // Stores whether overview was actived when we first perform the swipe up
+  // gesture. This is needed in case someone enters overview while the show home
+  // launcher animation is running, overview will be active, but we do not want
+  // to toggle overview again in that case.
+  bool overview_active_on_gesture_start_ = false;
+
   ScopedObserver<TabletModeController, TabletModeObserver>
       tablet_mode_observer_{this};
 

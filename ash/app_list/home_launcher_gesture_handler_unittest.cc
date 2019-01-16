@@ -13,6 +13,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/transform.h"
 #include "ui/wm/core/transient_window_manager.h"
@@ -38,7 +39,6 @@ class HomeLauncherGestureHandlerTest : public AshTestBase {
   // the base opacity to opaque for easier testing.
   virtual std::unique_ptr<aura::Window> CreateWindowForTesting() {
     std::unique_ptr<aura::Window> window = CreateTestWindow();
-
     window->SetTransform(gfx::Transform());
     window->layer()->SetOpacity(1.f);
     return window;
@@ -229,6 +229,19 @@ TEST_F(HomeLauncherGestureHandlerTest, OverviewMode) {
   EXPECT_FALSE(controller->IsSelecting());
   EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMinimized());
   EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMinimized());
+}
+
+// Tests that there is no crash if entering overview mode while home launcher is
+// still in process of animating a window.
+TEST_F(HomeLauncherGestureHandlerTest, OverviewModeEnteredWhileAnimating) {
+  UpdateDisplay("400x456");
+  ui::ScopedAnimationDurationScaleMode scoped_animation_duration(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  auto window = CreateWindowForTesting();
+  GetGestureHandler()->ShowHomeLauncher(
+      display_manager()->FindDisplayContainingPoint(gfx::Point(10, 10)));
+  Shell::Get()->window_selector_controller()->ToggleOverview();
 }
 
 // Tests that HomeLauncherGestureHandler works as expected when one window is
