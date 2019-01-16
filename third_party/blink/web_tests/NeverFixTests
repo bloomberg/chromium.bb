@@ -462,6 +462,15 @@ external/wpt/encrypted-media/clearkey-events-session-closed-event.https.html [ W
 external/wpt/encrypted-media/clearkey-update-non-ascii-input.https.html [ WontFix ]
 external/wpt/media-source/mediasource-invalid-codec.html [ WontFix ]
 
+# CSS Text features that are not planned to implement.
+external/wpt/css/css-text/text-transform/text-transform-full-size-kana-001.html [ WontFix ]
+external/wpt/css/css-text/text-transform/text-transform-full-size-kana-002.html [ WontFix ]
+external/wpt/css/css-text/text-transform/text-transform-full-size-kana-003.html [ WontFix ]
+external/wpt/css/css-text/text-transform/text-transform-full-size-kana-004.html [ WontFix ]
+external/wpt/css/css-text/text-transform/text-transform-full-size-kana-005.html [ WontFix ]
+external/wpt/css/css-text/text-transform/text-transform-full-size-kana-006.html [ WontFix ]
+external/wpt/css/css-text/text-transform/text-transform-full-size-kana-007.html [ WontFix ]
+
 external/wpt/clipboard-apis/async-navigator-clipboard-basics.https.html [ WontFix ]
 external/wpt/css/CSS2/linebox/inline-formatting-context-010b.xht [ WontFix ]
 external/wpt/css/CSS2/normal-flow/inline-block-replaced-height-008.xht [ WontFix ]
