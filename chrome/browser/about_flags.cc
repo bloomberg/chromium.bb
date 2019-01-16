@@ -4298,6 +4298,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableGpuServiceLoggingName,
      flag_descriptions::kEnableGpuServiceLoggingDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableGPUServiceLogging)},
+
+#if defined(OS_CHROMEOS)
+    {"crostini-app-search", flag_descriptions::kCrostiniAppSearchName,
+     flag_descriptions::kCrostiniAppSearchDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kCrostiniAppSearch)},
+#endif  // OS_CHROMEOS
 };
 
 class FlagsStateSingleton {

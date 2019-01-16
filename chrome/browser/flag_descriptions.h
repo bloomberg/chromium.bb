@@ -1888,6 +1888,9 @@ extern const char kCrosRegionsModeDefault[];
 extern const char kCrosRegionsModeOverride[];
 extern const char kCrosRegionsModeHide[];
 
+extern const char kCrostiniAppSearchName[];
+extern const char kCrostiniAppSearchDescription[];
+
 extern const char kCrostiniBackupName[];
 extern const char kCrostiniBackupDescription[];
 
