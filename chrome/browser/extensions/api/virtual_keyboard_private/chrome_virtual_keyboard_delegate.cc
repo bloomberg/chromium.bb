@@ -382,7 +382,9 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   features->AppendString(GenerateFeatureFlag("spellcheck", config.spell_check));
   features->AppendString(
       GenerateFeatureFlag("handwriting", config.handwriting));
-
+  features->AppendString(GenerateFeatureFlag(
+      "handwritinggesture",
+      base::FeatureList::IsEnabled(features::kHandwritingGesture)));
   results->Set("features", std::move(features));
 
   std::move(on_settings_callback).Run(std::move(results));

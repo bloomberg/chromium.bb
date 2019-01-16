@@ -2333,6 +2333,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "handwriting-gesture",
+    "owners": ["shend"],
+    "expiry_milestone": 76
+  },
+  {
     "name": "happiness-tracking-surveys-for-desktop",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

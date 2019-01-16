@@ -103,6 +103,9 @@ UI_BASE_EXPORT bool IsOzoneDrmMojo();
 // macOS Mojave/Windows 10.
 UI_BASE_EXPORT extern const base::Feature kDarkMode;
 
+#if defined(OS_CHROMEOS)
+UI_BASE_EXPORT extern const base::Feature kHandwritingGesture;
+#endif
 }  // namespace features
 
 #endif  // UI_BASE_UI_BASE_FEATURES_H_
