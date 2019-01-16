@@ -39,8 +39,9 @@ interface WindowManager {
   const string kDisplayId_InitProperty = "init:display_id";
 
   // Specifies that the system default caption and icon should not be rendered,
-  // and the client area should be equivalent to the window area. Type: bool
-  const string kRemoveStandardFrame_InitProperty = "init:remove-standard-frame";
+  // and the client area should be equivalent to the window area. This is used
+  // for frameless Chrome app windows and all Chrome browser windows. Type: bool
+  const string kClientProvidesFrame_InitProperty = "init:client-provides-frame";
 
   // The window type. This maps to aura::client::kWindowTypeKey as well as
   // Window::type(). This mapping is only done for top-level windows that are

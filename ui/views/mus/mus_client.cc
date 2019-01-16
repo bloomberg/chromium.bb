@@ -216,7 +216,7 @@ MusClient::ConfigurePropertiesFromParams(
       mojo::ConvertTo<TransportType>(
           static_cast<PrimitiveType>(init_params.keep_on_top));
 
-  properties[WindowManager::kRemoveStandardFrame_InitProperty] =
+  properties[WindowManager::kClientProvidesFrame_InitProperty] =
       mojo::ConvertTo<TransportType>(init_params.remove_standard_frame);
 
   if (init_params.corner_radius) {

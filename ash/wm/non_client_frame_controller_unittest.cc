@@ -95,7 +95,7 @@ TEST_F(NonClientFrameControllerTest, HonorsMinimumSizeWithoutFrame) {
   auto properties = CreatePropertiesForProxyWindow();
   properties[ws::mojom::WindowManager::kMinimumSize_Property] =
       mojo::ConvertTo<TransportType>(min_size);
-  properties[ws::mojom::WindowManager::kRemoveStandardFrame_InitProperty] =
+  properties[ws::mojom::WindowManager::kClientProvidesFrame_InitProperty] =
       mojo::ConvertTo<TransportType>(true);
   std::unique_ptr<aura::Window> window(
       GetWindowTreeTestHelper()->NewTopLevelWindow(
@@ -107,7 +107,7 @@ TEST_F(NonClientFrameControllerTest, HonorsMinimumSizeWithoutFrame) {
 TEST_F(NonClientFrameControllerTest, NonClientAreaShouldBeDraggable) {
   using TransportType = std::vector<uint8_t>;
   auto properties = CreatePropertiesForProxyWindow();
-  properties[ws::mojom::WindowManager::kRemoveStandardFrame_InitProperty] =
+  properties[ws::mojom::WindowManager::kClientProvidesFrame_InitProperty] =
       mojo::ConvertTo<TransportType>(true);
   std::unique_ptr<aura::Window> window(
       GetWindowTreeTestHelper()->NewTopLevelWindow(

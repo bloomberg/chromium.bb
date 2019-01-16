@@ -66,7 +66,6 @@ void CreateAndShowWidget(views::WidgetDelegateView* delegate,
   params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
   params.accept_events = false;
   params.keep_on_top = true;
-  params.remove_standard_frame = true;
   params.delegate = delegate;
   params.bounds = bounds;
   ash_util::SetupWidgetInitParamsForContainer(
