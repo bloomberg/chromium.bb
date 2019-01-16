@@ -1255,10 +1255,10 @@ int32_t BackendImpl::GetEntryCount() const {
 
 net::Error BackendImpl::OpenOrCreateEntry(const std::string& key,
                                           net::RequestPriority request_priority,
-                                          Entry** entry,
+                                          EntryWithOpened* entry_struct,
                                           CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
-  background_queue_.OpenOrCreateEntry(key, entry, std::move(callback));
+  background_queue_.OpenOrCreateEntry(key, entry_struct, std::move(callback));
   return net::ERR_IO_PENDING;
 }
 

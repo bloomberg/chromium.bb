@@ -88,7 +88,7 @@ class NET_EXPORT_PRIVATE MemBackendImpl final : public Backend {
   int32_t GetEntryCount() const override;
   net::Error OpenOrCreateEntry(const std::string& key,
                                net::RequestPriority request_priority,
-                               Entry** entry,
+                               EntryWithOpened* entry_struct,
                                CompletionOnceCallback callback) override;
   net::Error OpenEntry(const std::string& key,
                        net::RequestPriority request_priority,

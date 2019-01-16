@@ -169,14 +169,18 @@ int32_t MemBackendImpl::GetEntryCount() const {
 
 net::Error MemBackendImpl::OpenOrCreateEntry(const std::string& key,
                                              net::RequestPriority priority,
-                                             Entry** entry,
+                                             EntryWithOpened* entry_struct,
                                              CompletionOnceCallback callback) {
-  net::Error rv = OpenEntry(key, priority, entry, CompletionOnceCallback());
-  if (rv == net::OK)
+  net::Error rv = OpenEntry(key, priority, &(entry_struct->entry),
+                            CompletionOnceCallback());
+  if (rv == net::OK) {
+    entry_struct->opened = true;
     return rv;
-
+  }
   // Key was not opened, try creating it instead.
-  rv = CreateEntry(key, priority, entry, CompletionOnceCallback());
+  rv = CreateEntry(key, priority, &(entry_struct->entry),
+                   CompletionOnceCallback());
+  entry_struct->opened = false;
   return rv;
 }
 
