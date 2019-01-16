@@ -11,6 +11,7 @@
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/explore_sites/blacklist_site_task.h"
 #include "chrome/browser/android/explore_sites/catalog.pb.h"
+#include "chrome/browser/android/explore_sites/clear_activities_task.h"
 #include "chrome/browser/android/explore_sites/clear_catalog_task.h"
 #include "chrome/browser/android/explore_sites/explore_sites_bridge.h"
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
@@ -131,6 +132,16 @@ void ExploreSitesServiceImpl::BlacklistSite(const std::string& url) {
       std::make_unique<BlacklistSiteTask>(explore_sites_store_.get(), url));
 
   // TODO(https://crbug.com/893845): Remove cached category icon if affected.
+}
+
+void ExploreSitesServiceImpl::ClearActivities(base::Time begin,
+                                              base::Time end,
+                                              base::OnceClosure callback) {
+  task_queue_.AddTask(std::make_unique<ClearActivitiesTask>(
+      explore_sites_store_.get(), begin, end,
+      base::BindOnce(
+          [](base::OnceClosure callback, bool) { std::move(callback).Run(); },
+          std::move(callback))));
 }
 
 void ExploreSitesServiceImpl::ClearCachedCatalogsForDebugging() {

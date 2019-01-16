@@ -51,6 +51,9 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
                                 const std::string& accept_languages,
                                 BooleanCallback callback) override;
   void BlacklistSite(const std::string& url) override;
+  void ClearActivities(base::Time begin,
+                       base::Time end,
+                       base::OnceClosure callback) override;
   void ClearCachedCatalogsForDebugging() override;
   void OverrideCountryCodeForDebugging(
       const std::string& country_code) override;

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_EXPLORE_SITES_EXPLORE_SITES_SERVICE_H_
 #define CHROME_BROWSER_ANDROID_EXPLORE_SITES_EXPLORE_SITES_SERVICE_H_
 
+#include "base/time/time.h"
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -42,6 +43,11 @@ class ExploreSitesService : public KeyedService {
 
   // Add the url to the blacklist.
   virtual void BlacklistSite(const std::string& url) = 0;
+
+  // Remove the activity history from the specified time range.
+  virtual void ClearActivities(base::Time begin,
+                               base::Time end,
+                               base::OnceClosure callback) = 0;
 
   // Controls for use by chrome://explore-sites-internals.
   virtual void ClearCachedCatalogsForDebugging() = 0;
