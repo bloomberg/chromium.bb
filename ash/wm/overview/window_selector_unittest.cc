@@ -314,6 +314,14 @@ class WindowSelectorTest : public AshTestBase {
     return ws->grid_list_[ws->selected_grid_index_]->is_selecting();
   }
 
+  bool showing_filter_widget() {
+    return window_selector()
+        ->text_filter_widget_->GetNativeWindow()
+        ->layer()
+        ->GetTargetTransform()
+        .IsIdentity();
+  }
+
   views::Widget* GetCloseButton(WindowSelectorItem* window) {
     return window->caption_container_view_->GetCloseButton()->GetWidget();
   }
@@ -338,6 +346,14 @@ class WindowSelectorTest : public AshTestBase {
     EXPECT_TRUE(
         root_window->GetBoundsInScreen().Contains(GetTransformedTargetBounds(
             GetCloseButton(window_item)->GetNativeView())));
+  }
+
+  void FilterItems(const base::StringPiece& pattern) {
+    window_selector()->ContentsChanged(nullptr, base::UTF8ToUTF16(pattern));
+  }
+
+  views::Widget* text_filter_widget() {
+    return window_selector()->text_filter_widget_.get();
   }
 
   void SetGridBounds(WindowGrid* grid, const gfx::Rect& bounds) {
@@ -373,6 +389,37 @@ class WindowSelectorTest : public AshTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorTest);
 };
+
+// Tests that the text field in the overview menu is repositioned and resized
+// after a screen rotation.
+TEST_F(WindowSelectorTest, OverviewScreenRotation) {
+  const gfx::Rect bounds(400, 300);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+
+  // In overview mode the windows should no longer overlap and the text filter
+  // widget should be focused.
+  ToggleOverview();
+
+  views::Widget* text_filter = text_filter_widget();
+  UpdateDisplay("400x300");
+
+  // The text filter position is calculated as:
+  // x: 0.5 * (total_bounds.width() -
+  //           std::min(kTextFilterWidth, total_bounds.width())).
+  // y: -kTextFilterHeight (since there's no text in the filter) - 2.
+  // w: std::min(kTextFilterWidth, total_bounds.width()).
+  // h: kTextFilterHeight.
+  gfx::Rect expected_bounds(60, -34, 280, 32);
+  EXPECT_EQ(expected_bounds, text_filter->GetClientAreaBoundsInScreen());
+
+  // Rotates the display, which triggers the WindowSelector's
+  // RepositionTextFilterOnDisplayMetricsChange method.
+  UpdateDisplay("400x300/r");
+
+  // Uses the same formulas as above using width = 300, height = 400.
+  expected_bounds = gfx::Rect(10, -34, 280, 32);
+  EXPECT_EQ(expected_bounds, text_filter->GetClientAreaBoundsInScreen());
+}
 
 // Tests that an a11y alert is sent on entering overview mode.
 TEST_F(WindowSelectorTest, A11yAlertOnOverviewMode) {
@@ -421,11 +468,10 @@ TEST_F(WindowSelectorTest, Basic) {
   // Hide the cursor before entering overview to test that it will be shown.
   aura::client::GetCursorClient(root_window)->HideCursor();
 
-  // In overview mode the windows should no longer overlap and the overview
-  // focus window should be focused.
+  // In overview mode the windows should no longer overlap and the text filter
+  // widget should be focused.
   ToggleOverview();
-  EXPECT_EQ(window_selector()->GetOverviewFocusWindow(),
-            wm::GetFocusedWindow());
+  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), wm::GetFocusedWindow());
   EXPECT_FALSE(WindowsOverlapping(window1.get(), window2.get()));
 
   // Clicking window 1 should activate it.
@@ -474,6 +520,64 @@ TEST_F(WindowSelectorTest, ActivateMinimized) {
   EXPECT_EQ(mojom::WindowStateType::NORMAL, window_state->GetStateType());
 }
 
+// Tests that entering overview mode with an App-list active properly focuses
+// and activates the overview text filter window.
+TEST_F(WindowSelectorTest, TextFilterActive) {
+  const gfx::Rect bounds(400, 400);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+  wm::ActivateWindow(window.get());
+
+  EXPECT_TRUE(wm::IsActiveWindow(window.get()));
+  EXPECT_EQ(window.get(), wm::GetFocusedWindow());
+
+  // Pass an enum to satisfy the function, it is arbitrary and will not affect
+  // histograms.
+  GetAppListTestHelper()->ToggleAndRunLoop(GetPrimaryDisplay().id(),
+                                           app_list::kShelfButton);
+
+  // Activating overview cancels the App-list which normally would activate the
+  // previously active |window1|. Overview mode should properly transfer focus
+  // and activation to the text filter widget.
+  ToggleOverview();
+  EXPECT_FALSE(wm::IsActiveWindow(window.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(wm::GetFocusedWindow()));
+  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), wm::GetFocusedWindow());
+}
+
+// Verifies the whether overview mode is still active after the text filter
+// window loses activation in certain circumstances.
+TEST_F(WindowSelectorTest, TextFilterDeactivated) {
+  UpdateDisplay("600x600");
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  const gfx::Rect bounds(400, 400);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+  wm::ActivateWindow(window.get());
+
+  // Click somewhere on the screen not on the shelf and not on the overview
+  // window. This will cause a activation change which should close overview
+  // mode.
+  ToggleOverview();
+  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), wm::GetFocusedWindow());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     gfx::Point(500, 400));
+  generator.ClickLeftButton();
+  ASSERT_FALSE(IsSelecting());
+
+  // Click somewhere on the screen not on the shelf and not on the overview
+  // window. This will cause a activation change but will not close overview
+  // mode since a overview to home launcher drag is underway.
+  ToggleOverview();
+  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), wm::GetFocusedWindow());
+  Shell::Get()
+      ->app_list_controller()
+      ->home_launcher_gesture_handler()
+      ->OnPressEvent(HomeLauncherGestureHandler::Mode::kSlideUpToShow,
+                     gfx::Point());
+  generator.ClickLeftButton();
+  EXPECT_TRUE(IsSelecting());
+}
+
 // Tests that the ordering of windows is stable across different overview
 // sessions even when the windows have the same bounds.
 TEST_F(WindowSelectorTest, WindowsOrder) {
@@ -513,8 +617,7 @@ TEST_F(WindowSelectorTest, BasicGesture) {
   wm::ActivateWindow(window1.get());
   EXPECT_EQ(window1.get(), wm::GetFocusedWindow());
   ToggleOverview();
-  EXPECT_EQ(window_selector()->GetOverviewFocusWindow(),
-            wm::GetFocusedWindow());
+  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), wm::GetFocusedWindow());
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      window2.get());
   generator.GestureTapAt(
@@ -968,7 +1071,7 @@ TEST_F(WindowSelectorTest, BoundsChangeDuringOverview) {
 }
 
 // Tests that a newly created window aborts overview.
-TEST_F(WindowSelectorTest, NewWindowCancelsOverview) {
+TEST_F(WindowSelectorTest, NewWindowCancelsOveriew) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -981,7 +1084,7 @@ TEST_F(WindowSelectorTest, NewWindowCancelsOverview) {
 }
 
 // Tests that a window activation exits overview mode.
-TEST_F(WindowSelectorTest, ActivationCancelsOverview) {
+TEST_F(WindowSelectorTest, ActivationCancelsOveriew) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -1006,10 +1109,9 @@ TEST_F(WindowSelectorTest, CancelRestoresFocus) {
   wm::ActivateWindow(window.get());
   EXPECT_EQ(window.get(), wm::GetFocusedWindow());
 
-  // In overview mode, the overview focus window should be focused.
+  // In overview mode, the text filter widget should be focused.
   ToggleOverview();
-  EXPECT_EQ(window_selector()->GetOverviewFocusWindow(),
-            wm::GetFocusedWindow());
+  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), wm::GetFocusedWindow());
 
   // If canceling overview mode, focus should be restored.
   ToggleOverview();
@@ -1348,15 +1450,13 @@ TEST_F(WindowSelectorTest, ExitOverviewWithKey) {
 }
 
 // Regression test for clusterfuzz crash. https://crbug.com/920568
-TEST_F(WindowSelectorTest, TypeThenPressEscapeTwice) {
+TEST_F(WindowSelectorTest, FilterThenPressEscapeTwice) {
   std::unique_ptr<aura::Window> window(CreateTestWindow());
   ToggleOverview();
 
-  // Type some characters.
-  SendKey(ui::VKEY_A);
-  SendKey(ui::VKEY_B);
-  SendKey(ui::VKEY_C);
-  EXPECT_TRUE(window_selector()->GetOverviewFocusWindow());
+  // Type some characters to show the filter list.
+  FilterItems("abc");
+  EXPECT_TRUE(showing_filter_widget());
 
   // Pressing escape twice should not crash.
   SendKey(ui::VKEY_ESCAPE);
@@ -1483,6 +1583,136 @@ TEST_F(WindowSelectorTest, SelectWindowWithReturnKey) {
   SendKey(ui::VKEY_RETURN);
   EXPECT_FALSE(IsSelecting());
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
+}
+
+// Creates three windows and tests filtering them by title.
+TEST_F(WindowSelectorTest, BasicTextFiltering) {
+  gfx::Rect bounds(0, 0, 100, 100);
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window0(CreateWindow(bounds));
+  base::string16 window2_title = base::UTF8ToUTF16("Highway to test");
+  base::string16 window1_title = base::UTF8ToUTF16("For those about to test");
+  base::string16 window0_title = base::UTF8ToUTF16("We salute you");
+  window0->SetTitle(window0_title);
+  window1->SetTitle(window1_title);
+  window2->SetTitle(window2_title);
+  ToggleOverview();
+
+  EXPECT_FALSE(selection_widget_active());
+  EXPECT_FALSE(showing_filter_widget());
+  FilterItems("Test");
+
+  // The selection widget should appear when filtering starts, and should be
+  // selecting one of the matching windows above.
+  EXPECT_TRUE(selection_widget_active());
+  EXPECT_TRUE(showing_filter_widget());
+  // window0 does not contain the text "test".
+  EXPECT_NE(GetSelectedWindow(), window0.get());
+
+  // Window 0 has no "test" on it so it should be the only dimmed item.
+  const int grid_index = 0;
+  EXPECT_TRUE(GetWindowItemForWindow(grid_index, window0.get())->dimmed());
+  EXPECT_FALSE(GetWindowItemForWindow(grid_index, window1.get())->dimmed());
+  EXPECT_FALSE(GetWindowItemForWindow(grid_index, window2.get())->dimmed());
+
+  // No items match the search.
+  FilterItems("I'm testing 'n testing");
+  EXPECT_TRUE(GetWindowItemForWindow(grid_index, window0.get())->dimmed());
+  EXPECT_TRUE(GetWindowItemForWindow(grid_index, window1.get())->dimmed());
+  EXPECT_TRUE(GetWindowItemForWindow(grid_index, window2.get())->dimmed());
+
+  // All the items should match the empty string. The filter widget should also
+  // disappear.
+  FilterItems("");
+  EXPECT_FALSE(showing_filter_widget());
+  EXPECT_FALSE(GetWindowItemForWindow(grid_index, window0.get())->dimmed());
+  EXPECT_FALSE(GetWindowItemForWindow(grid_index, window1.get())->dimmed());
+  EXPECT_FALSE(GetWindowItemForWindow(grid_index, window2.get())->dimmed());
+
+  FilterItems("Foo");
+
+  EXPECT_NE(1.0f, window0->layer()->GetTargetOpacity());
+  EXPECT_NE(1.0f, window1->layer()->GetTargetOpacity());
+  EXPECT_NE(1.0f, window2->layer()->GetTargetOpacity());
+
+  ToggleOverview();
+
+  EXPECT_EQ(1.0f, window0->layer()->GetTargetOpacity());
+  EXPECT_EQ(1.0f, window1->layer()->GetTargetOpacity());
+  EXPECT_EQ(1.0f, window2->layer()->GetTargetOpacity());
+}
+
+// Tests selecting in the overview with dimmed and undimmed items.
+TEST_F(WindowSelectorTest, TextFilteringSelection) {
+  gfx::Rect bounds(0, 0, 100, 100);
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window0(CreateWindow(bounds));
+  base::string16 window2_title = base::UTF8ToUTF16("Rock and roll");
+  base::string16 window1_title = base::UTF8ToUTF16("Rock and");
+  base::string16 window0_title = base::UTF8ToUTF16("Rock");
+  window0->SetTitle(window0_title);
+  window1->SetTitle(window1_title);
+  window2->SetTitle(window2_title);
+  ToggleOverview();
+  EXPECT_TRUE(SelectWindow(window0.get()));
+  EXPECT_TRUE(selection_widget_active());
+
+  // Dim the first item, the selection should jump to the next item.
+  FilterItems("Rock and");
+  EXPECT_NE(GetSelectedWindow(), window0.get());
+
+  // Cycle the selection, the dimmed window should not be selected.
+  EXPECT_FALSE(SelectWindow(window0.get()));
+
+  // Dimming all the items should hide the selection widget.
+  FilterItems("Pop");
+  EXPECT_FALSE(selection_widget_active());
+
+  // Undimming one window should automatically select it.
+  FilterItems("Rock and roll");
+  EXPECT_EQ(GetSelectedWindow(), window2.get());
+}
+
+// Tests that transferring focus from the text filter to a window that is not a
+// top level window does not cancel overview mode.
+TEST_F(WindowSelectorTest, ShowTextFilterMenu) {
+  gfx::Rect bounds(0, 0, 100, 100);
+  std::unique_ptr<aura::Window> window0(CreateWindow(bounds));
+  base::string16 window0_title = base::UTF8ToUTF16("Test");
+  window0->SetTitle(window0_title);
+  wm::GetWindowState(window0.get())->Minimize();
+  ToggleOverview();
+
+  EXPECT_FALSE(selection_widget_active());
+  EXPECT_FALSE(showing_filter_widget());
+  FilterItems("Test");
+
+  EXPECT_TRUE(selection_widget_active());
+  EXPECT_TRUE(showing_filter_widget());
+
+  // Open system bubble shifting focus from the text filter.
+  GetPrimaryUnifiedSystemTray()->ShowBubble(false /* show_by_click */);
+
+  base::RunLoop().RunUntilIdle();
+
+  // This should not cancel overview mode.
+  ASSERT_TRUE(IsSelecting());
+  EXPECT_TRUE(selection_widget_active());
+  EXPECT_TRUE(showing_filter_widget());
+
+  // Click text filter to bring focus back.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  gfx::Point point_in_text_filter =
+      text_filter_widget()->GetWindowBoundsInScreen().CenterPoint();
+  generator->MoveMouseTo(point_in_text_filter);
+  generator->ClickLeftButton();
+  EXPECT_TRUE(IsSelecting());
+
+  // Cancel overview mode.
+  ToggleOverview();
+  ASSERT_FALSE(IsSelecting());
 }
 
 // Tests clicking on the desktop itself to cancel overview mode.
@@ -1634,7 +1864,6 @@ TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorMultiDisplay) {
   ToggleOverview();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(window_selector());
-  ASSERT_EQ(3u, grids().size());
   EXPECT_TRUE(grids()[0]->IsNoItemsIndicatorLabelVisibleForTesting());
   EXPECT_FALSE(grids()[1]->IsNoItemsIndicatorLabelVisibleForTesting());
   EXPECT_FALSE(grids()[2]->IsNoItemsIndicatorLabelVisibleForTesting());
@@ -1657,7 +1886,7 @@ TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorMultiDisplay) {
   ToggleOverview();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(window_selector());
-  ASSERT_EQ(3u, grids().size());
+  EXPECT_EQ(3u, grids().size());
   EXPECT_FALSE(grids()[0]->IsNoItemsIndicatorLabelVisibleForTesting());
   EXPECT_FALSE(grids()[1]->IsNoItemsIndicatorLabelVisibleForTesting());
   EXPECT_FALSE(grids()[2]->IsNoItemsIndicatorLabelVisibleForTesting());
@@ -1673,8 +1902,8 @@ TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorMultiDisplay) {
   // is still open. The non primary root grids are empty however.
   item2->CloseWindow();
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(window_selector());
-  ASSERT_EQ(3u, grids().size());
+  EXPECT_TRUE(window_selector());
+  EXPECT_EQ(3u, grids().size());
   EXPECT_FALSE(grids()[0]->IsNoItemsIndicatorLabelVisibleForTesting());
   EXPECT_FALSE(grids()[1]->IsNoItemsIndicatorLabelVisibleForTesting());
   EXPECT_FALSE(grids()[2]->IsNoItemsIndicatorLabelVisibleForTesting());
@@ -1687,6 +1916,16 @@ TEST_F(WindowSelectorTest, OverviewNoWindowsIndicatorMultiDisplay) {
   item1->CloseWindow();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(window_selector());
+}
+
+// Verify that pressing and releasing keys does not show the overview textbox
+// when there are no windows opened.
+TEST_F(WindowSelectorTest, TextfilterHiddenWhenNoWindows) {
+  ToggleOverview();
+  ASSERT_TRUE(window_selector());
+
+  SendKey(ui::VKEY_J);
+  EXPECT_FALSE(showing_filter_widget());
 }
 
 // Tests window list animation states are correctly updated.
@@ -2369,6 +2608,24 @@ TEST_F(WindowSelectorTest, RoundedEdgeMaskVisibility) {
   ToggleOverview();
 }
 
+// Verify that the system does not crash when exiting overview mode after
+// pressing CTRL+SHIFT+U.
+TEST_F(WindowSelectorTest, ExitInUnderlineMode) {
+  std::unique_ptr<aura::Window> window(
+      CreateWindow(gfx::Rect(10, 10, 200, 200)));
+
+  ToggleOverview();
+
+  // Enter underline mode on the text selector by generating CTRL+SHIFT+U
+  // sequence.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::VKEY_U, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  generator->ReleaseKey(ui::VKEY_U, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  // Test that leaving overview mode cleans up properly.
+  ToggleOverview();
+}
+
 // Tests that the shadows in overview mode are placed correctly.
 TEST_F(WindowSelectorTest, ShadowBounds) {
   // Helper function to check if the bounds of a shadow owned by |shadow_parent|
@@ -2528,7 +2785,8 @@ TEST_F(WindowSelectorTest, ShadowDisappearsInOverview) {
 
 // Verify that PIP windows will be excluded from the overview, but not hidden.
 TEST_F(WindowSelectorTest, PipWindowShownButExcludedFromOverview) {
-  std::unique_ptr<aura::Window> pip_window(CreateWindow(gfx::Rect(200, 200)));
+  const gfx::Rect bounds(200, 200);
+  std::unique_ptr<aura::Window> pip_window(CreateWindow(bounds));
 
   wm::WindowState* window_state = wm::GetWindowState(pip_window.get());
   const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);

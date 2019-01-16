@@ -511,7 +511,8 @@ bool WindowGrid::Move(WindowSelector::Direction direction, bool animate) {
     }
     changed_selection_index = true;
   }
-  while (!changed_selection_index) {
+  while (!changed_selection_index ||
+         (!out_of_bounds && window_list_[selected_index_]->dimmed())) {
     switch (direction) {
       case WindowSelector::UP:
       case WindowSelector::LEFT:
@@ -590,6 +591,22 @@ void WindowGrid::RemoveItem(WindowSelectorItem* selector_item,
 
   if (reposition)
     PositionWindows(/*animate=*/true);
+}
+
+void WindowGrid::FilterItems(const base::string16& pattern) {
+  base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents finder(pattern);
+  for (const auto& window : window_list_) {
+    if (finder.Search(window->GetWindow()->GetTitle(), nullptr, nullptr)) {
+      window->SetDimmed(false);
+    } else {
+      window->SetDimmed(true);
+      if (selection_widget_ && SelectedWindow() == window.get()) {
+        SelectedWindow()->set_selected(false);
+        selection_widget_.reset();
+        selector_shadow_.reset();
+      }
+    }
+  }
 }
 
 void WindowGrid::SetBoundsAndUpdatePositions(const gfx::Rect& bounds) {
