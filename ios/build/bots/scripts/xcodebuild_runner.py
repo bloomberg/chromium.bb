@@ -549,6 +549,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
         xcode_path=xcode_path,
         xctest=False
     )
+    self.erase_all_simulators()
     self._init_sharding_data()
     self.logs = collections.OrderedDict()
     self.test_results = collections.OrderedDict()
@@ -619,3 +620,11 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     # or there are failures for last run.
     return not self.test_results['commands'][-1]['logs']['failed'] and all(
         [not r['logs']['errors'] for r in self.test_results['commands']])
+
+  def erase_all_simulators(self):
+    """Erases all simulator devices.
+
+    Fix for DVTCoreSimulatorAdditionsErrorDomain error.
+    """
+    print 'Erasing all simulators.'
+    subprocess.call(['xcrun', 'simctl', 'erase', 'all'])
