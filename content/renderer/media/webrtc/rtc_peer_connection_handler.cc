@@ -669,6 +669,7 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
     }
 
     if (handler_) {
+      // |handler_| can become null after this call.
       handler_->OnSignalingChange(states.signaling_state);
 
       // Process the rest of the state changes differently depending on SDP
@@ -680,7 +681,7 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
         ProcessStateChangesUnifiedPlan(std::move(states));
       }
 
-      if (tracker_) {
+      if (tracker_ && handler_) {
         tracker_->TrackSessionDescriptionCallback(handler_.get(), action_,
                                                   "OnSuccess", "");
       }
@@ -715,6 +716,9 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
 
   void ProcessStateChangesPlanB(WebRtcSetDescriptionObserver::States states) {
     DCHECK_EQ(sdp_semantics_, webrtc::SdpSemantics::kPlanB);
+    if (!handler_)
+      return;
+
     // Determine which receivers have been removed before processing the
     // removal as to not invalidate the iterator.
     std::vector<RTCRtpReceiver*> removed_receivers;
@@ -726,18 +730,23 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
 
     // Process the addition of remote receivers/tracks.
     for (auto& transceiver_state : states.transceiver_states) {
-      if (ReceiverWasAdded(transceiver_state)) {
+      if (handler_ && ReceiverWasAdded(transceiver_state)) {
+        // |handler_| can become null after this call.
         handler_->OnAddReceiverPlanB(transceiver_state.MoveReceiverState());
       }
     }
     // Process the removal of remote receivers/tracks.
     for (auto* removed_receiver : removed_receivers) {
-      handler_->OnRemoveReceiverPlanB(RTCRtpReceiver::getId(
-          removed_receiver->state().webrtc_receiver().get()));
+      if (handler_) {
+        // |handler_| can become null after this call.
+        handler_->OnRemoveReceiverPlanB(RTCRtpReceiver::getId(
+            removed_receiver->state().webrtc_receiver().get()));
+      }
     }
   }
 
   bool ReceiverWasAdded(const RtpTransceiverState& transceiver_state) {
+    DCHECK(handler_);
     uintptr_t receiver_id = RTCRtpReceiver::getId(
         transceiver_state.receiver_state()->webrtc_receiver().get());
     for (const auto& receiver : handler_->rtp_receivers_) {
@@ -762,9 +771,11 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
   void ProcessStateChangesUnifiedPlan(
       WebRtcSetDescriptionObserver::States states) {
     DCHECK_EQ(sdp_semantics_, webrtc::SdpSemantics::kUnifiedPlan);
-    handler_->OnModifyTransceivers(
-        std::move(states.transceiver_states),
-        action_ == PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION);
+    if (handler_) {
+      handler_->OnModifyTransceivers(
+          std::move(states.transceiver_states),
+          action_ == PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION);
+    }
   }
 
   base::WeakPtr<RTCPeerConnectionHandler> handler_;
