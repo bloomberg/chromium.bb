@@ -57,8 +57,6 @@ class APP_LIST_EXPORT AppListItemView
   void SetItemName(const base::string16& display_name,
                    const base::string16& full_name);
   void SetItemIsInstalling(bool is_installing);
-  bool is_highlighted() { return is_highlighted_; }  // for unit test
-  void SetItemIsHighlighted(bool is_highlighted);
   void SetItemPercentDownloaded(int percent_downloaded);
 
   void CancelContextMenu();
@@ -108,10 +106,6 @@ class APP_LIST_EXPORT AppListItemView
   static gfx::Rect GetProgressBarBoundsForTargetViewBounds(
       const gfx::Rect& target_bounds,
       const gfx::Size& progress_bar_size);
-
-  // If the item is not in a folder, not highlighted, not being dragged, and not
-  // having something dropped onto it, enables subpixel AA for the title.
-  void SetTitleSubpixelAA();
 
   // views::Button overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -181,7 +175,6 @@ class APP_LIST_EXPORT AppListItemView
                               ui::MenuSourceType source_type) override;
 
   // views::Button overrides:
-  void StateChanged(ButtonState old_state) override;
   bool ShouldEnterPushedState(const ui::Event& event) override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
@@ -217,7 +210,6 @@ class APP_LIST_EXPORT AppListItemView
   void AdaptBoundsForSelectionHighlight(gfx::Rect* rect);
 
   const bool is_folder_;
-  const bool is_in_folder_;
 
   // Whether context menu options have been requested. Prevents multiple
   // requests.
@@ -251,7 +243,6 @@ class APP_LIST_EXPORT AppListItemView
   int preview_circle_radius_ = 0;
 
   bool is_installing_ = false;
-  bool is_highlighted_ = false;
 
   // Whether |context_menu_| was cancelled as the result of a continuous drag
   // gesture.

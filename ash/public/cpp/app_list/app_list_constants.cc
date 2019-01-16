@@ -11,8 +11,6 @@ namespace app_list {
 
 const SkColor kContentsBackgroundColor = SkColorSetRGB(0xF2, 0xF2, 0xF2);
 
-const SkColor kLabelBackgroundColor = SK_ColorTRANSPARENT;
-
 // Color of bottom separtor under folder title (12% white) in full screen mode.
 const SkColor kBottomSeparatorColor = SkColorSetARGB(0x1F, 0xFF, 0xFF, 0xFF);
 
