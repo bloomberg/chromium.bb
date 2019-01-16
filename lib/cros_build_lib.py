@@ -250,7 +250,7 @@ class TerminateRunCommandError(RunCommandError):
   """
 
 
-def SudoRunCommand(cmd, user='root', **kwargs):
+def SudoRunCommand(cmd, user='root', preserve_env=False, **kwargs):
   """Run a command via sudo.
 
   Client code must use this rather than coming up with their own RunCommand
@@ -261,6 +261,7 @@ def SudoRunCommand(cmd, user='root', **kwargs):
     cmd: The command to run.  See RunCommand for rules of this argument-
          SudoRunCommand purely prefixes it with sudo.
     user: The user to run the command as.
+    preserve_env (bool): Whether to preserve the environment.
     kwargs: See RunCommand options, it's a direct pass thru to it.
           Note that this supports a 'strict' keyword that defaults to True.
           If set to False, it'll suppress strict sudo behavior.
@@ -291,6 +292,9 @@ def SudoRunCommand(cmd, user='root', **kwargs):
 
   if user != 'root':
     sudo_cmd += ['-u', user]
+
+  if preserve_env:
+    sudo_cmd += ['--preserve-env']
 
   # Pass these values down into the sudo environment, since sudo will
   # just strip them normally.
