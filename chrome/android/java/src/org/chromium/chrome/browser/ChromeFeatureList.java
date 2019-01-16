@@ -49,6 +49,9 @@ public abstract class ChromeFeatureList {
         // when it is initialized. Return whether the native FeatureList has been initialized,
         // so the return value can be tested, or asserted for a more actionable stack trace
         // on failure.
+        //
+        // The FeatureList is however guaranteed to be initialized by the time
+        // AsyncInitializationActivity#finishNativeInitialization is called.
         return nativeIsInitialized();
     }
 
