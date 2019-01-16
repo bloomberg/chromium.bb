@@ -18,7 +18,6 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "net/disk_cache/disk_cache.h"
-#include "services/network/public/cpp/data_element.h"
 #include "storage/browser/blob/blob_entry.h"
 #include "storage/browser/blob/blob_storage_registry.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
@@ -100,36 +99,6 @@ BlobDataBuilder::FutureFile::FutureFile(scoped_refptr<BlobDataItem> item)
 
 BlobDataBuilder::BlobDataBuilder(const std::string& uuid) : uuid_(uuid) {}
 BlobDataBuilder::~BlobDataBuilder() = default;
-
-void BlobDataBuilder::AppendIPCDataElement(
-    const network::DataElement& ipc_data,
-    const BlobStorageRegistry& blob_registry) {
-  uint64_t length = ipc_data.length();
-  switch (ipc_data.type()) {
-    case network::DataElement::TYPE_BYTES:
-      DCHECK(!ipc_data.offset());
-      AppendData(ipc_data.bytes(),
-                 base::checked_cast<size_t>(length));
-      break;
-    case network::DataElement::TYPE_FILE:
-      AppendFile(ipc_data.path(), ipc_data.offset(), length,
-                 ipc_data.expected_modification_time());
-      break;
-    case network::DataElement::TYPE_BLOB:
-      // This will be deconstructed immediately into the items the blob is made
-      // up of.
-      AppendBlob(ipc_data.blob_uuid(), ipc_data.offset(), ipc_data.length(),
-                 blob_registry);
-      break;
-    case network::DataElement::TYPE_RAW_FILE:
-    case network::DataElement::TYPE_UNKNOWN:
-    // This type can't be sent by IPC.
-    case network::DataElement::TYPE_DATA_PIPE:
-    case network::DataElement::TYPE_CHUNKED_DATA_PIPE:
-      NOTREACHED();
-      break;
-  }
-}
 
 void BlobDataBuilder::AppendData(const char* data, size_t length) {
   if (!length)
