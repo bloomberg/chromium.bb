@@ -661,7 +661,7 @@ const PositionWithAffinity AXPosition::ToPositionWithAffinity(
       DCHECK(child_node) << "AX objects used in AX positions that are valid "
                             "DOM positions should always be connected to their "
                             "DOM nodes.";
-      if (child_node->NodeIndex() == 0) {
+      if (!child_node->previousSibling()) {
         // Creates a |PositionAnchorType::kBeforeChildren| position.
         container_node = child_node->parentNode();
         DCHECK(container_node);
@@ -683,8 +683,7 @@ const PositionWithAffinity AXPosition::ToPositionWithAffinity(
                                  "connected to their DOM nodes.";
 
       // Check if this is an "after children" position in the DOM as well.
-      if ((last_child_node->NodeIndex() + 1) ==
-          container_node->CountChildren()) {
+      if (!last_child_node->nextSibling()) {
         // Creates a |PositionAnchorType::kAfterChildren| position.
         container_node = last_child_node->parentNode();
         DCHECK(container_node);
