@@ -794,6 +794,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaPosinset) {
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaArticlePosInSetSetSize) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-article-posinset-setsize.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityAriaPresentation) {
   RunAriaTest(FILE_PATH_LITERAL("aria-presentation.html"));
 }
