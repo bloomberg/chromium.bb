@@ -53,6 +53,10 @@ std::string CompletedRequestKey(const std::string& unique_id,
   return CompletedRequestKeyPrefix(unique_id) + std::to_string(request_index);
 }
 
+std::string StorageVersionKey(const std::string& unique_id) {
+  return kStorageVersionKeyPrefix + unique_id;
+}
+
 DatabaseStatus ToDatabaseStatus(blink::ServiceWorkerStatusCode status) {
   switch (status) {
     case blink::ServiceWorkerStatusCode::kOk:

@@ -990,6 +990,31 @@ TEST_F(BackgroundFetchDataManagerTest, GetDeveloperIds) {
                                                   kAlternativeDeveloperId));
 }
 
+TEST_F(BackgroundFetchDataManagerTest, StorageVersionIsPersisted) {
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+
+  {
+    // Create a single registration.
+    BackgroundFetchRegistrationId registration_id(
+        sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
+
+    std::vector<blink::mojom::FetchAPIRequestPtr> requests =
+        CreateValidRequests(origin(), 2u);
+    auto options = blink::mojom::BackgroundFetchOptions::New();
+    blink::mojom::BackgroundFetchError error;
+    CreateRegistration(registration_id, CloneRequestVector(requests),
+                       options.Clone(), SkBitmap(), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  }
+
+  auto storage_versions = GetRegistrationUserDataByKeyPrefix(
+      sw_id, background_fetch::StorageVersionKey(kExampleUniqueId));
+  ASSERT_EQ(storage_versions.size(), 1u);
+  EXPECT_EQ(storage_versions[0], base::NumberToString(proto::SV_CURRENT));
+}
+
 TEST_F(BackgroundFetchDataManagerTest, GetRegistration) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
@@ -1962,7 +1987,8 @@ TEST_F(BackgroundFetchDataManagerTest, Cleanup) {
 
   RestartDataManagerFromPersistentStorage();
 
-  EXPECT_EQ(4u,  // Metadata proto + UI options + remaining pending fetches.
+  // Metadata proto + UI options + storage version + remaining pending fetches.
+  EXPECT_EQ(5u,
             GetRegistrationUserDataByKeyPrefix(sw_id, kUserDataPrefix).size());
 
   // Cleanup should delete the registration.

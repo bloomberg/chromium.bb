@@ -32,6 +32,7 @@ const char kUIOptionsKeyPrefix[] = "bgfetch_ui_options_";
 const char kPendingRequestKeyPrefix[] = "bgfetch_pending_request_";
 const char kActiveRequestKeyPrefix[] = "bgfetch_active_request_";
 const char kCompletedRequestKeyPrefix[] = "bgfetch_completed_request_";
+const char kStorageVersionKeyPrefix[] = "bgfetch_storage_version_";
 
 // Database Keys.
 CONTENT_EXPORT std::string ActiveRegistrationUniqueIdKey(
@@ -53,6 +54,8 @@ std::string CompletedRequestKeyPrefix(const std::string& unique_id);
 
 std::string CompletedRequestKey(const std::string& unique_id,
                                 int request_index);
+
+CONTENT_EXPORT std::string StorageVersionKey(const std::string& unique_id);
 
 // Database status.
 enum class DatabaseStatus { kOk, kFailed, kNotFound };

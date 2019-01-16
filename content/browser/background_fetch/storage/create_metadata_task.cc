@@ -296,7 +296,8 @@ void CreateMetadataTask::StoreMetadata() {
   // - DeveloperId -> UniqueID
   // - BackgroundFetchMetadata
   // - BackgroundFetchUIOptions
-  entries.reserve(requests_.size() + 3);
+  // - BackgroundFetchStorageVersion
+  entries.reserve(requests_.size() + 4u);
 
   std::string serialized_metadata_proto;
 
@@ -325,6 +326,9 @@ void CreateMetadataTask::StoreMetadata() {
                        std::move(serialized_metadata_proto));
   entries.emplace_back(UIOptionsKey(registration_id_.unique_id()),
                        serialized_ui_options_proto);
+  entries.emplace_back(
+      StorageVersionKey(registration_id_.unique_id()),
+      base::NumberToString(proto::BackgroundFetchStorageVersion::SV_CURRENT));
 
   // Signed integers are used for request indexes to avoid unsigned gotchas.
   for (int i = 0; i < base::checked_cast<int>(requests_.size()); i++) {
