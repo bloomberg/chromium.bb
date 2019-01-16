@@ -133,11 +133,11 @@ div {
   def testCssAlphaWithLongerDashedProps(self):
     self.VerifyContentsProducesOutput("""
 div {
-  border-left: 5px;  /* A hopefully removed comment. */
+  border-inline-start: 5px;  /* A hopefully removed comment. */
   border: 5px solid red;
 }""", """
 - Alphabetize properties and list vendor specific (i.e. -webkit) above standard.
-    border-left: 5px;
+    border-inline-start: 5px;
     border: 5px solid red;""")
 
   def testCssAlphaWithVariables(self):
@@ -465,6 +465,24 @@ b:before,
     -webkit-padding-before: 2px; (replace with padding-block-start)
     -webkit-padding-end: 3px; (replace with padding-inline-end)
     -webkit-padding-start: 4px; (replace with padding-inline-start)""")
+
+  def testStartEndInsteadOfLeftRight(self):
+    self.VerifyContentsProducesOutput("""
+.inline-node {
+  --var-is-ignored-left: 10px;
+  --var-is-ignored-right: 10px;
+  border-left-color: black;
+  border-right: 1px solid blue;  /* csschecker-disable-line left-right */
+  margin-right: 5px;
+  padding-left: 10px;    /* csschecker-disable-line some-other-thing */
+  text-align: right;
+}""", """
+- Use -start/end instead of -left/right (https://goo.gl/gQYY7z, add /* csschecker-disable-line left-right */ to suppress)
+    border-left-color: black; (replace with border-inline-start-color)
+    margin-right: 5px; (replace with margin-inline-end)
+    padding-left: 10px; (replace with padding-inline-start)
+    text-align: right; (replace with text-align: end)
+""")
 
   def testCssZeroWidthLengths(self):
     self.VerifyContentsProducesOutput("""
