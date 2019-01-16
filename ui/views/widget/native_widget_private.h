@@ -212,6 +212,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
                             ui::DragDropTypes::DragEventSource source) = 0;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) = 0;
   virtual void SetCursor(gfx::NativeCursor cursor) = 0;
+  virtual void ShowEmojiPanel();
   virtual bool IsMouseEventsEnabled() const = 0;
   // Returns true if any mouse button is currently down.
   virtual bool IsMouseButtonDown() const = 0;

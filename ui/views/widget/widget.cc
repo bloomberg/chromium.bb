@@ -384,6 +384,10 @@ void Widget::Init(const InitParams& in_params) {
   native_widget_->OnWidgetInitDone();
 }
 
+void Widget::ShowEmojiPanel() {
+  native_widget_->ShowEmojiPanel();
+}
+
 // Unconverted methods (see header) --------------------------------------------
 
 gfx::NativeView Widget::GetNativeView() const {

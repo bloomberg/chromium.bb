@@ -455,6 +455,9 @@ class BrowserWindow : public ui::BaseWindow {
   virtual std::string GetWorkspace() const = 0;
   virtual bool IsVisibleOnAllWorkspaces() const = 0;
 
+  // Shows the platform specific emoji picker.
+  virtual void ShowEmojiPanel() = 0;
+
  protected:
   friend class BrowserCloseManager;
   friend class BrowserView;

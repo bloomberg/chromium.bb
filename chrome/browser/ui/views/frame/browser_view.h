@@ -425,6 +425,8 @@ class BrowserView : public BrowserWindow,
   std::string GetWorkspace() const override;
   bool IsVisibleOnAllWorkspaces() const override;
 
+  void ShowEmojiPanel() override;
+
   BookmarkBarView* GetBookmarkBarView() const;
   LocationBarView* GetLocationBarView() const;
 

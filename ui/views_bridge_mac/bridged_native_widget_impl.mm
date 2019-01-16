@@ -21,6 +21,7 @@
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"
 #import "ui/base/cocoa/window_size_constants.h"
+#include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
@@ -382,6 +383,10 @@ void BridgedNativeWidgetImpl::SetParent(uint64_t new_parent_id) {
   // As in OnVisibilityChanged, do not set a parent for sheets.
   if (window_visible_ && ![window_ isSheet])
     [parent_->ns_window() addChildWindow:window_ ordered:NSWindowAbove];
+}
+
+void BridgedNativeWidgetImpl::ShowEmojiPanel() {
+  ui::ShowEmojiPanel();
 }
 
 void BridgedNativeWidgetImpl::CreateWindow(

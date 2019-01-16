@@ -14,6 +14,7 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
@@ -79,7 +80,7 @@ bool ViewsTextServicesContextMenuBase::IsCommandIdEnabled(
 
 void ViewsTextServicesContextMenuBase::ExecuteCommand(int command_id) {
   if (command_id == IDS_CONTENT_CONTEXT_EMOJI) {
-    ui::ShowEmojiPanel();
+    client()->GetWidget()->ShowEmojiPanel();
     UMA_HISTOGRAM_BOOLEAN(kViewsTextServicesContextMenuEmoji, true);
   }
 }
