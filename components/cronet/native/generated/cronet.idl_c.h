@@ -60,6 +60,10 @@ typedef struct Cronet_UrlResponseInfo Cronet_UrlResponseInfo;
 typedef struct Cronet_UrlResponseInfo* Cronet_UrlResponseInfoPtr;
 typedef struct Cronet_UrlRequestParams Cronet_UrlRequestParams;
 typedef struct Cronet_UrlRequestParams* Cronet_UrlRequestParamsPtr;
+typedef struct Cronet_DateTime Cronet_DateTime;
+typedef struct Cronet_DateTime* Cronet_DateTimePtr;
+typedef struct Cronet_Metrics Cronet_Metrics;
+typedef struct Cronet_Metrics* Cronet_MetricsPtr;
 typedef struct Cronet_RequestFinishedInfo Cronet_RequestFinishedInfo;
 typedef struct Cronet_RequestFinishedInfo* Cronet_RequestFinishedInfoPtr;
 
@@ -153,7 +157,6 @@ typedef enum Cronet_UrlRequestStatusListener_Status {
 } Cronet_UrlRequestStatusListener_Status;
 
 // Declare constants
-const int64_t Cronet_kInvalidTime = -1;
 
 ///////////////////////
 // Concrete interface Cronet_Buffer.
@@ -1007,72 +1010,168 @@ CRONET_EXPORT
 void Cronet_UrlRequestParams_annotations_clear(Cronet_UrlRequestParamsPtr self);
 
 ///////////////////////
+// Struct Cronet_DateTime.
+CRONET_EXPORT Cronet_DateTimePtr Cronet_DateTime_Create();
+CRONET_EXPORT void Cronet_DateTime_Destroy(Cronet_DateTimePtr self);
+// Cronet_DateTime setters.
+CRONET_EXPORT
+void Cronet_DateTime_value_set(Cronet_DateTimePtr self, int64_t value);
+// Cronet_DateTime getters.
+CRONET_EXPORT
+int64_t Cronet_DateTime_value_get(Cronet_DateTimePtr self);
+
+///////////////////////
+// Struct Cronet_Metrics.
+CRONET_EXPORT Cronet_MetricsPtr Cronet_Metrics_Create();
+CRONET_EXPORT void Cronet_Metrics_Destroy(Cronet_MetricsPtr self);
+// Cronet_Metrics setters.
+CRONET_EXPORT
+void Cronet_Metrics_request_start_set(Cronet_MetricsPtr self,
+                                      Cronet_DateTimePtr request_start);
+// Move data from |request_start|. The caller retains ownership of
+// |request_start| and must destroy it.
+void Cronet_Metrics_request_start_move(Cronet_MetricsPtr self,
+                                       Cronet_DateTimePtr request_start);
+CRONET_EXPORT
+void Cronet_Metrics_dns_start_set(Cronet_MetricsPtr self,
+                                  Cronet_DateTimePtr dns_start);
+// Move data from |dns_start|. The caller retains ownership of |dns_start| and
+// must destroy it.
+void Cronet_Metrics_dns_start_move(Cronet_MetricsPtr self,
+                                   Cronet_DateTimePtr dns_start);
+CRONET_EXPORT
+void Cronet_Metrics_dns_end_set(Cronet_MetricsPtr self,
+                                Cronet_DateTimePtr dns_end);
+// Move data from |dns_end|. The caller retains ownership of |dns_end| and must
+// destroy it.
+void Cronet_Metrics_dns_end_move(Cronet_MetricsPtr self,
+                                 Cronet_DateTimePtr dns_end);
+CRONET_EXPORT
+void Cronet_Metrics_connect_start_set(Cronet_MetricsPtr self,
+                                      Cronet_DateTimePtr connect_start);
+// Move data from |connect_start|. The caller retains ownership of
+// |connect_start| and must destroy it.
+void Cronet_Metrics_connect_start_move(Cronet_MetricsPtr self,
+                                       Cronet_DateTimePtr connect_start);
+CRONET_EXPORT
+void Cronet_Metrics_connect_end_set(Cronet_MetricsPtr self,
+                                    Cronet_DateTimePtr connect_end);
+// Move data from |connect_end|. The caller retains ownership of |connect_end|
+// and must destroy it.
+void Cronet_Metrics_connect_end_move(Cronet_MetricsPtr self,
+                                     Cronet_DateTimePtr connect_end);
+CRONET_EXPORT
+void Cronet_Metrics_ssl_start_set(Cronet_MetricsPtr self,
+                                  Cronet_DateTimePtr ssl_start);
+// Move data from |ssl_start|. The caller retains ownership of |ssl_start| and
+// must destroy it.
+void Cronet_Metrics_ssl_start_move(Cronet_MetricsPtr self,
+                                   Cronet_DateTimePtr ssl_start);
+CRONET_EXPORT
+void Cronet_Metrics_ssl_end_set(Cronet_MetricsPtr self,
+                                Cronet_DateTimePtr ssl_end);
+// Move data from |ssl_end|. The caller retains ownership of |ssl_end| and must
+// destroy it.
+void Cronet_Metrics_ssl_end_move(Cronet_MetricsPtr self,
+                                 Cronet_DateTimePtr ssl_end);
+CRONET_EXPORT
+void Cronet_Metrics_sending_start_set(Cronet_MetricsPtr self,
+                                      Cronet_DateTimePtr sending_start);
+// Move data from |sending_start|. The caller retains ownership of
+// |sending_start| and must destroy it.
+void Cronet_Metrics_sending_start_move(Cronet_MetricsPtr self,
+                                       Cronet_DateTimePtr sending_start);
+CRONET_EXPORT
+void Cronet_Metrics_sending_end_set(Cronet_MetricsPtr self,
+                                    Cronet_DateTimePtr sending_end);
+// Move data from |sending_end|. The caller retains ownership of |sending_end|
+// and must destroy it.
+void Cronet_Metrics_sending_end_move(Cronet_MetricsPtr self,
+                                     Cronet_DateTimePtr sending_end);
+CRONET_EXPORT
+void Cronet_Metrics_push_start_set(Cronet_MetricsPtr self,
+                                   Cronet_DateTimePtr push_start);
+// Move data from |push_start|. The caller retains ownership of |push_start| and
+// must destroy it.
+void Cronet_Metrics_push_start_move(Cronet_MetricsPtr self,
+                                    Cronet_DateTimePtr push_start);
+CRONET_EXPORT
+void Cronet_Metrics_push_end_set(Cronet_MetricsPtr self,
+                                 Cronet_DateTimePtr push_end);
+// Move data from |push_end|. The caller retains ownership of |push_end| and
+// must destroy it.
+void Cronet_Metrics_push_end_move(Cronet_MetricsPtr self,
+                                  Cronet_DateTimePtr push_end);
+CRONET_EXPORT
+void Cronet_Metrics_response_start_set(Cronet_MetricsPtr self,
+                                       Cronet_DateTimePtr response_start);
+// Move data from |response_start|. The caller retains ownership of
+// |response_start| and must destroy it.
+void Cronet_Metrics_response_start_move(Cronet_MetricsPtr self,
+                                        Cronet_DateTimePtr response_start);
+CRONET_EXPORT
+void Cronet_Metrics_request_end_set(Cronet_MetricsPtr self,
+                                    Cronet_DateTimePtr request_end);
+// Move data from |request_end|. The caller retains ownership of |request_end|
+// and must destroy it.
+void Cronet_Metrics_request_end_move(Cronet_MetricsPtr self,
+                                     Cronet_DateTimePtr request_end);
+CRONET_EXPORT
+void Cronet_Metrics_socket_reused_set(Cronet_MetricsPtr self,
+                                      bool socket_reused);
+CRONET_EXPORT
+void Cronet_Metrics_sent_byte_count_set(Cronet_MetricsPtr self,
+                                        int64_t sent_byte_count);
+CRONET_EXPORT
+void Cronet_Metrics_received_byte_count_set(Cronet_MetricsPtr self,
+                                            int64_t received_byte_count);
+// Cronet_Metrics getters.
+CRONET_EXPORT
+Cronet_DateTimePtr Cronet_Metrics_request_start_get(Cronet_MetricsPtr self);
+CRONET_EXPORT
+Cronet_DateTimePtr Cronet_Metrics_dns_start_get(Cronet_MetricsPtr self);
+CRONET_EXPORT
+Cronet_DateTimePtr Cronet_Metrics_dns_end_get(Cronet_MetricsPtr self);
+CRONET_EXPORT
+Cronet_DateTimePtr Cronet_Metrics_connect_start_get(Cronet_MetricsPtr self);
+CRONET_EXPORT
+Cronet_DateTimePtr Cronet_Metrics_connect_end_get(Cronet_MetricsPtr self);
+CRONET_EXPORT
+Cronet_DateTimePtr Cronet_Metrics_ssl_start_get(Cronet_MetricsPtr self);
+CRONET_EXPORT
+Cronet_DateTimePtr Cronet_Metrics_ssl_end_get(Cronet_MetricsPtr self);
+CRONET_EXPORT
+Cronet_DateTimePtr Cronet_Metrics_sending_start_get(Cronet_MetricsPtr self);
+CRONET_EXPORT
+Cronet_DateTimePtr Cronet_Metrics_sending_end_get(Cronet_MetricsPtr self);
+CRONET_EXPORT
+Cronet_DateTimePtr Cronet_Metrics_push_start_get(Cronet_MetricsPtr self);
+CRONET_EXPORT
+Cronet_DateTimePtr Cronet_Metrics_push_end_get(Cronet_MetricsPtr self);
+CRONET_EXPORT
+Cronet_DateTimePtr Cronet_Metrics_response_start_get(Cronet_MetricsPtr self);
+CRONET_EXPORT
+Cronet_DateTimePtr Cronet_Metrics_request_end_get(Cronet_MetricsPtr self);
+CRONET_EXPORT
+bool Cronet_Metrics_socket_reused_get(Cronet_MetricsPtr self);
+CRONET_EXPORT
+int64_t Cronet_Metrics_sent_byte_count_get(Cronet_MetricsPtr self);
+CRONET_EXPORT
+int64_t Cronet_Metrics_received_byte_count_get(Cronet_MetricsPtr self);
+
+///////////////////////
 // Struct Cronet_RequestFinishedInfo.
 CRONET_EXPORT Cronet_RequestFinishedInfoPtr Cronet_RequestFinishedInfo_Create();
 CRONET_EXPORT void Cronet_RequestFinishedInfo_Destroy(
     Cronet_RequestFinishedInfoPtr self);
 // Cronet_RequestFinishedInfo setters.
 CRONET_EXPORT
-void Cronet_RequestFinishedInfo_request_start_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t request_start);
-CRONET_EXPORT
-void Cronet_RequestFinishedInfo_dns_start_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t dns_start);
-CRONET_EXPORT
-void Cronet_RequestFinishedInfo_dns_end_set(Cronet_RequestFinishedInfoPtr self,
-                                            int64_t dns_end);
-CRONET_EXPORT
-void Cronet_RequestFinishedInfo_connect_start_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t connect_start);
-CRONET_EXPORT
-void Cronet_RequestFinishedInfo_connect_end_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t connect_end);
-CRONET_EXPORT
-void Cronet_RequestFinishedInfo_ssl_start_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t ssl_start);
-CRONET_EXPORT
-void Cronet_RequestFinishedInfo_ssl_end_set(Cronet_RequestFinishedInfoPtr self,
-                                            int64_t ssl_end);
-CRONET_EXPORT
-void Cronet_RequestFinishedInfo_sending_start_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t sending_start);
-CRONET_EXPORT
-void Cronet_RequestFinishedInfo_sending_end_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t sending_end);
-CRONET_EXPORT
-void Cronet_RequestFinishedInfo_push_start_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t push_start);
-CRONET_EXPORT
-void Cronet_RequestFinishedInfo_push_end_set(Cronet_RequestFinishedInfoPtr self,
-                                             int64_t push_end);
-CRONET_EXPORT
-void Cronet_RequestFinishedInfo_response_start_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t response_start);
-CRONET_EXPORT
-void Cronet_RequestFinishedInfo_request_end_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t request_end);
-CRONET_EXPORT
-void Cronet_RequestFinishedInfo_socket_reused_set(
-    Cronet_RequestFinishedInfoPtr self,
-    bool socket_reused);
-CRONET_EXPORT
-void Cronet_RequestFinishedInfo_sent_byte_count_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t sent_byte_count);
-CRONET_EXPORT
-void Cronet_RequestFinishedInfo_received_byte_count_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t received_byte_count);
+void Cronet_RequestFinishedInfo_metrics_set(Cronet_RequestFinishedInfoPtr self,
+                                            Cronet_MetricsPtr metrics);
+// Move data from |metrics|. The caller retains ownership of |metrics| and must
+// destroy it.
+void Cronet_RequestFinishedInfo_metrics_move(Cronet_RequestFinishedInfoPtr self,
+                                             Cronet_MetricsPtr metrics);
 CRONET_EXPORT
 void Cronet_RequestFinishedInfo_response_info_set(
     Cronet_RequestFinishedInfoPtr self,
@@ -1091,52 +1190,7 @@ void Cronet_RequestFinishedInfo_error_move(Cronet_RequestFinishedInfoPtr self,
                                            Cronet_ErrorPtr error);
 // Cronet_RequestFinishedInfo getters.
 CRONET_EXPORT
-int64_t Cronet_RequestFinishedInfo_request_start_get(
-    Cronet_RequestFinishedInfoPtr self);
-CRONET_EXPORT
-int64_t Cronet_RequestFinishedInfo_dns_start_get(
-    Cronet_RequestFinishedInfoPtr self);
-CRONET_EXPORT
-int64_t Cronet_RequestFinishedInfo_dns_end_get(
-    Cronet_RequestFinishedInfoPtr self);
-CRONET_EXPORT
-int64_t Cronet_RequestFinishedInfo_connect_start_get(
-    Cronet_RequestFinishedInfoPtr self);
-CRONET_EXPORT
-int64_t Cronet_RequestFinishedInfo_connect_end_get(
-    Cronet_RequestFinishedInfoPtr self);
-CRONET_EXPORT
-int64_t Cronet_RequestFinishedInfo_ssl_start_get(
-    Cronet_RequestFinishedInfoPtr self);
-CRONET_EXPORT
-int64_t Cronet_RequestFinishedInfo_ssl_end_get(
-    Cronet_RequestFinishedInfoPtr self);
-CRONET_EXPORT
-int64_t Cronet_RequestFinishedInfo_sending_start_get(
-    Cronet_RequestFinishedInfoPtr self);
-CRONET_EXPORT
-int64_t Cronet_RequestFinishedInfo_sending_end_get(
-    Cronet_RequestFinishedInfoPtr self);
-CRONET_EXPORT
-int64_t Cronet_RequestFinishedInfo_push_start_get(
-    Cronet_RequestFinishedInfoPtr self);
-CRONET_EXPORT
-int64_t Cronet_RequestFinishedInfo_push_end_get(
-    Cronet_RequestFinishedInfoPtr self);
-CRONET_EXPORT
-int64_t Cronet_RequestFinishedInfo_response_start_get(
-    Cronet_RequestFinishedInfoPtr self);
-CRONET_EXPORT
-int64_t Cronet_RequestFinishedInfo_request_end_get(
-    Cronet_RequestFinishedInfoPtr self);
-CRONET_EXPORT
-bool Cronet_RequestFinishedInfo_socket_reused_get(
-    Cronet_RequestFinishedInfoPtr self);
-CRONET_EXPORT
-int64_t Cronet_RequestFinishedInfo_sent_byte_count_get(
-    Cronet_RequestFinishedInfoPtr self);
-CRONET_EXPORT
-int64_t Cronet_RequestFinishedInfo_received_byte_count_get(
+Cronet_MetricsPtr Cronet_RequestFinishedInfo_metrics_get(
     Cronet_RequestFinishedInfoPtr self);
 CRONET_EXPORT
 Cronet_UrlResponseInfoPtr Cronet_RequestFinishedInfo_response_info_get(
