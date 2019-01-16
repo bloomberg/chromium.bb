@@ -7,7 +7,7 @@
 #include <ctime>
 #include <vector>
 
-#include "base/rand_util.h"
+#include "net/third_party/quiche/src/http2/test_tools/http2_random.h"
 #include "net/third_party/spdy/core/hpack/hpack_constants.h"
 #include "net/third_party/spdy/core/hpack/hpack_decoder_adapter.h"
 #include "net/third_party/spdy/core/hpack/hpack_encoder.h"
@@ -69,9 +69,11 @@ class HpackRoundTripTest : public ::testing::TestWithParam<InputSizeParam> {
   }
 
   size_t SampleExponential(size_t mean, size_t sanity_bound) {
-    return std::min<size_t>(-std::log(base::RandDouble()) * mean, sanity_bound);
+    return std::min<size_t>(-std::log(random_.RandDouble()) * mean,
+                            sanity_bound);
   }
 
+  http2::test::Http2Random random_;
   HpackEncoder encoder_;
   HpackDecoderAdapter decoder_;
 };
@@ -168,10 +170,6 @@ TEST_P(HpackRoundTripTest, RandomizedExamples) {
   values.push_back("baz=bing; foo=bar; garbage");
   values.push_back("baz=bing; fizzle=fazzle; garbage");
 
-  int seed = std::time(NULL);
-  LOG(INFO) << "Seeding with srand(" << seed << ")";
-  srand(seed);
-
   for (size_t i = 0; i != 2000; ++i) {
     SpdyHeaderBlock headers;
 
@@ -186,13 +184,13 @@ TEST_P(HpackRoundTripTest, RandomizedExamples) {
       // Pseudo headers must be added before regular headers.
       if (j < pseudo_header_count) {
         // Choose one of the defined pseudo headers at random.
-        size_t name_index = base::RandGenerator(pseudo_header_names.size());
+        size_t name_index = random_.Uniform(pseudo_header_names.size());
         name = pseudo_header_names[name_index];
       } else {
         // Randomly reuse an existing header name, or generate a new one.
         size_t name_index = SampleExponential(20, 200);
         if (name_index >= random_header_names.size()) {
-          name = base::RandBytesAsString(1 + SampleExponential(5, 30));
+          name = random_.RandString(1 + SampleExponential(5, 30));
           // A regular header cannot begin with the pseudo header prefix ":".
           if (name[0] == ':') {
             name[0] = 'x';
@@ -206,8 +204,7 @@ TEST_P(HpackRoundTripTest, RandomizedExamples) {
       // Randomly reuse an existing value, or generate a new one.
       size_t value_index = SampleExponential(20, 200);
       if (value_index >= values.size()) {
-        SpdyString newvalue =
-            base::RandBytesAsString(1 + SampleExponential(15, 75));
+        SpdyString newvalue = random_.RandString(1 + SampleExponential(15, 75));
         // Currently order is not preserved in the encoder.  In particular,
         // when a value is decomposed at \0 delimiters, its parts might get
         // encoded out of order if some but not all of them already exist in

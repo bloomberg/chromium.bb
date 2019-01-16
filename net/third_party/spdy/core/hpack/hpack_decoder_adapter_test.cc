@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoder_state.h"
 #include "net/third_party/quiche/src/http2/hpack/decoder/hpack_decoder_tables.h"
 #include "net/third_party/quiche/src/http2/hpack/tools/hpack_block_builder.h"
@@ -701,10 +700,10 @@ TEST_P(HpackDecoderAdapterTest, BasicC31) {
 // RFC 7541, Section C.4: Request Examples with Huffman Coding
 // http://httpwg.org/specs/rfc7541.html#rfc.section.C.4
 TEST_P(HpackDecoderAdapterTest, SectionC4RequestHuffmanExamples) {
-  // TODO(jamessynge): Use
-  // net/third_party/quiche/src/http2/hpack/tools/hpack_example.h to parse the
-  // example directly, instead of having it as a comment. 82 | == Indexed - Add
-  // ==
+  // TODO(jamessynge): Use http2/hpack/tools/hpack_example.h to parse the
+  // example directly, instead of having it as a comment.
+  //
+  // 82                                      | == Indexed - Add ==
   //                                         |   idx = 2
   //                                         | -> :method: GET
   // 86                                      | == Indexed - Add ==
