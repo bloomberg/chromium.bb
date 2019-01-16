@@ -25,14 +25,14 @@ const DEFAULT_IDB_STORE_NAME = 'store';
 
 if (!self.isSecureContext) {
   throw new DOMException(
-      'Async local storage is only available in secure contexts',
+      'KV Storage is only available in secure contexts',
       'SecurityError');
 }
 
 export class StorageArea {
   constructor(name) {
     _databasePromise.set(this, null);
-    _databaseName.set(this, `async-local-storage:${name}`);
+    _databaseName.set(this, `kv-storage:${name}`);
   }
 
   async set(key, value) {
