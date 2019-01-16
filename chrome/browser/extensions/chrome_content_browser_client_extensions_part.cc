@@ -19,6 +19,7 @@
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extension_webkit_preferences.h"
@@ -864,6 +865,20 @@ ChromeContentBrowserClientExtensionsPart::
         const url::Origin& request_initiator) {
   return URLLoaderFactoryManager::CreateFactory(
       process, network_context, header_client, request_initiator);
+}
+
+// static
+bool ChromeContentBrowserClientExtensionsPart::IsBuiltinComponent(
+    content::BrowserContext* browser_context,
+    const url::Origin& origin) {
+  if (origin.scheme() != extensions::kExtensionScheme)
+    return false;
+
+  const auto& extension_id = origin.host();
+  return ExtensionSystem::Get(browser_context)
+      ->extension_service()
+      ->component_loader()
+      ->Exists(extension_id);
 }
 
 // static

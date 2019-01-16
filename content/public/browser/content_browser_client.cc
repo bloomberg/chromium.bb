@@ -912,4 +912,9 @@ std::string ContentBrowserClient::GetUserAgent() const {
   return std::string();
 }
 
+bool ContentBrowserClient::IsBuiltinComponent(BrowserContext* browser_context,
+                                              const url::Origin& origin) {
+  return false;
+}
+
 }  // namespace content
