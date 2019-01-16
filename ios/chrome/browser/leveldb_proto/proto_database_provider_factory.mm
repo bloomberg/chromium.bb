@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/leveldb_proto/proto_database_provider_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/leveldb_proto/proto_database_provider.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -17,7 +17,8 @@ namespace leveldb_proto {
 
 // static
 ProtoDatabaseProviderFactory* ProtoDatabaseProviderFactory::GetInstance() {
-  return base::Singleton<ProtoDatabaseProviderFactory>::get();
+  static base::NoDestructor<ProtoDatabaseProviderFactory> instance;
+  return instance.get();
 }
 
 // static

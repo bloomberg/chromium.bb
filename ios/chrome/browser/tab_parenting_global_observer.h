@@ -9,11 +9,7 @@
 
 #include "base/callback_list.h"
 #include "base/macros.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
+#include "base/no_destructor.h"
 
 namespace web {
 class WebState;
@@ -37,7 +33,7 @@ class TabParentingGlobalObserver {
   void OnTabParented(web::WebState* web_state);
 
  private:
-  friend struct base::DefaultSingletonTraits<TabParentingGlobalObserver>;
+  friend class base::NoDestructor<TabParentingGlobalObserver>;
 
   TabParentingGlobalObserver();
   ~TabParentingGlobalObserver();

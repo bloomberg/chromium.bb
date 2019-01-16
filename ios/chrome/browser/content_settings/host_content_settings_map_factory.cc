@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/prefs/pref_service.h"
@@ -22,7 +22,8 @@ HostContentSettingsMap* HostContentSettingsMapFactory::GetForBrowserState(
 
 // static
 HostContentSettingsMapFactory* HostContentSettingsMapFactory::GetInstance() {
-  return base::Singleton<HostContentSettingsMapFactory>::get();
+  static base::NoDestructor<HostContentSettingsMapFactory> instance;
+  return instance.get();
 }
 
 HostContentSettingsMapFactory::HostContentSettingsMapFactory()

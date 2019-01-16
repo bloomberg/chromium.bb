@@ -4,14 +4,15 @@
 
 #include "ios/chrome/browser/prefs/ios_chrome_pref_model_associator_client.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 
 // static
 IOSChromePrefModelAssociatorClient*
 IOSChromePrefModelAssociatorClient::GetInstance() {
-  return base::Singleton<IOSChromePrefModelAssociatorClient>::get();
+  static base::NoDestructor<IOSChromePrefModelAssociatorClient> instance;
+  return instance.get();
 }
 
 IOSChromePrefModelAssociatorClient::IOSChromePrefModelAssociatorClient() {}

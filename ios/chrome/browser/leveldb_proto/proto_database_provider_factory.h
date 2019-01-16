@@ -6,12 +6,8 @@
 #define IOS_CHROME_BROWSER_LEVELDB_PROTO_PROTO_DATABASE_PROVIDER_FACTORY_H_
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 namespace ios {
 class ChromeBrowserState;
@@ -38,7 +34,7 @@ class ProtoDatabaseProviderFactory : public BrowserStateKeyedServiceFactory {
       web::BrowserState* context) const override;
 
  private:
-  friend struct base::DefaultSingletonTraits<ProtoDatabaseProviderFactory>;
+  friend class base::NoDestructor<ProtoDatabaseProviderFactory>;
 
   ProtoDatabaseProviderFactory();
   ~ProtoDatabaseProviderFactory() override;

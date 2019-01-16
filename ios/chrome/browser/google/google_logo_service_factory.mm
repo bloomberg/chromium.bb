@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/google/google_logo_service_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -26,7 +26,8 @@ GoogleLogoService* GoogleLogoServiceFactory::GetForBrowserState(
 
 // static
 GoogleLogoServiceFactory* GoogleLogoServiceFactory::GetInstance() {
-  return base::Singleton<GoogleLogoServiceFactory>::get();
+  static base::NoDestructor<GoogleLogoServiceFactory> instance;
+  return instance.get();
 }
 
 GoogleLogoServiceFactory::GoogleLogoServiceFactory()

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -86,7 +86,8 @@ WebDataServiceFactory::GetTokenWebDataForBrowserState(
 
 // static
 WebDataServiceFactory* WebDataServiceFactory::GetInstance() {
-  return base::Singleton<WebDataServiceFactory>::get();
+  static base::NoDestructor<WebDataServiceFactory> instance;
+  return instance.get();
 }
 
 WebDataServiceFactory::WebDataServiceFactory()

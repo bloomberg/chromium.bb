@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -33,7 +33,8 @@ BrowsingDataRemover* BrowsingDataRemoverFactory::GetForBrowserStateIfExists(
 
 // static
 BrowsingDataRemoverFactory* BrowsingDataRemoverFactory::GetInstance() {
-  return base::Singleton<BrowsingDataRemoverFactory>::get();
+  static base::NoDestructor<BrowsingDataRemoverFactory> instance;
+  return instance.get();
 }
 
 BrowsingDataRemoverFactory::BrowsingDataRemoverFactory()

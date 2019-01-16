@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/content_settings/cookie_settings_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
@@ -23,7 +23,8 @@ CookieSettingsFactory::GetForBrowserState(
 
 // static
 CookieSettingsFactory* CookieSettingsFactory::GetInstance() {
-  return base::Singleton<CookieSettingsFactory>::get();
+  static base::NoDestructor<CookieSettingsFactory> instance;
+  return instance.get();
 }
 
 CookieSettingsFactory::CookieSettingsFactory()
