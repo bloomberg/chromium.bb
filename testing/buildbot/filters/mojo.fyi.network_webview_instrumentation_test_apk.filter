@@ -137,11 +137,6 @@
 -org.chromium.android_webview.test.VisualStateTest.testVisualStateCallbackWaitsForJs
 -org.chromium.android_webview.test.VisualStateTest.testVisualStateCallbackWhenContainerViewDetached
 
-# https://crbug.com/893584
--org.chromium.android_webview.test.WebKitHitTestTest.testSrcEmailType
--org.chromium.android_webview.test.WebKitHitTestTest.testSrcGeoType
--org.chromium.android_webview.test.WebKitHitTestTest.testSrcPhoneType
-
 # https://crbug.com/893585
 -org.chromium.android_webview.test.WebViewWebVrTest.testWebVrNotFunctional
 
