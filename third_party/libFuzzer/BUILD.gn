@@ -29,7 +29,7 @@ source_set("libfuzzer") {
     "src/FuzzerDriver.cpp",
     "src/FuzzerExtFunctionsDlsym.cpp",
     "src/FuzzerExtFunctionsWeak.cpp",
-    "src/FuzzerExtFunctionsWeakAlias.cpp",
+    "src/FuzzerExtFunctionsWindows.cpp",
     "src/FuzzerExtraCounters.cpp",
     "src/FuzzerIO.cpp",
     "src/FuzzerIOPosix.cpp",
