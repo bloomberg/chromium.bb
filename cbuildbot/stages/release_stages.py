@@ -550,7 +550,8 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
     self.skip_duts_check = skip_duts_check
     self.debug = debug
     assert test_env in [constants.ENV_SKYLAB, constants.ENV_AUTOTEST]
-    self.test_env = test_env
+    # TODO (xixuan): A temporary hack before crbug.com/920393 is fixed.
+    self.test_env = constants.ENV_AUTOTEST
     # We don't need the '-channel'suffix.
     if channel.endswith('-channel'):
       channel = channel[0:-len('-channel')]
