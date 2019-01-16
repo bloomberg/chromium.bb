@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/browser/ubertoken_fetcher.h"
+#include "components/signin/core/browser/ubertoken_fetcher_impl.h"
 
 #include <vector>
 
@@ -27,24 +27,24 @@ std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
 
 namespace signin {
 
-const int UbertokenFetcher::kMaxRetries = 3;
+const int UbertokenFetcherImpl::kMaxRetries = 3;
 
-UbertokenFetcher::UbertokenFetcher(
+UbertokenFetcherImpl::UbertokenFetcherImpl(
     const std::string& account_id,
     OAuth2TokenService* token_service,
     CompletionCallback ubertoken_callback,
     gaia::GaiaSource source,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     bool is_bound_to_channel_id)
-    : UbertokenFetcher(account_id,
-                       /*access_token=*/"",
-                       token_service,
-                       std::move(ubertoken_callback),
-                       url_loader_factory,
-                       base::BindRepeating(CreateGaiaAuthFetcher, source),
-                       is_bound_to_channel_id) {}
+    : UbertokenFetcherImpl(account_id,
+                           /*access_token=*/"",
+                           token_service,
+                           std::move(ubertoken_callback),
+                           url_loader_factory,
+                           base::BindRepeating(CreateGaiaAuthFetcher, source),
+                           is_bound_to_channel_id) {}
 
-UbertokenFetcher::UbertokenFetcher(
+UbertokenFetcherImpl::UbertokenFetcherImpl(
     const std::string& account_id,
     const std::string& access_token,
     OAuth2TokenService* token_service,
@@ -75,14 +75,14 @@ UbertokenFetcher::UbertokenFetcher(
   ExchangeTokens();
 }
 
-UbertokenFetcher::~UbertokenFetcher() {}
+UbertokenFetcherImpl::~UbertokenFetcherImpl() {}
 
-void UbertokenFetcher::OnUberAuthTokenSuccess(const std::string& token) {
+void UbertokenFetcherImpl::OnUberAuthTokenSuccess(const std::string& token) {
   std::move(ubertoken_callback_)
       .Run(GoogleServiceAuthError::AuthErrorNone(), token);
 }
 
-void UbertokenFetcher::OnUberAuthTokenFailure(
+void UbertokenFetcherImpl::OnUberAuthTokenFailure(
     const GoogleServiceAuthError& error) {
   // Retry only transient errors.
   bool should_retry =
@@ -97,7 +97,7 @@ void UbertokenFetcher::OnUberAuthTokenFailure(
                                 GoogleServiceAuthError::NUM_STATES);
       retry_timer_.Stop();
       retry_timer_.Start(FROM_HERE, base::TimeDelta::FromSecondsD(backoff),
-                         this, &UbertokenFetcher::ExchangeTokens);
+                         this, &UbertokenFetcherImpl::ExchangeTokens);
       return;
     }
   } else {
@@ -119,7 +119,7 @@ void UbertokenFetcher::OnUberAuthTokenFailure(
   std::move(ubertoken_callback_).Run(error, /*access_token=*/std::string());
 }
 
-void UbertokenFetcher::OnGetTokenSuccess(
+void UbertokenFetcherImpl::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK(!token_response.access_token.empty());
@@ -128,14 +128,14 @@ void UbertokenFetcher::OnGetTokenSuccess(
   ExchangeTokens();
 }
 
-void UbertokenFetcher::OnGetTokenFailure(
+void UbertokenFetcherImpl::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
   access_token_request_.reset();
   std::move(ubertoken_callback_).Run(error, /*access_token=*/std::string());
 }
 
-void UbertokenFetcher::RequestAccessToken() {
+void UbertokenFetcherImpl::RequestAccessToken() {
   retry_number_ = 0;
   gaia_auth_fetcher_.reset();
   retry_timer_.Stop();
@@ -146,7 +146,7 @@ void UbertokenFetcher::RequestAccessToken() {
       token_service_->StartRequest(account_id_, scopes, this);
 }
 
-void UbertokenFetcher::ExchangeTokens() {
+void UbertokenFetcherImpl::ExchangeTokens() {
   gaia_auth_fetcher_ =
       gaia_auth_fetcher_factory_.Run(this, url_loader_factory_);
   gaia_auth_fetcher_->StartTokenFetchForUberAuthExchange(

@@ -17,7 +17,7 @@
 class Profile;
 
 namespace signin {
-class UbertokenFetcher;
+class UbertokenFetcherImpl;
 }
 
 namespace arc {
@@ -88,7 +88,7 @@ class ArcAuthContext : public GaiaAuthConsumer,
   base::OneShotTimer refresh_token_timeout_;
   base::OneShotTimer retry_timeout_;
   std::unique_ptr<GaiaAuthFetcher> merger_fetcher_;
-  std::unique_ptr<signin::UbertokenFetcher> ubertoken_fetcher_;
+  std::unique_ptr<signin::UbertokenFetcherImpl> ubertoken_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAuthContext);
 };
