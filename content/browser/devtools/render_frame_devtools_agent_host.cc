@@ -378,6 +378,10 @@ void RenderFrameDevToolsAgentHost::ReadyToCommitNavigation(
     return;
   }
 
+  // Child workers will eventually disconnect, but timing depends on the
+  // renderer process. To ensure consistent view over protocol, disconnect them
+  // right now.
+  GetRendererChannel()->ForceDetachWorkerSessions();
   UpdateFrameHost(handle->GetRenderFrameHost());
   // UpdateFrameHost may destruct |this|.
 }

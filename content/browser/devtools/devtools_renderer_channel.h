@@ -55,6 +55,7 @@ class CONTENT_EXPORT DevToolsRendererChannel
       RenderFrameHostImpl* frame_host);
   void AttachSession(DevToolsSession* session);
   void InspectElement(const gfx::Point& point);
+  void ForceDetachWorkerSessions();
 
   void SetReportChildWorkers(protocol::TargetAutoAttacher* attacher,
                              bool report,
