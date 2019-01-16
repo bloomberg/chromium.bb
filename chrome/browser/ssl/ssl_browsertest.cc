@@ -360,7 +360,8 @@ bool ComparePreAndPostInterstitialSSLStatuses(const content::SSLStatus& one,
               : true) &&
          one.cert_status == two.cert_status &&
          one.key_exchange_group == two.key_exchange_group &&
-         one.peer_signature_algorithm == two.peer_signature_algorithm &&
+         // Skip comparing the peer_signature_algorithm, because it is not
+         // filled in by the time of an interstitial.
          one.connection_status == two.connection_status &&
          one.pkp_bypassed == two.pkp_bypassed;
 }
