@@ -3437,9 +3437,8 @@ void CompositedLayerMapping::PaintContents(
   } else if (IsScrollableAreaLayer(graphics_layer)) {
     PaintScrollableArea(graphics_layer, context, interest_rect);
   }
-  probe::didPaint(owning_layer_.GetLayoutObject().GetFrame(),
-                  graphics_layer->CcLayer(), context,
-                  LayoutRect(interest_rect));
+  probe::didPaint(owning_layer_.GetLayoutObject().GetFrame(), graphics_layer,
+                  context, LayoutRect(interest_rect));
 #if DCHECK_IS_ON()
   if (Page* page = GetLayoutObject().GetFrame()->GetPage())
     page->SetIsPainting(false);

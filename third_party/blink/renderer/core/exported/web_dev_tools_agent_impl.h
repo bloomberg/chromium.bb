@@ -46,6 +46,7 @@ namespace blink {
 
 class ClientMessageLoopAdapter;
 class GraphicsContext;
+class GraphicsLayer;
 class InspectedFrames;
 class InspectorNetworkAgent;
 class InspectorOverlayAgent;
@@ -111,7 +112,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   void WaitForDebugger() override;
 
   // InspectorLayerTreeAgent::Client implementation.
-  bool IsInspectorLayer(const cc::Layer*) override;
+  bool IsInspectorLayer(GraphicsLayer*) override;
 
   // Thread::TaskObserver implementation.
   void WillProcessTask(const base::PendingTask&) override;

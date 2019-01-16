@@ -49,10 +49,6 @@
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace cc {
-class Layer;
-}
-
 namespace blink {
 
 class AXObjectCache;
@@ -673,8 +669,6 @@ class CORE_EXPORT LocalFrameView final
            RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
     return paint_artifact_compositor_.get();
   }
-
-  const cc::Layer* RootCcLayer() const;
 
   enum ForceThrottlingInvalidationBehavior {
     kDontForceThrottlingInvalidation,

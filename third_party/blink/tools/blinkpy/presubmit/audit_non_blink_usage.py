@@ -176,7 +176,6 @@ _CONFIG = [
 
             # Chromium geometry types.
             'gfx::Point',
-            'gfx::Point3F',
             'gfx::Rect',
             'gfx::RectF',
             'gfx::Size',
