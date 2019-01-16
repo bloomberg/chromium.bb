@@ -94,7 +94,7 @@ ModuleInfoData CreateSignedLoadedModuleInfoData() {
   ModuleInfoData module_data = CreateLoadedModuleInfoData();
 
   module_data.inspection_result->certificate_info.type =
-      CertificateType::CERTIFICATE_IN_FILE;
+      CertificateInfo::Type::CERTIFICATE_IN_FILE;
   module_data.inspection_result->certificate_info.path =
       base::FilePath(kCertificatePath);
   module_data.inspection_result->certificate_info.subject = kCertificateSubject;
@@ -112,7 +112,7 @@ class IncompatibleApplicationsUpdaterTest : public testing::Test,
         dll2_(kDllPath2),
         scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
         module_list_filter_(base::MakeRefCounted<MockModuleListFilter>()) {
-    exe_certificate_info_.type = CertificateType::CERTIFICATE_IN_FILE;
+    exe_certificate_info_.type = CertificateInfo::Type::CERTIFICATE_IN_FILE;
     exe_certificate_info_.path = base::FilePath(kCertificatePath);
     exe_certificate_info_.subject = kCertificateSubject;
   }

@@ -58,7 +58,7 @@ TEST(ModuleInfoUtilTest, GetCertificateInfoUnsigned) {
   ASSERT_TRUE(base::PathService::Get(base::FILE_EXE, &path));
   CertificateInfo cert_info;
   GetCertificateInfo(path, &cert_info);
-  EXPECT_EQ(CertificateType::NO_CERTIFICATE, cert_info.type);
+  EXPECT_EQ(CertificateInfo::Type::NO_CERTIFICATE, cert_info.type);
   EXPECT_TRUE(cert_info.path.empty());
   EXPECT_TRUE(cert_info.subject.empty());
 }
@@ -73,7 +73,7 @@ TEST(ModuleInfoUtilTest, GetCertificateInfoSigned) {
 
   CertificateInfo cert_info;
   GetCertificateInfo(path, &cert_info);
-  EXPECT_NE(CertificateType::NO_CERTIFICATE, cert_info.type);
+  EXPECT_NE(CertificateInfo::Type::NO_CERTIFICATE, cert_info.type);
   EXPECT_FALSE(cert_info.path.empty());
   EXPECT_FALSE(cert_info.subject.empty());
 }
