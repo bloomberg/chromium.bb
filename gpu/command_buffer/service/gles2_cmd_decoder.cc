@@ -10406,10 +10406,10 @@ bool GLES2DecoderImpl::PrepareTexturesForRender(bool* textures_set,
               (std::string("Texture bound to texture unit ") +
                base::UintToString(texture_unit_index) +
                " with internal format " +
-               gl::GLEnums::GetStringEnum(
+               GLES2Util::GetStringEnum(
                    texture_ref->texture()->GetInternalFormatOfBaseLevel()) +
                " is not compatible with sampler type " +
-               gl::GLEnums::GetStringEnum(uniform_info->type))
+               GLES2Util::GetStringEnum(uniform_info->type))
                   .c_str());
           return false;
         }
