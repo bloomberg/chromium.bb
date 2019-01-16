@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.support.annotation.IntDef;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -101,12 +102,6 @@ public class WebappSplashScreenController extends EmptyTabObserver {
         startSplashscreenTraceEvents();
 
         notifySplashscreenVisible();
-        mWebappUma.recordSplashscreenBackgroundColor(webappInfo.hasValidBackgroundColor()
-                        ? WebappUma.SplashColorStatus.CUSTOM
-                        : WebappUma.SplashColorStatus.DEFAULT);
-        mWebappUma.recordSplashscreenThemeColor(webappInfo.hasValidThemeColor()
-                        ? WebappUma.SplashColorStatus.CUSTOM
-                        : WebappUma.SplashColorStatus.DEFAULT);
 
         if (mIsForWebApk) {
             initializeLayout(webappInfo, backgroundColor, ((WebApkInfo) webappInfo).splashIcon());
@@ -245,42 +240,52 @@ public class WebappSplashScreenController extends EmptyTabObserver {
         Context context = ContextUtils.getApplicationContext();
         Resources resources = context.getResources();
 
-        Bitmap displayIcon = splashImage;
-        boolean displayIconGenerated = false;
-        boolean displayIconAdaptive = false;
-        if (displayIcon == null) {
-            displayIcon = webappInfo.icon();
-            displayIconGenerated = webappInfo.isIconGenerated();
-            displayIconAdaptive = webappInfo.isIconAdaptive();
+        Bitmap selectedIcon = splashImage;
+        boolean selectedIconGenerated = false;
+        boolean selectedIconAdaptive = false;
+        if (selectedIcon == null) {
+            selectedIcon = webappInfo.icon();
+            selectedIconGenerated = webappInfo.isIconGenerated();
+            selectedIconAdaptive = webappInfo.isIconAdaptive();
         }
         @SplashLayout.IconClassification
-        int displayIconClassification =
-                SplashLayout.classifyIcon(resources, displayIcon, displayIconGenerated);
+        int selectedIconClassification =
+                SplashLayout.classifyIcon(resources, selectedIcon, selectedIconGenerated);
 
-        if (displayIconClassification == SplashLayout.IconClassification.INVALID) {
-            mWebappUma.recordSplashscreenIconType(WebappUma.SplashIconType.NONE);
-        } else {
-            // Record stats about the splash screen.
-            @WebappUma.SplashIconType
-            int splashScreenIconType;
-            if (splashImage == null) {
-                splashScreenIconType = WebappUma.SplashIconType.FALLBACK;
-            } else if (displayIconClassification == SplashLayout.IconClassification.SMALL) {
-                splashScreenIconType = WebappUma.SplashIconType.CUSTOM_SMALL;
-            } else {
-                splashScreenIconType = WebappUma.SplashIconType.CUSTOM;
-            }
-            mWebappUma.recordSplashscreenIconType(splashScreenIconType);
-            mWebappUma.recordSplashscreenIconSize(
-                    Math.round(displayIcon.getScaledWidth(resources.getDisplayMetrics())
-                            / resources.getDisplayMetrics().density));
-        }
-
-        SplashLayout.createLayout(context, mSplashScreen, displayIcon, displayIconAdaptive,
-                displayIconClassification, webappInfo.name(),
+        SplashLayout.createLayout(context, mSplashScreen, selectedIcon, selectedIconAdaptive,
+                selectedIconClassification, webappInfo.name(),
                 ColorUtils.shouldUseLightForegroundOnBackground(backgroundColor));
 
+        recordUma(resources, webappInfo, selectedIconClassification, selectedIcon,
+                (splashImage != null));
         if (mNativeLoaded) mWebappUma.commitMetrics();
+    }
+
+    /**
+     * Records splash screen UMA metrics.
+     * @param resources
+     * @param webappInfo
+     * @param selectedIconClassification.
+     * @param selectedIcon The icon used on the splash screen.
+     * @param usingDedicatedIcon Whether the PWA provides different icons for the splash screen and
+     *                           for the app icon.
+     */
+    private void recordUma(Resources resources, WebappInfo webappInfo,
+            @SplashLayout.IconClassification int selectedIconClassification, Bitmap selectedIcon,
+            boolean usingDedicatedIcon) {
+        mWebappUma.recordSplashscreenBackgroundColor(webappInfo.hasValidBackgroundColor()
+                        ? WebappUma.SplashColorStatus.CUSTOM
+                        : WebappUma.SplashColorStatus.DEFAULT);
+        mWebappUma.recordSplashscreenThemeColor(webappInfo.hasValidThemeColor()
+                        ? WebappUma.SplashColorStatus.CUSTOM
+                        : WebappUma.SplashColorStatus.DEFAULT);
+
+        mWebappUma.recordSplashscreenIconType(selectedIconClassification, usingDedicatedIcon);
+        if (selectedIconClassification != SplashLayout.IconClassification.INVALID) {
+            DisplayMetrics displayMetrics = resources.getDisplayMetrics();
+            mWebappUma.recordSplashscreenIconSize(Math.round(
+                    selectedIcon.getScaledWidth(displayMetrics) / displayMetrics.density));
+        }
     }
 
     /**

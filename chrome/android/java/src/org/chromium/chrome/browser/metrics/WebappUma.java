@@ -10,6 +10,7 @@ import android.support.annotation.IntDef;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.webapps.SplashscreenObserver;
 import org.chromium.chrome.browser.webapps.WebappSplashScreenController;
+import org.chromium.webapk.lib.common.splash.SplashLayout;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -97,11 +98,31 @@ public class WebappUma implements SplashscreenObserver {
 
     /**
      * Records the type of icon on the splash screen.
-     * @param type flag representing the type of icon.
+     * @param selectedIconClassification
+     * @param usingDedicatedIcon Whether the PWA provides different icons for the splash screen and
+     *                           for the app icon.
      */
-    public void recordSplashscreenIconType(@SplashIconType int type) {
+    public void recordSplashscreenIconType(
+            @SplashLayout.IconClassification int selectedIconClassification,
+            boolean usingDedicatedIcon) {
         assert !mCommitted;
-        mSplashScreenIconType = type;
+        mSplashScreenIconType =
+                determineIconTypeForUma(selectedIconClassification, usingDedicatedIcon);
+    }
+
+    private static @WebappUma.SplashIconType int determineIconTypeForUma(
+            @SplashLayout.IconClassification int selectedIconClassification,
+            boolean usingDedicatedIcon) {
+        if (selectedIconClassification == SplashLayout.IconClassification.INVALID) {
+            return WebappUma.SplashIconType.NONE;
+        }
+        if (!usingDedicatedIcon) {
+            return WebappUma.SplashIconType.FALLBACK;
+        }
+        if (selectedIconClassification == SplashLayout.IconClassification.SMALL) {
+            return WebappUma.SplashIconType.CUSTOM_SMALL;
+        }
+        return WebappUma.SplashIconType.CUSTOM;
     }
 
     public void recordSplashscreenIconSize(int size) {
