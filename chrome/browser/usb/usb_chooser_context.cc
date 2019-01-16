@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_blocklist.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "content/public/common/service_manager_connection.h"
 #include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/usb_ids.h"
@@ -30,8 +31,6 @@ constexpr char kGuidKey[] = "ephemeral-guid";
 constexpr char kProductIdKey[] = "product-id";
 constexpr char kSerialNumberKey[] = "serial-number";
 constexpr char kVendorIdKey[] = "vendor-id";
-constexpr char kSourcePolicy[] = "policy";
-constexpr char kSourcePreference[] = "preference";
 
 // Reasons a permission may be closed. These are used in histograms so do not
 // remove/reorder entries. Only add at the end just before
@@ -202,10 +201,10 @@ UsbChooserContext::~UsbChooserContext() {
   OnDeviceManagerConnectionError();
 }
 
-std::vector<std::unique_ptr<base::DictionaryValue>>
+std::vector<std::unique_ptr<ChooserContextBase::Object>>
 UsbChooserContext::GetGrantedObjects(const GURL& requesting_origin,
                                      const GURL& embedding_origin) {
-  std::vector<std::unique_ptr<base::DictionaryValue>> objects =
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
       ChooserContextBase::GetGrantedObjects(requesting_origin,
                                             embedding_origin);
 
@@ -221,7 +220,11 @@ UsbChooserContext::GetGrantedObjects(const GURL& requesting_origin,
         // which always returns after the device list initialization in this
         // class.
         DCHECK(base::ContainsKey(devices_, guid));
-        objects.push_back(DeviceInfoToDictValue(*devices_[guid]));
+        objects.push_back(std::make_unique<ChooserContextBase::Object>(
+            requesting_origin, embedding_origin,
+            DeviceInfoToDictValue(*devices_[guid]).get(),
+            content_settings::SettingSource::SETTING_SOURCE_USER,
+            is_incognito_));
       }
     }
   }
@@ -246,8 +249,8 @@ UsbChooserContext::GetAllGrantedObjects() {
       // ChooserContextBase::Object constructor will swap the object.
       auto object = DeviceInfoToDictValue(*devices_[guid]);
       objects.push_back(std::make_unique<ChooserContextBase::Object>(
-          requesting_origin, embedding_origin, object.get(), kSourcePreference,
-          is_incognito_));
+          requesting_origin, embedding_origin, object.get(),
+          content_settings::SETTING_SOURCE_USER, is_incognito_));
     }
   }
 
@@ -257,11 +260,11 @@ UsbChooserContext::GetAllGrantedObjects() {
   std::map<std::pair<int, int>, base::Value> device_ids_to_object_map;
   for (auto it = objects.begin(); it != objects.end();) {
     const Object& object = **it;
-    auto device_ids = GetDeviceIds(object.object);
+    auto device_ids = GetDeviceIds(object.value);
     const GURL& requesting_origin = object.requesting_origin;
     const GURL& embedding_origin = object.embedding_origin;
 
-    device_ids_to_object_map[device_ids] = object.object.Clone();
+    device_ids_to_object_map[device_ids] = object.value.Clone();
 
     if (usb_policy_allowed_devices_->IsDeviceAllowed(
             requesting_origin, embedding_origin, device_ids)) {
@@ -288,7 +291,8 @@ UsbChooserContext::GetAllGrantedObjects() {
       }
 
       objects.push_back(std::make_unique<ChooserContextBase::Object>(
-          url_pair.first, url_pair.second, object.get(), kSourcePolicy,
+          url_pair.first, url_pair.second, object.get(),
+          content_settings::SettingSource::SETTING_SOURCE_POLICY,
           is_incognito_));
     }
   }
@@ -356,18 +360,18 @@ bool UsbChooserContext::HasDevicePermission(
     return true;
   }
 
-  std::vector<std::unique_ptr<base::DictionaryValue>> device_list =
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> object_list =
       GetGrantedObjects(requesting_origin, embedding_origin);
-  for (const std::unique_ptr<base::DictionaryValue>& device_dict :
-       device_list) {
+  for (const auto& object : object_list) {
     int vendor_id;
     int product_id;
     base::string16 serial_number;
-    if (device_dict->GetInteger(kVendorIdKey, &vendor_id) &&
+    const base::DictionaryValue& device_dict = object->value;
+    if (device_dict.GetInteger(kVendorIdKey, &vendor_id) &&
         device_info.vendor_id == vendor_id &&
-        device_dict->GetInteger(kProductIdKey, &product_id) &&
+        device_dict.GetInteger(kProductIdKey, &product_id) &&
         device_info.product_id == product_id &&
-        device_dict->GetString(kSerialNumberKey, &serial_number) &&
+        device_dict.GetString(kSerialNumberKey, &serial_number) &&
         device_info.serial_number == serial_number) {
       return true;
     }

@@ -218,8 +218,8 @@ PageInfoUI::PermissionInfo::PermissionInfo()
 
 PageInfoUI::ChosenObjectInfo::ChosenObjectInfo(
     const PageInfo::ChooserUIInfo& ui_info,
-    std::unique_ptr<base::DictionaryValue> object)
-    : ui_info(ui_info), object(std::move(object)) {}
+    std::unique_ptr<ChooserContextBase::Object> chooser_object)
+    : ui_info(ui_info), chooser_object(std::move(chooser_object)) {}
 
 PageInfoUI::ChosenObjectInfo::~ChosenObjectInfo() {}
 
@@ -428,7 +428,7 @@ SkColor PageInfoUI::GetSecondaryTextColor() {
 base::string16 PageInfoUI::ChosenObjectToUIString(
     const ChosenObjectInfo& object) {
   base::string16 name;
-  object.object->GetString(object.ui_info.ui_name_key, &name);
+  object.chooser_object->value.GetString(object.ui_info.ui_name_key, &name);
   return name;
 }
 

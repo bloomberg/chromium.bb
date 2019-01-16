@@ -526,7 +526,8 @@ void PageInfoBubbleView::OnPermissionChanged(
 
 void PageInfoBubbleView::OnChosenObjectDeleted(
     const PageInfoUI::ChosenObjectInfo& info) {
-  presenter_->OnSiteChosenObjectDeleted(info.ui_info, *info.object);
+  presenter_->OnSiteChosenObjectDeleted(info.ui_info,
+                                        info.chooser_object->value);
 }
 
 void PageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {

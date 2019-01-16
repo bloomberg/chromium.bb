@@ -204,6 +204,33 @@ SiteSettingSource CalculateSiteSettingSource(
   return SiteSettingSource::kPreference;
 }
 
+// Retrieves the source of a chooser exception as a string. This method uses the
+// CalculateSiteSettingSource method above to calculate the correct string to
+// use.
+std::string GetSourceStringForChooserException(
+    Profile* profile,
+    ContentSettingsType content_type,
+    content_settings::SettingSource source) {
+  // Prepare the parameters needed by CalculateSiteSettingSource
+  content_settings::SettingInfo info;
+  info.source = source;
+
+  // Chooser exceptions do not use a PermissionContextBase for their
+  // permissions.
+  PermissionResult permission_result(CONTENT_SETTING_DEFAULT,
+                                     PermissionStatusSource::UNSPECIFIED);
+
+  // The |origin| parameter is only used for |CONTENT_SETTINGS_TYPE_ADS| with
+  // the |kSafeBrowsingSubresourceFilter| feature flag enabled, so an empty GURL
+  // is used.
+  SiteSettingSource calculated_source = CalculateSiteSettingSource(
+      profile, content_type, /*origin=*/GURL::EmptyGURL(), info,
+      permission_result);
+  DCHECK(calculated_source == SiteSettingSource::kPolicy ||
+         calculated_source == SiteSettingSource::kPreference);
+  return SiteSettingSourceToString(calculated_source);
+}
+
 ChooserContextBase* GetUsbChooserContext(Profile* profile) {
   return UsbChooserContextFactory::GetForProfile(profile);
 }
@@ -589,6 +616,8 @@ void GetChooserExceptionsFromProfile(Profile* profile,
   }
 
   ChooserContextBase* chooser_context = chooser_type.get_context(profile);
+  ContentSettingsType content_type =
+      ContentSettingsTypeFromGroupName(std::string(chooser_type.name));
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
       chooser_context->GetAllGrantedObjects();
   AllOriginObjects all_origin_objects;
@@ -597,14 +626,20 @@ void GetChooserExceptionsFromProfile(Profile* profile,
     // TODO(https://crbug.com/854329): Include policy controlled objects
     // when the UI is capable of displaying them properly as policy controlled
     // objects.
-    if (object->source == SiteSettingSourceToString(SiteSettingSource::kPolicy))
+    if (object->source ==
+        content_settings::SettingSource::SETTING_SOURCE_POLICY) {
       continue;
-    std::string name = chooser_context->GetObjectName(object->object);
+    }
+
+    std::string name = chooser_context->GetObjectName(object->value);
+    std::string source = GetSourceStringForChooserException(
+        profile, content_type, object->source);
+
     // It is safe for this structure to hold references into |objects| because
     // they are both destroyed at the end of this function.
-    all_origin_objects[make_pair(object->requesting_origin, object->source)]
+    all_origin_objects[make_pair(object->requesting_origin, source)]
                       [object->embedding_origin]
-                          .insert(make_pair(name, &object->object));
+                          .insert(make_pair(name, &object->value));
   }
 
   // Keep the exceptions sorted by provider so they will be displayed in
@@ -740,18 +775,23 @@ std::unique_ptr<base::ListValue> GetChooserExceptionListFromProfile(
   }
 
   ChooserContextBase* chooser_context = chooser_type.get_context(profile);
+  ContentSettingsType content_type =
+      ContentSettingsTypeFromGroupName(std::string(chooser_type.name));
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
       chooser_context->GetAllGrantedObjects();
   AllChooserObjects all_chooser_objects;
 
   for (const auto& object : objects) {
     if (object->incognito == incognito) {
-      std::string name = chooser_context->GetObjectName(object->object);
+      std::string name = chooser_context->GetObjectName(object->value);
       auto& chooser_exception_details =
-          all_chooser_objects[std::make_pair(name, object->object.Clone())];
+          all_chooser_objects[std::make_pair(name, object->value.Clone())];
+
+      std::string source = GetSourceStringForChooserException(
+          profile, content_type, object->source);
 
       const auto requesting_origin_source_pair =
-          std::make_pair(object->requesting_origin, object->source);
+          std::make_pair(object->requesting_origin, source);
       auto& embedding_origin_set =
           chooser_exception_details[requesting_origin_source_pair];
 

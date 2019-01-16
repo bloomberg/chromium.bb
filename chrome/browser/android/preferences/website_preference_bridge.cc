@@ -563,10 +563,10 @@ static void JNI_WebsitePreferenceBridge_GetChosenObjects(
       jembedder = ConvertUTF8ToJavaString(env, embedder);
 
     ScopedJavaLocalRef<jstring> jname =
-        ConvertUTF8ToJavaString(env, context->GetObjectName(object->object));
+        ConvertUTF8ToJavaString(env, context->GetObjectName(object->value));
 
     std::string serialized;
-    bool written = base::JSONWriter::Write(object->object, &serialized);
+    bool written = base::JSONWriter::Write(object->value, &serialized);
     DCHECK(written);
     ScopedJavaLocalRef<jstring> jserialized =
         ConvertUTF8ToJavaString(env, serialized);

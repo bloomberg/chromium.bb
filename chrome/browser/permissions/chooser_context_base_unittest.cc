@@ -66,11 +66,11 @@ TEST_F(ChooserContextBaseTest, GrantAndRevokeObjectPermissions) {
   context.GrantObjectPermission(origin1_, origin1_, object1_.CreateDeepCopy());
   context.GrantObjectPermission(origin1_, origin1_, object2_.CreateDeepCopy());
 
-  std::vector<std::unique_ptr<base::DictionaryValue>> objects =
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
       context.GetGrantedObjects(origin1_, origin1_);
   EXPECT_EQ(2u, objects.size());
-  EXPECT_TRUE(object1_.Equals(objects[0].get()));
-  EXPECT_TRUE(object2_.Equals(objects[1].get()));
+  EXPECT_EQ(object1_, objects[0]->value);
+  EXPECT_EQ(object2_, objects[1]->value);
 
   // Granting permission to one origin should not grant them to another.
   objects = context.GetGrantedObjects(origin2_, origin2_);
@@ -86,10 +86,10 @@ TEST_F(ChooserContextBaseTest, GrantObjectPermissionTwice) {
   context.GrantObjectPermission(origin1_, origin1_, object1_.CreateDeepCopy());
   context.GrantObjectPermission(origin1_, origin1_, object1_.CreateDeepCopy());
 
-  std::vector<std::unique_ptr<base::DictionaryValue>> objects =
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
       context.GetGrantedObjects(origin1_, origin1_);
   EXPECT_EQ(1u, objects.size());
-  EXPECT_TRUE(object1_.Equals(objects[0].get()));
+  EXPECT_EQ(object1_, objects[0]->value);
 
   context.RevokeObjectPermission(origin1_, origin1_, object1_);
   objects = context.GetGrantedObjects(origin1_, origin1_);
@@ -100,10 +100,10 @@ TEST_F(ChooserContextBaseTest, GrantObjectPermissionEmbedded) {
   TestChooserContext context(profile());
   context.GrantObjectPermission(origin1_, origin2_, object1_.CreateDeepCopy());
 
-  std::vector<std::unique_ptr<base::DictionaryValue>> objects =
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
       context.GetGrantedObjects(origin1_, origin2_);
   EXPECT_EQ(1u, objects.size());
-  EXPECT_TRUE(object1_.Equals(objects[0].get()));
+  EXPECT_EQ(object1_, objects[0]->value);
 
   // The embedding origin still does not have permission.
   objects = context.GetGrantedObjects(origin2_, origin2_);
@@ -128,12 +128,12 @@ TEST_F(ChooserContextBaseTest, GetAllGrantedObjects) {
     if (object->requesting_origin == origin1_) {
       EXPECT_FALSE(found_one);
       EXPECT_EQ(origin1_, object->embedding_origin);
-      EXPECT_TRUE(object->object.Equals(&object1_));
+      EXPECT_EQ(object1_, objects[0]->value);
       found_one = true;
     } else if (object->requesting_origin == origin2_) {
       EXPECT_FALSE(found_two);
       EXPECT_EQ(origin2_, object->embedding_origin);
-      EXPECT_TRUE(object->object.Equals(&object2_));
+      EXPECT_EQ(object2_, objects[1]->value);
       found_two = true;
     } else {
       ADD_FAILURE() << "Unexpected object.";
@@ -153,14 +153,14 @@ TEST_F(ChooserContextBaseTest, GetGrantedObjectsWithGuardBlocked) {
   context.GrantObjectPermission(origin1_, origin1_, object1_.CreateDeepCopy());
   context.GrantObjectPermission(origin2_, origin2_, object2_.CreateDeepCopy());
 
-  std::vector<std::unique_ptr<base::DictionaryValue>> objects1 =
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects1 =
       context.GetGrantedObjects(origin1_, origin1_);
   EXPECT_EQ(0u, objects1.size());
 
-  std::vector<std::unique_ptr<base::DictionaryValue>> objects2 =
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects2 =
       context.GetGrantedObjects(origin2_, origin2_);
   ASSERT_EQ(1u, objects2.size());
-  EXPECT_TRUE(object2_.Equals(objects2[0].get()));
+  EXPECT_EQ(object2_, objects2[0]->value);
 }
 
 TEST_F(ChooserContextBaseTest, GetAllGrantedObjectsWithGuardBlocked) {
@@ -178,5 +178,5 @@ TEST_F(ChooserContextBaseTest, GetAllGrantedObjectsWithGuardBlocked) {
   ASSERT_EQ(1u, objects.size());
   EXPECT_EQ(origin2_, objects[0]->requesting_origin);
   EXPECT_EQ(origin2_, objects[0]->embedding_origin);
-  EXPECT_TRUE(objects[0]->object.Equals(&object2_));
+  EXPECT_EQ(object2_, objects[0]->value);
 }
