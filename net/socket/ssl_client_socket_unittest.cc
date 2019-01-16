@@ -2611,6 +2611,19 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
   EXPECT_FALSE(sock_->IsConnected());
 }
 
+TEST_F(SSLClientSocketCertRequestInfoTest,
+       DontRequestClientCertsIfServerCertInvalid) {
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_EXPIRED);
+  ssl_options.request_client_certificate = true;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  cert_verifier_->set_default_result(ERR_CERT_DATE_INVALID);
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+  EXPECT_THAT(rv, IsError(ERR_CERT_DATE_INVALID));
+}
+
 TEST_F(SSLClientSocketCertRequestInfoTest, NoAuthorities) {
   SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -3579,6 +3592,50 @@ TEST_F(SSLClientSocketTest, CTIsRequired) {
   EXPECT_TRUE(ssl_info.cert_status &
               CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED);
   EXPECT_FALSE(sock_->IsConnected());
+}
+
+// Test that when CT is required, setting ignore_certificate_errors
+// ignores errors in CT.
+TEST_F(SSLClientSocketTest, IgnoreCertificateErrorsBypassesRequiredCT) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+  scoped_refptr<X509Certificate> server_cert =
+      spawned_test_server()->GetCertificate();
+
+  // Certificate is trusted and chains to a public root.
+  CertVerifyResult verify_result;
+  verify_result.is_issued_by_known_root = true;
+  verify_result.verified_cert = server_cert;
+  verify_result.public_key_hashes =
+      MakeHashValueVector(kGoodHashValueVectorInput);
+  cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
+
+  // Set up CT
+  MockRequireCTDelegate require_ct_delegate;
+  transport_security_state_->SetRequireCTDelegate(&require_ct_delegate);
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_, _, _))
+      .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
+                                 CTRequirementLevel::NOT_REQUIRED));
+  EXPECT_CALL(
+      require_ct_delegate,
+      IsCTRequiredForHost(spawned_test_server()->host_port_pair().host(), _, _))
+      .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
+                                 CTRequirementLevel::REQUIRED));
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(server_cert.get(), _, _))
+      .WillRepeatedly(
+          Return(ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
+
+  SSLConfig ssl_config;
+  ssl_config.ignore_certificate_errors = true;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(ssl_info.cert_status &
+              CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED);
+  EXPECT_TRUE(sock_->IsConnected());
 }
 
 // Test that the CT compliance status is recorded in a histogram.

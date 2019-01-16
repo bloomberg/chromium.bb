@@ -514,7 +514,7 @@ public class WebServer {
                         if (request != null) {
                             handleRequest(request, socket.getOutputStream());
                         }
-                    } catch (InvalidRequest e) {
+                    } catch (InvalidRequest | IOException e) {
                         Log.e(TAG, e.getMessage());
                     } finally {
                         socket.close();

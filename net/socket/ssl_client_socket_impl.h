@@ -139,10 +139,9 @@ class SSLClientSocketImpl : public SSLClientSocket,
 
   int DoHandshake();
   int DoHandshakeComplete(int result);
-  int DoVerifyCert(int result);
-  int DoVerifyCertComplete(int result);
   void DoConnectCallback(int result);
 
+  void OnVerifyComplete(int result);
   void OnHandshakeIOComplete(int result);
 
   int DoHandshakeLoop(int last_io_result);
@@ -154,18 +153,17 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // and, if complete, runs the respective callbacks.
   void RetryAllOperations();
 
+  // Callback from the SSL layer when a certificate needs to be verified. This
+  // is called when establishing new (fresh) connections and when evaluating
+  // whether an existing session can be resumed.
+  static ssl_verify_result_t VerifyCertCallback(SSL* ssl, uint8_t* out_alert);
+  ssl_verify_result_t VerifyCert();
+  ssl_verify_result_t HandleVerifyResult();
   int VerifyCT();
 
   // Callback from the SSL layer that indicates the remote server is requesting
   // a certificate for this client.
   int ClientCertRequestCallback(SSL* ssl);
-
-  // Called after the initial handshake completes and after the server
-  // certificate has been verified. The order of handshake completion and
-  // certificate verification depends on whether the connection was false
-  // started. After both have happened (thus calling this twice), the session is
-  // safe to cache and will be cached.
-  void MaybeCacheSession();
 
   // Called from the SSL layer whenever a new session is established.
   int NewSessionCallback(SSL_SESSION* session);
@@ -259,6 +257,9 @@ class SSLClientSocketImpl : public SSLClientSocket,
   std::unique_ptr<CertVerifier::Request> cert_verifier_request_;
   base::TimeTicks start_cert_verification_time_;
 
+  // Result from Cert Verifier.
+  int cert_verification_result_;
+
   // Certificate Transparency: Verifier and result holder.
   ct::CTVerifyResult ct_verify_result_;
   CTVerifier* cert_transparency_verifier_;
@@ -279,8 +280,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
     STATE_NONE,
     STATE_HANDSHAKE,
     STATE_HANDSHAKE_COMPLETE,
-    STATE_VERIFY_CERT,
-    STATE_VERIFY_CERT_COMPLETE,
   };
   State next_handshake_state_;
 
@@ -291,11 +290,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
   bool disconnected_;
 
   NextProto negotiated_protocol_;
-  // If non-null, the newly-established to be inserted into the session cache
-  // once certificate verification is done.
-  bssl::UniquePtr<SSL_SESSION> pending_session_;
-  // True if the initial handshake's certificate has been verified.
-  bool certificate_verified_;
   // Set to true if a CertificateRequest was received.
   bool certificate_requested_;
 

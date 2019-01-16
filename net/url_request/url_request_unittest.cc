@@ -9911,36 +9911,6 @@ TEST_F(HTTPSRequestTest, ResumeTest) {
   }
 }
 
-// AssertTwoDistinctSessionsInserted checks that |session_info|, which must be
-// the result of fetching "ssl-session-cache" from the test server, indicates
-// that exactly two different sessions were inserted, with no real lookups.
-// There will be a fake TLS 1.3 session ID lookup that can be ignored.
-static void AssertTwoDistinctSessionsInserted(const string& session_info) {
-  std::vector<std::string> lines = base::SplitString(
-      session_info, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-
-  size_t inserts = 0;
-  std::string session_id;
-  for (size_t i = 0; i < lines.size() - 1; i++) {
-    std::vector<std::string> parts = base::SplitString(
-        lines[i], "\t", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    ASSERT_EQ(2u, parts.size());
-    if (parts[0] == "insert") {
-      inserts++;
-      if (i == 0) {
-        session_id = parts[1];
-      } else {
-        EXPECT_NE(session_id, parts[1]);
-      }
-    } else if (parts[0] == "lookup") {
-      // The fake TLS 1.3 session ID will produce fake lookups. Check that the
-      // inserted ID was not looked up.
-      EXPECT_NE(session_id, parts[1]);
-    }
-  }
-  ASSERT_EQ(2u, inserts) << session_info;
-}
-
 TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   // Test that sessions aren't resumed when the value of ssl_session_cache_shard
   // differs.
@@ -9957,7 +9927,7 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   {
     TestDelegate d;
     std::unique_ptr<URLRequest> r(default_context_.CreateRequest(
-        test_server.GetURL("ssl-session-cache"), DEFAULT_PRIORITY, &d,
+        test_server.GetURL("/"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
 
     r->Start();
@@ -10003,16 +9973,8 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
 
     d.RunUntilComplete();
 
-    // The response will look like;
-    //   lookup uvw (TLS 1.3's compatibility session ID)
-    //   insert abc
-    //   insert xyz
-    //
-    // With a newline at the end which makes the split think that there are
-    // three lines.
-
     EXPECT_EQ(1, d.response_started_count());
-    AssertTwoDistinctSessionsInserted(d.data_received());
+    EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, r->ssl_info().handshake_type);
   }
 }
 
@@ -10147,7 +10109,7 @@ TEST_F(HTTPSSessionTest, DontResumeSessionsForInvalidCertificates) {
   {
     TestDelegate d;
     std::unique_ptr<URLRequest> r(default_context_.CreateRequest(
-        test_server.GetURL("ssl-session-cache"), DEFAULT_PRIORITY, &d,
+        test_server.GetURL("/"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
 
     r->Start();
@@ -10175,23 +10137,8 @@ TEST_F(HTTPSSessionTest, DontResumeSessionsForInvalidCertificates) {
 
     d.RunUntilComplete();
 
-    // The response will look like;
-    //   lookup uvw (TLS 1.3's compatibility session ID)
-    //   insert abc
-    //   insert xyz
-    //
-    // With a newline at the end which makes the split think that there are
-    // three lines.
-    //
-    // If a session was presented (eg: a bug), then the response would look
-    // like;
-    //   lookup uvw (TLS 1.3's compatibility session ID)
-    //   insert abc
-    //   lookup abc
-    //   insert xyz
-
     EXPECT_EQ(1, d.response_started_count());
-    AssertTwoDistinctSessionsInserted(d.data_received());
+    EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, r->ssl_info().handshake_type);
   }
 }
 
