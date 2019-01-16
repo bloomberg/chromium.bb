@@ -54,6 +54,7 @@
 #include "chrome/browser/sync/sessions/sync_sessions_router_tab_helper.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
+#include "chrome/browser/complex_tasks/task_tab_helper.h"
 #include "chrome/browser/tracing/navigation_tracing.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
@@ -98,7 +99,6 @@
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/oom_intervention/oom_intervention_tab_helper.h"
 #include "chrome/browser/android/search_permissions/search_geolocation_disclosure_tab_helper.h"
-#include "chrome/browser/android/tasks/task_tab_helper.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/banners/app_banner_manager_android.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
@@ -261,6 +261,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
           profile));
   TabSpecificContentSettings::CreateForWebContents(web_contents);
   TabUIHelper::CreateForWebContents(web_contents);
+  tasks::TaskTabHelper::CreateForWebContents(web_contents);
   ukm::InitializeSourceUrlRecorderForWebContents(web_contents);
   vr::VrTabHelper::CreateForWebContents(web_contents);
 
@@ -283,7 +284,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
   SearchGeolocationDisclosureTabHelper::CreateForWebContents(web_contents);
   SingleTabModeTabHelper::CreateForWebContents(web_contents);
-  tasks::TaskTabHelper::CreateForWebContents(web_contents);
   ViewAndroidHelper::CreateForWebContents(web_contents);
 #else
   BookmarkTabHelper::CreateForWebContents(web_contents);
