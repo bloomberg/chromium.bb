@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/platform_probe_sink.h"
@@ -44,14 +44,7 @@ class NullFetchContext final : public FetchContext {
  public:
   explicit NullFetchContext(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : FetchContext(std::move(task_runner),
-                     *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-                         KURL(),
-                         nullptr /* security_origin */,
-                         network::mojom::ReferrerPolicy::kDefault,
-                         String(),
-                         HttpsState::kNone,
-                         AllowedByNosniff::MimeTypeCheck::kStrict)) {}
+      : FetchContext(std::move(task_runner)) {}
 
   void CountUsage(mojom::WebFeature) const override {}
   void CountDeprecation(mojom::WebFeature) const override {}
@@ -65,11 +58,9 @@ FetchContext& FetchContext::NullInstance(
 }
 
 FetchContext::FetchContext(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    FetchClientSettingsObject& fetch_client_settings_object)
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : platform_probe_sink_(MakeGarbageCollected<PlatformProbeSink>()),
-      task_runner_(std::move(task_runner)),
-      fetch_client_settings_object_(&fetch_client_settings_object) {
+      task_runner_(std::move(task_runner)) {
   platform_probe_sink_->addPlatformTraceEvents(
       MakeGarbageCollected<PlatformTraceEventsAgent>());
 }
@@ -83,7 +74,6 @@ void FetchContext::Bind(ResourceFetcher* fetcher) {
 
 void FetchContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(platform_probe_sink_);
-  visitor->Trace(fetch_client_settings_object_);
   visitor->Trace(fetcher_);
 }
 
@@ -183,16 +173,9 @@ const SecurityOrigin* FetchContext::GetSecurityOrigin() const {
   return GetFetchClientSettingsObject()->GetSecurityOrigin();
 }
 
-void FetchContext::SetFetchClientSettingsObject(
-    FetchClientSettingsObject* fetch_client_settings_object) {
-  DCHECK(fetch_client_settings_object);
-  fetch_client_settings_object_ = fetch_client_settings_object;
-}
-
 const FetchClientSettingsObject* FetchContext::GetFetchClientSettingsObject()
     const {
-  DCHECK(fetch_client_settings_object_);
-  return fetch_client_settings_object_.Get();
+  return &GetResourceFetcherProperties().GetFetchClientSettingsObject();
 }
 
 void FetchContext::PopulateResourceRequest(
