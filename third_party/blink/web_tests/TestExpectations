@@ -398,6 +398,8 @@ crbug.com/921105 virtual/threaded/animations/skew-notsequential-compositor.html 
 
 # ====== Paint team owned tests to here ======
 
+crbug.com/922249 virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure Pass ]
+
 # ====== Layout team owned tests from here ======
 
 crbug.com/591099 external/wpt/css/CSS2/floats/floats-line-wrap-shifted-001.html [ Failure ]
