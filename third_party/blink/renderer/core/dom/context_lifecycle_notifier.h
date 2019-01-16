@@ -30,6 +30,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/execution_context/pause_state.h"
 #include "third_party/blink/renderer/platform/lifecycle_notifier.h"
 
 namespace blink {
@@ -42,7 +43,7 @@ class CORE_EXPORT ContextLifecycleNotifier
     : public LifecycleNotifier<ExecutionContext, ContextLifecycleObserver> {
  public:
   void NotifyResumingPausableObjects();
-  void NotifySuspendingPausableObjects();
+  void NotifySuspendingPausableObjects(PauseState state);
 
   unsigned PausableObjectCount() const;
 

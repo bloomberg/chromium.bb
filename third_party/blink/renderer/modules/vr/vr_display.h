@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_frame_request_callback.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/execution_context/pausable_object.h"
 #include "third_party/blink/renderer/modules/vr/vr_display_capabilities.h"
 #include "third_party/blink/renderer/modules/vr/vr_layer_init.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/xr_frame_transport.h"
@@ -131,8 +131,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   bool HasPendingActivity() const final;
 
   // PausableObject:
-  void Pause() override;
-  void Unpause() override;
+  void ContextUnpaused() override;
 
   void OnChanged(device::mojom::blink::VRDisplayInfoPtr, bool is_immersive);
   void OnExitPresent(bool is_immersive);

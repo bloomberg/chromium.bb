@@ -226,11 +226,11 @@ void ScriptedIdleTaskController::ContextDestroyed(ExecutionContext*) {
   idle_tasks_.clear();
 }
 
-void ScriptedIdleTaskController::Pause() {
+void ScriptedIdleTaskController::ContextPaused(PauseState) {
   paused_ = true;
 }
 
-void ScriptedIdleTaskController::Unpause() {
+void ScriptedIdleTaskController::ContextUnpaused() {
   DCHECK(paused_);
   paused_ = false;
 

@@ -28,7 +28,7 @@
 #include "third_party/blink/renderer/core/dom/context_lifecycle_notifier.h"
 
 #include "base/auto_reset.h"
-#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/execution_context/pausable_object.h"
 
 namespace blink {
 
@@ -42,11 +42,12 @@ void ContextLifecycleNotifier::NotifyResumingPausableObjects() {
     DCHECK_EQ(pausable_object->GetExecutionContext(), Context());
     DCHECK(pausable_object->PauseIfNeededCalled());
 #endif
-    pausable_object->Unpause();
+    pausable_object->ContextUnpaused();
   });
 }
 
-void ContextLifecycleNotifier::NotifySuspendingPausableObjects() {
+void ContextLifecycleNotifier::NotifySuspendingPausableObjects(
+    PauseState state) {
   ForEachObserver([&](ContextLifecycleObserver* observer) {
     if (observer->ObserverType() !=
         ContextLifecycleObserver::kPausableObjectType)
@@ -56,7 +57,7 @@ void ContextLifecycleNotifier::NotifySuspendingPausableObjects() {
     DCHECK_EQ(pausable_object->GetExecutionContext(), Context());
     DCHECK(pausable_object->PauseIfNeededCalled());
 #endif
-    pausable_object->Pause();
+    pausable_object->ContextPaused(state);
   });
 }
 

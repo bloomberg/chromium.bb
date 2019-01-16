@@ -31,8 +31,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/dom/pausable_object.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
+#include "third_party/blink/renderer/core/execution_context/pausable_object.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/csp/execution_context_csp_delegate.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -51,7 +51,6 @@ ExecutionContext::ExecutionContext(v8::Isolate* isolate)
     : isolate_(isolate),
       circular_sequential_id_(0),
       in_dispatch_error_event_(false),
-      is_context_paused_(false),
       is_context_destroyed_(false),
       csp_delegate_(MakeGarbageCollected<ExecutionContextCSPDelegate>(*this)),
       window_interaction_tokens_(0),
@@ -78,15 +77,15 @@ ExecutionContext* ExecutionContext::ForRelevantRealm(
   return ToExecutionContext(info.Holder()->CreationContext());
 }
 
-void ExecutionContext::PausePausableObjects() {
-  DCHECK(!is_context_paused_);
-  NotifySuspendingPausableObjects();
-  is_context_paused_ = true;
+void ExecutionContext::PausePausableObjects(PauseState state) {
+  DCHECK(!pause_state_);
+  pause_state_ = state;
+  NotifySuspendingPausableObjects(state);
 }
 
 void ExecutionContext::UnpausePausableObjects() {
-  DCHECK(is_context_paused_);
-  is_context_paused_ = false;
+  DCHECK(pause_state_.has_value());
+  pause_state_.reset();
   NotifyResumingPausableObjects();
 }
 
@@ -96,8 +95,8 @@ void ExecutionContext::NotifyContextDestroyed() {
   ContextLifecycleNotifier::NotifyContextDestroyed();
 }
 
-void ExecutionContext::PauseScheduledTasks() {
-  PausePausableObjects();
+void ExecutionContext::PauseScheduledTasks(PauseState state) {
+  PausePausableObjects(state);
   TasksWerePaused();
 }
 
@@ -111,8 +110,8 @@ void ExecutionContext::PausePausableObjectIfNeeded(PausableObject* object) {
   DCHECK(Contains(object));
 #endif
   // Ensure all PausableObjects are paused also newly created ones.
-  if (is_context_paused_)
-    object->Pause();
+  if (pause_state_)
+    object->ContextPaused(pause_state_.value());
 }
 
 void ExecutionContext::DispatchErrorEvent(

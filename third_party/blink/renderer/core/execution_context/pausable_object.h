@@ -24,8 +24,8 @@
  *
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PAUSABLE_OBJECT_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PAUSABLE_OBJECT_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_PAUSABLE_OBJECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_PAUSABLE_OBJECT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
@@ -48,7 +48,7 @@ namespace blink {
 //
 // Objects with asynchronous activity, especially activity that may have an
 // observable effect on web-visible state, on should suspend that activity while
-// the page is paused by overriding Pause() and Unpause().
+// the page is paused by overriding ContextPaused() and ContextUnpaused().
 //
 // https://html.spec.whatwg.org/multipage/webappapis.html#pause
 class CORE_EXPORT PausableObject : public ContextLifecycleObserver {
@@ -64,8 +64,8 @@ class CORE_EXPORT PausableObject : public ContextLifecycleObserver {
 
   // These methods have an empty default implementation so that subclasses
   // which don't need special treatment can skip implementation.
-  virtual void Pause();
-  virtual void Unpause();
+  virtual void ContextPaused(PauseState);
+  virtual void ContextUnpaused();
 
   void DidMoveToNewExecutionContext(ExecutionContext*);
 
@@ -80,4 +80,4 @@ class CORE_EXPORT PausableObject : public ContextLifecycleObserver {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PAUSABLE_OBJECT_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_PAUSABLE_OBJECT_H_

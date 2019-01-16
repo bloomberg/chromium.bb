@@ -690,11 +690,11 @@ bool DOMWebSocket::HasPendingActivity() const {
   return channel_ || !event_queue_->IsEmpty();
 }
 
-void DOMWebSocket::Pause() {
+void DOMWebSocket::ContextPaused(PauseState) {
   event_queue_->Pause();
 }
 
-void DOMWebSocket::Unpause() {
+void DOMWebSocket::ContextUnpaused() {
   event_queue_->Unpause();
 
   // If |consumed_buffered_amount_| was updated while the object was paused then

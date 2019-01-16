@@ -32,11 +32,13 @@
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/pause_state.h"
 #include "third_party/blink/renderer/core/loader/console_logger_impl_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
@@ -195,12 +197,12 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   virtual void RemoveURLFromMemoryCache(const KURL&);
 
-  void PausePausableObjects();
+  void PausePausableObjects(PauseState);
   void UnpausePausableObjects();
   void StopPausableObjects();
   void NotifyContextDestroyed() override;
 
-  void PauseScheduledTasks();
+  void PauseScheduledTasks(PauseState);
   void UnpauseScheduledTasks();
 
   // TODO(haraken): Remove these methods by making the customers inherit from
@@ -210,8 +212,9 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   virtual void TasksWerePaused() {}
   virtual void TasksWereUnpaused() {}
 
-  bool IsContextPaused() const { return is_context_paused_; }
+  bool IsContextPaused() const { return pause_state_.has_value(); }
   bool IsContextDestroyed() const { return is_context_destroyed_; }
+  base::Optional<PauseState> ContextPauseState() const { return pause_state_; }
 
   // Called after the construction of an PausableObject to synchronize
   // pause state.
@@ -286,7 +289,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   bool in_dispatch_error_event_;
   HeapVector<Member<ErrorEvent>> pending_exceptions_;
 
-  bool is_context_paused_;
+  base::Optional<PauseState> pause_state_;
   bool is_context_destroyed_;
 
   Member<PublicURLManager> public_url_manager_;

@@ -96,12 +96,12 @@ bool BatteryManager::HasLastData() {
   return BatteryDispatcher::Instance().LatestData();
 }
 
-void BatteryManager::Pause() {
+void BatteryManager::ContextPaused(PauseState) {
   has_event_listener_ = false;
   StopUpdating();
 }
 
-void BatteryManager::Unpause() {
+void BatteryManager::ContextUnpaused() {
   has_event_listener_ = true;
   StartUpdating();
 }

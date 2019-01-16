@@ -208,8 +208,6 @@ blink_core_sources("dom") {
     "nth_index_cache.h",
     "parent_node.h",
     "parser_content_policy.h",
-    "pausable_object.cc",
-    "pausable_object.h",
     "presentation_attribute_style.cc",
     "presentation_attribute_style.h",
     "processing_instruction.cc",
