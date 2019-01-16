@@ -1,0 +1,22 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("cells") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "select_language_popup_menu_item.h",
+    "select_language_popup_menu_item.mm",
+    "translate_popup_menu_item.h",
+    "translate_popup_menu_item.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser/ui/popup_menu/public:ui_constants",
+    "//ios/chrome/browser/ui/popup_menu/public/cells",
+    "//ios/chrome/browser/ui/table_view:styler",
+    "//ios/chrome/browser/ui/table_view/cells",
+    "//ios/chrome/common/ui_util",
+  ]
+  libs = [ "UIKit.framework" ]
+}
