@@ -1413,7 +1413,12 @@ std::tuple<size_t, float, unsigned> AudioParamTimeline::ProcessLinearRamp(
   auto sample_rate = current_state.sample_rate;
 
   double delta_time = time2 - time1;
-  float k = delta_time > 0 ? 1 / delta_time : 0;
+  DCHECK_GE(delta_time, 0);
+  // Since delta_time is a double, 1/delta_time can easily overflow a float.
+  // Thus, if delta_time is close enough to zero (less than float min), treat it
+  // as zero.
+  float k =
+      delta_time <= std::numeric_limits<float>::min() ? 0 : 1 / delta_time;
   const float value_delta = value2 - value1;
 #if defined(ARCH_CPU_X86_FAMILY)
   if (fill_to_frame > write_index) {
