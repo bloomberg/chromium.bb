@@ -186,6 +186,9 @@ GpuServiceImpl::~GpuServiceImpl() {
 
   media_gpu_channel_manager_.reset();
   gpu_channel_manager_.reset();
+
+  // Scheduler must be destroyed before sync point manager is destroyed.
+  scheduler_.reset();
   owned_sync_point_manager_.reset();
 
   // Signal this event before destroying the child process. That way all
