@@ -26,6 +26,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/textfield/textfield.h"
 
 namespace app_list {
@@ -522,6 +523,12 @@ void AppsContainerView::UpdateSuggestionChips() {
 void AppsContainerView::DisableFocusForShowingActiveFolder(bool disabled) {
   suggestion_chip_container_view_->DisableFocusForShowingActiveFolder(disabled);
   apps_grid_view_->DisableFocusForShowingActiveFolder(disabled);
+
+  // Ignore the page switcher in accessibility tree so that buttons inside it
+  // will not be accessed by ChromeVox.
+  page_switcher_->GetViewAccessibility().OverrideIsIgnored(disabled);
+  page_switcher_->GetViewAccessibility().NotifyAccessibilityEvent(
+      ax::mojom::Event::kTreeChanged);
 }
 
 int AppsContainerView::GetExpectedSuggestionChipY(float progress) {
