@@ -314,7 +314,6 @@ Bug(none) paint/invalidation/scroll/scroll-with-transformed-parent-layer.html [ 
 
 # Under-invalidations.
 crbug.com/644358 paint/invalidation/background/full-viewport-repaint-for-background-attachment-fixed.html [ Crash ]
-crbug.com/644358 fast/block/float/float-overhanging-grandparent-change-self-painting.html [ Crash ]
 
 Bug(none) fast/dom/vertical-scrollbar-in-rtl.html [ Failure ]
 Bug(none) fast/events/continuous-platform-wheelevent-in-scrolling-div.html [ Failure ]

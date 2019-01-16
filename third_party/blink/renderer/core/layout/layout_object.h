@@ -102,6 +102,12 @@ enum MarkingBehavior {
 
 enum ScheduleRelayoutBehavior { kScheduleRelayout, kDontScheduleRelayout };
 
+enum {
+  kBackgroundPaintInGraphicsLayer = 1 << 0,
+  kBackgroundPaintInScrollingContents = 1 << 1
+};
+using BackgroundPaintLocation = uint8_t;
+
 struct AnnotatedRegionValue {
   DISALLOW_NEW();
   bool operator==(const AnnotatedRegionValue& o) const {
@@ -1986,7 +1992,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     }
 
     void SetPreviousBackgroundObscured(bool b) {
-      layout_object_.SetPreviousBackgroundObscured(b);
+      layout_object_.bitfields_.SetPreviousBackgroundObscured(b);
+    }
+    void SetPreviousBackgroundPaintLocation(BackgroundPaintLocation location) {
+      layout_object_.bitfields_.SetPreviousBackgroundPaintLocation(location);
     }
     void UpdatePreviousOutlineMayBeAffectedByDescendants() {
       layout_object_.SetPreviousOutlineMayBeAffectedByDescendants(
@@ -2101,8 +2110,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool PreviousBackgroundObscured() const {
     return bitfields_.PreviousBackgroundObscured();
   }
-  void SetPreviousBackgroundObscured(bool b) {
-    bitfields_.SetPreviousBackgroundObscured(b);
+  BackgroundPaintLocation PreviousBackgroundPaintLocation() const {
+    return bitfields_.PreviousBackgroundPaintLocation();
   }
 
   bool IsBackgroundAttachmentFixedObject() const {
@@ -2567,7 +2576,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           selection_state_(static_cast<unsigned>(SelectionState::kNone)),
           background_obscuration_state_(kBackgroundObscurationStatusInvalid),
           subtree_paint_property_update_reasons_(
-              static_cast<unsigned>(SubtreePaintPropertyUpdateReason::kNone)) {}
+              static_cast<unsigned>(SubtreePaintPropertyUpdateReason::kNone)),
+          previous_background_paint_location_(0) {}
 
     // Self needs layout means that this layout object is marked for a full
     // layout. This is the default layout but it is expensive as it recomputes
@@ -2817,6 +2827,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     unsigned subtree_paint_property_update_reasons_
         : kSubtreePaintPropertyUpdateReasonsBitfieldWidth;
 
+    // BackgroundPaintLocation of previous paint invalidation.
+    unsigned previous_background_paint_location_ : 2;
+
    public:
     bool IsOutOfFlowPositioned() const {
       return positioned_state_ == kIsOutOfFlowPositioned;
@@ -2890,6 +2903,17 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     ALWAYS_INLINE void SetBackgroundObscurationState(
         BackgroundObscurationState s) const {
       background_obscuration_state_ = s;
+    }
+
+    ALWAYS_INLINE BackgroundPaintLocation
+    PreviousBackgroundPaintLocation() const {
+      return static_cast<BackgroundPaintLocation>(
+          previous_background_paint_location_);
+    }
+    ALWAYS_INLINE void SetPreviousBackgroundPaintLocation(
+        BackgroundPaintLocation location) {
+      previous_background_paint_location_ = static_cast<unsigned>(location);
+      DCHECK_EQ(location, PreviousBackgroundPaintLocation());
     }
   };
 

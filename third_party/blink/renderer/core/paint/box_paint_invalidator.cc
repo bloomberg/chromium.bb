@@ -282,20 +282,20 @@ BoxPaintInvalidator::ComputeViewBackgroundInvalidation() {
 BoxPaintInvalidator::BackgroundInvalidationType
 BoxPaintInvalidator::ComputeBackgroundInvalidation(
     bool& should_invalidate_all_layers) {
-  should_invalidate_all_layers = false;
+  // Need to fully invalidate the background on all layers if background paint
+  // location changed.
+  auto new_background_location = box_.GetBackgroundPaintLocation();
+  if (new_background_location != box_.PreviousBackgroundPaintLocation()) {
+    should_invalidate_all_layers = true;
+    box_.GetMutableForPainting().SetPreviousBackgroundPaintLocation(
+        new_background_location);
+    return BackgroundInvalidationType::kFull;
+  }
 
   // If background changed, we may paint the background on different graphics
   // layer, so we need to fully invalidate the background on all layers.
   if (box_.BackgroundNeedsFullPaintInvalidation()) {
-    if (box_.HasLayer() && box_.Layer()->GetCompositedLayerMapping() &&
-        box_.Layer()->GetCompositedLayerMapping()->ScrollingContentsLayer())
-      should_invalidate_all_layers = true;
-
-    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-        box_.FirstFragment().PaintProperties() &&
-        box_.FirstFragment().PaintProperties()->ScrollTranslation())
-      should_invalidate_all_layers = true;
-
+    should_invalidate_all_layers = true;
     return BackgroundInvalidationType::kFull;
   }
 
@@ -336,7 +336,7 @@ BoxPaintInvalidator::ComputeBackgroundInvalidation(
 }
 
 void BoxPaintInvalidator::InvalidateBackground() {
-  bool should_invalidate_all_layers;
+  bool should_invalidate_all_layers = false;
   auto background_invalidation_type =
       ComputeBackgroundInvalidation(should_invalidate_all_layers);
   if (box_.IsLayoutView()) {
@@ -344,17 +344,19 @@ void BoxPaintInvalidator::InvalidateBackground() {
         background_invalidation_type, ComputeViewBackgroundInvalidation());
   }
 
-  if (should_invalidate_all_layers ||
-      (BackgroundPaintsOntoScrollingContentsLayer() &&
-       background_invalidation_type != BackgroundInvalidationType::kNone)) {
-    auto reason =
-        background_invalidation_type == BackgroundInvalidationType::kFull
-            ? PaintInvalidationReason::kBackground
-            : PaintInvalidationReason::kIncremental;
-    context_.painting_layer->SetNeedsRepaint();
-    ObjectPaintInvalidator(box_).InvalidateDisplayItemClient(
-        box_.GetScrollableArea()->GetScrollingBackgroundDisplayItemClient(),
-        reason);
+  if (box_.GetScrollableArea()) {
+    if (should_invalidate_all_layers ||
+        (BackgroundPaintsOntoScrollingContentsLayer() &&
+         background_invalidation_type != BackgroundInvalidationType::kNone)) {
+      auto reason =
+          background_invalidation_type == BackgroundInvalidationType::kFull
+              ? PaintInvalidationReason::kBackground
+              : PaintInvalidationReason::kIncremental;
+      context_.painting_layer->SetNeedsRepaint();
+      ObjectPaintInvalidator(box_).InvalidateDisplayItemClient(
+          box_.GetScrollableArea()->GetScrollingBackgroundDisplayItemClient(),
+          reason);
+    }
   }
 
   if (should_invalidate_all_layers ||
