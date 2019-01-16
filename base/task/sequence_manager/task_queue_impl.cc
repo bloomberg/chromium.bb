@@ -9,8 +9,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
-#include "base/task/sequence_manager/task_queue_proxy.h"
-#include "base/task/sequence_manager/task_queue_task_runner.h"
 #include "base/task/sequence_manager/time_domain.h"
 #include "base/task/sequence_manager/work_queue.h"
 #include "base/time/time.h"
@@ -43,6 +41,49 @@ const char* TaskQueue::PriorityToString(TaskQueue::QueuePriority priority) {
 
 namespace internal {
 
+TaskQueueImpl::GuardedTaskPoster::GuardedTaskPoster(TaskQueueImpl* outer)
+    : outer_(outer) {}
+
+TaskQueueImpl::GuardedTaskPoster::~GuardedTaskPoster() {}
+
+bool TaskQueueImpl::GuardedTaskPoster::PostTask(PostedTask task) {
+  auto token = operations_controller_.TryBeginOperation();
+  if (!token)
+    return false;
+
+  outer_->PostTask(std::move(task));
+  return true;
+}
+
+TaskQueueImpl::TaskRunner::TaskRunner(
+    scoped_refptr<GuardedTaskPoster> task_poster,
+    scoped_refptr<AssociatedThreadId> associated_thread,
+    int task_type)
+    : task_poster_(std::move(task_poster)),
+      associated_thread_(std::move(associated_thread)),
+      task_type_(task_type) {}
+
+TaskQueueImpl::TaskRunner::~TaskRunner() {}
+
+bool TaskQueueImpl::TaskRunner::PostDelayedTask(const Location& location,
+                                                OnceClosure callback,
+                                                TimeDelta delay) {
+  return task_poster_->PostTask(PostedTask(std::move(callback), location, delay,
+                                           Nestable::kNestable, task_type_));
+}
+
+bool TaskQueueImpl::TaskRunner::PostNonNestableDelayedTask(
+    const Location& location,
+    OnceClosure callback,
+    TimeDelta delay) {
+  return task_poster_->PostTask(PostedTask(std::move(callback), location, delay,
+                                           Nestable::kNonNestable, task_type_));
+}
+
+bool TaskQueueImpl::TaskRunner::RunsTasksInCurrentSequence() const {
+  return associated_thread_->IsBoundToCurrentThread();
+}
+
 TaskQueueImpl::TaskQueueImpl(SequenceManagerImpl* sequence_manager,
                              TimeDomain* time_domain,
                              const TaskQueue::Spec& spec)
@@ -51,17 +92,17 @@ TaskQueueImpl::TaskQueueImpl(SequenceManagerImpl* sequence_manager,
       associated_thread_(sequence_manager
                              ? sequence_manager->associated_thread()
                              : AssociatedThreadId::CreateBound()),
+      task_poster_(MakeRefCounted<GuardedTaskPoster>(this)),
       any_thread_(time_domain),
       main_thread_only_(this, time_domain),
-      proxy_(MakeRefCounted<TaskQueueProxy>(this, associated_thread_)),
       should_monitor_quiescence_(spec.should_monitor_quiescence),
       should_notify_observers_(spec.should_notify_observers),
       delayed_fence_allowed_(spec.delayed_fence_allowed) {
   DCHECK(time_domain);
   // SequenceManager can't be set later, so we need to prevent task runners
   // from posting any tasks.
-  if (!sequence_manager)
-    proxy_->DetachFromTaskQueueImpl();
+  if (sequence_manager_)
+    task_poster_->StartAcceptingOperations();
 }
 
 TaskQueueImpl::~TaskQueueImpl() {
@@ -98,13 +139,13 @@ TaskQueueImpl::MainThreadOnly::~MainThreadOnly() = default;
 
 scoped_refptr<SingleThreadTaskRunner> TaskQueueImpl::CreateTaskRunner(
     int task_type) const {
-  // |proxy_| pointer is const, hence no need for lock.
-  return MakeRefCounted<TaskQueueTaskRunner>(proxy_, task_type);
+  return MakeRefCounted<TaskRunner>(task_poster_, associated_thread_,
+                                    task_type);
 }
 
 void TaskQueueImpl::UnregisterTaskQueue() {
   // Detach task runners.
-  proxy_->DetachFromTaskQueueImpl();
+  task_poster_->ShutdownAndWaitForZeroOperations();
 
   TaskDeque immediate_incoming_queue;
 
@@ -150,16 +191,12 @@ const char* TaskQueueImpl::GetName() const {
   return name_;
 }
 
-bool TaskQueueImpl::RunsTasksInCurrentSequence() const {
-  return associated_thread_->IsBoundToCurrentThread();
-}
+void TaskQueueImpl::PostTask(PostedTask task) {
+  CurrentThread current_thread =
+      associated_thread_->IsBoundToCurrentThread()
+          ? TaskQueueImpl::CurrentThread::kMainThread
+          : TaskQueueImpl::CurrentThread::kNotMainThread;
 
-void TaskQueueImpl::PostTask(PostedTask task, CurrentThread current_thread) {
-  DCHECK_EQ(current_thread == CurrentThread::kMainThread,
-            RunsTasksInCurrentSequence());
-  // This method can only be called if task queue is able to accept tasks,
-  // i.e. has a sequence manager and not being unregistered. This is enforced
-  // by |proxy_| which is detached if this condition not met.
   if (task.delay.is_zero()) {
     PostImmediateTaskImpl(std::move(task), current_thread);
   } else {

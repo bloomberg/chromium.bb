@@ -17,6 +17,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
 #include "base/task/common/intrusive_heap.h"
+#include "base/task/common/operations_controller.h"
 #include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/enqueue_order.h"
 #include "base/task/sequence_manager/lazily_deallocated_deque.h"
@@ -35,7 +36,6 @@ class TimeDomain;
 namespace internal {
 
 class SequenceManagerImpl;
-class TaskQueueProxy;
 class WorkQueue;
 class WorkQueueSets;
 
@@ -104,8 +104,6 @@ class BASE_EXPORT TaskQueueImpl {
 
   // TaskQueue implementation.
   const char* GetName() const;
-  bool RunsTasksInCurrentSequence() const;
-  void PostTask(PostedTask task, CurrentThread current_thread);
   std::unique_ptr<TaskQueue::QueueEnabledVoter> CreateQueueEnabledVoter(
       scoped_refptr<TaskQueue> owning_task_queue);
   bool IsQueueEnabled() const;
@@ -259,6 +257,63 @@ class BASE_EXPORT TaskQueueImpl {
   friend class WorkQueue;
   friend class WorkQueueTest;
 
+  // A TaskQueueImpl instance can be destroyed or unregistered before all its
+  // associated TaskRunner instances are (they are refcounted). Thus we need a
+  // way to prevent TaskRunner instances from posting further tasks. This class
+  // guards PostTask calls using an OperationsController.
+  // This class is ref-counted as both the TaskQueueImpl instance and all
+  // associated TaskRunner instances share the same GuardedTaskPoster instance.
+  // When TaskQueueImpl shuts down it calls ShutdownAndWaitForZeroOperations(),
+  // preventing further PostTask calls being made to the underlying
+  // TaskQueueImpl.
+  class GuardedTaskPoster : public RefCountedThreadSafe<GuardedTaskPoster> {
+   public:
+    explicit GuardedTaskPoster(TaskQueueImpl* outer);
+
+    bool PostTask(PostedTask task);
+
+    void StartAcceptingOperations() {
+      operations_controller_.StartAcceptingOperations();
+    }
+
+    void ShutdownAndWaitForZeroOperations() {
+      operations_controller_.ShutdownAndWaitForZeroOperations();
+    }
+
+   private:
+    friend class RefCountedThreadSafe<GuardedTaskPoster>;
+
+    ~GuardedTaskPoster();
+
+    base::internal::OperationsController operations_controller_;
+    // Pointer might be stale, access guarded by |operations_controller_|
+    TaskQueueImpl* const outer_;
+  };
+
+  class TaskRunner : public SingleThreadTaskRunner {
+   public:
+    explicit TaskRunner(scoped_refptr<GuardedTaskPoster> task_poster,
+                        scoped_refptr<AssociatedThreadId> associated_thread,
+                        int task_type);
+
+    bool PostDelayedTask(const Location& location,
+                         OnceClosure callback,
+                         TimeDelta delay) final;
+    bool PostNonNestableDelayedTask(const Location& location,
+                                    OnceClosure callback,
+                                    TimeDelta delay) final;
+    bool RunsTasksInCurrentSequence() const final;
+
+   private:
+    ~TaskRunner() final;
+
+    bool PostTask(PostedTask task) const;
+
+    const scoped_refptr<GuardedTaskPoster> task_poster_;
+    const scoped_refptr<AssociatedThreadId> associated_thread_;
+    const int task_type_;
+  };
+
   struct AnyThread {
     explicit AnyThread(TimeDomain* time_domain);
     ~AnyThread();
@@ -337,6 +392,8 @@ class BASE_EXPORT TaskQueueImpl {
     bool is_enabled_for_test;
   };
 
+  void PostTask(PostedTask task);
+
   void PostImmediateTaskImpl(PostedTask task, CurrentThread current_thread);
   void PostDelayedTaskImpl(PostedTask task, CurrentThread current_thread);
 
@@ -392,6 +449,8 @@ class BASE_EXPORT TaskQueueImpl {
 
   scoped_refptr<AssociatedThreadId> associated_thread_;
 
+  const scoped_refptr<GuardedTaskPoster> task_poster_;
+
   mutable Lock any_thread_lock_;
   AnyThread any_thread_;
   struct AnyThread& any_thread() {
@@ -412,10 +471,6 @@ class BASE_EXPORT TaskQueueImpl {
     DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
     return main_thread_only_;
   }
-
-  // Proxy which allows TaskQueueTaskRunner to dispatch tasks and it can be
-  // detached from TaskQueueImpl to leave dangling task runners behind sefely.
-  const scoped_refptr<TaskQueueProxy> proxy_;
 
   mutable Lock immediate_incoming_queue_lock_;
   TaskDeque immediate_incoming_queue_;
