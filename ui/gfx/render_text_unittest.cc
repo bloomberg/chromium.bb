@@ -4511,6 +4511,47 @@ TEST_F(RenderTextTest, SubpixelRenderingSuppressed) {
   EXPECT_FALSE(GetRendererPaint().isLCDRenderText());
 }
 
+// Ensure the SkFont Edging is computed accurately.
+TEST_F(RenderTextTest, SkFontEdging) {
+  const auto edging = [this]() {
+    return GetRendererPaint().ToSkFont().getEdging();
+  };
+
+  FontRenderParams params;
+  EXPECT_TRUE(params.antialiasing);
+  EXPECT_EQ(params.subpixel_rendering,
+            FontRenderParams::SUBPIXEL_RENDERING_NONE);
+
+  // aa: true, subpixel: false, subpixel_suppressed: false -> kAntiAlias
+  renderer()->SetFontRenderParams(params,
+                                  false /*subpixel_rendering_suppressed*/);
+  EXPECT_EQ(edging(), SkFont::Edging::kAntiAlias);
+
+  // aa: false, subpixel: false, subpixel_suppressed: false -> kAlias
+  params.antialiasing = false;
+  renderer()->SetFontRenderParams(params,
+                                  false /*subpixel_rendering_suppressed*/);
+  EXPECT_EQ(edging(), SkFont::Edging::kAlias);
+
+  // aa: true, subpixel: true, subpixel_suppressed: false -> kSubpixelAntiAlias
+  params.antialiasing = true;
+  params.subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_RGB;
+  renderer()->SetFontRenderParams(params,
+                                  false /*subpixel_rendering_suppressed*/);
+  EXPECT_EQ(edging(), SkFont::Edging::kSubpixelAntiAlias);
+
+  // aa: true, subpixel: true, subpixel_suppressed: true -> kAntiAlias
+  renderer()->SetFontRenderParams(params,
+                                  true /*subpixel_rendering_suppressed*/);
+  EXPECT_EQ(edging(), SkFont::Edging::kAntiAlias);
+
+  // aa: false, subpixel: true, subpixel_suppressed: false -> kAlias
+  params.antialiasing = false;
+  renderer()->SetFontRenderParams(params,
+                                  false /*subpixel_rendering_suppressed*/);
+  EXPECT_EQ(edging(), SkFont::Edging::kAlias);
+}
+
 // Verify GetWordLookupDataAtPoint returns the correct baseline point and
 // decorated word for an LTR string.
 TEST_F(RenderTextTest, GetWordLookupDataAtPoint_LTR) {

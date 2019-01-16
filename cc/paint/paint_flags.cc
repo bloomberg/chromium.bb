@@ -164,6 +164,8 @@ SkFont PaintFlags::ToSkFont() const {
     } else {
       font.setEdging(SkFont::Edging::kAntiAlias);
     }
+  } else {
+    font.setEdging(SkFont::Edging::kAlias);
   }
   return font;
 }
