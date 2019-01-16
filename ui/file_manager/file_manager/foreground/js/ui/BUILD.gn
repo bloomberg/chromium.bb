@@ -360,6 +360,17 @@ js_library("list_container") {
   ]
 }
 
+js_unittest("list_container_unittest") {
+  deps = [
+    ":list_container",
+    "../../../common/js:util",
+    "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/webui/resources/js:webui_resource_test",
+    "//ui/webui/resources/js/cr/ui:context_menu_handler",
+    "//ui/webui/resources/js/cr/ui:menu",
+  ]
+}
+
 js_library("location_line") {
   deps = [
     "../../../common/js:files_app_entry_types",
@@ -454,6 +465,7 @@ js_unit_tests("unit_tests") {
     ":file_list_selection_model_unittest",
     ":file_table_unittest",
     ":file_tap_handler_unittest",
+    ":list_container_unittest",
     ":multi_menu_unittest",
   ]
 }
