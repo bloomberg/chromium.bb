@@ -556,6 +556,8 @@ using translate::LanguageDetectionController;
                      return !webState->IsLoading();
                    }),
                @"Failed to load large page on iOS 12.");
+    if (webState->ContentIsHTML())
+      web::WaitUntilWindowIdInjected(webState);
   } else {
     [ChromeEarlGrey loadURL:URL];
   }
