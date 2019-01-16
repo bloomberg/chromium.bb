@@ -228,15 +228,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   EXPECT_TRUE(CheckSyncHasMetadataForURLID(0, url_id_on_first_client));
 }
 
-#if defined(THREAD_SANITIZER)
-// https://crbug.com/917385
-#define MAYBE_AddThenExpireThenAddAgain DISABLED_AddThenExpireThenAddAgain
-#else
-#define MAYBE_AddThenExpireThenAddAgain AddThenExpireThenAddAgain
-#endif
-
-IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
-                       MAYBE_AddThenExpireThenAddAgain) {
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddThenExpireThenAddAgain) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   base::Time now = base::Time::Now();
@@ -288,15 +280,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   EXPECT_TRUE(CheckSyncHasURLMetadata(0, url));
 }
 
-#if defined(THREAD_SANITIZER)
-// https://crbug.com/917385
-#define MAYBE_AddThenExpireVisitByVisit DISABLED_AddThenExpireVisitByVisit
-#else
-#define MAYBE_AddThenExpireVisitByVisit AddThenExpireVisitByVisit
-#endif
-
-IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
-                       MAYBE_AddThenExpireVisitByVisit) {
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddThenExpireVisitByVisit) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   base::Time now = base::Time::Now();
@@ -492,14 +476,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddOneDeleteOther) {
   ASSERT_TRUE(ProfilesHaveSameTypedURLsChecker().Wait());
 }
 
-// crbug.com/919090
-#if defined(THREAD_SANITIZER)
-#define MAYBE_AddOneDeleteOtherAddAgain DISABLED_AddOneDeleteOtherAddAgain
-#else
-#define MAYBE_AddOneDeleteOtherAddAgain AddOneDeleteOtherAddAgain
-#endif
-IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
-                       MAYBE_AddOneDeleteOtherAddAgain) {
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddOneDeleteOtherAddAgain) {
   const base::string16 kHistoryUrl(
       ASCIIToUTF16("http://www.add-delete-add-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";

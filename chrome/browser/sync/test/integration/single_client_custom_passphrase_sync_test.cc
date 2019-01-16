@@ -306,7 +306,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(WaitForClientBookmarkWithTitle("scypt-encrypted bookmark"));
 }
 
-// See crbug.com/915219 about THREAD_SANITIZER.
+// See crbug.com/915219 about THREAD_SANITIZER. This data race is hard to avoid
+// as overriding g_feature_list after it has been used is needed for this test.
 #if defined(GOOGLE_CHROME_BUILD) || defined(THREAD_SANITIZER)
 // TODO(crbug.com/902297): Make the test pass in Chrome-branded builds.
 #define MAYBE_CannotDecryptScryptKeyEncryptedDataWhenScryptDisabled \

@@ -48,6 +48,10 @@ class TwoClientPasswordsSyncTest
   bool TestUsesSelfNotifications() override { return false; }
 
  protected:
+  // TODO(crbug.com/915219): This leads to a data race and thus all tests here
+  // are disabled on TSan. It is hard to avoid as overriding g_feature_list
+  // after it has been used is needed for this test (by setting up each client
+  // with a different ScopedFeatureList).
   void BeforeSetupClient(int index) override {
     const bool should_enable_pseudo_uss =
         index == 0 ? std::get<0>(GetParam()) : std::get<1>(GetParam());

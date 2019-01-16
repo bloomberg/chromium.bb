@@ -321,16 +321,10 @@ class SingleClientWalletWithAccountStorageSyncTest
 // ChromeOS does not support late signin after profile creation, so the test
 // below does not apply, at least in the current form.
 #if !defined(OS_CHROMEOS)
-#if defined(THREAD_SANITIZER)
-// https://crbug.com/917385
-#define MAYBE_DownloadAccountStorage_Card DISABLED_DownloadAccountStorage_Card
-#else
-#define MAYBE_DownloadAccountStorage_Card DownloadAccountStorage_Card
-#endif
 // The account storage requires USS, so we only test the USS implementation
 // here.
 IN_PROC_BROWSER_TEST_P(SingleClientWalletWithAccountStorageSyncTest,
-                       MAYBE_DownloadAccountStorage_Card) {
+                       DownloadAccountStorage_Card) {
   ASSERT_TRUE(SetupClients());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   pdm->OnSyncServiceInitialized(GetSyncService(0));
@@ -1101,17 +1095,8 @@ class SingleClientWalletSecondaryAccountSyncTest
 // ChromeOS doesn't support changes to the primary account after startup, so
 // these secondary-account-related tests don't apply.
 #if !defined(OS_CHROMEOS)
-#if defined(THREAD_SANITIZER)
-// Web Database thread and history DB thread access sqlite concurrently,
-// https://crbug.com/917380
-#define MAYBE_SwitchesFromAccountToProfileStorageOnSyncOptIn \
-  DISABLED_SwitchesFromAccountToProfileStorageOnSyncOptIn
-#else
-#define MAYBE_SwitchesFromAccountToProfileStorageOnSyncOptIn \
-  SwitchesFromAccountToProfileStorageOnSyncOptIn
-#endif
 IN_PROC_BROWSER_TEST_P(SingleClientWalletSecondaryAccountSyncTest,
-                       MAYBE_SwitchesFromAccountToProfileStorageOnSyncOptIn) {
+                       SwitchesFromAccountToProfileStorageOnSyncOptIn) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   GetPersonalDataManager(0)->OnSyncServiceInitialized(GetSyncService(0));
 
@@ -1173,18 +1158,9 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSecondaryAccountSyncTest,
   EXPECT_NE(nullptr, GetPaymentsCustomerData(profile_data).get());
 }
 
-#if defined(THREAD_SANITIZER)
-// Web Database thread and history DB thread access sqlite concurrently,
-// https://crbug.com/917380
-#define MAYBE_SwitchesFromAccountToProfileStorageOnSyncOptInWithAdvancedSetup \
-  DISABLED_SwitchesFromAccountToProfileStorageOnSyncOptInWithAdvancedSetup
-#else
-#define MAYBE_SwitchesFromAccountToProfileStorageOnSyncOptInWithAdvancedSetup \
-  SwitchesFromAccountToProfileStorageOnSyncOptInWithAdvancedSetup
-#endif
 IN_PROC_BROWSER_TEST_P(
     SingleClientWalletSecondaryAccountSyncTest,
-    MAYBE_SwitchesFromAccountToProfileStorageOnSyncOptInWithAdvancedSetup) {
+    SwitchesFromAccountToProfileStorageOnSyncOptInWithAdvancedSetup) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   GetPersonalDataManager(0)->OnSyncServiceInitialized(GetSyncService(0));
 
@@ -1278,17 +1254,8 @@ IN_PROC_BROWSER_TEST_P(
 // 3. Enable Sync-the-feature again -> profile storage.
 // 4. StopAndClear() -> account storage.
 // 5. Enable Sync-the-feature again -> profile storage.
-// Flaky on TSan, see crbug.com/917380.
-#if defined(THREAD_SANITIZER)
-#define MAYBE_SwitchesBetweenAccountAndProfileStorageOnTogglingSync \
-  DISABLED_SwitchesBetweenAccountAndProfileStorageOnTogglingSync
-#else
-#define MAYBE_SwitchesBetweenAccountAndProfileStorageOnTogglingSync \
-  SwitchesBetweenAccountAndProfileStorageOnTogglingSync
-#endif
-IN_PROC_BROWSER_TEST_P(
-    SingleClientWalletWithAccountStorageSyncTest,
-    MAYBE_SwitchesBetweenAccountAndProfileStorageOnTogglingSync) {
+IN_PROC_BROWSER_TEST_P(SingleClientWalletWithAccountStorageSyncTest,
+                       SwitchesBetweenAccountAndProfileStorageOnTogglingSync) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   GetPersonalDataManager(0)->OnSyncServiceInitialized(GetSyncService(0));
 

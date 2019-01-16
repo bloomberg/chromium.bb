@@ -155,7 +155,8 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 #if defined(THREAD_SANITIZER)
-// https://crbug.com/915219
+// https://crbug.com/915219. This data race is hard to avoid as overriding
+// g_feature_list after it has been used is needed for this test.
 #define MAYBE_ClientsCanSyncDataWhenScryptEncryptionEnabledInOne \
   DISABLED_ClientsCanSyncDataWhenScryptEncryptionEnabledInOne
 #else
