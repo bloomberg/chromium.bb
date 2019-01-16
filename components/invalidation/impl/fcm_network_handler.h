@@ -36,7 +36,9 @@ class FCMNetworkHandler : public gcm::GCMAppHandler,
                           public FCMSyncNetworkChannel {
  public:
   FCMNetworkHandler(gcm::GCMDriver* gcm_driver,
-                    instance_id::InstanceIDDriver* instance_id_driver);
+                    instance_id::InstanceIDDriver* instance_id_driver,
+                    const std::string& sender_id,
+                    const std::string& app_id);
 
   ~FCMNetworkHandler() override;
 
@@ -75,6 +77,10 @@ class FCMNetworkHandler : public gcm::GCMAppHandler,
   std::string token_;
 
   std::unique_ptr<base::OneShotTimer> token_validation_timer_;
+
+  const std::string sender_id_;
+  const std::string app_id_;
+
   base::WeakPtrFactory<FCMNetworkHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FCMNetworkHandler);

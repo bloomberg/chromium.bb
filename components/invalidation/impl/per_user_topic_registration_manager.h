@@ -53,7 +53,8 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
       invalidation::IdentityProvider* identity_provider,
       PrefService* local_state,
       network::mojom::URLLoaderFactory* url_loader_factory,
-      const ParseJSONCallback& parse_json);
+      const ParseJSONCallback& parse_json,
+      const std::string& project_id);
 
   virtual ~PerUserTopicRegistrationManager();
 
@@ -117,6 +118,8 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   // The callback for Parsing JSON.
   ParseJSONCallback parse_json_;
   network::mojom::URLLoaderFactory* url_loader_factory_;
+
+  const std::string project_id_;
 
   base::ObserverList<Observer>::Unchecked observers_;
 

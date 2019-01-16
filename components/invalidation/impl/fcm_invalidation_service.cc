@@ -19,6 +19,8 @@
 
 namespace {
 const char kApplicationName[] = "com.google.chrome.fcm.invalidations";
+// Sender ID coming from the Firebase console.
+const char kInvalidationGCMSenderId[] = "8181035976";
 }
 
 namespace invalidation {
@@ -183,7 +185,8 @@ void FCMInvalidationService::StartInvalidator() {
   DCHECK(IsReadyToStart());
 
   auto network = std::make_unique<syncer::FCMNetworkHandler>(
-      gcm_driver_, instance_id_driver_);
+      gcm_driver_, instance_id_driver_, kInvalidationGCMSenderId,
+      kApplicationName);
   // The order of calls is important. Do not change.
   // We should start listening before requesting the id, because
   // valid id is only generated, once there is an app handler
@@ -193,7 +196,7 @@ void FCMInvalidationService::StartInvalidator() {
 
   invalidator_ = std::make_unique<syncer::FCMInvalidator>(
       std::move(network), identity_provider_, pref_service_, loader_factory_,
-      parse_json_);
+      parse_json_, kInvalidationGCMSenderId);
   invalidator_->RegisterHandler(this);
   DoUpdateRegisteredIdsIfNeeded();
 }
