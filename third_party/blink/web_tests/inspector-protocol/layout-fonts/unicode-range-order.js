@@ -8,7 +8,7 @@
 
         @font-face {
             font-family: 'test1';
-            src: local('Times Roman'), local('Tinos-Regular'), local('Times New Roman');
+            src: local('Times'), local('Tinos-Regular');
         }
         @font-face {
             font-family: 'test1';
@@ -18,7 +18,7 @@
 
         @font-face {
             font-family: 'test2';
-            src: local('Times Roman'), local('Tinos-Regular'), local('Times New Roman');
+            src: local('Times'), local('Tinos-Regular');
         }
         @font-face {
             font-family: 'test2';
@@ -28,7 +28,7 @@
 
         @font-face {
             font-family: 'test3';
-            src: local('Times Roman'), local('Tinos-Regular'), local('Times New Roman');
+            src: local('Times'), local('Tinos-Regular');
         }
         @font-face {
             font-family: 'test3';
@@ -38,7 +38,7 @@
 
         @font-face {
             font-family: 'test4';
-            src: local('Times Roman'), local('Tinos-Regular'), local('Times New Roman');
+            src: local('Times'), local('Tinos-Regular');
         }
         @font-face {
             font-family: 'test4';
@@ -53,7 +53,7 @@
 
         @font-face {
             font-family: 'test5';
-            src: local('Times Roman'), local('Tinos-Regular'), local('Times New Roman');
+            src: local('Times'), local('Tinos-Regular'), local('Times New Roman');
         }
         @font-face {
             font-family: 'test5';
