@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "content/common/content_export.h"
 #include "ui/accessibility/ax_position.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
 
@@ -19,7 +20,7 @@ class BrowserAccessibility;
 
 using AXTreeID = ui::AXTreeID;
 
-class BrowserAccessibilityPosition
+class CONTENT_EXPORT BrowserAccessibilityPosition
     : public ui::AXPosition<BrowserAccessibilityPosition,
                             BrowserAccessibility> {
  public:
