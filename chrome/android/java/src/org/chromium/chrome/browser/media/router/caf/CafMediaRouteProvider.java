@@ -149,8 +149,8 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
     }
 
     @Override
-    public void onSessionStarted(CastSession session, String sessionId) {
-        super.onSessionStarted(session, sessionId);
+    protected void handleSessionStart(CastSession session, String sessionId) {
+        super.handleSessionStart(session, sessionId);
 
         for (ClientRecord clientRecord : mClientIdToRecords.values()) {
             // Should be exactly one instance of MediaRoute/ClientRecord at this moment.

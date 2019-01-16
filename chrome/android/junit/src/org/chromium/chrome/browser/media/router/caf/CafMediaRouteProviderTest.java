@@ -11,6 +11,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
@@ -34,6 +35,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
@@ -259,6 +262,17 @@ public class CafMediaRouteProviderTest {
         InOrder inOrder = inOrder(mSessionController, mRemoteMediaClient);
 
         doReturn(mSink).when(mSessionController).getSink();
+        doReturn(mCastSession).when(mSessionManager).getCurrentCastSession();
+        doReturn(null).when(mSessionController).getSession();
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) {
+                doReturn(invocation.getArguments()[0]).when(mSessionController).getSession();
+                return null;
+            }
+        })
+                .when(mSessionController)
+                .attachToCastSession(any(CastSession.class));
 
         // Prepare the pending create route request so super.onSessionStarted() behaves correctly.
         mProvider.createRoute(
