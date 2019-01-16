@@ -787,28 +787,6 @@ class PinterestDesktopStory2018(_MediaBrowsingStory):
     if not self.SKIP_LOGIN:
       action_runner.Wait(2)
 
-class GooglePlayStoreMobileStory(_MediaBrowsingStory):
-  """ Navigate to the movies page of Google Play Store, scroll to the bottom,
-  and click "see more" of a middle category (last before second scroll).
-  """
-  NAME = 'browse:media:googleplaystore:2019'
-  URL = 'https://play.google.com/store/movies'
-  ITEM_SELECTOR = ''
-  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  IS_SINGLE_PAGE_APP = True
-  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019, story_tags.IMAGES]
-  # intends to select the last category of movies and its "see more" button
-  _SEE_MORE_SELECTOR = ('div[class*="cluster-container"]:last-of-type '
-                        'a[class*="see-more"]')
-
-  def _DidLoadDocument(self, action_runner):
-    action_runner.ScrollPage()
-    action_runner.Wait(2)
-    action_runner.ScrollPage()
-    action_runner.Wait(2)
-    action_runner.MouseClick(self._SEE_MORE_SELECTOR)
-    action_runner.Wait(2)
-    action_runner.ScrollPage()
 
 class GooglePlayStoreDesktopStory(_MediaBrowsingStory):
   """ Navigate to the movies page of Google Play Store, scroll to the bottom,
