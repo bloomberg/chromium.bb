@@ -206,6 +206,9 @@ struct Cronet_RequestFinishedInfo {
   ~Cronet_RequestFinishedInfo();
 
   base::Optional<Cronet_Metrics> metrics;
+  std::vector<Cronet_RawDataPtr> annotations;
+  Cronet_RequestFinishedInfo_FINISHED_REASON finished_reason =
+      Cronet_RequestFinishedInfo_FINISHED_REASON_SUCCEEDED;
   base::Optional<Cronet_UrlResponseInfo> response_info;
   base::Optional<Cronet_Error> error;
 

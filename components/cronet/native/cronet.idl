@@ -1317,6 +1317,20 @@ struct RequestFinishedInfo {
   Metrics metrics;
 
   /**
+   * The objects that the caller has supplied when initiating the request,
+   * using {@link UrlRequestParams.annotations}.
+   *
+   * Annotations can be used to associate a {@link RequestFinishedInfo} with
+   * the original request or type of request.
+   */
+  array<handle> annotations;
+
+  /**
+   * Returns the reason why the request finished.
+   */
+  FINISHED_REASON finished_reason = SUCCEEDED;
+
+  /**
    * {@link UrlResponseInfo} for the request, if its response had started.
    */
   UrlResponseInfo? response_info;

@@ -490,6 +490,11 @@ TEST_F(CronetStructTest, TestCronet_RequestFinishedInfo) {
   EXPECT_EQ(Cronet_RequestFinishedInfo_metrics_get(first), nullptr);
 
   Cronet_Metrics_Destroy(test_metrics);
+  // TODO(mef): Test array |annotations|.
+  Cronet_RequestFinishedInfo_finished_reason_set(
+      second, Cronet_RequestFinishedInfo_finished_reason_get(first));
+  EXPECT_EQ(Cronet_RequestFinishedInfo_finished_reason_get(first),
+            Cronet_RequestFinishedInfo_finished_reason_get(second));
   Cronet_UrlResponseInfoPtr test_response_info =
       Cronet_UrlResponseInfo_Create();
   EXPECT_EQ(Cronet_RequestFinishedInfo_response_info_get(first), nullptr);
