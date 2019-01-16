@@ -56,6 +56,10 @@ class FakeServiceWorkerContext : public ServiceWorkerContext {
       const GURL& scope,
       ServiceWorkerContext::StartWorkerCallback info_callback,
       base::OnceClosure failure_callback) override;
+  void StartServiceWorkerAndDispatchMessage(
+      const GURL& scope,
+      blink::TransferableMessage message,
+      FakeServiceWorkerContext::ResultCallback result_callback) override;
   void StartServiceWorkerAndDispatchLongRunningMessage(
       const GURL& scope,
       blink::TransferableMessage message,

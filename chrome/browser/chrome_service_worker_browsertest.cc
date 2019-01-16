@@ -226,6 +226,31 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
+                       StartServiceWorkerAndDispatchMessage) {
+  base::RunLoop run_loop;
+  blink::TransferableMessage msg;
+  const base::string16 message_data = base::UTF8ToUTF16("testMessage");
+
+  WriteFile(FILE_PATH_LITERAL("sw.js"), "self.onfetch = function(e) {};");
+  WriteFile(FILE_PATH_LITERAL("test.html"), kInstallAndWaitForActivatedPage);
+  InitializeServer();
+  NavigateToPageAndWaitForReadyTitle("/test.html");
+  msg.owned_encoded_message = blink::EncodeStringMessage(message_data);
+  msg.encoded_message = msg.owned_encoded_message;
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindOnce(
+          &content::ServiceWorkerContext::StartServiceWorkerAndDispatchMessage,
+          base::Unretained(GetServiceWorkerContext()),
+          embedded_test_server()->GetURL("/scope/"), std::move(msg),
+          base::BindRepeating(&ExpectResultAndRun<bool>, true,
+                              run_loop.QuitClosure())));
+
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
                        StartServiceWorkerForLongRunningMessage) {
   base::RunLoop run_loop;
   blink::TransferableMessage msg;
