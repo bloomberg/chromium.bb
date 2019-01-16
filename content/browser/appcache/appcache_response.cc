@@ -238,11 +238,11 @@ void AppCacheResponseReader::ReadData(net::IOBuffer* buf,
 }
 
 void AppCacheResponseReader::ContinueReadData() {
-  if (read_position_ + buffer_len_ > range_length_) {
-    // TODO(michaeln): What about integer overflows?
-    DCHECK(range_length_ >= read_position_);
+  // Since every read reads at most (range_length_ - read_position_) bytes,
+  // read_position_ can never become larger than range_length_.
+  DCHECK_GE(range_length_, read_position_);
+  if (range_length_ - read_position_ < buffer_len_)
     buffer_len_ = range_length_ - read_position_;
-  }
   ReadRaw(kResponseContentIndex,
           range_offset_ + read_position_,
           buffer_.get(),
