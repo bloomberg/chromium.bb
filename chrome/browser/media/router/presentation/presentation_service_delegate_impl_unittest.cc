@@ -582,9 +582,9 @@ TEST_F(PresentationServiceDelegateImplTest, ConnectToLocalPresentation) {
   MockPresentationConnectionProxy receiver_proxy;
   mojo::Binding<PresentationConnection> receiver_binding(&receiver_proxy);
   auto& mock_local_manager = GetMockLocalPresentationManager();
-  EXPECT_CALL(mock_local_manager, RegisterLocalPresentationControllerInternal(
-                                      InfoEquals(presentation_info), rfh_id, _,
-                                      _, Equals(media_route)))
+  EXPECT_CALL(mock_local_manager,
+              RegisterLocalPresentationControllerInternal(
+                  InfoEquals(presentation_info), rfh_id, _, _, media_route))
       .WillOnce([&receiver_binding, &controller_ptr](
                     const PresentationInfo&,
                     const content::GlobalFrameRoutingId&,

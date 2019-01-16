@@ -216,7 +216,7 @@ TEST_F(MediaRouterMojoImplTest, CreateIncognitoRoute) {
 
   base::RunLoop run_loop;
   RouteResponseCallbackHandler handler;
-  EXPECT_CALL(handler, DoInvoke(Pointee(Equals(expected_route)), Not(""), "",
+  EXPECT_CALL(handler, DoInvoke(Pointee(expected_route), Not(""), "",
                                 RouteRequestResult::OK, _))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   router()->CreateRoute(
@@ -589,9 +589,8 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
     sinks.push_back(std::move(sink_internal));
   }
 
-  EXPECT_CALL(*sinks_observer, OnSinksReceived(SequenceEquals(expected_sinks)));
-  EXPECT_CALL(*extra_sinks_observer,
-              OnSinksReceived(SequenceEquals(expected_sinks)));
+  EXPECT_CALL(*sinks_observer, OnSinksReceived(expected_sinks));
+  EXPECT_CALL(*extra_sinks_observer, OnSinksReceived(expected_sinks));
   router()->OnSinksReceived(
       MediaRouteProviderId::EXTENSION, media_source.id(), sinks,
       std::vector<url::Origin>(1, url::Origin::Create(GURL(kOrigin))));
@@ -601,8 +600,7 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
   // registered.
   auto cached_sinks_observer = std::make_unique<MockMediaSinksObserver>(
       router(), media_source, url::Origin::Create(GURL(kOrigin)));
-  EXPECT_CALL(*cached_sinks_observer,
-              OnSinksReceived(SequenceEquals(expected_sinks)));
+  EXPECT_CALL(*cached_sinks_observer, OnSinksReceived(expected_sinks));
   EXPECT_TRUE(cached_sinks_observer->Init());
 
   // Different origin from cached result. Empty list will be returned.
@@ -726,14 +724,12 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaRoutesObserver) {
   expected_joinable_route_ids.push_back(kJoinableRouteId);
   expected_joinable_route_ids.push_back(kJoinableRouteId2);
 
-  EXPECT_CALL(routes_observer, OnRoutesUpdated(SequenceEquals(expected_routes),
-                                               expected_joinable_route_ids));
+  EXPECT_CALL(routes_observer,
+              OnRoutesUpdated(expected_routes, expected_joinable_route_ids));
   EXPECT_CALL(extra_routes_observer,
-              OnRoutesUpdated(SequenceEquals(expected_routes),
-                              expected_joinable_route_ids));
+              OnRoutesUpdated(expected_routes, expected_joinable_route_ids));
   EXPECT_CALL(different_routes_observer,
-              OnRoutesUpdated(SequenceEquals(expected_routes),
-                              expected_joinable_route_ids))
+              OnRoutesUpdated(expected_routes, expected_joinable_route_ids))
       .Times(0);
   router()->OnRoutesUpdated(MediaRouteProviderId::EXTENSION, expected_routes,
                             media_source.id(), expected_joinable_route_ids);
@@ -776,8 +772,8 @@ TEST_F(MediaRouterMojoImplTest, RegisterMediaRoutesObserver_DedupingWithCache) {
   auto observer1 =
       std::make_unique<MockMediaRoutesObserver>(router(), media_source.id());
   base::RunLoop().RunUntilIdle();
-  EXPECT_CALL(*observer1, OnRoutesUpdated(SequenceEquals(expected_routes),
-                                          expected_joinable_route_ids))
+  EXPECT_CALL(*observer1,
+              OnRoutesUpdated(expected_routes, expected_joinable_route_ids))
       .Times(1);
   router()->OnRoutesUpdated(MediaRouteProviderId::EXTENSION, expected_routes,
                             media_source.id(), expected_joinable_route_ids);
@@ -789,11 +785,11 @@ TEST_F(MediaRouterMojoImplTest, RegisterMediaRoutesObserver_DedupingWithCache) {
       std::make_unique<MockMediaRoutesObserver>(router(), media_source.id());
   auto observer3 =
       std::make_unique<MockMediaRoutesObserver>(router(), media_source.id());
-  EXPECT_CALL(*observer2, OnRoutesUpdated(SequenceEquals(expected_routes),
-                                          expected_joinable_route_ids))
+  EXPECT_CALL(*observer2,
+              OnRoutesUpdated(expected_routes, expected_joinable_route_ids))
       .Times(1);
-  EXPECT_CALL(*observer3, OnRoutesUpdated(SequenceEquals(expected_routes),
-                                          expected_joinable_route_ids))
+  EXPECT_CALL(*observer3,
+              OnRoutesUpdated(expected_routes, expected_joinable_route_ids))
       .Times(1);
   base::RunLoop().RunUntilIdle();
 
@@ -1196,21 +1192,21 @@ TEST_F(MediaRouterMojoImplTest, ObserveSinksFromMultipleProviders) {
   observer.Init();
 
   // Have the extension MRP report sinks.
-  EXPECT_CALL(observer, OnSinksReceived(UnorderedElementsAre(
-                            Equals(sink1a.sink()), Equals(sink1b.sink()))));
+  EXPECT_CALL(observer, OnSinksReceived(UnorderedElementsAre(sink1a.sink(),
+                                                             sink1b.sink())));
   router()->OnSinksReceived(MediaRouteProviderId::EXTENSION, kSource,
                             {sink1a, sink1b}, {});
 
   // Have the wired display MRP report sinks.
-  EXPECT_CALL(observer, OnSinksReceived(UnorderedElementsAre(
-                            Equals(sink1a.sink()), Equals(sink1b.sink()),
-                            Equals(sink2a.sink()), Equals(sink2b.sink()))));
+  EXPECT_CALL(observer,
+              OnSinksReceived(UnorderedElementsAre(
+                  sink1a.sink(), sink1b.sink(), sink2a.sink(), sink2b.sink())));
   router()->OnSinksReceived(MediaRouteProviderId::WIRED_DISPLAY, kSource,
                             {sink2a, sink2b}, {});
 
   // Have the extension MRP report an empty list of sinks.
-  EXPECT_CALL(observer, OnSinksReceived(UnorderedElementsAre(
-                            Equals(sink2a.sink()), Equals(sink2b.sink()))));
+  EXPECT_CALL(observer, OnSinksReceived(UnorderedElementsAre(sink2a.sink(),
+                                                             sink2b.sink())));
   router()->OnSinksReceived(MediaRouteProviderId::EXTENSION, kSource, {}, {});
 
   // Have the wired display MRP report an empty list of sinks.
@@ -1231,18 +1227,16 @@ TEST_F(MediaRouterMojoImplTest, ObserveRoutesFromMultipleProviders) {
   MockMediaRoutesObserver observer(router(), kSource);
 
   // Have the extension MRP report routes.
-  EXPECT_CALL(
-      observer,
-      OnRoutesUpdated(UnorderedElementsAre(Equals(route1a), Equals(route1b)),
-                      UnorderedElementsAre(route1a.media_route_id())));
+  EXPECT_CALL(observer,
+              OnRoutesUpdated(UnorderedElementsAre(route1a, route1b),
+                              UnorderedElementsAre(route1a.media_route_id())));
   router()->OnRoutesUpdated(MediaRouteProviderId::EXTENSION, {route1a, route1b},
                             kSource, {route1a.media_route_id()});
 
   // Have the wired display MRP report routes.
   EXPECT_CALL(
       observer,
-      OnRoutesUpdated(UnorderedElementsAre(Equals(route1a), Equals(route1b),
-                                           Equals(route2a), Equals(route2b)),
+      OnRoutesUpdated(UnorderedElementsAre(route1a, route1b, route2a, route2b),
                       UnorderedElementsAre(route1a.media_route_id(),
                                            route2a.media_route_id())));
   router()->OnRoutesUpdated(MediaRouteProviderId::WIRED_DISPLAY,
@@ -1250,10 +1244,9 @@ TEST_F(MediaRouterMojoImplTest, ObserveRoutesFromMultipleProviders) {
                             {route2a.media_route_id()});
 
   // Have the extension MRP report an empty list of routes.
-  EXPECT_CALL(
-      observer,
-      OnRoutesUpdated(UnorderedElementsAre(Equals(route2a), Equals(route2b)),
-                      UnorderedElementsAre(route2a.media_route_id())));
+  EXPECT_CALL(observer,
+              OnRoutesUpdated(UnorderedElementsAre(route2a, route2b),
+                              UnorderedElementsAre(route2a.media_route_id())));
   router()->OnRoutesUpdated(MediaRouteProviderId::EXTENSION, {}, kSource, {});
 
   // Have the wired display MRP report an empty list of routes.

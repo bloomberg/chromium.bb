@@ -335,7 +335,7 @@ TEST_F(LocalPresentationManagerTest, TestRegisterAndGetRoute) {
 
   auto* actual_route = manager()->GetRoute(kPresentationId);
   EXPECT_TRUE(actual_route);
-  EXPECT_TRUE(route.Equals(*actual_route));
+  EXPECT_EQ(route, *actual_route);
 }
 
 }  // namespace media_router

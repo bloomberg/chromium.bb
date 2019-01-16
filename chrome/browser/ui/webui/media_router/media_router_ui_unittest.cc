@@ -422,9 +422,9 @@ TEST_F(MediaRouterUITest, FilterNonDisplayRoutes) {
 
   media_router_ui_->OnRoutesUpdated(routes, std::vector<MediaRoute::Id>());
   ASSERT_EQ(2u, media_router_ui_->routes().size());
-  EXPECT_TRUE(display_route_1.Equals(media_router_ui_->routes()[0]));
+  EXPECT_EQ(display_route_1, media_router_ui_->routes()[0]);
   EXPECT_TRUE(media_router_ui_->routes()[0].for_display());
-  EXPECT_TRUE(display_route_2.Equals(media_router_ui_->routes()[1]));
+  EXPECT_EQ(display_route_2, media_router_ui_->routes()[1]);
   EXPECT_TRUE(media_router_ui_->routes()[1].for_display());
 }
 
@@ -483,9 +483,9 @@ TEST_F(MediaRouterUITest, UIMediaRoutesObserverAssignsCurrentCastModes) {
 
   const auto& filtered_routes = media_router_ui_->routes();
   ASSERT_EQ(2u, filtered_routes.size());
-  EXPECT_TRUE(display_route_1.Equals(filtered_routes[0]));
+  EXPECT_EQ(display_route_1, filtered_routes[0]);
   EXPECT_TRUE(filtered_routes[0].for_display());
-  EXPECT_TRUE(display_route_2.Equals(filtered_routes[1]));
+  EXPECT_EQ(display_route_2, filtered_routes[1]);
   EXPECT_TRUE(filtered_routes[1].for_display());
 
   const auto& current_cast_modes = media_router_ui_->routes_and_cast_modes();
@@ -531,9 +531,9 @@ TEST_F(MediaRouterUITest, UIMediaRoutesObserverSkipsUnavailableCastModes) {
 
   const auto& filtered_routes = media_router_ui_->routes();
   ASSERT_EQ(2u, filtered_routes.size());
-  EXPECT_TRUE(display_route_1.Equals(filtered_routes[0]));
+  EXPECT_EQ(display_route_1, filtered_routes[0]);
   EXPECT_TRUE(filtered_routes[0].for_display());
-  EXPECT_TRUE(display_route_2.Equals(filtered_routes[1]));
+  EXPECT_EQ(display_route_2, filtered_routes[1]);
   EXPECT_TRUE(filtered_routes[1].for_display());
 
   const auto& current_cast_modes = media_router_ui_->routes_and_cast_modes();

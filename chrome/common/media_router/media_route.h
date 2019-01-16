@@ -98,7 +98,7 @@ class MediaRoute {
   }
   bool is_local_presentation() const { return is_local_presentation_; }
 
-  bool Equals(const MediaRoute& other) const;
+  bool operator==(const MediaRoute& other) const;
 
  private:
   // The media route identifier.
