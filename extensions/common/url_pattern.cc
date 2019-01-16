@@ -353,6 +353,10 @@ URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern,
 }
 
 void URLPattern::SetValidSchemes(int valid_schemes) {
+  // TODO(devlin): Should we check that valid_schemes agrees with |scheme_|
+  // here? Otherwise, valid_schemes_ and schemes_ may stop agreeing with each
+  // other (e.g., in the case of `*://*/*`, where the scheme should only be
+  // http or https).
   spec_.clear();
   valid_schemes_ = valid_schemes;
 }
@@ -434,6 +438,8 @@ bool URLPattern::MatchesURL(const GURL& test) const {
     test_url = test.inner_url();
   }
 
+  // Ensure the scheme matches first, since <all_urls> may not match this URL if
+  // the scheme is excluded.
   if (!MatchesScheme(test_url->scheme_piece()))
     return false;
 
@@ -633,8 +639,14 @@ bool URLPattern::OverlapsWith(const URLPattern& other) const {
 }
 
 bool URLPattern::Contains(const URLPattern& other) const {
-  if (match_all_urls())
+  // Important: it's not enough to just check match_all_urls(); we also need to
+  // make sure that the schemes in this pattern are a superset of those in
+  // |other|.
+  if (match_all_urls() &&
+      (valid_schemes_ & other.valid_schemes_) == other.valid_schemes_) {
     return true;
+  }
+
   return MatchesAllSchemes(other.GetExplicitSchemes()) &&
          MatchesHost(other.host()) &&
          (!other.match_subdomains_ || match_subdomains_) &&

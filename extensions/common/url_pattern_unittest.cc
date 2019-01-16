@@ -1250,4 +1250,53 @@ TEST(ExtensionURLPatternTest, ValidSchemeIntersection) {
   }
 }
 
+// Tests that <all_urls> patterns correctly check schemes when testing if one
+// contains the other.
+TEST(ExtensionURLPatternTest, ContainsSchemes) {
+  const URLPattern http(URLPattern::SCHEME_HTTP, URLPattern::kAllUrlsPattern);
+  const URLPattern chrome(URLPattern::SCHEME_CHROMEUI,
+                          URLPattern::kAllUrlsPattern);
+  const URLPattern http_and_https(
+      URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS,
+      URLPattern::kAllUrlsPattern);
+  const URLPattern http_https_and_chrome(URLPattern::SCHEME_HTTP |
+                                             URLPattern::SCHEME_HTTPS |
+                                             URLPattern::SCHEME_CHROMEUI,
+                                         URLPattern::kAllUrlsPattern);
+
+  // A map between each URLPattern and the other patterns it should contain.
+  const std::map<const URLPattern*, std::set<const URLPattern*>> contains_map =
+      {
+          {&http, {}},
+          {&chrome, {}},
+          {&http_and_https, {&http}},
+          {&http_https_and_chrome, {&http, &http_and_https, &chrome}},
+      };
+
+  const URLPattern* all_patterns[] = {&http, &chrome, &http_and_https,
+                                      &http_https_and_chrome};
+
+  // Verify that each pattern contains exactly the expected patterns.
+  for (const auto& entry : contains_map) {
+    const URLPattern* pattern = entry.first;
+    const std::set<const URLPattern*>& contains_patterns = entry.second;
+    for (const URLPattern* other_pattern : all_patterns) {
+      SCOPED_TRACE(base::StringPrintf("Checking if %d contains %d",
+                                      pattern->valid_schemes(),
+                                      other_pattern->valid_schemes()));
+      bool expect_contains =
+          // Patterns should always contain themselves.
+          pattern == other_pattern || contains_patterns.count(other_pattern);
+      EXPECT_EQ(expect_contains, pattern->Contains(*other_pattern));
+    }
+  }
+
+  // Fun edge case for bonus points: |http| doesn't contain all the valid
+  // schemes of the other pattern, but does in practice (since the scheme is
+  // restricted to http by the match pattern).
+  EXPECT_TRUE(http.Contains(
+      URLPattern(URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS,
+                 "http://google.com/*")));
+}
+
 }  // namespace

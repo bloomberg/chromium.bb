@@ -19,12 +19,16 @@
 #include "components/crx_file/id_util.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_features.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 
 namespace {
+
+constexpr char kNotInManifestError[] =
+    "Only permissions specified in the manifest may be requested.";
 
 using permissions_test_util::GetPatternsAsStrings;
 
@@ -556,7 +560,7 @@ TEST_F(PermissionsAPIUnitTest, RequestingPermissionsNotSpecifiedInManifest) {
   auto function = base::MakeRefCounted<PermissionsRequestFunction>();
   function->set_user_gesture(true);
   function->set_extension(extension.get());
-  EXPECT_EQ("Only permissions specified in the manifest may be requested.",
+  EXPECT_EQ(kNotInManifestError,
             extension_function_test_utils::RunFunctionAndReturnError(
                 function.get(),
                 R"([{
@@ -615,6 +619,54 @@ TEST_F(PermissionsAPIUnitTest, RequestingAlreadyGrantedWithheldPermissions) {
   EXPECT_FALSE(
       permissions_data->active_permissions().effective_hosts().MatchesURL(
           kGoogleCom));
+}
+
+// Test that requesting chrome:-scheme URLs is disallowed in the permissions
+// API.
+TEST_F(PermissionsAPIUnitTest, RequestingChromeURLs) {
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension")
+          .SetManifestKey("optional_permissions",
+                          ListBuilder().Append("<all_urls>").Build())
+          .Build();
+  AddExtensionAndGrantPermissions(*extension);
+
+  const GURL chrome_url("chrome://settings");
+
+  // By default, the extension should not have access to chrome://settings.
+  EXPECT_FALSE(extension->permissions_data()->HasHostPermission(chrome_url));
+  // The optional permissions should also omit the chrome:-scheme for the
+  // <all_urls> pattern.
+  EXPECT_FALSE(PermissionsParser::GetOptionalPermissions(extension.get())
+                   .explicit_hosts()
+                   .MatchesURL(chrome_url));
+
+  {
+    // Trying to request "chrome://settings/*" should fail, since it's not in
+    // the optional permissions.
+    auto function = base::MakeRefCounted<PermissionsRequestFunction>();
+    function->set_user_gesture(true);
+    function->set_extension(extension.get());
+    std::string error =
+        extension_function_test_utils::RunFunctionAndReturnError(
+            function.get(), R"([{"origins": ["chrome://settings/*"]}])",
+            browser(), api_test_utils::NONE);
+    EXPECT_EQ(kNotInManifestError, error);
+  }
+  // chrome://settings should still be restricted.
+  EXPECT_FALSE(extension->permissions_data()->HasHostPermission(chrome_url));
+
+  // The extension can request <all_urls>, but it should not grant access to the
+  // chrome:-scheme.
+  std::unique_ptr<const PermissionSet> prompted_permissions;
+  RunRequestFunction(*extension, browser(), R"([{"origins": ["<all_urls>"]}])",
+                     &prompted_permissions);
+  EXPECT_THAT(GetPatternsAsStrings(prompted_permissions->effective_hosts()),
+              testing::UnorderedElementsAre("<all_urls>"));
+
+  EXPECT_FALSE(extension->permissions_data()->HasHostPermission(chrome_url));
+  EXPECT_TRUE(extension->permissions_data()->HasHostPermission(
+      GURL("https://example.com")));
 }
 
 }  // namespace extensions
