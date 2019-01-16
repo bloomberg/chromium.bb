@@ -7,6 +7,8 @@ component("impl") {
   visibility = [ "//media/learning/impl:unit_tests" ]
 
   sources = [
+    "distribution_reporter.cc",
+    "distribution_reporter.h",
     "extra_trees_trainer.cc",
     "extra_trees_trainer.h",
     "learning_session_impl.cc",
@@ -32,6 +34,7 @@ component("impl") {
 
   deps = [
     "//base",
+    "//services/metrics/public/cpp:metrics_cpp",
   ]
 
   public_deps = [
@@ -43,6 +46,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "distribution_reporter_unittest.cc",
     "extra_trees_trainer_unittest.cc",
     "fisher_iris_dataset.cc",
     "fisher_iris_dataset.h",

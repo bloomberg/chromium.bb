@@ -13,8 +13,12 @@
 namespace media {
 namespace learning {
 
-LearningTaskControllerImpl::LearningTaskControllerImpl(const LearningTask& task)
-    : task_(task), training_data_(std::make_unique<TrainingData>()) {
+LearningTaskControllerImpl::LearningTaskControllerImpl(
+    const LearningTask& task,
+    std::unique_ptr<DistributionReporter> reporter)
+    : task_(task),
+      training_data_(std::make_unique<TrainingData>()),
+      reporter_(std::move(reporter)) {
   switch (task_.model) {
     case LearningTask::Model::kExtraTrees:
       training_cb_ = base::BindRepeating(
@@ -26,10 +30,6 @@ LearningTaskControllerImpl::LearningTaskControllerImpl(const LearningTask& task)
           task_);
       break;
   }
-
-  // TODO(liberato): Record via UMA based on the task name.
-  accuracy_reporting_cb_ =
-      base::BindRepeating([](const LearningTask&, bool is_correct) {});
 }
 
 LearningTaskControllerImpl::~LearningTaskControllerImpl() = default;
@@ -39,15 +39,13 @@ void LearningTaskControllerImpl::AddExample(const LabelledExample& example) {
   training_data_->push_back(example);
 
   // Once we have a model, see if we'd get |example| correct.
-  if (model_) {
-    TargetDistribution distribution =
+  if (model_ && reporter_) {
+    TargetDistribution predicted =
         model_->PredictDistribution(example.features);
 
-    TargetValue predicted_value;
-    const bool is_correct = distribution.FindSingularMax(&predicted_value) &&
-                            predicted_value == example.target_value;
-    accuracy_reporting_cb_.Run(task_, is_correct);
-    // TODO(liberato): record entropy / not representable?
+    TargetDistribution observed;
+    observed += example.target_value;
+    reporter_->GetPredictionCallback(observed).Run(predicted);
   }
 
   // Train every time we get a multiple of |data_set_size|.
@@ -67,17 +65,11 @@ void LearningTaskControllerImpl::AddExample(const LabelledExample& example) {
 
 void LearningTaskControllerImpl::OnModelTrained(std::unique_ptr<Model> model) {
   model_ = std::move(model);
-  // TODO(liberato): record oob results.
 }
 
 void LearningTaskControllerImpl::SetTrainingCBForTesting(
     TrainingAlgorithmCB cb) {
   training_cb_ = std::move(cb);
-}
-
-void LearningTaskControllerImpl::SetAccuracyReportingCBForTesting(
-    AccuracyReportingCB cb) {
-  accuracy_reporting_cb_ = std::move(cb);
 }
 
 }  // namespace learning

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
+#include "media/learning/impl/distribution_reporter.h"
 #include "media/learning/impl/learning_task_controller.h"
 #include "media/learning/impl/training_algorithm.h"
 
@@ -22,23 +23,17 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
     : public LearningTaskController,
       public base::SupportsWeakPtr<LearningTaskControllerImpl> {
  public:
-  explicit LearningTaskControllerImpl(const LearningTask& task);
+  LearningTaskControllerImpl(
+      const LearningTask& task,
+      std::unique_ptr<DistributionReporter> reporter = nullptr);
   ~LearningTaskControllerImpl() override;
 
   // LearningTaskController
   void AddExample(const LabelledExample& example) override;
 
  private:
-  // Called with accuracy results as new examples are added.  Only tests should
-  // need to worry about this.
-  using AccuracyReportingCB =
-      base::RepeatingCallback<void(const LearningTask& task, bool is_correct)>;
-
   // Override the training CB for testing.
   void SetTrainingCBForTesting(TrainingAlgorithmCB cb);
-
-  // Override the reporting CB for testing.
-  void SetAccuracyReportingCBForTesting(AccuracyReportingCB cb);
 
   // Called by |training_cb_| when the model is trained.
   void OnModelTrained(std::unique_ptr<Model> model);
@@ -53,7 +48,8 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
 
   TrainingAlgorithmCB training_cb_;
 
-  AccuracyReportingCB accuracy_reporting_cb_;
+  // Optional reporter for training accuracy.
+  std::unique_ptr<DistributionReporter> reporter_;
 
   friend class LearningTaskControllerImplTest;
 };

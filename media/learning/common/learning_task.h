@@ -111,6 +111,20 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
 
   // Number of trees in the random forest.
   size_t rf_number_of_trees = 100;
+
+  // Reporting parameters
+
+  // This is a hack for the initial media capabilities investigation. It
+  // represents the threshold that we'll use to decide if a prediction would be
+  // T / F.  We should not do this -- instead we should report the distribution
+  // average for the prediction and the observation via UKM.
+  //
+  // In particular, if the percentage of dropped frames is greater than this,
+  // then report "false" (not smooth), else we report true.
+  double smoothness_threshold = 0.1;
+
+  // For our hacky confusion matrix reporting, this is the UMA histogram name.
+  std::string uma_name;
 };
 
 }  // namespace learning
