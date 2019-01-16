@@ -304,7 +304,13 @@ void DeviceManagementRequestJobImpl::HandleResponse(int net_error,
     UMA_HISTOGRAM_ENUMERATION("Enterprise.DMServerRequestSuccess",
                               DMServerRequestSuccess::REQUEST_ERROR,
                               DMServerRequestSuccess::REQUEST_MAX);
-    LOG(WARNING) << "DMServer sent an error response: " << response_code;
+    em::DeviceManagementResponse response;
+    if (response.ParseFromString(data)) {
+      LOG(WARNING) << "DMServer sent an error response: " << response_code
+                   << ". " << response.error_message();
+    } else {
+      LOG(WARNING) << "DMServer sent an error response: " << response_code;
+    }
   } else {
     // Success with retries_count_ retries.
     UMA_HISTOGRAM_EXACT_LINEAR(
