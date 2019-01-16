@@ -262,9 +262,8 @@ void EmbeddedSharedWorkerStub::WaitForServiceWorkerControllerInfo(
     blink::WebServiceWorkerNetworkProvider* web_network_provider,
     base::OnceClosure callback) {
   ServiceWorkerProviderContext* context =
-      static_cast<WebServiceWorkerNetworkProviderImplForWorker*>(
+      ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
           web_network_provider)
-          ->provider()
           ->context();
   context->PingContainerHost(std::move(callback));
 }
@@ -273,10 +272,9 @@ scoped_refptr<blink::WebWorkerFetchContext>
 EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
     blink::WebServiceWorkerNetworkProvider* web_network_provider) {
   DCHECK(web_network_provider);
-  ServiceWorkerProviderContext* provider_context =
+  ServiceWorkerNetworkProvider* network_provider =
       ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
-          web_network_provider)
-          ->context();
+          web_network_provider);
 
   // Make the factory used for service worker network fallback (that should
   // skip AppCache if it is provided).
@@ -285,7 +283,7 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
 
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       WebWorkerFetchContextImpl::Create(
-          provider_context, std::move(renderer_preferences_),
+          network_provider, std::move(renderer_preferences_),
           std::move(preference_watcher_request_),
           subresource_loader_factories_->Clone(), std::move(fallback_factory));
 
@@ -301,11 +299,6 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   // https://w3c.github.io/webappsec-secure-contexts/#examples-shared-workers
   worker_fetch_context->set_is_secure_context(IsOriginSecure(url_));
   worker_fetch_context->set_origin_url(url_.GetOrigin());
-  worker_fetch_context->set_service_worker_provider_id(
-      provider_context->provider_id());
-  worker_fetch_context->set_is_controlled_by_service_worker(
-      provider_context->IsControlledByServiceWorker());
-  worker_fetch_context->set_client_id(provider_context->client_id());
 
   return worker_fetch_context;
 }
