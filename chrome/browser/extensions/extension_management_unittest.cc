@@ -872,7 +872,7 @@ TEST_F(ExtensionManagementServiceTest,
 TEST_F(ExtensionManagementServiceTest,
        CloudReportingenabledOverridesExtensionSettings) {
   SetExampleDictPref(R"({
-        "kigjhoekjcpdfjpimbdjegmgecmlicaf": {
+        "oempjldejiginopiohodkdoklcjklbaa": {
           "installation_mode": "allowed",
           "blocked_permissions": ["bookmarks"],
           "minimum_version_required": "100.0",

@@ -43,7 +43,7 @@ const char kCroshBuiltinAppId[] = "nkoccljplnhpfnfiajclkommnmllphnl";
 const char kTextEditorAppId[] = "mmfbcljfglbokpmkimbfghdkjmjhdgbg";
 const char kInAppPaymentsSupportAppId[] = "nmmhkkegccagdldgiimedpiccmgmieda";
 const char kMediaRouterStableExtensionId[] = "pkedcjkdefgpdelpbcmbmeomcjbeemfm";
-const char kCloudReportingExtensionId[] = "kigjhoekjcpdfjpimbdjegmgecmlicaf";
+const char kCloudReportingExtensionId[] = "oempjldejiginopiohodkdoklcjklbaa";
 
 #if defined(OS_CHROMEOS)
 const char kAssessmentAssistantExtensionId[] =
