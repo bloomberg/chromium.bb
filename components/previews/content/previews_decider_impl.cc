@@ -97,6 +97,15 @@ bool IsPreviewsBlacklistIgnoredViaFlag() {
       switches::kIgnorePreviewsBlacklist);
 }
 
+// We don't care if the ECT is unknown if the slow page threshold is set to 4G
+// (i.e.: all pages).
+bool ShouldCheckForUnknownECT(net::EffectiveConnectionType ect) {
+  if (!base::FeatureList::IsEnabled(features::kSlowPageTriggering))
+    return true;
+
+  return ect != net::EFFECTIVE_CONNECTION_TYPE_LAST - 1;
+}
+
 }  // namespace
 
 PreviewsDeciderImpl::PreviewsDeciderImpl(
@@ -466,8 +475,9 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
   // connection type as offline when the Android APIs incorrectly return device
   // connectivity as null. See https://crbug.com/838969. So, we do not trigger
   // previews when |ect| is net::EFFECTIVE_CONNECTION_TYPE_OFFLINE.
-  if (previews_data->navigation_ect() ==
-      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+  if (ShouldCheckForUnknownECT(params::GetSessionMaxECTThreshold()) &&
+      previews_data->navigation_ect() ==
+          net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
     return PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE;
   }
   passed_reasons->push_back(

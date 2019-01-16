@@ -981,6 +981,22 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
             PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION),
         1);
   }
+
+  // Verify preview allowed for session when navigation ECT is unknown but max
+  // trigger threshold is 4G.
+  {
+    base::test::ScopedFeatureList nested_scoped_list;
+    nested_scoped_list.InitAndEnableFeatureWithParameters(
+        features::kSlowPageTriggering, {{"session_max_ect_trigger", "4G"}});
+    base::HistogramTester histogram_tester;
+    PreviewsUserData user_data(kDefaultPageId);
+    user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+    EXPECT_TRUE(previews_decider_impl()->ShouldCommitPreview(
+        &user_data, GURL("https://whitelisted.example.com"),
+        PreviewsType::NOSCRIPT));
+
+    histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 0);
+  }
 }
 
 TEST_F(PreviewsDeciderImplTest,
