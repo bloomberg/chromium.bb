@@ -53,7 +53,7 @@ std::string KeyDirectiveToPrefString(
 }  // namespace
 
 // static
-const base::flat_set<CryptAuthKeyBundle::Name>& NameList() {
+const base::flat_set<CryptAuthKeyBundle::Name>& CryptAuthKeyBundle::NameList() {
   static const base::NoDestructor<base::flat_set<CryptAuthKeyBundle::Name>>
       name_list({CryptAuthKeyBundle::Name::kUserKeyPair});
   return *name_list;
