@@ -363,10 +363,6 @@ WebViewImpl::~WebViewImpl() {
 }
 
 void WebViewImpl::SetWebWidgetClient(WebWidgetClient* client) {
-  // Just don't call this method if the client's null.
-  DCHECK(client);
-  // There should only be a WebWidgetClient if there is a WebViewClient.
-  DCHECK(!!AsView().client);
   AsWidget().client = client;
 }
 

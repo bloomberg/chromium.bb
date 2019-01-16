@@ -432,9 +432,12 @@ class RenderViewImplTest : public RenderViewTest {
   // Closes a view created during the test, i.e. not the |view()|. Checks that
   // the main frame is detached and deleted, and makes sure the view does not
   // leak.
-  void CloseRenderView(RenderViewImpl* new_view) {
-    new_view->GetWidget()->Close();
-    EXPECT_FALSE(new_view->GetMainRenderFrame());
+  void CloseRenderWidget(RenderWidget* widget) {
+    WidgetMsg_Close msg(widget->routing_id());
+    widget->OnMessageReceived(msg);
+
+    // WidgetMsg_Close posts a task to do the actual closing. Let that run.
+    base::RunLoop().RunUntilIdle();
   }
 
  private:
@@ -545,23 +548,6 @@ class RenderViewImplDisableZoomForDSFTest
     return deps;
   }
 };
-
-// Ensure that the main RenderFrame is deleted and cleared from the RenderView
-// after closing it.
-TEST_F(RenderViewImplTest, RenderFrameClearedAfterClose) {
-  // Create a new main frame RenderFrame so that we don't interfere with the
-  // shutdown of frame() in RenderViewTest.TearDown.
-  blink::WebURLRequest popup_request(GURL("http://foo.com"));
-  blink::WebView* new_web_view = view()->CreateView(
-      GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
-      blink::kWebNavigationPolicyNewForegroundTab, false,
-      blink::WebSandboxFlags::kNone,
-      blink::AllocateSessionStorageNamespaceId());
-  RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
-
-  // Checks that the frame is deleted properly and cleans up the view.
-  CloseRenderView(new_view);
-}
 
 // Test that we get form state change notifications when input fields change.
 TEST_F(RenderViewImplTest, OnNavStateChanged) {
@@ -811,7 +797,8 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
       FrameHostMsg_OpenURL::ID));
 
-  CloseRenderView(new_view);
+  RenderWidget* render_widget = new_view->GetWidget();
+  CloseRenderWidget(render_widget);
 }
 
 class AlwaysForkingRenderViewTest : public RenderViewImplTest {
