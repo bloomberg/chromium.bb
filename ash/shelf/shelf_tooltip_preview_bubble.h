@@ -24,7 +24,8 @@ class ASH_EXPORT ShelfTooltipPreviewBubble : public ShelfTooltipBubbleBase,
   ShelfTooltipPreviewBubble(views::View* anchor,
                             views::BubbleBorder::Arrow arrow,
                             const std::vector<aura::Window*>& windows,
-                            ShelfTooltipManager* manager);
+                            ShelfTooltipManager* manager,
+                            SkColor background_color);
   ~ShelfTooltipPreviewBubble() override;
 
  private:

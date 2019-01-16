@@ -121,6 +121,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // SessionObserver overrides:
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
+  SkColor GetShelfBackgroundColor() const;
+
   // Internal implementation detail. Do not expose outside of tests.
   ShelfView* shelf_view_for_testing() const { return shelf_view_; }
   ShelfBackgroundAnimator* background_animator_for_testing() {

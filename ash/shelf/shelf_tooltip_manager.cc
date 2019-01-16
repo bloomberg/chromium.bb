@@ -8,6 +8,7 @@
 #include "ash/shelf/shelf_tooltip_bubble.h"
 #include "ash/shelf/shelf_tooltip_preview_bubble.h"
 #include "ash/shelf/shelf_view.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/strings/string16.h"
@@ -89,12 +90,14 @@ void ShelfTooltipManager::ShowTooltip(views::View* view) {
   const std::vector<aura::Window*> open_windows =
       shelf_view_->GetOpenWindowsForShelfView(view);
 
-  const base::string16 text = shelf_view_->GetTitleForView(view);
   if (chromeos::switches::ShouldShowShelfHoverPreviews() &&
       open_windows.size() > 0) {
-    bubble_ = new ShelfTooltipPreviewBubble(view, arrow, open_windows, this);
+    bubble_ = new ShelfTooltipPreviewBubble(
+        view, arrow, open_windows, this,
+        shelf_view_->shelf_widget()->GetShelfBackgroundColor());
   } else {
-    bubble_ = new ShelfTooltipBubble(view, arrow, text);
+    bubble_ =
+        new ShelfTooltipBubble(view, arrow, shelf_view_->GetTitleForView(view));
   }
 
   aura::Window* window = bubble_->GetWidget()->GetNativeWindow();

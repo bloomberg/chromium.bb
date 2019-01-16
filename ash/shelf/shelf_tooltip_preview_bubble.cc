@@ -4,7 +4,9 @@
 
 #include "ash/shelf/shelf_tooltip_preview_bubble.h"
 
+#include "ash/shelf/shelf_widget.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 
 namespace ash {
 
@@ -15,13 +17,17 @@ constexpr int kTooltipPaddingBottom = 16;
 constexpr int kTooltipPaddingLeftRight = 16;
 
 // The padding between individual previews.
-constexpr int kPreviewPadding = 22;
+constexpr int kPreviewPadding = 10;
+
+// The border radius of the whole bubble
+constexpr int kPreviewBorderRadius = 16;
 
 ShelfTooltipPreviewBubble::ShelfTooltipPreviewBubble(
     views::View* anchor,
     views::BubbleBorder::Arrow arrow,
     const std::vector<aura::Window*>& windows,
-    ShelfTooltipManager* manager)
+    ShelfTooltipManager* manager,
+    SkColor background_color)
     : ShelfTooltipBubbleBase(anchor, arrow), manager_(manager) {
   const ui::NativeTheme* theme = anchor_widget()->GetNativeTheme();
   for (auto* window : windows) {
@@ -33,6 +39,10 @@ ShelfTooltipPreviewBubble::ShelfTooltipPreviewBubble(
   set_margins(gfx::Insets(kTooltipPaddingTop, kTooltipPaddingLeftRight,
                           kTooltipPaddingBottom, kTooltipPaddingLeftRight));
   views::BubbleDialogDelegateView::CreateBubble(this);
+
+  // This can only be set after bubble creation:
+  GetBubbleFrameView()->bubble_border()->SetCornerRadius(kPreviewBorderRadius);
+  GetBubbleFrameView()->bubble_border()->set_background_color(background_color);
 }
 
 ShelfTooltipPreviewBubble::~ShelfTooltipPreviewBubble() = default;
