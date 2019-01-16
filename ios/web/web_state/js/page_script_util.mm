@@ -20,7 +20,9 @@ namespace {
 // Make sure that script is injected only once. For example, content of
 // WKUserScript can be injected into the same page multiple times
 // without notifying WKNavigationDelegate (e.g. after window.document.write
-// JavaScript call). Wrapping injected script into "if (!injected)" check
+// JavaScript call). Injecting the script multiple times invalidates the
+// __gCrWeb.windowId variable and will break the ability to send messages from
+// JS to the native code. Wrapping injected script into "if (!injected)" check
 // prevents multiple injections into the same page. |script_identifier| should
 // identify the script being injected in order to enforce the injection of
 // |script| to only once.

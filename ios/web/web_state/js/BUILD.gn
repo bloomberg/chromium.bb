@@ -17,6 +17,8 @@ source_set("js") {
     "crw_js_injection_receiver.mm",
     "crw_js_post_request_loader.h",
     "crw_js_post_request_loader.mm",
+    "crw_js_window_id_manager.h",
+    "crw_js_window_id_manager.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
