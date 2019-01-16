@@ -396,7 +396,7 @@ class BASE_EXPORT SequenceManagerImpl
   // https://crbug.com/757940
   bool Validate();
 
-  int32_t memory_corruption_sentinel_;
+  volatile int32_t memory_corruption_sentinel_;
 
   MainThreadOnly main_thread_only_;
   MainThreadOnly& main_thread_only() {
