@@ -1258,7 +1258,7 @@ class InkController extends ContentController {
 
   /** @override */
   viewportChanged() {
-    this.inkHost_.viewportChanged(this.viewport_);
+    this.inkHost_.viewportChanged();
   }
 
   /** @override */
@@ -1271,8 +1271,9 @@ class InkController extends ContentController {
     if (!this.inkHost_) {
       this.inkHost_ = document.createElement('viewer-ink-host');
       $('content').appendChild(this.inkHost_);
+      this.inkHost_.viewport = this.viewport_;
     }
-    return this.inkHost_.load(filename, data, this.viewport_);
+    return this.inkHost_.load(filename, data);
   }
 
   /** @override */

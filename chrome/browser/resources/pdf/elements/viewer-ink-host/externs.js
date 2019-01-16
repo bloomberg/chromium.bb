@@ -2,9 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @typedef {{
+ *   x: number,
+ *   y: number
+ * }}
+ */
+let Point;
+
+/**
+ * @typedef {{
+ *   width: number,
+ *   height: number
+ * }}
+ */
+let Size;
+
 class Viewport {
-  /** @return {{width: number, height: number}} */
-  getDocumentDimensions() {}
+  /**
+   * @param {number} zoom
+   * @return {{width: number, height: number}}
+   */
+  getDocumentDimensions(zoom) {}
+
+  /**
+   * @param {!Point} point
+   * @return {boolean}
+   */
+  isPointInsidePage(point) {}
+
+  /** @return {!Point} */
+  get position() {}
+
+  /** @return {!Size} */
+  get size() {}
+
+  /** @return {number} */
+  get zoom() {}
 }
 
 /** @type {Object} */

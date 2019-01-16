@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+window.onerror = e => chrome.test.fail(e.stack);
+window.onunhandledrejection = e => chrome.test.fail(e.reason);
+
 function animationFrame() {
   return new Promise(resolve => requestAnimationFrame(resolve));
 }
@@ -19,7 +22,7 @@ async function testAsync(f) {
     await f();
     chrome.test.succeed();
   } catch (e) {
-    chrome.test.fail(e);
+    chrome.test.fail(e.stack);
   }
 }
 
@@ -140,6 +143,7 @@ chrome.test.runTests([
     testAsync(async () => {
       chrome.test.assertTrue(isAnnotationMode());
       const inkHost = contentElement();
+      inkHost.resetPenMode();
       const events = [];
       inkHost.ink_.dispatchPointerEvent = (type, init) =>
           events.push({type: type, init: init});
@@ -179,6 +183,7 @@ chrome.test.runTests([
       ]);
 
       // Multi-touch gesture should cancel and suppress first pointer.
+      inkHost.resetPenMode();
       inkHost.dispatchEvent(new PointerEvent('pointerdown', touch1));
       inkHost.dispatchEvent(new PointerEvent('pointerdown', touch2));
       inkHost.dispatchEvent(new PointerEvent('pointermove', touch1));
@@ -189,6 +194,7 @@ chrome.test.runTests([
       ]);
 
       // Pointers which are not active should be suppressed.
+      inkHost.resetPenMode();
       inkHost.dispatchEvent(new PointerEvent('pointerdown', mouse));
       inkHost.dispatchEvent(new PointerEvent('pointerdown', pen));
       inkHost.dispatchEvent(new PointerEvent('pointerdown', touch1));
@@ -221,6 +227,7 @@ chrome.test.runTests([
       ]);
 
       // Browser will cancel touch on pen input
+      inkHost.resetPenMode();
       inkHost.dispatchEvent(new PointerEvent('pointerdown', touch1));
       inkHost.dispatchEvent(new PointerEvent('pointercancel', touch1));
       inkHost.dispatchEvent(new PointerEvent('pointerdown', pen));
@@ -233,17 +240,89 @@ chrome.test.runTests([
       ]);
     });
   },
-  function testPreventDefaultTouchStart() {
+  function testTouchPanGestures() {
     testAsync(async () => {
+      // Ensure that we have an out-of-bounds area.
+      viewer.viewport_.setZoom(0.5);
       chrome.test.assertTrue(isAnnotationMode());
       const inkHost = contentElement();
-      let called = false;
-      inkHost.onTouchStart_({
-        preventDefault() {
-          called = true;
-        }
-      });
-      chrome.test.assertTrue(called);
+      function dispatchPointerEvent(type, init) {
+        const pointerEvent = new PointerEvent(type, init);
+        inkHost.dispatchEvent(pointerEvent);
+        return pointerEvent;
+      }
+      function dispatchPointerAndTouchEvents(type, init) {
+        const pointerEvent = dispatchPointerEvent(type, init);
+        let touchPrevented = false;
+        inkHost.onTouchStart_({
+          timeStamp: pointerEvent.timeStamp,
+          preventDefault() {
+            touchPrevented = true;
+          }
+        });
+        return touchPrevented;
+      }
+
+      const pen = {
+        pointerId: 2,
+        pointerType: 'pen',
+        pressure: 0.5,
+        clientX: innerWidth / 2,
+        clientY: innerHeight / 2,
+      };
+
+      const outOfBoundsPen = {
+        pointerId: 2,
+        pointerType: 'pen',
+        pressure: 0.5,
+        clientX: 2,
+        clientY: 3,
+      };
+
+      const touch = {
+        pointerId: 3,
+        pointerType: 'touch',
+        pressure: 0.5,
+        clientX: innerWidth / 2,
+        clientY: innerHeight / 2,
+      };
+
+      const outOfBoundsTouch = {
+        pointerId: 4,
+        pointerType: 'touch',
+        pressure: 0.5,
+        clientX: 4,
+        clientY: 5,
+      };
+
+      inkHost.resetPenMode();
+      let prevented = dispatchPointerAndTouchEvents('pointerdown', touch);
+      dispatchPointerEvent('pointerup', touch);
+      chrome.test.assertTrue(
+          prevented, 'in document touch should prevent default');
+
+      prevented =
+          dispatchPointerAndTouchEvents('pointerdown', outOfBoundsTouch);
+      dispatchPointerEvent('pointerup', outOfBoundsTouch);
+      chrome.test.assertFalse(
+          prevented, 'out of bounds touch should start gesture');
+
+      prevented = dispatchPointerAndTouchEvents('pointerdown', pen);
+      dispatchPointerEvent('pointerup', pen);
+      chrome.test.assertTrue(
+          prevented, 'in document pen should prevent default');
+
+      prevented = dispatchPointerAndTouchEvents('pointerdown', outOfBoundsPen);
+      dispatchPointerEvent('pointerup', outOfBoundsPen);
+      chrome.test.assertFalse(
+          prevented, 'out of bounds pen should start gesture');
+
+      chrome.test.assertTrue(
+          inkHost.penMode_, 'pen input should switch to pen mode');
+      prevented = dispatchPointerAndTouchEvents('pointerdown', touch);
+      dispatchPointerEvent('pointerup', touch);
+      chrome.test.assertFalse(
+          prevented, 'in document touch in pen mode should start gesture');
     });
   },
   function testExitAnnotationMode() {
