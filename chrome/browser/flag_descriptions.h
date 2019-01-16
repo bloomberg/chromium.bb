@@ -612,9 +612,6 @@ extern const char kExtensionContentVerificationEnforceStrict[];
 extern const char kExtensionsOnChromeUrlsName[];
 extern const char kExtensionsOnChromeUrlsDescription[];
 
-extern const char kFastUnloadName[];
-extern const char kFastUnloadDescription[];
-
 extern const char kFeaturePolicyName[];
 extern const char kFeaturePolicyDescription[];
 

@@ -851,8 +851,6 @@ jumbo_split_static_library("ui") {
       "exclusive_access/keyboard_lock_controller.h",
       "exclusive_access/mouse_lock_controller.cc",
       "exclusive_access/mouse_lock_controller.h",
-      "fast_unload_controller.cc",
-      "fast_unload_controller.h",
       "find_bar/find_bar_controller.cc",
       "find_bar/find_bar_controller.h",
       "find_bar/find_bar_platform_helper.cc",

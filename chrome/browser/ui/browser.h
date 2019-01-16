@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/unload_controller.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/omnibox/browser/location_bar_model.h"
@@ -65,14 +66,12 @@ class BrowserSyncedWindowDelegate;
 class BrowserLocationBarModelDelegate;
 class BrowserLiveTabContext;
 class BrowserWindow;
-class FastUnloadController;
 class FindBarController;
 class Profile;
 class ScopedKeepAlive;
 class StatusBubble;
 class TabStripModel;
 class TabStripModelDelegate;
-class UnloadController;
 
 namespace chrome {
 class BrowserCommandController;
@@ -399,9 +398,6 @@ class Browser : public TabStripModelObserver,
   // Figure out if there are tabs that have beforeunload handlers.
   // It starts beforeunload/unload processing as a side-effect.
   bool TabsNeedBeforeUnloadFired();
-
-  // Returns true if all tabs' beforeunload/unload events have fired.
-  bool HasCompletedUnloadProcessing() const;
 
   bool IsAttemptingToCloseBrowser() const;
 
@@ -1028,8 +1024,7 @@ class Browser : public TabStripModelObserver,
   // Tracks when this browser is being created by session restore.
   bool is_session_restore_;
 
-  std::unique_ptr<UnloadController> unload_controller_;
-  std::unique_ptr<FastUnloadController> fast_unload_controller_;
+  UnloadController unload_controller_;
 
   std::unique_ptr<ChromeBubbleManager> bubble_manager_;
 
