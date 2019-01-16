@@ -6064,6 +6064,10 @@ fuzzer_test("net_ftp_directory_listing_fuzzer") {
     "//base",
     "//net",
   ]
+
+  # TODO(https://crbug.com/921297): Re-enable once source of timeout is
+  # understood (probably just needs to restrict maximum input size).
+  additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
 }
 
 fuzzer_test("net_unescape_url_component_fuzzer") {
