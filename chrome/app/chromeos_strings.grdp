@@ -3619,10 +3619,10 @@
     Set up your fingerprint
   </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_LOCATION_TITLE" desc="The title of the dialog that shows where the fingerprint sensor is.">
-    Place your finger
+    Set up your fingerprint
   </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_DESCRIPTION" desc="The label that explains the location of the fingerprint sensor on the device.">
-    Touch the sensor with your finger. It's on the edge of your Chromebook.
+    Touch the power button with your finger
   </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_ENROLLMENT_PROGRESS_TITLE" desc="The title of the dialog that shows where the fingerprint sensor is.">
     Lift, then touch again
