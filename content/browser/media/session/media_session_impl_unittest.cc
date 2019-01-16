@@ -76,7 +76,11 @@ class MockAudioFocusDelegate : public AudioFocusDelegate {
 
 class MediaSessionImplTest : public RenderViewHostTestHarness {
  public:
-  MediaSessionImplTest() = default;
+  MediaSessionImplTest() {
+    default_actions_.insert(media_session::mojom::MediaSessionAction::kPlay);
+    default_actions_.insert(media_session::mojom::MediaSessionAction::kPause);
+    default_actions_.insert(media_session::mojom::MediaSessionAction::kStop);
+  }
 
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
@@ -163,7 +167,14 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
                                  media::MediaContentType::Persistent);
   }
 
+  const std::set<media_session::mojom::MediaSessionAction>& default_actions()
+      const {
+    return default_actions_;
+  }
+
  private:
+  std::set<media_session::mojom::MediaSessionAction> default_actions_;
+
   base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<MockMediaSessionServiceImpl> mock_media_session_service_;
@@ -330,6 +341,11 @@ TEST_F(MediaSessionImplTest, SuspendUI) {
 
   GetMediaSession()->Suspend(MediaSession::SuspendType::kUI);
   mock_media_session_service().FlushForTesting();
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForActions();
+  EXPECT_EQ(default_actions(), observer.actions_set());
 }
 
 TEST_F(MediaSessionImplTest, SuspendContent_WithAction) {
@@ -344,6 +360,11 @@ TEST_F(MediaSessionImplTest, SuspendContent_WithAction) {
 
   GetMediaSession()->Suspend(MediaSession::SuspendType::kContent);
   mock_media_session_service().FlushForTesting();
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForActions();
+  EXPECT_EQ(default_actions(), observer.actions_set());
 }
 
 TEST_F(MediaSessionImplTest, SuspendSystem_WithAction) {
@@ -358,6 +379,11 @@ TEST_F(MediaSessionImplTest, SuspendSystem_WithAction) {
 
   GetMediaSession()->Suspend(MediaSession::SuspendType::kSystem);
   mock_media_session_service().FlushForTesting();
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForActions();
+  EXPECT_EQ(default_actions(), observer.actions_set());
 }
 
 TEST_F(MediaSessionImplTest, SuspendUI_WithAction) {
@@ -371,6 +397,11 @@ TEST_F(MediaSessionImplTest, SuspendUI_WithAction) {
 
   GetMediaSession()->Suspend(MediaSession::SuspendType::kUI);
   mock_media_session_service().FlushForTesting();
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForActions();
+  EXPECT_EQ(default_actions(), observer.actions_set());
 }
 
 TEST_F(MediaSessionImplTest, ResumeUI) {
@@ -383,6 +414,11 @@ TEST_F(MediaSessionImplTest, ResumeUI) {
   GetMediaSession()->Suspend(MediaSession::SuspendType::kSystem);
   GetMediaSession()->Resume(MediaSession::SuspendType::kUI);
   mock_media_session_service().FlushForTesting();
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForActions();
+  EXPECT_EQ(default_actions(), observer.actions_set());
 }
 
 TEST_F(MediaSessionImplTest, ResumeContent_WithAction) {
@@ -397,6 +433,11 @@ TEST_F(MediaSessionImplTest, ResumeContent_WithAction) {
   GetMediaSession()->Suspend(MediaSession::SuspendType::kSystem);
   GetMediaSession()->Resume(MediaSession::SuspendType::kContent);
   mock_media_session_service().FlushForTesting();
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForActions();
+  EXPECT_EQ(default_actions(), observer.actions_set());
 }
 
 TEST_F(MediaSessionImplTest, ResumeSystem_WithAction) {
@@ -411,6 +452,11 @@ TEST_F(MediaSessionImplTest, ResumeSystem_WithAction) {
   GetMediaSession()->Suspend(MediaSession::SuspendType::kSystem);
   GetMediaSession()->Resume(MediaSession::SuspendType::kSystem);
   mock_media_session_service().FlushForTesting();
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForActions();
+  EXPECT_EQ(default_actions(), observer.actions_set());
 }
 
 TEST_F(MediaSessionImplTest, ResumeUI_WithAction) {
@@ -425,6 +471,11 @@ TEST_F(MediaSessionImplTest, ResumeUI_WithAction) {
   GetMediaSession()->Suspend(MediaSession::SuspendType::kSystem);
   GetMediaSession()->Resume(MediaSession::SuspendType::kUI);
   mock_media_session_service().FlushForTesting();
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForActions();
+  EXPECT_EQ(default_actions(), observer.actions_set());
 }
 
 #if !defined(OS_ANDROID)
