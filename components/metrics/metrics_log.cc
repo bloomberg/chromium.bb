@@ -210,6 +210,8 @@ void MetricsLog::RecordCoreSystemProfile(MetricsServiceClient* client,
   std::string package_name = client->GetAppPackageName();
   if (!package_name.empty() && package_name != "com.android.chrome")
     system_profile->set_app_package_name(package_name);
+#elif defined(OS_IOS)
+  os->set_build_number(base::SysInfo::GetIOSBuildNumber());
 #endif
 }
 

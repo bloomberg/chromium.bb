@@ -168,6 +168,15 @@ class BASE_EXPORT SysInfo {
   static int DalvikHeapGrowthLimitMB();
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_IOS)
+  // Returns the iOS build number string which is normally an alphanumeric
+  // string like 12E456. This build number can differentiate between different
+  // versions of iOS that may have the same major/minor/bugfix version numbers.
+  // For example, iOS beta releases have the same version number but different
+  // build number strings.
+  static std::string GetIOSBuildNumber();
+#endif  // defined(OS_IOS)
+
   // Returns true if this is a low-end device.
   // Low-end device refers to devices having a very low amount of total
   // system memory, typically <= 1GB.

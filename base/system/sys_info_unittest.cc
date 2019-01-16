@@ -114,6 +114,13 @@ TEST_F(SysInfoTest, OperatingSystemVersionNumbers) {
 }
 #endif
 
+#if defined(OS_IOS)
+TEST_F(SysInfoTest, GetIOSBuildNumber) {
+  std::string build_number(SysInfo::GetIOSBuildNumber());
+  EXPECT_GT(build_number.length(), 0U);
+}
+#endif  // defined(OS_IOS)
+
 TEST_F(SysInfoTest, Uptime) {
   TimeDelta up_time_1 = SysInfo::Uptime();
   // UpTime() is implemented internally using TimeTicks::Now(), which documents

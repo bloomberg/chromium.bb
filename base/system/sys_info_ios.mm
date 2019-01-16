@@ -84,6 +84,18 @@ void SysInfo::OperatingSystemVersionNumbers(int32_t* major_version,
 }
 
 // static
+std::string SysInfo::GetIOSBuildNumber() {
+  int mib[2] = {CTL_KERN, KERN_OSVERSION};
+  unsigned int namelen = sizeof(mib) / sizeof(mib[0]);
+  size_t buffer_size = 0;
+  sysctl(mib, namelen, nullptr, &buffer_size, nullptr, 0);
+  char build_number[buffer_size];
+  int result = sysctl(mib, namelen, build_number, &buffer_size, nullptr, 0);
+  DCHECK(result == 0);
+  return build_number;
+}
+
+// static
 int64_t SysInfo::AmountOfPhysicalMemoryImpl() {
   struct host_basic_info hostinfo;
   mach_msg_type_number_t count = HOST_BASIC_INFO_COUNT;
