@@ -550,6 +550,9 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
                     }
                 }
                 return true;
+            case R.id.start_animation_activity:
+                startActivity(new Intent(this, WebViewAnimationTestActivity.class));
+                return true;
             case R.id.menu_print:
                 PrintManager printManager = (PrintManager) getSystemService(Context.PRINT_SERVICE);
                 String jobName = "WebViewShell document";
