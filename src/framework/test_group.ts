@@ -1,5 +1,4 @@
 import { CaseRecorder, GroupRecorder, IResult } from "./logger";
-import { ParamIterable } from "./params";
 
 type TestFn<F extends Fixture> = (this: F) => (Promise<void> | void);
 interface ICase {

@@ -11,9 +11,9 @@ export const group = new TestGroup();
 group.test("construct", function() {
   const mylog = new Logger();
   const [testres, testrec] = mylog.record("foo/bar");
-  const [res1, rec1] = testrec.record("baz");
+  const [res1, ] = testrec.record("baz");
   const params2 = {};
-  const [res2, rec2] = testrec.record("qux", params2);
+  const [res2, ] = testrec.record("qux", params2);
 
   this.expect(testres.path === "foo/bar");
   this.expect(testres.cases.length === 2);
@@ -33,7 +33,7 @@ group.test("construct", function() {
 
 group.test("empty", function() {
   const mylog = new Logger();
-  const [testres, testrec] = mylog.record("");
+  const [, testrec] = mylog.record("");
   const [res, rec] = testrec.record("baz");
 
   rec.start();
@@ -45,7 +45,7 @@ group.test("empty", function() {
 
 group.test("pass", function() {
   const mylog = new Logger();
-  const [testres, testrec] = mylog.record("");
+  const [, testrec] = mylog.record("");
   const [res, rec] = testrec.record("baz");
 
   rec.start();
@@ -58,7 +58,7 @@ group.test("pass", function() {
 
 group.test("warn", function() {
   const mylog = new Logger();
-  const [testres, testrec] = mylog.record("");
+  const [, testrec] = mylog.record("");
   const [res, rec] = testrec.record("baz");
 
   rec.start();
@@ -71,7 +71,7 @@ group.test("warn", function() {
 
 group.test("fail", function() {
   const mylog = new Logger();
-  const [testres, testrec] = mylog.record("");
+  const [, testrec] = mylog.record("");
   const [res, rec] = testrec.record("baz");
 
   rec.start();

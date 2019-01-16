@@ -4,7 +4,6 @@ Unit tests for parameterization system.
 `;
 
 import {
-  CaseRecorder,
   Fixture,
   TestGroup,
 } from "../framework/index.js";
