@@ -403,7 +403,7 @@ ACTION_P7(VerifySameDocumentFinishedContext,
   EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
       page_transition, (*context)->GetPageTransition()));
   EXPECT_TRUE((*context)->IsSameDocument());
-  EXPECT_FALSE((*context)->HasCommitted());
+  EXPECT_TRUE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_FALSE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
