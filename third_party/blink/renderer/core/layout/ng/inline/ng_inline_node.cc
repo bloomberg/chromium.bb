@@ -249,6 +249,9 @@ void CollectInlinesInternal(LayoutBlockFlow* block,
       if (builder->ShouldAbort())
         return;
 
+      if (update_layout)
+        ClearInlineFragment(node);
+
     } else if (node->IsAtomicInlineLevel()) {
       if (node->IsLayoutNGListMarker() || node->IsListMarker()) {
         // LayoutNGListItem produces the 'outside' list marker as an inline

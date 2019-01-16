@@ -190,7 +190,9 @@ INSTANTIATE_TEST_CASE_P(
                     "<span>span</span>",
                     "<span>1234 12345678</span>",
                     "<span style='display: inline-block'>box</span>",
-                    "<img>"));
+                    "<img>",
+                    "<div style='float: left'>float</div>",
+                    "<div style='position: absolute'>abs</div>"));
 
 #define TEST_ITEM_TYPE_OFFSET(item, type, start, end) \
   EXPECT_EQ(NGInlineItem::type, item.Type());         \
