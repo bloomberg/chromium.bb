@@ -1551,7 +1551,7 @@ crbug.com/868956 virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ Sl
 crbug.com/878650 [ Release ] inspector-protocol/heap-profiler/heap-snapshot-merged-nodes.js [ Slow ]
 crbug.com/878650 [ Release ] inspector-protocol/heap-profiler/heap-snapshot-with-no-detached-iframe.js [ Slow ]
 
-crbug.com/878995 [ Win ] external/wpt/async-local-storage/key-types.tentative.https.html [ Slow ]
+crbug.com/878995 [ Win ] external/wpt/kv-storage/key-types.tentative.https.html [ Slow ]
 crbug.com/888225 external/wpt/svg/idlharness.window.html [ Slow ]
 
 crbug.com/893015 [ Linux ] http/tests/fetch/chromium/response-array-buffer-gc-crash.html [ Slow ]
