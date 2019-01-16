@@ -292,7 +292,8 @@ class XmlWrapper : public OmahaXmlWriter {
 
 // static
 OmahaService* OmahaService::GetInstance() {
-  return base::Singleton<OmahaService>::get();
+  static base::NoDestructor<OmahaService> instance;
+  return instance.get();
 }
 
 // static

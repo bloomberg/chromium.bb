@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "base/version.h"
@@ -66,9 +66,9 @@ class OmahaService {
   FRIEND_TEST_ALL_PREFIXES(OmahaServiceTest, InstallRetryTest);
   FRIEND_TEST_ALL_PREFIXES(OmahaServiceInternalTest,
                            PingMessageTestWithProfileData);
+
   // For the singleton:
-  friend struct base::DefaultSingletonTraits<OmahaService>;
-  friend class base::Singleton<OmahaService>;
+  friend class base::NoDestructor<OmahaService>;
 
   // Enum for the |GetPingContent| and |GetNextPingRequestId| method.
   enum PingContent {
