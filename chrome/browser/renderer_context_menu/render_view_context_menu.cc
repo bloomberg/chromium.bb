@@ -2156,7 +2156,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_EMOJI:
-      ui::ShowEmojiPanel();
+      GetBrowser()->window()->ShowEmojiPanel();
       break;
 
     default:

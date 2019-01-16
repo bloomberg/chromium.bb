@@ -544,6 +544,13 @@ void NativeWidgetMac::SetCursor(gfx::NativeCursor cursor) {
     bridge_impl()->SetCursor(cursor);
 }
 
+void NativeWidgetMac::ShowEmojiPanel() {
+  // We must plumb the call to ui::ShowEmojiPanel() over the bridge so that it
+  // is called from the correct process.
+  if (bridge())
+    bridge()->ShowEmojiPanel();
+}
+
 bool NativeWidgetMac::IsMouseEventsEnabled() const {
   // On platforms with touch, mouse events get disabled and calls to this method
   // can affect hover states. Since there is no touch on desktop Mac, this is

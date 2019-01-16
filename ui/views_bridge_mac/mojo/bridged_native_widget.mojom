@@ -88,6 +88,9 @@ interface BridgedNativeWidget {
   // this BridgedNativeWidget.
   SetParent(uint64 parent_id);
 
+  // Show the emoji panel for the NSWindow's process.
+  ShowEmojiPanel();
+
   // Initialize the window's style.
   InitWindow(BridgedNativeWidgetInitParams params);
 

@@ -3044,6 +3044,10 @@ bool BrowserView::IsVisibleOnAllWorkspaces() const {
   return frame_->IsVisibleOnAllWorkspaces();
 }
 
+void BrowserView::ShowEmojiPanel() {
+  GetWidget()->ShowEmojiPanel();
+}
+
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 void BrowserView::ShowInProductHelpPromo(InProductHelpFeature iph_feature) {
   switch (iph_feature) {
