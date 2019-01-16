@@ -354,11 +354,11 @@ void Context::DestroyService() {
   gl_context_ = nullptr;
 
   transfer_buffer_.reset();
+  gles2_cmd_helper_.reset();
+  command_buffer_.reset();
   if (decoder_)
     decoder_->Destroy(have_context);
   decoder_.reset();
-  gles2_cmd_helper_.reset();
-  command_buffer_.reset();
 }
 
 bool Context::HasService() const {
