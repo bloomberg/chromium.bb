@@ -38,15 +38,16 @@
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+namespace cc {
+class Layer;
+}
+
 namespace blink {
 
 class GraphicsContext;
-class GraphicsLayer;
 class InspectedFrames;
 class LayoutRect;
 class PictureSnapshot;
-class PaintLayer;
-class PaintLayerCompositor;
 
 class CORE_EXPORT InspectorLayerTreeAgent final
     : public InspectorBaseAgent<protocol::LayerTree::Metainfo> {
@@ -54,7 +55,7 @@ class CORE_EXPORT InspectorLayerTreeAgent final
   class Client {
    public:
     virtual ~Client() = default;
-    virtual bool IsInspectorLayer(GraphicsLayer*) = 0;
+    virtual bool IsInspectorLayer(const cc::Layer*) = 0;
   };
 
   static InspectorLayerTreeAgent* Create(InspectedFrames* inspected_frames,
@@ -71,7 +72,7 @@ class CORE_EXPORT InspectorLayerTreeAgent final
 
   // Called from InspectorInstrumentation
   void LayerTreeDidChange();
-  void DidPaint(const GraphicsLayer*, GraphicsContext&, const LayoutRect&);
+  void DidPaint(const cc::Layer*, GraphicsContext&, const LayoutRect&);
 
   // Called from the front-end.
   protocol::Response enable() override;
@@ -108,18 +109,13 @@ class CORE_EXPORT InspectorLayerTreeAgent final
  private:
   static unsigned last_snapshot_id_;
 
-  GraphicsLayer* RootGraphicsLayer();
+  const cc::Layer* RootLayer();
 
-  PaintLayerCompositor* GetPaintLayerCompositor();
-  protocol::Response LayerById(const String& layer_id, GraphicsLayer*&);
+  protocol::Response LayerById(const String& layer_id, const cc::Layer*&);
   protocol::Response GetSnapshotById(const String& snapshot_id,
                                      const PictureSnapshot*&);
-
-  typedef HashMap<int, int> LayerIdToNodeIdMap;
-  void BuildLayerIdToNodeIdMap(PaintLayer*, LayerIdToNodeIdMap&);
-  void GatherGraphicsLayers(
-      GraphicsLayer*,
-      HashMap<int, int>& layer_id_to_node_id_map,
+  void GatherLayers(
+      const cc::Layer*,
       std::unique_ptr<protocol::Array<protocol::LayerTree::Layer>>&,
       bool has_wheel_event_handlers,
       int scrolling_root_layer_id);

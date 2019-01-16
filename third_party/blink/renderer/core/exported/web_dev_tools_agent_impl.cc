@@ -461,7 +461,7 @@ void WebDevToolsAgentImpl::WaitForDebugger() {
   ClientMessageLoopAdapter::PauseForPageWait(web_local_frame_impl_);
 }
 
-bool WebDevToolsAgentImpl::IsInspectorLayer(GraphicsLayer* layer) {
+bool WebDevToolsAgentImpl::IsInspectorLayer(const cc::Layer* layer) {
   for (auto& it : overlay_agents_) {
     if (it.value->IsInspectorLayer(layer))
       return true;

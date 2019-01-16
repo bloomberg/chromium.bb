@@ -89,19 +89,17 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   GraphicsLayerClient& Client() const { return client_; }
 
-  void SetCompositingReasons(CompositingReasons reasons) {
-    compositing_reasons_ = reasons;
-  }
-  CompositingReasons GetCompositingReasons() const {
-    return compositing_reasons_;
-  }
+  void SetCompositingReasons(CompositingReasons reasons);
+  CompositingReasons GetCompositingReasons() const;
+
   SquashingDisallowedReasons GetSquashingDisallowedReasons() const {
     return squashing_disallowed_reasons_;
   }
   void SetSquashingDisallowedReasons(SquashingDisallowedReasons reasons) {
     squashing_disallowed_reasons_ = reasons;
   }
-  void SetOwnerNodeId(int id) { owner_node_id_ = id; }
+
+  void SetOwnerNodeId(int id);
 
   GraphicsLayer* Parent() const { return parent_; }
   void SetParent(GraphicsLayer*);  // Internal use only.
@@ -227,8 +225,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   // For hosting this GraphicsLayer in a native layer hierarchy.
   cc::PictureLayer* CcLayer() const;
 
-  int PaintCount() const { return paint_count_; }
-
   // Return a string with a human readable form of the layer tree. If debug is
   // true, pointers for the layers and timing data will be included in the
   // returned string.
@@ -344,8 +340,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   bool HasAncestor(GraphicsLayer*) const;
 #endif
 
-  void IncrementPaintCount() { ++paint_count_; }
-
   // Helper functions used by settors to keep layer's the state consistent.
   void UpdateChildList();
   void UpdateLayerIsDrawable();
@@ -392,8 +386,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   IntRect contents_rect_;
 
-  int paint_count_;
-
   scoped_refptr<cc::PictureLayer> layer_;
   scoped_refptr<cc::PictureImageLayer> image_layer_;
   IntSize image_size_;
@@ -409,10 +401,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   int rendering_context3d_;
 
-  CompositingReasons compositing_reasons_ = CompositingReason::kNone;
   SquashingDisallowedReasons squashing_disallowed_reasons_ =
       SquashingDisallowedReason::kNone;
-  int owner_node_id_ = 0;
 
   mutable std::unique_ptr<PaintController> paint_controller_;
 
