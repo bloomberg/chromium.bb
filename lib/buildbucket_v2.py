@@ -18,10 +18,10 @@ from infra_libs.buildbucket.proto import rpc_pb2 #pylint: disable=unused-import
 from infra_libs.buildbucket.proto.rpc_prpc_pb2 import BuildsServiceDescription
 
 BBV2_URL_ENDPOINT_PROD = (
-    "https://cr-buildbucket.appspot.com/prpc/buildbucket.v2.Builds"
+    "cr-buildbucket.appspot.com/prpc/buildbucket.v2.Builds"
 )
 BBV2_URL_ENDPOINT_TEST = (
-    "https://cr-buildbucket-test.appspot.com/prpc/buildbucket.v2.Builds"
+    "cr-buildbucket-test.appspot.com/prpc/buildbucket.v2.Builds"
 )
 
 
