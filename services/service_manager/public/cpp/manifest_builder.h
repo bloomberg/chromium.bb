@@ -94,6 +94,14 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ManifestBuilder {
     return *this;
   }
 
+  template <typename... InterfaceTypes>
+  ManifestBuilder& WithInterfacesBindableOnAnyService(
+      Manifest::InterfaceList<InterfaceTypes...> interfaces) {
+    manifest_.interfaces_bindable_on_any_service =
+        internal::GetInterfaceNames<InterfaceTypes...>();
+    return *this;
+  }
+
   Manifest Build() { return std::move(manifest_); }
 
  private:

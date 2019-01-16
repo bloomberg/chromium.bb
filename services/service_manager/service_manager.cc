@@ -245,7 +245,12 @@ class ServiceManager::Instance
       return false;
 
     const InterfaceProviderSpec& source_spec = source->GetConnectionSpec();
-    if (!AllowsInterface(params->source(), source_spec, identity_,
+    bool bindable_on_any_service =
+        source->options_.interfaces_bindable_on_any_service.count(
+            params->interface_name()) > 0;
+
+    if (!bindable_on_any_service &&
+        !AllowsInterface(params->source(), source_spec, identity_,
                          GetConnectionSpec(), params->interface_name())) {
       params->set_response_data(mojom::ConnectResult::ACCESS_DENIED, identity_);
       return false;
@@ -601,6 +606,7 @@ class ServiceManager::Instance
     }
 
     if (allow_any_application_ ||
+        !options_.interfaces_bindable_on_any_service.empty() ||
         connection_spec.requires.find(target_filter.service_name()) !=
             connection_spec.requires.end()) {
       return mojom::ConnectResult::SUCCEEDED;

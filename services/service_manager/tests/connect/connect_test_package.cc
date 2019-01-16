@@ -47,6 +47,7 @@ using GetTitleCallback = test::mojom::ConnectTestService::GetTitleCallback;
 class ProvidedService : public Service,
                         public test::mojom::ConnectTestService,
                         public test::mojom::BlockedInterface,
+                        public test::mojom::AlwaysAllowedInterface,
                         public test::mojom::IdentityTest,
                         public base::SimpleThread {
  public:
@@ -72,6 +73,9 @@ class ProvidedService : public Service,
                    base::Unretained(this)));
     registry_.AddInterface<test::mojom::BlockedInterface>(base::Bind(
         &ProvidedService::BindBlockedInterfaceRequest, base::Unretained(this)));
+    registry_.AddInterface<test::mojom::AlwaysAllowedInterface>(
+        base::Bind(&ProvidedService::BindAlwaysAllowedInterfaceRequest,
+                   base::Unretained(this)));
     registry_.AddInterface(base::BindRepeating(
         &ProvidedService::BindIdentityTestRequest, base::Unretained(this)));
   }
@@ -110,6 +114,12 @@ class ProvidedService : public Service,
     blocked_bindings_.AddBinding(this, std::move(request));
   }
 
+  void BindAlwaysAllowedInterfaceRequest(
+      test::mojom::AlwaysAllowedInterfaceRequest request,
+      const BindSourceInfo& source_info) {
+    always_allowed_bindings_.AddBinding(this, std::move(request));
+  }
+
   void BindIdentityTestRequest(test::mojom::IdentityTestRequest request,
                                const BindSourceInfo& source_info) {
     identity_test_bindings_.AddBinding(this, std::move(request));
@@ -127,6 +137,11 @@ class ProvidedService : public Service,
   // test::mojom::BlockedInterface:
   void GetTitleBlocked(GetTitleBlockedCallback callback) override {
     std::move(callback).Run("Called Blocked Interface!");
+  }
+
+  // test::mojom::AlwaysAllowedInterface:
+  void GetTitleAlwaysAllowed(GetTitleAlwaysAllowedCallback callback) override {
+    std::move(callback).Run("always_allowed");
   }
 
   // test::mojom::IdentityTest:
@@ -154,6 +169,7 @@ class ProvidedService : public Service,
     caller_.reset();
     bindings_.CloseAllBindings();
     blocked_bindings_.CloseAllBindings();
+    always_allowed_bindings_.CloseAllBindings();
     identity_test_bindings_.CloseAllBindings();
   }
 
@@ -173,6 +189,8 @@ class ProvidedService : public Service,
   BinderRegistryWithArgs<const BindSourceInfo&> registry_;
   mojo::BindingSet<test::mojom::ConnectTestService> bindings_;
   mojo::BindingSet<test::mojom::BlockedInterface> blocked_bindings_;
+  mojo::BindingSet<test::mojom::AlwaysAllowedInterface>
+      always_allowed_bindings_;
   mojo::BindingSet<test::mojom::IdentityTest> identity_test_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ProvidedService);

@@ -280,6 +280,10 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
       required_interface_filter_capabilities;
   std::vector<Manifest> packaged_services;
   std::vector<PreloadedFileInfo> preloaded_files;
+
+  // The list of interfaces that this service are allowed to connect to
+  // unconditionally on any service.
+  std::set<std::string> interfaces_bindable_on_any_service;
 };
 
 }  // namespace service_manager
