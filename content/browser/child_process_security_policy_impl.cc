@@ -1186,32 +1186,22 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
                                                             const GURL& url) {
   DCHECK(IsRunningOnExpectedThread());
 
-  // Determine the BrowsingInstance ID for calculating the expected process
-  // lock URL.
-  BrowsingInstanceId browsing_instance_id;
-  {
-    base::AutoLock lock(lock_);
-    auto state = security_state_.find(child_id);
-    if (state != security_state_.end())
-      browsing_instance_id = state->second->lowest_browsing_instance_id();
-  }
-
-  // It's important to call DetermineProcessLockURL when not holding |lock_|,
-  // since DetermineProcessLockURL consults GetMatchingIsolatedOrigin, which
-  // needs to grab the same lock.
-  GURL expected_process_lock = SiteInstanceImpl::DetermineProcessLockURL(
-      nullptr, IsolationContext(browsing_instance_id), url);
-
   base::AutoLock lock(lock_);
-  // Note that |lock| was released and reacquired after calculating
-  // |browsing_instance_id|; however, a process's |browsing_instance_id| can't
-  // change at runtime after being set, so this should be safe.
   auto state = security_state_.find(child_id);
   if (state == security_state_.end()) {
     // TODO(nick): Returning true instead of false here is a temporary
     // workaround for https://crbug.com/600441
     return true;
   }
+
+  // Determine the BrowsingInstance ID for calculating the expected process
+  // lock URL.
+  BrowsingInstanceId browsing_instance_id =
+      state->second->lowest_browsing_instance_id();
+
+  GURL expected_process_lock = SiteInstanceImpl::DetermineProcessLockURL(
+      nullptr, IsolationContext(browsing_instance_id), url);
+
   bool can_access =
       state->second->CanAccessDataForOrigin(expected_process_lock);
   if (!can_access) {
@@ -1342,7 +1332,7 @@ void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
     }
   }
 
-  base::AutoLock lock(lock_);
+  base::AutoLock isolated_origins_lock(isolated_origins_lock_);
   for (url::Origin& origin : origins_to_add) {
     // GetSiteForOrigin() is used to look up the site URL of |origin| to speed
     // up the isolated origin lookup.  This only performs a straightforward
@@ -1411,7 +1401,7 @@ bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(
     const GURL& site_url,
     url::Origin* result) {
   *result = url::Origin();
-  base::AutoLock lock(lock_);
+  base::AutoLock isolated_origins_lock(isolated_origins_lock_);
 
   // If |isolation_context| does not specify a BrowsingInstance ID, then assume
   // that we want to retrieve the latest applicable information; i.e., return
@@ -1471,7 +1461,7 @@ bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(
 void ChildProcessSecurityPolicyImpl::RemoveIsolatedOriginForTesting(
     const url::Origin& origin) {
   GURL key(SiteInstanceImpl::GetSiteForOrigin(origin));
-  base::AutoLock lock(lock_);
+  base::AutoLock isolated_origins_lock(isolated_origins_lock_);
   base::EraseIf(isolated_origins_[key],
                 [&origin](const IsolatedOriginEntry& entry) {
                   // Remove if origin matches.
