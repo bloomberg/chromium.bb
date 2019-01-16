@@ -165,11 +165,12 @@ class AppSearchProvider::App {
   bool MatchSearchableText(const TokenizedString& query) {
     if (searchable_text_.empty())
       return false;
-    if (tokenized_indexed_searchable_text_.empty())
+    if (tokenized_indexed_searchable_text_.empty()) {
       for (const base::string16& curr_text : searchable_text_) {
         tokenized_indexed_searchable_text_.push_back(
             std::make_unique<TokenizedString>(curr_text));
       }
+    }
     TokenizedStringMatch match;
     for (auto& curr_text : tokenized_indexed_searchable_text_) {
       match.Calculate(query, *curr_text);
@@ -272,27 +273,25 @@ class AppServiceDataSource : public AppSearchProvider::DataSource {
     if (!proxy) {
       return;
     }
-    proxy->Cache().ForEachApp(
-        [this, apps_vector](const apps::AppUpdate& update) {
-          if (update.ShowInSearch() != apps::mojom::OptionalBool::kTrue) {
-            return;
-          }
+    proxy->Cache().ForEachApp([this,
+                               apps_vector](const apps::AppUpdate& update) {
+      if (update.ShowInSearch() != apps::mojom::OptionalBool::kTrue) {
+        return;
+      }
 
-          // TODO(crbug.com/826982): add the "can load in incognito" concept to
-          // the App Service and use it here, similar to ExtensionDataSource.
+      // TODO(crbug.com/826982): add the "can load in incognito" concept to
+      // the App Service and use it here, similar to ExtensionDataSource.
 
-          apps_vector->emplace_back(std::make_unique<AppSearchProvider::App>(
-              this, update.AppId(),
-              // TODO(crbug.com/826982): add the "short name" concept to the App
-              // Service, and use it here.
-              update.Name(),
-              // TODO(crbug.com/826982): add the "last launch time" and "install
-              // time" concepts to the App Service, and use them here.
-              base::Time(), base::Time(),
-              // TODO(crbug.com/826982): add the "installed internally" concept
-              // to the App Service, and use it here.
-              true));
-        });
+      apps_vector->emplace_back(std::make_unique<AppSearchProvider::App>(
+          this, update.AppId(),
+          // TODO(crbug.com/826982): add the "short name" concept to the App
+          // Service, and use it here.
+          update.Name(),
+          // TODO(crbug.com/826982): add the "last launch time" and "install
+          // time" concepts to the App Service, and use them here.
+          base::Time(), base::Time(),
+          update.InstalledInternally() == apps::mojom::OptionalBool::kTrue));
+    });
   }
 
   std::unique_ptr<AppResult> CreateResult(

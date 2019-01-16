@@ -355,6 +355,18 @@ apps::mojom::AppPtr ExtensionApps::Convert(
     }
   }
 
+  // TODO(crbug.com/826982): does this catch default installed web apps?
+  //
+  // https://crrev.com/c/1377955/3/chrome/browser/apps/app_service/extension_apps.cc#263
+  bool installed_internally =
+      extension->was_installed_by_default() ||
+      extension->was_installed_by_oem() ||
+      extensions::Manifest::IsComponentLocation(extension->location()) ||
+      extensions::Manifest::IsPolicyLocation(extension->location());
+  app->installed_internally = installed_internally
+                                  ? apps::mojom::OptionalBool::kTrue
+                                  : apps::mojom::OptionalBool::kFalse;
+
   auto show = app_list::ShouldShowInLauncher(extension, profile_)
                   ? apps::mojom::OptionalBool::kTrue
                   : apps::mojom::OptionalBool::kFalse;

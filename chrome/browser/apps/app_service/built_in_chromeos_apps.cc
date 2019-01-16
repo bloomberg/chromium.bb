@@ -36,6 +36,7 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
   app->icon_key->icon_type = apps::mojom::IconType::kResource;
   app->icon_key->u_key = static_cast<uint64_t>(internal_app.icon_resource_id);
 
+  app->installed_internally = apps::mojom::OptionalBool::kTrue;
   app->show_in_launcher = internal_app.show_in_launcher
                               ? apps::mojom::OptionalBool::kTrue
                               : apps::mojom::OptionalBool::kFalse;

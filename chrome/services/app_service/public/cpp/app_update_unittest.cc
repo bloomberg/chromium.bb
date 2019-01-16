@@ -26,6 +26,9 @@ class AppUpdateTest : public testing::Test {
   std::vector<apps::mojom::PermissionPtr> expect_permissions_;
   bool expect_permissions_changed_;
 
+  apps::mojom::OptionalBool expect_installed_internally_;
+  bool expect_installed_internally_changed_;
+
   apps::mojom::OptionalBool expect_show_in_launcher_;
   bool expect_show_in_launcher_changed_;
 
@@ -49,6 +52,7 @@ class AppUpdateTest : public testing::Test {
     expect_name_changed_ = false;
     expect_icon_key_changed_ = false;
     expect_permissions_changed_ = false;
+    expect_installed_internally_changed_ = false;
     expect_show_in_launcher_changed_ = false;
     expect_show_in_search_changed_ = false;
   }
@@ -65,6 +69,10 @@ class AppUpdateTest : public testing::Test {
 
     EXPECT_EQ(expect_permissions_, u.Permissions());
     EXPECT_EQ(expect_permissions_changed_, u.PermissionsChanged());
+
+    EXPECT_EQ(expect_installed_internally_, u.InstalledInternally());
+    EXPECT_EQ(expect_installed_internally_changed_,
+              u.InstalledInternallyChanged());
 
     EXPECT_EQ(expect_show_in_launcher_, u.ShowInLauncher());
     EXPECT_EQ(expect_show_in_launcher_changed_, u.ShowInLauncherChanged());
@@ -84,6 +92,7 @@ class AppUpdateTest : public testing::Test {
     expect_name_ = "";
     expect_icon_key_ = nullptr;
     expect_permissions_.clear();
+    expect_installed_internally_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_launcher_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_search_ = apps::mojom::OptionalBool::kUnknown;
     ExpectNoChange();
@@ -148,6 +157,28 @@ class AppUpdateTest : public testing::Test {
       delta->icon_key = x.Clone();
       expect_icon_key_ = x.Clone();
       expect_icon_key_changed_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      ExpectNoChange();
+      CheckExpects(u);
+    }
+
+    // InstalledInternally tests.
+
+    if (state) {
+      state->installed_internally = apps::mojom::OptionalBool::kFalse;
+      expect_installed_internally_ = apps::mojom::OptionalBool::kFalse;
+      expect_installed_internally_changed_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      delta->installed_internally = apps::mojom::OptionalBool::kTrue;
+      expect_installed_internally_ = apps::mojom::OptionalBool::kTrue;
+      expect_installed_internally_changed_ = true;
       CheckExpects(u);
     }
 

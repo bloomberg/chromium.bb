@@ -256,6 +256,13 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
   app->icon_key->s_key = app_id;
   app->icon_key->u_key = next_u_key_++;
 
+  bool installed_internally =
+      prefs_->IsDefault(app_id) ||
+      prefs_->IsControlledByPolicy(app_info.package_name);
+  app->installed_internally = installed_internally
+                                  ? apps::mojom::OptionalBool::kTrue
+                                  : apps::mojom::OptionalBool::kFalse;
+
   auto show = app_info.show_in_launcher ? apps::mojom::OptionalBool::kTrue
                                         : apps::mojom::OptionalBool::kFalse;
   app->show_in_launcher = show;

@@ -43,6 +43,9 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
     state->permissions.clear();
     ClonePermissions(delta->permissions, &state->permissions);
   }
+  if (delta->installed_internally != apps::mojom::OptionalBool::kUnknown) {
+    state->installed_internally = delta->installed_internally;
+  }
   if (delta->show_in_launcher != apps::mojom::OptionalBool::kUnknown) {
     state->show_in_launcher = delta->show_in_launcher;
   }
@@ -136,6 +139,25 @@ std::vector<apps::mojom::PermissionPtr> AppUpdate::Permissions() const {
 bool AppUpdate::PermissionsChanged() const {
   return delta_ && !delta_->permissions.empty() &&
          (!state_ || (delta_->permissions != state_->permissions));
+}
+
+apps::mojom::OptionalBool AppUpdate::InstalledInternally() const {
+  if (delta_ &&
+      (delta_->installed_internally != apps::mojom::OptionalBool::kUnknown)) {
+    return delta_->installed_internally;
+  }
+  if (state_) {
+    return state_->installed_internally;
+  }
+  return apps::mojom::OptionalBool::kUnknown;
+}
+
+bool AppUpdate::InstalledInternallyChanged() const {
+  return delta_ &&
+         (delta_->installed_internally !=
+          apps::mojom::OptionalBool::kUnknown) &&
+         (!state_ ||
+          (delta_->installed_internally != state_->installed_internally));
 }
 
 apps::mojom::OptionalBool AppUpdate::ShowInLauncher() const {

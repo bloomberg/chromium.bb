@@ -23,6 +23,9 @@ struct App {
   // There is no guarantee that this is sorted by any criteria.
   array<Permission> permissions;
 
+  // Whether the app was installed by sync, policy or as a default app.
+  OptionalBool installed_internally;
+
   // TODO(nigeltao): be more principled, instead of ad hoc show_in_xxx and
   // show_in_yyy fields?
   OptionalBool show_in_launcher;
