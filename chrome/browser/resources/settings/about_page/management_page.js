@@ -137,8 +137,10 @@ Polymer({
 
         const row = table.insertRow();
         const nameCell = row.insertCell();
+        nameCell.className = 'extension-name';
         // insertCell(-1) inserts at the last position.
         const permissionsCell = row.insertCell(-1);
+        permissionsCell.className = 'extension-permissions';
         nameCell.textContent = extension.name;
         permissionsCell.appendChild(permissionsList);
       }

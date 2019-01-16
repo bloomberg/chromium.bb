@@ -12,9 +12,53 @@
         margin-inline-start: var(--cr-controlled-by-spacing);
       }
 
+      h2 {
+        @apply --cr-title-text;
+        font-weight: 600;
+      }
+
       ul {
         list-style-type : none;
+        padding: 0;
+        text-align: start;
       }
+
+      #reportingInfoList div {
+        align-items: center;
+        display: flex;
+        margin-bottom: 2em;
+      }
+
+      #reportingInfoList div + div {
+        margin-top: 2em;
+      }
+
+      #reportingInfoList iron-icon {
+        margin-inline-end: 10px;
+        width: 24px;
+      }
+
+      .table-head {
+        font-weight: 500;
+      }
+
+      .extension-name {
+        width: 30%;
+      }
+
+      .extension-permissions {
+        width: 70%;
+      }
+
+      .content-indented {
+        margin-inline-start: 20px;
+      }
+
+      .subtitle {
+        margin-bottom: 1em;
+        margin-top: 1em;
+      }
+
     </style>
       <!--  This is where page content gets dynamically added. -->
 
@@ -23,45 +67,49 @@
 
       <div class="settings-box block single-column" id="policies" hidden>
         <h2>$i18n{managementDeviceReporting}</h2>
-        <div id="deviceConfiguration">
-          $i18n{managementDeviceConfiguration}
+        <div class="content-indented subtitle" id="deviceConfiguration">
+            $i18n{managementDeviceConfiguration}
         </div>
-        <ul id="reportingInfoList">
-          <li id="reportingDevice" hidden>
+        <div id="reportingInfoList">
+          <div class="content-indented" id="reportingDevice" hidden>
             <iron-icon icon="settings:computer"></iron-icon>
             <span id="reportingDeviceText"> </span>
-          </li>
-          <li id="reportingSecurity" hidden>
+          </div>
+          <div class="content-indented" id="reportingSecurity" hidden>
             <iron-icon icon="settings:security"></iron-icon>
             <span id="reportingSecurityText"> </span>
-          </li>
-          <li id="reportingUserActivity" hidden>
+          </div>
+          <div class="content-indented" id="reportingUserActivity" hidden>
             <iron-icon icon="settings:person"></iron-icon>
             <span id="reportingUserActivityText"> </span>
-          </li>
-          <li id="reportingWeb" hidden>
+          </div>
+          <div class="content-indented" id="reportingWeb" hidden>
             <iron-icon icon="settings:public"></iron-icon>
             <span id="reportingWebText"> </span>
-          </li>
-        </ul>
+          </div>
+        </div>
       </div>
 
       <div class="settings-box two-line single-column" id="extensions" hidden>
         <h2>$i18n{managementExtensionReporting}</h2>
-        <div id="extensionsInstalled">
+        <div class="content-indented subtitle" id="extensionsInstalled">
           $i18n{managementExtensionsInstalled}
         </div>
-        <table id="extensionsTable">
+        <table class="content-indented" id="extensionsTable">
           <tr>
-            <th>$i18n{managementExtensionName}</th>
-            <th>$i18n{managementExtensionPermissions}</th>
+              <td class="extension-name table-head">
+                $i18n{managementExtensionName}
+              </td>
+              <td class="extension-permissions table-head">
+                $i18n{managementExtensionPermissions}
+              </td>
           </tr>
         </table>
       </div>
 
       <div class="settings-box two-line single-column" id="trustRoots" hidden>
-          <h2 class="section-title">$i18n{managementLocalTrustRoots}</h2>
-          <div id="trustRootsConfiguration"></div>
+          <h2>$i18n{managementLocalTrustRoots}</h2>
+          <div class="content-indented" id="trustRootsConfiguration"></div>
       </div>
   </template>
   <script src="management_page.js"></script>
