@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "mojo/public/cpp/system/handle.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/public/platform_window_surface.h"
 
@@ -41,11 +42,19 @@ class ScenicSurface : public ui::PlatformWindowSurface {
   void SetTextureToNewImagePipe(
       fidl::InterfaceRequest<fuchsia::images::ImagePipe> image_pipe_request);
 
+  // Sets the texture of the surface to an image resource.
+  void SetTextureToImage(const scenic::Image& image);
+
   // Links the surface to the window in the browser process.
   void LinkToParent();
 
   // Flushes commands to scenic & executes them.
   void Commit();
+
+  scenic::Session* scenic_session() {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    return &scenic_session_;
+  }
 
  private:
   scenic::Session scenic_session_;

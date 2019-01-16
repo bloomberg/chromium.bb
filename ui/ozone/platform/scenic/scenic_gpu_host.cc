@@ -35,7 +35,8 @@ namespace ui {
 
 ScenicGpuHost::ScenicGpuHost(ScenicWindowManager* scenic_window_manager)
     : scenic_window_manager_(scenic_window_manager),
-      binding_(this),
+      host_binding_(this),
+      gpu_binding_(this),
       ui_thread_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {
   DETACH_FROM_THREAD(io_thread_checker_);
@@ -43,6 +44,13 @@ ScenicGpuHost::ScenicGpuHost(ScenicWindowManager* scenic_window_manager)
 
 ScenicGpuHost::~ScenicGpuHost() {
   DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
+}
+
+mojom::ScenicGpuHostPtr ScenicGpuHost::CreateHostProcessSelfBinding() {
+  DCHECK(!host_binding_.is_bound());
+  mojom::ScenicGpuHostPtr gpu_host;
+  host_binding_.Bind(mojo::MakeRequest(&gpu_host));
+  return gpu_host;
 }
 
 void ScenicGpuHost::ExportParent(int32_t surface_handle,
@@ -87,8 +95,8 @@ void ScenicGpuHost::OnGpuServiceLaunchedOnUI(
   DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
 
   mojom::ScenicGpuHostPtr gpu_host;
-  binding_.Close();
-  binding_.Bind(mojo::MakeRequest(&gpu_host));
+  gpu_binding_.Close();
+  gpu_binding_.Bind(mojo::MakeRequest(&gpu_host));
 
   gpu_service_.Bind(std::move(gpu_service_ptr_info));
   gpu_service_->Initialize(std::move(gpu_host));

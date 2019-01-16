@@ -29,9 +29,8 @@ void FulfillInterfaceRequest(
 
 }  // namespace
 
-ScenicGpuService::ScenicGpuService()
-    : gpu_host_request_(mojo::MakeRequest(&gpu_host_)),
-      weak_ptr_factory_(this) {}
+ScenicGpuService::ScenicGpuService(mojom::ScenicGpuHostRequest gpu_host_request)
+    : gpu_host_request_(std::move(gpu_host_request)), weak_ptr_factory_(this) {}
 
 ScenicGpuService::~ScenicGpuService() {}
 

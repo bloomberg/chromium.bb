@@ -44,6 +44,11 @@ void ScenicSurface::SetTextureToNewImagePipe(
   scenic_session_.ReleaseResource(image_pipe_id);
 }
 
+void ScenicSurface::SetTextureToImage(const scenic::Image& image) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  material_.SetTexture(image);
+}
+
 void ScenicSurface::LinkToParent() {
   // Scenic does not care about order here; it's totally fine for imports to
   // cause exports, and that's what's done here.
