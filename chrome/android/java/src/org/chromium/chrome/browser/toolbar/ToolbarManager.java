@@ -558,8 +558,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             }
 
             @Override
-            public void onDidStartNavigation(Tab tab, String url, boolean isInMainFrame,
-                    boolean isSameDocument, boolean isErrorPage) {
+            public void onDidStartNavigation(
+                    Tab tab, String url, boolean isInMainFrame, boolean isSameDocument) {
                 if (!isInMainFrame) return;
                 // Update URL as soon as it becomes available when it's a new tab.
                 // But we want to update only when it's a new tab. So we check whether the current
