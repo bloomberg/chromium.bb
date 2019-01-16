@@ -116,7 +116,7 @@ AppCacheJob* AppCacheRequestHandler::MaybeLoadResource(
   if (job && job->IsDeliveringNetworkResponse()) {
     DCHECK(!job->IsStarted());
     if (job->AsURLLoaderJob()) {
-      job.release();  // AppCacheURLLoaderJob always deletes itself.
+      job.release()->AsURLLoaderJob()->DeleteIfNeeded();
       job_ = nullptr;
     } else {
       job.reset();

@@ -267,6 +267,8 @@ class AppCacheRequestHandlerTest
   void TearDownTest() {
     DCHECK(io_task_runner_->BelongsToCurrentThread());
     appcache_url_request_job_.reset();
+    if (appcache_url_loader_job_)
+      appcache_url_loader_job_->DeleteIfNeeded();
     appcache_url_loader_job_.reset();
     handler_.reset();
     request_ = nullptr;
@@ -311,11 +313,12 @@ class AppCacheRequestHandlerTest
   }
 
   void SetAppCacheJob(AppCacheJob* job) {
-    if (!job) {
-      appcache_url_request_job_.reset();
-      appcache_url_loader_job_ = nullptr;
+    appcache_url_request_job_.reset();
+    if (appcache_url_loader_job_)
+      appcache_url_loader_job_->DeleteIfNeeded();
+    appcache_url_loader_job_ = nullptr;
+    if (!job)
       return;
-    }
     if (request_handler_type_ == URLREQUEST)
       appcache_url_request_job_.reset(job->AsURLRequestJob());
     else
