@@ -335,13 +335,8 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
     signin_metrics::AccessPoint access_point) {
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
-  bool force_new_tab = false;
-  if (!browser) {
-    // Settings is not displayed in a browser window. Open a new window.
-    browser = new Browser(
-        Browser::CreateParams(Browser::TYPE_TABBED, profile_, true));
-    force_new_tab = true;
-  }
+  if (!browser)
+    return;
 
   syncer::SyncService* service = GetSyncService();
   if (service && service->HasUnrecoverableError()) {
@@ -355,7 +350,6 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
   // If the signin manager already has an authenticated username, this is a
   // re-auth scenario, and we need to ensure that the user signs in with the
   // same email address.
-  GURL url;
   if (SigninManagerFactory::GetForProfile(browser->profile())
           ->IsAuthenticated()) {
     UMA_HISTOGRAM_ENUMERATION("Signin.Reauth",
@@ -365,29 +359,14 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
     SigninErrorController* error_controller =
         SigninErrorControllerFactory::GetForProfile(browser->profile());
     DCHECK(error_controller->HasError());
-    if (!force_new_tab) {
       browser->window()->ShowAvatarBubbleFromAvatarButton(
           BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH,
           signin::ManageAccountsParams(), access_point, false);
-    } else {
-      url = signin::GetReauthURLForTab(
-          access_point, signin_metrics::Reason::REASON_REAUTHENTICATION,
-          browser->profile(), error_controller->error_account_id());
-    }
   } else {
-    if (!force_new_tab) {
-      browser->window()->ShowAvatarBubbleFromAvatarButton(
-          BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
-          signin::ManageAccountsParams(), access_point, false);
-    } else {
-      url = signin::GetPromoURLForTab(
-          access_point, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
-          true);
-    }
+    browser->window()->ShowAvatarBubbleFromAvatarButton(
+        BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
+        signin::ManageAccountsParams(), access_point, false);
   }
-
-  if (url.is_valid())
-    ShowSingletonTab(browser, url);
 }
 #endif
 
