@@ -86,7 +86,7 @@ float ViewportDescription::ResolveViewportLength(
 
 PageScaleConstraints ViewportDescription::Resolve(
     const FloatSize& initial_viewport_size,
-    Length legacy_fallback_width) const {
+    const Length& legacy_fallback_width) const {
   float result_width = kValueAuto;
 
   Length copy_max_width = max_width;

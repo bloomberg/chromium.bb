@@ -64,7 +64,7 @@ const PageScaleConstraints& PageScaleConstraintsSet::DefaultConstraints()
 
 void PageScaleConstraintsSet::UpdatePageDefinedConstraints(
     const ViewportDescription& description,
-    Length legacy_fallback_width) {
+    const Length& legacy_fallback_width) {
   page_defined_constraints_ =
       description.Resolve(FloatSize(icb_size_), legacy_fallback_width);
 
