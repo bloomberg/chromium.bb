@@ -176,6 +176,15 @@ void BaseAudioContext::Uninitialize() {
   DCHECK_EQ(active_source_nodes_.size(), 0u);
 }
 
+void BaseAudioContext::ContextPaused(PauseState pause_state) {
+  if (pause_state == PauseState::kFrozen)
+    destination()->GetAudioDestinationHandler().Pause();
+}
+
+void BaseAudioContext::ContextUnpaused() {
+  destination()->GetAudioDestinationHandler().Resume();
+}
+
 void BaseAudioContext::ContextDestroyed(ExecutionContext*) {
   destination()->GetAudioDestinationHandler().ContextDestroyed();
   Uninitialize();

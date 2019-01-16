@@ -58,6 +58,8 @@ class DefaultAudioDestinationHandler final : public AudioDestinationHandler,
   // For AudioDestinationHandler.
   void StartRendering() override;
   void StopRendering() override;
+  void Pause() override;
+  void Resume() override;
   void RestartRendering() override;
   uint32_t MaxChannelCount() const override;
   double SampleRate() const override;

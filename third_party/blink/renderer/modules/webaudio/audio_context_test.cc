@@ -17,6 +17,7 @@
 namespace blink {
 
 namespace {
+static bool web_audio_device_paused_;
 
 class MockWebAudioDeviceForAudioContext : public WebAudioDevice {
  public:
@@ -27,8 +28,8 @@ class MockWebAudioDeviceForAudioContext : public WebAudioDevice {
 
   void Start() override {}
   void Stop() override {}
-  void Pause() override {}
-  void Resume() override {}
+  void Pause() override { web_audio_device_paused_ = true; }
+  void Resume() override { web_audio_device_paused_ = false; }
   double SampleRate() override { return sample_rate_; }
   int FramesPerBuffer() override { return frames_per_buffer_; }
 
@@ -169,6 +170,19 @@ TEST_F(AudioContextTest, AudioContextAudibility_ServiceUnbind) {
 
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform;
   platform->RunUntilIdle();
+}
+
+TEST_F(AudioContextTest, ExecutionContextPaused) {
+  AudioContextOptions* options = AudioContextOptions::Create();
+  AudioContext* audio_context =
+      AudioContext::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
+
+  audio_context->set_was_audible_for_testing(true);
+  EXPECT_FALSE(web_audio_device_paused_);
+  GetDocument().PausePausableObjects(PauseState::kFrozen);
+  EXPECT_TRUE(web_audio_device_paused_);
+  GetDocument().UnpausePausableObjects();
+  EXPECT_FALSE(web_audio_device_paused_);
 }
 
 }  // namespace blink

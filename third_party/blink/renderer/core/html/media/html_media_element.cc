@@ -501,6 +501,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
       muted_(false),
       paused_(true),
       seeking_(false),
+      paused_by_context_paused_(false),
       sent_stalled_event_(false),
       ignore_preload_none_(false),
       text_tracks_visible_(false),
@@ -3576,6 +3577,20 @@ void HTMLMediaElement::ClearMediaPlayer() {
 
   if (GetLayoutObject())
     GetLayoutObject()->SetShouldDoFullPaintInvalidation();
+}
+
+void HTMLMediaElement::ContextPaused(PauseState pause_state) {
+  if (pause_state == PauseState::kFrozen && playing_) {
+    paused_by_context_paused_ = true;
+    pause();
+  }
+}
+
+void HTMLMediaElement::ContextUnpaused() {
+  if (paused_by_context_paused_) {
+    paused_by_context_paused_ = false;
+    Play();
+  }
 }
 
 void HTMLMediaElement::ContextDestroyed(ExecutionContext*) {
