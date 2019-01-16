@@ -341,7 +341,6 @@
     peach_pi-postsubmit
     peach_pit-postsubmit
     peppy-postsubmit
-    poppy-postsubmit
     pyro-postsubmit
     quawks-postsubmit
     rammus-postsubmit
@@ -488,7 +487,6 @@
     peach_pi-release
     peach_pit-release
     peppy-release
-    poppy-release
     pyro-release
     quawks-release
     rammus-release
@@ -2590,7 +2588,6 @@
     peach_pi-postsubmit
     peach_pit-postsubmit
     peppy-postsubmit
-    poppy-postsubmit
     pyro-postsubmit
     quawks-postsubmit
     rammus-postsubmit
@@ -2726,7 +2723,6 @@
     peach_pi-release
     peach_pit-release
     peppy-release
-    poppy-release
     pyro-release
     quawks-release
     rammus-release
@@ -3181,7 +3177,6 @@
   poppy-no-vmtest-pre-cq
   poppy-paladin-tryjob
   poppy-payloads-tryjob
-  poppy-postsubmit-tryjob
   poppy-pre-cq
   poppy-release-afdo-generate-tryjob
   poppy-release-afdo-tryjob
