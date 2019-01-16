@@ -3197,6 +3197,9 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Labels a select control which lists all bluetooth braille displays." name="IDS_CHROMEVOX_OPTIONS_BLUETOOTH_BRAILLE_DISPLAY_SELECT_LABEL">
         Select a bluetooth braille display
       </message>
+      <message desc="Describes web content that has no title." name="IDS_CHROMEVOX_WEB_CONTENT">
+        Web Content
+      </message>
     </messages>
   </release>
 </grit>

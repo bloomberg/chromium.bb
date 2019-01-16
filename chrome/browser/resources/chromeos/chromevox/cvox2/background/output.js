@@ -530,7 +530,7 @@ Output.RULES = {
           @describe_index($posInSet, $setSize)
           $roleDescription $description $state $restriction`
     },
-    rootWebArea: {enter: `$name`, speak: `$if($name, $name, $docUrl)`},
+    rootWebArea: {enter: `$name`, speak: `$if($name, $name, @web_content)`},
     region: {speak: `$state $nameOrTextContent $description $roleDescription`},
     row: {
       enter: `$node(tableRowHeader)`,
