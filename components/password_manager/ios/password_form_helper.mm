@@ -367,6 +367,23 @@ constexpr char kCommandPrefix[] = "passwordForm";
        completionHandler:completionHandler];
 }
 
+- (void)fillPasswordForm:(NSString*)formName
+        newPasswordIdentifier:(NSString*)newPasswordIdentifier
+    confirmPasswordIdentifier:(NSString*)confirmPasswordIdentifier
+            generatedPassword:(NSString*)generatedPassword
+            completionHandler:(nullable void (^)(BOOL))completionHandler {
+  // Send JSON over to the web view.
+  [self.jsPasswordManager fillPasswordForm:formName
+                     newPasswordIdentifier:newPasswordIdentifier
+                 confirmPasswordIdentifier:confirmPasswordIdentifier
+                         generatedPassword:generatedPassword
+                         completionHandler:^(BOOL result) {
+                           if (completionHandler) {
+                             completionHandler(result);
+                           }
+                         }];
+}
+
 - (void)fillPasswordFormWithFillData:(const password_manager::FillData&)fillData
                    completionHandler:
                        (nullable void (^)(BOOL))completionHandler {

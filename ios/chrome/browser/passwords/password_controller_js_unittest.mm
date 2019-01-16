@@ -14,7 +14,8 @@
 #error "This file requires ARC support."
 #endif
 
-// Unit tests for ios/chrome/browser/web/resources/password_controller.js
+// Unit tests for
+// components/password_manager/ios/resources/password_controller.js
 namespace {
 
 // Text fixture to test password controller.
@@ -391,5 +392,184 @@ TEST_F(PasswordControllerJsTest, OriginsAreDifferentInPathes) {
   ExecuteJavaScriptOnElementsAndCheck(@"document.getElementById('%@').value",
                                       @[ @"name", @"password" ],
                                       @[ username, password ]);
+}
+
+// Check that when instructed to fill a form named "bar", a form named "foo"
+// is not filled with generated password.
+TEST_F(PasswordControllerJsTest,
+       FillPasswordFormWithGeneratedPassword_FailsWhenFormNotFound) {
+  LoadHtmlAndInject(@"<html>"
+                     "  <body>"
+                     "    <form name=\"foo\">"
+                     "      <input type=\"password\" id=\"ps1\" name=\"ps\">"
+                     "    </form>"
+                     "  </body"
+                     "</html>");
+  NSString* const formName = @"bar";
+  NSString* const password = @"abc";
+  NSString* const newPasswordIdentifier = @"ps1";
+  EXPECT_NSEQ(
+      @NO,
+      ExecuteJavaScriptWithFormat(
+          @"__gCrWeb.passwords."
+          @"fillPasswordFormWithGeneratedPassword('%@',  '%@', '%@', '%@')",
+          formName, newPasswordIdentifier, @"", password));
+}
+
+// Check that filling a form without password fields fails.
+TEST_F(PasswordControllerJsTest,
+       FillPasswordFormWithGeneratedPassword_FailsWhenNoPasswordFields) {
+  LoadHtmlAndInject(@"<html>"
+                     "  <body>"
+                     "    <form name=\"foo\">"
+                     "      <input type=\"text\" name=\"user\">"
+                     "      <input type=\"submit\" name=\"go\">"
+                     "    </form>"
+                     "  </body"
+                     "</html>");
+  NSString* const formName = @"foo";
+  NSString* const password = @"abc";
+  NSString* const newPasswordIdentifier = @"ps1";
+  NSString* const confirmPasswordIdentifier = @"ps2";
+  EXPECT_NSEQ(
+      @NO, ExecuteJavaScriptWithFormat(
+               @"__gCrWeb.passwords."
+               @"fillPasswordFormWithGeneratedPassword('%@', '%@', '%@', '%@')",
+               formName, newPasswordIdentifier, confirmPasswordIdentifier,
+               password));
+}
+
+// Check that a matching and complete password form is successfully filled
+// with the generated password.
+TEST_F(PasswordControllerJsTest,
+       FillPasswordFormWithGeneratedPassword_SucceedsWhenFieldsFilled) {
+  LoadHtmlAndInject(@"<html>"
+                     "  <body>"
+                     "    <form name=\"foo\">"
+                     "      <input type=\"text\" id=\"user\" name=\"user\">"
+                     "      <input type=\"password\" id=\"ps1\" name=\"ps1\">"
+                     "      <input type=\"password\" id=\"ps2\" name=\"ps2\">"
+                     "      <input type=\"submit\" name=\"go\">"
+                     "    </form>"
+                     "  </body"
+                     "</html>");
+  NSString* const formName = @"foo";
+  NSString* const password = @"abc";
+  NSString* const newPasswordIdentifier = @"ps1";
+  NSString* const confirmPasswordIdentifier = @"ps2";
+  EXPECT_NSEQ(
+      @YES,
+      ExecuteJavaScriptWithFormat(
+          @"__gCrWeb.passwords."
+          @"fillPasswordFormWithGeneratedPassword('%@', '%@', '%@', '%@')",
+          formName, newPasswordIdentifier, confirmPasswordIdentifier,
+          password));
+  EXPECT_NSEQ(@YES,
+              ExecuteJavaScriptWithFormat(
+                  @"document.getElementById('ps1').value == '%@'", password));
+  EXPECT_NSEQ(@YES,
+              ExecuteJavaScriptWithFormat(
+                  @"document.getElementById('ps2').value == '%@'", password));
+  EXPECT_NSEQ(@NO,
+              ExecuteJavaScriptWithFormat(
+                  @"document.getElementById('user').value == '%@'", password));
+}
+
+// Check that a matching and complete password field is successfully filled
+// with the generated password and that confirm field is untouched.
+TEST_F(
+    PasswordControllerJsTest,
+    FillPasswordFormWithGeneratedPassword_SucceedsWhenOnlyNewPasswordFilled) {
+  LoadHtmlAndInject(@"<html>"
+                     "  <body>"
+                     "    <form name=\"foo\">"
+                     "      <input type=\"text\" id=\"user\" name=\"user\">"
+                     "      <input type=\"password\" id=\"ps1\" name=\"ps1\">"
+                     "      <input type=\"password\" id=\"ps2\" name=\"ps2\">"
+                     "      <input type=\"submit\" name=\"go\">"
+                     "    </form>"
+                     "  </body"
+                     "</html>");
+  NSString* const formName = @"foo";
+  NSString* const password = @"abc";
+  NSString* const newPasswordIdentifier = @"ps1";
+  EXPECT_NSEQ(
+      @YES,
+      ExecuteJavaScriptWithFormat(
+          @"__gCrWeb.passwords."
+          @"fillPasswordFormWithGeneratedPassword('%@', '%@', '%@', '%@')",
+          formName, newPasswordIdentifier, @"", password));
+  EXPECT_NSEQ(@YES,
+              ExecuteJavaScriptWithFormat(
+                  @"document.getElementById('ps1').value == '%@'", password));
+  EXPECT_NSEQ(@YES, ExecuteJavaScriptWithFormat(
+                        @"document.getElementById('ps2').value == '%@'", @""));
+  EXPECT_NSEQ(@NO,
+              ExecuteJavaScriptWithFormat(
+                  @"document.getElementById('user').value == '%@'", password));
+}
+
+// Check that a matching and complete confirm password field is successfully
+// filled with the generated password and that new password field is untouched.
+TEST_F(
+    PasswordControllerJsTest,
+    FillPasswordFormWithGeneratedPassword_SucceedsWhenOnlyConfirmPasswordFilled) {
+  LoadHtmlAndInject(@"<html>"
+                     "  <body>"
+                     "    <form name=\"foo\">"
+                     "      <input type=\"text\" id=\"user\" name=\"user\">"
+                     "      <input type=\"password\" id=\"ps1\" name=\"ps1\">"
+                     "      <input type=\"password\" id=\"ps2\" name=\"ps2\">"
+                     "      <input type=\"submit\" name=\"go\">"
+                     "    </form>"
+                     "  </body"
+                     "</html>");
+  NSString* const formName = @"foo";
+  NSString* const password = @"abc";
+  NSString* const confirmPasswordIdentifier = @"ps2";
+  EXPECT_NSEQ(
+      @YES,
+      ExecuteJavaScriptWithFormat(
+          @"__gCrWeb.passwords."
+          @"fillPasswordFormWithGeneratedPassword('%@', '%@', '%@', '%@')",
+          formName, @"", confirmPasswordIdentifier, password));
+  EXPECT_NSEQ(@YES, ExecuteJavaScriptWithFormat(
+                        @"document.getElementById('ps1').value == '%@'", @""));
+  EXPECT_NSEQ(@YES,
+              ExecuteJavaScriptWithFormat(
+                  @"document.getElementById('ps2').value == '%@'", password));
+  EXPECT_NSEQ(@NO,
+              ExecuteJavaScriptWithFormat(
+                  @"document.getElementById('user').value == '%@'", password));
+}
+
+// Check that unknown or null identifiers are handled gracefully.
+TEST_F(
+    PasswordControllerJsTest,
+    FillPasswordFormWithGeneratedPassword_SucceedsOnUnknownOrNullIdentifiers) {
+  LoadHtmlAndInject(@"<html>"
+                     "  <body>"
+                     "    <form name=\"foo\">"
+                     "      <input type=\"text\" id=\"user\" name=\"user\">"
+                     "      <input type=\"password\" id=\"ps1\" name=\"ps1\">"
+                     "      <input type=\"password\" id=\"ps2\" name=\"ps2\">"
+                     "      <input type=\"submit\" name=\"go\">"
+                     "    </form>"
+                     "  </body"
+                     "</html>");
+  NSString* const formName = @"foo";
+  NSString* const password = @"abc";
+  EXPECT_NSEQ(
+      @NO, ExecuteJavaScriptWithFormat(
+               @"__gCrWeb.passwords."
+               @"fillPasswordFormWithGeneratedPassword('%@', '%@', null, '%@')",
+               formName, @"hello", password));
+  EXPECT_NSEQ(@YES, ExecuteJavaScriptWithFormat(
+                        @"document.getElementById('ps1').value == '%@'", @""));
+  EXPECT_NSEQ(@YES, ExecuteJavaScriptWithFormat(
+                        @"document.getElementById('ps2').value == '%@'", @""));
+  EXPECT_NSEQ(@NO,
+              ExecuteJavaScriptWithFormat(
+                  @"document.getElementById('user').value == '%@'", password));
 }
 }  // namespace

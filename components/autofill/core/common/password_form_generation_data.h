@@ -9,7 +9,9 @@
 
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "url/gurl.h"
 
@@ -42,10 +44,16 @@ struct PasswordFormGenerationData {
 // TODO(https://crbug.com/866444): Remove old PasswordFormGenerationData and
 // rename to PasswordFormGenerationData when the old parser is gone.
 struct NewPasswordFormGenerationData {
+#if defined(OS_IOS)
+  base::string16 form_name;
+  base::string16 new_password_element;
+  base::string16 confirmation_password_element;
+#else
   uint32_t new_password_renderer_id =
       FormFieldData::kNotSetFormControlRendererId;
   uint32_t confirmation_password_renderer_id =
       FormFieldData::kNotSetFormControlRendererId;
+#endif
 };
 
 }  // namespace autofill
