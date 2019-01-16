@@ -27,10 +27,6 @@ namespace disk_cache {
 class Entry;
 }
 
-namespace network {
-class DataElement;
-}
-
 namespace storage {
 class BlobSliceTest;
 class BlobStorageContext;
@@ -50,15 +46,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataBuilder {
   ~BlobDataBuilder();
 
   const std::string& uuid() const { return uuid_; }
-
-  // Validates the data element that was sent over IPC, and copies the data if
-  // it's a 'bytes' element. Data elements of BYTES_DESCRIPTION or
-  // DISK_CACHE_ENTRY types are not valid IPC data element types, and cannot be
-  // given to this method.
-  // |blob_registry| is needed for data elements of type BLOB.
-  void AppendIPCDataElement(
-      const network::DataElement& ipc_data,
-      const BlobStorageRegistry& blob_registry);
 
   // Copies the given data into the blob.
   void AppendData(const std::string& data) {
