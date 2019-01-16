@@ -344,18 +344,19 @@ PrerenderContents::~PrerenderContents() {
   prerender_manager_->RecordFinalStatus(origin(), final_status());
   prerender_manager_->RecordNetworkBytesConsumed(origin(), network_bytes_);
 
-  // Broadcast the removal of aliases.
-  for (content::RenderProcessHost::iterator host_iterator =
-           content::RenderProcessHost::AllHostsIterator();
-       !host_iterator.IsAtEnd();
-       host_iterator.Advance()) {
-    content::RenderProcessHost* host = host_iterator.GetCurrentValue();
-    IPC::ChannelProxy* channel = host->GetChannel();
-    // |channel| might be NULL in tests.
-    if (channel) {
-      chrome::mojom::PrerenderDispatcherAssociatedPtr prerender_dispatcher;
-      channel->GetRemoteAssociatedInterface(&prerender_dispatcher);
-      prerender_dispatcher->PrerenderRemoveAliases(alias_urls_);
+  if (prerender_mode_ == FULL_PRERENDER) {
+    // Broadcast the removal of aliases.
+    for (content::RenderProcessHost::iterator host_iterator =
+             content::RenderProcessHost::AllHostsIterator();
+         !host_iterator.IsAtEnd(); host_iterator.Advance()) {
+      content::RenderProcessHost* host = host_iterator.GetCurrentValue();
+      IPC::ChannelProxy* channel = host->GetChannel();
+      // |channel| might be NULL in tests.
+      if (host->IsInitializedAndNotDead() && channel) {
+        chrome::mojom::PrerenderDispatcherAssociatedPtr prerender_dispatcher;
+        channel->GetRemoteAssociatedInterface(&prerender_dispatcher);
+        prerender_dispatcher->PrerenderRemoveAliases(alias_urls_);
+      }
     }
   }
 
@@ -467,17 +468,18 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
 
   alias_urls_.push_back(url);
 
-  for (content::RenderProcessHost::iterator host_iterator =
-           content::RenderProcessHost::AllHostsIterator();
-       !host_iterator.IsAtEnd();
-       host_iterator.Advance()) {
-    content::RenderProcessHost* host = host_iterator.GetCurrentValue();
-    IPC::ChannelProxy* channel = host->GetChannel();
-    // |channel| might be NULL in tests.
-    if (channel) {
-      chrome::mojom::PrerenderDispatcherAssociatedPtr prerender_dispatcher;
-      channel->GetRemoteAssociatedInterface(&prerender_dispatcher);
-      prerender_dispatcher->PrerenderAddAlias(url);
+  if (prerender_mode_ == FULL_PRERENDER) {
+    for (content::RenderProcessHost::iterator host_iterator =
+             content::RenderProcessHost::AllHostsIterator();
+         !host_iterator.IsAtEnd(); host_iterator.Advance()) {
+      content::RenderProcessHost* host = host_iterator.GetCurrentValue();
+      IPC::ChannelProxy* channel = host->GetChannel();
+      // |channel| might be NULL in tests.
+      if (host->IsInitializedAndNotDead() && channel) {
+        chrome::mojom::PrerenderDispatcherAssociatedPtr prerender_dispatcher;
+        channel->GetRemoteAssociatedInterface(&prerender_dispatcher);
+        prerender_dispatcher->PrerenderAddAlias(url);
+      }
     }
   }
 
