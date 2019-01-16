@@ -13228,7 +13228,7 @@
       When this policy is set to a non-empty list of time intervals:
       Devices will not be able to check for updates automatically during the specified time intervals. Devices that require a rollback or are below the minimum <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version will not be affected by this policy due to potential security issues. Furthermore, this policy will not block update checks requested by users or administrators.
       When this policy is unset or contains no time intervals:
-      No automatic update checks will be blocked by this policy, but they may be blocked by other policies.''',
+      No automatic update checks will be blocked by this policy, but they may be blocked by other policies. This feature is only enabled on Chrome devices configured as auto-launch kiosks. Other devices will not be restricted by this policy.''',
     },
     {
       'id': 454,
