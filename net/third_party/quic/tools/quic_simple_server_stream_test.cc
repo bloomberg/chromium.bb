@@ -200,6 +200,7 @@ class QuicSimpleServerStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
         quic_response_(new QuicBackendResponse),
         body_("hello world"),
         is_verion_99_(connection_->transport_version() == QUIC_VERSION_99) {
+    connection_->set_visitor(&session_);
     header_list_.OnHeaderBlockStart();
     header_list_.OnHeader(":authority", "www.google.com");
     header_list_.OnHeader(":path", "/");
