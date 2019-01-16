@@ -219,11 +219,44 @@ void RecordInstanceStats() {
   UMA_HISTOGRAM_COUNTS_100("OSX.OtherInstances.OtherUser", other_user_count);
 }
 
+// Used for UMA; never alter existing values.
+enum class FastUserSwitchEvent {
+  kUserDidBecomeActiveEvent,
+  kUserDidBecomeInactiveEvent,
+  kMaxValue = kUserDidBecomeInactiveEvent,
+};
+
+void LogFastUserSwitchStat(FastUserSwitchEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("OSX.FastUserSwitch", event);
+}
+
+void InstallFastUserSwitchStatRecorder() {
+  NSNotificationCenter* notification_center =
+      [[NSWorkspace sharedWorkspace] notificationCenter];
+  [notification_center
+      addObserverForName:NSWorkspaceSessionDidBecomeActiveNotification
+                  object:nil
+                   queue:nil
+              usingBlock:^(NSNotification* note) {
+                LogFastUserSwitchStat(
+                    FastUserSwitchEvent::kUserDidBecomeActiveEvent);
+              }];
+  [notification_center
+      addObserverForName:NSWorkspaceSessionDidResignActiveNotification
+                  object:nil
+                   queue:nil
+              usingBlock:^(NSNotification* note) {
+                LogFastUserSwitchStat(
+                    FastUserSwitchEvent::kUserDidBecomeInactiveEvent);
+              }];
+}
+
 // Records various bits of information about the local Chromium installation in
 // UMA.
 void RecordInstallationStats() {
   RecordFilesystemStats();
   RecordInstanceStats();
+  InstallFastUserSwitchStatRecorder();
 }
 
 }  // namespace
