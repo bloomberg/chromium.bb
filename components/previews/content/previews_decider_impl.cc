@@ -92,6 +92,28 @@ bool ShouldCheckOptimizationHints(PreviewsType type) {
   return false;
 }
 
+// Returns true if ECT should be checked for |type| only at the commit time. If
+// true is returned, then ECT need not be checked at the navigation time.
+bool CheckForUnknownECTOnlyAtCommitTime(PreviewsType type) {
+  switch (type) {
+    case PreviewsType::NOSCRIPT:
+    case PreviewsType::RESOURCE_LOADING_HINTS:
+      return true;
+    case PreviewsType::LOFI:
+    case PreviewsType::LITE_PAGE_REDIRECT:
+    case PreviewsType::OFFLINE:
+    case PreviewsType::LITE_PAGE:
+      return false;
+    case PreviewsType::NONE:
+    case PreviewsType::UNSPECIFIED:
+    case PreviewsType::DEPRECATED_AMP_REDIRECTION:
+    case PreviewsType::LAST:
+      break;
+  }
+  NOTREACHED();
+  return false;
+}
+
 bool IsPreviewsBlacklistIgnoredViaFlag() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kIgnorePreviewsBlacklist);
@@ -289,7 +311,8 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
   // perform its own ECT check and for previews with hints because the hints may
   // specify variable ECT thresholds for slow page hints.
   if (!is_drp_server_preview && !ShouldCheckOptimizationHints(type)) {
-    if (effective_connection_type_ == net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+    if (effective_connection_type_ == net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN &&
+        !CheckForUnknownECTOnlyAtCommitTime(type)) {
       return PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE;
     }
     passed_reasons->push_back(
@@ -475,26 +498,31 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
   // connection type as offline when the Android APIs incorrectly return device
   // connectivity as null. See https://crbug.com/838969. So, we do not trigger
   // previews when |ect| is net::EFFECTIVE_CONNECTION_TYPE_OFFLINE.
+  net::EffectiveConnectionType ect = previews_data->navigation_ect();
+  if (CheckForUnknownECTOnlyAtCommitTime(type) &&
+      ect == net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+    // Update the |ect| to the current value.
+    ect = effective_connection_type_;
+  }
+
   if (ShouldCheckForUnknownECT(params::GetSessionMaxECTThreshold()) &&
-      previews_data->navigation_ect() ==
-          net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+      ect == net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
     return PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE;
   }
   passed_reasons->push_back(
       PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE);
 
-  if (previews_data->navigation_ect() ==
-      net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+  if (ect == net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
     return PreviewsEligibilityReason::DEVICE_OFFLINE;
   }
   passed_reasons->push_back(PreviewsEligibilityReason::DEVICE_OFFLINE);
 
-  if (previews_data->navigation_ect() > ect_threshold) {
+  if (ect > ect_threshold) {
     return PreviewsEligibilityReason::NETWORK_NOT_SLOW;
   }
   passed_reasons->push_back(PreviewsEligibilityReason::NETWORK_NOT_SLOW);
 
-  if (previews_data->navigation_ect() > params::GetSessionMaxECTThreshold()) {
+  if (ect > params::GetSessionMaxECTThreshold()) {
     return PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION;
   }
   passed_reasons->push_back(

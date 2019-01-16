@@ -948,6 +948,7 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
 
   // Verify preview not allowed for whitelisted url for unknown network quality.
   {
+    ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
     base::HistogramTester histogram_tester;
     PreviewsUserData user_data(kDefaultPageId);
     user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
@@ -982,9 +983,70 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
         1);
   }
 
+  // Verify that navigation time ECT is given precedence over commit time ECT,
+  // if the former is available.
+  {
+    ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+    base::test::ScopedFeatureList nested_scoped_list;
+    nested_scoped_list.InitAndEnableFeatureWithParameters(
+        features::kSlowPageTriggering,
+        {{"session_max_ect_trigger", "Slow-2G"}});
+    base::HistogramTester histogram_tester;
+    PreviewsUserData user_data(kDefaultPageId);
+    user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_2G);
+    EXPECT_FALSE(previews_decider_impl()->ShouldCommitPreview(
+        &user_data, GURL("https://whitelisted.example.com"),
+        PreviewsType::NOSCRIPT));
+
+    histogram_tester.ExpectUniqueSample(
+        "Previews.EligibilityReason.NoScript",
+        static_cast<int>(
+            PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION),
+        1);
+  }
+
+  // Verify preview allowed for network slower than session ECT threshold when
+  // ECT is not available at navigation time.
+  {
+    ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+    base::test::ScopedFeatureList nested_scoped_list;
+    nested_scoped_list.InitAndEnableFeatureWithParameters(
+        features::kSlowPageTriggering,
+        {{"session_max_ect_trigger", "Slow-2G"}});
+    base::HistogramTester histogram_tester;
+    PreviewsUserData user_data(kDefaultPageId);
+    user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+    EXPECT_TRUE(previews_decider_impl()->ShouldCommitPreview(
+        &user_data, GURL("https://whitelisted.example.com"),
+        PreviewsType::NOSCRIPT));
+
+    histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 0);
+  }
+
+  // Verify preview not allowed for session limited ECT threshold when ECT is
+  // not available at navigation time.
+  {
+    ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_4G);
+    base::test::ScopedFeatureList nested_scoped_list;
+    nested_scoped_list.InitAndEnableFeatureWithParameters(
+        features::kSlowPageTriggering,
+        {{"session_max_ect_trigger", "Slow-2G"}});
+    base::HistogramTester histogram_tester;
+    PreviewsUserData user_data(kDefaultPageId);
+    user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+    EXPECT_FALSE(previews_decider_impl()->ShouldCommitPreview(
+        &user_data, GURL("https://whitelisted.example.com"),
+        PreviewsType::NOSCRIPT));
+
+    histogram_tester.ExpectUniqueSample(
+        "Previews.EligibilityReason.NoScript",
+        static_cast<int>(PreviewsEligibilityReason::NETWORK_NOT_SLOW), 1);
+  }
+
   // Verify preview allowed for session when navigation ECT is unknown but max
   // trigger threshold is 4G.
   {
+    ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
     base::test::ScopedFeatureList nested_scoped_list;
     nested_scoped_list.InitAndEnableFeatureWithParameters(
         features::kSlowPageTriggering, {{"session_max_ect_trigger", "4G"}});
@@ -1459,7 +1521,8 @@ TEST_F(PreviewsDeciderImplTest, IgnoreFlagStillHasFiveSecondRule) {
       ::testing::Contains(PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT));
 }
 
-TEST_F(PreviewsDeciderImplTest, LogDecisionMadeNetworkQualityNotAvailable) {
+TEST_F(PreviewsDeciderImplTest,
+       LoFi_LogDecisionMadeNetworkQualityNotAvailable) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kClientLoFi}, {});
@@ -1478,6 +1541,52 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeNetworkQualityNotAvailable) {
       PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
       PreviewsEligibilityReason::USER_BLACKLISTED,
       PreviewsEligibilityReason::HOST_BLACKLISTED,
+  };
+
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+  PreviewsUserData user_data(kDefaultPageId);
+  previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("http://www.google.com"), false, expected_type);
+
+  base::RunLoop().RunUntilIdle();
+  // Testing correct log method is called.
+  EXPECT_THAT(ui_service()->decision_reasons(),
+              ::testing::Contains(expected_reason));
+  EXPECT_THAT(ui_service()->decision_types(),
+              ::testing::Contains(expected_type));
+
+  EXPECT_EQ(1UL, ui_service()->decision_passed_reasons().size());
+  auto actual_passed_reasons = ui_service()->decision_passed_reasons()[0];
+  EXPECT_EQ(checked_decisions.size(), actual_passed_reasons.size());
+  EXPECT_EQ(checked_decisions.size(), actual_passed_reasons.size());
+  for (size_t i = 0; i < actual_passed_reasons.size(); i++) {
+    EXPECT_EQ(checked_decisions[i], actual_passed_reasons[i]);
+  }
+}
+
+TEST_F(PreviewsDeciderImplTest,
+       ResourceLoadingHints_LogDecisionMadeNetworkQualityNotAvailable) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kResourceLoadingHints,
+       features::kOptimizationHints},
+      {});
+  InitializeUIService();
+  std::unique_ptr<TestPreviewsBlackList> blacklist =
+      std::make_unique<TestPreviewsBlackList>(
+          PreviewsEligibilityReason::ALLOWED, previews_decider_impl());
+  previews_decider_impl()->InjectTestBlacklist(std::move(blacklist));
+
+  auto expected_reason = PreviewsEligibilityReason::ALLOWED;
+  auto expected_type = PreviewsType::RESOURCE_LOADING_HINTS;
+
+  std::vector<PreviewsEligibilityReason> checked_decisions = {
+      PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE,
+      PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
+      PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
+      PreviewsEligibilityReason::USER_BLACKLISTED,
+      PreviewsEligibilityReason::HOST_BLACKLISTED,
+      PreviewsEligibilityReason::RELOAD_DISALLOWED,
   };
 
   ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
