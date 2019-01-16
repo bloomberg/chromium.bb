@@ -10,17 +10,21 @@
 #include <utility>
 #include <vector>
 
-#include "base/files/file_util.h"
+#include "base/files/file.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "media/base/video_frame.h"
 #include "media/base/video_types.h"
-#include "media/gpu/test/video_frame_mapper.h"
-#include "media/gpu/test/video_frame_mapper_factory.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace media {
+
+class VideoFrame;
+
 namespace test {
+
+class VideoFrameMapper;
 
 // VideoFrameValidator validates the pixel content of each video frame.
 // It maps a video frame by using VideoFrameMapper, and converts the mapped
@@ -48,6 +52,10 @@ class VideoFrameValidator {
     std::string expected_md5;
   };
 
+  // Creates an instance of the video frame validator in 'CHECK' mode. The md5
+  // frame checksums need to be provided by calling SetFrameChecksums().
+  static std::unique_ptr<VideoFrameValidator> Create();
+
   // |flags| decides the behavior of created video frame validator. See the
   // detail in Flags.
   // |prefix_output_yuv| is the prefix name of saved yuv files.
@@ -74,8 +82,18 @@ class VideoFrameValidator {
                           size_t frame_index);
 
   // Returns information of frames that don't match golden md5 values.
-  // If there is no mismatched frame, returns an empty vector.
+  // If there is no mismatched frame, returns an empty vector. This function is
+  // thread-safe.
   std::vector<MismatchedFrameInfo> GetMismatchedFramesInfo() const;
+
+  // Returns the number of frames that didn't match the golden md5 values. This
+  // function is thread-safe.
+  size_t GetMismatchedFramesCount() const;
+
+  // Set the ordered list of md5 frame checksums to be used by the validator.
+  // TODO(dstaessens) Remove this function and provide checksums on
+  // construction of VideoFrameValidator.
+  void SetFrameChecksums(const std::vector<std::string>& frame_checksums);
 
  private:
   VideoFrameValidator(uint32_t flags,
@@ -103,7 +121,9 @@ class VideoFrameValidator {
                        const VideoFrame* const video_frame) const;
 
   // The results of invalid frame data.
-  std::vector<MismatchedFrameInfo> mismatched_frames_;
+  std::vector<MismatchedFrameInfo> mismatched_frames_
+      GUARDED_BY(mismatched_frames_lock_);
+  mutable base::Lock mismatched_frames_lock_;
 
   const uint32_t flags_;
 
@@ -111,7 +131,7 @@ class VideoFrameValidator {
   const base::FilePath prefix_output_yuv_;
 
   // Golden MD5 values.
-  const std::vector<std::string> md5_of_frames_;
+  std::vector<std::string> md5_of_frames_;
 
   // File to write md5 values if flags includes GENMD5.
   base::File md5_file_;

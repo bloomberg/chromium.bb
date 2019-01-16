@@ -5,6 +5,7 @@
 #ifndef MEDIA_GPU_TEST_VIDEO_PLAYER_VIDEO_H_
 #define MEDIA_GPU_TEST_VIDEO_PLAYER_VIDEO_H_
 
+#include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -15,12 +16,8 @@ namespace media {
 namespace test {
 
 // The video class provides functionality to load video files and manage their
-// properties such as codec, number of frames,...
+// properties such as video codec, number of frames, frame checksums,...
 // TODO(@dstaessens):
-// * Define and add functionality to load video properties. Each video should
-//   have an accompanying json file containing: codec, number of frames,
-//   MD5 checksums for the frame validator,... We could even go as far as
-//   having an offset for each individual frame in the video
 // * Use a file stream rather than loading potentially huge files into memory.
 class Video {
  public:
@@ -39,17 +36,25 @@ class Video {
   VideoCodecProfile Profile() const;
   // Get the number of frames in the video.
   uint32_t NumFrames() const;
+  // Get the list of frame checksums.
+  const std::vector<std::string>& FrameChecksums() const;
 
   // Set the default path to the test video data.
   static void SetTestDataPath(const base::FilePath& test_data_path);
 
  private:
-  // Load metadata from a JSON file associated with the video file.
+  // Return a profile that |codec| represents.
+  static VideoCodecProfile ConvertStringtoProfile(const std::string& codec);
+
+  // Load metadata from the JSON file associated with the video file.
   bool LoadMetadata();
   // Return true if video metadata is already loaded.
   bool IsMetadataLoaded() const;
-  // Return a profile that |codec| represents.
-  static VideoCodecProfile ConvertStringtoProfile(const std::string& codec);
+
+  // Load video frame checksums from the associated checksums file.
+  bool LoadFrameChecksums();
+  // Return true if the video frame checksums are loaded.
+  bool FrameChecksumsLoaded() const;
 
   // The path where all test video files are stored.
   // TODO(dstaessens@) Avoid using a static data path here.
@@ -57,7 +62,11 @@ class Video {
   // The video file's path, can be absolute or relative to the above path.
   base::FilePath file_path_;
 
+  // The video's data stream.
   std::vector<uint8_t> data_;
+
+  // Ordered list of video frame checksums.
+  std::vector<std::string> frame_checksums_;
 
   VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
   uint32_t num_frames_ = 0;

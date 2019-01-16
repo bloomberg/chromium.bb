@@ -19,8 +19,9 @@ namespace media {
 namespace test {
 
 class FrameRenderer;
-class VideoDecoderClient;
 class Video;
+class VideoDecoderClient;
+class VideoFrameValidator;
 
 // Default timeout used when waiting for events.
 constexpr base::TimeDelta kDefaultTimeout = base::TimeDelta::FromSeconds(10);
@@ -50,10 +51,12 @@ class VideoPlayer {
 
   ~VideoPlayer();
 
-  // Create an instance of the video player. The |frame_renderer| will not be
-  // owned by the video player. The caller should guarantee it exists for the
-  // entire lifetime of the video player.
-  static std::unique_ptr<VideoPlayer> Create(FrameRenderer* frame_renderer);
+  // Create an instance of the video player. The |frame_renderer| and
+  // |frame_validator| will not be owned by the video player. The caller should
+  // guarantee they exists for the entire lifetime of the video player.
+  static std::unique_ptr<VideoPlayer> Create(
+      FrameRenderer* frame_renderer,
+      VideoFrameValidator* frame_validator);
 
   // Set the video stream to be played. The |video| will not be owned by the
   // video player. A decoder will be set up for the specified video stream.
@@ -85,7 +88,8 @@ class VideoPlayer {
  private:
   VideoPlayer();
 
-  bool Initialize(FrameRenderer* frame_renderer);
+  void Initialize(FrameRenderer* frame_renderer,
+                  VideoFrameValidator* frame_validator);
   void Destroy();
 
   // Notify the client an event has occurred (e.g. frame decoded).
