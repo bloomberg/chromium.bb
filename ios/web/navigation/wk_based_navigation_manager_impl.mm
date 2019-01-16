@@ -444,6 +444,37 @@ bool WKBasedNavigationManagerImpl::CanPruneAllButLastCommittedItem() const {
   return true;
 }
 
+void WKBasedNavigationManagerImpl::
+    ApplyWKWebViewForwardHistoryClobberWorkaround() {
+  DCHECK(web_view_cache_.IsAttachedToWebView());
+
+  int current_item_index = web_view_cache_.GetCurrentItemIndex();
+  DCHECK_GE(current_item_index, 0);
+
+  int item_count = GetItemCount();
+  DCHECK_LT(current_item_index, item_count);
+
+  std::vector<std::unique_ptr<NavigationItem>> forward_items(
+      item_count - current_item_index);
+
+  for (size_t i = 0; i < forward_items.size(); i++) {
+    const NavigationItemImpl* item =
+        GetNavigationItemImplAtIndex(i + current_item_index);
+    forward_items[i] = std::make_unique<web::NavigationItemImpl>(*item);
+  }
+
+  DiscardNonCommittedItems();
+
+  // Replace forward history in WKWebView with |forward_items|.
+  // |last_committed_item_index| is set to 0 so that when this partial session
+  // restoration finishes, the current item is the first item in
+  // |forward_itmes|, which is also the current item before the session
+  // restoration, but because of crbug.com/887497 is expected to be clobbered
+  // with the wrong web content. The partial restore effectively forces a fresh
+  // load of this item while maintaining forward history.
+  UnsafeRestore(/*last_committed_item_index_=*/0, std::move(forward_items));
+}
+
 void WKBasedNavigationManagerImpl::Restore(
     int last_committed_item_index,
     std::vector<std::unique_ptr<NavigationItem>> items) {
@@ -463,10 +494,16 @@ void WKBasedNavigationManagerImpl::Restore(
     delegate_->RemoveWebView();
   }
   DCHECK_EQ(0, GetItemCount());
-  pending_item_index_ = -1;
+  DCHECK_EQ(-1, pending_item_index_);
   previous_item_index_ = -1;
   last_committed_item_index_ = -1;
 
+  UnsafeRestore(last_committed_item_index, std::move(items));
+}
+
+void WKBasedNavigationManagerImpl::UnsafeRestore(
+    int last_committed_item_index,
+    std::vector<std::unique_ptr<NavigationItem>> items) {
   // This function restores session history by loading a magic local file
   // (restore_session.html) into the web view. The session history is encoded
   // in the query parameter. When loaded, restore_session.html parses the

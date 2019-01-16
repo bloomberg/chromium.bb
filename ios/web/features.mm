@@ -28,5 +28,7 @@ const base::Feature kBrowserContainerFullscreen{
 const base::Feature kOutOfWebFullscreen{"OutOfWebFullscreen",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kHistoryClobberWorkaround{
+    "WKWebViewHistoryClobberWorkaround", base::FEATURE_ENABLED_BY_DEFAULT};
 }  // namespace features
 }  // namespace web

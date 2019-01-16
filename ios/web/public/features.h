@@ -32,6 +32,10 @@ extern const base::Feature kBrowserContainerFullscreen;
 // Used to use the fullscreen implementation out of web.
 extern const base::Feature kOutOfWebFullscreen;
 
+// Used to enable the workaround for WKWebView history clobber bug
+// (crbug.com/887497).
+extern const base::Feature kHistoryClobberWorkaround;
+
 }  // namespace features
 }  // namespace web
 

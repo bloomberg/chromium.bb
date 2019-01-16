@@ -146,6 +146,9 @@ class NavigationManagerImpl : public NavigationManager {
   // new navigation.
   virtual void SetPendingItemIndex(int index) = 0;
 
+  // Applies the workaround for crbug.com/887497.
+  virtual void ApplyWKWebViewForwardHistoryClobberWorkaround();
+
   // Resets the transient url rewriter list.
   void RemoveTransientURLRewriters();
 
