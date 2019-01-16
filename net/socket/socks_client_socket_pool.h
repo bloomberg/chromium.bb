@@ -18,7 +18,6 @@
 #include "net/dns/host_resolver.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_base.h"
-#include "net/socket/transport_client_socket_pool.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {

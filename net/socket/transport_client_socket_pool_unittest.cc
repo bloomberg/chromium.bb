@@ -25,6 +25,7 @@
 #include "net/socket/socket_test_util.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/transport_client_socket_pool_test_util.h"
+#include "net/socket/transport_connect_job.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_scoped_task_environment.h"
@@ -50,9 +51,12 @@ class TransportClientSocketPoolTest : public TestWithScopedTaskEnvironment {
   TransportClientSocketPoolTest()
       : connect_backup_jobs_enabled_(
             ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(true)),
-        params_(new TransportSocketParams(HostPortPair("www.google.com", 80),
-                                          false,
-                                          OnHostResolutionCallback())),
+        params_(TransportClientSocketPool::SocketParams::
+                    CreateFromTransportSocketParams(
+                        base::MakeRefCounted<TransportSocketParams>(
+                            HostPortPair("www.google.com", 80),
+                            false,
+                            OnHostResolutionCallback()))),
         host_resolver_(new MockHostResolver),
         client_socket_factory_(&net_log_),
         pool_(kMaxSockets,
@@ -68,8 +72,12 @@ class TransportClientSocketPoolTest : public TestWithScopedTaskEnvironment {
   }
 
   int StartRequest(const std::string& group_name, RequestPriority priority) {
-    scoped_refptr<TransportSocketParams> params(new TransportSocketParams(
-        HostPortPair("www.google.com", 80), false, OnHostResolutionCallback()));
+    scoped_refptr<TransportClientSocketPool::SocketParams> params(
+        TransportClientSocketPool::SocketParams::
+            CreateFromTransportSocketParams(
+                base::MakeRefCounted<TransportSocketParams>(
+                    HostPortPair("www.google.com", 80), false,
+                    OnHostResolutionCallback())));
     return test_base_.StartRequestUsingPool(
         &pool_, group_name, priority, ClientSocketPool::RespectLimits::ENABLED,
         params);
@@ -94,7 +102,7 @@ class TransportClientSocketPoolTest : public TestWithScopedTaskEnvironment {
 
   bool connect_backup_jobs_enabled_;
   TestNetLog net_log_;
-  scoped_refptr<TransportSocketParams> params_;
+  scoped_refptr<TransportClientSocketPool::SocketParams> params_;
   std::unique_ptr<MockHostResolver> host_resolver_;
   MockTransportClientSocketFactory client_socket_factory_;
   TransportClientSocketPool pool_;
@@ -393,8 +401,10 @@ TEST_F(TransportClientSocketPoolTest, InitHostResolutionFailure) {
   TestCompletionCallback callback;
   ClientSocketHandle handle;
   HostPortPair host_port_pair("unresolvable.host.name", 80);
-  scoped_refptr<TransportSocketParams> dest(new TransportSocketParams(
-      host_port_pair, false, OnHostResolutionCallback()));
+  scoped_refptr<TransportClientSocketPool::SocketParams> dest(
+      TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+          base::MakeRefCounted<TransportSocketParams>(
+              host_port_pair, false, OnHostResolutionCallback())));
   EXPECT_EQ(ERR_IO_PENDING,
             handle.Init("a", dest, kDefaultPriority, SocketTag(),
                         ClientSocketPool::RespectLimits::ENABLED,
@@ -683,9 +693,12 @@ class RequestSocketCallback : public TestCompletionCallbackBase {
       handle_->Reset();
       base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
       within_callback_ = true;
-      scoped_refptr<TransportSocketParams> dest(
-          new TransportSocketParams(HostPortPair("www.google.com", 80), false,
-                                    OnHostResolutionCallback()));
+      scoped_refptr<TransportClientSocketPool::SocketParams> dest(
+          TransportClientSocketPool::SocketParams::
+              CreateFromTransportSocketParams(
+                  base::MakeRefCounted<TransportSocketParams>(
+                      HostPortPair("www.google.com", 80), false,
+                      OnHostResolutionCallback())));
       int rv = handle_->Init("a", dest, LOWEST, SocketTag(),
                              ClientSocketPool::RespectLimits::ENABLED,
                              callback(), pool_, NetLogWithSource());
@@ -703,8 +716,11 @@ class RequestSocketCallback : public TestCompletionCallbackBase {
 TEST_F(TransportClientSocketPoolTest, RequestTwice) {
   ClientSocketHandle handle;
   RequestSocketCallback callback(&handle, &pool_);
-  scoped_refptr<TransportSocketParams> dest(new TransportSocketParams(
-      HostPortPair("www.google.com", 80), false, OnHostResolutionCallback()));
+  scoped_refptr<TransportClientSocketPool::SocketParams> dest(
+      TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+          base::MakeRefCounted<TransportSocketParams>(
+              HostPortPair("www.google.com", 80), false,
+              OnHostResolutionCallback())));
   int rv = handle.Init("a", dest, LOWEST, SocketTag(),
                        ClientSocketPool::RespectLimits::ENABLED,
                        callback.callback(), &pool_, NetLogWithSource());
@@ -1046,8 +1062,10 @@ TEST_F(TransportClientSocketPoolTest, Tag) {
 
   // Test socket is tagged before connected.
   uint64_t old_traffic = GetTaggedBytes(tag_val1);
-  scoped_refptr<TransportSocketParams> params(new TransportSocketParams(
-      test_server.host_port_pair(), false, OnHostResolutionCallback()));
+  scoped_refptr<TransportClientSocketPool::SocketParams> params =
+      TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+          base::MakeRefCounted<TransportSocketParams>(
+              test_server.host_port_pair(), false, OnHostResolutionCallback()));
   TestCompletionCallback callback;
   int rv = handle.Init("a", params, LOW, tag1,
                        ClientSocketPool::RespectLimits::ENABLED,

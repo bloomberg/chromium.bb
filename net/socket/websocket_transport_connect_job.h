@@ -19,7 +19,6 @@
 
 namespace net {
 
-class ClientSocketHandle;
 class NetLog;
 class WebSocketEndpointLockManager;
 class WebSocketTransportConnectSubJob;
@@ -32,6 +31,11 @@ class WebSocketTransportConnectSubJob;
 // (kIPv6FallbackTimerInMs) and start a connect() to an IPv4 address if the
 // timer fires. Then we race the IPv4 connect(s) against the IPv6 connect(s) and
 // use the socket that completes successfully first or fails last.
+//
+// TODO(mmenke): Look into merging this with TransportConnectJob. That would
+// bring all the features supported by TransportConnectJob to WebSockets:
+// Happy eyeballs, socket tagging, error reporting (Used by network error
+// logging), and provide performance information to SocketPerformanceWatcher.
 class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
  public:
   WebSocketTransportConnectJob(
@@ -39,25 +43,12 @@ class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
       RequestPriority priority,
       bool respect_limits,
       const scoped_refptr<TransportSocketParams>& params,
-      base::TimeDelta timeout_duration,
-      CompletionOnceCallback callback,
       ClientSocketFactory* client_socket_factory,
       HostResolver* host_resolver,
-      ClientSocketHandle* handle,
       Delegate* delegate,
-      WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
       NetLog* pool_net_log,
-      const NetLogWithSource& request_net_log);
+      WebSocketEndpointLockManager* websocket_endpoint_lock_manager);
   ~WebSocketTransportConnectJob() override;
-
-  // Unlike normal socket pools, the WebSocketTransportClientPool uses
-  // early-binding of sockets.
-  ClientSocketHandle* handle() const { return handle_; }
-
-  // Stash the callback from RequestSocket() here for convenience.
-  CompletionOnceCallback release_callback() { return std::move(callback_); }
-
-  const NetLogWithSource& request_net_log() const { return request_net_log_; }
 
   // ConnectJob methods.
   LoadState GetLoadState() const override;
@@ -115,10 +106,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
 
   base::OneShotTimer fallback_timer_;
   TransportConnectJob::RaceResult race_result_;
-  ClientSocketHandle* const handle_;
   WebSocketEndpointLockManager* const websocket_endpoint_lock_manager_;
-  CompletionOnceCallback callback_;
-  NetLogWithSource request_net_log_;
 
   bool had_ipv4_;
   bool had_ipv6_;

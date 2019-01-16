@@ -33,6 +33,8 @@
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
+#include "net/socket/transport_client_socket_pool.h"
+#include "net/socket/transport_connect_job.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_test_util_common.h"
@@ -1150,8 +1152,10 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSocketsFullPool) {
   ClientSocketHandle tcp_handles[kMaxSocketsPerGroup];
   int rv;
   for (auto& tcp_handle : tcp_handles) {
-    rv = tcp_handle.Init(kGroupName, tcp_params, LOW, tag1,
-                         ClientSocketPool::RespectLimits::ENABLED,
+    rv = tcp_handle.Init(kGroupName,
+                         TransportClientSocketPool::SocketParams::
+                             CreateFromTransportSocketParams(tcp_params),
+                         LOW, tag1, ClientSocketPool::RespectLimits::ENABLED,
                          callback.callback(), &tcp_pool, NetLogWithSource());
     EXPECT_THAT(callback.GetResult(rv), IsOk());
     EXPECT_TRUE(tcp_handle.socket());

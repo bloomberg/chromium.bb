@@ -758,14 +758,14 @@ EVENT_TYPE(SOCKET_POOL_REUSED_AN_EXISTING_SOCKET)
 // This event simply describes the host:port that were requested from the
 // socket pool. Its parameters are:
 //   {
-//     "host_and_port": <String encoding the host and port>,
+//     "group_name": <The group name for the socket request>,
 //   }
 EVENT_TYPE(TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKET)
 
 // This event simply describes the host:port that were requested from the
 // socket pool. Its parameters are:
 //   {
-//     "host_and_port": <String encoding the host and port>,
+//     "group_name": <The group name for the socket request>,
 //   }
 EVENT_TYPE(TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKETS)
 

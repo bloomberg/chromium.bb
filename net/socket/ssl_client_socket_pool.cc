@@ -251,8 +251,9 @@ int SSLConnectJob::DoTransportConnect() {
 
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
   transport_socket_handle_.reset(new ClientSocketHandle());
-  scoped_refptr<TransportSocketParams> direct_params =
-      params_->GetDirectConnectionParams();
+  scoped_refptr<TransportClientSocketPool::SocketParams> direct_params =
+      TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+          params_->GetDirectConnectionParams());
   return transport_socket_handle_->Init(group_name(), direct_params, priority(),
                                         socket_tag(), respect_limits(),
                                         callback_, transport_pool_, net_log());

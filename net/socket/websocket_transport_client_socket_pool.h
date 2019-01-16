@@ -96,13 +96,33 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
  private:
   class ConnectJobDelegate : public ConnectJob::Delegate {
    public:
-    explicit ConnectJobDelegate(WebSocketTransportClientSocketPool* owner);
+    ConnectJobDelegate(WebSocketTransportClientSocketPool* owner,
+                       CompletionOnceCallback callback,
+                       ClientSocketHandle* socket_handle,
+                       const NetLogWithSource& request_net_log);
     ~ConnectJobDelegate() override;
 
+    // ConnectJob::Delegate implementation
     void OnConnectJobComplete(int result, ConnectJob* job) override;
+
+    // Calls Connect() on |connect_job|, and takes ownership. Returns Connect's
+    // return value.
+    int Connect(std::unique_ptr<ConnectJob> connect_job);
+
+    CompletionOnceCallback release_callback() { return std::move(callback_); }
+    ConnectJob* connect_job() { return connect_job_.get(); }
+    ClientSocketHandle* socket_handle() { return socket_handle_; }
+
+    const NetLogWithSource& request_net_log() { return request_net_log_; }
+    const NetLogWithSource& connect_job_net_log();
 
    private:
     WebSocketTransportClientSocketPool* owner_;
+
+    CompletionOnceCallback callback_;
+    std::unique_ptr<ConnectJob> connect_job_;
+    ClientSocketHandle* const socket_handle_;
+    const NetLogWithSource request_net_log_;
 
     DISALLOW_COPY_AND_ASSIGN(ConnectJobDelegate);
   };
@@ -110,7 +130,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   // Store the arguments from a call to RequestSocket() that has stalled so we
   // can replay it when there are available socket slots.
   struct StalledRequest {
-    StalledRequest(const scoped_refptr<TransportSocketParams>& params,
+    StalledRequest(const scoped_refptr<SocketParams>& params,
                    RequestPriority priority,
                    ClientSocketHandle* handle,
                    CompletionOnceCallback callback,
@@ -118,17 +138,15 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
     StalledRequest(StalledRequest&& other);
     ~StalledRequest();
 
-    const scoped_refptr<TransportSocketParams> params;
+    const scoped_refptr<SocketParams> params;
     const RequestPriority priority;
     ClientSocketHandle* const handle;
     CompletionOnceCallback callback;
     const NetLogWithSource net_log;
   };
 
-  friend class ConnectJobDelegate;
-
   typedef std::map<const ClientSocketHandle*,
-                   std::unique_ptr<WebSocketTransportConnectJob>>
+                   std::unique_ptr<ConnectJobDelegate>>
       PendingConnectsMap;
   // This is a list so that we can remove requests from the middle, and also
   // so that iterators are not invalidated unless the corresponding request is
@@ -140,8 +158,9 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   // Tries to hand out the socket connected by |job|. |result| must be (async)
   // result of WebSocketTransportConnectJob::Connect(). Returns true iff it has
   // handed out a socket.
-  bool TryHandOutSocket(int result, WebSocketTransportConnectJob* job);
-  void OnConnectJobComplete(int result, WebSocketTransportConnectJob* job);
+  bool TryHandOutSocket(int result, ConnectJobDelegate* connect_job_delegate);
+  void OnConnectJobComplete(int result,
+                            ConnectJobDelegate* connect_job_delegate);
   void InvokeUserCallbackLater(ClientSocketHandle* handle,
                                CompletionOnceCallback callback,
                                int rv);
@@ -154,14 +173,12 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
                      ClientSocketHandle* handle,
                      const NetLogWithSource& net_log);
   void AddJob(ClientSocketHandle* handle,
-              std::unique_ptr<WebSocketTransportConnectJob> connect_job);
+              std::unique_ptr<ConnectJobDelegate> delegate);
   bool DeleteJob(ClientSocketHandle* handle);
-  const WebSocketTransportConnectJob* LookupConnectJob(
-      const ClientSocketHandle* handle) const;
+  const ConnectJob* LookupConnectJob(const ClientSocketHandle* handle) const;
   void ActivateStalledRequest();
   bool DeleteStalledRequest(ClientSocketHandle* handle);
 
-  ConnectJobDelegate connect_job_delegate_;
   std::set<const ClientSocketHandle*> pending_callbacks_;
   PendingConnectsMap pending_connects_;
   StalledRequestQueue stalled_request_queue_;

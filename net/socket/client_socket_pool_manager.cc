@@ -19,6 +19,7 @@
 #include "net/socket/socks_client_socket_pool.h"
 #include "net/socket/ssl_client_socket_pool.h"
 #include "net/socket/transport_client_socket_pool.h"
+#include "net/socket/transport_connect_job.h"
 #include "net/ssl/ssl_config.h"
 
 namespace net {
@@ -251,14 +252,20 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
   TransportClientSocketPool* pool =
       session->GetTransportSocketPool(socket_pool_type);
   if (num_preconnect_streams) {
-    RequestSocketsForPool(pool, connection_group, tcp_params,
-                          num_preconnect_streams, net_log);
+    RequestSocketsForPool(
+        pool, connection_group,
+        TransportClientSocketPool::SocketParams::
+            CreateFromTransportSocketParams(std::move(tcp_params)),
+        num_preconnect_streams, net_log);
     return OK;
   }
 
-  return socket_handle->Init(connection_group, tcp_params, request_priority,
-                             socket_tag, respect_limits, std::move(callback),
-                             pool, net_log);
+  return socket_handle->Init(
+      connection_group,
+      TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+          std::move(tcp_params)),
+      request_priority, socket_tag, respect_limits, std::move(callback), pool,
+      net_log);
 }
 
 }  // namespace

@@ -19,19 +19,67 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_base.h"
 #include "net/socket/socket_net_log_params.h"
+#include "net/socket/transport_connect_job.h"
+#include "net/socket/websocket_transport_connect_job.h"
 
 namespace net {
+
+namespace {
+
+// Creates a TransportConnectJob or WebSocketTransportConnectJob, depending on
+// whether or not |web_socket_endpoint_lock_manager| is nullptr.
+std::unique_ptr<ConnectJob> CreateTransportConnectJob(
+    scoped_refptr<TransportSocketParams> transport_client_params,
+    const std::string& group_name,
+    RequestPriority priority,
+    const SocketTag& socket_tag,
+    bool respect_limits,
+    ClientSocketFactory* client_socket_factory,
+    SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
+    HostResolver* host_resolver,
+    ConnectJob::Delegate* delegate,
+    NetLog* net_log,
+    WebSocketEndpointLockManager* web_socket_endpoint_lock_manager) {
+  if (!web_socket_endpoint_lock_manager) {
+    return std::make_unique<TransportConnectJob>(
+        group_name, priority, socket_tag, respect_limits,
+        transport_client_params, client_socket_factory,
+        socket_performance_watcher_factory, host_resolver, delegate, net_log);
+  }
+
+  return std::make_unique<WebSocketTransportConnectJob>(
+      group_name, priority, respect_limits, transport_client_params,
+      client_socket_factory, host_resolver, delegate, net_log,
+      web_socket_endpoint_lock_manager);
+}
+
+}  // namespace
+
+TransportClientSocketPool::SocketParams::SocketParams(
+    const CreateConnectJobCallback& create_connect_job_callback)
+    : create_connect_job_callback_(create_connect_job_callback) {}
+
+scoped_refptr<TransportClientSocketPool::SocketParams>
+TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+    scoped_refptr<TransportSocketParams> transport_client_params) {
+  CreateConnectJobCallback callback =
+      base::BindRepeating(&CreateTransportConnectJob, transport_client_params);
+  return base::MakeRefCounted<SocketParams>(callback);
+}
+
+TransportClientSocketPool::SocketParams::~SocketParams() = default;
 
 std::unique_ptr<ConnectJob>
 TransportClientSocketPool::TransportConnectJobFactory::NewConnectJob(
     const std::string& group_name,
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate) const {
-  return std::make_unique<TransportConnectJob>(
+  return request.params()->create_connect_job_callback().Run(
       group_name, request.priority(), request.socket_tag(),
       request.respect_limits() == ClientSocketPool::RespectLimits::ENABLED,
-      request.params(), client_socket_factory_,
-      socket_performance_watcher_factory_, host_resolver_, delegate, net_log_);
+      client_socket_factory_, socket_performance_watcher_factory_,
+      host_resolver_, delegate, net_log_,
+      nullptr /* websocket_endpoint_lock_manager */);
 }
 
 TransportClientSocketPool::TransportClientSocketPool(
@@ -64,10 +112,10 @@ int TransportClientSocketPool::RequestSocket(const std::string& group_name,
                                              ClientSocketHandle* handle,
                                              CompletionOnceCallback callback,
                                              const NetLogWithSource& net_log) {
-  const scoped_refptr<TransportSocketParams>* casted_params =
-      static_cast<const scoped_refptr<TransportSocketParams>*>(params);
+  const scoped_refptr<SocketParams>* casted_params =
+      static_cast<const scoped_refptr<SocketParams>*>(params);
 
-  NetLogTcpClientSocketPoolRequestedSocket(net_log, casted_params);
+  NetLogTcpClientSocketPoolRequestedSocket(net_log, group_name);
 
   return base_.RequestSocket(group_name, *casted_params, priority, socket_tag,
                              respect_limits, handle, std::move(callback),
@@ -76,13 +124,11 @@ int TransportClientSocketPool::RequestSocket(const std::string& group_name,
 
 void TransportClientSocketPool::NetLogTcpClientSocketPoolRequestedSocket(
     const NetLogWithSource& net_log,
-    const scoped_refptr<TransportSocketParams>* casted_params) {
+    const std::string& group_name) {
   if (net_log.IsCapturing()) {
     // TODO(eroman): Split out the host and port parameters.
-    net_log.AddEvent(
-        NetLogEventType::TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKET,
-        CreateNetLogHostPortPairCallback(
-            &casted_params->get()->destination().host_port_pair()));
+    net_log.AddEvent(NetLogEventType::TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKET,
+                     NetLog::StringCallback("group", &group_name));
   }
 }
 
@@ -91,15 +137,13 @@ void TransportClientSocketPool::RequestSockets(
     const void* params,
     int num_sockets,
     const NetLogWithSource& net_log) {
-  const scoped_refptr<TransportSocketParams>* casted_params =
-      static_cast<const scoped_refptr<TransportSocketParams>*>(params);
+  const scoped_refptr<SocketParams>* casted_params =
+      static_cast<const scoped_refptr<SocketParams>*>(params);
 
   if (net_log.IsCapturing()) {
     // TODO(eroman): Split out the host and port parameters.
-    net_log.AddEvent(
-        NetLogEventType::TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKETS,
-        CreateNetLogHostPortPairCallback(
-            &casted_params->get()->destination().host_port_pair()));
+    net_log.AddEvent(NetLogEventType::TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKETS,
+                     NetLog::StringCallback("group_name", &group_name));
   }
 
   base_.RequestSockets(group_name, *casted_params, num_sockets, net_log);
