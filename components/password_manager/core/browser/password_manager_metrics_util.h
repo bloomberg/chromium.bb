@@ -282,7 +282,7 @@ enum class LinuxBackendMigrationStatus {
   // No migration was attempted (this value should not occur).
   kNotAttempted = 0,
   // The last attempt was not completed.
-  kFailed = 1,
+  kDeprecatedFailed = 1,
   // All the data is in the encrypted loginDB.
   kCopiedAll = 2,
   // The standard login database is encrypted.
@@ -291,13 +291,20 @@ enum class LinuxBackendMigrationStatus {
   kStarted = 4,
   // No access to the native backend.
   kPostponed = 5,
-  // Could not create or write into the temporary file.
-  kFailedCreatedEncrypted = 6,
+  // Could not create or write into the temporary file. Deprecated and replaced
+  // by more precise errors.
+  kDeprecatedFailedCreatedEncrypted = 6,
   // Could not read from the native backend.
   kFailedAccessNative = 7,
   // Could not replace old database.
   kFailedReplace = 8,
-  kMaxValue = kFailedReplace
+  // Could not initialise the temporary encrypted database.
+  kFailedInitEncrypted,
+  // Could not reset th temporary encrypted database.
+  kFailedRecreateEncrypted,
+  // Could not add entries into the temporary encrypted database.
+  kFailedWriteToEncrypted,
+  kMaxValue = kFailedWriteToEncrypted
 };
 
 // Type of the password drop-down shown on focus field.
