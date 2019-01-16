@@ -270,13 +270,13 @@ body.platform-windows {
 }
 
 .contrast-text {
-    border-radius: 10px;
+    border-radius: 3px;
     width: 20px;
     height: 16px;
     text-align: center;
     line-height: 16px;
     margin-right: 9px;
-    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));
+    border: 1px solid #ccc;
 }
 
 </style>
@@ -643,16 +643,13 @@ function _createElementDescription(elementInfo)
     function addContrastRow(fgColor, contrast) {
         const ratio = contrastRatio(parseHexa(fgColor), parseHexa(contrast.backgroundColor));
         const threshold = computeIsLargeFont(contrast) ? 3.0 : 4.5;
-        if (ratio >= threshold)
-            return;
         const valueElement = addRow("Contrast");
         const sampleText = valueElement.createChild("div", "contrast-text");
         sampleText.style.color = fgColor;
         sampleText.style.backgroundColor = contrast.backgroundColor;
         sampleText.textContent = "Aa";
-        const icon = valueElement.createChild("div");
-        icon.textContent = "\u{1F6AB}";
-        icon.style.color = "red";
+        if (ratio < threshold)
+            valueElement.style.color = "red";
         valueElement.createTextChild(ratio);
     }
 
@@ -1067,8 +1064,8 @@ function test() {
                 className:"class",
                 nodeWidth: 800,
                 nodeHeight: 600,
-                style: {"color": "#FFFFFFFF", "background-color": "#FFFF107F", "font-family": "serif", "font-size": "12px", "font-weight": "normal"},
-                contrast: { fontWidth: "normal", fontSize: "12px", backgroundColor: "#FF0000FF" }
+                style: {"color": "#FF0000FF", "background-color": "#FFFF107F", "font-family": "serif", "font-size": "12px", "font-weight": "normal"},
+                contrast: { fontWidth: "normal", fontSize: "12px", backgroundColor: "#FFFFFFFF" }
             }
         });
 }
