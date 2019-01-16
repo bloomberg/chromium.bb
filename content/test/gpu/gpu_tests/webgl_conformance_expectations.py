@@ -748,6 +748,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # This test is skipped because it is crashing the GPU process.
     self.Skip('conformance/glsl/bugs/init-array-with-loop.html',
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=784817)
+    self.Flaky('conformance/glsl/bugs/loop-if-loop-gradient.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=920737)
     self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
     self.Flaky('conformance/glsl/constructors/glsl-construct-ivec4.html',
