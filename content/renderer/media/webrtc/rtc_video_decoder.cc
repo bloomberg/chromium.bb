@@ -925,7 +925,7 @@ void RTCVideoDecoder::DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent()
 void RTCVideoDecoder::ClearPendingBuffers() {
   // Delete WebRTC input buffers.
   for (const auto& pending_buffer : pending_buffers_)
-    delete[] pending_buffer.first._buffer;
+    delete[] pending_buffer.first.data();
   pending_buffers_.clear();
 }
 
