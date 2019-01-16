@@ -319,7 +319,7 @@ class BrowserCompositorInvalidateLayerTreePerfTest
     gpu_mailbox.SetName(
         reinterpret_cast<const int8_t*>(name_stream.str().c_str()));
     std::unique_ptr<viz::SingleReleaseCallback> callback =
-        viz::SingleReleaseCallback::Create(base::Bind(
+        viz::SingleReleaseCallback::Create(base::BindOnce(
             &BrowserCompositorInvalidateLayerTreePerfTest::ReleaseMailbox,
             base::Unretained(this)));
 

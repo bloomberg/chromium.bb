@@ -74,11 +74,11 @@ class ImageAnimationControllerTest : public testing::Test {
   void SetUp() override {
     task_runner_ =
         new DelayTrackingTaskRunner(base::ThreadTaskRunnerHandle::Get().get());
-    base::Closure invalidation_callback =
-        base::Bind(&ImageAnimationControllerTest::RequestInvalidation,
-                   base::Unretained(this));
+    auto invalidation_callback =
+        base::BindRepeating(&ImageAnimationControllerTest::RequestInvalidation,
+                            base::Unretained(this));
     controller_ = std::make_unique<ImageAnimationController>(
-        task_runner_.get(), invalidation_callback,
+        task_runner_.get(), std::move(invalidation_callback),
         GetEnableImageAnimationResync());
     now_ += base::TimeDelta::FromSeconds(10);
   }

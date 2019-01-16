@@ -595,8 +595,8 @@ void SingleThreadProxy::ScheduleRequestNewLayerTreeFrameSink() {
   if (layer_tree_frame_sink_creation_callback_.IsCancelled() &&
       !layer_tree_frame_sink_creation_requested_) {
     layer_tree_frame_sink_creation_callback_.Reset(
-        base::Bind(&SingleThreadProxy::RequestNewLayerTreeFrameSink,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&SingleThreadProxy::RequestNewLayerTreeFrameSink,
+                       weak_factory_.GetWeakPtr()));
     task_runner_provider_->MainThreadTaskRunner()->PostTask(
         FROM_HERE, layer_tree_frame_sink_creation_callback_.callback());
   }

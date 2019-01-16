@@ -255,11 +255,11 @@ class LayerTreeHostProxyTestCommitWaitsForActivation
     switch (impl->sync_tree()->source_frame_number()) {
       case 0: {
         // This is for case 1 in DidCommit.
-        auto unblock = base::Bind(
+        auto unblock = base::BindOnce(
             &LayerTreeHostProxyTestCommitWaitsForActivation::UnblockActivation,
             base::Unretained(this), impl);
         ImplThreadTaskRunner()->PostDelayedTask(
-            FROM_HERE, unblock,
+            FROM_HERE, std::move(unblock),
             // Use a delay to allow the main frame to start if it would. This
             // should cause failures (or flakiness) if we fail to wait for the
             // activation before starting the main frame.
@@ -348,13 +348,13 @@ class LayerTreeHostProxyTestCommitWaitsForActivationMFBA
         // This is the main frame with SetNextCommitWaitsForActivation().
         // Activation is currently blocked for the previous main frame (from the
         // case above). We unblock activate to allow this main frame to commit.
-        auto unblock =
-            base::Bind(&LayerTreeHostImpl::BlockNotifyReadyToActivateForTesting,
-                       base::Unretained(impl), false);
+        auto unblock = base::BindOnce(
+            &LayerTreeHostImpl::BlockNotifyReadyToActivateForTesting,
+            base::Unretained(impl), false);
         // Post the unblock instead of doing it immediately so that the main
         // frame is fully processed by the compositor thread, and it has a full
         // opportunity to wrongly unblock the main thread.
-        ImplThreadTaskRunner()->PostTask(FROM_HERE, unblock);
+        ImplThreadTaskRunner()->PostTask(FROM_HERE, std::move(unblock));
         // Once activation completes, we'll begin the commit for frame 1.
         break;
       }
@@ -376,11 +376,12 @@ class LayerTreeHostProxyTestCommitWaitsForActivationMFBA
       // failures (or flakiness) if we fail to wait for the activation before
       // starting the main frame.
       auto unblock =
-          base::Bind(&LayerTreeHostProxyTestCommitWaitsForActivationMFBA::
-                         UnblockActivation,
-                     base::Unretained(this), impl);
+          base::BindOnce(&LayerTreeHostProxyTestCommitWaitsForActivationMFBA::
+                             UnblockActivation,
+                         base::Unretained(this), impl);
       ImplThreadTaskRunner()->PostDelayedTask(
-          FROM_HERE, unblock, base::TimeDelta::FromMilliseconds(16 * 4));
+          FROM_HERE, std::move(unblock),
+          base::TimeDelta::FromMilliseconds(16 * 4));
     }
   }
 

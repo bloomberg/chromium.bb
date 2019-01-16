@@ -18,7 +18,7 @@ namespace cc {
 
 class CC_EXPORT ScrollbarAnimationControllerClient {
  public:
-  virtual void PostDelayedScrollbarAnimationTask(const base::Closure& task,
+  virtual void PostDelayedScrollbarAnimationTask(base::OnceClosure task,
                                                  base::TimeDelta delay) = 0;
   virtual void SetNeedsRedrawForScrollbarAnimation() = 0;
   virtual void SetNeedsAnimateForScrollbarAnimation() = 0;
@@ -153,7 +153,7 @@ class CC_EXPORT ScrollbarAnimationController {
   bool currently_scrolling_;
   bool show_in_fast_scroll_;
 
-  base::CancelableClosure delayed_scrollbar_animation_;
+  base::CancelableOnceClosure delayed_scrollbar_animation_;
 
   float opacity_;
 

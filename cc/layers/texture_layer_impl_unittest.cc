@@ -63,7 +63,7 @@ TEST(TextureLayerImplTest, Occlusion) {
   texture_layer_impl->SetDrawsContent(true);
   texture_layer_impl->SetTransferableResource(
       resource,
-      viz::SingleReleaseCallback::Create(base::Bind(&IgnoreCallback)));
+      viz::SingleReleaseCallback::Create(base::BindOnce(&IgnoreCallback)));
 
   impl.CalcDrawProps(viewport_size);
 
@@ -122,7 +122,7 @@ TEST(TextureLayerImplTest, ResourceNotFreedOnGpuRasterToggle) {
   texture_layer_impl->SetBounds(layer_size);
   texture_layer_impl->SetDrawsContent(true);
   texture_layer_impl->SetTransferableResource(
-      resource, viz::SingleReleaseCallback::Create(base::Bind(
+      resource, viz::SingleReleaseCallback::Create(base::BindOnce(
                     [](bool* released, const gpu::SyncToken& sync_token,
                        bool lost) { *released = true; },
                     base::Unretained(&released))));

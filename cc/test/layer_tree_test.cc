@@ -856,7 +856,8 @@ void LayerTreeTest::DoBeginTest() {
   }
 
   if (timeout_seconds_) {
-    timeout_.Reset(base::Bind(&LayerTreeTest::Timeout, base::Unretained(this)));
+    timeout_.Reset(
+        base::BindOnce(&LayerTreeTest::Timeout, base::Unretained(this)));
     main_task_runner_->PostDelayedTask(
         FROM_HERE, timeout_.callback(),
         base::TimeDelta::FromSeconds(timeout_seconds_));

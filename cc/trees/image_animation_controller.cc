@@ -426,7 +426,7 @@ void ImageAnimationController::DelayedNotifier::Schedule(
   pending_notification_time_.emplace(notification_time);
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&DelayedNotifier::Notify, weak_factory_.GetWeakPtr()),
+      base::BindOnce(&DelayedNotifier::Notify, weak_factory_.GetWeakPtr()),
       notification_time - now);
 }
 
