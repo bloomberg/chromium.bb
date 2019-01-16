@@ -54,6 +54,66 @@ suite('ExtensionsActivityLogTest', function() {
     ]
   };
 
+  // Sample activities representing content script invocations. Activities with
+  // missing args will not be processed.
+  const testContentScriptActivities = {
+    activities: [
+      {
+        activityId: '288',
+        activityType: 'content_script',
+        apiCall: '',
+        args: `["script1.js","script2.js"]`,
+        count: 1,
+        extensionId: EXTENSION_ID,
+        pageTitle: 'Test Extension',
+        pageUrl: 'https://www.google.com/search'
+      },
+      {
+        activityId: '290',
+        activityType: 'content_script',
+        apiCall: '',
+        count: 1,
+        extensionId: EXTENSION_ID,
+        pageTitle: 'Test Extension',
+        pageUrl: 'https://www.google.com/search'
+      },
+    ]
+  };
+
+  // Sample activities representing web requests. Activities with valid fields
+  // in other.webRequest should be split into multiple entries; one for every
+  // field. Activities with empty fields will have the group name be just the
+  // web request API call.
+  const testWebRequestActivities = {
+    activities: [
+      {
+        activityId: '1337',
+        activityType: 'web_request',
+        apiCall: 'webRequest.onBeforeSendHeaders',
+        args: 'null',
+        count: 300,
+        extensionId: EXTENSION_ID,
+        other: {
+          webRequest:
+              `{"modified_request_headers":true, "added_request_headers":"a"}`
+        },
+        pageUrl: `chrome-extension://${EXTENSION_ID}/index.html`,
+        time: 1546499283237.616
+      },
+      {
+        activityId: '1339',
+        activityType: 'web_request',
+        apiCall: 'webRequest.noWebRequestObject',
+        args: 'null',
+        count: 3,
+        extensionId: EXTENSION_ID,
+        other: {},
+        pageUrl: `chrome-extension://${EXTENSION_ID}/index.html`,
+        time: 1546499283237.616
+      },
+    ]
+  };
+
   // Initialize an extension activity log before each test.
   setup(function() {
     PolymerTest.clearBody();
@@ -90,12 +150,63 @@ suite('ExtensionsActivityLogTest', function() {
     // file because the logic to group activity log items by their API call
     // is in activity_log.js.
     expectEquals(
-        activityLogItems[0].$$('#api-call').innerText, 'i18n.getUILanguage');
+        activityLogItems[0].$$('#activity-key').innerText,
+        'i18n.getUILanguage');
     expectEquals(activityLogItems[0].$$('#activity-count').innerText, '40');
 
     expectEquals(
-        activityLogItems[1].$$('#api-call').innerText, 'Storage.getItem');
+        activityLogItems[1].$$('#activity-key').innerText, 'Storage.getItem');
     expectEquals(activityLogItems[1].$$('#activity-count').innerText, '35');
+  });
+
+  test('script names shown for content script activities', function() {
+    proxyDelegate.resetResolver('getExtensionActivityLog');
+    proxyDelegate.testActivities = testContentScriptActivities;
+
+    activityLog.refreshActivities().then(() => {
+      Polymer.dom.flush();
+      const activityLogItems =
+          activityLog.shadowRoot.querySelectorAll('activity-log-item');
+
+      // One activity should be shown for each content script name.
+      expectEquals(activityLogItems.length, 2);
+
+      expectEquals(
+          activityLogItems[0].$$('#activity-key').innerText, 'script1.js');
+      expectEquals(
+          activityLogItems[1].$$('#activity-key').innerText, 'script2.js');
+    });
+  });
+
+  test('other.webRequest fields shown for web request activities', function() {
+    proxyDelegate.resetResolver('getExtensionActivityLog');
+    proxyDelegate.testActivities = testWebRequestActivities;
+
+    activityLog.refreshActivities().then(() => {
+      Polymer.dom.flush();
+      const activityLogItems =
+          activityLog.shadowRoot.querySelectorAll('activity-log-item');
+
+      // First activity should be split into two groups as it has two actions
+      // recorded in the other.webRequest object. We display the names of these
+      // actions along with the API call. Second activity should fall back
+      // to using just the API call as the key. Hence we end up with three
+      // activity log items.
+      const expectedItemKeys = [
+        'webRequest.onBeforeSendHeaders (added_request_headers)',
+        'webRequest.onBeforeSendHeaders (modified_request_headers)',
+        'webRequest.noWebRequestObject'
+      ];
+      const expectedNumItems = expectedItemKeys.length;
+
+      expectEquals(activityLogItems.length, expectedNumItems);
+
+      for (let idx = 0; idx < expectedNumItems; ++idx) {
+        expectEquals(
+            activityLogItems[idx].$$('#activity-key').innerText,
+            expectedItemKeys[idx]);
+      }
+    });
   });
 
   test('activities shown match search query', function() {
@@ -117,7 +228,7 @@ suite('ExtensionsActivityLogTest', function() {
           // activity log entries are grouped by their API call.
           expectEquals(activityLogItems.length, 1);
           expectEquals(
-              activityLogItems[0].$$('#api-call').innerText,
+              activityLogItems[0].$$('#activity-key').innerText,
               'i18n.getUILanguage');
 
           // Change search query so no results match.

@@ -7,13 +7,13 @@ cr.define('extensions', function() {
 
   /**
    * @typedef {{
-   *   apiCall: string,
+   *   key: string,
    *   count: number,
    *   activityType: !chrome.activityLogPrivate.ExtensionActivityFilter,
    *   countsByUrl: !Map<string, number>
    * }}
    */
-  let ApiGroup;
+  let ActivityGroup;
 
   /**
    * A struct used to describe each url and its associated counts. The id is
@@ -30,9 +30,9 @@ cr.define('extensions', function() {
 
     properties: {
       /**
-       * The underlying ApiGroup that provides data for the
+       * The underlying ActivityGroup that provides data for the
        * ActivityLogItem displayed.
-       * @type {!extensions.ApiGroup}
+       * @type {!extensions.ActivityGroup}
        */
       data: Object,
 
@@ -58,8 +58,9 @@ cr.define('extensions', function() {
     },
 
     /**
-     * Sort the page URLs by the number of times the API call was made for that
-     * page URL. Resolve ties by the alphabetical order of the page URL.
+     * Sort the page URLs by the number of times it was associated with the key
+     * for this ActivityGroup (API call or content script invocation.) Resolve
+     * ties by the alphabetical order of the page URL.
      * @private
      * @return {!Array<PageUrlItem>}
      */
@@ -82,8 +83,8 @@ cr.define('extensions', function() {
     },
 
     /**
-     * Show the API call count for a particular page URL if more than one page
-     * URL is associated with this API call.
+     * Show the call count for a particular page URL if more than one page
+     * URL is associated with the key for this ActivityGroup.
      * @private
      * @return {boolean}
      */
@@ -94,6 +95,6 @@ cr.define('extensions', function() {
 
   return {
     ActivityLogItem: ActivityLogItem,
-    ApiGroup: ApiGroup,
+    ActivityGroup: ActivityGroup,
   };
 });

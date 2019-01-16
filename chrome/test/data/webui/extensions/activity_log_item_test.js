@@ -12,23 +12,23 @@ suite('ExtensionsActivityLogItemTest', function() {
   let testVisible;
 
   /**
-   * ApiGroup data for the activityLogItem
-   * @type {extensions.ApiGroup}
+   * ActivityGroup data for the activityLogItem
+   * @type {extensions.ActivityGroup}
    */
-  let testApiGroup;
+  let testActivityGroup;
 
   // Initialize an extension activity log item before each test.
   setup(function() {
     PolymerTest.clearBody();
-    testApiGroup = {
-      apiCall: 'i18n.getUILanguage',
+    testActivityGroup = {
+      key: 'i18n.getUILanguage',
       count: 1,
       activityType: chrome.activityLogPrivate.ExtensionActivityFilter.API_CALL,
       countsByUrl: new Map()
     };
 
     activityLogItem = new extensions.ActivityLogItem();
-    activityLogItem.data = testApiGroup;
+    activityLogItem.data = testActivityGroup;
     testVisible = extension_test_util.testVisible.bind(null, activityLogItem);
 
     document.body.appendChild(activityLogItem);
@@ -69,14 +69,15 @@ suite('ExtensionsActivityLogItemTest', function() {
   test('count not shown when there is only 1 page url', function() {
     const countsByUrl = new Map([['google.com', 1]]);
 
-    testApiGroup = {
-      apiCall: 'Storage.getItem',
+    testActivityGroup = {
+      key: 'Storage.getItem',
       count: 3,
       activityType:
           chrome.activityLogPrivate.ExtensionActivityFilter.DOM_ACCESS,
       countsByUrl
     };
-    activityLogItem.set('data', testApiGroup);
+
+    activityLogItem.set('data', testActivityGroup);
     activityLogItem.$$('#activity-item-main-row').click();
 
     Polymer.dom.flush();
@@ -90,14 +91,14 @@ suite('ExtensionsActivityLogItemTest', function() {
     const countsByUrl =
         new Map([['google.com', 5], ['chrome://extensions', 10]]);
 
-    testApiGroup = {
-      apiCall: 'Storage.getItem',
+    testActivityGroup = {
+      key: 'Storage.getItem',
       count: 15,
       activityType:
           chrome.activityLogPrivate.ExtensionActivityFilter.DOM_ACCESS,
       countsByUrl
     };
-    activityLogItem.set('data', testApiGroup);
+    activityLogItem.set('data', testActivityGroup);
     activityLogItem.$$('#activity-item-main-row').click();
 
     Polymer.dom.flush();
