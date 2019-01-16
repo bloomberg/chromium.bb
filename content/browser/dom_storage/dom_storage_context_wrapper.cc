@@ -275,6 +275,11 @@ void DOMStorageContextWrapper::PerformLocalStorageCleanup(
     base::OnceClosure callback) {
   DCHECK(context_.get());
   DCHECK(callback);
+  if (!mojo_state_) {
+    // Shutdown() has been called.
+    std::move(callback).Run();
+    return;
+  }
   mojo_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
