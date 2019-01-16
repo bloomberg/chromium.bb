@@ -75,17 +75,19 @@ void DragDropControllerMus::OnDragDropStart(
 
 uint32_t DragDropControllerMus::OnDragEnter(WindowMus* window,
                                             uint32_t event_flags,
-                                            const gfx::Point& screen_location,
+                                            const gfx::PointF& location_in_root,
+                                            const gfx::PointF& location,
                                             uint32_t effect_bitmask) {
-  return HandleDragEnterOrOver(window, event_flags, screen_location,
+  return HandleDragEnterOrOver(window, event_flags, location_in_root, location,
                                effect_bitmask, true);
 }
 
 uint32_t DragDropControllerMus::OnDragOver(WindowMus* window,
                                            uint32_t event_flags,
-                                           const gfx::Point& screen_location,
+                                           const gfx::PointF& location_in_root,
+                                           const gfx::PointF& location,
                                            uint32_t effect_bitmask) {
-  return HandleDragEnterOrOver(window, event_flags, screen_location,
+  return HandleDragEnterOrOver(window, event_flags, location_in_root, location,
                                effect_bitmask, false);
 }
 
@@ -101,7 +103,8 @@ void DragDropControllerMus::OnDragLeave(WindowMus* window) {
 uint32_t DragDropControllerMus::OnCompleteDrop(
     WindowMus* window,
     uint32_t event_flags,
-    const gfx::Point& screen_location,
+    const gfx::PointF& location_in_root,
+    const gfx::PointF& location,
     uint32_t effect_bitmask) {
   if (drop_target_window_tracker_.windows().empty())
     return ws::mojom::kDropEffectNone;
@@ -109,8 +112,9 @@ uint32_t DragDropControllerMus::OnCompleteDrop(
   DCHECK(window);
   Window* current_target = drop_target_window_tracker_.Pop();
   DCHECK_EQ(window->GetWindow(), current_target);
-  std::unique_ptr<ui::DropTargetEvent> event = CreateDropTargetEvent(
-      window->GetWindow(), event_flags, screen_location, effect_bitmask);
+  std::unique_ptr<ui::DropTargetEvent> event =
+      CreateDropTargetEvent(window->GetWindow(), event_flags, location_in_root,
+                            location, effect_bitmask);
   return client::GetDragDropDelegate(current_target)->OnPerformDrop(*event);
 }
 
@@ -193,7 +197,8 @@ void DragDropControllerMus::RemoveObserver(
 uint32_t DragDropControllerMus::HandleDragEnterOrOver(
     WindowMus* window,
     uint32_t event_flags,
-    const gfx::Point& screen_location,
+    const gfx::PointF& location_in_root,
+    const gfx::PointF& location,
     uint32_t effect_bitmask,
     bool is_enter) {
   client::DragDropDelegate* drag_drop_delegate =
@@ -207,28 +212,26 @@ uint32_t DragDropControllerMus::HandleDragEnterOrOver(
   }
   drop_target_window_tracker_.Add(window->GetWindow());
 
-  std::unique_ptr<ui::DropTargetEvent> event = CreateDropTargetEvent(
-      window->GetWindow(), event_flags, screen_location, effect_bitmask);
+  std::unique_ptr<ui::DropTargetEvent> event =
+      CreateDropTargetEvent(window->GetWindow(), event_flags, location_in_root,
+                            location, effect_bitmask);
   if (is_enter)
     drag_drop_delegate->OnDragEntered(*event);
   return drag_drop_delegate->OnDragUpdated(*event);
 }
 
 std::unique_ptr<ui::DropTargetEvent>
-DragDropControllerMus::CreateDropTargetEvent(Window* window,
-                                             uint32_t event_flags,
-                                             const gfx::Point& screen_location,
-                                             uint32_t effect_bitmask) {
-  DCHECK(window->GetHost());
-  gfx::Point root_location = screen_location;
-  window->GetHost()->ConvertScreenInPixelsToDIP(&root_location);
-  gfx::PointF location(root_location);
-  Window::ConvertPointToTarget(window->GetRootWindow(), window, &location);
+DragDropControllerMus::CreateDropTargetEvent(
+    Window* window,
+    uint32_t event_flags,
+    const gfx::PointF& location_in_root,
+    const gfx::PointF& location,
+    uint32_t effect_bitmask) {
   std::unique_ptr<ui::DropTargetEvent> event =
       std::make_unique<ui::DropTargetEvent>(
           current_drag_state_ ? current_drag_state_->drag_data
                               : *(os_exchange_data_.get()),
-          location, gfx::PointF(root_location), effect_bitmask);
+          location, location_in_root, effect_bitmask);
   event->set_flags(event_flags);
   ui::Event::DispatcherApi(event.get()).set_target(window);
   return event;

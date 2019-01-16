@@ -335,24 +335,27 @@ void RendererWindowTreeClient::OnDragDropStart(
 
 void RendererWindowTreeClient::OnDragEnter(ws::Id window_id,
                                            uint32_t event_flags,
-                                           const gfx::Point& position,
+                                           const gfx::PointF& location_in_root,
+                                           const gfx::PointF& location,
                                            uint32_t effect_bitmask,
                                            OnDragEnterCallback callback) {}
 
 void RendererWindowTreeClient::OnDragOver(ws::Id window_id,
                                           uint32_t event_flags,
-                                          const gfx::Point& position,
+                                          const gfx::PointF& location_in_root,
+                                          const gfx::PointF& location,
                                           uint32_t effect_bitmask,
                                           OnDragOverCallback callback) {}
 
 void RendererWindowTreeClient::OnDragLeave(ws::Id window_id) {}
 
-void RendererWindowTreeClient::OnCompleteDrop(ws::Id window_id,
-                                              uint32_t event_flags,
-                                              const gfx::Point& position,
-                                              uint32_t effect_bitmask,
-                                              OnCompleteDropCallback callback) {
-}
+void RendererWindowTreeClient::OnCompleteDrop(
+    ws::Id window_id,
+    uint32_t event_flags,
+    const gfx::PointF& location_in_root,
+    const gfx::PointF& location,
+    uint32_t effect_bitmask,
+    OnCompleteDropCallback callback) {}
 
 void RendererWindowTreeClient::OnPerformDragDropCompleted(
     uint32_t change_id,

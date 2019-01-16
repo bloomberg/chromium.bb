@@ -1387,20 +1387,24 @@ void WindowTreeClient::OnDragDropStart(
 
 void WindowTreeClient::OnDragEnter(ws::Id window_id,
                                    uint32_t key_state,
-                                   const gfx::Point& position,
+                                   const gfx::PointF& location_in_root,
+                                   const gfx::PointF& location,
                                    uint32_t effect_bitmask,
                                    OnDragEnterCallback callback) {
   std::move(callback).Run(drag_drop_controller_->OnDragEnter(
-      GetWindowByServerId(window_id), key_state, position, effect_bitmask));
+      GetWindowByServerId(window_id), key_state, location_in_root, location,
+      effect_bitmask));
 }
 
 void WindowTreeClient::OnDragOver(ws::Id window_id,
                                   uint32_t key_state,
-                                  const gfx::Point& position,
+                                  const gfx::PointF& location_in_root,
+                                  const gfx::PointF& location,
                                   uint32_t effect_bitmask,
                                   OnDragOverCallback callback) {
   std::move(callback).Run(drag_drop_controller_->OnDragOver(
-      GetWindowByServerId(window_id), key_state, position, effect_bitmask));
+      GetWindowByServerId(window_id), key_state, location_in_root, location,
+      effect_bitmask));
 }
 
 void WindowTreeClient::OnDragLeave(ws::Id window_id) {
@@ -1413,11 +1417,13 @@ void WindowTreeClient::OnDragDropDone() {
 
 void WindowTreeClient::OnCompleteDrop(ws::Id window_id,
                                       uint32_t key_state,
-                                      const gfx::Point& position,
+                                      const gfx::PointF& location_in_root,
+                                      const gfx::PointF& location,
                                       uint32_t effect_bitmask,
                                       OnCompleteDropCallback callback) {
   std::move(callback).Run(drag_drop_controller_->OnCompleteDrop(
-      GetWindowByServerId(window_id), key_state, position, effect_bitmask));
+      GetWindowByServerId(window_id), key_state, location_in_root, location,
+      effect_bitmask));
 }
 
 void WindowTreeClient::OnPerformDragDropCompleted(uint32_t change_id,
