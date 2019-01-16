@@ -18,7 +18,6 @@
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/url_formatter/idn_spoof_checker.h"
 #include "components/url_formatter/top_domains/top_domain_util.h"
-#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/navigation_handle.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -49,6 +48,21 @@ bool SkeletonsMatch(const url_formatter::Skeletons& skeletons1,
   return false;
 }
 
+// Returns true if the domain given by |domain_info| is a top domain.
+bool IsTopDomain(
+    const LookalikeUrlNavigationObserver::DomainInfo& domain_info) {
+  // Top domains are only accessible through their skeletons, so query the top
+  // domains trie for each skeleton of this domain.
+  for (const std::string& skeleton : domain_info.skeletons) {
+    const std::string top_domain =
+        url_formatter::LookupSkeletonInTopDomains(skeleton);
+    if (domain_info.domain_and_registry == top_domain) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Returns the eTLD+1 of |hostname|. This excludes private registries so that
 // GetETLDPlusOne("test.blogspot.com") returns "blogspot.com" (blogspot.com is
 // listed as a private registry). We do this to be consistent with
@@ -64,18 +78,8 @@ std::string GetETLDPlusOne(const GURL& url) {
 // comparison.
 std::string GetMatchingSiteEngagementDomain(
     const std::vector<GURL>& engaged_sites,
-    const std::string& domain_and_registry) {
-  // Compute skeletons using eTLD+1.
-  // eTLD+1 can be empty for private domains.
-  if (domain_and_registry.empty())
-    return std::string();
-
-  url_formatter::IDNConversionResult result =
-      url_formatter::IDNToUnicodeWithDetails(domain_and_registry);
-  DCHECK(result.has_idn_component);
-  const url_formatter::Skeletons navigated_skeletons =
-      url_formatter::GetSkeletons(result.result);
-
+    const LookalikeUrlNavigationObserver::DomainInfo& navigated_domain) {
+  DCHECK(!navigated_domain.domain_and_registry.empty());
   std::map<std::string, url_formatter::Skeletons>
       domain_and_registry_to_skeleton;
 
@@ -92,7 +96,7 @@ std::string GetMatchingSiteEngagementDomain(
     if (engaged_domain_and_registry.empty())
       continue;
 
-    if (domain_and_registry == engaged_domain_and_registry)
+    if (navigated_domain.domain_and_registry == engaged_domain_and_registry)
       return std::string();
 
     // Multiple domains can map to the same eTLD+1, avoid skeleton generation
@@ -114,7 +118,7 @@ std::string GetMatchingSiteEngagementDomain(
       skeletons = it->second;
     }
 
-    if (SkeletonsMatch(navigated_skeletons, skeletons))
+    if (SkeletonsMatch(navigated_domain.skeletons, skeletons))
       return engaged_site.host();
   }
   return std::string();
@@ -125,6 +129,19 @@ std::string GetMatchingSiteEngagementDomain(
 // static
 const char LookalikeUrlNavigationObserver::kHistogramName[] =
     "NavigationSuggestion.Event";
+
+LookalikeUrlNavigationObserver::DomainInfo::DomainInfo(
+    const std::string& arg_domain_and_registry,
+    const url_formatter::IDNConversionResult& arg_idn_result,
+    const url_formatter::Skeletons& arg_skeletons)
+    : domain_and_registry(arg_domain_and_registry),
+      idn_result(arg_idn_result),
+      skeletons(arg_skeletons) {}
+
+LookalikeUrlNavigationObserver::DomainInfo::~DomainInfo() = default;
+
+LookalikeUrlNavigationObserver::DomainInfo::DomainInfo(const DomainInfo&) =
+    default;
 
 LookalikeUrlNavigationObserver::LookalikeUrlNavigationObserver(
     content::WebContents* web_contents)
@@ -157,17 +174,41 @@ void LookalikeUrlNavigationObserver::DidFinishNavigation(
           url, blink::mojom::EngagementLevel::MEDIUM))
     return;
 
+  const DomainInfo navigated_domain = GetDomainInfo(url);
+  if (navigated_domain.domain_and_registry.empty() ||
+      IsTopDomain(navigated_domain))
+    return;
+
   LookalikeUrlService::Get(profile_)->GetEngagedSites(
       base::BindOnce(&LookalikeUrlNavigationObserver::PerformChecks,
-                     weak_factory_.GetWeakPtr(), url));
+                     weak_factory_.GetWeakPtr(), url, navigated_domain));
+}
+
+LookalikeUrlNavigationObserver::DomainInfo
+LookalikeUrlNavigationObserver::GetDomainInfo(const GURL& url) {
+  // Perform all computations on eTLD+1.
+  const std::string domain_and_registry = GetETLDPlusOne(url);
+  // eTLD+1 can be empty for private domains.
+  if (domain_and_registry.empty()) {
+    return DomainInfo(domain_and_registry, url_formatter::IDNConversionResult(),
+                      url_formatter::Skeletons());
+  }
+  // Compute skeletons using eTLD+1.
+  url_formatter::IDNConversionResult idn_result =
+      url_formatter::IDNToUnicodeWithDetails(domain_and_registry);
+  url_formatter::Skeletons skeletons =
+      url_formatter::GetSkeletons(idn_result.result);
+  return DomainInfo(domain_and_registry, idn_result, skeletons);
 }
 
 void LookalikeUrlNavigationObserver::PerformChecks(
     const GURL& url,
+    const DomainInfo& navigated_domain,
     const std::vector<GURL>& engaged_sites) {
   std::string matched_domain;
   MatchType match_type;
-  if (!GetMatchingDomain(url, engaged_sites, &matched_domain, &match_type)) {
+  if (!GetMatchingDomain(navigated_domain, engaged_sites, &matched_domain,
+                         &match_type)) {
     return;
   }
 
@@ -195,35 +236,31 @@ void LookalikeUrlNavigationObserver::PerformChecks(
 }
 
 bool LookalikeUrlNavigationObserver::GetMatchingDomain(
-    const GURL& url,
+    const DomainInfo& navigated_domain,
     const std::vector<GURL>& engaged_sites,
     std::string* matched_domain,
     MatchType* match_type) {
-  // Perform all computations on eTLD+1.
-  const std::string domain_and_registry = GetETLDPlusOne(url);
+  DCHECK(!navigated_domain.domain_and_registry.empty());
 
-  url_formatter::IDNConversionResult result =
-      url_formatter::IDNToUnicodeWithDetails(domain_and_registry);
-  if (result.has_idn_component) {
+  if (navigated_domain.idn_result.has_idn_component) {
     // If the navigated domain is IDN, check its skeleton against top domains
     // and engaged sites.
-    if (!result.matching_top_domain.empty()) {
+    if (!navigated_domain.idn_result.matching_top_domain.empty()) {
       // In practice, this is not possible since the top domain list does not
       // contain IDNs, so domain_and_registry can't both have IDN and be a top
       // domain. Still, sanity check in case the top domain list changes in the
       // future.
-      if (domain_and_registry == result.matching_top_domain) {
-        // Navigated domain is a top domain, do nothing.
-        return false;
-      }
+      // At this point, navigated domain should not be a top domain.
+      DCHECK_NE(navigated_domain.domain_and_registry,
+                navigated_domain.idn_result.matching_top_domain);
       RecordEvent(NavigationSuggestionEvent::kMatchTopSite);
-      *matched_domain = result.matching_top_domain;
+      *matched_domain = navigated_domain.idn_result.matching_top_domain;
       *match_type = MatchType::kTopSite;
       return true;
     }
 
     const std::string matched_engaged_domain =
-        GetMatchingSiteEngagementDomain(engaged_sites, domain_and_registry);
+        GetMatchingSiteEngagementDomain(engaged_sites, navigated_domain);
     if (!matched_engaged_domain.empty()) {
       RecordEvent(NavigationSuggestionEvent::kMatchSiteEngagement);
       *matched_domain = matched_engaged_domain;
@@ -235,8 +272,9 @@ bool LookalikeUrlNavigationObserver::GetMatchingDomain(
   // If we can't find an exact top domain or an engaged site, try to find a top
   // domain within an edit distance of one.
   const std::string similar_domain =
-      GetSimilarDomainFromTop500(base::UTF16ToUTF8(result.result));
-  if (!similar_domain.empty() && domain_and_registry != similar_domain) {
+      GetSimilarDomainFromTop500(navigated_domain);
+  if (!similar_domain.empty() &&
+      navigated_domain.domain_and_registry != similar_domain) {
     RecordEvent(NavigationSuggestionEvent::kMatchEditDistance);
     *matched_domain = similar_domain;
     *match_type = MatchType::kEditDistance;
@@ -290,18 +328,18 @@ bool LookalikeUrlNavigationObserver::IsEditDistanceAtMostOne(
 
 // static
 std::string LookalikeUrlNavigationObserver::GetSimilarDomainFromTop500(
-    const std::string& domain_and_registry) {
+    const DomainInfo& navigated_domain) {
   if (!url_formatter::top_domains::IsEditDistanceCandidate(
-          domain_and_registry)) {
+          navigated_domain.domain_and_registry)) {
     return std::string();
   }
   const std::string domain_without_registry =
-      url_formatter::top_domains::HostnameWithoutRegistry(domain_and_registry);
+      url_formatter::top_domains::HostnameWithoutRegistry(
+          navigated_domain.domain_and_registry);
 
-  for (const std::string& skeleton :
-       url_formatter::GetSkeletons(base::UTF8ToUTF16(domain_and_registry))) {
+  for (const std::string& navigated_skeleton : navigated_domain.skeletons) {
     for (const char* const top_domain_skeleton : kTop500) {
-      if (IsEditDistanceAtMostOne(base::UTF8ToUTF16(skeleton),
+      if (IsEditDistanceAtMostOne(base::UTF8ToUTF16(navigated_skeleton),
                                   base::UTF8ToUTF16(top_domain_skeleton))) {
         const std::string top_domain =
             url_formatter::LookupSkeletonInTopDomains(top_domain_skeleton);

@@ -360,8 +360,12 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
   TestInfobarNotShown(browser(), GetURL("google.com.tw"));
   CheckNoUkm();
 
+  // Matches bing.com but is a top domain itself.
+  TestInfobarNotShown(browser(), GetURL("ning.com"));
+  CheckNoUkm();
+
   // Matches ask.com but is too short.
-  TestInfobarNotShown(browser(), GetURL("asq.com"));
+  TestInfobarNotShown(browser(), GetURL("bsk.com"));
   CheckNoUkm();
 }
 
