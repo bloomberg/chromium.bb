@@ -646,13 +646,6 @@ HRESULT CGaiaCredentialBase::GetBaseGlsCommandline(
   // language.
   command_line->AppendSwitchNative("lang", GetSelectedLanguage());
 
-  // The gpu process will be running on an alternative desktop since it does not
-  // have access to the winlogon desktop. This mitigation is required merely to
-  // be able to start Chrome during winlogon. However, in this scenario no gpu
-  // rendering can be done to the screen, so all the gpu features need to be
-  // disabled. (crbug.com/904902)
-  command_line->AppendSwitch("disable-gpu");
-
   return S_OK;
 }
 
