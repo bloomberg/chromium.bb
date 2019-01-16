@@ -129,7 +129,7 @@ void ArcAppTest::SetUp(Profile* profile) {
 void ArcAppTest::WaitForDefaultApps() {
   DCHECK(arc_app_list_pref_);
   base::RunLoop run_loop;
-  arc_app_list_pref_->SetDefaltAppsReadyCallback(run_loop.QuitClosure());
+  arc_app_list_pref_->SetDefaultAppsReadyCallback(run_loop.QuitClosure());
   run_loop.Run();
 }
 

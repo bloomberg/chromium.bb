@@ -71,7 +71,7 @@ class ApkWebAppInstallerBrowserTest
     DCHECK(arc_app_list_prefs_);
 
     base::RunLoop run_loop;
-    arc_app_list_prefs_->SetDefaltAppsReadyCallback(run_loop.QuitClosure());
+    arc_app_list_prefs_->SetDefaultAppsReadyCallback(run_loop.QuitClosure());
     run_loop.Run();
 
     app_instance_ = std::make_unique<arc::FakeAppInstance>(arc_app_list_prefs_);

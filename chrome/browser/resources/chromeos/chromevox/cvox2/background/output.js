@@ -1957,7 +1957,7 @@ Output.prototype = {
     /**
      * Use Output.RULES for node.role if exists.
      * If not, use Output.RULES for parentRole if exists.
-     * If not, use Output.RULES for 'defalt'.
+     * If not, use Output.RULES for 'default'.
      */
     if (node.role && (eventBlock[node.role] || {}).speak !== undefined)
       rule.role = node.role;

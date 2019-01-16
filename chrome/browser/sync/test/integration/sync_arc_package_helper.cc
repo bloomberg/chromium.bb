@@ -122,7 +122,7 @@ void SyncArcPackageHelper::SetupArcService(Profile* profile) {
   DCHECK(arc_app_list_prefs);
 
   base::RunLoop run_loop;
-  arc_app_list_prefs->SetDefaltAppsReadyCallback(run_loop.QuitClosure());
+  arc_app_list_prefs->SetDefaultAppsReadyCallback(run_loop.QuitClosure());
   run_loop.Run();
 
   instance_map_[profile] =
