@@ -12,11 +12,11 @@
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/ubertoken_fetcher_impl.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "components/signin/core/browser/ubertoken_fetcher.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace extensions {
 
@@ -87,10 +87,9 @@ GaiaWebAuthFlow::~GaiaWebAuthFlow() {
 }
 
 void GaiaWebAuthFlow::Start() {
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  ubertoken_fetcher_ = std::make_unique<signin::UbertokenFetcherImpl>(
-      account_id_, token_service,
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
+  ubertoken_fetcher_ = identity_manager->CreateUbertokenFetcherForAccount(
+      account_id_,
       base::BindOnce(&GaiaWebAuthFlow::OnUbertokenFetchComplete,
                      base::Unretained(this)),
       gaia::GaiaSource::kChrome, profile_->GetURLLoaderFactory(),

@@ -5,6 +5,7 @@
 #include "services/identity/public/cpp/identity_manager.h"
 
 #include "build/build_config.h"
+#include "components/signin/core/browser/ubertoken_fetcher_impl.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
@@ -226,6 +227,18 @@ void IdentityManager::RemoveAccessTokenFromCache(
   // as well (to maintain ordering in the case where a client removes an access
   // token from the cache and then immediately requests an access token).
   token_service_->InvalidateAccessToken(account_id, scopes, access_token);
+}
+
+std::unique_ptr<signin::UbertokenFetcher>
+IdentityManager::CreateUbertokenFetcherForAccount(
+    const std::string& account_id,
+    signin::UbertokenFetcher::CompletionCallback callback,
+    gaia::GaiaSource source,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    bool bount_to_channel_id) {
+  return std::make_unique<signin::UbertokenFetcherImpl>(
+      account_id, token_service_, std::move(callback), source,
+      url_loader_factory, bount_to_channel_id);
 }
 
 PrimaryAccountMutator* IdentityManager::GetPrimaryAccountMutator() {

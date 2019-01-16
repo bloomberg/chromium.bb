@@ -34,6 +34,8 @@ static_library("shared") {
     "signin_pref_names.h",
     "signin_switches.cc",
     "signin_switches.h",
+    "ubertoken_fetcher.cc",
+    "ubertoken_fetcher.h",
   ]
   deps = [
     ":signin_buildflags",
