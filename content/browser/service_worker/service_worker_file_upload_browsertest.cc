@@ -47,6 +47,14 @@ void GetKey(const base::DictionaryValue& dict,
   *out_value = value->GetInt();
 }
 
+// Helper since the default output of EXPECT_EQ isn't useful when debugging
+// failures, it doesn't recurse into the dictionary.
+void ExpectEqual(const base::DictionaryValue& expected,
+                 const base::DictionaryValue& actual) {
+  EXPECT_EQ(expected, actual)
+      << "\nExpected: " << expected << "\nActual: " << actual;
+}
+
 const char kFileContent[] = "uploaded file content";
 const size_t kFileSize = base::size(kFileContent) - 1;
 }  // namespace
@@ -91,39 +99,47 @@ class ServiceWorkerFileUploadTest
 
   enum class TargetOrigin { kSameOrigin, kCrossOrigin };
 
+  // Builds a target URL for the form to submit to. The URL has path
+  // "|path|?|query|" so they can be adjusted to tell the service worker how to
+  // handle the request.
+  GURL BuildTargetUrl(const std::string& path, const std::string& query) {
+    return embedded_test_server()->GetURL(path + "?" + query);
+  }
+
   // Tests submitting a form that is intercepted by a service worker. The form
   // has several input elements including a file; this test creates a temp file
   // and uploads it. The service worker is expected to respond with JSON
   // describing the request data it saw.
-  // - |target_query|: the request is to path "upload?|target_query|",
-  //   so the service worker sees these search params.
-  // - |target_origin|: whether to submit the form to a cross-origin URL
-  //   from the page with the form.
+  // - |target_url|: where to submit the form to.
+  // - |target_origin|: whether to submit the form from a page that is
+  //   cross-origin to the target.
   // - |out_file_name|: the name of the file this test uploaded via the form.
-  // - |out_result|: the JSON returned by the service worker.
-  void RunTest(const std::string& target_query,
+  // - |out_result|: the body of the resulting document.
+  void RunTest(const GURL& target_url,
                TargetOrigin target_origin,
                std::string* out_file_name,
-               std::unique_ptr<base::DictionaryValue>* out_result) {
-    // Install the service worker.
+               std::string* out_result) {
+    // Install the service worker. Use root scope since the network fallback
+    // test needs it: the service worker will intercept "/echo", then fall back
+    // to network, and the request gets handled by the default request handler
+    // for that URL which echoes back the request.
     EXPECT_TRUE(NavigateToURL(
         shell(), embedded_test_server()->GetURL(
                      "/service_worker/create_service_worker.html")));
-    EXPECT_EQ("DONE", EvalJs(shell(), "register('file_upload_worker.js');"));
+    EXPECT_EQ("DONE",
+              EvalJs(shell(), "register('file_upload_worker.js', '/');"));
 
     // Generate the URL for the page with the file upload form.
     GURL page_url = embedded_test_server()->GetURL("/service_worker/form.html");
     // If |target_origin| says to test submitting to a cross-origin target, set
-    // this page to a different origin. The |target_url| is set below to submit
-    // the form back to the original origin with the service worker.
+    // this page to a different origin. The |target_url| is expected to point
+    // back to the original origin with the service worker.
     if (target_origin == TargetOrigin::kCrossOrigin) {
       GURL::Replacements replacements;
       replacements.SetHostStr("cross-origin.example.com");
       page_url = page_url.ReplaceComponents(replacements);
     }
-    // Set "target=" query parameter.
-    GURL target_url = embedded_test_server()->GetURL("/service_worker/upload?" +
-                                                     target_query);
+    // Set the target to |target_url|.
     page_url = net::AppendQueryParameter(page_url, "target", target_url.spec());
 
     // Navigate to the page with a file upload form.
@@ -156,12 +172,37 @@ class ServiceWorkerFileUploadTest
                                  "document.body.textContent");
     ASSERT_TRUE(result.error.empty());
 
-    std::unique_ptr<base::DictionaryValue> dict = base::DictionaryValue::From(
-        base::test::ParseJson(result.ExtractString()));
-    ASSERT_TRUE(dict);
-
     *out_file_name = file_path.BaseName().MaybeAsASCII();
-    *out_result = std::move(dict);
+    *out_result = result.ExtractString();
+  }
+
+  // Helper for tests where the service worker calls respondWith().
+  void RunRespondWithTest(const std::string& target_query,
+                          TargetOrigin target_origin,
+                          std::string* out_filename,
+                          std::unique_ptr<base::DictionaryValue>* out_result) {
+    std::string result;
+    RunTest(BuildTargetUrl("/service_worker/upload", target_query),
+            TargetOrigin::kSameOrigin, out_filename, &result);
+    *out_result = base::DictionaryValue::From(base::test::ParseJson(result));
+    ASSERT_TRUE(*out_result);
+  }
+
+  // Helper for tests where the service worker falls back to network.
+  void RunNetworkFallbackTest(TargetOrigin target_origin) {
+    std::string filename;
+    std::string result;
+    // Use "/echo" so the request hits the echo default handler after falling
+    // back to network.
+    // Use "getAs=fallback" to tell the service worker to fall back.
+    RunTest(BuildTargetUrl("/echo", "getAs=fallback"), target_origin, &filename,
+            &result);
+
+    // This isn't as rigorous as BuildExpectedBodyAsFormData(). The test author
+    // couldn't get that to work maybe because \r\n get stripped somewhere.
+    EXPECT_THAT(result, ::testing::HasSubstr(kFileContent));
+    EXPECT_THAT(result, ::testing::HasSubstr(filename));
+    EXPECT_THAT(result, ::testing::HasSubstr("form-data; name=\"file\""));
   }
 
   std::string BuildExpectedBodyAsText(const std::string& boundary,
@@ -222,7 +263,7 @@ class ServiceWorkerFileUploadTest
 IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest, AsText) {
   std::string filename;
   std::unique_ptr<base::DictionaryValue> dict;
-  RunTest("getAs=text", TargetOrigin::kSameOrigin, &filename, &dict);
+  RunRespondWithTest("getAs=text", TargetOrigin::kSameOrigin, &filename, &dict);
 
   std::string boundary;
   GetKey(*dict, "boundary", &boundary);
@@ -236,7 +277,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest, AsText) {
 IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest, AsBlob) {
   std::string filename;
   std::unique_ptr<base::DictionaryValue> dict;
-  RunTest("getAs=blob", TargetOrigin::kSameOrigin, &filename, &dict);
+  RunRespondWithTest("getAs=blob", TargetOrigin::kSameOrigin, &filename, &dict);
 
   std::string boundary;
   GetKey(*dict, "boundary", &boundary);
@@ -250,24 +291,32 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest, AsBlob) {
 IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest, AsFormData) {
   std::string filename;
   std::unique_ptr<base::DictionaryValue> dict;
-  RunTest("getAs=formData", TargetOrigin::kSameOrigin, &filename, &dict);
+  RunRespondWithTest("getAs=formData", TargetOrigin::kSameOrigin, &filename,
+                     &dict);
 
-  std::unique_ptr<base::DictionaryValue> expected =
-      BuildExpectedBodyAsFormData(filename);
-  EXPECT_EQ(*expected, *dict);
+  ExpectEqual(*BuildExpectedBodyAsFormData(filename), *dict);
+}
+
+// Tests network fallback.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest, NetworkFallback) {
+  RunNetworkFallbackTest(TargetOrigin::kSameOrigin);
 }
 
 // Tests using Request.formData() when the form was submitted to a cross-origin
 // target. Regression test for https://crbug.com/916070.
-IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest,
-                       CrossOriginPost_AsFormData) {
+IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest, AsFormData_CrossOrigin) {
   std::string filename;
   std::unique_ptr<base::DictionaryValue> dict;
-  RunTest("getAs=formData", TargetOrigin::kCrossOrigin, &filename, &dict);
+  RunRespondWithTest("getAs=formData", TargetOrigin::kCrossOrigin, &filename,
+                     &dict);
 
-  std::unique_ptr<base::DictionaryValue> expected =
-      BuildExpectedBodyAsFormData(filename);
-  EXPECT_EQ(*expected, *dict);
+  ExpectEqual(*BuildExpectedBodyAsFormData(filename), *dict);
+}
+
+// Tests network fallback when the form was submitted to a cross-origin target.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest,
+                       NetworkFallback_CrossOrigin) {
+  RunNetworkFallbackTest(TargetOrigin::kCrossOrigin);
 }
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,

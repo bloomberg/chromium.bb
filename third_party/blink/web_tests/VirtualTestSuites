@@ -939,11 +939,6 @@
   },
   {
     "prefix": "not-site-per-process",
-    "base": "http/tests/local/serviceworker/fetch-request-body-file.html",
-    "args": ["--disable-site-isolation-trials"]
-  },
-  {
-    "prefix": "not-site-per-process",
     "base": "http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html",
     "args": ["--disable-site-isolation-trials"]
   },
