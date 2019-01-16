@@ -368,18 +368,37 @@ a {
   color: rgb(66, 133, 244);
 }
 
-/* Hides "hide" text div, the offline content list itself and the action button
- * to show the downloads home when the offline content list is collapsed/hidden.
+/* Hides the "hide" text div when the offline content list is collapsed/hidden
+ * and, alternatively, hides the "show" text div when the offline content list
+ * is expanded/shown.
  */
-#offline-content-list.list-hidden #offline-content-suggestions,
-#offline-content-list.list-hidden #offline-content-list-action,
-#offline-content-list.list-hidden #offline-content-list-hide-text {
+#offline-content-list.list-hidden #offline-content-list-hide-text,
+#offline-content-list:not(.list-hidden) #offline-content-list-show-text {
   display: none;
 }
 
-/* Hides the "show" div when the offline content list is expanded/shown. */
-#offline-content-list:not(.list-hidden) #offline-content-list-show-text {
-  display: none;
+/* Controls the animation of the offline content list when it is expanded/shown.
+ */
+#offline-content-suggestions {
+  /* Max-height has to be set for the height animation to work. The chosen value
+   * is a little greater than the maximum height the list will have, when all
+   * suggestions have images, so that it is never clamped. This makes so that
+   * when the actual height is smaller then the animation is not as smooth.
+   */
+  max-height: 27em;
+  transition: max-height 0.2s ease-in, visibility 0s 0.2s,
+              opacity 0.2s 0.2s linear;
+}
+
+/* Controls the animation of the offline content list when it is
+ * collapsed/hidden.
+ */
+#offline-content-list.list-hidden #offline-content-suggestions {
+  max-height: 0;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s linear, visibility 0s 0.2s,
+              max-height 0.2s 0.2s ease-out;
 }
 
 #offline-content-list {
@@ -564,9 +583,23 @@ div.offline-content-suggestion {
   width: 1.4em;
 }
 
+/* Controls the animation (and a bit more) of the launch-downloads-home action
+ * button when the offline content list is expanded/shown.
+ */
 #offline-content-list-action {
   text-align: center;
+  transition: visibility 0s 0.2s, opacity 0.2s 0.2s linear;
 }
+
+/* Controls the animation of the launch-downloads-home action button when the
+ * offline content list is collapsed/hidden.
+ */
+#offline-content-list.list-hidden #offline-content-list-action {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s linear, visibility 0s 0.2s;
+}
+
 
 #offline-content-summary {
   border: 1px solid var(--google-gray-300);

@@ -307,10 +307,10 @@ function offlineContentAvailable(isShown, suggestions) {
   var contentListElement = document.getElementById('offline-content-list');
   if (document.dir == 'rtl')
     contentListElement.classList.add('is-rtl');
-  // The list is configured as shown by default. Hide if needed.
-  if (!isShown)
-    toggleOfflineContentListVisibility(false);
   contentListElement.hidden = false;
+  // The list is configured as hidden by default. Show it if needed.
+  if (isShown)
+    toggleOfflineContentListVisibility(false);
 }
 
 function toggleOfflineContentListVisibility(updatePref) {
