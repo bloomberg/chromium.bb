@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/payments/ios_payment_instrument_launcher_factory.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/payments/ios_payment_instrument_launcher.h"
@@ -28,7 +28,8 @@ IOSPaymentInstrumentLauncherFactory::GetForBrowserState(
 // static
 IOSPaymentInstrumentLauncherFactory*
 IOSPaymentInstrumentLauncherFactory::GetInstance() {
-  return base::Singleton<IOSPaymentInstrumentLauncherFactory>::get();
+  static base::NoDestructor<IOSPaymentInstrumentLauncherFactory> instance;
+  return instance.get();
 }
 
 IOSPaymentInstrumentLauncherFactory::IOSPaymentInstrumentLauncherFactory()

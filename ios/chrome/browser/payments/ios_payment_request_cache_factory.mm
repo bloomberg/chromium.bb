@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/payments/ios_payment_request_cache_factory.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request_cache.h"
@@ -27,7 +27,8 @@ IOSPaymentRequestCacheFactory::GetForBrowserState(
 
 // static
 IOSPaymentRequestCacheFactory* IOSPaymentRequestCacheFactory::GetInstance() {
-  return base::Singleton<IOSPaymentRequestCacheFactory>::get();
+  static base::NoDestructor<IOSPaymentRequestCacheFactory> instance;
+  return instance.get();
 }
 
 IOSPaymentRequestCacheFactory::IOSPaymentRequestCacheFactory()
