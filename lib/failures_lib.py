@@ -409,11 +409,12 @@ class TestWarning(StepFailure):
   """Raised if a test stage (e.g. VMTest) returns a warning code."""
 
 
-def ReportStageFailure(db, build_stage_id, exception, metrics_fields=None):
+def ReportStageFailure(buildstore, build_stage_id, exception,
+                       metrics_fields=None):
   """Reports stage failure to CIDB and Mornach along with inner exceptions.
 
   Args:
-    db: A valid cidb handle.
+    buildstore: BuildStore instance to make DB calls with.
     build_stage_id: The cidb id for the build stage that failed.
     exception: The failure exception to report.
     metrics_fields: (Optional) Fields for ts_mon metric.
@@ -430,7 +431,7 @@ def ReportStageFailure(db, build_stage_id, exception, metrics_fields=None):
                 if isinstance(exception, StepFailure) else None)
 
   outer_failure_id = _InsertFailureToCIDBAndMornach(
-      db,
+      buildstore,
       build_stage_id,
       type(exception).__name__,
       exception_message,
@@ -442,7 +443,7 @@ def ReportStageFailure(db, build_stage_id, exception, metrics_fields=None):
   if isinstance(exception, CompoundFailure):
     for exc_class, exc_str, _ in exception.exc_infos:
       _InsertFailureToCIDBAndMornach(
-          db,
+          buildstore,
           build_stage_id,
           exc_class.__name__,
           exc_str,
@@ -454,7 +455,7 @@ def ReportStageFailure(db, build_stage_id, exception, metrics_fields=None):
 
 
 def _InsertFailureToCIDBAndMornach(
-    db, build_stage_id, exception_type, exception_message,
+    buildstore, build_stage_id, exception_type, exception_message,
     exception_category=constants.EXCEPTION_CATEGORY_UNKNOWN,
     outer_failure_id=None,
     extra_info=None,
@@ -462,7 +463,7 @@ def _InsertFailureToCIDBAndMornach(
   """Report a single stage failure to CIDB and Mornach if needed.
 
   Args:
-    db: A valid cidb handle.
+    buildstore: BuildStore instance to make DB calls.
     build_stage_id: The cidb id for the build stage that failed.
     exception_type: str name of the exception class.
     exception_message: str description of the failure.
@@ -479,7 +480,8 @@ def _InsertFailureToCIDBAndMornach(
   Returns:
     The Integer id of this exception in the failureTable.
   """
-  failure_id = db.InsertFailure(
+  assert buildstore.AreClientsReady()
+  failure_id = buildstore.InsertFailure(
       build_stage_id, exception_type, exception_message,
       exception_category=exception_category,
       outer_failure_id=outer_failure_id,

@@ -216,6 +216,23 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     with self.assertRaises(buildstore.BuildStoreException):
       bs.FinishBuildStage(constants.MOCK_BUILD_ID, 'status')
 
+  def testInsertFailure(self):
+    """Tests the redirect for InsertFailure function."""
+    init = self.PatchObject(BuildStore, 'InitializeClients',
+                            return_value=True)
+    bs = BuildStore()
+    bs.cidb_conn = mock.MagicMock()
+    self.PatchObject(bs.cidb_conn, 'InsertFailure')
+    bs.InsertFailure(
+        constants.MOCK_STAGE_ID, 'error_type', 'SomethingFailedException')
+    bs.cidb_conn.InsertFailure.assert_called_once_with(
+        constants.MOCK_STAGE_ID, 'error_type', 'SomethingFailedException',
+        constants.EXCEPTION_CATEGORY_UNKNOWN, None, None)
+    init.return_value = False
+    with self.assertRaises(buildstore.BuildStoreException):
+      bs.InsertFailure(constants.MOCK_STAGE_ID, 'error_type',
+                       'SomethingFailedException')
+
   def testFinishBuild(self):
     """Tests the redirect for FinishBuild function."""
     init = self.PatchObject(BuildStore, 'InitializeClients',

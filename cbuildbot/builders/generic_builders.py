@@ -134,6 +134,7 @@ class Builder(object):
 
         if cidb.CIDBConnectionFactory.IsCIDBSetup():
           db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
+          buildstore = BuildStore()
           for build_stage_id in stage.GetBuildStageIDs():
             stage_status = db.GetBuildStage(build_stage_id)
 
@@ -151,7 +152,7 @@ class Builder(object):
                   'category': stage.category,
               }
               failures_lib.ReportStageFailure(
-                  db, build_stage_id, ex, metrics_fields=metrics_fields)
+                  buildstore, build_stage_id, ex, metrics_fields=metrics_fields)
 
             # If this stage has non_completed status in buildStageTable, mark
             # the stage as 'fail' status in buildStageTable.

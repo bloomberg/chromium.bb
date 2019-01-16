@@ -271,10 +271,9 @@ class BuilderStage(object):
           'failed_stage': self.name,
           'category': self.category
       })
-      _, db = self._run.GetCIDBHandle()
-      if db:
+      if self.buildstore.AreClientsReady():
         failures_lib.ReportStageFailure(
-            db,
+            self.buildstore,
             self._build_stage_id,
             stage_result,
             metrics_fields=failed_metrics_fields)
