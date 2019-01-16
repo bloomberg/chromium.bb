@@ -734,6 +734,23 @@ HttpHandler::HttpHandler(
       CommandMapping(
           kPost, "session/:sessionId/goog/page/resume",
           WrapToCommand("Resume", base::BindRepeating(&ExecuteResume))),
+      CommandMapping(kPost, "session/:sessionId/goog/cast/set_sink_to_use",
+                     WrapToCommand("SetSinkToUse",
+                                   base::BindRepeating(&ExecuteSetSinkToUse))),
+      CommandMapping(
+          kPost, "session/:sessionId/goog/cast/start_tab_mirroring",
+          WrapToCommand("StartTabMirroring",
+                        base::BindRepeating(&ExecuteStartTabMirroring))),
+      CommandMapping(kPost, "session/:sessionId/goog/cast/stop_casting",
+                     WrapToCommand("StopCasting",
+                                   base::BindRepeating(&ExecuteStopCasting))),
+      CommandMapping(
+          kGet, "session/:sessionId/goog/cast/get_sinks",
+          WrapToCommand("GetSinks", base::BindRepeating(&ExecuteGetSinks))),
+      CommandMapping(
+          kGet, "session/:sessionId/goog/cast/get_issue_message",
+          WrapToCommand("GetIssueMessage",
+                        base::BindRepeating(&ExecuteGetIssueMessage))),
 
       //
       // Commands of unknown origins.
