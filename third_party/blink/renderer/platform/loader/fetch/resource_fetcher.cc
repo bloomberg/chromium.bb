@@ -435,6 +435,7 @@ class ResourceFetcher::DetachableProperties final
   bool IsPaused() const override {
     return properties_ ? properties_->IsPaused() : paused_;
   }
+  bool IsDetached() const override { return !properties_; }
   bool IsLoadComplete() const override {
     return properties_ ? properties_->IsLoadComplete() : load_complete_;
   }

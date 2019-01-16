@@ -39,6 +39,7 @@ class TestResourceFetcherProperties final : public ResourceFetcherProperties {
     return 0;
   }
   bool IsPaused() const override { return false; }
+  bool IsDetached() const override { return false; }
   bool IsLoadComplete() const override { return load_complete_; }
   bool ShouldBlockLoadingMainResource() const override {
     return should_block_loading_main_resource_;

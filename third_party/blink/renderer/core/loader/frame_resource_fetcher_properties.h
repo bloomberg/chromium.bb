@@ -37,6 +37,7 @@ class FrameResourceFetcherProperties final : public ResourceFetcherProperties {
   ControllerServiceWorkerMode GetControllerServiceWorkerMode() const override;
   int64_t ServiceWorkerId() const override;
   bool IsPaused() const override;
+  bool IsDetached() const override { return false; }
   bool IsLoadComplete() const override;
   bool ShouldBlockLoadingMainResource() const override;
   bool ShouldBlockLoadingSubResource() const override;

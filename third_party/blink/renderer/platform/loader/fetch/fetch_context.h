@@ -226,8 +226,6 @@ class PLATFORM_EXPORT FetchContext
     return Platform::Current()->CreateCodeCacheLoader();
   }
 
-  virtual bool IsDetached() const { return false; }
-
   // Obtains FrameScheduler instance that is used in the attached frame.
   // May return nullptr if a frame is not attached or detached.
   virtual FrameScheduler* GetFrameScheduler() const { return nullptr; }
@@ -263,6 +261,10 @@ class PLATFORM_EXPORT FetchContext
   virtual void DispatchNetworkQuiet() {}
 
  protected:
+  // This is needed to make FetchContext cleanup smoother.
+  // TODO(yhirano): Remove this.
+  virtual bool IsDetached() const { return false; }
+
   // This is needed to make FetchContext cleanup smoother. Do not use this
   // function for other purposes.
   ResourceFetcher* GetFetcher() { return fetcher_; }
