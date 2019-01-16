@@ -1438,6 +1438,7 @@ void UiSceneCreator::CreateExternalPromptNotifcationOverlay() {
                 &ColorScheme::modal_prompt_background, &Rect::SetColor);
 
   auto scaler = Create<ScaledDepthAdjuster>(kNone, kPhaseNone, kPromptDistance);
+  scaler->SetName(kWebXrExternalPromptNotification);
   scaler->SetType(kTypeScaledDepthAdjuster);
   scaler->AddChild(std::move(prompt_window));
   scaler->set_contributes_to_parent_bounds(false);

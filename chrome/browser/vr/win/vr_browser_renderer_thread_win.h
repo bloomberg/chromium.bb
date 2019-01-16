@@ -33,6 +33,9 @@ class VR_EXPORT VRBrowserRendererThreadWin {
   void SetVisibleExternalPromptNotification(
       ExternalPromptNotificationType prompt);
 
+  static VRBrowserRendererThreadWin* GetInstanceForTesting();
+  BrowserRenderer* GetBrowserRendererForTesting();
+
  private:
   void CleanUp();
   void OnPose(device::mojom::XRFrameDataPtr data);
@@ -62,6 +65,11 @@ class VR_EXPORT VRBrowserRendererThreadWin {
 
   device::mojom::ImmersiveOverlayPtr overlay_;
   device::mojom::VRDisplayInfoPtr display_info_;
+
+  // This class is effectively a singleton, although it's not actually
+  // implemented as one. Since tests need to access the thread to post tasks,
+  // just keep a static reference to the existing instance.
+  static VRBrowserRendererThreadWin* instance_for_testing_;
 };
 
 }  // namespace vr

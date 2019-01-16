@@ -660,8 +660,12 @@ if (is_win) {
   # easily skip tests at runtime).
   test("xr_browser_tests") {
     sources = [
+      "test/browser_test_browser_renderer_browser_interface.cc",
+      "test/browser_test_browser_renderer_browser_interface.h",
       "test/mock_openvr_device_hook_base.cc",
       "test/mock_openvr_device_hook_base.h",
+      "test/ui_utils.cc",
+      "test/ui_utils.h",
       "test/webvr_browser_test.cc",
       "test/webvr_browser_test.h",
       "test/webxr_browser_test.cc",
@@ -672,6 +676,7 @@ if (is_win) {
       "test/xr_browser_test.h",
       "webxr_vr_frame_pose_browser_test.cc",
       "webxr_vr_input_browser_test.cc",
+      "webxr_vr_permission_request_browser_test.cc",
       "webxr_vr_pixel_browser_test.cc",
       "webxr_vr_tab_browser_test.cc",
       "webxr_vr_transition_browser_test.cc",
@@ -680,6 +685,7 @@ if (is_win) {
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
     deps = [
+      ":vr_common",
       "//base",
       "//chrome/test:browser_tests_runner",
       "//chrome/test:test_support",
