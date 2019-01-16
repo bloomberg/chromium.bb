@@ -38,6 +38,12 @@ extern const char kBreakpadNoDelayInitialUploadDescription[];
 extern const char kCompactTranslateInfobarName[];
 extern const char kCompactTranslateInfobarDescription[];
 
+#if defined(DCHECK_IS_CONFIGURABLE)
+// Title and description for the flag to enable configurable DCHECKs.
+extern const char kDcheckIsFatalName[];
+extern const char kDcheckIsFatalDescription[];
+#endif  // defined(DCHECK_IS_CONFIGURABLE)
+
 // Title and description for the flag to control if a crash report is generated
 // on main thread freeze.
 extern const char kDetectMainThreadFreezeName[];
