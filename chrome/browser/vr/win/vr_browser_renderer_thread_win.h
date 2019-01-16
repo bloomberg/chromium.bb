@@ -21,39 +21,11 @@ class GraphicsDelegateWin;
 class SchedulerDelegateWin;
 class VRUiBrowserInterface;
 
-// TODO(https://crbug.com/902576) There were issues initializing gfx::FontList
-// on a background thread, so run UI on the main thread.
-#define VR_UI_ON_MAIN_THREAD
-
-#ifdef VR_UI_ON_MAIN_THREAD
-
-class MaybeThread {
- public:
-  explicit MaybeThread(std::string) {}
-  virtual ~MaybeThread() = default;
-  virtual void CleanUp() {}
-  void Start() {}
-  void Stop() { CleanUp(); }
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
-    return scoped_refptr<base::SingleThreadTaskRunner>(
-        base::ThreadTaskRunnerHandle::Get());
-  }
-};
-
-#else
-
-class MaybeThread : public base::Thread {
-  explicit MaybeThread(std::string name) : base::Thread(name) {}
-};
-
-#endif
-
-class VR_EXPORT VRBrowserRendererThreadWin : public MaybeThread {
+class VR_EXPORT VRBrowserRendererThreadWin {
  public:
   VRBrowserRendererThreadWin();
-  ~VRBrowserRendererThreadWin() override;
+  ~VRBrowserRendererThreadWin();
 
-  // Methods called on the browser's main thread.
   void StartOverlay(device::mojom::XRCompositorHost* host);
   void StopOverlay();
   void SetVRDisplayInfo(device::mojom::VRDisplayInfoPtr display_info);
@@ -62,18 +34,7 @@ class VR_EXPORT VRBrowserRendererThreadWin : public MaybeThread {
       ExternalPromptNotificationType prompt);
 
  private:
-  // base::Thread overrides
-  void CleanUp() override;
-
-  // Methods called on render thread.
-  void StartOverlayOnRenderThread(
-      device::mojom::ImmersiveOverlayPtrInfo overlay);
-  void StopOverlayOnRenderThread();
-  void SetDisplayInfoOnRenderThread(
-      device::mojom::VRDisplayInfoPtr display_info);
-  void SetLocationInfoOnRenderThread(GURL gurl);
-  void SetVisibleExternalPromptNotificationOnRenderThread(
-      ExternalPromptNotificationType prompt);
+  void CleanUp();
   void OnPose(device::mojom::XRFrameDataPtr data);
   void SubmitResult(bool success);
   void SubmitFrame(device::mojom::XRFrameDataPtr data);
