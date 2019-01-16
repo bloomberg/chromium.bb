@@ -511,6 +511,57 @@ usesRestParams('a', 'b', 1, 2, 3);
 
 ---
 
+### Destructuring Assignment
+
+Flexible destructuring of collections or parameters.
+
+**Usage Example:**
+
+```js
+// Array
+const [a, , b] = [1, 2, 3];  // a = 1, b = 3
+
+// Object
+const {width, height} = document.body.getBoundingClientRect();
+// width = rect.width, height = rect.height
+
+// Parameters
+function f([name, val]) {
+  console.log(name, val);  // 'bar', 42
+}
+f(['bar', 42, 'extra 1', 'extra 2']);  // 'extra 1' and 'extra 2' are ignored.
+
+function g({name: n, val: v}) {
+  console.log(n, v);  // 'foo', 7
+}
+g({name: 'foo', val:  7});
+
+function h({name, val}) {
+  console.log(name, val);  // 'bar', 42
+}
+h({name: 'bar', val: 42});
+
+```
+**Mixing with [Rest Parameters](#rest-parameters)**
+
+Using rest parameters while destructuring objects is not supported by iOS 10 and requires setting the closure arg `language_in` to `ECMASCRIPT_2018`.
+
+```js
+const {one, ...rest} = {one: 1, two: 2, three: 3};
+```
+
+Using rest parameters while destructuring arrays, on the other hand, is supported by iOS 10 and `ECMASCRIPT_2017`.
+
+```js
+const [one, ...rest] = [1, 2, 3];
+```
+
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-destructuring-assignment)
+
+**Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/d/topic/chromium-dev/mwFnj7MTzgU)
+
+---
+
 ## Banned Features
 
 The following features are banned for Chromium development.
@@ -675,44 +726,6 @@ result === 'yy' && re.lastIndex === 5;  // true
 ```
 
 **Documentation:** [link](http://es6-features.org/#RegularExpressionStickyMatching)
-
-**Discussion Notes / Link to Thread:**
-
----
-
-### Destructuring Assignment
-
-Flexible destructuring of collections or parameters.
-
-**Usage Example:**
-
-```js
-// Array
-const [a, , b] = [1, 2, 3];  // a = 1, b = 3
-
-// Object
-const {width, height} = document.body.getBoundingClientRect();
-// width = rect.width, height = rect.height
-
-// Parameters
-function f([name, val]) {
-  console.log(name, val);  // 'bar', 42
-}
-f(['bar', 42, 'extra 1', 'extra 2']);  // 'extra 1' and 'extra 2' are ignored.
-
-function g({name: n, val: v}) {
-  console.log(n, v);  // 'foo', 7
-}
-g({name: 'foo', val:  7});
-
-function h({name, val}) {
-  console.log(name, val);  // 'bar', 42
-}
-h({name: 'bar', val: 42});
-
-```
-
-**Documentation:** [link](https://tc39.github.io/ecma262/#sec-destructuring-assignment)
 
 **Discussion Notes / Link to Thread:**
 
