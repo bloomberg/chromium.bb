@@ -46,6 +46,7 @@ namespace disk_cache {
 
 class Entry;
 class Backend;
+struct EntryWithOpened;
 
 // Returns an instance of a Backend of the given |type|. |path| points to a
 // folder where the cached data will be stored (if appropriate). This cache
@@ -159,25 +160,26 @@ class NET_EXPORT Backend {
   // Returns the number of entries in the cache.
   virtual int32_t GetEntryCount() const = 0;
 
-  // Atomically attempts to open an existing entry based on |key|
-  // or, if none already exists will create a new entry.
-  // Upon success |entry| contains a pointer to either the existing object
-  // specified or its newly created entry. When the entry pointer is no longer
-  // needed, its Close method should be called. The return value is a net error
-  // code. If this method returns ERR_IO_PENDING, the |callback| will be
-  // invoked when the entry is available. The pointer to receive the |entry|
-  // must remain valid until the operation completes. The |priority| of the
-  // entry determines its priority in the background worker pools.
+  // Atomically attempts to open an existing entry based on |key| or, if none
+  // already exists, to create a new entry. Upon success |entry_struct| contains
+  // a struct with 1) an entry pointer to either a preexisting or newly created
+  // entry 2) a bool indicting if the entry was opened or not. When the entry
+  // pointer is no longer needed, its Close method should be called. The return
+  // value is a net error code. If this method returns ERR_IO_PENDING, the
+  // |callback| will be invoked when the entry is available. The pointer to
+  // receive the |entry_struct| must remain valid until the operation completes.
+  // The |priority| of the entry determines its priority in the background
+  // worker pools.
   //
   // This method should be the preferred way to obtain an entry over using
   // OpenEntry() or CreateEntry() separately in order to simplify consumer
-  // logic
+  // logic.
   //
   // Warning: Currently under development and not yet implemented in all cache
   // backends.
   virtual net::Error OpenOrCreateEntry(const std::string& key,
                                        net::RequestPriority priority,
-                                       Entry** entry,
+                                       EntryWithOpened* entry_struct,
                                        CompletionOnceCallback callback);
 
   // Opens an existing entry. Upon success, |entry| holds a pointer to an Entry
@@ -457,6 +459,16 @@ class NET_EXPORT Entry {
 
  protected:
   virtual ~Entry() {}
+};
+
+// This struct is used to allow OpenOrCreateEntry() to return both an entry
+// pointer as well as a bool indicating whether the entry was opened or
+// not (i.e.: created).
+struct EntryWithOpened {
+  explicit EntryWithOpened(Entry* e) : entry(e), opened(false) {}
+  EntryWithOpened() : entry(nullptr), opened(false) {}
+  Entry* entry;
+  bool opened;
 };
 
 struct EntryDeleter {

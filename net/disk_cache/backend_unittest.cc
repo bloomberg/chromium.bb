@@ -4758,37 +4758,41 @@ TEST_F(DiskCacheBackendTest, SimpleMaxSizeLimit) {
 void DiskCacheBackendTest::BackendOpenOrCreateEntry() {
   InitCache();
 
-  disk_cache::Entry* entry1 = nullptr;
   // Test that new key is created.
-  ASSERT_THAT(OpenOrCreateEntry("first", &entry1), IsOk());
-  ASSERT_TRUE(nullptr != entry1);
+  disk_cache::EntryWithOpened es1;
+  ASSERT_THAT(OpenOrCreateEntry("first", &es1), IsOk());
+  ASSERT_TRUE(nullptr != es1.entry);
+  ASSERT_FALSE(es1.opened);
 
   // Test that existing key is opened and its entry matches.
-  disk_cache::Entry* entry2 = nullptr;
-  ASSERT_THAT(OpenOrCreateEntry("first", &entry2), IsOk());
-  ASSERT_TRUE(nullptr != entry2);
-  ASSERT_EQ(entry1, entry2);
+  disk_cache::EntryWithOpened es2;
+  ASSERT_THAT(OpenOrCreateEntry("first", &es2), IsOk());
+  ASSERT_TRUE(nullptr != es2.entry);
+  ASSERT_TRUE(es2.opened);
+  ASSERT_EQ(es1.entry, es2.entry);
 
   // Test that different keys' entries are not the same.
-  disk_cache::Entry* entry3 = nullptr;
-  ASSERT_THAT(OpenOrCreateEntry("second", &entry3), IsOk());
-  ASSERT_TRUE(nullptr != entry3);
-  ASSERT_NE(entry3, entry1);
+  disk_cache::EntryWithOpened es3;
+  ASSERT_THAT(OpenOrCreateEntry("second", &es3), IsOk());
+  ASSERT_TRUE(nullptr != es2.entry);
+  ASSERT_FALSE(es3.opened);
+  ASSERT_NE(es3.entry, es1.entry);
 
   // Test that a new entry can be created with the same key as a doomed entry.
-  entry3->Doom();
-  disk_cache::Entry* entry4 = nullptr;
-  ASSERT_THAT(OpenOrCreateEntry("second", &entry4), IsOk());
-  ASSERT_TRUE(nullptr != entry4);
-  ASSERT_NE(entry4, entry3);
+  es3.entry->Doom();
+  disk_cache::EntryWithOpened es4;
+  ASSERT_THAT(OpenOrCreateEntry("second", &es4), IsOk());
+  ASSERT_TRUE(nullptr != es4.entry);
+  ASSERT_FALSE(es4.opened);
+  ASSERT_NE(es4.entry, es3.entry);
 
   // Verify the expected number of entries
   ASSERT_EQ(2, cache_->GetEntryCount());
 
-  entry1->Close();
-  entry2->Close();
-  entry3->Close();
-  entry4->Close();
+  es1.entry->Close();
+  es2.entry->Close();
+  es3.entry->Close();
+  es4.entry->Close();
 }
 
 TEST_F(DiskCacheBackendTest, InMemoryOnlyOpenOrCreateEntry) {

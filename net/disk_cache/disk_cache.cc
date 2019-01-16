@@ -319,7 +319,7 @@ void FlushCacheThreadForTesting() {
 
 net::Error Backend::OpenOrCreateEntry(const std::string& key,
                                       net::RequestPriority priority,
-                                      Entry** entry,
+                                      EntryWithOpened* entry_struct,
                                       CompletionOnceCallback callback) {
   return net::ERR_NOT_IMPLEMENTED;
 }
