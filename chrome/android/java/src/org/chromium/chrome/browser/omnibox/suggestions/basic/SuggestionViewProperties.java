@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.omnibox.suggestions;
+package org.chromium.chrome.browser.omnibox.suggestions.basic;
 
 import android.graphics.Bitmap;
 import android.support.annotation.IntDef;
@@ -11,8 +11,9 @@ import android.text.TextUtils;
 import android.text.style.UpdateAppearance;
 import android.util.Pair;
 
-import org.chromium.chrome.browser.omnibox.suggestions.SuggestionView.SuggestionViewDelegate;
+import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
@@ -87,14 +88,8 @@ class SuggestionViewProperties {
     }
 
     /** The delegate to handle actions on the suggestion view. */
-    public static final WritableObjectPropertyKey<SuggestionViewDelegate> DELEGATE =
+    public static final WritableObjectPropertyKey<SuggestionView.SuggestionViewDelegate> DELEGATE =
             new WritableObjectPropertyKey<>();
-
-    /** Whether dark colors should be applied to text, icons */
-    public static final WritableBooleanPropertyKey USE_DARK_COLORS =
-            new WritableBooleanPropertyKey();
-    /** The layout direction to be applied to the entire suggestion view. */
-    public static final WritableIntPropertyKey LAYOUT_DIRECTION = new WritableIntPropertyKey();
 
     /** Whether the suggestion is for an answer. */
     public static final WritableBooleanPropertyKey IS_ANSWER = new WritableBooleanPropertyKey();
@@ -143,9 +138,11 @@ class SuggestionViewProperties {
     public static final WritableObjectPropertyKey<SuggestionTextContainer> TEXT_LINE_2_TEXT =
             new WritableObjectPropertyKey<>();
 
+    public static final PropertyKey[] ALL_UNIQUE_KEYS = new PropertyKey[] {DELEGATE, IS_ANSWER,
+            HAS_ANSWER_IMAGE, ANSWER_IMAGE, REFINABLE, SUGGESTION_ICON_TYPE, TEXT_LINE_1_SIZING,
+            TEXT_LINE_1_TEXT, TEXT_LINE_2_SIZING, TEXT_LINE_2_MAX_LINES, TEXT_LINE_2_TEXT_COLOR,
+            TEXT_LINE_2_TEXT_DIRECTION, TEXT_LINE_2_TEXT};
+
     public static final PropertyKey[] ALL_KEYS =
-            new PropertyKey[] {DELEGATE, USE_DARK_COLORS, LAYOUT_DIRECTION, IS_ANSWER,
-                    HAS_ANSWER_IMAGE, ANSWER_IMAGE, REFINABLE, SUGGESTION_ICON_TYPE,
-                    TEXT_LINE_1_SIZING, TEXT_LINE_1_TEXT, TEXT_LINE_2_SIZING, TEXT_LINE_2_MAX_LINES,
-                    TEXT_LINE_2_TEXT_COLOR, TEXT_LINE_2_TEXT_DIRECTION, TEXT_LINE_2_TEXT};
+            PropertyModel.concatKeys(ALL_UNIQUE_KEYS, SuggestionCommonProperties.ALL_KEYS);
 }

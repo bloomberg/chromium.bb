@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.omnibox.suggestions;
+package org.chromium.chrome.browser.omnibox.suggestions.basic;
 
 import android.content.Context;
 import android.support.annotation.ColorInt;
@@ -15,12 +15,14 @@ import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.omnibox.suggestions.SuggestionViewProperties.SuggestionIcon;
+import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
+import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties.SuggestionIcon;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
-class SuggestionViewViewBinder {
+/** Properties associated with the basic suggestion view. */
+public class SuggestionViewViewBinder {
     /**
      * @see
      * org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor.ViewBinder#bind(Object,
@@ -29,15 +31,15 @@ class SuggestionViewViewBinder {
     public static void bind(PropertyModel model, SuggestionView view, PropertyKey propertyKey) {
         if (SuggestionViewProperties.DELEGATE.equals(propertyKey)) {
             view.setDelegate(model.get(SuggestionViewProperties.DELEGATE));
-        } else if (SuggestionViewProperties.USE_DARK_COLORS.equals(propertyKey)) {
-            boolean useDarkColors = model.get(SuggestionViewProperties.USE_DARK_COLORS);
+        } else if (SuggestionCommonProperties.USE_DARK_COLORS.equals(propertyKey)) {
+            boolean useDarkColors = model.get(SuggestionCommonProperties.USE_DARK_COLORS);
             view.updateRefineIconTint(useDarkColors);
             view.updateSuggestionIconTint(useDarkColors);
             view.getTextLine1().setTextColor(
                     getStandardFontColor(view.getContext(), useDarkColors));
-        } else if (SuggestionViewProperties.LAYOUT_DIRECTION.equals(propertyKey)) {
+        } else if (SuggestionCommonProperties.LAYOUT_DIRECTION.equals(propertyKey)) {
             ViewCompat.setLayoutDirection(
-                    view, model.get(SuggestionViewProperties.LAYOUT_DIRECTION));
+                    view, model.get(SuggestionCommonProperties.LAYOUT_DIRECTION));
         } else if (SuggestionViewProperties.IS_ANSWER.equals(propertyKey)) {
             updateSuggestionLayoutType(view, model);
         } else if (SuggestionViewProperties.HAS_ANSWER_IMAGE.equals(propertyKey)) {
@@ -50,7 +52,9 @@ class SuggestionViewViewBinder {
         } else if (SuggestionViewProperties.REFINABLE.equals(propertyKey)) {
             boolean refinable = model.get(SuggestionViewProperties.REFINABLE);
             view.setRefinable(refinable);
-            if (refinable) view.initRefineIcon(model.get(SuggestionViewProperties.USE_DARK_COLORS));
+            if (refinable) {
+                view.initRefineIcon(model.get(SuggestionCommonProperties.USE_DARK_COLORS));
+            }
         } else if (SuggestionViewProperties.SUGGESTION_ICON_TYPE.equals(propertyKey)) {
             if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(view.getContext())) return;
 
@@ -77,7 +81,7 @@ class SuggestionViewViewBinder {
                     break;
             }
             view.setSuggestionIconDrawable(
-                    drawableId, model.get(SuggestionViewProperties.USE_DARK_COLORS));
+                    drawableId, model.get(SuggestionCommonProperties.USE_DARK_COLORS));
         } else if (SuggestionViewProperties.TEXT_LINE_1_SIZING.equals(propertyKey)) {
             Pair<Integer, Float> sizing = model.get(SuggestionViewProperties.TEXT_LINE_1_SIZING);
             view.getTextLine1().setTextSize(sizing.first, sizing.second);
