@@ -3062,6 +3062,7 @@
                     },
                     "enable_features": [
                         "OmniboxDisplayTitleForCurrentUrl",
+                        "OmniboxDocumentProvider",
                         "OmniboxNewAnswerLayout",
                         "OmniboxRichEntitySuggestions",
                         "OmniboxTailSuggestions",
