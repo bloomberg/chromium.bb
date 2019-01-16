@@ -13,7 +13,6 @@
 
 #include "net/base/host_port_pair.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
-#include "third_party/webrtc/p2p/base/port.h"
 
 namespace buzz {
 
