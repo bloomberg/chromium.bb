@@ -21295,6 +21295,7 @@ Called by update_net_error_codes.py.-->
   <int value="2728" label="ElementTimingExplicitlyRequested"/>
   <int value="2729" label="V8HTMLMediaElement_CaptureStream_Method"/>
   <int value="2730" label="QuirkyLineBoxBackgroundSize"/>
+  <int value="2731" label="DirectlyCompositedImage"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
