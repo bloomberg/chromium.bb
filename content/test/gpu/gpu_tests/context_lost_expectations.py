@@ -58,12 +58,6 @@ class ContextLostExpectations(GpuTestExpectations):
     self.Skip('ContextLost_WebGLContextLostInHiddenTab',
               ['android'], bug=609629)
 
-    # Timing out on Nexus 5.
-    self.Skip('ContextLost_WebGLBlockedAfterJSNavigation',
-              ['android', ('qualcomm', 'Adreno (TM) 330')], bug=911678)
-    self.Skip('ContextLost_WebGLUnblockedAfterUserInitiatedReload',
-              ['android', ('qualcomm', 'Adreno (TM) 330')], bug=911678)
-
     # Flaking on Nexus 5X
     self.Flaky('ContextLost_WebGLUnblockedAfterUserInitiatedReload',
               ['android', ('qualcomm', 'Adreno (TM) 418')], bug=879423)
@@ -78,8 +72,3 @@ class ContextLostExpectations(GpuTestExpectations):
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611906)
     self.Fail('ContextLost_WebGLContextLostFromQuantity',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611906)
-    # The following two tests time out.
-    self.Skip('ContextLost_WebGLBlockedAfterJSNavigation',
-              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=911678)
-    self.Skip('ContextLost_WebGLUnblockedAfterUserInitiatedReload',
-              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=911678)
