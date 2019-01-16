@@ -37,6 +37,8 @@ template("system_webview_apk_tmpl") {
         secondary_abi_shared_libraries = [ "//android_webview:libwebviewchromium($android_secondary_abi_toolchain)" ]
       }
     } else {
+      uncompress_shared_libraries = true
+
       # Include placeholder libraries to ensure we are treated as the desired
       # architecture.
       if (android_64bit_target_cpu) {
