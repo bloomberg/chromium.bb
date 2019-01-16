@@ -1103,7 +1103,7 @@ std::string AXNodeData::ToString() const {
         result += " autocomplete=" + value;
         break;
       case ax::mojom::StringAttribute::kChildTreeId:
-        result += " child_tree_id=" + value;
+        result += " child_tree_id=" + value.substr(0, 8);
         break;
       case ax::mojom::StringAttribute::kClassName:
         result += " class_name=" + value;
