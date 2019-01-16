@@ -25,12 +25,6 @@ PasswordGenerationPopupViewAndroid::PasswordGenerationPopupViewAndroid(
     PasswordGenerationPopupController* controller)
     : controller_(controller) {}
 
-void PasswordGenerationPopupViewAndroid::SavedPasswordsLinkClicked(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  if (controller_)
-    controller_->OnSavedPasswordsLinkClicked();
-}
 
 void PasswordGenerationPopupViewAndroid::Dismissed(
     JNIEnv* env,
@@ -105,8 +99,7 @@ void PasswordGenerationPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
       env, java_object_, controller_->IsRTL(),
       controller_->state() ==
           PasswordGenerationPopupController::kOfferGeneration,
-      password, suggestion, help, controller_->HelpTextLinkRange().start(),
-      controller_->HelpTextLinkRange().end());
+      password, suggestion, help);
 }
 
 void PasswordGenerationPopupViewAndroid::PasswordSelectionUpdated() {}

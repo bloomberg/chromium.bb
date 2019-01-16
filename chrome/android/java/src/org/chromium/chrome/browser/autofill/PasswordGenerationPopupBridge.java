@@ -21,8 +21,7 @@ import org.chromium.ui.base.WindowAndroid;
  */
 @JNINamespace("autofill")
 public class PasswordGenerationPopupBridge
-        implements AdapterView.OnItemClickListener, PopupWindow.OnDismissListener,
-                   PasswordGenerationAdapter.Delegate {
+        implements AdapterView.OnItemClickListener, PopupWindow.OnDismissListener {
     private final long mNativePasswordGenerationPopupViewAndroid;
     private final Context mContext;
     private final DropdownPopupWindow mPopup;
@@ -100,37 +99,20 @@ public class PasswordGenerationPopupBridge
      * @param password The auto-generated password to suggest.
      * @param suggestionTitle The translated title of the suggestion part of the popup.
      * @param explanationText The translated text that explains the popup.
-     * @param explanationTextLinkRangeStart The start of the range in the explanation text that
-     * should be a link to the saved passwords.
-     * @param explanationTextLinkRangeEnd The end of the range in the explanation text that should
-     * be a link to the saved passwords.
      */
     @CalledByNative
     private void show(boolean isRtl, boolean passwordDisplayed, String password,
-            String suggestionTitle, String explanationText, int explanationTextLinkRangeStart,
-            int explanationTextLinkRangeEnd) {
+            String suggestionTitle, String explanationText) {
         if (mPopup != null) {
             float anchorWidth = mAnchorView.getLayoutParams().width;
             assert anchorWidth > 0;
-            PasswordGenerationAdapter adapter = new PasswordGenerationAdapter(mContext, this,
-                    passwordDisplayed, password, suggestionTitle, explanationText,
-                    explanationTextLinkRangeStart, explanationTextLinkRangeEnd, anchorWidth);
+            PasswordGenerationAdapter adapter = new PasswordGenerationAdapter(mContext,
+                    passwordDisplayed, password, suggestionTitle, explanationText, anchorWidth);
             mPopup.setAdapter(adapter);
             mPopup.setRtl(isRtl);
             mPopup.show();
         }
     }
-
-    /**
-     * Called from adapter when the "saved passwords" link is clicked.
-     */
-    @Override
-    public void onSavedPasswordsLinkClicked() {
-        nativeSavedPasswordsLinkClicked(mNativePasswordGenerationPopupViewAndroid);
-    }
-
-    private native void nativeSavedPasswordsLinkClicked(
-            long nativePasswordGenerationPopupViewAndroid);
 
     /**
      * Hides the password generation popup.
