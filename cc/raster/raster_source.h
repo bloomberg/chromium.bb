@@ -27,6 +27,7 @@ namespace cc {
 class DisplayItemList;
 class DrawImage;
 class ImageProvider;
+class PaintWorkletImageProvider;
 
 class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
  public:
@@ -41,6 +42,10 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
     // The ImageProvider used to replace images during playback.
     ImageProvider* image_provider = nullptr;
+
+    // The PaintWorkletImageProvider is a bridge connecting the playback and the
+    // paint worklet image cache.
+    PaintWorkletImageProvider* paint_worklet_image_provider = nullptr;
 
     RasterColorSpace raster_color_space;
   };

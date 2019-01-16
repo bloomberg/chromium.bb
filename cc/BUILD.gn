@@ -150,6 +150,8 @@ cc_component("cc") {
     "raster/gpu_raster_buffer_provider.h",
     "raster/one_copy_raster_buffer_provider.cc",
     "raster/one_copy_raster_buffer_provider.h",
+    "raster/paint_worklet_image_provider.cc",
+    "raster/paint_worklet_image_provider.h",
     "raster/playback_image_provider.cc",
     "raster/playback_image_provider.h",
     "raster/raster_buffer.cc",

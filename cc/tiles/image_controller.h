@@ -88,6 +88,9 @@ class CC_EXPORT ImageController {
   }
 
   ImageDecodeCache* cache() const { return cache_; }
+  PaintWorkletImageCache* paint_worklet_image_cache() {
+    return &paint_worklet_image_cache_;
+  }
 
  protected:
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
