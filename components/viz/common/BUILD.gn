@@ -114,8 +114,6 @@ viz_component("common") {
     "gpu/context_provider.h",
     "gpu/raster_context_provider.cc",
     "gpu/raster_context_provider.h",
-    "gpu/texture_allocation.cc",
-    "gpu/texture_allocation.h",
     "hit_test/aggregated_hit_test_region.h",
     "hit_test/hit_test_region_list.cc",
     "hit_test/hit_test_region_list.h",
