@@ -11,6 +11,7 @@
       "fuchsia.net.LegacySocketProvider",
       "fuchsia.netstack.Netstack",
       "fuchsia.process.Launcher",
+      "fuchsia.sys.Launcher",
       "fuchsia.ui.input.ImeService",
       "fuchsia.ui.input.ImeVisibilityService",
       "fuchsia.ui.policy.Presenter",
