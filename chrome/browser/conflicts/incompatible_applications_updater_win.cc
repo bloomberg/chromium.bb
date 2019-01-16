@@ -300,7 +300,7 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
   // Explicitly whitelist modules whose signing cert's Subject field matches the
   // one in the current executable. No attempt is made to check the validity of
   // module signatures or of signing certs.
-  if (exe_certificate_info_.type != CertificateType::NO_CERTIFICATE &&
+  if (exe_certificate_info_.type != CertificateInfo::Type::NO_CERTIFICATE &&
       exe_certificate_info_.subject ==
           module_data.inspection_result->certificate_info.subject) {
     module_warning_decisions_[module_key.module_id] =

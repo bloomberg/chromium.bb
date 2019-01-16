@@ -218,7 +218,7 @@ void GetCatalogCertificateInfo(const base::FilePath& filename,
   if (subject.empty())
     return;
 
-  certificate_info->type = CertificateType::CERTIFICATE_IN_CATALOG;
+  certificate_info->type = CertificateInfo::Type::CERTIFICATE_IN_CATALOG;
   certificate_info->path = catalog_path;
   certificate_info->subject = subject;
 }
@@ -229,25 +229,25 @@ const wchar_t kClassIdRegistryKeyFormat[] = L"CLSID\\%ls\\InProcServer32";
 
 // ModuleDatabase::CertificateInfo ---------------------------------------------
 
-CertificateInfo::CertificateInfo() : type(CertificateType::NO_CERTIFICATE) {}
+CertificateInfo::CertificateInfo() : type(Type::NO_CERTIFICATE) {}
 
 // Extracts information about the certificate of the given file, if any is
 // found.
 void GetCertificateInfo(const base::FilePath& filename,
                         CertificateInfo* certificate_info) {
-  DCHECK_EQ(CertificateType::NO_CERTIFICATE, certificate_info->type);
+  DCHECK_EQ(CertificateInfo::Type::NO_CERTIFICATE, certificate_info->type);
   DCHECK(certificate_info->path.empty());
   DCHECK(certificate_info->subject.empty());
 
   GetCatalogCertificateInfo(filename, certificate_info);
-  if (certificate_info->type == CertificateType::CERTIFICATE_IN_CATALOG)
+  if (certificate_info->type == CertificateInfo::Type::CERTIFICATE_IN_CATALOG)
     return;
 
   base::string16 subject = GetSubjectNameInFile(filename);
   if (subject.empty())
     return;
 
-  certificate_info->type = CertificateType::CERTIFICATE_IN_FILE;
+  certificate_info->type = CertificateInfo::Type::CERTIFICATE_IN_FILE;
   certificate_info->path = filename;
   certificate_info->subject = subject;
 }

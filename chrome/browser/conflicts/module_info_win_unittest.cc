@@ -38,7 +38,7 @@ TEST(ModuleInfoTest, InspectModule) {
                inspection_result.description.c_str());
   EXPECT_FALSE(inspection_result.version.empty());
   EXPECT_EQ(inspection_result.certificate_info.type,
-            CertificateType::CERTIFICATE_IN_CATALOG);
+            CertificateInfo::Type::CERTIFICATE_IN_CATALOG);
   EXPECT_FALSE(inspection_result.certificate_info.path.empty());
   EXPECT_STREQ(L"Microsoft Windows",
                inspection_result.certificate_info.subject.c_str());

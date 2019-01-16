@@ -16,22 +16,22 @@
 // HKEY_CLASSES_ROOT.
 extern const wchar_t kClassIdRegistryKeyFormat[];
 
-// The type of certificate found for the module.
-enum class CertificateType {
-  // The module is not signed.
-  NO_CERTIFICATE,
-  // The module is signed and the certificate is in the module.
-  CERTIFICATE_IN_FILE,
-  // The module is signed and the certificate is in an external catalog.
-  CERTIFICATE_IN_CATALOG,
-};
-
 // Information about the certificate of a file.
 struct CertificateInfo {
+  // The type of certificate found for the module.
+  enum class Type {
+    // The module is not signed.
+    NO_CERTIFICATE,
+    // The module is signed and the certificate is in the module.
+    CERTIFICATE_IN_FILE,
+    // The module is signed and the certificate is in an external catalog.
+    CERTIFICATE_IN_CATALOG,
+  };
+
   CertificateInfo();
 
   // The type of signature encountered.
-  CertificateType type;
+  Type type;
 
   // Path to the file containing the certificate. Empty if |type| is
   // NO_CERTIFICATE.
