@@ -124,17 +124,19 @@ class OzonePlatformScenic
 
     base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
 
-    surface_factory_ =
-        std::make_unique<ScenicSurfaceFactory>(window_manager_.get());
-
     scenic_gpu_host_ = std::make_unique<ScenicGpuHost>(window_manager_.get());
+    scenic_gpu_host_ptr_ = scenic_gpu_host_->CreateHostProcessSelfBinding();
+
+    surface_factory_ =
+        std::make_unique<ScenicSurfaceFactory>(scenic_gpu_host_ptr_.get());
   }
 
   void InitializeGPU(const InitParams& params) override {
-    scenic_gpu_service_ = std::make_unique<ScenicGpuService>();
+    scenic_gpu_service_ = std::make_unique<ScenicGpuService>(
+        mojo::MakeRequest(&scenic_gpu_host_ptr_));
     DCHECK(!surface_factory_);
     surface_factory_ =
-        std::make_unique<ScenicSurfaceFactory>(scenic_gpu_service_.get());
+        std::make_unique<ScenicSurfaceFactory>(scenic_gpu_host_ptr_.get());
   }
 
   base::MessageLoop::Type GetMessageLoopTypeForGpu() override {
@@ -164,6 +166,8 @@ class OzonePlatformScenic
   std::unique_ptr<ScenicGpuHost> scenic_gpu_host_;
   std::unique_ptr<ScenicGpuService> scenic_gpu_service_;
   std::unique_ptr<ScenicSurfaceFactory> surface_factory_;
+
+  mojom::ScenicGpuHostPtr scenic_gpu_host_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformScenic);
 };

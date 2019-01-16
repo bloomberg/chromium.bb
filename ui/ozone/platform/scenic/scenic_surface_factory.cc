@@ -106,12 +106,8 @@ class ScenicPixmap : public gfx::NativePixmap {
 
 }  // namespace
 
-ScenicSurfaceFactory::ScenicSurfaceFactory(ScenicWindowManager* window_manager)
-    : window_manager_(window_manager),
-      egl_implementation_(std::make_unique<GLOzoneEGLScenic>()) {}
-
-ScenicSurfaceFactory::ScenicSurfaceFactory(ScenicGpuService* scenic_gpu_service)
-    : scenic_gpu_service_(scenic_gpu_service),
+ScenicSurfaceFactory::ScenicSurfaceFactory(mojom::ScenicGpuHost* gpu_host)
+    : gpu_host_(gpu_host),
       egl_implementation_(std::make_unique<GLOzoneEGLScenic>()) {}
 
 ScenicSurfaceFactory::~ScenicSurfaceFactory() = default;
@@ -145,19 +141,14 @@ GLOzone* ScenicSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
 std::unique_ptr<PlatformWindowSurface>
 ScenicSurfaceFactory::CreatePlatformWindowSurface(
     gfx::AcceleratedWidget widget) {
-  return std::make_unique<ScenicSurface>(
-      this, GetScenic(), scenic_gpu_service_->gpu_host(), widget);
+  return std::make_unique<ScenicSurface>(this, GetScenic(), gpu_host_, widget);
 }
 
 std::unique_ptr<SurfaceOzoneCanvas> ScenicSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!window_manager_)
-    LOG(FATAL) << "Software output not supported from GPU process";
-  ScenicWindow* window = window_manager_->GetWindow(widget);
-  if (!window)
-    return nullptr;
-  return std::make_unique<ScenicWindowCanvas>(GetScenic(), window);
+  ScenicSurface* surface = GetSurface(widget);
+  surface->LinkToParent();
+  return std::make_unique<ScenicWindowCanvas>(surface);
 }
 
 scoped_refptr<gfx::NativePixmap> ScenicSurfaceFactory::CreateNativePixmap(
@@ -172,7 +163,7 @@ scoped_refptr<gfx::NativePixmap> ScenicSurfaceFactory::CreateNativePixmap(
 std::unique_ptr<gpu::VulkanImplementation>
 ScenicSurfaceFactory::CreateVulkanImplementation() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!scenic_gpu_service_)
+  if (!gpu_host_)
     LOG(FATAL) << "Vulkan implementation requires InitializeForGPU";
 
   return std::make_unique<ui::VulkanImplementationScenic>(this);

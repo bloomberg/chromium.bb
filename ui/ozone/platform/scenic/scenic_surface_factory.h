@@ -14,18 +14,16 @@
 #include "base/threading/thread_checker.h"
 #include "gpu/vulkan/buildflags.h"
 #include "ui/ozone/public/gl_ozone.h"
+#include "ui/ozone/public/interfaces/scenic_gpu_host.mojom.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
 
-class ScenicWindowManager;
-class ScenicGpuService;
 class ScenicSurface;
 
 class ScenicSurfaceFactory : public SurfaceFactoryOzone {
  public:
-  explicit ScenicSurfaceFactory(ScenicWindowManager* window_manager);
-  explicit ScenicSurfaceFactory(ScenicGpuService* scenic_gpu_service);
+  explicit ScenicSurfaceFactory(mojom::ScenicGpuHost* gpu_host);
   ~ScenicSurfaceFactory() override;
 
   // SurfaceFactoryOzone implementation.
@@ -54,8 +52,7 @@ class ScenicSurfaceFactory : public SurfaceFactoryOzone {
 
   base::flat_map<gfx::AcceleratedWidget, ScenicSurface*> surface_map_;
 
-  ScenicWindowManager* const window_manager_ = nullptr;
-  ScenicGpuService* scenic_gpu_service_ = nullptr;
+  mojom::ScenicGpuHost* const gpu_host_;
   std::unique_ptr<GLOzone> egl_implementation_;
   fuchsia::ui::scenic::ScenicPtr scenic_;
 

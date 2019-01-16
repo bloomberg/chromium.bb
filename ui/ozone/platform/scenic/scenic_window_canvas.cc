@@ -66,21 +66,8 @@ void ScenicWindowCanvas::Frame::CopyDirtyRegionFrom(const Frame& frame) {
   dirty_region.setEmpty();
 }
 
-ScenicWindowCanvas::ScenicWindowCanvas(fuchsia::ui::scenic::Scenic* scenic,
-                                       ScenicWindow* window)
-    : window_(window),
-      scenic_session_(scenic),
-      parent_(&scenic_session_),
-      material_(&scenic_session_) {
-  scenic::ShapeNode shape(&scenic_session_);
-  shape.SetShape(scenic::Rectangle(&scenic_session_, 1.f, 1.f));
-  shape.SetMaterial(material_);
-
-  zx::eventpair export_token;
-  parent_.BindAsRequest(&export_token);
-  parent_.AddChild(shape);
-  window_->ExportRenderingEntity(std::move(export_token));
-}
+ScenicWindowCanvas::ScenicWindowCanvas(ScenicSurface* scenic_surface)
+    : scenic_surface_(scenic_surface) {}
 
 ScenicWindowCanvas::~ScenicWindowCanvas() = default;
 
@@ -90,7 +77,7 @@ void ScenicWindowCanvas::ResizeCanvas(const gfx::Size& viewport_size) {
 
   // Allocate new buffers with the new size.
   for (int i = 0; i < kNumBuffers; ++i) {
-    frames_[i].Initialize(viewport_size_, &scenic_session_);
+    frames_[i].Initialize(viewport_size_, scenic_surface_->scenic_session());
   }
 }
 
@@ -151,7 +138,8 @@ void ScenicWindowCanvas::PresentCanvas(const gfx::Rect& damage) {
       viewport_size_.width() * SkColorTypeBytesPerPixel(kN32_SkColorType);
   scenic::Image image(*frames_[current_frame_].scenic_memory, 0,
                       std::move(info));
-  material_.SetTexture(image);
+  // TODO(spang): Consider using ImagePipe for consistency with vulkan path.
+  scenic_surface_->SetTextureToImage(image);
 
   // Create release fence for the current buffer or reset it if it already
   // exists.
@@ -172,9 +160,10 @@ void ScenicWindowCanvas::PresentCanvas(const gfx::Rect& damage) {
   auto status = frames_[current_frame_].release_fence.duplicate(
       ZX_RIGHT_SAME_RIGHTS, &release_fence_dup);
   ZX_CHECK(status == ZX_OK, status);
-  scenic_session_.EnqueueReleaseFence(std::move(release_fence_dup));
-  scenic_session_.Present(/*presentation_time=*/0,
-                          [](fuchsia::images::PresentationInfo info) {});
+  scenic_surface_->scenic_session()->EnqueueReleaseFence(
+      std::move(release_fence_dup));
+  scenic_surface_->scenic_session()->Present(
+      /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
 
   // Move to the next buffer.
   current_frame_ = (current_frame_ + 1) % kNumBuffers;

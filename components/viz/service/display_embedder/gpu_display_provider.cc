@@ -56,6 +56,7 @@
 #include "components/viz/service/display_embedder/software_output_device_ozone.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/platform_window_surface.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 #endif
@@ -267,10 +268,13 @@ GpuDisplayProvider::CreateSoftwareOutputDeviceForPlatform(
 #elif defined(USE_OZONE)
   ui::SurfaceFactoryOzone* factory =
       ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
+  std::unique_ptr<ui::PlatformWindowSurface> platform_window_surface =
+      factory->CreatePlatformWindowSurface(surface_handle);
   std::unique_ptr<ui::SurfaceOzoneCanvas> surface_ozone =
       factory->CreateCanvasForWidget(surface_handle);
   CHECK(surface_ozone);
-  return std::make_unique<SoftwareOutputDeviceOzone>(std::move(surface_ozone));
+  return std::make_unique<SoftwareOutputDeviceOzone>(
+      std::move(platform_window_surface), std::move(surface_ozone));
 #elif defined(USE_X11)
   return std::make_unique<SoftwareOutputDeviceX11>(surface_handle);
 #endif
