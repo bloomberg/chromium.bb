@@ -42,57 +42,127 @@ cr.define('extensions', function() {
   }
 
   /**
-   * Group activity log entries by the API call and merge their counts.
-   * We currently assume that every API call matches to one activity type.
+   * Content scripts activities do not have an API call, so we use the names of
+   * the scripts executed (specified as a stringified JSON array in the args
+   * field) as the keys for an activity group instead.
+   * @private
+   * @param {!chrome.activityLogPrivate.ExtensionActivity} activity
+   * @return {!Array<string>}
+   */
+  function getActivityGroupKeysForContentScript_(activity) {
+    assert(
+        activity.activityType ===
+        chrome.activityLogPrivate.ExtensionActivityType.CONTENT_SCRIPT);
+
+    if (!activity.args) {
+      return [];
+    }
+
+    const parsedArgs = JSON.parse(activity.args);
+    assert(Array.isArray(parsedArgs), 'Invalid API data.');
+    return /** @type {!Array<string>} */ (parsedArgs);
+  }
+
+  /**
+   * Web request activities can have extra information which describes what the
+   * web request does in more detail than just the api_call. This information
+   * is in activity.other.webRequest and we use this to generate more activity
+   * group keys if possible.
+   * @private
+   * @param {!chrome.activityLogPrivate.ExtensionActivity} activity
+   * @return {!Array<string>}
+   */
+  function getActivityGroupKeysForWebRequest_(activity) {
+    assert(
+        activity.activityType ===
+        chrome.activityLogPrivate.ExtensionActivityType.WEB_REQUEST);
+
+    const apiCall = activity.apiCall;
+    const other = activity.other;
+
+    if (!other || !other.webRequest) {
+      return [apiCall];
+    }
+
+    const webRequest = /** @type {!Object} */ (JSON.parse(other.webRequest));
+    assert(typeof webRequest === 'object', 'Invalid API data');
+
+    // If there is extra information in the other.webRequest object,
+    // construct a group for each consisting of the API call and each object key
+    // in other.webRequest. Otherwise we default to just the API call.
+    return Object.keys(webRequest).length === 0 ?
+        [apiCall] :
+        Object.keys(webRequest).map(field => `${apiCall} (${field})`);
+  }
+
+  /**
+   * Group activity log entries by a key determined from each entry. Usually
+   * this would be the activity's API call though content script and web
+   * requests have different keys. We currently assume that every API call
+   * matches to one activity type.
    * @param {!Array<!chrome.activityLogPrivate.ExtensionActivity>}
    *     activityData
-   * @return {!Map<string, !extensions.ApiGroup>}
+   * @return {!Map<string, !extensions.ActivityGroup>}
    */
-  function groupActivitiesByApiCall(activityData) {
-    const activitiesByApiCall = new Map();
+  function groupActivities(activityData) {
+    const groupedActivities = new Map();
 
     for (const activity of activityData) {
-      const apiCall = activity.apiCall;
+      const activityType = activity.activityType;
       const count = activity.count;
       const pageUrl = activity.pageUrl;
 
-      if (!activitiesByApiCall.has(apiCall)) {
-        const apiGroup = {
-          apiCall,
-          count,
-          activityType: activity.activityType,
-          countsByUrl: pageUrl ? new Map([[pageUrl, count]]) : new Map()
-        };
-        activitiesByApiCall.set(apiCall, apiGroup);
-      } else {
-        const apiGroup = activitiesByApiCall.get(apiCall);
-        apiGroup.count += count;
+      const isContentScript = activityType ===
+          chrome.activityLogPrivate.ExtensionActivityType.CONTENT_SCRIPT;
+      const isWebRequest = activityType ===
+          chrome.activityLogPrivate.ExtensionActivityType.WEB_REQUEST;
 
-        if (pageUrl) {
-          const currentCount = apiGroup.countsByUrl.get(pageUrl) || 0;
-          apiGroup.countsByUrl.set(pageUrl, currentCount + count);
+      let activityGroupKeys = [activity.apiCall];
+      if (isContentScript) {
+        activityGroupKeys = getActivityGroupKeysForContentScript_(activity);
+      } else if (isWebRequest) {
+        activityGroupKeys = getActivityGroupKeysForWebRequest_(activity);
+      }
+
+      for (const key of activityGroupKeys) {
+        if (!groupedActivities.has(key)) {
+          const activityGroup = {
+            key,
+            count,
+            activityType,
+            countsByUrl: pageUrl ? new Map([[pageUrl, count]]) : new Map()
+          };
+          groupedActivities.set(key, activityGroup);
+        } else {
+          const activityGroup = groupedActivities.get(key);
+          activityGroup.count += count;
+
+          if (pageUrl) {
+            const currentCount = activityGroup.countsByUrl.get(pageUrl) || 0;
+            activityGroup.countsByUrl.set(pageUrl, currentCount + count);
+          }
         }
       }
     }
 
-    return activitiesByApiCall;
+    return groupedActivities;
   }
 
   /**
-   * Sort activities by the total count for each API call. Resolve ties by the
-   * alphabetical order of the API call name.
-   * @param {!Map<string, !extensions.ApiGroup>} activitiesByApiCall
-   * @return {!Array<!extensions.ApiGroup>}
+   * Sort activities by the total count for each activity group key. Resolve
+   * ties by the alphabetical order of the key.
+   * @param {!Map<string, !extensions.ActivityGroup>} groupedActivities
+   * @return {!Array<!extensions.ActivityGroup>}
    */
-  function sortActivitiesByCallCount(activitiesByApiCall) {
-    return Array.from(activitiesByApiCall.values()).sort(function(a, b) {
+  function sortActivitiesByCallCount(groupedActivities) {
+    return Array.from(groupedActivities.values()).sort(function(a, b) {
       if (a.count != b.count) {
         return b.count - a.count;
       }
-      if (a.apiCall < b.apiCall) {
+      if (a.key < b.key) {
         return -1;
       }
-      if (a.apiCall > b.apiCall) {
+      if (a.key > b.key) {
         return 1;
       }
       return 0;
@@ -115,9 +185,10 @@ cr.define('extensions', function() {
 
       /**
        * An array representing the activity log. Stores activities grouped by
-       * API call sorted in descending order of the call count.
+       * API call or content script name sorted in descending order of the call
+       * count.
        * @private
-       * @type {!Array<!extensions.ApiGroup>}
+       * @type {!Array<!extensions.ActivityGroup>}
        */
       activityData_: {
         type: Array,
@@ -142,7 +213,10 @@ cr.define('extensions', function() {
       onDataFetched: {type: Object, value: new PromiseResolver()},
 
       /** @private */
-      lastSearch_: String,
+      lastSearch_: {
+        type: String,
+        value: '',
+      },
     },
 
     /** @private {?number} */
@@ -220,27 +294,41 @@ cr.define('extensions', function() {
     processActivities_: function(activityData) {
       this.pageState_ = ActivityLogPageState.LOADED;
       this.activityData_ =
-          sortActivitiesByCallCount(groupActivitiesByApiCall(activityData));
+          sortActivitiesByCallCount(groupActivities(activityData));
       if (!this.onDataFetched.isFulfilled) {
         this.onDataFetched.resolve();
       }
     },
 
-    /** @private */
+    /** @return {!Promise<void>} */
+    refreshActivities: function() {
+      if (this.lastSearch_ === '') {
+        return this.getActivityLog_();
+      }
+
+      return this.getFilteredActivityLog_(this.lastSearch_);
+    },
+
+    /**
+     * @private
+     * @return {!Promise<void>}
+     */
     getActivityLog_: function() {
       this.pageState_ = ActivityLogPageState.LOADING;
-      this.delegate.getExtensionActivityLog(this.extensionId).then(result => {
-        this.processActivities_(result.activities);
-      });
+      return this.delegate.getExtensionActivityLog(this.extensionId)
+          .then(result => {
+            this.processActivities_(result.activities);
+          });
     },
 
     /**
      * @private
      * @param {string} searchTerm
+     * @return {!Promise<void>}
      */
     getFilteredActivityLog_: function(searchTerm) {
       this.pageState_ = ActivityLogPageState.LOADING;
-      this.delegate
+      return this.delegate
           .getFilteredExtensionActivityLog(this.extensionId, searchTerm)
           .then(result => {
             this.processActivities_(result.activities);
@@ -258,11 +346,7 @@ cr.define('extensions', function() {
       }
 
       this.lastSearch_ = searchTerm;
-      if (searchTerm === '') {
-        this.getActivityLog_();
-      } else {
-        this.getFilteredActivityLog_(searchTerm);
-      }
+      this.refreshActivities();
     },
   });
 

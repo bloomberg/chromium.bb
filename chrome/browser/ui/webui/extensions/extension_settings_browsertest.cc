@@ -263,9 +263,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionsActivityLogTest, TestActivityLogVisible) {
              Polymer.dom.flush();
              let item = activityLog.shadowRoot.querySelector(
                  'activity-log-item');
-             let apiCall = item.shadowRoot.getElementById('api-call');
+             let activityKey = item.shadowRoot.getElementById('activity-key');
              window.domAutomationController.send(
-                 apiCall.innerText === 'test.sendMessage');
+                 activityKey.innerText === 'test.sendMessage');
          });
       )",
       &has_api_call));

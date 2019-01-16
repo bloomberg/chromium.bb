@@ -52,9 +52,12 @@
         flex: 0 85px;
       }
 
-      #api-call {
+      #activity-key {
         flex: 1;
         margin-inline-start: 10px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       #activity-count {
@@ -83,7 +86,7 @@
         on-click="onExpandTap_">
       <div id="activity-call-and-count">
         <span id="activity-type">[[data.activityType]]</span>
-        <span id="api-call">[[data.apiCall]]</span>
+        <span id="activity-key" title="[[data.key]]">[[data.key]]</span>
         <span id="activity-count">[[data.count]]</span>
       </div>
       <cr-expand-button expanded="{{isExpanded_}}"

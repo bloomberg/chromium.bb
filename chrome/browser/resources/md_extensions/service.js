@@ -357,10 +357,9 @@ cr.define('extensions', function() {
     getFilteredExtensionActivityLog(extensionId, searchTerm) {
       const anyType = chrome.activityLogPrivate.ExtensionActivityFilter.ANY;
 
-      // Construct one filter for each API call we will make: one for exact
-      // match on the api call (api does not support partial matches), one for
-      // substring search by page URL, and one for substring search by argument
-      // URL. For the last two, % acts as a wildcard.
+      // Construct one filter for each API call we will make: one for substring
+      // search by api call, one for substring search by page URL, and one for
+      // substring search by argument URL. % acts as a wildcard.
       const activityLogFilters = [
         {
           activityType: anyType,
