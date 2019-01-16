@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/mixed_content_autoupgrade_status.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
@@ -786,7 +787,7 @@ void ResourceLoader::DidReceiveResponse(
                                request.GetUkmSourceId(), recorder.get());
   }
 
-  if (Context().IsDetached()) {
+  if (fetcher_->GetProperties().IsDetached()) {
     // If the fetch context is already detached, we don't need further signals,
     // so let's cancel the request.
     HandleError(

@@ -36,6 +36,7 @@ class PLATFORM_EXPORT NullResourceFetcherProperties final
     return 0;
   }
   bool IsPaused() const override { return false; }
+  bool IsDetached() const override { return true; }
   bool IsLoadComplete() const override { return true; }
   bool ShouldBlockLoadingMainResource() const override { return true; }
   bool ShouldBlockLoadingSubResource() const override { return true; }

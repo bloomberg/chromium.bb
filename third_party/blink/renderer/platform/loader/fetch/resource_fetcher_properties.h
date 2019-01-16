@@ -58,6 +58,11 @@ class PLATFORM_EXPORT ResourceFetcherProperties
   // https://html.spec.whatwg.org/C/webappapis.html#pause
   virtual bool IsPaused() const = 0;
 
+  // Returns whether this global context is detached. Note that in some cases
+  // the loading pipeline continues working after detached (e.g., for fetch()
+  // operations with "keepalive" specified).
+  virtual bool IsDetached() const = 0;
+
   // Returns whether the main resource for this global context is loaded.
   virtual bool IsLoadComplete() const = 0;
 
