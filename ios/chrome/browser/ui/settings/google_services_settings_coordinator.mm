@@ -72,6 +72,12 @@
   [self.navigationController dismissViewControllerAnimated:YES completion:nil];
 }
 
+- (void)authenticationFlowDidComplete {
+  DCHECK(self.authenticationFlow);
+  self.authenticationFlow = nil;
+  [self.googleServicesSettingsViewController allowUserInteraction];
+}
+
 #pragma mark - Properties
 
 - (AuthenticationService*)authService {
@@ -101,7 +107,7 @@
   __weak GoogleServicesSettingsCoordinator* weakSelf = self;
   [self.authenticationFlow startSignInWithCompletion:^(BOOL success) {
     // TODO(crbug.com/889919): Needs to add histogram for |success|.
-    [weakSelf.googleServicesSettingsViewController allowUserInteraction];
+    [weakSelf authenticationFlowDidComplete];
   }];
 }
 
