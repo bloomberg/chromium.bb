@@ -59,8 +59,10 @@ public class BrowserSessionContentUtils {
     public static void setActiveContentHandler(
             @NonNull BrowserSessionContentHandler contentHandler) {
         sActiveContentHandler = contentHandler;
-        sTaskIdToSession.append(sActiveContentHandler.getTaskId(),
-                sActiveContentHandler.getSession());
+        CustomTabsSessionToken session = sActiveContentHandler.getSession();
+        if (session != null) {
+            sTaskIdToSession.append(sActiveContentHandler.getTaskId(), session);
+        }
         ensureSessionCleanUpOnDisconnects();
     }
 
@@ -238,8 +240,11 @@ public class BrowserSessionContentUtils {
     private static void ensureSessionCleanUpOnDisconnects() {
         if (sSessionDisconnectCallback != null) return;
         sSessionDisconnectCallback = (session) -> {
+            if (session == null) {
+                return;
+            }
             for (int i = 0; i < sTaskIdToSession.size(); i++) {
-                if (sTaskIdToSession.valueAt(i).equals(session)) {
+                if (session.equals(sTaskIdToSession.valueAt(i))) {
                     sTaskIdToSession.removeAt(i);
                 }
             }
