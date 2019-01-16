@@ -43,6 +43,9 @@ class SyncSessionDurationsMetricsRecorder
       const AccountInfo& account_info) override;
   void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
   void OnRefreshTokensLoaded() override;
+  void OnErrorStateOfRefreshTokenUpdatedForAccount(
+      const AccountInfo& account_info,
+      const GoogleServiceAuthError& error) override;
   void OnAccountsInCookieUpdated(
       const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
@@ -64,6 +67,10 @@ class SyncSessionDurationsMetricsRecorder
 
   void HandleSyncAndAccountChange();
 
+  // Returns |FeatureState::ON| iff there is at least one account in
+  // |identity_manager| that has a valid refresh token.
+  FeatureState DetermineAccountStatus() const;
+
   SyncService* const sync_service_;
   identity::IdentityManager* const identity_manager_;
 
@@ -81,7 +88,7 @@ class SyncSessionDurationsMetricsRecorder
   // timer is absent if there's no active session.
   std::unique_ptr<base::ElapsedTimer> signin_session_timer_;
 
-  // Whether or not Chrome curently has an LST for an account.
+  // Whether or not Chrome curently has a valid refresh token for an account.
   FeatureState account_status_ = FeatureState::UNKNOWN;
   // Whether or not sync is currently active.
   FeatureState sync_status_ = FeatureState::UNKNOWN;

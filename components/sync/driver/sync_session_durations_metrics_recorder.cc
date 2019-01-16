@@ -146,6 +146,14 @@ void SyncSessionDurationsMetricsRecorder::OnRefreshTokensLoaded() {
   HandleSyncAndAccountChange();
 }
 
+void SyncSessionDurationsMetricsRecorder::
+    OnErrorStateOfRefreshTokenUpdatedForAccount(
+        const AccountInfo& account_info,
+        const GoogleServiceAuthError& error) {
+  DVLOG(1) << __func__;
+  HandleSyncAndAccountChange();
+}
+
 bool SyncSessionDurationsMetricsRecorder::ShouldLogUpdate(
     FeatureState new_sync_status,
     FeatureState new_account_status) {
@@ -168,16 +176,9 @@ void SyncSessionDurationsMetricsRecorder::UpdateSyncAndAccountStatus(
 }
 
 void SyncSessionDurationsMetricsRecorder::HandleSyncAndAccountChange() {
-  // If sync is off, we can tell whether the user is signed in by just checking
-  // if the token service has accounts, because the reconcilor will take care of
-  // removing accounts in error state from that list.
-  FeatureState non_sync_account_status =
-      identity_manager_->GetAccountsWithRefreshTokens().empty()
-          ? FeatureState::OFF
-          : FeatureState::ON;
   if (!sync_service_ || !sync_service_->CanSyncFeatureStart()) {
     // Only the account status needs to be updated when sync is off.
-    UpdateSyncAndAccountStatus(FeatureState::OFF, non_sync_account_status);
+    UpdateSyncAndAccountStatus(FeatureState::OFF, DetermineAccountStatus());
     return;
   }
 
@@ -192,9 +193,14 @@ void SyncSessionDurationsMetricsRecorder::HandleSyncAndAccountChange() {
     UpdateSyncAndAccountStatus(FeatureState::ON, FeatureState::ON);
   } else {
     // We don't know yet if sync is going to work.
-    // At least update the signin status, so that if we never learn
-    // what the sync state is, we know the signin state.
-    account_status_ = non_sync_account_status;
+    // At least update the account status, so that if we never learn what the
+    // sync state is, we know the signin state.
+    //
+    // TODO(msarda): The current code uses the account status for all accounts
+    // (i.e. it is not scoped to the sync account). Figure out whether this
+    // should be changed to only capture the status of the sync account when
+    // the user has opted in to sync.
+    account_status_ = DetermineAccountStatus();
   }
 }
 
@@ -249,6 +255,18 @@ void SyncSessionDurationsMetricsRecorder::LogSyncAndAccountDuration(
           session_length);
     }
   }
+}
+
+SyncSessionDurationsMetricsRecorder::FeatureState
+SyncSessionDurationsMetricsRecorder::DetermineAccountStatus() const {
+  for (const auto& account :
+       identity_manager_->GetAccountsWithRefreshTokens()) {
+    if (!identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
+            account.account_id)) {
+      return SyncSessionDurationsMetricsRecorder::FeatureState::ON;
+    }
+  }
+  return SyncSessionDurationsMetricsRecorder::FeatureState::OFF;
 }
 
 }  // namespace syncer
