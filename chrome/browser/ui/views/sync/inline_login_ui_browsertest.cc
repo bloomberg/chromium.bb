@@ -42,7 +42,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -259,8 +258,6 @@ MockSyncStarterInlineSigninHelper::MockSyncStarterInlineSigninHelper(
 class InlineLoginUIBrowserTest : public InProcessBrowserTest {
  public:
   InlineLoginUIBrowserTest() {}
-
-  void SetUpSigninManager(const std::string& username);
   void EnableSigninAllowed(bool enable);
   void AddEmailToOneClickRejectedList(const std::string& email);
   void AllowSigninCookies(bool enable);
@@ -269,15 +266,6 @@ class InlineLoginUIBrowserTest : public InProcessBrowserTest {
  protected:
   content::WebContents* web_contents() { return nullptr; }
 };
-
-void InlineLoginUIBrowserTest::SetUpSigninManager(const std::string& username) {
-  if (username.empty())
-    return;
-
-  auto* identity_manager =
-      IdentityManagerFactory::GetForProfile(browser()->profile());
-  identity::MakePrimaryAccountAvailable(identity_manager, username);
-}
 
 void InlineLoginUIBrowserTest::EnableSigninAllowed(bool enable) {
   PrefService* pref_service = browser()->profile()->GetPrefs();
@@ -374,7 +362,9 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOffer) {
 }
 
 IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferProfileConnected) {
-  SetUpSigninManager("foo@gmail.com");
+  auto* identity_manager =
+      IdentityManagerFactory::GetForProfile(browser()->profile());
+  identity::MakePrimaryAccountAvailable(identity_manager, "foo@gmail.com");
   EnableSigninAllowed(true);
 
   std::string error_message;
