@@ -33,6 +33,14 @@
 #include "ui/views/native_cursor.h"
 #include "ui/views/selection_controller.h"
 
+namespace {
+
+bool IsOpaque(SkColor color) {
+  return SkColorGetA(color) == SK_AlphaOPAQUE;
+}
+
+}  // namespace
+
 namespace views {
 
 const char Label::kViewClassName[] = "Label";
@@ -465,8 +473,7 @@ void Label::PaintText(gfx::Canvas* canvas) {
     return;
 
   for (View* view = this; view; view = view->parent()) {
-    if (view->background() &&
-        SkColorGetA(view->background()->get_color()) == SK_AlphaOPAQUE)
+    if (view->background() && IsOpaque(view->background()->get_color()))
       break;
 
     if (view->layer() && view->layer()->fills_bounds_opaquely()) {
@@ -860,16 +867,23 @@ gfx::Size Label::GetTextSize() const {
   return size;
 }
 
+SkColor Label::GetForegroundColor(SkColor foreground,
+                                  SkColor background) const {
+  return (auto_color_readability_ && IsOpaque(background))
+             ? color_utils::GetColorWithMinimumContrast(foreground, background)
+             : foreground;
+}
+
 void Label::RecalculateColors() {
-  actual_enabled_color_ = auto_color_readability_ ?
-      color_utils::GetReadableColor(requested_enabled_color_,
-                                    background_color_) :
-      requested_enabled_color_;
+  actual_enabled_color_ =
+      GetForegroundColor(requested_enabled_color_, background_color_);
+  // Using GetResultingPaintColor() here allows non-opaque selection backgrounds
+  // to still participate in auto color readability, assuming
+  // |background_color_| is itself opaque.
   actual_selection_text_color_ =
-      auto_color_readability_
-          ? color_utils::GetReadableColor(requested_selection_text_color_,
-                                          selection_background_color_)
-          : requested_selection_text_color_;
+      GetForegroundColor(requested_selection_text_color_,
+                         color_utils::GetResultingPaintColor(
+                             selection_background_color_, background_color_));
 
   ApplyTextColors();
   SchedulePaint();
@@ -879,15 +893,13 @@ void Label::ApplyTextColors() const {
   if (!display_text_)
     return;
 
-  bool subpixel_rendering_suppressed =
-      SkColorGetA(background_color_) != SK_AlphaOPAQUE ||
-      !subpixel_rendering_enabled_;
   display_text_->SetColor(actual_enabled_color_);
   display_text_->set_selection_color(actual_selection_text_color_);
   display_text_->set_selection_background_focused_color(
       selection_background_color_);
-  display_text_->set_subpixel_rendering_suppressed(
-      subpixel_rendering_suppressed);
+  const bool subpixel_rendering_enabled =
+      subpixel_rendering_enabled_ && IsOpaque(background_color_);
+  display_text_->set_subpixel_rendering_suppressed(!subpixel_rendering_enabled);
 }
 
 void Label::UpdateColorsFromTheme(const ui::NativeTheme* theme) {

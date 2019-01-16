@@ -100,16 +100,17 @@ IN_PROC_BROWSER_TEST_F(HostedAppOpaqueBrowserFrameViewTest, NoThemeColor) {
   if (!InstallAndLaunchHostedApp())
     return;
   EXPECT_EQ(hosted_app_button_container_->active_color_for_testing(),
-            SK_ColorBLACK);
+            gfx::kGoogleGrey900);
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(HostedAppOpaqueBrowserFrameViewTest, SystemThemeColor) {
   SetThemeMode(ThemeMode::kSystem);
-  ASSERT_TRUE(InstallAndLaunchHostedApp(SK_ColorBLACK));
+  // The color here should be ignored in system mode.
+  ASSERT_TRUE(InstallAndLaunchHostedApp(SK_ColorRED));
 
   EXPECT_EQ(hosted_app_button_container_->active_color_for_testing(),
-            SK_ColorBLACK);
+            gfx::kGoogleGrey900);
 }
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 

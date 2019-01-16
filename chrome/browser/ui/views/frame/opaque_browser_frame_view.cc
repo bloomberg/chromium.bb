@@ -62,8 +62,6 @@ using content::WebContents;
 
 namespace {
 
-constexpr SkColor kTitleBarFeatureColor = SK_ColorWHITE;
-
 class CaptionButtonBackgroundImageSource : public gfx::CanvasImageSource {
  public:
   CaptionButtonBackgroundImageSource(const gfx::ImageSkia& bg_image,
@@ -715,7 +713,7 @@ SkColor OpaqueBrowserFrameView::GetFrameForegroundColor(
     if (has_site_theme && !platform_observer_->IsUsingSystemTheme())
       return color_utils::GetThemedAssetColor(frame_color);
   }
-  return color_utils::GetReadableColor(kTitleBarFeatureColor, frame_color);
+  return color_utils::GetColorWithMaxContrast(frame_color);
 }
 
 void OpaqueBrowserFrameView::PaintRestoredFrameBorder(

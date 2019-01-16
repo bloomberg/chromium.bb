@@ -220,7 +220,6 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   }
 
   title_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  title_->SetAutoColorReadabilityEnabled(false);
   title_->SetHandlesTooltips(false);
   title_->SetFontList(AppListConfig::instance().app_title_font());
   title_->SetLineHeight(AppListConfig::instance().app_title_max_line_height());

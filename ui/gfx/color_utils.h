@@ -125,16 +125,6 @@ GFX_EXPORT SkColor BlendTowardMaxContrast(SkColor color, SkAlpha alpha);
 // This is a copy of |getThemedAssetColor()| in ColorUtils.java.
 GFX_EXPORT SkColor GetThemedAssetColor(SkColor theme_color);
 
-// Given a foreground and background color, try to return a foreground color
-// that is "readable" over the background color by luma-inverting the foreground
-// color and then using PickContrastingColor() to pick the one with greater
-// contrast.  During this process, alpha values will be ignored; the returned
-// color will have the same alpha as |foreground|.
-//
-// NOTE: This won't do anything but waste time if the supplied foreground color
-// has a luma value close to the midpoint (0.5 in the HSL representation).
-GFX_EXPORT SkColor GetReadableColor(SkColor foreground, SkColor background);
-
 // Returns whichever of |foreground1| or |foreground2| has higher contrast with
 // |background|.
 GFX_EXPORT SkColor PickContrastingColor(SkColor foreground1,

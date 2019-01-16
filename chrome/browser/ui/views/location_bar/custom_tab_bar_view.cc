@@ -111,8 +111,9 @@ class CustomTabBarTitleOriginView : public views::View {
 
     // We need to disable auto color readability, as we want to match the active
     // color in the title bar, which is subtly different.
-    // TODO(http://crbug.com/883177): Enable this if we use GetReadableColor(..)
-    // for the app title text instead of GetThemedAssetColor(..).
+    // TODO(http://crbug.com/883177): Enable this if we use
+    // GetColorWithMinimumContrast() for the app title text instead of
+    // GetThemedAssetColor().
     title_label_->SetAutoColorReadabilityEnabled(false);
     location_label_->SetAutoColorReadabilityEnabled(false);
 
