@@ -5,9 +5,6 @@
 package org.chromium.chrome.browser.autofill;
 
 import android.content.Context;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -17,7 +14,6 @@ import android.widget.RelativeLayout.LayoutParams;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.ui.text.NoUnderlineClickableSpan;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,13 +26,10 @@ import java.util.List;
  */
 public class PasswordGenerationAdapter extends BaseAdapter {
     private final Context mContext;
-    private final Delegate mDelegate;
     private final List<Integer> mViewTypes;
     private final String mPassword;
     private final String mSuggestionTitle;
     private final String mExplanationText;
-    private final int mExplanationTextLinkRangeStart;
-    private final int mExplanationTextLinkRangeEnd;
     private final int mSuggestionMeasuredWidth;
 
     /**
@@ -55,44 +48,24 @@ public class PasswordGenerationAdapter extends BaseAdapter {
     private static final int VIEW_TYPE_COUNT = 2;
 
     /**
-     * Handler for clicks on the "saved passwords" link.
-     */
-    public interface Delegate {
-        /**
-         * Called when the user clicks the "saved passwords" link.
-         */
-        public void onSavedPasswordsLinkClicked();
-    }
-
-    /**
      * Builds the adapter to display views using data from delegate.
      * @param context Android context.
-     * @param delegate The handler for clicking on the "saved passwords" link.
      * @param passwordDisplayed Whether the auto-generated password should be suggested.
      * @param password The auto-generated password to suggest.
      * @param suggestionTitle The translated title of the suggestion part of the UI.
      * @param explanationText The translated text for the explanation part of the UI.
-     * @param explanationTextLinkRangeStart The start of the range in the explanation text that
-     * should be a link to the saved passwords.
-     * @param explanationTextLinkRangeEnd The end of the range in the explanation text that should
-     * be a link to the saved passwords.
      * @param anchorWidthInDp The width of the anchor to which the popup is attached. Used to size
      * the explanation view.
      */
-    public PasswordGenerationAdapter(Context context, Delegate delegate, boolean passwordDisplayed,
-            String password, String suggestionTitle, String explanationText,
-            int explanationTextLinkRangeStart, int explanationTextLinkRangeEnd,
-            float anchorWidthInDp) {
+    public PasswordGenerationAdapter(Context context, boolean passwordDisplayed, String password,
+            String suggestionTitle, String explanationText, float anchorWidthInDp) {
         super();
         mContext = context;
-        mDelegate = delegate;
         mViewTypes = passwordDisplayed ? Arrays.asList(SUGGESTION, EXPLANATION)
                 : Arrays.asList(EXPLANATION);
         mPassword = password;
         mSuggestionTitle = suggestionTitle;
         mExplanationText = explanationText;
-        mExplanationTextLinkRangeStart = explanationTextLinkRangeStart;
-        mExplanationTextLinkRangeEnd = explanationTextLinkRangeEnd;
 
         int horizontalMarginInPx = Math.round(mContext.getResources().getDimension(
                 R.dimen.password_generation_horizontal_margin));
@@ -140,13 +113,7 @@ public class PasswordGenerationAdapter extends BaseAdapter {
                 view = inflater.inflate(R.layout.password_generation_popup_explanation, null);
                 TextView explanation = (TextView) view
                         .findViewById(R.id.password_generation_explanation);
-                SpannableString explanationSpan = new SpannableString(mExplanationText);
-                explanationSpan.setSpan(new NoUnderlineClickableSpan(
-                                                (view1) -> mDelegate.onSavedPasswordsLinkClicked()),
-                        mExplanationTextLinkRangeStart, mExplanationTextLinkRangeEnd,
-                        Spanned.SPAN_INCLUSIVE_INCLUSIVE);
-                explanation.setText(explanationSpan);
-                explanation.setMovementMethod(LinkMovementMethod.getInstance());
+                explanation.setText(mExplanationText);
                 explanation.setLayoutParams(new LayoutParams(mSuggestionMeasuredWidth,
                         LayoutParams.WRAP_CONTENT));
                 break;

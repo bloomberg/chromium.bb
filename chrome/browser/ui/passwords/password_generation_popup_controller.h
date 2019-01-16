@@ -8,10 +8,6 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 
-namespace gfx {
-class Range;
-}
-
 class PasswordGenerationPopupController
     : public autofill::AutofillPopupViewDelegate {
  public:
@@ -25,10 +21,6 @@ class PasswordGenerationPopupController
   // Called by the view when the password was accepted.
   virtual void PasswordAccepted() = 0;
 
-  // Called by the view when the saved passwords link is clicked.
-  // TODO(crbug.com/862269): Remove when "Smart Lock" is gone.
-  virtual void OnSavedPasswordsLinkClicked() = 0;
-
   // Accessors
   virtual GenerationState state() const = 0;
   virtual bool password_selected() const = 0;
@@ -37,8 +29,6 @@ class PasswordGenerationPopupController
   // Translated strings
   virtual base::string16 SuggestedText() = 0;
   virtual const base::string16& HelpText() = 0;
-  // TODO(crbug.com/862269): Remove when "Smart Lock" is gone.
-  virtual gfx::Range HelpTextLinkRange() = 0;
 
  protected:
   ~PasswordGenerationPopupController() override = default;

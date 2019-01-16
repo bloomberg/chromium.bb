@@ -22,11 +22,6 @@ class PasswordGenerationPopupViewAndroid : public PasswordGenerationPopupView {
   explicit PasswordGenerationPopupViewAndroid(
       PasswordGenerationPopupController* controller);
 
-  // Called from JNI when the "saved passwords" link was clicked.
-  void SavedPasswordsLinkClicked(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-
   // Called from JNI when the popup was dismissed.
   void Dismissed(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 

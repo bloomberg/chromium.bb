@@ -100,7 +100,6 @@ class PasswordGenerationPopupControllerImpl
   void SelectionCleared() override;
   bool HasSelection() const override;
   void PasswordAccepted() override;
-  void OnSavedPasswordsLinkClicked() override;
   gfx::NativeView container_view() const override;
   gfx::Rect popup_bounds() const override;
   const gfx::RectF& element_bounds() const override;
@@ -117,7 +116,6 @@ class PasswordGenerationPopupControllerImpl
   const base::string16& password() const override;
   base::string16 SuggestedText() override;
   const base::string16& HelpText() override;
-  gfx::Range HelpTextLinkRange() override;
 
   base::WeakPtr<PasswordGenerationPopupControllerImpl> GetWeakPtr();
 
