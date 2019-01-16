@@ -223,6 +223,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, NotificationWithoutIcon);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, InlineSettings);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateViewsOrderingTest);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestDeleteOnToggleExpanded);
 
   friend class NotificationViewMDTest;
 
@@ -305,6 +306,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   std::unique_ptr<ui::EventHandler> click_activator_;
 
   base::TimeTicks last_mouse_pressed_timestamp_;
+
+  base::WeakPtrFactory<NotificationViewMD> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NotificationViewMD);
 };
