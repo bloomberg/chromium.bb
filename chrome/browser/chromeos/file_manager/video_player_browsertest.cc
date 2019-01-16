@@ -73,4 +73,9 @@ IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, ClickControlButtons) {
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, NativeMediaKey) {
+  set_test_case_name("mediaKeyNative");
+  StartTest();
+}
+
 }  // namespace file_manager
