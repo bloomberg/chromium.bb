@@ -27,13 +27,12 @@ base::FilePath GetKernel32DllFilePath() {
 }  // namespace
 
 TEST(ModuleInfoTest, InspectModule) {
-  ModuleInfoKey module_key = {GetKernel32DllFilePath(), 0, 0, 1};
   StringMapping path_mapping = GetEnvironmentVariablesMapping({
       L"SystemRoot",
   });
 
   std::unique_ptr<ModuleInspectionResult> inspection_result =
-      InspectModule(path_mapping, module_key);
+      InspectModule(path_mapping, GetKernel32DllFilePath());
 
   EXPECT_STREQ(L"%systemroot%\\system32\\",
                inspection_result->location.c_str());

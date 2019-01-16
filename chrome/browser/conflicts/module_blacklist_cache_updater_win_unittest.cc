@@ -245,7 +245,8 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, IgnoreMicrosoftModules) {
 
   ModuleInfoKey module_key(module_path, module_size, time_date_stamp, 0);
   ModuleInfoData module_data = CreateLoadedModuleInfoData();
-  module_data.inspection_result = InspectModule(StringMapping(), module_key);
+  module_data.inspection_result =
+      InspectModule(StringMapping(), module_key.module_path);
 
   module_blacklist_cache_updater->OnNewModuleFound(module_key, module_data);
   module_blacklist_cache_updater->OnModuleDatabaseIdle();
