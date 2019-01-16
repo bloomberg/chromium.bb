@@ -28,7 +28,8 @@ class VIZ_COMMON_EXPORT SurfaceDrawQuad : public DrawQuad {
               const gfx::Rect& visible_rect,
               const SurfaceRange& surface_range,
               SkColor default_background_color,
-              bool stretch_content_to_fill_bounds);
+              bool stretch_content_to_fill_bounds,
+              bool ignores_input_event);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
@@ -36,11 +37,15 @@ class VIZ_COMMON_EXPORT SurfaceDrawQuad : public DrawQuad {
               bool needs_blending,
               const SurfaceRange& surface_range,
               SkColor default_background_color,
-              bool stretch_content_to_fill_bounds);
+              bool stretch_content_to_fill_bounds,
+              bool ignores_input_event);
 
   SurfaceRange surface_range;
   SkColor default_background_color = SK_ColorWHITE;
   bool stretch_content_to_fill_bounds = false;
+  // TODO(crbug.com/914530): Remove once VizHitTestSurfaceLayer is enabled by
+  // default.
+  bool ignores_input_event = false;
 
   static const SurfaceDrawQuad* MaterialCast(const DrawQuad* quad);
 
