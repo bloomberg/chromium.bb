@@ -96,6 +96,11 @@
             </p>
           </div>
         </template>
+        <cr-link-row label="$i18n{syncAndNonPersonalizedServices}"
+           sub-label="$i18n{syncAndGoogleServicesPrivacyDescription}"
+           icon-class="subpage-arrow" on-click="onSyncAndGoogleServicesClick_"
+           hidden="[[!unifiedConsentEnabled_]]">
+        </cr-link-row>
 <if expr="not chromeos">
         <settings-toggle-button id="signinAllowedToggle"
             pref="{{prefs.signin.allowed_on_next_startup}}"
@@ -181,10 +186,6 @@
                 aria-label="$i18n{clearBrowsingData}"
                 aria-describedby="clearBrowsingDataSecondary"></button>
           </paper-icon-button-light>
-        </div>
-        <div class="settings-box" on-click="onMoreSettingsBoxClicked_"
-            hidden="[[!unifiedConsentEnabled_]]">
-          <div class="start">$i18nRaw{syncAndPersonalizationLink}</div>
         </div>
       </div>
 <if expr="use_nss_certs">
