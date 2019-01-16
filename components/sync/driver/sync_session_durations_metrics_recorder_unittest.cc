@@ -135,7 +135,8 @@ TEST_F(SyncSessionDurationsMetricsRecorderTest,
            "OptedInToSyncWithAccount"});
 }
 
-TEST_F(SyncSessionDurationsMetricsRecorderTest, OptedInToSync_AuthError) {
+TEST_F(SyncSessionDurationsMetricsRecorderTest,
+       OptedInToSync_PrimaryAccountInAuthError) {
   EnableSync();
   SetInvalidCredentialsAuthError();
 
@@ -146,6 +147,45 @@ TEST_F(SyncSessionDurationsMetricsRecorderTest, OptedInToSync_AuthError) {
   ExpectNoSession(
       ht, {"NotOptedInToSyncWithoutAccount", "NotOptedInToSyncWithoutAccount",
            "OptedInToSyncWithAccount"});
+}
+
+TEST_F(SyncSessionDurationsMetricsRecorderTest,
+       SyncDisabled_PrimaryAccountInAuthError) {
+  EnableSync();
+  SetInvalidCredentialsAuthError();
+  sync_service_.SetDisableReasons(SyncService::DISABLE_REASON_USER_CHOICE);
+
+  base::HistogramTester ht;
+  StartAndEndSession();
+
+  // If the user opted in to sync, but then disabled sync (e.g. via policy or
+  // from the Android OS settings), then they are counted as having opted out
+  // of sync.
+  // The account is in auth error, so they are also counted as not having any
+  // browser account.
+  ExpectOneSession(ht, {"NotOptedInToSyncWithoutAccount"});
+  ExpectNoSession(ht,
+                  {"NotOptedInToSyncWithAccount", "OptedInToSyncWithoutAccount",
+                   "OptedInToSyncWithAccount"});
+}
+
+TEST_F(SyncSessionDurationsMetricsRecorderTest,
+       NotOptedInToSync_AccountInAuthError) {
+  AccountInfo account =
+      identity_test_env_.MakeAccountAvailable("foo@gmail.com");
+  identity_test_env_.UpdatePersistentErrorOfRefreshTokenForAccount(
+      account.account_id,
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+
+  base::HistogramTester ht;
+  StartAndEndSession();
+
+  // The account is in auth error, so they are counted as not having any browser
+  // account.
+  ExpectOneSession(ht, {"NotOptedInToSyncWithoutAccount"});
+  ExpectNoSession(ht,
+                  {"NotOptedInToSyncWithAccount", "OptedInToSyncWithoutAccount",
+                   "OptedInToSyncWithAccount"});
 }
 
 }  // namespace
