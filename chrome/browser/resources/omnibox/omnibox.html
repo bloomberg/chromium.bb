@@ -18,8 +18,7 @@
 
 <body>
   <template id="omnibox-input-template">
-    <link rel="stylesheet" href="omnibox.css">
-
+    <link rel="stylesheet" href="omnibox_input.css">
     <div class="top">
       <div class="top-column">
         <input id="input-text" type="text"
@@ -180,12 +179,27 @@
   </template>
 
   <template id="omnibox-output-template">
-    <link rel="stylesheet" href="omnibox.css">
+    <style>
+      [hidden] {
+        display: none !important;
+      }
+
+      @media only screen and (min-height: 900px) {
+        :host {
+          flex-grow: 1;
+          overflow-y: scroll;
+        }
+      }
+
+      output-results-group:not(:last-child) {
+        margin-bottom: 30px;
+      }
+    </style>
     <div id="contents"></div>
   </template>
 
   <template id="output-results-group-template">
-    <link rel="stylesheet" href="omnibox.css">
+    <link rel="stylesheet" href="output_results_group.css">
     <output-results-details></output-results-details>
     <table id="table"></table>
   </template>
@@ -209,7 +223,6 @@
         font-weight: bold;
       }
     </style>
-
     <span class="label">
       cursor position = <span id="cursor-position"></span>
     </span>

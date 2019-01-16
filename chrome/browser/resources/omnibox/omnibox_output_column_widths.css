@@ -26,18 +26,12 @@
   width: 70px;
 }
 
-.header-associated-keyword {
-  width: 120%;
-}
-
+.header-associated-keyword,
 .header-keyword {
   width: 120%;
 }
 
-.header-additional-info {
-  width: 240%;
-}
-
+.header-additional-info,
 .header-additional-properties {
   width: 240%;
 }

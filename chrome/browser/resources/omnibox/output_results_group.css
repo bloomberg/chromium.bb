@@ -1,0 +1,238 @@
+/* Copyright 2018 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+@import url(omnibox_output_column_widths.css);
+
+:host {
+  --header-color: #555;
+  display: inline-block;
+}
+
+/* detail section */
+
+output-results-details {
+  margin-bottom: 15px;
+}
+
+/* table */
+
+table {
+  --header-bg-color: #fafafa;
+  --row-hover-color: #fafafa;
+
+  background-color: white;
+  border: 1px solid var(--border-color);
+  border-spacing: 0;
+  font-size: 12px;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.head tr {
+  background-color: var(--header-bg-color);
+  color: var(--header-color);
+  font-size: 15px;
+}
+
+.body tr {
+  height: 66px;
+}
+
+.body td > * {
+  display: block;
+  max-height: 56px;
+}
+
+.body td {
+  word-break: break-all;
+}
+
+.body td * {
+  overflow: hidden;
+}
+
+.body td:not(:hover) {
+  white-space: nowrap;
+}
+
+.body td:not(:hover) * {
+  text-overflow: ellipsis;
+}
+
+.body td:hover * {
+  overflow-y: auto;
+}
+
+.body tr td pre.json {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.body tr:hover td {
+  background-color: var(--row-hover-color);
+}
+
+td {
+  padding: 0 5px;
+  transition: background-color 300ms;
+}
+
+th {
+  padding: 11px 5px 5px;
+  text-align: start;
+}
+
+.header-container {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 1px;
+  padding-top: 1px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-container span:not(:last-child)::after {
+  color: #555;
+  content: ' & ';
+}
+
+.body:not(:first-of-type) td.cell-provider-and-type .pair-item:first-child {
+  font-size: 0;
+}
+
+/* specific headers */
+
+.header-provider-and-type .header-container :first-child {
+  color: green;
+}
+
+.header-contents-and-description .header-container :first-child {
+  color: blue;
+}
+
+.header-fill-and-inline .header-container :nth-child(2) {
+  border: 1px solid;
+}
+
+/* specific columns */
+
+.pair-container {
+  align-items: center;
+}
+
+.cell-provider-and-type .pair-item:first-child {
+  color: green;
+  font-weight: bold;
+}
+
+.cell-contents-and-description .pair-container,
+.cell-fill-and-inline .pair-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.cell-contents-and-description .pair-container {
+  margin-inline-end: -15px;
+}
+
+.cell-contents-and-description .pair-item {
+  margin-inline-end: 15px;
+}
+
+.cell-contents-and-description img.pair-item {
+  border-radius: 3px;
+  height: 28px;
+}
+
+.cell-contents-and-description .pair-item.contents {
+  color: blue;
+}
+
+.cell-contents-and-description .pair-item.answer {
+  color: orange;
+}
+
+.cell-fill-and-inline .pair-container {
+  margin-inline-end: -1px;
+}
+
+.cell-fill-and-inline .pair-item {
+  margin-inline-end: 1px;
+}
+
+.cell-fill-and-inline .pair-item:nth-child(2):not(:empty) {
+  border: 1px solid;
+  font-weight: bold;
+}
+
+.cell-fill-and-inline .overlap-warning {
+  color: red;
+}
+
+.cell-destination-url img {
+  margin-inline-end: 5px;
+  vertical-align: middle;
+}
+
+/* boolean cells */
+
+.check-mark,
+.x-mark {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  font-size: 0;
+  height: 16px;
+  width: 16px;
+}
+
+.check-mark {
+  background-image: url(../../../../ui/webui/resources/images/check_circle_green.svg);
+}
+
+.x-mark {
+  background-image: url(../../../../ui/webui/resources/images/cancel_red.svg);
+}
+
+/* json cells */
+
+pre.json .key {
+  color: purple;
+  font-weight: bold;
+}
+
+pre.json .string {
+  color: green;
+}
+
+pre.json .number {
+  color: blue;
+}
+
+pre.json .boolean {
+  color: slateblue;
+  font-weight: bold;
+}
+
+pre.json .null {
+  color: magenta;
+  font-weight: bold;
+}
+
+/* misc cells */
+
+img:not([src]),
+.pair-item:empty:not(img) {
+  display: none;
+}
+
+/* filter */
+
+.filtered-highlighted {
+  background-color: rgb(208, 240, 255);
+}
+
+.filtered-highlighted-nested {
+  background-color: rgb(208, 255, 208);
+}
