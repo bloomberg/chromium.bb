@@ -6,16 +6,15 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/ubertoken_fetcher_impl.h"
+#include "components/signin/core/browser/ubertoken_fetcher.h"
 #include "content/public/common/url_constants.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
@@ -136,8 +135,9 @@ void ArcAuthContext::StartFetchers() {
     return;
   }
 
-  ubertoken_fetcher_ = std::make_unique<signin::UbertokenFetcherImpl>(
-      account_id_, ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
+  ubertoken_fetcher_ = identity_manager->CreateUbertokenFetcherForAccount(
+      account_id_,
       base::BindOnce(&ArcAuthContext::OnUbertokenFetchComplete,
                      base::Unretained(this)),
       gaia::GaiaSource::kChromeOS, profile_->GetURLLoaderFactory());

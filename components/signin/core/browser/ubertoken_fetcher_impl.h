@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "components/signin/core/browser/ubertoken_fetcher.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -36,7 +37,8 @@ using GaiaAuthFetcherFactory =
         scoped_refptr<network::SharedURLLoaderFactory>)>;
 
 // Allows to retrieve an uber-auth token.
-class UbertokenFetcherImpl : public GaiaAuthConsumer,
+class UbertokenFetcherImpl : public UbertokenFetcher,
+                             public GaiaAuthConsumer,
                              public OAuth2TokenService::Consumer {
  public:
   // Maximum number of retries to get the uber-auth token before giving up.

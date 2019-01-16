@@ -12,7 +12,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 
 namespace signin {
-class UbertokenFetcherImpl;
+class UbertokenFetcher;
 }
 
 namespace extensions {
@@ -93,7 +93,7 @@ class GaiaWebAuthFlow : public WebAuthFlow::Delegate {
   std::string redirect_scheme_;
   std::string redirect_path_prefix_;
   GURL auth_url_;
-  std::unique_ptr<signin::UbertokenFetcherImpl> ubertoken_fetcher_;
+  std::unique_ptr<signin::UbertokenFetcher> ubertoken_fetcher_;
   std::unique_ptr<WebAuthFlow> web_flow_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaWebAuthFlow);

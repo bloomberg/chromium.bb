@@ -13,6 +13,7 @@
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/core/browser/ubertoken_fetcher.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
 #include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
 #include "services/identity/public/cpp/scope_set.h"
@@ -289,6 +290,15 @@ class IdentityManager : public SigninManagerBase::Observer,
   void RemoveAccessTokenFromCache(const std::string& account_id,
                                   const identity::ScopeSet& scopes,
                                   const std::string& access_token);
+
+  // Creates an UbertokenFetcher given the passed-in information, allowing
+  // to specify a custom |url_loader_factory| as well.
+  std::unique_ptr<signin::UbertokenFetcher> CreateUbertokenFetcherForAccount(
+      const std::string& account_id,
+      signin::UbertokenFetcher::CompletionCallback callback,
+      gaia::GaiaSource source,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      bool bound_to_channel_id = true);
 
   // Returns pointer to the object used to change the signed-in state of the
   // primary account, if supported on the current platform. Otherwise, returns
