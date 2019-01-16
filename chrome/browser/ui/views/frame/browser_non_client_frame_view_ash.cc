@@ -301,21 +301,19 @@ bool BrowserNonClientFrameViewAsh::CanUserExitFullscreen() const {
   return ash::IsWindowTrustedPinned(GetFrameWindow()) ? false : true;
 }
 
-SkColor BrowserNonClientFrameViewAsh::GetFrameForegroundColor(
+SkColor BrowserNonClientFrameViewAsh::GetCaptionColor(
     ActiveState active_state) const {
   bool active = ShouldPaintAsActive(active_state);
 
-  SkColor active_color = views::FrameCaptionButton::GetButtonColor(
-      views::FrameCaptionButton::ColorMode::kDefault, ash::kDefaultFrameColor);
+  SkColor active_color =
+      views::FrameCaptionButton::GetButtonColor(ash::kDefaultFrameColor);
 
   // Hosted apps apply a theme color if specified by the extension.
   Browser* browser = browser_view()->browser();
   base::Optional<SkColor> theme_color =
       browser->hosted_app_controller()->GetThemeColor();
-  if (theme_color) {
-    active_color = views::FrameCaptionButton::GetButtonColor(
-        views::FrameCaptionButton::ColorMode::kThemed, *theme_color);
-  }
+  if (theme_color)
+    active_color = views::FrameCaptionButton::GetButtonColor(*theme_color);
 
   if (active)
     return active_color;
@@ -323,10 +321,7 @@ SkColor BrowserNonClientFrameViewAsh::GetFrameForegroundColor(
   // Add the container for extra hosted app buttons (e.g app menu button).
   const float inactive_alpha_ratio =
       views::FrameCaptionButton::GetInactiveButtonColorAlphaRatio();
-  SkColor inactive_color =
-      SkColorSetA(active_color, 255 * inactive_alpha_ratio);
-
-  return inactive_color;
+  return SkColorSetA(active_color, inactive_alpha_ratio * SK_AlphaOPAQUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -821,10 +816,9 @@ void BrowserNonClientFrameViewAsh::SetUpForHostedApp() {
     return;
 
   // Add the container for extra hosted app buttons (e.g app menu button).
-  SkColor active_color = GetFrameForegroundColor(kActive);
-  SkColor inactive_color = GetFrameForegroundColor(kInactive);
   set_hosted_app_button_container(new HostedAppButtonContainer(
-      frame(), browser_view(), active_color, inactive_color));
+      frame(), browser_view(), GetCaptionColor(kActive),
+      GetCaptionColor(kInactive)));
   AddChildView(hosted_app_button_container());
 }
 
@@ -837,9 +831,6 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
   } else if (browser_view()->IsBrowserTypeHostedApp()) {
     active_color =
         browser_view()->browser()->hosted_app_controller()->GetThemeColor();
-    frame_header_->set_button_color_mode(
-        active_color ? views::FrameCaptionButton::ColorMode::kThemed
-                     : views::FrameCaptionButton::ColorMode::kDefault);
   } else if (!browser_view()->browser()->is_app()) {
     active_color = kMdWebUiFrameColor;
   }

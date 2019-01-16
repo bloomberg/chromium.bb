@@ -122,9 +122,6 @@ GFX_EXPORT SkColor GetColorWithMaxContrast(SkColor color);
 // Blends towards the color with max contrast by |alpha|.
 GFX_EXPORT SkColor BlendTowardMaxContrast(SkColor color, SkAlpha alpha);
 
-// This is a copy of |getThemedAssetColor()| in ColorUtils.java.
-GFX_EXPORT SkColor GetThemedAssetColor(SkColor theme_color);
-
 // Returns whichever of |foreground1| or |foreground2| has higher contrast with
 // |background|.
 GFX_EXPORT SkColor PickContrastingColor(SkColor foreground1,

@@ -988,7 +988,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ThemeColor) {
   aura::Window* window = browser_view_->GetWidget()->GetNativeWindow();
   EXPECT_EQ(GetThemeColor(), window->GetProperty(ash::kFrameActiveColorKey));
   EXPECT_EQ(GetThemeColor(), window->GetProperty(ash::kFrameInactiveColorKey));
-  EXPECT_EQ(SK_ColorWHITE, GetActiveColor());
+  EXPECT_EQ(gfx::kGoogleGrey200, GetActiveColor());
 }
 
 // Make sure that for hosted apps, the height of the frame doesn't exceed the

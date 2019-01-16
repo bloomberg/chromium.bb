@@ -26,11 +26,6 @@ class VIEWS_EXPORT FrameCaptionButton : public views::Button {
  public:
   enum Animate { ANIMATE_YES, ANIMATE_NO };
 
-  enum class ColorMode {
-    kDefault,  // Most windows.
-    kThemed,   // Windows that have been themed by PWA manifest.
-  };
-
   static const char kViewClassName[];
 
   FrameCaptionButton(views::ButtonListener* listener,
@@ -38,9 +33,8 @@ class VIEWS_EXPORT FrameCaptionButton : public views::Button {
                      int hit_test_type);
   ~FrameCaptionButton() override;
 
-  // Gets the color to use for a frame caption button while a theme color is
-  // set.
-  static SkColor GetButtonColor(ColorMode color_mode, SkColor background_color);
+  // Gets the color to use for a frame caption button.
+  static SkColor GetButtonColor(SkColor background_color);
 
   // Gets the alpha ratio for the colors of inactive frame caption buttons.
   static float GetInactiveButtonColorAlphaRatio();
@@ -69,7 +63,6 @@ class VIEWS_EXPORT FrameCaptionButton : public views::Button {
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
   void SetBackgroundColor(SkColor background_color);
-  void SetColorMode(ColorMode color_mode);
 
   void set_paint_as_active(bool paint_as_active) {
     paint_as_active_ = paint_as_active;
@@ -110,9 +103,6 @@ class VIEWS_EXPORT FrameCaptionButton : public views::Button {
 
   // The current background color.
   SkColor background_color_;
-
-  // The algorithm to determine button colors.
-  ColorMode color_mode_;
 
   // Whether the button should be painted as active.
   bool paint_as_active_;
