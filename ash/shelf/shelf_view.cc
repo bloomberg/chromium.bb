@@ -331,7 +331,6 @@ ShelfView::ShelfView(ShelfModel* model, Shelf* shelf, ShelfWidget* shelf_widget)
       bounds_animator_(std::make_unique<views::BoundsAnimator>(this)),
       tooltip_(this),
       focus_search_(std::make_unique<ShelfFocusSearch>(this)),
-      shelf_item_background_color_(kShelfDefaultBaseColor),
       weak_factory_(this) {
   DCHECK(model_);
   DCHECK(shelf_);
@@ -965,11 +964,6 @@ int ShelfView::GetDimensionOfCenteredShelfItems() const {
   }
   size += (added_items - 1) * ShelfConstants::button_spacing();
   return size;
-}
-
-void ShelfView::UpdateShelfItemBackground(SkColor color) {
-  shelf_item_background_color_ = color;
-  SchedulePaint();
 }
 
 void ShelfView::OnTabletModeChanged() {

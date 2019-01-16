@@ -115,12 +115,9 @@ class TrayBackgroundView::TrayWidgetObserver : public views::WidgetObserver {
 class TrayBackground : public views::Background {
  public:
   explicit TrayBackground(TrayBackgroundView* tray_background_view)
-      : tray_background_view_(tray_background_view),
-        color_(SK_ColorTRANSPARENT) {}
+      : tray_background_view_(tray_background_view) {}
 
   ~TrayBackground() override = default;
-
-  void set_color(SkColor color) { color_ = color; }
 
  private:
   // Overridden from views::Background.
@@ -140,8 +137,6 @@ class TrayBackground : public views::Background {
 
   // Reference to the TrayBackgroundView for which this is a background.
   TrayBackgroundView* tray_background_view_;
-
-  SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBackground);
 };
@@ -422,11 +417,6 @@ void TrayBackgroundView::SetIsActive(bool is_active) {
 
 void TrayBackgroundView::UpdateBubbleViewArrow(TrayBubbleView* bubble_view) {
   // Nothing to do here.
-}
-
-void TrayBackgroundView::UpdateShelfItemBackground(SkColor color) {
-  background_->set_color(color);
-  SchedulePaint();
 }
 
 views::View* TrayBackgroundView::GetBubbleAnchor() const {

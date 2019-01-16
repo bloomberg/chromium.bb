@@ -102,9 +102,6 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   const ui::NativeTheme* GetNativeTheme() const override;
   bool OnNativeWidgetActivationChanged(bool active) override;
 
-  // ShelfBackgroundAnimatorObserver:
-  void UpdateShelfItemBackground(SkColor color) override;
-
   // TODO(jamescook): Introduce a test API instead of these methods.
   LogoutButtonTray* logout_button_tray_for_testing() {
     return logout_button_tray_.get();

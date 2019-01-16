@@ -326,8 +326,6 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
 
   views::Widget::AddObserver(this);
 
-  // Calls back into |this| and depends on |shelf_view_|.
-  background_animator_.AddObserver(this);
   background_animator_.AddObserver(delegate_view_);
   shelf_->AddObserver(this);
 }
@@ -355,7 +353,6 @@ void ShelfWidget::Shutdown() {
 
   // Don't need to update the shelf background during shutdown.
   background_animator_.RemoveObserver(delegate_view_);
-  background_animator_.RemoveObserver(this);
   shelf_->RemoveObserver(this);
 
   // Don't need to observe focus/activation during shutdown.
@@ -404,9 +401,6 @@ void ShelfWidget::OnTabletModeChanged() {
 
 void ShelfWidget::PostCreateShelf() {
   SetFocusCycler(Shell::Get()->focus_cycler());
-
-  // Ensure the newly created |shelf_| gets current values.
-  background_animator_.NotifyObserver(this);
 
   shelf_layout_manager_->LayoutShelf();
   shelf_layout_manager_->UpdateAutoHideState();
@@ -483,10 +477,6 @@ void ShelfWidget::OnWidgetActivationChanged(views::Widget* widget,
   } else {
     delegate_view_->GetFocusManager()->ClearFocus();
   }
-}
-
-void ShelfWidget::UpdateShelfItemBackground(SkColor color) {
-  shelf_view_->UpdateShelfItemBackground(color);
 }
 
 void ShelfWidget::WillDeleteShelfLayoutManager() {

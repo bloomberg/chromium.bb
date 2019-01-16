@@ -11,7 +11,6 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_observer.h"
 #include "ash/shelf/shelf_background_animator.h"
-#include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_observer.h"
 #include "base/macros.h"
@@ -38,7 +37,6 @@ class StatusAreaWidget;
 // early during RootWindowController initialization.
 class ASH_EXPORT ShelfWidget : public views::Widget,
                                public views::WidgetObserver,
-                               public ShelfBackgroundAnimatorObserver,
                                public ShelfLayoutManagerObserver,
                                public ShelfObserver,
                                public SessionObserver {
@@ -107,9 +105,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   // Overridden from views::WidgetObserver:
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
-
-  // ShelfBackgroundAnimatorObserver overrides:
-  void UpdateShelfItemBackground(SkColor color) override;
 
   // ShelfLayoutManagerObserver overrides:
   void WillDeleteShelfLayoutManager() override;
