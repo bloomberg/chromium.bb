@@ -113,6 +113,7 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
                                    ui::PageTransition transition) override;
   bool IsRestoreSessionInProgress() const override;
   void SetPendingItemIndex(int index) override;
+  void ApplyWKWebViewForwardHistoryClobberWorkaround() override;
 
   // NavigationManager:
   BrowserState* GetBrowserState() const override;
@@ -215,6 +216,15 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   void FinishReload() override;
   void FinishLoadURLWithParams() override;
   bool IsPlaceholderUrl(const GURL& url) const override;
+
+  // Restores the specified navigation session in the current web view. This
+  // differs from Restore() in that it doesn't reset the current navigation
+  // history to empty before restoring. It simply appends the restored session
+  // after the current item, effectively replacing only the forward history.
+  // |last_committed_item_index| is the 0-based index into |items| that the web
+  // view should be navigated to at the end of the restoration.
+  void UnsafeRestore(int last_committed_item_index,
+                     std::vector<std::unique_ptr<NavigationItem>> items);
 
   // The pending main frame navigation item. This is nullptr if there is no
   // pending item or if the pending item is a back-forward navigation, in which

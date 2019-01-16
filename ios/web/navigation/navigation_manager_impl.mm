@@ -125,6 +125,10 @@ void NavigationManagerImpl::SetBrowserState(BrowserState* browser_state) {
 
 void NavigationManagerImpl::DetachFromWebView() {}
 
+void NavigationManagerImpl::ApplyWKWebViewForwardHistoryClobberWorkaround() {
+  NOTREACHED();
+}
+
 void NavigationManagerImpl::RemoveTransientURLRewriters() {
   transient_url_rewriters_.clear();
 }
