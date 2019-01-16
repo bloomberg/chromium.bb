@@ -256,10 +256,6 @@ bool IsCrostiniUIAllowedForProfile(Profile* profile, bool check_policy) {
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
     return false;
   }
-
-  if (!base::FeatureList::IsEnabled(features::kExperimentalCrostiniUI)) {
-    return false;
-  }
   if (check_policy) {
     return IsCrostiniAllowedForProfile(profile);
   }

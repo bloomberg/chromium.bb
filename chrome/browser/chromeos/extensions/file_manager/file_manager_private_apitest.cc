@@ -360,9 +360,7 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
     browser()->profile()->GetPrefs()->SetBoolean(
         crostini::prefs::kCrostiniEnabled, true);
     scoped_feature_list->InitWithFeatures(
-        {features::kCrostini, features::kExperimentalCrostiniUI,
-         chromeos::features::kCrostiniFiles},
-        {});
+        {features::kCrostini, chromeos::features::kCrostiniFiles}, {});
     // Profile must be signed in with email for crostini.
     identity::SetPrimaryAccount(
         IdentityManagerFactory::GetForProfileIfExists(browser()->profile()),
