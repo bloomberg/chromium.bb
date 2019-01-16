@@ -71,7 +71,7 @@ a renderer to the browser. The system currently implements three strategies:
 Reply, Data Pipe, and Files.
 * **blob description**: the inital data sychronously sent to the browser that
 describes the items (content and sizes) of the new blob. This can
-optimistically include the blob data if the size is less than the maximimum mojo
+optimistically include the blob data if the size is less than the maximum mojo
 message size.
 
 # Blob Storage Limits
@@ -152,7 +152,7 @@ create a new blob. The `Register` method takes a blob description in the form of
 `DataElement`s, while the `RegisterFromStream` method creates a blob by reading
 data from a mojo `DataPipe`. Furthermore `Register` will call its callback as
 soon as possible after the request has been received, at which point the uuid is
-valid and known to the blob sytem. It will then asynchronously request the data
+valid and known to the blob system. It will then asynchronously request the data
 and actually create the blob. On the other hand the `RegisterFromStream` method
 won't call its callback until all the data for the blob has been received and
 the blob has been entirely completed.
