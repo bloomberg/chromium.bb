@@ -736,8 +736,10 @@ config("compiler") {
   }
 
   # Pass flag to LLD to work around issue in Valgrind related to
-  # location of debug symbols.
-  if (use_lld && ro_segment_workaround_for_valgrind) {
+  # location of debug symbols. This is also enabled for Android
+  # builds to allow debuggerd to properly symbolize stack crashes
+  # on this platform (http://crbug.com/919499).
+  if (use_lld && (ro_segment_workaround_for_valgrind || is_android)) {
     ldflags += [ "-Wl,--no-rosegment" ]
   }
 
