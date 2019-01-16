@@ -168,17 +168,7 @@ class ProguardCmdBuilder(object):
 
   def _WriteFlagsFile(self, cmd, out):
     # Quite useful for auditing proguard flags.
-    for config in sorted(self._configs):
-      out.write('#' * 80 + '\n')
-      out.write('# ' + config + '\n')
-      out.write('#' * 80 + '\n')
-      with open(config) as config_file:
-        contents = config_file.read().rstrip()
-      # Remove numbers from generated rule comments to make file more
-      # diff'able.
-      contents = re.sub(r' #generated:\d+', '', contents)
-      out.write(contents)
-      out.write('\n\n')
+    WriteFlagsFile(self._configs, out)
     out.write('#' * 80 + '\n')
     out.write('# Command-line\n')
     out.write('#' * 80 + '\n')
@@ -215,3 +205,20 @@ class ProguardCmdBuilder(object):
     open(self._outjar + '.seeds', 'a').close()
     open(self._outjar + '.usage', 'a').close()
     open(self._outjar + '.mapping', 'a').close()
+
+
+def WriteFlagsFile(configs, out, exclude_generated=False):
+  for config in sorted(configs):
+    if exclude_generated and config.endswith('.resources.proguard.txt'):
+      continue
+
+    out.write('#' * 80 + '\n')
+    out.write('# ' + config + '\n')
+    out.write('#' * 80 + '\n')
+    with open(config) as config_file:
+      contents = config_file.read().rstrip()
+    # Remove numbers from generated rule comments to make file more
+    # diff'able.
+    contents = re.sub(r' #generated:\d+', '', contents)
+    out.write(contents)
+    out.write('\n\n')
