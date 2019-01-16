@@ -19,6 +19,7 @@
 #include "net/socket/socks5_client_socket.h"
 #include "net/socket/socks_client_socket.h"
 #include "net/socket/transport_client_socket_pool.h"
+#include "net/socket/transport_connect_job.h"
 
 namespace net {
 
@@ -132,8 +133,11 @@ int SOCKSConnectJob::DoTransportConnect() {
   CompletionOnceCallback callback =
       base::BindOnce(&SOCKSConnectJob::OnIOComplete, base::Unretained(this));
   return transport_socket_handle_->Init(
-      group_name(), socks_params_->transport_params(), priority(), socket_tag(),
-      respect_limits(), std::move(callback), transport_pool_, net_log());
+      group_name(),
+      TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+          socks_params_->transport_params()),
+      priority(), socket_tag(), respect_limits(), std::move(callback),
+      transport_pool_, net_log());
 }
 
 int SOCKSConnectJob::DoTransportConnectComplete(int result) {

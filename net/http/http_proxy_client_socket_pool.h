@@ -81,7 +81,6 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   QuicStreamFactory* quic_stream_factory() const {
     return quic_stream_factory_;
   }
-  const HostResolver::RequestInfo& destination() const;
   bool is_trusted_proxy() const { return is_trusted_proxy_; }
   bool tunnel() const { return tunnel_; }
   const NetworkTrafficAnnotationTag traffic_annotation() const {

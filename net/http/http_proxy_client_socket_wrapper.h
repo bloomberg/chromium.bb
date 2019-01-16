@@ -25,7 +25,6 @@
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_client_socket_pool.h"
-#include "net/socket/transport_client_socket_pool.h"
 #include "net/spdy/spdy_session.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -40,6 +39,7 @@ class IOBuffer;
 class SpdySessionPool;
 class SSLClientSocketPool;
 class TransportClientSocketPool;
+class TransportSocketParams;
 
 // Class that establishes connections by calling into the lower layer socket
 // pools, creates a HttpProxyClientSocket, SpdyProxyClientSocket, or

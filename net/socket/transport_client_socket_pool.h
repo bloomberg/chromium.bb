@@ -16,7 +16,6 @@
 #include "net/socket/client_socket_pool_base.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/socket_tag.h"
-#include "net/socket/transport_connect_job.h"
 
 namespace net {
 
@@ -25,10 +24,55 @@ class HostResolver;
 class NetLog;
 class NetLogWithSource;
 class SocketPerformanceWatcherFactory;
+class TransportSocketParams;
+class WebSocketEndpointLockManager;
 
 class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
  public:
-  using SocketParams = TransportSocketParams;
+  // Callback to create a ConnectJob using the provided arguments. The lower
+  // level parameters used to construct the ConnectJob (like hostname, type of
+  // socket, proxy, etc) are all already bound to the callback.  If
+  // |websocket_endpoint_lock_manager| is non-null, a ConnectJob for use by
+  // WebSockets should be created.
+  using CreateConnectJobCallback =
+      base::RepeatingCallback<std::unique_ptr<ConnectJob>(
+          const std::string& group_name,
+          RequestPriority priority,
+          const SocketTag& socket_tag,
+          bool respect_limits,
+          ClientSocketFactory* client_socket_factory,
+          SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
+          HostResolver* host_resolver,
+          ConnectJob::Delegate* delegate,
+          NetLog* net_log,
+          WebSocketEndpointLockManager* websocket_endpoint_lock_manager)>;
+
+  // "Parameters" that own a single callback for creating a ConnectJob that can
+  // be of any type.
+  //
+  // TODO(mmenke): Once all the socket pool subclasses have been merged, replace
+  // this class with a callback.
+  class NET_EXPORT_PRIVATE SocketParams
+      : public base::RefCounted<SocketParams> {
+   public:
+    explicit SocketParams(
+        const CreateConnectJobCallback& create_connect_job_callback);
+
+    const CreateConnectJobCallback& create_connect_job_callback() {
+      return create_connect_job_callback_;
+    }
+
+    static scoped_refptr<SocketParams> CreateFromTransportSocketParams(
+        scoped_refptr<TransportSocketParams> transport_client_params);
+
+   private:
+    friend class base::RefCounted<SocketParams>;
+    ~SocketParams();
+
+    const CreateConnectJobCallback create_connect_job_callback_;
+
+    DISALLOW_COPY_AND_ASSIGN(SocketParams);
+  };
 
   TransportClientSocketPool(
       int max_sockets,
@@ -85,12 +129,11 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
 
  protected:
   // Methods shared with WebSocketTransportClientSocketPool
-  void NetLogTcpClientSocketPoolRequestedSocket(
-      const NetLogWithSource& net_log,
-      const scoped_refptr<TransportSocketParams>* casted_params);
+  void NetLogTcpClientSocketPoolRequestedSocket(const NetLogWithSource& net_log,
+                                                const std::string& group_name);
 
  private:
-  typedef ClientSocketPoolBase<TransportSocketParams> PoolBase;
+  typedef ClientSocketPoolBase<SocketParams> PoolBase;
 
   class TransportConnectJobFactory
       : public PoolBase::ConnectJobFactory {

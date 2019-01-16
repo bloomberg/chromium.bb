@@ -13,6 +13,7 @@
 #include "net/base/trace_constants.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
+#include "net/socket/transport_connect_job.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/socket/websocket_transport_connect_sub_job.h"
 
@@ -23,17 +24,13 @@ WebSocketTransportConnectJob::WebSocketTransportConnectJob(
     RequestPriority priority,
     bool respect_limits,
     const scoped_refptr<TransportSocketParams>& params,
-    base::TimeDelta timeout_duration,
-    CompletionOnceCallback callback,
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
-    ClientSocketHandle* handle,
     Delegate* delegate,
-    WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
     NetLog* pool_net_log,
-    const NetLogWithSource& request_net_log)
+    WebSocketEndpointLockManager* websocket_endpoint_lock_manager)
     : ConnectJob(group_name,
-                 timeout_duration,
+                 TransportConnectJob::ConnectionTimeout(),
                  priority,
                  SocketTag(),
                  respect_limits,
@@ -46,12 +43,11 @@ WebSocketTransportConnectJob::WebSocketTransportConnectJob(
       client_socket_factory_(client_socket_factory),
       next_state_(STATE_NONE),
       race_result_(TransportConnectJob::RACE_UNKNOWN),
-      handle_(handle),
       websocket_endpoint_lock_manager_(websocket_endpoint_lock_manager),
-      callback_(std::move(callback)),
-      request_net_log_(request_net_log),
       had_ipv4_(false),
-      had_ipv6_(false) {}
+      had_ipv6_(false) {
+  DCHECK(websocket_endpoint_lock_manager_);
+}
 
 WebSocketTransportConnectJob::~WebSocketTransportConnectJob() = default;
 

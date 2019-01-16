@@ -165,14 +165,6 @@ HttpProxySocketParams::HttpProxySocketParams(
   DCHECK(!transport_params_ || !ssl_params_);
 }
 
-const HostResolver::RequestInfo& HttpProxySocketParams::destination() const {
-  if (transport_params_.get() == NULL) {
-    return ssl_params_->GetDirectConnectionParams()->destination();
-  } else {
-    return transport_params_->destination();
-  }
-}
-
 HttpProxySocketParams::~HttpProxySocketParams() = default;
 
 HttpProxyConnectJob::HttpProxyConnectJob(

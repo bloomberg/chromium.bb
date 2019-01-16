@@ -17,6 +17,7 @@
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/transport_client_socket_pool.h"
+#include "net/socket/transport_connect_job.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -232,7 +233,7 @@ class SequencedSocketDataTest : public TestWithScopedTaskEnvironment {
   std::unique_ptr<SequencedSocketData> data_;
 
   const HostPortPair endpoint_;
-  scoped_refptr<TransportSocketParams> tcp_params_;
+  scoped_refptr<TransportClientSocketPool::SocketParams> tcp_params_;
   MockClientSocketFactory socket_factory_;
   MockTransportClientSocketPool socket_pool_;
   ClientSocketHandle connection_;
@@ -245,9 +246,12 @@ SequencedSocketDataTest::SequencedSocketDataTest()
     : sock_(nullptr),
       connect_data_(SYNCHRONOUS, OK),
       endpoint_("www.google.com", 443),
-      tcp_params_(new TransportSocketParams(endpoint_,
-                                            false,
-                                            OnHostResolutionCallback())),
+      tcp_params_(TransportClientSocketPool::SocketParams::
+                      CreateFromTransportSocketParams(
+                          base::MakeRefCounted<TransportSocketParams>(
+                              endpoint_,
+                              false,
+                              OnHostResolutionCallback()))),
       socket_pool_(10, 10, &socket_factory_),
       expect_eof_(true) {}
 

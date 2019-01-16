@@ -58,8 +58,7 @@ class NET_EXPORT_PRIVATE SSLSocketParams
   ConnectionType GetConnectionType() const;
 
   // Must be called only when GetConnectionType() returns DIRECT.
-  const scoped_refptr<TransportSocketParams>&
-      GetDirectConnectionParams() const;
+  const scoped_refptr<TransportSocketParams>& GetDirectConnectionParams() const;
 
   // Must be called only when GetConnectionType() returns SOCKS_PROXY.
   const scoped_refptr<SOCKSSocketParams>&
