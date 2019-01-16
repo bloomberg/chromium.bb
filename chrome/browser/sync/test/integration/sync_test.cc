@@ -265,11 +265,6 @@ void SyncTest::SetUp() {
   // Mock the Mac Keychain service.  The real Keychain can block on user input.
   OSCryptMocker::SetUp();
 
-  // Start up a sync test server if one is needed and setup mock gaia responses.
-  // Note: This must be done prior to the call to SetupClients() because we want
-  // the mock gaia responses to be available before GaiaUrls is initialized.
-  SetUpTestServerIfRequired();
-
   // Yield control back to the InProcessBrowserTest framework.
   InProcessBrowserTest::SetUp();
 }
@@ -937,6 +932,11 @@ void SyncTest::TearDownOnMainThread() {
 }
 
 void SyncTest::SetUpOnMainThread() {
+  // Start up a sync test server if one is needed and setup mock gaia responses.
+  // Note: This must be done prior to the call to SetupClients() because we want
+  // the mock gaia responses to be available before GaiaUrls is initialized.
+  SetUpTestServerIfRequired();
+
   if (!UsingExternalServers())
     SetupMockGaiaResponsesForProfile(ProfileManager::GetActiveUserProfile());
 
@@ -1072,7 +1072,9 @@ void SyncTest::SetUpTestServerIfRequired() {
       LOG(FATAL) << "Failed to set up local python sync and XMPP servers";
     SetupMockGaiaResponses();
   } else if (server_type_ == IN_PROCESS_FAKE_SERVER) {
-    fake_server_ = std::make_unique<fake_server::FakeServer>();
+    base::FilePath user_data_dir;
+    base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+    fake_server_ = std::make_unique<fake_server::FakeServer>(user_data_dir);
     SetupMockGaiaResponses();
   } else {
     LOG(FATAL) << "Don't know which server environment to run test in.";
