@@ -12,6 +12,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 
@@ -77,7 +78,8 @@ class TouchpadPinchBrowserTest : public ContentBrowserTest,
   void LoadURL() {
     const GURL data_url(kTouchpadPinchDataURL);
     NavigateToURL(shell(), data_url);
-    SynchronizeThreads();
+    HitTestRegionObserver observer(GetRenderWidgetHost()->GetFrameSinkId());
+    observer.WaitForHitTestData();
   }
 
   RenderWidgetHostImpl* GetRenderWidgetHost() {
@@ -87,7 +89,7 @@ class TouchpadPinchBrowserTest : public ContentBrowserTest,
                                           ->GetRenderWidgetHost());
   }
 
-  void SynchronizeThreads() {
+  void WaitForJavascriptExecution() {
     MainThreadFrameObserver observer(GetRenderWidgetHost());
     observer.Wait();
   }
@@ -124,7 +126,7 @@ IN_PROC_BROWSER_TEST_P(TouchpadPinchBrowserTest, WheelListenerAllowingPinch) {
   LoadURL();
   ASSERT_TRUE(
       content::ExecuteScript(shell()->web_contents(), "setListener(false);"));
-  SynchronizeThreads();
+  WaitForJavascriptExecution();
 
   content::TestPageScaleObserver scale_observer(shell()->web_contents());
 
@@ -168,7 +170,7 @@ void TouchpadPinchBrowserTest::EnsureNoScaleChangeWhenCanceled(
 
   ASSERT_TRUE(
       content::ExecuteScript(shell()->web_contents(), "setListener(true);"));
-  SynchronizeThreads();
+  WaitForJavascriptExecution();
 
   std::move(send_events).Run(shell()->web_contents(), pinch_position);
 
@@ -187,7 +189,7 @@ void TouchpadPinchBrowserTest::EnsureNoScaleChangeWhenCanceled(
   ASSERT_TRUE(content::ExecuteScript(shell()->web_contents(),
                                      "reset(); "
                                      "setListener(false);"));
-  SynchronizeThreads();
+  WaitForJavascriptExecution();
 
   content::TestPageScaleObserver scale_observer(shell()->web_contents());
   SimulateGesturePinchSequence(shell()->web_contents(), pinch_position, 2.0,
