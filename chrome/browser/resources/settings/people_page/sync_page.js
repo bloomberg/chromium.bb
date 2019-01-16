@@ -118,6 +118,13 @@ Polymer({
     },
 
     /** @private */
+    syncDisabledByAdmin_: {
+      type: Boolean,
+      value: false,
+      computed: 'computeSyncDisabledByAdmin_(syncStatus.managed)',
+    },
+
+    /** @private */
     syncSectionDisabled_: {
       type: Boolean,
       value: false,
@@ -224,6 +231,14 @@ Polymer({
          (!!this.syncStatus.hasError &&
           this.syncStatus.statusAction !==
               settings.StatusAction.ENTER_PASSPHRASE));
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeSyncDisabledByAdmin_: function() {
+    return this.syncStatus != undefined && !!this.syncStatus.managed;
   },
 
   /** @protected */

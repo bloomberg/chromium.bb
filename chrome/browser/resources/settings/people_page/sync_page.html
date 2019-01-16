@@ -111,8 +111,7 @@
       </settings-sync-account-control>
     </template>
 </if>
-
-    <div class="settings-box first" hidden="[[!syncStatus.managed]]">
+    <div class="settings-box first" hidden="[[!syncDisabledByAdmin_]]">
       <iron-icon id="disabled-by-admin-icon" icon="cr20:domain"></iron-icon>
       <div class="middle settings-box-text">
         $i18n{syncDisabledByAdministrator}
