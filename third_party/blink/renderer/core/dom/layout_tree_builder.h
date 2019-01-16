@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -86,7 +87,8 @@ class LayoutTreeBuilder {
     // AddChild() implementations to walk up the tree to find the correct
     // layout tree parent/siblings.
     if (next && next->IsText() && next->Parent()->IsAnonymous() &&
-        next->Parent()->IsInline()) {
+        next->Parent()->IsInline() &&
+        !ToLayoutInline(next->Parent())->IsFirstLineAnonymous()) {
       return next->Parent();
     }
     return next;
