@@ -8,6 +8,7 @@ namespace credential_provider {
 
 // Names of keys returned on json data from UI process.
 const char kKeyEmail[] = "email";
+const char kKeyPicture[] = "picture";
 const char kKeyFullname[] = "full_name";
 const char kKeyId[] = "id";
 const char kKeyMdmUrl[] = "mdm_url";
@@ -24,6 +25,7 @@ const char kKeyExitCode[] = "exit_code";
 const wchar_t kUserTokenHandle[] = L"th";
 const wchar_t kUserEmail[] = L"email";
 const wchar_t kUserId[] = L"id";
+const wchar_t kUserPictureUrl[] = L"pic";
 
 // Username and password key for special GAIA account to run GLS.
 const wchar_t kDefaultGaiaAccountName[] = L"gaia";
