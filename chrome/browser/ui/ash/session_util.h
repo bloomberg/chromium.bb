@@ -30,7 +30,7 @@ using GetActiveBrowserContextCallback =
 // scenario. This is passed in because it can differ in tests vs. production.
 // See for example MultiUserWindowManagerTestChromeOS.
 bool CanShowWindowForUser(
-    aura::Window* window,
+    const aura::Window* window,
     const GetActiveBrowserContextCallback& get_context_callback);
 
 gfx::ImageSkia GetAvatarImageForContext(content::BrowserContext* context);

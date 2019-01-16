@@ -23,8 +23,9 @@ namespace {
 // profile of the user who owns the window or the profile of the desktop on
 // which the window is positioned (for teleported windows) is returned, based on
 // |presenting|.
-content::BrowserContext* GetBrowserContextForWindow(aura::Window* window,
-                                                    bool presenting) {
+const content::BrowserContext* GetBrowserContextForWindow(
+    const aura::Window* window,
+    bool presenting) {
   DCHECK(window);
   auto* client = MultiUserWindowManagerClient::GetInstance();
   // Speculative fix for multi-profile crash. crbug.com/661821
@@ -47,7 +48,7 @@ const content::BrowserContext* GetActiveBrowserContext() {
 }
 
 bool CanShowWindowForUser(
-    aura::Window* window,
+    const aura::Window* window,
     const GetActiveBrowserContextCallback& get_context_callback) {
   DCHECK(window);
   if (user_manager::UserManager::Get()->GetLoggedInUsers().size() > 1u) {

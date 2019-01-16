@@ -48,20 +48,20 @@ AshFocusRules::~AshFocusRules() = default;
 ////////////////////////////////////////////////////////////////////////////////
 // AshFocusRules, ::wm::FocusRules:
 
-bool AshFocusRules::IsToplevelWindow(aura::Window* window) const {
+bool AshFocusRules::IsToplevelWindow(const aura::Window* window) const {
   return ash::IsToplevelWindow(window);
 }
 
-bool AshFocusRules::SupportsChildActivation(aura::Window* window) const {
+bool AshFocusRules::SupportsChildActivation(const aura::Window* window) const {
   return ash::IsActivatableShellWindowId(window->id());
 }
 
 bool AshFocusRules::IsWindowConsideredVisibleForActivation(
-    aura::Window* window) const {
+    const aura::Window* window) const {
   return ash::IsWindowConsideredVisibleForActivation(window);
 }
 
-bool AshFocusRules::CanActivateWindow(aura::Window* window) const {
+bool AshFocusRules::CanActivateWindow(const aura::Window* window) const {
   // Clearing activation is always permissible.
   if (!window)
     return true;
@@ -85,7 +85,7 @@ bool AshFocusRules::CanActivateWindow(aura::Window* window) const {
   return true;
 }
 
-bool AshFocusRules::CanFocusWindow(aura::Window* window,
+bool AshFocusRules::CanFocusWindow(const aura::Window* window,
                                    const ui::Event* event) const {
   if (!window)
     return true;

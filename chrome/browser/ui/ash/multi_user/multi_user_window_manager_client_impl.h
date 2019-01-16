@@ -55,7 +55,7 @@ class MultiUserWindowManagerClientImpl
   // MultiUserWindowManager overrides:
   void SetWindowOwner(aura::Window* window,
                       const AccountId& account_id) override;
-  const AccountId& GetWindowOwner(aura::Window* window) const override;
+  const AccountId& GetWindowOwner(const aura::Window* window) const override;
   void ShowWindowForUser(aura::Window* window,
                          const AccountId& account_id) override;
   bool AreWindowsSharedAmongUsers() const override;
@@ -63,7 +63,8 @@ class MultiUserWindowManagerClientImpl
       std::set<AccountId>* account_ids) const override;
   bool IsWindowOnDesktopOfUser(aura::Window* window,
                                const AccountId& account_id) const override;
-  const AccountId& GetUserPresentingWindow(aura::Window* window) const override;
+  const AccountId& GetUserPresentingWindow(
+      const aura::Window* window) const override;
   void AddUser(content::BrowserContext* context) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;

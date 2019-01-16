@@ -76,7 +76,7 @@ class MultiUserWindowManagerClient {
 
   // See who owns this window. The return value is the user account id or an
   // empty AccountId if not assigned yet.
-  virtual const AccountId& GetWindowOwner(aura::Window* window) const = 0;
+  virtual const AccountId& GetWindowOwner(const aura::Window* window) const = 0;
 
   // Allows to show an owned window for another users. If the window is not
   // owned, this call will return immediately. (The FileManager for example
@@ -102,7 +102,7 @@ class MultiUserWindowManagerClient {
   // Get the user on which the window is currently shown. If an empty string is
   // passed back the window will be presented for every user.
   virtual const AccountId& GetUserPresentingWindow(
-      aura::Window* window) const = 0;
+      const aura::Window* window) const = 0;
 
   // Adds user to monitor starting and running V1/V2 application windows.
   // Returns immediately if the user (identified by a |profile|) is already

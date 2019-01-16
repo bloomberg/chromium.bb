@@ -16,7 +16,7 @@ TestShellDelegate::TestShellDelegate() = default;
 
 TestShellDelegate::~TestShellDelegate() = default;
 
-bool TestShellDelegate::CanShowWindowForUser(aura::Window* window) const {
+bool TestShellDelegate::CanShowWindowForUser(const aura::Window* window) const {
   return true;
 }
 

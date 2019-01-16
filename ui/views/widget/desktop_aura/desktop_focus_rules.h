@@ -17,13 +17,14 @@ class DesktopFocusRules : public wm::BaseFocusRules {
 
  private:
   // Overridden from wm::BaseFocusRules:
-  bool CanActivateWindow(aura::Window* window) const override;
-  bool CanFocusWindow(aura::Window* window,
+  bool CanActivateWindow(const aura::Window* window) const override;
+  bool CanFocusWindow(const aura::Window* window,
                       const ui::Event* event) const override;
-  bool SupportsChildActivation(aura::Window* window) const override;
+  bool SupportsChildActivation(const aura::Window* window) const override;
   bool IsWindowConsideredVisibleForActivation(
-      aura::Window* window) const override;
-  aura::Window* GetToplevelWindow(aura::Window* window) const override;
+      const aura::Window* window) const override;
+  const aura::Window* GetToplevelWindow(
+      const aura::Window* window) const override;
   aura::Window* GetNextActivatableWindow(aura::Window* window) const override;
 
   // The content window. This is an activatable window even though it is a

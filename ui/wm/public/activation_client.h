@@ -40,14 +40,15 @@ class WM_PUBLIC_EXPORT ActivationClient {
   // GetToplevelWindow() below), as the toplevel window may not be activatable
   // (for example it may be blocked by a modal transient, or some other
   // condition).
-  virtual aura::Window* GetActivatableWindow(aura::Window* window) = 0;
+  virtual aura::Window* GetActivatableWindow(aura::Window* window) const = 0;
 
   // Retrieves the toplevel window for |window|, or NULL if there is none.
-  virtual aura::Window* GetToplevelWindow(aura::Window* window) = 0;
+  virtual const aura::Window* GetToplevelWindow(
+      const aura::Window* window) const = 0;
 
   // Returns true if |window| can be activated, false otherwise. If |window| has
   // a modal child it can not be activated.
-  virtual bool CanActivateWindow(aura::Window* window) const = 0;
+  virtual bool CanActivateWindow(const aura::Window* window) const = 0;
 
  protected:
   virtual ~ActivationClient() {}

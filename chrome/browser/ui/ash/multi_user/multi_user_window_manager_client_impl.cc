@@ -269,9 +269,13 @@ void MultiUserWindowManagerClientImpl::SetWindowOwner(
 }
 
 const AccountId& MultiUserWindowManagerClientImpl::GetWindowOwner(
-    aura::Window* window) const {
-  WindowToEntryMap::const_iterator it = window_to_entry_.find(window);
-  return it != window_to_entry_.end() ? it->second->owner() : EmptyAccountId();
+    const aura::Window* window) const {
+  for (WindowToEntryMap::const_iterator it = window_to_entry_.begin();
+       it != window_to_entry_.end(); it++) {
+    if (it->first == window)
+      return it->second->owner();
+  }
+  return EmptyAccountId();
 }
 
 void MultiUserWindowManagerClientImpl::ShowWindowForUser(
@@ -315,14 +319,16 @@ bool MultiUserWindowManagerClientImpl::IsWindowOnDesktopOfUser(
 }
 
 const AccountId& MultiUserWindowManagerClientImpl::GetUserPresentingWindow(
-    aura::Window* window) const {
-  WindowToEntryMap::const_iterator it = window_to_entry_.find(window);
+    const aura::Window* window) const {
+  for (WindowToEntryMap::const_iterator it = window_to_entry_.begin();
+       it != window_to_entry_.end(); it++) {
+    if (it->first == window)
+      // We ask the object for its desktop.
+      return it->second->show_for_user();
+  }
   // If the window is not owned by anyone it is shown on all desktops and we
   // return the empty string.
-  if (it == window_to_entry_.end())
-    return EmptyAccountId();
-  // Otherwise we ask the object for its desktop.
-  return it->second->show_for_user();
+  return EmptyAccountId();
 }
 
 void MultiUserWindowManagerClientImpl::AddUser(

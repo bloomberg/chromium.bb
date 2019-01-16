@@ -13,7 +13,7 @@
 
 namespace ash {
 
-bool IsToplevelWindow(aura::Window* window) {
+bool IsToplevelWindow(const aura::Window* window) {
   DCHECK(window);
   // The window must in a valid hierarchy.
   if (!window->GetRootWindow() || !window->parent())
@@ -24,7 +24,7 @@ bool IsToplevelWindow(aura::Window* window) {
   return IsActivatableShellWindowId(window->parent()->id());
 }
 
-bool IsWindowConsideredActivatable(aura::Window* window) {
+bool IsWindowConsideredActivatable(const aura::Window* window) {
   DCHECK(window);
   // Only toplevel windows can be activated.
   if (!IsToplevelWindow(window))
@@ -41,7 +41,7 @@ bool IsWindowConsideredActivatable(aura::Window* window) {
   return window->CanFocus();
 }
 
-bool IsWindowConsideredVisibleForActivation(aura::Window* window) {
+bool IsWindowConsideredVisibleForActivation(const aura::Window* window) {
   DCHECK(window);
   // If the |window| doesn't belong to the current active user and also doesn't
   // show for the current active user, then it should not be activated.

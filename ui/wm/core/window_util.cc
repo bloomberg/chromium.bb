@@ -77,11 +77,11 @@ bool IsActiveWindow(const aura::Window* window) {
   return client && client->GetActiveWindow() == window;
 }
 
-bool CanActivateWindow(aura::Window* window) {
+bool CanActivateWindow(const aura::Window* window) {
   DCHECK(window);
   if (!window->GetRootWindow())
     return false;
-  ActivationClient* client = GetActivationClient(window->GetRootWindow());
+  const ActivationClient* client = GetActivationClient(window->GetRootWindow());
   return client && client->CanActivateWindow(window);
 }
 
@@ -118,7 +118,7 @@ void SetWindowFullscreen(aura::Window* window, bool fullscreen) {
   }
 }
 
-bool WindowStateIs(aura::Window* window, ui::WindowShowState state) {
+bool WindowStateIs(const aura::Window* window, ui::WindowShowState state) {
   return window->GetProperty(aura::client::kShowStateKey) == state;
 }
 
@@ -140,7 +140,12 @@ aura::Window* GetActivatableWindow(aura::Window* window) {
 }
 
 aura::Window* GetToplevelWindow(aura::Window* window) {
-  ActivationClient* client = GetActivationClient(window->GetRootWindow());
+  return const_cast<aura::Window*>(
+      GetToplevelWindow(const_cast<const aura::Window*>(window)));
+}
+
+const aura::Window* GetToplevelWindow(const aura::Window* window) {
+  const ActivationClient* client = GetActivationClient(window->GetRootWindow());
   return client ? client->GetToplevelWindow(window) : NULL;
 }
 

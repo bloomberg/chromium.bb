@@ -124,7 +124,7 @@ class AppsFocusRules : public wm::BaseFocusRules {
   AppsFocusRules() {}
   ~AppsFocusRules() override {}
 
-  bool SupportsChildActivation(aura::Window* window) const override {
+  bool SupportsChildActivation(const aura::Window* window) const override {
     return true;
   }
 

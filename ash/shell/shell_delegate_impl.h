@@ -20,7 +20,7 @@ class ShellDelegateImpl : public ShellDelegate {
   ~ShellDelegateImpl() override;
 
   // ShellDelegate:
-  bool CanShowWindowForUser(aura::Window* window) const override;
+  bool CanShowWindowForUser(const aura::Window* window) const override;
   std::unique_ptr<ScreenshotDelegate> CreateScreenshotDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   ws::InputDeviceControllerClient* GetInputDeviceControllerClient() override;

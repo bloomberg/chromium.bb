@@ -19,7 +19,7 @@ void MultiUserWindowManagerClientStub::SetWindowOwner(
 }
 
 const AccountId& MultiUserWindowManagerClientStub::GetWindowOwner(
-    aura::Window* window) const {
+    const aura::Window* window) const {
   return EmptyAccountId();
 }
 
@@ -43,7 +43,7 @@ bool MultiUserWindowManagerClientStub::IsWindowOnDesktopOfUser(
 }
 
 const AccountId& MultiUserWindowManagerClientStub::GetUserPresentingWindow(
-    aura::Window* window) const {
+    const aura::Window* window) const {
   return EmptyAccountId();
 }
 

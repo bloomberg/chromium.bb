@@ -25,27 +25,28 @@
 namespace wm {
 namespace {
 
-bool HasAncestor(aura::Window* window, aura::Window* ancestor) {
+bool HasAncestor(const aura::Window* window, const aura::Window* ancestor) {
   return ancestor && ancestor->Contains(window);
 }
 
-bool TransientChildIsWindowModal(aura::Window* window) {
+bool TransientChildIsWindowModal(const aura::Window* window) {
   return window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_WINDOW;
 }
 
-bool TransientChildIsSystemModal(aura::Window* window) {
+bool TransientChildIsSystemModal(const aura::Window* window) {
   return window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM;
 }
 
-bool TransientChildIsChildModal(aura::Window* window) {
+bool TransientChildIsChildModal(const aura::Window* window) {
   return window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_CHILD;
 }
 
-aura::Window* GetModalParent(aura::Window* window) {
+aura::Window* GetModalParent(const aura::Window* window) {
   return window->GetProperty(aura::client::kChildModalParentKey);
 }
 
-bool IsModalTransientChild(aura::Window* transient, aura::Window* original) {
+bool IsModalTransientChild(const aura::Window* transient,
+                           const aura::Window* original) {
   return transient->IsVisible() &&
          (TransientChildIsWindowModal(transient) ||
           TransientChildIsSystemModal(transient) ||
@@ -53,14 +54,15 @@ bool IsModalTransientChild(aura::Window* transient, aura::Window* original) {
            HasAncestor(original, GetModalParent(transient))));
 }
 
-aura::Window* GetModalTransientChild(aura::Window* activatable,
-                                     aura::Window* original) {
-  for (aura::Window* transient : GetTransientChildren(activatable)) {
+const aura::Window* GetModalTransientChild(const aura::Window* activatable,
+                                           const aura::Window* original) {
+  for (const aura::Window* transient : GetTransientChildren(activatable)) {
     if (IsModalTransientChild(transient, original)) {
       if (GetTransientChildren(transient).empty())
         return transient;
 
-      aura::Window* modal_child = GetModalTransientChild(transient, original);
+      const aura::Window* modal_child =
+          GetModalTransientChild(transient, original);
       return modal_child ? modal_child : transient;
     }
   }
@@ -74,11 +76,16 @@ void SetModalParent(aura::Window* child, aura::Window* parent) {
 }
 
 aura::Window* GetModalTransient(aura::Window* window) {
+  return const_cast<aura::Window*>(
+      GetModalTransient(const_cast<const aura::Window*>(window)));
+}
+
+const aura::Window* GetModalTransient(const aura::Window* window) {
   if (!window)
     return nullptr;
 
   // We always want to check for the transient child of the toplevel window.
-  aura::Window* toplevel = GetToplevelWindow(window);
+  const aura::Window* toplevel = GetToplevelWindow(window);
   if (!toplevel)
     return nullptr;
 

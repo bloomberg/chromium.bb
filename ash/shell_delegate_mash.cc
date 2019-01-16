@@ -47,7 +47,7 @@ ShellDelegateMash::ShellDelegateMash() = default;
 
 ShellDelegateMash::~ShellDelegateMash() = default;
 
-bool ShellDelegateMash::CanShowWindowForUser(aura::Window* window) const {
+bool ShellDelegateMash::CanShowWindowForUser(const aura::Window* window) const {
   NOTIMPLEMENTED_LOG_ONCE();
   return true;
 }

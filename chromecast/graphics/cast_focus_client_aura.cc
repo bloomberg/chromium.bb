@@ -207,7 +207,8 @@ aura::Window* CastFocusClientAura::GetWindowToFocus() {
   return next;
 }
 
-aura::Window* CastFocusClientAura::GetZOrderWindow(aura::Window* window) {
+const aura::Window* CastFocusClientAura::GetZOrderWindow(
+    const aura::Window* window) const {
   while (window->parent() && !window->parent()->IsRootWindow()) {
     window = window->parent();
   }
@@ -235,15 +236,17 @@ const aura::Window* CastFocusClientAura::GetActiveWindow() const {
   return nullptr;
 }
 
-aura::Window* CastFocusClientAura::GetActivatableWindow(aura::Window* window) {
+aura::Window* CastFocusClientAura::GetActivatableWindow(
+    aura::Window* window) const {
   return window;
 }
 
-aura::Window* CastFocusClientAura::GetToplevelWindow(aura::Window* window) {
+const aura::Window* CastFocusClientAura::GetToplevelWindow(
+    const aura::Window* window) const {
   return GetZOrderWindow(window);
 }
 
-bool CastFocusClientAura::CanActivateWindow(aura::Window* window) const {
+bool CastFocusClientAura::CanActivateWindow(const aura::Window* window) const {
   return true;
 }
 

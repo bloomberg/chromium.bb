@@ -67,15 +67,17 @@ const aura::Window* FocusController::GetActiveWindow() const {
   return active_window_;
 }
 
-aura::Window* FocusController::GetActivatableWindow(aura::Window* window) {
+aura::Window* FocusController::GetActivatableWindow(
+    aura::Window* window) const {
   return rules_->GetActivatableWindow(window);
 }
 
-aura::Window* FocusController::GetToplevelWindow(aura::Window* window) {
+const aura::Window* FocusController::GetToplevelWindow(
+    const aura::Window* window) const {
   return rules_->GetToplevelWindow(window);
 }
 
-bool FocusController::CanActivateWindow(aura::Window* window) const {
+bool FocusController::CanActivateWindow(const aura::Window* window) const {
   return rules_->CanActivateWindow(window);
 }
 

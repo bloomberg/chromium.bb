@@ -15,9 +15,10 @@ namespace ash {
 
 // These functions provide the ash implementation wm::FocusRules. See
 // description there for details.
-ASH_EXPORT bool IsToplevelWindow(aura::Window* window);
-ASH_EXPORT bool IsWindowConsideredActivatable(aura::Window* window);
-ASH_EXPORT bool IsWindowConsideredVisibleForActivation(aura::Window* window);
+ASH_EXPORT bool IsToplevelWindow(const aura::Window* window);
+ASH_EXPORT bool IsWindowConsideredActivatable(const aura::Window* window);
+ASH_EXPORT bool IsWindowConsideredVisibleForActivation(
+    const aura::Window* window);
 
 }  // namespace ash
 

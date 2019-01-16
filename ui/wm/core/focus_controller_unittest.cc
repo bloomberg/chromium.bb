@@ -411,18 +411,18 @@ class TestFocusRules : public BaseFocusRules {
   }
 
   // Overridden from BaseFocusRules:
-  bool SupportsChildActivation(aura::Window* window) const override {
+  bool SupportsChildActivation(const aura::Window* window) const override {
     // In FocusControllerTests, only the RootWindow has activatable children.
     return window->GetRootWindow() == window;
   }
-  bool CanActivateWindow(aura::Window* window) const override {
+  bool CanActivateWindow(const aura::Window* window) const override {
     // Restricting focus to a non-activatable child window means the activatable
     // parent outside the focus restriction is activatable.
     bool can_activate =
         CanFocusOrActivate(window) || window->Contains(focus_restriction_);
     return can_activate ? BaseFocusRules::CanActivateWindow(window) : false;
   }
-  bool CanFocusWindow(aura::Window* window,
+  bool CanFocusWindow(const aura::Window* window,
                       const ui::Event* event) const override {
     return CanFocusOrActivate(window)
                ? BaseFocusRules::CanFocusWindow(window, event)
@@ -444,7 +444,7 @@ class TestFocusRules : public BaseFocusRules {
   }
 
  private:
-  bool CanFocusOrActivate(aura::Window* window) const {
+  bool CanFocusOrActivate(const aura::Window* window) const {
     return !focus_restriction_ || focus_restriction_->Contains(window);
   }
 
