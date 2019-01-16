@@ -263,12 +263,16 @@ bool IsPseudoClassValidAfterPseudoElement(
 bool IsSimpleSelectorValidAfterPseudoElement(
     const CSSParserSelector& simple_selector,
     CSSSelector::PseudoType compound_pseudo_element) {
-  if (compound_pseudo_element == CSSSelector::kPseudoUnknown)
-    return true;
-  if (compound_pseudo_element == CSSSelector::kPseudoContent)
-    return simple_selector.Match() != CSSSelector::kPseudoElement;
-  if (compound_pseudo_element == CSSSelector::kPseudoSlotted)
-    return simple_selector.IsTreeAbidingPseudoElement();
+  switch (compound_pseudo_element) {
+    case CSSSelector::kPseudoUnknown:
+      return true;
+    case CSSSelector::kPseudoContent:
+      return simple_selector.Match() != CSSSelector::kPseudoElement;
+    case CSSSelector::kPseudoSlotted:
+      return simple_selector.IsTreeAbidingPseudoElement();
+    default:
+      break;
+  }
   if (simple_selector.Match() != CSSSelector::kPseudoClass)
     return false;
   CSSSelector::PseudoType pseudo = simple_selector.GetPseudoType();
