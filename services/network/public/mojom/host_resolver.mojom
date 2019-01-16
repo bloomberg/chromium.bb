@@ -97,12 +97,25 @@ interface ResolveHostHandle {
 // Response interface used to receive results of NetworkContext::ResolveHost
 // requests.
 //
-// TODO(crbug.com/821021): Add additional methods to receive non-address
-// results (eg TXT DNS responses).
+// If only some result types are expected for an implementation, e.g. only
+// address types will be queried, see
+// services/network/public/cpp/resolve_host_client_base.h for a partial C++
+// implementation that allows overriding just expected result types.
 interface ResolveHostClient {
   // Called on completion of a resolve host request. Results are a network error
-  // code, and on success (network error code OK), an AddressList.
+  // code, and on success (network error code OK) and when results are in
+  // address form, an AddressList.
+  //
+  // Always called last to signal completion of the ResolveHost() request.
+  // Unless the ResolveHostClient is closed, this method will always be called
+  // exactly once, and afterwards, no more methods in the interface will be
+  // called.
   OnComplete(int32 result, AddressList? resolved_addresses);
+
+  // One or more On...Results() methods may be called when non-address results
+  // are available. Always called before OnComplete().
+  OnTextResults(array<string> text_results);
+  OnHostnameResults(array<HostPortPair> hosts);
 };
 
 // Parameter-grouping struct for additional optional parameters for
@@ -116,6 +129,9 @@ struct ResolveHostParameters {
     UNSPECIFIED,
     A,
     AAAA,
+    TXT,
+    PTR,
+    SRV,
   };
 
   // Requested DNS query type. If UNSPECIFIED, resolver will pick A or AAAA (or

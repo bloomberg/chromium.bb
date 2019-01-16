@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/optional.h"
@@ -17,8 +18,13 @@
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/dns/dns_config.h"
+#include "net/dns/dns_test_util.h"
+#include "net/dns/host_resolver_impl.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/dns/public/dns_protocol.h"
 #include "net/dns/public/dns_query_type.h"
 #include "net/log/net_log.h"
 #include "services/network/host_resolver.h"
@@ -69,6 +75,16 @@ class TestResolveHostClient : public mojom::ResolveHostClient {
       run_loop_->Quit();
   }
 
+  void OnTextResults(const std::vector<std::string>& text_results) override {
+    DCHECK(!complete_);
+    result_text_ = text_results;
+  }
+
+  void OnHostnameResults(const std::vector<net::HostPortPair>& hosts) override {
+    DCHECK(!complete_);
+    result_hosts_ = hosts;
+  }
+
   bool complete() const { return complete_; }
 
   int result_error() const {
@@ -81,12 +97,24 @@ class TestResolveHostClient : public mojom::ResolveHostClient {
     return result_addresses_;
   }
 
+  const base::Optional<std::vector<std::string>>& result_text() const {
+    DCHECK(complete_);
+    return result_text_;
+  }
+
+  const base::Optional<std::vector<net::HostPortPair>>& result_hosts() const {
+    DCHECK(complete_);
+    return result_hosts_;
+  }
+
  private:
   mojo::Binding<mojom::ResolveHostClient> binding_;
 
   bool complete_;
   int result_error_;
   base::Optional<net::AddressList> result_addresses_;
+  base::Optional<std::vector<std::string>> result_text_;
+  base::Optional<std::vector<net::HostPortPair>> result_hosts_;
   base::RunLoop* const run_loop_;
 };
 
@@ -113,6 +141,8 @@ TEST_F(HostResolverTest, Sync) {
   EXPECT_EQ(net::OK, response_client.result_error());
   EXPECT_THAT(response_client.result_addresses().value().endpoints(),
               testing::ElementsAre(CreateExpectedEndPoint("127.0.0.1", 160)));
+  EXPECT_FALSE(response_client.result_text());
+  EXPECT_FALSE(response_client.result_hosts());
   EXPECT_EQ(0u, resolver.GetNumOutstandingRequestsForTesting());
   EXPECT_EQ(net::DEFAULT_PRIORITY, inner_resolver->last_request_priority());
 }
@@ -145,6 +175,8 @@ TEST_F(HostResolverTest, Async) {
   EXPECT_EQ(net::OK, response_client.result_error());
   EXPECT_THAT(response_client.result_addresses().value().endpoints(),
               testing::ElementsAre(CreateExpectedEndPoint("127.0.0.1", 160)));
+  EXPECT_FALSE(response_client.result_text());
+  EXPECT_FALSE(response_client.result_hosts());
   EXPECT_TRUE(control_handle_closed);
   EXPECT_EQ(0u, resolver.GetNumOutstandingRequestsForTesting());
   EXPECT_EQ(net::DEFAULT_PRIORITY, inner_resolver->last_request_priority());
@@ -1024,6 +1056,95 @@ TEST_F(HostResolverTest, IsSpeculative) {
 
   EXPECT_EQ(net::OK, response_client.result_error());
   EXPECT_FALSE(response_client.result_addresses());
+  EXPECT_EQ(0u, resolver.GetNumOutstandingRequestsForTesting());
+}
+
+net::DnsConfig CreateValidDnsConfig() {
+  net::IPAddress dns_ip(192, 168, 1, 0);
+  net::DnsConfig config;
+  config.nameservers.push_back(
+      net::IPEndPoint(dns_ip, net::dns_protocol::kDefaultPort));
+  EXPECT_TRUE(config.IsValid());
+  return config;
+}
+
+TEST_F(HostResolverTest, TextResults) {
+  static const char* kTextRecords[] = {"foo", "bar", "more text"};
+  net::MockDnsClientRuleList rules;
+  rules.emplace_back(
+      "example.com", net::dns_protocol::kTypeTXT,
+      net::MockDnsClientRule::Result(net::BuildTestDnsResponse(
+          "example.com", {std::vector<std::string>(std::begin(kTextRecords),
+                                                   std::end(kTextRecords))})),
+      false /* delay */);
+  auto dns_client =
+      std::make_unique<net::MockDnsClient>(net::DnsConfig(), std::move(rules));
+
+  net::NetLog net_log;
+  std::unique_ptr<net::HostResolverImpl> inner_resolver =
+      net::HostResolver::CreateDefaultResolverImpl(&net_log);
+  inner_resolver->SetDnsClient(std::move(dns_client));
+  inner_resolver->SetBaseDnsConfigForTesting(CreateValidDnsConfig());
+
+  HostResolver resolver(inner_resolver.get(), &net_log);
+
+  base::RunLoop run_loop;
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->dns_query_type = net::DnsQueryType::TXT;
+  mojom::ResolveHostClientPtr response_client_ptr;
+  TestResolveHostClient response_client(&response_client_ptr, &run_loop);
+
+  resolver.ResolveHost(net::HostPortPair("example.com", 160),
+                       std::move(optional_parameters),
+                       std::move(response_client_ptr));
+  run_loop.Run();
+
+  EXPECT_EQ(net::OK, response_client.result_error());
+  EXPECT_FALSE(response_client.result_addresses());
+  EXPECT_THAT(response_client.result_text(),
+              testing::Optional(testing::ElementsAreArray(kTextRecords)));
+  EXPECT_FALSE(response_client.result_hosts());
+  EXPECT_EQ(0u, resolver.GetNumOutstandingRequestsForTesting());
+}
+
+TEST_F(HostResolverTest, HostResults) {
+  net::MockDnsClientRuleList rules;
+  rules.emplace_back(
+      "example.com", net::dns_protocol::kTypePTR,
+      net::MockDnsClientRule::Result(net::BuildTestDnsPointerResponse(
+          "example.com", {"google.com", "chromium.org"})),
+      false /* delay */);
+  auto dns_client =
+      std::make_unique<net::MockDnsClient>(net::DnsConfig(), std::move(rules));
+
+  net::NetLog net_log;
+  std::unique_ptr<net::HostResolverImpl> inner_resolver =
+      net::HostResolver::CreateDefaultResolverImpl(&net_log);
+  inner_resolver->SetDnsClient(std::move(dns_client));
+  inner_resolver->SetBaseDnsConfigForTesting(CreateValidDnsConfig());
+
+  HostResolver resolver(inner_resolver.get(), &net_log);
+
+  base::RunLoop run_loop;
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->dns_query_type = net::DnsQueryType::PTR;
+  mojom::ResolveHostClientPtr response_client_ptr;
+  TestResolveHostClient response_client(&response_client_ptr, &run_loop);
+
+  resolver.ResolveHost(net::HostPortPair("example.com", 160),
+                       std::move(optional_parameters),
+                       std::move(response_client_ptr));
+  run_loop.Run();
+
+  EXPECT_EQ(net::OK, response_client.result_error());
+  EXPECT_FALSE(response_client.result_addresses());
+  EXPECT_FALSE(response_client.result_text());
+  EXPECT_THAT(response_client.result_hosts(),
+              testing::Optional(testing::UnorderedElementsAre(
+                  net::HostPortPair("google.com", 160),
+                  net::HostPortPair("chromium.org", 160))));
   EXPECT_EQ(0u, resolver.GetNumOutstandingRequestsForTesting());
 }
 

@@ -226,11 +226,11 @@ EnumTraits<ResolveHostParameters::DnsQueryType, net::DnsQueryType>::ToMojom(
     case net::DnsQueryType::AAAA:
       return ResolveHostParameters::DnsQueryType::AAAA;
     case net::DnsQueryType::TXT:
+      return ResolveHostParameters::DnsQueryType::TXT;
     case net::DnsQueryType::PTR:
+      return ResolveHostParameters::DnsQueryType::PTR;
     case net::DnsQueryType::SRV:
-      // TODO(crbug.com/846423): Add Mojo support for non-address types.
-      NOTIMPLEMENTED();
-      return ResolveHostParameters::DnsQueryType::kMinValue;
+      return ResolveHostParameters::DnsQueryType::SRV;
   }
 }
 
@@ -247,6 +247,15 @@ bool EnumTraits<ResolveHostParameters::DnsQueryType, net::DnsQueryType>::
       return true;
     case ResolveHostParameters::DnsQueryType::AAAA:
       *output = net::DnsQueryType::AAAA;
+      return true;
+    case ResolveHostParameters::DnsQueryType::TXT:
+      *output = net::DnsQueryType::TXT;
+      return true;
+    case ResolveHostParameters::DnsQueryType::PTR:
+      *output = net::DnsQueryType::PTR;
+      return true;
+    case ResolveHostParameters::DnsQueryType::SRV:
+      *output = net::DnsQueryType::SRV;
       return true;
   }
 }
