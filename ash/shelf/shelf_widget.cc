@@ -104,6 +104,8 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   // ShelfBackgroundAnimatorObserver:
   void UpdateShelfBackground(SkColor color) override;
 
+  SkColor GetShelfBackgroundColor() const;
+
  private:
   ShelfWidget* shelf_widget_;
   FocusCycler* focus_cycler_;
@@ -274,6 +276,10 @@ views::View* ShelfWidget::DelegateView::GetDefaultFocusableChild() {
 void ShelfWidget::DelegateView::UpdateShelfBackground(SkColor color) {
   opaque_background_.SetColor(color);
   UpdateOpaqueBackground();
+}
+
+SkColor ShelfWidget::DelegateView::GetShelfBackgroundColor() const {
+  return opaque_background_.background_color();
 }
 
 ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
@@ -530,6 +536,10 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
     ShowIfHidden();
   }
   login_shelf_view_->UpdateAfterSessionStateChange(state);
+}
+
+SkColor ShelfWidget::GetShelfBackgroundColor() const {
+  return delegate_view_->GetShelfBackgroundColor();
 }
 
 void ShelfWidget::HideIfShown() {
