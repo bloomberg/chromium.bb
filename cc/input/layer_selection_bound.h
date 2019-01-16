@@ -26,6 +26,8 @@ struct CC_EXPORT LayerSelectionBound {
   // content of the layer (as opposed to being outside of the layer's bounds).
   bool hidden;
 
+  std::string ToString() const;
+
   bool operator==(const LayerSelectionBound& other) const;
   bool operator!=(const LayerSelectionBound& other) const;
 };
