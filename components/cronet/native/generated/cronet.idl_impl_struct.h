@@ -154,6 +154,49 @@ struct Cronet_UrlRequestParams {
   DISALLOW_ASSIGN(Cronet_UrlRequestParams);
 };
 
+// Struct Cronet_DateTime.
+struct Cronet_DateTime {
+ public:
+  Cronet_DateTime();
+  explicit Cronet_DateTime(const Cronet_DateTime& from);
+  explicit Cronet_DateTime(Cronet_DateTime&& from);
+  ~Cronet_DateTime();
+
+  int64_t value;
+
+ private:
+  DISALLOW_ASSIGN(Cronet_DateTime);
+};
+
+// Struct Cronet_Metrics.
+struct Cronet_Metrics {
+ public:
+  Cronet_Metrics();
+  explicit Cronet_Metrics(const Cronet_Metrics& from);
+  explicit Cronet_Metrics(Cronet_Metrics&& from);
+  ~Cronet_Metrics();
+
+  base::Optional<Cronet_DateTime> request_start;
+  base::Optional<Cronet_DateTime> dns_start;
+  base::Optional<Cronet_DateTime> dns_end;
+  base::Optional<Cronet_DateTime> connect_start;
+  base::Optional<Cronet_DateTime> connect_end;
+  base::Optional<Cronet_DateTime> ssl_start;
+  base::Optional<Cronet_DateTime> ssl_end;
+  base::Optional<Cronet_DateTime> sending_start;
+  base::Optional<Cronet_DateTime> sending_end;
+  base::Optional<Cronet_DateTime> push_start;
+  base::Optional<Cronet_DateTime> push_end;
+  base::Optional<Cronet_DateTime> response_start;
+  base::Optional<Cronet_DateTime> request_end;
+  bool socket_reused = false;
+  int64_t sent_byte_count = -1;
+  int64_t received_byte_count = -1;
+
+ private:
+  DISALLOW_ASSIGN(Cronet_Metrics);
+};
+
 // Struct Cronet_RequestFinishedInfo.
 struct Cronet_RequestFinishedInfo {
  public:
@@ -162,22 +205,7 @@ struct Cronet_RequestFinishedInfo {
   explicit Cronet_RequestFinishedInfo(Cronet_RequestFinishedInfo&& from);
   ~Cronet_RequestFinishedInfo();
 
-  int64_t request_start = Cronet_kInvalidTime;
-  int64_t dns_start = Cronet_kInvalidTime;
-  int64_t dns_end = Cronet_kInvalidTime;
-  int64_t connect_start = Cronet_kInvalidTime;
-  int64_t connect_end = Cronet_kInvalidTime;
-  int64_t ssl_start = Cronet_kInvalidTime;
-  int64_t ssl_end = Cronet_kInvalidTime;
-  int64_t sending_start = Cronet_kInvalidTime;
-  int64_t sending_end = Cronet_kInvalidTime;
-  int64_t push_start = Cronet_kInvalidTime;
-  int64_t push_end = Cronet_kInvalidTime;
-  int64_t response_start = Cronet_kInvalidTime;
-  int64_t request_end = Cronet_kInvalidTime;
-  bool socket_reused = false;
-  int64_t sent_byte_count = -1;
-  int64_t received_byte_count = -1;
+  base::Optional<Cronet_Metrics> metrics;
   base::Optional<Cronet_UrlResponseInfo> response_info;
   base::Optional<Cronet_Error> error;
 

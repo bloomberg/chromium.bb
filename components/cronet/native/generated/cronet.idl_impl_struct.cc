@@ -755,6 +755,373 @@ void Cronet_UrlRequestParams_annotations_clear(
   self->annotations.clear();
 }
 
+// Struct Cronet_DateTime.
+Cronet_DateTime::Cronet_DateTime() = default;
+
+Cronet_DateTime::Cronet_DateTime(const Cronet_DateTime& from) = default;
+
+Cronet_DateTime::Cronet_DateTime(Cronet_DateTime&& from) = default;
+
+Cronet_DateTime::~Cronet_DateTime() = default;
+
+Cronet_DateTimePtr Cronet_DateTime_Create() {
+  return new Cronet_DateTime();
+}
+
+void Cronet_DateTime_Destroy(Cronet_DateTimePtr self) {
+  delete self;
+}
+
+// Struct Cronet_DateTime setters.
+void Cronet_DateTime_value_set(Cronet_DateTimePtr self, int64_t value) {
+  DCHECK(self);
+  self->value = value;
+}
+
+// Struct Cronet_DateTime getters.
+int64_t Cronet_DateTime_value_get(Cronet_DateTimePtr self) {
+  DCHECK(self);
+  return self->value;
+}
+
+// Struct Cronet_Metrics.
+Cronet_Metrics::Cronet_Metrics() = default;
+
+Cronet_Metrics::Cronet_Metrics(const Cronet_Metrics& from) = default;
+
+Cronet_Metrics::Cronet_Metrics(Cronet_Metrics&& from) = default;
+
+Cronet_Metrics::~Cronet_Metrics() = default;
+
+Cronet_MetricsPtr Cronet_Metrics_Create() {
+  return new Cronet_Metrics();
+}
+
+void Cronet_Metrics_Destroy(Cronet_MetricsPtr self) {
+  delete self;
+}
+
+// Struct Cronet_Metrics setters.
+void Cronet_Metrics_request_start_set(Cronet_MetricsPtr self,
+                                      Cronet_DateTimePtr request_start) {
+  DCHECK(self);
+  self->request_start.reset();
+  if (request_start != nullptr)
+    self->request_start.emplace(*request_start);
+}
+void Cronet_Metrics_request_start_move(Cronet_MetricsPtr self,
+                                       Cronet_DateTimePtr request_start) {
+  DCHECK(self);
+  self->request_start.reset();
+  if (request_start != nullptr)
+    self->request_start.emplace(std::move(*request_start));
+}
+
+void Cronet_Metrics_dns_start_set(Cronet_MetricsPtr self,
+                                  Cronet_DateTimePtr dns_start) {
+  DCHECK(self);
+  self->dns_start.reset();
+  if (dns_start != nullptr)
+    self->dns_start.emplace(*dns_start);
+}
+void Cronet_Metrics_dns_start_move(Cronet_MetricsPtr self,
+                                   Cronet_DateTimePtr dns_start) {
+  DCHECK(self);
+  self->dns_start.reset();
+  if (dns_start != nullptr)
+    self->dns_start.emplace(std::move(*dns_start));
+}
+
+void Cronet_Metrics_dns_end_set(Cronet_MetricsPtr self,
+                                Cronet_DateTimePtr dns_end) {
+  DCHECK(self);
+  self->dns_end.reset();
+  if (dns_end != nullptr)
+    self->dns_end.emplace(*dns_end);
+}
+void Cronet_Metrics_dns_end_move(Cronet_MetricsPtr self,
+                                 Cronet_DateTimePtr dns_end) {
+  DCHECK(self);
+  self->dns_end.reset();
+  if (dns_end != nullptr)
+    self->dns_end.emplace(std::move(*dns_end));
+}
+
+void Cronet_Metrics_connect_start_set(Cronet_MetricsPtr self,
+                                      Cronet_DateTimePtr connect_start) {
+  DCHECK(self);
+  self->connect_start.reset();
+  if (connect_start != nullptr)
+    self->connect_start.emplace(*connect_start);
+}
+void Cronet_Metrics_connect_start_move(Cronet_MetricsPtr self,
+                                       Cronet_DateTimePtr connect_start) {
+  DCHECK(self);
+  self->connect_start.reset();
+  if (connect_start != nullptr)
+    self->connect_start.emplace(std::move(*connect_start));
+}
+
+void Cronet_Metrics_connect_end_set(Cronet_MetricsPtr self,
+                                    Cronet_DateTimePtr connect_end) {
+  DCHECK(self);
+  self->connect_end.reset();
+  if (connect_end != nullptr)
+    self->connect_end.emplace(*connect_end);
+}
+void Cronet_Metrics_connect_end_move(Cronet_MetricsPtr self,
+                                     Cronet_DateTimePtr connect_end) {
+  DCHECK(self);
+  self->connect_end.reset();
+  if (connect_end != nullptr)
+    self->connect_end.emplace(std::move(*connect_end));
+}
+
+void Cronet_Metrics_ssl_start_set(Cronet_MetricsPtr self,
+                                  Cronet_DateTimePtr ssl_start) {
+  DCHECK(self);
+  self->ssl_start.reset();
+  if (ssl_start != nullptr)
+    self->ssl_start.emplace(*ssl_start);
+}
+void Cronet_Metrics_ssl_start_move(Cronet_MetricsPtr self,
+                                   Cronet_DateTimePtr ssl_start) {
+  DCHECK(self);
+  self->ssl_start.reset();
+  if (ssl_start != nullptr)
+    self->ssl_start.emplace(std::move(*ssl_start));
+}
+
+void Cronet_Metrics_ssl_end_set(Cronet_MetricsPtr self,
+                                Cronet_DateTimePtr ssl_end) {
+  DCHECK(self);
+  self->ssl_end.reset();
+  if (ssl_end != nullptr)
+    self->ssl_end.emplace(*ssl_end);
+}
+void Cronet_Metrics_ssl_end_move(Cronet_MetricsPtr self,
+                                 Cronet_DateTimePtr ssl_end) {
+  DCHECK(self);
+  self->ssl_end.reset();
+  if (ssl_end != nullptr)
+    self->ssl_end.emplace(std::move(*ssl_end));
+}
+
+void Cronet_Metrics_sending_start_set(Cronet_MetricsPtr self,
+                                      Cronet_DateTimePtr sending_start) {
+  DCHECK(self);
+  self->sending_start.reset();
+  if (sending_start != nullptr)
+    self->sending_start.emplace(*sending_start);
+}
+void Cronet_Metrics_sending_start_move(Cronet_MetricsPtr self,
+                                       Cronet_DateTimePtr sending_start) {
+  DCHECK(self);
+  self->sending_start.reset();
+  if (sending_start != nullptr)
+    self->sending_start.emplace(std::move(*sending_start));
+}
+
+void Cronet_Metrics_sending_end_set(Cronet_MetricsPtr self,
+                                    Cronet_DateTimePtr sending_end) {
+  DCHECK(self);
+  self->sending_end.reset();
+  if (sending_end != nullptr)
+    self->sending_end.emplace(*sending_end);
+}
+void Cronet_Metrics_sending_end_move(Cronet_MetricsPtr self,
+                                     Cronet_DateTimePtr sending_end) {
+  DCHECK(self);
+  self->sending_end.reset();
+  if (sending_end != nullptr)
+    self->sending_end.emplace(std::move(*sending_end));
+}
+
+void Cronet_Metrics_push_start_set(Cronet_MetricsPtr self,
+                                   Cronet_DateTimePtr push_start) {
+  DCHECK(self);
+  self->push_start.reset();
+  if (push_start != nullptr)
+    self->push_start.emplace(*push_start);
+}
+void Cronet_Metrics_push_start_move(Cronet_MetricsPtr self,
+                                    Cronet_DateTimePtr push_start) {
+  DCHECK(self);
+  self->push_start.reset();
+  if (push_start != nullptr)
+    self->push_start.emplace(std::move(*push_start));
+}
+
+void Cronet_Metrics_push_end_set(Cronet_MetricsPtr self,
+                                 Cronet_DateTimePtr push_end) {
+  DCHECK(self);
+  self->push_end.reset();
+  if (push_end != nullptr)
+    self->push_end.emplace(*push_end);
+}
+void Cronet_Metrics_push_end_move(Cronet_MetricsPtr self,
+                                  Cronet_DateTimePtr push_end) {
+  DCHECK(self);
+  self->push_end.reset();
+  if (push_end != nullptr)
+    self->push_end.emplace(std::move(*push_end));
+}
+
+void Cronet_Metrics_response_start_set(Cronet_MetricsPtr self,
+                                       Cronet_DateTimePtr response_start) {
+  DCHECK(self);
+  self->response_start.reset();
+  if (response_start != nullptr)
+    self->response_start.emplace(*response_start);
+}
+void Cronet_Metrics_response_start_move(Cronet_MetricsPtr self,
+                                        Cronet_DateTimePtr response_start) {
+  DCHECK(self);
+  self->response_start.reset();
+  if (response_start != nullptr)
+    self->response_start.emplace(std::move(*response_start));
+}
+
+void Cronet_Metrics_request_end_set(Cronet_MetricsPtr self,
+                                    Cronet_DateTimePtr request_end) {
+  DCHECK(self);
+  self->request_end.reset();
+  if (request_end != nullptr)
+    self->request_end.emplace(*request_end);
+}
+void Cronet_Metrics_request_end_move(Cronet_MetricsPtr self,
+                                     Cronet_DateTimePtr request_end) {
+  DCHECK(self);
+  self->request_end.reset();
+  if (request_end != nullptr)
+    self->request_end.emplace(std::move(*request_end));
+}
+
+void Cronet_Metrics_socket_reused_set(Cronet_MetricsPtr self,
+                                      bool socket_reused) {
+  DCHECK(self);
+  self->socket_reused = socket_reused;
+}
+
+void Cronet_Metrics_sent_byte_count_set(Cronet_MetricsPtr self,
+                                        int64_t sent_byte_count) {
+  DCHECK(self);
+  self->sent_byte_count = sent_byte_count;
+}
+
+void Cronet_Metrics_received_byte_count_set(Cronet_MetricsPtr self,
+                                            int64_t received_byte_count) {
+  DCHECK(self);
+  self->received_byte_count = received_byte_count;
+}
+
+// Struct Cronet_Metrics getters.
+Cronet_DateTimePtr Cronet_Metrics_request_start_get(Cronet_MetricsPtr self) {
+  DCHECK(self);
+  if (self->request_start == base::nullopt)
+    return nullptr;
+  return &self->request_start.value();
+}
+
+Cronet_DateTimePtr Cronet_Metrics_dns_start_get(Cronet_MetricsPtr self) {
+  DCHECK(self);
+  if (self->dns_start == base::nullopt)
+    return nullptr;
+  return &self->dns_start.value();
+}
+
+Cronet_DateTimePtr Cronet_Metrics_dns_end_get(Cronet_MetricsPtr self) {
+  DCHECK(self);
+  if (self->dns_end == base::nullopt)
+    return nullptr;
+  return &self->dns_end.value();
+}
+
+Cronet_DateTimePtr Cronet_Metrics_connect_start_get(Cronet_MetricsPtr self) {
+  DCHECK(self);
+  if (self->connect_start == base::nullopt)
+    return nullptr;
+  return &self->connect_start.value();
+}
+
+Cronet_DateTimePtr Cronet_Metrics_connect_end_get(Cronet_MetricsPtr self) {
+  DCHECK(self);
+  if (self->connect_end == base::nullopt)
+    return nullptr;
+  return &self->connect_end.value();
+}
+
+Cronet_DateTimePtr Cronet_Metrics_ssl_start_get(Cronet_MetricsPtr self) {
+  DCHECK(self);
+  if (self->ssl_start == base::nullopt)
+    return nullptr;
+  return &self->ssl_start.value();
+}
+
+Cronet_DateTimePtr Cronet_Metrics_ssl_end_get(Cronet_MetricsPtr self) {
+  DCHECK(self);
+  if (self->ssl_end == base::nullopt)
+    return nullptr;
+  return &self->ssl_end.value();
+}
+
+Cronet_DateTimePtr Cronet_Metrics_sending_start_get(Cronet_MetricsPtr self) {
+  DCHECK(self);
+  if (self->sending_start == base::nullopt)
+    return nullptr;
+  return &self->sending_start.value();
+}
+
+Cronet_DateTimePtr Cronet_Metrics_sending_end_get(Cronet_MetricsPtr self) {
+  DCHECK(self);
+  if (self->sending_end == base::nullopt)
+    return nullptr;
+  return &self->sending_end.value();
+}
+
+Cronet_DateTimePtr Cronet_Metrics_push_start_get(Cronet_MetricsPtr self) {
+  DCHECK(self);
+  if (self->push_start == base::nullopt)
+    return nullptr;
+  return &self->push_start.value();
+}
+
+Cronet_DateTimePtr Cronet_Metrics_push_end_get(Cronet_MetricsPtr self) {
+  DCHECK(self);
+  if (self->push_end == base::nullopt)
+    return nullptr;
+  return &self->push_end.value();
+}
+
+Cronet_DateTimePtr Cronet_Metrics_response_start_get(Cronet_MetricsPtr self) {
+  DCHECK(self);
+  if (self->response_start == base::nullopt)
+    return nullptr;
+  return &self->response_start.value();
+}
+
+Cronet_DateTimePtr Cronet_Metrics_request_end_get(Cronet_MetricsPtr self) {
+  DCHECK(self);
+  if (self->request_end == base::nullopt)
+    return nullptr;
+  return &self->request_end.value();
+}
+
+bool Cronet_Metrics_socket_reused_get(Cronet_MetricsPtr self) {
+  DCHECK(self);
+  return self->socket_reused;
+}
+
+int64_t Cronet_Metrics_sent_byte_count_get(Cronet_MetricsPtr self) {
+  DCHECK(self);
+  return self->sent_byte_count;
+}
+
+int64_t Cronet_Metrics_received_byte_count_get(Cronet_MetricsPtr self) {
+  DCHECK(self);
+  return self->received_byte_count;
+}
+
 // Struct Cronet_RequestFinishedInfo.
 Cronet_RequestFinishedInfo::Cronet_RequestFinishedInfo() = default;
 
@@ -775,113 +1142,19 @@ void Cronet_RequestFinishedInfo_Destroy(Cronet_RequestFinishedInfoPtr self) {
 }
 
 // Struct Cronet_RequestFinishedInfo setters.
-void Cronet_RequestFinishedInfo_request_start_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t request_start) {
+void Cronet_RequestFinishedInfo_metrics_set(Cronet_RequestFinishedInfoPtr self,
+                                            Cronet_MetricsPtr metrics) {
   DCHECK(self);
-  self->request_start = request_start;
+  self->metrics.reset();
+  if (metrics != nullptr)
+    self->metrics.emplace(*metrics);
 }
-
-void Cronet_RequestFinishedInfo_dns_start_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t dns_start) {
+void Cronet_RequestFinishedInfo_metrics_move(Cronet_RequestFinishedInfoPtr self,
+                                             Cronet_MetricsPtr metrics) {
   DCHECK(self);
-  self->dns_start = dns_start;
-}
-
-void Cronet_RequestFinishedInfo_dns_end_set(Cronet_RequestFinishedInfoPtr self,
-                                            int64_t dns_end) {
-  DCHECK(self);
-  self->dns_end = dns_end;
-}
-
-void Cronet_RequestFinishedInfo_connect_start_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t connect_start) {
-  DCHECK(self);
-  self->connect_start = connect_start;
-}
-
-void Cronet_RequestFinishedInfo_connect_end_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t connect_end) {
-  DCHECK(self);
-  self->connect_end = connect_end;
-}
-
-void Cronet_RequestFinishedInfo_ssl_start_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t ssl_start) {
-  DCHECK(self);
-  self->ssl_start = ssl_start;
-}
-
-void Cronet_RequestFinishedInfo_ssl_end_set(Cronet_RequestFinishedInfoPtr self,
-                                            int64_t ssl_end) {
-  DCHECK(self);
-  self->ssl_end = ssl_end;
-}
-
-void Cronet_RequestFinishedInfo_sending_start_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t sending_start) {
-  DCHECK(self);
-  self->sending_start = sending_start;
-}
-
-void Cronet_RequestFinishedInfo_sending_end_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t sending_end) {
-  DCHECK(self);
-  self->sending_end = sending_end;
-}
-
-void Cronet_RequestFinishedInfo_push_start_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t push_start) {
-  DCHECK(self);
-  self->push_start = push_start;
-}
-
-void Cronet_RequestFinishedInfo_push_end_set(Cronet_RequestFinishedInfoPtr self,
-                                             int64_t push_end) {
-  DCHECK(self);
-  self->push_end = push_end;
-}
-
-void Cronet_RequestFinishedInfo_response_start_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t response_start) {
-  DCHECK(self);
-  self->response_start = response_start;
-}
-
-void Cronet_RequestFinishedInfo_request_end_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t request_end) {
-  DCHECK(self);
-  self->request_end = request_end;
-}
-
-void Cronet_RequestFinishedInfo_socket_reused_set(
-    Cronet_RequestFinishedInfoPtr self,
-    bool socket_reused) {
-  DCHECK(self);
-  self->socket_reused = socket_reused;
-}
-
-void Cronet_RequestFinishedInfo_sent_byte_count_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t sent_byte_count) {
-  DCHECK(self);
-  self->sent_byte_count = sent_byte_count;
-}
-
-void Cronet_RequestFinishedInfo_received_byte_count_set(
-    Cronet_RequestFinishedInfoPtr self,
-    int64_t received_byte_count) {
-  DCHECK(self);
-  self->received_byte_count = received_byte_count;
+  self->metrics.reset();
+  if (metrics != nullptr)
+    self->metrics.emplace(std::move(*metrics));
 }
 
 void Cronet_RequestFinishedInfo_response_info_set(
@@ -917,100 +1190,12 @@ void Cronet_RequestFinishedInfo_error_move(Cronet_RequestFinishedInfoPtr self,
 }
 
 // Struct Cronet_RequestFinishedInfo getters.
-int64_t Cronet_RequestFinishedInfo_request_start_get(
+Cronet_MetricsPtr Cronet_RequestFinishedInfo_metrics_get(
     Cronet_RequestFinishedInfoPtr self) {
   DCHECK(self);
-  return self->request_start;
-}
-
-int64_t Cronet_RequestFinishedInfo_dns_start_get(
-    Cronet_RequestFinishedInfoPtr self) {
-  DCHECK(self);
-  return self->dns_start;
-}
-
-int64_t Cronet_RequestFinishedInfo_dns_end_get(
-    Cronet_RequestFinishedInfoPtr self) {
-  DCHECK(self);
-  return self->dns_end;
-}
-
-int64_t Cronet_RequestFinishedInfo_connect_start_get(
-    Cronet_RequestFinishedInfoPtr self) {
-  DCHECK(self);
-  return self->connect_start;
-}
-
-int64_t Cronet_RequestFinishedInfo_connect_end_get(
-    Cronet_RequestFinishedInfoPtr self) {
-  DCHECK(self);
-  return self->connect_end;
-}
-
-int64_t Cronet_RequestFinishedInfo_ssl_start_get(
-    Cronet_RequestFinishedInfoPtr self) {
-  DCHECK(self);
-  return self->ssl_start;
-}
-
-int64_t Cronet_RequestFinishedInfo_ssl_end_get(
-    Cronet_RequestFinishedInfoPtr self) {
-  DCHECK(self);
-  return self->ssl_end;
-}
-
-int64_t Cronet_RequestFinishedInfo_sending_start_get(
-    Cronet_RequestFinishedInfoPtr self) {
-  DCHECK(self);
-  return self->sending_start;
-}
-
-int64_t Cronet_RequestFinishedInfo_sending_end_get(
-    Cronet_RequestFinishedInfoPtr self) {
-  DCHECK(self);
-  return self->sending_end;
-}
-
-int64_t Cronet_RequestFinishedInfo_push_start_get(
-    Cronet_RequestFinishedInfoPtr self) {
-  DCHECK(self);
-  return self->push_start;
-}
-
-int64_t Cronet_RequestFinishedInfo_push_end_get(
-    Cronet_RequestFinishedInfoPtr self) {
-  DCHECK(self);
-  return self->push_end;
-}
-
-int64_t Cronet_RequestFinishedInfo_response_start_get(
-    Cronet_RequestFinishedInfoPtr self) {
-  DCHECK(self);
-  return self->response_start;
-}
-
-int64_t Cronet_RequestFinishedInfo_request_end_get(
-    Cronet_RequestFinishedInfoPtr self) {
-  DCHECK(self);
-  return self->request_end;
-}
-
-bool Cronet_RequestFinishedInfo_socket_reused_get(
-    Cronet_RequestFinishedInfoPtr self) {
-  DCHECK(self);
-  return self->socket_reused;
-}
-
-int64_t Cronet_RequestFinishedInfo_sent_byte_count_get(
-    Cronet_RequestFinishedInfoPtr self) {
-  DCHECK(self);
-  return self->sent_byte_count;
-}
-
-int64_t Cronet_RequestFinishedInfo_received_byte_count_get(
-    Cronet_RequestFinishedInfoPtr self) {
-  DCHECK(self);
-  return self->received_byte_count;
+  if (self->metrics == base::nullopt)
+    return nullptr;
+  return &self->metrics.value();
 }
 
 Cronet_UrlResponseInfoPtr Cronet_RequestFinishedInfo_response_info_get(

@@ -1131,9 +1131,163 @@ struct UrlRequestParams {
 };
 
 /**
- * This value indicates an invalid time.
+ * Represents a date and time expressed as the number of milliseconds since the
+ * UNIX epoch.
  */
-const int64 kInvalidTime = -1;
+struct DateTime {
+  /**
+   * Number of milliseconds since the UNIX epoch.
+   */
+  int64 value;
+};
+
+/*
+ * Represents metrics collected for a single request. Most of these metrics are
+ * timestamps for events during the lifetime of the request, which can be used
+ * to build a detailed timeline for investigating performance.
+ *
+ * Events happen in this order:
+ * <ol>
+ * <li>{@link #request_start request start}</li>
+ * <li>{@link #dns_start DNS start}</li>
+ * <li>{@link #dns_end DNS end}</li>
+ * <li>{@link #connect_start connect start}</li>
+ * <li>{@link #ssl_start SSL start}</li>
+ * <li>{@link #ssl_end SSL end}</li>
+ * <li>{@link #connect_end connect end}</li>
+ * <li>{@link #sending_start sending start}</li>
+ * <li>{@link #sending_end sending end}</li>
+ * <li>{@link #response_start response start}</li>
+ * <li>{@link #request_end request end}</li>
+ * </ol>
+ *
+ * Start times are reported as the time when a request started blocking on the
+ * event, not when the event actually occurred, with the exception of push
+ * start and end. If a metric is not meaningful or not available, including
+ * cases when a request finished before reaching that stage, start and end
+ * times will be null. If no time was spent blocking on an event, start and end
+ * will be the same time.
+ *
+ * Timestamps are recorded using a clock that is guaranteed not to run
+ * backwards. All timestamps are correct relative to the system clock at the
+ * time of request start, and taking the difference between two timestamps will
+ * give the correct difference between the events. In order to preserve this
+ * property, timestamps for events other than request start are not guaranteed
+ * to match the system clock at the times they represent.
+ *
+ * Most timing metrics are taken from
+ * <a
+ * href="https://cs.chromium.org/chromium/src/net/base/load_timing_info.h">LoadTimingInfo</a>,
+ * which holds the information for <a href="http://w3c.github.io/navigation-timing/"></a> and
+ * <a href="https://www.w3.org/TR/resource-timing/"></a>.
+ */
+struct Metrics {
+  /**
+   * Time when the request started, which corresponds to calling
+   * Cronet_UrlRequest_Start(). This timestamp will match the system clock at
+   * the time it represents.
+   */
+  DateTime request_start;
+
+  /**
+   * Time when DNS lookup started. This and {@link #dns_end} will be set to
+   * non-null regardless of whether the result came from a DNS server or the
+   * local cache. Will equal null if the socket was reused (see {@link
+   * #socket_reused}).
+   */
+  DateTime? dns_start;
+
+  /**
+   * Time when DNS lookup finished. This and {@link dns_start} will return
+   * non-null regardless of whether the result came from a DNS server or the
+   * local cache. Will equal null if the socket was reused (see {@link
+   * #socket_reused}).
+   */
+  DateTime? dns_end;
+
+  /**
+   * Time when connection establishment started, typically when DNS resolution
+   * finishes. Will equal null if the socket was reused (see {@link
+   * #socket_reused}).
+   */
+  DateTime? connect_start;
+
+  /**
+   * Time when connection establishment finished, after TCP connection is
+   * established and, if using HTTPS, SSL handshake is completed. For QUIC
+   * 0-RTT, this represents the time of handshake confirmation and might happen
+   * later than {@link #sending_start}. Will equal null if the socket was
+   * reused (see {@link #socket_reused}).
+   */
+  DateTime? connect_end;
+
+  /**
+   * Time when SSL handshake started. For QUIC, this will be the same time as
+   * {@link #connect_start}. Will equal null if SSL is not used or if the
+   * socket was reused (see {@link #socket_reused}).
+   */
+  DateTime? ssl_start;
+
+  /**
+   * Time when SSL handshake finished. For QUIC, this will be the same time as
+   * {@link #connect_end}. Will equal null if SSL is not used or if the socket
+   * was reused (see {@link #socket_reused}).
+   */
+  DateTime? ssl_end;
+
+  /**
+   * Time when sending HTTP request headers started.
+   */
+  DateTime sending_start;
+
+  /**
+   * Time when sending HTTP request body finished. (Sending request body
+   * happens after sending request headers.)
+   */
+  DateTime sending_end;
+
+  /**
+   * Time when first byte of HTTP/2 server push was received.  Will equal
+   * null if server push is not used.
+   */
+  DateTime? push_start;
+
+  /**
+   * Time when last byte of HTTP/2 server push was received.  Will equal
+   * null if server push is not used.
+   */
+  DateTime? push_end;
+
+  /**
+   * Time when the end of the response headers was received.
+   */
+  DateTime response_start;
+
+  /**
+   * Time when the request finished.
+   */
+  DateTime request_end;
+
+  /**
+   * True if the socket was reused from a previous request, false otherwise.
+   * In HTTP/2 or QUIC, if streams are multiplexed in a single connection, this
+   * will be {@code true} for all streams after the first.  When {@code true},
+   * DNS, connection, and SSL times will be null.
+   */
+  bool socket_reused = false;
+
+  /**
+   * Returns total bytes sent over the network transport layer, or -1 if not
+   * collected.
+   */
+  int64 sent_byte_count = -1;
+
+  /**
+   * Total bytes received over the network transport layer, or -1 if not
+   * collected. Number of bytes does not include any previous redirects.
+   */
+  int64 received_byte_count = -1;
+};
 
 /**
  * Information about a finished request.
@@ -1157,159 +1311,10 @@ struct RequestFinishedInfo {
     CANCELED = 2,
   };
 
-  // TODO(caraitto): Move metrics fields to their own class once C generator
-  // supports struct within a struct.
-
-  /*
-   * The below fields represent metrics collected for a single request. Most of
-   * these metrics are timestamps for events during the lifetime of the request,
-   * which can be used to build a detailed timeline for investigating
-   * performance.
-   *
-   * Events happen in this order:
-   * <ol>
-   * <li>{@link #request_start request start}</li>
-   * <li>{@link #dns_start DNS start}</li>
-   * <li>{@link #dns_end DNS end}</li>
-   * <li>{@link #connect_start connect start}</li>
-   * <li>{@link #ssl_start SSL start}</li>
-   * <li>{@link #ssl_end SSL end}</li>
-   * <li>{@link #connect_end connect end}</li>
-   * <li>{@link #sending_start sending start}</li>
-   * <li>{@link #sending_end sending end}</li>
-   * <li>{@link #response_start response start}</li>
-   * <li>{@link #request_end request end}</li>
-   * </ol>
-   *
-   * Start times are reported as the time when a request started blocking on
-   * the event, not when the event actually occurred, with the exception of
-   * push start and end. If a metric is not meaningful or not available,
-   * including cases when a request finished before reaching that stage, start
-   * and end times will be kInvalidTime. If no time was spent blocking on an
-   * event, start and end will be the same time.
-   *
-   * Timestamps are recorded using a clock that is guaranteed not to run
-   * backwards. All timestamps are correct relative to the system clock at the
-   * time of request start, and taking the difference between two timestamps
-   * will give the correct difference between the events. In order to preserve
-   * this property, timestamps for events other than request start are not
-   * guaranteed to match the system clock at the times they represent.
-   *
-   * Most timing metrics are taken from
-   * <a
-   * href="https://cs.chromium.org/chromium/src/net/base/load_timing_info.h">LoadTimingInfo</a>,
-   * which holds the information for <a href="http://w3c.github.io/navigation-timing/"></a> and
-   * <a href="https://www.w3.org/TR/resource-timing/"></a>.
-   *
-   * All time fields are expressed as the number of milleseconds since the UNIX
-   * epoch, or kInvalidTime.
-   */
-
   /**
-   * Time when the request started, which corresponds to calling
-   * Cronet_UrlRequest_Start(). This timestamp will match the system clock at
-   * the time it represents.
+   * Metrics collected for this request.
    */
-  int64 request_start = kInvalidTime;
-
-  /**
-   * Time when DNS lookup started. This and {@link #dns_end} will be set to
-   * non-kInvalidTime regardless of whether the result came from a DNS server
-   * or the local cache. Will equal kInvalidTime if the socket was reused (see
-   * {@link #socket_reused}).
-   */
-  int64 dns_start = kInvalidTime;
-
-  /**
-   * Time when DNS lookup finished. This and {@link dns_start} will return
-   * non-kInvalidTime regardless of whether the result came from a DNS server
-   * or the local cache. Will equal kInvalidTime if the socket was reused (see
-   * {@link #socket_reused}).
-   */
-  int64 dns_end = kInvalidTime;
-
-  /**
-   * Time when connection establishment started, typically when DNS resolution
-   * finishes. Will equal kInvalidTime if the socket was reused (see {@link
-   * #socket_reused}).
-   */
-  int64 connect_start = kInvalidTime;
-
-  /**
-   * Time when connection establishment finished, after TCP connection is
-   * established and, if using HTTPS, SSL handshake is completed. For QUIC
-   * 0-RTT, this represents the time of handshake confirmation and might happen
-   * later than {@link #sending_start}. Will equal kInvalidTime if the socket
-   * was reused (see {@link #socket_reused}).
-   */
-  int64 connect_end = kInvalidTime;
-
-  /**
-   * Time when SSL handshake started. For QUIC, this will be the same time as
-   * {@link #connect_start}. Will equal kInvalidTime if SSL is not used or if
-   * the socket was reused (see {@link #socket_reused}).
-   */
-  int64 ssl_start = kInvalidTime;
-
-  /**
-   * Time when SSL handshake finished. For QUIC, this will be the same time as
-   * {@link #connect_end}. Will equal kInvalidTime if SSL is not used or if the
-   * socket was reused (see {@link #socket_reused}).
-   */
-  int64 ssl_end = kInvalidTime;
-
-  /**
-   * Time when sending HTTP request headers started.
-   */
-  int64 sending_start = kInvalidTime;
-
-  /**
-   * Time when sending HTTP request body finished. (Sending request body
-   * happens after sending request headers.)
-   */
-  int64 sending_end = kInvalidTime;
-
-  /**
-   * Time when first byte of HTTP/2 server push was received.  Will equal
-   * kInvalidTime if server push is not used.
-   */
-  int64 push_start = kInvalidTime;
-
-  /**
-   * Time when last byte of HTTP/2 server push was received.  Will equal
-   * kInvalidTime if server push is not used.
-   */
-  int64 push_end = kInvalidTime;
-
-  /**
-   * Time when the end of the response headers was received.
-   */
-  int64 response_start = kInvalidTime;
-
-  /**
-   * Time when the request finished.
-   */
-  int64 request_end = kInvalidTime;
-
-  /**
-   * True if the socket was reused from a previous request, false otherwise.
-   * In HTTP/2 or QUIC, if streams are multiplexed in a single connection,
-   * this will be {@code true} for all streams after the first.  When {@code
-   * true}, DNS, connection, and SSL times will be kInvalidTime.
-   */
-  bool socket_reused = false;
-
-  /**
-   * Returns total bytes sent over the network transport layer, or -1 if not
-   * collected.
-   */
-  int64 sent_byte_count = -1;
-
-  /**
-   * Total bytes received over the network transport layer, or -1 if not
-   * collected. Number of bytes does not include any previous redirects.
-   */
-  int64 received_byte_count = -1;
+  Metrics metrics;
 
   /**
    * {@link UrlResponseInfo} for the request, if its response had started.
