@@ -4,18 +4,17 @@
 
 #include "chrome/test/data/webui/ntp4_browsertest.h"
 
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/pref_names.h"
-#include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 
 NTP4LoggedInWebUITest::NTP4LoggedInWebUITest() {}
 
 NTP4LoggedInWebUITest::~NTP4LoggedInWebUITest() {}
 
 void NTP4LoggedInWebUITest::SetLoginName(const std::string& name) {
-  SigninManagerFactory::GetForProfile(browser()->profile())->
-      SetAuthenticatedAccountInfo(name, name);
+  auto* identity_manager =
+      IdentityManagerFactory::GetForProfile(browser()->profile());
+  identity::SetPrimaryAccount(identity_manager, name);
 }
