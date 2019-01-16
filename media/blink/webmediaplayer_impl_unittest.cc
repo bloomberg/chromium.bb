@@ -419,7 +419,8 @@ class WebMediaPlayerImplTest : public testing::Test {
         base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)
             ? blink::WebMediaPlayer::SurfaceLayerMode::kAlways
             : blink::WebMediaPlayer::SurfaceLayerMode::kNever,
-        is_background_suspend_enabled_, true);
+        is_background_suspend_enabled_, is_background_video_playback_enabled_,
+        true);
 
     auto compositor = std::make_unique<StrictMock<MockVideoFrameCompositor>>(
         params->video_frame_compositor_task_runner());
@@ -583,6 +584,10 @@ class WebMediaPlayerImplTest : public testing::Test {
     is_background_suspend_enabled_ = enable;
   }
 
+  void SetUpBackgroundVideoPlayback(bool enable) {
+    is_background_video_playback_enabled_ = enable;
+  }
+
   bool IsVideoLockedWhenPausedWhenHidden() const {
     return wmpi_->video_locked_when_paused_when_hidden_;
   }
@@ -726,6 +731,7 @@ class WebMediaPlayerImplTest : public testing::Test {
   AudioParameters audio_parameters_;
 
   bool is_background_suspend_enabled_ = false;
+  bool is_background_video_playback_enabled_ = true;
 
   // The client interface used by |wmpi_|.
   NiceMock<MockWebMediaPlayerClient> client_;
@@ -1718,7 +1724,7 @@ TEST_F(WebMediaPlayerImplTest,
 class WebMediaPlayerImplBackgroundBehaviorTest
     : public WebMediaPlayerImplTest,
       public ::testing::WithParamInterface<
-          std::tuple<bool, bool, int, int, bool, bool, bool, bool>> {
+          std::tuple<bool, bool, int, int, bool, bool, bool, bool, bool>> {
  public:
   // Indices of the tuple parameters.
   static const int kIsMediaSuspendEnabled = 0;
@@ -1729,10 +1735,12 @@ class WebMediaPlayerImplBackgroundBehaviorTest
   static const int kIsMediaSource = 5;
   static const int kIsBackgroundPauseEnabled = 6;
   static const int kIsPictureInPictureEnabled = 7;
+  static const int kIsBackgroundVideoPlaybackEnabled = 8;
 
   void SetUp() override {
     WebMediaPlayerImplTest::SetUp();
     SetUpMediaSuspend(IsMediaSuspendOn());
+    SetUpBackgroundVideoPlayback(IsBackgroundVideoPlaybackEnabled());
 
     std::string enabled_features;
     std::string disabled_features;
@@ -1809,6 +1817,10 @@ class WebMediaPlayerImplBackgroundBehaviorTest
     return std::get<kIsPictureInPictureEnabled>(GetParam());
   }
 
+  bool IsBackgroundVideoPlaybackEnabled() {
+    return std::get<kIsBackgroundVideoPlaybackEnabled>(GetParam());
+  }
+
   int GetDurationSec() const { return std::get<kDurationSec>(GetParam()); }
 
   int GetAverageKeyframeDistanceSec() const {
@@ -1848,7 +1860,8 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioOnly) {
   // Never optimize or pause an audio-only player.
   SetMetadata(true, false);
   EXPECT_FALSE(IsBackgroundOptimizationCandidate());
-  EXPECT_FALSE(ShouldPauseVideoWhenHidden());
+  EXPECT_FALSE(IsBackgroundVideoPlaybackEnabled() &&
+               ShouldPauseVideoWhenHidden());
   EXPECT_FALSE(ShouldDisableVideoWhenHidden());
 }
 
@@ -1865,8 +1878,9 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, VideoOnly) {
 
   // Video is always paused when suspension is on and only if matches the
   // optimization criteria if the optimization is on.
-  bool should_pause =
-      IsMediaSuspendOn() || (IsBackgroundPauseOn() && matches_requirements);
+  bool should_pause = !IsBackgroundVideoPlaybackEnabled() ||
+                      IsMediaSuspendOn() ||
+                      (IsBackgroundPauseOn() && matches_requirements);
   EXPECT_EQ(should_pause, ShouldPauseVideoWhenHidden());
 }
 
@@ -1884,8 +1898,11 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
             ShouldDisableVideoWhenHidden());
 
   // Only pause audible videos if both media suspend and resume background
-  // videos is on. Both are on by default on Android and off on desktop.
-  EXPECT_EQ(IsMediaSuspendOn() && IsResumeBackgroundVideoEnabled(),
+  // videos is on and background video playback is disabled. Background video
+  // playback is enabled by default. Both media suspend and resume background
+  // videos are on by default on Android and off on desktop.
+  EXPECT_EQ(!IsBackgroundVideoPlaybackEnabled() ||
+                (IsMediaSuspendOn() && IsResumeBackgroundVideoEnabled()),
             ShouldPauseVideoWhenHidden());
 
   if (!IsBackgroundOptimizationOn() || !matches_requirements ||
@@ -1925,6 +1942,7 @@ INSTANTIATE_TEST_CASE_P(
                     base::Time::kMillisecondsPerSecond +
                 1,
             100),
+        ::testing::Bool(),
         ::testing::Bool(),
         ::testing::Bool(),
         ::testing::Bool(),

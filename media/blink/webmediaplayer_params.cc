@@ -30,6 +30,7 @@ WebMediaPlayerParams::WebMediaPlayerParams(
     scoped_refptr<viz::ContextProvider> context_provider,
     blink::WebMediaPlayer::SurfaceLayerMode use_surface_layer_for_video,
     bool is_background_suspend_enabled,
+    bool is_background_video_playback_enabled,
     bool is_background_video_track_optimization_supported)
     : defer_load_cb_(defer_load_cb),
       audio_renderer_sink_(audio_renderer_sink),
@@ -49,6 +50,8 @@ WebMediaPlayerParams::WebMediaPlayerParams(
       context_provider_(std::move(context_provider)),
       use_surface_layer_for_video_(use_surface_layer_for_video),
       is_background_suspend_enabled_(is_background_suspend_enabled),
+      is_background_video_playback_enabled_(
+          is_background_video_playback_enabled),
       is_background_video_track_optimization_supported_(
           is_background_video_track_optimization_supported) {}
 

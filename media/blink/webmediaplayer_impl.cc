@@ -340,6 +340,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       overlay_routing_token_(OverlayInfo::RoutingToken()),
       media_metrics_provider_(params->take_metrics_provider()),
       is_background_suspend_enabled_(params->IsBackgroundSuspendEnabled()),
+      is_background_video_playback_enabled_(
+          params->IsBackgroundVideoPlaybackEnabled()),
       is_background_video_track_optimization_supported_(
           params->IsBackgroundVideoTrackOptimizationSupported()) {
   DVLOG(1) << __func__;
@@ -3261,6 +3263,9 @@ bool WebMediaPlayerImpl::IsOpaque() const {
 }
 
 bool WebMediaPlayerImpl::ShouldPauseVideoWhenHidden() const {
+  if (!is_background_video_playback_enabled_)
+    return true;
+
   // If suspending background video, pause any video that's not remoted or
   // not unlocked to play in the background.
   if (IsBackgroundSuspendEnabled(this)) {

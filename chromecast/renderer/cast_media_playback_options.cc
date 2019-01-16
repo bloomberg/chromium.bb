@@ -22,7 +22,6 @@ CastMediaPlaybackOptions::CastMediaPlaybackOptions(
           render_frame),
       render_frame_action_blocked_(false) {
   // Override default content MediaPlaybackOptions
-  renderer_media_playback_options_.is_background_suspend_enabled = true;
   renderer_media_playback_options_
       .is_background_video_track_optimization_supported = false;
   render_frame->SetRenderFrameMediaPlaybackOptions(
@@ -72,8 +71,9 @@ void CastMediaPlaybackOptions::SetMediaLoadingBlocked(bool blocked) {
   LOG(INFO) << "Render frame actions are unblocked.";
 }
 
-void CastMediaPlaybackOptions::SetBackgroundSuspendEnabled(bool enabled) {
-  renderer_media_playback_options_.is_background_suspend_enabled = enabled;
+void CastMediaPlaybackOptions::SetBackgroundVideoPlaybackEnabled(bool enabled) {
+  renderer_media_playback_options_.is_background_video_playback_enabled =
+      enabled;
   render_frame()->SetRenderFrameMediaPlaybackOptions(
       renderer_media_playback_options_);
 }

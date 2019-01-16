@@ -5,10 +5,10 @@
 module chromecast.shell.mojom;
 
 // Receives messages from browser process to control media playback options
-// (block loading, background suspend) for a specific RenderFrame.
+// (block loading, background playback) for a specific RenderFrame.
 // Implemented by a RenderFrameObserver.
 interface MediaPlaybackOptions {
   SetMediaLoadingBlocked(bool blocked);
 
-  SetBackgroundSuspendEnabled(bool enabled);
+  SetBackgroundVideoPlaybackEnabled(bool enabled);
 };

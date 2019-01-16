@@ -89,6 +89,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       scoped_refptr<viz::ContextProvider> context_provider,
       blink::WebMediaPlayer::SurfaceLayerMode use_surface_layer_for_video,
       bool is_background_suspend_enabled,
+      bool is_background_video_play_enabled,
       bool is_background_video_track_optimization_supported);
 
   ~WebMediaPlayerParams();
@@ -164,6 +165,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return is_background_suspend_enabled_;
   }
 
+  bool IsBackgroundVideoPlaybackEnabled() const {
+    return is_background_video_playback_enabled_;
+  }
+
   bool IsBackgroundVideoTrackOptimizationSupported() const {
     return is_background_video_track_optimization_supported_;
   }
@@ -192,6 +197,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   // Whether the renderer should automatically suspend media playback in
   // background tabs.
   bool is_background_suspend_enabled_ = false;
+  // Whether the renderer is allowed to play video in background tabs.
+  bool is_background_video_playback_enabled_ = true;
   // Whether background video optimization is supported on current platform.
   bool is_background_video_track_optimization_supported_ = true;
 

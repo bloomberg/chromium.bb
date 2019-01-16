@@ -23,6 +23,9 @@ struct RenderFrameMediaPlaybackOptions {
   // background tabs for given |render_frame|.
   bool is_background_suspend_enabled = kIsBackgroundMediaSuspendEnabled;
 
+  // Whether background video is allowed to play for given |render_frame|.
+  bool is_background_video_playback_enabled = true;
+
   // Whether background video optimization is supported on current platform.
   bool is_background_video_track_optimization_supported = true;
 };
