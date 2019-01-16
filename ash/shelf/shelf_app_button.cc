@@ -30,6 +30,7 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/painter.h"
@@ -694,6 +695,11 @@ std::unique_ptr<views::InkDropRipple> ShelfAppButton::CreateInkDropRipple()
       gfx::Size(ink_drop_small_size, ink_drop_small_size),
       ink_drop_small_corner_radius(), GetLocalBounds().CenterPoint(),
       GetInkDropBaseColor(), ink_drop_visible_opacity());
+}
+
+std::unique_ptr<views::InkDropMask> ShelfAppButton::CreateInkDropMask() const {
+  // Do not set a mask, allow the ink drop to burst out.
+  return nullptr;
 }
 
 void ShelfAppButton::UpdateState() {

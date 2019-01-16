@@ -93,6 +93,7 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton {
 
   // views::Button overrides:
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
   // Sets the icon image with a shadow.
   void SetShadowedImage(const gfx::ImageSkia& bitmap);
