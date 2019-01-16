@@ -81,6 +81,11 @@ class CONTENT_EXPORT IndexedDBConnection {
   // TODO(dmurph): Change that so this doesn't need to ignore unknown ids.
   void RemoveTransaction(int64_t id);
 
+  const std::unordered_map<int64_t, std::unique_ptr<IndexedDBTransaction>>&
+  transactions() const {
+    return transactions_;
+  }
+
  private:
   const int32_t id_;
 

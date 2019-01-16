@@ -16,10 +16,12 @@
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
+#include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_observer.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_factory.h"
+#include "content/browser/indexed_db/scopes/disjoint_range_lock_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
@@ -44,7 +46,9 @@ class AbortObserver {
 
 class IndexedDBTransactionTest : public testing::Test {
  public:
-  IndexedDBTransactionTest() : factory_(new MockIndexedDBFactory()) {
+  IndexedDBTransactionTest()
+      : factory_(new MockIndexedDBFactory()),
+        lock_manager_(kIndexedDBLockLevelCount) {
     backing_store_ = new IndexedDBFakeBackingStore();
     CreateDB();
   }
@@ -57,7 +61,7 @@ class IndexedDBTransactionTest : public testing::Test {
     std::tie(db_, s) = IndexedDBDatabase::Create(
         base::ASCIIToUTF16("db"), backing_store_.get(), factory_.get(),
         std::make_unique<FakeIndexedDBMetadataCoding>(),
-        IndexedDBDatabase::Identifier());
+        IndexedDBDatabase::Identifier(), &lock_manager_);
     ASSERT_TRUE(s.ok());
   }
 
@@ -80,6 +84,7 @@ class IndexedDBTransactionTest : public testing::Test {
 
  private:
   TestBrowserThreadBundle thread_bundle_;
+  DisjointRangeLockManager lock_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBTransactionTest);
 };
@@ -105,7 +110,7 @@ TEST_F(IndexedDBTransactionTest, Timeout) {
           id, connection.get(), scope,
           blink::mojom::IDBTransactionMode::ReadWrite,
           new IndexedDBFakeBackingStore::FakeTransaction(commit_success)));
-  db_->TransactionCreated(transaction.get());
+  db_->RegisterAndScheduleTransaction(transaction.get());
 
   // No conflicting transactions, so coordinator will start it immediately:
   EXPECT_EQ(IndexedDBTransaction::STARTED, transaction->state());
@@ -152,7 +157,7 @@ TEST_F(IndexedDBTransactionTest, NoTimeoutReadOnly) {
           id, connection.get(), scope,
           blink::mojom::IDBTransactionMode::ReadOnly,
           new IndexedDBFakeBackingStore::FakeTransaction(commit_success)));
-  db_->TransactionCreated(transaction.get());
+  db_->RegisterAndScheduleTransaction(transaction.get());
 
   // No conflicting transactions, so coordinator will start it immediately:
   EXPECT_EQ(IndexedDBTransaction::STARTED, transaction->state());
@@ -195,7 +200,7 @@ TEST_P(IndexedDBTransactionTestMode, ScheduleNormalTask) {
   EXPECT_EQ(0, transaction->diagnostics().tasks_scheduled);
   EXPECT_EQ(0, transaction->diagnostics().tasks_completed);
 
-  db_->TransactionCreated(transaction.get());
+  db_->RegisterAndScheduleTransaction(transaction.get());
 
   EXPECT_FALSE(transaction->HasPendingTasks());
   EXPECT_TRUE(transaction->IsTaskQueueEmpty());
@@ -257,7 +262,7 @@ TEST_P(IndexedDBTransactionTestMode, TaskFails) {
   EXPECT_EQ(0, transaction->diagnostics().tasks_scheduled);
   EXPECT_EQ(0, transaction->diagnostics().tasks_completed);
 
-  db_->TransactionCreated(transaction.get());
+  db_->RegisterAndScheduleTransaction(transaction.get());
 
   EXPECT_FALSE(transaction->HasPendingTasks());
   EXPECT_TRUE(transaction->IsTaskQueueEmpty());
@@ -323,7 +328,7 @@ TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
   EXPECT_EQ(0, transaction->diagnostics().tasks_scheduled);
   EXPECT_EQ(0, transaction->diagnostics().tasks_completed);
 
-  db_->TransactionCreated(transaction.get());
+  db_->RegisterAndScheduleTransaction(transaction.get());
 
   EXPECT_FALSE(transaction->HasPendingTasks());
   EXPECT_TRUE(transaction->IsTaskQueueEmpty());
@@ -376,7 +381,7 @@ TEST_P(IndexedDBTransactionTestMode, AbortTasks) {
       std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
           id, connection.get(), scope, GetParam(),
           new IndexedDBFakeBackingStore::FakeTransaction(commit_failure)));
-  db_->TransactionCreated(transaction.get());
+  db_->RegisterAndScheduleTransaction(transaction.get());
 
   AbortObserver observer;
   transaction->ScheduleTask(
@@ -405,7 +410,7 @@ TEST_P(IndexedDBTransactionTestMode, AbortPreemptive) {
       std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
           id, connection.get(), scope, GetParam(),
           new IndexedDBFakeBackingStore::FakeTransaction(commit_success)));
-  db_->TransactionCreated(transaction.get());
+  db_->RegisterAndScheduleTransaction(transaction.get());
 
   // No conflicting transactions, so coordinator will start it immediately:
   EXPECT_EQ(IndexedDBTransaction::STARTED, transaction->state());
@@ -463,7 +468,7 @@ TEST_F(IndexedDBTransactionTest, IndexedDBObserver) {
               blink::mojom::IDBTransactionMode::ReadWrite,
               new IndexedDBFakeBackingStore::FakeTransaction(commit_success))));
   ASSERT_TRUE(transaction);
-  db_->TransactionCreated(transaction.get());
+  db_->RegisterAndScheduleTransaction(transaction.get());
 
   EXPECT_EQ(0UL, transaction->pending_observers_.size());
   EXPECT_EQ(0UL, connection->active_observers().size());

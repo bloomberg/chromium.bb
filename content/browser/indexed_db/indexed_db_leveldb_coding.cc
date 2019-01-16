@@ -1004,6 +1004,27 @@ int CompareIndexKeys(const StringPiece& a, const StringPiece& b) {
   return Compare(a, b, true /*index_keys*/);
 }
 
+ScopeLockRange GetDatabaseLockRange(int64_t database_id) {
+  uint64_t first[1] = {
+      base::ByteSwapToLE64(static_cast<uint64_t>(database_id))};
+  uint64_t next[1] = {
+      base::ByteSwapToLE64(static_cast<uint64_t>(database_id + 1))};
+  return {std::string(reinterpret_cast<char*>(&first), sizeof(first)),
+          std::string(reinterpret_cast<char*>(&next), sizeof(next))};
+}
+
+ScopeLockRange GetObjectStoreLockRange(int64_t database_id,
+                                       int64_t object_store_id) {
+  uint64_t first[2] = {
+      base::ByteSwapToLE64(static_cast<uint64_t>(database_id)),
+      base::ByteSwapToLE64(static_cast<uint64_t>(object_store_id))};
+  uint64_t next[2] = {
+      base::ByteSwapToLE64(static_cast<uint64_t>(database_id)),
+      base::ByteSwapToLE64(static_cast<uint64_t>(object_store_id + 1))};
+  return {std::string(reinterpret_cast<char*>(&first), sizeof(first)),
+          std::string(reinterpret_cast<char*>(&next), sizeof(next))};
+}
+
 KeyPrefix::KeyPrefix()
     : database_id_(INVALID_TYPE),
       object_store_id_(INVALID_TYPE),

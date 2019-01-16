@@ -1003,8 +1003,6 @@ jumbo_source_set("browser") {
     "indexed_db/indexed_db_tracing.h",
     "indexed_db/indexed_db_transaction.cc",
     "indexed_db/indexed_db_transaction.h",
-    "indexed_db/indexed_db_transaction_coordinator.cc",
-    "indexed_db/indexed_db_transaction_coordinator.h",
     "indexed_db/indexed_db_value.cc",
     "indexed_db/indexed_db_value.h",
     "indexed_db/leveldb/leveldb_comparator.cc",

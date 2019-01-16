@@ -14,7 +14,7 @@ namespace content {
 namespace {
 
 TEST(ScopesLockManager, TestRangePopulation) {
-  ScopeLockRange range("a", "b");
+  ScopeLockRange range{"a", "b"};
   EXPECT_EQ("a", range.begin);
   EXPECT_EQ("b", range.end);
 }

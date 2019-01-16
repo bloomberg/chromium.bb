@@ -27,7 +27,6 @@
 #include "content/browser/indexed_db/indexed_db_pre_close_task_queue.h"
 #include "content/browser/indexed_db/indexed_db_tombstone_sweeper.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
-#include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
@@ -125,6 +124,7 @@ IndexedDBFactoryImpl::IndexedDBFactoryImpl(
     base::Clock* clock)
     : context_(context),
       leveldb_factory_(leveldb_factory),
+      lock_manager_(kIndexedDBLockLevelCount),
       clock_(clock),
       earliest_sweep_(GenerateNextGlobalSweepTime(clock_->Now())) {}
 
@@ -548,9 +548,10 @@ void IndexedDBFactoryImpl::DeleteDatabase(
   }
 
   scoped_refptr<IndexedDBDatabase> database;
-  std::tie(database, s) = IndexedDBDatabase::Create(
-      name, backing_store.get(), this,
-      std::make_unique<IndexedDBMetadataCoding>(), unique_identifier);
+  std::tie(database, s) =
+      IndexedDBDatabase::Create(name, backing_store.get(), this,
+                                std::make_unique<IndexedDBMetadataCoding>(),
+                                unique_identifier, &lock_manager_);
   if (!database.get()) {
     IndexedDBDatabaseError error(
         blink::kWebIDBDatabaseExceptionUnknownError,
@@ -785,9 +786,10 @@ void IndexedDBFactoryImpl::Open(
   }
 
   scoped_refptr<IndexedDBDatabase> database;
-  std::tie(database, s) = IndexedDBDatabase::Create(
-      name, backing_store.get(), this,
-      std::make_unique<IndexedDBMetadataCoding>(), unique_identifier);
+  std::tie(database, s) =
+      IndexedDBDatabase::Create(name, backing_store.get(), this,
+                                std::make_unique<IndexedDBMetadataCoding>(),
+                                unique_identifier, &lock_manager_);
   if (!database.get()) {
     DLOG(ERROR) << "Unable to create the database";
     IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,

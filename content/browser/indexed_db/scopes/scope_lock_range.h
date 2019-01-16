@@ -17,7 +17,6 @@ namespace content {
 // The range is [begin, end). Bytewise comparison is used to determine
 // overlapping ranges.
 struct CONTENT_EXPORT ScopeLockRange {
-  ScopeLockRange(std::string begin, std::string end);
   ScopeLockRange() = default;
   ~ScopeLockRange() = default;
   std::string begin;
