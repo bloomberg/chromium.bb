@@ -15,6 +15,7 @@ import android.util.TypedValue;
 import android.view.View;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
@@ -27,6 +28,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionView.Sugg
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties.SuggestionIcon;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties.SuggestionTextContainer;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.omnibox.AnswerType;
 import org.chromium.components.omnibox.SuggestionAnswer;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -69,6 +71,7 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
     private final SuggestionHost mSuggestionHost;
     private final AnswersImageFetcher mImageFetcher;
     private final UrlBarEditingTextStateProvider mUrlBarEditingTextProvider;
+    private boolean mEnableNewAnswerLayout;
 
     /**
      * @param context An Android context.
@@ -87,6 +90,15 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
     @Override
     public boolean doesProcessSuggestion(OmniboxSuggestion suggestion) {
         return true;
+    }
+
+    /**
+     * Signals that native initialization has completed.
+     */
+    public void onNativeInitialized() {
+        // Experiment: controls presence of certain answer icon types.
+        mEnableNewAnswerLayout =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_NEW_ANSWER_LAYOUT);
     }
 
     @Override
@@ -192,7 +204,41 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
         model.set(SuggestionViewProperties.HAS_ANSWER_IMAGE, secondLine.hasImage());
 
         model.set(SuggestionViewProperties.REFINABLE, true);
-        model.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE, SuggestionIcon.MAGNIFIER);
+
+        @SuggestionIcon
+        int icon = SuggestionIcon.MAGNIFIER;
+        if (mEnableNewAnswerLayout) {
+            switch (answer.getType()) {
+                case AnswerType.DICTIONARY:
+                    icon = SuggestionIcon.DICTIONARY;
+                    break;
+                case AnswerType.FINANCE:
+                    icon = SuggestionIcon.FINANCE;
+                    break;
+                case AnswerType.KNOWLEDGE_GRAPH:
+                    icon = SuggestionIcon.KNOWLEDGE;
+                    break;
+                case AnswerType.SUNRISE:
+                    icon = SuggestionIcon.SUNRISE;
+                    break;
+                case AnswerType.TRANSLATION:
+                    icon = SuggestionIcon.TRANSLATION;
+                    break;
+                case AnswerType.WEATHER:
+                    icon = SuggestionIcon.WEATHER;
+                    break;
+                case AnswerType.WHEN_IS:
+                    icon = SuggestionIcon.EVENT;
+                    break;
+                case AnswerType.CURRENCY:
+                    icon = SuggestionIcon.CURRENCY;
+                    break;
+                case AnswerType.SPORTS:
+                    icon = SuggestionIcon.SPORTS;
+            }
+        }
+
+        model.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE, icon);
     }
 
     private void setStateForTextSuggestion(PropertyModel model, OmniboxSuggestion suggestion) {

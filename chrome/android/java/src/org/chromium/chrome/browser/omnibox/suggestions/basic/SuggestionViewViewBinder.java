@@ -62,6 +62,7 @@ public class SuggestionViewViewBinder {
             int type = model.get(SuggestionViewProperties.SUGGESTION_ICON_TYPE);
 
             if (type == SuggestionIcon.UNDEFINED) return;
+            boolean allowTint = true;
 
             int drawableId = R.drawable.ic_omnibox_page;
             switch (type) {
@@ -77,11 +78,52 @@ public class SuggestionViewViewBinder {
                 case SuggestionIcon.VOICE:
                     drawableId = R.drawable.btn_mic;
                     break;
+                case SuggestionIcon.CALCULATOR:
+                    allowTint = false;
+                    drawableId = R.drawable.ic_equals_sign_round;
+                    break;
+                case SuggestionIcon.DICTIONARY:
+                    allowTint = false;
+                    drawableId = R.drawable.ic_book_round;
+                    break;
+                case SuggestionIcon.FINANCE:
+                    allowTint = false;
+                    drawableId = R.drawable.ic_swap_vert_round;
+                    break;
+                case SuggestionIcon.KNOWLEDGE:
+                    allowTint = false;
+                    drawableId = R.drawable.ic_google_round;
+                    break;
+                case SuggestionIcon.SUNRISE:
+                    allowTint = false;
+                    drawableId = R.drawable.ic_wb_sunny_round;
+                    break;
+                case SuggestionIcon.TRANSLATION:
+                    allowTint = false;
+                    drawableId = R.drawable.logo_translate_round;
+                    break;
+                case SuggestionIcon.WEATHER:
+                    allowTint = false;
+                    drawableId = R.drawable.logo_partly_cloudy_light;
+                    break;
+                case SuggestionIcon.EVENT:
+                    allowTint = false;
+                    drawableId = R.drawable.ic_event_round;
+                    break;
+                case SuggestionIcon.CURRENCY:
+                    allowTint = false;
+                    drawableId = R.drawable.ic_loop_round;
+                    break;
+                case SuggestionIcon.SPORTS:
+                    allowTint = false;
+                    drawableId = R.drawable.ic_google_round;
+                    break;
                 default:
                     break;
             }
+
             view.setSuggestionIconDrawable(
-                    drawableId, model.get(SuggestionCommonProperties.USE_DARK_COLORS));
+                    drawableId, model.get(SuggestionCommonProperties.USE_DARK_COLORS), allowTint);
         } else if (SuggestionViewProperties.TEXT_LINE_1_SIZING.equals(propertyKey)) {
             Pair<Integer, Float> sizing = model.get(SuggestionViewProperties.TEXT_LINE_1_SIZING);
             view.getTextLine1().setTextSize(sizing.first, sizing.second);

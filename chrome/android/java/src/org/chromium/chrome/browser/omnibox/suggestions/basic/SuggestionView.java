@@ -13,6 +13,7 @@ import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.VisibleForTesting;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -335,13 +336,20 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
 
     /**
      * Updates the suggestion icon to the specified drawable with the specified tint.
+     * @param resId resource id (may be bitmap or vector) of icon to display
+     * @param useDarkTint specifies whether to apply dark or light tint to an icon
+     * @param allowTint specifies whether icon should receive a tint or displayed as is.
      */
-    void setSuggestionIconDrawable(@DrawableRes int resId, boolean useDarkTint) {
-        mContentsView.mSuggestionIcon = TintedDrawable.constructTintedDrawable(getContext(), resId,
-                useDarkTint ? R.color.dark_mode_tint : R.color.white_mode_tint);
+    void setSuggestionIconDrawable(@DrawableRes int resId, boolean useDarkTint, boolean allowTint) {
+        mContentsView.mSuggestionIcon = AppCompatResources.getDrawable(getContext(), resId);
+        mContentsView.mAllowTint = allowTint;
         mContentsView.mSuggestionIcon.setBounds(0, 0,
                 mContentsView.mSuggestionIcon.getIntrinsicWidth(),
                 mContentsView.mSuggestionIcon.getIntrinsicHeight());
+        updateSuggestionIconTint(useDarkTint);
+        // Note: invalidate() does not immediately invoke onDraw(), but schedules it to be called at
+        // some point in the future.
+        // https://developer.android.com/reference/android/view/View.html#invalidate()
         mContentsView.invalidate();
     }
 
@@ -349,9 +357,10 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
      * Updates the suggestion icon (if present) to use the specified tint.
      */
     void updateSuggestionIconTint(boolean useDarkTint) {
-        if (mContentsView.mSuggestionIcon == null) return;
-        mContentsView.mSuggestionIcon.setTint(AppCompatResources.getColorStateList(
-                getContext(), useDarkTint ? R.color.dark_mode_tint : R.color.white_mode_tint));
+        if (!mContentsView.mAllowTint || mContentsView.mSuggestionIcon == null) return;
+        DrawableCompat.setTint(mContentsView.mSuggestionIcon,
+                ApiCompatibilityUtils.getColor(getContext().getResources(),
+                useDarkTint ? R.color.dark_mode_tint : R.color.white_mode_tint));
         mContentsView.invalidate();
     }
 
@@ -388,7 +397,8 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
      * icon).
      */
     private class SuggestionContentsContainer extends ViewGroup {
-        private TintedDrawable mSuggestionIcon;
+        private Drawable mSuggestionIcon;
+        private boolean mAllowTint;
 
         private final TextView mTextLine1;
         private final TextView mTextLine2;
