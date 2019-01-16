@@ -6,13 +6,8 @@
 #define IOS_CHROME_BROWSER_METRICS_IOS_PROFILE_SESSION_DURATIONS_SERVICE_FACTORY_H_
 
 #include "base/macros.h"
-
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 class IOSProfileSessionDurationsService;
 namespace ios {
@@ -29,8 +24,7 @@ class IOSProfileSessionDurationsServiceFactory
   static IOSProfileSessionDurationsServiceFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<
-      IOSProfileSessionDurationsServiceFactory>;
+  friend class base::NoDestructor<IOSProfileSessionDurationsServiceFactory>;
 
   IOSProfileSessionDurationsServiceFactory();
   ~IOSProfileSessionDurationsServiceFactory() override;
