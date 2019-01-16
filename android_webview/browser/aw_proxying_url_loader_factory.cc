@@ -230,7 +230,7 @@ void InterceptedRequest::OnReceiveResponse(
   // intercept response headers here
   // pause/resume proxied_client_binding_ if necessary
 
-  if (head.headers->response_code() >= 400) {
+  if (head.headers && head.headers->response_code() >= 400) {
     // In Android WebView the WebViewClient.onReceivedHttpError callback
     // is invoked for any resource (main page, iframe, image, etc.) with
     // status code >= 400.
@@ -248,8 +248,8 @@ void InterceptedRequest::OnReceiveResponse(
     // Check for x-auto-login-header
     HeaderData header_data;
     std::string header_string;
-    if (head.headers->GetNormalizedHeader(kAutoLoginHeaderName,
-                                          &header_string)) {
+    if (head.headers && head.headers->GetNormalizedHeader(kAutoLoginHeaderName,
+                                                          &header_string)) {
       if (ParseHeader(header_string, ALLOW_ANY_REALM, &header_data)) {
         // TODO(timvolodine): consider simplifying this and above callback
         // code, crbug.com/897149.
