@@ -3735,16 +3735,11 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
         <message name="IDS_VR_SERVICES_CHECK_INFOBAR_UPDATE_BUTTON" desc="Text to be displayed in the VR Services check infobar confirm button for updating.">
           Update
         </message>
-
-        <!-- VR module -->
-        <message name="IDS_VR_MODULE_TITLE" desc="Title of the Virtual Reality (VR) dynamic feature module. Used, for instance, in the text of dialogs confirming to download the module.">
-          VR
-        </message>
       </if>
 
       <!-- VR module -->
-      <message name="IDS_VR_MODULE_INSTALL_TEXT_TITLE" desc="Text shown when Chrome references the VR module in install start, success, failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to 'Installing virtual reality for Chrome…').">
-        virtual reality
+      <message name="IDS_VR_MODULE_TITLE" desc="Text shown when the VR module is referenced in install start, success, failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to 'Installing Virtual Reality for Chrome…').">
+        Virtual Reality
       </message>
       <message name="IDS_VR_PREPARING_VR_TOAST_STANDALONE_TEXT" desc="Text shown on a toast when Chrome's VR browser could not be started due to the VR module missing.">
         Chrome is still preparing for VR. Restart Chrome later.
@@ -3766,11 +3761,8 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
         </message>
 
         <!-- AR module -->
-        <message name="IDS_AR_MODULE_TITLE" desc="Title of the Augmented Reality (AR) dynamic feature module. Used, for instance, in the text of dialogs confirming to download the module.">
-          AR
-        </message>
-        <message name="IDS_AR_MODULE_INSTALL_TEXT_TITLE" desc="Text shown when Chrome references the AR module in install start, success, failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to 'Installing augmented reality for Chrome…').">
-          augmented reality
+        <message name="IDS_AR_MODULE_TITLE" desc="Text shown when the AR module is referenced in install start, success, failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to 'Installing Augmented Reality for Chrome…').">
+          Augmented Reality
         </message>
       </if>
 
