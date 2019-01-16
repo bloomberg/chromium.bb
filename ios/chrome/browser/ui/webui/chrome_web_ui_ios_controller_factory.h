@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 #include "ios/web/public/webui/web_ui_ios_controller_factory.h"
 
@@ -28,7 +28,7 @@ class ChromeWebUIIOSControllerFactory : public web::WebUIIOSControllerFactory {
   ~ChromeWebUIIOSControllerFactory() override;
 
  private:
-  friend struct base::DefaultSingletonTraits<ChromeWebUIIOSControllerFactory>;
+  friend class base::NoDestructor<ChromeWebUIIOSControllerFactory>;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebUIIOSControllerFactory);
 };

@@ -118,7 +118,8 @@ ChromeWebUIIOSControllerFactory::CreateWebUIIOSControllerForURL(
 // static
 ChromeWebUIIOSControllerFactory*
 ChromeWebUIIOSControllerFactory::GetInstance() {
-  return base::Singleton<ChromeWebUIIOSControllerFactory>::get();
+  static base::NoDestructor<ChromeWebUIIOSControllerFactory> instance;
+  return instance.get();
 }
 
 ChromeWebUIIOSControllerFactory::ChromeWebUIIOSControllerFactory() {}
