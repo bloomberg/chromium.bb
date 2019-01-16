@@ -449,6 +449,19 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
         }
     }
 
+    /**
+     * Merge lists of property keys.
+     * @param k1 The first list of keys.
+     * @param k2 The second list of keys.
+     * @return A concatenated list of property keys.
+     */
+    public static PropertyKey[] concatKeys(PropertyKey[] k1, PropertyKey[] k2) {
+        PropertyKey[] outList = new PropertyKey[k1.length + k2.length];
+        System.arraycopy(k1, 0, outList, 0, k1.length);
+        System.arraycopy(k2, 0, outList, k1.length, k2.length);
+        return outList;
+    }
+
     private static Map<PropertyKey, ValueContainer> buildData(PropertyKey[] keys) {
         Map<PropertyKey, ValueContainer> data = new HashMap<>();
         for (PropertyKey key : keys) {

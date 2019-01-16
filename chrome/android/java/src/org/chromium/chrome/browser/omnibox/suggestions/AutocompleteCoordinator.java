@@ -26,6 +26,8 @@ import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsList.OmniboxSuggestionListEmbedder;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionListViewBinder.SuggestionListViewHolder;
+import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionView;
+import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewViewBinder;
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionCoordinator;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
@@ -46,6 +48,43 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
     private final AutocompleteMediator mMediator;
 
     private ListView mListView;
+
+    /**
+     * A processor of omnibox suggestions. Implementers are provided the opportunity to analyze a
+     * suggestion and create a custom model.
+     */
+    public interface SuggestionProcessor {
+        /**
+         * @param suggestion The suggestion to process.
+         * @return Whether this suggestion processor handles this type of suggestion.
+         */
+        boolean doesProcessSuggestion(OmniboxSuggestion suggestion);
+
+        /**
+         * @return The type of view the models created by this processor represent.
+         */
+        int getViewTypeId();
+
+        /**
+         * @see org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlFocusChange(boolean)
+         */
+        void onUrlFocusChange(boolean hasFocus);
+
+        /**
+         * Create a model for a suggestion at the specified position.
+         * @param suggestion The suggestion to create the model for.
+         * @return A model for the suggestion.
+         */
+        PropertyModel createModelForSuggestion(OmniboxSuggestion suggestion);
+
+        /**
+         * Populate a model for the given suggestion.
+         * @param suggestion The suggestion to populate the model for.
+         * @param model The model to populate.
+         * @param position The position of the suggestion in the list.
+         */
+        void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position);
+    }
 
     /**
      * Provides the additional functionality to trigger and interact with autocomplete suggestions.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.omnibox.suggestions;
+package org.chromium.chrome.browser.omnibox.suggestions.basic;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -69,7 +69,7 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
      * Handler for actions that happen on suggestion view.
      */
     @VisibleForTesting
-    public static interface SuggestionViewDelegate {
+    public interface SuggestionViewDelegate {
         /** Triggered when the user selects one of the omnibox suggestions to navigate to. */
         void onSelection();
 
