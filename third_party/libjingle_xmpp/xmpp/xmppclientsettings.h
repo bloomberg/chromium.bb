@@ -11,8 +11,9 @@
 #ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPCLIENTSETTINGS_H_
 #define THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPCLIENTSETTINGS_H_
 
-#include "third_party/webrtc/p2p/base/port.h"
+#include "net/base/host_port_pair.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
+#include "third_party/webrtc/p2p/base/port.h"
 
 namespace buzz {
 
@@ -69,16 +70,14 @@ class XmppClientSettings : public XmppUserSettings {
  public:
   XmppClientSettings() : protocol_(PROTO_TCP) {}
 
-  void set_server(const rtc::SocketAddress& server) {
-      server_ = server;
-  }
+  void set_server(const net::HostPortPair& server) { server_ = server; }
   void set_protocol(ProtocolType protocol) { protocol_ = protocol; }
 
-  const rtc::SocketAddress& server() const { return server_; }
+  const net::HostPortPair& server() const { return server_; }
   ProtocolType protocol() const { return protocol_; }
 
  private:
-  rtc::SocketAddress server_;
+  net::HostPortPair server_;
   ProtocolType protocol_;
 };
 

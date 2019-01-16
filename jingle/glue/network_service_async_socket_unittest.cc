@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/address_list.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -35,8 +36,6 @@
 #include "services/network/proxy_resolving_socket_factory_mojo.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/webrtc/rtc_base/ip_address.h"
-#include "third_party/webrtc/rtc_base/socket_address.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 
 namespace jingle_glue {
@@ -274,7 +273,7 @@ class NetworkServiceAsyncSocketTest : public testing::Test,
       : ssl_socket_data_provider_(net::ASYNC, net::OK),
         use_mojo_level_mock_(use_mojo_level_mock),
         mock_proxy_resolving_socket_factory_(nullptr),
-        addr_("localhost", 35) {
+        addr_({"localhost", 35}) {
     // GTest death tests by default execute in a fork()ed but not exec()ed
     // process. On macOS, a CoreFoundation-backed MessageLoop will exit with a
     // __THE_PROCESS_HAS_FORKED_AND_YOU_CANNOT_USE_THIS_COREFOUNDATION_FUNCTIONALITY___YOU_MUST_EXEC__
@@ -570,7 +569,7 @@ class NetworkServiceAsyncSocketTest : public testing::Test,
 
   std::unique_ptr<NetworkServiceAsyncSocket> ns_async_socket_;
   base::circular_deque<SignalSocketState> signal_socket_states_;
-  const rtc::SocketAddress addr_;
+  const net::HostPortPair addr_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceAsyncSocketTest);
@@ -610,20 +609,8 @@ TEST_F(NetworkServiceAsyncSocketTest, DoubleClose) {
   ExpectClosed();
 }
 
-TEST_F(NetworkServiceAsyncSocketTest, NoHostnameConnect) {
-  rtc::IPAddress ip_address;
-  EXPECT_TRUE(rtc::IPFromString("127.0.0.1", &ip_address));
-  const rtc::SocketAddress no_hostname_addr(ip_address, addr_.port());
-  EXPECT_FALSE(ns_async_socket_->Connect(no_hostname_addr));
-  ExpectErrorState(NetworkServiceAsyncSocket::STATE_CLOSED,
-                   NetworkServiceAsyncSocket::ERROR_DNS);
-
-  EXPECT_TRUE(ns_async_socket_->Close());
-  ExpectClosed();
-}
-
 TEST_F(NetworkServiceAsyncSocketTest, ZeroPortConnect) {
-  const rtc::SocketAddress zero_port_addr(addr_.hostname(), 0);
+  const net::HostPortPair zero_port_addr({addr_.host(), 0});
   EXPECT_FALSE(ns_async_socket_->Connect(zero_port_addr));
   ExpectErrorState(NetworkServiceAsyncSocket::STATE_CLOSED,
                    NetworkServiceAsyncSocket::ERROR_DNS);

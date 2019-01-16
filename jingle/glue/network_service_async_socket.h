@@ -21,6 +21,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
+#include "net/base/host_port_pair.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "third_party/libjingle_xmpp/xmpp/asyncsocket.h"
@@ -68,7 +69,7 @@ class NetworkServiceAsyncSocket : public buzz::AsyncSocket,
   // Otherwise, starts the connection process and returns true.
   // SignalConnected will be raised when the connection is successful;
   // otherwise, SignalClosed will be raised with a net error set.
-  bool Connect(const rtc::SocketAddress& address) override;
+  bool Connect(const net::HostPortPair& address) override;
 
   // Tries to read at most |len| bytes into |data|.
   //

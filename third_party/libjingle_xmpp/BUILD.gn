@@ -97,6 +97,7 @@ rtc_static_library("rtc_xmpp") {
   deps = [
     ":rtc_xmllite",
     "//base",
+    "//net",
     "//third_party/webrtc/rtc_base:rtc_base_approved",
     "//third_party/webrtc_overrides:task_queue_impl",
   ]

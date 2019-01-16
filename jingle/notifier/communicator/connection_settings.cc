@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "net/base/host_port_pair.h"
 
 #include "third_party/libjingle_xmpp/xmpp/xmppclientsettings.h"
 
@@ -14,10 +15,9 @@ namespace notifier {
 
 const uint16_t kSslTcpPort = 443;
 
-ConnectionSettings::ConnectionSettings(
-    const rtc::SocketAddress& server,
-    SslTcpMode ssltcp_mode,
-    SslTcpSupport ssltcp_support)
+ConnectionSettings::ConnectionSettings(const net::HostPortPair& server,
+                                       SslTcpMode ssltcp_mode,
+                                       SslTcpSupport ssltcp_support)
     : server(server),
       ssltcp_mode(ssltcp_mode),
       ssltcp_support(ssltcp_support) {}
@@ -71,13 +71,13 @@ ConnectionSettingsList MakeConnectionSettingsList(
   for (ServerList::const_iterator it = servers.begin();
        it != servers.end(); ++it) {
     const ConnectionSettings settings(
-        rtc::SocketAddress(it->server.host(), it->server.port()),
+        net::HostPortPair({it->server.host(), it->server.port()}),
         DO_NOT_USE_SSLTCP, it->ssltcp_support);
 
     if (it->ssltcp_support == SUPPORTS_SSLTCP) {
       const ConnectionSettings settings_with_ssltcp(
-        rtc::SocketAddress(it->server.host(), kSslTcpPort),
-        USE_SSLTCP, it->ssltcp_support);
+          net::HostPortPair({it->server.host(), kSslTcpPort}), USE_SSLTCP,
+          it->ssltcp_support);
 
       if (try_ssltcp_first) {
         settings_list.push_back(settings_with_ssltcp);

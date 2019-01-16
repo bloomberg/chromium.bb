@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "net/base/host_port_pair.h"
 #include "jingle/notifier/base/server_information.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,20 +46,14 @@ TEST_F(ConnectionSettingsTest, Basic) {
 
   ConnectionSettingsList expected_settings_list;
   expected_settings_list.push_back(
-      ConnectionSettings(
-          rtc::SocketAddress("supports_ssltcp.com", 100),
-          DO_NOT_USE_SSLTCP,
-          SUPPORTS_SSLTCP));
+      ConnectionSettings(net::HostPortPair({"supports_ssltcp.com", 100}),
+                         DO_NOT_USE_SSLTCP, SUPPORTS_SSLTCP));
   expected_settings_list.push_back(
-      ConnectionSettings(
-          rtc::SocketAddress("supports_ssltcp.com", 443),
-          USE_SSLTCP,
-          SUPPORTS_SSLTCP));
-  expected_settings_list.push_back(
-      ConnectionSettings(
-          rtc::SocketAddress("does_not_support_ssltcp.com", 200),
-          DO_NOT_USE_SSLTCP,
-          DOES_NOT_SUPPORT_SSLTCP));
+      ConnectionSettings(net::HostPortPair({"supports_ssltcp.com", 443}),
+                         USE_SSLTCP, SUPPORTS_SSLTCP));
+  expected_settings_list.push_back(ConnectionSettings(
+      net::HostPortPair({"does_not_support_ssltcp.com", 200}),
+      DO_NOT_USE_SSLTCP, DOES_NOT_SUPPORT_SSLTCP));
 
   ASSERT_EQ(expected_settings_list.size(), settings_list.size());
   for (size_t i = 0; i < settings_list.size(); ++i) {
@@ -75,20 +70,14 @@ TEST_F(ConnectionSettingsTest, TrySslTcpFirst) {
 
   ConnectionSettingsList expected_settings_list;
   expected_settings_list.push_back(
-      ConnectionSettings(
-          rtc::SocketAddress("supports_ssltcp.com", 443),
-          USE_SSLTCP,
-          SUPPORTS_SSLTCP));
+      ConnectionSettings(net::HostPortPair({"supports_ssltcp.com", 443}),
+                         USE_SSLTCP, SUPPORTS_SSLTCP));
   expected_settings_list.push_back(
-      ConnectionSettings(
-          rtc::SocketAddress("supports_ssltcp.com", 100),
-          DO_NOT_USE_SSLTCP,
-          SUPPORTS_SSLTCP));
-  expected_settings_list.push_back(
-      ConnectionSettings(
-          rtc::SocketAddress("does_not_support_ssltcp.com", 200),
-          DO_NOT_USE_SSLTCP,
-          DOES_NOT_SUPPORT_SSLTCP));
+      ConnectionSettings(net::HostPortPair({"supports_ssltcp.com", 100}),
+                         DO_NOT_USE_SSLTCP, SUPPORTS_SSLTCP));
+  expected_settings_list.push_back(ConnectionSettings(
+      net::HostPortPair({"does_not_support_ssltcp.com", 200}),
+      DO_NOT_USE_SSLTCP, DOES_NOT_SUPPORT_SSLTCP));
 
   ASSERT_EQ(expected_settings_list.size(), settings_list.size());
   for (size_t i = 0; i < settings_list.size(); ++i) {

@@ -11,6 +11,7 @@
 #include "third_party/libjingle_xmpp/xmpp/xmppclient.h"
 
 #include "base/logging.h"
+#include "net/base/host_port_pair.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 #include "third_party/libjingle_xmpp/xmpp/plainsaslhandler.h"
 #include "third_party/libjingle_xmpp/xmpp/prexmppauth.h"
@@ -51,7 +52,7 @@ public:
   std::string pass_;
   std::string auth_mechanism_;
   std::string auth_token_;
-  rtc::SocketAddress server_;
+  net::HostPortPair server_;
   XmppEngine::Error pre_engine_error_;
   int pre_engine_subcode_;
   CaptchaChallenge captcha_challenge_;
@@ -110,7 +111,7 @@ XmppReturnStatus XmppClient::Connect(
   // For other servers, we leave the strings empty, which causes the jid's
   // domain to be used.  We do the same for gmail.com and googlemail.com as the
   // returned CN matches the account domain in those cases.
-  std::string server_name = settings.server().HostAsURIString();
+  std::string server_name = settings.server().ToString();
   if (server_name == buzz::STR_TALK_GOOGLE_COM ||
       server_name == buzz::STR_TALKX_L_GOOGLE_COM ||
       server_name == buzz::STR_XMPP_GOOGLE_COM ||
