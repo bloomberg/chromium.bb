@@ -380,20 +380,54 @@ void ApplyFontsFromMap(const ScriptFontFamilyMap& map,
   }
 }
 
-void ApplyBlinkSettings(const base::CommandLine& command_line,
-                        WebSettings* settings) {
-  if (!command_line.HasSwitch(switches::kBlinkSettings))
-    return;
+void ApplyCommandLineToSettings(const base::CommandLine& command_line,
+                                WebSettings* settings) {
+  settings->SetThreadedScrollingEnabled(
+      !command_line.HasSwitch(switches::kDisableThreadedScrolling));
 
-  std::vector<std::string> blink_settings = base::SplitString(
-      command_line.GetSwitchValueASCII(switches::kBlinkSettings),
-      ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  for (const std::string& setting : blink_settings) {
-    size_t pos = setting.find('=');
-    settings->SetFromStrings(
-        blink::WebString::FromLatin1(setting.substr(0, pos)),
-        blink::WebString::FromLatin1(
-            pos == std::string::npos ? "" : setting.substr(pos + 1)));
+  if (switches::IsTouchDragDropEnabled())
+    settings->SetTouchDragDropEnabled(true);
+
+  WebSettings::SelectionStrategyType selection_strategy;
+  if (command_line.GetSwitchValueASCII(switches::kTouchTextSelectionStrategy) ==
+      "direction")
+    selection_strategy = WebSettings::SelectionStrategyType::kDirection;
+  else
+    selection_strategy = WebSettings::SelectionStrategyType::kCharacter;
+  settings->SetSelectionStrategy(selection_strategy);
+
+  std::string passive_listeners_default =
+      command_line.GetSwitchValueASCII(switches::kPassiveListenersDefault);
+  if (!passive_listeners_default.empty()) {
+    WebSettings::PassiveEventListenerDefault passive_default =
+        WebSettings::PassiveEventListenerDefault::kFalse;
+    if (passive_listeners_default == "true")
+      passive_default = WebSettings::PassiveEventListenerDefault::kTrue;
+    else if (passive_listeners_default == "forcealltrue")
+      passive_default = WebSettings::PassiveEventListenerDefault::kForceAllTrue;
+    settings->SetPassiveEventListenerDefault(passive_default);
+  }
+
+  std::string network_quiet_timeout =
+      command_line.GetSwitchValueASCII(switches::kNetworkQuietTimeout);
+  if (!network_quiet_timeout.empty()) {
+    double network_quiet_timeout_seconds = 0.0;
+    if (base::StringToDouble(network_quiet_timeout,
+                             &network_quiet_timeout_seconds))
+      settings->SetNetworkQuietTimeout(network_quiet_timeout_seconds);
+  }
+
+  if (command_line.HasSwitch(switches::kBlinkSettings)) {
+    std::vector<std::string> blink_settings = base::SplitString(
+        command_line.GetSwitchValueASCII(switches::kBlinkSettings), ",",
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    for (const std::string& setting : blink_settings) {
+      size_t pos = setting.find('=');
+      settings->SetFromStrings(
+          blink::WebString::FromLatin1(setting.substr(0, pos)),
+          blink::WebString::FromLatin1(
+              pos == std::string::npos ? "" : setting.substr(pos + 1)));
+    }
   }
 }
 
@@ -481,48 +515,11 @@ void RenderViewImpl::Initialize(
       *base::CommandLine::ForCurrentProcess();
 
   webview()->SetDisplayMode(params->visual_properties.display_mode);
-  webview()->GetSettings()->SetThreadedScrollingEnabled(
-      !command_line.HasSwitch(switches::kDisableThreadedScrolling));
   webview()->SetShowFPSCounter(
       command_line.HasSwitch(cc::switches::kShowFPSCounter));
 
   ApplyWebPreferences(webkit_preferences_, webview());
-
-  if (switches::IsTouchDragDropEnabled())
-    webview()->GetSettings()->SetTouchDragDropEnabled(true);
-
-  WebSettings::SelectionStrategyType selection_strategy =
-      WebSettings::SelectionStrategyType::kCharacter;
-  const std::string selection_strategy_str =
-      command_line.GetSwitchValueASCII(switches::kTouchTextSelectionStrategy);
-  if (selection_strategy_str == "direction")
-    selection_strategy = WebSettings::SelectionStrategyType::kDirection;
-  webview()->GetSettings()->SetSelectionStrategy(selection_strategy);
-
-  std::string passive_listeners_default =
-      command_line.GetSwitchValueASCII(switches::kPassiveListenersDefault);
-  if (!passive_listeners_default.empty()) {
-    WebSettings::PassiveEventListenerDefault passiveDefault =
-        WebSettings::PassiveEventListenerDefault::kFalse;
-    if (passive_listeners_default == "true")
-      passiveDefault = WebSettings::PassiveEventListenerDefault::kTrue;
-    else if (passive_listeners_default == "forcealltrue")
-      passiveDefault = WebSettings::PassiveEventListenerDefault::kForceAllTrue;
-    webview()->GetSettings()->SetPassiveEventListenerDefault(passiveDefault);
-  }
-
-  std::string network_quiet_timeout =
-      command_line.GetSwitchValueASCII(switches::kNetworkQuietTimeout);
-  if (!network_quiet_timeout.empty()) {
-    double network_quiet_timeout_seconds = 0.0;
-    if (base::StringToDouble(network_quiet_timeout,
-                             &network_quiet_timeout_seconds)) {
-      webview()->GetSettings()->SetNetworkQuietTimeout(
-          network_quiet_timeout_seconds);
-    }
-  }
-
-  ApplyBlinkSettings(command_line, webview()->GetSettings());
+  ApplyCommandLineToSettings(command_line, webview()->GetSettings());
 
   // We have either a main frame or a proxy routing id.
   DCHECK_NE(params->main_frame_routing_id != MSG_ROUTING_NONE,
