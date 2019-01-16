@@ -28,6 +28,14 @@ void BarcodeDetectionProviderMac::Create(
 void BarcodeDetectionProviderMac::CreateBarcodeDetection(
     mojom::BarcodeDetectionRequest request,
     mojom::BarcodeDetectorOptionsPtr options) {
+  // SDK 10.14 has troubles using the Vision Framework, fall back to CIDetector.
+  // TODO(crbug.com/921968) remove this extra case and use the Vision Framework.
+  if (@available(macOS 10.14, *)) {
+    mojo::MakeStrongBinding(std::make_unique<BarcodeDetectionImplMac>(),
+                            std::move(request));
+    return;
+  }
+
   // Vision Framework needs at least MAC OS X 10.13.
   if (@available(macOS 10.13, *)) {
     auto impl =
@@ -38,7 +46,7 @@ void BarcodeDetectionProviderMac::CreateBarcodeDetection(
     return;
   }
 
-  // Barcode detection needs at least MAC OS X 10.10.
+  // CIDetector barcode detection needs at least MAC OS X 10.10.
   if (@available(macOS 10.10, *)) {
     mojo::MakeStrongBinding(std::make_unique<BarcodeDetectionImplMac>(),
                             std::move(request));
