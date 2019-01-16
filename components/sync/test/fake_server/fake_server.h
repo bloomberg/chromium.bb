@@ -55,6 +55,9 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   };
 
   FakeServer();
+  // A directory will be created under |user_data_dir| to persist sync server
+  // state. It's necessary for supporting PRE_ tests.
+  explicit FakeServer(const base::FilePath& user_data_dir);
   ~FakeServer() override;
 
   // Handles a /command POST (with the given |request|) to the server.

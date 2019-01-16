@@ -47,6 +47,7 @@ class SingleClientSecondaryAccountSyncTest : public SyncTest {
 #if defined(OS_CHROMEOS)
     secondary_account_helper::InitNetwork();
 #endif  // defined(OS_CHROMEOS)
+    SyncTest::SetUpOnMainThread();
   }
 
   Profile* profile() { return GetProfile(0); }
