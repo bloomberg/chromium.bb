@@ -39706,6 +39706,11 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="OSXFastUserSwitchEvent">
+  <int value="0" label="User Became Active"/>
+  <int value="1" label="User Became Inactive"/>
+</enum>
+
 <enum name="OSXFilesystem">
   <int value="0" label="Unknown"/>
   <int value="1" label="Other"/>
