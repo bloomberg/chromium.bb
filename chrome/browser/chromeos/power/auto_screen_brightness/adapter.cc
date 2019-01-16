@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +21,8 @@ namespace chromeos {
 namespace power {
 namespace auto_screen_brightness {
 
+Adapter::Params::Params() {}
+
 Adapter::Adapter(Profile* profile,
                  AlsReader* als_reader,
                  BrightnessMonitor* brightness_monitor,
@@ -30,6 +33,7 @@ Adapter::Adapter(Profile* profile,
       als_reader_observer_(this),
       brightness_monitor_observer_(this),
       modeller_observer_(this),
+      power_manager_client_observer_(this),
       metrics_reporter_(metrics_reporter),
       power_manager_client_(power_manager_client),
       tick_clock_(base::DefaultTickClock::GetInstance()),
@@ -43,6 +47,7 @@ Adapter::Adapter(Profile* profile,
   als_reader_observer_.Add(als_reader);
   brightness_monitor_observer_.Add(brightness_monitor);
   modeller_observer_.Add(modeller);
+  power_manager_client_observer_.Add(power_manager_client);
 
   power_manager_client_->WaitForServiceToBeAvailable(
       base::BindOnce(&Adapter::OnPowerManagerServiceAvailable,
@@ -52,10 +57,6 @@ Adapter::Adapter(Profile* profile,
     adapter_status_ = Status::kDisabled;
     return;
   }
-
-  continue_auto_brightness_after_user_adjustment_ =
-      base::FeatureList::IsEnabled(
-          features::kAutoScreenBrightnessContinuedAdjustment);
 
   InitParams();
 }
@@ -97,10 +98,10 @@ void Adapter::OnUserBrightnessChanged(double old_brightness_percent,
                                       double new_brightness_percent) {}
 
 void Adapter::OnUserBrightnessChangeRequested() {
-  if (!continue_auto_brightness_after_user_adjustment_) {
-    // This will disable |adapter_status_| so that the model will not make any
-    // brightness adjustment.
-    adapter_status_ = Status::kDisabled;
+  if (params_.user_adjustment_effect != UserAdjustmentEffect::kContinueAuto) {
+    // Adapter will stop making brightness adjustment until suspend/resume or
+    // when browser restarts.
+    adapter_disabled_by_user_adjustment_ = true;
   }
 
   if (!als_init_status_)
@@ -150,12 +151,22 @@ void Adapter::OnModelInitialized(
   UpdateStatus();
 }
 
+void Adapter::SuspendDone(const base::TimeDelta& /* sleep_duration */) {
+  if (params_.user_adjustment_effect == UserAdjustmentEffect::kPauseAuto)
+    adapter_disabled_by_user_adjustment_ = false;
+}
+
 void Adapter::SetTickClockForTesting(const base::TickClock* test_tick_clock) {
   tick_clock_ = test_tick_clock;
 }
 
 Adapter::Status Adapter::GetStatusForTesting() const {
   return adapter_status_;
+}
+
+bool Adapter::IsAppliedForTesting() const {
+  return (adapter_status_ == Status::kSuccess &&
+          !adapter_disabled_by_user_adjustment_);
 }
 
 base::Optional<MonotoneCubicSpline> Adapter::GetGlobalCurveForTesting() const {
@@ -270,6 +281,19 @@ void Adapter::InitParams() {
   params_.average_log_als = GetFieldTrialParamByFeatureAsBool(
       features::kAutoScreenBrightness, "average_log_als",
       params_.average_log_als);
+
+  const int user_adjustment_effect_as_int = GetFieldTrialParamByFeatureAsInt(
+      features::kAutoScreenBrightness, "user_adjustment_effect",
+      static_cast<int>(params_.user_adjustment_effect));
+  if (user_adjustment_effect_as_int < 0 || user_adjustment_effect_as_int > 2) {
+    LogParameterError(ParameterError::kAdapterError);
+    return;
+  }
+  params_.user_adjustment_effect =
+      static_cast<UserAdjustmentEffect>(user_adjustment_effect_as_int);
+
+  UMA_HISTOGRAM_ENUMERATION("AutoScreenBrightness.UserAdjustmentEffect",
+                            params_.user_adjustment_effect);
 }
 
 void Adapter::OnPowerManagerServiceAvailable(bool service_is_ready) {
@@ -319,7 +343,8 @@ void Adapter::UpdateStatus() {
 }
 
 bool Adapter::CanAdjustBrightness(double current_average_ambient) const {
-  if (adapter_status_ != Status::kSuccess)
+  if (adapter_status_ != Status::kSuccess ||
+      adapter_disabled_by_user_adjustment_)
     return false;
 
   // Do not change brightness if it's set by the policy, but do not completely

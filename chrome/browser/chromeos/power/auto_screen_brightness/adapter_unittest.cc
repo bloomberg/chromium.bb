@@ -202,6 +202,13 @@ class AdapterTest : public testing::Test {
     thread_bundle_.RunUntilIdle();
   }
 
+  void ReportSuspendDone() {
+    static_cast<chromeos::FakePowerManagerClient*>(
+        chromeos::DBusThreadManager::Get()->GetPowerManagerClient())
+        ->SendSuspendDone();
+    thread_bundle_.RunUntilIdle();
+  }
+
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
 
@@ -229,6 +236,7 @@ class AdapterTest : public testing::Test {
       {"model_curve", "2"},
       {"auto_brightness_als_horizon_seconds", "5"},
       {"average_log_als", "false"},
+      {"user_adjustment_effect", "0"},
   };
 
   std::unique_ptr<Adapter> adapter_;
@@ -398,15 +406,28 @@ TEST_F(AdapterTest, SequenceOfBrightnessUpdatesWithDefaultParams) {
   EXPECT_EQ(adapter_->GetAverageAmbientForTesting(thread_bundle_.NowTicks()),
             40);
 
-  // Adapter is disabled after a user manual adjustment.
+  // Adapter will not be applied after a user manual adjustment.
   fake_brightness_monitor_.ReportUserBrightnessChangeRequested();
   thread_bundle_.RunUntilIdle();
-  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kDisabled);
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
+  EXPECT_FALSE(adapter_->IsAppliedForTesting());
+
+  // SuspendDone does not re-enable Adapter as default for effect is
+  // |kDisableAuto|.
+  ReportSuspendDone();
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
+  EXPECT_FALSE(adapter_->IsAppliedForTesting());
+
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  fake_als_reader_.ReportAmbientLightUpdate(30);
+  thread_bundle_.RunUntilIdle();
+  EXPECT_EQ(test_observer_.num_changes(), 2);
 
   // Another user manual adjustment came in.
   fake_brightness_monitor_.ReportUserBrightnessChangeRequested();
   thread_bundle_.RunUntilIdle();
-  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kDisabled);
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
+  EXPECT_FALSE(adapter_->IsAppliedForTesting());
 }
 
 TEST_F(AdapterTest, UserBrightnessRequestBeforeAnyModelUpdate) {
@@ -419,15 +440,17 @@ TEST_F(AdapterTest, UserBrightnessRequestBeforeAnyModelUpdate) {
   EXPECT_TRUE(adapter_->GetPersonalCurveForTesting());
   EXPECT_EQ(*adapter_->GetPersonalCurveForTesting(), *personal_curve_);
 
-  // Adapter is disabled after a user manual adjustment.
+  // Adapter will not be applied after a user manual adjustment.
   fake_brightness_monitor_.ReportUserBrightnessChangeRequested();
   thread_bundle_.RunUntilIdle();
-  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kDisabled);
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
+  EXPECT_FALSE(adapter_->IsAppliedForTesting());
 
   // Another user manual adjustment came in.
   fake_brightness_monitor_.ReportUserBrightnessChangeRequested();
   thread_bundle_.RunUntilIdle();
-  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kDisabled);
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
+  EXPECT_FALSE(adapter_->IsAppliedForTesting());
 }
 
 TEST_F(AdapterTest, BrightnessLuxThresholds) {
@@ -752,6 +775,94 @@ TEST_F(AdapterTest, InvalidParameters) {
   histogram_tester_.ExpectUniqueSample(
       "AutoScreenBrightness.ParameterError",
       static_cast<int>(ParameterError::kAdapterError), 1);
+}
+
+TEST_F(AdapterTest, UserAdjustmentEffectPause) {
+  std::map<std::string, std::string> params = default_params_;
+  params["min_seconds_between_brightness_changes"] = "1";
+  params["user_adjustment_effect"] = "1";
+
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
+       global_curve_, personal_curve_, params);
+
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
+  EXPECT_TRUE(adapter_->GetGlobalCurveForTesting());
+  EXPECT_EQ(*adapter_->GetGlobalCurveForTesting(), *global_curve_);
+  EXPECT_TRUE(adapter_->GetPersonalCurveForTesting());
+  EXPECT_EQ(*adapter_->GetPersonalCurveForTesting(), *personal_curve_);
+
+  // Forward by 1sec because in real implementation, |first_als_time_| is zero
+  // if there's no ALS reading received.
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // Brightness is changed after the 1st ALS reading comes in.
+  fake_als_reader_.ReportAmbientLightUpdate(10);
+  thread_bundle_.RunUntilIdle();
+  EXPECT_EQ(test_observer_.num_changes(), 1);
+
+  // Adapter will not be applied after a user manual adjustment.
+  fake_brightness_monitor_.ReportUserBrightnessChangeRequested();
+  thread_bundle_.RunUntilIdle();
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
+  EXPECT_FALSE(adapter_->IsAppliedForTesting());
+
+  // SuspendDone is received, which reenables Adapter.
+  ReportSuspendDone();
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
+  EXPECT_TRUE(adapter_->IsAppliedForTesting());
+
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  fake_als_reader_.ReportAmbientLightUpdate(30);
+  thread_bundle_.RunUntilIdle();
+  EXPECT_EQ(test_observer_.num_changes(), 2);
+
+  // Another user manual adjustment that stops Adapter from being applied.
+  fake_brightness_monitor_.ReportUserBrightnessChangeRequested();
+  thread_bundle_.RunUntilIdle();
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
+  EXPECT_FALSE(adapter_->IsAppliedForTesting());
+
+  // Brightness is not changed after another ALS reading comes in.
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  fake_als_reader_.ReportAmbientLightUpdate(60);
+  thread_bundle_.RunUntilIdle();
+  EXPECT_EQ(test_observer_.num_changes(), 2);
+}
+
+TEST_F(AdapterTest, UserAdjustmentEffectContinue) {
+  std::map<std::string, std::string> params = default_params_;
+  params["min_seconds_between_brightness_changes"] = "1";
+  params["user_adjustment_effect"] = "2";
+
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
+       global_curve_, personal_curve_, params);
+
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
+  EXPECT_TRUE(adapter_->GetGlobalCurveForTesting());
+  EXPECT_EQ(*adapter_->GetGlobalCurveForTesting(), *global_curve_);
+  EXPECT_TRUE(adapter_->GetPersonalCurveForTesting());
+  EXPECT_EQ(*adapter_->GetPersonalCurveForTesting(), *personal_curve_);
+
+  // Forward by 1sec because in real implementation, |first_als_time_| is zero
+  // if there's no ALS reading received.
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // Brightness is changed after the 1st ALS reading comes in.
+  fake_als_reader_.ReportAmbientLightUpdate(10);
+  thread_bundle_.RunUntilIdle();
+  EXPECT_EQ(test_observer_.num_changes(), 1);
+
+  // User manual adjustment doesn't disable Adapter.
+  fake_brightness_monitor_.ReportUserBrightnessChangeRequested();
+  thread_bundle_.RunUntilIdle();
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
+  EXPECT_TRUE(adapter_->IsAppliedForTesting());
+
+  // Brightness is changed again after another ALS reading comes in.
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  fake_als_reader_.ReportAmbientLightUpdate(30);
+  thread_bundle_.RunUntilIdle();
+  EXPECT_EQ(test_observer_.num_changes(), 2);
 }
 
 }  // namespace auto_screen_brightness
