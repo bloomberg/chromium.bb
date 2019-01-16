@@ -26,11 +26,14 @@ const ContentSettingProvider = {
 let IsValid;
 
 /**
- * Stores origin information.
+ * Stores origin information. The |hasPermissionSettings| will be set to true
+ * when this origin has permissions or when there is a pattern permission
+ * affecting this origin.
  * @typedef {{origin: string,
  *            engagement: number,
  *            usage: number,
-              numCookies: number}}
+              numCookies: number,
+              hasPermissionSettings: boolean}}
  */
 let OriginInfo;
 
@@ -374,6 +377,12 @@ cr.define('settings', function() {
      * onBlockAutoplayStatusChanged.
      */
     fetchBlockAutoplayStatus() {}
+
+    /**
+     * Clears all the web storage data and cookies for a given etld+1.
+     * @param {string} etldPlus1 The etld+1 to clear data from.
+     */
+    clearEtldPlus1DataAndCookies(etldPlus1) {}
   }
 
   /**
@@ -533,6 +542,11 @@ cr.define('settings', function() {
     /** @override */
     fetchBlockAutoplayStatus() {
       chrome.send('fetchBlockAutoplayStatus');
+    }
+
+    /** @override */
+    clearEtldPlus1DataAndCookies(etldPlus1) {
+      chrome.send('clearEtldPlus1DataAndCookies', [etldPlus1]);
     }
   }
 

@@ -161,7 +161,8 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   void OnStorageFetched();
 
   // Returns a list of sites, grouped by their effective top level domain plus
-  // 1, with their cookies number and data usage information.
+  // 1, with their cookies number and data usage information. This method will
+  // only be called after HandleGetAllSites is called.
   base::Value PopulateCookiesAndUsageData(Profile* profile);
 
   // Converts a given number of bytes into a human-readable format, with data
@@ -223,6 +224,9 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
 
   BrowsingDataLocalStorageHelper* GetLocalStorageHelper();
 
+  // Clear web storage data and cookies from cookies tree model for an ETLD+1.
+  void HandleClearEtldPlus1DataAndCookies(const base::ListValue* args);
+
   void SetCookiesTreeModelForTesting(
       std::unique_ptr<CookiesTreeModel> cookies_tree_model);
 
@@ -257,6 +261,9 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
 
   // Populated every time the user reloads the All Sites page.
   std::map<std::string, std::set<std::string>> all_sites_map_;
+
+  // Store the origins that has permission settings.
+  std::set<std::string> origin_permission_set_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteSettingsHandler);
 };

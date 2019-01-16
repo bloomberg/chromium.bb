@@ -16,6 +16,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -76,6 +77,7 @@ constexpr char kReasonKey[] = "reason";
 constexpr char kEffectiveTopLevelDomainPlus1Name[] = "etldPlus1";
 constexpr char kOriginList[] = "origins";
 constexpr char kNumCookies[] = "numCookies";
+constexpr char kHasPermissionSettings[] = "hasPermissionSettings";
 constexpr char kZoom[] = "zoom";
 
 // Return an appropriate API Permission ID for the given string name.
@@ -219,6 +221,7 @@ void CreateOrAppendSiteGroupEntryForCookieHost(
 // the site engagement score for each origin.
 void ConvertSiteGroupMapToListValue(
     const std::map<std::string, std::set<std::string>>& site_group_map,
+    const std::set<std::string>& origin_permission_set,
     base::Value* list_value,
     Profile* profile) {
   DCHECK_EQ(base::Value::Type::LIST, list_value->type());
@@ -239,6 +242,9 @@ void ConvertSiteGroupMapToListValue(
           base::Value(engagement_service->GetScore(GURL(origin))));
       origin_object.SetKey("usage", base::Value(0));
       origin_object.SetKey(kNumCookies, base::Value(0));
+      origin_object.SetKey(
+          kHasPermissionSettings,
+          base::Value(base::ContainsKey(origin_permission_set, origin)));
       origin_list.GetList().emplace_back(std::move(origin_object));
     }
     site_group.SetKey(kNumCookies, base::Value(0));
@@ -400,6 +406,11 @@ void SiteSettingsHandler::RegisterMessages() {
       "fetchBlockAutoplayStatus",
       base::BindRepeating(&SiteSettingsHandler::HandleFetchBlockAutoplayStatus,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "clearEtldPlus1DataAndCookies",
+      base::BindRepeating(
+          &SiteSettingsHandler::HandleClearEtldPlus1DataAndCookies,
+          base::Unretained(this)));
 }
 
 void SiteSettingsHandler::OnJavascriptAllowed() {
@@ -716,6 +727,7 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   CHECK(args->GetList(1, &types));
 
   all_sites_map_.clear();
+  origin_permission_set_.clear();
 
   // Convert |types| to a list of ContentSettingsTypes.
   std::vector<ContentSettingsType> content_types;
@@ -753,6 +765,7 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
         if (result.source == PermissionStatusSource::MULTIPLE_DISMISSALS ||
             result.source == PermissionStatusSource::MULTIPLE_IGNORES) {
           CreateOrAppendSiteGroupEntryForUrl(&all_sites_map_, url);
+          origin_permission_set_.insert(url.spec());
           break;
         }
       }
@@ -764,9 +777,12 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
     ContentSettingsForOneType entries;
     map->GetSettingsForOneType(content_type, std::string(), &entries);
     for (const ContentSettingPatternSource& e : entries) {
-      if (PatternAppliesToSingleOrigin(e))
+      if (PatternAppliesToSingleOrigin(e)) {
         CreateOrAppendSiteGroupEntryForUrl(&all_sites_map_,
                                            GURL(e.primary_pattern.ToString()));
+        origin_permission_set_.insert(
+            GURL(e.primary_pattern.ToString()).spec());
+      }
     }
   }
 
@@ -781,7 +797,9 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   base::Value result(base::Value::Type::LIST);
 
   // Respond with currently available data.
-  ConvertSiteGroupMapToListValue(all_sites_map_, &result, profile);
+  ConvertSiteGroupMapToListValue(all_sites_map_, origin_permission_set_,
+                                 &result, profile);
+
   should_send_list_ = true;
 
   ResolveJavascriptCallback(*callback_id, result);
@@ -794,7 +812,8 @@ base::Value SiteSettingsHandler::PopulateCookiesAndUsageData(Profile* profile) {
 
   GetOriginStorage(&all_sites_map_, &origin_size_map);
   GetOriginCookies(&all_sites_map_, &origin_cookie_map);
-  ConvertSiteGroupMapToListValue(all_sites_map_, &list_value, profile);
+  ConvertSiteGroupMapToListValue(all_sites_map_, origin_permission_set_,
+                                 &list_value, profile);
 
   // Merge the origin usage and cookies number into |list_value|.
   for (base::Value& site_group : list_value.GetList()) {
@@ -1453,6 +1472,31 @@ BrowsingDataLocalStorageHelper* SiteSettingsHandler::GetLocalStorageHelper() {
   return local_storage_helper_.get();
 }
 
+void SiteSettingsHandler::HandleClearEtldPlus1DataAndCookies(
+    const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  std::string etld_plus1_string;
+  CHECK(args->GetString(0, &etld_plus1_string));
+
+  AllowJavascript();
+  CookieTreeNode* parent = cookies_tree_model_->GetRoot();
+
+  // Find all the nodes that contain the given etld+1.
+  std::vector<CookieTreeNode*> nodes_to_delete;
+  for (int i = 0; i < parent->child_count(); ++i) {
+    CookieTreeNode* node = parent->GetChild(i);
+    std::string cookie_node_etld_plus1 =
+        net::registry_controlled_domains::GetDomainAndRegistry(
+            base::UTF16ToUTF8(node->GetTitle()),
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    if (etld_plus1_string == cookie_node_etld_plus1)
+      nodes_to_delete.push_back(node);
+  }
+  for (auto* node : nodes_to_delete) {
+    cookies_tree_model_->DeleteCookieNode(node);
+  }
+}
+
 void SiteSettingsHandler::SetCookiesTreeModelForTesting(
     std::unique_ptr<CookiesTreeModel> cookies_tree_model) {
   cookies_tree_model_ = std::move(cookies_tree_model);
@@ -1461,5 +1505,4 @@ void SiteSettingsHandler::SetCookiesTreeModelForTesting(
 void SiteSettingsHandler::ClearAllSitesMapForTesting() {
   all_sites_map_.clear();
 }
-
 }  // namespace settings
