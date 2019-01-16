@@ -28,9 +28,11 @@ void AddTraceEvent(char phase,
                    const unsigned char* arg_types,
                    const unsigned long long* arg_values,
                    unsigned char flags) {
-  TRACE_EVENT_API_ADD_TRACE_EVENT(
-      phase, category_group_enabled, name, trace_event_internal::kGlobalScope,
-      id, num_args, arg_names, arg_types, arg_values, NULL, flags);
+  base::trace_event::TraceArguments args(num_args, arg_names, arg_types,
+                                         arg_values);
+  TRACE_EVENT_API_ADD_TRACE_EVENT(phase, category_group_enabled, name,
+                                  trace_event_internal::kGlobalScope, id, &args,
+                                  flags);
 }
 
 bool InitializeWebRtcModule() {

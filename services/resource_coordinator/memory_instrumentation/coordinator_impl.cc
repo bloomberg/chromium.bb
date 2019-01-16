@@ -48,7 +48,7 @@ constexpr base::TimeDelta kHeapDumpTimeout = base::TimeDelta::FromSeconds(60);
 // event.
 class StringWrapper : public base::trace_event::ConvertableToTraceFormat {
  public:
-  explicit StringWrapper(std::string json) : json_(std::move(json)) {}
+  explicit StringWrapper(std::string&& json) : json_(std::move(json)) {}
 
   void AppendAsTraceFormat(std::string* out) const override {
     out->append(json_);
@@ -552,12 +552,8 @@ void CoordinatorImpl::OnDumpProcessesForTracing(
 
     const char* char_buffer = static_cast<const char*>(mapping.get());
     std::string json(char_buffer, char_buffer + size);
-
-    const int kTraceEventNumArgs = 1;
-    const char* const kTraceEventArgNames[] = {"dumps"};
-    const unsigned char kTraceEventArgTypes[] = {TRACE_VALUE_TYPE_CONVERTABLE};
-    std::unique_ptr<base::trace_event::ConvertableToTraceFormat> wrapper(
-        new StringWrapper(std::move(json)));
+    base::trace_event::TraceArguments args(
+        "dumps", std::make_unique<StringWrapper>(std::move(json)));
 
     // Using the same id merges all of the heap dumps into a single detailed
     // dump node in the UI.
@@ -566,9 +562,7 @@ void CoordinatorImpl::OnDumpProcessesForTracing(
         base::trace_event::TraceLog::GetCategoryGroupEnabled(
             base::trace_event::MemoryDumpManager::kTraceCategory),
         "periodic_interval", trace_event_internal::kGlobalScope, dump_guid,
-        buffer_ptr->pid, kTraceEventNumArgs, kTraceEventArgNames,
-        kTraceEventArgTypes, nullptr /* arg_values */, &wrapper,
-        TRACE_EVENT_FLAG_HAS_ID);
+        buffer_ptr->pid, &args, TRACE_EVENT_FLAG_HAS_ID);
   }
 
   FinalizeGlobalMemoryDumpIfAllManagersReplied();
