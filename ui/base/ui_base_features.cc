@@ -178,4 +178,8 @@ bool IsOzoneDrmMojo() {
 
 const base::Feature kDarkMode = {"DarkMode", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_CHROMEOS)
+const base::Feature kHandwritingGesture = {"HandwritingGesture",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 }  // namespace features

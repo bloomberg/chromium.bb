@@ -3196,6 +3196,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableVirtualKeyboardUkmName,
      flag_descriptions::kEnableVirtualKeyboardUkmDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kEnableVirtualKeyboardUkm)},
+    {"handwriting-gesture", flag_descriptions::kHandwritingGestureName,
+     flag_descriptions::kHandwritingGestureDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kHandwritingGesture)},
 #endif  // OS_CHROMEOS
 
 #if !defined(OS_ANDROID)

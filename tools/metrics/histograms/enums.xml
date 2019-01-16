@@ -30260,6 +30260,7 @@ from previous Chrome versions.
   <int value="-2113705745"
       label="CrossOriginMediaPlaybackRequiresUserGesture:enabled"/>
   <int value="-2108564200" label="AutofillUpstream:disabled"/>
+  <int value="-2104950596" label="HandwritingGesture:enabled"/>
   <int value="-2101682955" label="EnableNotificationIndicator:enabled"/>
   <int value="-2099457894" label="Mash:enabled"/>
   <int value="-2099035488" label="enable-data-reduction-proxy-bypass-warning"/>
@@ -31227,6 +31228,7 @@ from previous Chrome versions.
   <int value="-488779992" label="blink-settings"/>
   <int value="-482259889" label="MacMDDownloadShelf:disabled"/>
   <int value="-478462945" label="enable-ephemeral-apps"/>
+  <int value="-477101783" label="HandwritingGesture:disabled"/>
   <int value="-475049740" label="disable-vr-shell"/>
   <int value="-474806100" label="DataReductionProxyMainMenu:enabled"/>
   <int value="-474322576" label="disable-quick-unlock-pin"/>

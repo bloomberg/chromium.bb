@@ -1094,6 +1094,10 @@ const char kViewsCastDialogDescription[] =
     "#views-browser-windows on Mac. This feature is activated if either this "
     "flag or #upcoming-ui-features is enabled";
 
+const char kHandwritingGestureName[] = "Handwriting Gestures";
+const char kHandwritingGestureDescription[] =
+    "Enables handwriting gestures within the virtual keyboard";
+
 const char kHideActiveAppsFromShelfName[] =
     "Hide running apps (that are not pinned) from the shelf";
 const char kHideActiveAppsFromShelfDescription[] =
