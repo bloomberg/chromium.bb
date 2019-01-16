@@ -714,39 +714,36 @@ TEST_F(NetworkSessionConfiguratorTest, HostRules) {
 }
 
 TEST_F(NetworkSessionConfiguratorTest, DefaultCacheBackend) {
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
 #if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   EXPECT_EQ(net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE,
-            ChooseCacheType(command_line));
+            ChooseCacheType());
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   EXPECT_EQ(
       base::mac::IsAtLeastOS10_14()
           ? net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE
           : net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE,
-      ChooseCacheType(command_line));
+      ChooseCacheType());
 #else
   EXPECT_EQ(net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE,
-            ChooseCacheType(command_line));
+            ChooseCacheType());
 #endif
 }
 
 TEST_F(NetworkSessionConfiguratorTest, SimpleCacheTrialExperimentYes) {
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial", "ExperimentYes");
   EXPECT_EQ(net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE,
-            ChooseCacheType(command_line));
+            ChooseCacheType());
 }
 
 TEST_F(NetworkSessionConfiguratorTest, SimpleCacheTrialDisable) {
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial", "Disable");
 #if !defined(OS_ANDROID)
   EXPECT_EQ(net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE,
-            ChooseCacheType(command_line));
+            ChooseCacheType());
 #else  // defined(OS_ANDROID)
   // Android always uses the simple cache.
   EXPECT_EQ(net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE,
-            ChooseCacheType(command_line));
+            ChooseCacheType());
 #endif
 }
 

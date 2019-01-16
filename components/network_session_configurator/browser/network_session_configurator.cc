@@ -637,8 +637,7 @@ void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
   }
 }
 
-net::URLRequestContextBuilder::HttpCacheParams::Type ChooseCacheType(
-    const base::CommandLine& command_line) {
+net::URLRequestContextBuilder::HttpCacheParams::Type ChooseCacheType() {
 #if !defined(OS_ANDROID)
   const std::string experiment_name =
       base::FieldTrialList::FindFullName("SimpleCacheTrial");

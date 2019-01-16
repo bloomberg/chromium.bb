@@ -1736,8 +1736,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
           net::URLRequestContextBuilder::HttpCacheParams::IN_MEMORY;
     } else {
       cache_params.path = *params_->http_cache_path;
-      cache_params.type = network_session_configurator::ChooseCacheType(
-          *base::CommandLine::ForCurrentProcess());
+      cache_params.type = network_session_configurator::ChooseCacheType();
     }
 
 #if defined(OS_ANDROID)

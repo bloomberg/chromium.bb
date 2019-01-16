@@ -32,8 +32,7 @@ void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
 
 // Returns the URLRequestContextBuilder::HttpCacheParams::Type that the disk
 // cache should use.
-net::URLRequestContextBuilder::HttpCacheParams::Type ChooseCacheType(
-    const base::CommandLine& command_line);
+net::URLRequestContextBuilder::HttpCacheParams::Type ChooseCacheType();
 
 }  // namespace network_session_configurator
 
