@@ -29,7 +29,8 @@ IOSProfileSessionDurationsServiceFactory::GetForBrowserState(
 // static
 IOSProfileSessionDurationsServiceFactory*
 IOSProfileSessionDurationsServiceFactory::GetInstance() {
-  return base::Singleton<IOSProfileSessionDurationsServiceFactory>::get();
+  static base::NoDestructor<IOSProfileSessionDurationsServiceFactory> instance;
+  return instance.get();
 }
 
 IOSProfileSessionDurationsServiceFactory::
