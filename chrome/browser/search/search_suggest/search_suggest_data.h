@@ -20,6 +20,10 @@ struct SearchSuggestData {
 
   // The HTML for the search suggestions.
   std::string suggestions_html;
+
+  // Javascript for search suggestion that should be appended at the end of the
+  // New Tab Page <body>.
+  std::string end_of_body_script;
 };
 
 bool operator==(const SearchSuggestData& lhs, const SearchSuggestData& rhs);
