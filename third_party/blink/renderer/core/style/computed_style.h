@@ -2129,13 +2129,9 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Whitespace utility functions.
-  static bool Is(EWhiteSpace a, EWhiteSpace b) {
-    return static_cast<unsigned>(a) & static_cast<unsigned>(b);
-  }
-  static bool IsNot(EWhiteSpace a, EWhiteSpace b) { return !Is(a, b); }
   static bool AutoWrap(EWhiteSpace ws) {
     // Nowrap and pre don't automatically wrap.
-    return IsNot(ws, EWhiteSpace::kNowrap | EWhiteSpace::kPre);
+    return ws != EWhiteSpace::kNowrap && ws != EWhiteSpace::kPre;
   }
 
   bool AutoWrap() const { return AutoWrap(WhiteSpace()); }
@@ -2153,8 +2149,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   static bool CollapseWhiteSpace(EWhiteSpace ws) {
     // Pre and prewrap do not collapse whitespace.
-    return IsNot(ws, EWhiteSpace::kPre | EWhiteSpace::kPreWrap |
-                         EWhiteSpace::kBreakSpaces);
+    return ws != EWhiteSpace::kPre && ws != EWhiteSpace::kPreWrap;
   }
 
   bool CollapseWhiteSpace() const { return CollapseWhiteSpace(WhiteSpace()); }
@@ -2170,15 +2165,15 @@ class ComputedStyle : public ComputedStyleBase,
     return false;
   }
   bool BreakOnlyAfterWhiteSpace() const {
-    return Is(WhiteSpace(),
-              EWhiteSpace::kPreWrap | EWhiteSpace::kBreakSpaces) ||
+    return WhiteSpace() == EWhiteSpace::kPreWrap ||
            GetLineBreak() == LineBreak::kAfterWhiteSpace;
   }
 
   bool BreakWords() const {
     return (WordBreak() == EWordBreak::kBreakWord ||
             OverflowWrap() == EOverflowWrap::kBreakWord) &&
-           IsNot(WhiteSpace(), EWhiteSpace::kPre | EWhiteSpace::kNowrap);
+           WhiteSpace() != EWhiteSpace::kPre &&
+           WhiteSpace() != EWhiteSpace::kNowrap;
   }
 
   // Text direction utility functions.
