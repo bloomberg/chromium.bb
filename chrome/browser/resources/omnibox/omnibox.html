@@ -147,25 +147,25 @@
                placeholder="Enter filter (e.g. 'google', 'is:star', 'not:del') [Alt+G]"
                title="Checks each cell individually; i.e. filter text should not span multiple columns. Supports fuzzyness; each character of filter text must be present in the cell, either adjacent to the previous matched character, or at the start of a new word. Words are defined as being delimited by either capital letters, groups of digits, or non alpha characters. E.g. 'abc' matches 'abc', 'a big cat', 'a-bigCat', 'a very big cat', and 'an amBer cat'; but does not match 'abigcat' or 'an amber cat'. 'green rainbow' is matched by 'gre rain', but not by 'gre bow'. One exception is the first character, which may be matched mid-word. E.g. 'een rain' can also match 'green rainbow'. Boolean properties can be searched for via the property name prefixed by 'is:' or 'not:'. Boolean property names are: 'Can Be Default', 'Starred', 'Has Tab Match', 'Del', 'Prev', and 'Done'.">
         <div class="row">
-          <span id="copy-text" class="button"
+          <span id="copy-text" class="button" accesskey="x"
                 title="Copy visible table in text format. This is affected by the visibility of ouput; i.e. toggling 'Show all details' affects what will be copied.">
             <i class="icon copy-icon"></i>
-            <span>Copy as text</span>
+            <span>Copy as te<span class="accesskey">x</span>t</span>
           </span>
         </div>
         <div class="row">
-          <span id="download-json" class="button"
+          <span id="download-json" class="button" accesskey="n"
                 title="Download responses in JSON format. This is not affected by the visibility of output and will include responses in their entirety as well as query and display inputs.">
             <i class="icon copy-icon"></i>
-            <span>Download as JSON</span>
+            <span>Dow<span class="accesskey">n</span>load as JSON</span>
           </span>
         </div>
         <div class="row">
           <label id="import-json" class="icon-button button drag-container"
-                 title="Import JSON">
+                 accesskey="m" title="Import JSON">
             <input id="import-json-input" type="file" accept=".json">
             <i class="icon copy-icon"></i>
-            <span>Import JSON</span>
+            <span>I<span class="accesskey">m</span>port JSON</span>
           </label>
         </div>
         <div id="imported-warning" class="row" hidden>
