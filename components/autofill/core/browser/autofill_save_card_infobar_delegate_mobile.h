@@ -38,7 +38,8 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
           upload_save_card_prompt_callback,
       AutofillClient::LocalSaveCardPromptCallback
           local_save_card_prompt_callback,
-      PrefService* pref_service);
+      PrefService* pref_service,
+      bool is_off_the_record);
 
   ~AutofillSaveCardInfoBarDelegateMobile() override;
 
@@ -115,6 +116,9 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
 
   // The legal messages to show in the content of the infobar.
   LegalMessageLines legal_messages_;
+
+  // Whether the save is offered while off the record
+  bool is_off_the_record_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillSaveCardInfoBarDelegateMobile);
 };

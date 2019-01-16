@@ -34,7 +34,8 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
     AutofillClient::UploadSaveCardPromptCallback
         upload_save_card_prompt_callback,
     AutofillClient::LocalSaveCardPromptCallback local_save_card_prompt_callback,
-    PrefService* pref_service)
+    PrefService* pref_service,
+    bool is_off_the_record)
     : ConfirmInfoBarDelegate(),
       upload_(upload),
       should_request_name_from_user_(should_request_name_from_user),
@@ -48,7 +49,8 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
       card_label_(card.NetworkAndLastFourDigits()),
       card_sub_label_(card.AbbreviatedExpirationDateForDisplay(
           !features::IsAutofillSaveCardDialogUnlabeledExpirationDateEnabled())),
-      card_last_four_digits_(card.LastFourDigits()) {
+      card_last_four_digits_(card.LastFourDigits()),
+      is_off_the_record_(is_off_the_record) {
   DCHECK_EQ(upload, !upload_save_card_prompt_callback_.is_null());
   DCHECK_EQ(upload, local_save_card_prompt_callback_.is_null());
 
@@ -101,7 +103,7 @@ base::string16 AutofillSaveCardInfoBarDelegateMobile::GetDescriptionText()
     return base::string16();
 
   bool offer_to_save_on_device_message =
-      OfferStoreUnmaskedCards() &&
+      OfferStoreUnmaskedCards(is_off_the_record_) &&
       !IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled();
   return l10n_util::GetStringUTF16(
       offer_to_save_on_device_message

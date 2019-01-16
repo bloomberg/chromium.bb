@@ -311,7 +311,8 @@ void CreditCardSaveManager::OnDidUploadCard(
   if (result == AutofillClient::SUCCESS) {
     // If the upload succeeds and we can store unmasked cards on this OS, we
     // will keep a copy of the card as a full server card on the device.
-    if (!server_id.empty() && OfferStoreUnmaskedCards() &&
+    if (!server_id.empty() &&
+        OfferStoreUnmaskedCards(payments_client_->is_off_the_record()) &&
         !IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled()) {
       upload_request_.card.set_record_type(CreditCard::FULL_SERVER_CARD);
       upload_request_.card.SetServerStatus(CreditCard::OK);

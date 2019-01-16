@@ -241,7 +241,8 @@ base::string16 SaveCardBubbleControllerImpl::GetExplanatoryMessage() const {
     return base::string16();
 
   bool offer_to_save_on_device_message =
-      OfferStoreUnmaskedCards() &&
+      OfferStoreUnmaskedCards(
+          web_contents_->GetBrowserContext()->IsOffTheRecord()) &&
       !IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled();
   if (should_request_name_from_user_) {
     return l10n_util::GetStringUTF16(
