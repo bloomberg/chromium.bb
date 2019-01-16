@@ -70,8 +70,7 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
   bool IsReady() const override;
   bool IsExternal() const override { return is_external_; }
   bool WasCanceled() const override;
-  bool StartStreamingIfPossible(base::OnceClosure) override;
-  bool IsCurrentlyStreaming() const override;
+  void StartStreamingIfPossible() override;
   KURL UrlForTracing() const override;
   void DisposeInternal() override;
 
@@ -128,22 +127,6 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
 
   // The request is intervened by document.write() intervention.
   bool intervened_ = false;
-
-  base::OnceClosure streamer_done_;
-
-  // This flag tracks whether streamer_ is currently streaming. It is used
-  // mainly to prevent re-streaming a script while it is being streamed.
-  //
-  // ReadyState unfortunately doesn't contain this information, because
-  // 1, the WaitingFor* states can occur with or without streaming, and
-  // 2, during the state transition, we need to first transition ready_state_,
-  //    then run callbacks, and only then consider the streaming done. So
-  //    during AdvanceReadyState and callback processing, the ready state
-  //    and is_currently_streaming_ are temporarily different. (They must
-  //    be consistent before and after AdvanceReadyState.)
-  //
-  // (See also: crbug.com/754360)
-  bool is_currently_streaming_;
 
   // Specifies the reason that script was never streamed.
   ScriptStreamer::NotStreamingReason not_streamed_reason_;

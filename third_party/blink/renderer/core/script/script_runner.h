@@ -60,7 +60,6 @@ class CORE_EXPORT ScriptRunner final
   void Suspend();
   void Resume();
   void NotifyScriptReady(PendingScript*);
-  void NotifyScriptStreamerFinished();
 
   static void MovePendingScript(Document&, Document&, ScriptLoader*);
 
@@ -86,11 +85,6 @@ class CORE_EXPORT ScriptRunner final
 
   void ExecuteTask();
 
-  // Try to start streaming a specific script or any available script.
-  void TryStream(PendingScript*);
-  void TryStreamAny();
-  bool DoTryStream(PendingScript*);  // Implementation for both Try* methods.
-
   Member<Document> document_;
 
   HeapDeque<TraceWrapperMember<PendingScript>> pending_in_order_scripts_;
@@ -110,9 +104,8 @@ class CORE_EXPORT ScriptRunner final
 #ifndef NDEBUG
   // We expect to have one posted task in flight for each script in either
   // .._to_be_executed_soon_ queue. This invariant will be temporarily violated
-  // when the ScriptRunner is suspended, or when we take a Script out the
-  // async_scripts_to_be_executed_soon_ queue for streaming. We'll use this
-  // variable to account & check this invariant for debugging.
+  // when the ScriptRunner is suspended. We'll use this variable to account &
+  // check this invariant for debugging.
   int number_of_extra_tasks_ = 0;
 #endif
   DISALLOW_COPY_AND_ASSIGN(ScriptRunner);
