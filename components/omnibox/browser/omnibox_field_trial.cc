@@ -131,6 +131,12 @@ const base::Feature kOmniboxTabSwitchSuggestions{
 #endif
 };
 
+// Feature used to reverse the sense of the tab switch button. Selecting the
+// suggestion will switch to the tab, while the button will navigate
+// locally.
+const base::Feature kOmniboxReverseTabSwitchLogic{
+    "OmniboxReverseTabSwitchLogic", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to enable various experiments on keyword mode, UI and
 // suggestions.
 const base::Feature kExperimentalKeywordMode{"ExperimentalKeywordMode",
@@ -785,6 +791,10 @@ bool OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions) ||
          base::FeatureList::IsEnabled(features::kExperimentalUi);
 #endif
+}
+
+bool OmniboxFieldTrial::IsTabSwitchLogicReversed() {
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxReverseTabSwitchLogic);
 }
 
 OmniboxFieldTrial::PedalSuggestionMode

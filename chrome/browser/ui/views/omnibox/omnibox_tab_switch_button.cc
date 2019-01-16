@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -153,7 +154,12 @@ void OmniboxTabSwitchButton::ProvideFocusHint() {
 }
 
 void OmniboxTabSwitchButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->SetName(l10n_util::GetStringUTF8(IDS_ACC_TAB_SWITCH_BUTTON));
+  if (!OmniboxFieldTrial::IsTabSwitchLogicReversed())
+    node_data->SetName(l10n_util::GetStringUTF8(IDS_ACC_TAB_SWITCH_BUTTON));
+  else
+    // TODO(krb): Internationalize when feature is final.
+    node_data->SetName(base::ASCIIToUTF16(
+        AutocompleteMatchType::kAlternateTabSwitchButtonMessage));
   // Although this appears visually as a button, expose as a list box option so
   // that it matches the other options within its list box container.
   node_data->role = ax::mojom::Role::kListBoxOption;
