@@ -81,9 +81,21 @@ class VideoPlayer {
   bool WaitForEvent(VideoPlayerEvent event,
                     size_t times = 1,
                     base::TimeDelta max_wait = kDefaultTimeout);
+  // Helper function to wait for a FlushDone event.
+  bool WaitForFlushDone();
+  // Helper function to wait for a ResetDone event.
+  bool WaitForResetDone();
+  // Helper function to wait for the specified number of FrameDecoded events.
+  bool WaitForFrameDecoded(size_t times);
 
   // Get the number of times the specified event occurred.
   size_t GetEventCount(VideoPlayerEvent event) const;
+  // Helper function to get the number of ResetDone events thrown.
+  size_t GetResetDoneCount() const;
+  // Helper function to get the number of FlushDone events thrown.
+  size_t GetFlushDoneCount() const;
+  // Helper function to get the number of FrameDecoded events thrown.
+  size_t GetFrameDecodedCount() const;
 
  private:
   VideoPlayer();

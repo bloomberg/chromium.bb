@@ -131,13 +131,6 @@ VideoPlayerState VideoPlayer::GetState() const {
   return video_player_state_;
 }
 
-size_t VideoPlayer::GetEventCount(VideoPlayerEvent event) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  base::AutoLock auto_lock(event_lock_);
-  return video_player_event_counts_[static_cast<size_t>(event)];
-}
-
 bool VideoPlayer::WaitForEvent(VideoPlayerEvent event,
                                size_t times,
                                base::TimeDelta max_wait) {
@@ -169,6 +162,37 @@ bool VideoPlayer::WaitForEvent(VideoPlayerEvent event,
     if (time_waiting >= max_wait)
       return false;
   }
+}
+
+bool VideoPlayer::WaitForFlushDone() {
+  return WaitForEvent(VideoPlayerEvent::kFlushDone);
+}
+
+bool VideoPlayer::WaitForResetDone() {
+  return WaitForEvent(VideoPlayerEvent::kResetDone);
+}
+
+bool VideoPlayer::WaitForFrameDecoded(size_t times) {
+  return WaitForEvent(VideoPlayerEvent::kFrameDecoded, times);
+}
+
+size_t VideoPlayer::GetEventCount(VideoPlayerEvent event) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  base::AutoLock auto_lock(event_lock_);
+  return video_player_event_counts_[static_cast<size_t>(event)];
+}
+
+size_t VideoPlayer::GetFlushDoneCount() const {
+  return GetEventCount(VideoPlayerEvent::kFlushDone);
+}
+
+size_t VideoPlayer::GetResetDoneCount() const {
+  return GetEventCount(VideoPlayerEvent::kResetDone);
+}
+
+size_t VideoPlayer::GetFrameDecodedCount() const {
+  return GetEventCount(VideoPlayerEvent::kFrameDecoded);
 }
 
 void VideoPlayer::NotifyEvent(VideoPlayerEvent event) {
