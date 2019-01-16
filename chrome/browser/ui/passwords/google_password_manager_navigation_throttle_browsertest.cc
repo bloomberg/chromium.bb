@@ -24,8 +24,8 @@
 #include "url/url_canon_stdstring.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/signin/core/browser/signin_manager_base.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #endif
 
 namespace {
@@ -78,10 +78,10 @@ class GooglePasswordManagerNavigationThrottleTest : public SyncTest {
 
     std::string username;
 #if defined(OS_CHROMEOS)
-    // In browser tests, the profile may already by authenticated with stub
+    // In browser tests, the profile may already be authenticated with stub
     // account |user_manager::kStubUserEmail|.
-    AccountInfo info = SigninManagerFactory::GetForProfile(profile)
-                           ->GetAuthenticatedAccountInfo();
+    AccountInfo info =
+        IdentityManagerFactory::GetForProfile(profile)->GetPrimaryAccountInfo();
     username = info.email;
 #endif
     if (username.empty())
