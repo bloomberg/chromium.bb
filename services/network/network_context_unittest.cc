@@ -713,8 +713,7 @@ TEST_F(NetworkContextTest, DiskCache) {
   ASSERT_TRUE(backend);
 
   EXPECT_EQ(net::DISK_CACHE, backend->GetCacheType());
-  EXPECT_EQ(network_session_configurator::ChooseCacheType(
-                *base::CommandLine::ForCurrentProcess()),
+  EXPECT_EQ(network_session_configurator::ChooseCacheType(),
             GetBackendType(backend));
 }
 

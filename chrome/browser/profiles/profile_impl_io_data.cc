@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -93,8 +92,8 @@ namespace {
 // TODO(mmenke): Once all URLRequestContexts are set up using
 // URLRequestContextBuilders, and the media URLRequestContext is take care of
 // (In one way or another), this should be removed.
-net::BackendType ChooseCacheBackendType(const base::CommandLine& command_line) {
-  switch (network_session_configurator::ChooseCacheType(command_line)) {
+net::BackendType ChooseCacheBackendType() {
+  switch (network_session_configurator::ChooseCacheType()) {
     case net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE:
       return net::CACHE_BACKEND_BLOCKFILE;
     case net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE:
@@ -513,10 +512,9 @@ net::URLRequestContext* ProfileImplIOData::InitializeMediaRequestContext(
 
   // Use a separate HTTP disk cache for isolated apps.
   std::unique_ptr<net::HttpCache::BackendFactory> media_backend(
-      new net::HttpCache::DefaultBackend(
-          net::MEDIA_CACHE,
-          ChooseCacheBackendType(*base::CommandLine::ForCurrentProcess()),
-          cache_path, cache_max_size));
+      new net::HttpCache::DefaultBackend(net::MEDIA_CACHE,
+                                         ChooseCacheBackendType(), cache_path,
+                                         cache_max_size));
   std::unique_ptr<net::HttpCache> media_http_cache = CreateHttpFactory(
       main_request_context()->http_transaction_factory(),
       std::move(media_backend));
