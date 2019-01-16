@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #import "ios/chrome/browser/ui/broadcaster/chrome_broadcast_observer_bridge.h"
+#import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 
 class FullscreenModelObserver;
 
@@ -161,6 +162,10 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
   // and toolbar height.
   void UpdateProgress();
 
+  // Updates the disabled counter depending on the current values of
+  // |scroll_view_height_| and |content_height_|.
+  void UpdateDisabledCounterForContentHeight();
+
   // Setter for |progress_|.  Notifies observers of the new value if
   // |notify_observers| is true.
   void SetProgress(CGFloat progress);
@@ -199,6 +204,8 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
   CGFloat top_inset_ = 0.0;
   // How many currently-running features require the toolbar be visible.
   size_t disabled_counter_ = 0;
+  // Whether fullscreen is disabled for short content.
+  bool disabled_for_short_content_ = false;
   // Whether the main content is being scrolled.
   bool scrolling_ = false;
   // Whether the scroll view is zooming.

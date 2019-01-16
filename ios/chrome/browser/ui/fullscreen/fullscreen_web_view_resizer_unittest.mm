@@ -34,8 +34,8 @@ class FullscreenWebViewResizerTest : public PlatformTest {
     _model.SetExpandedToolbarHeight(kTopToolbarExpandedHeight);
     _model.SetCollapsedToolbarHeight(kTopToolbarCollapsedHeight);
     _model.SetBottomToolbarHeight(kBottomToolbarHeight);
-    _model.SetScrollViewHeight(700);
     _model.SetContentHeight(1000);
+    _model.SetScrollViewHeight(700);
     _model.SetScrollViewIsScrolling(true);
     _model.SetYContentOffset(10);
 

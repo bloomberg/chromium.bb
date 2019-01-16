@@ -128,6 +128,7 @@ CGFloat FullscreenModel::GetBottomToolbarHeight() const {
 
 void FullscreenModel::SetScrollViewHeight(CGFloat scroll_view_height) {
   scroll_view_height_ = scroll_view_height;
+  UpdateDisabledCounterForContentHeight();
 }
 
 CGFloat FullscreenModel::GetScrollViewHeight() const {
@@ -136,6 +137,7 @@ CGFloat FullscreenModel::GetScrollViewHeight() const {
 
 void FullscreenModel::SetContentHeight(CGFloat content_height) {
   content_height_ = content_height;
+  UpdateDisabledCounterForContentHeight();
 }
 
 CGFloat FullscreenModel::GetContentHeight() const {
@@ -252,13 +254,24 @@ FullscreenModel::ScrollAction FullscreenModel::ActionForScrollFromOffset(
                            : ScrollAction::kUpdateBaseOffsetAndProgress;
 }
 
+void FullscreenModel::UpdateBaseOffset() {
+  base_offset_ = y_content_offset_ - (1.0 - progress_) * toolbar_height_delta();
+}
+
 void FullscreenModel::UpdateProgress() {
   CGFloat delta = base_offset_ - y_content_offset_;
   SetProgress(1.0 + delta / toolbar_height_delta());
 }
 
-void FullscreenModel::UpdateBaseOffset() {
-  base_offset_ = y_content_offset_ - (1.0 - progress_) * toolbar_height_delta();
+void FullscreenModel::UpdateDisabledCounterForContentHeight() {
+  bool disable = content_height_ < scroll_view_height_;
+  if (disabled_for_short_content_ == disable)
+    return;
+  disabled_for_short_content_ = disable;
+  if (disable)
+    IncrementDisabledCounter();
+  else
+    DecrementDisabledCounter();
 }
 
 void FullscreenModel::SetProgress(CGFloat progress) {
