@@ -491,7 +491,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   bool HasAutoHeightOrContainingBlockWithAutoHeight(
       RegisterPercentageDescendant = kRegisterPercentageDescendant) const;
   LayoutBlock* ContainingBlockForAutoHeightDetection(
-      Length logical_height) const;
+      const Length& logical_height) const;
 
   void AddOutlineRectsForNormalChildren(Vector<LayoutRect>&,
                                         const LayoutPoint& additional_offset,

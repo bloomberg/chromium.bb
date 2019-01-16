@@ -527,7 +527,7 @@ void GridTrackSizingAlgorithmStrategy::DistributeSpaceToTracks(
 
 LayoutUnit GridTrackSizingAlgorithmStrategy::MinLogicalWidthForChild(
     LayoutBox& child,
-    Length child_min_size,
+    const Length& child_min_size,
     LayoutUnit available_size) const {
   return child.ComputeLogicalWidthUsing(kMinSize, child_min_size,
                                         available_size, GetLayoutGrid()) +

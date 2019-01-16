@@ -1689,7 +1689,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       LogicalExtentComputedValues&) const;
   void ComputePositionedLogicalWidthUsing(
       SizeType,
-      Length logical_width,
+      const Length& logical_width,
       const LayoutBoxModelObject* container_block,
       TextDirection container_direction,
       LayoutUnit container_logical_width,

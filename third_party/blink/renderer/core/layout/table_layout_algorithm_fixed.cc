@@ -98,7 +98,7 @@ int TableLayoutAlgorithmFixed::CalcWidthArray() {
     if (col->IsTableColumnGroupWithColumnChildren())
       continue;
 
-    Length col_style_logical_width = col->StyleRef().LogicalWidth();
+    const Length& col_style_logical_width = col->StyleRef().LogicalWidth();
     int effective_col_width = 0;
     if (col_style_logical_width.IsFixed() &&
         col_style_logical_width.Value() > 0)
@@ -196,7 +196,7 @@ void TableLayoutAlgorithmFixed::ComputeIntrinsicLogicalWidths(
 void TableLayoutAlgorithmFixed::ApplyPreferredLogicalWidthQuirks(
     LayoutUnit& min_width,
     LayoutUnit& max_width) const {
-  Length table_logical_width = table_->StyleRef().LogicalWidth();
+  const Length& table_logical_width = table_->StyleRef().LogicalWidth();
   if (table_logical_width.IsFixed() && table_logical_width.IsPositive()) {
     min_width = max_width = LayoutUnit(
         max(min_width,

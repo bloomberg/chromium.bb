@@ -1584,8 +1584,8 @@ static inline void AdjustMarginForInlineReplaced(LayoutObject* child,
                                                  LayoutUnit& child_max) {
   // Inline replaced elts add in their margins to their min/max values.
   const ComputedStyle& child_style = child->StyleRef();
-  Length start_margin = child_style.MarginStart();
-  Length end_margin = child_style.MarginEnd();
+  const Length& start_margin = child_style.MarginStart();
+  const Length& end_margin = child_style.MarginEnd();
   LayoutUnit margins;
   if (start_margin.IsFixed())
     margins += AdjustFloatForSubPixelLayout(start_margin.Value());

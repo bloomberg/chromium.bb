@@ -303,8 +303,8 @@ static LayoutUnit MarginWidthForChild(LayoutBox* child) {
   // A margin basically has three types: fixed, percentage, and auto (variable).
   // Auto and percentage margins simply become 0 when computing min/max width.
   // Fixed margins can be added in as is.
-  Length margin_left = child->StyleRef().MarginLeft();
-  Length margin_right = child->StyleRef().MarginRight();
+  const Length& margin_left = child->StyleRef().MarginLeft();
+  const Length& margin_right = child->StyleRef().MarginRight();
   LayoutUnit margin;
   if (margin_left.IsFixed())
     margin += margin_left.Value();

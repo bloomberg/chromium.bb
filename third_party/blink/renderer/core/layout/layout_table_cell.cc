@@ -139,7 +139,7 @@ void LayoutTableCell::ColSpanOrRowSpanChanged() {
 
 Length LayoutTableCell::LogicalWidthFromColumns(
     LayoutTableCol* first_col_for_this_cell,
-    Length width_from_style) const {
+    const Length& width_from_style) const {
   DCHECK(first_col_for_this_cell);
   DCHECK_EQ(first_col_for_this_cell,
             Table()
@@ -150,7 +150,7 @@ Length LayoutTableCell::LogicalWidthFromColumns(
   unsigned col_span_count = ColSpan();
   int col_width_sum = 0;
   for (unsigned i = 1; i <= col_span_count; i++) {
-    Length col_width = table_col->StyleRef().LogicalWidth();
+    const Length& col_width = table_col->StyleRef().LogicalWidth();
 
     // Percentage value should be returned only for colSpan == 1.
     // Otherwise we return original width for the cell.

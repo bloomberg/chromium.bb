@@ -390,7 +390,7 @@ bool LayoutBlockFlow::CheckIfIsSelfCollapsingBlock() const {
       StyleRef().MarginAfterCollapse() == EMarginCollapse::kSeparate)
     return false;
 
-  Length logical_height_length = StyleRef().LogicalHeight();
+  const Length& logical_height_length = StyleRef().LogicalHeight();
   bool has_auto_height = logical_height_length.IsAuto();
   if (logical_height_length.IsPercentOrCalc() &&
       !GetDocument().InQuirksMode()) {
