@@ -267,8 +267,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
 
     ASSERT_EQ(1u, routes.size());
-    // TODO(https://crbug.com/867935): Replace with operator== / EXPECT_TRUE.
-    EXPECT_TRUE(routes[0].Equals(*route_));
+    EXPECT_EQ(routes[0], *route_);
   }
 
   // Note: |TestSendCustomDialLaunchMessage()| must be called first.

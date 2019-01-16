@@ -128,8 +128,8 @@ TEST_F(MediaRouterBaseTest, GetCurrentRoutes) {
   routes_observer_->OnRoutesUpdated(routes, joinable_route_ids);
   std::vector<MediaRoute> current_routes = router_.GetCurrentRoutes();
   ASSERT_EQ(current_routes.size(), 2u);
-  EXPECT_TRUE(current_routes[0].Equals(route1));
-  EXPECT_TRUE(current_routes[1].Equals(route2));
+  EXPECT_EQ(current_routes[0], route1);
+  EXPECT_EQ(current_routes[1], route2);
 
   routes_observer_->OnRoutesUpdated(std::vector<MediaRoute>(),
                                     std::vector<MediaRoute::Id>());

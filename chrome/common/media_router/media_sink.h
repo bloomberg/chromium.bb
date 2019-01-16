@@ -84,10 +84,6 @@ class MediaSink {
   // solely on the icon type, is not guaranteed to be correct 100% of the time.
   bool IsMaybeCloudSink() const;
 
-  // This method only compares IDs.
-  bool Equals(const MediaSink& other) const;
-
-  // This method compares all fields.
   bool operator==(const MediaSink& other) const;
   bool operator!=(const MediaSink& other) const;
 
