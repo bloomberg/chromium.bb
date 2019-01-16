@@ -735,10 +735,6 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
 // fullscreen control popup doesn't show up).
 IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
                        LockedFullscreenDisablesImmersive) {
-  // TODO(crbug.com/912191): pinning by setting the window property doesn't work
-  // in Mash.
-  if (features::IsSingleProcessMash())
-    return;
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   EXPECT_FALSE(browser_view->GetWidget()->IsFullscreen());
 
