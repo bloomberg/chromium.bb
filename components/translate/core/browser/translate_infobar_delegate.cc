@@ -149,12 +149,7 @@ bool TranslateInfoBarDelegate::IsTranslatableLanguageByPrefs() const {
 }
 
 void TranslateInfoBarDelegate::ToggleTranslatableLanguageByPrefs() {
-  if (ui_delegate_.IsLanguageBlocked()) {
-    ui_delegate_.SetLanguageBlocked(false);
-  } else {
-    ui_delegate_.SetLanguageBlocked(true);
-    infobar()->RemoveSelf();
-  }
+  ui_delegate_.SetLanguageBlocked(!ui_delegate_.IsLanguageBlocked());
 }
 
 bool TranslateInfoBarDelegate::IsSiteBlacklisted() const {
@@ -162,12 +157,7 @@ bool TranslateInfoBarDelegate::IsSiteBlacklisted() const {
 }
 
 void TranslateInfoBarDelegate::ToggleSiteBlacklist() {
-  if (ui_delegate_.IsSiteBlacklisted()) {
-    ui_delegate_.SetSiteBlacklist(false);
-  } else {
-    ui_delegate_.SetSiteBlacklist(true);
-    infobar()->RemoveSelf();
-  }
+  ui_delegate_.SetSiteBlacklist(!ui_delegate_.IsSiteBlacklisted());
 }
 
 bool TranslateInfoBarDelegate::ShouldAlwaysTranslate() const {
