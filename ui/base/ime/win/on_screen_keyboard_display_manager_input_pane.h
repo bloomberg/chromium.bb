@@ -29,7 +29,7 @@ class OnScreenKeyboardTest;
 class UI_BASE_IME_EXPORT OnScreenKeyboardDisplayManagerInputPane final
     : public InputMethodKeyboardController {
  public:
-  OnScreenKeyboardDisplayManagerInputPane(HWND hwnd);
+  explicit OnScreenKeyboardDisplayManagerInputPane(HWND hwnd);
   ~OnScreenKeyboardDisplayManagerInputPane() override;
 
   // InputMethodKeyboardController:
@@ -40,39 +40,24 @@ class UI_BASE_IME_EXPORT OnScreenKeyboardDisplayManagerInputPane final
   bool IsKeyboardVisible() override;
 
   void SetInputPaneForTesting(
-      ABI::Windows::UI::ViewManagement::IInputPane* pane);
+      Microsoft::WRL::ComPtr<ABI::Windows::UI::ViewManagement::IInputPane>
+          pane);
 
  private:
+  class VirtualKeyboardInputPane;
   friend class OnScreenKeyboardTest;
-
-  bool EnsureInputPanePointers();
-  HRESULT InputPaneShown(
-      ABI::Windows::UI::ViewManagement::IInputPane* pane,
-      ABI::Windows::UI::ViewManagement::IInputPaneVisibilityEventArgs* args);
-  HRESULT InputPaneHidden(
-      ABI::Windows::UI::ViewManagement::IInputPane* pane,
-      ABI::Windows::UI::ViewManagement::IInputPaneVisibilityEventArgs* args);
 
   void NotifyObserversOnKeyboardShown(gfx::Rect rect);
   void NotifyObserversOnKeyboardHidden();
-  void TryShow();
-  void TryHide();
-
-  using InputPaneEventHandler = ABI::Windows::Foundation::ITypedEventHandler<
-      ABI::Windows::UI::ViewManagement::InputPane*,
-      ABI::Windows::UI::ViewManagement::InputPaneVisibilityEventArgs*>;
 
   // The main window which displays the on screen keyboard.
   const HWND hwnd_;
-  Microsoft::WRL::ComPtr<ABI::Windows::UI::ViewManagement::IInputPane>
-      input_pane_;
-  Microsoft::WRL::ComPtr<ABI::Windows::UI::ViewManagement::IInputPane2>
-      input_pane2_;
   base::ObserverList<InputMethodKeyboardControllerObserver, false>::Unchecked
       observers_;
-  EventRegistrationToken show_event_token_;
-  EventRegistrationToken hide_event_token_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> background_task_runner_;
+  scoped_refptr<VirtualKeyboardInputPane> virtual_keyboard_input_pane_;
+  bool is_keyboard_visible_;
   base::WeakPtrFactory<OnScreenKeyboardDisplayManagerInputPane> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OnScreenKeyboardDisplayManagerInputPane);
