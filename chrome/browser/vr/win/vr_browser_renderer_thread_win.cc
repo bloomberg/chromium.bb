@@ -22,11 +22,18 @@
 
 namespace vr {
 
-VRBrowserRendererThreadWin::VRBrowserRendererThreadWin() {}
+VRBrowserRendererThreadWin* VRBrowserRendererThreadWin::instance_for_testing_ =
+    nullptr;
+
+VRBrowserRendererThreadWin::VRBrowserRendererThreadWin() {
+  DCHECK(instance_for_testing_ == nullptr);
+  instance_for_testing_ = this;
+}
 
 VRBrowserRendererThreadWin::~VRBrowserRendererThreadWin() {
   // Call Cleanup to ensure correct destruction order of VR-UI classes.
   CleanUp();
+  instance_for_testing_ = nullptr;
 }
 
 void VRBrowserRendererThreadWin::CleanUp() {
@@ -69,6 +76,15 @@ void VRBrowserRendererThreadWin::SetVisibleExternalPromptNotification(
     overlay_->RequestNextOverlayPose(base::BindOnce(
         &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
   }
+}
+
+VRBrowserRendererThreadWin*
+VRBrowserRendererThreadWin::GetInstanceForTesting() {
+  return instance_for_testing_;
+}
+
+BrowserRenderer* VRBrowserRendererThreadWin::GetBrowserRendererForTesting() {
+  return browser_renderer_.get();
 }
 
 namespace {

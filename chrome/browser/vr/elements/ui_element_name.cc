@@ -147,6 +147,7 @@ static const char* g_ui_element_name_strings[] = {
     "kControllerBatteryDot4",
     "kContentRepositionHitPlane",
     "kContentRepositionVisibilityToggle",
+    "kWebXrExternalPromptNotification",
 };
 
 static_assert(
