@@ -44,7 +44,8 @@ UnifiedConsentServiceFactory::GetForBrowserStateIfExists(
 
 // static
 UnifiedConsentServiceFactory* UnifiedConsentServiceFactory::GetInstance() {
-  return base::Singleton<UnifiedConsentServiceFactory>::get();
+  static base::NoDestructor<UnifiedConsentServiceFactory> instance;
+  return instance.get();
 }
 
 std::unique_ptr<KeyedService>
