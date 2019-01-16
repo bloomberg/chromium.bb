@@ -11,6 +11,7 @@ namespace plugin_vm {
 namespace prefs {
 
 extern const char kPluginVmImage[];
+extern const char kPluginVmImageExists[];
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 

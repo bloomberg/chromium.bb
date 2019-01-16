@@ -17,9 +17,13 @@ namespace prefs {
 //   "hash": "842841a4c75a55ad050d686f4ea5f77e83ae059877fe9b6946aa63d3d057ed32"
 // }
 const char kPluginVmImage[] = "plugin_vm.image";
+// A boolean preference representing whether there is a PluginVm image for
+// this user on this device.
+const char kPluginVmImageExists[] = "plugin_vm.image_exists";
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kPluginVmImage);
+  registry->RegisterBooleanPref(kPluginVmImageExists, false);
 }
 
 }  // namespace prefs

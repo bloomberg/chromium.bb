@@ -77,4 +77,13 @@ TEST_F(PluginVmUtilTest,
   EXPECT_TRUE(IsPluginVmAllowedForProfile(testing_profile_.get()));
 }
 
+TEST_F(PluginVmUtilTest, IsPluginVmConfiguredOnceAllConditionsAreMet) {
+  EXPECT_FALSE(IsPluginVmConfigured(testing_profile_.get()));
+
+  testing_profile_->GetPrefs()->SetBoolean(
+      plugin_vm::prefs::kPluginVmImageExists, true);
+
+  EXPECT_TRUE(IsPluginVmConfigured(testing_profile_.get()));
+}
+
 }  // namespace plugin_vm
