@@ -24,9 +24,8 @@
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='neg-z'",
-      "position": [9, 19],
-      "bounds": [100, 410],
-      "backfaceVisibility": "hidden"
+      "position": [9, -81],
+      "bounds": [100, 410]
     },
     {
       "name": "LayoutBlockFlow HTML (foreground) Layer",
@@ -49,26 +48,24 @@
       "position": [9, 9],
       "bounds": [100, 430],
       "drawsContent": false,
-      "backfaceVisibility": "hidden",
       "transform": 1
     },
     {
       "name": "Overflow Controls Host Layer",
       "position": [8, 8],
       "bounds": [102, 302],
-      "drawsContent": false
+      "drawsContent": false,
+      "backfaceVisibility": "hidden"
     },
     {
       "name": "Horizontal Scrollbar Layer",
       "position": [9, 309],
-      "bounds": [100, 0],
-      "backfaceVisibility": "hidden"
+      "bounds": [100, 0]
     },
     {
       "name": "Vertical Scrollbar Layer",
       "position": [109, 9],
-      "bounds": [0, 300],
-      "backfaceVisibility": "hidden"
+      "bounds": [0, 300]
     }
   ],
   "transforms": [

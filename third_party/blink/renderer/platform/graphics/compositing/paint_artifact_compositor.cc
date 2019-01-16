@@ -885,8 +885,10 @@ void PaintArtifactCompositor::Update(
     // Calling |PropertyTreeStateChanged| for every pending layer is
     // O(|property nodes|^2) and could be optimized by caching the lookup of
     // nodes known to be changed/unchanged.
-    if (PropertyTreeStateChanged(property_state))
+    if (PropertyTreeStateChanged(property_state)) {
       layer->SetSubtreePropertyChanged();
+      root_layer_->SetNeedsCommit();
+    }
   }
   property_tree_manager.Finalize();
   content_layer_clients_.swap(new_content_layer_clients);

@@ -2162,8 +2162,15 @@ void PaintLayerScrollableArea::UpdateCompositingLayersAfterScroll() {
         scrolling_coordinator->UpdateCompositedScrollOffset(this);
 
     if (!handled_scroll) {
-      Layer()->GetCompositedLayerMapping()->SetNeedsGraphicsLayerUpdate(
-          kGraphicsLayerUpdateSubtree);
+      if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+        // In non-BGPT mode, we need to do a full sub-tree update here, because
+        // we need to update the position property to compute
+        // offset_to_transform_parent. For more context, see the comment from
+        // chrishtr@ here:
+        // https://chromium-review.googlesource.com/c/chromium/src/+/1403639/6/third_party/blink/renderer/core/paint/paint_layer_scrollable_area.cc
+        Layer()->GetCompositedLayerMapping()->SetNeedsGraphicsLayerUpdate(
+            kGraphicsLayerUpdateSubtree);
+      }
       compositor->SetNeedsCompositingUpdate(
           kCompositingUpdateAfterGeometryChange);
     }

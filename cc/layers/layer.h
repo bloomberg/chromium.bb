@@ -765,6 +765,13 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   std::string ToString() const;
 
+  // Called when a property has been modified in a way that the layer knows
+  // immediately that a commit is required.  This implies SetNeedsPushProperties
+  // to push that property.
+  // This is public, so that it can be called directly when needed, for example
+  // in PropertyTreeManager when handling scroll offsets.
+  void SetNeedsCommit();
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
@@ -773,11 +780,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   virtual ~Layer();
 
   // These SetNeeds functions are in order of severity of update:
-  //
-  // Called when a property has been modified in a way that the layer knows
-  // immediately that a commit is required.  This implies SetNeedsPushProperties
-  // to push that property.
-  void SetNeedsCommit();
+
+  // See SetNeedsCommit() above - it belongs here in the order of severity.
 
   // Called when there's been a change in layer structure.  Implies
   // SetNeedsCommit and property tree rebuld, but not SetNeedsPushProperties
