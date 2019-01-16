@@ -568,8 +568,11 @@ WKBasedNavigationManagerImpl::GetLastCommittedItemInCurrentOrRestoredSession()
   }
 
   int index = GetLastCommittedItemIndexInCurrentOrRestoredSession();
-  return index == -1 ? nullptr
-                     : GetNavigationItemImplAtIndex(static_cast<size_t>(index));
+  if (index == -1) {
+    DCHECK_EQ(0, GetItemCount());
+    return nullptr;
+  }
+  return GetNavigationItemImplAtIndex(static_cast<size_t>(index));
 }
 
 int WKBasedNavigationManagerImpl::
