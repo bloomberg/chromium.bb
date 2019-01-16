@@ -221,7 +221,6 @@
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
 #include "third_party/blink/renderer/core/loader/prerenderer_client.h"
-#include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/loader/text_resource_decoder_builder.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -3221,7 +3220,6 @@ void Document::CancelParsing() {
   SetParsingState(kFinishedParsing);
   SetReadyState(kComplete);
   SuppressLoadEvent();
-  javascript_url_task_handle_.Cancel();
 }
 
 DocumentParser* Document::OpenForNavigation(
@@ -3447,6 +3445,7 @@ void Document::close() {
 
 void Document::ImplicitClose() {
   DCHECK(!InStyleRecalc());
+  DCHECK(parser_);
 
   load_event_progress_ = kLoadEventInProgress;
 
@@ -3535,7 +3534,6 @@ static bool AllDescendantsAreComplete(Frame* frame) {
 bool Document::ShouldComplete() {
   return parsing_state_ == kFinishedParsing && HaveImportsLoaded() &&
          !fetcher_->BlockingRequestCount() && !IsDelayingLoadEvent() &&
-         !javascript_url_task_handle_.IsActive() &&
          load_event_progress_ != kLoadEventInProgress &&
          AllDescendantsAreComplete(frame_);
 }
@@ -7828,34 +7826,6 @@ void Document::ReportFeaturePolicyViolation(
 
 void Document::IncrementNumberOfCanvases() {
   num_canvases_++;
-}
-
-void Document::ExecuteJavaScriptUrl(
-    const KURL& url,
-    ContentSecurityPolicyDisposition disposition) {
-  if (!frame_)
-    return;
-  frame_->GetScriptController().ExecuteScriptIfJavaScriptURL(url, nullptr,
-                                                             disposition);
-  CheckCompleted();
-}
-
-void Document::ProcessJavaScriptUrl(
-    const KURL& url,
-    ContentSecurityPolicyDisposition disposition) {
-  DCHECK(url.ProtocolIsJavaScript());
-  if (frame_->Loader().StateMachine()->IsDisplayingInitialEmptyDocument())
-    load_event_progress_ = kLoadEventNotRun;
-  frame_->Loader().Progress().ProgressStarted();
-  javascript_url_task_handle_ = PostCancellableTask(
-      *GetTaskRunner(TaskType::kNetworking), FROM_HERE,
-      WTF::Bind(&Document::ExecuteJavaScriptUrl, WrapWeakPersistent(this), url,
-                disposition));
-}
-
-void Document::CancelPendingJavaScriptUrl() {
-  if (javascript_url_task_handle_.IsActive())
-    javascript_url_task_handle_.Cancel();
 }
 
 void Document::SendViolationReport(

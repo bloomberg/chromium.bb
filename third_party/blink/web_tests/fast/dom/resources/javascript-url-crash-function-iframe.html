@@ -19,9 +19,7 @@ setTimeout(function ()
     // context is navigated.
     var w = window;
     test();
-    setTimeout(function() {
-        if (w.testRunner)
-            w.testRunner.notifyDone();
-    }, 0);
+    if (w.testRunner)
+        w.testRunner.notifyDone();
 }, 0);
 </script>
