@@ -100,6 +100,11 @@ class AnimometerWebGLMultiDrawPage(ToughWebglPage):
   # pylint: disable=line-too-long
   URL = 'http://kenrussell.github.io/webgl-animometer/Animometer/tests/3d/webgl.html?webgl_version=2&use_ubos=1&use_multi_draw=1'
 
+class AnimometerWebGLAttribArraysPage(ToughWebglPage):
+  BASE_NAME = 'animometer_webgl_attrib_arrays'
+  # pylint: disable=line-too-long
+  URL = 'http://kenrussell.github.io/webgl-animometer/Animometer/tests/3d/webgl.html?use_attributes=1'
+
 class CameraToWebGLPage(ToughWebglPage):
   TAGS = ToughWebglPage.TAGS + [story_tags.USE_FAKE_CAMERA_DEVICE]
   BASE_NAME = 'camera_to_webgl'
