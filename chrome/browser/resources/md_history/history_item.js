@@ -287,7 +287,7 @@ cr.define('md_history', function() {
      */
     getCustomEquivalent(sampleElement) {
       return sampleElement.getAttribute('focus-type') === 'star' ?
-          this.$.title :
+          this.$.link :
           null;
     },
   });

@@ -58,7 +58,7 @@ Polymer({
     if (this.opened) {
       this.shadowRoot.querySelectorAll('.item-container').forEach(function(el) {
         const row = new cr.ui.FocusRow(el, null);
-        row.addItem('title', '.website-title');
+        row.addItem('link', '.website-link');
         rows.push(row);
       });
     }

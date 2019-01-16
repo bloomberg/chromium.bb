@@ -134,14 +134,14 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
             MockInteractions.pressAndReleaseKeyOn(
                 focused, 39, [], 'ArrowRight');
             Polymer.dom.flush();
-            focused = items[2].$.title;
+            focused = items[2].$.link;
             assertEquals(focused, element.lastFocused_);
             assertTrue(items[2].row_.isActive());
             assertFalse(items[3].row_.isActive());
 
             MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
             Polymer.dom.flush();
-            focused = items[3].$.title;
+            focused = items[3].$.link;
             assertEquals(focused, element.lastFocused_);
             assertFalse(items[2].row_.isActive());
             assertTrue(items[3].row_.isActive());
@@ -170,7 +170,7 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
 
             MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
             Polymer.dom.flush();
-            focused = items[3].$.title;
+            focused = items[3].$.link;
             assertEquals(focused, element.lastFocused_);
             assertFalse(items[2].row_.isActive());
             assertTrue(items[3].row_.isActive());
@@ -223,7 +223,7 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
 
             // Go to the first url.
             MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
-            focused = polymerSelectAll(cards[0], '.website-title')[0];
+            focused = polymerSelectAll(cards[0], '.website-link')[0];
             assertEquals(focused, lastFocused);
 
             // Collapse the first card.
@@ -247,7 +247,7 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
           .then(function() {
             // First card's urls are focusable again.
             MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
-            focused = polymerSelectAll(cards[0], '.website-title')[0];
+            focused = polymerSelectAll(cards[0], '.website-link')[0];
             assertEquals(focused, lastFocused);
 
             // Remove the second URL from the first card.
@@ -264,7 +264,7 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
             assertEquals(focused, lastFocused);
 
             MockInteractions.pressAndReleaseKeyOn(focused, 38, [], 'ArrowUp');
-            focused = polymerSelectAll(cards[0], '.website-title')[0];
+            focused = polymerSelectAll(cards[0], '.website-link')[0];
             assertEquals(focused, lastFocused);
 
             // Remove the second card.
