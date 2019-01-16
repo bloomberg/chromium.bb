@@ -19,6 +19,7 @@
 #include "components/variations/service/variations_service.h"
 
 namespace base {
+class Clock;
 template <typename T>
 class NoDestructor;
 class SequencedTaskRunner;
@@ -42,10 +43,11 @@ class UpgradeDetectorImpl : public UpgradeDetector,
 
   // UpgradeDetector:
   base::TimeDelta GetHighAnnoyanceLevelDelta() override;
-  base::TimeTicks GetHighAnnoyanceDeadline() override;
+  base::Time GetHighAnnoyanceDeadline() override;
 
  protected:
-  explicit UpgradeDetectorImpl(const base::TickClock* tick_clock);
+  UpgradeDetectorImpl(const base::Clock* clock,
+                      const base::TickClock* tick_clock);
 
   // Sends out a notification and starts a one shot timer to wait until
   // notifying the user.

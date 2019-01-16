@@ -24,14 +24,14 @@ WallClockTimer::~WallClockTimer() {
 }
 
 void WallClockTimer::Start(const base::Location& posted_from,
-                           base::TimeDelta delay,
+                           base::Time desired_run_time,
                            base::OnceClosure user_task) {
   user_task_ = std::move(user_task);
   posted_from_ = posted_from;
-  delay_ = delay;
-  desired_run_time_ = Now() + delay_;
+  desired_run_time_ = desired_run_time;
   AddObserver();
-  timer_.Start(posted_from_, delay, this, &WallClockTimer::RunUserTask);
+  timer_.Start(posted_from_, desired_run_time_ - Now(), this,
+               &WallClockTimer::RunUserTask);
 }
 
 base::Time WallClockTimer::Now() const {

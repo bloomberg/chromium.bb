@@ -41,7 +41,7 @@
 // static
 views::Widget* RelaunchRecommendedBubbleView::ShowBubble(
     Browser* browser,
-    base::TimeTicks detection_time,
+    base::Time detection_time,
     base::RepeatingClosure on_accept) {
   DCHECK(browser);
 
@@ -169,7 +169,7 @@ void RelaunchRecommendedBubbleView::VisibilityChanged(
 RelaunchRecommendedBubbleView::RelaunchRecommendedBubbleView(
     views::Button* anchor_button,
     const gfx::Point& anchor_point,
-    base::TimeTicks detection_time,
+    base::Time detection_time,
     base::RepeatingClosure on_accept)
     : LocationBarBubbleDelegateView(anchor_button, anchor_point, nullptr),
       on_accept_(std::move(on_accept)),

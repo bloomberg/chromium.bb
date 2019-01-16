@@ -5,10 +5,14 @@
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_monitor_source.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/time/clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -39,19 +43,20 @@ class FakeRelaunchNotificationController
     : public RelaunchNotificationController {
  public:
   FakeRelaunchNotificationController(UpgradeDetector* upgrade_detector,
+                                     const base::Clock* clock,
                                      const base::TickClock* tick_clock,
                                      ControllerDelegate* delegate)
-      : RelaunchNotificationController(upgrade_detector, tick_clock),
+      : RelaunchNotificationController(upgrade_detector, clock, tick_clock),
         delegate_(delegate) {}
 
   using RelaunchNotificationController::kRelaunchGracePeriod;
 
  private:
-  void NotifyRelaunchRecommended() override {
+  void DoNotifyRelaunchRecommended() override {
     delegate_->NotifyRelaunchRecommended();
   }
 
-  void NotifyRelaunchRequired() override {
+  void DoNotifyRelaunchRequired(base::Time deadline) override {
     delegate_->NotifyRelaunchRequired();
   }
 
@@ -78,9 +83,10 @@ class MockControllerDelegate : public ControllerDelegate {
 // A fake UpgradeDetector.
 class FakeUpgradeDetector : public UpgradeDetector {
  public:
-  explicit FakeUpgradeDetector(const base::TickClock* tick_clock)
-      : UpgradeDetector(tick_clock) {
-    set_upgrade_detected_time(this->tick_clock()->NowTicks());
+  explicit FakeUpgradeDetector(const base::Clock* clock,
+                               const base::TickClock* tick_clock)
+      : UpgradeDetector(clock, tick_clock) {
+    set_upgrade_detected_time(this->clock()->Now());
   }
 
   // UpgradeDetector:
@@ -88,7 +94,7 @@ class FakeUpgradeDetector : public UpgradeDetector {
     return high_threshold_ / 3;
   }
 
-  base::TimeTicks GetHighAnnoyanceDeadline() override {
+  base::Time GetHighAnnoyanceDeadline() override {
     return upgrade_detected_time() + high_threshold_;
   }
 
@@ -117,6 +123,13 @@ class FakeUpgradeDetector : public UpgradeDetector {
   DISALLOW_COPY_AND_ASSIGN(FakeUpgradeDetector);
 };
 
+class StubPowerMonitorSource : public base::PowerMonitorSource {
+ public:
+  // base::PowerMonitorSource:
+  void Shutdown() override {}
+  bool IsOnBatteryPowerImpl() override { return false; }
+};
+
 }  // namespace
 
 // A test harness that provides facilities for manipulating the relaunch
@@ -128,7 +141,13 @@ class RelaunchNotificationControllerTest : public ::testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
         scoped_local_state_(TestingBrowserProcess::GetGlobal()),
-        upgrade_detector_(scoped_task_environment_.GetMockTickClock()) {}
+        upgrade_detector_(scoped_task_environment_.GetMockClock(),
+                          scoped_task_environment_.GetMockTickClock()) {
+    auto mock_power_monitor_source = std::make_unique<StubPowerMonitorSource>();
+    mock_power_monitor_source_ = mock_power_monitor_source.get();
+    power_monitor_ = std::make_unique<base::PowerMonitor>(
+        std::move(mock_power_monitor_source));
+  }
   UpgradeDetector* upgrade_detector() { return &upgrade_detector_; }
   FakeUpgradeDetector& fake_upgrade_detector() { return upgrade_detector_; }
 
@@ -137,6 +156,11 @@ class RelaunchNotificationControllerTest : public ::testing::Test {
   void SetNotificationPref(int value) {
     scoped_local_state_.Get()->SetManagedPref(
         prefs::kRelaunchNotification, std::make_unique<base::Value>(value));
+  }
+
+  // Returns the ScopedTaskEnvironment's MockClock.
+  const base::Clock* GetMockClock() {
+    return scoped_task_environment_.GetMockClock();
   }
 
   // Returns the ScopedTaskEnvironment's MockTickClock.
@@ -149,7 +173,12 @@ class RelaunchNotificationControllerTest : public ::testing::Test {
     scoped_task_environment_.FastForwardBy(delta);
   }
 
+  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+
  private:
+  std::unique_ptr<base::PowerMonitor> power_monitor_;
+  // Owned by power_monitor_. Use this to simulate a power suspend and resume.
+  StubPowerMonitorSource* mock_power_monitor_source_ = nullptr;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ScopedTestingLocalState scoped_local_state_;
   FakeUpgradeDetector upgrade_detector_;
@@ -161,7 +190,8 @@ TEST_F(RelaunchNotificationControllerTest, CreateDestroy) {
   ::testing::StrictMock<MockControllerDelegate> mock_controller_delegate;
 
   FakeRelaunchNotificationController controller(
-      upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
+      upgrade_detector(), GetMockClock(), GetMockTickClock(),
+      &mock_controller_delegate);
 }
 
 // Without the browser.relaunch_notification preference set, the controller
@@ -171,7 +201,8 @@ TEST_F(RelaunchNotificationControllerTest, PolicyUnset) {
   ::testing::StrictMock<MockControllerDelegate> mock_controller_delegate;
 
   FakeRelaunchNotificationController controller(
-      upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
+      upgrade_detector(), GetMockClock(), GetMockTickClock(),
+      &mock_controller_delegate);
 
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_VERY_LOW);
@@ -193,7 +224,8 @@ TEST_F(RelaunchNotificationControllerTest, RecommendedByPolicy) {
   ::testing::StrictMock<MockControllerDelegate> mock_controller_delegate;
 
   FakeRelaunchNotificationController controller(
-      upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
+      upgrade_detector(), GetMockClock(), GetMockTickClock(),
+      &mock_controller_delegate);
 
   // Nothing shown if the level is broadcast at NONE or VERY_LOW.
   fake_upgrade_detector().BroadcastLevelChange(
@@ -219,6 +251,11 @@ TEST_F(RelaunchNotificationControllerTest, RecommendedByPolicy) {
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
+
+  // First move time to the high annoyance deadline.
+  base::Time high_annoyance_deadline =
+      upgrade_detector()->GetHighAnnoyanceDeadline();
+  FastForwardBy(high_annoyance_deadline - GetMockClock()->Now());
 
   EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRecommended());
   fake_upgrade_detector().BroadcastLevelChange(
@@ -274,7 +311,8 @@ TEST_F(RelaunchNotificationControllerTest, RequiredByPolicy) {
   ::testing::StrictMock<MockControllerDelegate> mock_controller_delegate;
 
   FakeRelaunchNotificationController controller(
-      upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
+      upgrade_detector(), GetMockClock(), GetMockTickClock(),
+      &mock_controller_delegate);
 
   // Nothing shown if the level is broadcast at NONE.
   fake_upgrade_detector().BroadcastLevelChange(
@@ -329,7 +367,8 @@ TEST_F(RelaunchNotificationControllerTest, PolicyChangesNoUpgrade) {
   ::testing::StrictMock<MockControllerDelegate> mock_controller_delegate;
 
   FakeRelaunchNotificationController controller(
-      upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
+      upgrade_detector(), GetMockClock(), GetMockTickClock(),
+      &mock_controller_delegate);
 
   SetNotificationPref(1);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
@@ -365,7 +404,8 @@ TEST_F(RelaunchNotificationControllerTest, PolicyChangesWithUpgrade) {
   ::testing::StrictMock<MockControllerDelegate> mock_controller_delegate;
 
   FakeRelaunchNotificationController controller(
-      upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
+      upgrade_detector(), GetMockClock(), GetMockTickClock(),
+      &mock_controller_delegate);
 
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_LOW);
@@ -391,7 +431,8 @@ TEST_F(RelaunchNotificationControllerTest, RequiredDeadlineReached) {
   ::testing::StrictMock<MockControllerDelegate> mock_controller_delegate;
 
   FakeRelaunchNotificationController controller(
-      upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
+      upgrade_detector(), GetMockClock(), GetMockTickClock(),
+      &mock_controller_delegate);
 
   // As in the RequiredByPolicy test, the dialog should be shown.
   EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRequired());
@@ -412,7 +453,8 @@ TEST_F(RelaunchNotificationControllerTest, RequiredDeadlineReachedNoPolicy) {
   ::testing::StrictMock<MockControllerDelegate> mock_controller_delegate;
 
   FakeRelaunchNotificationController controller(
-      upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
+      upgrade_detector(), GetMockClock(), GetMockTickClock(),
+      &mock_controller_delegate);
 
   // As in the RequiredByPolicy test, the dialog should be shown.
   EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRequired());
@@ -437,7 +479,8 @@ TEST_F(RelaunchNotificationControllerTest, NonePeriodChange) {
   ::testing::StrictMock<MockControllerDelegate> mock_controller_delegate;
 
   FakeRelaunchNotificationController controller(
-      upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
+      upgrade_detector(), GetMockClock(), GetMockTickClock(),
+      &mock_controller_delegate);
 
   // Reduce the period.
   fake_upgrade_detector().BroadcastHighThresholdChange(
@@ -464,7 +507,8 @@ TEST_F(RelaunchNotificationControllerTest, VeryLowPeriodChange) {
   ::testing::StrictMock<MockControllerDelegate> mock_controller_delegate;
 
   FakeRelaunchNotificationController controller(
-      upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
+      upgrade_detector(), GetMockClock(), GetMockTickClock(),
+      &mock_controller_delegate);
 
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_VERY_LOW);
@@ -495,7 +539,13 @@ TEST_F(RelaunchNotificationControllerTest, PeriodChangeRecommended) {
   ::testing::StrictMock<MockControllerDelegate> mock_controller_delegate;
 
   FakeRelaunchNotificationController controller(
-      upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
+      upgrade_detector(), GetMockClock(), GetMockTickClock(),
+      &mock_controller_delegate);
+
+  // First move time to the high annoyance deadline.
+  base::Time high_annoyance_deadline =
+      upgrade_detector()->GetHighAnnoyanceDeadline();
+  FastForwardBy(high_annoyance_deadline - GetMockClock()->Now());
 
   // Get up to high annoyance so that the reshow timer is running.
   EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRecommended());
@@ -511,6 +561,7 @@ TEST_F(RelaunchNotificationControllerTest, PeriodChangeRecommended) {
   EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRecommended());
   fake_upgrade_detector().BroadcastHighThresholdChange(
       fake_upgrade_detector().high_threshold() / 10);
+  RunUntilIdle();
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // And expect another reshow at the new delta.
@@ -559,7 +610,8 @@ TEST_F(RelaunchNotificationControllerTest, PeriodChangeRequired) {
   ::testing::StrictMock<MockControllerDelegate> mock_controller_delegate;
 
   FakeRelaunchNotificationController controller(
-      upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
+      upgrade_detector(), GetMockClock(), GetMockTickClock(),
+      &mock_controller_delegate);
 
   // Get up to low annoyance so that the relaunch timer is running.
   EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRequired());
@@ -568,9 +620,9 @@ TEST_F(RelaunchNotificationControllerTest, PeriodChangeRequired) {
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // Move forward partway to the current deadline. Nothing should happen.
-  base::TimeTicks high_annoyance_deadline =
+  base::Time high_annoyance_deadline =
       upgrade_detector()->GetHighAnnoyanceDeadline();
-  FastForwardBy((high_annoyance_deadline - GetMockTickClock()->NowTicks()) / 2);
+  FastForwardBy((high_annoyance_deadline - GetMockClock()->Now()) / 2);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // Lengthen the period, thereby pushing out the deadline.
@@ -581,7 +633,7 @@ TEST_F(RelaunchNotificationControllerTest, PeriodChangeRequired) {
   // Ensure that nothing happens when the old deadline passes.
   FastForwardBy(high_annoyance_deadline +
                 FakeRelaunchNotificationController::kRelaunchGracePeriod -
-                GetMockTickClock()->NowTicks());
+                GetMockClock()->Now());
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // But now we enter elevated annoyance level and show the dialog.
@@ -594,7 +646,7 @@ TEST_F(RelaunchNotificationControllerTest, PeriodChangeRequired) {
   EXPECT_CALL(mock_controller_delegate, OnRelaunchDeadlineExpired());
   FastForwardBy(upgrade_detector()->GetHighAnnoyanceDeadline() +
                 FakeRelaunchNotificationController::kRelaunchGracePeriod -
-                GetMockTickClock()->NowTicks());
+                GetMockClock()->Now());
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // Shorten the period, bringing in the deadline. Expect the dialog to show and

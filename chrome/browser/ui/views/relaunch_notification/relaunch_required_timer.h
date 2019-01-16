@@ -20,14 +20,13 @@ class RelaunchRequiredTimer {
   // the controller, here it is used to compose the notification's title
   // accordingly (e.g. "Chrome will restart in 3 minutes").
   // |callback| is called every time the notification title has to be updated.
-  RelaunchRequiredTimer(base::TimeTicks deadline,
-                        base::RepeatingClosure callback);
+  RelaunchRequiredTimer(base::Time deadline, base::RepeatingClosure callback);
 
   ~RelaunchRequiredTimer();
 
   // Sets the relaunch deadline to |deadline| and refreshes the notifications's
   // title accordingly.
-  void SetDeadline(base::TimeTicks deadline);
+  void SetDeadline(base::Time deadline);
 
   // Returns current notification's title, composed depending on how much time
   // is left until the deadline.
@@ -41,7 +40,7 @@ class RelaunchRequiredTimer {
   void OnTitleRefresh();
 
   // The time at which Chrome will be forcefully relaunched.
-  base::TimeTicks deadline_;
+  base::Time deadline_;
 
   // A timer with which title refreshes are scheduled.
   WallClockTimer refresh_timer_;

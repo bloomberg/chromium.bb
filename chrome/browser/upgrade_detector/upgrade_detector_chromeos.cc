@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
@@ -101,8 +103,9 @@ class ChannelsRequester {
 }  // namespace
 
 UpgradeDetectorChromeos::UpgradeDetectorChromeos(
+    const base::Clock* clock,
     const base::TickClock* tick_clock)
-    : UpgradeDetector(tick_clock),
+    : UpgradeDetector(clock, tick_clock),
       high_threshold_(DetermineHighThreshold()),
       upgrade_notification_timer_(tick_clock),
       initialized_(false),
@@ -130,8 +133,8 @@ base::TimeDelta UpgradeDetectorChromeos::GetHighAnnoyanceLevelDelta() {
   return high_threshold_ - (high_threshold_ * kElevatedScaleFactor);
 }
 
-base::TimeTicks UpgradeDetectorChromeos::GetHighAnnoyanceDeadline() {
-  const base::TimeTicks detected_time = upgrade_detected_time();
+base::Time UpgradeDetectorChromeos::GetHighAnnoyanceDeadline() {
+  const base::Time detected_time = upgrade_detected_time();
   if (detected_time.is_null())
     return detected_time;
   return detected_time + high_threshold_;
@@ -152,7 +155,7 @@ void UpgradeDetectorChromeos::OnRelaunchNotificationPeriodPrefChanged() {
 void UpgradeDetectorChromeos::UpdateStatusChanged(
     const UpdateEngineClient::Status& status) {
   if (status.status == UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
-    set_upgrade_detected_time(tick_clock()->NowTicks());
+    set_upgrade_detected_time(clock()->Now());
 
     if (status.is_rollback) {
       // Powerwash will be required, determine what kind of notification to show
@@ -182,7 +185,7 @@ void UpgradeDetectorChromeos::OnUpdateOverCellularOneTimePermissionGranted() {
 void UpgradeDetectorChromeos::NotifyOnUpgrade() {
   const base::TimeDelta elevated_threshold =
       high_threshold_ * kElevatedScaleFactor;
-  base::TimeDelta delta = tick_clock()->NowTicks() - upgrade_detected_time();
+  base::TimeDelta delta = clock()->Now() - upgrade_detected_time();
   // The delay from now until the next highest notification stage is reached, or
   // zero if the highest notification stage has been reached.
   base::TimeDelta next_delay;
@@ -244,7 +247,7 @@ void UpgradeDetectorChromeos::OnChannelsReceived(std::string current_channel,
 // static
 UpgradeDetectorChromeos* UpgradeDetectorChromeos::GetInstance() {
   static base::NoDestructor<UpgradeDetectorChromeos> instance(
-      base::DefaultTickClock::GetInstance());
+      base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance());
   return instance.get();
 }
 
