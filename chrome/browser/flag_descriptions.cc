@@ -3136,6 +3136,10 @@ const char kCrosRegionsModeDefault[] = "Default";
 const char kCrosRegionsModeOverride[] = "Override VPD values.";
 const char kCrosRegionsModeHide[] = "Hide VPD values.";
 
+const char kCrostiniAppSearchName[] = "Crostini App Search";
+const char kCrostiniAppSearchDescription[] =
+    "Enable search and installation of Crostini apps in the launcher.";
+
 const char kCrostiniBackupName[] = "Crostini Backup";
 const char kCrostiniBackupDescription[] = "Enable Crostini export and import.";
 
