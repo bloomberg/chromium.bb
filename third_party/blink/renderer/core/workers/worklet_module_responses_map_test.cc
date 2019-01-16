@@ -29,7 +29,8 @@ class WorkletModuleResponsesMapTest : public testing::Test {
     platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
     auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
     auto* context = MakeGarbageCollected<MockFetchContext>();
-    fetcher_ = MakeGarbageCollected<ResourceFetcher>(*properties, context);
+    fetcher_ = MakeGarbageCollected<ResourceFetcher>(
+        ResourceFetcherInit(*properties, context));
     map_ = MakeGarbageCollected<WorkletModuleResponsesMap>();
   }
 

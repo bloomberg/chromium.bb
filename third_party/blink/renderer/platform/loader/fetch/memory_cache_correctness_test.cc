@@ -121,7 +121,8 @@ class MemoryCacheCorrectnessTest : public testing::Test {
         MakeGarbageCollected<TestResourceFetcherProperties>(security_origin_);
     properties->SetShouldBlockLoadingMainResource(true);
     properties->SetShouldBlockLoadingSubResource(true);
-    fetcher_ = MakeGarbageCollected<ResourceFetcher>(*properties, context);
+    fetcher_ = MakeGarbageCollected<ResourceFetcher>(
+        ResourceFetcherInit(*properties, context));
   }
   void TearDown() override {
     GetMemoryCache()->EvictResources();

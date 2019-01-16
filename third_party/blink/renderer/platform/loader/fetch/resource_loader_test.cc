@@ -161,7 +161,8 @@ TEST_F(ResourceLoaderTest, ResponseType) {
         MakeGarbageCollected<TestResourceFetcherProperties>(origin);
     FetchContext* context = MakeGarbageCollected<MockFetchContext>(
         nullptr, std::make_unique<TestWebURLLoaderFactory>());
-    auto* fetcher = MakeGarbageCollected<ResourceFetcher>(*properties, context);
+    auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
+        ResourceFetcherInit(*properties, context));
 
     ResourceRequest request;
     request.SetURL(test.url);
@@ -201,7 +202,8 @@ class ResourceLoaderIsolatedCodeCacheTest : public ResourceLoaderTest {
         MakeGarbageCollected<TestResourceFetcherProperties>(origin);
     FetchContext* context = MakeGarbageCollected<MockFetchContext>(
         nullptr, std::make_unique<TestWebURLLoaderFactory>());
-    auto* fetcher = MakeGarbageCollected<ResourceFetcher>(*properties, context);
+    auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
+        ResourceFetcherInit(*properties, context));
 
     ResourceRequest request;
     request.SetURL(foo_url_);

@@ -131,8 +131,8 @@ class BaseFetchContextTest : public testing::Test {
     auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>(
         *MakeGarbageCollected<FetchClientSettingsObjectImpl>(
             *execution_context_));
-    resource_fetcher_ =
-        MakeGarbageCollected<ResourceFetcher>(*properties, fetch_context_);
+    resource_fetcher_ = MakeGarbageCollected<ResourceFetcher>(
+        ResourceFetcherInit(*properties, fetch_context_));
   }
 
   Persistent<ExecutionContext> execution_context_;
