@@ -967,6 +967,7 @@
     },
     {
       name: "PassiveDocumentWheelEventListeners",
+      status: "stable",
     },
     {
       name: "PassPaintVisualRectToCompositor",
