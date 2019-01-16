@@ -3985,6 +3985,9 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       <message name="IDS_USAGE_STATS_CONSENT_PROMPT" desc="Consent prompt when authorizing Digital Wellbeing to access Chrome usage data">
         Allow Digital Wellbeing to show websites you visited
       </message>
+      <message name="IDS_USAGE_STATS_SETTING_TITLE" desc="Title for setting toggling Digital Wellbeing to access Chrome usage data">
+        Connect to Digital Wellbeing
+      </message>
     </messages>
   </release>
 </grit>

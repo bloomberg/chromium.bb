@@ -15,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -50,6 +51,7 @@ public class PrivacyPreferences extends PreferenceFragment
     private static final String PREF_SYNC_AND_SERVICES_LINK_DIVIDER =
             "sync_and_services_link_divider";
     private static final String PREF_SYNC_AND_SERVICES_LINK = "sync_and_services_link";
+    private static final String PREF_USAGE_STATS = "usage_stats_reporting";
 
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
 
@@ -127,6 +129,15 @@ public class PrivacyPreferences extends PreferenceFragment
         safeBrowsingPref.setOnPreferenceChangeListener(this);
         safeBrowsingPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
+        if (BuildInfo.isAtLeastQ()) {
+            ChromeBaseCheckBoxPreference usageStatsPref =
+                    (ChromeBaseCheckBoxPreference) findPreference(PREF_USAGE_STATS);
+            usageStatsPref.setOnPreferenceChangeListener(this);
+            usageStatsPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
+        } else {
+            preferenceScreen.removePreference(findPreference(PREF_USAGE_STATS));
+        }
+
         updateSummaries();
     }
 
@@ -148,6 +159,9 @@ public class PrivacyPreferences extends PreferenceFragment
         } else if (PREF_CAN_MAKE_PAYMENT.equals(key)) {
             PrefServiceBridge.getInstance().setBoolean(
                     Pref.CAN_MAKE_PAYMENT_ENABLED, (boolean) newValue);
+        } else if (PREF_USAGE_STATS.equals(key)) {
+            PrefServiceBridge.getInstance().setBoolean(
+                    Pref.USAGE_STATS_ENABLED, (boolean) newValue);
         }
 
         return true;
@@ -224,6 +238,11 @@ public class PrivacyPreferences extends PreferenceFragment
             usageAndCrashPref.setSummary(
                     privacyPrefManager.isUsageAndCrashReportingPermittedByUser() ? textOn
                                                                                  : textOff);
+        }
+
+        CheckBoxPreference usageStatsPref = (CheckBoxPreference) findPreference(PREF_USAGE_STATS);
+        if (usageStatsPref != null) {
+            usageStatsPref.setChecked(prefServiceBridge.getBoolean(Pref.USAGE_STATS_ENABLED));
         }
     }
 

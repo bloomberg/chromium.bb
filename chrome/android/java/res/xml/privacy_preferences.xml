@@ -34,6 +34,11 @@
         android:key="can_make_payment"
         android:title="@string/can_make_payment_title"
         android:summary="@string/settings_can_make_payment_toggle_label" />
+    <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
+        android:key="usage_stats_reporting"
+        android:title="@string/usage_stats_setting_title"
+        android:summary="@string/usage_stats_consent_prompt"
+        android:persistent="false" />
     <Preference
         android:key="usage_and_crash_reports"
         android:title="@string/usage_and_crash_reports_title_legacy"
