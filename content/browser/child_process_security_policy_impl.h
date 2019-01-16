@@ -434,7 +434,8 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
       int permission);
 
   // You must acquire this lock before reading or writing any members of this
-  // class.  You must not block while holding this lock.
+  // class, except for isolated_origins_ which uses its own lock.  You must not
+  // block while holding this lock.
   base::Lock lock_;
 
   // These schemes are white-listed for all child processes in various contexts.
@@ -456,10 +457,17 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   FileSystemPermissionPolicyMap file_system_policy_map_ GUARDED_BY(lock_);
 
+  // You must acquire this lock before reading or writing isolated_origins_.
+  // You must not block while holding this lock.
+  //
+  // It is allowed to hold both |lock_| and |isolated_origins_lock_|, but in
+  // this case, |lock_| should always be acquired first to prevent deadlock.
+  base::Lock isolated_origins_lock_ ACQUIRED_AFTER(lock_);
+
   // Tracks origins for which the entire origin should be treated as a site
   // when making process model decisions, rather than the origin's scheme and
   // eTLD+1. Each of these origins requires a dedicated process.  This set is
-  // protected by |lock_|.
+  // protected by |isolated_origins_lock_|.
   //
   // The origins are stored in a map indexed by a site URL computed for each
   // origin.  For example, adding https://foo.com, https://bar.foo.com, and
@@ -478,7 +486,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // greater than the threshold ID (called |min_browsing_instance_id|) in each
   // origin's IsolatedOriginEntry.
   base::flat_map<GURL, base::flat_set<IsolatedOriginEntry>> isolated_origins_
-      GUARDED_BY(lock_);
+      GUARDED_BY(isolated_origins_lock_);
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessSecurityPolicyImpl);
 };

@@ -1140,19 +1140,20 @@ TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
       ChildProcessSecurityPolicyImpl::GetInstance();
 
   // Initially there should be no isolated origins.
-  LOCKED_EXPECT_THAT(p->lock_, p->isolated_origins_, testing::IsEmpty());
+  LOCKED_EXPECT_THAT(p->isolated_origins_lock_, p->isolated_origins_,
+                     testing::IsEmpty());
 
   // Verify deduplication of the argument.
   p->AddIsolatedOrigins({foo, bar, bar});
   LOCKED_EXPECT_THAT(
-      p->lock_, p->isolated_origins_,
+      p->isolated_origins_lock_, p->isolated_origins_,
       testing::UnorderedElementsAre(GetIsolatedOriginEntry(foo),
                                     GetIsolatedOriginEntry(bar)));
 
   // Verify that the old set is extended (not replaced).
   p->AddIsolatedOrigins({baz});
   LOCKED_EXPECT_THAT(
-      p->lock_, p->isolated_origins_,
+      p->isolated_origins_lock_, p->isolated_origins_,
       testing::UnorderedElementsAre(GetIsolatedOriginEntry(foo),
                                     GetIsolatedOriginEntry(bar),
                                     GetIsolatedOriginEntry(baz)));
@@ -1160,7 +1161,7 @@ TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
   // Verify deduplication against the old set.
   p->AddIsolatedOrigins({foo});
   LOCKED_EXPECT_THAT(
-      p->lock_, p->isolated_origins_,
+      p->isolated_origins_lock_, p->isolated_origins_,
       testing::UnorderedElementsAre(GetIsolatedOriginEntry(foo),
                                     GetIsolatedOriginEntry(bar),
                                     GetIsolatedOriginEntry(baz)));
@@ -1169,7 +1170,7 @@ TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
   // origins that differ only in ports map to the same key.
   p->AddIsolatedOrigins({baz, baz_http_8000, baz_https_8000});
   LOCKED_EXPECT_THAT(
-      p->lock_, p->isolated_origins_,
+      p->isolated_origins_lock_, p->isolated_origins_,
       testing::UnorderedElementsAre(
           GetIsolatedOriginEntry(foo), GetIsolatedOriginEntry(bar),
           GetIsolatedOriginEntry(baz), GetIsolatedOriginEntry(baz_http)));
@@ -1190,7 +1191,7 @@ TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
     mock_log.StartCapturingLogs();
     p->AddIsolatedOrigins({quxfoo, invalid_etld});
     LOCKED_EXPECT_THAT(
-        p->lock_, p->isolated_origins_,
+        p->isolated_origins_lock_, p->isolated_origins_,
         testing::UnorderedElementsAre(
             GetIsolatedOriginEntry(foo, quxfoo), GetIsolatedOriginEntry(bar),
             GetIsolatedOriginEntry(baz), GetIsolatedOriginEntry(baz_http)));
@@ -1213,7 +1214,8 @@ TEST_F(ChildProcessSecurityPolicyTest, DynamicIsolatedOrigins) {
       ChildProcessSecurityPolicyImpl::GetInstance();
 
   // Initially there should be no isolated origins.
-  LOCKED_EXPECT_THAT(p->lock_, p->isolated_origins_, testing::IsEmpty());
+  LOCKED_EXPECT_THAT(p->isolated_origins_lock_, p->isolated_origins_,
+                     testing::IsEmpty());
 
   // There should be no BrowsingInstances created yet.  The ID that will be
   // assigned to the first BrowsingInstance to be created is 1.
@@ -1223,14 +1225,14 @@ TEST_F(ChildProcessSecurityPolicyTest, DynamicIsolatedOrigins) {
   // Isolate foo.com and bar.com.
   p->AddIsolatedOrigins({foo, bar});
   LOCKED_EXPECT_THAT(
-      p->lock_, p->isolated_origins_,
+      p->isolated_origins_lock_, p->isolated_origins_,
       testing::UnorderedElementsAre(GetIsolatedOriginEntry(1, foo),
                                     GetIsolatedOriginEntry(1, bar)));
 
   // Isolating bar.com again should have no effect.
   p->AddIsolatedOrigins({bar});
   LOCKED_EXPECT_THAT(
-      p->lock_, p->isolated_origins_,
+      p->isolated_origins_lock_, p->isolated_origins_,
       testing::UnorderedElementsAre(GetIsolatedOriginEntry(1, foo),
                                     GetIsolatedOriginEntry(1, bar)));
 
@@ -1247,7 +1249,7 @@ TEST_F(ChildProcessSecurityPolicyTest, DynamicIsolatedOrigins) {
   // above.
   p->AddIsolatedOrigins({baz});
   LOCKED_EXPECT_THAT(
-      p->lock_, p->isolated_origins_,
+      p->isolated_origins_lock_, p->isolated_origins_,
       testing::UnorderedElementsAre(GetIsolatedOriginEntry(1, foo),
                                     GetIsolatedOriginEntry(1, bar),
                                     GetIsolatedOriginEntry(2, baz)));
@@ -1255,7 +1257,7 @@ TEST_F(ChildProcessSecurityPolicyTest, DynamicIsolatedOrigins) {
   // Isolating bar.com again should not update the old BrowsingInstance ID.
   p->AddIsolatedOrigins({bar});
   LOCKED_EXPECT_THAT(
-      p->lock_, p->isolated_origins_,
+      p->isolated_origins_lock_, p->isolated_origins_,
       testing::UnorderedElementsAre(GetIsolatedOriginEntry(1, foo),
                                     GetIsolatedOriginEntry(1, bar),
                                     GetIsolatedOriginEntry(2, baz)));
@@ -1271,7 +1273,7 @@ TEST_F(ChildProcessSecurityPolicyTest, DynamicIsolatedOrigins) {
   // Isolate qux.com.
   p->AddIsolatedOrigins({qux});
   LOCKED_EXPECT_THAT(
-      p->lock_, p->isolated_origins_,
+      p->isolated_origins_lock_, p->isolated_origins_,
       testing::UnorderedElementsAre(
           GetIsolatedOriginEntry(1, foo), GetIsolatedOriginEntry(1, bar),
           GetIsolatedOriginEntry(2, baz), GetIsolatedOriginEntry(3, qux)));
