@@ -199,6 +199,11 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
 TEST_P(ScrollingCoordinatorTest, fastFractionalScrollingDiv) {
   ScopedFractionalScrollOffsetsForTest fractional_scroll_offsets(true);
 
+  // TODO(920417): Re-enable this test when main thread scrolling supports
+  // fractional scroll offsets.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
+
   RegisterMockedHttpURLLoad("fractional-scroll-div.html");
   NavigateTo(base_url_ + "fractional-scroll-div.html");
   ForceFullCompositingUpdate();
