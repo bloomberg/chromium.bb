@@ -94,7 +94,7 @@ Panel.matchMessage = function(message) {
 Panel.setActions = function(actions) {
   let div = document.getElementById(Panel.MENU_ID);
   for (let button of div.children)
-    button.disabled = !actions.includes(button.id);
+    button.hidden = !actions.includes(button.id);
 };
 
 /**
