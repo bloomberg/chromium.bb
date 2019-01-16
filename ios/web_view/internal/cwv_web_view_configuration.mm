@@ -18,10 +18,10 @@
 #import "ios/web_view/internal/cwv_web_view_internal.h"
 #include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
 #include "ios/web_view/internal/signin/web_view_account_tracker_service_factory.h"
+#include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_error_controller_factory.h"
-#include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
 #import "ios/web_view/internal/sync/cwv_sync_controller_internal.h"
 #import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -161,8 +161,8 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
     AccountTrackerService* accountTrackerService =
         ios_web_view::WebViewAccountTrackerServiceFactory::GetForBrowserState(
             self.browserState);
-    SigninManager* signinManager =
-        ios_web_view::WebViewSigninManagerFactory::GetForBrowserState(
+    identity::IdentityManager* identityManager =
+        ios_web_view::WebViewIdentityManagerFactory::GetForBrowserState(
             self.browserState);
     ProfileOAuth2TokenService* tokenService =
         ios_web_view::WebViewOAuth2TokenServiceFactory::GetForBrowserState(
@@ -174,7 +174,7 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
     _syncController = [[CWVSyncController alloc]
         initWithProfileSyncService:profileSyncService
              accountTrackerService:accountTrackerService
-                     signinManager:signinManager
+                   identityManager:identityManager
                       tokenService:tokenService
              signinErrorController:signinErrorController];
 

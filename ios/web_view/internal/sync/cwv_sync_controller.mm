@@ -13,12 +13,13 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web_view/public/cwv_identity.h"
 #import "ios/web_view/public/cwv_sync_controller_data_source.h"
 #import "ios/web_view/public/cwv_sync_controller_delegate.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -108,7 +109,7 @@ class WebViewSyncControllerObserverBridge
 @implementation CWVSyncController {
   browser_sync::ProfileSyncService* _profileSyncService;
   AccountTrackerService* _accountTrackerService;
-  SigninManager* _signinManager;
+  identity::IdentityManager* _identityManager;
   ProfileOAuth2TokenService* _tokenService;
   SigninErrorController* _signinErrorController;
   std::unique_ptr<ios_web_view::WebViewSyncControllerObserverBridge> _observer;
@@ -123,14 +124,14 @@ class WebViewSyncControllerObserverBridge
     initWithProfileSyncService:
         (browser_sync::ProfileSyncService*)profileSyncService
          accountTrackerService:(AccountTrackerService*)accountTrackerService
-                 signinManager:(SigninManager*)signinManager
+               identityManager:(identity::IdentityManager*)identityManager
                   tokenService:(ProfileOAuth2TokenService*)tokenService
          signinErrorController:(SigninErrorController*)signinErrorController {
   self = [super init];
   if (self) {
     _profileSyncService = profileSyncService;
     _accountTrackerService = accountTrackerService;
-    _signinManager = signinManager;
+    _identityManager = identityManager;
     _tokenService = tokenService;
     _signinErrorController = signinErrorController;
     _observer =
@@ -157,7 +158,7 @@ class WebViewSyncControllerObserverBridge
 #pragma mark - Public Methods
 
 - (CWVIdentity*)currentIdentity {
-  std::string authenticatedID = _signinManager->GetAuthenticatedAccountId();
+  std::string authenticatedID = _identityManager->GetPrimaryAccountId();
   if (authenticatedID.empty()) {
     return nil;
   }
@@ -187,13 +188,16 @@ class WebViewSyncControllerObserverBridge
   info.full_name = base::SysNSStringToUTF8(identity.fullName);
   std::string newAuthenticatedAccountID =
       _accountTrackerService->SeedAccountInfo(info);
-  _signinManager->OnExternalSigninCompleted(info.email);
+  auto* primaryAccountMutator = _identityManager->GetPrimaryAccountMutator();
+  primaryAccountMutator->SetPrimaryAccount(newAuthenticatedAccountID);
 
   [self reloadCredentials];
 }
 
 - (void)stopSyncAndClearIdentity {
-  _signinManager->SignOut(
+  auto* primaryAccountMutator = _identityManager->GetPrimaryAccountMutator();
+  primaryAccountMutator->ClearPrimaryAccount(
+      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
   _dataSource = nil;
@@ -218,7 +222,7 @@ class WebViewSyncControllerObserverBridge
 }
 
 - (void)reloadCredentials {
-  std::string authenticatedID = _signinManager->GetAuthenticatedAccountId();
+  std::string authenticatedID = _identityManager->GetPrimaryAccountId();
   if (!authenticatedID.empty()) {
     ProfileOAuth2TokenServiceIOSDelegate* tokenDelegate =
         static_cast<ProfileOAuth2TokenServiceIOSDelegate*>(
