@@ -8,7 +8,7 @@
 <dom-module id="cr-searchable-drop-down">
   <template>
     <style>
-      cr-input {
+      :host(:not([error-message-allowed])) cr-input {
         --cr-input-error-display: none;
       }
 
@@ -52,7 +52,9 @@
       explicitly used. -->
     <cr-input label="[[label]]" on-click="onClick_" value="[[value]]"
         on-input="onInput_" id="search" autofocus="[[autofocus]]"
-        placeholder="[[placeholder]]">
+        placeholder="[[placeholder]]"
+        error-message="[[getErrorMessage_(errorMessage, errorMessageAllowed)]]"
+        invalid="[[shouldShowErrorMessage_(errorMessage, errorMessageAllowed)]]">
     </cr-input>
     <iron-dropdown horizontal-align="left" vertical-align="top"
         vertical-offset="52">

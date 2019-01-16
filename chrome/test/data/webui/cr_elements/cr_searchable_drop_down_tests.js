@@ -100,4 +100,36 @@ suite('cr-searchable-drop-down', function() {
     search('ta');
     assertEquals('ta', dropDown.value);
   });
+
+  // If the error-message-allowed flag is passed and the |errorMessage| property
+  // is set, then the error message should be displayed. If the |errorMessage|
+  // property is not set or |errorMessageAllowed| is false, no error message
+  // should be displayed.
+  test('error message is displayed if set and allowed', function() {
+    dropDown.errorMessageAllowed = true;
+    dropDown.errorMessage = 'error message';
+
+    const input = dropDown.$.search;
+
+    assertEquals(dropDown.errorMessage, input.$.error.textContent);
+    assertTrue(input.invalid);
+
+    // Set |errorMessageAllowed| to false and verify no error message is shown.
+    dropDown.errorMessageAllowed = false;
+
+    assertNotEquals(dropDown.errorMessage, input.$.error.textContent);
+    assertFalse(input.invalid);
+
+    // Set |errorMessageAllowed| to true and verify it is displayed again.
+    dropDown.errorMessageAllowed = true;
+
+    assertEquals(dropDown.errorMessage, input.$.error.textContent);
+    assertTrue(input.invalid);
+
+    // Clearing |errorMessage| hides the error.
+    dropDown.errorMessage = '';
+
+    assertEquals(dropDown.errorMessage, input.$.error.textContent);
+    assertFalse(input.invalid);
+  });
 });
