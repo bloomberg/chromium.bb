@@ -325,6 +325,46 @@ chrome.test.getConfig(config => chrome.test.runTests([
     });
   },
 
+  // http://crbug.com/824174
+  function getResponseBodyInvalidChar() {
+    let requestId;
+
+    function onEvent(debuggeeId, message, params) {
+      if (message === 'Network.responseReceived' &&
+          params.response.url.endsWith('invalid_char.html')) {
+        requestId = params.requestId;
+      } else if (message === 'Network.loadingFinished' &&
+                 params.requestId === requestId) {
+        chrome.debugger.sendCommand(
+            debuggeeId, 'Network.getResponseBody',
+            {requestId: params.requestId}, function(responseBody) {
+              chrome.debugger.onEvent.removeListener(onEvent);
+              chrome.debugger.detach(debuggeeId);
+              chrome.test.succeed();
+            });
+      }
+    }
+
+    chrome.debugger.onEvent.addListener(onEvent);
+    chrome.tabs.create({url: 'inspected.html'}, function(tab) {
+      const debuggee = {tabId: tab.id};
+      chrome.debugger.attach(debuggee, protocolVersion, function() {
+        chrome.debugger.sendCommand(
+            debuggee, 'Network.enable', null, function() {
+              chrome.debugger.sendCommand(
+                  debuggee, 'Page.enable', null, function() {
+                    // Navigate to a new page after attaching so we don't miss
+                    // any protocol events that we might have missed while
+                    // attaching to the first page.
+                    chrome.debugger.sendCommand(
+                        debuggee, 'Page.navigate',
+                        {url: window.location.origin + '/fetch.html'});
+                  });
+            });
+      });
+    });
+  },
+
   function offlineErrorPage() {
     const url = 'http://127.0.0.1//extensions/api_test/debugger/inspected.html';
     chrome.tabs.create({url: url}, function(tab) {
