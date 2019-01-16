@@ -219,22 +219,24 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
           mojo::MakeRequest(&document_interface_broker).PassMessagePipe(),
           &old_frame, WebSandboxFlags::kNone, ParsedFeaturePolicy()));
   client->Bind(frame, std::move(owned_client));
+  std::unique_ptr<TestWebWidgetClient> widget_client;
   // Create a local root, if necessary.
   if (!frame->Parent()) {
+    widget_client = std::make_unique<TestWebWidgetClient>();
     // TODO(dcheng): The main frame widget currently has a special case.
     // Eliminate this once WebView is no longer a WebWidget.
-    WebWidgetClient* widget_client = frame->ViewImpl()->WidgetClient();
-    WebFrameWidget::CreateForMainFrame(widget_client, frame);
+    WebFrameWidget::CreateForMainFrame(widget_client.get(), frame);
   } else if (frame->Parent()->IsWebRemoteFrame()) {
-    auto widget_client = std::make_unique<TestWebWidgetClient>();
+    widget_client = std::make_unique<TestWebWidgetClient>();
     WebFrameWidget* frame_widget =
         WebFrameWidget::CreateForChildLocalRoot(widget_client.get(), frame);
     frame_widget->Resize(WebSize());
     // The WebWidget requires a LayerTreeView to be set, either by the
     // WebWidgetClient itself or by someone else. We do that here.
     frame_widget->SetLayerTreeView(widget_client->layer_tree_view());
-    client->BindWidgetClient(std::move(widget_client));
   }
+  if (widget_client)
+    client->BindWidgetClient(std::move(widget_client));
   return frame;
 }
 
@@ -330,7 +332,6 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
   // Eliminate this once WebView is no longer a WebWidget.
   blink::WebFrameWidget::CreateForMainFrame(test_web_widget_client_, frame);
   // TODO(danakj): Make this part of attaching the main frame's WebFrameWidget.
-  web_view_->SetWebWidgetClient(test_web_widget_client_);
   web_view_->MainFrameWidget()->SetLayerTreeView(
       test_web_widget_client_->layer_tree_view());
 

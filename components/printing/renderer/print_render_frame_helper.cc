@@ -927,10 +927,6 @@ void PrepareFrameAndViewForPrint::CopySelection(
       /*compositing_enabled=*/false,
       /*opener=*/nullptr);
   content::RenderView::ApplyWebPreferences(prefs, web_view);
-
-  // TODO(danakj): Make this part of attaching the main frame's WebFrameWidget.
-  web_view->SetWebWidgetClient(this);
-
   blink::mojom::DocumentInterfaceBrokerPtrInfo document_interface_broker;
   blink::WebLocalFrame* main_frame = blink::WebLocalFrame::CreateMainFrame(
       web_view, this, nullptr,

@@ -508,10 +508,6 @@ void RenderViewImpl::Initialize(
   webview_ = WebView::Create(this, params->hidden,
                              /*compositing_enabled=*/true,
                              opener_frame ? opener_frame->View() : nullptr);
-  // TODO(danakj): Make this part of attaching the main frame's WebFrameWidget,
-  // and move RenderWidget::Init to after the WebFrameWidget is attached (for
-  // a non-frozen RenderWidget).
-  webview_->SetWebWidgetClient(WidgetClient());
   GetWidget()->Init(std::move(show_callback), webview_->MainFrameWidget());
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
@@ -549,6 +545,9 @@ void RenderViewImpl::Initialize(
                                        opener_frame, MSG_ROUTING_NONE,
                                        params->replicated_frame_state,
                                        params->devtools_main_frame_token);
+    // TODO(danakj): Make WebViewImpl not need a WebWidgetClient when there is a
+    // remote main frame (when the RenderWidget is frozen).
+    webview_->SetWebWidgetClient(WidgetClient());
   }
 
   // TODO(davidben): Move this state from Blink into content.
@@ -1533,9 +1532,14 @@ void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
 }
 
 void RenderViewImpl::DetachWebFrameWidget() {
+  DCHECK(GetWidget()->is_frozen() || GetWidget()->is_closing());
   DCHECK(frame_widget_);
   frame_widget_->Close();
   frame_widget_ = nullptr;
+
+  // TODO(danakj): Make WebViewImpl not need a WebWidgetClient when there is a
+  // remote main frame (when the RenderWidget is frozen).
+  webview_->SetWebWidgetClient(WidgetClient());
 }
 
 void RenderViewImpl::SetZoomLevel(double zoom_level) {

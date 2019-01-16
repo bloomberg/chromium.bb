@@ -92,9 +92,9 @@ class CloseMessageSendingRenderViewVisitor : public RenderViewVisitor {
     // Simulate the Widget receiving a close message. This should result on
     // releasing the internal reference counts and destroying the internal
     // state.
-    WidgetMsg_Close msg(render_view->GetRoutingID());
     RenderWidget* render_widget =
         static_cast<RenderViewImpl*>(render_view)->GetWidget();
+    WidgetMsg_Close msg(render_widget->routing_id());
     render_widget->OnMessageReceived(msg);
     return true;
   }

@@ -11,13 +11,18 @@ namespace blink {
 
 WebViewFrameWidget::WebViewFrameWidget(WebWidgetClient& client,
                                        WebViewImpl& web_view)
-    : WebFrameWidgetBase(client),
-      web_view_(&web_view),
-      self_keep_alive_(this) {}
+    : WebFrameWidgetBase(client), web_view_(&web_view), self_keep_alive_(this) {
+  // TODO(danakj): SetLayerTreeView() here as well, then we can Close() the
+  // WebViewImpl's widget bits in Close().
+  web_view_->SetWebWidgetClient(&client);
+}
 
 WebViewFrameWidget::~WebViewFrameWidget() = default;
 
 void WebViewFrameWidget::Close() {
+  // TODO(danakj): Close() the WebViewImpl here, when we reset the LayerTreeView
+  // in the constructor.
+  web_view_->SetWebWidgetClient(nullptr);
   web_view_ = nullptr;
   WebFrameWidgetBase::Close();
 

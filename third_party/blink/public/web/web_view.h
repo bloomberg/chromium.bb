@@ -94,11 +94,9 @@ class WebView {
                                       bool compositing_enabled,
                                       WebView* opener);
 
-  // Called on WebView once a WebWidgetClient is ready. This method should be
-  // called during init of the WebView before completing it by creating the
-  // local or proxy main frame. If the WebViewClient passed to Create() was
-  // null, then this need not be called since it would have to be passed null
-  // also.
+  // Called on WebView when a WebFrameWidget is created for a local main frame,
+  // and can be set back to null when the WebWidgetClient is removed due to the
+  // main frame being detached.
   // TODO(danakj): Move this to WebWidget and merge with SetLayerTreeView, have
   // it be null/not set when the main frame is remote.
   virtual void SetWebWidgetClient(WebWidgetClient*) = 0;

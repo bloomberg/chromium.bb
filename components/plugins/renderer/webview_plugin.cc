@@ -266,14 +266,11 @@ WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   content::RenderView::ApplyWebPreferences(preferences, web_view_);
-
-  // TODO(danakj): Make this part of attaching the main frame's WebFrameWidget.
-  web_view_->SetWebWidgetClient(this);
-
   blink::mojom::DocumentInterfaceBrokerPtrInfo document_interface_broker;
   WebLocalFrame* web_frame = WebLocalFrame::CreateMainFrame(
       web_view_, this, nullptr,
       mojo::MakeRequest(&document_interface_broker).PassMessagePipe(), nullptr);
+  // The created WebFrameWidget is owned by the |web_frame|.
   WebFrameWidget::CreateForMainFrame(this, web_frame);
 }
 
