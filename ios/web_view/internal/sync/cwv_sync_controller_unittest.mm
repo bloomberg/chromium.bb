@@ -26,6 +26,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_identity.h"
 #import "ios/web_view/public/cwv_sync_controller_data_source.h"
@@ -88,6 +89,8 @@ class CWVSyncControllerTest : public PlatformTest {
 
     account_tracker_service_.Initialize(browser_state_.GetPrefs(),
                                         base::FilePath());
+    signin_manager_.Initialize(
+        ApplicationContext::GetInstance()->GetLocalState());
 
     EXPECT_CALL(*profile_sync_service_, AddObserver(_))
         .WillOnce(Invoke(this, &CWVSyncControllerTest::AddObserver));
@@ -95,7 +98,7 @@ class CWVSyncControllerTest : public PlatformTest {
     sync_controller_ = [[CWVSyncController alloc]
         initWithProfileSyncService:profile_sync_service_.get()
              accountTrackerService:&account_tracker_service_
-                     signinManager:&signin_manager_
+                   identityManager:identity_test_env_.identity_manager()
                       tokenService:&token_service_
              signinErrorController:&signin_error_controller_];
   };

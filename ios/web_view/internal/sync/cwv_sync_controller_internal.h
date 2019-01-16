@@ -18,8 +18,11 @@ namespace browser_sync {
 class ProfileSyncService;
 }  // namespace browser_sync
 
+namespace identity {
+class IdentityManager;
+}
+
 class AccountTrackerService;
-class SigninManager;
 class ProfileOAuth2TokenService;
 class SigninErrorController;
 
@@ -30,7 +33,7 @@ class SigninErrorController;
     initWithProfileSyncService:
         (browser_sync::ProfileSyncService*)profileSyncService
          accountTrackerService:(AccountTrackerService*)accountTrackerService
-                 signinManager:(SigninManager*)signinManager
+               identityManager:(identity::IdentityManager*)identityManager
                   tokenService:(ProfileOAuth2TokenService*)tokenService
          signinErrorController:(SigninErrorController*)SigninErrorController
     NS_DESIGNATED_INITIALIZER;
