@@ -552,11 +552,6 @@ NGPaintFragment* NGPaintFragment::LastForSameLayoutObject() {
   return fragment;
 }
 
-void NGPaintFragment::DirtyLinesFromChangedChild(LayoutObject* child) {
-  if (child->IsInline())
-    MarkLineBoxesDirtyFor(*child);
-}
-
 bool NGPaintFragment::FlippedLocalVisualRectFor(
     const LayoutObject* layout_object,
     LayoutRect* visual_rect) {
@@ -642,8 +637,22 @@ NGPaintFragment* NGPaintFragment::FirstLineBox() const {
   return nullptr;
 }
 
+void NGPaintFragment::DirtyLinesFromChangedChild(LayoutObject* child) {
+  // This function should be called on every child that has
+  // |IsInLayoutNGInlineFormattingContext()|, meaning it was once collected into
+  // |NGInlineNode|.
+  //
+  // New LayoutObjects will be handled in the next |CollectInline()|.
+  DCHECK(child && child->IsInLayoutNGInlineFormattingContext());
+
+  if (child->IsInline() || child->IsFloatingOrOutOfFlowPositioned())
+    MarkLineBoxesDirtyFor(*child);
+}
+
 void NGPaintFragment::MarkLineBoxesDirtyFor(const LayoutObject& layout_object) {
-  DCHECK(layout_object.IsInline()) << layout_object;
+  DCHECK(layout_object.IsInline() ||
+         layout_object.IsFloatingOrOutOfFlowPositioned())
+      << layout_object;
 
   // Since |layout_object| isn't in fragment tree, check preceding siblings.
   // Note: Once we reuse lines below dirty lines, we should check next siblings.
