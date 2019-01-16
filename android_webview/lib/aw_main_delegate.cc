@@ -282,7 +282,7 @@ int AwMainDelegate::RunProcess(
     const std::string& process_type,
     const content::MainFunctionParams& main_function_params) {
   if (process_type.empty()) {
-    browser_runner_.reset(content::BrowserMainRunner::Create());
+    browser_runner_ = content::BrowserMainRunner::Create();
     int exit_code = browser_runner_->Initialize(main_function_params);
     DCHECK_LT(exit_code, 0);
 

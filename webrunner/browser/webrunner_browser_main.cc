@@ -13,8 +13,8 @@
 namespace webrunner {
 
 int WebRunnerBrowserMain(const content::MainFunctionParams& parameters) {
-  std::unique_ptr<content::BrowserMainRunner> main_runner(
-      content::BrowserMainRunner::Create());
+  std::unique_ptr<content::BrowserMainRunner> main_runner =
+      content::BrowserMainRunner::Create();
   int exit_code = main_runner->Initialize(parameters);
   if (exit_code >= 0)
     return exit_code;

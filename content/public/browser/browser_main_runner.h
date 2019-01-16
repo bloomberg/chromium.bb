@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_MAIN_RUNNER_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_MAIN_RUNNER_H_
 
+#include <memory>
+
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 
@@ -18,7 +20,7 @@ class CONTENT_EXPORT BrowserMainRunner {
   virtual ~BrowserMainRunner() {}
 
   // Create a new BrowserMainRunner object.
-  static BrowserMainRunner* Create();
+  static std::unique_ptr<BrowserMainRunner> Create();
 
   // Returns true if the BrowserMainRunner has exited the main loop.
   static bool ExitedMainMessageLoop();

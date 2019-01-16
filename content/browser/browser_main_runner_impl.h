@@ -25,7 +25,7 @@ class NotificationServiceImpl;
 
 class BrowserMainRunnerImpl : public BrowserMainRunner {
  public:
-  static BrowserMainRunnerImpl* Create();
+  static std::unique_ptr<BrowserMainRunnerImpl> Create();
 
   BrowserMainRunnerImpl();
   ~BrowserMainRunnerImpl() override;

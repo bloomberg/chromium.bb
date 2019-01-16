@@ -288,8 +288,8 @@ int HeadlessContentMainDelegate::RunProcess(
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventBrowserProcessSortIndex);
 
-  std::unique_ptr<content::BrowserMainRunner> browser_runner(
-      content::BrowserMainRunner::Create());
+  std::unique_ptr<content::BrowserMainRunner> browser_runner =
+      content::BrowserMainRunner::Create();
 
   int exit_code = browser_runner->Initialize(main_function_params);
   DCHECK_LT(exit_code, 0) << "content::BrowserMainRunner::Initialize failed in "

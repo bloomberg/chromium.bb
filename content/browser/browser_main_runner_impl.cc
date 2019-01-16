@@ -49,8 +49,8 @@ base::LazyInstance<base::AtomicFlag>::Leaky g_exited_main_message_loop;
 }  // namespace
 
 // static
-BrowserMainRunnerImpl* BrowserMainRunnerImpl::Create() {
-  return new BrowserMainRunnerImpl();
+std::unique_ptr<BrowserMainRunnerImpl> BrowserMainRunnerImpl::Create() {
+  return std::make_unique<BrowserMainRunnerImpl>();
 }
 
 BrowserMainRunnerImpl::BrowserMainRunnerImpl()
@@ -240,7 +240,7 @@ void BrowserMainRunnerImpl::Shutdown() {
 }
 
 // static
-BrowserMainRunner* BrowserMainRunner::Create() {
+std::unique_ptr<BrowserMainRunner> BrowserMainRunner::Create() {
   return BrowserMainRunnerImpl::Create();
 }
 
