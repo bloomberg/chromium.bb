@@ -976,6 +976,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // background tabs.
   bool is_background_suspend_enabled_ = false;
 
+  // If disabled, video will be auto paused when in background. Affects the
+  // value of ShouldPauseVideoWhenHidden().
+  bool is_background_video_playback_enabled_ = true;
+
   // Whether background video optimization is supported on current platform.
   bool is_background_video_track_optimization_supported_ = true;
 

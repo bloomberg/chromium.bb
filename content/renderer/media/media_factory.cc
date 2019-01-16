@@ -387,6 +387,8 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
           render_frame_->GetRenderFrameMediaPlaybackOptions()
               .is_background_suspend_enabled,
           render_frame_->GetRenderFrameMediaPlaybackOptions()
+              .is_background_video_playback_enabled,
+          render_frame_->GetRenderFrameMediaPlaybackOptions()
               .is_background_video_track_optimization_supported));
 
   std::unique_ptr<media::VideoFrameCompositor> vfc =
