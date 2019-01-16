@@ -36,8 +36,8 @@ static bool ElementRepresentsNothing(const Element& element) {
 }
 
 static bool ImageSmallerThanAltImage(int pixels_for_alt_image,
-                                     const Length width,
-                                     const Length height) {
+                                     const Length& width,
+                                     const Length& height) {
   // We don't have a layout tree so can't compute the size of an image
   // relative dimensions - so we just assume we should display the alt image.
   if (!width.IsFixed() && !height.IsFixed())

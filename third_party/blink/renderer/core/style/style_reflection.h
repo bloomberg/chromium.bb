@@ -45,7 +45,7 @@ class StyleReflection : public RefCounted<StyleReflection> {
   bool operator!=(const StyleReflection& o) const { return !(*this == o); }
 
   CSSReflectionDirection Direction() const { return direction_; }
-  Length Offset() const { return offset_; }
+  const Length& Offset() const { return offset_; }
   const NinePieceImage& Mask() const { return mask_; }
 
   void SetDirection(CSSReflectionDirection dir) { direction_ = dir; }

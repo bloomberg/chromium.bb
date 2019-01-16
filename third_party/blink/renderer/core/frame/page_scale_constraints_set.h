@@ -68,7 +68,7 @@ class CORE_EXPORT PageScaleConstraintsSet
     return page_defined_constraints_;
   }
   void UpdatePageDefinedConstraints(const ViewportDescription&,
-                                    Length legacy_fallback_width);
+                                    const Length& legacy_fallback_width);
   void AdjustForAndroidWebViewQuirks(const ViewportDescription&,
                                      int layout_fallback_width,
                                      float device_scale_factor,
