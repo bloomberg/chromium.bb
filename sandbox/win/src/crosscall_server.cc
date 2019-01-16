@@ -181,19 +181,23 @@ CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
     return nullptr;
   }
 
-  const char* last_byte = &backing_mem[declared_size];
-  const char* first_byte = &backing_mem[min_declared_size];
+  // Here and below we're making use of uintptr_t to have well-defined integer
+  // overflow when doing pointer arithmetic.
+  auto backing_mem_ptr = reinterpret_cast<uintptr_t>(backing_mem);
+  auto last_byte = reinterpret_cast<uintptr_t>(&backing_mem[declared_size]);
+  auto first_byte =
+      reinterpret_cast<uintptr_t>(&backing_mem[min_declared_size]);
 
   // Verify here that all and each parameters make sense. This is done in the
   // local copy.
   for (uint32_t ix = 0; ix != param_count; ++ix) {
     uint32_t size = 0;
     ArgType type;
-    char* address = reinterpret_cast<char*>(
+    auto address = reinterpret_cast<uintptr_t>(
         copied_params->GetRawParameter(ix, &size, &type));
     if ((!address) ||                                     // No null params.
         (INVALID_TYPE >= type) || (LAST_TYPE <= type) ||  // Unknown type.
-        (address < backing_mem) ||         // Start cannot point before buffer.
+        (address < backing_mem_ptr) ||     // Start cannot point before buffer.
         (address < first_byte) ||          // Start cannot point too low.
         (address > last_byte) ||           // Start cannot point past buffer.
         ((address + size) < address) ||    // Invalid size.
