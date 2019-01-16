@@ -203,8 +203,6 @@ WindowPortMus::RequestLayerTreeFrameSink(
         std::make_unique<viz::HitTestDataProviderDrawQuad>(
             /* should_ask_for_child_regions */ false, root_accepts_events);
   }
-  params.local_surface_id_provider =
-      std::make_unique<viz::DefaultLocalSurfaceIdProvider>();
   params.enable_surface_synchronization = true;
   params.client_name = kMus;
 
