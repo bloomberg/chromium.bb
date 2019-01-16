@@ -161,9 +161,8 @@ class BrowserTestWithProfileShortcutManager : public InProcessBrowserTest {
 };
 
 // Check that the window properties on Windows are properly set.
-// TODO(crbug.com/915984): This test is flaky.
 IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
-                       DISABLED_WindowProperties) {
+                       WindowProperties) {
   // Single profile case. The profile name should not be shown.
   ValidateBrowserWindowProperties(browser(), base::string16());
 
@@ -193,8 +192,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
   ValidateBrowserWindowProperties(profile2_browser, entry->GetName());
 }
 
-// TODO(crbug.com/919760): This test is flaky.
-IN_PROC_BROWSER_TEST_F(BrowserWindowPropertyManagerTest, DISABLED_HostedApp) {
+IN_PROC_BROWSER_TEST_F(BrowserWindowPropertyManagerTest, HostedApp) {
   // Load an app.
   const extensions::Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("app/"));
