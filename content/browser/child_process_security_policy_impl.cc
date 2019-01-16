@@ -483,8 +483,33 @@ void ChildProcessSecurityPolicyImpl::Add(int child_id) {
 }
 
 void ChildProcessSecurityPolicyImpl::Remove(int child_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock lock(lock_);
+
+  auto state = security_state_.find(child_id);
+  if (state == security_state_.end())
+    return;
+
+  // Moving the existing SecurityState object into a pending map so
+  // that we can preserve permission state and avoid mutations to this
+  // state after Remove() has been called.
+  pending_remove_state_[child_id] = std::move(state->second);
   security_state_.erase(child_id);
+
+  // |child_id| could be inside tasks that are on the UI thread and IO thread
+  // task queues. We need to keep the |pending_remove_state_| entry around
+  // until we have successfully executed a task on the IO thread followed by
+  // a task on the UI thread. This should ensure that any pending tasks on
+  // either thread will have completed before we remove the entry.
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {BrowserThread::IO}, base::DoNothing(),
+      base::BindOnce(
+          [](ChildProcessSecurityPolicyImpl* policy, int child_id) {
+            DCHECK_CURRENTLY_ON(BrowserThread::UI);
+            base::AutoLock lock(policy->lock_);
+            policy->pending_remove_state_.erase(child_id);
+          },
+          base::Unretained(this), child_id));
 }
 
 void ChildProcessSecurityPolicyImpl::RegisterWebSafeScheme(
@@ -1187,30 +1212,30 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
   DCHECK(IsRunningOnExpectedThread());
 
   base::AutoLock lock(lock_);
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end()) {
-    // TODO(nick): Returning true instead of false here is a temporary
-    // workaround for https://crbug.com/600441
-    return true;
-  }
+  SecurityState* security_state = GetSecurityState(child_id);
 
   // Determine the BrowsingInstance ID for calculating the expected process
   // lock URL.
-  BrowsingInstanceId browsing_instance_id =
-      state->second->lowest_browsing_instance_id();
+  BrowsingInstanceId browsing_instance_id;
+
+  if (security_state)
+    browsing_instance_id = security_state->lowest_browsing_instance_id();
 
   GURL expected_process_lock = SiteInstanceImpl::DetermineProcessLockURL(
       nullptr, IsolationContext(browsing_instance_id), url);
 
-  bool can_access =
-      state->second->CanAccessDataForOrigin(expected_process_lock);
+  bool can_access = security_state && security_state->CanAccessDataForOrigin(
+                                          expected_process_lock);
   if (!can_access) {
     // Returning false here will result in a renderer kill.  Set some crash
     // keys that will help understand the circumstances of that kill.
     base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
                                    expected_process_lock.spec());
+
     base::debug::SetCrashKeyString(bad_message::GetKilledProcessOriginLockKey(),
-                                   state->second->origin_lock().spec());
+                                   security_state
+                                       ? security_state->origin_lock().spec()
+                                       : "(child id not found)");
 
     static auto* requested_origin_key = base::debug::AllocateCrashKeyString(
         "requested_origin", base::debug::CrashKeySize::Size64);
@@ -1469,6 +1494,22 @@ void ChildProcessSecurityPolicyImpl::RemoveIsolatedOriginForTesting(
                 });
   if (isolated_origins_[key].empty())
     isolated_origins_.erase(key);
+}
+
+ChildProcessSecurityPolicyImpl::SecurityState*
+ChildProcessSecurityPolicyImpl::GetSecurityState(int child_id) {
+  auto itr = security_state_.find(child_id);
+  if (itr != security_state_.end())
+    return itr->second.get();
+
+  // Check to see if |child_id| is in the pending removal map since this
+  // may be a call that was already on the IO or UI thread's task queue when the
+  // Remove() call occurred.
+  itr = pending_remove_state_.find(child_id);
+  if (itr != pending_remove_state_.end())
+    return itr->second.get();
+
+  return nullptr;
 }
 
 }  // namespace content
