@@ -1293,6 +1293,14 @@
     Certificates not loaded
   </message>
 
+  <!-- Sync/sign-in error messages -->
+  <message name="IDS_SIGNIN_ERROR_SECONDARY_ACCOUNT_BUBBLE_VIEW_TITLE" desc="Title in the sign-in error bubble view/notification for Chrome OS Secondary Accounts.">
+    Sign-in again
+  </message>
+  <message name="IDS_SIGNIN_ERROR_SECONDARY_ACCOUNT_BUBBLE_VIEW_MESSAGE" desc="Message in the sign-in error bubble view for Chrome OS Secondary Accounts.">
+    Your Google Account(s) need attention
+  </message>
+
   <!-- Strings used in <cr-network-list>, used in Settings and OOBE -->
   <message name="IDS_NETWORK_LIST_INITIALIZING" desc="Text in the network list element when a Cellular network is initiailizing.">
     Initializing...

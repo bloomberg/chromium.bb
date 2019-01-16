@@ -726,6 +726,9 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         </message>
       </if>
       <if expr="chromeos">
+        <message name="IDS_SIGNIN_ERROR_SECONDARY_ACCOUNT_DISPLAY_SOURCE" desc="Context title shown in the notification header of sign-in error notification for Chrome OS Secondary Accounts.">
+          Chrome OS System
+        </message>
         <message name="IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync error bubble view when the user needs to update their sync passphrase.">
           Chrome OS could not sync your data. Please update your Sync passphrase.
         </message>
