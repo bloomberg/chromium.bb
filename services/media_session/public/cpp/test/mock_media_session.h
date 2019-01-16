@@ -60,12 +60,17 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
     return session_actions_;
   }
 
+  const std::set<mojom::MediaSessionAction>& actions_set() const {
+    return session_actions_set_;
+  }
+
  private:
   void StartWaiting();
 
   mojom::MediaSessionInfoPtr session_info_;
   base::Optional<base::Optional<MediaMetadata>> session_metadata_;
   std::vector<mojom::MediaSessionAction> session_actions_;
+  std::set<mojom::MediaSessionAction> session_actions_set_;
 
   bool waiting_for_metadata_ = false;
   bool waiting_for_non_empty_metadata_ = false;

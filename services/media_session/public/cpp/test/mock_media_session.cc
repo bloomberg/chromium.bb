@@ -55,6 +55,8 @@ void MockMediaSessionMojoObserver::MediaSessionMetadataChanged(
 void MockMediaSessionMojoObserver::MediaSessionActionsChanged(
     const std::vector<mojom::MediaSessionAction>& actions) {
   session_actions_ = actions;
+  session_actions_set_ =
+      std::set<mojom::MediaSessionAction>(actions.begin(), actions.end());
 
   if (waiting_for_actions_) {
     run_loop_->Quit();

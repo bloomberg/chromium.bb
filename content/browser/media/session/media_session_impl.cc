@@ -205,9 +205,7 @@ void MediaSessionImpl::RemoveObserver(MediaSessionObserver* observer) {
 void MediaSessionImpl::NotifyAddedObserver(MediaSessionObserver* observer) {
   observer->MediaSessionMetadataChanged(
       routed_service_ ? routed_service_->metadata() : base::nullopt);
-  observer->MediaSessionActionsChanged(
-      routed_service_ ? routed_service_->actions()
-                      : std::set<media_session::mojom::MediaSessionAction>());
+  observer->MediaSessionActionsChanged(actions_);
   observer->MediaSessionStateChanged(IsControllable(), IsActuallyPaused());
 }
 
@@ -219,19 +217,6 @@ void MediaSessionImpl::NotifyMediaSessionMetadataChange(
   mojo_observers_.ForAllPtrs(
       [&metadata](media_session::mojom::MediaSessionObserver* observer) {
         observer->MediaSessionMetadataChanged(metadata);
-      });
-}
-
-void MediaSessionImpl::NotifyMediaSessionActionsChange(
-    const std::set<media_session::mojom::MediaSessionAction>& actions) {
-  for (auto& observer : observers_)
-    observer.MediaSessionActionsChanged(actions);
-
-  std::vector<media_session::mojom::MediaSessionAction> actions_vec(
-      actions.begin(), actions.end());
-  mojo_observers_.ForAllPtrs(
-      [&actions_vec](media_session::mojom::MediaSessionObserver* observer) {
-        observer->MediaSessionActionsChanged(actions_vec);
       });
 }
 
@@ -294,6 +279,7 @@ bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
   if (old_audio_focus_state != audio_focus_state_ ||
       old_controllable != IsControllable()) {
     NotifyLegacyObserversStateChange();
+    RebuildAndNotifyActionsChanged();
   }
 
   return true;
@@ -323,8 +309,10 @@ void MediaSessionImpl::RemovePlayer(MediaSessionPlayerObserver* observer,
   // The session may become controllable after removing a one-shot player.
   // However AbandonSystemAudioFocusIfNeeded will short-return and won't notify
   // about the state change.
-  if (!was_controllable && IsControllable())
+  if (!was_controllable && IsControllable()) {
     NotifyLegacyObserversStateChange();
+    RebuildAndNotifyActionsChanged();
+  }
 }
 
 void MediaSessionImpl::RemovePlayers(MediaSessionPlayerObserver* observer) {
@@ -357,8 +345,10 @@ void MediaSessionImpl::RemovePlayers(MediaSessionPlayerObserver* observer) {
   // The session may become controllable after removing a one-shot player.
   // However AbandonSystemAudioFocusIfNeeded will short-return and won't notify
   // about the state change.
-  if (!was_controllable && IsControllable())
+  if (!was_controllable && IsControllable()) {
     NotifyLegacyObserversStateChange();
+    RebuildAndNotifyActionsChanged();
+  }
 }
 
 void MediaSessionImpl::RecordSessionDuck() {
@@ -406,7 +396,7 @@ void MediaSessionImpl::Resume(SuspendType suspend_type) {
   if (suspend_type == SuspendType::kUI) {
     // If the site has registered an action handler for play then we should
     // pass it to the site and let them handle it.
-    if (IsActionSupported(media_session::mojom::MediaSessionAction::kPlay)) {
+    if (ShouldRouteAction(media_session::mojom::MediaSessionAction::kPlay)) {
       DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay);
       return;
     }
@@ -442,7 +432,7 @@ void MediaSessionImpl::Suspend(SuspendType suspend_type) {
   if (suspend_type == SuspendType::kUI) {
     // If the site has registered an action handler for pause then we should
     // pass it to the site and let them handle it.
-    if (IsActionSupported(media_session::mojom::MediaSessionAction::kPause)) {
+    if (ShouldRouteAction(media_session::mojom::MediaSessionAction::kPause)) {
       DidReceiveAction(media_session::mojom::MediaSessionAction::kPause);
       return;
     }
@@ -485,7 +475,7 @@ void MediaSessionImpl::Seek(base::TimeDelta seek_time) {
   if (seek_time > base::TimeDelta()) {
     // If the site has registered an action handler for seek forward then we
     // should pass it to the site and let them handle it.
-    if (IsActionSupported(
+    if (ShouldRouteAction(
             media_session::mojom::MediaSessionAction::kSeekForward)) {
       DidReceiveAction(media_session::mojom::MediaSessionAction::kSeekForward);
       return;
@@ -496,7 +486,7 @@ void MediaSessionImpl::Seek(base::TimeDelta seek_time) {
   } else if (seek_time < base::TimeDelta()) {
     // If the site has registered an action handler for seek backward then we
     // should pass it to the site and let them handle it.
-    if (IsActionSupported(
+    if (ShouldRouteAction(
             media_session::mojom::MediaSessionAction::kSeekBackward)) {
       DidReceiveAction(media_session::mojom::MediaSessionAction::kSeekBackward);
       return;
@@ -786,7 +776,7 @@ void MediaSessionImpl::AddObserver(
 
   if (routed_service_) {
     std::vector<media_session::mojom::MediaSessionAction> actions(
-        routed_service_->actions().begin(), routed_service_->actions().end());
+        actions_.begin(), actions_.end());
     observer->MediaSessionActionsChanged(actions);
   } else {
     observer->MediaSessionActionsChanged(
@@ -853,6 +843,7 @@ void MediaSessionImpl::AbandonSystemAudioFocusIfNeeded() {
 
   SetAudioFocusState(State::INACTIVE);
   NotifyLegacyObserversStateChange();
+  RebuildAndNotifyActionsChanged();
 }
 
 void MediaSessionImpl::NotifyLegacyObserversStateChange() {
@@ -960,7 +951,9 @@ void MediaSessionImpl::OnMediaSessionPlaybackStateChanged(
     MediaSessionServiceImpl* service) {
   if (service != routed_service_)
     return;
+
   NotifyLegacyObserversStateChange();
+  RebuildAndNotifyActionsChanged();
 }
 
 void MediaSessionImpl::OnMediaSessionMetadataChanged(
@@ -976,7 +969,7 @@ void MediaSessionImpl::OnMediaSessionActionsChanged(
   if (service != routed_service_)
     return;
 
-  NotifyMediaSessionActionsChange(routed_service_->actions());
+  RebuildAndNotifyActionsChanged();
 }
 
 void MediaSessionImpl::DidReceiveAction(
@@ -1034,7 +1027,7 @@ void MediaSessionImpl::UpdateRoutedService() {
   routed_service_ = new_service;
   if (routed_service_) {
     NotifyMediaSessionMetadataChange(routed_service_->metadata());
-    NotifyMediaSessionActionsChange(routed_service_->actions());
+    RebuildAndNotifyActionsChanged();
   }
 }
 
@@ -1079,10 +1072,39 @@ MediaSessionServiceImpl* MediaSessionImpl::ComputeServiceForRouting() {
   return best_frame ? services_[best_frame] : nullptr;
 }
 
-bool MediaSessionImpl::IsActionSupported(
+bool MediaSessionImpl::ShouldRouteAction(
     media_session::mojom::MediaSessionAction action) const {
   return routed_service_ &&
          base::ContainsKey(routed_service_->actions(), action);
+}
+
+void MediaSessionImpl::RebuildAndNotifyActionsChanged() {
+  std::set<media_session::mojom::MediaSessionAction> actions =
+      routed_service_ ? routed_service_->actions()
+                      : std::set<media_session::mojom::MediaSessionAction>();
+
+  // If we are controllable then we should always add these actions as we can
+  // support them by directly interacting with the players underneath.
+  if (IsControllable()) {
+    actions.insert(media_session::mojom::MediaSessionAction::kPlay);
+    actions.insert(media_session::mojom::MediaSessionAction::kPause);
+    actions.insert(media_session::mojom::MediaSessionAction::kStop);
+  }
+
+  if (actions_ == actions)
+    return;
+
+  actions_ = actions;
+
+  for (auto& observer : observers_)
+    observer.MediaSessionActionsChanged(actions);
+
+  std::vector<media_session::mojom::MediaSessionAction> actions_vec(
+      actions.begin(), actions.end());
+  mojo_observers_.ForAllPtrs(
+      [&actions_vec](media_session::mojom::MediaSessionObserver* observer) {
+        observer->MediaSessionActionsChanged(actions_vec);
+      });
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaSessionImpl)

@@ -1823,9 +1823,15 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   mock_media_session_service_->SetMetadata(metadata);
 
   mock_media_session_service_->EnableAction(
-      media_session::mojom::MediaSessionAction::kPlay);
+      media_session::mojom::MediaSessionAction::kSeekForward);
   std::set<media_session::mojom::MediaSessionAction> expectedActions =
       mock_media_session_service_->actions();
+
+  // These actions are provided by media session automatically if we are
+  // controllable.
+  expectedActions.insert(media_session::mojom::MediaSessionAction::kPlay);
+  expectedActions.insert(media_session::mojom::MediaSessionAction::kPause);
+  expectedActions.insert(media_session::mojom::MediaSessionAction::kStop);
 
   // Make sure the service is routed,
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>(

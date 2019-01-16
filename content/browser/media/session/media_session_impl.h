@@ -95,8 +95,6 @@ class MediaSessionImpl : public MediaSession,
 
   void NotifyMediaSessionMetadataChange(
       const base::Optional<media_session::MediaMetadata>& metadata);
-  void NotifyMediaSessionActionsChange(
-      const std::set<media_session::mojom::MediaSessionAction>& actions);
 
   // Adds the given player to the current media session. Returns whether the
   // player was successfully added. If it returns false, AddPlayer() should be
@@ -350,8 +348,15 @@ class MediaSessionImpl : public MediaSession,
   // to update |routed_service_|.
   CONTENT_EXPORT MediaSessionServiceImpl* ComputeServiceForRouting();
 
-  // Returns whether the action is supported by the media session.
-  bool IsActionSupported(media_session::mojom::MediaSessionAction action) const;
+  // Returns whether the action should be routed to |routed_service_|.
+  bool ShouldRouteAction(media_session::mojom::MediaSessionAction action) const;
+
+  // Rebuilds |actions_| and notifies observers if they have changed.
+  void RebuildAndNotifyActionsChanged();
+
+  // A set of actions supported by |routed_service_| and the current media
+  // session.
+  std::set<media_session::mojom::MediaSessionAction> actions_;
 
   std::unique_ptr<AudioFocusDelegate> delegate_;
   std::map<PlayerIdentifier, media_session::mojom::AudioFocusType>
