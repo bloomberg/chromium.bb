@@ -186,7 +186,8 @@ void ContextualSearchManager::OnSearchTermResolutionResponse(
       resolved_search_term.selection_start_adjust,
       resolved_search_term.selection_end_adjust, j_context_language,
       j_thumbnail_url, j_caption, j_quick_action_uri,
-      resolved_search_term.quick_action_category);
+      resolved_search_term.quick_action_category,
+      resolved_search_term.logged_event_id);
 }
 
 void ContextualSearchManager::OnTextSurroundingSelectionAvailable(

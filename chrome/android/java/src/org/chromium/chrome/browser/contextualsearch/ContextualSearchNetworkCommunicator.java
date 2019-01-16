@@ -39,12 +39,14 @@ public interface ContextualSearchNetworkCommunicator {
      * @param caption The caption to display.
      * @param quickActionUri The URI for the intent associated with the quick action.
      * @param quickActionCategory The {@link QuickActionCategory} for the quick action.
+     * @param loggedEventId The EventID logged by the server, which should be recorded and sent back
+     *        to the server along with user action results in a subsequent request.
      */
     void handleSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, String mid,
             boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust,
             String contextLanguage, String thumbnailUrl, String caption, String quickActionUri,
-            int quickActionCategory);
+            int quickActionCategory, long loggedEventId);
 
     /**
      * @return Whether the device is currently online.
