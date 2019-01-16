@@ -5146,6 +5146,7 @@ content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
     content::NavigationHandle* navigation_handle,
     const GURL& current_navigation_url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(!navigation_handle->HasCommitted());
 
   // If this is not a main frame, return the initial state. If there are no
   // previews in the state, return the state as is.
