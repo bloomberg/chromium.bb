@@ -204,7 +204,7 @@
 
     <!-- Autofill card unmasking prompt dimensions -->
     <dimen name="autofill_card_unmask_tooltip_horizontal_padding">16dp</dimen>
-    <dimen name="autofill_card_unmask_tooltip_vertical_padding">4dp</dimen>
+    <dimen name="autofill_card_unmask_tooltip_vertical_padding">8dp</dimen>
 
     <!-- Button bar dimensions -->
     <dimen name="button_bar_stacked_margin">8dp</dimen>
