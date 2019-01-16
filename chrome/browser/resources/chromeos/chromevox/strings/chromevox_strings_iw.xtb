@@ -104,7 +104,6 @@
 <translation id="1828385960365606039">מאי</translation>
 <translation id="1834891354138622109">עמודה</translation>
 <translation id="1845944666972354496">אפשר להפעיל באמצעות לחיצה פעמיים</translation>
-<translation id="1846771122725914429">‏צג ברייל תואם Bluetooth</translation>
 <translation id="1865601187525349519">סוף הטקסט</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">אמור את התאריך והשעה הנוכחיים.</translation>
@@ -490,7 +489,6 @@
 <translation id="4763480195061959176">סרטוני וידאו</translation>
 <translation id="4764692524839457597">ברירת מחדל</translation>
 <translation id="479989351350248267">Search</translation>
-<translation id="4804818685124855865">נתק</translation>
 <translation id="481165870889056555">הכרזה על הכותרת של הדף הנוכחי</translation>
 <translation id="4826415162591436065">נווט קדימה</translation>
 <translation id="4826604887384865800">הדילוג הבא</translation>
@@ -560,7 +558,6 @@
 <translation id="5291783959063340370">אובייקט</translation>
 <translation id="5302089807023311274">הפניה לביבליוגרפיה</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, כרטיסייה</translation>
-<translation id="5308380583665731573">התחברות</translation>
 <translation id="5310788376443009632">הוסר:</translation>
 <translation id="5320727453979144100">מצב דביק מופעל</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{פסיק}two{# פסיקים}many{# פסיקים}other{# פסיקים}}</translation>
@@ -649,7 +646,6 @@
 <translation id="5887397643266327462">כיתובי ברייל הופעלו.</translation>
 <translation id="5891934789323004067">טבלה</translation>
 <translation id="5899860758576822363">‏הפעל בעוצמת שמע נמוכה כשתוסף ה-ChromeVox מקריא</translation>
-<translation id="5906974869830879618">יש להזין קוד אימות</translation>
 <translation id="5921587111466148855">פרק</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{סימן שווה}two{# סימני שווה}many{# סימני שווה}other{# סימני שווה}}</translation>
 <translation id="5939518447894949180">אפס</translation>
@@ -778,7 +774,6 @@
 <translation id="712735679809149106">הד מילה</translation>
 <translation id="713824876195128146">‏blockquote הבא</translation>
 <translation id="7143034430156387447">מעבר בין ברייל 6 נקודות ו-8 נקודות</translation>
-<translation id="7143207342074048698">מתחבר</translation>
 <translation id="7157306005867877619">תקציר</translation>
 <translation id="7161425887892204659">סוף התאמת טקסט</translation>
 <translation id="7161771961008409533">לחצן קופץ</translation>
@@ -967,7 +962,6 @@
 <translation id="8940925288729953902">מקשי צירוף</translation>
 <translation id="8943175951035496220">אין תא מימין.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">שכח</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">אין טבלאות.</translation>
 <translation id="9040132695316389094">כותרת 1</translation>
@@ -1001,7 +995,6 @@
 <translation id="948171205378458592">האט את קצב הדיבור</translation>
 <translation id="958854023026327378">החלקה מטה עם אצבע אחת</translation>
 <translation id="962913030769097253">הכותרת הבאה של רמה 1</translation>
-<translation id="966588271015727539">‏בחירת צג ברייל תואם Bluetooth</translation>
 <translation id="973955474346881951">הפעל/השבת מצב דביק</translation>
 <translation id="976849232629612000">אין פריטים.</translation>
 <translation id="995852680044449248">תחילת קו חוצה</translation>

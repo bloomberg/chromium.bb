@@ -104,7 +104,6 @@
 <translation id="1828385960365606039">മേയ്</translation>
 <translation id="1834891354138622109">നിര</translation>
 <translation id="1845944666972354496">സജ്ജീവമാക്കാൻ രണ്ട് തവണ ടാപ്പ് ചെയ്യുക</translation>
-<translation id="1846771122725914429">Bluetooth ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ</translation>
 <translation id="1865601187525349519">വാചകത്തിന്റെ അവസാനം</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">നിലവിലെ സമയവും തീയതിയും പറയുക.</translation>
@@ -489,7 +488,6 @@
 <translation id="4763480195061959176">വീഡിയോ</translation>
 <translation id="4764692524839457597">ഡിഫോൾട്ട്</translation>
 <translation id="479989351350248267">search</translation>
-<translation id="4804818685124855865">വിച്ഛേദിക്കുക</translation>
 <translation id="481165870889056555">നിലവിലെ പേജിന്റെ ശീർഷകം അറിയിക്കുക</translation>
 <translation id="4826415162591436065">മുന്നോട്ട് നാവിഗേറ്റ് ചെയ്യുക</translation>
 <translation id="4826604887384865800">അടുത്ത ജമ്പ്</translation>
@@ -559,7 +557,6 @@
 <translation id="5291783959063340370">ഒബ്‌ജക്‌റ്റ്</translation>
 <translation id="5302089807023311274">ഗ്രന്ഥസൂചി റെഫറൻസ്</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, ടാബ്</translation>
-<translation id="5308380583665731573">കണക്‌റ്റുചെയ്യുക</translation>
 <translation id="5310788376443009632">നീക്കംചെയ്‌തു:</translation>
 <translation id="5320727453979144100">സ്‌റ്റിക്കി മോഡ് പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{കോമ}other{# കോമകൾ}}</translation>
@@ -648,7 +645,6 @@
 <translation id="5887397643266327462">ബ്രെയ്‌ലി അടിക്കുറിപ്പുകൾ പ്രവർത്തനക്ഷമമാക്കി.</translation>
 <translation id="5891934789323004067">പട്ടിക</translation>
 <translation id="5899860758576822363">ChromeVox സംസാരിക്കുമ്പോൾ കുറഞ്ഞ ശബ്‌ദത്തിൽ പ്ലേ ചെയ്യുക</translation>
-<translation id="5906974869830879618">ഒരു പിൻ നൽകുക</translation>
 <translation id="5921587111466148855">അധ്യായം</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{സമചിഹ്നം}other{# സമചിഹ്നങ്ങൾ}}</translation>
 <translation id="5939518447894949180">വീണ്ടും സജ്ജീകരിക്കുക</translation>
@@ -777,7 +773,6 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="712735679809149106">പദ എക്കൊ</translation>
 <translation id="713824876195128146">അടുത്ത ബ്ലോക്ക് ഉദ്ധരണി</translation>
 <translation id="7143034430156387447">6, 8 ഡോട്ട് ബ്രെയ്‌ലികൾക്കിടയിൽ മാറുക</translation>
-<translation id="7143207342074048698">കണക്റ്റുചെയ്യുന്നു</translation>
 <translation id="7157306005867877619">സംക്ഷേപം</translation>
 <translation id="7161425887892204659">വാചക പൊരുത്തം അവസാനിക്കുന്നു</translation>
 <translation id="7161771961008409533">പോപ്പ്-അപ്പ് ബട്ടൺ</translation>
@@ -966,7 +961,6 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="8940925288729953902">മോഡിഫയർ കീകൾ</translation>
 <translation id="8943175951035496220">വലതുഭാഗത്ത് കോളമൊന്നുമില്ല.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">മറന്നു</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">പട്ടികകൾ ഒന്നുമില്ല.</translation>
 <translation id="9040132695316389094">ശീർഷകം 1</translation>
@@ -1000,7 +994,6 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="948171205378458592">സംഭാഷണ റേറ്റ് കുറയ്ക്കുക</translation>
 <translation id="958854023026327378">ഒരു വിരൽ ഉപയോഗിച്ച് താഴോട്ട് സ്വൈപ്പ് ചെയ്യുക</translation>
 <translation id="962913030769097253">അടുത്ത നില 1 ശീർഷകം</translation>
-<translation id="966588271015727539">ഒരു Bluetooth ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="973955474346881951">സ്റ്റിക്കി മോഡ് പ്രവർത്തനക്ഷമമാക്കുക/പ്രവർത്തനരഹിതമാക്കുക</translation>
 <translation id="976849232629612000">ഇനങ്ങളൊന്നുമില്ല.</translation>
 <translation id="995852680044449248">കുറുകെവെട്ടൽ തുടങ്ങുന്നു</translation>

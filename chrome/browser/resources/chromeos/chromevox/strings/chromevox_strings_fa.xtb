@@ -104,7 +104,6 @@
 <translation id="1828385960365606039">مه</translation>
 <translation id="1834891354138622109">ستون</translation>
 <translation id="1845944666972354496">برای فعال کردن دو ضربه سریع بزنید</translation>
-<translation id="1846771122725914429">صفحه‌نمایش بریل بلوتوث</translation>
 <translation id="1865601187525349519">پایان نوشتار</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">تاریخ و زمان کنونی را بگویید.</translation>
@@ -490,7 +489,6 @@
 <translation id="4763480195061959176">ویدئو</translation>
 <translation id="4764692524839457597">پیش‌فرض</translation>
 <translation id="479989351350248267">جستجو</translation>
-<translation id="4804818685124855865">قطع اتصال</translation>
 <translation id="481165870889056555">اعلام عنوان صفحه کنونی</translation>
 <translation id="4826415162591436065">پیمایش به جلو</translation>
 <translation id="4826604887384865800">پرش بعدی</translation>
@@ -560,7 +558,6 @@
 <translation id="5291783959063340370">شیء</translation>
 <translation id="5302089807023311274">مرجع فهرست منابع</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />، برگه</translation>
-<translation id="5308380583665731573">اتصال</translation>
 <translation id="5310788376443009632">حذف شد:</translation>
 <translation id="5320727453979144100">حالت چسبان فعال شد</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{کاما}one{# کاما}other{# کاما}}</translation>
@@ -649,7 +646,6 @@
 <translation id="5887397643266327462">زیرنویس بریل فعال شد.</translation>
 <translation id="5891934789323004067">جدول</translation>
 <translation id="5899860758576822363">‏پخش با صدایی کمتر هنگامی که ChromeVox درحال صحبت کردن است</translation>
-<translation id="5906974869830879618">لطفاً پین را وارد کنید</translation>
 <translation id="5921587111466148855">فصل</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{علامت مساوی}one{# علامت مساوی}other{# علامت مساوی}}</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
@@ -778,7 +774,6 @@
 <translation id="712735679809149106">بازگویی کلمه</translation>
 <translation id="713824876195128146">نقل قول طولانی بعدی</translation>
 <translation id="7143034430156387447">تغییر وضعیت بین بریل ۶ و ۸ نقطه</translation>
-<translation id="7143207342074048698">در حال اتصال</translation>
 <translation id="7157306005867877619">انتزاعی</translation>
 <translation id="7161425887892204659">پایان مطابقت نوشتار</translation>
 <translation id="7161771961008409533">دکمه بازشو</translation>
@@ -967,7 +962,6 @@
 <translation id="8940925288729953902">کلیدهای تغییردهنده</translation>
 <translation id="8943175951035496220">سلولی در راست موجود نیست.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">فراموش شود</translation>
 <translation id="900114243503212879">فایل</translation>
 <translation id="9027462562263121875">جدولی وجود ندارد.</translation>
 <translation id="9040132695316389094">عنوان ۱</translation>
@@ -1001,7 +995,6 @@
 <translation id="948171205378458592">کاهش سرعت گفتار</translation>
 <translation id="958854023026327378">تند کشیدن یک انگشت به پایین</translation>
 <translation id="962913030769097253">عنوان بعدی سطح ۱</translation>
-<translation id="966588271015727539">صفحه‌نمایش بریل انتخاب کنید</translation>
 <translation id="973955474346881951">فعال/غیرفعال کردن حالت چسبنده</translation>
 <translation id="976849232629612000">موردی وجود ندارد.</translation>
 <translation id="995852680044449248">شروع خط زدن</translation>

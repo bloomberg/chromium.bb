@@ -104,7 +104,6 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="1828385960365606039">Mai</translation>
 <translation id="1834891354138622109">Spalte</translation>
 <translation id="1845944666972354496">Zum Aktivieren doppeltippen</translation>
-<translation id="1846771122725914429">Bluetooth-Braillezeile</translation>
 <translation id="1865601187525349519">Ende des Texts</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Uhrzeit und Datum ansagen</translation>
@@ -489,7 +488,6 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="4763480195061959176">Video</translation>
 <translation id="4764692524839457597">Standard</translation>
 <translation id="479989351350248267">Suchen</translation>
-<translation id="4804818685124855865">Verbindung trennen</translation>
 <translation id="481165870889056555">Titel der aktuellen Seite ansagen</translation>
 <translation id="4826415162591436065">Vorwärts navigieren</translation>
 <translation id="4826604887384865800">Nächster Sprung</translation>
@@ -559,7 +557,6 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="5291783959063340370">Objekt</translation>
 <translation id="5302089807023311274">Bibliografiereferenz</translation>
 <translation id="5304943142864553931">Tab "<ph name="TITLE" />"</translation>
-<translation id="5308380583665731573">Verbinden</translation>
 <translation id="5310788376443009632">Entfernt:</translation>
 <translation id="5320727453979144100">Fixierter Modus aktiviert</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{Komma}other{# Kommas}}</translation>
@@ -648,7 +645,6 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="5887397643266327462">Braille-Untertitel aktiviert</translation>
 <translation id="5891934789323004067">Tabelle</translation>
 <translation id="5899860758576822363">Mit geringerer Lautstärke wiedergeben, wenn eine Sprachausgabe durch ChromeVox stattfindet</translation>
-<translation id="5906974869830879618">Bitte geben Sie eine PIN ein</translation>
 <translation id="5921587111466148855">Kapitel</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{Gleichheitszeichen}other{# Gleichheitszeichen}}</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
@@ -777,7 +773,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="712735679809149106">Wortecho</translation>
 <translation id="713824876195128146">Nächstes Blockzitat</translation>
 <translation id="7143034430156387447">Zwischen 6- und 8-Punkt-Braille wechseln</translation>
-<translation id="7143207342074048698">Verbindung wird hergestellt.</translation>
 <translation id="7157306005867877619">Zusammenfassung</translation>
 <translation id="7161425887892204659">Ende Textübereinstimmung</translation>
 <translation id="7161771961008409533">Pop-up-Schaltfläche</translation>
@@ -966,7 +961,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="8940925288729953902">Modifikatortasten</translation>
 <translation id="8943175951035496220">Keine Zelle rechts</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">Entfernen</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">Keine Tabellen</translation>
 <translation id="9040132695316389094">Überschrift 1</translation>
@@ -1000,7 +994,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="948171205378458592">Sprechgeschwindigkeit verringern</translation>
 <translation id="958854023026327378">Mit einem Finger nach unten wischen</translation>
 <translation id="962913030769097253">Nächste Überschrift der Ebene 1</translation>
-<translation id="966588271015727539">Wählen Sie eine Bluetooth-Braillezeile aus</translation>
 <translation id="973955474346881951">Fixierten Modus aktivieren/deaktivieren</translation>
 <translation id="976849232629612000">Keine Elemente.</translation>
 <translation id="995852680044449248">Anfang durchgestrichener Text</translation>

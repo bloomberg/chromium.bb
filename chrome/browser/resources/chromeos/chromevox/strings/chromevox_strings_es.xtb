@@ -104,7 +104,6 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="1828385960365606039">Mayo</translation>
 <translation id="1834891354138622109">Columna</translation>
 <translation id="1845944666972354496">Toca dos veces para activar</translation>
-<translation id="1846771122725914429">Pantalla braille Bluetooth</translation>
 <translation id="1865601187525349519">Fin del texto</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Di la fecha y la hora actuales.</translation>
@@ -490,7 +489,6 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="4763480195061959176">vídeo</translation>
 <translation id="4764692524839457597">opción predeterminada</translation>
 <translation id="479989351350248267">buscar</translation>
-<translation id="4804818685124855865">Desvincular</translation>
 <translation id="481165870889056555">Indica el título de la página actual</translation>
 <translation id="4826415162591436065">Avanza</translation>
 <translation id="4826604887384865800">Siguiente salto</translation>
@@ -560,7 +558,6 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="5291783959063340370">Objeto</translation>
 <translation id="5302089807023311274">Referencia bibliográfica</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, pestaña</translation>
-<translation id="5308380583665731573">Conectar</translation>
 <translation id="5310788376443009632">eliminada:</translation>
 <translation id="5320727453979144100">Modo persistente habilitado</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{coma}other{# comas}}</translation>
@@ -649,7 +646,6 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="5887397643266327462">Subtítulos Braille habilitados.</translation>
 <translation id="5891934789323004067">Tabla</translation>
 <translation id="5899860758576822363">Reproducir a un volumen inferior cuando ChromeVox habla</translation>
-<translation id="5906974869830879618">Introduce un PIN</translation>
 <translation id="5921587111466148855">Capítulo</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{igual}other{# signos igual}}</translation>
 <translation id="5939518447894949180">Restablecer</translation>
@@ -778,7 +774,6 @@ Para abrir el menú del navegador Chrome, pulsa Alt + F.</translation>
 <translation id="712735679809149106">decir palabras</translation>
 <translation id="713824876195128146">Siguiente cita de bloque</translation>
 <translation id="7143034430156387447">Cambiar entre braille de 6 y 8 puntos</translation>
-<translation id="7143207342074048698">Conectando</translation>
 <translation id="7157306005867877619">Resumen</translation>
 <translation id="7161425887892204659">Fin de la coincidencia de texto</translation>
 <translation id="7161771961008409533">Botón con componente emergente</translation>
@@ -967,7 +962,6 @@ Para abrir el menú del navegador Chrome, pulsa Alt + F.</translation>
 <translation id="8940925288729953902">Teclas modificadoras</translation>
 <translation id="8943175951035496220">No hay ninguna celda a la derecha.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">Dejar de recordar</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">No hay tablas.</translation>
 <translation id="9040132695316389094">Título 1</translation>
@@ -1001,7 +995,6 @@ Para abrir el menú del navegador Chrome, pulsa Alt + F.</translation>
 <translation id="948171205378458592">Habla más lento</translation>
 <translation id="958854023026327378">Desliza un dedo hacia abajo</translation>
 <translation id="962913030769097253">Siguiente encabezado de nivel 1</translation>
-<translation id="966588271015727539">Selecciona una pantalla de braille Bluetooth</translation>
 <translation id="973955474346881951">Habilita o inhabilita el modo persistente</translation>
 <translation id="976849232629612000">No hay elementos.</translation>
 <translation id="995852680044449248">Inicio del tachado</translation>

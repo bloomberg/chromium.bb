@@ -104,7 +104,6 @@
 <translation id="1828385960365606039">5 月</translation>
 <translation id="1834891354138622109">欄</translation>
 <translation id="1845944666972354496">輕觸兩下即可啟用</translation>
-<translation id="1846771122725914429">藍牙點字顯示器</translation>
 <translation id="1865601187525349519">文字結束</translation>
 <translation id="1876229593313240038">文件</translation>
 <translation id="188130072164734898">說出目前的時間和日期。</translation>
@@ -490,7 +489,6 @@
 <translation id="4763480195061959176">影片</translation>
 <translation id="4764692524839457597">預設</translation>
 <translation id="479989351350248267">search</translation>
-<translation id="4804818685124855865">中斷連線</translation>
 <translation id="481165870889056555">朗讀目前網頁的標題</translation>
 <translation id="4826415162591436065">向前導覽</translation>
 <translation id="4826604887384865800">下一個跳轉</translation>
@@ -560,7 +558,6 @@
 <translation id="5291783959063340370">物件</translation>
 <translation id="5302089807023311274">參考書目資料</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />，分頁</translation>
-<translation id="5308380583665731573">連線</translation>
 <translation id="5310788376443009632">已移除：</translation>
 <translation id="5320727453979144100">固定模式已啟用</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{逗號}other{# 個逗號}}</translation>
@@ -649,7 +646,6 @@
 <translation id="5887397643266327462">點字字幕已啟用。</translation>
 <translation id="5891934789323004067">表格</translation>
 <translation id="5899860758576822363">ChromeVox 朗讀時調降音訊的播放音量</translation>
-<translation id="5906974869830879618">請輸入 PIN 碼</translation>
 <translation id="5921587111466148855">章節</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{等號}other{# 個等號}}</translation>
 <translation id="5939518447894949180">重設</translation>
@@ -778,7 +774,6 @@
 <translation id="712735679809149106">字詞語音回應</translation>
 <translation id="713824876195128146">下一個區塊引述</translation>
 <translation id="7143034430156387447">在 6 點與 8 點點字之間切換</translation>
-<translation id="7143207342074048698">連線中</translation>
 <translation id="7157306005867877619">摘要</translation>
 <translation id="7161425887892204659">相符文字結尾</translation>
 <translation id="7161771961008409533">彈出式按鈕</translation>
@@ -967,7 +962,6 @@
 <translation id="8940925288729953902">輔助鍵</translation>
 <translation id="8943175951035496220">右側沒有儲存格。</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">清除</translation>
 <translation id="900114243503212879">檔案</translation>
 <translation id="9027462562263121875">沒有表格。</translation>
 <translation id="9040132695316389094">標題 1</translation>
@@ -1001,7 +995,6 @@
 <translation id="948171205378458592">放慢說話速度</translation>
 <translation id="958854023026327378">以單指向下滑動</translation>
 <translation id="962913030769097253">下一個第 1 階標題</translation>
-<translation id="966588271015727539">選取藍牙點字顯示器</translation>
 <translation id="973955474346881951">啟用/停用固定模式</translation>
 <translation id="976849232629612000">沒有選單項目。</translation>
 <translation id="995852680044449248">刪除線開頭</translation>

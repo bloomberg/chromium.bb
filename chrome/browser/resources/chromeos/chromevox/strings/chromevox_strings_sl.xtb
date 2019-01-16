@@ -104,7 +104,6 @@
 <translation id="1828385960365606039">maj</translation>
 <translation id="1834891354138622109">Stolpec</translation>
 <translation id="1845944666972354496">Za aktiviranje se dvakrat dotaknite.</translation>
-<translation id="1846771122725914429">Zaslon braille Bluetooth</translation>
 <translation id="1865601187525349519">Konec besedila</translation>
 <translation id="1876229593313240038">dok</translation>
 <translation id="188130072164734898">Izgovori trenutna čas in datum.</translation>
@@ -490,7 +489,6 @@
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">privzeto</translation>
 <translation id="479989351350248267">search</translation>
-<translation id="4804818685124855865">Prekini povezavo</translation>
 <translation id="481165870889056555">Obvestilo o naslovu trenutne strani</translation>
 <translation id="4826415162591436065">Pomik naprej</translation>
 <translation id="4826604887384865800">Naslednji skok</translation>
@@ -560,7 +558,6 @@
 <translation id="5291783959063340370">Predmetna</translation>
 <translation id="5302089807023311274">Bibliografski viri</translation>
 <translation id="5304943142864553931">zavihek <ph name="TITLE" /></translation>
-<translation id="5308380583665731573">Povezovanje</translation>
 <translation id="5310788376443009632">odstranjeno:</translation>
 <translation id="5320727453979144100">Način zaklepanja je omogočen</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{vejica}one{# vejica}two{# vejici}few{# vejice}other{# vejic}}</translation>
@@ -649,7 +646,6 @@
 <translation id="5887397643266327462">Braillovi napisi so omogočeni.</translation>
 <translation id="5891934789323004067">Tabela</translation>
 <translation id="5899860758576822363">Predvajaj pri nižji glasnosti, ko ChromeVox govori</translation>
-<translation id="5906974869830879618">Vnesite kodo PIN</translation>
 <translation id="5921587111466148855">Poglavje</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{enačaj}one{# enačaj}two{# enačaja}few{# enačaji}other{# enačajev}}</translation>
 <translation id="5939518447894949180">Ponastavi</translation>
@@ -778,7 +774,6 @@
 <translation id="712735679809149106">izgovarjanje besed ob vnosu</translation>
 <translation id="713824876195128146">Naslednji citat v bloku</translation>
 <translation id="7143034430156387447">Preklop med braillovo pisavo s 6 pikami in z 8 pikami</translation>
-<translation id="7143207342074048698">Vzpostavljanje povezave</translation>
 <translation id="7157306005867877619">Izvleček</translation>
 <translation id="7161425887892204659">Konec ujemajočega se besedila</translation>
 <translation id="7161771961008409533">Pojavni gumb</translation>
@@ -967,7 +962,6 @@
 <translation id="8940925288729953902">Modifikacijske tipke</translation>
 <translation id="8943175951035496220">Ni celice desno.</translation>
 <translation id="8978496506222343566">opord</translation>
-<translation id="8986362086234534611">Pozabi</translation>
 <translation id="900114243503212879">dat</translation>
 <translation id="9027462562263121875">Ni tabel.</translation>
 <translation id="9040132695316389094">Naslov 1</translation>
@@ -1001,7 +995,6 @@
 <translation id="948171205378458592">Zmanjšanje hitrosti govora</translation>
 <translation id="958854023026327378">Z enim prstom povlecite dol</translation>
 <translation id="962913030769097253">Naslednji naslov na ravni 1</translation>
-<translation id="966588271015727539">Izberite bralnik braille Bluetooth</translation>
 <translation id="973955474346881951">Omogočanje/onemogočanje načina zaklepanja</translation>
 <translation id="976849232629612000">Ni elementov.</translation>
 <translation id="995852680044449248">Začetek prečrtanega besedila</translation>

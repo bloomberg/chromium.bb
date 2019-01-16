@@ -104,7 +104,6 @@
 <translation id="1828385960365606039">май</translation>
 <translation id="1834891354138622109">Столбец.</translation>
 <translation id="1845944666972354496">Нажмите дважды, чтобы активировать.</translation>
-<translation id="1846771122725914429">Дисплей Брайля с технологией Bluetooth</translation>
 <translation id="1865601187525349519">Конец текста.</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Озвучить текущее время и дату</translation>
@@ -490,7 +489,6 @@
 <translation id="4763480195061959176">видео</translation>
 <translation id="4764692524839457597">по умолчанию</translation>
 <translation id="479989351350248267">поиск</translation>
-<translation id="4804818685124855865">Отключиться</translation>
 <translation id="481165870889056555">Назвать заголовок текущей страницы</translation>
 <translation id="4826415162591436065">Перейти к следующему элементу</translation>
 <translation id="4826604887384865800">Следующий переход</translation>
@@ -560,7 +558,6 @@
 <translation id="5291783959063340370">Объект.</translation>
 <translation id="5302089807023311274">Ссылка на библиографию</translation>
 <translation id="5304943142864553931">Вкладка <ph name="TITLE" />.</translation>
-<translation id="5308380583665731573">Подключение</translation>
 <translation id="5310788376443009632">Удалено:</translation>
 <translation id="5320727453979144100">Режим залипания включен</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{запятая}one{# запятая}few{# запятые}many{# запятых}other{# commas}}</translation>
@@ -649,7 +646,6 @@
 <translation id="5887397643266327462">Титры шрифтом Брайля включены.</translation>
 <translation id="5891934789323004067">Таблица.</translation>
 <translation id="5899860758576822363">Уменьшать его громкость во время чтения ChromeVox</translation>
-<translation id="5906974869830879618">Введите PIN-код</translation>
 <translation id="5921587111466148855">Глава</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{знак равенства}one{# знак равенства}few{# знака равенства}many{# знаков равенства}other{# equal signs}}</translation>
 <translation id="5939518447894949180">Сбросить</translation>
@@ -778,7 +774,6 @@
 <translation id="712735679809149106">Озвучивание слов.</translation>
 <translation id="713824876195128146">Перейти к следующей цитате</translation>
 <translation id="7143034430156387447">Переключение между 6- и 8-точечным шрифтами</translation>
-<translation id="7143207342074048698">Подключение</translation>
 <translation id="7157306005867877619">Аннотация</translation>
 <translation id="7161425887892204659">Конец совпадающего отрывка</translation>
 <translation id="7161771961008409533">Кнопка-переключатель</translation>
@@ -967,7 +962,6 @@
 <translation id="8940925288729953902">Клавиши-модификаторы</translation>
 <translation id="8943175951035496220">Ячейки справа нет.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">Удалить</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">Таблиц нет.</translation>
 <translation id="9040132695316389094">Заголовок первого уровня</translation>
@@ -1001,7 +995,6 @@
 <translation id="948171205378458592">Замедлить речь</translation>
 <translation id="958854023026327378">Проведите одним пальцем вниз</translation>
 <translation id="962913030769097253">Перейти к следующему заголовку первого уровня</translation>
-<translation id="966588271015727539">Выберите дисплей Брайля с технологией Bluetooth</translation>
 <translation id="973955474346881951">Включить или выключить режим залипания</translation>
 <translation id="976849232629612000">Пунктов меню нет.</translation>
 <translation id="995852680044449248">Начало зачеркнутого теста</translation>

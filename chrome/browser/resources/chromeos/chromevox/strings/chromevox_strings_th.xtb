@@ -104,7 +104,6 @@
 <translation id="1828385960365606039">พฤษภาคม</translation>
 <translation id="1834891354138622109">คอลัมน์</translation>
 <translation id="1845944666972354496">แตะสองครั้งเพื่อเปิดใช้งาน</translation>
-<translation id="1846771122725914429">อุปกรณ์แสดงผลอักษรเบรลล์ผ่านบลูทูธ</translation>
 <translation id="1865601187525349519">สิ้นสุดข้อความ</translation>
 <translation id="1876229593313240038">เอกสาร</translation>
 <translation id="188130072164734898">พูดเวลาและวันที่ปัจจุบัน</translation>
@@ -489,7 +488,6 @@
 <translation id="4763480195061959176">วิดีโอ</translation>
 <translation id="4764692524839457597">ค่าเริ่มต้น</translation>
 <translation id="479989351350248267">ค้นหา</translation>
-<translation id="4804818685124855865">ตัดการเชื่อมต่อ</translation>
 <translation id="481165870889056555">แจ้งชื่อของหน้าเว็บปัจจุบัน</translation>
 <translation id="4826415162591436065">นำทางไปข้างหน้า</translation>
 <translation id="4826604887384865800">การข้ามถัดไป</translation>
@@ -559,7 +557,6 @@
 <translation id="5291783959063340370">ออบเจ็กต์</translation>
 <translation id="5302089807023311274">ข้อมูลอ้างอิงทางบรรณานุกรม</translation>
 <translation id="5304943142864553931">แท็บ <ph name="TITLE" /></translation>
-<translation id="5308380583665731573">เชื่อมต่อ</translation>
 <translation id="5310788376443009632">ลบออกแล้ว:</translation>
 <translation id="5320727453979144100">เปิดใช้งานโหมดติดหนึบแล้ว</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{เครื่องหมายจุลภาค}other{# เครื่องหมายจุลภาค}}</translation>
@@ -648,7 +645,6 @@
 <translation id="5887397643266327462">เปิดใช้คำบรรยายอักษรเบรลล์แล้ว</translation>
 <translation id="5891934789323004067">ตาราง</translation>
 <translation id="5899860758576822363">เล่นโดยลดระดับเสียงเมื่อ ChromeVox กำลังพูด</translation>
-<translation id="5906974869830879618">โปรดป้อน PIN</translation>
 <translation id="5921587111466148855">บท</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{เครื่องหมายเท่ากับ}other{# เครื่องหมายเท่ากับ}}</translation>
 <translation id="5939518447894949180">รีเซ็ต</translation>
@@ -777,7 +773,6 @@
 <translation id="712735679809149106">พูดคำ</translation>
 <translation id="713824876195128146">ข้อความอ้างอิงถัดไป</translation>
 <translation id="7143034430156387447">สลับไปมาระหว่างอักษรเบรลล์ 6 และ 8 จุด</translation>
-<translation id="7143207342074048698">กำลังเชื่อมต่อ</translation>
 <translation id="7157306005867877619">บทคัดย่อ</translation>
 <translation id="7161425887892204659">สิ้นสุดข้อความที่ตรงกัน</translation>
 <translation id="7161771961008409533">ปุ่มป๊อปอัป</translation>
@@ -966,7 +961,6 @@
 <translation id="8940925288729953902">คีย์ตัวปรับแต่ง</translation>
 <translation id="8943175951035496220">ไม่มีเซลล์ทางด้านขวา</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">ไม่จำ</translation>
 <translation id="900114243503212879">ไฟล์</translation>
 <translation id="9027462562263121875">ไม่มีตาราง</translation>
 <translation id="9040132695316389094">ส่วนหัวระดับ 1</translation>
@@ -1000,7 +994,6 @@
 <translation id="948171205378458592">ลดความเร็วการพูด</translation>
 <translation id="958854023026327378">เลื่อน 1 นิ้วลง</translation>
 <translation id="962913030769097253">ส่วนหัวระดับ 1 ถัดไป</translation>
-<translation id="966588271015727539">เลือกอุปกรณ์แสดงผลอักษรเบรลล์ผ่านบลูทูธ</translation>
 <translation id="973955474346881951">เปิด/ปิดโหมดติดหนึบ</translation>
 <translation id="976849232629612000">ไม่มีรายการ</translation>
 <translation id="995852680044449248">เริ่มส่วนที่ขีดฆ่า</translation>

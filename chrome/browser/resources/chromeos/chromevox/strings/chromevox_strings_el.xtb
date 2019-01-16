@@ -104,7 +104,6 @@
 <translation id="1828385960365606039">Μάιος</translation>
 <translation id="1834891354138622109">Στήλη</translation>
 <translation id="1845944666972354496">Πατήστε δύο φορές για ενεργοποίηση</translation>
-<translation id="1846771122725914429">Συσκευή μπράιγ Bluetooth</translation>
 <translation id="1865601187525349519">Τέλος κειμένου</translation>
 <translation id="1876229593313240038">έγγραφο</translation>
 <translation id="188130072164734898">Εκφώνηση της τρέχουσας ώρας και ημερομηνίας.</translation>
@@ -490,7 +489,6 @@
 <translation id="4763480195061959176">βίντεο</translation>
 <translation id="4764692524839457597">προεπιλογή</translation>
 <translation id="479989351350248267">search</translation>
-<translation id="4804818685124855865">Αποσύνδεση</translation>
 <translation id="481165870889056555">Ανακοίνωση του τίτλου της τρέχουσας σελίδας</translation>
 <translation id="4826415162591436065">Μετάβαση προς τα εμπρός</translation>
 <translation id="4826604887384865800">Επόμενη μετάβαση</translation>
@@ -560,7 +558,6 @@
 <translation id="5291783959063340370">Στοιχείο</translation>
 <translation id="5302089807023311274">Βιβλιογραφική αναφορά</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, καρτέλα</translation>
-<translation id="5308380583665731573">Σύνδεση</translation>
 <translation id="5310788376443009632">καταργήθηκε:</translation>
 <translation id="5320727453979144100">Έχει ενεργοποιηθεί η λειτουργία διατήρησης ενδιαφέροντος (Sticky)</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{κόμμα}other{# κόμματα}}</translation>
@@ -649,7 +646,6 @@
 <translation id="5887397643266327462">Οι υπότιτλοι braille ενεργοποιήθηκαν.</translation>
 <translation id="5891934789323004067">Πίνακας</translation>
 <translation id="5899860758576822363">Αναπαραγωγή σε χαμηλότερη ένταση κατά την εκφώνηση από το ChromeVox</translation>
-<translation id="5906974869830879618">Εισαγάγετε ένα PIN</translation>
 <translation id="5921587111466148855">Κεφάλαιο</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{σύμβολο "ίσον"}other{# σύμβολα "ίσον"}}</translation>
 <translation id="5939518447894949180">Επαναφορά</translation>
@@ -779,7 +775,6 @@
 <translation id="712735679809149106">εκφώνηση λέξεων</translation>
 <translation id="713824876195128146">Επόμενο block quote</translation>
 <translation id="7143034430156387447">Κάντε εναλλαγή μεταξύ εξάστιγμου και οκτάστιγμου braille</translation>
-<translation id="7143207342074048698">Σύνδεση</translation>
 <translation id="7157306005867877619">Περίληψη</translation>
 <translation id="7161425887892204659">Τέλος αντιστοίχισης κειμένου</translation>
 <translation id="7161771961008409533">Αναδυόμενο κουμπί</translation>
@@ -968,7 +963,6 @@
 <translation id="8940925288729953902">Κουμπιά τροποποιητή</translation>
 <translation id="8943175951035496220">Δεν υπάρχει κελί δεξιά.</translation>
 <translation id="8978496506222343566">επεξήγηση εργαλείου</translation>
-<translation id="8986362086234534611">Διαγραφή από τη μνήμη</translation>
 <translation id="900114243503212879">αρχείο</translation>
 <translation id="9027462562263121875">Δεν υπάρχουν πίνακες.</translation>
 <translation id="9040132695316389094">Επικεφαλίδα 1</translation>
@@ -1002,7 +996,6 @@
 <translation id="948171205378458592">Μείωση ταχύτητας ομιλίας</translation>
 <translation id="958854023026327378">Σύρετε ένα δάκτυλο προς τα κάτω</translation>
 <translation id="962913030769097253">Επικεφαλίδα επόμενου επιπέδου 1</translation>
-<translation id="966588271015727539">Επιλέξτε μια συσκευή μπράιγ Bluetooth</translation>
 <translation id="973955474346881951">Ενεργοποίηση/απενεργοποίηση λειτουργίας σταθεροποίησης</translation>
 <translation id="976849232629612000">Κανένα στοιχείο.</translation>
 <translation id="995852680044449248">Αρχή διακριτής διαγραφής</translation>

@@ -104,7 +104,6 @@
 <translation id="1828385960365606039">মে</translation>
 <translation id="1834891354138622109">কলাম</translation>
 <translation id="1845944666972354496">চালু করতে ডবল ট্যাপ করুন</translation>
-<translation id="1846771122725914429">ব্লুটুথ ব্রেইল ডিসপ্লে</translation>
 <translation id="1865601187525349519">পাঠ্যের শেষে</translation>
 <translation id="1876229593313240038">দস্তাবেজ</translation>
 <translation id="188130072164734898">বর্তমান সময় ও তারিখ বলে৷</translation>
@@ -490,7 +489,6 @@
 <translation id="4763480195061959176">ভিডিও</translation>
 <translation id="4764692524839457597">ডিফল্ট</translation>
 <translation id="479989351350248267">search</translation>
-<translation id="4804818685124855865">সংযোগ বিচ্ছিন্ন</translation>
 <translation id="481165870889056555">বর্তমান পৃষ্ঠার শিরোনাম ঘোষণা করুন</translation>
 <translation id="4826415162591436065">অগ্রবর্তী নেভিগেট করুন</translation>
 <translation id="4826604887384865800">পরবর্তী জাম্প</translation>
@@ -560,7 +558,6 @@
 <translation id="5291783959063340370">অবজেক্ট</translation>
 <translation id="5302089807023311274">বিবলিওগ্রাফি রেফারেন্স</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, ট্যাব</translation>
-<translation id="5308380583665731573">সংযুক্ত করুন</translation>
 <translation id="5310788376443009632">সরানো হয়েছে:</translation>
 <translation id="5320727453979144100">স্টিকি মোড সক্ষম</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{কমা}one{# টি কমা}other{# টি কমা}}</translation>
@@ -649,7 +646,6 @@
 <translation id="5887397643266327462">ব্রেইল পরিচয়লিপিগুলি সক্ষম করা হয়েছে৷</translation>
 <translation id="5891934789323004067">সারণী</translation>
 <translation id="5899860758576822363">ChromeVox কথা বলতে থাকলে কম ভলিউমে বাজান</translation>
-<translation id="5906974869830879618">পিন নম্বর লিখুন</translation>
 <translation id="5921587111466148855">অধ্যায়</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{সমান}one{#টি সমান চিহ্ন}other{#টি সমান চিহ্ন}}</translation>
 <translation id="5939518447894949180">রিসেট করুন</translation>
@@ -778,7 +774,6 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="712735679809149106">শব্দ ইকো</translation>
 <translation id="713824876195128146">পরবর্তী অবরুদ্ধ উদ্ধৃতি</translation>
 <translation id="7143034430156387447">৬ এবং ৮ ডট ব্রেলির মধ্যে টগল করুন</translation>
-<translation id="7143207342074048698">সংযুক্ত হচ্ছে</translation>
 <translation id="7157306005867877619">বিমূর্ত</translation>
 <translation id="7161425887892204659">টেক্সট ম্যাচিং শেষ</translation>
 <translation id="7161771961008409533">পপ-আপ বোতাম</translation>
@@ -967,7 +962,6 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="8940925288729953902">সংশোধক কী</translation>
 <translation id="8943175951035496220">ডানদিকে কোনো কক্ষ নেই৷</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">ভুলে যান</translation>
 <translation id="900114243503212879">ফাইল...</translation>
 <translation id="9027462562263121875">কোনো সারণী নেই৷</translation>
 <translation id="9040132695316389094">শিরোনাম ১</translation>
@@ -1001,7 +995,6 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="948171205378458592">স্পিচের হার কমান</translation>
 <translation id="958854023026327378">এক আঙ্গুল দিয়ে নিচের দিকে সোয়াইপ করুন</translation>
 <translation id="962913030769097253">পরবর্তী স্তর ১ শিরোনাম</translation>
-<translation id="966588271015727539">ব্লুটুথ ব্রেইল ডিসপ্লে বেছে নিন</translation>
 <translation id="973955474346881951">স্টিকি মোড সক্ষম/অক্ষম করুন</translation>
 <translation id="976849232629612000">কোনো আইটেম নেই।</translation>
 <translation id="995852680044449248">কাটা অক্ষর শুরু</translation>

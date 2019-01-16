@@ -104,7 +104,6 @@
 <translation id="1828385960365606039">5 月</translation>
 <translation id="1834891354138622109">列</translation>
 <translation id="1845944666972354496">有効にするにはダブルタップします</translation>
-<translation id="1846771122725914429">Bluetooth 点字ディスプレイ</translation>
 <translation id="1865601187525349519">テキスト終了</translation>
 <translation id="1876229593313240038">ドキュメント</translation>
 <translation id="188130072164734898">現在の日付と時刻を音声で読み上げます。</translation>
@@ -490,7 +489,6 @@
 <translation id="4763480195061959176">動画</translation>
 <translation id="4764692524839457597">デフォルト</translation>
 <translation id="479989351350248267">検索</translation>
-<translation id="4804818685124855865">切断</translation>
 <translation id="481165870889056555">現在のページのタイトルを読み上げる</translation>
 <translation id="4826415162591436065">順方向にナビゲート</translation>
 <translation id="4826604887384865800">次のジャンプ</translation>
@@ -560,7 +558,6 @@
 <translation id="5291783959063340370">オブジェクト</translation>
 <translation id="5302089807023311274">文献参照</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />、タブ</translation>
-<translation id="5308380583665731573">接続</translation>
 <translation id="5310788376443009632">次の内容を削除しました:</translation>
 <translation id="5320727453979144100">スティッキー モードは有効</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{カンマ}other{# 個のカンマ}}</translation>
@@ -649,7 +646,6 @@
 <translation id="5887397643266327462">ブライユ点字の表示が有効になっています。</translation>
 <translation id="5891934789323004067">表</translation>
 <translation id="5899860758576822363">ChromeVox の読み上げ中は小さい音量で再生する</translation>
-<translation id="5906974869830879618">PIN を入力してください</translation>
 <translation id="5921587111466148855">章</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{等号}other{# 個の等号}}</translation>
 <translation id="5939518447894949180">リセット</translation>
@@ -778,7 +774,6 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="712735679809149106">単語読み上げ</translation>
 <translation id="713824876195128146">次の引用文</translation>
 <translation id="7143034430156387447">6 点点字と 8 点点字を切り替えます</translation>
-<translation id="7143207342074048698">接続中</translation>
 <translation id="7157306005867877619">概要</translation>
 <translation id="7161425887892204659">テキスト一致の末尾</translation>
 <translation id="7161771961008409533">ポップアップ ボタン</translation>
@@ -967,7 +962,6 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="8940925288729953902">修飾キー</translation>
 <translation id="8943175951035496220">右にセルはありません。</translation>
 <translation id="8978496506222343566">ツールチップ</translation>
-<translation id="8986362086234534611">削除</translation>
 <translation id="900114243503212879">ファイル</translation>
 <translation id="9027462562263121875">表がありません。</translation>
 <translation id="9040132695316389094">見出し 1</translation>
@@ -1001,7 +995,6 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="948171205378458592">読み上げの速度を下げる</translation>
 <translation id="958854023026327378">1 本の指で下にスワイプします</translation>
 <translation id="962913030769097253">次のレベル 1 見出し</translation>
-<translation id="966588271015727539">Bluetooth 点字ディスプレイを選択してください</translation>
 <translation id="973955474346881951">スティッキー モードを有効または無効にする</translation>
 <translation id="976849232629612000">アイテムなし</translation>
 <translation id="995852680044449248">取り消し線の先頭</translation>

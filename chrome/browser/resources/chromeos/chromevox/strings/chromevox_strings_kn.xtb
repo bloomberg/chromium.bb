@@ -104,7 +104,6 @@
 <translation id="1828385960365606039">ಮೇ</translation>
 <translation id="1834891354138622109">ಕಾಲಮ್</translation>
 <translation id="1845944666972354496">ಸಕ್ರಿಯಗೊಳಿಸಲು ಡಬಲ್ ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
-<translation id="1846771122725914429">ಬ್ಲೂಟೂತ್ ಬ್ರೈಲ್ ಡಿಸ್‌ಪ್ಲೇ</translation>
 <translation id="1865601187525349519">ಪಠ್ಯದ ಕೊನೆ</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">ಪ್ರಸ್ತುತ ಸಮಯ ಮತ್ತು ದಿನಾಂಕವನ್ನು ಮಾತನಾಡಿ.</translation>
@@ -490,7 +489,6 @@
 <translation id="4763480195061959176">ವೀಡಿಯೊ</translation>
 <translation id="4764692524839457597">ಡಿಫಾಲ್ಟ್</translation>
 <translation id="479989351350248267">search</translation>
-<translation id="4804818685124855865">ಡಿಸ್‌ಕನೆಕ್ಟ್</translation>
 <translation id="481165870889056555">ಪ್ರಸ್ತುತ ಪುಟದ ಶೀರ್ಷಿಕೆಯನ್ನು ಪ್ರಕಟಿಸಿ</translation>
 <translation id="4826415162591436065">ಮುಂದಕ್ಕೆ ನ್ಯಾವಿಗೇಟ್ ಮಾಡಿ</translation>
 <translation id="4826604887384865800">ಮುಂದೆ ಹೋಗು</translation>
@@ -560,7 +558,6 @@
 <translation id="5291783959063340370">ವಸ್ತು</translation>
 <translation id="5302089807023311274">ಗ್ರಂಥಸೂಚಿ ಉಲ್ಲೇಖ</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, ಟ್ಯಾಬ್</translation>
-<translation id="5308380583665731573">ಸಂಪರ್ಕಿಸು</translation>
 <translation id="5310788376443009632">ತೆಗೆದುಹಾಕಲಾಗಿದೆ:</translation>
 <translation id="5320727453979144100">ಜಟಿಲವಾದ ಮೋಡ್ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{ಅರ್ಧವಿರಾಮ ಚಿಹ್ನೆ}one{# ಅರ್ಧವಿರಾಮ ಚಿಹ್ನೆಗಳು}other{# ಅರ್ಧವಿರಾಮ ಚಿಹ್ನೆಗಳು}}</translation>
@@ -649,7 +646,6 @@
 <translation id="5887397643266327462">ಬ್ರೈಲಿ ಶೀರ್ಷಿಕೆಗಳು ಸಕ್ರಿಯವಾಗಿವೆ.</translation>
 <translation id="5891934789323004067">ಕೋಷ್ಠಕ</translation>
 <translation id="5899860758576822363">ChromeVox ಮಾತನಾಡುತ್ತಿರುವಾಗ ಕಡಿಮೆ ವಾಲ್ಯೂಮ್‌ನಲ್ಲಿ ಪ್ಲೇ ಮಾಡಿ</translation>
-<translation id="5906974869830879618">ದಯವಿಟ್ಟು ಪಿನ್ ಒಂದನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="5921587111466148855">ಅಧ್ಯಾಯ</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{ಸಮ}one{# ಸಮ ಚಿಹ್ನೆಗಳು}other{# ಸಮ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="5939518447894949180">ಮರುಹೊಂದಿಸು</translation>
@@ -778,7 +774,6 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="712735679809149106">ಪದ ಎಕೋ</translation>
 <translation id="713824876195128146">ಮುಂದಿನ ನಿರ್ಬಂಧ ಖೋಟ್</translation>
 <translation id="7143034430156387447">6 ಮತ್ತು 8 ಚುಕ್ಕಿಗಳ ಬ್ರೈಲ್ ನಡುವೆ ಟಾಗಲ್ ಮಾಡಿ</translation>
-<translation id="7143207342074048698">ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="7157306005867877619">ಸಾರಾಂಶ</translation>
 <translation id="7161425887892204659">ಪಠ್ಯ ಹೊಂದಾಣಿಕೆ ಮುಕ್ತಾಯ</translation>
 <translation id="7161771961008409533">ಪಾಪ್-ಅಪ್ ಬಟನ್</translation>
@@ -967,7 +962,6 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="8940925288729953902">ಮಾರ್ಪಡಿಸುವ ಕೀಗಳು</translation>
 <translation id="8943175951035496220">ಯಾವುದೇ ಬಲ ಸೆಲ್ ಇಲ್ಲ.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">ಮರೆತುಹೋಗು</translation>
 <translation id="900114243503212879">ಫೈಲ್</translation>
 <translation id="9027462562263121875">ಯಾವುದೇ ಕೋಷ್ಟಕಗಳಿಲ್ಲ.</translation>
 <translation id="9040132695316389094">ಶೀರ್ಷಿಕೆ 1</translation>
@@ -1001,7 +995,6 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="948171205378458592">ಮಾತಿನ ಪ್ರಮಾಣವನ್ನು ಇಳಿಸಿ</translation>
 <translation id="958854023026327378">ಒಂದು ಬೆರಳಿನಿಂದ ಕೆಳಕ್ಕೆ ಸ್ವೈಪ್‌ ಮಾಡಿ</translation>
 <translation id="962913030769097253">ಮುಂದಿನ ಹಂತದ 1 ಶಿರೋನಾಮೆ</translation>
-<translation id="966588271015727539">ಒಂದು ಬ್ಲೂಟೂತ್ ಬ್ರೈಲ್ ಡಿಸ್‌ಪ್ಲೇಯನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="973955474346881951">ಜಟಿಲವಾದ ಮೋಡ್‌ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ/ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="976849232629612000">ಯಾವುದೇ ಐಟಂಗಳಿಲ್ಲ</translation>
 <translation id="995852680044449248">ಸ್ಟ್ರೈಕ್‌ ಮೂಲಕ ಆರಂಭ</translation>

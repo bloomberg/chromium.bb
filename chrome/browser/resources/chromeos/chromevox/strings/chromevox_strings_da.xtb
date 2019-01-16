@@ -104,7 +104,6 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="1828385960365606039">Maj</translation>
 <translation id="1834891354138622109">Kolonne</translation>
 <translation id="1845944666972354496">Tryk to gange for at aktivere</translation>
-<translation id="1846771122725914429">Brailleskærm via Bluetooth</translation>
 <translation id="1865601187525349519">Slutning af ​​tekst</translation>
 <translation id="1876229593313240038">dok</translation>
 <translation id="188130072164734898">Sig det aktuelle klokkeslæt og den aktuelle dato.</translation>
@@ -490,7 +489,6 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">standard</translation>
 <translation id="479989351350248267">søg</translation>
-<translation id="4804818685124855865">Afbryd</translation>
 <translation id="481165870889056555">Offentliggør titlen på den aktuelle side</translation>
 <translation id="4826415162591436065">Naviger frem</translation>
 <translation id="4826604887384865800">Næste hop</translation>
@@ -560,7 +558,6 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="5291783959063340370">Objekt</translation>
 <translation id="5302089807023311274">Reference i bibliografi</translation>
 <translation id="5304943142864553931">fanen <ph name="TITLE" /></translation>
-<translation id="5308380583665731573">Få forbindelse</translation>
 <translation id="5310788376443009632">fjernet:</translation>
 <translation id="5320727453979144100">Sticky-tilstand er aktiveret</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{komma}one{# kommaer}other{# kommaer}}</translation>
@@ -649,7 +646,6 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="5887397643266327462">Brailletekst er aktiveret.</translation>
 <translation id="5891934789323004067">Tabel</translation>
 <translation id="5899860758576822363">Afspil ved en lavere lydstyrke, når ChromeVox taler</translation>
-<translation id="5906974869830879618">Angiv en pinkode</translation>
 <translation id="5921587111466148855">Kapitel</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{lig med}one{# lig med-tegn}other{# lig med-tegn}}</translation>
 <translation id="5939518447894949180">Nulstil</translation>
@@ -778,7 +774,6 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="712735679809149106">ordekko</translation>
 <translation id="713824876195128146">Næste citatblok</translation>
 <translation id="7143034430156387447">Skift mellem 6- og 8-punkts braillealfabet.</translation>
-<translation id="7143207342074048698">Opretter forbindelse</translation>
 <translation id="7157306005867877619">Abstrakt</translation>
 <translation id="7161425887892204659">Slut på tekstmatch</translation>
 <translation id="7161771961008409533">Pop op-knap</translation>
@@ -967,7 +962,6 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="8940925288729953902">Ændringstaster</translation>
 <translation id="8943175951035496220">Ingen celle til højre.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">Glem</translation>
 <translation id="900114243503212879">fil</translation>
 <translation id="9027462562263121875">Ingen tabeller.</translation>
 <translation id="9040132695316389094">Overskrift 1</translation>
@@ -1001,7 +995,6 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="948171205378458592">Skru ned for talehastighed</translation>
 <translation id="958854023026327378">Stryg nedad med én finger</translation>
 <translation id="962913030769097253">Næste niveau 1-overskrift</translation>
-<translation id="966588271015727539">Vælg en brailleskærm via Bluetooth</translation>
 <translation id="973955474346881951">Aktivér/deaktiver sticky-tilstand</translation>
 <translation id="976849232629612000">Ingen elementer.</translation>
 <translation id="995852680044449248">Start på gennemstregning</translation>

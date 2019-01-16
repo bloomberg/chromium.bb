@@ -104,7 +104,6 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="1828385960365606039">Geg.</translation>
 <translation id="1834891354138622109">Stulpelis</translation>
 <translation id="1845944666972354496">Dukart palieskite, kad suaktyvintumėte</translation>
-<translation id="1846771122725914429">„Bluetooth“ Brailio rašmenų ekranas</translation>
 <translation id="1865601187525349519">Teksto pabaiga</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Pasakykite dabartinį laiką ir datą.</translation>
@@ -490,7 +489,6 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="4763480195061959176">vaizdo įrašas</translation>
 <translation id="4764692524839457597">numatytasis</translation>
 <translation id="479989351350248267">ieškoti</translation>
-<translation id="4804818685124855865">Atsijungti</translation>
 <translation id="481165870889056555">Pranešti apie dabartinio puslapio pavadinimą</translation>
 <translation id="4826415162591436065">Eiti į priekį</translation>
 <translation id="4826604887384865800">Kitas perėjimas</translation>
@@ -560,7 +558,6 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="5291783959063340370">Objektas</translation>
 <translation id="5302089807023311274">Bibliografijos nuoroda</translation>
 <translation id="5304943142864553931">„<ph name="TITLE" />“, skirtukas</translation>
-<translation id="5308380583665731573">Prisijungti</translation>
 <translation id="5310788376443009632">pašalinta:</translation>
 <translation id="5320727453979144100">Fiksuojamasis režimas įgalintas</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{kablelis}one{# kablelis}few{# kableliai}many{# commas}other{# kablelių}}</translation>
@@ -649,7 +646,6 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="5887397643266327462">Brailio rašmenų antraštės įgalintos.</translation>
 <translation id="5891934789323004067">Lentelė</translation>
 <translation id="5899860758576822363">Leisti mažesniu garsumu, kai kalba „ChromeVox“</translation>
-<translation id="5906974869830879618">Įveskite PIN kodą</translation>
 <translation id="5921587111466148855">Skyrius</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{lygybės ženklas}one{# lygybės ženklas}few{# lygybės ženklai}many{# equal signs}other{# lygybės ženklų}}</translation>
 <translation id="5939518447894949180">Nustatyti iš naujo</translation>
@@ -778,7 +774,6 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="712735679809149106">žodžio aidas</translation>
 <translation id="713824876195128146">Kita įtrauka</translation>
 <translation id="7143034430156387447">Perjunkite iš 6 į 8 taškų Brailio rašmenis ir atvirkščiai</translation>
-<translation id="7143207342074048698">Jungiama</translation>
 <translation id="7157306005867877619">Santrauka</translation>
 <translation id="7161425887892204659">Teksto atitikties pabaiga</translation>
 <translation id="7161771961008409533">Iššokantysis mygtukas</translation>
@@ -967,7 +962,6 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="8940925288729953902">Modifikavimo klavišai</translation>
 <translation id="8943175951035496220">Nėra langelio dešinėje.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">Pamiršti</translation>
 <translation id="900114243503212879">failas</translation>
 <translation id="9027462562263121875">Nėra lentelių.</translation>
 <translation id="9040132695316389094">1 antraštė</translation>
@@ -1001,7 +995,6 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="948171205378458592">Sumažinti kalbos tempą</translation>
 <translation id="958854023026327378">Perbraukite vienu pirštu žemyn</translation>
 <translation id="962913030769097253">Kita 1 lygio antraštė</translation>
-<translation id="966588271015727539">Pasirinkti „Bluetooth“ Brailio rašmenų ekraną</translation>
 <translation id="973955474346881951">Įgalinti pritraukimo režimą / neleisti jo</translation>
 <translation id="976849232629612000">Elementų nėra.</translation>
 <translation id="995852680044449248">Perbraukimo pradžia</translation>

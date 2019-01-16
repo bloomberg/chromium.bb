@@ -104,7 +104,6 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="1828385960365606039">maj</translation>
 <translation id="1834891354138622109">Kolumna</translation>
 <translation id="1845944666972354496">Kliknij dwukrotnie, by użyć</translation>
-<translation id="1846771122725914429">Monitor brajlowski Bluetooth</translation>
 <translation id="1865601187525349519">Koniec tekstu</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Powiedz bieżącą godzinę i datę.</translation>
@@ -490,7 +489,6 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="4763480195061959176">film</translation>
 <translation id="4764692524839457597">domyślne</translation>
 <translation id="479989351350248267">search</translation>
-<translation id="4804818685124855865">Rozłącz</translation>
 <translation id="481165870889056555">Przeczytaj tytuł bieżącej strony</translation>
 <translation id="4826415162591436065">Przejdź dalej</translation>
 <translation id="4826604887384865800">Następne przejście</translation>
@@ -560,7 +558,6 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="5291783959063340370">Obiekt</translation>
 <translation id="5302089807023311274">Odniesienie bibliograficzne</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, karta</translation>
-<translation id="5308380583665731573">Połącz</translation>
 <translation id="5310788376443009632">usunięto:</translation>
 <translation id="5320727453979144100">Tryb klawiszy trwałych włączony</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{przecinek}few{# przecinki}many{# przecinków}other{# commas}}</translation>
@@ -649,7 +646,6 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="5887397643266327462">Napisy brajlowskie włączone.</translation>
 <translation id="5891934789323004067">Tabela</translation>
 <translation id="5899860758576822363">Zmniejsz głośność odtwarzania, gdy ChromeVox mówi</translation>
-<translation id="5906974869830879618">Podaj kod PIN</translation>
 <translation id="5921587111466148855">Rozdział</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{równy}few{# znaki równości}many{# znaków równości}other{# equal signs}}</translation>
 <translation id="5939518447894949180">Resetuj</translation>
@@ -778,7 +774,6 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="712735679809149106">odczytywanie słów</translation>
 <translation id="713824876195128146">Następny cytat blokowy</translation>
 <translation id="7143034430156387447">Przełącz między pismem brajlowskim 6- i 8-punktowym</translation>
-<translation id="7143207342074048698">Łączenie</translation>
 <translation id="7157306005867877619">Streszczenie</translation>
 <translation id="7161425887892204659">Koniec pasującego tekstu</translation>
 <translation id="7161771961008409533">Przycisk wyskakującego okienka</translation>
@@ -967,7 +962,6 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="8940925288729953902">Klawisze modyfikujące</translation>
 <translation id="8943175951035496220">Brak komórki z prawej strony.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">Zapomnij</translation>
 <translation id="900114243503212879">plik</translation>
 <translation id="9027462562263121875">Brak tabel.</translation>
 <translation id="9040132695316389094">Nagłówek 1</translation>
@@ -1001,7 +995,6 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="948171205378458592">Zmniejsz tempo mowy</translation>
 <translation id="958854023026327378">Przesuń jednym palcem w dół</translation>
 <translation id="962913030769097253">Następny nagłówek poziomu 1</translation>
-<translation id="966588271015727539">Wybierz monitor brajlowski Bluetooth</translation>
 <translation id="973955474346881951">Włącz/wyłącz tryb klawiszy trwałych</translation>
 <translation id="976849232629612000">Brak elementów.</translation>
 <translation id="995852680044449248">Początek przekreślenia</translation>

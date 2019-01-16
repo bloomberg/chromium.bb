@@ -104,7 +104,6 @@
 <translation id="1828385960365606039">5월</translation>
 <translation id="1834891354138622109">열</translation>
 <translation id="1845944666972354496">활성화하려면 두 번 탭하세요.</translation>
-<translation id="1846771122725914429">블루투스 점자 디스플레이</translation>
 <translation id="1865601187525349519">텍스트의 끝</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">현재 날짜와 시간을 말합니다.</translation>
@@ -490,7 +489,6 @@
 <translation id="4763480195061959176">동영상</translation>
 <translation id="4764692524839457597">기본값</translation>
 <translation id="479989351350248267">검색</translation>
-<translation id="4804818685124855865">연결 해제</translation>
 <translation id="481165870889056555">현재 페이지의 제목 알림</translation>
 <translation id="4826415162591436065">앞으로 탐색</translation>
 <translation id="4826604887384865800">다음 점프</translation>
@@ -560,7 +558,6 @@
 <translation id="5291783959063340370">객체</translation>
 <translation id="5302089807023311274">참고문헌 참조</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, 탭</translation>
-<translation id="5308380583665731573">연결</translation>
 <translation id="5310788376443009632">삭제됨:</translation>
 <translation id="5320727453979144100">고정 모드 사용함</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{쉼표}other{쉼표 #개}}</translation>
@@ -649,7 +646,6 @@
 <translation id="5887397643266327462">점자 캡션을 사용 설정했습니다.</translation>
 <translation id="5891934789323004067">표</translation>
 <translation id="5899860758576822363">ChromeVox 음성이 나올 때는 낮은 볼륨으로 재생합니다.</translation>
-<translation id="5906974869830879618">PIN 입력</translation>
 <translation id="5921587111466148855">장</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{등호}other{등호 #개}}</translation>
 <translation id="5939518447894949180">초기화</translation>
@@ -778,7 +774,6 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="712735679809149106">단어 에코</translation>
 <translation id="713824876195128146">다음 블록 인용</translation>
 <translation id="7143034430156387447">6점 점자와 8점 점자 간 전환</translation>
-<translation id="7143207342074048698">연결 중</translation>
 <translation id="7157306005867877619">초록</translation>
 <translation id="7161425887892204659">텍스트 일치 끝부분</translation>
 <translation id="7161771961008409533">팝업 버튼</translation>
@@ -967,7 +962,6 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="8940925288729953902">특수키</translation>
 <translation id="8943175951035496220">오른쪽에 셀이 없습니다.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">저장 안함</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">표가 없습니다.</translation>
 <translation id="9040132695316389094">제목 1</translation>
@@ -1001,7 +995,6 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="948171205378458592">말하기 속도 줄이기</translation>
 <translation id="958854023026327378">손가락 한 개를 사용하여 아래로 스와이프</translation>
 <translation id="962913030769097253">다음 수준 1 제목</translation>
-<translation id="966588271015727539">블루투스 점자 디스플레이 선택</translation>
 <translation id="973955474346881951">고정 모드 사용/사용 중지</translation>
 <translation id="976849232629612000">항목 없음</translation>
 <translation id="995852680044449248">취소선 시작 부분</translation>

@@ -104,7 +104,6 @@
 <translation id="1828385960365606039">मई</translation>
 <translation id="1834891354138622109">स्तंभ</translation>
 <translation id="1845944666972354496">चालू करने के लिए दो बार टैप करें</translation>
-<translation id="1846771122725914429">ब्लूटूथ ब्रेल डिसप्ले</translation>
 <translation id="1865601187525349519">लेख का अंत</translation>
 <translation id="1876229593313240038">दस्तावेज़</translation>
 <translation id="188130072164734898">वर्तमान समय और दिनांक बोलें.</translation>
@@ -490,7 +489,6 @@
 <translation id="4763480195061959176">वीडियो</translation>
 <translation id="4764692524839457597">डिफ़ॉल्ट</translation>
 <translation id="479989351350248267">search</translation>
-<translation id="4804818685124855865">डिसकनेक्ट करें</translation>
 <translation id="481165870889056555">वर्तमान पेज का शीर्षक प्रदर्शित करें</translation>
 <translation id="4826415162591436065">आगे की ओर नेविगेट करें</translation>
 <translation id="4826604887384865800">अगला जंप</translation>
@@ -560,7 +558,6 @@
 <translation id="5291783959063340370">ऑब्जेक्ट</translation>
 <translation id="5302089807023311274">संदर्भ सूची का संदर्भ</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, टैब</translation>
-<translation id="5308380583665731573">कनेक्ट करें</translation>
 <translation id="5310788376443009632">निकाले गए:</translation>
 <translation id="5320727453979144100">रोचक मोड सक्षम</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{अल्पविराम}one{# अल्पविराम}other{# अल्पविराम}}</translation>
@@ -649,7 +646,6 @@
 <translation id="5887397643266327462">ब्रेल कैप्शन सक्षम किए गए.</translation>
 <translation id="5891934789323004067">तालिका</translation>
 <translation id="5899860758576822363">जब ChromeVox बोल रहा हो, तब कम वॉल्यूम में चलाएं</translation>
-<translation id="5906974869830879618">कृपया एक पिन डालें</translation>
 <translation id="5921587111466148855">पाठ</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{बराबर}one{# बराबर चिह्न}other{# बराबर चिह्न}}</translation>
 <translation id="5939518447894949180">रीसेट करें</translation>
@@ -778,7 +774,6 @@
 <translation id="712735679809149106">शब्द इको</translation>
 <translation id="713824876195128146">अगला ब्‍लॉक कोट</translation>
 <translation id="7143034430156387447">6 और 8 डॉट ब्रेल के बीच टॉगल करें</translation>
-<translation id="7143207342074048698">कनेक्‍ट हो रहा है</translation>
 <translation id="7157306005867877619">एब्सट्रैक्ट</translation>
 <translation id="7161425887892204659">लेख मिलान समाप्त</translation>
 <translation id="7161771961008409533">पॉप-अप बटन</translation>
@@ -967,7 +962,6 @@
 <translation id="8940925288729953902">संशोधक कुंजियां</translation>
 <translation id="8943175951035496220">कोई दायां सेल नहीं.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">भूल जाएं</translation>
 <translation id="900114243503212879">फ़ाइल</translation>
 <translation id="9027462562263121875">कोई तालिका नहीं.</translation>
 <translation id="9040132695316389094">शीर्षक 1</translation>
@@ -1001,7 +995,6 @@
 <translation id="948171205378458592">बोली की दर घटाएं</translation>
 <translation id="958854023026327378">एक उंगली से नीचे स्वाइप करें</translation>
 <translation id="962913030769097253">अगले स्तर 1 का शीर्षक</translation>
-<translation id="966588271015727539">एक ब्लूटूथ ब्रेल डिसप्ले चुनें</translation>
 <translation id="973955474346881951">स्टिकी मोड चालू/बंद करें</translation>
 <translation id="976849232629612000">कोई आइटम नहीं.</translation>
 <translation id="995852680044449248">स्ट्राइक थ्रू शुरू</translation>

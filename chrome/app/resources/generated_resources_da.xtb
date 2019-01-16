@@ -3489,7 +3489,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6285120108426285413"><ph name="FILE_NAME" /> downloades normalt ikke og kan være skadelig.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{Ny printer på dit netværk}one{Nye printere på dit netværk}other{Nye printere på dit netværk}}</translation>
-<translation id="6286708577777130801">Oplysninger om gemt adgangskode</translation>
+<translation id="6286708577777130801">Info om gemt adgangskode</translation>
 <translation id="6287852322318138013">Vælg en app, der skal åbne denne fil</translation>
 <translation id="6289452883081499048">Tilpassede Google-tjenester som f.eks. Play</translation>
 <translation id="6290556621549272952">Du kan bruge denne funktion til at vise indhold fra Chromium på dit fjernsyn eller andre enheder.</translation>
@@ -3533,7 +3533,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6356138805250111037">Gør stavekontrollen bedre ved at sende det, du indtaster i browseren, til Google</translation>
 <translation id="63566973648609420">Det er kun personer med din adgangssætning, der kan læse dine krypterede data. Adgangssætningen sendes ikke til og gemmes ikke af Google. Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkroniseringen<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Velkommen til <ph name="SHORT_PRODUCT_NAME" />-familien. Dette er ikke en almindelig computer.</translation>
-<translation id="6361850914223837199">Oplysninger om fejl:</translation>
+<translation id="6361850914223837199">Info om fejl:</translation>
 <translation id="6362853299801475928">&amp;Rapporter et problem...</translation>
 <translation id="6365411474437319296">Tilføj familie og venner</translation>
 <translation id="636751582193817858">Når du optager "Ok Google" tre gange, oprettes din stemmemodel, som gemmes på din enhed. Slet eller genoptræn din stemmemodel i indstillingerne for Google Assistent. Se eller slet talekommandoer i Google Aktivitetsadministration.</translation>

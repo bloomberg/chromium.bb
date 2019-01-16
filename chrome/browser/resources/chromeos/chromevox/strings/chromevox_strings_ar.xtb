@@ -104,7 +104,6 @@
 <translation id="1828385960365606039">مايو (أيار)</translation>
 <translation id="1834891354138622109">عمود</translation>
 <translation id="1845944666972354496">انقر مرّتين للتفعيل</translation>
-<translation id="1846771122725914429">عرض البلوتوث بلغة برايل</translation>
 <translation id="1865601187525349519">نهاية النص</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">نطق الوقت والتاريخ الحاليين.</translation>
@@ -490,7 +489,6 @@
 <translation id="4763480195061959176">فيديو</translation>
 <translation id="4764692524839457597">تلقائي</translation>
 <translation id="479989351350248267">بحث</translation>
-<translation id="4804818685124855865">قطع الاتصال</translation>
 <translation id="481165870889056555">الإعلان عن عنوان الصفحة الحالية</translation>
 <translation id="4826415162591436065">التنقل للأمام</translation>
 <translation id="4826604887384865800">الانتقال التالي</translation>
@@ -560,7 +558,6 @@
 <translation id="5291783959063340370">الهدف</translation>
 <translation id="5302089807023311274">مرجع قائمة مراجع</translation>
 <translation id="5304943142864553931">علامة التبويب <ph name="TITLE" /></translation>
-<translation id="5308380583665731573">اتصال</translation>
 <translation id="5310788376443009632">تمت إزالة:</translation>
 <translation id="5320727453979144100">تم تفعيل الوضع الثابت</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{فاصلة واحدة}zero{# commas}two{فاصلتان (#)}few{# فواصل}many{# فاصلة}other{# من الفواصل}}</translation>
@@ -649,7 +646,6 @@
 <translation id="5887397643266327462">تم تفعيل تسميات برايل التوضيحية.</translation>
 <translation id="5891934789323004067">جدول</translation>
 <translation id="5899860758576822363">‏التشغيل بصوت منخفض أثناء تحدُّث ChromeVox</translation>
-<translation id="5906974869830879618">يُرجى إدخال رقم تعريف شخصي</translation>
 <translation id="5921587111466148855">فصل</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{علامة تساوي واحدة}zero{# equal signs}two{علامتا تساوي (#)}few{# علامات تساوي}many{# علامة تساوي}other{# من علامات التساوي}}</translation>
 <translation id="5939518447894949180">إعادة</translation>
@@ -778,7 +774,6 @@
 <translation id="712735679809149106">صدى الكلمة</translation>
 <translation id="713824876195128146">الاقتباس الطويل التالي</translation>
 <translation id="7143034430156387447">التبديل بين نمط برايل ذي 6 نقاط و8 نقاط</translation>
-<translation id="7143207342074048698">اتصال</translation>
 <translation id="7157306005867877619">نبذة مختصرة</translation>
 <translation id="7161425887892204659">نهاية مطابقة النص</translation>
 <translation id="7161771961008409533">زر بقائمة منبثقة</translation>
@@ -967,7 +962,6 @@
 <translation id="8940925288729953902">مفاتيح التعديل</translation>
 <translation id="8943175951035496220">ليست هناك خلية في اليمين.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">حذف</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">ليست هناك أي جداول.</translation>
 <translation id="9040132695316389094">العنوان الأول</translation>
@@ -1001,7 +995,6 @@
 <translation id="948171205378458592">خفض تقييم النطق</translation>
 <translation id="958854023026327378">التمرير السريع بإصبع واحد إلى الأسفل</translation>
 <translation id="962913030769097253">عنوان المستوى الأول التالي</translation>
-<translation id="966588271015727539">اختيار عرض البلوتوث بلغة برايل</translation>
 <translation id="973955474346881951">تفعيل/إيقاف الوضع الثابت</translation>
 <translation id="976849232629612000">لا توجد عناصر.</translation>
 <translation id="995852680044449248">بداية النص الذي يتوسطه خط</translation>

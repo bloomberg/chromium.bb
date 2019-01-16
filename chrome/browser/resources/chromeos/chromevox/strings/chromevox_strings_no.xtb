@@ -104,7 +104,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="1828385960365606039">Mai</translation>
 <translation id="1834891354138622109">Kolonne</translation>
 <translation id="1845944666972354496">Dobbelttrykk for å aktivere</translation>
-<translation id="1846771122725914429">Bluetooth-leselist</translation>
 <translation id="1865601187525349519">Slutt på teksten</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Snakk inn nåværende dato og klokkeslett.</translation>
@@ -490,7 +489,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">standard</translation>
 <translation id="479989351350248267">søk</translation>
-<translation id="4804818685124855865">Koble fra</translation>
 <translation id="481165870889056555">Kunngjør tittelen på den nåværende siden</translation>
 <translation id="4826415162591436065">Naviger fremover</translation>
 <translation id="4826604887384865800">Neste hopp</translation>
@@ -560,7 +558,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="5291783959063340370">Objekt</translation>
 <translation id="5302089807023311274">Bibliografireferanse</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />-fane</translation>
-<translation id="5308380583665731573">Koble til</translation>
 <translation id="5310788376443009632">fjernet:</translation>
 <translation id="5320727453979144100">Trege taster er slått på</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{komma}other{# kommaer}}</translation>
@@ -649,7 +646,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="5887397643266327462">Punktskrift-teksting er slått på.</translation>
 <translation id="5891934789323004067">Tabell</translation>
 <translation id="5899860758576822363">Spill av med lavere volum når ChromeVox snakker</translation>
-<translation id="5906974869830879618">Skriv inn en PIN-kode</translation>
 <translation id="5921587111466148855">Kapittel</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{likhetstegn}other{# likhetstegn}}</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
@@ -778,7 +774,6 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="712735679809149106">ordekko</translation>
 <translation id="713824876195128146">Neste blokksitat-element</translation>
 <translation id="7143034430156387447">Bytt mellom 6- og 8-punkts punktskrift</translation>
-<translation id="7143207342074048698">Kobler til</translation>
 <translation id="7157306005867877619">Abstrakt</translation>
 <translation id="7161425887892204659">Slutt på samsvarende tekst</translation>
 <translation id="7161771961008409533">Knapp med forgrunnsvindu</translation>
@@ -967,7 +962,6 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="8940925288729953902">Modifikatortaster</translation>
 <translation id="8943175951035496220">Det finnes ingen celler til høyre.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">Glem</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">Det finnes ingen tabeller.</translation>
 <translation id="9040132695316389094">Overskrift 1</translation>
@@ -1001,7 +995,6 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="948171205378458592">Reduser talehastigheten</translation>
 <translation id="958854023026327378">Sveip én finger ned</translation>
 <translation id="962913030769097253">Neste overskrift på nivå 1</translation>
-<translation id="966588271015727539">Velg en Bluetooth-leselist</translation>
 <translation id="973955474346881951">Slå av eller på trege taster</translation>
 <translation id="976849232629612000">Ingen elementer.</translation>
 <translation id="995852680044449248">Begynnelse på gjennomstreking</translation>

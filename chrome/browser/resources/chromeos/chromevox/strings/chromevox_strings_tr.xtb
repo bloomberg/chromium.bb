@@ -104,7 +104,6 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="1828385960365606039">Mayıs</translation>
 <translation id="1834891354138622109">Sütun</translation>
 <translation id="1845944666972354496">Etkinleştirmek için iki kez dokunun</translation>
-<translation id="1846771122725914429">Bluetooth Braille Ekran</translation>
 <translation id="1865601187525349519">Metnin sonu</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Geçerli saati ve tarihi söyle.</translation>
@@ -489,7 +488,6 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">varsayılan</translation>
 <translation id="479989351350248267">ara</translation>
-<translation id="4804818685124855865">Bağlantıyı kes</translation>
 <translation id="481165870889056555">Mevcut sayfanın başlığını söyle</translation>
 <translation id="4826415162591436065">İleri git</translation>
 <translation id="4826604887384865800">Sonraki atlama</translation>
@@ -559,7 +557,6 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="5291783959063340370">Nesne</translation>
 <translation id="5302089807023311274">Kaynakça referansı</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, sekme</translation>
-<translation id="5308380583665731573">Bağlan</translation>
 <translation id="5310788376443009632">kaldırıldı:</translation>
 <translation id="5320727453979144100">Yapışkan mod etkinleştirildi</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{virgül}other{# virgül}}</translation>
@@ -648,7 +645,6 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="5887397643266327462">Braille altyazıları etkinleştirildi.</translation>
 <translation id="5891934789323004067">Tablo</translation>
 <translation id="5899860758576822363">ChromeVox konuşurken daha düşük ses seviyesinde çal</translation>
-<translation id="5906974869830879618">Lütfen bir PIN girin</translation>
 <translation id="5921587111466148855">Bölüm</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{eşit işareti}other{# eşit işareti}}</translation>
 <translation id="5939518447894949180">Sıfırla</translation>
@@ -777,7 +773,6 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="712735679809149106">kelime yansıtma</translation>
 <translation id="713824876195128146">Sonraki blok alıntı</translation>
 <translation id="7143034430156387447">6 ve 8 noktalı braille arasında geçiş yapar</translation>
-<translation id="7143207342074048698">Bağlanıyor</translation>
 <translation id="7157306005867877619">Özet</translation>
 <translation id="7161425887892204659">Eşleşen metin sonu</translation>
 <translation id="7161771961008409533">Pop-up düğme</translation>
@@ -966,7 +961,6 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="8940925288729953902">Değiştirici Tuşlar</translation>
 <translation id="8943175951035496220">Sağda hücre yok.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">Unut</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">Tablo yok.</translation>
 <translation id="9040132695316389094">Başlık 1</translation>
@@ -1000,7 +994,6 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="948171205378458592">Konuşma hızını düşür</translation>
 <translation id="958854023026327378">Bir parmağınızı aşağı kaydırın</translation>
 <translation id="962913030769097253">Sonraki 1. düzey başlık</translation>
-<translation id="966588271015727539">Bluetooth braille ekran seçin</translation>
 <translation id="973955474346881951">Yapışkan modu etkinleştir/devre dışı bırak</translation>
 <translation id="976849232629612000">Öğe yok.</translation>
 <translation id="995852680044449248">Üstü çizili metin başlangıcı</translation>

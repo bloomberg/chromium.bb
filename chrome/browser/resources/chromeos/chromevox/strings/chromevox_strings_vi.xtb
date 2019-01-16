@@ -104,7 +104,6 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="1828385960365606039">Tháng 5</translation>
 <translation id="1834891354138622109">Cột</translation>
 <translation id="1845944666972354496">Nhấn đúp để kích hoạt</translation>
-<translation id="1846771122725914429">Màn hình chữ nổi Bluetooth</translation>
 <translation id="1865601187525349519">Cuối văn bản</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Nói thời gian và ngày tháng hiện tại.</translation>
@@ -490,7 +489,6 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">mặc định</translation>
 <translation id="479989351350248267">search</translation>
-<translation id="4804818685124855865">Ngắt kết nối</translation>
 <translation id="481165870889056555">Thông báo tiêu đề của trang hiện tại</translation>
 <translation id="4826415162591436065">Điều hướng tiến lên</translation>
 <translation id="4826604887384865800">Bước nhảy tiếp theo</translation>
@@ -560,7 +558,6 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="5291783959063340370">Đối tượng</translation>
 <translation id="5302089807023311274">Tham chiếu danh mục</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, tab</translation>
-<translation id="5308380583665731573">Kết nối</translation>
 <translation id="5310788376443009632">đã xóa:</translation>
 <translation id="5320727453979144100">Đã bật chế độ cố định</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{dấu phẩy}other{# dấu phẩy}}</translation>
@@ -649,7 +646,6 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="5887397643266327462">Phụ đề chữ nổi đã được bật.</translation>
 <translation id="5891934789323004067">Bảng</translation>
 <translation id="5899860758576822363">Phát ở âm lượng thấp hơn khi ChromeVox đang nói</translation>
-<translation id="5906974869830879618">Vui lòng nhập mã PIN</translation>
 <translation id="5921587111466148855">Chương</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{dấu bằng}other{# dấu bằng}}</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
@@ -778,7 +774,6 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="712735679809149106">nói từ</translation>
 <translation id="713824876195128146">Khối trích dẫn tiếp theo</translation>
 <translation id="7143034430156387447">Chuyển đổi giữa chữ nổi 6 và 8 chấm</translation>
-<translation id="7143207342074048698">Đang kết nối</translation>
 <translation id="7157306005867877619">Bản tóm tắt</translation>
 <translation id="7161425887892204659">Cuối văn bản phù hợp</translation>
 <translation id="7161771961008409533">Nút cửa sổ bật lên</translation>
@@ -967,7 +962,6 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="8940925288729953902">Phím bổ trợ</translation>
 <translation id="8943175951035496220">Không có ô nào bên phải.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">Quên</translation>
 <translation id="900114243503212879">tệp</translation>
 <translation id="9027462562263121875">Không có bảng nào.</translation>
 <translation id="9040132695316389094">Tiêu đề 1</translation>
@@ -1001,7 +995,6 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="948171205378458592">Giảm tốc độ nói</translation>
 <translation id="958854023026327378">Vuốt xuống dưới bằng một ngón tay</translation>
 <translation id="962913030769097253">Tiêu đề cấp 1 tiếp theo</translation>
-<translation id="966588271015727539">Chọn màn hình chữ nổi Bluetooth</translation>
 <translation id="973955474346881951">Bật/tắt chế độ cố định</translation>
 <translation id="976849232629612000">Không có mục nào.</translation>
 <translation id="995852680044449248">Đầu chữ bị gạch ngang</translation>

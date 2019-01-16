@@ -104,7 +104,6 @@
 <translation id="1828385960365606039">ሜይ</translation>
 <translation id="1834891354138622109">አምድ</translation>
 <translation id="1845944666972354496">ለማግበር ሁለቴ መታ አድርግ</translation>
-<translation id="1846771122725914429">የብሉቱዝ ብሬይል ማሳያ</translation>
 <translation id="1865601187525349519">የጽሑፉ መጨረሻ</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">የአሁኑን ሰዓት እና ቀን ተናገር።</translation>
@@ -489,7 +488,6 @@
 <translation id="4763480195061959176">ቪዲዮ</translation>
 <translation id="4764692524839457597">ነባሪ</translation>
 <translation id="479989351350248267">ፈልግ</translation>
-<translation id="4804818685124855865">ግንኙነት አቋርጥ</translation>
 <translation id="481165870889056555">የአሁኑ ገጽ ርዕስ አስታውቅ</translation>
 <translation id="4826415162591436065">ወደፊት ያስሱ</translation>
 <translation id="4826604887384865800">ቀጣይ ዝላይ</translation>
@@ -559,7 +557,6 @@
 <translation id="5291783959063340370">ነገር</translation>
 <translation id="5302089807023311274">የዋቢ መጽሐፍት ማጣቀሻ</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />፣ ትር</translation>
-<translation id="5308380583665731573">ይገናኙ</translation>
 <translation id="5310788376443009632">የተወገዱ፦</translation>
 <translation id="5320727453979144100">አጣባቂ ሁነታ ነቅቷል</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{ኮማ}one{# ኮማዎች}other{# ኮማዎች}}</translation>
@@ -648,7 +645,6 @@
 <translation id="5887397643266327462">የብሬይል መግለጫዎች ነቅተዋል።</translation>
 <translation id="5891934789323004067">ሠንጠረዥ</translation>
 <translation id="5899860758576822363">ChromeVox እየተናገረ ሳለ ባነሰ የድምጽ መጠን ላይ አጫውት</translation>
-<translation id="5906974869830879618">እባክዎ ፒን ያስገቡ</translation>
 <translation id="5921587111466148855">ምዕራፍ</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{እኩል}one{# የእኩል ምልክቶች}other{# የእኩል ምልክቶች}}</translation>
 <translation id="5939518447894949180">ዳግም አስጀምር</translation>
@@ -777,7 +773,6 @@
 <translation id="712735679809149106">የቃል ማስተጋባት</translation>
 <translation id="713824876195128146">ቀጣይ የጽሑፍ ጥቅስ</translation>
 <translation id="7143034430156387447">በባለ6 እና 8 ነጥብ ብሬይል መካከል ቀያይር</translation>
-<translation id="7143207342074048698">በመያያዝ ላይ</translation>
 <translation id="7157306005867877619">ረቂቅ</translation>
 <translation id="7161425887892204659">የጽሑፍ ተዛማጅ መጨረሻ</translation>
 <translation id="7161771961008409533">ብቅ-ባይ አዝራር</translation>
@@ -966,7 +961,6 @@
 <translation id="8940925288729953902">መቀየሪያ ቁልፎች</translation>
 <translation id="8943175951035496220">በቀኝ ምንም ሕዋስ የለም።</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">እርሳ</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">ምንም ሰንጠረዦች የሉም።</translation>
 <translation id="9040132695316389094">ርዕስ 1</translation>
@@ -1000,7 +994,6 @@
 <translation id="948171205378458592">የንግግር ፍጥነት ይቀንሱ</translation>
 <translation id="958854023026327378">አንድ ጣት ወደ ታች ያንሸራትቱ</translation>
 <translation id="962913030769097253">ቀጣይ የደረጃ 1 ርዕስ</translation>
-<translation id="966588271015727539">የብሉቱዝ ብሬይል ማሳያ</translation>
 <translation id="973955474346881951">አጣባቂ ሁነታን አንቃ/አሰናክል</translation>
 <translation id="976849232629612000">ምንም ንጥሎች የሉም።</translation>
 <translation id="995852680044449248">የስክረዛ መጀመሪያ</translation>

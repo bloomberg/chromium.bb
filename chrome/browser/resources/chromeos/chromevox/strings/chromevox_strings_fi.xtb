@@ -104,7 +104,6 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="1828385960365606039">touko</translation>
 <translation id="1834891354138622109">Sarake</translation>
 <translation id="1845944666972354496">Aktivoi kaksoisnapauttamalla</translation>
-<translation id="1846771122725914429">Bluetooth-pistekirjoitusnäyttö</translation>
 <translation id="1865601187525349519">Tekstin loppu</translation>
 <translation id="1876229593313240038">dok.</translation>
 <translation id="188130072164734898">Sano tämänhetkinen aika ja päivämäärä.</translation>
@@ -490,7 +489,6 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">oletus</translation>
 <translation id="479989351350248267">haku</translation>
-<translation id="4804818685124855865">Katkaise yhteys</translation>
 <translation id="481165870889056555">Ilmoita nykyisen sivun otsikko</translation>
 <translation id="4826415162591436065">Siirry eteenpäin</translation>
 <translation id="4826604887384865800">Seuraava siirtyminen</translation>
@@ -560,7 +558,6 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="5291783959063340370">Kohde</translation>
 <translation id="5302089807023311274">Lähdeluetteloviittaus</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, välilehti</translation>
-<translation id="5308380583665731573">Muodosta yhteys</translation>
 <translation id="5310788376443009632">poistettu:</translation>
 <translation id="5320727453979144100">Kiinnitetty tila käytössä</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{pilkku}other{# pilkkua}}</translation>
@@ -649,7 +646,6 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="5887397643266327462">Pistekirjoituskuvatekstit ovat käytössä.</translation>
 <translation id="5891934789323004067">Taulukko</translation>
 <translation id="5899860758576822363">Vähennä äänenvoimakkuutta, kun ChromeVox puhuu.</translation>
-<translation id="5906974869830879618">Syötä PIN-koodi</translation>
 <translation id="5921587111466148855">Luku</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{yhtäläisyys}other{# yhtäläisyysmerkkiä}}</translation>
 <translation id="5939518447894949180">Tyhjennä</translation>
@@ -778,7 +774,6 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="712735679809149106">sanojen puhuminen</translation>
 <translation id="713824876195128146">Seuraava estoviittaus</translation>
 <translation id="7143034430156387447">Vaihda 6 ja 8 pisteen pistekirjoituksen välillä</translation>
-<translation id="7143207342074048698">Yhdistetään</translation>
 <translation id="7157306005867877619">Tiivistelmä</translation>
 <translation id="7161425887892204659">Tekstivastaavuuden loppu</translation>
 <translation id="7161771961008409533">Ponnahduspainike</translation>
@@ -967,7 +962,6 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="8940925288729953902">Muokkausavaimet</translation>
 <translation id="8943175951035496220">Ei oikealla olevia soluja.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">Unohda</translation>
 <translation id="900114243503212879">tiedosto</translation>
 <translation id="9027462562263121875">Ei taulukoita.</translation>
 <translation id="9040132695316389094">Otsikko 1</translation>
@@ -1001,7 +995,6 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="948171205378458592">Vähennä puhenopeutta</translation>
 <translation id="958854023026327378">Pyyhkäise alas yhdellä sormella</translation>
 <translation id="962913030769097253">Seuraava tason 1 otsikko</translation>
-<translation id="966588271015727539">Valitse Bluetooth-pistekirjoitusnäyttö</translation>
 <translation id="973955474346881951">Kiinnitystilan ottaminen käyttöön / poistaminen käytöstä</translation>
 <translation id="976849232629612000">Ei kohteita</translation>
 <translation id="995852680044449248">Yliviivauksen alku</translation>

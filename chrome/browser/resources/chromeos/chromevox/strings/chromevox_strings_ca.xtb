@@ -104,7 +104,6 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="1828385960365606039">Maig</translation>
 <translation id="1834891354138622109">Columna</translation>
 <translation id="1845944666972354496">Fes doble toc per activar</translation>
-<translation id="1846771122725914429">Pantalla braille amb connexió Bluetooth</translation>
 <translation id="1865601187525349519">Fi del text</translation>
 <translation id="1876229593313240038">document</translation>
 <translation id="188130072164734898">Diu en veu alta la data i l'hora actuals.</translation>
@@ -489,7 +488,6 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4763480195061959176">vídeo</translation>
 <translation id="4764692524839457597">opció predeterminada</translation>
 <translation id="479989351350248267">cerca</translation>
-<translation id="4804818685124855865">Desconnecta</translation>
 <translation id="481165870889056555">Presenta el títol de la pàgina actual</translation>
 <translation id="4826415162591436065">Navega cap endavant.</translation>
 <translation id="4826604887384865800">Salt següent</translation>
@@ -559,7 +557,6 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="5291783959063340370">Objecte</translation>
 <translation id="5302089807023311274">Referència bibliogràfica</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, pestanya</translation>
-<translation id="5308380583665731573">Connecta</translation>
 <translation id="5310788376443009632">s'ha suprimit:</translation>
 <translation id="5320727453979144100">S'ha activat el mode persistent.</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{coma}other{# comes}}</translation>
@@ -648,7 +645,6 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="5887397643266327462">Subtítols en braille activats.</translation>
 <translation id="5891934789323004067">Taula</translation>
 <translation id="5899860758576822363">Reprodueix a un volum més baix quan ChromeVox parli</translation>
-<translation id="5906974869830879618">Introdueix un PIN</translation>
 <translation id="5921587111466148855">Capítol</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{signe igual}other{# signes igual}}</translation>
 <translation id="5939518447894949180">Restableix</translation>
@@ -777,7 +773,6 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="712735679809149106">retorn de paraules</translation>
 <translation id="713824876195128146">Cita de bloc següent</translation>
 <translation id="7143034430156387447">Alterna entre braille de sis i vuit punts</translation>
-<translation id="7143207342074048698">S'està connectant</translation>
 <translation id="7157306005867877619">Resum</translation>
 <translation id="7161425887892204659">Fi de la coincidència de text</translation>
 <translation id="7161771961008409533">Botó emergent</translation>
@@ -966,7 +961,6 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="8940925288729953902">Tecles modificadores</translation>
 <translation id="8943175951035496220">No hi ha cap cel·la a la dreta.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">Oblida</translation>
 <translation id="900114243503212879">fitxer</translation>
 <translation id="9027462562263121875">No hi ha cap taula.</translation>
 <translation id="9040132695316389094">Capçalera 1</translation>
@@ -1000,7 +994,6 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="948171205378458592">Disminueix la velocitat de la veu.</translation>
 <translation id="958854023026327378">Fes lliscar un dit cap avall</translation>
 <translation id="962913030769097253">Capçalera del nivell 1 següent</translation>
-<translation id="966588271015727539">Selecciona una pantalla braille amb connexió Bluetooth</translation>
 <translation id="973955474346881951">Activa o desactiva el mode persistent</translation>
 <translation id="976849232629612000">No hi ha elements.</translation>
 <translation id="995852680044449248">Inici del ratllat</translation>

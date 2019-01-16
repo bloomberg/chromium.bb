@@ -104,7 +104,6 @@
 <translation id="1828385960365606039">మే</translation>
 <translation id="1834891354138622109">నిలువు వరుస</translation>
 <translation id="1845944666972354496">యాక్టివేట్ చేయడానికి రెండుసార్లు నొక్కండి</translation>
-<translation id="1846771122725914429">బ్లూటూత్ బ్రెయిలీ డిస్‌ప్లే</translation>
 <translation id="1865601187525349519">వచనం యొక్క ముగింపు</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">ప్రస్తుత సమయాన్ని మరియు తేదీని చదివి వినిపించండి.</translation>
@@ -490,7 +489,6 @@
 <translation id="4763480195061959176">వీడియో</translation>
 <translation id="4764692524839457597">డిఫాల్ట్</translation>
 <translation id="479989351350248267">search</translation>
-<translation id="4804818685124855865">డిస్‌కనెక్ట్ చెయ్యి</translation>
 <translation id="481165870889056555">ప్రస్తుత పేజీ యొక్క శీర్షికను తెలియజేయండి</translation>
 <translation id="4826415162591436065">ముందుకు నావిగేట్ చేయండి</translation>
 <translation id="4826604887384865800">తరువాత జంప్</translation>
@@ -560,7 +558,6 @@
 <translation id="5291783959063340370">ఆబ్జెక్ట్</translation>
 <translation id="5302089807023311274">వివరణపట్టి సూచన</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, ట్యాబ్</translation>
-<translation id="5308380583665731573">కనెక్ట్ చేయండి</translation>
 <translation id="5310788376443009632">తీసివేయబడినది:</translation>
 <translation id="5320727453979144100">స్టిక్కీ మోడ్ ప్రారంభించబడింది</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{కామా గుర్తు}other{# కామా గుర్తులు}}</translation>
@@ -649,7 +646,6 @@
 <translation id="5887397643266327462">బ్రెయిలీ శీర్షికలు ప్రారంభించబడ్డాయి.</translation>
 <translation id="5891934789323004067">పట్టిక</translation>
 <translation id="5899860758576822363">ChromeVox మాట్లాడుతున్నప్పుడు, తక్కువ వాల్యూమ్‌తో ప్లే చేయి</translation>
-<translation id="5906974869830879618">దయచేసి ‌పిన్‌ని నమోదు చేయండి</translation>
 <translation id="5921587111466148855">అధ్యాయం</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{సమాన గుర్తు}other{# సమాన గుర్తులు}}</translation>
 <translation id="5939518447894949180">రీసెట్ చేయి</translation>
@@ -778,7 +774,6 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="712735679809149106">పదం అనుకరణ</translation>
 <translation id="713824876195128146">తరువాత బ్లాక్ కోట్</translation>
 <translation id="7143034430156387447">6 మరియు 8 చుక్కల బ్రెయిలీ మధ్య మారండి</translation>
-<translation id="7143207342074048698">కనెక్ట్ అవుతోంది</translation>
 <translation id="7157306005867877619">సంక్షేపం</translation>
 <translation id="7161425887892204659">వచన సరిపోలిక ముగింపు</translation>
 <translation id="7161771961008409533">పాప్-అప్ బటన్</translation>
@@ -967,7 +962,6 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="8940925288729953902">మాడిఫైయర్ కీలు</translation>
 <translation id="8943175951035496220">కుడివైపు సెల్ లేదు.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">మరిచిపోయారా</translation>
 <translation id="900114243503212879">ఫైల్</translation>
 <translation id="9027462562263121875">పట్టికలు లేవు.</translation>
 <translation id="9040132695316389094">శీర్షిక 1</translation>
@@ -1001,7 +995,6 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="948171205378458592">ప్రసంగ రేటుని తగ్గించండి</translation>
 <translation id="958854023026327378">ఒక వేలితో కిందకి స్వైప్ చేయండి</translation>
 <translation id="962913030769097253">తరువాత స్థాయి 1 శీర్షిక</translation>
-<translation id="966588271015727539">బ్లూటూత్ బ్రెయిలీ డిస్‌ప్లేని ఎంచుకోండి</translation>
 <translation id="973955474346881951">స్టిక్కీ మోడ్‌ను ప్రారంభించండి/ఆపివేయండి</translation>
 <translation id="976849232629612000">అంశాలు లేవు.</translation>
 <translation id="995852680044449248">కొట్టివేత ప్రారంభం</translation>

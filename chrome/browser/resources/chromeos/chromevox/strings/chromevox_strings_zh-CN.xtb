@@ -104,7 +104,6 @@
 <translation id="1828385960365606039">5月</translation>
 <translation id="1834891354138622109">列</translation>
 <translation id="1845944666972354496">连续点按两次即可激活</translation>
-<translation id="1846771122725914429">蓝牙盲文显示屏</translation>
 <translation id="1865601187525349519">文本末尾</translation>
 <translation id="1876229593313240038">文档</translation>
 <translation id="188130072164734898">说出当前的日期和时间。</translation>
@@ -489,7 +488,6 @@
 <translation id="4763480195061959176">视频</translation>
 <translation id="4764692524839457597">默认</translation>
 <translation id="479989351350248267">搜索</translation>
-<translation id="4804818685124855865">断开连接</translation>
 <translation id="481165870889056555">读出当前页面的标题</translation>
 <translation id="4826415162591436065">向前导航</translation>
 <translation id="4826604887384865800">下一个跳转</translation>
@@ -559,7 +557,6 @@
 <translation id="5291783959063340370">对象</translation>
 <translation id="5302089807023311274">参考书目</translation>
 <translation id="5304943142864553931">切换到名为“<ph name="TITLE" />”的标签页</translation>
-<translation id="5308380583665731573">连接</translation>
 <translation id="5310788376443009632">已移除：</translation>
 <translation id="5320727453979144100">已启用粘滞模式</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{1个英文逗号}other{#个英文逗号}}</translation>
@@ -648,7 +645,6 @@
 <translation id="5887397643266327462">已启用盲文字幕功能。</translation>
 <translation id="5891934789323004067">表格</translation>
 <translation id="5899860758576822363">在 ChromeVox 朗读时以较低音量播放音频</translation>
-<translation id="5906974869830879618">请输入 PIN 码</translation>
 <translation id="5921587111466148855">章节</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{1个等号}other{#个等号}}</translation>
 <translation id="5939518447894949180">重置</translation>
@@ -777,7 +773,6 @@
 <translation id="712735679809149106">字词回显</translation>
 <translation id="713824876195128146">下一个块引用</translation>
 <translation id="7143034430156387447">在 6 点式盲文和 8 点式盲文之间切换</translation>
-<translation id="7143207342074048698">正在连接</translation>
 <translation id="7157306005867877619">摘要</translation>
 <translation id="7161425887892204659">匹配文字的末尾</translation>
 <translation id="7161771961008409533">弹出式按钮</translation>
@@ -966,7 +961,6 @@
 <translation id="8940925288729953902">辅助键</translation>
 <translation id="8943175951035496220">不存在右侧单元格。</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">不保存</translation>
 <translation id="900114243503212879">文件</translation>
 <translation id="9027462562263121875">无表格。</translation>
 <translation id="9040132695316389094">1级标题标记</translation>
@@ -1000,7 +994,6 @@
 <translation id="948171205378458592">减慢语速</translation>
 <translation id="958854023026327378">向下滑动一根手指</translation>
 <translation id="962913030769097253">下一个1级标题</translation>
-<translation id="966588271015727539">选择蓝牙盲文显示屏</translation>
 <translation id="973955474346881951">启用/停用粘滞模式</translation>
 <translation id="976849232629612000">无菜单项。</translation>
 <translation id="995852680044449248">划删除线的文字的开头</translation>

@@ -104,7 +104,6 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="1828385960365606039">mei</translation>
 <translation id="1834891354138622109">Kolom</translation>
 <translation id="1845944666972354496">Dubbeltik om te activeren</translation>
-<translation id="1846771122725914429">Bluetooth-brailleleesregel</translation>
 <translation id="1865601187525349519">Einde van tekst</translation>
 <translation id="1876229593313240038">document</translation>
 <translation id="188130072164734898">De huidige datum en tijd uitspreken.</translation>
@@ -489,7 +488,6 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">standaard</translation>
 <translation id="479989351350248267">zoeken</translation>
-<translation id="4804818685124855865">Verbinding verbreken</translation>
 <translation id="481165870889056555">De titel van de huidige pagina melden</translation>
 <translation id="4826415162591436065">Verder navigeren</translation>
 <translation id="4826604887384865800">Volgende sprong</translation>
@@ -559,7 +557,6 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="5291783959063340370">Object</translation>
 <translation id="5302089807023311274">Bibliografiereferentie</translation>
 <translation id="5304943142864553931">tabblad <ph name="TITLE" /></translation>
-<translation id="5308380583665731573">Verbinding maken</translation>
 <translation id="5310788376443009632">verwijderd:</translation>
 <translation id="5320727453979144100">Modus voor vastzetten ingeschakeld</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{komma}other{# komma's}}</translation>
@@ -648,7 +645,6 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="5887397643266327462">Braille-ondertiteling ingeschakeld.</translation>
 <translation id="5891934789323004067">Tabel</translation>
 <translation id="5899860758576822363">Afspelen met lager volume wanneer ChromeVox spreekt</translation>
-<translation id="5906974869830879618">Geef een pincode op</translation>
 <translation id="5921587111466148855">Hoofdstuk</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{gelijkteken}other{# gelijktekens}}</translation>
 <translation id="5939518447894949180">Resetten</translation>
@@ -776,7 +772,6 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="712735679809149106">woordecho</translation>
 <translation id="713824876195128146">Volgend blok met geciteerde tekst</translation>
 <translation id="7143034430156387447">Schakelen tussen zes- en achtpuntsbraille</translation>
-<translation id="7143207342074048698">Verbinding maken</translation>
 <translation id="7157306005867877619">Uittreksel</translation>
 <translation id="7161425887892204659">Eind van tekstovereenkomst</translation>
 <translation id="7161771961008409533">Pop-up-knop</translation>
@@ -965,7 +960,6 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="8940925288729953902">Aanpassingstoetsen</translation>
 <translation id="8943175951035496220">Geen cel aan de rechterkant.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">Vergeten</translation>
 <translation id="900114243503212879">bestand</translation>
 <translation id="9027462562263121875">Geen tabellen.</translation>
 <translation id="9040132695316389094">Kop 1</translation>
@@ -999,7 +993,6 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="948171205378458592">Spreeksnelheid verlagen</translation>
 <translation id="958854023026327378">Veeg met één vinger omlaag</translation>
 <translation id="962913030769097253">Volgende kop voor niveau 1</translation>
-<translation id="966588271015727539">Een Bluetooth-brailleleesregel selecteren</translation>
 <translation id="973955474346881951">Modus voor vastzetten in-/uitschakelen</translation>
 <translation id="976849232629612000">Geen items.</translation>
 <translation id="995852680044449248">Begin van doorgehaalde tekst</translation>

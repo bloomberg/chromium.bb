@@ -104,7 +104,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="1828385960365606039">May</translation>
 <translation id="1834891354138622109">Column</translation>
 <translation id="1845944666972354496">Double tap to activate</translation>
-<translation id="1846771122725914429">Bluetooth Braille Display</translation>
 <translation id="1865601187525349519">End of text</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Speak the current time and date.</translation>
@@ -490,7 +489,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">default</translation>
 <translation id="479989351350248267">search</translation>
-<translation id="4804818685124855865">Disconnect</translation>
 <translation id="481165870889056555">Announce the title of the current page</translation>
 <translation id="4826415162591436065">Navigate forward</translation>
 <translation id="4826604887384865800">Next jump</translation>
@@ -560,7 +558,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="5291783959063340370">Object</translation>
 <translation id="5302089807023311274">Bibliography reference</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, tab</translation>
-<translation id="5308380583665731573">Connect</translation>
 <translation id="5310788376443009632">removed:</translation>
 <translation id="5320727453979144100">Sticky mode enabled</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{comma}other{# commas}}</translation>
@@ -649,7 +646,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="5887397643266327462">Braille captions enabled.</translation>
 <translation id="5891934789323004067">Table</translation>
 <translation id="5899860758576822363">Play at lower volume when ChromeVox is speaking</translation>
-<translation id="5906974869830879618">Please enter a pin</translation>
 <translation id="5921587111466148855">Chapter</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{equal}other{# equal signs}}</translation>
 <translation id="5939518447894949180">Reset</translation>
@@ -778,7 +774,6 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="712735679809149106">word echo</translation>
 <translation id="713824876195128146">Next block quote</translation>
 <translation id="7143034430156387447">Toggle between 6 and 8 dot braille</translation>
-<translation id="7143207342074048698">Connecting ...</translation>
 <translation id="7157306005867877619">Abstract</translation>
 <translation id="7161425887892204659">Text match end</translation>
 <translation id="7161771961008409533">Pop-up button</translation>
@@ -967,7 +962,6 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="8940925288729953902">Modifier Keys</translation>
 <translation id="8943175951035496220">No cell right.</translation>
 <translation id="8978496506222343566">tltip</translation>
-<translation id="8986362086234534611">Forget</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">No tables.</translation>
 <translation id="9040132695316389094">Heading 1</translation>
@@ -1001,7 +995,6 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="948171205378458592">Decrease rate of speech</translation>
 <translation id="958854023026327378">Swipe one finger down</translation>
 <translation id="962913030769097253">Next level 1 heading</translation>
-<translation id="966588271015727539">Select a Bluetooth braille display</translation>
 <translation id="973955474346881951">Enable / Disable sticky mode</translation>
 <translation id="976849232629612000">No items.</translation>
 <translation id="995852680044449248">Strike through start</translation>
