@@ -1378,15 +1378,24 @@ class MockTaggingClientSocketFactory : public MockClientSocketFactory {
   DISALLOW_COPY_AND_ASSIGN(MockTaggingClientSocketFactory);
 };
 
-// Constants for a successful SOCKS v4 handshake (connecting to localhost on
-// port 80, for the request).
+// Host / port used for SOCKS4 test strings.
+extern const char kSOCKS4TestHost[];
+extern const int kSOCKS4TestPort;
+
+// Constants for a successful SOCKS v4 handshake (connecting to kSOCKS4TestHost
+// on port kSOCKS4TestPort, for the request).
 extern const char kSOCKS4OkRequestLocalHostPort80[];
 extern const int kSOCKS4OkRequestLocalHostPort80Length;
 
 extern const char kSOCKS4OkReply[];
 extern const int kSOCKS4OkReplyLength;
 
-// Constants for a successful SOCKS v5 handshake.
+// Host / port used for SOCKS5 test strings.
+extern const char kSOCKS5TestHost[];
+extern const int kSOCKS5TestPort;
+
+// Constants for a successful SOCKS v5 handshake (connecting to kSOCKS5TestHost
+// on port kSOCKS5TestPort, for the request)..
 extern const char kSOCKS5GreetRequest[];
 extern const int kSOCKS5GreetRequestLength;
 
