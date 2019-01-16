@@ -249,6 +249,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
             mHandler.post(deferredRunnable);
         }
         mDeferredNativeRunnables.clear();
+        mBasicSuggestionProcessor.onNativeInitialized();
     }
 
     /** @see org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlFocusChange(boolean) */
@@ -641,7 +642,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
         if (mDeferredOnSelection != null) {
             mDeferredOnSelection.setShouldLog(newSuggestions.size() > mDeferredOnSelection.mPosition
                     && mDeferredOnSelection.mSuggestion.equals(
-                               newSuggestions.get(mDeferredOnSelection.mPosition)));
+                            newSuggestions.get(mDeferredOnSelection.mPosition)));
             mDeferredOnSelection.run();
             mDeferredOnSelection = null;
         }
