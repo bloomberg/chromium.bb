@@ -219,7 +219,7 @@ class TestRenderViewHost
   // RenderViewHostImpl, see below.
   void SimulateWasHidden() override;
   void SimulateWasShown() override;
-  WebPreferences TestComputeWebkitPrefs() override;
+  WebPreferences TestComputeWebPreferences() override;
 
   void TestOnUpdateStateWithFile(const base::FilePath& file_path);
 

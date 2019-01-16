@@ -437,12 +437,14 @@ void RenderViewHostImpl::ShowContextMenu(RenderFrameHost* render_frame_host,
   GetDelegate()->GetDelegateView()->ShowContextMenu(render_frame_host, params);
 }
 
-WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
+const WebPreferences RenderViewHostImpl::ComputeWebPreferences() {
   TRACE_EVENT0("browser", "RenderViewHostImpl::GetWebkitPrefs");
   WebPreferences prefs;
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
+
+  SetSlowWebPreferences(command_line, &prefs);
 
   prefs.web_security_enabled =
       !command_line.HasSwitch(switches::kDisableWebSecurity);
@@ -515,50 +517,12 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
     NOTREACHED();
   }
 
-  // On Android, Touch event feature detection is enabled by default,
-  // Otherwise default is disabled.
-  std::string touch_enabled_default_switch =
-      switches::kTouchEventFeatureDetectionDisabled;
-#if defined(OS_ANDROID)
-  touch_enabled_default_switch = switches::kTouchEventFeatureDetectionEnabled;
-#endif  // defined(OS_ANDROID)
-  const std::string touch_enabled_switch =
-      command_line.HasSwitch(switches::kTouchEventFeatureDetection)
-          ? command_line.GetSwitchValueASCII(
-                switches::kTouchEventFeatureDetection)
-          : touch_enabled_default_switch;
-  prefs.touch_event_feature_detection_enabled =
-      (touch_enabled_switch == switches::kTouchEventFeatureDetectionAuto)
-          ? (ui::GetTouchScreensAvailability() ==
-             ui::TouchScreensAvailability::ENABLED)
-          : (touch_enabled_switch.empty() ||
-             touch_enabled_switch ==
-                 switches::kTouchEventFeatureDetectionEnabled);
-
-  std::tie(prefs.available_pointer_types, prefs.available_hover_types) =
-      ui::GetAvailablePointerAndHoverTypes();
-  prefs.primary_pointer_type =
-      ui::GetPrimaryPointerType(prefs.available_pointer_types);
-  prefs.primary_hover_type =
-      ui::GetPrimaryHoverType(prefs.available_hover_types);
-
 // TODO(dtapuska): Enable barrel button selection drag support on Android.
 // crbug.com/758042
 #if defined(OS_WIN)
   prefs.barrel_button_for_drag_enabled =
       base::FeatureList::IsEnabled(features::kDirectManipulationStylus);
 #endif  // defined(OS_WIN)
-
-#if defined(OS_ANDROID)
-  prefs.video_fullscreen_orientation_lock_enabled =
-      base::FeatureList::IsEnabled(media::kVideoFullscreenOrientationLock) &&
-      ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE;
-  prefs.video_rotate_to_fullscreen_enabled =
-      base::FeatureList::IsEnabled(media::kVideoRotateToFullscreen) &&
-      ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE;
-#endif
-
-  prefs.pointer_events_max_touch_points = ui::MaxTouchPoints();
 
   prefs.touch_adjustment_enabled =
       !command_line.HasSwitch(switches::kDisableTouchAdjustment);
@@ -573,8 +537,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
     prefs.loads_images_automatically = true;
     prefs.javascript_enabled = true;
   }
-
-  prefs.number_of_cpu_cores = base::SysInfo::NumberOfProcessors();
 
   prefs.viewport_enabled = command_line.HasSwitch(switches::kEnableViewport);
 
@@ -620,6 +582,75 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
 
   GetContentClient()->browser()->OverrideWebkitPrefs(this, &prefs);
   return prefs;
+}
+
+void RenderViewHostImpl::SetSlowWebPreferences(
+    const base::CommandLine& command_line,
+    WebPreferences* prefs) {
+  if (web_preferences_.get()) {
+#define SET_FROM_CACHE(prefs, field) prefs->field = web_preferences_->field
+
+    SET_FROM_CACHE(prefs, touch_event_feature_detection_enabled);
+    SET_FROM_CACHE(prefs, available_pointer_types);
+    SET_FROM_CACHE(prefs, available_hover_types);
+    SET_FROM_CACHE(prefs, primary_pointer_type);
+    SET_FROM_CACHE(prefs, primary_hover_type);
+    SET_FROM_CACHE(prefs, pointer_events_max_touch_points);
+    SET_FROM_CACHE(prefs, number_of_cpu_cores);
+
+#if defined(OS_ANDROID)
+    SET_FROM_CACHE(prefs, video_fullscreen_orientation_lock_enabled);
+    SET_FROM_CACHE(prefs, video_rotate_to_fullscreen_enabled);
+#endif
+
+#undef SET_FROM_CACHE
+  } else {
+    // Every prefs->field modified below should have a SET_FROM_CACHE entry
+    // above.
+
+    // On Android, Touch event feature detection is enabled by default,
+    // Otherwise default is disabled.
+    std::string touch_enabled_default_switch =
+        switches::kTouchEventFeatureDetectionDisabled;
+#if defined(OS_ANDROID)
+    touch_enabled_default_switch = switches::kTouchEventFeatureDetectionEnabled;
+#endif  // defined(OS_ANDROID)
+    const std::string touch_enabled_switch =
+        command_line.HasSwitch(switches::kTouchEventFeatureDetection)
+            ? command_line.GetSwitchValueASCII(
+                  switches::kTouchEventFeatureDetection)
+            : touch_enabled_default_switch;
+
+    prefs->touch_event_feature_detection_enabled =
+        (touch_enabled_switch == switches::kTouchEventFeatureDetectionAuto)
+            ? (ui::GetTouchScreensAvailability() ==
+               ui::TouchScreensAvailability::ENABLED)
+            : (touch_enabled_switch.empty() ||
+               touch_enabled_switch ==
+                   switches::kTouchEventFeatureDetectionEnabled);
+
+    std::tie(prefs->available_pointer_types, prefs->available_hover_types) =
+        ui::GetAvailablePointerAndHoverTypes();
+    prefs->primary_pointer_type =
+        ui::GetPrimaryPointerType(prefs->available_pointer_types);
+    prefs->primary_hover_type =
+        ui::GetPrimaryHoverType(prefs->available_hover_types);
+
+    prefs->pointer_events_max_touch_points = ui::MaxTouchPoints();
+
+    prefs->number_of_cpu_cores = base::SysInfo::NumberOfProcessors();
+
+#if defined(OS_ANDROID)
+    const bool device_is_phone =
+        ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE;
+    prefs->video_fullscreen_orientation_lock_enabled =
+        base::FeatureList::IsEnabled(media::kVideoFullscreenOrientationLock) &&
+        device_is_phone;
+    prefs->video_rotate_to_fullscreen_enabled =
+        base::FeatureList::IsEnabled(media::kVideoRotateToFullscreen) &&
+        device_is_phone;
+#endif
+  }
 }
 
 void RenderViewHostImpl::DispatchRenderViewCreated() {
@@ -953,11 +984,19 @@ void RenderViewHostImpl::OnWebkitPreferencesChanged() {
   if (updating_web_preferences_)
     return;
   updating_web_preferences_ = true;
-  UpdateWebkitPreferences(ComputeWebkitPrefs());
+  UpdateWebkitPreferences(ComputeWebPreferences());
 #if defined(OS_ANDROID)
   GetWidget()->SetForceEnableZoom(web_preferences_->force_enable_zoom);
 #endif
   updating_web_preferences_ = false;
+}
+
+void RenderViewHostImpl::OnHardwareConfigurationChanged() {
+  // OnWebkitPreferencesChanged is a no-op when this is true.
+  if (updating_web_preferences_)
+    return;
+  web_preferences_.reset();
+  OnWebkitPreferencesChanged();
 }
 
 void RenderViewHostImpl::EnablePreferredSizeMode() {
@@ -985,7 +1024,7 @@ void RenderViewHostImpl::PostRenderViewReady() {
 }
 
 void RenderViewHostImpl::OnGpuSwitched() {
-  OnWebkitPreferencesChanged();
+  OnHardwareConfigurationChanged();
 }
 
 void RenderViewHostImpl::RenderViewReady() {

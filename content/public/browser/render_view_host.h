@@ -103,16 +103,23 @@ class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
   virtual void SetWebUIProperty(const std::string& name,
                                 const std::string& value) = 0;
 
-  // Send the renderer process the current preferences supplied by the
+  // Sends the renderer process the current preferences supplied by the
   // RenderViewHostDelegate.
   virtual void SyncRendererPrefs() = 0;
 
+  // TODO(mustaq): Replace "Webkit" from the following three method names.
+  //
   // Returns the current WebKit preferences. Note: WebPreferences is cached, so
-  // this lookup will be fast
+  // this lookup will be fast.
   virtual WebPreferences GetWebkitPreferences() = 0;
 
-  // If any state that affects the webkit preferences changed, this method must
-  // be called. This triggers recomputing preferences.
+  // Passes current web preferences to the renderer after possibly recomputing
+  // them as follows: all "fast" preferences (those not requiring slow
+  // platform/device polling) are recomputed unconditionally; the remaining
+  // "slow" ones are recomputed only if they have not been computed before.
+  //
+  // This method must be called if any state that affects web preferences has
+  // changed.
   virtual void OnWebkitPreferencesChanged() = 0;
 
   // Passes a list of Webkit preferences to the renderer.
