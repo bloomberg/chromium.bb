@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
+#include "content/common/navigation_params.h"
 #include "content/public/common/resource_load_info.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -42,11 +43,14 @@ class CONTENT_EXPORT NavigationBodyLoader
       public network::mojom::URLLoaderClient {
  public:
   NavigationBodyLoader(
-      mojom::ResourceLoadInfoPtr resource_load_info,
+      const CommonNavigationParams& common_params,
+      const CommitNavigationParams& commit_params,
+      int request_id,
       const network::ResourceResponseHead& head,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      int render_frame_id);
+      int render_frame_id,
+      bool is_main_frame);
   ~NavigationBodyLoader() override;
 
  private:
@@ -100,11 +104,14 @@ class CONTENT_EXPORT NavigationBodyLoader
   void ReadFromDataPipe();
   void NotifyCompletionIfAppropriate();
 
-  mojom::ResourceLoadInfoPtr resource_load_info_;
-  network::ResourceResponseHead head_;
+  // Navigation parameters.
+  const int render_frame_id_;
+  const network::ResourceResponseHead head_;
   network::mojom::URLLoaderClientEndpointsPtr endpoints_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  int render_frame_id_;
+
+  // This struct holds stats to notify browser process.
+  mojom::ResourceLoadInfoPtr resource_load_info_;
 
   // These bindings are live while loading the response.
   network::mojom::URLLoaderPtr url_loader_;
