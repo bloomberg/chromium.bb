@@ -424,19 +424,26 @@ void PasswordFormManager::PresaveGeneratedPassword(
     form_without_username.username_value.clear();
     form_saver()->PresaveGeneratedPassword(form_without_username);
   }
-  // If a password had been generated already, a call to
-  // PresaveGeneratedPassword() implies that this password was modified.
+
   if (!has_generated_password_) {
     votes_uploader_.set_generated_password_changed(false);
     metrics_recorder_->SetGeneratedPasswordStatus(
         PasswordFormMetricsRecorder::GeneratedPasswordStatus::
             kPasswordAccepted);
   } else {
-    votes_uploader_.set_generated_password_changed(true);
-    metrics_recorder_->SetGeneratedPasswordStatus(
-        PasswordFormMetricsRecorder::GeneratedPasswordStatus::kPasswordEdited);
+    // If the password is already generated and the new value to presave differs
+    // from the presaved one, then mark that the generated password was changed.
+    // If a user recovers the original generated password, it will be recorded
+    // as a password change.
+    if (generated_password_ != form.password_value) {
+      votes_uploader_.set_generated_password_changed(true);
+      metrics_recorder_->SetGeneratedPasswordStatus(
+          PasswordFormMetricsRecorder::GeneratedPasswordStatus::
+              kPasswordEdited);
+    }
   }
   has_generated_password_ = true;
+  generated_password_ = form.password_value;
   votes_uploader_.set_has_generated_password(true);
 }
 
@@ -444,6 +451,7 @@ void PasswordFormManager::PasswordNoLongerGenerated() {
   DCHECK(has_generated_password_);
   form_saver()->RemovePresavedPassword();
   has_generated_password_ = false;
+  generated_password_.clear();
   votes_uploader_.set_has_generated_password(false);
   votes_uploader_.set_generated_password_changed(false);
   metrics_recorder_->SetGeneratedPasswordStatus(
@@ -1021,6 +1029,7 @@ std::unique_ptr<PasswordFormManager> PasswordFormManager::Clone() {
   result->pending_credentials_ = pending_credentials_;
   result->is_new_login_ = is_new_login_;
   result->has_generated_password_ = has_generated_password_;
+  result->generated_password_ = generated_password_;
   result->password_overridden_ = password_overridden_;
   result->retry_password_form_password_update_ =
       retry_password_form_password_update_;
