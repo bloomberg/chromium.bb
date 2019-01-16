@@ -114,7 +114,6 @@ void VRUiHostImpl::StartUiRendering() {
 
   DCHECK(info_);
   ui_rendering_thread_ = std::make_unique<VRBrowserRendererThreadWin>();
-  ui_rendering_thread_->Start();
   ui_rendering_thread_->SetVRDisplayInfo(info_.Clone());
 }
 
