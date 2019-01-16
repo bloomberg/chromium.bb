@@ -1197,9 +1197,14 @@
     // pan-down
     // none
 
-    // (prefers-color-scheme:) media feature
+    // (prefers-*:) media features
     "no-preference",
+
+    // (prefers-color-scheme:) media feature
     "dark",
     "light",
+
+    // (prefers-reduced-motion:) media feature
+    "reduce",
   ],
 }

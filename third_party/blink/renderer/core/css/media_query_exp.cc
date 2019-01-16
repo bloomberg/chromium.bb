@@ -79,6 +79,12 @@ static inline bool FeatureWithValidIdent(const String& media_feature,
     }
   }
 
+  if (RuntimeEnabledFeatures::MediaQueryPrefersReducedMotionEnabled()) {
+    if (media_feature == kPrefersReducedMotionMediaFeature) {
+      return ident == CSSValueNoPreference || ident == CSSValueReduce;
+    }
+  }
+
   return false;
 }
 
@@ -194,7 +200,9 @@ static inline bool FeatureWithoutValue(const String& media_feature) {
          media_feature == kShapeMediaFeature ||
          media_feature == kColorGamutMediaFeature ||
          media_feature == kImmersiveMediaFeature ||
-         media_feature == kPrefersColorSchemeMediaFeature;
+         media_feature == kPrefersColorSchemeMediaFeature ||
+         (RuntimeEnabledFeatures::MediaQueryPrefersReducedMotionEnabled() &&
+          media_feature == kPrefersReducedMotionMediaFeature);
 }
 
 bool MediaQueryExp::IsViewportDependent() const {

@@ -702,6 +702,22 @@ static bool PointerMediaFeatureEval(const MediaQueryExpValue& value,
          (pointer == kPointerTypeFine && value.id == CSSValueFine);
 }
 
+static bool PrefersReducedMotionMediaFeatureEval(
+    const MediaQueryExpValue& value,
+    MediaFeaturePrefix,
+    const MediaValues& media_values) {
+  // If the value is not valid, this was passed without an argument. In that
+  // case, it implicitly resolves to 'reduce'.
+  if (!value.IsValid())
+    return media_values.PrefersReducedMotion();
+
+  if (!value.is_id)
+    return false;
+
+  return (value.id == CSSValueNoPreference) ^
+         media_values.PrefersReducedMotion();
+}
+
 static bool ShapeMediaFeatureEval(const MediaQueryExpValue& value,
                                   MediaFeaturePrefix,
                                   const MediaValues& media_values) {

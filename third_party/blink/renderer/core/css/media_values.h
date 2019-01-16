@@ -78,6 +78,7 @@ class CORE_EXPORT MediaValues : public GarbageCollectedFinalized<MediaValues> {
   virtual DisplayShape GetDisplayShape() const = 0;
   virtual ColorSpaceGamut ColorGamut() const = 0;
   virtual WebColorScheme PreferredColorScheme() const = 0;
+  virtual bool PrefersReducedMotion() const = 0;
 
  protected:
   static double CalculateViewportWidth(LocalFrame*);
@@ -100,6 +101,7 @@ class CORE_EXPORT MediaValues : public GarbageCollectedFinalized<MediaValues> {
   static DisplayShape CalculateDisplayShape(LocalFrame*);
   static ColorSpaceGamut CalculateColorGamut(LocalFrame*);
   static WebColorScheme CalculatePreferredColorScheme(LocalFrame*);
+  static bool CalculatePrefersReducedMotion(LocalFrame*);
 };
 
 }  // namespace blink
