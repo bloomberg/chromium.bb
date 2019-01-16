@@ -70,6 +70,8 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  std::unique_ptr<base::DictionaryValue> CollectDebugData() const;
+
  private:
   struct RegistrationEntry;
 

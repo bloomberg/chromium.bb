@@ -241,16 +241,12 @@ void FCMInvalidationListener::OnSubscriptionChannelStateChanged(
 
 std::unique_ptr<base::DictionaryValue>
 FCMInvalidationListener::CollectDebugData() const {
-  std::unique_ptr<base::DictionaryValue> return_value(
-      new base::DictionaryValue());
-  // For each topic record if the subscription was successful.
-  TopicSet active_topics =
-      per_user_topic_registration_manager_->GetRegisteredIds();
+  std::unique_ptr<base::DictionaryValue> return_value =
+      per_user_topic_registration_manager_->CollectDebugData();
   for (const Topic& topic : registered_topics_) {
-    std::string status = "Registered";
-    if (active_topics.count(topic) == 0)
-      status = "Unregistered";
-    return_value->SetString(topic, status);
+    if (!return_value->HasKey(topic)) {
+      return_value->SetString(topic, "Unregistered");
+    }
   }
   return return_value;
 }
