@@ -16,7 +16,6 @@
 #include "third_party/skia/include/gpu/vk/GrVkTypes.h"
 #include "third_party/vulkan/include/vulkan/vulkan.h"
 
-class GrContext;
 class GrVkSecondaryCBDrawContext;
 
 namespace gl {
@@ -25,6 +24,7 @@ class GLImageAHardwareBuffer;
 
 namespace android_webview {
 class GLNonOwnedCompatibilityContext;
+class VulkanState;
 
 class AwDrawFnImpl {
  public:
@@ -50,7 +50,7 @@ class AwDrawFnImpl {
  private:
   // Struct which represents one in-flight draw for the Vk interop path.
   struct InFlightDraw {
-    InFlightDraw();
+    explicit InFlightDraw(VulkanState* vk_state);
     ~InFlightDraw();
     sk_sp<GrVkSecondaryCBDrawContext> draw_context;
     VkFence post_draw_fence = VK_NULL_HANDLE;
@@ -61,7 +61,9 @@ class AwDrawFnImpl {
     uint32_t texture_id = 0;
     uint32_t framebuffer_id = 0;
     GrVkImageInfo image_info;
-    VkDevice device;  // Used to clean up |image_info|
+
+    // Used to clean up Vulkan objects.
+    VulkanState* vk_state;
   };
 
   CompositorFrameConsumer* GetCompositorFrameConsumer() {
@@ -73,14 +75,10 @@ class AwDrawFnImpl {
   int functor_handle_;
   RenderThreadManager render_thread_manager_;
 
-  // Members for the GL-interop path.
-  VkQueue queue_ = VK_NULL_HANDLE;
-  VkDevice device_ = VK_NULL_HANDLE;
-  VkPhysicalDevice physical_device_ = VK_NULL_HANDLE;
-  std::unique_ptr<gpu::VulkanImplementation> vk_implementation_;
-  sk_sp<GrContext> gr_context_;
+  // State used for Vk rendering.
+  scoped_refptr<VulkanState> vk_state_;
 
-  // GL context used to draw via GL in interop path.
+  // GL context used to draw via GL in Vk interop path.
   scoped_refptr<GLNonOwnedCompatibilityContext> gl_context_;
 
   // Queue of draw contexts pending cleanup.
