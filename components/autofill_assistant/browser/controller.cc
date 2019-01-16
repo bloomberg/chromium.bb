@@ -340,8 +340,7 @@ void Controller::FinishStart(const GURL& initial_url) {
     should_fail_after_checking_scripts_ = true;
     GetUiController()->ShowOverlay();
     GetUiController()->ShowStatusMessage(l10n_util::GetStringFUTF8(
-        IDS_AUTOFILL_ASSISTANT_LOADING,
-        base::UTF8ToUTF16(web_contents()->GetVisibleURL().host())));
+        IDS_AUTOFILL_ASSISTANT_LOADING, base::UTF8ToUTF16(initial_url.host())));
   }
 
   touchable_element_area_.SetOnUpdate(base::BindRepeating(
