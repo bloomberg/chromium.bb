@@ -101,6 +101,7 @@ void ModifierKeyboardHookWinTest::SendModifierKeyUpEvent(KeyboardCode key_code,
       next_time_stamp()));
 }
 
+namespace {
 void VerifyKeyEvent(KeyEvent* key_event,
                     KeyboardCode non_located_key_code,
                     DomCode dom_code,
@@ -116,6 +117,7 @@ void VerifyKeyEvent(KeyEvent* key_event,
   ASSERT_EQ(key_event->key_code(), non_located_key_code);
   ASSERT_EQ(key_event->code(), dom_code);
 }
+}  // namespace
 
 TEST_F(ModifierKeyboardHookWinTest, SimpleLeftControlKeypressTest) {
   const KeyboardCode key_code = KeyboardCode::VKEY_LCONTROL;
