@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/sessions/core/tab_restore_service_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -37,7 +37,8 @@ IOSChromeTabRestoreServiceFactory::GetForBrowserState(
 // static
 IOSChromeTabRestoreServiceFactory*
 IOSChromeTabRestoreServiceFactory::GetInstance() {
-  return base::Singleton<IOSChromeTabRestoreServiceFactory>::get();
+  static base::NoDestructor<IOSChromeTabRestoreServiceFactory> instance;
+  return instance.get();
 }
 
 // static
