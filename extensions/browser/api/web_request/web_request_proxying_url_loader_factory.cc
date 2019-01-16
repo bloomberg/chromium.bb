@@ -7,9 +7,7 @@
 #include <utility>
 
 #include "base/debug/alias.h"
-#include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -59,7 +57,6 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::~InProgressRequest() {
         factory_->browser_context_, &info_.value());
   }
   if (on_before_send_headers_callback_) {
-    debug_events_.push_back("cb aborted");
     std::move(on_before_send_headers_callback_)
         .Run(net::ERR_ABORTED, base::nullopt);
   }
@@ -85,8 +82,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::Restart() {
       network_service_request_id_ != 0 &&
       ExtensionWebRequestEventRouter::GetInstance()->HasExtraHeadersListener(
           factory_->browser_context_, factory_->info_map_, &info_.value());
-  debug_events_.push_back(
-      base::StrCat({"start-", uses_header_client_ ? "1" : "0"}));
 
   // If the header client will be used, we start the request immediately, and
   // OnBeforeSendHeaders and OnSendHeaders will be handled there. Otherwise,
@@ -144,7 +139,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::FollowRedirect(
     target_loader_->FollowRedirect(removed_headers, modified_headers, new_url);
   }
 
-  debug_events_.push_back("redirect");
   Restart();
 }
 
@@ -274,7 +268,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnBeforeSendHeaders(
   DCHECK(uses_header_client_);
   request_.headers = headers;
   on_before_send_headers_callback_ = std::move(callback);
-  debug_events_.push_back("cb set");
   ContinueToBeforeSendHeaders(net::OK);
 }
 
@@ -420,15 +413,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   }
 
   if (uses_header_client_) {
-    // TODO(https://crbug.com/918761): Remove this once the bug is fixed.
-    if (!on_before_send_headers_callback_) {
-      static auto* web_request_debug = base::debug::AllocateCrashKeyString(
-          "web_request_debug", base::debug::CrashKeySize::Size256);
-      base::debug::SetCrashKeyString(web_request_debug,
-                                     base::JoinString(debug_events_, ","));
-      CHECK(false);
-    }
-    debug_events_.push_back("cb called");
+    DCHECK(on_before_send_headers_callback_);
     std::move(on_before_send_headers_callback_)
         .Run(error_code, request_.headers);
   }
@@ -460,7 +445,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::ContinueAuthRequest(
     return;
   }
 
-  debug_events_.push_back("auth");
   info_->AddResponseInfoFromResourceResponse(current_response_);
   auto continuation =
       base::BindRepeating(&InProgressRequest::OnAuthRequestHandled,
