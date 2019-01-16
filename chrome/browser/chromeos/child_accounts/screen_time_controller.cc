@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller.h"
 
+#include <algorithm>
+#include <string>
+
 #include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/feature_list.h"
 #include "base/optional.h"
@@ -111,9 +114,13 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
   if (state.is_locked) {
     DCHECK(!state.next_unlock_time.is_null());
     if (!session_manager::SessionManager::Get()->IsScreenLocked()) {
-      VLOG(1) << "Request status report before locking screen.";
-      ConsumerStatusReportingServiceFactory::GetForBrowserContext(context_)
-          ->RequestImmediateStatusReport();
+      // This status report are going to be done in EventBasedStatusReporting if
+      // this feature is enabled.
+      if (!base::FeatureList::IsEnabled(features::kEventBasedStatusReporting)) {
+        VLOG(1) << "Request status report before locking screen.";
+        ConsumerStatusReportingServiceFactory::GetForBrowserContext(context_)
+            ->RequestImmediateStatusReport();
+      }
       ForceScreenLockByPolicy(state.next_unlock_time);
     }
   } else {

@@ -9,11 +9,14 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service_factory.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/account_id/account_id.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,6 +57,15 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
   void SetUp() override {
     profile_.SetSupervisedUserId(supervised_users::kChildAccountSUID);
     arc_test_.SetUp(profile());
+
+    session_manager_.CreateSession(
+        account_id(),
+        chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
+            account_id().GetUserEmail()),
+        true);
+    session_manager_.SetSessionState(
+        session_manager::SessionState::LOGIN_PRIMARY);
+
     ConsumerStatusReportingServiceFactory::GetInstance()->SetTestingFactory(
         profile(),
         base::BindRepeating(&CreateTestingConsumerStatusReportingService));
@@ -73,12 +85,23 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
     return test_consumer_status_reporting_service_;
   }
 
+  session_manager::SessionManager* session_manager() {
+    return &session_manager_;
+  }
+
+  AccountId account_id() {
+    return chromeos::ProfileHelper::Get()
+        ->GetUserByProfile(profile())
+        ->GetAccountId();
+  }
+
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   ArcAppTest arc_test_;
   TestingProfile profile_;
   TestingConsumerStatusReportingService*
       test_consumer_status_reporting_service_;
+  session_manager::SessionManager session_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(EventBasedStatusReportingServiceTest);
 };
@@ -103,17 +126,65 @@ TEST_F(EventBasedStatusReportingServiceTest, ReportWhenAppUpdate) {
       1, test_consumer_status_reporting_service()->performed_status_reports());
 }
 
+TEST_F(EventBasedStatusReportingServiceTest, DoNotReportWhenUserJustSignIn) {
+  EventBasedStatusReportingService service(profile());
+
+  ASSERT_EQ(
+      0, test_consumer_status_reporting_service()->performed_status_reports());
+  session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
+  EXPECT_EQ(
+      0, test_consumer_status_reporting_service()->performed_status_reports());
+}
+
+TEST_F(EventBasedStatusReportingServiceTest, ReportWhenSessionIsLocked) {
+  EventBasedStatusReportingService service(profile());
+
+  ASSERT_EQ(
+      0, test_consumer_status_reporting_service()->performed_status_reports());
+  session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
+  EXPECT_EQ(
+      0, test_consumer_status_reporting_service()->performed_status_reports());
+  session_manager()->SetSessionState(session_manager::SessionState::LOCKED);
+  EXPECT_EQ(
+      1, test_consumer_status_reporting_service()->performed_status_reports());
+}
+
+TEST_F(EventBasedStatusReportingServiceTest, ReportWhenSessionIsActive) {
+  EventBasedStatusReportingService service(profile());
+
+  ASSERT_EQ(
+      0, test_consumer_status_reporting_service()->performed_status_reports());
+  session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
+  EXPECT_EQ(
+      0, test_consumer_status_reporting_service()->performed_status_reports());
+  session_manager()->SetSessionState(session_manager::SessionState::LOCKED);
+  EXPECT_EQ(
+      1, test_consumer_status_reporting_service()->performed_status_reports());
+  session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
+  EXPECT_EQ(
+      2, test_consumer_status_reporting_service()->performed_status_reports());
+}
+
 TEST_F(EventBasedStatusReportingServiceTest, ReportForMultipleEvents) {
   EventBasedStatusReportingService service(profile());
 
   ASSERT_EQ(
       0, test_consumer_status_reporting_service()->performed_status_reports());
-  app_host()->OnPackageAdded(arc::mojom::ArcPackageInfo::New());
+  session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
+  EXPECT_EQ(
+      0, test_consumer_status_reporting_service()->performed_status_reports());
+  session_manager()->SetSessionState(session_manager::SessionState::LOCKED);
   EXPECT_EQ(
       1, test_consumer_status_reporting_service()->performed_status_reports());
-  app_host()->OnPackageModified(arc::mojom::ArcPackageInfo::New());
+  session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
   EXPECT_EQ(
       2, test_consumer_status_reporting_service()->performed_status_reports());
+  app_host()->OnPackageAdded(arc::mojom::ArcPackageInfo::New());
+  EXPECT_EQ(
+      3, test_consumer_status_reporting_service()->performed_status_reports());
+  app_host()->OnPackageModified(arc::mojom::ArcPackageInfo::New());
+  EXPECT_EQ(
+      4, test_consumer_status_reporting_service()->performed_status_reports());
 }
 
 }  // namespace chromeos

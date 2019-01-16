@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/session_manager/core/session_manager_observer.h"
 
 namespace content {
 class BrowserContext;
@@ -16,8 +17,10 @@ class BrowserContext;
 namespace chromeos {
 
 // Requests status report when events relevant to supervision features happen.
-class EventBasedStatusReportingService : public KeyedService,
-                                         public ArcAppListPrefs::Observer {
+class EventBasedStatusReportingService
+    : public KeyedService,
+      public ArcAppListPrefs::Observer,
+      public session_manager::SessionManagerObserver {
  public:
   explicit EventBasedStatusReportingService(content::BrowserContext* context);
   ~EventBasedStatusReportingService() override;
@@ -28,11 +31,15 @@ class EventBasedStatusReportingService : public KeyedService,
   void OnPackageModified(
       const arc::mojom::ArcPackageInfo& package_info) override;
 
+  // session_manager::SessionManagerObserver:
+  void OnSessionStateChanged() override;
+
  private:
   // KeyedService:
   void Shutdown() override;
 
   content::BrowserContext* const context_;
+  bool session_just_started_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(EventBasedStatusReportingService);
 };
