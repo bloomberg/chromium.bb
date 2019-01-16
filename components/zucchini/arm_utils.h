@@ -132,7 +132,7 @@ class Arm32Rel32Translator {
     ADDR_A24 = 0,
     ADDR_T8,
     ADDR_T11,
-    ADDR_T21,
+    ADDR_T20,
     ADDR_T24,
     NUM_ADDR_TYPE
   };
@@ -211,10 +211,10 @@ class Arm32Rel32Translator {
   static bool ReadT11(rva_t instr_rva, uint16_t code16, rva_t* target_rva);
   static bool WriteT11(rva_t instr_rva, rva_t target_rva, uint16_t* code16);
 
-  static ArmAlign DecodeT21(uint32_t code32, arm_disp_t* disp);
-  static bool EncodeT21(arm_disp_t disp, uint32_t* code32);
-  static bool ReadT21(rva_t instr_rva, uint32_t code32, rva_t* target_rva);
-  static bool WriteT21(rva_t instr_rva, rva_t target_rva, uint32_t* code32);
+  static ArmAlign DecodeT20(uint32_t code32, arm_disp_t* disp);
+  static bool EncodeT20(arm_disp_t disp, uint32_t* code32);
+  static bool ReadT20(rva_t instr_rva, uint32_t code32, rva_t* target_rva);
+  static bool WriteT20(rva_t instr_rva, rva_t target_rva, uint32_t* code32);
 
   static ArmAlign DecodeT24(uint32_t code32, arm_disp_t* disp);
   static bool EncodeT24(arm_disp_t disp, uint32_t* code32);
@@ -293,15 +293,15 @@ class Arm32Rel32Translator {
                                        EncodeT11,
                                        ReadT11,
                                        WriteT11>;
-  using AddrTraits_T21 = ArmAddrTraits<AddrType,
-                                       ADDR_T21,
+  using AddrTraits_T20 = ArmAddrTraits<AddrType,
+                                       ADDR_T20,
                                        uint32_t,
                                        FetchThumb2Code32,
                                        StoreThumb2Code32,
-                                       DecodeT21,
-                                       EncodeT21,
-                                       ReadT21,
-                                       WriteT21>;
+                                       DecodeT20,
+                                       EncodeT20,
+                                       ReadT20,
+                                       WriteT20>;
   using AddrTraits_T24 = ArmAddrTraits<AddrType,
                                        ADDR_T24,
                                        uint32_t,

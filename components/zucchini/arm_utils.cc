@@ -194,7 +194,7 @@ bool Arm32Rel32Translator::WriteT11(rva_t instr_rva,
 }
 
 // static
-ArmAlign Arm32Rel32Translator::DecodeT21(uint32_t code32, arm_disp_t* disp) {
+ArmAlign Arm32Rel32Translator::DecodeT20(uint32_t code32, arm_disp_t* disp) {
   if ((code32 & 0xF800D000) == 0xF0008000 &&
       (code32 & 0x03C00000) != 0x03C00000) {
     // B encoding T3. Note the reversal of "(J1)" and "(J2)".
@@ -214,7 +214,7 @@ ArmAlign Arm32Rel32Translator::DecodeT21(uint32_t code32, arm_disp_t* disp) {
 }
 
 // static
-bool Arm32Rel32Translator::EncodeT21(arm_disp_t disp, uint32_t* code32) {
+bool Arm32Rel32Translator::EncodeT20(arm_disp_t disp, uint32_t* code32) {
   uint32_t t = *code32;
   if ((t & 0xF800D000) == 0xF0008000 && (t & 0x03C00000) != 0x03C00000) {
     if (disp % 2)  // Require 2-byte alignment.
@@ -235,11 +235,11 @@ bool Arm32Rel32Translator::EncodeT21(arm_disp_t disp, uint32_t* code32) {
 }
 
 // static
-bool Arm32Rel32Translator::ReadT21(rva_t instr_rva,
+bool Arm32Rel32Translator::ReadT20(rva_t instr_rva,
                                    uint32_t code32,
                                    rva_t* target_rva) {
   arm_disp_t disp;
-  ArmAlign align = DecodeT21(code32, &disp);
+  ArmAlign align = DecodeT20(code32, &disp);
   if (align == kArmAlignFail)
     return false;
   *target_rva = GetThumb2TargetRvaFromDisp(instr_rva, disp, align);
@@ -247,12 +247,12 @@ bool Arm32Rel32Translator::ReadT21(rva_t instr_rva,
 }
 
 // static
-bool Arm32Rel32Translator::WriteT21(rva_t instr_rva,
+bool Arm32Rel32Translator::WriteT20(rva_t instr_rva,
                                     rva_t target_rva,
                                     uint32_t* code32) {
   arm_disp_t disp =
       GetThumb2DispFromTargetRva(instr_rva, target_rva, kArmAlign2);
-  return EncodeT21(disp, code32);
+  return EncodeT20(disp, code32);
 }
 
 // static
