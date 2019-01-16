@@ -11,7 +11,8 @@
     "chrome://resources/",
     "contentSettings",
     "metricsPrivate",
-    "resourcesPrivate"
+    "resourcesPrivate",
+    {"fileSystem": ["write"]}
   ],
   "mime_types": [
     "application/pdf"
