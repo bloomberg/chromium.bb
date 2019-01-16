@@ -1123,7 +1123,13 @@ TEST_F(PersonalDataManagerTest, OfferStoreUnmaskedCards) {
 #elif defined(OS_LINUX)
   bool should_offer = false;
 #endif
-  EXPECT_EQ(should_offer, OfferStoreUnmaskedCards());
+  EXPECT_EQ(should_offer, OfferStoreUnmaskedCards(/*is_off_the_record=*/false));
+}
+
+// Tests that OfferStoreUnmaskedCards always returns false if the user is off
+// the record.
+TEST_F(PersonalDataManagerTest, OfferStoreUnmaskedCards_OffTheRecord) {
+  EXPECT_EQ(false, OfferStoreUnmaskedCards(/*is_off_the_record=*/true));
 }
 
 // Tests that UpdateServerCreditCard can be used to mask or unmask server cards.
@@ -1152,7 +1158,7 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCards) {
   WaitForOnPersonalDataChanged();
 
   ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
-  if (!OfferStoreUnmaskedCards()) {
+  if (!OfferStoreUnmaskedCards(/*is_off_the_record=*/false)) {
     for (CreditCard* card : personal_data_->GetCreditCards()) {
       EXPECT_EQ(CreditCard::MASKED_SERVER_CARD, card->record_type());
     }
@@ -3354,7 +3360,7 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   WaitForOnPersonalDataChanged();
   EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
 
-  if (!OfferStoreUnmaskedCards()) {
+  if (!OfferStoreUnmaskedCards(/*is_off_the_record=*/false)) {
     for (CreditCard* card : personal_data_->GetCreditCards()) {
       EXPECT_EQ(CreditCard::MASKED_SERVER_CARD, card->record_type());
     }

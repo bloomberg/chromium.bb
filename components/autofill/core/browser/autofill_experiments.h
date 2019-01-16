@@ -61,7 +61,7 @@ bool IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled();
 // Returns true if the user should be offered to locally store unmasked cards.
 // This controls whether the option is presented at all rather than the default
 // response of the option.
-bool OfferStoreUnmaskedCards();
+bool OfferStoreUnmaskedCards(bool is_off_the_record);
 
 // Returns whether the account of the active signed-in user should be used.
 bool ShouldUseActiveSignedInAccount();

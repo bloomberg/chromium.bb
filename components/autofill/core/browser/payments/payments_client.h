@@ -206,6 +206,8 @@ class PaymentsClient {
   void set_url_loader_factory_for_testing(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
+  bool is_off_the_record() { return is_off_the_record_; }
+
  private:
   friend class PaymentsClientTest;
 

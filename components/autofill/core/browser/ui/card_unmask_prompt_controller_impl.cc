@@ -205,7 +205,7 @@ bool CardUnmaskPromptControllerImpl::CanStoreLocally() const {
     return false;
   if (card_.record_type() == CreditCard::LOCAL_CARD)
     return false;
-  return OfferStoreUnmaskedCards();
+  return OfferStoreUnmaskedCards(is_off_the_record_);
 }
 
 bool CardUnmaskPromptControllerImpl::GetStoreLocallyStartState() const {

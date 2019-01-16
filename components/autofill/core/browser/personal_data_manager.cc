@@ -438,7 +438,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
 
           // If the user has a saved unmasked server card and the experiment is
           // disabled, force mask all cards back to the unsaved state.
-          if (!OfferStoreUnmaskedCards())
+          if (!OfferStoreUnmaskedCards(is_off_the_record_))
             ResetFullServerCards();
         }
         break;
