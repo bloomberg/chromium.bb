@@ -41,14 +41,12 @@ class ModuleInspectorTest : public testing::Test {
   }
 
   // Callback for ModuleInspector.
-  void OnModuleInspected(
-      const ModuleInfoKey& module_key,
-      std::unique_ptr<ModuleInspectionResult> inspection_result) {
+  void OnModuleInspected(const ModuleInfoKey& module_key,
+                         ModuleInspectionResult inspection_result) {
     inspected_modules_.push_back(std::move(inspection_result));
   }
 
-  const std::vector<std::unique_ptr<ModuleInspectionResult>>&
-  inspected_modules() {
+  const std::vector<ModuleInspectionResult>& inspected_modules() {
     return inspected_modules_;
   }
 
@@ -62,7 +60,7 @@ class ModuleInspectorTest : public testing::Test {
  private:
   ModuleInspector module_inspector_;
 
-  std::vector<std::unique_ptr<ModuleInspectionResult>> inspected_modules_;
+  std::vector<ModuleInspectionResult> inspected_modules_;
 
   DISALLOW_COPY_AND_ASSIGN(ModuleInspectorTest);
 };
@@ -77,7 +75,6 @@ TEST_F(ModuleInspectorTest, OneModule) {
   test_browser_thread_bundle_.RunUntilIdle();
 
   ASSERT_EQ(1u, inspected_modules().size());
-  EXPECT_TRUE(inspected_modules().front());
 }
 
 TEST_F(ModuleInspectorTest, MultipleModules) {
@@ -92,6 +89,4 @@ TEST_F(ModuleInspectorTest, MultipleModules) {
   test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(5u, inspected_modules().size());
-  for (const auto& inspection_result : inspected_modules())
-    EXPECT_TRUE(inspection_result);
 }

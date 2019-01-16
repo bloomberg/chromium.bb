@@ -16,6 +16,7 @@
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/sha1.h"
 #include "base/strings/stringprintf.h"
@@ -49,7 +50,7 @@ constexpr base::FilePath::CharType kDllPath2[] =
 ModuleInfoData CreateLoadedModuleInfoData() {
   ModuleInfoData module_data;
   module_data.module_properties |= ModuleInfoData::kPropertyLoadedModule;
-  module_data.inspection_result = std::make_unique<ModuleInspectionResult>();
+  module_data.inspection_result = base::make_optional<ModuleInspectionResult>();
   return module_data;
 }
 

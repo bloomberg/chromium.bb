@@ -31,7 +31,7 @@ StringMapping GetPathMapping() {
 void InspectModuleOnBlockingSequenceAndReply(
     const base::FilePath& module_path,
     scoped_refptr<base::SequencedTaskRunner> reply_task_runner,
-    base::OnceCallback<void(std::unique_ptr<ModuleInspectionResult>)>
+    base::OnceCallback<void(ModuleInspectionResult)>
         on_inspection_finished_callback) {
   reply_task_runner->PostTask(
       FROM_HERE, base::BindOnce(std::move(on_inspection_finished_callback),
@@ -96,13 +96,13 @@ void ModuleInspector::StartInspectingModule() {
 
 void ModuleInspector::OnInspectionFinished(
     const ModuleInfoKey& module_key,
-    std::unique_ptr<ModuleInspectionResult> inspection_result) {
+    ModuleInspectionResult inspection_result) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Convert the prefix of known Windows directories to their environment
   // variable mappings (ie, %systemroot$). This makes i18n localized paths
   // easily comparable.
-  CollapseMatchingPrefixInPath(path_mapping_, &inspection_result->location);
+  CollapseMatchingPrefixInPath(path_mapping_, &inspection_result.location);
 
   // Pop first, because the callback may want to know if there is any work left
   // to be done, which is caracterized by a non-empty queue.

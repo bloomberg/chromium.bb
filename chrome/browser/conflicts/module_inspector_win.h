@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CONFLICTS_MODULE_INSPECTOR_WIN_H_
 #define CHROME_BROWSER_CONFLICTS_MODULE_INSPECTOR_WIN_H_
 
-#include <memory>
-
 #include "base/callback.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
@@ -34,7 +32,7 @@ class ModuleInspector {
  public:
   using OnModuleInspectedCallback =
       base::Callback<void(const ModuleInfoKey& module_key,
-                          std::unique_ptr<ModuleInspectionResult>)>;
+                          ModuleInspectionResult inspection_result)>;
 
   explicit ModuleInspector(
       const OnModuleInspectedCallback& on_module_inspected_callback);
@@ -58,9 +56,8 @@ class ModuleInspector {
   // created when a module has finished being inspected. The callback will be
   // executed and, if the |queue_| is not empty, the next module will be sent
   // for inspection.
-  void OnInspectionFinished(
-      const ModuleInfoKey& module_key,
-      std::unique_ptr<ModuleInspectionResult> inspection_result);
+  void OnInspectionFinished(const ModuleInfoKey& module_key,
+                            ModuleInspectionResult inspection_result);
 
   OnModuleInspectedCallback on_module_inspected_callback_;
 

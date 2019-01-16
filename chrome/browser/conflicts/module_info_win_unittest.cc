@@ -27,21 +27,21 @@ base::FilePath GetKernel32DllFilePath() {
 }  // namespace
 
 TEST(ModuleInfoTest, InspectModule) {
-  std::unique_ptr<ModuleInspectionResult> inspection_result =
+  ModuleInspectionResult inspection_result =
       InspectModule(GetKernel32DllFilePath());
 
-  EXPECT_STREQ(L"c:\\windows\\system32\\", inspection_result->location.c_str());
-  EXPECT_STREQ(L"kernel32.dll", inspection_result->basename.c_str());
+  EXPECT_STREQ(L"c:\\windows\\system32\\", inspection_result.location.c_str());
+  EXPECT_STREQ(L"kernel32.dll", inspection_result.basename.c_str());
   EXPECT_STREQ(L"Microsoft\xAE Windows\xAE Operating System",
-               inspection_result->product_name.c_str());
+               inspection_result.product_name.c_str());
   EXPECT_STREQ(L"Windows NT BASE API Client DLL",
-               inspection_result->description.c_str());
-  EXPECT_FALSE(inspection_result->version.empty());
-  EXPECT_EQ(inspection_result->certificate_info.type,
+               inspection_result.description.c_str());
+  EXPECT_FALSE(inspection_result.version.empty());
+  EXPECT_EQ(inspection_result.certificate_info.type,
             CertificateType::CERTIFICATE_IN_CATALOG);
-  EXPECT_FALSE(inspection_result->certificate_info.path.empty());
+  EXPECT_FALSE(inspection_result.certificate_info.path.empty());
   EXPECT_STREQ(L"Microsoft Windows",
-               inspection_result->certificate_info.subject.c_str());
+               inspection_result.certificate_info.subject.c_str());
 }
 
 TEST(ModuleInfoTest, GenerateCodeId) {

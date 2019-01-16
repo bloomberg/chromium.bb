@@ -78,6 +78,12 @@ bool ModuleInfoKey::operator<(const ModuleInfoKey& mik) const {
 
 ModuleInspectionResult::ModuleInspectionResult() = default;
 
+ModuleInspectionResult::ModuleInspectionResult(
+    ModuleInspectionResult&& other) noexcept = default;
+
+ModuleInspectionResult& ModuleInspectionResult::operator=(
+    ModuleInspectionResult&& other) noexcept = default;
+
 ModuleInspectionResult::~ModuleInspectionResult() = default;
 
 // ModuleInfoData --------------------------------------------------------------
@@ -90,12 +96,11 @@ ModuleInfoData::ModuleInfoData(ModuleInfoData&& module_data) noexcept = default;
 
 // -----------------------------------------------------------------------------
 
-std::unique_ptr<ModuleInspectionResult> InspectModule(
-    const base::FilePath& module_path) {
-  auto inspection_result = std::make_unique<ModuleInspectionResult>();
+ModuleInspectionResult InspectModule(const base::FilePath& module_path) {
+  ModuleInspectionResult inspection_result;
 
-  PopulateModuleInfoData(module_path, inspection_result.get());
-  internal::NormalizeInspectionResult(inspection_result.get());
+  PopulateModuleInfoData(module_path, &inspection_result);
+  internal::NormalizeInspectionResult(&inspection_result);
 
   return inspection_result;
 }
