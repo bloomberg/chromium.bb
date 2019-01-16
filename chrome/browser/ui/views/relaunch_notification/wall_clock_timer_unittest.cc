@@ -58,10 +58,11 @@ TEST_F(WallClockTimerTest, PowerResume) {
   base::SimpleTestClock clock;
   // Set up a WallClockTimer that will fire in one minute.
   WallClockTimer wall_clock_timer(&clock, task_environment_.GetMockTickClock());
-  auto delay = base::TimeDelta::FromMinutes(1);
-  auto start_time = base::Time::Now();
+  const auto delay = base::TimeDelta::FromMinutes(1);
+  const auto start_time = base::Time::Now();
+  const auto run_time = start_time + delay;
   clock.SetNow(start_time);
-  wall_clock_timer.Start(FROM_HERE, delay, callback.Get());
+  wall_clock_timer.Start(FROM_HERE, run_time, callback.Get());
   EXPECT_EQ(wall_clock_timer.desired_run_time(), start_time + delay);
 
   mock_power_monitor_source_->Suspend();

@@ -26,7 +26,10 @@
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_brand.h"
@@ -139,8 +142,9 @@ base::Version GetCurrentlyInstalledVersionImpl(base::Version* critical_update) {
 
 }  // namespace
 
-UpgradeDetectorImpl::UpgradeDetectorImpl(const base::TickClock* tick_clock)
-    : UpgradeDetector(tick_clock),
+UpgradeDetectorImpl::UpgradeDetectorImpl(const base::Clock* clock,
+                                         const base::TickClock* tick_clock)
+    : UpgradeDetector(clock, tick_clock),
       blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
@@ -302,7 +306,7 @@ void UpgradeDetectorImpl::StartUpgradeNotificationTimer() {
     return;
 
   if (upgrade_detected_time().is_null())
-    set_upgrade_detected_time(tick_clock()->NowTicks());
+    set_upgrade_detected_time(clock()->Now());
 
   // Start the repeating timer for notifying the user after a certain period.
   upgrade_notification_timer_.Start(
@@ -561,8 +565,7 @@ void UpgradeDetectorImpl::OnAutoupdatesEnabledResult(
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
 void UpgradeDetectorImpl::NotifyOnUpgrade() {
-  const base::TimeDelta time_passed =
-      tick_clock()->NowTicks() - upgrade_detected_time();
+  const base::TimeDelta time_passed = clock()->Now() - upgrade_detected_time();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NotifyOnUpgradeWithTimePassed(time_passed);
 }
@@ -570,7 +573,7 @@ void UpgradeDetectorImpl::NotifyOnUpgrade() {
 // static
 UpgradeDetectorImpl* UpgradeDetectorImpl::GetInstance() {
   static base::NoDestructor<UpgradeDetectorImpl> instance(
-      base::DefaultTickClock::GetInstance());
+      base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance());
   return instance.get();
 }
 
@@ -579,9 +582,9 @@ base::TimeDelta UpgradeDetectorImpl::GetHighAnnoyanceLevelDelta() {
   return stages_[kStagesIndexHigh] - stages_[kStagesIndexElevated];
 }
 
-base::TimeTicks UpgradeDetectorImpl::GetHighAnnoyanceDeadline() {
+base::Time UpgradeDetectorImpl::GetHighAnnoyanceDeadline() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const base::TimeTicks detected_time = upgrade_detected_time();
+  const base::Time detected_time = upgrade_detected_time();
   if (detected_time.is_null())
     return detected_time;
   return detected_time + stages_[kStagesIndexHigh];

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 
 #include "base/macros.h"
+#include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -34,7 +35,8 @@ class MockAppMenuIconControllerDelegate
 class FakeUpgradeDetector : public UpgradeDetector {
  public:
   FakeUpgradeDetector()
-      : UpgradeDetector(base::DefaultTickClock::GetInstance()) {}
+      : UpgradeDetector(base::DefaultClock::GetInstance(),
+                        base::DefaultTickClock::GetInstance()) {}
 
   void BroadcastLevel(UpgradeNotificationAnnoyanceLevel level) {
     set_upgrade_notification_stage(level);
@@ -43,7 +45,7 @@ class FakeUpgradeDetector : public UpgradeDetector {
 
   // UpgradeDetector:
   base::TimeDelta GetHighAnnoyanceLevelDelta() override;
-  base::TimeTicks GetHighAnnoyanceDeadline() override;
+  base::Time GetHighAnnoyanceDeadline() override;
 
  private:
   // UpgradeDetector:
@@ -57,9 +59,9 @@ base::TimeDelta FakeUpgradeDetector::GetHighAnnoyanceLevelDelta() {
   return base::TimeDelta();
 }
 
-base::TimeTicks FakeUpgradeDetector::GetHighAnnoyanceDeadline() {
+base::Time FakeUpgradeDetector::GetHighAnnoyanceDeadline() {
   // This value is not important for this test.
-  return base::TimeTicks();
+  return base::Time();
 }
 
 void FakeUpgradeDetector::OnRelaunchNotificationPeriodPrefChanged() {}

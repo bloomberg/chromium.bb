@@ -33,7 +33,7 @@
 // static
 views::Widget* RelaunchRequiredDialogView::Show(
     Browser* browser,
-    base::TimeTicks deadline,
+    base::Time deadline,
     base::RepeatingClosure on_accept) {
   views::Widget* widget = constrained_window::CreateBrowserModalDialogViews(
       new RelaunchRequiredDialogView(deadline, std::move(on_accept)),
@@ -51,7 +51,7 @@ RelaunchRequiredDialogView* RelaunchRequiredDialogView::FromWidget(
       widget->widget_delegate()->AsDialogDelegate());
 }
 
-void RelaunchRequiredDialogView::SetDeadline(base::TimeTicks deadline) {
+void RelaunchRequiredDialogView::SetDeadline(base::Time deadline) {
   relaunch_required_timer_.SetDeadline(deadline);
 }
 
@@ -126,7 +126,7 @@ gfx::Size RelaunchRequiredDialogView::CalculatePreferredSize() const {
 // |relaunch_required_timer_| automatically starts for the next time the title
 // needs to be updated (e.g., from "2 days" to "3 days").
 RelaunchRequiredDialogView::RelaunchRequiredDialogView(
-    base::TimeTicks deadline,
+    base::Time deadline,
     base::RepeatingClosure on_accept)
     : on_accept_(on_accept),
       body_label_(nullptr),

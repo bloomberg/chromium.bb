@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/time/clock.h"
 #include "base/time/tick_clock.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
@@ -63,8 +64,10 @@ gfx::Image UpgradeDetector::GetIcon() {
   return gfx::Image(gfx::CreateVectorIcon(kBrowserToolsUpdateIcon, color));
 }
 
-UpgradeDetector::UpgradeDetector(const base::TickClock* tick_clock)
-    : tick_clock_(tick_clock),
+UpgradeDetector::UpgradeDetector(const base::Clock* clock,
+                                 const base::TickClock* tick_clock)
+    : clock_(clock),
+      tick_clock_(tick_clock),
       upgrade_available_(UPGRADE_AVAILABLE_NONE),
       best_effort_experiment_updates_available_(false),
       critical_experiment_updates_available_(false),

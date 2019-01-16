@@ -43,7 +43,7 @@ class WallClockTimer : public base::PowerObserver {
   // Start the timer to run at the given |delay| from now. If the timer is
   // already running, it will be replaced to call the given |user_task|.
   virtual void Start(const base::Location& posted_from,
-                     base::TimeDelta delay,
+                     base::Time desired_run_time,
                      base::OnceClosure user_task);
 
   // Start the timer to run at the given |delay| from now. If the timer is
@@ -51,10 +51,10 @@ class WallClockTimer : public base::PowerObserver {
   // |reviewer->*method|.
   template <class Receiver>
   void Start(const base::Location& posted_from,
-             base::TimeDelta delay,
+             base::Time desired_run_time,
              Receiver* receiver,
              void (Receiver::*method)()) {
-    Start(posted_from, delay,
+    Start(posted_from, desired_run_time,
           base::BindOnce(method, base::Unretained(receiver)));
   }
 
@@ -82,9 +82,6 @@ class WallClockTimer : public base::PowerObserver {
 
   // Location in user code.
   base::Location posted_from_;
-
-  // Delay requested by user.
-  base::TimeDelta delay_;
 
   // The desired run time of |user_task_|.
   base::Time desired_run_time_;

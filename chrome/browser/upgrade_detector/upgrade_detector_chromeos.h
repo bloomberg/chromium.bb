@@ -15,6 +15,7 @@
 #include "chromeos/dbus/update_engine_client.h"
 
 namespace base {
+class Clock;
 template <typename T>
 class NoDestructor;
 class TickClock;
@@ -37,12 +38,13 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
 
   // UpgradeDetector:
   base::TimeDelta GetHighAnnoyanceLevelDelta() override;
-  base::TimeTicks GetHighAnnoyanceDeadline() override;
+  base::Time GetHighAnnoyanceDeadline() override;
 
  private:
   friend class base::NoDestructor<UpgradeDetectorChromeos>;
 
-  explicit UpgradeDetectorChromeos(const base::TickClock* tick_clock);
+  UpgradeDetectorChromeos(const base::Clock* clock,
+                          const base::TickClock* tick_clock);
 
   // Returns the threshold to reach high annoyance level.
   static base::TimeDelta DetermineHighThreshold();
