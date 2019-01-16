@@ -62,14 +62,12 @@ async function asBlob(request) {
   });
 }
 
-async function generateResponse(request) {
-  const url = new URL(request.url);
-  const getAs = url.searchParams.get('getAs');
+async function generateResponse(request, getAs) {
   let resultString;
   if (getAs == 'formData')
     resultString = await asFormData(request);
   else if (getAs == 'blob')
-    resultString = await asBlob(request)
+    resultString = await asBlob(request);
   else
     resultString = await asText(request);
 
@@ -87,5 +85,9 @@ async function generateResponse(request) {
 self.addEventListener('fetch', event => {
   if (event.request.method != 'POST')
     return;
-  event.respondWith(generateResponse(event.request));
+  const url = new URL(event.request.url);
+  const getAs = url.searchParams.get('getAs');
+  if (getAs == 'fallback')
+    return;
+  event.respondWith(generateResponse(event.request, getAs));
 });
