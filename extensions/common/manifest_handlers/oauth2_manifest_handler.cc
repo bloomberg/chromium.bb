@@ -50,7 +50,7 @@ OAuth2ManifestHandler::~OAuth2ManifestHandler() {
 bool OAuth2ManifestHandler::Parse(Extension* extension,
                                   base::string16* error) {
   std::unique_ptr<OAuth2Info> info(new OAuth2Info);
-  const base::DictionaryValue* dict = NULL;
+  const base::Value* dict = nullptr;
   if (!extension->manifest()->GetDictionary(keys::kOAuth2, &dict)) {
     *error = base::ASCIIToUTF16(errors::kInvalidOAuth2ClientId);
     return false;
@@ -60,34 +60,41 @@ bool OAuth2ManifestHandler::Parse(Extension* extension,
   // oauth2.auto_approve based on whitelist, and if it is present.
   // GetBoolean reads the value of auto_approve directly from dict to prevent
   // duplicate checking.
-  if (extension->manifest()->HasPath(keys::kOAuth2AutoApprove) &&
-      !dict->GetBoolean(kAutoApprove, &info->auto_approve)) {
-    *error = base::ASCIIToUTF16(errors::kInvalidOAuth2AutoApprove);
-    return false;
+  if (extension->manifest()->HasPath(keys::kOAuth2AutoApprove)) {
+    const base::Value* auto_approve =
+        dict->FindKeyOfType(kAutoApprove, base::Value::Type::BOOLEAN);
+    if (auto_approve == nullptr) {
+      *error = base::ASCIIToUTF16(errors::kInvalidOAuth2AutoApprove);
+      return false;
+    }
+    info->auto_approve = auto_approve->GetBool();
   }
 
   // Component apps using auto_approve may use Chrome's client ID by
   // omitting the field.
-  if ((!dict->GetString(kClientId, &info->client_id) ||
-       info->client_id.empty()) &&
+  const base::Value* client_id =
+      dict->FindKeyOfType(kClientId, base::Value::Type::STRING);
+  if (client_id != nullptr)
+    info->client_id = client_id->GetString();
+
+  if (info->client_id.empty() &&
       (extension->location() != Manifest::COMPONENT || !info->auto_approve)) {
     *error = base::ASCIIToUTF16(errors::kInvalidOAuth2ClientId);
     return false;
   }
-
-  const base::ListValue* list = NULL;
-  if (!dict->GetList(kScopes, &list)) {
+  const base::Value* list =
+      dict->FindKeyOfType(kScopes, base::Value::Type::LIST);
+  if (list == nullptr) {
     *error = base::ASCIIToUTF16(errors::kInvalidOAuth2Scopes);
     return false;
   }
 
-  for (size_t i = 0; i < list->GetSize(); ++i) {
-    std::string scope;
-    if (!list->GetString(i, &scope)) {
+  for (const auto& entry : list->GetList()) {
+    if (!entry.is_string()) {
       *error = base::ASCIIToUTF16(errors::kInvalidOAuth2Scopes);
       return false;
     }
-    info->scopes.push_back(scope);
+    info->scopes.push_back(entry.GetString());
   }
 
   extension->SetManifestData(keys::kOAuth2, std::move(info));

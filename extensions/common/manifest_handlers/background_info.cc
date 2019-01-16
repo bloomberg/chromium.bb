@@ -25,7 +25,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using base::ASCIIToUTF16;
-using base::DictionaryValue;
 
 namespace extensions {
 
@@ -138,26 +137,25 @@ bool BackgroundInfo::Parse(const Extension* extension, base::string16* error) {
 bool BackgroundInfo::LoadBackgroundScripts(const Extension* extension,
                                            const std::string& key,
                                            base::string16* error) {
-  const base::Value* background_scripts_value = NULL;
+  const base::Value* background_scripts_value = nullptr;
   if (!extension->manifest()->Get(key, &background_scripts_value))
     return true;
 
   CHECK(background_scripts_value);
-  if (background_scripts_value->type() != base::Value::Type::LIST) {
+  if (!background_scripts_value->is_list()) {
     *error = ASCIIToUTF16(errors::kInvalidBackgroundScripts);
     return false;
   }
 
-  const base::ListValue* background_scripts = NULL;
-  background_scripts_value->GetAsList(&background_scripts);
-  for (size_t i = 0; i < background_scripts->GetSize(); ++i) {
-    std::string script;
-    if (!background_scripts->GetString(i, &script)) {
+  const base::Value::ListStorage& background_scripts =
+      background_scripts_value->GetList();
+  for (size_t i = 0; i < background_scripts.size(); ++i) {
+    if (!background_scripts[i].is_string()) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidBackgroundScript, base::NumberToString(i));
       return false;
     }
-    background_scripts_.push_back(script);
+    background_scripts_.push_back(background_scripts[i].GetString());
   }
 
   return true;
@@ -166,15 +164,15 @@ bool BackgroundInfo::LoadBackgroundScripts(const Extension* extension,
 bool BackgroundInfo::LoadBackgroundPage(const Extension* extension,
                                         const std::string& key,
                                         base::string16* error) {
-  const base::Value* background_page_value = NULL;
+  const base::Value* background_page_value = nullptr;
   if (!extension->manifest()->Get(key, &background_page_value))
     return true;
 
-  std::string background_str;
-  if (!background_page_value->GetAsString(&background_str)) {
+  if (!background_page_value->is_string()) {
     *error = ASCIIToUTF16(errors::kInvalidBackground);
     return false;
   }
+  const std::string& background_str = background_page_value->GetString();
 
   if (extension->is_hosted_app()) {
     background_url_ = GURL(background_str);

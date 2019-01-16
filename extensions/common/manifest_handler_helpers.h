@@ -7,26 +7,33 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 
 class ExtensionIconSet;
 
 namespace base {
-class DictionaryValue;
+class Value;
 }
 
 namespace extensions {
 namespace manifest_handler_helpers {
 
+// Tokenize a dictionary path.
+std::vector<base::StringPiece> TokenizeDictionaryPath(base::StringPiece path);
+
 // Strips leading slashes from the file path. Returns true iff the final path is
-// non empty.
+// not empty.
 bool NormalizeAndValidatePath(std::string* path);
+bool NormalizeAndValidatePath(const std::string& path,
+                              std::string* normalized_path);
 
 // Loads icon paths defined in dictionary |icons_value| into ExtensionIconSet
 // |icons|. |icons_value| is a dictionary value {icon size -> icon path}.
 // Returns success. If load fails, |error| will be set.
-bool LoadIconsFromDictionary(const base::DictionaryValue* icons_value,
+bool LoadIconsFromDictionary(const base::Value* icons_value,
                              ExtensionIconSet* icons,
                              base::string16* error);
 
