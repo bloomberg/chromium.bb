@@ -650,10 +650,10 @@ void EasyUnlockServiceSignin::ShowInitialUserPodState() {
     return;
 
   if (!pref_manager_->IsChromeOSLoginEnabled()) {
-    // Show a hardlock state if the user has not enabled the login flow.
-    SetHardlockStateForUser(
-        account_id_,
-        EasyUnlockScreenlockStateHandler::PASSWORD_REQUIRED_FOR_LOGIN);
+    // Show a hardlock state if the user has not enabled Smart Lock to the log
+    // in to the user's Google account.
+    SetHardlockStateForUser(account_id_,
+                            EasyUnlockScreenlockStateHandler::LOGIN_DISABLED);
   } else {
     // This UI is simply a placeholder until the RemoteDevices are loaded from
     // cryptohome and the ProximityAuthSystem is started. Hardlock states are

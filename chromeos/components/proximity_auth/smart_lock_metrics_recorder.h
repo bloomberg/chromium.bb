@@ -71,7 +71,7 @@ class SmartLockMetricsRecorder {
     kNoScreenlockStateHandler = 14,
     kPhoneLockedAndRssiTooLow = 15,
     kForcedReauth = 16,
-    kRequiredForLogin = 17,
+    kLoginWithSmartLockDisabled = 17,
     kPhoneNotLockable = 18,
     kMaxValue = kPhoneNotLockable
   };

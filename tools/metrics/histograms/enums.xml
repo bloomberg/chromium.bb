@@ -13049,7 +13049,7 @@ Called by update_net_error_codes.py.-->
   <int value="18" label="Password entry: No screenlock state handler"/>
   <int value="19" label="Password entry: Phone locked and tx power too high"/>
   <int value="20" label="Password entry: Forced re-auth"/>
-  <int value="21" label="Password entry: Required for login"/>
+  <int value="21" label="Password entry: Sign-in with Smart Lock disabled"/>
 </enum>
 
 <enum name="EasyUnlockBluetoothType">
@@ -48521,7 +48521,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="14" label="No screenlock state handler"/>
   <int value="15" label="Phone locked and RSSI too low"/>
   <int value="16" label="Forced Reauthentication"/>
-  <int value="17" label="Required for login"/>
+  <int value="17" label="Sign-in with Smart Lock disabled"/>
   <int value="18" label="Phone not lockable"/>
 </enum>
 

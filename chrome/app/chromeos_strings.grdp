@@ -3570,9 +3570,6 @@
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PASSWORD_REAUTH" desc="Tooltip for an icon on user's lock screen pod shown by EasyUnlock when the user must enter their password instead of using EasyUnlock, because too much time has passed since their last password entry.">
     For added security, Smart Lock will ask you to enter your password after 20 hours.
   </message>
-  <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PASSWORD_REQUIRED_FOR_LOGIN" desc="Tooltip for an icon on user's lock screen pod shown by EasyUnlock when a password is required to login to the Chromebook.">
-    To start Smart Lock, enter your password. Next time, you can use your phone to unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
-  </message>
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_UNSUPPORTED_ANDROID_VERSION" desc="Tooltip for the icon on user's lock screen pod shown by Easy Unlock when a phone set up to unlock the Chromebook is detected, but has an unsupported Android version. The user is asked to update the phone.">
     Please update your phone to a newer version of Android to unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
@@ -3585,8 +3582,11 @@
   <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_ADDED" desc="Tooltip text shown on a user's lock screen pod when Easy Unlock pairing data is synced on a new Chromebook.">
     Enter your password to enable Smart Lock. Next time, your phone will unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Turn off Smart Lock in Settings.
   </message>
-  <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_FAILURE" desc="Tooltip text shown on a user's lock screen when Smart Lock signin attempt fails.">
+  <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_FAILURE" desc="Tooltip text shown on a user's sign-in screen when Smart Lock sign-in attempt fails.">
     Smart Lock couldn’t verify your account. Type your password to enter.
+  </message>
+  <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_DISABLED" desc="Tooltip for an icon on user's sign-in screen pod shown by EasyUnlock when the feature is only enabled for unlock, not sign-in.">
+    To use Smart Lock to sign in to your Google Account, go to Settings > Connected devices > Your phone > Smart Lock.
   </message>
   <message name="IDS_SMART_LOCK_SCREENLOCK_TOOLTIP_HARDLOCK_REAUTH_USER" desc="Tooltip text shown on a user's lock screen pod to reauthenticate the user before setting up Smart Lock. A password has to be entered to unlock the device.">
     To set up Smart Lock for Chromebook, Google needs to make sure it’s you—type your password to get started.

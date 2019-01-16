@@ -594,9 +594,9 @@ EasyUnlockService::GetSmartUnlockPasswordAuthEvent() const {
       case EasyUnlockScreenlockStateHandler::PAIRING_ADDED:
         return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
             kPairingAdded;
-      case EasyUnlockScreenlockStateHandler::PASSWORD_REQUIRED_FOR_LOGIN:
+      case EasyUnlockScreenlockStateHandler::LOGIN_DISABLED:
         return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
-            kRequiredForLogin;
+            kLoginWithSmartLockDisabled;
       default:
         NOTREACHED();
         return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
@@ -670,8 +670,8 @@ EasyUnlockAuthEvent EasyUnlockService::GetPasswordAuthEvent() const {
         return PASSWORD_ENTRY_LOGIN_FAILED;
       case EasyUnlockScreenlockStateHandler::PAIRING_ADDED:
         return PASSWORD_ENTRY_PAIRING_ADDED;
-      case EasyUnlockScreenlockStateHandler::PASSWORD_REQUIRED_FOR_LOGIN:
-        return PASSWORD_ENTRY_REQUIRED_FOR_LOGIN;
+      case EasyUnlockScreenlockStateHandler::LOGIN_DISABLED:
+        return PASSWORD_ENTRY_LOGIN_DISABLED;
     }
   } else if (!screenlock_state_handler()) {
     return PASSWORD_ENTRY_NO_SCREENLOCK_STATE_HANDLER;
