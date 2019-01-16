@@ -6,14 +6,10 @@
 #define IOS_CHROME_BROWSER_DOWNLOAD_BROWSER_DOWNLOAD_SERVICE_FACTORY_H_
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 class BrowserDownloadService;
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 namespace web {
 class BrowserState;
@@ -28,7 +24,7 @@ class BrowserDownloadServiceFactory : public BrowserStateKeyedServiceFactory {
   static BrowserDownloadServiceFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<BrowserDownloadServiceFactory>;
+  friend class base::NoDestructor<BrowserDownloadServiceFactory>;
 
   BrowserDownloadServiceFactory();
   ~BrowserDownloadServiceFactory() override;
