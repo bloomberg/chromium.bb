@@ -82,10 +82,20 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
       suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
           model_, this, strings.hint, strings.hint_short, omnibox::kPedalIcon);
     } else {
-      suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
-          model_, this, l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT),
-          l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT),
-          omnibox::kSwitchIcon);
+      if (!OmniboxFieldTrial::IsTabSwitchLogicReversed()) {
+        suggestion_tab_switch_button_ =
+            std::make_unique<OmniboxTabSwitchButton>(
+                model_, this,
+                l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT),
+                l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT),
+                omnibox::kSwitchIcon);
+      } else {
+        suggestion_tab_switch_button_ =
+            std::make_unique<OmniboxTabSwitchButton>(
+                // TODO(krb): Make official strings when we accept the feature.
+                model_, this, base::ASCIIToUTF16("Open in this tab"),
+                base::ASCIIToUTF16("Open"), omnibox::kSwitchIcon);
+      }
     }
 
     suggestion_tab_switch_button_->set_owned_by_client();
@@ -238,7 +248,12 @@ void OmniboxResultView::SetRichSuggestionImage(const gfx::ImageSkia& image) {
 // |button| is the tab switch button.
 void OmniboxResultView::ButtonPressed(views::Button* button,
                                       const ui::Event& event) {
-  OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB, event.time_stamp());
+  if (!(OmniboxFieldTrial::IsTabSwitchLogicReversed() &&
+        match_.ShouldShowTabMatch())) {
+    OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB, event.time_stamp());
+  } else {
+    OpenMatch(WindowOpenDisposition::CURRENT_TAB, event.time_stamp());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -317,10 +332,15 @@ bool OmniboxResultView::OnMouseDragged(const ui::MouseEvent& event) {
 
 void OmniboxResultView::OnMouseReleased(const ui::MouseEvent& event) {
   if (event.IsOnlyMiddleMouseButton() || event.IsOnlyLeftMouseButton()) {
-    OpenMatch(event.IsOnlyLeftMouseButton()
-                  ? WindowOpenDisposition::CURRENT_TAB
-                  : WindowOpenDisposition::NEW_BACKGROUND_TAB,
-              event.time_stamp());
+    WindowOpenDisposition disposition =
+        event.IsOnlyLeftMouseButton()
+            ? WindowOpenDisposition::CURRENT_TAB
+            : WindowOpenDisposition::NEW_BACKGROUND_TAB;
+    if (OmniboxFieldTrial::IsTabSwitchLogicReversed() &&
+        match_.ShouldShowTabMatch()) {
+      disposition = WindowOpenDisposition::SWITCH_TO_TAB;
+    }
+    OpenMatch(disposition, event.time_stamp());
   }
 }
 
@@ -337,7 +357,7 @@ void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // The positional info is provided via
   // ax::mojom::IntAttribute::kPosInSet/SET_SIZE and providing it via text as
   // well would result in duplicate announcements.
-  // Pass false for is_tab_switch_button_focused, because the button will
+  // Pass false for |is_tab_switch_button_focused|, because the button will
   // receive its own label in the case that a screen reader is listening to
   // selection events on items rather than announcements or value change events.
   node_data->SetName(AutocompleteMatchType::ToAccessibilityLabel(

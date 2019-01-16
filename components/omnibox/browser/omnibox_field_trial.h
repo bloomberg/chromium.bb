@@ -36,6 +36,7 @@ extern const base::Feature kOmniboxNewAnswerLayout;
 extern const base::Feature kOmniboxReverseAnswers;
 extern const base::Feature kOmniboxTailSuggestions;
 extern const base::Feature kOmniboxTabSwitchSuggestions;
+extern const base::Feature kOmniboxReverseTabSwitchLogic;
 extern const base::Feature kExperimentalKeywordMode;
 extern const base::Feature kOmniboxPedalSuggestions;
 extern const base::Feature kEnableClipboardProvider;
@@ -442,6 +443,9 @@ class OmniboxFieldTrial {
   // Returns true if either the tab switch suggestions flag or the
   // #upcoming-ui-features flag is enabled.
   static bool IsTabSwitchSuggestionsEnabled();
+
+  // Returns true if the feature of reversing the tab switch logic is enabled.
+  static bool IsTabSwitchLogicReversed();
 
   // Returns the #omnibox-pedal-suggestions feature's mode parameter as enum.
   static PedalSuggestionMode GetPedalSuggestionMode();
