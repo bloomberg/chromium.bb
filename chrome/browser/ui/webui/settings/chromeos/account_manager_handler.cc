@@ -120,13 +120,6 @@ void AccountManagerUIHandler::GetAccountsCallbackHandler(
         account_tracker_service_->FindAccountInfoByGaiaId(account_key.id);
     DCHECK(!account_info.IsEmpty());
 
-    if (account_manager_->IsTokenAvailable(account_key) &&
-        account_info.full_name.empty()) {
-      // Account info has not been fully fetched yet from GAIA. Ignore this
-      // account.
-      continue;
-    }
-
     base::DictionaryValue account;
     account.SetString("id", account_key.id);
     account.SetInteger("accountType", account_key.account_type);
@@ -239,6 +232,14 @@ void AccountManagerUIHandler::OnAccountRemoved(
 // Note that we may be listening to |AccountTrackerService| but we still
 // consider |AccountManager| to be the source of truth for account list.
 void AccountManagerUIHandler::OnAccountUpdated(const AccountInfo& info) {
+  RefreshUI();
+}
+
+void AccountManagerUIHandler::OnAccountUpdateFailed(
+    const std::string& account_id) {
+  // An account fetch failed for |account_id|, but we must display the account
+  // anyways (if it was not being displayed already) so that users do not think
+  // that their account has suddenly disappeared.
   RefreshUI();
 }
 

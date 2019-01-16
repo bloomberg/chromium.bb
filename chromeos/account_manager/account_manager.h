@@ -166,7 +166,9 @@ class CHROMEOS_EXPORT AccountManager {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) const;
 
-  // Returns |true| if an LST is available for |account_key|.
+  // Returns |true| if an LST is available for |account_key|. Note that
+  // "availability" does not guarantee "validity", i.e. this method will return
+  // true for LSTs that have expired / been invalidated.
   // Note: Always returns false for Active Directory accounts.
   // Note: This method will return |false| if |AccountManager| has not been
   // initialized yet.
