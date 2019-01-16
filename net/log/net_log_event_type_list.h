@@ -1133,6 +1133,14 @@ EVENT_TYPE(HTTP_STREAM_JOB_CONTROLLER_BOUND)
 //   }
 EVENT_TYPE(HTTP_STREAM_JOB_CONTROLLER_PROXY_SERVER_RESOLVED)
 
+// Logs an alternative service found by the controller. The event parameters
+// are:
+//   {
+//      "alt_svc": The alternative service.
+//      "broken": <boolean>
+//   }
+EVENT_TYPE(HTTP_STREAM_JOB_CONTROLLER_ALT_SVC_FOUND)
+
 // ------------------------------------------------------------------------
 // HttpNetworkTransaction
 // ------------------------------------------------------------------------

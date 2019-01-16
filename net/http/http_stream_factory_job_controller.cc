@@ -57,6 +57,16 @@ std::unique_ptr<base::Value> NetLogJobControllerCallback(
   return std::move(dict);
 }
 
+std::unique_ptr<base::Value> NetLogAltSvcCallback(
+    const AlternativeServiceInfo* alt_svc_info,
+    bool is_broken,
+    NetLogCaptureMode /* capture_mode */) {
+  auto dict = std::make_unique<base::DictionaryValue>();
+  dict->SetString("alt_svc", alt_svc_info->ToString());
+  dict->SetBoolean("is_broken", is_broken);
+  return std::move(dict);
+}
+
 HttpStreamFactory::JobController::JobController(
     HttpStreamFactory* factory,
     HttpStreamRequest::Delegate* delegate,
@@ -1149,8 +1159,13 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
     DCHECK(IsAlternateProtocolValid(alternative_service_info.protocol()));
     if (!quic_advertised && alternative_service_info.protocol() == kProtoQUIC)
       quic_advertised = true;
-    if (http_server_properties.IsAlternativeServiceBroken(
-            alternative_service_info.alternative_service())) {
+    const bool is_broken = http_server_properties.IsAlternativeServiceBroken(
+        alternative_service_info.alternative_service());
+    net_log_.AddEvent(
+        NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_ALT_SVC_FOUND,
+        base::BindRepeating(&NetLogAltSvcCallback, &alternative_service_info,
+                            is_broken));
+    if (is_broken) {
       HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN, false);
       continue;
     }
