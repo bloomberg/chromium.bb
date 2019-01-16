@@ -22,7 +22,6 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.task.SchedulerTestHelpers;
 import org.chromium.base.test.task.TaskSchedulerTestHelpers;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
@@ -86,10 +85,8 @@ public class NativePostTaskTest {
         SchedulerTestHelpers.postTaskAndBlockUntilRun(taskQueue);
     }
 
-    // TODO(crbug.com/920678) Disabled for flakiness.
     @Test
     @MediumTest
-    @DisabledTest
     public void testCreateSequencedTaskRunner() throws Exception {
         startNativeScheduler();
         TaskRunner taskQueue = PostTask.createSequencedTaskRunner(new TaskTraits());
@@ -102,10 +99,8 @@ public class NativePostTaskTest {
         assertThat(orderList, contains(1, 2, 3));
     }
 
-    // TODO(crbug.com/920678) Disabled for flakiness.
     @Test
     @MediumTest
-    @DisabledTest
     public void testCreateSingleThreadSequencedTaskRunner() throws Exception {
         startNativeScheduler();
         TaskRunner taskQueue = PostTask.createSingleThreadTaskRunner(new TaskTraits());
