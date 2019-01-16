@@ -34,7 +34,7 @@ namespace content {
 
 class FrameRequestBlocker;
 class ResourceDispatcher;
-class ServiceWorkerProviderContext;
+class ServiceWorkerNetworkProvider;
 class ThreadSafeSender;
 class URLLoaderThrottleProvider;
 class WebSocketHandshakeThrottleProvider;
@@ -50,11 +50,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
  public:
   // Creates a new fetch context for a worker.
   //
-  // |provider_context| is the ServiceWorkerProviderContext of the worker and is
-  // used to route requests to its controller service worker. It can be null if
-  // this worker is never associated with service workers, for example, when a
-  // dedicated worker is created from a sandboxed iframe that doesn't have a
-  // service worker provider context.
+  // |network_provider| is the ServiceWorkerNetworkProvider of the worker and is
+  // used to route requests to its controller service worker.
   // |loader_factory_info| is used for regular loading by the worker.
   //
   // S13nServiceWorker:
@@ -70,7 +67,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // because it might additionally support non-NetworkService schemes (e.g.,
   // chrome-extension://).
   static scoped_refptr<WebWorkerFetchContextImpl> Create(
-      ServiceWorkerProviderContext* provider_context,
+      ServiceWorkerNetworkProvider* network_provider,
       RendererPreferences renderer_preferences,
       mojom::RendererPreferenceWatcherRequest watcher_request,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,

@@ -142,7 +142,6 @@
 #include "content/renderer/resource_timing_info_conversions.h"
 #include "content/renderer/savable_resources.h"
 #include "content/renderer/service_worker/service_worker_network_provider.h"
-#include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "content/renderer/skia_benchmarking_extension.h"
 #include "content/renderer/stats_collection_controller.h"
@@ -3762,7 +3761,6 @@ RenderFrameImpl::CreateWorkerFetchContext() {
   ServiceWorkerNetworkProvider* provider =
       ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
           web_provider);
-  ServiceWorkerProviderContext* provider_context = provider->context();
 
   mojom::RendererPreferenceWatcherPtr watcher;
   mojom::RendererPreferenceWatcherRequest watcher_request =
@@ -3771,7 +3769,7 @@ RenderFrameImpl::CreateWorkerFetchContext() {
 
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       WebWorkerFetchContextImpl::Create(
-          provider_context, render_view_->renderer_preferences(),
+          provider, render_view_->renderer_preferences(),
           std::move(watcher_request), GetLoaderFactoryBundle()->Clone(),
           GetLoaderFactoryBundle()->CloneWithoutAppCacheFactory());
 
@@ -3781,17 +3779,12 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       frame_->GetDocument().SiteForCookies());
   worker_fetch_context->set_is_secure_context(
       frame_->GetDocument().IsSecureContext());
-  worker_fetch_context->set_service_worker_provider_id(provider->provider_id());
-  worker_fetch_context->set_is_controlled_by_service_worker(
-      provider->IsControlledByServiceWorker());
   worker_fetch_context->set_origin_url(
       GURL(frame_->GetDocument().Url()).GetOrigin());
-  if (provider_context)
-    worker_fetch_context->set_client_id(provider_context->client_id());
 
   for (auto& observer : observers_)
     observer.WillCreateWorkerFetchContext(worker_fetch_context.get());
-  return std::move(worker_fetch_context);
+  return worker_fetch_context;
 }
 
 WebExternalPopupMenu* RenderFrameImpl::CreateExternalPopupMenu(
