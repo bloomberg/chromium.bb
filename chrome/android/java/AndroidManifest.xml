@@ -176,7 +176,7 @@ by a child template that "extends" this file.
              the module installation will not automatically bring in DFM's
              manifest entries. -->
         <meta-data android:name="com.google.ar.core.min_apk_version"
-            android:value="180815000"/>
+            android:value="181012000"/>
         {% endif %}
 
         <!-- Cast support -->
