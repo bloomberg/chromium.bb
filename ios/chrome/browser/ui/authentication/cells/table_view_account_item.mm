@@ -99,17 +99,6 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
     self.isAccessibilityElement = YES;
     [self addSubviews];
     [self setViewConstraints];
-    _imageView.contentMode = UIViewContentModeCenter;
-    _imageView.layer.masksToBounds = YES;
-    _imageView.contentMode = UIViewContentModeScaleAspectFit;
-
-    _textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-    _textLabel.adjustsFontForContentSizeCategory = YES;
-    _textLabel.textColor = UIColor.blackColor;
-    _detailTextLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
-    _detailTextLabel.adjustsFontForContentSizeCategory = YES;
-    _detailTextLabel.textColor = UIColorFromRGB(kSettingsCellsDetailTextColor);
   }
   return self;
 }
@@ -121,6 +110,11 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
 
   _imageView = [[UIImageView alloc] init];
   _imageView.translatesAutoresizingMaskIntoConstraints = NO;
+  _imageView.contentMode = UIViewContentModeCenter;
+  _imageView.layer.masksToBounds = YES;
+  _imageView.contentMode = UIViewContentModeScaleAspectFit;
+  // Creates the image rounded corners.
+  _imageView.layer.cornerRadius = kHorizontalImageFixedSize / 2.0f;
   [contentView addSubview:_imageView];
 
   _errorIcon = [[UIImageView alloc] init];
@@ -129,10 +123,17 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
 
   _textLabel = [[UILabel alloc] init];
   _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
+  _textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  _textLabel.adjustsFontForContentSizeCategory = YES;
+  _textLabel.textColor = UIColor.blackColor;
   [contentView addSubview:_textLabel];
 
   _detailTextLabel = [[UILabel alloc] init];
   _detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
+  _detailTextLabel.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
+  _detailTextLabel.adjustsFontForContentSizeCategory = YES;
+  _detailTextLabel.textColor = UIColorFromRGB(kSettingsCellsDetailTextColor);
   [contentView addSubview:_detailTextLabel];
 }
 
@@ -217,9 +218,6 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
 
 - (void)layoutSubviews {
   [super layoutSubviews];
-
-  // Creates the image rounded corners.
-  _imageView.layer.cornerRadius = _imageView.bounds.size.width / 2.0f;
 
   // Adjust the leading margin depending on existence of image.
   if (_imageView.image) {
