@@ -170,10 +170,11 @@ void AutoResumptionHandler::OnDownloadUpdated(download::DownloadItem* item) {
 
   if (item->GetState() == download::DownloadItem::INTERRUPTED &&
       IsAutoResumableDownload(item) && SatisfiesNetworkRequirements(item)) {
+    downloads_to_retry_.insert(item);
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(&AutoResumptionHandler::ResumeDownload,
-                       weak_factory_.GetWeakPtr(), item),
+        base::BindOnce(&AutoResumptionHandler::ResumeDownloadImmediately,
+                       weak_factory_.GetWeakPtr()),
         kDownloadImmediateRetryDelay);
     return;
   }
@@ -185,11 +186,18 @@ void AutoResumptionHandler::OnDownloadRemoved(download::DownloadItem* item) {
   RecomputeTaskParams();
 }
 
-void AutoResumptionHandler::ResumeDownload(download::DownloadItem* download) {
-  if (SatisfiesNetworkRequirements(download))
-    download->Resume(false);
-  else
-    RecomputeTaskParams();
+void AutoResumptionHandler::OnDownloadDestroyed(download::DownloadItem* item) {
+  downloads_to_retry_.erase(item);
+}
+
+void AutoResumptionHandler::ResumeDownloadImmediately() {
+  for (auto* download : std::move(downloads_to_retry_)) {
+    if (SatisfiesNetworkRequirements(download))
+      download->Resume(false);
+    else
+      RecomputeTaskParams();
+  }
+  downloads_to_retry_.clear();
 }
 
 void AutoResumptionHandler::OnStartScheduledTask(

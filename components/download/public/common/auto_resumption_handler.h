@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/macros.h"
@@ -58,6 +59,7 @@ class COMPONENTS_DOWNLOAD_EXPORT AutoResumptionHandler
   // DownloadItem::Observer overrides.
   void OnDownloadUpdated(download::DownloadItem* item) override;
   void OnDownloadRemoved(download::DownloadItem* item) override;
+  void OnDownloadDestroyed(download::DownloadItem* item) override;
 
  private:
   // NetworkStatusListener::Observer implementation.
@@ -66,7 +68,7 @@ class COMPONENTS_DOWNLOAD_EXPORT AutoResumptionHandler
   void ResumePendingDownloads();
   void RecomputeTaskParams();
   void RescheduleTaskIfNecessary();
-  void ResumeDownload(download::DownloadItem* download);
+  void ResumeDownloadImmediately();
   bool SatisfiesNetworkRequirements(download::DownloadItem* download);
   bool IsAutoResumableDownload(download::DownloadItem* item);
 
@@ -76,7 +78,12 @@ class COMPONENTS_DOWNLOAD_EXPORT AutoResumptionHandler
 
   std::unique_ptr<Config> config_;
 
+  // List of downloads that are auto-resumable. These will be resumed as soon as
+  // network conditions becomes favorable.
   std::map<std::string, download::DownloadItem*> resumable_downloads_;
+
+  // A temporary list of downloads which are being retried immediately.
+  std::set<download::DownloadItem*> downloads_to_retry_;
 
   bool recompute_task_params_scheduled_ = false;
 
