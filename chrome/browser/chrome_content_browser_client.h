@@ -553,6 +553,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::string GetProduct() const override;
   std::string GetUserAgent() const override;
 
+  bool IsBuiltinComponent(content::BrowserContext* browser_context,
+                          const url::Origin& origin) override;
+
   // Determines the committed previews state for the passed in params.
   static content::PreviewsState DetermineCommittedPreviewsForURL(
       const GURL& url,

@@ -100,6 +100,9 @@ class ChromeContentBrowserClientExtensionsPart
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       const url::Origin& request_initiator);
 
+  static bool IsBuiltinComponent(content::BrowserContext* browser_context,
+                                 const url::Origin& origin);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeContentBrowserClientExtensionsPartTest,
                            ShouldAllowOpenURLMetricsForEmptySiteURL);
@@ -156,4 +159,3 @@ class ChromeContentBrowserClientExtensionsPart
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_CHROME_CONTENT_BROWSER_CLIENT_EXTENSIONS_PART_H_
-

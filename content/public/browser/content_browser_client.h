@@ -1473,6 +1473,11 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns the user agent.  Content may cache this value.
   virtual std::string GetUserAgent() const;
+
+  // Returns whether |origin| should be considered a integral component similar
+  // to native code, and as such whether its log messages should be recorded.
+  virtual bool IsBuiltinComponent(BrowserContext* browser_context,
+                                  const url::Origin& origin);
 };
 
 }  // namespace content

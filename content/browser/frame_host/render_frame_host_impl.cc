@@ -1864,17 +1864,22 @@ void RenderFrameHostImpl::OnDidAddMessageToConsole(
   if (delegate_->DidAddMessageToConsole(level, message, line_no, source_id))
     return;
 
-  // Pass through log level only on WebUI pages to limit console spew.
-  const bool is_web_ui =
-      HasWebUIScheme(delegate_->GetMainFrameLastCommittedURL());
-  const int32_t resolved_level = is_web_ui ? level : ::logging::LOG_INFO;
+  // Pass through log level only on builtin components pages to limit console
+  // spew.
+  const bool is_builtin_component =
+      HasWebUIScheme(delegate_->GetMainFrameLastCommittedURL()) ||
+      GetContentClient()->browser()->IsBuiltinComponent(
+          GetProcess()->GetBrowserContext(), GetLastCommittedOrigin());
+  const int32_t resolved_level =
+      is_builtin_component ? level : ::logging::LOG_INFO;
 
   // LogMessages can be persisted so this shouldn't be logged in incognito mode.
-  // This rule is not applied to WebUI pages, because source code of WebUI is a
-  // part of Chrome source code, and we want to treat messages from WebUI the
-  // same way as we treat log messages from native code.
+  // This rule is not applied to WebUI pages or other builtin components,
+  // because WebUI and builtin components source code is a part of Chrome source
+  // code, and we want to treat messages from WebUI and other builtin components
+  // the same way as we treat log messages from native code.
   if (::logging::GetMinLogLevel() <= resolved_level &&
-      (is_web_ui ||
+      (is_builtin_component ||
        !GetSiteInstance()->GetBrowserContext()->IsOffTheRecord())) {
     logging::LogMessage("CONSOLE", line_no, resolved_level).stream()
         << "\"" << message << "\", source: " << source_id << " (" << line_no
