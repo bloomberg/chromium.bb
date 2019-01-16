@@ -284,6 +284,9 @@ def main():
         # Fuzzing instrumentation (-fsanitize=fuzzer-no-link).
         'lib/clang/*/lib/linux/libclang_rt.fuzzer_no_main-x86_64.a',
 
+        # HWASAN Android runtime.
+        'lib/clang/*/lib/linux/libclang_rt.hwasan-aarch64-android.so',
+
         # MemorySanitizer C runtime (pure C won't link with *_cxx).
         'lib/clang/*/lib/linux/libclang_rt.msan-x86_64.a',
         'lib/clang/*/lib/linux/libclang_rt.msan-x86_64.a.syms',

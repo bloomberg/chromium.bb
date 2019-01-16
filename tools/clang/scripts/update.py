@@ -35,7 +35,7 @@ if use_head_revision:
   CLANG_REVISION = 'HEAD'
 
 # This is incremented when pushing a new build of Clang at the same revision.
-CLANG_SUB_REVISION=2
+CLANG_SUB_REVISION=3
 
 PACKAGE_VERSION = "%s-%s" % (CLANG_REVISION, CLANG_SUB_REVISION)
 
@@ -848,6 +848,8 @@ def UpdateClang(args):
             'lib/linux/libclang_rt.ubsan_standalone-{0}-android.so',
             'lib/linux/libclang_rt.profile-{0}-android.a',
         ]
+      if target_arch == 'aarch64':
+        libs_want += ['lib/linux/libclang_rt.hwasan-{0}-android.so']
       libs_want = [lib.format(target_arch) for lib in libs_want]
       RunCommand(['ninja'] + libs_want)
 
