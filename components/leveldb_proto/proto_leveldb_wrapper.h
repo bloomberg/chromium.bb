@@ -320,6 +320,7 @@ void ProtoLevelDBWrapper::UpdateEntriesWithRemoveFilter(
     std::unique_ptr<typename Util::Internal<T>::KeyEntryVector> entries_to_save,
     const LevelDB::KeyFilter& delete_key_filter,
     Callbacks::UpdateCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UpdateEntriesWithRemoveFilter<T>(std::move(entries_to_save),
                                    delete_key_filter, std::string(),
                                    std::move(callback));

@@ -26,11 +26,16 @@ inline void GetClientFromTaskRunner(SharedProtoDatabase* db,
                                     const std::string& client_namespace,
                                     const std::string& type_prefix,
                                     base::OnceClosure closure) {
-  db->GetClient<TestProto>(
+  db->GetClientForTesting<TestProto>(
       client_namespace, type_prefix, true /* create_if_missing */,
-      base::BindOnce([](base::OnceClosure closure,
-                        Enums::InitStatus status) { std::move(closure).Run(); },
-                     std::move(closure)));
+      base::BindOnce(
+          [](base::OnceClosure closure, Enums::InitStatus status,
+             SharedDBMetadataProto::MigrationStatus migration_status) {
+            EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
+                      migration_status);
+            std::move(closure).Run();
+          },
+          std::move(closure)));
 }
 
 }  // namespace
@@ -48,9 +53,13 @@ class SharedProtoDatabaseTest : public testing::Test {
 
   void InitDB(bool create_if_missing,
               const std::string& client_name,
-              Callbacks::InitStatusCallback callback) {
-    db_->Init(create_if_missing, client_name, std::move(callback),
-              scoped_task_environment_.GetMainThreadTaskRunner());
+              SharedClientInitCallback callback) {
+    db_->task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&SharedProtoDatabase::Init,
+                       db_->weak_factory_->GetWeakPtr(), create_if_missing,
+                       client_name, std::move(callback),
+                       scoped_task_environment_.GetMainThreadTaskRunner()));
   }
 
   void KillDB() { db_.reset(); }
@@ -67,11 +76,14 @@ class SharedProtoDatabaseTest : public testing::Test {
       bool create_if_missing,
       Enums::InitStatus* status) {
     base::RunLoop loop;
-    auto client = db->GetClient<T>(
+    auto client = db->GetClientForTesting<T>(
         client_namespace, type_prefix, create_if_missing,
         base::BindOnce(
             [](Enums::InitStatus* status_out, base::OnceClosure closure,
-               Enums::InitStatus status) {
+               Enums::InitStatus status,
+               SharedDBMetadataProto::MigrationStatus migration_status) {
+              EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
+                        migration_status);
               *status_out = status;
               std::move(closure).Run();
             },
@@ -149,7 +161,10 @@ TEST_F(SharedProtoDatabaseTest, TestDBDestructionAfterInit) {
   base::RunLoop run_init_loop;
   InitDB(true /* create_if_missing */, kDefaultNamespace,
          base::BindOnce(
-             [](base::OnceClosure signal, Enums::InitStatus status) {
+             [](base::OnceClosure signal, Enums::InitStatus status,
+                SharedDBMetadataProto::MigrationStatus migration_status) {
+               EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
+                         migration_status);
                ASSERT_EQ(status, Enums::InitStatus::kOK);
                std::move(signal).Run();
              },
