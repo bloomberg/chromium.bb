@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
@@ -191,10 +192,21 @@ class Manifest {
   bool GetInteger(const std::string& path, int* out_value) const;
   bool GetString(const std::string& path, std::string* out_value) const;
   bool GetString(const std::string& path, base::string16* out_value) const;
+  // Deprecated: Use the GetDictionary() overload that accepts a base::Value
+  // output parameter instead.
   bool GetDictionary(const std::string& path,
                      const base::DictionaryValue** out_value) const;
+  bool GetDictionary(const std::string& path,
+                     const base::Value** out_value) const;
+  // Deprecated: Use the GetList() overload that accepts a base::Value output
+  // parameter instead.
   bool GetList(const std::string& path,
                const base::ListValue** out_value) const;
+  bool GetList(const std::string& path, const base::Value** out_value) const;
+
+  bool GetPathOfType(const std::string& path,
+                     base::Value::Type type,
+                     const base::Value** out_value) const;
 
   // Returns a new Manifest equal to this one.
   std::unique_ptr<Manifest> CreateDeepCopy() const;
@@ -209,6 +221,7 @@ class Manifest {
  private:
   // Returns true if the extension can specify the given |path|.
   bool CanAccessPath(const std::string& path) const;
+  bool CanAccessPath(const base::span<const base::StringPiece> path) const;
   bool CanAccessKey(const std::string& key) const;
 
   // A persistent, globally unique ID. An extension's ID is used in things

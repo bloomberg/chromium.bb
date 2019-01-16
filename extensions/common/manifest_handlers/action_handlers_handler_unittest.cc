@@ -22,8 +22,8 @@ namespace {
 class ActionHandlersManifestTest : public ManifestTest {
  protected:
   ManifestData CreateManifest(const std::string& action_handlers) {
-    std::unique_ptr<base::DictionaryValue> manifest =
-        base::DictionaryValue::From(base::test::ParseJson(R"json({
+    std::unique_ptr<base::Value> manifest =
+        base::test::ParseJson(R"json({
                                     "name": "test",
                                     "version": "1",
                                     "app": {
@@ -33,8 +33,7 @@ class ActionHandlersManifestTest : public ManifestTest {
                                     },
                                     "manifest_version": 2,
                                     "action_handlers": )json" +
-                                                          action_handlers +
-                                                          "}"));
+                              action_handlers + "}");
     EXPECT_TRUE(manifest);
     return ManifestData(std::move(manifest), "test");
   }

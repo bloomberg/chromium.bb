@@ -59,75 +59,67 @@ bool RequirementsHandler::Parse(Extension* extension, base::string16* error) {
     return true;
   }
 
-  const base::DictionaryValue* requirements_value = NULL;
+  const base::Value* requirements_value = nullptr;
   if (!extension->manifest()->GetDictionary(keys::kRequirements,
                                             &requirements_value)) {
     *error = base::ASCIIToUTF16(errors::kInvalidRequirements);
     return false;
   }
 
-  for (base::DictionaryValue::Iterator iter(*requirements_value);
-       !iter.IsAtEnd();
-       iter.Advance()) {
-    const base::DictionaryValue* requirement_value;
-    if (!iter.value().GetAsDictionary(&requirement_value)) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidRequirement, iter.key());
+  for (const auto& entry : requirements_value->DictItems()) {
+    if (!entry.second.is_dict()) {
+      *error = ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidRequirement,
+                                                   entry.first);
       return false;
     }
+    const base::Value& requirement_value = entry.second;
 
     // The plugins requirement is deprecated. Raise an install warning. If the
     // extension explicitly requires npapi plugins, raise an error.
-    if (iter.key() == "plugins") {
+    if (entry.first == "plugins") {
       extension->AddInstallWarning(
           InstallWarning(errors::kPluginsRequirementDeprecated));
-      bool requires_npapi = false;
-      if (requirement_value->GetBooleanWithoutPathExpansion("npapi",
-                                                            &requires_npapi) &&
-          requires_npapi) {
+      const base::Value* npapi_requirement =
+          requirement_value.FindKeyOfType("npapi", base::Value::Type::BOOLEAN);
+      if (npapi_requirement != nullptr && npapi_requirement->GetBool()) {
         *error = base::ASCIIToUTF16(errors::kNPAPIPluginsNotSupported);
         return false;
       }
-    } else if (iter.key() == "3D") {
-      const base::ListValue* features = NULL;
-      if (!requirement_value->GetListWithoutPathExpansion("features",
-                                                          &features) ||
-          !features) {
+    } else if (entry.first == "3D") {
+      const base::Value* features =
+          requirement_value.FindKeyOfType("features", base::Value::Type::LIST);
+      if (features == nullptr) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidRequirement, iter.key());
+            errors::kInvalidRequirement, entry.first);
         return false;
       }
 
-      for (auto feature_iter = features->begin();
-           feature_iter != features->end(); ++feature_iter) {
-        std::string feature;
-        if (feature_iter->GetAsString(&feature)) {
-          if (feature == "webgl") {
-            requirements->webgl = true;
-          } else if (feature == "css3d") {
-            // css3d is always available, so no check is needed, but no error is
-            // generated.
-          } else {
-            *error = ErrorUtils::FormatErrorMessageUTF16(
-                errors::kInvalidRequirement, iter.key());
-            return false;
-          }
-        }
-      }
-    } else if (iter.key() == "window") {
-      for (base::DictionaryValue::Iterator feature_iter(*requirement_value);
-           !feature_iter.IsAtEnd(); feature_iter.Advance()) {
-        bool feature_required = false;
-        if (!feature_iter.value().GetAsBoolean(&feature_required)) {
-          *error = ErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidRequirement, iter.key());
-          return false;
-        }
-        if (feature_iter.key() == "shape") {
-          requirements->window_shape = feature_required;
+      for (const auto& feature : features->GetList()) {
+        if (!feature.is_string())
+          continue;
+        if (feature.GetString() == "webgl") {
+          requirements->webgl = true;
+        } else if (feature.GetString() == "css3d") {
+          // css3d is always available, so no check is needed, but no error is
+          // generated.
         } else {
           *error = ErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidRequirement, iter.key());
+              errors::kInvalidRequirement, entry.first);
+          return false;
+        }
+      }
+    } else if (entry.first == "window") {
+      for (const auto& feature : requirement_value.DictItems()) {
+        if (!feature.second.is_bool()) {
+          *error = ErrorUtils::FormatErrorMessageUTF16(
+              errors::kInvalidRequirement, entry.first);
+          return false;
+        }
+        if (feature.first == "shape") {
+          requirements->window_shape = feature.second.GetBool();
+        } else {
+          *error = ErrorUtils::FormatErrorMessageUTF16(
+              errors::kInvalidRequirement, entry.first);
           return false;
         }
       }

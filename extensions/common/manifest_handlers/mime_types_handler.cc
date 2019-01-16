@@ -113,22 +113,20 @@ MimeTypesHandlerParser::~MimeTypesHandlerParser() {
 
 bool MimeTypesHandlerParser::Parse(extensions::Extension* extension,
                                    base::string16* error) {
-  const base::ListValue* mime_types_value = NULL;
-  if (!extension->manifest()->GetList(keys::kMIMETypes,
-                                      &mime_types_value)) {
+  const base::Value* mime_types_value = nullptr;
+  if (!extension->manifest()->GetList(keys::kMIMETypes, &mime_types_value)) {
     *error = base::ASCIIToUTF16(errors::kInvalidMimeTypesHandler);
     return false;
   }
 
-  std::unique_ptr<MimeTypesHandlerInfo> info(new MimeTypesHandlerInfo);
+  auto info = std::make_unique<MimeTypesHandlerInfo>();
   info->handler_.set_extension_id(extension->id());
-  for (size_t i = 0; i < mime_types_value->GetSize(); ++i) {
-    std::string filter;
-    if (!mime_types_value->GetString(i, &filter)) {
+  for (const auto& entry : mime_types_value->GetList()) {
+    if (!entry.is_string()) {
       *error = base::ASCIIToUTF16(errors::kInvalidMIMETypes);
       return false;
     }
-    info->handler_.AddMIMEType(filter);
+    info->handler_.AddMIMEType(entry.GetString());
   }
 
   std::string mime_types_handler;

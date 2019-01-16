@@ -58,19 +58,20 @@ SandboxedPageHandler::~SandboxedPageHandler() {
 bool SandboxedPageHandler::Parse(Extension* extension, base::string16* error) {
   std::unique_ptr<SandboxedPageInfo> sandboxed_info(new SandboxedPageInfo);
 
-  const base::ListValue* list_value = NULL;
+  const base::Value* list_value = nullptr;
   if (!extension->manifest()->GetList(keys::kSandboxedPages, &list_value)) {
     *error = base::ASCIIToUTF16(errors::kInvalidSandboxedPagesList);
     return false;
   }
 
-  for (size_t i = 0; i < list_value->GetSize(); ++i) {
-    std::string relative_path;
-    if (!list_value->GetString(i, &relative_path)) {
+  const base::Value::ListStorage& list_storage = list_value->GetList();
+  for (size_t i = 0; i < list_storage.size(); ++i) {
+    if (!list_storage[i].is_string()) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidSandboxedPage, base::NumberToString(i));
       return false;
     }
+    std::string relative_path = list_storage[i].GetString();
     URLPattern pattern(URLPattern::SCHEME_EXTENSION);
     if (pattern.Parse(extension->url().spec()) !=
         URLPattern::ParseResult::kSuccess) {
