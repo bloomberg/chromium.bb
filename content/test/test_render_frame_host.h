@@ -99,13 +99,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SendNavigateWithParams(
       FrameHostMsg_DidCommitProvisionalLoad_Params* params,
       bool was_within_same_document);
-  void SendNavigateWithParamsAndInterfaceProvider(
+  void SendNavigateWithParamsAndInterfaceParams(
       FrameHostMsg_DidCommitProvisionalLoad_Params* params,
-      service_manager::mojom::InterfaceProviderRequest request,
-      blink::mojom::DocumentInterfaceBrokerRequest
-          document_interface_broker_content_request,
-      blink::mojom::DocumentInterfaceBrokerRequest
-          document_interface_broker_blink_request,
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params,
       bool was_within_same_document);
 
   // With the current navigation logic this method is a no-op.
@@ -252,6 +248,17 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
 
   // Computes the page ID for a pending navigation in this RenderFrameHost;
   int32_t ComputeNextPageID();
+
+  std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+  BuildDidCommitParams(int nav_entry_id,
+                       bool did_create_new_entry,
+                       bool should_replace_entry,
+                       const GURL& url,
+                       ui::PageTransition transition,
+                       int response_code);
+
+  mojom::DidCommitProvisionalLoadInterfaceParamsPtr
+  BuildDidCommitInterfaceParams(bool is_same_document);
 
   // Keeps a running vector of messages sent to AddMessageToConsole.
   std::vector<std::string> console_messages_;
