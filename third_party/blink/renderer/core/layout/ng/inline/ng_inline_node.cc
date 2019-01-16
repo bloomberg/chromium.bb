@@ -454,6 +454,8 @@ void NGInlineNode::ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
         // TODO(xiaochengh): Change it into a move.
         data->items = items;
         SegmentBidiRunsInternal(data, layout_block_flow->StyleRef());
+      } else {
+        data->SetBaseDirection(TextDirection::kLtr);
       }
     }
   } else {
