@@ -300,3 +300,54 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, DISABLED_TokenExpiry) {
   std::string new_token = GetSyncService(0)->GetAccessTokenForTest();
   ASSERT_NE(old_token, new_token);
 }
+
+class NoAuthErrorChecker : public SingleClientStatusChangeChecker {
+ public:
+  explicit NoAuthErrorChecker(browser_sync::ProfileSyncService* service)
+      : SingleClientStatusChangeChecker(service) {}
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied() override {
+    return service()->GetAuthError().state() == GoogleServiceAuthError::NONE;
+  }
+
+  std::string GetDebugMessage() const override {
+    return "Waiting for auth error to be cleared";
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(SyncAuthTest, SyncPausedState) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+  ASSERT_EQ(GetSyncService(0)->GetTransportState(),
+            syncer::SyncService::TransportState::ACTIVE);
+  const syncer::ModelTypeSet active_types =
+      GetSyncService(0)->GetActiveDataTypes();
+  ASSERT_FALSE(active_types.Empty());
+
+  // Enter the "Sync paused" state.
+  GetClient(0)->EnterSyncPausedStateForPrimaryAccount();
+  ASSERT_TRUE(GetSyncService(0)->GetAuthError().IsPersistentError());
+  ASSERT_TRUE(AttemptToTriggerAuthError());
+
+  // While Sync itself is still considered active, the active data types should
+  // now be empty.
+  EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+  EXPECT_EQ(GetSyncService(0)->GetTransportState(),
+            syncer::SyncService::TransportState::ACTIVE);
+  EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Empty());
+
+  // Clear the "Sync paused" state again.
+  GetClient(0)->ExitSyncPausedStateForPrimaryAccount();
+  // SyncService will clear its auth error state only once it gets a valid
+  // access token again, so wait for that to happen.
+  NoAuthErrorChecker(GetSyncService(0)).Wait();
+  ASSERT_FALSE(GetSyncService(0)->GetAuthError().IsPersistentError());
+
+  // Now the active data types should be back.
+  EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+  EXPECT_EQ(GetSyncService(0)->GetTransportState(),
+            syncer::SyncService::TransportState::ACTIVE);
+  EXPECT_EQ(GetSyncService(0)->GetActiveDataTypes(), active_types);
+}

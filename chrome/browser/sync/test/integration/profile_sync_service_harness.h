@@ -53,6 +53,11 @@ class ProfileSyncServiceHarness {
   void SignOutPrimaryAccount();
 #endif  // !OS_CHROMEOS
 
+  // Enters/exits the "Sync paused" state, which in real life happens if a
+  // syncing user signs out of the content area.
+  void EnterSyncPausedStateForPrimaryAccount();
+  void ExitSyncPausedStateForPrimaryAccount();
+
   // Enables and configures sync for all available datatypes. Returns true only
   // after sync has been fully initialized and authenticated, and we are ready
   // to process changes.
