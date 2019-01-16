@@ -14,6 +14,7 @@ from __future__ import print_function
 
 import os
 
+from chromite.lib import buildbucket_v2
 from chromite.lib import cidb
 from chromite.lib import constants
 from chromite.lib import fake_cidb
@@ -26,7 +27,7 @@ class BuildStoreException(Exception):
 class BuildStore(object):
   """BuildStore class to handle all DB calls."""
 
-  def __init__(self, _read_from_bb=False, _write_to_bb=False,
+  def __init__(self, _read_from_bb=False, _write_to_bb=True,
                _write_to_cidb=True, cidb_creds=None):
     """Get an instance of the BuildStore.
 
@@ -41,10 +42,11 @@ class BuildStore(object):
     self._write_to_cidb = _write_to_cidb
     self.cidb_creds = cidb_creds
     self.cidb_conn = None
+    self.bb_client = None
     self.process_id = os.getpid()
 
   def _IsCIDBClientMissing(self):
-    """Checks to see CIDB client if needed and is missing.
+    """Checks to see if CIDB client is needed and is missing.
 
     Returns:
       Boolean indicating the state of CIDB client.
@@ -53,6 +55,17 @@ class BuildStore(object):
     cidb_is_running = self.cidb_conn is not None
 
     return need_for_cidb and not cidb_is_running
+
+  def _IsBuildbucketClientMissing(self):
+    """Checks to see if Buildbucket v2 client is needed and is missing.
+
+    Returns:
+      Boolean indicating the state of Buildbucket v2 client.
+    """
+    need_for_bb = self._write_to_bb or self._read_from_bb
+    bb_is_running = self.bb_client is not None
+
+    return need_for_bb and not bb_is_running
 
   def GetCIDBHandle(self):
     """Retrieve cidb_conn.
@@ -82,10 +95,14 @@ class BuildStore(object):
       elif not cidb.CIDBConnectionFactory.IsCIDBSetup():
         self.cidb_conn = None
       else:
-        self.cidb_conn = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder(
-        )
+        self.cidb_conn = (
+            cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder())
 
-    return not self._IsCIDBClientMissing()
+    if self._IsBuildbucketClientMissing() or pid_mismatch:
+      self.bb_client = buildbucket_v2.BuildbucketV2()
+
+    return not (self._IsCIDBClientMissing() or
+                self._IsBuildbucketClientMissing())
 
   def AreClientsReady(self):
     """A front-end function for InitializeClients()."""
@@ -122,10 +139,15 @@ class BuildStore(object):
     """
     if not self.InitializeClients():
       return
+    build_id = 0
     if self._write_to_cidb:
-      return self.cidb_conn.InsertBuild(
+      build_id = self.cidb_conn.InsertBuild(
           builder_name, build_number, build_config, bot_hostname,
           master_build_id, timeout_seconds, important, buildbucket_id, branch)
+    if self._write_to_bb:
+      buildbucket_v2.UpdateSelfCommonBuildProperties(critical=important)
+
+    return build_id
 
   def GetBuildMessages(self, build_id, message_type=None, message_subtype=None):
     """Gets build messages for particular build_id.

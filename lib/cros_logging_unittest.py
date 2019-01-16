@@ -60,7 +60,7 @@ class CrosloggingTest(cros_test_lib.OutputTestCase):
                               check_stderr=True, invert=True)
     self.AssertLogContainsMsg(
         '@@@SET_BUILD_PROPERTY',
-        lambda: logging.PrintBuildbotSetBuildProperty('name', {'a': 'value'}),
+        lambda: logging.PrintKitchenSetBuildProperty('name', {'a': 'value'}),
         check_stderr=True, invert=True)
 
   def testPrintBuildbotFunctionsWithMarker(self):
@@ -83,5 +83,5 @@ class CrosloggingTest(cros_test_lib.OutputTestCase):
                               check_stderr=True)
     self.AssertLogContainsMsg(
         '@@@SET_BUILD_PROPERTY@name@"value"@@@',
-        lambda: logging.PrintBuildbotSetBuildProperty('name', 'value'),
+        lambda: logging.PrintKitchenSetBuildProperty('name', 'value'),
         check_stderr=True)

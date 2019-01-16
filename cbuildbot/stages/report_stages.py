@@ -678,7 +678,7 @@ class ReportStage(generic_stages.BuilderStage,
                    builder_run.config.name, board_names)
       return
 
-    logging.PrintBuildbotSetBuildProperty('artifact_link', archive.upload_url)
+    logging.PrintKitchenSetBuildProperty('artifact_link', archive.upload_url)
 
     uploaded_json = 'uploaded.json'
     commands.GenerateUploadJSON(os.path.join(archive_path, uploaded_json),
