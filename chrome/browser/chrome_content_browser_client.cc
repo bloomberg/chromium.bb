@@ -90,6 +90,7 @@
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
+#include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
@@ -222,6 +223,7 @@
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_features.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_recorder_impl.h"
 #include "components/rappor/rappor_service_impl.h"
@@ -4765,6 +4767,17 @@ ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
             navigation_ui_data, frame_tree_node_id));
   }
 #endif
+
+  // TODO(ryansturm): plumb a network service url loader factory and page id
+  // generator through here. https://crbug.com/921740
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      base::FeatureList::IsEnabled(
+          previews::features::kHTTPSServerPreviewsUsingURLLoader)) {
+    interceptors.push_back(
+        std::make_unique<previews::PreviewsLitePageURLLoaderInterceptor>(
+            frame_tree_node_id));
+  }
+
   return interceptors;
 }
 

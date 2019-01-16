@@ -94,5 +94,10 @@ const base::Feature kSlowPageTriggering{"PreviewsSlowPageTriggering",
 const base::Feature kPreviewsDisallowedOnReloads{
     "PreviewsDisallowedOnReloads", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allows HTTPS previews to be served via a URLLoader when network service is
+// enabled.
+const base::Feature kHTTPSServerPreviewsUsingURLLoader{
+    "HTTPSServerPreviewsUsingURLLoader", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace previews

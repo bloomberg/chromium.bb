@@ -259,7 +259,9 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
   DCHECK_NE(navigation_handle()->GetReloadType(),
             content::ReloadType::ORIGINAL_REQUEST_URL);
 
+  // TODO: Move all eligibility reasons to PreviewsState decision code.
   // Check if the parameters of the navigation are not eligible for the preview.
+  // https://crbug.com/921755
   std::vector<IneligibleReason> ineligible_reasons;
   const GURL& url = navigation_handle()->GetURL();
   if (!url.SchemeIs(url::kHttpsScheme))
