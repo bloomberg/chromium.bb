@@ -4,9 +4,10 @@
 
 html {
   /* Material Design constants */
+  --md-add-size: 24px;
   --md-edit-menu-size: 20px;
-  --md-fallback-letter-size: 21px;
-  --md-favicon-size: 24px;
+  --md-fallback-letter-size: 16px;
+  --md-favicon-size: 32px;
   --md-icon-margin-bottom: 16px;
   --md-icon-size: 48px;
   --md-max-tiles-row: 5;
@@ -104,6 +105,12 @@ a:visited {
   transition-duration: 200ms;
 }
 
+html[darkmode=true] .md-tile-container.reorder .md-tile {
+  background-color: rgb(50, 54, 57);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4),
+      0 4px 8px 3px rgba(0, 0, 0, 0.25);
+}
+
 .md-tile-container.reorder .md-tile .md-tile-inner {
   z-index: unset;
 }
@@ -122,8 +129,16 @@ body:not(.reordering) .md-tile-container:hover {
   background-color: rgba(33, 32, 36, 0.06);
 }
 
+html[darkmode=true] body:not(.reordering) .md-tile-container:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
 body.dark-theme:not(.reordering) .md-tile-container:hover {
   background-color: rgba(255, 255, 255, 0.1);
+}
+
+html[darkmode=true] body.dark-theme:not(.reordering) .md-tile-container:hover {
+  background-color: rgba(218, 220, 224, 0.1);
 }
 
 body:not(.reordering) .md-tile-container:hover .md-menu {
@@ -157,22 +172,18 @@ body.dark-theme:not(.reordering) .md-tile-container:active + .md-menu::after {
 
 .md-icon {
   margin-bottom: var(--md-icon-margin-bottom);
-}
-
-.md-favicon {
   pointer-events: none;
 }
 
-.md-favicon img {
+.md-icon img {
   /* Icons returned by the NTP Icon Source are always of this size. */
   height: var(--md-icon-size);
   width: var(--md-icon-size);
 }
 
-.md-fallback-background,
-.md-add-background {
+.md-icon-background {
   align-items: center;
-  background-color: rgb(136, 136, 136);
+  background-color: rgb(241, 243, 244);
   border-radius: 50%;
   display: flex;
   height: var(--md-icon-size);
@@ -180,23 +191,29 @@ body.dark-theme:not(.reordering) .md-tile-container:active + .md-menu::after {
   width: var(--md-icon-size);
 }
 
-.md-fallback-letter {
-  color: white;
-  font-family: 'Segoe UI', 'Roboto', arial, sans-serif;
-  font-size: var(--md-fallback-letter-size);
-  height: var(--md-fallback-letter-size);
-  line-height: var(--md-fallback-letter-size);
-  text-align: center;
-  width: var(--md-fallback-letter-size);
-}
-
-.md-add-background {
-  background-color: rgb(241, 243, 244);
+html[darkmode=true] .md-icon-background {
+  background-color: rgb(32, 33, 36);
 }
 
 .md-add-icon {
   background: url(chrome-search://most-visited/add_link.svg) no-repeat center;
+  height: var(--md-add-size);
+  width: var(--md-add-size);
+}
+
+html[darkmode=true] .md-add-icon {
+  background: url(chrome-search://most-visited/add_link_white.svg) no-repeat center;
+}
+
+.md-fallback-letter {
+  background-color: rgb(136, 136, 136);
+  border-radius: 50%;
+  color: white;
+  font-family: 'Segoe UI', 'Roboto', arial, sans-serif;
+  font-size: var(--md-fallback-letter-size);
   height: var(--md-favicon-size);
+  line-height: var(--md-favicon-size);
+  text-align: center;
   width: var(--md-favicon-size);
 }
 
@@ -216,19 +233,25 @@ body.dark-theme:not(.reordering) .md-tile-container:active + .md-menu::after {
 .md-title span {
   line-height: var(--md-title-height);
 }
+
 /* Font weight on Mac and ChromeOS looks heavier on default background and
  * needs to be reduced. */
 body.mac-chromeos .md-title {
   font-weight: 400;
 }
 
-/* Apply when a custom background is set */
+/* Apply when Chrome is in dark mode. */
+html[darkmode=true] .md-title {
+  color: rgb(248, 249, 250);
+}
+
+/* Apply when a custom background is set. */
 body.dark-theme .md-tile-container:not(.reorder) .md-title {
   color: rgb(248, 249, 250);
   filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.35));
 }
 
-/* Apply only when a theme is installed */
+/* Apply only when a theme is installed. */
 body.using-theme .md-title-container {
   background-color: white;
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
@@ -236,9 +259,21 @@ body.using-theme .md-title-container {
   padding: 0 4px;
 }
 
+html[darkmode=true] body.using-theme .md-title-container {
+  background-color: rgb(32, 33, 36);
+}
+
+html[darkmode=true] body.using-theme .md-tile-container.reorder .md-title-container {
+  background-color: rgb(50, 54, 57);
+}
+
 body.using-theme .md-tile-container:not(.reorder) .md-title {
   color: rgba(33, 32, 36, 0.86);
   filter: unset;
+}
+
+html[darkmode=true] body.using-theme .md-tile-container:not(.reorder) .md-title {
+  color: rgb(248, 249, 250);
 }
 
 .md-menu {
@@ -282,6 +317,10 @@ body:not(.reordering) .md-menu:focus:not(.mouse-navigation) {
   width: var(--md-menu-size);
 }
 
+html[darkmode=true] .md-menu::after {
+  background-color: rgb(248, 249, 250);
+}
+
 .md-edit-menu {
   height: var(--md-edit-menu-size);
   width: var(--md-edit-menu-size);
@@ -297,6 +336,11 @@ body:not(.reordering) .md-menu:focus:not(.mouse-navigation) {
 body:not(.reordering) .md-menu:hover::after,
 body:not(.reordering) .md-menu:focus::after {
   background-color: rgba(33, 32, 36, 0.71);
+}
+
+html[darkmode=true] body:not(.reordering) .md-menu:hover::after,
+html[darkmode=true] body:not(.reordering) .md-menu:focus::after {
+  background-color: rgb(189, 193, 198);
 }
 
 body.dark-theme .md-tile-container:not(.reorder) .md-menu::after,

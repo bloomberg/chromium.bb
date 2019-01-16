@@ -530,17 +530,16 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, LoadsMDIframe) {
   // Get the total number of (non-empty) tiles from the iframe.
   int total_favicons = 0;
   ASSERT_TRUE(instant_test_utils::GetIntFromJS(
-      iframe, "document.querySelectorAll('.md-favicon').length",
-      &total_favicons));
+      iframe, "document.querySelectorAll('.md-icon').length", &total_favicons));
   // Also get how many of the tiles succeeded and failed in loading their
   // favicon images.
   int succeeded_favicons = 0;
   ASSERT_TRUE(instant_test_utils::GetIntFromJS(
-      iframe, "document.querySelectorAll('.md-favicon img').length",
+      iframe, "document.querySelectorAll('.md-icon img').length",
       &succeeded_favicons));
   int failed_favicons = 0;
   ASSERT_TRUE(instant_test_utils::GetIntFromJS(
-      iframe, "document.querySelectorAll('.md-favicon.failed-favicon').length",
+      iframe, "document.querySelectorAll('.md-icon.failed-favicon').length",
       &failed_favicons));
   // Check if only one add button exists in the frame. This will be included in
   // the total favicon count.
