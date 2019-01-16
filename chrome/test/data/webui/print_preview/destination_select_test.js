@@ -76,28 +76,17 @@ cr.define('destination_select_test', function() {
      * Checks that a printer is displayed to the user with the name given
      * by |printerName|.
      * @param {string} printerName The printer name that should be displayed.
-     * @return {!Promise} Promise that resolves when checks are complete.
      */
     function assertPrinterDisplay(printerName) {
       const destinationSettings = page.$$('print-preview-destination-settings');
 
-      return new Promise(resolve => {
-        Polymer.RenderStatus.afterNextRender(destinationSettings, () => {
-          Polymer.dom.flush();
-          // Check that the throbber is hidden and the dropdown is shown.
-          assertTrue(destinationSettings.$$('.throbber-container').hidden);
-          const destinationSelect = destinationSettings.$.destinationSelect;
-          assertFalse(destinationSelect.hidden);
+      // Check that the throbber is hidden and the destination info is shown.
+      assertTrue(destinationSettings.$$('.throbber-container').hidden);
+      assertFalse(destinationSettings.$$('.destination-settings-box').hidden);
 
-          const options =
-              destinationSelect.shadowRoot.querySelectorAll('option');
-          const selectedOption =
-              options[destinationSelect.$$('.md-select').selectedIndex];
-          // Check that the destination matches the expected destination.
-          assertEquals(printerName, selectedOption.textContent.trim());
-          resolve();
-        });
-      });
+      // Check that the destination matches the expected destination.
+      assertEquals(
+          printerName, destinationSettings.$$('.destination-name').textContent);
     }
 
     /**
@@ -116,7 +105,7 @@ cr.define('destination_select_test', function() {
         assertEquals('ID1', args.destinationId);
         assertEquals(print_preview.PrinterType.LOCAL, args.type);
         assertEquals('ID1', page.destination_.id);
-        return assertPrinterDisplay('One');
+        assertPrinterDisplay('One');
       });
     });
 
@@ -141,9 +130,8 @@ cr.define('destination_select_test', function() {
             assertEquals('ID1', args.destinationId);
             assertEquals(print_preview.PrinterType.LOCAL, args.type);
             assertEquals('ID1', page.destination_.id);
-            return assertPrinterDisplay('One');
-          })
-          .then(() => {
+            assertPrinterDisplay('One');
+
             // Load all local destinations.
             page.destinationStore_.startLoadAllDestinations();
             return nativeLayer.whenCalled('getPrinters');
@@ -218,7 +206,7 @@ cr.define('destination_select_test', function() {
         assertEquals('ID4', args.destinationId);
         assertEquals(print_preview.PrinterType.LOCAL, args.type);
         assertEquals('ID4', page.destination_.id);
-        return assertPrinterDisplay('Four');
+        assertPrinterDisplay('Four');
       });
     });
 
@@ -273,7 +261,7 @@ cr.define('destination_select_test', function() {
         assertEquals(destinations[0].id, args.destinationId);
         assertEquals(print_preview.PrinterType.LOCAL, args.type);
         assertEquals(destinations[0].id, page.destination_.id);
-        return assertPrinterDisplay(destinations[0].displayName);
+        assertPrinterDisplay(destinations[0].displayName);
       });
     });
 
@@ -302,10 +290,10 @@ cr.define('destination_select_test', function() {
             const destinationSettings =
                 page.$$('print-preview-destination-settings');
             assertTrue(destinationSettings.$$('.throbber-container').hidden);
-            const destinationSelect = destinationSettings.$.destinationSelect;
-            assertFalse(destinationSelect.hidden);
-            const selected = destinationSelect.$$('option[selected]');
-            assertEquals('noDestinations', selected.value);
+            assertTrue(
+                destinationSettings.$$('.destination-settings-box').hidden);
+            assertFalse(
+                destinationSettings.$$('.no-destinations-display').hidden);
           });
     });
   });

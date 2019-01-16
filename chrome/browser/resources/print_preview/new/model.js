@@ -730,7 +730,6 @@ Polymer({
     }
     this.initialized_ = true;
     this.stickySettings_ = null;
-    this.updateRecentDestinations_();
     this.stickySettingsChanged_();
   },
 

@@ -10,8 +10,6 @@ Polymer({
   properties: {
     activeUser: String,
 
-    appKioskMode: Boolean,
-
     /** @type {!print_preview.CloudPrintState} */
     cloudPrintState: {
       type: Number,
@@ -55,6 +53,13 @@ Polymer({
     /** @private {!Array<!print_preview.Destination>} */
     recentDestinationList_: Array,
 
+    /** @private {boolean} */
+    stale_: {
+      type: Boolean,
+      computed: 'computeStale_(destination)',
+      reflectToAttribute: true,
+    },
+
     /** @private {string} */
     statusText_: {
       type: String,
@@ -64,6 +69,7 @@ Polymer({
   },
 
   observers: [
+    'onDestinationSet_(destination, destination.id)',
     'updateRecentDestinationList_(' +
         'recentDestinations.*, activeUser, destinationStore)',
   ],
@@ -80,8 +86,9 @@ Polymer({
     // Need to update the recent list when the destination store inserts
     // destinations, in case any recent destinations have been added to the
     // store. At startup, recent destinations can be in the sticky settings,
-    // but they should not be displayed in the dropdown until they have been
-    // fetched by the DestinationStore, to ensure that they still exist.
+    // but they should not be displayed in the dialog's recent list until
+    // they have been fetched by the DestinationStore, to ensure that they
+    // still exist.
     this.tracker_.add(
         assert(this.destinationStore),
         print_preview.DestinationStore.EventType.DESTINATIONS_INSERTED,
@@ -110,38 +117,26 @@ Polymer({
       }
     });
     this.recentDestinationList_ = recentDestinations;
-    // Update the select value only after re-rendering the dropdown items.
-    // Otherwise, the select will sometimes display the wrong printer value
-    // (even though |destination| is correctly updated). Note that changing
-    // |destination| will always result in a subsequent change to
-    // |recentDestinations|.
-    Polymer.RenderStatus.afterNextRender(this, () => {
-      this.loadingDestination_ = !this.destination || !this.destination.id;
-      if (!this.loadingDestination_) {
-        this.$.destinationSelect.updateDestination();
-      }
-    });
   },
 
   /**
-   * @return {boolean} Whether the destinations dropdown should be disabled.
+   * @return {boolean} Whether the destination change button should be disabled.
    * @private
    */
-  shouldDisableDropdown_: function() {
+  shouldDisableButton_: function() {
     return !this.destinationStore || this.noDestinationsFound ||
         (this.disabled &&
          this.state != print_preview_new.State.INVALID_PRINTER);
   },
 
   /** @private */
-  onCloudPrintStateChanged_: function() {
-    if (this.cloudPrintState !== print_preview.CloudPrintState.ENABLED &&
-        this.cloudPrintState !== print_preview.CloudPrintState.SIGNED_IN) {
-      return;
-    }
+  onDestinationSet_: function() {
+    this.loadingDestination_ = !this.destination || !this.destination.id;
+  },
 
-    this.loadDropdownCloudDestinations_();
-    if (this.cloudPrintState === print_preview.CloudPrintState.SIGNED_IN) {
+  /** @private */
+  onCloudPrintStateChanged_: function() {
+    if (this.cloudPrintState !== print_preview.CloudPrintState.ENABLED) {
       return;
     }
 
@@ -178,42 +173,28 @@ Polymer({
   },
 
   /** @private */
-  loadDropdownCloudDestinations_: function() {
-    this.destinationStore.startLoadCookieDestination(
-        print_preview.Destination.GooglePromotedId.DOCS);
-    this.recentDestinations.forEach(destination => {
-      if (destination.origin === print_preview.DestinationOrigin.COOKIES &&
-          (destination.account === this.activeUser ||
-           destination.account === '')) {
-        this.destinationStore.startLoadCookieDestination(destination.id);
-      }
-    });
+  onChangeButtonClick_: function() {
+    this.destinationStore.startLoadAllDestinations();
+    if (this.activeUser) {
+      this.invitationStore.startLoadingInvitations(this.activeUser);
+    }
+    const dialog = this.$.destinationDialog.get();
+    dialog.show();
   },
 
   /**
-   * @param {!CustomEvent<string>} e Event containing the new selected value.
+   * @return {boolean} Whether the destination is offline or invalid, indicating
+   *     that "stale" styling should be applied.
    * @private
    */
-  onSelectedDestinationOptionChange_: function(e) {
-    const value = e.detail;
-    if (value === 'selectDestination') {
-      this.destinationStore.startLoadAllDestinations();
-      if (this.activeUser) {
-        this.invitationStore.startLoadingInvitations(this.activeUser);
-      }
-      this.$.destinationDialog.get().show();
-    } else {
-      this.destinationStore.selectDestinationByKey(value);
-    }
+  computeStale_: function() {
+    return !!this.destination &&
+        (this.destination.isOffline ||
+         this.destination.shouldShowInvalidCertificateError);
   },
 
   /** @private */
   onDialogClose_: function() {
-    // Reset the select value in case the user dismissed the dialog without
-    // selecting a new destination.
-    if (this.destination) {
-      this.$.destinationSelect.updateDestination();
-    }
-    this.$.destinationSelect.focus();
+    this.$$('paper-button').focus();
   },
 });

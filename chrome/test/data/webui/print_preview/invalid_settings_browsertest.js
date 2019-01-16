@@ -279,9 +279,9 @@ cr.define('invalid_settings_browsertest', function() {
             assertTrue(layoutSettings.$$('select').disabled);
             assertTrue(scalingSettings.$$('cr-input').disabled);
 
-            // The destination select dropdown should be enabled, so that the
+            // The destination settings button should be enabled, so that the
             // user can select a new printer.
-            assertFalse(destinationSettings.$.destinationSelect.disabled);
+            assertFalse(destinationSettings.$$('paper-button').disabled);
 
             // Reset
             nativeLayer.reset();
@@ -298,8 +298,8 @@ cr.define('invalid_settings_browsertest', function() {
             assertFalse(layoutSettings.$$('select').disabled);
             assertFalse(scalingSettings.$$('cr-input').disabled);
 
-            // The destination select dropdown should still be enabled.
-            assertFalse(destinationSettings.$.destinationSelect.disabled);
+            // The destination settings button should still be enabled.
+            assertFalse(destinationSettings.$$('paper-button').disabled);
 
             // Message text should have changed and overlay should be invisible.
             assertFalse(messageEl.textContent.includes(expectedMessageStart));
