@@ -719,11 +719,11 @@ TEST_P(LazyLoadFramesParamsTest, JavascriptStringFrameUrl) {
         </body>)HTML",
       kViewportHeight + GetLoadingDistanceThreshold() + 100));
 
-  Compositor().BeginFrame();
-  test::RunPendingTasks();
-
   EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
   EXPECT_TRUE(ConsoleMessages().Contains("child frame element onload"));
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
 
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
   histogram_tester()->ExpectTotalCount(

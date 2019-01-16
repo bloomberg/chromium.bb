@@ -462,8 +462,6 @@ void NavigationScheduler::Cancel() {
   if (navigate_task_handle_.IsActive()) {
     probe::frameClearedScheduledNavigation(frame_);
   }
-  if (frame_->GetDocument())
-    frame_->GetDocument()->CancelPendingJavaScriptUrl();
   navigate_task_handle_.Cancel();
   redirect_.Clear();
 }

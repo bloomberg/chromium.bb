@@ -238,6 +238,12 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(
 
   script_source = script_source.Substring(kJavascriptSchemeLength);
 
+  bool progress_notifications_needed =
+      GetFrame()->Loader().StateMachine()->IsDisplayingInitialEmptyDocument() &&
+      !GetFrame()->IsLoading();
+  if (progress_notifications_needed)
+    GetFrame()->Loader().Progress().ProgressStarted();
+
   Document* owner_document = GetFrame()->GetDocument();
 
   bool location_change_before =
@@ -264,8 +270,11 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(
   if (!GetFrame()->GetPage())
     return true;
 
-  if (result.IsEmpty() || !result->IsString())
+  if (result.IsEmpty() || !result->IsString()) {
+    if (progress_notifications_needed)
+      GetFrame()->Loader().Progress().ProgressCompleted();
     return true;
+  }
   String script_result = ToCoreString(v8::Local<v8::String>::Cast(result));
 
   // We're still in a frame, so there should be a DocumentLoader.

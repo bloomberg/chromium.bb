@@ -4,7 +4,6 @@
 <script type="text/javascript">
 testRunner.dumpBackForwardList();
 testRunner.dumpAsText();
-testRunner.waitUntilDone();
 
 var myFrame;
 function myCallbackFunction() {
@@ -17,7 +16,6 @@ function myCallbackFunction() {
 <script type="text/javascript">
 myFrame = document.createElement("iframe");    
 myFrame.src = "javascript:document.write('<script type=text/javascript>window.parent.myCallbackFunction();<\/script>'); document.close()";
-myFrame.onload = () => testRunner.notifyDone();
 document.body.appendChild(myFrame);
 </script>
 </body>

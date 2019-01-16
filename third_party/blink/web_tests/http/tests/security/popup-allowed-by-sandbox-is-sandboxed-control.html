@@ -15,7 +15,7 @@ if (window.testRunner) {
        win.document.write(
           '<form action=javascript:console.log(/PASS/) ><input type=submit></form>' +
           '<script>document.forms[0].submit();' +
-          'setTimeout(function() { if (window.testRunner)testRunner.notifyDone(); }, 0);' +
+          'if (window.testRunner)testRunner.notifyDone();' +
           '</' + 'script>');
        </script>"
   ></iframe>

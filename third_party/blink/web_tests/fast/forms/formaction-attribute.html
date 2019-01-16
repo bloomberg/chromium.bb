@@ -17,7 +17,6 @@
 <script>
 description("Test for formaction attributes in input and button tags.");
 var doneAction = false;
-jsTestIsAsync = true;
 
 function failTest(ul)
 {
@@ -45,51 +44,27 @@ function passTest3(ul)
     testPassed('The formaction attribute in the button tag was used.');
 }
 
-function test1() {
-    doneAction = false;
-    var input = document.getElementById('button1');
-    input.click();
-    setTimeout(function() {
-        if (!doneAction)
-            testFailed('Both of the action and the formaction attributes were ignored.');
-        test2();
-    }, 0);
-}
+doneAction = false;
+var input = document.getElementById('button1');
+input.click();
+if (!doneAction)
+    testFailed('Both of the action and the formaction attributes were ignored.');
+doneAction = false;
+clickElement(input);
+if (!doneAction)
+    testFailed('Both of the action and the formaction attributes were ignored.');
 
-function test2() {
-    doneAction = false;
-    var input = document.getElementById('button1');
-    clickElement(input);
-    setTimeout(function() {
-        if (!doneAction)
-            testFailed('Both of the action and the formaction attributes were ignored.');
-        test3();
-    }, 0);
-}
+doneAction = false;
+var button = document.getElementById('button2');
+button.click();
+if (!doneAction)
+    testFailed('Both of the action and the formaction attributes were ignored.');
 
-function test3() {
-    doneAction = false;
-    var button = document.getElementById('button2');
-    button.click();
-    setTimeout(function() {
-        if (!doneAction)
-            testFailed('Both of the action and the formaction attributes were ignored.');
-        test4();
-    }, 0);
-}
-
-function test4() {
-    doneAction = false;
-    var span = document.getElementById('span');
-    span.click();
-    setTimeout(function() {
-        if (!doneAction)
-            testFailed('Both of the action and the formaction attributes were ignored.');
-        finishJSTest();
-    }, 0);
-}
-
-test1();
+doneAction = false;
+var span = document.getElementById('span');
+span.click();
+if (!doneAction)
+    testFailed('Both of the action and the formaction attributes were ignored.');
 </script>
 </body>
 </html>

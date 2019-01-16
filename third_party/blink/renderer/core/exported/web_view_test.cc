@@ -4439,6 +4439,23 @@ TEST_F(ShowUnhandledTapTest, ShowUnhandledTapUIIfNeededWithTextSizes) {
 
 #endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
 
+TEST_F(WebViewTest, StopLoadingIfJavaScriptURLReturnsNoStringResult) {
+  ViewCreatingWebViewClient client;
+  frame_test_helpers::WebViewHelper main_web_view;
+  main_web_view.InitializeAndLoad("about:blank", nullptr, &client);
+
+  WebLocalFrame* frame = main_web_view.GetWebView()->MainFrameImpl();
+  v8::HandleScope scope(v8::Isolate::GetCurrent());
+  v8::Local<v8::Value> v8_value =
+      frame->ExecuteScriptAndReturnValue(WebScriptSource(
+          "var win = window.open('javascript:false'); win.document"));
+  ASSERT_TRUE(v8_value->IsObject());
+  Document* document =
+      V8Document::ToImplWithTypeCheck(v8::Isolate::GetCurrent(), v8_value);
+  ASSERT_TRUE(document);
+  EXPECT_FALSE(document->GetFrame()->IsLoading());
+}
+
 #if defined(OS_MACOSX)
 TEST_F(WebViewTest, WebSubstringUtil) {
   RegisterMockedHttpURLLoad("content_editable_populated.html");

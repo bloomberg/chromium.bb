@@ -41,7 +41,7 @@ try {
     container = document.createElement("div");
     targetFrame3 = container.appendChild(document.createElement("iframe"));
     helperFrame = targetFrame3.appendChild(document.createElement("iframe"));
-    container.removeChild(targetFrame3);
+    helperFrame.src = "javascript:top.container.removeChild(top.targetFrame3)";
     document.body.appendChild(container);
 } catch (e) { }
 shouldBeTrue("targetFrame3.contentWindow == undefined");
