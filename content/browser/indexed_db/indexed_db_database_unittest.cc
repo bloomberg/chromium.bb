@@ -23,11 +23,13 @@
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
+#include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_factory.h"
+#include "content/browser/indexed_db/scopes/disjoint_range_lock_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,6 +47,8 @@ namespace content {
 
 class IndexedDBDatabaseTest : public ::testing::Test {
  public:
+  IndexedDBDatabaseTest() : lock_manager_(kIndexedDBLockLevelCount) {}
+
   void SetUp() override {
     backing_store_ = new IndexedDBFakeBackingStore();
     factory_ = new MockIndexedDBFactory();
@@ -56,7 +60,8 @@ class IndexedDBDatabaseTest : public ::testing::Test {
 
     std::tie(db_, s) = IndexedDBDatabase::Create(
         ASCIIToUTF16("db"), backing_store_.get(), factory_.get(),
-        std::move(metadata_coding), IndexedDBDatabase::Identifier());
+        std::move(metadata_coding), IndexedDBDatabase::Identifier(),
+        &lock_manager_);
     ASSERT_TRUE(s.ok());
     EXPECT_FALSE(backing_store_->HasOneRef());  // local and db
   }
@@ -69,6 +74,7 @@ class IndexedDBDatabaseTest : public ::testing::Test {
 
  private:
   TestBrowserThreadBundle thread_bundle_;
+  DisjointRangeLockManager lock_manager_;
 };
 
 TEST_F(IndexedDBDatabaseTest, BackingStoreRetention) {
@@ -130,8 +136,11 @@ TEST_F(IndexedDBDatabaseTest, ForcedClose) {
 
   const int64_t transaction_id = 123;
   const std::vector<int64_t> scope;
-  db_->CreateTransaction(transaction_id, request->connection(), scope,
-                         blink::mojom::IDBTransactionMode::ReadOnly);
+  IndexedDBTransaction* transaction = request->connection()->CreateTransaction(
+      transaction_id, std::set<int64_t>(scope.begin(), scope.end()),
+      blink::mojom::IDBTransactionMode::ReadOnly,
+      new IndexedDBBackingStore::Transaction(backing_store_.get()));
+  db_->RegisterAndScheduleTransaction(transaction);
 
   request->connection()->ForceClose();
 
@@ -312,7 +321,8 @@ leveldb::Status DummyOperation(IndexedDBTransaction* transaction) {
 class IndexedDBDatabaseOperationTest : public testing::Test {
  public:
   IndexedDBDatabaseOperationTest()
-      : commit_success_(leveldb::Status::OK()),
+      : lock_manager_(kIndexedDBLockLevelCount),
+        commit_success_(leveldb::Status::OK()),
         factory_(new MockIndexedDBFactory()) {}
 
   void SetUp() override {
@@ -323,7 +333,8 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
     leveldb::Status s;
     std::tie(db_, s) = IndexedDBDatabase::Create(
         ASCIIToUTF16("db"), backing_store_.get(), factory_.get(),
-        std::move(metadata_coding), IndexedDBDatabase::Identifier());
+        std::move(metadata_coding), IndexedDBDatabase::Identifier(),
+        &lock_manager_);
     ASSERT_TRUE(s.ok());
 
     request_ = new MockIndexedDBCallbacks();
@@ -342,7 +353,7 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
         transaction_id, std::set<int64_t>() /*scope*/,
         blink::mojom::IDBTransactionMode::VersionChange,
         new IndexedDBFakeBackingStore::FakeTransaction(commit_success_));
-    db_->TransactionCreated(transaction_);
+    db_->RegisterAndScheduleTransaction(transaction_);
 
     // Add a dummy task which takes the place of the VersionChangeOperation
     // which kicks off the upgrade. This ensures that the transaction has
@@ -364,6 +375,7 @@ private:
   scoped_refptr<MockIndexedDBDatabaseCallbacks> callbacks_;
   IndexedDBTransaction* transaction_;
   std::unique_ptr<IndexedDBConnection> connection_;
+  DisjointRangeLockManager lock_manager_;
 
   leveldb::Status commit_success_;
 

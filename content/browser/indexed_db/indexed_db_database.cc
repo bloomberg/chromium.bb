@@ -246,11 +246,14 @@ class IndexedDBDatabase::OpenRequest
     DCHECK_EQ(db_->connections_.count(connection_.get()), 1UL);
 
     std::vector<int64_t> object_store_ids;
-    IndexedDBTransaction* transaction = db_->CreateTransaction(
-        pending_->transaction_id, connection_.get(), object_store_ids,
-        blink::mojom::IDBTransactionMode::VersionChange);
 
-    DCHECK(db_->transaction_coordinator_.IsRunningVersionChangeTransaction());
+    IndexedDBTransaction* transaction = connection_->CreateTransaction(
+        pending_->transaction_id,
+        std::set<int64_t>(object_store_ids.begin(), object_store_ids.end()),
+        blink::mojom::IDBTransactionMode::VersionChange,
+        new IndexedDBBackingStore::Transaction(db_->backing_store()));
+    db_->RegisterAndScheduleTransaction(transaction);
+
     transaction->ScheduleTask(
         base::BindOnce(&IndexedDBDatabase::VersionChangeOperation, db_,
                        pending_->version, pending_->callbacks));
@@ -379,11 +382,12 @@ std::tuple<scoped_refptr<IndexedDBDatabase>, Status> IndexedDBDatabase::Create(
     scoped_refptr<IndexedDBBackingStore> backing_store,
     scoped_refptr<IndexedDBFactory> factory,
     std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
-    const Identifier& unique_identifier) {
+    const Identifier& unique_identifier,
+    ScopesLockManager* transaction_lock_manager) {
   scoped_refptr<IndexedDBDatabase> database =
       IndexedDBClassFactory::Get()->CreateIndexedDBDatabase(
           name, backing_store, factory, std::move(metadata_coding),
-          unique_identifier);
+          unique_identifier, transaction_lock_manager);
   Status s = database->OpenInternal();
   if (!s.ok())
     database = nullptr;
@@ -395,7 +399,8 @@ IndexedDBDatabase::IndexedDBDatabase(
     scoped_refptr<IndexedDBBackingStore> backing_store,
     scoped_refptr<IndexedDBFactory> factory,
     std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
-    const Identifier& unique_identifier)
+    const Identifier& unique_identifier,
+    ScopesLockManager* transaction_lock_manager)
     : backing_store_(backing_store),
       metadata_(name,
                 kInvalidId,
@@ -403,7 +408,8 @@ IndexedDBDatabase::IndexedDBDatabase(
                 kInvalidId),
       identifier_(unique_identifier),
       factory_(factory),
-      metadata_coding_(std::move(metadata_coding)) {
+      metadata_coding_(std::move(metadata_coding)),
+      lock_manager_(transaction_lock_manager) {
   DCHECK(factory != nullptr);
 }
 
@@ -1816,29 +1822,34 @@ void IndexedDBDatabase::ProcessRequestQueue() {
   } while (!active_request_ && !pending_requests_.empty());
 }
 
-IndexedDBTransaction* IndexedDBDatabase::CreateTransaction(
-    int64_t transaction_id,
-    IndexedDBConnection* connection,
-    const std::vector<int64_t>& object_store_ids,
-    blink::mojom::IDBTransactionMode mode) {
-  IDB_TRACE1("IndexedDBDatabase::CreateTransaction", "txn.id", transaction_id);
-  DCHECK(connections_.count(connection));
+void IndexedDBDatabase::RegisterAndScheduleTransaction(
+    IndexedDBTransaction* transaction) {
+  IDB_TRACE1("IndexedDBDatabase::RegisterAndScheduleTransaction", "txn.id",
+             transaction->id());
 
   UMA_HISTOGRAM_COUNTS_1000(
       "WebCore.IndexedDB.Database.OutstandingTransactionCount",
       transaction_count_);
-
-  IndexedDBTransaction* transaction = connection->CreateTransaction(
-      transaction_id,
-      std::set<int64_t>(object_store_ids.begin(), object_store_ids.end()), mode,
-      new IndexedDBBackingStore::Transaction(backing_store_.get()));
-  TransactionCreated(transaction);
-  return transaction;
-}
-
-void IndexedDBDatabase::TransactionCreated(IndexedDBTransaction* transaction) {
   transaction_count_++;
-  transaction_coordinator_.DidCreateTransaction(transaction);
+  std::vector<ScopesLockManager::ScopeLockRequest> lock_requests;
+  lock_requests.reserve(1 + transaction->scope().size());
+  lock_requests.emplace_back(
+      kDatabaseRangeLockLevel, GetDatabaseLockRange(id()),
+      transaction->mode() == blink::mojom::IDBTransactionMode::VersionChange
+          ? ScopesLockManager::LockType::kExclusive
+          : ScopesLockManager::LockType::kShared);
+  ScopesLockManager::LockType lock_type =
+      transaction->mode() == blink::mojom::IDBTransactionMode::ReadOnly
+          ? ScopesLockManager::LockType::kShared
+          : ScopesLockManager::LockType::kExclusive;
+  for (int64_t object_store : transaction->scope()) {
+    lock_requests.emplace_back(kObjectStoreRangeLockLevel,
+                               GetObjectStoreLockRange(id(), object_store),
+                               lock_type);
+  }
+  lock_manager_->AcquireLocks(
+      std::move(lock_requests),
+      base::BindOnce(&IndexedDBTransaction::Start, transaction->AsWeakPtr()));
 }
 
 void IndexedDBDatabase::OpenConnection(

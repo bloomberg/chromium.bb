@@ -564,8 +564,12 @@ void DatabaseImpl::IDBSequenceHelper::CreateTransaction(
   if (connection_->GetTransaction(transaction_id))
     return;
 
-  connection_->database()->CreateTransaction(transaction_id, connection_.get(),
-                                             object_store_ids, mode);
+  IndexedDBTransaction* transaction = connection_->CreateTransaction(
+      transaction_id,
+      std::set<int64_t>(object_store_ids.begin(), object_store_ids.end()), mode,
+      new IndexedDBBackingStore::Transaction(
+          connection_->database()->backing_store()));
+  connection_->database()->RegisterAndScheduleTransaction(transaction);
 }
 
 void DatabaseImpl::IDBSequenceHelper::Close() {

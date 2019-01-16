@@ -23,6 +23,7 @@
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_observer.h"
+#include "content/browser/indexed_db/scopes/scope_lock.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
@@ -71,7 +72,7 @@ class CONTENT_EXPORT IndexedDBTransaction {
   void Abort(const IndexedDBDatabaseError& error);
 
   // Called by the transaction coordinator when this transaction is unblocked.
-  void Start();
+  void Start(std::vector<ScopeLock> locks);
 
   blink::mojom::IDBTransactionMode mode() const { return mode_; }
   const std::set<int64_t>& scope() const { return object_store_ids_; }
@@ -125,6 +126,10 @@ class CONTENT_EXPORT IndexedDBTransaction {
 
   void set_size(int64_t size) { size_ = size; }
   int64_t size() const { return size_; }
+
+  base::WeakPtr<IndexedDBTransaction> AsWeakPtr() {
+    return ptr_factory_.GetWeakPtr();
+  }
 
  protected:
   // Test classes may derive, but most creation should be done via
@@ -188,6 +193,7 @@ class CONTENT_EXPORT IndexedDBTransaction {
 
   bool used_ = false;
   State state_ = CREATED;
+  std::vector<ScopeLock> locks_;
   bool is_commit_pending_ = false;
   // We are owned by the connection object, but during force closes sometimes
   // there are issues if there is a pending OpenRequest. So use a WeakPtr.

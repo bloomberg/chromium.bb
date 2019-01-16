@@ -165,33 +165,37 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
     info->Set("paths", std::move(paths));
     info->SetDouble("connection_count", GetConnectionCount(origin));
 
-    // This ends up being O(n^2) since we iterate over all open databases
-    // to extract just those in the origin, and we're iterating over all
-    // origins in the outer loop.
+    // This ends up being O(NlogN), where N = number of open databases. We
+    // iterate over all open databases to extract just those in the origin, and
+    // we're iterating over all origins in the outer loop.
 
-    if (indexeddb_factory_.get()) {
-      std::pair<IndexedDBFactory::OriginDBMapIterator,
-                IndexedDBFactory::OriginDBMapIterator>
-          range = indexeddb_factory_->GetOpenDatabasesForOrigin(origin);
-      // TODO(jsbell): Sort by name?
-      std::unique_ptr<base::ListValue> database_list(
+    if (!indexeddb_factory_.get()) {
+      list->Append(std::move(info));
+      continue;
+    }
+    std::pair<IndexedDBFactory::OriginDBMapIterator,
+              IndexedDBFactory::OriginDBMapIterator>
+        range = indexeddb_factory_->GetOpenDatabasesForOrigin(origin);
+    // TODO(jsbell): Sort by name?
+    std::unique_ptr<base::ListValue> database_list(
+        std::make_unique<base::ListValue>());
+
+    for (auto it = range.first; it != range.second; ++it) {
+      const IndexedDBDatabase* db = it->second;
+      std::unique_ptr<base::DictionaryValue> db_info(
+          std::make_unique<base::DictionaryValue>());
+
+      db_info->SetString("name", db->name());
+      db_info->SetDouble("connection_count", db->ConnectionCount());
+      db_info->SetDouble("active_open_delete", db->ActiveOpenDeleteCount());
+      db_info->SetDouble("pending_open_delete", db->PendingOpenDeleteCount());
+
+      std::unique_ptr<base::ListValue> transaction_list(
           std::make_unique<base::ListValue>());
 
-      for (auto it = range.first; it != range.second; ++it) {
-        const IndexedDBDatabase* db = it->second;
-        std::unique_ptr<base::DictionaryValue> db_info(
-            std::make_unique<base::DictionaryValue>());
-
-        db_info->SetString("name", db->name());
-        db_info->SetDouble("connection_count", db->ConnectionCount());
-        db_info->SetDouble("active_open_delete", db->ActiveOpenDeleteCount());
-        db_info->SetDouble("pending_open_delete", db->PendingOpenDeleteCount());
-
-        std::unique_ptr<base::ListValue> transaction_list(
-            std::make_unique<base::ListValue>());
-        std::vector<const IndexedDBTransaction*> transactions =
-            db->transaction_coordinator().GetTransactions();
-        for (const auto* transaction : transactions) {
+      for (IndexedDBConnection* connection : db->connections()) {
+        for (const auto& transaction_id_pair : connection->transactions()) {
+          const auto* transaction = transaction_id_pair.second.get();
           std::unique_ptr<base::DictionaryValue> transaction_info(
               std::make_unique<base::DictionaryValue>());
 
@@ -252,13 +256,12 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
           transaction_info->Set("scope", std::move(scope));
           transaction_list->Append(std::move(transaction_info));
         }
-        db_info->Set("transactions", std::move(transaction_list));
-
-        database_list->Append(std::move(db_info));
       }
-      info->Set("databases", std::move(database_list));
-    }
+      db_info->Set("transactions", std::move(transaction_list));
 
+      database_list->Append(std::move(db_info));
+    }
+    info->Set("databases", std::move(database_list));
     list->Append(std::move(info));
   }
   return list.release();

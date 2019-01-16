@@ -9,9 +9,6 @@
 
 namespace content {
 
-ScopeLockRange::ScopeLockRange(std::string begin, std::string end)
-    : begin(std::move(begin)), end(std::move(end)) {}
-
 std::ostream& operator<<(std::ostream& out, const ScopeLockRange& range) {
   out << "<ScopeLockRange>{begin: 0x";
   out << std::setfill('0');
