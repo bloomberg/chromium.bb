@@ -2525,19 +2525,6 @@ hooks = [
     'condition': 'checkout_android or checkout_linux',
     'action': ['vpython', 'src/chrome/android/profiles/update_afdo_profile.py'],
   },
-  {
-    # This downloads SDK extras and puts them in the
-    # third_party/android_tools/sdk/extras directory.
-    'name': 'sdkextras',
-    'pattern': '.',
-    'condition': 'checkout_android',
-    # When adding a new sdk extras package to download, add the package
-    # directory and zip file to .gitignore in third_party/android_tools.
-    'action': [ 'python',
-                'src/build/android/play_services/update.py',
-                'download'
-    ],
-  },
   # Download checkstyle for use in PRESUBMIT for Java changes.
   {
     'name': 'checkstyle',
