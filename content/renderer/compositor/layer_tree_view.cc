@@ -520,35 +520,6 @@ int LayerTreeView::LayerTreeId() const {
   return layer_tree_host_->GetId();
 }
 
-void LayerTreeView::SetShowPaintRects(bool show) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
-  debug_state.show_paint_rects = show;
-  layer_tree_host_->SetDebugState(debug_state);
-}
-
-void LayerTreeView::SetShowDebugBorders(bool show) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
-  if (show)
-    debug_state.show_debug_borders.set();
-  else
-    debug_state.show_debug_borders.reset();
-  layer_tree_host_->SetDebugState(debug_state);
-}
-
-void LayerTreeView::SetShowScrollBottleneckRects(bool show) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
-  debug_state.show_touch_event_handler_rects = show;
-  debug_state.show_wheel_event_handler_rects = show;
-  debug_state.show_non_fast_scrollable_rects = show;
-  layer_tree_host_->SetDebugState(debug_state);
-}
-
-void LayerTreeView::SetShowHitTestBorders(bool show) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
-  debug_state.show_hit_test_borders = show;
-  layer_tree_host_->SetDebugState(debug_state);
-}
-
 void LayerTreeView::UpdateBrowserControlsState(
     cc::BrowserControlsState constraints,
     cc::BrowserControlsState current,

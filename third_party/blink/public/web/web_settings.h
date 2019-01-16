@@ -196,7 +196,6 @@ class WebSettings {
   virtual void SetPassiveEventListenerDefault(PassiveEventListenerDefault) = 0;
   virtual void SetPasswordEchoDurationInSeconds(double) = 0;
   virtual void SetPasswordEchoEnabled(bool) = 0;
-  virtual void SetPerTilePaintingEnabled(bool) = 0;
   virtual void SetPictographFontFamily(const WebString&,
                                        UScriptCode = USCRIPT_COMMON) = 0;
   virtual void SetPluginsEnabled(bool) = 0;
@@ -221,7 +220,6 @@ class WebSettings {
   virtual void SetShouldClearDocumentBackground(bool) = 0;
   virtual void SetShouldRespectImageOrientation(bool) = 0;
   virtual void SetShowContextMenuOnMouseUp(bool) = 0;
-  virtual void SetShowPaintRects(bool) = 0;
   virtual void SetShrinksViewportContentToFit(bool) = 0;
   virtual void SetSmartInsertDeleteEnabled(bool) = 0;
   // Spatial navigation feature, when enabled, improves the experience

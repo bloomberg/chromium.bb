@@ -42,7 +42,6 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings,
                                  DevToolsEmulator* dev_tools_emulator)
     : settings_(settings),
       dev_tools_emulator_(dev_tools_emulator),
-      show_paint_rects_(false),
       render_v_sync_notification_enabled_(false),
       auto_zoom_focused_node_to_legible_scale_(false),
       support_deprecated_target_density_dpi_(false),
@@ -454,10 +453,6 @@ void WebSettingsImpl::SetShowContextMenuOnMouseUp(bool enabled) {
   settings_->SetShowContextMenuOnMouseUp(enabled);
 }
 
-void WebSettingsImpl::SetShowPaintRects(bool show) {
-  show_paint_rects_ = show;
-}
-
 void WebSettingsImpl::SetEditingBehavior(EditingBehavior behavior) {
   settings_->SetEditingBehaviorType(static_cast<EditingBehaviorType>(behavior));
 }
@@ -551,10 +546,6 @@ void WebSettingsImpl::SetPasswordEchoEnabled(bool flag) {
 void WebSettingsImpl::SetPasswordEchoDurationInSeconds(
     double duration_in_seconds) {
   settings_->SetPasswordEchoDurationInSeconds(duration_in_seconds);
-}
-
-void WebSettingsImpl::SetPerTilePaintingEnabled(bool enabled) {
-  per_tile_painting_enabled_ = enabled;
 }
 
 void WebSettingsImpl::SetShouldPrintBackgrounds(bool enabled) {

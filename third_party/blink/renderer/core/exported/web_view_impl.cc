@@ -713,28 +713,6 @@ void WebViewImpl::EnableFakePageScaleAnimationForTesting(bool enable) {
   fake_page_scale_animation_page_scale_factor_ = 0;
 }
 
-void WebViewImpl::SetShowPaintRects(bool show) {
-  if (layer_tree_view_) {
-    TRACE_EVENT0("blink", "WebViewImpl::setShowPaintRects");
-    layer_tree_view_->SetShowPaintRects(show);
-  }
-}
-
-void WebViewImpl::SetShowDebugBorders(bool show) {
-  if (layer_tree_view_)
-    layer_tree_view_->SetShowDebugBorders(show);
-}
-
-void WebViewImpl::SetShowScrollBottleneckRects(bool show) {
-  if (layer_tree_view_)
-    layer_tree_view_->SetShowScrollBottleneckRects(show);
-}
-
-void WebViewImpl::SetShowHitTestBorders(bool show) {
-  if (layer_tree_view_)
-    layer_tree_view_->SetShowHitTestBorders(show);
-}
-
 void WebViewImpl::AcceptLanguagesChanged() {
   if (AsView().client)
     FontCache::AcceptLanguagesChanged(AsView().client->AcceptLanguages());

@@ -188,10 +188,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebPagePopupImpl* GetPagePopup() const override { return page_popup_.get(); }
   void SetMainFrameOverlayColor(SkColor) override;
   WebPageImportanceSignals* PageImportanceSignals() override;
-  void SetShowPaintRects(bool) override;
-  void SetShowDebugBorders(bool);
-  void SetShowScrollBottleneckRects(bool) override;
-  void SetShowHitTestBorders(bool);
   void AcceptLanguagesChanged() override;
   void SetPageFrozen(bool frozen) override;
   WebWidget* MainFrameWidget() override;

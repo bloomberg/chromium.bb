@@ -72,8 +72,12 @@ class WebWidgetClient {
   // a synchronous composite.
   virtual void ScheduleAnimation() {}
 
-  // Toggles the FPS counter in the HUD layer
+  // Show or hide compositor debug visualizations.
   virtual void SetShowFPSCounter(bool) {}
+  virtual void SetShowPaintRects(bool) {}
+  virtual void SetShowDebugBorders(bool) {}
+  virtual void SetShowScrollBottleneckRects(bool) {}
+  virtual void SetShowHitTestBorders(bool) {}
 
   // A notification callback for when the intrinsic sizing of the
   // widget changed. This is only called for SVG within a remote frame.

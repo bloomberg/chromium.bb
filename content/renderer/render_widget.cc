@@ -1054,6 +1054,39 @@ void RenderWidget::SetShowFPSCounter(bool show) {
   host->SetDebugState(debug_state);
 }
 
+void RenderWidget::SetShowPaintRects(bool show) {
+  cc::LayerTreeHost* host = layer_tree_view_->layer_tree_host();
+  cc::LayerTreeDebugState debug_state = host->GetDebugState();
+  debug_state.show_paint_rects = show;
+  host->SetDebugState(debug_state);
+}
+
+void RenderWidget::SetShowDebugBorders(bool show) {
+  cc::LayerTreeHost* host = layer_tree_view_->layer_tree_host();
+  cc::LayerTreeDebugState debug_state = host->GetDebugState();
+  if (show)
+    debug_state.show_debug_borders.set();
+  else
+    debug_state.show_debug_borders.reset();
+  host->SetDebugState(debug_state);
+}
+
+void RenderWidget::SetShowScrollBottleneckRects(bool show) {
+  cc::LayerTreeHost* host = layer_tree_view_->layer_tree_host();
+  cc::LayerTreeDebugState debug_state = host->GetDebugState();
+  debug_state.show_touch_event_handler_rects = show;
+  debug_state.show_wheel_event_handler_rects = show;
+  debug_state.show_non_fast_scrollable_rects = show;
+  host->SetDebugState(debug_state);
+}
+
+void RenderWidget::SetShowHitTestBorders(bool show) {
+  cc::LayerTreeHost* host = layer_tree_view_->layer_tree_host();
+  cc::LayerTreeDebugState debug_state = host->GetDebugState();
+  debug_state.show_hit_test_borders = show;
+  host->SetDebugState(debug_state);
+}
+
 void RenderWidget::UpdateVisualState(bool record_main_frame_metrics) {
   if (!GetWebWidget())
     return;
