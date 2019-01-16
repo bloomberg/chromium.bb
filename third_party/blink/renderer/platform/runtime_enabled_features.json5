@@ -1039,7 +1039,7 @@
     },
     {
       name: "PreloadImageSrcSet",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "Presentation",
