@@ -37,10 +37,6 @@ def _ParseArgs(args):
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
 
-  parser.add_option('--classpath', help='Classpaths necessary for desugaring.')
-  parser.add_option(
-      '--sdk-jars',
-      help='Path(s) to android sdk jar, necessary for desugaring.')
   parser.add_option('--output-directory',
                     default=os.getcwd(),
                     help='Path to the output build directory.')
@@ -322,13 +318,7 @@ def main(args):
   if options.multi_dex:
     input_paths.append(options.main_dex_list_path)
 
-  dex_cmd = ['java', '-jar', options.d8_jar_path]
-  options.sdk_jars = build_utils.ParseGnList(options.sdk_jars)
-  options.classpath = build_utils.ParseGnList(options.classpath)
-  for path in options.classpath:
-    dex_cmd += ['--classpath', path]
-  for path in options.sdk_jars:
-    dex_cmd += ['--lib', path]
+  dex_cmd = ['java', '-jar', options.d8_jar_path, '--no-desugaring']
   if options.multi_dex:
     dex_cmd += ['--main-dex-list', options.main_dex_list_path]
   if options.release:
