@@ -111,7 +111,7 @@ cca.views.camera.Preview.prototype.setSource_ = function(stream) {
     this.video_ = video;
     this.onIntrinsicSizeChanged_();
     video.addEventListener('resize', () => this.onIntrinsicSizeChanged_());
-    video.addEventListener('click', () => this.onFocusClicked_());
+    video.addEventListener('click', (event) => this.onFocusClicked_(event));
   });
 };
 
