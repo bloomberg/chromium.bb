@@ -920,9 +920,16 @@ bool JPEGImageDecoder::ShouldGenerateAllSizes() const {
 }
 
 bool JPEGImageDecoder::CanDecodeToYUV() {
+  // TODO(crbug.com/919627): Re-enable the code below once JPEG YUV decoding is
+  // finished.
+  // Returning false here is a bit deceptive because the JPEG decoder does
+  // support YUV. But the rest of the infrastructure at levels above the decoder
+  // is not quite there yet to handle the resulting JPEG YUV data,
+  // so for now we disable that path.
+  return false;
   // Calling IsSizeAvailable() ensures the reader is created and the output
   // color space is set.
-  return IsSizeAvailable() && reader_->Info()->out_color_space == JCS_YCbCr;
+  // return IsSizeAvailable() && reader_->Info()->out_color_space == JCS_YCbCr;
 }
 
 bool JPEGImageDecoder::DecodeToYUV() {
