@@ -40,10 +40,10 @@ class NavigationBodyLoaderTest : public ::testing::Test,
     auto endpoints = network::mojom::URLLoaderClientEndpoints::New();
     endpoints->url_loader_client = mojo::MakeRequest(&client_ptr_);
     loader_ = std::make_unique<NavigationBodyLoader>(
-        mojom::ResourceLoadInfo::New(), network::ResourceResponseHead(),
-        std::move(endpoints),
+        CommonNavigationParams(), CommitNavigationParams(), 1 /* request_id */,
+        network::ResourceResponseHead(), std::move(endpoints),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-        1 /* render_frame_id */);
+        2 /* render_frame_id */, true /* is_main_frame */);
   }
 
   void StartLoading() {

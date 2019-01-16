@@ -15,28 +15,43 @@
 namespace content {
 
 NavigationBodyLoader::NavigationBodyLoader(
-    mojom::ResourceLoadInfoPtr resource_load_info,
+    const CommonNavigationParams& common_params,
+    const CommitNavigationParams& commit_params,
+    int request_id,
     const network::ResourceResponseHead& head,
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    int render_frame_id)
-    : resource_load_info_(std::move(resource_load_info)),
+    int render_frame_id,
+    bool is_main_frame)
+    : render_frame_id_(render_frame_id),
       head_(head),
       endpoints_(std::move(endpoints)),
       task_runner_(task_runner),
-      render_frame_id_(render_frame_id),
       url_loader_client_binding_(this),
       handle_watcher_(FROM_HERE,
                       mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                       task_runner),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  resource_load_info_ = NotifyResourceLoadInitiated(
+      render_frame_id_, request_id,
+      !commit_params.original_url.is_empty() ? commit_params.original_url
+                                             : common_params.url,
+      !commit_params.original_method.empty() ? commit_params.original_method
+                                             : common_params.method,
+      common_params.referrer.url,
+      is_main_frame ? RESOURCE_TYPE_MAIN_FRAME : RESOURCE_TYPE_SUB_FRAME);
+  size_t redirect_count = commit_params.redirect_response.size();
+  for (size_t i = 0; i < redirect_count; ++i) {
+    NotifyResourceRedirectReceived(render_frame_id_, resource_load_info_.get(),
+                                   commit_params.redirect_infos[i],
+                                   commit_params.redirect_response[i]);
+  }
+}
 
 NavigationBodyLoader::~NavigationBodyLoader() {
   if (!has_received_completion_ || !has_seen_end_of_data_) {
-    NotifyResourceLoadCanceled(
-        render_frame_id_, resource_load_info_->request_id,
-        resource_load_info_->url, resource_load_info_->resource_type,
-        net::ERR_ABORTED);
+    NotifyResourceLoadCanceled(render_frame_id_, std::move(resource_load_info_),
+                               net::ERR_ABORTED);
   }
 }
 
@@ -66,8 +81,8 @@ void NavigationBodyLoader::OnReceiveCachedMetadata(
 }
 
 void NavigationBodyLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
-  NotifyResourceTransferSizeUpdated(
-      render_frame_id_, resource_load_info_->request_id, transfer_size_diff);
+  NotifyResourceTransferSizeUpdated(render_frame_id_, resource_load_info_.get(),
+                                    transfer_size_diff);
 }
 
 void NavigationBodyLoader::OnStartLoadingResponseBody(
@@ -104,9 +119,8 @@ void NavigationBodyLoader::StartLoadingBody(
     bool use_isolated_code_cache) {
   client_ = client;
 
-  NotifyResourceLoadStarted(render_frame_id_, resource_load_info_->request_id,
-                            resource_load_info_->url, head_,
-                            resource_load_info_->resource_type);
+  NotifyResourceResponseReceived(render_frame_id_, resource_load_info_.get(),
+                                 head_);
 
   if (use_isolated_code_cache) {
     code_cache_loader_ = std::make_unique<CodeCacheLoaderImpl>();
@@ -217,11 +231,12 @@ void NavigationBodyLoader::NotifyCompletionIfAppropriate() {
 
   handle_watcher_.Cancel();
 
-  GURL url = resource_load_info_->url;
-  resource_load_info_->was_cached = status_.exists_in_cache;
-  resource_load_info_->net_error = status_.error_code;
-  resource_load_info_->total_received_bytes = status_.encoded_data_length;
-  resource_load_info_->raw_body_bytes = status_.encoded_body_length;
+  base::Optional<blink::WebURLError> error;
+  if (status_.error_code != net::OK) {
+    error =
+        WebURLLoaderImpl::PopulateURLError(status_, resource_load_info_->url);
+  }
+
   NotifyResourceLoadCompleted(render_frame_id_, std::move(resource_load_info_),
                               status_);
 
@@ -231,9 +246,6 @@ void NavigationBodyLoader::NotifyCompletionIfAppropriate() {
   // |this| may be deleted after calling into client_, so clear it in advance.
   WebNavigationBodyLoader::Client* client = client_;
   client_ = nullptr;
-  base::Optional<blink::WebURLError> error;
-  if (status_.error_code != net::OK)
-    error = WebURLLoaderImpl::PopulateURLError(status_, url);
   client->BodyLoadingFinished(
       status_.completion_time, status_.encoded_data_length,
       status_.encoded_body_length, status_.decoded_body_length,

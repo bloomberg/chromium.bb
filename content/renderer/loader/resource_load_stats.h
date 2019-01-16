@@ -11,6 +11,10 @@
 
 class GURL;
 
+namespace net {
+struct RedirectInfo;
+}  // namespace net
+
 namespace network {
 struct ResourceResponseHead;
 struct URLLoaderCompletionStatus;
@@ -20,21 +24,38 @@ namespace content {
 
 // A collection of methods collecting histograms related to resource load
 // and notifying browser process with loading stats.
+//
+// Each resource load should start with NotifyResourceLoadInitiated,
+// and then pass returned mojom::ResourceLoadInfo to all subsequent
+// calls until NotifyResourceLoadCompleted or NotifyResourceLoadCanceled.
 
 #if defined(OS_ANDROID)
 void NotifyUpdateUserGestureCarryoverInfo(int render_frame_id);
 #endif
 
-void NotifyResourceLoadStarted(
+mojom::ResourceLoadInfoPtr NotifyResourceLoadInitiated(
     int render_frame_id,
     int request_id,
-    const GURL& response_url,
-    const network::ResourceResponseHead& response_head,
+    const GURL& request_url,
+    const std::string& http_method,
+    const GURL& referrer,
     ResourceType resource_type);
 
-void NotifyResourceTransferSizeUpdated(int render_frame_id,
-                                       int request_id,
-                                       int transfer_size_diff);
+void NotifyResourceRedirectReceived(
+    int render_frame_id,
+    mojom::ResourceLoadInfo* resource_load_info,
+    const net::RedirectInfo& redirect_info,
+    const network::ResourceResponseHead& redirect_response);
+
+void NotifyResourceResponseReceived(
+    int render_frame_id,
+    mojom::ResourceLoadInfo* resource_load_info,
+    const network::ResourceResponseHead& response_head);
+
+void NotifyResourceTransferSizeUpdated(
+    int render_frame_id,
+    mojom::ResourceLoadInfo* resource_load_info,
+    int transfer_size_diff);
 
 void NotifyResourceLoadCompleted(
     int render_frame_id,
@@ -42,9 +63,7 @@ void NotifyResourceLoadCompleted(
     const network::URLLoaderCompletionStatus& status);
 
 void NotifyResourceLoadCanceled(int render_frame_id,
-                                int request_id,
-                                const GURL& response_url,
-                                ResourceType resource_type,
+                                mojom::ResourceLoadInfoPtr resource_load_info,
                                 int net_error);
 
 }  // namespace content

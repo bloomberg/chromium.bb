@@ -9,12 +9,27 @@
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
+#include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 
 namespace content {
 
 namespace {
+
+// Returns true if the headers indicate that this resource should always be
+// revalidated or not cached.
+bool AlwaysAccessNetwork(
+    const scoped_refptr<net::HttpResponseHeaders>& headers) {
+  if (!headers)
+    return false;
+
+  // RFC 2616, section 14.9.
+  return headers->HasHeaderValue("cache-control", "no-cache") ||
+         headers->HasHeaderValue("cache-control", "no-store") ||
+         headers->HasHeaderValue("pragma", "no-cache") ||
+         headers->HasHeaderValue("vary", "*");
+}
 
 #if defined(OS_ANDROID)
 void UpdateUserGestureCarryoverInfo(int render_frame_id) {
@@ -24,11 +39,12 @@ void UpdateUserGestureCarryoverInfo(int render_frame_id) {
 }
 #endif
 
-void ResourceLoadStarted(int render_frame_id,
-                         int request_id,
-                         const GURL& response_url,
-                         const network::ResourceResponseHead& response_head,
-                         content::ResourceType resource_type) {
+void ResourceResponseReceived(
+    int render_frame_id,
+    int request_id,
+    const GURL& response_url,
+    const network::ResourceResponseHead& response_head,
+    content::ResourceType resource_type) {
   RenderFrameImpl* frame = RenderFrameImpl::FromRoutingID(render_frame_id);
   if (!frame)
     return;
@@ -81,14 +97,51 @@ void NotifyUpdateUserGestureCarryoverInfo(int render_frame_id) {
 }
 #endif
 
-void NotifyResourceLoadStarted(
+mojom::ResourceLoadInfoPtr NotifyResourceLoadInitiated(
     int render_frame_id,
     int request_id,
-    const GURL& response_url,
-    const network::ResourceResponseHead& response_head,
-    content::ResourceType resource_type) {
+    const GURL& request_url,
+    const std::string& http_method,
+    const GURL& referrer,
+    ResourceType resource_type) {
+  auto resource_load_info = mojom::ResourceLoadInfo::New();
+  resource_load_info->method = http_method;
+  resource_load_info->original_url = request_url;
+  resource_load_info->url = request_url;
+  resource_load_info->resource_type = resource_type;
+  resource_load_info->request_id = request_id;
+  resource_load_info->referrer = referrer;
+  resource_load_info->network_info = mojom::CommonNetworkInfo::New();
+  return resource_load_info;
+}
+
+void NotifyResourceRedirectReceived(
+    int render_frame_id,
+    mojom::ResourceLoadInfo* resource_load_info,
+    const net::RedirectInfo& redirect_info,
+    const network::ResourceResponseHead& redirect_response) {
+  resource_load_info->url = redirect_info.new_url;
+  resource_load_info->method = redirect_info.new_method;
+  resource_load_info->referrer = GURL(redirect_info.new_referrer);
+  mojom::RedirectInfoPtr net_redirect_info = mojom::RedirectInfo::New();
+  net_redirect_info->url = redirect_info.new_url;
+  net_redirect_info->network_info = mojom::CommonNetworkInfo::New();
+  net_redirect_info->network_info->network_accessed =
+      redirect_response.network_accessed;
+  net_redirect_info->network_info->always_access_network =
+      AlwaysAccessNetwork(redirect_response.headers);
+  net_redirect_info->network_info->ip_port_pair =
+      redirect_response.socket_address;
+  resource_load_info->redirect_info_chain.push_back(
+      std::move(net_redirect_info));
+}
+
+void NotifyResourceResponseReceived(
+    int render_frame_id,
+    mojom::ResourceLoadInfo* resource_load_info,
+    const network::ResourceResponseHead& response_head) {
   if (response_head.network_accessed) {
-    if (resource_type == RESOURCE_TYPE_MAIN_FRAME) {
+    if (resource_load_info->resource_type == RESOURCE_TYPE_MAIN_FRAME) {
       UMA_HISTOGRAM_ENUMERATION("Net.ConnectionInfo.MainFrame",
                                 response_head.connection_info,
                                 net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS);
@@ -99,12 +152,21 @@ void NotifyResourceLoadStarted(
     }
   }
 
+  resource_load_info->mime_type = response_head.mime_type;
+  resource_load_info->load_timing_info = response_head.load_timing;
+  resource_load_info->network_info->network_accessed =
+      response_head.network_accessed;
+  resource_load_info->network_info->always_access_network =
+      AlwaysAccessNetwork(response_head.headers);
+  resource_load_info->network_info->ip_port_pair = response_head.socket_address;
+
   auto task_runner = RenderThreadImpl::DeprecatedGetMainTaskRunner();
   if (!task_runner)
     return;
   if (task_runner->BelongsToCurrentThread()) {
-    ResourceLoadStarted(render_frame_id, request_id, response_url,
-                        response_head, resource_type);
+    ResourceResponseReceived(render_frame_id, resource_load_info->request_id,
+                             resource_load_info->url, response_head,
+                             resource_load_info->resource_type);
     return;
   }
 
@@ -114,24 +176,28 @@ void NotifyResourceLoadStarted(
   auto deep_copied_response = resource_response->DeepCopy();
   task_runner->PostTask(
       FROM_HERE,
-      base::BindOnce(ResourceLoadStarted, render_frame_id, request_id,
-                     response_url, deep_copied_response->head, resource_type));
+      base::BindOnce(ResourceResponseReceived, render_frame_id,
+                     resource_load_info->request_id, resource_load_info->url,
+                     deep_copied_response->head,
+                     resource_load_info->resource_type));
 }
 
-void NotifyResourceTransferSizeUpdated(int render_frame_id,
-                                       int request_id,
-                                       int transfer_size_diff) {
+void NotifyResourceTransferSizeUpdated(
+    int render_frame_id,
+    mojom::ResourceLoadInfo* resource_load_info,
+    int transfer_size_diff) {
   auto task_runner = RenderThreadImpl::DeprecatedGetMainTaskRunner();
   if (!task_runner)
     return;
   if (task_runner->BelongsToCurrentThread()) {
-    ResourceTransferSizeUpdated(render_frame_id, request_id,
+    ResourceTransferSizeUpdated(render_frame_id, resource_load_info->request_id,
                                 transfer_size_diff);
     return;
   }
   task_runner->PostTask(
-      FROM_HERE, base::BindOnce(ResourceTransferSizeUpdated, render_frame_id,
-                                request_id, transfer_size_diff));
+      FROM_HERE,
+      base::BindOnce(ResourceTransferSizeUpdated, render_frame_id,
+                     resource_load_info->request_id, transfer_size_diff));
 }
 
 void NotifyResourceLoadCompleted(
@@ -140,6 +206,11 @@ void NotifyResourceLoadCompleted(
     const network::URLLoaderCompletionStatus& status) {
   RecordLoadHistograms(resource_load_info->url,
                        resource_load_info->resource_type, status.error_code);
+
+  resource_load_info->was_cached = status.exists_in_cache;
+  resource_load_info->net_error = status.error_code;
+  resource_load_info->total_received_bytes = status.encoded_data_length;
+  resource_load_info->raw_body_bytes = status.encoded_body_length;
 
   auto task_runner = RenderThreadImpl::DeprecatedGetMainTaskRunner();
   if (!task_runner)
@@ -155,21 +226,21 @@ void NotifyResourceLoadCompleted(
 }
 
 void NotifyResourceLoadCanceled(int render_frame_id,
-                                int request_id,
-                                const GURL& response_url,
-                                ResourceType resource_type,
+                                mojom::ResourceLoadInfoPtr resource_load_info,
                                 int net_error) {
-  RecordLoadHistograms(response_url, resource_type, net_error);
+  RecordLoadHistograms(resource_load_info->url,
+                       resource_load_info->resource_type, net_error);
 
   auto task_runner = RenderThreadImpl::DeprecatedGetMainTaskRunner();
   if (!task_runner)
     return;
   if (task_runner->BelongsToCurrentThread()) {
-    ResourceLoadCanceled(render_frame_id, request_id);
+    ResourceLoadCanceled(render_frame_id, resource_load_info->request_id);
     return;
   }
-  task_runner->PostTask(FROM_HERE, base::BindOnce(ResourceLoadCanceled,
-                                                  render_frame_id, request_id));
+  task_runner->PostTask(FROM_HERE,
+                        base::BindOnce(ResourceLoadCanceled, render_frame_id,
+                                       resource_load_info->request_id));
 }
 
 }  // namespace content
