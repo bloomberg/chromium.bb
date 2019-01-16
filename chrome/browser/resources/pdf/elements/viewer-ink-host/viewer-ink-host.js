@@ -37,6 +37,20 @@ Polymer({
   lastZoom_: null,
 
   /**
+   * Used to conditionally allow a 'touchstart' event to cause
+   * a gesture. If we receive a 'touchstart' with this timestamp
+   * we will skip calling `preventDefault()`.
+   * @private {?number}
+   */
+  allowTouchStartTimeStamp_: null,
+
+  /** @private {boolean} */
+  penMode_: false,
+
+  /** @type {Viewport} */
+  viewport: null,
+
+  /**
    * Whether we should suppress pointer events due to a gesture,
    * eg. pinch-zoom.
    *
@@ -51,6 +65,11 @@ Polymer({
     pointercancel: 'onPointerUpOrCancel_',
     pointerleave: 'onPointerLeave_',
     touchstart: 'onTouchStart_',
+  },
+
+  /** Turns off pen mode if it is active. */
+  resetPenMode() {
+    this.penMode_ = false;
   },
 
   /** @param {AnnotationTool} tool */
@@ -85,14 +104,20 @@ Polymer({
 
   /** @param {TouchEvent} e */
   onTouchStart_: function(e) {
-    // TODO(dstockwell): prevent this conditionally when in "pen mode"
-    e.preventDefault();
+    if (e.timeStamp !== this.allowTouchStartTimeStamp_) {
+      e.preventDefault();
+    }
+    this.allowTouchStartTimeStamp_ = null;
   },
 
   /** @param {PointerEvent} e */
   onPointerDown_: function(e) {
     if (e.pointerType == 'mouse' && e.buttons != 1 || this.pointerGesture_) {
       return;
+    }
+
+    if (e.pointerType == 'pen') {
+      this.penMode_ = true;
     }
 
     if (this.activePointer_) {
@@ -106,6 +131,20 @@ Polymer({
           pointerType: this.activePointer_.pointerType,
         });
       }
+      return;
+    }
+
+    if (!this.viewport.isPointInsidePage({x: e.clientX, y: e.clientY}) &&
+        (e.pointerType == 'touch' || e.pointerType == 'pen')) {
+      // If a touch or pen is outside the page, we allow pan gestures to start.
+      this.allowTouchStartTimeStamp_ = e.timeStamp;
+      return;
+    }
+
+    if (e.pointerType == 'touch' && this.penMode_) {
+      // If we see a touch after having seen a pen, we allow touches to start
+      // pan gestures anywhere and suppress all touches from drawing.
+      this.allowTouchStartTimeStamp_ = e.timeStamp;
       return;
     }
 
@@ -155,10 +194,9 @@ Polymer({
    *
    * @param {string} fileName The name of the PDF file.
    * @param {!ArrayBuffer} data The contents of the PDF document.
-   * @param {!Viewport} viewport
    * @return {!Promise} void value.
    */
-  load: async function(fileName, data, viewport) {
+  load: async function(fileName, data) {
     this.fileName_ = fileName;
     this.state_ = State.LOADING;
     this.$.frame.src = 'ink/index.html';
@@ -166,7 +204,7 @@ Polymer({
     this.ink_ = await this.$.frame.contentWindow.initInk();
     this.ink_.setPDF(data);
     this.state_ = State.ACTIVE;
-    this.viewportChanged(viewport);
+    this.viewportChanged();
     // TODO(dstockwell): we shouldn't need this extra flush.
     await this.ink_.flush();
     await this.ink_.flush();
@@ -176,10 +214,11 @@ Polymer({
     this.style.visibility = 'visible';
   },
 
-  viewportChanged: function(viewport) {
+  viewportChanged: function() {
     if (this.state_ != State.ACTIVE) {
       return;
     }
+    const viewport = this.viewport;
     const pos = viewport.position;
     const size = viewport.size;
     const zoom = viewport.zoom;
