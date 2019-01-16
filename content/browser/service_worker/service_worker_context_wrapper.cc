@@ -480,6 +480,25 @@ void ServiceWorkerContextWrapper::StartWorkerForScope(
                      std::move(failure_callback)));
 }
 
+void ServiceWorkerContextWrapper::StartServiceWorkerAndDispatchMessage(
+    const GURL& scope,
+    blink::TransferableMessage message,
+    ResultCallback result_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (!context_core_) {
+    std::move(result_callback).Run(false);
+    return;
+  }
+
+  FindReadyRegistrationForScope(
+      net::SimplifyUrlForRequest(scope),
+      base::BindOnce(
+          &ServiceWorkerContextWrapper::DidFindRegistrationForMessageDispatch,
+          this, std::move(message), scope, std::move(result_callback),
+          false /* is_long_running_message */));
+}
+
 void ServiceWorkerContextWrapper::
     StartServiceWorkerAndDispatchLongRunningMessage(
         const GURL& scope,
@@ -500,16 +519,17 @@ void ServiceWorkerContextWrapper::
 
   FindReadyRegistrationForScope(
       net::SimplifyUrlForRequest(scope),
-      base::BindOnce(&ServiceWorkerContextWrapper::
-                         DidFindRegistrationForLongRunningMessage,
-                     this, std::move(message), scope,
-                     std::move(result_callback)));
+      base::BindOnce(
+          &ServiceWorkerContextWrapper::DidFindRegistrationForMessageDispatch,
+          this, std::move(message), scope, std::move(result_callback),
+          true /* is_long_running_message */));
 }
 
-void ServiceWorkerContextWrapper::DidFindRegistrationForLongRunningMessage(
+void ServiceWorkerContextWrapper::DidFindRegistrationForMessageDispatch(
     blink::TransferableMessage message,
     const GURL& source_origin,
     ResultCallback result_callback,
+    bool is_long_running_message,
     blink::ServiceWorkerStatusCode service_worker_status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
   if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
@@ -519,18 +539,21 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForLongRunningMessage(
     return;
   }
   registration->active_version()->StartWorker(
-      ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE,
-      base::BindOnce(&ServiceWorkerContextWrapper::
-                         DidStartServiceWorkerForLongRunningMessage,
-                     this, std::move(message), source_origin, registration,
-                     std::move(result_callback)));
+      is_long_running_message
+          ? ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE
+          : ServiceWorkerMetrics::EventType::MESSAGE,
+      base::BindOnce(
+          &ServiceWorkerContextWrapper::DidStartServiceWorkerForMessageDispatch,
+          this, std::move(message), source_origin, registration,
+          std::move(result_callback), is_long_running_message));
 }
 
-void ServiceWorkerContextWrapper::DidStartServiceWorkerForLongRunningMessage(
+void ServiceWorkerContextWrapper::DidStartServiceWorkerForMessageDispatch(
     blink::TransferableMessage message,
     const GURL& source_origin,
     scoped_refptr<ServiceWorkerRegistration> registration,
     ResultCallback result_callback,
+    bool is_long_running_message,
     blink::ServiceWorkerStatusCode status) {
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     std::move(result_callback).Run(false);
@@ -538,12 +561,6 @@ void ServiceWorkerContextWrapper::DidStartServiceWorkerForLongRunningMessage(
   }
 
   scoped_refptr<ServiceWorkerVersion> version = registration->active_version();
-
-  int request_id = version->StartRequestWithCustomTimeout(
-      ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE,
-      base::BindOnce(&MessageFinishedSending, std::move(result_callback)),
-      base::TimeDelta::FromDays(kActiveWorkerTimeoutDays),
-      ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
 
   blink::mojom::ExtendableMessageEventPtr event =
       blink::mojom::ExtendableMessageEvent::New();
@@ -554,9 +571,22 @@ void ServiceWorkerContextWrapper::DidStartServiceWorkerForLongRunningMessage(
           ->GetOrCreateServiceWorkerObjectHost(version)
           ->CreateCompleteObjectInfoToSend();
 
-  version->endpoint()->DispatchExtendableMessageEventWithCustomTimeout(
-      std::move(event), base::TimeDelta::FromDays(kActiveWorkerTimeoutDays),
-      version->CreateSimpleEventCallback(request_id));
+  if (is_long_running_message) {
+    int request_id = version->StartRequestWithCustomTimeout(
+        ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE,
+        base::BindOnce(&MessageFinishedSending, std::move(result_callback)),
+        base::TimeDelta::FromDays(kActiveWorkerTimeoutDays),
+        ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
+    version->endpoint()->DispatchExtendableMessageEventWithCustomTimeout(
+        std::move(event), base::TimeDelta::FromDays(kActiveWorkerTimeoutDays),
+        version->CreateSimpleEventCallback(request_id));
+  } else {
+    int request_id = version->StartRequest(
+        ServiceWorkerMetrics::EventType::MESSAGE,
+        base::BindOnce(&MessageFinishedSending, std::move(result_callback)));
+    version->endpoint()->DispatchExtendableMessageEvent(
+        std::move(event), version->CreateSimpleEventCallback(request_id));
+  }
 }
 
 void ServiceWorkerContextWrapper::StartServiceWorkerForNavigationHint(

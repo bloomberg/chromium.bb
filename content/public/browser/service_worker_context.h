@@ -180,6 +180,17 @@ class ServiceWorkerContext {
                                    StartWorkerCallback info_callback,
                                    base::OnceClosure failure_callback) = 0;
 
+  // Starts the active worker of the registration for the given |scope| and
+  // dispatches the given |message| to the service worker. |result_callback|
+  // is passed a success boolean indicating whether the message was dispatched
+  // successfully.
+  //
+  // Must be called on IO thread.
+  virtual void StartServiceWorkerAndDispatchMessage(
+      const GURL& scope,
+      blink::TransferableMessage message,
+      ResultCallback result_callback) = 0;
+
   // Deprecated: DO NOT USE
   // This is a temporary addition only to be used for the Android Messages
   // integration with ChromeOS (http://crbug.com/823256).  The removal is
