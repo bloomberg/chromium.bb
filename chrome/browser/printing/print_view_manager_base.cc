@@ -78,12 +78,11 @@ void ShowWarningMessageBox(const base::string16& message) {
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-void CreateQueryWithSettings(
-    std::unique_ptr<base::DictionaryValue> job_settings,
-    int render_process_id,
-    int render_frame_id,
-    scoped_refptr<PrintQueriesQueue> queue,
-    PrintSettingsCallback callback) {
+void CreateQueryWithSettings(base::Value job_settings,
+                             int render_process_id,
+                             int render_frame_id,
+                             scoped_refptr<PrintQueriesQueue> queue,
+                             PrintSettingsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   scoped_refptr<printing::PrinterQuery> printer_query =
       queue->CreatePrinterQuery(render_process_id, render_frame_id);
@@ -133,16 +132,15 @@ bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintViewManagerBase::PrintForPrintPreview(
-    std::unique_ptr<base::DictionaryValue> job_settings,
-    const scoped_refptr<base::RefCountedMemory>& print_data,
+    base::Value job_settings,
+    scoped_refptr<base::RefCountedMemory> print_data,
     content::RenderFrameHost* rfh,
     PrinterHandler::PrintCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  int page_count;
-  job_settings->GetInteger(kSettingPreviewPageCount, &page_count);
   PrintSettingsCallback settings_callback =
       base::BindOnce(&PrintViewManagerBase::OnPrintSettingsDone,
-                     weak_ptr_factory_.GetWeakPtr(), print_data, page_count,
+                     weak_ptr_factory_.GetWeakPtr(), print_data,
+                     job_settings.FindIntKey(kSettingPreviewPageCount).value(),
                      std::move(callback));
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},

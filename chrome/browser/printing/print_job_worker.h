@@ -11,16 +11,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "content/public/browser/browser_thread.h"
 #include "printing/page_number.h"
 #include "printing/print_job_constants.h"
 #include "printing/printing_context.h"
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace printing {
 
@@ -57,7 +54,7 @@ class PrintJobWorker {
                    bool is_modifiable);
 
   // Set the new print settings from a dictionary value.
-  void SetSettings(std::unique_ptr<base::DictionaryValue> new_settings);
+  void SetSettings(base::Value new_settings);
 
 #if defined(OS_CHROMEOS)
   // Set the new print settings from a POD type.
@@ -139,7 +136,7 @@ class PrintJobWorker {
       bool is_scripted);
 
   // Called on the UI thread to update the print settings.
-  void UpdatePrintSettings(std::unique_ptr<base::DictionaryValue> new_settings);
+  void UpdatePrintSettings(base::Value new_settings);
 
 #if defined(OS_CHROMEOS)
   // Called on the UI thread to update the print settings.

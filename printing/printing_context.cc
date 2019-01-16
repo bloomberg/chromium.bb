@@ -56,32 +56,31 @@ PrintingContext::Result PrintingContext::OnError() {
 }
 
 PrintingContext::Result PrintingContext::UsePdfSettings() {
-  std::unique_ptr<base::DictionaryValue> pdf_settings(
-      new base::DictionaryValue);
-  pdf_settings->SetBoolean(kSettingHeaderFooterEnabled, false);
-  pdf_settings->SetBoolean(kSettingShouldPrintBackgrounds, false);
-  pdf_settings->SetBoolean(kSettingShouldPrintSelectionOnly, false);
-  pdf_settings->SetInteger(kSettingMarginsType, printing::NO_MARGINS);
-  pdf_settings->SetBoolean(kSettingCollate, true);
-  pdf_settings->SetInteger(kSettingCopies, 1);
-  pdf_settings->SetInteger(kSettingColor, printing::COLOR);
-  pdf_settings->SetInteger(kSettingDpiHorizontal, kPointsPerInch);
-  pdf_settings->SetInteger(kSettingDpiVertical, kPointsPerInch);
-  pdf_settings->SetInteger(kSettingDuplexMode, printing::SIMPLEX);
-  pdf_settings->SetBoolean(kSettingLandscape, false);
-  pdf_settings->SetString(kSettingDeviceName, "");
-  pdf_settings->SetBoolean(kSettingPrintToPDF, true);
-  pdf_settings->SetBoolean(kSettingCloudPrintDialog, false);
-  pdf_settings->SetBoolean(kSettingPrintWithPrivet, false);
-  pdf_settings->SetBoolean(kSettingPrintWithExtension, false);
-  pdf_settings->SetInteger(kSettingScaleFactor, 100);
-  pdf_settings->SetBoolean(kSettingRasterizePdf, false);
-  pdf_settings->SetInteger(kSettingPagesPerSheet, 1);
-  return UpdatePrintSettings(*pdf_settings);
+  base::Value pdf_settings(base::Value::Type::DICTIONARY);
+  pdf_settings.SetKey(kSettingHeaderFooterEnabled, base::Value(false));
+  pdf_settings.SetKey(kSettingShouldPrintBackgrounds, base::Value(false));
+  pdf_settings.SetKey(kSettingShouldPrintSelectionOnly, base::Value(false));
+  pdf_settings.SetKey(kSettingMarginsType, base::Value(printing::NO_MARGINS));
+  pdf_settings.SetKey(kSettingCollate, base::Value(true));
+  pdf_settings.SetKey(kSettingCopies, base::Value(1));
+  pdf_settings.SetKey(kSettingColor, base::Value(printing::COLOR));
+  pdf_settings.SetKey(kSettingDpiHorizontal, base::Value(kPointsPerInch));
+  pdf_settings.SetKey(kSettingDpiVertical, base::Value(kPointsPerInch));
+  pdf_settings.SetKey(kSettingDuplexMode, base::Value(printing::SIMPLEX));
+  pdf_settings.SetKey(kSettingLandscape, base::Value(false));
+  pdf_settings.SetKey(kSettingDeviceName, base::Value(""));
+  pdf_settings.SetKey(kSettingPrintToPDF, base::Value(true));
+  pdf_settings.SetKey(kSettingCloudPrintDialog, base::Value(false));
+  pdf_settings.SetKey(kSettingPrintWithPrivet, base::Value(false));
+  pdf_settings.SetKey(kSettingPrintWithExtension, base::Value(false));
+  pdf_settings.SetKey(kSettingScaleFactor, base::Value(100));
+  pdf_settings.SetKey(kSettingRasterizePdf, base::Value(false));
+  pdf_settings.SetKey(kSettingPagesPerSheet, base::Value(1));
+  return UpdatePrintSettings(std::move(pdf_settings));
 }
 
 PrintingContext::Result PrintingContext::UpdatePrintSettings(
-    const base::DictionaryValue& job_settings) {
+    base::Value job_settings) {
   ResetSettings();
 
   if (!PrintSettingsFromJobSettings(job_settings, &settings_)) {
@@ -89,23 +88,29 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
     return OnError();
   }
 
-  bool print_to_pdf = false;
-  bool is_cloud_dialog = false;
-  bool print_with_privet = false;
-  bool print_with_extension = false;
+  base::Optional<bool> print_to_pdf_opt =
+      job_settings.FindBoolKey(kSettingPrintToPDF);
+  base::Optional<bool> is_cloud_dialog_opt =
+      job_settings.FindBoolKey(kSettingCloudPrintDialog);
+  base::Optional<bool> print_with_privet_opt =
+      job_settings.FindBoolKey(kSettingPrintWithPrivet);
+  base::Optional<bool> print_with_extension_opt =
+      job_settings.FindBoolKey(kSettingPrintWithExtension);
 
-  if (!job_settings.GetBoolean(kSettingPrintToPDF, &print_to_pdf) ||
-      !job_settings.GetBoolean(kSettingCloudPrintDialog, &is_cloud_dialog) ||
-      !job_settings.GetBoolean(kSettingPrintWithPrivet, &print_with_privet) ||
-      !job_settings.GetBoolean(kSettingPrintWithExtension,
-                               &print_with_extension)) {
+  if (!print_to_pdf_opt || !is_cloud_dialog_opt || !print_with_privet_opt ||
+      !print_with_extension_opt) {
     NOTREACHED();
     return OnError();
   }
 
-  bool print_to_cloud = job_settings.HasKey(kSettingCloudPrintId);
+  bool print_to_pdf = print_to_pdf_opt.value();
+  bool is_cloud_dialog = is_cloud_dialog_opt.value();
+  bool print_with_privet = print_with_privet_opt.value();
+  bool print_with_extension = print_with_extension_opt.value();
+
+  bool print_to_cloud = job_settings.FindKey(kSettingCloudPrintId) != nullptr;
   bool open_in_external_preview =
-      job_settings.HasKey(kSettingOpenPDFInPreview);
+      job_settings.FindKey(kSettingOpenPDFInPreview) != nullptr;
 
   if (!open_in_external_preview &&
       (print_to_pdf || print_to_cloud || is_cloud_dialog || print_with_privet ||
@@ -131,14 +136,10 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
     return OK;
   }
 
-  bool show_system_dialog = false;
-  job_settings.GetBoolean(kSettingShowSystemDialog, &show_system_dialog);
-
-  int page_count = 0;
-  job_settings.GetInteger(kSettingPreviewPageCount, &page_count);
-
-  return UpdatePrinterSettings(open_in_external_preview, show_system_dialog,
-                               page_count);
+  return UpdatePrinterSettings(
+      open_in_external_preview,
+      job_settings.FindBoolKey(kSettingShowSystemDialog).value_or(false),
+      job_settings.FindIntKey(kSettingPreviewPageCount).value_or(0));
 }
 
 #if defined(OS_CHROMEOS)

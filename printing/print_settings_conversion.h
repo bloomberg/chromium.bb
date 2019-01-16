@@ -11,6 +11,7 @@
 
 namespace base {
 class DictionaryValue;
+class Value;
 }
 
 namespace printing {
@@ -18,7 +19,7 @@ namespace printing {
 class PrintSettings;
 
 PRINTING_EXPORT bool PrintSettingsFromJobSettings(
-    const base::DictionaryValue& job_settings,
+    const base::Value& job_settings,
     PrintSettings* print_settings);
 
 // Use for debug only, because output is not completely consistent with format

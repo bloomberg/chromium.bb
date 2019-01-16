@@ -11,13 +11,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/values.h"
 #include "printing/native_drawing_context.h"
 #include "printing/print_settings.h"
 #include "ui/gfx/native_widget_types.h"
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace printing {
 
@@ -83,8 +80,8 @@ class PRINTING_EXPORT PrintingContext {
                                        int page_count) = 0;
 
   // Updates Print Settings. |job_settings| contains all print job
-  // settings information. |ranges| has the new page range settings.
-  Result UpdatePrintSettings(const base::DictionaryValue& job_settings);
+  // settings information.
+  Result UpdatePrintSettings(base::Value job_settings);
 
 #if defined(OS_CHROMEOS)
   // Updates Print Settings.

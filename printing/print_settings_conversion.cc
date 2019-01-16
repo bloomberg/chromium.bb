@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
 #include "printing/units.h"
@@ -26,20 +25,21 @@ namespace printing {
 
 namespace {
 
-void GetCustomMarginsFromJobSettings(const base::DictionaryValue& settings,
-                                     PageSizeMargins* page_size_margins) {
-  const base::DictionaryValue* custom_margins;
-  if (!settings.GetDictionary(kSettingMarginsCustom, &custom_margins) ||
-      !custom_margins->GetDouble(kSettingMarginTop,
-                                 &page_size_margins->margin_top) ||
-      !custom_margins->GetDouble(kSettingMarginBottom,
-                                 &page_size_margins->margin_bottom) ||
-      !custom_margins->GetDouble(kSettingMarginLeft,
-                                 &page_size_margins->margin_left) ||
-      !custom_margins->GetDouble(kSettingMarginRight,
-                                 &page_size_margins->margin_right)) {
+void GetCustomMarginsFromJobSettings(const base::Value& settings,
+                                     PageMargins* page_size_margins) {
+  const base::Value* custom_margins = settings.FindKey(kSettingMarginsCustom);
+  if (!custom_margins) {
     NOTREACHED();
+    return;
   }
+  page_size_margins->top =
+      custom_margins->FindKey(kSettingMarginTop)->GetDouble();
+  page_size_margins->bottom =
+      custom_margins->FindKey(kSettingMarginBottom)->GetDouble();
+  page_size_margins->left =
+      custom_margins->FindKey(kSettingMarginLeft)->GetDouble();
+  page_size_margins->right =
+      custom_margins->FindKey(kSettingMarginRight)->GetDouble();
 }
 
 void SetMarginsToJobSettings(const std::string& json_path,
@@ -75,150 +75,139 @@ void SetRectToJobSettings(const std::string& json_path,
 
 }  // namespace
 
-bool PrintSettingsFromJobSettings(const base::DictionaryValue& job_settings,
+bool PrintSettingsFromJobSettings(const base::Value& job_settings,
                                   PrintSettings* settings) {
-  bool display_header_footer = false;
-  if (!job_settings.GetBoolean(kSettingHeaderFooterEnabled,
-                               &display_header_footer)) {
+  base::Optional<bool> display_header_footer =
+      job_settings.FindBoolKey(kSettingHeaderFooterEnabled);
+  if (!display_header_footer.has_value())
     return false;
-  }
-  settings->set_display_header_footer(display_header_footer);
 
+  settings->set_display_header_footer(display_header_footer.value());
   if (settings->display_header_footer()) {
-    base::string16 title;
-    base::string16 url;
-    if (!job_settings.GetString(kSettingHeaderFooterTitle, &title) ||
-        !job_settings.GetString(kSettingHeaderFooterURL, &url)) {
+    const std::string* title =
+        job_settings.FindStringKey(kSettingHeaderFooterTitle);
+    const std::string* url =
+        job_settings.FindStringKey(kSettingHeaderFooterURL);
+    if (!title || !url)
       return false;
-    }
-    settings->set_title(title);
-    settings->set_url(url);
+
+    settings->set_title(base::UTF8ToUTF16(*title));
+    settings->set_url(base::UTF8ToUTF16(*url));
   }
 
-  bool backgrounds = false;
-  bool selection_only = false;
-  if (!job_settings.GetBoolean(kSettingShouldPrintBackgrounds, &backgrounds) ||
-      !job_settings.GetBoolean(kSettingShouldPrintSelectionOnly,
-                               &selection_only)) {
+  base::Optional<bool> backgrounds =
+      job_settings.FindBoolKey(kSettingShouldPrintBackgrounds);
+  base::Optional<bool> selection_only =
+      job_settings.FindBoolKey(kSettingShouldPrintSelectionOnly);
+  if (!backgrounds.has_value() || !selection_only.has_value())
     return false;
-  }
-  settings->set_should_print_backgrounds(backgrounds);
-  settings->set_selection_only(selection_only);
+
+  settings->set_should_print_backgrounds(backgrounds.value());
+  settings->set_selection_only(selection_only.value());
 
   PrintSettings::RequestedMedia requested_media;
-  const base::DictionaryValue* media_size_value = NULL;
-  if (job_settings.GetDictionary(kSettingMediaSize, &media_size_value)) {
-    int width_microns = 0;
-    int height_microns = 0;
-    if (media_size_value->GetInteger(kSettingMediaSizeWidthMicrons,
-                                     &width_microns) &&
-        media_size_value->GetInteger(kSettingMediaSizeHeightMicrons,
-                                     &height_microns)) {
-      requested_media.size_microns = gfx::Size(width_microns, height_microns);
+  const base::Value* media_size_value = job_settings.FindKeyOfType(
+      kSettingMediaSize, base::Value::Type::DICTIONARY);
+  if (media_size_value) {
+    base::Optional<int> width_microns =
+        media_size_value->FindIntKey(kSettingMediaSizeWidthMicrons);
+    base::Optional<int> height_microns =
+        media_size_value->FindIntKey(kSettingMediaSizeHeightMicrons);
+    if (width_microns.has_value() && height_microns.has_value()) {
+      requested_media.size_microns =
+          gfx::Size(width_microns.value(), height_microns.value());
     }
-    std::string vendor_id;
-    if (media_size_value->GetString(kSettingMediaSizeVendorId, &vendor_id) &&
-        !vendor_id.empty()) {
-      requested_media.vendor_id = vendor_id;
-    }
+
+    const std::string* vendor_id =
+        media_size_value->FindStringKey(kSettingMediaSizeVendorId);
+    if (vendor_id && !vendor_id->empty())
+      requested_media.vendor_id = *vendor_id;
   }
   settings->set_requested_media(requested_media);
 
-  int margin_type = DEFAULT_MARGINS;
-  if (!job_settings.GetInteger(kSettingMarginsType, &margin_type) ||
-      (margin_type != DEFAULT_MARGINS &&
-       margin_type != NO_MARGINS &&
-       margin_type != CUSTOM_MARGINS &&
-       margin_type != PRINTABLE_AREA_MARGINS)) {
+  int margin_type =
+      job_settings.FindIntKey(kSettingMarginsType).value_or(DEFAULT_MARGINS);
+  if (margin_type != DEFAULT_MARGINS && margin_type != NO_MARGINS &&
+      margin_type != CUSTOM_MARGINS && margin_type != PRINTABLE_AREA_MARGINS) {
     margin_type = DEFAULT_MARGINS;
   }
   settings->set_margin_type(static_cast<MarginType>(margin_type));
 
   if (margin_type == CUSTOM_MARGINS) {
-    PageSizeMargins page_size_margins;
-    GetCustomMarginsFromJobSettings(job_settings, &page_size_margins);
-
     PageMargins margins_in_points;
     margins_in_points.Clear();
-    margins_in_points.top = page_size_margins.margin_top;
-    margins_in_points.bottom = page_size_margins.margin_bottom;
-    margins_in_points.left = page_size_margins.margin_left;
-    margins_in_points.right = page_size_margins.margin_right;
-
+    GetCustomMarginsFromJobSettings(job_settings, &margins_in_points);
     settings->SetCustomMargins(margins_in_points);
   }
 
   PageRanges new_ranges;
-  const base::ListValue* page_range_array = NULL;
-  if (job_settings.GetList(kSettingPageRange, &page_range_array)) {
-    for (size_t index = 0; index < page_range_array->GetSize(); ++index) {
-      const base::DictionaryValue* dict;
-      if (!page_range_array->GetDictionary(index, &dict))
+  const base::Value* page_range_array =
+      job_settings.FindKeyOfType(kSettingPageRange, base::Value::Type::LIST);
+  if (page_range_array) {
+    for (const base::Value& value : page_range_array->GetList()) {
+      if (!value.is_dict())
         continue;
 
-      PageRange range;
-      if (!dict->GetInteger(kSettingPageRangeFrom, &range.from) ||
-          !dict->GetInteger(kSettingPageRangeTo, &range.to)) {
+      base::Optional<int> from = value.FindIntKey(kSettingPageRangeFrom);
+      base::Optional<int> to = value.FindIntKey(kSettingPageRangeTo);
+      if (!from.has_value() || !to.has_value())
         continue;
-      }
 
       // Page numbers are 1-based in the dictionary.
       // Page numbers are 0-based for the printing context.
-      range.from--;
-      range.to--;
-      new_ranges.push_back(range);
+      new_ranges.push_back(PageRange{from.value() - 1, to.value() - 1});
     }
   }
   settings->set_ranges(new_ranges);
 
-  int color = 0;
-  bool landscape = false;
-  int duplex_mode = 0;
-  base::string16 device_name;
-  bool collate = false;
-  int copies = 1;
-  int scale_factor = 100;
-  bool rasterize_pdf = false;
-  int pages_per_sheet = 1;
+  base::Optional<bool> collate = job_settings.FindBoolKey(kSettingCollate);
+  base::Optional<int> copies = job_settings.FindIntKey(kSettingCopies);
+  base::Optional<int> color = job_settings.FindIntKey(kSettingColor);
+  base::Optional<int> duplex_mode = job_settings.FindIntKey(kSettingDuplexMode);
+  base::Optional<bool> landscape = job_settings.FindBoolKey(kSettingLandscape);
+  const std::string* device_name =
+      job_settings.FindStringKey(kSettingDeviceName);
+  base::Optional<int> scale_factor =
+      job_settings.FindIntKey(kSettingScaleFactor);
+  base::Optional<bool> rasterize_pdf =
+      job_settings.FindBoolKey(kSettingRasterizePdf);
+  base::Optional<int> pages_per_sheet =
+      job_settings.FindIntKey(kSettingPagesPerSheet);
 
-  if (!job_settings.GetBoolean(kSettingCollate, &collate) ||
-      !job_settings.GetInteger(kSettingCopies, &copies) ||
-      !job_settings.GetInteger(kSettingColor, &color) ||
-      !job_settings.GetInteger(kSettingDuplexMode, &duplex_mode) ||
-      !job_settings.GetBoolean(kSettingLandscape, &landscape) ||
-      !job_settings.GetString(kSettingDeviceName, &device_name) ||
-      !job_settings.GetInteger(kSettingScaleFactor, &scale_factor) ||
-      !job_settings.GetBoolean(kSettingRasterizePdf, &rasterize_pdf) ||
-      !job_settings.GetInteger(kSettingPagesPerSheet, &pages_per_sheet)) {
+  if (!collate.has_value() || !copies.has_value() || !color.has_value() ||
+      !duplex_mode.has_value() || !landscape.has_value() || !device_name ||
+      !scale_factor.has_value() || !rasterize_pdf.has_value() ||
+      !pages_per_sheet.has_value()) {
     return false;
   }
 #if defined(OS_WIN)
-  int dpi_horizontal = 0;
-  int dpi_vertical = 0;
-  if (!job_settings.GetInteger(kSettingDpiHorizontal, &dpi_horizontal) ||
-      !job_settings.GetInteger(kSettingDpiVertical, &dpi_vertical)) {
+  base::Optional<int> dpi_horizontal =
+      job_settings.FindIntKey(kSettingDpiHorizontal);
+  base::Optional<int> dpi_vertical =
+      job_settings.FindIntKey(kSettingDpiVertical);
+  if (!dpi_horizontal.has_value() || !dpi_vertical.has_value())
     return false;
-  }
-  settings->set_dpi_xy(dpi_horizontal, dpi_vertical);
+
+  settings->set_dpi_xy(dpi_horizontal.value(), dpi_vertical.value());
 #endif
 
-  settings->set_collate(collate);
-  settings->set_copies(copies);
-  settings->SetOrientation(landscape);
-  settings->set_device_name(device_name);
-  settings->set_duplex_mode(static_cast<DuplexMode>(duplex_mode));
-  settings->set_color(static_cast<ColorModel>(color));
-  settings->set_scale_factor(static_cast<double>(scale_factor) / 100.0);
-  settings->set_rasterize_pdf(rasterize_pdf);
-  settings->set_pages_per_sheet(pages_per_sheet);
-  bool is_modifiable = false;
-  if (job_settings.GetBoolean(kSettingPreviewModifiable, &is_modifiable)) {
-    settings->set_is_modifiable(is_modifiable);
+  settings->set_collate(collate.value());
+  settings->set_copies(copies.value());
+  settings->SetOrientation(landscape.value());
+  settings->set_device_name(base::UTF8ToUTF16(*device_name));
+  settings->set_duplex_mode(static_cast<DuplexMode>(duplex_mode.value()));
+  settings->set_color(static_cast<ColorModel>(color.value()));
+  settings->set_scale_factor(static_cast<double>(scale_factor.value()) / 100.0);
+  settings->set_rasterize_pdf(rasterize_pdf.value());
+  settings->set_pages_per_sheet(pages_per_sheet.value());
+  base::Optional<bool> is_modifiable =
+      job_settings.FindBoolKey(kSettingPreviewModifiable);
+  if (is_modifiable.has_value()) {
+    settings->set_is_modifiable(is_modifiable.value());
 #if defined(OS_WIN)
-    settings->set_print_text_with_gdi(is_modifiable);
+    settings->set_print_text_with_gdi(is_modifiable.value());
 #endif
   }
-
   return true;
 }
 

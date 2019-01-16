@@ -7,8 +7,10 @@
 #include <string>
 #include <utility>
 
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
@@ -124,8 +126,10 @@ void LocalPrinterHandlerDefault::StartPrint(
     const gfx::Size& page_size,
     const scoped_refptr<base::RefCountedMemory>& print_data,
     PrintCallback callback) {
-  StartLocalPrint(ticket_json, print_data, preview_web_contents_,
-                  std::move(callback));
+  std::unique_ptr<base::Value> job_settings =
+      base::JSONReader::Read(ticket_json);
+  StartLocalPrint(base::Value::FromUniquePtrValue(std::move(job_settings)),
+                  print_data, preview_web_contents_, std::move(callback));
 }
 
 }  // namespace printing

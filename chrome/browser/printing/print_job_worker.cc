@@ -211,8 +211,7 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
   }
 }
 
-void PrintJobWorker::SetSettings(
-    std::unique_ptr<base::DictionaryValue> new_settings) {
+void PrintJobWorker::SetSettings(base::Value new_settings) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(query_);
 
@@ -239,11 +238,10 @@ void PrintJobWorker::SetSettingsFromPOD(
 }
 #endif
 
-void PrintJobWorker::UpdatePrintSettings(
-    std::unique_ptr<base::DictionaryValue> new_settings) {
+void PrintJobWorker::UpdatePrintSettings(base::Value new_settings) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PrintingContext::Result result =
-      printing_context_->UpdatePrintSettings(*new_settings);
+      printing_context_->UpdatePrintSettings(std::move(new_settings));
   GetSettingsDone(result);
 }
 

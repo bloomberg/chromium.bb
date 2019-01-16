@@ -47,9 +47,8 @@ TestPrinterQuery::TestPrinterQuery(int render_process_id, int render_frame_id)
 
 TestPrinterQuery::~TestPrinterQuery() {}
 
-void TestPrinterQuery::SetSettings(
-    std::unique_ptr<base::DictionaryValue> new_settings,
-    base::OnceClosure callback) {
+void TestPrinterQuery::SetSettings(base::Value new_settings,
+                                   base::OnceClosure callback) {
   DCHECK(offsets_);
 #if defined(OS_WIN)
   DCHECK(printer_type_);
@@ -57,7 +56,7 @@ void TestPrinterQuery::SetSettings(
   set_callback(std::move(callback));
   PrintSettings settings;
   PrintingContext::Result result =
-      PrintSettingsFromJobSettings(*new_settings, &settings)
+      PrintSettingsFromJobSettings(new_settings, &settings)
           ? PrintingContext::OK
           : PrintingContext::FAILED;
 
