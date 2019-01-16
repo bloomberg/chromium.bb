@@ -495,6 +495,19 @@ class QuicNetworkTransactionTest
         packet_number, stream_id, should_include_version, fin, offset, data);
   }
 
+  std::unique_ptr<quic::QuicEncryptedPacket>
+  ConstructClientMultipleDataFramesPacket(
+      quic::QuicPacketNumber packet_number,
+      quic::QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin,
+      quic::QuicStreamOffset offset,
+      const std::vector<std::string> data_writes) {
+    return client_maker_.MakeMultipleDataFramesPacket(packet_number, stream_id,
+                                                      should_include_version,
+                                                      fin, offset, data_writes);
+  }
+
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructClientAckAndDataPacket(
       quic::QuicPacketNumber packet_number,
       bool include_version,
@@ -508,6 +521,22 @@ class QuicNetworkTransactionTest
     return client_maker_.MakeAckAndDataPacket(
         packet_number, include_version, stream_id, largest_received,
         smallest_received, least_unacked, fin, offset, data);
+  }
+
+  std::unique_ptr<quic::QuicEncryptedPacket>
+  ConstructClientAckAndMultipleDataFramesPacket(
+      quic::QuicPacketNumber packet_number,
+      bool include_version,
+      quic::QuicStreamId stream_id,
+      quic::QuicPacketNumber largest_received,
+      quic::QuicPacketNumber smallest_received,
+      quic::QuicPacketNumber least_unacked,
+      bool fin,
+      quic::QuicStreamOffset offset,
+      const std::vector<std::string> data_writes) {
+    return client_maker_.MakeAckAndMultipleDataFramesPacket(
+        packet_number, include_version, stream_id, largest_received,
+        smallest_received, least_unacked, fin, offset, data_writes);
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructClientForceHolDataPacket(
@@ -7563,16 +7592,13 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectHttpsServer) {
 
   MockQuicData mock_quic_data;
   quic::QuicStreamOffset header_stream_offset = 0;
-  int write_packet_index = 1;
   mock_quic_data.AddWrite(
-      SYNCHRONOUS, ConstructInitialSettingsPacket(write_packet_index++,
-                                                  &header_stream_offset));
+      SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
   mock_quic_data.AddWrite(
-      SYNCHRONOUS,
-      ConstructClientRequestHeadersPacket(
-          write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
-          true, false, ConnectRequestHeaders("mail.example.org:443"),
-          &header_stream_offset));
+      SYNCHRONOUS, ConstructClientRequestHeadersPacket(
+                       2, GetNthClientInitiatedBidirectionalStreamId(0), true,
+                       false, ConnectRequestHeaders("mail.example.org:443"),
+                       &header_stream_offset));
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
@@ -7585,21 +7611,16 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectHttpsServer) {
   quic::QuicString header = ConstructDataHeader(strlen(get_request));
   if (version_ != quic::QUIC_VERSION_99) {
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, ConstructClientAckAndDataPacket(
-                         write_packet_index++, false,
-                         GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1,
-                         false, 0, quic::QuicStringPiece(get_request)));
+        SYNCHRONOUS,
+        ConstructClientAckAndDataPacket(
+            3, false, GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1,
+            false, 0, quic::QuicStringPiece(get_request)));
   } else {
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, ConstructClientAckAndDataPacket(
-                         write_packet_index++, false,
-                         GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1,
-                         false, 0, header));
-    mock_quic_data.AddWrite(
         SYNCHRONOUS,
-        ConstructClientDataPacket(
-            write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
-            false, false, header.length(), quic::QuicStringPiece(get_request)));
+        ConstructClientAckAndMultipleDataFramesPacket(
+            3, false, GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1,
+            false, 0, {header, quic::QuicString(get_request)}));
   }
 
   const char get_response[] =
@@ -7616,15 +7637,14 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectHttpsServer) {
                        3, GetNthClientInitiatedBidirectionalStreamId(0), false,
                        false, strlen(get_response) + header2.length(),
                        header3 + quic::QuicString("0123456789")));
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS, ConstructClientAckPacket(write_packet_index++, 3, 2, 1));
+  mock_quic_data.AddWrite(SYNCHRONOUS, ConstructClientAckPacket(4, 3, 2, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
 
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
-      ConstructClientRstPacket(
-          write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
-          quic::QUIC_STREAM_CANCELLED, strlen(get_request) + header.length()));
+      ConstructClientRstPacket(5, GetNthClientInitiatedBidirectionalStreamId(0),
+                               quic::QUIC_STREAM_CANCELLED,
+                               strlen(get_request) + header.length()));
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -7664,16 +7684,13 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectSpdyServer) {
 
   MockQuicData mock_quic_data;
   quic::QuicStreamOffset header_stream_offset = 0;
-  int write_packet_index = 1;
   mock_quic_data.AddWrite(
-      SYNCHRONOUS, ConstructInitialSettingsPacket(write_packet_index++,
-                                                  &header_stream_offset));
+      SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
   mock_quic_data.AddWrite(
-      SYNCHRONOUS,
-      ConstructClientRequestHeadersPacket(
-          write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
-          true, false, ConnectRequestHeaders("mail.example.org:443"),
-          &header_stream_offset));
+      SYNCHRONOUS, ConstructClientRequestHeadersPacket(
+                       2, GetNthClientInitiatedBidirectionalStreamId(0), true,
+                       false, ConnectRequestHeaders("mail.example.org:443"),
+                       &header_stream_offset));
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
@@ -7688,21 +7705,16 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectSpdyServer) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientAckAndDataPacket(
-            write_packet_index++, false,
-            GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1, false, 0,
+            3, false, GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1,
+            false, 0,
             quic::QuicStringPiece(get_frame.data(), get_frame.size())));
   } else {
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, ConstructClientAckAndDataPacket(
-                         write_packet_index++, false,
-                         GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1,
-                         false, 0, header));
-    mock_quic_data.AddWrite(
         SYNCHRONOUS,
-        ConstructClientDataPacket(
-            write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
-            false, false, header.length(),
-            quic::QuicStringPiece(get_frame.data(), get_frame.size())));
+        ConstructClientAckAndMultipleDataFramesPacket(
+            3, false, GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1,
+            false, 0,
+            {header, quic::QuicString(get_frame.data(), get_frame.size())}));
   }
   spdy::SpdySerializedFrame resp_frame =
       spdy_util.ConstructSpdyGetReply(nullptr, 0, 1);
@@ -7722,15 +7734,14 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectSpdyServer) {
           3, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
           resp_frame.size() + header2.length(),
           header3 + quic::QuicString(data_frame.data(), data_frame.size())));
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS, ConstructClientAckPacket(write_packet_index++, 3, 2, 1));
+  mock_quic_data.AddWrite(SYNCHRONOUS, ConstructClientAckPacket(4, 3, 2, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
 
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
-      ConstructClientRstPacket(
-          write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
-          quic::QUIC_STREAM_CANCELLED, get_frame.size() + header.length()));
+      ConstructClientRstPacket(5, GetNthClientInitiatedBidirectionalStreamId(0),
+                               quic::QUIC_STREAM_CANCELLED,
+                               get_frame.size() + header.length()));
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -7803,16 +7814,11 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseTransportSocket) {
             client_data_offset, quic::QuicStringPiece(get_request_1)));
   } else {
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, ConstructClientAckAndDataPacket(
-                         write_packet_index++, false,
-                         GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1,
-                         false, client_data_offset, header));
-    mock_quic_data.AddWrite(
         SYNCHRONOUS,
-        ConstructClientDataPacket(write_packet_index++,
-                                  GetNthClientInitiatedBidirectionalStreamId(0),
-                                  false, false, header.length(),
-                                  quic::QuicStringPiece(get_request_1)));
+        ConstructClientAckAndMultipleDataFramesPacket(
+            write_packet_index++, false,
+            GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1, false,
+            client_data_offset, {header, quic::QuicString(get_request_1)}));
   }
 
   client_data_offset += strlen(get_request_1) + header.length();
@@ -7847,18 +7853,20 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseTransportSocket) {
   if (version_ == quic::QUIC_VERSION_99) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
+        ConstructClientMultipleDataFramesPacket(
+            write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
+            false, false, client_data_offset,
+            {header4, quic::QuicString(get_request_2)}));
+    client_data_offset += header4.length() + strlen(get_request_2);
+  } else {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
         ConstructClientDataPacket(write_packet_index++,
                                   GetNthClientInitiatedBidirectionalStreamId(0),
-                                  false, false, client_data_offset, header4));
-    client_data_offset += header4.length();
+                                  false, false, client_data_offset,
+                                  quic::QuicStringPiece(get_request_2)));
+    client_data_offset += strlen(get_request_2);
   }
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS,
-      ConstructClientDataPacket(write_packet_index++,
-                                GetNthClientInitiatedBidirectionalStreamId(0),
-                                false, false, client_data_offset,
-                                quic::QuicStringPiece(get_request_2)));
-  client_data_offset += strlen(get_request_2);
 
   const char get_response_2[] =
       "HTTP/1.1 200 OK\r\n"
@@ -7942,18 +7950,15 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
   MockQuicData mock_quic_data;
   quic::QuicStreamOffset client_header_stream_offset = 0;
   quic::QuicStreamOffset server_header_stream_offset = 0;
-  int write_packet_index = 1;
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS, ConstructInitialSettingsPacket(
-                       write_packet_index++, &client_header_stream_offset));
+  mock_quic_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(
+                                           1, &client_header_stream_offset));
 
   // CONNECT request and response for first request
   mock_quic_data.AddWrite(
-      SYNCHRONOUS,
-      ConstructClientRequestHeadersPacket(
-          write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
-          true, false, ConnectRequestHeaders("mail.example.org:443"),
-          &client_header_stream_offset));
+      SYNCHRONOUS, ConstructClientRequestHeadersPacket(
+                       2, GetNthClientInitiatedBidirectionalStreamId(0), true,
+                       false, ConnectRequestHeaders("mail.example.org:443"),
+                       &client_header_stream_offset));
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
@@ -7967,21 +7972,16 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
   quic::QuicString header = ConstructDataHeader(strlen(get_request));
   if (version_ != quic::QUIC_VERSION_99) {
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, ConstructClientAckAndDataPacket(
-                         write_packet_index++, false,
-                         GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1,
-                         false, 0, quic::QuicStringPiece(get_request)));
+        SYNCHRONOUS,
+        ConstructClientAckAndDataPacket(
+            3, false, GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1,
+            false, 0, quic::QuicStringPiece(get_request)));
   } else {
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, ConstructClientAckAndDataPacket(
-                         write_packet_index++, false,
-                         GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1,
-                         false, 0, header));
-    mock_quic_data.AddWrite(
         SYNCHRONOUS,
-        ConstructClientDataPacket(
-            write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
-            false, false, header.length(), quic::QuicStringPiece(get_request)));
+        ConstructClientAckAndMultipleDataFramesPacket(
+            3, false, GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1,
+            false, 0, {header, quic::QuicString(get_request)}));
   }
 
   const char get_response[] =
@@ -7998,15 +7998,14 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
                        3, GetNthClientInitiatedBidirectionalStreamId(0), false,
                        false, strlen(get_response) + header2.length(),
                        header3 + quic::QuicString("0123456789")));
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS, ConstructClientAckPacket(write_packet_index++, 3, 2, 1));
+  mock_quic_data.AddWrite(SYNCHRONOUS, ConstructClientAckPacket(4, 3, 2, 1));
 
   // CONNECT request and response for second request
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientRequestHeadersPacket(
-          write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(1),
-          false, false, ConnectRequestHeaders("different.example.org:443"),
+          5, GetNthClientInitiatedBidirectionalStreamId(1), false, false,
+          ConnectRequestHeaders("different.example.org:443"),
           GetNthClientInitiatedBidirectionalStreamId(0),
           &client_header_stream_offset));
   mock_quic_data.AddRead(
@@ -8023,21 +8022,16 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientAckAndDataPacket(
-            write_packet_index++, false,
-            GetNthClientInitiatedBidirectionalStreamId(1), 4, 4, 1, false, 0,
+            6, false, GetNthClientInitiatedBidirectionalStreamId(1), 4, 4, 1,
+            false, 0,
             quic::QuicStringPiece(get_frame.data(), get_frame.size())));
   } else {
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, ConstructClientAckAndDataPacket(
-                         write_packet_index++, false,
-                         GetNthClientInitiatedBidirectionalStreamId(1), 4, 4, 1,
-                         false, 0, header4));
-    mock_quic_data.AddWrite(
         SYNCHRONOUS,
-        ConstructClientDataPacket(
-            write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(1),
-            false, false, header4.length(),
-            quic::QuicStringPiece(get_frame.data(), get_frame.size())));
+        ConstructClientAckAndMultipleDataFramesPacket(
+            6, false, GetNthClientInitiatedBidirectionalStreamId(1), 4, 4, 1,
+            false, 0,
+            {header4, quic::QuicString(get_frame.data(), get_frame.size())}));
   }
 
   spdy::SpdySerializedFrame resp_frame =
@@ -8059,20 +8053,19 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
           resp_frame.size() + header5.length(),
           header6 + quic::QuicString(data_frame.data(), data_frame.size())));
 
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS, ConstructClientAckPacket(write_packet_index++, 6, 5, 1));
+  mock_quic_data.AddWrite(SYNCHRONOUS, ConstructClientAckPacket(7, 6, 5, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
 
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
-      ConstructClientRstPacket(
-          write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
-          quic::QUIC_STREAM_CANCELLED, strlen(get_request) + header.length()));
+      ConstructClientRstPacket(8, GetNthClientInitiatedBidirectionalStreamId(0),
+                               quic::QUIC_STREAM_CANCELLED,
+                               strlen(get_request) + header.length()));
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
-      ConstructClientRstPacket(
-          write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(1),
-          quic::QUIC_STREAM_CANCELLED, get_frame.size() + header4.length()));
+      ConstructClientRstPacket(9, GetNthClientInitiatedBidirectionalStreamId(1),
+                               quic::QUIC_STREAM_CANCELLED,
+                               get_frame.size() + header4.length()));
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -8215,33 +8208,28 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectBadCertificate) {
   MockQuicData mock_quic_data;
   quic::QuicStreamOffset client_header_stream_offset = 0;
   quic::QuicStreamOffset server_header_stream_offset = 0;
-  int write_packet_index = 1;
+  mock_quic_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(
+                                           1, &client_header_stream_offset));
   mock_quic_data.AddWrite(
-      SYNCHRONOUS, ConstructInitialSettingsPacket(
-                       write_packet_index++, &client_header_stream_offset));
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS,
-      ConstructClientRequestHeadersPacket(
-          write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
-          true, false, ConnectRequestHeaders("mail.example.org:443"),
-          &client_header_stream_offset));
+      SYNCHRONOUS, ConstructClientRequestHeadersPacket(
+                       2, GetNthClientInitiatedBidirectionalStreamId(0), true,
+                       false, ConnectRequestHeaders("mail.example.org:443"),
+                       &client_header_stream_offset));
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK"), &server_header_stream_offset));
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS,
-      ConstructClientAckAndRstPacket(
-          write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
-          quic::QUIC_STREAM_CANCELLED, 1, 1, 1));
+  mock_quic_data.AddWrite(SYNCHRONOUS,
+                          ConstructClientAckAndRstPacket(
+                              3, GetNthClientInitiatedBidirectionalStreamId(0),
+                              quic::QUIC_STREAM_CANCELLED, 1, 1, 1));
 
   mock_quic_data.AddWrite(
-      SYNCHRONOUS,
-      ConstructClientRequestHeadersPacket(
-          write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(1),
-          false, false, ConnectRequestHeaders("mail.example.org:443"),
-          GetNthClientInitiatedBidirectionalStreamId(0),
-          &client_header_stream_offset));
+      SYNCHRONOUS, ConstructClientRequestHeadersPacket(
+                       4, GetNthClientInitiatedBidirectionalStreamId(1), false,
+                       false, ConnectRequestHeaders("mail.example.org:443"),
+                       GetNthClientInitiatedBidirectionalStreamId(0),
+                       &client_header_stream_offset));
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(1), false, false,
@@ -8254,21 +8242,16 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectBadCertificate) {
   quic::QuicString header = ConstructDataHeader(strlen(get_request));
   if (version_ != quic::QUIC_VERSION_99) {
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, ConstructClientAckAndDataPacket(
-                         write_packet_index++, false,
-                         GetNthClientInitiatedBidirectionalStreamId(1), 2, 2, 1,
-                         false, 0, quic::QuicStringPiece(get_request)));
+        SYNCHRONOUS,
+        ConstructClientAckAndDataPacket(
+            5, false, GetNthClientInitiatedBidirectionalStreamId(1), 2, 2, 1,
+            false, 0, quic::QuicStringPiece(get_request)));
   } else {
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, ConstructClientAckAndDataPacket(
-                         write_packet_index++, false,
-                         GetNthClientInitiatedBidirectionalStreamId(1), 2, 2, 1,
-                         false, 0, header));
-    mock_quic_data.AddWrite(
         SYNCHRONOUS,
-        ConstructClientDataPacket(
-            write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(1),
-            false, false, header.length(), quic::QuicStringPiece(get_request)));
+        ConstructClientAckAndMultipleDataFramesPacket(
+            5, false, GetNthClientInitiatedBidirectionalStreamId(1), 2, 2, 1,
+            false, 0, {header, quic::QuicString(get_request)}));
   }
   const char get_response[] =
       "HTTP/1.1 200 OK\r\n"
@@ -8285,15 +8268,14 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectBadCertificate) {
                        4, GetNthClientInitiatedBidirectionalStreamId(1), false,
                        false, strlen(get_response) + header2.length(),
                        header3 + quic::QuicString("0123456789")));
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS, ConstructClientAckPacket(write_packet_index++, 4, 3, 1));
+  mock_quic_data.AddWrite(SYNCHRONOUS, ConstructClientAckPacket(6, 4, 3, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
 
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
-      ConstructClientRstPacket(
-          write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(1),
-          quic::QUIC_STREAM_CANCELLED, strlen(get_request) + header.length()));
+      ConstructClientRstPacket(7, GetNthClientInitiatedBidirectionalStreamId(1),
+                               quic::QUIC_STREAM_CANCELLED,
+                               strlen(get_request) + header.length()));
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
