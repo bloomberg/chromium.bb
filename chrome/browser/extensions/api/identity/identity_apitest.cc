@@ -46,7 +46,6 @@
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_buildflags.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
