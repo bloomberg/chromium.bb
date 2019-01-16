@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/values.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
@@ -26,15 +27,15 @@ class ChooserContextBase : public KeyedService {
     // The contents of |object| are Swap()ed into the internal dictionary.
     Object(GURL requesting_origin,
            GURL embedding_origin,
-           base::DictionaryValue* object,
-           const std::string& source,
+           base::DictionaryValue* value,
+           content_settings::SettingSource source,
            bool incognito);
     ~Object();
 
     GURL requesting_origin;
     GURL embedding_origin;
-    base::DictionaryValue object;
-    std::string source;
+    base::DictionaryValue value;
+    content_settings::SettingSource source;
     bool incognito;
   };
 
@@ -55,7 +56,7 @@ class ChooserContextBase : public KeyedService {
   //
   // This method may be extended by a subclass to return objects not stored in
   // |host_content_settings_map_|.
-  virtual std::vector<std::unique_ptr<base::DictionaryValue>> GetGrantedObjects(
+  virtual std::vector<std::unique_ptr<Object>> GetGrantedObjects(
       const GURL& requesting_origin,
       const GURL& embedding_origin);
 
@@ -92,7 +93,8 @@ class ChooserContextBase : public KeyedService {
  private:
   std::unique_ptr<base::DictionaryValue> GetWebsiteSetting(
       const GURL& requesting_origin,
-      const GURL& embedding_origin);
+      const GURL& embedding_origin,
+      content_settings::SettingInfo* info);
   void SetWebsiteSetting(const GURL& requesting_origin,
                          const GURL& embedding_origin,
                          std::unique_ptr<base::Value> value);

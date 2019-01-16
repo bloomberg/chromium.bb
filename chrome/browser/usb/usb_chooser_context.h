@@ -41,7 +41,7 @@ class UsbChooserContext : public ChooserContextBase,
 
   // These methods from ChooserContextBase are overridden in order to expose
   // ephemeral devices through the public interface.
-  std::vector<std::unique_ptr<base::DictionaryValue>> GetGrantedObjects(
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> GetGrantedObjects(
       const GURL& requesting_origin,
       const GURL& embedding_origin) override;
   std::vector<std::unique_ptr<ChooserContextBase::Object>>

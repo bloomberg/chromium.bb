@@ -895,7 +895,14 @@ void PageInfo::PresentSitePermissions() {
       continue;
 
     auto chosen_objects = context->GetGrantedObjects(origin, origin);
-    for (std::unique_ptr<base::DictionaryValue>& object : chosen_objects) {
+    for (std::unique_ptr<ChooserContextBase::Object>& object : chosen_objects) {
+      // Ignore policy allowed devices until the UI is able to display them
+      // properly.
+      // TODO(https://crbug.com/854329): Remove this condition when the UI is
+      // capable of displaying policy chooser objects.
+      if (object->source == content_settings::SETTING_SOURCE_POLICY)
+        continue;
+
       chosen_object_info_list.push_back(
           std::make_unique<PageInfoUI::ChosenObjectInfo>(ui_info,
                                                          std::move(object)));

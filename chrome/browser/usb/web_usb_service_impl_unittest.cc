@@ -317,7 +317,7 @@ TEST_F(WebUsbServiceImplTest, RevokeDevicePermission) {
       base::BindLambdaForTesting([&]() { device_ptr.reset(); }));
 
   auto objects = context->GetGrantedObjects(origin, origin);
-  context->RevokeObjectPermission(origin, origin, *objects[0]);
+  context->RevokeObjectPermission(origin, origin, objects[0]->value);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(device_ptr);

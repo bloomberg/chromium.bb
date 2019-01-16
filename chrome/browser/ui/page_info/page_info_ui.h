@@ -11,6 +11,7 @@
 
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/ui/page_info/page_info.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -91,16 +92,17 @@ class PageInfoUI {
     bool is_incognito;
   };
 
-  // |ChosenObjectInfo| contains information about a single |object| of a
-  // chooser |type| that the current website has been granted access to.
+  // |ChosenObjectInfo| contains information about a single |chooser_object| of
+  // a chooser |type| that the current website has been granted access to.
   struct ChosenObjectInfo {
-    ChosenObjectInfo(const PageInfo::ChooserUIInfo& ui_info,
-                     std::unique_ptr<base::DictionaryValue> object);
+    ChosenObjectInfo(
+        const PageInfo::ChooserUIInfo& ui_info,
+        std::unique_ptr<ChooserContextBase::Object> chooser_object);
     ~ChosenObjectInfo();
     // |ui_info| for this chosen object type.
     const PageInfo::ChooserUIInfo& ui_info;
-    // The opaque |object| representing the thing the user selected.
-    std::unique_ptr<base::DictionaryValue> object;
+    // The opaque |chooser_object| representing the thing the user selected.
+    std::unique_ptr<ChooserContextBase::Object> chooser_object;
   };
 
   // |IdentityInfo| contains information about the site's identity and
