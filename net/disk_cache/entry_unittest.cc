@@ -5048,6 +5048,59 @@ TEST_F(DiskCacheEntryTest, MemoryOnlyLastUsedTimePersists) {
   LastUsedTimePersists();
 }
 
+TEST_F(DiskCacheEntryTest, SimpleCacheCloseResurrection) {
+  const int kSize = 10;
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kSize);
+  CacheTestFillBuffer(buffer->data(), kSize, false);
+
+  const char kKey[] = "key";
+  SetSimpleCacheMode();
+  InitCache();
+
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry(kKey, &entry), IsOk());
+  ASSERT_TRUE(entry != nullptr);
+
+  // Let optimistic create finish.
+  base::RunLoop().RunUntilIdle();
+  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  disk_cache::Entry* entry2 = nullptr;
+  net::TestCompletionCallback cb_open;
+  int rv = entry->WriteData(1, 0, buffer.get(), kSize,
+                            net::CompletionCallback(), false);
+
+  // Write should be optimistic.
+  ASSERT_EQ(kSize, rv);
+
+  // Since the write is still pending, the open will get queued...
+  int rv2 = cache_->OpenEntry(kKey, net::HIGHEST, &entry2, cb_open.callback());
+  EXPECT_EQ(net::ERR_IO_PENDING, rv2);
+
+  // ... as the open is queued, this Close will temporarily reduce the number
+  // of external references to 0.  This should not break things.
+  entry->Close();
+
+  // Wait till open finishes.
+  ASSERT_EQ(net::OK, cb_open.GetResult(rv2));
+  ASSERT_TRUE(entry2 != nullptr);
+
+  // Get first close a chance to finish.
+  base::RunLoop().RunUntilIdle();
+  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  // Make sure |entry2| is still usable.
+  scoped_refptr<net::IOBuffer> buffer2 =
+      base::MakeRefCounted<net::IOBuffer>(kSize);
+  memset(buffer2->data(), 0, kSize);
+  EXPECT_EQ(kSize, ReadData(entry2, 1, 0, buffer2.get(), kSize));
+  EXPECT_EQ(0, memcmp(buffer->data(), buffer2->data(), kSize));
+  entry2->Close();
+}
+
 class DiskCacheSimplePrefetchTest : public DiskCacheEntryTest {
  public:
   DiskCacheSimplePrefetchTest()
