@@ -33,7 +33,7 @@
 
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/webrtc/api/rtcerror.h"
+#include "third_party/webrtc/api/rtc_error.h"
 
 namespace blink {
 

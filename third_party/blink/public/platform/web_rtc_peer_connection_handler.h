@@ -35,9 +35,9 @@
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_vector.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
-#include "third_party/webrtc/api/rtcerror.h"
-#include "third_party/webrtc/api/rtptransceiverinterface.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
+#include "third_party/webrtc/api/rtc_error.h"
+#include "third_party/webrtc/api/rtp_transceiver_interface.h"
 
 namespace webrtc {
 enum class RTCErrorType;

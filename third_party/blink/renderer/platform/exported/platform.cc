@@ -66,8 +66,8 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/webrtc/api/rtpparameters.h"
-#include "third_party/webrtc/p2p/base/portallocator.h"
+#include "third_party/webrtc/api/rtp_parameters.h"
+#include "third_party/webrtc/p2p/base/port_allocator.h"
 
 namespace blink {
 

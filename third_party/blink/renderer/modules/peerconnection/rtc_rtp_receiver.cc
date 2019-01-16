@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/webrtc/api/rtpparameters.h"
+#include "third_party/webrtc/api/rtp_parameters.h"
 
 namespace blink {
 

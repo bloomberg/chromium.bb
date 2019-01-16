@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/dtls_transport_proxy.h"
-#include "third_party/webrtc/api/dtlstransportinterface.h"
+#include "third_party/webrtc/api/dtls_transport_interface.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 
 namespace blink {

@@ -21,13 +21,13 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event_init.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/webrtc/api/dtlstransportinterface.h"
-#include "third_party/webrtc/api/jsepicecandidate.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
-#include "third_party/webrtc/p2p/base/portallocator.h"
-#include "third_party/webrtc/p2p/base/transportdescription.h"
-#include "third_party/webrtc/pc/iceserverparsing.h"
-#include "third_party/webrtc/pc/webrtcsdp.h"
+#include "third_party/webrtc/api/dtls_transport_interface.h"
+#include "third_party/webrtc/api/jsep_ice_candidate.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
+#include "third_party/webrtc/p2p/base/port_allocator.h"
+#include "third_party/webrtc/p2p/base/transport_description.h"
+#include "third_party/webrtc/pc/ice_server_parsing.h"
+#include "third_party/webrtc/pc/webrtc_sdp.h"
 
 namespace blink {
 

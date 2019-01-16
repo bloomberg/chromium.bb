@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_packet_transport_adapter.h"
 
 #include "net/test/gtest_util.h"
-#include "third_party/webrtc/p2p/base/mockicetransport.h"
+#include "third_party/webrtc/p2p/base/mock_ice_transport.h"
 
 namespace blink {
 

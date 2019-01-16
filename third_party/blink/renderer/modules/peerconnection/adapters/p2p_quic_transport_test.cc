@@ -12,9 +12,9 @@
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/test/mock_p2p_quic_stream_delegate.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/test/mock_p2p_quic_transport_delegate.h"
-#include "third_party/webrtc/rtc_base/rtccertificate.h"
-#include "third_party/webrtc/rtc_base/sslfingerprint.h"
-#include "third_party/webrtc/rtc_base/sslidentity.h"
+#include "third_party/webrtc/rtc_base/rtc_certificate.h"
+#include "third_party/webrtc/rtc_base/ssl_fingerprint.h"
+#include "third_party/webrtc/rtc_base/ssl_identity.h"
 
 namespace blink {
 

@@ -34,7 +34,7 @@
 #include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/platform/web_rtc_key_params.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
 
 #include <memory>
 

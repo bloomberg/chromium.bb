@@ -32,7 +32,7 @@
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_web_rtc.h"
-#include "third_party/webrtc/api/rtcerror.h"
+#include "third_party/webrtc/api/rtc_error.h"
 #include "v8/include/v8.h"
 
 namespace blink {
