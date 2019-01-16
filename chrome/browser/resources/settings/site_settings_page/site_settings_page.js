@@ -134,9 +134,7 @@ Polymer({
       pairs.push([R.SITE_SETTINGS_PAYMENT_HANDLER, 'paymentHandler']);
     }
 
-    pairs.forEach(pair => {
-      const route = pair[0];
-      const id = pair[1];
+    pairs.forEach(([route, id]) => {
       this.focusConfig.set(route.path, () => this.async(() => {
         cr.ui.focusWithoutInk(assert(this.$$(`#${id}`)));
       }));
