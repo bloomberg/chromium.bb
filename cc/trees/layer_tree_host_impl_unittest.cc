@@ -9411,10 +9411,11 @@ class FakeLayerWithQuads : public LayerImpl {
 };
 
 TEST_F(LayerTreeHostImplTest, LayersFreeTextures) {
-  auto gl_owned = std::make_unique<viz::TestGLES2Interface>();
-  viz::TestGLES2Interface* gl = gl_owned.get();
+  scoped_refptr<viz::TestContextProvider> context_provider =
+      viz::TestContextProvider::Create();
+  viz::TestSharedImageInterface* sii = context_provider->SharedImageInterface();
   std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink(
-      FakeLayerTreeFrameSink::Create3d(std::move(gl_owned)));
+      FakeLayerTreeFrameSink::Create3d(context_provider));
   CreateHostImpl(DefaultSettings(), std::move(layer_tree_frame_sink));
 
   std::unique_ptr<LayerImpl> root_layer =
@@ -9435,19 +9436,19 @@ TEST_F(LayerTreeHostImplTest, LayersFreeTextures) {
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root_layer));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  EXPECT_EQ(0u, gl->NumTextures());
+  EXPECT_EQ(0u, sii->shared_image_count());
 
   TestFrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
 
-  EXPECT_GT(gl->NumTextures(), 0u);
+  EXPECT_GT(sii->shared_image_count(), 0u);
 
   // Kill the layer tree.
   host_impl_->active_tree()->DetachLayers();
   // There should be no textures left in use after.
-  EXPECT_EQ(0u, gl->NumTextures());
+  EXPECT_EQ(0u, sii->shared_image_count());
 }
 
 
