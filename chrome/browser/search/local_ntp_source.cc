@@ -414,6 +414,7 @@ std::unique_ptr<base::DictionaryValue> ConvertSearchSuggestDataToDict(
     const SearchSuggestData& data) {
   auto result = std::make_unique<base::DictionaryValue>();
   result->SetString("suggestionsHtml", data.suggestions_html);
+  result->SetString("suggestionsEndOfBodyScript", data.end_of_body_script);
   return result;
 }
 

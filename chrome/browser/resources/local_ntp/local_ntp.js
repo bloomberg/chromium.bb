@@ -1233,6 +1233,12 @@ function injectSearchSuggestions(suggestions) {
   suggestionsContainer.style.visibility = 'hidden';
   suggestionsContainer.innerHTML += suggestions.suggestionsHtml;
   $(IDS.NTP_CONTENTS).insertBefore(suggestionsContainer, $('most-visited'));
+
+  let endOfBodyScript = document.createElement('script');
+  endOfBodyScript.type = 'text/javascript';
+  endOfBodyScript.appendChild(
+      document.createTextNode(suggestions.suggestionsEndOfBodyScript));
+  document.body.appendChild(endOfBodyScript);
 }
 
 

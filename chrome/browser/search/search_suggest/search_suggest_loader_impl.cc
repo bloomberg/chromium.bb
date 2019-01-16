@@ -50,15 +50,30 @@ base::Optional<SearchSuggestData> JsonToSearchSuggestionData(
     return base::nullopt;
   }
 
+  const base::DictionaryValue* query_suggestions = nullptr;
+  if (!update->GetDictionary("query_suggestions", &query_suggestions)) {
+    DLOG(WARNING) << "Parse error: no query_suggestions";
+    return base::nullopt;
+  }
+
   // TODO(crbug.com/919905): Investigate if SafeHtml should be used here.
-  std::string search_suggestions = std::string();
-  if (!update->GetString("search_suggestions", &search_suggestions)) {
-    DLOG(WARNING) << "Parse error: no search_suggestions";
+  std::string suggestions_html = std::string();
+  if (!query_suggestions->GetString("query_suggestions_with_html",
+                                    &suggestions_html)) {
+    DLOG(WARNING) << "Parse error: no query_suggestions_with_html";
     return base::nullopt;
   }
 
   SearchSuggestData result;
-  result.suggestions_html = search_suggestions;
+  result.suggestions_html = suggestions_html;
+
+  std::string end_of_body_script = std::string();
+  if (!query_suggestions->GetString("script", &end_of_body_script)) {
+    DLOG(WARNING) << "Parse error: no script";
+    return base::nullopt;
+  }
+
+  result.end_of_body_script = end_of_body_script;
 
   return result;
 }

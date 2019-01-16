@@ -38,8 +38,9 @@ namespace {
 
 const char kApplicationLocale[] = "us";
 
-const char kMinimalValidResponse[] = R"json({"update": { "search_suggestions":""
-}})json";
+const char kMinimalValidResponse[] = R"json({"update": { "query_suggestions": {
+  "query_suggestions_with_html": "", "script": ""
+}}})json";
 
 // Required to instantiate a GoogleUrlTracker in UNIT_TEST_MODE.
 class GoogleURLTrackerClientStub : public GoogleURLTrackerClient {
@@ -168,7 +169,8 @@ TEST_F(SearchSuggestLoaderImplTest, HandlesResponsePreamble) {
 
 TEST_F(SearchSuggestLoaderImplTest, ParsesFullResponse) {
   SetUpResponseWithData(
-      R"json({"update": { "search_suggestions" : "<div></div>"}})json");
+      R"json({"update": { "query_suggestions": {"query_suggestions_with_html" :
+      "<div></div>", "script" : "<script></script>"}}})json");
 
   base::MockCallback<SearchSuggestLoader::SearchSuggestionsCallback> callback;
   search_suggest_loader()->Load(callback.Get());
@@ -181,6 +183,7 @@ TEST_F(SearchSuggestLoaderImplTest, ParsesFullResponse) {
 
   ASSERT_TRUE(data.has_value());
   EXPECT_THAT(data->suggestions_html, Eq("<div></div>"));
+  EXPECT_THAT(data->end_of_body_script, Eq("<script></script>"));
 }
 
 TEST_F(SearchSuggestLoaderImplTest, CoalescesMultipleRequests) {

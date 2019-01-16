@@ -14,7 +14,8 @@ SearchSuggestData& SearchSuggestData::operator=(const SearchSuggestData&) =
 SearchSuggestData& SearchSuggestData::operator=(SearchSuggestData&&) = default;
 
 bool operator==(const SearchSuggestData& lhs, const SearchSuggestData& rhs) {
-  return lhs.suggestions_html == rhs.suggestions_html;
+  return lhs.suggestions_html == rhs.suggestions_html &&
+         lhs.end_of_body_script == rhs.end_of_body_script;
 }
 
 bool operator!=(const SearchSuggestData& lhs, const SearchSuggestData& rhs) {
