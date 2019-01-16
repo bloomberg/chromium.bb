@@ -20,16 +20,10 @@
 
 - (void)hide {
   self.newTabButton.button.alpha = 0.0;
-  if ([self shouldUseCompactLayout]) {
-    self.backgroundColor = UIColor.blackColor;
-  }
 }
 
 - (void)show {
   self.newTabButton.button.alpha = 1.0;
-  if ([self shouldUseCompactLayout]) {
-    self.backgroundColor = UIColor.clearColor;
-  }
 }
 
 #pragma mark - UIView
@@ -62,8 +56,14 @@
   if (self.page == TabGridPageRemoteTabs) {
     if ([self shouldUseCompactLayout]) {
       [self setItems:@[ _spaceItem, self.trailingButton ]];
+      [self setBackgroundImage:_translucentBackground
+            forToolbarPosition:UIBarPositionAny
+                    barMetrics:UIBarMetricsDefault];
     } else {
       [self setItems:@[]];
+      [self setBackgroundImage:_transparentBackground
+            forToolbarPosition:UIToolbarPositionAny
+                    barMetrics:UIBarMetricsDefault];
     }
   } else {
     if ([self shouldUseCompactLayout]) {
@@ -72,14 +72,12 @@
         self.leadingButton, _spaceItem, _newTabButton, _spaceItem,
         self.trailingButton
       ]];
-      self.clipsToBounds = NO;
       [self setBackgroundImage:_translucentBackground
             forToolbarPosition:UIBarPositionAny
                     barMetrics:UIBarMetricsDefault];
     } else {
       self.newTabButton.sizeClass = TabGridNewTabButtonSizeClassLarge;
       [self setItems:@[ _spaceItem, _newTabButton ]];
-      self.clipsToBounds = YES;
       [self setBackgroundImage:_transparentBackground
             forToolbarPosition:UIToolbarPositionAny
                     barMetrics:UIBarMetricsDefault];
