@@ -28,6 +28,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
@@ -186,6 +187,11 @@ PreviewsLitePageDecider::MaybeCreateThrottleFor(
   DCHECK(handle);
   DCHECK(handle->GetWebContents());
   DCHECK(handle->GetWebContents()->GetBrowserContext());
+
+  if (base::FeatureList::IsEnabled(
+          previews::features::kHTTPSServerPreviewsUsingURLLoader)) {
+    return nullptr;
+  }
 
   content::BrowserContext* browser_context =
       handle->GetWebContents()->GetBrowserContext();
