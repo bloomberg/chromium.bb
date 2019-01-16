@@ -4021,17 +4021,11 @@ bool Texture::CompatibleWithSamplerUniformType(GLenum type) const {
       // Unsigned integer formats.
       return category == SAMPLER_UNSIGNED;
     default:
-#if DCHECK_IS_ON()
-      // Calling GetStringEnum here has a binary size impact on Android, so only
-      // do it when DCHECKs are enabled for debugging purposes.
-      NOTREACHED() << "Type: " << gl::GLEnums::GetStringEnum(level_info->type)
+      NOTREACHED() << "Type: " << GLES2Util::GetStringEnum(level_info->type)
                    << " Format: "
-                   << gl::GLEnums::GetStringEnum(level_info->format)
+                   << GLES2Util::GetStringEnum(level_info->format)
                    << "  Internal format: "
-                   << gl::GLEnums::GetStringEnum(level_info->internal_format);
-#else   // DCHECK_IS_ON()
-      NOTREACHED();
-#endif  // DCHECK_IS_ON()
+                   << GLES2Util::GetStringEnum(level_info->internal_format);
   }
   return false;
 }
