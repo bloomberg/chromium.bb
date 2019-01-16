@@ -714,7 +714,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // negative values for RTL.
   virtual void TextCharacterOffsets(Vector<int>&) const;
   // The start and end character offset of each word in the object's text.
-  virtual void GetWordBoundaries(Vector<AXRange>&) const;
+  virtual void GetWordBoundaries(Vector<int>& word_starts,
+                                 Vector<int>& word_ends) const;
 
   // Properties of interactive elements.
   ax::mojom::DefaultActionVerb Action() const;
