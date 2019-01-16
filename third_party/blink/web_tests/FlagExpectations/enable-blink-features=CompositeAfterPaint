@@ -305,14 +305,6 @@ Bug(none) css3/blending/mix-blend-mode-isolation-layer.html [ Failure ]
 Bug(none) css3/blending/mix-blend-mode-isolation-remove.html [ Failure ]
 Bug(none) fast/borders/overflow-hidden-border-radius-force-backing-store.html [ Failure ]
 
-# Subpixel adjustments due to differences in compositing
-# They are benign but we can't rebaseline reftests
-crbug.com/589265 fast/forms/text/input-appearance-autocomplete-very-long-value.html [ Failure ]
-crbug.com/589265 animations/svg/animated-filter-svg-element.html [ Failure ]
-crbug.com/589265 virtual/threaded/animations/svg/animated-filter-svg-element.html [ Failure ]
-crbug.com/589265 fast/pagination/repeating-thead-tfoot-paged-x.html [ Failure ]
-crbug.com/589265 fast/pagination/repeating-thead-tfoot-paged-y.html [ Failure ]
-
 # virtual/threaded variants of sub-directories and tests already skipped or marked as failing above.
 Bug(none) virtual/threaded/http/tests/devtools/tracing/ [ Skip ]
 Bug(none) virtual/threaded/fast/events/pinch/gesture-pinch-zoom-scroll-bubble.html [ Timeout ]
