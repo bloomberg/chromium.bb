@@ -77,8 +77,9 @@ class BASE_EXPORT RunLoop {
 
   // Run the current RunLoop::Delegate until it doesn't find any tasks or
   // messages in its queue (it goes idle).
-  // WARNING #1: This may never return! Do not use this when repeating tasks
-  //             such as animated web pages are present.
+  // WARNING #1: This may run long (flakily timeout) and even never return! Do
+  //             not use this when repeating tasks such as animated web pages
+  //             are present.
   // WARNING #2: This may return too early! For example, if used to run until an
   //             incoming event has occurred but that event depends on a task in
   //             a different queue -- e.g. a system event.
