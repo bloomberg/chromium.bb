@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/share_extension/share_extension_service_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
@@ -32,7 +32,8 @@ ShareExtensionService* ShareExtensionServiceFactory::GetForBrowserStateIfExists(
 
 // static
 ShareExtensionServiceFactory* ShareExtensionServiceFactory::GetInstance() {
-  return base::Singleton<ShareExtensionServiceFactory>::get();
+  static base::NoDestructor<ShareExtensionServiceFactory> instance;
+  return instance.get();
 }
 
 ShareExtensionServiceFactory::ShareExtensionServiceFactory()
