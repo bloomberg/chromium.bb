@@ -32,7 +32,8 @@ namespace auto_screen_brightness {
 // brightness as predicted by the model and instructs powerd to change it.
 class Adapter : public AlsReader::Observer,
                 public BrightnessMonitor::Observer,
-                public Modeller::Observer {
+                public Modeller::Observer,
+                public PowerManagerClient::Observer {
  public:
   // Type of curve to use.
   // These values are persisted to logs. Entries should not be renumbered and
@@ -48,8 +49,23 @@ class Adapter : public AlsReader::Observer,
     kMaxValue = kLatest
   };
 
+  // How user manual brightness change will affect Adapter.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class UserAdjustmentEffect {
+    // Completely disable Adapter until browser restarts.
+    kDisableAuto = 0,
+    // Pause Adapter until system is suspended and then resumed.
+    kPauseAuto = 1,
+    // No impact on Adapter and Adapter continues to auto-adjust brightness.
+    kContinueAuto = 2,
+    kMaxValue = kContinueAuto
+  };
+
   // The values in Params can be overridden by experiment flags.
   struct Params {
+    Params();
+
     // Average ambient value has to go up (resp. down) by
     // |brightening_lux_threshold_ratio| (resp. |darkening_lux_threshold_ratio|)
     // from the current value before brightness could be changed: brightness
@@ -91,6 +107,9 @@ class Adapter : public AlsReader::Observer,
     // logs of averaged lux values. This should be the same as
     // that used by the modeller.
     bool average_log_als = false;
+
+    UserAdjustmentEffect user_adjustment_effect =
+        UserAdjustmentEffect::kDisableAuto;
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -126,9 +145,16 @@ class Adapter : public AlsReader::Observer,
       const base::Optional<MonotoneCubicSpline>& global_curve,
       const base::Optional<MonotoneCubicSpline>& personal_curve) override;
 
+  // chromeos::PowerManagerClient::Observer overrides:
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+
   void SetTickClockForTesting(const base::TickClock* test_tick_clock);
 
   Status GetStatusForTesting() const;
+
+  // Only returns true if Adapter status is success and it's not disabled by
+  // user adjustment.
+  bool IsAppliedForTesting() const;
   base::Optional<MonotoneCubicSpline> GetGlobalCurveForTesting() const;
   base::Optional<MonotoneCubicSpline> GetPersonalCurveForTesting() const;
 
@@ -181,14 +207,14 @@ class Adapter : public AlsReader::Observer,
       brightness_monitor_observer_;
   ScopedObserver<Modeller, Modeller::Observer> modeller_observer_;
 
+  ScopedObserver<chromeos::PowerManagerClient,
+                 chromeos::PowerManagerClient::Observer>
+      power_manager_client_observer_;
+
   // Used to report daily metrics to UMA. This may be null in unit tests.
   MetricsReporter* metrics_reporter_;
 
   chromeos::PowerManagerClient* const power_manager_client_;
-
-  // Whether to continue adapting brightness after user makes a brightness
-  // change.
-  bool continue_auto_brightness_after_user_adjustment_ = false;
 
   Params params_;
 
@@ -205,6 +231,11 @@ class Adapter : public AlsReader::Observer,
   base::Optional<bool> power_manager_service_available_;
 
   Status adapter_status_ = Status::kInitializing;
+
+  // This is set to true whenever a user makes a manual adjustment, and if
+  // |params_.user_adjustment_effect| is not |kContinueAuto|. It will be
+  // reset to false if |params_.user_adjustment_effect| is |kPauseAuto|.
+  bool adapter_disabled_by_user_adjustment_ = false;
 
   // The thresholds are calculated from |average_ambient_lux_|. They are only
   // updated when brightness should occur (because average ambient value changed

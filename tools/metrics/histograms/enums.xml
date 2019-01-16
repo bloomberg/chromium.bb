@@ -3442,6 +3442,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="WithPriorModelAdjustment"/>
 </enum>
 
+<enum name="AutoScreenBrightnessUserAdjustmentEffect">
+  <int value="0" label="DisableAuto"/>
+  <int value="1" label="PauseAuto"/>
+  <int value="2" label="ContinueAuto"/>
+</enum>
+
 <enum name="AutoSigninFirstRun">
   <int value="0" label="No action"/>
   <int value="1" label="Turn off"/>

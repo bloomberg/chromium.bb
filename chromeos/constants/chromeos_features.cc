@@ -17,14 +17,6 @@ const base::Feature kAndroidMessagesIntegration{
 const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, auto-screen-brightness model will continue to adapt brightness
-// (based on ambient light)
-// after user changes brightness. Otherwise, the model will be disabled until
-// Chrome restarts.
-const base::Feature kAutoScreenBrightnessContinuedAdjustment{
-    "AutoScreenBrightnessContinuedAdjustment",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables or disables Crostini Backup.
 const base::Feature kCrostiniBackup{"CrostiniBackup",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
