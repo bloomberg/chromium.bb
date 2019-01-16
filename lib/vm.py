@@ -159,6 +159,9 @@ class VM(device.Device):
     self.qemu_smp = opts.qemu_smp
     if self.qemu_smp == 0:
       self.qemu_smp = min(8, multiprocessing.cpu_count)
+    self.qemu_hostfwd = opts.qemu_hostfwd
+    self.qemu_args = opts.qemu_args
+
     self.enable_kvm = opts.enable_kvm
     self.copy_on_write = opts.copy_on_write
     # We don't need sudo access for software emulation or if /dev/kvm is
@@ -441,15 +444,27 @@ class VM(device.Device):
         # Append 'check' to warn if the requested CPU is not fully supported.
         '-cpu', self.qemu_cpu + ',check',
         '-device', 'virtio-net,netdev=eth0',
-        '-netdev', 'user,id=eth0,net=10.0.2.0/27,hostfwd=tcp:%s:%d-:22'
-        % (remote_access.LOCALHOST_IP, self.ssh_port),
-        '-drive', 'file=%s,index=0,media=disk,cache=unsafe,format=%s'
+        '-device', 'virtio-scsi-pci,id=scsi',
+        '-device', 'scsi-hd,drive=hd',
+        '-drive', 'if=none,id=hd,file=%s,cache=unsafe,format=%s'
         % (self.image_path, self.image_format),
     ]
+    # netdev args, including hostfwds.
+    netdev_args = ('user,id=eth0,net=10.0.2.0/27,hostfwd=tcp:%s:%d-:%d'
+                   % (remote_access.LOCALHOST_IP, self.ssh_port,
+                      remote_access.DEFAULT_SSH_PORT))
+    if self.qemu_hostfwd:
+      for hostfwd in self.qemu_hostfwd:
+        netdev_args += ',hostfwd=%s' % hostfwd
+    qemu_args += ['-netdev', netdev_args]
+
+    if self.qemu_args:
+      for arg in self.qemu_args:
+        qemu_args += arg.split()
     if self.enable_kvm:
-      qemu_args.append('-enable-kvm')
+      qemu_args += ['-enable-kvm']
     if not self.display:
-      qemu_args.extend(['-display', 'none'])
+      qemu_args += ['-display', 'none']
     logging.info('Pid file: %s', self.pidfile)
     self.RunCommand(qemu_args)
     self.WaitForBoot()
@@ -582,6 +597,12 @@ class VM(device.Device):
                         help='CPU argument that will be passed to qemu.')
     parser.add_argument('--qemu-bios-path', type='path',
                         help='Path of directory with qemu bios files.')
+    parser.add_argument('--qemu-hostfwd', action='append',
+                        help='Ports to forward from the VM to the host in the '
+                        'QEMU hostfwd format, eg tcp:127.0.0.1:12345-:54321 to '
+                        'forward port 54321 on the VM to 12345 on the host.')
+    parser.add_argument('--qemu-args', action='append',
+                        help='Additional args to pass to qemu.')
     parser.add_argument('--copy-on-write', action='store_true', default=False,
                         help='Generates a temporary copy-on-write image backed '
                              'by the normal boot image. All filesystem changes '
