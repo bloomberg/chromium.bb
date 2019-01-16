@@ -3961,9 +3961,9 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       independent: true,
       inherited: true,
-      field_template: "keyword",
+      field_template: "multi_keyword", // We use a bitflag field due peformance issues
       keywords: [
-        "normal", "pre", "pre-wrap", "pre-line", "nowrap", "-webkit-nowrap"
+        "none", "normal", "pre", "pre-wrap", "pre-line", "nowrap", "-webkit-nowrap", "break-spaces"
       ],
       typedom_types: ["Keyword"],
       default_value: "normal",
