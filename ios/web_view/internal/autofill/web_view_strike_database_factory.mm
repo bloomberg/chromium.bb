@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/autofill/core/browser/strike_database.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/web_view/internal/app/application_context.h"
@@ -27,7 +27,8 @@ autofill::StrikeDatabase* WebViewStrikeDatabaseFactory::GetForBrowserState(
 
 // static
 WebViewStrikeDatabaseFactory* WebViewStrikeDatabaseFactory::GetInstance() {
-  return base::Singleton<WebViewStrikeDatabaseFactory>::get();
+  static base::NoDestructor<WebViewStrikeDatabaseFactory> instance;
+  return instance.get();
 }
 
 WebViewStrikeDatabaseFactory::WebViewStrikeDatabaseFactory()

@@ -8,12 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 namespace autofill {
 class AutocompleteHistoryManager;
@@ -32,8 +28,7 @@ class WebViewAutocompleteHistoryManagerFactory
   static WebViewAutocompleteHistoryManagerFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<
-      WebViewAutocompleteHistoryManagerFactory>;
+  friend class base::NoDestructor<WebViewAutocompleteHistoryManagerFactory>;
 
   WebViewAutocompleteHistoryManagerFactory();
   ~WebViewAutocompleteHistoryManagerFactory() override;
