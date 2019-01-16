@@ -354,8 +354,8 @@ void TestThatIsNotPlaceholderRequestAndServeResponse(
 
 ResourceFetcher* CreateFetcher() {
   auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
-  return MakeGarbageCollected<ResourceFetcher>(
-      *properties, MakeGarbageCollected<MockFetchContext>());
+  return MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+      *properties, MakeGarbageCollected<MockFetchContext>()));
 }
 
 TEST(ImageResourceTest, MultipartImage) {
@@ -1868,7 +1868,8 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   MockFetchContext* context = MakeGarbageCollected<MockFetchContext>(
       page_holder->GetFrame().GetTaskRunner(TaskType::kInternalTest));
   auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
-  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(*properties, context);
+  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
+      ResourceFetcherInit(*properties, context));
   auto* scheduler = MakeGarbageCollected<ResourceLoadScheduler>(
       ResourceLoadScheduler::ThrottlingPolicy::kNormal, context);
   ImageResource* image_resource = ImageResource::CreateForTest(test_url);

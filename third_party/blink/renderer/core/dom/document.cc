@@ -724,9 +724,9 @@ Document::Document(const DocumentInit& initializer,
   } else if (imports_controller_) {
     fetcher_ = FrameFetchContext::CreateFetcherForImportedDocument(this);
   } else {
-    fetcher_ = MakeGarbageCollected<ResourceFetcher>(
+    fetcher_ = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
         *MakeGarbageCollected<NullResourceFetcherProperties>(),
-        &FetchContext::NullInstance(GetTaskRunner(TaskType::kNetworking)));
+        &FetchContext::NullInstance(GetTaskRunner(TaskType::kNetworking))));
   }
   DCHECK(fetcher_);
 

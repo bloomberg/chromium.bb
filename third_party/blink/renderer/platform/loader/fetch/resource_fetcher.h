@@ -106,12 +106,8 @@ class PLATFORM_EXPORT ResourceFetcher
 
  public:
   // ResourceFetcher creators are responsible for setting consistent objects
-  // in ResourceFetcherInit or ResourceFetcher arguments to ensure correctness
-  // of this ResourceFetcher.
+  // in ResourceFetcherInit to ensure correctness of this ResourceFetcher.
   explicit ResourceFetcher(const ResourceFetcherInit&);
-  ResourceFetcher(const ResourceFetcherProperties& properties,
-                  FetchContext* context)
-      : ResourceFetcher(ResourceFetcherInit(properties, context)) {}
   virtual ~ResourceFetcher();
   virtual void Trace(blink::Visitor*);
 

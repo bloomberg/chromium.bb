@@ -109,8 +109,8 @@ class MemoryCacheTest : public testing::Test {
     global_memory_cache_ = ReplaceMemoryCacheForTesting(
         MemoryCache::Create(platform_->test_task_runner()));
     auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
-    fetcher_ = MakeGarbageCollected<ResourceFetcher>(
-        *properties, MakeGarbageCollected<MockFetchContext>());
+    fetcher_ = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+        *properties, MakeGarbageCollected<MockFetchContext>()));
   }
 
   void TearDown() override {
