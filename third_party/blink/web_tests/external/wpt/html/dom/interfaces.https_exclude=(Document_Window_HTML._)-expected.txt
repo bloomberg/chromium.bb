@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1134 tests; 1115 PASS, 19 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1130 tests; 1111 PASS, 19 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS Partial interface NavigatorID: original interface defined
@@ -1130,9 +1130,5 @@ PASS StorageEvent interface: attribute storageArea
 PASS Stringification of window.external
 PASS External interface: window.external must inherit property "AddSearchProvider()" with the proper type
 PASS External interface: window.external must inherit property "IsSearchProviderInstalled()" with the proper type
-PASS FormData interface: operation entries()
-PASS FormData interface: operation keys()
-PASS FormData interface: operation values()
-PASS FormData interface: operation forEach(function, any)
 Harness: the test ran to completion.
 
