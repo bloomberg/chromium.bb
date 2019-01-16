@@ -2571,11 +2571,8 @@
   <message name="IDS_SETTINGS_TITLE_AND_COUNT" desc="The title of a section in the settings page with a count of the total number of items in the section">
     <ph name="TITLE">$1<ex>Block</ex></ph> - <ph name="COUNT">$2<ex>42</ex></ph>
   </message>
-  <message name="IDS_SETTINGS_PRIVACY_MORE_SETTINGS" desc="The text with a link to point users to more sync and personalization settings">
-    For more settings that relate to privacy, security, and data collection, see <ph name="BEGIN_LINK">&lt;a href=&quot;chrome://settings/syncSetup&quot;&gt;<ex>&lt;a href=&quot;chrome://settings/syncSetup&quot;&gt;</ex></ph>Sync and personalization<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
-  </message>
-  <message name="IDS_SETTINGS_PRIVACY_MORE_SETTINGS_UNIFIED_CONSENT" desc="The text with a link to point users to Sync and Google services settings">
-    For more settings that relate to privacy, security, and data collection, see <ph name="BEGIN_LINK">&lt;a href=&quot;chrome://settings/syncSetup&quot;&gt;<ex>&lt;a href=&quot;chrome://settings/syncSetup&quot;&gt;</ex></ph>Sync and Google services<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  <message name="IDS_SETTINGS_SYNC_AND_GOOGLE_SERVICES_PRIVACY_DESC_UNIFIED_CONSENT" desc="The description of the 'Sync and Google services' row in the privacy section">
+    More settings that relate to privacy, security, and data collection
   </message>
 
   <!-- Reset Settings Page -->

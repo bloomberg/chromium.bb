@@ -308,17 +308,11 @@ Polymer({
     // </if>
   },
 
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onMoreSettingsBoxClicked_: function(e) {
-    if (e.target.tagName === 'A') {
-      e.preventDefault();
-      // Navigate to sync page, and remove (privacy related) search text to
-      // avoid the sync page from being hidden.
-      settings.navigateTo(settings.routes.SYNC, null, true);
-    }
+  /** @private */
+  onSyncAndGoogleServicesClick_: function() {
+    // Navigate to sync page, and remove (privacy related) search text to
+    // avoid the sync page from being hidden.
+    settings.navigateTo(settings.routes.SYNC, null, true);
   },
 
   /**
