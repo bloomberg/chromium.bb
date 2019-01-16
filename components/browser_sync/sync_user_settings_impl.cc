@@ -26,12 +26,7 @@ bool SyncUserSettingsImpl::IsSyncRequested() const {
 }
 
 void SyncUserSettingsImpl::SetSyncRequested(bool requested) {
-  // TODO(crbug.com/884159): Write to prefs directly.
-  if (requested) {
-    service_->RequestStart();
-  } else {
-    service_->RequestStop(ProfileSyncService::KEEP_DATA);
-  }
+  prefs_->SetSyncRequested(requested);
 }
 
 bool SyncUserSettingsImpl::IsSyncAllowedByPlatform() const {
