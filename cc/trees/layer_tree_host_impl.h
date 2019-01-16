@@ -418,7 +418,7 @@ class CC_EXPORT LayerTreeHostImpl
                                WhichTree tree) const override;
 
   // ScrollbarAnimationControllerClient implementation.
-  void PostDelayedScrollbarAnimationTask(const base::Closure& task,
+  void PostDelayedScrollbarAnimationTask(base::OnceClosure task,
                                          base::TimeDelta delay) override;
   void SetNeedsAnimateForScrollbarAnimation() override;
   void SetNeedsRedrawForScrollbarAnimation() override;

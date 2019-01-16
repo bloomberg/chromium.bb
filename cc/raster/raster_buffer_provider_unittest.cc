@@ -322,7 +322,6 @@ class RasterBufferProviderTest
   std::unique_ptr<RasterBufferProvider> raster_buffer_provider_;
   viz::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   SynchronousTaskGraphRunner task_graph_runner_;
-  base::CancelableClosure timeout_;
   UniqueNotifier all_tile_tasks_finished_;
   int timeout_seconds_;
   bool timed_out_;

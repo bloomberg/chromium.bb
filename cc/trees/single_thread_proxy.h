@@ -190,7 +190,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   bool layer_tree_frame_sink_lost_;
 
   // This is the callback for the scheduled RequestNewLayerTreeFrameSink.
-  base::CancelableClosure layer_tree_frame_sink_creation_callback_;
+  base::CancelableOnceClosure layer_tree_frame_sink_creation_callback_;
 
   base::WeakPtr<SingleThreadProxy> frame_sink_bound_weak_ptr_;
 

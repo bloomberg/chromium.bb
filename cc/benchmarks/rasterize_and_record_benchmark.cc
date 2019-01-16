@@ -131,8 +131,8 @@ RasterizeAndRecordBenchmark::CreateBenchmarkImpl(
     scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner) {
   return base::WrapUnique(new RasterizeAndRecordBenchmarkImpl(
       origin_task_runner, settings_.get(),
-      base::Bind(&RasterizeAndRecordBenchmark::RecordRasterResults,
-                 weak_ptr_factory_.GetWeakPtr())));
+      base::BindOnce(&RasterizeAndRecordBenchmark::RecordRasterResults,
+                     weak_ptr_factory_.GetWeakPtr())));
 }
 
 void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {

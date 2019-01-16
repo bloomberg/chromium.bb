@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
 #include "cc/tiles/image_controller.h"
@@ -44,8 +45,9 @@ class CC_EXPORT DecodedImageTracker {
   // unlock them.
   void OnImagesUsedInDraw(const std::vector<DrawImage>& draw_images);
 
-  using NowFn = base::Callback<base::TimeTicks()>;
-  void SetNowFunctionForTesting(NowFn now_fn) { now_fn_ = now_fn; }
+  void SetTickClockForTesting(const base::TickClock* tick_clock) {
+    tick_clock_ = tick_clock;
+  }
 
   // Test only functions:
   size_t NumLockedImagesForTesting() const { return locked_images_.size(); }
@@ -83,7 +85,7 @@ class CC_EXPORT DecodedImageTracker {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Defaults to base::TimeTicks::Now(), but overrideable for testing.
-  NowFn now_fn_;
+  const base::TickClock* tick_clock_;
 
   base::WeakPtrFactory<DecodedImageTracker> weak_ptr_factory_;
 

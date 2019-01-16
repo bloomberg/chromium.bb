@@ -137,7 +137,7 @@ StagingBufferPool::StagingBufferPool(
       base::BindRepeating(&StagingBufferPool::OnMemoryPressure,
                           weak_ptr_factory_.GetWeakPtr())));
 
-  reduce_memory_usage_callback_ = base::Bind(
+  reduce_memory_usage_callback_ = base::BindRepeating(
       &StagingBufferPool::ReduceMemoryUsage, weak_ptr_factory_.GetWeakPtr());
 }
 

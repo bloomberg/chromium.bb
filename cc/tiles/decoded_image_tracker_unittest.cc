@@ -67,8 +67,8 @@ class DecodedImageTrackerTest : public testing::Test {
   DecodedImageTrackerTest()
       : task_runner_(new base::TestMockTimeTaskRunner()),
         decoded_image_tracker_(&image_controller_, task_runner_) {
-    decoded_image_tracker_.SetNowFunctionForTesting(
-        base::Bind(&base::TestMockTimeTaskRunner::NowTicks, task_runner_));
+    decoded_image_tracker_.SetTickClockForTesting(
+        task_runner_->GetMockTickClock());
   }
 
   TestImageController* image_controller() { return &image_controller_; }

@@ -4980,9 +4980,9 @@ void LayerTreeHostImpl::FlashAllScrollbars(bool did_scroll) {
 }
 
 void LayerTreeHostImpl::PostDelayedScrollbarAnimationTask(
-    const base::Closure& task,
+    base::OnceClosure task,
     base::TimeDelta delay) {
-  client_->PostDelayedAnimationTaskOnImplThread(task, delay);
+  client_->PostDelayedAnimationTaskOnImplThread(std::move(task), delay);
 }
 
 // TODO(danakj): Make this a return value from the Animate() call instead of an

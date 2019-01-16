@@ -235,7 +235,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   std::unique_ptr<base::Thread> image_worker_;
   std::unique_ptr<viz::TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<TestTaskGraphRunner> task_graph_runner_;
-  base::CancelableClosure timeout_;
+  base::CancelableOnceClosure timeout_;
   scoped_refptr<viz::TestContextProvider> compositor_contexts_;
   base::WeakPtr<LayerTreeTest> main_thread_weak_ptr_;
   base::WeakPtrFactory<LayerTreeTest> weak_factory_;

@@ -42,12 +42,10 @@ class MockSingleScrollbarAnimationControllerClient
   }
 
   MOCK_METHOD2(PostDelayedScrollbarAnimationTask,
-               void(const base::Closure& start_fade, base::TimeDelta delay));
+               void(base::OnceClosure start_fade, base::TimeDelta delay));
   MOCK_METHOD0(SetNeedsRedrawForScrollbarAnimation, void());
   MOCK_METHOD0(SetNeedsAnimateForScrollbarAnimation, void());
   MOCK_METHOD0(DidChangeScrollbarVisibility, void());
-  MOCK_METHOD0(start_fade, base::Closure());
-  MOCK_METHOD0(delay, base::TimeDelta());
 
  private:
   LayerTreeHostImpl* host_impl_;

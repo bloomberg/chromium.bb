@@ -304,10 +304,11 @@ class TaskSetFinishedTaskImpl : public TileTask {
  public:
   explicit TaskSetFinishedTaskImpl(
       base::SequencedTaskRunner* task_runner,
-      const base::Closure& on_task_set_finished_callback)
+      base::RepeatingClosure on_task_set_finished_callback)
       : TileTask(true),
         task_runner_(task_runner),
-        on_task_set_finished_callback_(on_task_set_finished_callback) {}
+        on_task_set_finished_callback_(
+            std::move(on_task_set_finished_callback)) {}
 
   // Overridden from Task:
   void RunOnWorkerThread() override {
@@ -327,7 +328,7 @@ class TaskSetFinishedTaskImpl : public TileTask {
 
  private:
   base::SequencedTaskRunner* task_runner_;
-  const base::Closure on_task_set_finished_callback_;
+  const base::RepeatingClosure on_task_set_finished_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskSetFinishedTaskImpl);
 };
@@ -1398,7 +1399,7 @@ void TileManager::ScheduleCheckRasterFinishedQueries() {
   if (!check_pending_tile_queries_callback_.IsCancelled())
     return;
 
-  check_pending_tile_queries_callback_.Reset(base::Bind(
+  check_pending_tile_queries_callback_.Reset(base::BindOnce(
       &TileManager::CheckRasterFinishedQueries, base::Unretained(this)));
   task_runner_->PostDelayedTask(FROM_HERE,
                                 check_pending_tile_queries_callback_.callback(),
@@ -1697,7 +1698,8 @@ scoped_refptr<TileTask> TileManager::CreateTaskSetFinishedTask(
     void (TileManager::*callback)()) {
   return base::MakeRefCounted<TaskSetFinishedTaskImpl>(
       task_runner_,
-      base::Bind(callback, task_set_finished_weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(callback,
+                          task_set_finished_weak_ptr_factory_.GetWeakPtr()));
 }
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>

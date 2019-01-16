@@ -136,7 +136,7 @@ class CC_EXPORT StagingBufferPool
   int free_staging_buffer_usage_in_bytes_;
   const base::TimeDelta staging_buffer_expiration_delay_;
   bool reduce_memory_usage_pending_;
-  base::Closure reduce_memory_usage_callback_;
+  base::RepeatingClosure reduce_memory_usage_callback_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
