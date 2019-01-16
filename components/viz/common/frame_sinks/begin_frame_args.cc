@@ -4,6 +4,8 @@
 
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 
+#include <utility>
+
 #include "base/trace_event/traced_value.h"
 
 namespace viz {
@@ -16,8 +18,6 @@ const char* BeginFrameArgs::TypeToString(BeginFrameArgsType type) {
       return "NORMAL";
     case BeginFrameArgs::MISSED:
       return "MISSED";
-    case BeginFrameArgs::BEGIN_FRAME_ARGS_TYPE_MAX:
-      return "BEGIN_FRAME_ARGS_TYPE_MAX";
   }
   NOTREACHED();
   return "???";
@@ -64,7 +64,6 @@ BeginFrameArgs BeginFrameArgs::Create(BeginFrameArgs::CreationLocation location,
                                       base::TimeDelta interval,
                                       BeginFrameArgs::BeginFrameArgsType type) {
   DCHECK_NE(type, BeginFrameArgs::INVALID);
-  DCHECK_NE(type, BeginFrameArgs::BEGIN_FRAME_ARGS_TYPE_MAX);
 #ifdef NDEBUG
   return BeginFrameArgs(source_id, sequence_number, frame_time, deadline,
                         interval, type);

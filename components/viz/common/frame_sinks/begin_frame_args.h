@@ -44,9 +44,6 @@ struct VIZ_COMMON_EXPORT BeginFrameArgs {
     INVALID,
     NORMAL,
     MISSED,
-    // Not a real type, but used by the IPC system. Should always remain the
-    // *last* value in this enum.
-    BEGIN_FRAME_ARGS_TYPE_MAX,
   };
   static const char* TypeToString(BeginFrameArgsType type);
 
