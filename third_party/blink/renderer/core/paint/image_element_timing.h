@@ -45,6 +45,7 @@ class CORE_EXPORT ImageElementTiming final
   void Trace(blink::Visitor*) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ImageElementTimingTest, ImageInsideSVG);
   // Callback for the swap promise. Reports paint timestamps.
   void ReportImagePaintSwapTime(WebLayerTreeView::SwapResult,
                                 base::TimeTicks timestamp);
