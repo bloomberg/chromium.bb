@@ -24,7 +24,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/p2p/socket.h"
 #include "services/network/public/cpp/p2p_socket_type.h"
-#include "third_party/webrtc/rtc_base/asyncpacketsocket.h"
+#include "third_party/webrtc/rtc_base/async_packet_socket.h"
 
 namespace net {
 class NetLog;
