@@ -72,11 +72,6 @@
 -org.chromium.android_webview.test.AwSettingsTest.testCacheModeWithBlockedNetworkLoads
 -org.chromium.android_webview.test.AwSettingsTest.testContentUrlAccessWithTwoViews
 -org.chromium.android_webview.test.AwSettingsTest.testContentUrlFromFileWithTwoViews
--org.chromium.android_webview.test.AwSettingsTest.testDatabaseDisabled
--org.chromium.android_webview.test.AwSettingsTest.testDatabaseEnabled
--org.chromium.android_webview.test.AwSettingsTest.testDatabaseInitialValue
--org.chromium.android_webview.test.AwSettingsTest.testDefaultVideoPosterURL
--org.chromium.android_webview.test.AwSettingsTest.testDomStorageEnabledWithTwoViews
 -org.chromium.android_webview.test.AwSettingsTest.testFileAccessFromFilesIframeWithTwoViews
 -org.chromium.android_webview.test.AwSettingsTest.testFileAccessFromFilesImage
 -org.chromium.android_webview.test.AwSettingsTest.testFileAccessFromFilesXhrWithTwoViews
@@ -84,7 +79,6 @@
 -org.chromium.android_webview.test.AwSettingsTest.testFileUrlAccessToggleDoesNotBlockResourceUrls
 -org.chromium.android_webview.test.AwSettingsTest.testFileUrlAccessWithTwoViews
 -org.chromium.android_webview.test.AwSettingsTest.testResourceUrl
--org.chromium.android_webview.test.AwSettingsTest.testUniversalAccessFromFilesWithTwoViews
 
 # https://crbug.com/893572
 -org.chromium.android_webview.test.ClientOnPageStartedTest.testBrowserInitiatedRedirectHangingNavigation
