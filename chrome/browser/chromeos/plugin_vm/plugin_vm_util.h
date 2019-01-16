@@ -11,6 +11,8 @@ namespace plugin_vm {
 
 // Checks if PluginVm is allowed for the current profile.
 bool IsPluginVmAllowedForProfile(Profile* profile);
+// Checks if PluginVm is configured for the current profile.
+bool IsPluginVmConfigured(Profile* profile);
 
 }  // namespace plugin_vm
 

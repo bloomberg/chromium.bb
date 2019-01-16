@@ -54,4 +54,12 @@ bool IsPluginVmAllowedForProfile(Profile* profile) {
   return true;
 }
 
+bool IsPluginVmConfigured(Profile* profile) {
+  if (!profile->GetPrefs()->GetBoolean(
+          plugin_vm::prefs::kPluginVmImageExists)) {
+    return false;
+  }
+  return true;
+}
+
 }  // namespace plugin_vm
