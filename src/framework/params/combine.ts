@@ -1,12 +1,23 @@
 import {
-  ParamIterable,
-  ParamIterator,
+  IParamsSpec,
+  ParamSpecIterable,
+  ParamSpecIterator,
 } from "./index.js";
 
-export function pcombine(params: ParamIterable[]) { return new PCombine(params); }
-export class PCombine implements ParamIterable {
+export function pcombine(params: ParamSpecIterable[]) { return new PCombine(params); }
 
-  private static merge(a: object, b: object): object {
+class PCombine implements ParamSpecIterable {
+  private params: ParamSpecIterable[];
+
+  constructor(params: ParamSpecIterable[]) {
+    this.params = params;
+  }
+
+  public [Symbol.iterator](): ParamSpecIterator {
+    return PCombine.cartesian(this.params);
+  }
+
+  private static merge(a: IParamsSpec, b: IParamsSpec): IParamsSpec {
     for (const key of Object.keys(a)) {
       if (b.hasOwnProperty(key)) {
         throw new Error("Duplicate key: " + key);
@@ -15,9 +26,8 @@ export class PCombine implements ParamIterable {
     return {...a, ...b};
   }
 
-  private static * cartesian(iters: Array<Iterable<object>>): ParamIterator {
+  private static * cartesian(iters: ParamSpecIterable[]): ParamSpecIterator {
     if (iters.length === 0) {
-      yield {};
       return;
     }
     if (iters.length === 1) {
@@ -30,14 +40,5 @@ export class PCombine implements ParamIterable {
         yield PCombine.merge(a, b);
       }
     }
-  }
-  private params: ParamIterable[];
-
-  constructor(params: ParamIterable[]) {
-    this.params = params;
-  }
-
-  public [Symbol.iterator](): ParamIterator {
-    return PCombine.cartesian(this.params);
   }
 }

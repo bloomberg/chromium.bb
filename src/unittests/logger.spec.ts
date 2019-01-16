@@ -11,9 +11,9 @@ export const group = new TestGroup();
 group.test("construct", function() {
   const mylog = new Logger();
   const [testres, testrec] = mylog.record("foo/bar");
-  const [res1, ] = testrec.record("baz");
+  const [res1] = testrec.record("baz");
   const params2 = {};
-  const [res2, ] = testrec.record("qux", params2);
+  const [res2] = testrec.record("qux", params2);
 
   this.expect(testres.path === "foo/bar");
   this.expect(testres.cases.length === 2);

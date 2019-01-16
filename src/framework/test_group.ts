@@ -1,4 +1,5 @@
-import { CaseRecorder, GroupRecorder, IResult } from "./logger";
+import { CaseRecorder, GroupRecorder, IResult } from "./logger.js";
+import { IParamsAny, IParamsSpec } from "./params/index.js";
 
 type TestFn<F extends Fixture> = (this: F) => (Promise<void> | void);
 interface ICase {
@@ -11,10 +12,10 @@ interface IRunCase {
   params?: object;
   run: () => Promise<IResult>;
 }
-type IFixtureClass<F extends Fixture> = new(log: CaseRecorder, params?: object) => F;
+type IFixtureClass<F extends Fixture> = new(log: CaseRecorder, params: IParamsAny) => F;
 
 export abstract class Fixture {
-  public params?: object;
+  public params: IParamsAny;
   // TODO: This is called _rec because it's supposed to be invisible to tests,
   // but can't actually be since tests have 'this' bound to the fixture.
   // Probably should not bind, and instead just pass an arg.
@@ -23,7 +24,7 @@ export abstract class Fixture {
   // tslint:disable-next-line variable-name
   protected _rec: CaseRecorder;
 
-  public constructor(log: CaseRecorder, params?: object) {
+  public constructor(log: CaseRecorder, params: IParamsAny) {
     this._rec = log;
     this.params = params;
   }
@@ -65,25 +66,23 @@ export class TestGroup {
   public constructor() {
   }
 
-  public testpf<F extends Fixture>(
-      name: string, params: (object | undefined), fixture: IFixtureClass<F>, fn: TestFn<F>): void {
-    const n = params ? (name + "/" + JSON.stringify(params)) : name;
-    this.tests.push({ name: n, run: (log) => {
-      const inst = new fixture(log, params);
-      return fn.call(inst);
-      }});
+  public testpf<F extends Fixture>(name: string,
+                                   params: IParamsSpec,
+                                   fixture: IFixtureClass<F>,
+                                   fn: TestFn<F>): void {
+    return this.testImpl(name, params, fixture, fn);
   }
 
   public testf<F extends Fixture>(name: string, fixture: IFixtureClass<F>, fn: TestFn<F>): void {
-    return this.testpf(name, undefined, fixture, fn);
+    return this.testImpl(name, undefined, fixture, fn);
   }
 
-  public testp(name: string, params: object, fn: TestFn<DefaultFixture>): void {
-    return this.testpf(name, params, DefaultFixture, fn);
+  public testp(name: string, params: IParamsSpec, fn: TestFn<DefaultFixture>): void {
+    return this.testImpl(name, params, DefaultFixture, fn);
   }
 
   public test(name: string, fn: TestFn<DefaultFixture>): void {
-    return this.testpf(name, undefined, DefaultFixture, fn);
+    return this.testImpl(name, undefined, DefaultFixture, fn);
   }
 
   public * iterate(log: GroupRecorder): Iterable<IRunCase> {
@@ -96,5 +95,17 @@ export class TestGroup {
         return res;
       }};
     }
+  }
+
+  private testImpl<F extends Fixture>(name: string,
+                                      params: (IParamsSpec | undefined),
+                                      fixture: IFixtureClass<F>,
+                                      fn: TestFn<F>): void {
+    const n = params ? (name + "/" + JSON.stringify(params)) : name;
+    const p = params ? params : {};
+    this.tests.push({ name: n, run: (log) => {
+      const inst = new fixture(log, p);
+      return fn.call(inst);
+    }});
   }
 }

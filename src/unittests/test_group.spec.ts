@@ -14,7 +14,7 @@ function print(this: Fixture) {
   this.log(JSON.stringify(this.params));
 }
 
-group.test("test", print);
+group.test("test", function() {});
 
 group.testp("testp", {a: 1}, print);
 
