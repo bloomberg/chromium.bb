@@ -82,11 +82,6 @@ base::Optional<SkColor> GetDarkModeColor(int id) {
   // but this is very subject to change. Additionally, dark mode incognito may
   // end up having a different look. For now, just call into GetIncognitoColor
   // for convenience, but maintain a separate interface.
-
-  // NTP background is an exception since the NTP is different in incognito.
-  if (id == ThemeProperties::COLOR_NTP_BACKGROUND) {
-    return base::nullopt;
-  }
   return GetIncognitoColor(id);
 }
 
