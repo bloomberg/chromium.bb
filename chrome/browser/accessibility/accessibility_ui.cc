@@ -239,7 +239,8 @@ AccessibilityUI::AccessibilityUI(content::WebUI* web_ui)
       base::Bind(&HandleAccessibilityRequestCallback,
                  web_ui->GetWebContents()->GetBrowserContext()));
 
-  html_source->UseGzip({kTargetsDataFile});
+  html_source->UseGzip(base::BindRepeating(
+      [](const std::string& path) { return path != kTargetsDataFile; }));
 
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();

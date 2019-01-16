@@ -169,7 +169,6 @@ void WebUIDataSourceImpl::SetJsonPath(base::StringPiece path) {
   DCHECK(!path.empty());
 
   json_path_ = path.as_string();
-  excluded_paths_.insert(json_path_);
 }
 
 void WebUIDataSourceImpl::AddResourcePath(base::StringPiece path,
@@ -225,10 +224,9 @@ void WebUIDataSourceImpl::UseGzip() {
 }
 
 void WebUIDataSourceImpl::UseGzip(
-    const std::vector<std::string>& excluded_paths) {
+    base::RepeatingCallback<bool(const std::string&)> is_gzipped_callback) {
   UseGzip();
-  for (const auto& path : excluded_paths)
-    excluded_paths_.insert(path);
+  is_gzipped_callback_ = std::move(is_gzipped_callback);
 }
 
 const ui::TemplateReplacements* WebUIDataSourceImpl::GetReplacements() const {
@@ -312,7 +310,15 @@ const base::DictionaryValue* WebUIDataSourceImpl::GetLocalizedStrings() const {
 }
 
 bool WebUIDataSourceImpl::IsGzipped(const std::string& path) const {
-  return use_gzip_ && excluded_paths_.count(CleanUpPath(path)) == 0;
+  if (!use_gzip_)
+    return false;
+
+  // TODO(dbeam): does anybody care about the "dirty" path (i.e. stuff after ?).
+  const std::string clean_path = CleanUpPath(path);
+  if (!json_path_.empty() && clean_path == json_path_)
+    return false;
+
+  return is_gzipped_callback_.is_null() || is_gzipped_callback_.Run(clean_path);
 }
 
 }  // namespace content

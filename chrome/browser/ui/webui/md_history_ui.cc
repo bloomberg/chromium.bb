@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -173,7 +174,12 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
     source->AddResourcePath(resource.path, resource.idr);
     exclude_from_gzip.push_back(resource.path);
   }
-  source->UseGzip(exclude_from_gzip);
+  source->UseGzip(base::BindRepeating(
+      [](const std::vector<std::string> excluded_paths,
+         const std::string& path) {
+        return !base::ContainsValue(excluded_paths, path);
+      },
+      std::move(exclude_from_gzip)));
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   const bool use_polymer_2 =

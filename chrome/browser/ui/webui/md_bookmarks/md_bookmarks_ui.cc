@@ -157,7 +157,9 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
       base::FeatureList::IsEnabled(features::kWebUIPolymer2)
           ? IDR_MD_BOOKMARKS_VULCANIZED_P2_HTML
           : IDR_MD_BOOKMARKS_VULCANIZED_HTML);
-  source->UseGzip({"images/folder_open.svg", "images/folder.svg"});
+  source->UseGzip(base::BindRepeating([](const std::string& path) {
+    return path != "images/folder_open.svg" && path != "images/folder.svg";
+  }));
 #else
   source->AddResourcePath("actions.html", IDR_MD_BOOKMARKS_ACTIONS_HTML);
   source->AddResourcePath("actions.js", IDR_MD_BOOKMARKS_ACTIONS_JS);
