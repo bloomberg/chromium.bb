@@ -28,7 +28,7 @@ class POLICY_EXPORT ExternalDataManager {
   // retrieval is permanently impossible (e.g. |policy| references data that
   // does not exist on the server), the |callback| will never be invoked.
   virtual void Fetch(const std::string& policy,
-                     const ExternalDataFetcher::FetchCallback& callback) = 0;
+                     ExternalDataFetcher::FetchCallback callback) = 0;
 };
 
 }  // namespace policy

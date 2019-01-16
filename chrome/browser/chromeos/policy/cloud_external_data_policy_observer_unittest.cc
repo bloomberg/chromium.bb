@@ -59,7 +59,6 @@ namespace em = enterprise_management;
 
 using ::testing::Mock;
 using ::testing::Return;
-using ::testing::SaveArg;
 using ::testing::_;
 
 namespace policy {
@@ -745,7 +744,10 @@ TEST_F(CloudExternalDataPolicyObserverTest, RegularUserFetchSuccess) {
 
   EXPECT_CALL(external_data_manager_, Fetch(key::kUserAvatarImage, _))
       .Times(1)
-      .WillOnce(SaveArg<1>(&fetch_callback_));
+      .WillOnce([&](const std::string& policy,
+                    ExternalDataFetcher::FetchCallback callback) {
+        fetch_callback_ = std::move(callback);
+      });
 
   LogInAsRegularUser();
 
@@ -758,7 +760,8 @@ TEST_F(CloudExternalDataPolicyObserverTest, RegularUserFetchSuccess) {
   Mock::VerifyAndClear(&external_data_manager_);
   EXPECT_CALL(external_data_manager_, Fetch(key::kUserAvatarImage, _)).Times(0);
 
-  fetch_callback_.Run(base::WrapUnique(new std::string(avatar_policy_1_data_)));
+  std::move(fetch_callback_)
+      .Run(std::make_unique<std::string>(avatar_policy_1_data_));
 
   EXPECT_TRUE(set_calls_.empty());
   EXPECT_TRUE(cleared_calls_.empty());
@@ -805,9 +808,7 @@ TEST_F(CloudExternalDataPolicyObserverTest, RegularUserClearSet) {
 
   CreateObserver();
 
-  EXPECT_CALL(external_data_manager_, Fetch(key::kUserAvatarImage, _))
-      .Times(1)
-      .WillOnce(SaveArg<1>(&fetch_callback_));
+  EXPECT_CALL(external_data_manager_, Fetch(key::kUserAvatarImage, _)).Times(1);
 
   LogInAsRegularUser();
 
@@ -850,7 +851,10 @@ TEST_F(CloudExternalDataPolicyObserverTest, RegularUserSetUnset) {
   Mock::VerifyAndClear(&external_data_manager_);
   EXPECT_CALL(external_data_manager_, Fetch(key::kUserAvatarImage, _))
       .Times(1)
-      .WillOnce(SaveArg<1>(&fetch_callback_));
+      .WillOnce([&](const std::string& policy,
+                    ExternalDataFetcher::FetchCallback callback) {
+        fetch_callback_ = std::move(callback);
+      });
 
   SetRegularUserAvatarPolicy(avatar_policy_1_);
 
@@ -863,7 +867,8 @@ TEST_F(CloudExternalDataPolicyObserverTest, RegularUserSetUnset) {
   Mock::VerifyAndClear(&external_data_manager_);
   EXPECT_CALL(external_data_manager_, Fetch(key::kUserAvatarImage, _)).Times(0);
 
-  fetch_callback_.Run(base::WrapUnique(new std::string(avatar_policy_1_data_)));
+  std::move(fetch_callback_)
+      .Run(std::make_unique<std::string>(avatar_policy_1_data_));
 
   EXPECT_TRUE(set_calls_.empty());
   EXPECT_TRUE(cleared_calls_.empty());
@@ -884,9 +889,7 @@ TEST_F(CloudExternalDataPolicyObserverTest, RegularUserSetSet) {
 
   CreateObserver();
 
-  EXPECT_CALL(external_data_manager_, Fetch(key::kUserAvatarImage, _))
-      .Times(1)
-      .WillOnce(SaveArg<1>(&fetch_callback_));
+  EXPECT_CALL(external_data_manager_, Fetch(key::kUserAvatarImage, _)).Times(1);
 
   LogInAsRegularUser();
 
@@ -899,7 +902,10 @@ TEST_F(CloudExternalDataPolicyObserverTest, RegularUserSetSet) {
   Mock::VerifyAndClear(&external_data_manager_);
   EXPECT_CALL(external_data_manager_, Fetch(key::kUserAvatarImage, _))
       .Times(1)
-      .WillOnce(SaveArg<1>(&fetch_callback_));
+      .WillOnce([&](const std::string& policy,
+                    ExternalDataFetcher::FetchCallback callback) {
+        fetch_callback_ = std::move(callback);
+      });
 
   SetRegularUserAvatarPolicy(avatar_policy_2_);
 
@@ -912,7 +918,8 @@ TEST_F(CloudExternalDataPolicyObserverTest, RegularUserSetSet) {
   Mock::VerifyAndClear(&external_data_manager_);
   EXPECT_CALL(external_data_manager_, Fetch(key::kUserAvatarImage, _)).Times(0);
 
-  fetch_callback_.Run(base::WrapUnique(new std::string(avatar_policy_2_data_)));
+  std::move(fetch_callback_)
+      .Run(std::make_unique<std::string>(avatar_policy_2_data_));
 
   EXPECT_TRUE(set_calls_.empty());
   EXPECT_TRUE(cleared_calls_.empty());
@@ -929,9 +936,7 @@ TEST_F(CloudExternalDataPolicyObserverTest, RegularUserLogoutTest) {
   SetRegularUserAvatarPolicy(avatar_policy_1_);
   CreateObserver();
 
-  EXPECT_CALL(external_data_manager_, Fetch(key::kUserAvatarImage, _))
-      .Times(1)
-      .WillOnce(SaveArg<1>(&fetch_callback_));
+  EXPECT_CALL(external_data_manager_, Fetch(key::kUserAvatarImage, _)).Times(1);
 
   LogInAsRegularUser();
 

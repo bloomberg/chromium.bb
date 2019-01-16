@@ -67,7 +67,7 @@ void DeviceCloudExternalDataPolicyObserver::HandleExternalDataPolicyUpdate(
   // Invalidate any pending callbacks. They are fetching outdated data.
   weak_factory_.InvalidateWeakPtrs();
   if (entry->external_data_fetcher) {
-    entry->external_data_fetcher->Fetch(base::BindRepeating(
+    entry->external_data_fetcher->Fetch(base::BindOnce(
         &DeviceCloudExternalDataPolicyObserver::OnDeviceExternalDataFetched,
         weak_factory_.GetWeakPtr()));
   } else {
