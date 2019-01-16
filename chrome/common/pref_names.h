@@ -417,6 +417,7 @@ extern const char kLocalDiscoveryNotificationsEnabled[];
 extern const char kNotificationsVibrateEnabled[];
 extern const char kMigratedToSiteNotificationChannels[];
 extern const char kClearedBlockedSiteNotificationChannels[];
+extern const char kUsageStatsEnabled[];
 #endif
 
 extern const char kPushMessagingAppIdentifierMap[];

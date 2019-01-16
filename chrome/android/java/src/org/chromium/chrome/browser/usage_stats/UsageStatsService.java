@@ -8,6 +8,9 @@ import android.app.Activity;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 
 import java.util.List;
@@ -22,6 +25,7 @@ public class UsageStatsService {
     private EventTracker mEventTracker;
     private SuspensionTracker mSuspensionTracker;
     private TokenTracker mTokenTracker;
+    private UsageStatsBridge mBridge;
     private boolean mOptInState;
 
     /** Get the global instance of UsageStatsService */
@@ -38,6 +42,9 @@ public class UsageStatsService {
         mEventTracker = new EventTracker();
         mSuspensionTracker = new SuspensionTracker();
         mTokenTracker = new TokenTracker();
+        Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
+        mBridge = new UsageStatsBridge(profile);
+        // TODO(pnoland): listen for preference changes so we can notify DW.
     }
 
     /**
@@ -55,15 +62,15 @@ public class UsageStatsService {
     /** @return Whether the user has authorized DW to access usage stats data. */
     public boolean getOptInState() {
         ThreadUtils.assertOnUiThread();
-        // TODO(pnoland): return the value of the pref that controls opt in state.
-        return mOptInState;
+        PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
+        return prefServiceBridge.getBoolean(Pref.USAGE_STATS_ENABLED);
     }
 
     /** Sets the user's opt in state. */
     public void setOptInState(boolean state) {
         ThreadUtils.assertOnUiThread();
-        // TODO(pnoland): set the value of the pref that controls opt in state.
-        mOptInState = state;
+        PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
+        prefServiceBridge.setBoolean(Pref.USAGE_STATS_ENABLED, state);
     }
 
     /** Query for all events that occurred in the half-open range [start, end) */

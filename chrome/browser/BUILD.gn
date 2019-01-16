@@ -2401,6 +2401,10 @@ jumbo_split_static_library("browser") {
       "android/trusted_cdn.cc",
       "android/trusted_cdn.h",
       "android/url_utilities.cc",
+      "android/usage_stats/usage_stats_bridge.cc",
+      "android/usage_stats/usage_stats_bridge.h",
+      "android/usage_stats/usage_stats_database.cc",
+      "android/usage_stats/usage_stats_database.h",
       "android/usb/web_usb_chooser_android.cc",
       "android/usb/web_usb_chooser_android.h",
       "android/warmup_manager.cc",
@@ -2603,15 +2607,6 @@ jumbo_split_static_library("browser") {
         "supervised_user/child_accounts/child_account_feedback_reporter_android.h",
         "supervised_user/child_accounts/child_account_service_android.cc",
         "supervised_user/child_accounts/child_account_service_android.h",
-      ]
-    }
-
-    if (enable_usage_stats) {
-      sources += [
-        "android/usage_stats/usage_stats_bridge.cc",
-        "android/usage_stats/usage_stats_bridge.h",
-        "android/usage_stats/usage_stats_database.cc",
-        "android/usage_stats/usage_stats_database.h",
       ]
     }
   } else {  # !is_android

@@ -3977,6 +3977,14 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       <message name="IDS_AUTOFILL_ASSISTANT_GOOGLE_TERMS_URL" desc="URL for Google Autofill Assistant Terms of Service" translateable="false">
         http://support.google.com/assistant?p=fast_checkout
       </message>
+
+      <!-- Usage Stats strings -->
+      <message name="IDS_USAGE_STATS_CONSENT_TITLE" desc="Title for activity authorizing Digital Wellbeing to access Chrome usage data">
+        Connect Chrome to Digital Wellbeing?
+      </message>
+      <message name="IDS_USAGE_STATS_CONSENT_PROMPT" desc="Consent prompt when authorizing Digital Wellbeing to access Chrome usage data">
+        Allow Digital Wellbeing to show websites you visited
+      </message>
     </messages>
   </release>
 </grit>
