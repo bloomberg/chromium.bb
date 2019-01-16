@@ -36,6 +36,9 @@ extern GuideName* const kTabSwitcherGuide;
 extern GuideName* const kTabStripTabSwitcherGuide;
 // A guide that is constrained to match the frame of the ToolsMenu button.
 extern GuideName* const kToolsMenuGuide;
+// A guide that is constrained to match the frame of the translate infobar
+// options button.
+extern GuideName* const kTranslateInfobarOptionsGuide;
 // A guide that is constrained to match the frame of the last-tapped voice
 // search button.
 extern GuideName* const kVoiceSearchButtonGuide;

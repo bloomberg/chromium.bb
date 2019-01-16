@@ -17,7 +17,6 @@ source_set("infobars") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/translate",
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",

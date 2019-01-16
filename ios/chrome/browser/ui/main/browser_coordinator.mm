@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/scoped_observer.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
@@ -37,6 +38,7 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 #import "ios/chrome/browser/ui/translate/language_selection_coordinator.h"
+#import "ios/chrome/browser/ui/translate/translate_popup_menu_coordinator.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -107,6 +109,11 @@
 
 // Coordinator for presenting SKStoreProductViewController.
 @property(nonatomic, strong) StoreKitCoordinator* storeKitCoordinator;
+
+// Coordinator for the translate infobar's language selection and translate
+// option popup menus.
+@property(nonatomic, strong)
+    TranslatePopupMenuCoordinator* translatePopupMenuCoordinator;
 
 @end
 
@@ -238,11 +245,19 @@
   self.formInputAccessoryCoordinator.delegate = self;
   [self.formInputAccessoryCoordinator start];
 
-  self.languageSelectionCoordinator = [[LanguageSelectionCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                    browserState:self.browserState
-                    webStateList:self.tabModel.webStateList];
-  [self.languageSelectionCoordinator start];
+  if (base::FeatureList::IsEnabled(translate::kCompactTranslateInfobarIOS)) {
+    self.translatePopupMenuCoordinator = [[TranslatePopupMenuCoordinator alloc]
+        initWithBaseViewController:self.viewController
+                      browserState:self.browserState
+                      webStateList:self.tabModel.webStateList];
+    [self.translatePopupMenuCoordinator start];
+  } else {
+    self.languageSelectionCoordinator = [[LanguageSelectionCoordinator alloc]
+        initWithBaseViewController:self.viewController
+                      browserState:self.browserState
+                      webStateList:self.tabModel.webStateList];
+    [self.languageSelectionCoordinator start];
+  }
 
   self.pageInfoCoordinator = [[PageInfoLegacyCoordinator alloc]
       initWithBaseViewController:self.viewController
@@ -315,6 +330,9 @@
 
   [self.storeKitCoordinator stop];
   self.storeKitCoordinator = nil;
+
+  [self.translatePopupMenuCoordinator stop];
+  self.translatePopupMenuCoordinator = nil;
 }
 
 #pragma mark - BrowserCoordinatorCommands
