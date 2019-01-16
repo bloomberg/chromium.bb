@@ -163,8 +163,16 @@ views::CaptionButtonLayoutSize DefaultFrameHeader::GetButtonLayoutSize() const {
 }
 
 SkColor DefaultFrameHeader::GetTitleColor() const {
-  return color_utils::PickContrastingColor(
-      SK_ColorWHITE, SkColorSetRGB(40, 40, 40), GetCurrentFrameColor());
+  // Use IsDark() to change target colors instead of PickContrastingColor(), so
+  // that FrameCaptionButton::GetButtonColor() (which uses different target
+  // colors) can change between light/dark targets at the same time.  It looks
+  // bad when the title and caption buttons disagree about whether to be light
+  // or dark.
+  const SkColor frame_color = GetCurrentFrameColor();
+  const SkColor desired_color = color_utils::IsDark(frame_color)
+                                    ? SK_ColorWHITE
+                                    : SkColorSetRGB(40, 40, 40);
+  return color_utils::GetColorWithMinimumContrast(desired_color, frame_color);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

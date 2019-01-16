@@ -23,7 +23,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
  public:
   // Alpha to use for features in the titlebar (the window title and caption
   // buttons) when the window is inactive. They are opaque when active.
-  static constexpr SkAlpha kInactiveTitlebarFeatureAlpha = 0x65;
+  static constexpr SkAlpha kInactiveTitlebarFeatureAlpha = 0x66;
 
   static constexpr char kClassName[] = "GlassBrowserFrameView";
 

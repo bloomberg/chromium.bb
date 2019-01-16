@@ -66,7 +66,7 @@ constexpr char GlassBrowserFrameView::kClassName[];
 
 SkColor GlassBrowserFrameView::GetReadableFeatureColor(
     SkColor background_color) {
-  // color_utils::BlendTowardMaxContrast()/IsDark() aren't used here because
+  // color_utils::GetColorWithMaxContrast()/IsDark() aren't used here because
   // they switch based on the Chrome light/dark endpoints, while we want to use
   // the system native behavior below.
   return color_utils::GetLuma(background_color) < 128 ? SK_ColorWHITE
