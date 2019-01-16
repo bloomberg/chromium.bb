@@ -172,6 +172,9 @@ class CC_ANIMATION_EXPORT KeyframeModel {
   }
   bool affects_pending_elements() const { return affects_pending_elements_; }
 
+  KeyframeModel::Phase CalculatePhaseForTesting(
+      base::TimeDelta local_time) const;
+
  private:
   KeyframeModel(std::unique_ptr<AnimationCurve> curve,
                 int keyframe_model_id,

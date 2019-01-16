@@ -165,10 +165,17 @@ bool KeyframeModel::IsFinishedAt(base::TimeTicks monotonic_time) const {
              (ConvertMonotonicTimeToLocalTime(monotonic_time) + time_offset_);
 }
 
+KeyframeModel::Phase KeyframeModel::CalculatePhaseForTesting(
+    base::TimeDelta local_time) const {
+  return CalculatePhase(local_time);
+}
+
 KeyframeModel::Phase KeyframeModel::CalculatePhase(
     base::TimeDelta local_time) const {
   base::TimeDelta before_active_boundary_time =
-      std::max(-time_offset_, base::TimeDelta());
+      (time_offset_ == base::TimeDelta::Min()
+           ? base::TimeDelta::Max()
+           : std::max(-time_offset_, base::TimeDelta()));
   if (local_time < before_active_boundary_time ||
       (local_time == before_active_boundary_time && playback_rate_ < 0)) {
     return KeyframeModel::Phase::BEFORE;
