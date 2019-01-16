@@ -11,7 +11,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "chromeos/system/devicetype.h"
+#include "chromeos/constants/devicetype.h"
 #include "components/pairing/bluetooth_pairing_constants.h"
 #include "components/pairing/pairing_api.pb.h"
 #include "components/pairing/proto_decoder.h"

@@ -82,7 +82,6 @@ source_set("exo") {
   if (is_chromeos) {
     deps += [
       "//ash/public/cpp",
-      "//chromeos",
       "//ui/keyboard",
       "//ui/keyboard:mojom",
     ]

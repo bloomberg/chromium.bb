@@ -34,7 +34,6 @@ component("lib") {
   deps = [
     "//base",
     "//build/util:webkit_version",
-    "//chromeos",
     "//chromeos/assistant:buildflags",
     "//chromeos/dbus",
     "//components/account_id",
@@ -123,8 +122,7 @@ source_set("tests") {
     ":lib",
     "//base",
     "//base/test:test_support",
-    "//chromeos",
-    "//chromeos/dbus",
+    "//chromeos/dbus:test_support",
     "//chromeos/services/assistant/public/mojom",
     "//mojo/public/cpp/bindings:bindings",
     "//services/device/public/mojom",

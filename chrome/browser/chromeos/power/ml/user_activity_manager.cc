@@ -19,9 +19,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/devicetype.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
-#include "chromeos/system/devicetype.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/common/page_importance_signals.h"
 

@@ -439,7 +439,6 @@ jumbo_static_library("content_shell_lib") {
 
   if (is_chromeos) {
     deps += [
-      "//chromeos",
       "//chromeos/dbus",
       "//services/ws/test_ws:lib",
       "//services/ws/test_ws:mojom",

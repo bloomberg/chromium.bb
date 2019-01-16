@@ -50,7 +50,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/system/devicetype.h"
+#include "chromeos/constants/devicetype.h"
 #endif
 
 using device::BluetoothAdapter;

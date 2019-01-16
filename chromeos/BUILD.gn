@@ -75,8 +75,6 @@ component("chromeos") {
     "system/cpu_temperature_reader.h",
     "system/devicemode.cc",
     "system/devicemode.h",
-    "system/devicetype.cc",
-    "system/devicetype.h",
     "system/factory_ping_embargo_check.cc",
     "system/factory_ping_embargo_check.h",
 
@@ -122,6 +120,8 @@ source_set("chromeos_constants") {
     "constants/chromeos_pref_names.h",
     "constants/chromeos_switches.cc",
     "constants/chromeos_switches.h",
+    "constants/devicetype.cc",
+    "constants/devicetype.h",
   ]
 }
 

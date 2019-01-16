@@ -116,7 +116,7 @@ static_library("tether") {
 
   deps = [
     "//base",
-    "//chromeos",
+    "//chromeos:chromeos_constants",
     "//chromeos/components/multidevice/logging",
     "//chromeos/components/tether/proto",
     "//chromeos/dbus",
@@ -202,7 +202,7 @@ static_library("test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//chromeos",
+    "//chromeos:chromeos_constants",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice:test_support",
     "//chromeos/components/tether/proto",
@@ -264,8 +264,7 @@ source_set("unit_tests") {
     ":test_support",
     ":tether",
     "//base/test:test_support",
-    "//chromeos",
-    "//chromeos:test_support",
+    "//chromeos:chromeos_constants",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice:test_support",
     "//chromeos/components/tether/proto",

@@ -51,7 +51,7 @@ static_library("proximity_auth") {
 
   deps = [
     "//base",
-    "//chromeos",
+    "//chromeos:chromeos_constants",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice/logging",
     "//chromeos/components/proximity_auth/public/interfaces",
@@ -116,11 +116,11 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
-    "//chromeos",
+    "//chromeos:chromeos_constants",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice:test_support",
     "//chromeos/components/multidevice/logging",
-    "//chromeos/dbus",
+    "//chromeos/dbus:test_support",
     "//chromeos/services/multidevice_setup/public/cpp:prefs",
     "//chromeos/services/multidevice_setup/public/cpp:test_support",
     "//chromeos/services/secure_channel:test_support",
