@@ -8,7 +8,6 @@
 #include <atomic>
 #include <cstdint>
 
-#include "base/sequence_checker.h"
 #include "base/synchronization/waitable_event.h"
 
 namespace base {
@@ -48,10 +47,9 @@ namespace internal {
 //   }
 // }
 //
-// Attention: StartAcceptingOperations() and ShutdownAndWaitForZeroOperations()
-// must be called form the same Sequence.
-//
-// This class is thread-safe (but see attention note above).
+// This class is thread-safe.
+// But note that StartAcceptingOperations can never be called after
+// ShutdownAndWaitForZeroOperations.
 class BASE_EXPORT OperationsController {
  public:
   // The owner of an OperationToken which evaluates to true can safely perform
@@ -94,10 +92,6 @@ class BASE_EXPORT OperationsController {
   // an invalid token). Returns true if an attempt to perform an operation was
   // made and denied before StartAcceptingOperations() was called. Can be called
   // at most once, never after ShutdownAndWaitForZeroOperations().
-  //
-  // Note that if this returns true, the caller may perform an operation to
-  // replace the ones denied (safe since ShutdownAndWaitForZeroOperations() has
-  // to be invoked on the same sequence).
   bool StartAcceptingOperations();
 
   // Returns a RAII like object that implicitly converts to true if operations
@@ -111,8 +105,6 @@ class BASE_EXPORT OperationsController {
   // all the ongoing operations to complete.
   //
   // Attention: Can only be called once.
-  // Attention: Must be called from the same Sequence as
-  // StartAcceptingOperations() (if called).
   void ShutdownAndWaitForZeroOperations();
 
  private:
@@ -151,9 +143,6 @@ class BASE_EXPORT OperationsController {
 
   std::atomic<uint32_t> state_and_count_{0};
   WaitableEvent shutdown_complete_;
-  // Verifies that StartAcceptingOperations() and
-  // ShutdownAndWaitForZeroOperations() are performed on the same sequence.
-  SEQUENCE_CHECKER(owning_sequence_checker_);
 };
 
 }  // namespace internal

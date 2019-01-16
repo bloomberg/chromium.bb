@@ -110,11 +110,13 @@ void MessageLoopImpl::Controller::DidQueueTask(bool was_empty) {
 }
 
 void MessageLoopImpl::Controller::StartScheduling() {
+  DCHECK_CALLED_ON_VALID_THREAD(message_loop_->bound_thread_checker_);
   if (operations_controller_.StartAcceptingOperations())
     message_loop_->ScheduleWork();
 }
 
 void MessageLoopImpl::Controller::DisconnectFromParent() {
+  DCHECK_CALLED_ON_VALID_THREAD(message_loop_->bound_thread_checker_);
   ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait_for_fast_ops;
   operations_controller_.ShutdownAndWaitForZeroOperations();
 }
