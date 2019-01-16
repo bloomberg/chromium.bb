@@ -33,13 +33,9 @@
 #import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_account_signin_item.h"
-#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
-#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_image_detail_text_item.h"
-#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/passphrase_error_item.h"
-#import "ios/chrome/browser/ui/settings/cells/password_details_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_multiline_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_search_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
@@ -60,7 +56,6 @@ namespace {
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierTextCell = kSectionIdentifierEnumZero,
   SectionIdentifierDetailCell,
-  SectionIdentifierMultilineCell,
   SectionIdentifierSwitchCell,
   SectionIdentifierNativeAppCell,
   SectionIdentifierAutofill,
@@ -88,7 +83,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeDetailBothLong,
   ItemTypeMultilineBasic,
   ItemTypeImportDataMultiline,
-  ItemTypeSwitchBasic,
   ItemTypeSwitchDynamicHeight,
   ItemTypeSwitchSync,
   ItemTypeHeader,
@@ -101,9 +95,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypePaymentsSingleLine,
   ItemTypePaymentsDynamicHeight,
   ItemTypeCopiedToChrome,
-  ItemTypePasswordDetailsShortHidden,
-  ItemTypePasswordDetailsShortVisible,
-  ItemTypePasswordDetailsLong,
   ItemTypeSettingsSearch,
   ItemTypeAutofillDynamicHeight,
   ItemTypeAutofillCVC,
@@ -112,7 +103,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeFooter,
   ItemTypeSyncPassphraseError,
   ItemTypeContentSuggestions,
-  ItemTypeImageDetailTextItem,
 };
 
 // Credit Card icon size.
@@ -229,45 +219,13 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   [model addItem:detailLongBoth
       toSectionWithIdentifier:SectionIdentifierDetailCell];
 
-  // Multiline cells.
-  [model addSectionWithIdentifier:SectionIdentifierMultilineCell];
-  [model addItem:[self settingsImageDetailTextItem]
-      toSectionWithIdentifier:SectionIdentifierMultilineCell];
-  LegacySettingsImageDetailTextItem* settingsImageDetailTextItem =
-      [self settingsImageDetailTextItem];
-  settingsImageDetailTextItem.text = @"Short title";
-  [model addItem:settingsImageDetailTextItem
-      toSectionWithIdentifier:SectionIdentifierMultilineCell];
-  settingsImageDetailTextItem = [self settingsImageDetailTextItem];
-  settingsImageDetailTextItem.detailText = @"Short detail text";
-  [model addItem:settingsImageDetailTextItem
-      toSectionWithIdentifier:SectionIdentifierMultilineCell];
-  settingsImageDetailTextItem = [self settingsImageDetailTextItem];
-  settingsImageDetailTextItem.detailText =
-      @"Text multiline that works nice with a very very very very very long "
-      @"text Text multiline that works nice with a very very very very very "
-      @"long text Text multiline that works nice with a very very very very "
-      @"very long text";
-  [model addItem:settingsImageDetailTextItem
-      toSectionWithIdentifier:SectionIdentifierMultilineCell];
-
   // Switch cells.
   [model addSectionWithIdentifier:SectionIdentifierSwitchCell];
-  [model addItem:[self basicSwitchItem]
-      toSectionWithIdentifier:SectionIdentifierSwitchCell];
-  [model addItem:[self longTextSwitchItem]
-      toSectionWithIdentifier:SectionIdentifierSwitchCell];
   [model addItem:[self syncSwitchItem]
       toSectionWithIdentifier:SectionIdentifierSwitchCell];
 
   // Autofill cells.
   [model addSectionWithIdentifier:SectionIdentifierAutofill];
-  [model addItem:[self autofillItemWithMainAndTrailingText]
-      toSectionWithIdentifier:SectionIdentifierAutofill];
-  [model addItem:[self autofillItemWithLeadingTextOnly]
-      toSectionWithIdentifier:SectionIdentifierAutofill];
-  [model addItem:[self autofillItemWithAllText]
-      toSectionWithIdentifier:SectionIdentifierAutofill];
   [model addItem:[self autofillEditItem]
       toSectionWithIdentifier:SectionIdentifierAutofill];
   [model addItem:[self autofillEditItemWithIcon]
@@ -350,15 +308,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   [model addItem:copiedToChromeItem
       toSectionWithIdentifier:SectionIdentifierCopiedToChrome];
 
-  // Password Details cells.
-  [model addSectionWithIdentifier:SectionIdentifierPasswordDetails];
-  [model addItem:[self passwordDetailsShortHiddenItem]
-      toSectionWithIdentifier:SectionIdentifierPasswordDetails];
-  [model addItem:[self passwordDetailsShortVisibleItem]
-      toSectionWithIdentifier:SectionIdentifierPasswordDetails];
-  [model addItem:[self passwordDetailsLongItem]
-      toSectionWithIdentifier:SectionIdentifierPasswordDetails];
-
   // Account cells.
   [model addSectionWithIdentifier:SectionIdentifierAccountCell];
   [model addItem:[self accountItemDetailWithError]
@@ -404,7 +353,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
   switch (item.type) {
-    case ItemTypeImageDetailTextItem:
     case ItemTypeContentSuggestions:
     case ItemTypeFooter:
     case ItemTypeSwitchDynamicHeight:
@@ -416,9 +364,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
     case ItemTypeTextError:
     case ItemTypeMultilineBasic:
     case ItemTypeImportDataMultiline:
-    case ItemTypePasswordDetailsShortHidden:
-    case ItemTypePasswordDetailsShortVisible:
-    case ItemTypePasswordDetailsLong:
     case ItemTypeAutofillCVC:
     case ItemTypeAutofillStatus:
     case ItemTypePaymentsDynamicHeight:
@@ -481,7 +426,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   switch (item.type) {
     case ItemTypeApp:
     case ItemTypeColdStateSigninPromo:
-    case ItemTypeSwitchBasic:
     case ItemTypeSwitchDynamicHeight:
     case ItemTypeSwitchSync:
     case ItemTypeWarmStateSigninPromo:
@@ -573,23 +517,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 
 #pragma mark Private
 
-- (CollectionViewItem*)basicSwitchItem {
-  LegacySettingsSwitchItem* item =
-      [[LegacySettingsSwitchItem alloc] initWithType:ItemTypeSwitchBasic];
-  item.text = @"Enable awesomeness.";
-  item.on = YES;
-  return item;
-}
-
-- (CollectionViewItem*)longTextSwitchItem {
-  LegacySettingsSwitchItem* item = [[LegacySettingsSwitchItem alloc]
-      initWithType:ItemTypeSwitchDynamicHeight];
-  item.text = @"Enable awesomeness. This is a very long text that is intended "
-              @"to overflow.";
-  item.on = YES;
-  return item;
-}
-
 - (CollectionViewItem*)syncSwitchItem {
   LegacySyncSwitchItem* item =
       [[LegacySyncSwitchItem alloc] initWithType:ItemTypeSwitchSync];
@@ -632,34 +559,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
     [cardTypeIcons addObject:cardTypeIcon];
   }
   item.methodTypeIcons = cardTypeIcons;
-  return item;
-}
-
-- (CollectionViewItem*)autofillItemWithMainAndTrailingText {
-  LegacyAutofillDataItem* item = [[LegacyAutofillDataItem alloc]
-      initWithType:ItemTypeAutofillDynamicHeight];
-  item.text = @"Main Text";
-  item.trailingDetailText = @"Trailing Detail Text";
-  item.accessoryType = MDCCollectionViewCellAccessoryNone;
-  return item;
-}
-
-- (CollectionViewItem*)autofillItemWithLeadingTextOnly {
-  LegacyAutofillDataItem* item = [[LegacyAutofillDataItem alloc]
-      initWithType:ItemTypeAutofillDynamicHeight];
-  item.text = @"Main Text";
-  item.leadingDetailText = @"Leading Detail Text";
-  item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
-  return item;
-}
-
-- (CollectionViewItem*)autofillItemWithAllText {
-  LegacyAutofillDataItem* item = [[LegacyAutofillDataItem alloc]
-      initWithType:ItemTypeAutofillDynamicHeight];
-  item.text = @"Main Text";
-  item.leadingDetailText = @"Leading Detail Text";
-  item.trailingDetailText = @"Trailing Detail Text";
-  item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
   return item;
 }
 
@@ -768,18 +667,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
   return articleItem;
 }
 
-- (LegacySettingsImageDetailTextItem*)settingsImageDetailTextItem {
-  LegacySettingsImageDetailTextItem* settingsImageDetailTextItem =
-      [[LegacySettingsImageDetailTextItem alloc]
-          initWithType:ItemTypeImageDetailTextItem];
-  settingsImageDetailTextItem.image =
-      [UIImage imageNamed:@"ios_default_avatar"];
-  settingsImageDetailTextItem.text =
-      @"Text multiline that works nice with a very very very very very long "
-      @"text";
-  return settingsImageDetailTextItem;
-}
-
 - (ContentSuggestionsFooterItem*)contentSuggestionsFooterItem {
   ContentSuggestionsFooterItem* footerItem =
       [[ContentSuggestionsFooterItem alloc]
@@ -787,31 +674,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
                  title:@"Footer title"
               callback:nil];
   return footerItem;
-}
-
-- (PasswordDetailsItem*)passwordDetailsShortHiddenItem {
-  PasswordDetailsItem* item = [[PasswordDetailsItem alloc]
-      initWithType:ItemTypePasswordDetailsShortHidden];
-  item.text = @"hunter2";
-  return item;
-}
-
-- (PasswordDetailsItem*)passwordDetailsShortVisibleItem {
-  PasswordDetailsItem* item = [[PasswordDetailsItem alloc]
-      initWithType:ItemTypePasswordDetailsShortVisible];
-  item.text = @"hunter2";
-  item.showingText = YES;
-  return item;
-}
-
-- (PasswordDetailsItem*)passwordDetailsLongItem {
-  PasswordDetailsItem* item =
-      [[PasswordDetailsItem alloc] initWithType:ItemTypePasswordDetailsLong];
-  item.text =
-      @"Lorem ipsum dolor sit amet, consectetur "
-      @"adipiscing elit, sed do eiusmod tempor "
-      @"incididunt ut labore et dolore magna aliqua.";
-  return item;
 }
 
 @end

@@ -13,6 +13,7 @@
 // TextAndErrorItem: Displays a text label and might containg an accessory type.
 // It might also display an error icon at the right side of the cell if the
 // shouldDisplayError flag is set to true.
+// TODO(crbug.com/894800): Remove this.
 @interface TextAndErrorItem : CollectionViewItem
 
 // Item text.

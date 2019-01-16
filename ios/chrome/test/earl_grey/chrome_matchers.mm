@@ -24,7 +24,6 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/settings/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
-#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
@@ -48,20 +47,11 @@
 
 namespace {
 
-// TODO(crbug.com/894800): Remove |use_new_cell|.
-id<GREYMatcher> SettingsSwitchIsToggledOn(BOOL is_toggled_on,
-                                          BOOL use_new_cell) {
+id<GREYMatcher> SettingsSwitchIsToggledOn(BOOL is_toggled_on) {
   MatchesBlock matches = ^BOOL(id element) {
-    UISwitch* switch_view;
-    if (use_new_cell) {
-      SettingsSwitchCell* switch_cell =
-          base::mac::ObjCCastStrict<SettingsSwitchCell>(element);
-      switch_view = switch_cell.switchView;
-    } else {
-      LegacySettingsSwitchCell* switch_cell =
-          base::mac::ObjCCastStrict<LegacySettingsSwitchCell>(element);
-      switch_view = switch_cell.switchView;
-    }
+    SettingsSwitchCell* switch_cell =
+        base::mac::ObjCCastStrict<SettingsSwitchCell>(element);
+    UISwitch* switch_view = switch_cell.switchView;
     return (switch_view.on && is_toggled_on) ||
            (!switch_view.on && !is_toggled_on);
   };
@@ -75,19 +65,11 @@ id<GREYMatcher> SettingsSwitchIsToggledOn(BOOL is_toggled_on,
                                               descriptionBlock:describe];
 }
 
-// TODO(crbug.com/894800): Remove |use_new_cell|.
-id<GREYMatcher> SettingsSwitchIsEnabled(BOOL is_enabled, BOOL use_new_cell) {
+id<GREYMatcher> SettingsSwitchIsEnabled(BOOL is_enabled) {
   MatchesBlock matches = ^BOOL(id element) {
-    UISwitch* switch_view;
-    if (use_new_cell) {
-      SettingsSwitchCell* switch_cell =
-          base::mac::ObjCCastStrict<SettingsSwitchCell>(element);
-      switch_view = switch_cell.switchView;
-    } else {
-      LegacySettingsSwitchCell* switch_cell =
-          base::mac::ObjCCastStrict<LegacySettingsSwitchCell>(element);
-      switch_view = switch_cell.switchView;
-    }
+    SettingsSwitchCell* switch_cell =
+        base::mac::ObjCCastStrict<SettingsSwitchCell>(element);
+    UISwitch* switch_view = switch_cell.switchView;
     return (switch_view.enabled && is_enabled) ||
            (!switch_view.enabled && !is_enabled);
   };
@@ -318,22 +300,8 @@ id<GREYMatcher> SettingsSwitchCell(NSString* accessibility_identifier,
                                    BOOL is_toggled_on,
                                    BOOL is_enabled) {
   return grey_allOf(grey_accessibilityID(accessibility_identifier),
-                    SettingsSwitchIsToggledOn(is_toggled_on, YES),
-                    SettingsSwitchIsEnabled(is_enabled, YES),
-                    grey_sufficientlyVisible(), nil);
-}
-
-id<GREYMatcher> LegacySettingsSwitchCell(NSString* accessibility_identifier,
-                                         BOOL is_toggled_on) {
-  return LegacySettingsSwitchCell(accessibility_identifier, is_toggled_on, YES);
-}
-
-id<GREYMatcher> LegacySettingsSwitchCell(NSString* accessibility_identifier,
-                                         BOOL is_toggled_on,
-                                         BOOL is_enabled) {
-  return grey_allOf(grey_accessibilityID(accessibility_identifier),
-                    SettingsSwitchIsToggledOn(is_toggled_on, NO),
-                    SettingsSwitchIsEnabled(is_enabled, NO),
+                    SettingsSwitchIsToggledOn(is_toggled_on),
+                    SettingsSwitchIsEnabled(is_enabled),
                     grey_sufficientlyVisible(), nil);
 }
 

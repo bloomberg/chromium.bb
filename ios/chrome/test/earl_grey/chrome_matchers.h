@@ -108,17 +108,6 @@ id<GREYMatcher> SettingsSwitchCell(NSString* accessibility_identifier,
                                    BOOL is_toggled_on,
                                    BOOL is_enabled);
 
-// Matcher for LegacySettingsSwitchCell.
-// TODO(crbug.com/894800): Remove this.
-id<GREYMatcher> LegacySettingsSwitchCell(NSString* accessibility_identifier,
-                                         BOOL is_toggled_on);
-
-// Matcher for LegacySettingsSwitchCell.
-// TODO(crbug.com/894800): Remove this.
-id<GREYMatcher> LegacySettingsSwitchCell(NSString* accessibility_identifier,
-                                         BOOL is_toggled_on,
-                                         BOOL is_enabled);
-
 // Matcher for LegacySyncSwitchCell.
 id<GREYMatcher> LegacySyncSwitchCell(NSString* accessibilityLabel,
                                      BOOL isToggledOn);

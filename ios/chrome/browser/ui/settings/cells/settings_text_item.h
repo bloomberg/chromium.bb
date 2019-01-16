@@ -11,6 +11,7 @@
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 // Collection view item to represent and configure a CollectionViewTextCell.
+// TODO(crbug.com/894800): Remove this.
 @interface SettingsTextItem : CollectionViewItem
 
 // The accessory type for the represented cell.
