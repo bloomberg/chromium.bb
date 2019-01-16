@@ -29,7 +29,7 @@ uint32_t kCleanSlateBL_A1 = 0x0B000000;   // A24.
 uint32_t kCleanSlateBLX_A2 = 0xFA000000;  // A24.
 uint16_t kCleanSlateB_T1 = 0xD000;        // T8.
 uint16_t kCleanSlateB_T2 = 0xE000;        // T11.
-uint32_t kCleanSlateB_T3 = 0xF0008000;    // T21.
+uint32_t kCleanSlateB_T3 = 0xF0008000;    // T20.
 // For T4 encodings, |disp| = 0 means J1 = J2 = 1, so include 0x00002800.
 uint32_t kCleanSlateB_T4 = 0xF0009000 | 0x00002800;    // T24.
 uint32_t kCleanSlateBL_T1 = 0xF000D000 | 0x00002800;   // T24.
@@ -334,20 +334,20 @@ TEST(Arm32Rel32Translator, EncodeDecode) {
                {0x07FE, -0x0800, 0, 2, -2, 4, 0x40, 0x42},
                {1, -1, 0x41, 0x43, 0x0800, -0x0802});
 
-  // T21 tests.
-  ArmTranslatorEncodeDecodeTest<Arm32Rel32Translator::AddrTraits_T21> test_T21;
+  // T20 tests.
+  ArmTranslatorEncodeDecodeTest<Arm32Rel32Translator::AddrTraits_T20> test_T20;
   for (int cond = 0; cond <= 0x0E; ++cond) {
     ArmRelInstruction<uint32_t> B_T3_cond(
         "11110Scc cciiiiii 10(J1)0(J2)jjj jjjjjjjj",
         kCleanSlateB_T3 | (cond << 22));
-    test_T21.Run("SSSSSSSS SSSS(J2)(J1)ii iiiijjjj jjjjjjj0",
+    test_T20.Run("SSSSSSSS SSSS(J2)(J1)ii iiiijjjj jjjjjjj0",
                  {"S", "J2", "J1", "i", "j"}, {B_T3_cond},
                  {0x000FFFFE, -0x00100000, 0, 2, -2, 4, 0x40, 0x42},
                  {1, -1, 0x41, 0x43, 0x00100000, -0x00100002});
   }
   ArmRelInstruction<uint32_t> B_T3_invalid(
       "11110.11 11...... 10.0.... ........", kCleanSlateB_T3 | (0x0F << 22));
-  test_T21.Run("........ ........ ........ ........",
+  test_T20.Run("........ ........ ........ ........",
                std::vector<std::string>(), {B_T3_invalid},
                std::vector<arm_disp_t>(),
                {0x000FFFFE, -0x00100000, 0, 2, 4, 0x40, 0x42, 1, 0x41, 0x43,
