@@ -500,8 +500,6 @@ class CORE_EXPORT HTMLMediaElement
   // This does not stop autoplay visibility observation.
   void PauseInternal();
 
-  void AllowVideoRendering();
-
   void UpdateVolume();
   void UpdatePlayState();
   bool PotentiallyPlaying() const;
