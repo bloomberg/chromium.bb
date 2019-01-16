@@ -26,9 +26,18 @@ bool IsScreenCaptureMediaType(MediaStreamType type) {
   return IsDesktopCaptureMediaType(type) || IsTabCaptureMediaType(type);
 }
 
+bool IsVideoScreenCaptureMediaType(MediaStreamType type) {
+  return IsVideoDesktopCaptureMediaType(type) ||
+         type == MEDIA_GUM_TAB_VIDEO_CAPTURE;
+}
+
 bool IsDesktopCaptureMediaType(MediaStreamType type) {
+  return (type == MEDIA_GUM_DESKTOP_AUDIO_CAPTURE ||
+          IsVideoDesktopCaptureMediaType(type));
+}
+
+bool IsVideoDesktopCaptureMediaType(MediaStreamType type) {
   return (type == MEDIA_DISPLAY_VIDEO_CAPTURE ||
-          type == MEDIA_GUM_DESKTOP_AUDIO_CAPTURE ||
           type == MEDIA_GUM_DESKTOP_VIDEO_CAPTURE);
 }
 

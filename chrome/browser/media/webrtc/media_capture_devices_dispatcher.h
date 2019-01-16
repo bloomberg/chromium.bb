@@ -178,11 +178,11 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
                                          content::MediaRequestState state);
   void OnCreatingAudioStreamOnUIThread(int render_process_id,
                                        int render_frame_id);
-  void UpdateCapturingLinkSecured(int render_process_id,
-                                  int render_frame_id,
-                                  int page_request_id,
-                                  blink::MediaStreamType stream_type,
-                                  bool is_secure);
+  void UpdateVideoScreenCaptureStatus(int render_process_id,
+                                      int render_frame_id,
+                                      int page_request_id,
+                                      blink::MediaStreamType stream_type,
+                                      bool is_secure);
 
   // Only for testing, a list of cached audio capture devices.
   blink::MediaStreamDevices test_audio_devices_;

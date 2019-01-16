@@ -21,7 +21,8 @@
 
 namespace blink {
 
-// Types of media streams.
+// Types of media streams. When updating this list, make sure to update the
+// predicates declared below, e.g. IsVideoScreenCaptureMediaType().
 enum MediaStreamType {
   MEDIA_NO_SERVICE = 0,
 
@@ -84,7 +85,10 @@ using CameraCalibration =
 BLINK_COMMON_EXPORT bool IsAudioInputMediaType(MediaStreamType type);
 BLINK_COMMON_EXPORT bool IsVideoInputMediaType(MediaStreamType type);
 BLINK_COMMON_EXPORT bool IsScreenCaptureMediaType(MediaStreamType type);
+// Whether the |type| captures anything on the screen.
+BLINK_COMMON_EXPORT bool IsVideoScreenCaptureMediaType(MediaStreamType type);
 BLINK_COMMON_EXPORT bool IsDesktopCaptureMediaType(MediaStreamType type);
+BLINK_COMMON_EXPORT bool IsVideoDesktopCaptureMediaType(MediaStreamType type);
 BLINK_COMMON_EXPORT bool IsTabCaptureMediaType(MediaStreamType type);
 BLINK_COMMON_EXPORT bool IsDeviceMediaType(MediaStreamType type);
 

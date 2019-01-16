@@ -60,10 +60,10 @@ class MediaAccessHandler {
                                              int render_frame_id);
 
   //  Update any ongoing insecured capturing state.
-  virtual void UpdateCapturingLinkSecured(int render_process_id,
-                                          int render_frame_id,
-                                          int page_request_id,
-                                          bool is_secure) {}
+  virtual void UpdateVideoScreenCaptureStatus(int render_process_id,
+                                              int render_frame_id,
+                                              int page_request_id,
+                                              bool is_secure) {}
 
  protected:
   // Helper function for derived classes which takes in whether audio/video

@@ -461,34 +461,30 @@ void MediaCaptureDevicesDispatcher::OnSetCapturingLinkSecured(
     blink::MediaStreamType stream_type,
     bool is_secure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (stream_type != blink::MEDIA_GUM_TAB_VIDEO_CAPTURE &&
-      stream_type != blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE &&
-      stream_type != blink::MEDIA_DISPLAY_VIDEO_CAPTURE) {
+
+  if (!IsVideoScreenCaptureMediaType(stream_type))
     return;
-  }
+
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&MediaCaptureDevicesDispatcher::UpdateCapturingLinkSecured,
-                     base::Unretained(this), render_process_id, render_frame_id,
-                     page_request_id, stream_type, is_secure));
+      base::BindOnce(
+          &MediaCaptureDevicesDispatcher::UpdateVideoScreenCaptureStatus,
+          base::Unretained(this), render_process_id, render_frame_id,
+          page_request_id, stream_type, is_secure));
 }
 
-void MediaCaptureDevicesDispatcher::UpdateCapturingLinkSecured(
+void MediaCaptureDevicesDispatcher::UpdateVideoScreenCaptureStatus(
     int render_process_id,
     int render_frame_id,
     int page_request_id,
     blink::MediaStreamType stream_type,
     bool is_secure) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (stream_type != blink::MEDIA_GUM_TAB_VIDEO_CAPTURE &&
-      stream_type != blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE &&
-      stream_type != blink::MEDIA_DISPLAY_VIDEO_CAPTURE) {
-    return;
-  }
+  DCHECK(IsVideoScreenCaptureMediaType(stream_type));
 
   for (const auto& handler : media_access_handlers_) {
-    handler->UpdateCapturingLinkSecured(render_process_id, render_frame_id,
-                                        page_request_id, is_secure);
+    handler->UpdateVideoScreenCaptureStatus(render_process_id, render_frame_id,
+                                            page_request_id, is_secure);
     break;
   }
 }
