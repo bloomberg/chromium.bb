@@ -111,12 +111,12 @@ struct ModuleInfoData {
   std::unique_ptr<ModuleInspectionResult> inspection_result;
 };
 
-// Given a module identified by |module_key|, returns a populated
+// Given a module located at |module_path|, returns a populated
 // ModuleInspectionResult that contains detailed information about the module on
 // disk. This is a blocking task that requires access to disk.
 std::unique_ptr<ModuleInspectionResult> InspectModule(
     const StringMapping& env_variable_mapping,
-    const ModuleInfoKey& module_key);
+    const base::FilePath& module_path);
 
 // Generate the code id of a module.
 std::string GenerateCodeId(const ModuleInfoKey& module_key);

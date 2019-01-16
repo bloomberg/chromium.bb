@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -30,14 +31,14 @@ StringMapping GetPathMapping() {
 // background sequences, change this to use base::PostTaskAndReplyWithResult().
 void InspectModuleOnBlockingSequenceAndReply(
     scoped_refptr<base::RefCountedData<StringMapping>> env_variable_mapping,
-    const ModuleInfoKey& module_key,
+    const base::FilePath& module_path,
     scoped_refptr<base::SequencedTaskRunner> reply_task_runner,
     base::OnceCallback<void(std::unique_ptr<ModuleInspectionResult>)>
         on_inspection_finished_callback) {
   reply_task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(on_inspection_finished_callback),
-                     InspectModule(env_variable_mapping->data, module_key)));
+                     InspectModule(env_variable_mapping->data, module_path)));
 }
 
 }  // namespace
@@ -91,8 +92,8 @@ void ModuleInspector::StartInspectingModule() {
   AfterStartupTaskUtils::PostTask(
       FROM_HERE, task_runner_,
       base::BindOnce(
-          &InspectModuleOnBlockingSequenceAndReply, path_mapping_, module_key,
-          base::SequencedTaskRunnerHandle::Get(),
+          &InspectModuleOnBlockingSequenceAndReply, path_mapping_,
+          module_key.module_path, base::SequencedTaskRunnerHandle::Get(),
           base::BindOnce(&ModuleInspector::OnInspectionFinished,
                          weak_ptr_factory_.GetWeakPtr(), module_key)));
 }
