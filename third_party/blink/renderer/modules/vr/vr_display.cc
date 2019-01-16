@@ -151,9 +151,7 @@ VRDisplay::VRDisplay(NavigatorVR* navigator_vr,
 
 VRDisplay::~VRDisplay() = default;
 
-void VRDisplay::Pause() {}
-
-void VRDisplay::Unpause() {
+void VRDisplay::ContextUnpaused() {
   RequestVSync();
 }
 

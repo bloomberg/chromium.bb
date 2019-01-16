@@ -24,7 +24,7 @@
  *
  */
 
-#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/execution_context/pausable_object.h"
 
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
@@ -59,9 +59,9 @@ void PausableObject::PauseIfNeeded() {
     context->PausePausableObjectIfNeeded(this);
 }
 
-void PausableObject::Pause() {}
+void PausableObject::ContextPaused(PauseState) {}
 
-void PausableObject::Unpause() {}
+void PausableObject::ContextUnpaused() {}
 
 void PausableObject::DidMoveToNewExecutionContext(ExecutionContext* context) {
   SetContext(context);
@@ -71,12 +71,13 @@ void PausableObject::DidMoveToNewExecutionContext(ExecutionContext* context) {
     return;
   }
 
-  if (context->IsContextPaused()) {
-    Pause();
+  base::Optional<PauseState> pause_state = context->ContextPauseState();
+  if (pause_state) {
+    ContextPaused(pause_state.value());
     return;
   }
 
-  Unpause();
+  ContextUnpaused();
 }
 
 }  // namespace blink

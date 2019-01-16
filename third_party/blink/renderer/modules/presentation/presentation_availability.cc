@@ -76,11 +76,11 @@ bool PresentationAvailability::HasPendingActivity() const {
   return state_ != State::kInactive;
 }
 
-void PresentationAvailability::Unpause() {
+void PresentationAvailability::ContextUnpaused() {
   SetState(State::kActive);
 }
 
-void PresentationAvailability::Pause() {
+void PresentationAvailability::ContextPaused(PauseState) {
   SetState(State::kSuspended);
 }
 

@@ -316,7 +316,7 @@ TEST_F(ScriptPromiseResolverTest, suspend) {
       BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
   ASSERT_TRUE(ScriptPromiseResolverKeepAlive::IsAlive());
 
-  GetExecutionContext()->PausePausableObjects();
+  GetExecutionContext()->PausePausableObjects(PauseState::kFrozen);
   resolver->Resolve("hello");
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,

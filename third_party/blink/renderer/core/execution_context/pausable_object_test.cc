@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/execution_context/pausable_object.h"
 
 #include <memory>
 #include "testing/gmock/include/gmock/gmock.h"
@@ -95,7 +95,7 @@ TEST_F(PausableObjectTest, MoveToActiveDocument) {
 }
 
 TEST_F(PausableObjectTest, MoveToSuspendedDocument) {
-  DestDocument().PauseScheduledTasks();
+  DestDocument().PauseScheduledTasks(PauseState::kFrozen);
 
   EXPECT_CALL(PausableObject(), Pause());
   PausableObject().DidMoveToNewExecutionContext(&DestDocument());

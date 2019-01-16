@@ -59,11 +59,11 @@ bool PermissionStatus::HasPendingActivity() const {
   return binding_.is_bound();
 }
 
-void PermissionStatus::Unpause() {
+void PermissionStatus::ContextUnpaused() {
   StartListening();
 }
 
-void PermissionStatus::Pause() {
+void PermissionStatus::ContextPaused(PauseState) {
   StopListening();
 }
 

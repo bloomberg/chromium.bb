@@ -37,7 +37,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/execution_context/pausable_object.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -124,8 +124,8 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
 
   // PausableObject functions.
   void ContextDestroyed(ExecutionContext*) override;
-  void Pause() override;
-  void Unpause() override;
+  void ContextPaused(PauseState) override;
+  void ContextUnpaused() override;
 
   // ScriptWrappable functions.
   // Prevent this instance from being collected while it's not in CLOSED

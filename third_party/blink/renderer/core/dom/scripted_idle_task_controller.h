@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_idle_request_callback.h"
 #include "third_party/blink/renderer/core/dom/idle_deadline.h"
-#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/execution_context/pausable_object.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -78,8 +78,8 @@ class CORE_EXPORT ScriptedIdleTaskController
 
   // PausableObject interface.
   void ContextDestroyed(ExecutionContext*) override;
-  void Pause() override;
-  void Unpause() override;
+  void ContextPaused(PauseState) override;
+  void ContextUnpaused() override;
 
   void CallbackFired(CallbackId,
                      TimeTicks deadline,
