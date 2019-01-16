@@ -11,15 +11,14 @@ const test_desc = 'requestLEScan with multiple filters.';
 
 bluetooth_test(async (t) => {
   const fake_central =
-    await navigator.bluetooth.test.simulateCentral({state: 'powered-on'});
+      await navigator.bluetooth.test.simulateCentral({state: 'powered-on'});
 
-  await callWithTrustedClick(async () => {
-    await navigator.bluetooth.requestLEScan({filters: [{namePrefix: 'Health'},
-      {services: [health_uuid]}]})
-  });
+  await callWithTrustedClick(
+      async () => {await navigator.bluetooth.requestLEScan(
+          {filters: [{namePrefix: 'Health'}, {services: [health_uuid]}]})});
 
-  const eventWatcher = new EventWatcher(t,
-    navigator.bluetooth, ['advertisementreceived']);
+  const eventWatcher =
+      new EventWatcher(t, navigator.bluetooth, ['advertisementreceived']);
 
   let scan = {
     deviceAddress: '09:09:09:09:09:09',
@@ -49,7 +48,5 @@ bluetooth_test(async (t) => {
     assert_equals(e.name, 'Health Thermometer');
     assert_array_equals(e.uuids, []);
   });
-
 }, test_desc);
-
 </script>

@@ -7,17 +7,18 @@
 <script src="../../external/wpt/bluetooth/resources/bluetooth-scanning-helpers.js"></script>
 <script>
 'use strict';
-const test_desc = "requestLEScan scan options should have exactly one of " +
-    "'filters' or 'acceptAllAdvertisements:true'. Reject with TypeError if not.";
+const test_desc = 'requestLEScan scan options should have exactly one of ' +
+    '\'filters\' or \'acceptAllAdvertisements:true\'. Reject with TypeError if not.';
 const expected = new DOMException(
-    "Failed to execute 'requestLEScan' on 'Bluetooth': " +
-    "Either 'filters' should be present or " +
-    "'acceptAllAdvertisements' should be true, but not both.",
+    'Failed to execute \'requestLEScan\' on \'Bluetooth\': ' +
+        'Either \'filters\' should be present or ' +
+        '\'acceptAllAdvertisements\' should be true, but not both.',
     new TypeError());
 
 bluetooth_test(() => {
-    return assert_promise_rejects_with_message(
-         requestLEScanWithTrustedClick({filters: [], acceptAllAdvertisements: true}),
-         expected);
-  }, test_desc);
+  return assert_promise_rejects_with_message(
+      requestLEScanWithTrustedClick(
+          {filters: [], acceptAllAdvertisements: true}),
+      expected);
+}, test_desc);
 </script>

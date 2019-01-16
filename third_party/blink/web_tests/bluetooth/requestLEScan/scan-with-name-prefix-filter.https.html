@@ -12,15 +12,15 @@ let scan_result;
 
 bluetooth_test(async (t) => {
   const fake_central =
-    await navigator.bluetooth.test.simulateCentral({state: 'powered-on'});
+      await navigator.bluetooth.test.simulateCentral({state: 'powered-on'});
 
-  await callWithTrustedClick(async () => {
-    scan_result = await navigator.bluetooth.requestLEScan({filters: [{namePrefix: 'Health'}]})
-  });
+  await callWithTrustedClick(
+      async () => {scan_result = await navigator.bluetooth.requestLEScan(
+                       {filters: [{namePrefix: 'Health'}]})});
   assert_equals(scan_result.filters[0].namePrefix, 'Health')
 
-  const eventWatcher = new EventWatcher(t,
-    navigator.bluetooth, ['advertisementreceived']);
+  const eventWatcher =
+      new EventWatcher(t, navigator.bluetooth, ['advertisementreceived']);
 
   let promise = eventWatcher.wait_for('advertisementreceived').then(e => {
     assert_equals(e.name, 'Health Thermometer');
@@ -42,7 +42,5 @@ bluetooth_test(async (t) => {
   scan.scanRecord.name = 'Health Thermometer';
   fake_central.simulateAdvertisementReceived(scan);
   return promise;
-
 }, test_desc);
-
 </script>
