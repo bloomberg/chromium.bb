@@ -212,6 +212,12 @@ void SimulateMouseWheelCtrlZoomEvent(WebContents* web_contents,
                                      const gfx::Point& point,
                                      bool zoom_in,
                                      blink::WebMouseWheelEvent::Phase phase);
+
+void SimulateTouchscreenPinch(WebContents* web_contents,
+                              const gfx::PointF& anchor,
+                              float scale_change,
+                              base::OnceClosure on_complete);
+
 #endif  // !defined(OS_MACOSX)
 
 // Sends a GesturePinch Begin/Update/End sequence.

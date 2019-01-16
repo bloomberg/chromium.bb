@@ -248,8 +248,8 @@ chrome.test.runTests(function() {
     },
 
     function testPreventNativePinchZoom() {
-      let pluginElement = viewer.plugin_;
-      let touchAction = window.getComputedStyle(pluginElement).touchAction;
+      let touchAction =
+          window.getComputedStyle(document.documentElement).touchAction;
 
       chrome.test.assertEq('pan-x pan-y', touchAction);
 
