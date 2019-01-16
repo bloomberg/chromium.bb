@@ -41,12 +41,12 @@ import java.util.Set;
  * A class for keeping track of common data associated with showing contact details in
  * the contacts picker, for example the RecyclerView.
  */
-public class PickerCategoryView
-        extends RelativeLayout implements View.OnClickListener, RecyclerView.RecyclerListener,
-                                          SelectionDelegate.SelectionObserver<ContactDetails>,
-                                          SelectableListToolbar.SearchDelegate {
+public class PickerCategoryView extends RelativeLayout
+        implements View.OnClickListener, RecyclerView.RecyclerListener,
+                   SelectionDelegate.SelectionObserver<ContactDetails>,
+                   SelectableListToolbar.SearchDelegate, TopView.SelectAllToggleCallback {
     // Constants for the RoundedIconGenerator.
-    private static final int ICON_SIZE_DP = 28;
+    private static final int ICON_SIZE_DP = 36;
     private static final int ICON_CORNER_RADIUS_DP = 20;
     private static final int ICON_TEXT_SIZE_DP = 12;
 
@@ -67,6 +67,9 @@ public class PickerCategoryView
 
     // The RecyclerView showing the images.
     private RecyclerView mRecyclerView;
+
+    // The view at the top (showing the explanation and Select All checkbox).
+    private TopView mTopView;
 
     // The {@link PickerAdapter} for the RecyclerView.
     private PickerAdapter mPickerAdapter;
@@ -91,17 +94,6 @@ public class PickerCategoryView
 
     // The Done text button that confirms the selection choice.
     private Button mDoneButton;
-
-    // The action button in the bottom right corner.
-    private ImageView mActionButton;
-
-    // The accessibility labels for the two states of the action button.
-    private String mLabelSelectAll;
-    private String mLabelUndo;
-
-    // The action button has two modes, Select All and Undo. This keeps track of which mode is
-    // active.
-    private boolean mSelectAllMode = true;
 
     // Whether the picker is in multi-selection mode.
     private boolean mMultiSelectionAllowed;
@@ -143,17 +135,6 @@ public class PickerCategoryView
                 false, false);
         mToolbar.setNavigationOnClickListener(this);
         mToolbar.initializeSearchView(this, R.string.contacts_picker_search, 0);
-
-        mActionButton = (ImageView) root.findViewById(R.id.action);
-        if (multiSelectionAllowed) {
-            mActionButton.setOnClickListener(this);
-
-            mLabelSelectAll = resources.getString(R.string.select_all);
-            mLabelUndo = resources.getString(R.string.undo);
-            mActionButton.setContentDescription(mLabelSelectAll);
-        } else {
-            mActionButton.setVisibility(GONE);
-        }
 
         mSearchButton = (ImageView) mToolbar.findViewById(R.id.search);
         mSearchButton.setOnClickListener(this);
@@ -199,8 +180,9 @@ public class PickerCategoryView
 
         // Showing the search clears current selection. Save it, so we can restore it after the
         // search has completed.
-        mPreviousSelection = mSelectionDelegate.getSelectedItems();
+        mPreviousSelection = new HashSet<ContactDetails>(mSelectionDelegate.getSelectedItems());
         mSearchButton.setVisibility(GONE);
+        mPickerAdapter.setSearchMode(true);
         mToolbar.showSearchView();
     }
 
@@ -209,6 +191,7 @@ public class PickerCategoryView
     @Override
     public void onEndSearch() {
         mPickerAdapter.setSearchString("");
+        mPickerAdapter.setSearchMode(false);
         mToolbar.showCloseButton();
         mToolbar.setNavigationOnClickListener(this);
         mDoneButton.setVisibility(VISIBLE);
@@ -245,13 +228,8 @@ public class PickerCategoryView
             mToolbar.hideSearchView();
         }
 
-        // If all items have been selected, only show the Undo button if there's a meaningful
-        // state to revert to (one might not exist if they were all selected manually).
-        mActionButton.setVisibility(!mToolbar.isSearching() && mMultiSelectionAllowed
-                                && (selectedItems.size() != mPickerAdapter.getItemCount()
-                                           || mPreviousSelection != null)
-                        ? VISIBLE
-                        : GONE);
+        boolean allSelected = selectedItems.size() == mPickerAdapter.getItemCount() - 1;
+        mTopView.updateSelectAllCheckbox(allSelected);
     }
 
     // RecyclerView.RecyclerListener:
@@ -260,6 +238,24 @@ public class PickerCategoryView
     public void onViewRecycled(RecyclerView.ViewHolder holder) {
         ContactViewHolder bitmapHolder = (ContactViewHolder) holder;
         bitmapHolder.cancelIconRetrieval();
+    }
+
+    // TopView.SelectAllToggleCallback:
+
+    @Override
+    public void onSelectAllToggled(boolean allSelected) {
+        if (allSelected) {
+            mPreviousSelection = mSelectionDelegate.getSelectedItems();
+            mSelectionDelegate.setSelectedItems(
+                    new HashSet<ContactDetails>(mPickerAdapter.getAllContacts()));
+            mListener.onContactsPickerUserAction(
+                    ContactsPickerListener.ContactsPickerAction.SELECT_ALL, null);
+        } else {
+            mSelectionDelegate.setSelectedItems(new HashSet<ContactDetails>());
+            mPreviousSelection = null;
+            mListener.onContactsPickerUserAction(
+                    ContactsPickerListener.ContactsPickerAction.UNDO_SELECT_ALL, null);
+        }
     }
 
     // OnClickListener:
@@ -271,30 +267,12 @@ public class PickerCategoryView
             notifyContactsSelected();
         } else if (id == R.id.search) {
             onStartSearch();
-        } else if (id == R.id.action) {
-            if (mSelectAllMode) {
-                mPreviousSelection = mSelectionDelegate.getSelectedItems();
-                mSelectionDelegate.setSelectedItems(
-                        new HashSet<ContactDetails>(mPickerAdapter.getAllContacts()));
-                mActionButton.setImageResource(R.drawable.ic_undo);
-                mActionButton.setContentDescription(mLabelUndo);
-                mListener.onContactsPickerUserAction(
-                        ContactsPickerListener.ContactsPickerAction.SELECT_ALL, null);
-            } else {
-                mSelectionDelegate.setSelectedItems(mPreviousSelection);
-                mActionButton.setImageResource(R.drawable.ic_select_all);
-                mActionButton.setContentDescription(mLabelSelectAll);
-                mPreviousSelection = null;
-                mListener.onContactsPickerUserAction(
-                        ContactsPickerListener.ContactsPickerAction.UNDO_SELECT_ALL, null);
-            }
-            mSelectAllMode = !mSelectAllMode;
         } else {
             executeAction(ContactsPickerListener.ContactsPickerAction.CANCEL, null);
         }
     }
 
-    // Simple accessors:
+    // Simple getters and setters:
 
     SelectionDelegate<ContactDetails> getSelectionDelegate() {
         return mSelectionDelegate;
@@ -310,6 +288,14 @@ public class PickerCategoryView
 
     ChromeActivity getActivity() {
         return mActivity;
+    }
+
+    void setTopView(TopView topView) {
+        mTopView = topView;
+    }
+
+    boolean multiSelectionAllowed() {
+        return mMultiSelectionAllowed;
     }
 
     /**

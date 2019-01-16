@@ -212,9 +212,6 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SELECT" desc="Prompt for user to select something. [CHAR-LIMIT=20]">
         Select
       </message>
-      <message name="IDS_SELECT_ALL" desc="Prompt for user to select everything.">
-        Select all
-      </message>
       <message name="IDS_ADD" desc="Prompt for the user to add something, like a new address. [CHAR-LIMIT=20]">
         Add
       </message>
@@ -3555,10 +3552,16 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       <message name="IDS_CONTACTS_PICKER_SELECT_CONTACT" desc="The label at the top of the dialog that allows users to select a single contact from their device and share the details with a web page.">
         Select a contact
       </message>
+      <message name="IDS_CONTACTS_PICKER_ALL_CONTACTS" desc="The label associated with the select all checkbox, indicating that all the contacts will be selected.">
+        All contacts
+      </message>
       <message name="IDS_CONTACTS_PICKER_MORE_DETAILS" desc="Label describing that the user has one or more telephone/emails (used for either). The leading space is a word separator, for those languages that use space as a separator.">
         {DETAIL_COUNT, plural,
           =1 { (+ 1 more)}
           other { (+ # more)}}
+      </message>
+      <message name="IDS_DISCLAIMER_SHARING_CONTACT_DETAILS" desc="Label describing what will happen with the contact details that are being shared.">
+        The contacts you select below will be shared with the website <ph name="SITE">%1$s<ex>https://www.google.com</ex></ph>.
       </message>
 
       <!-- Photo Picker strings -->

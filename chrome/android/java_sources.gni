@@ -335,6 +335,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/contacts_picker/FetchIconWorkerTask.java",
   "java/src/org/chromium/chrome/browser/contacts_picker/PickerAdapter.java",
   "java/src/org/chromium/chrome/browser/contacts_picker/PickerCategoryView.java",
+  "java/src/org/chromium/chrome/browser/contacts_picker/TopView.java",
   "java/src/org/chromium/chrome/browser/content/ContentUtils.java",
   "java/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuItem.java",
   "java/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulator.java",

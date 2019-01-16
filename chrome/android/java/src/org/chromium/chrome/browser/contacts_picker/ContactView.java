@@ -7,15 +7,13 @@ package org.chromium.chrome.browser.contacts_picker;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -29,9 +27,6 @@ import java.util.List;
  * A container class for a view showing a contact in the Contacts Picker.
  */
 public class ContactView extends SelectableItemView<ContactDetails> {
-    // The length of the fade in animation (in ms).
-    private static final int IMAGE_FADE_IN_DURATION = 150;
-
     // Our context.
     private Context mContext;
 
@@ -43,13 +38,6 @@ public class ContactView extends SelectableItemView<ContactDetails> {
 
     // The details of the contact shown.
     private ContactDetails mContactDetails;
-
-    // The image view containing the profile image of the contact, or the abbreviated letters of the
-    // contact's name.
-    private ImageView mImage;
-
-    // The control that signifies the contact has been selected.
-    private ImageView mSelectedView;
 
     // The display name of the contact.
     public TextView mDisplayName;
@@ -77,10 +65,8 @@ public class ContactView extends SelectableItemView<ContactDetails> {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mImage = (ImageView) findViewById(R.id.image);
-        mDisplayName = (TextView) findViewById(R.id.name);
-        mDetailsView = (TextView) findViewById(R.id.details);
-        mSelectedView = (ImageView) findViewById(R.id.selected);
+        mDisplayName = findViewById(R.id.title);
+        mDetailsView = findViewById(R.id.description);
     }
 
     @Override
@@ -111,15 +97,9 @@ public class ContactView extends SelectableItemView<ContactDetails> {
                          .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, mContext.getResources(),
                                  R.string.close)
                          .build();
-        mModel.set(ModalDialogProperties.TITLE_ICON, mImage.getDrawable());
+        mModel.set(ModalDialogProperties.TITLE_ICON, getIconDrawable());
         mManager.showDialog(mModel, ModalDialogManager.ModalDialogType.APP);
         return true;
-    }
-
-    @Override
-    public void setChecked(boolean checked) {
-        super.setChecked(checked);
-        updateSelectionState();
     }
 
     @Override
@@ -134,8 +114,6 @@ public class ContactView extends SelectableItemView<ContactDetails> {
         boolean selected = selectedItems.contains(mContactDetails);
         boolean checked = super.isChecked();
         if (selected != checked) super.toggle();
-
-        updateSelectionState();
     }
 
     /**
@@ -171,12 +149,10 @@ public class ContactView extends SelectableItemView<ContactDetails> {
         if (icon == null) {
             icon = mCategoryView.getIconGenerator().generateIconForText(
                     contactDetails.getDisplayNameAbbreviation());
-            mImage.setImageBitmap(icon);
+            setIconDrawable(new BitmapDrawable(getResources(), icon));
         } else {
             setIconBitmap(icon);
         }
-
-        updateSelectionState();
     }
 
     /**
@@ -187,9 +163,7 @@ public class ContactView extends SelectableItemView<ContactDetails> {
         Resources resources = mContext.getResources();
         RoundedBitmapDrawable drawable = RoundedBitmapDrawableFactory.create(resources, icon);
         drawable.setCircular(true);
-        mImage.setImageDrawable(drawable);
-        mImage.setAlpha(0.0f);
-        mImage.animate().alpha(1.0f).setDuration(IMAGE_FADE_IN_DURATION).start();
+        setIconDrawable(drawable);
     }
 
     /**
@@ -197,26 +171,8 @@ public class ContactView extends SelectableItemView<ContactDetails> {
      * re-used.
      */
     private void resetTile() {
-        mImage.setImageBitmap(null);
+        setIconDrawable(null);
         mDisplayName.setText("");
         mDetailsView.setText("");
-        mSelectedView.setVisibility(View.GONE);
-    }
-
-    /**
-     * Updates the selection controls for this view.
-     */
-    private void updateSelectionState() {
-        boolean checked = super.isChecked();
-
-        if (checked) {
-            Resources resources = mContext.getResources();
-            setBackgroundColor(ApiCompatibilityUtils.getColor(
-                    resources, R.color.selectable_list_item_highlight_color));
-        } else {
-            setBackgroundColor(Color.TRANSPARENT);
-        }
-
-        mSelectedView.setVisibility(checked ? View.VISIBLE : View.GONE);
     }
 }
