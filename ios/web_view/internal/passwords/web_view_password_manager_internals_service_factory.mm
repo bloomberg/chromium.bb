@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -29,7 +29,9 @@ WebViewPasswordManagerInternalsServiceFactory::GetForBrowserState(
 // static
 WebViewPasswordManagerInternalsServiceFactory*
 WebViewPasswordManagerInternalsServiceFactory::GetInstance() {
-  return base::Singleton<WebViewPasswordManagerInternalsServiceFactory>::get();
+  static base::NoDestructor<WebViewPasswordManagerInternalsServiceFactory>
+      instance;
+  return instance.get();
 }
 
 WebViewPasswordManagerInternalsServiceFactory::

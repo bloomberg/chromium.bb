@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -51,7 +51,8 @@ WebViewPasswordStoreFactory::GetForBrowserState(
 
 // static
 WebViewPasswordStoreFactory* WebViewPasswordStoreFactory::GetInstance() {
-  return base::Singleton<WebViewPasswordStoreFactory>::get();
+  static base::NoDestructor<WebViewPasswordStoreFactory> instance;
+  return instance.get();
 }
 
 // static
