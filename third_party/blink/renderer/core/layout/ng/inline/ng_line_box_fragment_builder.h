@@ -30,8 +30,10 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
                            scoped_refptr<const ComputedStyle> style,
                            WritingMode writing_mode,
                            TextDirection)
-      : NGContainerFragmentBuilder(style, writing_mode, TextDirection::kLtr),
-        node_(node),
+      : NGContainerFragmentBuilder(node,
+                                   style,
+                                   writing_mode,
+                                   TextDirection::kLtr),
         line_box_type_(NGPhysicalLineBoxFragment::kNormalLineBox),
         base_direction_(TextDirection::kLtr) {}
 
@@ -222,8 +224,6 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   scoped_refptr<NGLayoutResult> ToLineBoxFragment();
 
  private:
-  NGInlineNode node_;
-
   NGLineHeightMetrics metrics_;
   NGPhysicalLineBoxFragment::NGLineBoxType line_box_type_;
   TextDirection base_direction_;

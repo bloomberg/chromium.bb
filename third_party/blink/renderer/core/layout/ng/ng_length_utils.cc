@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
@@ -78,17 +79,6 @@ inline bool BlockLengthMayChange(const Length& length,
   if (length.IsFillAvailable()) {
     if (new_space.AvailableSize().block_size !=
         old_space.AvailableSize().block_size)
-      return true;
-  } else if (length.IsAuto() || length.IsPercentOrCalc()) {
-    // Note that we check percentage resolution changes for 'auto' values here
-    // (in addition to percent values). The reason is that percentage resolution
-    // block sizes may be passed through auto-sized blocks, in some cases,
-    // e.g. for anonymous blocks, and also in quirks mode.
-    if (new_space.PercentageResolutionBlockSize() !=
-        old_space.PercentageResolutionBlockSize())
-      return true;
-    if (new_space.ReplacedPercentageResolutionBlockSize() !=
-        old_space.ReplacedPercentageResolutionBlockSize())
       return true;
   }
   return false;
@@ -656,7 +646,8 @@ NGLogicalSize ComputeReplacedSize(
 
 bool SizeMayChange(const ComputedStyle& style,
                    const NGConstraintSpace& new_space,
-                   const NGConstraintSpace& old_space) {
+                   const NGConstraintSpace& old_space,
+                   const NGLayoutResult& layout_result) {
   DCHECK_EQ(new_space.IsFixedSizeInline(), old_space.IsFixedSizeInline());
   DCHECK_EQ(new_space.IsFixedSizeBlock(), old_space.IsFixedSizeBlock());
 
@@ -690,6 +681,16 @@ bool SizeMayChange(const ComputedStyle& style,
         BlockLengthMayChange(style.LogicalMinHeight(), new_space, old_space) ||
         BlockLengthMayChange(style.LogicalMaxHeight(), new_space, old_space))
       return true;
+    // We only need to check if the PercentageResolutionBlockSizes match if the
+    // layout result has explicitly marked itself as dependent.
+    if (layout_result.DependsOnPercentageBlockSize()) {
+      if (new_space.PercentageResolutionBlockSize() !=
+          old_space.PercentageResolutionBlockSize())
+        return true;
+      if (new_space.ReplacedPercentageResolutionBlockSize() !=
+          old_space.ReplacedPercentageResolutionBlockSize())
+        return true;
+    }
   }
 
   if (new_space.PercentageResolutionInlineSize() !=
