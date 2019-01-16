@@ -28,7 +28,8 @@
   else
     return testRunner.fail('cannot find myEventListener node');
 
-  var retainers = helper.firstRetainingPath(node).map(node => node.name());
+  var retainers = helper.firstRetainingPath(node).map(
+      node => (node.name().includes("::")) ? "InternalNode" : node.name());
   var actual = retainers.join(', ');
   testRunner.log(`SUCCESS: retaining path = [${actual}]`);
   testRunner.completeTest();
