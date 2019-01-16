@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/task_traits.h"
 #include "base/threading/thread_checker.h"
@@ -75,7 +75,7 @@ class ModuleInspector {
   // The vector of paths to %env_var%, used to account for differences in
   // localization and where people keep their files.
   // e.g. c:\windows vs d:\windows
-  scoped_refptr<base::RefCountedData<StringMapping>> path_mapping_;
+  StringMapping path_mapping_;
 
   base::ThreadChecker thread_checker_;
 

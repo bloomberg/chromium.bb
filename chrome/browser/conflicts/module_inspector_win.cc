@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/after_startup_task_utils.h"
+#include "chrome/browser/conflicts/module_info_util_win.h"
 
 namespace {
 
@@ -24,21 +25,17 @@ StringMapping GetPathMapping() {
 
 // Does the inspection of the module and replies with the result by calling
 // |on_inspection_finished_callback| on |reply_task_runner|.
-// The StringMapping is wrapped in a RefCountedData to save a copy per
-// invocation.
 //
 // TODO(pmonette): When the Task Scheduler starts supporting after-startup
 // background sequences, change this to use base::PostTaskAndReplyWithResult().
 void InspectModuleOnBlockingSequenceAndReply(
-    scoped_refptr<base::RefCountedData<StringMapping>> env_variable_mapping,
     const base::FilePath& module_path,
     scoped_refptr<base::SequencedTaskRunner> reply_task_runner,
     base::OnceCallback<void(std::unique_ptr<ModuleInspectionResult>)>
         on_inspection_finished_callback) {
   reply_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(on_inspection_finished_callback),
-                     InspectModule(env_variable_mapping->data, module_path)));
+      FROM_HERE, base::BindOnce(std::move(on_inspection_finished_callback),
+                                InspectModule(module_path)));
 }
 
 }  // namespace
@@ -49,8 +46,7 @@ ModuleInspector::ModuleInspector(
       task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-      path_mapping_(base::MakeRefCounted<base::RefCountedData<StringMapping>>(
-          GetPathMapping())),
+      path_mapping_(GetPathMapping()),
       weak_ptr_factory_(this) {}
 
 ModuleInspector::~ModuleInspector() = default;
@@ -92,8 +88,8 @@ void ModuleInspector::StartInspectingModule() {
   AfterStartupTaskUtils::PostTask(
       FROM_HERE, task_runner_,
       base::BindOnce(
-          &InspectModuleOnBlockingSequenceAndReply, path_mapping_,
-          module_key.module_path, base::SequencedTaskRunnerHandle::Get(),
+          &InspectModuleOnBlockingSequenceAndReply, module_key.module_path,
+          base::SequencedTaskRunnerHandle::Get(),
           base::BindOnce(&ModuleInspector::OnInspectionFinished,
                          weak_ptr_factory_.GetWeakPtr(), module_key)));
 }
@@ -102,6 +98,11 @@ void ModuleInspector::OnInspectionFinished(
     const ModuleInfoKey& module_key,
     std::unique_ptr<ModuleInspectionResult> inspection_result) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Convert the prefix of known Windows directories to their environment
+  // variable mappings (ie, %systemroot$). This makes i18n localized paths
+  // easily comparable.
+  CollapseMatchingPrefixInPath(path_mapping_, &inspection_result->location);
 
   // Pop first, because the callback may want to know if there is any work left
   // to be done, which is caracterized by a non-empty queue.

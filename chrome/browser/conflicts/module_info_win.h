@@ -53,9 +53,7 @@ struct ModuleInspectionResult {
   ModuleInspectionResult();
   ~ModuleInspectionResult();
 
-  // The module path, not including the basename. This is cleaned and normalized
-  // so that common paths are converted to their environment variable mappings
-  // (ie, %systemroot%). This makes i18n localized paths easily comparable.
+  // The lowercase module path, not including the basename.
   base::string16 location;
 
   // The basename of the module.
@@ -115,7 +113,6 @@ struct ModuleInfoData {
 // ModuleInspectionResult that contains detailed information about the module on
 // disk. This is a blocking task that requires access to disk.
 std::unique_ptr<ModuleInspectionResult> InspectModule(
-    const StringMapping& env_variable_mapping,
     const base::FilePath& module_path);
 
 // Generate the code id of a module.
