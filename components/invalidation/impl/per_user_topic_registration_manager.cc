@@ -398,4 +398,15 @@ void PerUserTopicRegistrationManager::NotifySubscriptionChannelStateChange(
     observer.OnSubscriptionChannelStateChanged(invalidator_state);
 }
 
+std::unique_ptr<base::DictionaryValue>
+PerUserTopicRegistrationManager::CollectDebugData() const {
+  std::unique_ptr<base::DictionaryValue> return_value(
+      new base::DictionaryValue());
+  for (const auto& topic_to_private_topic : topic_to_private_topic_) {
+    return_value->SetString(topic_to_private_topic.first,
+                            topic_to_private_topic.second);
+  }
+  return return_value;
+}
+
 }  // namespace syncer
