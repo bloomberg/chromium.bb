@@ -131,7 +131,7 @@ void WebContentsObserverProxy::DidStartNavigation(
       ConvertUTF8ToJavaString(env, navigation_handle->GetURL().spec()));
   Java_WebContentsObserverProxy_didStartNavigation(
       env, java_observer_, jstring_url, navigation_handle->IsInMainFrame(),
-      navigation_handle->IsSameDocument(), navigation_handle->IsErrorPage());
+      navigation_handle->IsSameDocument());
 }
 
 void WebContentsObserverProxy::DidFinishNavigation(

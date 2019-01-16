@@ -392,7 +392,7 @@ public class Tab
 
             String url = tab.getUrl();
             // Simulate the PAGE_LOAD_STARTED notification that we did not get.
-            didStartPageLoad(url, false);
+            didStartPageLoad(url);
 
             if (didFinishLoad) {
                 // Simulate the PAGE_LOAD_FINISHED notification that we did not get.
@@ -1201,7 +1201,7 @@ public class Tab
             initWebContents(webContents);
 
             if (!creatingWebContents && webContents.isLoadingToDifferentDocument()) {
-                didStartPageLoad(webContents.getVisibleUrl(), false);
+                didStartPageLoad(webContents.getVisibleUrl());
             }
 
         } finally {
@@ -1441,9 +1441,8 @@ public class Tab
     /**
      * Called when a page has started loading.
      * @param validatedUrl URL being loaded.
-     * @param showingErrorPage Whether an error page is being shown.
      */
-    protected void didStartPageLoad(String validatedUrl, boolean showingErrorPage) {
+    protected void didStartPageLoad(String validatedUrl) {
         updateTitle();
         if (mIsRendererUnresponsive) handleRendererResponsiveStateChanged(true);
 

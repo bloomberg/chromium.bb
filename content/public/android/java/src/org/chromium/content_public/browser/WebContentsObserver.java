@@ -42,10 +42,8 @@ public abstract class WebContentsObserver {
      * @param isInMainFrame Whether the navigation is for the main frame.
      * @param isSameDocument Whether the main frame navigation did not cause changes to the
      *                   document (for example scrolling to a named anchor or PopState).
-     * @param isErrorPage Whether the navigation shows an error page.
      */
-    public void didStartNavigation(
-            String url, boolean isInMainFrame, boolean isSameDocument, boolean isErrorPage) {}
+    public void didStartNavigation(String url, boolean isInMainFrame, boolean isSameDocument) {}
 
     /**
      * Called when the current navigation is finished. This happens when a navigation is committed,
