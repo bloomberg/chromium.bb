@@ -45,19 +45,20 @@ namespace exo {
 ////////////////////////////////////////////////////////////////////////////////
 // Display, public:
 
-Display::Display() : file_helper_(std::unique_ptr<FileHelper>()) {}
+Display::Display()
+#if defined(USE_OZONE)
+    : client_native_pixmap_factory_(
+          gfx::CreateClientNativePixmapFactoryDmabuf())
+#endif
+{
+}
 
 #if defined(OS_CHROMEOS)
 Display::Display(NotificationSurfaceManager* notification_surface_manager,
                  InputMethodSurfaceManager* input_method_surface_manager,
                  std::unique_ptr<FileHelper> file_helper)
-    : file_helper_(std::move(file_helper))
-#if defined(USE_OZONE)
-      ,
-      client_native_pixmap_factory_(
-          gfx::CreateClientNativePixmapFactoryDmabuf())
-#endif  // defined(USE_OZONE)
-{
+    : Display() {
+  file_helper_ = std::move(file_helper);
   notification_surface_manager_ = notification_surface_manager;
   input_method_surface_manager_ = input_method_surface_manager;
 }
