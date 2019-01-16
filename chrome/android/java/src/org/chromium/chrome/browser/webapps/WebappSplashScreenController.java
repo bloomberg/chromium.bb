@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.support.annotation.IntDef;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -29,8 +30,23 @@ import org.chromium.net.NetError;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /** Shows and hides splash screen. */
-class WebappSplashScreenController extends EmptyTabObserver {
+public class WebappSplashScreenController extends EmptyTabObserver {
+    // SplashHidesReason defined in tools/metrics/histograms/enums.xml.
+    @IntDef({SplashHidesReason.PAINT, SplashHidesReason.LOAD_FINISHED,
+            SplashHidesReason.LOAD_FAILED, SplashHidesReason.CRASH})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SplashHidesReason {
+        int PAINT = 0;
+        int LOAD_FINISHED = 1;
+        int LOAD_FAILED = 2;
+        int CRASH = 3;
+        int NUM_ENTRIES = 4;
+    }
+
     // No error.
     public static final int ERROR_OK = 0;
 
@@ -86,11 +102,11 @@ class WebappSplashScreenController extends EmptyTabObserver {
 
         notifySplashscreenVisible();
         mWebappUma.recordSplashscreenBackgroundColor(webappInfo.hasValidBackgroundColor()
-                        ? WebappUma.SplashScreenColorStatus.CUSTOM
-                        : WebappUma.SplashScreenColorStatus.DEFAULT);
+                        ? WebappUma.SplashColorStatus.CUSTOM
+                        : WebappUma.SplashColorStatus.DEFAULT);
         mWebappUma.recordSplashscreenThemeColor(webappInfo.hasValidThemeColor()
-                        ? WebappUma.SplashScreenColorStatus.CUSTOM
-                        : WebappUma.SplashScreenColorStatus.DEFAULT);
+                        ? WebappUma.SplashColorStatus.CUSTOM
+                        : WebappUma.SplashColorStatus.DEFAULT);
 
         if (mIsForWebApk) {
             initializeLayout(webappInfo, backgroundColor, ((WebApkInfo) webappInfo).splashIcon());
@@ -137,27 +153,27 @@ class WebappSplashScreenController extends EmptyTabObserver {
     @Override
     public void didFirstVisuallyNonEmptyPaint(Tab tab) {
         if (canHideSplashScreen()) {
-            hideSplashScreenOnDrawingFinished(tab, WebappUma.SplashScreenHidesReason.PAINT);
+            hideSplashScreenOnDrawingFinished(tab, SplashHidesReason.PAINT);
         }
     }
 
     @Override
     public void onPageLoadFinished(Tab tab, String url) {
         if (canHideSplashScreen()) {
-            hideSplashScreenOnDrawingFinished(tab, WebappUma.SplashScreenHidesReason.LOAD_FINISHED);
+            hideSplashScreenOnDrawingFinished(tab, SplashHidesReason.LOAD_FINISHED);
         }
     }
 
     @Override
     public void onPageLoadFailed(Tab tab, int errorCode) {
         if (canHideSplashScreen()) {
-            animateHidingSplashScreen(tab, WebappUma.SplashScreenHidesReason.LOAD_FAILED);
+            animateHidingSplashScreen(tab, SplashHidesReason.LOAD_FAILED);
         }
     }
 
     @Override
     public void onCrash(Tab tab) {
-        animateHidingSplashScreen(tab, WebappUma.SplashScreenHidesReason.CRASH);
+        animateHidingSplashScreen(tab, SplashHidesReason.CRASH);
     }
 
     @Override
@@ -242,17 +258,17 @@ class WebappSplashScreenController extends EmptyTabObserver {
                 SplashLayout.classifyIcon(resources, displayIcon, displayIconGenerated);
 
         if (displayIconClassification == SplashLayout.IconClassification.INVALID) {
-            mWebappUma.recordSplashscreenIconType(WebappUma.SplashScreenIconType.NONE);
+            mWebappUma.recordSplashscreenIconType(WebappUma.SplashIconType.NONE);
         } else {
             // Record stats about the splash screen.
-            @WebappUma.SplashScreenIconType
+            @WebappUma.SplashIconType
             int splashScreenIconType;
             if (splashImage == null) {
-                splashScreenIconType = WebappUma.SplashScreenIconType.FALLBACK;
+                splashScreenIconType = WebappUma.SplashIconType.FALLBACK;
             } else if (displayIconClassification == SplashLayout.IconClassification.SMALL) {
-                splashScreenIconType = WebappUma.SplashScreenIconType.CUSTOM_SMALL;
+                splashScreenIconType = WebappUma.SplashIconType.CUSTOM_SMALL;
             } else {
-                splashScreenIconType = WebappUma.SplashScreenIconType.CUSTOM;
+                splashScreenIconType = WebappUma.SplashIconType.CUSTOM;
             }
             mWebappUma.recordSplashscreenIconType(splashScreenIconType);
             mWebappUma.recordSplashscreenIconSize(
@@ -273,7 +289,8 @@ class WebappSplashScreenController extends EmptyTabObserver {
      * Without this callback we were seeing a short flash of white between the splash screen and
      * the web content (crbug.com/734500).
      * */
-    private void hideSplashScreenOnDrawingFinished(final Tab tab, final int reason) {
+    private void hideSplashScreenOnDrawingFinished(
+            final Tab tab, final @SplashHidesReason int reason) {
         if (mSplashScreen == null) return;
 
         if (mCompositorViewHolder == null) {
@@ -286,7 +303,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
     }
 
     /** Performs the splash screen hiding animation. */
-    private void animateHidingSplashScreen(final Tab tab, final int reason) {
+    private void animateHidingSplashScreen(final Tab tab, final @SplashHidesReason int reason) {
         if (mSplashScreen == null) return;
 
         mSplashScreen.animate().alpha(0f).withEndAction(new Runnable() {
@@ -360,7 +377,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
         }
     }
 
-    private void notifySplashscreenHidden(int reason) {
+    private void notifySplashscreenHidden(@SplashHidesReason int reason) {
         for (SplashscreenObserver observer : mObservers) {
             observer.onSplashscreenHidden(reason);
         }

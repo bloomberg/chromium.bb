@@ -49019,19 +49019,19 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Needs restore"/>
 </enum>
 
-<enum name="SplashscreenColorStatus">
+<enum name="SplashColorStatus">
   <int value="0" label="Default color"/>
   <int value="1" label="Custom color"/>
 </enum>
 
-<enum name="SplashscreenHidesReason">
+<enum name="SplashHidesReason">
   <int value="0" label="First Paint"/>
   <int value="1" label="Page Load Finished"/>
   <int value="2" label="Page Load Failed"/>
   <int value="3" label="Crash"/>
 </enum>
 
-<enum name="SplashscreenIconType">
+<enum name="SplashIconType">
   <int value="0" label="No splashscreen icon"/>
   <int value="1" label="Fallback icon"/>
   <int value="2" label="Custom icon"/>
