@@ -3417,7 +3417,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
       return;
     const NavigationManagerImpl* navigationManager = self.navigationManagerImpl;
     GURL mainDocumentURL =
-        navigationManager->GetItemCount()
+        navigationManager->GetLastCommittedItem()
             ? navigationManager->GetLastCommittedItem()->GetURL()
             : [self currentURL];
     _lastUserInteraction =
