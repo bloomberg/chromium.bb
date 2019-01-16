@@ -87,10 +87,11 @@ void SetupSearchIllustrationView(views::View* illustration_view,
   illustration_view->AddChildView(text);
 }
 
-views::ScrollView* CreateScrollView() {
+views::ScrollView* CreateScrollView(views::View* content_view) {
   views::ScrollView* const scroller = new views::ScrollView();
   scroller->set_draw_overflow_indicator(false);
   scroller->ClipHeightTo(0, 0);
+  scroller->SetContents(content_view);
   return scroller;
 }
 
@@ -341,37 +342,44 @@ void KeyboardShortcutView::InitCategoriesTabbedPane(
   // not want to cache.
   active_tab_index_ =
       std::max(0, categories_tabbed_pane_->GetSelectedTabIndex());
-  // Although we remove all child views, when the KeyboardShortcutItemView is
-  // added back to the |categories_tabbed_pane_|, because there is no width
-  // changes, it will not layout the KeyboardShortcutItemView again due to the
-  // |MaybeCalculateAndDoLayout()| optimization in KeyboardShortcutItemView.
-  // Cannot remove |tab_strip_| and |contents_|, child views of the
-  // |categories_tabbed_pane_|, because they are added in the ctor of
-  // TabbedPane.
-  categories_tabbed_pane_->child_at(0)->RemoveAllChildViews(true);
-  categories_tabbed_pane_->child_at(1)->RemoveAllChildViews(true);
-
-  const bool first_init = initial_category.has_value();
   ShortcutCategory current_category = ShortcutCategory::kUnknown;
-  KeyboardShortcutItemListView* item_list_view;
+  KeyboardShortcutItemListView* item_list_view = nullptr;
+  const bool already_has_tabs = categories_tabbed_pane_->GetTabCount() > 0;
+  int tab_index = -1;
+  views::View* const tab_contents = categories_tabbed_pane_->child_at(1);
   for (const auto& item_view : shortcut_views_) {
     const ShortcutCategory category = item_view->category();
     DCHECK_NE(ShortcutCategory::kUnknown, category);
     if (current_category != category) {
       current_category = category;
-      item_list_view = new KeyboardShortcutItemListView();
-      views::ScrollView* const scroller = CreateScrollView();
-      scroller->SetContents(item_list_view);
-      categories_tabbed_pane_->AddTab(GetStringForCategory(current_category),
-                                      scroller);
+      ++tab_index;
+      views::View* content_view = nullptr;
+      // Delay constructing a KeyboardShortcutItemListView until it is needed.
+      if (initial_category.value_or(category) == category) {
+        item_list_view = new KeyboardShortcutItemListView();
+        content_view = item_list_view;
+      } else {
+        content_view = new views::View();
+      }
+
+      // Create new tabs or update the existing tabs' contents.
+      if (already_has_tabs) {
+        auto* scroll_view =
+            static_cast<views::ScrollView*>(tab_contents->child_at(tab_index));
+        scroll_view->SetContents(content_view);
+      } else {
+        categories_tabbed_pane_->AddTab(GetStringForCategory(current_category),
+                                        CreateScrollView(content_view));
+      }
     }
 
-    // If |first_init| is true, we only initialize the pane with the
+    // If |initial_category| has a value, we only initialize the pane with the
     // KeyboardShortcutItemView in the specific category in |initial_category|.
     // Otherwise, we will initialize all the panes.
-    if (first_init && category != initial_category.value())
+    if (initial_category.value_or(category) != category)
       continue;
 
+    // Add the item to the category contents container.
     if (item_list_view->has_children())
       item_list_view->AddHorizontalSeparator();
     views::StyledLabel* description_label_view =
@@ -382,6 +390,7 @@ void KeyboardShortcutView::InitCategoriesTabbedPane(
     // Remove the search query highlight.
     description_label_view->Layout();
   }
+  tab_contents->Layout();
   Layout();
 }
 
@@ -477,9 +486,8 @@ void KeyboardShortcutView::ShowSearchResults(
     constexpr int kHorizontalPadding = 128;
     found_items_list_view->SetBorder(views::CreateEmptyBorder(
         gfx::Insets(kTopPadding, kHorizontalPadding, 0, kHorizontalPadding)));
-    views::ScrollView* const scroller = CreateScrollView();
-    scroller->SetContents(found_items_list_view.release());
-    search_container_content_view = scroller;
+    search_container_content_view =
+        CreateScrollView(found_items_list_view.release());
   }
   replacement_strings.emplace_back(search_query);
   search_box_view_->SetAccessibleValue(l10n_util::GetStringFUTF16(
