@@ -26,7 +26,7 @@ public class SingleThreadTaskRunnerImpl extends TaskRunnerImpl implements Single
      * @param traits The TaskTraits associated with this SingleThreadTaskRunnerImpl.
      */
     public SingleThreadTaskRunnerImpl(Handler handler, TaskTraits traits) {
-        super(traits, "SingleThreadTaskRunnerImpl");
+        super(traits, "SingleThreadTaskRunnerImpl", TaskRunnerType.SINGLE_THREAD);
         mHandler = handler;
     }
 
@@ -44,6 +44,4 @@ public class SingleThreadTaskRunnerImpl extends TaskRunnerImpl implements Single
         // if |mHandler| is null then pre-native task execution is not supported.
         if (mHandler != null) mHandler.post(mRunPreNativeTaskClosure);
     }
-
-    private native boolean nativeBelongsToCurrentThread(long nativeTaskRunnerAndroid);
 }

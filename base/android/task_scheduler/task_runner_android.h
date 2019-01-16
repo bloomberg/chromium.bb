@@ -10,6 +10,9 @@
 
 namespace base {
 
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.base.task
+enum class TaskRunnerType { BASE, SEQUENCED, SINGLE_THREAD };
+
 // Native implementation backing TaskRunnerImpl.java which posts java tasks onto
 // a C++ TaskRunner.
 class TaskRunnerAndroid {

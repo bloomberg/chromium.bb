@@ -19,9 +19,10 @@ import java.util.LinkedList;
 public class TaskRunnerImpl implements TaskRunner {
     @Nullable
     private final TaskTraits mTaskTraits;
+    private final String mTraceEvent;
+    private final @TaskRunnerType int mTaskRunnerType;
     private final Object mLock = new Object();
     protected long mNativeTaskRunnerAndroid;
-    private final String mTraceEvent;
     protected final Runnable mRunPreNativeTaskClosure = this::runPreNativeTask;
     private boolean mIsDestroying;
 
@@ -32,16 +33,20 @@ public class TaskRunnerImpl implements TaskRunner {
      * @param traits The TaskTraits associated with this TaskRunnerImpl.
      */
     TaskRunnerImpl(TaskTraits traits) {
-        this(traits, "TaskRunnerImpl");
+        this(traits, "TaskRunnerImpl", TaskRunnerType.BASE);
     }
 
     /**
      * @param traits The TaskTraits associated with this TaskRunnerImpl.
      * @param traceCategory Specifies which subclass is this instance for logging purposes.
+     * @param taskRunnerType Specifies which subclass is this instance for initialising the correct
+     *         native scheduler.
      */
-    protected TaskRunnerImpl(TaskTraits traits, String traceCategory) {
+    protected TaskRunnerImpl(
+            TaskTraits traits, String traceCategory, @TaskRunnerType int taskRunnerType) {
         mTaskTraits = traits;
         mTraceEvent = traceCategory + ".PreNativeTask.run";
+        mTaskRunnerType = taskRunnerType;
     }
 
     @Override
@@ -107,9 +112,10 @@ public class TaskRunnerImpl implements TaskRunner {
     public void initNativeTaskRunner() {
         synchronized (mLock) {
             if (mPreNativeTasks != null) {
-                mNativeTaskRunnerAndroid = nativeInit(mTaskTraits.mPrioritySetExplicitly,
-                        mTaskTraits.mPriority, mTaskTraits.mMayBlock, mTaskTraits.mExtensionId,
-                        mTaskTraits.mExtensionData);
+                mNativeTaskRunnerAndroid =
+                        nativeInit(mTaskRunnerType, mTaskTraits.mPrioritySetExplicitly,
+                                mTaskTraits.mPriority, mTaskTraits.mMayBlock,
+                                mTaskTraits.mExtensionId, mTaskTraits.mExtensionData);
                 for (Runnable task : mPreNativeTasks) {
                     nativePostTask(mNativeTaskRunnerAndroid, task);
                 }
@@ -119,8 +125,10 @@ public class TaskRunnerImpl implements TaskRunner {
     }
 
     // NB due to Proguard obfuscation it's easiest to pass the traits via arguments.
-    private static native long nativeInit(boolean prioritySetExplicitly, int priority,
-            boolean mayBlock, byte extensionId, byte[] extensionData);
+    private native long nativeInit(@TaskRunnerType int taskRunnerType,
+            boolean prioritySetExplicitly, int priority, boolean mayBlock, byte extensionId,
+            byte[] extensionData);
     private native void nativeDestroy(long nativeTaskRunnerAndroid);
     private native void nativePostTask(long nativeTaskRunnerAndroid, Runnable task);
+    protected native boolean nativeBelongsToCurrentThread(long nativeTaskRunnerAndroid);
 }
