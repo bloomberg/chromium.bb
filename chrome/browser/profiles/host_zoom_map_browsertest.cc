@@ -131,7 +131,7 @@ class HostZoomMapBrowserTest : public InProcessBrowserTest {
   }
 
   std::string GetSigninPromoURL() {
-    return signin::GetPromoURLForTab(
+    return signin::GetEmbeddedPromoURL(
                signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
                signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT, false)
         .spec();

@@ -42,6 +42,8 @@
 
 using content::WebContents;
 
+namespace signin {
+
 namespace {
 
 // The maximum number of times we want to show the sign in promo at startup.
@@ -75,48 +77,16 @@ bool HasUserSkippedPromo(Profile* profile) {
   return profile->GetPrefs()->GetBoolean(prefs::kSignInPromoUserSkipped);
 }
 
-// Returns the sign in promo URL with the given arguments in the query.
-// |access_point| indicates where the sign in is being initiated.
-// |reason| indicates the purpose of using this URL.
-// |auto_close| whether to close the sign in promo automatically when done.
-GURL GetPromoURL(signin_metrics::AccessPoint access_point,
-                 signin_metrics::Reason reason,
-                 bool auto_close) {
-  CHECK_LT(static_cast<int>(access_point),
-           static_cast<int>(signin_metrics::AccessPoint::ACCESS_POINT_MAX));
-  CHECK_NE(static_cast<int>(access_point),
-           static_cast<int>(signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN));
-  CHECK_LT(static_cast<int>(reason),
-           static_cast<int>(signin_metrics::Reason::REASON_MAX));
-  CHECK_NE(static_cast<int>(reason),
-           static_cast<int>(signin_metrics::Reason::REASON_UNKNOWN_REASON));
-
-  GURL url(chrome::kChromeUIChromeSigninURL);
-  url = net::AppendQueryParameter(
-      url, signin::kSignInPromoQueryKeyAccessPoint,
-      base::IntToString(static_cast<int>(access_point)));
-  url = net::AppendQueryParameter(url, signin::kSignInPromoQueryKeyReason,
-                                  base::IntToString(static_cast<int>(reason)));
-  if (auto_close) {
-    url = net::AppendQueryParameter(url, signin::kSignInPromoQueryKeyAutoClose,
-                                    "1");
-  }
-  return url;
-}
-
-GURL GetReauthURL(signin_metrics::AccessPoint access_point,
-                  signin_metrics::Reason reason,
-                  const std::string& email,
-                  bool auto_close) {
-  GURL url = GetPromoURL(access_point, reason, auto_close);
+GURL GetEmbeddedReauthURLInternal(signin_metrics::AccessPoint access_point,
+                                  signin_metrics::Reason reason,
+                                  const std::string& email) {
+  GURL url = GetEmbeddedPromoURL(access_point, reason, /*auto_close=*/true);
   url = net::AppendQueryParameter(url, "email", email);
   url = net::AppendQueryParameter(url, "validateEmail", "1");
   return net::AppendQueryParameter(url, "readOnlyEmail", "1");
 }
 
 }  // namespace
-
-namespace signin {
 
 const char kSignInPromoQueryKeyAccessPoint[] = "access_point";
 const char kSignInPromoQueryKeyAutoClose[] = "auto_close";
@@ -213,41 +183,87 @@ GURL GetLandingURL(signin_metrics::AccessPoint access_point) {
   return GURL(url);
 }
 
-GURL GetPromoURLForTab(signin_metrics::AccessPoint access_point,
-                       signin_metrics::Reason reason,
-                       bool auto_close) {
-  return GetPromoURL(access_point, reason, auto_close);
+#if defined(OS_CHROMEOS)
+GURL GetEmbeddedPromoURLForTab(signin_metrics::AccessPoint access_point,
+                               signin_metrics::Reason reason,
+                               bool auto_close) {
+  return GetEmbeddedPromoURL(access_point, reason, auto_close);
 }
 
-GURL GetPromoURLForDialog(signin_metrics::AccessPoint access_point,
+GURL GetEmbeddedSigninURLFromBubbleViewMode(
+    Profile* profile,
+    profiles::BubbleViewMode mode,
+    signin_metrics::AccessPoint access_point) {
+  switch (mode) {
+    case profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN:
+      return GetEmbeddedPromoURL(
+          access_point, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
+          false /* auto_close */);
+      break;
+    case profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
+      return GetEmbeddedPromoURL(
+          access_point, signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT,
+          false /* auto_close */);
+      break;
+    case profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH: {
+      const SigninErrorController* error_controller =
+          SigninErrorControllerFactory::GetForProfile(profile);
+      CHECK(error_controller);
+      DCHECK(error_controller->HasError());
+      AccountInfo info =
+          AccountTrackerServiceFactory::GetForProfile(profile)->GetAccountInfo(
+              error_controller->error_account_id());
+      return GetEmbeddedReauthURLInternal(
+          access_point, signin_metrics::Reason::REASON_REAUTHENTICATION,
+          info.email);
+      break;
+    }
+    default:
+      NOTREACHED() << "Called with invalid mode=" << mode;
+      return GURL();
+  }
+}
+#endif
+
+GURL GetEmbeddedPromoURL(signin_metrics::AccessPoint access_point,
+                         signin_metrics::Reason reason,
+                         bool auto_close) {
+  CHECK_LT(static_cast<int>(access_point),
+           static_cast<int>(signin_metrics::AccessPoint::ACCESS_POINT_MAX));
+  CHECK_NE(static_cast<int>(access_point),
+           static_cast<int>(signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN));
+  CHECK_LT(static_cast<int>(reason),
+           static_cast<int>(signin_metrics::Reason::REASON_MAX));
+  CHECK_NE(static_cast<int>(reason),
+           static_cast<int>(signin_metrics::Reason::REASON_UNKNOWN_REASON));
+
+  GURL url(chrome::kChromeUIChromeSigninURL);
+  url = net::AppendQueryParameter(
+      url, signin::kSignInPromoQueryKeyAccessPoint,
+      base::IntToString(static_cast<int>(access_point)));
+  url = net::AppendQueryParameter(url, signin::kSignInPromoQueryKeyReason,
+                                  base::IntToString(static_cast<int>(reason)));
+  if (auto_close) {
+    url = net::AppendQueryParameter(url, signin::kSignInPromoQueryKeyAutoClose,
+                                    "1");
+  }
+  return url;
+}
+
+GURL GetEmbeddedReauthURL(signin_metrics::AccessPoint access_point,
                           signin_metrics::Reason reason,
-                          bool auto_close) {
-  return GetPromoURL(access_point, reason, auto_close);
-}
-
-GURL GetReauthURLForDialog(signin_metrics::AccessPoint access_point,
-                           signin_metrics::Reason reason,
-                           Profile* profile,
-                           const std::string& account_id) {
-  AccountInfo info = AccountTrackerServiceFactory::GetForProfile(profile)
-                         ->GetAccountInfo(account_id);
-  return GetReauthURL(access_point, reason, info.email, true /* auto_close */);
-}
-
-GURL GetReauthURLForTab(signin_metrics::AccessPoint access_point,
-                        signin_metrics::Reason reason,
-                        Profile* profile,
-                        const std::string& account_id) {
+                          Profile* profile,
+                          const std::string& account_id) {
   AccountInfo info =
       AccountTrackerServiceFactory::GetForProfile(profile)->GetAccountInfo(
           account_id);
-  return GetReauthURL(access_point, reason, info.email, true /* auto_close */);
+  return GetEmbeddedReauthURLInternal(access_point, reason, info.email);
 }
 
-GURL GetReauthURLWithEmailForDialog(signin_metrics::AccessPoint access_point,
-                                    signin_metrics::Reason reason,
-                                    const std::string& email) {
-  return GetReauthURL(access_point, reason, email, true /* auto_close */);
+GURL GetEmbeddedReauthURLWithEmail(signin_metrics::AccessPoint access_point,
+                                   signin_metrics::Reason reason,
+                                   const std::string& email) {
+  return GetEmbeddedReauthURLInternal(access_point, reason, email);
 }
 
 GURL GetSigninURLForDice(Profile* profile, const std::string& email) {
@@ -267,37 +283,7 @@ GURL GetSigninPartitionURL() {
   return GURL("chrome-guest://chrome-signin/?");
 }
 
-GURL GetSigninURLFromBubbleViewMode(Profile* profile,
-                                    profiles::BubbleViewMode mode,
-                                    signin_metrics::AccessPoint access_point) {
-  switch (mode) {
-    case profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN:
-      return GetPromoURLForDialog(
-          access_point, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
-          false /* auto_close */);
-      break;
-    case profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
-      return GetPromoURLForDialog(
-          access_point, signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT,
-          false /* auto_close */);
-      break;
-    case profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH: {
-      const SigninErrorController* error_controller =
-          SigninErrorControllerFactory::GetForProfile(profile);
-      CHECK(error_controller);
-      DCHECK(error_controller->HasError());
-      return GetReauthURLForDialog(
-          access_point, signin_metrics::Reason::REASON_REAUTHENTICATION,
-          profile, error_controller->error_account_id());
-      break;
-    }
-    default:
-      NOTREACHED() << "Called with invalid mode=" << mode;
-      return GURL();
-  }
-}
-
-signin_metrics::AccessPoint GetAccessPointForPromoURL(const GURL& url) {
+signin_metrics::AccessPoint GetAccessPointForEmbeddedPromoURL(const GURL& url) {
   std::string value;
   if (!net::GetValueForKeyInQuery(url, kSignInPromoQueryKeyAccessPoint,
                                   &value)) {
@@ -317,7 +303,7 @@ signin_metrics::AccessPoint GetAccessPointForPromoURL(const GURL& url) {
   return static_cast<signin_metrics::AccessPoint>(access_point);
 }
 
-signin_metrics::Reason GetSigninReasonForPromoURL(const GURL& url) {
+signin_metrics::Reason GetSigninReasonForEmbeddedPromoURL(const GURL& url) {
   std::string value;
   if (!net::GetValueForKeyInQuery(url, kSignInPromoQueryKeyReason, &value))
     return signin_metrics::Reason::REASON_UNKNOWN_REASON;
@@ -333,7 +319,7 @@ signin_metrics::Reason GetSigninReasonForPromoURL(const GURL& url) {
   return static_cast<signin_metrics::Reason>(reason);
 }
 
-bool IsAutoCloseEnabledInURL(const GURL& url) {
+bool IsAutoCloseEnabledInEmbeddedURL(const GURL& url) {
   std::string value;
   if (net::GetValueForKeyInQuery(url, kSignInPromoQueryKeyAutoClose, &value)) {
     int enabled = 0;

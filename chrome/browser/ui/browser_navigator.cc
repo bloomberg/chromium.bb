@@ -727,7 +727,7 @@ bool IsHostAllowedInIncognito(const GURL& url) {
     // retrieve the login scope token without touching any profiles. This
     // option is only available on Windows for use with Google Credential
     // Provider for Windows.
-    return signin::GetSigninReasonForPromoURL(url) ==
+    return signin::GetSigninReasonForEmbeddedPromoURL(url) ==
            signin_metrics::Reason::REASON_FETCH_LST_ONLY;
 #else
     return false;

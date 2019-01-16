@@ -87,7 +87,7 @@ class TestSigninCreateProfileHandler : public SigninCreateProfileHandler {
 
   // Mock this method so that we don't actually open the signin dialog during
   // the test.
-  MOCK_METHOD1(OpenSigninDialogForProfile, void(Profile* profile));
+  MOCK_METHOD1(OpenForceSigninDialogForProfile, void(Profile* profile));
 
  private:
   TestingProfileManager* profile_manager_;
@@ -171,7 +171,7 @@ TEST_F(SigninCreateProfileHandlerTest, CreateProfile) {
   EXPECT_CALL(*handler(), OpenNewWindowForProfile(_, _));
 
   // Expect no signin dialog opened for the new profile.
-  EXPECT_CALL(*handler(), OpenSigninDialogForProfile(_)).Times(0);
+  EXPECT_CALL(*handler(), OpenForceSigninDialogForProfile(_)).Times(0);
 
   // Create a profile.
   base::ListValue list_args;
@@ -203,7 +203,7 @@ TEST_F(SigninCreateProfileHandlerTest, CreateProfileWithForceSignin) {
   EXPECT_CALL(*handler(), OpenNewWindowForProfile(_, _)).Times(0);
 
   // Expect a signin dialog opened for the new profile.
-  EXPECT_CALL(*handler(), OpenSigninDialogForProfile(_)).Times(1);
+  EXPECT_CALL(*handler(), OpenForceSigninDialogForProfile(_)).Times(1);
 
   base::ListValue list_args;
   list_args.AppendString(kTestProfileName);

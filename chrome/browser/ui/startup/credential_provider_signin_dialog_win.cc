@@ -225,9 +225,9 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
 
     auto base_url =
         reauth_email_.empty()
-            ? signin::GetPromoURLForDialog(access_point, reason, false)
-            : signin::GetReauthURLWithEmailForDialog(access_point, reason,
-                                                     reauth_email_);
+            ? signin::GetEmbeddedPromoURL(access_point, reason, false)
+            : signin::GetEmbeddedReauthURLWithEmail(access_point, reason,
+                                                    reauth_email_);
     if (!reauth_gaia_id_.empty()) {
       base_url = net::AppendQueryParameter(
           base_url, credential_provider::kValidateGaiaIdSigninPromoParameter,

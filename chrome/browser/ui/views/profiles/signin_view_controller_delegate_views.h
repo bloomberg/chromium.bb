@@ -32,14 +32,6 @@ class WebView;
 class SigninViewControllerDelegateViews : public views::DialogDelegateView,
                                           public SigninViewControllerDelegate {
  public:
-  // Creates the web view that contains the signin flow in |mode| using
-  // |profile| as the web content's profile, then sets |delegate| as the created
-  // web content's delegate.
-  static std::unique_ptr<views::WebView> CreateGaiaWebView(
-      content::WebContentsDelegate* delegate,
-      profiles::BubbleViewMode mode,
-      Browser* browser,
-      signin_metrics::AccessPoint access_point);
 
   static std::unique_ptr<views::WebView> CreateSyncConfirmationWebView(
       Browser* browser);
@@ -58,6 +50,17 @@ class SigninViewControllerDelegateViews : public views::DialogDelegateView,
 
  private:
   friend SigninViewControllerDelegate;
+
+#if defined(OS_CHROMEOS)
+  // Creates the web view that contains the signin flow in |mode| using
+  // |profile| as the web content's profile, then sets |delegate| as the created
+  // web content's delegate.
+  static std::unique_ptr<views::WebView> CreateGaiaWebView(
+      content::WebContentsDelegate* delegate,
+      profiles::BubbleViewMode mode,
+      Browser* browser,
+      signin_metrics::AccessPoint access_point);
+#endif
 
   // Creates and displays a constrained window containing |web_contents|. If
   // |wait_for_size| is true, the delegate will wait for ResizeNativeView() to
