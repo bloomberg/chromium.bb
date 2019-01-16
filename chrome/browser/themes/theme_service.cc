@@ -566,8 +566,8 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
     }
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     case ThemeProperties::COLOR_SUPERVISED_USER_LABEL:
-      return color_utils::GetReadableColor(
-          SK_ColorWHITE, GetColor(kLabelBackground, incognito));
+      return color_utils::GetColorWithMaxContrast(
+          GetColor(kLabelBackground, incognito));
     case ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND:
       return color_utils::BlendTowardMaxContrast(
           GetColor(ThemeProperties::COLOR_FRAME, incognito), 0x80);

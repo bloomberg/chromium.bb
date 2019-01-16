@@ -25,6 +25,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -354,11 +355,15 @@ TouchObserverHUD::TouchObserverHUD(aura::Window* initial_root)
   label_container_->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
+  constexpr SkColor kShadowColor = SK_ColorWHITE;
+  const SkColor label_color =
+      color_utils::GetColorWithMaxContrast(kShadowColor);
   for (int i = 0; i < kMaxTouchPoints; ++i) {
     touch_labels_[i] = new views::Label;
-    touch_labels_[i]->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
+    touch_labels_[i]->SetEnabledColor(label_color);
+    touch_labels_[i]->SetBackgroundColor(SK_ColorTRANSPARENT);
     touch_labels_[i]->SetShadows(gfx::ShadowValues(
-        1, gfx::ShadowValue(gfx::Vector2d(1, 1), 0, SK_ColorWHITE)));
+        1, gfx::ShadowValue(gfx::Vector2d(1, 1), 0, kShadowColor)));
     label_container_->AddChildView(touch_labels_[i]);
   }
   label_container_->SetX(0);

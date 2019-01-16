@@ -81,8 +81,9 @@ class VIEWS_EXPORT Label : public View,
 
   // Enables or disables auto-color-readability (enabled by default).  If this
   // is enabled, then calls to set any foreground or background color will
-  // trigger an automatic mapper that uses color_utils::GetReadableColor() to
-  // ensure that the foreground colors are readable over the background color.
+  // trigger an automatic mapper that uses
+  // color_utils::GetColorWithMinimumContrast() to ensure that the foreground
+  // colors are readable over the background color.
   void SetAutoColorReadabilityEnabled(bool enabled);
 
   // Sets the color.  This will automatically force the color to be readable
@@ -310,6 +311,10 @@ class VIEWS_EXPORT Label : public View,
 
   // Get the text size for the current layout.
   gfx::Size GetTextSize() const;
+
+  // Returns the appropriate foreground color to use given the proposed
+  // |foreground| and |background| colors.
+  SkColor GetForegroundColor(SkColor foreground, SkColor background) const;
 
   // Updates text and selection colors from requested colors.
   void RecalculateColors();

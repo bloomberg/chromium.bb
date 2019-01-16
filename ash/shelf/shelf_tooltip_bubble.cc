@@ -48,8 +48,6 @@ ShelfTooltipBubble::ShelfTooltipBubble(views::View* anchor,
   SkColor background_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_TooltipBackground);
   label->SetBackgroundColor(background_color);
-  // The background is not opaque, so we can't do subpixel rendering.
-  label->SetSubpixelRenderingEnabled(false);
   AddChildView(label);
 
   gfx::Insets insets(kArrowTopBottomOffset, kArrowLeftRightOffset);

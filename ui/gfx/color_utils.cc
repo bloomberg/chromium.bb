@@ -64,13 +64,6 @@ float Linearize(float eight_bit_component) {
                                  : pow((component + 0.055f) / 1.055f, 2.4f);
 }
 
-SkColor LightnessInvertColor(SkColor color) {
-  HSL hsl;
-  SkColorToHSL(color, &hsl);
-  hsl.l = 1.0f - hsl.l;
-  return HSLToSkColor(hsl, SkColorGetA(color));
-}
-
 }  // namespace
 
 float GetContrastRatio(SkColor color_a, SkColor color_b) {
@@ -330,11 +323,6 @@ SkColor GetThemedAssetColor(SkColor theme_color) {
   if (use_light_color)
     return SK_ColorWHITE;
   return AlphaBlend(SK_ColorBLACK, theme_color, kThemedForegroundBlackFraction);
-}
-
-SkColor GetReadableColor(SkColor foreground, SkColor background) {
-  return PickContrastingColor(foreground, LightnessInvertColor(foreground),
-                              background);
 }
 
 SkColor PickContrastingColor(SkColor foreground1,

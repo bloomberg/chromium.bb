@@ -378,19 +378,19 @@ TEST_F(StyledLabelTest, StyledRangeTextStyleBold) {
 }
 
 TEST_F(StyledLabelTest, Color) {
-  const std::string text_red("RED");
+  const std::string text_blue("BLUE");
   const std::string text_link("link");
   const std::string text("word");
-  InitStyledLabel(text_red + text_link + text);
+  InitStyledLabel(text_blue + text_link + text);
 
-  StyledLabel::RangeStyleInfo style_info_red;
-  style_info_red.override_color = SK_ColorRED;
-  styled()->AddStyleRange(gfx::Range(0u, text_red.size()), style_info_red);
+  StyledLabel::RangeStyleInfo style_info_blue;
+  style_info_blue.override_color = SK_ColorBLUE;
+  styled()->AddStyleRange(gfx::Range(0u, text_blue.size()), style_info_blue);
 
   StyledLabel::RangeStyleInfo style_info_link =
       StyledLabel::RangeStyleInfo::CreateForLink();
   styled()->AddStyleRange(
-      gfx::Range(text_red.size(), text_red.size() + text_link.size()),
+      gfx::Range(text_blue.size(), text_blue.size() + text_link.size()),
       style_info_link);
 
   styled()->SetBounds(0, 0, 1000, 1000);
@@ -413,7 +413,7 @@ TEST_F(StyledLabelTest, Color) {
   container->AddChildView(link);
   const SkColor kDefaultLinkColor = link->enabled_color();
 
-  EXPECT_EQ(SK_ColorRED,
+  EXPECT_EQ(SK_ColorBLUE,
             static_cast<Label*>(styled()->child_at(0))->enabled_color());
   EXPECT_EQ(kDefaultLinkColor,
             static_cast<Label*>(styled()->child_at(1))->enabled_color());

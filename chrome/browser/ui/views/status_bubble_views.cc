@@ -493,10 +493,10 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
       theme_provider_->GetColor(ThemeProperties::COLOR_TAB_TEXT), bubble_color,
       0.6f);
 
-  canvas->DrawStringRect(
-      text_, GetFont(),
-      color_utils::GetReadableColor(blended_text_color, bubble_color),
-      text_rect);
+  canvas->DrawStringRect(text_, GetFont(),
+                         color_utils::GetColorWithMinimumContrast(
+                             blended_text_color, bubble_color),
+                         text_rect);
 }
 
 
