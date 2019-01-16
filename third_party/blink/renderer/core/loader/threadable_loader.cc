@@ -701,6 +701,7 @@ bool ThreadableLoader::RedirectReceived(
   // |last_request_url_| by destroying |assign_on_scope_exit|.
 
   ResourceRequest cross_origin_request(new_request);
+  cross_origin_request.SetOriginalUrl(initial_request_url_);
 
   // Remove any headers that may have been added by the network layer that cause
   // access control to fail.

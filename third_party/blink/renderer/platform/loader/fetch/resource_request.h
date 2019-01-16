@@ -95,6 +95,9 @@ class PLATFORM_EXPORT ResourceRequest final {
   const KURL& Url() const;
   void SetURL(const KURL&);
 
+  const KURL& GetOriginalUrl() const;
+  void SetOriginalUrl(const KURL&);
+
   void RemoveUserAndPassFromURL();
 
   mojom::FetchCacheMode GetCacheMode() const;
@@ -439,6 +442,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool NeedsHTTPOrigin() const;
 
   KURL url_;
+  KURL original_url_;
   // TimeDelta::Max() represents the default timeout on platforms that have one.
   base::TimeDelta timeout_interval_;
   KURL site_for_cookies_;

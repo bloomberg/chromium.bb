@@ -150,6 +150,14 @@ void ResourceRequest::SetURL(const KURL& url) {
   url_ = url;
 }
 
+const KURL& ResourceRequest::GetOriginalUrl() const {
+  return original_url_;
+}
+
+void ResourceRequest::SetOriginalUrl(const KURL& url) {
+  original_url_ = url;
+}
+
 void ResourceRequest::RemoveUserAndPassFromURL() {
   if (url_.User().IsEmpty() && url_.Pass().IsEmpty())
     return;
