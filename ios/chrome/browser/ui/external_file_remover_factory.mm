@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
@@ -26,7 +26,8 @@ ExternalFileRemover* ExternalFileRemoverFactory::GetForBrowserState(
 
 // static
 ExternalFileRemoverFactory* ExternalFileRemoverFactory::GetInstance() {
-  return base::Singleton<ExternalFileRemoverFactory>::get();
+  static base::NoDestructor<ExternalFileRemoverFactory> instance;
+  return instance.get();
 }
 
 ExternalFileRemoverFactory::ExternalFileRemoverFactory()
