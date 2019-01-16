@@ -27,11 +27,11 @@ void HpackOutputStream::AppendBits(uint8_t bits, size_t bit_size) {
   } else if (new_bit_offset <= 8) {
     // Buffer does not end on a byte boundary but the given bits fit
     // in the remainder of the last byte.
-    *buffer_.rbegin() |= bits << (8 - new_bit_offset);
+    buffer_.back() |= bits << (8 - new_bit_offset);
   } else {
     // Buffer does not end on a byte boundary and the given bits do
     // not fit in the remainder of the last byte.
-    *buffer_.rbegin() |= bits >> (new_bit_offset - 8);
+    buffer_.back() |= bits >> (new_bit_offset - 8);
     buffer_.append(1, bits << (16 - new_bit_offset));
   }
   bit_offset_ = new_bit_offset % 8;

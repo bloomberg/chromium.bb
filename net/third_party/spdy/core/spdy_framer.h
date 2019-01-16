@@ -12,7 +12,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/sys_byteorder.h"
 #include "net/third_party/spdy/core/hpack/hpack_encoder.h"
 #include "net/third_party/spdy/core/spdy_alt_svc_wire_format.h"
 #include "net/third_party/spdy/core/spdy_header_block.h"

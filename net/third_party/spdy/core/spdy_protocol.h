@@ -9,8 +9,8 @@
 #ifndef NET_THIRD_PARTY_SPDY_CORE_SPDY_PROTOCOL_H_
 #define NET_THIRD_PARTY_SPDY_CORE_SPDY_PROTOCOL_H_
 
-#include <stddef.h>
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 
 #include <iosfwd>
 #include <limits>
@@ -19,10 +19,8 @@
 #include <new>
 #include <utility>
 
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/sys_byteorder.h"
 #include "net/third_party/spdy/core/spdy_alt_svc_wire_format.h"
 #include "net/third_party/spdy/core/spdy_bitmasks.h"
 #include "net/third_party/spdy/core/spdy_bug_tracker.h"

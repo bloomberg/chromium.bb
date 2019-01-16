@@ -5,7 +5,6 @@
 #ifndef NET_THIRD_PARTY_SPDY_CORE_HPACK_HPACK_HUFFMAN_TABLE_H_
 #define NET_THIRD_PARTY_SPDY_CORE_HPACK_HPACK_HUFFMAN_TABLE_H_
 
-
 #include <cstddef>
 #include <cstdint>
 #include <vector>

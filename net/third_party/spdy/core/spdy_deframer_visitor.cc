@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <limits>
+#include <memory>
 
 #include "base/logging.h"
 #include "net/third_party/spdy/core/hpack/hpack_constants.h"
@@ -19,6 +20,7 @@
 #include "net/third_party/spdy/platform/api/spdy_flags.h"
 #include "net/third_party/spdy/platform/api/spdy_ptr_util.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::AssertionFailure;
 using ::testing::AssertionResult;
@@ -32,8 +34,7 @@ namespace test {
 enum class HeaderDirection { REQUEST, RESPONSE };
 
 // Types of HTTP/2 frames, per RFC 7540.
-// TODO(jamessynge): Switch to using
-// //net/third_party/quiche/src/http2/http2_constants.h when ready.
+// TODO(jamessynge): Switch to using http2/http2_constants.h when ready.
 enum Http2FrameType {
   DATA = 0,
   HEADERS = 1,
@@ -52,8 +53,7 @@ enum Http2FrameType {
   UNKNOWN = -2,
 };
 
-// TODO(jamessynge): Switch to using
-// //net/third_party/quiche/src/http2/http2_constants.h when ready.
+// TODO(jamessynge): Switch to using http2/http2_constants.h when ready.
 const char* Http2FrameTypeToString(Http2FrameType v) {
   switch (v) {
     case DATA:
@@ -87,8 +87,7 @@ const char* Http2FrameTypeToString(Http2FrameType v) {
   }
 }
 
-// TODO(jamessynge): Switch to using
-// //net/third_party/quiche/src/http2/http2_constants.h when ready.
+// TODO(jamessynge): Switch to using http2/http2_constants.h when ready.
 inline std::ostream& operator<<(std::ostream& out, Http2FrameType v) {
   return out << Http2FrameTypeToString(v);
 }
@@ -97,8 +96,7 @@ inline std::ostream& operator<<(std::ostream& out, Http2FrameType v) {
 // (see https://httpwg.github.io/specs/rfc7540.html#FrameHeader for details on
 // the fixed 9-octet header structure shared by all frames).
 // Flag bits are only valid for specified frame types.
-// TODO(jamessynge): Switch to using
-// //net/third_party/quiche/src/http2/http2_constants.h when ready.
+// TODO(jamessynge): Switch to using http2/http2_constants.h when ready.
 enum Http2HeaderFlag {
   NO_FLAGS = 0,
 
@@ -110,8 +108,7 @@ enum Http2HeaderFlag {
 };
 
 // Returns name of frame type.
-// TODO(jamessynge): Switch to using
-// //net/third_party/quiche/src/http2/http2_constants.h when ready.
+// TODO(jamessynge): Switch to using http2/http2_constants.h when ready.
 const char* Http2FrameTypeToString(Http2FrameType v);
 
 void SpdyDeframerVisitorInterface::OnPingAck(
@@ -773,7 +770,7 @@ void SpdyTestDeframerImpl::OnHeader(SpdyStringPiece key,
 void SpdyTestDeframerImpl::OnHeaderBlockEnd(
     size_t /* header_bytes_parsed */,
     size_t /* compressed_header_bytes_parsed */) {
-  CHECK(headers_);
+  CHECK(headers_ != nullptr);
   CHECK(frame_type_ == HEADERS || frame_type_ == CONTINUATION ||
         frame_type_ == PUSH_PROMISE)
       << "   frame_type_=" << Http2FrameTypeToString(frame_type_);
@@ -901,18 +898,18 @@ CollectedFrame& CollectedFrame::operator=(CollectedFrame&& other) {
   return *this;
 }
 
-::testing::AssertionResult CollectedFrame::VerifyHasHeaders(
+AssertionResult CollectedFrame::VerifyHasHeaders(
     const StringPairVector& expected_headers) const {
   VERIFY_NE(headers.get(), nullptr);
   VERIFY_THAT(*headers, ::testing::ContainerEq(expected_headers));
-  return ::testing::AssertionSuccess();
+  return AssertionSuccess();
 }
 
-::testing::AssertionResult CollectedFrame::VerifyHasSettings(
+AssertionResult CollectedFrame::VerifyHasSettings(
     const SettingVector& expected_settings) const {
   VERIFY_NE(settings.get(), nullptr);
   VERIFY_THAT(*settings, testing::ContainerEq(expected_settings));
-  return ::testing::AssertionSuccess();
+  return AssertionSuccess();
 }
 
 DeframerCallbackCollector::DeframerCallbackCollector(

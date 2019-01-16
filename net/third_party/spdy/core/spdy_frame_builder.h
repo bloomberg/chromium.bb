@@ -5,9 +5,8 @@
 #ifndef NET_THIRD_PARTY_SPDY_CORE_SPDY_FRAME_BUILDER_H_
 #define NET_THIRD_PARTY_SPDY_CORE_SPDY_FRAME_BUILDER_H_
 
-#include <stddef.h>
-#include <stdint.h>
-
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 
 #include "base/gtest_prod_util.h"

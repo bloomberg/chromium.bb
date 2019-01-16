@@ -5,6 +5,7 @@
 #include "net/third_party/spdy/core/hpack/hpack_header_table.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <set>
 #include <vector>
 

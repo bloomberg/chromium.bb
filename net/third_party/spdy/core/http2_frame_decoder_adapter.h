@@ -10,8 +10,8 @@
 #include <cstdint>
 #include <memory>
 
-#include "base/optional.h"
 #include "net/third_party/quiche/src/http2/decoder/http2_frame_decoder.h"
+#include "net/third_party/quiche/src/http2/platform/api/http2_optional.h"
 #include "net/third_party/spdy/core/hpack/hpack_decoder_adapter.h"
 #include "net/third_party/spdy/core/hpack/hpack_header_table.h"
 #include "net/third_party/spdy/core/spdy_alt_svc_wire_format.h"
@@ -245,7 +245,7 @@ class SPDY_EXPORT_PRIVATE Http2DecoderAdapter
 
   // Amount of trailing padding. Currently used just as an indicator of whether
   // OnPadLength has been called.
-  base::Optional<size_t> opt_pad_length_;
+  Http2Optional<size_t> opt_pad_length_;
 
   // Temporary buffers for the AltSvc fields.
   Http2String alt_svc_origin_;

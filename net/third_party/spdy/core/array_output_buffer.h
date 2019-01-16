@@ -37,7 +37,7 @@ class ArrayOutputBuffer : public ZeroCopyOutputBuffer {
  private:
   char* current_ = nullptr;
   char* begin_ = nullptr;
-  int64_t capacity_ = 0;
+  uint64_t capacity_ = 0;
 };
 
 }  // namespace spdy
