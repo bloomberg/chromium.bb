@@ -330,7 +330,8 @@ LayoutUnit LayoutMultiColumnFlowThread::MaxColumnLogicalHeight() const {
     return column_height_available_;
   }
   const LayoutBlockFlow* multicol_block = MultiColumnBlockFlow();
-  Length logical_max_height = multicol_block->StyleRef().LogicalMaxHeight();
+  const Length& logical_max_height =
+      multicol_block->StyleRef().LogicalMaxHeight();
   if (!logical_max_height.IsMaxSizeNone()) {
     LayoutUnit resolved_logical_max_height =
         multicol_block->ComputeContentLogicalHeight(

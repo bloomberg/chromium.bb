@@ -663,7 +663,7 @@ void LayoutBoxModelObject::UpdateFromStyle() {
 }
 
 LayoutBlock* LayoutBoxModelObject::ContainingBlockForAutoHeightDetection(
-    Length logical_height) const {
+    const Length& logical_height) const {
   // For percentage heights: The percentage is calculated with respect to the
   // height of the generated box's containing block. If the height of the
   // containing block is not specified explicitly (i.e., it depends on content
@@ -701,7 +701,7 @@ bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight(
   // TODO(rego): Check if we can somehow reuse LayoutBlock::
   // availableLogicalHeightForPercentageComputation() (see crbug.com/635655).
   const LayoutBox* this_box = IsBox() ? ToLayoutBox(this) : nullptr;
-  Length logical_height_length = StyleRef().LogicalHeight();
+  const Length& logical_height_length = StyleRef().LogicalHeight();
   LayoutBlock* cb =
       ContainingBlockForAutoHeightDetection(logical_height_length);
   if (register_percentage_descendant == kRegisterPercentageDescendant &&

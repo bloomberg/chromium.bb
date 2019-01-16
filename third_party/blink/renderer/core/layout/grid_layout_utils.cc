@@ -46,12 +46,12 @@ static LayoutUnit ComputeMarginLogicalSizeForChild(
   LayoutUnit margin_end;
   LayoutUnit logical_size =
       is_inline_direction ? child.LogicalWidth() : child.LogicalHeight();
-  Length margin_start_length = is_inline_direction
-                                   ? child.StyleRef().MarginStart()
-                                   : child.StyleRef().MarginBefore();
-  Length margin_end_length = is_inline_direction
-                                 ? child.StyleRef().MarginEnd()
-                                 : child.StyleRef().MarginAfter();
+  const Length& margin_start_length = is_inline_direction
+                                          ? child.StyleRef().MarginStart()
+                                          : child.StyleRef().MarginBefore();
+  const Length& margin_end_length = is_inline_direction
+                                        ? child.StyleRef().MarginEnd()
+                                        : child.StyleRef().MarginAfter();
   child.ComputeMarginsForDirection(
       for_direction, &grid, child.ContainingBlockLogicalWidthForContent(),
       logical_size, margin_start, margin_end, margin_start_length,

@@ -474,8 +474,8 @@ FlexLayoutAlgorithm::ContentAlignmentNormalBehavior() {
 bool FlexLayoutAlgorithm::ShouldApplyMinSizeAutoForChild(
     const LayoutBox& child) const {
   // css-flexbox section 4.5
-  Length min = IsHorizontalFlow() ? child.StyleRef().MinWidth()
-                                  : child.StyleRef().MinHeight();
+  const Length& min = IsHorizontalFlow() ? child.StyleRef().MinWidth()
+                                         : child.StyleRef().MinHeight();
   return min.IsAuto() && !child.ShouldApplySizeContainment() &&
          MainAxisOverflowForChild(child) == EOverflow::kVisible;
 }

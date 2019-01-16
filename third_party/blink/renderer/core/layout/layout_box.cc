@@ -400,7 +400,7 @@ void LayoutBox::UpdateShapeOutsideInfoAfterStyleChange(
       old_style ? old_style->ShapeOutside()
                 : ComputedStyleInitialValues::InitialShapeOutside();
 
-  Length shape_margin = style.ShapeMargin();
+  const Length& shape_margin = style.ShapeMargin();
   Length old_shape_margin =
       old_style ? old_style->ShapeMargin()
                 : ComputedStyleInitialValues::InitialShapeMargin();
@@ -2164,7 +2164,7 @@ LayoutUnit LayoutBox::PerpendicularContainingBlockLogicalHeight() const {
     return cb->OverrideContentLogicalHeight();
 
   const ComputedStyle& containing_block_style = cb->StyleRef();
-  Length logical_height_length = containing_block_style.LogicalHeight();
+  const Length& logical_height_length = containing_block_style.LogicalHeight();
 
   // FIXME: For now just support fixed heights.  Eventually should support
   // percentage heights as well.
@@ -3187,7 +3187,7 @@ void LayoutBox::UpdateLogicalHeight() {
   SetMarginAfter(computed_values.margins_.after_);
 }
 
-static inline Length HeightForDocumentElement(const Document& document) {
+static inline const Length& HeightForDocumentElement(const Document& document) {
   return document.documentElement()
       ->GetLayoutObject()
       ->StyleRef()
@@ -3651,7 +3651,7 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalWidthUsing(
                  ? ContainingBlockLogicalWidthForContent()
                  : PerpendicularContainingBlockLogicalHeight();
       }
-      Length container_logical_width =
+      const Length& container_logical_width =
           ContainingBlock()->StyleRef().LogicalWidth();
       // FIXME: Handle cases when containing block width is calculated or
       // viewport percent. https://bugs.webkit.org/show_bug.cgi?id=91071
@@ -3686,8 +3686,9 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeight(LayoutUnit) const {
 
 bool LayoutBox::LogicalHeightComputesAsNone(SizeType size_type) const {
   DCHECK(size_type == kMinSize || size_type == kMaxSize);
-  Length logical_height = size_type == kMinSize ? StyleRef().LogicalMinHeight()
-                                                : StyleRef().LogicalMaxHeight();
+  const Length& logical_height = size_type == kMinSize
+                                     ? StyleRef().LogicalMinHeight()
+                                     : StyleRef().LogicalMaxHeight();
   Length initial_logical_height =
       size_type == kMinSize ? ComputedStyleInitialValues::InitialMinHeight()
                             : ComputedStyleInitialValues::InitialMaxHeight();
@@ -4203,9 +4204,9 @@ void LayoutBox::ComputePositionedLogicalWidth(
 
   bool is_horizontal = IsHorizontalWritingMode();
   const LayoutUnit borders_plus_padding = BorderAndPaddingLogicalWidth();
-  const Length margin_logical_left =
+  const Length& margin_logical_left =
       is_horizontal ? StyleRef().MarginLeft() : StyleRef().MarginTop();
-  const Length margin_logical_right =
+  const Length& margin_logical_right =
       is_horizontal ? StyleRef().MarginRight() : StyleRef().MarginBottom();
 
   Length logical_left_length = StyleRef().LogicalLeft();
@@ -4327,7 +4328,7 @@ LayoutUnit LayoutBox::ShrinkToFitLogicalWidth(
 
 void LayoutBox::ComputePositionedLogicalWidthUsing(
     SizeType width_size_type,
-    Length logical_width,
+    const Length& logical_width,
     const LayoutBoxModelObject* container_block,
     TextDirection container_direction,
     LayoutUnit container_logical_width,
@@ -4614,8 +4615,8 @@ void LayoutBox::ComputePositionedLogicalHeight(
 
   const ComputedStyle& style_to_use = StyleRef();
   const LayoutUnit borders_plus_padding = BorderAndPaddingLogicalHeight();
-  const Length margin_before = style_to_use.MarginBefore();
-  const Length margin_after = style_to_use.MarginAfter();
+  const Length& margin_before = style_to_use.MarginBefore();
+  const Length& margin_after = style_to_use.MarginAfter();
   Length logical_top_length = style_to_use.LogicalTop();
   Length logical_bottom_length = style_to_use.LogicalBottom();
 

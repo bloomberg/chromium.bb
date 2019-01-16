@@ -150,8 +150,8 @@ void LayoutListMarker::UpdateLayout() {
   SetMarginStart(LayoutUnit());
   SetMarginEnd(LayoutUnit());
 
-  Length start_margin = StyleRef().MarginStart();
-  Length end_margin = StyleRef().MarginEnd();
+  const Length& start_margin = StyleRef().MarginStart();
+  const Length& end_margin = StyleRef().MarginEnd();
   if (start_margin.IsFixed())
     SetMarginStart(LayoutUnit(start_margin.Value()));
   if (end_margin.IsFixed())

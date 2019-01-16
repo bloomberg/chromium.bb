@@ -55,7 +55,7 @@ void LayoutTableSection::TableGridRow::UpdateLogicalHeightForCell(
   if (cell->ResolvedRowSpan() != 1)
     return;
 
-  Length cell_logical_height = cell->StyleRef().LogicalHeight();
+  const Length& cell_logical_height = cell->StyleRef().LogicalHeight();
   if (cell_logical_height.IsPositive()) {
     switch (cell_logical_height.GetType()) {
       case kPercent:

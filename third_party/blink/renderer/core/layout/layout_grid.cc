@@ -614,9 +614,10 @@ size_t LayoutGrid::ComputeAutoRepeatTracksCount(
     bool has_definite_max_track_sizing_function =
         auto_track_size.MaxTrackBreadth().IsLength() &&
         !auto_track_size.MaxTrackBreadth().IsContentSized();
-    auto track_length = has_definite_max_track_sizing_function
-                            ? auto_track_size.MaxTrackBreadth().length()
-                            : auto_track_size.MinTrackBreadth().length();
+    const Length& track_length =
+        has_definite_max_track_sizing_function
+            ? auto_track_size.MaxTrackBreadth().length()
+            : auto_track_size.MinTrackBreadth().length();
     auto_repeat_tracks_size +=
         ValueForLength(track_length, available_size.value());
   }
@@ -1543,8 +1544,8 @@ void LayoutGrid::UpdateAutoMarginsInRowAxisIfNeeded(LayoutBox& child) {
   if (available_alignment_space <= 0)
     return;
 
-  Length margin_start = child.StyleRef().MarginStartUsing(StyleRef());
-  Length margin_end = child.StyleRef().MarginEndUsing(StyleRef());
+  const Length& margin_start = child.StyleRef().MarginStartUsing(StyleRef());
+  const Length& margin_end = child.StyleRef().MarginEndUsing(StyleRef());
   if (margin_start.IsAuto() && margin_end.IsAuto()) {
     child.SetMarginStart(available_alignment_space / 2, Style());
     child.SetMarginEnd(available_alignment_space / 2, Style());
@@ -1567,8 +1568,8 @@ void LayoutGrid::UpdateAutoMarginsInColumnAxisIfNeeded(LayoutBox& child) {
   if (available_alignment_space <= 0)
     return;
 
-  Length margin_before = child.StyleRef().MarginBeforeUsing(StyleRef());
-  Length margin_after = child.StyleRef().MarginAfterUsing(StyleRef());
+  const Length& margin_before = child.StyleRef().MarginBeforeUsing(StyleRef());
+  const Length& margin_after = child.StyleRef().MarginAfterUsing(StyleRef());
   if (margin_before.IsAuto() && margin_after.IsAuto()) {
     child.SetMarginBefore(available_alignment_space / 2, Style());
     child.SetMarginAfter(available_alignment_space / 2, Style());

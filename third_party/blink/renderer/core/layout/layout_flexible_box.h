@@ -147,7 +147,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   bool UseChildAspectRatio(const LayoutBox& child) const;
   LayoutUnit ComputeMainSizeFromAspectRatioUsing(
       const LayoutBox& child,
-      Length cross_size_length) const;
+      const Length& cross_size_length) const;
   void SetFlowAwareLocationForChild(LayoutBox& child, const LayoutPoint&);
   LayoutUnit ComputeInnerFlexBaseSizeForChild(
       LayoutBox& child,
@@ -172,7 +172,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   void RepositionLogicalHeightDependentFlexItems(Vector<FlexLine>&);
   LayoutUnit ClientLogicalBottomAfterRepositioning();
 
-  LayoutUnit ComputeChildMarginValue(Length margin);
+  LayoutUnit ComputeChildMarginValue(const Length& margin);
   void PrepareOrderIteratorAndMargins();
   MinMaxSize ComputeMinAndMaxSizesForChild(const FlexLayoutAlgorithm& algorithm,
                                            const LayoutBox& child) const;

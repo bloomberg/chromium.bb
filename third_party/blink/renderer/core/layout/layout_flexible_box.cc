@@ -134,7 +134,7 @@ float LayoutFlexibleBox::CountIntrinsicSizeForAlgorithmChange(
   // item.
   if (IsColumnFlow())
     return previous_max_content_flex_fraction;
-  Length flex_basis = child->StyleRef().FlexBasis();
+  const Length& flex_basis = child->StyleRef().FlexBasis();
   float flex_grow = child->StyleRef().FlexGrow();
   // A flex-basis of auto will lead to a max-content flex fraction of zero, so
   // just like an inflexible item it would compute to a size of max-content, so
@@ -677,17 +677,14 @@ bool LayoutFlexibleBox::UseChildAspectRatio(const LayoutBox& child) const {
     // We can't compute a ratio in this case.
     return false;
   }
-  Length cross_size;
-  if (IsHorizontalFlow())
-    cross_size = child.StyleRef().Height();
-  else
-    cross_size = child.StyleRef().Width();
+  const Length& cross_size =
+      IsHorizontalFlow() ? child.StyleRef().Height() : child.StyleRef().Width();
   return CrossAxisLengthIsDefinite(child, cross_size);
 }
 
 LayoutUnit LayoutFlexibleBox::ComputeMainSizeFromAspectRatioUsing(
     const LayoutBox& child,
-    Length cross_size_length) const {
+    const Length& cross_size_length) const {
   DCHECK(HasAspectRatio(child));
   DCHECK_NE(child.IntrinsicSize().Height(), 0);
 
@@ -927,10 +924,11 @@ bool LayoutFlexibleBox::UpdateAutoMarginsInCrossAxis(
   DCHECK_GE(available_alignment_space, LayoutUnit());
 
   bool is_horizontal = IsHorizontalFlow();
-  Length top_or_left = is_horizontal ? child.StyleRef().MarginTop()
-                                     : child.StyleRef().MarginLeft();
-  Length bottom_or_right = is_horizontal ? child.StyleRef().MarginBottom()
-                                         : child.StyleRef().MarginRight();
+  const Length& top_or_left = is_horizontal ? child.StyleRef().MarginTop()
+                                            : child.StyleRef().MarginLeft();
+  const Length& bottom_or_right = is_horizontal
+                                      ? child.StyleRef().MarginBottom()
+                                      : child.StyleRef().MarginRight();
   if (top_or_left.IsAuto() && bottom_or_right.IsAuto()) {
     AdjustAlignmentForChild(child, available_alignment_space / 2);
     if (is_horizontal) {
@@ -979,7 +977,7 @@ bool LayoutFlexibleBox::UpdateAutoMarginsInCrossAxis(
   return false;
 }
 
-LayoutUnit LayoutFlexibleBox::ComputeChildMarginValue(Length margin) {
+LayoutUnit LayoutFlexibleBox::ComputeChildMarginValue(const Length& margin) {
   // When resolving the margins, we use the content size for resolving percent
   // and calc (for percents in calc expressions) margins. Fortunately, percent
   // margins are always computed with respect to the block's width, even for
@@ -1021,8 +1019,8 @@ MinMaxSize LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
     const LayoutBox& child) const {
   MinMaxSize sizes{LayoutUnit(), LayoutUnit::Max()};
 
-  Length max = IsHorizontalFlow() ? child.StyleRef().MaxWidth()
-                                  : child.StyleRef().MaxHeight();
+  const Length& max = IsHorizontalFlow() ? child.StyleRef().MaxWidth()
+                                         : child.StyleRef().MaxHeight();
   if (max.IsSpecifiedOrIntrinsic()) {
     sizes.max_size = ComputeMainAxisExtentForChild(child, kMaxSize, max);
     if (sizes.max_size == -1)
@@ -1030,8 +1028,8 @@ MinMaxSize LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
     DCHECK_GE(sizes.max_size, LayoutUnit());
   }
 
-  Length min = IsHorizontalFlow() ? child.StyleRef().MinWidth()
-                                  : child.StyleRef().MinHeight();
+  const Length& min = IsHorizontalFlow() ? child.StyleRef().MinWidth()
+                                         : child.StyleRef().MinHeight();
   if (min.IsSpecifiedOrIntrinsic()) {
     sizes.min_size = ComputeMainAxisExtentForChild(child, kMinSize, min);
     // computeMainAxisExtentForChild can return -1 when the child has a
@@ -1052,8 +1050,8 @@ MinMaxSize LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
       if (sizes.max_size != -1 && content_size > sizes.max_size)
         content_size = sizes.max_size;
 
-      Length main_size = IsHorizontalFlow() ? child.StyleRef().Width()
-                                            : child.StyleRef().Height();
+      const Length& main_size = IsHorizontalFlow() ? child.StyleRef().Width()
+                                                   : child.StyleRef().Height();
       if (MainAxisLengthIsDefinite(child, main_size)) {
         LayoutUnit resolved_main_size = ComputeMainAxisExtentForChild(
             child, kMainOrPreferredSize, main_size);
@@ -1064,9 +1062,9 @@ MinMaxSize LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
 
         sizes.min_size = std::min(specified_size, content_size);
       } else if (UseChildAspectRatio(child)) {
-        Length cross_size_length = IsHorizontalFlow()
-                                       ? child.StyleRef().Height()
-                                       : child.StyleRef().Width();
+        const Length& cross_size_length = IsHorizontalFlow()
+                                              ? child.StyleRef().Height()
+                                              : child.StyleRef().Width();
         LayoutUnit transferred_size =
             ComputeMainSizeFromAspectRatioUsing(child, cross_size_length);
         transferred_size = AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
@@ -1126,10 +1124,10 @@ bool LayoutFlexibleBox::UseOverrideLogicalHeightForPerentageResolution(
 LayoutUnit LayoutFlexibleBox::AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
     const LayoutBox& child,
     LayoutUnit child_size) const {
-  Length cross_min = IsHorizontalFlow() ? child.StyleRef().MinHeight()
-                                        : child.StyleRef().MinWidth();
-  Length cross_max = IsHorizontalFlow() ? child.StyleRef().MaxHeight()
-                                        : child.StyleRef().MaxWidth();
+  const Length& cross_min = IsHorizontalFlow() ? child.StyleRef().MinHeight()
+                                               : child.StyleRef().MinWidth();
+  const Length& cross_max = IsHorizontalFlow() ? child.StyleRef().MaxHeight()
+                                               : child.StyleRef().MaxWidth();
 
   if (CrossAxisLengthIsDefinite(child, cross_max)) {
     LayoutUnit max_value =
@@ -1375,10 +1373,12 @@ bool LayoutFlexibleBox::ChildHasIntrinsicMainAxisSize(
   bool result = false;
   if (IsHorizontalFlow() != child.StyleRef().IsHorizontalWritingMode()) {
     Length child_flex_basis = FlexBasisForChild(child);
-    Length child_min_size = IsHorizontalFlow() ? child.StyleRef().MinWidth()
-                                               : child.StyleRef().MinHeight();
-    Length child_max_size = IsHorizontalFlow() ? child.StyleRef().MaxWidth()
-                                               : child.StyleRef().MaxHeight();
+    const Length& child_min_size = IsHorizontalFlow()
+                                       ? child.StyleRef().MinWidth()
+                                       : child.StyleRef().MinHeight();
+    const Length& child_max_size = IsHorizontalFlow()
+                                       ? child.StyleRef().MaxWidth()
+                                       : child.StyleRef().MaxHeight();
     if (child_flex_basis.IsIntrinsic() || child_min_size.IsIntrinsicOrAuto() ||
         child_max_size.IsIntrinsic())
       result = true;
