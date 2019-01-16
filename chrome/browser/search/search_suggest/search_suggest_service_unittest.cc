@@ -8,16 +8,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/optional.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/search/search_suggest/search_suggest_data.h"
 #include "chrome/browser/search/search_suggest/search_suggest_loader.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "google_apis/gaia/fake_oauth2_token_service.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -51,9 +46,7 @@ class FakeSearchSuggestLoader : public SearchSuggestLoader {
 
 class SearchSuggestServiceTest : public testing::Test {
  public:
-  SearchSuggestServiceTest()
-      : signin_client_(&pref_service_),
-        identity_env_(&test_url_loader_factory_) {
+  SearchSuggestServiceTest() : identity_env_(&test_url_loader_factory_) {
     // GaiaCookieManagerService calls static methods of AccountTrackerService
     // which access prefs.
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
@@ -87,8 +80,6 @@ class SearchSuggestServiceTest : public testing::Test {
 
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  TestSigninClient signin_client_;
-  FakeOAuth2TokenService token_service_;
   identity::IdentityTestEnvironment identity_env_;
 
   // Owned by the service.
