@@ -6,15 +6,13 @@
 
 #include <map>
 
-#include "base/rand_util.h"
+#include "net/third_party/quiche/src/http2/test_tools/http2_random.h"
 #include "net/third_party/spdy/core/hpack/hpack_huffman_table.h"
 #include "net/third_party/spdy/platform/api/spdy_unsafe_arena.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace spdy {
-
-using testing::ElementsAre;
 
 namespace test {
 
@@ -86,10 +84,11 @@ class HpackEncoderPeer {
     std::unique_ptr<HpackEncoder::ProgressiveEncoder> encoderator =
         encoder->EncodeHeaderSet(header_set);
     SpdyString output_buffer;
-    encoderator->Next(base::RandInt(0, 15), &output_buffer);
+    http2::test::Http2Random random;
+    encoderator->Next(random.UniformInRange(0, 16), &output_buffer);
     while (encoderator->HasNext()) {
       SpdyString second_buffer;
-      encoderator->Next(base::RandInt(0, 15), &second_buffer);
+      encoderator->Next(random.UniformInRange(0, 16), &second_buffer);
       output_buffer.append(second_buffer);
     }
     *output = std::move(output_buffer);

@@ -10,7 +10,7 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "base/rand_util.h"
+#include "net/third_party/quiche/src/http2/test_tools/http2_random.h"
 #include "net/third_party/spdy/core/hpack/hpack_constants.h"
 #include "net/third_party/spdy/core/mock_spdy_framer_visitor.h"
 #include "net/third_party/spdy/core/spdy_frame_builder.h"
@@ -20,6 +20,7 @@
 #include "net/third_party/spdy/core/spdy_protocol_test_utils.h"
 #include "net/third_party/spdy/core/spdy_test_utils.h"
 #include "net/third_party/spdy/platform/api/spdy_ptr_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace spdy {
 namespace test {
@@ -47,7 +48,7 @@ class SpdyDeframerVisitorTest : public ::testing::Test {
       // the socket.
       const size_t kMaxReadSize = 32;
       size_t bytes_read =
-          (base::RandGenerator(std::min(input_remaining, kMaxReadSize))) + 1;
+          (random_.Uniform(std::min(input_remaining, kMaxReadSize))) + 1;
       size_t bytes_processed = decoder_.ProcessInput(input, bytes_read);
       input_remaining -= bytes_processed;
       input += bytes_processed;
@@ -65,6 +66,9 @@ class SpdyDeframerVisitorTest : public ::testing::Test {
   http2::Http2DecoderAdapter decoder_;
   std::vector<CollectedFrame> collected_frames_;
   std::unique_ptr<SpdyTestDeframer> deframer_;
+
+ private:
+  http2::test::Http2Random random_;
 };
 
 TEST_F(SpdyDeframerVisitorTest, DataFrame) {
