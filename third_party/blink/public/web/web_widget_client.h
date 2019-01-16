@@ -72,6 +72,9 @@ class WebWidgetClient {
   // a synchronous composite.
   virtual void ScheduleAnimation() {}
 
+  // Toggles the FPS counter in the HUD layer
+  virtual void SetShowFPSCounter(bool) {}
+
   // A notification callback for when the intrinsic sizing of the
   // widget changed. This is only called for SVG within a remote frame.
   virtual void IntrinsicSizingInfoChanged(const WebIntrinsicSizingInfo&) {}

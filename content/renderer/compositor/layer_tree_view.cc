@@ -520,12 +520,6 @@ int LayerTreeView::LayerTreeId() const {
   return layer_tree_host_->GetId();
 }
 
-void LayerTreeView::SetShowFPSCounter(bool show) {
-  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
-  debug_state.show_fps_counter = show;
-  layer_tree_host_->SetDebugState(debug_state);
-}
-
 void LayerTreeView::SetShowPaintRects(bool show) {
   cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
   debug_state.show_paint_rects = show;

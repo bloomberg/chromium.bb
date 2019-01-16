@@ -221,7 +221,6 @@ class WebSettings {
   virtual void SetShouldClearDocumentBackground(bool) = 0;
   virtual void SetShouldRespectImageOrientation(bool) = 0;
   virtual void SetShowContextMenuOnMouseUp(bool) = 0;
-  virtual void SetShowFPSCounter(bool) = 0;
   virtual void SetShowPaintRects(bool) = 0;
   virtual void SetShrinksViewportContentToFit(bool) = 0;
   virtual void SetSmartInsertDeleteEnabled(bool) = 0;

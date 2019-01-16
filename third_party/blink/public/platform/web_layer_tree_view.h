@@ -200,9 +200,6 @@ class WebLayerTreeView {
 
   virtual int LayerTreeId() const { return 0; }
 
-  // Toggles the FPS counter in the HUD layer
-  virtual void SetShowFPSCounter(bool) {}
-
   // Toggles the paint rects in the HUD layer
   virtual void SetShowPaintRects(bool) {}
 

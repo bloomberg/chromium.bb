@@ -1047,6 +1047,13 @@ void RenderWidget::ScheduleAnimation() {
   layer_tree_view_->SetNeedsBeginFrame();
 }
 
+void RenderWidget::SetShowFPSCounter(bool show) {
+  cc::LayerTreeHost* host = layer_tree_view_->layer_tree_host();
+  cc::LayerTreeDebugState debug_state = host->GetDebugState();
+  debug_state.show_fps_counter = show;
+  host->SetDebugState(debug_state);
+}
+
 void RenderWidget::UpdateVisualState(bool record_main_frame_metrics) {
   if (!GetWebWidget())
     return;
