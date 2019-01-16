@@ -25,6 +25,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/html/forms/file_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element_with_state.h"
@@ -403,23 +405,18 @@ void FormKeyGenerator::WillDeleteForm(HTMLFormElement* form) {
 
 // ----------------------------------------------------------------------------
 
-DocumentState* DocumentState::Create() {
-  return MakeGarbageCollected<DocumentState>();
-}
+DocumentState::DocumentState(Document& document) : document_(document) {}
 
 void DocumentState::Trace(blink::Visitor* visitor) {
+  visitor->Trace(document_);
   visitor->Trace(form_controls_);
 }
 
-void DocumentState::AddControl(HTMLFormControlElementWithState* control) {
-  DCHECK(!control->Next() && !control->Prev());
-  form_controls_.Append(control);
-}
-
-void DocumentState::RemoveControl(HTMLFormControlElementWithState* control) {
-  form_controls_.Remove(control);
-  control->SetPrev(nullptr);
-  control->SetNext(nullptr);
+void DocumentState::InvalidateControlList() {
+  if (form_controls_dirty_)
+    return;
+  form_controls_.resize(0);
+  form_controls_dirty_ = true;
 }
 
 static String FormStateSignature() {
@@ -432,11 +429,20 @@ static String FormStateSignature() {
 }
 
 Vector<String> DocumentState::ToStateVector() {
+  if (form_controls_dirty_) {
+    for (auto& element : Traversal<Element>::DescendantsOf(*document_)) {
+      if (auto* control_element = ToHTMLFormControlElementOrNull(element)) {
+        if (auto* stateful_control_element =
+                ToHTMLFormControlElementWithStateOrNull(control_element))
+          form_controls_.push_back(stateful_control_element);
+      }
+    }
+    form_controls_dirty_ = false;
+  }
   FormKeyGenerator* key_generator = FormKeyGenerator::Create();
   std::unique_ptr<SavedFormStateMap> state_map =
       base::WrapUnique(new SavedFormStateMap);
-  for (HTMLFormControlElementWithState* control = form_controls_.Head();
-       control; control = control->Next()) {
+  for (auto& control : form_controls_) {
     DCHECK(control->isConnected());
     if (!control->ShouldSaveAndRestoreFormControlState())
       continue;
@@ -463,7 +469,8 @@ Vector<String> DocumentState::ToStateVector() {
 
 // ----------------------------------------------------------------------------
 
-FormController::FormController() : document_state_(DocumentState::Create()) {}
+FormController::FormController(Document& document)
+    : document_state_(MakeGarbageCollected<DocumentState>(document)) {}
 
 FormController::~FormController() = default;
 
@@ -575,14 +582,8 @@ Vector<String> FormController::GetReferencedFilePaths(
   return to_return;
 }
 
-void FormController::RegisterStatefulFormControl(
-    HTMLFormControlElementWithState& control) {
-  document_state_->AddControl(&control);
-}
-
-void FormController::UnregisterStatefulFormControl(
-    HTMLFormControlElementWithState& control) {
-  document_state_->RemoveControl(&control);
+void FormController::InvalidateStatefulFormControlList() {
+  document_state_->InvalidateControlList();
 }
 
 }  // namespace blink
