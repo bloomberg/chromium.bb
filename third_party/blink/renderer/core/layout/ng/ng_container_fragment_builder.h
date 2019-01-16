@@ -164,6 +164,9 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 #endif
 
  protected:
+  friend class NGPhysicalContainerFragment;
+  friend class NGLayoutResult;
+
   // An out-of-flow positioned-candidate is a temporary data structure used
   // within the NGBoxFragmentBuilder.
   //
@@ -188,10 +191,14 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
         : descendant(descendant), child_offset(child_offset) {}
   };
 
-  NGContainerFragmentBuilder(scoped_refptr<const ComputedStyle> style,
+  NGContainerFragmentBuilder(NGLayoutInputNode node,
+                             scoped_refptr<const ComputedStyle> style,
                              WritingMode writing_mode,
                              TextDirection direction)
-      : NGFragmentBuilder(std::move(style), writing_mode, direction) {}
+      : NGFragmentBuilder(std::move(style), writing_mode, direction),
+        node_(node) {}
+
+  NGLayoutInputNode node_;
 
   LayoutUnit bfc_line_offset_;
   base::Optional<LayoutUnit> bfc_block_offset_;
@@ -222,8 +229,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   bool is_pushed_by_floats_ = false;
 
   bool has_orthogonal_flow_roots_ = false;
-
-  friend class NGPhysicalContainerFragment;
+  bool has_depends_on_percentage_block_size_child_ = false;
 };
 
 }  // namespace blink

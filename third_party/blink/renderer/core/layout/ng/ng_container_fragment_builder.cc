@@ -60,6 +60,9 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
   if (child.HasOrthogonalFlowRoots())
     has_orthogonal_flow_roots_ = true;
 
+  if (child.DependsOnPercentageBlockSize())
+    has_depends_on_percentage_block_size_child_ = true;
+
   return AddChild(child.PhysicalFragment(), child_offset);
 }
 
@@ -89,6 +92,10 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
   if (!IsParallelWritingMode(child->Style().GetWritingMode(),
                              Style().GetWritingMode()))
     has_orthogonal_flow_roots_ = true;
+
+  // We mark all legacy layout nodes as dependent on percentage block-size.
+  if (child->IsOldLayoutRoot())
+    has_depends_on_percentage_block_size_child_ = true;
 
   if (!has_last_resort_break_) {
     if (const auto* token = child->BreakToken()) {

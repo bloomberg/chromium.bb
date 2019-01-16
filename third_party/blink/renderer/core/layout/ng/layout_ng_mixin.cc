@@ -295,7 +295,7 @@ scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
 
     // If the available / percentage sizes have changed in a way that may affect
     // layout, we cannot re-use the previous result.
-    if (SizeMayChange(Base::StyleRef(), new_space, old_space))
+    if (SizeMayChange(Base::StyleRef(), new_space, old_space, *cached_result_))
       return nullptr;
   }
 

@@ -29,8 +29,10 @@ class CORE_EXPORT NGBoxFragmentBuilder final
                        scoped_refptr<const ComputedStyle> style,
                        WritingMode writing_mode,
                        TextDirection direction)
-      : NGContainerFragmentBuilder(std::move(style), writing_mode, direction),
-        node_(node),
+      : NGContainerFragmentBuilder(node,
+                                   std::move(style),
+                                   writing_mode,
+                                   direction),
         box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),
         is_old_layout_root_(false),
         did_break_(false) {
@@ -43,8 +45,10 @@ class CORE_EXPORT NGBoxFragmentBuilder final
                        scoped_refptr<const ComputedStyle> style,
                        WritingMode writing_mode,
                        TextDirection direction)
-      : NGContainerFragmentBuilder(std::move(style), writing_mode, direction),
-        node_(nullptr),
+      : NGContainerFragmentBuilder(nullptr,
+                                   std::move(style),
+                                   writing_mode,
+                                   direction),
         box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),
         is_old_layout_root_(false),
         did_break_(false) {
@@ -223,8 +227,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
  private:
   scoped_refptr<NGLayoutResult> ToBoxFragment(WritingMode);
-
-  NGLayoutInputNode node_;
 
   LayoutUnit intrinsic_block_size_;
   NGBoxStrut borders_;

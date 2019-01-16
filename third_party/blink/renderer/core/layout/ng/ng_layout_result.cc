@@ -30,6 +30,7 @@ NGLayoutResult::NGLayoutResult(
       is_pushed_by_floats_(builder->is_pushed_by_floats_),
       adjoining_floats_(builder->adjoining_floats_),
       has_orthogonal_flow_roots_(builder->has_orthogonal_flow_roots_),
+      depends_on_percentage_block_size_(DependsOnPercentageBlockSize(*builder)),
       status_(kSuccess) {
   DCHECK(physical_fragment) << "Use the other constructor for aborting layout";
   root_fragment_.fragment_ = std::move(physical_fragment);
@@ -47,6 +48,7 @@ NGLayoutResult::NGLayoutResult(NGLayoutResultStatus status,
       is_pushed_by_floats_(false),
       adjoining_floats_(kFloatTypeNone),
       has_orthogonal_flow_roots_(builder->has_orthogonal_flow_roots_),
+      depends_on_percentage_block_size_(false),
       status_(status) {
   DCHECK_NE(status, kSuccess)
       << "Use the other constructor for successful layout";
@@ -67,6 +69,7 @@ NGLayoutResult::NGLayoutResult(
       is_pushed_by_floats_(builder->is_pushed_by_floats_),
       adjoining_floats_(builder->adjoining_floats_),
       has_orthogonal_flow_roots_(builder->has_orthogonal_flow_roots_),
+      depends_on_percentage_block_size_(DependsOnPercentageBlockSize(*builder)),
       status_(kSuccess) {
   root_fragment_.fragment_ = std::move(physical_fragment);
   oof_positioned_descendants_ = std::move(builder->oof_positioned_descendants_);
@@ -90,10 +93,50 @@ NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
       is_pushed_by_floats_(other.is_pushed_by_floats_),
       adjoining_floats_(other.adjoining_floats_),
       has_orthogonal_flow_roots_(other.has_orthogonal_flow_roots_),
+      depends_on_percentage_block_size_(
+          other.depends_on_percentage_block_size_),
       status_(other.status_) {}
 
 // Define the destructor here, so that we can forward-declare more in the
 // header.
 NGLayoutResult::~NGLayoutResult() = default;
+
+bool NGLayoutResult::DependsOnPercentageBlockSize(
+    const NGContainerFragmentBuilder& builder) {
+  NGLayoutInputNode node = builder.node_;
+
+  if (!node || node.IsInline())
+    return builder.has_depends_on_percentage_block_size_child_;
+
+  // NOTE: If an element is OOF positioned, and has top/bottom constraints
+  // which are percentage based, this function will return false.
+  //
+  // This is fine as the top/bottom constraints are computed *before* layout,
+  // and the result is set as a fixed-block-size constraint. (And the caching
+  // logic will never check the result of this function).
+  //
+  // The result of this function still may be used for an OOF positioned
+  // element if it has a percentage block-size however, but this will return
+  // the correct result from below.
+
+  const ComputedStyle& style = builder.Style();
+  if (style.LogicalHeight().IsAuto() &&
+      builder.has_depends_on_percentage_block_size_child_) {
+    // Quirks mode has different %-block-size behaviour, than standards mode.
+    // An arbitrary descendant may depend on the percentage resolution
+    // block-size given.
+    // If this is also an anonymous block we need to mark ourselves dependent
+    // if we have a dependent child.
+    if (node.IsAnonymousBlock() || node.GetDocument().InQuirksMode())
+      return true;
+  }
+
+  if (style.LogicalHeight().IsPercentOrCalc() ||
+      style.LogicalMinHeight().IsPercentOrCalc() ||
+      style.LogicalMaxHeight().IsPercentOrCalc())
+    return true;
+
+  return false;
+}
 
 }  // namespace blink

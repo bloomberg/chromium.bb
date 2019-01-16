@@ -110,6 +110,12 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
   bool HasOrthogonalFlowRoots() const { return has_orthogonal_flow_roots_; }
 
+  // Returns true if we aren't able to re-use this layout result if the
+  // PercentageResolutionBlockSize changes.
+  bool DependsOnPercentageBlockSize() const {
+    return depends_on_percentage_block_size_;
+  }
+
  private:
   friend class NGBoxFragmentBuilder;
   friend class NGLineBoxFragmentBuilder;
@@ -125,6 +131,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // We don't need copy constructor today. Delete this to clarify that the
   // default copy constructor will not work because RefCounted can't be copied.
   NGLayoutResult(const NGLayoutResult&) = delete;
+
+  static bool DependsOnPercentageBlockSize(const NGContainerFragmentBuilder&);
 
   NGLink root_fragment_;
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
@@ -147,6 +155,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   unsigned adjoining_floats_ : 2;  // NGFloatTypes
 
   unsigned has_orthogonal_flow_roots_ : 1;
+  unsigned depends_on_percentage_block_size_ : 1;
 
   unsigned status_ : 1;
 };
