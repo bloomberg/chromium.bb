@@ -48,6 +48,6 @@ public class WebappSplashScreenBackgroundColorTest {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         WebappUma.HISTOGRAM_SPLASHSCREEN_BACKGROUNDCOLOR,
-                        WebappUma.SplashScreenColorStatus.CUSTOM));
+                        WebappUma.SplashColorStatus.CUSTOM));
     }
 }

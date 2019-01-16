@@ -8,6 +8,7 @@ import android.os.SystemClock;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.webapps.SplashscreenObserver;
+import org.chromium.chrome.browser.webapps.WebappSplashScreenController;
 
 /**
  * This class records cold start WebApk splashscreen metrics starting from the launch of the WebAPK
@@ -27,7 +28,7 @@ public class WebApkSplashscreenMetrics implements SplashscreenObserver {
     }
 
     @Override
-    public void onSplashscreenHidden(int reason) {
+    public void onSplashscreenHidden(@WebappSplashScreenController.SplashHidesReason int reason) {
         if (mShellApkLaunchTimeMs == -1) return;
 
         if (UmaUtils.hasComeToForeground() && !UmaUtils.hasComeToBackground()) {

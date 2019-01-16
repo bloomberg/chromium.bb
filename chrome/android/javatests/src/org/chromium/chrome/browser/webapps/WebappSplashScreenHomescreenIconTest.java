@@ -62,7 +62,7 @@ public class WebappSplashScreenHomescreenIconTest {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         WebappUma.HISTOGRAM_SPLASHSCREEN_ICON_TYPE,
-                        WebappUma.SplashScreenIconType.FALLBACK));
+                        WebappUma.SplashIconType.FALLBACK));
 
         Bitmap icon = ShortcutHelper.decodeBitmapFromString(WebappActivityTestRule.TEST_ICON);
         int sizeInDp = Math.round((float) icon.getWidth()

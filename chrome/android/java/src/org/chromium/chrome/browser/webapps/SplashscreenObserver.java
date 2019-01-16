@@ -17,5 +17,5 @@ public interface SplashscreenObserver {
      * Called when the splashscreen is hidden.
      * @param reason SplashscreenHidesReason defined in tools/metrics/histograms/enums.xml
      */
-    void onSplashscreenHidden(int reason);
+    void onSplashscreenHidden(@WebappSplashScreenController.SplashHidesReason int reason);
 }

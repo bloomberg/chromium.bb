@@ -9,6 +9,7 @@ import android.support.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.webapps.SplashscreenObserver;
+import org.chromium.chrome.browser.webapps.WebappSplashScreenController;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -18,35 +19,22 @@ import java.util.concurrent.TimeUnit;
  * Centralizes UMA data collection for web apps.
  */
 public class WebappUma implements SplashscreenObserver {
-    // SplashscreenColorStatus defined in tools/metrics/histograms/enums.xml.
+    // SplashColorStatus defined in tools/metrics/histograms/enums.xml.
     // NUM_ENTRIES is intentionally included into @IntDef.
-    @IntDef({SplashScreenColorStatus.DEFAULT, SplashScreenColorStatus.CUSTOM,
-            SplashScreenColorStatus.NUM_ENTRIES})
+    @IntDef({SplashColorStatus.DEFAULT, SplashColorStatus.CUSTOM, SplashColorStatus.NUM_ENTRIES})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface SplashScreenColorStatus {
+    public @interface SplashColorStatus {
         int DEFAULT = 0;
         int CUSTOM = 1;
         int NUM_ENTRIES = 2;
     }
 
-    // SplashscreenHidesReason defined in tools/metrics/histograms/enums.xml.
-    @IntDef({SplashScreenHidesReason.PAINT, SplashScreenHidesReason.LOAD_FINISHED,
-            SplashScreenHidesReason.LOAD_FAILED, SplashScreenHidesReason.CRASH})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface SplashScreenHidesReason {
-        int PAINT = 0;
-        int LOAD_FINISHED = 1;
-        int LOAD_FAILED = 2;
-        int CRASH = 3;
-        int NUM_ENTRIES = 4;
-    }
-
-    // SplashscreenBackgroundColorType defined in tools/metrics/histograms/enums.xml.
+    // SplashIconType defined in tools/metrics/histograms/enums.xml.
     // NUM_ENTRIES is intentionally included into @IntDef.
-    @IntDef({SplashScreenIconType.NONE, SplashScreenIconType.FALLBACK, SplashScreenIconType.CUSTOM,
-            SplashScreenIconType.CUSTOM_SMALL, SplashScreenIconType.NUM_ENTRIES})
+    @IntDef({SplashIconType.NONE, SplashIconType.FALLBACK, SplashIconType.CUSTOM,
+            SplashIconType.CUSTOM_SMALL, SplashIconType.NUM_ENTRIES})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface SplashScreenIconType {
+    public @interface SplashIconType {
         int NONE = 0;
         int FALLBACK = 1;
         int CUSTOM = 2;
@@ -59,19 +47,15 @@ public class WebappUma implements SplashscreenObserver {
             "Webapp.Splashscreen.BackgroundColor";
     public static final String HISTOGRAM_SPLASHSCREEN_DURATION =
             "Webapp.Splashscreen.Duration";
-    public static final String HISTOGRAM_SPLASHSCREEN_HIDES =
-            "Webapp.Splashscreen.Hides";
-    public static final String HISTOGRAM_SPLASHSCREEN_ICON_TYPE =
-            "Webapp.Splashscreen.Icon.Type";
-    public static final String HISTOGRAM_SPLASHSCREEN_ICON_SIZE =
-            "Webapp.Splashscreen.Icon.Size";
-    public static final String HISTOGRAM_SPLASHSCREEN_THEMECOLOR =
-            "Webapp.Splashscreen.ThemeColor";
+    public static final String HISTOGRAM_SPLASHSCREEN_HIDES = "Webapp.Splashscreen.Hides";
+    public static final String HISTOGRAM_SPLASHSCREEN_ICON_TYPE = "Webapp.Splashscreen.Icon.Type";
+    public static final String HISTOGRAM_SPLASHSCREEN_ICON_SIZE = "Webapp.Splashscreen.Icon.Size";
+    public static final String HISTOGRAM_SPLASHSCREEN_THEMECOLOR = "Webapp.Splashscreen.ThemeColor";
 
-    private int mSplashScreenBackgroundColor = SplashScreenColorStatus.NUM_ENTRIES;
-    private int mSplashScreenIconType = SplashScreenIconType.NUM_ENTRIES;
+    private int mSplashScreenBackgroundColor = SplashColorStatus.NUM_ENTRIES;
+    private int mSplashScreenIconType = SplashIconType.NUM_ENTRIES;
     private int mSplashScreenIconSize = -1;
-    private int mSplashScreenThemeColor = SplashScreenColorStatus.NUM_ENTRIES;
+    private int mSplashScreenThemeColor = SplashColorStatus.NUM_ENTRIES;
     private long mSplashScreenVisibleTime;
 
     private boolean mCommitted;
@@ -90,7 +74,7 @@ public class WebappUma implements SplashscreenObserver {
      * Records the type of background color on the splash screen.
      * @param type flag representing the type of color.
      */
-    public void recordSplashscreenBackgroundColor(@SplashScreenColorStatus int type) {
+    public void recordSplashscreenBackgroundColor(@SplashColorStatus int type) {
         assert !mCommitted;
         mSplashScreenBackgroundColor = type;
     }
@@ -102,9 +86,9 @@ public class WebappUma implements SplashscreenObserver {
      * @param reason enum representing the reason why the splash screen was hidden.
      */
     @Override
-    public void onSplashscreenHidden(@SplashScreenHidesReason int reason) {
-        RecordHistogram.recordEnumeratedHistogram(
-                HISTOGRAM_SPLASHSCREEN_HIDES, reason, SplashScreenHidesReason.NUM_ENTRIES);
+    public void onSplashscreenHidden(@WebappSplashScreenController.SplashHidesReason int reason) {
+        RecordHistogram.recordEnumeratedHistogram(HISTOGRAM_SPLASHSCREEN_HIDES, reason,
+                WebappSplashScreenController.SplashHidesReason.NUM_ENTRIES);
 
         assert mSplashScreenVisibleTime != 0;
         RecordHistogram.recordMediumTimesHistogram(HISTOGRAM_SPLASHSCREEN_DURATION,
@@ -115,7 +99,7 @@ public class WebappUma implements SplashscreenObserver {
      * Records the type of icon on the splash screen.
      * @param type flag representing the type of icon.
      */
-    public void recordSplashscreenIconType(@SplashScreenIconType int type) {
+    public void recordSplashscreenIconType(@SplashIconType int type) {
         assert !mCommitted;
         mSplashScreenIconType = type;
     }
@@ -130,7 +114,7 @@ public class WebappUma implements SplashscreenObserver {
      * Records the type of theme color on the splash screen.
      * @param type flag representing the type of color.
      */
-    public void recordSplashscreenThemeColor(@SplashScreenColorStatus int type) {
+    public void recordSplashscreenThemeColor(@SplashColorStatus int type) {
         assert !mCommitted;
         mSplashScreenThemeColor = type;
     }
@@ -144,28 +128,28 @@ public class WebappUma implements SplashscreenObserver {
 
         mCommitted = true;
 
-        assert mSplashScreenBackgroundColor != SplashScreenColorStatus.NUM_ENTRIES;
+        assert mSplashScreenBackgroundColor != SplashColorStatus.NUM_ENTRIES;
         RecordHistogram.recordEnumeratedHistogram(HISTOGRAM_SPLASHSCREEN_BACKGROUNDCOLOR,
-                mSplashScreenBackgroundColor, SplashScreenColorStatus.NUM_ENTRIES);
-        mSplashScreenBackgroundColor = SplashScreenColorStatus.NUM_ENTRIES;
+                mSplashScreenBackgroundColor, SplashColorStatus.NUM_ENTRIES);
+        mSplashScreenBackgroundColor = SplashColorStatus.NUM_ENTRIES;
 
-        assert mSplashScreenIconType != SplashScreenIconType.NUM_ENTRIES;
+        assert mSplashScreenIconType != SplashIconType.NUM_ENTRIES;
         RecordHistogram.recordEnumeratedHistogram(HISTOGRAM_SPLASHSCREEN_ICON_TYPE,
-                mSplashScreenIconType, SplashScreenIconType.NUM_ENTRIES);
+                mSplashScreenIconType, SplashIconType.NUM_ENTRIES);
 
-        if (mSplashScreenIconType == SplashScreenIconType.NONE) {
+        if (mSplashScreenIconType == SplashIconType.NONE) {
             assert mSplashScreenIconSize == -1;
         } else {
             assert mSplashScreenIconSize >= 0;
-            RecordHistogram.recordCount1000Histogram(HISTOGRAM_SPLASHSCREEN_ICON_SIZE,
-                    mSplashScreenIconSize);
+            RecordHistogram.recordCount1000Histogram(
+                    HISTOGRAM_SPLASHSCREEN_ICON_SIZE, mSplashScreenIconSize);
         }
-        mSplashScreenIconType = SplashScreenIconType.NUM_ENTRIES;
+        mSplashScreenIconType = SplashIconType.NUM_ENTRIES;
         mSplashScreenIconSize = -1;
 
-        assert mSplashScreenThemeColor != SplashScreenColorStatus.NUM_ENTRIES;
+        assert mSplashScreenThemeColor != SplashColorStatus.NUM_ENTRIES;
         RecordHistogram.recordEnumeratedHistogram(HISTOGRAM_SPLASHSCREEN_THEMECOLOR,
-                mSplashScreenThemeColor, SplashScreenColorStatus.NUM_ENTRIES);
-        mSplashScreenThemeColor = SplashScreenColorStatus.NUM_ENTRIES;
+                mSplashScreenThemeColor, SplashColorStatus.NUM_ENTRIES);
+        mSplashScreenThemeColor = SplashColorStatus.NUM_ENTRIES;
     }
 }

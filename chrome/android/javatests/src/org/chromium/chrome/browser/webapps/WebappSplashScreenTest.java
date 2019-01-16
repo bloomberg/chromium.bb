@@ -193,26 +193,25 @@ public class WebappSplashScreenTest {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         WebappUma.HISTOGRAM_SPLASHSCREEN_BACKGROUNDCOLOR,
-                        WebappUma.SplashScreenColorStatus.DEFAULT));
+                        WebappUma.SplashColorStatus.DEFAULT));
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         WebappUma.HISTOGRAM_SPLASHSCREEN_THEMECOLOR,
-                        WebappUma.SplashScreenColorStatus.DEFAULT));
+                        WebappUma.SplashColorStatus.DEFAULT));
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
-                        WebappUma.HISTOGRAM_SPLASHSCREEN_ICON_TYPE,
-                        WebappUma.SplashScreenIconType.NONE));
+                        WebappUma.HISTOGRAM_SPLASHSCREEN_ICON_TYPE, WebappUma.SplashIconType.NONE));
 
         // Tests UMA counts.
         Assert.assertEquals(1,
                 getHistogramTotalCountFor(WebappUma.HISTOGRAM_SPLASHSCREEN_BACKGROUNDCOLOR,
-                        WebappUma.SplashScreenColorStatus.NUM_ENTRIES));
+                        WebappUma.SplashColorStatus.NUM_ENTRIES));
         Assert.assertEquals(1,
                 getHistogramTotalCountFor(WebappUma.HISTOGRAM_SPLASHSCREEN_THEMECOLOR,
-                        WebappUma.SplashScreenColorStatus.NUM_ENTRIES));
+                        WebappUma.SplashColorStatus.NUM_ENTRIES));
         Assert.assertEquals(1,
                 getHistogramTotalCountFor(WebappUma.HISTOGRAM_SPLASHSCREEN_ICON_TYPE,
-                        WebappUma.SplashScreenIconType.NUM_ENTRIES));
+                        WebappUma.SplashIconType.NUM_ENTRIES));
 
         // Given that there is no icon, the ICON_SIZE UMA should not be recorded.
         Assert.assertEquals(
@@ -222,7 +221,7 @@ public class WebappSplashScreenTest {
         Assert.assertFalse(hasHistogramEntry(WebappUma.HISTOGRAM_SPLASHSCREEN_DURATION, 3000));
         Assert.assertEquals(0,
                 getHistogramTotalCountFor(WebappUma.HISTOGRAM_SPLASHSCREEN_HIDES,
-                        WebappUma.SplashScreenHidesReason.NUM_ENTRIES));
+                        WebappSplashScreenController.SplashHidesReason.NUM_ENTRIES));
     }
 
     @Test
@@ -244,18 +243,18 @@ public class WebappSplashScreenTest {
         Assert.assertTrue(hasHistogramEntry(WebappUma.HISTOGRAM_SPLASHSCREEN_DURATION, 10000));
         Assert.assertEquals(1,
                 getHistogramTotalCountFor(WebappUma.HISTOGRAM_SPLASHSCREEN_HIDES,
-                        WebappUma.SplashScreenHidesReason.NUM_ENTRIES));
+                        WebappSplashScreenController.SplashHidesReason.NUM_ENTRIES));
 
         // The other UMA records should not have changed.
         Assert.assertEquals(1,
                 getHistogramTotalCountFor(WebappUma.HISTOGRAM_SPLASHSCREEN_BACKGROUNDCOLOR,
-                        WebappUma.SplashScreenColorStatus.NUM_ENTRIES));
+                        WebappUma.SplashColorStatus.NUM_ENTRIES));
         Assert.assertEquals(1,
                 getHistogramTotalCountFor(WebappUma.HISTOGRAM_SPLASHSCREEN_THEMECOLOR,
-                        WebappUma.SplashScreenColorStatus.NUM_ENTRIES));
+                        WebappUma.SplashColorStatus.NUM_ENTRIES));
         Assert.assertEquals(1,
                 getHistogramTotalCountFor(WebappUma.HISTOGRAM_SPLASHSCREEN_ICON_TYPE,
-                        WebappUma.SplashScreenIconType.NUM_ENTRIES));
+                        WebappUma.SplashIconType.NUM_ENTRIES));
         Assert.assertEquals(
                 0, getHistogramTotalCountFor(WebappUma.HISTOGRAM_SPLASHSCREEN_ICON_SIZE, 50));
     }
