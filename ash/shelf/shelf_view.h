@@ -243,9 +243,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // or -1 if no separator is required.
   int GetSeparatorIndex() const;
 
-  // Updates the background for the shelf items.
-  void UpdateShelfItemBackground(SkColor color);
-
   // Update the layout when entering or exiting tablet mode. Have the owning
   // widget call this instead of observing changes ourselves to ensure this
   // happens after the tablet related changes in ShelfController.
@@ -603,10 +600,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Tracks UMA metrics based on shelf button press actions.
   ShelfButtonPressedMetricTracker shelf_button_pressed_metric_tracker_;
-
-  // Color used to paint the background behind the app list button and back
-  // button.
-  SkColor shelf_item_background_color_;
 
   // A reference to the view used as a separator between pinned and unpinned
   // items.

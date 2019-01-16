@@ -213,17 +213,6 @@ bool StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {
   return true;
 }
 
-void StatusAreaWidget::UpdateShelfItemBackground(SkColor color) {
-  unified_system_tray_->UpdateShelfItemBackground(color);
-  virtual_keyboard_tray_->UpdateShelfItemBackground(color);
-  ime_menu_tray_->UpdateShelfItemBackground(color);
-  select_to_speak_tray_->UpdateShelfItemBackground(color);
-  if (dictation_button_tray_)
-    dictation_button_tray_->UpdateShelfItemBackground(color);
-  palette_tray_->UpdateShelfItemBackground(color);
-  overview_button_tray_->UpdateShelfItemBackground(color);
-}
-
 void StatusAreaWidget::OnMouseEvent(ui::MouseEvent* event) {
   // Clicking anywhere except the virtual keyboard tray icon should hide the
   // virtual keyboard.
