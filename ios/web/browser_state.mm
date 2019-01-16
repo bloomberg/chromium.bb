@@ -9,9 +9,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/guid.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/no_destructor.h"
 #include "base/process/process_handle.h"
 #include "base/task/post_task.h"
 #include "base/token.h"
@@ -39,8 +39,11 @@ namespace web {
 namespace {
 
 // Maps service instance group IDs to associated BrowserState instances.
-base::LazyInstance<std::map<base::Token, BrowserState*>>::DestructorAtExit
-    g_instance_group_to_browser_state = LAZY_INSTANCE_INITIALIZER;
+std::map<base::Token, BrowserState*>& GetInstanceGroupToBrowserState() {
+  static base::NoDestructor<std::map<base::Token, BrowserState*>>
+      instance_group_to_browser_state;
+  return *instance_group_to_browser_state;
+}
 
 // Private key used for safe conversion of base::SupportsUserData to
 // web::BrowserState in web::BrowserState::FromSupportsUserData.
@@ -82,7 +85,7 @@ void RemoveBrowserStateFromInstanceGroupMap(BrowserState* browser_state) {
   ServiceInstanceGroupHolder* holder = static_cast<ServiceInstanceGroupHolder*>(
       browser_state->GetUserData(kServiceInstanceGroup));
   if (holder) {
-    g_instance_group_to_browser_state.Get().erase(holder->instance_group());
+    GetInstanceGroupToBrowserState().erase(holder->instance_group());
   }
 }
 
@@ -278,7 +281,7 @@ void BrowserState::Initialize(BrowserState* browser_state,
   // content::BrowserContext::Initialize). crbug.com/739450
 
   RemoveBrowserStateFromInstanceGroupMap(browser_state);
-  g_instance_group_to_browser_state.Get()[new_group] = browser_state;
+  GetInstanceGroupToBrowserState()[new_group] = browser_state;
   browser_state->SetUserData(
       kServiceInstanceGroup,
       std::make_unique<ServiceInstanceGroupHolder>(new_group));

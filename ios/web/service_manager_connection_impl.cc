@@ -10,9 +10,9 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/no_destructor.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ios/web/public/web_thread.h"
@@ -26,8 +26,11 @@
 namespace web {
 namespace {
 
-base::LazyInstance<std::unique_ptr<ServiceManagerConnection>>::Leaky
-    g_connection_for_process = LAZY_INSTANCE_INITIALIZER;
+std::unique_ptr<ServiceManagerConnection>& GetConnectionForProcess() {
+  static base::NoDestructor<std::unique_ptr<ServiceManagerConnection>>
+      connection_for_process;
+  return *connection_for_process;
+}
 
 }  // namespace
 
@@ -222,8 +225,8 @@ class ServiceManagerConnectionImpl::IOThreadContext
 void ServiceManagerConnection::Set(
     std::unique_ptr<ServiceManagerConnection> connection) {
   DCHECK_CURRENTLY_ON(WebThread::UI);
-  DCHECK(!g_connection_for_process.Get());
-  g_connection_for_process.Get() = std::move(connection);
+  DCHECK(!GetConnectionForProcess());
+  GetConnectionForProcess() = std::move(connection);
 }
 
 // static
@@ -233,7 +236,7 @@ ServiceManagerConnection* ServiceManagerConnection::Get() {
   // otherwise the DCHECK in the above method would fire).
   DCHECK(!web::WebThread::IsThreadInitialized(web::WebThread::UI) ||
          web::WebThread::CurrentlyOn(web::WebThread::UI));
-  return g_connection_for_process.Get().get();
+  return GetConnectionForProcess().get();
 }
 
 // static
@@ -241,7 +244,7 @@ void ServiceManagerConnection::Destroy() {
   DCHECK_CURRENTLY_ON(WebThread::UI);
 
   // This joins the service manager controller thread.
-  g_connection_for_process.Get().reset();
+  GetConnectionForProcess().reset();
 }
 
 // static

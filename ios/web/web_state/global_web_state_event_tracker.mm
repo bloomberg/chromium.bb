@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -17,7 +17,8 @@
 namespace web {
 
 GlobalWebStateEventTracker* GlobalWebStateEventTracker::GetInstance() {
-  return base::Singleton<GlobalWebStateEventTracker>::get();
+  static base::NoDestructor<GlobalWebStateEventTracker> instance;
+  return instance.get();
 }
 
 GlobalWebStateEventTracker::GlobalWebStateEventTracker()

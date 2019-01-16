@@ -7,32 +7,36 @@
 #include <stddef.h>
 #include <memory>
 
-#include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
 namespace web {
-
-base::LazyInstance<std::vector<WebUIIOSControllerFactory*>>::DestructorAtExit
-    g_factories = LAZY_INSTANCE_INITIALIZER;
+namespace {
+// Returns the global list of registered factories.
+std::vector<WebUIIOSControllerFactory*>& GetGlobalFactories() {
+  static base::NoDestructor<std::vector<WebUIIOSControllerFactory*>> factories;
+  return *factories;
+}
+}  // namespace
 
 void WebUIIOSControllerFactory::RegisterFactory(
     WebUIIOSControllerFactory* factory) {
-  g_factories.Pointer()->push_back(factory);
+  GetGlobalFactories().push_back(factory);
 }
 
 WebUIIOSControllerFactoryRegistry*
 WebUIIOSControllerFactoryRegistry::GetInstance() {
-  return base::Singleton<WebUIIOSControllerFactoryRegistry>::get();
+  static base::NoDestructor<WebUIIOSControllerFactoryRegistry> instance;
+  return instance.get();
 }
 
 std::unique_ptr<WebUIIOSController>
 WebUIIOSControllerFactoryRegistry::CreateWebUIIOSControllerForURL(
     WebUIIOS* web_ui,
     const GURL& url) const {
-  std::vector<WebUIIOSControllerFactory*>* factories = g_factories.Pointer();
-  for (WebUIIOSControllerFactory* factory : *factories) {
+  for (WebUIIOSControllerFactory* factory : GetGlobalFactories()) {
     auto controller = factory->CreateWebUIIOSControllerForURL(web_ui, url);
     if (controller)
       return controller;

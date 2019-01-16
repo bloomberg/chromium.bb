@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/lazy_instance.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
@@ -29,7 +29,10 @@ namespace {
 
 const char kURLDataManagerIOSKeyName[] = "url_data_manager";
 
-base::LazyInstance<base::Lock>::Leaky g_delete_lock = LAZY_INSTANCE_INITIALIZER;
+base::Lock& GetDeleteLock() {
+  static base::NoDestructor<base::Lock> delete_lock;
+  return *delete_lock;
+}
 
 URLDataManagerIOS* GetFromBrowserState(BrowserState* browser_state) {
   if (!browser_state->GetUserData(kURLDataManagerIOSKeyName)) {
@@ -75,7 +78,7 @@ void URLDataManagerIOS::DeleteDataSources() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   URLDataSources sources;
   {
-    base::AutoLock lock(g_delete_lock.Get());
+    base::AutoLock lock(GetDeleteLock());
     if (!data_sources_)
       return;
     data_sources_->swap(sources);
@@ -98,7 +101,7 @@ void URLDataManagerIOS::DeleteDataSource(
   // to delete.
   bool schedule_delete = false;
   {
-    base::AutoLock lock(g_delete_lock.Get());
+    base::AutoLock lock(GetDeleteLock());
     if (!data_sources_)
       data_sources_ = new URLDataSources();
     schedule_delete = data_sources_->empty();
@@ -128,7 +131,7 @@ void URLDataManagerIOS::AddWebUIIOSDataSource(BrowserState* browser_state,
 // static
 bool URLDataManagerIOS::IsScheduledForDeletion(
     const URLDataSourceIOSImpl* data_source) {
-  base::AutoLock lock(g_delete_lock.Get());
+  base::AutoLock lock(GetDeleteLock());
   if (!data_sources_)
     return false;
   return base::ContainsValue(*data_sources_, data_source);
