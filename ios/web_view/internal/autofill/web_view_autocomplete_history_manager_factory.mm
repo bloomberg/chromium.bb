@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -33,7 +33,8 @@ WebViewAutocompleteHistoryManagerFactory::GetForBrowserState(
 // static
 WebViewAutocompleteHistoryManagerFactory*
 WebViewAutocompleteHistoryManagerFactory::GetInstance() {
-  return base::Singleton<WebViewAutocompleteHistoryManagerFactory>::get();
+  static base::NoDestructor<WebViewAutocompleteHistoryManagerFactory> instance;
+  return instance.get();
 }
 
 WebViewAutocompleteHistoryManagerFactory::

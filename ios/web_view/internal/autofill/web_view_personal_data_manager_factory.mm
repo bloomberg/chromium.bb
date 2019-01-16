@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -33,7 +33,8 @@ WebViewPersonalDataManagerFactory::GetForBrowserState(
 // static
 WebViewPersonalDataManagerFactory*
 WebViewPersonalDataManagerFactory::GetInstance() {
-  return base::Singleton<WebViewPersonalDataManagerFactory>::get();
+  static base::NoDestructor<WebViewPersonalDataManagerFactory> instance;
+  return instance.get();
 }
 
 WebViewPersonalDataManagerFactory::WebViewPersonalDataManagerFactory()
