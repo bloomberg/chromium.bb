@@ -2077,7 +2077,8 @@ TYPED_TEST(OfflinePageRequestHandlerTest, LoadOtherPageOnDigestMismatch) {
   this->ExpectOfflinePageAccessCount(offline_id2, 0);
 }
 
-TYPED_TEST(OfflinePageRequestHandlerTest, EmptyFile) {
+// Disabled due to https://crbug.com/917113.
+TYPED_TEST(OfflinePageRequestHandlerTest, DISABLED_EmptyFile) {
   this->SimulateHasNetworkConnectivity(false);
 
   const std::string expected_data("");
