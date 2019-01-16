@@ -9,9 +9,6 @@
 # Need to convert MergeSessionResourceThrottle to a URLLoaderThrottle.
 -MergeSessionTest.XHRThrottle
 
-# Flaky with error: `Check failed: (sequence_checker_).CalledOnValidSequence()`.
--DevToolsSanityTest.DisposeEmptyBrowserContext
-
 # Crashing on Mash. https://crbug.com/919108
 -ChromeBrowserMainBrowserTest.VariationsServiceStartsRequestOnNetworkChange
 
