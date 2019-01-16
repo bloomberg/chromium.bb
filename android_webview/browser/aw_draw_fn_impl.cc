@@ -29,9 +29,6 @@
 using base::android::JavaParamRef;
 using content::BrowserThread;
 
-// TODO(ericrk): Audit CHECKs in this file and replace most with graceful error
-// handling.
-
 namespace android_webview {
 
 namespace {
@@ -87,6 +84,137 @@ class GLNonOwnedCompatibilityContext : public gl::GLContextEGL {
 };
 
 namespace {
+VulkanState* g_vulkan_state = nullptr;
+}
+
+class VulkanState : public base::RefCounted<VulkanState> {
+ public:
+  static scoped_refptr<VulkanState> GetOrCreateInstance(
+      AwDrawFn_InitVkParams* params) {
+    if (g_vulkan_state) {
+      DCHECK_EQ(params->device, g_vulkan_state->device());
+      DCHECK_EQ(params->queue, g_vulkan_state->queue());
+      return base::WrapRefCounted(g_vulkan_state);
+    }
+
+    auto new_state = base::WrapRefCounted(new VulkanState);
+    if (!new_state->Initialize(params))
+      return nullptr;
+
+    return new_state;
+  }
+
+  VkPhysicalDevice physical_device() { return physical_device_; }
+  VkDevice device() { return device_; }
+  VkQueue queue() { return queue_; }
+  gpu::VulkanImplementation* implementation() { return implementation_.get(); }
+  GrContext* gr_context() { return gr_context_.get(); }
+
+ private:
+  friend class base::RefCounted<VulkanState>;
+
+  VulkanState() {
+    DCHECK_EQ(nullptr, g_vulkan_state);
+    g_vulkan_state = this;
+  }
+
+  ~VulkanState() {
+    DCHECK_EQ(g_vulkan_state, this);
+    g_vulkan_state = nullptr;
+  }
+
+  bool Initialize(AwDrawFn_InitVkParams* params) {
+    physical_device_ = params->physical_device;
+    device_ = params->device;
+    queue_ = params->queue;
+
+    // Don't call init on implementation. Instead call InitVulkanForWebView,
+    // which avoids creating a new instance.
+    implementation_ = gpu::CreateVulkanImplementation();
+    if (!InitVulkanForWebView(params->instance, params->device)) {
+      LOG(ERROR) << "Unable to initialize Vulkan pointers.";
+      return false;
+    }
+
+    // Create our Skia GrContext.
+    GrVkGetProc get_proc =
+        MakeUnifiedGetter(vkGetInstanceProcAddr, vkGetDeviceProcAddr);
+    GrVkExtensions extensions;
+    extensions.init(get_proc, params->instance, params->physical_device,
+                    params->enabled_instance_extension_names_length,
+                    params->enabled_instance_extension_names,
+                    params->enabled_device_extension_names_length,
+                    params->enabled_device_extension_names);
+    GrVkBackendContext backend_context{
+        .fInstance = params->instance,
+        .fPhysicalDevice = params->physical_device,
+        .fDevice = params->device,
+        .fQueue = params->queue,
+        .fGraphicsQueueIndex = params->graphics_queue_index,
+        .fInstanceVersion = params->instance_version,
+        .fVkExtensions = &extensions,
+        .fDeviceFeatures = params->device_features,
+        .fDeviceFeatures2 = params->device_features_2,
+        .fMemoryAllocator = nullptr,
+        .fGetProc = get_proc,
+        .fOwnsInstanceAndDevice = false,
+    };
+    gr_context_ = GrContext::MakeVulkan(backend_context);
+    if (!gr_context_) {
+      LOG(ERROR) << "Unable to initialize GrContext.";
+      return false;
+    }
+    return true;
+  }
+
+  static bool InitVulkanForWebView(VkInstance instance, VkDevice device) {
+    gpu::VulkanFunctionPointers* vulkan_function_pointers =
+        gpu::GetVulkanFunctionPointers();
+
+    // If we are re-initing, we don't need to re-load the shared library or
+    // re-bind unassociated pointers. These shouldn't change.
+    if (!vulkan_function_pointers->vulkan_loader_library_) {
+      base::NativeLibraryLoadError native_library_load_error;
+      vulkan_function_pointers->vulkan_loader_library_ =
+          base::LoadNativeLibrary(base::FilePath("libvulkan.so"),
+                                  &native_library_load_error);
+      if (!vulkan_function_pointers->vulkan_loader_library_)
+        return false;
+      if (!vulkan_function_pointers->BindUnassociatedFunctionPointers())
+        return false;
+    }
+
+    // These vars depend on |instance| and |device| and should be
+    // re-initialized.
+    if (!vulkan_function_pointers->BindInstanceFunctionPointers(instance))
+      return false;
+    if (!vulkan_function_pointers->BindPhysicalDeviceFunctionPointers(instance))
+      return false;
+    if (!vulkan_function_pointers->BindDeviceFunctionPointers(device))
+      return false;
+
+    return true;
+  }
+
+  static GrVkGetProc MakeUnifiedGetter(const PFN_vkGetInstanceProcAddr& iproc,
+                                       const PFN_vkGetDeviceProcAddr& dproc) {
+    return [&iproc, &dproc](const char* proc_name, VkInstance instance,
+                            VkDevice device) {
+      if (device != VK_NULL_HANDLE) {
+        return dproc(device, proc_name);
+      }
+      return iproc(instance, proc_name);
+    };
+  }
+
+  VkPhysicalDevice physical_device_ = VK_NULL_HANDLE;
+  VkDevice device_ = VK_NULL_HANDLE;
+  VkQueue queue_ = VK_NULL_HANDLE;
+  std::unique_ptr<gpu::VulkanImplementation> implementation_;
+  sk_sp<GrContext> gr_context_;
+};
+
+namespace {
 
 AwDrawFnFunctionTable* g_draw_fn_function_table = nullptr;
 
@@ -135,36 +263,6 @@ void PostDrawVkWrapper(int functor,
                functor);
   CHECK_EQ(static_cast<AwDrawFnImpl*>(data)->functor_handle(), functor);
   static_cast<AwDrawFnImpl*>(data)->PostDrawVk(params);
-}
-
-GrVkGetProc MakeUnifiedGetter(const PFN_vkGetInstanceProcAddr& iproc,
-                              const PFN_vkGetDeviceProcAddr& dproc) {
-  return [&iproc, &dproc](const char* proc_name, VkInstance instance,
-                          VkDevice device) {
-    if (device != VK_NULL_HANDLE) {
-      return dproc(device, proc_name);
-    }
-    return iproc(instance, proc_name);
-  };
-}
-
-bool InitVulkanForWebView(VkInstance instance, VkDevice device) {
-  gpu::VulkanFunctionPointers* vulkan_function_pointers =
-      gpu::GetVulkanFunctionPointers();
-  base::NativeLibraryLoadError native_library_load_error;
-  vulkan_function_pointers->vulkan_loader_library_ = base::LoadNativeLibrary(
-      base::FilePath("libvulkan.so"), &native_library_load_error);
-  if (!vulkan_function_pointers->vulkan_loader_library_)
-    return false;
-  if (!vulkan_function_pointers->BindUnassociatedFunctionPointers())
-    return false;
-  if (!vulkan_function_pointers->BindInstanceFunctionPointers(instance))
-    return false;
-  if (!vulkan_function_pointers->BindPhysicalDeviceFunctionPointers(instance))
-    return false;
-  if (!vulkan_function_pointers->BindDeviceFunctionPointers(device))
-    return false;
-  return true;
 }
 
 }  // namespace
@@ -241,14 +339,7 @@ void AwDrawFnImpl::OnContextDestroyed() {
     TakeInFlightDrawForReUse();
   }
 
-  // Delete |gr_context_| first, as it may use Vk.
-  gr_context_.reset();
-
-  queue_ = VK_NULL_HANDLE;
-  device_ = VK_NULL_HANDLE;
-  physical_device_ = VK_NULL_HANDLE;
-  vk_implementation_.reset();
-
+  vk_state_.reset();
   gl_context_.reset();
 }
 
@@ -272,56 +363,20 @@ void AwDrawFnImpl::DrawGL(AwDrawFn_DrawGLParams* params) {
 }
 
 void AwDrawFnImpl::InitVk(AwDrawFn_InitVkParams* params) {
-  // Cache Vulkan objects which we'll need to re-use, as Skia does not give a
-  // way to later retrieve them.
-  DCHECK(device_ == VK_NULL_HANDLE);
-  DCHECK(queue_ == VK_NULL_HANDLE);
-  DCHECK(physical_device_ == VK_NULL_HANDLE);
-  device_ = params->device;
-  queue_ = params->queue;
-  physical_device_ = params->physical_device;
-
-  // We should never have a |vk_implementation_| if we are calling VkInit. This
+  // We should never have a |vk_state_| if we are calling VkInit. This
   // means context destroyed was not correctly called.
-  DCHECK(!vk_implementation_);
-  vk_implementation_ = gpu::CreateVulkanImplementation();
-  // Don't call init on implementation. Instead call InitVulkanForWebView,
-  // which avoids creating a new instance.
-  // TODO(ericrk): Call this only once per process, unless we lose our context
-  // and get a new VkDevice or VkInstance.
-  CHECK(InitVulkanForWebView(params->instance, params->device));
-
-  // Create our Skia GrContext.
-  GrVkGetProc get_proc =
-      MakeUnifiedGetter(vkGetInstanceProcAddr, vkGetDeviceProcAddr);
-  GrVkExtensions extensions;
-  extensions.init(get_proc, params->instance, params->physical_device,
-                  params->enabled_instance_extension_names_length,
-                  params->enabled_instance_extension_names,
-                  params->enabled_device_extension_names_length,
-                  params->enabled_device_extension_names);
-  GrVkBackendContext backend_context{
-      .fInstance = params->instance,
-      .fPhysicalDevice = params->physical_device,
-      .fDevice = params->device,
-      .fQueue = params->queue,
-      .fGraphicsQueueIndex = params->graphics_queue_index,
-      .fInstanceVersion = params->instance_version,
-      .fVkExtensions = &extensions,
-      .fDeviceFeatures = params->device_features,
-      .fDeviceFeatures2 = params->device_features_2,
-      .fMemoryAllocator = nullptr,
-      .fGetProc = get_proc,
-      .fOwnsInstanceAndDevice = false,
-  };
-  gr_context_ = GrContext::MakeVulkan(backend_context);
-  CHECK(gr_context_);
+  DCHECK(!vk_state_);
+  vk_state_ = VulkanState::GetOrCreateInstance(params);
 
   // Make sure we have a GL context.
+  DCHECK(!gl_context_);
   gl_context_ = GLNonOwnedCompatibilityContext::GetOrCreateInstance();
 }
 
 void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
+  if (!vk_state_ || !gl_context_)
+    return;
+
   if (!gl_context_->MakeCurrent()) {
     LOG(ERROR) << "Failed to make GL context current for drawing.";
     return;
@@ -344,7 +399,7 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
 
   // If we weren't able to re-use a previous draw, create one.
   if (!pending_draw_) {
-    pending_draw_ = std::make_unique<InFlightDraw>();
+    pending_draw_ = std::make_unique<InFlightDraw>(vk_state_.get());
 
     AHardwareBuffer_Desc desc = {};
     desc.width = params->width;
@@ -358,24 +413,38 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
                  AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT;
     AHardwareBuffer* buffer = nullptr;
     base::AndroidHardwareBufferCompat::GetInstance().Allocate(&desc, &buffer);
-    CHECK(buffer);
-    auto cleanup = base::android::ScopedHardwareBufferHandle::Adopt(buffer);
+    if (!buffer) {
+      LOG(ERROR) << "Failed to allocate AHardwareBuffer for WebView rendering.";
+      return;
+    }
+    auto scoped_buffer =
+        base::android::ScopedHardwareBufferHandle::Adopt(buffer);
 
     pending_draw_->ahb_image = base::MakeRefCounted<gl::GLImageAHardwareBuffer>(
         gfx::Size(params->width, params->height));
-    CHECK(pending_draw_->ahb_image->Initialize(buffer, false /* preserved */));
+    if (!pending_draw_->ahb_image->Initialize(scoped_buffer.get(),
+                                              false /* preserved */)) {
+      LOG(ERROR) << "Failed to initialize GLImage for AHardwareBuffer.";
+      return;
+    }
 
     glGenTextures(1, static_cast<GLuint*>(&pending_draw_->texture_id));
     GLenum target = GL_TEXTURE_2D;
     glBindTexture(target, pending_draw_->texture_id);
-    CHECK(pending_draw_->ahb_image->BindTexImage(target));
+    if (!pending_draw_->ahb_image->BindTexImage(target)) {
+      LOG(ERROR) << "Failed to bind GLImage for AHardwareBuffer.";
+      return;
+    }
     glBindTexture(target, 0);
     glGenFramebuffersEXT(1, &pending_draw_->framebuffer_id);
     glBindFramebufferEXT(GL_FRAMEBUFFER, pending_draw_->framebuffer_id);
     glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                               GL_TEXTURE_2D, pending_draw_->texture_id, 0);
-    CHECK(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) ==
-          GL_FRAMEBUFFER_COMPLETE);
+    if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) !=
+        GL_FRAMEBUFFER_COMPLETE) {
+      LOG(ERROR) << "Failed to set up framebuffer for WebView GL drawing.";
+      return;
+    }
   }
 
   // Ask GL to wait on any Vk sync_fd before writing.
@@ -385,8 +454,6 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
   base::ScopedFD gl_done_fd;
   {
     glBindFramebufferEXT(GL_FRAMEBUFFER, pending_draw_->framebuffer_id);
-    CHECK(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) ==
-          GL_FRAMEBUFFER_COMPLETE);
     glViewport(0, 0, params->width, params->height);
     glDisable(GL_STENCIL_TEST);
     glDisable(GL_SCISSOR_TEST);
@@ -436,20 +503,24 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
   };
   SkSurfaceProps props(0, kUnknown_SkPixelGeometry);
   pending_draw_->draw_context = GrVkSecondaryCBDrawContext::Make(
-      gr_context_.get(), info, drawable_info, &props);
+      vk_state_->gr_context(), info, drawable_info, &props);
 
   // If we have a |gl_done_fd|, create a Skia GrBackendSemaphore from
   // |gl_done_fd| and wait.
   if (gl_done_fd.is_valid()) {
     VkSemaphore gl_done_semaphore;
-    if (!vk_implementation_->ImportSemaphoreFdKHR(
-            device_, std::move(gl_done_fd), &gl_done_semaphore)) {
-      CHECK(false);
+    if (!vk_state_->implementation()->ImportSemaphoreFdKHR(
+            vk_state_->device(), std::move(gl_done_fd), &gl_done_semaphore)) {
+      LOG(ERROR) << "Could not create Vulkan semaphore for GL completion.";
+      return;
     }
     GrBackendSemaphore gr_semaphore;
     gr_semaphore.initVulkan(gl_done_semaphore);
     if (!pending_draw_->draw_context->wait(1, &gr_semaphore)) {
-      CHECK(false);
+      // If wait returns false, we must clean up the |gl_done_semaphore|.
+      vkDestroySemaphore(vk_state_->device(), gl_done_semaphore, nullptr);
+      LOG(ERROR) << "Could not wait on GL completion semaphore.";
+      return;
     }
   }
 
@@ -459,13 +530,15 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
     VkImageCreateInfo vk_image_info;
     VkDeviceMemory vk_device_memory;
     VkDeviceSize mem_allocation_size;
-    if (!vk_implementation_->CreateVkImageAndImportAHB(
-            device_, physical_device_, gfx::Size(params->width, params->height),
+    if (!vk_state_->implementation()->CreateVkImageAndImportAHB(
+            vk_state_->device(), vk_state_->physical_device(),
+            gfx::Size(params->width, params->height),
             base::android::ScopedHardwareBufferHandle::Create(
                 pending_draw_->ahb_image->GetAHardwareBuffer()->buffer()),
             &vk_image, &vk_image_info, &vk_device_memory,
             &mem_allocation_size)) {
-      CHECK(false);
+      LOG(ERROR) << "Could not create VkImage from AHB.";
+      return;
     }
 
     // Create backend texture from the VkImage.
@@ -476,16 +549,18 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
                                  vk_image_info.initialLayout,
                                  vk_image_info.format,
                                  vk_image_info.mipLevels};
-    pending_draw_->device = device_;
   }
 
   // Create an SkImage from AHB.
   GrBackendTexture backend_texture(params->width, params->height,
                                    pending_draw_->image_info);
   pending_draw_->ahb_skimage = SkImage::MakeFromTexture(
-      gr_context_.get(), backend_texture, kBottomLeft_GrSurfaceOrigin,
+      vk_state_->gr_context(), backend_texture, kBottomLeft_GrSurfaceOrigin,
       kRGBA_8888_SkColorType, kPremul_SkAlphaType, nullptr);
-  CHECK(pending_draw_->ahb_skimage);
+  if (!pending_draw_->ahb_skimage) {
+    LOG(ERROR) << "Could not create SkImage from VkImage.";
+    return;
+  }
 
   // Draw the SkImage.
   SkPaint paint;
@@ -496,6 +571,9 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
 }
 
 void AwDrawFnImpl::PostDrawVk(AwDrawFn_PostDrawVkParams* params) {
+  if (!vk_state_ || !gl_context_)
+    return;
+
   // Release the SkImage so that Skia transitions it back to EXTERNAL.
   pending_draw_->ahb_skimage.reset();
 
@@ -508,19 +586,30 @@ void AwDrawFnImpl::PostDrawVk(AwDrawFn_PostDrawVkParams* params) {
   sem_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
   sem_info.pNext = &export_info;
   sem_info.flags = 0;
-  bool result = vkCreateSemaphore(device_, &sem_info, nullptr,
-                                  &pending_draw_->post_draw_semaphore);
-  CHECK(result == VK_SUCCESS);
+  VkResult result = vkCreateSemaphore(vk_state_->device(), &sem_info, nullptr,
+                                      &pending_draw_->post_draw_semaphore);
+  if (result != VK_SUCCESS) {
+    LOG(ERROR) << "Could not create VkSemaphore.";
+    return;
+  }
   GrBackendSemaphore gr_post_draw_semaphore;
   gr_post_draw_semaphore.initVulkan(pending_draw_->post_draw_semaphore);
 
   // Flush so that we know the image's transition has been submitted and that
   // the |post_draw_semaphore| is pending.
   GrSemaphoresSubmitted submitted =
-      gr_context_->flushAndSignalSemaphores(1, &gr_post_draw_semaphore);
-  CHECK(submitted == GrSemaphoresSubmitted::kYes);
-  vk_implementation_->GetSemaphoreFdKHR(
-      device_, pending_draw_->post_draw_semaphore, &pending_draw_->sync_fd);
+      vk_state_->gr_context()->flushAndSignalSemaphores(
+          1, &gr_post_draw_semaphore);
+  if (submitted != GrSemaphoresSubmitted::kYes) {
+    LOG(ERROR) << "Skia could not submit GrSemaphore.";
+    return;
+  }
+  if (!vk_state_->implementation()->GetSemaphoreFdKHR(
+          vk_state_->device(), pending_draw_->post_draw_semaphore,
+          &pending_draw_->sync_fd)) {
+    LOG(ERROR) << "Could not retrieve SyncFD from |post_draw_semaphore|.";
+    return;
+  }
 
   // Get a fence to wait on for CPU-side cleanup.
   VkFenceCreateInfo create_info{
@@ -529,12 +618,18 @@ void AwDrawFnImpl::PostDrawVk(AwDrawFn_PostDrawVkParams* params) {
       .flags = 0,
   };
   DCHECK(VK_NULL_HANDLE == pending_draw_->post_draw_fence);
-  VkResult vk_result = vkCreateFence(device_, &create_info, nullptr,
-                                     &pending_draw_->post_draw_fence);
-  DCHECK_EQ(vk_result, VK_SUCCESS);
-  CHECK(pending_draw_->post_draw_fence != VK_NULL_HANDLE);
-  result = vkQueueSubmit(queue_, 0, nullptr, pending_draw_->post_draw_fence);
-  DCHECK_EQ(result, VK_SUCCESS);
+  result = vkCreateFence(vk_state_->device(), &create_info, nullptr,
+                         &pending_draw_->post_draw_fence);
+  if (result != VK_SUCCESS) {
+    LOG(ERROR) << "Could not create VkFence.";
+    return;
+  }
+  result = vkQueueSubmit(vk_state_->queue(), 0, nullptr,
+                         pending_draw_->post_draw_fence);
+  if (result != VK_SUCCESS) {
+    LOG(ERROR) << "Could not submit fence to queue.";
+    return;
+  }
 
   // Add the |pending_draw_| to |in_flight_draws_|.
   in_flight_draws_.push_back(std::move(pending_draw_));
@@ -542,27 +637,25 @@ void AwDrawFnImpl::PostDrawVk(AwDrawFn_PostDrawVkParams* params) {
 
 std::unique_ptr<AwDrawFnImpl::InFlightDraw>
 AwDrawFnImpl::TakeInFlightDrawForReUse() {
+  DCHECK(vk_state_);
   DCHECK(!in_flight_draws_.empty());
   std::unique_ptr<InFlightDraw>& draw = in_flight_draws_.front();
 
   // Wait for our draw's |post_draw_fence| to pass.
-  CHECK(draw->post_draw_fence != VK_NULL_HANDLE);
+  DCHECK(draw->post_draw_fence != VK_NULL_HANDLE);
   VkResult wait_result =
-      vkWaitForFences(device_, 1, &draw->post_draw_fence, VK_TRUE,
+      vkWaitForFences(vk_state_->device(), 1, &draw->post_draw_fence, VK_TRUE,
                       base::TimeDelta::FromSeconds(60).InNanoseconds());
   if (wait_result != VK_SUCCESS) {
     LOG(ERROR) << "Fence did not pass in the expected timeframe.";
     return nullptr;
   }
 
-  // Unclear if we can re-use the GrVkSecondaryCBDrawContext.
-  // TODO(ericrk): Follow-up.
   draw->draw_context->releaseResources();
   draw->draw_context.reset();
-  // Clean up the |post_draw_fence|, which we'll re-create.
-  vkDestroyFence(device_, draw->post_draw_fence, nullptr);
+  vkDestroyFence(vk_state_->device(), draw->post_draw_fence, nullptr);
   draw->post_draw_fence = VK_NULL_HANDLE;
-  vkDestroySemaphore(device_, draw->post_draw_semaphore, nullptr);
+  vkDestroySemaphore(vk_state_->device(), draw->post_draw_semaphore, nullptr);
   draw->post_draw_semaphore = VK_NULL_HANDLE;
 
   std::unique_ptr<InFlightDraw> draw_to_return = std::move(draw);
@@ -570,21 +663,51 @@ AwDrawFnImpl::TakeInFlightDrawForReUse() {
   return draw_to_return;
 }
 
-AwDrawFnImpl::InFlightDraw::InFlightDraw() = default;
+AwDrawFnImpl::InFlightDraw::InFlightDraw(VulkanState* vk_state)
+    : vk_state(vk_state) {}
 
 AwDrawFnImpl::InFlightDraw::~InFlightDraw() {
-  // These are always destroyed in TakeInFlightDrawForReUse.
-  CHECK(post_draw_fence == VK_NULL_HANDLE);
-  CHECK(post_draw_semaphore == VK_NULL_HANDLE);
+  // If |draw_context| is valid, we encountered an error during Vk drawing and
+  // should call vkQueueWaitIdle to ensure safe shutdown.
+  bool encountered_error = !!draw_context;
+  if (encountered_error) {
+    // Clean up one-off objects which may have been left alive due to an error.
 
-  // Clean up re-usable components.
+    // Clean up |ahb_skimage| first, as doing so generates Vk commands we need
+    // to flush before the vkQueueWaitIdle below.
+    if (ahb_skimage) {
+      ahb_skimage.reset();
+      vk_state->gr_context()->flush();
+    }
+    // We encountered an error and are not sure when our Vk objects are safe to
+    // delete. VkQueueWaitIdle to ensure safety.
+    vkQueueWaitIdle(vk_state->queue());
+    if (draw_context) {
+      draw_context->releaseResources();
+      draw_context.reset();
+    }
+    if (post_draw_fence != VK_NULL_HANDLE) {
+      vkDestroyFence(vk_state->device(), post_draw_fence, nullptr);
+      post_draw_fence = VK_NULL_HANDLE;
+    }
+    if (post_draw_semaphore != VK_NULL_HANDLE) {
+      vkDestroySemaphore(vk_state->device(), post_draw_semaphore, nullptr);
+      post_draw_semaphore = VK_NULL_HANDLE;
+    }
+  }
+  DCHECK(!draw_context);
+  DCHECK(!ahb_skimage);
+  DCHECK(post_draw_fence == VK_NULL_HANDLE);
+  DCHECK(post_draw_semaphore == VK_NULL_HANDLE);
+
+  // Clean up re-usable components that are expected to still be alive.
   if (texture_id)
     glDeleteTextures(1, &texture_id);
   if (framebuffer_id)
     glDeleteFramebuffersEXT(1, &framebuffer_id);
   if (image_info.fImage != VK_NULL_HANDLE) {
-    vkDestroyImage(device, image_info.fImage, nullptr);
-    vkFreeMemory(device, image_info.fAlloc.fMemory, nullptr);
+    vkDestroyImage(vk_state->device(), image_info.fImage, nullptr);
+    vkFreeMemory(vk_state->device(), image_info.fAlloc.fMemory, nullptr);
   }
 }
 
