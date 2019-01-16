@@ -769,15 +769,8 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
 
     /**
      * @return Whether the Custom Tab should attempt to display a Trusted Web Activity.
-     * Will return false if native is not initialized.
-     *
-     * Trusted Web Activities require CustomTabsClient#warmup to have been called, meaning that
-     * native will have been initialized when the client is trying to use a TWA.
      */
     boolean isTrustedWebActivity() {
-        if (!ChromeFeatureList.isInitialized()) return false;
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY)) return false;
-
         return mIsTrustedWebActivity;
     }
 

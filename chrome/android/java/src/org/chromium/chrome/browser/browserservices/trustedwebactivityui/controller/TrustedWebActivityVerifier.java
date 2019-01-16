@@ -29,6 +29,8 @@ import java.lang.annotation.RetentionPolicy;
 
 import javax.inject.Inject;
 
+import dagger.Lazy;
+
 /**
  * Checks whether the currently seen web page belongs to a verified origin and updates the
  * {@link TrustedWebActivityModel} accordingly.
@@ -38,10 +40,11 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
     /** The Digital Asset Link relationship used for Trusted Web Activities. */
     private final static int RELATIONSHIP = CustomTabsService.RELATION_HANDLE_ALL_URLS;
 
-    private final ClientAppDataRecorder mClientAppDataRecorder;
+    private final Lazy<ClientAppDataRecorder> mClientAppDataRecorder;
     private final CustomTabsConnection mCustomTabsConnection;
     private final CustomTabIntentDataProvider mIntentDataProvider;
     private final ActivityTabProvider mActivityTabProvider;
+    private final TabObserverRegistrar mTabObserverRegistrar;
     private final String mClientPackageName;
 
     @Nullable private VerificationState mState;
@@ -76,6 +79,10 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
                 boolean isFragmentNavigation, Integer pageTransition, int errorCode,
                 int httpStatusCode) {
             if (!hasCommitted || !isInMainFrame) return;
+            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY)) {
+                assert false : "Shouldn't observe navigation when TWAs are disabled";
+                return;
+            }
 
             // This doesn't perform a network request or attempt new verification - it checks to
             // see if a verification already exists for the given inputs.
@@ -87,7 +94,7 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
     };
 
     @Inject
-    public TrustedWebActivityVerifier(ClientAppDataRecorder clientAppDataRecorder,
+    public TrustedWebActivityVerifier(Lazy<ClientAppDataRecorder> clientAppDataRecorder,
             CustomTabIntentDataProvider intentDataProvider,
             CustomTabsConnection customTabsConnection,
             ActivityLifecycleDispatcher lifecycleDispatcher,
@@ -97,6 +104,7 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
         mCustomTabsConnection = customTabsConnection;
         mIntentDataProvider = intentDataProvider;
         mActivityTabProvider = activityTabProvider;
+        mTabObserverRegistrar =  tabObserverRegistrar;
         mClientPackageName = customTabsConnection.getClientPackageNameForSession(
                 intentDataProvider.getSession());
         assert mClientPackageName != null;
@@ -152,11 +160,13 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
      */
     private void attemptVerificationForInitialUrl(String url, Tab tab) {
         Origin origin = new Origin(url);
-
-        mState = new VerificationState(origin, VERIFICATION_PENDING);
-        for (Runnable observer : mObservers) {
-            observer.run();
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY)) {
+            mTabObserverRegistrar.unregisterTabObserver(mVerifyOnPageLoadObserver);
+            updateState(origin, VERIFICATION_FAILURE);
+            return;
         }
+
+        updateState(origin, VERIFICATION_PENDING);
 
         new OriginVerifier((packageName2, origin2, verified, online) -> {
             if (!origin.equals(new Origin(tab.getUrl()))) return;
@@ -169,8 +179,11 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
         if (verified) {
             registerClientAppData(origin);
         }
-        mState = new VerificationState(origin,
-                verified ? VERIFICATION_SUCCESS : VERIFICATION_FAILURE);
+        updateState(origin, verified ? VERIFICATION_SUCCESS : VERIFICATION_FAILURE);
+    }
+
+    private void updateState(Origin origin, @VerificationStatus int status) {
+        mState = new VerificationState(origin, status);
         for (Runnable observer : mObservers) {
             observer.run();
         }
@@ -196,6 +209,6 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
      * for that origin with that app.
      */
     private void registerClientAppData(Origin origin) {
-        mClientAppDataRecorder.register(mClientPackageName, origin);
+        mClientAppDataRecorder.get().register(mClientPackageName, origin);
     }
 }
