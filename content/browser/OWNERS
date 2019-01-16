@@ -28,7 +28,5 @@ per-file sandbox_parameters_mac.*=file://sandbox/mac/OWNERS
 per-file sandbox_mac_unittest.*=file://sandbox/mac/OWNERS
 
 # Linux sandboxing.
-per-file sandbox_host_linux.*=jln@chromium.org
-per-file sandbox_host_linux.*=jorgelo@chromium.org
-per-file sandbox_ipc_linux.*=jln@chromium.org
-per-file sandbox_ipc_linux.*=jorgelo@chromium.org
+per-file sandbox_host_linux.*=file://sandbox/linux/OWNERS
+per-file sandbox_ipc_linux.*=file://sandbox/linux/OWNERS
