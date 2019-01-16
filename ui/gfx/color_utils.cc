@@ -96,8 +96,8 @@ void SkColorToHSL(SkColor c, HSL* hsl) {
   float r = SkColorGetR(c) / 255.0f;
   float g = SkColorGetG(c) / 255.0f;
   float b = SkColorGetB(c) / 255.0f;
-  float vmax = std::max(std::max(r, g), b);
-  float vmin = std::min(std::min(r, g), b);
+  float vmax = std::max({r, g, b});
+  float vmin = std::min({r, g, b});
   float delta = vmax - vmin;
   hsl->l = (vmax + vmin) / 2;
   if (SkColorGetR(c) == SkColorGetG(c) && SkColorGetR(c) == SkColorGetB(c)) {

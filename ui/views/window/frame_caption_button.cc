@@ -76,8 +76,21 @@ SkColor FrameCaptionButton::GetButtonColor(ColorMode color_mode,
     return color_utils::GetThemedAssetColor(background_color);
 
   DCHECK_EQ(color_mode, ColorMode::kDefault);
-  return color_utils::PickContrastingColor(
-      gfx::kGoogleGrey200, gfx::kGoogleGrey700, background_color);
+  // Use IsDark() to change target colors instead of PickContrastingColor(), so
+  // that DefaultFrameHeader::GetTitleColor() (which uses different target
+  // colors) can change between light/dark targets at the same time.  It looks
+  // bad when the title and caption buttons disagree about whether to be light
+  // or dark.
+  const SkColor source = color_utils::IsDark(background_color)
+                             ? gfx::kGoogleGrey200
+                             : gfx::kGoogleGrey700;
+  const SkColor target = color_utils::GetColorWithMaxContrast(background_color);
+  // Guarantee the caption buttons reach at least contrast ratio 3; this ratio
+  // matches that used for focus indicators, large text, and other "have to see
+  // it but perhaps don't have to read fine detail" cases.
+  const SkAlpha alpha = color_utils::GetBlendValueWithMinimumContrast(
+      source, target, background_color, 3.0f);
+  return color_utils::AlphaBlend(target, source, alpha);
 }
 
 // static
