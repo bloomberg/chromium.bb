@@ -144,7 +144,7 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
     @CalledByNative
     private void installModule(Tab tab) {
         mTab = tab;
-        ModuleInstallUi ui = new ModuleInstallUi(mTab, R.string.vr_module_install_text_title, this);
+        ModuleInstallUi ui = new ModuleInstallUi(mTab, R.string.vr_module_title, this);
         ui.showInstallStartUi();
         installModule((success) -> {
             if (success) {
