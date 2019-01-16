@@ -12,6 +12,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/menu_utils.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
+#include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -150,8 +151,9 @@ ShelfContextMenuModel::ShelfContextMenuModel(MenuItemList menu_items,
       menu_items_(std::move(menu_items)),
       delegate_(delegate),
       display_id_(display_id) {
-  // Append shelf settings and wallpaper items if no shelf item was selected.
-  if (!delegate)
+  // Append shelf settings and wallpaper items to the menu if ShelfView or
+  // AppListButton are selected.
+  if (!delegate || delegate_->app_id() == kAppListId)
     AddLocalMenuItems(&menu_items_, display_id);
   menu_utils::PopulateMenuFromMojoMenuItems(this, this, menu_items_,
                                             &submenus_);
