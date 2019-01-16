@@ -26,16 +26,19 @@ class CaptureAccessHandlerBase : public MediaAccessHandler {
                                blink::MediaStreamType stream_type,
                                content::MediaRequestState state) override;
 
-  // Return true if there is any ongoing insecured capturing. The capturing is
-  // deemed secure if all connected video sinks are reported secure and the
-  // connections to the sinks are being managed by a trusted extension.
+  // Returns true if there is any ongoing insecured capturing. Returns false
+  // otherwise, e.g. there is no capturing, or all capturing are secure. A
+  // capturing is deemed secure if all connected video sinks are reported secure
+  // and the connections to the sinks are also secure, e.g. being managed by a
+  // trusted extension.
   bool IsInsecureCapturingInProgress(int render_process_id,
                                      int render_frame_id) override;
 
-  void UpdateCapturingLinkSecured(int render_process_id,
-                                  int render_frame_id,
-                                  int page_request_id,
-                                  bool is_secure) override;
+  // Updates video screen capture status with whether it |is_secure| or not.
+  void UpdateVideoScreenCaptureStatus(int render_process_id,
+                                      int render_frame_id,
+                                      int page_request_id,
+                                      bool is_secure) override;
 
  protected:
   static bool IsExtensionWhitelistedForScreenCapture(
