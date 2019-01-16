@@ -34,6 +34,7 @@ class SyncPrefObserver {
  public:
   virtual void OnSyncManagedPrefChange(bool is_sync_managed) = 0;
   virtual void OnFirstSetupCompletePrefChange(bool is_first_setup_complete) = 0;
+  virtual void OnSyncRequestedPrefChange(bool is_sync_requested) = 0;
   virtual void OnPreferredDataTypesPrefChange(
       bool sync_everything,
       syncer::ModelTypeSet preferred_types) = 0;
@@ -228,6 +229,7 @@ class SyncPrefs : public CryptoSyncPrefs,
 
   void OnSyncManagedPrefChanged();
   void OnFirstSetupCompletePrefChange();
+  void OnSyncSuppressedPrefChange();
 
   // Never null.
   PrefService* const pref_service_;
@@ -239,6 +241,8 @@ class SyncPrefs : public CryptoSyncPrefs,
   BooleanPrefMember pref_sync_managed_;
 
   BooleanPrefMember pref_first_setup_complete_;
+
+  BooleanPrefMember pref_sync_suppressed_;
 
   bool local_sync_enabled_;
 

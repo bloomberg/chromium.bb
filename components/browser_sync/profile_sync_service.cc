@@ -1008,8 +1008,9 @@ void ProfileSyncService::OnEngineInitialized(
   NotifyObservers();
 
   // Nobody will call us to start if no sign in is going to happen.
-  if (IsLocalSyncEnabled())
-    RequestStart();
+  if (IsLocalSyncEnabled()) {
+    startup_controller_->TryStart(/*force_immediate=*/true);
+  }
 }
 
 void ProfileSyncService::OnSyncCycleCompleted(
@@ -1441,7 +1442,7 @@ void ProfileSyncService::SyncAllowedByPlatformChanged(bool allowed) {
     StopImpl(KEEP_DATA);
     // TODO(crbug.com/856179): Evaluate whether we can get away without a full
     // restart (i.e. just reconfigure plus whatever cleanup is necessary). See
-    // also similar comment in RequestStop.
+    // also similar comment in OnSyncRequestedPrefChange().
     if (IsStandaloneTransportEnabled()) {
       startup_controller_->TryStart(/*force_immediate=*/false);
     }
@@ -1725,6 +1726,33 @@ void ProfileSyncService::OnFirstSetupCompletePrefChange(
   }
 }
 
+void ProfileSyncService::OnSyncRequestedPrefChange(bool is_sync_requested) {
+  if (is_sync_requested) {
+    NotifyObservers();
+
+    // If the Sync engine was already initialized (probably running in transport
+    // mode), just reconfigure.
+    if (IsStandaloneTransportEnabled() && engine_initialized_) {
+      ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
+    } else {
+      // Otherwise try to start up. Note that there might still be other disable
+      // reasons remaining, in which case this will effectively do nothing.
+      startup_controller_->TryStart(/*force_immediate=*/true);
+    }
+  } else {
+    // This will notify the observers.
+    StopImpl(KEEP_DATA);
+
+    // TODO(crbug.com/856179): Evaluate whether we can get away without a full
+    // restart (i.e. just reconfigure plus whatever cleanup is necessary).
+    // Especially in the CLEAR_DATA case, StopImpl does a lot of cleanup that
+    // might still be required.
+    if (IsStandaloneTransportEnabled()) {
+      startup_controller_->TryStart(/*force_immediate=*/false);
+    }
+  }
+}
+
 void ProfileSyncService::OnGaiaAccountsInCookieUpdated(
     const std::vector<gaia::ListedAccount>& accounts,
     const std::vector<gaia::ListedAccount>& signed_out_accounts,
@@ -1962,38 +1990,9 @@ bool ProfileSyncService::IsSyncAllowedByFlag() {
 }
 
 void ProfileSyncService::StopAndClear() {
-  RequestStop(CLEAR_DATA);
-}
-
-void ProfileSyncService::RequestStop(SyncStopDataFate data_fate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  sync_prefs_.SetSyncRequested(false);
-  StopImpl(data_fate);
-
-  // TODO(crbug.com/856179): Evaluate whether we can get away without a full
-  // restart (i.e. just reconfigure plus whatever cleanup is necessary).
-  // Especially in the CLEAR_DATA case, StopImpl does a lot of cleanup that
-  // might still be required.
-  if (IsStandaloneTransportEnabled()) {
-    startup_controller_->TryStart(/*force_immediate=*/false);
-  }
-}
-
-void ProfileSyncService::RequestStart() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!sync_prefs_.IsSyncRequested()) {
-    sync_prefs_.SetSyncRequested(true);
-    NotifyObservers();
-  }
-  // If the Sync engine was already initialized (probably running in transport
-  // mode), just reconfigure.
-  if (IsStandaloneTransportEnabled() && engine_initialized_) {
-    ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
-  } else {
-    // Otherwise try to start up. Note that there might still be other disable
-    // reasons remaining, in which case this will effectively do nothing.
-    startup_controller_->TryStart(/*force_immediate=*/true);
-  }
+  StopImpl(CLEAR_DATA);
+  user_settings_->SetSyncRequested(false);
 }
 
 void ProfileSyncService::ReconfigureDatatypeManager(
@@ -2067,7 +2066,7 @@ void ProfileSyncService::OverrideNetworkResourcesForTest(
   network_resources_ = std::move(network_resources);
 
   if (restart) {
-    RequestStart();
+    startup_controller_->TryStart(/*force_immediate=*/true);
     DCHECK(engine_);
   }
 }

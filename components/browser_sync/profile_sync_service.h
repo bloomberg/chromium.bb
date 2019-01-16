@@ -162,14 +162,6 @@ class ProfileSyncService : public syncer::SyncService,
     MANUAL_START,
   };
 
-  // Passed as an argument to RequestStop to control whether or not the sync
-  // engine should clear its data directory when it shuts down. See
-  // RequestStop for more information.
-  enum SyncStopDataFate {
-    KEEP_DATA,
-    CLEAR_DATA,
-  };
-
   // Bundles the arguments for ProfileSyncService construction. This is a
   // movable struct. Because of the non-POD data members, it needs out-of-line
   // constructors, so in particular the move constructor needs to be
@@ -213,8 +205,6 @@ class ProfileSyncService : public syncer::SyncService,
   void TriggerRefresh(const syncer::ModelTypeSet& types) override;
   void OnDataTypeRequestsSyncStartup(syncer::ModelType type) override;
   void StopAndClear() override;
-  void RequestStop(SyncStopDataFate data_fate);
-  void RequestStart();
   void AddObserver(syncer::SyncServiceObserver* observer) override;
   void RemoveObserver(syncer::SyncServiceObserver* observer) override;
   bool HasObserver(const syncer::SyncServiceObserver* observer) const override;
@@ -366,6 +356,7 @@ class ProfileSyncService : public syncer::SyncService,
   // SyncPrefObserver implementation.
   void OnSyncManagedPrefChange(bool is_sync_managed) override;
   void OnFirstSetupCompletePrefChange(bool is_first_setup_complete) override;
+  void OnSyncRequestedPrefChange(bool is_sync_requested) override;
   void OnPreferredDataTypesPrefChange(
       bool sync_everything,
       syncer::ModelTypeSet preferred_types) override;
@@ -414,6 +405,14 @@ class ProfileSyncService : public syncer::SyncService,
   syncer::SyncClient* GetSyncClientForTest();
 
  private:
+  // Passed as an argument to StopImpl to control whether or not the sync
+  // engine should clear its data directory when it shuts down. See StopImpl
+  // for more information.
+  enum SyncStopDataFate {
+    KEEP_DATA,
+    CLEAR_DATA,
+  };
+
   // Shorthand for user_settings_.IsFirstSetupComplete().
   bool IsFirstSetupComplete() const;
 

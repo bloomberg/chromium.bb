@@ -75,6 +75,7 @@ class MockSyncPrefObserver : public SyncPrefObserver {
  public:
   MOCK_METHOD1(OnSyncManagedPrefChange, void(bool));
   MOCK_METHOD1(OnFirstSetupCompletePrefChange, void(bool));
+  MOCK_METHOD1(OnSyncRequestedPrefChange, void(bool));
   MOCK_METHOD2(OnPreferredDataTypesPrefChange, void(bool, ModelTypeSet));
 };
 
@@ -85,9 +86,12 @@ TEST_F(SyncPrefsTest, ObservedPrefs) {
   EXPECT_CALL(mock_sync_pref_observer, OnSyncManagedPrefChange(false));
   EXPECT_CALL(mock_sync_pref_observer, OnFirstSetupCompletePrefChange(true));
   EXPECT_CALL(mock_sync_pref_observer, OnFirstSetupCompletePrefChange(false));
+  EXPECT_CALL(mock_sync_pref_observer, OnSyncRequestedPrefChange(false));
+  EXPECT_CALL(mock_sync_pref_observer, OnSyncRequestedPrefChange(true));
 
-  EXPECT_FALSE(sync_prefs_->IsManaged());
-  EXPECT_FALSE(sync_prefs_->IsFirstSetupComplete());
+  ASSERT_FALSE(sync_prefs_->IsManaged());
+  ASSERT_FALSE(sync_prefs_->IsFirstSetupComplete());
+  ASSERT_TRUE(sync_prefs_->IsSyncRequested());
 
   sync_prefs_->AddSyncPrefObserver(&mock_sync_pref_observer);
 
@@ -102,6 +106,11 @@ TEST_F(SyncPrefsTest, ObservedPrefs) {
   // all prefs instead.
   sync_prefs_->ClearPreferences();
   EXPECT_FALSE(sync_prefs_->IsFirstSetupComplete());
+
+  sync_prefs_->SetSyncRequested(false);
+  EXPECT_FALSE(sync_prefs_->IsSyncRequested());
+  sync_prefs_->SetSyncRequested(true);
+  EXPECT_TRUE(sync_prefs_->IsSyncRequested());
 
   sync_prefs_->RemoveSyncPrefObserver(&mock_sync_pref_observer);
 }
