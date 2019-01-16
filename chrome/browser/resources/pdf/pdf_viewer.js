@@ -1146,12 +1146,13 @@ PDFViewer.prototype = {
       fileName = fileName + '.pdf';
     }
 
-    const a = document.createElement('a');
-    a.download = fileName;
-    const blob = new Blob([result.dataToSave], {type: 'application/pdf'});
-    a.href = URL.createObjectURL(blob);
-    a.click();
-    URL.revokeObjectURL(a.href);
+    chrome.fileSystem.chooseEntry(
+        {type: 'saveFile', suggestedName: fileName}, entry => {
+          entry.createWriter(writer => {
+            writer.write(
+                new Blob([result.dataToSave], {type: 'application/pdf'}));
+          });
+        });
 
     // Saving in Annotation mode is destructive: crbug.com/919364
     this.exitAnnotationMode_();
