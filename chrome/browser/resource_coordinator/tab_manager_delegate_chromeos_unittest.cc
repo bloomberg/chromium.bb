@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/test_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/time.h"
@@ -101,6 +102,54 @@ TEST_F(TabManagerDelegateTest, CandidatesSortedWithFocusedAppAndTab) {
   EXPECT_EQ(&focused_lifecycle_unit, candidates[0].lifecycle_unit());
   ASSERT_TRUE(candidates[1].app());
   EXPECT_EQ("focused", candidates[1].app()->process_name());
+}
+
+TEST_F(TabManagerDelegateTest, CandidatesSortedWithNewProcessTypes) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({features::kNewProcessTypes},
+                                {features::kTabRanker});
+  std::vector<arc::ArcProcess> arc_processes;
+  arc_processes.emplace_back(1, 10, "focused", arc::mojom::ProcessState::TOP,
+                             kIsFocused, 100);
+  arc_processes.emplace_back(2, 20, "visible1", arc::mojom::ProcessState::TOP,
+                             kNotFocused, 200);
+  arc_processes.emplace_back(
+      3, 30, "service", arc::mojom::ProcessState::SERVICE, kNotFocused, 500);
+  arc_processes.emplace_back(4, 40, "cached",
+                             arc::mojom::ProcessState::CACHED_EMPTY,
+                             kNotFocused, 150);
+
+  TestLifecycleUnit focused_tab(base::TimeTicks::Max());
+  TestLifecycleUnit protected_tab(
+      base::TimeTicks() + base::TimeDelta::FromSeconds(1), 0, false);
+  TestLifecycleUnit background_tab(base::TimeTicks() +
+                                   base::TimeDelta::FromSeconds(5));
+  LifecycleUnitVector lifecycle_units{&focused_tab, &protected_tab,
+                                      &background_tab};
+
+  std::vector<TabManagerDelegate::Candidate> candidates;
+  candidates =
+      TabManagerDelegate::GetSortedCandidates(lifecycle_units, arc_processes);
+
+  ASSERT_EQ(7U, candidates.size());
+  EXPECT_EQ(&focused_tab, candidates[0].lifecycle_unit());
+  EXPECT_EQ(ProcessType::FOCUSED_TAB, candidates[0].process_type());
+  ASSERT_TRUE(candidates[1].app());
+  EXPECT_EQ("focused", candidates[1].app()->process_name());
+  EXPECT_EQ(ProcessType::FOCUSED_APP, candidates[1].process_type());
+  ASSERT_TRUE(candidates[2].app());
+  EXPECT_EQ("visible1", candidates[2].app()->process_name());
+  EXPECT_EQ(ProcessType::PROTECTED_BACKGROUND, candidates[2].process_type());
+  EXPECT_EQ(&protected_tab, candidates[3].lifecycle_unit());
+  EXPECT_EQ(ProcessType::PROTECTED_BACKGROUND, candidates[3].process_type());
+  ASSERT_TRUE(candidates[4].app());
+  EXPECT_EQ("service", candidates[4].app()->process_name());
+  EXPECT_EQ(ProcessType::BACKGROUND, candidates[4].process_type());
+  EXPECT_EQ(&background_tab, candidates[5].lifecycle_unit());
+  EXPECT_EQ(ProcessType::BACKGROUND, candidates[5].process_type());
+  ASSERT_TRUE(candidates[6].app());
+  EXPECT_EQ("cached", candidates[6].app()->process_name());
+  EXPECT_EQ(ProcessType::CACHED_APP, candidates[6].process_type());
 }
 
 class MockTabManagerDelegate : public TabManagerDelegate {

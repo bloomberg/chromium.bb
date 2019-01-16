@@ -120,6 +120,8 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest,
                            CandidatesSortedWithFocusedAppAndTab);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest,
+                           CandidatesSortedWithNewProcessTypes);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest,
                            DoNotKillRecentlyKilledArcProcesses);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, IsRecentlyKilledArcProcess);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, KillMultipleProcesses);
