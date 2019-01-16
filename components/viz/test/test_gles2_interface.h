@@ -166,6 +166,8 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
                              const GLenum* attachments) override;
   void ProduceTextureDirectCHROMIUM(GLuint texture, GLbyte* mailbox) override;
   GLuint CreateAndConsumeTextureCHROMIUM(const GLbyte* mailbox) override;
+  GLuint CreateAndTexStorage2DSharedImageCHROMIUM(
+      const GLbyte* mailbox) override;
 
   void ResizeCHROMIUM(GLuint width,
                       GLuint height,

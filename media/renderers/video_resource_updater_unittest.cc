@@ -58,41 +58,19 @@ class UploadCounterGLES2Interface : public viz::TestGLES2Interface {
     ++upload_count_;
   }
 
-  void TexStorage2DEXT(GLenum target,
-                       GLint levels,
-                       GLuint internalformat,
-                       GLint width,
-                       GLint height) override {}
-
-  void GenTextures(GLsizei n, GLuint* textures) override {
-    created_texture_count_ += n;
-    viz::TestGLES2Interface::GenTextures(n, textures);
-  }
-
-  void DeleteTextures(GLsizei n, const GLuint* textures) override {
-    created_texture_count_ -= n;
-    viz::TestGLES2Interface::DeleteTextures(n, textures);
-  }
-
   int UploadCount() { return upload_count_; }
   void ResetUploadCount() { upload_count_ = 0; }
 
-  int TextureCreationCount() { return created_texture_count_; }
-  void ResetTextureCreationCount() { created_texture_count_ = 0; }
-
  private:
   int upload_count_;
-  int created_texture_count_;
 };
 
 class VideoResourceUpdaterTest : public testing::Test {
  protected:
   VideoResourceUpdaterTest() {
-    std::unique_ptr<UploadCounterGLES2Interface> gl(
-        new UploadCounterGLES2Interface());
+    auto gl = std::make_unique<UploadCounterGLES2Interface>();
 
     gl_ = gl.get();
-    gl_->set_support_texture_storage(true);
 
     context_provider_ = viz::TestContextProvider::Create(std::move(gl));
     context_provider_->BindToCurrentThread();
@@ -254,6 +232,10 @@ class VideoResourceUpdaterTest : public testing::Test {
             base::TimeDelta());  // timestamp
     EXPECT_TRUE(video_frame);
     return video_frame;
+  }
+
+  size_t GetSharedImageCount() {
+    return context_provider_->SharedImageInterface()->shared_image_count();
   }
 
   static const gpu::SyncToken kMailboxSyncToken;
@@ -560,7 +542,7 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_StreamTexture) {
   // Note that |use_stream_video_draw_quad| is true for this test.
   std::unique_ptr<VideoResourceUpdater> updater =
       CreateUpdaterForHardware(true);
-  gl_->ResetTextureCreationCount();
+  EXPECT_EQ(0u, GetSharedImageCount());
   scoped_refptr<media::VideoFrame> video_frame =
       CreateTestStreamTextureHardwareVideoFrame(false);
 
@@ -571,11 +553,10 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_StreamTexture) {
   EXPECT_EQ((GLenum)GL_TEXTURE_EXTERNAL_OES,
             resources.resources[0].mailbox_holder.texture_target);
   EXPECT_EQ(1u, resources.release_callbacks.size());
-  EXPECT_EQ(0, gl_->TextureCreationCount());
+  EXPECT_EQ(0u, GetSharedImageCount());
 
   // A copied stream texture should return an RGBA resource in a new
   // GL_TEXTURE_2D texture.
-  gl_->ResetTextureCreationCount();
   video_frame = CreateTestStreamTextureHardwareVideoFrame(true);
   resources = updater->CreateExternalResourcesFromVideoFrame(video_frame);
   EXPECT_EQ(VideoFrameResourceType::RGBA_PREMULTIPLIED, resources.type);
@@ -583,12 +564,12 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_StreamTexture) {
   EXPECT_EQ((GLenum)GL_TEXTURE_2D,
             resources.resources[0].mailbox_holder.texture_target);
   EXPECT_EQ(1u, resources.release_callbacks.size());
-  EXPECT_EQ(1, gl_->TextureCreationCount());
+  EXPECT_EQ(1u, GetSharedImageCount());
 }
 
 TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_TextureQuad) {
   std::unique_ptr<VideoResourceUpdater> updater = CreateUpdaterForHardware();
-  gl_->ResetTextureCreationCount();
+  EXPECT_EQ(0u, GetSharedImageCount());
   scoped_refptr<media::VideoFrame> video_frame =
       CreateTestStreamTextureHardwareVideoFrame(false);
 
@@ -599,7 +580,7 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_TextureQuad) {
   EXPECT_EQ((GLenum)GL_TEXTURE_EXTERNAL_OES,
             resources.resources[0].mailbox_holder.texture_target);
   EXPECT_EQ(1u, resources.release_callbacks.size());
-  EXPECT_EQ(0, gl_->TextureCreationCount());
+  EXPECT_EQ(0u, GetSharedImageCount());
 }
 
 // Passthrough the sync token returned by the compositor if we don't have an
@@ -695,7 +676,7 @@ TEST_F(VideoResourceUpdaterTest, GenerateSyncTokenOnTextureCopy) {
 // of the underlying buffer, that is YUV_420_BIPLANAR.
 TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_SingleNV12) {
   std::unique_ptr<VideoResourceUpdater> updater = CreateUpdaterForHardware();
-  gl_->ResetTextureCreationCount();
+  EXPECT_EQ(0u, GetSharedImageCount());
   scoped_refptr<media::VideoFrame> video_frame = CreateTestHardwareVideoFrame(
       media::PIXEL_FORMAT_NV12, GL_TEXTURE_EXTERNAL_OES);
 
@@ -716,12 +697,12 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_SingleNV12) {
             resources.resources[0].mailbox_holder.texture_target);
   EXPECT_EQ(viz::YUV_420_BIPLANAR, resources.resources[0].format);
 
-  EXPECT_EQ(0, gl_->TextureCreationCount());
+  EXPECT_EQ(0u, GetSharedImageCount());
 }
 
 TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_DualNV12) {
   std::unique_ptr<VideoResourceUpdater> updater = CreateUpdaterForHardware();
-  gl_->ResetTextureCreationCount();
+  EXPECT_EQ(0u, GetSharedImageCount());
   scoped_refptr<media::VideoFrame> video_frame =
       CreateTestYuvHardwareVideoFrame(media::PIXEL_FORMAT_NV12, 2,
                                       GL_TEXTURE_EXTERNAL_OES);
@@ -744,7 +725,7 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_DualNV12) {
   EXPECT_EQ((GLenum)GL_TEXTURE_RECTANGLE_ARB,
             resources.resources[0].mailbox_holder.texture_target);
   EXPECT_EQ(viz::RGBA_8888, resources.resources[0].format);
-  EXPECT_EQ(0, gl_->TextureCreationCount());
+  EXPECT_EQ(0u, GetSharedImageCount());
 }
 
 }  // namespace
