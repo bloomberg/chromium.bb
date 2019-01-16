@@ -199,16 +199,20 @@ class MenuManager {
     if (SwitchAccessPredicate.isTextInput(node))
       actions.push(MenuManager.Action.DICTATION);
 
-    if (node.scrollable) {
+    let scrollableAncestor = node;
+    while (!scrollableAncestor.scrollable && scrollableAncestor.parent)
+      scrollableAncestor = scrollableAncestor.parent;
+
+    if (scrollableAncestor.scrollable) {
       // TODO(crbug/920659) This does not work for ARC++. Implement scroll
       // directions via standardActions.
-      if (node.scrollX > node.scrollXMin)
+      if (scrollableAncestor.scrollX > scrollableAncestor.scrollXMin)
         actions.push(MenuManager.Action.SCROLL_LEFT);
-      if (node.scrollX < node.scrollXMax)
+      if (scrollableAncestor.scrollX < scrollableAncestor.scrollXMax)
         actions.push(MenuManager.Action.SCROLL_RIGHT);
-      if (node.scrollY > node.scrollYMin)
+      if (scrollableAncestor.scrollY > scrollableAncestor.scrollYMin)
         actions.push(MenuManager.Action.SCROLL_UP);
-      if (node.scrollY < node.scrollYMax)
+      if (scrollableAncestor.scrollY < scrollableAncestor.scrollYMax)
         actions.push(MenuManager.Action.SCROLL_DOWN);
     }
 
