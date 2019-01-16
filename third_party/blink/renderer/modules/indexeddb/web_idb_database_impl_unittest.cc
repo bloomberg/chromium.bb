@@ -44,7 +44,8 @@ TEST_F(WebIDBDatabaseImplTest, ValueSizeTest) {
   ThreadState::Current()->CollectAllGarbage();
   EXPECT_CALL(callbacks, Error(_, _)).Times(1);
 
-  WebIDBDatabaseImpl database_impl(nullptr);
+  WebIDBDatabaseImpl database_impl(
+      nullptr, blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   database_impl.max_put_value_size_ = kMaxValueSizeForTesting;
   database_impl.Put(transaction_id, object_store_id, std::move(value),
                     std::move(key), mojom::IDBPutMode::AddOrUpdate, &callbacks,
@@ -85,7 +86,8 @@ TEST_F(WebIDBDatabaseImplTest, KeyAndValueSizeTest) {
   ThreadState::Current()->CollectAllGarbage();
   EXPECT_CALL(callbacks, Error(_, _)).Times(1);
 
-  WebIDBDatabaseImpl database_impl(nullptr);
+  WebIDBDatabaseImpl database_impl(
+      nullptr, blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   database_impl.max_put_value_size_ = kMaxValueSizeForTesting;
   database_impl.Put(transaction_id, object_store_id, std::move(value),
                     std::move(key), mojom::IDBPutMode::AddOrUpdate, &callbacks,

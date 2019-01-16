@@ -21,7 +21,8 @@ class WebIDBCallbacks;
 
 class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
  public:
-  WebIDBDatabaseImpl(mojom::blink::IDBDatabaseAssociatedPtrInfo database);
+  WebIDBDatabaseImpl(mojom::blink::IDBDatabaseAssociatedPtrInfo database,
+                     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~WebIDBDatabaseImpl() override;
 
   // WebIDBDatabase
@@ -135,6 +136,7 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
 
   std::set<int32_t> observer_ids_;
   mojom::blink::IDBDatabaseAssociatedPtr database_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace blink

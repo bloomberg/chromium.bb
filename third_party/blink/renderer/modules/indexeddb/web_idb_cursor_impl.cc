@@ -22,14 +22,16 @@ namespace blink {
 
 WebIDBCursorImpl::WebIDBCursorImpl(
     mojom::blink::IDBCursorAssociatedPtrInfo cursor_info,
-    int64_t transaction_id)
+    int64_t transaction_id,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : transaction_id_(transaction_id),
-      cursor_(std::move(cursor_info)),
       continue_count_(0),
       used_prefetches_(0),
       pending_onsuccess_callbacks_(0),
       prefetch_amount_(kMinPrefetchAmount),
+      task_runner_(task_runner),
       weak_factory_(this) {
+  cursor_.Bind(std::move(cursor_info), std::move(task_runner));
   IndexedDBDispatcher::RegisterCursor(this);
 }
 
@@ -222,7 +224,8 @@ IDBCallbacksAssociatedPtrInfo WebIDBCursorImpl::GetCallbacksProxy(
     std::unique_ptr<WebIDBCallbacks> callbacks) {
   IDBCallbacksAssociatedPtrInfo ptr_info;
   auto request = mojo::MakeRequest(&ptr_info);
-  mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request));
+  mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request),
+                                    task_runner_);
   return ptr_info;
 }
 

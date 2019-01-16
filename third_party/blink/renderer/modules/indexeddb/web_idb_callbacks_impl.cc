@@ -72,6 +72,8 @@ std::unique_ptr<WebIDBCallbacksImpl> WebIDBCallbacksImpl::Create(
 
 WebIDBCallbacksImpl::WebIDBCallbacksImpl(IDBRequest* request)
     : request_(request) {
+  task_runner_ = request_->GetExecutionContext()->GetTaskRunner(
+      TaskType::kInternalIndexedDB);
   probe::AsyncTaskScheduled(request_->GetExecutionContext(),
                             indexed_db_names::kIndexedDB, this);
 }
@@ -142,7 +144,7 @@ void WebIDBCallbacksImpl::SuccessCursor(
     return;
 
   std::unique_ptr<WebIDBCursorImpl> cursor = std::make_unique<WebIDBCursorImpl>(
-      std::move(cursor_info), transaction_id_);
+      std::move(cursor_info), transaction_id_, task_runner_);
   std::unique_ptr<IDBValue> value;
   if (optional_value.has_value()) {
     value = std::move(optional_value.value());
@@ -175,8 +177,10 @@ void WebIDBCallbacksImpl::SuccessDatabase(
     mojom::blink::IDBDatabaseAssociatedPtrInfo database_info,
     const IDBDatabaseMetadata& metadata) {
   std::unique_ptr<WebIDBDatabase> db;
-  if (database_info.is_valid())
-    db = std::make_unique<WebIDBDatabaseImpl>(std::move(database_info));
+  if (database_info.is_valid()) {
+    db = std::make_unique<WebIDBDatabaseImpl>(std::move(database_info),
+                                              task_runner_);
+  }
   if (request_) {
     probe::AsyncTask async_task(request_->GetExecutionContext(), this,
                                 "success");
@@ -289,8 +293,10 @@ void WebIDBCallbacksImpl::UpgradeNeeded(
     const String& data_loss_message,
     const IDBDatabaseMetadata& metadata) {
   std::unique_ptr<WebIDBDatabase> db;
-  if (database_info.is_valid())
-    db = std::make_unique<WebIDBDatabaseImpl>(std::move(database_info));
+  if (database_info.is_valid()) {
+    db = std::make_unique<WebIDBDatabaseImpl>(std::move(database_info),
+                                              task_runner_);
+  }
   if (request_) {
     probe::AsyncTask async_task(request_->GetExecutionContext(), this,
                                 "upgradeNeeded");

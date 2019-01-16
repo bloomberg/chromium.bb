@@ -21,7 +21,8 @@ namespace blink {
 class MODULES_EXPORT WebIDBCursorImpl : public WebIDBCursor {
  public:
   WebIDBCursorImpl(mojom::blink::IDBCursorAssociatedPtrInfo cursor,
-                   int64_t transaction_id);
+                   int64_t transaction_id,
+                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~WebIDBCursorImpl() override;
 
   void Advance(uint32_t count, WebIDBCallbacks* callback) override;
@@ -82,6 +83,8 @@ class MODULES_EXPORT WebIDBCursorImpl : public WebIDBCursor {
 
   // Number of items to request in next prefetch.
   int prefetch_amount_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::WeakPtrFactory<WebIDBCursorImpl> weak_factory_;
 
