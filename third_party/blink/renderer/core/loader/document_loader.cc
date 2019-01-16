@@ -1323,6 +1323,19 @@ void DocumentLoader::InstallNewDocument(
   if (reason == InstallNewDocumentReason::kNavigation)
     DidCommitNavigation(global_object_reuse_policy);
 
+  // TODO(yoichio): This is temporary switch to support chrome internal
+  // components migration from the old web APIs.
+  // After completion of the migration, we should remove this.
+  // See crbug.com/911943 for detail.
+  if (url.Protocol() == "chrome-devtools" || url.Protocol() == "chrome") {
+    OriginTrialContext::FromOrCreate(document)->AddFeature("WebComponentsV0");
+    // CrElementsProfileAvatarSelectorFocusTest, or some Web UI tests need this
+    // RuntimeEnabledFeatures on in addition to the above OriginTrialContext
+    // flag.
+    RuntimeEnabledFeatures::SetShadowDOMV0Enabled(true);
+    RuntimeEnabledFeatures::SetCustomElementsV0Enabled(true);
+    RuntimeEnabledFeatures::SetHTMLImportsEnabled(true);
+  }
   // Initializing origin trials might force window proxy initialization,
   // which later triggers CHECK when swapping in via WebFrame::Swap().
   // We can safely omit installing original trials on initial empty document
