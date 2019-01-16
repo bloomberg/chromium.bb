@@ -76,6 +76,8 @@ class ClientBase {
     std::unique_ptr<zaura_shell> aura_shell;
     std::unique_ptr<zwp_fullscreen_shell_v1> fullscreen_shell;
     std::unique_ptr<zwp_input_timestamps_manager_v1> input_timestamps_manager;
+    std::unique_ptr<zwp_linux_explicit_synchronization_v1>
+        linux_explicit_synchronization;
   };
 
   struct Buffer {

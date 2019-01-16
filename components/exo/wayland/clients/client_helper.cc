@@ -6,6 +6,7 @@
 
 #include <input-timestamps-unstable-v1-client-protocol.h>
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
+#include <linux-explicit-synchronization-unstable-v1-client-protocol.h>
 #include <presentation-time-client-protocol.h>
 #include <wayland-client-core.h>
 #include <wayland-client-protocol.h>
@@ -49,12 +50,18 @@ DEFAULT_DELETER(struct wp_presentation_feedback,
 DEFAULT_DELETER(zaura_shell, zaura_shell_destroy)
 DEFAULT_DELETER(zaura_surface, zaura_surface_destroy)
 DEFAULT_DELETER(zaura_output, zaura_output_destroy)
+DEFAULT_DELETER(zwp_linux_buffer_release_v1,
+                zwp_linux_buffer_release_v1_destroy)
 DEFAULT_DELETER(zwp_fullscreen_shell_v1, zwp_fullscreen_shell_v1_destroy)
 DEFAULT_DELETER(zwp_input_timestamps_manager_v1,
                 zwp_input_timestamps_manager_v1_destroy);
 DEFAULT_DELETER(zwp_input_timestamps_v1, zwp_input_timestamps_v1_destroy)
 DEFAULT_DELETER(zwp_linux_buffer_params_v1, zwp_linux_buffer_params_v1_destroy)
 DEFAULT_DELETER(zwp_linux_dmabuf_v1, zwp_linux_dmabuf_v1_destroy)
+DEFAULT_DELETER(zwp_linux_explicit_synchronization_v1,
+                zwp_linux_explicit_synchronization_v1_destroy)
+DEFAULT_DELETER(zwp_linux_surface_synchronization_v1,
+                zwp_linux_surface_synchronization_v1_destroy)
 
 #if defined(USE_GBM)
 DEFAULT_DELETER(gbm_bo, gbm_bo_destroy)

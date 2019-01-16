@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <fullscreen-shell-unstable-v1-client-protocol.h>
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
+#include <linux-explicit-synchronization-unstable-v1-client-protocol.h>
 #include <presentation-time-client-protocol.h>
 #include <wayland-client-core.h>
 #include <wayland-client-protocol.h>
@@ -129,6 +130,11 @@ void RegistryHandler(void* data,
   } else if (strcmp(interface, "wl_output") == 0) {
     globals->output.reset(static_cast<wl_output*>(
         wl_registry_bind(registry, id, &wl_output_interface, 1)));
+  } else if (strcmp(interface, "zwp_linux_explicit_synchronization_v1") == 0) {
+    globals->linux_explicit_synchronization.reset(
+        static_cast<zwp_linux_explicit_synchronization_v1*>(wl_registry_bind(
+            registry, id, &zwp_linux_explicit_synchronization_v1_interface,
+            1)));
   }
 }
 
