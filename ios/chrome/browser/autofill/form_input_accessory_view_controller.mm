@@ -335,10 +335,32 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   return nil;
 }
 
+// Returns YES if one the first level of children has "Picker" in their class
+// name. No otherwise.
+- (BOOL)containsPickerView:(UIView*)view {
+  for (UIView* subview in view.subviews) {
+    if ([NSStringFromClass([subview class]) rangeOfString:@"Picker"].location !=
+        NSNotFound) {
+      return YES;
+    }
+  }
+  return NO;
+}
+
 - (void)keyboardWillOrDidChangeFrame:(NSNotification*)notification {
   CGRect keyboardFrame =
       [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
   UIView* keyboardView = [self getKeyboardView];
+  // On iPhones when the field is a selector the keyboard becomes a picker.
+  // Restore the keyboard in these cases, but allow the user to return to see
+  // the info in Manual Fallback.
+  if (!IsIPadIdiom() && [self containsPickerView:keyboardView]) {
+    [self.manualFillAccessoryViewController resetAnimated:NO];
+    [self unlockManualFallbackView];
+    [self.keyboardReplacementView removeFromSuperview];
+    self.keyboardReplacementView = nil;
+    return;
+  }
   CGRect windowRect = keyboardView.window.bounds;
   // On iPad when the keyboard is undocked, on iOS 11 and 12,
   // `UIKeyboard*HideNotification` or `UIKeyboard*ShowNotification` are not
