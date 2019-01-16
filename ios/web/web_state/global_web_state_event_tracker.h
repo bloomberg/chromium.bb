@@ -8,15 +8,11 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "ios/web/public/web_state/global_web_state_observer.h"
 #include "ios/web/public/web_state/web_state_observer.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 namespace web {
 
@@ -32,7 +28,7 @@ class GlobalWebStateEventTracker : public WebStateObserver {
   void RemoveObserver(GlobalWebStateObserver* observer);
 
  private:
-  friend struct base::DefaultSingletonTraits<GlobalWebStateEventTracker>;
+  friend class base::NoDestructor<GlobalWebStateEventTracker>;
   friend class WebStateEventForwarder;
   friend class WebStateImpl;
 

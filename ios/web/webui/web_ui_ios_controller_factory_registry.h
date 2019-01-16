@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "ios/web/public/webui/web_ui_ios_controller_factory.h"
 
 namespace web {
@@ -26,7 +26,7 @@ class WebUIIOSControllerFactoryRegistry : public WebUIIOSControllerFactory {
       const GURL& url) const override;
 
  private:
-  friend struct base::DefaultSingletonTraits<WebUIIOSControllerFactoryRegistry>;
+  friend class base::NoDestructor<WebUIIOSControllerFactoryRegistry>;
 
   WebUIIOSControllerFactoryRegistry();
   ~WebUIIOSControllerFactoryRegistry() override;

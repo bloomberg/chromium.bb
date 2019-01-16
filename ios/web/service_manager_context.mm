@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
