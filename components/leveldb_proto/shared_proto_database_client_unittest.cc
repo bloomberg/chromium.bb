@@ -25,6 +25,11 @@ const char* kDefaultNamespace1 = "cde";
 const char* kDefaultNamespace2 = "cfd";
 const char* kDefaultTypePrefix = "tp";
 
+void DeleteSoon(scoped_refptr<SharedProtoDatabase> db,
+                std::unique_ptr<base::ScopedTempDir>) {
+  db.reset();
+}
+
 }  // namespace
 
 class SharedProtoDatabaseClientTest : public testing::Test {
@@ -37,8 +42,11 @@ class SharedProtoDatabaseClientTest : public testing::Test {
   }
 
   void TearDown() override {
-    db_.reset();
-    temp_dir_.reset();
+    // TODO(ssid): SharedProtoDatabase should use scoped_refptr and this
+    // shouldn't be required.
+    db_->database_task_runner_for_testing()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&DeleteSoon, std::move(db_), std::move(temp_dir_)));
   }
 
  protected:
@@ -52,13 +60,19 @@ class SharedProtoDatabaseClientTest : public testing::Test {
       const std::string& client_namespace,
       const std::string& type_prefix,
       bool create_if_missing,
-      Callbacks::InitStatusCallback callback) {
-    return db_->GetClient<T>(
+      Callbacks::InitStatusCallback callback,
+      SharedDBMetadataProto::MigrationStatus expected_migration_status =
+          SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED) {
+    return db_->GetClientForTesting<T>(
         client_namespace, type_prefix, create_if_missing,
         base::BindOnce(
-            [](Callbacks::InitStatusCallback callback,
-               Enums::InitStatus status) { std::move(callback).Run(status); },
-            std::move(callback)));
+            [](SharedDBMetadataProto::MigrationStatus expected_migration_status,
+               Callbacks::InitStatusCallback callback, Enums::InitStatus status,
+               SharedDBMetadataProto::MigrationStatus migration_status) {
+              EXPECT_EQ(expected_migration_status, migration_status);
+              std::move(callback).Run(status);
+            },
+            expected_migration_status, std::move(callback)));
   }
 
   template <typename T>
@@ -66,7 +80,9 @@ class SharedProtoDatabaseClientTest : public testing::Test {
       const std::string& client_namespace,
       const std::string& type_prefix,
       bool create_if_missing,
-      Enums::InitStatus* status) {
+      Enums::InitStatus* status,
+      SharedDBMetadataProto::MigrationStatus expected_migration_status =
+          SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED) {
     base::RunLoop loop;
     auto client = GetClient<T>(
         client_namespace, type_prefix, create_if_missing,
@@ -76,7 +92,8 @@ class SharedProtoDatabaseClientTest : public testing::Test {
               *status_out = status;
               std::move(closure).Run();
             },
-            status, loop.QuitClosure()));
+            status, loop.QuitClosure()),
+        expected_migration_status);
     loop.Run();
     return client;
   }
@@ -276,6 +293,22 @@ class SharedProtoDatabaseClientTest : public testing::Test {
         std::move(wait_callback));
     wait_loop.Run();
     SetObsoleteClientListForTesting(nullptr);
+  }
+
+  void UpdateMetadataAsync(
+      SharedProtoDatabaseClient<TestProto>* client,
+      SharedDBMetadataProto::MigrationStatus migration_status) {
+    base::RunLoop wait_loop;
+    Callbacks::UpdateCallback wait_callback = base::BindOnce(
+        [](base::OnceClosure closure, bool success) {
+          EXPECT_TRUE(success);
+          std::move(closure).Run();
+        },
+        wait_loop.QuitClosure());
+    client->set_migration_status(migration_status);
+    UpdateClientMetadataAsync(client->parent_db_, client->prefix_,
+                              migration_status, std::move(wait_callback));
+    wait_loop.Run();
   }
 
  private:
@@ -639,6 +672,60 @@ TEST_F(SharedProtoDatabaseClientTest, TestDestroy) {
   keys.clear();
   db->LoadKeys(&keys);
   ASSERT_EQ(keys.size(), 0U);
+}
+
+TEST_F(SharedProtoDatabaseClientTest, UpdateClientMetadataAsync) {
+  auto status = Enums::InitStatus::kError;
+  auto client_a =
+      GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
+                                  true /* create_if_missing */, &status);
+  EXPECT_EQ(status, Enums::InitStatus::kOK);
+  EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
+            client_a->migration_status());
+
+  auto client_b =
+      GetClientAndWait<TestProto>(kDefaultNamespace1, kDefaultTypePrefix,
+                                  true /* create_if_missing */, &status);
+  EXPECT_EQ(status, Enums::InitStatus::kOK);
+  EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
+            client_b->migration_status());
+
+  auto client_c =
+      GetClientAndWait<TestProto>(kDefaultNamespace2, kDefaultTypePrefix,
+                                  true /* create_if_missing */, &status);
+  EXPECT_EQ(status, Enums::InitStatus::kOK);
+  EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
+            client_c->migration_status());
+
+  UpdateMetadataAsync(client_a.get(),
+                      SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL);
+  UpdateMetadataAsync(
+      client_b.get(),
+      SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SHARED_TO_BE_DELETED);
+
+  client_a.reset();
+  client_b.reset();
+  client_c.reset();
+
+  auto client_d = GetClientAndWait<TestProto>(
+      kDefaultNamespace, kDefaultTypePrefix, true /* create_if_missing */,
+      &status, SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL);
+  EXPECT_EQ(status, Enums::InitStatus::kOK);
+
+  auto client_e = GetClientAndWait<TestProto>(
+      kDefaultNamespace1, kDefaultTypePrefix, true /* create_if_missing */,
+      &status, SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SHARED_TO_BE_DELETED);
+  EXPECT_EQ(status, Enums::InitStatus::kOK);
+
+  auto client_f =
+      GetClientAndWait<TestProto>(kDefaultNamespace2, kDefaultTypePrefix,
+                                  true /* create_if_missing */, &status);
+  EXPECT_EQ(status, Enums::InitStatus::kOK);
+
+  UpdateMetadataAsync(client_d.get(),
+                      SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED);
+  UpdateMetadataAsync(client_e.get(),
+                      SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED);
 }
 
 }  // namespace leveldb_proto

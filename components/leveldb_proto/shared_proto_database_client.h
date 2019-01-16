@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/leveldb_proto/leveldb_database.h"
+#include "components/leveldb_proto/proto/shared_db_metadata.pb.h"
 #include "components/leveldb_proto/proto_leveldb_wrapper.h"
 #include "components/leveldb_proto/unique_proto_database.h"
 
@@ -19,6 +20,9 @@ namespace leveldb_proto {
 class SharedProtoDatabase;
 
 using ClientCorruptCallback = base::OnceCallback<void(bool)>;
+using SharedClientInitCallback =
+    base::OnceCallback<void(Enums::InitStatus,
+                            SharedDBMetadataProto::MigrationStatus)>;
 
 std::string StripPrefix(const std::string& key, const std::string& prefix);
 std::unique_ptr<std::vector<std::string>> PrefixStrings(
@@ -32,13 +36,15 @@ std::unique_ptr<std::vector<std::string>> PrefixStrings(
     const std::string& prefix);
 
 void GetSharedDatabaseInitStatusAsync(
-    const std::string& client_name,
+    const std::string& client_db_id,
     const scoped_refptr<SharedProtoDatabase>& db,
     Callbacks::InitStatusCallback callback);
 
-void UpdateClientCorruptAsync(const scoped_refptr<SharedProtoDatabase>& db,
-                              const std::string& client_name,
-                              ClientCorruptCallback callback);
+void UpdateClientMetadataAsync(
+    const scoped_refptr<SharedProtoDatabase>& db,
+    const std::string& client_db_id,
+    SharedDBMetadataProto::MigrationStatus migration_status,
+    ClientCorruptCallback callback);
 
 // Destroys all the data from obsolete clients, for the given |db_wrapper|
 // instance. |callback| is called once all the obsolete clients data are
@@ -60,10 +66,10 @@ class SharedProtoDatabaseClient : public ProtoDatabase<T> {
  public:
   virtual ~SharedProtoDatabaseClient();
 
-  void Init(const std::string& client_name,
+  void Init(const std::string& client_uma_name,
             Callbacks::InitStatusCallback callback) override;
 
-  void Init(const char* client_name,
+  void Init(const char* client_uma_name,
             const base::FilePath& database_dir,
             const leveldb_env::Options& options,
             Callbacks::InitCallback callback) override;
@@ -131,6 +137,19 @@ class SharedProtoDatabaseClient : public ProtoDatabase<T> {
 
   typename Callbacks::InitCallback GetInitCallback() const;
 
+  const std::string& client_db_id() const { return prefix_; }
+
+  void set_migration_status(
+      SharedDBMetadataProto::MigrationStatus migration_status) {
+    migration_status_ = migration_status;
+  }
+
+  void UpdateClientInitMetadata(SharedDBMetadataProto::MigrationStatus);
+
+  SharedDBMetadataProto::MigrationStatus migration_status() const {
+    return migration_status_;
+  }
+
  private:
   friend class SharedProtoDatabase;
   friend class SharedProtoDatabaseTest;
@@ -159,14 +178,15 @@ class SharedProtoDatabaseClient : public ProtoDatabase<T> {
       std::unique_ptr<typename Util::Internal<T>::KeyEntryVector> kev,
       const std::string& prefix);
 
-  void UpdateClientCorruptionCount();
-
   SEQUENCE_CHECKER(sequence_checker_);
 
   // |is_corrupt_| should be set by the SharedProtoDatabase that creates this
   // when a client is created that doesn't know about a previous shared
   // database corruption.
   bool is_corrupt_ = false;
+  SharedDBMetadataProto::MigrationStatus migration_status_ =
+      SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED;
+
   std::string prefix_;
   std::string client_name_;
 
@@ -200,15 +220,14 @@ SharedProtoDatabaseClient<T>::~SharedProtoDatabaseClient() {
 
 template <typename T>
 void SharedProtoDatabaseClient<T>::Init(
-    const std::string& client_name,
+    const std::string& client_uma_name,
     Callbacks::InitStatusCallback callback) {
-  unique_db_->SetMetricsId(client_name);
-  GetSharedDatabaseInitStatusAsync(client_name, parent_db_,
-                                   std::move(callback));
+  unique_db_->SetMetricsId(client_uma_name);
+  GetSharedDatabaseInitStatusAsync(prefix_, parent_db_, std::move(callback));
 }
 
 template <typename T>
-void SharedProtoDatabaseClient<T>::Init(const char* client_name,
+void SharedProtoDatabaseClient<T>::Init(const char* client_uma_name,
                                         const base::FilePath& database_dir,
                                         const leveldb_env::Options& options,
                                         Callbacks::InitCallback callback) {
@@ -366,17 +385,20 @@ void SharedProtoDatabaseClient<T>::Destroy(
 }
 
 template <typename T>
-void SharedProtoDatabaseClient<T>::UpdateClientCorruptionCount() {
+void SharedProtoDatabaseClient<T>::UpdateClientInitMetadata(
+    SharedDBMetadataProto::MigrationStatus migration_status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  migration_status_ = migration_status;
   // Tell the SharedProtoDatabase that we've seen the corruption state so it's
   // safe to update its records for this client.
-  UpdateClientCorruptAsync(parent_db_, client_name_,
-                           base::BindOnce([](bool success) {
-                             // TODO(thildebr): Should we do anything special
-                             // here? If the shared DB can't update the client's
-                             // corruption counter to match its own, then the
-                             // client will think it's corrupt on the next Init
-                             // as well.
-                           }));
+  UpdateClientMetadataAsync(parent_db_, prefix_, migration_status_,
+                            base::BindOnce([](bool success) {
+                              // TODO(thildebr): Should we do anything special
+                              // here? If the shared DB can't update the
+                              // client's corruption counter to match its own,
+                              // then the client will think it's corrupt on the
+                              // next Init as well.
+                            }));
 }
 
 // static

@@ -12,6 +12,9 @@ package leveldb_proto;
 //
 // Next tag: 3
 message SharedDBMetadataProto {
+  // Add obsolete fields here.
+  reserved 2;
+
   // For the global database, this is value increases every time a corruption
   // is discovered, as a way for clients to determine whether there's been a
   // corruption since the last time they checked.
@@ -20,6 +23,28 @@ message SharedDBMetadataProto {
   // a corruption next time they check.
   optional uint64 corruptions = 1;
 
-  // Timestamp for when the database was modified.
-  optional uint64 last_modified = 2;
+  // Stores the status of migration in the last session for the database.
+  enum MigrationStatus {
+    // No migration was attempted in the last session. Either unique or shared
+    // did not exist because migration was already done, or either of them
+    // failed to load.
+    MIGRATION_NOT_ATTEMPTED = 0;
+
+    // Last session used shared db and migration was successful.
+    MIGRATE_TO_SHARED_SUCCESSFUL = 1;
+
+    // Last session used shared db and migration transfer was complete, but
+    // unique db was not deleted.
+    MIGRATE_TO_SHARED_UNIQUE_TO_BE_DELETED = 2;
+
+    // Last session used unique db and migration from shared to unique was
+    // successful.
+    MIGRATE_TO_UNIQUE_SUCCESSFUL = 3;
+
+    // last session used unique db and migration transfer from shared to unique
+    // was successful, but the shared db was not deleted.
+    MIGRATE_TO_UNIQUE_SHARED_TO_BE_DELETED = 4;
+  };
+
+  optional MigrationStatus migration_status = 3;
 }

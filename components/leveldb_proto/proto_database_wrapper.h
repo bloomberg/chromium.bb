@@ -150,16 +150,29 @@ class ProtoDatabaseWrapper : public UniqueProtoDatabase<T> {
       bool use_shared_db,
       Callbacks::InitStatusCallback callback,
       std::unique_ptr<SharedProtoDatabaseClient<T>> client);
-  void OnMigrationTransferComplete(std::unique_ptr<ProtoDatabase<T>> unique_db,
-                                   std::unique_ptr<ProtoDatabase<T>> client,
-                                   bool use_shared_db,
-                                   Callbacks::InitStatusCallback callback,
-                                   bool success);
-  void OnMigrationCleanupComplete(std::unique_ptr<ProtoDatabase<T>> unique_db,
-                                  std::unique_ptr<ProtoDatabase<T>> client,
-                                  bool use_shared_db,
-                                  Callbacks::InitStatusCallback callback,
-                                  bool success);
+  void DeleteOldDataAndMigrate(
+      std::unique_ptr<ProtoDatabase<T>> unique_db,
+      std::unique_ptr<SharedProtoDatabaseClient<T>> client,
+      bool use_shared_db,
+      Callbacks::InitStatusCallback callback);
+  void MaybeDoMigrationOnDeletingOld(
+      std::unique_ptr<ProtoDatabase<T>> unique_db,
+      std::unique_ptr<SharedProtoDatabaseClient<T>> client,
+      Callbacks::InitStatusCallback init_callback,
+      bool use_shared_db,
+      bool delete_success);
+  void OnMigrationTransferComplete(
+      std::unique_ptr<ProtoDatabase<T>> unique_db,
+      std::unique_ptr<SharedProtoDatabaseClient<T>> client,
+      bool use_shared_db,
+      Callbacks::InitStatusCallback callback,
+      bool success);
+  void OnMigrationCleanupComplete(
+      std::unique_ptr<ProtoDatabase<T>> unique_db,
+      std::unique_ptr<SharedProtoDatabaseClient<T>> client,
+      bool use_shared_db,
+      Callbacks::InitStatusCallback callback,
+      bool success);
 
   std::string client_namespace_;
   std::string type_prefix_;
@@ -325,43 +338,137 @@ void ProtoDatabaseWrapper<T>::OnGetSharedDBClient(
     return;
   }
 
-  if (unique_db && client) {
-    // We got access to both the unique DB and a shared DB, meaning we need to
-    // attempt migration and give back the right one.
-    ProtoDatabase<T>* from = use_shared_db ? unique_db.get() : client.get();
-    ProtoDatabase<T>* to = use_shared_db ? client.get() : unique_db.get();
-    migration_delegate_->DoMigration(
-        from, to,
-        base::BindOnce(&ProtoDatabaseWrapper<T>::OnMigrationTransferComplete,
-                       weak_ptr_factory_->GetWeakPtr(), std::move(unique_db),
-                       std::move(client), use_shared_db, std::move(callback)));
+  if (!unique_db || !client) {
+    // One of two things happened:
+    // 1) We failed to get a shared DB instance, so regardless of whether we
+    // want to use the shared DB or not, we'll settle for the unique DB.
+    // 2) We failed to initialize a unique DB, but got  access to the shared DB,
+    // so we use that regardless of whether we "should be" or not.
+    db_ = client ? std::move(client) : std::move(unique_db);
+    RunCallbackOnCallingSequence(
+        base::BindOnce(std::move(callback), Enums::InitStatus::kOK));
     return;
   }
 
-  // One of two things happened:
-  // 1) We failed to get a shared DB instance, so regardless of whether we
-  // want to use the shared DB or not, we'll settle for the unique DB.
-  // 2) We failed to initialize a unique DB, but got  access to the shared DB,
-  // so we use that regardless of whether we "should be" or not.
-  db_ = client ? std::move(client) : std::move(unique_db);
-  RunCallbackOnCallingSequence(
-      base::BindOnce(std::move(callback), Enums::InitStatus::kOK));
+  ProtoDatabase<T>* from = nullptr;
+  ProtoDatabase<T>* to = nullptr;
+  if (use_shared_db) {
+    switch (client->migration_status()) {
+      case SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED:
+      case SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SUCCESSFUL:
+        from = unique_db.get();
+        to = client.get();
+        break;
+      case SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL:
+        // Unique db was deleted in previous migration, so nothing to do here.
+        return OnMigrationCleanupComplete(std::move(unique_db),
+                                          std::move(client), use_shared_db,
+                                          std::move(callback), true);
+      case SharedDBMetadataProto::MIGRATE_TO_SHARED_UNIQUE_TO_BE_DELETED:
+        // Migration transfer was completed, so just try deleting the unique db.
+        return OnMigrationTransferComplete(std::move(unique_db),
+                                           std::move(client), use_shared_db,
+                                           std::move(callback), true);
+      case SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SHARED_TO_BE_DELETED:
+        // Shared db was not deleted in last migration and we want to use shared
+        // db. So, delete stale data, and attempt migration.
+        return DeleteOldDataAndMigrate(std::move(unique_db), std::move(client),
+                                       use_shared_db, std::move(callback));
+    };
+  } else {
+    switch (client->migration_status()) {
+      case SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED:
+      case SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL:
+        from = client.get();
+        to = unique_db.get();
+        break;
+      case SharedDBMetadataProto::MIGRATE_TO_SHARED_UNIQUE_TO_BE_DELETED:
+        // Unique db was not deleted in last migration and we want to use unique
+        // db. So, delete stale data, and attempt migration.
+        return DeleteOldDataAndMigrate(std::move(unique_db), std::move(client),
+                                       use_shared_db, std::move(callback));
+      case SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SUCCESSFUL:
+        // Shared db was deleted in previous migration, so nothing to do here.
+        return OnMigrationCleanupComplete(std::move(unique_db),
+                                          std::move(client), use_shared_db,
+                                          std::move(callback), true);
+      case SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SHARED_TO_BE_DELETED:
+        // Migration transfer was completed, so just try deleting the shared db.
+        return OnMigrationTransferComplete(std::move(unique_db),
+                                           std::move(client), use_shared_db,
+                                           std::move(callback), true);
+    };
+  }
+
+  // We got access to both the unique DB and a shared DB, meaning we need to
+  // attempt migration and give back the right one.
+  migration_delegate_->DoMigration(
+      from, to,
+      base::BindOnce(&ProtoDatabaseWrapper<T>::OnMigrationTransferComplete,
+                     weak_ptr_factory_->GetWeakPtr(), std::move(unique_db),
+                     std::move(client), use_shared_db, std::move(callback)));
+}
+
+template <typename T>
+void ProtoDatabaseWrapper<T>::DeleteOldDataAndMigrate(
+    std::unique_ptr<ProtoDatabase<T>> unique_db,
+    std::unique_ptr<SharedProtoDatabaseClient<T>> client,
+    bool use_shared_db,
+    Callbacks::InitStatusCallback callback) {
+  ProtoDatabase<T>* to_remove_old_data =
+      use_shared_db ? client.get() : unique_db.get();
+  auto maybe_do_migration =
+      base::BindOnce(&ProtoDatabaseWrapper<T>::MaybeDoMigrationOnDeletingOld,
+                     weak_ptr_factory_->GetWeakPtr(), std::move(unique_db),
+                     std::move(client), std::move(callback), use_shared_db);
+
+  to_remove_old_data->UpdateEntriesWithRemoveFilter(
+      std::make_unique<typename Util::Internal<T>::KeyEntryVector>(),
+      base::BindRepeating([](const std::string& key) { return true; }),
+      std::move(maybe_do_migration));
+}
+
+template <typename T>
+void ProtoDatabaseWrapper<T>::MaybeDoMigrationOnDeletingOld(
+    std::unique_ptr<ProtoDatabase<T>> unique_db,
+    std::unique_ptr<SharedProtoDatabaseClient<T>> client,
+    Callbacks::InitStatusCallback callback,
+    bool use_shared_db,
+    bool delete_success) {
+  if (!delete_success) {
+    // Old data has not been removed from the database we want to use. We also
+    // know that previous attempt of migration failed for same reason. Give up
+    // on this database and use the other.
+    // This update is not necessary since this was the old value. But update to
+    // be clear.
+    client->UpdateClientInitMetadata(
+        use_shared_db
+            ? SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SHARED_TO_BE_DELETED
+            : SharedDBMetadataProto::MIGRATE_TO_SHARED_UNIQUE_TO_BE_DELETED);
+    db_ = use_shared_db ? std::move(unique_db) : std::move(client);
+    RunCallbackOnCallingSequence(
+        base::BindOnce(std::move(callback), Enums::InitStatus::kOK));
+    return;
+  }
+
+  auto from = use_shared_db ? unique_db.get() : client.get();
+  auto to = use_shared_db ? client.get() : unique_db.get();
+  migration_delegate_->DoMigration(
+      from, to,
+      base::BindOnce(&ProtoDatabaseWrapper<T>::OnMigrationTransferComplete,
+                     weak_ptr_factory_->GetWeakPtr(), std::move(unique_db),
+                     std::move(client), use_shared_db, std::move(callback)));
 }
 
 template <typename T>
 void ProtoDatabaseWrapper<T>::OnMigrationTransferComplete(
     std::unique_ptr<ProtoDatabase<T>> unique_db,
-    std::unique_ptr<ProtoDatabase<T>> client,
+    std::unique_ptr<SharedProtoDatabaseClient<T>> client,
     bool use_shared_db,
     Callbacks::InitStatusCallback callback,
     bool success) {
   if (success) {
     // Call Destroy on the DB we no longer want to use.
-    // TODO(thildebr): If this destroy fails, we should flag this as undestroyed
-    // so that we don't erroneously transfer data from the undestroyed database
-    // on next start. This might be possible by comparing the modified timestamp
-    // of the unique database directory with metadata in the shared database
-    // about last modified for each client.
     auto* db_destroy_ptr = use_shared_db ? unique_db.get() : client.get();
     db_destroy_ptr->Destroy(
         base::BindOnce(&ProtoDatabaseWrapper<T>::OnMigrationCleanupComplete,
@@ -370,6 +477,13 @@ void ProtoDatabaseWrapper<T>::OnMigrationTransferComplete(
     return;
   }
 
+  // Failing to transfer the old data means that the requested database to be
+  // used could have some bad data. So, mark them to be deleted before use in
+  // the next runs.
+  client->UpdateClientInitMetadata(
+      use_shared_db
+          ? SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SHARED_TO_BE_DELETED
+          : SharedDBMetadataProto::MIGRATE_TO_SHARED_UNIQUE_TO_BE_DELETED);
   db_ = use_shared_db ? std::move(unique_db) : std::move(client);
   RunCallbackOnCallingSequence(
       base::BindOnce(std::move(callback), Enums::InitStatus::kOK));
@@ -378,7 +492,7 @@ void ProtoDatabaseWrapper<T>::OnMigrationTransferComplete(
 template <typename T>
 void ProtoDatabaseWrapper<T>::OnMigrationCleanupComplete(
     std::unique_ptr<ProtoDatabase<T>> unique_db,
-    std::unique_ptr<ProtoDatabase<T>> client,
+    std::unique_ptr<SharedProtoDatabaseClient<T>> client,
     bool use_shared_db,
     Callbacks::InitStatusCallback callback,
     bool success) {
@@ -386,10 +500,17 @@ void ProtoDatabaseWrapper<T>::OnMigrationCleanupComplete(
   // far as the original caller is concerned. As long as |db_| is assigned, we
   // return true.
   if (success) {
-    db_ = use_shared_db ? std::move(client) : std::move(unique_db);
+    client->UpdateClientInitMetadata(
+        use_shared_db ? SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL
+                      : SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SUCCESSFUL);
   } else {
-    db_ = use_shared_db ? std::move(unique_db) : std::move(client);
+    client->UpdateClientInitMetadata(
+        use_shared_db
+            ? SharedDBMetadataProto::MIGRATE_TO_SHARED_UNIQUE_TO_BE_DELETED
+            : SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SHARED_TO_BE_DELETED);
   }
+  // Migration transfer was complete. So, we should use the requested database.
+  db_ = use_shared_db ? std::move(client) : std::move(unique_db);
   RunCallbackOnCallingSequence(
       base::BindOnce(std::move(callback), Enums::InitStatus::kOK));
 }

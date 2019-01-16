@@ -61,8 +61,8 @@ class ProtoDatabaseWrapperTest : public testing::Test {
     ASSERT_TRUE(shared_db_temp_dir_->CreateUniqueTempDir());
     test_thread_ = std::make_unique<base::Thread>("test_thread");
     ASSERT_TRUE(test_thread_->Start());
-    shared_db_ = base::WrapRefCounted(
-        new SharedProtoDatabase("client", shared_db_temp_dir_->GetPath()));
+    shared_db_ = base::WrapRefCounted(new SharedProtoDatabase(
+        kDefaultClientName, shared_db_temp_dir_->GetPath()));
   }
 
   void TearDown() override {
@@ -167,6 +167,54 @@ class ProtoDatabaseWrapperTest : public testing::Test {
     load_loop.Run();
   }
 
+  void UpdateClientMetadata(
+      SharedDBMetadataProto::MigrationStatus migration_status) {
+    base::RunLoop init_wait;
+    auto client = shared_db_->GetClientForTesting<TestProto>(
+        kDefaultNamespace, kDefaultTypePrefix, /*create_if_missing=*/true,
+        base::BindOnce(
+            [](base::OnceClosure closure, Enums::InitStatus status,
+               SharedDBMetadataProto::MigrationStatus migration_status) {
+              EXPECT_EQ(Enums::kOK, status);
+              EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
+                        migration_status);
+              std::move(closure).Run();
+            },
+            init_wait.QuitClosure()));
+    init_wait.Run();
+
+    base::RunLoop wait_loop;
+    shared_db_->UpdateClientMetadataAsync(
+        client->client_db_id(), migration_status,
+        base::BindOnce(
+            [](base::OnceClosure closure, bool success) {
+              EXPECT_TRUE(success);
+              std::move(closure).Run();
+            },
+            wait_loop.QuitClosure()));
+    wait_loop.Run();
+  }
+
+  SharedDBMetadataProto::MigrationStatus GetClientMigrationStatus() {
+    SharedDBMetadataProto::MigrationStatus migration_status;
+    base::RunLoop init_wait;
+    auto client = shared_db_->GetClientForTesting<TestProto>(
+        kDefaultNamespace, kDefaultTypePrefix, /*create_if_missing=*/true,
+        base::BindOnce(
+            [](base::OnceClosure closure,
+               SharedDBMetadataProto::MigrationStatus* output,
+               Enums::InitStatus status,
+               SharedDBMetadataProto::MigrationStatus migration_status) {
+              EXPECT_EQ(Enums::kOK, status);
+              *output = migration_status;
+              std::move(closure).Run();
+            },
+            init_wait.QuitClosure(), &migration_status));
+    init_wait.Run();
+
+    return migration_status;
+  }
+
   scoped_refptr<base::SequencedTaskRunner> GetTestThreadTaskRunner() {
     return test_thread_->task_runner();
   }
@@ -269,6 +317,9 @@ TEST_F(ProtoDatabaseWrapperTest, Migration_EmptyDBs_UniqueToShared) {
                     CreateSharedProvider(db_provider_withshared.get()));
   InitWrapperAndWait(shared_wrapper.get(), kDefaultClientName, true,
                      Enums::InitStatus::kOK);
+
+  EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL,
+            GetClientMigrationStatus());
 }
 
 TEST_F(ProtoDatabaseWrapperTest, Migration_EmptyDBs_SharedToUnique) {
@@ -279,12 +330,16 @@ TEST_F(ProtoDatabaseWrapperTest, Migration_EmptyDBs_SharedToUnique) {
                                       CreateSharedProvider(db_provider.get()));
   InitWrapperAndWait(shared_wrapper.get(), kDefaultClientName, true,
                      Enums::InitStatus::kOK);
+  EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
+            GetClientMigrationStatus());
 
   auto unique_wrapper = CreateWrapper(kDefaultNamespace, kDefaultTypePrefix,
                                       temp_dir(), GetTestThreadTaskRunner(),
                                       CreateSharedProvider(db_provider.get()));
   InitWrapperAndWait(shared_wrapper.get(), kDefaultClientName, false,
                      Enums::InitStatus::kOK);
+  EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SUCCESSFUL,
+            GetClientMigrationStatus());
 }
 
 TEST_F(ProtoDatabaseWrapperTest, Migration_UniqueToShared) {
@@ -313,6 +368,9 @@ TEST_F(ProtoDatabaseWrapperTest, Migration_UniqueToShared) {
   InitWrapperAndWait(shared_wrapper.get(), kDefaultClientName, true,
                      Enums::InitStatus::kOK);
   VerifyDataInWrapper(shared_wrapper.get(), data_set.get());
+
+  EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL,
+            GetClientMigrationStatus());
 }
 
 TEST_F(ProtoDatabaseWrapperTest, Migration_SharedToUnique) {
@@ -331,6 +389,9 @@ TEST_F(ProtoDatabaseWrapperTest, Migration_SharedToUnique) {
                      Enums::InitStatus::kOK);
   AddDataToWrapper(shared_wrapper.get(), data_set.get());
 
+  EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
+            GetClientMigrationStatus());
+
   auto unique_wrapper =
       CreateWrapper(kDefaultNamespace, kDefaultTypePrefix, temp_dir(),
                     GetTestThreadTaskRunner(),
@@ -338,6 +399,164 @@ TEST_F(ProtoDatabaseWrapperTest, Migration_SharedToUnique) {
   InitWrapperAndWait(unique_wrapper.get(), kDefaultClientName, false,
                      Enums::InitStatus::kOK);
   VerifyDataInWrapper(unique_wrapper.get(), data_set.get());
+  EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SUCCESSFUL,
+            GetClientMigrationStatus());
+}
+
+TEST_F(ProtoDatabaseWrapperTest, Migration_UniqueToShared_UniqueObsolete) {
+  auto data_set = std::make_unique<std::vector<std::string>>();
+  data_set->emplace_back("entry1");
+  data_set->emplace_back("entry2");
+  data_set->emplace_back("entry3");
+
+  // First we create a unique DB so our second pass has a unique DB available.
+  auto db_provider_noshared = CreateProviderNoSharedDB();
+  auto unique_wrapper =
+      CreateWrapper(kDefaultNamespace, kDefaultTypePrefix, temp_dir(),
+                    GetTestThreadTaskRunner(),
+                    CreateSharedProvider(db_provider_noshared.get()));
+  InitWrapperAndWait(unique_wrapper.get(), kDefaultClientName, false,
+                     Enums::InitStatus::kOK);
+  AddDataToWrapper(unique_wrapper.get(), data_set.get());
+  // Kill the wrapper so it doesn't have a lock on the DB anymore.
+  unique_wrapper.reset();
+
+  UpdateClientMetadata(
+      SharedDBMetadataProto::MIGRATE_TO_SHARED_UNIQUE_TO_BE_DELETED);
+
+  auto db_provider_withshared = CreateProviderWithSharedDB();
+  auto shared_wrapper =
+      CreateWrapper(kDefaultNamespace, kDefaultTypePrefix, temp_dir(),
+                    GetTestThreadTaskRunner(),
+                    CreateSharedProvider(db_provider_withshared.get()));
+  InitWrapperAndWait(shared_wrapper.get(), kDefaultClientName, true,
+                     Enums::InitStatus::kOK);
+
+  // Unique db should be deleted in migration. So, shared db should be clean.
+  data_set->clear();
+  VerifyDataInWrapper(shared_wrapper.get(), data_set.get());
+  EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL,
+            GetClientMigrationStatus());
+}
+
+TEST_F(ProtoDatabaseWrapperTest, Migration_UniqueToShared_SharedObsolete) {
+  auto data_set = std::make_unique<std::vector<std::string>>();
+  data_set->emplace_back("entry1");
+  data_set->emplace_back("entry2");
+  data_set->emplace_back("entry3");
+
+  // First we create a shared DB so our second pass has a shared DB available.
+  auto db_provider_withshared = CreateProviderWithSharedDB();
+  auto shared_wrapper =
+      CreateWrapper(kDefaultNamespace, kDefaultTypePrefix, temp_dir(),
+                    GetTestThreadTaskRunner(),
+                    CreateSharedProvider(db_provider_withshared.get()));
+  InitWrapperAndWait(shared_wrapper.get(), kDefaultClientName, true,
+                     Enums::InitStatus::kOK);
+  AddDataToWrapper(shared_wrapper.get(), data_set.get());
+
+  // Force create an uniquedb, which was deleted by migration.
+  auto db_provider_noshared = CreateProviderNoSharedDB();
+  auto unique_wrapper =
+      CreateWrapper(kDefaultNamespace, kDefaultTypePrefix, temp_dir(),
+                    GetTestThreadTaskRunner(),
+                    CreateSharedProvider(db_provider_noshared.get()));
+  InitWrapperAndWait(unique_wrapper.get(), kDefaultClientName, false,
+                     Enums::InitStatus::kOK);
+  unique_wrapper.reset();
+  EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
+            GetClientMigrationStatus());
+
+  UpdateClientMetadata(
+      SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SHARED_TO_BE_DELETED);
+
+  shared_wrapper.reset();
+  db_provider_withshared = CreateProviderWithSharedDB();
+
+  auto shared_wrapper1 =
+      CreateWrapper(kDefaultNamespace, kDefaultTypePrefix, temp_dir(),
+                    GetTestThreadTaskRunner(),
+                    CreateSharedProvider(db_provider_withshared.get()));
+  InitWrapperAndWait(shared_wrapper1.get(), kDefaultClientName, true,
+                     Enums::InitStatus::kOK);
+
+  // Shared db should be deleted in migration. So, shared db should be clean.
+  data_set->clear();
+  VerifyDataInWrapper(shared_wrapper1.get(), data_set.get());
+  EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL,
+            GetClientMigrationStatus());
+}
+
+TEST_F(ProtoDatabaseWrapperTest, Migration_SharedToUnique_SharedObsolete) {
+  auto data_set = std::make_unique<std::vector<std::string>>();
+  data_set->emplace_back("entry1");
+  data_set->emplace_back("entry2");
+  data_set->emplace_back("entry3");
+
+  // First we create a shared DB so our second pass has a shared DB available.
+  auto db_provider_withshared = CreateProviderWithSharedDB();
+  auto shared_wrapper =
+      CreateWrapper(kDefaultNamespace, kDefaultTypePrefix, temp_dir(),
+                    GetTestThreadTaskRunner(),
+                    CreateSharedProvider(db_provider_withshared.get()));
+  InitWrapperAndWait(shared_wrapper.get(), kDefaultClientName, true,
+                     Enums::InitStatus::kOK);
+  AddDataToWrapper(shared_wrapper.get(), data_set.get());
+
+  EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
+            GetClientMigrationStatus());
+
+  UpdateClientMetadata(
+      SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SHARED_TO_BE_DELETED);
+
+  auto unique_wrapper =
+      CreateWrapper(kDefaultNamespace, kDefaultTypePrefix, temp_dir(),
+                    GetTestThreadTaskRunner(),
+                    CreateSharedProvider(db_provider_withshared.get()));
+  InitWrapperAndWait(unique_wrapper.get(), kDefaultClientName, false,
+                     Enums::InitStatus::kOK);
+
+  // Shared db should be deleted in migration. So, unique db should be clean.
+  data_set->clear();
+  VerifyDataInWrapper(unique_wrapper.get(), data_set.get());
+  EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SUCCESSFUL,
+            GetClientMigrationStatus());
+}
+
+TEST_F(ProtoDatabaseWrapperTest, Migration_SharedToUnique_UniqueObsolete) {
+  auto data_set = std::make_unique<std::vector<std::string>>();
+  data_set->emplace_back("entry1");
+  data_set->emplace_back("entry2");
+  data_set->emplace_back("entry3");
+
+  // First we create a shared DB so our second pass has a shared DB available.
+  auto db_provider_noshared = CreateProviderNoSharedDB();
+  auto unique_wrapper =
+      CreateWrapper(kDefaultNamespace, kDefaultTypePrefix, temp_dir(),
+                    GetTestThreadTaskRunner(),
+                    CreateSharedProvider(db_provider_noshared.get()));
+  InitWrapperAndWait(unique_wrapper.get(), kDefaultClientName, false,
+                     Enums::InitStatus::kOK);
+  AddDataToWrapper(unique_wrapper.get(), data_set.get());
+
+  UpdateClientMetadata(
+      SharedDBMetadataProto::MIGRATE_TO_SHARED_UNIQUE_TO_BE_DELETED);
+
+  unique_wrapper.reset();
+
+  auto db_provider_withshared = CreateProviderWithSharedDB();
+  auto shared_wrapper =
+      CreateWrapper(kDefaultNamespace, kDefaultTypePrefix, temp_dir(),
+                    GetTestThreadTaskRunner(),
+                    CreateSharedProvider(db_provider_withshared.get()));
+  InitWrapperAndWait(shared_wrapper.get(), kDefaultClientName, false,
+                     Enums::InitStatus::kOK);
+
+  // Unique db should be deleted in migration. So, unique db should be clean.
+  data_set->clear();
+  VerifyDataInWrapper(shared_wrapper.get(), data_set.get());
+  EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SUCCESSFUL,
+            GetClientMigrationStatus());
 }
 
 }  // namespace leveldb_proto
