@@ -596,7 +596,13 @@ TEST_F(TCPSocketTest, CancelPendingReadIfReady) {
   ASSERT_EQ(0, memcmp(&kMsg, read_buffer->data(), msg_size));
 }
 
-TEST_F(TCPSocketTest, IsConnected) {
+// Flaky on iOS device, see crbug.com/921852
+#if defined(OS_IOS) && !(TARGET_OS_SIMULATOR)
+#define MAYBE_IsConnected FLAKY_IsConnected
+#else
+#define MAYBE_IsConnected IsConnected
+#endif  // defined(OS_IOS) && !(TARGET_OS_SIMULATOR)
+TEST_F(TCPSocketTest, MAYBE_IsConnected) {
   ASSERT_NO_FATAL_FAILURE(SetUpListenIPv4());
 
   TestCompletionCallback accept_callback;
