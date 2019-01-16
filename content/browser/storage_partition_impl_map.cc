@@ -455,8 +455,9 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
                   partition->GetPath(), in_memory));
   }
 
+  // Arm the serviceworker cookie change observation API.
   partition->GetCookieStoreContext()->ListenToCookieChanges(
-      partition->GetNetworkContext(), base::DoNothing());
+      partition->GetNetworkContext(), /*success_callback=*/base::DoNothing());
 
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // This needs to happen after SetURLRequestContext() since we need this

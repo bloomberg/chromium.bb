@@ -52,13 +52,13 @@ class CONTENT_EXPORT CookieStoreContext
   // errors.
   void Initialize(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-      base::OnceCallback<void(bool)> callback);
+      base::OnceCallback<void(bool)> success_callback);
 
   // Starts listening to cookie changes from a network service instance.
   //
   // The callback is called with the (success / failure) result of subscribing.
   void ListenToCookieChanges(::network::mojom::NetworkContext* network_context,
-                             base::OnceCallback<void(bool)> callback);
+                             base::OnceCallback<void(bool)> success_callback);
 
   // Routes a mojo request to the CookieStoreManager on the IO thread.
   void CreateService(blink::mojom::CookieStoreRequest request,
@@ -71,11 +71,11 @@ class CONTENT_EXPORT CookieStoreContext
 
   void InitializeOnIOThread(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-      base::OnceCallback<void(bool)> callback);
+      base::OnceCallback<void(bool)> success_callback);
 
   void ListenToCookieChangesOnIOThread(
       ::network::mojom::CookieManagerPtrInfo cookie_manager_ptr_info,
-      base::OnceCallback<void(bool)> callback);
+      base::OnceCallback<void(bool)> success_callback);
 
   void CreateServiceOnIOThread(blink::mojom::CookieStoreRequest request,
                                const url::Origin& origin);

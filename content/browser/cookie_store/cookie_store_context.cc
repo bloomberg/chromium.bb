@@ -25,7 +25,7 @@ CookieStoreContext::~CookieStoreContext() {
 
 void CookieStoreContext::Initialize(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(bool)> success_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 #if DCHECK_IS_ON()
   DCHECK(!initialize_called_) << __func__ << " called twice";
@@ -43,12 +43,13 @@ void CookieStoreContext::Initialize(
                 task_runner->PostTask(
                     FROM_HERE, base::BindOnce(std::move(callback), result));
               },
-              base::SequencedTaskRunnerHandle::Get(), std::move(callback))));
+              base::SequencedTaskRunnerHandle::Get(),
+              std::move(success_callback))));
 }
 
 void CookieStoreContext::ListenToCookieChanges(
     ::network::mojom::NetworkContext* network_context,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(bool)> success_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 #if DCHECK_IS_ON()
   DCHECK(initialize_called_) << __func__ << " called before Initialize()";
@@ -69,7 +70,8 @@ void CookieStoreContext::ListenToCookieChanges(
                 task_runner->PostTask(
                     FROM_HERE, base::BindOnce(std::move(callback), result));
               },
-              base::SequencedTaskRunnerHandle::Get(), std::move(callback))));
+              base::SequencedTaskRunnerHandle::Get(),
+              std::move(success_callback))));
 }
 
 void CookieStoreContext::CreateService(blink::mojom::CookieStoreRequest request,
@@ -87,24 +89,24 @@ void CookieStoreContext::CreateService(blink::mojom::CookieStoreRequest request,
 
 void CookieStoreContext::InitializeOnIOThread(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(bool)> success_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!cookie_store_manager_) << __func__ << " called more than once";
 
   cookie_store_manager_ =
       std::make_unique<CookieStoreManager>(std::move(service_worker_context));
-  cookie_store_manager_->LoadAllSubscriptions(std::move(callback));
+  cookie_store_manager_->LoadAllSubscriptions(std::move(success_callback));
 }
 
 void CookieStoreContext::ListenToCookieChangesOnIOThread(
     ::network::mojom::CookieManagerPtrInfo cookie_manager_ptr_info,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(bool)> success_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(cookie_store_manager_);
 
   cookie_store_manager_->ListenToCookieChanges(
       ::network::mojom::CookieManagerPtr(std::move(cookie_manager_ptr_info)),
-      std::move(callback));
+      std::move(success_callback));
 }
 
 void CookieStoreContext::CreateServiceOnIOThread(
