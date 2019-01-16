@@ -88,6 +88,7 @@ browser=chrome
 trace_time=10
 cold=false
 url=
+atrace_buffer_size=
 atrace_categories=
 killg=false
 repeat=
@@ -118,6 +119,9 @@ for i in "$@"; do
         ;;
         --atrace=*)
         atrace_categories="${i#*=}"
+        ;;
+        --atrace-buffer-size*)
+        atrace_buffer_size="${i#*=}"
         ;;
         --killg)
         killg=true
@@ -228,6 +232,11 @@ profile_options="$profile_options --time=$trace_time"
 if [ ! -z "$atrace_categories" ]; then
     profile_options="$profile_options --atrace-categories=$atrace_categories"
     output_tag="$output_tag-${atrace_categories//,/_}"
+fi
+
+if [ ! -z "$atrace_buffer_size" ]; then
+    profile_options="$profile_options --atrace-buffer-size=$atrace_buffer_size"
+    output_tag="$output_tag-${atrace_buffer_size}"
 fi
 
 if [ $cold = true ]; then
