@@ -82,10 +82,23 @@ IN_PROC_BROWSER_TEST_F(TwoClientCustomPassphraseSyncTest, ClientsCanSyncData) {
   EXPECT_TRUE(WaitForBookmarksToMatchVerifier());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientCustomPassphraseSyncTest,
-                       ClientsCanSyncDataWhenScryptEncryptionNotEnabled) {
-  ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
-                                     /*use_for_new_passphrases=*/false);
+class TwoClientCustomPassphraseSyncTestWithScryptEncryptionNotEnabled
+    : public TwoClientCustomPassphraseSyncTest {
+ public:
+  TwoClientCustomPassphraseSyncTestWithScryptEncryptionNotEnabled()
+      : toggler_(/*force_disabled=*/false,
+                 /*use_for_new_passphrases=*/false) {}
+  ~TwoClientCustomPassphraseSyncTestWithScryptEncryptionNotEnabled() override {}
+
+ private:
+  ScopedScryptFeatureToggler toggler_;
+  DISALLOW_COPY_AND_ASSIGN(
+      TwoClientCustomPassphraseSyncTestWithScryptEncryptionNotEnabled);
+};
+
+IN_PROC_BROWSER_TEST_F(
+    TwoClientCustomPassphraseSyncTestWithScryptEncryptionNotEnabled,
+    ClientsCanSyncData) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
@@ -104,8 +117,23 @@ IN_PROC_BROWSER_TEST_F(TwoClientCustomPassphraseSyncTest,
   EXPECT_TRUE(WaitForBookmarksToMatchVerifier());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientCustomPassphraseSyncTest,
-                       ClientsCanSyncDataWhenScryptEncryptionEnabledInBoth) {
+class TwoClientCustomPassphraseSyncTestWithScryptEncryptionEnabled
+    : public TwoClientCustomPassphraseSyncTest {
+ public:
+  TwoClientCustomPassphraseSyncTestWithScryptEncryptionEnabled()
+      : toggler_(/*force_disabled=*/false,
+                 /*use_for_new_passphrases=*/true) {}
+  ~TwoClientCustomPassphraseSyncTestWithScryptEncryptionEnabled() override {}
+
+ private:
+  ScopedScryptFeatureToggler toggler_;
+  DISALLOW_COPY_AND_ASSIGN(
+      TwoClientCustomPassphraseSyncTestWithScryptEncryptionEnabled);
+};
+
+IN_PROC_BROWSER_TEST_F(
+    TwoClientCustomPassphraseSyncTestWithScryptEncryptionEnabled,
+    ClientsCanSyncData) {
   ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
                                      /*use_for_new_passphrases=*/true);
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
