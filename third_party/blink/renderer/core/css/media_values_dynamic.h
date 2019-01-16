@@ -49,6 +49,7 @@ class CORE_EXPORT MediaValuesDynamic : public MediaValues {
   DisplayShape GetDisplayShape() const override;
   ColorSpaceGamut ColorGamut() const override;
   WebColorScheme PreferredColorScheme() const override;
+  bool PrefersReducedMotion() const override;
   Document* GetDocument() const override;
   bool HasValues() const override;
   void OverrideViewportDimensions(double width, double height) override;

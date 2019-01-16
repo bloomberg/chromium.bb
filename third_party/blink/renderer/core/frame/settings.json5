@@ -1017,5 +1017,13 @@
       invalidate: "MediaQuery",
       type: "WebColorScheme",
     },
+
+    // Preferred motion-reduction setting from the OS/application passed to the
+    // renderer for evaluating the prefers-reduced-motion media query.
+    {
+      name: "prefersReducedMotion",
+      initial: false,
+      invalidate: "MediaQuery",
+    },
   ],
 }

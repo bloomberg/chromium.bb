@@ -146,6 +146,10 @@ WebColorScheme MediaValuesDynamic::PreferredColorScheme() const {
   return CalculatePreferredColorScheme(frame_);
 }
 
+bool MediaValuesDynamic::PrefersReducedMotion() const {
+  return CalculatePrefersReducedMotion(frame_);
+}
+
 Document* MediaValuesDynamic::GetDocument() const {
   return frame_->GetDocument();
 }

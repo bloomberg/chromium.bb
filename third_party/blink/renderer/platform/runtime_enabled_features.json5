@@ -762,6 +762,9 @@
       name: "MediaQueryPrefersColorScheme",
     },
     {
+      name: "MediaQueryPrefersReducedMotion",
+    },
+    {
       name: "MediaQueryShape",
       status: "experimental",
     },

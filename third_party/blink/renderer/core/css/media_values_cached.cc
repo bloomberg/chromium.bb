@@ -32,7 +32,8 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData()
       display_mode(kWebDisplayModeBrowser),
       display_shape(kDisplayShapeRect),
       color_gamut(ColorSpaceGamut::kUnknown),
-      preferred_color_scheme(WebColorScheme::kNoPreference) {}
+      preferred_color_scheme(WebColorScheme::kNoPreference),
+      prefers_reduced_motion(false) {}
 
 MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     Document& document)
@@ -72,6 +73,7 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     display_shape = MediaValues::CalculateDisplayShape(frame);
     color_gamut = MediaValues::CalculateColorGamut(frame);
     preferred_color_scheme = MediaValues::CalculatePreferredColorScheme(frame);
+    prefers_reduced_motion = MediaValues::CalculatePrefersReducedMotion(frame);
   }
 }
 
@@ -197,6 +199,10 @@ ColorSpaceGamut MediaValuesCached::ColorGamut() const {
 
 WebColorScheme MediaValuesCached::PreferredColorScheme() const {
   return data_.preferred_color_scheme;
+}
+
+bool MediaValuesCached::PrefersReducedMotion() const {
+  return data_.prefers_reduced_motion;
 }
 
 }  // namespace blink
