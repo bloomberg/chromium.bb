@@ -60,8 +60,7 @@ ContentTestSuite::ContentTestSuite(int argc, char** argv)
     : ContentTestSuiteBase(argc, argv) {
 }
 
-ContentTestSuite::~ContentTestSuite() {
-}
+ContentTestSuite::~ContentTestSuite() = default;
 
 void ContentTestSuite::Initialize() {
 #if defined(OS_MACOSX)
@@ -78,6 +77,8 @@ void ContentTestSuite::Initialize() {
     ContentClient client;
     ContentTestSuiteBase::RegisterContentSchemes(&client);
   }
+  base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
+
   RegisterPathProvider();
   media::InitializeMediaLibrary();
   // When running in a child process for Mac sandbox tests, the sandbox exists
