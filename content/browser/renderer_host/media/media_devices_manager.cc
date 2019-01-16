@@ -781,7 +781,9 @@ void MediaDevicesManager::AudioDevicesEnumerated(
 
   MediaDeviceInfoArray snapshot;
   for (const media::AudioDeviceDescription& description : device_descriptions) {
-    snapshot.emplace_back(description);
+    snapshot.emplace_back(description.unique_id, description.device_name,
+                          description.group_id,
+                          media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE);
   }
   DevicesEnumerated(type, snapshot);
 }

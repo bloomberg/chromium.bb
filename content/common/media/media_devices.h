@@ -12,7 +12,6 @@
 #include "media/base/video_facing.h"
 
 namespace media {
-struct AudioDeviceDescription;
 struct VideoCaptureDeviceDescriptor;
 }  // namespace media
 
@@ -34,7 +33,6 @@ struct CONTENT_EXPORT MediaDeviceInfo {
       const std::string& label,
       const std::string& group_id,
       media::VideoFacingMode video_facing = media::MEDIA_VIDEO_FACING_NONE);
-  explicit MediaDeviceInfo(const media::AudioDeviceDescription& description);
   explicit MediaDeviceInfo(
       const media::VideoCaptureDeviceDescriptor& descriptor);
   ~MediaDeviceInfo();
