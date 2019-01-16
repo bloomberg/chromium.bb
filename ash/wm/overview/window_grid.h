@@ -102,12 +102,6 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // all window items in the grid after removing the item.
   void RemoveItem(WindowSelectorItem* selector_item, bool reposition);
 
-  // Dims the items whose titles do not contain |pattern| and prevents their
-  // selection. The pattern has its accents removed and is converted to
-  // lowercase in a l10n sensitive context.
-  // If |pattern| is empty, no item is dimmed.
-  void FilterItems(const base::string16& pattern);
-
   // Sets bounds for the window grid and positions all windows in the grid.
   void SetBoundsAndUpdatePositions(const gfx::Rect& bounds_in_screen);
   void SetBoundsAndUpdatePositionsIgnoringWindow(
