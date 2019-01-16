@@ -2743,9 +2743,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"quick-unlock-pin", flag_descriptions::kQuickUnlockPinName,
      flag_descriptions::kQuickUnlockPinDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kQuickUnlockPin)},
-    {"quick-unlock-fingerprint", flag_descriptions::kQuickUnlockFingerprint,
-     flag_descriptions::kQuickUnlockFingerprintDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kQuickUnlockFingerprint)},
 #endif  // OS_CHROMEOS
 #if defined(OS_ANDROID)
     {"no-credit-card-abort", flag_descriptions::kNoCreditCardAbort,
