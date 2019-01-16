@@ -214,7 +214,7 @@
 - (void)presentSecurityWarningAlertWithText:(NSString*)body {
   NSString* alertTitle =
       l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_TITLE);
-  NSString* defaltActionTitle =
+  NSString* defaultActionTitle =
       l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_OK_BUTTON);
 
   UIAlertController* alert =
@@ -222,7 +222,7 @@
                                           message:body
                                    preferredStyle:UIAlertControllerStyleAlert];
   UIAlertAction* defaultAction =
-      [UIAlertAction actionWithTitle:defaltActionTitle
+      [UIAlertAction actionWithTitle:defaultActionTitle
                                style:UIAlertActionStyleDefault
                              handler:^(UIAlertAction* action){
                              }];

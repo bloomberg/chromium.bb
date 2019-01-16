@@ -305,7 +305,7 @@ class ArcAppListPrefs : public KeyedService,
                        const std::string& key,
                        base::Value value);
 
-  void SetDefaltAppsReadyCallback(base::OnceClosure callback);
+  void SetDefaultAppsReadyCallback(base::OnceClosure callback);
   void SimulateDefaultAppAvailabilityTimeoutForTesting();
 
  private:

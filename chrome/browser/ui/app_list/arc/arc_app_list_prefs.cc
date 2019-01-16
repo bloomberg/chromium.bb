@@ -984,7 +984,7 @@ void ArcAppListPrefs::SetPackagePrefs(const std::string& package_name,
   update.Get()->SetKey(key, std::move(value));
 }
 
-void ArcAppListPrefs::SetDefaltAppsReadyCallback(base::OnceClosure callback) {
+void ArcAppListPrefs::SetDefaultAppsReadyCallback(base::OnceClosure callback) {
   DCHECK(!callback.is_null());
   DCHECK(default_apps_ready_callback_.is_null());
   default_apps_ready_callback_ = std::move(callback);
