@@ -18,7 +18,6 @@ per-file browser_resources.grd=file://ui/webui/PLATFORM_OWNERS
 
 per-file browser_close_manager_browsertest.cc=creis@chromium.org
 
-per-file browser_navigator_browsertest.*=alexmos@chromium.org
 per-file browser_navigator_browsertest.*=file://content/OWNERS
 
 per-file certificate_manager_model*=mattm@chromium.org
@@ -33,10 +32,8 @@ per-file chrome_browser_field_trials*=file://components/variations/OWNERS
 per-file chrome_device_client*=reillyg@chromium.org
 per-file chrome_device_client*=rockot@google.com
 
-per-file chrome_navigation_browsertest.cc=alexmos@chromium.org
 per-file chrome_navigation_browsertest.cc=file://content/OWNERS
 
-per-file chrome_security_exploit_browsertest.cc=alexmos@chromium.org
 per-file chrome_security_exploit_browsertest.cc=file://content/OWNERS
 
 per-file chrome_service_worker_browsertest.cc=file://content/browser/service_worker/OWNERS
