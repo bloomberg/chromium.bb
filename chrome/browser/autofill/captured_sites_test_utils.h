@@ -31,7 +31,7 @@ namespace captured_sites_test_utils {
 //    user action.
 const base::TimeDelta default_action_timeout = base::TimeDelta::FromSeconds(30);
 // The amount of time to wait for a page to trigger a paint in response to a
-// an ation. The Captured Site Automation Framework uses this timeout to
+// an action. The Captured Site Automation Framework uses this timeout to
 // break out of a wait loop after a hover action.
 const base::TimeDelta visual_update_timeout = base::TimeDelta::FromSeconds(20);
 
