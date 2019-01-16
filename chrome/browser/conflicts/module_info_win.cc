@@ -91,14 +91,11 @@ ModuleInfoData::ModuleInfoData(ModuleInfoData&& module_data) noexcept = default;
 // -----------------------------------------------------------------------------
 
 std::unique_ptr<ModuleInspectionResult> InspectModule(
-    const StringMapping& env_variable_mapping,
     const base::FilePath& module_path) {
   auto inspection_result = std::make_unique<ModuleInspectionResult>();
 
   PopulateModuleInfoData(module_path, inspection_result.get());
   internal::NormalizeInspectionResult(inspection_result.get());
-  CollapseMatchingPrefixInPath(env_variable_mapping,
-                               &inspection_result->location);
 
   return inspection_result;
 }
