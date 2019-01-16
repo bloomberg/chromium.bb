@@ -161,11 +161,6 @@ extern const base::Feature kEventBasedStatusReporting;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kExperimentalAppBanners;
 
-#if defined(OS_CHROMEOS)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kExperimentalCrostiniUI;
-#endif
-
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kExternalExtensionDefaultButtonControl;
 

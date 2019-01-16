@@ -3547,13 +3547,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBundledConnectionHelpDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBundledConnectionHelpFeature)},
 
-#if defined(OS_CHROMEOS)
-    {"enable-experimental-crostini-ui",
-     flag_descriptions::kExperimentalCrostiniUIName,
-     flag_descriptions::kExperimentalCrostiniUIDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kExperimentalCrostiniUI)},
-#endif  // OS_CHROMEOS
-
 #if defined(OS_ANDROID)
     {"enable-omnibox-voice-search-always-visible",
      flag_descriptions::kOmniboxVoiceSearchAlwaysVisibleName,
@@ -4338,13 +4331,6 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   // enable-ui-devtools is only available on for non Stable channels.
   if (!strcmp(ui_devtools::switches::kEnableUiDevTools, entry.internal_name) &&
       channel == version_info::Channel::STABLE) {
-    return true;
-  }
-
-  // enable-experimental-crostini-ui is only available for boards that have
-  // VM support, which is controlled by the Crostini feature.
-  if (!strcmp("enable-experimental-crostini-ui", entry.internal_name) &&
-      !base::FeatureList::IsEnabled(features::kCrostini)) {
     return true;
   }
 #endif  // defined(OS_CHROMEOS)

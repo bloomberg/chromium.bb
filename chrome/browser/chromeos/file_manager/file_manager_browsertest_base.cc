@@ -1265,7 +1265,6 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   std::vector<base::Feature> disabled_features;
   if (!IsGuestModeTest()) {
     enabled_features.emplace_back(features::kCrostini);
-    enabled_features.emplace_back(features::kExperimentalCrostiniUI);
     enabled_features.emplace_back(chromeos::features::kCrostiniFiles);
   }
   if (IsDriveFsTest()) {

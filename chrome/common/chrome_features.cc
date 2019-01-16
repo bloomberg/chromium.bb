@@ -259,11 +259,6 @@ const base::Feature kExperimentalAppBanners {
 #endif
 };
 
-#if defined(OS_CHROMEOS)
-const base::Feature kExperimentalCrostiniUI{"ExperimentalCrostiniUI",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 // If enabled, this feature's |kExternalInstallDefaultButtonKey| field trial
 // parameter value controls which |ExternalInstallBubbleAlert| button is the
 // default.
