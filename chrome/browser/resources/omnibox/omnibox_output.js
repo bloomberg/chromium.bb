@@ -84,7 +84,8 @@ cr.define('omnibox_output', function() {
      * @param {string} data
      */
     updateAnswerImage(url, data) {
-      this.matches.forEach(match => match.updateAnswerImage(url, data));
+      this.autocompleteMatches.forEach(
+          match => match.updateAnswerImage(url, data));
     }
 
     /**
@@ -113,12 +114,13 @@ cr.define('omnibox_output', function() {
 
     /** @private */
     updateFilterHighlights_() {
-      this.matches.forEach(match => match.filter(this.filterText_));
+      this.autocompleteMatches.forEach(match => match.filter(this.filterText_));
     }
 
     /** @return {!Array<!OutputMatch>} */
-    get matches() {
-      return this.resultsGroups_.flatMap(resultsGroup => resultsGroup.matches);
+    get autocompleteMatches() {
+      return this.resultsGroups_.flatMap(
+          resultsGroup => resultsGroup.autocompleteMatches);
     }
 
     /** @return {string} */
@@ -260,7 +262,8 @@ cr.define('omnibox_output', function() {
               !showDetails && !column.displayAlways);
 
       // Show certain columns only if they showDetails is true.
-      this.matches.forEach(match => match.updateVisibility(showDetails));
+      this.autocompleteMatches.forEach(
+          match => match.updateVisibility(showDetails));
     }
 
     /**
@@ -274,10 +277,10 @@ cr.define('omnibox_output', function() {
     }
 
     /** @return {!Array<!OutputMatch>} */
-    get matches() {
+    get autocompleteMatches() {
       return [this.combinedResults]
           .concat(this.individualResultsList)
-          .flatMap(results => results.matches);
+          .flatMap(results => results.autocompleteMatches);
     }
 
     /** @return {!Array<string>} */
@@ -321,24 +324,25 @@ cr.define('omnibox_output', function() {
       super();
       this.classList.add('body');
       /** @type {!Array<!OutputMatch>} */
-      this.matches = [];
+      this.autocompleteMatches = [];
     }
 
     /** @param {!Array<!mojom.AutocompleteMatch>} results */
     set results(results) {
-      this.matches.forEach(match => match.remove());
-      this.matches = results.map(OutputMatch.create);
-      this.matches.forEach(this.appendChild.bind(this));
+      this.autocompleteMatches.forEach(match => match.remove());
+      this.autocompleteMatches = results.map(OutputMatch.create);
+      this.autocompleteMatches.forEach(this.appendChild.bind(this));
     }
 
     /** @return {?string} */
     get innerHeaderText() {
-      return this.matches[0].providerName;
+      return this.autocompleteMatches[0].providerName;
     }
 
     /** @return {boolean} */
     get hasAdditionalProperties() {
-      return this.matches.some(match => match.hasAdditionalProperties);
+      return this.autocompleteMatches.some(
+          match => match.hasAdditionalProperties);
     }
   }
 
