@@ -144,6 +144,11 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Increases the bounds of the dragged item.
   void ScaleUpSelectedItem(OverviewAnimationType animation_type);
 
+  // Sets if the item is dimmed in the overview. Changing the value will also
+  // change the visibility of the transform windows.
+  void SetDimmed(bool dimmed);
+  bool dimmed() const { return dimmed_; }
+
   const gfx::Rect& target_bounds() const { return target_bounds_; }
 
   // Stacks the |item_widget_| in the correct place. |item_widget_| may be
@@ -166,6 +171,20 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
 
   // If the window item represents a minimized window, update its content view.
   void UpdateItemContentViewForMinimizedWindow();
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // aura::WindowObserver:
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
+  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowTitleChanged(aura::Window* window) override;
+
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override;
 
   // Handle the mouse/gesture event and facilitate dragging the item.
   void HandlePressEvent(const gfx::Point& location_in_screen);
@@ -202,25 +221,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   void SetOpacity(float opacity);
   float GetOpacity();
 
-  OverviewAnimationType GetExitOverviewAnimationType();
-  OverviewAnimationType GetExitTransformAnimationType();
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // aura::WindowObserver:
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds,
-                             ui::PropertyChangeReason reason) override;
-  void OnWindowDestroying(aura::Window* window) override;
-  void OnWindowTitleChanged(aura::Window* window) override;
-
-  // ui::ImplicitAnimationObserver:
-  void OnImplicitAnimationsCompleted() override;
-
-  WindowGrid* window_grid() { return window_grid_; }
-
   void set_should_animate_when_entering(bool should_animate) {
     should_animate_when_entering_ = should_animate;
   }
@@ -234,6 +234,11 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   bool should_animate_when_exiting() const {
     return should_animate_when_exiting_;
   }
+
+  OverviewAnimationType GetExitOverviewAnimationType();
+  OverviewAnimationType GetExitTransformAnimationType();
+
+  WindowGrid* window_grid() { return window_grid_; }
 
   void set_should_restack_on_animation_end(bool val) {
     should_restack_on_animation_end_ = val;
@@ -277,6 +282,10 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // selection and stacks the window at the top of the Z order in order to keep
   // it visible while dragging around.
   void StartDrag();
+
+  // True if the item is being shown in the overview, false if it's being
+  // filtered.
+  bool dimmed_ = false;
 
   // The root window this item is being displayed on.
   aura::Window* root_window_;
