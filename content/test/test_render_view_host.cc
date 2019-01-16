@@ -297,8 +297,8 @@ void TestRenderViewHost::SimulateWasShown() {
   GetWidget()->WasShown(false /* record_presentation_time */);
 }
 
-WebPreferences TestRenderViewHost::TestComputeWebkitPrefs() {
-  return ComputeWebkitPrefs();
+WebPreferences TestRenderViewHost::TestComputeWebPreferences() {
+  return ComputeWebPreferences();
 }
 
 void TestRenderViewHost::OnWebkitPreferencesChanged() {
