@@ -128,28 +128,6 @@ void UkmPageLoadMetricsObserver::OnFailedProvisionalLoad(
       .Record(ukm::UkmRecorder::Get());
 }
 
-void UkmPageLoadMetricsObserver::OnUserInput(
-    const blink::WebInputEvent& event,
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (was_hidden_)
-    return;
-
-  switch (event.GetType()) {
-    // Mouse move/enter/leave are common events, and most pages don't insert new
-    // DOM elements for these events, so we ignore them.
-    case blink::WebInputEvent::kMouseMove:
-    case blink::WebInputEvent::kMouseEnter:
-    case blink::WebInputEvent::kMouseLeave:
-      return;
-    default:
-      break;
-  }
-
-  ukm::builders::PageLoad builder(extra_info.source_id);
-  RecordBeforeUserInputMetrics(&builder, timing, extra_info);
-}
-
 void UkmPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
@@ -291,10 +269,6 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
   if (main_frame_timing_)
     ReportMainResourceTimingMetrics(timing, &builder);
 
-  // Ensure that before user input metrics are recorded for all page loads, even
-  // if no user input was processed during the page load lifetime.
-  RecordBeforeUserInputMetrics(&builder, timing, info);
-
   builder.Record(ukm::UkmRecorder::Get());
 }
 
@@ -346,28 +320,6 @@ void UkmPageLoadMetricsObserver::RecordPageLoadExtraInfoMetrics(
     builder.SetWasCached(1);
   }
   builder.Record(ukm::UkmRecorder::Get());
-}
-
-void UkmPageLoadMetricsObserver::RecordBeforeUserInputMetrics(
-    ukm::builders::PageLoad* builder,
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (recorded_before_user_input_metrics_)
-    return;
-  recorded_before_user_input_metrics_ = true;
-
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->largest_image_paint, extra_info)) {
-    builder
-        ->SetExperimental_PaintTiming_NavigationToLargestImagePaint_BeforeUserInput(
-            timing.paint_timing->largest_image_paint.value().InMilliseconds());
-  }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->largest_text_paint, extra_info)) {
-    builder
-        ->SetExperimental_PaintTiming_NavigationToLargestTextPaint_BeforeUserInput(
-            timing.paint_timing->largest_text_paint.value().InMilliseconds());
-  }
 }
 
 void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(

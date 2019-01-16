@@ -258,11 +258,6 @@ TEST_F(UkmPageLoadMetricsObserverTest, LargestImagePaint) {
         kv.second.get(),
         PageLoad::kExperimental_PaintTiming_NavigationToLargestImagePaintName,
         600);
-    test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(),
-        PageLoad::
-            kExperimental_PaintTiming_NavigationToLargestImagePaint_BeforeUserInputName,
-        600);
     EXPECT_TRUE(test_ukm_recorder().EntryHasMetric(
         kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
   }
