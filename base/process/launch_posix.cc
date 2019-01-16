@@ -40,6 +40,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/platform_thread_internal_posix.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -721,6 +722,13 @@ pid_t ForkWithFlags(unsigned long flags, pid_t* ptid, pid_t* ctid) {
   if (setjmp(env) == 0) {
     return CloneAndLongjmpInChild(flags, ptid, ctid, &env);
   }
+
+#if defined(OS_LINUX)
+  // Since we use clone() directly, it does not call any pthread_aftork()
+  // callbacks, we explicitly clear tid cache here (normally this call is
+  // done as pthread_aftork() callback).  See crbug.com/902514.
+  base::internal::ClearTidCache();
+#endif  // defined(OS_LINUX)
 
   return 0;
 }

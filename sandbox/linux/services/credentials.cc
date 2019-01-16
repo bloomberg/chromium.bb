@@ -37,6 +37,7 @@ namespace sandbox {
 namespace {
 
 const int kExitSuccess = 0;
+const int kExitFailure = 1;
 
 #if defined(__clang__)
 // Disable sanitizers that rely on TLS and may write to non-stack memory.
@@ -281,7 +282,7 @@ bool Credentials::CanCreateProcessInNewUserNS() {
     // unshare() requires the effective uid and gid to have a mapping in the
     // parent namespace.
     if (!SetGidAndUidMaps(gid, uid))
-      _exit(1);
+      _exit(kExitFailure);
 
     // Make sure we drop CAP_SYS_ADMIN.
     CHECK(sandbox::Credentials::DropAllCapabilities());
@@ -290,7 +291,7 @@ bool Credentials::CanCreateProcessInNewUserNS() {
     // Jessie explicitly forbids this case.  See:
     // add-sysctl-to-disallow-unprivileged-CLONE_NEWUSER-by-default.patch
     if (sys_unshare(CLONE_NEWUSER))
-      _exit(1);
+      _exit(kExitFailure);
 
     _exit(kExitSuccess);
   }
@@ -298,6 +299,9 @@ bool Credentials::CanCreateProcessInNewUserNS() {
   // Always reap the child.
   int status = -1;
   PCHECK(HANDLE_EINTR(waitpid(pid, &status, 0)) == pid);
+
+  DCHECK(WIFEXITED(status) && (WEXITSTATUS(status) == kExitSuccess ||
+                               WEXITSTATUS(status) == kExitFailure));
 
   // clone(2) succeeded.  Now return true only if the system grants
   // unprivileged use of CLONE_NEWUSER as well.

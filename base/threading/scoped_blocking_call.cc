@@ -15,17 +15,6 @@ namespace base {
 
 namespace {
 
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_64)
-// For a mysterious reason, enabling tracing in ScopedBlockingCall makes
-// telemetry_unittests's
-// telemetry.core.tracing_controller_unittest.
-//     StartupTracingTest.testCloseBrowserBeforeTracingIsStopped
-// timeout only on chromeos-amd64-generic-rel : https://crbug.com/902514.
-const bool kTraceScopedBlockingCall = false;
-#else
-const bool kTraceScopedBlockingCall = true;
-#endif
-
 LazyInstance<ThreadLocalPointer<internal::BlockingObserver>>::Leaky
     tls_blocking_observer = LAZY_INSTANCE_INITIALIZER;
 
@@ -84,10 +73,8 @@ ScopedBlockingCall::ScopedBlockingCall(BlockingType blocking_type)
 #endif
 
   internal::AssertBlockingAllowed();
-  if (kTraceScopedBlockingCall) {
-    TRACE_EVENT_BEGIN1("base", "ScopedBlockingCall", "blocking_type",
-                       static_cast<int>(blocking_type));
-  }
+  TRACE_EVENT_BEGIN1("base", "ScopedBlockingCall", "blocking_type",
+                     static_cast<int>(blocking_type));
 
 #if DCHECK_IS_ON()
   tls_construction_in_progress.Get().Set(false);
@@ -95,8 +82,7 @@ ScopedBlockingCall::ScopedBlockingCall(BlockingType blocking_type)
 }
 
 ScopedBlockingCall::~ScopedBlockingCall() {
-  if (kTraceScopedBlockingCall)
-    TRACE_EVENT_END0("base", "ScopedBlockingCall");
+  TRACE_EVENT_END0("base", "ScopedBlockingCall");
 }
 
 namespace internal {
@@ -110,10 +96,8 @@ ScopedBlockingCallWithBaseSyncPrimitives::
 #endif
 
   internal::AssertBaseSyncPrimitivesAllowed();
-  if (kTraceScopedBlockingCall) {
-    TRACE_EVENT_BEGIN1("base", "ScopedBlockingCallWithBaseSyncPrimitives",
-                       "blocking_type", static_cast<int>(blocking_type));
-  }
+  TRACE_EVENT_BEGIN1("base", "ScopedBlockingCallWithBaseSyncPrimitives",
+                     "blocking_type", static_cast<int>(blocking_type));
 
 #if DCHECK_IS_ON()
   tls_construction_in_progress.Get().Set(false);
@@ -122,8 +106,7 @@ ScopedBlockingCallWithBaseSyncPrimitives::
 
 ScopedBlockingCallWithBaseSyncPrimitives::
     ~ScopedBlockingCallWithBaseSyncPrimitives() {
-  if (kTraceScopedBlockingCall)
-    TRACE_EVENT_END0("base", "ScopedBlockingCallWithBaseSyncPrimitives");
+  TRACE_EVENT_END0("base", "ScopedBlockingCallWithBaseSyncPrimitives");
 }
 
 void SetBlockingObserverForCurrentThread(BlockingObserver* blocking_observer) {
