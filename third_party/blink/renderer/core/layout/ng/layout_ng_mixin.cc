@@ -396,11 +396,17 @@ void LayoutNGMixin<Base>::SetPaintFragment(
   scoped_refptr<NGPaintFragment>* current =
       NGPaintFragment::Find(&paint_fragment_, break_token);
   DCHECK(current);
+  bool has_old = current->get();
   if (fragment) {
     *current = NGPaintFragment::Create(std::move(fragment), offset, break_token,
                                        std::move(*current));
   } else {
     *current = nullptr;
+  }
+
+  if (has_old) {
+    // Painting layer needs repaint when a DisplayItemClient is destroyed.
+    ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
   }
 }
 
