@@ -9,7 +9,7 @@
 namespace chromeos {
 
 namespace {
-const char kChromeVoxEnabledMessage[] = "chrome vox spoken feedback is ready";
+const char kChromeVoxEnabledMessage[] = "ChromeVox spoken feedback is ready";
 const char kChromeVoxAlertMessage[] = "Alert";
 const char kChromeVoxUpdate1[] = "chrome vox Updated Press chrome vox o,";
 const char kChromeVoxUpdate2[] = "n to learn more about chrome vox Next.";
