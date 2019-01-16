@@ -82,7 +82,6 @@ crbug.com/860713 external/wpt/bluetooth/service/getCharacteristics/gen-reconnect
 crbug.com/908841 external/wpt/fullscreen/api/element-ready-check-containing-iframe-manual.html [ Timeout ]
 
 # The following fail only on Mac.
-crbug.com/891427 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
@@ -385,8 +384,7 @@ crbug.com/767318 compositing/reflections/nested-reflection-mask-change.html [ Fa
 crbug.com/887000 virtual/prefer_compositing_to_lcd_text/scrollbars/hidden-scrollbars-invisible.html [ Failure ]
 crbug.com/882975 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-prevent-in-handler.html [ Failure Pass ]
 crbug.com/882975 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Failure Pass ]
-### See crbug.com/891427 comment near the top of this file:
-###crbug.com/882975 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Failure Pass ]
+crbug.com/882975 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Failure Pass ]
 crbug.com/884239 virtual/threaded/animations/animationworklet/worklet-animation-local-time-undefined.html [ Failure ]
 # Subpixel rounding differences that are incorrect.
 crbug.com/836886 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scaled-overflow.html [ Failure ]
