@@ -345,8 +345,14 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   // to an existing one.
   bool is_new_login_;
 
-  // Whether this form has an auto generated password.
+  // Whether this form has an auto generated password. If the user modifies the
+  // password it remains in status "generated".
   bool has_generated_password_;
+
+  // If |has_generated_password_|, contains a generated password. If the user
+  // modifies the generated password, this field is updated to reflect the
+  // modified value.
+  base::string16 generated_password_;
 
   // Whether the saved password was overridden.
   bool password_overridden_;
