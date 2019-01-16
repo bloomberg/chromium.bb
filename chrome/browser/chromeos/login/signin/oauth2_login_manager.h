@@ -175,12 +175,6 @@ class OAuth2LoginManager : public KeyedService,
   // Update the token service and inform listeners of a new refresh token.
   void UpdateCredentials(const std::string& account_id);
 
-  // Notify that the refresh tokens are loaded and ready to use.
-  void FireRefreshTokensLoaded();
-
-  // Reports when all tokens are loaded.
-  void ReportOAuth2TokensLoaded();
-
   // Checks if primary account sessions cookies are stale and restores them
   // if needed.
   void VerifySessionCookies();
