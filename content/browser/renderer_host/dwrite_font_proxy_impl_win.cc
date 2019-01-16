@@ -289,6 +289,9 @@ bool AddFilesForFont(IDWriteFont* font,
 
   base::string16 file_path_folded = base::i18n::FoldCase(file_path);
 
+  if (!file_path_folded.size())
+    return false;
+
   if (!base::StartsWith(file_path_folded, windows_fonts_path,
                         base::CompareCase::SENSITIVE)) {
     LogLoaderType(FILE_OUTSIDE_SANDBOX);
@@ -678,6 +681,12 @@ bool DWriteFontProxyImpl::EnsureFontUniqueNameTable() {
                            &custom_font_path_set, &ttc_index)) {
         if (IsLastResortFallbackFont(family_index))
           LogMessageFilterError(LAST_RESORT_FONT_ADD_FILES_FAILED);
+
+        // It's possible to not be able to retrieve a font file for a font that
+        // is in the system font collection, see https://crbug.com/922183. If we
+        // were not able to retrieve a file for a registered font, we do not
+        // need to add it to the map.
+        continue;
       }
 
       // After having received clarification from Microsoft, the API is designed
