@@ -49,6 +49,8 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
@@ -68,8 +70,8 @@ using protocol::Maybe;
 using protocol::Response;
 unsigned InspectorLayerTreeAgent::last_snapshot_id_;
 
-inline String IdForLayer(const cc::Layer* layer) {
-  return String::Number(layer->id());
+inline String IdForLayer(const GraphicsLayer* graphics_layer) {
+  return String::Number(graphics_layer->CcLayer()->id());
 }
 
 static std::unique_ptr<protocol::DOM::Rect> BuildObjectForRect(
@@ -95,18 +97,20 @@ static std::unique_ptr<protocol::LayerTree::ScrollRect> BuildScrollRect(
 }
 
 static std::unique_ptr<Array<protocol::LayerTree::ScrollRect>>
-BuildScrollRectsForLayer(const cc::Layer* layer, bool report_wheel_scrollers) {
+BuildScrollRectsForLayer(GraphicsLayer* graphics_layer,
+                         bool report_wheel_scrollers) {
   std::unique_ptr<Array<protocol::LayerTree::ScrollRect>> scroll_rects =
       Array<protocol::LayerTree::ScrollRect>::create();
+  cc::Layer* cc_layer = graphics_layer->CcLayer();
   const cc::Region& non_fast_scrollable_rects =
-      layer->non_fast_scrollable_region();
+      cc_layer->non_fast_scrollable_region();
   for (const gfx::Rect& rect : non_fast_scrollable_rects) {
     scroll_rects->addItem(BuildScrollRect(
         IntRect(rect),
         protocol::LayerTree::ScrollRect::TypeEnum::RepaintsOnScroll));
   }
   const cc::Region& touch_event_handler_region =
-      layer->touch_action_region().region();
+      cc_layer->touch_action_region().region();
 
   for (const gfx::Rect& rect : touch_event_handler_region) {
     scroll_rects->addItem(BuildScrollRect(
@@ -116,8 +120,8 @@ BuildScrollRectsForLayer(const cc::Layer* layer, bool report_wheel_scrollers) {
   if (report_wheel_scrollers) {
     scroll_rects->addItem(BuildScrollRect(
         // TODO(yutak): This truncates the floating point position to integers.
-        gfx::Rect(layer->position().x(), layer->position().y(),
-                  layer->bounds().width(), layer->bounds().height()),
+        gfx::Rect(cc_layer->position().x(), cc_layer->position().y(),
+                  cc_layer->bounds().width(), cc_layer->bounds().height()),
         protocol::LayerTree::ScrollRect::TypeEnum::WheelEventHandler));
   }
   return scroll_rects->length() ? std::move(scroll_rects) : nullptr;
@@ -125,19 +129,20 @@ BuildScrollRectsForLayer(const cc::Layer* layer, bool report_wheel_scrollers) {
 
 // TODO(flackr): We should be getting the sticky position constraints from the
 // property tree once blink is able to access them. https://crbug.com/754339
-static const cc::Layer* FindLayerByElementId(const cc::Layer* root,
-                                             CompositorElementId element_id) {
-  if (root->element_id() == element_id)
+static GraphicsLayer* FindLayerByElementId(GraphicsLayer* root,
+                                           CompositorElementId element_id) {
+  if (root->CcLayer()->element_id() == element_id)
     return root;
-  for (auto child : root->children()) {
-    if (const auto* layer = FindLayerByElementId(child.get(), element_id))
+  for (wtf_size_t i = 0, size = root->Children().size(); i < size; ++i) {
+    if (GraphicsLayer* layer =
+            FindLayerByElementId(root->Children()[i], element_id))
       return layer;
   }
   return nullptr;
 }
 
 static std::unique_ptr<protocol::LayerTree::StickyPositionConstraint>
-BuildStickyInfoForLayer(const cc::Layer* root, const cc::Layer* layer) {
+BuildStickyInfoForLayer(GraphicsLayer* root, cc::Layer* layer) {
   cc::LayerStickyPositionConstraint constraints =
       layer->sticky_position_constraint();
   if (!constraints.is_sticky)
@@ -160,12 +165,14 @@ BuildStickyInfoForLayer(const cc::Layer* root, const cc::Layer* layer) {
     constraints_obj->setNearestLayerShiftingStickyBox(String::Number(
         FindLayerByElementId(root,
                              constraints.nearest_element_shifting_sticky_box)
+            ->CcLayer()
             ->id()));
   }
   if (constraints.nearest_element_shifting_containing_block) {
     constraints_obj->setNearestLayerShiftingContainingBlock(String::Number(
         FindLayerByElementId(
             root, constraints.nearest_element_shifting_containing_block)
+            ->CcLayer()
             ->id()));
   }
 
@@ -173,73 +180,60 @@ BuildStickyInfoForLayer(const cc::Layer* root, const cc::Layer* layer) {
 }
 
 static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
-    const cc::Layer* root,
-    const cc::Layer* layer,
+    GraphicsLayer* root,
+    GraphicsLayer* graphics_layer,
+    int node_id,
     bool report_wheel_event_listeners) {
-  bool using_layer_list =
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled();
-
-  // When the front-end doesn't show internal layers, it will use the the first
-  // DrawsContent layer as the root of the shown layer tree. This doesn't work
-  // for layer list because the non-DrawsContent root layer is the parent of
-  // all DrawsContent layers. We have to cheat the front-end by setting
-  // drawsContent to true for the root layer.
-  bool draws_content =
-      (using_layer_list && root == layer) || layer->DrawsContent();
-
+  cc::Layer* cc_layer = graphics_layer->CcLayer();
   std::unique_ptr<protocol::LayerTree::Layer> layer_object =
       protocol::LayerTree::Layer::create()
-          .setLayerId(IdForLayer(layer))
-          .setOffsetX(using_layer_list ? 0 : layer->position().x())
-          .setOffsetY(using_layer_list ? 0 : layer->position().y())
-          .setWidth(layer->bounds().width())
-          .setHeight(layer->bounds().height())
-          .setPaintCount(layer->paint_count())
-          .setDrawsContent(draws_content)
+          .setLayerId(IdForLayer(graphics_layer))
+          .setOffsetX(cc_layer->position().x())
+          .setOffsetY(cc_layer->position().y())
+          .setWidth(cc_layer->bounds().width())
+          .setHeight(cc_layer->bounds().height())
+          .setPaintCount(graphics_layer->PaintCount())
+          .setDrawsContent(cc_layer->DrawsContent())
           .build();
 
-  if (auto node_id = layer->owner_node_id())
+  if (node_id)
     layer_object->setBackendNodeId(node_id);
 
-  if (const auto* parent = layer->parent())
+  GraphicsLayer* parent = graphics_layer->Parent();
+  if (parent)
     layer_object->setParentLayerId(IdForLayer(parent));
-
-  gfx::Transform transform;
-  gfx::Point3F transform_origin;
-  if (using_layer_list) {
-    transform = layer->ScreenSpaceTransform();
-  } else {
-    transform = layer->transform();
-    transform_origin = layer->transform_origin();
-  }
-
+  if (!graphics_layer->ContentsAreVisible())
+    layer_object->setInvisible(true);
+  const TransformationMatrix& transform = graphics_layer->Transform();
   if (!transform.IsIdentity()) {
-    auto transform_array = Array<double>::create();
-    for (int col = 0; col < 4; ++col) {
-      for (int row = 0; row < 4; ++row)
-        transform_array->addItem(transform.matrix().get(row, col));
-    }
+    TransformationMatrix::FloatMatrix4 flattened_matrix;
+    transform.ToColumnMajorFloatArray(flattened_matrix);
+    std::unique_ptr<Array<double>> transform_array = Array<double>::create();
+    for (size_t i = 0; i < base::size(flattened_matrix); ++i)
+      transform_array->addItem(flattened_matrix[i]);
     layer_object->setTransform(std::move(transform_array));
+    const FloatPoint3D& transform_origin = graphics_layer->TransformOrigin();
     // FIXME: rename these to setTransformOrigin*
-    if (layer->bounds().width() > 0) {
-      layer_object->setAnchorX(transform_origin.x() / layer->bounds().width());
+    if (cc_layer->bounds().width() > 0) {
+      layer_object->setAnchorX(transform_origin.X() /
+                               cc_layer->bounds().width());
     } else {
       layer_object->setAnchorX(0.f);
     }
-    if (layer->bounds().height() > 0) {
-      layer_object->setAnchorY(transform_origin.y() / layer->bounds().height());
+    if (cc_layer->bounds().height() > 0) {
+      layer_object->setAnchorY(transform_origin.Y() /
+                               cc_layer->bounds().height());
     } else {
       layer_object->setAnchorY(0.f);
     }
-    layer_object->setAnchorZ(transform_origin.z());
+    layer_object->setAnchorZ(transform_origin.Z());
   }
   std::unique_ptr<Array<protocol::LayerTree::ScrollRect>> scroll_rects =
-      BuildScrollRectsForLayer(layer, report_wheel_event_listeners);
+      BuildScrollRectsForLayer(graphics_layer, report_wheel_event_listeners);
   if (scroll_rects)
     layer_object->setScrollRects(std::move(scroll_rects));
   std::unique_ptr<protocol::LayerTree::StickyPositionConstraint> sticky_info =
-      BuildStickyInfoForLayer(root, layer);
+      BuildStickyInfoForLayer(root, cc_layer);
   if (sticky_info)
     layer_object->setStickyPositionConstraint(std::move(sticky_info));
   return layer_object;
@@ -284,15 +278,14 @@ void InspectorLayerTreeAgent::LayerTreeDidChange() {
   GetFrontend()->layerTreeDidChange(BuildLayerTree());
 }
 
-void InspectorLayerTreeAgent::DidPaint(const cc::Layer* layer,
+void InspectorLayerTreeAgent::DidPaint(const GraphicsLayer* graphics_layer,
                                        GraphicsContext&,
                                        const LayoutRect& rect) {
   if (suppress_layer_paint_events_)
     return;
-
   // Should only happen for LocalFrameView paints when compositing is off.
   // Consider different instrumentation method for that.
-  if (!layer)
+  if (!graphics_layer)
     return;
 
   std::unique_ptr<protocol::DOM::Rect> dom_rect = protocol::DOM::Rect::create()
@@ -301,71 +294,120 @@ void InspectorLayerTreeAgent::DidPaint(const cc::Layer* layer,
                                                       .setWidth(rect.Width())
                                                       .setHeight(rect.Height())
                                                       .build();
-  GetFrontend()->layerPainted(IdForLayer(layer), std::move(dom_rect));
+  GetFrontend()->layerPainted(IdForLayer(graphics_layer), std::move(dom_rect));
 }
 
 std::unique_ptr<Array<protocol::LayerTree::Layer>>
 InspectorLayerTreeAgent::BuildLayerTree() {
-  const auto* root_layer = RootLayer();
-  if (!root_layer)
+  PaintLayerCompositor* compositor = GetPaintLayerCompositor();
+  if (!compositor || !compositor->InCompositingMode())
     return nullptr;
 
+  LayerIdToNodeIdMap layer_id_to_node_id_map;
   std::unique_ptr<Array<protocol::LayerTree::Layer>> layers =
       Array<protocol::LayerTree::Layer>::create();
-  auto* root_frame = inspected_frames_->Root();
+  BuildLayerIdToNodeIdMap(compositor->RootLayer(), layer_id_to_node_id_map);
   auto* layer_for_scrolling =
-      root_frame->View()->LayoutViewport()->LayerForScrolling();
+      inspected_frames_->Root()->View()->LayoutViewport()->LayerForScrolling();
   int scrolling_layer_id =
       layer_for_scrolling ? layer_for_scrolling->CcLayer()->id() : 0;
   bool have_blocking_wheel_event_handlers =
-      root_frame->GetChromeClient().EventListenerProperties(
-          root_frame, cc::EventListenerClass::kMouseWheel) ==
+      inspected_frames_->Root()->GetChromeClient().EventListenerProperties(
+          inspected_frames_->Root(), cc::EventListenerClass::kMouseWheel) ==
       cc::EventListenerProperties::kBlocking;
 
-  GatherLayers(root_layer, layers, have_blocking_wheel_event_handlers,
-               scrolling_layer_id);
+  GatherGraphicsLayers(RootGraphicsLayer(), layer_id_to_node_id_map, layers,
+                       have_blocking_wheel_event_handlers, scrolling_layer_id);
   return layers;
 }
 
-void InspectorLayerTreeAgent::GatherLayers(
-    const cc::Layer* layer,
+void InspectorLayerTreeAgent::BuildLayerIdToNodeIdMap(
+    PaintLayer* root,
+    LayerIdToNodeIdMap& layer_id_to_node_id_map) {
+  if (root->HasCompositedLayerMapping()) {
+    if (Node* node = root->GetLayoutObject().GeneratingNode()) {
+      GraphicsLayer* graphics_layer =
+          root->GetCompositedLayerMapping()->ChildForSuperlayers();
+      layer_id_to_node_id_map.Set(graphics_layer->CcLayer()->id(),
+                                  IdentifiersFactory::IntIdForNode(node));
+    }
+  }
+  for (PaintLayer* child = root->FirstChild(); child;
+       child = child->NextSibling())
+    BuildLayerIdToNodeIdMap(child, layer_id_to_node_id_map);
+  if (!root->GetLayoutObject().IsLayoutIFrame())
+    return;
+  FrameView* child_frame_view =
+      ToLayoutEmbeddedContent(root->GetLayoutObject()).ChildFrameView();
+  if (!child_frame_view || !child_frame_view->IsLocalFrameView())
+    return;
+  LayoutView* child_layout_view =
+      ToLocalFrameView(child_frame_view)->GetLayoutView();
+  if (!child_layout_view)
+    return;
+  PaintLayerCompositor* child_compositor = child_layout_view->Compositor();
+  if (!child_compositor)
+    return;
+  BuildLayerIdToNodeIdMap(child_compositor->RootLayer(),
+                          layer_id_to_node_id_map);
+}
+
+void InspectorLayerTreeAgent::GatherGraphicsLayers(
+    GraphicsLayer* layer,
+    HashMap<int, int>& layer_id_to_node_id_map,
     std::unique_ptr<Array<protocol::LayerTree::Layer>>& layers,
     bool has_wheel_event_handlers,
     int scrolling_layer_id) {
   if (client_->IsInspectorLayer(layer))
     return;
-  int layer_id = layer->id();
+  int layer_id = layer->CcLayer()->id();
   layers->addItem(BuildObjectForLayer(
-      RootLayer(), layer,
+      RootGraphicsLayer(), layer, layer_id_to_node_id_map.at(layer_id),
       has_wheel_event_handlers && layer_id == scrolling_layer_id));
-  for (auto child : layer->children()) {
-    GatherLayers(child.get(), layers, has_wheel_event_handlers,
-                 scrolling_layer_id);
-  }
+  for (wtf_size_t i = 0, size = layer->Children().size(); i < size; ++i)
+    GatherGraphicsLayers(layer->Children()[i], layer_id_to_node_id_map, layers,
+                         has_wheel_event_handlers, scrolling_layer_id);
 }
 
-const cc::Layer* InspectorLayerTreeAgent::RootLayer() {
-  return inspected_frames_->Root()->View()->RootCcLayer();
+PaintLayerCompositor* InspectorLayerTreeAgent::GetPaintLayerCompositor() {
+  // TODO(crbug.com/916768): Implement the feature.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return nullptr;
+
+  auto* layout_view = inspected_frames_->Root()->ContentLayoutObject();
+  PaintLayerCompositor* compositor =
+      layout_view ? layout_view->Compositor() : nullptr;
+  return compositor;
 }
 
-static const cc::Layer* FindLayerById(const cc::Layer* root, int layer_id) {
-  if (root->id() == layer_id)
+GraphicsLayer* InspectorLayerTreeAgent::RootGraphicsLayer() {
+  return inspected_frames_->Root()
+      ->GetPage()
+      ->GetVisualViewport()
+      .RootGraphicsLayer();
+}
+
+static GraphicsLayer* FindLayerById(GraphicsLayer* root, int layer_id) {
+  if (root->CcLayer()->id() == layer_id)
     return root;
-  for (auto child : root->children()) {
-    if (const auto* layer = FindLayerById(child.get(), layer_id))
+  for (wtf_size_t i = 0, size = root->Children().size(); i < size; ++i) {
+    if (GraphicsLayer* layer = FindLayerById(root->Children()[i], layer_id))
       return layer;
   }
   return nullptr;
 }
 
 Response InspectorLayerTreeAgent::LayerById(const String& layer_id,
-                                            const cc::Layer*& result) {
+                                            GraphicsLayer*& result) {
   bool ok;
   int id = layer_id.ToInt(&ok);
   if (!ok)
     return Response::Error("Invalid layer id");
+  PaintLayerCompositor* compositor = GetPaintLayerCompositor();
+  if (!compositor)
+    return Response::Error("Not in compositing mode");
 
-  result = FindLayerById(RootLayer(), id);
+  result = FindLayerById(RootGraphicsLayer(), id);
   if (!result)
     return Response::Error("No layer matching given id found");
   return Response::OK();
@@ -374,26 +416,27 @@ Response InspectorLayerTreeAgent::LayerById(const String& layer_id,
 Response InspectorLayerTreeAgent::compositingReasons(
     const String& layer_id,
     std::unique_ptr<Array<String>>* reason_strings) {
-  const cc::Layer* layer = nullptr;
-  Response response = LayerById(layer_id, layer);
+  GraphicsLayer* graphics_layer = nullptr;
+  Response response = LayerById(layer_id, graphics_layer);
   if (!response.isSuccess())
     return response;
-  CompositingReasons reasons = layer->compositing_reasons();
+  CompositingReasons reasons_bitmask = graphics_layer->GetCompositingReasons();
   *reason_strings = Array<String>::create();
-  for (const char* name : CompositingReason::ShortNames(reasons))
+  for (const char* name : CompositingReason::ShortNames(reasons_bitmask))
     (*reason_strings)->addItem(name);
   return Response::OK();
 }
 
 Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
                                                String* snapshot_id) {
-  const cc::Layer* layer = nullptr;
+  GraphicsLayer* layer = nullptr;
   Response response = LayerById(layer_id, layer);
   if (!response.isSuccess())
     return response;
   if (!layer->DrawsContent())
     return Response::Error("Layer does not draw content");
 
+  IntRect interest_rect(IntPoint(), IntSize(layer->Size()));
   suppress_layer_paint_events_ = true;
 
   // If we hit a devtool break point in the middle of document lifecycle, for
@@ -405,16 +448,22 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
                                                       .LifecyclePostponed())
     return Response::Error("Layer does not draw content");
 
-  inspected_frames_->Root()->View()->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kOther);
+  inspected_frames_->Root()->View()->UpdateAllLifecyclePhasesExceptPaint();
+  for (auto frame = inspected_frames_->begin();
+       frame != inspected_frames_->end(); ++frame) {
+    frame->GetDocument()->Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
+  }
+  layer->Paint(&interest_rect);
+  for (auto frame = inspected_frames_->begin();
+       frame != inspected_frames_->end(); ++frame) {
+    frame->GetDocument()->Lifecycle().AdvanceTo(DocumentLifecycle::kPaintClean);
+  }
 
   suppress_layer_paint_events_ = false;
 
-  auto picture = layer->GetPicture();
-  if (!picture)
-    return Response::Error("Layer does not produce picture");
+  auto snapshot = base::AdoptRef(new PictureSnapshot(
+      ToSkPicture(layer->CapturePaintRecord(), interest_rect)));
 
-  auto snapshot = base::MakeRefCounted<PictureSnapshot>(std::move(picture));
   *snapshot_id = String::Number(++last_snapshot_id_);
   bool new_entry = snapshot_by_id_.insert(*snapshot_id, snapshot).is_new_entry;
   DCHECK(new_entry);

@@ -4,23 +4,6 @@ Canvas log:
 {
     0 : {
         commandIndex : 0
-        method : "drawPaint"
-        params : {
-            paint : {
-                blendMode : "Src"
-                color : "#0"
-                filterLevel : "None"
-                flags : "none"
-                strokeCap : "Butt"
-                strokeJoin : "Miter"
-                strokeMiter : 4
-                strokeWidth : 0
-                styleName : "Fill"
-            }
-        }
-    }
-    1 : {
-        commandIndex : 1
         method : "drawRect"
         params : {
             paint : {
@@ -41,8 +24,8 @@ Canvas log:
             }
         }
     }
-    2 : {
-        commandIndex : 2
+    1 : {
+        commandIndex : 1
         method : "drawRect"
         params : {
             paint : {
@@ -63,8 +46,8 @@ Canvas log:
             }
         }
     }
-    3 : {
-        commandIndex : 3
+    2 : {
+        commandIndex : 2
         method : "drawImageRect"
         params : {
             dst : {
@@ -96,21 +79,21 @@ Canvas log:
             }
         }
     }
-    4 : {
-        commandIndex : 4
+    3 : {
+        commandIndex : 3
         method : "save"
         params : undefined
     }
-    5 : {
-        commandIndex : 5
+    4 : {
+        commandIndex : 4
         method : "translate"
         params : {
             dx : 0
             dy : 71
         }
     }
-    6 : {
-        commandIndex : 6
+    5 : {
+        commandIndex : 5
         method : "clipRect"
         params : {
             SkRegion::Op : "kIntersect_Op"
@@ -123,8 +106,8 @@ Canvas log:
             softClipEdgeStyle : true
         }
     }
-    7 : {
-        commandIndex : 7
+    6 : {
+        commandIndex : 6
         method : "drawRect"
         params : {
             paint : {
@@ -145,8 +128,8 @@ Canvas log:
             }
         }
     }
-    8 : {
-        commandIndex : 8
+    7 : {
+        commandIndex : 7
         method : "restore"
         params : undefined
     }

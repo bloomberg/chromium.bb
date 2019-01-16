@@ -47,14 +47,11 @@
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-namespace cc {
-class Layer;
-}
-
 namespace blink {
 
 class Color;
 class GraphicsContext;
+class GraphicsLayer;
 class InspectedFrames;
 class InspectorDOMAgent;
 class LocalFrame;
@@ -134,7 +131,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   // For CompositeAfterPaint.
   void PaintOverlay(GraphicsContext&);
 
-  bool IsInspectorLayer(const cc::Layer*) const;
+  bool IsInspectorLayer(GraphicsLayer*);
 
  private:
   class InspectorOverlayChromeClient;
