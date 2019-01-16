@@ -26,6 +26,7 @@
 // https://html.spec.whatwg.org/multipage/webstorage.html#the-storageevent-interface
 
 [
+    Exposed=Window,
     Constructor(DOMString type, optional StorageEventInit eventInitDict)
 ] interface StorageEvent : Event {
     readonly attribute DOMString? key;
@@ -34,13 +35,12 @@
     readonly attribute USVString url;
     readonly attribute Storage? storageArea;
 
-    // Non-standard API
-    [Measure, LegacyInterfaceTypeChecking] void initStorageEvent([Default=Undefined] optional DOMString typeArg,
-                                                                 [Default=Undefined] optional boolean canBubbleArg,
-                                                                 [Default=Undefined] optional boolean cancelableArg,
-                                                                 [Default=Undefined] optional DOMString keyArg,
-                                                                 [Default=Undefined] optional DOMString? oldValueArg,
-                                                                 [Default=Undefined] optional DOMString? newValueArg,
-                                                                 [Default=Undefined] optional USVString urlArg,
-                                                                 [Default=Undefined] optional Storage storageAreaArg);
+    [Measure] void initStorageEvent(DOMString type,
+                                    optional boolean bubbles = false,
+                                    optional boolean cancelable = false,
+                                    optional DOMString? key = null,
+                                    optional DOMString? oldValue = null,
+                                    optional DOMString? newValue = null,
+                                    optional USVString url = "",
+                                    optional Storage? storageArea = null);
 };
