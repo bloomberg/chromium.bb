@@ -8,6 +8,7 @@
 #import <WebKit/WebKit.h>
 
 #import "base/test/ios/wait_util.h"
+#include "base/timer/elapsed_timer.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 
@@ -26,6 +27,33 @@ void ExecuteScriptForTesting(web::WebInterstitialImpl* interstitial,
                              web::JavaScriptResultBlock handler) {
   DCHECK(interstitial);
   interstitial->ExecuteJavaScript(script, handler);
+}
+
+void WaitUntilWindowIdInjected(WebState* web_state) {
+  bool is_window_id_injected = false;
+  bool is_timeout = false;
+  bool is_unrecoverable_error = false;
+
+  base::ElapsedTimer timer;
+  base::TimeDelta timeout =
+      base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
+
+  // Keep polling until either the JavaScript execution returns with expected
+  // value (indicating that Window ID is set), the timeout occurs, or an
+  // unrecoverable error occurs.
+  while (!is_window_id_injected && !is_timeout && !is_unrecoverable_error) {
+    NSError* error = nil;
+    id result = ExecuteJavaScript(web_state, @"0", &error);
+    if (error) {
+      is_unrecoverable_error = ![error.domain isEqual:WKErrorDomain] ||
+                               error.code != WKErrorJavaScriptExceptionOccurred;
+    } else {
+      is_window_id_injected = [result isEqual:@0];
+    }
+    is_timeout = timeout < timer.Elapsed();
+  }
+  GREYAssertFalse(is_timeout, @"windowID injection timed out");
+  GREYAssertFalse(is_unrecoverable_error, @"script execution error");
 }
 
 id ExecuteJavaScript(WebState* web_state,

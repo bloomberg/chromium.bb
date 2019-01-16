@@ -11,6 +11,11 @@
 
 namespace web {
 
+// Waits until the Window ID has been injected and the page is thus ready to
+// respond to JavaScript injection. Fails with a GREYAssert on timeout or if
+// unrecoverable error (such as no web view) occurs.
+void WaitUntilWindowIdInjected(WebState* web_state);
+
 // Executes |javascript| on the given |web_state|, and waits until execution is
 // completed. If |out_error| is not nil, it is set to the error resulting from
 // the execution, if one occurs. The return value is the result of the
