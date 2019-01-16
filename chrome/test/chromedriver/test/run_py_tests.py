@@ -1423,83 +1423,110 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     document = self._driver.SendCommandAndGetResult('DOM.getDocument', params)
     self.assertTrue('root' in document)
 
-  def testShadowDomFindElementWithSlashDeep(self):
-    """Checks that chromedriver can find elements in a shadow DOM using /deep/
-    css selectors."""
+  def _FindElementInShadowDom(self, css_selectors):
+    """Find an element inside shadow DOM using CSS selectors.
+    The last item in css_selectors identify the element to find. All preceding
+    selectors identify the hierarchy of shadow hosts to traverse in order to
+    reach the target shadow DOM."""
+    current = None
+    for selector in css_selectors:
+      if current is None:
+        # First CSS selector, start from root DOM.
+        current = self._driver
+      else:
+        # current is a shadow host selected previously.
+        # Enter the corresponding shadow root.
+        current = self._driver.ExecuteScript(
+            'return arguments[0].shadowRoot', current)
+      current = current.FindElement('css', selector)
+    return current
+
+  def testShadowDomFindElement(self):
+    """Checks that chromedriver can find elements in a shadow DOM."""
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/shadow_dom_test.html'))
-    self.assertTrue(self._driver.FindElement("css", "* /deep/ #olderTextBox"))
+    self.assertTrue(self._FindElementInShadowDom(
+        ["#innerDiv", "#parentDiv", "#textBox"]))
 
   def testShadowDomFindChildElement(self):
     """Checks that chromedriver can find child elements from a shadow DOM
     element."""
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/shadow_dom_test.html'))
-    elem = self._driver.FindElement("css", "* /deep/ #olderChildDiv")
-    self.assertTrue(elem.FindElement("id", "olderTextBox"))
+    elem = self._FindElementInShadowDom(
+        ["#innerDiv", "#parentDiv", "#childDiv"])
+    self.assertTrue(elem.FindElement("id", "textBox"))
 
-  def testShadowDomFindElementFailsFromRootWithoutSlashDeep(self):
-    """Checks that chromedriver can't find elements in a shadow DOM without
-    /deep/."""
+  def testShadowDomFindElementFailsFromRoot(self):
+    """Checks that chromedriver can't find elements in a shadow DOM from
+    root."""
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/shadow_dom_test.html'))
     # can't find element from the root without /deep/
     with self.assertRaises(chromedriver.NoSuchElement):
-      self._driver.FindElement("id", "#olderTextBox")
+      self._driver.FindElement("id", "#textBox")
 
   def testShadowDomText(self):
     """Checks that chromedriver can find extract the text from a shadow DOM
     element."""
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/shadow_dom_test.html'))
-    elem = self._driver.FindElement("css", "* /deep/ #olderHeading")
-    self.assertEqual("Older Child", elem.GetText())
+    elem = self._FindElementInShadowDom(
+        ["#innerDiv", "#parentDiv", "#heading"])
+    self.assertEqual("Child", elem.GetText())
 
   def testShadowDomSendKeys(self):
     """Checks that chromedriver can call SendKeys on a shadow DOM element."""
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/shadow_dom_test.html'))
-    elem = self._driver.FindElement("css", "* /deep/ #olderTextBox")
+    elem = self._FindElementInShadowDom(
+        ["#innerDiv", "#parentDiv", "#textBox"])
     elem.SendKeys("bar")
     self.assertEqual("foobar", self._driver.ExecuteScript(
-        'return document.querySelector("* /deep/ #olderTextBox").value;'))
+        'return arguments[0].value;', elem))
 
   def testShadowDomClear(self):
     """Checks that chromedriver can call Clear on a shadow DOM element."""
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/shadow_dom_test.html'))
-    elem = self._driver.FindElement("css", "* /deep/ #olderTextBox")
+    elem = self._FindElementInShadowDom(
+        ["#innerDiv", "#parentDiv", "#textBox"])
     elem.Clear()
     self.assertEqual("", self._driver.ExecuteScript(
-        'return document.querySelector("* /deep/ #olderTextBox").value;'))
+        'return arguments[0].value;', elem))
 
   def testShadowDomClick(self):
     """Checks that chromedriver can call Click on an element in a shadow DOM."""
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/shadow_dom_test.html'))
-    elem = self._driver.FindElement("css", "* /deep/ #olderButton")
+    elem = self._FindElementInShadowDom(
+        ["#innerDiv", "#parentDiv", "#button"])
     elem.Click()
     # the button's onClicked handler changes the text box's value
     self.assertEqual("Button Was Clicked", self._driver.ExecuteScript(
-        'return document.querySelector("* /deep/ #olderTextBox").value;'))
+        'return arguments[0].value;',
+        self._FindElementInShadowDom(["#innerDiv", "#parentDiv", "#textBox"])))
 
   def testShadowDomHover(self):
     """Checks that chromedriver can call HoverOver on an element in a
     shadow DOM."""
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/shadow_dom_test.html'))
-    elem = self._driver.FindElement("css", "* /deep/ #olderButton")
+    elem = self._FindElementInShadowDom(
+        ["#innerDiv", "#parentDiv", "#button"])
     elem.HoverOver()
     # the button's onMouseOver handler changes the text box's value
     self.assertEqual("Button Was Hovered Over", self._driver.ExecuteScript(
-        'return document.querySelector("* /deep/ #olderTextBox").value;'))
+        'return arguments[0].value;',
+        self._FindElementInShadowDom(["#innerDiv", "#parentDiv", "#textBox"])))
 
   def testShadowDomStaleReference(self):
     """Checks that trying to manipulate shadow DOM elements that are detached
     from the document raises a StaleElementReference exception"""
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/shadow_dom_test.html'))
-    elem = self._driver.FindElement("css", "* /deep/ #olderButton")
+    elem = self._FindElementInShadowDom(
+        ["#innerDiv", "#parentDiv", "#button"])
     self._driver.ExecuteScript(
         'document.querySelector("#outerDiv").innerHTML="<div/>";')
     with self.assertRaises(chromedriver.StaleElementReference):
@@ -1510,9 +1537,10 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     from the document raises a StaleElementReference exception"""
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/shadow_dom_test.html'))
-    elem = self._driver.FindElement("css", "* /deep/ #olderButton")
+    elem = self._FindElementInShadowDom(
+        ["#innerDiv", "#parentDiv", "#button"])
     self.assertTrue(elem.IsDisplayed())
-    elem2 = self._driver.FindElement("css", "* /deep/ #hostContent")
+    elem2 = self._driver.FindElement("css", "#hostContent")
     self.assertTrue(elem2.IsDisplayed())
     self._driver.ExecuteScript(
         'document.querySelector("#outerDiv").style.display="None";')
