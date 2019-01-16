@@ -73,6 +73,13 @@ public abstract class SelectableItemView<E> extends SelectableItemViewBase<E> {
     }
 
     /**
+     * Returns the drawable set for the icon view, if any.
+     */
+    protected Drawable getIconDrawable() {
+        return mIconDrawable;
+    }
+
+    /**
      * Update icon image and background based on whether this item is selected.
      */
     @Override

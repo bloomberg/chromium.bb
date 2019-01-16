@@ -206,6 +206,7 @@
 -keep class org.chromium.chrome.browser.compositor.CompositorViewHolder { <init>(android.content.Context, android.util.AttributeSet); }
 -keep class org.chromium.chrome.browser.contacts_picker.ContactView { <init>(android.content.Context, android.util.AttributeSet); }
 -keep class org.chromium.chrome.browser.contacts_picker.ContactsPickerToolbar { <init>(android.content.Context, android.util.AttributeSet); }
+-keep class org.chromium.chrome.browser.contacts_picker.TopView { <init>(android.content.Context, android.util.AttributeSet); }
 -keep class org.chromium.chrome.browser.contextmenu.TabularContextMenuViewPager { <init>(android.content.Context, android.util.AttributeSet); }
 -keep class org.chromium.chrome.browser.contextual_suggestions.ToolbarView { <init>(android.content.Context, android.util.AttributeSet); }
 -keep class org.chromium.chrome.browser.coordinator.CoordinatorLayoutForPointer { <init>(android.content.Context, android.util.AttributeSet); }

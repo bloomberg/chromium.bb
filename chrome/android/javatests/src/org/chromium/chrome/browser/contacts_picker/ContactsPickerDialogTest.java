@@ -141,20 +141,32 @@ public class ContactsPickerDialogTest
         return dialog;
     }
 
+    /**
+     * Clicks a single view in the RecyclerView that occupies slot |position|. Note that even though
+     * the first entry in the RecyclerView is a Select All checkbox, this function automatically
+     * skips past it. This way, calling clickView for |position| 0 will click the first Contact in
+     * the list (and not the Select All checkbox).
+     * @param position The position of the item to click (zero-based), or -1 if the intention is to
+     *                 toggle the Select All checkbox.
+     * @param expectedSelectionCount The expected selection count after the view has been clicked.
+     * @param expectSelection True if the clicked-on view should become selected.
+     */
     private void clickView(final int position, final int expectedSelectionCount,
             final boolean expectSelection) throws Exception {
         RecyclerView recyclerView = getRecyclerView();
-        RecyclerViewTestUtils.scrollToView(recyclerView, position);
+        RecyclerViewTestUtils.scrollToView(recyclerView, position + 1);
 
         int callCount = onSelectionCallback.getCallCount();
         TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
-                recyclerView.findViewHolderForAdapterPosition(position).itemView);
+                recyclerView.findViewHolderForAdapterPosition(position + 1).itemView);
         onSelectionCallback.waitForCallback(callCount, 1);
 
         // Validate the correct selection took place.
-        Assert.assertEquals(expectedSelectionCount, mCurrentContactSelection.size());
-        Assert.assertEquals(
-                expectSelection, mSelectionDelegate.isItemSelected(mTestContacts.get(position)));
+        if (position != -1) {
+            Assert.assertEquals(expectedSelectionCount, mCurrentContactSelection.size());
+            Assert.assertEquals(expectSelection,
+                    mSelectionDelegate.isItemSelected(mTestContacts.get(position)));
+        }
     }
 
     private void clickDone() throws Exception {
@@ -180,15 +192,16 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(ContactsPickerAction.CANCEL, mLastActionRecorded);
     }
 
-    private void clickActionButton(final int expectedSelectionCount,
+    private void toggleSelectAll(final int expectedSelectionCount,
             final @ContactsPickerAction int expectedAction) throws Exception {
         mLastActionRecorded = ContactsPickerAction.NUM_ENTRIES;
 
-        ContactsPickerToolbar toolbar =
-                (ContactsPickerToolbar) mDialog.findViewById(R.id.action_bar);
-        View action = toolbar.findViewById(R.id.action);
         int callCount = onActionCallback.getCallCount();
-        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(), action);
+
+        // The clickView function automatically skips the Select All checkbox, which is the first
+        // item in the list. Compensate for that by passing in -1.
+        clickView(-1, expectedSelectionCount,
+                expectedAction == ContactsPickerAction.CONTACTS_SELECTED);
         onActionCallback.waitForCallback(callCount, 1);
         Assert.assertEquals(expectedSelectionCount, mSelectionDelegate.getSelectedItems().size());
         Assert.assertEquals(expectedAction, mLastActionRecorded);
@@ -296,37 +309,25 @@ public class ContactsPickerDialogTest
         createDialog(/* multiselect = */ true, Arrays.asList("image/*"));
         Assert.assertTrue(mDialog.isShowing());
 
-        ContactsPickerToolbar toolbar =
-                (ContactsPickerToolbar) mDialog.findViewById(R.id.action_bar);
-        View action = toolbar.findViewById(R.id.action);
-        Assert.assertEquals(View.VISIBLE, action.getVisibility());
-
-        clickActionButton(6, ContactsPickerAction.SELECT_ALL);
-        clickActionButton(0, ContactsPickerAction.UNDO_SELECT_ALL);
+        toggleSelectAll(6, ContactsPickerAction.SELECT_ALL);
+        toggleSelectAll(0, ContactsPickerAction.UNDO_SELECT_ALL);
 
         // Manually select one item.
-        int expectedSelectionCount = 0;
-        clickView(0, ++expectedSelectionCount, /* expectSelection = */ true);
+        clickView(0, /* expectedSelectionCount = */ 1, /* expectSelection = */ true);
 
-        clickActionButton(6, ContactsPickerAction.SELECT_ALL);
-        clickActionButton(1, ContactsPickerAction.UNDO_SELECT_ALL);
+        toggleSelectAll(6, ContactsPickerAction.SELECT_ALL);
+        toggleSelectAll(0, ContactsPickerAction.UNDO_SELECT_ALL);
 
         // Select the rest of the items manually.
+        int expectedSelectionCount = 0;
         clickView(1, ++expectedSelectionCount, /* expectSelection = */ true);
         clickView(2, ++expectedSelectionCount, /* expectSelection = */ true);
         clickView(3, ++expectedSelectionCount, /* expectSelection = */ true);
         clickView(4, ++expectedSelectionCount, /* expectSelection = */ true);
         clickView(5, ++expectedSelectionCount, /* expectSelection = */ true);
 
-        // Select all should no longer be visible (nothing left to select).
-        Assert.assertEquals(View.GONE, action.getVisibility());
-
-        // Deselect one item. The Select All button should re-appear.
-        clickView(5, --expectedSelectionCount, /* expectSelection = */ false);
-        Assert.assertEquals(View.VISIBLE, action.getVisibility());
-
-        clickActionButton(6, ContactsPickerAction.SELECT_ALL);
-        clickActionButton(5, ContactsPickerAction.UNDO_SELECT_ALL);
+        toggleSelectAll(6, ContactsPickerAction.SELECT_ALL);
+        toggleSelectAll(0, ContactsPickerAction.UNDO_SELECT_ALL);
     }
 
     @Test
