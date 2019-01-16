@@ -89,10 +89,6 @@
              desc="Option shown on printer drop-down list for saving previewed document as a PDF.">
       Save as PDF
     </message>
-    <message name="IDS_PRINT_PREVIEW_PRINT_TO_GOOGLE_DRIVE"
-             desc="Option shown on printer drop-down list for saving previewed document to Google Drive.">
-      Save to Google Drive
-    </message>
     <message name="IDS_PRINT_PREVIEW_SUMMARY_FORMAT_SHORT" desc="Print summary, explaining to the user how many pages will be printed.">
       Total: <ph name="NUMBER_OF_SHEETS">$1<ex>10</ex></ph> <ph name="SHEETS_LABEL">$2<ex>sheets of paper</ex></ph>
     </message>
@@ -210,8 +206,8 @@
     <message name="IDS_PRINT_PREVIEW_MANAGE" desc="Text of link to manage printers.">
       Manage...
     </message>
-    <message name="IDS_PRINT_PREVIEW_SELECT_DESTINATION" desc="Dropdown option to select a destination from dialog." meaning="Label text">
-      Select destination
+    <message name="IDS_PRINT_PREVIEW_CHANGE_DESTINATION" desc="Label on button to change print destination." meaning="Label text">
+      Change...
     </message>
     <message name="IDS_PRINT_PREVIEW_OFFLINE_FOR_YEAR" desc="Shown when printer has been offline for more than a year.">
       Offline for more than a year

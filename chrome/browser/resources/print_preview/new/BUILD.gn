@@ -95,7 +95,6 @@ js_library("header") {
 js_library("destination_settings") {
   deps = [
     ":destination_dialog",
-    ":destination_select",
     ":state",
     "../data:destination",
     "../data:destination_store",
@@ -104,15 +103,6 @@ js_library("destination_settings") {
     "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render",
     "//ui/webui/resources/js:i18n_behavior",
   ]
-}
-
-js_library("destination_select") {
-  deps = [
-    "../data:destination",
-    "../data:user_info",
-    "//ui/webui/resources/js:i18n_behavior",
-  ]
-  externs_list = [ "$externs_path/pending.js" ]
 }
 
 js_library("pages_settings") {
