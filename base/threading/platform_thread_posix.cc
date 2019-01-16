@@ -148,18 +148,26 @@ bool CreateThread(size_t stack_size,
 // CHECK/DCHECKs.
 thread_local pid_t g_thread_id = -1;
 
-void ClearTidCache() {
-  g_thread_id = -1;
-}
-
 class InitAtFork {
  public:
-  InitAtFork() { pthread_atfork(nullptr, nullptr, ClearTidCache); }
+  InitAtFork() { pthread_atfork(nullptr, nullptr, internal::ClearTidCache); }
 };
 
 #endif  // defined(OS_LINUX)
 
 }  // namespace
+
+#if defined(OS_LINUX)
+
+namespace internal {
+
+void ClearTidCache() {
+  g_thread_id = -1;
+}
+
+}  // namespace internal
+
+#endif  // defined(OS_LINUX)
 
 // static
 PlatformThreadId PlatformThread::CurrentId() {
