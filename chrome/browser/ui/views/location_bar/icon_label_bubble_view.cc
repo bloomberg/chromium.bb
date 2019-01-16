@@ -68,8 +68,8 @@ IconLabelBubbleView::SeparatorView::SeparatorView(IconLabelBubbleView* owner) {
 void IconLabelBubbleView::SeparatorView::OnPaint(gfx::Canvas* canvas) {
   const SkColor plain_text_color = owner_->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldDefaultColor);
-  const SkColor separator_color = SkColorSetA(
-      plain_text_color, color_utils::IsDark(plain_text_color) ? 0x59 : 0xCC);
+  const SkColor separator_color =
+      SkColorSetA(color_utils::GetColorWithMaxContrast(plain_text_color), 0x66);
   const float x = GetLocalBounds().right() -
                   owner_->GetEndPaddingWithSeparator() -
                   1.0f / canvas->image_scale();
