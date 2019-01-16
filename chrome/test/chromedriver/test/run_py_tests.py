@@ -245,6 +245,9 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'HeadlessInvalidCertificateTest.*',
         # Tests of the desktop Chrome launch process.
         'LaunchDesktopTest.*',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2737
+        'ChromeDriverTest.testTakeElementScreenshot',
+        'ChromeDriverTest.testTakeElementScreenshotInIframe',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
