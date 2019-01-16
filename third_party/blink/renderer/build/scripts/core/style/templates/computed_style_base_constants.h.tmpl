@@ -14,7 +14,7 @@ namespace blink {
 {% for enum in enums %}
 enum class {{enum.type_name}} : unsigned {
   {% for value in enum.values %}
-  {{value}}{{print_if(enum.is_set, " = " ~ (0 if loop.first else 2**loop.index0))}},
+  {{value}}{{print_if(enum.is_set, " = " ~ (0 if loop.first else 2**(loop.index0 - 1)))}},
   {% endfor %}
 };
 

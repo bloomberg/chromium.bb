@@ -85,6 +85,7 @@ ASSERT_SIZE(BorderValue, SameSizeAsBorderValue);
 // Since different compilers/architectures pack ComputedStyle differently,
 // re-create the same structure for an accurate size comparison.
 struct SameSizeAsComputedStyle : public RefCounted<SameSizeAsComputedStyle> {
+  unsigned extra_;
   struct ComputedStyleBase {
     void* data_refs[7];
     unsigned bitfields_[4];

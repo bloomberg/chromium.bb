@@ -877,7 +877,9 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyWhiteSpace:
       return value_id == CSSValueNormal || value_id == CSSValuePre ||
              value_id == CSSValuePreWrap || value_id == CSSValuePreLine ||
-             value_id == CSSValueNowrap;
+             value_id == CSSValueNowrap ||
+             (RuntimeEnabledFeatures::CSS3TextBreakSpacesEnabled() &&
+              value_id == CSSValueBreakSpaces);
     case CSSPropertyWordBreak:
       return value_id == CSSValueNormal || value_id == CSSValueBreakAll ||
              value_id == CSSValueKeepAll || value_id == CSSValueBreakWord;
