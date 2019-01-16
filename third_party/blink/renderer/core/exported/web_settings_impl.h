@@ -126,7 +126,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetPassiveEventListenerDefault(PassiveEventListenerDefault) override;
   void SetPasswordEchoDurationInSeconds(double) override;
   void SetPasswordEchoEnabled(bool) override;
-  void SetPerTilePaintingEnabled(bool) override;
   void SetPictographFontFamily(const WebString&,
                                UScriptCode = USCRIPT_COMMON) override;
   void SetPluginsEnabled(bool) override;
@@ -150,7 +149,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetShouldClearDocumentBackground(bool) override;
   void SetShouldRespectImageOrientation(bool) override;
   void SetShowContextMenuOnMouseUp(bool) override;
-  void SetShowPaintRects(bool) override;
   void SetShrinksViewportContentToFit(bool) override;
   void SetSmartInsertDeleteEnabled(bool) override;
   void SetSmoothScrollForFindEnabled(bool) override;
@@ -218,7 +216,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetLazyImageLoadingDistanceThresholdPx3G(int) override;
   void SetLazyImageLoadingDistanceThresholdPx4G(int) override;
 
-  bool ShowPaintRects() const { return show_paint_rects_; }
   bool RenderVSyncNotificationEnabled() const {
     return render_v_sync_notification_enabled_;
   }
@@ -226,7 +223,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
     return auto_zoom_focused_node_to_legible_scale_;
   }
   bool DoubleTapToZoomEnabled() const;
-  bool PerTilePaintingEnabled() const { return per_tile_painting_enabled_; }
   bool SupportDeprecatedTargetDensityDPI() const {
     return support_deprecated_target_density_dpi_;
   }
@@ -247,10 +243,8 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
  private:
   Settings* settings_;
   UntracedMember<DevToolsEmulator> dev_tools_emulator_;
-  bool show_paint_rects_;
   bool render_v_sync_notification_enabled_;
   bool auto_zoom_focused_node_to_legible_scale_;
-  bool per_tile_painting_enabled_;
   bool support_deprecated_target_density_dpi_;
   // This quirk is to maintain compatibility with Android apps built on
   // the Android SDK prior to and including version 18. Presumably, this

@@ -360,7 +360,12 @@ Response InspectorOverlayAgent::setShowDebugBorders(bool show) {
     if (!response.isSuccess())
       return response;
   }
-  frame_impl_->ViewImpl()->SetShowDebugBorders(show);
+  WebFrameWidget* widget = frame_impl_->LocalRoot()->FrameWidget();
+  WebFrameWidgetBase* widget_impl = static_cast<WebFrameWidgetBase*>(widget);
+  // While a frame is being detached the inspector will shutdown and
+  // turn off debug overlays, but the WebFrameWidget is already gone.
+  if (widget_impl)
+    widget_impl->Client()->SetShowDebugBorders(show);
   return Response::OK();
 }
 
@@ -387,7 +392,12 @@ Response InspectorOverlayAgent::setShowPaintRects(bool show) {
     if (!response.isSuccess())
       return response;
   }
-  frame_impl_->ViewImpl()->SetShowPaintRects(show);
+  WebFrameWidget* widget = frame_impl_->LocalRoot()->FrameWidget();
+  WebFrameWidgetBase* widget_impl = static_cast<WebFrameWidgetBase*>(widget);
+  // While a frame is being detached the inspector will shutdown and
+  // turn off debug overlays, but the WebFrameWidget is already gone.
+  if (widget_impl)
+    widget_impl->Client()->SetShowPaintRects(show);
   if (!show && frame_impl_->GetFrameView())
     frame_impl_->GetFrameView()->Invalidate();
   return Response::OK();
@@ -400,7 +410,12 @@ Response InspectorOverlayAgent::setShowScrollBottleneckRects(bool show) {
     if (!response.isSuccess())
       return response;
   }
-  frame_impl_->ViewImpl()->SetShowScrollBottleneckRects(show);
+  WebFrameWidget* widget = frame_impl_->LocalRoot()->FrameWidget();
+  WebFrameWidgetBase* widget_impl = static_cast<WebFrameWidgetBase*>(widget);
+  // While a frame is being detached the inspector will shutdown and
+  // turn off debug overlays, but the WebFrameWidget is already gone.
+  if (widget_impl)
+    widget_impl->Client()->SetShowScrollBottleneckRects(show);
   return Response::OK();
 }
 
@@ -411,7 +426,12 @@ Response InspectorOverlayAgent::setShowHitTestBorders(bool show) {
     if (!response.isSuccess())
       return response;
   }
-  frame_impl_->ViewImpl()->SetShowHitTestBorders(show);
+  WebFrameWidget* widget = frame_impl_->LocalRoot()->FrameWidget();
+  WebFrameWidgetBase* widget_impl = static_cast<WebFrameWidgetBase*>(widget);
+  // While a frame is being detached the inspector will shutdown and
+  // turn off debug overlays, but the WebFrameWidget is already gone.
+  if (widget_impl)
+    widget_impl->Client()->SetShowHitTestBorders(show);
   return Response::OK();
 }
 
