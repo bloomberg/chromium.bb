@@ -25,8 +25,10 @@ cr.define('omnibox_output', function() {
     constructor() {
       super('omnibox-output-template');
 
-      /** @type {!Array<!mojom.OmniboxResult>} */
-      this.responses = [];
+      /** @private {number} */
+      this.selectedResponseIndex_ = 0;
+      /** @type {!Array<!Array<!mojom.OmniboxResult>>} */
+      this.responsesHistory = [];
       /** @private {!Array<!OutputResultsGroup>} */
       this.resultsGroups_ = [];
       /** @private {!QueryInputs} */
@@ -54,16 +56,53 @@ cr.define('omnibox_output', function() {
       this.updateFilterHighlights_();
     }
 
-    clearAutocompleteResponses() {
-      this.responses = [];
-      this.resultsGroups_ = [];
-      clearChildren(this.$$('#contents'));
+    /** @param {!Array<!Array<!mojom.OmniboxResult>>} responsesHistory */
+    setResponsesHistory(responsesHistory) {
+      this.responsesHistory = responsesHistory;
+      this.dispatchEvent(new CustomEvent(
+          'responses-count-changed', {detail: responsesHistory.length}));
+      this.updateSelectedResponseIndex(this.selectedResponseIndex_);
+    }
+
+    /** @param {number} selection */
+    updateSelectedResponseIndex(selection) {
+      if (selection >= 0 && selection < this.responsesHistory.length) {
+        this.selectedResponseIndex_ = selection;
+        this.clearResultsGroups_();
+        this.responsesHistory[selection].forEach(
+            this.createResultsGroup_.bind(this));
+      }
+    }
+
+    prepareNewQuery() {
+      this.responsesHistory.push([]);
+      this.dispatchEvent(new CustomEvent(
+          'responses-count-changed', {detail: this.responsesHistory.length}));
     }
 
     /** @param {!mojom.OmniboxResult} response */
     addAutocompleteResponse(response) {
-      this.responses.push(response);
+      const lastIndex = this.responsesHistory.length - 1;
+      this.responsesHistory[lastIndex].push(response);
+      if (lastIndex === this.selectedResponseIndex_) {
+        this.createResultsGroup_(response);
+      }
+    }
 
+    /**
+     * Clears result groups from the UI.
+     * @private
+     */
+    clearResultsGroups_() {
+      this.resultsGroups_ = [];
+      clearChildren(this.$$('#contents'));
+    }
+
+    /**
+     * Creates and adds a result group to the UI.
+     * @private @param {!mojom.OmniboxResult} response
+     */
+    createResultsGroup_(response) {
       const resultsGroup =
           OutputResultsGroup.create(response, this.queryInputs_.cursorPosition);
       this.resultsGroups_.push(resultsGroup);
@@ -71,12 +110,6 @@ cr.define('omnibox_output', function() {
 
       this.updateVisibility_();
       this.updateFilterHighlights_();
-    }
-
-    /** @param {!Array<!mojom.OmniboxResult>} responses */
-    setAutocompleteResponses(responses) {
-      this.clearAutocompleteResponses();
-      responses.forEach(this.addAutocompleteResponse.bind(this));
     }
 
     /**

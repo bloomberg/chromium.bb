@@ -38,6 +38,18 @@
             </span>
           </label>
         </div>
+        <div class="row response-selection-container">
+          <span>Quer<span class="accesskey">y</span></span>
+          <input id="response-selection" type="number" accesskey="y" value="0"
+                 min="0" max="0">
+          <span>of <span id="responses-count">0</span></span>
+        </div>
+        <div id="history-warning" class="row" hidden>
+          <span class="warning-text"
+                title="The output you are currently viewing is historical and may not reflect the current inputs.">
+            Viewing historical data
+          </span>
+        </div>
       </div>
 
       <div class="top-column">
@@ -170,7 +182,7 @@
         </div>
         <div id="imported-warning" class="row" hidden>
           <span class="warning-text"
-                title="The output you are currently viewing was imported and may not be the same as if you had entered these inputs now.">
+                title="The output you are currently viewing is imported and may not be the same as if you had entered these inputs now.">
             Viewing imported data
           </span>
         </div>
