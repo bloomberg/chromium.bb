@@ -115,7 +115,7 @@ struct AwDrawFn_DrawVkParams {
   float transfer_function_d;
   float transfer_function_e;
   float transfer_function_f;
-  float color_space_matrix[9];
+  float color_space_toXYZD50[9];
 
   // Input: current clip rect
   int clip_left;

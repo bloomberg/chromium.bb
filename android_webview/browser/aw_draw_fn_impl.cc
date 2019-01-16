@@ -408,9 +408,9 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
       params->transfer_function_b, params->transfer_function_c,
       params->transfer_function_e, params->transfer_function_f};
   skcms_Matrix3x3 to_xyz;
-  static_assert(sizeof(to_xyz.vals) == sizeof(params->color_space_matrix),
+  static_assert(sizeof(to_xyz.vals) == sizeof(params->color_space_toXYZD50),
                 "Color space matrix sizes do not match");
-  memcpy(&to_xyz.vals[0][0], &params->color_space_matrix[0],
+  memcpy(&to_xyz.vals[0][0], &params->color_space_toXYZD50[0],
          sizeof(to_xyz.vals));
   sk_sp<SkColorSpace> color_space = SkColorSpace::MakeRGB(transfer_fn, to_xyz);
   // TODO(ericrk): Use colorspace.
