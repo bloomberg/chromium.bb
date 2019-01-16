@@ -198,9 +198,8 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
   void OnRegisteredModulesEnumerated();
 
   // Callback for ModuleInspector.
-  void OnModuleInspected(
-      const ModuleInfoKey& module_key,
-      std::unique_ptr<ModuleInspectionResult> inspection_result);
+  void OnModuleInspected(const ModuleInfoKey& module_key,
+                         ModuleInspectionResult inspection_result);
 
   // If the ModuleDatabase is truly idle, calls EnterIdleState().
   void OnDelayExpired();

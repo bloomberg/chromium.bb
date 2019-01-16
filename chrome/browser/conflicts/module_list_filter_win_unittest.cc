@@ -127,8 +127,8 @@ ModuleInfo CreateModuleInfo(const base::FilePath& module_path,
                                           module_time_date_stamp, 0),
                     std::forward_as_tuple());
 
-  result.second.inspection_result = std::make_unique<ModuleInspectionResult>();
-
+  result.second.inspection_result =
+      base::make_optional<ModuleInspectionResult>();
   result.second.inspection_result->basename = module_path.BaseName().value();
 
   return result;

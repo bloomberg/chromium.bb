@@ -334,7 +334,7 @@ void ModuleDatabase::OnRegisteredModulesEnumerated() {
 
 void ModuleDatabase::OnModuleInspected(
     const ModuleInfoKey& module_key,
-    std::unique_ptr<ModuleInspectionResult> inspection_result) {
+    ModuleInspectionResult inspection_result) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   auto it = modules_.find(module_key);
