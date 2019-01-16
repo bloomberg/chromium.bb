@@ -578,6 +578,9 @@ queryViewBlockForProvider:(id<FormInputSuggestionsProvider>)provider
 - (void)handleTextInputDidEndEditing:(NSNotification*)notification {
   self.editingUIKitTextInput = NO;
   [self continueCustomKeyboardView];
+  if (IsIPadIdiom()) {
+    [self updateSuggestionsIfNeeded];
+  }
 }
 
 #pragma mark - PasswordFetcherDelegate
