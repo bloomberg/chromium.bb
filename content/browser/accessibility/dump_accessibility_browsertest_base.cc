@@ -141,7 +141,6 @@ std::vector<int> DumpAccessibilityTestBase::DiffLines(
 
 void DumpAccessibilityTestBase::ParseHtmlForExtraDirectives(
     const std::string& test_html,
-    std::vector<Filter>* filters,
     std::vector<std::string>* wait_for,
     std::vector<std::string>* run_until) {
   for (const std::string& line :
@@ -154,17 +153,17 @@ void DumpAccessibilityTestBase::ParseHtmlForExtraDirectives(
     const std::string& until_str = "@RUN-UNTIL-EVENT:";
     if (base::StartsWith(line, allow_empty_str,
                          base::CompareCase::SENSITIVE)) {
-      filters->push_back(
+      filters_.push_back(
           Filter(base::UTF8ToUTF16(line.substr(allow_empty_str.size())),
                  Filter::ALLOW_EMPTY));
     } else if (base::StartsWith(line, allow_str,
                                 base::CompareCase::SENSITIVE)) {
-      filters->push_back(Filter(base::UTF8ToUTF16(
+      filters_.push_back(Filter(base::UTF8ToUTF16(
           line.substr(allow_str.size())),
                                 Filter::ALLOW));
     } else if (base::StartsWith(line, deny_str,
                                 base::CompareCase::SENSITIVE)) {
-      filters->push_back(Filter(base::UTF8ToUTF16(
+      filters_.push_back(Filter(base::UTF8ToUTF16(
           line.substr(deny_str.size())),
                                 Filter::DENY));
     } else if (base::StartsWith(line, wait_str,
@@ -262,7 +261,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   std::vector<std::string> run_until;
   filters_.clear();
   AddDefaultFilters(&filters_);
-  ParseHtmlForExtraDirectives(html_contents, &filters_, &wait_for, &run_until);
+  ParseHtmlForExtraDirectives(html_contents, &wait_for, &run_until);
 
   // Get the test URL.
   GURL url(embedded_test_server()->GetURL(
