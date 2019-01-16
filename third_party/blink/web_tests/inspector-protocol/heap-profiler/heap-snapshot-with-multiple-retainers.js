@@ -55,7 +55,8 @@
   var retainingPaths = [];
   for (var iter = eventListener.retainers(); iter.hasNext(); iter.next()) {
     var path = helper.firstRetainingPath(iter.retainer.node());
-    path = path.map(node => node.name());
+    path = path.map(
+        node => (node.name().includes("::")) ? "InternalNode" : node.name());
     retainingPaths.push(path.join(', '));
   }
 

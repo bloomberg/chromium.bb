@@ -4,8 +4,8 @@
 
 #include <string.h>
 
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
 #include "third_party/blink/renderer/platform/heap/name_traits.h"
 
 namespace blink {
@@ -29,10 +29,20 @@ class ClassWithName : public NameClient {
 
 }  // namespace
 
+TEST(NameTraitTest, InternalNamesHiddenInOfficialBuild) {
+#if defined(OFFICIAL_BUILD)
+  EXPECT_TRUE(NameTrait<ClassWithoutName>::HideInternalName());
+#endif
+}
+
 TEST(NameTraitTest, DefaultName) {
   ClassWithoutName no_name;
   const char* name = NameTrait<ClassWithoutName>::GetName(&no_name);
-  EXPECT_EQ(0, strcmp(name, "InternalNode"));
+  if (NameTrait<ClassWithoutName>::HideInternalName()) {
+    EXPECT_EQ(0, strcmp(name, "InternalNode"));
+  } else {
+    EXPECT_NE(nullptr, strstr(name, "ClassWithoutName"));
+  }
 }
 
 TEST(NameTraitTest, CustomName) {
