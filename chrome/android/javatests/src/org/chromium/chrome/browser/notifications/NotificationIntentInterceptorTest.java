@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.notifications;
 
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -56,8 +55,9 @@ public class NotificationIntentInterceptorTest {
     // Builds a simple notification used in tests.
     private Notification buildSimpleNotification(String title) {
         ChromeNotificationBuilder builder =
-                NotificationBuilderFactory.createChromeNotificationBuilder(
-                        true /* preferCompat */, ChannelDefinitions.ChannelId.DOWNLOADS);
+                NotificationBuilderFactory.createChromeNotificationBuilder(true /* preferCompat */,
+                        ChannelDefinitions.ChannelId.DOWNLOADS, null /* remoteAppPackageName */,
+                        NotificationTestUtil.getTestNotificationMetadata());
 
         // Set content intent. UI automator may tap the notification and expand the action buttons,
         // in order to reduce flakiness, don't add action button.
@@ -66,11 +66,10 @@ public class NotificationIntentInterceptorTest {
         Uri uri = Uri.parse("www.example.com");
         contentIntent.setData(uri);
         contentIntent.setAction(Intent.ACTION_VIEW);
-        PendingIntent contentPendingIntent =
-                PendingIntent.getActivity(context, 0, contentIntent, 0);
+        PendingIntentProvider contentPendingIntent =
+                PendingIntentProvider.getActivity(context, 0, contentIntent, 0);
         assert contentPendingIntent != null;
-        builder.setContentIntent(NotificationIntentInterceptor.createInterceptPendingIntent(
-                NotificationIntentInterceptor.IntentType.CONTENT_INTENT, contentPendingIntent));
+        builder.setContentIntent(contentPendingIntent);
         builder.setContentTitle(title);
         builder.setSmallIcon(R.drawable.offline_pin);
         return builder.build();

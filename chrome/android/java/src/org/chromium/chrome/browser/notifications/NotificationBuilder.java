@@ -23,15 +23,17 @@ import org.chromium.chrome.browser.notifications.channels.ChannelsInitializer;
 public class NotificationBuilder implements ChromeNotificationBuilder {
     private final Notification.Builder mBuilder;
     private final Context mContext;
+    private final NotificationMetadata mMetadata;
 
-    NotificationBuilder(
-            Context context, String channelId, ChannelsInitializer channelsInitializer) {
+    NotificationBuilder(Context context, String channelId, ChannelsInitializer channelsInitializer,
+            NotificationMetadata metadata) {
         mContext = context;
         mBuilder = new Notification.Builder(mContext);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             channelsInitializer.safeInitialize(channelId);
             mBuilder.setChannelId(channelId);
         }
+        mMetadata = metadata;
     }
 
     @Override
@@ -43,6 +45,16 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
     @Override
     public ChromeNotificationBuilder setContentIntent(PendingIntent contentIntent) {
         mBuilder.setContentIntent(contentIntent);
+        return this;
+    }
+
+    @Override
+    public ChromeNotificationBuilder setContentIntent(PendingIntentProvider contentIntent) {
+        assert (mMetadata != null);
+        PendingIntent pendingIntent = NotificationIntentInterceptor.createInterceptPendingIntent(
+                NotificationIntentInterceptor.IntentType.CONTENT_INTENT, 0 /* intentId */,
+                mMetadata, contentIntent);
+        mBuilder.setContentIntent(pendingIntent);
         return this;
     }
 
