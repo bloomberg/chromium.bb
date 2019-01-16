@@ -28,6 +28,7 @@ public class ContextualSearchUma {
     // Constants to use for the original selection gesture
     private static final boolean LONG_PRESS = false;
     private static final boolean TAP = true;
+    private static final int MILLIS_IN_A_DAY = 1000 * 60 * 60 * 24;
 
     // Constants used to log UMA "enum" histograms about the Contextual Search's preference state.
     @IntDef({Preference.UNINITIALIZED, Preference.ENABLED, Preference.DISABLED})
@@ -1305,6 +1306,17 @@ public class ContextualSearchUma {
                 "Search.ContextualSearchPrevious28DayImpressions", previous28DayImpressions);
         RecordHistogram.recordPercentageHistogram(
                 "Search.ContextualSearchPrevious28DayCtr", previous28DayCtr);
+    }
+
+    /**
+     * Logs a duration since the outcomes (and associated timestamp) were saved in persistent
+     * storage.
+     * @param durationMs The duration to log, in milliseconds.
+     */
+    public static void logOutcomesTimestamp(long durationMs) {
+        int durationInDays = (int) (durationMs / MILLIS_IN_A_DAY);
+        RecordHistogram.recordCount100Histogram(
+                "Search.ContextualSearch.OutcomesDuration", durationInDays);
     }
 
     /**
