@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/autofill/core/browser/legacy_strike_database.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/application_context.h"
@@ -23,7 +23,8 @@ LegacyStrikeDatabase* LegacyStrikeDatabaseFactory::GetForBrowserState(
 
 // static
 LegacyStrikeDatabaseFactory* LegacyStrikeDatabaseFactory::GetInstance() {
-  return base::Singleton<LegacyStrikeDatabaseFactory>::get();
+  static base::NoDestructor<LegacyStrikeDatabaseFactory> instance;
+  return instance.get();
 }
 
 LegacyStrikeDatabaseFactory::LegacyStrikeDatabaseFactory()

@@ -15,9 +15,8 @@
 namespace autofill {
 
 AutofillProfileValidator* AutofillProfileValidatorFactory::GetInstance() {
-  static base::LazyInstance<AutofillProfileValidatorFactory>::DestructorAtExit
-      instance = LAZY_INSTANCE_INITIALIZER;
-  return &(instance.Get().autofill_profile_validator_);
+  static base::NoDestructor<AutofillProfileValidatorFactory> instance;
+  return &(instance->autofill_profile_validator_);
 }
 
 AutofillProfileValidatorFactory::AutofillProfileValidatorFactory()
