@@ -29,7 +29,6 @@ static_library("multidevice") {
   deps = [
     "//base",
     "//base:i18n",
-    "//chromeos",
     "//chromeos/components/multidevice/logging",
     "//chromeos/dbus",
     "//chromeos/services/device_sync/proto",

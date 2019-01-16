@@ -16,7 +16,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/system/devicetype.h"
+#include "chromeos/constants/devicetype.h"
 #elif defined(OS_LINUX)
 #include "components/sync/base/get_session_name_linux.h"
 #elif defined(OS_IOS)

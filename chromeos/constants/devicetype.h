@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_SYSTEM_DEVICETYPE_H_
-#define CHROMEOS_SYSTEM_DEVICETYPE_H_
+#ifndef CHROMEOS_CONSTANTS_DEVICETYPE_H_
+#define CHROMEOS_CONSTANTS_DEVICETYPE_H_
 
 #include "chromeos/chromeos_export.h"
 
@@ -22,4 +22,4 @@ CHROMEOS_EXPORT DeviceType GetDeviceType();
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_SYSTEM_DEVICETYPE_H_
+#endif  // CHROMEOS_CONSTANTS_DEVICETYPE_H_

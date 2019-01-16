@@ -61,7 +61,6 @@ jumbo_component("keyboard") {
     ":mojom",
     ":resources",
     "//base",
-    "//chromeos",
     "//services/metrics/public/cpp:ukm_builders",
     "//ui/aura",
     "//ui/base",

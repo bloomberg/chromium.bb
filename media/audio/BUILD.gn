@@ -272,10 +272,7 @@ source_set("audio") {
       "cras/cras_unified.h",
     ]
     configs += [ ":libcras" ]
-    deps += [
-      "//chromeos/audio",
-      "//chromeos/dbus",
-    ]
+    deps += [ "//chromeos/audio" ]
   }
 
   if (use_pulseaudio) {

@@ -22,7 +22,6 @@ component("drivefs") {
   ]
   deps = [
     "//base",
-    "//chromeos",
     "//chromeos/components/drivefs/mojom",
     "//chromeos/dbus",
     "//chromeos/disks",
@@ -49,9 +48,8 @@ source_set("test_support") {
   deps = [
     ":drivefs",
     "//base",
-    "//chromeos",
     "//chromeos/components/drivefs/mojom",
-    "//chromeos/dbus",
+    "//chromeos/dbus:test_support",
     "//net",
   ]
 }
@@ -71,7 +69,6 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
-    "//chromeos:test_support",
     "//chromeos/components/drivefs/mojom",
     "//chromeos/disks:test_support",
     "//components/drive",

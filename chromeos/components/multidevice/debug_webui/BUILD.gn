@@ -17,7 +17,7 @@ static_library("debug_webui") {
   deps = [
     "//base",
     "//base:i18n",
-    "//chromeos",
+    "//chromeos:chromeos_constants",
     "//chromeos/components/multidevice/logging",
     "//chromeos/components/proximity_auth",
     "//chromeos/resources",
