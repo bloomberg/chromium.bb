@@ -387,10 +387,18 @@ int main(int argc, char *argv[]) {
     printf("Usage: %s [OPTIONS]\n\nOptions\n%s", argv[0], options.c_str());
     return 0;
   }
+  bool early_exit = false;
   if (cmd_line->HasSwitch("v") || cmd_line->HasSwitch("version")) {
     printf("ChromeDriver %s\n", kChromeDriverVersion);
-    return 0;
+    early_exit = true;
   }
+  if (cmd_line->HasSwitch("minimum-chrome-version")) {
+    printf("minimum supported Chrome version: %s\n",
+           GetMinimumSupportedChromeVersion().c_str());
+    early_exit = true;
+  }
+  if (early_exit)
+    return 0;
   if (cmd_line->HasSwitch("port")) {
     int cmd_line_port;
     if (!base::StringToInt(cmd_line->GetSwitchValueASCII("port"),
@@ -463,12 +471,6 @@ int main(int argc, char *argv[]) {
   if (!InitLogging()) {
     printf("Unable to initialize logging. Exiting...\n");
     return 1;
-  }
-
-  if (cmd_line->HasSwitch("minimum-chrome-version")) {
-    printf("minimum supported Chrome version: %s\n",
-           GetMinimumSupportedChromeVersion().c_str());
-    return 0;
   }
 
   mojo::core::Init();
