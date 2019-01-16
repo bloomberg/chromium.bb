@@ -736,22 +736,6 @@ mojom("android_mojo_bindings") {
   export_header_blink = "third_party/blink/public/platform/web_common.h"
 }
 
-mojom("media_devices_mojo_bindings") {
-  sources = [
-    "platform/modules/mediastream/media_devices.mojom",
-  ]
-
-  public_deps = [
-    "//media/capture/mojom:video_capture",
-    "//media/mojo/interfaces",
-    "//ui/gfx/geometry/mojo",
-  ]
-
-  export_class_attribute = "CONTENT_EXPORT"
-  export_define = "CONTENT_IMPLEMENTATION=1"
-  export_header = "content/common/content_export.h"
-}
-
 # The embedded_frame_sink_mojo_bindings is separated from the rest of mojom
 # files because its deps contain too many files in Chromium that would pollute
 # the include paths in generated mojom-blink files for other services.
@@ -818,8 +802,6 @@ group("generate_mojo_bindings") {
     ":core_mojo_bindings_blink_headers",
     ":core_mojo_bindings_headers",
     ":embedded_frame_sink_mojo_bindings_blink_headers",
-    ":media_devices_mojo_bindings_blink_headers",
-    ":media_devices_mojo_bindings_headers",
     ":mojo_bindings_blink_headers",
     ":mojo_bindings_headers",
   ]

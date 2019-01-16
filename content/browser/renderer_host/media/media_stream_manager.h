@@ -47,11 +47,11 @@
 #include "content/browser/renderer_host/media/media_devices_manager.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/common/content_export.h"
-#include "content/common/media/media_devices.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/media_request_state.h"
 #include "content/public/browser/media_stream_request.h"
 #include "media/base/video_facing.h"
+#include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
@@ -314,14 +314,14 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Helper for sending up-to-date device lists to media observer when a
   // capture device is plugged in or unplugged.
-  void NotifyDevicesChanged(MediaDeviceType stream_type,
-                            const MediaDeviceInfoArray& devices);
+  void NotifyDevicesChanged(blink::MediaDeviceType stream_type,
+                            const blink::WebMediaDeviceInfoArray& devices);
 
   // This method is called when an audio or video device is removed. It makes
   // sure all MediaStreams that use a removed device are stopped and that the
   // render process is notified. Must be called on the IO thread.
-  void StopRemovedDevice(MediaDeviceType type,
-                         const MediaDeviceInfo& media_device_info);
+  void StopRemovedDevice(blink::MediaDeviceType type,
+                         const blink::WebMediaDeviceInfo& media_device_info);
 
   void SetGenerateStreamCallbackForTesting(
       GenerateStreamTestCallback test_callback);
@@ -451,15 +451,16 @@ class CONTENT_EXPORT MediaStreamManager
   // Otherwise, if no valid device is found, device_id is unchanged.
   bool PickDeviceId(const MediaDeviceSaltAndOrigin& salt_and_origin,
                     const blink::TrackControls& controls,
-                    const MediaDeviceInfoArray& devices,
+                    const blink::WebMediaDeviceInfoArray& devices,
                     std::string* device_id) const;
 
   // Finds the requested device id from request. The requested device type
   // must be MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.
-  bool GetRequestedDeviceCaptureId(const DeviceRequest* request,
-                                   blink::MediaStreamType type,
-                                   const MediaDeviceInfoArray& devices,
-                                   std::string* device_id) const;
+  bool GetRequestedDeviceCaptureId(
+      const DeviceRequest* request,
+      blink::MediaStreamType type,
+      const blink::WebMediaDeviceInfoArray& devices,
+      std::string* device_id) const;
 
   void TranslateDeviceIdToSourceId(DeviceRequest* request,
                                    blink::MediaStreamDevice* device);
@@ -487,7 +488,7 @@ class CONTENT_EXPORT MediaStreamManager
   // |video_capture_manager_| to set the MediaStreamDevice fields.
   blink::MediaStreamDevices ConvertToMediaStreamDevices(
       blink::MediaStreamType stream_type,
-      const MediaDeviceInfoArray& device_infos);
+      const blink::WebMediaDeviceInfoArray& device_infos);
 
   media::AudioSystem* const audio_system_;  // not owned
   scoped_refptr<AudioInputDeviceManager> audio_input_device_manager_;

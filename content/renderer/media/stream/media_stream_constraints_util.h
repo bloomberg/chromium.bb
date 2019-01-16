@@ -14,7 +14,7 @@
 #include "content/renderer/media/stream/video_track_adapter.h"
 #include "media/base/video_facing.h"
 #include "media/capture/video_capture_types.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_devices.mojom.h"
+#include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 

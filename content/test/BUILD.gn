@@ -1698,7 +1698,6 @@ test("content_unittests") {
     "../common/inter_process_time_ticks_converter_unittest.cc",
     "../common/mac/attributed_string_coder_unittest.mm",
     "../common/manifest_util_unittest.cc",
-    "../common/media/media_devices_unittest.cc",
     "../common/mime_sniffing_throttle_unittest.cc",
     "../common/origin_util_unittest.cc",
     "../common/page_state_serialization_unittest.cc",

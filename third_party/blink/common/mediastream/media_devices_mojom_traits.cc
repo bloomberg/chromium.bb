@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/media/media_devices_mojom_traits.h"
+#include "third_party/blink/public/common/mediastream/media_devices_mojom_traits.h"
 
 #include "base/logging.h"
 
@@ -10,14 +10,14 @@ namespace mojo {
 
 // static
 blink::mojom::MediaDeviceType
-EnumTraits<blink::mojom::MediaDeviceType, content::MediaDeviceType>::ToMojom(
-    content::MediaDeviceType type) {
+EnumTraits<blink::mojom::MediaDeviceType, blink::MediaDeviceType>::ToMojom(
+    blink::MediaDeviceType type) {
   switch (type) {
-    case content::MediaDeviceType::MEDIA_DEVICE_TYPE_AUDIO_INPUT:
+    case blink::MediaDeviceType::MEDIA_DEVICE_TYPE_AUDIO_INPUT:
       return blink::mojom::MediaDeviceType::MEDIA_AUDIO_INPUT;
-    case content::MediaDeviceType::MEDIA_DEVICE_TYPE_VIDEO_INPUT:
+    case blink::MediaDeviceType::MEDIA_DEVICE_TYPE_VIDEO_INPUT:
       return blink::mojom::MediaDeviceType::MEDIA_VIDEO_INPUT;
-    case content::MediaDeviceType::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT:
+    case blink::MediaDeviceType::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT:
       return blink::mojom::MediaDeviceType::MEDIA_AUDIO_OUTPUT;
     default:
       break;
@@ -27,18 +27,18 @@ EnumTraits<blink::mojom::MediaDeviceType, content::MediaDeviceType>::ToMojom(
 }
 
 // static
-bool EnumTraits<blink::mojom::MediaDeviceType, content::MediaDeviceType>::
+bool EnumTraits<blink::mojom::MediaDeviceType, blink::MediaDeviceType>::
     FromMojom(blink::mojom::MediaDeviceType input,
-              content::MediaDeviceType* out) {
+              blink::MediaDeviceType* out) {
   switch (input) {
     case blink::mojom::MediaDeviceType::MEDIA_AUDIO_INPUT:
-      *out = content::MediaDeviceType::MEDIA_DEVICE_TYPE_AUDIO_INPUT;
+      *out = blink::MediaDeviceType::MEDIA_DEVICE_TYPE_AUDIO_INPUT;
       return true;
     case blink::mojom::MediaDeviceType::MEDIA_VIDEO_INPUT:
-      *out = content::MediaDeviceType::MEDIA_DEVICE_TYPE_VIDEO_INPUT;
+      *out = blink::MediaDeviceType::MEDIA_DEVICE_TYPE_VIDEO_INPUT;
       return true;
     case blink::mojom::MediaDeviceType::MEDIA_AUDIO_OUTPUT:
-      *out = content::MediaDeviceType::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT;
+      *out = blink::MediaDeviceType::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT;
       return true;
     default:
       break;
@@ -87,10 +87,10 @@ bool EnumTraits<blink::mojom::FacingMode, media::VideoFacingMode>::FromMojom(
 }
 
 // static
-bool StructTraits<
-    blink::mojom::MediaDeviceInfoDataView,
-    content::MediaDeviceInfo>::Read(blink::mojom::MediaDeviceInfoDataView input,
-                                    content::MediaDeviceInfo* out) {
+bool StructTraits<blink::mojom::MediaDeviceInfoDataView,
+                  blink::WebMediaDeviceInfo>::
+    Read(blink::mojom::MediaDeviceInfoDataView input,
+         blink::WebMediaDeviceInfo* out) {
   if (!input.ReadDeviceId(&out->device_id))
     return false;
   if (!input.ReadLabel(&out->label))

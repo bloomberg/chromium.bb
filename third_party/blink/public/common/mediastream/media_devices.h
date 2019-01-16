@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_MEDIA_MEDIA_DEVICES_H_
-#define CONTENT_COMMON_MEDIA_MEDIA_DEVICES_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_MEDIASTREAM_MEDIA_DEVICES_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_MEDIASTREAM_MEDIA_DEVICES_H_
 
 #include <string>
 #include <vector>
 
-#include "content/common/content_export.h"
 #include "media/base/video_facing.h"
+#include "third_party/blink/public/common/common_export.h"
 
 namespace media {
 struct VideoCaptureDeviceDescriptor;
 }  // namespace media
 
-namespace content {
+namespace blink {
 
 enum MediaDeviceType {
   MEDIA_DEVICE_TYPE_AUDIO_INPUT,
@@ -24,20 +24,20 @@ enum MediaDeviceType {
   NUM_MEDIA_DEVICE_TYPES,
 };
 
-struct CONTENT_EXPORT MediaDeviceInfo {
-  MediaDeviceInfo();
-  MediaDeviceInfo(const MediaDeviceInfo& other);
-  MediaDeviceInfo(MediaDeviceInfo&& other);
-  MediaDeviceInfo(
+struct BLINK_COMMON_EXPORT WebMediaDeviceInfo {
+  WebMediaDeviceInfo();
+  WebMediaDeviceInfo(const WebMediaDeviceInfo& other);
+  WebMediaDeviceInfo(WebMediaDeviceInfo&& other);
+  WebMediaDeviceInfo(
       const std::string& device_id,
       const std::string& label,
       const std::string& group_id,
       media::VideoFacingMode video_facing = media::MEDIA_VIDEO_FACING_NONE);
-  explicit MediaDeviceInfo(
+  explicit WebMediaDeviceInfo(
       const media::VideoCaptureDeviceDescriptor& descriptor);
-  ~MediaDeviceInfo();
-  MediaDeviceInfo& operator=(const MediaDeviceInfo& other);
-  MediaDeviceInfo& operator=(MediaDeviceInfo&& other);
+  ~WebMediaDeviceInfo();
+  WebMediaDeviceInfo& operator=(const WebMediaDeviceInfo& other);
+  WebMediaDeviceInfo& operator=(WebMediaDeviceInfo&& other);
 
   std::string device_id;
   std::string label;
@@ -45,14 +45,15 @@ struct CONTENT_EXPORT MediaDeviceInfo {
   media::VideoFacingMode video_facing;
 };
 
-using MediaDeviceInfoArray = std::vector<MediaDeviceInfo>;
+using WebMediaDeviceInfoArray = std::vector<WebMediaDeviceInfo>;
 
-bool operator==(const MediaDeviceInfo& first, const MediaDeviceInfo& second);
+BLINK_COMMON_EXPORT bool operator==(const WebMediaDeviceInfo& first,
+                                    const WebMediaDeviceInfo& second);
 
 inline bool IsValidMediaDeviceType(MediaDeviceType type) {
   return type >= 0 && type < NUM_MEDIA_DEVICE_TYPES;
 }
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_COMMON_MEDIA_MEDIA_DEVICES_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_MEDIASTREAM_MEDIA_DEVICES_H_

@@ -51,6 +51,7 @@ mojom("mojom_platform") {
     "manifest/display_mode.mojom",
     "manifest/manifest.mojom",
     "manifest/manifest_manager.mojom",
+    "mediastream/media_devices.mojom",
     "mediastream/media_stream.mojom",
     "net/ip_address_space.mojom",
     "notifications/notification.mojom",

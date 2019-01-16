@@ -226,7 +226,6 @@ jumbo_source_set("browser") {
     "//ipc",
     "//media/mojo/interfaces:remoting",
     "//third_party/blink/public:embedded_frame_sink_mojo_bindings",
-    "//third_party/blink/public:media_devices_mojo_bindings",
     "//third_party/leveldatabase",
   ]
 
