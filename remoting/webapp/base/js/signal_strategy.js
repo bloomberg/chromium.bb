@@ -42,7 +42,9 @@ remoting.SignalStrategy.State = {
  */
 remoting.SignalStrategy.Type = {
   XMPP: 'xmpp',
-  WCS: 'wcs'
+  WCS: 'wcs',
+  LCS: 'lcs',
+  FTL: 'ftl',
 };
 
 remoting.SignalStrategy.prototype.dispose = function() {};

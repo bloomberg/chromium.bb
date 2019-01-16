@@ -95,6 +95,14 @@ class ChromotingEvent {
     AUTO_RECONNECT_ON_HOST_OFFLINE = 4,
   };
 
+  enum SignalStrategyType {
+    NOT_SET = 0,
+    XMPP = 1,
+    WCS = 2,
+    LCS = 3,
+    FTL = 4,
+  };
+
   enum class Type {
     SESSION_STATE = 1,
     CONNECTION_STATISTICS = 2,
@@ -133,6 +141,7 @@ class ChromotingEvent {
   static const char kSessionEntryPointKey[];
   static const char kSessionIdKey[];
   static const char kSessionStateKey[];
+  static const char kSignalStrategyTypeKey[];
   static const char kTypeKey[];
   static const char kVideoBandwidthKey[];
   static const char kWebAppVersionKey[];

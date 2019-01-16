@@ -64,6 +64,12 @@ void ClientTelemetryLogger::SetTransportRoute(
   transport_route_ = std::make_unique<protocol::TransportRoute>(route);
 }
 
+void ClientTelemetryLogger::SetSignalStrategyType(
+    ChromotingEvent::SignalStrategyType signal_strategy_type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  signal_strategy_type_ = signal_strategy_type;
+}
+
 void ClientTelemetryLogger::LogSessionStateChange(
     ChromotingEvent::SessionState state,
     ChromotingEvent::ConnectionError error) {
@@ -236,6 +242,10 @@ void ClientTelemetryLogger::FillEventContext(ChromotingEvent* event) const {
     int session_duration =
         (base::TimeTicks::Now() - session_start_time_).InSeconds();
     event->SetInteger(ChromotingEvent::kSessionDurationKey, session_duration);
+  }
+  if (signal_strategy_type_ != ChromotingEvent::SignalStrategyType::NOT_SET) {
+    event->SetInteger(ChromotingEvent::kSignalStrategyTypeKey,
+                      signal_strategy_type_);
   }
 }
 

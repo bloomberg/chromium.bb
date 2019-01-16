@@ -500,6 +500,10 @@ function toSignalStrategyType(type) {
       return remoting.ChromotingEvent.SignalStrategyType.XMPP;
     case remoting.SignalStrategy.Type.WCS:
       return remoting.ChromotingEvent.SignalStrategyType.WCS;
+    case remoting.SignalStrategy.Type.LCS:
+      return remoting.ChromotingEvent.SignalStrategyType.LCS;
+    case remoting.SignalStrategy.Type.FTL:
+      return remoting.ChromotingEvent.SignalStrategyType.FTL;
     default:
       throw new Error('Unknown signal strategy type : ' + type);
   }
