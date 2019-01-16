@@ -2206,14 +2206,15 @@ TEST_F(ShelfViewTest, DragAppAfterContextMenuIsShownInAutoHideShelf) {
   EXPECT_EQ(first_app_id, model_->items()[last_index].id);
 }
 
-// Tests that the app list button does not show a context menu on right click.
-TEST_F(ShelfViewTest, AppListButtonDoesNotShowContextMenu) {
+// Tests that the app list button does shows a context menu on right click.
+TEST_F(ShelfViewTest, AppListButtonDoesShowContextMenu) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   const AppListButton* app_list_button = shelf_view_->GetAppListButton();
   generator->MoveMouseTo(app_list_button->GetBoundsInScreen().CenterPoint());
   generator->PressRightButton();
-  EXPECT_FALSE(test_api_->CloseMenu());
+  EXPECT_TRUE(test_api_->CloseMenu());
 }
+
 // Test class that tests both context and application menus.
 class ShelfViewMenuTest : public ShelfViewTest,
                           public testing::WithParamInterface<bool> {
