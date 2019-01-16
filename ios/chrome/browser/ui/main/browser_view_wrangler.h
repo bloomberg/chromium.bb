@@ -47,17 +47,17 @@ class ChromeBrowserState;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Creates the main tab model used by the receiver, using the browser state
+// Creates the main Browser used by the receiver, using the browser state
 // and tab model observer it was configured with. This should be done before
-// the main interface is accessed, usually immediatley after initialization.
-- (void)createMainTabModel;
+// the main interface is accessed, usually immediately after initialization.
+- (void)createMainBrowser;
 
 // Update the device sharing manager. This should be done after updates to the
 // tab model. This class creates and manages the state of the sharing manager.
 - (void)updateDeviceSharingManager;
 
-// Destroy and rebuild the incognito tab model.
-- (void)destroyAndRebuildIncognitoTabModel;
+// Destroy and rebuild the incognito Browser.
+- (void)destroyAndRebuildIncognitoBrowser;
 
 // Called before the instance is deallocated.
 - (void)shutdown;
@@ -66,8 +66,6 @@ class ChromeBrowserState;
 
 @interface BrowserViewWrangler (Testing)
 @property(nonatomic, readonly) DeviceSharingManager* deviceSharingManager;
-@property(nonatomic) TabModel* mainTabModel;
-@property(nonatomic) TabModel* otrTabModel;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_MAIN_BROWSER_VIEW_WRANGLER_H_

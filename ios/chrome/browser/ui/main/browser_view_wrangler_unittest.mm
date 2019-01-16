@@ -38,7 +38,7 @@ TEST_F(BrowserViewWranglerTest, TestInitNilObserver) {
                   tabModelObserver:nil
         applicationCommandEndpoint:(id<ApplicationCommands>)nil
                    storageSwitcher:nil];
-    [wrangler createMainTabModel];
+    [wrangler createMainBrowser];
     // Test that BVC is created on demand.
     BrowserViewController* bvc = wrangler.mainInterface.bvc;
     EXPECT_NE(bvc, nil);
