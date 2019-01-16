@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <functional>
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -226,7 +227,8 @@ void ExpireHistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
 void ExpireHistoryBackend::ExpireHistoryBetween(
     const std::set<GURL>& restrict_urls,
     base::Time begin_time,
-    base::Time end_time) {
+    base::Time end_time,
+    bool user_initiated) {
   if (!main_db_)
     return;
 
@@ -245,7 +247,9 @@ void ExpireHistoryBackend::ExpireHistoryBetween(
     }
   }
   DeletionTimeRange time_range(begin_time, end_time);
-  ExpireVisitsInternal(visits, time_range, restrict_urls);
+  ExpireVisitsInternal(
+      visits, time_range, restrict_urls,
+      user_initiated ? DELETION_USER_INITIATED : DELETION_EXPIRED);
 }
 
 void ExpireHistoryBackend::ExpireHistoryForTimes(
@@ -268,13 +272,15 @@ void ExpireHistoryBackend::ExpireHistoryForTimes(
 }
 
 void ExpireHistoryBackend::ExpireVisits(const VisitVector& visits) {
-  ExpireVisitsInternal(visits, DeletionTimeRange::Invalid(), {});
+  ExpireVisitsInternal(visits, DeletionTimeRange::Invalid(), {},
+                       DELETION_USER_INITIATED);
 }
 
 void ExpireHistoryBackend::ExpireVisitsInternal(
     const VisitVector& visits,
     const DeletionTimeRange& time_range,
-    const std::set<GURL>& restrict_urls) {
+    const std::set<GURL>& restrict_urls,
+    DeletionType type) {
   if (visits.empty())
     return;
 
@@ -292,7 +298,7 @@ void ExpireHistoryBackend::ExpireVisitsInternal(
   ExpireURLsForVisits(visits_and_redirects, &effects);
   DeleteFaviconsIfPossible(&effects);
   BroadcastNotifications(
-      &effects, DELETION_USER_INITIATED, time_range,
+      &effects, type, time_range,
       restrict_urls.empty() ? base::Optional<std::set<GURL>>() : restrict_urls);
 
   // Pick up any bits possibly left over.

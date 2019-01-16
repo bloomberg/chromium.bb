@@ -394,7 +394,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       base::RecordAction(UserMetricsAction("ClearBrowsingData_History"));
       history_service->ExpireLocalAndRemoteHistoryBetween(
           WebHistoryServiceFactory::GetForProfile(profile_), std::set<GURL>(),
-          delete_begin_, delete_end_,
+          delete_begin_, delete_end_, /*user_initiated*/ true,
           base::AdaptCallbackForRepeating(CreatePendingTaskCompletionClosure()),
           &history_task_tracker_);
     }

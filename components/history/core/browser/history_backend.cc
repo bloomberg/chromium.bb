@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <functional>
 #include <limits>
-#include <list>
 #include <map>
 #include <memory>
 #include <set>
@@ -1666,7 +1665,7 @@ void HistoryBackend::MergeFavicon(
         // Sync calls MergeFavicon() for all of the favicons that it manages at
         // startup. Do not update the "last updated" time if the favicon bitmap
         // data matches that in the database.
-        // TODO: Pass in boolean to MergeFavicon() if any users of
+        // TODO(pkotwicz): Pass in boolean to MergeFavicon() if any users of
         // MergeFavicon() want the last_updated time to be updated when the new
         // bitmap data is identical to the old.
         bitmap_identical = true;
@@ -2439,7 +2438,8 @@ void HistoryBackend::DeleteURL(const GURL& url) {
 
 void HistoryBackend::ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
                                           Time begin_time,
-                                          Time end_time) {
+                                          Time end_time,
+                                          bool user_initiated) {
   if (!db_)
     return;
 
@@ -2450,7 +2450,8 @@ void HistoryBackend::ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
     DeleteAllHistory();
   } else {
     // Clearing parts of history, have the expirer do the depend
-    expirer_.ExpireHistoryBetween(restrict_urls, begin_time, end_time);
+    expirer_.ExpireHistoryBetween(restrict_urls, begin_time, end_time,
+                                  user_initiated);
 
     // Force a commit, if the user is deleting something for privacy reasons,
     // we want to get it on disk ASAP.
@@ -2515,7 +2516,8 @@ void HistoryBackend::ExpireHistory(
     bool update_first_recorded_time = false;
 
     for (auto it = expire_list.begin(); it != expire_list.end(); ++it) {
-      expirer_.ExpireHistoryBetween(it->urls, it->begin_time, it->end_time);
+      expirer_.ExpireHistoryBetween(it->urls, it->begin_time, it->end_time,
+                                    true);
 
       if (it->begin_time < first_recorded_time_)
         update_first_recorded_time = true;
@@ -2746,7 +2748,7 @@ bool HistoryBackend::ClearAllThumbnailHistory(
   }
 
 #if defined(OS_ANDROID)
-  // TODO (michaelbai): Add the unit test once AndroidProviderBackend is
+  // TODO(michaelbai): Add the unit test once AndroidProviderBackend is
   // available in HistoryBackend.
   db_->ClearAndroidURLRows();
 #endif

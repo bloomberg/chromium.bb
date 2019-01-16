@@ -607,7 +607,8 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarred) {
 
   // This should delete the last two visits.
   std::set<GURL> restrict_urls;
-  expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2], base::Time());
+  expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2], base::Time(),
+                                /*user_initiated*/ true);
   EXPECT_EQ(GetLastDeletionInfo()->time_range().begin(), visit_times[2]);
   EXPECT_EQ(GetLastDeletionInfo()->time_range().end(), base::Time());
 
@@ -660,7 +661,8 @@ TEST_F(ExpireHistoryTest, FlushURLsUnstarredBetweenTwoTimestamps) {
 
   // This should delete the two visits of the url_ids[1].
   std::set<GURL> restrict_urls;
-  expirer_.ExpireHistoryBetween(restrict_urls, visit_times[1], visit_times[3]);
+  expirer_.ExpireHistoryBetween(restrict_urls, visit_times[1], visit_times[3],
+                                /*user_initiated*/ true);
 
   main_db_->GetVisitsForURL(url_ids[0], &visits);
   EXPECT_EQ(1U, visits.size());
@@ -705,7 +707,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarredWithMaxTime) {
   // This should delete the last two visits.
   std::set<GURL> restrict_urls;
   expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2],
-                                base::Time::Max());
+                                base::Time::Max(), /*user_initiated*/ true);
 
   // Verify that the middle URL had its last visit deleted only.
   visits.clear();
@@ -751,7 +753,8 @@ TEST_F(ExpireHistoryTest, FlushAllURLsUnstarred) {
 
   // This should delete all URL visits.
   std::set<GURL> restrict_urls;
-  expirer_.ExpireHistoryBetween(restrict_urls, base::Time(), base::Time::Max());
+  expirer_.ExpireHistoryBetween(restrict_urls, base::Time(), base::Time::Max(),
+                                /*user_initiated*/ true);
 
   // Verify that all URL visits deleted.
   visits.clear();
@@ -839,7 +842,8 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarredRestricted) {
 
   // This should delete the last two visits.
   std::set<GURL> restrict_urls = {url_row1.url()};
-  expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2], base::Time());
+  expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2], base::Time(),
+                                /*user_initiated*/ true);
   EXPECT_EQ(GetLastDeletionInfo()->time_range().begin(), visit_times[2]);
   EXPECT_EQ(GetLastDeletionInfo()->time_range().end(), base::Time());
   EXPECT_EQ(GetLastDeletionInfo()->deleted_rows().size(), 0U);
@@ -887,7 +891,8 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsStarred) {
 
   // This should delete the last two visits.
   std::set<GURL> restrict_urls;
-  expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2], base::Time());
+  expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2], base::Time(),
+                                /*user_initiated*/ true);
 
   // The URL rows should still exist.
   URLRow new_url_row1, new_url_row2;
@@ -915,6 +920,21 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsStarred) {
   EXPECT_TRUE(HasFavicon(favicon_id));
   favicon_id = GetFavicon(url_row1.url(), favicon_base::IconType::kFavicon);
   EXPECT_TRUE(HasFavicon(favicon_id));
+}
+
+TEST_F(ExpireHistoryTest, ExpireHistoryBetweenPropagatesUserInitiated) {
+  URLID url_ids[3];
+  base::Time visit_times[4];
+  AddExampleData(url_ids, visit_times);
+  std::set<GURL> restrict_urls;
+
+  expirer_.ExpireHistoryBetween(restrict_urls, visit_times[3], base::Time(),
+                                /*user_initiated*/ true);
+  EXPECT_FALSE(GetLastDeletionInfo()->is_from_expiration());
+
+  expirer_.ExpireHistoryBetween(restrict_urls, visit_times[1], base::Time(),
+                                /*user_initiated*/ false);
+  EXPECT_TRUE(GetLastDeletionInfo()->is_from_expiration());
 }
 
 TEST_F(ExpireHistoryTest, ExpireHistoryBeforeUnstarred) {

@@ -5,6 +5,8 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 
 #include <algorithm>
+#include <map>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -263,7 +265,7 @@ class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
  protected:
   void CheckScoreFromSettings(HostContentSettingsMap* settings_map,
                               const GURL& url,
-                              double *score) {
+                              double* score) {
     *score = SiteEngagementService::GetScoreFromSettings(settings_map, url);
   }
 
@@ -1164,7 +1166,8 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     base::CancelableTaskTracker task_tracker;
     // Expire origin1, origin2, origin2a, and origin4's most recent visit.
     history->ExpireHistoryBetween(std::set<GURL>(), yesterday, today,
-                                  base::DoNothing(), &task_tracker);
+                                  /*user_initiated*/ true, base::DoNothing(),
+                                  &task_tracker);
     waiter.Wait();
 
     // origin2 is cleaned up because all its urls are deleted. origin1a and

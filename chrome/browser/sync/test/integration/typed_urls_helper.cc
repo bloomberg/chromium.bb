@@ -374,11 +374,13 @@ void ExpireHistoryBetween(int index,
                           base::Time end_time) {
   base::CancelableTaskTracker task_tracker;
   GetHistoryServiceFromClient(index)->ExpireHistoryBetween(
-      {}, begin_time, end_time, base::DoNothing(), &task_tracker);
+      {}, begin_time, end_time, /*user_initiated*/ true, base::DoNothing(),
+      &task_tracker);
   if (test()->use_verifier()) {
     HistoryServiceFactory::GetForProfile(test()->verifier(),
                                          ServiceAccessType::IMPLICIT_ACCESS)
-        ->ExpireHistoryBetween({}, begin_time, end_time, base::DoNothing(),
+        ->ExpireHistoryBetween({}, begin_time, end_time,
+                               /*user_initiated*/ true, base::DoNothing(),
                                &task_tracker);
   }
   WaitForHistoryDBThread(index);

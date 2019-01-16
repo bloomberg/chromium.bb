@@ -4,6 +4,10 @@
 
 #include "chrome/browser/media/media_engagement_service.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -481,7 +485,8 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     base::CancelableTaskTracker task_tracker;
     // Expire origin1, origin1a, origin2, and origin3a's most recent visit.
     history->ExpireHistoryBetween(std::set<GURL>(), yesterday, today,
-                                  base::DoNothing(), &task_tracker);
+                                  /*user_initiated*/ true, base::DoNothing(),
+                                  &task_tracker);
     waiter.Wait();
 
     // origin1 should have a score that is not zero and is the same as the old
@@ -687,6 +692,7 @@ TEST_F(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsDeleted) {
     base::CancelableTaskTracker task_tracker;
     // Clear all history.
     history->ExpireHistoryBetween(std::set<GURL>(), base::Time(), base::Time(),
+                                  /*user_initiated*/ true,
                                   run_loop.QuitClosure(), &task_tracker);
     run_loop.Run();
 

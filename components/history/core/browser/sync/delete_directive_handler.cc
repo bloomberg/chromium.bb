@@ -274,7 +274,8 @@ void DeleteDirectiveHandler::DeleteDirectiveTask::
         // time range in directive is inclusive.
         history_backend->ExpireHistoryBetween(
             std::set<GURL>(), current_start_time,
-            current_end_time + base::TimeDelta::FromMicroseconds(1));
+            current_end_time + base::TimeDelta::FromMicroseconds(1),
+            /*user_initiated*/ true);
       }
       current_start_time = directive_start_time;
     }
@@ -285,7 +286,8 @@ void DeleteDirectiveHandler::DeleteDirectiveTask::
   if (!current_start_time.is_null()) {
     history_backend->ExpireHistoryBetween(
         std::set<GURL>(), current_start_time,
-        current_end_time + base::TimeDelta::FromMicroseconds(1));
+        current_end_time + base::TimeDelta::FromMicroseconds(1),
+        /*user_initiated*/ true);
   }
 }
 
