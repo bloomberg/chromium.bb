@@ -84,7 +84,6 @@ void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
   const std::string primary_account_id = GetPrimaryAccountId();
   if (token_service->RefreshTokenIsAvailable(primary_account_id)) {
     VLOG(1) << "OAuth2 refresh token is already loaded.";
-    FireRefreshTokensLoaded();
     VerifySessionCookies();
   } else {
     VLOG(1) << "Waiting for OAuth2 refresh token being loaded from database.";
@@ -164,15 +163,9 @@ void OAuth2LoginManager::UpdateCredentials(const std::string& account_id) {
   DCHECK(!refresh_token_.empty());
   // |account_id| is assumed to be already canonicalized if it's an email.
   GetTokenService()->UpdateCredentials(account_id, refresh_token_);
-  FireRefreshTokensLoaded();
 
   for (auto& observer : observer_list_)
     observer.OnNewRefreshTokenAvaiable(user_profile_);
-}
-
-void OAuth2LoginManager::FireRefreshTokensLoaded() {
-  // TODO(570218): Figure out the right way to plumb this.
-  GetTokenService()->LoadCredentials(std::string());
 }
 
 void OAuth2LoginManager::VerifySessionCookies() {
