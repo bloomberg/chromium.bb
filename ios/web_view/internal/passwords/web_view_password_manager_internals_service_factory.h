@@ -6,12 +6,8 @@
 #define IOS_WEB_VIEW_INTERNAL_PASSWORDS_WEB_VIEW_PASSWORD_MANAGER_INTERNALS_SERVICE_FACTORY_H_
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
 
 namespace password_manager {
 class PasswordManagerInternalsService;
@@ -31,7 +27,7 @@ class WebViewPasswordManagerInternalsServiceFactory
   static WebViewPasswordManagerInternalsServiceFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<
+  friend class base::NoDestructor<
       WebViewPasswordManagerInternalsServiceFactory>;
 
   WebViewPasswordManagerInternalsServiceFactory();
