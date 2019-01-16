@@ -33,9 +33,10 @@ class DownloadTaskImpl : public DownloadTask {
     // remove all references to the given DownloadTask and stop using it.
     virtual void OnTaskDestroyed(DownloadTaskImpl* task) = 0;
 
-    // Creates background NSURLSession with given |identifier|, |delegate| and
-    // |delegate_queue|.
+    // Creates background NSURLSession with given |identifier|, |cookies|,
+    // |delegate| and |delegate_queue|.
     virtual NSURLSession* CreateSession(NSString* identifier,
+                                        NSArray<NSHTTPCookie*>* cookies,
                                         id<NSURLSessionDataDelegate> delegate,
                                         NSOperationQueue* delegate_queue) = 0;
     virtual ~Delegate() = default;
@@ -79,8 +80,9 @@ class DownloadTaskImpl : public DownloadTask {
   ~DownloadTaskImpl() override;
 
  private:
-  // Creates background NSURLSession with given |identifier|.
-  NSURLSession* CreateSession(NSString* identifier);
+  // Creates background NSURLSession with given |identifier| and |cookies|.
+  NSURLSession* CreateSession(NSString* identifier,
+                              NSArray<NSHTTPCookie*>* cookies);
 
   // Asynchronously returns cookies for WebState associated with this task (on
   // iOS 10 and earlier, the array is always empty as it is not possible to
