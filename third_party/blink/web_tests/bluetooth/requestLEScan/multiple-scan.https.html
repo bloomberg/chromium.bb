@@ -14,11 +14,13 @@ let scan2;
 
 bluetooth_test(async (t) => {
   const fake_central =
-    await navigator.bluetooth.test.simulateCentral({state: 'powered-on'});
+      await navigator.bluetooth.test.simulateCentral({state: 'powered-on'});
 
   await callWithTrustedClick(async () => {
-    scan = await navigator.bluetooth.requestLEScan({acceptAllAdvertisements: true});
-    scan2 = await navigator.bluetooth.requestLEScan({acceptAllAdvertisements: true});
+    scan = await navigator.bluetooth.requestLEScan(
+        {acceptAllAdvertisements: true});
+    scan2 = await navigator.bluetooth.requestLEScan(
+        {acceptAllAdvertisements: true});
   });
 
   assert_true(scan.active);
@@ -28,15 +30,13 @@ bluetooth_test(async (t) => {
   assert_false(scan2.active);
 
   // We should still get an event because we called requestLEScan twice.
-  const eventWatcher = new EventWatcher(t,
-    navigator.bluetooth, ['advertisementreceived']);
+  const eventWatcher =
+      new EventWatcher(t, navigator.bluetooth, ['advertisementreceived']);
 
   let promise = eventWatcher.wait_for('advertisementreceived').then(e => {
     verifyBluetoothAdvertisingEvent(e);
   });
   fake_central.simulateAdvertisementReceived(scanResult);
   return promise;
-
 }, test_desc);
-
 </script>

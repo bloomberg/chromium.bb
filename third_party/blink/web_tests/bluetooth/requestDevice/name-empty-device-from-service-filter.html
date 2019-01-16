@@ -7,13 +7,14 @@
 <script src="../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-bluetooth_test(() => {
-  return setBluetoothFakeAdapter('EmptyNameHeartRateAdapter')
-  .then(() => requestDeviceWithTrustedClick({
-    filters: [{services: ['heart_rate']}]}))
-  .then(device => {
-    assert_equals(device.name, '');
-  })
-}, 'An empty name device can be obtained by advertised service UUID.');
+bluetooth_test(
+    () => {return setBluetoothFakeAdapter('EmptyNameHeartRateAdapter')
+               .then(
+                   () => requestDeviceWithTrustedClick(
+                       {filters: [{services: ['heart_rate']}]}))
+               .then(device => {
+                 assert_equals(device.name, '');
+               })},
+    'An empty name device can be obtained by advertised service UUID.');
 </script>
 

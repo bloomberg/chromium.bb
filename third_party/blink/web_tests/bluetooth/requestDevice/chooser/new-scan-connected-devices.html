@@ -9,10 +9,10 @@
 bluetooth_test(() => {
   setBluetoothManualChooser(true);
 
-  let requestDevicePromise =
-    setBluetoothFakeAdapter('DeviceEventAdapter')
-      .then(() => requestDeviceWithTrustedClick({
-        filters: [{services: ['heart_rate']}]}));
+  let requestDevicePromise = setBluetoothFakeAdapter('DeviceEventAdapter')
+                                 .then(() => requestDeviceWithTrustedClick({
+                                         filters: [{services: ['heart_rate']}]
+                                       }));
   return getBluetoothManualChooserEvents(4).then(events => {
     assert_equals(events[0], 'chooser-opened(file://)');
     let idsByName = new AddDeviceEventSet();
@@ -21,7 +21,7 @@ bluetooth_test(() => {
     assert_equals(events[2], 'discovering');
     assert_equals(events[3], 'discovery-idle');
     sendBluetoothManualChooserEvent(
-      'selected', idsByName.get('Connected Heart Rate Device'));
+        'selected', idsByName.get('Connected Heart Rate Device'));
     return requestDevicePromise;
   });
 });

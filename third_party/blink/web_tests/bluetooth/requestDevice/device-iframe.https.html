@@ -16,7 +16,7 @@ function createIframe(iframe) {
   });
 }
 
-promise_test(async(t) => {
+promise_test(async (t) => {
   let iframe = document.createElement('iframe');
   let iframeBluetoothObject = await createIframe(iframe);
   document.body.removeChild(iframe);
@@ -25,5 +25,5 @@ promise_test(async(t) => {
   GCController.collect();
   return callWithTrustedClick(iframeBluetoothObject.requestDevice)
       .catch(err => assert_equals(err.name, 'ReferenceError'));
-  }, 'detaching from iframe invalidates reference to the iframe bluetooth object');
+}, 'detaching from iframe invalidates reference to the iframe bluetooth object');
 </script>
