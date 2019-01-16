@@ -1420,6 +1420,7 @@
         'test_suites': {
           'gtest_tests': 'chromeos_device_kevin_tests',
         },
+        'os_type': 'chromeos',
       },
       'fuchsia-fyi-arm64-rel': {
         'additional_compile_targets': [

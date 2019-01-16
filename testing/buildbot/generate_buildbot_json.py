@@ -230,6 +230,9 @@ class BBJSONGenerator(object):
   def is_android(self, tester_config):
     return tester_config.get('os_type') == 'android'
 
+  def is_chromeos(self, tester_config):
+    return tester_config.get('os_type') == 'chromeos'
+
   def is_linux(self, tester_config):
     return tester_config.get('os_type') == 'linux'
 
@@ -447,6 +450,15 @@ class BBJSONGenerator(object):
           'True'
         ],
       }
+    elif self.is_chromeos(tester_config) and tester_config.get('use_swarming',
+                                                               True):
+      # The presence of the "device_type" dimension indicates that the tests
+      # are targetting CrOS hardware and so need the special trigger script.
+      dimension_sets = tester_config['swarming']['dimension_sets']
+      if all('device_type' in ds for ds in dimension_sets):
+        test['trigger_script'] = {
+          'script': '//testing/trigger_scripts/chromeos_device_trigger.py',
+        }
 
   def add_android_presentation_args(self, tester_config, test_name, result):
     args = result.get('args', [])
