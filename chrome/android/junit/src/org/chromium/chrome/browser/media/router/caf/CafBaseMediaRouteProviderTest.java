@@ -384,6 +384,7 @@ public class CafBaseMediaRouteProviderTest {
         MediaSource mockSource = mock(MediaSource.class);
         doReturn(mockSource).when(mProvider).getSourceFromId("source-id");
         doReturn("source-id").when(mockSource).getSourceId();
+        doReturn(mCastSession).when(mSessionManager).getCurrentCastSession();
 
         // Request to create a session.
         mProvider.createRoute("source-id", "cast-route", "presentation-id", "origin", 1, false, 1);
@@ -396,6 +397,65 @@ public class CafBaseMediaRouteProviderTest {
         assertEquals(mProvider.mRoutes.size(), 1);
 
         MediaRoute route = (MediaRoute) (mProvider.mRoutes.values().toArray()[0]);
+        assertEquals(route.sinkId, "cast-route");
+        assertEquals(route.sourceId, "source-id");
+        assertEquals(route.presentationId, "presentation-id");
+        assertNull(mProvider.getPendingCreateRouteRequestInfo());
+    }
+
+    @Test
+    public void testOnSessionStarted_nonCurrentSession() {
+        CastSession otherCastSession = mock(CastSession.class);
+
+        InOrder inOrder = inOrder(mSessionController);
+        MediaSource mockSource = mock(MediaSource.class);
+        doReturn(mockSource).when(mProvider).getSourceFromId("source-id");
+        doReturn("source-id").when(mockSource).getSourceId();
+        doReturn(otherCastSession).when(mSessionManager).getCurrentCastSession();
+
+        // Request to create a session.
+        mProvider.createRoute("source-id", "cast-route", "presentation-id", "origin", 1, false, 1);
+
+        // Session started.
+        mProvider.onSessionStarted(mCastSession, "session-id");
+
+        inOrder.verify(mSessionController, never()).attachToCastSession(mCastSession);
+        inOrder.verify(mSessionController, never()).onSessionStarted();
+        assertTrue(mProvider.mRoutes.isEmpty());
+    }
+
+    @Test
+    public void testOnSessionStarted_twiceForSameSession() {
+        InOrder inOrder = inOrder(mSessionController);
+        MediaSource mockSource = mock(MediaSource.class);
+        doReturn(mockSource).when(mProvider).getSourceFromId("source-id");
+        doReturn("source-id").when(mockSource).getSourceId();
+        doReturn(mCastSession).when(mSessionManager).getCurrentCastSession();
+
+        // Request to create a session.
+        mProvider.createRoute("source-id", "cast-route", "presentation-id", "origin", 1, false, 1);
+
+        // Session started.
+        mProvider.onSessionStarted(mCastSession, "session-id");
+
+        inOrder.verify(mSessionController).attachToCastSession(mCastSession);
+        inOrder.verify(mSessionController).onSessionStarted();
+        assertEquals(mProvider.mRoutes.size(), 1);
+
+        MediaRoute route = (MediaRoute) (mProvider.mRoutes.values().toArray()[0]);
+        assertEquals(route.sinkId, "cast-route");
+        assertEquals(route.sourceId, "source-id");
+        assertEquals(route.presentationId, "presentation-id");
+        assertNull(mProvider.getPendingCreateRouteRequestInfo());
+
+        // Same session started for the second time.
+        mProvider.onSessionStarted(mCastSession, "session-id");
+
+        inOrder.verify(mSessionController, never()).attachToCastSession(mCastSession);
+        inOrder.verify(mSessionController, never()).onSessionStarted();
+        assertEquals(mProvider.mRoutes.size(), 1);
+
+        route = (MediaRoute) (mProvider.mRoutes.values().toArray()[0]);
         assertEquals(route.sinkId, "cast-route");
         assertEquals(route.sourceId, "source-id");
         assertEquals(route.presentationId, "presentation-id");

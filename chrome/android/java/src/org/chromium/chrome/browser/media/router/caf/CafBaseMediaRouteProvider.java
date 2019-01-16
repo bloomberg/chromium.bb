@@ -229,17 +229,19 @@ public abstract class CafBaseMediaRouteProvider
     @Override
     public void onSessionStarted(CastSession session, String sessionId) {
         Log.d(TAG, "onSessionStarted");
-        sessionController().attachToCastSession(session);
-        sessionController().onSessionStarted();
 
-        MediaSink sink = mPendingCreateRouteRequestInfo.sink;
-        MediaSource source = mPendingCreateRouteRequestInfo.source;
-        MediaRoute route = new MediaRoute(
-                sink.getId(), source.getSourceId(), mPendingCreateRouteRequestInfo.presentationId);
-        addRoute(route, mPendingCreateRouteRequestInfo.origin, mPendingCreateRouteRequestInfo.tabId,
-                mPendingCreateRouteRequestInfo.nativeRequestId, /* wasLaunched= */ true);
+        if (session != CastUtils.getCastContext().getSessionManager().getCurrentCastSession()) {
+            // Sometimes the session start signal might come in for an earlier launch request, which
+            // should be ignored.
+            return;
+        }
 
-        mPendingCreateRouteRequestInfo = null;
+        if (session == sessionController().getSession() || mPendingCreateRouteRequestInfo == null) {
+            // Early return for any possible case that the session start signal comes in twice for
+            // the same session.
+            return;
+        }
+        handleSessionStart(session, sessionId);
     }
 
     @Override
@@ -272,6 +274,20 @@ public abstract class CafBaseMediaRouteProvider
     ///////////////////////////////////////////////////////
     // SessionManagerListener implementation end
     ///////////////////////////////////////////////////////
+
+    protected void handleSessionStart(CastSession session, String sessionId) {
+        sessionController().attachToCastSession(session);
+        sessionController().onSessionStarted();
+
+        MediaSink sink = mPendingCreateRouteRequestInfo.sink;
+        MediaSource source = mPendingCreateRouteRequestInfo.source;
+        MediaRoute route = new MediaRoute(
+                sink.getId(), source.getSourceId(), mPendingCreateRouteRequestInfo.presentationId);
+        addRoute(route, mPendingCreateRouteRequestInfo.origin, mPendingCreateRouteRequestInfo.tabId,
+                mPendingCreateRouteRequestInfo.nativeRequestId, /* wasLaunched= */ true);
+
+        mPendingCreateRouteRequestInfo = null;
+    }
 
     private void handleSessionEnd() {
         if (mPendingCreateRouteRequestInfo != null) {
