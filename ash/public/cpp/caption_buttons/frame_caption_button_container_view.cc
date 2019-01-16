@@ -224,14 +224,6 @@ void FrameCaptionButtonContainerView::SetPaintAsActive(bool paint_as_active) {
   close_button_->set_paint_as_active(paint_as_active);
 }
 
-void FrameCaptionButtonContainerView::SetColorMode(
-    views::FrameCaptionButton::ColorMode color_mode) {
-  menu_button_->SetColorMode(color_mode);
-  minimize_button_->SetColorMode(color_mode);
-  size_button_->SetColorMode(color_mode);
-  close_button_->SetColorMode(color_mode);
-}
-
 void FrameCaptionButtonContainerView::SetBackgroundColor(
     SkColor background_color) {
   menu_button_->SetBackgroundColor(background_color);

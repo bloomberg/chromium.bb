@@ -70,16 +70,13 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
             ->hosted_app_controller()
             ->ShouldShowHostedAppButtonContainer()) {
       set_hosted_app_button_container(new HostedAppButtonContainer(
-          frame, browser_view, GetFrameForegroundColor(kActive),
-          GetFrameForegroundColor(kInactive), kHostedAppMenuMargin));
+          frame, browser_view, GetCaptionColor(kActive),
+          GetCaptionColor(kInactive), kHostedAppMenuMargin));
       AddChildView(hosted_app_button_container());
     }
 
     DCHECK(browser_view->ShouldShowWindowTitle());
     window_title_ = new views::Label(browser_view->GetWindowTitle());
-    // view::Label's readability algorithm conflicts with the one used by
-    // |GetFrameForegroundColor|.
-    window_title_->SetAutoColorReadabilityEnabled(false);
     AddChildView(window_title_);
   }
 }
@@ -211,11 +208,6 @@ bool BrowserNonClientFrameViewMac::ShouldHideTopUIForFullscreen() const {
 void BrowserNonClientFrameViewMac::UpdateThrobber(bool running) {
 }
 
-SkColor BrowserNonClientFrameViewMac::GetFrameForegroundColor(
-    ActiveState active_state) const {
-  return color_utils::GetThemedAssetColor(GetFrameColor(active_state));
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewMac, views::NonClientFrameView implementation:
 
@@ -286,7 +278,7 @@ void BrowserNonClientFrameViewMac::OnPaint(gfx::Canvas* canvas) {
 
   if (window_title_) {
     window_title_->SetBackgroundColor(frame_color);
-    window_title_->SetEnabledColor(GetFrameForegroundColor(kUseCurrent));
+    window_title_->SetEnabledColor(GetCaptionColor(kUseCurrent));
   }
 
   auto* theme_service =

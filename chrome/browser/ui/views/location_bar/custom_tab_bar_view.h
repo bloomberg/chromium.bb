@@ -59,7 +59,7 @@ class CustomTabBarView : public views::View,
 
  private:
   SkColor theme_color_;
-  SkColor text_color_;
+  SkColor caption_color_;
 
   base::string16 last_title_;
   base::string16 last_location_;

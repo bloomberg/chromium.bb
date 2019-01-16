@@ -22,8 +22,8 @@ constexpr SkColor kBackgroundColors[] = {
 
 TEST(FrameCaptionButtonTest, ThemedColorContrast) {
   for (SkColor background_color : kBackgroundColors) {
-    SkColor button_color = views::FrameCaptionButton::GetButtonColor(
-        views::FrameCaptionButton::ColorMode::kThemed, background_color);
+    SkColor button_color =
+        views::FrameCaptionButton::GetButtonColor(background_color);
     EXPECT_GE(color_utils::GetContrastRatio(button_color, background_color), 3);
   }
 }

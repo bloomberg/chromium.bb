@@ -165,7 +165,6 @@ void FrameHeader::SetLeftHeaderView(views::View* left_header_view) {
 void FrameHeader::SetBackButton(views::FrameCaptionButton* back_button) {
   back_button_ = back_button;
   if (back_button_) {
-    back_button_->SetColorMode(button_color_mode_);
     back_button_->SetBackgroundColor(GetCurrentFrameColor());
     back_button_->SetImage(views::CAPTION_BUTTON_ICON_BACK,
                            views::FrameCaptionButton::ANIMATE_NO,
@@ -204,12 +203,10 @@ gfx::Rect FrameHeader::GetPaintedBounds() const {
 }
 
 void FrameHeader::UpdateCaptionButtonColors() {
-  caption_button_container_->SetColorMode(button_color_mode_);
-  caption_button_container_->SetBackgroundColor(GetCurrentFrameColor());
-  if (back_button_) {
-    back_button_->SetColorMode(button_color_mode_);
-    back_button_->SetBackgroundColor(GetCurrentFrameColor());
-  }
+  const SkColor frame_color = GetCurrentFrameColor();
+  caption_button_container_->SetBackgroundColor(frame_color);
+  if (back_button_)
+    back_button_->SetBackgroundColor(frame_color);
 }
 
 void FrameHeader::PaintTitleBar(gfx::Canvas* canvas) {

@@ -97,10 +97,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // tabstrip background.
   SkColor GetFrameColor(ActiveState active_state = kUseCurrent) const;
 
-  // Returns the color to use for text and other title bar elements given the
-  // frame |active_state|.
-  virtual SkColor GetFrameForegroundColor(
-      ActiveState active_state = kUseCurrent) const = 0;
+  // Returns the color to use for text, caption buttons, and other title bar
+  // elements.
+  virtual SkColor GetCaptionColor(ActiveState active_state = kUseCurrent) const;
 
   // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
   // state of the window.

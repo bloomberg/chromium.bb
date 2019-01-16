@@ -47,7 +47,6 @@ FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
     : Button(listener),
       icon_(icon),
       background_color_(SK_ColorWHITE),
-      color_mode_(ColorMode::kDefault),
       paint_as_active_(false),
       alpha_(255),
       ink_drop_corner_radius_(kCaptionButtonInkDropDefaultCornerRadius),
@@ -70,12 +69,7 @@ FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
 FrameCaptionButton::~FrameCaptionButton() = default;
 
 // static
-SkColor FrameCaptionButton::GetButtonColor(ColorMode color_mode,
-                                           SkColor background_color) {
-  if (color_mode == ColorMode::kThemed)
-    return color_utils::GetThemedAssetColor(background_color);
-
-  DCHECK_EQ(color_mode, ColorMode::kDefault);
+SkColor FrameCaptionButton::GetButtonColor(SkColor background_color) {
   // Use IsDark() to change target colors instead of PickContrastingColor(), so
   // that DefaultFrameHeader::GetTitleColor() (which uses different target
   // colors) can change between light/dark targets at the same time.  It looks
@@ -101,8 +95,8 @@ float FrameCaptionButton::GetInactiveButtonColorAlphaRatio() {
 void FrameCaptionButton::SetImage(CaptionButtonIcon icon,
                                   Animate animate,
                                   const gfx::VectorIcon& icon_definition) {
-  gfx::ImageSkia new_icon_image = gfx::CreateVectorIcon(
-      icon_definition, GetButtonColor(color_mode_, background_color_));
+  gfx::ImageSkia new_icon_image =
+      gfx::CreateVectorIcon(icon_definition, GetButtonColor(background_color_));
 
   // The early return is dependent on |animate| because callers use SetImage()
   // with ANIMATE_NO to progress the crossfade animation to the end.
@@ -203,11 +197,6 @@ void FrameCaptionButton::SetBackgroundColor(SkColor background_color) {
   UpdateInkDropBaseColor();
 }
 
-void FrameCaptionButton::SetColorMode(ColorMode color_mode) {
-  color_mode_ = color_mode;
-  UpdateInkDropBaseColor();
-}
-
 void FrameCaptionButton::PaintButtonContents(gfx::Canvas* canvas) {
   constexpr SkAlpha kHighlightVisibleOpacity = 0x14;
   SkAlpha highlight_alpha = SK_AlphaTRANSPARENT;
@@ -300,7 +289,7 @@ void FrameCaptionButton::UpdateInkDropBaseColor() {
   // glyph color.
   // TODO(pkasting): It would likely be better to make the button glyph always
   // be an alpha-blended version of GetColorWithMaxContrast(background_color_).
-  const SkColor button_color = GetButtonColor(color_mode_, background_color_);
+  const SkColor button_color = GetButtonColor(background_color_);
   set_ink_drop_base_color(
       GetColorWithMaxContrast(GetColorWithMaxContrast(button_color)));
 }

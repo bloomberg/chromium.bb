@@ -33,7 +33,6 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
   void UpdateFullscreenTopUI(bool needs_check_tab_fullscreen) override;
   bool ShouldHideTopUIForFullscreen() const override;
   void UpdateThrobber(bool running) override;
-  SkColor GetFrameForegroundColor(ActiveState active_state) const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;

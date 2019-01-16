@@ -82,9 +82,6 @@ class ASH_PUBLIC_EXPORT FrameCaptionButtonContainerView
   // a repaint.
   void SetPaintAsActive(bool paint_as_active);
 
-  // Sets whether the buttons should use themed foreground color computation.
-  void SetColorMode(views::FrameCaptionButton::ColorMode color_mode);
-
   // Sets the background frame color that buttons should compute their color
   // respective to.
   void SetBackgroundColor(SkColor background_color);

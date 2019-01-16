@@ -310,21 +310,6 @@ SkColor BlendTowardMaxContrast(SkColor color, SkAlpha alpha) {
   return AlphaBlend(GetColorWithMaxContrast(color), color, alpha);
 }
 
-SkColor GetThemedAssetColor(SkColor theme_color) {
-  // Minimum theme light color contrast.
-  constexpr float kContrastLightItemThreshold = 3.0f;
-
-  // The amount to darken a light theme color by for use as foreground color.
-  constexpr float kThemedForegroundBlackFraction = 0.64f;
-
-  // This mimics |shouldUseLightForegroundOnBackground| from ColorUtils.java.
-  bool use_light_color = GetContrastRatio(SK_ColorWHITE, theme_color) >=
-                         kContrastLightItemThreshold;
-  if (use_light_color)
-    return SK_ColorWHITE;
-  return AlphaBlend(SK_ColorBLACK, theme_color, kThemedForegroundBlackFraction);
-}
-
 SkColor PickContrastingColor(SkColor foreground1,
                              SkColor foreground2,
                              SkColor background) {

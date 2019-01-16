@@ -169,6 +169,11 @@ SkColor BrowserNonClientFrameView::GetFrameColor(
                                           browser_view_->IsIncognito());
 }
 
+SkColor BrowserNonClientFrameView::GetCaptionColor(
+    ActiveState active_state) const {
+  return color_utils::GetColorWithMaxContrast(GetFrameColor(active_state));
+}
+
 SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {
   const int color_id =
       ShouldPaintAsActive()

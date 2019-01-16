@@ -114,14 +114,12 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
   extensions::HostedAppBrowserController* controller =
       browser_view->browser()->hosted_app_controller();
   if (controller && controller->ShouldShowHostedAppButtonContainer()) {
-    // TODO(alancutter): Avoid snapshotting GetFrameForegroundColor() values
-    // here and call it on demand in
-    // HostedAppButtonContainer::UpdateIconsColor() via a delegate interface.
-    SkColor active_color = GetFrameForegroundColor(kActive);
-    SkColor inactive_color = GetFrameForegroundColor(kInactive);
-
+    // TODO(alancutter): Avoid snapshotting GetCaptionColor() values here and
+    // call it on demand in HostedAppButtonContainer::UpdateIconsColor() via a
+    // delegate interface.
     set_hosted_app_button_container(new HostedAppButtonContainer(
-        frame, browser_view, active_color, inactive_color));
+        frame, browser_view, GetCaptionColor(kActive),
+        GetCaptionColor(kInactive)));
     AddChildView(hosted_app_button_container());
   }
 
@@ -238,8 +236,7 @@ bool GlassBrowserFrameView::IsSingleTabModeAvailable() const {
          BrowserNonClientFrameView::IsSingleTabModeAvailable();
 }
 
-SkColor GlassBrowserFrameView::GetFrameForegroundColor(
-    ActiveState active_state) const {
+SkColor GlassBrowserFrameView::GetCaptionColor(ActiveState active_state) const {
   const SkAlpha title_alpha = ShouldPaintAsActive(active_state)
                                   ? SK_AlphaOPAQUE
                                   : kInactiveTitlebarFeatureAlpha;
@@ -650,7 +647,7 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
   }
 
   if (ShowCustomTitle())
-    window_title_->SetEnabledColor(GetFrameForegroundColor(kUseCurrent));
+    window_title_->SetEnabledColor(GetCaptionColor(kUseCurrent));
 }
 
 void GlassBrowserFrameView::LayoutTitleBar() {

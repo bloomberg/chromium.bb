@@ -33,7 +33,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/image/canvas_image_source.h"
@@ -181,8 +180,6 @@ void OpaqueBrowserFrameView::InitViews() {
 
   window_title_ = new views::Label(browser_view()->GetWindowTitle());
   window_title_->SetVisible(browser_view()->ShouldShowWindowTitle());
-  // Readability is ensured by GetFrameForegroundColor().
-  window_title_->SetAutoColorReadabilityEnabled(false);
   window_title_->SetSubpixelRenderingEnabled(false);
   window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   window_title_->set_id(VIEW_ID_WINDOW_TITLE);
@@ -192,8 +189,8 @@ void OpaqueBrowserFrameView::InitViews() {
       browser_view()->browser()->hosted_app_controller();
   if (controller && controller->ShouldShowHostedAppButtonContainer()) {
     set_hosted_app_button_container(new HostedAppButtonContainer(
-        frame(), browser_view(), GetFrameForegroundColor(kActive),
-        GetFrameForegroundColor(kInactive)));
+        frame(), browser_view(), GetCaptionColor(kActive),
+        GetCaptionColor(kInactive)));
     AddChildView(hosted_app_button_container());
   }
 }
@@ -501,7 +498,8 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
 
   const bool active = ShouldPaintAsActive();
   SkColor frame_color = GetFrameColor();
-  window_title_->SetEnabledColor(GetFrameForegroundColor(kUseCurrent));
+  window_title_->SetEnabledColor(GetCaptionColor(kUseCurrent));
+  window_title_->SetBackgroundColor(frame_color);
   frame_background_->set_frame_color(frame_color);
   frame_background_->set_use_custom_frame(frame()->UseCustomFrame());
   frame_background_->set_is_active(active);
@@ -516,15 +514,6 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   frame_background_->set_top_area_height(GetTopAreaHeight());
 
   if (GetFrameButtonStyle() == FrameButtonStyle::kMdButton) {
-    views::FrameCaptionButton::ColorMode color_mode =
-        views::FrameCaptionButton::ColorMode::kDefault;
-    extensions::HostedAppBrowserController* controller =
-        browser_view()->browser()->hosted_app_controller();
-    if (controller) {
-      color_mode = controller->GetThemeColor()
-                       ? views::FrameCaptionButton::ColorMode::kThemed
-                       : views::FrameCaptionButton::ColorMode::kDefault;
-    }
     for (auto* button :
          {minimize_button_, maximize_button_, restore_button_, close_button_}) {
       DCHECK_EQ(std::string(views::FrameCaptionButton::kViewClassName),
@@ -533,7 +522,6 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
           static_cast<views::FrameCaptionButton*>(button);
       frame_caption_button->set_paint_as_active(active);
       frame_caption_button->SetBackgroundColor(frame_color);
-      frame_caption_button->SetColorMode(color_mode);
     }
   }
 
@@ -699,21 +687,6 @@ bool OpaqueBrowserFrameView::ShouldShowWindowTitleBar() const {
     return true;
   return !views::ViewsDelegate::GetInstance()->WindowManagerProvidesTitleBar(
       IsMaximized());
-}
-
-SkColor OpaqueBrowserFrameView::GetFrameForegroundColor(
-    ActiveState active_state) const {
-  const SkColor frame_color = GetFrameColor(active_state);
-  if (browser_view()->IsBrowserTypeHostedApp()) {
-    const bool has_site_theme = browser_view()
-                                    ->browser()
-                                    ->hosted_app_controller()
-                                    ->GetThemeColor()
-                                    .has_value();
-    if (has_site_theme && !platform_observer_->IsUsingSystemTheme())
-      return color_utils::GetThemedAssetColor(frame_color);
-  }
-  return color_utils::GetColorWithMaxContrast(frame_color);
 }
 
 void OpaqueBrowserFrameView::PaintRestoredFrameBorder(

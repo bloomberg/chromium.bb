@@ -104,21 +104,16 @@ void GoBackToApp(content::WebContents* web_contents) {
 // page.
 class CustomTabBarTitleOriginView : public views::View {
  public:
-  explicit CustomTabBarTitleOriginView(SkColor text_color) {
+  explicit CustomTabBarTitleOriginView(SkColor foreground_color,
+                                       SkColor background_color) {
     title_label_ = new views::Label(
         base::string16(), views::style::TextContext::CONTEXT_DIALOG_TITLE);
     location_label_ = new views::Label(base::string16());
 
-    // We need to disable auto color readability, as we want to match the active
-    // color in the title bar, which is subtly different.
-    // TODO(http://crbug.com/883177): Enable this if we use
-    // GetColorWithMinimumContrast() for the app title text instead of
-    // GetThemedAssetColor().
-    title_label_->SetAutoColorReadabilityEnabled(false);
-    location_label_->SetAutoColorReadabilityEnabled(false);
-
-    title_label_->SetEnabledColor(text_color);
-    location_label_->SetEnabledColor(text_color);
+    title_label_->SetEnabledColor(foreground_color);
+    title_label_->SetBackgroundColor(background_color);
+    location_label_->SetEnabledColor(foreground_color);
+    title_label_->SetBackgroundColor(background_color);
 
     AddChildView(title_label_);
     AddChildView(location_label_);
@@ -157,19 +152,20 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
   theme_color_ = optional_theme_color.value_or(GetDefaultFrameColor());
   SetBackground(views::CreateSolidBackground(theme_color_));
 
-  text_color_ = browser_view->frame()->GetFrameView()->GetFrameForegroundColor(
+  caption_color_ = browser_view->frame()->GetFrameView()->GetCaptionColor(
       BrowserNonClientFrameView::kActive);
 
   const gfx::FontList& font_list = views::style::GetFont(
       CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
 
-  close_button_ = CreateCloseButton(this, text_color_);
+  close_button_ = CreateCloseButton(this, caption_color_);
   AddChildView(close_button_);
 
   location_icon_view_ = new LocationIconView(font_list, this);
   AddChildView(location_icon_view_);
 
-  title_origin_view_ = new CustomTabBarTitleOriginView(text_color_);
+  title_origin_view_ =
+      new CustomTabBarTitleOriginView(caption_color_, theme_color_);
   AddChildView(title_origin_view_);
 
   int padding = GetLayoutConstant(LayoutConstant::LOCATION_BAR_ELEMENT_PADDING);
@@ -186,7 +182,7 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
   SetLayoutManager(std::move(layout));
-  SetBorder(views::CreateSolidSidedBorder(0, 0, 1, 0, text_color_));
+  SetBorder(views::CreateSolidSidedBorder(0, 0, 1, 0, caption_color_));
 
   tab_strip_model_observer_.Add(browser->tab_strip_model());
 }
@@ -236,8 +232,8 @@ bool CustomTabBarView::ShowPageInfoDialog() {
 
 SkColor CustomTabBarView::GetSecurityChipColor(
     security_state::SecurityLevel security_level) const {
-  OmniboxTint tint =
-      color_utils::IsDark(text_color_) ? OmniboxTint::LIGHT : OmniboxTint::DARK;
+  OmniboxTint tint = color_utils::IsDark(caption_color_) ? OmniboxTint::LIGHT
+                                                         : OmniboxTint::DARK;
 
   return GetOmniboxSecurityChipColor(tint, security_level);
 }

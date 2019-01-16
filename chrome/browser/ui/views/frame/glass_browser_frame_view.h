@@ -43,7 +43,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
   bool IsSingleTabModeAvailable() const override;
-  SkColor GetFrameForegroundColor(ActiveState active_state) const override;
+  SkColor GetCaptionColor(ActiveState active_state) const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;

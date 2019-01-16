@@ -76,11 +76,6 @@ class ASH_PUBLIC_EXPORT FrameHeader : public gfx::AnimationDelegate {
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
-  void set_button_color_mode(
-      views::FrameCaptionButton::ColorMode button_color_mode) {
-    button_color_mode_ = button_color_mode;
-  }
-
  protected:
   FrameHeader(views::Widget* target_widget, views::View* view);
 
@@ -124,9 +119,6 @@ class ASH_PUBLIC_EXPORT FrameHeader : public gfx::AnimationDelegate {
   void LayoutHeaderInternal();
 
   gfx::Rect GetTitleBounds() const;
-
-  views::FrameCaptionButton::ColorMode button_color_mode_ =
-      views::FrameCaptionButton::ColorMode::kDefault;
 
   // The widget that the caption buttons act on. This can be different from
   // |view_|'s widget.
