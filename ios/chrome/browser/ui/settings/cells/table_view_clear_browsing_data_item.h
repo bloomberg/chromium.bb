@@ -11,6 +11,7 @@ enum class BrowsingDataRemoveMask;
 
 // TableViewClearBrowsingDataItem contains the model data for a
 // TableViewTextCell in addition a BrowsingDataRemoveMask property.
+// TODO(crbug.com/894800): Remove this.
 @interface TableViewClearBrowsingDataItem : TableViewItem
 
 // Text of the TableViewTextCell
