@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -129,44 +130,20 @@ base::LazyInstance<PrintPreviewRequestIdMapWithLock>::DestructorAtExit
 base::LazyInstance<base::IDMap<PrintPreviewUI*>>::DestructorAtExit
     g_print_preview_ui_id_map = LAZY_INSTANCE_INITIALIZER;
 
-// PrintPreviewUI serves data for chrome://print requests.
-//
-// The format for requesting PDF data is as follows:
-// chrome://print/<PrintPreviewUIID>/<PageIndex>/print.pdf
-//
-// Parameters (< > required):
-//    <PrintPreviewUIID> = PrintPreview UI ID
-//    <PageIndex> = Page index is zero-based or
-//                  |COMPLETE_PREVIEW_DOCUMENT_INDEX| to represent
-//                  a print ready PDF.
-//
-// Example:
-//    chrome://print/123/10/print.pdf
-//
-// Requests to chrome://print with paths not ending in /print.pdf are used
-// to return the markup or other resources for the print preview page itself.
+// Get markup or other resources for the print preview page.
 bool HandleRequestCallback(
     const std::string& path,
     const content::WebUIDataSource::GotDataCallback& callback) {
   // ChromeWebUIDataSource handles most requests except for the print preview
   // data.
-  std::string file_path = path.substr(0, path.find_first_of('?'));
-  if (!base::EndsWith(file_path, "/print.pdf", base::CompareCase::SENSITIVE))
+  int preview_ui_id;
+  int page_index;
+  if (!PrintPreviewUI::ParseDataPath(path, &preview_ui_id, &page_index))
     return false;
 
-  // Print Preview data.
   scoped_refptr<base::RefCountedMemory> data;
-  std::vector<std::string> url_substr = base::SplitString(
-      path, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  int preview_ui_id = -1;
-  int page_index = 0;
-  if (url_substr.size() == 3 &&
-      base::StringToInt(url_substr[0], &preview_ui_id),
-      base::StringToInt(url_substr[1], &page_index) &&
-      preview_ui_id >= 0) {
-    PrintPreviewDataService::GetInstance()->GetDataEntry(
-        preview_ui_id, page_index, &data);
-  }
+  PrintPreviewDataService::GetInstance()->GetDataEntry(preview_ui_id,
+                                                       page_index, &data);
   if (data.get()) {
     callback.Run(data.get());
     return true;
@@ -344,7 +321,8 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
                      cloud_printer_handler_enabled);
 }
 
-void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
+std::vector<std::string> SetupPrintPreviewPlugin(
+    content::WebUIDataSource* source) {
   static constexpr struct {
     const char* path;
     int id;
@@ -419,13 +397,18 @@ void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
     {"pdf/viewport_scroller.js", IDR_PDF_VIEWPORT_SCROLLER_JS},
     {"pdf/zoom_manager.js", IDR_PDF_ZOOM_MANAGER_JS},
   };
-  for (const auto& resource : kPdfResources)
+  std::vector<std::string> excluded_paths;
+  for (const auto& resource : kPdfResources) {
+    excluded_paths.emplace_back(resource.path);
     source->AddResourcePath(resource.path, resource.id);
+  }
 
   source->SetRequestFilter(base::BindRepeating(&HandleRequestCallback));
   source->OverrideContentSecurityPolicyChildSrc("child-src 'self';");
   source->DisableDenyXFrameOptions();
   source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");
+
+  return excluded_paths;
 }
 
 content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
@@ -440,14 +423,22 @@ content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
       base::FeatureList::IsEnabled(features::kWebUIPolymer2) ?
           IDR_PRINT_PREVIEW_VULCANIZED_P2_HTML :
           IDR_PRINT_PREVIEW_VULCANIZED_HTML);
+  std::vector<std::string> exclude_from_gzip = SetupPrintPreviewPlugin(source);
+  source->UseGzip(base::BindRepeating(
+      [](const std::vector<std::string>& excluded_paths,
+         const std::string& path) {
+        return !base::ContainsValue(excluded_paths, path) &&
+               !PrintPreviewUI::ParseDataPath(path, nullptr, nullptr);
+      },
+      std::move(exclude_from_gzip)));
 #else
   for (size_t i = 0; i < kPrintPreviewResourcesSize; ++i) {
     source->AddResourcePath(kPrintPreviewResources[i].name,
                             kPrintPreviewResources[i].value);
   }
   source->SetDefaultResource(IDR_PRINT_PREVIEW_NEW_HTML);
-#endif
   SetupPrintPreviewPlugin(source);
+#endif
   AddPrintPreviewFlags(source, profile);
   return source;
 }
@@ -509,6 +500,34 @@ void PrintPreviewUI::SetPrintPreviewDataForIndex(
     scoped_refptr<base::RefCountedMemory> data) {
   PrintPreviewDataService::GetInstance()->SetDataEntry(*id_, index,
                                                        std::move(data));
+}
+
+// static
+bool PrintPreviewUI::ParseDataPath(const std::string& path,
+                                   int* ui_id,
+                                   int* page_index) {
+  std::string file_path = path.substr(0, path.find_first_of('?'));
+  if (!base::EndsWith(file_path, "/print.pdf", base::CompareCase::SENSITIVE))
+    return false;
+
+  std::vector<std::string> url_substr =
+      base::SplitString(path, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (url_substr.size() != 3)
+    return false;
+
+  int preview_ui_id = -1;
+  if (!base::StringToInt(url_substr[0], &preview_ui_id) || preview_ui_id < 0)
+    return false;
+
+  int preview_page_index = 0;
+  if (!base::StringToInt(url_substr[1], &preview_page_index))
+    return false;
+
+  if (ui_id)
+    *ui_id = preview_ui_id;
+  if (page_index)
+    *page_index = preview_page_index;
+  return true;
 }
 
 void PrintPreviewUI::ClearAllPreviewData() {
