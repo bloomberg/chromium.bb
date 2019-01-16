@@ -4,7 +4,9 @@
 
 #include "content/browser/background_fetch/storage/database_task.h"
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/metrics/histogram_functions.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
@@ -33,21 +35,22 @@ void DidGetUsageAndQuota(DatabaseTask::IsQuotaAvailableCallback callback,
 
 }  // namespace
 
-DatabaseTaskHost::DatabaseTaskHost() : weak_factory_(this) {}
+DatabaseTaskHost::DatabaseTaskHost() = default;
 
 DatabaseTaskHost::~DatabaseTaskHost() = default;
 
-base::WeakPtr<DatabaseTaskHost> DatabaseTaskHost::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
-}
-
-DatabaseTask::DatabaseTask(DatabaseTaskHost* host) : host_(host) {
+DatabaseTask::DatabaseTask(DatabaseTaskHost* host)
+    : host_(host), weak_ptr_factory_(this) {
   DCHECK(host_);
   // Hold a reference to the CacheStorageManager.
   cache_manager_ = data_manager()->cache_manager();
 }
 
 DatabaseTask::~DatabaseTask() = default;
+
+base::WeakPtr<DatabaseTaskHost> DatabaseTask::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
 
 void DatabaseTask::Finished() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -88,6 +91,40 @@ void DatabaseTask::IsQuotaAvailable(const url::Origin& origin,
       base::ThreadTaskRunnerHandle::Get().get(), origin,
       blink::mojom::StorageType::kTemporary,
       base::BindOnce(&DidGetUsageAndQuota, std::move(callback), size));
+}
+
+void DatabaseTask::GetStorageVersion(int64_t service_worker_registration_id,
+                                     const std::string& unique_id,
+                                     StorageVersionCallback callback) {
+  service_worker_context()->GetRegistrationUserData(
+      service_worker_registration_id, {StorageVersionKey(unique_id)},
+      base::BindOnce(&DatabaseTask::DidGetStorageVersion,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void DatabaseTask::DidGetStorageVersion(StorageVersionCallback callback,
+                                        const std::vector<std::string>& data,
+                                        blink::ServiceWorkerStatusCode status) {
+  switch (ToDatabaseStatus(status)) {
+    case DatabaseStatus::kNotFound:
+    case DatabaseStatus::kFailed:
+      // This shouldn't happen.
+      std::move(callback).Run(proto::SV_UNINITIALIZED);
+      return;
+    case DatabaseStatus::kOk:
+      break;
+  }
+
+  DCHECK_EQ(data.size(), 1u);
+  int storage_version = proto::SV_UNINITIALIZED;
+
+  if (!base::StringToInt(data[0], &storage_version) ||
+      !proto::BackgroundFetchStorageVersion_IsValid(storage_version)) {
+    storage_version = proto::SV_UNINITIALIZED;
+  }
+
+  std::move(callback).Run(
+      static_cast<proto::BackgroundFetchStorageVersion>(storage_version));
 }
 
 void DatabaseTask::SetStorageError(BackgroundFetchStorageError error) {

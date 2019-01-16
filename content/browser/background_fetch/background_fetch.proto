@@ -85,6 +85,26 @@ message BackgroundFetchOptions {
   optional uint64 download_total = 3;
 }
 
+// Keeps track of the version of the persisted data. If a breaking change
+// needs to be made, increment `CURRENT`, and replace it with a descriptive
+// name of the change. Don't directly check against `SV_CURRENT` as it can be
+// changed.
+// For example, if you want to enable a new key format for the SWDB, perform
+// the following steps:
+// 1. Add a new enum value (SV_ENABLE_NEW_KEY_FORMAT) and increment
+//    `SV_CURRENT`
+// 2. Migrate the old formats on database load (GetInitializationDataTask).
+// 3. Add a TODO with a bug to clean this up after 2 milestones or so.
+//
+// Next Tag: 2
+enum BackgroundFetchStorageVersion {
+  SV_UNINITIALIZED = 0;
+  // Add new versions here.
+
+  // Must be last.
+  SV_CURRENT = 1;
+}
+
 // Stores information about the background fetch that will be persisted
 // in memory. This information should be everything needed to reconstruct
 // the state of an interrupted background fetch.

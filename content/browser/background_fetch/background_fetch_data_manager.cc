@@ -248,4 +248,9 @@ BackgroundFetchDataManager* BackgroundFetchDataManager::data_manager() {
   return this;
 }
 
+base::WeakPtr<background_fetch::DatabaseTaskHost>
+BackgroundFetchDataManager::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 }  // namespace content

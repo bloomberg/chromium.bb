@@ -200,6 +200,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   // DatabaseTaskHost implementation.
   void OnTaskFinished(background_fetch::DatabaseTask* task) override;
   BackgroundFetchDataManager* data_manager() override;
+  base::WeakPtr<background_fetch::DatabaseTaskHost> GetWeakPtr() override;
 
   void Cleanup();
 
