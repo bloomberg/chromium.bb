@@ -6,12 +6,8 @@
 #define IOS_CHROME_BROWSER_WEB_STATE_LIST_WEB_USAGE_ENABLER_WEB_STATE_LIST_WEB_USAGE_ENABLER_FACTORY_H_
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
 
 namespace ios {
 class ChromeBrowserState;
@@ -32,8 +28,7 @@ class WebStateListWebUsageEnablerFactory
   static WebStateListWebUsageEnablerFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<
-      WebStateListWebUsageEnablerFactory>;
+  friend class base::NoDestructor<WebStateListWebUsageEnablerFactory>;
 
   WebStateListWebUsageEnablerFactory();
 
