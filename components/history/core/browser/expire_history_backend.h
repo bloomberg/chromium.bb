@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_EXPIRE_HISTORY_BACKEND_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_EXPIRE_HISTORY_BACKEND_H_
 
+#include <map>
 #include <memory>
 #include <set>
 #include <vector>
@@ -80,7 +81,9 @@ class ExpireHistoryBackend {
   // Removes all visits to restrict_urls (or all URLs if empty) in the given
   // time range, updating the URLs accordingly.
   void ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
-                            base::Time begin_time, base::Time end_time);
+                            base::Time begin_time,
+                            base::Time end_time,
+                            bool user_initiated);
 
   // Removes all visits to all URLs with the given times, updating the
   // URLs accordingly.  |times| must be in reverse chronological order
@@ -197,17 +200,6 @@ class ExpireHistoryBackend {
   // any now-unused favicons.
   void ExpireURLsForVisits(const VisitVector& visits, DeleteEffects* effects);
 
-  void ExpireVisitsInternal(const VisitVector& visits,
-                            const DeletionTimeRange& time_range,
-                            const std::set<GURL>& restrict_urls);
-
-  // Deletes the favicons listed in |effects->affected_favicons| if they are
-  // unsued. Fails silently (we don't care about favicons so much, so don't want
-  // to stop everything if it fails). Fills |expired_favicons| with the set of
-  // favicon urls that no longer have associated visits and were therefore
-  // expired.
-  void DeleteFaviconsIfPossible(DeleteEffects* effects);
-
   // Enum representing what type of action resulted in the history DB deletion.
   enum DeletionType {
     // User initiated the deletion from the History UI.
@@ -216,6 +208,18 @@ class ExpireHistoryBackend {
     // old.
     DELETION_EXPIRED
   };
+
+  void ExpireVisitsInternal(const VisitVector& visits,
+                            const DeletionTimeRange& time_range,
+                            const std::set<GURL>& restrict_urls,
+                            DeletionType type);
+
+  // Deletes the favicons listed in |effects->affected_favicons| if they are
+  // unused. Fails silently (we don't care about favicons so much, so don't want
+  // to stop everything if it fails). Fills |expired_favicons| with the set of
+  // favicon urls that no longer have associated visits and were therefore
+  // expired.
+  void DeleteFaviconsIfPossible(DeleteEffects* effects);
 
   // Broadcasts URL modified and deleted notifications.
   void BroadcastNotifications(DeleteEffects* effects,

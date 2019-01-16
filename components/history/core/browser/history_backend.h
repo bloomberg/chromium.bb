@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <list>
 #include <memory>
 #include <set>
 #include <string>
@@ -421,7 +422,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Calls ExpireHistoryBackend::ExpireHistoryBetween and commits the change.
   void ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
                             base::Time begin_time,
-                            base::Time end_time);
+                            base::Time end_time,
+                            bool user_initiated);
 
   // Finds the URLs visited at |times| and expires all their visits within
   // [|begin_time|, |end_time|). All times in |times| should be in

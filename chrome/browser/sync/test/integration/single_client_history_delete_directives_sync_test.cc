@@ -125,8 +125,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientHistoryDeleteDirectivesSyncTest,
 
   history_service->ExpireLocalAndRemoteHistoryBetween(
       WebHistoryServiceFactory::GetForProfile(GetProfile(0)), std::set<GURL>(),
-      /*begin_time=*/base::Time(), /*end_time=*/base::Time(), base::DoNothing(),
-      &task_tracker);
+      /*begin_time=*/base::Time(), /*end_time=*/base::Time(),
+      /*user_initiated*/ true, base::DoNothing(), &task_tracker);
 
   EXPECT_TRUE(WaitForHistoryDeleteDirectives(1));
 }

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/history/history_api.h"
 
 #include <memory>
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
@@ -389,11 +390,10 @@ ExtensionFunction::ResponseAction HistoryDeleteRangeFunction::Run() {
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
-      restrict_urls,
-      start_time,
-      end_time,
-      base::Bind(&HistoryDeleteRangeFunction::DeleteComplete,
-                 base::Unretained(this)),
+      restrict_urls, start_time, end_time,
+      /*user_initiated*/ true,
+      base::BindOnce(&HistoryDeleteRangeFunction::DeleteComplete,
+                     base::Unretained(this)),
       &task_tracker_);
 
   // Also clean from the activity log unless in testing mode.
@@ -421,12 +421,14 @@ ExtensionFunction::ResponseAction HistoryDeleteAllFunction::Run() {
   std::set<GURL> restrict_urls;
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
+  // Uninitialized base::Time() means unbounded.
   hs->ExpireHistoryBetween(
       restrict_urls,
-      base::Time(),      // Unbounded beginning...
-      base::Time(),      // ...and the end.
-      base::Bind(&HistoryDeleteAllFunction::DeleteComplete,
-                 base::Unretained(this)),
+      /*begin_time*/ base::Time(),
+      /*end_time*/ base::Time(),
+      /*user_initiated*/ true,
+      base::BindOnce(&HistoryDeleteAllFunction::DeleteComplete,
+                     base::Unretained(this)),
       &task_tracker_);
 
   // Also clean from the activity log unless in testing mode.

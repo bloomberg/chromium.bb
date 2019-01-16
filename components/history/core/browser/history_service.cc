@@ -1090,27 +1090,28 @@ void HistoryService::ExpireHistoryBetween(
     const std::set<GURL>& restrict_urls,
     Time begin_time,
     Time end_time,
-    const base::Closure& callback,
+    bool user_initiated,
+    base::OnceClosure callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   tracker->PostTaskAndReply(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::ExpireHistoryBetween, history_backend_,
-                     restrict_urls, begin_time, end_time),
-      callback);
+                     restrict_urls, begin_time, end_time, user_initiated),
+      std::move(callback));
 }
 
 void HistoryService::ExpireHistory(
     const std::vector<ExpireHistoryArgs>& expire_list,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   tracker->PostTaskAndReply(backend_task_runner_.get(), FROM_HERE,
                             base::BindOnce(&HistoryBackend::ExpireHistory,
                                            history_backend_, expire_list),
-                            callback);
+                            std::move(callback));
 }
 
 void HistoryService::ExpireHistoryBeforeForTesting(
@@ -1131,7 +1132,8 @@ void HistoryService::ExpireLocalAndRemoteHistoryBetween(
     const std::set<GURL>& restrict_urls,
     Time begin_time,
     Time end_time,
-    const base::Closure& callback,
+    bool user_initiated,
+    base::OnceClosure callback,
     base::CancelableTaskTracker* tracker) {
   // TODO(dubroy): This should be factored out into a separate class that
   // dispatches deletions to the proper places.
@@ -1175,7 +1177,8 @@ void HistoryService::ExpireLocalAndRemoteHistoryBetween(
                                       base::Bind(&ExpireWebHistoryComplete),
                                       partial_traffic_annotation);
   }
-  ExpireHistoryBetween(restrict_urls, begin_time, end_time, callback, tracker);
+  ExpireHistoryBetween(restrict_urls, begin_time, end_time, user_initiated,
+                       std::move(callback), tracker);
 }
 
 void HistoryService::OnDBLoaded() {

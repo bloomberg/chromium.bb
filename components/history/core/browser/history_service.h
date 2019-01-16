@@ -339,7 +339,8 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   void ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
                             base::Time begin_time,
                             base::Time end_time,
-                            const base::Closure& callback,
+                            bool user_initiated,
+                            base::OnceClosure callback,
                             base::CancelableTaskTracker* tracker);
 
   // Removes all visits to specified URLs in specific time ranges.
@@ -347,7 +348,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // vector. The fields of |ExpireHistoryArgs| map directly to the arguments of
   // of ExpireHistoryBetween().
   void ExpireHistory(const std::vector<ExpireHistoryArgs>& expire_list,
-                     const base::Closure& callback,
+                     base::OnceClosure callback,
                      base::CancelableTaskTracker* tracker);
 
   // Expires all visits before and including the given time, updating the URLs
@@ -363,7 +364,8 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
                                           const std::set<GURL>& restrict_urls,
                                           base::Time begin_time,
                                           base::Time end_time,
-                                          const base::Closure& callback,
+                                          bool user_initiated,
+                                          base::OnceClosure callback,
                                           base::CancelableTaskTracker* tracker);
 
   // Processes the given |delete_directive| and sends it to the
