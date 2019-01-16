@@ -7,6 +7,7 @@
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_timeouts.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/appcache_fuzzer.pb.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
@@ -26,8 +27,10 @@ namespace content {
 namespace {
 
 struct Env {
-  Env() : thread_bundle(base::test::ScopedTaskEnvironment::MainThreadType::IO) {
-    base::CommandLine::Init(0, nullptr);
+  Env()
+      : thread_bundle((base::CommandLine::Init(0, nullptr),
+                       TestTimeouts::Initialize(),
+                       base::test::ScopedTaskEnvironment::MainThreadType::IO)) {
     logging::SetMinLogLevel(logging::LOG_FATAL);
     mojo::core::Init();
     feature_list.InitWithFeatures({network::features::kNetworkService}, {});
