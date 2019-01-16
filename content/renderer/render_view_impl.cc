@@ -503,9 +503,13 @@ void RenderViewImpl::Initialize(
 
   // Pass WidgetClient(), not |this|, as the WebWidgetClient. The method may
   // be overridden in web tests to inject a test-only WebWidgetClient.
-  webview_ = WebView::Create(this, WidgetClient(), params->hidden,
+  webview_ = WebView::Create(this, params->hidden,
                              /*compositing_enabled=*/true,
                              opener_frame ? opener_frame->View() : nullptr);
+  // TODO(danakj): Make this part of attaching the main frame's WebFrameWidget,
+  // and move RenderWidget::Init to after the WebFrameWidget is attached (for
+  // a non-frozen RenderWidget).
+  webview_->SetWebWidgetClient(WidgetClient());
   GetWidget()->Init(std::move(show_callback), webview_->MainFrameWidget());
 
   g_view_map.Get().insert(std::make_pair(webview(), this));

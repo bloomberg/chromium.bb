@@ -19,7 +19,6 @@ mojo::ScopedMessagePipeHandle CreateStubDocumentInterfaceBrokerHandle() {
 
 ScopedWebFrame::ScopedWebFrame()
     : view_(blink::WebView::Create(/*client=*/nullptr,
-                                   /*widget_client=*/nullptr,
                                    /*is_hidden=*/false,
                                    /*compositing_enabled=*/false,
                                    /*opener=*/nullptr)),

@@ -101,7 +101,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                                       public PageWidgetEventHandler {
  public:
   static WebViewImpl* Create(WebViewClient*,
-                             WebWidgetClient*,
                              bool is_hidden,
                              bool compositing_enabled,
                              WebViewImpl* opener);
@@ -111,6 +110,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   static bool UseExternalPopupMenus();
 
   // WebView methods:
+  void SetWebWidgetClient(WebWidgetClient*) override;
   void SetPrerendererClient(WebPrerendererClient*) override;
   WebSettings* GetSettings() override;
   WebString PageEncoding() const override;
@@ -489,7 +489,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   friend class WTF::RefCounted<WebViewImpl>;
 
   WebViewImpl(WebViewClient*,
-              WebWidgetClient*,
               bool is_hidden,
               bool does_composite,
               WebViewImpl* opener);
@@ -563,7 +562,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   struct ViewData {
     ViewData(WebViewClient* client) : client(client) {}
 
-    // Can be null (e.g. unittests, shared workers, etc.)
+    // Can be null (e.g. unittests, shared workers, etc).
     WebViewClient* client;
     Persistent<Page> page;
   } as_view_;
@@ -572,9 +571,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // APIs. They can be called from within WebWidget APIs, and internal methods,
   // though these need to be sorted as being for the view or the widget also.
   struct WidgetData {
-    WidgetData(WebWidgetClient* client) : client(client) {}
-
-    WebWidgetClient* client;  // Can also be null.
+    // Can be null (e.g. unittests, shared workers, etc).
+    WebWidgetClient* client = nullptr;
   } as_widget_;
 
   Persistent<ChromeClient> chrome_client_;

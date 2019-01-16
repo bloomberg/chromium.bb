@@ -255,23 +255,21 @@ class EmptyEventListener final : public NativeEventListener {
 // WebView ----------------------------------------------------------------
 
 WebView* WebView::Create(WebViewClient* client,
-                         WebWidgetClient* widget_client,
                          bool is_hidden,
                          bool compositing_enabled,
                          WebView* opener) {
-  return WebViewImpl::Create(client, widget_client, is_hidden,
-                             compositing_enabled,
+  return WebViewImpl::Create(client, is_hidden, compositing_enabled,
                              static_cast<WebViewImpl*>(opener));
 }
 
 WebViewImpl* WebViewImpl::Create(WebViewClient* client,
-                                 WebWidgetClient* widget_client,
                                  bool is_hidden,
                                  bool compositing_enabled,
                                  WebViewImpl* opener) {
-  // Pass the WebViewImpl's self-reference to the caller.
-  auto web_view = base::AdoptRef(new WebViewImpl(
-      client, widget_client, is_hidden, compositing_enabled, opener));
+  // Take a self-reference for WebViewImpl that is released by calling Close(),
+  // then return a raw pointer to the caller.
+  auto web_view = base::AdoptRef(
+      new WebViewImpl(client, is_hidden, compositing_enabled, opener));
   web_view->AddRef();
   return web_view.get();
 }
@@ -293,12 +291,10 @@ void WebViewImpl::SetPrerendererClient(
 }
 
 WebViewImpl::WebViewImpl(WebViewClient* client,
-                         WebWidgetClient* widget_client,
                          bool is_hidden,
                          bool does_composite,
                          WebViewImpl* opener)
     : as_view_(client),
-      as_widget_(widget_client),
       chrome_client_(ChromeClientImpl::Create(this)),
       should_auto_resize_(false),
       zoom_level_(0),
@@ -335,7 +331,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       display_mode_(kWebDisplayModeBrowser),
       elastic_overscroll_(FloatSize()),
       mutator_dispatcher_(nullptr) {
-  DCHECK_EQ(!!AsView().client, !!AsWidget().client);
   if (!AsView().client) {
     DCHECK(!does_composite_);
   }
@@ -365,6 +360,14 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
 
 WebViewImpl::~WebViewImpl() {
   DCHECK(!AsView().page);
+}
+
+void WebViewImpl::SetWebWidgetClient(WebWidgetClient* client) {
+  // Just don't call this method if the client's null.
+  DCHECK(client);
+  // There should only be a WebWidgetClient if there is a WebViewClient.
+  DCHECK(!!AsView().client);
+  AsWidget().client = client;
 }
 
 WebDevToolsAgentImpl* WebViewImpl::MainFrameDevToolsAgentImpl() {
