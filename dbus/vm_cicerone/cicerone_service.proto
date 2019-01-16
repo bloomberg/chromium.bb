@@ -19,18 +19,8 @@ message NotifyVmStartedRequest {
   // The owner of the VM.
   string owner_id = 2;
 
-  // The IPv4 subnet for containers within the VM in network byte order.
-  uint32 container_ipv4_subnet = 3;
-
-  // The netmask for the IPv4 subnet for containers within the VM in network
-  // byte order.
-  uint32 container_ipv4_netmask = 4;
-
-  // The IPv4 address of the VM in network byte order.
-  uint32 ipv4_address = 5;
-
   // The virtual socket context id assigned to the VM.
-  uint32 cid = 6;
+  uint32 cid = 3;
 }
 
 // Message sent to cicerone when a VM stopped or failed to complete startup.
