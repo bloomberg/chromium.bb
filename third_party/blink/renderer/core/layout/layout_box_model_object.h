@@ -46,12 +46,6 @@ enum PaintLayerType {
   kForcedPaintLayer
 };
 
-enum : uint32_t {
-  kBackgroundPaintInGraphicsLayer = 1 << 0,
-  kBackgroundPaintInScrollingContents = 1 << 1
-};
-using BackgroundPaintLocation = uint32_t;
-
 // Modes for some of the line-related functions.
 enum LinePositionMode {
   kPositionOnContainingLine,
