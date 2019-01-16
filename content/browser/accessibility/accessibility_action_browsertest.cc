@@ -28,10 +28,10 @@ class AccessibilityActionBrowserTest : public ContentBrowserTest {
 
  protected:
   BrowserAccessibility* FindNode(ax::mojom::Role role,
-                                 const std::string& name) {
+                                 const std::string& name_or_value) {
     BrowserAccessibility* root = GetManager()->GetRoot();
     CHECK(root);
-    return FindNodeInSubtree(*root, role, name);
+    return FindNodeInSubtree(*root, role, name_or_value);
   }
 
   BrowserAccessibilityManager* GetManager() {
@@ -58,13 +58,19 @@ class AccessibilityActionBrowserTest : public ContentBrowserTest {
  private:
   BrowserAccessibility* FindNodeInSubtree(BrowserAccessibility& node,
                                           ax::mojom::Role role,
-                                          const std::string& name) {
+                                          const std::string& name_or_value) {
+    const auto& name =
+        node.GetStringAttribute(ax::mojom::StringAttribute::kName);
+    const auto& value =
+        node.GetStringAttribute(ax::mojom::StringAttribute::kValue);
     if (node.GetRole() == role &&
-        node.GetStringAttribute(ax::mojom::StringAttribute::kName) == name)
+        (name == name_or_value || value == name_or_value)) {
       return &node;
+    }
+
     for (unsigned int i = 0; i < node.PlatformChildCount(); ++i) {
-      BrowserAccessibility* result = FindNodeInSubtree(
-          *node.PlatformGetChild(i), role, name);
+      BrowserAccessibility* result =
+          FindNodeInSubtree(*node.PlatformGetChild(i), role, name_or_value);
       if (result)
         return result;
     }
@@ -316,6 +322,34 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ImgElementGetImage) {
   EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(1, 1));
   EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(0, 2));
   EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(1, 2));
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
+                       DoDefaultActionFocusesContentEditable) {
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  GURL url(
+      "data:text/html,"
+      "<div><button>Before</button></div>"
+      "<div contenteditable>Editable text</div>"
+      "<div><button>After</button></div>");
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  BrowserAccessibility* target =
+      FindNode(ax::mojom::Role::kGenericContainer, "Editable text");
+  ASSERT_NE(nullptr, target);
+
+  AccessibilityNotificationWaiter waiter2(
+      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kFocus);
+  GetManager()->DoDefaultAction(*target);
+  waiter2.WaitForNotification();
+
+  BrowserAccessibility* focus = GetManager()->GetFocus();
+  EXPECT_EQ(focus->GetId(), target->GetId());
 }
 
 }  // namespace content

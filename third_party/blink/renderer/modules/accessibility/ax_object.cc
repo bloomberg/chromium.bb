@@ -2843,6 +2843,9 @@ bool AXObject::OnNativeClickAction() {
   if (!element && GetNode())
     element = GetNode()->parentElement();
 
+  if (IsTextControl())
+    return OnNativeFocusAction();
+
   if (element) {
     element->AccessKeyAction(true);
     return true;

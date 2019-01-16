@@ -140,11 +140,12 @@ TEST_F('ChromeVoxEditingTest', 'TextButNoSelectionChange', function() {
 TEST_F('ChromeVoxEditingTest', 'RichTextMoveByLine', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
-    <div id="go" role="textbox" contenteditable>
+    <div role="textbox" contenteditable>
       <h2>hello</h2>
       <div><br></div>
       <p>This is a <a href="#test">test</a> of rich text</p>
     </div>
+    <button id="go">Go</button>
     <script>
       var dir = 'forward';
       var line = 0;
@@ -164,7 +165,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByLine', function() {
     </script>
   */}, function(root) {
     var input = root.find({role: RoleType.TEXT_FIELD});
-    var moveByLine = input.doDefault.bind(input);
+    var go = root.find({role: RoleType.BUTTON});
+    var moveByLine = go.doDefault.bind(go);
     this.listenOnce(input, 'focus', function() {
       mockFeedback.call(moveByLine)
           .expectSpeech('\n')
@@ -187,7 +189,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByLine', function() {
 TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacter', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
-    <div id="go" role="textbox" contenteditable>This <b>is</b> a test.</div>
+    <div role="textbox" contenteditable>This <b>is</b> a test.</div>
+    <button id="go">Go</button>
 
     <script>
       var dir = 'forward';
@@ -208,7 +211,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacter', function() {
     </script>
   */}, function(root) {
     var input = root.find({role: RoleType.TEXT_FIELD});
-    var moveByChar = input.doDefault.bind(input);
+    var go = root.find({role: RoleType.BUTTON});
+    var moveByChar = go.doDefault.bind(go);
     var lineText = 'This is a test. mled';
 
     this.listenOnce(input, 'focus', function() {
@@ -257,7 +261,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacter', function() {
 TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterNodeWorkaround', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
-    <div id="go" role="textbox" contenteditable>hello <b>world</b></div>
+    <div role="textbox" contenteditable>hello <b>world</b></div>
+    <button id="go">Go</button>
 
     <script>
       document.getElementById('go').addEventListener('click', function() {
@@ -267,7 +272,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterNodeWorkaround', function
     </script>
   */}, function(root) {
     var input = root.find({role: RoleType.TEXT_FIELD});
-    var moveByChar = input.doDefault.bind(input)
+    var go = root.find({role: RoleType.BUTTON});
+    var moveByChar = go.doDefault.bind(go);
     var lineText = 'hello world mled';
 
     this.listenOnce(input, 'focus', function() {
@@ -298,7 +304,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterNodeWorkaround', function
 TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterEndOfLine', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
-    <div id="go" role="textbox" contenteditable>Test</div>
+    <div role="textbox" contenteditable>Test</div>
+    <button id="go">Go</button>
 
     <script>
       document.getElementById('go').addEventListener('click', function() {
@@ -308,7 +315,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterEndOfLine', function() {
     </script>
   */}, function(root) {
     var input = root.find({role: RoleType.TEXT_FIELD});
-    var moveByChar = input.doDefault.bind(input);
+    var go = root.find({role: RoleType.BUTTON});
+    var moveByChar = go.doDefault.bind(go);
     var lineText = 'Test mled';
 
     this.listenOnce(input, 'focus', function() {
@@ -334,8 +342,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterEndOfLine', function() {
 TEST_F('ChromeVoxEditingTest', 'RichTextLinkOutput', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
-    <div id="go" role="textbox" contenteditable>a <a href="#">test</a></div>
-
+    <div role="textbox" contenteditable>a <a href="#">test</a></div>
+    <button id="go">Go</button>
     <script>
       document.getElementById('go').addEventListener('click', function() {
         var sel = getSelection();
@@ -344,7 +352,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextLinkOutput', function() {
     </script>
   */}, function(root) {
     var input = root.find({role: RoleType.TEXT_FIELD});
-    var moveByChar = input.doDefault.bind(input);
+    var go = root.find({role: RoleType.BUTTON});
+    var moveByChar = go.doDefault.bind(go);
     var lineText = 'a test mled';
     var lineOnLinkText = 'a test lnk mled';
 
@@ -378,7 +387,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextLinkOutput', function() {
 TEST_F('ChromeVoxEditingTest', 'RichTextExtendByCharacter', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
-    <div id="go" role="textbox" contenteditable>Te<br>st</div>
+    <div role="textbox" contenteditable>Te<br>st</div>
+    <button id="go">Go</button>
 
     <script>
       document.getElementById('go').addEventListener('click', function() {
@@ -388,7 +398,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextExtendByCharacter', function() {
     </script>
   */}, function(root) {
     var input = root.find({role: RoleType.TEXT_FIELD});
-    var moveByChar = input.doDefault.bind(input);
+    var go = root.find({role: RoleType.BUTTON});
+    var moveByChar = go.doDefault.bind(go);
 
     this.listenOnce(input, 'focus', function() {
       mockFeedback.call(moveByChar)
@@ -412,9 +423,10 @@ TEST_F('ChromeVoxEditingTest', 'RichTextExtendByCharacter', function() {
 TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
-    <p id="go" contenteditable>
+    <p contenteditable>
       <img alt="dog"></img> is a <img alt="cat"</img> test
     </p>
+    <button id="go">Go</button>
     <script>
       document.getElementById('go').addEventListener('click', function() {
         var sel = getSelection();
@@ -423,7 +435,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', function() {
     </script>
   */}, function(root) {
     var input = root.find({role: RoleType.PARAGRAPH});
-    var moveByChar = input.doDefault.bind(input);
+    var go = root.find({role: RoleType.BUTTON});
+    var moveByChar = go.doDefault.bind(go);
 
     this.listenOnce(input, 'focus', function() {
       var lineText = 'dog is a cat test mled';
@@ -477,7 +490,10 @@ TEST_F('ChromeVoxEditingTest', 'RichTextSelectByLine', function() {
   // middle of "11111" and reliably hit a given character position in "22222",
   // regardless of font configuration. https://crbug.com/898213
   this.runWithLoadedTree(function() {/*!
-    <p id="go" contenteditable>
+    <div>
+      <button id="go">Go</button>
+    </div>
+    <p contenteditable>
       11111 line<br>
       22222 line<br>
       33333 line<br>
@@ -511,7 +527,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextSelectByLine', function() {
     </script>
   */}, function(root) {
     var input = root.find({role: RoleType.PARAGRAPH});
-    var move = input.doDefault.bind(input);
+    var go = root.find({role: RoleType.BUTTON});
+    var move = go.doDefault.bind(go);
 
     this.listenOnce(input, 'focus', function() {
 
