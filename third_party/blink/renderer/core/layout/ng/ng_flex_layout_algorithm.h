@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
 
+#include "third_party/blink/renderer/core/layout/flexible_box_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 
 namespace blink {
@@ -31,6 +32,8 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
       const MinMaxSizeInput&) const override;
 
  private:
+  void ConstructAndAppendFlexItems();
+  void GiveLinesAndItemsFinalPositionAndSize();
   // This is same method as FlexItem but we need that logic before FlexItem is
   // constructed.
   bool MainAxisIsInlineAxis(NGBlockNode child);
@@ -48,6 +51,9 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   const bool is_column_;
   NGLogicalSize border_box_size_;
   NGLogicalSize content_box_size_;
+  // This is populated at the top of Layout(), so isn't available in
+  // ComputeMinMaxSize() or anything it calls.
+  base::Optional<FlexLayoutAlgorithm> algorithm;
 };
 
 }  // namespace blink

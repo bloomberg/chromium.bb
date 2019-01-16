@@ -1513,9 +1513,8 @@ void LayoutFlexibleBox::LayoutColumnReverse(FlexItemVectorView& children,
   const StyleContentAlignmentData justify_content =
       FlexLayoutAlgorithm::ResolvedJustifyContent(StyleRef());
 
-  // This is similar to the logic in layoutAndPlaceChildren, except we place
-  // the children starting from the end of the flexbox. We also don't need to
-  // layout anything since we're just moving the children to a new position.
+  // This is similar to the logic in FlexLine::ComputeLineItemsPosition, except
+  // we place the children starting from the end of the flexbox.
   LayoutUnit main_axis_offset = LogicalHeight() - FlowAwareContentInsetEnd();
   main_axis_offset -= FlexLayoutAlgorithm::InitialContentPositionOffset(
       available_free_space, justify_content, children.size());
