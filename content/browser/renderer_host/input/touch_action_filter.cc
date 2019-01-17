@@ -345,6 +345,9 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
 
     case WebInputEvent::kGestureTapDown:
       gesture_sequence_in_progress_ = true;
+      // TODO(xidachen): investigate why the touch action has no value.
+      if (compositor_touch_action_enabled_ && !touch_action.has_value())
+        SetTouchAction(cc::kTouchActionAuto);
       // In theory, the num_of_active_touches_ should be > 0 at this point. But
       // crash reports suggest otherwise.
       if (num_of_active_touches_ <= 0)
