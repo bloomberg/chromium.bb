@@ -76,9 +76,9 @@ class VideoTrackRecorderTest
     blink_source_.SetExtraData(mock_source_);
     blink_track_.Initialize(blink_source_);
 
-    track_ = new MediaStreamVideoTrack(mock_source_,
-                                       MediaStreamSource::ConstraintsCallback(),
-                                       true /* enabled */);
+    track_ = new MediaStreamVideoTrack(
+        mock_source_, blink::PlatformMediaStreamSource::ConstraintsCallback(),
+        true /* enabled */);
     blink_track_.SetTrackData(track_);
 
     // Paranoia checks.

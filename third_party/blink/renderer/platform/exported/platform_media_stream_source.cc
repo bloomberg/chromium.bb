@@ -2,72 +2,64 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_source.h"
+#include "third_party/blink/public/platform/modules/mediastream/platform_media_stream_source.h"
 
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 
-namespace content {
+namespace blink {
 
 const char kMediaStreamSourceTab[] = "tab";
 const char kMediaStreamSourceScreen[] = "screen";
 const char kMediaStreamSourceDesktop[] = "desktop";
 const char kMediaStreamSourceSystem[] = "system";
 
-const char MediaStreamSource::kSourceId[] = "sourceId";
+const char PlatformMediaStreamSource::kSourceId[] = "sourceId";
 
-MediaStreamSource::MediaStreamSource() {
-}
+PlatformMediaStreamSource::PlatformMediaStreamSource() {}
 
-MediaStreamSource::~MediaStreamSource() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+PlatformMediaStreamSource::~PlatformMediaStreamSource() {
   DCHECK(stop_callback_.is_null());
 }
 
-void MediaStreamSource::StopSource() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+void PlatformMediaStreamSource::StopSource() {
   DoStopSource();
   FinalizeStopSource();
 }
 
-void MediaStreamSource::FinalizeStopSource() {
+void PlatformMediaStreamSource::FinalizeStopSource() {
   if (!stop_callback_.is_null())
     base::ResetAndReturn(&stop_callback_).Run(Owner());
   Owner().SetReadyState(blink::WebMediaStreamSource::kReadyStateEnded);
 }
 
-void MediaStreamSource::SetSourceMuted(bool is_muted) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+void PlatformMediaStreamSource::SetSourceMuted(bool is_muted) {
   // Although this change is valid only if the ready state isn't already Ended,
   // there's code further along (like in blink::MediaStreamTrack) which filters
-  // that out alredy.
+  // that out already.
   Owner().SetReadyState(is_muted
                             ? blink::WebMediaStreamSource::kReadyStateMuted
                             : blink::WebMediaStreamSource::kReadyStateLive);
 }
 
-void MediaStreamSource::SetDevice(const blink::MediaStreamDevice& device) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+void PlatformMediaStreamSource::SetDevice(
+    const blink::MediaStreamDevice& device) {
   device_ = device;
 }
 
-void MediaStreamSource::SetStopCallback(
+void PlatformMediaStreamSource::SetStopCallback(
     const SourceStoppedCallback& stop_callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(stop_callback_.is_null());
   stop_callback_ = stop_callback;
 }
 
-void MediaStreamSource::ResetSourceStoppedCallback() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+void PlatformMediaStreamSource::ResetSourceStoppedCallback() {
   DCHECK(!stop_callback_.is_null());
   stop_callback_.Reset();
 }
 
-void MediaStreamSource::ChangeSource(
+void PlatformMediaStreamSource::ChangeSource(
     const blink::MediaStreamDevice& new_device) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DoChangeSource(new_device);
 }
 
-}  // namespace content
+}  // namespace blink

@@ -15,8 +15,8 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/stream/media_stream_audio_deliverer.h"
-#include "content/renderer/media/stream/media_stream_source.h"
 #include "media/base/limits.h"
+#include "third_party/blink/public/platform/modules/mediastream/platform_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 
@@ -69,7 +69,7 @@ class MediaStreamAudioTrack;
 //
 // Usage example:
 //
-//   class MyAudioSource : public MediaStreamSource { ... };
+//   class MyAudioSource : public MediaStreamAudioSource { ... };
 //
 //   blink::WebMediaStreamSource blink_source = ...;
 //   blink::WebMediaStreamTrack blink_track = ...;
@@ -83,7 +83,8 @@ class MediaStreamAudioTrack;
 //   // Regardless of whether ConnectToTrack() succeeds, there will always be a
 //   // MediaStreamAudioTrack instance created.
 //   CHECK(MediaStreamAudioTrack::From(blink_track));
-class CONTENT_EXPORT MediaStreamAudioSource : public MediaStreamSource {
+class CONTENT_EXPORT MediaStreamAudioSource
+    : public blink::PlatformMediaStreamSource {
  public:
   explicit MediaStreamAudioSource(bool is_local_source);
   MediaStreamAudioSource(bool is_local_source,

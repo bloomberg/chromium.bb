@@ -45,7 +45,8 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
                              false /* remote */);
     blink_source_.SetExtraData(mock_source_);
     blink_track_ = MediaStreamVideoTrack::CreateVideoTrack(
-        mock_source_, MediaStreamSource::ConstraintsCallback(), true);
+        mock_source_, blink::PlatformMediaStreamSource::ConstraintsCallback(),
+        true);
     mock_source_->StartMockedSource();
     base::RunLoop().RunUntilIdle();
 

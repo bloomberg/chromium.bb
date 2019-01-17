@@ -1421,7 +1421,8 @@ AudioCaptureSettings SelectSettingsAudioCapture(
   // Score is ignored as it is no longer needed.
   AudioCaptureSettings settings;
   std::tie(std::ignore, settings) = candidates.SelectSettingsAndScore(
-      constraints.Basic(), media_stream_source == kMediaStreamSourceDesktop,
+      constraints.Basic(),
+      media_stream_source == blink::kMediaStreamSourceDesktop,
       should_disable_hardware_noise_suppression);
 
   return settings;
@@ -1446,14 +1447,14 @@ SelectSettingsAudioCapture(MediaStreamAudioSource* source,
 
   if (source->device().type == blink::MEDIA_GUM_TAB_AUDIO_CAPTURE &&
       !media_stream_source.empty() &&
-      media_stream_source != kMediaStreamSourceTab) {
+      media_stream_source != blink::kMediaStreamSourceTab) {
     return AudioCaptureSettings(
         constraints.Basic().media_stream_source.GetName());
   }
   if (source->device().type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE &&
       !media_stream_source.empty() &&
-      media_stream_source != kMediaStreamSourceSystem &&
-      media_stream_source != kMediaStreamSourceDesktop) {
+      media_stream_source != blink::kMediaStreamSourceSystem &&
+      media_stream_source != blink::kMediaStreamSourceDesktop) {
     return AudioCaptureSettings(
         constraints.Basic().media_stream_source.GetName());
   }

@@ -167,7 +167,7 @@ void MediaStreamAudioSource::StopAudioDeliveryTo(MediaStreamAudioTrack* track) {
   // The W3C spec requires a source automatically stop when the last track is
   // stopped.
   if (!is_stopped_ && did_remove_last_track)
-    MediaStreamSource::StopSource();
+    blink::PlatformMediaStreamSource::StopSource();
 }
 
 void MediaStreamAudioSource::StopSourceOnError(const std::string& why) {
@@ -175,14 +175,16 @@ void MediaStreamAudioSource::StopSourceOnError(const std::string& why) {
 
   // Stop source when error occurs.
   task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&MediaStreamSource::StopSource, GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&blink::PlatformMediaStreamSource::StopSource,
+                                GetWeakPtr()));
 }
 
 void MediaStreamAudioSource::SetMutedState(bool muted_state) {
   DVLOG(3) << "MediaStreamAudioSource::SetMutedState state=" << muted_state;
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(&MediaStreamSource::SetSourceMuted,
-                                        GetWeakPtr(), muted_state));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&blink::PlatformMediaStreamSource::SetSourceMuted,
+                     GetWeakPtr(), muted_state));
 }
 
 base::SingleThreadTaskRunner* MediaStreamAudioSource::GetTaskRunner() const {

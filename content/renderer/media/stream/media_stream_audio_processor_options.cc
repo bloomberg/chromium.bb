@@ -22,7 +22,6 @@
 #include "build/build_config.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/media/stream/media_stream_constraints_util.h"
-#include "content/renderer/media/stream/media_stream_source.h"
 #include "media/base/audio_parameters.h"
 #include "third_party/webrtc/modules/audio_processing/aec_dump/aec_dump_factory.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"

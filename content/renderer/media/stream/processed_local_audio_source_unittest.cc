@@ -140,7 +140,7 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
     return blink_audio_track_;
   }
 
-  void OnAudioSourceStarted(MediaStreamSource* source,
+  void OnAudioSourceStarted(blink::PlatformMediaStreamSource* source,
                             blink::MediaStreamRequestResult result,
                             const blink::WebString& result_name) {}
 

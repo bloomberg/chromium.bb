@@ -15,13 +15,13 @@
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/media/stream/media_stream_audio_track.h"
-#include "content/renderer/media/stream/media_stream_source.h"
 #include "content/renderer/media/stream/media_stream_video_source.h"
 #include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "content/renderer/media/stream/webaudio_media_stream_source.h"
 #include "content/renderer/media/webrtc_local_audio_source_provider.h"
 #include "media/base/sample_format.h"
+#include "third_party/blink/public/platform/modules/mediastream/platform_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
@@ -189,8 +189,8 @@ void MediaStreamCenter::DidStopMediaStreamSource(
     const blink::WebMediaStreamSource& web_source) {
   if (web_source.IsNull())
     return;
-  MediaStreamSource* const source =
-      static_cast<MediaStreamSource*>(web_source.GetExtraData());
+  blink::PlatformMediaStreamSource* const source =
+      static_cast<blink::PlatformMediaStreamSource*>(web_source.GetExtraData());
   DCHECK(source);
   source->StopSource();
 }

@@ -17,9 +17,9 @@
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/stream/media_stream_dispatcher_eventhandler.h"
-#include "content/renderer/media/stream/media_stream_source.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
+#include "third_party/blink/public/platform/modules/mediastream/platform_media_stream_source.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
 
@@ -136,10 +136,12 @@ class CONTENT_EXPORT UserMediaProcessor
   // https://crbug.com/764293
   virtual MediaStreamAudioSource* CreateAudioSource(
       const blink::MediaStreamDevice& device,
-      const MediaStreamSource::ConstraintsCallback& source_ready);
+      const blink::PlatformMediaStreamSource::ConstraintsCallback&
+          source_ready);
   virtual MediaStreamVideoSource* CreateVideoSource(
       const blink::MediaStreamDevice& device,
-      const MediaStreamSource::SourceStoppedCallback& stop_callback);
+      const blink::PlatformMediaStreamSource::SourceStoppedCallback&
+          stop_callback);
 
   // Intended to be used only for testing.
   const AudioCaptureSettings& AudioCaptureSettingsForTesting() const;
@@ -213,16 +215,16 @@ class CONTENT_EXPORT UserMediaProcessor
   static void OnAudioSourceStartedOnAudioThread(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       base::WeakPtr<UserMediaProcessor> weak_ptr,
-      MediaStreamSource* source,
+      blink::PlatformMediaStreamSource* source,
       blink::MediaStreamRequestResult result,
       const blink::WebString& result_name);
 
-  void OnAudioSourceStarted(MediaStreamSource* source,
+  void OnAudioSourceStarted(blink::PlatformMediaStreamSource* source,
                             blink::MediaStreamRequestResult result,
                             const blink::WebString& result_name);
 
   void NotifyCurrentRequestInfoOfAudioSourceStarted(
-      MediaStreamSource* source,
+      blink::PlatformMediaStreamSource* source,
       blink::MediaStreamRequestResult result,
       const blink::WebString& result_name);
 

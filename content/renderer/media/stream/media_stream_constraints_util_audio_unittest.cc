@@ -14,12 +14,12 @@
 #include "base/test/scoped_task_environment.h"
 #include "content/renderer/media/stream/local_media_stream_audio_source.h"
 #include "content/renderer/media/stream/media_stream_audio_source.h"
-#include "content/renderer/media/stream/media_stream_source.h"
 #include "content/renderer/media/stream/mock_constraint_factory.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/mediastream/platform_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
 
@@ -151,7 +151,7 @@ class MediaStreamConstraintsUtilAudioTest
     std::string media_source = GetMediaStreamSource();
     if (media_source.empty())
       return blink::MEDIA_DEVICE_AUDIO_CAPTURE;
-    else if (media_source == kMediaStreamSourceTab)
+    else if (media_source == blink::kMediaStreamSourceTab)
       return blink::MEDIA_GUM_TAB_AUDIO_CAPTURE;
     return blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE;
   }
@@ -171,7 +171,7 @@ class MediaStreamConstraintsUtilAudioTest
 
     return std::make_unique<ProcessedLocalAudioSource>(
         -1, device, hotword_enabled, disable_local_echo, properties,
-        MediaStreamSource::ConstraintsCallback(), &pc_factory_);
+        blink::PlatformMediaStreamSource::ConstraintsCallback(), &pc_factory_);
   }
 
   std::unique_ptr<ProcessedLocalAudioSource> GetProcessedLocalAudioSource(
@@ -199,7 +199,7 @@ class MediaStreamConstraintsUtilAudioTest
 
     return std::make_unique<LocalMediaStreamAudioSource>(
         -1, device, hotword_enabled, disable_local_echo,
-        MediaStreamSource::ConstraintsCallback());
+        blink::PlatformMediaStreamSource::ConstraintsCallback());
   }
 
   AudioCaptureSettings SelectSettings() {
@@ -286,7 +286,7 @@ class MediaStreamConstraintsUtilAudioTest
     }
     if (!Contains(exclude_main_settings,
                   &AudioCaptureSettings::disable_local_echo)) {
-      EXPECT_EQ(GetMediaStreamSource() != kMediaStreamSourceDesktop,
+      EXPECT_EQ(GetMediaStreamSource() != blink::kMediaStreamSourceDesktop,
                 result.disable_local_echo());
     }
     if (!Contains(exclude_main_settings,
@@ -416,7 +416,7 @@ class MediaStreamConstraintsUtilAudioTest
     // The following are not audio processing.
     EXPECT_FALSE(properties.goog_audio_mirroring);
     EXPECT_FALSE(result.hotword_enabled());
-    EXPECT_EQ(GetMediaStreamSource() != kMediaStreamSourceDesktop,
+    EXPECT_EQ(GetMediaStreamSource() != blink::kMediaStreamSourceDesktop,
               result.disable_local_echo());
     EXPECT_FALSE(result.render_to_associated_sink());
     if (IsDeviceCapture()) {
@@ -448,7 +448,7 @@ class MediaStreamConstraintsUtilAudioTest
     // The following are not audio processing.
     EXPECT_FALSE(properties.goog_audio_mirroring);
     EXPECT_FALSE(result.hotword_enabled());
-    EXPECT_EQ(GetMediaStreamSource() != kMediaStreamSourceDesktop,
+    EXPECT_EQ(GetMediaStreamSource() != blink::kMediaStreamSourceDesktop,
               result.disable_local_echo());
     EXPECT_FALSE(result.render_to_associated_sink());
     CheckDevice(*system_echo_canceller_device_, result);
@@ -1234,7 +1234,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, EchoCancellationWithWebRtc) {
         // The following are not audio processing.
         EXPECT_FALSE(properties.goog_audio_mirroring);
         EXPECT_FALSE(result.hotword_enabled());
-        EXPECT_EQ(GetMediaStreamSource() != kMediaStreamSourceDesktop,
+        EXPECT_EQ(GetMediaStreamSource() != blink::kMediaStreamSourceDesktop,
                   result.disable_local_echo());
         EXPECT_FALSE(result.render_to_associated_sink());
         if (IsDeviceCapture()) {
@@ -1295,7 +1295,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, EchoCancellationWithSystem) {
         // The following are not audio processing.
         EXPECT_FALSE(properties.goog_audio_mirroring);
         EXPECT_FALSE(result.hotword_enabled());
-        EXPECT_EQ(GetMediaStreamSource() != kMediaStreamSourceDesktop,
+        EXPECT_EQ(GetMediaStreamSource() != blink::kMediaStreamSourceDesktop,
                   result.disable_local_echo());
         EXPECT_FALSE(result.render_to_associated_sink());
         CheckDevice(*system_echo_canceller_device_, result);
@@ -1548,7 +1548,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
           // The following are not audio processing.
           EXPECT_FALSE(properties.goog_audio_mirroring);
           EXPECT_FALSE(result.hotword_enabled());
-          EXPECT_EQ(GetMediaStreamSource() != kMediaStreamSourceDesktop,
+          EXPECT_EQ(GetMediaStreamSource() != blink::kMediaStreamSourceDesktop,
                     result.disable_local_echo());
           EXPECT_FALSE(result.render_to_associated_sink());
           CheckDevice(*system_echo_canceller_device_, result);
@@ -2148,8 +2148,8 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, UsedAndUnusedSources) {
 INSTANTIATE_TEST_CASE_P(,
                         MediaStreamConstraintsUtilAudioTest,
                         testing::Values("",
-                                        kMediaStreamSourceTab,
-                                        kMediaStreamSourceSystem,
-                                        kMediaStreamSourceDesktop));
+                                        blink::kMediaStreamSourceTab,
+                                        blink::kMediaStreamSourceSystem,
+                                        blink::kMediaStreamSourceDesktop));
 
 }  // namespace content

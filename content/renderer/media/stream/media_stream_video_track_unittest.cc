@@ -88,7 +88,8 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
   blink::WebMediaStreamTrack CreateTrack() {
     const bool enabled = true;
     blink::WebMediaStreamTrack track = MediaStreamVideoTrack::CreateVideoTrack(
-        mock_source_, MediaStreamSource::ConstraintsCallback(), enabled);
+        mock_source_, blink::PlatformMediaStreamSource::ConstraintsCallback(),
+        enabled);
     if (!source_started_) {
       mock_source_->StartMockedSource();
       source_started_ = true;
@@ -103,7 +104,7 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
     const bool enabled = true;
     blink::WebMediaStreamTrack track = MediaStreamVideoTrack::CreateVideoTrack(
         mock_source_, adapter_settings, base::Optional<bool>(), false, 0.0,
-        MediaStreamSource::ConstraintsCallback(), enabled);
+        blink::PlatformMediaStreamSource::ConstraintsCallback(), enabled);
     if (!source_started_) {
       mock_source_->StartMockedSource();
       source_started_ = true;

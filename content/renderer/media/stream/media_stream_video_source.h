@@ -15,11 +15,11 @@
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
-#include "content/renderer/media/stream/media_stream_source.h"
 #include "content/renderer/media/stream/media_stream_types.h"
 #include "content/renderer/media/stream/secure_display_link_tracker.h"
 #include "media/base/video_frame.h"
 #include "media/capture/video_capture_types.h"
+#include "third_party/blink/public/platform/modules/mediastream/platform_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
@@ -41,7 +41,8 @@ class VideoTrackAdapterSettings;
 // MediaStreamVideoSources such as local video capture, video sources received
 // on a PeerConnection or a source created in NaCl.
 // All methods calls will be done from the main render thread.
-class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
+class CONTENT_EXPORT MediaStreamVideoSource
+    : public blink::PlatformMediaStreamSource {
  public:
   enum {
     // Default resolution. If no constraints are specified and the delegate

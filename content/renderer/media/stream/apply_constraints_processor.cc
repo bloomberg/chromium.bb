@@ -17,7 +17,6 @@
 #include "content/renderer/media/stream/media_stream_constraints_util_audio.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_video_content.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_video_device.h"
-#include "content/renderer/media/stream/media_stream_source.h"
 #include "content/renderer/media/stream/media_stream_video_source.h"
 #include "content/renderer/media/stream/media_stream_video_track.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
