@@ -160,7 +160,8 @@ bool VideoFrameLayout::Plane::operator!=(
 
 bool VideoFrameLayout::operator==(const VideoFrameLayout& rhs) const {
   return format_ == rhs.format_ && coded_size_ == rhs.coded_size_ &&
-         planes_ == rhs.planes_ && buffer_sizes_ == rhs.buffer_sizes_;
+         planes_ == rhs.planes_ && buffer_sizes_ == rhs.buffer_sizes_ &&
+         buffer_addr_align_ == rhs.buffer_addr_align_;
 }
 
 bool VideoFrameLayout::operator!=(const VideoFrameLayout& rhs) const {
