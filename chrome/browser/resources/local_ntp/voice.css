@@ -41,22 +41,28 @@
 .overlay-dialog {
   background: transparent;
   border: none;
+  height: 100%;
+  left: 0;
+  margin: auto;
+  padding: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+}
+
+.overlay-dialog::backdrop {
+  background-color: white;
 }
 
 /* The background element. */
 .overlay,
 .overlay-hidden {
   background: white;
-  height: 100%;
-  left: 0;
   opacity: 0;
-  overflow: hidden;
-  position: fixed;
   text-align: left;
-  top: 0;
   transition: visibility 0s linear 218ms, background-color 218ms;
   visibility: hidden;
-  width: 100%;
   z-index: 10000;
 }
 
@@ -77,10 +83,11 @@
   margin: 15px;
   opacity: .54;
   padding: 0;
-  position: absolute;
+  position: fixed;
   right: 0;
   top: 0;
   width: 15px;
+  z-index: 1;
 }
 
 html[dir=rtl] .close-button {
@@ -157,7 +164,7 @@ html[dir=rtl] .close-button {
   opacity: 0;
   pointer-events: none;
   position: absolute;
-  transition-delay: 0;
+  transition-delay: 0s;
 }
 
 /* Button state when speech recognition is active. */
@@ -165,7 +172,7 @@ html[dir=rtl] .close-button {
   opacity: 1;
   pointer-events: auto;
   position: absolute;
-  transition-delay: 0;
+  transition-delay: 0s;
 }
 
 /* Button state when speech input is being received by the microphone. */
