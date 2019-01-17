@@ -18,7 +18,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAuraLinux
     : public BrowserAccessibilityManager {
  public:
   BrowserAccessibilityManagerAuraLinux(
-      AtkObject* parent_object,
       const ui::AXTreeUpdate& initial_tree,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
@@ -37,8 +36,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAuraLinux
   void FireSelectedEvent(BrowserAccessibility* node);
   void FireExpandedEvent(BrowserAccessibility* node, bool is_expanded);
   void FireLoadingEvent(BrowserAccessibility* node, bool is_loading);
-
-  AtkObject* parent_object() { return parent_object_; }
 
  protected:
   // AXTreeObserver methods.
