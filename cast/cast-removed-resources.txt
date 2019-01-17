@@ -111,8 +111,6 @@ brkitr/ru.res
 brkitr/sent_el.brk
 brkitr/word_ja.brk
 
-curr/*
-
 unit/*
 
 lang/ar_EG.res
