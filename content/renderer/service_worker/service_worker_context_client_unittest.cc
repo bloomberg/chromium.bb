@@ -285,6 +285,7 @@ class ServiceWorkerContextClientTest : public testing::Test {
             nullptr /* preference_watcher_request */,
             nullptr /* subresource_loaders */,
             blink::scheduler::GetSingleThreadTaskRunnerForTesting());
+    context_client->SetReportDebugLogForTesting(false);
 
     context_client->WorkerContextStarted(proxy);
 
