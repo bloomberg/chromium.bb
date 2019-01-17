@@ -52,14 +52,10 @@ function FullWindowVideoControls(
         break;
 
       case ' ': // Space
-        if (useNativeControls) {
-          break;
-        }
       case 'k':
       case 'MediaPlayPause':
         if (!e.target.classList.contains('menu-button')) {
-          useNativeControls ? this.togglePlayState() :
-                              this.togglePlayStateWithFeedback();
+          this.togglePlayStateWithFeedback();
         }
         break;
       case 'Escape':
@@ -103,10 +99,6 @@ function FullWindowVideoControls(
   controlsContainer.addEventListener('cr-slider-value-changed', () => {
     this.inactivityWatcher_.kick();
   });
-
-  if (useNativeControls) {
-    return;
-  }
 
   // TODO(mtomasz): Simplify. crbug.com/254318.
   var clickInProgress = false;
@@ -274,14 +266,6 @@ VideoPlayer.prototype.prepare = function(videos) {
       getRequiredElement('video-container'),
       getRequiredElement('controls'));
 
-  if (useNativeControls) {
-    getRequiredElement('controls-wrapper').style.display = 'none';
-    getRequiredElement('spinner-container').style.display = 'none';
-    getRequiredElement('error-wrapper').style.display = 'none';
-    getRequiredElement('thumbnail').style.display = 'none';
-    getRequiredElement('cast-container').style.display = 'none';
-  }
-
   var observer = new MutationObserver(function(mutations) {
     var isLoadingOrDisabledChanged = mutations.some(function(mutation) {
       return mutation.attributeName === 'loading' ||
@@ -439,12 +423,6 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
 
       this.videoElement_ = document.createElement('video');
       getRequiredElement('video-container').appendChild(this.videoElement_);
-
-      if (useNativeControls) {
-        this.videoElement_.controls = true;
-        this.videoElement_.controlsList = 'nodownload';
-        this.videoElement_.style.pointerEvents = 'auto';
-      }
 
       var videoUrl = video.toURL();
       var source = document.createElement('source');
@@ -873,6 +851,8 @@ VideoPlayer.prototype.updateMediaSessionPlaybackState_ = function() {
 
 var player = new VideoPlayer();
 
+let nativePlayer = new NativeControlsVideoPlayer();
+
 /**
  * Initializes the load time data.
  * @param {function()} callback Called when the load time data is ready.
@@ -924,8 +904,14 @@ initPromise
         util.URLsToEntries(window.appState.items, function(entries) {
           metrics.recordOpenVideoPlayerAction();
           metrics.recordNumberOfOpenedFiles(entries.length);
-          player.prepare(entries);
-          player.playFirstVideo(player, fulfill);
+
+          if (!useNativeControls) {
+            player.prepare(entries);
+            player.playFirstVideo(player, fulfill);
+          } else {
+            nativePlayer.prepare(entries);
+            nativePlayer.playFirstVideo();
+          }
         }.wrap());
       }.wrap());
     }.wrap());
