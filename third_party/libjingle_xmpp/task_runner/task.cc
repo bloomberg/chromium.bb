@@ -51,21 +51,9 @@ Task::~Task() {
   }
 }
 
-int64_t Task::CurrentTime() {
-  return GetRunner()->CurrentTime();
-}
-
-int64_t Task::ElapsedTime() {
-  return CurrentTime() - start_time_;
-}
-
 void Task::Start() {
   if (state_ != STATE_INIT)
     return;
-  // Set the start time before starting the task.  Otherwise if the task
-  // finishes quickly and deletes the Task object, setting start_time_
-  // will crash.
-  start_time_ = CurrentTime();
   GetRunner()->StartTask(this);
 }
 
@@ -113,7 +101,6 @@ void Task::Step() {
   } else {
     state_ = new_state;
     blocked_ = false;
-    ResetTimeout();
   }
 
   if (new_state == STATE_DONE) {
@@ -197,26 +184,20 @@ std::string Task::GetStateName(int state) const {
 int Task::Process(int state) {
   int newstate = STATE_ERROR;
 
-  if (TimedOut()) {
-    ClearTimeout();
-    newstate = OnTimeout();
-    SignalTimeout();
-  } else {
-    switch (state) {
-      case STATE_INIT:
-        newstate = STATE_START;
-        break;
-      case STATE_START:
-        newstate = ProcessStart();
-        break;
-      case STATE_RESPONSE:
-        newstate = ProcessResponse();
-        break;
-      case STATE_DONE:
-      case STATE_ERROR:
-        newstate = STATE_BLOCKED;
-        break;
-    }
+  switch (state) {
+    case STATE_INIT:
+      newstate = STATE_START;
+      break;
+    case STATE_START:
+      newstate = ProcessStart();
+      break;
+    case STATE_RESPONSE:
+      newstate = ProcessResponse();
+      break;
+    case STATE_DONE:
+    case STATE_ERROR:
+      newstate = STATE_BLOCKED;
+      break;
   }
 
   return newstate;
@@ -228,56 +209,6 @@ void Task::Stop() {
 }
 
 int Task::ProcessResponse() {
-  return STATE_DONE;
-}
-
-void Task::set_timeout_seconds(const int timeout_seconds) {
-  timeout_seconds_ = timeout_seconds;
-  ResetTimeout();
-}
-
-bool Task::TimedOut() {
-  return timeout_seconds_ &&
-    timeout_time_ &&
-    CurrentTime() >= timeout_time_;
-}
-
-void Task::ResetTimeout() {
-  int64_t previous_timeout_time = timeout_time_;
-  bool timeout_allowed = (state_ != STATE_INIT)
-                      && (state_ != STATE_DONE)
-                      && (state_ != STATE_ERROR);
-  if (timeout_seconds_ && timeout_allowed && !timeout_suspended_)
-    timeout_time_ = CurrentTime() +
-                    (timeout_seconds_ * kSecToMsec * kMsecTo100ns);
-  else
-    timeout_time_ = 0;
-
-  GetRunner()->UpdateTaskTimeout(this, previous_timeout_time);
-}
-
-void Task::ClearTimeout() {
-  int64_t previous_timeout_time = timeout_time_;
-  timeout_time_ = 0;
-  GetRunner()->UpdateTaskTimeout(this, previous_timeout_time);
-}
-
-void Task::SuspendTimeout() {
-  if (!timeout_suspended_) {
-    timeout_suspended_ = true;
-    ResetTimeout();
-  }
-}
-
-void Task::ResumeTimeout() {
-  if (timeout_suspended_) {
-    timeout_suspended_ = false;
-    ResetTimeout();
-  }
-}
-
-int Task::OnTimeout() {
-  // by default, we are finished after timing out
   return STATE_DONE;
 }
 
