@@ -4,8 +4,8 @@
 
 #include "extensions/browser/api/web_request/web_request_event_details.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
@@ -76,7 +76,7 @@ TEST(WebRequestEventDetailsTest, WhitelistedCopyForPublicSession) {
 TEST(WebRequestEventDetailsTest, SetResponseHeaders) {
   const int kFilter =
       extension_web_request_api_helpers::ExtraInfoSpec::RESPONSE_HEADERS;
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   net::TestURLRequestContext context;
 
   char headers_string[] =
