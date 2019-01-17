@@ -95,7 +95,9 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
+#include "chrome/browser/ui/blocked_content/list_item_position.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker.h"
+#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_controller.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_desktop.h"
@@ -1240,10 +1242,12 @@ void Browser::OnDidBlockFramebust(content::WebContents* web_contents,
                                   const GURL& url) {
   if (auto* framebust_helper =
           FramebustBlockTabHelper::FromWebContents(web_contents)) {
-    // TODO(csharrison): Add a click callback here to collect framebusting
-    // click-through metrics.
-    framebust_helper->AddBlockedUrl(url,
-                                    FramebustBlockTabHelper::ClickCallback());
+    auto on_click = [](const GURL& url, size_t index, size_t total_elements) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "WebCore.Framebust.ClickThroughPosition",
+          GetListItemPositionFromDistance(index, total_elements));
+    };
+    framebust_helper->AddBlockedUrl(url, base::BindOnce(on_click));
   }
 }
 

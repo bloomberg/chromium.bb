@@ -65,17 +65,19 @@ void LogAction(TabUnderNavigationThrottle::Action action, bool off_the_record) {
 #if defined(OS_ANDROID)
 typedef FramebustBlockMessageDelegate::InterventionOutcome InterventionOutcome;
 
-void LogOutcome(bool off_the_record, InterventionOutcome outcome) {
-  TabUnderNavigationThrottle::Action action;
+TabUnderNavigationThrottle::Action GetActionForOutcome(
+    InterventionOutcome outcome) {
   switch (outcome) {
     case InterventionOutcome::kAccepted:
-      action = TabUnderNavigationThrottle::Action::kAcceptedIntervention;
-      break;
+      return TabUnderNavigationThrottle::Action::kAcceptedIntervention;
     case InterventionOutcome::kDeclinedAndNavigated:
-      action = TabUnderNavigationThrottle::Action::kClickedThrough;
-      break;
+      return TabUnderNavigationThrottle::Action::kClickedThrough;
   }
-  LogAction(action, off_the_record);
+  NOTREACHED();
+}
+
+void LogOutcome(bool off_the_record, InterventionOutcome outcome) {
+  LogAction(GetActionForOutcome(outcome), off_the_record);
 }
 #else
 void OnListItemClicked(bool off_the_record,
@@ -85,8 +87,7 @@ void OnListItemClicked(bool off_the_record,
   LogAction(TabUnderNavigationThrottle::Action::kClickedThrough,
             off_the_record);
   UMA_HISTOGRAM_ENUMERATION("Tab.TabUnder.ClickThroughPosition",
-                            GetListItemPositionFromDistance(index, total_size),
-                            ListItemPosition::kLast);
+                            GetListItemPositionFromDistance(index, total_size));
 }
 #endif
 

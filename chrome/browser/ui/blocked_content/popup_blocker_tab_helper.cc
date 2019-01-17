@@ -113,7 +113,7 @@ void PopupBlockerTabHelper::ShowBlockedPopup(
       std::distance(blocked_popups_.begin(), it), blocked_popups_.size());
 
   UMA_HISTOGRAM_ENUMERATION("ContentSettings.Popups.ClickThroughPosition",
-                            position, ListItemPosition::kLast);
+                            position);
 
   BlockedRequest* popup = it->second.get();
 
