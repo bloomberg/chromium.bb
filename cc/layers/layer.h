@@ -772,6 +772,25 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // in PropertyTreeManager when handling scroll offsets.
   void SetNeedsCommit();
 
+  // The following data are for profiling and debugging. They will be displayed
+  // e.g. in the Layers panel of DevTools.
+
+  // The compositing reasons of the layer. The values are defined in
+  // third_party/blink/renderer/platform/graphics/compositing_reasons.h.
+  void set_compositing_reasons(uint64_t compositing_reasons) {
+    compositing_reasons_ = compositing_reasons;
+  }
+  uint64_t compositing_reasons() const { return compositing_reasons_; }
+
+  // The id of the DOM node that owns this layer.
+  void set_owner_node_id(int node_id) { owner_node_id_ = node_id; }
+  int owner_node_id() const { return owner_node_id_; }
+
+  // How many times this layer has been repainted.
+  int paint_count() const { return paint_count_; }
+
+  // End of data for profiling and debugging.
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
@@ -813,6 +832,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // When true, the layer is about to perform an update. Any commit requests
   // will be handled implicitly after the update completes.
   bool ignore_set_needs_commit_;
+
+  int paint_count_;
 
  private:
   friend class base::RefCounted<Layer>;
@@ -990,6 +1011,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // This value is valid only when LayerTreeHost::has_copy_request() is true
   bool subtree_has_copy_request_ : 1;
   SkColor safe_opaque_background_color_;
+  uint64_t compositing_reasons_;
+  int owner_node_id_;
 
   std::unique_ptr<std::set<Layer*>> clip_children_;
 
