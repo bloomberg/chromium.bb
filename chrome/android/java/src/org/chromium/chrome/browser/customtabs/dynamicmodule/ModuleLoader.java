@@ -198,6 +198,7 @@ public class ModuleLoader {
 
     private void destroyModule(@DestructionReason int reason) {
         assert mModuleEntryPoint != null;
+
         ModuleMetrics.recordDestruction(reason);
         mModuleEntryPoint.onDestroy();
         CrashKeys.getInstance().set(CrashKeyIndex.ACTIVE_DYNAMIC_MODULE, null);
@@ -313,10 +314,13 @@ public class ModuleLoader {
                 ModuleMetrics.recordEntryPointInitTime(entryPointInitStartTime);
 
                 ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.SUCCESS_NEW);
+
                 mModuleEntryPoint = entryPoint;
                 mModuleUnusedTimeMs = ModuleMetrics.now();
                 runAndClearCallbacks();
                 sendAllBundles();
+
+                ModuleMetrics.recordCodeMemoryFootprint(mComponentName.getPackageName());
                 return;
             } catch (Exception e) {
                 // No multi-catch below API level 19 for reflection exceptions.

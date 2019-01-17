@@ -168,16 +168,14 @@ uint32_t ReadLinuxProcSmapsFile(FILE* smaps_file,
       region = VmRegion();
       counters_parsed_for_current_region = 0;
       should_add_current_region = ParseSmapsHeader(line, &region);
-    } else {
+    } else if (should_add_current_region) {
       counters_parsed_for_current_region += ParseSmapsCounter(line, &region);
       DCHECK_LE(counters_parsed_for_current_region,
                 kNumExpectedCountersPerRegion);
       if (counters_parsed_for_current_region == kNumExpectedCountersPerRegion) {
-        if (should_add_current_region) {
-          maps->push_back(VmRegion::New(region));
-          ++num_valid_regions;
-          should_add_current_region = false;
-        }
+        maps->push_back(VmRegion::New(region));
+        ++num_valid_regions;
+        should_add_current_region = false;
       }
     }
   }
