@@ -34,6 +34,9 @@ cr.define('extensions', function() {
 
       /** Whether "View Activity Log" link should be shown. */
       showActivityLog: Boolean,
+
+      /** Whether the user navigated to this page from the activity log page. */
+      fromActivityLog: Boolean,
     },
 
     observers: [
@@ -49,8 +52,12 @@ cr.define('extensions', function() {
      * @private
      */
     onViewEnterStart_: function() {
+      const elementToFocus = this.fromActivityLog ?
+          this.$.extensionsActivityLogLink :
+          this.$.closeButton;
+
       Polymer.RenderStatus.afterNextRender(
-          this, () => cr.ui.focusWithoutInk(this.$.closeButton));
+          this, () => cr.ui.focusWithoutInk(elementToFocus));
     },
 
     /** @private */
