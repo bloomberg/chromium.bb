@@ -10,6 +10,9 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
+#include "android_webview/browser/aw_content_browser_overlay_manifest.h"
+#include "android_webview/browser/aw_content_renderer_overlay_manifest.h"
+#include "android_webview/browser/aw_content_utility_overlay_manifest.h"
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
@@ -42,7 +45,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/scoped_file.h"
-#include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
@@ -671,21 +673,13 @@ AwContentBrowserClient::GetDevToolsManagerDelegate() {
 
 base::Optional<service_manager::Manifest>
 AwContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
-  int id = -1;
   if (name == content::mojom::kBrowserServiceName)
-    id = IDR_AW_BROWSER_MANIFEST_OVERLAY;
+    return GetAWContentBrowserOverlayManifest();
   else if (name == content::mojom::kRendererServiceName)
-    id = IDR_AW_RENDERER_MANIFEST_OVERLAY;
+    return GetAWContentRendererOverlayManifest();
   else if (name == content::mojom::kUtilityServiceName)
-    id = IDR_AW_UTILITY_MANIFEST_OVERLAY;
-  if (id == -1)
-    return base::nullopt;
-
-  base::StringPiece manifest_contents =
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
-          id, ui::ScaleFactor::SCALE_FACTOR_NONE);
-  return service_manager::Manifest::FromValueDeprecated(
-      base::JSONReader::Read(manifest_contents));
+    return GetAWContentUtilityOverlayManifest();
+  return base::nullopt;
 }
 
 void AwContentBrowserClient::BindInterfaceRequestFromFrame(
