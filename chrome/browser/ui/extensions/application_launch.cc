@@ -245,8 +245,10 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params,
     contents = params.navigated_or_inserted_contents;
   }
 
-  web_app::WebAppTabHelperBase::FromWebContents(contents)->SetAppId(
-      extension->id());
+  web_app::WebAppTabHelperBase* tab_helper =
+      web_app::WebAppTabHelperBase::FromWebContents(contents);
+  DCHECK(tab_helper);
+  tab_helper->SetAppId(extension->id());
 
 #if defined(OS_CHROMEOS)
   // In ash, LAUNCH_FULLSCREEN launches in the OpenApplicationWindow function
@@ -392,8 +394,10 @@ WebContents* ShowApplicationWindow(const AppLaunchParams& params,
   extensions::HostedAppBrowserController::SetAppPrefsForWebContents(
       browser->hosted_app_controller(), web_contents);
   if (extension) {
-    web_app::WebAppTabHelperBase::FromWebContents(web_contents)
-        ->SetAppId(extension->id());
+    web_app::WebAppTabHelperBase* tab_helper =
+        web_app::WebAppTabHelperBase::FromWebContents(web_contents);
+    DCHECK(tab_helper);
+    tab_helper->SetAppId(extension->id());
   }
 
   browser->window()->Show();
