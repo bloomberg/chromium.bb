@@ -1088,6 +1088,13 @@ bool CSSSelector::HasDeepCombinatorOrShadowPseudo() const {
       *this);
 }
 
+bool CSSSelector::FollowsPart() const {
+  const CSSSelector* previous = TagHistory();
+  if (!previous)
+    return false;
+  return previous->GetPseudoType() == kPseudoPart;
+}
+
 bool CSSSelector::NeedsUpdatedDistribution() const {
   return ForAnyInTagHistory(
       [](const CSSSelector& selector) -> bool {

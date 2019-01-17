@@ -385,6 +385,8 @@ class CORE_EXPORT CSSSelector {
   bool HasContentPseudo() const;
   bool HasSlottedPseudo() const;
   bool HasDeepCombinatorOrShadowPseudo() const;
+  // Returns true if the immediately preceeding simple selector is ::part.
+  bool FollowsPart() const;
   bool NeedsUpdatedDistribution() const;
   bool HasPseudoIs() const;
   bool HasPseudoWhere() const;

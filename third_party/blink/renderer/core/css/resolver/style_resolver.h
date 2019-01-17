@@ -157,6 +157,7 @@ class CORE_EXPORT StyleResolver final
   // This matches `::part` selectors. It looks in ancestor scopes as far as
   // part mapping requires.
   void MatchPseudoPartRules(const Element&, ElementRuleCollector&);
+  void MatchPseudoPartRulesForUAHost(const Element&, ElementRuleCollector&);
   void MatchScopedRulesV0(const Element&,
                           ElementRuleCollector&,
                           ScopedStyleResolver*);
