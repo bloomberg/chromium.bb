@@ -6,7 +6,6 @@
 
 #include "base/auto_reset.h"
 #include "base/mac/foundation_util.h"
-#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -15,6 +14,7 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/sync/sync_observer_bridge.h"
+#import "ios/chrome/browser/ui/settings/cells/account_sign_in_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_command_handler.h"
@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "services/identity/public/objc/identity_manager_observer_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -37,14 +38,17 @@ namespace {
 
 // List of sections.
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  SyncFeedbackSectionIdentifier = kSectionIdentifierEnumZero,
+  SyncSectionIdentifier = kSectionIdentifierEnumZero,
+  SyncFeedbackSectionIdentifier,
   NonPersonalizedSectionIdentifier,
 };
 
 // List of items.
 typedef NS_ENUM(NSInteger, ItemType) {
-  // SyncErrorSectionIdentifier,
-  RestartAuthenticationFlowErrorItemType = kItemTypeEnumZero,
+  // SyncSectionIdentifier section.
+  SignInItemType = kItemTypeEnumZero,
+  // SyncErrorSectionIdentifier section.
+  RestartAuthenticationFlowErrorItemType,
   ReauthDialogAsSyncIsInAuthErrorItemType,
   ShowPassphraseDialogErrorItemType,
   // NonPersonalizedSectionIdentifier section.
@@ -56,19 +60,23 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface GoogleServicesSettingsMediator () <BooleanObserver,
-                                              SyncObserverModelBridge> {
+@interface GoogleServicesSettingsMediator () <
+    BooleanObserver,
+    IdentityManagerObserverBridgeDelegate,
+    SyncObserverModelBridge> {
   // Sync observer.
   std::unique_ptr<SyncObserverBridge> _syncObserver;
+  // Identity manager observer.
+  std::unique_ptr<identity::IdentityManagerObserverBridge>
+      _identityManagerObserverBridge;
 }
 
 // Returns YES if the user is authenticated.
 @property(nonatomic, assign, readonly) BOOL isAuthenticated;
 // Sync setup service.
 @property(nonatomic, assign, readonly) SyncSetupService* syncSetupService;
-// Preference value for the autocomplete wallet feature.
-@property(nonatomic, strong, readonly)
-    PrefBackedBoolean* autocompleteWalletPreference;
+// YES if the impression of the Signin cell has already been recorded.
+@property(nonatomic, assign) BOOL hasRecordedSigninImpression;
 // Preference value for the "Autocomplete searches and URLs" feature.
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* autocompleteSearchPreference;
@@ -110,10 +118,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     DCHECK(localPrefService);
     DCHECK(syncSetupService);
     _syncSetupService = syncSetupService;
-    _autocompleteWalletPreference = [[PrefBackedBoolean alloc]
-        initWithPrefService:userPrefService
-                   prefName:autofill::prefs::kAutofillWalletImportEnabled];
-    _autocompleteWalletPreference.observer = self;
     _autocompleteSearchPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
                    prefName:prefs::kSearchSuggestEnabled];
@@ -141,11 +145,49 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return self;
 }
 
+#pragma mark - Loads sync section
+
+// Loads the sync section.
+- (void)loadSyncSection {
+  TableViewModel* model = self.consumer.tableViewModel;
+  [model addSectionWithIdentifier:SyncSectionIdentifier];
+  [self updateSyncSection:NO];
+}
+
+// Reloads the sync section. If |notifyConsumer| is NO, the consumer will not be
+// notified about model changes.
+- (void)updateSyncSection:(BOOL)notifyConsumer {
+  TableViewModel* model = self.consumer.tableViewModel;
+  [model deleteAllItemsFromSectionWithIdentifier:SyncSectionIdentifier];
+  if (self.isAuthenticated) {
+    self.hasRecordedSigninImpression = NO;
+  } else {
+    AccountSignInItem* item =
+        [[AccountSignInItem alloc] initWithType:SignInItemType];
+    item.detailText = l10n_util::GetNSString(
+        IDS_IOS_GOOGLE_SERVICES_SETTINGS_SIGN_IN_DETAIL_TEXT);
+    [model addItem:item toSectionWithIdentifier:SyncSectionIdentifier];
+    if (!self.hasRecordedSigninImpression) {
+      // Once the Settings are open, this button impression will at most be
+      // recorded once per dialog displayed and per sign-in.
+      signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
+          signin_metrics::AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS);
+      self.hasRecordedSigninImpression = YES;
+    }
+  }
+  if (notifyConsumer) {
+    NSUInteger sectionIndex =
+        [model sectionForSectionIdentifier:SyncSectionIdentifier];
+    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:sectionIndex];
+    [self.consumer reloadSections:indexSet];
+  }
+}
+
 #pragma mark - Load sync feedback section
 
-// Reloads the sync feedback section. If |notifyConsummer| is YES, the consomer
+// Reloads the sync feedback section. If |notifyConsumer| is YES, the consumer
 // is notified to add or remove the sync error section.
-- (void)updateSyncErrorSectionAndNotifyConsumer:(BOOL)notifyConsummer {
+- (void)updateSyncErrorSectionAndNotifyConsumer:(BOOL)notifyConsumer {
   TableViewModel* model = self.consumer.tableViewModel;
   BOOL hasError = NO;
   ItemType type;
@@ -176,7 +218,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       NSUInteger sectionIndex =
           [model sectionForSectionIdentifier:SyncFeedbackSectionIdentifier];
       [model removeSectionWithIdentifier:SyncFeedbackSectionIdentifier];
-      if (notifyConsummer) {
+      if (notifyConsumer) {
         NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:sectionIndex];
         [self.consumer deleteSections:indexSet];
       }
@@ -200,7 +242,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [model addItem:syncErrorItem
         toSectionWithIdentifier:SyncFeedbackSectionIdentifier];
   }
-  if (notifyConsummer) {
+  if (notifyConsumer) {
     NSUInteger sectionIndex =
         [model sectionForSectionIdentifier:SyncFeedbackSectionIdentifier];
     NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:sectionIndex];
@@ -244,6 +286,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       case BetterSearchAndBrowsingItemType:
         switchItem.on = self.anonymizedDataCollectionPreference.value;
         break;
+      case SignInItemType:
       case RestartAuthenticationFlowErrorItemType:
       case ReauthDialogAsSyncIsInAuthErrorItemType:
       case ShowPassphraseDialogErrorItemType:
@@ -337,8 +380,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)googleServicesSettingsViewControllerLoadModel:
     (GoogleServicesSettingsViewController*)controller {
   DCHECK_EQ(self.consumer, controller);
-  [self loadNonPersonalizedSection];
+  [self loadSyncSection];
   [self updateSyncErrorSectionAndNotifyConsumer:NO];
+  [self loadNonPersonalizedSection];
+  _identityManagerObserverBridge.reset(
+      new identity::IdentityManagerObserverBridge(self.identityManager, self));
   DCHECK(self.syncService);
   _syncObserver.reset(new SyncObserverBridge(self, self.syncService));
 }
@@ -368,6 +414,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case BetterSearchAndBrowsingItemType:
       self.anonymizedDataCollectionPreference.value = value;
       break;
+    case SignInItemType:
     case RestartAuthenticationFlowErrorItemType:
     case ReauthDialogAsSyncIsInAuthErrorItemType:
     case ShowPassphraseDialogErrorItemType:
@@ -379,6 +426,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)didSelectItem:(TableViewItem*)item {
   ItemType type = static_cast<ItemType>(item.type);
   switch (type) {
+    case SignInItemType:
+      [self.commandHandler showSignIn];
+      break;
     case RestartAuthenticationFlowErrorItemType:
       [self.commandHandler restartAuthenticationFlow];
       break;
@@ -400,6 +450,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)onSyncStateChanged {
   [self updateSyncErrorSectionAndNotifyConsumer:YES];
+}
+#pragma mark - IdentityManagerObserverBridgeDelegate
+
+- (void)onPrimaryAccountSet:(const AccountInfo&)primaryAccountInfo {
+  [self updateSyncSection:YES];
+}
+
+- (void)onPrimaryAccountCleared:(const AccountInfo&)previousPrimaryAccountInfo {
+  [self updateSyncSection:YES];
 }
 
 #pragma mark - BooleanObserver
