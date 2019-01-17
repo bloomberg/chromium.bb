@@ -60,10 +60,12 @@ void BufferedFileWriter::Cancel() {
 }
 
 void BufferedFileWriter::OnWriteFileResult(
-    base::Optional<protocol::FileTransfer_Error> error,
-    std::unique_ptr<FileOperations::Writer> writer) {
-  writer_ = std::move(writer);
-  OnWriteResult(std::move(error));
+    protocol::FileTransferResult<std::unique_ptr<FileOperations::Writer>>
+        result) {
+  OnWriteResult(std::move(result).Map([&](auto writer) {
+    writer_ = std::move(writer);
+    return kMonostate;
+  }));
 }
 
 void BufferedFileWriter::WriteNextChunk() {
@@ -79,10 +81,10 @@ void BufferedFileWriter::WriteNextChunk() {
 // Handles the result from both WriteFile and WriteChunk. For the former, it is
 // called by OnWriteFileResult after setting writer_.
 void BufferedFileWriter::OnWriteResult(
-    base::Optional<protocol::FileTransfer_Error> error) {
-  if (error) {
+    protocol::FileTransferResult<Monostate> result) {
+  if (!result) {
     SetState(kFailed);
-    std::move(on_error_).Run(std::move(*error));
+    std::move(on_error_).Run(std::move(result.error()));
     return;
   }
 
@@ -103,10 +105,10 @@ void BufferedFileWriter::DoClose() {
 }
 
 void BufferedFileWriter::OnCloseResult(
-    base::Optional<protocol::FileTransfer_Error> error) {
-  if (error) {
+    protocol::FileTransferResult<Monostate> result) {
+  if (!result) {
     SetState(kFailed);
-    std::move(on_error_).Run(std::move(*error));
+    std::move(on_error_).Run(std::move(result.error()));
     return;
   }
 

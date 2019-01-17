@@ -141,7 +141,7 @@ void FileTransferMessageHandler::Cancel() {
 }
 
 void FileTransferMessageHandler::OnComplete() {
-  SendResult(base::nullopt);  // Success
+  SendResult(kSuccessTag);  // Success
 }
 
 void FileTransferMessageHandler::OnError(protocol::FileTransfer_Error error) {
@@ -149,12 +149,12 @@ void FileTransferMessageHandler::OnError(protocol::FileTransfer_Error error) {
 }
 
 void FileTransferMessageHandler::SendResult(
-    base::Optional<protocol::FileTransfer_Error> error) {
+    protocol::FileTransferResult<Monostate> result) {
   protocol::FileTransfer result_message;
-  if (error) {
-    *result_message.mutable_error() = std::move(*error);
-  } else {
+  if (result) {
     result_message.mutable_success();
+  } else {
+    *result_message.mutable_error() = std::move(result.error());
   }
   Send(result_message, base::Closure());
 }

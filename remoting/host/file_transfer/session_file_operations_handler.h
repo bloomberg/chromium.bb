@@ -33,13 +33,14 @@ class SessionFileOperationsHandler : public IpcFileOperations::RequestHandler {
   void Cancel(std::uint64_t file_id) override;
 
  private:
-  void OnWriteFileResult(std::uint64_t file_id,
-                         base::Optional<protocol::FileTransfer_Error> error,
-                         std::unique_ptr<FileOperations::Writer> writer);
+  void OnWriteFileResult(
+      std::uint64_t file_id,
+      protocol::FileTransferResult<std::unique_ptr<FileOperations::Writer>>
+          result);
   void OnWriteChunkResult(std::uint64_t file_id,
-                          base::Optional<protocol::FileTransfer_Error> error);
+                          protocol::FileTransferResult<Monostate> result);
   void OnCloseResult(std::uint64_t file_id,
-                     base::Optional<protocol::FileTransfer_Error> error);
+                     protocol::FileTransferResult<Monostate> result);
 
   IpcFileOperations::ResultHandler* result_handler_;
   std::unique_ptr<FileOperations> file_operations_;

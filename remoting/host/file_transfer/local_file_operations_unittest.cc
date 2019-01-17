@@ -36,14 +36,15 @@ class LocalFileOperationsTest : public testing::Test {
   void WriteFile(const base::FilePath& filename,
                  base::queue<std::string> chunks,
                  bool close);
-  void OnFileCreated(base::queue<std::string> chunks,
-                     bool close,
-                     base::Optional<protocol::FileTransfer_Error> error,
-                     std::unique_ptr<FileOperations::Writer> writer);
+  void OnFileCreated(
+      base::queue<std::string> chunks,
+      bool close,
+      protocol::FileTransferResult<std::unique_ptr<FileOperations::Writer>>
+          result);
   void OnWriteComplete(base::queue<std::string> remaining_chunks,
                        bool close,
-                       base::Optional<protocol::FileTransfer_Error> error);
-  void OnCloseComplete(base::Optional<protocol::FileTransfer_Error> error);
+                       protocol::FileTransferResult<Monostate> result);
+  void OnCloseComplete(protocol::FileTransferResult<Monostate> result);
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedPathOverride scoped_path_override_;
@@ -83,17 +84,20 @@ void LocalFileOperationsTest::WriteFile(const base::FilePath& filename,
 void LocalFileOperationsTest::OnFileCreated(
     base::queue<std::string> chunks,
     bool close,
-    base::Optional<protocol::FileTransfer_Error> error,
-    std::unique_ptr<FileOperations::Writer> writer) {
-  file_writer_ = std::move(writer);
-  OnWriteComplete(std::move(chunks), close, error);
+    protocol::FileTransferResult<std::unique_ptr<FileOperations::Writer>>
+        result) {
+  OnWriteComplete(std::move(chunks), close,
+                  std::move(result).Map([&](auto writer) {
+                    file_writer_ = std::move(writer);
+                    return kMonostate;
+                  }));
 }
 
 void LocalFileOperationsTest::OnWriteComplete(
     base::queue<std::string> remaining_chunks,
     bool close,
-    base::Optional<protocol::FileTransfer_Error> error) {
-  ASSERT_FALSE(error);
+    protocol::FileTransferResult<Monostate> result) {
+  ASSERT_TRUE(result);
   if (!remaining_chunks.empty()) {
     std::string next_chunk = std::move(remaining_chunks.front());
     remaining_chunks.pop();
@@ -111,8 +115,8 @@ void LocalFileOperationsTest::OnWriteComplete(
 }
 
 void LocalFileOperationsTest::OnCloseComplete(
-    base::Optional<protocol::FileTransfer_Error> error) {
-  ASSERT_FALSE(error);
+    protocol::FileTransferResult<Monostate> result) {
+  ASSERT_TRUE(result);
   operation_completed_ = true;
 }
 

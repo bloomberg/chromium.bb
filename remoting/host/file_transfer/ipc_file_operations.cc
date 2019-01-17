@@ -14,9 +14,6 @@
 
 namespace remoting {
 
-using ResultCallback =
-    base::OnceCallback<void(base::Optional<protocol::FileTransfer_Error>)>;
-
 class IpcFileOperations::IpcWriter : public FileOperations::Writer {
  public:
   IpcWriter(std::uint64_t file_id, base::WeakPtr<SharedState> shared_state);
@@ -30,9 +27,9 @@ class IpcFileOperations::IpcWriter : public FileOperations::Writer {
 
  private:
   void OnWriteChunkResult(Callback callback,
-                          base::Optional<protocol::FileTransfer_Error> error);
+                          protocol::FileTransferResult<Monostate> result);
   void OnCloseResult(Callback callback,
-                     base::Optional<protocol::FileTransfer_Error> error);
+                     protocol::FileTransferResult<Monostate> result);
 
   State state_ = kReady;
   std::uint64_t file_id_;
@@ -72,13 +69,9 @@ IpcFileOperations::IpcFileOperations(base::WeakPtr<SharedState> shared_state)
 void IpcFileOperations::OnWriteFileResult(
     std::unique_ptr<IpcWriter> writer,
     WriteFileCallback callback,
-    base::Optional<protocol::FileTransfer_Error> error) {
-  if (error) {
-    // If there's an error, writer should be null.
-    writer.reset();
-  }
-
-  std::move(callback).Run(std::move(error), std::move(writer));
+    protocol::FileTransferResult<Monostate> result) {
+  std::move(callback).Run(
+      std::move(result).Map([&](Monostate) { return std::move(writer); }));
 }
 
 IpcFileOperationsFactory::IpcFileOperationsFactory(
@@ -95,12 +88,13 @@ IpcFileOperationsFactory::CreateFileOperations() {
 
 void IpcFileOperationsFactory::OnResult(
     uint64_t file_id,
-    base::Optional<protocol::FileTransfer_Error> error) {
+    protocol::FileTransferResult<Monostate> result) {
   auto callback_iter = shared_state_.result_callbacks.find(file_id);
   if (callback_iter != shared_state_.result_callbacks.end()) {
-    ResultCallback callback = std::move(callback_iter->second);
+    IpcFileOperations::ResultCallback callback =
+        std::move(callback_iter->second);
     shared_state_.result_callbacks.erase(callback_iter);
-    std::move(callback).Run(error);
+    std::move(callback).Run(std::move(result));
   }
 }
 
@@ -166,24 +160,24 @@ FileOperations::State IpcFileOperations::IpcWriter::state() {
 
 void IpcFileOperations::IpcWriter::OnWriteChunkResult(
     Callback callback,
-    base::Optional<protocol::FileTransfer_Error> error) {
-  if (error) {
-    state_ = kFailed;
-  } else {
+    protocol::FileTransferResult<Monostate> result) {
+  if (result) {
     state_ = kReady;
+  } else {
+    state_ = kFailed;
   }
-  std::move(callback).Run(error);
+  std::move(callback).Run(std::move(result));
 }
 
 void IpcFileOperations::IpcWriter::OnCloseResult(
     Callback callback,
-    base::Optional<protocol::FileTransfer_Error> error) {
-  if (error) {
-    state_ = kFailed;
-  } else {
+    protocol::FileTransferResult<Monostate> result) {
+  if (result) {
     state_ = kClosed;
+  } else {
+    state_ = kFailed;
   }
-  std::move(callback).Run(error);
+  std::move(callback).Run(std::move(result));
 }
 
 }  // namespace remoting
