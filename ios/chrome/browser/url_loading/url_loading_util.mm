@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/sessions/core/tab_restore_service_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -20,6 +21,7 @@
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/web_state/web_state.h"
+#include "net/base/url_util.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -27,15 +29,36 @@
 #endif
 
 namespace {
-// Helper method for inducing intentional crashes, in a separate function so
-// it will show up in stack traces.
-void InduceBrowserCrash() {
-  // Induce an intentional crash in the browser process.
-  CHECK(false);
-  // Call another function, so that the above CHECK can't be tail-call
-  // optimized. This ensures that this method's name will show up in the stack
-  // for easier identification.
-  CHECK(true);
+// Helper method for inducing intentional freezes and crashes, in a separate
+// function so it will show up in stack traces.
+// If a delay parameter is present, the main thread will be frozen for that
+// number of seconds.
+// If a crash parameter is "true" (which is the default value), the browser will
+// crash after this delay. Any other value will not trigger a crash.
+void InduceBrowserCrash(const GURL& url) {
+  int delay = 0;
+  std::string delay_string;
+  if (net::GetValueForKeyInQuery(url, "delay", &delay_string)) {
+    base::StringToInt(delay_string, &delay);
+  }
+  if (delay > 0) {
+    sleep(delay);
+  }
+
+  bool crash = true;
+  std::string crash_string;
+  if (net::GetValueForKeyInQuery(url, "crash", &crash_string)) {
+    crash = crash_string == "" || crash_string == "true";
+  }
+
+  if (crash) {
+    // Induce an intentional crash in the browser process.
+    CHECK(false);
+    // Call another function, so that the above CHECK can't be tail-call
+    // optimized. This ensures that this method's name will show up in the stack
+    // for easier identification.
+    CHECK(true);
+  }
 }
 }
 
@@ -101,7 +124,7 @@ URLLoadResult LoadURL(const ChromeLoadParams& chrome_params,
   // ending up in the history causing the app to crash at every subsequent
   // restart.
   if (params.url.host() == kChromeUIBrowserCrashHost) {
-    InduceBrowserCrash();
+    InduceBrowserCrash(params.url);
     // Under a debugger, the app can continue working even after the CHECK.
     // Adding a return avoids adding the crash url to history.
     return URLLoadResult::INDUCED_CRASH;
