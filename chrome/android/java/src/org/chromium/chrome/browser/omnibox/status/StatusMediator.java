@@ -11,6 +11,7 @@ import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -31,6 +32,8 @@ class StatusMediator {
     private int mUrlMinWidth;
     private int mSeparatorMinWidth;
     private int mVerboseStatusTextMinWidth;
+
+    private @ConnectionSecurityLevel int mPageSecurityLevel;
 
     private @DrawableRes int mSecurityIconRes;
     private @DrawableRes int mSecurityIconTintRes;
@@ -70,6 +73,16 @@ class StatusMediator {
             updateStatusVisibility();
             updateColorTheme();
         }
+    }
+
+    /**
+     * Specify displayed page's security level.
+     */
+    void setPageSecurityLevel(@ConnectionSecurityLevel int level) {
+        if (mPageSecurityLevel == level) return;
+        mPageSecurityLevel = level;
+        updateStatusVisibility();
+        updateLocationBarIcon();
     }
 
     /**
@@ -179,14 +192,6 @@ class StatusMediator {
     }
 
     /**
-     * Specify whether parent allows verbose status text.
-     */
-    void setVerboseStatusTextAllowed(boolean isVerboseStatusTextAllowed) {
-        mVerboseStatusAllowed = isVerboseStatusTextAllowed;
-        updateStatusVisibility();
-    }
-
-    /**
      * Specify minimum width of the verbose status text field.
      */
     void setVerboseStatusTextMinWidth(int width) {
@@ -197,7 +202,6 @@ class StatusMediator {
      * Update visibility of the verbose status text field.
      */
     private void updateStatusVisibility() {
-        @StringRes
         int statusText = 0;
 
         if (mPageIsPreview) {
@@ -207,7 +211,7 @@ class StatusMediator {
         }
 
         // Decide whether presenting verbose status text makes sense.
-        boolean newVisibility = mVerboseStatusAllowed && mVerboseStatusSpaceAvailable
+        boolean newVisibility = shouldShowVerboseStatusText() && mVerboseStatusSpaceAvailable
                 && (!mUrlHasFocus) && (statusText != 0);
 
         // Update status content only if it is visible.
@@ -255,6 +259,14 @@ class StatusMediator {
     @VisibleForTesting
     boolean isSecurityButtonShown() {
         return mIsSecurityButtonShown;
+    }
+
+    /**
+     * Compute verbose status text for the current page.
+     */
+    private boolean shouldShowVerboseStatusText() {
+        return (mPageIsPreview && mPageSecurityLevel != ConnectionSecurityLevel.DANGEROUS)
+                || mPageIsOffline;
     }
 
     /**

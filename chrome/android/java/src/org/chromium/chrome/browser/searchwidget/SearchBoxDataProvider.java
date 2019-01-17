@@ -89,11 +89,6 @@ class SearchBoxDataProvider implements ToolbarDataProvider {
     }
 
     @Override
-    public boolean shouldShowVerboseStatus() {
-        return false;
-    }
-
-    @Override
     public int getSecurityLevel() {
         return ConnectionSecurityLevel.NONE;
     }

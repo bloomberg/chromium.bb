@@ -320,19 +320,6 @@ public class LocationBarModel implements ToolbarDataProvider {
     }
 
     @Override
-    public boolean shouldShowVerboseStatus() {
-        int securityLevel = getSecurityLevel();
-        if (isPreview() && securityLevel != ConnectionSecurityLevel.DANGEROUS) {
-            return true;
-        }
-        // Because is offline page is cleared a bit slower, we also ensure that connection security
-        // level is NONE or HTTP_SHOW_WARNING (http://crbug.com/671453).
-        return isOfflinePage()
-                && (securityLevel == ConnectionSecurityLevel.NONE
-                           || securityLevel == ConnectionSecurityLevel.HTTP_SHOW_WARNING);
-    }
-
-    @Override
     public int getSecurityLevel() {
         Tab tab = getTab();
         return getSecurityLevel(

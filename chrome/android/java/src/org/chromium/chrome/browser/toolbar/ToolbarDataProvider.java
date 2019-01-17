@@ -85,11 +85,6 @@ public interface ToolbarDataProvider {
     boolean isPreview();
 
     /**
-     * @return Whether verbose status next to the security icon should be displayed.
-     */
-    boolean shouldShowVerboseStatus();
-
-    /**
      * @return The current {@link ConnectionSecurityLevel}.
      */
     @ConnectionSecurityLevel

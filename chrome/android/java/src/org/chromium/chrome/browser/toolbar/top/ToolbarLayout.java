@@ -237,11 +237,6 @@ public abstract class ToolbarLayout extends FrameLayout {
             }
 
             @Override
-            public boolean shouldShowVerboseStatus() {
-                return false;
-            }
-
-            @Override
             public int getSecurityLevel() {
                 return ConnectionSecurityLevel.NONE;
             }
