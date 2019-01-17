@@ -41,17 +41,18 @@ void IMEDriver::Register() {
   ime_registrar->RegisterDriver(std::move(ime_driver_ptr));
 }
 
-void IMEDriver::StartSession(ws::mojom::StartSessionDetailsPtr details) {
+void IMEDriver::StartSession(ws::mojom::InputMethodRequest input_method_request,
+                             ws::mojom::TextInputClientPtr client,
+                             ws::mojom::SessionDetailsPtr details) {
 #if defined(OS_CHROMEOS)
   std::unique_ptr<RemoteTextInputClient> remote_client =
-      std::make_unique<RemoteTextInputClient>(
-          ws::mojom::TextInputClientPtr(std::move(details->client)),
-          std::move(details->state), details->caret_bounds);
+      std::make_unique<RemoteTextInputClient>(std::move(client),
+                                              std::move(details));
   mojo::MakeStrongBinding(
       std::make_unique<InputMethodBridge>(std::move(remote_client)),
-      std::move(details->input_method_request));
+      std::move(input_method_request));
 #else
   mojo::MakeStrongBinding(std::make_unique<SimpleInputMethod>(),
-                          std::move(details->input_method_request));
+                          std::move(input_method_request));
 #endif
 }

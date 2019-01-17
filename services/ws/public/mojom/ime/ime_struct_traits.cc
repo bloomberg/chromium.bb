@@ -70,6 +70,53 @@ bool StructTraits<ws::mojom::CompositionTextDataView, ui::CompositionText>::
 }
 
 // static
+ws::mojom::FocusReason
+EnumTraits<ws::mojom::FocusReason, ui::TextInputClient::FocusReason>::ToMojom(
+    ui::TextInputClient::FocusReason input) {
+  switch (input) {
+    case ui::TextInputClient::FOCUS_REASON_NONE:
+      return ws::mojom::FocusReason::kNone;
+    case ui::TextInputClient::FOCUS_REASON_MOUSE:
+      return ws::mojom::FocusReason::kMouse;
+    case ui::TextInputClient::FOCUS_REASON_TOUCH:
+      return ws::mojom::FocusReason::kTouch;
+    case ui::TextInputClient::FOCUS_REASON_PEN:
+      return ws::mojom::FocusReason::kPen;
+    case ui::TextInputClient::FOCUS_REASON_OTHER:
+      return ws::mojom::FocusReason::kOther;
+  }
+
+  NOTREACHED();
+  return ws::mojom::FocusReason::kNone;
+}
+
+// static
+bool EnumTraits<ws::mojom::FocusReason, ui::TextInputClient::FocusReason>::
+    FromMojom(ws::mojom::FocusReason input,
+              ui::TextInputClient::FocusReason* out) {
+  switch (input) {
+    case ws::mojom::FocusReason::kNone:
+      *out = ui::TextInputClient::FOCUS_REASON_NONE;
+      return true;
+    case ws::mojom::FocusReason::kMouse:
+      *out = ui::TextInputClient::FOCUS_REASON_MOUSE;
+      return true;
+    case ws::mojom::FocusReason::kTouch:
+      *out = ui::TextInputClient::FOCUS_REASON_TOUCH;
+      return true;
+    case ws::mojom::FocusReason::kPen:
+      *out = ui::TextInputClient::FOCUS_REASON_PEN;
+      return true;
+    case ws::mojom::FocusReason::kOther:
+      *out = ui::TextInputClient::FOCUS_REASON_OTHER;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
 ws::mojom::ImeTextSpanType
 EnumTraits<ws::mojom::ImeTextSpanType, ui::ImeTextSpan::Type>::ToMojom(
     ui::ImeTextSpan::Type ime_text_span_type) {

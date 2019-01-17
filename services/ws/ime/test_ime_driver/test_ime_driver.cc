@@ -70,11 +70,11 @@ TestIMEDriver::TestIMEDriver() {}
 
 TestIMEDriver::~TestIMEDriver() {}
 
-void TestIMEDriver::StartSession(mojom::StartSessionDetailsPtr details) {
-  mojo::MakeStrongBinding(
-      std::make_unique<TestInputMethod>(
-          mojom::TextInputClientPtr(std::move(details->client))),
-      std::move(details->input_method_request));
+void TestIMEDriver::StartSession(mojom::InputMethodRequest input_method_request,
+                                 mojom::TextInputClientPtr client,
+                                 mojom::SessionDetailsPtr details) {
+  mojo::MakeStrongBinding(std::make_unique<TestInputMethod>(std::move(client)),
+                          std::move(input_method_request));
 }
 
 }  // namespace test

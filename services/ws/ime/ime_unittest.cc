@@ -114,16 +114,14 @@ class IMEAppTest : public testing::Test {
 // Tests sending a KeyEvent to the IMEDriver through the Mus IMEDriver.
 TEST_F(IMEAppTest, ProcessKeyEvent) {
   ws::mojom::InputMethodPtr input_method;
-  ws::mojom::StartSessionDetailsPtr details =
-      ws::mojom::StartSessionDetails::New();
-  TestTextInputClient client(MakeRequest(&details->client));
-  details->input_method_request = MakeRequest(&input_method);
-  details->state = ws::mojom::TextInputState::New();
-  details->state->text_input_type = ui::TEXT_INPUT_TYPE_TEXT;
-  details->state->text_input_mode = ui::TEXT_INPUT_MODE_DEFAULT;
-  details->state->text_direction = base::i18n::LEFT_TO_RIGHT;
-  details->state->text_input_flags = 0;
-  ime_driver_->StartSession(std::move(details));
+  ws::mojom::SessionDetailsPtr details = ws::mojom::SessionDetails::New();
+  details->state = ws::mojom::TextInputState::New(ui::TEXT_INPUT_TYPE_TEXT,
+                                                  ui::TEXT_INPUT_MODE_DEFAULT,
+                                                  base::i18n::LEFT_TO_RIGHT, 0);
+  ws::mojom::TextInputClientPtr client_ptr;
+  TestTextInputClient client(MakeRequest(&client_ptr));
+  ime_driver_->StartSession(MakeRequest(&input_method), std::move(client_ptr),
+                            std::move(details));
 
   // Send character key event.
   ui::KeyEvent char_event('A', ui::VKEY_A, ui::DomCode::NONE, 0);
