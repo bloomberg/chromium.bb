@@ -10,6 +10,7 @@ static_library("send_tab_to_self") {
     "send_tab_to_self_entry.h",
     "send_tab_to_self_model.cc",
     "send_tab_to_self_model.h",
+    "send_tab_to_self_model_observer.h",
   ]
   deps = [
     "//base",

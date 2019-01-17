@@ -10,4 +10,14 @@ SendTabToSelfModel::SendTabToSelfModel() {}
 
 SendTabToSelfModel::~SendTabToSelfModel() {}
 
+// Observer methods.
+void SendTabToSelfModel::AddObserver(SendTabToSelfModelObserver* observer) {
+  DCHECK(observer);
+  observers_.AddObserver(observer);
+}
+
+void SendTabToSelfModel::RemoveObserver(SendTabToSelfModelObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 }  // namespace send_tab_to_self
