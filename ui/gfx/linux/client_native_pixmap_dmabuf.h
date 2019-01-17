@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <array>
 #include <memory>
 
 #include "base/files/scoped_file.h"
@@ -39,25 +38,13 @@ class ClientNativePixmapDmaBuf : public gfx::ClientNativePixmap {
   int GetStride(size_t plane) const override;
 
  private:
-  static constexpr size_t kMaxPlanes = 4;
-
-  struct PlaneInfo {
-    PlaneInfo();
-    PlaneInfo(PlaneInfo&& plane_info);
-    ~PlaneInfo();
-
-    base::ScopedFD fd;
-    void* data = nullptr;
-    size_t offset = 0;
-    size_t size = 0;
-  };
   ClientNativePixmapDmaBuf(const gfx::NativePixmapHandle& handle,
-                           const gfx::Size& size,
-                           std::array<PlaneInfo, kMaxPlanes> plane_info);
+                           const gfx::Size& size);
 
   const gfx::NativePixmapHandle pixmap_handle_;
   const gfx::Size size_;
-  const std::array<PlaneInfo, kMaxPlanes> plane_info_;
+  base::ScopedFD dmabuf_fd_;
+  void* data_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientNativePixmapDmaBuf);
 };

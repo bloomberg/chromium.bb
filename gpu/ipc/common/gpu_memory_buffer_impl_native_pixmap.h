@@ -56,11 +56,11 @@ class GPU_EXPORT GpuMemoryBufferImplNativePixmap : public GpuMemoryBufferImpl {
       const DestructionCallback& callback,
       std::unique_ptr<gfx::ClientNativePixmap> native_pixmap,
       const std::vector<gfx::NativePixmapPlane>& planes,
-      std::vector<base::ScopedFD> fds);
+      base::ScopedFD fd);
 
-  const std::unique_ptr<gfx::ClientNativePixmap> pixmap_;
+  std::unique_ptr<gfx::ClientNativePixmap> pixmap_;
   std::vector<gfx::NativePixmapPlane> planes_;
-  std::vector<base::ScopedFD> fds_;
+  base::ScopedFD fd_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplNativePixmap);
 };
