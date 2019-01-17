@@ -165,8 +165,8 @@ void LocalFileWriter::WriteFile(const base::FilePath& filename,
         base::BindOnce(
             std::move(callback),
             protocol::MakeFileTransferError(
-                FROM_HERE, protocol::FileTransfer_Error_Type_UNEXPECTED_ERROR),
-            nullptr));
+                FROM_HERE,
+                protocol::FileTransfer_Error_Type_UNEXPECTED_ERROR)));
     return;
   }
 
@@ -222,10 +222,8 @@ void LocalFileWriter::OnCreateResult(std::unique_ptr<LocalFileWriter> writer,
                                      base::File::Error error) {
   if (error != base::File::FILE_OK) {
     LOG(ERROR) << "Creating temp file failed with error: " << error;
-    std::move(callback).Run(
-        protocol::MakeFileTransferError(
-            FROM_HERE, FileErrorToResponseErrorType(error), error),
-        nullptr);
+    std::move(callback).Run(protocol::MakeFileTransferError(
+        FROM_HERE, FileErrorToResponseErrorType(error), error));
   } else {
     // Now that the temp file has been created successfully, we could lock it
     // using base::File::Lock(), but this would not prevent the file from being
@@ -233,7 +231,7 @@ void LocalFileWriter::OnCreateResult(std::unique_ptr<LocalFileWriter> writer,
     // the file as if the file was still there, and an error will occur when
     // calling base::Move() to move the temp file. Chrome exhibits the same
     // behavior with its downloads.
-    std::move(callback).Run(base::nullopt, std::move(writer));
+    std::move(callback).Run(std::move(writer));
   }
 }
 
@@ -262,7 +260,7 @@ void LocalFileWriter::OnWriteResult(std::string data,
     return;
   }
 
-  std::move(callback).Run(base::nullopt);
+  std::move(callback).Run(kSuccessTag);
 }
 
 void LocalFileWriter::OnCloseResult(Callback callback,
@@ -299,7 +297,7 @@ void LocalFileWriter::MoveToDestination(Callback callback,
 void LocalFileWriter::OnMoveResult(Callback callback, bool success) {
   if (success) {
     SetState(FileOperations::kClosed);
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(kSuccessTag);
   } else {
     LOG(ERROR) << "Failed to move file to final destination.";
     Cancel();

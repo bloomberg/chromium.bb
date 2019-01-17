@@ -51,9 +51,9 @@ void FakeFileOperations::DoWriteFile(const base::FilePath& filename,
                                      WriteFileCallback callback) {
   if (!test_io_->io_error) {
     std::move(callback).Run(
-        base::nullopt, std::make_unique<FakeFileWriter>(test_io_, filename));
+        std::make_unique<FakeFileWriter>(test_io_, filename));
   } else {
-    std::move(callback).Run(test_io_->io_error, nullptr);
+    std::move(callback).Run(*test_io_->io_error);
   }
 }
 
@@ -120,12 +120,12 @@ void FakeFileOperations::FakeFileWriter::DoWrite(std::string data,
   if (!test_io_->io_error) {
     chunks_.push_back(std::move(data));
     state_ = kReady;
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(kSuccessTag);
   } else {
     state_ = kFailed;
     test_io_->files_written.push_back(
         OutputFile(filename_, true /* failed */, std::move(chunks_)));
-    std::move(callback).Run(test_io_->io_error);
+    std::move(callback).Run(*test_io_->io_error);
   }
 }
 
@@ -137,12 +137,12 @@ void FakeFileOperations::FakeFileWriter::DoClose(Callback callback) {
     test_io_->files_written.push_back(
         OutputFile(filename_, false /* failed */, std::move(chunks_)));
     state_ = kClosed;
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(kSuccessTag);
   } else {
     state_ = kFailed;
     test_io_->files_written.push_back(
         OutputFile(filename_, true /* failed */, std::move(chunks_)));
-    std::move(callback).Run(test_io_->io_error);
+    std::move(callback).Run(*test_io_->io_error);
   }
 }
 

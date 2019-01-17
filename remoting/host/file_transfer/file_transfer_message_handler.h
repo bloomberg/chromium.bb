@@ -14,7 +14,7 @@
 #include "base/optional.h"
 #include "remoting/host/file_transfer/buffered_file_writer.h"
 #include "remoting/host/file_transfer/file_operations.h"
-#include "remoting/proto/file_transfer.pb.h"
+#include "remoting/protocol/file_transfer_helpers.h"
 #include "remoting/protocol/named_message_pipe_handler.h"
 
 namespace remoting {
@@ -51,7 +51,7 @@ class FileTransferMessageHandler : public protocol::NamedMessagePipeHandler {
   void Cancel();
   void OnComplete();
   void OnError(protocol::FileTransfer_Error error);
-  void SendResult(base::Optional<protocol::FileTransfer_Error> error);
+  void SendResult(protocol::FileTransferResult<Monostate> result);
   void CancelAndSendError(protocol::FileTransfer_Error error);
   void SetState(State state);
 

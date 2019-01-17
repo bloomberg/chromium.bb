@@ -106,7 +106,7 @@ class DesktopSessionAgent
 
   // IpcFileOperations::ResultHandler implementation.
   void OnResult(std::uint64_t file_id,
-                base::Optional<protocol::FileTransfer_Error> error) override;
+                protocol::FileTransferResult<Monostate> result) override;
 
   // Creates desktop integration components and a connected IPC channel to be
   // used to access them. The client end of the channel is returned.

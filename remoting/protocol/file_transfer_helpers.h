@@ -10,10 +10,14 @@
 
 #include "base/location.h"
 #include "base/optional.h"
+#include "remoting/base/result.h"
 #include "remoting/proto/file_transfer.pb.h"
 
 namespace remoting {
 namespace protocol {
+
+template <typename SuccessType>
+using FileTransferResult = Result<SuccessType, FileTransfer_Error>;
 
 FileTransfer_Error MakeFileTransferError(
     base::Location location,

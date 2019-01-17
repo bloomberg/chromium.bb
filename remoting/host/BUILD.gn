@@ -84,6 +84,7 @@ static_library("host") {
     "chromoting_messages.h",
     "chromoting_param_traits.cc",
     "chromoting_param_traits.h",
+    "chromoting_param_traits_impl.h",
     "client_session.cc",
     "client_session.h",
     "client_session_control.h",

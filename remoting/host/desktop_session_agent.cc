@@ -444,11 +444,11 @@ void DesktopSessionAgent::ProcessAudioPacket(
 
 void DesktopSessionAgent::OnResult(
     uint64_t file_id,
-    base::Optional<protocol::FileTransfer_Error> error) {
+    protocol::FileTransferResult<Monostate> result) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  SendToNetwork(
-      std::make_unique<ChromotingDesktopNetworkMsg_FileResult>(file_id, error));
+  SendToNetwork(std::make_unique<ChromotingDesktopNetworkMsg_FileResult>(
+      file_id, std::move(result)));
 }
 
 mojo::ScopedMessagePipeHandle DesktopSessionAgent::Start(

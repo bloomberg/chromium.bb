@@ -4,7 +4,6 @@
 
 #include "remoting/host/file_transfer/session_file_operations_handler.h"
 #include "base/bind.h"
-#include "remoting/host/desktop_session_agent.h"
 #include "remoting/protocol/file_transfer_helpers.h"
 
 namespace remoting {
@@ -67,28 +66,40 @@ void SessionFileOperationsHandler::Cancel(uint64_t file_id) {
 
 void SessionFileOperationsHandler::OnWriteFileResult(
     uint64_t file_id,
-    base::Optional<protocol::FileTransfer_Error> error,
-    std::unique_ptr<FileOperations::Writer> writer) {
-  if (!error) {
-    writers_.emplace(file_id, std::move(writer));
+    protocol::FileTransferResult<std::unique_ptr<FileOperations::Writer>>
+        result) {
+  if (!result_handler_) {
+    return;
   }
-  result_handler_->OnResult(file_id, error);
+
+  result_handler_->OnResult(file_id, std::move(result).Map([&](auto writer) {
+    writers_.emplace(file_id, std::move(writer));
+    return kMonostate;
+  }));
 }
 
 void SessionFileOperationsHandler::OnWriteChunkResult(
     uint64_t file_id,
-    base::Optional<protocol::FileTransfer_Error> error) {
-  if (error) {
+    protocol::FileTransferResult<Monostate> result) {
+  if (!result_handler_) {
+    return;
+  }
+
+  if (!result) {
     writers_.erase(file_id);
   }
-  result_handler_->OnResult(file_id, error);
+  result_handler_->OnResult(file_id, std::move(result));
 }
 
 void SessionFileOperationsHandler::OnCloseResult(
     uint64_t file_id,
-    base::Optional<protocol::FileTransfer_Error> error) {
+    protocol::FileTransferResult<Monostate> result) {
+  if (!result_handler_) {
+    return;
+  }
+
   writers_.erase(file_id);
-  result_handler_->OnResult(file_id, error);
+  result_handler_->OnResult(file_id, std::move(result));
 }
 
 SessionFileOperationsHandler::~SessionFileOperationsHandler() = default;

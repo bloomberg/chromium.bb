@@ -64,12 +64,13 @@ class BufferedFileWriter {
     kFailed,
   };
 
-  void OnWriteFileResult(base::Optional<protocol::FileTransfer_Error> error,
-                         std::unique_ptr<FileOperations::Writer> writer);
+  void OnWriteFileResult(
+      protocol::FileTransferResult<std::unique_ptr<FileOperations::Writer>>
+          result);
   void WriteNextChunk();
-  void OnWriteResult(base::Optional<protocol::FileTransfer_Error> error);
+  void OnWriteResult(protocol::FileTransferResult<Monostate> result);
   void DoClose();
-  void OnCloseResult(base::Optional<protocol::FileTransfer_Error> error);
+  void OnCloseResult(protocol::FileTransferResult<Monostate> result);
   void SetState(State state);
 
   // Tracks internal state.

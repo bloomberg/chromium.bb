@@ -16,9 +16,9 @@
 #include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/screen_resolution.h"
 #include "remoting/proto/action.pb.h"
-#include "remoting/proto/file_transfer.pb.h"
 #include "remoting/proto/process_stats.pb.h"
 #include "remoting/protocol/errors.h"
+#include "remoting/protocol/file_transfer_helpers.h"
 #include "remoting/protocol/transport.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -211,10 +211,12 @@ IPC_MESSAGE_CONTROL(ChromotingDesktopNetworkMsg_AudioPacket,
                     std::string /* serialized_packet */)
 
 // Informs the network process of the result of a file operation on the file
-// identified by |file_id|. If error is set, the file ID is no longer valid.
-IPC_MESSAGE_CONTROL(ChromotingDesktopNetworkMsg_FileResult,
-                    uint64_t /* file_id */,
-                    base::Optional<remoting::protocol::FileTransfer_Error>)
+// identified by |file_id|. If |result| is an error, the file ID is no longer
+// valid.
+IPC_MESSAGE_CONTROL(
+    ChromotingDesktopNetworkMsg_FileResult,
+    uint64_t /* file_id */,
+    remoting::protocol::FileTransferResult<remoting::Monostate> /* result */)
 
 //-----------------------------------------------------------------------------
 // Chromoting messages sent from the network to the desktop process.

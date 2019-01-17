@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "remoting/host/file_transfer/file_operations.h"
-#include "remoting/proto/file_transfer.pb.h"
+#include "remoting/protocol/file_transfer_helpers.h"
 
 namespace remoting {
 
@@ -39,9 +39,8 @@ class IpcFileOperations : public FileOperations {
   class ResultHandler {
    public:
     virtual ~ResultHandler() = default;
-    virtual void OnResult(
-        std::uint64_t file_id,
-        base::Optional<protocol::FileTransfer_Error> error) = 0;
+    virtual void OnResult(std::uint64_t file_id,
+                          protocol::FileTransferResult<Monostate> result) = 0;
   };
 
   ~IpcFileOperations() override;
@@ -53,7 +52,7 @@ class IpcFileOperations : public FileOperations {
 
  private:
   using ResultCallback =
-      base::OnceCallback<void(base::Optional<protocol::FileTransfer_Error>)>;
+      base::OnceCallback<void(protocol::FileTransferResult<Monostate>)>;
 
   class IpcWriter;
 
@@ -80,10 +79,9 @@ class IpcFileOperations : public FileOperations {
 
   explicit IpcFileOperations(base::WeakPtr<SharedState> shared_state);
 
-  static void OnWriteFileResult(
-      std::unique_ptr<IpcWriter> writer,
-      WriteFileCallback callback,
-      base::Optional<protocol::FileTransfer_Error> error);
+  static void OnWriteFileResult(std::unique_ptr<IpcWriter> writer,
+                                WriteFileCallback callback,
+                                protocol::FileTransferResult<Monostate> result);
 
   // Contains shared state used by all instances tied to a given
   // RequestHandler.
@@ -108,7 +106,7 @@ class IpcFileOperationsFactory : public IpcFileOperations::ResultHandler {
 
   // ResultHandler implementation.
   void OnResult(std::uint64_t file_id,
-                base::Optional<protocol::FileTransfer_Error> error) override;
+                protocol::FileTransferResult<Monostate> result) override;
 
  private:
   IpcFileOperations::SharedState shared_state_;

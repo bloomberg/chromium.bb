@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
-#include "remoting/proto/file_transfer.pb.h"
+#include "remoting/protocol/file_transfer_helpers.h"
 
 namespace base {
 class FilePath;
@@ -41,9 +41,8 @@ class FileOperations {
 
   class Writer {
    public:
-    // |error| will be nullopt on success or contain error details on failure.
     using Callback = base::OnceCallback<void(
-        base::Optional<protocol::FileTransfer_Error> error)>;
+        protocol::FileTransferResult<Monostate> result)>;
 
     // Destructing FileWriter before calling Close will implicitly call Cancel.
     virtual ~Writer() {}
@@ -62,12 +61,9 @@ class FileOperations {
 
   class Reader {
    public:
-    // |error| will be nullopt on success or contain error details on failure.
-    // In the event of an error, |data| will contain the data successfully read
-    // before the error, if any.
+    // On success, |result| will contain the read data.
     using Callback = base::OnceCallback<void(
-        base::Optional<protocol::FileTransfer_Error> error,
-        std::string data)>;
+        protocol::FileTransferResult<std::string> result)>;
 
     virtual ~Reader() {}
     // Reads a chunk of the given size from the file.
@@ -76,18 +72,14 @@ class FileOperations {
     virtual State state() = 0;
   };
 
-  // On success, |error| will be nullopt and |writer| can be used to write data
-  // to the file. On failure, |error| will contain the error details and
-  // |writer| will be null.
+  // On success, |result| will contain a Writer that can be used to write data
+  // to the file.
   using WriteFileCallback = base::OnceCallback<void(
-      base::Optional<protocol::FileTransfer_Error> error,
-      std::unique_ptr<Writer> writer)>;
-  // On success, |error| will be nullopt and |reader| can be used to read data
-  // from the file. On failure, |error| will contain the error details and
-  // |reader| will be null.
+      protocol::FileTransferResult<std::unique_ptr<Writer>> result)>;
+  // On success, |result| will contain a Reader that can be used to read data
+  // from the file.
   using ReadFileCallback = base::OnceCallback<void(
-      base::Optional<protocol::FileTransfer_Error> error,
-      std::unique_ptr<Reader> reader)>;
+      protocol::FileTransferResult<std::unique_ptr<Reader>> result)>;
 
   virtual ~FileOperations() {}
 
