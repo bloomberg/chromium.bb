@@ -11,6 +11,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/feature_utilities.h"
@@ -104,10 +105,15 @@ infobars::InfoBar* FindHungRendererInfoBar(InfoBarService* infobar_service) {
 
 void ShowFramebustBlockInfobarInternal(content::WebContents* web_contents,
                                        const GURL& url) {
+  auto intervention_outcome =
+      [](FramebustBlockMessageDelegate::InterventionOutcome outcome) {
+        UMA_HISTOGRAM_ENUMERATION("WebCore.Framebust.InterventionOutcome",
+                                  outcome);
+      };
   FramebustBlockInfoBar::Show(
       web_contents,
       std::make_unique<FramebustBlockMessageDelegate>(
-          web_contents, url, FramebustBlockMessageDelegate::OutcomeCallback()));
+          web_contents, url, base::BindOnce(intervention_outcome)));
 }
 
 }  // anonymous namespace
