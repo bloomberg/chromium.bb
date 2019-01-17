@@ -30,6 +30,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -918,6 +919,13 @@ void CrostiniManager::StartLxdContainer(std::string vm_name,
   request.set_container_name(std::move(container_name));
   request.set_owner_id(owner_id_);
   request.set_async(true);
+  if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
+    if (auto* integration_service =
+            drive::DriveIntegrationServiceFactory::GetForProfile(profile_)) {
+      request.set_drivefs_mount_path(
+          integration_service->GetMountPointPath().value());
+    }
+  }
   GetCiceroneClient()->StartLxdContainer(
       std::move(request),
       base::BindOnce(&CrostiniManager::OnStartLxdContainer,
