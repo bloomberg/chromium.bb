@@ -43,7 +43,8 @@ import java.util.concurrent.Callable;
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr"})
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT) // WebVR is only supported on K+
+// TODO(crbug.com/897259): consistently failing on pre-N.
+@MinAndroidSdkLevel(Build.VERSION_CODES.N) // WebVR is only supported on K+
 public class WebXrVrTabTest {
     @ClassParameter
     private static List<ParameterSet> sClassParams =
