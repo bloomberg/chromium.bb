@@ -758,6 +758,17 @@ video_encode_accelerator_unittest.
 First 40 raw yv12 frames of bear-1280x720.mp4 scaled down to 320x192 for
 video_encode_accelerator_unittest.
 
+### ImageProcessor Test Files
+
+#### bear\_320x192.i420.yuv
+First frame of bear\_320x192\_40frames.yuv for image\_processor_test.
+
+#### bear\_320x192.nv12.yuv
+First frame of bear\_320x192\_40frames.nv12.yuv for image\_processor_test.
+
+#### bear\_320x192.yv21.yuv
+First frame of bear\_320x192\_40frames.yv21.yuv for image\_processor_test.
+
 ###  VP9 parser test files:
 
 #### bear-vp9.ivf
