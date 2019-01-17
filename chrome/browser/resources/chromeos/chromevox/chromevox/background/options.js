@@ -92,19 +92,13 @@ cvox.OptionsPage.init = function() {
   cvox.OptionsPage.disableEventStreamFilterCheckBoxes(
       localStorage['enableEventStreamLogging'] == 'false');
 
-  chrome.commandLinePrivate.hasSwitch('enable-audio-focus', function(result) {
-    if (!result) {
-      $('audioStrategy').hidden = true;
-      $('audioDescription').hidden = true;
-    }
-    if (localStorage['audioStrategy']) {
-      for (var i = 0, opt; opt = $('audioStrategy').options[i]; i++) {
-        if (opt.id == localStorage['audioStrategy']) {
-          opt.setAttribute('selected', '');
-        }
+  if (localStorage['audioStrategy']) {
+    for (var i = 0, opt; opt = $('audioStrategy').options[i]; i++) {
+      if (opt.id == localStorage['audioStrategy']) {
+        opt.setAttribute('selected', '');
       }
     }
-  });
+  }
 
   var registerEventStreamFiltersListener = function() {
     $('toggleEventStreamFilters').addEventListener('click', function(evt) {
