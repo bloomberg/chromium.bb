@@ -142,8 +142,10 @@ void AppCacheDispatcherHost::GetStatus(int32_t host_id,
       mojo::ReportBadMessage("ACDH_GET_STATUS");
     }
   }
-  std::move(callback).Run(
-      blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED);
+  if (callback) {
+    std::move(callback).Run(
+        blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED);
+  }
 }
 
 void AppCacheDispatcherHost::StartUpdate(int32_t host_id,
@@ -155,7 +157,8 @@ void AppCacheDispatcherHost::StartUpdate(int32_t host_id,
       mojo::ReportBadMessage("ACDH_START_UPDATE");
     }
   }
-  std::move(callback).Run(false);
+  if (callback)
+    std::move(callback).Run(false);
 }
 
 void AppCacheDispatcherHost::SwapCache(int32_t host_id,
@@ -167,7 +170,8 @@ void AppCacheDispatcherHost::SwapCache(int32_t host_id,
       mojo::ReportBadMessage("ACDH_SWAP_CACHE");
     }
   }
-  std::move(callback).Run(false);
+  if (callback)
+    std::move(callback).Run(false);
 }
 
 }  // namespace content

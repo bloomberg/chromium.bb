@@ -83,16 +83,19 @@ class CONTENT_EXPORT AppCacheHost
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Support for cache selection and scriptable method calls.
+  // Support for cache selection and scriptable method calls. These methods
+  // return false if their preconditions have been broken.
+  // TODO(mek): WARN_UNUSED_RESULT to make sure we're actually checking the
+  // return values.
   bool SelectCache(const GURL& document_url,
                    const int64_t cache_document_was_loaded_from,
                    const GURL& manifest_url);
   bool SelectCacheForSharedWorker(int64_t appcache_id);
   bool MarkAsForeignEntry(const GURL& document_url,
                           int64_t cache_document_was_loaded_from);
-  void GetStatusWithCallback(GetStatusCallback callback);
-  void StartUpdateWithCallback(StartUpdateCallback callback);
-  void SwapCacheWithCallback(SwapCacheCallback callback);
+  bool GetStatusWithCallback(GetStatusCallback callback);
+  bool StartUpdateWithCallback(StartUpdateCallback callback);
+  bool SwapCacheWithCallback(SwapCacheCallback callback);
 
   // Called prior to the main resource load. When the system contains multiple
   // candidates for a main resource load, the appcache preferred by the host

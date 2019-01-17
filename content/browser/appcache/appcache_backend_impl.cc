@@ -92,8 +92,7 @@ bool AppCacheBackendImpl::GetStatusWithCallback(int host_id,
   if (!host)
     return false;
 
-  host->GetStatusWithCallback(std::move(*callback));
-  return true;
+  return host->GetStatusWithCallback(std::move(*callback));
 }
 
 bool AppCacheBackendImpl::StartUpdateWithCallback(
@@ -103,8 +102,7 @@ bool AppCacheBackendImpl::StartUpdateWithCallback(
   if (!host)
     return false;
 
-  host->StartUpdateWithCallback(std::move(*callback));
-  return true;
+  return host->StartUpdateWithCallback(std::move(*callback));
 }
 
 bool AppCacheBackendImpl::SwapCacheWithCallback(int host_id,
@@ -113,8 +111,7 @@ bool AppCacheBackendImpl::SwapCacheWithCallback(int host_id,
   if (!host)
     return false;
 
-  host->SwapCacheWithCallback(std::move(*callback));
-  return true;
+  return host->SwapCacheWithCallback(std::move(*callback));
 }
 
 void AppCacheBackendImpl::GetResourceList(

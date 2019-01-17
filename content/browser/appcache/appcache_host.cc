@@ -211,16 +211,21 @@ bool AppCacheHost::MarkAsForeignEntry(const GURL& document_url,
   return true;
 }
 
-void AppCacheHost::GetStatusWithCallback(GetStatusCallback callback) {
-  DCHECK(pending_start_update_callback_.is_null() &&
-         pending_swap_cache_callback_.is_null() &&
-         pending_get_status_callback_.is_null());
+bool AppCacheHost::GetStatusWithCallback(GetStatusCallback callback) {
+  if (!pending_start_update_callback_.is_null() ||
+      !pending_swap_cache_callback_.is_null() ||
+      !pending_get_status_callback_.is_null()) {
+    std::move(callback).Run(
+        blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED);
+    return false;
+  }
 
   pending_get_status_callback_ = std::move(callback);
   if (is_selection_pending())
-    return;
+    return true;
 
   DoPendingGetStatus();
+  return true;
 }
 
 void AppCacheHost::DoPendingGetStatus() {
@@ -229,16 +234,20 @@ void AppCacheHost::DoPendingGetStatus() {
   std::move(pending_get_status_callback_).Run(GetStatus());
 }
 
-void AppCacheHost::StartUpdateWithCallback(StartUpdateCallback callback) {
-  DCHECK(pending_start_update_callback_.is_null() &&
-         pending_swap_cache_callback_.is_null() &&
-         pending_get_status_callback_.is_null());
+bool AppCacheHost::StartUpdateWithCallback(StartUpdateCallback callback) {
+  if (!pending_start_update_callback_.is_null() ||
+      !pending_swap_cache_callback_.is_null() ||
+      !pending_get_status_callback_.is_null()) {
+    std::move(callback).Run(false);
+    return false;
+  }
 
   pending_start_update_callback_ = std::move(callback);
   if (is_selection_pending())
-    return;
+    return true;
 
   DoPendingStartUpdate();
+  return true;
 }
 
 void AppCacheHost::DoPendingStartUpdate() {
@@ -257,17 +266,21 @@ void AppCacheHost::DoPendingStartUpdate() {
   std::move(pending_start_update_callback_).Run(success);
 }
 
-void AppCacheHost::SwapCacheWithCallback(SwapCacheCallback callback) {
-  DCHECK(pending_start_update_callback_.is_null() &&
-         pending_swap_cache_callback_.is_null() &&
-         pending_get_status_callback_.is_null());
+bool AppCacheHost::SwapCacheWithCallback(SwapCacheCallback callback) {
+  if (!pending_start_update_callback_.is_null() ||
+      !pending_swap_cache_callback_.is_null() ||
+      !pending_get_status_callback_.is_null()) {
+    std::move(callback).Run(false);
+    return false;
+  }
 
   pending_swap_cache_callback_ = std::move(callback);
 
   if (is_selection_pending())
-    return;
+    return true;
 
   DoPendingSwapCache();
+  return true;
 }
 
 void AppCacheHost::DoPendingSwapCache() {
