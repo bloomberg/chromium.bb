@@ -102,8 +102,8 @@ public class InfoBarAppearanceTest {
         CallbackHelper callbackHelper = new CallbackHelper();
         EmptyTabObserver navigationWaiter = new EmptyTabObserver() {
             @Override
-            public void onDidStartNavigation(
-                    Tab tab, String url, boolean isInMainFrame, boolean isSameDocument) {
+            public void onDidStartNavigation(Tab tab, String url, boolean isInMainFrame,
+                    boolean isSameDocument, long navigationHandleProxy) {
                 callbackHelper.notifyCalled();
             }
         };

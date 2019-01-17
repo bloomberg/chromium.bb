@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_CLASS_NAME;
+import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_HEADER_VALUE;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_PACKAGE_NAME;
 import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleNavigationEventObserver.PENDING_URL_KEY;
@@ -230,6 +231,11 @@ public class CustomTabsDynamicModuleTestUtils {
 
         IntentBuilder setModuleManagedUrlRegex(String urlRegex) {
             mIntent.putExtra(EXTRA_MODULE_MANAGED_URLS_REGEX, urlRegex);
+            return this;
+        }
+
+        IntentBuilder setModuleManagedUrlHeaderValue(String headerValue) {
+            mIntent.putExtra(EXTRA_MODULE_MANAGED_URLS_HEADER_VALUE, headerValue);
             return this;
         }
 

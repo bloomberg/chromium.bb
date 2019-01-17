@@ -237,6 +237,17 @@ class CONTENT_EXPORT NavigationHandle {
   // Returns the headers used for this request.
   virtual const net::HttpRequestHeaders& GetRequestHeaders() = 0;
 
+  // Remove a request's header. If the header is not present, it has no effect.
+  // Must be called during a redirect.
+  virtual void RemoveRequestHeader(const std::string& header_name) = 0;
+
+  // Set a request's header. If the header is already present, its value is
+  // overwritten. When modified during a navigation start, the headers will be
+  // applied to the initial network request. When modified during a redirect,
+  // the headers will be applied to the redirected request.
+  virtual void SetRequestHeader(const std::string& header_name,
+                                const std::string& header_value) = 0;
+
   // Returns the response headers for the request, or nullptr if there aren't
   // any response headers or they have not been received yet. The response
   // headers may change during the navigation (e.g. after encountering a server

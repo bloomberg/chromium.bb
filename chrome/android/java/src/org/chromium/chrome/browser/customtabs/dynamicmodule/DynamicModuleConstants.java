@@ -9,6 +9,11 @@ package org.chromium.chrome.browser.customtabs.dynamicmodule;
  */
 public class DynamicModuleConstants {
     /**
+     * The custom header's name used for module managed URLs.
+     */
+    public static final String MANAGED_URL_HEADER = "X-CCT-Module-Client-Data";
+
+    /**
      * The module version when {@link IActivityDelegate#onNavigationEvent} is introduced.
      */
     public static final int ON_NAVIGATION_EVENT_MODULE_API_VERSION = 4;

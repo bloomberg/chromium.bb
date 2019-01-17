@@ -216,14 +216,26 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         }
 
         @Override
-        public void didStartNavigation(String url, boolean isInMainFrame, boolean isSameDocument) {
+        public void didStartNavigation(String url, boolean isInMainFrame, boolean isSameDocument,
+                long navigationHandleProxy) {
             if (isInMainFrame && !isSameDocument) {
                 mTab.didStartPageLoad(url);
             }
 
             RewindableIterator<TabObserver> observers = mTab.getTabObservers();
             while (observers.hasNext()) {
-                observers.next().onDidStartNavigation(mTab, url, isInMainFrame, isSameDocument);
+                observers.next().onDidStartNavigation(
+                        mTab, url, isInMainFrame, isSameDocument, navigationHandleProxy);
+            }
+        }
+
+        @Override
+        public void didRedirectNavigation(
+                String url, boolean isInMainFrame, long navigationHandleProxy) {
+            RewindableIterator<TabObserver> observers = mTab.getTabObservers();
+            while (observers.hasNext()) {
+                observers.next().onDidRedirectNavigation(
+                        mTab, url, isInMainFrame, navigationHandleProxy);
             }
         }
 

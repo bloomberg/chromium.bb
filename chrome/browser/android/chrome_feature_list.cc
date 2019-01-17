@@ -94,6 +94,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTModule,
     &kCCTModuleCache,
     &kCCTModuleCustomHeader,
+    &kCCTModuleCustomRequestHeader,
     &kCCTModulePostMessage,
     &kCCTPostMessageAPI,
     &kCCTRedirectPreconnect,
@@ -241,6 +242,9 @@ const base::Feature kCCTModuleCache{"CCTModuleCache",
 
 const base::Feature kCCTModuleCustomHeader{"CCTModuleCustomHeader",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCCTModuleCustomRequestHeader{
+    "CCTModuleCustomRequestHeader", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCCTModulePostMessage{"CCTModulePostMessage",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

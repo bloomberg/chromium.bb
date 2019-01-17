@@ -312,8 +312,8 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
             private int mLastDistillerPageIndex;
 
             @Override
-            public void didStartNavigation(
-                    String url, boolean isInMainFrame, boolean isSameDocument) {
+            public void didStartNavigation(String url, boolean isInMainFrame,
+                    boolean isSameDocument, long navigationHandleProxy) {
                 if (!isInMainFrame || isSameDocument) return;
 
                 // Reader Mode should not pollute the navigation stack. To avoid this, watch for

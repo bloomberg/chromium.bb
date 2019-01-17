@@ -146,6 +146,11 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     public static final String EXTRA_MODULE_CLASS_NAME =
             "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_CLASS_NAME";
 
+    /** The custom header's value sent for module managed URLs */
+    @VisibleForTesting
+    public static final String EXTRA_MODULE_MANAGED_URLS_HEADER_VALUE =
+            "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_MANAGED_URLS_HEADER_VALUE";
+
     /** Extra that indicates whether to hide the CCT header on module managed URLs. */
     @VisibleForTesting
     public static final String EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS =
@@ -176,6 +181,8 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     private final ComponentName mModuleComponentName;
     @Nullable
     private final Pattern mModuleManagedUrlsPattern;
+    @Nullable
+    private final String mModuleManagedUrlsHeaderValue;
     private final boolean mHideCctHeaderOnModuleManagedUrls;
     private final boolean mIsIncognito;
     @Nullable
@@ -309,11 +316,14 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
             mModuleManagedUrlsPattern = (moduleManagedUrlsRegex != null)
                     ? Pattern.compile(moduleManagedUrlsRegex)
                     : null;
+            mModuleManagedUrlsHeaderValue =
+                    IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_MANAGED_URLS_HEADER_VALUE);
             mHideCctHeaderOnModuleManagedUrls = IntentUtils.safeGetBooleanExtra(
                     intent, EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS, false);
         } else {
             mModuleComponentName = null;
             mModuleManagedUrlsPattern = null;
+            mModuleManagedUrlsHeaderValue = null;
             mHideCctHeaderOnModuleManagedUrls = false;
         }
     }
@@ -821,6 +831,16 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     @Nullable
     public Pattern getExtraModuleManagedUrlsPattern() {
         return mModuleManagedUrlsPattern;
+    }
+
+    /**
+     * See {@link #EXTRA_MODULE_MANAGED_URLS_HEADER_VALUE}.
+     * @return The header value sent to managed hosts when the URL matches the
+     *         EXTRA_MODULE_MANAGED_URLS_REGEX.
+     */
+    @Nullable
+    public String getExtraModuleManagedUrlsHeaderValue() {
+        return mModuleManagedUrlsHeaderValue;
     }
 
     /**

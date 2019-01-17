@@ -2243,6 +2243,8 @@ jumbo_source_set("browser") {
       "android/javascript_injector.cc",
       "android/javascript_injector.h",
       "android/load_url_params.cc",
+      "android/navigation_handle_proxy.cc",
+      "android/navigation_handle_proxy.h",
       "android/nfc_host.cc",
       "android/nfc_host.h",
       "android/overscroll_controller_android.cc",

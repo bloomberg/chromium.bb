@@ -333,8 +333,8 @@ public class OverlayPanelContent {
                     }
 
                     @Override
-                    public void didStartNavigation(
-                            String url, boolean isInMainFrame, boolean isSameDocument) {
+                    public void didStartNavigation(String url, boolean isInMainFrame,
+                            boolean isSameDocument, long navigationHandleProxy) {
                         if (isInMainFrame && !isSameDocument) {
                             mContentDelegate.onMainFrameLoadStarted(
                                     url, !TextUtils.equals(url, mLoadedUrl));

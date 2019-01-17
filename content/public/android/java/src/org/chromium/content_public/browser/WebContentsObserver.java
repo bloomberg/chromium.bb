@@ -42,8 +42,23 @@ public abstract class WebContentsObserver {
      * @param isInMainFrame Whether the navigation is for the main frame.
      * @param isSameDocument Whether the main frame navigation did not cause changes to the
      *                   document (for example scrolling to a named anchor or PopState).
+     * @param navigationHandleProxy Pointer to a NavigationHandleProxy representing the navigation.
+     *                              Its lifetime is bound to this function. Do not store it. It can
+     *                              be used to modify headers.
      */
-    public void didStartNavigation(String url, boolean isInMainFrame, boolean isSameDocument) {}
+    public void didStartNavigation(String url, boolean isInMainFrame, boolean isSameDocument,
+            long navigationHandleProxy) {}
+
+    /**
+     * Called when the browser process redirect a navigation.
+     * @param url The validated URL for the loading page.
+     * @param isInMainFrame Whether the navigation is for the main frame.
+     * @param navigationHandleProxy Pointer to a NavigationHandleProxy representing the navigation.
+     *                              Its lifetime is bound to this function. Do not store it. It can
+     *                              be used to modify headers.
+     */
+    public void didRedirectNavigation(
+            String url, boolean isInMainFrame, long navigationHandleProxy) {}
 
     /**
      * Called when the current navigation is finished. This happens when a navigation is committed,
