@@ -5910,6 +5910,9 @@ crbug.com/921151 [ Linux ] http/tests/security/mixedContent/insecure-iframe-with
 crbug.com/921151 [ Linux ] virtual/outofblink-cors/http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure Pass ]
 crbug.com/921151 [ Linux ] virtual/outofblink-cors-ns/http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure Pass ]
 
+# Writable Files tests depend on mojo interfaces that are only exposed behind a flag.
+crbug.com/922735 fast/filesystem/writable-files/ [ Skip ]
+
 # These fail when landing valid changes to Mojo bindings dispatch timing. This
 # seems to be due to the layout test framework taking a snapshot too soon, as
 # viewing the layout test contents manually (in e.g. Content Shell) consistently
