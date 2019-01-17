@@ -29,8 +29,8 @@ class PUPCleanerUtilTest : public testing::Test {
  public:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(base::CreateTemporaryDirInDir(temp_dir_.GetPath(), L"subfolder",
-                                              &subfolder_path_));
+    ASSERT_TRUE(base::CreateTemporaryDirInDir(
+        temp_dir_.GetPath(), L"subfolder", &subfolder_path_));
   }
 
   base::FilePath CreateFileInTopDir(const base::string16& basename,
@@ -55,9 +55,13 @@ class PUPCleanerUtilTest : public testing::Test {
 TEST_F(PUPCleanerUtilTest, CollectRemovablePupFiles_ActiveFiles) {
   PUPData pup_data;
   TestPUPData test_pup_data;
-  test_pup_data.AddPUP(kFakePupId1, PUPData::FLAGS_ACTION_REMOVE, nullptr,
+  test_pup_data.AddPUP(kFakePupId1,
+                       PUPData::FLAGS_ACTION_REMOVE,
+                       nullptr,
                        PUPData::kMaxFilesToRemoveSmallUwS);
-  test_pup_data.AddPUP(kFakePupId2, PUPData::FLAGS_ACTION_REMOVE, nullptr,
+  test_pup_data.AddPUP(kFakePupId2,
+                       PUPData::FLAGS_ACTION_REMOVE,
+                       nullptr,
                        PUPData::kMaxFilesToRemoveSmallUwS);
 
   base::FilePath active_path1 = CreateFileInTopDir(L"file.exe", kFileContent);
@@ -86,8 +90,8 @@ TEST_F(PUPCleanerUtilTest, CollectRemovablePupFiles_ActiveFiles) {
   expected_collected_paths.Insert(lnk_path);
 
   FilePathSet collected_paths;
-  EXPECT_TRUE(CollectRemovablePupFiles(Engine::URZA, {kFakePupId1, kFakePupId2},
-                                       &collected_paths));
+  EXPECT_TRUE(CollectRemovablePupFiles(
+      Engine::URZA, {kFakePupId1, kFakePupId2}, &collected_paths));
   EXPECT_EQ(expected_collected_paths, collected_paths);
 }
 
@@ -96,7 +100,9 @@ TEST_F(PUPCleanerUtilTest, CollectRemovablePupFiles_InactiveFiles) {
   //  detected as part of UwS service registration.
   PUPData pup_data;
   TestPUPData test_pup_data;
-  test_pup_data.AddPUP(kFakePupId1, PUPData::FLAGS_ACTION_REMOVE, nullptr,
+  test_pup_data.AddPUP(kFakePupId1,
+                       PUPData::FLAGS_ACTION_REMOVE,
+                       nullptr,
                        PUPData::kMaxFilesToRemoveSmallUwS);
 
   base::FilePath inactive_path = CreateFileInTopDir(L"file.jpg", kFileContent);
@@ -127,7 +133,9 @@ TEST_F(PUPCleanerUtilTest, CollectRemovablePupFiles_TooManyFiles) {
   // files for a PUP exceed the PUPs max_files_to_remove threshold.
   PUPData pup_data;
   TestPUPData test_pup_data;
-  test_pup_data.AddPUP(kFakePupId1, PUPData::FLAGS_ACTION_REMOVE, nullptr,
+  test_pup_data.AddPUP(kFakePupId1,
+                       PUPData::FLAGS_ACTION_REMOVE,
+                       nullptr,
                        /*max_files_to_remove=*/1);
   PUPData::PUP* pup = pup_data.GetPUP(kFakePupId1);
   ASSERT_TRUE(pup);
@@ -146,8 +154,8 @@ TEST_F(PUPCleanerUtilTest, CollectRemovablePupFiles_TooManyFiles) {
   expected_collected_paths.Insert(active_path2);
 
   FilePathSet collected_paths_unsafe;
-  EXPECT_FALSE(CollectRemovablePupFiles(Engine::URZA, {kFakePupId1},
-                                        &collected_paths_unsafe));
+  EXPECT_FALSE(CollectRemovablePupFiles(
+      Engine::URZA, {kFakePupId1}, &collected_paths_unsafe));
   EXPECT_EQ(expected_collected_paths, collected_paths_unsafe);
 }
 

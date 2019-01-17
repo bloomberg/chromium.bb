@@ -25,8 +25,8 @@ bool CollectRemovablePupFiles(Engine::Name engine,
 
     for (const auto& file_path : pup->expanded_disk_footprints.file_paths()) {
       // Verify that files can be deleted.
-      if (FileRemover::IsFileRemovalAllowed(file_path,
-                                            files_detected_in_services, {}) ==
+      if (FileRemover::IsFileRemovalAllowed(
+              file_path, files_detected_in_services, {}) ==
           FileRemoverAPI::DeletionValidationStatus::ALLOWED) {
         pup_files->Insert(file_path);
         ++added_pup_files_size;
