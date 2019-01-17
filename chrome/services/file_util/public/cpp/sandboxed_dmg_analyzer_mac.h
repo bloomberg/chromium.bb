@@ -30,6 +30,7 @@ class SandboxedDMGAnalyzer
       base::Callback<void(const safe_browsing::ArchiveAnalyzerResults&)>;
 
   SandboxedDMGAnalyzer(const base::FilePath& dmg_file,
+                       const uint64_t max_size,
                        const ResultCallback& callback,
                        service_manager::Connector* connector);
 
@@ -55,6 +56,9 @@ class SandboxedDMGAnalyzer
 
   // The file path of the file to analyze.
   const base::FilePath file_path_;
+
+  // Maximum file size allowed by FilePolicy
+  const uint64_t max_size_;
 
   // Callback invoked on the UI thread with the file analyze results.
   const ResultCallback callback_;
