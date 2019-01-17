@@ -605,6 +605,19 @@ bool ListedElement::IsElementInternals() const {
   return false;
 }
 
+ListedElement* ListedElement::From(Element& element) {
+  auto* html_element = ToHTMLElementOrNull(element);
+  if (!html_element)
+    return nullptr;
+  if (html_element->IsFormControlElement())
+    return ToHTMLFormControlElement(&element);
+  if (html_element->IsFormAssociatedCustomElement())
+    return &element.EnsureElementInternals();
+  if (auto* object = ToHTMLObjectElementOrNull(html_element))
+    return object;
+  return nullptr;
+}
+
 const HTMLElement& ToHTMLElement(const ListedElement& listed_element) {
   if (listed_element.IsFormControlElement())
     return ToHTMLFormControlElement(listed_element);
