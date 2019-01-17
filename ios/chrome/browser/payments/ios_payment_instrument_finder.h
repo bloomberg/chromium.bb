@@ -107,6 +107,7 @@ class IOSPaymentInstrumentFinder {
   // and |method| is the url payment method identifier that corresponds with
   // this manifest.
   void OnPaymentManifestDownloaded(const GURL& method,
+                                   const GURL& method_url_after_redirects,
                                    const std::string& content);
 
   // Parses a payment method manifest for its default applications and gets all
@@ -122,9 +123,11 @@ class IOSPaymentInstrumentFinder {
   // the url payment method that corresponds with this manifest.
   // |web_app_manifest_url| is the web app manifest url. This is passed to
   // GetPaymentAppDetailsFromWebAppManifest for validating an icon source path.
-  void OnWebAppManifestDownloaded(const GURL& method,
-                                  const GURL& web_app_manifest_url,
-                                  const std::string& content);
+  void OnWebAppManifestDownloaded(
+      const GURL& method,
+      const GURL& web_app_manifest_url,
+      const GURL& web_app_manifest_url_after_redirects,
+      const std::string& content);
 
   // Parses a web app manifest for its name, icon, and universal link. |input|
   // is the json encoded web app manifest to parse. |web_app_manifest_url|

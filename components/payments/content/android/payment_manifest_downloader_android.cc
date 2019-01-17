@@ -27,7 +27,8 @@ class DownloadCallback {
 
   ~DownloadCallback() {}
 
-  void OnPaymentMethodManifestDownload(const std::string& content) {
+  void OnPaymentMethodManifestDownload(const GURL& url_after_redirects,
+                                       const std::string& content) {
     JNIEnv* env = base::android::AttachCurrentThread();
 
     if (content.empty()) {
@@ -39,7 +40,8 @@ class DownloadCallback {
     }
   }
 
-  void OnWebAppManifestDownload(const std::string& content) {
+  void OnWebAppManifestDownload(const GURL& url_after_redirects,
+                                const std::string& content) {
     JNIEnv* env = base::android::AttachCurrentThread();
 
     if (content.empty()) {

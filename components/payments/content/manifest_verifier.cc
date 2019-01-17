@@ -213,6 +213,7 @@ void ManifestVerifier::OnWebDataServiceRequestDone(
 
 void ManifestVerifier::OnPaymentMethodManifestDownloaded(
     const GURL& method_manifest_url,
+    const GURL& unused_method_manifest_url_after_redirects,
     const std::string& content) {
   DCHECK_LT(0U, number_of_manifests_to_download_);
 

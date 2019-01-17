@@ -21,42 +21,36 @@ TestDownloader::TestDownloader(
 
 TestDownloader::~TestDownloader() {}
 
-void TestDownloader::DownloadPaymentMethodManifest(
-    const GURL& url,
-    PaymentManifestDownloadCallback callback) {
-  PaymentManifestDownloader::DownloadPaymentMethodManifest(
-      FindTestServerURL(url), std::move(callback));
-}
-
-void TestDownloader::DownloadWebAppManifest(
-    const GURL& url,
-    PaymentManifestDownloadCallback callback) {
-  PaymentManifestDownloader::DownloadWebAppManifest(FindTestServerURL(url),
-                                                    std::move(callback));
-}
-
 void TestDownloader::AddTestServerURL(const std::string& prefix,
                                       const GURL& test_server_url) {
   test_server_url_[prefix] = test_server_url;
 }
 
-GURL TestDownloader::FindTestServerURL(const GURL& url) const {
-  GURL actual_url = url;
+void TestDownloader::InitiateDownload(
+    const GURL& url,
+    const std::string& method,
+    int allowed_number_of_redirects,
+    PaymentManifestDownloadCallback callback) {
+  PaymentManifestDownloader::InitiateDownload(FindTestServerURL(url), method,
+                                              allowed_number_of_redirects,
+                                              std::move(callback));
+}
 
+GURL TestDownloader::FindTestServerURL(const GURL& url) const {
   // Find the first key in |test_server_url_| that is a prefix of |url|. If
   // found, then replace this prefix in the |url| with the URL of the test
   // server that should be used instead.
   for (const auto& prefix_and_url : test_server_url_) {
     const std::string& prefix = prefix_and_url.first;
     const GURL& test_server_url = prefix_and_url.second;
-    if (base::StartsWith(url.spec(), prefix, base::CompareCase::SENSITIVE)) {
-      actual_url =
-          GURL(test_server_url.spec() + url.spec().substr(prefix.length()));
-      break;
+    if (base::StartsWith(url.spec(), prefix, base::CompareCase::SENSITIVE) &&
+        !base::StartsWith(url.spec(), test_server_url.spec(),
+                          base::CompareCase::SENSITIVE)) {
+      return GURL(test_server_url.spec() + url.spec().substr(prefix.length()));
     }
   }
 
-  return actual_url;
+  return url;
 }
 
 }  // namespace payments

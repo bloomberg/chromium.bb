@@ -81,7 +81,7 @@ bool AppSupportsAtLeastOneRequestedMethodData(
 
 void RemovePortNumbersFromScopesForTest(
     content::PaymentAppProvider::PaymentApps* apps) {
-  url::Replacements<char> replacements;
+  GURL::Replacements replacements;
   replacements.ClearPort();
   for (auto& app : *apps) {
     app.second->scope = app.second->scope.ReplaceComponents(replacements);
@@ -120,6 +120,8 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
       // Construct crawler in constructor to allow it observe the web_contents.
       crawler_ = std::make_unique<InstallablePaymentAppCrawler>(
           web_contents, downloader_.get(), parser_.get(), cache_.get());
+      if (ignore_port_in_origin_comparison_for_testing_)
+        crawler_->IgnorePortInOriginComparisonForTesting();
     }
 
     // Method data cannot be copied and is passed in as a const-ref, which
@@ -138,13 +140,13 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
             base::Unretained(this)));
   }
 
-  void IgnorePortInAppScopeForTesting() {
-    ignore_port_in_app_scope_for_testing_ = true;
+  void IgnorePortInOriginComparisonForTesting() {
+    ignore_port_in_origin_comparison_for_testing_ = true;
   }
 
  private:
   void OnGotAllPaymentApps(content::PaymentAppProvider::PaymentApps apps) {
-    if (ignore_port_in_app_scope_for_testing_)
+    if (ignore_port_in_origin_comparison_for_testing_)
       RemovePortNumbersFromScopesForTest(&apps);
 
     ServiceWorkerPaymentAppFactory::RemoveAppsWithoutMatchingMethodData(
@@ -238,7 +240,7 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
   std::unique_ptr<InstallablePaymentAppCrawler> crawler_;
   bool is_payment_app_crawler_finished_using_resources_ = true;
 
-  bool ignore_port_in_app_scope_for_testing_ = false;
+  bool ignore_port_in_origin_comparison_for_testing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SelfDeletingServiceWorkerPaymentAppFactory);
 };
@@ -263,7 +265,7 @@ void ServiceWorkerPaymentAppFactory::GetAllPaymentApps(
   std::unique_ptr<PaymentManifestDownloader> downloader;
   if (test_downloader_ != nullptr) {
     downloader = std::move(test_downloader_);
-    self_delete_factory->IgnorePortInAppScopeForTesting();
+    self_delete_factory->IgnorePortInOriginComparisonForTesting();
   } else {
     downloader = std::make_unique<payments::PaymentManifestDownloader>(
         std::make_unique<DeveloperConsoleLogger>(web_contents),
@@ -298,7 +300,7 @@ void ServiceWorkerPaymentAppFactory::RemoveAppsWithoutMatchingMethodData(
 }
 
 void ServiceWorkerPaymentAppFactory::
-    SetDownloaderAndIgnorePortInAppScopeForTesting(
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting(
         std::unique_ptr<PaymentManifestDownloader> downloader) {
   test_downloader_ = std::move(downloader);
 }

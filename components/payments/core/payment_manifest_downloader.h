@@ -30,26 +30,34 @@ namespace payments {
 
 class ErrorLogger;
 
-// Called on completed download of a manifest. Download failure results in empty
-// contents. Failure to download the manifest can happen because of the
-// following reasons:
+// Called on completed download of a manifest |contents| from |url|, which is
+// the final URL after following the redirects, if any.
+//
+// Download failure results in empty contents. Failure to download the manifest
+// can happen because of the following reasons:
 //  - HTTP response code is not 200. (204 is also allowed for HEAD request.)
 //  - HTTP GET on the manifest URL returns empty content.
 //
 // In the case of a payment method manifest download, can also fail when:
+//  - More than three redirects.
+//  - Cross-site redirects.
 //  - HTTP response headers are absent.
 //  - HTTP response headers do not contain Link headers.
 //  - Link header does not contain rel="payment-method-manifest".
-//  - Link header does not contain a valid URL.
+//  - Link header does not contain a valid URL of the same origin.
+//
+// In the case of a web app manifest download, can also also fail when:
+//  - There's a redirect.
 using PaymentManifestDownloadCallback =
-    base::OnceCallback<void(const std::string&)>;
+    base::OnceCallback<void(const GURL& url, const std::string& contents)>;
 
 // Downloader of the payment method manifest and web-app manifest based on the
 // payment method name that is a URL with HTTPS scheme, e.g.,
 // https://bobpay.com.
 //
-// The downloader does not follow redirects. A download succeeds only if all
-// HTTP response codes are 200 or 204.
+// The downloader follows up to three redirects for the HEAD request only (used
+// for payment method manifests). Three is enough for known legitimate use cases
+// and seems like a good upper bound.
 class PaymentManifestDownloader {
  public:
   PaymentManifestDownloader(
@@ -77,20 +85,20 @@ class PaymentManifestDownloader {
   // 2) GET request for the payment method manifest file.
   //
   // |url| should be a valid URL with HTTPS scheme.
-  virtual void DownloadPaymentMethodManifest(
-      const GURL& url,
-      PaymentManifestDownloadCallback callback);
+  void DownloadPaymentMethodManifest(const GURL& url,
+                                     PaymentManifestDownloadCallback callback);
 
   // Download a web app manifest via a single HTTP request:
   //
   // 1) GET request for the payment method name.
   //
   // |url| should be a valid URL with HTTPS scheme.
-  virtual void DownloadWebAppManifest(const GURL& url,
-                                      PaymentManifestDownloadCallback callback);
+  void DownloadWebAppManifest(const GURL& url,
+                              PaymentManifestDownloadCallback callback);
 
  private:
   friend class PaymentMethodManifestDownloaderTest;
+  friend class TestDownloader;
   friend class WebAppManifestDownloaderTest;
 
   // Information about an ongoing download request.
@@ -129,10 +137,11 @@ class PaymentManifestDownloader {
   // Called by unittests to get the original URL of the in-progress loader.
   GURL GetLoaderOriginalURLForTesting();
 
-  void InitiateDownload(const GURL& url,
-                        const std::string& method,
-                        int allowed_number_of_redirects,
-                        PaymentManifestDownloadCallback callback);
+  // Overridden in TestDownloader.
+  virtual void InitiateDownload(const GURL& url,
+                                const std::string& method,
+                                int allowed_number_of_redirects,
+                                PaymentManifestDownloadCallback callback);
 
   std::unique_ptr<ErrorLogger> log_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

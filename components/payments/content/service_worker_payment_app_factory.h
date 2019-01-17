@@ -84,7 +84,7 @@ class ServiceWorkerPaymentAppFactory {
   // Should be used only in tests.
   // Should be called before every call to GetAllPaymentApps() (because the test
   // downloader is moved into the SelfDeletingServiceWorkerPaymentAppFactory).
-  void SetDownloaderAndIgnorePortInAppScopeForTesting(
+  void SetDownloaderAndIgnorePortInOriginComparisonForTesting(
       std::unique_ptr<PaymentManifestDownloader> downloader);
 
   std::unique_ptr<PaymentManifestDownloader> test_downloader_;
