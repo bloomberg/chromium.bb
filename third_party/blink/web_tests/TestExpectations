@@ -5920,6 +5920,7 @@ crbug.com/921719 printing/offscreencanvas-webgl-printing.html  [ Skip ]
 crbug.com/921719 scrollbars/mock-scrollbars.html [ Skip ]
 crbug.com/921719 virtual/layout_ng_experimental/printing/offscreencanvas-2d-printing.html [ Skip ]
 crbug.com/921719 virtual/layout_ng_experimental/printing/offscreencanvas-webgl-printing.html [ Skip ]
+crbug.com/921719 virtual/prefer_compositing_to_lcd_text/scrollbars/mock-scrollbars.html [ Skip ]
 crbug.com/921719 virtual/threaded/printing/offscreencanvas-2d-printing.html [ Skip ]
 crbug.com/921719 virtual/threaded/printing/offscreencanvas-webgl-printing.html [ Skip ]
 

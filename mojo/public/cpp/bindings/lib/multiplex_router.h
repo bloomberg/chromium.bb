@@ -136,6 +136,9 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) MultiplexRouter
   // Whether there are any associated interfaces running currently.
   bool HasAssociatedEndpoints() const;
 
+  // See comments on Binding::EnableBatchDispatch().
+  void EnableBatchDispatch();
+
   // Sets this object to testing mode.
   // In testing mode, the object doesn't disconnect the underlying message pipe
   // when it receives unexpected or invalid messages.

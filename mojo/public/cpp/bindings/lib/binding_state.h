@@ -76,6 +76,8 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) BindingStateBase {
 
   void FlushForTesting();
 
+  void EnableBatchDispatch();
+
   void EnableTestingMode();
 
   scoped_refptr<internal::MultiplexRouter> RouterForTesting();
