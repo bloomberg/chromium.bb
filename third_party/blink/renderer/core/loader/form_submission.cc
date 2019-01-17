@@ -235,11 +235,9 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
           ? UTF8Encoding()
           : FormDataEncoder::EncodingFromAcceptCharset(
                 copied_attributes.AcceptCharset(), document.Encoding());
-  FormData* dom_form_data =
-      FormData::Create(data_encoding.EncodingForFormSubmission());
-  bool entry_list_result =
-      form->ConstructEntryList(submit_button, *dom_form_data);
-  DCHECK(entry_list_result);
+  FormData* dom_form_data = form->ConstructEntryList(
+      submit_button, data_encoding.EncodingForFormSubmission());
+  DCHECK(dom_form_data);
 
   scoped_refptr<EncodedFormData> form_data;
   String boundary;

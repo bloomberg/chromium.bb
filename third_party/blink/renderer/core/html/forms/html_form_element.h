@@ -112,9 +112,9 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
 
   // 'construct the entry list'
   // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#constructing-the-form-data-set
-  // Returns false if this form is already running this function.
-  bool ConstructEntryList(HTMLFormControlElement* submit_button,
-                          FormData& form_data);
+  // Returns nullptr if this form is already running this function.
+  FormData* ConstructEntryList(HTMLFormControlElement* submit_button,
+                               const WTF::TextEncoding& encoding);
 
   unsigned UniqueRendererFormId() const { return unique_renderer_form_id_; }
 

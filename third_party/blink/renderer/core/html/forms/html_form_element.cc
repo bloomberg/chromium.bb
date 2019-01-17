@@ -421,11 +421,13 @@ void HTMLFormElement::Submit(Event* event,
   }
 }
 
-bool HTMLFormElement::ConstructEntryList(HTMLFormControlElement* submit_button,
-                                         FormData& form_data) {
+FormData* HTMLFormElement::ConstructEntryList(
+    HTMLFormControlElement* submit_button,
+    const WTF::TextEncoding& encoding) {
   if (is_constructing_entry_list_) {
-    return false;
+    return nullptr;
   }
+  auto& form_data = *MakeGarbageCollected<FormData>(encoding);
   base::AutoReset<bool> entry_list_scope(&is_constructing_entry_list_, true);
   if (submit_button)
     submit_button->SetActivatedSubmit(true);
@@ -445,7 +447,7 @@ bool HTMLFormElement::ConstructEntryList(HTMLFormControlElement* submit_button,
 
   if (submit_button)
     submit_button->SetActivatedSubmit(false);
-  return true;
+  return &form_data;
 }
 
 void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
