@@ -464,6 +464,7 @@ html[dir=rtl] #attribution,
 
 #mv-single {
   border: none;
+  display: block;
   height: 100%;
   width: 100%;
 }
