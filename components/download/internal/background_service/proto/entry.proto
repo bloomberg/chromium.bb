@@ -22,7 +22,8 @@ enum DownloadClient {
   BACKGROUND_FETCH = 5;
   DEBUGGING = 6;
   MOUNTAIN_INTERNAL = 7;
-  BOUNDARY = 8;
+  PLUGIN_VM_IMAGE = 8;
+  BOUNDARY = 9;
 }
 
 // Stores the request params, internal state, metrics and metadata associated
