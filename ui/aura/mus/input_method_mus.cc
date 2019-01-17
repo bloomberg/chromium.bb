@@ -105,11 +105,9 @@ void InputMethodMus::OnTextInputTypeChanged(const ui::TextInputClient* client) {
   if (!input_method_)
     return;
 
-  auto text_input_state = ws::mojom::TextInputState::New();
-  text_input_state->text_input_type = client->GetTextInputType();
-  text_input_state->text_input_mode = client->GetTextInputMode();
-  text_input_state->text_direction = client->GetTextDirection();
-  text_input_state->text_input_flags = client->GetTextInputFlags();
+  auto text_input_state = ws::mojom::TextInputState::New(
+      client->GetTextInputType(), client->GetTextInputMode(),
+      client->GetTextDirection(), client->GetTextInputFlags());
   input_method_->OnTextInputStateChanged(std::move(text_input_state));
 }
 
@@ -195,19 +193,15 @@ void InputMethodMus::OnDidChangeFocusedClient(
       std::make_unique<TextInputClientImpl>(focused, delegate());
 
   if (ime_driver_) {
-    ws::mojom::StartSessionDetailsPtr details =
-        ws::mojom::StartSessionDetails::New();
-    details->client =
-        text_input_client_->CreateInterfacePtrAndBind().PassInterface();
-    details->input_method_request = MakeRequest(&input_method_ptr_);
-    input_method_ = input_method_ptr_.get();
-    details->state = ws::mojom::TextInputState::New();
-    details->state->text_input_type = focused->GetTextInputType();
-    details->state->text_input_mode = focused->GetTextInputMode();
-    details->state->text_direction = focused->GetTextDirection();
-    details->state->text_input_flags = focused->GetTextInputFlags();
+    ws::mojom::SessionDetailsPtr details = ws::mojom::SessionDetails::New();
+    details->state = ws::mojom::TextInputState::New(
+        focused->GetTextInputType(), focused->GetTextInputMode(),
+        focused->GetTextDirection(), focused->GetTextInputFlags());
     details->caret_bounds = focused->GetCaretBounds();
-    ime_driver_->StartSession(std::move(details));
+    ime_driver_->StartSession(MakeRequest(&input_method_ptr_),
+                              text_input_client_->CreateInterfacePtrAndBind(),
+                              std::move(details));
+    input_method_ = input_method_ptr_.get();
   }
 }
 

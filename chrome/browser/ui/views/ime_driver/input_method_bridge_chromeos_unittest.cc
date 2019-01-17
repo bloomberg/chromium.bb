@@ -111,15 +111,13 @@ class InputMethodBridgeChromeOSTest : public testing::Test {
 
     ws::mojom::TextInputClientPtr client_ptr;
     client_ = std::make_unique<TestTextInputClient>(MakeRequest(&client_ptr));
-    ws::mojom::TextInputStatePtr text_input_state =
-        ws::mojom::TextInputState::New();
-    text_input_state->text_input_type = ui::TEXT_INPUT_TYPE_TEXT;
-    text_input_state->text_input_mode = ui::TEXT_INPUT_MODE_DEFAULT;
-    text_input_state->text_direction = base::i18n::LEFT_TO_RIGHT;
-    text_input_state->text_input_flags = 0;
+    ws::mojom::SessionDetailsPtr details = ws::mojom::SessionDetails::New();
+    details->state = ws::mojom::TextInputState::New(
+        ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT,
+        base::i18n::LEFT_TO_RIGHT, 0);
     input_method_ = std::make_unique<InputMethodBridge>(
-        std::make_unique<RemoteTextInputClient>(
-            std::move(client_ptr), std::move(text_input_state), gfx::Rect()));
+        std::make_unique<RemoteTextInputClient>(std::move(client_ptr),
+                                                std::move(details)));
   }
 
   bool ProcessKeyEvent(std::unique_ptr<ui::Event> event) {

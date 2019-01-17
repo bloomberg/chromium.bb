@@ -9,6 +9,7 @@
 #include "ui/base/ime/candidate_window.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_text_span.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 
@@ -83,6 +84,13 @@ struct StructTraits<ws::mojom::CompositionTextDataView, ui::CompositionText> {
   }
   static bool Read(ws::mojom::CompositionTextDataView data,
                    ui::CompositionText* out);
+};
+
+template <>
+struct EnumTraits<ws::mojom::FocusReason, ui::TextInputClient::FocusReason> {
+  static ws::mojom::FocusReason ToMojom(ui::TextInputClient::FocusReason input);
+  static bool FromMojom(ws::mojom::FocusReason input,
+                        ui::TextInputClient::FocusReason* out);
 };
 
 template <>

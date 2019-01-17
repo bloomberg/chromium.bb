@@ -19,7 +19,9 @@ class IMEDriver : public ws::mojom::IMEDriver {
 
  private:
   // ws::mojom::IMEDriver:
-  void StartSession(ws::mojom::StartSessionDetailsPtr details) override;
+  void StartSession(ws::mojom::InputMethodRequest input_method_request,
+                    ws::mojom::TextInputClientPtr client,
+                    ws::mojom::SessionDetailsPtr details) override;
 
   DISALLOW_COPY_AND_ASSIGN(IMEDriver);
 };

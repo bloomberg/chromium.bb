@@ -17,9 +17,8 @@
 class RemoteTextInputClient : public ui::TextInputClient,
                               public ui::internal::InputMethodDelegate {
  public:
-  RemoteTextInputClient(ws::mojom::TextInputClientPtr remote_client,
-                        ws::mojom::TextInputStatePtr text_input_state,
-                        gfx::Rect caret_bounds);
+  RemoteTextInputClient(ws::mojom::TextInputClientPtr client,
+                        ws::mojom::SessionDetailsPtr details);
   ~RemoteTextInputClient() override;
 
   void SetTextInputState(ws::mojom::TextInputStatePtr text_input_state);
@@ -72,8 +71,7 @@ class RemoteTextInputClient : public ui::TextInputClient,
   void RunNextPendingCallback(bool completed);
 
   ws::mojom::TextInputClientPtr remote_client_;
-  ws::mojom::TextInputStatePtr text_input_state_;
-  gfx::Rect caret_bounds_;
+  ws::mojom::SessionDetailsPtr details_;
 
   // Callbacks supplied to DispatchKeyEventPostIME() are added here. When the
   // response from the remote side is received

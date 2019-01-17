@@ -9,12 +9,9 @@
 #include "ui/events/event_dispatcher.h"
 
 RemoteTextInputClient::RemoteTextInputClient(
-    ws::mojom::TextInputClientPtr remote_client,
-    ws::mojom::TextInputStatePtr text_input_state,
-    gfx::Rect caret_bounds)
-    : remote_client_(std::move(remote_client)),
-      text_input_state_(std::move(text_input_state)),
-      caret_bounds_(caret_bounds) {}
+    ws::mojom::TextInputClientPtr client,
+    ws::mojom::SessionDetailsPtr details)
+    : remote_client_(std::move(client)), details_(std::move(details)) {}
 
 RemoteTextInputClient::~RemoteTextInputClient() {
   while (!pending_callbacks_.empty())
@@ -23,11 +20,11 @@ RemoteTextInputClient::~RemoteTextInputClient() {
 
 void RemoteTextInputClient::SetTextInputState(
     ws::mojom::TextInputStatePtr text_input_state) {
-  text_input_state_ = std::move(text_input_state);
+  details_->state = std::move(text_input_state);
 }
 
 void RemoteTextInputClient::SetCaretBounds(const gfx::Rect& caret_bounds) {
-  caret_bounds_ = caret_bounds;
+  details_->caret_bounds = caret_bounds;
 }
 
 void RemoteTextInputClient::OnDispatchKeyEventPostIMECompleted(bool completed) {
@@ -56,19 +53,19 @@ void RemoteTextInputClient::InsertChar(const ui::KeyEvent& event) {
 }
 
 ui::TextInputType RemoteTextInputClient::GetTextInputType() const {
-  return text_input_state_->text_input_type;
+  return details_->state->text_input_type;
 }
 
 ui::TextInputMode RemoteTextInputClient::GetTextInputMode() const {
-  return text_input_state_->text_input_mode;
+  return details_->state->text_input_mode;
 }
 
 base::i18n::TextDirection RemoteTextInputClient::GetTextDirection() const {
-  return text_input_state_->text_direction;
+  return details_->state->text_direction;
 }
 
 int RemoteTextInputClient::GetTextInputFlags() const {
-  return text_input_state_->text_input_flags;
+  return details_->state->text_input_flags;
 }
 
 bool RemoteTextInputClient::CanComposeInline() const {
@@ -79,7 +76,7 @@ bool RemoteTextInputClient::CanComposeInline() const {
 }
 
 gfx::Rect RemoteTextInputClient::GetCaretBounds() const {
-  return caret_bounds_;
+  return details_->caret_bounds;
 }
 
 bool RemoteTextInputClient::GetCompositionCharacterBounds(
@@ -97,9 +94,7 @@ bool RemoteTextInputClient::HasCompositionText() const {
 }
 
 ui::TextInputClient::FocusReason RemoteTextInputClient::GetFocusReason() const {
-  // TODO(https://crbug.com/824604): Implement this correctly.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return ui::TextInputClient::FOCUS_REASON_OTHER;
+  return details_->focus_reason;
 }
 
 bool RemoteTextInputClient::GetTextRange(gfx::Range* range) const {
@@ -175,15 +170,11 @@ void RemoteTextInputClient::SetTextEditCommandForNextKeyEvent(
 }
 
 ukm::SourceId RemoteTextInputClient::GetClientSourceForMetrics() const {
-  // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return ukm::SourceId();
+  return details_->client_source_for_metrics;
 }
 
 bool RemoteTextInputClient::ShouldDoLearning() {
-  // TODO(https://crbug.com/311180): Implement this method.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  return details_->should_do_learning;
 }
 
 ui::EventDispatchDetails RemoteTextInputClient::DispatchKeyEventPostIME(

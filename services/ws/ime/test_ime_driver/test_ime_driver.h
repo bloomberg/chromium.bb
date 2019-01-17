@@ -22,7 +22,9 @@ class TestIMEDriver : public mojom::IMEDriver {
 
  private:
   // mojom::IMEDriver:
-  void StartSession(mojom::StartSessionDetailsPtr details) override;
+  void StartSession(mojom::InputMethodRequest input_method_request,
+                    mojom::TextInputClientPtr client,
+                    mojom::SessionDetailsPtr details) override;
 
   DISALLOW_COPY_AND_ASSIGN(TestIMEDriver);
 };
