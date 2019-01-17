@@ -28,7 +28,7 @@ const base::Feature kEnableSurfaceSynchronization{
 // (OOP-D).
 // TODO(dnicoara): Look at enabling Chromecast support when ChromeOS support is
 // ready.
-#if defined(OS_CHROMEOS) || defined(OS_FUCHSIA) || defined(IS_CHROMECAST)
+#if defined(OS_CHROMEOS) || defined(IS_CHROMECAST)
 const base::Feature kVizDisplayCompositor{"VizDisplayCompositor",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 #else
