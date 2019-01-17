@@ -405,13 +405,4 @@ CacheStorageHandle CacheStorageDispatcherHost::OpenCacheStorage(
       origin, CacheStorageOwner::kCacheAPI);
 }
 
-bool CacheStorageDispatcherHost::ValidState() {
-  // cache_manager() can return nullptr when process is shutting down.
-  if (!(context_ && context_->cache_manager())) {
-    bindings_.CloseAllBindings();
-    return false;
-  }
-  return true;
-}
-
 }  // namespace content
