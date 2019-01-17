@@ -9,6 +9,15 @@
 namespace download {
 namespace features {
 
+const base::Feature kDownloadAutoResumptionNative {
+  "DownloadsAutoResumptionNative",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
 const base::Feature kParallelDownloading {
   "ParallelDownloading",
 #if defined(OS_ANDROID)

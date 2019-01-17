@@ -42,6 +42,7 @@ class AutoResumptionHandlerTest : public testing::Test {
 
     auto config = std::make_unique<AutoResumptionHandler::Config>();
     config->auto_resumption_size_limit = 100;
+    config->is_auto_resumption_enabled_in_native = true;
 
     auto_resumption_handler_ = std::make_unique<AutoResumptionHandler>(
         std::move(network_listener), std::move(task_manager),

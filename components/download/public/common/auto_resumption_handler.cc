@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -93,7 +92,9 @@ bool IsInterruptedDownloadAutoResumable(download::DownloadItem* download_item,
 
 namespace download {
 
-AutoResumptionHandler::Config::Config() : auto_resumption_size_limit(0) {}
+AutoResumptionHandler::Config::Config()
+    : auto_resumption_size_limit(0),
+      is_auto_resumption_enabled_in_native(false) {}
 
 // static
 void AutoResumptionHandler::Create(
@@ -225,6 +226,9 @@ void AutoResumptionHandler::RecomputeTaskParams() {
 }
 
 void AutoResumptionHandler::RescheduleTaskIfNecessary() {
+  if (!config_->is_auto_resumption_enabled_in_native)
+    return;
+
   recompute_task_params_scheduled_ = false;
 
   bool has_resumable_downloads = false;
@@ -259,6 +263,9 @@ void AutoResumptionHandler::RescheduleTaskIfNecessary() {
 }
 
 void AutoResumptionHandler::ResumePendingDownloads() {
+  if (!config_->is_auto_resumption_enabled_in_native)
+    return;
+
   for (auto iter = resumable_downloads_.begin();
        iter != resumable_downloads_.end(); ++iter) {
     download::DownloadItem* download = iter->second;

@@ -189,6 +189,13 @@ public class ChromePreferenceManager {
     public static final String NIGHT_MODE_AVAILABLE_KEY = "night_mode_available";
 
     /**
+     * Whether or not the download auto-resumption is enabled in native.
+     * Default value is true.
+     */
+    public static final String DOWNLOAD_AUTO_RESUMPTION_IN_NATIVE_KEY =
+            "download_auto_resumption_in_native";
+
+    /**
      * Marks that the content suggestions surface has been shown.
      * Default value is false.
      */

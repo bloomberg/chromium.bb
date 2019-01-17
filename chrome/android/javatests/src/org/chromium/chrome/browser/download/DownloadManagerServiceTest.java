@@ -28,6 +28,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.download.DownloadInfo.Builder;
 import org.chromium.chrome.browser.download.DownloadManagerServiceTest.MockDownloadNotifier.MethodID;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
@@ -485,6 +486,9 @@ public class DownloadManagerServiceTest {
     @Feature({"Download"})
     @RetryOnFailure
     public void testInterruptedDownloadAreAutoResumed() throws InterruptedException {
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.DOWNLOAD_AUTO_RESUMPTION_IN_NATIVE_KEY, false);
+
         MockDownloadNotifier notifier = new MockDownloadNotifier();
         createDownloadManagerService(notifier, UPDATE_DELAY_FOR_TEST);
         DownloadManagerService.disableNetworkListenerForTest();

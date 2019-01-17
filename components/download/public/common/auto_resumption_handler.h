@@ -31,6 +31,7 @@ class COMPONENTS_DOWNLOAD_EXPORT AutoResumptionHandler
     ~Config() = default;
 
     int auto_resumption_size_limit;
+    bool is_auto_resumption_enabled_in_native;
   };
 
   // Creates the singleton instance of AutoResumptionHandler.

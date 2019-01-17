@@ -11,6 +11,10 @@
 namespace download {
 namespace features {
 
+// Whether download auto-resumptions are enabled in native.
+COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
+    kDownloadAutoResumptionNative;
+
 // Whether a download can be handled by parallel jobs.
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kParallelDownloading;
 

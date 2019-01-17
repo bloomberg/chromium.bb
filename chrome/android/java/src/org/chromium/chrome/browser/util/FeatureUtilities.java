@@ -21,6 +21,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -76,6 +77,8 @@ public class FeatureUtilities {
     private static Boolean sIsBottomToolbarEnabled;
     private static Boolean sShouldInflateToolbarOnBackgroundThread;
     private static Boolean sIsNightModeAvailable;
+
+    private static Boolean sDownloadAutoResumptionEnabledInNative;
 
     private static final String NTP_BUTTON_TRIAL_NAME = "NewTabPage";
     private static final String NTP_BUTTON_VARIANT_PARAM_NAME = "variation";
@@ -189,6 +192,7 @@ public class FeatureUtilities {
         cacheBottomToolbarEnabled();
         cacheInflateToolbarOnBackgroundThread();
         cacheNightModeAvailable();
+        cacheDownloadAutoResumptionEnabledInNative();
 
         // Propagate DONT_PREFETCH_LIBRARIES feature value to LibraryLoader. This can't
         // be done in LibraryLoader itself because it lives in //base and can't depend
@@ -267,6 +271,22 @@ public class FeatureUtilities {
     }
 
     /**
+     * @return Whether or not the download auto-resumptions should be enabled in native.
+     */
+    @CalledByNative
+    public static boolean isDownloadAutoResumptionEnabledInNative() {
+        if (sDownloadAutoResumptionEnabledInNative == null) {
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+
+            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+                sDownloadAutoResumptionEnabledInNative = prefManager.readBoolean(
+                        ChromePreferenceManager.DOWNLOAD_AUTO_RESUMPTION_IN_NATIVE_KEY, true);
+            }
+        }
+        return sDownloadAutoResumptionEnabledInNative;
+    }
+
+    /**
      * Cache whether or not the new tab page button is enabled so on next startup, the value can
      * be made available immediately.
      */
@@ -334,6 +354,16 @@ public class FeatureUtilities {
         ChromePreferenceManager.getInstance().writeBoolean(
                 ChromePreferenceManager.BOTTOM_TOOLBAR_ENABLED_KEY,
                 ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_DUET));
+    }
+
+    /**
+     * Cache whether or not download auto-resumptions are enabled in native so on next startup, the
+     * value can be made available immediately.
+     */
+    private static void cacheDownloadAutoResumptionEnabledInNative() {
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.DOWNLOAD_AUTO_RESUMPTION_IN_NATIVE_KEY,
+                ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE));
     }
 
     /**
