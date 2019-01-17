@@ -15,7 +15,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -583,31 +583,17 @@ bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
   return false;
 }
 
-class FlagsStateSingleton {
- public:
-  FlagsStateSingleton()
-      : flags_state_(kFeatureEntries, base::size(kFeatureEntries)) {}
-  ~FlagsStateSingleton() {}
-
-  static FlagsStateSingleton* GetInstance() {
-    return base::Singleton<FlagsStateSingleton>::get();
-  }
-
-  static flags_ui::FlagsState* GetFlagsState() {
-    return &GetInstance()->flags_state_;
-  }
-
- private:
-  flags_ui::FlagsState flags_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(FlagsStateSingleton);
-};
+flags_ui::FlagsState& GetGlobalFlagsState() {
+  static base::NoDestructor<flags_ui::FlagsState> flags_state(
+      kFeatureEntries, base::size(kFeatureEntries));
+  return *flags_state;
+}
 }  // namespace
 
 void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
                             base::CommandLine* command_line) {
   AppendSwitchesFromExperimentalSettings(command_line);
-  FlagsStateSingleton::GetFlagsState()->ConvertFlagsToSwitches(
+  GetGlobalFlagsState().ConvertFlagsToSwitches(
       flags_storage, command_line, flags_ui::kAddSentinels,
       switches::kEnableFeatures, switches::kDisableFeatures);
 }
@@ -615,15 +601,15 @@ void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
 std::vector<std::string> RegisterAllFeatureVariationParameters(
     flags_ui::FlagsStorage* flags_storage,
     base::FeatureList* feature_list) {
-  return FlagsStateSingleton::GetFlagsState()
-      ->RegisterAllFeatureVariationParameters(flags_storage, feature_list);
+  return GetGlobalFlagsState().RegisterAllFeatureVariationParameters(
+      flags_storage, feature_list);
 }
 
 void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
                            flags_ui::FlagAccess access,
                            base::ListValue* supported_entries,
                            base::ListValue* unsupported_entries) {
-  FlagsStateSingleton::GetFlagsState()->GetFlagFeatureEntries(
+  GetGlobalFlagsState().GetFlagFeatureEntries(
       flags_storage, access, supported_entries, unsupported_entries,
       base::Bind(&SkipConditionalFeatureEntry));
 }
@@ -631,12 +617,12 @@ void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
 void SetFeatureEntryEnabled(flags_ui::FlagsStorage* flags_storage,
                             const std::string& internal_name,
                             bool enable) {
-  FlagsStateSingleton::GetFlagsState()->SetFeatureEntryEnabled(
-      flags_storage, internal_name, enable);
+  GetGlobalFlagsState().SetFeatureEntryEnabled(flags_storage, internal_name,
+                                               enable);
 }
 
 void ResetAllFlags(flags_ui::FlagsStorage* flags_storage) {
-  FlagsStateSingleton::GetFlagsState()->ResetAllFlags(flags_storage);
+  GetGlobalFlagsState().ResetAllFlags(flags_storage);
 }
 
 namespace testing {
