@@ -849,6 +849,7 @@
     "AutofillUpstreamEditableCardholderName": [
         {
             "platforms": [
+                "android",
                 "chromeos",
                 "linux",
                 "mac",
