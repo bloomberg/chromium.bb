@@ -7,6 +7,7 @@
 
 #include <unordered_set>
 
+#include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -39,6 +40,37 @@ class OmniboxPedal {
     const base::string16 suggestion_contents;
   };
 
+  class SynonymGroup {
+   public:
+    // Note: synonyms must be specified in decreasing order by string length
+    // so that longest matches will be detected first.  For example,
+    // "incognito window" must come before "incognito" so that the " window"
+    // part will also be covered by this group -- otherwise it would be left
+    // intact and wrongly treated as uncovered by the checking algorithm.
+    // See OmniboxPedal::IsConceptMatch for the logic that necessitates order.
+    SynonymGroup(bool required, std::initializer_list<const char*> synonyms);
+    SynonymGroup(const SynonymGroup& other);
+    ~SynonymGroup();
+
+    // Removes first matching synonym from given |remaining| string if any are
+    // found.  Returns true if checking may continue; false if no further
+    // checking is required because what remains cannot be a concept match.
+    bool EraseFirstMatchIn(base::string16& remaining) const;
+
+   protected:
+    // If this is true, a synonym of the group must be present for triggering.
+    // If false, then presence is simply allowed and does not inhibit triggering
+    // (any text not covered by groups would stop trigger).
+    bool required_;
+
+    // The set of interchangeable alternative representations for this group:
+    // when trying to clear browsing data, a user may think of 'erase', 'clear',
+    // 'delete', etc.  Even though these are not strictly synonymous in natural
+    // language, they are considered equivalent within the context of intention
+    // to perform this Pedal's action.
+    std::vector<base::string16> synonyms_;
+  };
+
   // ExecutionContext provides the necessary structure for Pedal
   // execution implementations that potentially vary widely, and
   // references are preferred over pointers for members that are
@@ -61,7 +93,11 @@ class OmniboxPedal {
     base::TimeTicks match_selection_timestamp_;
   };
 
-  OmniboxPedal(LabelStrings strings);
+  OmniboxPedal(
+      LabelStrings strings,
+      GURL url,
+      std::initializer_list<const char*> triggers,
+      std::initializer_list<const OmniboxPedal::SynonymGroup> synonym_groups);
   virtual ~OmniboxPedal();
 
   // Provides read access to labels associated with this Pedal.
@@ -105,9 +141,19 @@ class OmniboxPedal {
   bool IsTriggerMatch(const base::string16& match_text) const;
 
  protected:
+  FRIEND_TEST_ALL_PREFIXES(OmniboxPedalTest, SynonymGroupErasesFirstMatchOnly);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxPedalTest, SynonymGroupsDriveConceptMatches);
+
+  // If a sufficient set of triggering synonym groups are present in match_text
+  // then it's a concept match and this returns true.  If a required group is
+  // not present, or if match_text contains extraneous text not covered by any
+  // synonym group, then it's not a concept match and this returns false.
+  bool IsConceptMatch(const base::string16& match_text) const;
+
   // Use this for the common case of navigating to a URL.
   void OpenURL(ExecutionContext& context, const GURL& url) const;
 
+  std::vector<SynonymGroup> synonym_groups_;
   std::unordered_set<base::string16> triggers_;
   LabelStrings strings_;
 
