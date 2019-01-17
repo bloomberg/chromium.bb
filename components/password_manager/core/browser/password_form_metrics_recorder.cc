@@ -415,14 +415,14 @@ void PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric(
 
   // Consider cases when the user typed known or unknown credentials.
   if (username_password_state.saved_password_typed) {
-    filling_assistance_ = FillingAssistance::kPasswordTyped;
+    filling_assistance_ = FillingAssistance::kKnownPasswordTyped;
     return;
   }
 
   if (!username_password_state.IsPasswordFilled()) {
     filling_assistance_ =
         username_password_state.unknown_password_typed
-            ? FillingAssistance::kNewCredentialsTyped
+            ? FillingAssistance::kNewPasswordTypedWhileCredentialsExisted
             : FillingAssistance::kNoUserInputNoFillingInPasswordFields;
     return;
   }
@@ -445,8 +445,8 @@ void PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric(
     return;
   }
 
-  filling_assistance_ =
-      FillingAssistance::kNoUserInputNoFillingInPasswordFields;
+  // If execution gets here, we have a bug in our state machine.
+  NOTREACHED();
 }
 
 int PasswordFormMetricsRecorder::GetActionsTaken() const {
