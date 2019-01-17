@@ -56,8 +56,7 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
   // |stream_size|. The video stream will not be owned by the decoder client,
   // the caller should guarantee it exists until DestroyDecoder() is called.
   void CreateDecoder(const VideoDecodeAccelerator::Config& config,
-                     const std::vector<uint8_t>& stream,
-                     const std::vector<std::string>& frame_checksums);
+                     const std::vector<uint8_t>& stream);
   // Destroy the currently active decoder.
   void DestroyDecoder();
 
@@ -104,7 +103,6 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
   void CreateDecoderFactoryTask(base::WaitableEvent* done);
   void CreateDecoderTask(VideoDecodeAccelerator::Config config,
                          const std::vector<uint8_t>* stream,
-                         const std::vector<std::string>* frame_checksums,
                          base::WaitableEvent* done);
   void DestroyDecoderTask(base::WaitableEvent* done);
 

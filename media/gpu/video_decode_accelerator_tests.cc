@@ -24,7 +24,8 @@ namespace media {
 namespace test {
 
 namespace {
-// Test environment for video decode tests.
+// Test environment for video decode tests. Performs setup and teardown once for
+// the entire test run.
 class VideoDecoderTestEnvironment : public ::testing::Environment {
  public:
   explicit VideoDecoderTestEnvironment(const Video* video) : video_(video) {}
@@ -35,14 +36,8 @@ class VideoDecoderTestEnvironment : public ::testing::Environment {
   // Tear down the video decode test environment, only called once.
   void TearDown() override;
 
-  std::unique_ptr<VideoPlayer> CreateVideoPlayer() {
-    return VideoPlayer::Create(dummy_frame_renderer_.get(),
-                               frame_validator_.get());
-  }
-
   std::unique_ptr<base::test::ScopedTaskEnvironment> task_environment_;
   std::unique_ptr<FrameRendererDummy> dummy_frame_renderer_;
-  std::unique_ptr<VideoFrameValidator> frame_validator_;
   const Video* const video_;
 
   // An exit manager is required to run callbacks on shutdown.
@@ -68,8 +63,6 @@ void VideoDecoderTestEnvironment::SetUp() {
 
   dummy_frame_renderer_ = FrameRendererDummy::Create();
   ASSERT_NE(dummy_frame_renderer_, nullptr);
-
-  frame_validator_ = media::test::VideoFrameValidator::Create();
 }
 
 void VideoDecoderTestEnvironment::TearDown() {
@@ -79,28 +72,38 @@ void VideoDecoderTestEnvironment::TearDown() {
 
 media::test::VideoDecoderTestEnvironment* g_env;
 
+// Video decode test class. Performs setup and teardown for each single test.
+class VideoDecoderTest : public ::testing::Test {
+ public:
+  std::unique_ptr<VideoPlayer> CreateVideoPlayer(const Video* video) {
+    frame_validator_ =
+        media::test::VideoFrameValidator::Create(video->FrameChecksums());
+    return VideoPlayer::Create(video, g_env->dummy_frame_renderer_.get(),
+                               frame_validator_.get());
+  }
+
+ protected:
+  std::unique_ptr<VideoFrameValidator> frame_validator_;
+};
+
 }  // namespace
 
 // Play video from start to end. Wait for the kFlushDone event at the end of the
 // stream, that notifies us all frames have been decoded.
-TEST(VideoDecodeAcceleratorTest, FlushAtEndOfStream) {
-  auto tvp = g_env->CreateVideoPlayer();
-  // TODO(dstaessens) Remove this function and provide the stream on
-  // construction of the VideoPlayer.
-  tvp->SetStream(g_env->video_);
+TEST_F(VideoDecoderTest, FlushAtEndOfStream) {
+  auto tvp = CreateVideoPlayer(g_env->video_);
 
   tvp->Play();
   EXPECT_TRUE(tvp->WaitForFlushDone());
 
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
-  EXPECT_EQ(0u, g_env->frame_validator_->GetMismatchedFramesCount());
+  EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
 }
 
 // Flush the decoder immediately after initialization.
-TEST(VideoDecodeAcceleratorTest, FlushAfterInitialize) {
-  auto tvp = g_env->CreateVideoPlayer();
-  tvp->SetStream(g_env->video_);
+TEST_F(VideoDecoderTest, FlushAfterInitialize) {
+  auto tvp = CreateVideoPlayer(g_env->video_);
 
   tvp->Flush();
   EXPECT_TRUE(tvp->WaitForFlushDone());
@@ -109,14 +112,13 @@ TEST(VideoDecodeAcceleratorTest, FlushAfterInitialize) {
 
   EXPECT_EQ(tvp->GetFlushDoneCount(), 2u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
-  EXPECT_EQ(0u, g_env->frame_validator_->GetMismatchedFramesCount());
+  EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
 }
 
 // Flush the decoder immediately after doing a mid-stream reset, without waiting
 // for a kResetDone event.
-TEST(VideoDecodeAcceleratorTest, FlushBeforeResetDone) {
-  auto tvp = g_env->CreateVideoPlayer();
-  tvp->SetStream(g_env->video_);
+TEST_F(VideoDecoderTest, FlushBeforeResetDone) {
+  auto tvp = CreateVideoPlayer(g_env->video_);
 
   tvp->Play();
   EXPECT_TRUE(tvp->WaitForFrameDecoded(g_env->video_->NumFrames() / 2));
@@ -132,13 +134,12 @@ TEST(VideoDecodeAcceleratorTest, FlushBeforeResetDone) {
   EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
   EXPECT_LE(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
-  EXPECT_EQ(0u, g_env->frame_validator_->GetMismatchedFramesCount());
+  EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
 }
 
 // Reset the decoder immediately after initialization.
-TEST(VideoDecodeAcceleratorTest, ResetAfterInitialize) {
-  auto tvp = g_env->CreateVideoPlayer();
-  tvp->SetStream(g_env->video_);
+TEST_F(VideoDecoderTest, ResetAfterInitialize) {
+  auto tvp = CreateVideoPlayer(g_env->video_);
 
   tvp->Reset();
   EXPECT_TRUE(tvp->WaitForResetDone());
@@ -148,13 +149,12 @@ TEST(VideoDecodeAcceleratorTest, ResetAfterInitialize) {
   EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
-  EXPECT_EQ(0u, g_env->frame_validator_->GetMismatchedFramesCount());
+  EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
 }
 
 // Reset the decoder when the middle of the stream is reached.
-TEST(VideoDecodeAcceleratorTest, ResetMidStream) {
-  auto tvp = g_env->CreateVideoPlayer();
-  tvp->SetStream(g_env->video_);
+TEST_F(VideoDecoderTest, ResetMidStream) {
+  auto tvp = CreateVideoPlayer(g_env->video_);
 
   tvp->Play();
   EXPECT_TRUE(tvp->WaitForFrameDecoded(g_env->video_->NumFrames() / 2));
@@ -168,13 +168,12 @@ TEST(VideoDecodeAcceleratorTest, ResetMidStream) {
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(),
             numFramesDecoded + g_env->video_->NumFrames());
-  EXPECT_EQ(0u, g_env->frame_validator_->GetMismatchedFramesCount());
+  EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
 }
 
 // Reset the decoder when the end of the stream is reached.
-TEST(VideoDecodeAcceleratorTest, ResetEndOfStream) {
-  auto tvp = g_env->CreateVideoPlayer();
-  tvp->SetStream(g_env->video_);
+TEST_F(VideoDecoderTest, ResetEndOfStream) {
+  auto tvp = CreateVideoPlayer(g_env->video_);
 
   tvp->Play();
   EXPECT_TRUE(tvp->WaitForFlushDone());
@@ -187,14 +186,13 @@ TEST(VideoDecodeAcceleratorTest, ResetEndOfStream) {
   EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFlushDoneCount(), 2u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames() * 2);
-  EXPECT_EQ(0u, g_env->frame_validator_->GetMismatchedFramesCount());
+  EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
 }
 
 // Reset the decoder immediately when the end-of-stream flush starts, without
 // waiting for a kFlushDone event.
-TEST(VideoDecodeAcceleratorTest, ResetBeforeFlushDone) {
-  auto tvp = g_env->CreateVideoPlayer();
-  tvp->SetStream(g_env->video_);
+TEST_F(VideoDecoderTest, ResetBeforeFlushDone) {
+  auto tvp = CreateVideoPlayer(g_env->video_);
 
   // Reset when a kFlushing event is received.
   tvp->Play();
@@ -210,7 +208,7 @@ TEST(VideoDecodeAcceleratorTest, ResetBeforeFlushDone) {
   EXPECT_LE(tvp->GetFlushDoneCount(), 1u);
   EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
   EXPECT_LE(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
-  EXPECT_EQ(0u, g_env->frame_validator_->GetMismatchedFramesCount());
+  EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
 }
 
 }  // namespace test

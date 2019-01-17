@@ -84,15 +84,13 @@ void VideoDecoderClient::Destroy() {
 
 void VideoDecoderClient::CreateDecoder(
     const VideoDecodeAccelerator::Config& config,
-    const std::vector<uint8_t>& stream,
-    const std::vector<std::string>& frame_checksums) {
+    const std::vector<uint8_t>& stream) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(video_player_sequence_checker_);
 
   base::WaitableEvent done;
   decoder_client_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VideoDecoderClient::CreateDecoderTask, weak_this_, config,
-                     &stream, &frame_checksums, &done));
+      FROM_HERE, base::BindOnce(&VideoDecoderClient::CreateDecoderTask,
+                                weak_this_, config, &stream, &done));
   done.Wait();
 }
 
@@ -278,7 +276,6 @@ void VideoDecoderClient::CreateDecoderFactoryTask(base::WaitableEvent* done) {
 void VideoDecoderClient::CreateDecoderTask(
     VideoDecodeAccelerator::Config config,
     const std::vector<uint8_t>* stream,
-    const std::vector<std::string>* frame_checksums,
     base::WaitableEvent* done) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
   LOG_ASSERT(decoder_factory_) << "Decoder factory not created yet";
@@ -287,7 +284,6 @@ void VideoDecoderClient::CreateDecoderTask(
 
   encoded_data_helper_ =
       std::make_unique<EncodedDataHelper>(*stream, config.profile);
-  frame_validator_->SetFrameChecksums(*frame_checksums);
 
   gpu::GpuDriverBugWorkarounds gpu_driver_bug_workarounds;
   gpu::GpuPreferences gpu_preferences;
