@@ -57,83 +57,6 @@ struct TextStyle {
   gfx::BaselineStyle baseline = gfx::NORMAL_BASELINE;
 };
 
-// Returns the styles that should be applied to the specified answer text type.
-//
-// Note that the font value is only consulted for the first text type that
-// appears on an answer line, because RenderText does not yet support multiple
-// font sizes. Subsequent text types on the same line will share the text size
-// of the first type, while the color and baseline styles specified here will
-// always apply. The gfx::INFERIOR baseline style is used as a workaround to
-// produce smaller text on the same line. The way this is used in the current
-// set of answers is that the small types (TOP_ALIGNED, DESCRIPTION_NEGATIVE,
-// DESCRIPTION_POSITIVE and SUGGESTION_SECONDARY_TEXT_SMALL) only ever appear
-// following LargeFont text, so for consistency they specify LargeFont for the
-// first value even though this is not actually used (since they're not the
-// first value).
-TextStyle GetTextStyle(int text_type) {
-  // The size delta for large fonts in the legacy spec (per comment above, the
-  // result is usually smaller due to the baseline style).
-  constexpr int kLarge = ui::ResourceBundle::kLargeFontDelta;
-
-  // The size delta for the smaller of font size in the touchable style. This
-  // will always use the same baseline style.
-  constexpr int kTouchableSmall = -3;
-
-  switch (text_type) {
-    case SuggestionAnswer::TOP_ALIGNED:
-      return {OmniboxPart::RESULTS_TEXT_DIMMED, kLarge, kTouchableSmall,
-              gfx::SUPERIOR};
-
-    case SuggestionAnswer::DESCRIPTION_NEGATIVE:
-      return {OmniboxPart::RESULTS_TEXT_NEGATIVE, kLarge, kTouchableSmall,
-              gfx::INFERIOR};
-
-    case SuggestionAnswer::DESCRIPTION_POSITIVE:
-      return {OmniboxPart::RESULTS_TEXT_POSITIVE, kLarge, kTouchableSmall,
-              gfx::INFERIOR};
-
-    case SuggestionAnswer::ANSWER_TEXT_MEDIUM:
-      return {OmniboxPart::RESULTS_TEXT_DIMMED};
-
-    case SuggestionAnswer::ANSWER_TEXT_LARGE:
-      // Note: There is no large font in the touchable spec.
-      return {OmniboxPart::RESULTS_TEXT_DIMMED, kLarge};
-
-    case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_SMALL:
-      return {OmniboxPart::RESULTS_TEXT_DIMMED, kLarge, kTouchableSmall,
-              gfx::INFERIOR};
-
-    case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_MEDIUM:
-      return {OmniboxPart::RESULTS_TEXT_DIMMED};
-
-    case SuggestionAnswer::PERSONALIZED_SUGGESTION:
-    case SuggestionAnswer::SUGGESTION:  // Fall through.
-    default:
-      return {OmniboxPart::RESULTS_TEXT_DEFAULT};
-  }
-}
-
-const gfx::FontList& GetFontForType(int text_type) {
-  const gfx::FontList& omnibox_font =
-      views::style::GetFont(CONTEXT_OMNIBOX_PRIMARY, kTextStyle);
-  if (ui::MaterialDesignController::touch_ui()) {
-    int delta = GetTextStyle(text_type).touchable_size_delta;
-    if (delta == 0)
-      return omnibox_font;
-
-    // Use the cache in ResourceBundle (gfx::FontList::Derive() is slow and
-    // doesn't return a reference).
-    return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
-        omnibox_font.GetFontSize() - gfx::FontList().GetFontSize() + delta);
-  }
-
-  int delta = GetTextStyle(text_type).legacy_size_delta;
-  if (delta == kInherit)
-    return omnibox_font;
-
-  return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(delta);
-}
-
 // The new answer layout has separate and different treatment of text styles,
 // and as of writing both styling approaches need to be supported.  When old
 // answer styles are deprecated, the above TextStyle structure and related
@@ -285,14 +208,6 @@ void OmniboxTextView::SetText(const SuggestionAnswer::ImageLine& line,
   render_text_.reset();
   render_text_ = CreateRenderText(base::string16());
 
-  if (!OmniboxFieldTrial::IsNewAnswerLayoutEnabled()) {
-    // This assumes that the first text type in the line can be used to specify
-    // the font for all the text fields in the line.  For now this works but
-    // eventually it may be necessary to get RenderText to support multiple font
-    // sizes or use multiple RenderTexts.
-    render_text_->SetFontList(GetFontForType(line.text_fields()[0].type()));
-  }
-
   for (const SuggestionAnswer::TextField& text_field : line.text_fields())
     AppendText(text_field, base::string16());
   if (!line.text_fields().empty()) {
@@ -386,26 +301,7 @@ void OmniboxTextView::AppendText(const SuggestionAnswer::TextField& field,
   int offset = render_text_->text().length();
   gfx::Range range(offset, offset + text.length());
   render_text_->AppendText(text);
-  if (OmniboxFieldTrial::IsNewAnswerLayoutEnabled()) {
-    ApplyTextStyleForType(field.style(), result_view_, render_text_.get(),
-                          range);
-  } else {
-    const int text_type = field.type();
-    const TextStyle& text_style = GetTextStyle(text_type);
-    // TODO(dschuyler): follow up on the problem of different font sizes within
-    // one RenderText.  Maybe with render_text_->SetFontList(...).
-    render_text_->ApplyWeight(gfx::Font::Weight::NORMAL, range);
-    render_text_->ApplyColor(result_view_->GetColor(text_style.part), range);
-
-    // Baselines are always aligned under the touch UI. Font sizes change
-    // instead.
-    if (!ui::MaterialDesignController::touch_ui()) {
-      render_text_->ApplyBaselineStyle(text_style.baseline, range);
-    } else if (text_style.touchable_size_delta != 0) {
-      render_text_->ApplyFontSizeOverride(
-          GetFontForType(text_type).GetFontSize(), range);
-    }
-  }
+  ApplyTextStyleForType(field.style(), result_view_, render_text_.get(), range);
 }
 
 void OmniboxTextView::UpdateLineHeight() {

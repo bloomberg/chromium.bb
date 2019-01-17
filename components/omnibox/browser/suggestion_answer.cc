@@ -275,8 +275,7 @@ bool SuggestionAnswer::ParseAnswer(const base::DictionaryValue* answer_json,
 
   std::string image_url;
   const base::DictionaryValue* optional_image;
-  if (OmniboxFieldTrial::IsNewAnswerLayoutEnabled() &&
-      answer_json->GetDictionary("i", &optional_image) &&
+  if (answer_json->GetDictionary("i", &optional_image) &&
       optional_image->GetString("d", &image_url)) {
     result->image_url_ = GURL(image_url);
   } else {
@@ -311,9 +310,6 @@ size_t SuggestionAnswer::EstimateMemoryUsage() const {
 }
 
 void SuggestionAnswer::InterpretTextTypes() {
-  if (!OmniboxFieldTrial::IsNewAnswerLayoutEnabled())
-    return;
-
   switch (type()) {
     case SuggestionAnswer::ANSWER_TYPE_WEATHER: {
       second_line_.SetTextStyles(SuggestionAnswer::TOP_ALIGNED,

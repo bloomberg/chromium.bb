@@ -185,7 +185,6 @@ bool IsTrivialAutocompletion(const AutocompleteMatch& match) {
 // Whether this autocomplete match type supports custom descriptions.
 bool AutocompleteMatchHasCustomDescription(const AutocompleteMatch& match) {
   if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_DESKTOP &&
-      OmniboxFieldTrial::IsNewAnswerLayoutEnabled() &&
       match.type == AutocompleteMatchType::CALCULATOR) {
     return true;
   }
