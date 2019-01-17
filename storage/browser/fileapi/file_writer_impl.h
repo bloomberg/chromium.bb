@@ -6,6 +6,7 @@
 #define STORAGE_BROWSER_FILEAPI_FILE_WRITER_IMPL_H_
 
 #include "base/component_export.h"
+#include "base/memory/weak_ptr.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "third_party/blink/public/mojom/filesystem/file_writer.mojom.h"
@@ -60,6 +61,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileWriterImpl
   const std::unique_ptr<FileSystemOperationRunner> operation_runner_;
   const base::WeakPtr<BlobStorageContext> blob_context_;
   const FileSystemURL url_;
+
+  base::WeakPtrFactory<FileWriterImpl> weak_ptr_factory_;
 };
 
 }  // namespace storage
