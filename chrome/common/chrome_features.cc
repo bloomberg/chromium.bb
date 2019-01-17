@@ -659,6 +659,10 @@ const base::Feature kMachineLearningService{"MachineLearningService",
 // TODO(crbug.com/874630): Remove this kill-switch
 const base::Feature kUsbguard{"USBGuard", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable USB Bouncer for managing a device whitelist for USBGuard on Chrome OS.
+const base::Feature kUsbbouncer{"USBBouncer",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable running shill in a minijail sandbox on Chrome OS.
 const base::Feature kShillSandboxing{"ShillSandboxing",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
