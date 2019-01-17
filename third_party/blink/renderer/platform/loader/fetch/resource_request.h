@@ -95,8 +95,13 @@ class PLATFORM_EXPORT ResourceRequest final {
   const KURL& Url() const;
   void SetURL(const KURL&);
 
-  const KURL& GetOriginalUrl() const;
-  void SetOriginalUrl(const KURL&);
+  // ThreadableLoader sometimes breaks redirect chains into separate Resource
+  // and ResourceRequests. The ResourceTiming API needs the initial URL for the
+  // name attribute of PerformanceResourceTiming entries. This property
+  // remembers the initial URL for that purpose. Note that it can return a null
+  // URL. In that case, use Url() instead.
+  const KURL& GetInitialUrlForResourceTiming() const;
+  void SetInitialUrlForResourceTiming(const KURL&);
 
   void RemoveUserAndPassFromURL();
 
@@ -442,7 +447,9 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool NeedsHTTPOrigin() const;
 
   KURL url_;
-  KURL original_url_;
+  // TODO(yoav): initial_url_for_resource_timing_ is a stop-gap only needed
+  // until Out-of-Blink CORS lands: https://crbug.com/736308
+  KURL initial_url_for_resource_timing_;
   // TimeDelta::Max() represents the default timeout on platforms that have one.
   base::TimeDelta timeout_interval_;
   KURL site_for_cookies_;
