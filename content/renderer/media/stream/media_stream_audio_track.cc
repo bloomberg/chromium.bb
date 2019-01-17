@@ -36,7 +36,7 @@ MediaStreamAudioTrack* MediaStreamAudioTrack::From(
       track.Source().GetType() != blink::WebMediaStreamSource::kTypeAudio) {
     return nullptr;
   }
-  return static_cast<MediaStreamAudioTrack*>(track.GetTrackData());
+  return static_cast<MediaStreamAudioTrack*>(track.GetPlatformTrack());
 }
 
 void MediaStreamAudioTrack::AddSink(MediaStreamAudioSink* sink) {

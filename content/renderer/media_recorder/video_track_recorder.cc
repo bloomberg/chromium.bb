@@ -402,7 +402,7 @@ VideoTrackRecorder::VideoTrackRecorder(
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   DCHECK(!track_.IsNull());
-  DCHECK(track_.GetTrackData());
+  DCHECK(track_.GetPlatformTrack());
 
   initialize_encoder_callback_ = base::Bind(
       &VideoTrackRecorder::InitializeEncoder, weak_ptr_factory_.GetWeakPtr(),

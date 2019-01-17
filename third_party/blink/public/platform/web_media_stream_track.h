@@ -25,6 +25,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_STREAM_TRACK_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_STREAM_TRACK_H_
 
+#include <memory>
+
 #include "base/optional.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
@@ -34,9 +36,9 @@ namespace blink {
 
 class MediaStreamComponent;
 class MediaStreamTrack;
+class PlatformMediaStreamTrack;
 class WebAudioSourceProvider;
 class WebMediaConstraints;
-class WebMediaStream;
 class WebMediaStreamSource;
 class WebString;
 
@@ -103,13 +105,6 @@ class WebMediaStreamTrack {
     base::Optional<CursorCaptureType> cursor;
   };
 
-  class TrackData {
-   public:
-    TrackData() = default;
-    virtual ~TrackData() = default;
-    virtual void GetSettings(Settings&) = 0;
-  };
-
   enum class ContentHintType {
     kNone,
     kAudioSpeech,
@@ -146,12 +141,9 @@ class WebMediaStreamTrack {
   BLINK_PLATFORM_EXPORT WebMediaConstraints Constraints() const;
   BLINK_PLATFORM_EXPORT void SetConstraints(const WebMediaConstraints&);
 
-  // Extra data associated with this WebMediaStream.
-  // If non-null, the extra data pointer will be deleted when the object is
-  // destroyed.  Setting the track data pointer will cause any existing non-null
-  // track data pointer to be deleted.
-  BLINK_PLATFORM_EXPORT TrackData* GetTrackData() const;
-  BLINK_PLATFORM_EXPORT void SetTrackData(TrackData*);
+  BLINK_PLATFORM_EXPORT PlatformMediaStreamTrack* GetPlatformTrack() const;
+  BLINK_PLATFORM_EXPORT void SetPlatformTrack(
+      std::unique_ptr<PlatformMediaStreamTrack>);
 
   // The lifetime of the WebAudioSourceProvider should outlive the
   // WebMediaStreamTrack, and clients are responsible for calling

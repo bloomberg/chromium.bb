@@ -68,11 +68,10 @@ void MockMediaStreamRegistry::AddVideoTrack(
   blink::WebMediaStreamTrack blink_track;
   blink_track.Initialize(blink::WebString::FromUTF8(track_id), blink_source);
 
-  MediaStreamVideoTrack* native_track = new MediaStreamVideoTrack(
+  blink_track.SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
       native_source, adapter_settings, noise_reduction, is_screencast,
       min_frame_rate, MediaStreamVideoSource::ConstraintsCallback(),
-      true /* enabled */);
-  blink_track.SetTrackData(native_track);
+      true /* enabled */));
   test_stream_.AddTrack(blink_track);
 }
 

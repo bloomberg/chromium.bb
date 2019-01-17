@@ -16,11 +16,10 @@ namespace blink {
 // PlatformMediaStreamTrack is a Chrome representation of
 // blink::WebMediaStreamTrack. It is owned by blink::WebMediaStreamTrack as
 // blink::WebMediaStreamTrack::ExtraData.
-class BLINK_PLATFORM_EXPORT PlatformMediaStreamTrack
-    : public blink::WebMediaStreamTrack::TrackData {
+class BLINK_PLATFORM_EXPORT PlatformMediaStreamTrack {
  public:
   explicit PlatformMediaStreamTrack(bool is_local_track);
-  ~PlatformMediaStreamTrack() override;
+  virtual ~PlatformMediaStreamTrack();
 
   static PlatformMediaStreamTrack* GetTrack(
       const blink::WebMediaStreamTrack& track);
@@ -36,7 +35,7 @@ class BLINK_PLATFORM_EXPORT PlatformMediaStreamTrack
   void Stop() { StopAndNotify(base::OnceClosure()); }
 
   // TODO(hta): Make method pure virtual when all tracks have the method.
-  void GetSettings(blink::WebMediaStreamTrack::Settings& settings) override {}
+  virtual void GetSettings(blink::WebMediaStreamTrack::Settings& settings) {}
 
   bool is_local_track() const { return is_local_track_; }
 
