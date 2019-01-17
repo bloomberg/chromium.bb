@@ -271,6 +271,9 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
   // are insetted. This defines the amount of paddings around the icon area.
   virtual gfx::Insets GetIconAreaInsets() const;
 
+  // Returns the number of icons that can fit within the given width.
+  size_t WidthToIconCountUnclamped(int width) const;
+
   // ToolbarActionsModel::Observer:
   void OnToolbarActionAdded(const ToolbarActionsModel::ToolbarItem& item,
                             int index) override;
