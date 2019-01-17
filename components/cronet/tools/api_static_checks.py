@@ -121,7 +121,7 @@ def check_api_calls(opts):
   # Extract API class files from jar
   jar_cmd = ['jar', 'xf', os.path.abspath(opts.api_jar)]
   build_utils.CheckOutput(jar_cmd, cwd=temp_dir)
-  shutil.rmtree(os.path.join(temp_dir, 'META-INF'))
+  shutil.rmtree(os.path.join(temp_dir, 'META-INF'), ignore_errors=True)
 
   # Collect names of API classes
   api_classes = []
@@ -141,7 +141,7 @@ def check_api_calls(opts):
   for impl_jar in opts.impl_jar:
     jar_cmd = ['jar', 'xf', os.path.abspath(impl_jar)]
     build_utils.CheckOutput(jar_cmd, cwd=temp_dir)
-  shutil.rmtree(os.path.join(temp_dir, 'META-INF'))
+  shutil.rmtree(os.path.join(temp_dir, 'META-INF'), ignore_errors=True)
 
   # Process classes
   bad_api_calls = []
