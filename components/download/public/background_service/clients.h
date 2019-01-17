@@ -39,7 +39,9 @@ enum class DownloadClient {
 
   MOUNTAIN_INTERNAL = 4,
 
-  BOUNDARY = 5,
+  PLUGIN_VM_IMAGE = 5,
+
+  BOUNDARY = 6,
 };
 
 using DownloadClientMap = std::map<DownloadClient, std::unique_ptr<Client>>;

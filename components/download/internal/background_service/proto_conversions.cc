@@ -70,6 +70,8 @@ protodb::DownloadClient ProtoConversions::DownloadClientToProto(
       return protodb::DownloadClient::DEBUGGING;
     case DownloadClient::MOUNTAIN_INTERNAL:
       return protodb::DownloadClient::MOUNTAIN_INTERNAL;
+    case DownloadClient::PLUGIN_VM_IMAGE:
+      return protodb::DownloadClient::PLUGIN_VM_IMAGE;
     case DownloadClient::BOUNDARY:
       return protodb::DownloadClient::BOUNDARY;
   }
@@ -97,6 +99,8 @@ DownloadClient ProtoConversions::DownloadClientFromProto(
       return DownloadClient::DEBUGGING;
     case protodb::DownloadClient::MOUNTAIN_INTERNAL:
       return DownloadClient::MOUNTAIN_INTERNAL;
+    case protodb::DownloadClient::PLUGIN_VM_IMAGE:
+      return DownloadClient::PLUGIN_VM_IMAGE;
     case protodb::DownloadClient::BOUNDARY:
       return DownloadClient::BOUNDARY;
   }
