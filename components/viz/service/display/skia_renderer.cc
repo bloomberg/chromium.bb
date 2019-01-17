@@ -212,12 +212,8 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
     }
     case DrawMode::DDL: {
       DCHECK(skia_output_surface_);
-      lock_set_for_external_use_.emplace(
-          resource_provider,
-          base::BindRepeating(&SkiaOutputSurface::MakePromiseSkImage,
-                              base::Unretained(skia_output_surface_)),
-          base::BindRepeating(&SkiaOutputSurface::DestroySkImage,
-                              base::Unretained(skia_output_surface_)));
+      lock_set_for_external_use_.emplace(resource_provider,
+                                         skia_output_surface);
       break;
     }
     case DrawMode::SKPRECORD: {

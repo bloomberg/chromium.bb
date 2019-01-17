@@ -14,6 +14,7 @@
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/service/display/shared_bitmap_manager.h"
+#include "components/viz/service/display/skia_output_surface.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -648,12 +649,12 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     // TODO(https://crbug.com/922592): Batch deletion for reduced overhead.
     auto sk_image_it = resource_sk_images_.find(local_id);
     if (sk_image_it != resource_sk_images_.end()) {
-      ResourceSkImage found(std::move(sk_image_it->second));
+      sk_sp<SkImage> found(std::move(sk_image_it->second));
       resource_sk_images_.erase(sk_image_it);
 
-      if (found.destroy_callback.has_value()) {
+      if (external_use_client_) {
         gpu::SyncToken token =
-            found.destroy_callback->Run(std::move(found.image));
+            external_use_client_->QueueReleasePromiseSkImage(std::move(found));
         resource.UpdateSyncToken(token);
       }
     }
@@ -722,6 +723,9 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
 #endif
     DeleteResourceInternal(it, style);
   }
+
+  if (external_use_client_)
+    external_use_client_->FlushQueuedReleases();
 
   for (size_t i : to_return_indices_unverified)
     unverified_sync_tokens.push_back(to_return[i].sync_token.GetData());
@@ -854,7 +858,7 @@ DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
   // Use cached SkImage if possible.
   auto it = resource_provider_->resource_sk_images_.find(resource_id);
   if (it != resource_provider_->resource_sk_images_.end()) {
-    sk_image_ = it->second.image;
+    sk_image_ = it->second;
     return;
   }
 
@@ -873,7 +877,7 @@ DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
         ResourceFormatToClosestSkColorType(!resource_provider->IsSoftware(),
                                            resource->transferable.format),
         kPremul_SkAlphaType, nullptr);
-    resource_provider_->resource_sk_images_[resource_id].image = sk_image_;
+    resource_provider_->resource_sk_images_[resource_id] = sk_image_;
     return;
   }
 
@@ -893,7 +897,7 @@ DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
   resource_provider->PopulateSkBitmapWithResource(&sk_bitmap, resource);
   sk_bitmap.setImmutable();
   sk_image_ = SkImage::MakeFromBitmap(sk_bitmap);
-  resource_provider_->resource_sk_images_[resource_id].image = sk_image_;
+  resource_provider_->resource_sk_images_[resource_id] = sk_image_;
 }
 
 DisplayResourceProvider::ScopedReadLockSkImage::~ScopedReadLockSkImage() {
@@ -902,11 +906,11 @@ DisplayResourceProvider::ScopedReadLockSkImage::~ScopedReadLockSkImage() {
 
 DisplayResourceProvider::LockSetForExternalUse::LockSetForExternalUse(
     DisplayResourceProvider* resource_provider,
-    const CreateSkImageCallback& create_callback,
-    const DestroySkImageCallback& destroy_callback)
-    : resource_provider_(resource_provider),
-      create_sk_image_callback_(create_callback),
-      destroy_sk_image_callback_(destroy_callback) {}
+    SkiaOutputSurface* client)
+    : resource_provider_(resource_provider) {
+  DCHECK(!resource_provider_->external_use_client_);
+  resource_provider_->external_use_client_ = client;
+}
 
 DisplayResourceProvider::LockSetForExternalUse::~LockSetForExternalUse() {
   DCHECK(resources_.empty());
@@ -924,12 +928,12 @@ DisplayResourceProvider::LockSetForExternalUse::LockResourceAndCreateSkImage(
     ResourceId id) {
   auto metadata = LockResource(id);
   auto& resource_sk_image = resource_provider_->resource_sk_images_[id];
-  if (!resource_sk_image.image) {
-    resource_sk_image.image =
-        create_sk_image_callback_.Run(std::move(metadata));
-    resource_sk_image.destroy_callback = destroy_sk_image_callback_;
+  if (!resource_sk_image) {
+    resource_sk_image =
+        resource_provider_->external_use_client_->MakePromiseSkImage(
+            std::move(metadata));
   }
-  return resource_sk_image.image;
+  return resource_sk_image;
 }
 
 void DisplayResourceProvider::LockSetForExternalUse::UnlockResources(
@@ -996,11 +1000,6 @@ DisplayResourceProvider::ChildResource::ChildResource(
 DisplayResourceProvider::ChildResource::ChildResource(ChildResource&& other) =
     default;
 DisplayResourceProvider::ChildResource::~ChildResource() = default;
-
-DisplayResourceProvider::ResourceSkImage::ResourceSkImage() = default;
-DisplayResourceProvider::ResourceSkImage::ResourceSkImage(
-    const ResourceSkImage&) = default;
-DisplayResourceProvider::ResourceSkImage::~ResourceSkImage() = default;
 
 void DisplayResourceProvider::ChildResource::SetLocallyUsed() {
   synchronization_state_ = LOCALLY_USED;

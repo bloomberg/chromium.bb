@@ -124,7 +124,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   sk_sp<GrContextThreadSafeProxy> GetGrContextThreadSafeProxy();
   const gl::GLVersionInfo* gl_version_info() const { return gl_version_info_; }
 
-  void DestroySkImage(sk_sp<SkImage>&& image, uint64_t sync_fence_release);
+  void DestroySkImages(std::vector<sk_sp<SkImage>>&& images,
+                       uint64_t sync_fence_release);
 
  private:
 // gpu::ImageTransportSurfaceDelegate implementation:
