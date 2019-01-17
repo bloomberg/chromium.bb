@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/auto_reset.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/renderer/render_frame.h"
@@ -30,15 +29,16 @@ void OnLoadScriptInjector::BindToRequest(
   bindings_.AddBinding(this, std::move(request));
 }
 
-void OnLoadScriptInjector::DidClearWindowObject() {
-  // The script may cause the window to be cleared (e.g. by producing a page
-  // load event), so the guard is used to prevent reentrancy and potential
-  // infinite loops.
-  if (is_handling_clear_window_object_)
+void OnLoadScriptInjector::DidCommitProvisionalLoad(
+    bool is_same_document_navigation,
+    ui::PageTransition transition) {
+  // Ignore pushState or document fragment navigation.
+  if (is_same_document_navigation)
     return;
 
-  base::AutoReset<bool> clear_window_reset(&is_handling_clear_window_object_,
-                                           true);
+  // Don't inject anything for subframes.
+  if (!render_frame()->IsMainFrame())
+    return;
 
   for (mojo::ScopedSharedBufferHandle& script : on_load_scripts_) {
     DCHECK_EQ(script->GetSize() % 2, 0u);  // Crude check to see this is UTF-16.

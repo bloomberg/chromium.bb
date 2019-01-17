@@ -31,14 +31,14 @@ class OnLoadScriptInjector : public content::RenderFrameObserver,
 
   // RenderFrameObserver override:
   void OnDestruct() override;
-  void DidClearWindowObject() override;
+  void DidCommitProvisionalLoad(bool is_same_document_navigation,
+                                ui::PageTransition transition) override;
 
  private:
   // Called by OnDestruct(), when the RenderFrame is destroyed.
   ~OnLoadScriptInjector() override;
 
   std::vector<mojo::ScopedSharedBufferHandle> on_load_scripts_;
-  bool is_handling_clear_window_object_ = false;
   mojo::AssociatedBindingSet<mojom::OnLoadScriptInjector> bindings_;
   base::WeakPtrFactory<OnLoadScriptInjector> weak_ptr_factory_;
 

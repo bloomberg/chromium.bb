@@ -20,13 +20,14 @@ cast.__platform__.Port = class {
     this.id_ = id;
   }
 
-  // Sends a message to the port, or buffers the message for later delivery if
-  // no port is available yet.
-  sendMessage(message) {
-    if (this.port_)
-      this.port_.postMessage(message);
-    else
-      this.buffer_.push(message);
+  // Sends a message and optionally a list of Transferables to the Port,
+  // or buffers the message for later delivery if |this| is unconnected.
+  sendMessage(data, transferables) {
+    if (this.port_) {
+      this.port_.postMessage(data, transferables);
+    } else {
+      this.buffer_.push({'data': data, 'transferables': transferables});
+    }
   }
 
   // Receives a MessagePort from cast.__platform__.connector.
@@ -40,7 +41,8 @@ cast.__platform__.Port = class {
 
     // Flush and destroy the pre-connect buffer.
     for (var i = 0; i < this.buffer_.length; ++i) {
-      this.port_.postMessage(this.buffer_[i]);
+      this.port_.postMessage(this.buffer_[i].data,
+          this.buffer_[i].transferables);
     }
     this.buffer = null;
   }

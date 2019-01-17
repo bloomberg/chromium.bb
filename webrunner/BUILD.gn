@@ -92,10 +92,17 @@ fuchsia_package_runner("castrunner") {
 
 source_set("castrunner_common") {
   sources = [
+    "app/cast/bindings/cast_channel.cc",
+    "app/cast/bindings/cast_channel.h",
     "app/cast/cast_runner.cc",
     "app/cast/cast_runner.h",
   ]
+  data = [
+    "app/cast/bindings/cast_channel.js",
+  ]
   deps = [
+    ":mem_buffer_common",
+    ":named_message_port_connector",
     ":web_fidl",
     "//base",
     "//url",
@@ -104,6 +111,7 @@ source_set("castrunner_common") {
     ":cast_fidl",
     ":webrunner_common",
   ]
+  configs += [ ":webrunner_implementation" ]
 }
 
 executable("castrunner_exe") {
@@ -136,7 +144,7 @@ test("castrunner_unittests") {
     ":app_config_manager_test_support",
     ":castrunner_common",
     ":castrunner_test_support",
-    ":test_common",
+    ":test_support",
     ":test_support",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
@@ -152,7 +160,7 @@ test("castrunner_integration_tests") {
     ":app_config_manager_test_support",
     ":castrunner_common",
     ":castrunner_test_support",
-    ":test_common",
+    ":test_support",
     ":test_support",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
@@ -174,14 +182,38 @@ source_set("named_message_port_connector") {
     "common/named_message_port_connector.js",
   ]
   deps = [
-    ":common",
+    ":mem_buffer_common",
     ":web_fidl",
     "//base",
     "//third_party/fuchsia-sdk/sdk:mem",
   ]
+  configs += [ ":webrunner_implementation" ]
 }
 
-source_set("common") {
+test("castrunner_browsertests") {
+  sources = [
+    "app/cast/bindings/cast_channel_browsertest.cc",
+  ]
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+  data = [
+    "app/cast/test/data",
+  ]
+  deps = [
+    ":browsertest_common",
+    ":castrunner_common",
+    ":mem_buffer_common",
+    ":named_message_port_connector",
+    ":test_support",
+    ":web_fidl",
+    "//base/test:test_support",
+    "//content/public/browser",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/ozone",
+  ]
+}
+
+source_set("mem_buffer_common") {
   sources = [
     "common/mem_buffer_util.cc",
     "common/mem_buffer_util.h",
@@ -242,12 +274,19 @@ executable("webrunner_exe") {
 source_set("test_support") {
   testonly = true
   sources = [
+    # TODO(kmarshall): Move common/test/* to test/.
+    "common/test/test_common.cc",
+    "common/test/test_common.h",
     "test/fake_context.cc",
     "test/fake_context.h",
     "test/promise.h",
   ]
   deps = [
+    ":mem_buffer_common",
+    ":web_fidl",
     "//base",
+    "//base/test:test_config",
+    "//content/test:test_support",
   ]
   public_deps = [
     ":web_fidl",
@@ -291,7 +330,7 @@ mojom("mojom") {
 
 component("service_lib") {
   deps = [
-    ":common",
+    ":mem_buffer_common",
     ":mojom",
     ":service_pak",
     "//base",
@@ -402,21 +441,6 @@ repack("service_pak") {
   output = "$root_out_dir/webrunner.pak"
 }
 
-source_set("test_common") {
-  testonly = true
-  sources = [
-    "common/test/test_common.cc",
-    "common/test/test_common.h",
-  ]
-  deps = [
-    ":common",
-    ":web_fidl",
-    "//base",
-    "//base/test:test_config",
-    "//content/test:test_support",
-  ]
-}
-
 source_set("browsertest_common") {
   testonly = true
   sources = [
@@ -447,14 +471,14 @@ test("webrunner_browsertests") {
     "common/test/data",
   ]
   data_deps = [
-    ":common",
+    ":named_message_port_connector",
   ]
   deps = [
     ":browsertest_common",
-    ":common",
+    ":mem_buffer_common",
     ":named_message_port_connector",
     ":service_lib",
-    ":test_common",
+    ":test_support",
     ":test_support",
     ":web_fidl",
     "//base/test:test_support",
@@ -486,7 +510,7 @@ test("webrunner_smoketests") {
     "app/web/webrunner_smoke_test.cc",
   ]
   deps = [
-    ":test_common",
+    ":test_support",
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
@@ -531,6 +555,11 @@ fidl_library("cast_fidl") {
 
   sources = [
     "fidl/cast/application_config.fidl",
+    "fidl/cast/cast_channel.fidl",
+  ]
+
+  public_deps = [
+    ":web_fidl",
   ]
 }
 

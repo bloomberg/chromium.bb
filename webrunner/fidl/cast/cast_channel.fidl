@@ -1,0 +1,17 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+library chromium.cast;
+
+using chromium.web;
+
+[Discoverable]
+interface CastChannel {
+  // Handles Cast Channel open calls from the webpage.
+  // The new Cast Channel's message port is returned asynchronously once
+  // opened by the webpage. The port is disconnected when the peer's Cast
+  // Channel is closed.
+  1: Connect() -> (chromium.web.MessagePort channel);
+};
+
