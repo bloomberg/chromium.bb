@@ -1181,7 +1181,7 @@ struct DateTime {
   /**
    * Number of milliseconds since the UNIX epoch.
    */
-  int64 value;
+  int64 value = 0;
 };
 
 /*
