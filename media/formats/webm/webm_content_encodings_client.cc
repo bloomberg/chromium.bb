@@ -249,7 +249,6 @@ bool WebMContentEncodingsClient::OnBinary(int id,
                                           int size) {
   DCHECK(cur_content_encoding_.get());
   DCHECK(data);
-  DCHECK_GT(size, 0);
 
   if (id != kWebMIdContentEncKeyID) {
     MEDIA_LOG(ERROR, media_log_) << "Unsupported element " << id;
@@ -258,6 +257,11 @@ bool WebMContentEncodingsClient::OnBinary(int id,
 
   if (!cur_content_encoding_->encryption_key_id().empty()) {
     MEDIA_LOG(ERROR, media_log_) << "Unexpected multiple ContentEncKeyID";
+    return false;
+  }
+
+  if (size <= 0) {
+    MEDIA_LOG(ERROR, media_log_) << "Invalid ContentEncKeyID size: " << size;
     return false;
   }
 
