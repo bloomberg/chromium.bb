@@ -7,8 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/gpu/macros.h"
 #include "third_party/libyuv/include/libyuv/convert_from.h"
 
@@ -31,17 +30,12 @@ LibYUVImageProcessor::LibYUVImageProcessor(
       input_visible_rect_(input_visible_size),
       output_visible_rect_(output_visible_size),
       error_cb_(error_cb),
-      client_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      process_thread_("LibYUVImageProcessorThread"),
-      weak_this_factory_(this) {
-  weak_this_ = weak_this_factory_.GetWeakPtr();
-}
+      process_thread_("LibYUVImageProcessorThread") {}
 
 LibYUVImageProcessor::~LibYUVImageProcessor() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
   Reset();
 
-  weak_this_factory_.InvalidateWeakPtrs();
   process_thread_.Stop();
 }
 
@@ -94,7 +88,7 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
   auto processor = base::WrapUnique(new LibYUVImageProcessor(
       input_config.layout, input_config.visible_size, input_storage_type,
       output_config.layout, output_config.visible_size, output_storage_type,
-      output_mode, std::move(error_cb)));
+      output_mode, media::BindToCurrentLoop(std::move(error_cb))));
   if (!processor->process_thread_.Start()) {
     VLOGF(1) << "Failed to start processing thread";
     return nullptr;
@@ -106,21 +100,22 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
 }
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
-bool LibYUVImageProcessor::Process(
+bool LibYUVImageProcessor::ProcessInternal(
     scoped_refptr<VideoFrame> frame,
     int output_buffer_index,
     std::vector<base::ScopedFD> output_dmabuf_fds,
     FrameReadyCB cb) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
   NOTIMPLEMENTED();
   return false;
 }
 #endif
 
-bool LibYUVImageProcessor::Process(scoped_refptr<VideoFrame> input_frame,
-                                   scoped_refptr<VideoFrame> output_frame,
-                                   FrameReadyCB cb) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+bool LibYUVImageProcessor::ProcessInternal(
+    scoped_refptr<VideoFrame> input_frame,
+    scoped_refptr<VideoFrame> output_frame,
+    FrameReadyCB cb) {
+  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
   DVLOGF(4);
   DCHECK_EQ(input_frame->layout().format(), input_layout_.format());
   DCHECK(input_frame->layout().coded_size() == input_layout_.coded_size());
@@ -144,6 +139,7 @@ void LibYUVImageProcessor::ProcessTask(scoped_refptr<VideoFrame> input_frame,
                                        FrameReadyCB cb) {
   DCHECK(process_thread_.task_runner()->BelongsToCurrentThread());
   DVLOGF(4);
+
   int result = libyuv::I420ToNV12(input_frame->data(VideoFrame::kYPlane),
                                   input_frame->stride(VideoFrame::kYPlane),
                                   input_frame->data(VideoFrame::kUPlane),
@@ -161,19 +157,11 @@ void LibYUVImageProcessor::ProcessTask(scoped_refptr<VideoFrame> input_frame,
     NotifyError();
     return;
   }
-  client_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&LibYUVImageProcessor::FrameReady, weak_this_,
-                                std::move(cb), std::move(output_frame)));
-}
-
-void LibYUVImageProcessor::FrameReady(FrameReadyCB cb,
-                                      scoped_refptr<VideoFrame> frame) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  std::move(cb).Run(std::move(frame));
+  std::move(cb).Run(std::move(output_frame));
 }
 
 bool LibYUVImageProcessor::Reset() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
 
   process_task_tracker_.TryCancelAll();
   return true;
@@ -181,15 +169,6 @@ bool LibYUVImageProcessor::Reset() {
 
 void LibYUVImageProcessor::NotifyError() {
   VLOGF(1);
-  DCHECK(!client_task_runner_->BelongsToCurrentThread());
-  client_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&LibYUVImageProcessor::NotifyErrorOnClientThread,
-                     weak_this_));
-}
-
-void LibYUVImageProcessor::NotifyErrorOnClientThread() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   error_cb_.Run();
 }
 

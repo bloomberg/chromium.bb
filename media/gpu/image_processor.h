@@ -26,8 +26,14 @@ namespace media {
 //
 // This class exposes the interface that an image processor should implement.
 // The threading model of ImageProcessor:
-// Process(), Reset(), and callbacks: FrameReadyCB, ErrorCB, should be run in
-// the same thread that creates ImageProcessor.
+// There are two threads, "client thread" and "processor thread".
+// "client thread" is the thread that creates the ImageProcessor.
+// Process(), Reset() and callbacks (i.e. FrameReadyCB and ErrorCB) must be run
+// on client thread.
+// ImageProcessor should have its owned thread, "processor thread", so that
+// Process() doesn't block client thread. The callbacks can be called on
+// processor thread. ImageProcessor's client must guarantee the callback finally
+// posts them to and run on the thread that creates ImageProcessor.
 class MEDIA_GPU_EXPORT ImageProcessor {
  public:
   // OutputMode is used as intermediate stage. The ultimate goal is to make
@@ -54,20 +60,16 @@ class MEDIA_GPU_EXPORT ImageProcessor {
   };
 
   // Callback to be used to return a processed image to the client.
-  // FrameReadyCB shall be executed on the thread that creates ImageProcessor.
-  // ImageProcessor has to bind its weak pointer to the task to execute
-  // FrameReadyCB so that the task will not be called after ImageProcessor
-  // instance is destructed. Note that ImageProcessor client instance should
-  // have the same lifetime of or outlive ImageProcessor.
+  // FrameReadyCB is guaranteed to be executed on the "client thread".
+  // Process() is responsible for making sure this invariant is
+  // respected by using media::BindToCurrentLoop().
   using FrameReadyCB = base::OnceCallback<void(scoped_refptr<VideoFrame>)>;
 
   // Callback to be used to notify client when ImageProcess encounters error.
-  // It should be assigned in subclass's factory method.
-  // ErrorCB shall be executed on the thread that creates ImageProcessor.
-  // ImageProcessor has to bind its weak pointer to the task to execute ErrorCB
-  // so that the task will not be called after ImageProcessor instance is
-  // destructed. Note that ImageProcessor client instance should have the same
-  // lifetime of or outlive ImageProcessor.
+  // It should be assigned in subclass' factory method. ErrorCB is guaranteed to
+  // be executed on the "client thread". Implementations are responsible for
+  // making sure this invariant is respected, by using
+  // media::BindToCurrentLoop() where appropriate.
   using ErrorCB = base::RepeatingClosure;
 
   virtual ~ImageProcessor() = default;
@@ -101,31 +103,33 @@ class MEDIA_GPU_EXPORT ImageProcessor {
   // should pass non-empty |output_dmabuf_fds| and the processed frame will be
   // stored in those buffers. If the number of |output_dmabuf_fds| is not
   // expected, this function will return false.
-  // Process() must be called on the same thread that creates ImageProcessor.
+  // Process() must be called on "client thread". This should not be blocking
+  // function.
   //
   // Note: because base::ScopedFD is defined under OS_POXIS or OS_FUCHSIA, we
   // define this function under the same build config. It doesn't affect its
   // current users as they are all under the same build config.
   // TODO(crbug.com/907767): Remove this once ImageProcessor always works as
   // IMPORT mode for output.
-  virtual bool Process(scoped_refptr<VideoFrame> frame,
-                       int output_buffer_index,
-                       std::vector<base::ScopedFD> output_dmabuf_fds,
-                       FrameReadyCB cb) = 0;
+  bool Process(scoped_refptr<VideoFrame> frame,
+               int output_buffer_index,
+               std::vector<base::ScopedFD> output_dmabuf_fds,
+               FrameReadyCB cb);
 #endif
 
   // Called by client to process |input_frame| and store in |output_frame|. This
   // can only be used when output mode is IMPORT. The processor will drop all
   // its references to |input_frame| and |output_frame| after it finishes
   // accessing it.
-  // Process() must be called on the same thread that creates ImageProcessor.
-  virtual bool Process(scoped_refptr<VideoFrame> input_frame,
-                       scoped_refptr<VideoFrame> output_frame,
-                       FrameReadyCB cb) = 0;
+  // Process() must be called on "client thread". This should not be blocking
+  // function.
+  bool Process(scoped_refptr<VideoFrame> input_frame,
+               scoped_refptr<VideoFrame> output_frame,
+               FrameReadyCB cb);
 
   // Reset all processing frames. After this method returns, no more callbacks
   // will be invoked. ImageProcessor is ready to process more frames.
-  // Reset() must be called on the same thread that creates ImageProcessor.
+  // Reset() must be called on "client thread".
   virtual bool Reset() = 0;
 
  protected:
@@ -145,6 +149,21 @@ class MEDIA_GPU_EXPORT ImageProcessor {
   const VideoFrameLayout output_layout_;
   const VideoFrame::StorageType output_storage_type_;
   const OutputMode output_mode_;
+
+ private:
+  // Each ImageProcessor shall implement ProcessInternal() as Process().
+  // ProcessInternal() is called inside of Process() with
+  // media::BindToCurrentLoop() on |cb| to guarantee |cb| will be executed on
+  // "client thread".
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+  virtual bool ProcessInternal(scoped_refptr<VideoFrame> frame,
+                               int output_buffer_index,
+                               std::vector<base::ScopedFD> output_dmabuf_fds,
+                               FrameReadyCB cb) = 0;
+#endif
+  virtual bool ProcessInternal(scoped_refptr<VideoFrame> input_frame,
+                               scoped_refptr<VideoFrame> output_frame,
+                               FrameReadyCB cb) = 0;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ImageProcessor);
 };

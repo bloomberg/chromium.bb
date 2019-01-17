@@ -4,6 +4,8 @@
 
 #include "media/gpu/image_processor.h"
 
+#include "media/base/bind_to_current_loop.h"
+
 namespace media {
 
 ImageProcessor::PortConfig::PortConfig(
@@ -26,5 +28,23 @@ ImageProcessor::ImageProcessor(const VideoFrameLayout& input_layout,
       output_layout_(output_layout),
       output_storage_type_(output_storage_type),
       output_mode_(output_mode) {}
+
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+bool ImageProcessor::Process(scoped_refptr<VideoFrame> frame,
+                             int output_buffer_index,
+                             std::vector<base::ScopedFD> output_dmabuf_fds,
+                             FrameReadyCB cb) {
+  return ProcessInternal(std::move(frame), output_buffer_index,
+                         std::move(output_dmabuf_fds),
+                         BindToCurrentLoop(std::move(cb)));
+}
+#endif
+
+bool ImageProcessor::Process(scoped_refptr<VideoFrame> input_frame,
+                             scoped_refptr<VideoFrame> output_frame,
+                             FrameReadyCB cb) {
+  return ProcessInternal(std::move(input_frame), std::move(output_frame),
+                         BindToCurrentLoop(std::move(cb)));
+}
 
 }  // namespace media

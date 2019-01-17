@@ -15,8 +15,7 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/base/video_types.h"
 #include "media/gpu/macros.h"
@@ -83,7 +82,6 @@ V4L2ImageProcessor::V4L2ImageProcessor(
       input_memory_type_(input_memory_type),
       output_visible_size_(output_visible_size),
       output_memory_type_(output_memory_type),
-      client_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       device_(device),
       device_thread_("V4L2ImageProcessorThread"),
       device_poll_thread_("V4L2ImageProcessorDevicePollThread"),
@@ -92,13 +90,10 @@ V4L2ImageProcessor::V4L2ImageProcessor(
       output_streamon_(false),
       output_buffer_queued_count_(0),
       num_buffers_(num_buffers),
-      error_cb_(error_cb),
-      weak_this_factory_(this) {
-  weak_this_ = weak_this_factory_.GetWeakPtr();
-}
+      error_cb_(error_cb) {}
 
 V4L2ImageProcessor::~V4L2ImageProcessor() {
-  DCHECK(client_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
 
   Destroy();
 
@@ -111,14 +106,6 @@ V4L2ImageProcessor::~V4L2ImageProcessor() {
 
 void V4L2ImageProcessor::NotifyError() {
   VLOGF(1);
-  DCHECK(!client_task_runner_->BelongsToCurrentThread());
-  client_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2ImageProcessor::NotifyErrorOnClientThread,
-                                weak_this_));
-}
-
-void V4L2ImageProcessor::NotifyErrorOnClientThread() {
-  DCHECK(client_task_runner_->BelongsToCurrentThread());
   error_cb_.Run();
 }
 
@@ -289,7 +276,7 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
       input_memory_type, output_memory_type, output_mode,
       *negotiated_input_layout, *negotiated_output_layout,
       input_config.visible_size, output_config.visible_size, num_buffers,
-      std::move(error_cb)));
+      media::BindToCurrentLoop(std::move(error_cb))));
   if (!processor->Initialize()) {
     VLOGF(1) << "Failed to initialize V4L2ImageProcessor";
     return nullptr;
@@ -387,10 +374,11 @@ bool V4L2ImageProcessor::TryOutputFormat(uint32_t input_pixelformat,
   return true;
 }
 
-bool V4L2ImageProcessor::Process(scoped_refptr<VideoFrame> frame,
-                                 int output_buffer_index,
-                                 std::vector<base::ScopedFD> output_dmabuf_fds,
-                                 FrameReadyCB cb) {
+bool V4L2ImageProcessor::ProcessInternal(
+    scoped_refptr<VideoFrame> frame,
+    int output_buffer_index,
+    std::vector<base::ScopedFD> output_dmabuf_fds,
+    FrameReadyCB cb) {
   DVLOGF(4) << "ts=" << frame->timestamp().InMilliseconds();
 
   switch (output_memory_type_) {
@@ -440,9 +428,9 @@ bool V4L2ImageProcessor::Process(scoped_refptr<VideoFrame> frame,
   return true;
 }
 
-bool V4L2ImageProcessor::Process(scoped_refptr<VideoFrame> input_frame,
-                                 scoped_refptr<VideoFrame> output_frame,
-                                 FrameReadyCB cb) {
+bool V4L2ImageProcessor::ProcessInternal(scoped_refptr<VideoFrame> input_frame,
+                                         scoped_refptr<VideoFrame> output_frame,
+                                         FrameReadyCB cb) {
   NOTIMPLEMENTED();
   return false;
 }
@@ -459,7 +447,7 @@ void V4L2ImageProcessor::ProcessTask(std::unique_ptr<JobRecord> job_record) {
 
 bool V4L2ImageProcessor::Reset() {
   VLOGF(2);
-  DCHECK(client_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
   DCHECK(device_thread_.IsRunning());
 
   process_task_tracker_.TryCancelAll();
@@ -468,12 +456,12 @@ bool V4L2ImageProcessor::Reset() {
 
 void V4L2ImageProcessor::Destroy() {
   VLOGF(2);
-  DCHECK(client_task_runner_->BelongsToCurrentThread());
-
+  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
 
   // If the device thread is running, destroy using posted task.
   if (device_thread_.IsRunning()) {
     process_task_tracker_.TryCancelAll();
+
     device_thread_.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&V4L2ImageProcessor::StopDevicePoll,
                                   base::Unretained(this)));
@@ -487,7 +475,8 @@ void V4L2ImageProcessor::Destroy() {
 
 bool V4L2ImageProcessor::CreateInputBuffers() {
   VLOGF(2);
-  DCHECK(client_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
+
   DCHECK(!input_streamon_);
 
   struct v4l2_control control;
@@ -554,7 +543,7 @@ bool V4L2ImageProcessor::CreateInputBuffers() {
 
 bool V4L2ImageProcessor::CreateOutputBuffers() {
   VLOGF(2);
-  DCHECK(client_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
   DCHECK(!output_streamon_);
 
   struct v4l2_rect visible_rect;
@@ -611,7 +600,7 @@ bool V4L2ImageProcessor::CreateOutputBuffers() {
 
 void V4L2ImageProcessor::DestroyInputBuffers() {
   VLOGF(2);
-  DCHECK(client_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
   DCHECK(!input_streamon_);
 
   struct v4l2_requestbuffers reqbufs;
@@ -627,7 +616,7 @@ void V4L2ImageProcessor::DestroyInputBuffers() {
 
 void V4L2ImageProcessor::DestroyOutputBuffers() {
   VLOGF(2);
-  DCHECK(client_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
   DCHECK(!output_streamon_);
 
   output_buffer_map_.clear();
@@ -803,10 +792,7 @@ void V4L2ImageProcessor::Dequeue() {
 
     DVLOGF(4) << "Processing finished, returning frame, index=" << dqbuf.index;
 
-    client_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&V4L2ImageProcessor::FrameReady, weak_this_,
-                                  std::move(job_record->ready_cb),
-                                  job_record->output_frame));
+    std::move(job_record->ready_cb).Run(std::move(job_record->output_frame));
   }
 }
 
@@ -977,12 +963,6 @@ void V4L2ImageProcessor::StopDevicePoll() {
   for (auto& output_buffer : output_buffer_map_)
     output_buffer.at_device = false;
   output_buffer_queued_count_ = 0;
-}
-
-void V4L2ImageProcessor::FrameReady(FrameReadyCB cb,
-                                    scoped_refptr<VideoFrame> frame) {
-  DCHECK(client_task_runner_->BelongsToCurrentThread());
-  std::move(cb).Run(frame);
 }
 
 }  // namespace media

@@ -238,8 +238,10 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
         {ImageProcessor::OutputMode::ALLOCATE,
          ImageProcessor::OutputMode::IMPORT},
         kImageProcBufferCount,
+        // We have to bind |weak_this| for ImageProcessorError, because child
+        // thread is outlive this V4L2VideoEncodeAccelerator.
         base::BindRepeating(&V4L2VideoEncodeAccelerator::ImageProcessorError,
-                            base::Unretained(this)));
+                            weak_this_));
     if (!image_processor_) {
       VLOGF(1) << "Failed initializing image processor";
       return false;
@@ -355,6 +357,7 @@ bool V4L2VideoEncodeAccelerator::InitInputMemoryType(const Config& config) {
 }
 
 void V4L2VideoEncodeAccelerator::ImageProcessorError() {
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
   VLOGF(1) << "Image processor error";
   NOTIFY_ERROR(kPlatformFailureError);
 }
@@ -381,23 +384,23 @@ void V4L2VideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
         auto output_frame = VideoFrame::WrapVideoFrame(
             buf, buf->format(), buf->visible_rect(), buf->natural_size());
 
-        // Unretained(this) is safe in creating FrameReadyCB because
-        // V4L2VideoEncodeAccelerator instance outlives |image_processor_| and
-        // ImageProcessor invalidates posted FrameReadyCB when its Reset() or
-        // destructor is called.
+        // We have to bind |weak_this| for FrameProcessed, because child
+        // thread is outlive this V4L2VideoEncodeAccelerator.
         if (!image_processor_->Process(
                 frame, std::move(output_frame),
                 base::BindOnce(&V4L2VideoEncodeAccelerator::FrameProcessed,
-                               base::Unretained(this), force_keyframe,
-                               frame->timestamp(), output_buffer_index))) {
+                               weak_this_, force_keyframe, frame->timestamp(),
+                               output_buffer_index))) {
           NOTIFY_ERROR(kPlatformFailureError);
         }
       } else {
+        // We have to bind |weak_this| for FrameProcessed, because child
+        // thread is outlive this V4L2VideoEncodeAccelerator.
         if (!image_processor_->Process(
                 frame, output_buffer_index, std::vector<base::ScopedFD>(),
                 base::BindOnce(&V4L2VideoEncodeAccelerator::FrameProcessed,
-                               base::Unretained(this), force_keyframe,
-                               frame->timestamp(), output_buffer_index))) {
+                               weak_this_, force_keyframe, frame->timestamp(),
+                               output_buffer_index))) {
           NOTIFY_ERROR(kPlatformFailureError);
         }
       }
@@ -531,6 +534,8 @@ void V4L2VideoEncodeAccelerator::FrameProcessed(
   DVLOGF(4) << "force_keyframe=" << force_keyframe
             << ", output_buffer_index=" << output_buffer_index;
   DCHECK_GE(output_buffer_index, 0);
+  DCHECK(encoder_thread_.IsRunning());
+  DCHECK(!weak_this_.WasInvalidated());
 
   frame->AddDestructionObserver(BindToCurrentLoop(
       base::Bind(&V4L2VideoEncodeAccelerator::ReuseImageProcessorOutputBuffer,

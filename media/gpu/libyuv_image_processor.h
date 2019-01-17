@@ -5,13 +5,13 @@
 #ifndef MEDIA_GPU_LIBYUV_IMAGE_PROCESSOR_H_
 #define MEDIA_GPU_LIBYUV_IMAGE_PROCESSOR_H_
 
+#include <atomic>
 #include <memory>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
@@ -24,10 +24,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
 namespace media {
 
 // A software image processor which uses libyuv to perform format conversion.
@@ -37,15 +33,6 @@ class MEDIA_GPU_EXPORT LibYUVImageProcessor : public ImageProcessor {
  public:
   // ImageProcessor override
   ~LibYUVImageProcessor() override;
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
-  bool Process(scoped_refptr<VideoFrame> frame,
-               int output_buffer_index,
-               std::vector<base::ScopedFD> output_dmabuf_fds,
-               FrameReadyCB cb) override;
-#endif
-  bool Process(scoped_refptr<VideoFrame> input_frame,
-               scoped_refptr<VideoFrame> output_frame,
-               FrameReadyCB cb) override;
   bool Reset() override;
 
   // Factory method to create LibYUVImageProcessor to convert video format
@@ -69,18 +56,22 @@ class MEDIA_GPU_EXPORT LibYUVImageProcessor : public ImageProcessor {
                        OutputMode output_mode,
                        ErrorCB error_cb);
 
+  // ImageProcessor override
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+  bool ProcessInternal(scoped_refptr<VideoFrame> frame,
+                       int output_buffer_index,
+                       std::vector<base::ScopedFD> output_dmabuf_fds,
+                       FrameReadyCB cb) override;
+#endif
+  bool ProcessInternal(scoped_refptr<VideoFrame> input_frame,
+                       scoped_refptr<VideoFrame> output_frame,
+                       FrameReadyCB cb) override;
+
   void ProcessTask(scoped_refptr<VideoFrame> input_frame,
                    scoped_refptr<VideoFrame> output_frame,
                    FrameReadyCB cb);
 
-  // A processed frame is ready.
-  void FrameReady(FrameReadyCB cb, scoped_refptr<VideoFrame> frame);
-
-  // Posts error on |client_task_runner_| thread. This must be called in a
-  // thread |client_task_runner_| doesn't belong to.
   void NotifyError();
-  // Invokes |error_cb_|. This must be called in |client_task_runner_|'s thread.
-  void NotifyErrorOnClientThread();
 
   static bool IsFormatSupported(VideoPixelFormat input_format,
                                 VideoPixelFormat output_format);
@@ -90,9 +81,6 @@ class MEDIA_GPU_EXPORT LibYUVImageProcessor : public ImageProcessor {
 
   // Error callback to the client.
   ErrorCB error_cb_;
-
-  // A task runner belongs to a thread where LibYUVImageProcessor is created.
-  const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner_;
 
   // Thread to process frame format conversion.
   base::Thread process_thread_;
@@ -104,23 +92,8 @@ class MEDIA_GPU_EXPORT LibYUVImageProcessor : public ImageProcessor {
   // binding. CancelableTaskTracker is designed to deal with this scenario.
   base::CancelableTaskTracker process_task_tracker_;
 
-  // Checker for the thread |client_task_runner_| belongs to.
-  THREAD_CHECKER(thread_checker_);
-
-  // Emits weak pointer to |this| for tasks from |processor_thread_| to the
-  // thread that creates LibYUVImageProcessor. So the tasks are cancelled if
-  // |this| is invalidated, which leads to avoid calling FrameReadyCB and
-  // ErrorCB of the invalidated client (e.g. V4L2VideoEncodeAccelerator).
-  // On the other hand, since |process_thread_| is the member of this class, it
-  // is guaranteed this instance is alive when a task on the thread is executed.
-  // Therefore, base::Unretained(this) is safe for |processor_thread_| tasks
-  // posted from |client_task_runner_|'s thread.
-  // NOTE: |weak_this_| must always be dereferenced and invalidated on the
-  // thread that creates LibYUVImageProcessor.
-  base::WeakPtr<LibYUVImageProcessor> weak_this_;
-
-  // The WeakPtrFactory for |weak_this_|.
-  base::WeakPtrFactory<LibYUVImageProcessor> weak_this_factory_;
+  // Checker for the thread that creates this LibYUVImageProcessor.
+  THREAD_CHECKER(client_thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(LibYUVImageProcessor);
 };
