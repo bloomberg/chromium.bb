@@ -158,7 +158,14 @@ void InterceptedRequest::Restart() {
   std::unique_ptr<AwContentsIoThreadClient> io_thread_client =
       GetIoThreadClient();
   DCHECK(io_thread_client);
-  request_.load_flags = GetCacheModeForClient(io_thread_client.get());
+
+  if (ShouldBlockURL(request_.url, io_thread_client.get())) {
+    OnRequestError(network::URLLoaderCompletionStatus(net::ERR_ACCESS_DENIED));
+    return;
+  }
+
+  request_.load_flags =
+      UpdateLoadFlags(request_.load_flags, io_thread_client.get());
 
   // TODO: verify the case when WebContents::RenderFrameDeleted is called
   // before network request is intercepted (i.e. if that's possible and

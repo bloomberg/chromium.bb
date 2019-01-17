@@ -47,18 +47,6 @@ base::LazyInstance<android_webview::AwResourceDispatcherHostDelegate>::
     DestructorAtExit g_webview_resource_dispatcher_host_delegate =
         LAZY_INSTANCE_INITIALIZER;
 
-void SetCacheControlFlag(
-    net::URLRequest* request, int flag) {
-  const int all_cache_control_flags =
-      net::LOAD_BYPASS_CACHE | net::LOAD_VALIDATE_CACHE |
-      net::LOAD_SKIP_CACHE_VALIDATION | net::LOAD_ONLY_FROM_CACHE;
-  DCHECK_EQ((flag & all_cache_control_flags), flag);
-  int load_flags = request->load_flags();
-  load_flags &= ~all_cache_control_flags;
-  load_flags |= flag;
-  request->SetLoadFlags(load_flags);
-}
-
 // Called when ResourceDispathcerHost detects a download request.
 // The download is already cancelled when this is called, since
 // relevant for DownloadListener is already extracted.
@@ -230,31 +218,11 @@ bool IoThreadClientThrottle::ShouldBlockRequest() {
   if (!io_client)
     return false;
 
-  // Part of implementation of WebSettings.allowContentAccess.
-  if (request_->url().SchemeIs(url::kContentScheme) &&
-      io_client->ShouldBlockContentUrls()) {
+  if (ShouldBlockURL(request_->url(), io_client.get()))
     return true;
-  }
 
-  // Part of implementation of WebSettings.allowFileAccess.
-  if (request_->url().SchemeIsFile() &&
-      io_client->ShouldBlockFileUrls()) {
-    // Application's assets and resources are always available.
-    return !IsAndroidSpecialFileUrl(request_->url());
-  }
-
-  if (io_client->ShouldBlockNetworkLoads()) {
-    if (request_->url().SchemeIs(url::kFtpScheme)) {
-      return true;
-    }
-    SetCacheControlFlag(
-        request_, net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION);
-  } else {
-    int cache_mode = GetCacheModeForClient(io_client.get());
-    if (cache_mode) {
-      SetCacheControlFlag(request_, cache_mode);
-    }
-  }
+  request_->SetLoadFlags(
+      UpdateLoadFlags(request_->load_flags(), io_client.get()));
   return false;
 }
 
