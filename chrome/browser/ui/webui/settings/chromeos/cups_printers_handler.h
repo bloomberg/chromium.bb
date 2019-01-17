@@ -78,6 +78,12 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
                                    const std::string& make_and_model,
                                    bool ipp_everywhere);
 
+  // Callback for PPD matching attempts;
+  void OnPpdResolved(const std::string& callback_id,
+                     base::Value info,
+                     PpdProvider::CallbackResultCode res,
+                     const Printer::PpdReference& ppd_ref);
+
   void HandleAddCupsPrinter(const base::ListValue* args);
 
   // Handles the result of adding a printer which the user specified the

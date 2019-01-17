@@ -297,6 +297,11 @@ suite('CupsAddPrinterDialogTests', function() {
       printerMakeAndModel: '',
       printerName: 'Test Printer',
       printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
       printerProtocol: 'ipps',
       printerQueue: 'moreinfohere',
       printerStatus: '',
@@ -363,6 +368,11 @@ suite('CupsAddPrinterDialogTests', function() {
       printerMakeAndModel: '',
       printerName: 'printer',
       printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
       printerProtocol: 'usb',
       printerQueue: 'moreinfohere',
       printerStatus: '',

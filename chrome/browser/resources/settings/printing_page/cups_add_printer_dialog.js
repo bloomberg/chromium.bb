@@ -42,7 +42,6 @@ function getEmptyPrinter_() {
     ppdManufacturer: '',
     ppdModel: '',
     printerAddress: '',
-    printerAutoconf: false,
     printerDescription: '',
     printerId: '',
     printerManufacturer: '',
@@ -50,6 +49,12 @@ function getEmptyPrinter_() {
     printerMakeAndModel: '',
     printerName: '',
     printerPPDPath: '',
+    printerPpdReference: {
+      userSuppliedPpdUrl: '',
+      effectiveMakeAndModel: '',
+      autoconf: false,
+    },
+    printerPpdReferenceResolved: false,
     printerProtocol: 'ipp',
     printerQueue: '',
     printerStatus: '',
@@ -374,14 +379,19 @@ Polymer({
    * @private
    * */
   onPrinterFound_: function(info) {
-    this.newPrinter.printerAutoconf = info.autoconf;
     this.newPrinter.printerManufacturer = info.manufacturer;
     this.newPrinter.printerModel = info.model;
     this.newPrinter.printerMakeAndModel = info.makeAndModel;
+    this.newPrinter.printerPpdReference.userSuppliedPpdUrl =
+        info.ppdRefUserSuppliedPpdUrl;
+    this.newPrinter.printerPpdReference.effectiveMakeAndModel =
+        info.ppdRefEffectiveMakeAndModel;
+    this.newPrinter.printerPpdReference.autoconf = info.autoconf;
+    this.newPrinter.printerPpdReferenceResolved = info.ppdReferenceResolved;
 
     // Add the printer if it's configurable. Otherwise, forward to the
     // manufacturer dialog.
-    if (this.newPrinter.printerAutoconf) {
+    if (this.newPrinter.printerPpdReferenceResolved) {
       this.addPrinter_();
     } else {
       this.switchToManufacturerDialog_();
