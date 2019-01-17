@@ -1372,8 +1372,14 @@ TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
   p->RemoveIsolatedOriginForTesting(baz_http);
 }
 
+// Fails on Fuchsia x64. crbug.com/922732
+#if defined(OS_FUCHSIA)
+#define MAYBE_DynamicIsolatedOrigins DISABLED_DynamicIsolatedOrigins
+#else
+#define MAYBE_DynamicIsolatedOrigins DynamicIsolatedOrigins
+#endif
 // Verifies that isolated origins only apply to future BrowsingInstances.
-TEST_F(ChildProcessSecurityPolicyTest, DynamicIsolatedOrigins) {
+TEST_F(ChildProcessSecurityPolicyTest, MAYBE_DynamicIsolatedOrigins) {
   url::Origin foo = url::Origin::Create(GURL("https://foo.com/"));
   url::Origin bar = url::Origin::Create(GURL("https://bar.com/"));
   url::Origin baz = url::Origin::Create(GURL("https://baz.com/"));
