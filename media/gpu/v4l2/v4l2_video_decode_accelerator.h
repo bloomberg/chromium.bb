@@ -22,6 +22,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "media/base/limits.h"
 #include "media/base/video_decoder_config.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
@@ -91,7 +92,8 @@ class H264Parser;
 //   buffrers. We cannot drop any frame during resolution change. So V4L2VDA
 //   should destroy output buffers after image processor returns all the frames.
 class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
-    : public VideoDecodeAccelerator {
+    : public VideoDecodeAccelerator,
+      public base::trace_event::MemoryDumpProvider {
  public:
   V4L2VideoDecodeAccelerator(
       EGLDisplay egl_display,
@@ -121,6 +123,10 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
       override;
 
   static VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles();
+
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
  private:
   // These are rather subjectively tuned.
@@ -483,8 +489,11 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Got a reset request while we were performing resolution change or waiting
   // picture buffers.
   bool reset_pending_;
-  // Input queue for decoder_thread_: BitstreamBuffers in.
-  base::queue<std::unique_ptr<BitstreamBufferRef>> decoder_input_queue_;
+  // Input queue for decoder_thread_: BitstreamBuffers in. Although the elements
+  // in |decoder_input_queue_| is push()/pop() in queue order, this needs to be
+  // base::circular_deque because we need to do random access in OnMemoryDump().
+  base::circular_deque<std::unique_ptr<BitstreamBufferRef>>
+      decoder_input_queue_;
   // For H264 decode, hardware requires that we send it frame-sized chunks.
   // We'll need to parse the stream.
   std::unique_ptr<H264Parser> decoder_h264_parser_;
