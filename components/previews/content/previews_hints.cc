@@ -4,20 +4,17 @@
 
 #include "components/previews/content/previews_hints.h"
 
-#include <array>
-#include <string>
+#include <unordered_set>
 
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/hints_component_util.h"
-#include "components/optimization_guide/url_pattern_with_wildcards.h"
 #include "components/previews/core/bloom_filter.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
@@ -40,7 +37,7 @@ const base::FilePath::CharType kSentinelFileName[] =
 // Returns false if the processing should not continue because the
 // file exists with the same version (indicating that processing that version
 // failed previously (possibly crash or shutdown). Should be run in the
-// background (e.g., same task as PreviewsHints::CreateFromHintsComponent()).
+// background (e.g., same task as PreviewsHints::Create()).
 bool CreateSentinelFile(const base::FilePath& sentinel_path,
                         const base::Version& version) {
   DCHECK(version.IsValid());
@@ -81,8 +78,9 @@ bool CreateSentinelFile(const base::FilePath& sentinel_path,
 // configuration is complete and should be done in the background (e.g.,
 // same task as Hints.CreateFromConfig).
 void DeleteSentinelFile(const base::FilePath& sentinel_path) {
-  if (!base::DeleteFile(sentinel_path, false /* recursive */))
+  if (!base::DeleteFile(sentinel_path, false /* recursive */)) {
     DLOG(ERROR) << "Error deleting sentinel file";
+  }
 }
 
 // Enumerates the possible outcomes of processing previews hints. Used in UMA
@@ -94,7 +92,8 @@ enum class PreviewsProcessHintsResult {
   kProcessedNoPreviewsHints = 0,
   kProcessedPreviewsHints = 1,
   kFailedFinishProcessing = 2,
-  kMaxValue = kFailedFinishProcessing
+  kSkippedProcessingPreviewsHints = 3,
+  kMaxValue = kSkippedProcessingPreviewsHints
 };
 
 // Enumerates status event of processing optimization filters (such as the
@@ -151,186 +150,55 @@ net::EffectiveConnectionType ConvertProtoEffectiveConnectionType(
   }
 }
 
-bool IsDisabledExperimentalOptimization(
-    const optimization_guide::proto::Optimization& optimization) {
-  // If this optimization has been marked with an experiment name, consider it
-  // disabled unless an experiment with that name is running. Experiment names
-  // are configured with the experiment_name parameter to the
-  // kOptimizationHintsExperiments feature.
-  //
-  // If kOptimizationHintsExperiments is disabled, getting the param value
-  // returns an empty string. Since experiment names are not allowed to be
-  // empty strings, all experiments will be disabled if the feature is
-  // disabled.
-  if (optimization.has_experiment_name() &&
-      !optimization.experiment_name().empty() &&
-      optimization.experiment_name() !=
-          base::GetFieldTrialParamValueByFeature(
-              features::kOptimizationHintsExperiments,
-              features::kOptimizationHintsExperimentNameParam)) {
-    return true;
-  }
-  return false;
-}
-
-// If |hint| contains page hints, then this function adds a pared down version
-// of the hint to |stripped_hints_with_page_hints|, removing all of the hint's
-// top-level optimizations and only retaining the first enabled optimization of
-// each preview type within each page hint.
-// |total_page_patterns_with_resource_loading_hints_received| and
-// |total_resource_loading_hints_received| have their totals updated as
-// resource loading hints are encountered.
-void MaybeAddHintToStrippedHintsToHintCacheData(
+void UpdateTotalsForHintsWithPageHints(
     const optimization_guide::proto::Hint& hint,
-    HintCache::Data* hint_cache_data,
     size_t* total_page_patterns_with_resource_loading_hints_received,
     size_t* total_resource_loading_hints_received) {
-  DCHECK(hint_cache_data);
+  DCHECK(!hint.page_hints().empty());
   DCHECK(total_page_patterns_with_resource_loading_hints_received);
   DCHECK(total_resource_loading_hints_received);
 
-  if (hint.page_hints().empty()) {
-    return;
-  }
-
-  if (previews::params::IsResourceLoadingHintsEnabled()) {
-    UMA_HISTOGRAM_COUNTS("ResourceLoadingHints.PageHints.ProcessedCount",
-                         hint.page_hints().size());
-  }
-
-  // |stripped_hint| is a copy of |hint| with top-level optimizations and
-  // disabled experimental optimizations within the page hints stripped out.
-  optimization_guide::proto::Hint stripped_hint;
-
   for (const auto& page_hint : hint.page_hints()) {
-    // Track the preview types encountered for |page_hint|. Only the first
-    // supported one will be kept for any one preview type.
-    std::array<bool, static_cast<int>(PreviewsType::LAST)>
-        encountered_preview_types;
-    encountered_preview_types.fill(false);
-
-    // Initially set the added page hint to nullptr. This will be set the first
-    // time an enabled optimization is encountered.
-    optimization_guide::proto::PageHint* added_page_hint = nullptr;
-
     for (const auto& optimization : page_hint.whitelisted_optimizations()) {
-      if (IsDisabledExperimentalOptimization(optimization)) {
-        continue;
-      }
-
       base::Optional<PreviewsType> previews_type =
           ConvertProtoOptimizationTypeToPreviewsType(
               optimization.optimization_type());
-
-      // Only add the first encountered optimization of a previews type.
-      if (!previews_type ||
-          encountered_preview_types[static_cast<int>(*previews_type)]) {
+      if (!previews_type) {
         continue;
       }
-      encountered_preview_types[static_cast<int>(*previews_type)] = true;
 
-      // If this is a resource loading hints optimization, then add it to the
-      // resource loading hints totals.
       if (previews_type == PreviewsType::RESOURCE_LOADING_HINTS) {
-        // Always skip over resource loading hints when they're disabled.
-        if (!previews::params::IsResourceLoadingHintsEnabled()) {
-          continue;
-        }
-
         (*total_page_patterns_with_resource_loading_hints_received)++;
         (*total_resource_loading_hints_received) +=
             optimization.resource_loading_hints_size();
-
-        // If the total page patterns with resource loading hints has reached
-        // the cap, then no additional resource loading hints optimizations can
-        // be added to page hints.
-        if (*total_page_patterns_with_resource_loading_hints_received >
-            previews::params::GetMaxPageHintsInMemoryThreshhold()) {
-          continue;
-        }
       } else {
         DCHECK_EQ(optimization.resource_loading_hints_size(), 0);
       }
-
-      // If this page hint hasn't been added to the stripped hint yet, then add
-      // it now and populate its non-whitelisted optimization fields.
-      if (!added_page_hint) {
-        added_page_hint = stripped_hint.add_page_hints();
-        added_page_hint->set_page_pattern(page_hint.page_pattern());
-        if (page_hint.has_max_ect_trigger()) {
-          added_page_hint->set_max_ect_trigger(page_hint.max_ect_trigger());
-        }
-      }
-      auto* added_optimization =
-          added_page_hint->add_whitelisted_optimizations();
-      *added_optimization = optimization;
     }
   }
-
-  if (stripped_hint.page_hints_size() > 0) {
-    stripped_hint.set_key_representation(hint.key_representation());
-    stripped_hint.set_key(hint.key());
-    hint_cache_data->AddHint(stripped_hint);
-  }
 }
 
-void RecordProcessHintsResult(PreviewsProcessHintsResult result) {
-  base::UmaHistogramEnumeration("Previews.ProcessHintsResult", result);
-}
-
-void RecordOptimizationFilterStatus(PreviewsType previews_type,
-                                    PreviewsOptimizationFilterStatus status) {
-  std::string histogram_name =
-      base::StringPrintf("Previews.OptimizationFilterStatus.%s",
-                         GetStringNameForType(previews_type).c_str());
-  base::UmaHistogramEnumeration(histogram_name, status);
-}
-
-}  // namespace
-
-PreviewsHints::PreviewsHints() {
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
-
-PreviewsHints::~PreviewsHints() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-// static
-std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
-    const optimization_guide::HintsComponentInfo& info) {
-  std::unique_ptr<optimization_guide::proto::Configuration> config =
-      ProcessHintsComponent(info);
-  if (!config) {
-    return nullptr;
+PreviewsProcessHintsResult ProcessConfigurationHints(
+    optimization_guide::proto::Configuration* config,
+    HintCacheStore::ComponentUpdateData* component_update_data) {
+  DCHECK(config);
+  // If there's no component update data, then there's nothing to do. This
+  // component is not newer than the one contained within the hint cache.
+  if (!component_update_data) {
+    return PreviewsProcessHintsResult::kSkippedProcessingPreviewsHints;
   }
 
-  base::FilePath sentinel_path(info.path.DirName().Append(kSentinelFileName));
-  if (!CreateSentinelFile(sentinel_path, info.version)) {
-    RecordProcessHintsResult(
-        PreviewsProcessHintsResult::kFailedFinishProcessing);
-    return nullptr;
-  }
+  std::unordered_set<std::string> seen_host_suffixes;
 
-  std::unique_ptr<PreviewsHints> hints = CreateFromHintsConfiguration(*config);
-
-  // Completed processing hints data without crashing so clear sentinel.
-  DeleteSentinelFile(sentinel_path);
-  return hints;
-}
-
-// static
-std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsConfiguration(
-    const optimization_guide::proto::Configuration& config) {
-  std::unique_ptr<PreviewsHints> hints(new PreviewsHints());
-  HintCache::Data hint_cache_data;
-
-  std::set<std::string> seen_host_suffixes;
-
+  size_t total_processed_hints_with_page_hints = 0;
   size_t total_page_patterns_with_resource_loading_hints_received = 0;
   size_t total_resource_loading_hints_received = 0;
-  // Process hint configuration.
-  for (const auto& hint : config.hints()) {
+
+  // Process each hint in the the hint configuration. The hints are mutable
+  // because once processing is completed on each individual hint, it is moved
+  // into the component update data. This eliminates the need to make any
+  // additional copies of the hints.
+  for (auto& hint : *(config->mutable_hints())) {
     // We only support host suffixes at the moment. Skip anything else.
     // One |hint| applies to one host URL suffix.
     if (hint.key_representation() != optimization_guide::proto::HOST_SUFFIX) {
@@ -353,14 +221,23 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsConfiguration(
     }
     seen_host_suffixes.insert(hint_key);
 
-    // If this hint contains page hints, then add a pared down version of the
-    // hint to the initial hints that are used to populate the hint cache,
-    // removing all of the hint's top-level optimizations and only retaining the
-    // first enabled optimization of each preview type within each page hint.
-    MaybeAddHintToStrippedHintsToHintCacheData(
-        hint, &hint_cache_data,
-        &total_page_patterns_with_resource_loading_hints_received,
-        &total_resource_loading_hints_received);
+    if (!hint.page_hints().empty()) {
+      ++total_processed_hints_with_page_hints;
+      UpdateTotalsForHintsWithPageHints(
+          hint, &total_page_patterns_with_resource_loading_hints_received,
+          &total_resource_loading_hints_received);
+
+      if (previews::params::IsResourceLoadingHintsEnabled()) {
+        UMA_HISTOGRAM_COUNTS("ResourceLoadingHints.PageHints.ProcessedCount",
+                             hint.page_hints().size());
+      }
+
+      // Now that processing is finished on |hint|, move it into the component
+      // data.
+      // WARNING: Do not use |hint| after this call. Its contents will no
+      // longer be valid.
+      component_update_data->MoveHintIntoUpdateData(std::move(hint));
+    }
   }
 
   if (previews::params::IsResourceLoadingHintsEnabled()) {
@@ -372,24 +249,103 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsConfiguration(
         total_resource_loading_hints_received);
   }
 
-  if (hint_cache_data.HasHints()) {
-    hints->hint_cache_ =
-        std::make_unique<HintCache>(std::move(hint_cache_data));
+  return total_processed_hints_with_page_hints > 0
+             ? PreviewsProcessHintsResult::kProcessedPreviewsHints
+             : PreviewsProcessHintsResult::kProcessedNoPreviewsHints;
+}
+
+void RecordProcessHintsResult(PreviewsProcessHintsResult result) {
+  base::UmaHistogramEnumeration("Previews.ProcessHintsResult", result);
+}
+
+void RecordOptimizationFilterStatus(PreviewsType previews_type,
+                                    PreviewsOptimizationFilterStatus status) {
+  std::string histogram_name =
+      base::StringPrintf("Previews.OptimizationFilterStatus.%s",
+                         GetStringNameForType(previews_type).c_str());
+  base::UmaHistogramEnumeration(histogram_name, status);
+}
+
+}  // namespace
+
+PreviewsHints::PreviewsHints(
+    std::unique_ptr<HintCacheStore::ComponentUpdateData> component_update_data)
+    : hint_cache_(nullptr),
+      component_update_data_(std::move(component_update_data)) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
+
+PreviewsHints::~PreviewsHints() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+// static
+std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
+    const optimization_guide::HintsComponentInfo& info,
+    std::unique_ptr<HintCacheStore::ComponentUpdateData>
+        component_update_data) {
+  std::unique_ptr<optimization_guide::proto::Configuration> config =
+      ProcessHintsComponent(info);
+  if (!config) {
+    return nullptr;
   }
 
-  // Extract any supported large scale blacklists from the configuration.
-  hints->ParseOptimizationFilters(config);
+  base::FilePath sentinel_path(info.path.DirName().Append(kSentinelFileName));
+  if (!CreateSentinelFile(sentinel_path, info.version)) {
+    RecordProcessHintsResult(
+        PreviewsProcessHintsResult::kFailedFinishProcessing);
+    return nullptr;
+  }
 
-  RecordProcessHintsResult(
-      !hints->hint_cache_
-          ? PreviewsProcessHintsResult::kProcessedNoPreviewsHints
-          : PreviewsProcessHintsResult::kProcessedPreviewsHints);
+  std::unique_ptr<PreviewsHints> hints = CreateFromHintsConfiguration(
+      std::move(config), std::move(component_update_data));
+
+  // Completed processing hints data without crashing so clear sentinel.
+  DeleteSentinelFile(sentinel_path);
   return hints;
+}
+
+// static
+std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsConfiguration(
+    std::unique_ptr<optimization_guide::proto::Configuration> config,
+    std::unique_ptr<HintCacheStore::ComponentUpdateData>
+        component_update_data) {
+  // Process the hints within the configuration. This will move the hints from
+  // |config| into |component_update_data|.
+  PreviewsProcessHintsResult process_hints_result =
+      ProcessConfigurationHints(config.get(), component_update_data.get());
+
+  // Construct the PrevewsHints object with |component_update_data|, which will
+  // later be used to update the HintCache's component data during Initialize().
+  std::unique_ptr<PreviewsHints> hints(
+      new PreviewsHints(std::move(component_update_data)));
+
+  // Extract any supported large scale blacklists from the configuration.
+  hints->ParseOptimizationFilters(*config);
+
+  // Now that processing is complete, record the result.
+  RecordProcessHintsResult(process_hints_result);
+
+  return hints;
+}
+
+void PreviewsHints::Initialize(HintCache* hint_cache,
+                               base::OnceClosure callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!hint_cache_);
+  DCHECK(hint_cache);
+  hint_cache_ = hint_cache;
+  if (component_update_data_) {
+    hint_cache_->UpdateComponentData(std::move(component_update_data_),
+                                     std::move(callback));
+  } else {
+    std::move(callback).Run();
+  }
 }
 
 void PreviewsHints::ParseOptimizationFilters(
     const optimization_guide::proto::Configuration& config) {
-  for (const auto blacklist : config.optimization_blacklists()) {
+  for (const auto& blacklist : config.optimization_blacklists()) {
     base::Optional<PreviewsType> previews_type =
         ConvertProtoOptimizationTypeToPreviewsType(
             blacklist.optimization_type());
@@ -407,7 +363,7 @@ void PreviewsHints::ParseOptimizationFilters(
                                        kFailedServerBlacklistDuplicateConfig);
         continue;
       }
-      auto bloom_filter_proto = blacklist.bloom_filter();
+      const auto& bloom_filter_proto = blacklist.bloom_filter();
       DCHECK_GT(bloom_filter_proto.num_hash_functions(), 0u);
       DCHECK_GT(bloom_filter_proto.num_bits(), 0u);
       DCHECK(bloom_filter_proto.has_data());
@@ -445,52 +401,34 @@ void PreviewsHints::ParseOptimizationFilters(
   }
 }
 
-// static
-const optimization_guide::proto::PageHint* PreviewsHints::FindPageHint(
-    const GURL& document_url,
-    const optimization_guide::proto::Hint& hint) {
-  if (hint.page_hints_size() == 0)
-    return nullptr;
-  std::string url = document_url.spec();
-  for (const auto& page_hint : hint.page_hints()) {
-    if (page_hint.page_pattern().empty())
-      continue;
-    optimization_guide::URLPatternWithWildcards url_pattern(
-        page_hint.page_pattern());
-    if (url_pattern.Matches(url)) {
-      // Return the first matching page hint.
-      return &page_hint;
-    }
-  }
-  return nullptr;
-}
-
 bool PreviewsHints::IsWhitelisted(
     const GURL& url,
     PreviewsType type,
     int* out_inflation_percent,
     net::EffectiveConnectionType* out_ect_threshold) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!hint_cache_) {
-    return false;
-  }
+  DCHECK(hint_cache_);
 
   if (!url.has_host()) {
     return false;
   }
 
+  if (type == previews::PreviewsType::RESOURCE_LOADING_HINTS &&
+      !previews::params::IsResourceLoadingHintsEnabled()) {
+    return false;
+  }
+
   // Now check HintCache for a loaded entry with a PageHint that matches |url|
   // that whitelists the optimization.
-  std::string host = url.host();
-  if (!hint_cache_->IsHintLoaded(host)) {
+  const optimization_guide::proto::Hint* hint =
+      hint_cache_->GetHintIfLoaded(url.host());
+  if (!hint) {
     // TODO(dougarnett): Add UMA histogram counts for both cases of HasHint().
     return false;
   }
 
-  const optimization_guide::proto::Hint* hint = hint_cache_->GetHint(host);
   const optimization_guide::proto::PageHint* matched_page_hint =
-      FindPageHint(url, *hint);
+      FindPageHintForURL(url, hint);
   if (!matched_page_hint) {
     return false;
   }
@@ -499,8 +437,9 @@ bool PreviewsHints::IsWhitelisted(
        matched_page_hint->whitelisted_optimizations()) {
     if (ConvertProtoOptimizationTypeToPreviewsType(
             optimization.optimization_type()) == type) {
-      // TODO(jegray): When persistence is added for hints, address handling of
-      // disabled experimental optimizations.
+      if (IsDisabledExperimentalOptimization(optimization)) {
+        continue;
+      }
       // Found whitelisted optimization.
       *out_inflation_percent = optimization.inflation_percent();
       if (matched_page_hint->has_max_ect_trigger()) {
@@ -529,8 +468,9 @@ bool PreviewsHints::IsBlacklisted(const GURL& url, PreviewsType type) const {
       return false;
     }
 
-    if (lite_page_redirect_blacklist_)
+    if (lite_page_redirect_blacklist_) {
       return lite_page_redirect_blacklist_->ContainsHostSuffix(url);
+    }
   }
 
   return false;
@@ -540,8 +480,9 @@ bool PreviewsHints::MaybeLoadOptimizationHints(
     const GURL& url,
     HintLoadedCallback callback) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(hint_cache_);
 
-  if (!hint_cache_ || !url.has_host()) {
+  if (!url.has_host()) {
     return false;
   }
 
@@ -553,26 +494,17 @@ bool PreviewsHints::GetResourceLoadingHints(
     const GURL& url,
     std::vector<std::string>* out_resource_patterns_to_block) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!hint_cache_) {
-    return false;
-  }
+  DCHECK(hint_cache_);
+  DCHECK(previews::params::IsResourceLoadingHintsEnabled());
 
   // First find matched page hint.
-
-  std::string host = url.host();
-  if (!hint_cache_->IsHintLoaded(host)) {
-    return false;
-  }
-  const optimization_guide::proto::Hint* hint = hint_cache_->GetHint(host);
   const optimization_guide::proto::PageHint* matched_page_hint =
-      FindPageHint(url, *hint);
+      FindPageHintForURL(url, hint_cache_->GetHintIfLoaded(url.host()));
   if (!matched_page_hint) {
     return false;
   }
 
   // Now populate the resource patterns.
-
   for (const auto& optimization :
        matched_page_hint->whitelisted_optimizations()) {
     if (optimization.optimization_type() !=
@@ -580,8 +512,10 @@ bool PreviewsHints::GetResourceLoadingHints(
       continue;
     }
 
-    // TODO(jegray): When persistence is added for hints, address handling of
-    // disabled experimental optimizations.
+    if (IsDisabledExperimentalOptimization(optimization)) {
+      continue;
+    }
+
     for (const auto& resource_loading_hint :
          optimization.resource_loading_hints()) {
       if (!resource_loading_hint.resource_pattern().empty() &&
@@ -600,9 +534,7 @@ bool PreviewsHints::GetResourceLoadingHints(
 void PreviewsHints::LogHintCacheMatch(const GURL& url,
                                       bool is_committed,
                                       net::EffectiveConnectionType ect) const {
-  if (!hint_cache_) {
-    return;
-  }
+  DCHECK(hint_cache_);
 
   if (hint_cache_->HasHint(url.host())) {
     if (!is_committed) {
@@ -613,13 +545,13 @@ void PreviewsHints::LogHintCacheMatch(const GURL& url,
       UMA_HISTOGRAM_ENUMERATION(
           "Previews.OptimizationGuide.HintCache.HasHint.AtCommit", ect,
           net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST);
-      if (hint_cache_->IsHintLoaded(url.host())) {
+      const optimization_guide::proto::Hint* hint =
+          hint_cache_->GetHintIfLoaded(url.host());
+      if (hint) {
         UMA_HISTOGRAM_ENUMERATION(
             "Previews.OptimizationGuide.HintCache.HostMatch.AtCommit", ect,
             net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST);
-        const optimization_guide::proto::Hint* hint =
-            hint_cache_->GetHint(url.host());
-        if (FindPageHint(url, *hint) != nullptr) {
+        if (FindPageHintForURL(url, hint)) {
           UMA_HISTOGRAM_ENUMERATION(
               "Previews.OptimizationGuide.HintCache.PageMatch.AtCommit", ect,
               net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST);

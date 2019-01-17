@@ -15,6 +15,8 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
@@ -133,8 +135,11 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
  public:
   TestPreviewsOptimizationGuide(
       optimization_guide::OptimizationGuideService* optimization_guide_service,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
-      : PreviewsOptimizationGuide(optimization_guide_service, ui_task_runner) {}
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
+      const base::FilePath& test_path)
+      : PreviewsOptimizationGuide(optimization_guide_service,
+                                  ui_task_runner,
+                                  test_path) {}
   ~TestPreviewsOptimizationGuide() override {}
 
   // PreviewsOptimizationGuide:
@@ -357,6 +362,8 @@ class PreviewsDeciderImplTest : public testing::Test {
     variations::testing::ClearAllVariationParams();
   }
 
+  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
+
   void TearDown() override { ui_service_.reset(); }
 
   void InitializeUIServiceWithoutWaitingForBlackList() {
@@ -375,7 +382,8 @@ class PreviewsDeciderImplTest : public testing::Test {
         std::move(previews_decider_impl), std::make_unique<TestOptOutStore>(),
         std::make_unique<TestPreviewsOptimizationGuide>(
             &optimization_guide_service_,
-            scoped_task_environment_.GetMainThreadTaskRunner()),
+            scoped_task_environment_.GetMainThreadTaskRunner(),
+            temp_dir_.GetPath()),
         base::BindRepeating(&IsPreviewFieldTrialEnabled),
         std::make_unique<PreviewsLogger>(), std::move(allowed_types),
         &network_quality_tracker_));
@@ -404,6 +412,7 @@ class PreviewsDeciderImplTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::ScopedTempDir temp_dir_;
   base::FieldTrialList field_trial_list_;
   TestPreviewsDeciderImpl* previews_decider_impl_;
   optimization_guide::OptimizationGuideService optimization_guide_service_;
@@ -821,19 +830,22 @@ TEST_F(PreviewsDeciderImplTest, NoScriptFeatureDefaultBehavior) {
 
   base::HistogramTester histogram_tester;
   PreviewsUserData user_data(kDefaultPageId);
+#if defined(OS_ANDROID)
+  // Enabled by default on Android. NOSCRIPT always allowed at navigation start
+  // to handle asynchronous loading of page hints; non-whitelisted ones are
+  // later blocked on commit.
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::NOSCRIPT));
+  histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 1);
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.NoScript",
+      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+#else   // !defined(OS_ANDROID)
+  // Disabled by default on non-Android.
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
       &user_data, GURL("https://www.google.com"), false,
       PreviewsType::NOSCRIPT));
-#if defined(OS_ANDROID)
-  // Enabled by default on Android but no server whitelist.
-  histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 1);
-  histogram_tester.ExpectUniqueSample(
-      "Previews.EligibilityReason.NoScript",
-      static_cast<int>(
-          PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
-      1);
-#else   // !defined(OS_ANDROID)
-  // Disabled by default on non-Android.
   histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 0);
 #endif  // defined(OS_ANDROID)
 }
@@ -875,25 +887,20 @@ TEST_F(PreviewsDeciderImplTest, NoScriptAllowedByFeatureWithWhitelist) {
   base::HistogramTester histogram_tester;
 
   PreviewsUserData user_data(kDefaultPageId);
-  // First verify no preview for non-whitelisted url.
-  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+  // First verify preview allowed for non-whitelisted url; they're always
+  // allowed at navigation start to enable asynchronous loading of page hints.
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
       &user_data, GURL("https://www.google.com"), false,
       PreviewsType::NOSCRIPT));
 
-  histogram_tester.ExpectUniqueSample(
-      "Previews.EligibilityReason.NoScript",
-      static_cast<int>(
-          PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
-      1);
-
-  // Now verify preview for whitelisted url.
+  // Now verify preview allowed for whitelisted url.
   EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
       &user_data, GURL("https://whitelisted.example.com"), false,
       PreviewsType::NOSCRIPT));
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.NoScript",
-      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 2);
 }
 
 TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
@@ -1558,7 +1565,6 @@ TEST_F(PreviewsDeciderImplTest,
   EXPECT_EQ(1UL, ui_service()->decision_passed_reasons().size());
   auto actual_passed_reasons = ui_service()->decision_passed_reasons()[0];
   EXPECT_EQ(checked_decisions.size(), actual_passed_reasons.size());
-  EXPECT_EQ(checked_decisions.size(), actual_passed_reasons.size());
   for (size_t i = 0; i < actual_passed_reasons.size(); i++) {
     EXPECT_EQ(checked_decisions[i], actual_passed_reasons[i]);
   }
@@ -1647,7 +1653,6 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeNetworkNotSlow) {
   EXPECT_EQ(1UL, ui_service()->decision_passed_reasons().size());
   auto actual_passed_reasons = ui_service()->decision_passed_reasons()[0];
   EXPECT_EQ(checked_decisions.size(), actual_passed_reasons.size());
-  EXPECT_EQ(checked_decisions.size(), actual_passed_reasons.size());
   for (size_t i = 0; i < actual_passed_reasons.size(); i++) {
     EXPECT_EQ(checked_decisions[i], actual_passed_reasons[i]);
   }
@@ -1691,7 +1696,6 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeReloadDisallowed) {
 
   EXPECT_EQ(1UL, ui_service()->decision_passed_reasons().size());
   auto actual_passed_reasons = ui_service()->decision_passed_reasons()[0];
-  EXPECT_EQ(checked_decisions.size(), actual_passed_reasons.size());
   EXPECT_EQ(checked_decisions.size(), actual_passed_reasons.size());
   for (size_t i = 0; i < actual_passed_reasons.size(); i++) {
     EXPECT_EQ(checked_decisions[i], actual_passed_reasons[i]);
@@ -1767,7 +1771,6 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeAllowClientPreviewsWithECT) {
   EXPECT_EQ(1UL, ui_service()->decision_passed_reasons().size());
   auto actual_passed_reasons = ui_service()->decision_passed_reasons()[0];
   EXPECT_EQ(checked_decisions.size(), actual_passed_reasons.size());
-  EXPECT_EQ(checked_decisions.size(), actual_passed_reasons.size());
   for (size_t i = 0; i < actual_passed_reasons.size(); i++) {
     EXPECT_EQ(checked_decisions[i], actual_passed_reasons[i]);
   }
@@ -1799,7 +1802,6 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeAllowHintPreviewWithoutECT) {
       PreviewsEligibilityReason::USER_BLACKLISTED,
       PreviewsEligibilityReason::HOST_BLACKLISTED,
       PreviewsEligibilityReason::RELOAD_DISALLOWED,
-      PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER,
   };
   PreviewsUserData user_data(kDefaultPageId);
   EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
@@ -1815,7 +1817,6 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeAllowHintPreviewWithoutECT) {
 
   EXPECT_EQ(1UL, ui_service()->decision_passed_reasons().size());
   auto actual_passed_reasons = ui_service()->decision_passed_reasons()[0];
-  EXPECT_EQ(checked_decisions.size(), actual_passed_reasons.size());
   EXPECT_EQ(checked_decisions.size(), actual_passed_reasons.size());
   for (size_t i = 0; i < actual_passed_reasons.size(); i++) {
     EXPECT_EQ(checked_decisions[i], actual_passed_reasons[i]);

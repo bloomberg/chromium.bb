@@ -360,7 +360,8 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
 
 bool PreviewsDeciderImpl::LoadPageHints(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return previews_opt_guide_->MaybeLoadOptimizationHints(url);
+  return previews_opt_guide_->MaybeLoadOptimizationHints(url,
+                                                         base::DoNothing());
 }
 
 bool PreviewsDeciderImpl::GetResourceLoadingHints(
@@ -450,20 +451,8 @@ PreviewsDeciderImpl::ShouldAllowPreviewPerOptimizationHints(
         PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER);
   }
 
-  // For NoScript, ensure it is whitelisted for this request.
-  if (type == PreviewsType::NOSCRIPT) {
-    net::EffectiveConnectionType ect_threshold =
-        params::GetECTThresholdForPreview(type);
-    if (!previews_opt_guide_->IsWhitelisted(previews_data, url, type,
-                                            &ect_threshold)) {
-      return PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER;
-    }
-    passed_reasons->push_back(
-        PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER);
-  }
-
-  // Note: allow ResourceLoadingHints since the guide is available. Hints may
-  // need to be loaded from it for commit time detail check.
+  // Note: allow NoScript and ResourceLoadingHints since the guide is available.
+  // Page hints may need to be loaded from it for commit time detail check.
 
   return PreviewsEligibilityReason::ALLOWED;
 }
