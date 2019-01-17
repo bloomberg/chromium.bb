@@ -141,6 +141,10 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     public static final String EXTRA_MODULE_PACKAGE_NAME =
             "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_PACKAGE_NAME";
 
+    /** The resource ID of the dex file that contains the module code. */
+    private static final String EXTRA_MODULE_DEX_RESOURCE_ID =
+            "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_DEX_RESOURCE_ID";
+
     /** The class name of the module entry point. */
     @VisibleForTesting
     public static final String EXTRA_MODULE_CLASS_NAME =
@@ -184,6 +188,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     @Nullable
     private final String mModuleManagedUrlsHeaderValue;
     private final boolean mHideCctHeaderOnModuleManagedUrls;
+    private final int mModuleDexResourceId;
     private final boolean mIsIncognito;
     @Nullable
     private String mUrlToLoad;
@@ -311,6 +316,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
         String moduleClassName = IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_CLASS_NAME);
         if (modulePackageName != null && moduleClassName != null) {
             mModuleComponentName = new ComponentName(modulePackageName, moduleClassName);
+            mModuleDexResourceId = intent.getIntExtra(EXTRA_MODULE_DEX_RESOURCE_ID, -1);
             String moduleManagedUrlsRegex =
                     IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_MANAGED_URLS_REGEX);
             mModuleManagedUrlsPattern = (moduleManagedUrlsRegex != null)
@@ -325,6 +331,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
             mModuleManagedUrlsPattern = null;
             mModuleManagedUrlsHeaderValue = null;
             mHideCctHeaderOnModuleManagedUrls = false;
+            mModuleDexResourceId = 0;
         }
     }
 
@@ -821,6 +828,14 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     @Nullable
     public ComponentName getModuleComponentName() {
         return mModuleComponentName;
+    }
+
+    /**
+     * @return The resource identifier for the dex that contains module code. {@code 0} if no dex
+     * resource is provided.
+     */
+    public int getModuleDexResourceId() {
+        return mModuleDexResourceId;
     }
 
     /**

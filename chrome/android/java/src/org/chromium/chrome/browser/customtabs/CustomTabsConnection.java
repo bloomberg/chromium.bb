@@ -1442,11 +1442,24 @@ public class CustomTabsConnection {
             @DetachedResourceRequestMotivation int motivation);
 
     public ModuleLoader getModuleLoader(ComponentName componentName) {
-        if (mModuleLoader == null) mModuleLoader = new ModuleLoader(componentName);
+        return getModuleLoader(componentName, 0);
+    }
+
+    public ModuleLoader getModuleLoader(ComponentName componentName, int resourceId) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE_DEX_LOADING)) {
+            resourceId = 0;
+        }
+
+        if (mModuleLoader == null) mModuleLoader = new ModuleLoader(componentName, resourceId);
         if (!componentName.equals(mModuleLoader.getComponentName())) {
             throw new IllegalStateException("The given component name " + componentName
                     + " does not match the initialized component name "
                     + mModuleLoader.getComponentName());
+        }
+        if (resourceId != mModuleLoader.getDexResourceId()) {
+            throw new IllegalStateException("The given resource ID " + resourceId
+                    + " does not match the initialized resource ID "
+                    + mModuleLoader.getDexResourceId());
         }
         return mModuleLoader;
     }

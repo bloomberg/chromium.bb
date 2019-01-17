@@ -31,6 +31,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooksModule;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -160,10 +161,10 @@ public class CustomTabsDynamicModuleUITest {
      */
     @Test
     @SmallTest
+    @DisabledTest
     @Features.EnableFeatures(ChromeFeatureList.CCT_MODULE)
     public void testCloseButtonBehaviourWithDynamicModule()
             throws InterruptedException, ExecutionException, TimeoutException {
-
         Intent intent = new IntentBuilder(mModuleManagedPage)
                 .setModuleManagedUrlRegex(getModuleManagedRegex())
                 .build();
