@@ -465,17 +465,39 @@ public class ChromeFullscreenManager
      * Updates viewport size to have it render the content correctly.
      */
     public void updateViewportSize() {
-        if (mInGesture || mContentViewScrolling) return;
-
         // Update content viewport size only when the browser controls are not animating.
         int topContentOffset = (int) mRendererTopContentOffset;
+        int topControlOffset = Math.max(mRendererTopControlOffset, -getTopControlsHeight());
         int bottomControlOffset = (int) mRendererBottomControlOffset;
-        if ((topContentOffset != 0 && topContentOffset != getTopControlsHeight())
-                && bottomControlOffset != 0 && bottomControlOffset != getBottomControlsHeight()) {
+
+        // Controls resize the view only when they are being displayed at their
+        // maximum. Otherwise when the viewport is small, we can show unrelated
+        // graphical textures while scrolling the controls away.
+        // For top controls this is when the offset matches the height.
+        // For bottom controls this is the inverse, an offset of 0 means fully
+        // displayed. When there are no bottom controls, their height is 0.
+        boolean controlsResizeView = topControlOffset == 0 && bottomControlOffset == 0;
+
+        // Do not update the size during a gesture or scroll. Unless there has
+        // been a change in how a view resizes for controls, due to the viewport
+        // growing in size. When growing the viewport, it must be done
+        // immediately, otheriwse we render old textures in the expanded region.
+        // When shrinking the viewport, we can wait for the user input to finish
+        // before adjusting.
+        if (mControlsResizeView == controlsResizeView) {
+            if (mInGesture || mContentViewScrolling) return;
+            if ((topContentOffset != 0 && topContentOffset != getTopControlsHeight())
+                    && bottomControlOffset != 0
+                    && bottomControlOffset != getBottomControlsHeight()) {
+                return;
+            }
+        } else if ((mInGesture || mContentViewScrolling)
+                && topContentOffset == getTopControlsHeight()) {
+            // When shrinking the viewport, we can wait for the user input to finish
+            // before adjusting.
             return;
         }
-        boolean controlsResizeView =
-                topContentOffset > 0 || bottomControlOffset < getBottomControlsHeight();
+
         mControlsResizeView = controlsResizeView;
         Tab tab = getTab();
         if (tab == null) return;
