@@ -244,15 +244,15 @@ GbmSurfaceFactory::CreateNativePixmapFromHandleInternal(
     gfx::BufferFormat format,
     const gfx::NativePixmapHandle& handle) {
   size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
-  if (handle.planes.size() != num_planes ||
-      (handle.fds.size() != 1 && handle.fds.size() != num_planes)) {
+  DCHECK_GE(num_planes, handle.fds.size());
+  if (handle.planes.size() != num_planes) {
     return nullptr;
   }
+
   std::vector<base::ScopedFD> scoped_fds;
   for (auto& fd : handle.fds) {
     scoped_fds.emplace_back(fd.fd);
   }
-
   std::vector<gfx::NativePixmapPlane> planes;
   for (const auto& plane : handle.planes) {
     planes.push_back(plane);
