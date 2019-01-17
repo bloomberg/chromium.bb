@@ -65,7 +65,6 @@
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
-#include "third_party/blink/public/web/web_global_object_reuse_policy.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
 #include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_icon_url.h"
@@ -396,9 +395,16 @@ class BLINK_EXPORT WebLocalFrameClient {
   // The provisional datasource is now committed.  The first part of the
   // response body has been received, and the encoding of the response
   // body is known.
+  // The mojo::ScopedMessagePipeHandle is a DocumentInterfaceBroker handle. When
+  // a load commits and a new Document is created, Blink creates a new
+  // DocumentInterfaceBroker endpoint to ensure that interface requests in the
+  // newly committed Document are associated with the correct origin (even if
+  // the origin of the old and the new Document are the same). The one
+  // exception is if the Window object is reused; in that case, the old
+  // DocumentInterfaceBroker handle will be reused, and the endpoint won't be
+  // bound to any requests.
   virtual void DidCommitProvisionalLoad(const WebHistoryItem&,
                                         WebHistoryCommitType,
-                                        WebGlobalObjectReusePolicy,
                                         mojo::ScopedMessagePipeHandle) {}
 
   // The frame's document has just been initialized.

@@ -4278,7 +4278,6 @@ void RenderFrameImpl::DidStartProvisionalLoad(
 void RenderFrameImpl::DidCommitProvisionalLoad(
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type,
-    blink::WebGlobalObjectReusePolicy global_object_reuse_policy,
     mojo::ScopedMessagePipeHandle document_interface_broker_blink_handle) {
   TRACE_EVENT2("navigation,rail", "RenderFrameImpl::didCommitProvisionalLoad",
                "id", routing_id_,
@@ -4367,13 +4366,9 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   blink::mojom::DocumentInterfaceBrokerRequest
       document_interface_broker_request;
 
-  // TODO(crbug.com/718652): check whether
-  // |document_interface_broker_blink_handle| is valid instead and remove the
-  // |global_object_reuse_policy| parameter.
-  bool reuse_existing_interfaces =
-      (global_object_reuse_policy ==
-       blink::WebGlobalObjectReusePolicy::kUseExisting);
-  if (!reuse_existing_interfaces) {
+  // blink passes a valid DocumentInterfaceBroker handle when the new pipe needs
+  // to be bound.
+  if (document_interface_broker_blink_handle.is_valid()) {
     // If we're navigating to a new document, bind |remote_interfaces_| to a new
     // message pipe. The request end of the new InterfaceProvider interface will
     // be sent over as part of DidCommitProvisionalLoad. After the RFHI receives
@@ -4439,13 +4434,13 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
 
   DidCommitNavigationInternal(
       item, commit_type, false /* was_within_same_document */, transition,
-      reuse_existing_interfaces
-          ? nullptr
-          : mojom::DidCommitProvisionalLoadInterfaceParams::New(
+      document_interface_broker_blink_handle.is_valid()
+          ? mojom::DidCommitProvisionalLoadInterfaceParams::New(
                 std::move(remote_interface_provider_request),
                 std::move(document_interface_broker_request),
                 blink::mojom::DocumentInterfaceBrokerRequest(
-                    std::move(document_interface_broker_blink_handle))));
+                    std::move(document_interface_broker_blink_handle)))
+          : nullptr);
 
   // Record time between receiving the message to commit the navigation until it
   // has committed. Only successful cross-document navigation handled by the

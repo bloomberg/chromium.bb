@@ -4495,7 +4495,6 @@ class ClearScrollStateOnCommitWebFrameClient
   // frame_test_helpers::TestWebFrameClient:
   void DidCommitProvisionalLoad(const WebHistoryItem&,
                                 WebHistoryCommitType,
-                                WebGlobalObjectReusePolicy,
                                 mojo::ScopedMessagePipeHandle) override {
     Frame()->View()->ResetScrollAndScaleState();
   }
@@ -6652,7 +6651,6 @@ class TestWillInsertBodyWebFrameClient
   // frame_test_helpers::TestWebFrameClient:
   void DidCommitProvisionalLoad(const WebHistoryItem&,
                                 WebHistoryCommitType,
-                                WebGlobalObjectReusePolicy,
                                 mojo::ScopedMessagePipeHandle) override {
     did_load_ = true;
   }
@@ -9483,7 +9481,6 @@ class RemoteToLocalSwapWebFrameClient
   // frame_test_helpers::TestWebFrameClient:
   void DidCommitProvisionalLoad(const WebHistoryItem&,
                                 WebHistoryCommitType history_commit_type,
-                                WebGlobalObjectReusePolicy,
                                 mojo::ScopedMessagePipeHandle) override {
     history_commit_type_ = history_commit_type;
     remote_frame_->Swap(Frame());
@@ -9700,7 +9697,6 @@ class CommitTypeWebFrameClient : public frame_test_helpers::TestWebFrameClient {
   // frame_test_helpers::TestWebFrameClient:
   void DidCommitProvisionalLoad(const WebHistoryItem&,
                                 WebHistoryCommitType history_commit_type,
-                                WebGlobalObjectReusePolicy,
                                 mojo::ScopedMessagePipeHandle) override {
     history_commit_type_ = history_commit_type;
   }
@@ -10605,7 +10601,6 @@ class CallbackOrderingWebFrameClient
   }
   void DidCommitProvisionalLoad(const WebHistoryItem&,
                                 WebHistoryCommitType,
-                                WebGlobalObjectReusePolicy,
                                 mojo::ScopedMessagePipeHandle) override {
     EXPECT_EQ(2, callback_count_++);
   }
