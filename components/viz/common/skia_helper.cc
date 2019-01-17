@@ -9,7 +9,8 @@
 #include "ui/gfx/skia_util.h"
 
 namespace viz {
-sk_sp<SkImage> SkiaHelper::ApplyImageFilter(sk_sp<SkImage> src_image,
+sk_sp<SkImage> SkiaHelper::ApplyImageFilter(GrContext* context,
+                                            sk_sp<SkImage> src_image,
                                             const gfx::RectF& src_rect,
                                             const gfx::RectF& dst_rect,
                                             const gfx::Vector2dF& scale,
@@ -42,8 +43,8 @@ sk_sp<SkImage> SkiaHelper::ApplyImageFilter(sk_sp<SkImage> src_image,
   filter = filter->makeWithLocalMatrix(local_matrix);
   SkIRect in_subset = SkIRect::MakeWH(src_rect.width(), src_rect.height());
 
-  sk_sp<SkImage> image = src_image->makeWithFilter(filter.get(), in_subset,
-                                                   clip_bounds, subset, offset);
+  sk_sp<SkImage> image = src_image->makeWithFilter(
+      context, filter.get(), in_subset, clip_bounds, subset, offset);
   if (!image || !image->isTextureBacked()) {
     return nullptr;
   }

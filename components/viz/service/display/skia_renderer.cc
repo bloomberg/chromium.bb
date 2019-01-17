@@ -959,8 +959,9 @@ bool SkiaRenderer::CalculateRPDQParams(sk_sp<SkImage> content,
     gfx::RectF src_rect(quad->rect);
     // TODO(xing.xu): Support flip_texture. (https://crbug.com/822859)
     params->filter_image = SkiaHelper::ApplyImageFilter(
-        content, src_rect, dst_rect, quad->filters_scale, std::move(filter),
-        &offset, &subset, quad->filters_origin, false);
+        current_canvas_->getGrContext(), content, src_rect, dst_rect,
+        quad->filters_scale, std::move(filter), &offset, &subset,
+        quad->filters_origin, false);
     if (!params->filter_image)
       return false;
     params->dst_rect =
