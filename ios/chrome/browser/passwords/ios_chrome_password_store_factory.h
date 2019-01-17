@@ -7,14 +7,10 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/refcounted_browser_state_keyed_service_factory.h"
 
 enum class ServiceAccessType;
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
 
 namespace ios {
 class ChromeBrowserState;
@@ -41,7 +37,7 @@ class IOSChromePasswordStoreFactory
       ios::ChromeBrowserState* browser_state);
 
  private:
-  friend struct base::DefaultSingletonTraits<IOSChromePasswordStoreFactory>;
+  friend class base::NoDestructor<IOSChromePasswordStoreFactory>;
 
   IOSChromePasswordStoreFactory();
   ~IOSChromePasswordStoreFactory() override;
