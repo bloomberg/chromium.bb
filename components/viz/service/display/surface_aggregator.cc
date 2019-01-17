@@ -635,8 +635,7 @@ void SurfaceAggregator::CopyQuadsToPass(
         const SharedQuadState* dest_shared_quad_state = CopySharedQuadState(
             quad->shared_quad_state, target_transform, clip_rect, dest_pass);
         last_copied_source_shared_quad_state = quad->shared_quad_state;
-        if (aggregate_only_damaged_ && !has_copy_requests_ &&
-            !has_cached_render_passes_) {
+        if (ignore_undamaged) {
           damage_rect_in_quad_space_valid = CalculateQuadSpaceDamageRect(
               dest_shared_quad_state->quad_to_target_transform,
               dest_pass->transform_to_root_target, root_damage_rect_,
