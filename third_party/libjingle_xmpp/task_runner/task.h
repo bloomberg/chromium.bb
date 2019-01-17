@@ -16,7 +16,6 @@
 #include <string>
 
 #include "third_party/libjingle_xmpp/task_runner/taskparent.h"
-#include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -109,14 +108,6 @@ class Task : public TaskParent {
   // Called from outside to stop task without any more callbacks
   void Abort(bool nowake = false);
 
-  bool TimedOut();
-
-  int64_t timeout_time() const { return timeout_time_; }
-  int timeout_seconds() const { return timeout_seconds_; }
-  void set_timeout_seconds(int timeout_seconds);
-
-  sigslot::signal0<> SignalTimeout;
-
   // Called inside the task to signal that the task may be unblocked
   void Wake();
 
@@ -135,22 +126,13 @@ class Task : public TaskParent {
   // Called inside to advise that the task should wake and signal an error
   void Error();
 
-  int64_t CurrentTime();
-
   virtual std::string GetStateName(int state) const;
   virtual int Process(int state);
   virtual void Stop();
   virtual int ProcessStart() = 0;
   virtual int ProcessResponse();
 
-  void ResetTimeout();
-  void ClearTimeout();
-
-  void SuspendTimeout();
-  void ResumeTimeout();
-
  protected:
-  virtual int OnTimeout();
 
  private:
   void Done();

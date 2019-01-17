@@ -24,7 +24,6 @@ class TaskPump : public rtc::TaskRunner {
 
   // rtc::TaskRunner implementation.
   void WakeTasks() override;
-  int64_t CurrentTime() override;
 
   // No tasks will be processed after this is called, even if
   // WakeTasks() is called.

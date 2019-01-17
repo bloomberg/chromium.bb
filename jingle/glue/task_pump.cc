@@ -31,13 +31,6 @@ void TaskPump::WakeTasks() {
   }
 }
 
-int64_t TaskPump::CurrentTime() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Only timeout tasks rely on this function.  Since we're not using
-  // libjingle tasks for timeout, it's safe to return 0 here.
-  return 0;
-}
-
 void TaskPump::Stop() {
   stopped_ = true;
 }
