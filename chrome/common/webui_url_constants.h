@@ -295,6 +295,7 @@ extern const char kHelpSubPage[];
 extern const char kInternetSubPage[];
 extern const char kConnectedDevicesSubPage[];
 extern const char kLockScreenSubPage[];
+extern const char kManagementSubPage[];
 extern const char kNetworkDetailSubPage[];
 extern const char kPowerSubPage[];
 extern const char kSmbSharesPage[];
