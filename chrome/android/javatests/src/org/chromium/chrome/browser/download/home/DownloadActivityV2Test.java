@@ -10,17 +10,12 @@ import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import android.support.test.filters.MediumTest;
-import android.support.test.rule.ActivityTestRule;
 
-import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -28,7 +23,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.download.DisableAnimationsRule;
 import org.chromium.chrome.browser.download.home.list.UiUtils;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.download.ui.StubbedProvider;
@@ -37,6 +31,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivity;
+import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.ui.test.util.UiRestriction;
@@ -44,21 +39,10 @@ import org.chromium.ui.test.util.UiRestriction;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Tests the DownloadActivity and the DownloadManagerUi. */
+/** Tests the DownloadActivity home V2. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-public class DownloadActivityV2Test {
-    // Disable animations to reduce flakiness.
-    @ClassRule
-    public static DisableAnimationsRule disableAnimationsRule = new DisableAnimationsRule();
-
-    @Rule
-    public ActivityTestRule<DummyUiActivity> mActivityTestRule =
-            new ActivityTestRule<>(DummyUiActivity.class);
-
-    @Rule
-    public MockitoRule mMockitoRule = MockitoJUnit.rule();
-
+public class DownloadActivityV2Test extends DummyUiActivityTestCase {
     @Mock
     private Profile mProfile;
     @Mock
@@ -66,7 +50,6 @@ public class DownloadActivityV2Test {
     @Mock
     private SnackbarManager mSnackbarManager;
 
-    private DummyUiActivity mActivity;
     private DownloadManagerCoordinator mDownloadCoordinator;
 
     @BeforeClass
@@ -77,8 +60,10 @@ public class DownloadActivityV2Test {
         DummyUiActivity.setTestTheme(org.chromium.chrome.R.style.FullscreenWhiteActivityTheme);
     }
 
-    @Before
-    public void setUp() throws Exception {
+    @Override
+    public void setUpTest() throws Exception {
+        super.setUpTest();
+        MockitoAnnotations.initMocks(this);
         // TODO(yliuyliu): Write a new StubbedOfflineContentProvider for new Download UI testing.
         StubbedProvider stubbedProvider = new StubbedProvider();
         OfflineContentAggregatorFactory.setOfflineContentProviderForTests(
@@ -102,8 +87,6 @@ public class DownloadActivityV2Test {
         features.put(ChromeFeatureList.DOWNLOAD_HOME_V2, true);
         features.put(ChromeFeatureList.OFFLINE_PAGES_PREFETCHING, true);
         ChromeFeatureList.setTestFeatures(features);
-
-        mActivity = mActivityTestRule.getActivity();
     }
 
     private void setUpUi() {
@@ -113,9 +96,9 @@ public class DownloadActivityV2Test {
                                                  .setUseNewDownloadPath(true)
                                                  .setUseNewDownloadPathThumbnails(true)
                                                  .build();
-        mDownloadCoordinator =
-                new DownloadManagerCoordinatorImpl(mProfile, mActivity, config, mSnackbarManager);
-        mActivity.setContentView(mDownloadCoordinator.getView());
+        mDownloadCoordinator = new DownloadManagerCoordinatorImpl(
+                mProfile, getActivity(), config, mSnackbarManager);
+        getActivity().setContentView(mDownloadCoordinator.getView());
 
         mDownloadCoordinator.updateForUrl(UrlConstants.DOWNLOADS_URL);
     }
