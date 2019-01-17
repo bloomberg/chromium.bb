@@ -22,11 +22,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.list.DateOrderedListCoordinator.DateOrderedListObserver;
 import org.chromium.chrome.browser.download.home.list.holder.ListItemViewHolder;
-import org.chromium.chrome.browser.modelutil.ForwardingListObservable;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
-import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.ui.modelutil.ForwardingListObservable;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+import org.chromium.ui.modelutil.RecyclerViewAdapter;
 
 /**
  * The View component of a DateOrderedList.  This takes the DateOrderedListModel and creates the

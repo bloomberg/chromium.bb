@@ -24,7 +24,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 class UrlBarViewBinder {
     /**
      * @see
-     * org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor.ViewBinder#bind(Object,
+     * PropertyModelChangeProcessor.ViewBinder#bind(Object,
      * Object, Object)
      */
     public static void bind(PropertyModel model, UrlBar view, PropertyKey propertyKey) {

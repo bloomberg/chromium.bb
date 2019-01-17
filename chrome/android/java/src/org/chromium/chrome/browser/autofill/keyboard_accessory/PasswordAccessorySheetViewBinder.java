@@ -21,7 +21,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabModel.AccessorySheetDataPiece;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabViewBinder.ElementViewHolder;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.FooterCommand;
-import org.chromium.chrome.browser.modelutil.ListModel;
+import org.chromium.ui.modelutil.ListModel;
 
 /**
  * This stateless class provides methods to bind the items in a {@link ListModel <Item>}

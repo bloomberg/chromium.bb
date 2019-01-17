@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.modelutil;
+package org.chromium.ui.modelutil;
 
-import org.chromium.ui.modelutil.PropertyObservable;
 import org.chromium.ui.modelutil.PropertyObservable.PropertyObserver;
 
 /**
@@ -52,8 +51,8 @@ public class PropertyModelChangeProcessor<M extends PropertyObservable<P>, V, P>
      * @param view The view to which data will be bound.
      * @param viewBinder A class that binds the model to the view.
      */
-    public static <M extends PropertyObservable<P>, V, P>
-    PropertyModelChangeProcessor<M, V, P> create(M model, V view, ViewBinder<M, V, P> viewBinder) {
+    public static <M extends PropertyObservable<P>, V, P> PropertyModelChangeProcessor<M, V, P>
+    create(M model, V view, ViewBinder<M, V, P> viewBinder) {
         return new PropertyModelChangeProcessor<>(model, view, viewBinder);
     }
 

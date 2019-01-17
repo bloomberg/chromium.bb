@@ -306,9 +306,23 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/modaldialog/DialogDismissalCause.java",
     "java/src/org/chromium/ui/modaldialog/ModalDialogManager.java",
     "java/src/org/chromium/ui/modaldialog/ModalDialogProperties.java",
+    "java/src/org/chromium/ui/modelutil/ForwardingListObservable.java",
+    "java/src/org/chromium/ui/modelutil/LazyConstructionPropertyMcp.java",
+    "java/src/org/chromium/ui/modelutil/ListModel.java",
+    "java/src/org/chromium/ui/modelutil/ListModelBase.java",
+    "java/src/org/chromium/ui/modelutil/ListModelChangeProcessor.java",
+    "java/src/org/chromium/ui/modelutil/ListObservable.java",
+    "java/src/org/chromium/ui/modelutil/ListObservableImpl.java",
+    "java/src/org/chromium/ui/modelutil/ModelListAdapter.java",
     "java/src/org/chromium/ui/modelutil/PropertyKey.java",
+    "java/src/org/chromium/ui/modelutil/PropertyListModel.java",
     "java/src/org/chromium/ui/modelutil/PropertyModel.java",
+    "java/src/org/chromium/ui/modelutil/PropertyModelChangeProcessor.java",
     "java/src/org/chromium/ui/modelutil/PropertyObservable.java",
+    "java/src/org/chromium/ui/modelutil/RecyclerViewAdapter.java",
+    "java/src/org/chromium/ui/modelutil/SimpleList.java",
+    "java/src/org/chromium/ui/modelutil/SimpleRecyclerViewMcp.java",
+    "java/src/org/chromium/ui/modelutil/SimpleRecyclerViewMcpBase.java",
     "java/src/org/chromium/ui/resources/HandleViewResources.java",
     "java/src/org/chromium/ui/resources/LayoutResource.java",
     "java/src/org/chromium/ui/resources/Resource.java",
@@ -351,6 +365,7 @@ android_library("ui_full_java") {
     "//base:base_java",
     "//third_party/android_deps:android_support_annotations_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:android_support_v7_recyclerview_java",
   ]
   srcjar_deps = [
     ":java_enums_srcjar",
@@ -365,11 +380,13 @@ android_library("ui_java_test_support") {
     "javatests/src/org/chromium/ui/test/util/UiDisableIfSkipCheck.java",
     "javatests/src/org/chromium/ui/test/util/UiRestriction.java",
     "javatests/src/org/chromium/ui/test/util/UiRestrictionSkipCheck.java",
+    "javatests/src/org/chromium/ui/test/util/modelutil/FakeViewProvider.java",
   ]
   deps = [
     ":ui_java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//third_party/junit",
   ]
 }
 
@@ -388,6 +405,9 @@ junit_binary("ui_junit_tests") {
     "junit/src/org/chromium/ui/base/SelectFileDialogTest.java",
     "junit/src/org/chromium/ui/drawable/StateListDrawableBuilderTest.java",
     "junit/src/org/chromium/ui/modaldialog/ModalDialogManagerTest.java",
+    "junit/src/org/chromium/ui/modelutil/LazyConstructionPropertyMcpTest.java",
+    "junit/src/org/chromium/ui/modelutil/PropertyModelTest.java",
+    "junit/src/org/chromium/ui/modelutil/SimpleListObservableTest.java",
     "junit/src/org/chromium/ui/text/SpanApplierTest.java",
     "junit/src/org/chromium/ui/shadows/ShadowAsyncLayoutInflater.java",
     "junit/src/org/chromium/ui/shadows/ShadowAppCompatResources.java",
@@ -397,6 +417,7 @@ junit_binary("ui_junit_tests") {
   ]
   deps = [
     ":ui_java",
+    ":ui_java_test_support",
     ":ui_javatest_resources",
     "//base:base_java",
     "//base:base_java_test_support",

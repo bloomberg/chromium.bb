@@ -17,9 +17,9 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabModel.AccessorySheetDataPiece;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
-import org.chromium.chrome.browser.modelutil.ListModel;
-import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
-import org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcp;
+import org.chromium.ui.modelutil.ListModel;
+import org.chromium.ui.modelutil.RecyclerViewAdapter;
+import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
 
 /**
  * This component is a tab that can be added to the {@link ManualFillingCoordinator} which shows it

@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
@@ -28,6 +27,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.ui.modelutil.ListObservable;
 
 import java.util.List;
 import java.util.Set;

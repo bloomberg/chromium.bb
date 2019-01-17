@@ -34,11 +34,11 @@ import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Tab;
-import org.chromium.chrome.browser.modelutil.ListObservable;
-import org.chromium.chrome.test.util.browser.modelutil.FakeViewProvider;
+import org.chromium.ui.modelutil.ListObservable;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyObservable;
+import org.chromium.ui.test.util.modelutil.FakeViewProvider;
 
 /**
  * Controller tests for the keyboard accessory bottom sheet component.

@@ -54,7 +54,6 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo.SigninObserver;
@@ -80,6 +79,7 @@ import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestU
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.net.NetworkChangeNotifier;
+import org.chromium.ui.modelutil.RecyclerViewAdapter;
 
 import java.util.ArrayList;
 import java.util.Collection;

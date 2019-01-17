@@ -25,7 +25,7 @@ public abstract class ListItemViewHolder extends ViewHolder {
     /**
      * Used as a method reference for ViewHolderFactory.
      * @see
-     * org.chromium.chrome.browser.modelutil.RecyclerViewAdapter.ViewHolderFactory#createViewHolder
+     * RecyclerViewAdapter.ViewHolderFactory#createViewHolder
      */
     public static ListItemViewHolder create(ViewGroup parent, @ListUtils.ViewType int viewType) {
         switch (viewType) {

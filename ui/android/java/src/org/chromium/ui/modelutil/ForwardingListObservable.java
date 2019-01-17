@@ -1,11 +1,9 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-package org.chromium.chrome.browser.modelutil;
+package org.chromium.ui.modelutil;
 
 import android.support.annotation.Nullable;
-
-import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
 
 /**
  * Helper class for implementing a {@link ListObserver} that just forwards to its own observers.
@@ -13,7 +11,8 @@ import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
  *         partial updates.
  * TODO(bauerb): Remove this class if it turns out we can shortcut notifications
  */
-public class ForwardingListObservable<P> extends ListObservableImpl<P> implements ListObserver<P> {
+public class ForwardingListObservable<P>
+        extends ListObservableImpl<P> implements ListObservable.ListObserver<P> {
     @Override
     public void onItemRangeInserted(ListObservable source, int index, int count) {
         notifyItemRangeInserted(index, count);

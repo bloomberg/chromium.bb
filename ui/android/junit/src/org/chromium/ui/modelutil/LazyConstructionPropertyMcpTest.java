@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.modelutil;
+package org.chromium.ui.modelutil;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
@@ -27,14 +27,11 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor.ViewBinder;
-import org.chromium.chrome.test.util.browser.modelutil.FakeViewProvider;
-import org.chromium.ui.modelutil.PropertyKey;
-import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
-import org.chromium.ui.modelutil.PropertyObservable;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor.ViewBinder;
+import org.chromium.ui.test.util.modelutil.FakeViewProvider;
 
 /**
  * Unit tests for LazyConstructionPropertyMcp.

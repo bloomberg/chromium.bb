@@ -25,7 +25,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 public class SuggestionViewViewBinder {
     /**
      * @see
-     * org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor.ViewBinder#bind(Object,
+     * PropertyModelChangeProcessor.ViewBinder#bind(Object,
      * Object, Object)
      */
     public static void bind(PropertyModel model, SuggestionView view, PropertyKey propertyKey) {

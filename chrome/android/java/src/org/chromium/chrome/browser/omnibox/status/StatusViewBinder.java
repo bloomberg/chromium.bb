@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.omnibox.status;
 
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor.ViewBinder;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor.ViewBinder;
 
 /**
  * StatusViewBinder observes StatusModel changes and triggers StatusView updates.

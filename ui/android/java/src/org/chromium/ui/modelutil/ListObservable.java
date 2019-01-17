@@ -1,7 +1,7 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-package org.chromium.chrome.browser.modelutil;
+package org.chromium.ui.modelutil;
 
 import android.support.annotation.Nullable;
 
@@ -60,8 +60,7 @@ public interface ListObservable<P> {
          * @param count The number of changed items.
          * @param payload Optional parameter, use {@code null} to identify a "full" update.
          */
-        default void onItemRangeChanged(ListObservable<P> source, int index, int count,
-                @Nullable P payload) {
-        }
+        default void onItemRangeChanged(
+                ListObservable<P> source, int index, int count, @Nullable P payload) {}
     }
 }

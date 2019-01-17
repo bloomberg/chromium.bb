@@ -13,8 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Tab;
-import org.chromium.chrome.browser.modelutil.ListModel;
-import org.chromium.chrome.browser.modelutil.ListModelChangeProcessor;
+import org.chromium.ui.modelutil.ListModel;
+import org.chromium.ui.modelutil.ListModelChangeProcessor;
 
 import java.util.HashMap;
 import java.util.Map;

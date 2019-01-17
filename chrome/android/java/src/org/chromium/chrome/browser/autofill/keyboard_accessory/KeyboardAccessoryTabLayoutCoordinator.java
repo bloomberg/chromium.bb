@@ -12,10 +12,10 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.modelutil.ListModel;
-import org.chromium.chrome.browser.modelutil.ListModelChangeProcessor;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
+import org.chromium.ui.modelutil.ListModel;
+import org.chromium.ui.modelutil.ListModelChangeProcessor;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
  * This component reflects the state of selected tabs in the keyboard accessory. It can be assigned
