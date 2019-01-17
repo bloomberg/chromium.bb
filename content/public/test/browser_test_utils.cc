@@ -2368,7 +2368,7 @@ void RenderFrameSubmissionObserver::WaitForPageScaleFactor(
     const float tolerance) {
   while (std::abs(render_frame_metadata_provider_->LastRenderFrameMetadata()
                       .page_scale_factor -
-                  expected_page_scale_factor) < tolerance) {
+                  expected_page_scale_factor) > tolerance) {
     WaitForMetadataChange();
   }
 }
@@ -2378,7 +2378,7 @@ void RenderFrameSubmissionObserver::WaitForExternalPageScaleFactor(
     const float tolerance) {
   while (std::abs(render_frame_metadata_provider_->LastRenderFrameMetadata()
                       .external_page_scale_factor -
-                  expected_external_page_scale_factor) < tolerance) {
+                  expected_external_page_scale_factor) > tolerance) {
     WaitForMetadataChange();
   }
 }

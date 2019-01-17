@@ -11005,7 +11005,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   ack_waiter.Wait();
 
   // Make sure all the page scale values behave as expected.
-  const float kScaleTolerance = 0.0001f;
+  const float kScaleTolerance = 0.05f;
   observer_a.WaitForPageScaleFactor(target_page_scale, kScaleTolerance);
   observer_b.WaitForExternalPageScaleFactor(target_page_scale, kScaleTolerance);
   observer_c.WaitForExternalPageScaleFactor(target_page_scale, kScaleTolerance);
