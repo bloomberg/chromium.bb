@@ -14,6 +14,7 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "ios/web_view/cwv_web_view_buildflags.h"
 #include "ios/web_view/internal/app/application_context.h"
+#import "ios/web_view/internal/cwv_flags_internal.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
 #include "ios/web_view/internal/translate/web_view_translate_service.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -41,6 +42,9 @@ void WebViewWebMainParts::PreCreateThreads() {
   // Initialize local state.
   PrefService* local_state = ApplicationContext::GetInstance()->GetLocalState();
   DCHECK(local_state);
+
+  // Flags are converted here to ensure it is set before being read by others.
+  [[CWVFlags sharedInstance] convertFlagsToCommandLineSwitches];
 
   ApplicationContext::GetInstance()->PreCreateThreads();
 

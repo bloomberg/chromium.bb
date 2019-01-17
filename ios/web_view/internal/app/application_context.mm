@@ -19,6 +19,7 @@
 #include "ios/web/public/web_thread.h"
 #include "ios/web_view/cwv_web_view_buildflags.h"
 #include "ios/web_view/internal/app/web_view_io_thread.h"
+#import "ios/web_view/internal/cwv_flags_internal.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "services/network/network_change_manager.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
