@@ -1255,7 +1255,7 @@ public class CustomTabActivityTest {
         connection.newSession(token);
         connection.overridePackageNameForSessionForTesting(token, "app1");
         ThreadUtils.runOnUiThreadBlocking(
-                () -> OriginVerifier.addVerifiedOriginForPackage("app1", new Origin(referrer),
+                () -> OriginVerifier.addVerificationOverride("app1", new Origin(referrer),
                         CustomTabsService.RELATION_USE_AS_ORIGIN));
 
         final CustomTabsSessionToken session = warmUpAndLaunchUrlWithSession(intent);
@@ -1944,7 +1944,7 @@ public class CustomTabActivityTest {
         Assert.assertTrue(connection.newSession(token));
         connection.mClientManager.setAllowParallelRequestForSession(token, true);
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            OriginVerifier.addVerifiedOriginForPackage(
+            OriginVerifier.addVerificationOverride(
                     context.getPackageName(), origin, CustomTabsService.RELATION_USE_AS_ORIGIN);
         });
 

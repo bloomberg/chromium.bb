@@ -93,7 +93,7 @@ public class DetachedResourceRequestTest {
                 () -> Assert.assertFalse(mConnection.canDoParallelRequest(session, ORIGIN)));
         ThreadUtils.runOnUiThreadBlocking(() -> {
             String packageName = mContext.getPackageName();
-            OriginVerifier.addVerifiedOriginForPackage(packageName, new Origin(ORIGIN.toString()),
+            OriginVerifier.addVerificationOverride(packageName, new Origin(ORIGIN.toString()),
                     CustomTabsService.RELATION_USE_AS_ORIGIN);
             Assert.assertTrue(mConnection.canDoParallelRequest(session, ORIGIN));
         });
@@ -107,7 +107,7 @@ public class DetachedResourceRequestTest {
         Assert.assertTrue(mConnection.newSession(session));
         ThreadUtils.runOnUiThreadBlocking(() -> {
             String packageName = mContext.getPackageName();
-            OriginVerifier.addVerifiedOriginForPackage(packageName, new Origin(ORIGIN.toString()),
+            OriginVerifier.addVerificationOverride(packageName, new Origin(ORIGIN.toString()),
 
                     CustomTabsService.RELATION_USE_AS_ORIGIN);
         });
@@ -523,7 +523,7 @@ public class DetachedResourceRequestTest {
         mConnection.mClientManager.setAllowParallelRequestForSession(token, true);
         mConnection.mClientManager.setAllowResourcePrefetchForSession(token, true);
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            OriginVerifier.addVerifiedOriginForPackage(mContext.getPackageName(),
+            OriginVerifier.addVerificationOverride(mContext.getPackageName(),
                     new Origin(origin.toString()), CustomTabsService.RELATION_USE_AS_ORIGIN);
             Assert.assertTrue(mConnection.canDoParallelRequest(token, origin));
         });
