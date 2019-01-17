@@ -209,6 +209,22 @@ AXNodeData::AXNodeData(const AXNodeData& other) {
   relative_bounds = other.relative_bounds;
 }
 
+AXNodeData::AXNodeData(AXNodeData&& other) {
+  id = other.id;
+  role = other.role;
+  state = other.state;
+  actions = other.actions;
+  string_attributes.swap(other.string_attributes);
+  int_attributes.swap(other.int_attributes);
+  float_attributes.swap(other.float_attributes);
+  bool_attributes.swap(other.bool_attributes);
+  intlist_attributes.swap(other.intlist_attributes);
+  stringlist_attributes.swap(other.stringlist_attributes);
+  html_attributes.swap(other.html_attributes);
+  child_ids.swap(other.child_ids);
+  relative_bounds = other.relative_bounds;
+}
+
 AXNodeData& AXNodeData::operator=(AXNodeData other) {
   id = other.id;
   role = other.role;
