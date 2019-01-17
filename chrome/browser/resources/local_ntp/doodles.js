@@ -313,8 +313,9 @@ doodles.logDoodleShare = function(platform) {
 doodles.isDoodleCurrentlyVisible = function() {
   var haveDoodle = ($(doodles.IDS.LOGO_DOODLE)
                         .classList.contains(doodles.CLASSES.SHOW_LOGO));
-  var wantDoodle = (doodles.targetDoodle.image !== null) &&
-      (doodles.targetDoodle.metadata !== null);
+  var wantDoodle = (doodles.targetDoodle.metadata !== null) &&
+      (doodles.targetDoodle.image !== null ||
+       doodles.targetDoodle.metadata.type === doodles.LOGO_TYPE.INTERACTIVE);
   if (!haveDoodle || !wantDoodle) {
     return haveDoodle === wantDoodle;
   }
