@@ -248,8 +248,8 @@ void BrowserRenderer::AcceptDoffPromptForTesting() {
 }
 
 void BrowserRenderer::SetBrowserRendererBrowserInterfaceForTesting(
-    BrowserRendererBrowserInterface* interface) {
-  browser_ = interface;
+    BrowserRendererBrowserInterface* interface_ptr) {
+  browser_ = interface_ptr;
 }
 
 void BrowserRenderer::UpdateUi(const RenderInfo& render_info,
