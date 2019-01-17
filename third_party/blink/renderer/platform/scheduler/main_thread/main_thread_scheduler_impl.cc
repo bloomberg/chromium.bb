@@ -47,14 +47,6 @@ using base::sequence_manager::TaskTimeObserver;
 using base::sequence_manager::TimeDomain;
 
 namespace {
-// The run time of loading tasks is strongly bimodal.  The vast majority are
-// very cheap, but there are usually a handful of very expensive tasks (e.g ~1
-// second on a mobile device) so we take a very pessimistic view when estimating
-// the cost of loading tasks.
-const int kLoadingTaskEstimationSampleCount = 1000;
-const double kLoadingTaskEstimationPercentile = 99;
-const int kTimerTaskEstimationSampleCount = 1000;
-const double kTimerTaskEstimationPercentile = 99;
 const int kShortIdlePeriodDurationSampleCount = 10;
 const double kShortIdlePeriodDurationPercentile = 50;
 // Amount of idle time left in a frame (as a ratio of the vsync interval) above
@@ -297,21 +289,6 @@ MainThreadSchedulerImpl::~MainThreadSchedulerImpl() {
       this);
 
   for (auto& pair : task_runners_) {
-    TaskCostEstimator* observer = nullptr;
-    switch (pair.first->queue_class()) {
-      case MainThreadTaskQueue::QueueClass::kLoading:
-        observer = &main_thread_only().loading_task_cost_estimator;
-        break;
-      case MainThreadTaskQueue::QueueClass::kTimer:
-        observer = &main_thread_only().timer_task_cost_estimator;
-        break;
-      default:
-        observer = nullptr;
-    }
-
-    if (observer)
-      pair.first->RemoveTaskObserver(observer);
-
     pair.first->ShutdownTaskQueue();
   }
 
@@ -335,13 +312,7 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
     const scoped_refptr<MainThreadTaskQueue>& compositor_task_runner,
     const base::TickClock* time_source,
     base::TimeTicks now)
-    : loading_task_cost_estimator(time_source,
-                                  kLoadingTaskEstimationSampleCount,
-                                  kLoadingTaskEstimationPercentile),
-      timer_task_cost_estimator(time_source,
-                                kTimerTaskEstimationSampleCount,
-                                kTimerTaskEstimationPercentile),
-      idle_time_estimator(compositor_task_runner,
+    : idle_time_estimator(compositor_task_runner,
                           time_source,
                           kShortIdlePeriodDurationSampleCount,
                           kShortIdlePeriodDurationPercentile),
@@ -360,11 +331,6 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
                            "Scheduler.PauseCount",
                            main_thread_scheduler_impl,
                            &main_thread_scheduler_impl->tracing_controller_),
-      expensive_task_policy(ExpensiveTaskPolicy::kRun,
-                            "Scheduler.ExpensiveTaskPolicy",
-                            main_thread_scheduler_impl,
-                            &main_thread_scheduler_impl->tracing_controller_,
-                            ExpensiveTaskPolicyToString),
       rail_mode_for_tracing(current_policy.rail_mode(),
                             "Scheduler.RAILMode",
                             main_thread_scheduler_impl,
@@ -383,30 +349,6 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
       keep_active_fetch_or_worker(
           false,
           "Scheduler.KeepRendererActive",
-          main_thread_scheduler_impl,
-          &main_thread_scheduler_impl->tracing_controller_,
-          YesNoStateToString),
-      loading_task_estimated_cost(
-          base::TimeDelta(),
-          "Scheduler.LoadingTaskEstimatedCostMs",
-          main_thread_scheduler_impl,
-          &main_thread_scheduler_impl->tracing_controller_,
-          TimeDeltaToMilliseconds),
-      timer_task_estimated_cost(
-          base::TimeDelta(),
-          "Scheduler.TimerTaskEstimatedCostMs",
-          main_thread_scheduler_impl,
-          &main_thread_scheduler_impl->tracing_controller_,
-          TimeDeltaToMilliseconds),
-      loading_tasks_seem_expensive(
-          false,
-          "Scheduler.LoadingTasksSeemExpensive",
-          main_thread_scheduler_impl,
-          &main_thread_scheduler_impl->tracing_controller_,
-          YesNoStateToString),
-      timer_tasks_seem_expensive(
-          false,
-          "Scheduler.TimerTasksSeemExpensive",
           main_thread_scheduler_impl,
           &main_thread_scheduler_impl->tracing_controller_,
           YesNoStateToString),
@@ -617,13 +559,6 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
 
   FrameSchedulerImpl::InitializeTaskTypeQueueTraitsMap(
       frame_task_types_to_queue_traits);
-
-  disable_expensive_task_blocking =
-      base::FeatureList::IsEnabled(kDisableExpensiveTaskBlocking);
-  disable_non_touchstart_input_heuristics =
-      base::FeatureList::IsEnabled(kDisableNonTouchstartInputHeuristics);
-  disable_touchstart_input_heuristics =
-      base::FeatureList::IsEnabled(kDisableTouchstartInputHeuristics);
 }
 
 MainThreadSchedulerImpl::AnyThread::~AnyThread() = default;
@@ -742,12 +677,6 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTaskQueue(
   auto insert_result =
       task_runners_.insert(std::make_pair(task_queue, std::move(voter)));
   auto queue_class = task_queue->queue_class();
-  if (queue_class == MainThreadTaskQueue::QueueClass::kTimer) {
-    task_queue->AddTaskObserver(&main_thread_only().timer_task_cost_estimator);
-  } else if (queue_class == MainThreadTaskQueue::QueueClass::kLoading) {
-    task_queue->AddTaskObserver(
-        &main_thread_only().loading_task_cost_estimator);
-  }
 
   ApplyTaskQueuePolicy(
       task_queue.get(), insert_result.first->second.get(), TaskQueuePolicy(),
@@ -808,20 +737,7 @@ void MainThreadSchedulerImpl::OnShutdownTaskQueue(
   if (task_queue_throttler_)
     task_queue_throttler_->ShutdownTaskQueue(task_queue.get());
 
-  if (task_runners_.erase(task_queue)) {
-    switch (task_queue->queue_class()) {
-      case MainThreadTaskQueue::QueueClass::kTimer:
-        task_queue->RemoveTaskObserver(
-            &main_thread_only().timer_task_cost_estimator);
-        break;
-      case MainThreadTaskQueue::QueueClass::kLoading:
-        task_queue->RemoveTaskObserver(
-            &main_thread_only().loading_task_cost_estimator);
-        break;
-      default:
-        break;
-    }
-  }
+  task_runners_.erase(task_queue.get());
 }
 
 bool MainThreadSchedulerImpl::CanExceedIdleDeadlineIfRequired() const {
@@ -1408,22 +1324,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   main_thread_only().longest_jank_free_task_duration =
       longest_jank_free_task_duration;
 
-  main_thread_only().loading_task_estimated_cost =
-      main_thread_only().loading_task_cost_estimator.expected_task_duration();
-  bool loading_tasks_seem_expensive =
-      main_thread_only().loading_task_estimated_cost >
-      longest_jank_free_task_duration;
-
-  main_thread_only().timer_task_estimated_cost =
-      main_thread_only().timer_task_cost_estimator.expected_task_duration();
-  bool timer_tasks_seem_expensive =
-      main_thread_only().timer_task_estimated_cost >
-      longest_jank_free_task_duration;
-
-  main_thread_only().timer_tasks_seem_expensive = timer_tasks_seem_expensive;
-  main_thread_only().loading_tasks_seem_expensive =
-      loading_tasks_seem_expensive;
-
   // The |new_policy_duration| is the minimum of |expected_use_case_duration|
   // and |gesture_expected_flag_valid_for_duration| unless one is zero in
   // which case we choose the other.
@@ -1452,7 +1352,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
           kFastCompositingIdleTimeThreshold;
 
   Policy new_policy;
-  ExpensiveTaskPolicy expensive_task_policy = ExpensiveTaskPolicy::kRun;
   new_policy.rail_mode() = v8::PERFORMANCE_ANIMATION;
   new_policy.use_case() = main_thread_only().current_use_case;
 
@@ -1460,7 +1359,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     case UseCase::kCompositorGesture:
       if (main_thread_only().blocking_input_expected_soon) {
         new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
-        expensive_task_policy = ExpensiveTaskPolicy::kBlock;
         new_policy.compositor_priority() =
             TaskQueue::QueuePriority::kHighestPriority;
       } else {
@@ -1477,12 +1375,8 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       new_policy.compositor_priority() = main_thread_compositing_is_fast
                                              ? TaskQueue::kHighestPriority
                                              : TaskQueue::kNormalPriority;
-      if (main_thread_only().blocking_input_expected_soon) {
+      if (main_thread_only().blocking_input_expected_soon)
         new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
-        expensive_task_policy = ExpensiveTaskPolicy::kBlock;
-      } else {
-        expensive_task_policy = ExpensiveTaskPolicy::kThrottle;
-      }
       break;
 
     case UseCase::kMainThreadCustomInputHandling:
@@ -1503,12 +1397,8 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       // handling over other tasks.
       new_policy.compositor_priority() =
           TaskQueue::QueuePriority::kHighestPriority;
-      if (main_thread_only().blocking_input_expected_soon) {
+      if (main_thread_only().blocking_input_expected_soon)
         new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
-        expensive_task_policy = ExpensiveTaskPolicy::kBlock;
-      } else {
-        expensive_task_policy = ExpensiveTaskPolicy::kThrottle;
-      }
       break;
 
     case UseCase::kTouchstart:
@@ -1517,8 +1407,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
       new_policy.loading_queue_policy().is_deferred = true;
       new_policy.timer_queue_policy().is_deferred = true;
-      // NOTE this is a nop due to the above.
-      expensive_task_policy = ExpensiveTaskPolicy::kBlock;
       break;
 
     case UseCase::kNone:
@@ -1527,7 +1415,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       if (main_thread_only().blocking_input_expected_soon &&
           any_thread().last_gesture_was_compositor_driven) {
         new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
-        expensive_task_policy = ExpensiveTaskPolicy::kBlock;
       }
       break;
 
@@ -1544,36 +1431,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   // TODO(skyostil): Add an idle state for foreground tabs too.
   if (main_thread_only().renderer_hidden)
     new_policy.rail_mode() = v8::PERFORMANCE_IDLE;
-
-  if (expensive_task_policy == ExpensiveTaskPolicy::kBlock &&
-      !main_thread_only().have_seen_a_begin_main_frame) {
-    expensive_task_policy = ExpensiveTaskPolicy::kRun;
-  }
-
-  if (scheduling_settings().disable_expensive_task_blocking)
-    expensive_task_policy = ExpensiveTaskPolicy::kRun;
-
-  switch (expensive_task_policy) {
-    case ExpensiveTaskPolicy::kRun:
-      break;
-
-    case ExpensiveTaskPolicy::kBlock:
-      if (loading_tasks_seem_expensive)
-        new_policy.loading_queue_policy().is_deferred = true;
-      if (timer_tasks_seem_expensive)
-        new_policy.timer_queue_policy().is_deferred = true;
-      break;
-
-    case ExpensiveTaskPolicy::kThrottle:
-      if (loading_tasks_seem_expensive) {
-        new_policy.loading_queue_policy().is_throttled = true;
-      }
-      if (timer_tasks_seem_expensive) {
-        new_policy.timer_queue_policy().is_throttled = true;
-      }
-      break;
-  }
-  main_thread_only().expensive_task_policy = expensive_task_policy;
 
   if (main_thread_only().renderer_pause_count != 0) {
     new_policy.loading_queue_policy().is_paused = true;
@@ -1694,8 +1551,7 @@ UseCase MainThreadSchedulerImpl::ComputeCurrentUseCase(
   // Special case for flings. This is needed because we don't get notification
   // of a fling ending (although we do for cancellation).
   if (any_thread().fling_compositor_escalation_deadline > now &&
-      !any_thread().awaiting_touch_start_response &&
-      !scheduling_settings().disable_non_touchstart_input_heuristics) {
+      !any_thread().awaiting_touch_start_response) {
     *expected_use_case_duration =
         any_thread().fling_compositor_escalation_deadline - now;
     return UseCase::kCompositorGesture;
@@ -1705,8 +1561,7 @@ UseCase MainThreadSchedulerImpl::ComputeCurrentUseCase(
       any_thread().user_model.TimeLeftInUserGesture(now);
   if (*expected_use_case_duration > base::TimeDelta()) {
     // Has a gesture been fully established?
-    if (any_thread().awaiting_touch_start_response &&
-        !scheduling_settings().disable_touchstart_input_heuristics) {
+    if (any_thread().awaiting_touch_start_response) {
       // No, so arrange for compositor tasks to be run at the highest priority.
       return UseCase::kTouchstart;
     }
@@ -1721,19 +1576,17 @@ UseCase MainThreadSchedulerImpl::ComputeCurrentUseCase(
     //    stream of input events and has prevented a default gesture from being
     //    started.
     // 4. SYNCHRONIZED_GESTURE where the gesture is processed on both threads.
-    if (!scheduling_settings().disable_non_touchstart_input_heuristics) {
-      if (any_thread().last_gesture_was_compositor_driven) {
-        if (any_thread().begin_main_frame_on_critical_path) {
-          return UseCase::kSynchronizedGesture;
-        } else {
-          return UseCase::kCompositorGesture;
-        }
-      }
-      if (any_thread().default_gesture_prevented) {
-        return UseCase::kMainThreadCustomInputHandling;
+    if (any_thread().last_gesture_was_compositor_driven) {
+      if (any_thread().begin_main_frame_on_critical_path) {
+        return UseCase::kSynchronizedGesture;
       } else {
-        return UseCase::kMainThreadGesture;
+        return UseCase::kCompositorGesture;
       }
+    }
+    if (any_thread().default_gesture_prevented) {
+      return UseCase::kMainThreadCustomInputHandling;
+    } else {
+      return UseCase::kMainThreadGesture;
     }
   }
 
@@ -1792,16 +1645,6 @@ bool MainThreadSchedulerImpl::CanEnterLongIdlePeriod(
 MainThreadSchedulerHelper*
 MainThreadSchedulerImpl::GetSchedulerHelperForTesting() {
   return &helper_;
-}
-
-TaskCostEstimator*
-MainThreadSchedulerImpl::GetLoadingTaskCostEstimatorForTesting() {
-  return &main_thread_only().loading_task_cost_estimator;
-}
-
-TaskCostEstimator*
-MainThreadSchedulerImpl::GetTimerTaskCostEstimatorForTesting() {
-  return &main_thread_only().timer_task_cost_estimator;
 }
 
 IdleTimeEstimator* MainThreadSchedulerImpl::GetIdleTimeEstimatorForTesting() {
@@ -2045,22 +1888,6 @@ void MainThreadSchedulerImpl::CreateTraceEventObjectSnapshotLocked() const {
       "MainThreadScheduler", this, AsValueLocked(helper_.NowTicks()));
 }
 
-// static
-const char* MainThreadSchedulerImpl::ExpensiveTaskPolicyToString(
-    ExpensiveTaskPolicy expensive_task_policy) {
-  switch (expensive_task_policy) {
-    case ExpensiveTaskPolicy::kRun:
-      return "run";
-    case ExpensiveTaskPolicy::kBlock:
-      return "block";
-    case ExpensiveTaskPolicy::kThrottle:
-      return "throttle";
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
-}
-
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 MainThreadSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   helper_.CheckOnValidThread();
@@ -2075,10 +1902,6 @@ MainThreadSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
       main_thread_only().has_visible_render_widget_with_touch_handler);
   state->SetString("current_use_case",
                    UseCaseToString(main_thread_only().current_use_case));
-  state->SetBoolean("loading_tasks_seem_expensive",
-                    main_thread_only().loading_tasks_seem_expensive);
-  state->SetBoolean("timer_tasks_seem_expensive",
-                    main_thread_only().timer_tasks_seem_expensive);
   state->SetBoolean("begin_frame_not_expected_soon",
                     main_thread_only().begin_frame_not_expected_soon);
   state->SetBoolean(
@@ -2122,14 +1945,6 @@ MainThreadSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
                     any_thread().last_gesture_was_compositor_driven);
   state->SetBoolean("default_gesture_prevented",
                     any_thread().default_gesture_prevented);
-  state->SetDouble("expected_loading_task_duration",
-                   main_thread_only()
-                       .loading_task_cost_estimator.expected_task_duration()
-                       .InMillisecondsF());
-  state->SetDouble("expected_timer_task_duration",
-                   main_thread_only()
-                       .timer_task_cost_estimator.expected_task_duration()
-                       .InMillisecondsF());
   state->SetBoolean("is_audio_playing", main_thread_only().is_audio_playing);
   state->SetBoolean("virtual_time_stopped",
                     main_thread_only().virtual_time_stopped);
@@ -2164,10 +1979,6 @@ MainThreadSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
       (main_thread_only().estimated_next_frame_begin - base::TimeTicks())
           .InMillisecondsF());
   state->SetBoolean("in_idle_period", any_thread().in_idle_period);
-
-  state->SetString(
-      "expensive_task_policy",
-      ExpensiveTaskPolicyToString(main_thread_only().expensive_task_policy));
 
   any_thread().user_model.AsValueInto(state.get());
   render_widget_scheduler_signals_.AsValueInto(state.get());
@@ -2339,8 +2150,6 @@ void MainThreadSchedulerImpl::ResetForNavigationLocked() {
   any_thread().have_seen_a_blocking_gesture = false;
   any_thread().waiting_for_meaningful_paint = true;
   any_thread().have_seen_input_since_navigation = false;
-  main_thread_only().loading_task_cost_estimator.Clear();
-  main_thread_only().timer_task_cost_estimator.Clear();
   main_thread_only().idle_time_estimator.Clear();
   main_thread_only().have_seen_a_begin_main_frame = false;
   main_thread_only().have_reported_blocking_intervention_since_navigation =
