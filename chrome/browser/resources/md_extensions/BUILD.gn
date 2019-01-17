@@ -103,6 +103,7 @@ js_library("activity_log") {
     ":activity_log_item",
     "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field",
     "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
   externs_list = [
     "$externs_path/activity_log_private.js",

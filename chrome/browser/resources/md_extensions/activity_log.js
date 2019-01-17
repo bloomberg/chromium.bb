@@ -222,6 +222,10 @@ cr.define('extensions', function() {
     /** @private {?number} */
     navigationListener_: null,
 
+    listeners: {
+      'view-enter-start': 'onViewEnterStart_',
+    },
+
     /** @override */
     attached: function() {
       // Fetch the activity log for the extension when this page is attached.
@@ -245,6 +249,15 @@ cr.define('extensions', function() {
     detached: function() {
       assert(extensions.navigation.removeListener(this.navigationListener_));
       this.navigationListener_ = null;
+    },
+
+    /**
+     * Focuses the back button when page is loaded.
+     * @private
+     */
+    onViewEnterStart_: function() {
+      Polymer.RenderStatus.afterNextRender(
+          this, () => cr.ui.focusWithoutInk(this.$.closeButton));
     },
 
     /**

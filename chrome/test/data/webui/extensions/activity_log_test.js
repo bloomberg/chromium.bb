@@ -313,7 +313,7 @@ suite('ExtensionsActivityLogTest', function() {
       currentPage = newPage;
     });
 
-    activityLog.$$('#close-button').click();
+    activityLog.$$('#closeButton').click();
     expectDeepEquals(
         currentPage, {page: Page.DETAILS, extensionId: EXTENSION_ID});
   });

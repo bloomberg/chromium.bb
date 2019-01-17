@@ -133,6 +133,13 @@ cr.define('extensions', function() {
       /** @private */
       showOptionsDialog_: Boolean,
 
+      /**
+       * Whether the last page the user navigated from was the activity log
+       * page.
+       * @private
+       */
+      fromActivityLog_: Boolean,
+
       // <if expr="chromeos">
       /** @private */
       kioskEnabled_: {
@@ -150,6 +157,8 @@ cr.define('extensions', function() {
 
     listeners: {
       'load-error': 'onLoadError_',
+      'view-enter-start': 'onViewEnterStart_',
+      'view-exit-start': 'onViewExitStart_',
       'view-exit-finish': 'onViewExitFinish_',
     },
 
@@ -533,15 +542,32 @@ cr.define('extensions', function() {
     },
 
     /** @private */
+    onViewEnterStart_: function() {
+      this.fromActivityLog_ = false;
+    },
+
+    /**
+     * @param {!CustomEvent} e
+     * @private
+     */
+    onViewExitStart_: function(e) {
+      const viewType = e.composedPath()[0].tagName;
+      this.fromActivityLog_ = viewType == 'EXTENSIONS-ACTIVITY-LOG';
+    },
+
+    /**
+     * @param {!CustomEvent} e
+     * @private
+     */
     onViewExitFinish_: function(e) {
-      const viewType = e.path[0].tagName;
+      const viewType = e.composedPath()[0].tagName;
       if (viewType == 'EXTENSIONS-ITEM-LIST' ||
           viewType == 'EXTENSIONS-KEYBOARD-SHORTCUTS' ||
           viewType == 'EXTENSIONS-ACTIVITY-LOG') {
         return;
       }
 
-      const extensionId = e.path[0].data.id;
+      const extensionId = e.composedPath()[0].data.id;
       const list = this.$$('extensions-item-list');
       const button = viewType == 'EXTENSIONS-DETAIL-VIEW' ?
           list.getDetailsButton(extensionId) :
