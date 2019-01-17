@@ -31,7 +31,7 @@
       </if>
 
       <!-- Material Design Bookmarks -->
-      <include name="IDR_COMPONENT_MD_BOOKMARKS_BOOKMARKS_HTML" file="md_bookmarks/bookmarks.html" type="BINDATA" />
+      <include name="IDR_COMPONENT_MD_BOOKMARKS_BOOKMARKS_HTML" file="bookmarks/bookmarks.html" type="BINDATA" />
       <!-- Gaia auth extension -->
       <include name="IDR_GAIA_AUTH_SUCCESS" file="gaia_auth/success.html" allowexternalscript="true" type="BINDATA" />
       <!-- Hangout Services extension, included in Google Chrome builds only. -->

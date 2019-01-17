@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/md_bookmarks/md_bookmarks_ui.h"
+#include "chrome/browser/ui/webui/bookmarks/bookmarks_ui.h"
 
 #include <algorithm>
 #include <memory>
@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
-#include "chrome/browser/ui/webui/md_bookmarks/bookmarks_message_handler.h"
+#include "chrome/browser/ui/webui/bookmarks/bookmarks_message_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
 #include "chrome/common/chrome_features.h"
@@ -47,7 +47,7 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   source->AddBoolean("isManaged", chrome::ShouldDisplayManagedUi(profile));
 
   // Build an Accelerator to describe undo shortcut
-  // NOTE: the undo shortcut is also defined in md_bookmarks/command_manager.js
+  // NOTE: the undo shortcut is also defined in bookmarks/command_manager.js
   // TODO(b/893033): de-duplicate shortcut by moving all shortcut definitions
   // from JS to C++.
   ui::Accelerator undoAccelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);

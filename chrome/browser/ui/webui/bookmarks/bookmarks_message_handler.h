@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_MD_BOOKMARKS_BOOKMARKS_MESSAGE_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_MD_BOOKMARKS_BOOKMARKS_MESSAGE_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_BOOKMARKS_BOOKMARKS_MESSAGE_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_BOOKMARKS_BOOKMARKS_MESSAGE_HANDLER_H_
 
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -36,4 +36,4 @@ class BookmarksMessageHandler : public content::WebUIMessageHandler {
   DISALLOW_COPY_AND_ASSIGN(BookmarksMessageHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_MD_BOOKMARKS_BOOKMARKS_MESSAGE_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_BOOKMARKS_BOOKMARKS_MESSAGE_HANDLER_H_

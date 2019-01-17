@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/md_bookmarks/bookmarks_message_handler.h"
+#include "chrome/browser/ui/webui/bookmarks/bookmarks_message_handler.h"
 
 #include "base/bind.h"
 #include "base/values.h"

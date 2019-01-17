@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/md_bookmarks/md_bookmarks_browsertest.h"
+#include "chrome/browser/ui/webui/bookmarks/bookmarks_browsertest.h"
 
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"

@@ -15,10 +15,10 @@ if (closure_compile) {
     ]
     if (is_linux || is_win || is_mac) {
       deps += [
+        "bookmarks:closure_compile",
         "discards:closure_compile",
         "local_state:closure_compile",
         "management:closure_compile",
-        "md_bookmarks:closure_compile",
         "md_downloads:closure_compile",
         "md_history:closure_compile",
         "md_user_manager:closure_compile",
