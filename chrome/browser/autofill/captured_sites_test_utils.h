@@ -154,8 +154,8 @@ class TestRecipeReplayChromeFeatureActionExecutor {
   // document.
   virtual bool AutofillForm(content::RenderFrameHost* frame,
                             const std::string& focus_element_css_selector,
-                            const int attempts = 1,
-                            const gfx::Point& offset = gfx::Point(0, 0));
+                            const std::vector<std::string> iframe_path,
+                            const int attempts = 1);
   virtual bool AddAutofillProfileInfo(const std::string& field_type,
                                       const std::string& field_value);
   virtual bool SetupAutofillProfile();
@@ -214,12 +214,12 @@ class TestRecipeReplayer {
   static void SetUpCommandLine(base::CommandLine* command_line);
   static bool PlaceFocusOnElement(content::RenderFrameHost* frame,
                                   const std::string& element_xpath,
-                                  const gfx::Point& offset);
-  static bool GetCenterCoordinateOfTargetElement(
+                                  const std::vector<std::string> iframe_path);
+  static bool GetBoundingRectOfTargetElement(
       content::RenderFrameHost* frame,
       const std::string& target_element_xpath,
-      int& x,
-      int& y);
+      const std::vector<std::string> iframe_path,
+      gfx::Rect* output_rect);
   static bool SimulateLeftMouseClickAt(
       content::RenderFrameHost* render_frame_host,
       const gfx::Point& point);
@@ -227,6 +227,15 @@ class TestRecipeReplayer {
                                    const gfx::Point& point);
 
  private:
+  static bool GetIFrameOffsetFromIFramePath(
+      content::RenderFrameHost* frame,
+      const std::vector<std::string>& iframe_path,
+      gfx::Vector2d* offset);
+  static bool GetBoundingRectOfTargetElement(
+      content::RenderFrameHost* frame,
+      const std::string& target_element_xpath,
+      gfx::Rect* output_rect);
+
   Browser* browser();
   TestRecipeReplayChromeFeatureActionExecutor* feature_action_executor();
   content::WebContents* GetWebContents();
@@ -264,8 +273,8 @@ class TestRecipeReplayer {
                                            std::string* xpath);
   bool GetTargetFrameFromAction(const base::DictionaryValue& action,
                                 content::RenderFrameHost** frame);
-  bool GetTargetFrameCoordOffsetFromAction(const base::DictionaryValue& action,
-                                           gfx::Point* point);
+  bool GetIFramePathFromAction(const base::DictionaryValue& action,
+                               std::vector<std::string>* iframe_path);
   bool GetTargetHTMLElementVisibilityEnumFromAction(
       const base::DictionaryValue& action,
       int* visibility_enum_val);
