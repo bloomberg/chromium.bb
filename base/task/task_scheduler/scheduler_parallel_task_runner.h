@@ -12,6 +12,7 @@
 #include "base/task/task_scheduler/scheduler_lock.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner.h"
+#include "base/thread_annotations.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -44,13 +45,12 @@ class BASE_EXPORT SchedulerParallelTaskRunner : public TaskRunner {
   const TaskTraits traits_;
   SchedulerTaskRunnerDelegate* const scheduler_task_runner_delegate_;
 
-  // Synchronizes access to |sequences_|.
   SchedulerLock lock_;
 
   // List of alive Sequences instantiated by this SchedulerParallelTaskRunner.
   // Sequences are added when they are instantiated, and removed when they are
   // destroyed.
-  base::flat_set<Sequence*> sequences_;
+  base::flat_set<Sequence*> sequences_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerParallelTaskRunner);
 };
