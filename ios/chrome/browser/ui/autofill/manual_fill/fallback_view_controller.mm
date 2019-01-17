@@ -33,7 +33,25 @@ constexpr CGFloat PopoverMaxHeight = 360;
 // loading indicator on iPad.
 constexpr CGFloat PopoverLoadingHeight = 185.5;
 
+// If the loading indicator was shown, it will be on screen for at least this
+// amount of seconds.
+constexpr CGFloat kMinimumLoadingTime = 0.5;
+
 }  // namespace
+
+@interface FallbackViewController ()
+
+// The date when the loading indicator started or [NSDate distantPast] if it
+// hasn't been shown.
+@property(nonatomic, strong) NSDate* loadingIndicatorStartingDate;
+
+// Data Items to be shown when the loading indicator disappears.
+@property(nonatomic, strong) NSArray<TableViewItem*>* queuedDataItems;
+
+// Action Items to be shown when the loading indicator disappears.
+@property(nonatomic, strong) NSArray<TableViewItem*>* queuedActionItems;
+
+@end
 
 @implementation FallbackViewController
 
@@ -51,6 +69,7 @@ constexpr CGFloat PopoverLoadingHeight = 185.5;
            selector:@selector(handleKeyboardDidHide:)
                name:UIKeyboardDidHideNotification
              object:nil];
+    _loadingIndicatorStartingDate = [NSDate distantPast];
   }
   return self;
 }
@@ -75,37 +94,100 @@ constexpr CGFloat PopoverLoadingHeight = 185.5;
           PopoverPreferredWidth, AlignValueToPixel(PopoverLoadingHeight));
     }
     [self startLoadingIndicatorWithLoadingMessage:@""];
+    self.loadingIndicatorStartingDate = [NSDate date];
   }
 }
 
 - (void)presentDataItems:(NSArray<TableViewItem*>*)items {
+  if (![self shouldPresentItems]) {
+    if (self.queuedDataItems) {
+      self.queuedDataItems = items;
+      return;
+    }
+    self.queuedDataItems = items;
+    NSTimeInterval remainingTime =
+        kMinimumLoadingTime - [self timeSinceLoadingIndicatorStarted];
+    __weak __typeof(self) weakSelf = self;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
+                                 (int64_t)(remainingTime * NSEC_PER_SEC)),
+                   dispatch_get_main_queue(), ^{
+                     [weakSelf presentQueuedDataItems];
+                   });
+    return;
+  }
+  self.queuedDataItems = items;
+  [self presentQueuedDataItems];
+}
+
+- (void)presentActionItems:(NSArray<TableViewItem*>*)actions {
+  if (![self shouldPresentItems]) {
+    if (self.queuedActionItems) {
+      self.queuedActionItems = actions;
+      return;
+    }
+    self.queuedActionItems = actions;
+    NSTimeInterval remainingTime =
+        kMinimumLoadingTime - [self timeSinceLoadingIndicatorStarted];
+    __weak __typeof(self) weakSelf = self;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
+                                 (int64_t)(remainingTime * NSEC_PER_SEC)),
+                   dispatch_get_main_queue(), ^{
+                     [weakSelf presentQueuedActionItems];
+                   });
+    return;
+  }
+  self.queuedActionItems = actions;
+  [self presentQueuedActionItems];
+}
+
+#pragma mark - Private
+
+// Presents the data items currently in queue.
+- (void)presentQueuedDataItems {
+  DCHECK(self.queuedDataItems);
   [self createModelIfNeeded];
   BOOL sectionExist = [self.tableViewModel
       hasSectionForSectionIdentifier:ItemsSectionIdentifier];
   // If there are no passed items, remove section if exist.
-  if (!items.count && sectionExist) {
+  if (!self.queuedDataItems.count && sectionExist) {
     [self.tableViewModel removeSectionWithIdentifier:ItemsSectionIdentifier];
-  } else if (items.count && !sectionExist) {
+  } else if (self.queuedDataItems.count && !sectionExist) {
     [self.tableViewModel insertSectionWithIdentifier:ItemsSectionIdentifier
                                              atIndex:0];
   }
-  [self presentFallbackItems:items inSection:ItemsSectionIdentifier];
+  [self presentFallbackItems:self.queuedDataItems
+                   inSection:ItemsSectionIdentifier];
+  self.queuedDataItems = nil;
 }
 
-- (void)presentActionItems:(NSArray<TableViewItem*>*)actions {
+// Presents the action items currently in queue.
+- (void)presentQueuedActionItems {
+  DCHECK(self.queuedActionItems);
   [self createModelIfNeeded];
   BOOL sectionExist = [self.tableViewModel
       hasSectionForSectionIdentifier:ActionsSectionIdentifier];
   // If there are no passed items, remove section if exist.
-  if (!actions.count && sectionExist) {
+  if (!self.queuedActionItems.count && sectionExist) {
     [self.tableViewModel removeSectionWithIdentifier:ActionsSectionIdentifier];
-  } else if (actions.count && !sectionExist) {
+  } else if (self.queuedActionItems.count && !sectionExist) {
     [self.tableViewModel addSectionWithIdentifier:ActionsSectionIdentifier];
   }
-  [self presentFallbackItems:actions inSection:ActionsSectionIdentifier];
+  [self presentFallbackItems:self.queuedActionItems
+                   inSection:ActionsSectionIdentifier];
+  self.queuedActionItems = nil;
 }
 
-#pragma mark - Private
+// Seconds since the loading indicator started. This is >> kMinimumLoadingTime
+// if the loading indicator wasn't shown.
+- (NSTimeInterval)timeSinceLoadingIndicatorStarted {
+  return
+      [[NSDate date] timeIntervalSinceDate:self.loadingIndicatorStartingDate];
+}
+
+// Indicates if the view is ready for data to be presented.
+- (BOOL)shouldPresentItems {
+  return [self timeSinceLoadingIndicatorStarted] >= kMinimumLoadingTime;
+}
 
 - (void)createModelIfNeeded {
   if (!self.tableViewModel) {
