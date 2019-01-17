@@ -30,6 +30,11 @@ bool GetIsInMultiWindowModeValue() {
   return is_in_multi_window_mode;
 }
 
+bool IsDownloadAutoResumptionEnabledInNative() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_FeatureUtilities_isDownloadAutoResumptionEnabledInNative(env);
+}
+
 } // namespace android
 } // namespace chrome
 

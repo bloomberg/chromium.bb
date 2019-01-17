@@ -361,6 +361,7 @@ public class DownloadManagerService
         }
         updateDownloadProgress(item, status);
 
+        if (FeatureUtilities.isDownloadAutoResumptionEnabledInNative()) return;
         DownloadProgress progress = mDownloadProgressMap.get(item.getId());
         if (progress == null) return;
         if (!isAutoResumable || sIsNetworkListenerDisabled) return;
@@ -1321,6 +1322,7 @@ public class DownloadManagerService
      * @param guid Id of the download item.
      */
     private void addAutoResumableDownload(String guid) {
+        if (FeatureUtilities.isDownloadAutoResumptionEnabledInNative()) return;
         if (mAutoResumableDownloadIds.isEmpty() && !sIsNetworkListenerDisabled) {
             mNetworkChangeNotifier = new NetworkChangeNotifierAutoDetect(
                     this, new RegistrationPolicyAlwaysRegister());
@@ -1335,6 +1337,7 @@ public class DownloadManagerService
      * @param guid Id of the download item.
      */
     private void removeAutoResumableDownload(String guid) {
+        if (FeatureUtilities.isDownloadAutoResumptionEnabledInNative()) return;
         if (mAutoResumableDownloadIds.isEmpty()) return;
         mAutoResumableDownloadIds.remove(guid);
         stopListenToConnectionChangeIfNotNeeded();
@@ -1352,6 +1355,7 @@ public class DownloadManagerService
 
     @Override
     public void onConnectionTypeChanged(int connectionType) {
+        if (FeatureUtilities.isDownloadAutoResumptionEnabledInNative()) return;
         if (mAutoResumableDownloadIds.isEmpty()) return;
         if (connectionType == ConnectionType.CONNECTION_NONE) return;
         boolean isMetered = isActiveNetworkMetered(ContextUtils.getApplicationContext());

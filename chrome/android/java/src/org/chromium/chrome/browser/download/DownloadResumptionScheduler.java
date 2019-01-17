@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download;
 import android.annotation.SuppressLint;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
@@ -36,6 +37,8 @@ public class DownloadResumptionScheduler {
      * if there are resumable downloads available.
      */
     public void scheduleIfNecessary() {
+        if (FeatureUtilities.isDownloadAutoResumptionEnabledInNative()) return;
+
         List<DownloadSharedPreferenceEntry> entries =
                 DownloadSharedPreferenceHelper.getInstance().getEntries();
 

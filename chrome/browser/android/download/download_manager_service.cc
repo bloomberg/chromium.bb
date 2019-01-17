@@ -18,6 +18,7 @@
 #include "chrome/browser/android/download/download_controller.h"
 #include "chrome/browser/android/download/download_utils.h"
 #include "chrome/browser/android/download/service/download_task_scheduler.h"
+#include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
@@ -83,6 +84,8 @@ void DownloadManagerService::CreateAutoResumptionHandler() {
   auto config = std::make_unique<download::AutoResumptionHandler::Config>();
   config->auto_resumption_size_limit =
       DownloadUtils::GetAutoResumptionSizeLimit();
+  config->is_auto_resumption_enabled_in_native =
+      chrome::android::IsDownloadAutoResumptionEnabledInNative();
   download::AutoResumptionHandler::Create(
       std::move(network_listener), std::move(task_manager), std::move(config));
 }

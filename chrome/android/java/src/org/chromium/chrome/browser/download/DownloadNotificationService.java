@@ -31,6 +31,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
@@ -528,6 +529,8 @@ public class DownloadNotificationService {
      * already in progress, do nothing.
      */
     void resumeAllPendingDownloads() {
+        if (FeatureUtilities.isDownloadAutoResumptionEnabledInNative()) return;
+
         // Limit the number of auto resumption attempts in case Chrome falls into a vicious cycle.
         DownloadResumptionScheduler.getDownloadResumptionScheduler().cancel();
         int numAutoResumptionAtemptLeft = getResumptionAttemptLeft();
