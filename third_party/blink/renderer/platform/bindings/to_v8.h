@@ -60,11 +60,12 @@ inline v8::Local<v8::Value> ToV8(CallbackFunctionBase* callback,
 inline v8::Local<v8::Value> ToV8(CallbackInterfaceBase* callback,
                                  v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
-  // |creation_context| is intentionally ignored. Callback interface objects
-  // are not wrappers nor clonable. ToV8 on a callback interface object must
-  // be used only when it's the same origin-domain in the same world.
-  DCHECK(!callback || (callback->CallbackRelevantScriptState()->GetContext() ==
-                       creation_context->CreationContext()));
+  // |creation_context| is intentionally ignored. Callback interfaces are not
+  // wrappers nor clonable. ToV8 on a callback interface must be used only when
+  // it's in the same world.
+  DCHECK(!callback ||
+         (&callback->GetWorld() ==
+          &ScriptState::From(creation_context->CreationContext())->World()));
   return callback ? callback->CallbackObject().As<v8::Value>()
                   : v8::Null(isolate).As<v8::Value>();
 }
