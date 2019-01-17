@@ -21,7 +21,7 @@ extern "C" {
 // results of these decisions and then calls av1_encode()
 int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                         uint8_t *const dest, unsigned int *frame_flags,
-                        struct lookahead_entry *source);
+                        const EncodeFrameInput *const frame_input);
 
 #ifdef __cplusplus
 }  // extern "C"

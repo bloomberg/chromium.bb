@@ -5529,19 +5529,27 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 }
 
 int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
+               const EncodeFrameInput *const frame_input,
                const EncodeFrameParams *const frame_params,
                EncodeFrameResults *const frame_results) {
   AV1_COMMON *const cm = &cpi->common;
 
-  // TODO(david.turner@argondesign.com): Copy data from frame_params to cpi and
-  // cm as appropriate
+  cpi->unscaled_source = frame_input->source;
+  cpi->source = frame_input->source;
+  cpi->unscaled_last_source = frame_input->last_source;
 
   cm->error_resilient_mode = frame_params->error_resilient_mode;
   cpi->ref_frame_flags = frame_params->ref_frame_flags;
   cpi->speed = frame_params->speed;
 
-  if (encode_frame_to_data_rate(cpi, &frame_results->size, dest,
-                                frame_params->frame_flags) != AOM_CODEC_OK) {
+  if (cpi->oxcf.pass == 1) {
+    av1_first_pass(cpi, frame_input->ts_duration);
+  } else if (cpi->oxcf.pass == 0 || cpi->oxcf.pass == 2) {
+    if (encode_frame_to_data_rate(cpi, &frame_results->size, dest,
+                                  frame_params->frame_flags) != AOM_CODEC_OK) {
+      return AOM_CODEC_ERROR;
+    }
+  } else {
     return AOM_CODEC_ERROR;
   }
 
@@ -5877,7 +5885,8 @@ typedef struct GF_PICTURE {
 } GF_PICTURE;
 
 static void init_gop_frames(AV1_COMP *cpi, GF_PICTURE *gf_picture,
-                            const GF_GROUP *gf_group, int *tpl_group_frames) {
+                            const GF_GROUP *gf_group, int *tpl_group_frames,
+                            const EncodeFrameInput *const frame_input) {
   AV1_COMMON *cm = &cpi->common;
   const SequenceHeader *const seq_params = &cm->seq_params;
   int frame_idx = 0;
@@ -5927,7 +5936,7 @@ static void init_gop_frames(AV1_COMP *cpi, GF_PICTURE *gf_picture,
   ++*tpl_group_frames;
 
   // Initialize ARF frame
-  gf_picture[1].frame = cpi->source;
+  gf_picture[1].frame = frame_input->source;
   gf_picture[1].ref_frame[0] = gld_index;
   gf_picture[1].ref_frame[1] = lst_index;
   gf_picture[1].ref_frame[2] = alt_index;
@@ -6426,13 +6435,14 @@ static void mc_flow_dispenser(AV1_COMP *cpi, GF_PICTURE *gf_picture,
   }
 }
 
-static void setup_tpl_stats(AV1_COMP *cpi) {
+static void setup_tpl_stats(AV1_COMP *cpi,
+                            const EncodeFrameInput *const frame_input) {
   GF_PICTURE gf_picture[MAX_LAG_BUFFERS];
   const GF_GROUP *gf_group = &cpi->twopass.gf_group;
   int tpl_group_frames = 0;
   int frame_idx;
 
-  init_gop_frames(cpi, gf_picture, gf_group, &tpl_group_frames);
+  init_gop_frames(cpi, gf_picture, gf_group, &tpl_group_frames, frame_input);
 
   init_tpl_stats(cpi);
 
@@ -6607,6 +6617,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   AV1_COMMON *const cm = &cpi->common;
   struct aom_usec_timer cmptimer;
+  EncodeFrameInput frame_input;
 
 #if CONFIG_BITSTREAM_DEBUG
   assert(cpi->oxcf.max_threads == 0 &&
@@ -6659,14 +6670,9 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     return -1;
   }
 
-  if (temporal_filtered) {
-    cpi->unscaled_source = &cpi->alt_ref_buffer;
-    cpi->source = &cpi->alt_ref_buffer;
-  } else {
-    cpi->unscaled_source = &source->img;
-    cpi->source = &source->img;
-  }
-  cpi->unscaled_last_source = last_source != NULL ? &last_source->img : NULL;
+  frame_input.source = temporal_filtered ? &cpi->alt_ref_buffer : &source->img;
+  frame_input.last_source = last_source != NULL ? &last_source->img : NULL;
+  frame_input.ts_duration = source->ts_end - source->ts_start;
 
   *time_stamp = source->ts_start;
   *time_end = source->ts_end;
@@ -6722,11 +6728,11 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
     if (cpi->twopass.gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
       set_frame_size(cpi, cm->width, cm->height);
-      setup_tpl_stats(cpi);
+      setup_tpl_stats(cpi, &frame_input);
     }
   }
 
-  if (av1_encode_strategy(cpi, size, dest, frame_flags, source) !=
+  if (av1_encode_strategy(cpi, size, dest, frame_flags, &frame_input) !=
       AOM_CODEC_OK) {
     return AOM_CODEC_ERROR;
   }

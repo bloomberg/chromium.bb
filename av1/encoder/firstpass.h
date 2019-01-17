@@ -174,7 +174,7 @@ struct AV1_COMP;
 
 void av1_init_first_pass(struct AV1_COMP *cpi);
 void av1_rc_get_first_pass_params(struct AV1_COMP *cpi);
-void av1_first_pass(struct AV1_COMP *cpi, const struct lookahead_entry *source);
+void av1_first_pass(struct AV1_COMP *cpi, const int64_t ts_duration);
 void av1_end_first_pass(struct AV1_COMP *cpi);
 
 void av1_init_second_pass(struct AV1_COMP *cpi);

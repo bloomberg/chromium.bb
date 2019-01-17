@@ -237,6 +237,7 @@ static int get_ref_frame_flags(const AV1_COMP *const cpi) {
 }
 
 static int Pass0Encode(AV1_COMP *const cpi, uint8_t *const dest,
+                       const EncodeFrameInput *const frame_input,
                        EncodeFrameParams *const frame_params,
                        EncodeFrameResults *const frame_results) {
   if (cpi->oxcf.rc_mode == AOM_CBR) {
@@ -251,7 +252,8 @@ static int Pass0Encode(AV1_COMP *const cpi, uint8_t *const dest,
   // Work out which reference frame slots may be used.
   frame_params->ref_frame_flags = get_ref_frame_flags(cpi);
 
-  if (av1_encode(cpi, dest, frame_params, frame_results) != AOM_CODEC_OK) {
+  if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
+      AOM_CODEC_OK) {
     return AOM_CODEC_ERROR;
   }
 
@@ -265,7 +267,16 @@ static int Pass0Encode(AV1_COMP *const cpi, uint8_t *const dest,
   return AOM_CODEC_OK;
 }
 
+static int Pass1Encode(AV1_COMP *const cpi,
+                       const EncodeFrameInput *const frame_input,
+                       EncodeFrameParams *const frame_params) {
+  cpi->td.mb.e_mbd.lossless[0] = is_lossless_requested(&cpi->oxcf);
+  av1_encode(cpi, NULL, frame_input, frame_params, NULL);
+  return AOM_CODEC_OK;
+}
+
 static int Pass2Encode(AV1_COMP *const cpi, uint8_t *const dest,
+                       const EncodeFrameInput *const frame_input,
                        EncodeFrameParams *const frame_params,
                        EncodeFrameResults *const frame_results) {
   AV1_COMMON *const cm = &cpi->common;
@@ -284,7 +295,8 @@ static int Pass2Encode(AV1_COMP *const cpi, uint8_t *const dest,
   // Work out which reference frame slots may be used.
   frame_params->ref_frame_flags = get_ref_frame_flags(cpi);
 
-  if (av1_encode(cpi, dest, frame_params, frame_results) != AOM_CODEC_OK) {
+  if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
+      AOM_CODEC_OK) {
     return AOM_CODEC_ERROR;
   }
 
@@ -310,7 +322,7 @@ static int Pass2Encode(AV1_COMP *const cpi, uint8_t *const dest,
 
 int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                         uint8_t *const dest, unsigned int *frame_flags,
-                        struct lookahead_entry *source) {
+                        const EncodeFrameInput *const frame_input) {
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
 
   EncodeFrameParams frame_params;
@@ -332,14 +344,17 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   frame_params.speed = oxcf->speed;
 
   if (oxcf->pass == 0) {  // Single pass encode
-    if (Pass0Encode(cpi, dest, &frame_params, &frame_results) != AOM_CODEC_OK) {
+    if (Pass0Encode(cpi, dest, frame_input, &frame_params, &frame_results) !=
+        AOM_CODEC_OK) {
       return AOM_CODEC_ERROR;
     }
   } else if (oxcf->pass == 1) {  // Two-pass encode, first pass
-    cpi->td.mb.e_mbd.lossless[0] = is_lossless_requested(oxcf);
-    av1_first_pass(cpi, source);
+    if (Pass1Encode(cpi, frame_input, &frame_params) != AOM_CODEC_OK) {
+      return AOM_CODEC_ERROR;
+    }
   } else if (oxcf->pass == 2) {  // Two-pass encode, second pass
-    if (Pass2Encode(cpi, dest, &frame_params, &frame_results) != AOM_CODEC_OK) {
+    if (Pass2Encode(cpi, dest, frame_input, &frame_params, &frame_results) !=
+        AOM_CODEC_OK) {
       return AOM_CODEC_ERROR;
     }
   }

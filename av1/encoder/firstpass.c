@@ -486,7 +486,7 @@ static double raw_motion_error_stdev(int *raw_motion_err_list,
 
 #define UL_INTRA_THRESH 50
 #define INVALID_ROW -1
-void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
+void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   int mb_row, mb_col;
   MACROBLOCK *const x = &cpi->td.mb;
   AV1_COMMON *const cm = &cpi->common;
@@ -1040,7 +1040,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
     // TODO(paulwilkins):  Handle the case when duration is set to 0, or
     // something less than the full time between subsequent values of
     // cpi->source_time_stamp.
-    fps.duration = (double)(source->ts_end - source->ts_start);
+    fps.duration = (double)ts_duration;
 
     // Don't want to do output stats with a stack variable!
     twopass->this_frame_stats = fps;
