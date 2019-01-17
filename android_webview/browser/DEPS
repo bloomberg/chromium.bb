@@ -8,6 +8,7 @@ include_rules = [
   "+cc",
   "+components/autofill/android",
   "+components/autofill/content/browser",
+  "+components/autofill/content/common",
   "+components/autofill/core/browser",
   "+components/autofill/core/common",
   "+components/cdm/browser",
@@ -83,5 +84,7 @@ include_rules = [
   # For find-in-page
   "+third_party/blink/public/mojom/frame",
   # Required for the Web Speech API.
-  "+third_party/blink/public/mojom/speech"
+  "+third_party/blink/public/mojom/speech",
+  # For the content_browser overlay manifest
+  "+third_party/blink/public/platform",
 ]
