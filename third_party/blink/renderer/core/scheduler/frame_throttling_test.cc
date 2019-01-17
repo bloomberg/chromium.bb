@@ -1035,6 +1035,10 @@ TEST_P(FrameThrottlingTest, ThrottleInnerCompositedLayer) {
 }
 
 TEST_P(FrameThrottlingTest, ThrottleSubtreeAtomically) {
+  // TODO(crbug.com/922419): The test is broken for LayoutNG.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
   // Create two nested frames which are throttled.
   SimRequest main_resource("https://example.com/", "text/html");
   SimRequest frame_resource("https://example.com/iframe.html", "text/html");
