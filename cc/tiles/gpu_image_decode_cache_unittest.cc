@@ -2120,7 +2120,8 @@ TEST_P(GpuImageDecodeCacheTest,
     // image we've cached.
     EXPECT_TRUE(decoded_image == decoded_draw_image.image());
     // Ensure that the SW decoded image had colorspace conversion applied.
-    EXPECT_TRUE(decoded_image->colorSpace() == target_color_space.get());
+    EXPECT_TRUE(SkColorSpace::Equals(decoded_image->colorSpace(),
+                                     target_color_space.get()));
   }
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
@@ -2169,8 +2170,8 @@ TEST_P(GpuImageDecodeCacheTest,
                                      target_color_space.get()));
   } else {
     // Ensure that the HW uploaded image had color space conversion applied.
-    EXPECT_TRUE(decoded_draw_image.image()->colorSpace() ==
-                target_color_space.get());
+    EXPECT_TRUE(SkColorSpace::Equals(decoded_draw_image.image()->colorSpace(),
+                                     target_color_space.get()));
   }
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);

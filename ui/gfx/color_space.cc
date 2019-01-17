@@ -10,7 +10,6 @@
 #include <sstream>
 
 #include "base/atomic_sequence_num.h"
-#include "base/containers/mru_cache.h"
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
@@ -24,20 +23,6 @@ namespace gfx {
 namespace {
 
 base::AtomicSequenceNumber g_color_space_id;
-
-// See comments in ToSkColorSpace about this cache. This cache may only be
-// accessed while holding g_sk_color_space_cache_lock.
-static const size_t kMaxCachedSkColorSpaces = 16;
-using SkColorSpaceCacheBase =
-    base::MRUCache<gfx::ColorSpace, sk_sp<SkColorSpace>>;
-class SkColorSpaceCache : public SkColorSpaceCacheBase {
- public:
-  SkColorSpaceCache() : SkColorSpaceCacheBase(kMaxCachedSkColorSpaces) {}
-};
-base::LazyInstance<SkColorSpaceCache>::Leaky g_sk_color_space_cache =
-    LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<base::Lock>::Leaky g_sk_color_space_cache_lock =
-    LAZY_INSTANCE_INITIALIZER;
 
 static bool IsAlmostZero(float value) {
   return std::abs(value) < std::numeric_limits<float>::epsilon();
@@ -473,8 +458,6 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   }
 
   // Use the named SRGB and linear-SRGB instead of the generic constructors.
-  // These do not need to be cached because skia will always return the same
-  // pointer.
   if (primaries_ == PrimaryID::BT709) {
     if (transfer_ == TransferID::IEC61966_2_1)
       return SkColorSpace::MakeSRGB();
@@ -515,21 +498,11 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
       break;
   }
 
-  // Maintain a gfx::ColorSpace to SkColorSpace map, so that pointer-based
-  // comparisons of SkColorSpaces will be more likely to be accurate.
-  // https://crbug.com/793116
-  base::AutoLock lock(g_sk_color_space_cache_lock.Get());
-
-  auto found = g_sk_color_space_cache.Get().Get(*this);
-  if (found != g_sk_color_space_cache.Get().end())
-    return found->second;
-
   sk_sp<SkColorSpace> sk_color_space =
       SkColorSpace::MakeRGB(transfer_fn, gamut);
   if (!sk_color_space)
     DLOG(ERROR) << "SkColorSpace::MakeRGB failed.";
 
-  g_sk_color_space_cache.Get().Put(*this, sk_color_space);
   return sk_color_space;
 }
 
