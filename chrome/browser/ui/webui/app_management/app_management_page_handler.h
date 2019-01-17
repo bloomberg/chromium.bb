@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
+#include "chrome/browser/ui/webui/app_management/app_management_shelf_delegate_chromeos.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -24,17 +25,23 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
                            content::WebUI* web_ui);
   ~AppManagementPageHandler() override;
 
+  void OnPinnedChanged(const std::string& app_id, bool pinned);
+
   // app_management::mojom::PageHandler:
   void GetApps(GetAppsCallback callback) override;
-  void SetPermission(const std::string& app_id,
-                     apps::mojom::PermissionPtr permission) override;
   void GetExtensionAppPermissionMessages(
       const std::string& app_id,
       GetExtensionAppPermissionMessagesCallback callback) override;
+  void SetPinned(const std::string& app_id,
+                 apps::mojom::OptionalBool pinned) override;
+  void SetPermission(const std::string& app_id,
+                     apps::mojom::PermissionPtr permission) override;
   void Uninstall(const std::string& app_id) override;
   void OpenNativeSettings(const std::string& app_id) override;
 
  private:
+  app_management::mojom::AppPtr CreateUIAppPtr(const apps::AppUpdate& update);
+
   // apps::AppRegistryCache::Observer overrides:
   void OnAppUpdate(const apps::AppUpdate& update) override;
 
@@ -43,6 +50,10 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
   app_management::mojom::PagePtr page_;
 
   Profile* profile_;
+
+#if defined(OS_CHROMEOS)
+  AppManagementShelfDelegate shelf_delegate_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(AppManagementPageHandler);
 };
