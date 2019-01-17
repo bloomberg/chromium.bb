@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/url_constants.h"
@@ -230,9 +231,14 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
   }
 
   void CreateNavigationHandle() {
+    scoped_refptr<FrameNavigationEntry> frame_entry(new FrameNavigationEntry());
+    request_ = NavigationRequest::CreateBrowserInitiated(
+        main_test_rfh()->frame_tree_node(), CommonNavigationParams(),
+        CommitNavigationParams(), false /* browser-initiated */, std::string(),
+        *frame_entry, nullptr, nullptr, nullptr);
     test_handle_ =
         base::WrapUnique<NavigationHandleImpl>(new NavigationHandleImpl(
-            GURL(), base::nullopt, std::vector<GURL>(),
+            request_.get(), GURL(), base::nullopt, std::vector<GURL>(),
             main_test_rfh()->frame_tree_node(),
             true,   // is_renderer_initiated
             false,  // is_same_document
@@ -265,6 +271,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
 
   void ResetNavigationHandle() { test_handle_ = nullptr; }
 
+  std::unique_ptr<NavigationRequest> request_;
   std::unique_ptr<NavigationHandleImpl> test_handle_;
   bool was_callback_called_;
   NavigationThrottle::ThrottleCheckResult callback_result_;
