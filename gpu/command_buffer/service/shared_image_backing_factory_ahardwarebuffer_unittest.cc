@@ -20,6 +20,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gfx/color_space.h"
@@ -150,10 +151,14 @@ TEST_F(SharedImageBackingFactoryAHBTest, Basic) {
   EXPECT_EQ(size.width(), surface->width());
   EXPECT_EQ(size.height(), surface->height());
   skia_representation->EndWriteAccess(std::move(surface));
-  GrBackendTexture backend_texture;
-  EXPECT_TRUE(skia_representation->BeginReadAccess(nullptr, &backend_texture));
-  EXPECT_EQ(size.width(), backend_texture.width());
-  EXPECT_EQ(size.width(), backend_texture.width());
+  auto promise_texture = skia_representation->BeginReadAccess(nullptr);
+  EXPECT_TRUE(promise_texture);
+  if (promise_texture) {
+    GrBackendTexture backend_texture = promise_texture->backendTexture();
+    EXPECT_TRUE(backend_texture.isValid());
+    EXPECT_EQ(size.width(), backend_texture.width());
+    EXPECT_EQ(size.height(), backend_texture.height());
+  }
   skia_representation->EndReadAccess();
   skia_representation.reset();
 
@@ -210,14 +215,18 @@ TEST_F(SharedImageBackingFactoryAHBTest, GLSkiaGL) {
   auto skia_representation =
       shared_image_representation_factory_->ProduceSkia(mailbox);
   EXPECT_TRUE(skia_representation);
-  GrBackendTexture backend_texture;
-  EXPECT_TRUE(skia_representation->BeginReadAccess(nullptr, &backend_texture));
-  EXPECT_EQ(size.width(), backend_texture.width());
-  EXPECT_EQ(size.width(), backend_texture.width());
+  auto promise_texture = skia_representation->BeginReadAccess(nullptr);
+  EXPECT_TRUE(promise_texture);
+  if (promise_texture) {
+    GrBackendTexture backend_texture = promise_texture->backendTexture();
+    EXPECT_TRUE(backend_texture.isValid());
+    EXPECT_EQ(size.width(), backend_texture.width());
+    EXPECT_EQ(size.height(), backend_texture.height());
+  }
 
   // Create an Sk Image from GrBackendTexture.
   auto sk_image = SkImage::MakeFromTexture(
-      gr_context(), backend_texture, kTopLeft_GrSurfaceOrigin,
+      gr_context(), promise_texture->backendTexture(), kTopLeft_GrSurfaceOrigin,
       kRGBA_8888_SkColorType, kOpaque_SkAlphaType, nullptr);
 
   SkImageInfo dst_info =

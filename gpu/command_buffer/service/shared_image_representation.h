@@ -16,6 +16,7 @@
 
 class GrContext;
 typedef unsigned int GLenum;
+class SkPromiseImageTexture;
 
 namespace gpu {
 namespace gles2 {
@@ -112,8 +113,8 @@ class SharedImageRepresentationSkia : public SharedImageRepresentation {
       int final_msaa_count,
       const SkSurfaceProps& surface_props) = 0;
   virtual void EndWriteAccess(sk_sp<SkSurface> surface) = 0;
-  virtual bool BeginReadAccess(SkSurface* sk_surface,
-                               GrBackendTexture* backend_texture_out) = 0;
+  virtual sk_sp<SkPromiseImageTexture> BeginReadAccess(
+      SkSurface* sk_surface) = 0;
   virtual void EndReadAccess() = 0;
 };
 

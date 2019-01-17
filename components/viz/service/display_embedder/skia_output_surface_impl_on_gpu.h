@@ -22,6 +22,7 @@
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
+#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/latency/latency_tracker.h"
 
@@ -108,19 +109,17 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
                   std::unique_ptr<CopyOutputRequest> request);
 
   // Fulfill callback for promise SkImage created from a resource.
-  void FulfillPromiseTexture(
+  sk_sp<SkPromiseImageTexture> FulfillPromiseTexture(
       const gpu::MailboxHolder& mailbox_holder,
       const gfx::Size& size,
       const ResourceFormat resource_format,
-      std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out,
-      GrBackendTexture* backend_texture);
+      std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out);
   // Fulfill callback for promise SkImage created from a render pass.
   // |shared_image_out| is ignored for render passes, as these aren't based on
   // SharedImage.
-  void FulfillPromiseTexture(
+  sk_sp<SkPromiseImageTexture> FulfillPromiseTexture(
       const RenderPassId id,
-      std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out,
-      GrBackendTexture* backend_texture);
+      std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out);
 
   sk_sp<GrContextThreadSafeProxy> GetGrContextThreadSafeProxy();
   const gl::GLVersionInfo* gl_version_info() const { return gl_version_info_; }
@@ -189,7 +188,17 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
 
   // Offscreen surfaces for render passes. It can only be accessed on GPU
   // thread.
-  base::flat_map<RenderPassId, sk_sp<SkSurface>> offscreen_surfaces_;
+  struct OffscreenSurface {
+    OffscreenSurface();
+    OffscreenSurface(const OffscreenSurface& offscreen_surface);
+    OffscreenSurface(OffscreenSurface&& offscreen_surface);
+    OffscreenSurface& operator=(const OffscreenSurface& offscreen_surface);
+    OffscreenSurface& operator=(OffscreenSurface&& offscreen_surface);
+    ~OffscreenSurface();
+    sk_sp<SkSurface> surface;
+    sk_sp<SkPromiseImageTexture> promise_texture;
+  };
+  base::flat_map<RenderPassId, OffscreenSurface> offscreen_surfaces_;
 
   // Params are pushed each time we begin a swap, and popped each time we
   // present or complete a swap.

@@ -70,6 +70,24 @@ class FakeOnScreenSurface : public gl::GLSurfaceAdapter {
 
 }  // namespace
 
+SkiaOutputSurfaceImplOnGpu::OffscreenSurface::OffscreenSurface() = default;
+
+SkiaOutputSurfaceImplOnGpu::OffscreenSurface::~OffscreenSurface() = default;
+
+SkiaOutputSurfaceImplOnGpu::OffscreenSurface::OffscreenSurface(
+    const OffscreenSurface& offscreen_surface) = default;
+
+SkiaOutputSurfaceImplOnGpu::OffscreenSurface::OffscreenSurface(
+    OffscreenSurface&& offscreen_surface) = default;
+
+SkiaOutputSurfaceImplOnGpu::OffscreenSurface&
+SkiaOutputSurfaceImplOnGpu::OffscreenSurface::operator=(
+    const OffscreenSurface& offscreen_surface) = default;
+
+SkiaOutputSurfaceImplOnGpu::OffscreenSurface&
+SkiaOutputSurfaceImplOnGpu::OffscreenSurface::operator=(
+    OffscreenSurface&& offscreen_surface) = default;
+
 SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
     GpuServiceImpl* gpu_service,
     gpu::SurfaceHandle surface_handle,
@@ -315,7 +333,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
   if (!MakeCurrent())
     return;
 
-  auto& surface = offscreen_surfaces_[id];
+  auto& surface = offscreen_surfaces_[id].surface;
   SkSurfaceCharacterization characterization;
   // TODO(penghuang): Using characterization != ddl->characterization(), when
   // the SkSurfaceCharacterization::operator!= is implemented in Skia.
@@ -360,7 +378,8 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     return;
 
   DCHECK(!id || offscreen_surfaces_.find(id) != offscreen_surfaces_.end());
-  auto* surface = id ? offscreen_surfaces_[id].get() : sk_surface_.get();
+  auto* surface =
+      id ? offscreen_surfaces_[id].surface.get() : sk_surface_.get();
 
   SkBitmap bitmap;
   SkImageInfo copy_rect_info = SkImageInfo::Make(
@@ -413,70 +432,76 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
       result_format, result_rect, bitmap));
 }
 
-void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
+sk_sp<SkPromiseImageTexture> SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     const gpu::MailboxHolder& mailbox_holder,
     const gfx::Size& size,
     const ResourceFormat resource_format,
-    std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out,
-    GrBackendTexture* backend_texture) {
+    std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (*shared_image_out) {
-    DCHECK(shared_image_representation_factory_->IsSharedImage(
-        mailbox_holder.mailbox));
-    bool result = (*shared_image_out)
-                      ->BeginReadAccess(sk_surface_.get(), backend_texture);
-    ALLOW_UNUSED_LOCAL(result);
-    DLOG_IF(ERROR, !result)
-        << "Failed to begin read access for SharedImageRepresentationSkia";
-    return;
-  }
-  if (shared_image_representation_factory_->IsSharedImage(
-          mailbox_holder.mailbox)) {
+  if (!*shared_image_out && shared_image_representation_factory_->IsSharedImage(
+                                mailbox_holder.mailbox)) {
     std::unique_ptr<gpu::SharedImageRepresentationSkia> shared_image =
         shared_image_representation_factory_->ProduceSkia(
             mailbox_holder.mailbox);
     DCHECK(shared_image);
-    if (!shared_image->BeginReadAccess(sk_surface_.get(), backend_texture)) {
-      DLOG(ERROR)
-          << "Failed to begin read access for SharedImageRepresentationSkia";
-      return;
-    }
     *shared_image_out = std::move(shared_image);
-    return;
+  }
+  if (*shared_image_out) {
+    DCHECK(shared_image_representation_factory_->IsSharedImage(
+        mailbox_holder.mailbox));
+    auto promise_texture =
+        (*shared_image_out)->BeginReadAccess(sk_surface_.get());
+    DLOG_IF(ERROR, !promise_texture)
+        << "Failed to begin read access for SharedImageRepresentationSkia";
+    return promise_texture;
   }
 
   if (gpu_service_->is_using_vulkan()) {
     // Probably this texture is created with wrong inteface (GLES2Interface).
     DLOG(ERROR) << "Failed to fulfill the promise texture whose backend is not "
                    "compitable with vulkan.";
-    return;
+    return nullptr;
   }
 
   auto* mailbox_manager = gpu_service_->mailbox_manager();
   auto* texture_base = mailbox_manager->ConsumeTexture(mailbox_holder.mailbox);
   if (!texture_base) {
     DLOG(ERROR) << "Failed to fulfill the promise texture.";
-    return;
+    return nullptr;
   }
   BindOrCopyTextureIfNecessary(texture_base);
+  GrBackendTexture backend_texture;
   gpu::GetGrBackendTexture(gl_version_info_, texture_base->target(), size,
                            texture_base->service_id(), resource_format,
-                           backend_texture);
+                           &backend_texture);
+  if (!backend_texture.isValid()) {
+    DLOG(ERROR) << "Failed to fulfill the promise texture.";
+    return nullptr;
+  }
+  return SkPromiseImageTexture::Make(backend_texture);
 }
 
-void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
+sk_sp<SkPromiseImageTexture> SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     const RenderPassId id,
-    std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out,
-    GrBackendTexture* backend_texture) {
+    std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out) {
   DCHECK(!*shared_image_out);
   auto it = offscreen_surfaces_.find(id);
   DCHECK(it != offscreen_surfaces_.end());
-  sk_sp<SkSurface>& surface = it->second;
-  *backend_texture =
-      surface->getBackendTexture(SkSurface::kFlushRead_BackendHandleAccess);
-  DLOG_IF(ERROR, !backend_texture->isValid())
-      << "Failed to fulfill the promise texture created from RenderPassId:"
-      << id;
+  auto& surface = it->second.surface;
+  auto& promise_texture = it->second.promise_texture;
+  if (!promise_texture) {
+    promise_texture = SkPromiseImageTexture::Make(
+        surface->getBackendTexture(SkSurface::kFlushRead_BackendHandleAccess));
+    if (!promise_texture) {
+      DLOG(ERROR)
+          << "Failed to fulfill the promise texture created from RenderPassId:"
+          << id;
+      return nullptr;
+    }
+  } else {
+    surface->flush();
+  }
+  return promise_texture;
 }
 
 sk_sp<GrContextThreadSafeProxy>
