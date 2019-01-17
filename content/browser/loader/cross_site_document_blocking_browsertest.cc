@@ -36,7 +36,6 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/test_content_browser_client.h"
-#include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/cross_origin_read_blocking.h"
@@ -107,6 +106,11 @@ void InspectHistograms(
     is_restricted_uma_expected = true;
     FetchHistogramsFromChildProcesses();
 
+    // TODO(lukasza): https://crbug.com/910287: Remove the special case below
+    // after ensuring that |request_initiator| coming through AppCache is
+    // trustworthy (today kBrowserProcess will be reported in
+    // NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility UMA when
+    // AppCache is relaying renderer requests through a browser process).
     auto expected_lock_compatibility =
         special_request_initiator_origin_lock_check_for_appcache
             ? network::InitiatorLockCompatibility::kBrowserProcess
@@ -316,10 +320,6 @@ class RequestInterceptor {
     }
   }
 
-  void InjectRequestInitiator(const url::Origin& request_initiator) {
-    request_initiator_to_inject_ = request_initiator;
-  }
-
  private:
   bool InterceptorCallback(URLLoaderInterceptor::RequestParams* params) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -332,10 +332,6 @@ class RequestInterceptor {
     if (request_intercepted_)
       return false;
     request_intercepted_ = true;
-
-    // Modify |params| if requested.
-    if (request_initiator_to_inject_.has_value())
-      params->url_request.request_initiator = request_initiator_to_inject_;
 
     // Inject |test_client_| into the request.
     DCHECK(!original_client_);
@@ -382,8 +378,6 @@ class RequestInterceptor {
 
   const GURL url_to_intercept_;
   URLLoaderInterceptor interceptor_;
-
-  base::Optional<url::Origin> request_initiator_to_inject_;
 
   // |test_client_ptr_info_| below is used to transition results of
   // |test_client_.CreateInterfacePtr()| into IO thread.
@@ -771,59 +765,6 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, AppCache) {
                       special_request_initiator_origin_lock_check_for_appcache);
     interceptor.Verify(kShouldBeBlockedWithoutSniffing);
   }
-}
-
-IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
-                       AppCache_InitiatorEnforcement) {
-  embedded_test_server()->StartAcceptingConnections();
-
-  // Verification of |request_initiator| is only done in the NetworkService code
-  // path.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
-  // Prepare to intercept the network request at the IPC layer.
-  // in a way, that injects |spoofed_initiator| (simulating a compromised
-  // renderer that pretends to be making the request on behalf of another
-  // origin).
-  //
-  // Note that RequestInterceptor has to be constructed before the
-  // RenderFrameHostImpl is created.
-  GURL cross_site_url("http://cross-origin.com/site_isolation/nosniff.json");
-  RequestInterceptor interceptor(cross_site_url);
-  url::Origin spoofed_initiator =
-      url::Origin::Create(GURL("https://victim.example.com"));
-  interceptor.InjectRequestInitiator(spoofed_initiator);
-
-  // Load the main page twice. The second navigation should have AppCache
-  // initialized for the page.
-  GURL main_url = embedded_test_server()->GetURL(
-      "/appcache/simple_page_with_manifest.html");
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
-  base::string16 expected_title = base::ASCIIToUTF16("AppCache updated");
-  content::TitleWatcher title_watcher(shell()->web_contents(), expected_title);
-  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
-
-  // Trigger an AppCache request with an incorrect |request_initiator| and
-  // verify that this will terminate the renderer process.
-  //
-  // Note that during the test, no renderer processes will be actually
-  // terminated, because the malicious/invalid message originates from within
-  // the test process (i.e. from URLLoaderInterceptor::Interceptor's
-  // CreateLoaderAndStart method which forwards the
-  // InjectRequestInitiator-modified request into
-  // AppCacheSubresourceURLFactory).  This necessitates testing via
-  // mojo::test::BadMessageObserver rather than via RenderProcessHostWatcher or
-  // RenderProcessHostKillWaiter.
-  mojo::test::BadMessageObserver bad_message_observer;
-  const char kScriptTemplate[] = R"(
-      var img = document.createElement('img');
-      img.src = $1;
-      document.body.appendChild(img); )";
-  EXPECT_TRUE(ExecJs(shell(), JsReplace(kScriptTemplate, cross_site_url)));
-  EXPECT_EQ("APP_CACHE_SUBRESOURCE_URL_FACTORY_INVALID_INITIATOR",
-            bad_message_observer.WaitForBadMessage());
 }
 
 IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, PrefetchIsNotImpacted) {
