@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("//build/config/chrome_build.gni")
+import("//build/config/jumbo.gni")
 import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
 import("//headless/headless.gni")
@@ -110,16 +110,6 @@ action("embed_resources") {
   ]
 }
 
-service_manifest("headless_browser_manifest_overlay") {
-  source = "lib/browser/headless_browser_manifest_overlay.json"
-}
-
-service_manifest("headless_packaged_services_manifest_overlay") {
-  source = "lib/browser/headless_packaged_services_manifest_overlay.json"
-  packaged_services =
-      [ "//components/services/pdf_compositor:pdf_compositor_manifest" ]
-}
-
 grit("resources") {
   source = "lib/resources/headless_lib_resources.grd"
   outputs = [
@@ -127,14 +117,6 @@ grit("resources") {
     "$root_gen_dir/headless/headless_lib_resources.pak",
   ]
   source_is_generated = true
-  grit_flags = [
-    "-E",
-    "mojom_root=" + rebase_path(root_gen_dir, root_build_dir),
-  ]
-  deps = [
-    ":headless_browser_manifest_overlay",
-    ":headless_packaged_services_manifest_overlay",
-  ]
 }
 
 devtools_domains = [
@@ -421,6 +403,8 @@ jumbo_component("headless") {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
+      "lib/browser/headless_overlay_manifests.cc",
+      "lib/browser/headless_overlay_manifests.h",
       "lib/browser/headless_web_contents_impl.cc",
       "lib/browser/headless_web_contents_impl.h",
       "lib/headless_content_main_delegate.cc",
@@ -442,6 +426,8 @@ jumbo_component("headless") {
     deps += [
       "//components/crash/core/common:crash_key",
       "//components/security_state/content",
+      "//components/services/pdf_compositor:pdf_compositor_manifest",
+      "//components/services/pdf_compositor/public/interfaces",
       "//gin",
       "//third_party/blink/public:blink",
       "//third_party/blink/public:blink_headers",
@@ -573,6 +559,8 @@ test("headless_unittests") {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
+      "lib/browser/headless_overlay_manifests.cc",
+      "lib/browser/headless_overlay_manifests.h",
       "lib/utility/headless_content_utility_client.cc",
       "lib/utility/headless_content_utility_client.h",
     ]
@@ -583,6 +571,8 @@ test("headless_unittests") {
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//components/security_state/content",
+    "//components/services/pdf_compositor:pdf_compositor_manifest",
+    "//components/services/pdf_compositor/public/interfaces",
     "//content/public/app:both",
     "//content/public/child:child",
     "//content/public/common",
@@ -726,6 +716,8 @@ test("headless_browsertests") {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
+      "lib/browser/headless_overlay_manifests.cc",
+      "lib/browser/headless_overlay_manifests.h",
       "lib/utility/headless_content_utility_client.cc",
       "lib/utility/headless_content_utility_client.h",
     ]
@@ -735,6 +727,8 @@ test("headless_browsertests") {
     ":headless_renderer",
     "//base",
     "//components/security_state/content",
+    "//components/services/pdf_compositor:pdf_compositor_manifest",
+    "//components/services/pdf_compositor/public/interfaces",
     "//content/test:test_support",
     "//services/network/public/mojom",
     "//testing/gmock",
@@ -781,10 +775,14 @@ if (is_win) {
       "app/headless_shell_win.cc",
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
+      "lib/browser/headless_overlay_manifests.cc",
+      "lib/browser/headless_overlay_manifests.h",
       "public/headless_shell.h",
     ]
     deps = [
       ":headless",
+      "//components/services/pdf_compositor:pdf_compositor_manifest",
+      "//components/services/pdf_compositor/public/interfaces",
       "//content:sandbox_helper_win",
       "//content/public/browser",
       "//content/public/common",
@@ -860,6 +858,8 @@ jumbo_static_library("headless_shell_lib") {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
+      "lib/browser/headless_overlay_manifests.cc",
+      "lib/browser/headless_overlay_manifests.h",
       "lib/utility/headless_content_utility_client.cc",
       "lib/utility/headless_content_utility_client.h",
     ]
@@ -869,6 +869,8 @@ jumbo_static_library("headless_shell_lib") {
     ":headless_renderer",
     "//components/os_crypt",
     "//components/security_state/content",
+    "//components/services/pdf_compositor:pdf_compositor_manifest",
+    "//components/services/pdf_compositor/public/interfaces",
     "//content/public/app:both",
     "//content/public/browser",
     "//content/public/child:child",
