@@ -53,7 +53,7 @@ class MockAnimationWorkletMutator
     return std::unique_ptr<AnimationWorkletOutput>(MutateRef(*input));
   }
 
-  MOCK_CONST_METHOD0(GetScopeId, int());
+  MOCK_CONST_METHOD0(GetWorkletId, int());
   MOCK_METHOD1(MutateRef,
                AnimationWorkletOutput*(const AnimationWorkletInput&));
 
@@ -123,7 +123,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
   mutator_->RegisterAnimationWorkletMutator(first_mutator,
                                             first_thread->GetTaskRunner());
 
-  EXPECT_CALL(*first_mutator, GetScopeId())
+  EXPECT_CALL(*first_mutator, GetWorkletId())
       .Times(AtLeast(1))
       .WillRepeatedly(Return(11));
   EXPECT_CALL(*first_mutator, MutateRef(Truly(OnlyIncludesAnimation1)))
@@ -144,7 +144,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
   mutator_->RegisterAnimationWorkletMutator(first_mutator,
                                             first_thread->GetTaskRunner());
 
-  EXPECT_CALL(*first_mutator, GetScopeId())
+  EXPECT_CALL(*first_mutator, GetWorkletId())
       .Times(AtLeast(1))
       .WillRepeatedly(Return(11));
   EXPECT_CALL(*first_mutator, MutateRef(_)).Times(0);
@@ -177,7 +177,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
 
   mutator_->RegisterAnimationWorkletMutator(first_mutator,
                                             first_thread->GetTaskRunner());
-  EXPECT_CALL(*first_mutator, GetScopeId())
+  EXPECT_CALL(*first_mutator, GetWorkletId())
       .Times(AtLeast(1))
       .WillRepeatedly(Return(11));
   EXPECT_CALL(*first_mutator, MutateRef(_)).Times(1).WillOnce(Return(nullptr));
@@ -195,7 +195,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
 
   mutator_->RegisterAnimationWorkletMutator(first_mutator,
                                             first_thread->GetTaskRunner());
-  EXPECT_CALL(*first_mutator, GetScopeId())
+  EXPECT_CALL(*first_mutator, GetWorkletId())
       .Times(AtLeast(1))
       .WillRepeatedly(Return(11));
   EXPECT_CALL(*first_mutator, MutateRef(_))
@@ -232,13 +232,13 @@ TEST_F(AnimationWorkletMutatorDispatcherImplTest,
   mutator_->RegisterAnimationWorkletMutator(second_mutator,
                                             first_thread->GetTaskRunner());
 
-  EXPECT_CALL(*first_mutator, GetScopeId())
+  EXPECT_CALL(*first_mutator, GetWorkletId())
       .Times(AtLeast(1))
       .WillRepeatedly(Return(11));
   EXPECT_CALL(*first_mutator, MutateRef(_))
       .Times(1)
       .WillOnce(Return(new AnimationWorkletOutput()));
-  EXPECT_CALL(*second_mutator, GetScopeId())
+  EXPECT_CALL(*second_mutator, GetWorkletId())
       .Times(AtLeast(1))
       .WillRepeatedly(Return(22));
   EXPECT_CALL(*second_mutator, MutateRef(_))
@@ -267,13 +267,13 @@ TEST_F(
   mutator_->RegisterAnimationWorkletMutator(second_mutator,
                                             second_thread->GetTaskRunner());
 
-  EXPECT_CALL(*first_mutator, GetScopeId())
+  EXPECT_CALL(*first_mutator, GetWorkletId())
       .Times(AtLeast(1))
       .WillRepeatedly(Return(11));
   EXPECT_CALL(*first_mutator, MutateRef(_))
       .Times(1)
       .WillOnce(Return(new AnimationWorkletOutput()));
-  EXPECT_CALL(*second_mutator, GetScopeId())
+  EXPECT_CALL(*second_mutator, GetWorkletId())
       .Times(AtLeast(1))
       .WillRepeatedly(Return(22));
   EXPECT_CALL(*second_mutator, MutateRef(_))
@@ -289,9 +289,9 @@ TEST_F(
   // Ensure mutator is not invoked after unregistration.
   mutator_->UnregisterAnimationWorkletMutator(first_mutator);
 
-  EXPECT_CALL(*first_mutator, GetScopeId()).Times(0);
+  EXPECT_CALL(*first_mutator, GetWorkletId()).Times(0);
   EXPECT_CALL(*first_mutator, MutateRef(_)).Times(0);
-  EXPECT_CALL(*second_mutator, GetScopeId())
+  EXPECT_CALL(*second_mutator, GetWorkletId())
       .Times(AtLeast(1))
       .WillRepeatedly(Return(22));
   EXPECT_CALL(*second_mutator, MutateRef(_))

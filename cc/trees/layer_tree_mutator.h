@@ -21,13 +21,13 @@ namespace cc {
 struct CC_EXPORT WorkletAnimationId {
   // Uniquely identifies the animation worklet with which this animation is
   // associated.
-  int scope_id;
+  int worklet_id;
   // Uniquely identifies the animation within its animation worklet. Note that
   // animation_id is only guaranteed to be unique per animation worklet.
   int animation_id;
 
   inline bool operator==(const WorkletAnimationId& rhs) const {
-    return (this->scope_id == rhs.scope_id) &&
+    return (this->worklet_id == rhs.worklet_id) &&
            (this->animation_id == rhs.animation_id);
   }
 };
@@ -68,8 +68,8 @@ struct CC_EXPORT AnimationWorkletInput {
   ~AnimationWorkletInput();
 
 #if DCHECK_IS_ON()
-  // Verifies all animation states have the expected scope id.
-  bool ValidateScope(int scope_id) const;
+  // Verifies all animation states have the expected worklet id.
+  bool ValidateId(int worklet_id) const;
 #endif
   DISALLOW_COPY_AND_ASSIGN(AnimationWorkletInput);
 };

@@ -24,21 +24,22 @@ AnimationWorkletInput::AddAndUpdateState::AddAndUpdateState(
 AnimationWorkletInput::AddAndUpdateState::~AddAndUpdateState() = default;
 
 #if DCHECK_IS_ON()
-bool AnimationWorkletInput::ValidateScope(int scope_id) const {
+bool AnimationWorkletInput::ValidateId(int worklet_id) const {
   return std::all_of(added_and_updated_animations.cbegin(),
                      added_and_updated_animations.cend(),
-                     [scope_id](auto& it) {
-                       return it.worklet_animation_id.scope_id == scope_id;
+                     [worklet_id](auto& it) {
+                       return it.worklet_animation_id.worklet_id == worklet_id;
                      }) &&
          std::all_of(updated_animations.cbegin(), updated_animations.cend(),
-                     [scope_id](auto& it) {
-                       return it.worklet_animation_id.scope_id == scope_id;
+                     [worklet_id](auto& it) {
+                       return it.worklet_animation_id.worklet_id == worklet_id;
                      }) &&
          std::all_of(
              removed_animations.cbegin(), removed_animations.cend(),
-             [scope_id](auto& it) { return it.scope_id == scope_id; }) &&
-         std::all_of(peeked_animations.cbegin(), peeked_animations.cend(),
-                     [scope_id](auto& it) { return it.scope_id == scope_id; });
+             [worklet_id](auto& it) { return it.worklet_id == worklet_id; }) &&
+         std::all_of(
+             peeked_animations.cbegin(), peeked_animations.cend(),
+             [worklet_id](auto& it) { return it.worklet_id == worklet_id; });
 }
 #endif
 
@@ -65,29 +66,29 @@ AnimationWorkletInput& MutatorInputState::EnsureWorkletEntry(int id) {
 
 void MutatorInputState::Add(AnimationWorkletInput::AddAndUpdateState&& state) {
   AnimationWorkletInput& worklet_input =
-      EnsureWorkletEntry(state.worklet_animation_id.scope_id);
+      EnsureWorkletEntry(state.worklet_animation_id.worklet_id);
   worklet_input.added_and_updated_animations.push_back(std::move(state));
 }
 void MutatorInputState::Update(AnimationWorkletInput::UpdateState&& state) {
   AnimationWorkletInput& worklet_input =
-      EnsureWorkletEntry(state.worklet_animation_id.scope_id);
+      EnsureWorkletEntry(state.worklet_animation_id.worklet_id);
   worklet_input.updated_animations.push_back(std::move(state));
 }
 void MutatorInputState::Remove(WorkletAnimationId worklet_animation_id) {
   AnimationWorkletInput& worklet_input =
-      EnsureWorkletEntry(worklet_animation_id.scope_id);
+      EnsureWorkletEntry(worklet_animation_id.worklet_id);
   worklet_input.removed_animations.push_back(worklet_animation_id);
 }
 
 void MutatorInputState::Peek(WorkletAnimationId worklet_animation_id) {
   AnimationWorkletInput& worklet_input =
-      EnsureWorkletEntry(worklet_animation_id.scope_id);
+      EnsureWorkletEntry(worklet_animation_id.worklet_id);
   worklet_input.peeked_animations.push_back(worklet_animation_id);
 }
 
 std::unique_ptr<AnimationWorkletInput> MutatorInputState::TakeWorkletState(
-    int scope_id) {
-  auto it = inputs_.find(scope_id);
+    int worklet_id) {
+  auto it = inputs_.find(worklet_id);
   if (it == inputs_.end())
     return nullptr;
 

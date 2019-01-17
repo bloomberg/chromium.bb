@@ -38,7 +38,7 @@ class MODULES_EXPORT AnimationWorkletProxyClient
   // This client is hooked to the given |mutatee|, on the given
   // |mutatee_runner|.
   explicit AnimationWorkletProxyClient(
-      int scope_id,
+      int worklet_id,
       base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> compositor_mutatee,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_mutatee_runner,
       base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> main_thread_mutatee,
@@ -51,15 +51,15 @@ class MODULES_EXPORT AnimationWorkletProxyClient
 
   // AnimationWorkletMutator:
   // These methods are invoked on the animation worklet thread.
-  int GetScopeId() const override { return scope_id_; }
+  int GetWorkletId() const override { return worklet_id_; }
   std::unique_ptr<AnimationWorkletOutput> Mutate(
       std::unique_ptr<AnimationWorkletInput> input) override;
 
-  static AnimationWorkletProxyClient* FromDocument(Document*, int scope_id);
+  static AnimationWorkletProxyClient* FromDocument(Document*, int worklet_id);
   static AnimationWorkletProxyClient* From(WorkerClients*);
 
  private:
-  const int scope_id_;
+  const int worklet_id_;
 
   struct MutatorItem {
     base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> mutator_dispatcher;

@@ -134,12 +134,12 @@ TEST_F(WorkletAnimationTest,
   worklet_animation_->UpdateInputState(state.get());
   // First state request sets the start time and thus current time should be 0.
   std::unique_ptr<AnimationWorkletInput> input =
-      state->TakeWorkletState(id.scope_id);
+      state->TakeWorkletState(id.worklet_id);
   EXPECT_NEAR(0, input->added_and_updated_animations[0].current_time, error);
   state.reset(new AnimationWorkletDispatcherInput);
   GetDocument().GetAnimationClock().ResetTimeForTesting(second_ticks);
   worklet_animation_->UpdateInputState(state.get());
-  input = state->TakeWorkletState(id.scope_id);
+  input = state->TakeWorkletState(id.worklet_id);
   EXPECT_NEAR(123.4, input->updated_animations[0].current_time, error);
 }
 
@@ -186,14 +186,14 @@ TEST_F(WorkletAnimationTest,
       std::make_unique<AnimationWorkletDispatcherInput>();
   worklet_animation->UpdateInputState(state.get());
   std::unique_ptr<AnimationWorkletInput> input =
-      state->TakeWorkletState(id.scope_id);
+      state->TakeWorkletState(id.worklet_id);
 
   EXPECT_NEAR(40, input->added_and_updated_animations[0].current_time, error);
   state.reset(new AnimationWorkletDispatcherInput);
 
   scrollable_area->SetScrollOffset(ScrollOffset(0, 70), kProgrammaticScroll);
   worklet_animation->UpdateInputState(state.get());
-  input = state->TakeWorkletState(id.scope_id);
+  input = state->TakeWorkletState(id.worklet_id);
   EXPECT_NEAR(70, input->updated_animations[0].current_time, error);
 }
 
@@ -216,7 +216,7 @@ TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
       std::make_unique<AnimationWorkletDispatcherInput>();
   worklet_animation_->UpdateInputState(state.get());
   std::unique_ptr<AnimationWorkletInput> input =
-      state->TakeWorkletState(id.scope_id);
+      state->TakeWorkletState(id.worklet_id);
   EXPECT_EQ(input->peeked_animations.size(), 1u);
   EXPECT_EQ(input->added_and_updated_animations.size(), 0u);
   EXPECT_EQ(input->updated_animations.size(), 0u);
@@ -227,7 +227,7 @@ TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
   AnimationWorkletOutput::AnimationState output(id);
   worklet_animation_->SetOutputState(output);
   worklet_animation_->UpdateInputState(state.get());
-  input = state->TakeWorkletState(id.scope_id);
+  input = state->TakeWorkletState(id.worklet_id);
   EXPECT_EQ(input->peeked_animations.size(), 1u);
   EXPECT_EQ(input->added_and_updated_animations.size(), 0u);
   EXPECT_EQ(input->updated_animations.size(), 0u);
@@ -241,14 +241,14 @@ TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
   output_with_value.local_times = local_times;
   worklet_animation_->SetOutputState(output_with_value);
   worklet_animation_->UpdateInputState(state.get());
-  input = state->TakeWorkletState(id.scope_id);
+  input = state->TakeWorkletState(id.worklet_id);
   EXPECT_FALSE(input);
   state.reset(new AnimationWorkletDispatcherInput);
 
   // Input time changes. Need to peek again.
   GetDocument().GetAnimationClock().ResetTimeForTesting(second_ticks);
   worklet_animation_->UpdateInputState(state.get());
-  input = state->TakeWorkletState(id.scope_id);
+  input = state->TakeWorkletState(id.worklet_id);
   EXPECT_EQ(input->peeked_animations.size(), 1u);
   EXPECT_EQ(input->added_and_updated_animations.size(), 0u);
   EXPECT_EQ(input->updated_animations.size(), 0u);
