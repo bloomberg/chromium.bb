@@ -4,6 +4,8 @@
 
 #include "net/ftp/ftp_network_transaction.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
@@ -659,12 +661,10 @@ int FtpNetworkTransaction::DoLoop(int result) {
 int FtpNetworkTransaction::DoCtrlResolveHost() {
   next_state_ = STATE_CTRL_RESOLVE_HOST_COMPLETE;
 
-  HostResolver::RequestInfo info(HostPortPair::FromURL(request_->url));
-  // No known referrer.
-  return resolver_->Resolve(
-      info, DEFAULT_PRIORITY, &addresses_,
-      base::Bind(&FtpNetworkTransaction::OnIOComplete, base::Unretained(this)),
-      &resolve_request_, net_log_);
+  resolve_request_ = resolver_->CreateRequest(
+      HostPortPair::FromURL(request_->url), net_log_, base::nullopt);
+  return resolve_request_->Start(base::BindOnce(
+      &FtpNetworkTransaction::OnIOComplete, base::Unretained(this)));
 }
 
 int FtpNetworkTransaction::DoCtrlResolveHostComplete(int result) {
@@ -675,8 +675,10 @@ int FtpNetworkTransaction::DoCtrlResolveHostComplete(int result) {
 
 int FtpNetworkTransaction::DoCtrlConnect() {
   next_state_ = STATE_CTRL_CONNECT_COMPLETE;
+  DCHECK(resolve_request_ && resolve_request_->GetAddressResults());
   ctrl_socket_ = socket_factory_->CreateTransportClientSocket(
-      addresses_, nullptr, net_log_.net_log(), net_log_.source());
+      resolve_request_->GetAddressResults().value(), nullptr,
+      net_log_.net_log(), net_log_.source());
   net_log_.AddEvent(
       NetLogEventType::FTP_CONTROL_CONNECTION,
       ctrl_socket_->NetLog().source().ToEventParametersCallback());
@@ -1364,7 +1366,7 @@ void FtpNetworkTransaction::RecordDataConnectionError(int result) {
     default:
       type = NET_ERROR_OTHER;
       break;
-  };
+  }
   static bool had_error_type[NUM_OF_NET_ERROR_TYPES];
 
   DCHECK(type >= 0 && type < NUM_OF_NET_ERROR_TYPES);
