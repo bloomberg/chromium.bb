@@ -72,6 +72,12 @@ wayland_protocol("pointer_gestures_protocol") {
   ]
 }
 
+wayland_protocol("relative_pointer_protocol") {
+  sources = [
+    "src/unstable/relative-pointer/relative-pointer-unstable-v1.xml",
+  ]
+}
+
 wayland_protocol("keyboard_configuration_protocol") {
   sources = [
     "unstable/keyboard/keyboard-configuration-unstable-v1.xml",
