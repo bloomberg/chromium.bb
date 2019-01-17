@@ -55,6 +55,8 @@ public final class PageViewObserverTest {
     private Tab mTab2;
     @Mock
     private EventTracker mEventTracker;
+    @Mock
+    private TokenTracker mTokenTracker;
     @Captor
     private ArgumentCaptor<TabObserver> mTabObserverCaptor;
     @Captor
@@ -178,9 +180,11 @@ public final class PageViewObserverTest {
         verify(mEventTracker, times(0)).addWebsiteEvent(argThat(isStopEvent(DIFFERENT_FQDN)));
     }
 
+    // TODO(pnoland): add test for platform reporting once the System API is available in Q.
+
     private PageViewObserver createPageViewObserver() {
         PageViewObserver observer =
-                new PageViewObserver(mActivity, mTabModelSelector, mEventTracker);
+                new PageViewObserver(mActivity, mTabModelSelector, mEventTracker, mTokenTracker);
         verify(mTabModel, times(1)).addObserver(mTabModelObserverCaptor.capture());
         if (mTabModelSelector.getCurrentTab() != null) {
             verify(mTabModelSelector.getCurrentTab(), times(1))
