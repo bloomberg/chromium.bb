@@ -37,6 +37,7 @@ import android.widget.FrameLayout;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -136,6 +137,7 @@ import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.tasks.TasksUma;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
+import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -629,6 +631,10 @@ public class ChromeTabbedActivity
                 // We call getFeedAppLifecycle() here to ensure the app lifecycle is created so that
                 // it can start listening for state changes.
                 FeedProcessScopeFactory.getFeedAppLifecycle();
+            }
+
+            if (BuildInfo.isAtLeastQ()) {
+                UsageStatsService.getInstance().createPageViewObserver(mTabModelSelectorImpl, this);
             }
 
             super.finishNativeInitialization();
