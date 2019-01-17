@@ -47,7 +47,12 @@ void AnalyzeRarFile(base::File rar_file,
     return;
   }
 
-  if (base::FeatureList::IsEnabled(kInspectRarContentFeature)) {
+  // If the file is too big to unpack, fall back to the old method.
+  bool too_big_to_unpack =
+      base::checked_cast<uint64_t>(rar_file.GetLength()) >
+      FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze("rar");
+  if (base::FeatureList::IsEnabled(kInspectRarContentFeature) &&
+      !too_big_to_unpack) {
     auto command = std::make_unique<third_party_unrar::CommandData>();
     command->ParseArg(const_cast<wchar_t*>(L"-p"));
     command->ParseArg(const_cast<wchar_t*>(L"x"));
