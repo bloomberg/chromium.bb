@@ -253,6 +253,7 @@ cast_source_set("browser") {
       "extensions/api/accessibility_private/accessibility_extension_api.h",
       "extensions/api/automation_internal/automation_event_router.cc",
       "extensions/api/automation_internal/automation_event_router.h",
+      "extensions/api/automation_internal/automation_event_router_interface.h",
       "extensions/api/automation_internal/automation_internal_api.cc",
       "extensions/api/automation_internal/automation_internal_api.h",
       "extensions/api/bookmarks/bookmarks_api.cc",
