@@ -193,12 +193,20 @@ WorkletAnimation* WorkletAnimation::Create(
     return nullptr;
   }
 
+  Document& document = keyframe_effects.at(0)->target()->GetDocument();
+  if (!document.GetWorkletAnimationController().IsAnimatorRegistered(
+          animator_name)) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The animator '" + animator_name + "' has not yet been registered.");
+    return nullptr;
+  }
+
   AnimationWorklet* worklet =
       CSSAnimationWorklet::animationWorklet(script_state);
 
   WorkletAnimationId id = worklet->NextWorkletAnimationId();
 
-  Document& document = keyframe_effects.at(0)->target()->GetDocument();
   AnimationTimeline* animation_timeline =
       ConvertAnimationTimeline(document, timeline);
 
