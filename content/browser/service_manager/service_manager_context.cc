@@ -81,6 +81,7 @@
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/service_manager.h"
 #include "services/shape_detection/public/mojom/constants.mojom.h"
+#include "services/tracing/manifest.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/tracing_service.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
@@ -230,6 +231,9 @@ service_manager::Manifest LoadServiceManifest(base::StringPiece service_name,
       GetContentClient()->browser()->GetServiceManifestOverlay(service_name);
   if (overlay)
     manifest.Amend(*overlay);
+
+  if (service_name == mojom::kPackagedServicesServiceName)
+    manifest.packaged_services.push_back(tracing::GetManifest());
 
   if (!manifest.preloaded_files.empty()) {
     std::map<std::string, base::FilePath> preloaded_files_map;

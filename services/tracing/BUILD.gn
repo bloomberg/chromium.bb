@@ -46,9 +46,17 @@ source_set("lib") {
   }
 }
 
-service_manifest("manifest") {
-  name = "tracing"
-  source = "manifest.json"
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//services/service_manager/public/cpp",
+    "//services/tracing/public/mojom",
+  ]
 }
 
 source_set("tests") {
