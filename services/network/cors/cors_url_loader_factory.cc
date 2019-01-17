@@ -26,7 +26,8 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
     mojom::URLLoaderFactoryRequest request,
     const OriginAccessList* origin_access_list)
     : context_(context),
-      disable_web_security_(params && params->disable_web_security),
+      disable_web_security_(params->disable_web_security),
+      process_id_(params->process_id),
       network_loader_factory_(std::make_unique<network::URLLoaderFactory>(
           context,
           std::move(params),
@@ -45,8 +46,10 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
     bool disable_web_security,
     std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory,
     const base::RepeatingCallback<void(int)>& preflight_finalizer,
-    const OriginAccessList* origin_access_list)
+    const OriginAccessList* origin_access_list,
+    uint32_t process_id)
     : disable_web_security_(disable_web_security),
+      process_id_(process_id),
       network_loader_factory_(std::move(network_loader_factory)),
       preflight_finalizer_(preflight_finalizer),
       origin_access_list_(origin_access_list) {
@@ -61,10 +64,14 @@ CorsURLLoaderFactory::~CorsURLLoaderFactory() = default;
 
 void CorsURLLoaderFactory::OnLoaderCreated(
     std::unique_ptr<mojom::URLLoader> loader) {
+  if (context_)
+    context_->LoaderCreated(process_id_);
   loaders_.insert(std::move(loader));
 }
 
 void CorsURLLoaderFactory::DestroyURLLoader(mojom::URLLoader* loader) {
+  if (context_)
+    context_->LoaderDestroyed(process_id_);
   auto it = loaders_.find(loader);
   DCHECK(it != loaders_.end());
   loaders_.erase(it);

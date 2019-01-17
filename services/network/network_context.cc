@@ -322,6 +322,7 @@ std::string HashesToBase64String(const net::HashValueVector& hashes) {
 
 }  // namespace
 
+constexpr uint32_t NetworkContext::kMaxOutstandingRequestsPerProcess;
 constexpr bool NetworkContext::enable_resource_scheduler_;
 
 NetworkContext::PendingCertVerify::PendingCertVerify() = default;
@@ -735,6 +736,24 @@ void NetworkContext::DestroyURLLoaderFactory(
   auto it = url_loader_factories_.find(url_loader_factory);
   DCHECK(it != url_loader_factories_.end());
   url_loader_factories_.erase(it);
+}
+
+void NetworkContext::LoaderCreated(uint32_t process_id) {
+  loader_count_per_process_[process_id] += 1;
+}
+
+void NetworkContext::LoaderDestroyed(uint32_t process_id) {
+  auto it = loader_count_per_process_.find(process_id);
+  DCHECK(it != loader_count_per_process_.end());
+  it->second -= 1;
+  if (it->second == 0)
+    loader_count_per_process_.erase(it);
+}
+
+bool NetworkContext::CanCreateLoader(uint32_t process_id) {
+  auto it = loader_count_per_process_.find(process_id);
+  uint32_t count = (it == loader_count_per_process_.end() ? 0 : it->second);
+  return count < max_loaders_per_process_;
 }
 
 size_t NetworkContext::GetNumOutstandingResolveHostRequestsForTesting() const {
