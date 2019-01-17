@@ -109,21 +109,13 @@ bool MigrateDirectoryDataWithBatchSize(ModelType type,
   std::vector<int64_t> child_ids;
   AppendAllDescendantIds(&trans, root, &child_ids);
 
-  // If there are no entities to process, make sure we anyway call
-  // ProcessGetUpdatesResponse() at least one in order to feed the progress
-  // marker.
-  // TODO(crbug.com/921495): Remove the restriction for
-  // HISTORY_DELETE_DIRECTIVES and instead do it for all types, e.g. by
-  // replacing the while() below with a do {} while();
-  if (type == HISTORY_DELETE_DIRECTIVES && child_ids.empty()) {
-    worker->ProcessGetUpdatesResponse(progress, context, SyncEntityList(),
-                                      /*from_uss_migrator=*/true,
-                                      /*status=*/nullptr);
-  }
-
   // Process |batch_size| entities at a time to reduce memory usage.
   size_t i = 0;
-  while (i < child_ids.size()) {
+
+  // We use |do {} while| to guarantee that, even if there are no entities to
+  // process, we call ProcessGetUpdatesResponse() at least once in order to feed
+  // the progress marker.
+  do {
     // Vector to own the temporary entities.
     std::vector<std::unique_ptr<sync_pb::SyncEntity>> entities;
     // Vector of raw pointers for passing to ProcessGetUpdatesResponse().
@@ -152,7 +144,7 @@ bool MigrateDirectoryDataWithBatchSize(ModelType type,
     worker->ProcessGetUpdatesResponse(progress, context, entity_ptrs,
                                       /*from_uss_migrator=*/true,
                                       /*status=*/nullptr);
-  }
+  } while (i != child_ids.size());
 
   worker->PassiveApplyUpdates(nullptr);
   return true;
