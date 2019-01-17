@@ -1,4 +1,7 @@
 This is a testharness.js-based test.
-FAIL XHR responseURL should be the response URL assert_equals: expected "https://web-platform.test:8444/service-workers/service-worker/resources/dummy.txt" but got "https://web-platform.test:8444/service-workers/service-worker/resources/test?url=https%3A%2F%2Fweb-platform.test%3A8444%2Fservice-workers%2Fservice-worker%2Fresources%2Fdummy.txt"
+PASS global setup
+FAIL XHR responseURL should be the response URL assert_equals: responseURL expected "https://web-platform.test:8444/service-workers/service-worker/resources/dummy.txt" but got "https://web-platform.test:8444/service-workers/service-worker/resources/test?url=https%3A%2F%2Fweb-platform.test%3A8444%2Fservice-workers%2Fservice-worker%2Fresources%2Fdummy.txt"
+FAIL XHR Document should use the response URL assert_equals: responseURL expected "https://web-platform.test:8444/service-workers/service-worker/resources/blank.html" but got "https://web-platform.test:8444/service-workers/service-worker/resources/test?url=https%3A%2F%2Fweb-platform.test%3A8444%2Fservice-workers%2Fservice-worker%2Fresources%2Fblank.html"
+PASS global cleanup
 Harness: the test ran to completion.
 
