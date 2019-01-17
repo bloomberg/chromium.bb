@@ -2,9 +2,11 @@
 
 ## Applying flags
 
+*** note
 **Note:** this requires either a `userdebug` or `eng` Android build (you can
 check with `adb shell getprop ro.build.type`). Flags cannot be enabled on
 production builds of Android.
+***
 
 WebView reads flags from a specific file during startup. To enable flags, write
 to the file with:
@@ -14,7 +16,7 @@ $ # Overwrites all flags (and prints the new flag state):
 $ build/android/adb_system_webview_command_line \
     --show-composited-layer-borders \
     --log-net-log=foo.json # Supports multiple flags
-$ # Simply prints the existing flag state):
+$ # Simply prints the existing flag state:
 $ build/android/adb_system_webview_command_line
 $ # Passing empty string clears all flags:
 $ build/android/adb_system_webview_command_line ""
@@ -29,7 +31,9 @@ $ # The first token is ignored. We use '_' as a convenient placeholder, but any
 $ # token is acceptable.
 ```
 
+*** note
 **Note:** either set of commands will overwrite existing flags.
+***
 
 ### Applying Features with flags
 
