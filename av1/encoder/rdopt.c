@@ -11206,6 +11206,42 @@ bool mask_says_skip(const mode_skip_mask_t *mode_skip_mask,
          (mode_skip_mask->ref_frame2 & (1 << AOMMAX(0, ref_frame[1])));
 }
 
+static int inter_mode_compatible_skip(const AV1_COMP *cpi, const MACROBLOCK *x,
+                                      BLOCK_SIZE bsize, int mode_index) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const struct segmentation *const seg = &cm->seg;
+  const MV_REFERENCE_FRAME *ref_frame = av1_mode_order[mode_index].ref_frame;
+  const PREDICTION_MODE this_mode = av1_mode_order[mode_index].mode;
+  const CurrentFrame *const current_frame = &cm->current_frame;
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const MB_MODE_INFO *const mbmi = xd->mi[0];
+  const unsigned char segment_id = mbmi->segment_id;
+  const int comp_pred = ref_frame[1] > INTRA_FRAME;
+
+  if (comp_pred) {
+    if (frame_is_intra_only(cm)) return 1;
+
+    if (current_frame->reference_mode == SINGLE_REFERENCE) return 1;
+
+    // Skip compound inter modes if ARF is not available.
+    if (!(cpi->ref_frame_flags & ref_frame_flag_list[ref_frame[1]])) return 1;
+
+    // Do not allow compound prediction if the segment level reference frame
+    // feature is in use as in this case there can only be one reference.
+    if (segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME)) return 1;
+
+    if (!is_comp_ref_allowed(bsize)) return 1;
+  }
+
+  if (ref_frame[0] > INTRA_FRAME && ref_frame[1] == INTRA_FRAME) {
+    // Mode must by compatible
+    if (!is_interintra_allowed_mode(this_mode)) return 1;
+    if (!is_interintra_allowed_bsize(bsize)) return 1;
+  }
+
+  return 0;
+}
+
 // Case 1: return 0, means don't skip this mode
 // Case 2: return 1, means skip this mode completely
 // Case 3: return 2, means skip compound only, but still try single motion modes
@@ -11215,14 +11251,13 @@ static int inter_mode_search_order_independent_skip(
     mode_skip_mask_t *mode_skip_mask, InterModeSearchState *search_state) {
   const SPEED_FEATURES *const sf = &cpi->sf;
   const AV1_COMMON *const cm = &cpi->common;
-  const struct segmentation *const seg = &cm->seg;
   const OrderHintInfo *const order_hint_info = &cm->seq_params.order_hint_info;
   const CurrentFrame *const current_frame = &cm->current_frame;
   const MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = xd->mi[0];
-  const unsigned char segment_id = mbmi->segment_id;
   const MV_REFERENCE_FRAME *ref_frame = av1_mode_order[mode_index].ref_frame;
   const PREDICTION_MODE this_mode = av1_mode_order[mode_index].mode;
+  const int comp_pred = ref_frame[1] > INTRA_FRAME;
   int skip_motion_mode = 0;
 
   if (mask_says_skip(mode_skip_mask, ref_frame, this_mode)) {
@@ -11285,12 +11320,6 @@ static int inter_mode_search_order_independent_skip(
     if (!found) return 1;
   }
 
-  if (ref_frame[0] > INTRA_FRAME && ref_frame[1] == INTRA_FRAME) {
-    // Mode must by compatible
-    if (!is_interintra_allowed_mode(this_mode)) return 1;
-    if (!is_interintra_allowed_bsize(bsize)) return 1;
-  }
-
   // This is only used in motion vector unit test.
   if (cpi->oxcf.motion_vector_unit_test && ref_frame[0] == INTRA_FRAME)
     return 1;
@@ -11305,22 +11334,6 @@ static int inter_mode_search_order_independent_skip(
           x->source_variance < skip_intra_var_thresh)
         return 1;
     }
-  } else {
-    if (!is_comp_ref_allowed(bsize) && ref_frame[1] > INTRA_FRAME) return 1;
-  }
-
-  const int comp_pred = ref_frame[1] > INTRA_FRAME;
-  if (comp_pred) {
-    if (frame_is_intra_only(cm)) return 1;
-
-    if (current_frame->reference_mode == SINGLE_REFERENCE) return 1;
-
-    // Skip compound inter modes if ARF is not available.
-    if (!(cpi->ref_frame_flags & ref_frame_flag_list[ref_frame[1]])) return 1;
-
-    // Do not allow compound prediction if the segment level reference frame
-    // feature is in use as in this case there can only be one reference.
-    if (segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME)) return 1;
   }
 
   if (sf->selective_ref_frame) {
@@ -12144,6 +12157,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     x->skip = 0;
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
+
+    if (inter_mode_compatible_skip(cpi, x, bsize, midx)) continue;
 
     const int ret = inter_mode_search_order_independent_skip(
         cpi, ctx, x, bsize, midx, mi_row, mi_col, &mode_skip_mask,
