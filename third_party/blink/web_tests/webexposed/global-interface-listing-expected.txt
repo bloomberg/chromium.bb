@@ -2175,6 +2175,11 @@ interface EventTarget
     method constructor
     method dispatchEvent
     method removeEventListener
+interface External
+    attribute @@toStringTag
+    method AddSearchProvider
+    method IsSearchProviderInstalled
+    method constructor
 interface FaceDetector
     attribute @@toStringTag
     method constructor
