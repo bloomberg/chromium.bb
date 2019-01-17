@@ -88,8 +88,13 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   // okay if some of these are model-specific.
   // TODO(liberato): switch to base::DictionaryValue?
 
-  // Number of examples before we'll train a model.
-  size_t min_data_set_size = 10u;
+  // Maximum data set size until we start replacing examples.
+  size_t max_data_set_size = 100u;
+
+  // Fraction of examples that must be new before the task controller will train
+  // a new model.  Note that this is a fraction of the number of examples that
+  // we currently have, which might be less than |max_data_set_size|.
+  double min_new_data_fraction = 0.1;
 
   // Should the accuracy of this model be recorded to UMA?
   bool record_accuracy_via_uma = true;

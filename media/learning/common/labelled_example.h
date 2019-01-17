@@ -92,6 +92,7 @@ class COMPONENT_EXPORT(LEARNING_COMMON) TrainingData {
 
   // Provide the |i|-th example, over [0, size()).
   const LabelledExample& operator[](size_t i) const { return examples_[i]; }
+  LabelledExample& operator[](size_t i) { return examples_[i]; }
 
   // Return a copy of this data with duplicate entries merged.  Example weights
   // will be summed.

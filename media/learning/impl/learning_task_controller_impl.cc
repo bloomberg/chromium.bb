@@ -35,8 +35,16 @@ LearningTaskControllerImpl::LearningTaskControllerImpl(
 LearningTaskControllerImpl::~LearningTaskControllerImpl() = default;
 
 void LearningTaskControllerImpl::AddExample(const LabelledExample& example) {
-  // TODO(liberato): do we ever trim older examples?
-  training_data_->push_back(example);
+  if (training_data_->size() >= task_.max_data_set_size) {
+    // Replace a random example.  We don't necessarily want to replace the
+    // oldest, since we don't necessarily want to enforce an ad-hoc recency
+    // constraint here.  That's a different issue.
+    (*training_data_)[rng()->Generate(training_data_->size())] = example;
+  } else {
+    training_data_->push_back(example);
+  }
+  // Either way, we have one more example that we haven't used for training yet.
+  num_untrained_examples_++;
 
   // Once we have a model, see if we'd get |example| correct.
   if (model_ && reporter_) {
@@ -48,22 +56,32 @@ void LearningTaskControllerImpl::AddExample(const LabelledExample& example) {
     reporter_->GetPredictionCallback(observed).Run(predicted);
   }
 
-  // Train every time we get a multiple of |data_set_size|.
-  // TODO(liberato): weight might go up by more than one.
-  if ((training_data_->total_weight() % task_.min_data_set_size) != 0)
+  // Can't train more than one model concurrently.
+  if (training_is_in_progress_)
     return;
 
+  // Train every time we get enough new examples.  Note that this works even if
+  // we are replacing old examples rather than adding new ones.
+  double frac = ((double)num_untrained_examples_) / training_data_->size();
+  if (frac < task_.min_new_data_fraction)
+    return;
+
+  num_untrained_examples_ = 0;
+
+  // TODO(liberato): don't do this if one is in-flight.
   TrainedModelCB model_cb =
       base::BindOnce(&LearningTaskControllerImpl::OnModelTrained, AsWeakPtr());
-  // TODO(liberato): Post to a background task runner.
+  training_is_in_progress_ = true;
+  // Note that this copies the training data, so it's okay if we add more
+  // examples to our copy before this returns.
+  // TODO(liberato): Post to a background task runner, and bind |model_cb| to
+  // the current one.
   training_cb_.Run(*training_data_.get(), std::move(model_cb));
-
-  // TODO(liberato): replace |training_data_| and merge them once the model is
-  // trained.  Else, new examples will change the data during training.  For
-  // now, training is synchronous, so it's okay as it is.
 }
 
 void LearningTaskControllerImpl::OnModelTrained(std::unique_ptr<Model> model) {
+  DCHECK(training_is_in_progress_);
+  training_is_in_progress_ = false;
   model_ = std::move(model);
 }
 
