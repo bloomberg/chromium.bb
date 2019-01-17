@@ -2833,7 +2833,8 @@ static void model_rd_with_surffit(const AV1_COMP *const cpi,
   const double yl = log(sse_norm / qstepsqr) / log(2.0);
   double rate_f, dist_by_sse_norm_f;
 
-  av1_model_rd_surffit(plane_bsize, xm, yl, &rate_f, &dist_by_sse_norm_f);
+  av1_model_rd_surffit(plane_bsize, sse_norm, xm, yl, &rate_f,
+                       &dist_by_sse_norm_f);
 
   const double dist_f = dist_by_sse_norm_f * sse_norm;
   int rate_i = (int)(AOMMAX(0.0, rate_f * num_samples) + 0.5);
@@ -2937,7 +2938,8 @@ static void model_rd_with_curvfit(const AV1_COMP *const cpi,
   const double xqr = log(sse_norm / qstepsqr) / log(2.0);
 
   double rate_f, dist_by_sse_norm_f;
-  av1_model_rd_curvfit(plane_bsize, xqr, &rate_f, &dist_by_sse_norm_f);
+  av1_model_rd_curvfit(plane_bsize, sse_norm, xqr, &rate_f,
+                       &dist_by_sse_norm_f);
 
   const double dist_f = dist_by_sse_norm_f * sse_norm;
   int rate_i = (int)(AOMMAX(0.0, rate_f * num_samples) + 0.5);
