@@ -32,6 +32,87 @@ class OmniboxInput extends OmniboxElement {
     this.displayInputs = OmniboxInput.defaultDisplayInputs;
   }
 
+  /** @override */
+  connectedCallback() {
+    this.setupElementListeners_();
+  }
+
+  /** @private */
+  setupElementListeners_() {
+    ['#input-text',
+     '#reset-autocomplete-controller',
+     '#lock-cursor-position',
+     '#zero-suggest',
+     '#prevent-inline-autocomplete',
+     '#prefer-keyword',
+     '#current-url',
+     '#page-classification',
+    ]
+        .forEach(
+            query => this.$$(query).addEventListener(
+                'input', this.onQueryInputsChanged_.bind(this)));
+
+    // Set text of .arrow-padding to substring of #input-text text, from
+    // beginning until cursor position, in order to correctly align .arrow-up.
+    this.$$('#input-text')
+        .addEventListener(
+            'input', this.positionCursorPositionIndicators_.bind(this));
+
+    this.$$('#response-selection')
+        .addEventListener('input', this.onResponseSelectionChanged_.bind(this));
+    this.$$('#response-selection')
+        .addEventListener('blur', this.onResponseSelectionBlur_.bind(this));
+
+    ['#show-incomplete-results',
+     '#show-details',
+     '#show-all-providers',
+    ]
+        .forEach(
+            query => this.$$(query).addEventListener(
+                'input', this.onDisplayInputsChanged_.bind(this)));
+
+    this.$$('#filter-text')
+        .addEventListener('input', this.onFilterInputsChanged_.bind(this));
+
+    this.$$('#copy-text')
+        .addEventListener('click', this.onCopyText_.bind(this));
+    this.$$('#download-json')
+        .addEventListener('click', this.onDownloadJson_.bind(this));
+    this.setupDragListeners_(this.$$('#import-json'));
+    this.$$('#import-json')
+        .addEventListener('drop', this.onImportDropped_.bind(this));
+    this.$$('#import-json-input')
+        .addEventListener('input', this.onImportFileSelected_.bind(this));
+  }
+
+  /**
+   * Sets up boilerplate event listeners for an element that is able to receive
+   * drag events.
+   * @private @param {!Element} element
+   */
+  setupDragListeners_(element) {
+    element.addEventListener(
+        'dragenter', () => element.classList.add('drag-hover'));
+    element.addEventListener(
+        'dragleave', () => element.classList.remove('drag-hover'));
+    element.addEventListener('dragover', e => e.preventDefault());
+    element.addEventListener('drop', e => {
+      e.preventDefault();
+      element.classList.remove('drag-hover');
+    });
+  }
+
+  /** @private */
+  onQueryInputsChanged_() {
+    this.$$('#imported-warning').hidden = true;
+    this.$$('#current-url').disabled = this.$$('#zero-suggest').checked;
+    if (this.$$('#zero-suggest').checked) {
+      this.$$('#current-url').value = this.$$('#input-text').value;
+    }
+    this.dispatchEvent(
+        new CustomEvent('query-inputs-changed', {detail: this.queryInputs}));
+  }
+
   /** @return {QueryInputs} */
   get queryInputs() {
     return {
@@ -64,6 +145,62 @@ class OmniboxInput extends OmniboxElement {
     this.$$('#page-classification').value = queryInputs.pageClassification;
   }
 
+  /** @private @return {number} */
+  get cursorPosition_() {
+    return this.$$('#lock-cursor-position').checked ?
+        this.$$('#input-text').value.length :
+        this.$$('#input-text').selectionEnd;
+  }
+
+  /** @private @param {number} value */
+  set cursorPosition_(value) {
+    this.$$('#input-text').setSelectionRange(value, value);
+    this.positionCursorPositionIndicators_();
+  }
+
+  /** @private */
+  positionCursorPositionIndicators_() {
+    this.$$('.arrow-padding').textContent =
+        this.$$('#input-text').value.substring(0, this.cursorPosition_);
+  }
+
+  /** @return {boolean} */
+  get connectWindowOmnibox() {
+    return this.$$('#connect-window-omnibox').checked;
+  }
+
+  /** @private */
+  onResponseSelectionChanged_() {
+    const {value, max} = this.$$('#response-selection');
+    this.$$('#history-warning').hidden = value === '0' || value === max;
+    this.dispatchEvent(new CustomEvent('response-select', {detail: value - 1}));
+  }
+
+  /** @private */
+  onResponseSelectionBlur_() {
+    const {value, min, max} = this.$$('#response-selection');
+    this.$$('#response-selection').value = Math.max(Math.min(value, max), min);
+    this.onResponseSelectionChanged_();
+  }
+
+  /** @param {number} value */
+  set responsesCount(value) {
+    if (this.$$('#response-selection').value ===
+        this.$$('#response-selection').max) {
+      this.$$('#response-selection').value = value;
+    }
+    this.$$('#response-selection').max = value;
+    this.$$('#response-selection').min = value ? 1 : 0;
+    this.$$('#responses-count').textContent = value;
+    this.onResponseSelectionBlur_();
+  }
+
+  /** @private */
+  onDisplayInputsChanged_() {
+    this.dispatchEvent(new CustomEvent(
+        'display-inputs-changed', {detail: this.displayInputs}));
+  }
+
   /** @return {DisplayInputs} */
   get displayInputs() {
     return {
@@ -79,93 +216,6 @@ class OmniboxInput extends OmniboxElement {
         displayInputs.showIncompleteResults;
     this.$$('#show-details').checked = displayInputs.showDetails;
     this.$$('#show-all-providers').checked = displayInputs.showAllProviders;
-  }
-
-  /** @override */
-  connectedCallback() {
-    this.setupElementListeners_();
-  }
-
-  /** @private */
-  setupElementListeners_() {
-    ['#input-text',
-     '#reset-autocomplete-controller',
-     '#lock-cursor-position',
-     '#zero-suggest',
-     '#prevent-inline-autocomplete',
-     '#prefer-keyword',
-     '#current-url',
-     '#page-classification',
-    ]
-        .forEach(
-            query => this.$$(query).addEventListener(
-                'input', this.onQueryInputsChanged_.bind(this)));
-
-    ['#show-incomplete-results',
-     '#show-details',
-     '#show-all-providers',
-    ]
-        .forEach(
-            query => this.$$(query).addEventListener(
-                'input', this.onDisplayInputsChanged_.bind(this)));
-
-    this.$$('#filter-text')
-        .addEventListener('input', this.onFilterInputsChanged_.bind(this));
-
-    this.$$('#copy-text')
-        .addEventListener('click', this.onCopyText_.bind(this));
-    this.$$('#download-json')
-        .addEventListener('click', this.onDownloadJson_.bind(this));
-    this.setupDragListeners_(this.$$('#import-json'));
-    this.$$('#import-json')
-        .addEventListener('drop', this.onImportDropped_.bind(this));
-    this.$$('#import-json-input')
-        .addEventListener('input', this.onImportFileSelected_.bind(this));
-
-    // Set text of .arrow-padding to substring of #input-text text, from
-    // beginning until cursor position, in order to correctly align .arrow-up.
-    this.$$('#input-text')
-        .addEventListener(
-            'input', this.positionCursorPositionIndicators_.bind(this));
-
-    this.$$('#response-selection')
-        .addEventListener('input', this.onResponseSelectionChanged_.bind(this));
-    this.$$('#response-selection')
-        .addEventListener('blur', this.onResponseSelectionBlur_.bind(this));
-  }
-
-  /**
-   * Sets up boilerplate event listeners for an element that is able to receive
-   * drag events.
-   * @private @param {!Element} element
-   */
-  setupDragListeners_(element) {
-    element.addEventListener(
-        'dragenter', () => element.classList.add('drag-hover'));
-    element.addEventListener(
-        'dragleave', () => element.classList.remove('drag-hover'));
-    element.addEventListener('dragover', e => e.preventDefault());
-    element.addEventListener('drop', e => {
-      e.preventDefault();
-      element.classList.remove('drag-hover');
-    });
-  }
-
-  /** @private */
-  onQueryInputsChanged_() {
-    this.$$('#imported-warning').hidden = true;
-    this.$$('#current-url').disabled = this.$$('#zero-suggest').checked;
-    if (this.$$('#zero-suggest').checked) {
-      this.$$('#current-url').value = this.$$('#input-text').value;
-    }
-    this.dispatchEvent(
-        new CustomEvent('query-inputs-changed', {detail: this.queryInputs}));
-  }
-
-  /** @private */
-  onDisplayInputsChanged_() {
-    this.dispatchEvent(new CustomEvent(
-        'display-inputs-changed', {detail: this.displayInputs}));
   }
 
   /** @private */
@@ -221,56 +271,6 @@ class OmniboxInput extends OmniboxElement {
     } catch (error) {
       console.error('error during import, invalid json:', error);
     }
-  }
-
-  /** @private */
-  onResponseSelectionChanged_() {
-    const {value, max} = this.$$('#response-selection');
-    this.$$('#history-warning').hidden = value === '0' || value === max;
-    this.dispatchEvent(new CustomEvent('response-select', {detail: value - 1}));
-  }
-
-  /** @private */
-  onResponseSelectionBlur_() {
-    const {value, min, max} = this.$$('#response-selection');
-    this.$$('#response-selection').value = Math.max(Math.min(value, max), min);
-    this.onResponseSelectionChanged_();
-  }
-
-  /** @param {number} value */
-  set responsesCount(value) {
-    if (this.$$('#response-selection').value ===
-        this.$$('#response-selection').max) {
-      this.$$('#response-selection').value = value;
-    }
-    this.$$('#response-selection').max = value;
-    this.$$('#response-selection').min = value ? 1 : 0;
-    this.$$('#responses-count').textContent = value;
-    this.onResponseSelectionBlur_();
-  }
-
-  /** @return {boolean} */
-  get connectWindowOmnibox() {
-    return this.$$('#connect-window-omnibox').checked;
-  }
-
-  /** @private @return {number} */
-  get cursorPosition_() {
-    return this.$$('#lock-cursor-position').checked ?
-        this.$$('#input-text').value.length :
-        this.$$('#input-text').selectionEnd;
-  }
-
-  /** @private @param {number} value */
-  set cursorPosition_(value) {
-    this.$$('#input-text').setSelectionRange(value, value);
-    this.positionCursorPositionIndicators_();
-  }
-
-  /** @private */
-  positionCursorPositionIndicators_() {
-    this.$$('.arrow-padding').textContent =
-        this.$$('#input-text').value.substring(0, this.cursorPosition_);
   }
 
   /** @return {DisplayInputs} */
