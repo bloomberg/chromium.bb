@@ -337,6 +337,7 @@ Response InspectorOverlayAgent::enable() {
         static_cast<int>(backend_node_id_to_inspect_));
   }
   backend_node_id_to_inspect_ = 0;
+  SetNeedsUnbufferedInput(true);
   return Response::OK();
 }
 
@@ -352,6 +353,7 @@ Response InspectorOverlayAgent::disable() {
   setSuspended(false);
   SetSearchingForNode(kNotSearching,
                       Maybe<protocol::Overlay::HighlightConfig>());
+  SetNeedsUnbufferedInput(false);
   return Response::OK();
 }
 
@@ -453,6 +455,7 @@ Response InspectorOverlayAgent::setSuspended(bool suspended) {
   if (suspended && !suspended_.Get())
     ClearInternal();
   suspended_.Set(suspended);
+  SetNeedsUnbufferedInput(!suspended);
   return Response::OK();
 }
 
@@ -1359,6 +1362,14 @@ Response InspectorOverlayAgent::HighlightConfigFromInspectorObject(
 
   *out_config = std::move(highlight_config);
   return Response::OK();
+}
+
+void InspectorOverlayAgent::SetNeedsUnbufferedInput(bool unbuffered) {
+  LocalFrame* frame = frame_impl_->GetFrame();
+  if (frame) {
+    frame->GetPage()->GetChromeClient().SetNeedsUnbufferedInputForDebugger(
+        frame, unbuffered);
+  }
 }
 
 }  // namespace blink

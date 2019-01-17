@@ -197,6 +197,8 @@ class CORE_EXPORT InspectorOverlayAgent final
                           bool omit_tooltip);
   void InnerHideHighlight();
 
+  void SetNeedsUnbufferedInput(bool unbuffered);
+
   Member<WebLocalFrameImpl> frame_impl_;
   Member<InspectedFrames> inspected_frames_;
   Member<Node> highlight_node_;

@@ -150,6 +150,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   // appropriate scroll optimizations can be chosen.
   void SetHasScrollEventHandlers(LocalFrame*, bool has_event_handlers) override;
   void SetNeedsLowLatencyInput(LocalFrame*, bool needs_low_latency) override;
+  void SetNeedsUnbufferedInputForDebugger(LocalFrame*, bool immediate) override;
   void RequestUnbufferedInputEvents(LocalFrame*) override;
   void SetTouchAction(LocalFrame*, TouchAction) override;
 

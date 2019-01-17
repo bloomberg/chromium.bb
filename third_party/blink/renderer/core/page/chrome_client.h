@@ -294,6 +294,7 @@ class CORE_EXPORT ChromeClient
       cc::EventListenerClass) const = 0;
   virtual void SetHasScrollEventHandlers(LocalFrame*, bool) = 0;
   virtual void SetNeedsLowLatencyInput(LocalFrame*, bool) = 0;
+  virtual void SetNeedsUnbufferedInputForDebugger(LocalFrame*, bool) = 0;
   virtual void RequestUnbufferedInputEvents(LocalFrame*) = 0;
   virtual void SetTouchAction(LocalFrame*, TouchAction) = 0;
 
