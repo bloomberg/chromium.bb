@@ -60,7 +60,6 @@ from v8_utilities import binding_header_filename, extended_attribute_value_conta
 NON_WRAPPER_TYPES = frozenset([
     'Dictionary',
     'EventHandler',
-    'EventListener',
     'NodeFilter',
     'SerializedScriptValue',
 ])
@@ -130,7 +129,6 @@ CPP_SPECIAL_CONVERSION_RULES = {
     'Date': 'double',
     'Dictionary': 'Dictionary',
     'EventHandler': 'EventListener*',
-    'EventListener': 'EventListener*',
     'Promise': 'ScriptPromise',
     'ScriptValue': 'ScriptValue',
     # FIXME: Eliminate custom bindings for XPathNSResolver  http://crbug.com/345529
@@ -403,8 +401,7 @@ INCLUDES_FOR_TYPE = {
                             'core/typed_arrays/array_buffer_view_helpers.h',
                             'core/typed_arrays/flexible_array_buffer_view.h']),
     'Dictionary': set(['bindings/core/v8/dictionary.h']),
-    'EventHandler': set(['bindings/core/v8/v8_event_listener_helper.h']),
-    'EventListener': set(['bindings/core/v8/v8_event_listener_helper.h']),
+    'EventHandler': set(['bindings/core/v8/js_event_handler.h']),
     'HTMLCollection': set(['bindings/core/v8/v8_html_collection.h',
                            'core/dom/class_collection.h',
                            'core/dom/tag_collection.h',
@@ -1013,8 +1010,7 @@ CPP_VALUE_TO_V8_VALUE = {
                      'V8String({isolate}, {cpp_value}).As<v8::Value>())'),
     # Special cases
     'Dictionary': '{cpp_value}.V8Value()',
-    'EventHandler':
-        'JSBasedEventListener::GetListenerOrNull({isolate}, impl, {cpp_value})',
+    'EventHandler': 'JSEventHandler::AsV8Value({isolate}, impl, {cpp_value})',
     'NodeFilter': 'ToV8({cpp_value}, {creation_context}, {isolate})',
     'Record': 'ToV8({cpp_value}, {creation_context}, {isolate})',
     'ScriptValue': '{cpp_value}.V8Value()',

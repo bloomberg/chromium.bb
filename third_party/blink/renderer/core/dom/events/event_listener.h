@@ -21,7 +21,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_LISTENER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_LISTENER_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/custom_wrappable_adapter.h"
+#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -32,9 +32,11 @@ namespace blink {
 class Event;
 class ExecutionContext;
 
-class CORE_EXPORT EventListener : public CustomWrappableAdapter {
+class CORE_EXPORT EventListener
+    : public GarbageCollectedFinalized<EventListener>,
+      public NameClient {
  public:
-  ~EventListener() override = default;
+  virtual ~EventListener() = default;
 
   // Invokes this event listener.
   virtual void Invoke(ExecutionContext*, Event*) = 0;
@@ -57,6 +59,8 @@ class CORE_EXPORT EventListener : public CustomWrappableAdapter {
 
   virtual bool operator==(const EventListener&) const = 0;
 
+  virtual void Trace(Visitor*) {}
+
   const char* NameInHeapSnapshot() const override { return "EventListener"; }
 
   // Helper functions for DowncastTraits.
@@ -70,6 +74,8 @@ class CORE_EXPORT EventListener : public CustomWrappableAdapter {
   // subclasses must inherit from either of them.
   friend class JSBasedEventListener;
   friend class NativeEventListener;
+
+  DISALLOW_COPY_AND_ASSIGN(EventListener);
 };
 
 }  // namespace blink

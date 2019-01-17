@@ -66,8 +66,8 @@ class CORE_EXPORT MediaQueryList final
 
   // These two functions are provided for compatibility with JS code
   // written before the change listener became a DOM event.
-  void addDeprecatedListener(EventListener*);
-  void removeDeprecatedListener(EventListener*);
+  void addDeprecatedListener(V8EventListener*);
+  void removeDeprecatedListener(V8EventListener*);
 
   // C++ code can use these functions to listen to changes instead of having to
   // use DOM event listeners.

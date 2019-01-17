@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 
 #include <memory>
+
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -12,7 +13,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_token_list.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_event.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener_helper.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_event_listener_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_html_all_collection.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_html_collection.h"
@@ -373,19 +374,14 @@ void ThreadDebugger::SetMonitorEventsCallback(
   if (!event_target)
     return;
   Vector<String> types = NormalizeEventTypes(info);
-  EventListener* event_listener = V8EventListenerHelper::GetEventListener(
-      ScriptState::Current(info.GetIsolate()),
-      v8::Local<v8::Function>::Cast(info.Data()),
-      enabled ? kListenerFindOrCreate : kListenerFindOnly);
-  if (!event_listener)
-    return;
+  DCHECK(!info.Data().IsEmpty() && info.Data()->IsFunction());
+  V8EventListener* event_listener =
+      V8EventListener::Create(info.Data().As<v8::Function>());
   for (wtf_size_t i = 0; i < types.size(); ++i) {
     if (enabled)
-      event_target->addEventListener(AtomicString(types[i]), event_listener,
-                                     false);
+      event_target->addEventListener(AtomicString(types[i]), event_listener);
     else
-      event_target->removeEventListener(AtomicString(types[i]), event_listener,
-                                        false);
+      event_target->removeEventListener(AtomicString(types[i]), event_listener);
   }
 }
 

@@ -199,7 +199,6 @@ class PLATFORM_EXPORT RuntimeCallStats {
 #define BINDINGS_COUNTERS(V)      \
   V(AssociateObjectWithWrapper)   \
   V(CreateWrapper)                \
-  V(GetEventListener)             \
   V(HasInstance)                  \
   V(ToExecutionContext)           \
   V(ToV8DOMWindow)                \

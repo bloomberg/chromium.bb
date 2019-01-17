@@ -15,6 +15,7 @@ namespace blink {
 class DOMWrapperWorld;
 class Event;
 class EventTarget;
+class ScriptState;
 class SourceLocation;
 
 // |JSBasedEventListener| is the base class for JS-based event listeners,
@@ -23,16 +24,6 @@ class SourceLocation;
 // implements the common features.
 class CORE_EXPORT JSBasedEventListener : public EventListener {
  public:
-  // TODO(bindings): consider to remove this (and use GetListenerObject()
-  // instead) because this method is used in mostly only generated classes.
-  static v8::Local<v8::Value> GetListenerOrNull(v8::Isolate* isolate,
-                                                EventTarget* event_target,
-                                                EventListener* listener) {
-    if (auto* v8_listener = DynamicTo<JSBasedEventListener>(listener))
-      return v8_listener->GetListenerObject(*event_target);
-    return v8::Null(isolate);
-  }
-
   ~JSBasedEventListener() override;
 
   // blink::EventListener overrides:
