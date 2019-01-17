@@ -432,10 +432,6 @@ class OmniboxFieldTrial {
   // Returns true if the rich entities flag is enabled.
   static bool IsRichEntitySuggestionsEnabled();
 
-  // Returns true if either the new answer layout flag or the
-  // #upcoming-ui-features flag is enabled.
-  static bool IsNewAnswerLayoutEnabled();
-
   // Returns true if either the reverse answers flag or the
   // #upcoming-ui-features flag is enabled.
   static bool IsReverseAnswersEnabled();

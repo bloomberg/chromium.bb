@@ -241,8 +241,7 @@ int OmniboxMatchCellView::GetTextIndent() {
 void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
                                          const AutocompleteMatch& match) {
   is_rich_suggestion_ =
-      (OmniboxFieldTrial::IsNewAnswerLayoutEnabled() &&
-       (!!match.answer || match.type == AutocompleteMatchType::CALCULATOR)) ||
+      (!!match.answer || match.type == AutocompleteMatchType::CALCULATOR) ||
       (OmniboxFieldTrial::IsRichEntitySuggestionsEnabled() &&
        !match.image_url.empty());
   is_search_type_ = AutocompleteMatch::IsSearchType(match.type);
@@ -268,8 +267,7 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
     icon_view_->SetSize(icon_view_->CalculatePreferredSize());
   }
 
-  if (OmniboxFieldTrial::IsNewAnswerLayoutEnabled() &&
-      match.type == AutocompleteMatchType::CALCULATOR) {
+  if (match.type == AutocompleteMatchType::CALCULATOR) {
     answer_image_view_->SetImage(
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_OMNIBOX_CALCULATOR_ROUND));

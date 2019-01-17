@@ -774,11 +774,6 @@ bool OmniboxFieldTrial::IsRichEntitySuggestionsEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions);
 }
 
-bool OmniboxFieldTrial::IsNewAnswerLayoutEnabled() {
-  // TODO(orinj): The call is now obsolete and can be removed.
-  return true;
-}
-
 bool OmniboxFieldTrial::IsReverseAnswersEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxReverseAnswers) ||
          base::FeatureList::IsEnabled(features::kExperimentalUi);
