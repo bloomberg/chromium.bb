@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -209,6 +210,11 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback);
 
+  // TODO(crbug.com/907311): Remove after we identified the cause of crash.
+  void SetReportDebugLogForTesting(bool report_debug_log) {
+    report_debug_log_ = report_debug_log;
+  }
+
  private:
   struct WorkerContextData;
   class NavigationPreloadRequest;
@@ -361,6 +367,9 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void SetTimeoutTimerForTesting(
       std::unique_ptr<ServiceWorkerTimeoutTimer> timeout_timer);
 
+  // TODO(crbug.com/907311): Remove after we identified the cause of crash.
+  void RecordDebugLog(const char* message);
+
   const int embedded_worker_id_;
   const int64_t service_worker_version_id_;
   const GURL service_worker_scope_;
@@ -416,6 +425,11 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // Detects disconnection from the network service.
   network::mojom::URLLoaderFactoryPtr
       network_service_connection_error_handler_holder_;
+
+  // TODO(crbug.com/907311): Remove after we identified the cause of crash.
+  bool report_debug_log_ = true;
+  base::Lock debug_log_lock_;
+  std::vector<std::string> debug_log_ GUARDED_BY(debug_log_lock_);
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextClient);
 };

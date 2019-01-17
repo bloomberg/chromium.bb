@@ -562,7 +562,19 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
                                      : "ResourceLoader"));
 }
 
-ServiceWorkerContextClient::~ServiceWorkerContextClient() {}
+ServiceWorkerContextClient::~ServiceWorkerContextClient() {
+  // TODO(crbug.com/907311): Remove this instrumentation after we identified
+  // the cause of crash.
+  if (report_debug_log_ && context_) {
+    std::string log;
+    for (const auto& entry : debug_log_) {
+      log += entry + " ";
+    }
+    DEBUG_ALIAS_FOR_CSTR(debug_log, log.c_str(), 1024);
+    CHECK(false) << "Destructing ServiceWorkerContextClient without calling "
+                    "WillDestroyWorkerContext()";
+  }
+}
 
 void ServiceWorkerContextClient::WorkerReadyForInspection() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
@@ -572,6 +584,7 @@ void ServiceWorkerContextClient::WorkerReadyForInspection() {
 void ServiceWorkerContextClient::WorkerContextFailedToStart() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!proxy_);
+  RecordDebugLog("WorkerContextFailedToStart");
 
   (*instance_host_)->OnStopped();
 
@@ -621,6 +634,7 @@ void ServiceWorkerContextClient::WorkerContextStarted(
     blink::WebServiceWorkerContextProxy* proxy) {
   DCHECK(!worker_task_runner_.get());
   DCHECK_NE(0, WorkerThread::GetCurrentId());
+  RecordDebugLog("WorkerContextStarted");
   worker_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   // g_worker_client_tls.Pointer()->Get() could return nullptr if this context
   // gets deleted before workerContextStarted() is called.
@@ -701,6 +715,7 @@ void ServiceWorkerContextClient::DidEvaluateScript(bool success) {
 
 void ServiceWorkerContextClient::DidInitializeWorkerContext(
     v8::Local<v8::Context> context) {
+  RecordDebugLog("DidInitializeWorkerContext");
   GetContentClient()
       ->renderer()
       ->DidInitializeServiceWorkerContextOnWorkerThread(
@@ -710,6 +725,7 @@ void ServiceWorkerContextClient::DidInitializeWorkerContext(
 
 void ServiceWorkerContextClient::WillDestroyWorkerContext(
     v8::Local<v8::Context> context) {
+  RecordDebugLog("WillDestroyWorkerContext");
   // At this point WillStopCurrentWorkerThread is already called, so
   // worker_task_runner_->RunsTasksInCurrentSequence() returns false
   // (while we're still on the worker thread).
@@ -731,6 +747,7 @@ void ServiceWorkerContextClient::WillDestroyWorkerContext(
 
 void ServiceWorkerContextClient::WorkerContextDestroyed() {
   DCHECK(g_worker_client_tls.Pointer()->Get() == nullptr);
+  RecordDebugLog("WorkerContextDestroyed");
 
   // TODO(shimazu): The signals to the browser should be in the order:
   // (1) WorkerStopped (via mojo call EmbeddedWorkerInstanceHost.OnStopped())
@@ -1780,6 +1797,7 @@ void ServiceWorkerContextClient::OnRequestedTermination(
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(context_);
   DCHECK(context_->timeout_timer);
+  RecordDebugLog("OnRequestedTermination");
 
   // This worker will be terminated soon. Ignore the message.
   if (will_be_terminated)
@@ -1796,6 +1814,7 @@ bool ServiceWorkerContextClient::RequestedTermination() const {
 }
 
 void ServiceWorkerContextClient::StopWorker() {
+  RecordDebugLog("StopWorker");
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   if (embedded_worker_client_)
     embedded_worker_client_->StopWorker();
@@ -1825,6 +1844,11 @@ void ServiceWorkerContextClient::SetTimeoutTimerForTesting(
     std::unique_ptr<ServiceWorkerTimeoutTimer> timeout_timer) {
   DCHECK(context_);
   context_->timeout_timer = std::move(timeout_timer);
+}
+
+void ServiceWorkerContextClient::RecordDebugLog(const char* message) {
+  base::AutoLock lock(debug_log_lock_);
+  debug_log_.emplace_back(message);
 }
 
 }  // namespace content
