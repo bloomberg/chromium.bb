@@ -2323,8 +2323,9 @@ void QuicChromiumClientSession::CloseSessionOnError(
   if (!callback_.is_null()) {
     base::ResetAndReturn(&callback_).Run(net_error);
   }
+
   CloseAllStreams(net_error);
-  CloseAllHandles(net_error);
+
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_CLOSE_ON_ERROR,
                     NetLog::IntCallback("net_error", net_error));
 
@@ -2332,6 +2333,7 @@ void QuicChromiumClientSession::CloseSessionOnError(
     connection()->CloseConnection(quic_error, "net error", behavior);
   DCHECK(!connection()->connected());
 
+  CloseAllHandles(net_error);
   NotifyFactoryOfSessionClosed();
 }
 

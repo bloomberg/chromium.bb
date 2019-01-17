@@ -5389,6 +5389,11 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorNoNewNetwork(
   EXPECT_EQ(ERR_NETWORK_CHANGED,
             stream->ReadResponseHeaders(callback_.callback()));
 
+  NetErrorDetails error_details;
+  stream->PopulateNetErrorDetails(&error_details);
+  EXPECT_EQ(error_details.quic_connection_error,
+            quic::QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK);
+
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
