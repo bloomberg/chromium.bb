@@ -24,12 +24,8 @@
 
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element_with_state.h"
 
-#include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/local_frame_client.h"
-#include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
-#include "third_party/blink/renderer/core/page/chrome_client.h"
 
 namespace blink {
 
@@ -119,21 +115,6 @@ HTMLFormControlElementWithState::HTMLFormControlElementWithState(
     : HTMLFormControlElement(tag_name, doc) {}
 
 HTMLFormControlElementWithState::~HTMLFormControlElementWithState() = default;
-
-Node::InsertionNotificationRequest
-HTMLFormControlElementWithState::InsertedInto(ContainerNode& insertion_point) {
-  if (insertion_point.isConnected() && !ContainingShadowRoot())
-    GetDocument().GetFormController().InvalidateStatefulFormControlList();
-  return HTMLFormControlElement::InsertedInto(insertion_point);
-}
-
-void HTMLFormControlElementWithState::RemovedFrom(
-    ContainerNode& insertion_point) {
-  if (insertion_point.isConnected() && !ContainingShadowRoot() &&
-      !insertion_point.ContainingShadowRoot())
-    GetDocument().GetFormController().InvalidateStatefulFormControlList();
-  HTMLFormControlElement::RemovedFrom(insertion_point);
-}
 
 bool HTMLFormControlElementWithState::ShouldAutocomplete() const {
   if (!Form())
@@ -284,27 +265,15 @@ void HTMLFormControlElementWithState::setIDLExposedAutofillValue(
   setAttribute(html_names::kAutocompleteAttr, AtomicString(autocomplete_value));
 }
 
-void HTMLFormControlElementWithState::NotifyFormStateChanged() {
-  // This can be called during fragment parsing as a result of option
-  // selection before the document is active (or even in a frame).
-  if (!GetDocument().IsActive())
-    return;
-  GetDocument().GetFrame()->Client()->DidUpdateCurrentHistoryItem();
-}
-
 bool HTMLFormControlElementWithState::ShouldSaveAndRestoreFormControlState()
     const {
   // We don't save/restore control state in a form with autocomplete=off.
   return isConnected() && ShouldAutocomplete();
 }
 
-FormControlState HTMLFormControlElementWithState::SaveFormControlState() const {
-  return FormControlState();
-}
-
 void HTMLFormControlElementWithState::FinishParsingChildren() {
   HTMLFormControlElement::FinishParsingChildren();
-  GetDocument().GetFormController().RestoreControlStateFor(*this);
+  ListedElement::TakeStateAndRestore();
 }
 
 bool HTMLFormControlElementWithState::IsFormControlElementWithState() const {
