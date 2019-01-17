@@ -107,10 +107,6 @@ class PLATFORM_EXPORT CallbackInterfaceBase
   Member<ScriptState> incumbent_script_state_;
 
   friend class V8PersistentCallbackInterfaceBase;
-  // ToV8 needs to call |CallbackObject| member function.
-  friend v8::Local<v8::Value> ToV8(CallbackInterfaceBase* callback,
-                                   v8::Local<v8::Object> creation_context,
-                                   v8::Isolate*);
 };
 
 // V8PersistentCallbackInterfaceBase retains the underlying v8::Object of a
