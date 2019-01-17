@@ -910,8 +910,9 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
   SkIPoint offset;
   SkIRect subset;
   sk_sp<SkImage> filtered_image = SkiaHelper::ApplyImageFilter(
-      src_image, src_image_rect, src_image_rect, gfx::Vector2dF(1, 1),
-      std::move(filter), &offset, &subset, quad->filters_origin, true);
+      use_gr_context->context(), src_image, src_image_rect, src_image_rect,
+      gfx::Vector2dF(1, 1), std::move(filter), &offset, &subset,
+      quad->filters_origin, true);
 
   if (!backdrop_filter_bounds.IsEmpty()) {
     // Clip the filtered image to the bounding box of the element.
@@ -1215,8 +1216,9 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
                           params->contents_texture->size(),
                           use_gr_context->context(), params->flip_texture);
           params->filter_image = SkiaHelper::ApplyImageFilter(
-              src_image, src_rect, params->dst_rect, quad->filters_scale,
-              std::move(filter), &offset, &subset, quad->filters_origin, true);
+              use_gr_context->context(), src_image, src_rect, params->dst_rect,
+              quad->filters_scale, std::move(filter), &offset, &subset,
+              quad->filters_origin, true);
         } else {
           DisplayResourceProvider::ScopedReadLockGL
               prefilter_bypass_quad_texture_lock(
@@ -1229,8 +1231,9 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
                           prefilter_bypass_quad_texture_lock.size(),
                           use_gr_context->context(), params->flip_texture);
           params->filter_image = SkiaHelper::ApplyImageFilter(
-              src_image, src_rect, params->dst_rect, quad->filters_scale,
-              std::move(filter), &offset, &subset, quad->filters_origin, true);
+              use_gr_context->context(), src_image, src_rect, params->dst_rect,
+              quad->filters_scale, std::move(filter), &offset, &subset,
+              quad->filters_origin, true);
         }
 
         if (!params->filter_image)
