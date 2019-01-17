@@ -424,7 +424,8 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     """Test RunCommand(..., env=xyz) works."""
     # We'll put this bogus environment together, just to make sure
     # subprocess.Popen gets passed it.
-    env = {'Tom': 'Jerry', 'Itchy': 'Scratchy'}
+    rc_env = {'Tom': 'Jerry', 'Itchy': 'Scratchy'}
+    sp_env = dict(rc_env, LC_MESSAGES='C')
 
     # This is a simple case, copied from testReturnCodeZeroWithArrayCmd()
     self.proc_mock.returncode = 0
@@ -433,8 +434,8 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     # Run.  We expect the env= to be passed through from sp (subprocess.Popen)
     # to rc (RunCommand).
     self._TestCmd(cmd_list, cmd_list,
-                  sp_kv=dict(env=env),
-                  rc_kv=dict(env=env))
+                  sp_kv=dict(env=sp_env),
+                  rc_kv=dict(env=rc_env))
 
   def testExtraEnvOnlyWorks(self):
     """Test RunCommand(..., extra_env=xyz) works."""
@@ -462,7 +463,12 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     # subprocess.Popen gets passed it.
     env = {'Tom': 'Jerry', 'Itchy': 'Scratchy'}
     extra_env = {'Pinky': 'Brain'}
-    total_env = {'Tom': 'Jerry', 'Itchy': 'Scratchy', 'Pinky': 'Brain'}
+    total_env = {
+        'Tom': 'Jerry',
+        'Itchy': 'Scratchy',
+        'Pinky': 'Brain',
+        'LC_MESSAGES': 'C'
+    }
 
     # This is a simple case, copied from testReturnCodeZeroWithArrayCmd()
     self.proc_mock.returncode = 0
@@ -481,7 +487,12 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     # subprocess.Popen gets passed it.
     env = {'Tom': 'Jerry', 'Itchy': 'Scratchy'}
     extra_env = {'Pinky': 'Brain'}
-    total_env = {'Tom': 'Jerry', 'Itchy': 'Scratchy', 'Pinky': 'Brain'}
+    total_env = {
+        'Tom': 'Jerry',
+        'Itchy': 'Scratchy',
+        'Pinky': 'Brain',
+        'LC_MESSAGES': 'C'
+    }
 
     # This is a simple case, copied from testReturnCodeZeroWithArrayCmd()
     self.proc_mock.returncode = 0

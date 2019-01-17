@@ -558,7 +558,11 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
   # If we are using enter_chroot we need to use enterchroot pass env through
   # to the final command.
   env = env.copy() if env is not None else os.environ.copy()
+  # Looking at localized error messages may be unexpectedly dangerous, so we
+  # set LC_MESSAGES=C to make sure the output of commands is safe to inspect.
+  env['LC_MESSAGES'] = 'C'
   env.update(extra_env if extra_env else {})
+
   if enter_chroot and not IsInsideChroot():
     wrapper = ['cros_sdk']
     if cwd:
