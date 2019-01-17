@@ -48,8 +48,7 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase,
   void OnGetInlineFrameData(
       mojom::XRFrameDataProvider::GetFrameDataCallback callback) override;
 
-  void OnStartPresentResult(mojom::XRRuntime::RequestSessionCallback callback,
-                            mojom::XRSessionPtr session);
+  void OnStartPresentResult(mojom::XRSessionPtr session);
 
   // XRSessionController
   void SetFrameDataRestricted(bool restricted) override;
@@ -66,7 +65,6 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase,
   void CreateNonPresentingContext();
   void OnInitRequestSessionFinished(
       mojom::XRRuntimeSessionOptionsPtr options,
-      mojom::XRRuntime::RequestSessionCallback callback,
       bool success);
 
   base::android::ScopedJavaGlobalRef<jobject> non_presenting_context_;
@@ -77,6 +75,8 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase,
   mojo::Binding<mojom::XRSessionController> exclusive_controller_binding_;
 
   std::unique_ptr<VrModuleDelegate> module_delegate_;
+
+  mojom::XRRuntime::RequestSessionCallback pending_request_session_callback_;
 
   base::WeakPtrFactory<GvrDevice> weak_ptr_factory_;
 
