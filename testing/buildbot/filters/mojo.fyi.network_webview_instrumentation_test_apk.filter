@@ -103,13 +103,6 @@
 -org.chromium.android_webview.test.LoadDataWithBaseUrlTest.testXhrForCustomSchemeUrl
 -org.chromium.android_webview.test.LoadDataWithBaseUrlTest.testXhrForHttpSchemeUrl
 
-# https://crbug.com/893581
--org.chromium.android_webview.test.LoadUrlTest.testLoadUrlWithExtraHeaders
--org.chromium.android_webview.test.LoadUrlTest.testRedirectAndReloadWithExtraHeaders
--org.chromium.android_webview.test.LoadUrlTest.testReloadWithExtraHeaders
--org.chromium.android_webview.test.LoadUrlTest.testRendererNavigationAndGoBackWithExtraHeaders
--org.chromium.android_webview.test.AwNetworkConfigurationTest.testRequestedWithApplicationValuePreferred
-
 # https://crbug.com/893582
 -org.chromium.android_webview.test.SafeBrowsingTest.testSafeBrowsingDontProceedCausesNetworkErrorForMainFrame
 -org.chromium.android_webview.test.SafeBrowsingTest.testSafeBrowsingHardcodedMalwareUrl

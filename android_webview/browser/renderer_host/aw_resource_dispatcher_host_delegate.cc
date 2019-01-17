@@ -276,8 +276,6 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
     content::AppCacheService* appcache_service,
     ResourceType resource_type,
     std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
-  AddExtraHeadersIfNeeded(request, resource_context);
-
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
 
@@ -318,14 +316,6 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
       std::make_unique<web_restrictions::WebRestrictionsResourceThrottle>(
           AwBrowserContext::GetDefault()->GetWebRestrictionProvider(),
           request->url(), is_main_frame));
-}
-
-void AwResourceDispatcherHostDelegate::OnRequestRedirected(
-    const GURL& redirect_url,
-    net::URLRequest* request,
-    content::ResourceContext* resource_context,
-    network::ResourceResponse* response) {
-  AddExtraHeadersIfNeeded(request, resource_context);
 }
 
 void AwResourceDispatcherHostDelegate::RequestComplete(
@@ -475,36 +465,6 @@ void AwResourceDispatcherHostDelegate::OnIoThreadClientReadyInternal(
     IoThreadClientThrottle* throttle = it->second;
     throttle->OnIoThreadClientReady(new_render_process_id, new_render_frame_id);
     pending_throttles_.erase(it);
-  }
-}
-
-void AwResourceDispatcherHostDelegate::AddExtraHeadersIfNeeded(
-    net::URLRequest* request,
-    content::ResourceContext* resource_context) {
-  const content::ResourceRequestInfo* request_info =
-      content::ResourceRequestInfo::ForRequest(request);
-  if (!request_info)
-    return;
-  if (request_info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME)
-    return;
-
-  const ui::PageTransition transition = request_info->GetPageTransition();
-  const bool is_load_url =
-      transition & ui::PAGE_TRANSITION_FROM_API;
-  const bool is_go_back_forward =
-      transition & ui::PAGE_TRANSITION_FORWARD_BACK;
-  const bool is_reload = ui::PageTransitionCoreTypeIs(
-      transition, ui::PAGE_TRANSITION_RELOAD);
-  if (is_load_url || is_go_back_forward || is_reload) {
-    AwResourceContext* awrc = static_cast<AwResourceContext*>(resource_context);
-    std::string extra_headers = awrc->GetExtraHeaders(request->url());
-    if (!extra_headers.empty()) {
-      net::HttpRequestHeaders headers;
-      headers.AddHeadersFromString(extra_headers);
-      for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext(); ) {
-        request->SetExtraRequestHeaderByName(it.name(), it.value(), false);
-      }
-    }
   }
 }
 

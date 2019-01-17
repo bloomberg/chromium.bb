@@ -23,6 +23,7 @@
 #include "android_webview/browser/aw_settings.h"
 #include "android_webview/browser/aw_speech_recognition_manager_delegate.h"
 #include "android_webview/browser/aw_url_checker_delegate_impl.h"
+#include "android_webview/browser/aw_url_loader_throttle.h"
 #include "android_webview/browser/aw_web_contents_view_delegate.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/net_helpers.h"
@@ -757,6 +758,18 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
       if (safe_browsing_throttle)
         result.push_back(std::move(safe_browsing_throttle));
     }
+  }
+
+  if (request.resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
+    const bool is_load_url =
+        request.transition_type & ui::PAGE_TRANSITION_FROM_API;
+    const bool is_go_back_forward =
+        request.transition_type & ui::PAGE_TRANSITION_FORWARD_BACK;
+    const bool is_reload = ui::PageTransitionCoreTypeIs(
+        static_cast<ui::PageTransition>(request.transition_type),
+        ui::PAGE_TRANSITION_RELOAD);
+    if (is_load_url || is_go_back_forward || is_reload)
+      result.push_back(std::make_unique<AwURLLoaderThrottle>(resource_context));
   }
 
   return result;
