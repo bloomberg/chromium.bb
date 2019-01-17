@@ -24,6 +24,11 @@ class COMPONENT_EXPORT(
   static bool FillProcessMemoryMaps(base::ProcessId,
                                     mojom::MemoryMapOption,
                                     mojom::RawOSMemDump*);
+  static std::vector<mojom::VmRegionPtr> GetProcessMemoryMaps(base::ProcessId);
+
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  static void SetProcSmapsForTesting(FILE*);
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OSMetricsTest, ParseProcSmaps);
@@ -31,15 +36,11 @@ class COMPONENT_EXPORT(
   FRIEND_TEST_ALL_PREFIXES(OSMetricsTest, TestMachOReading);
   FRIEND_TEST_ALL_PREFIXES(heap_profiling::ProfilingJsonExporterTest,
                            MemoryMaps);
-  static std::vector<mojom::VmRegionPtr> GetProcessMemoryMaps(base::ProcessId);
 
 #if defined(OS_MACOSX)
   static std::vector<mojom::VmRegionPtr> GetProcessModules(base::ProcessId);
 #endif
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-  static void SetProcSmapsForTesting(FILE*);
-#endif  // defined(OS_LINUX)
 };
 
 }  // namespace memory_instrumentation
