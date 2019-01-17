@@ -18,6 +18,12 @@ namespace chrome_test_util {
 // was successful.
 bool TapWebViewElementWithId(const std::string& element_id) WARN_UNUSED_RESULT;
 
+// Attempts to tap the element with |element_id| within window.frames[0] of the
+// current WebState using a JavaScript click() event. This only works on
+// same-origin iframes. Returns a bool indicating if the tap was successful.
+bool TapWebViewElementWithIdInIframe(const std::string& element_id)
+    WARN_UNUSED_RESULT;
+
 // Attempts to tap the element with |element_id| in the current WebState
 // using a JavaScript click() event. |error| can be nil.
 bool TapWebViewElementWithId(const std::string& element_id,
