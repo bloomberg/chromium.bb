@@ -296,7 +296,7 @@ TEST_F(RasterFormatTest, ClearPaintCacheINTERNAL) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(RasterFormatTest, CreateAndConsumeTextureINTERNALImmediate) {
+TEST_F(RasterFormatTest, CopySubTextureINTERNALImmediate) {
   const int kSomeBaseValueToTestWith = 51;
   static GLbyte data[] = {
       static_cast<GLbyte>(kSomeBaseValueToTestWith + 0),
@@ -315,61 +315,42 @@ TEST_F(RasterFormatTest, CreateAndConsumeTextureINTERNALImmediate) {
       static_cast<GLbyte>(kSomeBaseValueToTestWith + 13),
       static_cast<GLbyte>(kSomeBaseValueToTestWith + 14),
       static_cast<GLbyte>(kSomeBaseValueToTestWith + 15),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 16),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 17),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 18),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 19),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 20),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 21),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 22),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 23),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 24),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 25),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 26),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 27),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 28),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 29),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 30),
+      static_cast<GLbyte>(kSomeBaseValueToTestWith + 31),
   };
-  cmds::CreateAndConsumeTextureINTERNALImmediate& cmd =
-      *GetBufferAs<cmds::CreateAndConsumeTextureINTERNALImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11), data);
-  EXPECT_EQ(static_cast<uint32_t>(
-                cmds::CreateAndConsumeTextureINTERNALImmediate::kCmdId),
-            cmd.header.command);
+  cmds::CopySubTextureINTERNALImmediate& cmd =
+      *GetBufferAs<cmds::CopySubTextureINTERNALImmediate>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLint>(11), static_cast<GLint>(12),
+              static_cast<GLint>(13), static_cast<GLint>(14),
+              static_cast<GLsizei>(15), static_cast<GLsizei>(16), data);
+  EXPECT_EQ(
+      static_cast<uint32_t>(cmds::CopySubTextureINTERNALImmediate::kCmdId),
+      cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)),
             cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.texture_id);
+  EXPECT_EQ(static_cast<GLint>(11), cmd.xoffset);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.yoffset);
+  EXPECT_EQ(static_cast<GLint>(13), cmd.x);
+  EXPECT_EQ(static_cast<GLint>(14), cmd.y);
+  EXPECT_EQ(static_cast<GLsizei>(15), cmd.width);
+  EXPECT_EQ(static_cast<GLsizei>(16), cmd.height);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
-}
-
-TEST_F(RasterFormatTest, CopySubTextureINTERNAL) {
-  cmds::CopySubTextureINTERNAL& cmd =
-      *GetBufferAs<cmds::CopySubTextureINTERNAL>();
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLuint>(12),
-              static_cast<GLint>(13), static_cast<GLint>(14),
-              static_cast<GLint>(15), static_cast<GLint>(16),
-              static_cast<GLsizei>(17), static_cast<GLsizei>(18));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::CopySubTextureINTERNAL::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.source_id);
-  EXPECT_EQ(static_cast<GLuint>(12), cmd.dest_id);
-  EXPECT_EQ(static_cast<GLint>(13), cmd.xoffset);
-  EXPECT_EQ(static_cast<GLint>(14), cmd.yoffset);
-  EXPECT_EQ(static_cast<GLint>(15), cmd.x);
-  EXPECT_EQ(static_cast<GLint>(16), cmd.y);
-  EXPECT_EQ(static_cast<GLsizei>(17), cmd.width);
-  EXPECT_EQ(static_cast<GLsizei>(18), cmd.height);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(RasterFormatTest, DeleteTexturesINTERNALImmediate) {
-  static GLuint ids[] = {
-      12,
-      23,
-      34,
-  };
-  cmds::DeleteTexturesINTERNALImmediate& cmd =
-      *GetBufferAs<cmds::DeleteTexturesINTERNALImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(base::size(ids)), ids);
-  EXPECT_EQ(
-      static_cast<uint32_t>(cmds::DeleteTexturesINTERNALImmediate::kCmdId),
-      cmd.header.command);
-  EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(cmd.n * 4u),
-            cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizei>(base::size(ids)), cmd.n);
-  CheckBytesWrittenMatchesExpectedSize(
-      next_cmd,
-      sizeof(cmd) + RoundSizeToMultipleOfEntries(base::size(ids) * 4u));
-  EXPECT_EQ(0, memcmp(ids, ImmediateDataAddress(&cmd), sizeof(ids)));
 }
 
 TEST_F(RasterFormatTest, TraceBeginCHROMIUM) {

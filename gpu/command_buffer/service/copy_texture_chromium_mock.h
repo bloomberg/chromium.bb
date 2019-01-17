@@ -73,7 +73,7 @@ class MockCopyTextureResourceManager
 
   // Cannot MOCK_METHOD more than 10 args.
   void DoCopyTexture(
-      const DecoderContext* decoder,
+      DecoderContext* decoder,
       GLenum source_target,
       GLuint source_id,
       GLint source_level,
@@ -91,7 +91,7 @@ class MockCopyTextureResourceManager
       CopyTextureMethod method,
       CopyTexImageResourceManager* luma_emulation_blitter) override {}
   void DoCopySubTexture(
-      const DecoderContext* decoder,
+      DecoderContext* decoder,
       GLenum source_target,
       GLuint source_id,
       GLint source_level,
@@ -117,7 +117,7 @@ class MockCopyTextureResourceManager
       CopyTextureMethod method,
       CopyTexImageResourceManager* luma_emulation_blitter) override {}
   void DoCopySubTextureWithTransform(
-      const DecoderContext* decoder,
+      DecoderContext* decoder,
       GLenum source_target,
       GLuint source_id,
       GLint source_level,
@@ -143,7 +143,7 @@ class MockCopyTextureResourceManager
       const GLfloat transform_matrix[16],
       CopyTexImageResourceManager* luma_emulation_blitter) override{};
   void DoCopyTextureWithTransform(
-      const DecoderContext* decoder,
+      DecoderContext* decoder,
       GLenum source_target,
       GLuint source_id,
       GLint source_level,

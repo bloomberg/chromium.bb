@@ -57,7 +57,7 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
   virtual void Destroy() = 0;
 
   virtual void DoCopyTexture(
-      const DecoderContext* decoder,
+      DecoderContext* decoder,
       GLenum source_target,
       GLuint source_id,
       GLint source_level,
@@ -76,7 +76,7 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
       CopyTexImageResourceManager* luma_emulation_blitter) = 0;
 
   virtual void DoCopySubTexture(
-      const DecoderContext* decoder,
+      DecoderContext* decoder,
       GLenum source_target,
       GLuint source_id,
       GLint source_level,
@@ -103,7 +103,7 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
       CopyTexImageResourceManager* luma_emulation_blitter) = 0;
 
   virtual void DoCopySubTextureWithTransform(
-      const DecoderContext* decoder,
+      DecoderContext* decoder,
       GLenum source_target,
       GLuint source_id,
       GLint source_level,
@@ -134,7 +134,7 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
   // matrix should be given in column-major form, so it can be passed
   // directly to GL.
   virtual void DoCopyTextureWithTransform(
-      const DecoderContext* decoder,
+      DecoderContext* decoder,
       GLenum source_target,
       GLuint source_id,
       GLint source_level,

@@ -181,26 +181,13 @@ _NAMED_TYPE_INFO = {
 # not_shared:   For GENn types, True if objects can't be shared between contexts
 
 _FUNCTION_INFO = {
-  'CreateAndConsumeTextureINTERNAL': {
-    'decoder_func': 'DoCreateAndConsumeTextureINTERNAL',
-    'internal': True,
-    'type': 'PUT',
-    'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
-    'unit_test': False,
-    'trace_level': 2,
-  },
   'CopySubTextureINTERNAL': {
     'decoder_func': 'DoCopySubTextureINTERNAL',
     'internal': True,
+    'type': 'PUT',
+    'count': 32,  # GL_MAILBOX_SIZE_CHROMIUM x2
     'unit_test': False,
     'trace_level': 2,
-  },
-  'DeleteTexturesINTERNAL': {
-    'type': 'DELn',
-    'internal': True,
-    'resource_type': 'Texture',
-    'resource_types': 'Textures',
-    'unit_test': False,
   },
   'Finish': {
     'impl_func': False,

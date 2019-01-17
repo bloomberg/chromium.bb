@@ -54,7 +54,6 @@ RasterDecoderTestBase::InitState::~InitState() = default;
 RasterDecoderTestBase::RasterDecoderTestBase()
     : surface_(nullptr),
       context_(nullptr),
-      client_texture_id_(106),
       shared_memory_id_(0),
       shared_memory_offset_(0),
       shared_memory_address_(nullptr),
@@ -142,15 +141,14 @@ void RasterDecoderTestBase::ExpectEnableDisable(GLenum cap, bool enable) {
   }
 }
 
-void RasterDecoderTestBase::CreateFakeTexture(
-    GLuint client_id,
+gpu::Mailbox RasterDecoderTestBase::CreateFakeTexture(
     GLuint service_id,
     viz::ResourceFormat resource_format,
     GLsizei width,
     GLsizei height,
     bool cleared) {
   // Create texture and temporary ref.
-  const GLuint kTempClientId = 271828;
+  const GLuint kTempClientId = next_fake_texture_client_id_++;
   auto* temp_ref =
       group_->texture_manager()->CreateTexture(kTempClientId, service_id);
   group_->texture_manager()->SetTarget(temp_ref, GL_TEXTURE_2D);
@@ -161,22 +159,8 @@ void RasterDecoderTestBase::CreateFakeTexture(
       cleared ? gfx::Rect(width, height) : gfx::Rect());
   gpu::Mailbox mailbox = gpu::Mailbox::Generate();
   group_->mailbox_manager()->ProduceTexture(mailbox, temp_ref->texture());
-
-  // Consume texture to hold a permanent ref.
-  cmds::CreateAndConsumeTextureINTERNALImmediate& cmd =
-      *GetImmediateAs<cmds::CreateAndConsumeTextureINTERNALImmediate>();
-  cmd.Init(client_id, mailbox.name);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailbox.name)));
-
-  // Check that client_texture_id has appropriate attributes.
-  auto* texture_ref = group().texture_manager()->GetTexture(client_id);
-  ASSERT_NE(texture_ref, nullptr);
-  auto* texture = texture_ref->texture();
-  EXPECT_EQ(service_id, texture->service_id());
-
-  // Release temporary ref.
-  group_->texture_manager()->RemoveTexture(kTempClientId);
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  return mailbox;
 }
 
 void RasterDecoderTestBase::InitDecoder(const InitState& init) {
@@ -286,9 +270,9 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   decoder_->MakeCurrent();
   decoder_->BeginDecoding();
 
-  CreateFakeTexture(client_texture_id_, kServiceTextureId,
-                    viz::ResourceFormat::RGBA_8888, /*width=*/2,
-                    /*height=*/2, /*cleared=*/false);
+  client_texture_mailbox_ = CreateFakeTexture(
+      kServiceTextureId, viz::ResourceFormat::RGBA_8888, /*width=*/2,
+      /*height=*/2, /*cleared=*/false);
 }
 
 void RasterDecoderTestBase::ResetDecoder() {
@@ -383,23 +367,6 @@ void RasterDecoderTestBase::SetBucketAsCStrings(uint32_t bucket_id,
   cmd2.Init(bucket_id, 0, total_size, shared_memory_id_, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd2));
   ClearSharedMemory();
-}
-
-void RasterDecoderTestBase::DoDeleteTexture(GLuint client_id,
-                                            GLuint service_id) {
-  {
-    InSequence s;
-
-    // Calling DoDeleteTexture will unbind the texture from any texture units
-    // it's currently bound to.
-    EXPECT_CALL(*gl_, BindTexture(_, 0)).Times(AnyNumber());
-
-    EXPECT_CALL(*gl_, DeleteTextures(1, Pointee(service_id)))
-        .Times(1)
-        .RetiresOnSaturation();
-
-    GenHelper<cmds::DeleteTexturesINTERNALImmediate>(client_id);
-  }
 }
 
 void RasterDecoderTestBase::SetScopedTextureBinderExpectations(GLenum target) {

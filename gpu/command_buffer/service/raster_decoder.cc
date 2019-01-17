@@ -132,24 +132,6 @@ class ScopedTextureBinder {
       gr_context->resetContext(kTextureBinding_GrGLBackendState);
   }
 
-  ScopedTextureBinder(gles2::ContextState* state,
-                      gles2::TextureManager* texture_manager,
-                      gles2::TextureRef* texture_ref,
-                      GLenum target,
-                      GrContext* gr_context,
-                      bool state_is_dirty)
-      : ScopedTextureBinder(state,
-                            target,
-                            texture_ref->texture()->service_id(),
-                            gr_context,
-                            state_is_dirty) {
-    auto* texture = texture_ref->texture();
-    if (!texture->target())
-      texture_manager->SetTarget(texture_ref, target);
-    DCHECK_EQ(texture->target(), target_)
-        << "Texture bound to more than 1 target.";
-  }
-
   ~ScopedTextureBinder() {
     if (!state_is_dirty_)
       state_->api()->glBindTextureFn(target_, 0);
@@ -265,7 +247,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   void RestoreFramebufferBindings() const override;
   void RestoreRenderbufferBindings() override;
   void RestoreProgramBindings() const override;
-  void RestoreTextureState(unsigned service_id) const override;
+  void RestoreTextureState(unsigned service_id) override;
   void RestoreTextureUnitBindings(unsigned unit) const override;
   void RestoreVertexAttribArray(unsigned index) override;
   void RestoreAllExternalTextureBindingsIfNeeded() override;
@@ -408,22 +390,6 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   gles2::ImageManager* image_manager() { return group_->image_manager(); }
 
-  // Creates a Texture for the given texture.
-  gles2::TextureRef* CreateTexture(GLuint client_id, GLuint service_id) {
-    return texture_manager()->CreateTexture(client_id, service_id);
-  }
-
-  // Gets the texture info for the given texture. Returns nullptr if none
-  // exists.
-  gles2::TextureRef* GetTexture(GLuint client_id) const {
-    return texture_manager()->GetTexture(client_id);
-  }
-
-  // Deletes the texture info for the given texture.
-  void RemoveTexture(GLuint client_id) {
-    texture_manager()->RemoveTexture(client_id);
-  }
-
   // Set remaining commands to process to 0 to force DoCommands to return
   // and allow context preemption and GPU watchdog checks in
   // CommandExecutor().
@@ -435,10 +401,6 @@ class RasterDecoderImpl final : public RasterDecoder,
                               int num_entries,
                               int* entries_processed);
 
-  void DoCreateAndConsumeTextureINTERNAL(GLuint client_id,
-                                         const volatile GLbyte* key);
-  void DeleteTexturesINTERNALHelper(GLsizei n,
-                                    const volatile GLuint* client_ids);
   bool GenQueriesEXTHelper(GLsizei n, const GLuint* client_ids);
   void DeleteQueriesEXTHelper(GLsizei n, const volatile GLuint* client_ids);
   void DoFinish();
@@ -447,14 +409,13 @@ class RasterDecoderImpl final : public RasterDecoder,
   void DoTraceEndCHROMIUM();
   bool InitializeCopyTexImageBlitter();
   bool InitializeCopyTextureCHROMIUM();
-  void DoCopySubTextureINTERNAL(GLuint source_id,
-                                GLuint dest_id,
-                                GLint xoffset,
+  void DoCopySubTextureINTERNAL(GLint xoffset,
                                 GLint yoffset,
                                 GLint x,
                                 GLint y,
                                 GLsizei width,
-                                GLsizei height);
+                                GLsizei height,
+                                const volatile GLbyte* mailboxes);
   // If the texture has an image but that image is not bound or copied to the
   // texture, this will first attempt to bind it, and if that fails
   // CopyTexImage on it.
@@ -608,6 +569,9 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   // Workaround for https://crbug.com/906453
   bool flush_workaround_disabled_for_test_ = false;
+
+  bool in_copy_sub_texture_ = false;
+  bool reset_texture_state_ = false;
 
   base::WeakPtrFactory<DecoderContext> weak_ptr_factory_;
 
@@ -965,24 +929,9 @@ void RasterDecoderImpl::RestoreProgramBindings() const {
   raster_decoder_context_state_->PessimisticallyResetGrContext();
 }
 
-void RasterDecoderImpl::RestoreTextureState(unsigned service_id) const {
-  raster_decoder_context_state_->PessimisticallyResetGrContext();
-  gles2::Texture* texture =
-      texture_manager()->GetTextureForServiceId(service_id);
-  if (texture) {
-    GLenum target = texture->target();
-    api()->glBindTextureFn(target, service_id);
-    api()->glTexParameteriFn(target, GL_TEXTURE_WRAP_S, texture->wrap_s());
-    api()->glTexParameteriFn(target, GL_TEXTURE_WRAP_T, texture->wrap_t());
-    api()->glTexParameteriFn(target, GL_TEXTURE_MIN_FILTER,
-                             texture->min_filter());
-    api()->glTexParameteriFn(target, GL_TEXTURE_MAG_FILTER,
-                             texture->mag_filter());
-    if (feature_info_->IsWebGL2OrES3Context()) {
-      api()->glTexParameteriFn(target, GL_TEXTURE_BASE_LEVEL,
-                               texture->base_level());
-    }
-  }
+void RasterDecoderImpl::RestoreTextureState(unsigned service_id) {
+  DCHECK(in_copy_sub_texture_);
+  reset_texture_state_ = true;
 }
 
 void RasterDecoderImpl::RestoreTextureUnitBindings(unsigned unit) const {
@@ -1580,67 +1529,6 @@ void RasterDecoderImpl::DoFlush() {
   ProcessPendingQueries(false);
 }
 
-void RasterDecoderImpl::DoCreateAndConsumeTextureINTERNAL(
-    GLuint client_id,
-    const volatile GLbyte* key) {
-  TRACE_EVENT2("gpu", "RasterDecoderImpl::DoCreateAndConsumeTextureINTERNAL",
-               "context", logger_.GetLogPrefix(), "key[0]",
-               static_cast<unsigned char>(key[0]));
-  Mailbox mailbox =
-      Mailbox::FromVolatile(*reinterpret_cast<const volatile Mailbox*>(key));
-  DLOG_IF(ERROR, !mailbox.Verify()) << "CreateAndConsumeTexture was "
-                                       "passed a mailbox that was not "
-                                       "generated by ProduceTextureCHROMIUM.";
-  if (!client_id) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
-                       "glCreateAndConsumeTextureCHROMIUM",
-                       "invalid client id");
-    return;
-  }
-
-  gles2::TextureRef* texture_ref = GetTexture(client_id);
-  if (texture_ref) {
-    // No need to create texture here, the client_id already has an associated
-    // texture.
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
-                       "glCreateAndConsumeTextureCHROMIUM",
-                       "client id already in use");
-    return;
-  }
-
-  gles2::Texture* texture = gles2::Texture::CheckedCast(
-      group_->mailbox_manager()->ConsumeTexture(mailbox));
-  if (!texture) {
-    // Create texture to handle invalid mailbox (see http://crbug.com/472465).
-    GLuint service_id = 0;
-    api()->glGenTexturesFn(1, &service_id);
-    DCHECK(service_id);
-    texture_manager()->CreateTexture(client_id, service_id);
-
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
-                       "glCreateAndConsumeTextureCHROMIUM",
-                       "invalid mailbox name");
-    return;
-  }
-
-  texture_ref = texture_manager()->Consume(client_id, texture);
-
-  // TODO(backer): Validate that the consumed texture is consistent with
-  // TextureMetadata.
-}
-
-void RasterDecoderImpl::DeleteTexturesINTERNALHelper(
-    GLsizei n,
-    const volatile GLuint* client_ids) {
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    GLuint client_id = client_ids[ii];
-    gles2::TextureRef* texture_ref = GetTexture(client_id);
-    if (texture_ref) {
-      RemoveTexture(client_id);
-    }
-  }
-}
-
 bool RasterDecoderImpl::GenQueriesEXTHelper(GLsizei n,
                                             const GLuint* client_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
@@ -1757,37 +1645,50 @@ bool RasterDecoderImpl::InitializeCopyTextureCHROMIUM() {
   return true;
 }
 
-void RasterDecoderImpl::DoCopySubTextureINTERNAL(GLuint source_id,
-                                                 GLuint dest_id,
-                                                 GLint xoffset,
-                                                 GLint yoffset,
-                                                 GLint x,
-                                                 GLint y,
-                                                 GLsizei width,
-                                                 GLsizei height) {
-  gles2::TextureRef* source_texture_ref = GetTexture(source_id);
-  gles2::TextureRef* dest_texture_ref = GetTexture(dest_id);
-  if (!source_texture_ref || !dest_texture_ref) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
-                       "unknown texture id");
+void RasterDecoderImpl::DoCopySubTextureINTERNAL(
+    GLint xoffset,
+    GLint yoffset,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height,
+    const volatile GLbyte* mailboxes) {
+  Mailbox source_mailbox = Mailbox::FromVolatile(
+      reinterpret_cast<const volatile Mailbox*>(mailboxes)[0]);
+  DLOG_IF(ERROR, !source_mailbox.Verify())
+      << "CopySubTexture was passed an invalid mailbox";
+  Mailbox dest_mailbox = Mailbox::FromVolatile(
+      reinterpret_cast<const volatile Mailbox*>(mailboxes)[1]);
+  DLOG_IF(ERROR, !dest_mailbox.Verify())
+      << "CopySubTexture was passed an invalid mailbox";
+
+  // TODO(piman): use shared image representations instead.
+  gles2::Texture* source_texture = gles2::Texture::CheckedCast(
+      group_->mailbox_manager()->ConsumeTexture(source_mailbox));
+  gles2::Texture* dest_texture = gles2::Texture::CheckedCast(
+      group_->mailbox_manager()->ConsumeTexture(dest_mailbox));
+  if (!source_texture || !dest_texture) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture", "unknown mailbox");
     return;
   }
-
-  gles2::Texture* source_texture = source_texture_ref->texture();
-  gles2::Texture* dest_texture = dest_texture_ref->texture();
   if (source_texture == dest_texture) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCopySubTexture",
                        "source and destination textures are the same");
     return;
   }
-
   GLenum source_target = source_texture->target();
-  GLint source_level = 0;
   GLenum dest_target = dest_texture->target();
+  if (!source_target || !dest_target) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCopySubTexture",
+                       "textures not initialized");
+    return;
+  }
+
+  GLint source_level = 0;
   GLint dest_level = 0;
 
   ScopedTextureBinder binder(
-      state(), texture_manager(), dest_texture_ref, dest_target, gr_context(),
+      state(), dest_target, dest_texture->service_id(), gr_context(),
       raster_decoder_context_state_->need_context_state_reset);
   base::Optional<ScopedPixelUnpackState> pixel_unpack_state;
 
@@ -1891,8 +1792,8 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(GLuint source_id,
   }
 
   // Clear the source texture if necessary.
-  if (!texture_manager()->ClearTextureLevel(this, source_texture_ref,
-                                            source_target, 0 /* level */)) {
+  if (!texture_manager()->ClearTextureLevel(this, source_texture, source_target,
+                                            0 /* level */)) {
     LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glCopySubTexture",
                        "source texture dimensions too big");
     return;
@@ -1913,20 +1814,18 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(GLuint source_id,
                 dest_texture->GetLevelClearedRect(dest_target, dest_level)
                     .size()
                     .GetArea());
-      texture_manager()->SetLevelClearedRect(dest_texture_ref, dest_target,
-                                             dest_level, cleared_rect);
+      dest_texture->SetLevelClearedRect(dest_target, dest_level, cleared_rect);
     } else {
       // Otherwise clear part of texture level that is not already cleared.
-      if (!texture_manager()->ClearTextureLevel(this, dest_texture_ref,
-                                                dest_target, dest_level)) {
+      if (!texture_manager()->ClearTextureLevel(this, dest_texture, dest_target,
+                                                dest_level)) {
         LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glCopySubTexture",
                            "destination texture dimensions too big");
         return;
       }
     }
   } else {
-    texture_manager()->SetLevelCleared(dest_texture_ref, dest_target,
-                                       dest_level, true);
+    dest_texture->SetLevelCleared(dest_target, dest_level, true);
   }
 
   // TODO(qiankun.miao@intel.com): Support level > 0 for CopyTexSubImage.
@@ -1982,6 +1881,7 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(GLuint source_id,
   }
 #endif
 
+  in_copy_sub_texture_ = true;
   copy_texture_chromium_->DoCopySubTexture(
       this, source_target, source_texture->service_id(), source_level,
       source_internal_format, dest_target, dest_texture->service_id(),
@@ -1990,6 +1890,21 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(GLuint source_id,
       false /* unpack_flip_y */, false /* unpack_premultiply_alpha */,
       false /* unpack_unmultiply_alpha */, false /* dither */, method,
       copy_tex_image_blit_.get());
+  in_copy_sub_texture_ = false;
+  if (reset_texture_state_) {
+    reset_texture_state_ = false;
+    for (auto* texture : {source_texture, dest_texture}) {
+      GLenum target = texture->target();
+      api()->glBindTextureFn(target, texture->service_id());
+      api()->glTexParameteriFn(target, GL_TEXTURE_WRAP_S, texture->wrap_s());
+      api()->glTexParameteriFn(target, GL_TEXTURE_WRAP_T, texture->wrap_t());
+      api()->glTexParameteriFn(target, GL_TEXTURE_MIN_FILTER,
+                               texture->min_filter());
+      api()->glTexParameteriFn(target, GL_TEXTURE_MAG_FILTER,
+                               texture->mag_filter());
+    }
+    raster_decoder_context_state_->PessimisticallyResetGrContext();
+  }
 }
 
 void RasterDecoderImpl::DoBindOrCopyTexImageIfNeeded(gles2::Texture* texture,

@@ -87,7 +87,7 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_CONST_METHOD0(RestoreGlobalState, void());
   MOCK_CONST_METHOD0(RestoreProgramBindings, void());
   MOCK_METHOD0(RestoreRenderbufferBindings, void());
-  MOCK_CONST_METHOD1(RestoreTextureState, void(unsigned service_id));
+  MOCK_METHOD1(RestoreTextureState, void(unsigned service_id));
   MOCK_CONST_METHOD1(RestoreTextureUnitBindings, void(unsigned unit));
   MOCK_METHOD1(RestoreVertexAttribArray, void(unsigned index));
   MOCK_CONST_METHOD0(RestoreDeviceWindowRectangles, void());
