@@ -70,11 +70,6 @@ class CONTENT_EXPORT CacheStorageDispatcherHost
   // Called by Init() on IO thread.
   void CreateCacheListener(CacheStorageContextImpl* context);
 
-  // Validate the current state of required members, returns false if they
-  // aren't valid and also close |bindings_|, so it's safe to not run
-  // mojo callbacks.
-  bool ValidState();
-
   scoped_refptr<CacheStorageContextImpl> context_;
 
   mojo::StrongBindingSet<blink::mojom::CacheStorage> bindings_;
