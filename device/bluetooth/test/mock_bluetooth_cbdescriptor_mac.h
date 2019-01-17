@@ -21,6 +21,7 @@
 
 - (void)simulateReadWithValue:(id)value error:(NSError*)error;
 - (void)simulateWriteWithError:(NSError*)error;
+- (void)simulateUpdateWithError:(NSError*)error;
 
 @end
 
