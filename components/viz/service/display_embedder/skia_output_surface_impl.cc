@@ -143,7 +143,6 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
     auto* helper = static_cast<PromiseTextureHelper*>(texture_context);
     if (helper->shared_image_) {
       helper->shared_image_->EndReadAccess();
-      helper->shared_image_.reset();
     }
   }
 
@@ -456,6 +455,23 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
 
   return YUVAPromiseTextureHelper::MakeYUVAPromiseSkImage(
       this, yuv_color_space, std::move(metadatas), has_alpha);
+}
+
+gpu::SyncToken SkiaOutputSurfaceImpl::DestroySkImage(sk_sp<SkImage>&& image) {
+  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::VIZ_OUTPUT_SURFACE,
+                            impl_on_gpu_->command_buffer_id(),
+                            ++sync_fence_release_);
+  sync_token.SetVerifyFlush();
+
+  auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
+  // impl_on_gpu_ is released on the GPU thread by a posted task from
+  // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
+  auto callback = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::DestroySkImage,
+                                 base::Unretained(impl_on_gpu_.get()),
+                                 std::move(image), sync_fence_release_);
+  gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
+      sequence_id, std::move(callback), std::vector<gpu::SyncToken>()));
+  return sync_token;
 }
 
 void SkiaOutputSurfaceImpl::SkiaSwapBuffers(OutputSurfaceFrame frame) {

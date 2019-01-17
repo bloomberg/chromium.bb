@@ -59,6 +59,10 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface {
       SkYUVColorSpace yuv_color_space,
       bool has_alpha) = 0;
 
+  // Release SkImage created by MakePromiseSkImage.  |image| may or may not
+  // have been fulfilled.
+  virtual gpu::SyncToken DestroySkImage(sk_sp<SkImage>&& image) = 0;
+
   // Swaps the current backbuffer to the screen.
   virtual void SkiaSwapBuffers(OutputSurfaceFrame frame) = 0;
 

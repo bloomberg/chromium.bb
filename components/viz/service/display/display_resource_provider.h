@@ -190,8 +190,13 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
    public:
     using CreateSkImageCallback =
         base::RepeatingCallback<sk_sp<SkImage>(ResourceMetadata)>;
+    // TODO(https://crbug.com/922595): Remove SyncToken once we always use
+    // SharedImage and can rely on SharedImage ref-counting.
+    using DestroySkImageCallback =
+        base::RepeatingCallback<gpu::SyncToken(sk_sp<SkImage>&&)>;
     LockSetForExternalUse(DisplayResourceProvider* resource_provider,
-                          const CreateSkImageCallback& callback);
+                          const CreateSkImageCallback& create_callback,
+                          const DestroySkImageCallback& destroy_callback);
     ~LockSetForExternalUse();
 
     // Lock a resource for external use.
@@ -209,6 +214,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
    private:
     DisplayResourceProvider* const resource_provider_;
     CreateSkImageCallback create_sk_image_callback_;
+    DestroySkImageCallback destroy_sk_image_callback_;
     std::vector<ResourceId> resources_;
 
     DISALLOW_COPY_AND_ASSIGN(LockSetForExternalUse);
@@ -477,7 +483,16 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
 
   ResourceMap resources_;
   ChildMap children_;
-  base::flat_map<ResourceId, sk_sp<SkImage>> resource_sk_image_;
+  struct ResourceSkImage {
+    ResourceSkImage();
+    ResourceSkImage(const ResourceSkImage&);
+    ~ResourceSkImage();
+
+    sk_sp<SkImage> image;
+    base::Optional<LockSetForExternalUse::DestroySkImageCallback>
+        destroy_callback;
+  };
+  base::flat_map<ResourceId, ResourceSkImage> resource_sk_images_;
   base::flat_map<int, std::vector<ResourceId>> batched_returning_resources_;
   scoped_refptr<ResourceFence> current_read_lock_fence_;
   // Keep track of whether deleted resources should be batched up or returned
