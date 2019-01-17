@@ -37,9 +37,10 @@ void FieldTrialSynchronizer::NotifyAllRenderers(
   for (content::RenderProcessHost::iterator it(
           content::RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
-    IPC::ChannelProxy* channel = it.GetCurrentValue()->GetChannel();
+    auto* host = it.GetCurrentValue();
+    IPC::ChannelProxy* channel = host->GetChannel();
     // channel might be null in tests.
-    if (channel) {
+    if (host->IsInitializedAndNotDead() && channel) {
       chrome::mojom::RendererConfigurationAssociatedPtr renderer_configuration;
       channel->GetRemoteAssociatedInterface(&renderer_configuration);
       renderer_configuration->SetFieldTrialGroup(field_trial_name, group_name);
