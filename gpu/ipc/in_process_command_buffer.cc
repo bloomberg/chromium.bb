@@ -575,13 +575,17 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
     bool use_passthrough_cmd_decoder =
         task_executor_->gpu_preferences().use_passthrough_cmd_decoder &&
         gles2::PassthroughCommandDecoderSupported();
-    if (!use_passthrough_cmd_decoder &&
-        params.attribs.enable_raster_interface &&
+    bool allow_raster_decoder =
+        !use_passthrough_cmd_decoder ||
+        task_executor_->gpu_preferences().enable_passthrough_raster_decoder;
+
+    if (allow_raster_decoder && params.attribs.enable_raster_interface &&
         !params.attribs.enable_gles2_interface) {
       context_state_ = base::MakeRefCounted<raster::RasterDecoderContextState>(
           gl_share_group_, surface_, real_context, use_virtualized_gl_context_,
           base::DoNothing());
-      context_state_->InitializeGL(context_group_->feature_info());
+      context_state_->InitializeGL(task_executor_->gpu_preferences(),
+                                   context_group_->feature_info());
       gr_shader_cache_ = params.gr_shader_cache;
       context_state_->InitializeGrContext(workarounds, params.gr_shader_cache,
                                           params.activity_flags);

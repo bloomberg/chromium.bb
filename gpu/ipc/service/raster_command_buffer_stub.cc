@@ -106,6 +106,7 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
   if (!raster_decoder_context_state->IsGLInitialized()) {
     if (!raster_decoder_context_state->MakeCurrent(nullptr) ||
         !raster_decoder_context_state->InitializeGL(
+            manager->gpu_preferences(),
             base::MakeRefCounted<gles2::FeatureInfo>(
                 manager->gpu_driver_bug_workarounds(),
                 manager->gpu_feature_info()))) {

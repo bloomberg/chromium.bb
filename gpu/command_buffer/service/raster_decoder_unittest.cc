@@ -243,7 +243,7 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
         std::move(share_group), std::move(surface), std::move(context),
         false /* use_virtualized_gl_contexts */, base::DoNothing());
     context_state_->InitializeGrContext(workarounds, nullptr);
-    context_state_->InitializeGL(feature_info);
+    context_state_->InitializeGL(GpuPreferences(), feature_info);
 
     group_ = new gles2::ContextGroup(
         gpu_preferences_, false, &mailbox_manager_,

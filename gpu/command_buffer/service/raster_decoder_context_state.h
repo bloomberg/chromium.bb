@@ -29,6 +29,8 @@ namespace gpu {
 class GpuDriverBugWorkarounds;
 class GpuProcessActivityFlags;
 class ServiceTransferCache;
+struct GpuPreferences;
+
 namespace gles2 {
 class FeatureInfo;
 struct ContextState;
@@ -57,7 +59,8 @@ struct GPU_GLES2_EXPORT RasterDecoderContextState
                            GpuProcessActivityFlags* activity_flags = nullptr,
                            gl::ProgressReporter* progress_reporter = nullptr);
 
-  bool InitializeGL(scoped_refptr<gles2::FeatureInfo> feature_info);
+  bool InitializeGL(const GpuPreferences& gpu_preferences,
+                    scoped_refptr<gles2::FeatureInfo> feature_info);
   bool IsGLInitialized() const { return !!feature_info_; }
 
   bool MakeCurrent(gl::GLSurface* surface);
