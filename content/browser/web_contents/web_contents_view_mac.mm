@@ -20,10 +20,12 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #import "content/browser/web_contents/web_contents_view_cocoa.h"
+#import "content/browser/web_contents/web_drag_dest_mac.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/ns_view_bridge_factory_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
+#include "content/public/common/web_contents_ns_view_bridge.mojom-shared.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/cocoa/ns_view_ids.h"
@@ -142,6 +144,7 @@ void WebContentsViewMac::StartDragging(
                          ~NSDragOperationGeneric;
   NSPoint offset = NSPointFromCGPoint(
       gfx::PointAtOffsetFromOrigin(image_offset).ToCGPoint());
+  [drag_dest_ setDragStartTrackersForProcess:source_rwh->GetProcess()->GetID()];
   [cocoa_view_ startDragWithDropData:drop_data
                            sourceRWH:source_rwh
                    dragOperationMask:mask
@@ -218,11 +221,11 @@ void WebContentsViewMac::FocusThroughTabTraversal(bool reverse) {
 }
 
 DropData* WebContentsViewMac::GetDropData() const {
-  return [cocoa_view_ dropData];
+  return [drag_dest_ currentDropData];
 }
 
 void WebContentsViewMac::UpdateDragCursor(WebDragOperation operation) {
-  [cocoa_view_ setCurrentDragOperation: operation];
+  [drag_dest_ setCurrentOperation:operation];
 }
 
 void WebContentsViewMac::GotFocus(RenderWidgetHostImpl* render_widget_host) {
@@ -300,6 +303,10 @@ void WebContentsViewMac::CreateView(
   WebContentsViewCocoa* view =
       [[WebContentsViewCocoa alloc] initWithWebContentsViewMac:this];
   cocoa_view_.reset(view);
+
+  drag_dest_.reset([[WebDragDest alloc] initWithWebContentsImpl:web_contents_]);
+  if (delegate_)
+    [drag_dest_ setDragDelegate:delegate_->GetDragDestDelegate()];
 }
 
 RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
@@ -413,16 +420,6 @@ void WebContentsViewMac::CloseTab() {
   web_contents_->Close(web_contents_->GetRenderViewHost());
 }
 
-void WebContentsViewMac::OnWindowVisibilityChanged(Visibility visibility) {
-  if (!web_contents() || web_contents()->IsBeingDestroyed())
-    return;
-  // TODO(ccameron): Communicate window visibility and occlusion from the remote
-  // process (for now, always treat remote windows as visible).
-  if (ns_view_bridge_remote_)
-    visibility = Visibility::VISIBLE;
-  web_contents()->UpdateWebContentsVisibility(visibility);
-}
-
 std::list<RenderWidgetHostViewMac*> WebContentsViewMac::GetChildViews() {
   // Remove any child NSViews that have been destroyed.
   std::list<RenderWidgetHostViewMac*> result;
@@ -435,6 +432,104 @@ std::list<RenderWidgetHostViewMac*> WebContentsViewMac::GetChildViews() {
     }
   }
   return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WebContentsViewMac, mojom::WebContentsNSViewClient:
+
+void WebContentsViewMac::OnMouseEvent(bool motion, bool exited) {
+  if (!web_contents_ || !web_contents_->GetDelegate())
+    return;
+
+  web_contents_->GetDelegate()->ContentsMouseEvent(web_contents_, motion,
+                                                   exited);
+}
+
+void WebContentsViewMac::OnBecameFirstResponder(
+    mojom::SelectionDirection direction) {
+  if (!web_contents_)
+    return;
+  if (direction == mojom::SelectionDirection::kDirect)
+    return;
+
+  web_contents_->FocusThroughTabTraversal(direction ==
+                                          mojom::SelectionDirection::kReverse);
+}
+
+void WebContentsViewMac::OnWindowVisibilityChanged(
+    mojom::Visibility mojo_visibility) {
+  if (!web_contents_ || web_contents_->IsBeingDestroyed())
+    return;
+
+  // TODO: make content use the mojo type for visibility.
+  Visibility visibility = Visibility::VISIBLE;
+  switch (mojo_visibility) {
+    case mojom::Visibility::kVisible:
+      visibility = Visibility::VISIBLE;
+      break;
+    case mojom::Visibility::kOccluded:
+      visibility = Visibility::OCCLUDED;
+      break;
+    case mojom::Visibility::kHidden:
+      visibility = Visibility::HIDDEN;
+      break;
+  }
+
+  // TODO(ccameron): Communicate window visibility and occlusion from the remote
+  // process (for now, always treat remote windows as visible).
+  if (ns_view_bridge_remote_)
+    visibility = Visibility::VISIBLE;
+
+  web_contents_->UpdateWebContentsVisibility(visibility);
+}
+
+void WebContentsViewMac::SetDropData(const DropData& drop_data) {
+  [drag_dest_ setDropData:drop_data];
+}
+
+bool WebContentsViewMac::DraggingEntered(mojom::DraggingInfoPtr dragging_info,
+                                         uint32_t* out_result) {
+  *out_result = [drag_dest_ draggingEntered:dragging_info.get()];
+  return true;
+}
+
+void WebContentsViewMac::DraggingExited() {
+  [drag_dest_ draggingExited];
+}
+
+bool WebContentsViewMac::DraggingUpdated(mojom::DraggingInfoPtr dragging_info,
+                                         uint32_t* out_result) {
+  *out_result = [drag_dest_ draggingUpdated:dragging_info.get()];
+  return true;
+}
+
+bool WebContentsViewMac::PerformDragOperation(
+    mojom::DraggingInfoPtr dragging_info,
+    bool* out_result) {
+  *out_result = [drag_dest_ performDragOperation:dragging_info.get()];
+  return true;
+}
+
+void WebContentsViewMac::DraggingEntered(mojom::DraggingInfoPtr dragging_info,
+                                         DraggingEnteredCallback callback) {
+  uint32_t result = 0;
+  DraggingEntered(std::move(dragging_info), &result);
+  std::move(callback).Run(result);
+}
+
+void WebContentsViewMac::DraggingUpdated(mojom::DraggingInfoPtr dragging_info,
+                                         DraggingUpdatedCallback callback) {
+  uint32_t result = false;
+  DraggingUpdated(std::move(dragging_info), &result);
+  std::move(callback).Run(result);
+}
+
+void WebContentsViewMac::PerformDragOperation(
+    mojom::DraggingInfoPtr dragging_info,
+    PerformDragOperationCallback callback) {
+  bool result = false;
+  PerformDragOperation(std::move(dragging_info), &result);
+  std::move(callback).Run(result);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -463,7 +558,7 @@ void WebContentsViewMac::OnViewsHostableAttached(
 
     // TODO(ccameron): Communicate window visibility and occlusion from the
     // remote process (for now, always treat remote windows as visible).
-    OnWindowVisibilityChanged(content::Visibility::VISIBLE);
+    OnWindowVisibilityChanged(mojom::Visibility::kVisible);
   } else if (factory_host_id != NSViewBridgeFactoryHost::kLocalDirectHostId) {
     LOG(ERROR) << "Failed to look up NSViewBridgeFactoryHost!";
   }
