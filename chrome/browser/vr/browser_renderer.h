@@ -78,7 +78,7 @@ class VR_EXPORT BrowserRenderer : public SchedulerBrowserRendererInterface {
       VisibilityChangeExpectation visibility_expectation);
   void AcceptDoffPromptForTesting();
   void SetBrowserRendererBrowserInterfaceForTesting(
-      BrowserRendererBrowserInterface* interface);
+      BrowserRendererBrowserInterface* interface_ptr);
   void ConnectPresentingService(
       device::mojom::VRDisplayInfoPtr display_info,
       device::mojom::XRRuntimeSessionOptionsPtr options);
