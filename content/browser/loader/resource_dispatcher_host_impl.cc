@@ -924,20 +924,11 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     report_raw_headers = false;
   }
 
-  // Do not report raw headers if the request's site needs to be isolated
-  // from the current process.
-  if (report_raw_headers) {
-    bool is_isolated =
-        SiteIsolationPolicy::UseDedicatedProcessesForAllSites() ||
-        // TODO(alexmos): get BrowsingInstance ID from the child_id's
-        // SecurityState.  One way is to expose a version of IsIsolatedOrigin
-        // that can take child_id instead of IsolationContext, and look up
-        // the BrowsingInstance ID internally in ChildProcessSecurityPolicy.
-        policy->IsIsolatedOrigin(IsolationContext(),
-                                 url::Origin::Create(request_data.url));
-    if (is_isolated &&
-        !policy->CanAccessDataForOrigin(child_id, request_data.url))
-      report_raw_headers = false;
+  // Do not report raw headers if the current process isn't permitted to access
+  // data for the request's site.
+  if (report_raw_headers &&
+      !policy->CanAccessDataForOrigin(child_id, request_data.url)) {
+    report_raw_headers = false;
   }
 
   if (DoNotPromptForLogin(static_cast<ResourceType>(request_data.resource_type),
