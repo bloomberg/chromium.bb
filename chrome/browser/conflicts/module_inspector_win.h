@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/task/task_traits.h"
-#include "base/threading/thread_checker.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 
 namespace base {
@@ -27,7 +27,7 @@ class SequencedTaskRunner;
 // is possible to increase the priority level of these tasks by calling
 // IncreaseInspectionPriority().
 //
-// This class is not thread safe and it enforces safety via a ThreadChecker.
+// This class is not thread safe and it enforces safety via a SEQUENCE_CHECKER.
 class ModuleInspector {
  public:
   using OnModuleInspectedCallback =
@@ -49,6 +49,10 @@ class ModuleInspector {
   bool IsIdle();
 
  private:
+  // Invoked when Chrome has finished starting up to initiate the inspection of
+  // queued modules.
+  void OnStartupFinished();
+
   // Starts inspecting the module at the front of the queue.
   void StartInspectingModule();
 
@@ -64,6 +68,10 @@ class ModuleInspector {
   // The modules are put in queue until they are sent for inspection.
   base::queue<ModuleInfoKey> queue_;
 
+  // Indicates if Chrome has finished starting up. Used to delay the background
+  // inspection tasks in order to not negatively impact startup performance.
+  bool is_after_startup_;
+
   // The task runner where module inspections takes place. It originally starts
   // at BEST_EFFORT priority, but is changed to USER_VISIBLE when
   // IncreaseInspectionPriority() is called.
@@ -74,7 +82,7 @@ class ModuleInspector {
   // e.g. c:\windows vs d:\windows
   StringMapping path_mapping_;
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Weak pointers are used to safely post the inspection result back to the
   // ModuleInspector from the task scheduler.
