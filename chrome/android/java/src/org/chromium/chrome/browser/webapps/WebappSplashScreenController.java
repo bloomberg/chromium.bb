@@ -148,27 +148,27 @@ public class WebappSplashScreenController extends EmptyTabObserver {
     @Override
     public void didFirstVisuallyNonEmptyPaint(Tab tab) {
         if (canHideSplashScreen()) {
-            hideSplashScreenOnDrawingFinished(tab, SplashHidesReason.PAINT);
+            hideSplash(tab, SplashHidesReason.PAINT);
         }
     }
 
     @Override
     public void onPageLoadFinished(Tab tab, String url) {
         if (canHideSplashScreen()) {
-            hideSplashScreenOnDrawingFinished(tab, SplashHidesReason.LOAD_FINISHED);
+            hideSplash(tab, SplashHidesReason.LOAD_FINISHED);
         }
     }
 
     @Override
     public void onPageLoadFailed(Tab tab, int errorCode) {
         if (canHideSplashScreen()) {
-            animateHidingSplashScreen(tab, SplashHidesReason.LOAD_FAILED);
+            hideSplash(tab, SplashHidesReason.LOAD_FAILED);
         }
     }
 
     @Override
     public void onCrash(Tab tab) {
-        animateHidingSplashScreen(tab, SplashHidesReason.CRASH);
+        hideSplash(tab, SplashHidesReason.CRASH);
     }
 
     @Override
@@ -288,21 +288,19 @@ public class WebappSplashScreenController extends EmptyTabObserver {
         }
     }
 
-    /**
-     * Schedules the splash screen hiding once the compositor has finished drawing a frame.
-     *
-     * Without this callback we were seeing a short flash of white between the splash screen and
-     * the web content (crbug.com/734500).
-     * */
-    private void hideSplashScreenOnDrawingFinished(
-            final Tab tab, final @SplashHidesReason int reason) {
+    /** Schedules the splash screen hiding once the compositor has finished drawing a frame. */
+    private void hideSplash(final Tab tab, final @SplashHidesReason int reason) {
+        // Don't try to hide the splash screen again if is already hidden.
         if (mSplashScreen == null) return;
 
-        if (mCompositorViewHolder == null) {
+        if (reason == SplashHidesReason.LOAD_FAILED || reason == SplashHidesReason.CRASH) {
             animateHidingSplashScreen(tab, reason);
             return;
         }
 
+        // Delay hiding the splash screen till the compositor has finished drawing the next frame.
+        // Without this callback we were seeing a short flash of white between the splash screen and
+        // the web content (crbug.com/734500).
         mCompositorViewHolder.getCompositorView().surfaceRedrawNeededAsync(
                 () -> { animateHidingSplashScreen(tab, reason); });
     }
