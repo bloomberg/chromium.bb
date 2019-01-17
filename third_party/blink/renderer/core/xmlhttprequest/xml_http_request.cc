@@ -355,7 +355,7 @@ void XMLHttpRequest::InitResponseDocument() {
 
   DocumentInit init = DocumentInit::Create()
                           .WithContextDocument(GetDocument()->ContextDocument())
-                          .WithURL(response_.CurrentRequestUrl());
+                          .WithURL(response_.ResponseUrl());
   if (is_html)
     response_document_ = HTMLDocument::Create(init);
   else
@@ -540,7 +540,7 @@ String XMLHttpRequest::responseType() {
 }
 
 String XMLHttpRequest::responseURL() {
-  KURL response_url(response_.CurrentRequestUrl());
+  KURL response_url(response_.ResponseUrl());
   if (!response_url.IsNull())
     response_url.RemoveFragmentIdentifier();
   return response_url.GetString();
