@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/prefix_delegate.h"
+#include "ui/views/style/typography.h"
 
 namespace gfx {
 class FontList;
@@ -38,14 +39,20 @@ class VIEWS_EXPORT Combobox : public View,
  public:
   // The combobox's class name.
   static const char kViewClassName[];
+  static const int kDefaultComboboxTextContext = style::CONTEXT_BUTTON;
+  static const int kDefaultComboboxTextStyle = style::STYLE_PRIMARY;
 
   // |model| is owned by the combobox when using this constructor.
-  explicit Combobox(std::unique_ptr<ui::ComboboxModel> model);
+  explicit Combobox(std::unique_ptr<ui::ComboboxModel> model,
+                    int text_context = kDefaultComboboxTextContext,
+                    int text_style = kDefaultComboboxTextStyle);
   // |model| is not owned by the combobox when using this constructor.
-  explicit Combobox(ui::ComboboxModel* model);
+  explicit Combobox(ui::ComboboxModel* model,
+                    int text_context = kDefaultComboboxTextContext,
+                    int text_style = kDefaultComboboxTextStyle);
   ~Combobox() override;
 
-  static const gfx::FontList& GetFontList();
+  const gfx::FontList& GetFontList() const;
 
   // Sets the listener which will be called when a selection has been made.
   void set_listener(ComboboxListener* listener) { listener_ = listener; }
@@ -148,6 +155,14 @@ class VIEWS_EXPORT Combobox : public View,
 
   // Reference to our model, which may be owned or not.
   ui::ComboboxModel* model_;
+
+  // Typography context for the text written in the combobox and the options
+  // shown in the drop-down menu.
+  const int text_context_;
+
+  // Typography style for the text written in the combobox and the options shown
+  // in the drop-down menu.
+  const int text_style_;
 
   // Our listener. Not owned. Notified when the selected index change.
   ComboboxListener* listener_;

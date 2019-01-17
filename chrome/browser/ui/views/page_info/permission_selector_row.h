@@ -48,8 +48,12 @@ class PermissionSelectorRow {
                         views::GridLayout* layout);
   virtual ~PermissionSelectorRow();
 
+  // Calculates the amount of padding to add beneath a |PermissionSelectorRow|
+  // depending on whether it has an accompanying permission decision reason.
+  int CalculatePaddingBeneathPermissionRow(bool has_reason);
+
   // Retrieve the minimum height a |PermissionSelectorRow| can be.
-  static int MinHeightForPermissionRow();
+  int MinHeightForPermissionRow();
 
   void AddObserver(PermissionSelectorRowObserver* observer);
 

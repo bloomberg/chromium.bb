@@ -161,7 +161,7 @@ class Combobox::ComboboxMenuModel : public ui::MenuModel,
   bool IsItemDynamicAt(int index) const override { return true; }
 
   const gfx::FontList* GetLabelFontListAt(int index) const override {
-    return &GetFontList();
+    return &owner_->GetFontList();
   }
 
   bool GetAcceleratorAt(int index,
@@ -215,13 +215,17 @@ class Combobox::ComboboxMenuModel : public ui::MenuModel,
 ////////////////////////////////////////////////////////////////////////////////
 // Combobox, public:
 
-Combobox::Combobox(std::unique_ptr<ui::ComboboxModel> model)
-    : Combobox(model.get()) {
+Combobox::Combobox(std::unique_ptr<ui::ComboboxModel> model,
+                   int text_context,
+                   int text_style)
+    : Combobox(model.get(), text_context, text_style) {
   owned_model_ = std::move(model);
 }
 
-Combobox::Combobox(ui::ComboboxModel* model)
+Combobox::Combobox(ui::ComboboxModel* model, int text_context, int text_style)
     : model_(model),
+      text_context_(text_context),
+      text_style_(text_style),
       listener_(nullptr),
       selected_index_(model_->GetDefaultIndex()),
       invalid_(false),
@@ -255,9 +259,8 @@ Combobox::~Combobox() {
   }
 }
 
-// static
-const gfx::FontList& Combobox::GetFontList() {
-  return style::GetFont(style::CONTEXT_BUTTON, style::STYLE_PRIMARY);
+const gfx::FontList& Combobox::GetFontList() const {
+  return style::GetFont(text_context_, text_style_);
 }
 
 void Combobox::ModelChanged() {
@@ -562,7 +565,7 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
 
   int disclosure_arrow_offset = width() - GetArrowContainerWidth();
 
-  const gfx::FontList& font_list = Combobox::GetFontList();
+  const gfx::FontList& font_list = GetFontList();
   int text_width = gfx::GetStringWidth(text, font_list);
   if ((text_width + insets.width()) > disclosure_arrow_offset)
     text_width = disclosure_arrow_offset - insets.width();
