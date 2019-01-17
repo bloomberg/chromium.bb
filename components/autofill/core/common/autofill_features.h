@@ -63,6 +63,7 @@ extern const base::Feature kAutofillSaveOnProbablySubmitted;
 extern const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs;
 extern const base::Feature kAutofillSendOnlyCountryInGetUploadDetails;
 extern const base::Feature kAutofillServerCommunication;
+extern const base::Feature kAutofillSettingsCardTypeSplit;
 extern const base::Feature kAutofillShowAllSuggestionsOnPrefilledForms;
 extern const base::Feature kAutofillShowAutocompleteConsoleWarnings;
 extern const base::Feature kAutofillShowTypePredictions;

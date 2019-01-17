@@ -307,6 +307,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "autofill-settings-split-by-card-type",
+    "owners": [ "sebsg" ],
+    "expiry_milestone": 75
+  },
+  {
     "name": "automatic-password-generation",
     "owners": [ "ioanap", "fhorschig" ],
     "expiry_milestone": 76
