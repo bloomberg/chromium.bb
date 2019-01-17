@@ -44,6 +44,21 @@ _SHORTEN_LANGUAGE_CODE_MAP = {
   'fil': 'tl',  # Filipino to Tagalog.
 }
 
+# A list of extensions corresponding to files that should never be compressed
+# in the bundle. This used to be handled by bundletool automatically until
+# release 0.8.0, which required that this be passed to the BundleConfig
+# file instead.
+#
+# This is the original list, which was taken from aapt2, with 'webp' added to
+# it (which curiously was missing from the list).
+_UNCOMPRESSED_FILE_EXTS = [
+    '3g2', '3gp', '3gpp', '3gpp2', 'aac', 'amr', 'awb', 'git', 'imy', 'jet',
+    'jpeg', 'jpg', 'm4a', 'm4v', 'mid', 'midi', 'mkv', 'mp2', 'mp3', 'mp4',
+    'mpeg', 'mpg', 'ogg', 'png', 'rtttl', 'smf', 'wav', 'webm', 'webp', 'wmv',
+    'xmf'
+]
+
+
 def _ParseArgs(args):
   parser = argparse.ArgumentParser()
   parser.add_argument('--out-bundle', required=True,
@@ -149,6 +164,8 @@ def _GenerateBundleConfigJson(uncompressed_assets,
     ]
 
   uncompressed_globs.extend('assets/' + x for x in uncompressed_assets)
+
+  uncompressed_globs.extend(['*.' + ext for ext in _UNCOMPRESSED_FILE_EXTS])
 
   data = {
     'optimizations': {
