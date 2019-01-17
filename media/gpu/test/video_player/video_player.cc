@@ -30,18 +30,20 @@ VideoPlayer::~VideoPlayer() {
 
 // static
 std::unique_ptr<VideoPlayer> VideoPlayer::Create(
+    const Video* video,
     FrameRenderer* frame_renderer,
     VideoFrameValidator* frame_validator) {
   auto video_player = base::WrapUnique(new VideoPlayer());
-  video_player->Initialize(frame_renderer, frame_validator);
+  video_player->Initialize(video, frame_renderer, frame_validator);
   return video_player;
 }
 
-void VideoPlayer::Initialize(FrameRenderer* frame_renderer,
+void VideoPlayer::Initialize(const Video* video,
+                             FrameRenderer* frame_renderer,
                              VideoFrameValidator* frame_validator) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(video_player_state_, VideoPlayerState::kUninitialized);
-  DCHECK(frame_renderer);
+  DCHECK(frame_renderer && video);
   DVLOGF(4);
 
   EventCallback event_cb =
@@ -51,6 +53,15 @@ void VideoPlayer::Initialize(FrameRenderer* frame_renderer,
       VideoDecoderClient::Create(event_cb, frame_renderer, frame_validator);
   CHECK(decoder_client_) << "Failed to create decoder client";
 
+  // Create a decoder for the specified video. We'll always use import mode as
+  // this is the only mode supported by the media::VideoDecoder interface, which
+  // the video decoders are being migrated to.
+  VideoDecodeAccelerator::Config decoder_config(video->Profile());
+  decoder_config.output_mode =
+      VideoDecodeAccelerator::Config::OutputMode::IMPORT;
+  decoder_client_->CreateDecoder(decoder_config, video->Data());
+
+  video_ = video;
   video_player_state_ = VideoPlayerState::kIdle;
 }
 
@@ -61,28 +72,6 @@ void VideoPlayer::Destroy() {
 
   decoder_client_.reset();
   video_player_state_ = VideoPlayerState::kDestroyed;
-}
-
-void VideoPlayer::SetStream(const Video* const video) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(video);
-  DVLOGF(4);
-
-  // Destroy the currently active decoder.
-  if (video_) {
-    decoder_client_->DestroyDecoder();
-  }
-
-  // Create a decoder for the specified video. We'll always use import mode as
-  // this is the only mode supported by the media::VideoDecoder interface, which
-  // the video decoders are being migrated to.
-  VideoDecodeAccelerator::Config decoder_config(video->Profile());
-  decoder_config.output_mode =
-      VideoDecodeAccelerator::Config::OutputMode::IMPORT;
-  decoder_client_->CreateDecoder(decoder_config, video->Data(),
-                                 video->FrameChecksums());
-
-  video_ = video;
 }
 
 void VideoPlayer::Play() {

@@ -52,9 +52,11 @@ class VideoFrameValidator {
     std::string expected_md5;
   };
 
-  // Creates an instance of the video frame validator in 'CHECK' mode. The md5
-  // frame checksums need to be provided by calling SetFrameChecksums().
-  static std::unique_ptr<VideoFrameValidator> Create();
+  // Creates an instance of the video frame validator in 'CHECK' mode.
+  // |frame_checksums| should contain the ordered list of md5 frame checksums to
+  // be used by the validator
+  static std::unique_ptr<VideoFrameValidator> Create(
+      const std::vector<std::string>& frame_checksums);
 
   // |flags| decides the behavior of created video frame validator. See the
   // detail in Flags.
@@ -89,11 +91,6 @@ class VideoFrameValidator {
   // Returns the number of frames that didn't match the golden md5 values. This
   // function is thread-safe.
   size_t GetMismatchedFramesCount() const;
-
-  // Set the ordered list of md5 frame checksums to be used by the validator.
-  // TODO(dstaessens) Remove this function and provide checksums on
-  // construction of VideoFrameValidator.
-  void SetFrameChecksums(const std::vector<std::string>& frame_checksums);
 
  private:
   VideoFrameValidator(uint32_t flags,

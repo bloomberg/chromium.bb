@@ -21,7 +21,8 @@ namespace media {
 namespace test {
 
 // static
-std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create() {
+std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
+    const std::vector<std::string>& frame_checksums) {
   auto video_frame_mapper = VideoFrameMapperFactory::CreateMapper();
   if (!video_frame_mapper) {
     LOG(ERROR) << "Failed to create VideoFrameMapper.";
@@ -29,7 +30,7 @@ std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create() {
   }
 
   return base::WrapUnique(new VideoFrameValidator(
-      VideoFrameValidator::CHECK, base::FilePath(), std::vector<std::string>(),
+      VideoFrameValidator::CHECK, base::FilePath(), frame_checksums,
       base::File(), std::move(video_frame_mapper)));
 }
 
@@ -136,17 +137,6 @@ VideoFrameValidator::GetMismatchedFramesInfo() const {
 size_t VideoFrameValidator::GetMismatchedFramesCount() const {
   base::AutoLock auto_lock(mismatched_frames_lock_);
   return mismatched_frames_.size();
-}
-
-void VideoFrameValidator::SetFrameChecksums(
-    const std::vector<std::string>& frame_checksums) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  md5_of_frames_ = frame_checksums;
-  // TODO(dstaessens@) Setting a different stream happens at the start of a
-  // test, and we don't want test results to influence each-other. This should
-  // be removed when 'SetFrameChecksums' is moved to the constructor.
-  base::AutoLock auto_lock(mismatched_frames_lock_);
-  mismatched_frames_.clear();
 }
 
 scoped_refptr<VideoFrame> VideoFrameValidator::CreateStandardizedFrame(

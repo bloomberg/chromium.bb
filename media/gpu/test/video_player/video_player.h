@@ -51,16 +51,13 @@ class VideoPlayer {
 
   ~VideoPlayer();
 
-  // Create an instance of the video player. The |frame_renderer| and
+  // Create an instance of the video player. The |video|, |frame_renderer| and
   // |frame_validator| will not be owned by the video player. The caller should
-  // guarantee they exists for the entire lifetime of the video player.
+  // guarantee they outlive the video player.
   static std::unique_ptr<VideoPlayer> Create(
+      const Video* video,
       FrameRenderer* frame_renderer,
       VideoFrameValidator* frame_validator);
-
-  // Set the video stream to be played. The |video| will not be owned by the
-  // video player. A decoder will be set up for the specified video stream.
-  void SetStream(const Video* video);
 
   void Play();
   void Stop();
@@ -100,7 +97,8 @@ class VideoPlayer {
  private:
   VideoPlayer();
 
-  void Initialize(FrameRenderer* frame_renderer,
+  void Initialize(const Video* video,
+                  FrameRenderer* frame_renderer,
                   VideoFrameValidator* frame_validator);
   void Destroy();
 
