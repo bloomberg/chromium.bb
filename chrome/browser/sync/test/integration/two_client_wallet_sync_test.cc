@@ -577,22 +577,22 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
        CreateDefaultSyncPaymentsCustomerData()});
   ASSERT_TRUE(SetupSync());
 
-  // Grab the current card on the first client.
-  std::vector<CreditCard*> credit_cards = GetServerCreditCards(0);
-  ASSERT_EQ(1u, credit_cards.size());
-  CreditCard card = *credit_cards[0];
+  // Grab the current address on the first client.
+  std::vector<AutofillProfile*> server_addresses = GetServerProfiles(0);
+  ASSERT_EQ(1u, server_addresses.size());
+  AutofillProfile address = *server_addresses[0];
 
   // Remove the card from the data.
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateDefaultSyncPaymentsCustomerData()});
 
-  // Simulate using the card locally, only to force an update when committing
-  // a change.
-  ASSERT_EQ(1u, card.use_count());
-  card.set_use_count(2);
-  card.set_use_date(kLaterTime);
-  UpdateServerCardMetadata(0, card);
+  // Simulate using the address locally, only to force an update for wallet
+  // cards when committing a change.
+  ASSERT_EQ(1u, address.use_count());
+  address.set_use_count(2);
+  address.set_use_date(kLaterTime);
+  UpdateServerAddressMetadata(0, address);
 
   // Wait for the change to propagate.
   EXPECT_TRUE(AutofillWalletChecker(0, 1).Wait());
@@ -633,10 +633,10 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
        CreateDefaultSyncPaymentsCustomerData()});
   ASSERT_TRUE(SetupSync());
 
-  // Grab the current address on the first client.
-  std::vector<AutofillProfile*> server_addresses = GetServerProfiles(0);
-  ASSERT_EQ(1u, server_addresses.size());
-  AutofillProfile address = *server_addresses[0];
+  // Grab the current card on the first client.
+  std::vector<CreditCard*> credit_cards = GetServerCreditCards(0);
+  ASSERT_EQ(1u, credit_cards.size());
+  CreditCard card = *credit_cards[0];
 
   // Remove the address from the data.
   GetFakeServer()->SetWalletData(
@@ -644,12 +644,12 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
                             kDefaultBillingAddressID),
        CreateDefaultSyncPaymentsCustomerData()});
 
-  // Simulate using the address locally, only to force an update when committing
-  // a change.
-  ASSERT_EQ(1u, address.use_count());
-  address.set_use_count(2);
-  address.set_use_date(kLaterTime);
-  UpdateServerAddressMetadata(0, address);
+  // Simulate using the card locally, only to force an update for wallet
+  // addresses when committing a change.
+  ASSERT_EQ(1u, card.use_count());
+  card.set_use_count(2);
+  card.set_use_date(kLaterTime);
+  UpdateServerCardMetadata(0, card);
 
   // Wait for the change to propagate.
   EXPECT_TRUE(AutofillWalletChecker(0, 1).Wait());
