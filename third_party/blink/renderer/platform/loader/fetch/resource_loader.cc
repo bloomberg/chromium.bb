@@ -809,18 +809,7 @@ void ResourceLoader::DidReceiveResponse(
   const ResourceResponse& response = web_url_response.ToResourceResponse();
 
   should_use_isolated_code_cache_ =
-      RuntimeEnabledFeatures::IsolatedCodeCacheEnabled() &&
-      // Service worker script has its own code cache.
-      request_context != mojom::RequestContextType::SERVICE_WORKER &&
-      // And also, resources which are served from CacheStorage via service
-      // workers have its own code cache.
-      response.CacheStorageCacheName().IsNull() &&
-      // Also, we only support code cache for other service worker provided
-      // resources when a direct pass-through fetch handler is used.  If the
-      // service worker synthesizes a new Response or provides a Response
-      // fetched from a different URL, then do not use the code cache.
-      (!response.WasFetchedViaServiceWorker() ||
-       response.IsServiceWorkerPassThrough());
+      ShouldUseIsolatedCodeCache(request_context, response);
 
   // Perform 'nosniff' checks against the original response instead of the 304
   // response for a successful revalidation.

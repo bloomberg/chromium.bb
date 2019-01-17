@@ -7,6 +7,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -118,6 +119,21 @@ std::unique_ptr<CachedMetadataSender> CachedMetadataSender::Create(
   }
 
   return std::make_unique<CachedMetadataSenderImpl>(response, code_cache_type);
+}
+
+bool ShouldUseIsolatedCodeCache(mojom::RequestContextType request_context,
+                                const ResourceResponse& response) {
+  return RuntimeEnabledFeatures::IsolatedCodeCacheEnabled() &&
+         // Service worker script has its own code cache.
+         request_context != mojom::RequestContextType::SERVICE_WORKER &&
+         // Also, we only support code cache for other service worker provided
+         // resources when a direct pass-through fetch handler is used.  If the
+         // service worker synthesizes a new Response or provides a Response
+         // fetched from a different URL, then do not use the code cache.
+         // Also, responses coming from cache storage use a separate code
+         // cache mechanism.
+         (!response.WasFetchedViaServiceWorker() ||
+          response.IsServiceWorkerPassThrough());
 }
 
 }  // namespace blink
