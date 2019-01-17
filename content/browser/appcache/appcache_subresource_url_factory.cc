@@ -4,6 +4,9 @@
 
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "content/browser/appcache/appcache_host.h"
@@ -11,9 +14,12 @@
 #include "content/browser/appcache/appcache_url_loader_job.h"
 #include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -358,6 +364,21 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (request.request_initiator.has_value() &&
+      !request.request_initiator.value().opaque() &&
+      request.request_initiator.value() != appcache_host_->origin_in_use()) {
+    const char* scheme_exception =
+        GetContentClient()
+            ->browser()
+            ->GetInitiatorSchemeBypassingDocumentBlocking();
+    if (!scheme_exception ||
+        request.request_initiator.value().scheme() != scheme_exception) {
+      mojo::ReportBadMessage(
+          "APP_CACHE_SUBRESOURCE_URL_FACTORY_INVALID_INITIATOR");
+      return;
+    }
+  }
+
   new SubresourceLoader(std::move(url_loader_request), routing_id, request_id,
                         options, request, std::move(client), traffic_annotation,
                         appcache_host_, network_loader_factory_);

@@ -4621,6 +4621,17 @@ void RenderFrameHostImpl::CommitNavigation(
       // If the caller has supplied a factory for AppCache, use it.
       subresource_loader_factories->appcache_factory_info() =
           std::move(subresource_loader_params->appcache_loader_factory_info);
+
+      // Inject test intermediary if needed.
+      if (!g_create_network_factory_callback_for_test.Get().is_null()) {
+        network::mojom::URLLoaderFactoryPtrInfo original_factory =
+            std::move(subresource_loader_factories->appcache_factory_info());
+        network::mojom::URLLoaderFactoryRequest new_request = mojo::MakeRequest(
+            &subresource_loader_factories->appcache_factory_info());
+        g_create_network_factory_callback_for_test.Get().Run(
+            std::move(new_request), GetProcess()->GetID(),
+            std::move(original_factory));
+      }
     }
 
     // Set up the default factory.

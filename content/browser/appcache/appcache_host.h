@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
@@ -62,7 +63,6 @@ class CONTENT_EXPORT AppCacheHost
       public AppCacheGroup::UpdateObserver,
       public AppCacheServiceImpl::Observer {
  public:
-
   class CONTENT_EXPORT Observer {
    public:
     // Called just after the cache selection algorithm completes.
@@ -187,6 +187,8 @@ class CONTENT_EXPORT AppCacheHost
     return pending_selected_cache_id_ != blink::mojom::kAppCacheNoCacheId ||
            !pending_selected_manifest_url_.is_empty();
   }
+
+  const url::Origin& origin_in_use() { return origin_in_use_; }
 
   const GURL& first_party_url() const { return first_party_url_; }
   void SetFirstPartyUrlForTesting(const GURL& url) {

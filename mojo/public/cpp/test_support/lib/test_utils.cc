@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "mojo/public/cpp/test_support/test_support.h"
@@ -75,6 +76,31 @@ void IterateAndReportPerf(const char* test_name,
   MojoTestSupportLogPerfResult(test_name, sub_test_name,
                                1000000.0 * iterations / (end_time - start_time),
                                "iterations/second");
+}
+
+BadMessageObserver::BadMessageObserver() : got_bad_message_(false) {
+  mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
+      &BadMessageObserver::OnReportBadMessage, base::Unretained(this)));
+}
+
+BadMessageObserver::~BadMessageObserver() {
+  mojo::core::SetDefaultProcessErrorCallback(
+      mojo::core::ProcessErrorCallback());
+}
+
+std::string BadMessageObserver::WaitForBadMessage() {
+  if (!got_bad_message_)
+    run_loop_.Run();
+  return last_error_for_bad_message_;
+}
+
+void BadMessageObserver::OnReportBadMessage(const std::string& message) {
+  if (got_bad_message_)
+    return;
+
+  last_error_for_bad_message_ = message;
+  got_bad_message_ = true;
+  run_loop_.Quit();
 }
 
 }  // namespace test

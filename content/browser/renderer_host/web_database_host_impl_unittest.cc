@@ -10,12 +10,14 @@
 #include "content/browser/isolation_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
 #include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
 namespace {
+
 base::string16 ConstructVfsFileName(const url::Origin& origin,
                                     const base::string16& name,
                                     const base::string16& suffix) {
@@ -24,40 +26,18 @@ base::string16 ConstructVfsFileName(const url::Origin& origin,
          base::ASCIIToUTF16("#") + suffix;
 }
 
-class BadMessageObserver {
+class FakeMojoMessageDispatchContext {
  public:
-  BadMessageObserver()
-      : dummy_message_(0, 0, 0, 0, nullptr), context_(&dummy_message_) {
-    mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
-        &BadMessageObserver::ReportBadMessage, base::Unretained(this)));
-  }
-
-  ~BadMessageObserver() {
-    mojo::core::SetDefaultProcessErrorCallback(
-        mojo::core::ProcessErrorCallback());
-  }
-
-  const std::string& WaitForError() {
-    if (last_error_.empty())
-      run_loop_.Run();
-
-    return last_error_;
-  }
+  FakeMojoMessageDispatchContext()
+      : dummy_message_(0, 0, 0, 0, nullptr), context_(&dummy_message_) {}
 
  private:
-  void ReportBadMessage(const std::string& error) {
-    DCHECK(!error.empty());
-    last_error_ = error;
-    run_loop_.Quit();
-  }
-
   mojo::Message dummy_message_;
   mojo::internal::MessageDispatchContext context_;
-  std::string last_error_;
-  base::RunLoop run_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(BadMessageObserver);
+  DISALLOW_COPY_AND_ASSIGN(FakeMojoMessageDispatchContext);
 };
+
 }  // namespace
 
 class WebDatabaseHostImplTest : public ::testing::Test {
@@ -80,16 +60,18 @@ class WebDatabaseHostImplTest : public ::testing::Test {
 
   template <typename Callable>
   void CheckUnauthorizedOrigin(const Callable& func) {
-    BadMessageObserver bad_message_observer;
+    FakeMojoMessageDispatchContext fake_dispatch_context;
+    mojo::test::BadMessageObserver bad_message_observer;
     func();
-    EXPECT_EQ("Unauthorized origin.", bad_message_observer.WaitForError());
+    EXPECT_EQ("Unauthorized origin.", bad_message_observer.WaitForBadMessage());
   }
 
   template <typename Callable>
   void CheckInvalidOrigin(const Callable& func) {
-    BadMessageObserver bad_message_observer;
+    FakeMojoMessageDispatchContext fake_dispatch_context;
+    mojo::test::BadMessageObserver bad_message_observer;
     func();
-    EXPECT_EQ("Invalid origin.", bad_message_observer.WaitForError());
+    EXPECT_EQ("Invalid origin.", bad_message_observer.WaitForBadMessage());
   }
 
   WebDatabaseHostImpl* host() { return host_.get(); }
