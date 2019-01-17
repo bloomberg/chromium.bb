@@ -1385,9 +1385,7 @@ void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
                                return entry.origin == origin;
                              });
       if (it != matching_origins.end()) {
-        // TODO(alexmos): Simplify this by defining operator <= for IdType.
-        DCHECK(it->min_browsing_instance_id < min_browsing_instance_id ||
-               it->min_browsing_instance_id == min_browsing_instance_id);
+        DCHECK_LE(it->min_browsing_instance_id, min_browsing_instance_id);
         continue;
       }
     }
@@ -1462,12 +1460,9 @@ bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(
   bool found = false;
   if (it != isolated_origins_.end()) {
     for (const auto& isolated_origin_entry : it->second) {
-      // TODO(alexmos): Simplify this by defining operator <= for IdType.
       bool matches_browsing_instance_id =
-          isolated_origin_entry.min_browsing_instance_id <
-              browsing_instance_id ||
-          isolated_origin_entry.min_browsing_instance_id ==
-              browsing_instance_id;
+          isolated_origin_entry.min_browsing_instance_id <=
+          browsing_instance_id;
       if (matches_browsing_instance_id &&
           IsolatedOriginUtil::DoesOriginMatchIsolatedOrigin(
               origin, isolated_origin_entry.origin)) {

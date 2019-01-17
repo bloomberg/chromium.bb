@@ -60,6 +60,7 @@ class IdType {
   bool operator==(const IdType& other) const { return value_ == other.value_; }
   bool operator!=(const IdType& other) const { return value_ != other.value_; }
   bool operator<(const IdType& other) const { return value_ < other.value_; }
+  bool operator<=(const IdType& other) const { return value_ <= other.value_; }
 
   // Hasher to use in std::unordered_map, std::unordered_set, etc.
   struct Hasher {
