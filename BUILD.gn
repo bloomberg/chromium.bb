@@ -764,14 +764,9 @@ group("gn_all") {
 
   if (is_fuchsia) {
     deps += [
+      "//fuchsia:webrunner_unittests",
+      "//fuchsia/net_http:http_service_tests",
       "//headless",
-      "//headless:headless_shell",
-      "//headless:headless_tests",
-      "//webrunner",
-      "//webrunner:archive_sources",
-      "//webrunner:webrunner_unittests",
-      "//webrunner/net_http:http_pkg",
-      "//webrunner/net_http:http_service_tests",
     ]
   }
 

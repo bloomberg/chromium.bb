@@ -1643,19 +1643,19 @@ def _CheckSpamLogging(input_api, output_api):
                  r"^courgette[\\/]courgette_minimal_tool\.cc$",
                  r"^courgette[\\/]courgette_tool\.cc$",
                  r"^extensions[\\/]renderer[\\/]logging_native_handler\.cc$",
+                 r"^fuchsia[\\/]browser[\\/]frame_impl.cc$",
+                 r"^headless[\\/]app[\\/]headless_shell\.cc$",
                  r"^ipc[\\/]ipc_logging\.cc$",
                  r"^native_client_sdk[\\/]",
                  r"^remoting[\\/]base[\\/]logging\.h$",
                  r"^remoting[\\/]host[\\/].*",
                  r"^sandbox[\\/]linux[\\/].*",
+                 r"^storage[\\/]browser[\\/]fileapi[\\/]" +
+                     r"dump_file_system.cc$",
                  r"^tools[\\/]",
                  r"^ui[\\/]base[\\/]resource[\\/]data_pack.cc$",
                  r"^ui[\\/]aura[\\/]bench[\\/]bench_main\.cc$",
-                 r"^ui[\\/]ozone[\\/]platform[\\/]cast[\\/]",
-                 r"^webrunner[\\/]browser[\\/]frame_impl.cc$",
-                 r"^storage[\\/]browser[\\/]fileapi[\\/]" +
-                     r"dump_file_system.cc$",
-                 r"^headless[\\/]app[\\/]headless_shell\.cc$"))
+                 r"^ui[\\/]ozone[\\/]platform[\\/]cast[\\/]"))
   source_file_filter = lambda x: input_api.FilterSourceFile(
       x, white_list=file_inclusion_pattern, black_list=black_list)
 
