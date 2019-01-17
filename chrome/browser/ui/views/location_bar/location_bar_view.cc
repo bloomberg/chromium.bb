@@ -332,19 +332,22 @@ void LocationBarView::SelectAll() {
 // LocationBarView, public LocationBar implementation:
 
 void LocationBarView::FocusLocation(bool select_all) {
-  // Only exit Query in Omnibox mode on focus command if the location bar was
-  // already focused to begin with, i.e. user presses Ctrl+L twice.
-  bool exit_query_in_omnibox = omnibox_view_->HasFocus();
+  const bool omnibox_already_focused = omnibox_view_->HasFocus();
 
   omnibox_view_->SetFocus();
+
+  if (omnibox_already_focused)
+    omnibox_view()->model()->ClearKeyword();
 
   if (!select_all)
     return;
 
   omnibox_view_->SelectAll(true);
 
+  // Only exit Query in Omnibox mode on focus command if the location bar was
+  // already focused to begin with, i.e. user presses Ctrl+L twice.
   if (base::FeatureList::IsEnabled(kOmniboxShowFullUrlOnKeyboardShortcut))
-    omnibox_view()->model()->Unelide(exit_query_in_omnibox);
+    omnibox_view()->model()->Unelide(omnibox_already_focused);
 }
 
 void LocationBarView::Revert() {
