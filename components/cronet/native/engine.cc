@@ -258,6 +258,17 @@ Cronet_RESULT Cronet_EngineImpl::Shutdown() {
   return CheckResult(Cronet_RESULT_SUCCESS);
 }
 
+void Cronet_EngineImpl::AddRequestFinishedListener(
+    Cronet_RequestFinishedInfoListenerPtr listener,
+    Cronet_ExecutorPtr executor) {
+  NOTIMPLEMENTED();
+}
+
+void Cronet_EngineImpl::RemoveRequestFinishedListener(
+    Cronet_RequestFinishedInfoListenerPtr listener) {
+  NOTIMPLEMENTED();
+}
+
 Cronet_RESULT Cronet_EngineImpl::CheckResult(Cronet_RESULT result) {
   if (enable_check_result_)
     CHECK_EQ(Cronet_RESULT_SUCCESS, result);

@@ -682,6 +682,20 @@ void Cronet_UrlRequestParams_annotations_add(Cronet_UrlRequestParamsPtr self,
   self->annotations.push_back(element);
 }
 
+void Cronet_UrlRequestParams_request_finished_listener_set(
+    Cronet_UrlRequestParamsPtr self,
+    Cronet_RequestFinishedInfoListenerPtr request_finished_listener) {
+  DCHECK(self);
+  self->request_finished_listener = request_finished_listener;
+}
+
+void Cronet_UrlRequestParams_request_finished_executor_set(
+    Cronet_UrlRequestParamsPtr self,
+    Cronet_ExecutorPtr request_finished_executor) {
+  DCHECK(self);
+  self->request_finished_executor = request_finished_executor;
+}
+
 // Struct Cronet_UrlRequestParams getters.
 Cronet_String Cronet_UrlRequestParams_http_method_get(
     Cronet_UrlRequestParamsPtr self) {
@@ -753,6 +767,19 @@ void Cronet_UrlRequestParams_annotations_clear(
     Cronet_UrlRequestParamsPtr self) {
   DCHECK(self);
   self->annotations.clear();
+}
+
+Cronet_RequestFinishedInfoListenerPtr
+Cronet_UrlRequestParams_request_finished_listener_get(
+    Cronet_UrlRequestParamsPtr self) {
+  DCHECK(self);
+  return self->request_finished_listener;
+}
+
+Cronet_ExecutorPtr Cronet_UrlRequestParams_request_finished_executor_get(
+    Cronet_UrlRequestParamsPtr self) {
+  DCHECK(self);
+  return self->request_finished_executor;
 }
 
 // Struct Cronet_DateTime.

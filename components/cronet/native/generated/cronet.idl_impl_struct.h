@@ -149,6 +149,8 @@ struct Cronet_UrlRequestParams {
   Cronet_ExecutorPtr upload_data_provider_executor = nullptr;
   bool allow_direct_executor = false;
   std::vector<Cronet_RawDataPtr> annotations;
+  Cronet_RequestFinishedInfoListenerPtr request_finished_listener = nullptr;
+  Cronet_ExecutorPtr request_finished_executor = nullptr;
 
  private:
   DISALLOW_ASSIGN(Cronet_UrlRequestParams);
