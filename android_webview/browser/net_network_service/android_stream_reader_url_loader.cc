@@ -63,20 +63,6 @@ class InputStreamReaderWrapper
   DISALLOW_COPY_AND_ASSIGN(InputStreamReaderWrapper);
 };
 
-class AndroidResponseDelegate
-    : public AndroidStreamReaderURLLoader::ResponseDelegate {
- public:
-  AndroidResponseDelegate(std::unique_ptr<AwWebResourceResponse> response)
-      : response_(std::move(response)) {}
-  std::unique_ptr<android_webview::InputStream> OpenInputStream(
-      JNIEnv* env) override {
-    return response_->GetInputStream(env);
-  }
-
- private:
-  std::unique_ptr<AwWebResourceResponse> response_;
-};
-
 AndroidStreamReaderURLLoader::AndroidStreamReaderURLLoader(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
