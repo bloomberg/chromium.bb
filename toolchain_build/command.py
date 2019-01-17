@@ -406,6 +406,10 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
                                                       logger=logger)
       tracked_push_url = dict(push_list).get('origin', 'None')
 
+      # TODO(thakis): Remove once https://crbug.com/923062 is done.
+      logger.debug('remote fetch: %s', fetch_list)
+      logger.debug('remote push: %s', push_list)
+
       if ((known_mirrors and tracked_fetch_url != url) or
           (push_mirrors and tracked_push_url != push_url)):
         updated_fetch_url = tracked_fetch_url
