@@ -33,5 +33,9 @@ const char kClearLitePageRedirectLocalBlacklist[] =
 // valid value to this switch causes Chrome startup to block on hints parsing.
 const char kHintsProtoOverride[] = "optimization_guide_hints_override";
 
+// Purges the hint cache store on startup, so that it's guaranteed to be using
+// fresh data.
+const char kPurgeHintCacheStore[] = "purge_hint_cache_store";
+
 }  // namespace switches
 }  // namespace previews

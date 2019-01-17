@@ -43247,6 +43247,10 @@ Called by update_net_trust_anchors.py.-->
     Failed to finish processing same version previously so skipping to avoid
     potential crash loop.
   </int>
+  <int value="3" label="Skipped hints processing">
+    Skipped processing the previews hints, likely because the hint cache already
+    contains the same version.
+  </int>
 </enum>
 
 <enum name="PreviewsServerLitePageBlacklistReason">

@@ -28,7 +28,9 @@ class OptimizationGuideService {
 
   // Adds the observer and synchronously dispatches the current
   // HintsComponentInfo to it if one is already available.
-  void AddObserver(OptimizationGuideServiceObserver* observer);
+  //
+  // Virtual so it can be mocked out in tests.
+  virtual void AddObserver(OptimizationGuideServiceObserver* observer);
   // Virtual so it can be mocked out in tests.
   virtual void RemoveObserver(OptimizationGuideServiceObserver* observer);
 
