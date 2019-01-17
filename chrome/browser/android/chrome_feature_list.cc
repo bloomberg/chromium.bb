@@ -69,6 +69,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kIncognitoStrings,
     &features::kMaterialDesignIncognitoNTP,
     &features::kPermissionDelegation,
+    &features::kPredictivePrefetchingAllowedOnAllConnectionTypes,
     &features::kServiceWorkerPaymentApps,
     &features::kShowTrustedPublisherURL,
     &features::kSoundContentSetting,
