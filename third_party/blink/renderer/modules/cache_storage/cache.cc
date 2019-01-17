@@ -496,8 +496,19 @@ class Cache::CodeCacheHandleCallbackForPut final
                                    base::Time response_time,
                                    base::TimeTicks) {
     ServiceWorkerGlobalScope* global_scope = GetServiceWorkerGlobalScope();
+    // |cache_ptr_| can be disconnected when the wrapper of CacheStorage is
+    // gone.
+    if (!cache_->cache_ptr_.is_bound()) {
+      global_scope->DidEndTask(task_id);
+      return;
+    }
+
     scoped_refptr<CachedMetadata> cached_metadata =
         GenerateFullCodeCache(array_buffer);
+    if (!cached_metadata) {
+      global_scope->DidEndTask(task_id);
+      return;
+    }
     cache_->cache_ptr_->SetSideData(
         url_, response_time, cached_metadata->SerializedData(),
         WTF::Bind(
