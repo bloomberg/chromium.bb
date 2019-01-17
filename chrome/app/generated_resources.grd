@@ -5761,6 +5761,9 @@ the Bookmarks menu.">
         <message name="IDS_TAB_CXMENU_ADD_TAB_TO_EXISTING_GROUP" desc="The label of the tab context menu submenu for adding one or more tabs to an existing tab group.">
           Add to existing group
         </message>
+        <message name="IDS_TAB_CXMENU_REMOVE_TAB_FROM_GROUP" desc="The label of the tab context menu item for removing one or more tabs from the groups that contain them.">
+          Remove from group
+        </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_TAB_CXMENU_NEWTAB" desc="In Title Case: The label of the 'New Tab' Tab context menu item.">
@@ -5807,6 +5810,9 @@ the Bookmarks menu.">
         </message>
         <message name="IDS_TAB_CXMENU_ADD_TAB_TO_EXISTING_GROUP" desc="In Title Case: The label of the tab context menu submenu for adding one or more tabs to an existing tab group.">
           Add to Existing Group
+        </message>
+        <message name="IDS_TAB_CXMENU_REMOVE_TAB_FROM_GROUP" desc="In Title Case: The label of the tab context menu item for removing one or more tabs from the groups that contain them.">
+          Remove From Group
         </message>
         <message name="IDS_TAB_CXMENU_SEND_TO_MY_DEVICES" desc="In Title Case: The label of the tab context menu item for share this tab to other devices.">
           Send To My Devices

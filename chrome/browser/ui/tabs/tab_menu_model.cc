@@ -43,6 +43,14 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                              IDS_TAB_CXMENU_ADD_TAB_TO_EXISTING_GROUP,
                              add_to_existing_group_submenu_.get());
     }
+
+    for (size_t index = 0; index < affected_indices.size(); index++) {
+      if (tab_strip->GetTabGroupForTab(affected_indices[index]) != nullptr) {
+        AddItemWithStringId(TabStripModel::CommandRemoveFromGroup,
+                            IDS_TAB_CXMENU_REMOVE_TAB_FROM_GROUP);
+        break;
+      }
+    }
   }
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);

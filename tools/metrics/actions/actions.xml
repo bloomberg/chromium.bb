@@ -19870,6 +19870,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="TabContextMenu_RemoveFromGroup">
+  <owner>bsep@google.com</owner>
+  <owner>tbergquist@google.com</owner>
+  <description>
+    User selected Remove from group from the tab context menu.
+  </description>
+</action>
+
 <action name="TabContextMenu_RestoreTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
