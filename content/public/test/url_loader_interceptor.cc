@@ -249,28 +249,16 @@ class URLLoaderInterceptor::URLLoaderFactoryGetterWrapper {
               ->get();
         }));
     url_loader_factory_getter_->SetNetworkFactoryForTesting(
-        frame_interceptor_.get(), false);
-
-    frame_interceptor_corb_enabled_ = std::make_unique<Interceptor>(
-        parent, base::BindRepeating([]() { return 0; }),
-        base::BindLambdaForTesting([=]() -> network::mojom::URLLoaderFactory* {
-          return url_loader_factory_getter
-              ->original_network_factory__corb_enabled_for_testing()
-              ->get();
-        }));
-    url_loader_factory_getter_->SetNetworkFactoryForTesting(
-        frame_interceptor_corb_enabled_.get(), true);
+        frame_interceptor_.get());
   }
 
   ~URLLoaderFactoryGetterWrapper() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    url_loader_factory_getter_->SetNetworkFactoryForTesting(nullptr, false);
-    url_loader_factory_getter_->SetNetworkFactoryForTesting(nullptr, true);
+    url_loader_factory_getter_->SetNetworkFactoryForTesting(nullptr);
   }
 
  private:
   std::unique_ptr<Interceptor> frame_interceptor_;
-  std::unique_ptr<Interceptor> frame_interceptor_corb_enabled_;
   URLLoaderFactoryGetter* url_loader_factory_getter_;
 };
 

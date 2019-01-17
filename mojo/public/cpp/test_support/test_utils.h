@@ -6,10 +6,12 @@
 #define MOJO_PUBLIC_CPP_TEST_SUPPORT_TEST_UTILS_H_
 
 #include <string>
+#include <utility>
 
-#include "mojo/public/cpp/system/core.h"
-
+#include "base/macros.h"
+#include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
 namespace test {
@@ -49,6 +51,28 @@ void IterateAndReportPerf(const char* test_name,
                           const char* sub_test_name,
                           PerfTestSingleIteration single_iteration,
                           void* closure);
+
+// Intercepts a single bad message (reported via mojo::ReportBadMessage or
+// mojo::GetBadMessageCallback) that would be associated with the global bad
+// message handler (typically when the messages originate from a test
+// implementation of an interface hosted in the test process).
+class BadMessageObserver {
+ public:
+  BadMessageObserver();
+  ~BadMessageObserver();
+
+  // Waits for the bad message and returns the error string.
+  std::string WaitForBadMessage();
+
+ private:
+  void OnReportBadMessage(const std::string& message);
+
+  std::string last_error_for_bad_message_;
+  bool got_bad_message_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(BadMessageObserver);
+};
 
 }  // namespace test
 }  // namespace mojo
