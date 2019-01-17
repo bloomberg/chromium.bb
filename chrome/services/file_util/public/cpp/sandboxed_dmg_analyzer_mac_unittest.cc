@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
+#include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/services/file_util/file_util_service.h"
 #include "chrome/services/file_util/public/mojom/constants.mojom.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -37,7 +38,10 @@ class SandboxedDMGAnalyzerTest : public testing::Test {
     base::RunLoop run_loop;
     ResultsGetter results_getter(run_loop.QuitClosure(), results);
     scoped_refptr<SandboxedDMGAnalyzer> analyzer(new SandboxedDMGAnalyzer(
-        path, results_getter.GetCallback(),
+        path,
+        safe_browsing::FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze(
+            "dmg"),
+        results_getter.GetCallback(),
         test_connector_factory_.GetDefaultConnector()));
     analyzer->Start();
     run_loop.Run();

@@ -275,29 +275,14 @@ void FileAnalyzer::StartExtractDmgFeatures() {
 
   // Directly use 'dmg' extension since download file may not have any
   // extension, but has still been deemed a DMG through file type sniffing.
-  base::File file(tmp_path_, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  if (!file.IsValid()) {
-    std::move(callback_).Run(std::move(results_));
-    return;
-  }
-  int64_t size = file.GetLength();
-
-  bool too_big_to_unpack =
-      base::checked_cast<uint64_t>(size) >
-      FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze("dmg");
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.DmgTooBigToUnpack",
-                        too_big_to_unpack);
-  if (too_big_to_unpack) {
-    std::move(callback_).Run(std::move(results_));
-  } else {
-    dmg_analyzer_ = new SandboxedDMGAnalyzer(
-        tmp_path_,
-        base::BindRepeating(&FileAnalyzer::OnDmgAnalysisFinished,
-                            weakptr_factory_.GetWeakPtr()),
-        content::ServiceManagerConnection::GetForProcess()->GetConnector());
-    dmg_analyzer_->Start();
-    dmg_analysis_start_time_ = base::TimeTicks::Now();
-  }
+  dmg_analyzer_ = new SandboxedDMGAnalyzer(
+      tmp_path_,
+      FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze("dmg"),
+      base::BindRepeating(&FileAnalyzer::OnDmgAnalysisFinished,
+                          weakptr_factory_.GetWeakPtr()),
+      content::ServiceManagerConnection::GetForProcess()->GetConnector());
+  dmg_analyzer_->Start();
+  dmg_analysis_start_time_ = base::TimeTicks::Now();
 }
 
 void FileAnalyzer::ExtractFileOrDmgFeatures(
