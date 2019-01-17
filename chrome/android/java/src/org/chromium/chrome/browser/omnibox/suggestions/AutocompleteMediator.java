@@ -29,8 +29,9 @@ import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator.AutocompleteDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator.SuggestionProcessor;
+import org.chromium.chrome.browser.omnibox.suggestions.basic.AnswerSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor.SuggestionHost;
+import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionView.SuggestionViewDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -87,6 +88,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
     private final Handler mHandler;
     private final BasicSuggestionProcessor mBasicSuggestionProcessor;
     private EditUrlSuggestionProcessor mEditUrlProcessor;
+    private final AnswerSuggestionProcessor mAnswerSuggestionProcessor;
 
     private ToolbarDataProvider mDataProvider;
     private boolean mNativeInitialized;
@@ -145,6 +147,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
         mBasicSuggestionProcessor = new BasicSuggestionProcessor(mContext, this, textProvider);
         mEditUrlProcessor = new EditUrlSuggestionProcessor(
                 delegate, (suggestion) -> onSelection(suggestion, 0));
+        mAnswerSuggestionProcessor = new AnswerSuggestionProcessor(mContext, this);
     }
 
     /**
@@ -262,7 +265,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
             mHandler.post(deferredRunnable);
         }
         mDeferredNativeRunnables.clear();
-        mBasicSuggestionProcessor.onNativeInitialized();
+        mAnswerSuggestionProcessor.onNativeInitialized();
     }
 
     /**
@@ -293,8 +296,9 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
             // a consequence the omnibox is unfocused).
             hideSuggestions();
         }
-        mBasicSuggestionProcessor.onUrlFocusChange(hasFocus);
         if (mEditUrlProcessor != null) mEditUrlProcessor.onUrlFocusChange(hasFocus);
+        mAnswerSuggestionProcessor.onUrlFocusChange(hasFocus);
+        mBasicSuggestionProcessor.onUrlFocusChange(hasFocus);
     }
 
     /**
@@ -642,7 +646,10 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
      * @return The appropriate suggestion processor for the provided suggestion.
      */
     private SuggestionProcessor getProcessorForSuggestion(OmniboxSuggestion suggestion) {
-        if (mEditUrlProcessor != null && mEditUrlProcessor.doesProcessSuggestion(suggestion)) {
+        if (mAnswerSuggestionProcessor.doesProcessSuggestion(suggestion)) {
+            return mAnswerSuggestionProcessor;
+        } else if (mEditUrlProcessor != null
+                && mEditUrlProcessor.doesProcessSuggestion(suggestion)) {
             return mEditUrlProcessor;
         }
         return mBasicSuggestionProcessor;

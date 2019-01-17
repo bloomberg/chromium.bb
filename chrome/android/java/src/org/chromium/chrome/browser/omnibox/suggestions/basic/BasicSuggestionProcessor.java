@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.omnibox.suggestions.basic;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -14,64 +13,25 @@ import android.util.Pair;
 import android.util.TypedValue;
 import android.view.View;
 
-import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
-import org.chromium.chrome.browser.omnibox.suggestions.AnswersImageFetcher;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator.SuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionView.SuggestionViewDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties.SuggestionIcon;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties.SuggestionTextContainer;
-import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.components.omnibox.AnswerType;
-import org.chromium.components.omnibox.SuggestionAnswer;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-/** A class that handles model and view creation for the most commonly used omnibox suggestion. */
+/** A class that handles model and view creation for the basic omnibox suggestions. */
 public class BasicSuggestionProcessor implements SuggestionProcessor {
-    /** A mechanism for creating {@link SuggestionViewDelegate}s. */
-    public interface SuggestionHost {
-        /**
-         * @param suggestion The suggestion to create the delegate for.
-         * @param position The position of the delegate in the list.
-         * @return A delegate for the specified suggestion.
-         */
-        SuggestionViewDelegate createSuggestionViewDelegate(
-                OmniboxSuggestion suggestion, int position);
-
-        /**
-         * @param model The model to check.
-         * @return Whether the model is active in the list being shown.
-         */
-        boolean isActiveModel(PropertyModel model);
-
-        /**
-         * Notify the host that the suggestion models have changed.
-         */
-        void notifyPropertyModelsChanged();
-
-        /**
-         * @return The browser's active profile.
-         */
-        Profile getCurrentProfile();
-    }
-
-    private final Map<String, List<PropertyModel>> mPendingAnswerRequestUrls;
     private final Context mContext;
     private final SuggestionHost mSuggestionHost;
-    private final AnswersImageFetcher mImageFetcher;
     private final UrlBarEditingTextStateProvider mUrlBarEditingTextProvider;
-    private boolean mEnableNewAnswerLayout;
 
     /**
      * @param context An Android context.
@@ -82,23 +42,12 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
             UrlBarEditingTextStateProvider editingTextProvider) {
         mContext = context;
         mSuggestionHost = suggestionHost;
-        mPendingAnswerRequestUrls = new HashMap<>();
-        mImageFetcher = new AnswersImageFetcher();
         mUrlBarEditingTextProvider = editingTextProvider;
     }
 
     @Override
     public boolean doesProcessSuggestion(OmniboxSuggestion suggestion) {
         return true;
-    }
-
-    /**
-     * Signals that native initialization has completed.
-     */
-    public void onNativeInitialized() {
-        // Experiment: controls presence of certain answer icon types.
-        mEnableNewAnswerLayout =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_NEW_ANSWER_LAYOUT);
     }
 
     @Override
@@ -113,162 +62,18 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
 
     @Override
     public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
-        maybeFetchAnswerIcon(suggestion, model);
-
         model.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE,
                 SuggestionViewProperties.SuggestionIcon.UNDEFINED);
         model.set(SuggestionViewProperties.DELEGATE,
                 mSuggestionHost.createSuggestionViewDelegate(suggestion, position));
 
-        // Suggestions with attached answers are rendered with rich results regardless of which
-        // suggestion type they are.
-        if (suggestion.hasAnswer()) {
-            setStateForAnswerSuggestion(model, suggestion.getAnswer());
-        } else {
-            setStateForTextSuggestion(model, suggestion);
-        }
+        setStateForSuggestion(model, suggestion);
     }
 
     @Override
-    public void onUrlFocusChange(boolean hasFocus) {
-        if (!hasFocus) mImageFetcher.clearCache();
-    }
+    public void onUrlFocusChange(boolean hasFocus) {}
 
-    private void maybeFetchAnswerIcon(OmniboxSuggestion suggestion, PropertyModel model) {
-        ThreadUtils.assertOnUiThread();
-
-        // Attempting to fetch answer data before we have a profile to request it for.
-        if (mSuggestionHost.getCurrentProfile() == null) return;
-
-        if (!suggestion.hasAnswer()) return;
-        final String url = suggestion.getAnswer().getSecondLine().getImage();
-        if (url == null) return;
-
-        // Do not make duplicate answer image requests for the same URL (to avoid generating
-        // duplicate bitmaps for the same image).
-        if (mPendingAnswerRequestUrls.containsKey(url)) {
-            mPendingAnswerRequestUrls.get(url).add(model);
-            return;
-        }
-
-        List<PropertyModel> models = new ArrayList<>();
-        models.add(model);
-        mPendingAnswerRequestUrls.put(url, models);
-        mImageFetcher.requestAnswersImage(mSuggestionHost.getCurrentProfile(), url,
-                new AnswersImageFetcher.AnswersImageObserver() {
-                    @Override
-                    public void onAnswersImageChanged(Bitmap bitmap) {
-                        ThreadUtils.assertOnUiThread();
-
-                        List<PropertyModel> models = mPendingAnswerRequestUrls.remove(url);
-                        boolean didUpdate = false;
-                        for (int i = 0; i < models.size(); i++) {
-                            PropertyModel model = models.get(i);
-                            if (!mSuggestionHost.isActiveModel(model)) continue;
-                            model.set(SuggestionViewProperties.ANSWER_IMAGE, bitmap);
-                            didUpdate = true;
-                        }
-                        if (didUpdate) mSuggestionHost.notifyPropertyModelsChanged();
-                    }
-                });
-    }
-
-    /**
-     * Sets both lines of the Omnibox suggestion based on an Answers in Suggest result.
-     */
-    private void setStateForAnswerSuggestion(PropertyModel model, SuggestionAnswer answer) {
-        float density = mContext.getResources().getDisplayMetrics().density;
-        SuggestionAnswer.ImageLine firstLine = answer.getFirstLine();
-        SuggestionAnswer.ImageLine secondLine = answer.getSecondLine();
-        int numAnswerLines = parseNumAnswerLines(secondLine.getTextFields());
-        if (numAnswerLines == -1) numAnswerLines = 1;
-        model.set(SuggestionViewProperties.IS_ANSWER, true);
-
-        if (mEnableNewAnswerLayout) {
-            model.set(SuggestionViewProperties.TEXT_LINE_2_SIZING,
-                    Pair.create(TypedValue.COMPLEX_UNIT_SP,
-                            (float) AnswerTextBuilder.getMaxTextHeightSp(firstLine)));
-            model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT,
-                    new SuggestionTextContainer(
-                            AnswerTextBuilder.buildSpannable(firstLine, density)));
-
-            model.set(SuggestionViewProperties.TEXT_LINE_1_SIZING,
-                    Pair.create(TypedValue.COMPLEX_UNIT_SP,
-                            (float) AnswerTextBuilder.getMaxTextHeightSp(secondLine)));
-            model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT,
-                    new SuggestionTextContainer(
-                            AnswerTextBuilder.buildSpannable(secondLine, density)));
-            model.set(SuggestionViewProperties.TEXT_LINE_1_MAX_LINES, numAnswerLines);
-            model.set(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES, 1);
-            model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_COLOR,
-                    SuggestionViewViewBinder.getStandardFontColor(
-                            mContext, model.get(SuggestionCommonProperties.USE_DARK_COLORS)));
-            model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT_DIRECTION,
-                    View.TEXT_DIRECTION_INHERIT);
-        } else {
-            model.set(SuggestionViewProperties.TEXT_LINE_1_SIZING,
-                    Pair.create(TypedValue.COMPLEX_UNIT_SP,
-                            (float) AnswerTextBuilder.getMaxTextHeightSp(firstLine)));
-            model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT,
-                    new SuggestionTextContainer(
-                            AnswerTextBuilder.buildSpannable(firstLine, density)));
-
-            model.set(SuggestionViewProperties.TEXT_LINE_2_SIZING,
-                    Pair.create(TypedValue.COMPLEX_UNIT_SP,
-                            (float) AnswerTextBuilder.getMaxTextHeightSp(secondLine)));
-            model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT,
-                    new SuggestionTextContainer(
-                            AnswerTextBuilder.buildSpannable(secondLine, density)));
-            model.set(SuggestionViewProperties.TEXT_LINE_1_MAX_LINES, 1);
-            model.set(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES, numAnswerLines);
-            model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_COLOR,
-                    SuggestionViewViewBinder.getStandardFontColor(
-                            mContext, model.get(SuggestionCommonProperties.USE_DARK_COLORS)));
-            model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_DIRECTION,
-                    View.TEXT_DIRECTION_INHERIT);
-        }
-
-        model.set(SuggestionViewProperties.HAS_ANSWER_IMAGE, secondLine.hasImage());
-
-        model.set(SuggestionViewProperties.REFINABLE, true);
-
-        @SuggestionIcon
-        int icon = SuggestionIcon.MAGNIFIER;
-        if (mEnableNewAnswerLayout) {
-            switch (answer.getType()) {
-                case AnswerType.DICTIONARY:
-                    icon = SuggestionIcon.DICTIONARY;
-                    break;
-                case AnswerType.FINANCE:
-                    icon = SuggestionIcon.FINANCE;
-                    break;
-                case AnswerType.KNOWLEDGE_GRAPH:
-                    icon = SuggestionIcon.KNOWLEDGE;
-                    break;
-                case AnswerType.SUNRISE:
-                    icon = SuggestionIcon.SUNRISE;
-                    break;
-                case AnswerType.TRANSLATION:
-                    icon = SuggestionIcon.TRANSLATION;
-                    break;
-                case AnswerType.WEATHER:
-                    icon = SuggestionIcon.WEATHER;
-                    break;
-                case AnswerType.WHEN_IS:
-                    icon = SuggestionIcon.EVENT;
-                    break;
-                case AnswerType.CURRENCY:
-                    icon = SuggestionIcon.CURRENCY;
-                    break;
-                case AnswerType.SPORTS:
-                    icon = SuggestionIcon.SPORTS;
-            }
-        }
-
-        model.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE, icon);
-    }
-
-    private void setStateForTextSuggestion(PropertyModel model, OmniboxSuggestion suggestion) {
+    private void setStateForSuggestion(PropertyModel model, OmniboxSuggestion suggestion) {
         int suggestionType = suggestion.getType();
         @SuggestionIcon
         int suggestionIcon;
@@ -404,15 +209,6 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
         Spannable str = SpannableString.valueOf(suggestedQuery);
         if (shouldHighlight) applyHighlightToMatchRegions(str, classifications);
         return str;
-    }
-
-    private static int parseNumAnswerLines(List<SuggestionAnswer.TextField> textFields) {
-        for (int i = 0; i < textFields.size(); i++) {
-            if (textFields.get(i).hasNumLines()) {
-                return Math.min(3, textFields.get(i).getNumLines());
-            }
-        }
-        return -1;
     }
 
     private static boolean applyHighlightToMatchRegions(
