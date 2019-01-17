@@ -62,10 +62,10 @@ void PrintManager::PrintingRenderFrameDeleted() {
 
 #if defined(OS_ANDROID)
 void PrintManager::PdfWritingDone(int page_count) {
-  if (!pdf_writing_done_callback_.is_null())
+  if (pdf_writing_done_callback_)
     pdf_writing_done_callback_.Run(page_count);
   // Invalidate the file descriptor so it doesn't get reused.
-  file_descriptor_ = base::FileDescriptor(-1, false);
+  file_descriptor_ = base::FileDescriptor();
 }
 #endif
 
