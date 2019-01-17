@@ -45,7 +45,17 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
         bobpay_(net::EmbeddedTestServer::TYPE_HTTPS),
         frankpay_(net::EmbeddedTestServer::TYPE_HTTPS),
         georgepay_(net::EmbeddedTestServer::TYPE_HTTPS),
-        kylepay_(net::EmbeddedTestServer::TYPE_HTTPS) {
+        kylepay_(net::EmbeddedTestServer::TYPE_HTTPS),
+        larrypay_(net::EmbeddedTestServer::TYPE_HTTPS),
+        charlie_example_(net::EmbeddedTestServer::TYPE_HTTPS),
+        david_example_(net::EmbeddedTestServer::TYPE_HTTPS),
+        frank_example_(net::EmbeddedTestServer::TYPE_HTTPS),
+        george_example_(net::EmbeddedTestServer::TYPE_HTTPS),
+        harry_example_(net::EmbeddedTestServer::TYPE_HTTPS),
+        ike_example_(net::EmbeddedTestServer::TYPE_HTTPS),
+        john_example_(net::EmbeddedTestServer::TYPE_HTTPS),
+        kyle_example_(net::EmbeddedTestServer::TYPE_HTTPS),
+        larry_example_(net::EmbeddedTestServer::TYPE_HTTPS) {
     scoped_feature_list_.InitWithFeatures(
         {::features::kServiceWorkerPaymentApps,
          features::kWebPaymentsJustInTimePaymentApp},
@@ -73,6 +83,16 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(StartTestServer("frankpay.com", &frankpay_));
     ASSERT_TRUE(StartTestServer("georgepay.com", &georgepay_));
     ASSERT_TRUE(StartTestServer("kylepay.com", &kylepay_));
+    ASSERT_TRUE(StartTestServer("larrypay.com", &larrypay_));
+    ASSERT_TRUE(StartTestServer("charlie.example.com", &charlie_example_));
+    ASSERT_TRUE(StartTestServer("david.example.com", &david_example_));
+    ASSERT_TRUE(StartTestServer("frank.example.com", &frank_example_));
+    ASSERT_TRUE(StartTestServer("george.example.com", &george_example_));
+    ASSERT_TRUE(StartTestServer("harry.example.com", &harry_example_));
+    ASSERT_TRUE(StartTestServer("ike.example.com", &ike_example_));
+    ASSERT_TRUE(StartTestServer("john.example.com", &john_example_));
+    ASSERT_TRUE(StartTestServer("kyle.example.com", &kyle_example_));
+    ASSERT_TRUE(StartTestServer("larry.example.com", &larry_example_));
 
     GetPermissionRequestManager()->set_auto_response_for_test(
         PermissionRequestManager::ACCEPT_ALL);
@@ -126,8 +146,35 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
                                  georgepay_.GetURL("georgepay.com", "/"));
     downloader->AddTestServerURL("https://kylepay.com/",
                                  kylepay_.GetURL("kylepay.com", "/"));
+    downloader->AddTestServerURL("https://larrypay.com/",
+                                 larrypay_.GetURL("larrypay.com", "/"));
+    downloader->AddTestServerURL(
+        "https://charlie.example.com/",
+        charlie_example_.GetURL("charlie.example.com", "/"));
+    downloader->AddTestServerURL(
+        "https://david.example.com/",
+        david_example_.GetURL("david.example.com", "/"));
+    downloader->AddTestServerURL(
+        "https://frank.example.com/",
+        frank_example_.GetURL("frank.example.com", "/"));
+    downloader->AddTestServerURL(
+        "https://george.example.com/",
+        george_example_.GetURL("george.example.com", "/"));
+    downloader->AddTestServerURL(
+        "https://harry.example.com/",
+        harry_example_.GetURL("harry.example.com", "/"));
+    downloader->AddTestServerURL("https://ike.example.com/",
+                                 ike_example_.GetURL("ike.example.com", "/"));
+    downloader->AddTestServerURL("https://john.example.com/",
+                                 john_example_.GetURL("john.example.com", "/"));
+    downloader->AddTestServerURL("https://kyle.example.com/",
+                                 kyle_example_.GetURL("kyle.example.com", "/"));
+    downloader->AddTestServerURL(
+        "https://larry.example.com/",
+        larry_example_.GetURL("larry.example.com", "/"));
     ServiceWorkerPaymentAppFactory::GetInstance()
-        ->SetDownloaderAndIgnorePortInAppScopeForTesting(std::move(downloader));
+        ->SetDownloaderAndIgnorePortInOriginComparisonForTesting(
+            std::move(downloader));
 
     std::vector<mojom::PaymentMethodDataPtr> method_data;
     for (const auto& identifier : payment_method_identifiers) {
@@ -237,6 +284,46 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
   // https://kylepay.com hosts a payment handler that can be installed "just in
   // time."
   net::EmbeddedTestServer kylepay_;
+
+  // https://larrypay.com/webpay cross-site redirects to
+  // https://kylepay.com/webpay.
+  net::EmbeddedTestServer larrypay_;
+
+  // https://charlie.example.com/webpay same-site redirects to
+  // https://david.example.com/webpay.
+  net::EmbeddedTestServer charlie_example_;
+
+  // https://david.example.com/webpay same-site redirects to
+  // https://frank.example.com/webpay.
+  net::EmbeddedTestServer david_example_;
+
+  // https://frank.example.com/webpay same-site redirects to
+  // https://george.example.com/webpay.
+  net::EmbeddedTestServer frank_example_;
+
+  // https://george.example.com/webpay same-site redirects to
+  // https://harry.example.com/webpay.
+  net::EmbeddedTestServer george_example_;
+
+  // https://harry.example.com/webpay hosts a payment handler that can be
+  // installed "just in time."
+  net::EmbeddedTestServer harry_example_;
+
+  // https://ike.example.com/webpay has a cross-origin HTTP Link header to
+  // https://harry.example.com/payment-manifest.json.
+  net::EmbeddedTestServer ike_example_;
+
+  // https://john.example.com/payment-method.json has a cross-origin default
+  // application https://harry.example.com/app.json.
+  net::EmbeddedTestServer john_example_;
+
+  // https://kyle.example.com/app.json has a cross-origin service worker
+  // https://harry.example.com/app.js.
+  net::EmbeddedTestServer kyle_example_;
+
+  // https://larry.example.com/app.json has a cross-origin service worker scope
+  // https://harry.example.com/webpay/.
+  net::EmbeddedTestServer larry_example_;
 
   // The installed apps that have been found by the factory in
   // GetAllPaymentAppsForMethods() method.
@@ -511,6 +598,171 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
     EXPECT_TRUE(apps().empty());
     ASSERT_EQ(1U, installable_apps().size());
     ExpectInstallablePaymentAppInScope("https://kylepay.com/webpay");
+  }
+}
+
+// The payment method https://larrypay.com/webpay is not valid, because it
+// redirects to a different site (https://kylepay.com/webpay).
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+                       InvalidDifferentSiteRedirect) {
+  {
+    GetAllPaymentAppsForMethods({"https://larrypay.com/webpay"});
+
+    EXPECT_TRUE(apps().empty());
+    EXPECT_TRUE(installable_apps().empty());
+  }
+
+  // Repeat lookups should have identical results.
+  {
+    GetAllPaymentAppsForMethods({"https://larrypay.com/webpay"});
+
+    EXPECT_TRUE(apps().empty());
+    EXPECT_TRUE(installable_apps().empty());
+  }
+}
+
+// The payment method https://charlie.example.com/webpay is not valid, because
+// it redirects 4 times (charlie -> david -> frank -> george -> harry).
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+                       FourRedirectsIsNotValid) {
+  {
+    GetAllPaymentAppsForMethods({"https://charlie.example.com/webpay"});
+
+    EXPECT_TRUE(apps().empty());
+    EXPECT_TRUE(installable_apps().empty());
+  }
+
+  // Repeat lookups should have identical results.
+  {
+    GetAllPaymentAppsForMethods({"https://charlie.example.com/webpay"});
+
+    EXPECT_TRUE(apps().empty());
+    EXPECT_TRUE(installable_apps().empty());
+  }
+}
+
+// The payment method https://david.example.com/webpay is valid, because it
+// redirects 3 times (david -> frank -> george -> harry).
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+                       ThreeRedirectsIsValid) {
+  {
+    GetAllPaymentAppsForMethods({"https://david.example.com/webpay"});
+
+    EXPECT_TRUE(apps().empty());
+    ASSERT_EQ(1U, installable_apps().size());
+    ExpectInstallablePaymentAppInScope("https://harry.example.com/webpay");
+  }
+
+  // Repeat lookups should have identical results.
+  {
+    GetAllPaymentAppsForMethods({"https://david.example.com/webpay"});
+
+    EXPECT_TRUE(apps().empty());
+    ASSERT_EQ(1U, installable_apps().size());
+    ExpectInstallablePaymentAppInScope("https://harry.example.com/webpay");
+  }
+}
+
+// The payment method https://george.example.com/webpay is valid, because it
+// redirects once (george -> harry).
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+                       OneRedirectIsValid) {
+  {
+    GetAllPaymentAppsForMethods({"https://george.example.com/webpay"});
+
+    EXPECT_TRUE(apps().empty());
+    ASSERT_EQ(1U, installable_apps().size());
+    ExpectInstallablePaymentAppInScope("https://harry.example.com/webpay");
+  }
+
+  // Repeat lookups should have identical results.
+  {
+    GetAllPaymentAppsForMethods({"https://george.example.com/webpay"});
+
+    EXPECT_TRUE(apps().empty());
+    ASSERT_EQ(1U, installable_apps().size());
+    ExpectInstallablePaymentAppInScope("https://harry.example.com/webpay");
+  }
+}
+
+// The payment method https://ike.example.com/webpay is not valid, because of
+// its cross-origin HTTP Link to
+// https://harry.example.com/payment-manifest.json.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+                       CrossOriginHttpLinkHeaderIsInvalid) {
+  {
+    GetAllPaymentAppsForMethods({"https://ike.example.com/webpay"});
+
+    EXPECT_TRUE(apps().empty());
+    EXPECT_TRUE(installable_apps().empty());
+  }
+
+  // Repeat lookups should have identical results.
+  {
+    GetAllPaymentAppsForMethods({"https://ike.example.com/webpay"});
+
+    EXPECT_TRUE(apps().empty());
+    EXPECT_TRUE(installable_apps().empty());
+  }
+}
+
+// The payment method https://john.example.com/webpay is not valid, because of
+// its cross-origin default application https://harry.example.com/app.json.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+                       CrossOriginDefaultApplicationIsInvalid) {
+  {
+    GetAllPaymentAppsForMethods({"https://john.example.com/webpay"});
+
+    EXPECT_TRUE(apps().empty());
+    EXPECT_TRUE(installable_apps().empty());
+  }
+
+  // Repeat lookups should have identical results.
+  {
+    GetAllPaymentAppsForMethods({"https://john.example.com/webpay"});
+
+    EXPECT_TRUE(apps().empty());
+    EXPECT_TRUE(installable_apps().empty());
+  }
+}
+
+// The payment method https://kyle.example.com/webpay is not valid, because of
+// its cross-origin service worker location https://harry.example.com/app.js.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+                       CrossOriginServiceWorkerIsInvalid) {
+  {
+    GetAllPaymentAppsForMethods({"https://kyle.example.com/webpay"});
+
+    EXPECT_TRUE(apps().empty());
+    EXPECT_TRUE(installable_apps().empty());
+  }
+
+  // Repeat lookups should have identical results.
+  {
+    GetAllPaymentAppsForMethods({"https://kyle.example.com/webpay"});
+
+    EXPECT_TRUE(apps().empty());
+    EXPECT_TRUE(installable_apps().empty());
+  }
+}
+
+// The payment method https://larry.example.com/webpay is not valid, because of
+// its cross-origin service worker scope https://harry.example.com/webpay/".
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFactoryBrowserTest,
+                       CrossOriginServiceWorkerScopeIsInvalid) {
+  {
+    GetAllPaymentAppsForMethods({"https://larry.example.com/webpay"});
+
+    EXPECT_TRUE(apps().empty());
+    EXPECT_TRUE(installable_apps().empty());
+  }
+
+  // Repeat lookups should have identical results.
+  {
+    GetAllPaymentAppsForMethods({"https://larry.example.com/webpay"});
+
+    EXPECT_TRUE(apps().empty());
+    EXPECT_TRUE(installable_apps().empty());
   }
 }
 

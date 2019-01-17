@@ -29,14 +29,13 @@
 namespace payments {
 namespace {
 
-GURL ParseResponseHeader(const GURL& original_url,
-                         const GURL& final_url,
+GURL ParseResponseHeader(const GURL& url,
                          scoped_refptr<net::HttpResponseHeaders> headers,
                          const ErrorLogger& log) {
   if (!headers) {
     log.Error(base::StringPrintf(
         "No HTTP headers found on \"%s\" for payment method manifest.",
-        final_url.spec().c_str()));
+        url.spec().c_str()));
     return GURL();
   }
 
@@ -44,7 +43,7 @@ GURL ParseResponseHeader(const GURL& original_url,
   if (response_code != net::HTTP_OK && response_code != net::HTTP_NO_CONTENT) {
     log.Error(base::StringPrintf(
         "Unable to make a HEAD request to \"%s\" for payment method manifest.",
-        final_url.spec().c_str()));
+        url.spec().c_str()));
     return GURL();
   }
 
@@ -53,7 +52,7 @@ GURL ParseResponseHeader(const GURL& original_url,
   if (link_header.empty()) {
     log.Error(base::StringPrintf(
         "No HTTP Link headers found on \"%s\" for payment method manifest.",
-        final_url.spec().c_str()));
+        url.spec().c_str()));
     return GURL();
   }
 
@@ -73,13 +72,13 @@ GURL ParseResponseHeader(const GURL& original_url,
         base::SplitString(rel->second.value_or(""), HTTP_LWS,
                           base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     if (base::ContainsValue(rel_parts, "payment-method-manifest"))
-      return original_url.Resolve(payment_method_manifest_url);
+      return url.Resolve(payment_method_manifest_url);
   }
 
-  log.Error(base::StringPrintf(
-      "No rel=\"payment-method-manifest\" HTTP Link headers found on \"%s\" "
-      "for payment method manifest.",
-      final_url.spec().c_str()));
+  log.Error(
+      base::StringPrintf("No rel=\"payment-method-manifest\" HTTP Link headers "
+                         "found on \"%s\" for payment method manifest.",
+                         url.spec().c_str()));
   return GURL();
 }
 
@@ -99,15 +98,15 @@ bool IsValidManifestUrl(const GURL& url, const ErrorLogger& log) {
 GURL ParseRedirectUrl(const net::RedirectInfo& redirect_info,
                       const ErrorLogger& log) {
   // Do not follow net::HTTP_MULTIPLE_CHOICES, net::HTTP_NOT_MODIFIED and
-  // net::HTTP_USE_PROXY redirects.
-  if (redirect_info.status_code != net::HTTP_MOVED_PERMANENTLY &&
-      redirect_info.status_code != net::HTTP_FOUND &&
-      redirect_info.status_code != net::HTTP_SEE_OTHER &&
-      redirect_info.status_code != net::HTTP_TEMPORARY_REDIRECT &&
-      redirect_info.status_code != net::HTTP_PERMANENT_REDIRECT) {
+  // net::HTTP_USE_PROXY redirects. (306 is no longer used.)
+  if (redirect_info.status_code != net::HTTP_MOVED_PERMANENTLY &&   // 301
+      redirect_info.status_code != net::HTTP_FOUND &&               // 302
+      redirect_info.status_code != net::HTTP_SEE_OTHER &&           // 303
+      redirect_info.status_code != net::HTTP_TEMPORARY_REDIRECT &&  // 307
+      redirect_info.status_code != net::HTTP_PERMANENT_REDIRECT) {  // 308
     log.Error(
-        "Cannot follow HTTP_MULTIPLE_CHOICES, HTTP_NOT_MODIFIED, and "
-        "HTTP_USE_PROXY redirects for payment manifests.");
+        "Cannot follow HTTP_MULTIPLE_CHOICES (300), HTTP_NOT_MODIFIED (304), "
+        "and HTTP_USE_PROXY (305) redirects for payment manifests.");
     return GURL();
   }
 
@@ -200,7 +199,7 @@ void PaymentManifestDownloader::OnURLLoaderRedirect(
         "number of redirects.");
   }
 
-  std::move(download->callback).Run(std::string());
+  std::move(download->callback).Run(download->original_url, std::string());
 }
 
 void PaymentManifestDownloader::OnURLLoaderComplete(
@@ -231,21 +230,35 @@ void PaymentManifestDownloader::OnURLLoaderCompleteInternal(
   std::unique_ptr<Download> download = std::move(download_it->second);
   downloads_.erase(download_it);
 
-  if (download->method == "HEAD") {
-    GURL url =
-        ParseResponseHeader(download->original_url, final_url, headers, *log_);
-    if (IsValidManifestUrl(url, *log_)) {
-      InitiateDownload(url, "GET",
-                       /*allowed_number_of_redirects=*/0,
-                       std::move(download->callback));
-    } else {
-      std::move(download->callback).Run(std::string());
-    }
+  if (download->method == "GET") {
+    std::move(download->callback)
+        .Run(final_url,
+             ParseResponseContent(final_url, response_body, headers, *log_));
     return;
   }
 
-  std::move(download->callback)
-      .Run(ParseResponseContent(final_url, response_body, headers, *log_));
+  DCHECK_EQ("HEAD", download->method);
+  GURL payment_method_manifest_url =
+      ParseResponseHeader(final_url, headers, *log_);
+
+  if (!payment_method_manifest_url.is_valid() ||
+      !IsValidManifestUrl(payment_method_manifest_url, *log_)) {
+    std::move(download->callback).Run(final_url, std::string());
+    return;
+  }
+
+  if (!url::IsSameOriginWith(final_url, payment_method_manifest_url)) {
+    log_->Error(base::StringPrintf(
+        "Payment method manifest \"%s\" is not allowed for the method \"%s\" "
+        "because of different origin.",
+        payment_method_manifest_url.spec().c_str(), final_url.spec().c_str()));
+    std::move(download->callback).Run(final_url, std::string());
+    return;
+  }
+
+  InitiateDownload(payment_method_manifest_url, "GET",
+                   /*allowed_number_of_redirects=*/0,
+                   std::move(download->callback));
 }
 
 network::SimpleURLLoader* PaymentManifestDownloader::GetLoaderForTesting() {

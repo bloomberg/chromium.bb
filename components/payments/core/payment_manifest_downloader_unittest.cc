@@ -10,12 +10,18 @@
 #include "components/payments/core/error_logger.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {
+namespace {
+
+using testing::_;
+
+}  // namespace
 
 class PaymentMethodManifestDownloaderTest : public testing::Test {
  public:
@@ -34,7 +40,9 @@ class PaymentMethodManifestDownloaderTest : public testing::Test {
 
   ~PaymentMethodManifestDownloaderTest() override {}
 
-  MOCK_METHOD1(OnManifestDownload, void(const std::string& content));
+  MOCK_METHOD2(OnManifestDownload,
+               void(const GURL& unused_url_after_redirects,
+                    const std::string& content));
 
   void CallComplete(int response_code = 200,
                     const std::string& link_header = std::string(),
@@ -48,9 +56,10 @@ class PaymentMethodManifestDownloaderTest : public testing::Test {
 
     if (!link_header.empty())
       headers->AddHeader(link_header);
-    downloader_.OnURLLoaderCompleteInternal(downloader_.GetLoaderForTesting(),
-                                            test_url_, response_body, headers,
-                                            net::OK);
+    downloader_.OnURLLoaderCompleteInternal(
+        downloader_.GetLoaderForTesting(),
+        downloader_.GetLoaderOriginalURLForTesting(), response_body, headers,
+        net::OK);
   }
 
   void CallRedirect(int redirect_code, const GURL& new_url) {
@@ -77,19 +86,19 @@ class PaymentMethodManifestDownloaderTest : public testing::Test {
 };
 
 TEST_F(PaymentMethodManifestDownloaderTest, HttpHeadResponse404IsFailure) {
-  EXPECT_CALL(*this, OnManifestDownload(std::string()));
+  EXPECT_CALL(*this, OnManifestDownload(_, std::string()));
 
   CallComplete(404);
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, NoHttpHeadersIsFailure) {
-  EXPECT_CALL(*this, OnManifestDownload(std::string()));
+  EXPECT_CALL(*this, OnManifestDownload(_, std::string()));
 
   CallComplete(200, std::string(), std::string(), false);
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, EmptyHttpHeaderIsFailure) {
-  EXPECT_CALL(*this, OnManifestDownload(std::string()));
+  EXPECT_CALL(*this, OnManifestDownload(_, std::string()));
 
   CallComplete(200);
 }
@@ -97,26 +106,26 @@ TEST_F(PaymentMethodManifestDownloaderTest, EmptyHttpHeaderIsFailure) {
 TEST_F(PaymentMethodManifestDownloaderTest, EmptyHttpLinkHeaderIsFailure) {
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders(std::string()));
-  EXPECT_CALL(*this, OnManifestDownload(std::string()));
+  EXPECT_CALL(*this, OnManifestDownload(_, std::string()));
 
   CallComplete(200, "Link:");
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, NoRelInHttpLinkHeaderIsFailure) {
-  EXPECT_CALL(*this, OnManifestDownload(std::string()));
+  EXPECT_CALL(*this, OnManifestDownload(_, std::string()));
 
   CallComplete(200, "Link: <manifest.json>");
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, NoUrlInHttpLinkHeaderIsFailure) {
-  EXPECT_CALL(*this, OnManifestDownload(std::string()));
+  EXPECT_CALL(*this, OnManifestDownload(_, std::string()));
 
   CallComplete(200, "Link: rel=payment-method-manifest");
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest,
        NoManifestRellInHttpLinkHeaderIsFailure) {
-  EXPECT_CALL(*this, OnManifestDownload(std::string()));
+  EXPECT_CALL(*this, OnManifestDownload(_, std::string()));
 
   CallComplete(200, "Link: <manifest.json>; rel=web-app-manifest");
 }
@@ -126,7 +135,7 @@ TEST_F(PaymentMethodManifestDownloaderTest, HttpGetResponse404IsFailure) {
       new net::HttpResponseHeaders(std::string()));
   CallComplete(200, "Link: <manifest.json>; rel=payment-method-manifest");
 
-  EXPECT_CALL(*this, OnManifestDownload(std::string()));
+  EXPECT_CALL(*this, OnManifestDownload(_, std::string()));
 
   CallComplete(404);
 }
@@ -134,7 +143,7 @@ TEST_F(PaymentMethodManifestDownloaderTest, HttpGetResponse404IsFailure) {
 TEST_F(PaymentMethodManifestDownloaderTest, EmptyHttpGetResponseIsFailure) {
   CallComplete(200, "Link: <manifest.json>; rel=payment-method-manifest");
 
-  EXPECT_CALL(*this, OnManifestDownload(std::string()));
+  EXPECT_CALL(*this, OnManifestDownload(_, std::string()));
 
   CallComplete(200, std::string(), std::string(), false);
 }
@@ -142,7 +151,7 @@ TEST_F(PaymentMethodManifestDownloaderTest, EmptyHttpGetResponseIsFailure) {
 TEST_F(PaymentMethodManifestDownloaderTest, NonEmptyHttpGetResponseIsSuccess) {
   CallComplete(200, "Link: <manifest.json>; rel=payment-method-manifest");
 
-  EXPECT_CALL(*this, OnManifestDownload("manifest content"));
+  EXPECT_CALL(*this, OnManifestDownload(_, "manifest content"));
 
   CallComplete(200, std::string(), "manifest content");
 }
@@ -150,7 +159,7 @@ TEST_F(PaymentMethodManifestDownloaderTest, NonEmptyHttpGetResponseIsSuccess) {
 TEST_F(PaymentMethodManifestDownloaderTest, HeaderResponseCode204IsSuccess) {
   CallComplete(204, "Link: <manifest.json>; rel=payment-method-manifest");
 
-  EXPECT_CALL(*this, OnManifestDownload("manifest content"));
+  EXPECT_CALL(*this, OnManifestDownload(_, "manifest content"));
 
   CallComplete(200, std::string(), "manifest content");
 }
@@ -163,22 +172,22 @@ TEST_F(PaymentMethodManifestDownloaderTest, RelativeHttpHeaderLinkUrl) {
 
 TEST_F(PaymentMethodManifestDownloaderTest, AbsoluteHttpsHeaderLinkUrl) {
   CallComplete(200,
-               "Link: <https://alicepay.com/manifest.json>; "
+               "Link: <https://bobpay.com/manifest.json>; "
                "rel=payment-method-manifest");
 
-  EXPECT_EQ("https://alicepay.com/manifest.json", GetOriginalURL());
+  EXPECT_EQ("https://bobpay.com/manifest.json", GetOriginalURL());
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, AbsoluteHttpHeaderLinkUrl) {
-  EXPECT_CALL(*this, OnManifestDownload(std::string()));
+  EXPECT_CALL(*this, OnManifestDownload(_, std::string()));
 
   CallComplete(200,
-               "Link: <http://alicepay.com/manifest.json>; "
+               "Link: <http://bobpay.com/manifest.json>; "
                "rel=payment-method-manifest");
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, 300IsUnsupportedRedirect) {
-  EXPECT_CALL(*this, OnManifestDownload(std::string()));
+  EXPECT_CALL(*this, OnManifestDownload(_, std::string()));
 
   CallRedirect(300, GURL("https://pay.bobpay.com"));
 }
@@ -194,7 +203,7 @@ TEST_F(PaymentMethodManifestDownloaderTest, 301And302AreSupportedRedirects) {
 
   CallComplete(200, "Link: <manifest.json>; rel=payment-method-manifest");
 
-  EXPECT_CALL(*this, OnManifestDownload("manifest content"));
+  EXPECT_CALL(*this, OnManifestDownload(_, "manifest content"));
 
   CallComplete(200, std::string(), "manifest content");
 }
@@ -210,19 +219,19 @@ TEST_F(PaymentMethodManifestDownloaderTest, 302And303AreSupportedRedirects) {
 
   CallComplete(200, "Link: <manifest.json>; rel=payment-method-manifest");
 
-  EXPECT_CALL(*this, OnManifestDownload("manifest content"));
+  EXPECT_CALL(*this, OnManifestDownload(_, "manifest content"));
 
   CallComplete(200, std::string(), "manifest content");
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, 304IsUnsupportedRedirect) {
-  EXPECT_CALL(*this, OnManifestDownload(std::string()));
+  EXPECT_CALL(*this, OnManifestDownload(_, std::string()));
 
   CallRedirect(304, GURL("https://pay.bobpay.com"));
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, 305IsUnsupportedRedirect) {
-  EXPECT_CALL(*this, OnManifestDownload(std::string()));
+  EXPECT_CALL(*this, OnManifestDownload(_, std::string()));
 
   CallRedirect(305, GURL("https://pay.bobpay.com"));
 }
@@ -238,7 +247,7 @@ TEST_F(PaymentMethodManifestDownloaderTest, 307And308AreSupportedRedirects) {
 
   CallComplete(200, "Link: <manifest.json>; rel=payment-method-manifest");
 
-  EXPECT_CALL(*this, OnManifestDownload("manifest content"));
+  EXPECT_CALL(*this, OnManifestDownload(_, "manifest content"));
 
   CallComplete(200, std::string(), "manifest content");
 }
@@ -256,19 +265,19 @@ TEST_F(PaymentMethodManifestDownloaderTest, NoMoreThanThreeRedirects) {
 
   EXPECT_EQ(GetOriginalURL(), GURL("https://newpay.bobpay.com"));
 
-  EXPECT_CALL(*this, OnManifestDownload(std::string()));
+  EXPECT_CALL(*this, OnManifestDownload(_, std::string()));
 
   CallRedirect(308, GURL("https://newpay.bobpay.com"));
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, InvalidRedirectUrlIsFailure) {
-  EXPECT_CALL(*this, OnManifestDownload(std::string()));
+  EXPECT_CALL(*this, OnManifestDownload(_, std::string()));
 
   CallRedirect(308, GURL("pay.bobpay.com"));
 }
 
 TEST_F(PaymentMethodManifestDownloaderTest, NotAllowCrossSiteRedirects) {
-  EXPECT_CALL(*this, OnManifestDownload(std::string()));
+  EXPECT_CALL(*this, OnManifestDownload(_, std::string()));
 
   CallRedirect(301, GURL("https://alicepay.com"));
 }
@@ -290,7 +299,8 @@ class WebAppManifestDownloaderTest : public testing::Test {
 
   ~WebAppManifestDownloaderTest() override {}
 
-  MOCK_METHOD1(OnManifestDownload, void(const std::string& content));
+  MOCK_METHOD2(OnManifestDownload,
+               void(const GURL& url, const std::string& content));
 
   void CallComplete(int response_code,
                     const std::string& response_body = std::string()) {
@@ -313,19 +323,19 @@ class WebAppManifestDownloaderTest : public testing::Test {
 };
 
 TEST_F(WebAppManifestDownloaderTest, HttpGetResponse404IsFailure) {
-  EXPECT_CALL(*this, OnManifestDownload(std::string()));
+  EXPECT_CALL(*this, OnManifestDownload(_, std::string()));
 
   CallComplete(404);
 }
 
 TEST_F(WebAppManifestDownloaderTest, EmptyHttpGetResponseIsFailure) {
-  EXPECT_CALL(*this, OnManifestDownload(std::string()));
+  EXPECT_CALL(*this, OnManifestDownload(_, std::string()));
 
   CallComplete(200);
 }
 
 TEST_F(WebAppManifestDownloaderTest, NonEmptyHttpGetResponseIsSuccess) {
-  EXPECT_CALL(*this, OnManifestDownload("manifest content"));
+  EXPECT_CALL(*this, OnManifestDownload(_, "manifest content"));
 
   CallComplete(200, "manifest content");
 }
