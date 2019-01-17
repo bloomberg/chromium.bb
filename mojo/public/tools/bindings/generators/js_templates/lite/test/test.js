@@ -6,16 +6,10 @@ async function testFunction() {
   /** @type {test.mojom.TestPageHandlerProxy} */
   let proxy = test.mojom.TestPageHandler.getProxy()
 
-  /**
-   * @type {{values: !Array<!string>}}
-   * This type is not enforced, as Closure does not handle Promise return
-   * typing.
-   */
+  // Type infers {?{values: !Array<!string>}} from Promise return type.
   let result = await proxy.method1();
-  /**
-   * @type {Array<string>}
-   * This type is enforced because of the above cast.
-   */
+
+  /** @type {Array<string>} */
   let values = result.values;
 }
 
