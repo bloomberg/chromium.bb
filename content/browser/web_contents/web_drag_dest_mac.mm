@@ -16,6 +16,7 @@
 #include "content/public/browser/web_drag_dest_delegate.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/drop_data.h"
+#include "content/public/common/web_contents_ns_view_bridge.mojom.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
@@ -26,7 +27,7 @@
 #include "ui/gfx/geometry/point.h"
 
 using blink::WebDragOperationsMask;
-using content::DraggingInfo;
+using content::mojom::DraggingInfo;
 using content::DropData;
 using content::OpenURLParams;
 using content::Referrer;
@@ -138,7 +139,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
   dropDataUnfiltered_ = std::make_unique<DropData>(dropData);
 }
 
-- (NSDragOperation)draggingEntered:(const DraggingInfo&)info {
+- (NSDragOperation)draggingEntered:(const DraggingInfo*)info {
   // Save off the RVH so we can tell if it changes during a drag. If it does,
   // we need to send a new enter message in draggingUpdated:.
   currentRVH_ = webContents_->GetRenderViewHost();
@@ -153,7 +154,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
   }
 
   content::RenderWidgetHostImpl* targetRWH =
-      [self GetRenderWidgetHostAtPoint:info.location_in_view
+      [self GetRenderWidgetHostAtPoint:info->location_in_view
                          transformedPt:&transformedPt];
   if (![self isValidDragTarget:targetRWH])
     return NSDragOperationNone;
@@ -166,7 +167,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
   currentRWHForDrag_ = targetRWH->GetWeakPtr();
   currentRWHForDrag_->FilterDropData(dropData.get());
 
-  NSDragOperation mask = info.operation_mask;
+  NSDragOperation mask = info->operation_mask;
 
   // Give the delegate an opportunity to cancel the drag.
   canceled_ = !webContents_->GetDelegate()->CanDragEnter(
@@ -177,7 +178,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
     return NSDragOperationNone;
 
   if ([self onlyAllowsNavigation]) {
-    if (info.url)
+    if (info->url)
       return NSDragOperationCopy;
     return NSDragOperationNone;
   }
@@ -190,7 +191,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
   dropDataFiltered_.swap(dropData);
 
   currentRWHForDrag_->DragTargetDragEnter(
-      *dropDataFiltered_, transformedPt, info.location_in_screen,
+      *dropDataFiltered_, transformedPt, info->location_in_screen,
       static_cast<WebDragOperationsMask>(mask), GetModifierFlags());
 
   // We won't know the true operation (whether the drag is allowed) until we
@@ -221,7 +222,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
   dropDataFiltered_.reset();
 }
 
-- (NSDragOperation)draggingUpdated:(const DraggingInfo&)info {
+- (NSDragOperation)draggingUpdated:(const DraggingInfo*)info {
   if (canceled_) {
     // TODO(ekaramad,paulmeyer): We probably shouldn't be checking for
     // |canceled_| twice in this method.
@@ -230,7 +231,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
 
   gfx::PointF transformedPt;
   content::RenderWidgetHostImpl* targetRWH =
-      [self GetRenderWidgetHostAtPoint:info.location_in_view
+      [self GetRenderWidgetHostAtPoint:info->location_in_view
                          transformedPt:&transformedPt];
 
   if (![self isValidDragTarget:targetRWH])
@@ -240,8 +241,8 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
   // per drag, even without the drag ever leaving the window.
   if (targetRWH != currentRWHForDrag_.get()) {
     if (currentRWHForDrag_) {
-      gfx::PointF transformedLeavePoint = info.location_in_view;
-      gfx::PointF transformedScreenPoint = info.location_in_screen;
+      gfx::PointF transformedLeavePoint = info->location_in_view;
+      gfx::PointF transformedScreenPoint = info->location_in_screen;
       content::RenderWidgetHostViewBase* rootView =
           static_cast<content::RenderWidgetHostViewBase*>(
               webContents_->GetRenderWidgetHostView());
@@ -262,13 +263,13 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
     return NSDragOperationNone;
 
   if ([self onlyAllowsNavigation]) {
-    if (info.url)
+    if (info->url)
       return NSDragOperationCopy;
     return NSDragOperationNone;
   }
 
-  NSDragOperation mask = info.operation_mask;
-  targetRWH->DragTargetDragOver(transformedPt, info.location_in_screen,
+  NSDragOperation mask = info->operation_mask;
+  targetRWH->DragTargetDragOver(transformedPt, info->location_in_screen,
                                 static_cast<WebDragOperationsMask>(mask),
                                 GetModifierFlags());
 
@@ -278,10 +279,10 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
   return currentOperation_;
 }
 
-- (BOOL)performDragOperation:(const DraggingInfo&)info {
+- (BOOL)performDragOperation:(const DraggingInfo*)info {
   gfx::PointF transformedPt;
   content::RenderWidgetHostImpl* targetRWH =
-      [self GetRenderWidgetHostAtPoint:info.location_in_view
+      [self GetRenderWidgetHostAtPoint:info->location_in_view
                          transformedPt:&transformedPt];
 
   if (![self isValidDragTarget:targetRWH])
@@ -290,15 +291,15 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
   if (targetRWH != currentRWHForDrag_.get()) {
     if (currentRWHForDrag_)
       currentRWHForDrag_->DragTargetDragLeave(transformedPt,
-                                              info.location_in_screen);
+                                              info->location_in_screen);
     [self draggingEntered:info];
   }
 
   // Check if we only allow navigation and navigate to a url on the pasteboard.
   if ([self onlyAllowsNavigation]) {
-    if (info.url) {
+    if (info->url) {
       webContents_->OpenURL(OpenURLParams(
-          *info.url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
+          *info->url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
           ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
       return YES;
     } else {
@@ -312,7 +313,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
   currentRVH_ = NULL;
 
   targetRWH->DragTargetDrop(*dropDataFiltered_, transformedPt,
-                            info.location_in_screen, GetModifierFlags());
+                            info->location_in_screen, GetModifierFlags());
 
   dropDataUnfiltered_.reset();
   dropDataFiltered_.reset();
@@ -405,8 +406,5 @@ void PopulateDropDataFromPasteboard(content::DropData* data,
                               &data->custom_data);
   }
 }
-
-DraggingInfo::DraggingInfo() = default;
-DraggingInfo::~DraggingInfo() = default;
 
 }  // namespace content

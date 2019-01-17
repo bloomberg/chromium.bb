@@ -26,6 +26,7 @@
 #include "ui/gfx/geometry/size.h"
 
 @class WebContentsViewCocoa;
+@class WebDragDest;
 
 namespace content {
 class RenderWidgetHostViewMac;
@@ -120,11 +121,9 @@ class WebContentsViewMac : public WebContentsView,
   // CloseTabAfterEventTracking() implementation.
   void CloseTab();
 
-  // Called from Cocoa when window visibility changes.
-  void OnWindowVisibilityChanged(content::Visibility visibility);
-
   WebContentsImpl* web_contents() { return web_contents_; }
   WebContentsViewDelegate* delegate() { return delegate_.get(); }
+  WebDragDest* drag_dest() const { return drag_dest_.get(); }
 
   using RenderWidgetHostViewCreateFunction =
       RenderWidgetHostViewMac* (*)(RenderWidgetHost*, bool);
@@ -134,6 +133,27 @@ class WebContentsViewMac : public WebContentsView,
       RenderWidgetHostViewCreateFunction create_render_widget_host_view);
 
  private:
+  // mojom::WebContentsNSViewClient:
+  void OnMouseEvent(bool motion, bool exited) override;
+  void OnBecameFirstResponder(mojom::SelectionDirection direction) override;
+  void OnWindowVisibilityChanged(mojom::Visibility visibility) override;
+  void SetDropData(const DropData& drop_data) override;
+  bool DraggingEntered(mojom::DraggingInfoPtr dragging_info,
+                       uint32_t* out_result) override;
+  void DraggingExited() override;
+  bool DraggingUpdated(mojom::DraggingInfoPtr dragging_info,
+                       uint32_t* out_result) override;
+  bool PerformDragOperation(mojom::DraggingInfoPtr dragging_info,
+                            bool* out_result) override;
+
+  // mojom::WebContentsNSViewClient, synchronous methods:
+  void DraggingEntered(mojom::DraggingInfoPtr dragging_info,
+                       DraggingEnteredCallback callback) override;
+  void DraggingUpdated(mojom::DraggingInfoPtr dragging_info,
+                       DraggingUpdatedCallback callback) override;
+  void PerformDragOperation(mojom::DraggingInfoPtr dragging_info,
+                            PerformDragOperationCallback callback) override;
+
   // Return the list of child RenderWidgetHostViewMacs. This will remove any
   // destroyed instances before returning.
   std::list<RenderWidgetHostViewMac*> GetChildViews();
@@ -143,6 +163,9 @@ class WebContentsViewMac : public WebContentsView,
 
   // The Cocoa NSView that lives in the view hierarchy.
   base::scoped_nsobject<WebContentsViewCocoa> cocoa_view_;
+
+  // Destination for drag-drop.
+  base::scoped_nsobject<WebDragDest> drag_dest_;
 
   // Our optional delegate.
   std::unique_ptr<WebContentsViewDelegate> delegate_;
