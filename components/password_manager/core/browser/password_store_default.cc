@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/password_store_default.h"
 
+#include <iterator>
 #include <set>
 #include <utility>
 
@@ -72,9 +73,10 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginImpl(
     const PasswordForm& form) {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   PasswordStoreChangeList changes;
-  if (login_db_ && login_db_->RemoveLogin(form))
-    changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
-  return changes;
+  if (login_db_ && login_db_->RemoveLogin(form, &changes)) {
+    return changes;
+  }
+  return PasswordStoreChangeList();
 }
 
 PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsByURLAndTimeImpl(
@@ -86,9 +88,12 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsByURLAndTimeImpl(
   if (login_db_ &&
       login_db_->GetLoginsCreatedBetween(delete_begin, delete_end, &forms)) {
     for (const auto& form : forms) {
-      if (url_filter.Run(form->origin) && login_db_->RemoveLogin(*form))
-        changes.push_back(
-            PasswordStoreChange(PasswordStoreChange::REMOVE, *form));
+      PasswordStoreChangeList remove_changes;
+      if (url_filter.Run(form->origin) &&
+          login_db_->RemoveLogin(*form, &remove_changes)) {
+        std::move(remove_changes.begin(), remove_changes.end(),
+                  std::back_inserter(changes));
+      }
     }
     if (!changes.empty())
       LogStatsForBulkDeletion(changes.size());
@@ -99,36 +104,24 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsByURLAndTimeImpl(
 PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
     base::Time delete_begin,
     base::Time delete_end) {
-  std::vector<std::unique_ptr<PasswordForm>> forms;
   PasswordStoreChangeList changes;
-  if (login_db_ &&
-      login_db_->GetLoginsCreatedBetween(delete_begin, delete_end, &forms)) {
-    if (login_db_->RemoveLoginsCreatedBetween(delete_begin, delete_end)) {
-      for (const auto& form : forms) {
-        changes.push_back(
-            PasswordStoreChange(PasswordStoreChange::REMOVE, *form));
-      }
-      LogStatsForBulkDeletion(changes.size());
-    }
+  if (!login_db_ || !login_db_->RemoveLoginsCreatedBetween(
+                        delete_begin, delete_end, &changes)) {
+    return PasswordStoreChangeList();
   }
+  LogStatsForBulkDeletion(changes.size());
   return changes;
 }
 
 PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsSyncedBetweenImpl(
     base::Time delete_begin,
     base::Time delete_end) {
-  std::vector<std::unique_ptr<PasswordForm>> forms;
   PasswordStoreChangeList changes;
-  if (login_db_ &&
-      login_db_->GetLoginsSyncedBetween(delete_begin, delete_end, &forms)) {
-    if (login_db_->RemoveLoginsSyncedBetween(delete_begin, delete_end)) {
-      for (const auto& form : forms) {
-        changes.push_back(
-            PasswordStoreChange(PasswordStoreChange::REMOVE, *form));
-      }
-      LogStatsForBulkDeletionDuringRollback(changes.size());
-    }
+  if (!login_db_ || !login_db_->RemoveLoginsSyncedBetween(
+                        delete_begin, delete_end, &changes)) {
+    return PasswordStoreChangeList();
   }
+  LogStatsForBulkDeletionDuringRollback(changes.size());
   return changes;
 }
 

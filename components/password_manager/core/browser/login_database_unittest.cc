@@ -228,7 +228,7 @@ class LoginDatabaseTest : public testing::Test {
     EXPECT_EQ(result[0]->signon_realm, "http://example.com/Realm");
 
     // Clear state.
-    db().RemoveLoginsCreatedBetween(now, base::Time());
+    db().RemoveLoginsCreatedBetween(now, base::Time(), /*changes=*/nullptr);
   }
 
   // Checks that a form of a given |scheme|, once stored, can be successfully
@@ -254,7 +254,7 @@ class LoginDatabaseTest : public testing::Test {
     EXPECT_EQ(result[0]->signon_realm, origin);
 
     // Clear state.
-    db().RemoveLoginsCreatedBetween(now, base::Time());
+    db().RemoveLoginsCreatedBetween(now, base::Time(), /*changes=*/nullptr);
   }
 
   base::ScopedTempDir temp_dir_;
@@ -327,7 +327,7 @@ TEST_F(LoginDatabaseTest, Logins) {
   result.clear();
 
   // The user chose to forget the original but not the new.
-  EXPECT_TRUE(db().RemoveLogin(form));
+  EXPECT_TRUE(db().RemoveLogin(form, /*changes=*/nullptr));
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(1U, result.size());
   result.clear();
@@ -358,7 +358,7 @@ TEST_F(LoginDatabaseTest, Logins) {
   result.clear();
 
   // Make sure everything can disappear.
-  EXPECT_TRUE(db().RemoveLogin(form4));
+  EXPECT_TRUE(db().RemoveLogin(form4, /*changes=*/nullptr));
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(0U, result.size());
 }
@@ -432,7 +432,7 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
   EXPECT_TRUE(result[0]->is_public_suffix_match);
 
   // Try to remove PSL matched form
-  EXPECT_FALSE(db().RemoveLogin(*result[0]));
+  EXPECT_FALSE(db().RemoveLogin(*result[0], /*changes=*/nullptr));
   result.clear();
   // Ensure that the original form is still there
   EXPECT_TRUE(db().GetLogins(PasswordStore::FormDigest(form), &result));
@@ -912,7 +912,7 @@ TEST_F(LoginDatabaseTest,
                 same_organization_forms.size());
     }
 
-    ASSERT_TRUE(db().RemoveLogin(*form));
+    ASSERT_TRUE(db().RemoveLogin(*form, /*changes=*/nullptr));
   }
 }
 
@@ -990,7 +990,7 @@ TEST_F(LoginDatabaseTest, GetLoginsForSameOrganizationName_DetailsOfMatching) {
     EXPECT_TRUE(db().GetLoginsForSameOrganizationName(
         test_case.queried_signon_realm, &result));
     EXPECT_EQ(test_case.expected_matches ? 1u : 0u, result.size());
-    ASSERT_TRUE(db().RemoveLogin(*form));
+    ASSERT_TRUE(db().RemoveLogin(*form, /*changes=*/nullptr));
   }
 }
 
@@ -1062,7 +1062,7 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   result.clear();
 
   // Delete everything from today's date and on.
-  db().RemoveLoginsCreatedBetween(now, base::Time());
+  db().RemoveLoginsCreatedBetween(now, base::Time(), /*changes=*/nullptr);
 
   // Should have deleted two logins.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -1070,7 +1070,8 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   result.clear();
 
   // Delete all logins created more than 30 days back.
-  db().RemoveLoginsCreatedBetween(base::Time(), back_30_days);
+  db().RemoveLoginsCreatedBetween(base::Time(), back_30_days,
+                                  /*changes=*/nullptr);
 
   // Should have deleted two logins.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -1078,7 +1079,8 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   result.clear();
 
   // Delete with 0 date (should delete all).
-  db().RemoveLoginsCreatedBetween(base::Time(), base::Time());
+  db().RemoveLoginsCreatedBetween(base::Time(), base::Time(),
+                                  /*changes=*/nullptr);
 
   // Verify nothing is left.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -1106,15 +1108,12 @@ TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
   EXPECT_EQ(4U, result.size());
   result.clear();
 
-  // Get everything from today's date and on.
-  EXPECT_TRUE(db().GetLoginsSyncedBetween(now, base::Time(), &result));
-  ASSERT_EQ(2U, result.size());
-  EXPECT_EQ("http://3.com", result[0]->signon_realm);
-  EXPECT_EQ("http://4.com", result[1]->signon_realm);
-  result.clear();
-
   // Delete everything from today's date and on.
-  db().RemoveLoginsSyncedBetween(now, base::Time());
+  PasswordStoreChangeList changes;
+  EXPECT_TRUE(db().RemoveLoginsSyncedBetween(now, base::Time(), &changes));
+  ASSERT_EQ(2U, changes.size());
+  EXPECT_EQ("http://3.com", changes[0].form().signon_realm);
+  EXPECT_EQ("http://4.com", changes[1].form().signon_realm);
 
   // Should have deleted half of what we inserted.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -1124,7 +1123,7 @@ TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
   result.clear();
 
   // Delete with 0 date (should delete all).
-  db().RemoveLoginsSyncedBetween(base::Time(), now);
+  db().RemoveLoginsSyncedBetween(base::Time(), now, /*changes=*/nullptr);
 
   // Verify nothing is left.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -1294,7 +1293,7 @@ TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
   completed_form.password_element = encountered_form.password_element;
   completed_form.submit_element = encountered_form.submit_element;
   EXPECT_EQ(AddChangeForForm(completed_form), db().AddLogin(completed_form));
-  EXPECT_TRUE(db().RemoveLogin(incomplete_form));
+  EXPECT_TRUE(db().RemoveLogin(incomplete_form, /*changes=*/nullptr));
 
   // Get matches for encountered_form again.
   EXPECT_TRUE(
@@ -1441,11 +1440,11 @@ TEST_F(LoginDatabaseTest, RemoveWrongForm) {
   form.blacklisted_by_user = false;
   form.scheme = PasswordForm::SCHEME_HTML;
   // The form isn't in the database.
-  EXPECT_FALSE(db().RemoveLogin(form));
+  EXPECT_FALSE(db().RemoveLogin(form, /*changes=*/nullptr));
 
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
-  EXPECT_TRUE(db().RemoveLogin(form));
-  EXPECT_FALSE(db().RemoveLogin(form));
+  EXPECT_TRUE(db().RemoveLogin(form, /*changes=*/nullptr));
+  EXPECT_FALSE(db().RemoveLogin(form, /*changes=*/nullptr));
 }
 
 TEST_F(LoginDatabaseTest, ReportMetricsTest) {
@@ -2064,7 +2063,7 @@ void LoginDatabaseMigrationTest::MigrationToVCurrent(
     EXPECT_TRUE(db.GetLogins(PasswordStore::FormDigest(form), &result));
     ASSERT_EQ(1U, result.size());
     EXPECT_EQ(form, *result[0]);
-    EXPECT_TRUE(db.RemoveLogin(form));
+    EXPECT_TRUE(db.RemoveLogin(form, /*changes=*/nullptr));
   }
   // New date, in microseconds since platform independent epoch.
   std::vector<int64_t> new_date_created(

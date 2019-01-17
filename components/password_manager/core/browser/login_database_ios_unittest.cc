@@ -135,7 +135,7 @@ TEST_F(LoginDatabaseIOSTest, RemoveLogin) {
 
   ignore_result(login_db_->AddLogin(form));
 
-  ignore_result(login_db_->RemoveLogin(form));
+  ignore_result(login_db_->RemoveLogin(form, /*changes=*/nullptr));
 
   std::vector<std::unique_ptr<PasswordForm>> forms;
   EXPECT_TRUE(login_db_->GetLogins(PasswordStore::FormDigest(form), &forms));
@@ -169,7 +169,8 @@ TEST_F(LoginDatabaseIOSTest, RemoveLoginsCreatedBetween) {
   }
 
   login_db_->RemoveLoginsCreatedBetween(base::Time::FromDoubleT(150),
-                                        base::Time::FromDoubleT(250));
+                                        base::Time::FromDoubleT(250),
+                                        /*changes=*/nullptr);
 
   PasswordStore::FormDigest form = {PasswordForm::SCHEME_HTML,
                                     "http://www.example.com", GURL()};
