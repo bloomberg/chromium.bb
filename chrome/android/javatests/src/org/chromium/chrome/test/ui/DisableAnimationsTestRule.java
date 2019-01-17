@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.download;
+package org.chromium.chrome.test.ui;
 
 import android.os.IBinder;
 
@@ -18,21 +18,21 @@ import java.util.Arrays;
 /**
  * {@link TestRule} to disable animations for UI testing.
  */
-public class DisableAnimationsRule implements TestRule {
+public class DisableAnimationsTestRule implements TestRule {
     private Method mSetAnimationScalesMethod;
     private Method mGetAnimationScalesMethod;
     private Object mWindowManagerObject;
 
     private static final float DISABLED_SCALE_FACTOR = 0.0f;
     private static final float DEFAULT_SCALE_FACTOR = 1.0f;
-    private static final String TAG = "disable_animations";
+    private static final String TAG = "DisableAnimations";
 
     /**
      * Invoke setAnimationScalesMethod to turn off system animations, such as Window animation
      * scale, Transition animation scale, Animator duration scale, which can improve stability
      * and reduce flakiness for UI testing.
      */
-    public DisableAnimationsRule() {
+    public DisableAnimationsTestRule() {
         try {
             Class<?> windowManagerStubClazz = Class.forName("android.view.IWindowManager$Stub");
             Method asInterface =

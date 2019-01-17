@@ -62,6 +62,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.ListMenuButton.Item;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.offline_items_collection.OfflineItem;
@@ -80,7 +81,7 @@ import java.util.List;
 public class DownloadActivityTest {
     // Disable animations to reduce flakiness.
     @ClassRule
-    public static DisableAnimationsRule disableAnimationsRule = new DisableAnimationsRule();
+    public static DisableAnimationsTestRule disableAnimationsRule = new DisableAnimationsTestRule();
 
     @Rule
     public ActivityTestRule<DownloadActivity> mActivityTestRule =
