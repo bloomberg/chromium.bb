@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/skia/include/effects/SkCornerPathEffect.h"
 #include "third_party/skia/third_party/skcms/skcms.h"
-#include "ui/gfx/icc_profile.h"
 
 #include <algorithm>
 #include <cmath>
@@ -318,29 +317,6 @@ SkColor ScaleAlpha(SkColor color, float alpha) {
   const auto rounded_alpha = std::lround(SkColorGetA(color) * clamped_alpha);
 
   return SkColorSetA(color, rounded_alpha);
-}
-
-gfx::ColorSpace SkColorSpaceToGfxColorSpace(
-    const sk_sp<SkColorSpace> color_space) {
-  if (!color_space)
-    return gfx::ColorSpace::CreateSRGB();
-
-  SkMatrix44 toXYZD50;
-  SkColorSpaceTransferFn transfer_fn;
-  if (color_space->toXYZD50(&toXYZD50) &&
-      color_space->isNumericalTransferFn(&transfer_fn))
-    return gfx::ColorSpace::CreateCustom(toXYZD50, transfer_fn);
-
-  // Use an intermediate ICC profile to convert the color space data structure.
-  // If this fails, we fall back to sRGB.
-  sk_sp<SkData> sk_profile = color_space->serialize();
-  if (sk_profile) {
-    gfx::ICCProfile icc_profile =
-        gfx::ICCProfile::FromData(sk_profile->data(), sk_profile->size());
-    if (icc_profile.IsValid())
-      return icc_profile.GetColorSpace();
-  }
-  return gfx::ColorSpace::CreateSRGB();
 }
 
 bool ApproximatelyEqualSkColorSpaces(sk_sp<SkColorSpace> src_color_space,

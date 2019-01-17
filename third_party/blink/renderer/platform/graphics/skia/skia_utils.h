@@ -74,10 +74,6 @@ BlendMode PLATFORM_EXPORT BlendModeFromSkBlendMode(SkBlendMode);
 // alpha is in the range [0, 1].
 SkColor PLATFORM_EXPORT ScaleAlpha(SkColor, float);
 
-// Convert a SkColorSpace to a gfx::ColorSpace
-gfx::ColorSpace PLATFORM_EXPORT
-SkColorSpaceToGfxColorSpace(const sk_sp<SkColorSpace>);
-
 bool PLATFORM_EXPORT
 ApproximatelyEqualSkColorSpaces(sk_sp<SkColorSpace> src_color_space,
                                 sk_sp<SkColorSpace> dst_color_space);
