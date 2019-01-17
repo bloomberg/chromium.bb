@@ -23,6 +23,8 @@ class GbmBuffer {
   virtual uint32_t GetFormat() const = 0;
   virtual uint64_t GetFormatModifier() const = 0;
   virtual uint32_t GetFlags() const = 0;
+  // TODO(crbug.com/911370): Remove this because the number of fds will always
+  // be equal to the number of planes.
   virtual size_t GetFdCount() const = 0;
   // TODO(reveman): This should not be needed once crbug.com/597932 is
   // fixed, as the size would be queried directly from the underlying bo.
