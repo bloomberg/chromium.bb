@@ -68,10 +68,11 @@ class NetworkErrorLoggingService;
 #endif
 class NetworkQualityEstimator;
 class ProxyResolutionService;
+class ProxyServer;
+class QuicCryptoClientStreamFactory;
 #if BUILDFLAG(ENABLE_REPORTING)
 class ReportingService;
 #endif
-class QuicCryptoClientStreamFactory;
 class SocketPerformanceWatcherFactory;
 class SOCKSClientSocketPool;
 class SSLClientSocketPool;
@@ -293,13 +294,13 @@ class NET_EXPORT HttpNetworkSession {
   SSLClientSocketPool* GetSSLSocketPool(SocketPoolType pool_type);
   SOCKSClientSocketPool* GetSocketPoolForSOCKSProxy(
       SocketPoolType pool_type,
-      const HostPortPair& socks_proxy);
-  HttpProxyClientSocketPool* GetSocketPoolForHTTPProxy(
+      const ProxyServer& socks_proxy);
+  HttpProxyClientSocketPool* GetSocketPoolForHTTPLikeProxy(
       SocketPoolType pool_type,
-      const HostPortPair& http_proxy);
+      const ProxyServer& http_proxy);
   SSLClientSocketPool* GetSocketPoolForSSLWithProxy(
       SocketPoolType pool_type,
-      const HostPortPair& proxy_server);
+      const ProxyServer& proxy_server);
 
   CertVerifier* cert_verifier() { return cert_verifier_; }
   ProxyResolutionService* proxy_resolution_service() {

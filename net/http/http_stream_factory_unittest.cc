@@ -529,7 +529,8 @@ TEST_F(HttpStreamFactoryTest, PreconnectHttpProxy) {
     std::unique_ptr<HttpNetworkSession> session(
         SpdySessionDependencies::SpdyCreateSession(&session_deps));
     HttpNetworkSessionPeer peer(session.get());
-    HostPortPair proxy_host("http_proxy", 80);
+    ProxyServer proxy_server(ProxyServer::SCHEME_HTTP,
+                             HostPortPair("http_proxy", 80));
     CapturePreconnectsHttpProxySocketPool* http_proxy_pool =
         new CapturePreconnectsHttpProxySocketPool(
             session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
@@ -544,9 +545,9 @@ TEST_F(HttpStreamFactoryTest, PreconnectHttpProxy) {
             session_deps.ct_policy_enforcer.get());
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPoolForHTTPProxy(
-        proxy_host, base::WrapUnique(http_proxy_pool));
+        proxy_server, base::WrapUnique(http_proxy_pool));
     mock_pool_manager->SetSocketPoolForSSLWithProxy(
-        proxy_host, base::WrapUnique(ssl_conn_pool));
+        proxy_server, base::WrapUnique(ssl_conn_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
     PreconnectHelper(kTests[i], session.get());
     if (kTests[i].ssl)
@@ -563,7 +564,8 @@ TEST_F(HttpStreamFactoryTest, PreconnectSocksProxy) {
     std::unique_ptr<HttpNetworkSession> session(
         SpdySessionDependencies::SpdyCreateSession(&session_deps));
     HttpNetworkSessionPeer peer(session.get());
-    HostPortPair proxy_host("socks_proxy", 1080);
+    ProxyServer proxy_server(ProxyServer::SCHEME_SOCKS4,
+                             HostPortPair("socks_proxy", 1080));
     CapturePreconnectsSOCKSSocketPool* socks_proxy_pool =
         new CapturePreconnectsSOCKSSocketPool(
             session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
@@ -578,9 +580,9 @@ TEST_F(HttpStreamFactoryTest, PreconnectSocksProxy) {
             session_deps.ct_policy_enforcer.get());
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPoolForSOCKSProxy(
-        proxy_host, base::WrapUnique(socks_proxy_pool));
+        proxy_server, base::WrapUnique(socks_proxy_pool));
     mock_pool_manager->SetSocketPoolForSSLWithProxy(
-        proxy_host, base::WrapUnique(ssl_conn_pool));
+        proxy_server, base::WrapUnique(ssl_conn_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
     PreconnectHelper(kTests[i], session.get());
     if (kTests[i].ssl)
@@ -1191,7 +1193,8 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
     auto session =
         std::make_unique<HttpNetworkSession>(session_params, session_context);
     HttpNetworkSessionPeer peer(session.get());
-    HostPortPair proxy_host("http_proxy", 80);
+    ProxyServer proxy_server(ProxyServer::SCHEME_HTTP,
+                             HostPortPair("http_proxy", 80));
     CapturePreconnectsHttpProxySocketPool* http_proxy_pool =
         new CapturePreconnectsHttpProxySocketPool(
             session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
@@ -1206,9 +1209,9 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
             session_deps.ct_policy_enforcer.get());
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPoolForHTTPProxy(
-        proxy_host, base::WrapUnique(http_proxy_pool));
+        proxy_server, base::WrapUnique(http_proxy_pool));
     mock_pool_manager->SetSocketPoolForSSLWithProxy(
-        proxy_host, base::WrapUnique(ssl_conn_pool));
+        proxy_server, base::WrapUnique(ssl_conn_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
     PreconnectHelperForURL(num_streams, url, session.get());
     EXPECT_EQ(num_streams, ssl_conn_pool->last_num_streams());
@@ -1247,7 +1250,8 @@ TEST_F(HttpStreamFactoryTest, OnlyOnePreconnectToProxyServer) {
           std::make_unique<HttpNetworkSession>(session_params, session_context);
 
       HttpNetworkSessionPeer peer(session.get());
-      HostPortPair proxy_host("myproxy.org", 443);
+      ProxyServer proxy_server(ProxyServer::SCHEME_HTTPS,
+                               HostPortPair("myproxy.org", 443));
 
       for (int preconnect_request = 0; preconnect_request < 2;
            ++preconnect_request) {
@@ -1269,9 +1273,9 @@ TEST_F(HttpStreamFactoryTest, OnlyOnePreconnectToProxyServer) {
         auto mock_pool_manager =
             std::make_unique<MockClientSocketPoolManager>();
         mock_pool_manager->SetSocketPoolForHTTPProxy(
-            proxy_host, base::WrapUnique(http_proxy_pool));
+            proxy_server, base::WrapUnique(http_proxy_pool));
         mock_pool_manager->SetSocketPoolForSSLWithProxy(
-            proxy_host, base::WrapUnique(ssl_conn_pool));
+            proxy_server, base::WrapUnique(ssl_conn_pool));
         peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
         HttpRequestInfo request;
@@ -1342,7 +1346,8 @@ TEST_F(HttpStreamFactoryTest, ProxyServerPreconnectDifferentPrivacyModes) {
       std::make_unique<HttpNetworkSession>(session_params, session_context);
 
   HttpNetworkSessionPeer peer(session.get());
-  HostPortPair proxy_host("myproxy.org", 443);
+  ProxyServer proxy_server(ProxyServer::SCHEME_HTTPS,
+                           HostPortPair("myproxy.org", 443));
 
   CapturePreconnectsHttpProxySocketPool* http_proxy_pool =
       new CapturePreconnectsHttpProxySocketPool(
@@ -1359,9 +1364,9 @@ TEST_F(HttpStreamFactoryTest, ProxyServerPreconnectDifferentPrivacyModes) {
 
   auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
   mock_pool_manager->SetSocketPoolForHTTPProxy(
-      proxy_host, base::WrapUnique(http_proxy_pool));
+      proxy_server, base::WrapUnique(http_proxy_pool));
   mock_pool_manager->SetSocketPoolForSSLWithProxy(
-      proxy_host, base::WrapUnique(ssl_conn_pool));
+      proxy_server, base::WrapUnique(ssl_conn_pool));
   peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
   HttpRequestInfo request_privacy_mode_disabled;
@@ -1771,18 +1776,30 @@ TEST_F(HttpStreamFactoryTest, RequestHttpStreamOverProxy) {
                    HttpNetworkSession::NORMAL_SOCKET_POOL)));
   EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSSLSocketPool(
                    HttpNetworkSession::NORMAL_SOCKET_POOL)));
-  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetSocketPoolForHTTPProxy(
+  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetSocketPoolForHTTPLikeProxy(
                    HttpNetworkSession::NORMAL_SOCKET_POOL,
-                   HostPortPair("myproxy", 8888))));
+                   ProxyServer(ProxyServer::SCHEME_HTTP,
+                               HostPortPair("myproxy", 8888)))));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSocketPoolForHTTPLikeProxy(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL,
+                   ProxyServer(ProxyServer::SCHEME_HTTPS,
+                               HostPortPair("myproxy", 8888)))));
   EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSocketPoolForSSLWithProxy(
                    HttpNetworkSession::NORMAL_SOCKET_POOL,
-                   HostPortPair("myproxy", 8888))));
-  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSocketPoolForHTTPProxy(
+                   ProxyServer(ProxyServer::SCHEME_HTTP,
+                               HostPortPair("myproxy", 8888)))));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSocketPoolForSSLWithProxy(
+                   HttpNetworkSession::NORMAL_SOCKET_POOL,
+                   ProxyServer(ProxyServer::SCHEME_HTTPS,
+                               HostPortPair("myproxy", 8888)))));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSocketPoolForHTTPLikeProxy(
                    HttpNetworkSession::WEBSOCKET_SOCKET_POOL,
-                   HostPortPair("myproxy", 8888))));
+                   ProxyServer(ProxyServer::SCHEME_HTTP,
+                               HostPortPair("myproxy", 8888)))));
   EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSocketPoolForSSLWithProxy(
                    HttpNetworkSession::WEBSOCKET_SOCKET_POOL,
-                   HostPortPair("myproxy", 8888))));
+                   ProxyServer(ProxyServer::SCHEME_HTTP,
+                               HostPortPair("myproxy", 8888)))));
   EXPECT_FALSE(waiter.used_proxy_info().is_direct());
 }
 
@@ -1825,9 +1842,10 @@ TEST_F(HttpStreamFactoryTest, RequestHttpStreamOverProxyWithPreconnects) {
        ++preconnect_request) {
     session->http_stream_factory()->PreconnectStreams(1, request_info);
     base::RunLoop().RunUntilIdle();
-    while (GetSocketPoolGroupCount(session->GetSocketPoolForHTTPProxy(
+    while (GetSocketPoolGroupCount(session->GetSocketPoolForHTTPLikeProxy(
                HttpNetworkSession::NORMAL_SOCKET_POOL,
-               HostPortPair("myproxy.org", 443))) == 0) {
+               ProxyServer(ProxyServer::SCHEME_HTTPS,
+                           HostPortPair("myproxy.org", 443)))) == 0) {
       base::RunLoop().RunUntilIdle();
     }
   }
@@ -1849,18 +1867,20 @@ TEST_F(HttpStreamFactoryTest, RequestHttpStreamOverProxyWithPreconnects) {
   ASSERT_TRUE(nullptr != waiter.stream());
   EXPECT_TRUE(nullptr == waiter.websocket_stream());
 
-  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetSocketPoolForHTTPProxy(
+  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetSocketPoolForHTTPLikeProxy(
                    HttpNetworkSession::NORMAL_SOCKET_POOL,
-                   HostPortPair("myproxy.org", 443))));
+                   ProxyServer(ProxyServer::SCHEME_HTTPS,
+                               HostPortPair("myproxy.org", 443)))));
   EXPECT_FALSE(waiter.used_proxy_info().is_direct());
 
   for (int preconnect_request = 1; preconnect_request <= num_preconnects;
        ++preconnect_request) {
     session->http_stream_factory()->PreconnectStreams(1, request_info);
     base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetSocketPoolForHTTPProxy(
+    EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetSocketPoolForHTTPLikeProxy(
                      HttpNetworkSession::NORMAL_SOCKET_POOL,
-                     HostPortPair("myproxy.org", 443))));
+                     ProxyServer(ProxyServer::SCHEME_HTTPS,
+                                 HostPortPair("myproxy.org", 443)))));
   }
 
   // First preconnect would be successful since the stream to the proxy server
@@ -1998,18 +2018,22 @@ TEST_F(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverProxy) {
                    HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSSLSocketPool(
                    HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
-  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSocketPoolForHTTPProxy(
+  EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSocketPoolForHTTPLikeProxy(
                    HttpNetworkSession::NORMAL_SOCKET_POOL,
-                   HostPortPair("myproxy", 8888))));
+                   ProxyServer(ProxyServer::SCHEME_HTTP,
+                               HostPortPair("myproxy", 8888)))));
   EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSocketPoolForSSLWithProxy(
                    HttpNetworkSession::NORMAL_SOCKET_POOL,
-                   HostPortPair("myproxy", 8888))));
-  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetSocketPoolForHTTPProxy(
+                   ProxyServer(ProxyServer::SCHEME_HTTP,
+                               HostPortPair("myproxy", 8888)))));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetSocketPoolForHTTPLikeProxy(
                    HttpNetworkSession::WEBSOCKET_SOCKET_POOL,
-                   HostPortPair("myproxy", 8888))));
+                   ProxyServer(ProxyServer::SCHEME_HTTP,
+                               HostPortPair("myproxy", 8888)))));
   EXPECT_EQ(0, GetSocketPoolGroupCount(session->GetSocketPoolForSSLWithProxy(
                    HttpNetworkSession::WEBSOCKET_SOCKET_POOL,
-                   HostPortPair("myproxy", 8888))));
+                   ProxyServer(ProxyServer::SCHEME_HTTP,
+                               HostPortPair("myproxy", 8888)))));
   EXPECT_FALSE(waiter.used_proxy_info().is_direct());
 }
 

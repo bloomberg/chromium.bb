@@ -4925,6 +4925,12 @@ class SameProxyWithDifferentSchemesProxyResolver : public ProxyResolver {
       results->UsePacString("HTTPS " + ProxyHostPortPairAsString());
       return OK;
     }
+    if (url.path() == "/https_trusted") {
+      results->UseProxyServer(ProxyServer(ProxyServer::SCHEME_HTTPS,
+                                          ProxyHostPortPair(),
+                                          true /* is_trusted_proxy */));
+      return OK;
+    }
     NOTREACHED();
     return ERR_NOT_IMPLEMENTED;
   }
@@ -4952,7 +4958,7 @@ class SameProxyWithDifferentSchemesProxyResolverFactory
 };
 
 // Check that when different proxy schemes are all applied to a proxy at the
-// same address, the sonnections are not grouped together.  i.e., a request to
+// same address, the connections are not grouped together.  i.e., a request to
 // foo.com using proxy.com as an HTTPS proxy won't use the same socket as a
 // request to foo.com using proxy.com as an HTTP proxy.
 TEST_F(HttpNetworkTransactionTest, SameDestinationForDifferentProxyTypes) {
@@ -5043,20 +5049,45 @@ TEST_F(HttpNetworkTransactionTest, SameDestinationForDifferentProxyTypes) {
   SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
+  MockWrite https_trusted_writes[] = {
+      MockWrite(SYNCHRONOUS,
+                "GET http://test/https_trusted HTTP/1.1\r\n"
+                "Host: test\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+  MockRead https_trusted_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Proxy-Connection: keep-alive\r\n"
+               "Content-Length: 22\r\n\r\n"
+               "HTTPS Trusted Response"),
+  };
+  StaticSocketDataProvider trusted_https_data(https_trusted_reads,
+                                              https_trusted_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&trusted_https_data);
+  SSLSocketDataProvider ssl2(SYNCHRONOUS, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
+
   struct TestCase {
     GURL url;
     std::string expected_response;
-    // How many idle sockets there should be in the SOCKS proxy socket pool
+    // How many idle sockets there should be in the SOCKS 4/5 proxy socket pools
     // after the test.
-    int expected_idle_socks_sockets;
-    // How many idle sockets there should be in the HTTP proxy socket pool after
-    // the test.
+    int expected_idle_socks4_sockets;
+    int expected_idle_socks5_sockets;
+    // How many idle sockets there should be in the HTTP/HTTPS proxy socket
+    // pools after the test.
     int expected_idle_http_sockets;
+    int expected_idle_https_sockets;
+    // How many idle sockets there should be in the HTTPS proxy socket pool with
+    // the ProxyServer's |is_trusted_proxy| bit set after the test.
+    int expected_idle_trusted_https_sockets;
   } const kTestCases[] = {
-      {GURL("http://test/socks4"), "SOCKS4 Response", 1, 0},
-      {GURL("http://test/socks5"), "SOCKS5 Response", 2, 0},
-      {GURL("http://test/http"), "HTTP Response", 2, 1},
-      {GURL("http://test/https"), "HTTPS Response", 2, 2},
+      {GURL("http://test/socks4"), "SOCKS4 Response", 1, 0, 0, 0, 0},
+      {GURL("http://test/socks5"), "SOCKS5 Response", 1, 1, 0, 0, 0},
+      {GURL("http://test/http"), "HTTP Response", 1, 1, 1, 0, 0},
+      {GURL("http://test/https"), "HTTPS Response", 1, 1, 1, 1, 0},
+      {GURL("http://test/https_trusted"), "HTTPS Trusted Response", 1, 1, 1, 1,
+       1},
   };
 
   for (const auto& test_case : kTestCases) {
@@ -5089,20 +5120,47 @@ TEST_F(HttpNetworkTransactionTest, SameDestinationForDifferentProxyTypes) {
     // sockets are indeed being returned to the socket pool.  If each request
     // doesn't return an idle socket to the pool, the test would incorrectly
     // pass.
-    EXPECT_EQ(
-        test_case.expected_idle_socks_sockets,
-        session
-            ->GetSocketPoolForSOCKSProxy(
-                HttpNetworkSession::NORMAL_SOCKET_POOL,
-                SameProxyWithDifferentSchemesProxyResolver::ProxyHostPortPair())
-            ->IdleSocketCount());
-    EXPECT_EQ(
-        test_case.expected_idle_http_sockets,
-        session
-            ->GetSocketPoolForHTTPProxy(
-                HttpNetworkSession::NORMAL_SOCKET_POOL,
-                SameProxyWithDifferentSchemesProxyResolver::ProxyHostPortPair())
-            ->IdleSocketCount());
+    EXPECT_EQ(test_case.expected_idle_socks4_sockets,
+              session
+                  ->GetSocketPoolForSOCKSProxy(
+                      HttpNetworkSession::NORMAL_SOCKET_POOL,
+                      ProxyServer(ProxyServer::SCHEME_SOCKS4,
+                                  SameProxyWithDifferentSchemesProxyResolver::
+                                      ProxyHostPortPair()))
+                  ->IdleSocketCount());
+    EXPECT_EQ(test_case.expected_idle_socks5_sockets,
+              session
+                  ->GetSocketPoolForSOCKSProxy(
+                      HttpNetworkSession::NORMAL_SOCKET_POOL,
+                      ProxyServer(ProxyServer::SCHEME_SOCKS5,
+                                  SameProxyWithDifferentSchemesProxyResolver::
+                                      ProxyHostPortPair()))
+                  ->IdleSocketCount());
+    EXPECT_EQ(test_case.expected_idle_http_sockets,
+              session
+                  ->GetSocketPoolForHTTPLikeProxy(
+                      HttpNetworkSession::NORMAL_SOCKET_POOL,
+                      ProxyServer(ProxyServer::SCHEME_HTTP,
+                                  SameProxyWithDifferentSchemesProxyResolver::
+                                      ProxyHostPortPair()))
+                  ->IdleSocketCount());
+    EXPECT_EQ(test_case.expected_idle_https_sockets,
+              session
+                  ->GetSocketPoolForHTTPLikeProxy(
+                      HttpNetworkSession::NORMAL_SOCKET_POOL,
+                      ProxyServer(ProxyServer::SCHEME_HTTPS,
+                                  SameProxyWithDifferentSchemesProxyResolver::
+                                      ProxyHostPortPair()))
+                  ->IdleSocketCount());
+    EXPECT_EQ(test_case.expected_idle_trusted_https_sockets,
+              session
+                  ->GetSocketPoolForHTTPLikeProxy(
+                      HttpNetworkSession::NORMAL_SOCKET_POOL,
+                      ProxyServer(ProxyServer::SCHEME_HTTPS,
+                                  SameProxyWithDifferentSchemesProxyResolver::
+                                      ProxyHostPortPair(),
+                                  true /* is_trusted_proxy */))
+                  ->IdleSocketCount());
   }
 }
 
@@ -11065,26 +11123,28 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForHTTPProxyConnections) {
 
     HttpNetworkSessionPeer peer(session.get());
 
-    HostPortPair proxy_host("http_proxy", 80);
+    ProxyServer proxy_server(ProxyServer::SCHEME_HTTP,
+                             HostPortPair("http_proxy", 80));
     CaptureGroupNameHttpProxySocketPool* http_proxy_pool =
         new CaptureGroupNameHttpProxySocketPool(NULL, NULL);
     CaptureGroupNameSSLSocketPool* ssl_conn_pool =
         new CaptureGroupNameSSLSocketPool(NULL, NULL);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPoolForHTTPProxy(
-        proxy_host, base::WrapUnique(http_proxy_pool));
+        proxy_server, base::WrapUnique(http_proxy_pool));
     mock_pool_manager->SetSocketPoolForSSLWithProxy(
-        proxy_host, base::WrapUnique(ssl_conn_pool));
+        proxy_server, base::WrapUnique(ssl_conn_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
     EXPECT_EQ(ERR_IO_PENDING,
               GroupNameTransactionHelper(tests[i].url, session.get()));
-    if (tests[i].ssl)
+    if (tests[i].ssl) {
       EXPECT_EQ(tests[i].expected_group_name,
                 ssl_conn_pool->last_group_name_received());
-    else
+    } else {
       EXPECT_EQ(tests[i].expected_group_name,
                 http_proxy_pool->last_group_name_received());
+    }
   }
 }
 
@@ -11134,16 +11194,18 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForSOCKSConnections) {
 
     HttpNetworkSessionPeer peer(session.get());
 
-    HostPortPair proxy_host("socks_proxy", 1080);
+    ProxyServer proxy_server(
+        ProxyServer::FromURI(tests[i].proxy_server, ProxyServer::SCHEME_HTTP));
+    ASSERT_TRUE(proxy_server.is_valid());
     CaptureGroupNameSOCKSSocketPool* socks_conn_pool =
         new CaptureGroupNameSOCKSSocketPool(NULL, NULL);
     CaptureGroupNameSSLSocketPool* ssl_conn_pool =
         new CaptureGroupNameSSLSocketPool(NULL, NULL);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPoolForSOCKSProxy(
-        proxy_host, base::WrapUnique(socks_conn_pool));
+        proxy_server, base::WrapUnique(socks_conn_pool));
     mock_pool_manager->SetSocketPoolForSSLWithProxy(
-        proxy_host, base::WrapUnique(ssl_conn_pool));
+        proxy_server, base::WrapUnique(ssl_conn_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
     HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
