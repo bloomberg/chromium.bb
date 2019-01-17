@@ -31,6 +31,10 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace crx_file {
+enum class VerifierFormat;
+}
+
 namespace service_manager {
 class Connector;
 }
@@ -155,7 +159,8 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // Validates the signature of the extension and extract the key to
   // |public_key_|. True if the signature validates, false otherwise.
   bool ValidateSignature(const base::FilePath& crx_path,
-                         const std::string& expected_hash);
+                         const std::string& expected_hash,
+                         const crx_file::VerifierFormat required_format);
 
   // Unzips the extension into directory.
   void Unzip(const base::FilePath& crx_path,

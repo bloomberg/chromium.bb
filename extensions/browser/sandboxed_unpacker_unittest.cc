@@ -31,6 +31,7 @@
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/switches.h"
+#include "extensions/common/verifier_formats.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "extensions/test/test_extensions_client.h"
 #include "services/data_decoder/data_decoder_service.h"
@@ -218,7 +219,8 @@ class SandboxedUnpackerTest : public ExtensionsTest {
         FROM_HERE,
         base::Bind(
             &SandboxedUnpacker::StartWithCrx, sandboxed_unpacker_,
-            extensions::CRXFileInfo(std::string(), crx_path, package_hash)));
+            extensions::CRXFileInfo(std::string(), crx_path, package_hash,
+                                    GetTestVerifierFormat())));
     client_->WaitForUnpack();
   }
 

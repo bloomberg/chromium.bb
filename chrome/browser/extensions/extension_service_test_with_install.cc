@@ -15,6 +15,7 @@
 #include "extensions/browser/extension_creator.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/common/verifier_formats.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -280,8 +281,8 @@ void ExtensionServiceTestWithInstall::UpdateExtension(
   content::WindowedNotificationObserver observer(
       extensions::NOTIFICATION_CRX_INSTALLER_DONE,
       base::Bind(&IsCrxInstallerDone, &installer));
-  service()->UpdateExtension(extensions::CRXFileInfo(id, path), true,
-                             &installer);
+  service()->UpdateExtension(CRXFileInfo(id, GetTestVerifierFormat(), path),
+                             true, &installer);
 
   if (installer)
     observer.Wait();

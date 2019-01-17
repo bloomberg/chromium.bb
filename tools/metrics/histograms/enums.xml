@@ -15232,6 +15232,7 @@ Called by update_net_error_codes.py.-->
   <int value="513" label="ReportDeviceStorageStatus"/>
   <int value="514" label="ReportDeviceBoardStatus"/>
   <int value="515" label="PluginVmLicenseKey"/>
+  <int value="516" label="ExtensionAllowInsecureUpdates"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

@@ -38,6 +38,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/crx_file/crx_verifier.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -64,6 +65,7 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/user_script.h"
+#include "extensions/common/verifier_formats.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -167,7 +169,11 @@ CrxInstaller::~CrxInstaller() {
 }
 
 void CrxInstaller::InstallCrx(const base::FilePath& source_file) {
-  InstallCrxFile(CRXFileInfo(source_file));
+  crx_file::VerifierFormat format =
+      off_store_install_allow_reason_ == OffStoreInstallDisallowed
+          ? GetWebstoreVerifierFormat()
+          : GetExternalVerifierFormat();
+  InstallCrxFile(CRXFileInfo(source_file, format));
 }
 
 void CrxInstaller::InstallCrxFile(const CRXFileInfo& source_file) {
@@ -479,7 +485,6 @@ void CrxInstaller::OnUnpackFailure(const CrxInstallError& error) {
   UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackFailureInstallCause",
                             install_cause(),
                             extension_misc::NUM_INSTALL_CAUSES);
-
   ReportFailureFromFileThread(error);
 }
 

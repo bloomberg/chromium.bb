@@ -25,6 +25,10 @@
 #include "net/http/http_request_headers.h"
 #include "url/gurl.h"
 
+namespace crx_file {
+enum class VerifierFormat;
+}
+
 namespace identity {
 class PrimaryAccountAccessTokenFetcher;
 class IdentityManager;
@@ -79,6 +83,7 @@ class ExtensionDownloader {
       ExtensionDownloaderDelegate* delegate,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       service_manager::Connector* connector,
+      crx_file::VerifierFormat crx_format_requirement,
       const base::FilePath& profile_path = base::FilePath());
   ~ExtensionDownloader();
 
@@ -397,6 +402,8 @@ class ExtensionDownloader {
   net::HttpRequestHeaders
       last_extension_loader_resource_request_headers_for_testing_;
   int last_extension_loader_load_flags_for_testing_ = 0;
+
+  crx_file::VerifierFormat crx_format_requirement_;
 
   // Used to create WeakPtrs to |this|.
   base::WeakPtrFactory<ExtensionDownloader> weak_ptr_factory_;
