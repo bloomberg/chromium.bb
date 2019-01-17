@@ -164,7 +164,7 @@ struct Cronet_DateTime {
   explicit Cronet_DateTime(Cronet_DateTime&& from);
   ~Cronet_DateTime();
 
-  int64_t value;
+  int64_t value = 0;
 
  private:
   DISALLOW_ASSIGN(Cronet_DateTime);
