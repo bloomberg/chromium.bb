@@ -9,7 +9,11 @@
 
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_features.h"
+#include "components/variations/variations_http_header_provider.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace contextual_suggestions {
@@ -79,6 +83,40 @@ TEST(ContextualSuggestionsFetch, GetFetchEndpoint_Feature_WithParameter) {
                                                   parameters);
   EXPECT_EQ("https://test.com/httpservice/web/ExploreService/GetPivots/",
             ContextualSuggestionsFetch::GetFetchEndpoint());
+}
+
+TEST(ContextualSuggestionsFetch, MakeResourceRequest_VariationsHeader) {
+  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner(
+      new base::TestSimpleTaskRunner());
+  base::ThreadTaskRunnerHandle handle(test_task_runner);
+  EXPECT_EQ(variations::VariationsHttpHeaderProvider::ForceIdsResult::SUCCESS,
+            variations::VariationsHttpHeaderProvider::GetInstance()
+                ->ForceVariationIds({"12345"}, ""));
+
+  ContextualSuggestionsFetch fetch(GURL("http://test.com"), "en-US", false);
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      fetch.MakeResourceRequestForTesting();
+
+  EXPECT_TRUE(resource_request->headers.HasHeader("X-Client-Data"));
+}
+
+TEST(ContextualSuggestionsFetch,
+     MakeResourceRequest_VariationsHeader_NonGoogleEndpoint) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII("contextual-suggestions-fetch-endpoint",
+                                  "https://nongoogleendpoint.com");
+  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner(
+      new base::TestSimpleTaskRunner());
+  base::ThreadTaskRunnerHandle handle(test_task_runner);
+  EXPECT_EQ(variations::VariationsHttpHeaderProvider::ForceIdsResult::SUCCESS,
+            variations::VariationsHttpHeaderProvider::GetInstance()
+                ->ForceVariationIds({"12345"}, ""));
+
+  ContextualSuggestionsFetch fetch(GURL("http://test.com"), "en-US", false);
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      fetch.MakeResourceRequestForTesting();
+
+  EXPECT_FALSE(resource_request->headers.HasHeader("X-Client-Data"));
 }
 
 }  // namespace
