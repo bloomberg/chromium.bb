@@ -53,7 +53,7 @@ class QuicProtocolConnection final : public ProtocolConnection {
 };
 
 struct ServiceStreamPair {
-  ServiceStreamPair(std::unique_ptr<QuicStream>&& stream,
+  ServiceStreamPair(std::unique_ptr<QuicStream> stream,
                     QuicProtocolConnection* protocol_connection);
   ~ServiceStreamPair();
   ServiceStreamPair(ServiceStreamPair&&);
@@ -75,7 +75,7 @@ class ServiceConnectionDelegate final : public QuicConnection::Delegate,
         ServiceConnectionDelegate* delegate,
         uint64_t connection_id) = 0;
     virtual void OnIncomingStream(
-        std::unique_ptr<QuicProtocolConnection>&& connection) = 0;
+        std::unique_ptr<QuicProtocolConnection> connection) = 0;
     virtual void OnConnectionClosed(uint64_t endpoint_id,
                                     uint64_t connection_id) = 0;
     virtual void OnDataReceived(uint64_t endpoint_id,
@@ -123,8 +123,8 @@ class ServiceConnectionDelegate final : public QuicConnection::Delegate,
 
 struct ServiceConnectionData {
   explicit ServiceConnectionData(
-      std::unique_ptr<QuicConnection>&& connection,
-      std::unique_ptr<ServiceConnectionDelegate>&& delegate);
+      std::unique_ptr<QuicConnection> connection,
+      std::unique_ptr<ServiceConnectionDelegate> delegate);
   ServiceConnectionData(ServiceConnectionData&&);
   ~ServiceConnectionData();
   ServiceConnectionData& operator=(ServiceConnectionData&&);

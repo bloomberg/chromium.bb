@@ -34,7 +34,7 @@ class ProtocolConnectionClient {
     // Called when a new connection was created between 5-tuples.
     virtual void OnConnectionOpened(
         uint64_t request_id,
-        std::unique_ptr<ProtocolConnection>&& connection) = 0;
+        std::unique_ptr<ProtocolConnection> connection) = 0;
     virtual void OnConnectionFailed(uint64_t request_id) = 0;
   };
 

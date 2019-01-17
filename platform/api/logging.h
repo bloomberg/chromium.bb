@@ -61,6 +61,8 @@ class LogMessage {
   std::ostringstream stream_;
 };
 
+// TODO(jophba): Remove magic number logging. We almost always use 1,
+// demarcation of different levels is non-obvious.
 #define OSP_VLOG(l)                                                      \
   ::openscreen::platform::LogMessage(                                    \
       ::openscreen::platform::LogLevel::kVerbose, l, __FILE__, __LINE__) \
@@ -141,7 +143,16 @@ class Voidify {
 #define OSP_DLOG_FATAL OSP_LOG_IF(FATAL, OSP_DCHECK_IS_ON())
 #define OSP_DLOG_IF(level, condition) \
   OSP_LOG_IF(level, OSP_DCHECK_IS_ON() && (condition))
-#define OSP_DVLOG(l) OSP_VLOG_IF(l, OSP_DCHECK_IS_ON())
+
+// Verbose logging methods
+// Conventions on log level are:
+// 1 = verbose
+// 2 = very verbose
+// 3 = debugging
+#define OSP_DVLOG OSP_VLOG_IF(1, OSP_DCHECK_IS_ON())
+#define OSP_DVVLOG OSP_VLOG_IF(2, OSP_DCHECK_IS_ON())
+#define OSP_DVLOG_DEBUG OSP_VLOG_IF(3, OSP_DCHECK_IS_ON())
+
 #define OSP_DVLOG_IF(l, condition) \
   OSP_VLOG_IF(l, OSP_DCHECK_IS_ON() && (condition))
 

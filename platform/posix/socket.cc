@@ -17,6 +17,8 @@
 
 #include "base/error.h"
 #include "platform/api/logging.h"
+#include "platform/posix/socket.h"
+#include "third_party/abseil/src/absl/types/optional.h"
 
 namespace openscreen {
 namespace platform {

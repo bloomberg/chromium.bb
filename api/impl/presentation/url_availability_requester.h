@@ -92,7 +92,7 @@ class UrlAvailabilityRequester {
                       const IPEndpoint& endpoint);
     ~ReceiverRequester() override;
 
-    void GetOrRequesetAvailabilities(
+    void GetOrRequestAvailabilities(
         const std::vector<std::string>& requested_urls,
         ReceiverObserver* observer);
     void RequestUrlAvailabilities(std::vector<std::string> urls);
@@ -109,7 +109,7 @@ class UrlAvailabilityRequester {
     // ProtocolConnectionClient::ConnectionRequestCallback overrides.
     void OnConnectionOpened(
         uint64_t request_id,
-        std::unique_ptr<ProtocolConnection>&& connection) override;
+        std::unique_ptr<ProtocolConnection> connection) override;
     void OnConnectionFailed(uint64_t request_id) override;
 
     // MessageDemuxer::MessageCallback overrides.

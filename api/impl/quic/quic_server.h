@@ -51,7 +51,7 @@ class QuicServer final : public ProtocolConnectionServer,
   uint64_t OnCryptoHandshakeComplete(ServiceConnectionDelegate* delegate,
                                      uint64_t connection_id) override;
   void OnIncomingStream(
-      std::unique_ptr<QuicProtocolConnection>&& connection) override;
+      std::unique_ptr<QuicProtocolConnection> connection) override;
   void OnConnectionClosed(uint64_t endpoint_id,
                           uint64_t connection_id) override;
   void OnDataReceived(uint64_t endpoint_id,
@@ -66,7 +66,7 @@ class QuicServer final : public ProtocolConnectionServer,
   QuicConnection::Delegate* NextConnectionDelegate(
       const IPEndpoint& source) override;
   void OnIncomingConnection(
-      std::unique_ptr<QuicConnection>&& connection) override;
+      std::unique_ptr<QuicConnection> connection) override;
 
   const std::vector<IPEndpoint> connection_endpoints_;
   std::unique_ptr<QuicConnectionFactory> connection_factory_;

@@ -53,10 +53,10 @@ void QuicProtocolConnection::OnClose() {
 }
 
 ServiceStreamPair::ServiceStreamPair(
-    std::unique_ptr<QuicStream>&& stream,
+    std::unique_ptr<QuicStream> stream,
     QuicProtocolConnection* protocol_connection)
     : stream(std::move(stream)),
-      connection_id(protocol_connection->connection_id()),
+      connection_id(protocol_connection->id()),
       protocol_connection(std::move(protocol_connection)) {}
 ServiceStreamPair::~ServiceStreamPair() = default;
 
@@ -148,8 +148,8 @@ void ServiceConnectionDelegate::OnClose(uint64_t stream_id) {
 }
 
 ServiceConnectionData::ServiceConnectionData(
-    std::unique_ptr<QuicConnection>&& connection,
-    std::unique_ptr<ServiceConnectionDelegate>&& delegate)
+    std::unique_ptr<QuicConnection> connection,
+    std::unique_ptr<ServiceConnectionDelegate> delegate)
     : connection(std::move(connection)), delegate(std::move(delegate)) {}
 ServiceConnectionData::ServiceConnectionData(ServiceConnectionData&&) = default;
 ServiceConnectionData::~ServiceConnectionData() = default;

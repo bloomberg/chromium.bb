@@ -16,6 +16,7 @@
 
 namespace openscreen {
 namespace {
+
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Test;
@@ -40,7 +41,7 @@ class MockConnectRequest final
 
   void OnConnectionOpened(
       uint64_t request_id,
-      std::unique_ptr<ProtocolConnection>&& connection) override {
+      std::unique_ptr<ProtocolConnection> connection) override {
     OnConnectionOpenedMock();
   }
   MOCK_METHOD0(OnConnectionOpenedMock, void());
@@ -85,7 +86,7 @@ class QuicServerTest : public Test {
 
     msgs::CborEncodeBuffer buffer;
     msgs::PresentationConnectionMessage message;
-    message.presentation_id = "some-id";
+    message.presentation_id = "vj73FSKv3PFMfLdU";
     message.connection_id = 7;
     message.message.which = decltype(message.message.which)::kString;
     new (&message.message.str) std::string("message from server");

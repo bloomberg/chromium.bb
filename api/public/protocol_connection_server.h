@@ -37,7 +37,7 @@ class ProtocolConnectionServer {
     virtual void OnSuspended() = 0;
 
     virtual void OnIncomingConnection(
-        std::unique_ptr<ProtocolConnection>&& connection) = 0;
+        std::unique_ptr<ProtocolConnection> connection) = 0;
   };
 
   virtual ~ProtocolConnectionServer();

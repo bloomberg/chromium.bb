@@ -7,8 +7,17 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <type_traits>
+
+#include "base/error.h"
+#include "msgs/osp_messages.h"
+#include "platform/api/logging.h"
 
 namespace openscreen {
+
+template <typename T>
+using MessageEncodingFunction =
+    std::add_pointer_t<bool(const T&, msgs::CborEncodeBuffer*)>;
 
 class Error;
 struct NetworkMetrics;
@@ -20,6 +29,9 @@ struct NetworkMetrics;
 //
 // A ProtocolConnection supports multiple protocols defined by the Open Screen
 // standard and can be extended by embedders with additional protocols.
+//
+// TODO(jophba): move to sharing underlying QUIC connections between multiple
+// instances of ProtocolConnection.
 class ProtocolConnection {
  public:
   class Observer {
@@ -47,17 +59,31 @@ class ProtocolConnection {
 
   void SetObserver(Observer* observer);
 
+  template <typename T>
+  Error WriteMessage(const T& message, MessageEncodingFunction<T> encoder) {
+    msgs::CborEncodeBuffer buffer;
+
+    if (!encoder(message, &buffer)) {
+      OSP_LOG_WARN << "failed to properly encode presentation message";
+      return Error::Code::kParseError;
+    }
+
+    Write(buffer.data(), buffer.size());
+
+    return Error::None();
+  }
+
   // TODO(btolsch): This should be derived from the handshake auth identifier
   // when that is finalized and implemented.
   uint64_t endpoint_id() const { return endpoint_id_; }
-  uint64_t connection_id() const { return connection_id_; }
+  uint64_t id() const { return id_; }
 
   virtual void Write(const uint8_t* data, size_t data_size) = 0;
   virtual void CloseWriteEnd() = 0;
 
  protected:
   uint64_t endpoint_id_;
-  uint64_t connection_id_;
+  uint64_t id_;
   Observer* observer_ = nullptr;
 };
 

@@ -88,9 +88,9 @@ struct CddlGroup {
 struct CddlSymbolTable {
   std::vector<std::unique_ptr<CddlType>> types;
   std::vector<std::unique_ptr<CddlGroup>> groups;
-  std::string root_rule;
   std::map<std::string, CddlType*> type_map;
   std::map<std::string, CddlGroup*> group_map;
+  std::string root_rule;
 };
 
 struct CppType {

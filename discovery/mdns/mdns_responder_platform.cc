@@ -117,7 +117,7 @@ mDNSs32 mDNSPlatformUTC() {
 }
 
 void mDNSPlatformWriteDebugMsg(const char* msg) {
-  OSP_DVLOG(3) << __func__ << ": " << msg;
+  OSP_DVLOG_DEBUG << __func__ << ": " << msg;
 }
 
 void mDNSPlatformWriteLogMsg(const char* ident,

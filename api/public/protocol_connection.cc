@@ -4,13 +4,10 @@
 
 #include "api/public/protocol_connection.h"
 
-#include "platform/api/logging.h"
-
 namespace openscreen {
 
-ProtocolConnection::ProtocolConnection(uint64_t endpoint_id,
-                                       uint64_t connection_id)
-    : endpoint_id_(endpoint_id), connection_id_(connection_id) {}
+ProtocolConnection::ProtocolConnection(uint64_t endpoint_id, uint64_t id)
+    : endpoint_id_(endpoint_id), id_(id) {}
 
 void ProtocolConnection::SetObserver(Observer* observer) {
   OSP_DCHECK(!observer_ || !observer);

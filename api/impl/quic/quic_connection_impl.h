@@ -69,8 +69,8 @@ class QuicConnectionImpl final : public QuicConnection,
  public:
   QuicConnectionImpl(QuicConnectionFactoryImpl* parent_factory,
                      QuicConnection::Delegate* delegate,
-                     std::unique_ptr<UdpTransport>&& udp_transport,
-                     std::unique_ptr<::quic::QuartcSession>&& session);
+                     std::unique_ptr<UdpTransport> udp_transport,
+                     std::unique_ptr<::quic::QuartcSession> session);
 
   ~QuicConnectionImpl() override;
 

@@ -30,7 +30,8 @@ bool Error::operator==(const Error& other) const {
   return code_ == other.code_ && message_ == other.message_;
 }
 
-// static
+// TODO(jophba): integrate with jrw@ utility library once it
+// has landed, to avoid kludgy string construction here.
 std::string Error::CodeToString(Error::Code code) {
   switch (code) {
     case Error::Code::kNone:

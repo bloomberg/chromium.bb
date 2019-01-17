@@ -70,12 +70,12 @@ class AutoMessage final
 
   void OnConnectionOpened(
       uint64_t request_id,
-      std::unique_ptr<ProtocolConnection>&& connection) override {
+      std::unique_ptr<ProtocolConnection> connection) override {
     request_ = ProtocolConnectionClient::ConnectRequest();
     msgs::CborEncodeBuffer buffer;
     msgs::PresentationConnectionMessage message;
     message.connection_id = 0;
-    message.presentation_id = "presentation-id-foo";
+    message.presentation_id = "qD0wuy6EIwQFfIEe9BKl";
     message.message.which = decltype(message.message.which)::kString;
     new (&message.message.str) std::string("message from client");
     if (msgs::EncodePresentationConnectionMessage(message, &buffer))
@@ -180,7 +180,7 @@ class ConnectionServerObserver final
   void OnError(const Error& error) override {}
 
   void OnIncomingConnection(
-      std::unique_ptr<ProtocolConnection>&& connection) override {
+      std::unique_ptr<ProtocolConnection> connection) override {
     auto observer = std::make_unique<ConnectionObserver>(this);
     connection->SetObserver(observer.get());
     connections_.emplace_back(std::move(observer), std::move(connection));

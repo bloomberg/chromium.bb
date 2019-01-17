@@ -40,7 +40,7 @@ class MockServerObserver final : public ProtocolConnectionServer::Observer {
   MOCK_METHOD0(OnSuspended, void());
 
   void OnIncomingConnection(
-      std::unique_ptr<ProtocolConnection>&& connection) override {
+      std::unique_ptr<ProtocolConnection> connection) override {
     OnIncomingConnectionMock(connection);
   }
   MOCK_METHOD1(OnIncomingConnectionMock,

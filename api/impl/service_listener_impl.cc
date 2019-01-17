@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "api/impl/service_listener_impl.h"
+
 #include "base/error.h"
 #include "platform/api/logging.h"
 

@@ -4,7 +4,11 @@
 
 #include "platform/api/network_interface.h"
 
+// clang-format off
+// NOTE: this header MUST be included before linux/if_arp and others, as
+// they depend on struct sockaddr being a complete type.
 #include <sys/socket.h>
+// clang-format on
 
 #include <linux/ethtool.h>
 #include <linux/if_arp.h>
@@ -361,8 +365,8 @@ std::vector<InterfaceAddresses> GetAddressInfo(
         InterfaceAddresses* addresses = FindOrAddAddressesForIndex(
             &address_list, info_list, interface_address->ifa_index);
         if (!addresses) {
-          OSP_DVLOG(1) << "skipping address for interface "
-                       << interface_address->ifa_index;
+          OSP_DVLOG << "skipping address for interface "
+                    << interface_address->ifa_index;
           continue;
         }
 

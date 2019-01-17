@@ -111,7 +111,7 @@ uint64_t QuicServer::OnCryptoHandshakeComplete(
 }
 
 void QuicServer::OnIncomingStream(
-    std::unique_ptr<QuicProtocolConnection>&& connection) {
+    std::unique_ptr<QuicProtocolConnection> connection) {
   OSP_DCHECK_EQ(state_, State::kRunning);
   observer_->OnIncomingConnection(std::move(connection));
 }
@@ -158,7 +158,7 @@ QuicConnection::Delegate* QuicServer::NextConnectionDelegate(
 }
 
 void QuicServer::OnIncomingConnection(
-    std::unique_ptr<QuicConnection>&& connection) {
+    std::unique_ptr<QuicConnection> connection) {
   OSP_DCHECK_EQ(state_, State::kRunning);
   const IPEndpoint& endpoint = pending_connection_delegate_->endpoint();
   pending_connections_.emplace(

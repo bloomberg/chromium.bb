@@ -57,7 +57,7 @@ class QuicClient final : public ProtocolConnectionClient,
   uint64_t OnCryptoHandshakeComplete(ServiceConnectionDelegate* delegate,
                                      uint64_t connection_id) override;
   void OnIncomingStream(
-      std::unique_ptr<QuicProtocolConnection>&& connection) override;
+      std::unique_ptr<QuicProtocolConnection> connection) override;
   void OnConnectionClosed(uint64_t endpoint_id,
                           uint64_t connection_id) override;
   void OnDataReceived(uint64_t endpoint_id,

@@ -10,7 +10,6 @@ open-screen-message =
   #6.2020(presentation-connection-open-request) /
   #6.2021(presentation-connection-open-response) /
   #6.2022(presentation-connection-close-request) /
-  #6.2023(presentation-connection-close-response) /
   #6.2024(presentation-connection-close-event) /
   #6.2030(presentation-connection-message) /
   #6.2040(presentation-receiver-status-event)
@@ -50,6 +49,7 @@ timestamp = (
 presentation-url-availability-request = {
   request
   urls: [* url]
+  watch-duration: uint
   watch-id: uint
 }
 
@@ -152,14 +152,6 @@ presentation-connection-close-request = {
   request
   presentation-id: presentation-id
   connection-id: presentation-connection-id
-}
-
-presentation-connection-close-response = {
-  response
-  result: &(
-    result
-    presentation-unknown-presentation-id
-  )
 }
 
 presentation-connection-close-event = {

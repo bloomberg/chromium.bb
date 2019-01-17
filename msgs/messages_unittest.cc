@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "msgs/osp_messages.h"
-
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 namespace openscreen {
@@ -141,7 +140,7 @@ TEST(PresentationMessagesTest, EncodeConnectionMessageString) {
   uint8_t buffer[256];
   PresentationConnectionMessage message;
   message.connection_id = 1234;
-  message.presentation_id = "deadbeef__";
+  message.presentation_id = "jecAUuV05bSf4O7FzDl1";
   message.message.which =
       PresentationConnectionMessage::Message::Which::kString;
   new (&message.message.str) std::string("test message as a string");
@@ -165,7 +164,7 @@ TEST(PresentationMessagesTest, EncodeConnectionMessageBytes) {
   uint8_t buffer[256];
   PresentationConnectionMessage message;
   message.connection_id = 1234;
-  message.presentation_id = "deadbeef__";
+  message.presentation_id = "FkSyaix6HsXcrCNB";
   message.message.which = PresentationConnectionMessage::Message::Which::kBytes;
   new (&message.message.bytes)
       std::vector<uint8_t>{0, 1, 2, 3, 255, 254, 253, 86, 71, 0, 0, 1, 0, 2};
