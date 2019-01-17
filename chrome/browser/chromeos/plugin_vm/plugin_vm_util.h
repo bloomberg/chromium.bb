@@ -14,6 +14,8 @@ bool IsPluginVmAllowedForProfile(Profile* profile);
 // Checks if PluginVm is configured for the current profile.
 bool IsPluginVmConfigured(Profile* profile);
 
+void ShowPluginVmLauncherView(Profile* profile);
+
 }  // namespace plugin_vm
 
 #endif  // CHROME_BROWSER_CHROMEOS_PLUGIN_VM_PLUGIN_VM_UTIL_H_

@@ -37,11 +37,10 @@ const char* PluginVmAppItem::GetItemType() const {
 void PluginVmAppItem::Activate(int event_flags) {
   if (plugin_vm::IsPluginVmConfigured(profile())) {
     // TODO(http://crbug.com/904853): Start PluginVm.
+    // Manually close app_list view because focus is not changed on PluginVm app
+    // start, and current view remains active.
+    GetController()->DismissView();
   } else {
-    // TODO(http://crbug.com/904852): Show dialog that sets up PluginVm
-    // environment.
+    plugin_vm::ShowPluginVmLauncherView(profile());
   }
-  // Manually close app_list view because focus is not changed on PluginVm app
-  // start, and current view remains active.
-  GetController()->DismissView();
 }

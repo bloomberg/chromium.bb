@@ -3735,4 +3735,31 @@
   <message name="IDS_SMB_SHARES_CREDENTIALS_PASSWORD" desc="Title for the input that lets users specify their password for an SMB Share. This field is optional.">
     Password (optional)
   </message>
+
+  <!-- Strings for PluginVm launcher -->
+  <!-- TODO(okalitova, timloh): Remove translatable flag after strings are finalized. -->
+  <message name="IDS_PLUGIN_VM_LAUNCHER_ENVIRONMENT_SETTING_TITLE" desc="Title of the PluginVm launcher, a dialog for launching PluginVm." translateable="false">
+    Finishing <ph name="APP_NAME">PluginVm</ph> environment setting...
+  </message>
+  <message name="IDS_PLUGIN_VM_LAUNCHER_FINISHED_TITLE" desc="Title of the PluginVm launcher, a dialog for launching PluginVm." translateable="false">
+    <ph name="APP_NAME">PluginVm</ph> environment setting complete
+  </message>
+  <message name="IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE" desc="Title of the PluginVm launcher, a dialog for launching PluginVm." translateable="false">
+    Error setting <ph name="APP_NAME">PluginVm</ph> environment
+  </message>
+  <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOADING_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
+    Downloading <ph name="APP_NAME">PluginVm</ph> image...
+  </message>
+  <message name="IDS_PLUGIN_VM_LAUNCHER_UNZIPPING_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
+    Configuring <ph name="APP_NAME">PluginVm</ph> image...
+  </message>
+  <message name="IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
+    The <ph name="APP_NAME">PluginVm</ph> environment didn't set. Please try again.
+  </message>
+  <message name="IDS_PLUGIN_VM_LAUNCHER_LAUNCH_BUTTON" desc="Label for the button in the PluginVm launcher dialog to launch PluginVm." translateable="false">
+    Launch
+  </message>
+  <message name="IDS_PLUGIN_VM_LAUNCHER_RETRY_BUTTON" desc="Label for the button in the PluginVm launcher dialog to retry PluginVm environment setting." translateable="false">
+    Retry
+  </message>
 </grit-part>
