@@ -48,6 +48,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxPrioritizedOriginDatabase
   bool RemovePathForOrigin(const std::string& origin) override;
   bool ListAllOrigins(std::vector<OriginRecord>* origins) override;
   void DropDatabase() override;
+  void RewriteDatabase() override;
 
   const base::FilePath& primary_origin_file() const {
     return primary_origin_file_;

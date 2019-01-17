@@ -1293,6 +1293,12 @@ void ObfuscatedFileUtil::DropDatabases() {
   timer_.Stop();
 }
 
+void ObfuscatedFileUtil::RewriteDatabases() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (origin_database_)
+    origin_database_->RewriteDatabase();
+}
+
 bool ObfuscatedFileUtil::InitOriginDatabase(const GURL& origin_hint,
                                             bool create) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -140,6 +140,13 @@ void SandboxPrioritizedOriginDatabase::DropDatabase() {
   origin_database_.reset();
 }
 
+void SandboxPrioritizedOriginDatabase::RewriteDatabase() {
+  if (primary_origin_database_)
+    primary_origin_database_->RewriteDatabase();
+  if (origin_database_)
+    origin_database_->RewriteDatabase();
+}
+
 bool SandboxPrioritizedOriginDatabase::MaybeLoadPrimaryOrigin() {
   if (primary_origin_database_)
     return true;

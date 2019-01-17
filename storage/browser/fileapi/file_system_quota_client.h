@@ -55,6 +55,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemQuotaClient
   void DeleteOriginData(const url::Origin& origin,
                         blink::mojom::StorageType type,
                         DeletionCallback callback) override;
+  void PerformStorageCleanup(blink::mojom::StorageType type,
+                             base::OnceClosure callback) override;
   bool DoesSupport(blink::mojom::StorageType type) const override;
 
  private:

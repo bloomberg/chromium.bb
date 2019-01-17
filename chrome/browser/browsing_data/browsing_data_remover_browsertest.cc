@@ -1337,9 +1337,6 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, StorageRemovedFromDisk) {
   // but there are a few bugs that need to be fixed.
   // Any addition to this list must have an associated TODO().
   static const std::vector<std::string> whitelist = {
-    // TODO(crbug.com/823071): LevelDB logs are not deleted immediately.
-    "File System/Origins/[0-9]*.log",
-
 #if defined(OS_CHROMEOS)
     // TODO(crbug.com/846297): Many leveldb files remain on ChromeOS. I couldn't
     // reproduce this in manual testing, so it might be a timing issue when

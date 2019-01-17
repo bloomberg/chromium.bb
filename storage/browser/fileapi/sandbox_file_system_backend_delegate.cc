@@ -360,6 +360,14 @@ SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileTaskRunner(
   return base::File::FILE_ERROR_FAILED;
 }
 
+void SandboxFileSystemBackendDelegate::PerformStorageCleanupOnFileTaskRunner(
+    FileSystemContext* context,
+    storage::QuotaManagerProxy* proxy,
+    FileSystemType type) {
+  DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
+  obfuscated_file_util()->RewriteDatabases();
+}
+
 void SandboxFileSystemBackendDelegate::GetOriginsForTypeOnFileTaskRunner(
     FileSystemType type, std::set<GURL>* origins) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());

@@ -232,6 +232,15 @@ PluginPrivateFileSystemBackend::DeleteOriginDataOnFileTaskRunner(
   return base::File::FILE_ERROR_FAILED;
 }
 
+void PluginPrivateFileSystemBackend::PerformStorageCleanupOnFileTaskRunner(
+    FileSystemContext* context,
+    storage::QuotaManagerProxy* proxy,
+    FileSystemType type) {
+  if (!CanHandleType(type))
+    return;
+  obfuscated_file_util()->RewriteDatabases();
+}
+
 void PluginPrivateFileSystemBackend::GetOriginsForTypeOnFileTaskRunner(
     FileSystemType type,
     std::set<GURL>* origins) {

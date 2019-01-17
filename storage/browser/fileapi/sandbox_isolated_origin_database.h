@@ -38,6 +38,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxIsolatedOriginDatabase
   bool RemovePathForOrigin(const std::string& origin) override;
   bool ListAllOrigins(std::vector<OriginRecord>* origins) override;
   void DropDatabase() override;
+  void RewriteDatabase() override;
 
   // TODO(kinuko): Deprecate this after a few release cycles, e.g. around M33.
   static void MigrateBackFromObsoleteOriginDatabase(

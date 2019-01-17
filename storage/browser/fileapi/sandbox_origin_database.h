@@ -43,6 +43,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxOriginDatabase
                         base::FilePath* directory) override;
   bool RemovePathForOrigin(const std::string& origin) override;
   bool ListAllOrigins(std::vector<OriginRecord>* origins) override;
+  void RewriteDatabase() override;
   void DropDatabase() override;
 
   base::FilePath GetDatabasePath() const;

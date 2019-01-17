@@ -208,6 +208,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
   void MaybePrepopulateDatabase(
       const std::vector<std::string>& type_strings_to_prepopulate);
 
+  void RewriteDatabases();
+
  private:
   using FileId = SandboxDirectoryDatabase::FileId;
   using FileInfo = SandboxDirectoryDatabase::FileInfo;

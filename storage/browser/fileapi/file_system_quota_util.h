@@ -41,6 +41,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemQuotaUtil {
       const GURL& origin_url,
       FileSystemType type) = 0;
 
+  virtual void PerformStorageCleanupOnFileTaskRunner(
+      FileSystemContext* context,
+      storage::QuotaManagerProxy* proxy,
+      FileSystemType type) = 0;
+
   virtual void GetOriginsForTypeOnFileTaskRunner(storage::FileSystemType type,
                                                  std::set<GURL>* origins) = 0;
 

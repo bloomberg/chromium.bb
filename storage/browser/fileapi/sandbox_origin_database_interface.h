@@ -46,6 +46,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxOriginDatabaseInterface {
   // This will release all database resources in use; call it to save memory.
   virtual void DropDatabase() = 0;
 
+  // This will rewrite the database to remove traces of deleted data from disk.
+  virtual void RewriteDatabase() = 0;
+
  protected:
   SandboxOriginDatabaseInterface() {}
 };

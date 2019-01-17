@@ -79,6 +79,15 @@ blink::mojom::QuotaStatusCode DeleteOriginOnFileTaskRunner(
   return blink::mojom::QuotaStatusCode::kErrorInvalidModification;
 }
 
+void PerformStorageCleanupOnFileTaskRunner(FileSystemContext* context,
+                                           FileSystemType type) {
+  FileSystemBackend* provider = context->GetFileSystemBackend(type);
+  if (!provider || !provider->GetQuotaUtil())
+    return;
+  provider->GetQuotaUtil()->PerformStorageCleanupOnFileTaskRunner(
+      context, context->quota_manager_proxy(), type);
+}
+
 }  // namespace
 
 FileSystemQuotaClient::FileSystemQuotaClient(
@@ -181,6 +190,17 @@ void FileSystemQuotaClient::DeleteOriginData(const url::Origin& origin,
       file_task_runner(), FROM_HERE,
       base::BindOnce(&DeleteOriginOnFileTaskRunner,
                      base::RetainedRef(file_system_context_), origin, fs_type),
+      std::move(callback));
+}
+
+void FileSystemQuotaClient::PerformStorageCleanup(StorageType type,
+                                                  base::OnceClosure callback) {
+  FileSystemType fs_type = QuotaStorageTypeToFileSystemType(type);
+  DCHECK(fs_type != kFileSystemTypeUnknown);
+  file_task_runner()->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&PerformStorageCleanupOnFileTaskRunner,
+                     base::RetainedRef(file_system_context_), fs_type),
       std::move(callback));
 }
 
