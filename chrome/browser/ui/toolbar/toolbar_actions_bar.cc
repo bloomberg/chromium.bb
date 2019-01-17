@@ -184,11 +184,15 @@ int ToolbarActionsBar::IconCountToWidth(size_t icons) const {
          (icons - 1) * GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
 }
 
-size_t ToolbarActionsBar::WidthToIconCount(int pixels) const {
+size_t ToolbarActionsBar::WidthToIconCountUnclamped(int pixels) const {
   const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
-  return base::ClampToRange(
-      (pixels + element_padding) / (GetViewSize().width() + element_padding), 0,
-      static_cast<int>(toolbar_actions_.size()));
+  return std::max(
+      (pixels + element_padding) / (GetViewSize().width() + element_padding),
+      0);
+}
+
+size_t ToolbarActionsBar::WidthToIconCount(int pixels) const {
+  return std::min(WidthToIconCountUnclamped(pixels), toolbar_actions_.size());
 }
 
 size_t ToolbarActionsBar::GetIconCount() const {
@@ -378,8 +382,10 @@ bool ToolbarActionsBar::ShowToolbarActionPopup(const std::string& action_id,
 
 void ToolbarActionsBar::SetOverflowRowWidth(int width) {
   DCHECK(in_overflow_mode());
+  // This uses the unclamped icon count to allow the in-menu bar to span the
+  // menu width.
   platform_settings_.icons_per_overflow_menu_row =
-      std::max(WidthToIconCount(width), static_cast<size_t>(1));
+      std::max(WidthToIconCountUnclamped(width), static_cast<size_t>(1));
 }
 
 void ToolbarActionsBar::OnResizeComplete(int width) {
