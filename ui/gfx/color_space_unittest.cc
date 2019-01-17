@@ -133,25 +133,11 @@ TEST(ColorSpace, ConversionToAndFromSkColorSpace) {
   };
 
   // Test that converting from ColorSpace to SkColorSpace is producing an
-  // equivalent representation, and that the SkColorSpace ref-pointers are being
-  // globally cached.
-  sk_sp<SkColorSpace> got_sk_color_spaces[kNumTests];
-  for (size_t i = 0; i < kNumTests; ++i)
-    got_sk_color_spaces[i] = color_spaces[i].ToSkColorSpace();
+  // equivalent representation.
   for (size_t i = 0; i < kNumTests; ++i) {
-    EXPECT_TRUE(SkColorSpace::Equals(got_sk_color_spaces[i].get(),
+    EXPECT_TRUE(SkColorSpace::Equals(color_spaces[i].ToSkColorSpace().get(),
                                      sk_color_spaces[i].get()))
         << " on iteration i = " << i;
-    // ToSkColorSpace should return the same thing every time.
-    EXPECT_EQ(got_sk_color_spaces[i].get(),
-              color_spaces[i].ToSkColorSpace().get())
-        << " on iteration i = " << i;
-    // But there is no cache within Skia, except for sRGB.
-    // This test may start failing if this behavior changes.
-    if (i != 0) {
-      EXPECT_NE(got_sk_color_spaces[i].get(), sk_color_spaces[i].get())
-          << " on iteration i = " << i;
-    }
   }
 
   // Invariant test: Test that converting a SkColorSpace to a ColorSpace is
