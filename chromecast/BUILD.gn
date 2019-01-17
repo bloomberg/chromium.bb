@@ -256,6 +256,10 @@ cast_test_group("cast_tests") {
     # the cast IsSupporedVideoConfigs ignore the transfer function parameter.
     # (b/36984215).
     gtest_excludes = [ "*.IsSupportedVideoConfig_VP9TransferFunctions" ]
+    if (is_android_things) {
+      gtest_excludes +=
+          [ "FontUniqueNameLookupTest.TestMatchPostScriptNameTtc" ]
+    }
     if (target_os == "linux" && !is_cast_desktop_build) {
       # DesktopCaptureDeviceTest.*: No capture device on Eureka
       # Disable PepperGamepadHostTest.WaitForReply (pepper not supported on Eureka)
