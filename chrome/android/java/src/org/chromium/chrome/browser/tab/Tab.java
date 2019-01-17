@@ -2445,17 +2445,12 @@ public class Tab
     }
 
     public void setTopControlsHeight(int height, boolean controlsResizeView) {
-        float scale = getWindowAndroid().getDisplay().getDipScale();
-        mTopControlsHeight = (int) Math.ceil(height / scale);
+        mTopControlsHeight = height;
         mControlsResizeView = controlsResizeView;
     }
 
     public void setBottomControlsHeight(int height) {
-        // TODO(mdjones): We should use a single unit of measurement for tracking browser control
-        //                height. Conversion to/from px and dp in various places causes complexity
-        //                in logic and rounding errors.
-        float scale = getWindowAndroid().getDisplay().getDipScale();
-        mBottomControlsHeight = (int) Math.ceil(height / scale);
+        mBottomControlsHeight = height;
     }
 
     int getTopControlsHeight() {

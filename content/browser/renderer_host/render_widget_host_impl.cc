@@ -880,10 +880,12 @@ bool RenderWidgetHostImpl::GetVisualProperties(
     visual_properties->top_controls_height = view_->GetTopControlsHeight();
     visual_properties->bottom_controls_height =
         view_->GetBottomControlsHeight();
-    if (IsUseZoomForDSFEnabled()) {
+    if (!IsUseZoomForDSFEnabled()) {
       float device_scale = visual_properties->screen_info.device_scale_factor;
-      visual_properties->top_controls_height *= device_scale;
-      visual_properties->bottom_controls_height *= device_scale;
+      if (device_scale != 0.f) {
+        visual_properties->top_controls_height /= device_scale;
+        visual_properties->bottom_controls_height /= device_scale;
+      }
     }
     visual_properties->browser_controls_shrink_blink_size =
         view_->DoBrowserControlsShrinkRendererSize();

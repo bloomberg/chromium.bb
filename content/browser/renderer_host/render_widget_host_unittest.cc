@@ -1964,31 +1964,6 @@ TEST_F(RenderWidgetHostTest, VisualProperties) {
             visual_properties.compositor_viewport_pixel_size);
 }
 
-TEST_F(RenderWidgetHostTest, VisualPropertiesDeviceScale) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitchASCII(switches::kEnableUseZoomForDSF, "true");
-
-  float device_scale = 3.5f;
-  ScreenInfo screen_info;
-  screen_info.device_scale_factor = device_scale;
-
-  view_->SetScreenInfo(screen_info);
-  host_->SynchronizeVisualProperties();
-
-  float top_controls_height = 10.0f;
-  float bottom_controls_height = 20.0f;
-  view_->set_top_controls_height(top_controls_height);
-  view_->set_bottom_controls_height(bottom_controls_height);
-
-  VisualProperties visual_properties;
-  bool needs_ack = false;
-  host_->GetVisualProperties(&visual_properties, &needs_ack);
-  EXPECT_EQ(top_controls_height * device_scale,
-            visual_properties.top_controls_height);
-  EXPECT_EQ(bottom_controls_height * device_scale,
-            visual_properties.bottom_controls_height);
-}
-
 // Make sure no dragging occurs after renderer exited. See crbug.com/704832.
 // DISABLED for crbug.com/908012
 TEST_F(RenderWidgetHostTest, DISABLED_RendererExitedNoDrag) {
