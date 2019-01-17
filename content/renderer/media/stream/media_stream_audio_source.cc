@@ -70,8 +70,8 @@ bool MediaStreamAudioSource::ConnectToTrack(
   // Create and initialize a new MediaStreamAudioTrack and pass ownership of it
   // to the WebMediaStreamTrack.
   blink::WebMediaStreamTrack mutable_blink_track = blink_track;
-  mutable_blink_track.SetTrackData(
-      CreateMediaStreamAudioTrack(blink_track.Id().Utf8()).release());
+  mutable_blink_track.SetPlatformTrack(
+      CreateMediaStreamAudioTrack(blink_track.Id().Utf8()));
 
   // Propagate initial "enabled" state.
   MediaStreamAudioTrack* const track = MediaStreamAudioTrack::From(blink_track);

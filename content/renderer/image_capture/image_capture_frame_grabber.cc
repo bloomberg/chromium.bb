@@ -119,7 +119,7 @@ void ImageCaptureFrameGrabber::GrabFrame(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!!callbacks);
 
-  DCHECK(track && !track->IsNull() && track->GetTrackData());
+  DCHECK(track && !track->IsNull() && track->GetPlatformTrack());
   DCHECK_EQ(blink::WebMediaStreamSource::kTypeVideo, track->Source().GetType());
 
   if (frame_grab_in_progress_) {

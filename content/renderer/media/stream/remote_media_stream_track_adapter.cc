@@ -47,9 +47,8 @@ void RemoteVideoTrackAdapter::InitializeWebVideoTrack(
   capabilities.device_id = blink::WebString::FromUTF8(id());
   web_track()->Source().SetCapabilities(capabilities);
 
-  MediaStreamVideoTrack* media_stream_track = new MediaStreamVideoTrack(
-      video_source, MediaStreamVideoSource::ConstraintsCallback(), enabled);
-  web_track()->SetTrackData(media_stream_track);
+  web_track()->SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
+      video_source, MediaStreamVideoSource::ConstraintsCallback(), enabled));
 }
 
 RemoteAudioTrackAdapter::RemoteAudioTrackAdapter(

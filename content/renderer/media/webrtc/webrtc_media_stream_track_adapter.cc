@@ -144,7 +144,7 @@ bool WebRtcMediaStreamTrackAdapter::IsEqual(
     const blink::WebMediaStreamTrack& web_track) {
   DCHECK(main_thread_->BelongsToCurrentThread());
   EnsureTrackIsInitialized();
-  return web_track_.GetTrackData() == web_track.GetTrackData();
+  return web_track_.GetPlatformTrack() == web_track.GetPlatformTrack();
 }
 
 void WebRtcMediaStreamTrackAdapter::InitializeLocalAudioTrack(

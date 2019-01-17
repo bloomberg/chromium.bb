@@ -74,13 +74,13 @@ void CreateNativeAudioMediaStreamTrack(
 }
 
 void CreateNativeVideoMediaStreamTrack(blink::WebMediaStreamTrack track) {
-  DCHECK(track.GetTrackData() == nullptr);
+  DCHECK(track.GetPlatformTrack() == nullptr);
   blink::WebMediaStreamSource source = track.Source();
   DCHECK_EQ(source.GetType(), blink::WebMediaStreamSource::kTypeVideo);
   MediaStreamVideoSource* native_source =
       MediaStreamVideoSource::GetVideoSource(source);
   DCHECK(native_source);
-  track.SetTrackData(new MediaStreamVideoTrack(
+  track.SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
       native_source, MediaStreamVideoSource::ConstraintsCallback(),
       track.IsEnabled()));
 }
@@ -88,7 +88,7 @@ void CreateNativeVideoMediaStreamTrack(blink::WebMediaStreamTrack track) {
 void CloneNativeVideoMediaStreamTrack(
     const blink::WebMediaStreamTrack& original,
     blink::WebMediaStreamTrack clone) {
-  DCHECK(!clone.GetTrackData());
+  DCHECK(!clone.GetPlatformTrack());
   blink::WebMediaStreamSource source = clone.Source();
   DCHECK_EQ(source.GetType(), blink::WebMediaStreamSource::kTypeVideo);
   MediaStreamVideoSource* native_source =
@@ -97,7 +97,7 @@ void CloneNativeVideoMediaStreamTrack(
   MediaStreamVideoTrack* original_track =
       MediaStreamVideoTrack::GetVideoTrack(original);
   DCHECK(original_track);
-  clone.SetTrackData(new MediaStreamVideoTrack(
+  clone.SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
       native_source, original_track->adapter_settings(),
       original_track->noise_reduction(), original_track->is_screencast(),
       original_track->min_frame_rate(),
@@ -113,7 +113,7 @@ MediaStreamCenter::~MediaStreamCenter() = default;
 void MediaStreamCenter::DidCreateMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
   DVLOG(1) << "MediaStreamCenter::didCreateMediaStreamTrack";
-  DCHECK(!track.IsNull() && !track.GetTrackData());
+  DCHECK(!track.IsNull() && !track.GetPlatformTrack());
   DCHECK(!track.Source().IsNull());
 
   switch (track.Source().GetType()) {
@@ -130,7 +130,7 @@ void MediaStreamCenter::DidCloneMediaStreamTrack(
     const blink::WebMediaStreamTrack& original,
     const blink::WebMediaStreamTrack& clone) {
   DCHECK(!clone.IsNull());
-  DCHECK(!clone.GetTrackData());
+  DCHECK(!clone.GetPlatformTrack());
   DCHECK(!clone.Source().IsNull());
 
   switch (clone.Source().GetType()) {
@@ -172,7 +172,7 @@ MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
   DVLOG(1) << "MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack";
   blink::PlatformMediaStreamTrack* media_stream_track =
-      static_cast<blink::PlatformMediaStreamTrack*>(track.GetTrackData());
+      track.GetPlatformTrack();
   if (!media_stream_track) {
     DLOG(ERROR) << "Native track missing for webaudio source.";
     return nullptr;

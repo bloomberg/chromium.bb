@@ -79,7 +79,7 @@ class VideoTrackRecorderTest
     track_ = new MediaStreamVideoTrack(
         mock_source_, blink::PlatformMediaStreamSource::ConstraintsCallback(),
         true /* enabled */);
-    blink_track_.SetTrackData(track_);
+    blink_track_.SetPlatformTrack(base::WrapUnique(track_));
 
     // Paranoia checks.
     EXPECT_EQ(blink_track_.Source().GetPlatformSource(),

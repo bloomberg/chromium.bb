@@ -207,7 +207,8 @@ blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     bool enabled) {
   blink::WebMediaStreamTrack track;
   track.Initialize(source->Owner());
-  track.SetTrackData(new MediaStreamVideoTrack(source, callback, enabled));
+  track.SetPlatformTrack(
+      std::make_unique<MediaStreamVideoTrack>(source, callback, enabled));
   return track;
 }
 
@@ -219,7 +220,8 @@ blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     bool enabled) {
   blink::WebMediaStreamTrack track;
   track.Initialize(id, source->Owner());
-  track.SetTrackData(new MediaStreamVideoTrack(source, callback, enabled));
+  track.SetPlatformTrack(
+      std::make_unique<MediaStreamVideoTrack>(source, callback, enabled));
   return track;
 }
 
@@ -234,7 +236,7 @@ blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     bool enabled) {
   blink::WebMediaStreamTrack track;
   track.Initialize(source->Owner());
-  track.SetTrackData(new MediaStreamVideoTrack(
+  track.SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
       source, adapter_settings, noise_reduction, is_screencast, min_frame_rate,
       callback, enabled));
   return track;
@@ -247,7 +249,7 @@ MediaStreamVideoTrack* MediaStreamVideoTrack::GetVideoTrack(
       track.Source().GetType() != blink::WebMediaStreamSource::kTypeVideo) {
     return nullptr;
   }
-  return static_cast<MediaStreamVideoTrack*>(track.GetTrackData());
+  return static_cast<MediaStreamVideoTrack*>(track.GetPlatformTrack());
 }
 
 MediaStreamVideoTrack::MediaStreamVideoTrack(

@@ -38,25 +38,6 @@
 
 namespace blink {
 
-namespace {
-
-class TrackDataContainer : public MediaStreamComponent::TrackData {
- public:
-  explicit TrackDataContainer(
-      std::unique_ptr<WebMediaStreamTrack::TrackData> extra_data)
-      : extra_data_(std::move(extra_data)) {}
-
-  WebMediaStreamTrack::TrackData* GetTrackData() { return extra_data_.get(); }
-  void GetSettings(WebMediaStreamTrack::Settings& settings) override {
-    extra_data_->GetSettings(settings);
-  }
-
- private:
-  std::unique_ptr<WebMediaStreamTrack::TrackData> extra_data_;
-};
-
-}  // namespace
-
 const char WebMediaStreamTrack::kResizeModeNone[] = "none";
 const char WebMediaStreamTrack::kResizeModeRescale[] = "crop-and-scale";
 
@@ -128,18 +109,14 @@ WebMediaStreamSource WebMediaStreamTrack::Source() const {
   return WebMediaStreamSource(private_->Source());
 }
 
-WebMediaStreamTrack::TrackData* WebMediaStreamTrack::GetTrackData() const {
-  MediaStreamComponent::TrackData* data = private_->GetTrackData();
-  if (!data)
-    return nullptr;
-  return static_cast<TrackDataContainer*>(data)->GetTrackData();
+PlatformMediaStreamTrack* WebMediaStreamTrack::GetPlatformTrack() const {
+  return private_->GetPlatformTrack();
 }
 
-void WebMediaStreamTrack::SetTrackData(TrackData* extra_data) {
+void WebMediaStreamTrack::SetPlatformTrack(
+    std::unique_ptr<PlatformMediaStreamTrack> platform_track) {
   DCHECK(!private_.IsNull());
-
-  private_->SetTrackData(
-      std::make_unique<TrackDataContainer>(base::WrapUnique(extra_data)));
+  private_->SetPlatformTrack(std::move(platform_track));
 }
 
 void WebMediaStreamTrack::SetSourceProvider(WebAudioSourceProvider* provider) {

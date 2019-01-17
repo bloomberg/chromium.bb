@@ -485,7 +485,7 @@ void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
       false /* is_device_capture */));
 
   web_track->Initialize(webkit_source);
-  web_track->SetTrackData(new MediaStreamVideoTrack(
+  web_track->SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
       media_stream_source, MediaStreamVideoSource::ConstraintsCallback(),
       true));
 }
