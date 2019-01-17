@@ -153,17 +153,30 @@ void Service::OnVoiceInteractionSettingsEnabled(bool enabled) {
 }
 
 void Service::OnVoiceInteractionHotwordEnabled(bool enabled) {
-  if (assistant_manager_service_ &&
-      assistant_manager_service_->GetState() !=
-          AssistantManagerService::State::STOPPED) {
-    // Hotword status change requires restarting assistant manager.
-    StopAssistantManagerService();
-  }
-
-  UpdateAssistantManagerState();
+  // Hotword status change requires restarting assistant manager.
+  MaybeRestartAssistantManager();
 }
 
 void Service::OnLocaleChanged(const std::string& locale) {
+  UpdateAssistantManagerState();
+}
+
+void Service::MaybeRestartAssistantManager() {
+  if (assistant_manager_service_) {
+    switch (assistant_manager_service_->GetState()) {
+      case AssistantManagerService::State::RUNNING:
+        StopAssistantManagerService();
+        break;
+      case AssistantManagerService::State::STARTED:
+        // A previous instance of assistant manager is still in the process
+        // of starting. We need to wait for that to finish before trying to
+        // restart a new one to avoid potentially multiple instances running.
+        pending_restart_assistant_manager_ = true;
+        return;
+      case AssistantManagerService::State::STOPPED:
+        break;
+    }
+  }
   UpdateAssistantManagerState();
 }
 
@@ -331,6 +344,12 @@ void Service::FinalizeAssistantManagerService() {
   client_->OnAssistantStatusChanged(true /* running */);
   UpdateListeningState();
   DVLOG(1) << "Assistant is running";
+
+  if (pending_restart_assistant_manager_) {
+    pending_restart_assistant_manager_ = false;
+    StopAssistantManagerService();
+    UpdateAssistantManagerState();
+  }
 }
 
 void Service::StopAssistantManagerService() {

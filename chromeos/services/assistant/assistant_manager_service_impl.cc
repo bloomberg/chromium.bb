@@ -126,6 +126,7 @@ void AssistantManagerServiceImpl::Start(const std::string& access_token,
                                         bool enable_hotword,
                                         base::OnceClosure post_init_callback) {
   DCHECK(!assistant_manager_);
+  DCHECK_EQ(state_, State::STOPPED);
 
   // Set the flag to avoid starting the service multiple times.
   state_ = State::STARTED;
@@ -159,6 +160,9 @@ void AssistantManagerServiceImpl::Start(const std::string& access_token,
 }
 
 void AssistantManagerServiceImpl::Stop() {
+  // We cannot cleanly stop the service if it is in the process of starting up.
+  DCHECK_NE(state_, State::STARTED);
+
   state_ = State::STOPPED;
 
   assistant_manager_internal_ = nullptr;
@@ -774,6 +778,7 @@ void AssistantManagerServiceImpl::PostInitAssistant(
     base::OnceClosure post_init_callback,
     std::unique_ptr<assistant_client::AssistantManager>* assistant_manager) {
   DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
+  DCHECK_EQ(state_, State::STARTED);
 
   assistant_manager_ = std::move(*assistant_manager);
   assistant_manager_internal_ =
