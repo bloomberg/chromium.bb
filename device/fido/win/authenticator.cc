@@ -122,7 +122,9 @@ void WinWebAuthnApiAuthenticator::MakeCredential(
           WEBAUTHN_EXTENSIONS{0, nullptr},  // will be set later
           authenticator_attachment, request.resident_key_required(),
           ToWinUserVerificationRequirement(request.user_verification()),
-          WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT, 0 /* flags */,
+          ToWinAttestationConveyancePreference(
+              request.attestation_preference()),
+          0 /* flags */,
           nullptr,  // pCancellationId -- will be set later
           nullptr,  // pExcludeCredentialList -- will be set later
       },

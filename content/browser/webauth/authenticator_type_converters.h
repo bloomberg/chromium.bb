@@ -104,6 +104,13 @@ struct TypeConverter<std::vector<::device::CableDiscoveryData>,
       const std::vector<::blink::mojom::CableAuthenticationPtr>& input);
 };
 
+template <>
+struct TypeConverter<::device::AttestationConveyancePreference,
+                     ::blink::mojom::AttestationConveyancePreference> {
+  static ::device::AttestationConveyancePreference Convert(
+      const ::blink::mojom::AttestationConveyancePreference& input);
+};
+
 }  // namespace mojo
 
 #endif  // CONTENT_BROWSER_WEBAUTH_AUTHENTICATOR_TYPE_CONVERTERS_H_

@@ -183,7 +183,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   MakeCredentialCallback make_credential_response_callback_;
   GetAssertionCallback get_assertion_response_callback_;
   std::string client_data_json_;
-  blink::mojom::AttestationConveyancePreference attestation_preference_;
+  bool attestation_requested_;
   url::Origin caller_origin_;
   std::string relying_party_id_;
   std::unique_ptr<base::OneShotTimer> timer_;
