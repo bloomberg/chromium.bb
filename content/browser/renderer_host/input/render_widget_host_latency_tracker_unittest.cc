@@ -195,8 +195,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestValidEventTiming) {
   // When last_event_time of the end_component is less than the first_event_time
   // of the start_component, zero is recorded instead of a negative value.
   histogram_tester().ExpectUniqueSample(
-      "Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin2", 0, 1);
-  histogram_tester().ExpectUniqueSample(
       "Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4", 0, 1);
   histogram_tester().ExpectUniqueSample(
       "Event.Latency.Scroll.Wheel.TimeToScrollUpdateSwapBegin2", 0, 1);
@@ -261,20 +259,12 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
                           0));
       EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.ScrollBegin.Wheel."
-                          "TimeToScrollUpdateSwapBegin2",
-                          1));
-      EXPECT_TRUE(
-          HistogramSizeEq("Event.Latency.ScrollBegin.Wheel."
                           "TimeToScrollUpdateSwapBegin4",
                           1));
       EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.Scroll.Wheel."
                           "TimeToScrollUpdateSwapBegin2",
                           1));
-      EXPECT_TRUE(
-          HistogramSizeEq("Event.Latency.ScrollUpdate.Wheel."
-                          "TimeToScrollUpdateSwapBegin2",
-                          0));
       EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.ScrollUpdate.Wheel."
                           "TimeToScrollUpdateSwapBegin4",
@@ -374,18 +364,10 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
                           1));
       EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.ScrollBegin.Wheel."
-                          "TimeToScrollUpdateSwapBegin2",
-                          0));
-      EXPECT_TRUE(
-          HistogramSizeEq("Event.Latency.ScrollBegin.Wheel."
                           "TimeToScrollUpdateSwapBegin4",
                           0));
       EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.Scroll.Wheel."
-                          "TimeToScrollUpdateSwapBegin2",
-                          1));
-      EXPECT_TRUE(
-          HistogramSizeEq("Event.Latency.ScrollUpdate.Wheel."
                           "TimeToScrollUpdateSwapBegin2",
                           1));
       EXPECT_TRUE(
@@ -466,10 +448,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestInertialToScrollHistograms) {
     }
 
     // UMA histograms.
-    EXPECT_TRUE(
-        HistogramSizeEq("Event.Latency.ScrollInertial.Touch."
-                        "TimeToScrollUpdateSwapBegin2",
-                        1));
     EXPECT_TRUE(
         HistogramSizeEq("Event.Latency.ScrollInertial.Touch."
                         "TimeToScrollUpdateSwapBegin4",
@@ -563,12 +541,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
                         "TimeToScrollUpdateSwapBegin2",
                         0));
     EXPECT_TRUE(HistogramSizeEq(
-        "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin2", 1));
-    EXPECT_TRUE(HistogramSizeEq(
         "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4", 1));
 
-    EXPECT_TRUE(HistogramSizeEq(
-        "Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin2", 0));
     EXPECT_TRUE(HistogramSizeEq(
         "Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4", 0));
 
@@ -676,11 +650,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
                         "TimeToScrollUpdateSwapBegin2",
                         1));
     EXPECT_TRUE(HistogramSizeEq(
-        "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin2", 0));
-    EXPECT_TRUE(HistogramSizeEq(
         "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4", 0));
-    EXPECT_TRUE(HistogramSizeEq(
-        "Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin2", 1));
     EXPECT_TRUE(HistogramSizeEq(
         "Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4", 1));
     EXPECT_TRUE(HistogramSizeEq(

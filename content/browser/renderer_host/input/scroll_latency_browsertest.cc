@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest, SmoothWheelScroll) {
 
   DoSmoothWheelScroll(gfx::Vector2d(0, 100));
   while (!VerifyRecordedSamplesForHistogram(
-      1, "Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin2")) {
+      1, "Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4")) {
     GiveItSomeTime();
     FetchHistogramsFromChildProcesses();
   }
@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest,
   EXPECT_TRUE(VerifyRecordedSamplesForHistogram(
       0, "Event.Latency.ScrollBegin.Touch.TimeToHandled2_Impl"));
   EXPECT_TRUE(VerifyRecordedSamplesForHistogram(
-      0, "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin2"));
+      0, "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4"));
 }
 
 }  // namespace content

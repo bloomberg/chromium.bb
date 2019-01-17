@@ -195,15 +195,6 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
             ".TimeToScrollUpdateSwapBegin4",
         original_timestamp, gpu_swap_begin_timestamp);
 
-    // This is the same metric as above. But due to a change in rebucketing,
-    // UMA pipeline cannot process this for the chirp alerts. Hence adding a
-    // newer version the this metric above. TODO(nzolghadr): Remove it in a
-    // future milesone like M70.
-    UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
-        "Event.Latency." + scroll_name + "." + input_modality +
-            ".TimeToScrollUpdateSwapBegin2",
-        original_timestamp, gpu_swap_begin_timestamp);
-
     if (input_modality == "Wheel") {
       RecordUmaEventLatencyScrollWheelTimeToScrollUpdateSwapBegin2Histogram(
           original_timestamp, gpu_swap_begin_timestamp);
@@ -230,15 +221,6 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
     UMA_HISTOGRAM_INPUT_LATENCY_5_SECONDS_MAX_MICROSECONDS(
         "Event.Latency." + scroll_name + "." + input_modality +
             ".TimeToScrollUpdateSwapBegin4",
-        original_timestamp, gpu_swap_begin_timestamp);
-
-    // This is the same metric as above. But due to a change in rebucketing,
-    // UMA pipeline cannot process this for the chirp alerts. Hence adding a
-    // newer version the this metric above. TODO(nzolghadr): Remove it in a
-    // future milesone like M70.
-    UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
-        "Event.Latency." + scroll_name + "." + input_modality +
-            ".TimeToScrollUpdateSwapBegin2",
         original_timestamp, gpu_swap_begin_timestamp);
 
     if (input_modality == "Wheel") {
