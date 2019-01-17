@@ -112,11 +112,6 @@ set_aom_config_var(CONFIG_MAX_DECODE_PROFILE 2 NUMBER
                    "Max profile to support decoding.")
 set_aom_config_var(CONFIG_NORMAL_TILE_MODE 0 NUMBER
                    "Only enables normal tile mode.")
-set_aom_config_var(
-  CONFIG_REDUCED_ENCODER_BORDER 0 NUMBER
-  "Enable reduced border extention for encoder. \
-                    Disables superres and resize support."
-  )
 set_aom_config_var(CONFIG_SIZE_LIMIT 0 NUMBER "Limit max decode width/height.")
 set_aom_config_var(CONFIG_SPATIAL_RESAMPLING 1 NUMBER "Spatial resampling.")
 set_aom_config_var(DECODE_HEIGHT_LIMIT 0 NUMBER "Set limit for decode height.")

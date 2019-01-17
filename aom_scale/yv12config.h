@@ -24,15 +24,7 @@ extern "C" {
 
 #define AOMINNERBORDERINPIXELS 160
 #define AOM_INTERP_EXTEND 4
-
-// TODO(jingning): Use unified inter predictor for encoder and
-// decoder during the development process. Revisit the frame border
-// to improve the decoder performance.
-#if CONFIG_REDUCED_ENCODER_BORDER
-#define AOM_BORDER_IN_PIXELS 160
-#else
 #define AOM_BORDER_IN_PIXELS 288
-#endif  // CONFIG_REDUCED_ENCODER_BORDER
 #define AOM_ENC_NO_SCALE_BORDER 160
 #define AOM_DEC_BORDER_IN_PIXELS 64
 
