@@ -1166,8 +1166,8 @@ SimpleURLLoaderImpl::SimpleURLLoaderImpl(
       //
       // TODO(mmenke): Add a similar method for bytes, to allow streaming of
       // large byte buffers to the network process when uploading.
-      DCHECK(element.type() != DataElement::TYPE_FILE &&
-             element.type() != DataElement::TYPE_BYTES);
+      DCHECK(element.type() != mojom::DataElementType::kFile &&
+             element.type() != mojom::DataElementType::kBytes);
     }
   }
 #endif  // DCHECK_IS_ON()
@@ -1356,7 +1356,7 @@ void SimpleURLLoaderImpl::SetRetryOptions(int max_retries, int retry_mode) {
       // pipe.
       // TODO(mmenke):  Data pipes can be Cloned(), though, so maybe update code
       // to do that?
-      DCHECK(element.type() != DataElement::TYPE_DATA_PIPE);
+      DCHECK(element.type() != mojom::DataElementType::kDataPipe);
     }
   }
 #endif  // DCHECK_IS_ON()

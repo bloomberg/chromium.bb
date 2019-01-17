@@ -84,7 +84,8 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequestBody
   void set_identifier(int64_t id) { identifier_ = id; }
   int64_t identifier() const { return identifier_; }
 
-  // Returns paths referred to by |elements| of type DataElement::TYPE_FILE.
+  // Returns paths referred to by |elements| of type
+  // network::mojom::DataElementType::kFile.
   std::vector<base::FilePath> GetReferencedFiles() const;
 
   // Sets the flag which indicates whether the post data contains sensitive

@@ -42,7 +42,7 @@ bool BodyHasNoDataPipeGetters(const network::ResourceRequestBody* body) {
   if (!body)
     return true;
   for (const auto& elem : *body->elements()) {
-    if (elem.type() == network::DataElement::TYPE_DATA_PIPE)
+    if (elem.type() == network::mojom::DataElementType::kDataPipe)
       return false;
   }
   return true;

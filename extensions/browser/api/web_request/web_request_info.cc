@@ -166,16 +166,16 @@ bool CreateUploadDataSourcesFromResourceRequest(
 
   for (auto& element : *request.request_body->elements()) {
     switch (element.type()) {
-      case network::DataElement::TYPE_DATA_PIPE:
+      case network::mojom::DataElementType::kDataPipe:
         // TODO(https://crbug.com/721414): Support data pipe elements.
         break;
 
-      case network::DataElement::TYPE_BYTES:
+      case network::mojom::DataElementType::kBytes:
         data_sources->push_back(std::make_unique<BytesUploadDataSource>(
             base::StringPiece(element.bytes(), element.length())));
         break;
 
-      case network::DataElement::TYPE_FILE:
+      case network::mojom::DataElementType::kFile:
         // TODO(https://crbug.com/715679): This may not work when network
         // process is sandboxed.
         data_sources->push_back(

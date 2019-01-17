@@ -260,7 +260,7 @@ class Helper : public EmbeddedWorkerTestHelper {
     // So far this test expects a single bytes element.
     ASSERT_EQ(1u, elements->size());
     const network::DataElement& element = elements->front();
-    ASSERT_EQ(network::DataElement::TYPE_BYTES, element.type());
+    ASSERT_EQ(network::mojom::DataElementType::kBytes, element.type());
     *out_string = std::string(element.bytes(), element.length());
   }
 

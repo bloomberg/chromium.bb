@@ -313,10 +313,10 @@ WebHTTPBody GetWebHTTPBodyForRequestBodyWithBlobPtrs(
   auto blob_ptr_iter = blob_ptrs.begin();
   for (auto& element : *input.elements()) {
     switch (element.type()) {
-      case network::DataElement::TYPE_BYTES:
+      case network::mojom::DataElementType::kBytes:
         http_body.AppendData(WebData(element.bytes(), element.length()));
         break;
-      case network::DataElement::TYPE_FILE:
+      case network::mojom::DataElementType::kFile:
         http_body.AppendFileRange(
             blink::FilePathToWebString(element.path()), element.offset(),
             (element.length() != std::numeric_limits<uint64_t>::max())
@@ -324,7 +324,7 @@ WebHTTPBody GetWebHTTPBodyForRequestBodyWithBlobPtrs(
                 : -1,
             element.expected_modification_time().ToDoubleT());
         break;
-      case network::DataElement::TYPE_BLOB:
+      case network::mojom::DataElementType::kBlob:
         if (blob_ptrs.empty()) {
           http_body.AppendBlob(WebString::FromASCII(element.blob_uuid()));
         } else {
@@ -334,14 +334,14 @@ WebHTTPBody GetWebHTTPBodyForRequestBodyWithBlobPtrs(
                                element.length(), blob.PassHandle());
         }
         break;
-      case network::DataElement::TYPE_DATA_PIPE: {
+      case network::mojom::DataElementType::kDataPipe: {
         http_body.AppendDataPipe(
             element.CloneDataPipeGetter().PassInterface().PassHandle());
         break;
       }
-      case network::DataElement::TYPE_UNKNOWN:
-      case network::DataElement::TYPE_RAW_FILE:
-      case network::DataElement::TYPE_CHUNKED_DATA_PIPE:
+      case network::mojom::DataElementType::kUnknown:
+      case network::mojom::DataElementType::kRawFile:
+      case network::mojom::DataElementType::kChunkedDataPipe:
         NOTREACHED();
         break;
     }
@@ -354,7 +354,7 @@ std::vector<blink::mojom::BlobPtrInfo> GetBlobPtrsForRequestBody(
   std::vector<blink::mojom::BlobPtrInfo> blob_ptrs;
   blink::mojom::BlobRegistryPtr blob_registry;
   for (auto& element : *input.elements()) {
-    if (element.type() == network::DataElement::TYPE_BLOB) {
+    if (element.type() == network::mojom::DataElementType::kBlob) {
       blink::mojom::BlobPtrInfo blob_ptr;
       if (!blob_registry) {
         blink::Platform::Current()->GetInterfaceProvider()->GetInterface(

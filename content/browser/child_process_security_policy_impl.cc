@@ -991,25 +991,25 @@ bool ChildProcessSecurityPolicyImpl::CanReadRequestBody(
 
   for (const network::DataElement& element : *body->elements()) {
     switch (element.type()) {
-      case network::DataElement::TYPE_FILE:
+      case network::mojom::DataElementType::kFile:
         if (!CanReadFile(child_id, element.path()))
           return false;
         break;
 
-      case network::DataElement::TYPE_BYTES:
+      case network::mojom::DataElementType::kBytes:
         // Data is self-contained within |body| - no need to check access.
         break;
 
-      case network::DataElement::TYPE_BLOB:
+      case network::mojom::DataElementType::kBlob:
         // No need to validate - the unguessability of the uuid of the blob is a
         // sufficient defense against access from an unrelated renderer.
         break;
 
-      case network::DataElement::TYPE_DATA_PIPE:
+      case network::mojom::DataElementType::kDataPipe:
         // Data is self-contained within |body| - no need to check access.
         break;
 
-      case network::DataElement::TYPE_UNKNOWN:
+      case network::mojom::DataElementType::kUnknown:
       default:
         // Fail safe - deny access.
         NOTREACHED();
