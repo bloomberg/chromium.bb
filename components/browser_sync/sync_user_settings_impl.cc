@@ -4,18 +4,22 @@
 
 #include "components/browser_sync/sync_user_settings_impl.h"
 
-#include "components/browser_sync/profile_sync_service.h"
-#include "components/sync/base/model_type.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/driver/sync_service_crypto.h"
 
 namespace browser_sync {
 
-SyncUserSettingsImpl::SyncUserSettingsImpl(ProfileSyncService* service,
-                                           syncer::SyncPrefs* prefs)
-    : service_(service),
+SyncUserSettingsImpl::SyncUserSettingsImpl(
+    syncer::SyncServiceCrypto* crypto,
+    syncer::SyncPrefs* prefs,
+    syncer::ModelTypeSet registered_types,
+    const base::RepeatingCallback<void(bool)>& sync_allowed_by_platform_changed)
+    : crypto_(crypto),
       prefs_(prefs),
-      registered_types_(service_->GetRegisteredDataTypes()) {
-  DCHECK(service_);
+      registered_types_(registered_types),
+      sync_allowed_by_platform_changed_cb_(sync_allowed_by_platform_changed) {
+  DCHECK(crypto_);
   DCHECK(prefs_);
 }
 
@@ -40,7 +44,7 @@ void SyncUserSettingsImpl::SetSyncAllowedByPlatform(bool allowed) {
 
   sync_allowed_by_platform_ = allowed;
 
-  service_->SyncAllowedByPlatformChanged(sync_allowed_by_platform_);
+  sync_allowed_by_platform_changed_cb_.Run(sync_allowed_by_platform_);
 }
 
 bool SyncUserSettingsImpl::IsFirstSetupComplete() const {
@@ -69,63 +73,61 @@ void SyncUserSettingsImpl::SetChosenDataTypes(bool sync_everything,
 }
 
 bool SyncUserSettingsImpl::IsEncryptEverythingAllowed() const {
-  // TODO(crbug.com/884159): Use SyncServiceCrypto.
-  // Note: This requires *Profile*SyncService.
-  return service_->IsEncryptEverythingAllowed();
+  return crypto_->IsEncryptEverythingAllowed();
 }
 
 void SyncUserSettingsImpl::SetEncryptEverythingAllowed(bool allowed) {
-  // TODO(crbug.com/884159): Use SyncServiceCrypto.
-  // Note: This requires *Profile*SyncService.
-  service_->SetEncryptEverythingAllowed(allowed);
+  crypto_->SetEncryptEverythingAllowed(allowed);
 }
 
 bool SyncUserSettingsImpl::IsEncryptEverythingEnabled() const {
-  // TODO(crbug.com/884159): Use SyncServiceCrypto.
-  return service_->IsEncryptEverythingEnabled();
+  return crypto_->IsEncryptEverythingEnabled();
 }
 
 void SyncUserSettingsImpl::EnableEncryptEverything() {
-  // TODO(crbug.com/884159): Use SyncServiceCrypto.
-  service_->EnableEncryptEverything();
+  crypto_->EnableEncryptEverything();
 }
 
 bool SyncUserSettingsImpl::IsPassphraseRequired() const {
-  // TODO(crbug.com/884159): Use SyncServiceCrypto.
-  return service_->IsPassphraseRequired();
+  return crypto_->passphrase_required_reason() !=
+         syncer::REASON_PASSPHRASE_NOT_REQUIRED;
 }
 
 bool SyncUserSettingsImpl::IsPassphraseRequiredForDecryption() const {
-  // TODO(crbug.com/884159): Use SyncServiceCrypto.
-  return service_->IsPassphraseRequiredForDecryption();
+  // If there is an encrypted datatype enabled and we don't have the proper
+  // passphrase, we must prompt the user for a passphrase. The only way for the
+  // user to avoid entering their passphrase is to disable the encrypted types.
+  return IsEncryptedDatatypeEnabled() && IsPassphraseRequired();
 }
 
 bool SyncUserSettingsImpl::IsUsingSecondaryPassphrase() const {
-  // TODO(crbug.com/884159): Use SyncServiceCrypto.
-  return service_->IsUsingSecondaryPassphrase();
+  return crypto_->IsUsingSecondaryPassphrase();
 }
 
 base::Time SyncUserSettingsImpl::GetExplicitPassphraseTime() const {
-  // TODO(crbug.com/884159): Use SyncServiceCrypto.
-  return service_->GetExplicitPassphraseTime();
+  return crypto_->GetExplicitPassphraseTime();
 }
 
 syncer::PassphraseType SyncUserSettingsImpl::GetPassphraseType() const {
-  // TODO(crbug.com/884159): Use SyncServiceCrypto.
-  // Note: This requires *Profile*SyncService.
-  return service_->GetPassphraseType();
+  return crypto_->GetPassphraseType();
 }
 
 void SyncUserSettingsImpl::SetEncryptionPassphrase(
     const std::string& passphrase) {
-  // TODO(crbug.com/884159): Use SyncServiceCrypto.
-  service_->SetEncryptionPassphrase(passphrase);
+  crypto_->SetEncryptionPassphrase(passphrase);
 }
 
 bool SyncUserSettingsImpl::SetDecryptionPassphrase(
     const std::string& passphrase) {
-  // TODO(crbug.com/884159): Use SyncServiceCrypto.
-  return service_->SetDecryptionPassphrase(passphrase);
+  DCHECK(IsPassphraseRequired())
+      << "SetDecryptionPassphrase must not be called when "
+         "IsPassphraseRequired() is false.";
+
+  DVLOG(1) << "Setting passphrase for decryption.";
+
+  bool result = crypto_->SetDecryptionPassphrase(passphrase);
+  UMA_HISTOGRAM_BOOLEAN("Sync.PassphraseDecryptionSucceeded", result);
+  return result;
 }
 
 syncer::ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
@@ -137,6 +139,23 @@ syncer::ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
     types.Remove(syncer::USER_EVENTS);
   }
   return types;
+}
+
+syncer::ModelTypeSet SyncUserSettingsImpl::GetEncryptedDataTypes() const {
+  return crypto_->GetEncryptedDataTypes();
+}
+
+bool SyncUserSettingsImpl::IsEncryptedDatatypeEnabled() const {
+  if (IsEncryptionPending())
+    return true;
+  const syncer::ModelTypeSet preferred_types = GetPreferredDataTypes();
+  const syncer::ModelTypeSet encrypted_types = GetEncryptedDataTypes();
+  DCHECK(encrypted_types.Has(syncer::PASSWORDS));
+  return !Intersection(preferred_types, encrypted_types).Empty();
+}
+
+bool SyncUserSettingsImpl::IsEncryptionPending() const {
+  return crypto_->encryption_pending();
 }
 
 }  // namespace browser_sync

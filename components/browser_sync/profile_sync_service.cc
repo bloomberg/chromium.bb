@@ -281,7 +281,10 @@ void ProfileSyncService::Initialize() {
                   ->GetControllerDelegate()
                   .get()));
 
-  user_settings_ = std::make_unique<SyncUserSettingsImpl>(this, &sync_prefs_);
+  user_settings_ = std::make_unique<SyncUserSettingsImpl>(
+      &crypto_, &sync_prefs_, GetRegisteredDataTypes(),
+      base::BindRepeating(&ProfileSyncService::SyncAllowedByPlatformChanged,
+                          base::Unretained(this)));
 
   sync_prefs_.AddSyncPrefObserver(this);
 
@@ -448,12 +451,7 @@ bool ProfileSyncService::ShouldStartEngine(
 }
 
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
-  if (encryption_pending())
-    return true;
-  const syncer::ModelTypeSet preferred_types = GetPreferredDataTypes();
-  const syncer::ModelTypeSet encrypted_types = GetEncryptedDataTypes();
-  DCHECK(encrypted_types.Has(syncer::PASSWORDS));
-  return !Intersection(preferred_types, encrypted_types).Empty();
+  return user_settings_->IsEncryptedDatatypeEnabled();
 }
 
 void ProfileSyncService::OnProtocolEvent(const syncer::ProtocolEvent& event) {
@@ -1236,7 +1234,7 @@ void ProfileSyncService::OnConfigureDone(
 
   // This must be done before we start syncing with the server to avoid
   // sending unencrypted data up on a first time sync.
-  if (crypto_.encryption_pending())
+  if (user_settings_->IsEncryptionPending())
     engine_->EnableEncryptEverything();
   NotifyObservers();
 
@@ -1332,8 +1330,7 @@ bool ProfileSyncService::IsSignedIn() const {
 
 bool ProfileSyncService::IsPassphraseRequired() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return crypto_.passphrase_required_reason() !=
-         syncer::REASON_PASSPHRASE_NOT_REQUIRED;
+  return user_settings_->IsPassphraseRequired();
 }
 
 bool ProfileSyncService::IsPassphraseRequiredForDecryption() const {
@@ -1422,17 +1419,17 @@ syncer::ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
 
 bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return crypto_.IsUsingSecondaryPassphrase();
+  return user_settings_->IsUsingSecondaryPassphrase();
 }
 
 syncer::PassphraseType ProfileSyncService::GetPassphraseType() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return crypto_.GetPassphraseType();
+  return user_settings_->GetPassphraseType();
 }
 
 base::Time ProfileSyncService::GetExplicitPassphraseTime() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return crypto_.GetExplicitPassphraseTime();
+  return user_settings_->GetExplicitPassphraseTime();
 }
 
 void ProfileSyncService::SyncAllowedByPlatformChanged(bool allowed) {
@@ -1654,58 +1651,45 @@ void ProfileSyncService::SetEncryptionPassphrase(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(data_type_manager_);
   DCHECK(data_type_manager_->IsNigoriEnabled());
-  crypto_.SetEncryptionPassphrase(passphrase);
+  user_settings_->SetEncryptionPassphrase(passphrase);
 }
 
 bool ProfileSyncService::SetDecryptionPassphrase(
     const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (IsPassphraseRequired()) {
-    DCHECK(data_type_manager_);
-    DCHECK(data_type_manager_->IsNigoriEnabled());
-
-    DVLOG(1) << "Setting passphrase for decryption.";
-
-    bool result = crypto_.SetDecryptionPassphrase(passphrase);
-    UMA_HISTOGRAM_BOOLEAN("Sync.PassphraseDecryptionSucceeded", result);
-    return result;
-  }
-  NOTREACHED() << "SetDecryptionPassphrase must not be called when "
-                  "IsPassphraseRequired() is false.";
-  return false;
+  return user_settings_->SetDecryptionPassphrase(passphrase);
 }
 
 bool ProfileSyncService::IsEncryptEverythingAllowed() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return crypto_.IsEncryptEverythingAllowed();
+  return user_settings_->IsEncryptEverythingAllowed();
 }
 
 void ProfileSyncService::SetEncryptEverythingAllowed(bool allowed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  crypto_.SetEncryptEverythingAllowed(allowed);
+  user_settings_->SetEncryptEverythingAllowed(allowed);
 }
 
 void ProfileSyncService::EnableEncryptEverything() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  crypto_.EnableEncryptEverything();
+  user_settings_->EnableEncryptEverything();
 }
 
 bool ProfileSyncService::encryption_pending() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // We may be called during the setup process before we're
-  // initialized (via IsEncryptedDatatypeEnabled and
-  // IsPassphraseRequiredForDecryption).
-  return crypto_.encryption_pending();
+  // We may be called during the setup process before we're initialized (via
+  // IsEncryptedDatatypeEnabled and IsPassphraseRequiredForDecryption).
+  return user_settings_->IsEncryptionPending();
 }
 
 bool ProfileSyncService::IsEncryptEverythingEnabled() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return crypto_.IsEncryptEverythingEnabled();
+  return user_settings_->IsEncryptEverythingEnabled();
 }
 
 syncer::ModelTypeSet ProfileSyncService::GetEncryptedDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return crypto_.GetEncryptedDataTypes();
+  return user_settings_->GetEncryptedDataTypes();
 }
 
 void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
