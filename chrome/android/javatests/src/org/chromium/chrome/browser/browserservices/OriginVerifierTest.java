@@ -31,6 +31,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -88,10 +89,10 @@ public class OriginVerifierTest {
         mHttpsOrigin = new Origin("https://www.example.com");
         mHttpOrigin = new Origin("http://www.android.com");
 
-        mHandleAllUrlsVerifier =
-                new OriginVerifier(PACKAGE_NAME, CustomTabsService.RELATION_HANDLE_ALL_URLS);
-        mUseAsOriginVerifier =
-                new OriginVerifier(PACKAGE_NAME, CustomTabsService.RELATION_USE_AS_ORIGIN);
+        mHandleAllUrlsVerifier = new OriginVerifier(new TestOriginVerificationListener(),
+                PACKAGE_NAME, CustomTabsService.RELATION_HANDLE_ALL_URLS);
+        mUseAsOriginVerifier = new OriginVerifier(new TestOriginVerificationListener(),
+                PACKAGE_NAME, CustomTabsService.RELATION_USE_AS_ORIGIN);
         mVerificationResultSemaphore = new Semaphore(0);
     }
 
@@ -106,14 +107,12 @@ public class OriginVerifierTest {
     @Test
     @SmallTest
     public void testOnlyHttpsAllowed() throws InterruptedException {
-        Origin origin = new Origin(Uri.parse("LOL"));
-        ThreadUtils.postOnUiThread(() ->
-                mHandleAllUrlsVerifier.start(new TestOriginVerificationListener(), origin));
+        ThreadUtils.postOnUiThread(()
+                -> mHandleAllUrlsVerifier.start(new Origin(Uri.parse("LOL"))));
         Assert.assertTrue(
                 mVerificationResultSemaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         Assert.assertFalse(mLastVerified);
-        ThreadUtils.postOnUiThread(() ->
-                mHandleAllUrlsVerifier.start(new TestOriginVerificationListener(), mHttpOrigin));
+        ThreadUtils.postOnUiThread(() -> mHandleAllUrlsVerifier.start(mHttpOrigin));
         Assert.assertTrue(
                 mVerificationResultSemaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         Assert.assertFalse(mLastVerified);
@@ -122,20 +121,28 @@ public class OriginVerifierTest {
     @Test
     @SmallTest
     public void testMultipleRelationships() throws Exception {
-        ThreadUtils.postOnUiThread(() ->
-                OriginVerifier.addVerificationOverride(
-                        PACKAGE_NAME, mHttpsOrigin, CustomTabsService.RELATION_USE_AS_ORIGIN));
-        ThreadUtils.postOnUiThread(() ->
-                mUseAsOriginVerifier.start(new TestOriginVerificationListener(), mHttpsOrigin));
+        ThreadUtils.postOnUiThread(
+                ()
+                        -> OriginVerifier.addVerifiedOriginForPackage(PACKAGE_NAME,
+                        mHttpsOrigin, CustomTabsService.RELATION_USE_AS_ORIGIN));
+        ThreadUtils.postOnUiThread(() -> mUseAsOriginVerifier.start(mHttpsOrigin));
         Assert.assertTrue(
                 mVerificationResultSemaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         Assert.assertTrue(mLastVerified);
-        Assert.assertTrue(ThreadUtils.runOnUiThreadBlocking(
-                () -> OriginVerifier.wasPreviouslyVerified(PACKAGE_NAME, mHttpsOrigin,
-                        CustomTabsService.RELATION_USE_AS_ORIGIN)));
-        Assert.assertFalse(ThreadUtils.runOnUiThreadBlocking(
-                () -> OriginVerifier.wasPreviouslyVerified(PACKAGE_NAME, mHttpsOrigin,
-                        CustomTabsService.RELATION_HANDLE_ALL_URLS)));
+        Assert.assertTrue(ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return OriginVerifier.isValidOrigin(PACKAGE_NAME, mHttpsOrigin,
+                        CustomTabsService.RELATION_USE_AS_ORIGIN);
+            }
+        }));
+        Assert.assertFalse(ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return OriginVerifier.isValidOrigin(PACKAGE_NAME, mHttpsOrigin,
+                        CustomTabsService.RELATION_HANDLE_ALL_URLS);
+            }
+        }));
         Assert.assertEquals(mLastPackageName, PACKAGE_NAME);
         Assert.assertEquals(mLastOrigin, mHttpsOrigin);
     }

@@ -476,8 +476,8 @@ class ClientManager {
             }
         };
 
-        params.originVerifier = new OriginVerifier(params.getPackageName(), relation);
-        ThreadUtils.runOnUiThread(() -> { params.originVerifier.start(listener, origin); });
+        params.originVerifier = new OriginVerifier(listener, params.getPackageName(), relation);
+        ThreadUtils.runOnUiThread(() -> { params.originVerifier.start(origin); });
         if (relation == CustomTabsService.RELATION_HANDLE_ALL_URLS
                 && InstalledAppProviderImpl.isAppInstalledAndAssociatedWithOrigin(
                            params.getPackageName(), URI.create(origin.toString()),
@@ -704,7 +704,7 @@ class ClientManager {
      */
     public synchronized boolean isFirstPartyOriginForSession(
             CustomTabsSessionToken session, Origin origin) {
-        return OriginVerifier.wasPreviouslyVerified(getClientPackageNameForSession(session), origin,
+        return OriginVerifier.isValidOrigin(getClientPackageNameForSession(session), origin,
                 CustomTabsService.RELATION_USE_AS_ORIGIN);
     }
 
