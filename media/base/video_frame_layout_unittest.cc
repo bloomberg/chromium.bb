@@ -286,21 +286,30 @@ TEST(VideoFrameLayout, EqualOperator) {
   std::vector<int32_t> strides = {384, 192, 192};
   std::vector<size_t> offsets = {0, 100, 200};
   std::vector<size_t> buffer_sizes = {73728, 18432, 18432};
+  const size_t align = VideoFrameLayout::kBufferAddressAlignment;
+
   auto layout = VideoFrameLayout::CreateWithPlanes(
       PIXEL_FORMAT_I420, coded_size, CreatePlanes(strides, offsets),
-      buffer_sizes);
+      buffer_sizes, align);
   ASSERT_TRUE(layout.has_value());
 
   auto same_layout = VideoFrameLayout::CreateWithPlanes(
       PIXEL_FORMAT_I420, coded_size, CreatePlanes(strides, offsets),
-      buffer_sizes);
+      buffer_sizes, align);
   ASSERT_TRUE(same_layout.has_value());
   EXPECT_EQ(*layout, *same_layout);
 
   std::vector<size_t> another_buffer_sizes = {73728};
   auto different_layout = VideoFrameLayout::CreateWithPlanes(
       PIXEL_FORMAT_I420, coded_size, CreatePlanes(strides, offsets),
-      another_buffer_sizes);
+      another_buffer_sizes, align);
+  ASSERT_TRUE(different_layout.has_value());
+  EXPECT_NE(*layout, *different_layout);
+
+  const size_t another_align = 0x1000;
+  different_layout = VideoFrameLayout::CreateWithPlanes(
+      PIXEL_FORMAT_I420, coded_size, CreatePlanes(strides, offsets),
+      buffer_sizes, another_align);
   ASSERT_TRUE(different_layout.has_value());
   EXPECT_NE(*layout, *different_layout);
 }
