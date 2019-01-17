@@ -405,7 +405,8 @@ void QuicHttpStream::PopulateNetErrorDetails(NetErrorDetails* details) {
   details->connection_info =
       ConnectionInfoFromQuicVersion(quic_session()->GetQuicVersion());
   quic_session()->PopulateNetErrorDetails(details);
-  if (quic_session()->IsCryptoHandshakeConfirmed() && stream_)
+  if (quic_session()->IsCryptoHandshakeConfirmed() && stream_ &&
+      stream_->connection_error() != quic::QUIC_NO_ERROR)
     details->quic_connection_error = stream_->connection_error();
 }
 
