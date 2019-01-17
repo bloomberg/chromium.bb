@@ -61,7 +61,6 @@ class CORE_EXPORT SystemClipboard {
  private:
   SystemClipboard();
   bool IsValidBufferType(mojom::ClipboardBuffer);
-  void WriteImageNoCommit(const SkBitmap&);
 
   mojom::blink::ClipboardHostPtr clipboard_;
   mojom::ClipboardBuffer buffer_ = mojom::ClipboardBuffer::kStandard;

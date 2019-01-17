@@ -169,7 +169,7 @@ void SystemClipboard::WriteImageWithTag(Image* image,
   SkBitmap bitmap;
   if (sk_sp<SkImage> sk_image = paint_image.GetSkImage())
     sk_image->asLegacyBitmap(&bitmap);
-  WriteImageNoCommit(bitmap);
+  clipboard_->WriteImage(mojom::ClipboardBuffer::kStandard, bitmap);
 
   if (url.IsValid() && !url.IsEmpty()) {
 #if !defined(OS_MACOSX)
@@ -192,8 +192,7 @@ void SystemClipboard::WriteImageWithTag(Image* image,
 }
 
 void SystemClipboard::WriteImage(const SkBitmap& bitmap) {
-  WriteImageNoCommit(bitmap);
-
+  clipboard_->WriteImage(mojom::ClipboardBuffer::kStandard, bitmap);
   clipboard_->CommitWrite(mojom::ClipboardBuffer::kStandard);
 }
 
@@ -254,15 +253,6 @@ bool SystemClipboard::IsValidBufferType(mojom::ClipboardBuffer buffer) {
 #endif
   }
   return true;
-}
-
-void SystemClipboard::WriteImageNoCommit(const SkBitmap& bitmap) {
-  if (bitmap.isNull())
-    return;
-  // TODO(crbug.com/918717): Remove CHECK if no crashes occur on it in canary.
-  CHECK(bitmap.getPixels());
-
-  clipboard_->WriteImage(mojom::ClipboardBuffer::kStandard, bitmap);
 }
 
 }  // namespace blink
