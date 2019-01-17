@@ -36,14 +36,7 @@ public class PostTask {
      */
     public static TaskRunner createTaskRunner(TaskTraits taskTraits) {
         synchronized (sLock) {
-            TaskRunner taskRunner =
-                    getTaskExecutorForTraits(taskTraits).createTaskRunner(taskTraits);
-            if (sPreNativeTaskRunners != null) {
-                sPreNativeTaskRunners.add(taskRunner);
-            } else {
-                taskRunner.initNativeTaskRunner();
-            }
-            return taskRunner;
+            return getTaskExecutorForTraits(taskTraits).createTaskRunner(taskTraits);
         }
     }
 
@@ -53,14 +46,7 @@ public class PostTask {
      */
     public static SequencedTaskRunner createSequencedTaskRunner(TaskTraits taskTraits) {
         synchronized (sLock) {
-            SequencedTaskRunner taskRunner =
-                    getTaskExecutorForTraits(taskTraits).createSequencedTaskRunner(taskTraits);
-            if (sPreNativeTaskRunners != null) {
-                sPreNativeTaskRunners.add(taskRunner);
-            } else {
-                taskRunner.initNativeTaskRunner();
-            }
-            return taskRunner;
+            return getTaskExecutorForTraits(taskTraits).createSequencedTaskRunner(taskTraits);
         }
     }
 
@@ -71,14 +57,7 @@ public class PostTask {
      */
     public static SingleThreadTaskRunner createSingleThreadTaskRunner(TaskTraits taskTraits) {
         synchronized (sLock) {
-            SingleThreadTaskRunner taskRunner =
-                    getTaskExecutorForTraits(taskTraits).createSingleThreadTaskRunner(taskTraits);
-            if (sPreNativeTaskRunners != null) {
-                sPreNativeTaskRunners.add(taskRunner);
-            } else {
-                taskRunner.initNativeTaskRunner();
-            }
-            return taskRunner;
+            return getTaskExecutorForTraits(taskTraits).createSingleThreadTaskRunner(taskTraits);
         }
     }
 
@@ -87,13 +66,22 @@ public class PostTask {
      * @param task The task to be run with the specified traits.
      */
     public static void postTask(TaskTraits taskTraits, Runnable task) {
+        postDelayedTask(taskTraits, task, 0);
+    }
+
+    /**
+     * @param taskTraits The TaskTraits that describe the desired TaskRunner.
+     * @param task The task to be run with the specified traits.
+     * @param delay The delay in milliseconds before the task can be run.
+     */
+    public static void postDelayedTask(TaskTraits taskTraits, Runnable task, long delay) {
         synchronized (sLock) {
             if (sPreNativeTaskRunners != null) {
-                getTaskExecutorForTraits(taskTraits).postTask(taskTraits, task);
+                getTaskExecutorForTraits(taskTraits).postDelayedTask(taskTraits, task, delay);
             } else {
-                nativePostTask(taskTraits.mPrioritySetExplicitly, taskTraits.mPriority,
+                nativePostDelayedTask(taskTraits.mPrioritySetExplicitly, taskTraits.mPriority,
                         taskTraits.mMayBlock, taskTraits.mExtensionId, taskTraits.mExtensionData,
-                        task);
+                        task, delay);
             }
         }
     }
@@ -111,6 +99,23 @@ public class PostTask {
             assert sTaskExecutors[extensionId] == null;
             sTaskExecutors[extensionId] = taskExecutor;
         }
+    }
+
+    /**
+     * Called by every TaskRunner on its creation, attempts to register this
+     * TaskRunner as pre-native, unless the native scheduler has been
+     * initialised already, and informs the caller about the outcome. Called
+     * only when sLock has already been acquired.
+     *
+     * @param taskRunner The TaskRunner to be registered.
+     * @return If the taskRunner got registered as pre-native.
+     */
+    static boolean registerPreNativeTaskRunnerLocked(TaskRunner taskRunner) {
+        if (sPreNativeTaskRunners != null) {
+            sPreNativeTaskRunners.add(taskRunner);
+            return true;
+        }
+        return false;
     }
 
     private static TaskExecutor getTaskExecutorForTraits(TaskTraits traits) {
@@ -136,6 +141,6 @@ public class PostTask {
         }
     }
 
-    private static native void nativePostTask(boolean prioritySetExplicitly, int priority,
-            boolean mayBlock, byte extensionId, byte[] extensionData, Runnable task);
+    private static native void nativePostDelayedTask(boolean prioritySetExplicitly, int priority,
+            boolean mayBlock, byte extensionId, byte[] extensionData, Runnable task, long delay);
 }

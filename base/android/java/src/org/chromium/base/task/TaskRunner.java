@@ -27,6 +27,14 @@ public interface TaskRunner {
     void destroy();
 
     /**
+     * Posts a task to run after a specified delay.
+     *
+     * @param task The task to be run.
+     * @param delay The delay in milliseconds before the task can be run.
+     */
+    public void postDelayedTask(Runnable task, long delay);
+
+    /**
      * Instructs the TaskRunner to initialize the native TaskRunner and migrate any tasks over to
      * it.
      */
