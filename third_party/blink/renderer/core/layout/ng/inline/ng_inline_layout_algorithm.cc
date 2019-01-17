@@ -138,7 +138,7 @@ void NGInlineLayoutAlgorithm::RebuildBoxStates(
   }
 
   // Create box states for tags that are not closed yet.
-  box_states->OnBeginPlaceItems(&line_info.LineStyle(), baseline_type_,
+  box_states->OnBeginPlaceItems(line_info.LineStyle(), baseline_type_,
                                 quirks_mode_);
   for (const NGInlineItem* item : open_items) {
     NGInlineItemResult item_result;
@@ -153,7 +153,7 @@ void NGInlineLayoutAlgorithm::CheckBoxStates(
     const NGInlineBreakToken* break_token) const {
   NGInlineLayoutStateStack rebuilt;
   RebuildBoxStates(line_info, break_token, &rebuilt);
-  rebuilt.OnBeginPlaceItems(&line_info.LineStyle(), baseline_type_,
+  rebuilt.OnBeginPlaceItems(line_info.LineStyle(), baseline_type_,
                             quirks_mode_);
 
   DCHECK(box_states_);
@@ -173,19 +173,15 @@ void NGInlineLayoutAlgorithm::CreateLine(
   // of items, which are needed to compute inline static positions.
   LayoutUnit line_offset_for_text_align = ApplyTextAlign(line_info);
 
-  const ComputedStyle& line_style = line_info->LineStyle();
-  NGLineHeightMetrics line_metrics(line_style, baseline_type_);
-  NGLineHeightMetrics line_metrics_with_leading = line_metrics;
-  line_metrics_with_leading.AddLeading(line_style.ComputedLineHeightAsFixed());
-
   NGTextFragmentBuilder text_builder(Node(),
                                      ConstraintSpace().GetWritingMode());
 
   // Compute heights of all inline items by placing the dominant baseline at 0.
   // The baseline is adjusted after the height of the line box is computed.
+  const ComputedStyle& line_style = line_info->LineStyle();
   box_states_->SetIsEmptyLine(line_info->IsEmptyLine());
   NGInlineBoxState* box =
-      box_states_->OnBeginPlaceItems(&line_style, baseline_type_, quirks_mode_);
+      box_states_->OnBeginPlaceItems(line_style, baseline_type_, quirks_mode_);
 #if DCHECK_IS_ON()
   if (is_box_states_from_context_)
     CheckBoxStates(*line_info, BreakToken());

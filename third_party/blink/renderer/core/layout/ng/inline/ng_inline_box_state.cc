@@ -102,7 +102,7 @@ bool NGInlineBoxState::CanAddTextOfStyle(
 }
 
 NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
-    const ComputedStyle* line_style,
+    const ComputedStyle& line_style,
     FontBaseline baseline_type,
     bool line_height_quirk) {
   if (stack_.IsEmpty()) {
@@ -133,14 +133,14 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
 
   // Initialize the box state for the line box.
   NGInlineBoxState& line_box = LineBoxState();
-  if (line_box.style != line_style) {
-    line_box.style = line_style;
+  if (line_box.style != &line_style) {
+    line_box.style = &line_style;
 
     // Use a "strut" (a zero-width inline box with the element's font and
     // line height properties) as the initial metrics for the line box.
     // https://drafts.csswg.org/css2/visudet.html#strut
     if (!line_height_quirk)
-      line_box.ComputeTextMetrics(*line_style, baseline_type);
+      line_box.ComputeTextMetrics(line_style, baseline_type);
   }
 
   return &stack_.back();

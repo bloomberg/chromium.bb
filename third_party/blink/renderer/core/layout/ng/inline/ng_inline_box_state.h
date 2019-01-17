@@ -116,7 +116,7 @@ class CORE_EXPORT NGInlineLayoutStateStack {
 
   // Initialize the box state stack for a new line.
   // @return The initial box state for the line.
-  NGInlineBoxState* OnBeginPlaceItems(const ComputedStyle*, FontBaseline, bool);
+  NGInlineBoxState* OnBeginPlaceItems(const ComputedStyle&, FontBaseline, bool);
 
   // Push a box state stack.
   NGInlineBoxState* OnOpenTag(const NGInlineItem&,
