@@ -66,9 +66,9 @@ void ShadowTreeStyleSheetCollection::CollectStyleSheets(
     return;
 
   for (CSSStyleSheet* sheet : GetTreeScope().AdoptedStyleSheets()) {
-    if (!sheet || !sheet->CanBeActivated(g_null_atom) ||
-        sheet->AssociatedDocument() != GetTreeScope().GetDocument())
+    if (!sheet || !sheet->CanBeActivated(g_null_atom))
       continue;
+    DCHECK_EQ(GetTreeScope().GetDocument(), sheet->AssociatedDocument());
     collection.AppendActiveStyleSheet(
         std::make_pair(sheet, master_engine.RuleSetForSheet(*sheet)));
   }

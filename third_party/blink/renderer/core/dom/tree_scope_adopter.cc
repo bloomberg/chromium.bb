@@ -93,6 +93,9 @@ void TreeScopeAdopter::MoveShadowTreeToNewDocument(
     Document& old_document,
     Document& new_document) const {
   DCHECK_NE(old_document, new_document);
+  HeapVector<Member<CSSStyleSheet>> empty_vector;
+  shadow_root.SetAdoptedStyleSheets(empty_vector);
+
   if (shadow_root.GetType() == ShadowRootType::V0) {
     new_document.SetShadowCascadeOrder(ShadowCascadeOrder::kShadowCascadeV0);
   } else if (shadow_root.IsV1() && !shadow_root.IsUserAgent()) {

@@ -94,9 +94,9 @@ void DocumentStyleSheetCollection::CollectStyleSheetsFromCandidates(
   for (CSSStyleSheet* sheet : GetTreeScope().AdoptedStyleSheets()) {
     if (!sheet ||
         !sheet->CanBeActivated(
-            GetDocument().GetStyleEngine().PreferredStylesheetSetName()) ||
-        sheet->AssociatedDocument() != GetDocument())
+            GetDocument().GetStyleEngine().PreferredStylesheetSetName()))
       continue;
+    DCHECK_EQ(GetDocument(), sheet->AssociatedDocument());
     collector.AppendSheetForList(sheet);
     collector.AppendActiveStyleSheet(
         std::make_pair(sheet, master_engine.RuleSetForSheet(*sheet)));
