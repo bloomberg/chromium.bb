@@ -24,6 +24,18 @@ html {
   --md-title-height: 24px;
   --md-title-max-height: 28px;
 
+  /* Material Design colors */
+  --dark-mode-bg-rgb: 50, 54, 57;
+  --GG900-rgb: 32, 33, 36;
+  --GG800-rgb: 60, 64, 67;
+  --GG700-rgb: 95, 99, 104;
+  --GG600-rgb: 128, 134, 139;
+  --GG500-rgb: 154, 160, 166;
+  --GG400-rgb: 189, 193, 198;
+  --GG300-rgb: 218, 220, 224;
+  --GG200-rgb: 232, 234, 237;
+  --GG100-rgb: 241, 243, 244;
+  --GG50-rgb: 248, 249, 250;
 
   /* May be overridden by themes (on the body element). */
   --tile-title-color: #323232;
@@ -100,13 +112,13 @@ a:visited {
 .md-tile-container.reorder .md-tile {
   background-color: white;
   border-radius: 4px;
-  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3),
-      0 4px 8px 3px rgba(60, 64, 67, 0.15);
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), 0.3),
+      0 4px 8px 3px rgba(var(--GG800-rgb), 0.15);
   transition-duration: 200ms;
 }
 
 html[darkmode=true] .md-tile-container.reorder .md-tile {
-  background-color: rgb(50, 54, 57);
+  background-color: rgb(var(--dark-mode-bg-rgb));
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4),
       0 4px 8px 3px rgba(0, 0, 0, 0.25);
 }
@@ -126,19 +138,15 @@ html[darkmode=true] .md-tile-container.reorder .md-tile {
 }
 
 body:not(.reordering) .md-tile-container:hover {
-  background-color: rgba(33, 32, 36, 0.06);
+  background-color: rgba(var(--GG900-rgb), 0.06);
 }
 
 html[darkmode=true] body:not(.reordering) .md-tile-container:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 body.dark-theme:not(.reordering) .md-tile-container:hover {
   background-color: rgba(255, 255, 255, 0.1);
-}
-
-html[darkmode=true] body.dark-theme:not(.reordering) .md-tile-container:hover {
-  background-color: rgba(218, 220, 224, 0.1);
 }
 
 body:not(.reordering) .md-tile-container:hover .md-menu {
@@ -147,7 +155,7 @@ body:not(.reordering) .md-tile-container:hover .md-menu {
 }
 
 body.dark-theme:not(.reordering) .md-tile-container:active + .md-menu::after {
-  background-color: rgb(189, 193, 198);
+  background-color: rgb(var(--GG400-rgb));
   transition-delay: 0ms;
 }
 
@@ -183,7 +191,7 @@ body.dark-theme:not(.reordering) .md-tile-container:active + .md-menu::after {
 
 .md-icon-background {
   align-items: center;
-  background-color: rgb(241, 243, 244);
+  background-color: rgb(var(--GG100-rgb));
   border-radius: 50%;
   display: flex;
   height: var(--md-icon-size);
@@ -192,7 +200,7 @@ body.dark-theme:not(.reordering) .md-tile-container:active + .md-menu::after {
 }
 
 html[darkmode=true] .md-icon-background {
-  background-color: rgb(32, 33, 36);
+  background-color: rgb(var(--GG900-rgb));
 }
 
 .md-add-icon {
@@ -206,7 +214,7 @@ html[darkmode=true] .md-add-icon {
 }
 
 .md-fallback-letter {
-  background-color: rgb(136, 136, 136);
+  background-color: rgb(var(--GG600-rgb));
   border-radius: 50%;
   color: white;
   font-family: 'Segoe UI', 'Roboto', arial, sans-serif;
@@ -218,7 +226,7 @@ html[darkmode=true] .md-add-icon {
 }
 
 .md-title {
-  color: rgba(33, 32, 36, 0.86);
+  color: rgb(var(--GG800-rgb));
   font-family: 'Roboto', arial, sans-serif;
   font-size: var(--md-title-font-size);
   font-weight: 500;
@@ -242,12 +250,12 @@ body.mac-chromeos .md-title {
 
 /* Apply when Chrome is in dark mode. */
 html[darkmode=true] .md-title {
-  color: rgb(248, 249, 250);
+  color: rgb(var(--GG200-rgb));
 }
 
 /* Apply when a custom background is set. */
 body.dark-theme .md-tile-container:not(.reorder) .md-title {
-  color: rgb(248, 249, 250);
+  color: rgb(var(--GG50-rgb));
   filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.35));
 }
 
@@ -260,20 +268,20 @@ body.using-theme .md-title-container {
 }
 
 html[darkmode=true] body.using-theme .md-title-container {
-  background-color: rgb(32, 33, 36);
+  background-color: rgb(var(--GG900-rgb));
 }
 
 html[darkmode=true] body.using-theme .md-tile-container.reorder .md-title-container {
-  background-color: rgb(50, 54, 57);
+  background-color: rgb(var(--dark-mode-bg-rgb));
 }
 
 body.using-theme .md-tile-container:not(.reorder) .md-title {
-  color: rgba(33, 32, 36, 0.86);
+  color: rgb(var(--GG800-rgb));
   filter: unset;
 }
 
 html[darkmode=true] body.using-theme .md-tile-container:not(.reorder) .md-title {
-  color: rgb(248, 249, 250);
+  color: rgb(var(--GG200-rgb));
 }
 
 .md-menu {
@@ -307,7 +315,7 @@ body:not(.reordering) .md-menu:focus:not(.mouse-navigation) {
       url(chrome-search://local-ntp/images/close_3_mask.png@2x) 2x);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: var(--mask-width);
-  background-color: rgba(33, 32, 36, 0.55);
+  background-color: rgb(var(--GG600-rgb));
   content: '';
   display: block;
   height: var(--md-menu-size);
@@ -318,7 +326,7 @@ body:not(.reordering) .md-menu:focus:not(.mouse-navigation) {
 }
 
 html[darkmode=true] .md-menu::after {
-  background-color: rgb(248, 249, 250);
+  background-color: rgb(var(--GG200-rgb));
 }
 
 .md-edit-menu {
@@ -335,12 +343,12 @@ html[darkmode=true] .md-menu::after {
 
 body:not(.reordering) .md-menu:hover::after,
 body:not(.reordering) .md-menu:focus::after {
-  background-color: rgba(33, 32, 36, 0.71);
+  background-color: rgb(var(--GG700-rgb));
 }
 
 html[darkmode=true] body:not(.reordering) .md-menu:hover::after,
 html[darkmode=true] body:not(.reordering) .md-menu:focus::after {
-  background-color: rgb(189, 193, 198);
+  background-color: rgb(var(--GG400-rgb));
 }
 
 body.dark-theme .md-tile-container:not(.reorder) .md-menu::after,
@@ -348,8 +356,19 @@ body.dark-theme:not(.reordering) .md-menu:focus:not(.mouse-navigation)::after {
   background-color: white;
 }
 
+html[darkmode=true] body.dark-theme .md-tile-container:not(.reorder) .md-menu::after,
+html[darkmode=true] body.dark-theme:not(.reordering) .md-menu:focus:not(.mouse-navigation)::after {
+  background-color: rgb(var(--GG200-rgb));
+}
+
 body.dark-theme:not(.reordering) .md-menu:active::after,
 body.dark-theme:not(.reordering) .md-menu:hover::after,
 body.dark-theme:not(.reordering) .md-menu.mouse-navigation:focus::after {
-  background-color: rgb(218, 220, 224);
+  background-color: rgb(var(--GG300-rgb));
+}
+
+html[darkmode=true] body.dark-theme:not(.reordering) .md-menu:active::after,
+html[darkmode=true] body.dark-theme:not(.reordering) .md-menu:hover::after,
+html[darkmode=true] body.dark-theme:not(.reordering) .md-menu.mouse-navigation:focus::after {
+  background-color: rgb(var(--GG400-rgb));
 }
