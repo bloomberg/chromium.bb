@@ -48,7 +48,8 @@ namespace voice {
 
 // static
 SpeechInputLocaleConfigImpl* SpeechInputLocaleConfigImpl::GetInstance() {
-  return base::Singleton<SpeechInputLocaleConfigImpl>::get();
+  static base::NoDestructor<SpeechInputLocaleConfigImpl> instance;
+  return instance.get();
 }
 
 SpeechInputLocaleConfigImpl::SpeechInputLocaleConfigImpl() {
