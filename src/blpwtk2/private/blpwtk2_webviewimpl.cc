@@ -841,11 +841,6 @@ void WebViewImpl::FindReply(content::WebContents *source_contents,
 }
 
 // WebContentsObserver overrides
-void WebViewImpl::RenderViewCreated(content::RenderViewHost *render_view_host)
-{
-    onRenderViewHostMadeCurrent(render_view_host);
-}
-
 void WebViewImpl::RenderViewHostChanged(content::RenderViewHost *old_host,
                                         content::RenderViewHost *new_host)
 {
