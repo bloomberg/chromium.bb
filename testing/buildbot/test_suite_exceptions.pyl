@@ -259,6 +259,14 @@
       },
     },
   },
+  'castrunner_browsertests': {
+    # TODO(crbug.com/910799): Enable this once we're confident that it
+    # passes.
+    'remove_from': [
+      # chromium.linux
+      'Fuchsia x64',
+    ],
+  },
   'castrunner_integration_tests': {
     'remove_from': [
       # chromium.linux

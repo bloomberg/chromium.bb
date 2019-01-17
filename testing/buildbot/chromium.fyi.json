@@ -3926,6 +3926,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "castrunner_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "castrunner_integration_tests"
       },
       {
@@ -4065,6 +4071,17 @@
           ]
         },
         "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        },
+        "test": "castrunner_browsertests"
       },
       {
         "swarming": {
@@ -4304,6 +4321,17 @@
           ]
         },
         "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        },
+        "test": "castrunner_browsertests"
       },
       {
         "swarming": {

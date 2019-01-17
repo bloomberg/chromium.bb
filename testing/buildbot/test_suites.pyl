@@ -2718,6 +2718,7 @@
 
     'fuchsia_gtests': {
       'base_unittests': {},
+      'castrunner_browsertests': {},
       'castrunner_integration_tests': {},
       'castrunner_unittests': {},
       'content_unittests': {
