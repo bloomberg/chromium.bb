@@ -735,8 +735,8 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
     with osutils.TempDir(prefix='cbuildbot-payloads') as tempdir:
       with self.ArtifactUploader() as queue:
         image_path = os.path.join(self.GetImageDirSymlink(), image_name)
-        commands.GeneratePayloads(self._build_root, image_path, tempdir,
-                                  **kwargs)
+        commands.GeneratePayloads(image_path, tempdir, **kwargs)
+        commands.GenerateQuickProvisionPayloads(image_path, tempdir)
         for payload in os.listdir(tempdir):
           queue.put([os.path.join(tempdir, payload)])
 

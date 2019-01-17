@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import argparse
 import mock
 import os
 import sys
@@ -441,68 +440,21 @@ class UploadTestArtifactsStageTest(build_stages_unittest.AllConfigsTestCase,
     board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
     board_runattrs.SetParallel('images_generated', True)
 
-    chroot_base = os.path.join(self.build_root, 'chroot')
-
-    def _ExtractOutputParam(cmd):
-      """Extract the --output option from a list of arguments."""
-      argparser = argparse.ArgumentParser()
-      argparser.add_argument('--output', action='store')
-      options, _ = argparser.parse_known_args(cmd)
-      return options.output
-
-    def _SimUpdatePayload(cmd, *_args, **kwargs):
-      """Simulate cros_generate_update_payload by creating its output file."""
-      self.assertTrue(kwargs.get('enter_chroot'))
-
-      output = _ExtractOutputParam(cmd)
-      self.assertTrue(output)
-      self.assertTrue(os.path.dirname(output))
-
-      # Join these paths manually since output is absolute and os.path.join
-      # will throw away chroot_base.
-      output = os.sep.join([chroot_base, output])
-
-      if not os.path.isdir(os.path.dirname(output)):
-        os.makedirs(os.path.dirname(output))
-      self.assertNotExists(output)
-
-      osutils.Touch(output)
-
-    def _SimUpdateStatefulPayload(cmd, *_args, **kwargs):
-      """Simulate cros_generate_stateful_update_payload like above."""
-      self.assertTrue(kwargs.get('enter_chroot'))
-
-      output = _ExtractOutputParam(cmd)
-      self.assertTrue(output)
-
-      # Join these paths manually since output is absolute and os.path.join
-      # will throw away chroot_base.
-      output = os.sep.join([chroot_base, output])
-
-      if not os.path.isdir(output):
-        os.makedirs(output)
-
-      output = os.path.join(output, commands.STATEFUL_FILE)
-
-      self.assertNotExists(output)
-
-      osutils.Touch(output)
-
-    def _HookRunCommand(rc):
-      rc.AddCmdResult(
-          partial_mock.ListRegex('cros_generate_update_payload'),
-          side_effect=_SimUpdatePayload)
-      rc.AddCmdResult(
-          partial_mock.ListRegex('cros_generate_stateful_update_payload'),
-          side_effect=_SimUpdateStatefulPayload)
+    generate_quick_provision_payloads_mock = self.PatchObject(
+        commands, 'GenerateQuickProvisionPayloads')
+    generate_update_payloads_mock = self.PatchObject(commands,
+                                                     'GeneratePayloads')
 
     with parallel_unittest.ParallelMock():
-      with self.RunStageWithConfig(mock_configurator=_HookRunCommand) as rc:
+      with self.RunStageWithConfig():
         if (self._run.config.upload_hw_test_artifacts and
             self._run.config.images):
-          self.assertNotEqual(rc.call_count, 0)
+          self.assertNotEqual(generate_update_payloads_mock.call_count, 0)
+          self.assertNotEqual(generate_quick_provision_payloads_mock.call_count,
+                              0)
         else:
-          self.assertEqual(rc.call_count, 0)
+          self.assertEqual(generate_update_payloads_mock.call_count, 0)
+          self.assertEqual(generate_quick_provision_payloads_mock.call_count, 0)
 
   def testAllConfigs(self):
     """Test all major configurations"""

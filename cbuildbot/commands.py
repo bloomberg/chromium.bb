@@ -20,12 +20,13 @@ import shutil
 import sys
 import tempfile
 
+from chromite.cbuildbot import swarming_lib
+from chromite.cbuildbot import topology
+
 from chromite.lib import buildbot_annotations
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import failures_lib
-from chromite.cbuildbot import swarming_lib
-from chromite.cbuildbot import topology
 from chromite.lib import cipd
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -40,7 +41,12 @@ from chromite.lib import portage_util
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
 from chromite.lib import tree_status
+
 from chromite.lib.paygen import filelib
+from chromite.lib.paygen import partition_lib
+from chromite.lib.paygen import paygen_payload_lib
+from chromite.lib.paygen import paygen_stateful_payload_lib
+
 from chromite.scripts import pushimage
 
 
@@ -3154,12 +3160,31 @@ def CreateTestRoot(build_root):
   return os.path.sep + os.path.relpath(test_root, start=chroot)
 
 
-def GeneratePayloads(build_root, target_image_path, archive_dir, full=False,
-                     delta=False, stateful=False):
+def GenerateQuickProvisionPayloads(target_image_path, archive_dir):
+  """Generates payloads needed for quick_provision script.
+
+  Args:
+    target_image_path: The path to the image to extract the partitions.
+    archive_dir: Where to store partitions when generated.
+  """
+  with osutils.TempDir() as temp_dir:
+    # These partitions are mainly used by quick_provision.
+    partition_lib.ExtractKernel(
+        target_image_path, os.path.join(temp_dir, 'full_dev_part_KERN.bin'))
+    partition_lib.ExtractRoot(
+        target_image_path, os.path.join(temp_dir, 'full_dev_part_ROOT.bin'),
+        truncate=False)
+    for partition in ('KERN', 'ROOT'):
+      source = os.path.join(temp_dir, 'full_dev_part_%s.bin' % partition)
+      dest = os.path.join(archive_dir, 'full_dev_part_%s.bin.gz' % partition)
+      cros_build_lib.CompressFile(source, dest)
+
+
+def GeneratePayloads(target_image_path, archive_dir, full=False, delta=False,
+                     stateful=False):
   """Generates the payloads for hw testing.
 
   Args:
-    build_root: The root of the chromium os checkout.
     target_image_path: The path to the image to generate payloads to.
     archive_dir: Where to store payloads we generated.
     full: Generate full payloads.
@@ -3173,56 +3198,25 @@ def GeneratePayloads(build_root, target_image_path, archive_dir, full=False,
   prefix = 'chromeos'
   suffix = 'dev.bin'
 
-  cwd = os.path.join(build_root, 'src', 'scripts')
-  chroot_dir = os.path.join(build_root, 'chroot')
-  chroot_tmp = os.path.join(chroot_dir, 'tmp')
-  chroot_target = path_util.ToChrootPath(target_image_path)
+  if full:
+    # Names for full payloads look something like this:
+    # chromeos_R37-5952.0.2014_06_12_2302-a1_link_full_dev.bin
+    name = '_'.join([prefix, os_version, board, 'full', suffix])
+    payload_path = os.path.join(archive_dir, name)
+    paygen_payload_lib.GenerateUpdatePayload(target_image_path, payload_path)
 
-  with osutils.TempDir(base_dir=chroot_tmp,
-                       prefix='generate_payloads') as temp_dir:
-    chroot_temp_dir = temp_dir.replace(chroot_dir, '', 1)
+  if delta:
+    # Names for delta payloads look something like this:
+    # chromeos_R37-5952.0.2014_06_12_2302-a1_R37-
+    # 5952.0.2014_06_12_2302-a1_link_delta_dev.bin
+    name = '_'.join([prefix, os_version, os_version, board, 'delta', suffix])
+    payload_path = os.path.join(archive_dir, name)
+    paygen_payload_lib.GenerateUpdatePayload(target_image_path, payload_path,
+                                             src_image=target_image_path)
 
-    cmd = [
-        'cros_generate_update_payload',
-        '--image', chroot_target,
-        '--output', os.path.join(chroot_temp_dir, 'update.gz')
-    ]
-    if full:
-      cmd_full = cmd
-      cmd_full.extend(['--kern_path',
-                       os.path.join(chroot_temp_dir, 'full_dev_part_KERN.bin'),
-                       '--root_pretruncate_path',
-                       os.path.join(chroot_temp_dir, 'full_dev_part_ROOT.bin')])
-      cros_build_lib.RunCommand(cmd_full, enter_chroot=True, cwd=cwd)
-      name = '_'.join([prefix, os_version, board, 'full', suffix])
-      # Names for full payloads look something like this:
-      # chromeos_R37-5952.0.2014_06_12_2302-a1_link_full_dev.bin
-      shutil.move(os.path.join(temp_dir, 'update.gz'),
-                  os.path.join(archive_dir, name))
-      for partition in ['KERN', 'ROOT']:
-        source = os.path.join(temp_dir, 'full_dev_part_%s.bin' % partition)
-        dest = os.path.join(archive_dir, 'full_dev_part_%s.bin.gz' % partition)
-        cros_build_lib.CompressFile(source, dest)
-
-    cmd.extend(['--src_image', chroot_target])
-    if delta:
-      cros_build_lib.RunCommand(cmd, enter_chroot=True, cwd=cwd)
-      # Names for delta payloads look something like this:
-      # chromeos_R37-5952.0.2014_06_12_2302-a1_R37-
-      # 5952.0.2014_06_12_2302-a1_link_delta_dev.bin
-      name = '_'.join([prefix, os_version, os_version, board, 'delta', suffix])
-      shutil.move(os.path.join(temp_dir, 'update.gz'),
-                  os.path.join(archive_dir, name))
-
-    if stateful:
-      cmd = [
-          'cros_generate_stateful_update_payload',
-          '--image', chroot_target,
-          '--output', chroot_temp_dir
-      ]
-      cros_build_lib.RunCommand(cmd, enter_chroot=True, cwd=cwd)
-      shutil.move(os.path.join(temp_dir, STATEFUL_FILE),
-                  os.path.join(archive_dir, STATEFUL_FILE))
+  if stateful:
+    paygen_stateful_payload_lib.GenerateStatefulPayload(target_image_path,
+                                                        archive_dir)
 
 
 def GetChromeLKGM(revision):
