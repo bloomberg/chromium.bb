@@ -205,7 +205,7 @@ std::unique_ptr<base::Value> AsValue(const SkPaint& paint) {
     val->Set("Xfermode", AsValue(paint.getBlendMode()));
   }
 
-  if (paint.getFlags()) {
+  if (paint.isAntiAlias() || paint.isDither()) {
     FlagsBuilder builder('|');
     builder.addFlag(paint.isAntiAlias(), "AntiAlias");
     builder.addFlag(paint.isDither(), "Dither");
