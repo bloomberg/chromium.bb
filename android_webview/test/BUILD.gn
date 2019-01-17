@@ -28,6 +28,7 @@ if (public_android_sdk) {
     data_deps = [
       "//build/android:logdog_wrapper_py",
       "//build/android:test_runner_py",
+      "//testing/buildbot/filters:webview_cts_tests_filters",
     ]
 
     # Filter out comments.
