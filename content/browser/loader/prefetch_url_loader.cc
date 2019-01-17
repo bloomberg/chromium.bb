@@ -81,7 +81,7 @@ void PrefetchURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const base::Optional<GURL>& new_url) {
-  DCHECK(removed_headers.empty() && modified_headers.IsEmpty())
+  DCHECK(modified_headers.IsEmpty())
       << "Redirect with modified headers was not supported yet. "
          "crbug.com/845683";
   DCHECK(!new_url) << "Redirect with modified URL was not "
@@ -111,8 +111,8 @@ void PrefetchURLLoader::FollowRedirect(
     }
   }
 
-  loader_->FollowRedirect(std::vector<std::string>() /* removed_headers */,
-                          modified_request_headers_for_accept, base::nullopt);
+  loader_->FollowRedirect(removed_headers, modified_request_headers_for_accept,
+                          base::nullopt);
 }
 
 void PrefetchURLLoader::ProceedWithResponse() {
