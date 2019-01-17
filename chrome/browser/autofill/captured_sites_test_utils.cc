@@ -639,8 +639,8 @@ bool TestRecipeReplayer::ExecuteAutofillAction(
   if (!GetTargetFrameFromAction(action, &frame))
     return false;
 
-  gfx::Point offset;
-  if (!GetTargetFrameCoordOffsetFromAction(action, &offset))
+  std::vector<std::string> frame_path;
+  if (!GetIFramePathFromAction(action, &frame_path))
     return false;
 
   if (!WaitForElementToBeReady(frame, xpath, visibility_enum_val))
@@ -661,8 +661,8 @@ bool TestRecipeReplayer::ExecuteAutofillAction(
     return false;
   }
 
-  if (!feature_action_executor()->AutofillForm(
-          frame, xpath, kAutofillActionNumRetries, offset))
+  if (!feature_action_executor()->AutofillForm(frame, xpath, frame_path,
+                                               kAutofillActionNumRetries))
     return false;
   page_activity_observer.WaitTillPageIsIdle(
       kAutofillActionWaitForVisualUpdateTimeout);
@@ -719,11 +719,11 @@ bool TestRecipeReplayer::ExecuteHoverAction(
   VLOG(1) << "Hovering over `" << xpath << "`.";
   PageActivityObserver page_activity_observer(frame);
 
-  int x, y;
-  if (!GetCenterCoordinateOfTargetElement(frame, xpath, x, y))
+  gfx::Rect rect;
+  if (!GetBoundingRectOfTargetElement(frame, xpath, &rect))
     return false;
 
-  if (!SimulateMouseHoverAt(frame, gfx::Point(x, y)))
+  if (!SimulateMouseHoverAt(frame, rect.CenterPoint()))
     return false;
 
   if (!page_activity_observer.WaitForVisualUpdate()) {
@@ -749,8 +749,8 @@ bool TestRecipeReplayer::ExecutePressEnterAction(
   if (!GetTargetFrameFromAction(action, &frame))
     return false;
 
-  gfx::Point offset;
-  if (!GetTargetFrameCoordOffsetFromAction(action, &offset))
+  std::vector<std::string> frame_path;
+  if (!GetIFramePathFromAction(action, &frame_path))
     return false;
 
   if (!WaitForElementToBeReady(frame, xpath, visibility_enum_val))
@@ -758,7 +758,7 @@ bool TestRecipeReplayer::ExecutePressEnterAction(
 
   VLOG(1) << "Press 'Enter' on `" << xpath << "`.";
   PageActivityObserver page_activity_observer(frame);
-  if (!PlaceFocusOnElement(frame, xpath, offset))
+  if (!PlaceFocusOnElement(frame, xpath, frame_path))
     return false;
 
   ui::DomKey key = ui::DomKey::ENTER;
@@ -950,8 +950,8 @@ bool TestRecipeReplayer::ExecuteTypePasswordAction(
   if (!GetTargetFrameFromAction(action, &frame))
     return false;
 
-  gfx::Point offset;
-  if (!GetTargetFrameCoordOffsetFromAction(action, &offset))
+  std::vector<std::string> frame_path;
+  if (!GetIFramePathFromAction(action, &frame_path))
     return false;
 
   if (!WaitForElementToBeReady(frame, xpath, visibility_enum_val))
@@ -979,7 +979,7 @@ bool TestRecipeReplayer::ExecuteTypePasswordAction(
     return false;
   }
 
-  if (!PlaceFocusOnElement(frame, xpath, offset))
+  if (!PlaceFocusOnElement(frame, xpath, frame_path))
     return false;
 
   VLOG(1) << "Typing '" << value << "' inside `" << xpath << "`.";
@@ -1241,9 +1241,11 @@ bool TestRecipeReplayer::GetTargetFrameFromAction(
   return true;
 }
 
-bool TestRecipeReplayer::GetTargetFrameCoordOffsetFromAction(
+bool TestRecipeReplayer::GetIFramePathFromAction(
     const base::DictionaryValue& action,
-    gfx::Point* point) {
+    std::vector<std::string>* iframe_path) {
+  *iframe_path = std::vector<std::string>();
+
   const base::Value* iframe_container = action.FindKey("context");
   if (!iframe_container) {
     ADD_FAILURE() << "Failed to extract the iframe context from action!";
@@ -1256,38 +1258,60 @@ bool TestRecipeReplayer::GetTargetFrameCoordOffsetFromAction(
     return false;
   }
 
-  const base::Value* offset_container = iframe->FindKey("offset");
-  if (!offset_container) {
-    // By default, the frame offset is (0, 0).
-    *point = gfx::Point(0, 0);
+  const base::Value* iframe_path_container = iframe->FindKey("path");
+  if (!iframe_path_container) {
+    // If the action does not have a path container, it would mean that:
+    // 1. The target frame is the top level frame.
+    // 2. The target frame is an iframe, but it is the top-level frame in its
+    //    rendering process.
     return true;
   }
 
-  const base::DictionaryValue* offset;
-  if (!offset_container->GetAsDictionary(&offset)) {
-    ADD_FAILURE() << "Failed to extract the iframe offset object!";
+  if (base::Value::Type::LIST != iframe_path_container->type()) {
+    ADD_FAILURE() << "The action's iframe path is not a list!";
     return false;
   }
 
-  int x, y;
-
-  const base::Value* x_container = offset->FindKey("x");
-  if (base::Value::Type::INTEGER != x_container->type()) {
-    ADD_FAILURE() << "Offset x property is not an integer!";
-    return false;
+  const base::Value::ListStorage& iframe_xpath_list =
+      iframe_path_container->GetList();
+  for (auto it_xpath = iframe_xpath_list.begin();
+       it_xpath != iframe_xpath_list.end(); ++it_xpath) {
+    std::string xpath;
+    if (!it_xpath->GetAsString(&xpath)) {
+      ADD_FAILURE() << "Failed to extract the iframe xpath from action!";
+      return false;
+    }
+    iframe_path->push_back(xpath);
   }
 
-  x = x_container->GetInt();
+  return true;
+}
 
-  const base::Value* y_container = offset->FindKey("y");
-  if (base::Value::Type::INTEGER != y_container->type()) {
-    ADD_FAILURE() << "Offset y property is not an integer!";
-    return false;
+bool TestRecipeReplayer::GetIFrameOffsetFromIFramePath(
+    content::RenderFrameHost* frame,
+    const std::vector<std::string>& iframe_path,
+    gfx::Vector2d* offset) {
+  *offset = gfx::Vector2d(0, 0);
+
+  for (auto it_xpath = iframe_path.begin(); it_xpath != iframe_path.end();
+       it_xpath++) {
+    content::RenderFrameHost* parent_frame = frame->GetParent();
+    if (parent_frame == nullptr) {
+      ADD_FAILURE() << "Trying to iterate past the top level frame!";
+      return false;
+    }
+
+    gfx::Rect rect;
+    if (!GetBoundingRectOfTargetElement(parent_frame, *it_xpath, &rect)) {
+      ADD_FAILURE() << "Failed to extract position of iframe with xpath `"
+                    << *it_xpath << "`!";
+      return false;
+    }
+
+    *offset += rect.OffsetFromOrigin();
+    frame = parent_frame;
   }
 
-  y = y_container->GetInt();
-
-  *point = gfx::Point(x, y);
   return true;
 }
 
@@ -1395,9 +1419,10 @@ bool TestRecipeReplayer::ExpectElementPropertyEquals(
   return false;
 }
 
-bool TestRecipeReplayer::PlaceFocusOnElement(content::RenderFrameHost* frame,
-                                             const std::string& element_xpath,
-                                             const gfx::Point& offset) {
+bool TestRecipeReplayer::PlaceFocusOnElement(
+    content::RenderFrameHost* frame,
+    const std::string& element_xpath,
+    const std::vector<std::string> iframe_path) {
   const std::string focus_on_target_field_js(base::StringPrintf(
       "try {"
       "  function onFocusHandler(event) {"
@@ -1433,63 +1458,97 @@ bool TestRecipeReplayer::PlaceFocusOnElement(content::RenderFrameHost* frame,
   } else {
     // Failing focusing on an element through script, use the less preferred
     // method of left mouse clicking the element.
-    int x, y;
-    if (!GetCenterCoordinateOfTargetElement(frame, element_xpath, x, y))
+    gfx::Rect rect;
+    if (!GetBoundingRectOfTargetElement(frame, element_xpath, iframe_path,
+                                        &rect))
       return false;
 
-    return SimulateLeftMouseClickAt(frame, gfx::Point(x, y));
+    return SimulateLeftMouseClickAt(frame, rect.CenterPoint());
   }
 }
 
-bool TestRecipeReplayer::GetCenterCoordinateOfTargetElement(
+bool TestRecipeReplayer::GetBoundingRectOfTargetElement(
     content::RenderFrameHost* frame,
     const std::string& target_element_xpath,
-    int& x,
-    int& y) {
-  const std::string get_target_field_x_js(base::StringPrintf(
+    gfx::Rect* output_rect) {
+  std::string rect_str;
+  const std::string get_element_bounding_rect_js(base::StringPrintf(
       "window.domAutomationController.send("
       "    (function() {"
       "       try {"
       "         const element = automation_helper.getElementByXpath(`%s`);"
       "         const rect = element.getBoundingClientRect();"
-      "         return Math.floor(rect.left + rect.width / 2);"
+      "         return Math.round(rect.left) + ',' + "
+      "                Math.round(rect.top) + ',' + "
+      "                Math.round(rect.width) + ',' + "
+      "                Math.round(rect.height);"
       "       } catch(ex) {}"
-      "       return -1;"
+      "       return '';"
       "    })());",
       target_element_xpath.c_str()));
-  const std::string get_target_field_y_js(base::StringPrintf(
-      "window.domAutomationController.send("
-      "    (function() {"
-      "       try {"
-      "         const element = automation_helper.getElementByXpath(`%s`);"
-      "         const rect = element.getBoundingClientRect();"
-      "         return Math.floor(rect.top + rect.height / 2);"
-      "       } catch(ex) {}"
-      "       return -1;"
-      "    })());",
-      target_element_xpath.c_str()));
-  if (!content::ExecuteScriptAndExtractInt(frame, get_target_field_x_js, &x)) {
+
+  if (!content::ExecuteScriptAndExtractString(
+          frame, get_element_bounding_rect_js, &rect_str)) {
     ADD_FAILURE()
-        << "Failed to run script to extract target element's x coordinate!";
+        << "Failed to run script to extract target element's bounding rect!";
     return false;
   }
 
-  if (x == -1) {
-    ADD_FAILURE() << "Failed to extract target element's x coordinate!";
+  if (rect_str.empty()) {
+    ADD_FAILURE() << "Failed to extract target element's bounding rect!";
     return false;
   }
 
-  if (!content::ExecuteScriptAndExtractInt(frame, get_target_field_y_js, &y)) {
-    ADD_FAILURE()
-        << "Failed to run script to extract target element's y coordinate!";
+  // Parse the bounding rect string to extract the element coordinates.
+  std::istringstream rect_stream(rect_str);
+  std::string token;
+  if (!std::getline(rect_stream, token, ',')) {
+    ADD_FAILURE() << "Failed to extract target element's x coordinate from "
+                  << "the string `" << rect_str << "`!";
     return false;
   }
 
-  if (y == -1) {
-    ADD_FAILURE() << "Failed to extract target element's y coordinate!";
+  output_rect->set_x(std::stoi(token));
+
+  if (!std::getline(rect_stream, token, ',')) {
+    ADD_FAILURE() << "Failed to extract target element's y coordinate from "
+                  << "the string `" << rect_str << "`!";
     return false;
   }
 
+  output_rect->set_y(std::stoi(token));
+
+  if (!std::getline(rect_stream, token, ',')) {
+    ADD_FAILURE() << "Failed to extract target element's width from "
+                  << "the string `" << rect_str << "`!";
+    return false;
+  }
+
+  output_rect->set_width(std::stoi(token));
+
+  if (!std::getline(rect_stream, token, ',')) {
+    ADD_FAILURE() << "Failed to extract target element's height from "
+                  << "the string `" << rect_str << "`!";
+    return false;
+  }
+
+  output_rect->set_height(std::stoi(token));
+
+  return true;
+}
+
+bool TestRecipeReplayer::GetBoundingRectOfTargetElement(
+    content::RenderFrameHost* frame,
+    const std::string& target_element_xpath,
+    const std::vector<std::string> iframe_path,
+    gfx::Rect* output_rect) {
+  gfx::Vector2d offset;
+  if (!GetIFrameOffsetFromIFramePath(frame, iframe_path, &offset))
+    return false;
+  if (!GetBoundingRectOfTargetElement(frame, target_element_xpath, output_rect))
+    return false;
+
+  *output_rect += offset;
   return true;
 }
 
@@ -1696,8 +1755,8 @@ TestRecipeReplayChromeFeatureActionExecutor::
 bool TestRecipeReplayChromeFeatureActionExecutor::AutofillForm(
     content::RenderFrameHost* frame,
     const std::string& focus_element_css_selector,
-    const int attempts,
-    const gfx::Point& offset) {
+    const std::vector<std::string> iframe_path,
+    const int attempts) {
   ADD_FAILURE() << "TestRecipeReplayChromeFeatureActionExecutor::AutofillForm "
                    "is not implemented!";
   return false;
