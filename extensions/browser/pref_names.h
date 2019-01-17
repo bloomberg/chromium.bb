@@ -52,6 +52,9 @@ extern const char kExtensions[];
 // policy.
 extern const char kExtensionManagement[];
 
+// Policy that indicates whether CRX2 extension updates are allowed.
+extern const char kInsecureExtensionUpdatesEnabled[];
+
 // A whitelist of extension ids the user can install: exceptions from the
 // following blacklist.
 extern const char kInstallAllowList[];

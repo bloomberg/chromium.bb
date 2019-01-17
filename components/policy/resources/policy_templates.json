@@ -413,6 +413,7 @@
         'ExtensionInstallForcelist',
         'ExtensionInstallSources',
         'ExtensionAllowedTypes',
+        'ExtensionAllowInsecureUpdates',
         'ExtensionSettings',
       ],
     },
@@ -3146,6 +3147,26 @@
 
           <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME">ExtensionInstallBlacklist</ph> takes precedence over this policy. That is, an extension on the blacklist won't be installed, even if it happens from a site on this list.''',
       'label': '''URL patterns to allow extension, app, and user script installs from''',
+    },
+    {
+      'name': 'ExtensionAllowInsecureUpdates',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:73-', 'chrome_os:73-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 516,
+      'caption': '''Allow insecure algorithms in integrity checks on extension updates and installs''',
+      'tags': ['system-security'],
+      'desc': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> provides for the secure update and installation of extensions. However, the content of some extensions hosted outside of the Chrome Web Store may only be protected by insecure signing or hashing algorithms such as SHA1. When this policy is disabled, fresh installation of and updates to such extensions will not be permitted by Chrome (until the extension developers rebuild the extension with stronger algorithms). When this policy is enabled, installation and updates for such extensions will be permitted.
+
+          This will default to the enabled behavior when unset.
+          Starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 75, this will default to the disabled behavior when unset.
+
+          Starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 77, this policy will be ignored and treated as disabled.''',
     },
     {
       'name': 'ExtensionAllowedTypes',
@@ -14375,5 +14396,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  515
+  'highest_id_currently_used':  516
 }

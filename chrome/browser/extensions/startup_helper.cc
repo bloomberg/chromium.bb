@@ -21,6 +21,7 @@
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/verifier_formats.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 using content::BrowserThread;
@@ -181,7 +182,7 @@ bool StartupHelper::ValidateCrx(const base::CommandLine& cmd_line,
   }
 
   base::RunLoop run_loop;
-  CRXFileInfo file(path);
+  CRXFileInfo file(path, extensions::GetExternalVerifierFormat());
   auto helper = base::MakeRefCounted<ValidateCrxHelper>(
       file, temp_dir.GetPath(), run_loop.QuitClosure());
   helper->Start();

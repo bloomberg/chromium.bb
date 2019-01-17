@@ -128,6 +128,7 @@
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/value_builder.h"
+#include "extensions/common/verifier_formats.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
@@ -2709,8 +2710,8 @@ TEST_F(ExtensionServiceTest, UpdateExtensionDuringShutdown) {
 
   // Update should fail and extension should not be updated.
   path = data_dir().AppendASCII("good2.crx");
-  bool updated =
-      service()->UpdateExtension(CRXFileInfo(good_crx, path), true, NULL);
+  bool updated = service()->UpdateExtension(
+      CRXFileInfo(good_crx, GetTestVerifierFormat(), path), true, NULL);
   ASSERT_FALSE(updated);
   ASSERT_EQ(
       "1.0.0.0",

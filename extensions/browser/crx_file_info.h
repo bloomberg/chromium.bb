@@ -9,6 +9,10 @@
 
 #include "base/files/file_path.h"
 
+namespace crx_file {
+enum class VerifierFormat;
+}
+
 namespace extensions {
 
 // CRXFileInfo holds general information about a cached CRX file
@@ -16,17 +20,23 @@ struct CRXFileInfo {
   CRXFileInfo();
   CRXFileInfo(const std::string& extension_id,
               const base::FilePath& path,
-              const std::string& hash);
-  CRXFileInfo(const std::string& extension_id, const base::FilePath& path);
-  explicit CRXFileInfo(const base::FilePath& path);
+              const std::string& hash,
+              const crx_file::VerifierFormat required_format);
+  CRXFileInfo(const std::string& extension_id,
+              const crx_file::VerifierFormat required_format,
+              const base::FilePath& path);
+  CRXFileInfo(const base::FilePath& path,
+              const crx_file::VerifierFormat required_format);
+  explicit CRXFileInfo(const CRXFileInfo&);
 
   bool operator==(const CRXFileInfo& that) const;
 
-  // The only mandatory field is the file path, whereas extension_id and hash
-  // are only being checked if those are non-empty.
+  // Only |path| and |required_format| are mandatory. |extension_id| and
+  // |expected_hash| are only checked if non-empty.
   std::string extension_id;
   base::FilePath path;
   std::string expected_hash;
+  crx_file::VerifierFormat required_format;
 };
 
 }  // namespace extensions

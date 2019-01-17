@@ -76,6 +76,9 @@ enum class SandboxedUnpackerFailureReason {
   DEPRECATED_ERROR_PARSING_DNR_RULESET = 39,  // No longer used; kept for UMA.
   ERROR_INDEXING_DNR_RULESET = 40,
 
+  // SandboxedUnpacker::ValidateSignature()
+  CRX_REQUIRED_PROOF_MISSING = 41,
+
   NUM_FAILURE_REASONS
 };
 

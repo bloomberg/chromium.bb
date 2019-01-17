@@ -14,6 +14,7 @@
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/verifier_formats.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -51,7 +52,7 @@ void DownloaderTestDelegate::StartUpdateCheck(
           base::BindOnce(
               &ExtensionDownloaderDelegate::OnExtensionDownloadFinished,
               base::Unretained(delegate),
-              CRXFileInfo(id, responses_[id].second),
+              CRXFileInfo(id, GetTestVerifierFormat(), responses_[id].second),
               false /* pass_file_ownership */, GURL(), responses_[id].first,
               ExtensionDownloaderDelegate::PingResult(), data->request_ids(),
               ExtensionDownloaderDelegate::InstallCallback()));

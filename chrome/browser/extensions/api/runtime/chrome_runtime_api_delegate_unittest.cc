@@ -31,6 +31,7 @@
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/browser/updater/extension_downloader_test_delegate.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/verifier_formats.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -122,7 +123,8 @@ class DownloaderTestDelegate : public ExtensionDownloaderTestDelegate {
       }
       auto update = updates_.find(id);
       if (update != updates_.end()) {
-        CRXFileInfo info(id, update->second.path, "" /* no hash */);
+        CRXFileInfo info(id, update->second.path, "" /* no hash */,
+                         GetTestVerifierFormat());
         std::string version = update->second.version;
         updates_.erase(update);
         base::ThreadTaskRunnerHandle::Get()->PostTask(

@@ -23,6 +23,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "components/crx_file/crx_verifier.h"
 #include "components/update_client/update_query_params.h"
 #include "content/public/browser/file_url_loader.h"
 #include "content/public/browser/notification_details.h"
@@ -37,6 +38,7 @@
 #include "extensions/common/extension_updater_uma.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_url_handlers.h"
+#include "extensions/common/verifier_formats.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -211,6 +213,7 @@ ExtensionDownloader::ExtensionDownloader(
     ExtensionDownloaderDelegate* delegate,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     service_manager::Connector* connector,
+    const crx_file::VerifierFormat crx_format_requirement,
     const base::FilePath& profile_path)
     : delegate_(delegate),
       url_loader_factory_(std::move(url_loader_factory)),
@@ -226,6 +229,7 @@ ExtensionDownloader::ExtensionDownloader(
                               base::Unretained(this))),
       extension_cache_(nullptr),
       identity_manager_(nullptr),
+      crx_format_requirement_(crx_format_requirement),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
   DCHECK(url_loader_factory_);
@@ -888,9 +892,13 @@ void ExtensionDownloader::NotifyDelegateDownloadFinished(
   const GURL& url = fetch_data->url;
   const std::string& version = fetch_data->version;
   const std::set<int>& request_ids = fetch_data->request_ids;
+  const crx_file::VerifierFormat required_format =
+      extension_urls::IsWebstoreUpdateUrl(fetch_data->url)
+          ? GetWebstoreVerifierFormat()
+          : crx_format_requirement_;
   delegate_->OnExtensionDownloadFinished(
-      CRXFileInfo(id, crx_path, package_hash), file_ownership_passed, url,
-      version, ping_results_[id], request_ids,
+      CRXFileInfo(id, crx_path, package_hash, required_format),
+      file_ownership_passed, url, version, ping_results_[id], request_ids,
       from_cache ? base::BindRepeating(&ExtensionDownloader::CacheInstallDone,
                                        weak_ptr_factory_.GetWeakPtr(),
                                        base::Passed(&fetch_data))

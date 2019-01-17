@@ -58,6 +58,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/verifier_formats.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -346,7 +347,9 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
         extensions::NOTIFICATION_CRX_INSTALLER_DONE,
         base::Bind(&IsCrxInstallerDone, &installer));
     extension_service_->UpdateExtension(
-        extensions::CRXFileInfo(extension->id(), path), true, &installer);
+        extensions::CRXFileInfo(extension->id(),
+                                extensions::GetTestVerifierFormat(), path),
+        true, &installer);
 
     if (installer)
       observer.Wait();
