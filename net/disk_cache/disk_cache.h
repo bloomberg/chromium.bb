@@ -174,9 +174,6 @@ class NET_EXPORT Backend {
   // This method should be the preferred way to obtain an entry over using
   // OpenEntry() or CreateEntry() separately in order to simplify consumer
   // logic.
-  //
-  // Warning: Currently under development and not yet implemented in all cache
-  // backends.
   virtual net::Error OpenOrCreateEntry(const std::string& key,
                                        net::RequestPriority priority,
                                        EntryWithOpened* entry_struct,
