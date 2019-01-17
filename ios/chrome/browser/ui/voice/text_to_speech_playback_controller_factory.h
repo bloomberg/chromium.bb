@@ -6,12 +6,8 @@
 #define IOS_CHROME_BROWSER_UI_VOICE_TEXT_TO_SPEECH_PLAYBACK_CONTROLLER_FACTORY_H_
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
 
 namespace ios {
 class ChromeBrowserState;
@@ -32,8 +28,7 @@ class TextToSpeechPlaybackControllerFactory
   static TextToSpeechPlaybackControllerFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<
-      TextToSpeechPlaybackControllerFactory>;
+  friend class base::NoDestructor<TextToSpeechPlaybackControllerFactory>;
 
   TextToSpeechPlaybackControllerFactory();
 
