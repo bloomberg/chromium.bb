@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cicerone_client.h"
@@ -180,6 +181,10 @@ class CrostiniManagerTest : public testing::Test {
     profile_ = std::make_unique<TestingProfile>();
     crostini_manager_ = std::make_unique<CrostiniManager>(profile_.get());
 
+    // Link gaia user for DriveFS.
+    user_manager_.AddUser(AccountId::FromUserEmailGaiaId(
+        profile_->GetProfileUserName(), "12345"));
+
     device::mojom::UsbDeviceManagerPtr fake_usb_manager_ptr_;
     fake_usb_manager_.AddBinding(mojo::MakeRequest(&fake_usb_manager_ptr_));
     crostini_manager_->SetUsbManagerForTesting(
@@ -210,6 +215,7 @@ class CrostiniManagerTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  chromeos::FakeChromeUserManager user_manager_;
   DISALLOW_COPY_AND_ASSIGN(CrostiniManagerTest);
 };
 
