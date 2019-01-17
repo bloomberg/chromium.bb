@@ -16,11 +16,11 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "chrome/common/chrome_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -327,7 +327,7 @@ class ProfilePrefStoreManagerTest : public testing::Test,
       ADD_FAILURE() << "No validation observed for preference: " << pref_path;
   }
 
-  base::MessageLoop main_message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::vector<prefs::mojom::TrackedPreferenceMetadataPtr> configuration_;
   base::ScopedTempDir profile_dir_;
   scoped_refptr<user_prefs::PrefRegistrySyncable> profile_pref_registry_;
