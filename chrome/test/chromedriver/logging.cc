@@ -255,6 +255,7 @@ bool InitLogging() {
       return false;
     }
     VLOG(0) << "Starting ChromeDriver " << kChromeDriverVersion;
+    VLOG(0) << kPortProtectionMessage;
   }
 
   Log::truncate_logged_params = !cmd_line->HasSwitch("replayable");
