@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "chromecast/browser/extensions/api/automation_internal/automation_event_router_interface.h"
 #include "chromecast/common/extensions_api/automation_internal.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/notification_observer.h"
@@ -32,7 +33,8 @@ namespace extensions {
 namespace cast {
 struct AutomationListener;
 
-class AutomationEventRouter : public content::NotificationObserver {
+class AutomationEventRouter : public AutomationEventRouterInterface,
+                              content::NotificationObserver {
  public:
   static AutomationEventRouter* GetInstance();
 
@@ -51,15 +53,21 @@ class AutomationEventRouter : public content::NotificationObserver {
                                              int listener_process_id);
 
   void DispatchAccessibilityEvents(
-      const ExtensionMsg_AccessibilityEventBundleParams& events);
+      const ExtensionMsg_AccessibilityEventBundleParams& events) override;
 
   void DispatchAccessibilityLocationChange(
-      const ExtensionMsg_AccessibilityLocationChangeParams& params);
+      const ExtensionMsg_AccessibilityLocationChangeParams& params) override;
 
   // Notify all automation extensions that an accessibility tree was
   // destroyed. If |browser_context| is null,
-  void DispatchTreeDestroyedEvent(ui::AXTreeID tree_id,
-                                  content::BrowserContext* browser_context);
+  void DispatchTreeDestroyedEvent(
+      ui::AXTreeID tree_id,
+      content::BrowserContext* browser_context) override;
+
+  // Notify the source extension of the action of an action result.
+  void DispatchActionResult(const ui::AXActionData& data,
+                            bool result,
+                            content::BrowserContext* active_profile) override;
 
  private:
   struct AutomationListener {

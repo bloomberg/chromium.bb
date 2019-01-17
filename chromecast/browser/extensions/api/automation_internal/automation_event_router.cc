@@ -56,6 +56,26 @@ void AutomationEventRouter::RegisterListenerWithDesktopPermission(
   Register(extension_id, listener_process_id, ui::AXTreeIDUnknown(), true);
 }
 
+void AutomationEventRouter::DispatchActionResult(
+    const ui::AXActionData& data,
+    bool result,
+    content::BrowserContext* active_profile) {
+  CHECK(!data.source_extension_id.empty());
+
+  if (listeners_.empty())
+    return;
+
+  std::unique_ptr<base::ListValue> args(
+      api::automation_internal::OnActionResult::Create(
+          data.target_tree_id.ToString(), data.request_id, result));
+  auto event = std::make_unique<Event>(
+      events::AUTOMATION_INTERNAL_ON_ACTION_RESULT,
+      api::automation_internal::OnActionResult::kEventName, std::move(args),
+      active_profile);
+  EventRouter::Get(active_profile)
+      ->DispatchEventToExtension(data.source_extension_id, std::move(event));
+}
+
 void AutomationEventRouter::DispatchAccessibilityEvents(
     const ExtensionMsg_AccessibilityEventBundleParams& event_bundle) {
   for (const auto& listener : listeners_) {
