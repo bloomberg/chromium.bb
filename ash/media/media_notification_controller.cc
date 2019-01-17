@@ -40,10 +40,8 @@ MediaNotificationController::MediaNotificationController(
   media_session::mojom::AudioFocusManagerPtr audio_focus_ptr;
   connector->BindInterface(media_session::mojom::kServiceName,
                            mojo::MakeRequest(&audio_focus_ptr));
-
-  media_session::mojom::MediaControllerManagerPtr controller_manager_ptr;
   connector->BindInterface(media_session::mojom::kServiceName,
-                           mojo::MakeRequest(&controller_manager_ptr));
+                           mojo::MakeRequest(&controller_manager_ptr_));
 
   media_session::mojom::AudioFocusObserverPtr audio_focus_observer;
   audio_focus_observer_binding_.Bind(mojo::MakeRequest(&audio_focus_observer));
