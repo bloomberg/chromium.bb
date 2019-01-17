@@ -15,6 +15,7 @@
 #include "net/third_party/quic/core/quic_session.h"
 #include "net/third_party/quic/tools/quic_simple_crypto_server_stream_helper.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_crypto_config_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_packet_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_stream_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport.h"
@@ -43,6 +44,17 @@ class MODULES_EXPORT P2PQuicTransportImpl final
       public P2PQuicPacketTransport::ReceiveDelegate,
       public quic::QuicCryptoClientStream::ProofHandler {
  public:
+  // Creates the necessary QUIC and Chromium specific objects before
+  // creating P2PQuicTransportImpl.
+  static std::unique_ptr<P2PQuicTransportImpl> Create(
+      quic::QuicClock* clock,
+      quic::QuicAlarmFactory* alarm_factory,
+      quic::QuicRandom* quic_random,
+      Delegate* delegate,
+      P2PQuicPacketTransport* packet_transport,
+      const P2PQuicTransportConfig& config,
+      std::unique_ptr<P2PQuicCryptoConfigFactory> crypto_config_factory);
+
   P2PQuicTransportImpl(
       Delegate* delegate,
       P2PQuicPacketTransport* packet_transport,
@@ -50,6 +62,7 @@ class MODULES_EXPORT P2PQuicTransportImpl final
       std::unique_ptr<net::QuicChromiumConnectionHelper> helper,
       std::unique_ptr<quic::QuicConnection> connection,
       const quic::QuicConfig& quic_config,
+      std::unique_ptr<P2PQuicCryptoConfigFactory> crypto_config_factory,
       quic::QuicClock* clock);
 
   ~P2PQuicTransportImpl() override;
@@ -160,6 +173,9 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   std::unique_ptr<net::QuicChromiumConnectionHelper> helper_;
 
   std::unique_ptr<quic::QuicConnection> connection_;
+
+  // Used to create either a crypto client or server config.
+  std::unique_ptr<P2PQuicCryptoConfigFactory> crypto_config_factory_;
 
   std::unique_ptr<quic::QuicCryptoStream> crypto_stream_;
   // Crypto information. Note that currently the handshake is insecure and these
