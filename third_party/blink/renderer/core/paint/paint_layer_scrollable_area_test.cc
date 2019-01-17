@@ -938,15 +938,8 @@ TEST_P(PaintLayerScrollableAreaTest, ViewScrollWithFixedAttachmentBackground) {
   EXPECT_TRUE(fixed_background_div->ShouldDoFullPaintInvalidation());
   EXPECT_TRUE(fixed_background_div->BackgroundNeedsFullPaintInvalidation());
   EXPECT_FALSE(fixed_background_div->NeedsPaintPropertyUpdate());
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // In CAP, we assume the view's fixed attachment background is composited
-    // at this time and doesn't need paint invalidation on view scroll.
-    EXPECT_FALSE(GetLayoutView().ShouldDoFullPaintInvalidation());
-    EXPECT_FALSE(GetLayoutView().BackgroundNeedsFullPaintInvalidation());
-  } else {
-    EXPECT_TRUE(GetLayoutView().ShouldDoFullPaintInvalidation());
-    EXPECT_TRUE(GetLayoutView().BackgroundNeedsFullPaintInvalidation());
-  }
+  EXPECT_TRUE(GetLayoutView().ShouldDoFullPaintInvalidation());
+  EXPECT_TRUE(GetLayoutView().BackgroundNeedsFullPaintInvalidation());
   EXPECT_TRUE(GetLayoutView().NeedsPaintPropertyUpdate());
   UpdateAllLifecyclePhasesForTest();
 
