@@ -110,11 +110,8 @@ PolymerElement.prototype.shadyRoot;
  */
 PolymerElement.prototype.$$ = function(selector) {};
 
-/** @type {string} The custom element tag name. */
+/** @type {string} The Custom element tag name. */
 PolymerElement.prototype.is;
-
-/** @type {null|!HTMLTemplateElement} The element's template. */
-PolymerElement.prototype._template;
 
 /** @type {string} The native element this element extends. */
 PolymerElement.prototype.extends;
@@ -139,8 +136,6 @@ PolymerElement.prototype.observers;
 PolymerElement.prototype.created = function() {};
 /** On ready callback. */
 PolymerElement.prototype.ready = function() {};
-/** On before register callback. */
-PolymerElement.prototype.beforeRegister = function() {};
 /** On registered callback. */
 PolymerElement.prototype.registered = function() {};
 /** On attached to the DOM callback. */
@@ -233,11 +228,11 @@ PolymerElement.prototype.notifySplices = function(path, splices) {};
  *   or an array of path parts (e.g. `['foo.bar', 'baz']`).  Note that
  *   bracketed expressions are not supported; string-based path parts
  *   *must* be separated by dots.  Note that when dereferencing array
- *   indices, the index may be used as a dotted part directly
+ *   indicies, the index may be used as a dotted part directly
  *   (e.g. `users.12.name` or `['users', 12, 'name']`).
  * @param {*} value Value to set at the specified path.
  * @param {Object=} root Root object from which the path is evaluated.
- */
+*/
 PolymerElement.prototype.set = function(path, value, root) {};
 
 /**
@@ -252,7 +247,7 @@ PolymerElement.prototype.set = function(path, value, root) {};
  *   or an array of path parts (e.g. `['foo.bar', 'baz']`).  Note that
  *   bracketed expressions are not supported; string-based path parts
  *   *must* be separated by dots.  Note that when dereferencing array
- *   indices, the index may be used as a dotted part directly
+ *   indicies, the index may be used as a dotted part directly
  *   (e.g. `users.12.name` or `['users', 12, 'name']`).
  * @param {Object=} root Root object from which the path is evaluated.
  * @return {*} Value at the path, or `undefined` if any part of the path
@@ -1573,8 +1568,7 @@ Polymer.ResolveUrl.resolveUrl = function(url, baseURI) {}
 Polymer.RenderStatus = {};
 
 /**
- * Makes callback when first render occurs or immediately if render has
- * occurred.
+ * Makes callback when first render occurs or immediately if render has occured.
  * @param {!function()} cb Callback function to be invoked.
  */
 Polymer.RenderStatus.whenReady = function(cb) {}

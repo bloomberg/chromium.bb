@@ -258,7 +258,7 @@ Polymer({
       this.state_ = State.IDLE;
     }
     return {
-      fileName: /** @type {string} */ (this.fileName_),
+      fileName: this.fileName_,
       dataToSave: this.buffer_,
     };
   },
