@@ -248,6 +248,10 @@ void VizProcessContextProvider::InitializeContext(
 
   cache_controller_ = std::make_unique<ContextCacheController>(
       gles2_implementation_.get(), base::ThreadTaskRunnerHandle::Get());
+
+  // TraceEndCHROMIUM is implicit when the context is destroyed
+  gles2_implementation_->TraceBeginCHROMIUM("VizCompositor",
+                                            "DisplayCompositor");
 }
 
 void VizProcessContextProvider::OnContextLost() {
