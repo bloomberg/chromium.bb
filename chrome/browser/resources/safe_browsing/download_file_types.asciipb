@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 26
+version_id: 27
 sampled_ping_probability: 0.01
 max_archived_binaries_to_report: 10
 default_file_type {
@@ -492,6 +492,9 @@ file_types {
   is_archive: true
   ping_setting: FULL_PING
   inspection_type: RAR
+  platform_settings {
+    max_file_size_to_analyze: 52428800 # 50MB
+  }
 }
 file_types {
   extension: "squashfs"
