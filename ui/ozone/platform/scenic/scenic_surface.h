@@ -17,10 +17,6 @@
 
 namespace ui {
 
-namespace mojom {
-class ScenicGpuHost;
-}
-
 class ScenicSurfaceFactory;
 
 // Holder for Scenic resources backing rendering surface.
@@ -32,10 +28,10 @@ class ScenicSurfaceFactory;
 // The texture is updated through an image pipe.
 class ScenicSurface : public ui::PlatformWindowSurface {
  public:
-  ScenicSurface(ScenicSurfaceFactory* scenic_surface_factory,
-                fuchsia::ui::scenic::Scenic* scenic,
-                mojom::ScenicGpuHost* gpu_host,
-                gfx::AcceleratedWidget window);
+  ScenicSurface(
+      ScenicSurfaceFactory* scenic_surface_factory,
+      gfx::AcceleratedWidget window,
+      scenic::SessionPtrAndListenerRequest sesion_and_listener_request);
   ~ScenicSurface() override;
 
   // Sets the texture of the surface to a new image pipe.
@@ -45,11 +41,12 @@ class ScenicSurface : public ui::PlatformWindowSurface {
   // Sets the texture of the surface to an image resource.
   void SetTextureToImage(const scenic::Image& image);
 
-  // Links the surface to the window in the browser process.
-  void LinkToParent();
+  // Creates token to links the surface to the window in the browser process.
+  mojo::ScopedHandle CreateParentExportToken();
 
-  // Flushes commands to scenic & executes them.
-  void Commit();
+  void AssertBelongsToCurrentThread() {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  }
 
   scenic::Session* scenic_session() {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -63,7 +60,6 @@ class ScenicSurface : public ui::PlatformWindowSurface {
   scenic::Material material_;
 
   ScenicSurfaceFactory* const scenic_surface_factory_;
-  mojom::ScenicGpuHost* const gpu_host_;
   const gfx::AcceleratedWidget window_;
 
   THREAD_CHECKER(thread_checker_);

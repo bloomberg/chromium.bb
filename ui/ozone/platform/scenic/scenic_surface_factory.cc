@@ -108,19 +108,12 @@ class ScenicPixmap : public gfx::NativePixmap {
 
 ScenicSurfaceFactory::ScenicSurfaceFactory(mojom::ScenicGpuHost* gpu_host)
     : gpu_host_(gpu_host),
-      egl_implementation_(std::make_unique<GLOzoneEGLScenic>()) {}
+      egl_implementation_(std::make_unique<GLOzoneEGLScenic>()),
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      weak_ptr_factory_(this) {}
 
-ScenicSurfaceFactory::~ScenicSurfaceFactory() = default;
-
-fuchsia::ui::scenic::Scenic* ScenicSurfaceFactory::GetScenic() {
-  if (!scenic_) {
-    scenic_ = base::fuchsia::ComponentContext::GetDefault()
-                  ->ConnectToService<fuchsia::ui::scenic::Scenic>();
-    scenic_.set_error_handler([](zx_status_t status) {
-      ZX_LOG(FATAL, status) << "Scenic connection failed";
-    });
-  }
-  return scenic_.get();
+ScenicSurfaceFactory::~ScenicSurfaceFactory() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 std::vector<gl::GLImplementation>
@@ -141,13 +134,18 @@ GLOzone* ScenicSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
 std::unique_ptr<PlatformWindowSurface>
 ScenicSurfaceFactory::CreatePlatformWindowSurface(
     gfx::AcceleratedWidget widget) {
-  return std::make_unique<ScenicSurface>(this, GetScenic(), gpu_host_, widget);
+  auto surface =
+      std::make_unique<ScenicSurface>(this, widget, CreateScenicSession());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ScenicSurfaceFactory::LinkSurfaceToParent,
+                                weak_ptr_factory_.GetWeakPtr(), widget,
+                                surface->CreateParentExportToken()));
+  return surface;
 }
 
 std::unique_ptr<SurfaceOzoneCanvas> ScenicSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
   ScenicSurface* surface = GetSurface(widget);
-  surface->LinkToParent();
   return std::make_unique<ScenicWindowCanvas>(surface);
 }
 
@@ -172,22 +170,62 @@ ScenicSurfaceFactory::CreateVulkanImplementation() {
 
 void ScenicSurfaceFactory::AddSurface(gfx::AcceleratedWidget widget,
                                       ScenicSurface* surface) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  base::AutoLock lock(surface_lock_);
   DCHECK(!base::ContainsKey(surface_map_, widget));
+  surface->AssertBelongsToCurrentThread();
   surface_map_.insert(std::make_pair(widget, surface));
 }
 
 void ScenicSurfaceFactory::RemoveSurface(gfx::AcceleratedWidget widget) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(base::ContainsKey(surface_map_, widget));
-  surface_map_.erase(widget);
+  base::AutoLock lock(surface_lock_);
+  auto it = surface_map_.find(widget);
+  DCHECK(it != surface_map_.end());
+  ScenicSurface* surface = it->second;
+  surface->AssertBelongsToCurrentThread();
+  surface_map_.erase(it);
 }
 
 ScenicSurface* ScenicSurfaceFactory::GetSurface(gfx::AcceleratedWidget widget) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  base::AutoLock lock(surface_lock_);
   auto it = surface_map_.find(widget);
   DCHECK(it != surface_map_.end());
-  return it->second;
+  ScenicSurface* surface = it->second;
+  surface->AssertBelongsToCurrentThread();
+  return surface;
+}
+
+scenic::SessionPtrAndListenerRequest
+ScenicSurfaceFactory::CreateScenicSession() {
+  fuchsia::ui::scenic::SessionPtr session;
+  fidl::InterfaceHandle<fuchsia::ui::scenic::SessionListener> listener_handle;
+  auto listener_request = listener_handle.NewRequest();
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ScenicSurfaceFactory::CreateScenicSessionOnMainThread,
+                     weak_ptr_factory_.GetWeakPtr(), session.NewRequest(),
+                     listener_handle.Bind()));
+  return {std::move(session), std::move(listener_request)};
+}
+
+void ScenicSurfaceFactory::CreateScenicSessionOnMainThread(
+    fidl::InterfaceRequest<fuchsia::ui::scenic::Session> session_request,
+    fidl::InterfaceHandle<fuchsia::ui::scenic::SessionListener> listener) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!scenic_) {
+    scenic_ = base::fuchsia::ComponentContext::GetDefault()
+                  ->ConnectToService<fuchsia::ui::scenic::Scenic>();
+    scenic_.set_error_handler([](zx_status_t status) {
+      ZX_LOG(FATAL, status) << "Scenic connection failed";
+    });
+  }
+  scenic_->CreateSession(std::move(session_request), std::move(listener));
+}
+
+void ScenicSurfaceFactory::LinkSurfaceToParent(
+    gfx::AcceleratedWidget widget,
+    mojo::ScopedHandle export_token_mojo) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  gpu_host_->ExportParent(widget, std::move(export_token_mojo));
 }
 
 }  // namespace ui
