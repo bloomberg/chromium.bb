@@ -173,8 +173,16 @@ class WebController {
  private:
   friend class WebControllerBrowserTest;
 
-  // Helper class to get element's position when is stable and the frame it
-  // belongs finished visual update.
+  // Callback that receives the position that corresponds to the center
+  // of an element, from ElementPositionGetter.
+  //
+  // If the first element is false, the call failed. Otherwise, the second
+  // element contains the x position and the third the y position of the center
+  // of the element in viewport coordinates.
+  using ElementPositionCallback = base::OnceCallback<void(bool, int, int)>;
+
+  // Helper class to get element's position in viewport coordinates when is
+  // stable and the frame it belongs finished visual update.
   class ElementPositionGetter {
    public:
     ElementPositionGetter();
@@ -185,33 +193,31 @@ class WebController {
     void Start(content::RenderFrameHost* frame_host,
                DevtoolsClient* devtools_client,
                std::string element_object_id,
-               base::OnceCallback<void(int, int)> callback);
+               ElementPositionCallback callback);
 
    private:
-    void OnVisualStateUpdatedCallback(bool state);
-    void GetAndWaitBoxModelStable(DevtoolsClient* devtools_client,
-                                  std::string object_id,
-                                  int point_x,
-                                  int point_y,
-                                  int remaining_rounds);
+    void OnVisualStateUpdatedCallback(bool success);
+    void GetAndWaitBoxModelStable();
     void OnGetBoxModelForStableCheck(
-        DevtoolsClient* devtools_client,
-        std::string object_id,
-        int point_x,
-        int point_y,
-        int remaining_rounds,
         std::unique_ptr<dom::GetBoxModelResult> result);
     void OnScrollIntoView(
-        DevtoolsClient* devtools_client,
-        std::string object_id,
-        int point_x,
-        int point_y,
-        int remaining_rounds,
         std::unique_ptr<runtime::CallFunctionOnResult> result);
     void OnResult(int x, int y);
+    void OnError();
 
-    base::OnceCallback<void(int, int)> callback_;
-    bool visual_state_updated_;
+    DevtoolsClient* devtools_client_ = nullptr;
+    std::string object_id_;
+    int remaining_rounds_ = 0;
+    ElementPositionCallback callback_;
+    bool visual_state_updated_ = false;
+
+    // If |has_point_| is true, |point_x_| and |point_y_| contain the last
+    // computed center of the element, in viewport coordinates. Note that
+    // negative coordinates are valid, in case the element is above or to the
+    // left of the viewport.
+    bool has_point_ = false;
+    int point_x_ = 0;
+    int point_y_ = 0;
 
     base::WeakPtrFactory<ElementPositionGetter> weak_ptr_factory_;
     DISALLOW_COPY_AND_ASSIGN(ElementPositionGetter);
@@ -274,6 +280,7 @@ class WebController {
       std::unique_ptr<ElementPositionGetter> element_position_getter,
       base::OnceCallback<void(bool)> callback,
       bool is_a_click,
+      bool has_coordinates,
       int x,
       int y);
   void OnDispatchPressMouseEvent(
