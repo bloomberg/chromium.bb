@@ -14,21 +14,20 @@ import org.chromium.chrome.R;
 import org.chromium.net.NetError;
 
 /**
- * A dialog to notify users that WebAPKs need a network connection to launch.
+ * A dialog to notify user of network errors while loading WebAPK's start URL.
  */
-public class WebappOfflineDialog {
+public class WebApkOfflineDialog {
     private Dialog mDialog;
 
     /**
-     * Shows the dialog that notifies users that the WebAPK or TWA is offline.
+     * Shows dialog to notify user of network error.
      * @param activity Activity that will be used for {@link Dialog#show()}.
      * @param appName The name of the Android native client for which the dialog is shown.
-     * @param isWebApk Whether the app above is a WebAPK.
      * @param errorCode The network error code.
      */
-    public void show(final Activity activity, String appName, boolean isWebApk, int errorCode) {
+    public void show(final Activity activity, String appName, int errorCode) {
         AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialogTheme);
-        builder.setMessage(getErrorDescription(activity, appName, isWebApk, errorCode))
+        builder.setMessage(getErrorDescription(activity, appName, errorCode))
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -46,18 +45,15 @@ public class WebappOfflineDialog {
         mDialog.cancel();
     }
 
-    private String getErrorDescription(
-            Activity activity, String appName, boolean isWebApk, int errorCode) {
+    private String getErrorDescription(Activity activity, String appName, int errorCode) {
         switch (errorCode) {
             case NetError.ERR_INTERNET_DISCONNECTED:
-                int messageID = isWebApk ? R.string.webapk_offline_dialog
-                                         : R.string.webapp_twa_offline_dialog;
-                return activity.getString(messageID, appName);
+                return activity.getString(R.string.webapk_offline_dialog, appName);
             case NetError.ERR_TUNNEL_CONNECTION_FAILED:
                 return activity.getString(
-                        R.string.webapp_network_error_message_tunnel_connection_failed);
+                        R.string.webapk_network_error_message_tunnel_connection_failed);
             default:
-                return activity.getString(R.string.webapp_cannot_connect_to_site);
+                return activity.getString(R.string.webapk_cannot_connect_to_site);
         }
     }
 }

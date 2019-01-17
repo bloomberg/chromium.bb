@@ -69,7 +69,7 @@ public class WebappSplashScreenController extends EmptyTabObserver {
     /** The error code of the navigation. */
     private int mErrorCode;
 
-    private WebappOfflineDialog mOfflineDialog;
+    private WebApkOfflineDialog mOfflineDialog;
 
     /** Indicates whether reloading is allowed. */
     private boolean mAllowReloads;
@@ -230,8 +230,8 @@ public class WebappSplashScreenController extends EmptyTabObserver {
                 };
 
         NetworkChangeNotifier.addConnectionTypeObserver(observer);
-        mOfflineDialog = new WebappOfflineDialog();
-        mOfflineDialog.show(tab.getActivity(), mAppName, mIsForWebApk, errorCode);
+        mOfflineDialog = new WebApkOfflineDialog();
+        mOfflineDialog.show(tab.getActivity(), mAppName, errorCode);
     }
 
     /** Sets the splash screen layout and sets the splash screen's title and icon. */
