@@ -18,15 +18,20 @@ namespace blink {
 
 CanvasRenderingContextHost::CanvasRenderingContextHost() = default;
 
-void CanvasRenderingContextHost::RecordCanvasSizeToUMA(unsigned width,
-                                                       unsigned height,
+void CanvasRenderingContextHost::RecordCanvasSizeToUMA(const IntSize& size,
                                                        HostType hostType) {
+  if (did_record_canvas_size_to_uma_)
+    return;
+  did_record_canvas_size_to_uma_ = true;
+
   if (hostType == kCanvasHost) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.Canvas.SqrtNumberOfPixels",
-                                std::sqrt(width * height), 1, 5000, 100);
+                                std::sqrt(size.Width() * size.Height()), 1,
+                                5000, 100);
   } else if (hostType == kOffscreenCanvasHost) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.OffscreenCanvas.SqrtNumberOfPixels",
-                                std::sqrt(width * height), 1, 5000, 100);
+                                std::sqrt(size.Width() * size.Height()), 1,
+                                5000, 100);
   } else {
     NOTREACHED();
   }
