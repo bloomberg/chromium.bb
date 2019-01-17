@@ -807,6 +807,13 @@ MdnsResponder::~MdnsResponder() {
 void MdnsResponder::CreateNameForAddress(
     const net::IPAddress& address,
     mojom::MdnsResponder::CreateNameForAddressCallback callback) {
+  DCHECK(address.IsValid() || address.empty());
+  if (!address.IsValid()) {
+    LOG(ERROR) << "Invalid IP address to create a name for";
+    binding_.Close();
+    manager_->OnMojoConnectionError(this);
+    return;
+  }
   std::string name;
   auto it = FindNameCreatedForAddress(address);
   bool announcement_sched_at_least_once = false;
@@ -847,6 +854,7 @@ void MdnsResponder::CreateNameForAddress(
 void MdnsResponder::RemoveNameForAddress(
     const net::IPAddress& address,
     mojom::MdnsResponder::RemoveNameForAddressCallback callback) {
+  DCHECK(address.IsValid() || address.empty());
   auto it = FindNameCreatedForAddress(address);
   if (it == name_addr_map_.end()) {
     std::move(callback).Run(false /* removed */, false /* goodbye_scheduled */);

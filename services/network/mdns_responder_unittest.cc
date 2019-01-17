@@ -15,6 +15,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
 #include "base/test/scoped_task_environment.h"
+#include "mojo/public/cpp/bindings/connector.h"
 #include "net/base/ip_address.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_response.h"
@@ -536,6 +537,19 @@ TEST_F(MdnsResponderTest, SendNegativeResponseToQueryForNonAddressRecord) {
   }
 }
 
+// Test that the responder manager closes the connection after
+// an invalid IP address is given to create a name for.
+TEST_F(MdnsResponderTest,
+       HostClosesMojoConnectionWhenCreatingNameForInvalidAddress) {
+  const net::IPAddress addr;
+  ASSERT_TRUE(!addr.IsValid());
+  EXPECT_TRUE(client_[0].is_bound());
+  // No packet should be sent out from interfaces.
+  EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(0);
+  CreateNameForAddress(0, addr);
+  EXPECT_FALSE(client_[0].is_bound());
+}
+
 // Test that the responder manager closes the connection after observing
 // conflicting name resolution in the network.
 TEST_F(MdnsResponderTest, HostClosesMojoConnectionAfterObservingNameConflict) {
@@ -553,7 +567,11 @@ TEST_F(MdnsResponderTest, HostClosesMojoConnectionAfterObservingNameConflict) {
   std::string expected_goodbye = CreateResolutionResponse(
       base::TimeDelta(), {{name1, addr1}, {name2, addr2}});
 
+  EXPECT_TRUE(client_[0].is_bound());
   // MockMdnsSocketFactory binds sockets to two interfaces.
+  // We should send only two goodbyes before closing the connection and no
+  // packet should be sent out from interfaces after the connection is closed.
+  EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(0);
   EXPECT_CALL(socket_factory_, OnSendTo(expected_goodbye)).Times(2);
   socket_factory_.SimulateReceive(
       reinterpret_cast<const uint8_t*>(conflicting_response.data()),
