@@ -14,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/address_list.h"
 #include "net/base/auth.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/completion_repeating_callback.h"
@@ -211,10 +210,9 @@ class NET_EXPORT_PRIVATE FtpNetworkTransaction : public FtpTransaction {
   MutableNetworkTrafficAnnotationTag traffic_annotation_;
   FtpResponseInfo response_;
 
-  // Cancels the outstanding request on destruction.
   HostResolver* resolver_;
-  AddressList addresses_;
-  std::unique_ptr<HostResolver::Request> resolve_request_;
+  // Cancels the outstanding request on destruction.
+  std::unique_ptr<HostResolver::ResolveHostRequest> resolve_request_;
 
   // User buffer passed to the Read method for control socket.
   scoped_refptr<IOBuffer> read_ctrl_buf_;
