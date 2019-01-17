@@ -65,8 +65,6 @@ class PasswordAccessoryControllerImpl
                                   bool is_fillable,
                                   bool is_password_field) override;
   void DidNavigateMainFrame() override;
-  void ShowWhenKeyboardIsVisible() override;
-  void Hide() override;
   void GetFavicon(
       int desired_size_in_pixel,
       base::OnceCallback<void(const gfx::Image&)> icon_callback) override;

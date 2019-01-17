@@ -157,6 +157,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   void SetViewForTesting(AutofillPopupView* view) { view_ = view; }
 
   PopupControllerCommon controller_common_;
+  content::WebContents* web_contents_;
   AutofillPopupView* view_ = nullptr;  // Weak reference.
   AutofillPopupLayoutModel layout_model_;
   base::WeakPtr<AutofillPopupDelegate> delegate_;
