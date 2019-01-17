@@ -111,7 +111,10 @@ if (!is_android) {
 
   js_library("metadata_view") {
     deps = [
+      ":browser_proxy",
+      ":constants",
       ":fake_page_handler",
+      ":types",
     ]
   }
 

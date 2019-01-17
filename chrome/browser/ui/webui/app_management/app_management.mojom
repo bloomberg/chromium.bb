@@ -39,6 +39,7 @@ interface PageHandler {
   GetApps() => (array<App> apps);
   GetExtensionAppPermissionMessages(string app_id) =>
       (array<ExtensionAppPermissionMessage> messages);
+  SetPinned(string app_id, apps.mojom.OptionalBool pinned);
   SetPermission(string app_id,
                 apps.mojom.Permission permission);
   Uninstall(string app_id);

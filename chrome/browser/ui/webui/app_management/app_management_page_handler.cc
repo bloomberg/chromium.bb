@@ -19,21 +19,9 @@
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_data.h"
 
+using apps::mojom::OptionalBool;
+
 namespace {
-
-app_management::mojom::AppPtr CreateUIAppPtr(const apps::AppUpdate& update) {
-  base::flat_map<uint32_t, apps::mojom::PermissionPtr> permissions;
-  for (const auto& permission : update.Permissions()) {
-    permissions[permission->permission_id] = permission->Clone();
-  }
-
-  return app_management::mojom::App::New(
-      update.AppId(), update.AppType(), update.Name(),
-      base::nullopt /*description*/,
-      apps::mojom::OptionalBool::kUnknown /*is_pinned*/,
-      base::nullopt /*version*/, base::nullopt /*size*/,
-      std::move(permissions));
-}
 
 app_management::mojom::ExtensionAppPermissionMessagePtr
 CreateExtensionAppPermissionMessage(
@@ -45,6 +33,7 @@ CreateExtensionAppPermissionMessage(
   return app_management::mojom::ExtensionAppPermissionMessage::New(
       base::UTF16ToUTF8(message.message()), std::move(submessages));
 }
+
 }  // namespace
 
 AppManagementPageHandler::AppManagementPageHandler(
@@ -53,9 +42,48 @@ AppManagementPageHandler::AppManagementPageHandler(
     content::WebUI* web_ui)
     : binding_(this, std::move(request)),
       page_(std::move(page)),
-      profile_(Profile::FromWebUI(web_ui)) {}
+      profile_(Profile::FromWebUI(web_ui))
+#if defined(OS_CHROMEOS)
+      ,
+      shelf_delegate_(this)
+#endif
+{
+  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile_);
+
+  // TODO(crbug.com/826982): revisit pending decision on AppServiceProxy in
+  // incognito
+  if (!proxy)
+    return;
+
+  Observe(&proxy->Cache());
+}
 
 AppManagementPageHandler::~AppManagementPageHandler() {}
+
+void AppManagementPageHandler::OnPinnedChanged(const std::string& app_id,
+                                               bool pinned) {
+  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile_);
+
+  // TODO(crbug.com/826982): revisit pending decision on AppServiceProxy in
+  // incognito
+  if (!proxy)
+    return;
+
+  app_management::mojom::AppPtr app;
+
+  proxy->Cache().ForOneApp(app_id, [this, &app](const apps::AppUpdate& update) {
+    if (update.Readiness() == apps::mojom::Readiness::kReady)
+      app = CreateUIAppPtr(update);
+  });
+
+  // If an app with this id is not already installed, do nothing.
+  if (!app)
+    return;
+
+  app->is_pinned = pinned ? OptionalBool::kTrue : OptionalBool::kFalse;
+
+  page_->OnAppChanged(std::move(app));
+}
 
 void AppManagementPageHandler::GetApps(GetAppsCallback callback) {
   apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile_);
@@ -66,13 +94,39 @@ void AppManagementPageHandler::GetApps(GetAppsCallback callback) {
     return;
 
   std::vector<app_management::mojom::AppPtr> apps;
-  proxy->Cache().ForEachApp([&apps](const apps::AppUpdate& update) {
+  proxy->Cache().ForEachApp([this, &apps](const apps::AppUpdate& update) {
     apps.push_back(CreateUIAppPtr(update));
   });
 
-  Observe(&proxy->Cache());
-
   std::move(callback).Run(std::move(apps));
+}
+
+void AppManagementPageHandler::GetExtensionAppPermissionMessages(
+    const std::string& app_id,
+    GetExtensionAppPermissionMessagesCallback callback) {
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  const extensions::Extension* extension = registry->GetExtensionById(
+      app_id, extensions::ExtensionRegistry::ENABLED |
+                  extensions::ExtensionRegistry::DISABLED |
+                  extensions::ExtensionRegistry::BLACKLISTED);
+  std::vector<app_management::mojom::ExtensionAppPermissionMessagePtr> messages;
+  if (extension) {
+    for (const auto& message :
+         extension->permissions_data()->GetPermissionMessages()) {
+      messages.push_back(CreateExtensionAppPermissionMessage(message));
+    }
+  }
+  std::move(callback).Run(std::move(messages));
+}
+
+void AppManagementPageHandler::SetPinned(const std::string& app_id,
+                                         OptionalBool pinned) {
+#if defined(OS_CHROMEOS)
+  shelf_delegate_.SetPinned(app_id, pinned);
+#else
+  NOTREACHED();
+#endif
 }
 
 void AppManagementPageHandler::SetPermission(
@@ -106,7 +160,32 @@ void AppManagementPageHandler::OpenNativeSettings(const std::string& app_id) {
   // incognito
   if (!proxy)
     return;
+
   proxy->OpenNativeSettings(app_id);
+}
+
+app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
+    const apps::AppUpdate& update) {
+  base::flat_map<uint32_t, apps::mojom::PermissionPtr> permissions;
+  for (const auto& permission : update.Permissions()) {
+    permissions[permission->permission_id] = permission->Clone();
+  }
+
+  auto app = app_management::mojom::App::New();
+  app->id = update.AppId();
+  app->type = update.AppType();
+  app->title = update.Name();
+  app->permissions = std::move(permissions);
+
+  // On other OS's, is_pinned defaults to OptionalBool::kUnknown, which is
+  // used to represent the fact that there is no concept of being pinned.
+#if defined(OS_CHROMEOS)
+  app->is_pinned = shelf_delegate_.IsPinned(update.AppId())
+                       ? OptionalBool::kTrue
+                       : OptionalBool::kFalse;
+#endif
+
+  return app;
 }
 
 void AppManagementPageHandler::OnAppUpdate(const apps::AppUpdate& update) {
@@ -120,23 +199,4 @@ void AppManagementPageHandler::OnAppUpdate(const apps::AppUpdate& update) {
   } else {
     page_->OnAppChanged(CreateUIAppPtr(update));
   }
-}
-
-void AppManagementPageHandler::GetExtensionAppPermissionMessages(
-    const std::string& app_id,
-    GetExtensionAppPermissionMessagesCallback callback) {
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile_);
-  const extensions::Extension* extension = registry->GetExtensionById(
-      app_id, extensions::ExtensionRegistry::ENABLED |
-                  extensions::ExtensionRegistry::DISABLED |
-                  extensions::ExtensionRegistry::BLACKLISTED);
-  std::vector<app_management::mojom::ExtensionAppPermissionMessagePtr> messages;
-  if (extension) {
-    for (const auto& message :
-         extension->permissions_data()->GetPermissionMessages()) {
-      messages.push_back(CreateExtensionAppPermissionMessage(message));
-    }
-  }
-  std::move(callback).Run(std::move(messages));
 }

@@ -90,6 +90,18 @@ cr.define('app_management', function() {
 
     /**
      * @param {string} appId
+     * @param {OptionalBool} pinnedValue
+     */
+    setPinned(appId, pinnedValue) {
+      const app = app_management.Store.getInstance().data.apps[appId];
+
+      const newApp =
+          /** @type {App} */ (Object.assign({}, app, {isPinned: pinnedValue}));
+      this.page.onAppChanged(newApp);
+    }
+
+    /**
+     * @param {string} appId
      * @param {Permission} permission
      */
     setPermission(appId, permission) {
