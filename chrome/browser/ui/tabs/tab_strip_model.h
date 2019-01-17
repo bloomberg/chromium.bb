@@ -290,6 +290,9 @@ class TabStripModel {
   // https://crbug.com/915956.
   const TabGroupData* GetTabGroupForTab(int index) const;
 
+  // Returns the list of tab groups that contain at least one tab in this strip.
+  std::vector<TabGroupData*> ListTabGroups() const;
+
   // Returns the index of the first tab that is not a pinned tab. This returns
   // |count()| if all of the tabs are pinned tabs, and 0 if none of the tabs are
   // pinned tabs.
@@ -347,9 +350,16 @@ class TabStripModel {
   // https://crbug.com/915956.
   void AddToNewGroup(const std::vector<int>& indices);
 
+  // Add the set of tabs pointed to by |indices| to the tab group |group|. The
+  // tabs take on the pinnedness of the tabs already in the group, and are moved
+  // to immediately follow the tabs already in the group.
+  void AddToExistingGroup(const std::vector<int>& indices,
+                          const TabGroupData* group);
+
   // View API //////////////////////////////////////////////////////////////////
 
-  // Context menu functions.
+  // Context menu functions. Tab groups uses command ids following CommandLast
+  // for entries in the 'Add to existing group' submenu.
   enum ContextMenuCommand {
     CommandFirst,
     CommandNewTab,
@@ -365,6 +375,7 @@ class TabStripModel {
     CommandSendToMyDevices,
     CommandBookmarkAllTabs,
     CommandAddToNewGroup,
+    CommandAddToExistingGroup,
     CommandLast
   };
 
@@ -378,6 +389,11 @@ class TabStripModel {
   // command applies to all selected tabs.
   void ExecuteContextMenuCommand(int context_index,
                                  ContextMenuCommand command_id);
+
+  // Adds the tab at |context_index| to the given tab group |group|. If
+  // |context_index| is selected the command applies to all selected tabs.
+  void ExecuteAddToExistingGroupCommand(int context_index,
+                                        const TabGroupData* group);
 
   // Returns true if 'CommandToggleTabAudioMuted' will mute. |index| is the
   // index supplied to |ExecuteContextMenuCommand|.
@@ -525,6 +541,17 @@ class TabStripModel {
   // Implementation of MoveSelectedTabsTo. Moves |length| of the selected tabs
   // starting at |start| to |index|. See MoveSelectedTabsTo for more details.
   void MoveSelectedTabsToImpl(int index, size_t start, size_t length);
+
+  // Moves the set of tabs indicated by |indices| to precede the tab at index
+  // |destination_index|, maintaining their order and the order of tabs not
+  // being moved, and adds them to the tab group |group|.
+  void MoveTabsIntoGroup(const std::vector<int>& indices,
+                         int destination_index,
+                         const TabGroupData* group);
+
+  // Ensures all tabs indicated by |indices| are pinned, moving them in the
+  // process if necessary. Returns the new locations of all of those tabs.
+  std::vector<int> SetTabsPinned(const std::vector<int>& indices, bool pinned);
 
   // Sets the sound content setting for each site at the |indices|.
   void SetSitesMuted(const std::vector<int>& indices, bool mute) const;
