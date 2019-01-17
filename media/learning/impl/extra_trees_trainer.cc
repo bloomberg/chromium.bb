@@ -6,8 +6,8 @@
 
 #include <set>
 
+#include "base/bind.h"
 #include "base/logging.h"
-#include "media/learning/impl/one_hot.h"
 #include "media/learning/impl/random_tree_trainer.h"
 #include "media/learning/impl/voting_ensemble.h"
 
@@ -18,31 +18,46 @@ ExtraTreesTrainer::ExtraTreesTrainer() = default;
 
 ExtraTreesTrainer::~ExtraTreesTrainer() = default;
 
-std::unique_ptr<Model> ExtraTreesTrainer::Train(
-    const LearningTask& task,
-    const TrainingData& training_data) {
-  int n_trees = task.rf_number_of_trees;
+void ExtraTreesTrainer::Train(const LearningTask& task,
+                              const TrainingData& training_data,
+                              TrainedModelCB model_cb) {
+  // Make sure that there is no training in progress.
+  DCHECK_EQ(trees_.size(), 0u);
+  DCHECK_EQ(converter_.get(), nullptr);
 
-  RandomTreeTrainer tree_trainer(rng());
-  std::vector<std::unique_ptr<Model>> trees;
-  trees.reserve(n_trees);
+  task_ = task;
+  trees_.reserve(task.rf_number_of_trees);
 
   // RandomTree requires one-hot vectors to properly choose split points the way
   // that ExtraTrees require.
-  std::unique_ptr<OneHotConverter> converter =
-      std::make_unique<OneHotConverter>(task, training_data);
-  TrainingData converted_training_data = converter->Convert(training_data);
+  // TODO(liberato): Modify it not to need this.  It's slow.
+  converter_ = std::make_unique<OneHotConverter>(task, training_data);
+  converted_training_data_ = converter_->Convert(training_data);
 
-  for (int i = 0; i < n_trees; i++) {
-    // Train the tree.
-    std::unique_ptr<Model> tree = tree_trainer.Train(
-        converter->converted_task(), converted_training_data);
+  // Start training.  Send in nullptr to start the process.
+  OnRandomTreeModel(std::move(model_cb), nullptr);
+}
 
-    trees.push_back(std::move(tree));
+void ExtraTreesTrainer::OnRandomTreeModel(TrainedModelCB model_cb,
+                                          std::unique_ptr<Model> model) {
+  // Allow a null Model to make it easy to start training.
+  if (model)
+    trees_.push_back(std::move(model));
+
+  // If this is the last tree, then return the finished model.
+  if (trees_.size() == task_.rf_number_of_trees) {
+    std::move(model_cb).Run(std::make_unique<ConvertingModel>(
+        std::move(converter_),
+        std::make_unique<VotingEnsemble>(std::move(trees_))));
+    return;
   }
 
-  return std::make_unique<ConvertingModel>(
-      std::move(converter), std::make_unique<VotingEnsemble>(std::move(trees)));
+  // Train the next tree.
+  auto cb = base::BindOnce(&ExtraTreesTrainer::OnRandomTreeModel, AsWeakPtr(),
+                           std::move(model_cb));
+  RandomTreeTrainer tree_trainer(rng());
+  tree_trainer.Train(converter_->converted_task(), converted_training_data_,
+                     std::move(cb));
 }
 
 }  // namespace learning

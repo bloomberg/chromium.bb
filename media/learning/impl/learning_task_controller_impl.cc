@@ -25,7 +25,7 @@ LearningTaskControllerImpl::LearningTaskControllerImpl(
           [](const LearningTask& task, TrainingData training_data,
              TrainedModelCB model_cb) {
             ExtraTreesTrainer trainer;
-            std::move(model_cb).Run(trainer.Train(task, training_data));
+            trainer.Train(task, training_data, std::move(model_cb));
           },
           task_);
       break;
