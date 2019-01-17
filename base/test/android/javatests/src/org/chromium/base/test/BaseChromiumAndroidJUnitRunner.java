@@ -212,6 +212,7 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
         // See crbug://841695. TestLoader.isTestClass is incorrectly deciding that
         // InstrumentationTestSuite is a test class.
         builder.removeTestClass("android.test.InstrumentationTestSuite");
+        builder.setClassLoader(new ForgivingClassLoader());
         return builder.build();
     }
 
@@ -325,6 +326,27 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
         } catch (Exception e) {
             // No way to recover and test listing will fail.
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * ClassLoader that translates NoClassDefFoundError into ClassNotFoundException.
+     *
+     * Required because Android's TestLoader class tries to load all classes, but catches only
+     * ClassNotFoundException.
+     *
+     * One way NoClassDefFoundError is triggered is on Android L when a class extends a non-existent
+     * class. See https://crbug.com/912690.
+     */
+    private static class ForgivingClassLoader extends ClassLoader {
+        private final ClassLoader mDelegateLoader = getClass().getClassLoader();
+        @Override
+        public Class<?> loadClass(String name) throws ClassNotFoundException {
+            try {
+                return mDelegateLoader.loadClass(name);
+            } catch (NoClassDefFoundError e) {
+                throw new ClassNotFoundException(name, e);
+            }
         }
     }
 }
