@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #include "ios/chrome/grit/ios_resources.h"
+#include "ios/public/provider/chrome/browser/browser_url_rewriter_provider.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/voice/audio_session_controller.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
@@ -174,6 +175,10 @@ void ChromeWebClient::GetAdditionalWebUISchemes(
 void ChromeWebClient::PostBrowserURLRewriterCreation(
     web::BrowserURLRewriter* rewriter) {
   rewriter->AddURLRewriter(&WillHandleWebBrowserAboutURL);
+  BrowserURLRewriterProvider* provider =
+      ios::GetChromeBrowserProvider()->GetBrowserURLRewriterProvider();
+  if (provider)
+    provider->AddProviderRewriters(rewriter);
 }
 
 NSString* ChromeWebClient::GetDocumentStartScriptForAllFrames(
