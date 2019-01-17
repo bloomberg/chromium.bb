@@ -394,19 +394,21 @@ void AppListItemView::SetAsAttemptedFolderTarget(bool is_target_folder) {
 
 void AppListItemView::SetItemName(const base::string16& display_name,
                                   const base::string16& full_name) {
-  if (is_folder_ && display_name.empty()) {
-    title_->SetText(ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-        IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER));
-  } else {
+  const base::string16 folder_name_placeholder =
+      ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+          IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER);
+  if (is_folder_ && display_name.empty())
+    title_->SetText(folder_name_placeholder);
+  else
     title_->SetText(display_name);
-  }
 
   tooltip_text_ = display_name == full_name ? base::string16() : full_name;
 
   // Use full name for accessibility.
   SetAccessibleName(
       is_folder_ ? l10n_util::GetStringFUTF16(
-                       IDS_APP_LIST_FOLDER_BUTTON_ACCESSIBILE_NAME, full_name)
+                       IDS_APP_LIST_FOLDER_BUTTON_ACCESSIBILE_NAME,
+                       full_name.empty() ? folder_name_placeholder : full_name)
                  : full_name);
   Layout();
 }
