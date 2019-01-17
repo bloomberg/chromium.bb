@@ -46,6 +46,8 @@ class VR_BASE_EXPORT BrowserUiInterface {
       const CapturingStateModel& potential_capturing) = 0;
   virtual void ShowExitVrPrompt(UiUnsupportedMode reason) = 0;
   virtual void SetSpeechRecognitionEnabled(bool enabled) = 0;
+  virtual void SetHasOrCanRequestRecordAudioPermission(
+      bool has_or_can_request_record_audio) = 0;
   virtual void SetRecognitionResult(const base::string16& result) = 0;
   virtual void OnSpeechRecognitionStateChanged(int new_state) = 0;
   virtual void SetOmniboxSuggestions(

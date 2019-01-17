@@ -12,7 +12,7 @@ namespace vr {
 
 struct VR_BASE_EXPORT SpeechRecognitionModel {
   int speech_recognition_state = 0;
-  bool has_or_can_request_audio_permission = true;
+  bool has_or_can_request_record_audio_permission = true;
   base::string16 recognition_result;
 };
 

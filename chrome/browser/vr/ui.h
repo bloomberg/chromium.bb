@@ -102,6 +102,8 @@ class VR_UI_EXPORT Ui : public UiInterface,
   void ShowExitVrPrompt(UiUnsupportedMode reason) override;
   void SetSpeechRecognitionEnabled(bool enabled) override;
   void SetRecognitionResult(const base::string16& result) override;
+  void SetHasOrCanRequestRecordAudioPermission(
+      bool has_or_can_request_record_audio) override;
   void OnSpeechRecognitionStateChanged(int new_state) override;
   void SetOmniboxSuggestions(
       std::unique_ptr<OmniboxSuggestions> suggestions) override;

@@ -1189,8 +1189,13 @@ public class VrShellDelegate
         return false;
     }
 
-    public boolean hasAudioPermission() {
+    public boolean hasRecordAudioPermission() {
         return mActivity.getWindowAndroid().hasPermission(android.Manifest.permission.RECORD_AUDIO);
+    }
+
+    public boolean canRequestRecordAudioPermission() {
+        return mActivity.getWindowAndroid().canRequestPermission(
+                android.Manifest.permission.RECORD_AUDIO);
     }
 
     private boolean isWindowModeCorrectForVr() {

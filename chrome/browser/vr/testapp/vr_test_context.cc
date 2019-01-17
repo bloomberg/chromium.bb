@@ -482,7 +482,7 @@ unsigned int VrTestContext::CreateTexture(SkColor color) {
 }
 
 void VrTestContext::CreateFakeVoiceSearchResult() {
-  if (!model_->voice_search_enabled())
+  if (!model_->voice_search_active())
     return;
   auto browser_ui = ui_->GetBrowserUiWeakPtr();
   browser_ui->SetRecognitionResult(

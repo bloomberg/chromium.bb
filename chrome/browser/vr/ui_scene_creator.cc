@@ -627,7 +627,7 @@ void OnControllerModelAdded(UiScene* scene,
       l10n_util::GetStringUTF16(IDS_VR_BUTTON_BACK), model, element_binding);
   back_button_label->AddBinding(VR_BIND_FUNC(
       bool, Model, model,
-      model->omnibox_editing_enabled() || model->voice_search_enabled(),
+      model->omnibox_editing_enabled() || model->voice_search_active(),
       UiElement, back_button_label.get(), SetVisible));
   callout_group->AddChild(std::move(back_button_label));
 
@@ -1731,7 +1731,7 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   speech_recognition_root->SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(
           kSpeechRecognitionOpacityAnimationDurationMs));
-  VR_BIND_VISIBILITY(speech_recognition_root, model->voice_search_enabled());
+  VR_BIND_VISIBILITY(speech_recognition_root, model->voice_search_active());
 
   auto inner_circle = std::make_unique<Rect>();
   inner_circle->SetName(kSpeechRecognitionCircle);
@@ -2427,12 +2427,7 @@ void UiSceneCreator::CreateOmnibox() {
   // TODO(crbug.com/834308): Refactor this element to be resized by a
   // fixed-width layout, rather than adjusting based on other elements.
   omnibox_text_field->AddBinding(std::make_unique<Binding<bool>>(
-      VR_BIND_LAMBDA(
-          [](Model* m) {
-            return m->speech.has_or_can_request_audio_permission &&
-                   !m->incognito && !m->active_capturing.audio_capture_enabled;
-          },
-          base::Unretained(model_)),
+      VR_BIND_LAMBDA(&Model::voice_search_available, base::Unretained(model_)),
       VR_BIND_LAMBDA(
           [](TextInput* e, const bool& mic_button_visible) {
             float width = kOmniboxWidthDMM - 2 * kOmniboxTextMarginDMM;
@@ -2537,19 +2532,13 @@ void UiSceneCreator::CreateOmnibox() {
   mic_button->SetIconScaleFactor(kUrlBarButtonIconScaleFactor);
   mic_button->set_hover_offset(kUrlBarButtonHoverOffsetDMM);
   mic_button->set_corner_radius(kUrlBarItemCornerRadiusDMM);
-  VR_BIND_VISIBILITY(mic_button,
-                     model->speech.has_or_can_request_audio_permission &&
-                         !model->incognito &&
-                         !model->active_capturing.audio_capture_enabled);
+  VR_BIND_VISIBILITY(mic_button, model->voice_search_available());
   VR_BIND_BUTTON_COLORS(model_, mic_button.get(), &ColorScheme::url_bar_button,
                         &Button::SetButtonColors);
 
   auto mic_button_spacer =
       CreateSpacer(kOmniboxMicIconRightMarginDMM, kOmniboxHeightDMM);
-  VR_BIND_VISIBILITY(mic_button_spacer,
-                     model->speech.has_or_can_request_audio_permission &&
-                         !model->incognito &&
-                         !model->active_capturing.audio_capture_enabled);
+  VR_BIND_VISIBILITY(mic_button_spacer, model->voice_search_available());
 
   auto text_field_layout = Create<LinearLayout>(
       kOmniboxTextFieldLayout, kPhaseNone, LinearLayout::kRight);
