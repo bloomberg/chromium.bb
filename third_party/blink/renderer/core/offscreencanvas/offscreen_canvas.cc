@@ -46,9 +46,6 @@ OffscreenCanvas* OffscreenCanvas::Create(unsigned width, unsigned height) {
 }
 
 OffscreenCanvas::~OffscreenCanvas() {
-  CanvasRenderingContextHost::RecordCanvasSizeToUMA(
-      Size().Width(), Size().Height(),
-      CanvasRenderingContextHost::HostType::kOffscreenCanvasHost);
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
       -memory_usage_);
 }
@@ -57,6 +54,8 @@ void OffscreenCanvas::Commit(scoped_refptr<CanvasResource> canvas_resource,
                              const SkIRect& damage_rect) {
   if (!HasPlaceholderCanvas() || !canvas_resource)
     return;
+  RecordCanvasSizeToUMA(
+      Size(), CanvasRenderingContextHost::HostType::kOffscreenCanvasHost);
 
   base::TimeTicks commit_start_time = WTF::CurrentTimeTicks();
   current_frame_damage_rect_.join(damage_rect);
