@@ -34,6 +34,7 @@ namespace blink {
 
 class ContainerNode;
 class Document;
+class Element;
 class FormAttributeTargetObserver;
 class FormData;
 class HTMLElement;
@@ -46,6 +47,10 @@ class ValidityState;
 class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
  public:
   virtual ~ListedElement();
+  // Returns a valid ListedElement pointer if the specified element is an
+  // instance of a ListedElement subclass, or a form-associated custom element.
+  // Returns nullptr otherwise.
+  static ListedElement* From(Element& element);
 
   static HTMLFormElement* FindAssociatedForm(const HTMLElement*,
                                              const AtomicString& form_id,
