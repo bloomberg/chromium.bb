@@ -276,7 +276,9 @@ TEST_F(LoginDatabaseTest, Logins) {
 
   // Add it and make sure it is there and that all the fields were retrieved
   // correctly.
-  EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
+  PasswordStoreChangeList changes = db().AddLogin(form);
+  ASSERT_EQ(AddChangeForForm(form), changes);
+  EXPECT_EQ(1, changes[0].primary_key());
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   ASSERT_EQ(1U, result.size());
   EXPECT_EQ(form, *result[0]);
@@ -316,7 +318,9 @@ TEST_F(LoginDatabaseTest, Logins) {
   EXPECT_EQ(0U, result.size());
 
   // Let's imagine the user logs into the secure site.
-  EXPECT_EQ(AddChangeForForm(form4), db().AddLogin(form4));
+  changes = db().AddLogin(form4);
+  ASSERT_EQ(AddChangeForForm(form4), changes);
+  EXPECT_EQ(2, changes[0].primary_key());
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(2U, result.size());
   result.clear();
@@ -327,7 +331,9 @@ TEST_F(LoginDatabaseTest, Logins) {
   result.clear();
 
   // The user chose to forget the original but not the new.
-  EXPECT_TRUE(db().RemoveLogin(form, /*changes=*/nullptr));
+  EXPECT_TRUE(db().RemoveLogin(form, &changes));
+  ASSERT_EQ(1U, changes.size());
+  EXPECT_EQ(1, changes[0].primary_key());
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(1U, result.size());
   result.clear();
@@ -358,9 +364,30 @@ TEST_F(LoginDatabaseTest, Logins) {
   result.clear();
 
   // Make sure everything can disappear.
-  EXPECT_TRUE(db().RemoveLogin(form4, /*changes=*/nullptr));
+  EXPECT_TRUE(db().RemoveLogin(form4, &changes));
+  ASSERT_EQ(1U, changes.size());
+  EXPECT_EQ(2, changes[0].primary_key());
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(0U, result.size());
+}
+
+TEST_F(LoginDatabaseTest, AddLoginReturnsPrimaryKey) {
+  std::vector<std::unique_ptr<PasswordForm>> result;
+
+  // Verify the database is empty.
+  EXPECT_TRUE(db().GetAutofillableLogins(&result));
+  EXPECT_EQ(0U, result.size());
+
+  // Example password form.
+  PasswordForm form;
+  GenerateExamplePasswordForm(&form);
+
+  // Add it and make sure the primary key is returned in the
+  // PasswordStoreChange.
+  PasswordStoreChangeList change_list = db().AddLogin(form);
+  ASSERT_EQ(1U, change_list.size());
+  EXPECT_EQ(AddChangeForForm(form), change_list);
+  EXPECT_EQ(1, change_list[0].primary_key());
 }
 
 TEST_F(LoginDatabaseTest, RemoveLoginsById) {
@@ -376,13 +403,15 @@ TEST_F(LoginDatabaseTest, RemoveLoginsById) {
 
   // Add it and make sure it is there and that all the fields were retrieved
   // correctly.
-  EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
+  PasswordStoreChangeList change_list = db().AddLogin(form);
+  ASSERT_EQ(1U, change_list.size());
+  int id = change_list[0].primary_key();
+  EXPECT_EQ(AddChangeForForm(form), change_list);
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   ASSERT_EQ(1U, result.size());
   EXPECT_EQ(form, *result[0]);
   result.clear();
 
-  int id = db().GetIdForTesting(form);
   EXPECT_TRUE(db().RemoveLoginById(id));
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(0U, result.size());
@@ -1051,18 +1080,25 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   result.clear();
 
   // Get everything from today's date and on.
-  EXPECT_TRUE(db().GetLoginsCreatedBetween(now, base::Time(), &result));
-  EXPECT_EQ(2U, result.size());
-  result.clear();
+  PrimaryKeyToFormMap key_to_form_map;
+  EXPECT_TRUE(
+      db().GetLoginsCreatedBetween(now, base::Time(), &key_to_form_map));
+  EXPECT_EQ(2U, key_to_form_map.size());
+  key_to_form_map.clear();
 
   // Get all logins created more than 30 days back.
-  EXPECT_TRUE(
-      db().GetLoginsCreatedBetween(base::Time(), back_30_days, &result));
-  EXPECT_EQ(2U, result.size());
-  result.clear();
+  EXPECT_TRUE(db().GetLoginsCreatedBetween(base::Time(), back_30_days,
+                                           &key_to_form_map));
+  EXPECT_EQ(2U, key_to_form_map.size());
+  key_to_form_map.clear();
 
   // Delete everything from today's date and on.
-  db().RemoveLoginsCreatedBetween(now, base::Time(), /*changes=*/nullptr);
+  PasswordStoreChangeList changes;
+  db().RemoveLoginsCreatedBetween(now, base::Time(), &changes);
+  ASSERT_EQ(2U, changes.size());
+  // The 3rd and the 4th should have been deleted.
+  EXPECT_EQ(3, changes[0].primary_key());
+  EXPECT_EQ(4, changes[1].primary_key());
 
   // Should have deleted two logins.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -1070,8 +1106,11 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   result.clear();
 
   // Delete all logins created more than 30 days back.
-  db().RemoveLoginsCreatedBetween(base::Time(), back_30_days,
-                                  /*changes=*/nullptr);
+  db().RemoveLoginsCreatedBetween(base::Time(), back_30_days, &changes);
+  ASSERT_EQ(2U, changes.size());
+  // The 1st and the 5th should have been deleted.
+  EXPECT_EQ(1, changes[0].primary_key());
+  EXPECT_EQ(5, changes[1].primary_key());
 
   // Should have deleted two logins.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -1079,8 +1118,10 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   result.clear();
 
   // Delete with 0 date (should delete all).
-  db().RemoveLoginsCreatedBetween(base::Time(), base::Time(),
-                                  /*changes=*/nullptr);
+  db().RemoveLoginsCreatedBetween(base::Time(), base::Time(), &changes);
+  ASSERT_EQ(1U, changes.size());
+  // The 2nd should have been deleted.
+  EXPECT_EQ(2, changes[0].primary_key());
 
   // Verify nothing is left.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -1113,7 +1154,9 @@ TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
   EXPECT_TRUE(db().RemoveLoginsSyncedBetween(now, base::Time(), &changes));
   ASSERT_EQ(2U, changes.size());
   EXPECT_EQ("http://3.com", changes[0].form().signon_realm);
+  EXPECT_EQ(3, changes[0].primary_key());
   EXPECT_EQ("http://4.com", changes[1].form().signon_realm);
+  EXPECT_EQ(4, changes[1].primary_key());
 
   // Should have deleted half of what we inserted.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -1123,7 +1166,10 @@ TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
   result.clear();
 
   // Delete with 0 date (should delete all).
-  db().RemoveLoginsSyncedBetween(base::Time(), now, /*changes=*/nullptr);
+  db().RemoveLoginsSyncedBetween(base::Time(), now, &changes);
+  ASSERT_EQ(2U, changes.size());
+  EXPECT_EQ(1, changes[0].primary_key());
+  EXPECT_EQ(2, changes[1].primary_key());
 
   // Verify nothing is left.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
@@ -1421,8 +1467,11 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.federation_origin =
       url::Origin::Create(GURL("https://accounts.google.com/"));
   form.skip_zero_click = true;
-  EXPECT_EQ(UpdateChangeForForm(form), db().UpdateLogin(form));
 
+  PasswordStoreChangeList changes = db().UpdateLogin(form);
+  EXPECT_EQ(UpdateChangeForForm(form), changes);
+  ASSERT_EQ(1U, changes.size());
+  EXPECT_EQ(1, changes[0].primary_key());
   std::vector<std::unique_ptr<PasswordForm>> result;
   EXPECT_TRUE(db().GetLogins(PasswordStore::FormDigest(form), &result));
   ASSERT_EQ(1U, result.size());

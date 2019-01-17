@@ -83,11 +83,12 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginsByURLAndTimeImpl(
     const base::Callback<bool(const GURL&)>& url_filter,
     base::Time delete_begin,
     base::Time delete_end) {
-  std::vector<std::unique_ptr<PasswordForm>> forms;
+  PrimaryKeyToFormMap key_to_form_map;
   PasswordStoreChangeList changes;
-  if (login_db_ &&
-      login_db_->GetLoginsCreatedBetween(delete_begin, delete_end, &forms)) {
-    for (const auto& form : forms) {
+  if (login_db_ && login_db_->GetLoginsCreatedBetween(delete_begin, delete_end,
+                                                      &key_to_form_map)) {
+    for (const auto& pair : key_to_form_map) {
+      PasswordForm* form = pair.second.get();
       PasswordStoreChangeList remove_changes;
       if (url_filter.Run(form->origin) &&
           login_db_->RemoveLogin(*form, &remove_changes)) {

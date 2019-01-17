@@ -37,6 +37,9 @@ namespace password_manager {
 
 class SQLTableBuilder;
 
+using PrimaryKeyToFormMap =
+    std::map<int, std::unique_ptr<autofill::PasswordForm>>;
+
 extern const int kCurrentVersionNumber;
 extern const int kCompatibleVersionNumber;
 
@@ -135,11 +138,11 @@ class LoginDatabase : public syncer::SyncMetadataStore {
 
   // Gets all logins created from |begin| onwards (inclusive) and before |end|.
   // You may use a null Time value to do an unbounded search in either
-  // direction.
-  bool GetLoginsCreatedBetween(
-      base::Time begin,
-      base::Time end,
-      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
+  // direction. |key_to_form_map| must not be null and will be used to return
+  // the results. The key of the map is the DB primary key.
+  bool GetLoginsCreatedBetween(base::Time begin,
+                               base::Time end,
+                               PrimaryKeyToFormMap* key_to_form_map)
       WARN_UNUSED_RESULT;
 
   // Gets the complete list of not blacklisted credentials.
@@ -191,13 +194,6 @@ class LoginDatabase : public syncer::SyncMetadataStore {
   // the underlying database. Only one transaction may exist at a time.
   bool BeginTransaction();
   bool CommitTransaction();
-
-  // Returns the id for the specified |form|.  Returns -1 if the row for this
-  // |form| is not found.
-  // TODO(crbug.com/902349): consider migrating away from this method and make
-  // AddLogin() return the inserted id of the inserted item (probably using an
-  // output parameter).
-  int GetIdForTesting(const autofill::PasswordForm& form) const;
 
   // Returns all the stored sync metadata. Returns null in case of failure.
   std::unique_ptr<syncer::MetadataBatch> GetAllSyncMetadataForTesting();
@@ -257,13 +253,15 @@ class LoginDatabase : public syncer::SyncMetadataStore {
                                    base::string16* plain_text) const
       WARN_UNUSED_RESULT;
 
-  // Fills |form| from the values in the given statement (which is assumed to
-  // be of the form used by the Get*Logins methods).
-  // Returns the EncryptionResult from decrypting the password in |s|; if not
-  // ENCRYPTION_RESULT_SUCCESS, |form| is not filled.
-  EncryptionResult InitPasswordFormFromStatement(autofill::PasswordForm* form,
-                                                 const sql::Statement& s) const
-      WARN_UNUSED_RESULT;
+  // Fills |form| from the values in the given statement (which is assumed to be
+  // of the form used by the Get*Logins methods). Fills the corresponding DB
+  // primary key in |primary_key|. Returns the EncryptionResult from decrypting
+  // the password in |s|; if not ENCRYPTION_RESULT_SUCCESS, |form| is not
+  // filled.
+  EncryptionResult InitPasswordFormFromStatement(
+      const sql::Statement& s,
+      int* primary_key,
+      autofill::PasswordForm* form) const WARN_UNUSED_RESULT;
 
   // Gets all blacklisted or all non-blacklisted (depending on |blacklisted|)
   // credentials. On success returns true and overwrites |forms| with the
@@ -274,12 +272,16 @@ class LoginDatabase : public syncer::SyncMetadataStore {
 
   // Gets all logins synced from |begin| onwards (inclusive) and before |end|.
   // You may use a null Time value to do an unbounded search in either
-  // direction.
-  bool GetLoginsSyncedBetween(
-      base::Time begin,
-      base::Time end,
-      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
+  // direction. |key_to_form_map| must not be null and will be used to return
+  // the results. The key of the map is the DB primary key.
+  bool GetLoginsSyncedBetween(base::Time begin,
+                              base::Time end,
+                              PrimaryKeyToFormMap* key_to_form_map)
       WARN_UNUSED_RESULT;
+
+  // Returns the DB primary key for the specified |form|.  Returns -1 if the row
+  // for this |form| is not found.
+  int GetPrimaryKey(const autofill::PasswordForm& form) const;
 
   // Reads all the stored sync entities metadata in a MetadataBatch. Returns
   // nullptr in case of failure.
@@ -293,10 +295,12 @@ class LoginDatabase : public syncer::SyncMetadataStore {
   // |*matched_form| or federated credentials for it. If feature for recovering
   // passwords is enabled, it removes all passwords that couldn't be decrypted
   // when encryption was available from the database. On success returns true.
+  // |key_to_form_map| must not be null and will be used to return the results.
+  // The key of the map is the DB primary key.
   bool StatementToForms(sql::Statement* statement,
                         const PasswordStore::FormDigest* matched_form,
-                        std::vector<std::unique_ptr<autofill::PasswordForm>>*
-                            forms) WARN_UNUSED_RESULT;
+                        PrimaryKeyToFormMap* key_to_form_map)
+      WARN_UNUSED_RESULT;
 
   // Initializes all the *_statement_ data members with appropriate SQL
   // fragments based on |builder|.
