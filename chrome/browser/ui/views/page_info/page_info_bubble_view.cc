@@ -724,6 +724,7 @@ void PageInfoBubbleView::SetPermissionInfo(
   chosen_object_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                       side_margin);
 
+  int min_height_for_permission_rows = 0;
   for (const auto& permission : permission_info_list) {
     std::unique_ptr<PermissionSelectorRow> selector =
         std::make_unique<PermissionSelectorRow>(
@@ -732,6 +733,8 @@ void PageInfoBubbleView::SetPermissionInfo(
                            : GURL::EmptyGURL(),
             permission, layout);
     selector->AddObserver(this);
+    min_height_for_permission_rows = std::max(
+        min_height_for_permission_rows, selector->MinHeightForPermissionRow());
     selector_rows_.push_back(std::move(selector));
   }
 
@@ -756,9 +759,8 @@ void PageInfoBubbleView::SetPermissionInfo(
     // Since chosen objects are presented after permissions in the same list,
     // make sure its height is the same as the permissions row's minimum height
     // plus padding.
-    layout->StartRow(
-        1.0, kChosenObjectSectionId,
-        PermissionSelectorRow::MinHeightForPermissionRow() + list_item_padding);
+    layout->StartRow(1.0, kChosenObjectSectionId,
+                     min_height_for_permission_rows + list_item_padding);
     // The view takes ownership of the object info.
     auto object_view = std::make_unique<ChosenObjectView>(std::move(object));
     object_view->AddObserver(this);

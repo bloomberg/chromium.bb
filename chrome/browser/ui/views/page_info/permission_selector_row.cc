@@ -33,27 +33,6 @@ namespace {
 constexpr int kPermissionRowTextContext = views::style::CONTEXT_LABEL;
 constexpr int kPermissionRowTextStyle = views::style::STYLE_PRIMARY;
 
-// Calculates the amount of padding to add beneath a |PermissionSelectorRow|
-// depending on whether it has an accompanying permission decision reason.
-int CalculatePaddingBeneathPermissionRow(bool has_reason) {
-  const int list_item_padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                                    DISTANCE_CONTROL_LIST_VERTICAL) /
-                                2;
-  if (!has_reason)
-    return list_item_padding;
-
-  const int combobox_height =
-      PermissionSelectorRow::MinHeightForPermissionRow();
-  // Match the amount of padding above the |PermissionSelectorRow| title text
-  // here by calculating its full height of this |PermissionSelectorRow| and
-  // subtracting the line height, then dividing everything by two. Note it is
-  // assumed the combobox is the tallest part of the row.
-  return (list_item_padding * 2 + combobox_height -
-          views::style::GetLineHeight(kPermissionRowTextContext,
-                                      kPermissionRowTextStyle)) /
-         2;
-}
-
 }  // namespace
 
 namespace internal {
@@ -256,11 +235,29 @@ PermissionSelectorRow::~PermissionSelectorRow() {
   delete combobox_;
 }
 
-// static
+int PermissionSelectorRow::CalculatePaddingBeneathPermissionRow(
+    bool has_reason) {
+  const int list_item_padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                    DISTANCE_CONTROL_LIST_VERTICAL) /
+                                2;
+  if (!has_reason)
+    return list_item_padding;
+
+  const int combobox_height = MinHeightForPermissionRow();
+  // Match the amount of padding above the |PermissionSelectorRow| title text
+  // here by calculating its full height of this |PermissionSelectorRow| and
+  // subtracting the line height, then dividing everything by two. Note it is
+  // assumed the combobox is the tallest part of the row.
+  return (list_item_padding * 2 + combobox_height -
+          views::style::GetLineHeight(kPermissionRowTextContext,
+                                      kPermissionRowTextStyle)) /
+         2;
+}
+
 int PermissionSelectorRow::MinHeightForPermissionRow() {
   return ChromeLayoutProvider::Get()->GetControlHeightForFont(
       kPermissionRowTextContext, kPermissionRowTextStyle,
-      views::Combobox::GetFontList());
+      combobox_->GetFontList());
 }
 
 void PermissionSelectorRow::AddObserver(
