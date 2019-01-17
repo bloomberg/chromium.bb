@@ -213,6 +213,43 @@ bool IsValidUriChange(const Printer& existing_printer,
   return existing_printer.uri() == new_printer.uri();
 }
 
+// Assumes |info| is a dictionary.
+void SetPpdReference(const Printer::PpdReference& ppd_ref, base::Value* info) {
+  if (!ppd_ref.user_supplied_ppd_url.empty()) {
+    info->SetKey("ppdRefUserSuppliedPpdUrl",
+                 base::Value(ppd_ref.user_supplied_ppd_url));
+  } else if (!ppd_ref.effective_make_and_model.empty()) {
+    info->SetKey("ppdRefEffectiveMakeAndModel",
+                 base::Value(ppd_ref.effective_make_and_model));
+  } else {  // Must be autoconf, shouldn't be possible
+    NOTREACHED() << "Succeeded in PPD matching without emm";
+  }
+}
+
+Printer::PpdReference GetPpdReference(const base::Value* info) {
+  const char ppd_ref_pathname[] = "printerPpdReference";
+  auto* user_supplied_ppd_url =
+      info->FindPath({ppd_ref_pathname, "userSuppliedPPDUrl"});
+  auto* effective_make_and_model =
+      info->FindPath({ppd_ref_pathname, "effectiveMakeAndModel"});
+  auto* autoconf = info->FindPath({ppd_ref_pathname, "autoconf"});
+
+  if (user_supplied_ppd_url != nullptr) {
+    DCHECK(!effective_make_and_model && !autoconf);
+    return Printer::PpdReference{user_supplied_ppd_url->GetString(), "", false};
+  }
+
+  if (effective_make_and_model != nullptr) {
+    DCHECK(!user_supplied_ppd_url && !autoconf);
+    return Printer::PpdReference{"", effective_make_and_model->GetString(),
+                                 false};
+  }
+
+  // Otherwise it must be autoconf
+  DCHECK(autoconf && autoconf->GetBool());
+  return Printer::PpdReference{"", "", true};
+}
+
 }  // namespace
 
 CupsPrintersHandler::CupsPrintersHandler(content::WebUI* webui)
@@ -470,11 +507,42 @@ void CupsPrintersHandler::OnAutoconfQueried(const std::string& callback_id,
   PRINTER_LOG(DEBUG) << "Resolved printer information: make_and_model("
                      << make_and_model << ") autoconf(" << ipp_everywhere
                      << ")";
-  base::DictionaryValue info;
-  info.SetString("manufacturer", make);
-  info.SetString("model", model);
-  info.SetString("makeAndModel", make_and_model);
-  info.SetBoolean("autoconf", ipp_everywhere);
+
+  // Bundle printer metadata
+  base::Value info(base::Value::Type::DICTIONARY);
+  info.SetKey("manufacturer", base::Value(make));
+  info.SetKey("model", base::Value(model));
+  info.SetKey("makeAndModel", base::Value(make_and_model));
+  info.SetKey("autoconf", base::Value(ipp_everywhere));
+
+  if (ipp_everywhere) {
+    info.SetKey("ppdReferenceResolved", base::Value(true));
+    ResolveJavascriptCallback(base::Value(callback_id), info);
+    return;
+  }
+
+  PpdProvider::PrinterSearchData ppd_search_data;
+  ppd_search_data.make_and_model.push_back(make_and_model);
+
+  // Try to resolve the PPD matching.
+  ppd_provider_->ResolvePpdReference(
+      ppd_search_data,
+      base::BindOnce(&CupsPrintersHandler::OnPpdResolved,
+                     weak_factory_.GetWeakPtr(), callback_id, std::move(info)));
+}
+
+void CupsPrintersHandler::OnPpdResolved(const std::string& callback_id,
+                                        base::Value info,
+                                        PpdProvider::CallbackResultCode res,
+                                        const Printer::PpdReference& ppd_ref) {
+  if (res != PpdProvider::CallbackResultCode::SUCCESS) {
+    info.SetKey("ppdReferenceResolved", base::Value(false));
+    ResolveJavascriptCallback(base::Value(callback_id), info);
+    return;
+  }
+
+  SetPpdReference(ppd_ref, &info);
+  info.SetKey("ppdReferenceResolved", base::Value(true));
   ResolveJavascriptCallback(base::Value(callback_id), info);
 }
 
@@ -535,12 +603,13 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
   std::string printer_ppd_path;
   printer_dict->GetString("printerPPDPath", &printer_ppd_path);
 
-  bool autoconf = false;
-  printer_dict->GetBoolean("printerAutoconf", &autoconf);
+  // Checks whether a resolved PPD Reference is available.
+  bool ppd_ref_resolved = false;
+  printer_dict->GetBoolean("printerPpdReferenceResolved", &ppd_ref_resolved);
 
   // Verify that the printer is autoconf or a valid ppd path is present.
-  if (autoconf) {
-    printer->mutable_ppd_reference()->autoconf = true;
+  if (ppd_ref_resolved) {
+    *printer->mutable_ppd_reference() = GetPpdReference(printer_dict);
   } else if (!printer_ppd_path.empty()) {
     RecordPpdSource(kUser);
     GURL tmp = net::FilePathToFileURL(base::FilePath(printer_ppd_path));
@@ -557,7 +626,7 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
     bool found = false;
     for (const auto& resolved_printer : resolved_printers_[ppd_manufacturer]) {
       if (resolved_printer.name == ppd_model) {
-        *(printer->mutable_ppd_reference()) = resolved_printer.ppd_ref;
+        *printer->mutable_ppd_reference() = resolved_printer.ppd_ref;
         found = true;
         break;
       }
