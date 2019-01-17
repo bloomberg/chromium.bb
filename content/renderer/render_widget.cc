@@ -3071,6 +3071,11 @@ void RenderWidget::SetNeedsLowLatencyInput(bool needs_low_latency) {
     input_event_queue_->SetNeedsLowLatency(needs_low_latency);
 }
 
+void RenderWidget::SetNeedsUnbufferedInputForDebugger(bool unbuffered) {
+  if (input_event_queue_)
+    input_event_queue_->SetNeedsUnbufferedInputForDebugger(unbuffered);
+}
+
 void RenderWidget::AnimateDoubleTapZoomInMainFrame(
     const blink::WebPoint& point,
     const blink::WebRect& rect_to_zoom) {

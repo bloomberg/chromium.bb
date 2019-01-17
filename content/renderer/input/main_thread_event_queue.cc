@@ -230,6 +230,7 @@ MainThreadEventQueue::MainThreadEventQueue(
       enable_fling_passive_listener_flag_(base::FeatureList::IsEnabled(
           features::kPassiveEventListenersDueToFling)),
       needs_low_latency_(false),
+      needs_unbuffered_input_for_debugger_(false),
       allow_raf_aligned_input_(allow_raf_aligned_input),
       main_task_runner_(main_task_runner),
       main_thread_scheduler_(main_thread_scheduler),
@@ -573,7 +574,8 @@ bool MainThreadEventQueue::IsRafAlignedEvent(
     case blink::WebInputEvent::kMouseWheel:
     case blink::WebInputEvent::kTouchMove:
       return allow_raf_aligned_input_ && !needs_low_latency_ &&
-             !needs_low_latency_until_pointer_up_;
+             !needs_low_latency_until_pointer_up_ &&
+             !needs_unbuffered_input_for_debugger_;
     default:
       return false;
   }
@@ -637,6 +639,10 @@ void MainThreadEventQueue::ClearClient() {
 
 void MainThreadEventQueue::SetNeedsLowLatency(bool low_latency) {
   needs_low_latency_ = low_latency;
+}
+
+void MainThreadEventQueue::SetNeedsUnbufferedInputForDebugger(bool unbuffered) {
+  needs_unbuffered_input_for_debugger_ = unbuffered;
 }
 
 void MainThreadEventQueue::HasPointerRawMoveEventHandlers(bool has_handlers) {

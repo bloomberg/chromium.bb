@@ -101,6 +101,8 @@ class CONTENT_EXPORT MainThreadEventQueue
 
   void ClearClient();
   void SetNeedsLowLatency(bool low_latency);
+  void SetNeedsUnbufferedInputForDebugger(bool unbuffered);
+
   void HasPointerRawMoveEventHandlers(bool has_handlers);
 
   // Request unbuffered input events until next pointerup.
@@ -147,6 +149,7 @@ class CONTENT_EXPORT MainThreadEventQueue
   bool last_touch_start_forced_nonblocking_due_to_fling_;
   bool enable_fling_passive_listener_flag_;
   bool needs_low_latency_;
+  bool needs_unbuffered_input_for_debugger_;
   bool allow_raf_aligned_input_;
   bool needs_low_latency_until_pointer_up_ = false;
   bool has_pointerrawmove_handlers_ = false;

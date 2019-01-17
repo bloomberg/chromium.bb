@@ -390,6 +390,7 @@ class CONTENT_EXPORT RenderWidget
   void HasPointerRawMoveEventHandlers(bool has_handlers) override;
   void HasTouchEventHandlers(bool has_handlers) override;
   void SetNeedsLowLatencyInput(bool) override;
+  void SetNeedsUnbufferedInputForDebugger(bool) override;
   void AnimateDoubleTapZoomInMainFrame(const blink::WebPoint& point,
                                        const blink::WebRect& bounds) override;
   void ZoomToFindInPageRectInMainFrame(

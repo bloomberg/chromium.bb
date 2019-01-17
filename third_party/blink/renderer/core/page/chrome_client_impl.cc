@@ -987,6 +987,18 @@ void ChromeClientImpl::SetNeedsLowLatencyInput(LocalFrame* frame,
     client->SetNeedsLowLatencyInput(needs_low_latency);
 }
 
+void ChromeClientImpl::SetNeedsUnbufferedInputForDebugger(LocalFrame* frame,
+                                                          bool unbuffered) {
+  DCHECK(frame);
+  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
+  WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
+  if (!widget)
+    return;
+
+  if (WebWidgetClient* client = widget->Client())
+    client->SetNeedsUnbufferedInputForDebugger(unbuffered);
+}
+
 void ChromeClientImpl::RequestUnbufferedInputEvents(LocalFrame* frame) {
   DCHECK(frame);
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);

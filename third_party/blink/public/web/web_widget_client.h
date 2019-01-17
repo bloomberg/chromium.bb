@@ -160,6 +160,10 @@ class WebWidgetClient {
   // event occurs.
   virtual void RequestUnbufferedInputEvents() {}
 
+  // Requests unbuffered (ie. low latency) input due to debugger being
+  // attached. Debugger needs to paint when stopped in the event handler.
+  virtual void SetNeedsUnbufferedInputForDebugger(bool) {}
+
   // Called during WebWidget::HandleInputEvent for a TouchStart event to inform
   // the embedder of the touch actions that are permitted for this touch.
   virtual void SetTouchAction(WebTouchAction touch_action) {}
