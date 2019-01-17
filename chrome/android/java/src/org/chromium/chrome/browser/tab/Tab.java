@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.tab;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -1052,6 +1051,7 @@ public class Tab
                 maybeShowNativePage(nativePage.getUrl(), true);
             }
             NativePageAssassin.getInstance().tabShown(this);
+            TabImportanceManager.tabShown(this);
 
             // If the page is still loading, update the progress bar (otherwise it would not show
             // until the renderer notifies of new progress being made).
@@ -1095,7 +1095,7 @@ public class Tab
         }
     }
 
-    public final void setImportance(@ChildProcessImportance int importance) {
+    /* package */ final void setImportance(@ChildProcessImportance int importance) {
         if (mImportance == importance) return;
         mImportance = importance;
         WebContents webContents = getWebContents();
@@ -1681,6 +1681,8 @@ public class Tab
         destroyNativePageInternal(currentNativePage);
         destroyWebContents(true);
 
+        TabImportanceManager.tabDestroyed(this);
+
         // Destroys the native tab after destroying the ContentView but before destroying the
         // InfoBarContainer. The native tab should be destroyed before the infobar container as
         // destroying the native tab cleanups up any remaining infobars. The infobar container
@@ -2132,7 +2134,7 @@ public class Tab
     }
 
     private static Rect getEstimatedContentSize(Context context) {
-        return ExternalPrerenderHandler.estimateContentSize((Application) context, false);
+        return ExternalPrerenderHandler.estimateContentSize(context, false);
     }
 
     /** This is currently called when committing a pre-rendered page. */
