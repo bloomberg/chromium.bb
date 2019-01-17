@@ -285,6 +285,17 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
                                       .syncController stopSyncAndClearIdentity];
                             }]];
 
+  NSString* sandboxTitle = [CWVFlags sharedInstance].usesSyncAndWalletSandbox
+                               ? @"Use production sync/wallet"
+                               : @"Use sandbox sync/wallet";
+  [alertController
+      addAction:[UIAlertAction actionWithTitle:sandboxTitle
+                                         style:UIAlertActionStyleDefault
+                                       handler:^(UIAlertAction* action) {
+                                         [CWVFlags sharedInstance]
+                                             .usesSyncAndWalletSandbox ^= YES;
+                                       }]];
+
   [self presentViewController:alertController animated:YES completion:nil];
 }
 
