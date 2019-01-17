@@ -316,8 +316,8 @@ public final class NewTabPageUma {
             status = ContentSuggestionsDisplayStatus.COLLAPSED;
         }
 
-        RecordHistogram.recordEnumeratedHistogram("ContentSuggestions.Feed.DisplayStatus", status,
-                ContentSuggestionsDisplayStatus.NUM_ENTRIES);
+        RecordHistogram.recordEnumeratedHistogram("ContentSuggestions.Feed.DisplayStatusOnOpen",
+                status, ContentSuggestionsDisplayStatus.NUM_ENTRIES);
     }
 
     /**
