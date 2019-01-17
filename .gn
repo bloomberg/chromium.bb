@@ -279,6 +279,7 @@ check_targets = [
   "//extensions/renderer:unit_tests",
   "//extensions/shell/*",
   "//extensions/strings/*",
+  "//fuchsia/*",
   "//gin/*",
   "//google_apis/*",
   "//google_update/*",
@@ -606,7 +607,6 @@ check_targets = [
   "//url/*",
 
   #"//v8/*",  # Errors: https://bugs.chromium.org/p/v8/issues/detail?id=7330
-  "//webrunner/*",
 ]
 
 # These are the list of GN files that run exec_script. This whitelist exists
