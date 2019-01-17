@@ -22,7 +22,8 @@ void CollectPathsRecursively(const base::FilePath& file_path,
     return;
 
   base::FileEnumerator file_enum(
-      file_path, true,
+      file_path,
+      true,
       base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
   for (base::FilePath file = file_enum.Next(); !file.empty();
        file = file_enum.Next()) {
@@ -35,7 +36,9 @@ bool CollectPathsRecursivelyWithLimits(const base::FilePath& file_path,
                                        size_t max_filesize,
                                        bool allow_folders,
                                        PUPData::PUP* pup) {
-  return CollectPathsRecursivelyWithLimits(file_path, max_files, max_filesize,
+  return CollectPathsRecursivelyWithLimits(file_path,
+                                           max_files,
+                                           max_filesize,
                                            allow_folders,
                                            &pup->expanded_disk_footprints);
 }

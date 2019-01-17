@@ -34,8 +34,8 @@ class PUPDiskUtilTests : public testing::Test {
  public:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(base::CreateTemporaryDirInDir(temp_dir_.GetPath(), kSubFolder,
-                                              &subfolder_path_));
+    ASSERT_TRUE(base::CreateTemporaryDirInDir(
+        temp_dir_.GetPath(), kSubFolder, &subfolder_path_));
   }
 
   base::FilePath CreateFileInTopDir(const base::FilePath& basename,

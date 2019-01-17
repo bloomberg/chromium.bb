@@ -22,8 +22,8 @@ const char kTestUwSTwoName[] = "Removed/TestUwSTwo";
 }  // namespace
 
 TEST(DynamicPUPTest, OnePUP) {
-  DynamicPUP pupOne(kTestUwSOneName, kTestUwSOneId,
-                    PUPData::FLAGS_STATE_CONFIRMED_UWS);
+  DynamicPUP pupOne(
+      kTestUwSOneName, kTestUwSOneId, PUPData::FLAGS_STATE_CONFIRMED_UWS);
 
   EXPECT_EQ(pupOne.signature().id, kTestUwSOneId);
   EXPECT_STREQ(pupOne.signature().name, kTestUwSOneName);
@@ -34,8 +34,8 @@ TEST(DynamicPUPTest, OnePUP) {
 }
 
 TEST(DynamicPUPTest, MultiPUPs) {
-  DynamicPUP pupOne(kTestUwSOneName, kTestUwSOneId,
-                    PUPData::FLAGS_STATE_CONFIRMED_UWS);
+  DynamicPUP pupOne(
+      kTestUwSOneName, kTestUwSOneId, PUPData::FLAGS_STATE_CONFIRMED_UWS);
   DynamicPUP pupTwo(kTestUwSTwoName, kTestUwSTwoId, PUPData::FLAGS_NONE);
 
   EXPECT_EQ(pupOne.signature().id, kTestUwSOneId);

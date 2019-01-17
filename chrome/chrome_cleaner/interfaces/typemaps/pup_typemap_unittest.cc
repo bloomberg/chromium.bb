@@ -9,6 +9,7 @@
 #include "chrome/chrome_cleaner/ipc/ipc_test_util.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/pup_data/pup_data.h"
+#include "chrome/chrome_cleaner/test/test_extensions.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
 #include "components/chrome_cleaner/test/test_name_helper.h"
 #include "mojo/core/embedder/embedder.h"
@@ -24,9 +25,6 @@ namespace {
 using base::WaitableEvent;
 using testing::UnorderedElementsAreArray;
 
-constexpr wchar_t kWindowsCurrentVersionRegKeyName[] =
-    L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion";
-
 // Special result code returned by the Mojo connection error handler on child
 // processes and expected by the parent process on typemap unmarshaling error
 // tests.
@@ -36,16 +34,6 @@ class TestPUPTypemapImpl : public mojom::TestPUPTypemap {
  public:
   explicit TestPUPTypemapImpl(mojom::TestPUPTypemapRequest request)
       : binding_(this, std::move(request)) {}
-
-  void EchoRegKeyPath(const RegKeyPath& path,
-                      EchoRegKeyPathCallback callback) override {
-    std::move(callback).Run(path);
-  }
-
-  void EchoRegistryFootprint(const PUPData::RegistryFootprint& reg_footprint,
-                             EchoRegistryFootprintCallback callback) override {
-    std::move(callback).Run(reg_footprint);
-  }
 
   void EchoPUP(const PUPData::PUP& pup, EchoPUPCallback callback) override {
     std::move(callback).Run(pup);
@@ -96,18 +84,6 @@ class EchoingChildProcess : public chrome_cleaner::ChildProcess {
     event->Signal();
   }
 
-  RegKeyPath EchoRegKeyPath(const RegKeyPath& input) {
-    return Echo(input, base::BindOnce(&EchoingChildProcess::RunEchoRegKeyPath,
-                                      base::Unretained(this)));
-  }
-
-  PUPData::RegistryFootprint EchoRegistryFootprint(
-      const PUPData::RegistryFootprint& input) {
-    return Echo(input,
-                base::BindOnce(&EchoingChildProcess::RunEchoRegistryFootprint,
-                               base::Unretained(this)));
-  }
-
   PUPData::PUP EchoPUP(const PUPData::PUP& input) {
     return Echo(input, base::BindOnce(&EchoingChildProcess::RunEchoPUP,
                                       base::Unretained(this)));
@@ -120,18 +96,6 @@ class EchoingChildProcess : public chrome_cleaner::ChildProcess {
         base::BindOnce(
             [](std::unique_ptr<mojom::TestPUPTypemapPtr> ptr) { ptr.reset(); },
             base::Passed(&ptr_)));
-  }
-
-  void RunEchoRegKeyPath(
-      const RegKeyPath& input,
-      mojom::TestPUPTypemap::EchoRegKeyPathCallback callback) {
-    (*ptr_)->EchoRegKeyPath(input, std::move(callback));
-  }
-
-  void RunEchoRegistryFootprint(
-      const PUPData::RegistryFootprint& input,
-      mojom::TestPUPTypemap::EchoRegistryFootprintCallback callback) {
-    (*ptr_)->EchoRegistryFootprint(input, std::move(callback));
   }
 
   void RunEchoPUP(const PUPData::PUP& input,
@@ -189,58 +153,6 @@ scoped_refptr<EchoingChildProcess> InitChildProcess() {
   return child_process;
 }
 
-MULTIPROCESS_TEST_MAIN(EchoRegKeyPathMain) {
-  scoped_refptr<EchoingChildProcess> child_process = InitChildProcess();
-
-  RegKeyPath version_key(HKEY_LOCAL_MACHINE, kWindowsCurrentVersionRegKeyName,
-                         KEY_WOW64_32KEY);
-  EXPECT_EQ(version_key, child_process->EchoRegKeyPath(version_key));
-
-  return ::testing::Test::HasNonfatalFailure();
-}
-
-MULTIPROCESS_TEST_MAIN(EchoRegistryFootprint) {
-  scoped_refptr<EchoingChildProcess> child_process = InitChildProcess();
-
-  RegKeyPath version_key(HKEY_LOCAL_MACHINE, kWindowsCurrentVersionRegKeyName,
-                         KEY_WOW64_32KEY);
-
-  PUPData::RegistryFootprint fp1(version_key, L"value_name", L"value_substring",
-                                 REGISTRY_VALUE_MATCH_EXACT);
-  EXPECT_EQ(fp1, child_process->EchoRegistryFootprint(fp1));
-
-  PUPData::RegistryFootprint fp2(version_key, L"value_name", L"",
-                                 REGISTRY_VALUE_MATCH_EXACT);
-  EXPECT_EQ(fp2, child_process->EchoRegistryFootprint(fp2));
-
-  PUPData::RegistryFootprint fp3(version_key, L"", L"",
-                                 REGISTRY_VALUE_MATCH_EXACT);
-  EXPECT_EQ(fp3, child_process->EchoRegistryFootprint(fp3));
-
-  return ::testing::Test::HasNonfatalFailure();
-}
-
-MULTIPROCESS_TEST_MAIN(EchoRegistryFootprintFailure) {
-  scoped_refptr<EchoingChildProcess> child_process = InitChildProcess();
-
-  RegKeyPath version_key(HKEY_LOCAL_MACHINE, kWindowsCurrentVersionRegKeyName,
-                         KEY_WOW64_32KEY);
-
-  // Creates a RegistryFootprint with a rule that doesn't correspond to a valid
-  // RegistryMatchRule enum value. This will trigger a deserialization error on
-  // the broker process that will cause the pipe to be closed. As a consequence,
-  // the connection error handler, defined in BindToPipe(), will terminate the
-  // child process with a special exit code that will be expected to be received
-  // by the parent process.
-  PUPData::RegistryFootprint fp_invalid(version_key, L"value_name",
-                                        L"value_substring",
-                                        static_cast<RegistryMatchRule>(-1));
-  PUPData::RegistryFootprint unused =
-      child_process->EchoRegistryFootprint(fp_invalid);
-
-  return ::testing::Test::HasNonfatalFailure();
-}
-
 MULTIPROCESS_TEST_MAIN(EchoPUP) {
   scoped_refptr<EchoingChildProcess> child_process = InitChildProcess();
 
@@ -250,6 +162,38 @@ MULTIPROCESS_TEST_MAIN(EchoPUP) {
   pup.AddDiskFootprint(base::FilePath(L"C:\\Program Files\\File2.exe"));
   pup.AddDiskFootprint(base::FilePath(L"C:\\Program Files\\File3.exe"));
 
+  pup.disk_footprints_info.Insert(base::FilePath(L"C:\\File1.exe"),
+                                  PUPData::FileInfo({UwS::FOUND_IN_MEMORY}));
+  pup.disk_footprints_info.Insert(
+      base::FilePath(L"C:\\File2.exe"),
+      PUPData::FileInfo({UwS::FOUND_IN_SHELL, UwS::FOUND_IN_CLSID}));
+
+  const PUPData::PUP echoed = child_process->EchoPUP(pup);
+
+  // Not using operator== because error messages only show the sequences of
+  // bytes for each object, which makes it very hard to identify the differences
+  // between both objects.
+  EXPECT_THAT(
+      echoed.expanded_disk_footprints.file_paths(),
+      UnorderedElementsAreArray(pup.expanded_disk_footprints.file_paths()));
+  EXPECT_EQ(pup.disk_footprints_info.map(), echoed.disk_footprints_info.map());
+
+  return ::testing::Test::HasNonfatalFailure();
+}
+
+MULTIPROCESS_TEST_MAIN(EchoPUP_ExtraData) {
+  scoped_refptr<EchoingChildProcess> child_process = InitChildProcess();
+
+  PUPData::PUP pup;
+
+  pup.AddDiskFootprint(base::FilePath(L"C:\\Program Files\\File1.exe"));
+
+  // Add some items which are not normally populated in the target process.
+  // Expect them not to be present after echoing the PUP, to validate that they
+  // aren't passed through the Mojo interface. This keeps the security boundary
+  // small.
+  constexpr wchar_t kWindowsCurrentVersionRegKeyName[] =
+      L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion";
   RegKeyPath version_key(HKEY_LOCAL_MACHINE, kWindowsCurrentVersionRegKeyName,
                          KEY_WOW64_32KEY);
   pup.expanded_registry_footprints.emplace_back(version_key, L"value_name",
@@ -262,46 +206,22 @@ MULTIPROCESS_TEST_MAIN(EchoPUP) {
   pup.expanded_scheduled_tasks.push_back(L"Scheduled task 2");
   pup.expanded_scheduled_tasks.push_back(L"Scheduled task 3");
 
-  pup.disk_footprints_info.Insert(base::FilePath(L"C:\\File1.exe"),
-                                  PUPData::FileInfo({UwS::FOUND_IN_MEMORY}));
-  pup.disk_footprints_info.Insert(
-      base::FilePath(L"C:\\File2.exe"),
-      PUPData::FileInfo({UwS::FOUND_IN_SHELL, UwS::FOUND_IN_CLSID}));
+  pup.matched_extensions.push_back(ForceInstalledExtension(
+      *ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId1)),
+      POLICY_EXTENSION_FORCELIST, "https://test.com",
+      "all_your_permission_are_belong_to_us"));
 
   const PUPData::PUP echoed = child_process->EchoPUP(pup);
+
   // Not using operator== because error messages only show the sequences of
   // bytes for each object, which makes it very hard to identify the differences
   // between both objects.
   EXPECT_THAT(
       echoed.expanded_disk_footprints.file_paths(),
       UnorderedElementsAreArray(pup.expanded_disk_footprints.file_paths()));
-  EXPECT_THAT(echoed.expanded_registry_footprints,
-              UnorderedElementsAreArray(pup.expanded_registry_footprints));
-  EXPECT_THAT(echoed.expanded_scheduled_tasks,
-              UnorderedElementsAreArray(pup.expanded_scheduled_tasks));
-  EXPECT_EQ(pup.disk_footprints_info.map(), echoed.disk_footprints_info.map());
-
-  return ::testing::Test::HasNonfatalFailure();
-}
-
-MULTIPROCESS_TEST_MAIN(EchoPUPFailure_InvalidRegistryMatchRule) {
-  scoped_refptr<EchoingChildProcess> child_process = InitChildProcess();
-
-  // Same approach as used in EchoRegistryFootprintFailure, creates a registry
-  // footprint in the pup data with a rule that doesn't correspond to a valid
-  // RegistryMatchRule enum value. This will trigger a deserialization error on
-  // the broker process that will cause the pipe to be closed. As a consequence,
-  // the connection error handler, defined in BindToPipe(), will terminate the
-  // child process with a special exit code that will be expected to be received
-  // by the parent process.
-  PUPData::PUP pup;
-  RegKeyPath version_key(HKEY_LOCAL_MACHINE, kWindowsCurrentVersionRegKeyName,
-                         KEY_WOW64_32KEY);
-  pup.expanded_registry_footprints.emplace_back(
-      version_key, L"value_name", L"value_substring",
-      static_cast<RegistryMatchRule>(-1));
-
-  const PUPData::PUP unused = child_process->EchoPUP(pup);
+  EXPECT_TRUE(echoed.expanded_registry_footprints.empty());
+  EXPECT_TRUE(echoed.expanded_scheduled_tasks.empty());
+  EXPECT_TRUE(echoed.matched_extensions.empty());
 
   return ::testing::Test::HasNonfatalFailure();
 }
@@ -309,8 +229,12 @@ MULTIPROCESS_TEST_MAIN(EchoPUPFailure_InvalidRegistryMatchRule) {
 MULTIPROCESS_TEST_MAIN(EchoPUPFailure_InvalidTraceLocation) {
   scoped_refptr<EchoingChildProcess> child_process = InitChildProcess();
 
-  // Same approach as used in EchoPUPFailure_InvalidRegistryMatchRule, this time
-  // passing an invalid trace location.
+  // Creates a PUP with a trace location that doesn't correspond to a valid
+  // UwS::TraceLocation enum value. This will trigger a deserialization error on
+  // the broker process that will cause the pipe to be closed. As a consequence,
+  // the connection error handler, defined in BindToPipe(), will terminate the
+  // child process with a special exit code that will be expected to be received
+  // by the parent process.
   PUPData::PUP pup;
   pup.disk_footprints_info.Insert(
       base::FilePath(L"C:\\File1.exe"),
@@ -329,7 +253,7 @@ MULTIPROCESS_TEST_MAIN(EchoPUPFailure_InvalidTraceLocation) {
 //    to fail;
 //  - child_main_function_: the name of the MULTIPROCESS_TEST_MAIN function for
 //    the child process.
-typedef std::tuple<bool, const char*> PUPTypemapTestParams;
+typedef std::tuple<bool, std::string> PUPTypemapTestParams;
 
 class PUPTypemapTest : public ::testing::TestWithParam<PUPTypemapTestParams> {
  public:
@@ -342,7 +266,7 @@ class PUPTypemapTest : public ::testing::TestWithParam<PUPTypemapTestParams> {
   }
 
  protected:
-  const char* child_main_function_;
+  std::string child_main_function_;
   bool expected_to_succeed_;
 
   scoped_refptr<MojoTaskRunner> mojo_task_runner_;
@@ -356,22 +280,18 @@ TEST_P(PUPTypemapTest, Echo) {
   EXPECT_EQ(expected_to_succeed_ ? 0 : kConnectionBrokenResultCode, exit_code);
 }
 
-INSTANTIATE_TEST_CASE_P(
-    Success,
-    PUPTypemapTest,
-    testing::Combine(testing::Values(true),
-                     testing::Values("EchoRegKeyPathMain",
-                                     "EchoRegistryFootprint",
-                                     "EchoPUP")),
-    GetParamNameForTest());
+INSTANTIATE_TEST_CASE_P(Success,
+                        PUPTypemapTest,
+                        testing::Combine(testing::Values(true),
+                                         testing::Values("EchoPUP",
+                                                         "EchoPUP_ExtraData")),
+                        GetParamNameForTest());
 
 INSTANTIATE_TEST_CASE_P(
     Failure,
     PUPTypemapTest,
     testing::Combine(testing::Values(false),
-                     testing::Values("EchoRegistryFootprintFailure",
-                                     "EchoPUPFailure_InvalidRegistryMatchRule",
-                                     "EchoPUPFailure_InvalidTraceLocation")),
+                     testing::Values("EchoPUPFailure_InvalidTraceLocation")),
     GetParamNameForTest());
 
 }  // namespace
