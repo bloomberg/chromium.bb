@@ -5,7 +5,7 @@
 Polymer({
   is: 'print-preview-destination-select',
 
-  behaviors: [I18nBehavior],
+  behaviors: [I18nBehavior, print_preview_new.SelectBehavior],
 
   properties: {
     activeUser: String,
@@ -26,38 +26,21 @@ Polymer({
     recentDestinationList: Array,
 
     /** @private {boolean} */
-    showGoogleDrive_: {
-      type: Boolean,
-      computed: 'computeShowGoogleDrive_(' +
-          'recentDestinationList.*, cloudPrintState)',
-    },
-
-    /** @private {boolean} */
-    showSaveAsPdf_: {
-      type: Boolean,
-      computed: 'computeShowSaveAsPdf_(recentDestinationList.*, appKioskMode)',
-    },
+    showGoogleDrive_:
+        {type: Boolean, computed: 'computeShowGoogleDrive_(cloudPrintState)'},
   },
 
   /** @private {!IronMetaElement} */
   meta_: /** @type {!IronMetaElement} */ (
       Polymer.Base.create('iron-meta', {type: 'iconset'})),
 
-  /** Sets the select to the current value of |destination|. */
-  updateDestination: function() {
-    this.$$('.md-select').value = this.destination.key;
+  focus: function() {
+    this.$$('.md-select').focus();
   },
 
-  /**
-   * @return {boolean} Whether to show the Google Drive option.
-   * @private
-   */
-  computeShowSaveAsPdf_: function() {
-    return !this.appKioskMode && this.recentDestinationList &&
-        !this.recentDestinationList.some(destination => {
-          return destination.id ===
-              print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
-        });
+  /** Sets the select to the current value of |destination|. */
+  updateDestination: function() {
+    this.selectedValue = this.destination.key;
   },
 
   /**
@@ -65,11 +48,7 @@ Polymer({
    * @private
    */
   computeShowGoogleDrive_: function() {
-    return this.cloudPrintState === print_preview.CloudPrintState.SIGNED_IN &&
-        this.recentDestinationList &&
-        !this.recentDestinationList.some(
-            destination => destination.id ===
-                print_preview.Destination.GooglePromotedId.DOCS);
+    return this.cloudPrintState === print_preview.CloudPrintState.SIGNED_IN;
   },
 
   /**
@@ -115,7 +94,7 @@ Polymer({
   },
 
   /** @private */
-  onSelectedDestinationOptionChange_: function() {
-    this.fire('selected-option-change', this.$$('.md-select').value);
+  onProcessSelectChange: function(value) {
+    this.fire('selected-option-change', value);
   },
 });

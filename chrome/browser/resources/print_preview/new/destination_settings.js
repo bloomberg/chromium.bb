@@ -50,6 +50,7 @@ Polymer({
     loadingDestination_: {
       type: Boolean,
       value: true,
+      observer: 'onLoadingDestinationChange_',
     },
 
     /** @private {!Array<!print_preview.Destination>} */
@@ -88,6 +89,16 @@ Polymer({
         this.updateRecentDestinationList_.bind(this));
   },
 
+  /**
+   * @param {!print_preview.RecentDestination} destination
+   * @return {boolean} Whether the destination is Save as PDF or Save to Drive.
+   */
+  destinationIsDriveOrPdf_: function(destination) {
+    return destination.id ===
+        print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ||
+        destination.id === print_preview.Destination.GooglePromotedId.DOCS;
+  },
+
   /** @private */
   updateRecentDestinationList_: function() {
     if (!this.recentDestinations || !this.destinationStore) {
@@ -95,32 +106,34 @@ Polymer({
     }
 
     const recentDestinations = [];
+    let update = false;
     let filterAccount = this.activeUser;
     // Fallback to the account for the current destination, in case activeUser
     // is not known yet from cloudprint.
     if (!filterAccount) {
       filterAccount = this.destination ? this.destination.account : '';
     }
+    const existingKeys = this.recentDestinationList_ ?
+        this.recentDestinationList_.map(listItem => listItem.key) :
+        [];
     this.recentDestinations.forEach(recentDestination => {
-      const destination = this.destinationStore.getDestinationByKey(
-          print_preview.createRecentDestinationKey(recentDestination));
-      if (destination &&
+      const key = print_preview.createRecentDestinationKey(recentDestination);
+      const destination = this.destinationStore.getDestinationByKey(key);
+      if (destination && !this.destinationIsDriveOrPdf_(recentDestination) &&
           (!destination.account || destination.account == filterAccount)) {
         recentDestinations.push(destination);
+        update = update || !existingKeys.includes(key);
       }
     });
-    this.recentDestinationList_ = recentDestinations;
-    // Update the select value only after re-rendering the dropdown items.
-    // Otherwise, the select will sometimes display the wrong printer value
-    // (even though |destination| is correctly updated). Note that changing
-    // |destination| will always result in a subsequent change to
-    // |recentDestinations|.
-    Polymer.RenderStatus.afterNextRender(this, () => {
-      this.loadingDestination_ = !this.destination || !this.destination.id;
-      if (!this.loadingDestination_) {
-        this.$.destinationSelect.updateDestination();
-      }
-    });
+
+    // Only update the list if new destinations have been added to it.
+    // Re-ordering the dropdown items every time the selected item changes is
+    // a bad experience for keyboard users.
+    if (update) {
+      this.recentDestinationList_ = recentDestinations;
+    }
+
+    this.loadingDestination_ = !this.destination || !this.destination.id;
   },
 
   /**
@@ -129,7 +142,8 @@ Polymer({
    */
   shouldDisableDropdown_: function() {
     return !this.destinationStore || this.noDestinationsFound ||
-        (this.disabled &&
+        this.loadingDestination_ ||
+        (this.disabled && this.state != print_preview_new.State.NOT_READY &&
          this.state != print_preview_new.State.INVALID_PRINTER);
   },
 
@@ -215,5 +229,24 @@ Polymer({
       this.$.destinationSelect.updateDestination();
     }
     this.$.destinationSelect.focus();
+  },
+
+  /** @private */
+  onLoadingDestinationChange_: function() {
+    if (this.loadingDestination_) {
+      return;
+    }
+
+    // TODO (rbpotter): Remove this conditional when the Polymer 2 migration
+    // is completed.
+    if (Polymer.DomIf) {
+      Polymer.RenderStatus.beforeNextRender(this.$.destinationSelect, () => {
+        this.$.destinationSelect.updateDestination();
+      });
+    } else {
+      this.$.destinationSelect.async(() => {
+        this.$.destinationSelect.updateDestination();
+      });
+    }
   },
 });
