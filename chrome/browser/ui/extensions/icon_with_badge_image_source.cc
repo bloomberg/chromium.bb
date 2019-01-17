@@ -124,8 +124,7 @@ void IconWithBadgeImageSource::PaintBadge(gfx::Canvas* canvas) {
   for (size_t i = 0; i < kMaxIncrementAttempts; ++i) {
     int w = 0;
     int h = 0;
-    gfx::FontList bigger_font =
-        base_font.Derive(1, 0, gfx::Font::Weight::NORMAL);
+    gfx::FontList bigger_font = base_font.Derive(1, 0, gfx::Font::Weight::BOLD);
     gfx::Canvas::SizeStringInt(utf16_text, bigger_font, &w, &h, 0,
                                gfx::Canvas::NO_ELLIPSIS);
     if (h > kBadgeHeight)
