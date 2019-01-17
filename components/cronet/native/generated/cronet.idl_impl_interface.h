@@ -101,6 +101,11 @@ struct Cronet_Engine {
   virtual Cronet_RESULT Shutdown() = 0;
   virtual Cronet_String GetVersionString() = 0;
   virtual Cronet_String GetDefaultUserAgent() = 0;
+  virtual void AddRequestFinishedListener(
+      Cronet_RequestFinishedInfoListenerPtr listener,
+      Cronet_ExecutorPtr executor) = 0;
+  virtual void RemoveRequestFinishedListener(
+      Cronet_RequestFinishedInfoListenerPtr listener) = 0;
 
  private:
   Cronet_ClientContext client_context_ = nullptr;

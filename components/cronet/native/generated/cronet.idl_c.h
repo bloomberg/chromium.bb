@@ -316,6 +316,15 @@ CRONET_EXPORT
 Cronet_String Cronet_Engine_GetVersionString(Cronet_EnginePtr self);
 CRONET_EXPORT
 Cronet_String Cronet_Engine_GetDefaultUserAgent(Cronet_EnginePtr self);
+CRONET_EXPORT
+void Cronet_Engine_AddRequestFinishedListener(
+    Cronet_EnginePtr self,
+    Cronet_RequestFinishedInfoListenerPtr listener,
+    Cronet_ExecutorPtr executor);
+CRONET_EXPORT
+void Cronet_Engine_RemoveRequestFinishedListener(
+    Cronet_EnginePtr self,
+    Cronet_RequestFinishedInfoListenerPtr listener);
 // Concrete interface Cronet_Engine is implemented by Cronet.
 // The app can implement these for testing / mocking.
 typedef Cronet_RESULT (*Cronet_Engine_StartWithParamsFunc)(
@@ -330,6 +339,13 @@ typedef Cronet_String (*Cronet_Engine_GetVersionStringFunc)(
     Cronet_EnginePtr self);
 typedef Cronet_String (*Cronet_Engine_GetDefaultUserAgentFunc)(
     Cronet_EnginePtr self);
+typedef void (*Cronet_Engine_AddRequestFinishedListenerFunc)(
+    Cronet_EnginePtr self,
+    Cronet_RequestFinishedInfoListenerPtr listener,
+    Cronet_ExecutorPtr executor);
+typedef void (*Cronet_Engine_RemoveRequestFinishedListenerFunc)(
+    Cronet_EnginePtr self,
+    Cronet_RequestFinishedInfoListenerPtr listener);
 // Concrete interface Cronet_Engine is implemented by Cronet.
 // The app can use this for testing / mocking.
 CRONET_EXPORT Cronet_EnginePtr Cronet_Engine_CreateWith(
@@ -338,7 +354,10 @@ CRONET_EXPORT Cronet_EnginePtr Cronet_Engine_CreateWith(
     Cronet_Engine_StopNetLogFunc StopNetLogFunc,
     Cronet_Engine_ShutdownFunc ShutdownFunc,
     Cronet_Engine_GetVersionStringFunc GetVersionStringFunc,
-    Cronet_Engine_GetDefaultUserAgentFunc GetDefaultUserAgentFunc);
+    Cronet_Engine_GetDefaultUserAgentFunc GetDefaultUserAgentFunc,
+    Cronet_Engine_AddRequestFinishedListenerFunc AddRequestFinishedListenerFunc,
+    Cronet_Engine_RemoveRequestFinishedListenerFunc
+        RemoveRequestFinishedListenerFunc);
 
 ///////////////////////
 // Abstract interface Cronet_UrlRequestStatusListener is implemented by the app.
@@ -971,6 +990,14 @@ void Cronet_UrlRequestParams_allow_direct_executor_set(
 CRONET_EXPORT
 void Cronet_UrlRequestParams_annotations_add(Cronet_UrlRequestParamsPtr self,
                                              Cronet_RawDataPtr element);
+CRONET_EXPORT
+void Cronet_UrlRequestParams_request_finished_listener_set(
+    Cronet_UrlRequestParamsPtr self,
+    Cronet_RequestFinishedInfoListenerPtr request_finished_listener);
+CRONET_EXPORT
+void Cronet_UrlRequestParams_request_finished_executor_set(
+    Cronet_UrlRequestParamsPtr self,
+    Cronet_ExecutorPtr request_finished_executor);
 // Cronet_UrlRequestParams getters.
 CRONET_EXPORT
 Cronet_String Cronet_UrlRequestParams_http_method_get(
@@ -1008,6 +1035,13 @@ Cronet_RawDataPtr Cronet_UrlRequestParams_annotations_at(
     uint32_t index);
 CRONET_EXPORT
 void Cronet_UrlRequestParams_annotations_clear(Cronet_UrlRequestParamsPtr self);
+CRONET_EXPORT
+Cronet_RequestFinishedInfoListenerPtr
+Cronet_UrlRequestParams_request_finished_listener_get(
+    Cronet_UrlRequestParamsPtr self);
+CRONET_EXPORT
+Cronet_ExecutorPtr Cronet_UrlRequestParams_request_finished_executor_get(
+    Cronet_UrlRequestParamsPtr self);
 
 ///////////////////////
 // Struct Cronet_DateTime.

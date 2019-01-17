@@ -249,6 +249,14 @@ TEST_F(CronetStructTest, TestCronet_UrlRequestParams) {
   EXPECT_EQ(Cronet_UrlRequestParams_allow_direct_executor_get(first),
             Cronet_UrlRequestParams_allow_direct_executor_get(second));
   // TODO(mef): Test array |annotations|.
+  Cronet_UrlRequestParams_request_finished_listener_set(
+      second, Cronet_UrlRequestParams_request_finished_listener_get(first));
+  EXPECT_EQ(Cronet_UrlRequestParams_request_finished_listener_get(first),
+            Cronet_UrlRequestParams_request_finished_listener_get(second));
+  Cronet_UrlRequestParams_request_finished_executor_set(
+      second, Cronet_UrlRequestParams_request_finished_executor_get(first));
+  EXPECT_EQ(Cronet_UrlRequestParams_request_finished_executor_get(first),
+            Cronet_UrlRequestParams_request_finished_executor_get(second));
   Cronet_UrlRequestParams_Destroy(first);
   Cronet_UrlRequestParams_Destroy(second);
 }

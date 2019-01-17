@@ -133,7 +133,7 @@ struct Error {
 
   /**
    * Cronet internal error code. This may provide more specific error
-   * diagnosis than |error_code|, but the constant values  may change over time.
+   * diagnosis than |error_code|, but the constant values may change over time.
    * See
    * <a href=https://chromium.googlesource.com/chromium/src/+/master/net/base/net_error_list.h>
    * here</a> for the lastest list of values.
@@ -382,6 +382,30 @@ interface Engine {
    */
   [Sync]
   GetDefaultUserAgent() => (string default_user_agent);
+
+  /**
+   * Registers a listener that gets called after the end of each request after
+   * OnSucceeded(), OnFailed(), or OnCanceled() is called with the {@code
+   * RequestFinishedInfo}.
+   *
+   * The listener is called on {@code executor} -- the same executor may be
+   * used with several listeners.
+   *
+   * Ownership **not** taken for {@code listener} or {@code executor} -- these
+   * may be safely destroyed after a call to RemoveRequestFinishedListener(),
+   * or if the engine has shutdown.
+   *
+   * @param listener the listener for finished requests.
+   * @param executor the executor upon which to run the listener.
+   */
+  AddRequestFinishedListener(RequestFinishedInfoListener listener,
+                             Executor executor);
+
+  /**
+   * Unregisters a RequestFinishedInfoListener, including its association with
+   * its registered Executor.
+   */
+  RemoveRequestFinishedListener(RequestFinishedInfoListener listener);
 };
 
 /**
@@ -1128,6 +1152,25 @@ struct UrlRequestParams {
    * Passed through to a RequestFinishedInfoListener.
    */
   array<handle> annotations;
+
+  /**
+   * A listener that gets invoked after {@link
+   * UrlRequestCallback.OnCanceled()}, {@link UrlRequestCallback.OnFailed()} or
+   * {@link UrlRequestCallback.OnSucceeded()} return.
+   *
+   * The listener is invoked with the request finished info on {@code
+   * request_finished_executor}, which must be set.
+   *
+   * Ownership **not** taken for {@code request_finished_listener} or {@code
+   * request_finished_executor} -- these may be safely destroyed after a call
+   * to RemoveRequestFinishedListener(), or if the engine has shutdown.
+   */
+  RequestFinishedInfoListener? request_finished_listener;
+
+  /**
+   * The Executor used to run the {@code request_finished_listener}.
+   */
+  Executor? request_finished_executor;
 };
 
 /**
