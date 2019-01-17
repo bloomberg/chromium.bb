@@ -32,6 +32,8 @@ void FakeVideoStream::SetObserver(Observer* observer) {
   observer_ = observer;
 }
 
+void FakeVideoStream::SelectSource(int id) {};
+
 base::WeakPtr<FakeVideoStream> FakeVideoStream::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }

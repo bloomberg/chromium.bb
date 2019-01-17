@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "remoting/base/capabilities.h"
@@ -235,6 +236,18 @@ void ClientSession::DeliverClientMessage(
     DLOG(INFO) << "Unexpected message received: " << message.type() << ": "
                << message.data();
   }
+}
+
+void ClientSession::SelectDesktopDisplay(
+    const protocol::SelectDesktopDisplayRequest& select_display) {
+  int id = webrtc::kFullDesktopScreenId;
+  if (select_display.id() != "all") {
+    if (!base::StringToInt(select_display.id().c_str(), &id)) {
+      // Default to fullscreen if unable to parse id.
+      id = webrtc::kFullDesktopScreenId;
+    }
+  }
+  video_stream_->SelectSource(id);
 }
 
 void ClientSession::OnConnectionAuthenticating() {

@@ -228,6 +228,9 @@ IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_StartSessionAgent,
 
 IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_CaptureFrame)
 
+IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_SelectSource,
+                    int /* desktop_display_id */)
+
 // Carries a clipboard event from the client to the desktop session agent.
 // |serialized_event| is a serialized protocol::ClipboardEvent.
 IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_InjectClipboardEvent,

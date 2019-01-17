@@ -140,6 +140,9 @@ class DesktopSessionAgent
   // Handles CaptureFrame requests from the client.
   void OnCaptureFrame();
 
+  // Handles desktop display selection requests from the client.
+  void OnSelectSource(int id);
+
   // Handles event executor requests from the client.
   void OnInjectClipboardEvent(const std::string& serialized_event);
   void OnInjectKeyEvent(const std::string& serialized_event);

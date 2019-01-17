@@ -115,6 +115,7 @@ class DesktopSessionProxy
   // APIs used to implement the webrtc::DesktopCapturer interface. These must be
   // called on the |video_capture_task_runner_| thread.
   void CaptureFrame();
+  bool SelectSource(webrtc::DesktopCapturer::SourceId id);
 
   // Stores |video_capturer| to be used to post captured video frames. Called on
   // the |video_capture_task_runner_| thread.

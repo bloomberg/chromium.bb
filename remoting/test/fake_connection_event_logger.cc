@@ -229,6 +229,8 @@ class FakeConnectionEventLogger::CounterHostStub
   void RequestPairing(
       const protocol::PairingRequest& pairing_request) override {}
   void SetCapabilities(const protocol::Capabilities& capabilities) override {}
+  void SelectDesktopDisplay(
+      const protocol::SelectDesktopDisplayRequest& select_display) override{};
 };
 
 FakeConnectionEventLogger::CounterHostStub::CounterHostStub()
