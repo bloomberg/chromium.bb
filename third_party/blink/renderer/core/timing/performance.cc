@@ -480,8 +480,7 @@ void Performance::GenerateAndAddResourceTiming(
     return;
   AddResourceTiming(
       GenerateResourceTiming(*security_origin, info, *context),
-      !initiator_type.IsNull() ? initiator_type : info.InitiatorType(),
-      context->IsSecureContext());
+      !initiator_type.IsNull() ? initiator_type : info.InitiatorType());
 }
 
 WebResourceTimingInfo Performance::GenerateResourceTiming(
@@ -537,6 +536,8 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
   result.encoded_body_size = final_response.EncodedBodyLength();
   result.decoded_body_size = final_response.DecodedBodyLength();
   result.did_reuse_connection = final_response.ConnectionReused();
+  result.is_secure_context =
+      SecurityOrigin::IsSecure(final_response.ResponseUrl());
   result.allow_negative_values = info.NegativeAllowed();
 
   if (result.allow_timing_details) {
@@ -551,10 +552,9 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
 }
 
 void Performance::AddResourceTiming(const WebResourceTimingInfo& info,
-                                    const AtomicString& initiator_type,
-                                    bool is_secure_context) {
-  PerformanceEntry* entry = PerformanceResourceTiming::Create(
-      info, time_origin_, initiator_type, is_secure_context);
+                                    const AtomicString& initiator_type) {
+  PerformanceEntry* entry =
+      PerformanceResourceTiming::Create(info, time_origin_, initiator_type);
   NotifyObserversOfEntry(*entry);
   // https://w3c.github.io/resource-timing/#dfn-add-a-performanceresourcetiming-entry
   if (CanAddResourceTimingEntry() &&

@@ -56,15 +56,13 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
                             const WebVector<WebServerTimingInfo>&);
   PerformanceResourceTiming(const WebResourceTimingInfo&,
                             TimeTicks time_origin,
-                            const AtomicString& initiator_type,
-                            bool is_secure_context);
+                            const AtomicString& initiator_type);
   ~PerformanceResourceTiming() override;
   static PerformanceResourceTiming* Create(const WebResourceTimingInfo& info,
                                            TimeTicks time_origin,
-                                           const AtomicString& initiator_type,
-                                           bool is_secure_context) {
-    return MakeGarbageCollected<PerformanceResourceTiming>(
-        info, time_origin, initiator_type, is_secure_context);
+                                           const AtomicString& initiator_type) {
+    return MakeGarbageCollected<PerformanceResourceTiming>(info, time_origin,
+                                                           initiator_type);
   }
 
   AtomicString entryType() const override;

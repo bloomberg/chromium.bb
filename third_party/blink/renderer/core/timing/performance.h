@@ -149,8 +149,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
       const ResourceTimingInfo&,
       ExecutionContext& context_for_use_counter);
   void AddResourceTiming(const WebResourceTimingInfo&,
-                         const AtomicString& initiator_type,
-                         bool is_secure_context);
+                         const AtomicString& initiator_type);
 
   void NotifyNavigationTimingToObservers();
 
