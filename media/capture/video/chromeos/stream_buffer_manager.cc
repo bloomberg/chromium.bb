@@ -728,12 +728,13 @@ void StreamBufferManager::SubmitCaptureResultIfComplete(
   CaptureResult& pending_result = pending_results_[frame_number];
   if (!stream_context_[stream_type]->capture_results_with_buffer.count(
           frame_number) ||
-      pending_result.partial_metadata_received.size() < partial_result_count_ ||
+      *pending_result.partial_metadata_received.rbegin() <
+          partial_result_count_ ||
       pending_result.reference_time == base::TimeTicks()) {
     // We can only submit the result buffer of |frame_number| for |stream_type|
     // when:
     //   1. The result buffer for |stream_type| is received, and
-    //   2. All the result metadata are received, and
+    //   2. Received partial result id equals to partial result count, and
     //   3. The shutter time is received.
     return;
   }
