@@ -184,22 +184,49 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
         if (numAnswerLines == -1) numAnswerLines = 1;
         model.set(SuggestionViewProperties.IS_ANSWER, true);
 
-        model.set(SuggestionViewProperties.TEXT_LINE_1_SIZING,
-                Pair.create(TypedValue.COMPLEX_UNIT_SP,
-                        (float) AnswerTextBuilder.getMaxTextHeightSp(firstLine)));
-        model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT,
-                new SuggestionTextContainer(AnswerTextBuilder.buildSpannable(firstLine, density)));
+        if (mEnableNewAnswerLayout) {
+            model.set(SuggestionViewProperties.TEXT_LINE_2_SIZING,
+                    Pair.create(TypedValue.COMPLEX_UNIT_SP,
+                            (float) AnswerTextBuilder.getMaxTextHeightSp(firstLine)));
+            model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT,
+                    new SuggestionTextContainer(
+                            AnswerTextBuilder.buildSpannable(firstLine, density)));
 
-        model.set(SuggestionViewProperties.TEXT_LINE_2_SIZING,
-                Pair.create(TypedValue.COMPLEX_UNIT_SP,
-                        (float) AnswerTextBuilder.getMaxTextHeightSp(secondLine)));
-        model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT,
-                new SuggestionTextContainer(AnswerTextBuilder.buildSpannable(secondLine, density)));
-        model.set(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES, numAnswerLines);
-        model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_COLOR,
-                SuggestionViewViewBinder.getStandardFontColor(
-                        mContext, model.get(SuggestionCommonProperties.USE_DARK_COLORS)));
-        model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_DIRECTION, View.TEXT_DIRECTION_INHERIT);
+            model.set(SuggestionViewProperties.TEXT_LINE_1_SIZING,
+                    Pair.create(TypedValue.COMPLEX_UNIT_SP,
+                            (float) AnswerTextBuilder.getMaxTextHeightSp(secondLine)));
+            model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT,
+                    new SuggestionTextContainer(
+                            AnswerTextBuilder.buildSpannable(secondLine, density)));
+            model.set(SuggestionViewProperties.TEXT_LINE_1_MAX_LINES, numAnswerLines);
+            model.set(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES, 1);
+            model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_COLOR,
+                    SuggestionViewViewBinder.getStandardFontColor(
+                            mContext, model.get(SuggestionCommonProperties.USE_DARK_COLORS)));
+            model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT_DIRECTION,
+                    View.TEXT_DIRECTION_INHERIT);
+        } else {
+            model.set(SuggestionViewProperties.TEXT_LINE_1_SIZING,
+                    Pair.create(TypedValue.COMPLEX_UNIT_SP,
+                            (float) AnswerTextBuilder.getMaxTextHeightSp(firstLine)));
+            model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT,
+                    new SuggestionTextContainer(
+                            AnswerTextBuilder.buildSpannable(firstLine, density)));
+
+            model.set(SuggestionViewProperties.TEXT_LINE_2_SIZING,
+                    Pair.create(TypedValue.COMPLEX_UNIT_SP,
+                            (float) AnswerTextBuilder.getMaxTextHeightSp(secondLine)));
+            model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT,
+                    new SuggestionTextContainer(
+                            AnswerTextBuilder.buildSpannable(secondLine, density)));
+            model.set(SuggestionViewProperties.TEXT_LINE_1_MAX_LINES, 1);
+            model.set(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES, numAnswerLines);
+            model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_COLOR,
+                    SuggestionViewViewBinder.getStandardFontColor(
+                            mContext, model.get(SuggestionCommonProperties.USE_DARK_COLORS)));
+            model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_DIRECTION,
+                    View.TEXT_DIRECTION_INHERIT);
+        }
 
         model.set(SuggestionViewProperties.HAS_ANSWER_IMAGE, secondLine.hasImage());
 
@@ -312,6 +339,7 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
                         mContext.getResources().getDimension(
                                 org.chromium.chrome.R.dimen
                                         .omnibox_suggestion_second_line_text_size)));
+        model.set(SuggestionViewProperties.TEXT_LINE_1_MAX_LINES, 1);
         model.set(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES, 1);
 
         boolean sameAsTyped =
