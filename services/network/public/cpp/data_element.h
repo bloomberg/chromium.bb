@@ -23,6 +23,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -33,22 +34,6 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
  public:
   static const uint64_t kUnknownSize = std::numeric_limits<uint64_t>::max();
 
-  enum Type {
-    TYPE_UNKNOWN = -1,
-
-    // Only used for Upload with Network Service as of now:
-    TYPE_DATA_PIPE,
-    TYPE_CHUNKED_DATA_PIPE,
-    TYPE_RAW_FILE,
-
-    // Used for Upload when Network Service is disabled:
-    TYPE_BLOB,
-    TYPE_FILE,
-
-    // Commonly used in every case:
-    TYPE_BYTES,
-  };
-
   DataElement();
   ~DataElement();
 
@@ -57,7 +42,7 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
   DataElement(DataElement&& other);
   DataElement& operator=(DataElement&& other);
 
-  Type type() const { return type_; }
+  mojom::DataElementType type() const { return type_; }
   const char* bytes() const { return bytes_ ? bytes_ : buf_.data(); }
   const base::FilePath& path() const { return path_; }
   const base::File& file() const { return file_; }
@@ -74,7 +59,7 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
 
   // Sets TYPE_BYTES data. This copies the given data into the element.
   void SetToBytes(const char* bytes, int bytes_len) {
-    type_ = TYPE_BYTES;
+    type_ = mojom::DataElementType::kBytes;
     bytes_ = nullptr;
     buf_.assign(bytes, bytes + bytes_len);
     length_ = buf_.size();
@@ -82,7 +67,7 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
 
   // Sets TYPE_BYTES data. This moves the given data vector into the element.
   void SetToBytes(std::vector<char> bytes) {
-    type_ = TYPE_BYTES;
+    type_ = mojom::DataElementType::kBytes;
     bytes_ = nullptr;
     buf_ = std::move(bytes);
     length_ = buf_.size();
@@ -91,7 +76,7 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
   // Sets TYPE_BYTES data, and clears the internal bytes buffer.
   // For use with AppendBytes.
   void SetToEmptyBytes() {
-    type_ = TYPE_BYTES;
+    type_ = mojom::DataElementType::kBytes;
     buf_.clear();
     length_ = 0;
     bytes_ = nullptr;
@@ -100,7 +85,7 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
   // Copies and appends the given data into the element. SetToEmptyBytes or
   // SetToBytes must be called before this method.
   void AppendBytes(const char* bytes, int bytes_len) {
-    DCHECK_EQ(type_, TYPE_BYTES);
+    DCHECK_EQ(type_, mojom::DataElementType::kBytes);
     DCHECK_NE(length_, std::numeric_limits<uint64_t>::max());
     DCHECK(!bytes_);
     buf_.insert(buf_.end(), bytes, bytes + bytes_len);
@@ -111,7 +96,7 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
   // should make sure the data is alive when this element is accessed.
   // You cannot use AppendBytes with this method.
   void SetToSharedBytes(const char* bytes, int bytes_len) {
-    type_ = TYPE_BYTES;
+    type_ = mojom::DataElementType::kBytes;
     bytes_ = bytes;
     length_ = bytes_len;
   }
@@ -120,7 +105,7 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
   // internal vector but does not populate it with anything.  The caller can
   // then use the bytes() method to access this buffer and populate it.
   void SetToAllocatedBytes(size_t bytes_len) {
-    type_ = TYPE_BYTES;
+    type_ = mojom::DataElementType::kBytes;
     bytes_ = nullptr;
     buf_.resize(bytes_len);
     length_ = bytes_len;
@@ -186,7 +171,7 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
  private:
   FRIEND_TEST_ALL_PREFIXES(BlobAsyncTransportStrategyTest, TestInvalidParams);
   friend void PrintTo(const DataElement& x, ::std::ostream* os);
-  Type type_;
+  mojom::DataElementType type_;
   // For TYPE_BYTES.
   std::vector<char> buf_;
   // For TYPE_BYTES.

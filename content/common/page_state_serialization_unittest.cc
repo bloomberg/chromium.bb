@@ -40,8 +40,8 @@ template <>
 void ExpectEquality(const network::DataElement& expected,
                     const network::DataElement& actual) {
   EXPECT_EQ(expected.type(), actual.type());
-  if (expected.type() == network::DataElement::TYPE_BYTES &&
-      actual.type() == network::DataElement::TYPE_BYTES) {
+  if (expected.type() == network::mojom::DataElementType::kBytes &&
+      actual.type() == network::mojom::DataElementType::kBytes) {
     EXPECT_EQ(std::string(expected.bytes(), expected.length()),
               std::string(actual.bytes(), actual.length()));
   }

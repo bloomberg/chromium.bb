@@ -50,6 +50,24 @@ enum URLRequestReferrerPolicy {
   kNoReferrer
 };
 
+// Used for represents the type of the internal contents of
+// network::DataElement.
+enum DataElementType {
+  kUnknown = -1,
+
+  // Only used for Upload with Network Service as of now:
+  kDataPipe,
+  kChunkedDataPipe,
+  kRawFile,
+
+  // Used for Upload when Network Service is disabled:
+  kBlob,
+  kFile,
+
+  // Commonly used in every case:
+  kBytes,
+};
+
 // Typemapped to network::ResourceRequest.
 struct URLRequest {
   // The request method: GET, POST, etc.

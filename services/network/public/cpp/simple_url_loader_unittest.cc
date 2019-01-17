@@ -1730,7 +1730,7 @@ class MockURLLoader : public network::mojom::URLLoader {
         weak_factory_for_data_pipe_callbacks_(this) {
     if (request_body && request_body->elements()->size() == 1 &&
         (*request_body->elements())[0].type() ==
-            network::DataElement::TYPE_DATA_PIPE) {
+            network::mojom::DataElementType::kDataPipe) {
       data_pipe_getter_ = (*request_body->elements())[0].CloneDataPipeGetter();
       DCHECK(data_pipe_getter_);
     }

@@ -710,7 +710,7 @@ std::string SpeechRecognitionEngineTest::ConsumeChunkedUploadData() {
       EXPECT_TRUE(upstream_request->request.request_body);
       EXPECT_EQ(1u, upstream_request->request.request_body->elements()->size());
       EXPECT_EQ(
-          network::DataElement::TYPE_CHUNKED_DATA_PIPE,
+          network::mojom::DataElementType::kChunkedDataPipe,
           (*upstream_request->request.request_body->elements())[0].type());
       network::TestURLLoaderFactory::PendingRequest* mutable_upstream_request =
           const_cast<network::TestURLLoaderFactory::PendingRequest*>(

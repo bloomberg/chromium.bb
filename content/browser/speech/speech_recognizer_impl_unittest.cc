@@ -423,7 +423,7 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
       ASSERT_TRUE(upstream_request->request.request_body);
       ASSERT_EQ(1u, upstream_request->request.request_body->elements()->size());
       ASSERT_EQ(
-          network::DataElement::TYPE_CHUNKED_DATA_PIPE,
+          network::mojom::DataElementType::kChunkedDataPipe,
           (*upstream_request->request.request_body->elements())[0].type());
       network::TestURLLoaderFactory::PendingRequest* mutable_upstream_request =
           const_cast<network::TestURLLoaderFactory::PendingRequest*>(

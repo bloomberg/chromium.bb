@@ -14,6 +14,7 @@
 #include "net/http/http_status_code.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -144,7 +145,7 @@ class TestServerURLLoaderFactory {
 
       // We only support the simplest body structure.
       CHECK(elements && elements->size() == 1 &&
-            (*elements)[0].type() == network::DataElement::TYPE_BYTES);
+            (*elements)[0].type() == network::mojom::DataElementType::kBytes);
 
       actual_body =
           std::string((*elements)[0].bytes(), (*elements)[0].length());

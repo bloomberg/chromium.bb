@@ -42,7 +42,7 @@ class BytesElementReader : public net::UploadBytesElementReader {
                      const network::DataElement& element)
       : net::UploadBytesElementReader(element.bytes(), element.length()),
         resource_request_body_(resource_request_body) {
-    DCHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
+    DCHECK_EQ(network::mojom::DataElementType::kBytes, element.type());
   }
 
   ~BytesElementReader() override {}
@@ -68,7 +68,7 @@ class FileElementReader : public net::UploadFileElementReader {
                                      element.length(),
                                      element.expected_modification_time()),
         resource_request_body_(resource_request_body) {
-    DCHECK_EQ(network::DataElement::TYPE_FILE, element.type());
+    DCHECK_EQ(network::mojom::DataElementType::kFile, element.type());
   }
 
   ~FileElementReader() override {}
@@ -89,15 +89,15 @@ std::unique_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
   std::vector<std::unique_ptr<net::UploadElementReader>> element_readers;
   for (const auto& element : *body->elements()) {
     switch (element.type()) {
-      case network::DataElement::TYPE_BYTES:
+      case network::mojom::DataElementType::kBytes:
         element_readers.push_back(
             std::make_unique<BytesElementReader>(body, element));
         break;
-      case network::DataElement::TYPE_FILE:
+      case network::mojom::DataElementType::kFile:
         element_readers.push_back(std::make_unique<FileElementReader>(
             body, file_task_runner, element));
         break;
-      case network::DataElement::TYPE_BLOB: {
+      case network::mojom::DataElementType::kBlob: {
         DCHECK_EQ(0ul, element.offset());
         std::unique_ptr<storage::BlobDataHandle> handle =
             blob_context->GetBlobDataFromUUID(element.blob_uuid());
@@ -108,10 +108,10 @@ std::unique_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
                 std::move(handle)));
         break;
       }
-      case network::DataElement::TYPE_RAW_FILE:
-      case network::DataElement::TYPE_DATA_PIPE:
-      case network::DataElement::TYPE_CHUNKED_DATA_PIPE:
-      case network::DataElement::TYPE_UNKNOWN:
+      case network::mojom::DataElementType::kRawFile:
+      case network::mojom::DataElementType::kDataPipe:
+      case network::mojom::DataElementType::kChunkedDataPipe:
+      case network::mojom::DataElementType::kUnknown:
         NOTREACHED();
         break;
     }

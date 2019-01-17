@@ -729,7 +729,7 @@ bool GetPostData(const network::ResourceRequestBody& request_body,
   if (elements->empty())
     return false;
   for (const auto& element : *elements) {
-    if (element.type() != network::DataElement::TYPE_BYTES)
+    if (element.type() != network::mojom::DataElementType::kBytes)
       return false;
     result->append(element.bytes(), element.length());
   }

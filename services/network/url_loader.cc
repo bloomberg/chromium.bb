@@ -121,7 +121,7 @@ class BytesElementReader : public net::UploadBytesElementReader {
                      const DataElement& element)
       : net::UploadBytesElementReader(element.bytes(), element.length()),
         resource_request_body_(resource_request_body) {
-    DCHECK_EQ(DataElement::TYPE_BYTES, element.type());
+    DCHECK_EQ(network::mojom::DataElementType::kBytes, element.type());
   }
 
   ~BytesElementReader() override {}
@@ -149,7 +149,7 @@ class FileElementReader : public net::UploadFileElementReader {
                                      element.length(),
                                      element.expected_modification_time()),
         resource_request_body_(resource_request_body) {
-    DCHECK_EQ(DataElement::TYPE_FILE, element.type());
+    DCHECK_EQ(network::mojom::DataElementType::kFile, element.type());
   }
 
   ~FileElementReader() override {}
@@ -174,7 +174,7 @@ class RawFileElementReader : public net::UploadFileElementReader {
             element.length(),
             element.expected_modification_time()),
         resource_request_body_(resource_request_body) {
-    DCHECK_EQ(DataElement::TYPE_RAW_FILE, element.type());
+    DCHECK_EQ(network::mojom::DataElementType::kRawFile, element.type());
   }
 
   ~RawFileElementReader() override {}
@@ -193,7 +193,7 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
   // In the case of a chunked upload, there will just be one element.
   if (body->elements()->size() == 1 &&
       body->elements()->begin()->type() ==
-          DataElement::TYPE_CHUNKED_DATA_PIPE) {
+          network::mojom::DataElementType::kChunkedDataPipe) {
     return std::make_unique<ChunkedDataPipeUploadDataStream>(
         body, mojom::ChunkedDataPipeGetterPtr(
                   const_cast<DataElement&>(body->elements()->front())
@@ -204,35 +204,35 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
   std::vector<std::unique_ptr<net::UploadElementReader>> element_readers;
   for (const auto& element : *body->elements()) {
     switch (element.type()) {
-      case DataElement::TYPE_BYTES:
+      case network::mojom::DataElementType::kBytes:
         element_readers.push_back(
             std::make_unique<BytesElementReader>(body, element));
         break;
-      case DataElement::TYPE_FILE:
+      case network::mojom::DataElementType::kFile:
         DCHECK(opened_file != opened_files.end());
         element_readers.push_back(std::make_unique<FileElementReader>(
             body, file_task_runner, element, std::move(*opened_file++)));
         break;
-      case DataElement::TYPE_RAW_FILE:
+      case network::mojom::DataElementType::kRawFile:
         element_readers.push_back(std::make_unique<RawFileElementReader>(
             body, file_task_runner, element));
         break;
-      case DataElement::TYPE_BLOB: {
+      case network::mojom::DataElementType::kBlob: {
         CHECK(false) << "Network service always uses DATA_PIPE for blobs.";
         break;
       }
-      case DataElement::TYPE_DATA_PIPE: {
+      case network::mojom::DataElementType::kDataPipe: {
         element_readers.push_back(std::make_unique<DataPipeElementReader>(
             body, element.CloneDataPipeGetter()));
         break;
       }
-      case DataElement::TYPE_CHUNKED_DATA_PIPE: {
+      case network::mojom::DataElementType::kChunkedDataPipe: {
         // This shouldn't happen, as the traits logic should ensure that if
         // there's a chunked pipe, there's one and only one element.
         NOTREACHED();
         break;
       }
-      case DataElement::TYPE_UNKNOWN:
+      case network::mojom::DataElementType::kUnknown:
         NOTREACHED();
         break;
     }
@@ -464,7 +464,7 @@ URLLoader::URLLoader(
 void URLLoader::OpenFilesForUpload(const ResourceRequest& request) {
   std::vector<base::FilePath> paths;
   for (const auto& element : *request.request_body.get()->elements()) {
-    if (element.type() == DataElement::TYPE_FILE)
+    if (element.type() == mojom::DataElementType::kFile)
       paths.push_back(element.path());
   }
   if (paths.empty()) {
