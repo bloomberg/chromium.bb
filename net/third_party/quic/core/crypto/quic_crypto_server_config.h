@@ -539,7 +539,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
       QuicReferenceCountedPointer<Config> primary_config,
       QuicReferenceCountedPointer<QuicSignedServerConfig> crypto_proof,
       std::unique_ptr<ProofSource::Details> proof_source_details,
-      bool use_get_cert_chain,
       bool get_proof_failed,
       QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
           client_hello_state,

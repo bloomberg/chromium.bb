@@ -91,8 +91,7 @@ class TestPacketCreator : public QuicPacketCreator {
     // Save data before data is consumed.
     QuicByteCount data_length = total_length - iov_offset;
     if (data_length > 0) {
-      producer_->SaveStreamData(id, iov, iov_count, iov_offset, offset,
-                                data_length);
+      producer_->SaveStreamData(id, iov, iov_count, iov_offset, data_length);
     }
     return QuicPacketCreator::ConsumeData(id, data_length, iov_offset, offset,
                                           fin, needs_full_padding,
@@ -394,7 +393,7 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithFullPadding) {
   MakeIOVector("fake handshake message data", &iov_);
   producer_.SaveStreamData(
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version()), &iov_,
-      1u, 0u, 0u, iov_.iov_len);
+      1u, 0u, iov_.iov_len);
   QuicPacketCreatorPeer::CreateStreamFrame(
       &creator_,
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version()),
@@ -417,7 +416,7 @@ TEST_P(QuicPacketCreatorTest, DoNotRetransmitPendingPadding) {
   MakeIOVector("fake message data", &iov_);
   producer_.SaveStreamData(
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version()), &iov_,
-      1u, 0u, 0u, iov_.iov_len);
+      1u, 0u, iov_.iov_len);
   QuicPacketCreatorPeer::CreateStreamFrame(
       &creator_,
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version()),
@@ -483,7 +482,7 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithFullPacketAndPadding) {
     SimpleDataProducer producer;
     producer.SaveStreamData(
         QuicUtils::GetCryptoStreamId(client_framer_.transport_version()), &iov_,
-        1u, 0u, 0u, iov_.iov_len);
+        1u, 0u, iov_.iov_len);
     QuicPacketCreatorPeer::framer(&creator_)->set_data_producer(&producer);
     QuicPacketCreatorPeer::CreateStreamFrame(
         &creator_,
@@ -1217,7 +1216,7 @@ TEST_P(QuicPacketCreatorTest, SerializeAndSendStreamFrame) {
   MakeIOVector("test", &iov_);
   producer_.SaveStreamData(
       QuicUtils::GetHeadersStreamId(client_framer_.transport_version()), &iov_,
-      1u, 0u, 0u, iov_.iov_len);
+      1u, 0u, iov_.iov_len);
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
   size_t num_bytes_consumed;
@@ -1357,7 +1356,7 @@ TEST_P(QuicPacketCreatorTest, SendPacketAfterFullPaddingRetransmission) {
   MakeIOVector("fake handshake message data", &iov_);
   producer_.SaveStreamData(
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version()), &iov_,
-      1u, 0u, 0u, iov_.iov_len);
+      1u, 0u, iov_.iov_len);
   QuicPacketCreatorPeer::CreateStreamFrame(
       &creator_,
       QuicUtils::GetCryptoStreamId(client_framer_.transport_version()),

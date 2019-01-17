@@ -223,7 +223,13 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
   }
 
   bool OnCryptoFrame(const QuicCryptoFrame& frame) override {
-    // TODO(nharper): Implement.
+    ++frame_count_;
+    // Save a copy of the data so it is valid after the packet is processed.
+    QuicString* string_data =
+        new QuicString(frame.data_buffer, frame.data_length);
+    crypto_data_.push_back(QuicWrapUnique(string_data));
+    crypto_frames_.push_back(QuicMakeUnique<QuicCryptoFrame>(
+        ENCRYPTION_NONE, frame.offset, *string_data));
     return true;
   }
 
@@ -373,6 +379,7 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
   std::unique_ptr<QuicIetfStatelessResetPacket> stateless_reset_packet_;
   std::unique_ptr<QuicVersionNegotiationPacket> version_negotiation_packet_;
   std::vector<std::unique_ptr<QuicStreamFrame>> stream_frames_;
+  std::vector<std::unique_ptr<QuicCryptoFrame>> crypto_frames_;
   std::vector<std::unique_ptr<QuicAckFrame>> ack_frames_;
   std::vector<std::unique_ptr<QuicStopWaitingFrame>> stop_waiting_frames_;
   std::vector<std::unique_ptr<QuicPaddingFrame>> padding_frames_;
@@ -393,6 +400,7 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
   QuicRetireConnectionIdFrame retire_connection_id_;
   QuicNewTokenFrame new_token_;
   std::vector<std::unique_ptr<QuicString>> stream_data_;
+  std::vector<std::unique_ptr<QuicString>> crypto_data_;
 };
 
 // Simple struct for defining a packet's content, and associated
@@ -5853,6 +5861,112 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
                                       data->length(), AsChars(p), p_size);
 }
 
+TEST_P(QuicFramerTest, BuildCryptoFramePacket) {
+  if (framer_.transport_version() < QUIC_VERSION_99) {
+    // CRYPTO frames aren't supported prior to v46.
+    return;
+  }
+  QuicPacketHeader header;
+  header.destination_connection_id = FramerTestConnectionId();
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+
+  SimpleDataProducer data_producer;
+  framer_.set_data_producer(&data_producer);
+
+  QuicStringPiece crypto_frame_contents("hello world!");
+  QuicCryptoFrame crypto_frame(ENCRYPTION_NONE, kStreamOffset,
+                               crypto_frame_contents.length());
+  data_producer.SaveCryptoData(ENCRYPTION_NONE, kStreamOffset,
+                               crypto_frame_contents);
+
+  QuicFrames frames = {QuicFrame(&crypto_frame)};
+
+  // clang-format off
+  unsigned char packet[] = {
+    // type (short header, 4 byte packet number)
+    0x43,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // frame type (CRYPTO frame)
+    0x18,
+    // offset
+    kVarInt62EightBytes + 0x3A, 0x98, 0xFE, 0xDC,
+    0x32, 0x10, 0x76, 0x54,
+    // length
+    kVarInt62OneByte + 12,
+    // data
+    'h',  'e',  'l',  'l',
+    'o',  ' ',  'w',  'o',
+    'r',  'l',  'd',  '!',
+  };
+  // clang-format on
+
+  size_t packet_size = QUIC_ARRAYSIZE(packet);
+
+  std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      packet_size);
+}
+
+TEST_P(QuicFramerTest, CryptoFrame) {
+  if (framer_.transport_version() < QUIC_VERSION_99) {
+    // CRYPTO frames aren't supported prior to v46.
+    return;
+  }
+
+  // clang-format off
+  PacketFragments packet = {
+      // type (short header, 4 byte packet number)
+      {"",
+       {0x43}},
+      // connection_id
+      {"",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // packet number
+      {"",
+       {0x12, 0x34, 0x56, 0x78}},
+      // frame type (CRYPTO frame)
+      {"",
+       {0x18}},
+      // offset
+      {"",
+       {kVarInt62EightBytes + 0x3A, 0x98, 0xFE, 0xDC,
+        0x32, 0x10, 0x76, 0x54}},
+      // data length
+      {"Invalid data length.",
+       {kVarInt62OneByte + 12}},
+      // data
+      {"Unable to read frame data.",
+       {'h',  'e',  'l',  'l',
+        'o',  ' ',  'w',  'o',
+        'r',  'l',  'd',  '!'}},
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet));
+  EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_TRUE(CheckDecryption(
+      *encrypted, !kIncludeVersion, !kIncludeDiversificationNonce,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID));
+  ASSERT_EQ(1u, visitor_.crypto_frames_.size());
+  QuicCryptoFrame* frame = visitor_.crypto_frames_[0].get();
+  EXPECT_EQ(kStreamOffset, frame->offset);
+  EXPECT_EQ("hello world!", QuicString(frame->data_buffer, frame->data_length));
+
+  CheckFramingBoundaries(packet, QUIC_INVALID_FRAME_DATA);
+}
+
 TEST_P(QuicFramerTest, BuildVersionNegotiationPacket) {
   // clang-format off
   unsigned char packet[] = {
@@ -9457,7 +9571,7 @@ TEST_P(QuicFramerTest, StartsWithChlo) {
   iovec.iov_len = data.length();
   producer.SaveStreamData(
       QuicUtils::GetCryptoStreamId(framer_.transport_version()), &iovec, 1, 0,
-      0, data.length());
+      data.length());
   for (size_t offset = 0; offset < 5; ++offset) {
     if (offset == 0 || offset == 4) {
       EXPECT_TRUE(framer_.StartsWithChlo(

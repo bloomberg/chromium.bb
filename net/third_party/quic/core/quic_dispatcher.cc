@@ -92,6 +92,13 @@ class PacketCollector : public QuicPacketCreator::DelegateInterface,
     }
     return WRITE_FAILED;
   }
+  bool WriteCryptoData(EncryptionLevel level,
+                       QuicStreamOffset offset,
+                       QuicByteCount data_length,
+                       QuicDataWriter* writer) override {
+    QUIC_BUG << "PacketCollector::WriteCryptoData is unimplemented.";
+    return false;
+  }
 
   std::vector<std::unique_ptr<QuicEncryptedPacket>>* packets() {
     return &packets_;

@@ -26,6 +26,7 @@
 #include "net/third_party/quic/core/quic_config.h"
 #include "net/third_party/quic/core/quic_packet_generator.h"
 #include "net/third_party/quic/core/quic_pending_retransmission.h"
+#include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_client_stats.h"
@@ -348,10 +349,7 @@ QuicConnection::QuicConnection(
       processing_ack_frame_(false),
       supports_release_time_(false),
       release_time_into_future_(QuicTime::Delta::Zero()),
-      donot_retransmit_old_window_updates_(false),
-      no_version_negotiation_(supported_versions.size() == 1),
-      decrypt_packets_on_key_change_(
-          GetQuicReloadableFlag(quic_decrypt_packets_on_key_change)) {
+      no_version_negotiation_(supported_versions.size() == 1) {
   if (ack_mode_ == ACK_DECIMATION) {
     QUIC_RELOADABLE_FLAG_COUNT(quic_enable_ack_decimation);
   }
@@ -441,16 +439,24 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   if (config.HasClientSentConnectionOption(kACKD, perspective_)) {
     ack_mode_ = ACK_DECIMATION;
   }
-  if (!GetQuicReloadableFlag(quic_enable_ack_decimation) &&
+  if ((!GetQuicReloadableFlag(quic_enable_ack_decimation) ||
+       GetQuicReloadableFlag(quic_keep_ack_decimation_reordering)) &&
       config.HasClientSentConnectionOption(kAKD2, perspective_)) {
+    if (GetQuicReloadableFlag(quic_keep_ack_decimation_reordering)) {
+      QUIC_RELOADABLE_FLAG_COUNT_N(quic_keep_ack_decimation_reordering, 1, 2);
+    }
     ack_mode_ = ACK_DECIMATION_WITH_REORDERING;
   }
   if (config.HasClientSentConnectionOption(kAKD3, perspective_)) {
     ack_mode_ = ACK_DECIMATION;
     ack_decimation_delay_ = kShortAckDecimationDelay;
   }
-  if (!GetQuicReloadableFlag(quic_enable_ack_decimation) &&
+  if ((!GetQuicReloadableFlag(quic_enable_ack_decimation) ||
+       GetQuicReloadableFlag(quic_keep_ack_decimation_reordering)) &&
       config.HasClientSentConnectionOption(kAKD4, perspective_)) {
+    if (GetQuicReloadableFlag(quic_keep_ack_decimation_reordering)) {
+      QUIC_RELOADABLE_FLAG_COUNT_N(quic_keep_ack_decimation_reordering, 2, 2);
+    }
     ack_mode_ = ACK_DECIMATION_WITH_REORDERING;
     ack_decimation_delay_ = kShortAckDecimationDelay;
   }
@@ -1497,7 +1503,8 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
     // If there are new missing packets to report, send an ack immediately.
     if (received_packet_manager_.HasNewMissingPackets()) {
       if (ack_mode_ == ACK_DECIMATION_WITH_REORDERING) {
-        DCHECK(!GetQuicReloadableFlag(quic_enable_ack_decimation));
+        DCHECK(!GetQuicReloadableFlag(quic_enable_ack_decimation) ||
+               GetQuicReloadableFlag(quic_keep_ack_decimation_reordering));
         // Wait the minimum of an eighth min_rtt and the existing ack time.
         QuicTime ack_time =
             clock_->ApproximateNow() +
@@ -2321,6 +2328,14 @@ void QuicConnection::FlushPackets() {
   }
 
   WriteResult result = writer_->Flush();
+
+  if (HandleWriteBlocked()) {
+    DCHECK_EQ(WRITE_STATUS_BLOCKED, result.status)
+        << "Unexpected flush result:" << result;
+    QUIC_DLOG(INFO) << ENDPOINT << "Write blocked in FlushPackets.";
+    return;
+  }
+
   if (IsWriteError(result.status)) {
     OnWriteError(result.error_code);
   }
@@ -2503,8 +2518,7 @@ void QuicConnection::SendAck() {
   }
   consecutive_num_packets_with_no_retransmittable_frames_ = 0;
   if (packet_generator_.HasRetransmittableFrames() ||
-      (donot_retransmit_old_window_updates_ &&
-       visitor_->WillingAndAbleToWrite())) {
+      visitor_->WillingAndAbleToWrite()) {
     // There are pending retransmittable frames.
     return;
   }
@@ -2576,11 +2590,7 @@ void QuicConnection::SetDefaultEncryptionLevel(EncryptionLevel level) {
 void QuicConnection::SetDecrypter(EncryptionLevel level,
                                   std::unique_ptr<QuicDecrypter> decrypter) {
   framer_.SetDecrypter(level, std::move(decrypter));
-  if (!decrypt_packets_on_key_change_) {
-    return;
-  }
 
-  QUIC_RELOADABLE_FLAG_COUNT_N(quic_decrypt_packets_on_key_change, 1, 3);
   if (!undecryptable_packets_.empty() &&
       !process_undecryptable_packets_alarm_->IsSet()) {
     process_undecryptable_packets_alarm_->Set(clock_->ApproximateNow());
@@ -2592,11 +2602,7 @@ void QuicConnection::SetAlternativeDecrypter(
     std::unique_ptr<QuicDecrypter> decrypter,
     bool latch_once_used) {
   framer_.SetAlternativeDecrypter(level, std::move(decrypter), latch_once_used);
-  if (!decrypt_packets_on_key_change_) {
-    return;
-  }
 
-  QUIC_RELOADABLE_FLAG_COUNT_N(quic_decrypt_packets_on_key_change, 2, 3);
   if (!undecryptable_packets_.empty() &&
       !process_undecryptable_packets_alarm_->IsSet()) {
     process_undecryptable_packets_alarm_->Set(clock_->ApproximateNow());
@@ -2618,10 +2624,7 @@ void QuicConnection::QueueUndecryptablePacket(
 }
 
 void QuicConnection::MaybeProcessUndecryptablePackets() {
-  if (decrypt_packets_on_key_change_) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_decrypt_packets_on_key_change, 3, 3);
-    process_undecryptable_packets_alarm_->Cancel();
-  }
+  process_undecryptable_packets_alarm_->Cancel();
 
   if (undecryptable_packets_.empty() || encryption_level_ == ENCRYPTION_NONE) {
     return;

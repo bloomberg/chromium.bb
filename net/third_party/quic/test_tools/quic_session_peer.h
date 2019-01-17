@@ -29,6 +29,8 @@ class QuicSessionPeer {
 
   static QuicStreamId GetNextOutgoingBidirectionalStreamId(
       QuicSession* session);
+  static QuicStreamId GetNextOutgoingUnidirectionalStreamId(
+      QuicSession* session);
   static void SetNextOutgoingBidirectionalStreamId(QuicSession* session,
                                                    QuicStreamId id);
   static void SetMaxOpenIncomingStreams(QuicSession* session,

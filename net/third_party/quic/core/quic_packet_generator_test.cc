@@ -121,7 +121,7 @@ class TestPacketGenerator : public QuicPacketGenerator {
                                        bool fin) {
     // Save data before data is consumed.
     if (total_length > 0) {
-      producer_->SaveStreamData(id, iov, iov_count, 0, offset, total_length);
+      producer_->SaveStreamData(id, iov, iov_count, 0, total_length);
     }
     return QuicPacketGenerator::ConsumeDataFastPath(id, total_length, offset,
                                                     fin, 0);
@@ -135,7 +135,7 @@ class TestPacketGenerator : public QuicPacketGenerator {
                                StreamSendingState state) {
     // Save data before data is consumed.
     if (total_length > 0) {
-      producer_->SaveStreamData(id, iov, iov_count, 0, offset, total_length);
+      producer_->SaveStreamData(id, iov, iov_count, 0, total_length);
     }
     return QuicPacketGenerator::ConsumeData(id, total_length, offset, state);
   }

@@ -1335,7 +1335,6 @@ class QuicCryptoServerConfig::EvaluateClientHelloCallback
           requested_config,
       QuicReferenceCountedPointer<QuicCryptoServerConfig::Config>
           primary_config,
-      bool use_get_cert_chain,
       QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config,
       QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
           client_hello_state,
@@ -1345,7 +1344,6 @@ class QuicCryptoServerConfig::EvaluateClientHelloCallback
         version_(version),
         requested_config_(std::move(requested_config)),
         primary_config_(std::move(primary_config)),
-        use_get_cert_chain_(use_get_cert_chain),
         signed_config_(signed_config),
         client_hello_state_(std::move(client_hello_state)),
         done_cb_(std::move(done_cb)) {}
@@ -1360,8 +1358,8 @@ class QuicCryptoServerConfig::EvaluateClientHelloCallback
     }
     config_.EvaluateClientHelloAfterGetProof(
         server_ip_, version_, requested_config_, primary_config_,
-        signed_config_, std::move(details), use_get_cert_chain_, !ok,
-        client_hello_state_, std::move(done_cb_));
+        signed_config_, std::move(details), !ok, client_hello_state_,
+        std::move(done_cb_));
   }
 
  private:
@@ -1372,7 +1370,6 @@ class QuicCryptoServerConfig::EvaluateClientHelloCallback
       requested_config_;
   const QuicReferenceCountedPointer<QuicCryptoServerConfig::Config>
       primary_config_;
-  const bool use_get_cert_chain_;
   QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config_;
   QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
       client_hello_state_;
@@ -1453,28 +1450,6 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     // No valid source address token.
   }
 
-  const bool use_get_cert_chain =
-      GetQuicReloadableFlag(quic_use_get_cert_chain);
-  if (!use_get_cert_chain) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_use_get_cert_chain, 1, 2);
-    QuicString serialized_config = primary_config->serialized;
-    QuicString chlo_hash;
-    CryptoUtils::HashHandshakeMessage(client_hello, &chlo_hash,
-                                      Perspective::IS_SERVER);
-    // Make an async call to GetProof and setup the callback to trampoline
-    // back into EvaluateClientHelloAfterGetProof
-    auto cb = QuicMakeUnique<EvaluateClientHelloCallback>(
-        *this, server_address.host(), version, requested_config, primary_config,
-        use_get_cert_chain, signed_config, client_hello_state,
-        std::move(done_cb));
-    proof_source_->GetProof(server_address, QuicString(info->sni),
-                            serialized_config, version, chlo_hash,
-                            std::move(cb));
-    helper.DetachCallback();
-    return;
-  }
-
-  QUIC_RELOADABLE_FLAG_COUNT_N(quic_use_get_cert_chain, 2, 2);
   QuicReferenceCountedPointer<ProofSource::Chain> chain =
       proof_source_->GetCertChain(server_address, QuicString(info->sni));
   if (!chain) {
@@ -1484,7 +1459,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   }
   EvaluateClientHelloAfterGetProof(
       server_address.host(), version, requested_config, primary_config,
-      signed_config, /*proof_source_details=*/nullptr, use_get_cert_chain,
+      signed_config, /*proof_source_details=*/nullptr,
       /*get_proof_failed=*/false, client_hello_state, std::move(done_cb));
   helper.DetachCallback();
 }
@@ -1496,7 +1471,6 @@ void QuicCryptoServerConfig::EvaluateClientHelloAfterGetProof(
     QuicReferenceCountedPointer<Config> primary_config,
     QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config,
     std::unique_ptr<ProofSource::Details> proof_source_details,
-    bool use_get_cert_chain,
     bool get_proof_failed,
     QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
         client_hello_state,
@@ -1504,18 +1478,6 @@ void QuicCryptoServerConfig::EvaluateClientHelloAfterGetProof(
   ValidateClientHelloHelper helper(client_hello_state, &done_cb);
   const CryptoHandshakeMessage& client_hello = client_hello_state->client_hello;
   ClientHelloInfo* info = &(client_hello_state->info);
-
-  if (!use_get_cert_chain) {
-    if (get_proof_failed) {
-      info->reject_reasons.push_back(SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE);
-    }
-
-    if (signed_config->chain != nullptr &&
-        !ValidateExpectedLeafCertificate(client_hello,
-                                         signed_config->chain->certs)) {
-      info->reject_reasons.push_back(INVALID_EXPECTED_LEAF_CERTIFICATE);
-    }
-  }
 
   if (info->client_nonce.size() != kNonceSize) {
     info->reject_reasons.push_back(CLIENT_NONCE_INVALID_FAILURE);
