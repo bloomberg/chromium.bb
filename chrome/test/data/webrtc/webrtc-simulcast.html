@@ -140,7 +140,10 @@ function fail(e) {
 
 function initialize() {
   trace('Setting up for a new call.');
-  var configs = {iceServers:[]};
+  // TODO(https://crbug.com/921041): Add simulcast test coverage for both Plan B
+  // and Unified Plan as a layout test and remove this browser test which only
+  // currently only works in Plan B.
+  var configs = {iceServers:[], sdpSemantics:'plan-b'};
   var constraints = {'mandatory': {'DtlsSrtpKeyAgreement': false}};
   pcClient = new RTCPeerConnection(configs, constraints);
   trace('Created local peer connection object pcClient');

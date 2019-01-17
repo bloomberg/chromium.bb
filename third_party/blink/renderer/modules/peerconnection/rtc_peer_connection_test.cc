@@ -513,6 +513,11 @@ TEST_F(RTCPeerConnectionTest, GetTrackRemoveStreamAndGCAll) {
     EXPECT_TRUE(pc->GetTrack(track_component));
 
     RemoveStream(scope, pc, stream);
+    // In Unified Plan, transceivers will still reference the stream even after
+    // it is "removed". To make the GC tests work, clear the stream from tracks
+    // so that the stream does not keep tracks alive.
+    while (!stream->getTracks().IsEmpty())
+      stream->removeTrack(stream->getTracks()[0], scope.GetExceptionState());
   }
 
   // This will destroy |MediaStream|, |MediaStreamTrack| and its
@@ -545,6 +550,11 @@ TEST_F(RTCPeerConnectionTest,
     EXPECT_TRUE(pc->GetTrack(track_component.Get()));
 
     RemoveStream(scope, pc, stream);
+    // In Unified Plan, transceivers will still reference the stream even after
+    // it is "removed". To make the GC tests work, clear the stream from tracks
+    // so that the stream does not keep tracks alive.
+    while (!stream->getTracks().IsEmpty())
+      stream->removeTrack(stream->getTracks()[0], scope.GetExceptionState());
   }
 
   // This will destroy |MediaStream| and |MediaStreamTrack| (but not
@@ -552,43 +562,6 @@ TEST_F(RTCPeerConnectionTest,
   // connection.
   WebHeap::CollectAllGarbageForTesting();
   EXPECT_FALSE(pc->GetTrack(track_component.Get()));
-}
-
-TEST_F(RTCPeerConnectionTest, GetTrackRemoveStreamAndGCWithPersistentStream) {
-  V8TestingScope scope;
-  Persistent<RTCPeerConnection> pc = CreatePC(scope);
-  EXPECT_EQ("", GetExceptionMessage(scope));
-  ASSERT_TRUE(pc);
-
-  MediaStreamTrack* track =
-      CreateTrack(scope, MediaStreamSource::kTypeAudio, "audioTrack");
-  MediaStreamComponent* track_component = track->Component();
-  Persistent<MediaStream> stream;
-
-  {
-    HeapVector<Member<MediaStreamTrack>> tracks;
-    tracks.push_back(track);
-    stream = MediaStream::Create(scope.GetExecutionContext(), tracks);
-    ASSERT_TRUE(stream);
-
-    EXPECT_FALSE(pc->GetTrack(track_component));
-    AddStream(scope, pc, stream);
-    EXPECT_TRUE(pc->GetTrack(track_component));
-
-    RemoveStream(scope, pc, stream);
-  }
-
-  // With a persistent |MediaStream|, the |MediaStreamTrack| and
-  // |MediaStreamComponent| will not be destroyed and continue to be mapped by
-  // peer connection.
-  WebHeap::CollectAllGarbageForTesting();
-  EXPECT_TRUE(pc->GetTrack(track_component));
-
-  stream = nullptr;
-  // Now |MediaStream|, |MediaStreamTrack| and |MediaStreamComponent| will be
-  // destroyed and the mapping removed from the peer connection.
-  WebHeap::CollectAllGarbageForTesting();
-  EXPECT_FALSE(pc->GetTrack(track_component));
 }
 
 TEST_F(RTCPeerConnectionTest, CheckForComplexSdpWithSdpSemanticsPlanB) {

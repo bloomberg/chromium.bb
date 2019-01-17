@@ -10,7 +10,8 @@
 // that are not in the spec.
 
 promise_test(async t => {
-  let pc = new RTCPeerConnection();
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
   let stream = await navigator.mediaDevices.getUserMedia({audio:true});
   pc.addStream(stream);
   assert_array_equals(pc.getLocalStreams(), [ stream ]);
@@ -19,7 +20,8 @@ promise_test(async t => {
 }, 'addStream() adds to local streams and senders.');
 
 promise_test(async t => {
-  let pc = new RTCPeerConnection();
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
   let stream = await navigator.mediaDevices.getUserMedia({audio:true});
   let sender = pc.addTrack(stream.getTracks()[0], stream);
   assert_array_equals(pc.getLocalStreams(), [ stream ]);
@@ -27,7 +29,8 @@ promise_test(async t => {
 }, 'addTrack() adds to local streams and senders.');
 
 promise_test(async t => {
-  let pc = new RTCPeerConnection();
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
   let stream = await navigator.mediaDevices.getUserMedia({audio:true});
   pc.addStream(stream);
   try {
@@ -40,7 +43,8 @@ promise_test(async t => {
 }, 'addTrack() fails after addStream().');
 
 promise_test(async t => {
-  let pc = new RTCPeerConnection();
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
   let stream = await navigator.mediaDevices.getUserMedia({audio:true,
                                                           video:true});
   let sender = pc.addTrack(stream.getTracks()[0]);
@@ -56,7 +60,8 @@ promise_test(async t => {
 }, 'addStream() after addTrack() adds the remaining track.');
 
 promise_test(async t => {
-  let pc = new RTCPeerConnection();
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
   let stream = await navigator.mediaDevices.getUserMedia({audio:true,
                                                           video:true});
   let videoTrack = stream.getVideoTracks()[0];
@@ -73,7 +78,8 @@ promise_test(async t => {
 }, 'Adding a track to an addStream()-stream adds it to the PC.');
 
 promise_test(async t => {
-  let pc = new RTCPeerConnection();
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
   let stream = await navigator.mediaDevices.getUserMedia({audio:true,
                                                           video:true});
   let videoTrack = stream.getVideoTracks()[0];
@@ -88,7 +94,8 @@ promise_test(async t => {
 }, 'Removing a track from an addStream()-stream removes it from the PC.');
 
 promise_test(async t => {
-  let pc = new RTCPeerConnection();
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
   let stream = await navigator.mediaDevices.getUserMedia({audio:true,
                                                           video:true});
   let videoTrack = stream.getVideoTracks()[0];
@@ -100,7 +107,8 @@ promise_test(async t => {
 }, 'Adding a track to an addStream()-stream after the PC closed is safe.');
 
 promise_test(async t => {
-  let pc = new RTCPeerConnection();
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
   let stream = await navigator.mediaDevices.getUserMedia({audio:true,
                                                           video:true});
   let videoTrack = stream.getVideoTracks()[0];
@@ -111,7 +119,8 @@ promise_test(async t => {
 }, 'Removing a track from an addStream()-stream after the PC closed is safe.');
 
 promise_test(async t => {
-  let pc = new RTCPeerConnection();
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
   let stream = await navigator.mediaDevices.getUserMedia({audio:true,
                                                           video:true});
   let videoTrack = stream.getVideoTracks()[0];
@@ -129,7 +138,8 @@ promise_test(async t => {
 }, 'The PC stops observing the stream after removeStream().');
 
 promise_test(async t => {
-  let pc = new RTCPeerConnection();
+  const pc = new RTCPeerConnection({sdpSemantics:'plan-b'});
+  t.add_cleanup(() => pc.close());
   let stream = await navigator.mediaDevices.getUserMedia({audio:true});
   pc.addStream(stream);
   assert_array_equals(pc.getLocalStreams(), [ stream ]);
@@ -140,7 +150,8 @@ promise_test(async t => {
 }, 'removeStream() after addStream() removes from local streams and senders.');
 
 promise_test(async t => {
-  let pc = new RTCPeerConnection();
+  const pc = new RTCPeerConnection({sdpSemantics:'plan-b'});
+  t.add_cleanup(() => pc.close());
   let stream = await navigator.mediaDevices.getUserMedia({audio:true});
   pc.addTrack(stream.getTracks()[0], stream);
   assert_array_equals(pc.getLocalStreams(), [ stream ]);
@@ -151,7 +162,8 @@ promise_test(async t => {
 }, 'removeStream() after addTrack() removes from local streams and senders.');
 
 promise_test(async t => {
-  let pc = new RTCPeerConnection();
+  const pc = new RTCPeerConnection({sdpSemantics:'plan-b'});
+  t.add_cleanup(() => pc.close());
   let stream = await navigator.mediaDevices.getUserMedia({audio:true,
                                                           video:true});
   pc.addStream(stream);
@@ -167,7 +179,8 @@ promise_test(async t => {
 }, 'removeStream() after removeTrack() removes remaining tracks.');
 
 promise_test(async t => {
-  let pc = new RTCPeerConnection();
+  const pc = new RTCPeerConnection({sdpSemantics:'plan-b'});
+  t.add_cleanup(() => pc.close());
   let stream = await navigator.mediaDevices.getUserMedia({audio:true});
   pc.addStream(stream);
   assert_array_equals(pc.getLocalStreams(), [ stream ]);
@@ -178,7 +191,8 @@ promise_test(async t => {
 }, 'removeTrack() after addStream() removes from local streams and senders.');
 
 promise_test(async t => {
-  let pc = new RTCPeerConnection();
+  const pc = new RTCPeerConnection({sdpSemantics:'plan-b'});
+  t.add_cleanup(() => pc.close());
   let stream = await navigator.mediaDevices.getUserMedia({audio:true});
   let sender = pc.addTrack(stream.getTracks()[0], stream);
   assert_array_equals(pc.getLocalStreams(), [ stream ]);
@@ -189,14 +203,16 @@ promise_test(async t => {
 }, 'removeTrack() after addTrack() removes from local streams and senders.');
 
 promise_test(async t => {
-  let pc = new RTCPeerConnection();
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
   let stream = await navigator.mediaDevices.getUserMedia({audio:true});
   pc.addStream(stream);
   pc.createDTMFSender(stream.getTracks()[0]);
 }, 'createDTMFSender() with addStream()-track.');
 
 promise_test(async t => {
-  let pc = new RTCPeerConnection();
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
   let stream = await navigator.mediaDevices.getUserMedia({audio:true});
   let track = stream.getTracks()[0];
   pc.addTrack(track);

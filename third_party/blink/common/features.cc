@@ -74,7 +74,7 @@ const base::Feature kRTCGetDisplayMedia{"RTCGetDisplayMedia",
 // unless the default is overridden (by passing {sdpSemantics:'plan-b'} as the
 // argument).
 const base::Feature kRTCUnifiedPlanByDefault{"RTCUnifiedPlanByDefault",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Determines if the SDP attrbute extmap-allow-mixed should be offered by
 // default or not. The default value can be overridden by passing

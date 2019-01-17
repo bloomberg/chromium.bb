@@ -7,8 +7,9 @@
 </head>
 <body>
 <script>
-promise_test(function() {
-  let pc = new RTCPeerConnection();
+promise_test(async t => {
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
   return createStreams({audio:true}, 1)
     .then(function(streams) {
       for (let i = 0; i < streams.length; ++i) {
@@ -21,8 +22,9 @@ promise_test(function() {
     });
 }, 'getSenders() for a stream with a single audio track.');
 
-promise_test(function() {
-  let pc = new RTCPeerConnection();
+promise_test(async t => {
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
   return createStreams({video:true}, 1)
     .then(function(streams) {
       for (let i = 0; i < streams.length; ++i) {
@@ -35,8 +37,9 @@ promise_test(function() {
     });
 }, 'getSenders() for a stream with a single video track.');
 
-promise_test(function() {
-  let pc = new RTCPeerConnection();
+promise_test(async t => {
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
   return createStreams({audio:true, video:true}, 1)
     .then(function(streams) {
       for (let i = 0; i < streams.length; ++i) {
@@ -49,8 +52,9 @@ promise_test(function() {
     });
 }, 'getSenders() for a stream with an audio and video track.');
 
-promise_test(function() {
-  let pc = new RTCPeerConnection();
+promise_test(async t => {
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
   return createStreams({audio:true, video:true}, 2)
     .then(function(streams) {
       for (let i = 0; i < streams.length; ++i) {
@@ -63,8 +67,9 @@ promise_test(function() {
     });
 }, 'getSenders() for a multiple audio-video streams.');
 
-promise_test(function() {
-  let pc = new RTCPeerConnection();
+promise_test(async t => {
+  const pc = new RTCPeerConnection({sdpSemantics:'plan-b'});
+  t.add_cleanup(() => pc.close());
   let senders = new Set();
   return createStreams({audio:true, video:true}, 2)
     .then(function(streams) {
@@ -117,8 +122,9 @@ promise_test(function() {
     });
 }, 'getSenders() for streams being added and removed.');
 
-promise_test(function() {
-  let pc = new RTCPeerConnection();
+promise_test(async t => {
+  const pc = new RTCPeerConnection({sdpSemantics:'plan-b'});
+  t.add_cleanup(() => pc.close());
   return createStreams({audio:true, video:false}, 1)
     .then(function(streams) {
       let track = streams[0].getAudioTracks()[0];
