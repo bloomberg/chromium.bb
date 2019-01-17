@@ -307,10 +307,12 @@ foreach driver : [ 'etnaviv', 'intel', 'freedreno' ]
 	endif
 
 	if enabled
-		dep = dependency('libdrm_' + driver, required: required)
+		dep = dependency('libdrm_' + driver, required: false)
 		if dep.found()
 			simple_dmabuf_drm_deps += dep
 			config_h.set('HAVE_LIBDRM_' + driver.to_upper(), 1)
+		elif required
+			error('simple-dmabuf-drm is configured to use @0@ but it was not found. Or, you can remove @1@ from \'-Dsimple-dmabuf-drm\' list.'.format('libdrm_' + driver, driver))
 		endif
 	endif
 endforeach
