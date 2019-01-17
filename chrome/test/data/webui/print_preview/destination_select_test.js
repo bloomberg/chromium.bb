@@ -80,23 +80,19 @@ cr.define('destination_select_test', function() {
      */
     function assertPrinterDisplay(printerName) {
       const destinationSettings = page.$$('print-preview-destination-settings');
+      const destinationSelect = destinationSettings.$.destinationSelect;
 
-      return new Promise(resolve => {
-        Polymer.RenderStatus.afterNextRender(destinationSettings, () => {
-          Polymer.dom.flush();
-          // Check that the throbber is hidden and the dropdown is shown.
-          assertTrue(destinationSettings.$$('.throbber-container').hidden);
-          const destinationSelect = destinationSettings.$.destinationSelect;
-          assertFalse(destinationSelect.hidden);
+      Polymer.dom.flush();
+      return test_util.waitForRender(destinationSelect, () => {
+        // Check that the throbber is hidden and the dropdown is shown.
+        assertTrue(destinationSettings.$$('.throbber-container').hidden);
+        assertFalse(destinationSelect.hidden);
 
-          const options =
-              destinationSelect.shadowRoot.querySelectorAll('option');
-          const selectedOption =
-              options[destinationSelect.$$('.md-select').selectedIndex];
-          // Check that the destination matches the expected destination.
-          assertEquals(printerName, selectedOption.textContent.trim());
-          resolve();
-        });
+        const options = destinationSelect.shadowRoot.querySelectorAll('option');
+        const selectedOption =
+            options[destinationSelect.$$('.md-select').selectedIndex];
+        // Check that the destination matches the expected destination.
+        assertEquals(printerName, selectedOption.textContent.trim());
       });
     }
 

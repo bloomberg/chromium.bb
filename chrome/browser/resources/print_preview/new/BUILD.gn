@@ -108,6 +108,7 @@ js_library("destination_settings") {
 
 js_library("destination_select") {
   deps = [
+    ":select_behavior",
     "../data:destination",
     "../data:user_info",
     "//ui/webui/resources/js:i18n_behavior",

@@ -64,6 +64,18 @@ cr.define('destination_settings_test', function() {
       document.body.appendChild(destinationSettings);
     });
 
+    function waitForRender(element) {
+      return new Promise(resolve => {
+        if (Polymer.DomIf) {
+          Polymer.RenderStatus.beforeNextRender(element, resolve);
+        } else {
+          setTimeout(() => {
+            resolve();
+          });
+        }
+      });
+    }
+
     // Tests that the dropdown is enabled or disabled correctly based on
     // the state.
     test(assert(TestNames.ChangeDropdownState), function() {
@@ -84,36 +96,41 @@ cr.define('destination_settings_test', function() {
       assertTrue(dropdown.disabled);
 
       // Simulate loading a destination and setting state to ready. The dropdown
-      // is still enabled.
+      // is enabled.
       destinationSettings.destination = new print_preview.Destination(
           'FooDevice', print_preview.DestinationType.LOCAL, getLocalOrigin(),
           'FooName', true /* isRecent */,
           print_preview.DestinationConnectionStatus.ONLINE);
+      destinationSettings.recentDestinations = [
+        print_preview.makeRecentDestination(destinationSettings.destination),
+      ];
       destinationSettings.state = print_preview_new.State.READY;
       destinationSettings.disabled = false;
-      assertFalse(dropdown.disabled);
+      return waitForRender(dropdown).then(() => {
+        assertFalse(dropdown.disabled);
 
-      // Simulate setting a setting to an invalid value. Dropdown is disabled
-      // due to validation error on another control.
-      destinationSettings.state = print_preview_new.State.INVALID_TICKET;
-      destinationSettings.disabled = true;
-      assertTrue(dropdown.disabled);
+        // Simulate setting a setting to an invalid value. Dropdown is disabled
+        // due to validation error on another control.
+        destinationSettings.state = print_preview_new.State.INVALID_TICKET;
+        destinationSettings.disabled = true;
+        assertTrue(dropdown.disabled);
 
-      // Simulate the user fixing the validation error, and then selecting an
-      // invalid printer. Dropdown is enabled, so that the user can fix the
-      // error.
-      destinationSettings.state = print_preview_new.State.READY;
-      destinationSettings.disabled = false;
-      destinationSettings.state = print_preview_new.State.INVALID_PRINTER;
-      destinationSettings.disabled = true;
-      assertFalse(dropdown.disabled);
+        // Simulate the user fixing the validation error, and then selecting an
+        // invalid printer. Dropdown is enabled, so that the user can fix the
+        // error.
+        destinationSettings.state = print_preview_new.State.READY;
+        destinationSettings.disabled = false;
+        destinationSettings.state = print_preview_new.State.INVALID_PRINTER;
+        destinationSettings.disabled = true;
+        assertFalse(dropdown.disabled);
 
-      // Simulate the user having no printers.
-      destinationSettings.destination = null;
-      destinationSettings.state = print_preview_new.State.INVALID_PRINTER;
-      destinationSettings.disabled = true;
-      destinationSettings.noDestinationsFound = true;
-      assertTrue(dropdown.disabled);
+        // Simulate the user having no printers.
+        destinationSettings.destination = null;
+        destinationSettings.state = print_preview_new.State.INVALID_PRINTER;
+        destinationSettings.disabled = true;
+        destinationSettings.noDestinationsFound = true;
+        assertTrue(dropdown.disabled);
+      });
     });
 
     /** @return {!print_preview.DestinationOrigin} */
@@ -263,16 +280,16 @@ cr.define('destination_settings_test', function() {
           .then(() => {
             assertDropdownItems([
               makeLocalDestinationKey('ID1'),
-              'Save as PDF/local/',
               makeLocalDestinationKey('ID3'),
+              'Save as PDF/local/',
             ]);
 
             // If the user is signed in, Save to Drive should be displayed.
             signIn();
             assertDropdownItems([
               makeLocalDestinationKey('ID1'),
-              'Save as PDF/local/',
               makeLocalDestinationKey('ID3'),
+              'Save as PDF/local/',
               '__google__docs/cookies/foo@chromium.org',
             ]);
           });
@@ -307,9 +324,9 @@ cr.define('destination_settings_test', function() {
             signIn();
             assertDropdownItems([
               makeLocalDestinationKey('ID1'),
-              '__google__docs/cookies/foo@chromium.org',
               makeLocalDestinationKey('ID3'),
               'Save as PDF/local/',
+              '__google__docs/cookies/foo@chromium.org',
             ]);
           });
     });
@@ -336,8 +353,8 @@ cr.define('destination_settings_test', function() {
           .then(() => {
             assertDropdownItems([
               makeLocalDestinationKey('ID1'),
-              'Save as PDF/local/',
               makeLocalDestinationKey('ID3'),
+              'Save as PDF/local/',
             ]);
             // Most recent destination is selected by default.
             assertEquals('ID1', destinationSettings.destination.id);
@@ -381,9 +398,9 @@ cr.define('destination_settings_test', function() {
             signIn();
             assertDropdownItems([
               makeLocalDestinationKey('ID1'),
-              '__google__docs/cookies/foo@chromium.org',
               makeLocalDestinationKey('ID3'),
               'Save as PDF/local/',
+              '__google__docs/cookies/foo@chromium.org',
             ]);
             // Most recent destination is selected by default.
             assertEquals('ID1', destinationSettings.destination.id);
