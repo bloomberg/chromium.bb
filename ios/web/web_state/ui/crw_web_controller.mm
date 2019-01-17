@@ -36,6 +36,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "crypto/symmetric_key.h"
 #import "ios/net/http_response_headers_util.h"
@@ -352,6 +353,12 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
   // WebController.EmptyNavigationManagerCausedByStopLoading UMA metric which
   // helps with diagnosing a navigation related crash (crbug.com/565457).
   __weak WKNavigation* _stoppedWKNavigation;
+
+  // Used to poll for a SafeBrowsing warning being displayed. This is created in
+  // |decidePolicyForNavigationAction| and destroyed once any of the following
+  // happens: 1) a SafeBrowsing warning is detected; 2) any WKNavigationDelegate
+  // method is called; 3) |abortLoad| is called.
+  base::RepeatingTimer _safeBrowsingWarningDetectionTimer;
 
   // CRWWebUIManager object for loading WebUI pages.
   CRWWebUIManager* _webUIManager;
@@ -875,7 +882,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 // This method should be called on receiving WKNavigationDelegate callbacks. It
 // will log a metric if the callback occurs after the reciever has already been
-// closed.
+// closed. It also stops the SafeBrowsing warning detection timer, since after
+// this point it's too late for a SafeBrowsing warning to be displayed for the
+// navigation for which the timer was started.
 - (void)didReceiveWebViewNavigationDelegateCallback;
 
 // Sets up WebUI for URL.
@@ -2105,6 +2114,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [_pendingNavigationInfo setCancelled:YES];
   _certVerificationErrors->Clear();
   [self loadCancelled];
+  _safeBrowsingWarningDetectionTimer.Stop();
 }
 
 - (void)loadCancelled {
@@ -2936,6 +2946,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // item will be committed when the native content or webUI is displayed.
   if (!context->IsPlaceholderNavigation()) {
     self.navigationManagerImpl->CommitPendingItem();
+    // If a SafeBrowsing warning is currently displayed, the user has tapped
+    // the button on the warning page to proceed to the site, the site has
+    // started loading, and the warning is about to be removed. In this case,
+    // the transient item for the warning needs to be removed too.
+    if ([self isSafeBrowsingWarningDisplayedInWebView])
+      self.navigationManagerImpl->DiscardNonCommittedItems();
   }
 }
 
@@ -3202,6 +3218,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (_isBeingDestroyed) {
     UMA_HISTOGRAM_BOOLEAN("Renderer.WKWebViewCallbackAfterDestroy", true);
   }
+  _safeBrowsingWarningDetectionTimer.Stop();
 }
 
 - (BOOL)shouldRenderResponse:(WKNavigationResponse*)WKResponse {
@@ -4555,6 +4572,56 @@ registerLoadRequestForURL:(const GURL&)requestURL
       // is changed to YES.
       _webStateImpl->SetIsLoading(false);
     }
+  }
+
+  // Only try to detect a SafeBrowsing warning if one isn't already displayed,
+  // since the detection logic won't be able to distinguish between the current
+  // warning and a warning for the page that's about to be loaded. Also, since
+  // the purpose of running this logic is to ensure that the right URL is
+  // displayed in the omnibox, don't try to detect a SafeBrowsing warning for
+  // iframe navigations, because the omnibox already shows the correct main
+  // frame URL in that case.
+  if (allowLoad && isMainFrameNavigationAction &&
+      ![self isSafeBrowsingWarningDisplayedInWebView]) {
+    __weak CRWWebController* weakSelf = self;
+    const base::TimeDelta kDelayUntilSafeBrowsingWarningCheck =
+        base::TimeDelta::FromMilliseconds(20);
+    _safeBrowsingWarningDetectionTimer.Start(
+        FROM_HERE, kDelayUntilSafeBrowsingWarningCheck, base::BindRepeating(^{
+          __strong __typeof(weakSelf) strongSelf = weakSelf;
+          if ([strongSelf isSafeBrowsingWarningDisplayedInWebView]) {
+            // Extract state from an existing navigation context if one exists.
+            // Create a new context rather than just re-using the existing one,
+            // since the existing context will continue to be used if the user
+            // decides to proceed to the unsafe page. In that case, WebKit
+            // continues the navigation with the same WKNavigation* that's
+            // associated with the existing context.
+            web::NavigationContextImpl* existingContext = [strongSelf
+                contextForPendingMainFrameNavigationWithURL:requestURL];
+            bool hasUserGesture =
+                existingContext ? existingContext->HasUserGesture() : false;
+            bool isRendererInitiated =
+                existingContext ? existingContext->IsRendererInitiated() : true;
+            std::unique_ptr<web::NavigationContextImpl> context =
+                web::NavigationContextImpl::CreateNavigationContext(
+                    strongSelf->_webStateImpl, requestURL, hasUserGesture,
+                    transition, isRendererInitiated);
+            strongSelf.navigationManagerImpl->AddTransientItem(requestURL);
+            strongSelf.webStateImpl->OnNavigationStarted(context.get());
+            strongSelf.webStateImpl->OnNavigationFinished(context.get());
+            strongSelf->_safeBrowsingWarningDetectionTimer.Stop();
+            if (!existingContext) {
+              // If there's an existing context, observers will already be aware
+              // of a load in progress. Otherwise, observers need to be notified
+              // here, so that if the user decides to go back to the previous
+              // page (stopping the load), observers will be aware of a possible
+              // URL change and the URL displayed in the omnibox will get
+              // updated.
+              DCHECK(strongSelf->_webView.loading);
+              strongSelf->_webStateImpl->SetIsLoading(true);
+            }
+          }
+        }));
   }
 
   decisionHandler(allowLoad ? WKNavigationActionPolicyAllow
