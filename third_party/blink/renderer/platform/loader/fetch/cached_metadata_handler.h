@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_CACHED_METADATA_HANDLER_H_
 
 #include <stdint.h>
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-shared.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -33,6 +34,10 @@ class PLATFORM_EXPORT CachedMetadataSender {
   // aggressive. See V8CodeCache::GetCompileOptions() for an example.
   virtual bool IsServedFromCacheStorage() = 0;
 };
+
+// Returns whether we should use isolated code cache for a particular response.
+PLATFORM_EXPORT bool ShouldUseIsolatedCodeCache(mojom::RequestContextType,
+                                                const ResourceResponse&);
 
 // Handler class for caching operations.
 class CachedMetadataHandler
