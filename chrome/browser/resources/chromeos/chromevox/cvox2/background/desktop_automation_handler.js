@@ -72,7 +72,6 @@ DesktopAutomationHandler = function(node) {
   this.addListener_(EventType.BLUR, this.onBlur);
   this.addListener_(
       EventType.CHECKED_STATE_CHANGED, this.onCheckedStateChanged);
-  this.addListener_(EventType.CHILDREN_CHANGED, this.onChildrenChanged);
   this.addListener_(
       EventType.DOCUMENT_SELECTION_CHANGED, this.onDocumentSelectionChanged);
   this.addListener_(EventType.EXPANDED_CHANGED, this.onEventIfInRange);
@@ -188,14 +187,17 @@ DesktopAutomationHandler.prototype = {
     if (prev.contentEquals(cursors.Range.fromNode(evt.target)) ||
         evt.target.state.focused) {
       var prevTarget = this.lastAttributeTarget_;
-      this.lastAttributeTarget_ = evt.target;
-      var prevOutput = this.lastAttributeOutput_;
-      this.lastAttributeOutput_ = new Output().withRichSpeechAndBraille(
-          cursors.Range.fromNode(evt.target), prev, Output.EventType.NAVIGATE);
 
-      if (evt.target == prevTarget && prevOutput &&
-          prevOutput.equals(this.lastAttributeOutput_))
+      // Re-target to active descendant if it exists.
+      var prevOutput = this.lastAttributeOutput_;
+      this.lastAttributeTarget_ = evt.target.activeDescendant || evt.target;
+      this.lastAttributeOutput_ = new Output().withRichSpeechAndBraille(
+          cursors.Range.fromNode(this.lastAttributeTarget_), prev,
+          Output.EventType.NAVIGATE);
+      if (this.lastAttributeTarget_ == prevTarget && prevOutput &&
+          prevOutput.equals(this.lastAttributeOutput_)) {
         return;
+      }
 
       // If the target or an ancestor is controlled by another control, we may
       // want to delay the output.
@@ -230,8 +232,11 @@ DesktopAutomationHandler.prototype = {
   onAriaAttributeChanged: function(evt) {
     if (evt.target.state.editable)
       return;
-    // Only report attribute changes on menu list items if it is selected.
-    if (evt.target.role == RoleType.MENU_LIST_OPTION && !evt.target.selected)
+
+    // Only report attribute changes on some *Option roles if it is selected.
+    if ((evt.target.role == RoleType.MENU_LIST_OPTION ||
+         evt.target.role == RoleType.LIST_BOX_OPTION) &&
+        !evt.target.selected)
       return;
 
     this.onEventIfInRange(evt);
@@ -318,12 +323,11 @@ DesktopAutomationHandler.prototype = {
   onActiveDescendantChanged: function(evt) {
     if (!evt.target.activeDescendant || !evt.target.state.focused)
       return;
-    var prevRange = ChromeVoxState.instance.currentRange;
-    var range = cursors.Range.fromNode(evt.target.activeDescendant);
-    ChromeVoxState.instance.setCurrentRange(range);
-    new Output()
-        .withRichSpeechAndBraille(range, prevRange, Output.EventType.NAVIGATE)
-        .go();
+
+    // Various events might come before a key press (which forces flushed
+    // speech) and this handler. Force output to be at least category flushed.
+    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.CATEGORY_FLUSH);
+    this.onEventIfInRange(evt);
   },
 
   /**
@@ -359,27 +363,6 @@ DesktopAutomationHandler.prototype = {
     var event = new CustomAutomationEvent(
         EventType.CHECKED_STATE_CHANGED, evt.target, evt.eventFrom);
     this.onEventIfInRange(event);
-  },
-
-  /**
-   * @param {!AutomationEvent} evt
-   */
-  onChildrenChanged: function(evt) {
-    var curRange = ChromeVoxState.instance.currentRange;
-
-    // views::TextField blinks by making its cursor view alternate between
-    // visible and not visible. This results in a children changed event on its
-    // parent (the text field itself). In general, text field feedback should be
-    // given within text field specific events.
-    if (evt.target.role == RoleType.TEXT_FIELD)
-      return;
-
-    // Always refresh the braille contents.
-    if (curRange && curRange.equals(cursors.Range.fromNode(evt.target))) {
-      new Output()
-          .withBraille(curRange, curRange, Output.EventType.NAVIGATE)
-          .go();
-    }
   },
 
   /**
