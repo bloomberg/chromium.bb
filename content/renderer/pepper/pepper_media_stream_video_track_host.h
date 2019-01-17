@@ -19,9 +19,12 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace blink {
+class PlatformMediaStreamSource;
+}  // namespace blink
+
 namespace content {
 
-class MediaStreamSource;
 
 class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
                                         public MediaStreamVideoSink {
@@ -80,7 +83,7 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
       const ppapi::MediaStreamVideoTrackShared::Attributes& attributes);
 
   void InitBlinkTrack();
-  void OnTrackStarted(MediaStreamSource* source,
+  void OnTrackStarted(blink::PlatformMediaStreamSource* source,
                       blink::MediaStreamRequestResult result,
                       const blink::WebString& result_name);
 

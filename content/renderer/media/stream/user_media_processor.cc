@@ -76,10 +76,10 @@ void InitializeAudioTrackControls(const blink::WebUserMediaRequest& web_request,
           ? std::string()
           : constraints.Basic().media_stream_source.Exact()[0].Utf8();
   if (!source_constraint.empty()) {
-    if (source_constraint == kMediaStreamSourceTab) {
+    if (source_constraint == blink::kMediaStreamSourceTab) {
       *stream_type = blink::MEDIA_GUM_TAB_AUDIO_CAPTURE;
-    } else if (source_constraint == kMediaStreamSourceDesktop ||
-               source_constraint == kMediaStreamSourceSystem) {
+    } else if (source_constraint == blink::kMediaStreamSourceDesktop ||
+               source_constraint == blink::kMediaStreamSourceSystem) {
       *stream_type = blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE;
     }
   } else {
@@ -111,10 +111,10 @@ void InitializeVideoTrackControls(const blink::WebUserMediaRequest& web_request,
           ? std::string()
           : constraints.Basic().media_stream_source.Exact()[0].Utf8();
   if (!source_constraint.empty()) {
-    if (source_constraint == kMediaStreamSourceTab) {
+    if (source_constraint == blink::kMediaStreamSourceTab) {
       *stream_type = blink::MEDIA_GUM_TAB_VIDEO_CAPTURE;
-    } else if (source_constraint == kMediaStreamSourceDesktop ||
-               source_constraint == kMediaStreamSourceScreen) {
+    } else if (source_constraint == blink::kMediaStreamSourceDesktop ||
+               source_constraint == blink::kMediaStreamSourceScreen) {
       *stream_type = blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
     }
   } else {
@@ -130,12 +130,13 @@ bool IsSameDevice(const MediaStreamDevice& device,
 
 bool IsSameSource(const blink::WebMediaStreamSource& source,
                   const blink::WebMediaStreamSource& other_source) {
-  MediaStreamSource* const source_extra_data =
-      static_cast<MediaStreamSource*>(source.GetExtraData());
+  blink::PlatformMediaStreamSource* const source_extra_data =
+      static_cast<blink::PlatformMediaStreamSource*>(source.GetExtraData());
   const MediaStreamDevice& device = source_extra_data->device();
 
-  MediaStreamSource* const other_source_extra_data =
-      static_cast<MediaStreamSource*>(other_source.GetExtraData());
+  blink::PlatformMediaStreamSource* const other_source_extra_data =
+      static_cast<blink::PlatformMediaStreamSource*>(
+          other_source.GetExtraData());
   const MediaStreamDevice& other_device = other_source_extra_data->device();
 
   return IsSameDevice(device, other_device);
@@ -224,7 +225,7 @@ class UserMediaProcessor::RequestInfo
   void CallbackOnTracksStarted(const ResourcesReady& callback);
 
   // Called when a local audio source has finished (or failed) initializing.
-  void OnAudioSourceStarted(MediaStreamSource* source,
+  void OnAudioSourceStarted(blink::PlatformMediaStreamSource* source,
                             MediaStreamRequestResult result,
                             const blink::WebString& result_name);
 
@@ -300,7 +301,7 @@ class UserMediaProcessor::RequestInfo
   const url::Origin& security_origin() const { return security_origin_; }
 
  private:
-  void OnTrackStarted(MediaStreamSource* source,
+  void OnTrackStarted(blink::PlatformMediaStreamSource* source,
                       MediaStreamRequestResult result,
                       const blink::WebString& result_name);
 
@@ -323,7 +324,7 @@ class UserMediaProcessor::RequestInfo
   blink::WebString request_result_name_;
   // Sources used in this request.
   std::vector<blink::WebMediaStreamSource> sources_;
-  std::vector<MediaStreamSource*> sources_waiting_for_callback_;
+  std::vector<blink::PlatformMediaStreamSource*> sources_waiting_for_callback_;
   std::map<std::string, media::VideoCaptureFormats> video_formats_map_;
   MediaStreamDevices audio_devices_;
   MediaStreamDevices video_devices_;
@@ -387,7 +388,7 @@ void UserMediaProcessor::RequestInfo::CallbackOnTracksStarted(
 }
 
 void UserMediaProcessor::RequestInfo::OnTrackStarted(
-    MediaStreamSource* source,
+    blink::PlatformMediaStreamSource* source,
     MediaStreamRequestResult result,
     const blink::WebString& result_name) {
   DVLOG(1) << "OnTrackStarted result " << result;
@@ -413,7 +414,7 @@ void UserMediaProcessor::RequestInfo::CheckAllTracksStarted() {
 }
 
 void UserMediaProcessor::RequestInfo::OnAudioSourceStarted(
-    MediaStreamSource* source,
+    blink::PlatformMediaStreamSource* source,
     MediaStreamRequestResult result,
     const blink::WebString& result_name) {
   // Check if we're waiting to be notified of this source.  If not, then we'll
@@ -508,8 +509,8 @@ void UserMediaProcessor::SelectAudioDeviceSettings(
                        return web_source.Id().Utf8() == device->device_id;
                      });
     if (it != local_sources_.end()) {
-      MediaStreamSource* const source =
-          static_cast<MediaStreamSource*>(it->GetExtraData());
+      blink::PlatformMediaStreamSource* const source =
+          static_cast<blink::PlatformMediaStreamSource*>(it->GetExtraData());
       if (source->device().type == blink::MEDIA_DEVICE_AUDIO_CAPTURE)
         audio_source = static_cast<MediaStreamAudioSource*>(source);
     }
@@ -799,7 +800,7 @@ void UserMediaProcessor::OnStreamGeneratedForCancelledRequest(
 void UserMediaProcessor::OnAudioSourceStartedOnAudioThread(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     base::WeakPtr<UserMediaProcessor> weak_ptr,
-    MediaStreamSource* source,
+    blink::PlatformMediaStreamSource* source,
     MediaStreamRequestResult result,
     const blink::WebString& result_name) {
   task_runner->PostTask(
@@ -808,15 +809,15 @@ void UserMediaProcessor::OnAudioSourceStartedOnAudioThread(
 }
 
 void UserMediaProcessor::OnAudioSourceStarted(
-    MediaStreamSource* source,
+    blink::PlatformMediaStreamSource* source,
     MediaStreamRequestResult result,
     const blink::WebString& result_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   for (auto it = pending_local_sources_.begin();
        it != pending_local_sources_.end(); ++it) {
-    MediaStreamSource* const source_extra_data =
-        static_cast<MediaStreamSource*>((*it).GetExtraData());
+    blink::PlatformMediaStreamSource* const source_extra_data =
+        static_cast<blink::PlatformMediaStreamSource*>((*it).GetExtraData());
     if (source_extra_data != source)
       continue;
     if (result == blink::MEDIA_DEVICE_OK)
@@ -829,7 +830,7 @@ void UserMediaProcessor::OnAudioSourceStarted(
 }
 
 void UserMediaProcessor::NotifyCurrentRequestInfoOfAudioSourceStarted(
-    MediaStreamSource* source,
+    blink::PlatformMediaStreamSource* source,
     MediaStreamRequestResult result,
     const blink::WebString& result_name) {
   // The only request possibly being processed is |current_request_info_|.
@@ -900,8 +901,9 @@ void UserMediaProcessor::OnDeviceChanged(const MediaStreamDevice& old_device,
     return;
   }
 
-  MediaStreamSource* const source_impl =
-      static_cast<MediaStreamSource*>(source_ptr->GetExtraData());
+  blink::PlatformMediaStreamSource* const source_impl =
+      static_cast<blink::PlatformMediaStreamSource*>(
+          source_ptr->GetExtraData());
   source_impl->ChangeSource(new_device);
 }
 
@@ -950,9 +952,10 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
   // See OnAudioSourceStarted for more details.
   pending_local_sources_.push_back(source);
 
-  MediaStreamSource::ConstraintsCallback source_ready = base::BindRepeating(
-      &UserMediaProcessor::OnAudioSourceStartedOnAudioThread, task_runner_,
-      weak_factory_.GetWeakPtr());
+  blink::PlatformMediaStreamSource::ConstraintsCallback source_ready =
+      base::BindRepeating(
+          &UserMediaProcessor::OnAudioSourceStartedOnAudioThread, task_runner_,
+          weak_factory_.GetWeakPtr());
 
   MediaStreamAudioSource* const audio_source =
       CreateAudioSource(device, std::move(source_ready));
@@ -989,7 +992,7 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
 
 MediaStreamAudioSource* UserMediaProcessor::CreateAudioSource(
     const MediaStreamDevice& device,
-    const MediaStreamSource::ConstraintsCallback& source_ready) {
+    const blink::PlatformMediaStreamSource::ConstraintsCallback& source_ready) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(current_request_info_);
 
@@ -1018,7 +1021,8 @@ MediaStreamAudioSource* UserMediaProcessor::CreateAudioSource(
 
 MediaStreamVideoSource* UserMediaProcessor::CreateVideoSource(
     const MediaStreamDevice& device,
-    const MediaStreamSource::SourceStoppedCallback& stop_callback) {
+    const blink::PlatformMediaStreamSource::SourceStoppedCallback&
+        stop_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(current_request_info_);
   DCHECK(current_request_info_->video_capture_settings().HasValue());
@@ -1258,8 +1262,9 @@ const blink::WebMediaStreamSource* UserMediaProcessor::FindLocalSource(
     const LocalStreamSources& sources,
     const MediaStreamDevice& device) const {
   for (const auto& local_source : sources) {
-    MediaStreamSource* const source =
-        static_cast<MediaStreamSource*>(local_source.GetExtraData());
+    blink::PlatformMediaStreamSource* const source =
+        static_cast<blink::PlatformMediaStreamSource*>(
+            local_source.GetExtraData());
     const MediaStreamDevice& active_device = source->device();
     if (IsSameDevice(active_device, device))
       return &local_source;
@@ -1310,8 +1315,8 @@ bool UserMediaProcessor::RemoveLocalSource(
   for (auto device_it = pending_local_sources_.begin();
        device_it != pending_local_sources_.end(); ++device_it) {
     if (IsSameSource(*device_it, source)) {
-      MediaStreamSource* const source_extra_data =
-          static_cast<MediaStreamSource*>(source.GetExtraData());
+      blink::PlatformMediaStreamSource* const source_extra_data =
+          static_cast<blink::PlatformMediaStreamSource*>(source.GetExtraData());
       const bool is_audio_source =
           source.GetType() == blink::WebMediaStreamSource::kTypeAudio;
       NotifyCurrentRequestInfoOfAudioSourceStarted(
@@ -1393,8 +1398,8 @@ void UserMediaProcessor::OnLocalSourceStopped(
   const bool some_source_removed = RemoveLocalSource(source);
   CHECK(some_source_removed);
 
-  MediaStreamSource* source_impl =
-      static_cast<MediaStreamSource*>(source.GetExtraData());
+  blink::PlatformMediaStreamSource* source_impl =
+      static_cast<blink::PlatformMediaStreamSource*>(source.GetExtraData());
   media_stream_device_observer_->RemoveStreamDevice(source_impl->device());
   GetMediaStreamDispatcherHost()->StopStreamDevice(
       source_impl->device().id, source_impl->device().session_id);
@@ -1403,8 +1408,8 @@ void UserMediaProcessor::OnLocalSourceStopped(
 void UserMediaProcessor::StopLocalSource(
     const blink::WebMediaStreamSource& source,
     bool notify_dispatcher) {
-  MediaStreamSource* source_impl =
-      static_cast<MediaStreamSource*>(source.GetExtraData());
+  blink::PlatformMediaStreamSource* source_impl =
+      static_cast<blink::PlatformMediaStreamSource*>(source.GetExtraData());
   DVLOG(1) << "UserMediaProcessor::StopLocalSource("
            << "{device_id = " << source_impl->device().id << "})";
 

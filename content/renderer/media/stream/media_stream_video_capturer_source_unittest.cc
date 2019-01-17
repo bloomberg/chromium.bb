@@ -172,7 +172,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
   }
 
  protected:
-  void OnConstraintsApplied(MediaStreamSource* source,
+  void OnConstraintsApplied(blink::PlatformMediaStreamSource* source,
                             blink::MediaStreamRequestResult result,
                             const blink::WebString& result_name) {}
 
@@ -216,7 +216,8 @@ TEST_F(MediaStreamVideoCapturerSourceTest, StartAndStop) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded,
             webkit_source_.GetReadyState());
-  // Verify that MediaStreamSource::SourceStoppedCallback has been triggered.
+  // Verify that blink::PlatformMediaStreamSource::SourceStoppedCallback has
+  // been triggered.
   EXPECT_TRUE(source_stopped_);
 }
 
@@ -278,7 +279,8 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Restart) {
   base::RunLoop().RunUntilIdle();
   // When the source has stopped for restart, the source is not considered
   // stopped, even if the underlying delegate is not running anymore.
-  // MediaStreamSource::SourceStoppedCallback should not be triggered.
+  // blink::PlatformMediaStreamSource::SourceStoppedCallback should not be
+  // triggered.
   EXPECT_EQ(webkit_source_.GetReadyState(),
             blink::WebMediaStreamSource::kReadyStateLive);
   EXPECT_FALSE(source_stopped_);
@@ -332,7 +334,8 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Restart) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded,
             webkit_source_.GetReadyState());
-  // Verify that MediaStreamSource::SourceStoppedCallback has been triggered.
+  // Verify that blink::PlatformMediaStreamSource::SourceStoppedCallback has
+  // been triggered.
   EXPECT_TRUE(source_stopped_);
   EXPECT_FALSE(source_->IsRunning());
 }
@@ -402,7 +405,8 @@ TEST_F(MediaStreamVideoCapturerSourceTest, ChangeSource) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateEnded,
             webkit_source_.GetReadyState());
-  // Verify that MediaStreamSource::SourceStoppedCallback has been triggered.
+  // Verify that blink::PlatformMediaStreamSource::SourceStoppedCallback has
+  // been triggered.
   EXPECT_TRUE(source_stopped_);
 }
 

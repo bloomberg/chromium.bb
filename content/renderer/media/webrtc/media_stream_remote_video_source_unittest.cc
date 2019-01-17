@@ -138,7 +138,7 @@ class MediaStreamRemoteVideoSourceTest
   }
 
  private:
-  void OnTrackStarted(MediaStreamSource* source,
+  void OnTrackStarted(blink::PlatformMediaStreamSource* source,
                       blink::MediaStreamRequestResult result,
                       const blink::WebString& result_name) {
     ASSERT_EQ(source, remote_source_);

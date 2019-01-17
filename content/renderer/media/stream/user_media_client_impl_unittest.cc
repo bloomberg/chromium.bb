@@ -343,7 +343,8 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   // UserMediaProcessor overrides.
   MediaStreamVideoSource* CreateVideoSource(
       const blink::MediaStreamDevice& device,
-      const MediaStreamSource::SourceStoppedCallback& stop_callback) override {
+      const blink::PlatformMediaStreamSource::SourceStoppedCallback&
+          stop_callback) override {
     video_source_ =
         new MockMediaStreamVideoCapturerSource(device, stop_callback, factory_);
     return video_source_;
@@ -351,7 +352,8 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
 
   MediaStreamAudioSource* CreateAudioSource(
       const blink::MediaStreamDevice& device,
-      const MediaStreamSource::ConstraintsCallback& source_ready) override {
+      const blink::PlatformMediaStreamSource::ConstraintsCallback& source_ready)
+      override {
     MediaStreamAudioSource* source;
     if (create_source_that_fails_) {
       class FailedAtLifeAudioSource : public MediaStreamAudioSource {
@@ -401,8 +403,8 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
 
  private:
   static void SignalSourceReady(
-      const MediaStreamSource::ConstraintsCallback& source_ready,
-      MediaStreamSource* source) {
+      const blink::PlatformMediaStreamSource::ConstraintsCallback& source_ready,
+      blink::PlatformMediaStreamSource* source) {
     source_ready.Run(source, blink::MEDIA_DEVICE_OK, "");
   }
 
@@ -926,7 +928,7 @@ TEST_F(UserMediaClientImplTest, DefaultConstraintsPropagate) {
 TEST_F(UserMediaClientImplTest, DefaultTabCapturePropagate) {
   MockConstraintFactory factory;
   factory.basic().media_stream_source.SetExact(
-      blink::WebString::FromASCII(kMediaStreamSourceTab));
+      blink::WebString::FromASCII(blink::kMediaStreamSourceTab));
   blink::WebMediaConstraints audio_constraints =
       factory.CreateWebMediaConstraints();
   blink::WebMediaConstraints video_constraints =
@@ -984,7 +986,7 @@ TEST_F(UserMediaClientImplTest, DefaultTabCapturePropagate) {
 TEST_F(UserMediaClientImplTest, DefaultDesktopCapturePropagate) {
   MockConstraintFactory factory;
   factory.basic().media_stream_source.SetExact(
-      blink::WebString::FromASCII(kMediaStreamSourceDesktop));
+      blink::WebString::FromASCII(blink::kMediaStreamSourceDesktop));
   blink::WebMediaConstraints audio_constraints =
       factory.CreateWebMediaConstraints();
   blink::WebMediaConstraints video_constraints =
@@ -1375,7 +1377,7 @@ TEST_F(UserMediaClientImplTest, IsCapturing) {
 TEST_F(UserMediaClientImplTest, DesktopCaptureChangeSource) {
   MockConstraintFactory factory;
   factory.basic().media_stream_source.SetExact(
-      blink::WebString::FromASCII(kMediaStreamSourceDesktop));
+      blink::WebString::FromASCII(blink::kMediaStreamSourceDesktop));
   blink::WebMediaConstraints audio_constraints =
       factory.CreateWebMediaConstraints();
   blink::WebMediaConstraints video_constraints =
@@ -1413,7 +1415,7 @@ TEST_F(UserMediaClientImplTest, DesktopCaptureChangeSource) {
 TEST_F(UserMediaClientImplTest, DesktopCaptureChangeSourceWithoutAudio) {
   MockConstraintFactory factory;
   factory.basic().media_stream_source.SetExact(
-      blink::WebString::FromASCII(kMediaStreamSourceDesktop));
+      blink::WebString::FromASCII(blink::kMediaStreamSourceDesktop));
   blink::WebMediaConstraints audio_constraints =
       factory.CreateWebMediaConstraints();
   blink::WebMediaConstraints video_constraints =

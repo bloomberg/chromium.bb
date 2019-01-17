@@ -473,7 +473,8 @@ void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
   media::VideoCaptureFormats preferred_formats = source->GetPreferredFormats();
   std::unique_ptr<MediaStreamVideoSource> media_stream_source(
       new MediaStreamVideoCapturerSource(
-          MediaStreamSource::SourceStoppedCallback(), std::move(source)));
+          blink::PlatformMediaStreamSource::SourceStoppedCallback(),
+          std::move(source)));
   blink::WebMediaStreamSource webkit_source;
   webkit_source.Initialize(track_id, blink::WebMediaStreamSource::kTypeVideo,
                            track_id, false);

@@ -26,7 +26,6 @@
 #include "content/renderer/media/audio/mock_audio_device_factory.h"
 #include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "content/renderer/media/stream/media_stream_audio_track.h"
-#include "content/renderer/media/stream/media_stream_source.h"
 #include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/stream/mock_constraint_factory.h"
 #include "content/renderer/media/stream/mock_media_stream_video_source.h"
@@ -39,6 +38,7 @@
 #include "content/renderer/media/webrtc/rtc_stats.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/mediastream/platform_media_stream_source.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
@@ -389,7 +389,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
       MediaStreamVideoTrack::GetVideoTrack(track)->Stop();
   }
 
-  static void OnAudioSourceStarted(MediaStreamSource* source,
+  static void OnAudioSourceStarted(blink::PlatformMediaStreamSource* source,
                                    blink::MediaStreamRequestResult result,
                                    const blink::WebString& result_name) {}
 

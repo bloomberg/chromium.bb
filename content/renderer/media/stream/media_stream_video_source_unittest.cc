@@ -113,7 +113,8 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
     EXPECT_EQ(0, NumberOfSuccessConstraintsCallbacks());
     mock_source_->StartMockedSource();
     // Once the source has started successfully we expect that the
-    // ConstraintsCallback in MediaStreamSource::AddTrack completes.
+    // ConstraintsCallback in blink::PlatformMediaStreamSource::AddTrack
+    // completes.
     EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
     return track;
   }
@@ -234,7 +235,7 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
   }
 
  private:
-  void OnConstraintsApplied(MediaStreamSource* source,
+  void OnConstraintsApplied(blink::PlatformMediaStreamSource* source,
                             blink::MediaStreamRequestResult result,
                             const blink::WebString& result_name) {
     ASSERT_EQ(source, web_source().GetExtraData());
