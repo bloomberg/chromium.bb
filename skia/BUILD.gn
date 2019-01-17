@@ -51,8 +51,7 @@ config("skia_config") {
     configs = [ "//third_party/vulkan:vulkan_config" ]
   }
 
-  defines = skia_for_chromium_defines
-  defines += [
+  defines = [
     "SK_HAS_PNG_LIBRARY",
     "SK_HAS_WEBP_LIBRARY",
   ]
