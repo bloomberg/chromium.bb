@@ -1,8 +1,8 @@
 import {
+  IParamsSpec,
+  paramsEqual,
   ParamSpecIterable,
   ParamSpecIterator,
-  paramsEqual,
-  IParamsSpec,
 } from "./index.js";
 
 export function pexclude(params: ParamSpecIterable, exclude: ParamSpecIterable) {

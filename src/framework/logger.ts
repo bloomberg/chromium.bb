@@ -84,7 +84,7 @@ export class CaseRecorder {
     if (msg) {
       m += ": " + msg;
     }
-    m += " " + getStackTrace();
+    m += " " + getStackTrace(new Error());
     this.log(m);
   }
 
@@ -94,7 +94,15 @@ export class CaseRecorder {
     if (msg) {
       m += ": " + msg;
     }
-    m += " " + getStackTrace();
+    m += " " + getStackTrace(new Error());
+    this.log(m);
+  }
+
+  public threw(e: Error) {
+    this.failed = true;
+    let m = "EXCEPTION";
+    console.log(e);
+    m += " " + getStackTrace(e);
     this.log(m);
   }
 }

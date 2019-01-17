@@ -7,15 +7,6 @@ import {
 export function pcombine(params: ParamSpecIterable[]) { return new PCombine(params); }
 
 class PCombine implements ParamSpecIterable {
-  private params: ParamSpecIterable[];
-
-  constructor(params: ParamSpecIterable[]) {
-    this.params = params;
-  }
-
-  public [Symbol.iterator](): ParamSpecIterator {
-    return PCombine.cartesian(this.params);
-  }
 
   private static merge(a: IParamsSpec, b: IParamsSpec): IParamsSpec {
     for (const key of Object.keys(a)) {
@@ -40,5 +31,14 @@ class PCombine implements ParamSpecIterable {
         yield PCombine.merge(a, b);
       }
     }
+  }
+  private params: ParamSpecIterable[];
+
+  constructor(params: ParamSpecIterable[]) {
+    this.params = params;
+  }
+
+  public [Symbol.iterator](): ParamSpecIterator {
+    return PCombine.cartesian(this.params);
   }
 }

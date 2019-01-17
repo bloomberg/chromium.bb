@@ -4,6 +4,9 @@ Unit tests for parameterization system.
 
 import {
   DefaultFixture,
+  IParamsSpec,
+  objectEquals,
+  ParamSpecIterable,
   pcombine,
   pexclude,
   pfilter,
@@ -13,61 +16,54 @@ import {
 
 export const group = new TestGroup();
 
-// TODO: these tests should just test the Array.from() value of various params
-// generators.
-
-function print(this: DefaultFixture) {
-  this.log(JSON.stringify(this.params));
+class ParamsTest extends DefaultFixture {
+  public test(act: ParamSpecIterable, exp: IParamsSpec[]) {
+    this.expect(objectEquals(Array.from(act), exp));
+  }
 }
 
-for (const params of [ {hello: 1}, {hello: 2} ]) {
-  group.testp("literal", params, print);
-}
+group.testf("options", ParamsTest, function() {
+  this.test(
+    poptions("hello", [1, 2, 3]),
+    [{ hello: 1 }, { hello: 2 }, { hello: 3 }]);
+});
 
-for (const params of poptions("hello", [1, 2, 3])) {
-  group.testp("options", params, print);
-}
+group.testf("combine/none", ParamsTest, function() {
+  this.test(
+    pcombine([]),
+    []);
+});
 
-for (const params of pcombine([])) {
-  group.testp("combine/none", params, function() {
-    this.fail("this test shouldn't run");
-  });
-}
+group.testf("combine/zeroes_and_ones", ParamsTest, function() {
+  this.test(pcombine([[], []]), []);
+  this.test(pcombine([[], [{}]]), []);
+  this.test(pcombine([[{}], []]), []);
+  this.test(pcombine([[{}], [{}]]), [{}]);
+});
 
-for (const params of pcombine([[{}], [{}]])) {
-  group.testp("combine/unit_unit", params, print);
-}
+group.testf("combine/mixed", ParamsTest, function() {
+  this.test(
+    pcombine([ poptions("x", [1, 2]), poptions("y", ["a", "b"]), [{p: 4}, {q: 5}], [{}] ]),
+    [
+      { p: 4, x: 1, y: "a" }, { q: 5, x: 1, y: "a" },
+      { p: 4, x: 1, y: "b" }, { q: 5, x: 1, y: "b" },
+      { p: 4, x: 2, y: "a" }, { q: 5, x: 2, y: "a" },
+      { p: 4, x: 2, y: "b" }, { q: 5, x: 2, y: "b" },
+    ]);
+});
 
-for (const params of pcombine([ poptions("x", [1, 2]), poptions("y", ["a", "b"]), [{}] ])) {
-  group.testp("combine/lists", params, print);
-}
+group.testf("filter", ParamsTest, function() {
+  this.test(
+    pfilter(
+      [{ a: true, x: 1 }, { a: false, y: 2 }],
+      (p) => p.a),
+    [{ a: true, x: 1 }]);
+});
 
-for (const params of pcombine([
-    [{x: 1, y: 2}, {x: 10, y: 20}],
-    [{z: "z"}, {w: "w"}],
-  ])) {
-  group.testp("combine/arrays", params, print);
-}
-
-for (const params of pcombine([
-    poptions("x", [1, 2]),
-    [{z: "z"}, {w: "w"}],
-  ])) {
-  group.testp("combine/mixed", params, print);
-}
-
-for (const params of pfilter(
-    [{a: true, x: 1}, {a: false, y: 2}],
-    (p) => p.a)) {
-  group.testp("filter", params, function() {
-    this.expect(this.params.a);
-  });
-}
-
-for (const params of pexclude(
-    [{ a: true, x: 1 }, { a: false, y: 2 }],
-    [{ a: true }, { a: false, y: 2 }])) {
-  group.testp("exclude", params, function() {
-    this.expect(this.params.a);
-  });
-}
+group.testf("exclude", ParamsTest, function() {
+  this.test(
+    pexclude(
+      [{ a: true, x: 1 }, { a: false, y: 2 }],
+      [{ a: true }, { a: false, y: 2 }]),
+    [{ a: true, x: 1 }]);
+});

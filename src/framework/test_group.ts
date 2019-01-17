@@ -90,7 +90,11 @@ export class TestGroup {
       const [res, rec] = log.record(t.name, t.params);
       yield {name: t.name, params: t.params, run: async () => {
         rec.start();
-        await t.run(rec);
+        try {
+          await t.run(rec);
+        } catch (e) {
+          rec.threw(e);
+        }
         rec.finish();
         return res;
       }};
