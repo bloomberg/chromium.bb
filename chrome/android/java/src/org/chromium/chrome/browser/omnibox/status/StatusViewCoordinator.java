@@ -139,7 +139,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
     private void updateVerboseStatusVisibility() {
         // TODO(ender): turn around logic for ToolbarDataProvider to offer
         // notifications rather than polling for these attributes.
-        mMediator.setVerboseStatusTextAllowed(mToolbarDataProvider.shouldShowVerboseStatus());
+        mMediator.setPageSecurityLevel(mToolbarDataProvider.getSecurityLevel());
         mMediator.setPageIsOffline(mToolbarDataProvider.isOfflinePage());
         mMediator.setPageIsPreview(mToolbarDataProvider.isPreview());
     }
