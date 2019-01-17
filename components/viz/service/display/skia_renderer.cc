@@ -215,6 +215,8 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
       lock_set_for_external_use_.emplace(
           resource_provider,
           base::BindRepeating(&SkiaOutputSurface::MakePromiseSkImage,
+                              base::Unretained(skia_output_surface_)),
+          base::BindRepeating(&SkiaOutputSurface::DestroySkImage,
                               base::Unretained(skia_output_surface_)));
       break;
     }

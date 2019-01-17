@@ -643,10 +643,20 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   for (ResourceId local_id : unused) {
     auto it = resources_.find(local_id);
     CHECK(it != resources_.end());
-
-    resource_sk_image_.erase(local_id);
-
     ChildResource& resource = it->second;
+
+    // TODO(https://crbug.com/922592): Batch deletion for reduced overhead.
+    auto sk_image_it = resource_sk_images_.find(local_id);
+    if (sk_image_it != resource_sk_images_.end()) {
+      ResourceSkImage found(std::move(sk_image_it->second));
+      resource_sk_images_.erase(sk_image_it);
+
+      if (found.destroy_callback.has_value()) {
+        gpu::SyncToken token =
+            found.destroy_callback->Run(std::move(found.image));
+        resource.UpdateSyncToken(token);
+      }
+    }
 
     ResourceId child_id = resource.transferable.id;
     DCHECK(child_info->child_to_parent_map.count(child_id));
@@ -842,9 +852,9 @@ DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
   DCHECK(resource);
 
   // Use cached SkImage if possible.
-  auto it = resource_provider_->resource_sk_image_.find(resource_id);
-  if (it != resource_provider_->resource_sk_image_.end()) {
-    sk_image_ = it->second;
+  auto it = resource_provider_->resource_sk_images_.find(resource_id);
+  if (it != resource_provider_->resource_sk_images_.end()) {
+    sk_image_ = it->second.image;
     return;
   }
 
@@ -863,7 +873,7 @@ DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
         ResourceFormatToClosestSkColorType(!resource_provider->IsSoftware(),
                                            resource->transferable.format),
         kPremul_SkAlphaType, nullptr);
-    resource_provider_->resource_sk_image_[resource_id] = sk_image_;
+    resource_provider_->resource_sk_images_[resource_id].image = sk_image_;
     return;
   }
 
@@ -883,7 +893,7 @@ DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
   resource_provider->PopulateSkBitmapWithResource(&sk_bitmap, resource);
   sk_bitmap.setImmutable();
   sk_image_ = SkImage::MakeFromBitmap(sk_bitmap);
-  resource_provider_->resource_sk_image_[resource_id] = sk_image_;
+  resource_provider_->resource_sk_images_[resource_id].image = sk_image_;
 }
 
 DisplayResourceProvider::ScopedReadLockSkImage::~ScopedReadLockSkImage() {
@@ -892,9 +902,11 @@ DisplayResourceProvider::ScopedReadLockSkImage::~ScopedReadLockSkImage() {
 
 DisplayResourceProvider::LockSetForExternalUse::LockSetForExternalUse(
     DisplayResourceProvider* resource_provider,
-    const CreateSkImageCallback& callback)
+    const CreateSkImageCallback& create_callback,
+    const DestroySkImageCallback& destroy_callback)
     : resource_provider_(resource_provider),
-      create_sk_image_callback_(callback) {}
+      create_sk_image_callback_(create_callback),
+      destroy_sk_image_callback_(destroy_callback) {}
 
 DisplayResourceProvider::LockSetForExternalUse::~LockSetForExternalUse() {
   DCHECK(resources_.empty());
@@ -911,10 +923,13 @@ sk_sp<SkImage>
 DisplayResourceProvider::LockSetForExternalUse::LockResourceAndCreateSkImage(
     ResourceId id) {
   auto metadata = LockResource(id);
-  auto& sk_image = resource_provider_->resource_sk_image_[id];
-  if (!sk_image)
-    sk_image = create_sk_image_callback_.Run(std::move(metadata));
-  return sk_image;
+  auto& resource_sk_image = resource_provider_->resource_sk_images_[id];
+  if (!resource_sk_image.image) {
+    resource_sk_image.image =
+        create_sk_image_callback_.Run(std::move(metadata));
+    resource_sk_image.destroy_callback = destroy_sk_image_callback_;
+  }
+  return resource_sk_image.image;
 }
 
 void DisplayResourceProvider::LockSetForExternalUse::UnlockResources(
@@ -981,6 +996,11 @@ DisplayResourceProvider::ChildResource::ChildResource(
 DisplayResourceProvider::ChildResource::ChildResource(ChildResource&& other) =
     default;
 DisplayResourceProvider::ChildResource::~ChildResource() = default;
+
+DisplayResourceProvider::ResourceSkImage::ResourceSkImage() = default;
+DisplayResourceProvider::ResourceSkImage::ResourceSkImage(
+    const ResourceSkImage&) = default;
+DisplayResourceProvider::ResourceSkImage::~ResourceSkImage() = default;
 
 void DisplayResourceProvider::ChildResource::SetLocallyUsed() {
   synchronization_state_ = LOCALLY_USED;

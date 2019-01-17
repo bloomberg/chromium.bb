@@ -420,7 +420,16 @@ void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out,
     GrBackendTexture* backend_texture) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!*shared_image_out);
+  if (*shared_image_out) {
+    DCHECK(shared_image_representation_factory_->IsSharedImage(
+        mailbox_holder.mailbox));
+    bool result = (*shared_image_out)
+                      ->BeginReadAccess(sk_surface_.get(), backend_texture);
+    ALLOW_UNUSED_LOCAL(result);
+    DLOG_IF(ERROR, !result)
+        << "Failed to begin read access for SharedImageRepresentationSkia";
+    return;
+  }
   if (shared_image_representation_factory_->IsSharedImage(
           mailbox_holder.mailbox)) {
     std::unique_ptr<gpu::SharedImageRepresentationSkia> shared_image =
@@ -473,6 +482,13 @@ void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
 sk_sp<GrContextThreadSafeProxy>
 SkiaOutputSurfaceImplOnGpu::GetGrContextThreadSafeProxy() {
   return gr_context()->threadSafeProxy();
+}
+
+void SkiaOutputSurfaceImplOnGpu::DestroySkImage(sk_sp<SkImage>&& image,
+                                                uint64_t sync_fence_release) {
+  MakeCurrent();
+  image.reset();
+  sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
 }
 
 #if defined(OS_WIN)

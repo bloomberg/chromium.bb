@@ -79,6 +79,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       std::vector<ResourceMetadata> metadatas,
       SkYUVColorSpace yuv_color_space,
       bool has_alpha) override;
+  gpu::SyncToken DestroySkImage(sk_sp<SkImage>&& image) override;
   void SkiaSwapBuffers(OutputSurfaceFrame frame) override;
   SkCanvas* BeginPaintRenderPass(const RenderPassId& id,
                                  const gfx::Size& surface_size,

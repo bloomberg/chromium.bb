@@ -480,7 +480,8 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
 
   DisplayResourceProvider::LockSetForExternalUse lock_set(
       resource_provider_.get(),
-      DisplayResourceProvider::LockSetForExternalUse::CreateSkImageCallback());
+      DisplayResourceProvider::LockSetForExternalUse::CreateSkImageCallback(),
+      DisplayResourceProvider::LockSetForExternalUse::DestroySkImageCallback());
 
   ResourceMetadata metadata = lock_set.LockResource(parent_id);
   ASSERT_EQ(metadata.mailbox_holder.mailbox, mailbox);
