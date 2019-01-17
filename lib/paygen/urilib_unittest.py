@@ -122,3 +122,23 @@ index %s..%s 100644
     # Run 8, local and HTTP
     self.assertRaises(urilib.NotSupportedBetweenTypes, urilib.Copy,
                       local_path, http_path)
+
+  def testGetPathExcludingProtocol(self):
+    """Tests GetPathExcludingProtocol."""
+    self.assertEqual(urilib.GetPathExcludingProtocol('foo-file'), 'foo-file')
+    self.assertEqual(urilib.GetPathExcludingProtocol('foo/directory/foo-file'),
+                     'foo/directory/foo-file')
+    self.assertEqual(urilib.GetPathExcludingProtocol('/foo-file'), '/foo-file')
+    self.assertEqual(urilib.GetPathExcludingProtocol('/foo/directory/foo-file'),
+                     '/foo/directory/foo-file')
+    self.assertEqual(urilib.GetPathExcludingProtocol('file:///foo-file'),
+                     '/foo-file')
+    self.assertEqual(urilib.GetPathExcludingProtocol('gs://foo-file'),
+                     'foo-file')
+    self.assertEqual(urilib.GetPathExcludingProtocol('http://foo-file'),
+                     'foo-file')
+    self.assertEqual(urilib.GetPathExcludingProtocol('https://foo-file'),
+                     'foo-file')
+    self.assertEqual(
+        urilib.GetPathExcludingProtocol('https://foo-directory/foo-file'),
+        'foo-directory/foo-file')
