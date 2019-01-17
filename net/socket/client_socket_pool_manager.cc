@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/load_flags.h"
+#include "net/base/proxy_server.h"
 #include "net/http/http_proxy_client_socket_pool.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_stream_factory.h"
@@ -89,7 +90,6 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
                          CompletionOnceCallback callback) {
   scoped_refptr<HttpProxySocketParams> http_proxy_params;
   scoped_refptr<SOCKSSocketParams> socks_params;
-  std::unique_ptr<HostPortPair> proxy_host_port;
 
   const bool using_ssl = group_type == ClientSocketPoolManager::SSL_GROUP;
   HostPortPair origin_host_port = endpoint;
@@ -129,10 +129,9 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
 
   if (!proxy_info.is_direct()) {
     ProxyServer proxy_server = proxy_info.proxy_server();
-    proxy_host_port.reset(new HostPortPair(proxy_server.host_port_pair()));
     scoped_refptr<TransportSocketParams> proxy_tcp_params(
-        new TransportSocketParams(*proxy_host_port, disable_resolver_cache,
-                                  resolution_callback));
+        new TransportSocketParams(proxy_server.host_port_pair(),
+                                  disable_resolver_cache, resolution_callback));
 
     if (proxy_info.is_http() || proxy_info.is_https() || proxy_info.is_quic()) {
       // TODO(mmenke):  Would it be better to split these into two different
@@ -149,11 +148,12 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
       scoped_refptr<SSLSocketParams> ssl_params;
       if (!proxy_info.is_http()) {
         proxy_tcp_params = new TransportSocketParams(
-            *proxy_host_port, disable_resolver_cache, resolution_callback);
+            proxy_server.host_port_pair(), disable_resolver_cache,
+            resolution_callback);
         // Set ssl_params, and unset proxy_tcp_params
-        ssl_params =
-            new SSLSocketParams(proxy_tcp_params, NULL, NULL, *proxy_host_port,
-                                ssl_config_for_proxy, PRIVACY_MODE_DISABLED);
+        ssl_params = new SSLSocketParams(
+            proxy_tcp_params, NULL, NULL, proxy_server.host_port_pair(),
+            ssl_config_for_proxy, PRIVACY_MODE_DISABLED);
         proxy_tcp_params = NULL;
       }
 
@@ -202,8 +202,8 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
     if (proxy_info.is_direct()) {
       ssl_pool = session->GetSSLSocketPool(socket_pool_type);
     } else {
-      ssl_pool = session->GetSocketPoolForSSLWithProxy(socket_pool_type,
-                                                       *proxy_host_port);
+      ssl_pool = session->GetSocketPoolForSSLWithProxy(
+          socket_pool_type, proxy_info.proxy_server());
     }
 
     if (num_preconnect_streams) {
@@ -220,8 +220,8 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
   // Finally, get the connection started.
 
   if (proxy_info.is_http() || proxy_info.is_https()) {
-    HttpProxyClientSocketPool* pool =
-        session->GetSocketPoolForHTTPProxy(socket_pool_type, *proxy_host_port);
+    HttpProxyClientSocketPool* pool = session->GetSocketPoolForHTTPLikeProxy(
+        socket_pool_type, proxy_info.proxy_server());
     if (num_preconnect_streams) {
       RequestSocketsForPool(pool, connection_group, http_proxy_params,
                             num_preconnect_streams, net_log);
@@ -234,8 +234,8 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
   }
 
   if (proxy_info.is_socks()) {
-    SOCKSClientSocketPool* pool =
-        session->GetSocketPoolForSOCKSProxy(socket_pool_type, *proxy_host_port);
+    SOCKSClientSocketPool* pool = session->GetSocketPoolForSOCKSProxy(
+        socket_pool_type, proxy_info.proxy_server());
     if (num_preconnect_streams) {
       RequestSocketsForPool(pool, connection_group, socks_params,
                             num_preconnect_streams, net_log);

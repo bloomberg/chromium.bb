@@ -314,20 +314,21 @@ SSLClientSocketPool* HttpNetworkSession::GetSSLSocketPool(
 
 SOCKSClientSocketPool* HttpNetworkSession::GetSocketPoolForSOCKSProxy(
     SocketPoolType pool_type,
-    const HostPortPair& socks_proxy) {
+    const ProxyServer& socks_proxy) {
   return GetSocketPoolManager(pool_type)->GetSocketPoolForSOCKSProxy(
       socks_proxy);
 }
 
-HttpProxyClientSocketPool* HttpNetworkSession::GetSocketPoolForHTTPProxy(
+HttpProxyClientSocketPool* HttpNetworkSession::GetSocketPoolForHTTPLikeProxy(
     SocketPoolType pool_type,
-    const HostPortPair& http_proxy) {
-  return GetSocketPoolManager(pool_type)->GetSocketPoolForHTTPProxy(http_proxy);
+    const ProxyServer& http_proxy) {
+  return GetSocketPoolManager(pool_type)->GetSocketPoolForHTTPLikeProxy(
+      http_proxy);
 }
 
 SSLClientSocketPool* HttpNetworkSession::GetSocketPoolForSSLWithProxy(
     SocketPoolType pool_type,
-    const HostPortPair& proxy_server) {
+    const ProxyServer& proxy_server) {
   return GetSocketPoolManager(pool_type)->GetSocketPoolForSSLWithProxy(
       proxy_server);
 }
