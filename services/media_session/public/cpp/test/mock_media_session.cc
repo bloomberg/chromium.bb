@@ -335,6 +335,7 @@ mojom::MediaSessionInfoPtr MockMediaSession::GetMediaSessionInfoSync() const {
     info->playback_state = mojom::MediaPlaybackState::kPlaying;
 
   info->is_controllable = is_controllable_;
+  info->prefer_stop_for_gain_focus_loss = prefer_stop_;
 
   return info;
 }

@@ -1196,4 +1196,42 @@ TEST_P(AudioFocusManagerTest, AudioFocusGrouping_TransientSameGroup) {
             GetState(&media_session_2));
 }
 
+TEST_P(AudioFocusManagerTest, RequestAudioFocus_PreferStop_LossToGain) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  media_session_1.SetPreferStop(true);
+
+  AudioFocusManager::RequestId request_id_1 =
+      RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(request_id_1, GetAudioFocusedSession());
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+
+  AudioFocusManager::RequestId request_id_2 =
+      RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(request_id_2, GetAudioFocusedSession());
+  EXPECT_EQ(GetStateFromParam(mojom::MediaSessionInfo::SessionState::kInactive),
+            GetState(&media_session_1));
+}
+
+TEST_P(AudioFocusManagerTest,
+       RequestAudioFocus_PreferStop_LossToGainTransient) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  media_session_1.SetPreferStop(true);
+
+  AudioFocusManager::RequestId request_id_1 =
+      RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(request_id_1, GetAudioFocusedSession());
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+
+  RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGainTransient);
+  EXPECT_EQ(
+      GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended),
+      GetState(&media_session_1));
+}
+
 }  // namespace media_session
