@@ -92,7 +92,9 @@ builder.
     * [`//components/viz/.+`](https://cs.chromium.org/chromium/src/components/viz/)
     * [`//content/test/gpu/.+`](https://cs.chromium.org/chromium/src/content/test/gpu/)
     * [`//gpu/.+`](https://cs.chromium.org/chromium/src/gpu/)
-    * [`//media/(audio|filters|gpu)/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:media/(audio|filters|gpu)/)
+    * [`//media/audio/.+`](https://cs.chromium.org/chromium/src/media/audio/)
+    * [`//media/filters/.+`](https://cs.chromium.org/chromium/src/media/filters/)
+    * [`//media/gpu/.+`](https://cs.chromium.org/chromium/src/media/gpu/)
     * [`//services/viz/.+`](https://cs.chromium.org/chromium/src/services/viz/)
     * [`//testing/trigger_scripts/.+`](https://cs.chromium.org/chromium/src/testing/trigger_scripts/)
     * [`//third_party/blink/renderer/modules/webgl/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgl/)
@@ -119,11 +121,9 @@ builder.
 
   Path regular expressions:
     * [`//cc/.+`](https://cs.chromium.org/chromium/src/cc/)
-    * [`//third_party/blink/renderer/core/(svg|paint)/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/renderer/core/(svg|paint)/)
-    * [`//third_party/blink/renderer/core/paint/compositing/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/paint/compositing/)
+    * [`//third_party/blink/renderer/core/paint/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/paint/)
+    * [`//third_party/blink/renderer/core/svg/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/svg/)
     * [`//third_party/blink/renderer/platform/graphics/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/)
-    * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-blink-features=BlinkGenPropertyTrees)
-    * [`//third_party/blink/web_tests/flag-specific/enable-blink-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/flag-specific/enable-blink-features=BlinkGenPropertyTrees)
     * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=CompositeAfterPaint`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-blink-features=CompositeAfterPaint)
     * [`//third_party/blink/web_tests/flag-specific/enable-blink-features=CompositeAfterPaint/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/enable-blink-features=CompositeAfterPaint/)
 
@@ -135,11 +135,9 @@ builder.
 * [linux_layout_tests_composite_after_paint](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_layout_tests_composite_after_paint) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux_layout_tests_composite_after_paint)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_layout_tests_composite_after_paint))
 
   Path regular expressions:
-    * [`//third_party/blink/renderer/core/paint/compositing/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/paint/compositing/)
-    * [`//third_party/blink/renderer/core/(svg|paint)/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/renderer/core/(svg|paint)/)
+    * [`//third_party/blink/renderer/core/paint/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/paint/)
+    * [`//third_party/blink/renderer/core/svg/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/svg/)
     * [`//third_party/blink/renderer/platform/graphics/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/)
-    * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-blink-features=BlinkGenPropertyTrees)
-    * [`//third_party/blink/web_tests/flag-specific/enable-blink-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/flag-specific/enable-blink-features=BlinkGenPropertyTrees)
     * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=CompositeAfterPaint`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-blink-features=CompositeAfterPaint)
     * [`//third_party/blink/web_tests/flag-specific/enable-blink-features=CompositeAfterPaint/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/enable-blink-features=CompositeAfterPaint/)
 
@@ -168,7 +166,9 @@ builder.
     * [`//chrome/browser/vr/.+`](https://cs.chromium.org/chromium/src/chrome/browser/vr/)
     * [`//content/test/gpu/.+`](https://cs.chromium.org/chromium/src/content/test/gpu/)
     * [`//gpu/.+`](https://cs.chromium.org/chromium/src/gpu/)
-    * [`//media/(audio|filters|gpu)/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:media/(audio|filters|gpu)/)
+    * [`//media/audio/.+`](https://cs.chromium.org/chromium/src/media/audio/)
+    * [`//media/filters/.+`](https://cs.chromium.org/chromium/src/media/filters/)
+    * [`//media/gpu/.+`](https://cs.chromium.org/chromium/src/media/gpu/)
     * [`//testing/trigger_scripts/.+`](https://cs.chromium.org/chromium/src/testing/trigger_scripts/)
     * [`//third_party/blink/renderer/modules/webgl/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgl/)
     * [`//ui/gl/.+`](https://cs.chromium.org/chromium/src/ui/gl/)
@@ -184,7 +184,9 @@ builder.
     * [`//chrome/browser/vr/.+`](https://cs.chromium.org/chromium/src/chrome/browser/vr/)
     * [`//content/test/gpu/.+`](https://cs.chromium.org/chromium/src/content/test/gpu/)
     * [`//gpu/.+`](https://cs.chromium.org/chromium/src/gpu/)
-    * [`//media/(audio|filters|gpu)/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:media/(audio|filters|gpu)/)
+    * [`//media/audio/.+`](https://cs.chromium.org/chromium/src/media/audio/)
+    * [`//media/filters/.+`](https://cs.chromium.org/chromium/src/media/filters/)
+    * [`//media/gpu/.+`](https://cs.chromium.org/chromium/src/media/gpu/)
     * [`//services/shape_detection/.+`](https://cs.chromium.org/chromium/src/services/shape_detection/)
     * [`//testing/trigger_scripts/.+`](https://cs.chromium.org/chromium/src/testing/trigger_scripts/)
     * [`//third_party/blink/renderer/modules/webgl/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgl/)
@@ -197,7 +199,9 @@ builder.
     * [`//content/test/gpu/.+`](https://cs.chromium.org/chromium/src/content/test/gpu/)
     * [`//device/vr/.+`](https://cs.chromium.org/chromium/src/device/vr/)
     * [`//gpu/.+`](https://cs.chromium.org/chromium/src/gpu/)
-    * [`//media/(audio|filters|gpu)/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:media/(audio|filters|gpu)/)
+    * [`//media/audio/.+`](https://cs.chromium.org/chromium/src/media/audio/)
+    * [`//media/filters/.+`](https://cs.chromium.org/chromium/src/media/filters/)
+    * [`//media/gpu/.+`](https://cs.chromium.org/chromium/src/media/gpu/)
     * [`//testing/trigger_scripts/.+`](https://cs.chromium.org/chromium/src/testing/trigger_scripts/)
     * [`//third_party/blink/renderer/modules/vr/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/vr/)
     * [`//third_party/blink/renderer/modules/webgl/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgl/)
@@ -208,12 +212,18 @@ builder.
 * [android_compile_x64_dbg](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android_compile_x64_dbg) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+android_compile_x64_dbg)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+android_compile_x64_dbg))
 
   Path regular expressions:
-    * [`//sandbox/linux/(bpd_dsl|seccomp-bpf|secomp-bpf-helpers|system_headers|tests)/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:sandbox/linux/(bpd_dsl|seccomp-bpf|secomp-bpf-helpers|system_headers|tests)/)
+    * [`//sandbox/linux/seccomp-bpf/.+`](https://cs.chromium.org/chromium/src/sandbox/linux/seccomp-bpf/)
+    * [`//sandbox/linux/seccomp-bpf-helpers/.+`](https://cs.chromium.org/chromium/src/sandbox/linux/seccomp-bpf-helpers/)
+    * [`//sandbox/linux/system_headers/.+`](https://cs.chromium.org/chromium/src/sandbox/linux/system_headers/)
+    * [`//sandbox/linux/tests/.+`](https://cs.chromium.org/chromium/src/sandbox/linux/tests/)
 
 * [android_compile_x86_dbg](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android_compile_x86_dbg) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+android_compile_x86_dbg)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+android_compile_x86_dbg))
 
   Path regular expressions:
-    * [`//sandbox/linux/(bpd_dsl|seccomp-bpf|secomp-bpf-helpers|system_headers|tests)/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:sandbox/linux/(bpd_dsl|seccomp-bpf|secomp-bpf-helpers|system_headers|tests)/)
+    * [`//sandbox/linux/seccomp-bpf/.+`](https://cs.chromium.org/chromium/src/sandbox/linux/seccomp-bpf/)
+    * [`//sandbox/linux/seccomp-bpf-helpers/.+`](https://cs.chromium.org/chromium/src/sandbox/linux/seccomp-bpf-helpers/)
+    * [`//sandbox/linux/system_headers/.+`](https://cs.chromium.org/chromium/src/sandbox/linux/system_headers/)
+    * [`//sandbox/linux/tests/.+`](https://cs.chromium.org/chromium/src/sandbox/linux/tests/)
 
 * [android_cronet_tester](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android_cronet_tester) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+android_cronet_tester)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+android_cronet_tester))
 
