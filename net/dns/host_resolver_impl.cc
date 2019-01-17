@@ -1740,11 +1740,17 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
     switch (key_.host_resolver_source) {
       case HostResolverSource::ANY:
-        // Default to DnsTask (with allowed fallback to ProcTask for address
-        // queries). But if hostname appears to be an MDNS name (ends in
+        // Force address queries with canonname to use ProcTask to counter poor
+        // CNAME support in DnsTask. See https://crbug.com/872665
+        //
+        // Otherwise, default to DnsTask (with allowed fallback to ProcTask for
+        // address queries). But if hostname appears to be an MDNS name (ends in
         // *.local), go with ProcTask for address queries and MdnsTask for non-
         // address queries.
-        if (!ResemblesMulticastDNSName(key_.hostname)) {
+        if ((key_.host_resolver_flags & HOST_RESOLVER_CANONNAME) &&
+            IsAddressType(key_.dns_query_type)) {
+          StartProcTask();
+        } else if (!ResemblesMulticastDNSName(key_.hostname)) {
           StartDnsTask(IsAddressType(
               key_.dns_query_type) /* allow_fallback_resolution */);
         } else if (IsAddressType(key_.dns_query_type)) {
