@@ -10,11 +10,11 @@ import {
 
 export const group = new TestGroup();
 
-function print(this: Fixture) {
-  this.log(JSON.stringify(this.params));
+function print(t: Fixture) {
+  t.log(JSON.stringify(t.params));
 }
 
-group.test("test", function() {});
+group.test("test", (t) => {});
 
 group.testp("testp", {a: 1}, print);
 
@@ -24,10 +24,10 @@ class Printer extends Fixture {
   }
 }
 
-group.testf("testf", Printer, function() {
-  this.print();
+group.testf("testf", Printer, (t) => {
+  t.print();
 });
 
-group.testpf("testpf", {a: 1}, Printer, function() {
-  this.print();
+group.testpf("testpf", {a: 1}, Printer, (t) => {
+  t.print();
 });

@@ -1,7 +1,7 @@
 import { CaseRecorder, GroupRecorder, IResult } from "./logger.js";
 import { IParamsAny, IParamsSpec } from "./params/index.js";
 
-type TestFn<F extends Fixture> = (this: F) => (Promise<void> | void);
+type TestFn<F extends Fixture> = (t: F) => (Promise<void> | void);
 interface ICase {
   name: string;
   params?: object;
@@ -16,31 +16,25 @@ type IFixtureClass<F extends Fixture> = new(log: CaseRecorder, params: IParamsAn
 
 export abstract class Fixture {
   public params: IParamsAny;
-  // TODO: This is called _rec because it's supposed to be invisible to tests,
-  // but can't actually be since tests have 'this' bound to the fixture.
-  // Probably should not bind, and instead just pass an arg.
-  //
-  // TODO: If that, then also remove only-arrow-functions from tslint.json.
-  // tslint:disable-next-line variable-name
-  protected _rec: CaseRecorder;
+  protected rec: CaseRecorder;
 
   public constructor(log: CaseRecorder, params: IParamsAny) {
-    this._rec = log;
+    this.rec = log;
     this.params = params;
   }
 
   public log(msg: string) {
-    this._rec.log(msg);
+    this.rec.log(msg);
   }
 }
 
 export class DefaultFixture extends Fixture {
   public warn(msg?: string) {
-    this._rec.warn(msg);
+    this.rec.warn(msg);
   }
 
   public fail(msg?: string) {
-    this._rec.fail(msg);
+    this.rec.fail(msg);
   }
 
   public ok(msg?: string) {
@@ -55,7 +49,7 @@ export class DefaultFixture extends Fixture {
     if (cond) {
       this.ok(msg);
     } else {
-      this._rec.fail(msg);
+      this.rec.fail(msg);
     }
   }
 }
@@ -109,7 +103,7 @@ export class TestGroup {
     const p = params ? params : {};
     this.tests.push({ name: n, run: (log) => {
       const inst = new fixture(log, p);
-      return fn.call(inst);
+      return fn(inst);
     }});
   }
 }
