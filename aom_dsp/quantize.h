@@ -16,6 +16,8 @@
 
 #include "aom_dsp/aom_dsp_common.h"
 
+#define ADAPTIVE_QUANT_B 0
+
 #ifdef __cplusplus
 extern "C" {
 #endif

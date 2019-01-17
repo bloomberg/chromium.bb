@@ -281,6 +281,31 @@ void av1_quantize_b_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                         dqcoeff_ptr, p->dequant_QTX, eob_ptr, sc->scan,
                         sc->iscan, qm_ptr, iqm_ptr, qparam->log_scale);
   } else {
+#if ADAPTIVE_QUANT_B
+    // TODO(sarahparker) These quantize_b optimizations need SIMD
+    // implementations
+    switch (qparam->log_scale) {
+      case 0:
+        aom_quantize_b_c(coeff_ptr, n_coeffs, p->zbin_QTX, p->round_QTX,
+                         p->quant_QTX, p->quant_shift_QTX, qcoeff_ptr,
+                         dqcoeff_ptr, p->dequant_QTX, eob_ptr, sc->scan,
+                         sc->iscan);
+        break;
+      case 1:
+        aom_quantize_b_32x32_c(coeff_ptr, n_coeffs, p->zbin_QTX, p->round_QTX,
+                               p->quant_QTX, p->quant_shift_QTX, qcoeff_ptr,
+                               dqcoeff_ptr, p->dequant_QTX, eob_ptr, sc->scan,
+                               sc->iscan);
+        break;
+      case 2:
+        aom_quantize_b_64x64_c(coeff_ptr, n_coeffs, p->zbin_QTX, p->round_QTX,
+                               p->quant_QTX, p->quant_shift_QTX, qcoeff_ptr,
+                               dqcoeff_ptr, p->dequant_QTX, eob_ptr, sc->scan,
+                               sc->iscan);
+        break;
+      default: assert(0);
+    }
+#else
     switch (qparam->log_scale) {
       case 0:
         aom_quantize_b(coeff_ptr, n_coeffs, p->zbin_QTX, p->round_QTX,
@@ -302,6 +327,7 @@ void av1_quantize_b_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
         break;
       default: assert(0);
     }
+#endif
   }
 }
 
