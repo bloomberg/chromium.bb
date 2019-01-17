@@ -515,7 +515,8 @@ void PepperMediaStreamVideoTrackHost::InitBlinkTrack() {
                            false /* remote */);
   MediaStreamVideoSource* const source =
       new VideoSource(weak_factory_.GetWeakPtr());
-  webkit_source.SetExtraData(source);  // Takes ownership of |source|.
+  webkit_source.SetPlatformSource(
+      base::WrapUnique(source));  // Takes ownership of |source|.
 
   const bool enabled = true;
   track_ = MediaStreamVideoTrack::CreateVideoTrack(

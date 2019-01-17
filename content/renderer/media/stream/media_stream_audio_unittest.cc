@@ -275,7 +275,8 @@ class MediaStreamAudioTest : public ::testing::Test {
 TEST_F(MediaStreamAudioTest, BasicUsage) {
   // Create the source, but it should not be started yet.
   ASSERT_FALSE(source());
-  blink_audio_source_.SetExtraData(new FakeMediaStreamAudioSource());
+  blink_audio_source_.SetPlatformSource(
+      std::make_unique<FakeMediaStreamAudioSource>());
   ASSERT_TRUE(source());
   EXPECT_FALSE(source()->was_started());
   EXPECT_FALSE(source()->was_stopped());
@@ -319,7 +320,8 @@ TEST_F(MediaStreamAudioTest, BasicUsage) {
 TEST_F(MediaStreamAudioTest, ConnectTrackAfterSourceStopped) {
   // Create the source, connect one track, and stop it. This should
   // automatically stop the source.
-  blink_audio_source_.SetExtraData(new FakeMediaStreamAudioSource());
+  blink_audio_source_.SetPlatformSource(
+      std::make_unique<FakeMediaStreamAudioSource>());
   ASSERT_TRUE(source());
   EXPECT_TRUE(source()->ConnectToTrack(blink_audio_track_));
   track()->Stop();
@@ -355,7 +357,8 @@ TEST_F(MediaStreamAudioTest, AddSinkToStoppedTrack) {
 TEST_F(MediaStreamAudioTest, FormatChangesPropagate) {
   // Create a source, connect it to track, and connect the track to a
   // sink.
-  blink_audio_source_.SetExtraData(new FakeMediaStreamAudioSource());
+  blink_audio_source_.SetPlatformSource(
+      std::make_unique<FakeMediaStreamAudioSource>());
   ASSERT_TRUE(source());
   EXPECT_TRUE(source()->ConnectToTrack(blink_audio_track_));
   ASSERT_TRUE(track());
@@ -390,7 +393,8 @@ TEST_F(MediaStreamAudioTest, FormatChangesPropagate) {
 // OnEnabledChanged() method should be called.
 TEST_F(MediaStreamAudioTest, EnableAndDisableTracks) {
   // Create a source and connect it to track.
-  blink_audio_source_.SetExtraData(new FakeMediaStreamAudioSource());
+  blink_audio_source_.SetPlatformSource(
+      std::make_unique<FakeMediaStreamAudioSource>());
   ASSERT_TRUE(source());
   EXPECT_TRUE(source()->ConnectToTrack(blink_audio_track_));
   ASSERT_TRUE(track());

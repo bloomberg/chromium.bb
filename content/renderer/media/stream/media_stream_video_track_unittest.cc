@@ -81,7 +81,7 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
                              blink::WebMediaStreamSource::kTypeVideo,
                              blink::WebString::FromASCII("dummy_source_name"),
                              false /* remote */);
-    blink_source_.SetExtraData(mock_source_);
+    blink_source_.SetPlatformSource(base::WrapUnique(mock_source_));
   }
 
   // Create a track that's associated with |mock_source_|.
@@ -123,7 +123,7 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
                              blink::WebMediaStreamSource::kTypeVideo,
                              blink::WebString::FromASCII("dummy_source_name"),
                              false /* remote */);
-    blink_source_.SetExtraData(mock_source_);
+    blink_source_.SetPlatformSource(base::WrapUnique(mock_source_));
   }
 
   MockMediaStreamVideoSource* mock_source() { return mock_source_; }

@@ -9,8 +9,12 @@
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
 
 namespace blink {
+
+class MediaStreamSource;
+class WebMediaStreamSource;
 
 // Names for media stream source capture types.
 // These are values set via the "chromeMediaSource" constraint.
@@ -21,8 +25,7 @@ BLINK_PLATFORM_EXPORT extern const char kMediaStreamSourceDesktop[];
 BLINK_PLATFORM_EXPORT extern const char
     kMediaStreamSourceSystem[]; /* audio only */
 
-class BLINK_PLATFORM_EXPORT PlatformMediaStreamSource
-    : public WebMediaStreamSource::ExtraData {
+class BLINK_PLATFORM_EXPORT PlatformMediaStreamSource {
  public:
   using SourceStoppedCallback =
       base::Callback<void(const WebMediaStreamSource& source)>;
@@ -37,7 +40,7 @@ class BLINK_PLATFORM_EXPORT PlatformMediaStreamSource
   static const char kSourceId[];
 
   PlatformMediaStreamSource();
-  ~PlatformMediaStreamSource() override;
+  virtual ~PlatformMediaStreamSource();
 
   // Returns device information about a source that has been created by a
   // JavaScript call to GetUserMedia, e.g., a camera or microphone.
@@ -63,6 +66,11 @@ class BLINK_PLATFORM_EXPORT PlatformMediaStreamSource
   // Change the source to the |new_device| by calling DoChangeSource().
   void ChangeSource(const MediaStreamDevice& new_device);
 
+  WebMediaStreamSource Owner();
+#if INSIDE_BLINK
+  void SetOwner(MediaStreamSource*);
+#endif
+
  protected:
   // Called when StopSource is called. It allows derived classes to implement
   // its own Stop method.
@@ -80,6 +88,10 @@ class BLINK_PLATFORM_EXPORT PlatformMediaStreamSource
  private:
   MediaStreamDevice device_;
   SourceStoppedCallback stop_callback_;
+#if INSIDE_BLINK
+  GC_PLUGIN_IGNORE("http://crbug.com/409526")
+#endif
+  MediaStreamSource* owner_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformMediaStreamSource);
 };

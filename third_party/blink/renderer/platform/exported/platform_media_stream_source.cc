@@ -4,6 +4,8 @@
 
 #include "third_party/blink/public/platform/modules/mediastream/platform_media_stream_source.h"
 
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
+
 #include "base/logging.h"
 
 namespace blink {
@@ -61,5 +63,17 @@ void PlatformMediaStreamSource::ChangeSource(
     const blink::MediaStreamDevice& new_device) {
   DoChangeSource(new_device);
 }
+
+WebMediaStreamSource PlatformMediaStreamSource::Owner() {
+  DCHECK(owner_);
+  return WebMediaStreamSource(owner_);
+}
+
+#if INSIDE_BLINK
+void PlatformMediaStreamSource::SetOwner(MediaStreamSource* owner) {
+  DCHECK(!owner_);
+  owner_ = owner;
+}
+#endif
 
 }  // namespace blink

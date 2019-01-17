@@ -249,7 +249,8 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
                             blink::WebMediaStreamSource::kTypeAudio,
                             blink::WebString::FromUTF8("dummy_source_name"),
                             false /* remote */);
-    audio_source.SetExtraData(new MediaStreamAudioSource(true));
+    audio_source.SetPlatformSource(
+        std::make_unique<MediaStreamAudioSource>(true));
     blink_track_.Initialize(blink::WebString::FromUTF8("audio_track"),
                             audio_source);
     CHECK(MediaStreamAudioSource::From(audio_source)

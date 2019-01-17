@@ -72,7 +72,7 @@ class RTCRtpSenderTest : public ::testing::Test {
         blink::WebString::FromUTF8("local_audio_track"), false);
     MediaStreamAudioSource* audio_source = new MediaStreamAudioSource(true);
     // Takes ownership of |audio_source|.
-    web_source.SetExtraData(audio_source);
+    web_source.SetPlatformSource(base::WrapUnique(audio_source));
     blink::WebMediaStreamTrack web_track;
     web_track.Initialize(web_source.Id(), web_source);
     audio_source->ConnectToTrack(web_track);
