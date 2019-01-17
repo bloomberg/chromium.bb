@@ -226,6 +226,9 @@ void PreconnectManager::TryToLaunchPreresolveJobs() {
     if (info) {
       DCHECK_LE(1u, info->queued_count);
       --info->queued_count;
+      if (info->is_done()) {
+        AllPreresolvesForUrlFinished(info);
+      }
     }
   }
 }

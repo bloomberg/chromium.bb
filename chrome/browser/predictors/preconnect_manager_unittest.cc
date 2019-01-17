@@ -73,6 +73,8 @@ class MockNetworkContext : public network::TestNetworkContext {
       network::mojom::ResolveHostParametersPtr optional_parameters,
       network::mojom::ResolveHostClientPtr response_client) override {
     const std::string& host = host_port.host();
+    EXPECT_FALSE(IsHangingHost(GURL(host)))
+        << " Hosts marked as hanging should not be resolved.";
     EXPECT_TRUE(
         resolve_host_clients_.emplace(host, std::move(response_client)).second);
     ResolveHostProxy(host);
@@ -104,6 +106,9 @@ class MockNetworkContext : public network::TestNetworkContext {
 
   void CompleteProxyLookup(const GURL& url,
                            const base::Optional<net::ProxyInfo>& result) {
+    if (IsHangingHost(url))
+      return;
+
     auto it = proxy_lookup_clients_.find(url);
     if (it == proxy_lookup_clients_.end()) {
       ADD_FAILURE() << url.spec() << " wasn't found";
@@ -113,6 +118,16 @@ class MockNetworkContext : public network::TestNetworkContext {
     proxy_lookup_clients_.erase(it);
     // Wait for OnProxyLookupComplete() to be executed on the UI thread.
     base::RunLoop().RunUntilIdle();
+  }
+
+  // Preresolve/preconnect requests for all hosts in |hanging_url_requests| is
+  // never completed.
+  void SetHangingHostsFromPreconnectRequests(
+      const std::vector<PreconnectRequest>& hanging_url_requests) {
+    hanging_hosts_.clear();
+    for (const auto& request : hanging_url_requests) {
+      hanging_hosts_.push_back(request.origin.host());
+    }
   }
 
   void EnableProxyTesting() { enabled_proxy_testing_ = true; }
@@ -125,10 +140,16 @@ class MockNetworkContext : public network::TestNetworkContext {
                     bool privacy_mode_enabled));
 
  private:
+  bool IsHangingHost(const GURL& url) const {
+    return std::find(hanging_hosts_.begin(), hanging_hosts_.end(),
+                     url.host()) != hanging_hosts_.end();
+  }
+
   std::map<std::string, network::mojom::ResolveHostClientPtr>
       resolve_host_clients_;
   std::map<GURL, network::mojom::ProxyLookupClientPtr> proxy_lookup_clients_;
   bool enabled_proxy_testing_ = false;
+  std::vector<std::string> hanging_hosts_;
 };
 
 class PreconnectManagerTest : public testing::Test {
@@ -313,6 +334,72 @@ TEST_F(PreconnectManagerTest, TestTwoConcurrentMainFrameUrls_MultipleTimes) {
   mock_network_context_->CompleteHostLookup(requests[count - 1].origin.host(),
                                             net::OK);
   mock_network_context_->CompleteHostLookup(requests[count].origin.host(),
+                                            net::OK);
+}
+
+// Starts preconnect request for two webpages. The preconnect request for the
+// second webpage is cancelled after one of its associated preconnect request
+// goes in-flight.
+// Verifies that if (i) Preconnect for a webpage is cancelled then its state is
+// cleared after its associated in-flight requests finish; and, (ii) If the
+// preconnect for that webpage is requested again, then
+// the pertaining requests are dispatched to the network.
+TEST_F(PreconnectManagerTest,
+       TestStartOneUrlPreconnect_MultipleTimes_CancelledAfterInFlight) {
+  GURL main_frame_url_1("http://google1.com");
+  size_t count = PreconnectManager::kMaxInflightPreresolves;
+  std::vector<PreconnectRequest> requests;
+  for (size_t i = 0; i < count - 1; ++i) {
+    requests.emplace_back(
+        GURL(base::StringPrintf("http://hanging.cdn%" PRIuS ".google.com", i)),
+        1);
+  }
+  mock_network_context_->SetHangingHostsFromPreconnectRequests(requests);
+
+  // Preconnect requests to |requests| would hang.
+  preconnect_manager_->Start(main_frame_url_1, requests);
+
+  GURL main_frame_url_2("http://google2.com");
+  GURL url_to_preconnect_1("http://cdn.google1.com");
+  GURL url_to_preconnect_2("http://cdn.google2.com");
+
+  EXPECT_CALL(*mock_network_context_,
+              ResolveHostProxy(url_to_preconnect_1.host()));
+  // Starting and stopping preconnect request for |main_frame_url_2|
+  // should still dispatch the request for |url_to_preconnect_1| on the
+  // network.
+  preconnect_manager_->Start(main_frame_url_2,
+                             {PreconnectRequest(url_to_preconnect_1, 1),
+                              PreconnectRequest(url_to_preconnect_2, 1)});
+  // preconnect request for |url_to_preconnect_1| is still in-flight and
+  // Stop() is called on the associated webpage.
+  preconnect_manager_->Stop(main_frame_url_2);
+  VerifyAndClearExpectations();
+
+  EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url_2));
+  mock_network_context_->CompleteHostLookup(url_to_preconnect_1.host(),
+                                            net::OK);
+  VerifyAndClearExpectations();
+
+  // Request preconnect for |main_frame_url_2| again.
+  EXPECT_CALL(*mock_network_context_,
+              ResolveHostProxy(url_to_preconnect_1.host()));
+  EXPECT_CALL(*mock_network_context_,
+              ResolveHostProxy(url_to_preconnect_2.host()));
+  EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url_2));
+  EXPECT_CALL(
+      *mock_network_context_,
+      PreconnectSockets(1, url_to_preconnect_1, kNormalLoadFlags, false));
+  EXPECT_CALL(
+      *mock_network_context_,
+      PreconnectSockets(1, url_to_preconnect_2, kNormalLoadFlags, false));
+  preconnect_manager_->Start(main_frame_url_2,
+                             {PreconnectRequest(url_to_preconnect_1, 1),
+                              PreconnectRequest(url_to_preconnect_2, 1)});
+
+  mock_network_context_->CompleteHostLookup(url_to_preconnect_1.host(),
+                                            net::OK);
+  mock_network_context_->CompleteHostLookup(url_to_preconnect_2.host(),
                                             net::OK);
 }
 
