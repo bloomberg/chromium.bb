@@ -4100,8 +4100,12 @@ if (enable_java_templates) {
           invoker.command_line_flags_file,
         ]
       }
-
-      # TODO(digit): Add --proguard-mapping-path argument.
+      if (_proguard_enabled) {
+        args += [
+          "--proguard-mapping-path",
+          rebase_path(_proguard_mapping_path, root_build_dir),
+        ]
+      }
     }
 
     group(target_name) {
