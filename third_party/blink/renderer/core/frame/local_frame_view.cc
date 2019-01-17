@@ -1275,14 +1275,12 @@ void LocalFrameView::InvalidateBackgroundAttachmentFixedDescendantsOnScroll(
     if (scrolled_object != GetLayoutView() &&
         !layout_object->IsDescendantOf(&scrolled_object))
       continue;
-    // An object needs to be repainted on scroll when it has background-
-    // attachment:fixed, unless the background will be separately composited
-    // i.e. when a LayoutView paints backgrounds only into scrolling contents.
+    // An object needs to repaint the background on scroll when it has
+    // background-attachment:fixed unless the object is the LayoutView and the
+    // background is not painted on the scrolling contents.
     if (layout_object == GetLayoutView() &&
-        GetLayoutView()->GetBackgroundPaintLocation() ==
-            kBackgroundPaintInScrollingContents &&
-        (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-         GetLayoutView()->Compositor()->PreferCompositingToLCDTextEnabled()))
+        !(GetLayoutView()->GetBackgroundPaintLocation() &
+          kBackgroundPaintInScrollingContents))
       continue;
     layout_object->SetBackgroundNeedsFullPaintInvalidation();
   }

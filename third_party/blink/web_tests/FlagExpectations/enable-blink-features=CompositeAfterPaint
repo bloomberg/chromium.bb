@@ -292,9 +292,6 @@ Bug(none) svg/wicd/test-rightsizing-b.xhtml [ Crash Failure ]
 Bug(none) paint/invalidation/scroll/scroll-in-transformed-layer.html [ Failure ]
 Bug(none) paint/invalidation/scroll/scroll-with-transformed-parent-layer.html [ Failure ]
 
-# Under-invalidations.
-crbug.com/644358 paint/invalidation/background/full-viewport-repaint-for-background-attachment-fixed.html [ Crash ]
-
 # Text failures due to layerization differences
 Bug(none) compositing/overflow/scroller-with-border-radius.html [ Failure ]
 Bug(none) css3/blending/mix-blend-mode-2nd-stacking-context-composited.html [ Failure ]

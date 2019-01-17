@@ -10,11 +10,6 @@
           "object": "Scrolling background of LayoutView #document",
           "rect": [0, 0, 785, 5000],
           "reason": "background"
-        },
-        {
-          "object": "InlineTextBox 'Tests that scrolling a frame with background-attachment: fixed invalidates the entire viewport.'",
-          "rect": [0, 0, 589, 19],
-          "reason": "disappeared"
         }
       ],
       "transform": 1

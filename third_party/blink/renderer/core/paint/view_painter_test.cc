@@ -106,8 +106,6 @@ void ViewPainterTest::RunFixedBackgroundTest(
   SkRect rect = static_cast<const cc::DrawRectOp*>(*it)->rect;
   if (prefer_compositing_to_lcd_text) {
     EXPECT_EQ(SkRect::MakeXYWH(0, 0, 800, 600), rect);
-  } else if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(SkRect::MakeXYWH(0, 0, 800, 600), rect);
   } else {
     EXPECT_EQ(SkRect::MakeXYWH(scroll_offset.Width(), scroll_offset.Height(),
                                800, 600),
