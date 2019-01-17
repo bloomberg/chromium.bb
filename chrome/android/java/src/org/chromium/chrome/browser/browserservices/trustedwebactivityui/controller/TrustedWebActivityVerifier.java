@@ -46,7 +46,6 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
     private final ActivityTabProvider mActivityTabProvider;
     private final TabObserverRegistrar mTabObserverRegistrar;
     private final String mClientPackageName;
-    private final OriginVerifier mOriginVerifier;
 
     @Nullable private VerificationState mState;
 
@@ -87,7 +86,10 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
 
             // This doesn't perform a network request or attempt new verification - it checks to
             // see if a verification already exists for the given inputs.
-            handleVerificationResult(isPageOnVerifiedOrigin(url), new Origin(url));
+            Origin origin = new Origin(url);
+            boolean verified = OriginVerifier.isValidOrigin(mClientPackageName, origin,
+                    RELATIONSHIP);
+            handleVerificationResult(verified, origin);
         }
     };
 
@@ -106,8 +108,6 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
         mClientPackageName = customTabsConnection.getClientPackageNameForSession(
                 intentDataProvider.getSession());
         assert mClientPackageName != null;
-
-        mOriginVerifier = new OriginVerifier(mClientPackageName, RELATIONSHIP);
 
         tabObserverRegistrar.registerTabObserver(mVerifyOnPageLoadObserver);
         lifecycleDispatcher.register(this);
@@ -152,7 +152,7 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
 
     /** Returns whether the given |url| is on an Origin that the package has been verified for. */
     public boolean isPageOnVerifiedOrigin(String url) {
-        return mOriginVerifier.wasPreviouslyVerified(new Origin(url));
+        return OriginVerifier.isValidOrigin(mClientPackageName, new Origin(url), RELATIONSHIP);
     }
 
     /**
@@ -167,11 +167,12 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
         }
 
         updateState(origin, VERIFICATION_PENDING);
-        mOriginVerifier.start((packageName2, origin2, verified, online) -> {
+
+        new OriginVerifier((packageName2, origin2, verified, online) -> {
             if (!origin.equals(new Origin(tab.getUrl()))) return;
 
             handleVerificationResult(verified, origin);
-        }, origin);
+        }, mClientPackageName, RELATIONSHIP).start(origin);
     }
 
     private void handleVerificationResult(boolean verified, Origin origin) {

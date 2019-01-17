@@ -13,13 +13,10 @@ public class Relationship {
     public final String packageName;
     public final Origin origin;
     public final int relation;
-    public final String signatureFingerprint;
 
     /** Creates a {@link Relationship} to hold relationship details. */
-    public Relationship(String packageName, String signatureFingerprint, Origin origin,
-            int relation) {
+    public Relationship(String packageName, Origin origin, int relation) {
         this.packageName = packageName;
-        this.signatureFingerprint = signatureFingerprint;
         this.origin = origin;
         this.relation = relation;
     }
@@ -31,6 +28,6 @@ public class Relationship {
     @Override
     public String toString() {
         // Neither package names nor origins contain commas.
-        return packageName + "," + origin + "," + relation + "," + signatureFingerprint;
+        return packageName + "," + origin + "," + relation;
     }
 }
