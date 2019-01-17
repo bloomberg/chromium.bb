@@ -80,19 +80,18 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer
   explicit RandomTreeTrainer(RandomNumberGenerator* rng = nullptr);
   ~RandomTreeTrainer();
 
-  // Return a callback that can be used to train a random tree.
-  static TrainingAlgorithmCB GetTrainingAlgorithmCB(const LearningTask& task);
+  // Train on all examples.  Calls |model_cb| with the trained model, which
+  // won't happen before this returns.
+  void Train(const LearningTask& task,
+             const TrainingData& examples,
+             TrainedModelCB model_cb);
 
-  // Train on all examples.
-  std::unique_ptr<Model> Train(const LearningTask& task,
-                               const TrainingData& examples);
-
+ private:
   // Train on the subset |training_idx|.
   std::unique_ptr<Model> Train(const LearningTask& task,
                                const TrainingData& examples,
                                const std::vector<size_t>& training_idx);
 
- private:
   // Set of feature indices.
   using FeatureSet = std::set<int>;
 

@@ -9,20 +9,10 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/optional.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 
 namespace media {
 namespace learning {
-
-// static
-TrainingAlgorithmCB RandomTreeTrainer::GetTrainingAlgorithmCB(
-    const LearningTask& task) {
-  return base::BindRepeating(
-      [](LearningTask task, TrainingData training_data,
-         TrainedModelCB model_cb) {
-        std::move(model_cb).Run(RandomTreeTrainer().Train(task, training_data));
-      },
-      task);
-}
 
 RandomTreeTrainer::Split::Split() = default;
 
@@ -145,16 +135,19 @@ RandomTreeTrainer::RandomTreeTrainer(RandomNumberGenerator* rng)
 
 RandomTreeTrainer::~RandomTreeTrainer() = default;
 
-std::unique_ptr<Model> RandomTreeTrainer::Train(
-    const LearningTask& task,
-    const TrainingData& training_data) {
+void RandomTreeTrainer::Train(const LearningTask& task,
+                              const TrainingData& training_data,
+                              TrainedModelCB model_cb) {
   // Start with all the training data.
   std::vector<size_t> training_idx;
   training_idx.reserve(training_data.size());
   for (size_t idx = 0; idx < training_data.size(); idx++)
     training_idx.push_back(idx);
 
-  return Train(task, training_data, training_idx);
+  // It's a little odd that we don't post training.  Perhaps we should.
+  auto model = Train(task, training_data, training_idx);
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(model_cb), std::move(model)));
 }
 
 std::unique_ptr<Model> RandomTreeTrainer::Train(

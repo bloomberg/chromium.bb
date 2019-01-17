@@ -5,6 +5,7 @@
 #include "media/learning/impl/extra_trees_trainer.h"
 
 #include "base/memory/ref_counted.h"
+#include "base/test/scoped_task_environment.h"
 #include "media/learning/impl/fisher_iris_dataset.h"
 #include "media/learning/impl/test_random_number_generator.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,6 +28,21 @@ class ExtraTreesTest : public testing::TestWithParam<LearningTask::Ordering> {
     }
   }
 
+  std::unique_ptr<Model> Train(const LearningTask& task,
+                               const TrainingData& data) {
+    std::unique_ptr<Model> model;
+    trainer_.Train(
+        task_, data,
+        base::BindOnce(
+            [](std::unique_ptr<Model>* model_out,
+               std::unique_ptr<Model> model) { *model_out = std::move(model); },
+            &model));
+    scoped_task_environment_.RunUntilIdle();
+    return model;
+  }
+
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   TestRandomNumberGenerator rng_;
   ExtraTreesTrainer trainer_;
   LearningTask task_;
@@ -36,7 +52,7 @@ class ExtraTreesTest : public testing::TestWithParam<LearningTask::Ordering> {
 
 TEST_P(ExtraTreesTest, EmptyTrainingDataWorks) {
   TrainingData empty;
-  auto model = trainer_.Train(task_, empty);
+  auto model = Train(task_, empty);
   EXPECT_NE(model.get(), nullptr);
   EXPECT_EQ(model->PredictDistribution(FeatureVector()), TargetDistribution());
 }
@@ -45,7 +61,7 @@ TEST_P(ExtraTreesTest, FisherIrisDataset) {
   SetupFeatures(4);
   FisherIrisDataset iris;
   TrainingData training_data = iris.GetTrainingData();
-  auto model = trainer_.Train(task_, training_data);
+  auto model = Train(task_, training_data);
 
   // Verify predictions on the training set, just for sanity.
   size_t num_correct = 0;
@@ -82,7 +98,7 @@ TEST_P(ExtraTreesTest, WeightedTrainingSetIsSupported) {
 
   // Create a weighed set with |weight| for each example's weight.
   EXPECT_FALSE(training_data.is_unweighted());
-  auto model = trainer_.Train(task_, training_data);
+  auto model = Train(task_, training_data);
 
   // The singular max should be example_1.
   TargetDistribution distribution =
@@ -115,7 +131,7 @@ TEST_P(ExtraTreesTest, RegressionWorks) {
   task_.target_description.ordering = LearningTask::Ordering::kNumeric;
 
   // Create a weighed set with |weight| for each example's weight.
-  auto model = trainer_.Train(task_, training_data);
+  auto model = Train(task_, training_data);
 
   // Make sure that the results are in the right range.
   TargetDistribution distribution =
@@ -168,9 +184,9 @@ TEST_P(ExtraTreesTest, RegressionVsBinaryClassification) {
   }
 
   // Train a model on the binary classification task and the regression task.
-  auto c_model = trainer_.Train(task_, c_data);
+  auto c_model = Train(task_, c_data);
   task_.target_description.ordering = LearningTask::Ordering::kNumeric;
-  auto r_model = trainer_.Train(task_, r_data);
+  auto r_model = Train(task_, r_data);
 
   // Verify that, for all feature combinations, the models roughly agree.  Since
   // the data is separable, it probably should be exact.

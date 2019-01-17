@@ -69,6 +69,8 @@ TrainingData::TrainingData(TrainingData&& rhs) = default;
 
 TrainingData::~TrainingData() = default;
 
+TrainingData& TrainingData::operator=(TrainingData&& rhs) = default;
+
 TrainingData TrainingData::DeDuplicate() const {
   // flat_set has non-const iterators, while std::set does not.  const_cast is
   // not allowed by chromium style outside of getters, so flat_set it is.
