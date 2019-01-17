@@ -299,19 +299,18 @@ void MockRenderThread::PassInitialInterfaceProviderRequestForFrame(
 // The Frame expects to be returned a valid route_id different from its own.
 void MockRenderThread::OnCreateChildFrame(
     const FrameHostMsg_CreateChildFrame_Params& params,
-    int* new_render_frame_id,
-    FrameHostMsg_CreateChildFrame_Params_Reply* params_reply,
-    base::UnguessableToken* devtools_frame_token) {
-  *new_render_frame_id = GetNextRoutingID();
+    FrameHostMsg_CreateChildFrame_Params_Reply* params_reply) {
+  params_reply->child_routing_id = GetNextRoutingID();
   service_manager::mojom::InterfaceProviderPtr interface_provider;
   frame_routing_id_to_initial_interface_provider_requests_.emplace(
-      *new_render_frame_id, mojo::MakeRequest(&interface_provider));
+      params_reply->child_routing_id, mojo::MakeRequest(&interface_provider));
   params_reply->new_interface_provider =
       interface_provider.PassInterface().PassHandle().release();
 
   blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker;
   frame_routing_id_to_initial_document_broker_requests_.emplace(
-      *new_render_frame_id, mojo::MakeRequest(&document_interface_broker));
+      params_reply->child_routing_id,
+      mojo::MakeRequest(&document_interface_broker));
   params_reply->document_interface_broker_content_handle =
       document_interface_broker.PassInterface().PassHandle().release();
 
@@ -320,7 +319,7 @@ void MockRenderThread::OnCreateChildFrame(
   params_reply->document_interface_broker_blink_handle =
       document_interface_broker_blink.PassInterface().PassHandle().release();
 
-  *devtools_frame_token = base::UnguessableToken::Create();
+  params_reply->devtools_frame_token = base::UnguessableToken::Create();
 }
 
 bool MockRenderThread::OnControlMessageReceived(const IPC::Message& msg) {
