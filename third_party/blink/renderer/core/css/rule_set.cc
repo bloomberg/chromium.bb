@@ -214,9 +214,13 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
       focus_pseudo_class_rules_.push_back(rule_data);
       return true;
     case CSSSelector::kPseudoPlaceholder:
-      AddToRuleSet(AtomicString("-webkit-input-placeholder"),
-                   EnsurePendingRules()->shadow_pseudo_element_rules,
-                   rule_data);
+      if (it->FollowsPart()) {
+        part_pseudo_rules_.push_back(rule_data);
+      } else {
+        AddToRuleSet(AtomicString("-webkit-input-placeholder"),
+                     EnsurePendingRules()->shadow_pseudo_element_rules,
+                     rule_data);
+      }
       return true;
     case CSSSelector::kPseudoHost:
     case CSSSelector::kPseudoHostContext:

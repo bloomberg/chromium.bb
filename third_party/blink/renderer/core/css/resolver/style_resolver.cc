@@ -321,11 +321,24 @@ static void MatchElementScopeRules(const Element& element,
   collector.FinishAddingAuthorRulesForTreeScope();
 }
 
+void StyleResolver::MatchPseudoPartRulesForUAHost(
+    const Element& element,
+    ElementRuleCollector& collector) {
+  if (element.ShadowPseudoId() != "-webkit-input-placeholder")
+    return;
+
+  // We allow ::placeholder pseudo element after ::part(). See
+  // MatchSlottedRulesForUAHost for a more detailed explanation.
+  DCHECK(element.OwnerShadowHost());
+  MatchPseudoPartRules(*element.OwnerShadowHost(), collector);
+}
+
 void StyleResolver::MatchPseudoPartRules(const Element& element,
                                          ElementRuleCollector& collector) {
   if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
     return;
 
+  MatchPseudoPartRulesForUAHost(element, collector);
   DOMTokenList* part = element.GetPart();
   if (!part)
     return;
