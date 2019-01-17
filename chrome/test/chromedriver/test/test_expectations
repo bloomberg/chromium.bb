@@ -185,6 +185,9 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2611
     'CorrectEventFiringTest.testClickAnElementThatDisappear',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2697
+    'CorrectEventFiringTest.testShouldEmitClickEventWhenClickingOnATextInputElement',
 ]
 
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
