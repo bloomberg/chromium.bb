@@ -453,7 +453,9 @@ CSSPrimitiveValue* ConsumeGradientLengthOrPercent(
 CSSPrimitiveValue* ConsumeAngle(
     CSSParserTokenRange& range,
     const CSSParserContext* context,
-    base::Optional<WebFeature> unitless_zero_feature) {
+    base::Optional<WebFeature> unitless_zero_feature,
+    double minimum_value,
+    double maximum_value) {
   // Ensure that we have a context for counting the
   // unitless_zero_feature if it is requested.
   DCHECK(context || !unitless_zero_feature);
@@ -479,10 +481,30 @@ CSSPrimitiveValue* ConsumeAngle(
   }
   CalcParser calc_parser(range, kValueRangeAll);
   if (const CSSCalcValue* calculation = calc_parser.Value()) {
-    if (calculation->Category() == kCalcAngle)
-      return calc_parser.ConsumeValue();
+    if (calculation->Category() != kCalcAngle)
+      return nullptr;
+    if (CSSPrimitiveValue* result = calc_parser.ConsumeValue()) {
+      if (result->GetDoubleValue() < minimum_value) {
+        return CSSPrimitiveValue::Create(minimum_value,
+                                         result->TypeWithCalcResolved());
+      }
+      if (result->GetDoubleValue() > maximum_value) {
+        return CSSPrimitiveValue::Create(maximum_value,
+                                         result->TypeWithCalcResolved());
+      }
+      return result;
+    }
   }
   return nullptr;
+}
+
+CSSPrimitiveValue* ConsumeAngle(
+    CSSParserTokenRange& range,
+    const CSSParserContext* context,
+    base::Optional<WebFeature> unitless_zero_feature) {
+  return ConsumeAngle(range, context, std::move(unitless_zero_feature),
+                      std::numeric_limits<double>::lowest(),
+                      std::numeric_limits<double>::max());
 }
 
 CSSPrimitiveValue* ConsumeTime(CSSParserTokenRange& range,

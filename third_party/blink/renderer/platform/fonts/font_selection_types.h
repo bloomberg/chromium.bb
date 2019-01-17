@@ -185,6 +185,18 @@ static inline const FontSelectionValue& ItalicSlopeValue() {
   return italicValue;
 }
 
+static inline const FontSelectionValue& MaxObliqueValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, maxObliqueValue,
+                                  (90));
+  return maxObliqueValue;
+}
+
+static inline const FontSelectionValue& MinObliqueValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, minObliqueValue,
+                                  (-90));
+  return minObliqueValue;
+}
+
 static inline const FontSelectionValue& BoldThreshold() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, boldThreshold,
                                   (600));
