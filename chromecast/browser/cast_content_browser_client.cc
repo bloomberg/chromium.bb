@@ -195,6 +195,9 @@ CastContentBrowserClient::CastContentBrowserClient(
 #if defined(OS_ANDROID)
         // TODO(awolter): Remove this once the feature is on by default.
         features::kAudioServiceAudioStreams,
+#if BUILDFLAG(ENABLE_VIDEO_CAPTURE_SERVICE)
+        features::kMojoVideoCapture,
+#endif  // BUILDFLAG(ENABLE_VIDEO_CAPTURE_SERVICE)
 #endif
   });
 
