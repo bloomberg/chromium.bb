@@ -1030,15 +1030,12 @@ void RasterImplementation::CopySubTexture(const gpu::Mailbox& source_mailbox,
     SetGLError(GL_INVALID_VALUE, "glCopySubTexture", "height < 0");
     return;
   }
-  // TODO(piman): coalesce all these commands.
-  GLuint texture_ids[2] = {1, 2};
-  helper_->CreateAndConsumeTextureINTERNALImmediate(texture_ids[0],
-                                                    source_mailbox.name);
-  helper_->CreateAndConsumeTextureINTERNALImmediate(texture_ids[1],
-                                                    dest_mailbox.name);
-  helper_->CopySubTextureINTERNAL(texture_ids[0], texture_ids[1], xoffset,
-                                  yoffset, x, y, width, height);
-  helper_->DeleteTexturesINTERNALImmediate(2, texture_ids);
+  GLbyte mailboxes[sizeof(source_mailbox.name) * 2];
+  memcpy(mailboxes, source_mailbox.name, sizeof(source_mailbox.name));
+  memcpy(mailboxes + sizeof(source_mailbox.name), dest_mailbox.name,
+         sizeof(dest_mailbox.name));
+  helper_->CopySubTextureINTERNALImmediate(xoffset, yoffset, x, y, width,
+                                           height, mailboxes);
   CheckGLError();
 }
 

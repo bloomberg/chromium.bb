@@ -67,7 +67,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   void RestoreFramebufferBindings() const override { NOTREACHED(); }
   void RestoreRenderbufferBindings() override { NOTREACHED(); }
   void RestoreProgramBindings() const override { NOTREACHED(); }
-  void RestoreTextureState(unsigned service_id) const override { NOTREACHED(); }
+  void RestoreTextureState(unsigned service_id) override { NOTREACHED(); }
   void RestoreTextureUnitBindings(unsigned unit) const override {
     NOTREACHED();
   }

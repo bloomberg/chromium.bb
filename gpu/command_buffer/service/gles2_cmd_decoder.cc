@@ -676,7 +676,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void RestoreBufferBinding(unsigned int target) override;
   void RestoreFramebufferBindings() const override;
   void RestoreRenderbufferBindings() override;
-  void RestoreTextureState(unsigned service_id) const override;
+  void RestoreTextureState(unsigned service_id) override;
 
   void ClearDeviceWindowRectangles() const;
   void RestoreDeviceWindowRectangles() const override;
@@ -6190,7 +6190,7 @@ void GLES2DecoderImpl::RestoreRenderbufferBindings() {
   state_.RestoreRenderbufferBindings();
 }
 
-void GLES2DecoderImpl::RestoreTextureState(unsigned service_id) const {
+void GLES2DecoderImpl::RestoreTextureState(unsigned service_id) {
   Texture* texture = texture_manager()->GetTextureForServiceId(service_id);
   if (texture) {
     GLenum target = texture->target();

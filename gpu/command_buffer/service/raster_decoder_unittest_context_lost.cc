@@ -176,7 +176,7 @@ TEST_P(RasterDecoderLostContextTest, LostFromMakeCurrentWithRobustness) {
 TEST_P(RasterDecoderLostContextTest, TextureDestroyAfterLostFromMakeCurrent) {
   Init(/*has_robustness=*/true);
 
-  CreateFakeTexture(kNewClientId, kNewServiceId, viz::ResourceFormat::RGBA_8888,
+  CreateFakeTexture(kNewServiceId, viz::ResourceFormat::RGBA_8888,
                     /*width=*/2, /*height=*/2,
                     /*cleared=*/false);
 

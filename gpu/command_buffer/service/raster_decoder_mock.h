@@ -87,7 +87,7 @@ class MockRasterDecoder : public RasterDecoder {
   MOCK_CONST_METHOD0(RestoreFramebufferBindings, void());
   MOCK_CONST_METHOD0(RestoreProgramBindings, void());
   MOCK_METHOD0(RestoreRenderbufferBindings, void());
-  MOCK_CONST_METHOD1(RestoreTextureState, void(unsigned service_id));
+  MOCK_METHOD1(RestoreTextureState, void(unsigned service_id));
   MOCK_CONST_METHOD1(RestoreTextureUnitBindings, void(unsigned unit));
   MOCK_METHOD1(RestoreVertexAttribArray, void(unsigned index));
 

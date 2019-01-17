@@ -218,7 +218,7 @@ class GPU_GLES2_EXPORT DecoderContext : public AsyncAPIInterface,
   virtual void RestoreAllAttributes() const = 0;
 
   // Restores texture states for a given service id.
-  virtual void RestoreTextureState(unsigned service_id) const = 0;
+  virtual void RestoreTextureState(unsigned service_id) = 0;
 };
 
 }  // namespace gpu

@@ -1400,8 +1400,7 @@ void GLES2DecoderPassthroughImpl::RestoreGlobalState() const {}
 
 void GLES2DecoderPassthroughImpl::RestoreProgramBindings() const {}
 
-void GLES2DecoderPassthroughImpl::RestoreTextureState(
-    unsigned service_id) const {}
+void GLES2DecoderPassthroughImpl::RestoreTextureState(unsigned service_id) {}
 
 void GLES2DecoderPassthroughImpl::RestoreTextureUnitBindings(
     unsigned unit) const {}

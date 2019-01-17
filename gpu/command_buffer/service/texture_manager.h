@@ -313,6 +313,11 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   // rectangle if level does not exist.
   gfx::Rect GetLevelClearedRect(GLenum target, GLint level) const;
 
+  // Marks a |rect| of a particular level as cleared.
+  void SetLevelClearedRect(GLenum target,
+                           GLint level,
+                           const gfx::Rect& cleared_rect);
+
   // Whether a particular level/face is cleared.
   bool IsLevelCleared(GLenum target, GLint level) const;
   // Whether a particular level/face is partially cleared.
@@ -464,11 +469,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   bool npot() const {
     return npot_;
   }
-
-  // Marks a |rect| of a particular level as cleared.
-  void SetLevelClearedRect(GLenum target,
-                           GLint level,
-                           const gfx::Rect& cleared_rect);
 
   // Updates the cleared flag for this texture by inspecting all the mips.
   void UpdateCleared();
@@ -937,6 +937,11 @@ class GPU_GLES2_EXPORT TextureManager
   // Clear a specific level.
   bool ClearTextureLevel(DecoderContext* decoder,
                          TextureRef* ref,
+                         GLenum target,
+                         GLint level);
+
+  bool ClearTextureLevel(DecoderContext* decoder,
+                         Texture* texture,
                          GLenum target,
                          GLint level);
 

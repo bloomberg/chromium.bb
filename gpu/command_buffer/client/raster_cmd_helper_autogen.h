@@ -182,41 +182,20 @@ void ClearPaintCacheINTERNAL() {
   }
 }
 
-void CreateAndConsumeTextureINTERNALImmediate(GLuint texture_id,
-                                              const GLbyte* mailbox) {
+void CopySubTextureINTERNALImmediate(GLint xoffset,
+                                     GLint yoffset,
+                                     GLint x,
+                                     GLint y,
+                                     GLsizei width,
+                                     GLsizei height,
+                                     const GLbyte* mailboxes) {
   const uint32_t size =
-      raster::cmds::CreateAndConsumeTextureINTERNALImmediate::ComputeSize();
-  raster::cmds::CreateAndConsumeTextureINTERNALImmediate* c =
+      raster::cmds::CopySubTextureINTERNALImmediate::ComputeSize();
+  raster::cmds::CopySubTextureINTERNALImmediate* c =
       GetImmediateCmdSpaceTotalSize<
-          raster::cmds::CreateAndConsumeTextureINTERNALImmediate>(size);
+          raster::cmds::CopySubTextureINTERNALImmediate>(size);
   if (c) {
-    c->Init(texture_id, mailbox);
-  }
-}
-
-void CopySubTextureINTERNAL(GLuint source_id,
-                            GLuint dest_id,
-                            GLint xoffset,
-                            GLint yoffset,
-                            GLint x,
-                            GLint y,
-                            GLsizei width,
-                            GLsizei height) {
-  raster::cmds::CopySubTextureINTERNAL* c =
-      GetCmdSpace<raster::cmds::CopySubTextureINTERNAL>();
-  if (c) {
-    c->Init(source_id, dest_id, xoffset, yoffset, x, y, width, height);
-  }
-}
-
-void DeleteTexturesINTERNALImmediate(GLsizei n, const GLuint* textures) {
-  const uint32_t size =
-      raster::cmds::DeleteTexturesINTERNALImmediate::ComputeSize(n);
-  raster::cmds::DeleteTexturesINTERNALImmediate* c =
-      GetImmediateCmdSpaceTotalSize<
-          raster::cmds::DeleteTexturesINTERNALImmediate>(size);
-  if (c) {
-    c->Init(n, textures);
+    c->Init(xoffset, yoffset, x, y, width, height, mailboxes);
   }
 }
 

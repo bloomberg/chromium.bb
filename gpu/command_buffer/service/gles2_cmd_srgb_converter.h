@@ -50,7 +50,7 @@ class GPU_GLES2_EXPORT SRGBConverter {
       bool encode,
       bool enable_scissor_test);
 
-  void GenerateMipmap(const gles2::GLES2Decoder* decoder,
+  void GenerateMipmap(gles2::GLES2Decoder* decoder,
                       Texture* tex,
                       GLenum target);
 

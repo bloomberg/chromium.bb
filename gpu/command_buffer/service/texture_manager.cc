@@ -2211,6 +2211,13 @@ bool TextureManager::ClearTextureLevel(DecoderContext* decoder,
                                        GLint level) {
   DCHECK(ref);
   Texture* texture = ref->texture();
+  return ClearTextureLevel(decoder, texture, target, level);
+}
+
+bool TextureManager::ClearTextureLevel(DecoderContext* decoder,
+                                       Texture* texture,
+                                       GLenum target,
+                                       GLint level) {
   if (texture->num_uncleared_mips() == 0) {
     return true;
   }

@@ -258,44 +258,29 @@ error::Error RasterDecoderImpl::HandleClearPaintCacheINTERNAL(
   return error::kNoError;
 }
 
-error::Error RasterDecoderImpl::HandleCreateAndConsumeTextureINTERNALImmediate(
+error::Error RasterDecoderImpl::HandleCopySubTextureINTERNALImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
-  const volatile raster::cmds::CreateAndConsumeTextureINTERNALImmediate& c =
-      *static_cast<const volatile raster::cmds::
-                       CreateAndConsumeTextureINTERNALImmediate*>(cmd_data);
-  GLuint texture_id = static_cast<GLuint>(c.texture_id);
-  uint32_t mailbox_size;
-  if (!gles2::GLES2Util::ComputeDataSize<GLbyte, 16>(1, &mailbox_size)) {
-    return error::kOutOfBounds;
-  }
-  if (mailbox_size > immediate_data_size) {
-    return error::kOutOfBounds;
-  }
-  volatile const GLbyte* mailbox =
-      gles2::GetImmediateDataAs<volatile const GLbyte*>(c, mailbox_size,
-                                                        immediate_data_size);
-  if (mailbox == nullptr) {
-    return error::kOutOfBounds;
-  }
-  DoCreateAndConsumeTextureINTERNAL(texture_id, mailbox);
-  return error::kNoError;
-}
-
-error::Error RasterDecoderImpl::HandleCopySubTextureINTERNAL(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile raster::cmds::CopySubTextureINTERNAL& c =
-      *static_cast<const volatile raster::cmds::CopySubTextureINTERNAL*>(
+  const volatile raster::cmds::CopySubTextureINTERNALImmediate& c =
+      *static_cast<
+          const volatile raster::cmds::CopySubTextureINTERNALImmediate*>(
           cmd_data);
-  GLuint source_id = static_cast<GLuint>(c.source_id);
-  GLuint dest_id = static_cast<GLuint>(c.dest_id);
   GLint xoffset = static_cast<GLint>(c.xoffset);
   GLint yoffset = static_cast<GLint>(c.yoffset);
   GLint x = static_cast<GLint>(c.x);
   GLint y = static_cast<GLint>(c.y);
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
+  uint32_t mailboxes_size;
+  if (!gles2::GLES2Util::ComputeDataSize<GLbyte, 32>(1, &mailboxes_size)) {
+    return error::kOutOfBounds;
+  }
+  if (mailboxes_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  volatile const GLbyte* mailboxes =
+      gles2::GetImmediateDataAs<volatile const GLbyte*>(c, mailboxes_size,
+                                                        immediate_data_size);
   if (width < 0) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTextureINTERNAL",
                        "width < 0");
@@ -306,30 +291,10 @@ error::Error RasterDecoderImpl::HandleCopySubTextureINTERNAL(
                        "height < 0");
     return error::kNoError;
   }
-  DoCopySubTextureINTERNAL(source_id, dest_id, xoffset, yoffset, x, y, width,
-                           height);
-  return error::kNoError;
-}
-
-error::Error RasterDecoderImpl::HandleDeleteTexturesINTERNALImmediate(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile raster::cmds::DeleteTexturesINTERNALImmediate& c =
-      *static_cast<
-          const volatile raster::cmds::DeleteTexturesINTERNALImmediate*>(
-          cmd_data);
-  GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t textures_size;
-  if (!gles2::SafeMultiplyUint32(n, sizeof(GLuint), &textures_size)) {
+  if (mailboxes == nullptr) {
     return error::kOutOfBounds;
   }
-  volatile const GLuint* textures =
-      gles2::GetImmediateDataAs<volatile const GLuint*>(c, textures_size,
-                                                        immediate_data_size);
-  if (textures == nullptr) {
-    return error::kOutOfBounds;
-  }
-  DeleteTexturesINTERNALHelper(n, textures);
+  DoCopySubTextureINTERNAL(xoffset, yoffset, x, y, width, height, mailboxes);
   return error::kNoError;
 }
 
