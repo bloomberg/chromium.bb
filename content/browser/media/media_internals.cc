@@ -377,6 +377,15 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
 
   auto it = player_info_map.find(event.id);
   if (it == player_info_map.end()) {
+    if (event.type != media::MediaLogEvent::WEBMEDIAPLAYER_CREATED) {
+      // Due to the asynchronous cleanup order of PipelineImpl and WMPI,
+      // sometimes a kStopped / kStopping event can sneak in after
+      // WEBMEDIAPLAYER_DESTROYED. This causes a new memory leak because the
+      // newly created PipelineImpl would never get cleaned up.
+      // As a result, we should be dropping any event that would target a
+      // player that hasn't already been created.
+      return;
+    }
     bool success = false;
     std::tie(it, success) = player_info_map.emplace(
         std::make_pair(event.id, PipelineInfo(IsIncognito(render_process_id))));
