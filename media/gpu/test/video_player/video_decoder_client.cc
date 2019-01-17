@@ -14,7 +14,6 @@
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
 #include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
 #include "media/gpu/test/video_frame_helpers.h"
-#include "media/gpu/test/video_frame_validator.h"
 #include "media/gpu/test/video_player/frame_renderer.h"
 
 #define DVLOGF(level) DVLOG(level) << __func__ << "(): "
@@ -26,10 +25,10 @@ namespace test {
 VideoDecoderClient::VideoDecoderClient(
     const VideoPlayer::EventCallback& event_cb,
     FrameRenderer* renderer,
-    VideoFrameValidator* frame_validator)
+    const std::vector<VideoFrameProcessor*>& frame_processors)
     : event_cb_(event_cb),
       frame_renderer_(renderer),
-      frame_validator_(frame_validator),
+      frame_processors_(frame_processors),
       decoder_client_thread_("VDAClientDecoderThread"),
       decoder_client_state_(VideoDecoderClientState::kUninitialized),
       weak_this_factory_(this) {
@@ -46,9 +45,9 @@ VideoDecoderClient::~VideoDecoderClient() {
 std::unique_ptr<VideoDecoderClient> VideoDecoderClient::Create(
     const VideoPlayer::EventCallback& event_cb,
     FrameRenderer* frame_renderer,
-    VideoFrameValidator* frame_validator) {
+    const std::vector<VideoFrameProcessor*>& frame_processors) {
   auto decoder_client = base::WrapUnique(
-      new VideoDecoderClient(event_cb, frame_renderer, frame_validator));
+      new VideoDecoderClient(event_cb, frame_renderer, frame_processors));
   if (!decoder_client->Initialize()) {
     return nullptr;
   }
@@ -188,7 +187,9 @@ void VideoDecoderClient::PictureReady(const Picture& picture) {
 
   frame_renderer_->RenderFrame(wrapped_video_frame);
 
-  frame_validator_->EvaluateVideoFrame(video_frame, current_frame_index_++);
+  for (VideoFrameProcessor* frame_processor : frame_processors_)
+    frame_processor->ProcessVideoFrame(video_frame, current_frame_index_);
+  current_frame_index_++;
 }
 
 void VideoDecoderClient::NotifyEndOfBitstreamBuffer(

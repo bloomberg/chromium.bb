@@ -32,15 +32,16 @@ VideoPlayer::~VideoPlayer() {
 std::unique_ptr<VideoPlayer> VideoPlayer::Create(
     const Video* video,
     FrameRenderer* frame_renderer,
-    VideoFrameValidator* frame_validator) {
+    const std::vector<VideoFrameProcessor*>& frame_processors) {
   auto video_player = base::WrapUnique(new VideoPlayer());
-  video_player->Initialize(video, frame_renderer, frame_validator);
+  video_player->Initialize(video, frame_renderer, frame_processors);
   return video_player;
 }
 
-void VideoPlayer::Initialize(const Video* video,
-                             FrameRenderer* frame_renderer,
-                             VideoFrameValidator* frame_validator) {
+void VideoPlayer::Initialize(
+    const Video* video,
+    FrameRenderer* frame_renderer,
+    const std::vector<VideoFrameProcessor*>& frame_processors) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(video_player_state_, VideoPlayerState::kUninitialized);
   DCHECK(frame_renderer && video);
@@ -50,7 +51,7 @@ void VideoPlayer::Initialize(const Video* video,
       base::BindRepeating(&VideoPlayer::NotifyEvent, base::Unretained(this));
 
   decoder_client_ =
-      VideoDecoderClient::Create(event_cb, frame_renderer, frame_validator);
+      VideoDecoderClient::Create(event_cb, frame_renderer, frame_processors);
   CHECK(decoder_client_) << "Failed to create decoder client";
 
   // Create a decoder for the specified video. We'll always use import mode as
