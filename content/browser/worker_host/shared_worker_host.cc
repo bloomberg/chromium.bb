@@ -31,8 +31,8 @@
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom.h"
 #include "third_party/blink/public/platform/web_feature.mojom.h"
-#include "third_party/blink/public/web/worker_content_settings_proxy.mojom.h"
 
 namespace content {
 namespace {

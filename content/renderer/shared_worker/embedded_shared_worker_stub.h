@@ -21,12 +21,12 @@
 #include "third_party/blink/public/mojom/worker/shared_worker.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_host.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
+#include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
-#include "third_party/blink/public/web/worker_content_settings_proxy.mojom.h"
 #include "url/gurl.h"
 
 namespace blink {
