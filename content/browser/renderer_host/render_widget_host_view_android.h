@@ -284,7 +284,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool SynchronizeVisualProperties(
       const cc::DeadlinePolicy& deadline_policy,
       const base::Optional<viz::LocalSurfaceIdAllocation>&
-          child_local_surface_id_allocation);
+          child_local_surface_id_allocation,
+      bool scroll_focused_node_into_view);
 
   bool HasValidFrame() const;
 

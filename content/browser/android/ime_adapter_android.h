@@ -105,7 +105,8 @@ class CONTENT_EXPORT ImeAdapterAndroid : public RenderWidgetHostConnector {
   }
 
   void UpdateState(const TextInputState& state);
-  void UpdateAfterViewSizeChanged();
+  // Update size change, and return whether we need to scroll input into view.
+  bool UpdateSizeChangeForScroll();
   void UpdateOnTouchDown();
 
   void AdvanceFocusInForm(JNIEnv*,
