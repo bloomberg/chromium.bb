@@ -67,6 +67,10 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
  private:
   using SendTabToSelfEntries =
       std::map<std::string, std::unique_ptr<SendTabToSelfEntry>>;
+
+  // Notify all observers of a change;
+  void NotifySendTabToSelfModelChanged();
+
   // |entries_| is keyed by GUIDs.
   SendTabToSelfEntries entries_;
   const syncer::LocalDeviceInfoProvider* const local_device_info_provider_;

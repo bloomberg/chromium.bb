@@ -7,7 +7,9 @@
 
 #include <vector>
 
+#include "base/observer_list.h"
 #include "components/send_tab_to_self/send_tab_to_self_entry.h"
+#include "components/send_tab_to_self/send_tab_to_self_model_observer.h"
 
 namespace send_tab_to_self {
 
@@ -22,7 +24,7 @@ class SendTabToSelfModel {
   // Returns a vector of entry IDs in the model.
   virtual std::vector<std::string> GetAllGuids() const = 0;
 
-  // Delete all entries. Return true if entries where indeed deleted.
+  // Delete all entries.
   virtual void DeleteAllEntries() = 0;
 
   // Returns a specific entry. Returns null if the entry does not exist.
@@ -34,6 +36,15 @@ class SendTabToSelfModel {
   virtual const SendTabToSelfEntry* AddEntry(const GURL& url,
                                              const std::string& title,
                                              base::Time navigation_time) = 0;
+
+  // Observer registration methods. The model will remove all observers upon
+  // destruction automatically.
+  void AddObserver(SendTabToSelfModelObserver* observer);
+  void RemoveObserver(SendTabToSelfModelObserver* observer);
+
+ protected:
+  // The observers.
+  base::ObserverList<SendTabToSelfModelObserver>::Unchecked observers_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfModel);

@@ -54,17 +54,22 @@ base::Optional<syncer::ModelError> SendTabToSelfBridge::MergeSyncData(
 base::Optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
-  // TODO(jeffreycohen): Handle deletion.
   for (syncer::EntityChange& change : entity_changes) {
-    const sync_pb::SendTabToSelfSpecifics& specifics =
-        change.data().specifics.send_tab_to_self();
-    // Deserialize entry.
-    // TODO(jeffreycohen): FromProto expects a valid entry. External data
-    // needs to be sanitized before it's passed through.
-    std::unique_ptr<SendTabToSelfEntry> entry =
-        SendTabToSelfEntry::FromProto(specifics, clock_->Now());
-    // This entry is new. Add it to the model.
-    entries_[entry->GetGUID()] = std::move(entry);
+    if (change.type() == syncer::EntityChange::ACTION_DELETE) {
+      entries_.erase(change.storage_key());
+    } else {
+      const sync_pb::SendTabToSelfSpecifics& specifics =
+          change.data().specifics.send_tab_to_self();
+      // TODO(jeffreycohen): FromProto expects a valid entry. External data
+      // needs to be sanitized before it's passed through.
+      std::unique_ptr<SendTabToSelfEntry> entry =
+          SendTabToSelfEntry::FromProto(specifics, clock_->Now());
+      // This entry is new. Add it to the model.
+      entries_[entry->GetGUID()] = std::move(entry);
+    }
+  }
+  if (!entity_changes.empty()) {
+    NotifySendTabToSelfModelChanged();
   }
   return base::nullopt;
 }
@@ -169,6 +174,11 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
   change_processor()->Put(guid, std::move(entity_data), &metadata_change_list);
 
   return entries_.emplace(guid, std::move(entry)).first->second.get();
+}
+
+void SendTabToSelfBridge::NotifySendTabToSelfModelChanged() {
+  for (SendTabToSelfModelObserver& observer : observers_)
+    observer.SendTabToSelfModelChanged();
 }
 
 }  // namespace send_tab_to_self

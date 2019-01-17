@@ -110,12 +110,29 @@ TEST_F(SendTabToSelfBridgeTest, ApplySyncChangesOneAdd) {
       syncer::EntityChange::CreateAdd("guid1", MakeEntityData(entry)));
   auto metadata_change_list =
       std::make_unique<syncer::InMemoryMetadataChangeList>();
-  // TODO(jeffreycohen): guid doesnt seem to survive CreateAdd.
   bridge_.ApplySyncChanges(std::move(metadata_change_list), add_changes);
   EXPECT_EQ(1ul, bridge_.GetAllGuids().size());
 }
 
-// TODO(jeffreycohen): Test deletion logic once implemented.
+// Tests that the send tab to self entry is correctly removed.
+TEST_F(SendTabToSelfBridgeTest, ApplySyncChangesOneDeletion) {
+  SendTabToSelfEntry entry("guid1", GURL("http://www.example.com/"), "title",
+                           AdvanceAndGetTime(), AdvanceAndGetTime(), "device");
+  std::unique_ptr<sync_pb::SendTabToSelfSpecifics> specifics = entry.AsProto();
+
+  syncer::EntityChangeList add_changes;
+
+  add_changes.push_back(
+      syncer::EntityChange::CreateAdd("guid1", MakeEntityData(entry)));
+  auto metadata_change_list =
+      std::make_unique<syncer::InMemoryMetadataChangeList>();
+  bridge_.ApplySyncChanges(std::move(metadata_change_list), add_changes);
+  EXPECT_EQ(1ul, bridge_.GetAllGuids().size());
+  syncer::EntityChangeList delete_changes;
+  delete_changes.push_back(syncer::EntityChange::CreateDelete("guid1"));
+  bridge_.ApplySyncChanges(std::move(metadata_change_list), delete_changes);
+  EXPECT_EQ(0ul, bridge_.GetAllGuids().size());
+}
 
 }  // namespace
 
