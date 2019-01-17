@@ -353,7 +353,7 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
 }
 
 // TODO(alancutter): Consider moving this utility function up somewhere where it
-// can be shared with md_bookmarks_ui.cc.
+// can be shared with bookmarks_ui.cc.
 // Ampersands are used by menus to determine which characters to use as shortcut
 // keys. This functionality is not implemented for NTP.
 static base::string16 GetLocalizedString(int message_id) {

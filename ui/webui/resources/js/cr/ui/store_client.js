@@ -11,7 +11,7 @@ cr.define('cr.ui', function() {
    *
    * This StoreClient is generic, and needs to be combined with a
    * page-specific implementation, as in
-   * chrome/browser/resources/md_bookmarks/store_client.js.
+   * chrome/browser/resources/bookmarks/store_client.js.
    * This implementation should override the watch, getState and getStore
    * methods.
    *

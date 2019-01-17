@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_MD_BOOKMARKS_MD_BOOKMARKS_BROWSERTEST_H_
-#define CHROME_BROWSER_UI_WEBUI_MD_BOOKMARKS_MD_BOOKMARKS_BROWSERTEST_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_BOOKMARKS_BOOKMARKS_BROWSERTEST_H_
+#define CHROME_BROWSER_UI_WEBUI_BOOKMARKS_BOOKMARKS_BROWSERTEST_H_
 
 #include "chrome/test/base/web_ui_browser_test.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -30,4 +30,4 @@ class MdBookmarksBrowserTest : public WebUIBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(MdBookmarksBrowserTest);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_MD_BOOKMARKS_MD_BOOKMARKS_BROWSERTEST_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_BOOKMARKS_BOOKMARKS_BROWSERTEST_H_

@@ -5158,7 +5158,7 @@ grit("resources") {
 
   if (!is_android && optimize_webui) {
     deps += [
-      "//chrome/browser/resources/md_bookmarks:build",
+      "//chrome/browser/resources/bookmarks:build",
       "//chrome/browser/resources/md_downloads:build",
       "//chrome/browser/resources/md_history:build",
     ]

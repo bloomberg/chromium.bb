@@ -8,7 +8,7 @@ suiteSetup(function() {
      * This is a generic test store, designed to replace a real Store instance
      * during testing. It should be extended by providing the specific store
      * implementation class that the test store is replacing, as in
-     * chrome/test/data/webui/md_bookmarks/test_store.js.
+     * chrome/test/data/webui/bookmarks/test_store.js.
      */
     class TestStore extends cr.ui.Store {
       constructor(

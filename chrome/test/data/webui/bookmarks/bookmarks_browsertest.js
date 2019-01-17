@@ -10,7 +10,7 @@ const ROOT_PATH = '../../../../../';
 GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/browser/prefs/incognito_mode_prefs.h"');
-GEN('#include "chrome/browser/ui/webui/md_bookmarks/md_bookmarks_browsertest.h"');
+GEN('#include "chrome/browser/ui/webui/bookmarks/bookmarks_browsertest.h"');
 
 function MaterialBookmarksBrowserTest() {}
 

@@ -68,7 +68,7 @@ cr.define('bookmarks', function() {
       this.addShortcut_(Command.OPEN_NEW_TAB, 'Ctrl|Enter', 'Meta|Enter');
       this.addShortcut_(Command.OPEN_NEW_WINDOW, 'Shift|Enter');
 
-      // Note: the undo shortcut is also defined in md_bookmarks_ui.cc
+      // Note: the undo shortcut is also defined in bookmarks_ui.cc
       // TODO(b/893033): de-duplicate shortcut by moving all shortcut
       // definitions from JS to C++.
       this.addShortcut_(Command.UNDO, 'Ctrl|z', 'Meta|z');
