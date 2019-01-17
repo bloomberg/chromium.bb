@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Wed, 16 Jan 2019 13:07:12 -0800
+Subject: [PATCH 30/30] Fix detection of orphaned and malformed autoindexes.
+
+This backports https://sqlite.org/src/info/10f9e39d6ed2413f
+
+Bug: 922213
+---
+ third_party/sqlite/src/src/prepare.c | 14 +++++---------
+ 1 file changed, 5 insertions(+), 9 deletions(-)
+
+diff --git a/third_party/sqlite/src/src/prepare.c b/third_party/sqlite/src/src/prepare.c
+index fe098cfa092e..cdf6f65bb115 100644
+--- a/third_party/sqlite/src/src/prepare.c
++++ b/third_party/sqlite/src/src/prepare.c
+@@ -118,15 +118,11 @@ int sqlite3InitCallback(void *pInit, int argc, char **argv, char **NotUsed){
+     */
+     Index *pIndex;
+     pIndex = sqlite3FindIndex(db, argv[0], db->aDb[iDb].zDbSName);
+-    if( pIndex==0 ){
+-      /* This can occur if there exists an index on a TEMP table which
+-      ** has the same name as another index on a permanent index.  Since
+-      ** the permanent table is hidden by the TEMP table, we can also
+-      ** safely ignore the index on the permanent table.
+-      */
+-      /* Do Nothing */;
+-    }else if( sqlite3GetInt32(argv[1], &pIndex->tnum)==0 ){
+-      corruptSchema(pData, argv[0], "invalid rootpage");
++    if( pIndex==0
++     || sqlite3GetInt32(argv[1],&pIndex->tnum)==0
++     || pIndex->tnum<2
++    ){
++      corruptSchema(pData, argv[0], pIndex?"invalid rootpage":"orphan index");
+     }
+   }
+   return 0;
+--
+2.18.0
+
