@@ -157,8 +157,6 @@ void MediaStreamVideoSource::DidStopSource(base::OnceClosure callback,
                                            RestartResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(callback);
-  DCHECK_EQ(Owner().GetReadyState(),
-            blink::WebMediaStreamSource::kReadyStateEnded);
   if (result == RestartResult::IS_STOPPED) {
     state_ = ENDED;
   }
