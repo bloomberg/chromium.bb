@@ -24,4 +24,7 @@ extern const base::Feature kSnapshotDrawView;
 // Feature to rework handling of copied content (url/string/image) in the ui.
 extern const base::Feature kCopiedContentBehavior;
 
+// Feature to apply UI Refresh theme to the settings.
+extern const base::Feature kSettingsRefresh;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_
