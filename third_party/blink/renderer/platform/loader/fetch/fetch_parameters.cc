@@ -123,6 +123,13 @@ void FetchParameters::SetLazyImagePlaceholder() {
   SetAllowImagePlaceholder();
 }
 
+void FetchParameters::SetLazyImageDeferred() {
+  resource_request_.SetPreviewsState(resource_request_.GetPreviewsState() |
+                                     WebURLRequest::kLazyImageLoadDeferred);
+  DCHECK_EQ(kNone, image_request_optimization_);
+  image_request_optimization_ = kDeferImageLoad;
+}
+
 void FetchParameters::SetAllowImagePlaceholder() {
   DCHECK_EQ(kNone, image_request_optimization_);
   if (!resource_request_.Url().ProtocolIsInHTTPFamily() ||
