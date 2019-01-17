@@ -9,8 +9,8 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/hover_highlight_view.h"
-#include "ash/system/unified/unified_detailed_view_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "components/prefs/pref_service.h"
@@ -71,7 +71,7 @@ class TrayAccessibilityTest : public AshTestBase {
   ~TrayAccessibilityTest() override = default;
 
   void CreateDetailedMenu() {
-    delegate_ = std::make_unique<UnifiedDetailedViewDelegate>(nullptr);
+    delegate_ = std::make_unique<DetailedViewDelegate>(nullptr);
     detailed_menu_ =
         std::make_unique<tray::AccessibilityDetailedView>(delegate_.get());
   }

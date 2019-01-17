@@ -5,7 +5,7 @@
 #include "ash/system/audio/unified_audio_detailed_view_controller.h"
 
 #include "ash/system/audio/audio_detailed_view.h"
-#include "ash/system/unified/unified_detailed_view_delegate.h"
+#include "ash/system/tray/detailed_view_delegate.h"
 
 using chromeos::CrasAudioHandler;
 
@@ -14,7 +14,7 @@ namespace ash {
 UnifiedAudioDetailedViewController::UnifiedAudioDetailedViewController(
     UnifiedSystemTrayController* tray_controller)
     : detailed_view_delegate_(
-          std::make_unique<UnifiedDetailedViewDelegate>(tray_controller)) {
+          std::make_unique<DetailedViewDelegate>(tray_controller)) {
   DCHECK(CrasAudioHandler::IsInitialized());
   CrasAudioHandler::Get()->AddAudioObserver(this);
 }
