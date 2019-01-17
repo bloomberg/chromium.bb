@@ -345,16 +345,24 @@ class TabStripModel {
 
   // Create a new tab group and add the set of tabs pointed to be |indices| to
   // it. Pins all of the tabs if any of them were pinned, and reorders the tabs
-  // so they are contiguous and do not split an existing group in half. This
-  // feature is in development and gated behind a feature flag.
-  // https://crbug.com/915956.
+  // so they are contiguous and do not split an existing group in half.
+  // |indices| must be sorted in ascending order. This feature is in development
+  // and gated behind a feature flag. https://crbug.com/915956.
   void AddToNewGroup(const std::vector<int>& indices);
 
   // Add the set of tabs pointed to by |indices| to the tab group |group|. The
   // tabs take on the pinnedness of the tabs already in the group, and are moved
-  // to immediately follow the tabs already in the group.
+  // to immediately follow the tabs already in the group. |indices| must be
+  // sorted in ascending order. This feature is in development and gated behind
+  // a feature flag. https://crbug.com/915956.
   void AddToExistingGroup(const std::vector<int>& indices,
                           const TabGroupData* group);
+
+  // Removes the set of tabs pointed to by |indices| from the the groups they
+  // are in, if any. The tabs are moved out of the group if necessary. |indices|
+  // must be sorted in ascending order. This feature is in development and gated
+  // behind a feature flag. https://crbug.com/915956.
+  void RemoveFromGroup(const std::vector<int>& indices);
 
   // View API //////////////////////////////////////////////////////////////////
 
@@ -376,6 +384,7 @@ class TabStripModel {
     CommandBookmarkAllTabs,
     CommandAddToNewGroup,
     CommandAddToExistingGroup,
+    CommandRemoveFromGroup,
     CommandLast
   };
 

@@ -1044,6 +1044,25 @@ std::vector<int> TabStripModel::SetTabsPinned(const std::vector<int>& indices,
   return new_indices;
 }
 
+void TabStripModel::RemoveFromGroup(const std::vector<int>& indices) {
+  // Remove each tab from the group it's in, if any. Go from right to left
+  // since tabs may move to the right when ungrouped.
+  for (int i = indices.size() - 1; i >= 0; i--) {
+    const TabGroupData* group = GetTabGroupForTab(indices[i]);
+    if (group == nullptr)
+      continue;
+    // Move the tab until it's the rightmost tab in its group
+    int stepsToMove = 0;
+    while (ContainsIndex(indices[i] + stepsToMove + 1) &&
+           GetTabGroupForTab(indices[i] + stepsToMove + 1) == group) {
+      stepsToMove++;
+    }
+    MoveWebContentsAt(indices[i], indices[i] + stepsToMove, false);
+
+    contents_data_[indices[i] + stepsToMove]->set_group(nullptr);
+  }
+}
+
 // Context menu functions.
 bool TabStripModel::IsContextMenuCommandEnabled(
     int context_index,
@@ -1108,6 +1127,9 @@ bool TabStripModel::IsContextMenuCommandEnabled(
       return true;
 
     case CommandAddToExistingGroup:
+      return true;
+
+    case CommandRemoveFromGroup:
       return true;
 
     default:
@@ -1262,6 +1284,13 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
     case CommandAddToExistingGroup: {
       // Do nothing. The submenu's delegate will invoke
       // ExecuteAddToExistingGroupCommand with the correct group later.
+      break;
+    }
+
+    case CommandRemoveFromGroup: {
+      base::RecordAction(UserMetricsAction("TabContextMenu_RemoveFromGroup"));
+      std::vector<int> indices = GetIndicesForCommand(context_index);
+      RemoveFromGroup(indices);
       break;
     }
 
