@@ -1605,7 +1605,7 @@ ImageData* BaseRenderingContext2D::getImageData(
       return nullptr;
     }
     sx += sw;
-    sw = -sw;
+    sw = base::saturated_cast<int>(base::SafeUnsignedAbs(sw));
   }
   if (sh < 0) {
     if (!base::CheckAdd(sy, sh).IsValid<int>()) {
@@ -1613,7 +1613,7 @@ ImageData* BaseRenderingContext2D::getImageData(
       return nullptr;
     }
     sy += sh;
-    sh = -sh;
+    sh = base::saturated_cast<int>(base::SafeUnsignedAbs(sh));
   }
 
   if (!base::CheckAdd(sx, sw).IsValid<int>() ||
@@ -1736,12 +1736,13 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
 
   if (dirty_width < 0) {
     dirty_x += dirty_width;
-    dirty_width = -dirty_width;
+    dirty_width = base::saturated_cast<int>(base::SafeUnsignedAbs(dirty_width));
   }
 
   if (dirty_height < 0) {
     dirty_y += dirty_height;
-    dirty_height = -dirty_height;
+    dirty_height =
+        base::saturated_cast<int>(base::SafeUnsignedAbs(dirty_height));
   }
 
   IntRect dest_rect(dirty_x, dirty_y, dirty_width, dirty_height);
