@@ -53,20 +53,7 @@ AppServiceAppItem::AppServiceAppItem(
     const apps::AppUpdate& app_update)
     : ChromeAppListItem(profile, app_update.AppId()),
       app_type_(app_update.AppType()) {
-  SetName(app_update.Name());
-  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile);
-  if (proxy) {
-    // TODO(crbug.com/826982): if another AppUpdate is observed, we should call
-    // LoadIcon again. The question (see the TODO in
-    // AppServiceAppModelBuilder::OnAppUpdate) is who should be the observer:
-    // the AppModelBuilder or the AppItem?
-    proxy->LoadIcon(app_update.AppId(),
-                    apps::mojom::IconCompression::kUncompressed,
-                    app_list::AppListConfig::instance().grid_icon_dimension(),
-                    base::BindOnce(&AppServiceAppItem::OnLoadIcon,
-                                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
+  OnAppUpdate(app_update, true);
   if (sync_item && sync_item->item_ordinal.IsValid()) {
     UpdateFromSync(sync_item);
   } else {
@@ -78,6 +65,28 @@ AppServiceAppItem::AppServiceAppItem(
 }
 
 AppServiceAppItem::~AppServiceAppItem() = default;
+
+void AppServiceAppItem::OnAppUpdate(const apps::AppUpdate& app_update) {
+  OnAppUpdate(app_update, false);
+}
+
+void AppServiceAppItem::OnAppUpdate(const apps::AppUpdate& app_update,
+                                    bool in_constructor) {
+  if (in_constructor || app_update.NameChanged()) {
+    SetName(app_update.Name());
+  }
+
+  if (in_constructor || app_update.IconKeyChanged()) {
+    apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile());
+    if (proxy) {
+      proxy->LoadIcon(app_update.AppId(),
+                      apps::mojom::IconCompression::kUncompressed,
+                      app_list::AppListConfig::instance().grid_icon_dimension(),
+                      base::BindOnce(&AppServiceAppItem::OnLoadIcon,
+                                     weak_ptr_factory_.GetWeakPtr()));
+    }
+  }
+}
 
 void AppServiceAppItem::Activate(int event_flags) {
   Launch(event_flags, apps::mojom::LaunchSource::kFromAppListGrid);

@@ -257,12 +257,15 @@ class AppSearchProvider::DataSource {
 
 namespace {
 
-class AppServiceDataSource : public AppSearchProvider::DataSource {
+class AppServiceDataSource : public AppSearchProvider::DataSource,
+                             public apps::AppRegistryCache::Observer {
  public:
   AppServiceDataSource(Profile* profile, AppSearchProvider* owner)
       : AppSearchProvider::DataSource(profile, owner) {
-    // TODO(crbug.com/826982): observe the cache for apps being installed and
-    // uninstalled, and in the callback, call RefreshAppsAndUpdateResultsXxx().
+    apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile);
+    if (proxy) {
+      Observe(&proxy->Cache());
+    }
   }
 
   ~AppServiceDataSource() override = default;
@@ -303,6 +306,15 @@ class AppServiceDataSource : public AppSearchProvider::DataSource {
   }
 
  private:
+  // apps::AppRegistryCache::Observer overrides:
+  void OnAppUpdate(const apps::AppUpdate& update) override {
+    if (update.Readiness() == apps::mojom::Readiness::kReady) {
+      owner()->RefreshAppsAndUpdateResultsDeferred();
+    } else {
+      owner()->RefreshAppsAndUpdateResults();
+    }
+  }
+
   DISALLOW_COPY_AND_ASSIGN(AppServiceDataSource);
 };
 
