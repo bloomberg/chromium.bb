@@ -312,7 +312,6 @@ TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
   blink::mojom::DocumentInterfaceBrokerPtr stub_document_interface_broker;
   frame()->DidCommitProvisionalLoad(
       item, blink::kWebStandardCommit,
-      blink::WebGlobalObjectReusePolicy::kCreateNew,
       mojo::MakeRequest(&stub_document_interface_broker).PassMessagePipe());
   EXPECT_EQ(SERVER_LOFI_ON, frame()->GetPreviewsState());
 
@@ -325,7 +324,6 @@ TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
   // but serves the purpose of testing the LoFi state logic.
   GetMainRenderFrame()->DidCommitProvisionalLoad(
       item, blink::kWebStandardCommit,
-      blink::WebGlobalObjectReusePolicy::kCreateNew,
       mojo::MakeRequest(&stub_document_interface_broker).PassMessagePipe());
   EXPECT_EQ(PREVIEWS_UNSPECIFIED, GetMainRenderFrame()->GetPreviewsState());
   // The subframe would be deleted here after a cross-document navigation. It
@@ -375,7 +373,6 @@ TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
     blink::mojom::DocumentInterfaceBrokerPtr stub_document_interface_broker;
     frame()->DidCommitProvisionalLoad(
         item, blink::kWebStandardCommit,
-        blink::WebGlobalObjectReusePolicy::kCreateNew,
         mojo::MakeRequest(&stub_document_interface_broker).PassMessagePipe());
     EXPECT_EQ(tests[i].type, frame()->GetEffectiveConnectionType());
 
@@ -386,7 +383,6 @@ TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
 
     GetMainRenderFrame()->DidCommitProvisionalLoad(
         item, blink::kWebStandardCommit,
-        blink::WebGlobalObjectReusePolicy::kCreateNew,
         mojo::MakeRequest(&stub_document_interface_broker).PassMessagePipe());
     EXPECT_EQ(blink::WebEffectiveConnectionType::kTypeUnknown,
               GetMainRenderFrame()->GetEffectiveConnectionType());

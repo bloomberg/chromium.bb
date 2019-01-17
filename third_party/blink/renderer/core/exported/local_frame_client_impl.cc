@@ -465,7 +465,7 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
     }
 
     web_frame_->Client()->DidCommitProvisionalLoad(
-        WebHistoryItem(item), commit_type, global_object_reuse_policy,
+        WebHistoryItem(item), commit_type,
         document_interface_broker_request.PassMessagePipe());
     if (web_frame_->GetFrame()->IsLocalRoot()) {
       // This update should be sent as soon as loading the new document begins
