@@ -941,17 +941,18 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
   const bool success = s.Run();
   db_.reset_error_callback();
   if (success) {
-    list.emplace_back(PasswordStoreChange::ADD, form);
+    list.emplace_back(PasswordStoreChange::ADD, form, db_.GetLastInsertRowId());
     return list;
   }
   // Repeat the same statement but with REPLACE semantic.
   DCHECK(!add_replace_statement_.empty());
+  int old_primary_key = GetPrimaryKey(form);
   s.Assign(
       db_.GetCachedStatement(SQL_FROM_HERE, add_replace_statement_.c_str()));
   BindAddStatement(form, encrypted_password, &s);
   if (s.Run()) {
-    list.emplace_back(PasswordStoreChange::REMOVE, form);
-    list.emplace_back(PasswordStoreChange::ADD, form);
+    list.emplace_back(PasswordStoreChange::REMOVE, form, old_primary_key);
+    list.emplace_back(PasswordStoreChange::ADD, form, db_.GetLastInsertRowId());
   }
   return list;
 }
@@ -971,7 +972,7 @@ PasswordStoreChangeList LoginDatabase::AddBlacklistedLoginForTesting(
       db_.GetCachedStatement(SQL_FROM_HERE, add_statement_.c_str()));
   BindAddStatement(form, encrypted_password, &s);
   if (s.Run())
-    list.emplace_back(PasswordStoreChange::ADD, form);
+    list.emplace_back(PasswordStoreChange::ADD, form, db_.GetLastInsertRowId());
   return list;
 }
 
@@ -1032,7 +1033,7 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
 
   PasswordStoreChangeList list;
   if (db_.GetLastChangeCount())
-    list.emplace_back(PasswordStoreChange::UPDATE, form);
+    list.emplace_back(PasswordStoreChange::UPDATE, form, GetPrimaryKey(form));
 
   return list;
 }
@@ -1052,6 +1053,7 @@ bool LoginDatabase::RemoveLogin(const PasswordForm& form,
 #endif
   // Remove a login by UNIQUE-constrained fields.
   DCHECK(!delete_statement_.empty());
+  int primary_key = GetPrimaryKey(form);
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, delete_statement_.c_str()));
   s.BindString(0, form.origin.spec());
@@ -1064,7 +1066,7 @@ bool LoginDatabase::RemoveLogin(const PasswordForm& form,
     return false;
   }
   if (changes) {
-    changes->emplace_back(PasswordStoreChange::REMOVE, form);
+    changes->emplace_back(PasswordStoreChange::REMOVE, form, primary_key);
   }
   return true;
 }
@@ -1087,15 +1089,15 @@ bool LoginDatabase::RemoveLoginsCreatedBetween(
   if (changes) {
     changes->clear();
   }
-  std::vector<std::unique_ptr<PasswordForm>> forms;
+  PrimaryKeyToFormMap key_to_form_map;
   ScopedTransaction transaction(this);
-  if (!GetLoginsCreatedBetween(delete_begin, delete_end, &forms)) {
+  if (!GetLoginsCreatedBetween(delete_begin, delete_end, &key_to_form_map)) {
     return false;
   }
 
 #if defined(OS_IOS)
-  for (const std::unique_ptr<PasswordForm>& form : forms) {
-    DeleteEncryptedPassword(*form);
+  for (const auto& pair : key_to_form_map) {
+    DeleteEncryptedPassword(*pair.second);
   }
 #endif
 
@@ -1110,8 +1112,10 @@ bool LoginDatabase::RemoveLoginsCreatedBetween(
     return false;
   }
   if (changes) {
-    for (const auto& form : forms) {
-      changes->emplace_back(PasswordStoreChange::REMOVE, *form);
+    for (const auto& pair : key_to_form_map) {
+      changes->emplace_back(PasswordStoreChange::REMOVE,
+                            /*form=*/std::move(*pair.second),
+                            /*primary_key=*/pair.first);
     }
   }
   return true;
@@ -1125,14 +1129,14 @@ bool LoginDatabase::RemoveLoginsSyncedBetween(
     changes->clear();
   }
   ScopedTransaction transaction(this);
-  std::vector<std::unique_ptr<PasswordForm>> forms;
-  if (!GetLoginsSyncedBetween(delete_begin, delete_end, &forms)) {
+  PrimaryKeyToFormMap key_to_form_map;
+  if (!GetLoginsSyncedBetween(delete_begin, delete_end, &key_to_form_map)) {
     return false;
   }
 
 #if defined(OS_IOS)
-  for (const std::unique_ptr<PasswordForm>& form : forms) {
-    DeleteEncryptedPassword(*form);
+  for (const auto& pair : key_to_form_map) {
+    DeleteEncryptedPassword(*pair.second);
   }
 #endif
 
@@ -1148,8 +1152,10 @@ bool LoginDatabase::RemoveLoginsSyncedBetween(
     return false;
   }
   if (changes) {
-    for (const auto& form : forms) {
-      changes->emplace_back(PasswordStoreChange::REMOVE, *form);
+    for (const auto& pair : key_to_form_map) {
+      changes->emplace_back(PasswordStoreChange::REMOVE,
+                            /*form=*/std::move(*pair.second),
+                            /*primary_key=*/pair.first);
     }
   }
   return true;
@@ -1159,10 +1165,16 @@ bool LoginDatabase::GetAutoSignInLogins(
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
   DCHECK(forms);
   DCHECK(!autosignin_statement_.empty());
+  forms->clear();
+
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, autosignin_statement_.c_str()));
-
-  return StatementToForms(&s, nullptr, forms);
+  PrimaryKeyToFormMap key_to_form_map;
+  bool result = StatementToForms(&s, nullptr, &key_to_form_map);
+  for (auto& pair : key_to_form_map) {
+    forms->push_back(std::move(pair.second));
+  }
+  return result;
 }
 
 bool LoginDatabase::DisableAutoSignInForOrigin(const GURL& origin) {
@@ -1175,8 +1187,9 @@ bool LoginDatabase::DisableAutoSignInForOrigin(const GURL& origin) {
 }
 
 LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
-    PasswordForm* form,
-    const sql::Statement& s) const {
+    const sql::Statement& s,
+    int* primary_key,
+    PasswordForm* form) const {
   std::string encrypted_password;
   s.ColumnBlobAsString(COLUMN_PASSWORD_VALUE, &encrypted_password);
   base::string16 decrypted_password;
@@ -1188,6 +1201,7 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
     return encryption_result;
   }
 
+  *primary_key = s.ColumnInt(COLUMN_ID);
   std::string tmp = s.ColumnString(COLUMN_ORIGIN_URL);
   form->origin = GURL(tmp);
   tmp = s.ColumnString(COLUMN_ACTION_URL);
@@ -1250,6 +1264,8 @@ bool LoginDatabase::GetLogins(
     const PasswordStore::FormDigest& form,
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
   DCHECK(forms);
+  forms->clear();
+
   const GURL signon_realm(form.signon_realm);
   std::string registered_domain = GetRegistryControlledDomain(signon_realm);
   const bool should_PSL_matching_apply =
@@ -1318,14 +1334,17 @@ bool LoginDatabase::GetLogins(
                               PSL_DOMAIN_MATCH_NOT_USED,
                               PSL_DOMAIN_MATCH_COUNT);
   }
-
+  PrimaryKeyToFormMap key_to_form_map;
   bool success = StatementToForms(
       &s, should_PSL_matching_apply || should_federated_apply ? &form : nullptr,
-      forms);
-  if (success)
-    return true;
-  forms->clear();
-  return false;
+      &key_to_form_map);
+  if (!success) {
+    return false;
+  }
+  for (auto& pair : key_to_form_map) {
+    forms->push_back(std::move(pair.second));
+  }
+  return true;
 }
 
 bool LoginDatabase::GetLoginsForSameOrganizationName(
@@ -1355,7 +1374,11 @@ bool LoginDatabase::GetLoginsForSameOrganizationName(
       SQL_FROM_HERE, get_same_organization_name_logins_statement_.c_str()));
   s.BindString(0, signon_realms_with_same_organization_name_regexp);
 
-  bool success = StatementToForms(&s, nullptr, forms);
+  PrimaryKeyToFormMap key_to_form_map;
+  bool success = StatementToForms(&s, nullptr, &key_to_form_map);
+  for (auto& pair : key_to_form_map) {
+    forms->push_back(std::move(pair.second));
+  }
 
   using PasswordFormPtr = std::unique_ptr<autofill::PasswordForm>;
   base::EraseIf(*forms, [&organization_name](const PasswordFormPtr& form) {
@@ -1373,8 +1396,8 @@ bool LoginDatabase::GetLoginsForSameOrganizationName(
 bool LoginDatabase::GetLoginsCreatedBetween(
     const base::Time begin,
     const base::Time end,
-    std::vector<std::unique_ptr<PasswordForm>>* forms) {
-  DCHECK(forms);
+    PrimaryKeyToFormMap* key_to_form_map) {
+  DCHECK(key_to_form_map);
   DCHECK(!created_statement_.empty());
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, created_statement_.c_str()));
@@ -1382,14 +1405,14 @@ bool LoginDatabase::GetLoginsCreatedBetween(
   s.BindInt64(1, end.is_null() ? std::numeric_limits<int64_t>::max()
                                : end.ToInternalValue());
 
-  return StatementToForms(&s, nullptr, forms);
+  return StatementToForms(&s, nullptr, key_to_form_map);
 }
 
 bool LoginDatabase::GetLoginsSyncedBetween(
     const base::Time begin,
     const base::Time end,
-    std::vector<std::unique_ptr<PasswordForm>>* forms) {
-  DCHECK(forms);
+    PrimaryKeyToFormMap* key_to_form_map) {
+  DCHECK(key_to_form_map);
   DCHECK(!synced_statement_.empty());
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, synced_statement_.c_str()));
@@ -1398,7 +1421,7 @@ bool LoginDatabase::GetLoginsSyncedBetween(
               end.is_null() ? base::Time::Max().ToInternalValue()
                             : end.ToInternalValue());
 
-  return StatementToForms(&s, nullptr, forms);
+  return StatementToForms(&s, nullptr, key_to_form_map);
 }
 
 bool LoginDatabase::GetAutofillableLogins(
@@ -1416,15 +1439,22 @@ bool LoginDatabase::GetAllLoginsWithBlacklistSetting(
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
   DCHECK(forms);
   DCHECK(!blacklisted_statement_.empty());
+  forms->clear();
+
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, blacklisted_statement_.c_str()));
   s.BindInt(0, blacklisted ? 1 : 0);
 
-  bool success = StatementToForms(&s, nullptr, forms);
-  if (success)
-    return true;
-  forms->clear();
-  return false;
+  PrimaryKeyToFormMap key_to_form_map;
+
+  if (!StatementToForms(&s, nullptr, &key_to_form_map)) {
+    return false;
+  }
+
+  for (auto& pair : key_to_form_map) {
+    forms->push_back(std::move(pair.second));
+  }
+  return true;
 }
 
 bool LoginDatabase::DeleteAndRecreateDatabaseFile() {
@@ -1586,7 +1616,7 @@ bool LoginDatabase::CommitTransaction() {
   return db_.CommitTransaction();
 }
 
-int LoginDatabase::GetIdForTesting(const PasswordForm& form) const {
+int LoginDatabase::GetPrimaryKey(const PasswordForm& form) const {
   DCHECK(!id_statement_.empty());
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, id_statement_.c_str()));
@@ -1670,16 +1700,17 @@ LoginDatabase::GetModelTypeStateForTesting() {
 bool LoginDatabase::StatementToForms(
     sql::Statement* statement,
     const PasswordStore::FormDigest* matched_form,
-    std::vector<std::unique_ptr<PasswordForm>>* forms) {
+    PrimaryKeyToFormMap* key_to_form_map) {
   PSLDomainMatchMetric psl_domain_match_metric = PSL_DOMAIN_MATCH_NONE;
 
   std::vector<PasswordForm> forms_to_be_deleted;
 
-  forms->clear();
+  key_to_form_map->clear();
   while (statement->Step()) {
     auto new_form = std::make_unique<PasswordForm>();
+    int primary_key = -1;
     EncryptionResult result =
-        InitPasswordFormFromStatement(new_form.get(), *statement);
+        InitPasswordFormFromStatement(*statement, &primary_key, new_form.get());
     if (result == ENCRYPTION_RESULT_SERVICE_FAILURE)
       return false;
     if (result == ENCRYPTION_RESULT_ITEM_FAILURE) {
@@ -1708,7 +1739,7 @@ bool LoginDatabase::StatementToForms(
       }
     }
 
-    forms->push_back(std::move(new_form));
+    key_to_form_map->emplace(primary_key, std::move(new_form));
   }
 
   if (matched_form) {
