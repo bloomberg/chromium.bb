@@ -24,6 +24,7 @@ import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * AwContentsClient subclass used for testing.
@@ -48,6 +49,7 @@ public class TestAwContentsClient extends NullContentsClient {
     private final OnReceivedTitleHelper mOnReceivedTitleHelper;
     private final PictureListenerHelper mPictureListenerHelper;
     private final ShouldOverrideUrlLoadingHelper mShouldOverrideUrlLoadingHelper;
+    private final ShouldInterceptRequestHelper mShouldInterceptRequestHelper;
     private final OnLoadResourceHelper mOnLoadResourceHelper;
     private final DoUpdateVisitedHistoryHelper mDoUpdateVisitedHistoryHelper;
     private final OnCreateWindowHelper mOnCreateWindowHelper;
@@ -71,6 +73,7 @@ public class TestAwContentsClient extends NullContentsClient {
         mOnReceivedTitleHelper = new OnReceivedTitleHelper();
         mPictureListenerHelper = new PictureListenerHelper();
         mShouldOverrideUrlLoadingHelper = new ShouldOverrideUrlLoadingHelper();
+        mShouldInterceptRequestHelper = new ShouldInterceptRequestHelper();
         mOnLoadResourceHelper = new OnLoadResourceHelper();
         mDoUpdateVisitedHistoryHelper = new DoUpdateVisitedHistoryHelper();
         mOnCreateWindowHelper = new OnCreateWindowHelper();
@@ -121,6 +124,10 @@ public class TestAwContentsClient extends NullContentsClient {
 
     public ShouldOverrideUrlLoadingHelper getShouldOverrideUrlLoadingHelper() {
         return mShouldOverrideUrlLoadingHelper;
+    }
+
+    public ShouldInterceptRequestHelper getShouldInterceptRequestHelper() {
+        return mShouldInterceptRequestHelper;
     }
 
     public OnLoadResourceHelper getOnLoadResourceHelper() {
@@ -512,6 +519,54 @@ public class TestAwContentsClient extends NullContentsClient {
                 mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingReturnValue();
         mShouldOverrideUrlLoadingHelper.notifyCalled(
                 request.url, request.isRedirect, request.hasUserGesture, request.isMainFrame);
+        return returnValue;
+    }
+
+    /**
+     * Callback helper for shouldInterceptRequest.
+     */
+    public static class ShouldInterceptRequestHelper extends CallbackHelper {
+        private List<String> mShouldInterceptRequestUrls = new ArrayList<String>();
+        private ConcurrentHashMap<String, AwWebResourceResponse> mReturnValuesByUrls =
+                new ConcurrentHashMap<String, AwWebResourceResponse>();
+        private ConcurrentHashMap<String, AwWebResourceRequest> mRequestsByUrls =
+                new ConcurrentHashMap<String, AwWebResourceRequest>();
+        // This is read on another thread, so needs to be marked volatile.
+        private volatile AwWebResourceResponse mShouldInterceptRequestReturnValue;
+        void setReturnValue(AwWebResourceResponse value) {
+            mShouldInterceptRequestReturnValue = value;
+        }
+        void setReturnValueForUrl(String url, AwWebResourceResponse value) {
+            mReturnValuesByUrls.put(url, value);
+        }
+        public List<String> getUrls() {
+            assert getCallCount() > 0;
+            return mShouldInterceptRequestUrls;
+        }
+        public AwWebResourceResponse getReturnValue(String url) {
+            AwWebResourceResponse value = mReturnValuesByUrls.get(url);
+            if (value != null) return value;
+            return mShouldInterceptRequestReturnValue;
+        }
+        public AwWebResourceRequest getRequestsForUrl(String url) {
+            assert getCallCount() > 0;
+            assert mRequestsByUrls.containsKey(url);
+            return mRequestsByUrls.get(url);
+        }
+        public void notifyCalled(AwWebResourceRequest request) {
+            mShouldInterceptRequestUrls.add(request.url);
+            mRequestsByUrls.put(request.url, request);
+            notifyCalled();
+        }
+    }
+
+    @Override
+    public AwWebResourceResponse shouldInterceptRequest(AwWebResourceRequest request) {
+        super.shouldInterceptRequest(request);
+        if (TRACE) Log.i(TAG, "shouldInterceptRequest " + request.url);
+        AwWebResourceResponse returnValue =
+                mShouldInterceptRequestHelper.getReturnValue(request.url);
+        mShouldInterceptRequestHelper.notifyCalled(request);
         return returnValue;
     }
 

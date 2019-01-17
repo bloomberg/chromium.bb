@@ -14,10 +14,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
+
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A test suite for WebView's network-related configuration. This tests WebView's default settings,
@@ -63,5 +68,142 @@ public class AwNetworkConfigurationTest {
         } finally {
             mTestServer.stopAndDestroyServer();
         }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Network"})
+    public void testRequestedWithHeaderMainFrame() throws Throwable {
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
+        try {
+            final String echoHeaderUrl = mTestServer.getURL("/echoheader?X-Requested-With");
+            mActivityTestRule.loadUrlSync(
+                    mAwContents, mContentsClient.getOnPageFinishedHelper(), echoHeaderUrl);
+            AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+            final String xRequestedWith = mActivityTestRule.getJavaScriptResultBodyTextContent(
+                    mAwContents, mContentsClient);
+            final String packageName = InstrumentationRegistry.getInstrumentation()
+                                               .getTargetContext()
+                                               .getPackageName();
+            Assert.assertEquals("X-Requested-With header should be the app package name",
+                    packageName, xRequestedWith);
+        } finally {
+            mTestServer.stopAndDestroyServer();
+        }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Network"})
+    public void testRequestedWithHeaderSubResource() throws Throwable {
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
+        try {
+            // Use the test server's root path as the baseUrl to satisfy same-origin restrictions.
+            final String baseUrl = mTestServer.getURL("/");
+            final String echoHeaderUrl = mTestServer.getURL("/echoheader?X-Requested-With");
+            final String pageWithIframeHtml = "<html><body><p>Main frame</p><iframe src='"
+                    + echoHeaderUrl + "'/></body></html>";
+            // We use loadDataWithBaseUrlSync because we need to dynamically control the HTML
+            // content, which EmbeddedTestServer doesn't support. We don't need to encode content
+            // because loadDataWithBaseUrl() encodes content itself.
+            mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
+                    mContentsClient.getOnPageFinishedHelper(), pageWithIframeHtml,
+                    /* mimeType */ null, /* isBase64Encoded */ false, baseUrl, /* historyUrl */
+                    null);
+            AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+            final String xRequestedWith =
+                    getJavaScriptResultIframeTextContent(mAwContents, mContentsClient);
+            final String packageName = InstrumentationRegistry.getInstrumentation()
+                                               .getTargetContext()
+                                               .getPackageName();
+            Assert.assertEquals("X-Requested-With header should be the app package name",
+                    packageName, xRequestedWith);
+        } finally {
+            mTestServer.stopAndDestroyServer();
+        }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Network"})
+    public void testRequestedWithHeaderHttpRedirect() throws Throwable {
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
+        try {
+            final String echoHeaderUrl = mTestServer.getURL("/echoheader?X-Requested-With");
+            final String encodedEchoHeaderUrl = URLEncoder.encode(echoHeaderUrl, "UTF-8");
+            // Returns a server-redirect (301) to echoHeaderUrl.
+            final String redirectToEchoHeaderUrl =
+                    mTestServer.getURL("/server-redirect?" + encodedEchoHeaderUrl);
+            mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+                    redirectToEchoHeaderUrl);
+            AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+            final String xRequestedWith = mActivityTestRule.getJavaScriptResultBodyTextContent(
+                    mAwContents, mContentsClient);
+            final String packageName = InstrumentationRegistry.getInstrumentation()
+                                               .getTargetContext()
+                                               .getPackageName();
+            Assert.assertEquals("X-Requested-With header should be the app package name",
+                    packageName, xRequestedWith);
+        } finally {
+            mTestServer.stopAndDestroyServer();
+        }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Network"})
+    public void testRequestedWithApplicationValuePreferred() throws Throwable {
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
+        try {
+            final String echoHeaderUrl = mTestServer.getURL("/echoheader?X-Requested-With");
+            final String applicationRequestedWithValue = "foo";
+            final Map<String, String> extraHeaders = new HashMap<>();
+            extraHeaders.put("X-Requested-With", applicationRequestedWithValue);
+            mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+                    echoHeaderUrl, extraHeaders);
+            AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+            final String xRequestedWith = mActivityTestRule.getJavaScriptResultBodyTextContent(
+                    mAwContents, mContentsClient);
+            Assert.assertEquals("Should prefer app's provided X-Requested-With header",
+                    applicationRequestedWithValue, xRequestedWith);
+        } finally {
+            mTestServer.stopAndDestroyServer();
+        }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Network"})
+    public void testRequestedWithHeaderShouldInterceptRequest() throws Throwable {
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
+        try {
+            final String url = mTestServer.getURL("/any-http-url-will-suffice.html");
+            mActivityTestRule.loadUrlSync(
+                    mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            AwWebResourceRequest request =
+                    mContentsClient.getShouldInterceptRequestHelper().getRequestsForUrl(url);
+            Assert.assertFalse("X-Requested-With should be invisible to shouldInterceptRequest",
+                    request.requestHeaders.containsKey("X-Requested-With"));
+        } finally {
+            mTestServer.stopAndDestroyServer();
+        }
+    }
+
+    /**
+     * Like {@link AwActivityTestRule#getJavaScriptResultBodyTextContent}, but it gets the text
+     * content of the iframe instead. This assumes the main frame has only a single iframe.
+     */
+    private String getJavaScriptResultIframeTextContent(
+            final AwContents awContents, final TestAwContentsClient viewClient) throws Exception {
+        final String script =
+                "document.getElementsByTagName('iframe')[0].contentDocument.body.textContent";
+        String raw =
+                mActivityTestRule.executeJavaScriptAndWaitForResult(awContents, viewClient, script);
+        return mActivityTestRule.maybeStripDoubleQuotes(raw);
     }
 }
