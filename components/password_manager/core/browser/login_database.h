@@ -83,8 +83,11 @@ class LoginDatabase : public syncer::SyncMetadataStore {
       WARN_UNUSED_RESULT;
 
   // Removes |form| from the list of remembered password forms. Returns true if
-  // |form| was successfully removed from the database.
-  bool RemoveLogin(const autofill::PasswordForm& form) WARN_UNUSED_RESULT;
+  // |form| was successfully removed from the database. If |changes| is not be
+  // null, it will be used to populate the change list of the removed forms if
+  // any.
+  bool RemoveLogin(const autofill::PasswordForm& form,
+                   PasswordStoreChangeList* changes) WARN_UNUSED_RESULT;
 
   // Removes the form with |id| from the list of remembered password forms.
   // Returns true if the form was successfully removed from the database.
@@ -92,15 +95,19 @@ class LoginDatabase : public syncer::SyncMetadataStore {
 
   // Removes all logins created from |delete_begin| onwards (inclusive) and
   // before |delete_end|. You may use a null Time value to do an unbounded
-  // delete in either direction.
+  // delete in either direction. If |changes| is not be null, it will be used to
+  // populate the change list of the removed forms if any.
   bool RemoveLoginsCreatedBetween(base::Time delete_begin,
-                                  base::Time delete_end);
+                                  base::Time delete_end,
+                                  PasswordStoreChangeList* changes);
 
   // Removes all logins synced from |delete_begin| onwards (inclusive) and
   // before |delete_end|. You may use a null Time value to do an unbounded
-  // delete in either direction.
+  // delete in either direction. If |changes| is not be null, it will be used to
+  // populate the change list of the removed forms if any.
   bool RemoveLoginsSyncedBetween(base::Time delete_begin,
-                                 base::Time delete_end);
+                                 base::Time delete_end,
+                                 PasswordStoreChangeList* changes);
 
   // Sets the 'skip_zero_click' flag on all forms on |origin| to 'true'.
   bool DisableAutoSignInForOrigin(const GURL& origin);
@@ -130,15 +137,6 @@ class LoginDatabase : public syncer::SyncMetadataStore {
   // You may use a null Time value to do an unbounded search in either
   // direction.
   bool GetLoginsCreatedBetween(
-      base::Time begin,
-      base::Time end,
-      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
-      WARN_UNUSED_RESULT;
-
-  // Gets all logins synced from |begin| onwards (inclusive) and before |end|.
-  // You may use a null Time value to do an unbounded search in either
-  // direction.
-  bool GetLoginsSyncedBetween(
       base::Time begin,
       base::Time end,
       std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
@@ -273,6 +271,15 @@ class LoginDatabase : public syncer::SyncMetadataStore {
   bool GetAllLoginsWithBlacklistSetting(
       bool blacklisted,
       std::vector<std::unique_ptr<autofill::PasswordForm>>* forms);
+
+  // Gets all logins synced from |begin| onwards (inclusive) and before |end|.
+  // You may use a null Time value to do an unbounded search in either
+  // direction.
+  bool GetLoginsSyncedBetween(
+      base::Time begin,
+      base::Time end,
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
+      WARN_UNUSED_RESULT;
 
   // Reads all the stored sync entities metadata in a MetadataBatch. Returns
   // nullptr in case of failure.

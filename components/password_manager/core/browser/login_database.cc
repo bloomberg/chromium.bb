@@ -84,6 +84,20 @@ autofill::ValueElementVector DeserializeValueElementPairs(
 
 namespace {
 
+// A simple class for scoping a login database transaction. This does not
+// support rollback since the login database doesn't either.
+class ScopedTransaction {
+ public:
+  explicit ScopedTransaction(LoginDatabase* db) : db_(db) {
+    db_->BeginTransaction();
+  }
+  ~ScopedTransaction() { db_->CommitTransaction(); }
+
+ private:
+  LoginDatabase* db_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedTransaction);
+};
+
 // Convenience enum for interacting with SQL queries that use all the columns.
 enum LoginDatabaseTableColumns {
   COLUMN_ORIGIN_URL = 0,
@@ -927,7 +941,7 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
   const bool success = s.Run();
   db_.reset_error_callback();
   if (success) {
-    list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
+    list.emplace_back(PasswordStoreChange::ADD, form);
     return list;
   }
   // Repeat the same statement but with REPLACE semantic.
@@ -936,8 +950,8 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
       db_.GetCachedStatement(SQL_FROM_HERE, add_replace_statement_.c_str()));
   BindAddStatement(form, encrypted_password, &s);
   if (s.Run()) {
-    list.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
-    list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
+    list.emplace_back(PasswordStoreChange::REMOVE, form);
+    list.emplace_back(PasswordStoreChange::ADD, form);
   }
   return list;
 }
@@ -957,7 +971,7 @@ PasswordStoreChangeList LoginDatabase::AddBlacklistedLoginForTesting(
       db_.GetCachedStatement(SQL_FROM_HERE, add_statement_.c_str()));
   BindAddStatement(form, encrypted_password, &s);
   if (s.Run())
-    list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
+    list.emplace_back(PasswordStoreChange::ADD, form);
   return list;
 }
 
@@ -1018,12 +1032,16 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
 
   PasswordStoreChangeList list;
   if (db_.GetLastChangeCount())
-    list.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
+    list.emplace_back(PasswordStoreChange::UPDATE, form);
 
   return list;
 }
 
-bool LoginDatabase::RemoveLogin(const PasswordForm& form) {
+bool LoginDatabase::RemoveLogin(const PasswordForm& form,
+                                PasswordStoreChangeList* changes) {
+  if (changes) {
+    changes->clear();
+  }
   if (form.is_public_suffix_match) {
     // TODO(dvadym): Discuss whether we should allow to remove PSL matched
     // credentials.
@@ -1042,7 +1060,13 @@ bool LoginDatabase::RemoveLogin(const PasswordForm& form) {
   s.BindString16(3, form.password_element);
   s.BindString(4, form.signon_realm);
 
-  return s.Run() && db_.GetLastChangeCount() > 0;
+  if (!s.Run() || db_.GetLastChangeCount() == 0) {
+    return false;
+  }
+  if (changes) {
+    changes->emplace_back(PasswordStoreChange::REMOVE, form);
+  }
+  return true;
 }
 
 bool LoginDatabase::RemoveLoginById(int id) {
@@ -1056,14 +1080,22 @@ bool LoginDatabase::RemoveLoginById(int id) {
   return s.Run() && db_.GetLastChangeCount() > 0;
 }
 
-bool LoginDatabase::RemoveLoginsCreatedBetween(base::Time delete_begin,
-                                               base::Time delete_end) {
-#if defined(OS_IOS)
+bool LoginDatabase::RemoveLoginsCreatedBetween(
+    base::Time delete_begin,
+    base::Time delete_end,
+    PasswordStoreChangeList* changes) {
+  if (changes) {
+    changes->clear();
+  }
   std::vector<std::unique_ptr<PasswordForm>> forms;
-  if (GetLoginsCreatedBetween(delete_begin, delete_end, &forms)) {
-    for (size_t i = 0; i < forms.size(); i++) {
-      DeleteEncryptedPassword(*forms[i]);
-    }
+  ScopedTransaction transaction(this);
+  if (!GetLoginsCreatedBetween(delete_begin, delete_end, &forms)) {
+    return false;
+  }
+
+#if defined(OS_IOS)
+  for (const std::unique_ptr<PasswordForm>& form : forms) {
+    DeleteEncryptedPassword(*form);
   }
 #endif
 
@@ -1074,11 +1106,36 @@ bool LoginDatabase::RemoveLoginsCreatedBetween(base::Time delete_begin,
   s.BindInt64(1, delete_end.is_null() ? std::numeric_limits<int64_t>::max()
                                       : delete_end.ToInternalValue());
 
-  return s.Run();
+  if (!s.Run()) {
+    return false;
+  }
+  if (changes) {
+    for (const auto& form : forms) {
+      changes->emplace_back(PasswordStoreChange::REMOVE, *form);
+    }
+  }
+  return true;
 }
 
-bool LoginDatabase::RemoveLoginsSyncedBetween(base::Time delete_begin,
-                                              base::Time delete_end) {
+bool LoginDatabase::RemoveLoginsSyncedBetween(
+    base::Time delete_begin,
+    base::Time delete_end,
+    PasswordStoreChangeList* changes) {
+  if (changes) {
+    changes->clear();
+  }
+  ScopedTransaction transaction(this);
+  std::vector<std::unique_ptr<PasswordForm>> forms;
+  if (!GetLoginsSyncedBetween(delete_begin, delete_end, &forms)) {
+    return false;
+  }
+
+#if defined(OS_IOS)
+  for (const std::unique_ptr<PasswordForm>& form : forms) {
+    DeleteEncryptedPassword(*form);
+  }
+#endif
+
   sql::Statement s(db_.GetCachedStatement(
       SQL_FROM_HERE,
       "DELETE FROM logins WHERE date_synced >= ? AND date_synced < ?"));
@@ -1087,7 +1144,15 @@ bool LoginDatabase::RemoveLoginsSyncedBetween(base::Time delete_begin,
               delete_end.is_null() ? base::Time::Max().ToInternalValue()
                                    : delete_end.ToInternalValue());
 
-  return s.Run();
+  if (!s.Run()) {
+    return false;
+  }
+  if (changes) {
+    for (const auto& form : forms) {
+      changes->emplace_back(PasswordStoreChange::REMOVE, *form);
+    }
+  }
+  return true;
 }
 
 bool LoginDatabase::GetAutoSignInLogins(
@@ -1402,7 +1467,7 @@ DatabaseCleanupResult LoginDatabase::DeleteUndecryptableLogins() {
   }
 
   for (const auto& form : forms_to_be_deleted) {
-    if (!RemoveLogin(form)) {
+    if (!RemoveLogin(form, nullptr)) {
       metrics_util::LogDeleteUndecryptableLoginsReturnValue(
           metrics_util::DeleteCorruptedPasswordsResult::kItemFailure);
       return DatabaseCleanupResult::kItemFailure;
@@ -1655,8 +1720,9 @@ bool LoginDatabase::StatementToForms(
   // Remove corrupted passwords.
   size_t count_removed_logins = 0;
   for (const auto& form : forms_to_be_deleted) {
-    if (RemoveLogin(form))
+    if (RemoveLogin(form, nullptr)) {
       count_removed_logins++;
+    }
   }
 
   if (count_removed_logins > 0) {
