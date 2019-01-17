@@ -77,8 +77,7 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
   item.externally_removed = download_item->GetFileExternallyRemoved();
   item.creation_time = download_item->GetStartTime();
   item.last_accessed_time = download_item->GetLastAccessTime();
-  item.is_openable = download_item->CanOpenDownload() &&
-                     blink::IsSupportedMimeType(download_item->GetMimeType());
+  item.is_openable = download_item->CanOpenDownload();
   item.file_path = download_item->GetTargetFilePath();
   item.mime_type = download_item->GetMimeType();
 
@@ -87,6 +86,7 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
   item.is_off_the_record = off_the_record;
 
   item.is_resumable = download_item->CanResume();
+  item.allow_metered = download_item->AllowMetered();
   item.received_bytes = download_item->GetReceivedBytes();
   item.is_dangerous = download_item->IsDangerous();
 
@@ -94,7 +94,6 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
   bool time_remaining_known = download_item->TimeRemaining(&time_delta);
   item.time_remaining_ms = time_remaining_known ? time_delta.InMilliseconds()
                                                 : kUnknownRemainingTime;
-  // TODO(crbug.com/857549): Add allow_metered, fail_state, pending_state.
   item.fail_state =
       ConvertDownloadInterruptReasonToFailState(download_item->GetLastReason());
   switch (download_item->GetState()) {
@@ -110,14 +109,21 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
     case DownloadItem::CANCELLED:
       item.state = OfflineItemState::CANCELLED;
       break;
-    case DownloadItem::INTERRUPTED:
-      item.state = download_item->CanResume() ? OfflineItemState::INTERRUPTED
-                                              : OfflineItemState::FAILED;
-      break;
+    case DownloadItem::INTERRUPTED: {
+      item.state =
+          download_item->IsPaused()
+              ? OfflineItemState::PAUSED
+              : (download_item->CanResume() ? OfflineItemState::INTERRUPTED
+                                            : OfflineItemState::FAILED);
+    } break;
     default:
       NOTREACHED();
   }
 
+  // TODO(crbug.com/857549): Set pending_state correctly.
+  item.pending_state = item.state == OfflineItemState::INTERRUPTED
+                           ? PendingState::PENDING_NETWORK
+                           : PendingState::NOT_PENDING;
   item.progress.value = download_item->GetReceivedBytes();
   if (download_item->PercentComplete() != -1)
     item.progress.max = download_item->GetTotalBytes();
