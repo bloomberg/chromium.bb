@@ -245,7 +245,7 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
       feature_info->workarounds().use_virtualized_gl_contexts,
       base::DoNothing());
 
-  raster_decoder_context_state_->InitializeGL(feature_info);
+  raster_decoder_context_state_->InitializeGL(GpuPreferences(), feature_info);
 
   decoder_.reset(RasterDecoder::Create(this, command_buffer_service_.get(),
                                        &outputter_, group_.get(),

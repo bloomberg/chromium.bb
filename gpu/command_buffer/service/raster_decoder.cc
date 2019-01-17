@@ -350,9 +350,13 @@ class RasterDecoderImpl final : public RasterDecoder,
 
  private:
   gles2::ContextState* state() const {
+    if (use_passthrough()) {
+      NOTREACHED();
+      return nullptr;
+    }
     return raster_decoder_context_state_->context_state();
   }
-  gl::GLApi* api() const { return state()->api(); }
+  gl::GLApi* api() const { return api_; }
   GrContext* gr_context() const {
     return raster_decoder_context_state_->gr_context;
   }
@@ -379,6 +383,8 @@ class RasterDecoderImpl final : public RasterDecoder,
   }
 
   MemoryTracker* memory_tracker() { return group_->memory_tracker(); }
+
+  bool use_passthrough() const { return group_->use_passthrough_cmd_decoder(); }
 
   gles2::BufferManager* buffer_manager() { return group_->buffer_manager(); }
 
@@ -573,6 +579,8 @@ class RasterDecoderImpl final : public RasterDecoder,
   bool in_copy_sub_texture_ = false;
   bool reset_texture_state_ = false;
 
+  gl::GLApi* api_ = nullptr;
+
   base::WeakPtrFactory<DecoderContext> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterDecoderImpl);
@@ -687,6 +695,8 @@ ContextResult RasterDecoderImpl::Initialize(
   TRACE_EVENT0("gpu", "RasterDecoderImpl::Initialize");
   DCHECK(raster_decoder_context_state_->IsCurrent(surface.get()));
   DCHECK(!context_.get());
+
+  api_ = gl::g_current_gl_context;
 
   set_initialized();
 
@@ -1070,6 +1080,8 @@ gles2::Logger* RasterDecoderImpl::GetLogger() {
 }
 
 void RasterDecoderImpl::SetIgnoreCachedStateForTest(bool ignore) {
+  if (use_passthrough())
+    return;
   state()->SetIgnoreCachedStateForTest(ignore);
 }
 
@@ -1661,6 +1673,41 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(
       reinterpret_cast<const volatile Mailbox*>(mailboxes)[1]);
   DLOG_IF(ERROR, !dest_mailbox.Verify())
       << "CopySubTexture was passed an invalid mailbox";
+
+  if (use_passthrough()) {
+    // TODO(piman): use shared image representations instead.
+    gles2::TexturePassthrough* source_texture =
+        gles2::TexturePassthrough::CheckedCast(
+            group_->mailbox_manager()->ConsumeTexture(source_mailbox));
+    gles2::TexturePassthrough* dest_texture =
+        gles2::TexturePassthrough::CheckedCast(
+            group_->mailbox_manager()->ConsumeTexture(dest_mailbox));
+    if (!source_texture || !dest_texture) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                         "unknown mailbox");
+      return;
+    }
+    if (source_texture->is_bind_pending()) {
+      gl::GLImage* image =
+          source_texture->GetLevelImage(source_texture->target(), 0);
+      if (image) {
+        api()->glBindTextureFn(source_texture->target(),
+                               source_texture->service_id());
+        if (!image->BindTexImage(source_texture->target())) {
+          image->CopyTexImage(source_texture->target());
+        }
+        source_texture->set_is_bind_pending(false);
+      }
+    }
+
+    api()->glCopySubTextureCHROMIUMFn(
+        source_texture->service_id(), /*source_level=*/0,
+        dest_texture->target(), dest_texture->service_id(),
+        /*dest_level=*/0, xoffset, yoffset, x, y, width, height,
+        /*unpack_flip_y=*/false, /*unpack_premultiply_alpha=*/false,
+        /*unpack_unmultiply_alpha=*/false);
+    return;
+  }
 
   // TODO(piman): use shared image representations instead.
   gles2::Texture* source_texture = gles2::Texture::CheckedCast(

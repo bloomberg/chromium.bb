@@ -10,6 +10,7 @@
 #include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
+#include "gpu/config/gpu_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -42,7 +43,7 @@ class GrCacheControllerTest : public testing::Test {
     context_state_->InitializeGrContext(workarounds, nullptr);
     auto feature_info =
         base::MakeRefCounted<gles2::FeatureInfo>(workarounds, GpuFeatureInfo());
-    context_state_->InitializeGL(std::move(feature_info));
+    context_state_->InitializeGL(GpuPreferences(), std::move(feature_info));
 
     controller_ =
         std::make_unique<GrCacheController>(context_state_.get(), task_runner_);

@@ -436,7 +436,8 @@ GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
     if (!vulkan_context_provider_) {
       auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
           gpu_driver_bug_workarounds(), gpu_feature_info());
-      if (!raster_decoder_context_state_->InitializeGL(feature_info.get())) {
+      if (!raster_decoder_context_state_->InitializeGL(gpu_preferences_,
+                                                       feature_info.get())) {
         raster_decoder_context_state_ = nullptr;
         return nullptr;
       }

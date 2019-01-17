@@ -16,6 +16,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_switches.h"
@@ -116,6 +117,8 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
 
   gpu_preferences.enable_oop_rasterization_ddl =
       command_line->HasSwitch(switches::kEnableOopRasterizationDDL);
+  gpu_preferences.enable_passthrough_raster_decoder =
+      command_line->HasSwitch(switches::kEnablePassthroughRasterDecoder);
 
   gpu_preferences.enable_vulkan =
       command_line->HasSwitch(switches::kEnableVulkan);

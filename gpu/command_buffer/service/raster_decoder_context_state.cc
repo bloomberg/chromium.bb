@@ -10,6 +10,7 @@
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/service_transfer_cache.h"
+#include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/vulkan/buildflags.h"
 #include "ui/gl/gl_bindings.h"
@@ -126,6 +127,7 @@ void RasterDecoderContextState::InitializeGrContext(
 }
 
 bool RasterDecoderContextState::InitializeGL(
+    const GpuPreferences& gpu_preferences,
     scoped_refptr<gles2::FeatureInfo> feature_info) {
   // We still need initialize GL when Vulkan is used, because RasterDecoder
   // depends on GL.
@@ -141,7 +143,8 @@ bool RasterDecoderContextState::InitializeGL(
 
   feature_info_ = std::move(feature_info);
   feature_info_->Initialize(gpu::CONTEXT_TYPE_OPENGLES2,
-                            false /* is_passthrough_cmd_decoder */,
+                            gpu_preferences.use_passthrough_cmd_decoder &&
+                                gles2::PassthroughCommandDecoderSupported(),
                             gles2::DisallowedFeatures());
 
   auto* api = gl::g_current_gl_context;

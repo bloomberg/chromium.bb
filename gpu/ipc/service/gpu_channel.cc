@@ -647,6 +647,9 @@ void GpuChannel::OnCreateCommandBuffer(
   bool use_passthrough_cmd_decoder =
       gpu_channel_manager_->gpu_preferences().use_passthrough_cmd_decoder &&
       gles2::PassthroughCommandDecoderSupported();
+  bool allow_raster_decoder =
+      !use_passthrough_cmd_decoder ||
+      gpu_channel_manager_->gpu_preferences().enable_passthrough_raster_decoder;
 
   if (init_params.attribs.context_type == CONTEXT_TYPE_WEBGPU) {
     if (!gpu_channel_manager_->gpu_preferences().enable_webgpu) {
@@ -656,7 +659,7 @@ void GpuChannel::OnCreateCommandBuffer(
 
     stub = std::make_unique<WebGPUCommandBufferStub>(
         this, init_params, command_buffer_id, sequence_id, stream_id, route_id);
-  } else if (!use_passthrough_cmd_decoder &&
+  } else if (allow_raster_decoder &&
              init_params.attribs.enable_raster_interface &&
              !init_params.attribs.enable_gles2_interface) {
     stub = std::make_unique<RasterCommandBufferStub>(
