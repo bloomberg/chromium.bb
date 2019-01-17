@@ -19,7 +19,7 @@ struct SystemResourceUsage {
   base::IoCounters io_counters;
   base::TimeDelta user_time;
   base::TimeDelta kernel_time;
-  size_t peak_working_set_size;
+  size_t peak_working_set_size;  // In bytes.
 };
 
 // This returns a string instead of a base::FilePath because it is called from
