@@ -36,7 +36,7 @@ gen-certurl -pem prime256v1-sha256-noext.public.pem \
 
 # Generate the signed exchange file.
 gen-signedexchange \
-  -version 1b2 \
+  -version 1b3 \
   -uri https://test.example.org/test/ \
   -status 200 \
   -content test.html \
@@ -59,20 +59,19 @@ cp test.example.org_test.sxg test.example.org_test_download.sxg
 
 # Generate the signed exchange file with invalid magic string
 xxd -p test.example.org_test.sxg |
-  sed '1s/^737867312d623200/737867312d787800/' |
+  sed '1s/^737867312d62..00/737867312d787800/' |
   xxd -r -p > test.example.org_test_invalid_magic_string.sxg
 
 # Generate the signed exchange file with invalid cbor header.
-# 0x82 : start array of 2 elements.
-# 0xa1 : start map of 1 element -> 0xa4 : 4 elements.
+# 0xa4 : start map of 4 element -> 0xa5 : 5 elements.
 xxd -p test.example.org_test.sxg |
   tr -d '\n' |
-  sed 's/82a1/82a4/' |
+  sed 's/a44664/a54664/' |
   xxd -r -p > test.example.org_test_invalid_cbor_header.sxg
 
 # Generate the signed exchange file with noext certificate
 gen-signedexchange \
-  -version 1b2 \
+  -version 1b3 \
   -uri https://test.example.org/test/ \
   -status 200 \
   -content test.html \
@@ -86,7 +85,7 @@ gen-signedexchange \
 
 # Generate the signed exchange file with invalid URL.
 gen-signedexchange \
-  -version 1b2 \
+  -version 1b3 \
   -uri https://test.example.com/test/ \
   -status 200 \
   -content test.html \
@@ -100,7 +99,7 @@ gen-signedexchange \
 
 # Generate the signed exchange for a plain text file.
 gen-signedexchange \
-  -version 1b2 \
+  -version 1b3 \
   -uri https://test.example.org/hello.txt \
   -status 200 \
   -content hello.txt \
@@ -117,7 +116,7 @@ echo "signed_exchange_signature_verifier_unittest.cc with the followings:"
 echo "===="
 
 gen-signedexchange \
-  -version 1b2 \
+  -version 1b3 \
   -uri https://test.example.org/test/ \
   -content test.html \
   -certificate ./prime256v1-sha256.public.pem \
@@ -132,7 +131,7 @@ echo 'constexpr uint8_t kCborHeaderECDSAP256[] = {'
 xxd --include $tmpdir/out.cborheader | sed '1d;$d'
 
 gen-signedexchange \
-  -version 1b2 \
+  -version 1b3 \
   -uri https://test.example.org/test/ \
   -content test.html \
   -certificate ./secp384r1-sha256.public.pem \

@@ -169,7 +169,7 @@ class SignedExchangeHandlerTest
             url::Origin::Create(GURL("https://sxg.example.com/test.sxg"))) {}
 
   virtual std::string ContentType() {
-    return "application/signed-exchange;v=b2";
+    return "application/signed-exchange;v=b3";
   }
 
   void SetUp() override {
