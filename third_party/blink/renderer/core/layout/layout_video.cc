@@ -200,8 +200,8 @@ void LayoutVideo::UpdateAfterLayout() {
   LayoutBox::UpdateAfterLayout();
   // Report violation of unsized-media policy.
   if (auto* video_element = ToHTMLVideoElementOrNull(GetNode())) {
-    if (video_element->IsDefaultIntrinsicSize())
-      media_element_parser_helpers::ReportUnsizedMediaViolation(this);
+    media_element_parser_helpers::ReportUnsizedMediaViolation(
+        this, video_element->IsDefaultIntrinsicSize());
   }
 }
 

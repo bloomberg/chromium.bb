@@ -64,13 +64,18 @@ bool ParseIntrinsicSizeAttribute(const String& value,
   return false;
 }
 
-void ReportUnsizedMediaViolation(const LayoutObject* layout_object) {
+void ReportUnsizedMediaViolation(const LayoutObject* layout_object,
+                                 bool send_report) {
   const ComputedStyle& style = layout_object->StyleRef();
   if (!style.LogicalWidth().IsSpecified() &&
       !style.LogicalHeight().IsSpecified()) {
-    layout_object->GetDocument().ReportFeaturePolicyViolation(
-        mojom::FeaturePolicyFeature::kUnsizedMedia,
-        mojom::FeaturePolicyDisposition::kEnforce);
+    layout_object->GetDocument().CountPotentialFeaturePolicyViolation(
+        mojom::FeaturePolicyFeature::kUnsizedMedia);
+    if (send_report) {
+      layout_object->GetDocument().ReportFeaturePolicyViolation(
+          mojom::FeaturePolicyFeature::kUnsizedMedia,
+          mojom::FeaturePolicyDisposition::kEnforce);
+    }
   }
 }
 
