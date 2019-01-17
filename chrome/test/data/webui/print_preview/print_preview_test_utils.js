@@ -231,8 +231,8 @@ cr.define('print_preview_test_utils', function() {
 
   /**
    * Creates 5 local destinations, adds them to |localDestinations| and
-   * sets the capabilities in |nativeLayer|.
-   * @param {!print_preview.NativeLayerStub} nativeLayer
+   * sets the capabilities in |nativeLayer|, if it is non-null.
+   * @param {?print_preview.NativeLayerStub} nativeLayer
    * @param {!Array<!print_preview.LocalDestinationInfo>} localDestinations
    * @return {!Array<!print_preview.Destination>}
    */
@@ -248,8 +248,10 @@ cr.define('print_preview_test_utils', function() {
           const destination = new print_preview.Destination(
               info.id, print_preview.DestinationType.LOCAL, origin, info.name,
               false, print_preview.DestinationConnectionStatus.ONLINE);
-          nativeLayer.setLocalDestinationCapabilities(
-              print_preview_test_utils.getCddTemplate(info.id, info.name));
+          if (nativeLayer) {
+            nativeLayer.setLocalDestinationCapabilities(
+                print_preview_test_utils.getCddTemplate(info.id, info.name));
+          }
           localDestinations.push({printerName: info.name, deviceName: info.id});
           destinations.push(destination);
         });
@@ -313,6 +315,27 @@ cr.define('print_preview_test_utils', function() {
         testListenerElement.addWebUIListener.bind(testListenerElement));
   }
 
+  /** @return {!print_preview.Destination} The Google Drive destination. */
+  function getGoogleDriveDestination() {
+    return new print_preview.Destination(
+        print_preview.Destination.GooglePromotedId.DOCS,
+        print_preview.DestinationType.GOOGLE,
+        print_preview.DestinationOrigin.COOKIES,
+        print_preview.Destination.GooglePromotedId.DOCS, true /* isRecent */,
+        print_preview.DestinationConnectionStatus.ONLINE,
+        {account: 'foo@chromium.org'});
+  }
+
+  /** @return {!print_preview.Destination} The Save as PDF destination. */
+  function getSaveAsPdfDestination() {
+    return new print_preview.Destination(
+        print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
+        print_preview.DestinationType.LOCAL,
+        print_preview.DestinationOrigin.LOCAL,
+        loadTimeData.getString('printToPDF'), false /*isRecent*/,
+        print_preview.DestinationConnectionStatus.ONLINE);
+  }
+
   return {
     createDestinationStore: createDestinationStore,
     createDestinationWithCertificateStatus:
@@ -323,9 +346,11 @@ cr.define('print_preview_test_utils', function() {
     getDefaultMediaSize: getDefaultMediaSize,
     getDefaultOrientation: getDefaultOrientation,
     getDestinations: getDestinations,
+    getGoogleDriveDestination: getGoogleDriveDestination,
     getMediaSizeCapabilityWithCustomNames:
         getMediaSizeCapabilityWithCustomNames,
     getPdfPrinter: getPdfPrinter,
+    getSaveAsPdfDestination: getSaveAsPdfDestination,
     setupTestListenerElement: setupTestListenerElement,
     triggerInputEvent: triggerInputEvent,
   };
