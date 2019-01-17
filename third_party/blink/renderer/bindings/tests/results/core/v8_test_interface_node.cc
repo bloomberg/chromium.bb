@@ -12,9 +12,9 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
+#include "third_party/blink/renderer/bindings/core/v8/js_event_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_configuration.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_test_interface_empty.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_processing_stack.h"
@@ -134,7 +134,7 @@ static void EventHandlerAttributeAttributeGetter(const v8::FunctionCallbackInfo<
 
   EventListener* cpp_value(WTF::GetPtr(impl->eventHandlerAttribute()));
 
-  V8SetReturnValue(info, JSBasedEventListener::GetListenerOrNull(info.GetIsolate(), impl, cpp_value));
+  V8SetReturnValue(info, JSEventHandler::AsV8Value(info.GetIsolate(), impl, cpp_value));
 }
 
 static void EventHandlerAttributeAttributeSetter(
@@ -149,7 +149,7 @@ static void EventHandlerAttributeAttributeSetter(
 
   // Prepare the value to be set.
 
-  impl->setEventHandlerAttribute(V8EventListenerHelper::GetEventHandler(ScriptState::ForRelevantRealm(info), v8_value, JSEventHandler::HandlerType::kEventHandler, kListenerFindOrCreate));
+  impl->setEventHandlerAttribute(JSEventHandler::CreateOrNull(v8_value, JSEventHandler::HandlerType::kEventHandler));
 }
 
 static void PerWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {

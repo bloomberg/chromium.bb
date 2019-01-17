@@ -194,9 +194,7 @@ v8::Local<v8::Value> JSEventHandlerForContentAttribute::GetCompiledHandler(
   // EventHandler callback function object whose object reference is function
   // and whose callback context is settings object.
   compiled_function->SetName(V8String(isolate, function_name_));
-  SetCompiledHandler(
-      script_state_of_event_target, compiled_function,
-      V8PrivateProperty::GetCustomWrappableEventHandler(GetIsolate()));
+  SetCompiledHandler(script_state_of_event_target, compiled_function);
 
   return JSEventHandler::GetListenerObject(event_target);
 }

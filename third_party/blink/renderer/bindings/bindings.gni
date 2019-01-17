@@ -139,8 +139,6 @@ bindings_core_v8_files =
                     "core/v8/v8_dom_configuration.h",
                     "core/v8/v8_embedder_graph_builder.cc",
                     "core/v8/v8_embedder_graph_builder.h",
-                    "core/v8/v8_event_listener_helper.cc",
-                    "core/v8/v8_event_listener_helper.h",
                     "core/v8/v8_event_listener_info.h",
                     "core/v8/v8_gc_controller.cc",
                     "core/v8/v8_gc_controller.h",

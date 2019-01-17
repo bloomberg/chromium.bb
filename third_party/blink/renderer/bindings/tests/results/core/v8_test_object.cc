@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
+#include "third_party/blink/renderer/bindings/core/v8/js_event_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_call_stack.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -28,7 +29,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_document_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_configuration.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_event_target.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_float32_array.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_html_collection.h"
@@ -1663,7 +1663,7 @@ static void EventHandlerAttributeAttributeGetter(const v8::FunctionCallbackInfo<
 
   EventListener* cpp_value(WTF::GetPtr(impl->eventHandlerAttribute()));
 
-  V8SetReturnValue(info, JSBasedEventListener::GetListenerOrNull(info.GetIsolate(), impl, cpp_value));
+  V8SetReturnValue(info, JSEventHandler::AsV8Value(info.GetIsolate(), impl, cpp_value));
 }
 
 static void EventHandlerAttributeAttributeSetter(
@@ -1678,7 +1678,7 @@ static void EventHandlerAttributeAttributeSetter(
 
   // Prepare the value to be set.
 
-  impl->setEventHandlerAttribute(V8EventListenerHelper::GetEventHandler(ScriptState::ForRelevantRealm(info), v8_value, JSEventHandler::HandlerType::kEventHandler, kListenerFindOrCreate));
+  impl->setEventHandlerAttribute(JSEventHandler::CreateOrNull(v8_value, JSEventHandler::HandlerType::kEventHandler));
 }
 
 static void DoubleOrStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {

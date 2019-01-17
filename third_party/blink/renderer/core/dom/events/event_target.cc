@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/add_event_listener_options_or_boolean.h"
 #include "third_party/blink/renderer/bindings/core/v8/event_listener_options_or_boolean.h"
 #include "third_party/blink/renderer/bindings/core/v8/js_based_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/js_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
@@ -352,21 +353,22 @@ void EventTarget::SetDefaultAddEventListenerOptions(
 }
 
 bool EventTarget::addEventListener(const AtomicString& event_type,
-                                   EventListener* listener,
-                                   bool use_capture) {
-  AddEventListenerOptionsResolved* options =
-      AddEventListenerOptionsResolved::Create();
-  options->setCapture(use_capture);
-  SetDefaultAddEventListenerOptions(event_type, listener, options);
-  return AddEventListenerInternal(event_type, listener, options);
+                                   V8EventListener* listener) {
+  EventListener* event_listener = JSEventListener::CreateOrNull(listener);
+  return addEventListener(event_type, event_listener);
 }
 
 bool EventTarget::addEventListener(
     const AtomicString& event_type,
-    EventListener* listener,
+    V8EventListener* listener,
     const AddEventListenerOptionsOrBoolean& options_union) {
-  if (options_union.IsBoolean())
-    return addEventListener(event_type, listener, options_union.GetAsBoolean());
+  EventListener* event_listener = JSEventListener::CreateOrNull(listener);
+
+  if (options_union.IsBoolean()) {
+    return addEventListener(event_type, event_listener,
+                            options_union.GetAsBoolean());
+  }
+
   if (options_union.IsAddEventListenerOptions()) {
     AddEventListenerOptionsResolved* resolved_options =
         AddEventListenerOptionsResolved::Create();
@@ -378,9 +380,20 @@ bool EventTarget::addEventListener(
       resolved_options->setOnce(options->once());
     if (options->hasCapture())
       resolved_options->setCapture(options->capture());
-    return addEventListener(event_type, listener, resolved_options);
+    return addEventListener(event_type, event_listener, resolved_options);
   }
-  return addEventListener(event_type, listener);
+
+  return addEventListener(event_type, event_listener);
+}
+
+bool EventTarget::addEventListener(const AtomicString& event_type,
+                                   EventListener* listener,
+                                   bool use_capture) {
+  AddEventListenerOptionsResolved* options =
+      AddEventListenerOptionsResolved::Create();
+  options->setCapture(use_capture);
+  SetDefaultAddEventListenerOptions(event_type, listener, options);
+  return AddEventListenerInternal(event_type, listener, options);
 }
 
 bool EventTarget::addEventListener(const AtomicString& event_type,
@@ -449,26 +462,36 @@ void EventTarget::AddedEventListener(
 }
 
 bool EventTarget::removeEventListener(const AtomicString& event_type,
+                                      V8EventListener* listener) {
+  EventListener* event_listener = JSEventListener::CreateOrNull(listener);
+  return removeEventListener(event_type, event_listener);
+}
+
+bool EventTarget::removeEventListener(
+    const AtomicString& event_type,
+    V8EventListener* listener,
+    const EventListenerOptionsOrBoolean& options_union) {
+  EventListener* event_listener = JSEventListener::CreateOrNull(listener);
+
+  if (options_union.IsBoolean()) {
+    return removeEventListener(event_type, event_listener,
+                               options_union.GetAsBoolean());
+  }
+
+  if (options_union.IsEventListenerOptions()) {
+    EventListenerOptions* options = options_union.GetAsEventListenerOptions();
+    return removeEventListener(event_type, event_listener, options);
+  }
+
+  return removeEventListener(event_type, event_listener);
+}
+
+bool EventTarget::removeEventListener(const AtomicString& event_type,
                                       const EventListener* listener,
                                       bool use_capture) {
   EventListenerOptions* options = EventListenerOptions::Create();
   options->setCapture(use_capture);
   return RemoveEventListenerInternal(event_type, listener, options);
-}
-
-bool EventTarget::removeEventListener(
-    const AtomicString& event_type,
-    const EventListener* listener,
-    const EventListenerOptionsOrBoolean& options_union) {
-  if (options_union.IsBoolean()) {
-    return removeEventListener(event_type, listener,
-                               options_union.GetAsBoolean());
-  }
-  if (options_union.IsEventListenerOptions()) {
-    EventListenerOptions* options = options_union.GetAsEventListenerOptions();
-    return removeEventListener(event_type, listener, options);
-  }
-  return removeEventListener(event_type, listener);
 }
 
 bool EventTarget::removeEventListener(const AtomicString& event_type,

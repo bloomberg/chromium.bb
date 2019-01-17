@@ -60,6 +60,7 @@ class MessagePort;
 class Node;
 class ScriptState;
 class ServiceWorker;
+class V8EventListener;
 
 struct FiringEventIterator {
   DISALLOW_NEW();
@@ -132,22 +133,24 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
 
   static EventTarget* Create(ScriptState*);
 
+  bool addEventListener(const AtomicString& event_type, V8EventListener*);
+  bool addEventListener(const AtomicString& event_type,
+                        V8EventListener*,
+                        const AddEventListenerOptionsOrBoolean&);
   bool addEventListener(const AtomicString& event_type,
                         EventListener*,
                         bool use_capture = false);
   bool addEventListener(const AtomicString& event_type,
                         EventListener*,
-                        const AddEventListenerOptionsOrBoolean&);
-  bool addEventListener(const AtomicString& event_type,
-                        EventListener*,
                         AddEventListenerOptionsResolved*);
 
+  bool removeEventListener(const AtomicString& event_type, V8EventListener*);
+  bool removeEventListener(const AtomicString& event_type,
+                           V8EventListener*,
+                           const EventListenerOptionsOrBoolean&);
   bool removeEventListener(const AtomicString& event_type,
                            const EventListener*,
                            bool use_capture = false);
-  bool removeEventListener(const AtomicString& event_type,
-                           const EventListener*,
-                           const EventListenerOptionsOrBoolean&);
   bool removeEventListener(const AtomicString& event_type,
                            const EventListener*,
                            EventListenerOptions*);

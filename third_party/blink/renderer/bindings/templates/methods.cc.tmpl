@@ -152,27 +152,6 @@ if (UNLIKELY(num_args_passed <= {{argument.index}})) {
 }
 {% endif %}
 {% if argument.is_callback_interface %}
-{# FIXME: remove EventListener special case. crbug.com/630986 #}
-{% if argument.idl_type == 'EventListener' %}
-if (info[{{argument.index}}]->IsNullOrUndefined()) {
-  // Just go through.
-} else if (info[{{argument.index}}]->IsObject()) {
-  // TODO(crbug.com/886588): Remove the following special casing.
-  if (info[{{argument.index}}].As<v8::Object>()->CreationContext().IsEmpty()) {
-    {{define_exception_state}}
-    exception_state.ThrowSecurityError("The callback provided as parameter {{argument.index + 1}} is a cross origin object.");
-    return;
-  }
-} else {
-  {{throw_argument_error(method, argument, "The callback provided as parameter %(index)d is not an object.")}}
-  return;
-}
-{% if method.name == 'removeEventListener' or method.name == 'removeListener' %}
-{{argument.local_cpp_variable}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], kListenerFindOnly);
-{% else %}{# method.name == 'AddEventListener' #}
-{{argument.local_cpp_variable}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], kListenerFindOrCreate);
-{% endif %}{# method.name #}
-{% else %}{# argument.idl_type == 'EventListener' #}
 if (info[{{argument.index}}]->IsObject()) {
   {{argument.local_cpp_variable}} = V8{{argument.idl_type}}::Create(info[{{argument.index}}].As<v8::Object>());
 {% if argument.is_nullable %}
@@ -186,7 +165,6 @@ if (info[{{argument.index}}]->IsObject()) {
   {{throw_argument_error(method, argument, "The callback provided as parameter %(index)d is not an object.")}}
   return;
 }
-{% endif %}{# argument.idl_type == 'EventListener' #}
 {% elif argument.is_callback_function %}
 if (info[{{argument.index}}]->IsFunction()) {
   {{v8_value_to_local_cpp_value(argument)}}
