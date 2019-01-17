@@ -48,7 +48,6 @@
 -org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testDoesNotChangeReportedUrl
 
 # https://crbug.com/893568
--org.chromium.android_webview.test.AwContentsTest.testCanInjectHeaders
 -org.chromium.android_webview.test.AwContentsTest.testDownload
 -org.chromium.android_webview.test.AwContentsTest.testEscapingOfErrorPage
 
@@ -58,17 +57,10 @@
 
 # https://crbug.com/893570
 -org.chromium.android_webview.test.AwSettingsTest.testAssetUrl
--org.chromium.android_webview.test.AwSettingsTest.testBlockNetworkLoadsWithAudio
--org.chromium.android_webview.test.AwSettingsTest.testBlockNetworkLoadsWithHttpResources
--org.chromium.android_webview.test.AwSettingsTest.testCacheModeWithBlockedNetworkLoads
 -org.chromium.android_webview.test.AwSettingsTest.testContentUrlAccessWithTwoViews
 -org.chromium.android_webview.test.AwSettingsTest.testContentUrlFromFileWithTwoViews
--org.chromium.android_webview.test.AwSettingsTest.testFileAccessFromFilesIframeWithTwoViews
--org.chromium.android_webview.test.AwSettingsTest.testFileAccessFromFilesImage
--org.chromium.android_webview.test.AwSettingsTest.testFileAccessFromFilesXhrWithTwoViews
 -org.chromium.android_webview.test.AwSettingsTest.testFileUrlAccessToggleDoesNotBlockAssetUrls
 -org.chromium.android_webview.test.AwSettingsTest.testFileUrlAccessToggleDoesNotBlockResourceUrls
--org.chromium.android_webview.test.AwSettingsTest.testFileUrlAccessWithTwoViews
 -org.chromium.android_webview.test.AwSettingsTest.testResourceUrl
 
 # https://crbug.com/893572

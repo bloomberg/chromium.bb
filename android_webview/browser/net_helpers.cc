@@ -5,12 +5,27 @@
 #include "android_webview/browser/net_helpers.h"
 
 #include "android_webview/browser/aw_contents_io_thread_client.h"
+#include "android_webview/common/url_constants.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "net/base/load_flags.h"
+#include "url/gurl.h"
 
 namespace android_webview {
 
+namespace {
+int UpdateCacheControlFlags(int load_flags, int cache_control_flags) {
+  const int all_cache_control_flags =
+      net::LOAD_BYPASS_CACHE | net::LOAD_VALIDATE_CACHE |
+      net::LOAD_SKIP_CACHE_VALIDATION | net::LOAD_ONLY_FROM_CACHE;
+  DCHECK_EQ((cache_control_flags & all_cache_control_flags),
+            cache_control_flags);
+  load_flags &= ~all_cache_control_flags;
+  load_flags |= cache_control_flags;
+  return load_flags;
+}
+
+// Gets the net-layer load_flags which reflect |client|'s cache mode.
 int GetCacheModeForClient(AwContentsIoThreadClient* client) {
   AwContentsIoThreadClient::CacheMode cache_mode = client->GetCacheMode();
   switch (cache_mode) {
@@ -30,6 +45,36 @@ int GetCacheModeForClient(AwContentsIoThreadClient* client) {
       // Otherwise, fall back to network. This is the usual (default) case.
       return 0;
   }
+}
+
+}  // namespace
+
+int UpdateLoadFlags(int load_flags, AwContentsIoThreadClient* client) {
+  if (client->ShouldBlockNetworkLoads()) {
+    return UpdateCacheControlFlags(
+        load_flags,
+        net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION);
+  }
+
+  int cache_mode = GetCacheModeForClient(client);
+  if (!cache_mode)
+    return load_flags;
+
+  return UpdateCacheControlFlags(load_flags, cache_mode);
+}
+
+bool ShouldBlockURL(const GURL& url, AwContentsIoThreadClient* client) {
+  // Part of implementation of WebSettings.allowContentAccess.
+  if (url.SchemeIs(url::kContentScheme) && client->ShouldBlockContentUrls())
+    return true;
+
+  // Part of implementation of WebSettings.allowFileAccess.
+  if (url.SchemeIsFile() && client->ShouldBlockFileUrls()) {
+    // Application's assets and resources are always available.
+    return !IsAndroidSpecialFileUrl(url);
+  }
+
+  return client->ShouldBlockNetworkLoads() && url.SchemeIs(url::kFtpScheme);
 }
 
 int GetHttpCacheSize() {
