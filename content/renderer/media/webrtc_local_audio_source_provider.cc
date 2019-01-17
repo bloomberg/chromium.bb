@@ -64,14 +64,11 @@ WebRtcLocalAudioSourceProvider::~WebRtcLocalAudioSourceProvider() {
 
 void WebRtcLocalAudioSourceProvider::OnSetFormat(
     const media::AudioParameters& params) {
-  // We need detach the thread here because it will be a new capture thread
-  // calling OnSetFormat() and OnData() if the source is restarted.
-  capture_thread_checker_.DetachFromThread();
-  DCHECK(capture_thread_checker_.CalledOnValidThread());
   DCHECK(params.IsValid());
-  DCHECK(sink_params_.IsValid());
 
   base::AutoLock auto_lock(lock_);
+  DCHECK(sink_params_.IsValid());
+
   source_params_ = params;
   // Create the audio converter with |disable_fifo| as false so that the
   // converter will request source_params.frames_per_buffer() each time.
@@ -87,6 +84,7 @@ void WebRtcLocalAudioSourceProvider::OnSetFormat(
 
 void WebRtcLocalAudioSourceProvider::OnReadyStateChanged(
       blink::WebMediaStreamSource::ReadyState state) {
+  NON_REENTRANT_SCOPE(ready_state_reentrancy_checker_);
   if (state == blink::WebMediaStreamSource::kReadyStateEnded)
     track_stopped_ = true;
 }
@@ -94,9 +92,7 @@ void WebRtcLocalAudioSourceProvider::OnReadyStateChanged(
 void WebRtcLocalAudioSourceProvider::OnData(
     const media::AudioBus& audio_bus,
     base::TimeTicks estimated_capture_time) {
-  DCHECK(capture_thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(audio_bus.channels(), source_params_.channels());
-  DCHECK_EQ(audio_bus.frames(), source_params_.frames_per_buffer());
+  NON_REENTRANT_SCOPE(capture_reentrancy_checker_);
   DCHECK(!estimated_capture_time.is_null());
 
   base::AutoLock auto_lock(lock_);
@@ -104,6 +100,8 @@ void WebRtcLocalAudioSourceProvider::OnData(
     return;
 
   DCHECK(fifo_.get());
+  DCHECK_EQ(audio_bus.channels(), source_params_.channels());
+  DCHECK_EQ(audio_bus.frames(), source_params_.frames_per_buffer());
 
   if (fifo_->frames() + audio_bus.frames() <= fifo_->max_frames()) {
     fifo_->Push(&audio_bus);
@@ -122,7 +120,9 @@ void WebRtcLocalAudioSourceProvider::SetClient(
 void WebRtcLocalAudioSourceProvider::ProvideInput(
     const WebVector<float*>& audio_data,
     size_t number_of_frames) {
+  NON_REENTRANT_SCOPE(provide_input_reentrancy_checker_);
   DCHECK_EQ(number_of_frames, kWebAudioRenderBufferSize);
+
   if (!output_wrapper_ ||
       static_cast<size_t>(output_wrapper_->channels()) != audio_data.size()) {
     output_wrapper_ = media::AudioBus::CreateWrapper(audio_data.size());
@@ -140,8 +140,14 @@ void WebRtcLocalAudioSourceProvider::ProvideInput(
   audio_converter_->Convert(output_wrapper_.get());
 }
 
+// |lock_| needs to be acquired before this function is called. It's called by
+// AudioConverter which in turn is called by the above ProvideInput() function.
+// Thus thread safety analysis is disabled here and |lock_| acquire manually
+// asserted.
 double WebRtcLocalAudioSourceProvider::ProvideInput(media::AudioBus* audio_bus,
-                                                    uint32_t frames_delayed) {
+                                                    uint32_t frames_delayed)
+    NO_THREAD_SAFETY_ANALYSIS {
+  lock_.AssertAcquired();
   if (fifo_->frames() >= audio_bus->frames()) {
     fifo_->Consume(audio_bus, 0, audio_bus->frames());
   } else {
@@ -156,6 +162,7 @@ double WebRtcLocalAudioSourceProvider::ProvideInput(media::AudioBus* audio_bus,
 
 void WebRtcLocalAudioSourceProvider::SetSinkParamsForTesting(
     const media::AudioParameters& sink_params) {
+  base::AutoLock auto_lock(lock_);
   sink_params_ = sink_params;
 }
 
