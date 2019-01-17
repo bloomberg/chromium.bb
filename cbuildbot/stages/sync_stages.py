@@ -432,6 +432,11 @@ class SyncStage(generic_stages.BuilderStage):
         self.repo.ExportManifest(mark_revision=self.output_manifest_sha1),
         file=sys.stderr)
 
+    # Perform git fetch all on projects to resolve any git corruption
+    # that may occur due to flake.
+    # http://crbug/921407
+    self.repo.FetchAll()
+
   def RunPrePatchBuild(self):
     """Run through a pre-patch build to prepare for incremental build.
 
