@@ -131,6 +131,7 @@ void LogIsSameProcess(ui::PageTransition transition, bool is_same_process) {
 }  // namespace
 
 NavigationHandleImpl::NavigationHandleImpl(
+    NavigationRequest* navigation_request,
     const GURL& url,
     const base::Optional<url::Origin>& initiator_origin,
     const std::vector<GURL>& redirect_chain,
@@ -154,7 +155,8 @@ NavigationHandleImpl::NavigationHandleImpl(
     blink::WebMixedContentContextType mixed_content_context_type,
     const std::string& href_translate,
     base::TimeTicks input_start)
-    : url_(url),
+    : navigation_request_(navigation_request),
+      url_(url),
       initiator_origin_(initiator_origin),
       has_user_gesture_(has_user_gesture),
       transition_(transition),

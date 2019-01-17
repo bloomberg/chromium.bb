@@ -40,6 +40,7 @@ namespace content {
 class AppCacheNavigationHandle;
 class ChromeAppCacheService;
 class NavigationUIData;
+class NavigationRequest;
 class NavigatorDelegate;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandle;
@@ -383,6 +384,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   // |navigation_start| comes from the CommonNavigationParams associated with
   // this navigation.
   NavigationHandleImpl(
+      NavigationRequest* navigation_request,
       const GURL& url,
       const base::Optional<url::Origin>& initiator_origin,
       const std::vector<GURL>& redirect_chain,
@@ -452,6 +454,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
 
   void StopCommitTimeout();
   void RestartCommitTimeout();
+
+  // The NavigationRequest that owns this NavigationHandle.
+  NavigationRequest* navigation_request_;
 
   // See NavigationHandle for a description of those member variables.
   GURL url_;

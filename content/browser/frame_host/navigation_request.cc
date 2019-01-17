@@ -766,8 +766,8 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
 
   std::unique_ptr<NavigationHandleImpl> navigation_handle =
       base::WrapUnique(new NavigationHandleImpl(
-          common_params_.url, common_params_.initiator_origin, redirect_chain,
-          frame_tree_node_, !browser_initiated_,
+          this, common_params_.url, common_params_.initiator_origin,
+          redirect_chain, frame_tree_node_, !browser_initiated_,
           FrameMsg_Navigate_Type::IsSameDocument(
               common_params_.navigation_type),
           common_params_.navigation_start, nav_entry_id_,
