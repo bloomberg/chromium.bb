@@ -97,7 +97,7 @@ class NinjaBuilder(cr.Builder):
   @classmethod
   def ClassInit(cls):
     # TODO(iancottrell): If we can't detect ninja, we should be disabled.
-    ninja_binaries = cr.Host.SearchPath('ninja')
+    ninja_binaries = cr.Host.SearchPath('autoninja')
     if ninja_binaries:
       cls.DETECTED.Set(NINJA_BINARY=ninja_binaries[0])
 
