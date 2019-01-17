@@ -8,6 +8,8 @@
 #include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
 #include "services/network/public/cpp/http_request_headers_mojom_traits.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
+#include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "url/mojom/origin_mojom_traits.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 
@@ -204,6 +206,19 @@ bool StructTraits<
   out->is_revalidating = data.is_revalidating();
   out->custom_proxy_use_alternate_proxy_list =
       data.custom_proxy_use_alternate_proxy_list();
+  return true;
+}
+
+bool StructTraits<network::mojom::URLRequestBodyDataView,
+                  scoped_refptr<network::ResourceRequestBody>>::
+    Read(network::mojom::URLRequestBodyDataView data,
+         scoped_refptr<network::ResourceRequestBody>* out) {
+  auto body = base::MakeRefCounted<network::ResourceRequestBody>();
+  if (!data.ReadElements(&(body->elements_)))
+    return false;
+  body->set_identifier(data.identifier());
+  body->set_contains_sensitive_info(data.contains_sensitive_info());
+  *out = std::move(body);
   return true;
 }
 

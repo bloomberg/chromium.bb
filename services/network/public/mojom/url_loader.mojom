@@ -13,8 +13,22 @@ import "services/network/public/mojom/request_context_frame_type.mojom";
 import "url/mojom/url.mojom";
 import "url/mojom/origin.mojom";
 
+// Typemapped to network::ResourceRequestBody
+struct URLRequestBody {
+  // Store upload bodies
+  array<DataElement> elements;
+
+  // Identifies a particular upload instance, which is used by the cache to
+  // formulate a cache key.
+  uint64 identifier;
+
+  // Indicates whether the post data contains sensitive information like
+  // passwords.
+  bool contains_sensitive_info;
+};
+
 [Native]
-struct URLRequestBody;
+struct DataElement;
 
 [Native]
 struct URLResponseHead;

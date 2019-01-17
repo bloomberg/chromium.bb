@@ -6,9 +6,12 @@
 #define SERVICES_NETWORK_PUBLIC_CPP_URL_REQUEST_MOJOM_TRAITS_H_
 
 #include "base/component_export.h"
+#include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
+#include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/base/request_priority.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
 
 namespace mojo {
@@ -215,6 +218,37 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
 
   static bool Read(network::mojom::URLRequestDataView data,
                    network::ResourceRequest* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::URLRequestBodyDataView,
+                 scoped_refptr<network::ResourceRequestBody>> {
+  static bool IsNull(const scoped_refptr<network::ResourceRequestBody>& r) {
+    return !r;
+  }
+
+  static void SetToNull(scoped_refptr<network::ResourceRequestBody>* output) {
+    output->reset();
+  }
+
+  static const std::vector<network::DataElement>& elements(
+      const scoped_refptr<network::ResourceRequestBody>& r) {
+    return *r->elements();
+  }
+
+  static uint64_t identifier(
+      const scoped_refptr<network::ResourceRequestBody>& r) {
+    return r->identifier_;
+  }
+
+  static bool contains_sensitive_info(
+      const scoped_refptr<network::ResourceRequestBody>& r) {
+    return r->contains_sensitive_info_;
+  }
+
+  static bool Read(network::mojom::URLRequestBodyDataView data,
+                   scoped_refptr<network::ResourceRequestBody>* out);
 };
 
 }  // namespace mojo
