@@ -67,6 +67,7 @@ public class ContactView extends SelectableItemView<ContactDetails> {
 
         mDisplayName = findViewById(R.id.title);
         mDetailsView = findViewById(R.id.description);
+        mDetailsView.setMaxLines(2);
     }
 
     @Override
