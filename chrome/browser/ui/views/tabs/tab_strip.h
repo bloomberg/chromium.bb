@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
-#include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -139,12 +138,6 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Returns the bounds of the new tab button.
   gfx::Rect new_tab_button_bounds() const { return new_tab_button_bounds_; }
-
-  // Starts highlighting the tab at the specified index.
-  void StartHighlight(int model_index);
-
-  // Stops all tab higlighting.
-  void StopAllHighlighting();
 
   // Adds a tab at the specified index.
   void AddTabAt(int model_index, TabRendererData data, bool is_active);
@@ -682,11 +675,6 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Valid for the lifetime of a drag over us.
   std::unique_ptr<DropArrow> drop_arrow_;
-
-  // To ensure all tabs pulse at the same time they share the same animation
-  // container. This is that animation container.
-  scoped_refptr<gfx::AnimationContainer> animation_container_{
-      new gfx::AnimationContainer()};
 
   // MouseWatcher is used for two things:
   // . When a tab is closed to reset the layout.

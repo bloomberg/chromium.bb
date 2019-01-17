@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/containers/span.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -378,12 +379,6 @@ class TabStripModel {
   void ExecuteContextMenuCommand(int context_index,
                                  ContextMenuCommand command_id);
 
-  // Returns a vector of indices of the tabs that will close when executing the
-  // command |id| for the tab at |index|. The returned indices are sorted in
-  // descending order.
-  std::vector<int> GetIndicesClosedByCommand(int index,
-                                             ContextMenuCommand id) const;
-
   // Returns true if 'CommandToggleTabAudioMuted' will mute. |index| is the
   // index supplied to |ExecuteContextMenuCommand|.
   bool WillContextMenuMute(int index);
@@ -424,6 +419,8 @@ class TabStripModel {
   bool ShouldResetOpenerOnActiveTabChange(content::WebContents* contents) const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(TabStripModelTest, GetIndicesClosedByCommand);
+
   class WebContentsData;
   struct DetachedWebContents;
   struct DetachNotifications;
@@ -459,6 +456,12 @@ class TabStripModel {
   // determine which indices the command applies to. Indices are sorted in
   // increasing order.
   std::vector<int> GetIndicesForCommand(int index) const;
+
+  // Returns a vector of indices of the tabs that will close when executing the
+  // command |id| for the tab at |index|. The returned indices are sorted in
+  // descending order.
+  std::vector<int> GetIndicesClosedByCommand(int index,
+                                             ContextMenuCommand id) const;
 
   // Returns true if the specified WebContents is a New Tab at the end of
   // the tabstrip. We check for this because opener relationships are _not_
