@@ -11,8 +11,7 @@ connected to it on the private network.
 
 Here is a typical flow for using the setup.
 
-- Use an existing workspace uploaded by the [moblab-generic-vm-paladin
-  builder](https://uberchromegw.corp.google.com/i/chromiumos/builders/moblab-generic-vm-paladin).
+- Use an existing workspace uploaded by the [moblab-generic-vm-paladin builder].
   Simply download the workspace and untar it:
   ```
   pprabhu@pprabhu:scratch$ gsutil -m cp gs://chromeos-image-archive/moblab-generic-vm-paladin/R67-10469.0.0-rc1/workspace.tar.bz2 .
@@ -58,8 +57,8 @@ Here is a typical flow for using the setup.
   Now jump to the instructions below for starting the VMs from this pre-created
   workspace.
 
-- Obtain and unzip a moblab image. You can start with artifacts from a [recent
-  moblab-generic-vm-paladin run](https://uberchromegw.corp.google.com/i/chromiumos/builders/moblab-generic-vm-paladin).
+- Obtain and unzip a moblab image. You can start with artifacts from a recent
+  run of the [moblab-generic-vm-paladin builder].
   - It is faster to download the image via gsutil.
     ```
     pprabhu@pprabhu:moblab_image$ gsutil -m cp
@@ -93,8 +92,7 @@ Here is a typical flow for using the setup.
     ```
 - Obtain and unzip our DUT image. You could use the same moblab image that you
   just downloaded (just provided the same path for *dut_image* below).
-  We'll use a recent [betty paladin
-  image](https://uberchromegw.corp.google.com/i/chromeos/builders/betty-paladin).
+  We'll use a recent run of the [betty paladin builder].
   ```
   pprabhu@pprabhu:dut_image$ gsutil -m cp gs://chromeos-image-archive/betty-paladin/R66-10406.0.0-rc2/image.zip .
   Copying gs://chromeos-image-archive/betty-paladin/R66-10406.0.0-rc2/image.zip...
@@ -121,7 +119,8 @@ Here is a typical flow for using the setup.
     inflating: id_rsa.pub
   ```
 - Create a new moblabvm using these images. You need to be under a full
-  chromiumos checkout for the following to work smoothly. All _cros_ commands
+  chromiumos checkout for the following to work smoothly. You need to have run
+  `setup_board` for moblab-generic-vm and betty. All _cros_ commands
   are run outside the chroot. Note that this assumes that /work/scratch, or
   whatever you use in its place, is a sane path and has ~15 GB of space free.
   ```
@@ -170,14 +169,14 @@ CHROMEOS_AUSERVER=http://build112-m2.golo.chromium.org:8080/update
 
 ## Bootstrapping
 
-The setup so far is sufficient if you want to run
-[moblab_RunSuite](https://chromium.googlesource.com/chromiumos/third_party/autotest/+/master/server/site_tests/moblab_RunSuite/)
+The setup so far is sufficient if you want to run [moblab_RunSuite]
 against it. This test bootstraps the moblab setup (independent of whether it's a
 VM or a real moblab device connected to other real DUTs).
 
 If you want to use this moblab VM setup for local development, you need to
 bootstrap it yourself. One way to do this is to simply run a moblab_RunSuite
-test against the setup before you begin.
+test against the setup before you begin. You need to have built packages for
+moblab-generic-vm.
 ```
 cros_sdk -- test_that --no-quickmerge -b moblab-generic-vm localhost:16482 \
     moblab_DummyServerNoSspSuite --args 'services_init_timeout_m=10 \
@@ -330,3 +329,7 @@ Run:
 ```
 sudo apt-get install qemu-kvm
 ```
+
+[moblab-generic-vm-paladin builder]: https://cros-goldeneye.corp.google.com/chromeos/legoland/builderHistory?buildConfig=moblab-generic-vm-paladin&buildBranch=master
+[betty paladin builder]: https://cros-goldeneye.corp.google.com/chromeos/legoland/builderHistory?buildConfig=betty-paladin&buildBranch=master
+[moblab_RunSuite]: https://chromium.googlesource.com/chromiumos/third_party/autotest/+/master/server/site_tests/moblab_RunSuite/
