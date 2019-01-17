@@ -208,9 +208,11 @@ void OmniboxPopupModel::SetSelectedLineState(LineState state) {
   selected_line_state_ = state;
   view_->InvalidateLine(selected_line_);
 
-  // Ensures update of accessibility data.
-  edit_model_->view()->OnTemporaryTextMaybeChanged(
-    edit_model_->view()->GetText(), match, false, false);
+  // Ensures update of accessibility data for button text.
+  if (state == BUTTON_FOCUSED) {
+    edit_model_->view()->OnTemporaryTextMaybeChanged(
+        edit_model_->view()->GetText(), match, false, false);
+  }
 }
 
 void OmniboxPopupModel::TryDeletingCurrentItem() {
