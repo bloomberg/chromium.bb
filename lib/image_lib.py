@@ -283,10 +283,19 @@ def WriteLsbRelease(sysroot, fields):
   osutils.WriteFile(path, content, mode='w', makedirs=True, sudo=True)
 
 
-def GetLatestImageLink(board):
-  """Get the path for the `latest` image symlink for the given board."""
-  return os.path.join(constants.SOURCE_ROOT, 'src/build/images', board,
-                      'latest')
+def GetLatestImageLink(board, force_chroot=False):
+  """Get the path for the `latest` image symlink for the given board.
+
+  Args:
+    board (str): The name of the board.
+    force_chroot (bool): Get the path as if we are inside the chroot, whether
+      or not we actually are.
+
+  Returns:
+    str - The `latest` image symlink path.
+  """
+  base = constants.CHROOT_SOURCE_ROOT if force_chroot else constants.SOURCE_ROOT
+  return os.path.join(base, 'src/build/images', board, 'latest')
 
 
 class ImageDoesNotExistError(Error):
