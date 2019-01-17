@@ -45754,6 +45754,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Load"/>
 </enum>
 
+<enum name="Rollback_OobeRestoreResult">
+  <int value="0" label="Succeeded"/>
+  <int value="1" label="Stage 1 Failure"/>
+  <int value="2" label="Stage 2 Failure"/>
+  <int value="3" label="Stage 3 Failure"/>
+</enum>
+
 <enum name="RSAKeyUsage">
   <int value="0" label="Not an RSA key"/>
   <int value="1" label="OK (no extension)"/>
