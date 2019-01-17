@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.vr;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
@@ -413,13 +414,11 @@ public class VrShell extends GvrLayout
         // relatively low-res Pixel, and higher-res Pixel XL and other devices.
         boolean lowDensity = dm.densityDpi <= DisplayMetrics.DENSITY_XXHIGH;
 
-        boolean hasOrCanRequestAudioPermission =
-                mActivity.getWindowAndroid().hasPermission(android.Manifest.permission.RECORD_AUDIO)
-                || mActivity.getWindowAndroid().canRequestPermission(
-                           android.Manifest.permission.RECORD_AUDIO);
+        boolean hasOrCanRequestRecordAudioPermission =
+                hasRecordAudioPermission() || canRequestRecordAudioPermission();
         boolean supportsRecognition = FeatureUtilities.isRecognitionIntentPresent(mActivity, false);
         mNativeVrShell = nativeInit(mDelegate, forWebVr, !mVrBrowsingEnabled,
-                hasOrCanRequestAudioPermission && supportsRecognition,
+                hasOrCanRequestRecordAudioPermission && supportsRecognition,
                 getGvrApi().getNativeGvrContext(), mReprojectedRendering, displayWidthMeters,
                 displayHeightMeters, dm.widthPixels, dm.heightPixels, pauseContent, lowDensity,
                 isStandaloneVrDevice);
@@ -534,8 +533,14 @@ public class VrShell extends GvrLayout
 
     // Returns true if Chrome has permission to use audio input.
     @CalledByNative
-    public boolean hasAudioPermission() {
-        return mDelegate.hasAudioPermission();
+    public boolean hasRecordAudioPermission() {
+        return mDelegate.hasRecordAudioPermission();
+    }
+
+    // Returns true if Chrome has not been permanently denied audio input permission.
+    @CalledByNative
+    public boolean canRequestRecordAudioPermission() {
+        return mDelegate.canRequestRecordAudioPermission();
     }
 
     // Exits VR, telling the user to remove their headset, and returning to Chromium.
@@ -568,6 +573,8 @@ public class VrShell extends GvrLayout
                             @Override
                             public void run() {
                                 VrShellDelegate.enterVrIfNecessary();
+                                nativeRequestRecordAudioPermissionResult(mNativeVrShell,
+                                        grantResults[0] == PackageManager.PERMISSION_GRANTED);
                             }
                         });
                     }
@@ -1273,7 +1280,7 @@ public class VrShell extends GvrLayout
     }
 
     private native long nativeInit(VrShellDelegate delegate, boolean forWebVR,
-            boolean browsingDisabled, boolean hasOrCanRequestAudioPermission, long gvrApi,
+            boolean browsingDisabled, boolean hasOrCanRequestRecordAudioPermission, long gvrApi,
             boolean reprojectedRendering, float displayWidthMeters, float displayHeightMeters,
             int displayWidthPixels, int displayHeightPixels, boolean pauseContent,
             boolean lowDensity, boolean isStandaloneVrDevice);
@@ -1329,4 +1336,6 @@ public class VrShell extends GvrLayout
             long nativeVrShell, int elementName, int timeoutMs, boolean visibility);
     private native void nativeResumeContentRendering(long nativeVrShell);
     private native void nativeOnOverlayTextureEmptyChanged(long nativeVrShell, boolean empty);
+    private native void nativeRequestRecordAudioPermissionResult(
+            long nativeVrShell, boolean canRecordAudio);
 }

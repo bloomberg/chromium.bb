@@ -947,7 +947,7 @@ void VrShell::SetVoiceSearchActive(bool active) {
   if (!active && !speech_recognizer_)
     return;
 
-  if (!HasAudioPermission()) {
+  if (!HasRecordAudioPermission()) {
     OnUnsupportedMode(
         UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission);
     return;
@@ -986,9 +986,24 @@ void VrShell::ShowPageInfo() {
   Java_VrShell_showPageInfo(base::android::AttachCurrentThread(), j_vr_shell_);
 }
 
-bool VrShell::HasAudioPermission() {
+bool VrShell::HasRecordAudioPermission() const {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_VrShell_hasAudioPermission(env, j_vr_shell_);
+  return Java_VrShell_hasRecordAudioPermission(env, j_vr_shell_);
+}
+
+bool VrShell::CanRequestRecordAudioPermission() const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_VrShell_canRequestRecordAudioPermission(env, j_vr_shell_);
+}
+
+void VrShell::RequestRecordAudioPermissionResult(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& object,
+    jboolean can_record_audio) {
+  // If permission was denied, we need to check if it was *permanently* denied.
+  if (!can_record_audio && !CanRequestRecordAudioPermission()) {
+    ui_->SetHasOrCanRequestRecordAudioPermission(false);
+  }
 }
 
 void VrShell::PollCapturingState() {
@@ -1352,7 +1367,7 @@ jlong JNI_VrShell_Init(JNIEnv* env,
                        const JavaParamRef<jobject>& delegate,
                        jboolean for_web_vr,
                        jboolean browsing_disabled,
-                       jboolean has_or_can_request_audio_permission,
+                       jboolean has_or_can_request_record_audio_permission,
                        jlong gvr_api,
                        jboolean reprojected_rendering,
                        jfloat display_width_meters,
@@ -1365,8 +1380,8 @@ jlong JNI_VrShell_Init(JNIEnv* env,
   UiInitialState ui_initial_state;
   ui_initial_state.browsing_disabled = browsing_disabled;
   ui_initial_state.in_web_vr = for_web_vr;
-  ui_initial_state.has_or_can_request_audio_permission =
-      has_or_can_request_audio_permission;
+  ui_initial_state.has_or_can_request_record_audio_permission =
+      has_or_can_request_record_audio_permission;
   ui_initial_state.assets_supported = AssetsLoader::AssetsSupported();
   ui_initial_state.is_standalone_vr_device = is_standalone_vr_device;
   ui_initial_state.use_new_incognito_strings =

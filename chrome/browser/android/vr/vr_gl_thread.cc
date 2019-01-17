@@ -392,6 +392,16 @@ void VrGLThread::ShowExitVrPrompt(UiUnsupportedMode reason) {
                                          weak_browser_ui_, reason));
 }
 
+void VrGLThread::SetHasOrCanRequestRecordAudioPermission(
+    bool const has_or_can_request_record_audio) {
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &BrowserUiInterface::SetHasOrCanRequestRecordAudioPermission,
+          weak_browser_ui_, has_or_can_request_record_audio));
+}
+
 void VrGLThread::SetSpeechRecognitionEnabled(bool enabled) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(

@@ -73,7 +73,8 @@ struct VR_UI_EXPORT Model {
   bool has_mode_in_stack(UiMode mode) const;
   bool browsing_enabled() const;
   bool default_browsing_enabled() const;
-  bool voice_search_enabled() const;
+  bool voice_search_available() const;
+  bool voice_search_active() const;
   bool omnibox_editing_enabled() const;
   bool editing_enabled() const;
   bool fullscreen_enabled() const;

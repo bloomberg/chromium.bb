@@ -205,7 +205,12 @@ class VrShell : device::GvrGamepadDataProvider,
   void StartAutocomplete(const AutocompleteRequest& request);
   void StopAutocomplete();
   void ShowPageInfo();
-  bool HasAudioPermission();
+  bool HasRecordAudioPermission() const;
+  bool CanRequestRecordAudioPermission() const;
+  void RequestRecordAudioPermissionResult(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& object,
+      jboolean can_record_audio);
 
   void ClearFocusedElement();
   void ProcessContentGesture(std::unique_ptr<InputEvent> event, int content_id);

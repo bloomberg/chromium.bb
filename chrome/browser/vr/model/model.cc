@@ -95,7 +95,12 @@ bool Model::default_browsing_enabled() const {
   return get_last_opaque_mode() == kModeBrowsing;
 }
 
-bool Model::voice_search_enabled() const {
+bool Model::voice_search_available() const {
+  return speech.has_or_can_request_record_audio_permission && !incognito &&
+         !active_capturing.audio_capture_enabled;
+}
+
+bool Model::voice_search_active() const {
   return get_last_opaque_mode() == kModeVoiceSearch;
 }
 

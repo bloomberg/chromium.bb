@@ -293,11 +293,11 @@ TEST_F(UiTest, VoiceSearchHiddenWhenCantAskForPermission) {
   CreateScene(kNotInWebVr);
 
   model_->push_mode(kModeEditingOmnibox);
-  model_->speech.has_or_can_request_audio_permission = true;
+  model_->speech.has_or_can_request_record_audio_permission = true;
   EXPECT_TRUE(OnBeginFrame());
   EXPECT_TRUE(IsVisible(kOmniboxVoiceSearchButton));
 
-  model_->speech.has_or_can_request_audio_permission = false;
+  model_->speech.has_or_can_request_record_audio_permission = false;
   EXPECT_TRUE(OnBeginFrame());
   EXPECT_FALSE(IsVisible(kOmniboxVoiceSearchButton));
 }
@@ -306,7 +306,7 @@ TEST_F(UiTest, VoiceSearchHiddenWhenContentCapturingAudio) {
   CreateScene(kNotInWebVr);
 
   model_->push_mode(kModeEditingOmnibox);
-  model_->speech.has_or_can_request_audio_permission = true;
+  model_->speech.has_or_can_request_record_audio_permission = true;
   model_->active_capturing.audio_capture_enabled = false;
   EXPECT_TRUE(OnBeginFrame());
   EXPECT_TRUE(IsVisible(kOmniboxVoiceSearchButton));
