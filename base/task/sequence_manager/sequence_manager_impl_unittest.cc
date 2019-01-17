@@ -4150,6 +4150,39 @@ TEST_P(SequenceManagerTest, DescribeAllPendingTasks) {
   EXPECT_THAT(description, HasSubstr("PostTaskC@"));
 }
 
+TEST_P(SequenceManagerTest, TaskPriortyInterleaving) {
+  CreateTaskQueues(TaskQueue::QueuePriority::kQueuePriorityCount);
+
+  for (uint8_t priority = 0;
+       priority < TaskQueue::QueuePriority::kQueuePriorityCount; priority++) {
+    if (priority != TaskQueue::QueuePriority::kNormalPriority) {
+      queues_[priority]->SetQueuePriority(
+          static_cast<TaskQueue::QueuePriority>(priority));
+    }
+  }
+
+  std::string order;
+  for (int i = 0; i < 60; i++) {
+    for (uint8_t priority = 0;
+         priority < TaskQueue::QueuePriority::kQueuePriorityCount; priority++) {
+      queues_[priority]->task_runner()->PostTask(
+          FROM_HERE,
+          base::BindOnce([](std::string* str, char c) { str->push_back(c); },
+                         &order, '0' + priority));
+    }
+  }
+
+  RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(order,
+            "000000000000000000000000000000000000000000000000000000000000"
+            "111121111213112141121113121111211412311121111211312411121111"
+            "231112114121131211112111123412222223222224223222222223242222"
+            "223222222423222222223433333343333334333333433333343333334333"
+            "333433333343333344444444444444444444444444444444444444444444"
+            "555555555555555555555555555555555555555555555555555555555555");
+}
+
 }  // namespace sequence_manager_impl_unittest
 }  // namespace internal
 }  // namespace sequence_manager
