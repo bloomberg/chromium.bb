@@ -219,10 +219,6 @@ class PLATFORM_EXPORT V8PerIsolateData {
     return unified_heap_controller_.get();
   }
 
-  int IsNearV8HeapLimitHandled() { return handled_near_v8_heap_limit_; }
-
-  void HandledNearV8HeapLimit() { handled_near_v8_heap_limit_ = true; }
-
  private:
   V8PerIsolateData(scoped_refptr<base::SingleThreadTaskRunner>,
                    V8ContextSnapshotMode);
@@ -294,7 +290,6 @@ class PLATFORM_EXPORT V8PerIsolateData {
   std::unique_ptr<UnifiedHeapController> unified_heap_controller_;
 
   RuntimeCallStats runtime_call_stats_;
-  bool handled_near_v8_heap_limit_;
 };
 
 }  // namespace blink
