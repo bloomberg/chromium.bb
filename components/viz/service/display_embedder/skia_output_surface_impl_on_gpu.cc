@@ -509,10 +509,11 @@ SkiaOutputSurfaceImplOnGpu::GetGrContextThreadSafeProxy() {
   return gr_context()->threadSafeProxy();
 }
 
-void SkiaOutputSurfaceImplOnGpu::DestroySkImage(sk_sp<SkImage>&& image,
-                                                uint64_t sync_fence_release) {
+void SkiaOutputSurfaceImplOnGpu::DestroySkImages(
+    std::vector<sk_sp<SkImage>>&& images,
+    uint64_t sync_fence_release) {
   MakeCurrent();
-  image.reset();
+  images.clear();
   sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
 }
 

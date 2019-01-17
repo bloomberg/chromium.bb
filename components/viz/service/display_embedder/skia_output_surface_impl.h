@@ -74,22 +74,24 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 
   // SkiaOutputSurface implementation:
   SkCanvas* BeginPaintCurrentFrame() override;
-  sk_sp<SkImage> MakePromiseSkImage(ResourceMetadata metadata) override;
   sk_sp<SkImage> MakePromiseSkImageFromYUV(
       std::vector<ResourceMetadata> metadatas,
       SkYUVColorSpace yuv_color_space,
       bool has_alpha) override;
-  gpu::SyncToken DestroySkImage(sk_sp<SkImage>&& image) override;
   void SkiaSwapBuffers(OutputSurfaceFrame frame) override;
   SkCanvas* BeginPaintRenderPass(const RenderPassId& id,
                                  const gfx::Size& surface_size,
                                  ResourceFormat format,
                                  bool mipmap) override;
   gpu::SyncToken SubmitPaint() override;
+  sk_sp<SkImage> MakePromiseSkImage(ResourceMetadata metadata) override;
   sk_sp<SkImage> MakePromiseSkImageFromRenderPass(const RenderPassId& id,
                                                   const gfx::Size& size,
                                                   ResourceFormat format,
                                                   bool mipmap) override;
+  gpu::SyncToken QueueReleasePromiseSkImage(sk_sp<SkImage>&& image) override;
+  void FlushQueuedReleases() override;
+
   void RemoveRenderPassResource(std::vector<RenderPassId> ids) override;
   void CopyOutput(RenderPassId id,
                   const gfx::Rect& copy_rect,
@@ -153,6 +155,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 
   // Observers for context lost.
   base::ObserverList<ContextLostObserver>::Unchecked observers_;
+
+  std::vector<sk_sp<SkImage>> images_pending_release_;
 
   THREAD_CHECKER(thread_checker_);
 
