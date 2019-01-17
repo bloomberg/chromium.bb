@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill_assistant.ui;
+package org.chromium.chrome.browser.autofill_assistant;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -53,10 +53,10 @@ import java.util.List;
  * forwarding implemented in this view should likely be a {@link
  * org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter}, and part of a scene.
  */
-public class TouchEventFilter
+public class TouchEventFilterView
         extends View implements ChromeFullscreenManager.FullscreenListener, GestureStateListener {
     /** A client of this view. */
-    public interface Client {
+    public interface Delegate {
         /** Called after a certain number of unexpected taps. */
         void onUnexpectedTaps();
 
@@ -94,7 +94,7 @@ public class TouchEventFilter
     /** The current gesture is being forwarded to the content view. */
     private static final int FORWARDING_GESTURE_MODE = 2;
 
-    private Client mClient;
+    private Delegate mDelegate;
     private ChromeFullscreenManager mFullscreenManager;
     private GestureListenerManager mGestureListenerManager;
     private View mCompositorView;
@@ -102,12 +102,16 @@ public class TouchEventFilter
     private final Paint mGrayOut;
     private final Paint mClear;
 
-    /** Whether a partial-screen overlay is enabled or not. Has precedence over {@link
-     * @mFullOverlayEnabled}. */
+    /**
+     * Whether a partial-screen overlay is enabled or not. Has precedence over {@link
+     * @mFullOverlayEnabled}.
+     */
     private boolean mPartialOverlayEnabled;
 
-    /** Whether a full-screen overlay is enabled or not. Is overridden by {@link
-     * @mPartialOverlayEnabled}.*/
+    /**
+     * Whether a full-screen overlay is enabled or not. Is overridden by {@link
+     * @mPartialOverlayEnabled}.
+     */
     private boolean mFullOverlayEnabled;
 
     /** Padding added between the element area and the grayed-out area. */
@@ -184,15 +188,15 @@ public class TouchEventFilter
     /** Current bottom margin of this view. */
     private int mMarginBottom;
 
-    public TouchEventFilter(Context context) {
+    public TouchEventFilterView(Context context) {
         this(context, null, 0);
     }
 
-    public TouchEventFilter(Context context, AttributeSet attributeSet) {
+    public TouchEventFilterView(Context context, AttributeSet attributeSet) {
         this(context, attributeSet, 0);
     }
 
-    public TouchEventFilter(Context context, AttributeSet attributeSet, int defStyle) {
+    public TouchEventFilterView(Context context, AttributeSet attributeSet, int defStyle) {
         super(context, attributeSet, defStyle);
         mGrayOut = new Paint(Paint.ANTI_ALIAS_FLAG);
         mGrayOut.setColor(
@@ -231,9 +235,9 @@ public class TouchEventFilter
     }
 
     /** Initializes dependencies. */
-    public void init(Client client, ChromeFullscreenManager fullscreenManager,
+    public void init(Delegate delegate, ChromeFullscreenManager fullscreenManager,
             WebContents webContents, View compositorView) {
-        mClient = client;
+        mDelegate = delegate;
         mFullscreenManager = fullscreenManager;
         mFullscreenManager.addListener(this);
         mGestureListenerManager = GestureListenerManager.fromWebContents(webContents);
@@ -243,7 +247,7 @@ public class TouchEventFilter
     }
 
     public void deInit() {
-        mClient = null;
+        mDelegate = null;
         mCompositorView = null;
         if (mFullscreenManager != null) {
             mFullscreenManager.removeListener(this);
@@ -338,8 +342,8 @@ public class TouchEventFilter
     }
 
     private boolean dispatchTouchEventWithNoOverlay() {
-        if (mClient != null) {
-            mClient.onUserInteractionInsideTouchableArea();
+        if (mDelegate != null) {
+            mDelegate.onUserInteractionInsideTouchableArea();
         }
         return false;
     }
@@ -371,7 +375,7 @@ public class TouchEventFilter
                 resetCurrentGesture();
 
                 if (shouldLetEventThrough(event)) {
-                    mClient.onUserInteractionInsideTouchableArea();
+                    mDelegate.onUserInteractionInsideTouchableArea();
                     // This is the last we'll hear of this gesture unless it turns multi-touch. No
                     // need to track or forward it.
                     return false;
@@ -564,12 +568,12 @@ public class TouchEventFilter
         if (!mBrowserScrolling) {
             // onScrollOffsetOrExtentChanged will be called alone, without onScrollStarted during a
             // Javascript-initiated scroll.
-            mClient.updateTouchableArea();
+            mDelegate.updateTouchableArea();
             return;
         }
         mBrowserScrollOffsetY = scrollOffsetY - mInitialBrowserScrollOffsetY;
         invalidate();
-        mClient.updateTouchableArea();
+        mDelegate.updateTouchableArea();
     }
 
     /** Called at the end of a scroll gesture triggered by the browser. */
@@ -582,7 +586,7 @@ public class TouchEventFilter
         mBrowserScrollOffsetY = 0;
         mBrowserScrolling = false;
         invalidate();
-        mClient.updateTouchableArea();
+        mDelegate.updateTouchableArea();
     }
 
     /** Considers whether to let the client know about unexpected taps. */
@@ -595,8 +599,8 @@ public class TouchEventFilter
             }
         }
         mUnexpectedTapTimes.add(eventTimeMs);
-        if (mUnexpectedTapTimes.size() == TAP_TRACKING_COUNT && mClient != null) {
-            mClient.onUnexpectedTaps();
+        if (mUnexpectedTapTimes.size() == TAP_TRACKING_COUNT && mDelegate != null) {
+            mDelegate.onUnexpectedTaps();
             mUnexpectedTapTimes.clear();
         }
     }

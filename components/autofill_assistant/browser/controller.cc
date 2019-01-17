@@ -36,6 +36,10 @@ static constexpr int kPeriodicScriptCheckCount = 10;
 // autostart.
 static constexpr int kAutostartCheckCountLimit = 5;
 
+// The initial progress to set when autostarting and showing the "Loading..."
+// message.
+static constexpr int kAutostartInitialProgress = 10;
+
 // Cookie experiment name.
 // TODO(crbug.com/806868): Introduce a dedicated experiment extra parameter to
 // pass allow passing more than one experiment.
@@ -339,8 +343,10 @@ void Controller::FinishStart(const GURL& initial_url) {
   if (allow_autostart_) {
     should_fail_after_checking_scripts_ = true;
     GetUiController()->ShowOverlay();
-    GetUiController()->ShowStatusMessage(l10n_util::GetStringFUTF8(
-        IDS_AUTOFILL_ASSISTANT_LOADING, base::UTF8ToUTF16(initial_url.host())));
+    GetUiController()->ShowProgressBar(
+        kAutostartInitialProgress,
+        l10n_util::GetStringFUTF8(IDS_AUTOFILL_ASSISTANT_LOADING,
+                                  base::UTF8ToUTF16(initial_url.host())));
   }
 
   touchable_element_area_.SetOnUpdate(base::BindRepeating(

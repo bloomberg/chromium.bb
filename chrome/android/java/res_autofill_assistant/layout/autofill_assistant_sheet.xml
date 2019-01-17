@@ -5,13 +5,13 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/autofill_assistant"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:visibility="invisible"
     android:gravity="bottom">
 
-    <org.chromium.chrome.browser.autofill_assistant.ui.TouchEventFilter
+    <org.chromium.chrome.browser.autofill_assistant.TouchEventFilterView
         android:id="@+id/touch_event_filter"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -34,91 +34,22 @@
             android:clickable="true"
             android:background="@drawable/autofill_assistant_bottombar_bg"
             android:orientation="vertical"
+            android:animateLayoutChanges="true"
             app:behavior_peekHeight="34dp"
             app:layout_behavior="@string/bottom_sheet_behavior">
 
-            <org.chromium.ui.widget.ChromeImageView
+            <ImageView
                 android:id="@+id/swipe_indicator"
                 android:layout_width="36dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:layout_gravity="center_horizontal"
-                android:src="@drawable/autofill_assistant_swipe_indicator"/>
+                android:src="@drawable/autofill_assistant_swipe_indicator"
+                tools:ignore="ContentDescription" />
 
-            <LinearLayout
-                android:id="@+id/bottombar_header"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginStart="24dp"
-                android:layout_marginEnd="24dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+            <include
+                layout="@layout/autofill_assistant_header"/>
 
-                <org.chromium.ui.widget.ChromeImageView
-                    android:id="@+id/assistant_image"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    app:srcCompat="@drawable/ic_autofill_assistant_24dp" />
-
-                <TextView
-                    android:id="@+id/status_message"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:paddingStart="24dp"
-                    android:paddingEnd="24dp"
-                    android:textAppearance="@style/TextAppearance.BlackTitle2"
-                    android:layout_weight="1.0"
-                    android:maxLines="2"
-                    android:ellipsize="end"/>
-
-                <org.chromium.ui.widget.ChromeImageButton
-                    android:id="@+id/feedback_button"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginEnd="12dp"
-                    app:srcCompat="@drawable/ic_bug_report_24dp"
-                    android:tint="@color/light_icon_color"
-                    android:background="?attr/selectableItemBackground"
-                    android:contentDescription="@string/menu_send_feedback" />
-
-                <org.chromium.ui.widget.ChromeImageButton
-                    android:id="@+id/close_button"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/btn_delete_24dp"
-                    android:tint="@color/light_icon_color"
-                    android:background="?attr/selectableItemBackground"
-                    android:contentDescription="@string/close" />
-            </LinearLayout>
-
-            <org.chromium.chrome.browser.widget.MaterialProgressBar
-                android:id="@+id/progress_bar"
-                android:layout_width="match_parent"
-                android:layout_height="6dp"
-                app:colorBackground="@color/modern_grey_100"
-                app:colorProgress="@color/modern_blue_600" />
-
-            <include layout="@layout/autofill_assistant_details"
-                     android:id="@+id/details"/>
-
-            <HorizontalScrollView
-                android:id="@+id/carousel_scroll"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:scrollbars="none">
-                <LinearLayout
-                    android:id="@+id/carousel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="16dp"
-                    android:paddingStart="24dp"
-                    android:paddingEnd="24dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:visibility="gone">
-                </LinearLayout>
-            </HorizontalScrollView>
         </LinearLayout>
     </android.support.design.widget.CoordinatorLayout>
 </FrameLayout>

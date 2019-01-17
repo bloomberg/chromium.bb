@@ -58,6 +58,13 @@ UiControllerAndroid::~UiControllerAndroid() {
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 
+void UiControllerAndroid::ShowOnboarding(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& on_accept) {
+  Java_AutofillAssistantUiController_onShowOnboarding(
+      env, java_autofill_assistant_ui_controller_, on_accept);
+}
+
 void UiControllerAndroid::ShowStatusMessage(const std::string& message) {
   JNIEnv* env = AttachCurrentThread();
   Java_AutofillAssistantUiController_onShowStatusMessage(

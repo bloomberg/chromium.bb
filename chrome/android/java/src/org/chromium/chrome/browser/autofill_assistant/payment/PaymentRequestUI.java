@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill_assistant.ui;
+package org.chromium.chrome.browser.autofill_assistant.payment;
 
 import static org.chromium.chrome.browser.payments.ui.PaymentRequestSection.EDIT_BUTTON_GONE;
 
@@ -31,7 +31,6 @@ import android.widget.TextView;
 import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeVersionInfo;
-import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantPaymentRequest;
 import org.chromium.chrome.browser.payments.ShippingStrings;
 import org.chromium.chrome.browser.payments.ui.PaymentInformation;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection;
@@ -108,7 +107,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private Button mPayButton;
     private View mSpinnyLayout;
     // View used to store a view to be replaced with the current payment request UI.
-    private ViewGroup mBackupView;
+    private View mBackupView;
 
     private LineItemBreakdownSection mOrderSummarySection;
     private OptionSection mShippingAddressSection;
@@ -230,7 +229,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      *
      * @param container View to replace with the payment request UI.
      */
-    public void show(ViewGroup container) {
+    public void show(View container) {
         // Clear the current Autofill Assistant sheet and show the request view.
         LinearLayout.LayoutParams sheetParams =
                 new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
@@ -374,7 +373,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      *  <li>The PaymentRequest JavaScript object being destroyed.</li>
      * </ul>
      *
-     * Does not call Client.onDismissed().
+     * Does not call Delegate.onDismissed().
      *
      * Should not be called multiple times.
      */
@@ -552,8 +551,10 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         return mEditorDialog;
     }
 
-    /** @return The card editor user interface. Distinct from the common editor user interface,
-     * because the credit card editor can launch the address editor. */
+    /**
+     * @return The card editor user interface. Distinct from the common editor user interface,
+     * because the credit card editor can launch the address editor.
+     */
     public EditorDialog getCardEditorDialog() {
         return mCardEditorDialog;
     }
@@ -667,13 +668,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private void updatePayButtonEnabled() {
         boolean contactInfoOk = !mRequestContactDetails
                 || (mContactDetailsSectionInformation != null
-                           && mContactDetailsSectionInformation.getSelectedItem() != null);
+                        && mContactDetailsSectionInformation.getSelectedItem() != null);
         boolean shippingInfoOk = !mRequestShipping
                 || (mShippingAddressSectionInformation != null
-                           && mShippingAddressSectionInformation.getSelectedItem() != null);
+                        && mShippingAddressSectionInformation.getSelectedItem() != null);
         boolean shippingOptionInfoOk = !mRequestShippingOption
                 || (mShippingOptionsSectionInformation != null
-                           && mShippingOptionsSectionInformation.getSelectedItem() != null);
+                        && mShippingOptionsSectionInformation.getSelectedItem() != null);
         mPayButton.setEnabled(contactInfoOk && shippingInfoOk && shippingOptionInfoOk
                 && mPaymentMethodSectionInformation != null
                 && mPaymentMethodSectionInformation.getSelectedItem() != null
