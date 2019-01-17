@@ -12,6 +12,7 @@ import android.text.Spannable;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.View;
+import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -127,6 +128,16 @@ public class SuggestionViewViewBinder {
         } else if (SuggestionViewProperties.TEXT_LINE_1_SIZING.equals(propertyKey)) {
             Pair<Integer, Float> sizing = model.get(SuggestionViewProperties.TEXT_LINE_1_SIZING);
             view.getTextLine1().setTextSize(sizing.first, sizing.second);
+        } else if (SuggestionViewProperties.TEXT_LINE_1_MAX_LINES.equals(propertyKey)) {
+            updateSuggestionLayoutType(view, model);
+            updateSuggestionViewTextMaxLines(
+                    view.getTextLine1(), model.get(SuggestionViewProperties.TEXT_LINE_1_MAX_LINES));
+        } else if (SuggestionViewProperties.TEXT_LINE_1_TEXT_COLOR.equals(propertyKey)) {
+            view.getTextLine1().setTextColor(
+                    model.get(SuggestionViewProperties.TEXT_LINE_1_TEXT_COLOR));
+        } else if (SuggestionViewProperties.TEXT_LINE_1_TEXT_DIRECTION.equals(propertyKey)) {
+            ApiCompatibilityUtils.setTextDirection(view.getTextLine1(),
+                    model.get(SuggestionViewProperties.TEXT_LINE_1_TEXT_DIRECTION));
         } else if (SuggestionViewProperties.TEXT_LINE_1_TEXT.equals(propertyKey)) {
             view.getTextLine1().setText(model.get(SuggestionViewProperties.TEXT_LINE_1_TEXT).text);
         } else if (SuggestionViewProperties.TEXT_LINE_2_SIZING.equals(propertyKey)) {
@@ -134,15 +145,8 @@ public class SuggestionViewViewBinder {
             view.getTextLine2().setTextSize(sizing.first, sizing.second);
         } else if (SuggestionViewProperties.TEXT_LINE_2_MAX_LINES.equals(propertyKey)) {
             updateSuggestionLayoutType(view, model);
-            int numberLines = model.get(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES);
-            if (numberLines == 1) {
-                view.getTextLine2().setEllipsize(null);
-                view.getTextLine2().setSingleLine();
-            } else {
-                view.getTextLine2().setSingleLine(false);
-                view.getTextLine2().setEllipsize(TextUtils.TruncateAt.END);
-                view.getTextLine2().setMaxLines(numberLines);
-            }
+            updateSuggestionViewTextMaxLines(
+                    view.getTextLine2(), model.get(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES));
         } else if (SuggestionViewProperties.TEXT_LINE_2_TEXT_COLOR.equals(propertyKey)) {
             view.getTextLine2().setTextColor(
                     model.get(SuggestionViewProperties.TEXT_LINE_2_TEXT_COLOR));
@@ -160,13 +164,31 @@ public class SuggestionViewViewBinder {
         }
     }
 
+    /**
+     * Adjust properties of the text field to properly display single- and multi-line answers.
+     */
+    private static void updateSuggestionViewTextMaxLines(TextView view, int lines) {
+        if (lines == 1) {
+            view.setEllipsize(null);
+            view.setSingleLine();
+        } else {
+            view.setSingleLine(false);
+            view.setEllipsize(TextUtils.TruncateAt.END);
+            view.setMaxLines(lines);
+        }
+    }
+
     private static void updateSuggestionLayoutType(SuggestionView view, PropertyModel model) {
         boolean isAnswer = model.get(SuggestionViewProperties.IS_ANSWER);
-        int numberLines = model.get(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES);
+        // Note: only one of these fields will report line count > 0; this depends on the selected
+        // suggestion layout. Old layout allows multiline response in line 2, new answer layout - in
+        // line 1.
+        boolean isMultiline = model.get(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES) > 1
+                || model.get(SuggestionViewProperties.TEXT_LINE_1_MAX_LINES) > 1;
         if (!isAnswer) {
             view.setSuggestionLayoutType(SuggestionView.SuggestionLayoutType.TEXT_SUGGESTION);
         } else {
-            view.setSuggestionLayoutType(numberLines > 1
+            view.setSuggestionLayoutType(isMultiline
                             ? SuggestionView.SuggestionLayoutType.MULTI_LINE_ANSWER
                             : SuggestionView.SuggestionLayoutType.ANSWER);
         }

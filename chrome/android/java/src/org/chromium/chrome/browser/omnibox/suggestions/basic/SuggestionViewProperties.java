@@ -128,6 +128,14 @@ class SuggestionViewProperties {
      */
     public static final WritableObjectPropertyKey<Pair<Integer, Float>> TEXT_LINE_1_SIZING =
             new WritableObjectPropertyKey<>();
+    /** The maximum number of lines to be shown for the first line of text. */
+    public static final WritableIntPropertyKey TEXT_LINE_1_MAX_LINES = new WritableIntPropertyKey();
+    /** The color to be applied to the first line of text. */
+    public static final WritableIntPropertyKey TEXT_LINE_1_TEXT_COLOR =
+            new WritableIntPropertyKey();
+    /** The direction the text should be laid out for the first line of text. */
+    public static final WritableIntPropertyKey TEXT_LINE_1_TEXT_DIRECTION =
+            new WritableIntPropertyKey();
     /** The actual text content for the first line of text. */
     public static final WritableObjectPropertyKey<SuggestionTextContainer> TEXT_LINE_1_TEXT =
             new WritableObjectPropertyKey<>();
@@ -154,6 +162,7 @@ class SuggestionViewProperties {
 
     public static final PropertyKey[] ALL_UNIQUE_KEYS = new PropertyKey[] {DELEGATE, IS_ANSWER,
             HAS_ANSWER_IMAGE, ANSWER_IMAGE, REFINABLE, SUGGESTION_ICON_TYPE, TEXT_LINE_1_SIZING,
+            TEXT_LINE_1_MAX_LINES, TEXT_LINE_1_TEXT_COLOR, TEXT_LINE_1_TEXT_DIRECTION,
             TEXT_LINE_1_TEXT, TEXT_LINE_2_SIZING, TEXT_LINE_2_MAX_LINES, TEXT_LINE_2_TEXT_COLOR,
             TEXT_LINE_2_TEXT_DIRECTION, TEXT_LINE_2_TEXT};
 

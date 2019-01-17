@@ -360,7 +360,7 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
         if (!mContentsView.mAllowTint || mContentsView.mSuggestionIcon == null) return;
         DrawableCompat.setTint(mContentsView.mSuggestionIcon,
                 ApiCompatibilityUtils.getColor(getContext().getResources(),
-                useDarkTint ? R.color.dark_mode_tint : R.color.white_mode_tint));
+                        useDarkTint ? R.color.dark_mode_tint : R.color.white_mode_tint));
         mContentsView.invalidate();
     }
 
