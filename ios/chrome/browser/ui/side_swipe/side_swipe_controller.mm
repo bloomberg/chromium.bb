@@ -28,6 +28,7 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/web_navigation_util.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -407,10 +408,14 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 }
 
 - (BOOL)canNavigate:(BOOL)goBack {
-  if (goBack && [[model_ currentTab] canGoBack]) {
+  WebStateList* webStateList = model_.webStateList;
+  if (!webStateList || !webStateList->GetActiveWebState())
+    return NO;
+  web::WebState* webState = webStateList->GetActiveWebState();
+  if (goBack && webState->GetNavigationManager()->CanGoBack()) {
     return YES;
   }
-  if (!goBack && [[model_ currentTab] canGoForward]) {
+  if (!goBack && webState->GetNavigationManager()->CanGoForward()) {
     return YES;
   }
   return NO;
@@ -455,11 +460,14 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     animatedFullscreenDisabler_ = nullptr;
   }
 
-  __weak Tab* weakCurrentTab = [model_ currentTab];
   [pageSideSwipeView_ handleHorizontalPan:gesture
       onOverThresholdCompletion:^{
+        WebStateList* webStateList = model_.webStateList;
+        web::WebState* webState = nullptr;
+        if (webStateList) {
+          webState = webStateList->GetActiveWebState();
+        }
         BOOL wantsBack = IsSwipingBack(gesture.direction);
-        web::WebState* webState = [weakCurrentTab webState];
         if (webState) {
           if (wantsBack) {
             web_navigation_util::GoBack(webState);
