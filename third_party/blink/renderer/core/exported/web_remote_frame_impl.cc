@@ -301,8 +301,7 @@ void WebRemoteFrameImpl::ForwardResourceTimingToParent(
       ToHTMLFrameOwnerElement(frame_->Owner());
   DCHECK(owner_element);
   DOMWindowPerformance::performance(*parent_frame->GetFrame()->DomWindow())
-      ->AddResourceTiming(info, owner_element->localName(),
-                          owner_element->GetDocument().IsSecureContext());
+      ->AddResourceTiming(info, owner_element->localName());
 }
 
 void WebRemoteFrameImpl::DispatchLoadEventForFrameOwner() {

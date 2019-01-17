@@ -53,6 +53,7 @@ struct WebResourceTimingInfo {
   uint64_t decoded_body_size;
 
   bool did_reuse_connection;
+  bool is_secure_context;
 
   // TODO(dcheng): The way this code works is fairly confusing: it might seem
   // unusual to store policy members like |allow_timing_details| inline, rather

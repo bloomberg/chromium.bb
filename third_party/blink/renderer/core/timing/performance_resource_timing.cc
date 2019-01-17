@@ -45,8 +45,7 @@ namespace blink {
 PerformanceResourceTiming::PerformanceResourceTiming(
     const WebResourceTimingInfo& info,
     TimeTicks time_origin,
-    const AtomicString& initiator_type,
-    bool is_secure_context)
+    const AtomicString& initiator_type)
     : PerformanceEntry(info.name,
                        Performance::MonotonicTimeToDOMHighResTimeStamp(
                            time_origin,
@@ -73,7 +72,7 @@ PerformanceResourceTiming::PerformanceResourceTiming(
       allow_timing_details_(info.allow_timing_details),
       allow_redirect_details_(info.allow_redirect_details),
       allow_negative_value_(info.allow_negative_values),
-      is_secure_context_(is_secure_context),
+      is_secure_context_(info.is_secure_context),
       server_timing_(
           PerformanceServerTiming::FromParsedServerTiming(info.server_timing)) {
 }
