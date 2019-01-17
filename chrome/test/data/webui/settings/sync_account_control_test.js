@@ -87,6 +87,23 @@ cr.define('settings_sync_account_control', function() {
           });
     });
 
+    test('promo header has the correct class', function() {
+      testElement.syncStatus = {signedIn: false, signedInUsername: ''};
+      testElement.promoLabelWithNoAccount = testElement.promoLabelWithAccount =
+          'title';
+      sync_test_util.simulateStoredAccounts([]);
+      assertVisible(testElement.$$('#promo-header'), true);
+      // When there is no secondary label, the settings box is one line.
+      assertFalse(
+          testElement.$$('#promo-header').classList.contains('two-line'));
+
+      testElement.promoSecondaryLabelWithNoAccount =
+          testElement.promoSecondaryLabelWithAccount = 'subtitle';
+      // When there is a secondary label, the settings box is two line.
+      assertTrue(
+          testElement.$$('#promo-header').classList.contains('two-line'));
+    });
+
     test('not signed in and no stored accounts', function() {
       testElement.syncStatus = {signedIn: false, signedInUsername: ''};
       sync_test_util.simulateStoredAccounts([]);

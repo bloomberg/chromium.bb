@@ -78,7 +78,14 @@ Polymer({
       computed: 'computeShouldShowAvatarRow_(storedAccounts_, syncStatus,' +
           'storedAccounts_.length, syncStatus.signedIn)',
       observer: 'onShouldShowAvatarRowChange_',
-    }
+    },
+
+    /** @private */
+    subLabel_: {
+      type: String,
+      computed: 'computeSubLabel_(promoSecondaryLabelWithAccount,' +
+          'promoSecondaryLabelWithNoAccount, shownAccount_)',
+    },
   },
 
   observers: [
@@ -158,6 +165,23 @@ Polymer({
    */
   getLabel_: function(labelWithAccount, labelWithNoAccount) {
     return this.shownAccount_ ? labelWithAccount : labelWithNoAccount;
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  computeSubLabel_: function() {
+    return this.getLabel_(this.promoSecondaryLabelWithAccount,
+                          this.promoSecondaryLabelWithNoAccount);
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getPromoHeaderClass_: function() {
+    return !!this.subLabel_ ? 'two-line': '';
   },
 
   /**
