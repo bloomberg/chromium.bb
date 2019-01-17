@@ -244,7 +244,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': 'bbe900a8ed92b6bc0d0bbc1bff8adf377c414a45',
+  'quiche_revision': '9e83c26b83c78c6bb0e537e84090eee0269b2826',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
