@@ -265,12 +265,19 @@ static const gchar* AXPlatformNodeAuraLinuxGetDescription(
 }
 
 static gint AXPlatformNodeAuraLinuxGetIndexInParent(AtkObject* atk_object) {
-  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
-
-  if (!obj)
+  AtkObject* parent = atk_object_get_parent(atk_object);
+  if (!parent)
     return -1;
 
-  return obj->GetIndexInParent();
+  int n_children = atk_object_get_n_accessible_children(parent);
+  for (int i = 0; i < n_children; i++) {
+    AtkObject* child = atk_object_ref_accessible_child(parent, i);
+    g_object_unref(child);
+    if (child == atk_object)
+      return i;
+  }
+
+  return -1;
 }
 
 static AtkObject* AXPlatformNodeAuraLinuxGetParent(AtkObject* atk_object) {

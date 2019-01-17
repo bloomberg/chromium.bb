@@ -5176,6 +5176,11 @@ if (!is_android) {
     } else {
       sources += [ "../browser/metrics/desktop_session_duration/chrome_visibility_observer_interactive_uitest.cc" ]
     }
+
+    if (use_atk && toolkit_views) {
+      sources += [ "../browser/ui/views/accessibility/browser_accessibility_uitest_auralinux.cc" ]
+      configs += [ "//build/config/linux/atk" ]
+    }
   }
 }
 
