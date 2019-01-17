@@ -261,8 +261,14 @@ TEST_F(CronetStructTest, TestCronet_UrlRequestParams) {
   Cronet_UrlRequestParams_Destroy(second);
 }
 
+// Fails under MSAN: crbug.com/922842
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_TestCronet_DateTime DISABLED_TestCronet_DateTime
+#else
+#define MAYBE_TestCronet_DateTime TestCronet_DateTime
+#endif
 // Test Struct Cronet_DateTime setters and getters.
-TEST_F(CronetStructTest, TestCronet_DateTime) {
+TEST_F(CronetStructTest, MAYBE_TestCronet_DateTime) {
   Cronet_DateTimePtr first = Cronet_DateTime_Create();
   Cronet_DateTimePtr second = Cronet_DateTime_Create();
 
