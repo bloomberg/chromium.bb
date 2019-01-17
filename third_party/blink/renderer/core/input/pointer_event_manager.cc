@@ -909,12 +909,6 @@ bool PointerEventManager::HasPointerCapture(int pointer_id,
   return pending_pointer_capture_target_.at(pointer_id) == target;
 }
 
-bool PointerEventManager::HasProcessedPointerCapture(
-    int pointer_id,
-    const Element* target) const {
-  return pointer_capture_target_.at(pointer_id) == target;
-}
-
 void PointerEventManager::ReleasePointerCapture(int pointer_id) {
   pending_pointer_capture_target_.erase(pointer_id);
 }

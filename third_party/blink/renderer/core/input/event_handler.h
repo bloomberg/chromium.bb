@@ -224,7 +224,6 @@ class CORE_EXPORT EventHandler final
   void ReleasePointerCapture(int, Element*);
   void ReleaseMousePointerCapture();
   bool HasPointerCapture(int, const Element*) const;
-  bool HasProcessedPointerCapture(int, const Element*) const;
   void ProcessPendingPointerCaptureForPointerLock(const WebMouseEvent&);
 
   void ElementRemoved(Element*);

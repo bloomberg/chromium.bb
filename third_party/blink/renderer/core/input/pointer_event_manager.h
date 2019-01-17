@@ -88,9 +88,6 @@ class CORE_EXPORT PointerEventManager
   // See Element::hasPointerCapture(int).
   bool HasPointerCapture(int, const Element*) const;
 
-  // See Element::hasProcessedPointerCapture(int).
-  bool HasProcessedPointerCapture(int, const Element*) const;
-
   bool IsActive(const int) const;
 
   // Returns whether there is any touch on the screen.

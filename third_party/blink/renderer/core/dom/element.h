@@ -711,13 +711,6 @@ class CORE_EXPORT Element : public ContainerNode {
   // https://w3c.github.io/pointerevents/#dom-element-haspointercapture
   bool hasPointerCapture(int pointer_id) const;
 
-  // Returns true iff the element has received a gotpointercapture event for
-  // the |pointerId| but hasn't yet received a lostpointercapture event for
-  // the same id. The time window during which this is true is "delayed" from
-  // (but overlapping with) the time window for hasPointerCapture():
-  // https://w3c.github.io/pointerevents/#process-pending-pointer-capture
-  bool HasProcessedPointerCapture(int pointer_id) const;
-
   String TextFromChildren();
 
   virtual String title() const { return String(); }

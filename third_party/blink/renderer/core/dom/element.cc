@@ -3697,12 +3697,6 @@ bool Element::hasPointerCapture(int pointer_id) const {
              pointer_id, this);
 }
 
-bool Element::HasProcessedPointerCapture(int pointer_id) const {
-  return GetDocument().GetFrame() &&
-         GetDocument().GetFrame()->GetEventHandler().HasProcessedPointerCapture(
-             pointer_id, this);
-}
-
 String Element::outerText() {
   // Getting outerText is the same as getting innerText, only
   // setting is different. You would think this should get the plain
