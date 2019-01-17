@@ -133,5 +133,6 @@ cca.views.MasterSettings.prototype.openFeedback = function() {
  * @private
  */
 cca.views.MasterSettings.prototype.openHelp_ = function() {
-  window.open('https://support.google.com/chromebook/answer/4487486');
+  window.open(
+      'https://support.google.com/chromebook/?p=camera_usage_on_chromebook');
 };
