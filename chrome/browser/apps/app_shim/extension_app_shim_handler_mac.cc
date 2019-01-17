@@ -792,16 +792,23 @@ void ExtensionAppShimHandler::OnAppStop(content::BrowserContext* context,
 void ExtensionAppShimHandler::OnBrowserAdded(Browser* browser) {}
 
 void ExtensionAppShimHandler::OnBrowserRemoved(Browser* browser) {
-  const Extension* extension = MaybeGetAppForBrowser(browser);
-  if (!extension)
-    return;
-
-  AppBrowserMap::iterator it = app_browser_windows_.find(extension->id());
-  if (it != app_browser_windows_.end()) {
+  // Note that |browser| may no longer have an extension, if it was unloaded
+  // before |browser| was closed. Search for |browser| in all extensions in
+  // |app_browser_windows_|.
+  for (auto it = app_browser_windows_.begin(); it != app_browser_windows_.end();
+       ++it) {
+    const std::string& extension_id = it->first;
     BrowserSet& browsers = it->second;
-    browsers.erase(browser);
-    if (browsers.empty())
-      OnAppDeactivated(browser->profile(), extension->id());
+    auto found = browsers.find(browser);
+    if (found == browsers.end())
+      continue;
+
+    browsers.erase(found);
+    if (browsers.empty()) {
+      OnAppDeactivated(browser->profile(), extension_id);
+      app_browser_windows_.erase(it);
+    }
+    return;
   }
 }
 
