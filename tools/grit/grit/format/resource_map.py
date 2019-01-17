@@ -142,11 +142,30 @@ def _FormatSource(get_key, root, lang, output_dir, include_gzipped=False):
 def _GetItemName(item):
   return item.attrs['name']
 
+# Check if |path2| is a subpath of |path1|.
+def _IsSubpath(path1, path2):
+  path1_abs = os.path.abspath(path1)
+  path2_abs = os.path.abspath(path2)
+  common = os.path.commonprefix([path1_abs, path2_abs])
+  return path1_abs == common
 
 def _GetItemPath(item):
   path = item.GetInputPath().replace("\\", "/")
-  # resource_maps don't currently work with variables. See crbug.com/899437
-  # for why you might not need this, and if you still think you need it then
-  # comment 17 has a patch for how to make it work.
-  assert '$' not in path, 'see comment above'
+
+  # Handle the case where the file resides within the output folder,
+  # by expanding any variables as well as replacing the output folder name with
+  # a fixed string such that the key added to the map does not depend on a given
+  # developer's setup.
+  #
+  # For example this will convert the following path:
+  # ../../out/gchrome/${root_gen_dir}/ui/webui/resources/js/foo.js
+  # to:
+  # @out_folder@/gen/ui/webui/resources/js/foo.js
+
+  real_path = item.ToRealPath(item.GetInputPath())
+  if (item.attrs.get('use_base_dir', 'true') != 'true' and
+          _IsSubpath(os.path.curdir, real_path)):
+    path = os.path.join('@out_folder@', os.path.relpath(real_path))
+
+  assert '$' not in path, 'all variables should have been expanded'
   return path
