@@ -396,9 +396,11 @@ TEST_F('CrExtensionsManagerUnitTest', 'Uninstall', function() {
   this.runMochaTest(extension_manager_tests.TestNames.Uninstall);
 });
 
-TEST_F('CrExtensionsManagerUnitTest', 'UninstallFromDetails', function() {
-  this.runMochaTest(extension_manager_tests.TestNames.UninstallFromDetails);
-});
+// Flaky since r621915: https://crbug.com/922490
+TEST_F(
+    'CrExtensionsManagerUnitTest', 'DISABLED_UninstallFromDetails', function() {
+      this.runMochaTest(extension_manager_tests.TestNames.UninstallFromDetails);
+    });
 
 TEST_F('CrExtensionsManagerUnitTest', 'ToggleIncognito', function() {
   this.runMochaTest(extension_manager_tests.TestNames.ToggleIncognitoMode);
