@@ -349,18 +349,19 @@ gfx::Size AppsGridView::GetTileGridSizeWithoutPadding() const {
   return size;
 }
 
-gfx::Size AppsGridView::GetMinimumTileGridSize() const {
+gfx::Size AppsGridView::GetMinimumTileGridSize(int cols,
+                                               int rows_per_page) const {
   const gfx::Size tile_size = GetTileViewSize();
-  return gfx::Size(tile_size.width() * cols_,
-                   tile_size.height() * rows_per_page_);
+  return gfx::Size(tile_size.width() * cols,
+                   tile_size.height() * rows_per_page);
 }
 
-gfx::Size AppsGridView::GetMaximumTileGridSize() const {
+gfx::Size AppsGridView::GetMaximumTileGridSize(int cols,
+                                               int rows_per_page) const {
   const gfx::Size tile_size = GetTileViewSize();
-  return gfx::Size(
-      tile_size.width() * cols_ + kMaximumTileSpacing * (cols_ - 1),
-      tile_size.height() * rows_per_page_ +
-          kMaximumTileSpacing * (rows_per_page_ - 1));
+  return gfx::Size(tile_size.width() * cols + kMaximumTileSpacing * (cols - 1),
+                   tile_size.height() * rows_per_page +
+                       kMaximumTileSpacing * (rows_per_page - 1));
 }
 
 void AppsGridView::ResetForShowApps() {
@@ -1769,7 +1770,8 @@ void AppsGridView::StartDragAndDropHostDrag(const gfx::Point& grid_location) {
   DCHECK(!IsDraggingForReparentInRootLevelGridView());
   drag_and_drop_host_->CreateDragIconProxyByLocationWithNoAnimation(
       drag_view_->GetIconBoundsInScreen().origin(), drag_view_->GetIconImage(),
-      drag_view_, kDragAndDropProxyScale * GetTransform().Scale2d().x(),
+      drag_view_,
+      kDragAndDropProxyScale * contents_view_->GetAppListMainViewScale(),
       drag_view_->item()->is_folder() && IsTabletMode()
           ? AppListConfig::instance().blur_radius()
           : 0);
@@ -1822,7 +1824,8 @@ void AppsGridView::MaybeStartPageFlipTimer(const gfx::Point& drag_point) {
   // Drag zones are at the edges of the scroll axis.
   if (pagination_controller_->scroll_axis() ==
       PaginationController::SCROLL_AXIS_VERTICAL) {
-    if (drag_point.y() < AppListConfig::instance().page_flip_zone_size()) {
+    if (drag_point.y() <
+        AppListConfig::instance().page_flip_zone_size() + GetInsets().top()) {
       new_page_flip_target = pagination_model_.selected_page() - 1;
     } else if (IsPointWithinBottomDragBuffer(drag_point)) {
       // If the drag point is within the drag buffer, but not over the shelf.
@@ -2184,36 +2187,25 @@ bool AppsGridView::IsPointWithinDragBuffer(const gfx::Point& point) const {
 }
 
 bool AppsGridView::IsPointWithinPageFlipBuffer(const gfx::Point& point) const {
-  gfx::Point point_in_screen = point;
-  ConvertPointToScreen(this, &point_in_screen);
-  const display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestView(
-          GetWidget()->GetNativeView());
-  return display.work_area().Contains(point_in_screen);
+  // The page flip buffer is the work area bounds excluding shelf bounds, which
+  // is the same as AppsContainerView's bounds.
+  gfx::Point point_in_parent = point;
+  ConvertPointToTarget(this, parent(), &point_in_parent);
+  return parent()->GetContentsBounds().Contains(point_in_parent);
 }
 
 bool AppsGridView::IsPointWithinBottomDragBuffer(
     const gfx::Point& point) const {
-  gfx::Point point_in_screen = point;
-  ConvertPointToScreen(this, &point_in_screen);
-  const display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestView(
-          GetWidget()->GetNativeView());
-
-  const int kBottomDragBufferMax =
-      display.bounds().bottom() -
-      (contents_view_->app_list_view()->is_side_shelf()
-           ? 0
-           : (display.bounds().bottom() - display.work_area().bottom()));
-
-  // The minimum y position is the bottom of this view, which is sometimes
-  // transformed for display zoom.
-  gfx::RectF transformed_bounds_in_screen = gfx::RectF(GetBoundsInScreen());
-  GetTransform().TransformRect(&transformed_bounds_in_screen);
-  const int kBottomDragBufferMin = transformed_bounds_in_screen.bottom();
-
-  return point_in_screen.y() > kBottomDragBufferMin &&
-         point_in_screen.y() < kBottomDragBufferMax;
+  // The bottom drag buffer is between the bottom of apps grid and top of shelf.
+  gfx::Point point_in_parent = point;
+  ConvertPointToTarget(this, parent(), &point_in_parent);
+  gfx::Rect parent_rect = parent()->GetContentsBounds();
+  const int kBottomDragBufferMax = parent_rect.bottom();
+  const int kBottomDragBufferMin =
+      bounds().bottom() - GetInsets().bottom() -
+      AppListConfig::instance().page_flip_zone_size();
+  return point_in_parent.y() > kBottomDragBufferMin &&
+         point_in_parent.y() < kBottomDragBufferMax;
 }
 
 void AppsGridView::ButtonPressed(views::Button* sender,

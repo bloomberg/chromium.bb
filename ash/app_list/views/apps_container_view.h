@@ -73,11 +73,11 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   void OnTabletModeChanged(bool started);
 
   // views::View overrides:
-  gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   const char* GetClassName() const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  gfx::Size GetMinimumSize() const override;
 
   // HorizontalPage overrides:
   void OnWillBeHidden() override;
@@ -107,12 +107,6 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
 
   void SetShowState(ShowState show_state, bool show_apps_with_animation);
 
-  // Gets the final top padding of search box.
-  int GetSearchBoxFinalTopPadding() const;
-
-  // Returns the bounds of the page in the parent view during dragging.
-  gfx::Rect GetPageBoundsDuringDragging(ash::AppListState state) const;
-
   // Updates suggestion chips from app list model.
   void UpdateSuggestionChips();
 
@@ -123,6 +117,10 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   // Returns expected suggestion chip container's y position based on the app
   // list transition progress.
   int GetExpectedSuggestionChipY(float progress);
+
+  // Returns true if columns and rows number of |apps_grid_view_| should be
+  // switched.
+  bool ShouldSwitchColsAndRows() const;
 
   ContentsView* contents_view_;  // Not owned.
 

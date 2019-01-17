@@ -138,15 +138,11 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // specify their own custom layout.
   gfx::Rect GetDefaultContentsBounds() const;
 
-  // Returns the maximum preferred size of the all pages.
-  gfx::Size GetMaximumContentsSize() const;
-
   // Performs the 'back' action for the active page. Returns whether the action
   // was handled.
   bool Back();
 
   // Overridden from views::View:
-  gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   const char* GetClassName() const override;
 
@@ -170,6 +166,10 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   // Updates y position and opacity of the items in this view during dragging.
   void UpdateYPositionAndOpacity();
+
+  // Returns the scale that is used to transform the AppListMainView. The scale
+  // is also applied to search box window.
+  float GetAppListMainViewScale() const;
 
  private:
   // Sets the active launcher page, accounting for whether the change is for
