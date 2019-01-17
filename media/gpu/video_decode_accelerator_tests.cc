@@ -79,7 +79,7 @@ class VideoDecoderTest : public ::testing::Test {
     frame_validator_ =
         media::test::VideoFrameValidator::Create(video->FrameChecksums());
     return VideoPlayer::Create(video, g_env->dummy_frame_renderer_.get(),
-                               frame_validator_.get());
+                               {frame_validator_.get()});
   }
 
  protected:

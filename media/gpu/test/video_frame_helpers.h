@@ -22,6 +22,19 @@ class VideoFrame;
 
 namespace test {
 
+// The video frame processor defines an abstract interface for classes that are
+// interested in processing video frames (e.g. FrameValidator,...).
+class VideoFrameProcessor {
+ public:
+  virtual ~VideoFrameProcessor() = default;
+
+  // Process the specified |video_frame|. This can e.g. validate the frame,
+  // calculate the frame's checksum, write the frame to file,... The
+  // |frame_index| is the index of the video frame in display order.
+  virtual void ProcessVideoFrame(scoped_refptr<VideoFrame> video_frame,
+                                 size_t frame_index) = 0;
+};
+
 // Create a video frame with specified |pixel_format| and |size|.
 scoped_refptr<VideoFrame> CreateVideoFrame(
     VideoPixelFormat pixel_format,

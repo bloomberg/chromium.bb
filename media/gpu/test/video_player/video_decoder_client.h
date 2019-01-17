@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <map>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -26,7 +25,7 @@ namespace test {
 
 class EncodedDataHelper;
 class FrameRenderer;
-class VideoFrameValidator;
+class VideoFrameProcessor;
 
 // The video decoder client is responsible for the communication between the
 // video player and the video decoder. It also communicates with the frame
@@ -43,18 +42,18 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
   ~VideoDecoderClient() override;
 
   // Return an instance of the VideoDecoderClient. The |frame_renderer| and
-  // |frame_validator| will not be owned by the decoder client, the caller
+  // |frame_processors| will not be owned by the decoder client, the caller
   // should guarantee they outlive the decoder client. The |event_cb| will be
   // called whenever an event occurs (e.g. frame decoded) and should be
   // thread-safe.
   static std::unique_ptr<VideoDecoderClient> Create(
       const VideoPlayer::EventCallback& event_cb,
       FrameRenderer* frame_renderer,
-      VideoFrameValidator* frame_validator);
+      const std::vector<VideoFrameProcessor*>& frame_processors);
 
-  // Create a decoder with specified |config|, video |stream| and video
-  // |stream_size|. The video stream will not be owned by the decoder client,
-  // the caller should guarantee it exists until DestroyDecoder() is called.
+  // Create a decoder with specified |config| and video |stream|. The video
+  // will not be owned by the decoder client, the caller should guarantee it
+  // exists until DestroyDecoder() is called.
   void CreateDecoder(const VideoDecodeAccelerator::Config& config,
                      const std::vector<uint8_t>& stream);
   // Destroy the currently active decoder.
@@ -82,7 +81,7 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
 
   VideoDecoderClient(const VideoPlayer::EventCallback& event_cb,
                      FrameRenderer* renderer,
-                     VideoFrameValidator* frame_validator);
+                     const std::vector<VideoFrameProcessor*>& frame_processors);
 
   bool Initialize();
   void Destroy();
@@ -125,7 +124,7 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
 
   VideoPlayer::EventCallback event_cb_;
   FrameRenderer* const frame_renderer_;
-  VideoFrameValidator* const frame_validator_;
+  std::vector<VideoFrameProcessor*> const frame_processors_;
 
   std::unique_ptr<GpuVideoDecodeAcceleratorFactory> decoder_factory_;
   std::unique_ptr<VideoDecodeAccelerator> decoder_;

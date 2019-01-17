@@ -96,7 +96,18 @@ VideoFrameValidator::VideoFrameValidator(
 
 VideoFrameValidator::~VideoFrameValidator() {}
 
-void VideoFrameValidator::EvaluateVideoFrame(
+std::vector<VideoFrameValidator::MismatchedFrameInfo>
+VideoFrameValidator::GetMismatchedFramesInfo() const {
+  base::AutoLock auto_lock(mismatched_frames_lock_);
+  return mismatched_frames_;
+}
+
+size_t VideoFrameValidator::GetMismatchedFramesCount() const {
+  base::AutoLock auto_lock(mismatched_frames_lock_);
+  return mismatched_frames_.size();
+}
+
+void VideoFrameValidator::ProcessVideoFrame(
     scoped_refptr<VideoFrame> video_frame,
     size_t frame_index) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -126,17 +137,6 @@ void VideoFrameValidator::EvaluateVideoFrame(
     LOG_IF(WARNING, !WriteI420ToFile(frame_index, standard_frame.get()))
         << "Failed to write yuv into file.";
   }
-}
-
-std::vector<VideoFrameValidator::MismatchedFrameInfo>
-VideoFrameValidator::GetMismatchedFramesInfo() const {
-  base::AutoLock auto_lock(mismatched_frames_lock_);
-  return mismatched_frames_;
-}
-
-size_t VideoFrameValidator::GetMismatchedFramesCount() const {
-  base::AutoLock auto_lock(mismatched_frames_lock_);
-  return mismatched_frames_.size();
 }
 
 scoped_refptr<VideoFrame> VideoFrameValidator::CreateStandardizedFrame(

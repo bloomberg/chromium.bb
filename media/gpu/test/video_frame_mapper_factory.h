@@ -28,4 +28,4 @@ class VideoFrameMapperFactory {
 }  // namespace test
 }  // namespace media
 
-#endif  // MEDIA_GPU_TEST_GENERIC_VIDEO_FRAME_MAPPER_FACTORY_H_
+#endif  // MEDIA_GPU_TEST_VIDEO_FRAME_MAPPER_FACTORY_H_

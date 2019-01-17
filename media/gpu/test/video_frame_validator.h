@@ -16,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/video_types.h"
+#include "media/gpu/test/video_frame_helpers.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace media {
@@ -35,7 +36,7 @@ class VideoFrameMapper;
 // identical on all platforms.
 // Mapping and verification of a frame is a costly operation and will influence
 // performance measurements.
-class VideoFrameValidator {
+class VideoFrameValidator : public VideoFrameProcessor {
  public:
   enum Flags : uint32_t {
     // Checks soundness of video frames.
@@ -74,14 +75,7 @@ class VideoFrameValidator {
       const base::FilePath& md5_file_path,
       bool linear);
 
-  ~VideoFrameValidator();
-
-  // This checks if |video_frame|'s pixel content is as expected.
-  // A client of VideoFrameValidator would call this function on each frame in
-  // PictureReady().
-  // |frame_index| is the index of video frame in display order.
-  void EvaluateVideoFrame(scoped_refptr<VideoFrame> video_frame,
-                          size_t frame_index);
+  ~VideoFrameValidator() override;
 
   // Returns information of frames that don't match golden md5 values.
   // If there is no mismatched frame, returns an empty vector. This function is
@@ -91,6 +85,11 @@ class VideoFrameValidator {
   // Returns the number of frames that didn't match the golden md5 values. This
   // function is thread-safe.
   size_t GetMismatchedFramesCount() const;
+
+  // Interface VideoFrameProcessor
+  // Validate the |video_frame|'s pixel content.
+  void ProcessVideoFrame(scoped_refptr<VideoFrame> video_frame,
+                         size_t frame_index) override;
 
  private:
   VideoFrameValidator(uint32_t flags,

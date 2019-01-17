@@ -605,8 +605,8 @@ void GLRenderingVDAClient::PictureReady(const Picture& picture) {
   if (video_frame_validator_) {
     auto video_frame = texture_it->second->ExportVideoFrame(visible_rect);
     ASSERT_NE(video_frame.get(), nullptr);
-    video_frame_validator_->EvaluateVideoFrame(std::move(video_frame),
-                                               frame_index_);
+    video_frame_validator_->ProcessVideoFrame(std::move(video_frame),
+                                              frame_index_);
     frame_index_++;
   }
   rendering_helper_->ConsumeVideoFrame(config_.window_id,
