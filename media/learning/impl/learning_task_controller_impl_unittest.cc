@@ -34,7 +34,8 @@ class LearningTaskControllerImplTest : public testing::Test {
   LearningTaskControllerImplTest()
       : predicted_target_(123), not_predicted_target_(456) {
     // Don't require too many training examples per report.
-    task_.min_data_set_size = 4;
+    task_.max_data_set_size = 20;
+    task_.min_new_data_fraction = 0.1;
 
     std::unique_ptr<FakeDistributionReporter> reporter =
         std::make_unique<FakeDistributionReporter>(task_);
@@ -64,6 +65,7 @@ class LearningTaskControllerImplTest : public testing::Test {
     TargetValue target_;
   };
 
+  // Note that this trains models synchronously.
   void OnTrain(TrainingData training_data, TrainedModelCB model_cb) {
     num_models_++;
     std::move(model_cb).Run(std::make_unique<FakeModel>(predicted_target_));
@@ -85,32 +87,42 @@ class LearningTaskControllerImplTest : public testing::Test {
 TEST_F(LearningTaskControllerImplTest, AddingExamplesTrainsModelAndReports) {
   LabelledExample example;
 
-  // Adding the first n-1 examples shouldn't cause it to train a model.
-  for (size_t i = 0; i < task_.min_data_set_size - 1; i++)
-    controller_->AddExample(example);
-  EXPECT_EQ(num_models_, 0);
-
-  // Adding one more example should train a model.
-  controller_->AddExample(example);
-  EXPECT_EQ(num_models_, 1);
-
-  // No results should be reported yet.
-  EXPECT_EQ(reporter_raw_->num_reported_, 0);
-  EXPECT_EQ(reporter_raw_->num_correct_, 0);
-
-  // Adding one more example should report results.
+  // Up to the first 1/training_fraction examples should train on each example.
+  // Make each of the examples agree on |predicted_target_|.
   example.target_value = predicted_target_;
-  controller_->AddExample(example);
-  EXPECT_EQ(num_models_, 1);
-  EXPECT_EQ(reporter_raw_->num_reported_, 1);
-  EXPECT_EQ(reporter_raw_->num_correct_, 1);
+  int count = static_cast<int>(1.0 / task_.min_new_data_fraction);
+  for (int i = 0; i < count; i++) {
+    controller_->AddExample(example);
+    EXPECT_EQ(num_models_, i + 1);
+    // All examples except the first should be reported as correct.  For the
+    // first, there's no model to test again.
+    EXPECT_EQ(reporter_raw_->num_reported_, i);
+    EXPECT_EQ(reporter_raw_->num_correct_, i);
+  }
+  // The next |count| should train every other one.
+  for (int i = 0; i < count; i++) {
+    controller_->AddExample(example);
+    EXPECT_EQ(num_models_, count + (i + 1) / 2);
+  }
 
-  // Adding a value that doesn't match should report one more attempt.
+  // The next |count| should be the same, since we've reached the max training
+  // set size.
+  for (int i = 0; i < count; i++) {
+    controller_->AddExample(example);
+    EXPECT_EQ(num_models_, count + count / 2 + (i + 1) / 2);
+  }
+
+  // We should have reported results for each except the first.  All of them
+  // should be correct, since there's only one target so far.
+  EXPECT_EQ(reporter_raw_->num_reported_, count * 3 - 1);
+  EXPECT_EQ(reporter_raw_->num_correct_, count * 3 - 1);
+
+  // Adding a value that doesn't match should report one more attempt, with an
+  // incorrect prediction.
   example.target_value = not_predicted_target_;
   controller_->AddExample(example);
-  EXPECT_EQ(num_models_, 1);
-  EXPECT_EQ(reporter_raw_->num_reported_, 2);
-  EXPECT_EQ(reporter_raw_->num_correct_, 1);  // Still 1.
+  EXPECT_EQ(reporter_raw_->num_reported_, count * 3);
+  EXPECT_EQ(reporter_raw_->num_correct_, count * 3 - 1);  // Unchanged.
 }
 
 }  // namespace learning

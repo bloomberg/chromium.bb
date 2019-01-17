@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/learning/impl/distribution_reporter.h"
 #include "media/learning/impl/learning_task_controller.h"
+#include "media/learning/impl/random_number_generator.h"
 #include "media/learning/impl/training_algorithm.h"
 
 namespace media {
@@ -21,6 +22,7 @@ class LearningTaskControllerImplTest;
 
 class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
     : public LearningTaskController,
+      public HasRandomNumberGenerator,
       public base::SupportsWeakPtr<LearningTaskControllerImpl> {
  public:
   LearningTaskControllerImpl(
@@ -45,6 +47,13 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
 
   // Most recently trained model, or null.
   std::unique_ptr<Model> model_;
+
+  // We don't want to have multiple models in flight.
+  bool training_is_in_progress_ = false;
+
+  // Number of examples in |training_data_| that haven't been used for training.
+  // This helps us decide when to train a new model.
+  int num_untrained_examples_ = 0;
 
   TrainingAlgorithmCB training_cb_;
 
