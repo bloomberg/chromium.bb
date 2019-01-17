@@ -237,7 +237,37 @@
   <Type Name="blink::NGPhysicalFragment">
     <DisplayString>{(blink::NGPhysicalFragment::NGFragmentType)type_} {size_} {*layout_object_}</DisplayString>
     <Expand>
-      <Item Name="children_" Condition="type_ == 0 || type_ == 2">((blink::NGPhysicalContainerFragment*)this)->children_</Item>
+      <!-- Resolve subclasses because VS can't resolve without virtual functions -->
+      <ExpandedItem Condition="type_ == 0">(blink::NGPhysicalBoxFragment*)this</ExpandedItem>
+      <ExpandedItem Condition="type_ == 1">(blink::NGPhysicalTextFragment*)this</ExpandedItem>
+      <ExpandedItem Condition="type_ == 2">(blink::NGPhysicalLineBoxFragment*)this</ExpandedItem>
+    </Expand>
+  </Type>
+  <Type Name="blink::NGPhysicalBoxFragment">
+    <Expand>
+      <Item Name="SubType">(blink::NGPhysicalFragment::NGBoxType)sub_type_</Item>
+      <Synthetic Name="Children">
+        <DisplayString>{num_children_}</DisplayString>
+        <Expand>
+          <ArrayItems>
+            <Size>num_children_</Size>
+            <ValuePointer>children_</ValuePointer>
+          </ArrayItems>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
+  <Type Name="blink::NGPhysicalLineBoxFragment">
+    <Expand>
+      <Synthetic Name="Children">
+        <DisplayString>{num_children_}</DisplayString>
+        <Expand>
+          <ArrayItems>
+            <Size>num_children_</Size>
+            <ValuePointer>children_</ValuePointer>
+          </ArrayItems>
+        </Expand>
+      </Synthetic>
     </Expand>
   </Type>
   <Type Name="blink::NGLogicalOffset">
