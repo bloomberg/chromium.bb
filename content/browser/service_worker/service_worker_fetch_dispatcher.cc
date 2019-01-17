@@ -518,9 +518,8 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
 
   // Grant the service worker's process access to files in the request body.
   if (request_->body) {
-    const scoped_refptr<network::ResourceRequestBody>& body = *request_->body;
     GrantFileAccessToProcess(version_->embedded_worker()->process_id(),
-                             body->GetReferencedFiles());
+                             request_->body->GetReferencedFiles());
   }
 
   // Run callback to say that the fetch event will be dispatched.

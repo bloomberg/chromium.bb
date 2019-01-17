@@ -1334,18 +1334,17 @@ void ServiceWorkerContextClient::ToWebServiceWorkerRequestForFetchEvent(
 
   // The body is provided in |request->body|.
   DCHECK(!request->blob);
-  if (request->body.has_value()) {
-    DCHECK(request->body.value());
+  if (request->body) {
     std::vector<blink::mojom::BlobPtrInfo> blob_ptrs;
     if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       // We need this as GetBlobFromUUID is a sync IPC.
       // TODO(kinuko): Remove the friend for ScopedAllowBaseSyncPrimitives
       // in //base as well when we remove this code.
       base::ScopedAllowBaseSyncPrimitives allow_sync_primitives;
-      blob_ptrs = GetBlobPtrsForRequestBody(*(request->body.value()));
+      blob_ptrs = GetBlobPtrsForRequestBody(*request->body);
     }
     blink::WebHTTPBody body = GetWebHTTPBodyForRequestBodyWithBlobPtrs(
-        *(request->body.value()), std::move(blob_ptrs));
+        *request->body, std::move(blob_ptrs));
     body.SetUniqueBoundary();
     web_request->SetBody(body);
   }

@@ -253,7 +253,7 @@ class FakeControllerServiceWorker
       DispatchFetchEventCallback callback) override {
     EXPECT_FALSE(params->request->is_main_resource_load);
     if (params->request->body)
-      request_body_ = params->request->body.value();
+      request_body_ = params->request->body;
 
     fetch_event_count_++;
     fetch_event_request_ = std::move(params->request);

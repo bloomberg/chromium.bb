@@ -285,7 +285,7 @@ class Helper : public EmbeddedWorkerTestHelper {
 
     has_received_fetch_event_ = true;
     if (request->body)
-      request_body_ = request->body.value();
+      request_body_ = request->body;
 
     switch (response_mode_) {
       case ResponseMode::kDefault:

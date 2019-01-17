@@ -18,7 +18,7 @@ public_deps = [
 ]
 type_mappings = [
   "network.mojom.URLRequest=network::ResourceRequest",
-  "network.mojom.URLRequestBody=scoped_refptr<network::ResourceRequestBody>[copyable_pass_by_value]",
+  "network.mojom.URLRequestBody=scoped_refptr<network::ResourceRequestBody>[nullable_is_same_type,copyable_pass_by_value]",
   "network.mojom.URLRequestReferrerPolicy=net::URLRequest::ReferrerPolicy",
   "network.mojom.RequestPriority=net::RequestPriority",
   "network.mojom.DataElement=network::DataElement[move_only]",
