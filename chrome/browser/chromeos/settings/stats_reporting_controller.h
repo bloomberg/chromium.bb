@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_STATS_REPORTING_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_STATS_REPORTING_CONTROLLER_H_
 
+#include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 
 class PrefRegistrySimple;
@@ -39,7 +42,8 @@ namespace chromeos {
 // The caller need not care whether the write was immediate or pending, as long
 // as they also use this class to read the value of kStatsReportingPref.
 // IsEnabled will return the pending value until ownership is taken and the
-// pending value is written - from then on it will return the actual value.
+// pending value is written - from then on it will return the signed, stored
+// value from CrosSettings.
 class StatsReportingController {
  public:
   // Manage singleton instance.
@@ -60,6 +64,11 @@ class StatsReportingController {
   // successfully signed and persisted, or if it is still stored as a pending
   // write.
   bool IsEnabled();
+
+  // Add an observer |callback| for changes to the setting.
+  using ObserverSubscription = base::CallbackList<void(void)>::Subscription;
+  std::unique_ptr<ObserverSubscription> AddObserver(
+      const base::RepeatingClosure& callback) WARN_UNUSED_RESULT;
 
   // Called once ownership is taken, |owner| is the profile taking ownership.
   void OnOwnershipTaken(Profile* owner);
@@ -85,6 +94,9 @@ class StatsReportingController {
   // to the owner - otherwise just prints a warning.
   void SetWithService(ownership::OwnerSettingsService* service, bool enabled);
 
+  // Notifies observers if the value has changed.
+  void NotifyObservers();
+
   // Gets the current ownership status - owned, unowned, or unknown.
   DeviceSettingsService::OwnershipStatus GetOwnershipStatus();
 
@@ -102,7 +114,7 @@ class StatsReportingController {
 
   // Sets |*value| to the value signed and stored in CrosSettings, if one
   // exists. Returns false if there is no such value.
-  bool GetActualValue(bool* value);
+  bool GetSignedStoredValue(bool* value);
 
   // Clears any value waiting to be written (from storage in local state).
   void ClearPendingValue();
@@ -111,7 +123,12 @@ class StatsReportingController {
     return weak_factory_.GetWeakPtr();
   }
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   PrefService* local_state_;
+  bool value_notified_to_observers_;
+  base::CallbackList<void(void)> callback_list_;
+  std::unique_ptr<CrosSettings::ObserverSubscription> setting_subscription_;
 
   base::WeakPtrFactory<StatsReportingController> weak_factory_;
 
