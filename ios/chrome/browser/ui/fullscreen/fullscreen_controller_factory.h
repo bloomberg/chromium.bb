@@ -6,12 +6,8 @@
 #define IOS_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_FACTORY_H_
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
 
 namespace ios {
 class ChromeBrowserState;
@@ -31,7 +27,7 @@ class FullscreenControllerFactory : public BrowserStateKeyedServiceFactory {
   static FullscreenControllerFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<FullscreenControllerFactory>;
+  friend class base::NoDestructor<FullscreenControllerFactory>;
 
   FullscreenControllerFactory();
 
