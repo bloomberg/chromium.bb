@@ -13,7 +13,7 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/image_fetcher/core/cache/proto/cached_image_metadata.pb.h"
-#include "components/leveldb_proto/proto_database_impl.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 
 using image_fetcher::CachedImageMetadataProto;
 
@@ -61,9 +61,8 @@ ImageMetadataStoreLevelDB::ImageMetadataStoreLevelDB(
     base::Clock* clock)
     : ImageMetadataStoreLevelDB(
           database_dir,
-          std::make_unique<
-              leveldb_proto::ProtoDatabaseImpl<CachedImageMetadataProto>>(
-              task_runner),
+          leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<
+              CachedImageMetadataProto>(task_runner),
           clock) {}
 
 ImageMetadataStoreLevelDB::ImageMetadataStoreLevelDB(

@@ -33,8 +33,7 @@
 #include "components/feature_engagement/internal/system_time_provider.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/feature_list.h"
-#include "components/leveldb_proto/proto_database_impl.h"
-#include "components/leveldb_proto/proto_database_provider.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 
 namespace feature_engagement {
 

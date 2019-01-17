@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_LEVELDB_PROTO_SHARED_PROTO_DATABASE_H_
-#define COMPONENTS_LEVELDB_PROTO_SHARED_PROTO_DATABASE_H_
+#ifndef COMPONENTS_LEVELDB_PROTO_INTERNAL_SHARED_PROTO_DATABASE_H_
+#define COMPONENTS_LEVELDB_PROTO_INTERNAL_SHARED_PROTO_DATABASE_H_
 
 #include <queue>
 
@@ -13,11 +13,11 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
-#include "components/leveldb_proto/leveldb_database.h"
-#include "components/leveldb_proto/proto/shared_db_metadata.pb.h"
-#include "components/leveldb_proto/proto_database.h"
-#include "components/leveldb_proto/proto_leveldb_wrapper.h"
-#include "components/leveldb_proto/shared_proto_database_client.h"
+#include "components/leveldb_proto/internal/leveldb_database.h"
+#include "components/leveldb_proto/internal/proto/shared_db_metadata.pb.h"
+#include "components/leveldb_proto/internal/proto_leveldb_wrapper.h"
+#include "components/leveldb_proto/internal/shared_proto_database_client.h"
+#include "components/leveldb_proto/public/proto_database.h"
 
 namespace leveldb_proto {
 
@@ -255,4 +255,4 @@ SharedProtoDatabase::GetClientInternal(const std::string& client_namespace,
 
 }  // namespace leveldb_proto
 
-#endif  // COMPONENTS_LEVELDB_PROTO_SHARED_PROTO_DATABASE_H_
+#endif  // COMPONENTS_LEVELDB_PROTO_INTERNAL_SHARED_PROTO_DATABASE_H_

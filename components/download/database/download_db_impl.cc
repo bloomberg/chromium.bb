@@ -12,7 +12,7 @@
 #include "components/download/database/download_db_conversions.h"
 #include "components/download/database/download_db_entry.h"
 #include "components/download/database/proto/download_entry.pb.h"
-#include "components/leveldb_proto/proto_database_impl.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 
 namespace download {
 
@@ -51,8 +51,8 @@ DownloadDBImpl::DownloadDBImpl(DownloadNamespace download_namespace,
     : DownloadDBImpl(
           download_namespace,
           database_dir,
-          std::make_unique<
-              leveldb_proto::ProtoDatabaseImpl<download_pb::DownloadDBEntry>>(
+          leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<
+              download_pb::DownloadDBEntry>(
               base::CreateSequencedTaskRunnerWithTraits(
                   {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                    base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))) {}

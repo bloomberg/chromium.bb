@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_LEVELDB_PROTO_SHARED_PROTO_DATABASE_CLIENT_H_
-#define COMPONENTS_LEVELDB_PROTO_SHARED_PROTO_DATABASE_CLIENT_H_
+#ifndef COMPONENTS_LEVELDB_PROTO_INTERNAL_SHARED_PROTO_DATABASE_CLIENT_H_
+#define COMPONENTS_LEVELDB_PROTO_INTERNAL_SHARED_PROTO_DATABASE_CLIENT_H_
 
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/leveldb_proto/leveldb_database.h"
-#include "components/leveldb_proto/proto/shared_db_metadata.pb.h"
-#include "components/leveldb_proto/proto_leveldb_wrapper.h"
-#include "components/leveldb_proto/unique_proto_database.h"
+#include "components/leveldb_proto/internal/leveldb_database.h"
+#include "components/leveldb_proto/internal/proto/shared_db_metadata.pb.h"
+#include "components/leveldb_proto/internal/proto_leveldb_wrapper.h"
+#include "components/leveldb_proto/internal/unique_proto_database.h"
 
 namespace leveldb_proto {
 
@@ -443,4 +443,4 @@ SharedProtoDatabaseClient<T>::PrefixKeyEntryVector(
 
 }  // namespace leveldb_proto
 
-#endif  // COMPONENTS_LEVELDB_PROTO_SHARED_PROTO_DATABASE_CLIENT_H_
+#endif  // COMPONENTS_LEVELDB_PROTO_INTERNAL_SHARED_PROTO_DATABASE_CLIENT_H_

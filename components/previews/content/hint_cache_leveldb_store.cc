@@ -4,7 +4,7 @@
 
 #include "components/previews/content/hint_cache_leveldb_store.h"
 
-#include "components/leveldb_proto/proto_database_impl.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 
 namespace previews {
 
@@ -35,9 +35,8 @@ HintCacheLevelDBStore::HintCacheLevelDBStore(
     scoped_refptr<base::SequencedTaskRunner> store_task_runner)
     : HintCacheLevelDBStore(
           database_dir,
-          std::make_unique<
-              leveldb_proto::ProtoDatabaseImpl<previews::proto::StoreEntry>>(
-              store_task_runner)) {}
+          leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<
+              previews::proto::StoreEntry>(store_task_runner)) {}
 
 HintCacheLevelDBStore::HintCacheLevelDBStore(
     const base::FilePath& database_dir,

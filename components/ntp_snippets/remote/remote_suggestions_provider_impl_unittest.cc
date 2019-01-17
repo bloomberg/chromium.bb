@@ -330,7 +330,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
 
   ~RemoteSuggestionsProviderImplTest() override {
     // We need to run until idle after deleting the database, because
-    // ProtoDatabaseImpl deletes the actual LevelDB asynchronously on the task
+    // ProtoDatabase deletes the actual LevelDB asynchronously on the task
     // runner. Without this, we'd get reports of memory leaks.
     RunUntilIdle();
   }

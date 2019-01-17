@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/leveldb_proto/proto_leveldb_wrapper_metrics.h"
+#include "components/leveldb_proto/internal/proto_leveldb_wrapper_metrics.h"
 
 #include "base/metrics/histogram.h"
 #include "third_party/leveldatabase/env_chromium.h"

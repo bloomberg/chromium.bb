@@ -12,7 +12,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/proto/strike_data.pb.h"
-#include "components/leveldb_proto/proto_database_impl.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 
 namespace autofill {
 
@@ -23,7 +23,7 @@ const char kKeyPrefixForCreditCardSave[] = "creditCardSave";
 }  // namespace
 
 LegacyStrikeDatabase::LegacyStrikeDatabase(const base::FilePath& database_dir)
-    : db_(std::make_unique<leveldb_proto::ProtoDatabaseImpl<StrikeData>>(
+    : db_(leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<StrikeData>(
           base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))),

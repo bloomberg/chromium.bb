@@ -6,7 +6,7 @@
 
 #include "base/task/post_task.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
-#include "components/leveldb_proto/proto_database_provider.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 
 namespace usage_stats {
 

@@ -22,7 +22,7 @@
 #include "components/download/internal/background_service/proto/entry.pb.h"
 #include "components/download/internal/background_service/scheduler/scheduler_impl.h"
 #include "components/download/public/task/empty_task_scheduler.h"
-#include "components/leveldb_proto/proto_database_impl.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 #include "content/public/browser/storage_partition.h"
 
 #if defined(OS_ANDROID)
@@ -107,7 +107,7 @@ DownloadService* BuildDownloadService(
 
   auto entry_db_storage_dir = storage_dir.Append(kEntryDBStorageDir);
   auto entry_db =
-      std::make_unique<leveldb_proto::ProtoDatabaseImpl<protodb::Entry>>(
+      leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<protodb::Entry>(
           background_task_runner);
   auto store = std::make_unique<DownloadStore>(entry_db_storage_dir,
                                                std::move(entry_db));

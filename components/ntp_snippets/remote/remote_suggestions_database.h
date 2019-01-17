@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "components/leveldb_proto/proto_database.h"
+#include "components/leveldb_proto/public/proto_database.h"
 #include "components/ntp_snippets/remote/remote_suggestion.h"
 
 namespace base {
@@ -35,7 +35,7 @@ class RemoteSuggestionsDatabase {
       base::OnceCallback<void(RemoteSuggestion::PtrVector)>;
   using SnippetImageCallback = base::OnceCallback<void(std::string)>;
 
-  // Creates a RemoteSuggestionsDatabase backed by real ProtoDatabaseImpls.
+  // Creates a RemoteSuggestionsDatabase backed by real ProtoDatabases.
   RemoteSuggestionsDatabase(const base::FilePath& database_dir);
   // Creates a RemoteSuggestionsDatabase backed by the passed-in ProtoDatabases,
   // useful for testing.

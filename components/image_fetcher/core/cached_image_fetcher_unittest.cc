@@ -67,7 +67,7 @@ class ComponentizedCachedImageFetcherTest : public testing::Test {
   ~ComponentizedCachedImageFetcherTest() override {
     cached_image_fetcher_.reset();
     // We need to run until idle after deleting the database, because
-    // ProtoDatabaseImpl deletes the actual LevelDB asynchronously.
+    // ProtoDatabase deletes the actual LevelDB asynchronously.
     RunUntilIdle();
   }
 

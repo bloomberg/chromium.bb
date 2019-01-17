@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "components/autofill/core/browser/proto/strike_data.pb.h"
 #include "components/autofill/core/common/autofill_clock.h"
-#include "components/leveldb_proto/proto_database_impl.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 
 namespace autofill {
 
@@ -25,7 +25,7 @@ const int kMaxInitAttempts = 3;
 }  // namespace
 
 StrikeDatabase::StrikeDatabase(const base::FilePath& database_dir)
-    : db_(std::make_unique<leveldb_proto::ProtoDatabaseImpl<StrikeData>>(
+    : db_(leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<StrikeData>(
           base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))),

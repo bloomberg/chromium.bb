@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_LEVELDB_PROTO_LEVELDB_DATABASE_H_
-#define COMPONENTS_LEVELDB_PROTO_LEVELDB_DATABASE_H_
+#ifndef COMPONENTS_LEVELDB_PROTO_INTERNAL_LEVELDB_DATABASE_H_
+#define COMPONENTS_LEVELDB_PROTO_INTERNAL_LEVELDB_DATABASE_H_
 
 #include <map>
 #include <memory>
@@ -19,7 +19,6 @@ class HistogramBase;
 }  // namespace base
 
 namespace leveldb {
-class Cache;
 class DB;
 class Env;
 }  // namespace leveldb
@@ -105,8 +104,6 @@ class LevelDB {
   bool GetApproximateMemoryUse(uint64_t* approx_mem);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ProtoDatabaseImplLevelDBTest, TestDBInitFail);
-
   DFAKE_MUTEX(thread_checker_);
 
   // The declaration order of these members matters: |db_| depends on |env_| and
@@ -124,4 +121,4 @@ class LevelDB {
 
 }  // namespace leveldb_proto
 
-#endif  // COMPONENTS_LEVELDB_PROTO_LEVELDB_DATABASE_H_
+#endif  // COMPONENTS_LEVELDB_PROTO_INTERNAL_LEVELDB_DATABASE_H_

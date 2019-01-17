@@ -23,9 +23,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "components/leveldb_proto/leveldb_database.h"
+#include "components/leveldb_proto/internal/leveldb_database.h"
+#include "components/leveldb_proto/internal/unique_proto_database.h"
 #include "components/leveldb_proto/testing/proto/test_db.pb.h"
-#include "components/leveldb_proto/unique_proto_database.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -35,14 +35,14 @@
 using base::MessageLoop;
 using base::ScopedTempDir;
 using leveldb_env::Options;
+using testing::_;
 using testing::Invoke;
 using testing::MakeMatcher;
-using testing::MatchResultListener;
 using testing::Matcher;
 using testing::MatcherInterface;
+using testing::MatchResultListener;
 using testing::Return;
 using testing::UnorderedElementsAre;
-using testing::_;
 
 namespace leveldb_proto {
 

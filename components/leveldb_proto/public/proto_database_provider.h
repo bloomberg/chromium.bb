@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_LEVELDB_PROTO_PROTO_DATABASE_PROVIDER_H_
-#define COMPONENTS_LEVELDB_PROTO_PROTO_DATABASE_PROVIDER_H_
+#ifndef COMPONENTS_LEVELDB_PROTO_PUBLIC_PROTO_DATABASE_PROVIDER_H_
+#define COMPONENTS_LEVELDB_PROTO_PUBLIC_PROTO_DATABASE_PROVIDER_H_
 
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/leveldb_proto/proto_database.h"
-#include "components/leveldb_proto/proto_database_wrapper.h"
-#include "components/leveldb_proto/shared_proto_database_provider.h"
+#include "components/leveldb_proto/internal/proto_database_wrapper.h"
+#include "components/leveldb_proto/internal/shared_proto_database_provider.h"
+#include "components/leveldb_proto/public/proto_database.h"
 
 namespace leveldb_proto {
 
@@ -24,6 +24,12 @@ class ProtoDatabaseProvider : public KeyedService {
       base::OnceCallback<void(scoped_refptr<SharedProtoDatabase>)>;
 
   static ProtoDatabaseProvider* Create(const base::FilePath& profile_dir);
+
+  template <typename T>
+  static std::unique_ptr<ProtoDatabase<T>> CreateUniqueDB(
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+    return std::make_unique<UniqueProtoDatabase<T>>(task_runner);
+  }
 
   // |client_namespace| is the unique prefix to be used in the shared database
   // if the database returned is a SharedDatabaseClient<T>. This name must be
@@ -84,4 +90,4 @@ std::unique_ptr<ProtoDatabase<T>> ProtoDatabaseProvider::GetDB(
 
 }  // namespace leveldb_proto
 
-#endif  // COMPONENTS_LEVELDB_PROTO_PROTO_DATABASE_PROVIDER_H_
+#endif  // COMPONENTS_LEVELDB_PROTO_PUBLIC_PROTO_DATABASE_PROVIDER_H_
