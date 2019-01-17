@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_P2P_QUIC_TRANSPORT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_P2P_QUIC_TRANSPORT_H_
 
+#include "base/logging.h"
 #include "third_party/webrtc/rtc_base/ssl_fingerprint.h"
 
 namespace blink {
@@ -21,6 +22,28 @@ class P2PQuicStream;
 // This object should be run entirely on the webrtc worker thread.
 class P2PQuicTransport {
  public:
+  // A config used when starting the QUIC handshake.
+  struct StartConfig final {
+    explicit StartConfig(std::vector<std::unique_ptr<rtc::SSLFingerprint>>
+                             remote_fingerprints_in)
+        : remote_fingerprints(std::move(remote_fingerprints_in)) {
+      DCHECK_GT(remote_fingerprints.size(), 0u);
+    }
+
+    explicit StartConfig(const std::string pre_shared_key_in)
+        : pre_shared_key(pre_shared_key_in) {
+      DCHECK(!pre_shared_key.empty());
+    }
+
+    // These fingerprints are used to verify the self signed remote certificate
+    // used in the QUIC handshake. See:
+    // https://w3c.github.io/webrtc-quic/#quic-transport*
+    std::vector<std::unique_ptr<rtc::SSLFingerprint>> remote_fingerprints;
+
+    // The pre shared key to be used in the handshake.
+    const std::string pre_shared_key;
+  };
+
   // Used for receiving callbacks from the P2PQuicTransport regarding QUIC
   // connection changes, handshake success/failures and new QuicStreams being
   // added from the remote side.
@@ -51,15 +74,13 @@ class P2PQuicTransport {
 
   // Closes the QuicConnection and sends a close frame to the remote side.
   // This will trigger P2PQuicTransport::Delegate::OnRemoteClosed() on the
-  // remote side.
+  // remote side. This must not be called before Start().
   virtual void Stop() = 0;
 
-  // Starts the QUIC handshake negotiation and sets the remote fingerprints
-  // that were signaled through a secure channel. These fingerprints are used to
-  // verify the self signed remote certificate used in the QUIC handshake. See:
-  // https://w3c.github.io/webrtc-quic/#quic-transport*
-  virtual void Start(std::vector<std::unique_ptr<rtc::SSLFingerprint>>
-                         remote_fingerprints) = 0;
+  // Starts the QUIC handshake negotiation. If this is a client perspective
+  // this means initiating the QUIC handshake with a CHLO, while for
+  // a server perspective this means now listening and responding to a CHLO.
+  virtual void Start(StartConfig config) = 0;
 
   // Creates a new outgoing stream. This stream is owned by the
   // P2PQuicTransport. Its lifetime is managed by the P2PQuicTransport,

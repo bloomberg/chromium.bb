@@ -68,26 +68,17 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   ~P2PQuicTransportImpl() override;
 
   // P2PQuicTransport overrides.
-
   void Stop() override;
-
-  // Sets the remote fingerprints, and if the the P2PQuicTransportImpl is a
-  // client starts the QUIC handshake . This handshake is currently insecure,
-  // meaning that the certificates used are fake and are not verified. It also
-  // assumes a handshake for a server/client case. This must be called before
-  // creating any streams.
+  // This handshake is currently insecure in the case of using remote
+  // fingerprints to verify the remote certificate. For a secure handshake, set
+  // the pre_shared_key attribute of the |config| before calling this. This
+  // function must be called before creating any streams.
   //
   // TODO(https://crbug.com/874300): Verify both the client and server
   // certificates with the signaled remote fingerprints. Until the TLS 1.3
   // handshake is supported in the QUIC core library we can only verify the
-  // server's certificate, but not the client's. Note that this means
-  // implementing the handshake for a P2P case, in which case verification
-  // completes after both receiving the signaled remote fingerprint and getting
-  // a client hello. Because either can come first, a synchronous call to verify
-  // the remote fingerprint is not possible.
-  void Start(std::vector<std::unique_ptr<rtc::SSLFingerprint>>
-                 remote_fingerprints) override;
-
+  // server's certificate, but not the client's.
+  void Start(StartConfig config) override;
   // Creates an outgoing stream that is owned by the quic::QuicSession.
   P2PQuicStreamImpl* CreateStream() override;
 
@@ -178,10 +169,12 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   std::unique_ptr<P2PQuicCryptoConfigFactory> crypto_config_factory_;
 
   std::unique_ptr<quic::QuicCryptoStream> crypto_stream_;
-  // Crypto information. Note that currently the handshake is insecure and these
-  // are not used...
+  // Crypto certificate information. Note that currently the handshake is
+  // insecure and these are not used...
   rtc::scoped_refptr<rtc::RTCCertificate> certificate_;
   std::vector<std::unique_ptr<rtc::SSLFingerprint>> remote_fingerprints_;
+
+  bool pre_shared_key_set_ = false;
 
   quic::Perspective perspective_;
   // Outlives the P2PQuicTransport.

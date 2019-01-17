@@ -290,8 +290,6 @@ P2PQuicTransportImpl::P2PQuicTransportImpl(
       NOTREACHED();
       break;
   }
-  InitializeCryptoStream();
-  packet_transport_->SetReceiveDelegate(this);
 }
 
 P2PQuicTransportImpl::~P2PQuicTransportImpl() {
@@ -299,6 +297,8 @@ P2PQuicTransportImpl::~P2PQuicTransportImpl() {
 }
 
 void P2PQuicTransportImpl::Stop() {
+  // This shouldn't be called before Start().
+  DCHECK(crypto_stream_);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (IsClosed()) {
     return;
@@ -312,23 +312,38 @@ void P2PQuicTransportImpl::Stop() {
       quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
 }
 
-void P2PQuicTransportImpl::Start(
-    std::vector<std::unique_ptr<rtc::SSLFingerprint>> remote_fingerprints) {
+void P2PQuicTransportImpl::Start(StartConfig config) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_EQ(remote_fingerprints_.size(), 0u);
-  DCHECK_GT(remote_fingerprints.size(), 0u);
-  if (IsClosed()) {
-    // We could have received a close from the remote side before calling this.
-    return;
+  // Either the remote fingerprints are being verified or a pre shared key is
+  // set.
+  DCHECK(config.remote_fingerprints.size() > 0u ||
+         !config.pre_shared_key.empty());
+  DCHECK(!crypto_stream_);
+
+  remote_fingerprints_ = std::move(config.remote_fingerprints);
+  switch (perspective_) {
+    case quic::Perspective::IS_CLIENT: {
+      crypto_client_config_->set_pre_shared_key(config.pre_shared_key);
+      break;
+    }
+    case quic::Perspective::IS_SERVER: {
+      crypto_server_config_->set_pre_shared_key(config.pre_shared_key);
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
   }
-  // These will be used to verify the remote certificate during the handshake.
-  remote_fingerprints_ = std::move(remote_fingerprints);
+
+  InitializeCryptoStream();
 
   if (perspective_ == quic::Perspective::IS_CLIENT) {
     quic::QuicCryptoClientStream* client_crypto_stream =
         static_cast<quic::QuicCryptoClientStream*>(crypto_stream_.get());
     client_crypto_stream->CryptoConnect();
   }
+  // Now that crypto streams are setup we are ready to receive QUIC packets.
+  packet_transport_->SetReceiveDelegate(this);
 }
 
 void P2PQuicTransportImpl::OnPacketDataReceived(const char* data,

@@ -522,33 +522,19 @@ class P2PQuicTransportTest : public testing::Test {
     }
   }
 
-  // Starts the handshake, by setting the remote fingerprints and kicking off
-  // the handshake from the client.
-  void StartHandshake() {
-    std::vector<std::unique_ptr<rtc::SSLFingerprint>> server_fingerprints;
-    server_fingerprints.emplace_back(rtc::SSLFingerprint::Create(
-        "sha-256", server_peer_->certificate()->identity()));
-    // The server side doesn't currently need call this to set the remote
-    // fingerprints, but once P2P certificate verification is supported in the
-    // TLS 1.3 handshake this will ben necessary.
-    server_peer_->quic_transport()->Start(std::move(server_fingerprints));
-
-    std::vector<std::unique_ptr<rtc::SSLFingerprint>> client_fingerprints;
-    client_fingerprints.emplace_back(rtc::SSLFingerprint::Create(
-        "sha-256", client_peer_->certificate()->identity()));
-    client_peer_->quic_transport()->Start(std::move(client_fingerprints));
-  }
-
   // Sets up an initial handshake and connection between peers.
+  // This is done using a pre shared key.
   void Connect() {
     CallbackRunLoop run_loop(runner());
-
     EXPECT_CALL(*client_peer_->quic_transport_delegate(), OnConnected())
         .WillOnce(FireCallback(run_loop.CreateCallback()));
     EXPECT_CALL(*server_peer_->quic_transport_delegate(), OnConnected())
         .WillOnce(FireCallback(run_loop.CreateCallback()));
 
-    StartHandshake();
+    server_peer_->quic_transport()->Start(
+        P2PQuicTransport::StartConfig("foobar"));
+    client_peer_->quic_transport()->Start(
+        P2PQuicTransport::StartConfig("foobar"));
     run_loop.RunUntilCallbacksFired();
   }
 
@@ -660,10 +646,21 @@ class P2PQuicTransportTest : public testing::Test {
   std::unique_ptr<QuicPeerForTest> server_peer_;
 };
 
-// Tests that we can connect two quic transports.
-TEST_F(P2PQuicTransportTest, HandshakeConnectsPeers) {
+// Tests that we can connect two quic transports using pre shared keys.
+TEST_F(P2PQuicTransportTest, HandshakeConnectsPeersWithPreSharedKeys) {
   Initialize();
-  Connect();
+
+  CallbackRunLoop run_loop(runner());
+  EXPECT_CALL(*client_peer()->quic_transport_delegate(), OnConnected())
+      .WillOnce(FireCallback(run_loop.CreateCallback()));
+  EXPECT_CALL(*server_peer()->quic_transport_delegate(), OnConnected())
+      .WillOnce(FireCallback(run_loop.CreateCallback()));
+
+  server_peer()->quic_transport()->Start(
+      P2PQuicTransport::StartConfig("foobar"));
+  client_peer()->quic_transport()->Start(
+      P2PQuicTransport::StartConfig("foobar"));
+  run_loop.RunUntilCallbacksFired();
 
   EXPECT_TRUE(client_peer()->quic_transport()->IsEncryptionEstablished());
   EXPECT_TRUE(client_peer()->quic_transport()->IsCryptoHandshakeConfirmed());
@@ -671,6 +668,38 @@ TEST_F(P2PQuicTransportTest, HandshakeConnectsPeers) {
   EXPECT_TRUE(server_peer()->quic_transport()->IsEncryptionEstablished());
 }
 
+// Tests that we can connect two quic transports using remote certificate
+// fingerprints. Note that the fingerprints aren't currently used for
+// verification.
+TEST_F(P2PQuicTransportTest, HandshakeConnectsPeersWithRemoteCertificates) {
+  Initialize();
+
+  CallbackRunLoop run_loop(runner());
+  EXPECT_CALL(*client_peer()->quic_transport_delegate(), OnConnected())
+      .WillOnce(FireCallback(run_loop.CreateCallback()));
+  EXPECT_CALL(*server_peer()->quic_transport_delegate(), OnConnected())
+      .WillOnce(FireCallback(run_loop.CreateCallback()));
+
+  // Start the handshake with the remote fingerprints.
+  std::vector<std::unique_ptr<rtc::SSLFingerprint>> server_fingerprints;
+  server_fingerprints.emplace_back(rtc::SSLFingerprint::Create(
+      "sha-256", server_peer()->certificate()->identity()));
+  server_peer()->quic_transport()->Start(
+      P2PQuicTransport::StartConfig(std::move(server_fingerprints)));
+
+  std::vector<std::unique_ptr<rtc::SSLFingerprint>> client_fingerprints;
+  client_fingerprints.emplace_back(rtc::SSLFingerprint::Create(
+      "sha-256", client_peer()->certificate()->identity()));
+  client_peer()->quic_transport()->Start(
+      P2PQuicTransport::StartConfig(std::move(client_fingerprints)));
+
+  run_loop.RunUntilCallbacksFired();
+
+  EXPECT_TRUE(client_peer()->quic_transport()->IsEncryptionEstablished());
+  EXPECT_TRUE(client_peer()->quic_transport()->IsCryptoHandshakeConfirmed());
+  EXPECT_TRUE(server_peer()->quic_transport()->IsCryptoHandshakeConfirmed());
+  EXPECT_TRUE(server_peer()->quic_transport()->IsEncryptionEstablished());
+}
 // Tests the standard case for the server side closing the connection.
 TEST_F(P2PQuicTransportTest, ServerStops) {
   Initialize();
@@ -726,82 +755,6 @@ TEST_F(P2PQuicTransportTest, StopAfterStopped) {
   ExpectTransportsClosed();
 }
 
-// Tests that when the client closes the connection the subsequent call to
-// StartHandshake() will be ignored.
-TEST_F(P2PQuicTransportTest, ClientStopsBeforeClientStarts) {
-  Initialize();
-  CallbackRunLoop run_loop(runner());
-  EXPECT_CALL(*server_peer()->quic_transport_delegate(), OnRemoteStopped())
-      .WillOnce(FireCallback(run_loop.CreateCallback()));
-  client_peer()->quic_transport()->Stop();
-  StartHandshake();
-  run_loop.RunUntilCallbacksFired();
-
-  ExpectConnectionNotEstablished();
-  ExpectTransportsClosed();
-}
-
-// Tests that if the server closes the connection before the client starts the
-// handshake, the client side will already be closed and Start() will be
-// ignored.
-TEST_F(P2PQuicTransportTest, ServerStopsBeforeClientStarts) {
-  Initialize();
-  CallbackRunLoop run_loop(runner());
-  EXPECT_CALL(*client_peer()->quic_transport_delegate(), OnRemoteStopped())
-      .WillOnce(FireCallback(run_loop.CreateCallback()));
-  EXPECT_CALL(*server_peer()->quic_transport_delegate(), OnRemoteStopped())
-      .Times(0);
-
-  server_peer()->quic_transport()->Stop();
-  StartHandshake();
-  run_loop.RunUntilCallbacksFired();
-
-  ExpectConnectionNotEstablished();
-  ExpectTransportsClosed();
-}
-
-// Tests that when the server's connection fails and then a handshake is
-// attempted the transports will not become connected.
-TEST_F(P2PQuicTransportTest, ClientConnectionClosesBeforeHandshake) {
-  Initialize();
-  CallbackRunLoop run_loop(runner());
-  EXPECT_CALL(*client_peer()->quic_transport_delegate(),
-              OnConnectionFailed(_, _))
-      .WillOnce(FireCallback(run_loop.CreateCallback()));
-  EXPECT_CALL(*server_peer()->quic_transport_delegate(),
-              OnConnectionFailed(_, _))
-      .WillOnce(FireCallback(run_loop.CreateCallback()));
-
-  client_connection()->CloseConnection(
-      quic::QuicErrorCode::QUIC_INTERNAL_ERROR, "internal error",
-      quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-  StartHandshake();
-  run_loop.RunUntilCallbacksFired();
-
-  ExpectConnectionNotEstablished();
-}
-
-// Tests that when the server's connection fails and then a handshake is
-// attempted the transports will not become connected.
-TEST_F(P2PQuicTransportTest, ServerConnectionClosesBeforeHandshake) {
-  Initialize();
-  CallbackRunLoop run_loop(runner());
-  EXPECT_CALL(*client_peer()->quic_transport_delegate(),
-              OnConnectionFailed(_, _))
-      .WillOnce(FireCallback(run_loop.CreateCallback()));
-  EXPECT_CALL(*server_peer()->quic_transport_delegate(),
-              OnConnectionFailed(_, _))
-      .WillOnce(FireCallback(run_loop.CreateCallback()));
-
-  server_connection()->CloseConnection(
-      quic::QuicErrorCode::QUIC_INTERNAL_ERROR, "internal error",
-      quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-  StartHandshake();
-  run_loop.RunUntilCallbacksFired();
-
-  ExpectConnectionNotEstablished();
-}
-
 // Tests that the appropriate callbacks are fired when the handshake fails.
 TEST_F(P2PQuicTransportTest, HandshakeFailure) {
   InitializeWithFailingProofVerification();
@@ -813,10 +766,35 @@ TEST_F(P2PQuicTransportTest, HandshakeFailure) {
               OnConnectionFailed(_, _))
       .WillOnce(FireCallback(run_loop.CreateCallback()));
 
-  StartHandshake();
+  server_peer()->quic_transport()->Start(
+      P2PQuicTransport::StartConfig("foobar"));
+  client_peer()->quic_transport()->Start(
+      P2PQuicTransport::StartConfig("foobar"));
   run_loop.RunUntilCallbacksFired();
 
   ExpectConnectionNotEstablished();
+  ExpectTransportsClosed();
+}
+
+// Tests that the handshake fails if the pre shared keys don't match.
+// In this case the handshake finishes, but the connection fails because packets
+// can't be decrypted.
+TEST_F(P2PQuicTransportTest, HandshakeFailsBecauseKeysDontMatch) {
+  Initialize();
+  CallbackRunLoop run_loop(runner());
+  EXPECT_CALL(*client_peer()->quic_transport_delegate(),
+              OnConnectionFailed(_, _))
+      .WillOnce(FireCallback(run_loop.CreateCallback()));
+  EXPECT_CALL(*server_peer()->quic_transport_delegate(),
+              OnConnectionFailed(_, _))
+      .WillOnce(FireCallback(run_loop.CreateCallback()));
+
+  server_peer()->quic_transport()->Start(
+      P2PQuicTransport::StartConfig("foobar"));
+  client_peer()->quic_transport()->Start(
+      P2PQuicTransport::StartConfig("barfoo"));
+  run_loop.RunUntilCallbacksFired();
+
   ExpectTransportsClosed();
 }
 

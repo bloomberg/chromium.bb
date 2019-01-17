@@ -17,12 +17,8 @@ class MockP2PQuicTransport : public testing::NiceMock<P2PQuicTransport> {
 
   // P2PQuicTransport overrides.
   MOCK_METHOD0(Stop, void());
-  void Start(std::vector<std::unique_ptr<rtc::SSLFingerprint>>
-                 remote_fingerprints) override {
-    MockStart(remote_fingerprints);
-  }
-  MOCK_METHOD1(MockStart,
-               void(const std::vector<std::unique_ptr<rtc::SSLFingerprint>>&));
+  void Start(StartConfig config) override { MockStart(config); }
+  MOCK_METHOD1(MockStart, void(const StartConfig&));
   MOCK_METHOD0(CreateStream, P2PQuicStream*());
 };
 
