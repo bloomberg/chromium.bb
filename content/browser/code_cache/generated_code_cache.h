@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_CODE_CACHE_GENERATED_CODE_CACHE_H_
 #define CONTENT_BROWSER_CODE_CACHE_GENERATED_CODE_CACHE_H_
 
+#include <queue>
+
+#include "base/containers/queue.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -128,22 +131,34 @@ class CONTENT_EXPORT GeneratedCodeCache {
       scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
       int rv);
   void CreateCompleteForWriteData(
+      const std::string& key,
       scoped_refptr<net::IOBufferWithSize> buffer,
       scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
       int rv);
+  void WriteDataCompleted(const std::string& key, int rv);
 
   // Fetch entry from cache
   void FetchEntryImpl(const std::string& key, ReadDataCallback);
   void OpenCompleteForReadData(
       ReadDataCallback callback,
+      const std::string& key,
       scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
       int rv);
-  void ReadDataComplete(ReadDataCallback callback,
+  void ReadDataComplete(const std::string& key,
+                        ReadDataCallback callback,
                         scoped_refptr<net::IOBufferWithSize> buffer,
                         int rv);
 
   // Delete entry from cache
   void DeleteEntryImpl(const std::string& key);
+
+  // Issues the queued operation at the front of the queue for the given |key|.
+  void IssueQueuedOperationForEntry(const std::string& key);
+  // Enqueues into the list if there is an in-progress operation. Otherwise
+  // creates an entry to indicate there is an active operation.
+  bool EnqueueAsPendingOperation(const std::string& key,
+                                 std::unique_ptr<PendingOperation> op);
+  void IssueOperation(PendingOperation* op);
 
   void DoPendingClearCache(net::CompletionCallback callback);
   void PendingClearComplete(net::CompletionCallback callback, int rv);
@@ -154,6 +169,10 @@ class CONTENT_EXPORT GeneratedCodeCache {
   BackendState backend_state_;
 
   std::vector<std::unique_ptr<PendingOperation>> pending_ops_;
+
+  // Map from key to queue ops.
+  std::map<std::string, base::queue<std::unique_ptr<PendingOperation>>>
+      active_entries_map_;
 
   base::FilePath path_;
   int max_size_bytes_;
