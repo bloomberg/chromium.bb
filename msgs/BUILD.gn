@@ -12,6 +12,7 @@ source_set("msgs") {
     ":cddl_gen",
   ]
   deps = [
+    "//third_party/abseil",
     "//third_party/tinycbor",
   ]
 }

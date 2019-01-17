@@ -24,6 +24,7 @@
 #include "base/ip_address.h"
 #include "base/scoped_pipe.h"
 #include "platform/api/logging.h"
+#include "third_party/abseil/src/absl/strings/string_view.h"
 
 namespace openscreen {
 namespace platform {
@@ -33,12 +34,9 @@ constexpr int kNetlinkRecvmsgBufSize = 8192;
 
 // Safely reads the system name for the interface from the (probably)
 // null-terminated string |kernel_name| and returns a std::string.
-std::string GetInterfaceName(const char* kernel_name) {
-  std::string name;
-  size_t name_len = strnlen(kernel_name, IFNAMSIZ);
-  OSP_CHECK_LT(name_len, IFNAMSIZ);
-  name.assign(kernel_name, name_len);
-  return name;
+std::string GetInterfaceName(absl::string_view kernel_name) {
+  OSP_CHECK_LT(kernel_name.length(), IFNAMSIZ);
+  return std::string(kernel_name);
 }
 
 // Returns the type of the interface identified by the name |ifname|, if it can

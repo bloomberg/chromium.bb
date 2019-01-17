@@ -55,7 +55,7 @@ std::string CppTypeToString(const CppType& cpp_type) {
           CppTypeToString(*cpp_type.vector_type.element_type);
       if (element_string.empty())
         return std::string();
-      return std::string("std::vector<") + element_string + std::string(">");
+      return "std::vector<" + element_string + ">";
     } break;
     case CppType::Which::kEnum:
       return ToCamelCase(cpp_type.name);
@@ -343,9 +343,8 @@ bool WriteEncoder(int fd,
                   "  CBOR_RETURN_ON_ERROR(cbor_encode_text_string(&encoder%d, "
                   "\"%s\", sizeof(\"%s\") - 1));\n",
                   encoder_depth, x.first.c_str(), x.first.c_str());
-          if (!WriteEncoder(fd,
-                            name + std::string(".") + ToUnderscoreId(x.first),
-                            *x.second, nested_type_scope, encoder_depth)) {
+          if (!WriteEncoder(fd, name + "." + ToUnderscoreId(x.first), *x.second,
+                            nested_type_scope, encoder_depth)) {
             return false;
           }
         }
@@ -410,9 +409,8 @@ bool WriteEncoder(int fd,
             dprintf(fd, "  case %s::%s::Which::kUint64:\n",
                     ToCamelCase(nested_type_scope).c_str(),
                     ToCamelCase(cpp_type.name).c_str());
-            if (!WriteEncoder(fd, ToUnderscoreId(name + std::string(".uint")),
-                              *union_member, nested_type_scope,
-                              encoder_depth)) {
+            if (!WriteEncoder(fd, ToUnderscoreId(name + ".uint"), *union_member,
+                              nested_type_scope, encoder_depth)) {
               return false;
             }
             dprintf(fd, "    break;\n");
@@ -421,9 +419,8 @@ bool WriteEncoder(int fd,
             dprintf(fd, "  case %s::%s::Which::kString:\n",
                     ToCamelCase(nested_type_scope).c_str(),
                     ToCamelCase(cpp_type.name).c_str());
-            if (!WriteEncoder(fd, ToUnderscoreId(name + std::string(".str")),
-                              *union_member, nested_type_scope,
-                              encoder_depth)) {
+            if (!WriteEncoder(fd, ToUnderscoreId(name + ".str"), *union_member,
+                              nested_type_scope, encoder_depth)) {
               return false;
             }
             dprintf(fd, "    break;\n");
@@ -432,7 +429,7 @@ bool WriteEncoder(int fd,
             dprintf(fd, "  case %s::%s::Which::kBytes:\n",
                     ToCamelCase(nested_type_scope).c_str(),
                     ToCamelCase(cpp_type.name).c_str());
-            if (!WriteEncoder(fd, ToUnderscoreId(name + std::string(".bytes")),
+            if (!WriteEncoder(fd, ToUnderscoreId(name + ".bytes"),
                               *union_member, nested_type_scope,
                               encoder_depth)) {
               return false;
@@ -544,7 +541,7 @@ bool WriteMapEncoder(
         dprintf(fd, "  switch (%s.%s.which) {\n", fullname.c_str(),
                 x.first.c_str());
       }
-      fullname = fullname + std::string(".") + x.first;
+      fullname = fullname + "." + x.first;
     }
     if (!WriteEncoder(fd, fullname, *member_type, nested_type_scope,
                       encoder_depth)) {
@@ -605,7 +602,7 @@ bool WriteArrayEncoder(
         dprintf(fd, "  switch (%s.%s.which) {\n", fullname.c_str(),
                 x.first.c_str());
       }
-      fullname = fullname + std::string(".") + x.first;
+      fullname = fullname + "." + x.first;
     }
     if (!WriteEncoder(fd, fullname, *member_type, nested_type_scope,
                       encoder_depth)) {
@@ -905,8 +902,8 @@ bool WriteDecoder(int fd,
                     temp_value_type, decoder_depth);
             dprintf(fd, "  %s.which = decltype(%s)::Which::kUint64;\n",
                     name.c_str(), name.c_str());
-            if (!WriteDecoder(fd, name + std::string(".uint"), ".", *x,
-                              decoder_depth, temporary_count)) {
+            if (!WriteDecoder(fd, name + ".uint", ".", *x, decoder_depth,
+                              temporary_count)) {
               return false;
             }
             break;
@@ -915,7 +912,7 @@ bool WriteDecoder(int fd,
                     temp_value_type);
             dprintf(fd, "  %s.which = decltype(%s)::Which::kString;\n",
                     name.c_str(), name.c_str());
-            std::string str_name = name + std::string(".str");
+            std::string str_name = name + ".str";
             dprintf(fd, "  new (&%s) std::string();\n", str_name.c_str());
             if (!WriteDecoder(fd, str_name, ".", *x, decoder_depth,
                               temporary_count)) {
@@ -925,7 +922,7 @@ bool WriteDecoder(int fd,
           case CppType::Which::kBytes: {
             dprintf(fd, "  if (type%d == CborByteStringType) {\n",
                     temp_value_type);
-            std::string bytes_name = name + std::string(".bytes");
+            std::string bytes_name = name + ".bytes";
             dprintf(fd, "  %s.which = decltype(%s)::Which::kBytes;\n",
                     name.c_str(), name.c_str());
             dprintf(fd, "  new (&%s) std::vector<uint8_t>();\n",

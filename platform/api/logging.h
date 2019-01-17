@@ -7,6 +7,8 @@
 
 #include <sstream>
 
+#include "third_party/abseil/src/absl/strings/string_view.h"
+
 namespace openscreen {
 namespace platform {
 
@@ -27,9 +29,9 @@ void LogInit(const char* filename);
 void SetLogLevel(LogLevel level, int verbose_level = 0);
 void LogWithLevel(LogLevel level,
                   int verbose_level,
-                  const char* file,
+                  absl::string_view file,
                   int line,
-                  const char* msg);
+                  absl::string_view msg);
 void Break();
 //
 // END PLATFORM IMPLEMENTATION
@@ -39,7 +41,10 @@ void Break();
 // base/logging.h.
 class LogMessage {
  public:
-  LogMessage(LogLevel level, int verbose_level, const char* file, int line);
+  LogMessage(LogLevel level,
+             int verbose_level,
+             absl::string_view file,
+             int line);
   ~LogMessage();
 
   std::ostream& stream() { return stream_; }
@@ -47,7 +52,11 @@ class LogMessage {
  private:
   const LogLevel level_;
   const int verbose_level_;
-  const char* const file_;
+
+  // The file here comes from the __FILE__ macro, which should persist while
+  // we are doing the logging. Hence, keeping it unmanaged here and not
+  // creating a copy should be safe.
+  absl::string_view const file_;
   const int line_;
   std::ostringstream stream_;
 };

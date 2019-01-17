@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "third_party/abseil/src/absl/strings/string_view.h"
+
 struct AstNode {
   // These types all correspond to types in the grammar, which can be found in
   // grammar.abnf.
@@ -52,7 +54,7 @@ struct ParseResult {
   std::vector<std::unique_ptr<AstNode>> nodes;
 };
 
-ParseResult ParseCddl(std::string& data);
+ParseResult ParseCddl(absl::string_view data);
 void DumpAst(AstNode* node, int indent_level = 0);
 
 #endif  // TOOLS_CDDL_PARSE_H_

@@ -50,9 +50,9 @@ void SetLogLevel(LogLevel level, int verbose_level) {
 
 void LogWithLevel(LogLevel level,
                   int verbose_level,
-                  const char* file,
+                  absl::string_view file,
                   int line,
-                  const char* msg) {
+                  absl::string_view msg) {
   if (CombinedLogLevel{level, verbose_level} < g_log_level)
     return;
 

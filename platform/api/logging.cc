@@ -9,7 +9,7 @@ namespace platform {
 
 LogMessage::LogMessage(LogLevel level,
                        int verbose_level,
-                       const char* file,
+                       absl::string_view file,
                        int line)
     : level_(level), verbose_level_(verbose_level), file_(file), line_(line) {}
 

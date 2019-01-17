@@ -12,4 +12,9 @@ executable("cddl") {
     "sema.cc",
     "sema.h",
   ]
+
+  deps = [
+    "//platform",
+    "//third_party/abseil",
+  ]
 }

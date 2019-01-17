@@ -12,12 +12,12 @@ source_set("abseil") {
   sources = [
     "src/absl/base/attributes.h",
     "src/absl/base/config.h",
+    "src/absl/base/internal/raw_logging.cc",
+    "src/absl/base/internal/raw_logging.h",
     "src/absl/base/internal/atomic_hook.h",
     "src/absl/base/internal/identity.h",
     "src/absl/base/internal/inline_variable.h",
     "src/absl/base/internal/invoke.h",
-    "src/absl/base/internal/raw_logging.cc",
-    "src/absl/base/internal/raw_logging.h",
     "src/absl/base/log_severity.h",
     "src/absl/base/macros.h",
     "src/absl/base/optimization.h",
@@ -29,11 +29,18 @@ source_set("abseil") {
     "src/absl/types/bad_optional_access.h",
     "src/absl/types/optional.cc",
     "src/absl/types/optional.h",
+    "src/absl/base/internal/throw_delegate.cc",
+    "src/absl/base/internal/throw_delegate.h",
+    "src/absl/strings/internal/memutil.cc",
+    "src/absl/strings/internal/memutil.h",
+    "src/absl/strings/ascii.cc",
+    "src/absl/strings/ascii.h",
+    "src/absl/strings/string_view.cc",
+    "src/absl/strings/string_view.h",
   ]
 
   configs -= [ "//build/config:symbol_visibility_hidden" ]
   configs += [ "//build/config:symbol_visibility_default" ]
   configs -= [ "//build:default_include_dirs" ]
-
   public_configs = [":abseil_config"]
 }

@@ -100,15 +100,14 @@ int main(int argc, char** argv) {
   if (pos == std::string::npos) {
     return 1;
   }
-  std::string header_filename =
-      args.gen_dir + std::string("/") + args.header_filename;
+  std::string header_filename = args.gen_dir + "/" + args.header_filename;
   int header_fd = open(header_filename.c_str(), O_CREAT | O_TRUNC | O_WRONLY,
                        S_IRUSR | S_IWUSR | S_IRGRP);
   if (header_fd == -1) {
     std::cerr << "failed to open " << args.header_filename << std::endl;
     return 1;
   }
-  std::string cc_filename = args.gen_dir + std::string("/") + args.cc_filename;
+  std::string cc_filename = args.gen_dir + "/" + args.cc_filename;
   int cc_fd = open(cc_filename.c_str(), O_CREAT | O_TRUNC | O_WRONLY,
                    S_IRUSR | S_IWUSR | S_IRGRP);
   if (cc_fd == -1) {
