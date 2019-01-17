@@ -137,6 +137,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileSystemBackendDelegate
       storage::QuotaManagerProxy* proxy,
       const GURL& origin_url,
       FileSystemType type) override;
+  void PerformStorageCleanupOnFileTaskRunner(FileSystemContext* context,
+                                             storage::QuotaManagerProxy* proxy,
+                                             FileSystemType type) override;
   void GetOriginsForTypeOnFileTaskRunner(FileSystemType type,
                                          std::set<GURL>* origins) override;
   void GetOriginsForHostOnFileTaskRunner(FileSystemType type,

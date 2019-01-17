@@ -51,8 +51,9 @@ bool SandboxIsolatedOriginDatabase::ListAllOrigins(
   return true;
 }
 
-void SandboxIsolatedOriginDatabase::DropDatabase() {
-}
+void SandboxIsolatedOriginDatabase::DropDatabase() {}
+
+void SandboxIsolatedOriginDatabase::RewriteDatabase() {}
 
 void SandboxIsolatedOriginDatabase::MigrateBackFromObsoleteOriginDatabase(
     const std::string& origin,

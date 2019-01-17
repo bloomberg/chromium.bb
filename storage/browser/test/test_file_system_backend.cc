@@ -76,6 +76,11 @@ class TestFileSystemBackend::QuotaUtil : public storage::FileSystemQuotaUtil,
     return base::File::FILE_OK;
   }
 
+  void PerformStorageCleanupOnFileTaskRunner(
+      FileSystemContext* context,
+      storage::QuotaManagerProxy* proxy,
+      storage::FileSystemType type) override {}
+
   scoped_refptr<storage::QuotaReservation>
   CreateQuotaReservationOnFileTaskRunner(
       const GURL& origin_url,
