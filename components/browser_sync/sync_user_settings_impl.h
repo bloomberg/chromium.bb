@@ -9,18 +9,24 @@
 
 #include "components/sync/driver/sync_user_settings.h"
 
+#include "base/callback.h"
+#include "components/sync/base/model_type.h"
+
 namespace syncer {
 class SyncPrefs;
+class SyncServiceCrypto;
 }
 
 namespace browser_sync {
 
-class ProfileSyncService;
-
 class SyncUserSettingsImpl : public syncer::SyncUserSettings {
  public:
-  // Both |service| and |prefs| must not be null, and must outlive this object.
-  SyncUserSettingsImpl(ProfileSyncService* service, syncer::SyncPrefs* prefs);
+  // Both |crypto| and |prefs| must not be null, and must outlive this object.
+  SyncUserSettingsImpl(syncer::SyncServiceCrypto* crypto,
+                       syncer::SyncPrefs* prefs,
+                       syncer::ModelTypeSet registered_types,
+                       const base::RepeatingCallback<void(bool)>&
+                           sync_allowed_by_platform_changed);
   ~SyncUserSettingsImpl() override;
 
   bool IsSyncRequested() const override;
@@ -52,11 +58,15 @@ class SyncUserSettingsImpl : public syncer::SyncUserSettings {
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
 
   syncer::ModelTypeSet GetPreferredDataTypes() const;
+  syncer::ModelTypeSet GetEncryptedDataTypes() const;
+  bool IsEncryptedDatatypeEnabled() const;
+  bool IsEncryptionPending() const;
 
  private:
-  ProfileSyncService* const service_;
+  syncer::SyncServiceCrypto* const crypto_;
   syncer::SyncPrefs* const prefs_;
   const syncer::ModelTypeSet registered_types_;
+  base::RepeatingCallback<void(bool)> sync_allowed_by_platform_changed_cb_;
 
   // Whether sync is currently allowed on this platform.
   bool sync_allowed_by_platform_ = true;
