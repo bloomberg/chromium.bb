@@ -17,8 +17,8 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
-  return new BrowserAccessibilityManagerAuraLinux(nullptr, initial_tree,
-                                                  delegate, factory);
+  return new BrowserAccessibilityManagerAuraLinux(initial_tree, delegate,
+                                                  factory);
 }
 
 BrowserAccessibilityManagerAuraLinux*
@@ -27,12 +27,10 @@ BrowserAccessibilityManager::ToBrowserAccessibilityManagerAuraLinux() {
 }
 
 BrowserAccessibilityManagerAuraLinux::BrowserAccessibilityManagerAuraLinux(
-    AtkObject* parent_object,
     const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
-    : BrowserAccessibilityManager(delegate, factory),
-      parent_object_(parent_object) {
+    : BrowserAccessibilityManager(delegate, factory) {
   Initialize(initial_tree);
 }
 
