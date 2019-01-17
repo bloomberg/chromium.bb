@@ -53,6 +53,7 @@ message FileTransfer {
       PERMISSION_DENIED = 3;
       OUT_OF_DISK_SPACE = 4;
       IO_ERROR = 5;
+      NOT_LOGGED_IN = 6;
     }
 
     // An error category to be used to select a user-displayed error message.

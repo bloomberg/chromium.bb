@@ -18,6 +18,10 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "build/build_config.h"
+#include "remoting/base/result.h"
+#include "remoting/host/file_transfer/ensure_user.h"
+#include "remoting/host/file_transfer/get_desktop_directory.h"
 #include "remoting/protocol/file_transfer_helpers.h"
 
 namespace remoting {
@@ -56,8 +60,13 @@ class LocalFileWriter : public FileOperations::Writer {
                   std::unique_ptr<base::FileProxy> file_proxy,
                   const base::FilePath& destination_filepath);
 
-  // Callbacks for CreateFile(). These are static because they're used in the
-  // construction of TheadedFileWriter.
+  // Callbacks for WriteFile(). These are static because they're used in the
+  // construction of LocalFileWriter.
+  static void OnGetTargetDirectoryResult(
+      scoped_refptr<base::SequencedTaskRunner> file_task_runner,
+      base::FilePath filename,
+      FileOperations::WriteFileCallback callback,
+      protocol::FileTransferResult<base::FilePath> target_directory_result);
   static void CreateTempFile(std::unique_ptr<LocalFileWriter> writer,
                              FileOperations::WriteFileCallback callback,
                              int unique_path_number);
@@ -156,26 +165,44 @@ FileOperations::State LocalFileWriter::state() {
 
 void LocalFileWriter::WriteFile(const base::FilePath& filename,
                                 FileOperations::WriteFileCallback callback) {
-  base::FilePath target_directory;
-  if (!base::PathService::Get(base::DIR_USER_DESKTOP, &target_directory)) {
-    LOG(ERROR) << "Failed to get DIR_USER_DESKTOP from base::PathService::Get";
-
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            std::move(callback),
-            protocol::MakeFileTransferError(
-                FROM_HERE,
-                protocol::FileTransfer_Error_Type_UNEXPECTED_ERROR)));
-    return;
-  }
-
+#if defined(OS_WIN)
+  // On Windows, we use user impersonation to write files as the currently
+  // logged-in user, while the process as a whole runs as SYSTEM. Since user
+  // impersonation is per-thread on Windows, we need a dedicated thread to
+  // ensure that no other code is accidentally run with the wrong privileges.
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner =
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+          base::SingleThreadTaskRunnerThreadMode::DEDICATED);
+#else
   scoped_refptr<base::SequencedTaskRunner> file_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+#endif
+  base::PostTaskAndReplyWithResult(
+      file_task_runner.get(), FROM_HERE, base::BindOnce([] {
+        return EnsureUserContext().AndThen(
+            [](Monostate) { return GetDesktopDirectory(); });
+      }),
+      base::BindOnce(&OnGetTargetDirectoryResult, file_task_runner, filename,
+                     std::move(callback)));
+}
+
+void LocalFileWriter::OnGetTargetDirectoryResult(
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner,
+    base::FilePath filename,
+    FileOperations::WriteFileCallback callback,
+    protocol::FileTransferResult<base::FilePath> target_directory_result) {
   DCHECK(file_task_runner);
+  if (!target_directory_result) {
+    std::move(callback).Run(std::move(target_directory_result.error()));
+    return;
+  }
+
+  base::FilePath target_directory =
+      std::move(target_directory_result.success());
   base::SequencedTaskRunner* file_task_runner_ptr = file_task_runner.get();
-  auto file_proxy = std::make_unique<base::FileProxy>(file_task_runner.get());
+  auto file_proxy = std::make_unique<base::FileProxy>(file_task_runner_ptr);
   base::FilePath destination_filepath =
       target_directory.Append(filename.BaseName());
 
