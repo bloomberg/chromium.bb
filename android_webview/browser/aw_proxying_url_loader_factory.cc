@@ -8,8 +8,10 @@
 
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
+#include "android_webview/browser/input_stream.h"
 #include "android_webview/browser/net/aw_web_resource_response.h"
 #include "android_webview/browser/net_helpers.h"
+#include "android_webview/browser/net_network_service/android_stream_reader_url_loader.h"
 #include "android_webview/browser/renderer_host/auto_login_parser.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -27,6 +29,21 @@ namespace android_webview {
 namespace {
 
 const char kAutoLoginHeaderName[] = "X-Auto-Login";
+
+class AndroidResponseDelegate
+    : public AndroidStreamReaderURLLoader::ResponseDelegate {
+ public:
+  AndroidResponseDelegate(std::unique_ptr<AwWebResourceResponse> response)
+      : response_(std::move(response)) {}
+
+  std::unique_ptr<android_webview::InputStream> OpenInputStream(
+      JNIEnv* env) override {
+    return response_->GetInputStream(env);
+  }
+
+ private:
+  std::unique_ptr<AwWebResourceResponse> response_;
+};
 
 // Handles intercepted, in-progress requests/responses, so that they can be
 // controlled and modified accordingly.
@@ -71,6 +88,9 @@ class InterceptedRequest : public network::mojom::URLLoader,
   void ResumeReadingBodyFromNet() override;
 
   void ContinueAfterIntercept();
+  void ContinueAfterInterceptWithOverride(
+      std::unique_ptr<AwWebResourceResponse> response);
+
   void InterceptResponseReceived(
       std::unique_ptr<AwWebResourceResponse> response);
 
@@ -151,8 +171,9 @@ void InterceptedRequest::Restart() {
 void InterceptedRequest::InterceptResponseReceived(
     std::unique_ptr<AwWebResourceResponse> response) {
   if (response) {
-    // TODO(timvolodine): handle the case where response contains data,
-    // i.e. is actually overridden, crbug.com/893566.
+    // non-null response: make sure to use it as an override for the
+    // normal network data.
+    ContinueAfterInterceptWithOverride(std::move(response));
   } else {
     ContinueAfterIntercept();
   }
@@ -166,6 +187,16 @@ void InterceptedRequest::ContinueAfterIntercept() {
         mojo::MakeRequest(&target_loader_), routing_id_, request_id_, options_,
         request_, std::move(proxied_client), traffic_annotation_);
   }
+}
+
+void InterceptedRequest::ContinueAfterInterceptWithOverride(
+    std::unique_ptr<AwWebResourceResponse> response) {
+  network::mojom::URLLoaderClientPtr proxied_client;
+  proxied_client_binding_.Bind(mojo::MakeRequest(&proxied_client));
+  AndroidStreamReaderURLLoader* loader = new AndroidStreamReaderURLLoader(
+      request_, std::move(proxied_client), traffic_annotation_,
+      std::make_unique<AndroidResponseDelegate>(std::move(response)));
+  loader->Start();
 }
 
 namespace {
