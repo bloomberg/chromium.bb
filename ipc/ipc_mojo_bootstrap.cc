@@ -146,6 +146,14 @@ class ChannelAssociatedGroupController
                    base::Unretained(this)));
     connector_->set_enforce_errors_from_incoming_receiver(false);
     connector_->SetWatcherHeapProfilerTag("IPC Channel");
+
+    // Don't let the Connector do any sort of queuing on our behalf. Individual
+    // messages bound for the IPC::ChannelProxy thread (i.e. that vast majority
+    // of messages received by this Connector) are already individually
+    // scheduled for dispatch by ChannelProxy, so Connector's normal mode of
+    // operation would only introduce a redundant scheduling step for most
+    // messages.
+    connector_->set_force_immediate_dispatch(true);
   }
 
   void Pause() {

@@ -238,6 +238,18 @@ class Binding {
     return internal_state_.SwapImplForTesting(new_impl);
   }
 
+  // DO NOT INTRODUCE NEW USES OF THIS METHOD.
+  //
+  // Allows this Binding to dispatch multiple messages within the extent of a
+  // single scheduled task. Normally every incoming message is dispatched by a
+  // dedicated task on the Binding's SequencedTaskRunner, and this is preferred.
+  // Allowing a Binding to do batch dispatch can cause it to starve its sequence
+  // for long periods of time when spammed with messages.
+  //
+  // This will be removed and exists only temporarily to support some edge cases
+  // where an unintended dependency on batch dispatch remains in production.
+  void EnableBatchDispatch() { internal_state_.EnableBatchDispatch(); }
+
   // DO NOT USE. Exposed only for internal use and for testing.
   internal::BindingState<Interface, ImplRefTraits>* internal_state() {
     return &internal_state_;

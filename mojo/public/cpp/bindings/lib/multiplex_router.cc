@@ -552,6 +552,10 @@ bool MultiplexRouter::HasAssociatedEndpoints() const {
   return !base::ContainsKey(endpoints_, kMasterInterfaceId);
 }
 
+void MultiplexRouter::EnableBatchDispatch() {
+  connector_.set_force_immediate_dispatch(true);
+}
+
 void MultiplexRouter::EnableTestingMode() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   MayAutoLock locker(&lock_);

@@ -75,6 +75,11 @@ void BindingStateBase::FlushForTesting() {
   endpoint_client_->FlushForTesting();
 }
 
+void BindingStateBase::EnableBatchDispatch() {
+  DCHECK(is_bound());
+  router_->EnableBatchDispatch();
+}
+
 void BindingStateBase::EnableTestingMode() {
   DCHECK(is_bound());
   router_->EnableTestingMode();

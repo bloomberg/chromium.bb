@@ -377,6 +377,10 @@ void ThrottlingURLLoader::StartNow() {
 
   network::mojom::URLLoaderClientPtr client;
   client_binding_.Bind(mojo::MakeRequest(&client), start_info_->task_runner);
+
+  // TODO(https://crbug.com/919736): Remove this call.
+  client_binding_.EnableBatchDispatch();
+
   client_binding_.set_connection_error_handler(base::BindOnce(
       &ThrottlingURLLoader::OnClientConnectionError, base::Unretained(this)));
 
