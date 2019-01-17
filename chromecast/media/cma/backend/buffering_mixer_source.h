@@ -227,7 +227,6 @@ class BufferingMixerSource : public MixerInput::Source,
   void PostEos();
   void PostError(MixerError error);
   void PostAudioReadyForPlayback();
-  int64_t GetCurrentBufferedDataInUs();
   void DropAudio(int64_t frames);
   bool CanDropFrames(int64_t frames_to_drop);
   int64_t DataToFrames(int64_t size);
