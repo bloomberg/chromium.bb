@@ -7,6 +7,7 @@
 #include "base/android/task_scheduler/post_task_android.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/time/time.h"
 #include "jni/TaskRunnerImpl_jni.h"
 
 namespace base {
@@ -49,13 +50,16 @@ void TaskRunnerAndroid::Destroy(JNIEnv* env,
   delete this;
 }
 
-void TaskRunnerAndroid::PostTask(JNIEnv* env,
-                                 const base::android::JavaRef<jobject>& caller,
-                                 const base::android::JavaRef<jobject>& task) {
-  task_runner_->PostTask(
+void TaskRunnerAndroid::PostDelayedTask(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& caller,
+    const base::android::JavaRef<jobject>& task,
+    jlong delay) {
+  task_runner_->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&PostTaskAndroid::RunJavaTask,
-                     base::android::ScopedJavaGlobalRef<jobject>(task)));
+                     base::android::ScopedJavaGlobalRef<jobject>(task)),
+      TimeDelta::FromMilliseconds(delay));
 }
 
 bool TaskRunnerAndroid::BelongsToCurrentThread(

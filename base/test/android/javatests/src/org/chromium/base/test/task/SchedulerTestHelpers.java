@@ -24,18 +24,27 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SchedulerTestHelpers {
     public static void postRecordOrderTask(
             TaskRunner taskQueue, List<Integer> orderList, int order) {
-        taskQueue.postTask(new Runnable() {
+        postRecordOrderDelayedTask(taskQueue, orderList, order, 0);
+    }
+
+    public static void postRecordOrderDelayedTask(
+            TaskRunner taskQueue, List<Integer> orderList, int order, long delay) {
+        taskQueue.postDelayedTask(new Runnable() {
             @Override
             public void run() {
                 orderList.add(order);
             }
-        });
+        }, delay);
     }
 
     public static void postTaskAndBlockUntilRun(TaskRunner taskQueue) {
+        postDelayedTaskAndBlockUntilRun(taskQueue, 0);
+    }
+
+    public static void postDelayedTaskAndBlockUntilRun(TaskRunner taskQueue, long delay) {
         final Object lock = new Object();
         final AtomicBoolean taskExecuted = new AtomicBoolean();
-        taskQueue.postTask(new Runnable() {
+        taskQueue.postDelayedTask(new Runnable() {
             @Override
             public void run() {
                 synchronized (lock) {
@@ -43,7 +52,7 @@ public class SchedulerTestHelpers {
                     lock.notify();
                 }
             }
-        });
+        }, delay);
         synchronized (lock) {
             try {
                 while (!taskExecuted.get()) {
@@ -53,6 +62,18 @@ public class SchedulerTestHelpers {
                 ie.printStackTrace();
             }
         }
+    }
+
+    public static void postThreeTasksInOrder(TaskRunner taskQueue, List<Integer> orderList) {
+        postRecordOrderTask(taskQueue, orderList, 1);
+        postRecordOrderTask(taskQueue, orderList, 2);
+        postRecordOrderTask(taskQueue, orderList, 3);
+    }
+
+    public static void postThreeDelayedTasksInOrder(TaskRunner taskQueue, List<Integer> orderList) {
+        postRecordOrderDelayedTask(taskQueue, orderList, 1, 1);
+        postRecordOrderDelayedTask(taskQueue, orderList, 2, 1);
+        postRecordOrderDelayedTask(taskQueue, orderList, 3, 1);
     }
 
     /**

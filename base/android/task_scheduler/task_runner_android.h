@@ -22,9 +22,10 @@ class TaskRunnerAndroid {
 
   void Destroy(JNIEnv* env, const base::android::JavaRef<jobject>& caller);
 
-  void PostTask(JNIEnv* env,
-                const base::android::JavaRef<jobject>& caller,
-                const base::android::JavaRef<jobject>& task);
+  void PostDelayedTask(JNIEnv* env,
+                       const base::android::JavaRef<jobject>& caller,
+                       const base::android::JavaRef<jobject>& task,
+                       jlong delay);
 
   bool BelongsToCurrentThread(JNIEnv* env,
                               const base::android::JavaRef<jobject>& caller);
