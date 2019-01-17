@@ -168,11 +168,14 @@ class CONTENT_EXPORT StoragePartitionImpl
   // Can return nullptr while |this| is being destroyed.
   BrowserContext* browser_context() const;
 
-  // Called by each renderer process once. Returns the id of the created
-  // binding.
+  // Called by each renderer process for each StoragePartitionService interface
+  // it binds in the renderer process. Returns the id of the created binding.
   mojo::BindingId Bind(
       int process_id,
       mojo::InterfaceRequest<blink::mojom::StoragePartitionService> request);
+
+  // Remove a binding created by a previous Bind() call.
+  void Unbind(mojo::BindingId binding_id);
 
   auto& bindings_for_testing() { return bindings_; }
 

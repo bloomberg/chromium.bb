@@ -1349,6 +1349,10 @@ mojo::BindingId StoragePartitionImpl::Bind(
   return bindings_.AddBinding(this, std::move(request), process_id);
 }
 
+void StoragePartitionImpl::Unbind(mojo::BindingId binding_id) {
+  bindings_.RemoveBinding(binding_id);
+}
+
 void StoragePartitionImpl::OverrideQuotaManagerForTesting(
     storage::QuotaManager* quota_manager) {
   quota_manager_ = quota_manager;

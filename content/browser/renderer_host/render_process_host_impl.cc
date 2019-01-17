@@ -2410,7 +2410,8 @@ void RenderProcessHostImpl::CreateStoragePartitionService(
     return;
   }
 
-  storage_partition_impl_->Bind(id_, std::move(request));
+  storage_partition_binding_ids_.insert(
+      storage_partition_impl_->Bind(id_, std::move(request)));
 }
 
 void RenderProcessHostImpl::CreateBroadcastChannelProvider(
@@ -4296,6 +4297,10 @@ void RenderProcessHostImpl::ResetIPC() {
 
   // Destroy all embedded CompositorFrameSinks.
   embedded_frame_sink_provider_.reset();
+
+  for (auto binding_id : storage_partition_binding_ids_) {
+    storage_partition_impl_->Unbind(binding_id);
+  }
 
   // If RenderProcessHostImpl is reused, the next renderer will send a new
   // request for FrameSinkProvider so make sure frame_sink_provider_ is ready
