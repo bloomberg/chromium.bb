@@ -29,7 +29,8 @@ class RevokedAudioDecoderWrapper : public DestructableAudioDecoder {
   ~RevokedAudioDecoderWrapper() override = default;
 
  private:
-  // CmaBackend::AudioDecoder implementation:
+  // DestructableAudioDecoder implementation:
+  void OnInitialized() override {}
   void SetDelegate(Delegate* delegate) override {}
   BufferStatus PushBuffer(scoped_refptr<DecoderBufferBase> buffer) override {
     return MediaPipelineBackend::kBufferPending;
@@ -60,6 +61,7 @@ ActiveAudioDecoderWrapper::ActiveAudioDecoderWrapper(
       decoder_(backend_decoder),
       content_type_(type),
       buffer_delegate_(buffer_delegate),
+      initialized_(false),
       delegate_active_(false),
       global_volume_multiplier_(1.0f),
       stream_volume_multiplier_(1.0f) {
@@ -78,11 +80,21 @@ ActiveAudioDecoderWrapper::~ActiveAudioDecoderWrapper() {
   backend_manager_->RemoveAudioDecoder(this);
 }
 
+void ActiveAudioDecoderWrapper::OnInitialized() {
+  initialized_ = true;
+  if (!delegate_active_) {
+    float volume = stream_volume_multiplier_ * global_volume_multiplier_;
+    decoder_.SetVolume(volume);
+  }
+}
+
 void ActiveAudioDecoderWrapper::SetGlobalVolumeMultiplier(float multiplier) {
   global_volume_multiplier_ = multiplier;
   if (!delegate_active_) {
     float volume = stream_volume_multiplier_ * global_volume_multiplier_;
-    decoder_.SetVolume(volume);
+    if (initialized_) {
+      decoder_.SetVolume(volume);
+    }
     if (buffer_delegate_) {
       buffer_delegate_->OnSetVolume(volume);
     }
@@ -129,7 +141,7 @@ bool ActiveAudioDecoderWrapper::SetVolume(float multiplier) {
     buffer_delegate_->OnSetVolume(volume);
   }
 
-  if (delegate_active_) {
+  if (delegate_active_ || !initialized_) {
     return true;
   }
   return decoder_.SetVolume(volume);
@@ -167,6 +179,10 @@ AudioDecoderWrapper::AudioDecoderWrapper(AudioContentType type)
 }
 
 AudioDecoderWrapper::~AudioDecoderWrapper() = default;
+
+void AudioDecoderWrapper::OnInitialized() {
+  audio_decoder_->OnInitialized();
+}
 
 void AudioDecoderWrapper::Revoke() {
   if (!decoder_revoked_) {

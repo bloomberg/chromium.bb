@@ -23,6 +23,8 @@ enum class AudioContentType;
 class DestructableAudioDecoder : public CmaBackend::AudioDecoder {
  public:
   ~DestructableAudioDecoder() override = default;
+
+  virtual void OnInitialized() = 0;
 };
 
 class ActiveAudioDecoderWrapper : public DestructableAudioDecoder {
@@ -38,7 +40,8 @@ class ActiveAudioDecoderWrapper : public DestructableAudioDecoder {
   AudioContentType content_type() const { return content_type_; }
 
  private:
-  // CmaBackend::AudioDecoder implementation:
+  // DestructableAudioDecoder implementation:
+  void OnInitialized() override;
   void SetDelegate(Delegate* delegate) override;
   BufferStatus PushBuffer(scoped_refptr<DecoderBufferBase> buffer) override;
   bool SetConfig(const AudioConfig& config) override;
@@ -52,6 +55,7 @@ class ActiveAudioDecoderWrapper : public DestructableAudioDecoder {
   const AudioContentType content_type_;
 
   MediaPipelineBackendManager::BufferDelegate* const buffer_delegate_;
+  bool initialized_;
   bool delegate_active_;
 
   float global_volume_multiplier_;
@@ -72,6 +76,7 @@ class AudioDecoderWrapper : public CmaBackend::AudioDecoder {
   AudioDecoderWrapper(AudioContentType type);
   ~AudioDecoderWrapper() override;
 
+  void OnInitialized();
   void Revoke();
 
  private:
