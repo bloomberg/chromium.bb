@@ -105,13 +105,8 @@ void HistoryTabHelper::DidFinishNavigation(
     return;
   }
 
-  if (navigation_context->IsDownload()) {
-    return;
-  }
-
-  if (!navigation_context->HasCommitted() &&
-      !navigation_context->IsSameDocument()) {
-    // Navigation was replaced.
+  if (!navigation_context->HasCommitted()) {
+    // Navigation was replaced or aborted.
     return;
   }
 
