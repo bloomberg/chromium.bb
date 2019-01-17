@@ -109,6 +109,9 @@ declare_args() {
   # that do not have a mixer in the CMA backend.
   enable_cast_audio_manager_mixer =
       chromecast_branding == "google" && !is_cast_audio_only && !is_android
+
+  # Set to true to enable video capture service for video input and output.
+  enable_video_capture_service = false
 }
 
 declare_args() {
