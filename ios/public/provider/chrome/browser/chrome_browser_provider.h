@@ -18,6 +18,7 @@
 
 class AppDistributionProvider;
 class BrandedImageProvider;
+class BrowserURLRewriterProvider;
 class FullscreenProvider;
 class MailtoHandlerProvider;
 class OmahaServiceProvider;
@@ -156,6 +157,9 @@ class ChromeBrowserProvider {
 
   // Returns an instance of the fullscreen provider.
   virtual FullscreenProvider* GetFullscreenProvider() const;
+
+  // Returns an instance of the BrowserURLRewriter provider.
+  virtual BrowserURLRewriterProvider* GetBrowserURLRewriterProvider() const;
 
   // Adds and removes observers.
   void AddObserver(Observer* observer);
