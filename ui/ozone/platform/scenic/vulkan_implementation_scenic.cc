@@ -70,12 +70,8 @@ VkInstance VulkanImplementationScenic::GetVulkanInstance() {
 
 std::unique_ptr<gpu::VulkanSurface>
 VulkanImplementationScenic::CreateViewSurface(gfx::AcceleratedWidget window) {
-  ScenicSurface* scenic_surface = scenic_surface_factory_->GetSurface(window);
-
-  // Attach the surface to the window.
-  scenic_surface->LinkToParent();
-
   fuchsia::images::ImagePipePtr image_pipe;
+  ScenicSurface* scenic_surface = scenic_surface_factory_->GetSurface(window);
   scenic_surface->SetTextureToNewImagePipe(image_pipe.NewRequest());
 
   VkSurfaceKHR surface;
@@ -93,11 +89,6 @@ VulkanImplementationScenic::CreateViewSurface(gfx::AcceleratedWidget window) {
     // if it does.
     LOG(FATAL) << "vkCreateImagePipeSurfaceFUCHSIA failed: " << result;
   }
-
-  // Execute the initialization commands. Once this is done we won't need to
-  // make any further changes to ScenicSurface other than to keep it alive; the
-  // texture can be replaced through the vulkan swapchain API.
-  scenic_surface->Commit();
 
   return std::make_unique<gpu::VulkanSurface>(GetVulkanInstance(), surface);
 }
