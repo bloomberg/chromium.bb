@@ -584,8 +584,6 @@ void WebContentsViewAndroid::OnSizeChanged() {
   auto* rwhv = GetRenderWidgetHostViewAndroid();
   if (rwhv) {
     web_contents_->SendScreenRects();
-    rwhv->SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                                      base::nullopt);
   }
 }
 

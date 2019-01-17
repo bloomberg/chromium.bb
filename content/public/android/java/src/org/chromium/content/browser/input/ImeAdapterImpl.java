@@ -527,7 +527,8 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
     }
 
     @CalledByNative
-    private void updateAfterViewSizeChanged() {
+    private boolean updateSizeChangeForScroll() {
+        boolean scrollFocusedEditable = false;
         // Execute a delayed form focus operation because the OSK was brought up earlier.
         if (!mFocusPreOSKViewportRect.isEmpty()) {
             Rect rect = new Rect();
@@ -536,13 +537,14 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
                 // Only assume the OSK triggered the onSizeChanged if width was preserved.
                 if (rect.width() == mFocusPreOSKViewportRect.width()) {
                     assert mWebContents != null;
-                    mWebContents.scrollFocusedEditableNodeIntoView();
+                    scrollFocusedEditable = true;
                 }
                 // Zero the rect to prevent the above operation from issuing the delayed
                 // form focus event.
                 cancelRequestToScrollFocusedEditableNodeIntoView();
             }
         }
+        return scrollFocusedEditable;
     }
 
     @CalledByNative

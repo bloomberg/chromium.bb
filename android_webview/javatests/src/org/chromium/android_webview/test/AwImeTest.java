@@ -5,12 +5,16 @@
 package org.chromium.android_webview.test;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.support.test.filters.SmallTest;
 import android.view.KeyEvent;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.JavascriptInterface;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,8 +26,10 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.ImeAdapter;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestInputMethodManagerWrapper;
 
 /**
@@ -60,9 +66,21 @@ public class AwImeTest {
             // Use detached container view to avoid focus request.
             mTestContainerView =
                     mActivityTestRule.createDetachedAwTestContainerView(mContentsClient);
+            mTestContainerView.setLayoutParams(
+                    new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
             mEditText = new EditText(mActivityTestRule.getActivity());
-            mActivityTestRule.getActivity().addView(mEditText);
-            mActivityTestRule.getActivity().addView(mTestContainerView);
+            LinearLayout linearLayout = new LinearLayout(mActivityTestRule.getActivity());
+            linearLayout.setOrientation(LinearLayout.VERTICAL);
+            linearLayout.setLayoutParams(
+                    new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+
+            // Ensures that we don't autofocus EditText.
+            linearLayout.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
+            linearLayout.setFocusableInTouchMode(true);
+
+            mActivityTestRule.getActivity().addView(linearLayout);
+            linearLayout.addView(mEditText);
+            linearLayout.addView(mTestContainerView);
             mTestContainerView.getAwContents().addJavascriptInterface(
                     mTestJavascriptInterface, "test");
             // Let's not test against real input method.
@@ -70,11 +88,24 @@ public class AwImeTest {
             imeAdapter.setInputMethodManagerWrapper(
                     TestInputMethodManagerWrapper.create(imeAdapter));
         });
+        AwActivityTestRule.enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
     }
 
     private void loadContentEditableBody() throws Exception {
         final String mime = "text/html";
         final String htmlDocument = "<html><body contenteditable id='editor'></body></html>";
+        final CallbackHelper loadHelper = mContentsClient.getOnPageFinishedHelper();
+
+        mActivityTestRule.loadDataSync(
+                mTestContainerView.getAwContents(), loadHelper, htmlDocument, mime, false);
+    }
+
+    private void loadBottomInputHtml() throws Throwable {
+        final String mime = "text/html";
+        // Shows an input at the bottom of the screen.
+        final String htmlDocument = "<html><head>"
+                + "<style>html, body{height:100%;} div{position:absolute;bottom:5;}</style>"
+                + "</head><body>Test<div id='footer'><input id='input_text'></div></body></html>";
         final CallbackHelper loadHelper = mContentsClient.getOnPageFinishedHelper();
 
         mActivityTestRule.loadDataSync(
@@ -94,7 +125,6 @@ public class AwImeTest {
     private void focusOnWebViewAndEnableEditing() throws Exception {
         ThreadUtils.runOnUiThreadBlocking((Runnable) () -> mTestContainerView.requestFocus());
 
-        AwActivityTestRule.enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
         // View focus may not have been propagated to the renderer process yet. If document is not
         // yet focused, and focusing on an element is an invalid operation. See crbug.com/622151
         // for details.
@@ -206,5 +236,40 @@ public class AwImeTest {
                 return mActivityTestRule.getActivity().getCurrentFocus() == mEditText;
             }
         });
+    }
+
+    private int getScrollY() throws Exception {
+        return Integer.parseInt(mActivityTestRule.executeJavaScriptAndWaitForResult(
+                mTestContainerView.getAwContents(), mContentsClient, "window.scrollY"));
+    }
+
+    // https://crbug.com/920061
+    @Test
+    @SmallTest
+    public void testFocusAndViewSizeChangeCausesScroll() throws Throwable {
+        loadBottomInputHtml();
+        Rect currentRect = new Rect();
+        mTestContainerView.getWindowVisibleDisplayFrame(currentRect);
+        WebContents webContents = mTestContainerView.getAwContents().getWebContents();
+
+        int initialScrollY = getScrollY();
+
+        DOMUtils.waitForNonZeroNodeBounds(webContents, "input_text");
+        DOMUtils.clickNode(webContents, "input_text");
+
+        // When a virtual keyboard shows up, the window and view size shrink. Note that we are not
+        // depend on the real virtual keyboard behavior here. We only emulate the behavior by
+        // shrinking the window and view sizes.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mTestContainerView.setWindowVisibleDisplayFrameOverride(new Rect(
+                    currentRect.left, currentRect.top, currentRect.right, currentRect.centerY()));
+            int width = mTestContainerView.getWidth();
+            int height = mTestContainerView.getHeight();
+            mTestContainerView.onSizeChanged(width, height / 2, width, height);
+        });
+
+        // Scrolling may take some time. Ensures that scrolling happened.
+        CriteriaHelper.pollInstrumentationThread(
+                () -> (getScrollY() > initialScrollY), "Scrolling did not happen");
     }
 }
