@@ -58,7 +58,8 @@ class PasswordGenerationPopupViewViews::GeneratedPasswordBox
 
     DCHECK(!password_label_);
     password_label_ = autofill::CreateLabelWithColorReadabilityDisabled(
-        password, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
+        password, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+        STYLE_SECONDARY_MONOSPACED);
     layout->AddView(password_label_);
   }
 
