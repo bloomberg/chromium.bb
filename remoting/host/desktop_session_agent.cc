@@ -181,6 +181,8 @@ bool DesktopSessionAgent::OnMessageReceived(const IPC::Message& message) {
     IPC_BEGIN_MESSAGE_MAP(DesktopSessionAgent, message)
       IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_CaptureFrame,
                           OnCaptureFrame)
+      IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_SelectSource,
+                          OnSelectSource)
       IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InjectClipboardEvent,
                           OnInjectClipboardEvent)
       IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InjectKeyEvent,
@@ -516,6 +518,11 @@ void DesktopSessionAgent::OnCaptureFrame() {
   // requests, pixel data in captured frames will likely be corrupted but
   // stability of webrtc::DesktopCapturer will not be affected.
   video_capturer_->CaptureFrame();
+}
+
+void DesktopSessionAgent::OnSelectSource(int id) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  video_capturer_->SelectSource(id);
 }
 
 void DesktopSessionAgent::OnInjectClipboardEvent(

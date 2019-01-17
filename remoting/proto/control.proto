@@ -106,3 +106,9 @@ message VideoLayout {
   // Layout for each video track.
   repeated VideoTrackLayout video_track = 1;
 }
+
+message SelectDesktopDisplayRequest {
+  // Identifier for display to select. Valid strings are "0", "1", ...
+  // The "all" string is used to select the entire desktop.
+  optional string id = 1;
+}

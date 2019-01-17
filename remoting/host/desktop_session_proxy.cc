@@ -293,6 +293,12 @@ void DesktopSessionProxy::CaptureFrame() {
   }
 }
 
+bool DesktopSessionProxy::SelectSource(webrtc::DesktopCapturer::SourceId id) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  SendToDesktop(new ChromotingNetworkDesktopMsg_SelectSource(id));
+  return true;
+}
+
 void DesktopSessionProxy::SetVideoCapturer(
     const base::WeakPtr<IpcVideoFrameCapturer> video_capturer) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());

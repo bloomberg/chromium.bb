@@ -160,6 +160,10 @@ void WebrtcVideoStream::Start(
                                this);
 }
 
+void WebrtcVideoStream::SelectSource(int id) {
+  capturer_->SelectSource(id);
+}
+
 void WebrtcVideoStream::SetEventTimestampsSource(
     scoped_refptr<InputEventTimestampsSource> event_timestamps_source) {
   event_timestamps_source_ = event_timestamps_source;

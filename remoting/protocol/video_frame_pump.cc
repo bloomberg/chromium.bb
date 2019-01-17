@@ -102,6 +102,8 @@ void VideoFramePump::SetObserver(Observer* observer) {
   observer_ = observer;
 }
 
+void VideoFramePump::SelectSource(int id) {}
+
 void VideoFramePump::OnCaptureResult(
     webrtc::DesktopCapturer::Result result,
     std::unique_ptr<webrtc::DesktopFrame> frame) {

@@ -42,6 +42,7 @@ class DesktopCapturerProxy::Core : public webrtc::DesktopCapturer::Callback {
   void Start();
   void SetSharedMemoryFactory(
       std::unique_ptr<webrtc::SharedMemoryFactory> shared_memory_factory);
+  void SelectSource(SourceId id);
   void CaptureFrame();
 
  private:
@@ -93,6 +94,13 @@ void DesktopCapturerProxy::Core::SetSharedMemoryFactory(
   DCHECK(thread_checker_.CalledOnValidThread());
   if (capturer_) {
     capturer_->SetSharedMemoryFactory(std::move(shared_memory_factory));
+  }
+}
+
+void DesktopCapturerProxy::Core::SelectSource(SourceId id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (capturer_) {
+    capturer_->SelectSource(id);
   }
 }
 
@@ -175,7 +183,10 @@ bool DesktopCapturerProxy::GetSourceList(SourceList* sources) {
 }
 
 bool DesktopCapturerProxy::SelectSource(SourceId id) {
-  NOTIMPLEMENTED();
+  DCHECK(thread_checker_.CalledOnValidThread());
+  capture_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Core::SelectSource, base::Unretained(core_.get()), id));
   return false;
 }
 

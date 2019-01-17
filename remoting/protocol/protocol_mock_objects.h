@@ -133,6 +133,8 @@ class MockHostStub : public HostStub {
   MOCK_METHOD1(SetCapabilities, void(const Capabilities& capabilities));
   MOCK_METHOD1(RequestPairing, void(const PairingRequest& pairing_request));
   MOCK_METHOD1(DeliverClientMessage, void(const ExtensionMessage& message));
+  MOCK_METHOD1(SelectDesktopDisplay,
+               void(const SelectDesktopDisplayRequest& message));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockHostStub);

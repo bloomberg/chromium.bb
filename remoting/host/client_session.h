@@ -113,6 +113,8 @@ class ClientSession : public protocol::HostStub,
   void RequestPairing(
       const remoting::protocol::PairingRequest& pairing_request) override;
   void DeliverClientMessage(const protocol::ExtensionMessage& message) override;
+  void SelectDesktopDisplay(
+      const protocol::SelectDesktopDisplayRequest& select_display) override;
 
   // protocol::ConnectionToClient::EventHandler interface.
   void OnConnectionAuthenticating() override;

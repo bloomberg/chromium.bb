@@ -47,8 +47,8 @@ bool IpcVideoFrameCapturer::GetSourceList(SourceList* sources) {
 }
 
 bool IpcVideoFrameCapturer::SelectSource(SourceId id) {
-  NOTIMPLEMENTED();
-  return false;
+  desktop_session_proxy_->SelectSource(id);
+  return true;
 }
 
 }  // namespace remoting
