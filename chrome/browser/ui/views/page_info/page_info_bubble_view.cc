@@ -506,6 +506,11 @@ PageInfoBubbleView::PageInfoBubbleView(
     layout->AddView(CreateSiteSettingsLink(side_margin, this).release());
 
   views::BubbleDialogDelegateView::CreateBubble(this);
+
+  // CreateBubble() may not set our size synchronously so explicitly set it here
+  // before PageInfo updates trigger child layouts.
+  SetSize(GetPreferredSize());
+
   presenter_.reset(new PageInfo(
       this, profile, TabSpecificContentSettings::FromWebContents(web_contents),
       web_contents, url, security_info));
