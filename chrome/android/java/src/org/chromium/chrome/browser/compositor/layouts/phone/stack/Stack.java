@@ -87,8 +87,8 @@ public abstract class Stack implements ChromeAnimation.Animatable {
     private static final float DISCARD_END_SCALE_SWIPE = 0.5f;
 
     /**
-     * The delta time applied on the velocity from the fling. This is to compute the kick to help
-     * discarding a card.
+     * The delta time applied on the velocity from the fling. This is to compute the kick to
+     * help discarding a card.
      */
     private static final float DISCARD_FLING_DT = 1.0f / 45.0f;
 
@@ -147,13 +147,14 @@ public abstract class Stack implements ChromeAnimation.Animatable {
     private static final float SCROLL_WARP_PCTG = 0.4f;
 
     /**
-     * Percentage of the screen a swipe gesture must traverse before it is allowed to be canceled.
+     * Percentage of the screen a swipe gesture must traverse before it is allowed to be
+     * canceled.
      */
     private static final float SWIPE_LANDSCAPE_THRESHOLD = 0.19f;
 
     /**
-     * How far to place the tab to the left of the user's finger when swiping in dp.  This keeps the
-     * tab under the user's finger.
+     * How far to place the tab to the left of the user's finger when swiping in dp.  This keeps
+     * the tab under the user's finger.
      */
     private static final float LANDSCAPE_SWIPE_DRAG_TAB_OFFSET_DP = 40.f;
 
@@ -205,8 +206,8 @@ public abstract class Stack implements ChromeAnimation.Animatable {
     // Discard
     protected StackTab mDiscardingTab;
 
-    // We can't initialize mDiscardDirection here using LocalizationUtils.isRtl() because it will
-    // involve a jni call. Instead, mDiscardDirection will be initialized in Show().
+    // We can't initialize mDiscardDirection here using LocalizationUtils.isRtl() because it
+    // will involve a jni call. Instead, mDiscardDirection will be initialized in Show().
     private float mDiscardDirection = Float.NaN;
 
     private int mReferenceOrderIndex = -1;
@@ -353,8 +354,8 @@ public abstract class Stack implements ChromeAnimation.Animatable {
     }
 
     /**
-     * @return True if we should put the close button on the right side of the tab, or false if we
-     * should put it on the left. This method already accounts for RTL flipping.
+     * @return True if we should put the close button on the right side of the tab, or false if
+     *              we should put it on the left. This method already accounts for RTL flipping.
      */
     private boolean isCloseButtonOnRight() {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)) {
@@ -378,8 +379,8 @@ public abstract class Stack implements ChromeAnimation.Animatable {
                 mStackTabs[i].setDying(true);
             }
         } else {
-            // This needs to be set to true to handle the case where both the normal and incognito
-            // tabs are being closed.
+            // This needs to be set to true to handle the case where both the normal and
+            // incognito tabs are being closed.
             needAnimation = true;
         }
 
@@ -529,8 +530,8 @@ public abstract class Stack implements ChromeAnimation.Animatable {
         if (mAnimationFactory != null && mViewAnimationFactory != null) {
             mOverviewAnimationType = type;
 
-            // First try to build a View animation.  Then fallback to the compositor animation if
-            // one isn't created.
+            // First try to build a View animation.  Then fallback to the compositor animation
+            // if one isn't created.
             mViewAnimations = mViewAnimationFactory.createAnimatorForType(
                     type, mStackTabs, mLayout.getViewContainer(), mTabList, focusIndex);
 
@@ -610,8 +611,8 @@ public abstract class Stack implements ChromeAnimation.Animatable {
                 break;
         }
 
-        // sync the scrollTarget and scrollOffset. For ENTER_STACK animation, don't sync to ensure
-        // the tab can tilt back.
+        // sync the scrollTarget and scrollOffset. For ENTER_STACK animation, don't sync to
+        // ensure the tab can tilt back.
         if (mOverviewAnimationType != OverviewAnimationType.NONE
                 && mOverviewAnimationType != OverviewAnimationType.ENTER_STACK
                 && mScroller.isFinished()) {
@@ -674,8 +675,8 @@ public abstract class Stack implements ChromeAnimation.Animatable {
      * @param type              The type of the animation to start.
      * @param sourceIndex       The source index needed by some animation types.
      * @param finishImmediately Whether the animation jumps straight to the end.
-     * @return                  true, if we can start the animation without cleaning up the current
-     *                          animation.
+     * @return                  true, if we can start the animation without cleaning up the
+     *                          current animation.
      */
     private boolean canUpdateAnimation(long time, @OverviewAnimationType int type, int sourceIndex,
             boolean finishImmediately) {
@@ -785,7 +786,8 @@ public abstract class Stack implements ChromeAnimation.Animatable {
                 mDragLock = hintLock;
             }
         }
-        // Returns a hint of the lock so we can show feedback even if the lock is not committed yet.
+        // Returns a hint of the lock so we can show feedback even if the lock is not committed
+        // yet.
         return mDragLock == DragLock.NONE ? hintLock : mDragLock;
     }
 
@@ -963,10 +965,10 @@ public abstract class Stack implements ChromeAnimation.Animatable {
      * OverlappingStack implements this to auto-magically the cards as the stack get scrolled.
      * NonOverlappingStack just ignores this call.
      *
-     * @param amount                The amount of scroll performed in pixel. The sign indicates the
-     *                              direction.
-     * @param allowReverseDirection Whether or not to allow corrections in the reverse direction of
-     *                              the amount scrolled.
+     * @param amount                The amount of scroll performed in pixel. The sign indicates
+     *                              the direction.
+     * @param allowReverseDirection Whether or not to allow corrections in the reverse direction
+     *                              of the amount scrolled.
      * @return                      True if any tab had been 'visibly' moved.
      */
     protected abstract boolean evenOutTabs(float amount, boolean allowReverseDirection);
@@ -995,7 +997,7 @@ public abstract class Stack implements ChromeAnimation.Animatable {
             mScroller.fling(0, (int) mScrollTarget, 0, (int) velocity, 0, 0,
                     (int) getMinScroll(false), (int) getMaxScroll(false), 0,
                     (int) ((velocity > 0 ? mMaxOverScroll : mMaxUnderScroll)
-                                    * MAX_OVER_FLING_SCALE),
+                            * MAX_OVER_FLING_SCALE),
                     time);
 
             // Set the target to the final scroll position to make sure
@@ -1104,9 +1106,9 @@ public abstract class Stack implements ChromeAnimation.Animatable {
             // Check if the click was within the boundaries of the close button defined by its
             // visible coordinates.
             if (mStackTabs[clicked].getLayoutTab().checkCloseHitTest(x, y)) {
-                // Tell the model to close the tab because the close button was pressed.  The model
-                // will then trigger a notification which will start the actual close process here
-                // if necessary.
+                // Tell the model to close the tab because the close button was pressed.  The
+                // model will then trigger a notification which will start the actual close
+                // process here if necessary.
                 StackTab tab = mStackTabs[clicked];
                 final float halfCloseBtnWidth = LayoutTab.CLOSE_BUTTON_WIDTH_DP / 2.f;
                 final float halfCloseBtnHeight = mBorderTopPadding / 2.f;
@@ -1121,8 +1123,8 @@ public abstract class Stack implements ChromeAnimation.Animatable {
                 RecordUserAction.record("MobileTabClosed");
             } else {
                 // Let the model know that a new {@link LayoutTab} was selected. The model will
-                // notify us if we need to do anything visual. setIndex() will possibly switch the
-                // models and broadcast the event.
+                // notify us if we need to do anything visual. setIndex() will possibly switch
+                // the models and broadcast the event.
                 mLayout.uiSelectingTab(time, mStackTabs[clicked].getId());
             }
         }
@@ -1220,8 +1222,8 @@ public abstract class Stack implements ChromeAnimation.Animatable {
                 // {@link LayoutTab} can get accessed (the animation check should catch it).
                 if (!mStackTabs[i].isDying() && mStackTabs[i].getLayoutTab().isVisible()) {
                     float d = mStackTabs[i].getLayoutTab().computeDistanceTo(x, y);
-                    // Strict '<' is very important here because we might have several tab at the
-                    // same place and we want the one above.
+                    // Strict '<' is very important here because we might have several tab at
+                    // the same place and we want the one above.
                     if (d < closestDistance) {
                         closestIndex = i;
                         closestDistance = d;
@@ -1276,13 +1278,13 @@ public abstract class Stack implements ChromeAnimation.Animatable {
             float maxScreenScrollOffset = scrollToScreen(mScrollOffset + tabScrollOffset);
             maxScrollOffset = -mScrollOffset
                     + screenToScroll(maxScreenScrollOffset
-                                      + mStackTabs[i].getSizeInScrollDirection(mCurrentMode));
+                            + mStackTabs[i].getSizeInScrollDirection(mCurrentMode));
         }
     }
 
     /**
-     * @return Whether or not to enable logic that gives the tabs a "stacked" appearance at the top
-     *         (in portrait mode) or left (in landscape mode).
+     * @return Whether or not to enable logic that gives the tabs a "stacked" appearance at the
+     *         top (in portrait mode) or left (in landscape mode).
      */
     protected abstract boolean shouldStackTabsAtTop();
 
@@ -1293,23 +1295,23 @@ public abstract class Stack implements ChromeAnimation.Animatable {
     protected abstract boolean shouldStackTabsAtBottom();
 
     /**
-     * @return How much the stack should adjust the y position of each LayoutTab in portrait mode
-     *         (as a fraction of the amount space that would be above and below the tab if it were
-     *         centered).
+     * @return How much the stack should adjust the y position of each LayoutTab in portrait
+     *         mode (as a fraction of the amount space that would be above and below the tab if
+     *         it were centered).
      */
     protected abstract float getStackPortraitYOffsetProportion();
 
     /**
-     * @return How much the stack should adjust the x position of each LayoutTab in landscape mode
-     *         (as a fraction of the amount space that would be to the left and right of the tab if
-     *         it were centered).
+     * @return How much the stack should adjust the x position of each LayoutTab in landscape
+     *         mode (as a fraction of the amount space that would be to the left and right of
+     *         the tab if it were centered).
      */
     protected abstract float getStackLandscapeStartOffsetProportion();
 
     /**
-     * @return How much the stack should adjust the x position of each LayoutTab in portrait mode
-     *         (as a fraction of the amount space that would be above and below the tab if it were
-     *         centered).
+     * @return How much the stack should adjust the x position of each LayoutTab in portrait
+     *         mode (as a fraction of the amount space that would be above and below the tab if
+     *         it were centered).
      */
     protected abstract float getStackLandscapeYOffsetProportion();
 
@@ -1358,7 +1360,8 @@ public abstract class Stack implements ChromeAnimation.Animatable {
                 if (overscrollPercent < 0) {
                     // Oversroll at the top of the screen. For the first
                     // OVERSCROLL_TOP_SLIDE_PCTG of the overscroll, slide the tabs
-                    // together so they completely overlap.  After that, stop scrolling the tabs.
+                    // together so they completely overlap.  After that, stop scrolling the
+                    // tabs.
                     screenScrollOffset +=
                             (overscrollPercent / OVERSCROLL_TOP_SLIDE_PCTG) * screenScrollOffset;
                     screenScrollOffset = Math.max(0, screenScrollOffset);
@@ -1418,7 +1421,8 @@ public abstract class Stack implements ChromeAnimation.Animatable {
                     pos = layoutTab.getY();
                     layoutTab.setY(Math.min(pos, maxStackedPosition));
                 } else if (LocalizationUtils.isLayoutRtl()) {
-                    // On RTL landscape, pos is a distance between tab's right and mLayout's right.
+                    // On RTL landscape, pos is a distance between tab's right and mLayout's
+                    // right.
                     float posOffset = mLayout.getWidth()
                             - layoutTab.getOriginalContentWidth() * getScaleAmount() * stackScale;
                     pos = -layoutTab.getX() + posOffset;
@@ -1480,8 +1484,8 @@ public abstract class Stack implements ChromeAnimation.Animatable {
     protected abstract void computeTabClippingVisibilityHelper();
 
     /**
-     * Computes the index that should be assumed to be the currently centered tab, for purposes of
-     * prioritizing which thumbnails to render.
+     * Computes the index that should be assumed to be the currently centered tab, for purposes
+     * of prioritizing which thumbnails to render.
      */
     protected abstract int computeReferenceIndex();
 
@@ -1619,10 +1623,10 @@ public abstract class Stack implements ChromeAnimation.Animatable {
      * Creates the {@link StackTab}s needed for display and populates {@link #mStackTabs}.
      * It is called from show() at the beginning of every new draw phase. It tries to reuse old
      * {@link StackTab} instead of creating new ones every time.
-     * @param restoreState Whether or not to restore the {@link LayoutTab} state when we rebuild the
-     *                     {@link StackTab}s.  There are some properties like maximum content size
-     *                     or whether or not to show the toolbar that might have to be restored if
-     *                     we're calling this while the switcher is already visible.
+     * @param restoreState Whether or not to restore the {@link LayoutTab} state when we rebuild
+     *                     the {@link StackTab}s.  There are some properties like maximum content
+     *                     size or whether or not to show the toolbar that might have to be
+     *                     restored if we're calling this while the switcher is already visible.
      */
     private void createStackTabs(boolean restoreState) {
         final int count = mTabList.getCount();
@@ -1711,12 +1715,12 @@ public abstract class Stack implements ChromeAnimation.Animatable {
     protected abstract float getSpacingScreen();
 
     /**
-     * This redetermines the proper spacing for the {@link StackTab}. It takes in a parameter for
-     * the size instead of using the mStackTabs.length property because we could be setting the
-     * spacing for a delete before the tab has been removed (will help with animations).
+     * This redetermines the proper spacing for the {@link StackTab}. It takes in a parameter
+     * for the size instead of using the mStackTabs.length property because we could be setting
+     * the spacing for a delete before the tab has been removed (will help with animations).
      * @param layoutTabCount The number of layout tabs currently in the Stack.
-     * @return               How far apart the tabs should be spaced (modulo certain adjustments,
-     *                       such as non-linear warping).
+     * @return               How far apart the tabs should be spaced (modulo certain
+     *                       adjustments, such as non-linear warping).
      */
     protected abstract int computeSpacing(int layoutTabCount);
 
@@ -1786,8 +1790,8 @@ public abstract class Stack implements ChromeAnimation.Animatable {
      * Smoothes input signal. The definition of the input is lower than the
      * pixel density of the screen so we need to smooth the input to give the illusion of smooth
      * animation on screen from chunky inputs.
-     * The combination of 20 pixels and 0.9f ensures that the output is not more than 2 pixels away
-     * from the target.
+     * The combination of 20 pixels and 0.9f ensures that the output is not more than 2 pixels
+     * away from the target.
      * TODO: This has nothing to do with time, just draw rate.
      *       Is this okay or do we want to have the interpolation based on the time elapsed?
      * @param current   The current value of the signal.
@@ -1825,7 +1829,8 @@ public abstract class Stack implements ChromeAnimation.Animatable {
             }
             mLayout.requestUpdate();
         } else {
-            // Make sure that the scroller is marked as finished when the destination is reached.
+            // Make sure that the scroller is marked as finished when the destination is
+            // reached.
             mScroller.forceFinished(true);
         }
         updateOverscrollOffset();
@@ -1883,9 +1888,9 @@ public abstract class Stack implements ChromeAnimation.Animatable {
     }
 
     private float getRange(float range) {
-        return range * (mCurrentMode == Orientation.PORTRAIT
-                                       ? mLayout.getWidth()
-                                       : mLayout.getHeightMinusBrowserControls());
+        return range
+                * (mCurrentMode == Orientation.PORTRAIT ? mLayout.getWidth()
+                                                        : mLayout.getHeightMinusBrowserControls());
     }
 
     /**
@@ -1977,14 +1982,16 @@ public abstract class Stack implements ChromeAnimation.Animatable {
 
     /**
      * Reset session based parameters.
-     * Called before the a session starts. Before the show, regardless if the stack is displayable.
+     * Called before the a session starts. Before the show, regardless if the stack is
+     * displayable.
      */
     public void reset() {
         mIsDying = false;
     }
 
     /**
-     * Called when the swipe animation get initiated. It gives a chance to initialize everything.
+     * Called when the swipe animation get initiated. It gives a chance to initialize
+     * everything.
      * @param time      The current time of the app in ms.
      * @param direction The direction the swipe is in.
      * @param x         The horizontal coordinate the swipe started at in dp.
@@ -2068,9 +2075,11 @@ public abstract class Stack implements ChromeAnimation.Animatable {
         // Propagate the new drag event.
         drag(time, x, y, dx, dy);
 
-        // Figure out if the user has scrolled down enough that they can scroll back up and exit.
+        // Figure out if the user has scrolled down enough that they can scroll back up and
+        // exit.
         if (mCurrentMode == Orientation.PORTRAIT) {
-            // The cancelable threshold is determined by the top position of the tab in the stack.
+            // The cancelable threshold is determined by the top position of the tab in the
+            // stack.
             final float discardOffset = mStackTabs[index].getScrollOffset();
             final boolean beyondThreshold = -mScrollOffset < discardOffset;
 
