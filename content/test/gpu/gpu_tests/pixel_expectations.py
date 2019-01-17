@@ -147,3 +147,7 @@ class PixelExpectations(GpuTestExpectations):
         ['mac', ('amd', 0x679e)], bug=911413)
     self.Fail('Pixel_Video_MP4_FourColors_Rot_270',
         ['mac', ('amd', 0x679e)], bug=911413)
+
+    # Flaky on Windows: crbug.com/921279
+    self.Flaky('Pixel_DirectComposition_ComplexOverlays',
+        ['win', 'nvidia'], bug=921279)
