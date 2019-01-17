@@ -1249,9 +1249,6 @@ void MenuController::SetSelection(MenuItemView* menu_item,
         (selection_types & SELECTION_OPEN_SUBMENU) != 0);
   }
 
-  if (menu_item && menu_item->GetDelegate())
-    menu_item->GetDelegate()->SelectionChanged(menu_item);
-
   DCHECK(menu_item || (selection_types & SELECTION_EXIT) != 0);
 
   pending_state_.item = menu_item;

@@ -75,7 +75,6 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate {
   bool IsCommandEnabled(int id) const override;
   bool IsCommandVisible(int id) const override;
   bool IsItemChecked(int id) const override;
-  void SelectionChanged(MenuItemView* menu) override;
   void WillShowMenu(MenuItemView* menu) override;
   void WillHideMenu(MenuItemView* menu) override;
   void OnMenuClosed(MenuItemView* menu) override;

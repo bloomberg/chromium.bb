@@ -50,9 +50,6 @@ bool SimpleMenuModel::Delegate::GetIconForCommandId(
   return false;
 }
 
-void SimpleMenuModel::Delegate::CommandIdHighlighted(int command_id) {
-}
-
 void SimpleMenuModel::Delegate::OnMenuWillShow(SimpleMenuModel* /*source*/) {}
 
 void SimpleMenuModel::Delegate::MenuClosed(SimpleMenuModel* /*source*/) {
@@ -420,11 +417,6 @@ bool SimpleMenuModel::IsVisibleAt(int index) const {
 
   return delegate_->IsCommandIdVisible(command_id) &&
          items_[ValidateItemIndex(index)].visible;
-}
-
-void SimpleMenuModel::HighlightChangedTo(int index) {
-  if (delegate_)
-    delegate_->CommandIdHighlighted(GetCommandIdAt(index));
 }
 
 void SimpleMenuModel::ActivatedAt(int index) {

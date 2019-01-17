@@ -412,7 +412,7 @@ TEST_F(TabTest, HitTestTopPixel) {
   InitWidget(&widget);
 
   FakeTabController tab_controller;
-  Tab tab(&tab_controller, nullptr);
+  Tab tab(&tab_controller);
   widget.GetContentsView()->AddChildView(&tab);
   tab.SizeToPreferredSize();
 
@@ -446,7 +446,7 @@ TEST_F(TabTest, LayoutAndVisibilityOfElements) {
   InitWidget(&widget);
 
   FakeTabController controller;
-  Tab tab(&controller, nullptr);
+  Tab tab(&controller);
   widget.GetContentsView()->AddChildView(&tab);
 
   SkBitmap bitmap;
@@ -498,7 +498,7 @@ TEST_F(TabTest, TooltipProvidedByTab) {
   InitWidget(&widget);
 
   FakeTabController controller;
-  Tab tab(&controller, nullptr);
+  Tab tab(&controller);
   widget.GetContentsView()->AddChildView(&tab);
   tab.SizeToPreferredSize();
 
@@ -548,7 +548,7 @@ TEST_F(TabTest, TooltipProvidedByTab) {
 // shouldn't change the insets of the close button.
 TEST_F(TabTest, CloseButtonLayout) {
   FakeTabController tab_controller;
-  Tab tab(&tab_controller, nullptr);
+  Tab tab(&tab_controller);
   tab.SetBounds(0, 0, 100, 50);
   LayoutTab(&tab);
   gfx::Insets close_button_insets = GetCloseButton(tab)->GetInsets();
@@ -569,7 +569,7 @@ TEST_F(TabTest, CloseButtonFocus) {
   Widget widget;
   InitWidget(&widget);
   FakeTabController tab_controller;
-  Tab tab(&tab_controller, nullptr);
+  Tab tab(&tab_controller);
   widget.GetContentsView()->AddChildView(&tab);
 
   views::ImageButton* tab_close_button = GetCloseButton(tab);
@@ -590,7 +590,7 @@ TEST_F(TabTest, LayeredThrobber) {
   InitWidget(&widget);
 
   FakeTabController tab_controller;
-  Tab tab(&tab_controller, nullptr);
+  Tab tab(&tab_controller);
   widget.GetContentsView()->AddChildView(&tab);
   tab.SizeToPreferredSize();
 
@@ -701,7 +701,7 @@ TEST_F(TabTest, LayeredThrobber) {
 
 TEST_F(TabTest, TitleHiddenWhenSmall) {
   FakeTabController tab_controller;
-  Tab tab(&tab_controller, nullptr);
+  Tab tab(&tab_controller);
   tab.SetBounds(0, 0, 100, 50);
   EXPECT_GT(GetTitleWidth(tab), 0);
   tab.SetBounds(0, 0, 0, 50);
@@ -715,7 +715,7 @@ TEST_F(TabTest, FaviconDoesntMoveWhenShowingAlertIndicator) {
   for (bool is_active_tab : {false, true}) {
     FakeTabController controller;
     controller.set_active_tab(is_active_tab);
-    Tab tab(&controller, nullptr);
+    Tab tab(&controller);
     widget.GetContentsView()->AddChildView(&tab);
     tab.SizeToPreferredSize();
 
@@ -734,7 +734,7 @@ TEST_F(TabTest, SmallTabsHideCloseButton) {
 
   FakeTabController controller;
   controller.set_active_tab(false);
-  Tab tab(&controller, nullptr);
+  Tab tab(&controller);
   widget.GetContentsView()->AddChildView(&tab);
   const int width = tab.tab_style()->GetContentsInsets().width() +
                     Tab::kMinimumContentsWidthForCloseButtons;
@@ -757,7 +757,7 @@ TEST_F(TabTest, ExtraLeftPaddingNotShownOnSmallActiveTab) {
 
   FakeTabController controller;
   controller.set_active_tab(true);
-  Tab tab(&controller, nullptr);
+  Tab tab(&controller);
   widget.GetContentsView()->AddChildView(&tab);
   tab.SetBounds(0, 0, 200, 50);
   const views::View* close = GetCloseButton(tab);
@@ -777,7 +777,7 @@ TEST_F(TabTest, ExtraLeftPaddingShownOnSiteWithoutFavicon) {
   InitWidget(&widget);
 
   FakeTabController controller;
-  Tab tab(&controller, nullptr);
+  Tab tab(&controller);
   widget.GetContentsView()->AddChildView(&tab);
 
   tab.SizeToPreferredSize();
@@ -800,7 +800,7 @@ TEST_F(TabTest, ExtraAlertPaddingNotShownOnSmallActiveTab) {
 
   FakeTabController controller;
   controller.set_active_tab(true);
-  Tab tab(&controller, nullptr);
+  Tab tab(&controller);
   widget.GetContentsView()->AddChildView(&tab);
   TabRendererData data;
   data.alert_state = TabAlertState::AUDIO_PLAYING;
@@ -845,7 +845,7 @@ TEST_F(TabTest, TitleTextHasSufficientContrast) {
   Widget widget;
   InitWidget(&widget);
   FakeTabController controller;
-  Tab tab(&controller, nullptr);
+  Tab tab(&controller);
   widget.GetContentsView()->AddChildView(&tab);
 
   for (const auto& colors : color_schemes) {

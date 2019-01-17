@@ -220,22 +220,6 @@ bool MenuModelAdapter::IsItemChecked(int id) const {
   return false;
 }
 
-void MenuModelAdapter::SelectionChanged(MenuItemView* menu) {
-  // Ignore selection of the root menu.
-  if (menu == menu->GetRootMenuItem())
-    return;
-
-  const int id = menu->GetCommand();
-  ui::MenuModel* model = menu_model_;
-  int index = 0;
-  if (ui::MenuModel::GetModelAndIndexForCommandId(id, &model, &index)) {
-    model->HighlightChangedTo(index);
-    return;
-  }
-
-  NOTREACHED();
-}
-
 void MenuModelAdapter::WillShowMenu(MenuItemView* menu) {
   // Look up the menu model for this menu.
   const std::map<MenuItemView*, ui::MenuModel*>::const_iterator map_iterator =
