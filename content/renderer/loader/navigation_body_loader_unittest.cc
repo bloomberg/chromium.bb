@@ -159,6 +159,13 @@ class NavigationBodyLoaderTest : public ::testing::Test,
   base::Optional<blink::WebURLError> error_;
 };
 
+TEST_F(NavigationBodyLoaderTest, SetDefersBeforeStart) {
+  CreateBodyLoader();
+  loader_->SetDefersLoading(true);
+  loader_->SetDefersLoading(false);
+  // Should not crash.
+}
+
 TEST_F(NavigationBodyLoaderTest, DataReceived) {
   CreateBodyLoader();
   StartLoading();

@@ -111,7 +111,8 @@ void NavigationBodyLoader::SetDefersLoading(bool defers) {
   if (is_deferred_ == defers)
     return;
   is_deferred_ = defers;
-  OnReadable(MOJO_RESULT_OK);
+  if (handle_.is_valid())
+    OnReadable(MOJO_RESULT_OK);
 }
 
 void NavigationBodyLoader::StartLoadingBody(
