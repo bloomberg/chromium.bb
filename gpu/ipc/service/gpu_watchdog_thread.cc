@@ -39,9 +39,12 @@ namespace {
 
 #if defined(CYGPROFILE_INSTRUMENTATION)
 const int kGpuTimeout = 30000;
-#elif defined(OS_WIN)
+#elif defined(OS_WIN) || defined(OS_MACOSX)
 // Use a slightly longer timeout on Windows due to prevalence of slow and
 // infected machines.
+
+// Also use a slightly longer timeout on MacOSX to get rid of GPU process
+// hangs at context creation during startup. See https://crbug.com/918490.
 const int kGpuTimeout = 15000;
 #else
 const int kGpuTimeout = 10000;
