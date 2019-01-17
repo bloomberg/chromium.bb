@@ -3137,7 +3137,6 @@ crbug.com/626703 external/wpt/css/css-text/boundary-shaping/boundary-shaping-004
 crbug.com/626703 external/wpt/css/css-sizing/range-percent-intrinsic-size-2.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/filter-effects/filter-subregion-01.html [ Failure ]
-crbug.com/626703 external/wpt/webrtc/RTCTrackEvent-fire.html [ Timeout ]
 crbug.com/915204 external/wpt/css/css-multicol/multicol-span-all-005.html [ Failure ]
 crbug.com/626703 [ Android ] external/wpt/css/css-layout-api/auto-block-size-absolute.https.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/css/css-layout-api/auto-block-size-absolute.https.html [ Failure ]
@@ -3169,7 +3168,6 @@ crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting
 crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-manual-classic.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-manual-classic.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/no-active-script-manual-module.html [ Timeout ]
-crbug.com/626703 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCRtpTransceiver.https.html [ Timeout ]
 crbug.com/626703 external/wpt/html/webappapis/user-prompts/newline-normalization-manual.html [ Skip ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/html/browsers/browsing-the-web/read-media/pageload-video.html [ Crash ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/feature-policy/picture-in-picture-allowed-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Crash ]
@@ -4887,8 +4885,6 @@ crbug.com/771492 [ Linux ] external/wpt/css/css-tables/table-model-fixup-2.html 
 crbug.com/771492 [ Mac ] external/wpt/css/css-tables/table-model-fixup-2.html [ Failure ]
 
 # Suspended WebRTC tests
-# Test fails, and output changes for each run.
-crbug.com/771540 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-answer.html [ Pass Failure ]
 # Timeout due to events not firing
 crbug.com/781935 fast/mediastream/MediaStreamTrack-observer-iterate-no-crash.html [ Timeout ]
 crbug.com/781935 fast/mediastream/MediaStreamTrack.html [ Timeout ]
@@ -5182,14 +5178,6 @@ crbug.com/826936 external/wpt/webauthn/getcredential-badargs-userverification.ht
 crbug.com/826936 external/wpt/webauthn/getcredential-extensions.https.html [ Pass Timeout Failure ]
 crbug.com/826936 external/wpt/webauthn/getcredential-passing.https.html [ Pass Timeout Failure ]
 crbug.com/826936 external/wpt/webauthn/getcredential-timeout.https.html [ Pass Timeout Failure ]
-
-# WebRTC codec tests - software H.264 not present on webkit bot family
-crbug.com/840659 external/wpt/webrtc/protocol/video-codecs.https.html [ Pass Failure ]
-crbug.com/840659 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/protocol/video-codecs.https.html [ Pass Failure ]
-
-# WebRTC: In "Plan B", remote tracks are unmuted by default, so tests time out
-# waiting for "unmute".
-crbug.com/889487 external/wpt/webrtc/RTCPeerConnection-remote-track-mute.https.html [ Timeout ]
 
 # Sheriff 2018-04-11
 crbug.com/831796 fast/events/autoscroll-in-textfield.html [ Failure Pass ]
@@ -5700,9 +5688,6 @@ crbug.com/891510 [ Linux ] fast/dom/inline-event-attributes-release.html [ Failu
 crbug.com/891510 [ Win7 ] fast/dom/inline-event-attributes-release.html [ Failure Pass ]
 crbug.com/892772 [ Mac ] editing/caret/caret-painting-low-dpi.html [ Failure Pass ]
 
-# Flakiness in DTMF
-crbug.com/893112 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Pass Failure ]
-
 # Sheriff 2018-10-09
 crbug.com/806357 [ Linux ] virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure ]
 crbug.com/893869 [ Linux ] css3/masking/mask-repeat-space-padding.html [ Failure Pass ]
@@ -5895,6 +5880,15 @@ crbug.com/919492 [ Mac ] virtual/fractional_scrolling_threaded/fast/scrolling/ov
 crbug.com/919504 paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Timeout Pass ]
 crbug.com/919559 [ Win ] virtual/outofblink-cors/http/tests/fetch/window/thorough/redirect-loop.html [ Timeout Pass ]
 crbug.com/919587 [ Linux ] virtual/threaded/fast/idle-callback/idle_periods.html [ Pass Failure ]
+
+# WebRTC Unified Plan
+crbug.com/920979 external/wpt/webrtc/RTCRtpTransceiver.https.html [ Timeout ]
+# WebRTC Plan B
+crbug.com/920979 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-remote-track-mute.https.html [ Timeout ]
+crbug.com/920979 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCTrackEvent-fire.html [ Timeout ]
+# WebRTC codec tests - software H.264 not present on webkit bot family
+crbug.com/840659 external/wpt/webrtc/protocol/video-codecs.https.html [ Pass Failure ]
+crbug.com/840659 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/video-codecs.https.html [ Pass Failure ]
 
 # Sheriff 2019-01-11
 crbug.com/921038 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/legacy-performance-memory-counters-enabled.html [ Skip ]

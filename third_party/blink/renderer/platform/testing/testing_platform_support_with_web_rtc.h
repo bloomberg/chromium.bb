@@ -65,6 +65,11 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   void Stop() override;
   WebString Id() const override;
   webrtc::PeerConnectionInterface* NativePeerConnection() override;
+
+ private:
+  class DummyWebRTCRtpTransceiver;
+
+  std::vector<std::unique_ptr<DummyWebRTCRtpTransceiver>> transceivers_;
 };
 
 class TestingPlatformSupportWithWebRTC : public TestingPlatformSupport {

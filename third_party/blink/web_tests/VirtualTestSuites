@@ -685,9 +685,9 @@
     "args": ["--enable-blink-features=OffMainThreadWorkerScriptFetch"]
   },
   {
-    "prefix": "webrtc-wpt-unified-plan",
+    "prefix": "webrtc-wpt-plan-b",
     "base": "external/wpt/webrtc",
-    "args": ["--enable-features=RTCUnifiedPlanByDefault"]
+    "args": ["--disable-features=RTCUnifiedPlanByDefault"]
   },
   {
     "prefix": "video-surface-layer",
