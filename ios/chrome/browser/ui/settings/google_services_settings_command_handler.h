@@ -17,6 +17,9 @@
 // Opens the passphrase dialog.
 - (void)openPassphraseDialog;
 
+// Presents the sign-in dialog to the user.
+- (void)showSignIn;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_SETTINGS_COMMAND_HANDLER_H_
