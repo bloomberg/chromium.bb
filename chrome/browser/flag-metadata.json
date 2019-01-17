@@ -1150,7 +1150,7 @@
   },
   {
     "name": "enable-drive-fs",
-    // "owners": [ "your-team" ],
+    "owners": [ "sammc", "dats" ],
     "expiry_milestone": 76
   },
   {
@@ -1465,7 +1465,7 @@
   },
   {
     "name": "enable-myfiles-volume",
-    // "owners": [ "your-team" ],
+    "owners": [ "lucmult", "noel" ],
     "expiry_milestone": 76
   },
   {
