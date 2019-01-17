@@ -15,7 +15,7 @@ class PLATFORM_EXPORT AnimationWorkletMutator : public GarbageCollectedMixin {
  public:
   virtual ~AnimationWorkletMutator() = default;
 
-  virtual int GetScopeId() const = 0;
+  virtual int GetWorkletId() const = 0;
   // Runs the animation frame callback.
   virtual std::unique_ptr<AnimationWorkletOutput> Mutate(
       std::unique_ptr<AnimationWorkletInput>) = 0;

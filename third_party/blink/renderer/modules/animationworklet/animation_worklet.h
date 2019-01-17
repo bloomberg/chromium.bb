@@ -32,7 +32,7 @@ class MODULES_EXPORT AnimationWorklet final : public Worklet {
  private:
   // Unique id associated with this worklet that is used by cc to identify all
   // animations associated it.
-  int scope_id_;
+  int worklet_id_;
   int last_animation_id_;
 
   // Implements Worklet.

@@ -118,7 +118,7 @@ TEST_F(WorkletAnimationTest, CurrentTimeCorrectlyUsesScrollTimeline) {
   worklet_animation->UpdateInputState(state.get(), base::TimeTicks::Now(),
                                       scroll_tree, true);
   std::unique_ptr<AnimationWorkletInput> input =
-      state->TakeWorkletState(worklet_animation_id_.scope_id);
+      state->TakeWorkletState(worklet_animation_id_.worklet_id);
   EXPECT_EQ(1234, input->added_and_updated_animations[0].current_time);
 }
 
@@ -141,18 +141,18 @@ TEST_F(WorkletAnimationTest,
                                       true);
   // First state request sets the start time and thus current time should be 0.
   std::unique_ptr<AnimationWorkletInput> input =
-      state->TakeWorkletState(worklet_animation_id_.scope_id);
+      state->TakeWorkletState(worklet_animation_id_.worklet_id);
   EXPECT_EQ(0, input->added_and_updated_animations[0].current_time);
   state.reset(new MutatorInputState);
   worklet_animation->UpdateInputState(state.get(), second_ticks, scroll_tree,
                                       true);
-  input = state->TakeWorkletState(worklet_animation_id_.scope_id);
+  input = state->TakeWorkletState(worklet_animation_id_.worklet_id);
   EXPECT_EQ(123.4, input->updated_animations[0].current_time);
   // Should always offset from start time.
   state.reset(new MutatorInputState());
   worklet_animation->UpdateInputState(state.get(), third_ticks, scroll_tree,
                                       true);
-  input = state->TakeWorkletState(worklet_animation_id_.scope_id);
+  input = state->TakeWorkletState(worklet_animation_id_.worklet_id);
   EXPECT_EQ(246.8, input->updated_animations[0].current_time);
 }
 
@@ -178,7 +178,7 @@ TEST_F(WorkletAnimationTest, UpdateInputStateProducesCorrectState) {
   base::TimeTicks time;
   worklet_animation_->UpdateInputState(state.get(), time, scroll_tree, true);
   std::unique_ptr<AnimationWorkletInput> input =
-      state->TakeWorkletState(worklet_animation_id_.scope_id);
+      state->TakeWorkletState(worklet_animation_id_.worklet_id);
   EXPECT_EQ(input->added_and_updated_animations.size(), 1u);
   EXPECT_EQ("test_name", input->added_and_updated_animations[0].name);
   EXPECT_EQ(input->updated_animations.size(), 0u);
@@ -189,7 +189,7 @@ TEST_F(WorkletAnimationTest, UpdateInputStateProducesCorrectState) {
   state.reset(new MutatorInputState());
   time += base::TimeDelta::FromSecondsD(0.1);
   worklet_animation_->UpdateInputState(state.get(), time, scroll_tree, true);
-  input = state->TakeWorkletState(worklet_animation_id_.scope_id);
+  input = state->TakeWorkletState(worklet_animation_id_.worklet_id);
   EXPECT_EQ(input->added_and_updated_animations.size(), 0u);
   EXPECT_EQ(input->updated_animations.size(), 1u);
   EXPECT_EQ(input->removed_animations.size(), 0u);
@@ -200,7 +200,7 @@ TEST_F(WorkletAnimationTest, UpdateInputStateProducesCorrectState) {
   state.reset(new MutatorInputState());
   time += base::TimeDelta::FromSecondsD(0.1);
   worklet_animation_->UpdateInputState(state.get(), time, scroll_tree, true);
-  input = state->TakeWorkletState(worklet_animation_id_.scope_id);
+  input = state->TakeWorkletState(worklet_animation_id_.worklet_id);
   EXPECT_EQ(input->added_and_updated_animations.size(), 0u);
   EXPECT_EQ(input->updated_animations.size(), 1u);
   EXPECT_EQ(input->removed_animations.size(), 0u);
@@ -211,7 +211,7 @@ TEST_F(WorkletAnimationTest, UpdateInputStateProducesCorrectState) {
   worklet_animation_->UpdateState(true, nullptr);
   state.reset(new MutatorInputState());
   worklet_animation_->UpdateInputState(state.get(), time, scroll_tree, true);
-  input = state->TakeWorkletState(worklet_animation_id_.scope_id);
+  input = state->TakeWorkletState(worklet_animation_id_.worklet_id);
   EXPECT_EQ(input->added_and_updated_animations.size(), 0u);
   EXPECT_EQ(input->updated_animations.size(), 0u);
   EXPECT_EQ(input->removed_animations.size(), 1u);
@@ -236,21 +236,21 @@ TEST_F(WorkletAnimationTest, SkipUnchangedAnimations) {
   base::TimeTicks time;
   worklet_animation_->UpdateInputState(state.get(), time, scroll_tree, true);
   std::unique_ptr<AnimationWorkletInput> input =
-      state->TakeWorkletState(worklet_animation_id_.scope_id);
+      state->TakeWorkletState(worklet_animation_id_.worklet_id);
   EXPECT_EQ(input->added_and_updated_animations.size(), 1u);
   EXPECT_EQ(input->updated_animations.size(), 0u);
 
   state.reset(new MutatorInputState());
   // No update on the input state if input time stays the same.
   worklet_animation_->UpdateInputState(state.get(), time, scroll_tree, true);
-  input = state->TakeWorkletState(worklet_animation_id_.scope_id);
+  input = state->TakeWorkletState(worklet_animation_id_.worklet_id);
   EXPECT_FALSE(input);
 
   state.reset(new MutatorInputState());
   // Different input time causes the input state to be updated.
   time += base::TimeDelta::FromSecondsD(0.1);
   worklet_animation_->UpdateInputState(state.get(), time, scroll_tree, true);
-  input = state->TakeWorkletState(worklet_animation_id_.scope_id);
+  input = state->TakeWorkletState(worklet_animation_id_.worklet_id);
   EXPECT_EQ(input->updated_animations.size(), 1u);
 
   state.reset(new MutatorInputState());
@@ -258,7 +258,7 @@ TEST_F(WorkletAnimationTest, SkipUnchangedAnimations) {
   // the input time doesn't change.
   worklet_animation_->RemoveKeyframeModel(keyframe_model_id);
   worklet_animation_->UpdateInputState(state.get(), time, scroll_tree, true);
-  input = state->TakeWorkletState(worklet_animation_id_.scope_id);
+  input = state->TakeWorkletState(worklet_animation_id_.worklet_id);
   EXPECT_EQ(input->updated_animations.size(), 0u);
   EXPECT_EQ(input->removed_animations.size(), 1u);
 }

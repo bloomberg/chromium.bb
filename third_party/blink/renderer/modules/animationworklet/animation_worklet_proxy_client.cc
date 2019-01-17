@@ -18,14 +18,14 @@ const char AnimationWorkletProxyClient::kSupplementName[] =
     "AnimationWorkletProxyClient";
 
 AnimationWorkletProxyClient::AnimationWorkletProxyClient(
-    int scope_id,
+    int worklet_id,
     base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
         compositor_mutator_dispatcher,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_mutator_runner,
     base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
         main_thread_mutator_dispatcher,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_mutator_runner)
-    : scope_id_(scope_id), state_(RunState::kUninitialized) {
+    : worklet_id_(worklet_id), state_(RunState::kUninitialized) {
   DCHECK(IsMainThread());
   mutator_items_.emplace_back(std::move(compositor_mutator_dispatcher),
                               std::move(compositor_mutator_runner));
@@ -116,9 +116,9 @@ std::unique_ptr<AnimationWorkletOutput> AnimationWorkletProxyClient::Mutate(
     std::unique_ptr<AnimationWorkletInput> input) {
   DCHECK(input);
 #if DCHECK_IS_ON()
-  DCHECK(input->ValidateScope(scope_id_))
+  DCHECK(input->ValidateId(worklet_id_))
       << "Input has state that does not belong to this global scope: "
-      << scope_id_;
+      << worklet_id_;
 #endif
 
   if (!global_scope_)
@@ -134,7 +134,7 @@ std::unique_ptr<AnimationWorkletOutput> AnimationWorkletProxyClient::Mutate(
 // static
 AnimationWorkletProxyClient* AnimationWorkletProxyClient::FromDocument(
     Document* document,
-    int scope_id) {
+    int worklet_id) {
   WebLocalFrameImpl* local_frame =
       WebLocalFrameImpl::FromFrame(document->GetFrame());
 
@@ -151,7 +151,7 @@ AnimationWorkletProxyClient* AnimationWorkletProxyClient::FromDocument(
               .EnsureMainThreadMutatorDispatcher(&main_thread_host_queue);
 
   return MakeGarbageCollected<AnimationWorkletProxyClient>(
-      scope_id, std::move(compositor_mutator_dispatcher),
+      worklet_id, std::move(compositor_mutator_dispatcher),
       std::move(compositor_host_queue),
       std::move(main_thread_mutator_dispatcher),
       std::move(main_thread_host_queue));

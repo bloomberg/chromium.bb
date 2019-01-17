@@ -159,11 +159,11 @@ AnimationWorkletMutatorDispatcherImpl::CreateInputMap(
   InputMap input_map;
   for (const auto& pair : mutator_map_) {
     AnimationWorkletMutator* mutator = pair.key;
-    const int scope_id = mutator->GetScopeId();
+    const int worklet_id = mutator->GetWorkletId();
     std::unique_ptr<AnimationWorkletInput> input =
-        mutator_input.TakeWorkletState(scope_id);
+        mutator_input.TakeWorkletState(worklet_id);
     if (input) {
-      input_map.insert(scope_id, std::move(input));
+      input_map.insert(worklet_id, std::move(input));
     }
   }
   return input_map;
@@ -182,9 +182,9 @@ void AnimationWorkletMutatorDispatcherImpl::RequestMutations(
   for (const auto& pair : mutator_map_) {
     AnimationWorkletMutator* mutator = pair.key;
     scoped_refptr<base::SingleThreadTaskRunner> worklet_queue = pair.value;
-    int scope_id = mutator->GetScopeId();
+    int worklet_id = mutator->GetWorkletId();
     DCHECK(!worklet_queue->BelongsToCurrentThread());
-    auto it = mutator_input_map_.find(scope_id);
+    auto it = mutator_input_map_.find(worklet_id);
     if (it == mutator_input_map_.end()) {
       // No input to process.
       on_mutator_done.Run();
