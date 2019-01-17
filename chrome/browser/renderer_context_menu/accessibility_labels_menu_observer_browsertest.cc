@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/renderer_context_menu/mock_render_view_context_menu.h"
 #include "chrome/common/pref_names.h"
@@ -39,8 +38,7 @@ class AccessibilityLabelsMenuObserverTest : public InProcessBrowserTest {
   }
 
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
-    base::CommandLine default_command_line(base::CommandLine::NO_PROGRAM);
-    InProcessBrowserTest::SetUpDefaultCommandLine(&default_command_line);
+    InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
     command_line->AppendSwitch(
         switches::kEnableExperimentalAccessibilityLabels);
   }
@@ -73,18 +71,10 @@ AccessibilityLabelsMenuObserverTest::~AccessibilityLabelsMenuObserverTest() {}
 
 }  // namespace
 
-#if defined(OS_LINUX)
-#define MAYBE_AccessibilityLabelsNotShownWithoutScreenReader \
-  DISABLED_AccessibilityLabelsNotShownWithoutScreenReader
-#else
-#define MAYBE_AccessibilityLabelsNotShownWithoutScreenReader \
-  AccessibilityLabelsNotShownWithoutScreenReader
-#endif
 // Tests that opening a context menu does not show the menu option if a
 // screen reader is not enabled, regardless of the image labels setting.
-// TODO(crbug.com/921487) Investigate flakes on linux.
 IN_PROC_BROWSER_TEST_F(AccessibilityLabelsMenuObserverTest,
-                       MAYBE_AccessibilityLabelsNotShownWithoutScreenReader) {
+                       AccessibilityLabelsNotShownWithoutScreenReader) {
   menu()->GetPrefs()->SetBoolean(prefs::kAccessibilityImageLabelsEnabled,
                                  false);
   InitMenu();
@@ -125,16 +115,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityLabelsMenuObserverTest,
   EXPECT_FALSE(item.hidden);
 }
 #else
-#if defined(OS_LINUX)
-#define MAYBE_AccessibilityLabelsShowWithScreenReaderEnabled \
-  DISABLED_AccessibilityLabelsShowWithScreenReaderEnabled
-#else
-#define MAYBE_AccessibilityLabelsShowWithScreenReaderEnabled \
-  AccessibilityLabelsShowWithScreenReaderEnabled
-#endif
-// TODO(crbug.com/921487) Investigate flakes on linux.
 IN_PROC_BROWSER_TEST_F(AccessibilityLabelsMenuObserverTest,
-                       MAYBE_AccessibilityLabelsShowWithScreenReaderEnabled) {
+                       AccessibilityLabelsShowWithScreenReaderEnabled) {
   // Spoof a screen reader.
   content::BrowserAccessibilityState::GetInstance()->AddAccessibilityModeFlags(
       ui::AXMode::kScreenReader);
