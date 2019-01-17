@@ -153,6 +153,17 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicForDataReductionProxy) {
   EXPECT_TRUE(params_.enable_quic);
 }
 
+TEST_F(NetworkSessionConfiguratorTest, EnableQuicProxiesForHttpsUrls) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["enable_quic_proxies_for_https_urls"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.enable_quic_proxies_for_https_urls);
+}
+
 TEST_F(NetworkSessionConfiguratorTest,
        MarkQuicBrokenWhenNetworkBlackholesFromFieldTrialParams) {
   std::map<std::string, std::string> field_trial_params;
