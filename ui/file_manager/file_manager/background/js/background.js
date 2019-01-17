@@ -441,7 +441,7 @@ FileBrowserBackgroundImpl.prototype.onContextMenuClicked_ = function(info) {
     // new window. If not found, then launch with the default url.
     this.findFocusedWindow_().then(function(key) {
       if (!key) {
-        launcher.launchFileManager(appState);
+        launcher.launchFileManager();
         return;
       }
       var appState = {

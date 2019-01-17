@@ -114,6 +114,7 @@ function MockChromeStorageAPI() {
   /** @type {Object<?>} */
   this.state = {};
 
+  /** @suppress {const} */
   window.chrome = window.chrome || {};
   /** @suppress {const} */
   window.chrome.runtime = window.chrome.runtime || {};  // For lastError.

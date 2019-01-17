@@ -188,7 +188,7 @@ VolumeManagerImpl.prototype.onMountCompleted_ = function(event) {
               new Event(VolumeManagerCommon.VOLUME_ALREADY_MOUNTED);
           navigationEvent.volumeId = event.volumeMetadata.volumeId;
           this.dispatchEvent(navigationEvent);
-          this.finishRequest_(requestKey, event.status, volumeInfo);
+          this.finishRequest_(requestKey, event.status);
           callback();
         } else {
           console.warn('Failed to mount a volume: ' + event.status);
