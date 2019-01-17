@@ -1898,7 +1898,16 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, CtrlWheelInvokesCustomZoom) {
                                std::move(send_ctrl_wheel));
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TouchscreenPinchInvokesCustomZoom) {
+// Flaky on ChromeOS (https://crbug.com/922974)
+#if defined(OS_CHROMEOS)
+#define MAYBE_TouchscreenPinchInvokesCustomZoom \
+  DISABLED_TouchscreenPinchInvokesCustomZoom
+#else
+#define MAYBE_TouchscreenPinchInvokesCustomZoom \
+  TouchscreenPinchInvokesCustomZoom
+#endif
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest,
+                       MAYBE_TouchscreenPinchInvokesCustomZoom) {
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
   WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
