@@ -831,4 +831,39 @@ TEST(AXEventGeneratorTest, NodeBecomesUnignored) {
       DumpEvents(&event_generator));
 }
 
+TEST(AXEventGeneratorTest, ActiveDescendantChangeOnDescendant) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(5);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].role = ax::mojom::Role::kRootWebArea;
+  initial_state.nodes[0].child_ids.push_back(2);
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].role = ax::mojom::Role::kGenericContainer;
+  initial_state.nodes[1].child_ids.push_back(3);
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].role = ax::mojom::Role::kGroup;
+  initial_state.nodes[2].AddIntAttribute(
+      ax::mojom::IntAttribute::kActivedescendantId, 4);
+  initial_state.nodes[2].child_ids.push_back(4);
+  initial_state.nodes[2].child_ids.push_back(5);
+  initial_state.nodes[3].id = 4;
+  initial_state.nodes[3].role = ax::mojom::Role::kGroup;
+  initial_state.nodes[4].id = 5;
+  initial_state.nodes[4].role = ax::mojom::Role::kGroup;
+
+  AXTree tree(initial_state);
+
+  AXEventGenerator event_generator(&tree);
+  initial_state.nodes[2].RemoveIntAttribute(
+      ax::mojom::IntAttribute::kActivedescendantId);
+  initial_state.nodes[2].AddIntAttribute(
+      ax::mojom::IntAttribute::kActivedescendantId, 5);
+  AXTreeUpdate update = initial_state;
+  update.node_id_to_clear = 2;
+  EXPECT_TRUE(tree.Unserialize(update));
+  EXPECT_EQ("ACTIVE_DESCENDANT_CHANGED on 3, RELATED_NODE_CHANGED on 3",
+            DumpEvents(&event_generator));
+}
+
 }  // namespace ui

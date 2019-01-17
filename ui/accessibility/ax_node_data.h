@@ -37,6 +37,7 @@ struct AX_EXPORT AXNodeData {
   virtual ~AXNodeData();
 
   AXNodeData(const AXNodeData& other);
+  AXNodeData(AXNodeData&& other);
   AXNodeData& operator=(AXNodeData other);
 
   // Accessing accessibility attributes:
