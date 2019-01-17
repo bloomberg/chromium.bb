@@ -11,7 +11,7 @@ public class DynamicModuleConstants {
     /**
      * The custom header's name used for module managed URLs.
      */
-    public static final String MANAGED_URL_HEADER = "X-CCT-Module-Client-Data";
+    public static final String MANAGED_URL_HEADER = "X-CCT-Client-Data";
 
     /**
      * The module version when {@link IActivityDelegate#onNavigationEvent} is introduced.
