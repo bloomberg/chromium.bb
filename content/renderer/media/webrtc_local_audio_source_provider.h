@@ -12,11 +12,12 @@
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_checker.h"
+#include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "media/base/audio_converter.h"
+#include "media/base/reentrancy_checker.h"
 #include "third_party/blink/public/platform/web_audio_source_provider.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -47,7 +48,7 @@ namespace content {
 // MediaStreamAudioSourceNode will periodically call provideInput() to get the
 // data from the FIFO.
 //
-// All calls are protected by a lock.
+// Most calls are protected by a lock.
 class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
     : public blink::WebAudioSourceProvider,
       public media::AudioConverter::InputCallback,
@@ -71,12 +72,6 @@ class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
   void ProvideInput(const blink::WebVector<float*>& audio_data,
                     size_t number_of_frames) override;
 
-  // media::AudioConverter::Inputcallback implementation.
-  // This function is triggered by provideInput()on the WebAudio audio thread,
-  // so it has been under the protection of |lock_|.
-  double ProvideInput(media::AudioBus* audio_bus,
-                      uint32_t frames_delayed) override;
-
   // Method to allow the unittests to inject its own sink parameters to avoid
   // query the hardware.
   // TODO(xians,tommi): Remove and instead offer a way to inject the sink
@@ -87,27 +82,44 @@ class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
   void SetSinkParamsForTesting(const media::AudioParameters& sink_params);
 
  private:
-  // Used to DCHECK that some methods are called on the capture audio thread.
-  base::ThreadChecker capture_thread_checker_;
+  // media::AudioConverter::InputCallback implementation.
+  // This function is triggered by the above ProvideInput() on the WebAudio
+  // audio thread, so it has be called under the protection of |lock_|.
+  double ProvideInput(media::AudioBus* audio_bus,
+                      uint32_t frames_delayed) override;
 
-  std::unique_ptr<media::AudioConverter> audio_converter_;
-  std::unique_ptr<media::AudioFifo> fifo_;
-  std::unique_ptr<media::AudioBus> output_wrapper_;
-  bool is_enabled_;
-  media::AudioParameters source_params_;
-  media::AudioParameters sink_params_;
+  std::unique_ptr<media::AudioConverter> audio_converter_ GUARDED_BY(lock_);
+  std::unique_ptr<media::AudioFifo> fifo_ GUARDED_BY(lock_);
+  bool is_enabled_ GUARDED_BY(lock_);
+  media::AudioParameters source_params_ GUARDED_BY(lock_);
+  media::AudioParameters sink_params_ GUARDED_BY(lock_);
 
-  // Protects all the member variables above.
+  // Protects the above variables.
   base::Lock lock_;
 
-  // Used to report the correct delay to |webaudio_source_|.
-  base::TimeTicks last_fill_;
+  // No lock protection needed since only accessed in WebVector version of
+  // ProvideInput().
+  std::unique_ptr<media::AudioBus> output_wrapper_;
 
   // The audio track that this source provider is connected to.
+  // No lock protection needed since only accessed in constructor and
+  // destructor.
   blink::WebMediaStreamTrack track_;
 
   // Flag to tell if the track has been stopped or not.
+  // No lock protection needed since only accessed in constructor, destructor
+  // and OnReadyStateChanged().
   bool track_stopped_;
+
+  // Used to assert that OnData() is only accessed by one thread at a time. We
+  // can't use a thread checker since thread may change.
+  REENTRANCY_CHECKER(capture_reentrancy_checker_);
+
+  // Used to assert that ProvideInput() is not accessed concurrently.
+  REENTRANCY_CHECKER(provide_input_reentrancy_checker_);
+
+  // Used to assert that OnReadyStateChanged() is not accessed concurrently.
+  REENTRANCY_CHECKER(ready_state_reentrancy_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLocalAudioSourceProvider);
 };
