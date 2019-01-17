@@ -38,10 +38,6 @@ struct P2PQuicTransportConfig final {
   // The certificates are owned by the P2PQuicTransport. These come from
   // blink::RTCCertificates: https://www.w3.org/TR/webrtc/#dom-rtccertificate
   const std::vector<rtc::scoped_refptr<rtc::RTCCertificate>> certificates;
-  // When set to true the P2PQuicTransport will immediately be able
-  // to listen and respond to a crypto handshake upon construction.
-  // This will NOT start a handshake.
-  bool can_respond_to_crypto_handshake = true;
   // The amount that the delegate can store in its read buffer. This is a
   // mandatory field that must be set to ensure that the
   // P2PQuicStream::Delegate will not give the delegate more data than it can

@@ -6,7 +6,9 @@
 #include "net/quic/test_task_runner.h"
 #include "net/test/gtest_util.h"
 #include "net/third_party/quic/core/tls_client_handshaker.h"
+#include "net/third_party/quic/core/tls_server_handshaker.h"
 #include "net/third_party/quic/test_tools/mock_clock.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_crypto_config_factory_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_packet_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_impl.h"
@@ -304,10 +306,10 @@ rtc::scoped_refptr<rtc::RTCCertificate> CreateTestCertificate() {
 }
 
 // Allows faking a failing handshake.
-class FailingProofVerifier : public quic::ProofVerifier {
+class FailingProofVerifierStub : public quic::ProofVerifier {
  public:
-  FailingProofVerifier() {}
-  ~FailingProofVerifier() override {}
+  FailingProofVerifierStub() {}
+  ~FailingProofVerifierStub() override {}
 
   // ProofVerifier override.
   quic::QuicAsyncStatus VerifyProof(
@@ -340,6 +342,70 @@ class FailingProofVerifier : public quic::ProofVerifier {
     return nullptr;
   }
 };
+
+// A dummy implementation of a quic::ProofSource.
+class ProofSourceStub : public quic::ProofSource {
+ public:
+  ProofSourceStub() {}
+  ~ProofSourceStub() override {}
+
+  // ProofSource override.
+  void GetProof(const quic::QuicSocketAddress& server_addr,
+                const quic::QuicString& hostname,
+                const quic::QuicString& server_config,
+                quic::QuicTransportVersion transport_version,
+                quic::QuicStringPiece chlo_hash,
+                std::unique_ptr<Callback> callback) override {
+    quic::QuicCryptoProof proof;
+    proof.signature = "Test signature";
+    proof.leaf_cert_scts = "Test timestamp";
+    callback->Run(true, GetCertChain(server_addr, hostname), proof,
+                  nullptr /* details */);
+  }
+
+  quic::QuicReferenceCountedPointer<Chain> GetCertChain(
+      const quic::QuicSocketAddress& server_address,
+      const quic::QuicString& hostname) override {
+    std::vector<quic::QuicString> certs;
+    certs.push_back("Test cert");
+    return quic::QuicReferenceCountedPointer<Chain>(
+        new ProofSource::Chain(certs));
+  }
+  void ComputeTlsSignature(
+      const quic::QuicSocketAddress& server_address,
+      const quic::QuicString& hostname,
+      uint16_t signature_algorithm,
+      quic::QuicStringPiece in,
+      std::unique_ptr<SignatureCallback> callback) override {
+    callback->Run(true, "Test signature");
+  }
+};
+
+// Creates crypto configs that will fail a QUIC handshake.
+class FailingQuicCryptoConfigFactory final : public P2PQuicCryptoConfigFactory {
+ public:
+  FailingQuicCryptoConfigFactory(quic::QuicRandom* quic_random)
+      : quic_random_(quic_random) {}
+
+  std::unique_ptr<quic::QuicCryptoClientConfig> CreateClientCryptoConfig()
+      override {
+    return std::make_unique<quic::QuicCryptoClientConfig>(
+        std::make_unique<FailingProofVerifierStub>(),
+        quic::TlsClientHandshaker::CreateSslCtx());
+  }
+
+  std::unique_ptr<quic::QuicCryptoServerConfig> CreateServerCryptoConfig()
+      override {
+    return std::make_unique<quic::QuicCryptoServerConfig>(
+        quic::QuicCryptoServerConfig::TESTING, quic_random_,
+        std::make_unique<ProofSourceStub>(), quic::KeyExchangeSource::Default(),
+        quic::TlsServerHandshaker::CreateSslCtx());
+  }
+
+ private:
+  quic::QuicRandom* quic_random_;
+};
+
 }  // namespace
 
 // Unit tests for the P2PQuicTransport, using an underlying fake packet
@@ -353,7 +419,14 @@ class FailingProofVerifier : public quic::ProofVerifier {
 // callbacks have been fired.
 class P2PQuicTransportTest : public testing::Test {
  public:
-  P2PQuicTransportTest() {}
+  P2PQuicTransportTest() {
+    // Quic crashes if packets are sent at time 0, and the clock defaults to 0.
+    clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(1000));
+    quic_random_ = quic::QuicRandom::GetInstance();
+    runner_ = base::MakeRefCounted<net::test::TestTaskRunner>(&clock_);
+    alarm_factory_ =
+        std::make_unique<net::QuicChromiumAlarmFactory>(runner_.get(), &clock_);
+  }
 
   ~P2PQuicTransportTest() override {
     // This must be done before desctructing the transports so that we don't
@@ -364,100 +437,81 @@ class P2PQuicTransportTest : public testing::Test {
         client_peer_->packet_transport());
   }
 
-  // Connects both peer's underlying transports and creates both
-  // P2PQuicTransportImpls.
-  void Initialize(bool can_respond_to_crypto_handshake = true) {
-    // Quic crashes if packets are sent at time 0, and the clock defaults to 0.
-    clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(1000));
-    runner_ = new net::test::TestTaskRunner(&clock_);
-    net::QuicChromiumAlarmFactory* alarm_factory =
-        new net::QuicChromiumAlarmFactory(runner_.get(), &clock_);
-    quic_transport_factory_ = std::make_unique<P2PQuicTransportFactoryImpl>(
-        &clock_, std::unique_ptr<net::QuicChromiumAlarmFactory>(alarm_factory));
-
+  // Supplying the |client_crypto_factory| and |server_crypto_factory| allows
+  // testing a failing QUIC handshake. The |client_certificate| and
+  // |server_certificate| must be the same certificates used in the crypto
+  // factories.
+  void Initialize(
+      std::unique_ptr<P2PQuicCryptoConfigFactory> client_crypto_factory,
+      std::unique_ptr<P2PQuicCryptoConfigFactory> server_crypto_factory,
+      rtc::scoped_refptr<rtc::RTCCertificate> client_certificate,
+      rtc::scoped_refptr<rtc::RTCCertificate> server_certificate) {
     auto client_packet_transport =
-        std::make_unique<FakePacketTransport>(alarm_factory, &clock_);
+        std::make_unique<FakePacketTransport>(alarm_factory_.get(), &clock_);
     auto server_packet_transport =
-        std::make_unique<FakePacketTransport>(alarm_factory, &clock_);
+        std::make_unique<FakePacketTransport>(alarm_factory_.get(), &clock_);
     // Connect the transports so that they can speak to each other.
     client_packet_transport->ConnectPeerTransport(
         server_packet_transport.get());
     server_packet_transport->ConnectPeerTransport(
         client_packet_transport.get());
-    rtc::scoped_refptr<rtc::RTCCertificate> client_cert =
-        CreateTestCertificate();
 
     auto client_quic_transport_delegate =
         std::make_unique<MockP2PQuicTransportDelegate>();
-    std::vector<rtc::scoped_refptr<rtc::RTCCertificate>> client_certificates;
-    client_certificates.push_back(client_cert);
     P2PQuicTransportConfig client_config(
-        quic::Perspective::IS_CLIENT, client_certificates,
+        quic::Perspective::IS_CLIENT, {client_certificate},
         kTransportDelegateReadBufferSize, kTransportWriteBufferSize);
-    client_config.can_respond_to_crypto_handshake =
-        can_respond_to_crypto_handshake;
-    // We can't downcast a unique_ptr to an object, so we have to release, cast
-    // it, then create a unique_ptr of the downcasted pointer.
-    P2PQuicTransportImpl* client_quic_transport_ptr =
-        static_cast<P2PQuicTransportImpl*>(
-            quic_transport_factory_
-                ->CreateQuicTransport(client_quic_transport_delegate.get(),
-                                      client_packet_transport.get(),
-                                      client_config)
-                .release());
+
     std::unique_ptr<P2PQuicTransportImpl> client_quic_transport =
-        std::unique_ptr<P2PQuicTransportImpl>(client_quic_transport_ptr);
+        P2PQuicTransportImpl::Create(
+            &clock_, alarm_factory_.get(), quic_random_,
+            client_quic_transport_delegate.get(), client_packet_transport.get(),
+            client_config, std::move(client_crypto_factory));
+
     client_peer_ = std::make_unique<QuicPeerForTest>(
         std::move(client_packet_transport),
         std::move(client_quic_transport_delegate),
-        std::move(client_quic_transport), client_cert);
+        std::move(client_quic_transport), client_certificate);
 
     auto server_quic_transport_delegate =
         std::make_unique<MockP2PQuicTransportDelegate>();
 
-    rtc::scoped_refptr<rtc::RTCCertificate> server_cert =
-        CreateTestCertificate();
-    std::vector<rtc::scoped_refptr<rtc::RTCCertificate>> server_certificates;
-    server_certificates.push_back(server_cert);
     P2PQuicTransportConfig server_config(
-        quic::Perspective::IS_SERVER, server_certificates,
+        quic::Perspective::IS_SERVER, {server_certificate},
         kTransportDelegateReadBufferSize, kTransportWriteBufferSize);
-    server_config.can_respond_to_crypto_handshake =
-        can_respond_to_crypto_handshake;
-    P2PQuicTransportImpl* server_quic_transport_ptr =
-        static_cast<P2PQuicTransportImpl*>(
-            quic_transport_factory_
-                ->CreateQuicTransport(server_quic_transport_delegate.get(),
-                                      server_packet_transport.get(),
-                                      server_config)
-                .release());
+
     std::unique_ptr<P2PQuicTransportImpl> server_quic_transport =
-        std::unique_ptr<P2PQuicTransportImpl>(server_quic_transport_ptr);
+        P2PQuicTransportImpl::Create(
+            &clock_, alarm_factory_.get(), quic_random_,
+            server_quic_transport_delegate.get(), server_packet_transport.get(),
+            server_config, std::move(server_crypto_factory));
+
     server_peer_ = std::make_unique<QuicPeerForTest>(
         std::move(server_packet_transport),
         std::move(server_quic_transport_delegate),
-        std::move(server_quic_transport), server_cert);
+        std::move(server_quic_transport), server_certificate);
   }
 
-  // Sets a FailingProofVerifier to the client transport before initializing
-  // the its crypto stream. This allows the client to fail the proof
-  // verification step during the crypto handshake.
+  // Connects both peer's underlying packet transports and creates both
+  // P2PQuicTransportImpls.
+  void Initialize() {
+    rtc::scoped_refptr<rtc::RTCCertificate> client_cert =
+        CreateTestCertificate();
+    rtc::scoped_refptr<rtc::RTCCertificate> server_cert =
+        CreateTestCertificate();
+    Initialize(std::make_unique<P2PQuicCryptoConfigFactoryImpl>(client_cert,
+                                                                quic_random_),
+               std::make_unique<P2PQuicCryptoConfigFactoryImpl>(server_cert,
+                                                                quic_random_),
+               client_cert, server_cert);
+  }
+
+  // Uses a crypto config factory that returns a client configuration that
+  // will reject the QUIC handshake. This lets us simulate a failng handshake.
   void InitializeWithFailingProofVerification() {
-    // Allows us to initialize the crypto streams after constructing the
-    // objects.
-    Initialize(false);
-    // Create the client crypto config and insert it into the client transport.
-    std::unique_ptr<quic::ProofVerifier> proof_verifier(
-        new FailingProofVerifier);
-    std::unique_ptr<quic::QuicCryptoClientConfig> crypto_client_config =
-        std::make_unique<quic::QuicCryptoClientConfig>(
-            std::move(proof_verifier),
-            quic::TlsClientHandshaker::CreateSslCtx());
-    client_peer_->quic_transport()->set_crypto_client_config(
-        std::move(crypto_client_config));
-    // Now initialize the crypto streams.
-    client_peer_->quic_transport()->InitializeCryptoStream();
-    server_peer_->quic_transport()->InitializeCryptoStream();
+    Initialize(std::make_unique<FailingQuicCryptoConfigFactory>(quic_random_),
+               std::make_unique<FailingQuicCryptoConfigFactory>(quic_random_),
+               CreateTestCertificate(), CreateTestCertificate());
   }
 
   // Drives the test by running the current tasks that are posted.
@@ -593,10 +647,13 @@ class P2PQuicTransportTest : public testing::Test {
 
  private:
   quic::MockClock clock_;
+  quic::QuicRandom* quic_random_;
   // The TestTaskRunner is used by the QUIC library for setting/firing alarms.
   // We are able to explicitly run these tasks ourselves with the
   // TestTaskRunner.
   scoped_refptr<net::test::TestTaskRunner> runner_;
+  // This is eventually passed down to the QUIC library.
+  std::unique_ptr<net::QuicChromiumAlarmFactory> alarm_factory_;
 
   std::unique_ptr<P2PQuicTransportFactoryImpl> quic_transport_factory_;
   std::unique_ptr<QuicPeerForTest> client_peer_;

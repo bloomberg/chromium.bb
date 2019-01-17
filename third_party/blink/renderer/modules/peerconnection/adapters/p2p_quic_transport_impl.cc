@@ -4,7 +4,6 @@
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_impl.h"
 
 #include "net/quic/quic_chromium_connection_helper.h"
-#include "net/third_party/quic/core/crypto/proof_source.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/quic_config.h"
 #include "net/third_party/quic/core/tls_client_handshaker.h"
@@ -18,93 +17,151 @@ namespace {
 static const char kClosingDetails[] = "Application closed connection.";
 static const size_t kHostnameLength = 32;
 
-// TODO(https://crbug.com/874300): Create a secure connection by implementing a
-// P2PProofSource and P2PProofVerifier and remove these once the TLS 1.3
-// handshake is implemented for QUIC. This will allow us to verify for both the
-// server and client:
-// - The self signed certificate fingerprint matches the remote
-//   fingerprint that was signaled.
-// - The peer owns the certificate, by verifying the signature of the hash of
-//   the handshake context.
-//
-// Used by QuicCryptoServerConfig to provide dummy proof credentials
-// (taken from quic/quartc).
-class DummyProofSource : public quic::ProofSource {
+// QUIC's default is 100. Setting this value to 10000 allows room for QUIC to
+// not refuse new incoming streams in the case that an application wants to send
+// a small chunk of data per stream (and immediately close) unreliably.
+uint32_t kMaxIncomingDynamicStreams = 10000;
+
+// The P2PQuicPacketWriter is a private helper class that implements the
+// QuicPacketWriter using a P2PQuicPacketTransport. This allows us to
+// connect our own packet transport for writing into the QuicConnection.
+// The normal case is using an ICE transport (packet_transport) for writing.
+class P2PQuicPacketWriter : public quic::QuicPacketWriter,
+                            public P2PQuicPacketTransport::WriteObserver {
  public:
-  DummyProofSource() {}
-  ~DummyProofSource() override {}
-
-  // ProofSource override.
-  void GetProof(const quic::QuicSocketAddress& server_addr,
-                const quic::QuicString& hostname,
-                const quic::QuicString& server_config,
-                quic::QuicTransportVersion transport_version,
-                quic::QuicStringPiece chlo_hash,
-                std::unique_ptr<Callback> callback) override {
-    quic::QuicCryptoProof proof;
-    proof.signature = "Dummy signature";
-    proof.leaf_cert_scts = "Dummy timestamp";
-    callback->Run(true, GetCertChain(server_addr, hostname), proof,
-                  nullptr /* details */);
+  P2PQuicPacketWriter(P2PQuicPacketTransport* packet_transport)
+      : packet_transport_(packet_transport) {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DCHECK(packet_transport_);
+    packet_transport_->SetWriteObserver(this);
   }
 
-  quic::QuicReferenceCountedPointer<Chain> GetCertChain(
-      const quic::QuicSocketAddress& server_address,
-      const quic::QuicString& hostname) override {
-    std::vector<quic::QuicString> certs;
-    certs.push_back("Dummy cert");
-    return quic::QuicReferenceCountedPointer<Chain>(
-        new ProofSource::Chain(certs));
+  // This way the packet transport knows it no longer has a write observer and
+  // can DCHECK this on destruction.
+  ~P2PQuicPacketWriter() override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    packet_transport_->SetWriteObserver(nullptr);
   }
 
-  void ComputeTlsSignature(
-      const quic::QuicSocketAddress& server_address,
-      const quic::QuicString& hostname,
-      uint16_t signature_algorithm,
-      quic::QuicStringPiece in,
-      std::unique_ptr<SignatureCallback> callback) override {
-    callback->Run(true, "Dummy signature");
-  }
-};
-
-// Used by QuicCryptoClientConfig to ignore the peer's credentials
-// and establish an insecure QUIC connection (taken from quic/quartc).
-class InsecureProofVerifier : public quic::ProofVerifier {
- public:
-  InsecureProofVerifier() {}
-  ~InsecureProofVerifier() override {}
-
-  // ProofVerifier override.
-  quic::QuicAsyncStatus VerifyProof(
-      const quic::QuicString& hostname,
-      const uint16_t port,
-      const quic::QuicString& server_config,
-      quic::QuicTransportVersion transport_version,
-      quic::QuicStringPiece chlo_hash,
-      const std::vector<quic::QuicString>& certs,
-      const quic::QuicString& cert_sct,
-      const quic::QuicString& signature,
-      const quic::ProofVerifyContext* context,
-      quic::QuicString* error_details,
-      std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
-      std::unique_ptr<quic::ProofVerifierCallback> callback) override {
-    return quic::QUIC_SUCCESS;
+  // Sets the QuicConnection (which owns this packet writer). This allows us
+  // to get the packet numbers of QUIC packets we write. The QuicConnection
+  // is created with a quic::QuicPacketWriter, so we can't set the connection
+  // in the constructor.
+  void InitializeWithQuicConnection(quic::QuicConnection* connection) {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DCHECK(connection);
+    if (packet_transport_->Writable()) {
+      SetWritable();
+    }
+    connection_ = connection;
   }
 
-  quic::QuicAsyncStatus VerifyCertChain(
-      const quic::QuicString& hostname,
-      const std::vector<quic::QuicString>& certs,
-      const quic::ProofVerifyContext* context,
-      quic::QuicString* error_details,
-      std::unique_ptr<quic::ProofVerifyDetails>* details,
-      std::unique_ptr<quic::ProofVerifierCallback> callback) override {
-    return quic::QUIC_SUCCESS;
+  // quic::QuicPacketWriter overrides.
+
+  // Writes a QUIC packet to the network with the packet number as additional
+  // packet  info.
+  quic::WriteResult WritePacket(const char* buffer,
+                                size_t buf_len,
+                                const quic::QuicIpAddress& self_address,
+                                const quic::QuicSocketAddress& peer_address,
+                                quic::PerPacketOptions* options) override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DCHECK(connection_);
+    if (IsWriteBlocked()) {
+      return quic::WriteResult(quic::WRITE_STATUS_BLOCKED, EWOULDBLOCK);
+    }
+
+    P2PQuicPacketTransport::QuicPacket packet;
+    packet.packet_number = connection_->packet_generator().packet_number();
+    packet.buffer = buffer;
+    packet.buf_len = buf_len;
+    int bytes_written = packet_transport_->WritePacket(packet);
+    if (bytes_written <= 0) {
+      writable_ = false;
+      return quic::WriteResult(quic::WRITE_STATUS_BLOCKED, EWOULDBLOCK);
+    }
+    return quic::WriteResult(quic::WRITE_STATUS_OK, bytes_written);
   }
 
-  std::unique_ptr<quic::ProofVerifyContext> CreateDefaultContext() override {
+  bool IsWriteBlockedDataBuffered() const override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    return false;
+  }
+
+  bool IsWriteBlocked() const override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    return !writable_;
+  }
+
+  quic::QuicByteCount GetMaxPacketSize(
+      const quic::QuicSocketAddress& peer_address) const override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    // This can be configured later.
+    return 1200;
+  }
+
+  void SetWritable() override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    writable_ = true;
+  }
+
+  bool SupportsReleaseTime() const override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    return false;
+  }
+
+  bool IsBatchMode() const override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    return false;
+  }
+
+  char* GetNextWriteLocation(
+      const quic::QuicIpAddress& self_address,
+      const quic::QuicSocketAddress& peer_address) override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     return nullptr;
   }
+
+  quic::WriteResult Flush() override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    return quic::WriteResult(quic::WRITE_STATUS_OK, 0);
+  }
+
+  // P2PQuicPacketTransport::WriteDelegate override.
+  void OnCanWrite() override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    SetWritable();
+    connection_->OnCanWrite();
+  }
+
+ private:
+  // The packet transport is owned by the P2PQuicSession, not the
+  // BlinkPacketWriter.
+  P2PQuicPacketTransport* packet_transport_;
+  // The QuicConnection owns this packet writer and will outlive it.
+  quic::QuicConnection* connection_;
+
+  bool writable_ = false;
+  THREAD_CHECKER(thread_checker_);
 };
+
+// Creates the QuicConnection for the QuicSession. Currently this connection
+// uses a dummy address and ID. The |packet_writer| is a basic implementation
+// using the QuicTransportConfig::packet_transport for writing. The |helper|
+// and |alarm_factory| should be chromium specific implementations.
+std::unique_ptr<quic::QuicConnection> CreateQuicConnection(
+    quic::Perspective perspective,
+    quic::QuicConnectionHelperInterface* helper,
+    quic::QuicPacketWriter* packet_writer,
+    quic::QuicAlarmFactory* alarm_factory) {
+  quic::QuicIpAddress ip;
+  ip.FromString("0.0.0.0");
+  quic::QuicSocketAddress dummy_address(ip, 0 /* Port */);
+  return std::make_unique<quic::QuicConnection>(
+      quic::EmptyQuicConnectionId() /* dummy ID */, dummy_address, helper,
+      alarm_factory, packet_writer,
+      /* owns_writer */ true, perspective, quic::CurrentSupportedVersions());
+}
 
 // A dummy helper for a server crypto stream that accepts all client hellos
 // and generates a random connection ID.
@@ -134,6 +191,56 @@ class DummyCryptoServerStreamHelper
 };
 }  // namespace
 
+std::unique_ptr<P2PQuicTransportImpl> P2PQuicTransportImpl::Create(
+    quic::QuicClock* clock,
+    quic::QuicAlarmFactory* alarm_factory,
+    quic::QuicRandom* quic_random,
+    P2PQuicTransport::Delegate* delegate,
+    P2PQuicPacketTransport* packet_transport,
+    const P2PQuicTransportConfig& config,
+    std::unique_ptr<P2PQuicCryptoConfigFactory> crypto_config_factory) {
+  DCHECK(delegate);
+  DCHECK(packet_transport);
+  DCHECK(crypto_config_factory);
+
+  // The P2PQuicSession owns these chromium specific objects required
+  // by the QuicConnection. These outlive the QuicConnection itself.
+  std::unique_ptr<net::QuicChromiumConnectionHelper> helper =
+      std::make_unique<net::QuicChromiumConnectionHelper>(clock, quic_random);
+
+  P2PQuicPacketWriter* packet_writer =
+      new P2PQuicPacketWriter(packet_transport);
+  std::unique_ptr<quic::QuicConnection> quic_connection = CreateQuicConnection(
+      config.perspective, helper.get(), packet_writer, alarm_factory);
+  // It's okay for the quic::QuicConnection to have a P2PQuicPacketWriter before
+  // the P2PQuicPacketWriter is initialized, because the P2QuicPacketWriter
+  // won't be writable until this occurs.
+  packet_writer->InitializeWithQuicConnection(quic_connection.get());
+
+  // QUIC configurations for the session are specified here.
+  // TODO(shampson): Consider setting larger initial flow control window sizes
+  // so that the default limit doesn't cause initial undersending.
+  quic::QuicConfig quic_config;
+  quic_config.SetMaxIncomingDynamicStreamsToSend(kMaxIncomingDynamicStreams);
+  // The handshake network timeouts are configured to large values to prevent
+  // the QUIC connection from being closed on a slow connection. This can occur
+  // if signaling is slow and one side begins the handshake early.
+  // See ICE related bug: bugs.webrtc.org/9869.
+  //
+  // This timeout is from time of creation of the quic::QuicConnection object to
+  // the completion of the handshake. It must be larger than the idle time.
+  quic_config.set_max_time_before_crypto_handshake(
+      quic::QuicTime::Delta::FromSeconds(50));
+  // This is the timeout for idle time in the handshake. This value allows
+  // time for slow signaling to complete.
+  quic_config.set_max_idle_time_before_crypto_handshake(
+      quic::QuicTime::Delta::FromSeconds(30));
+  return std::make_unique<P2PQuicTransportImpl>(
+      delegate, packet_transport, std::move(config), std::move(helper),
+      std::move(quic_connection), quic_config, std::move(crypto_config_factory),
+      clock);
+}
+
 P2PQuicTransportImpl::P2PQuicTransportImpl(
     Delegate* delegate,
     P2PQuicPacketTransport* packet_transport,
@@ -141,6 +248,7 @@ P2PQuicTransportImpl::P2PQuicTransportImpl(
     std::unique_ptr<net::QuicChromiumConnectionHelper> helper,
     std::unique_ptr<quic::QuicConnection> connection,
     const quic::QuicConfig& quic_config,
+    std::unique_ptr<P2PQuicCryptoConfigFactory> crypto_config_factory,
     quic::QuicClock* clock)
     : quic::QuicSession(connection.get(),
                         nullptr /* visitor */,
@@ -148,6 +256,7 @@ P2PQuicTransportImpl::P2PQuicTransportImpl(
                         quic::CurrentSupportedVersions()),
       helper_(std::move(helper)),
       connection_(std::move(connection)),
+      crypto_config_factory_(std::move(crypto_config_factory)),
       perspective_(p2p_transport_config.perspective),
       packet_transport_(packet_transport),
       delegate_(delegate),
@@ -157,17 +266,31 @@ P2PQuicTransportImpl::P2PQuicTransportImpl(
       stream_write_buffer_size_(p2p_transport_config.stream_write_buffer_size) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(delegate_);
+  DCHECK(crypto_config_factory_);
   DCHECK(clock_);
   DCHECK(packet_transport_);
   DCHECK_GT(stream_delegate_read_buffer_size_, 0u);
   DCHECK_GT(stream_write_buffer_size_, 0u);
   DCHECK_GT(p2p_transport_config.certificates.size(), 0u);
-  if (p2p_transport_config.can_respond_to_crypto_handshake) {
-    InitializeCryptoStream();
-  }
   // TODO(https://crbug.com/874296): The web API accepts multiple certificates,
   // and we might want to pass these down to let QUIC decide on what to use.
   certificate_ = p2p_transport_config.certificates[0];
+  switch (perspective_) {
+    case quic::Perspective::IS_CLIENT: {
+      crypto_client_config_ =
+          crypto_config_factory_->CreateClientCryptoConfig();
+      break;
+    }
+    case quic::Perspective::IS_SERVER: {
+      crypto_server_config_ =
+          crypto_config_factory_->CreateServerCryptoConfig();
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
+  InitializeCryptoStream();
   packet_transport_->SetReceiveDelegate(this);
 }
 
@@ -283,16 +406,12 @@ P2PQuicStreamImpl* P2PQuicTransportImpl::CreateStreamInternal(
 void P2PQuicTransportImpl::InitializeCryptoStream() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!crypto_stream_);
+  // TODO(shampson): If the P2PQuicTransportImpl is subclassed into a client
+  // and server class we can call this as a virtual function and not need this
+  // switch statement.
   switch (perspective_) {
     case quic::Perspective::IS_CLIENT: {
-      if (!crypto_client_config_) {
-        // The |crypto_client_config_| has not already been set (by the test).
-        std::unique_ptr<quic::ProofVerifier> proof_verifier(
-            new InsecureProofVerifier);
-        crypto_client_config_ = std::make_unique<quic::QuicCryptoClientConfig>(
-            std::move(proof_verifier),
-            quic::TlsClientHandshaker::CreateSslCtx());
-      }
+      DCHECK(crypto_client_config_);
       // The host must be unique for every endpoint the client communicates
       // with.
       char random_hostname[kHostnameLength];
@@ -310,11 +429,7 @@ void P2PQuicTransportImpl::InitializeCryptoStream() {
       break;
     }
     case quic::Perspective::IS_SERVER: {
-      std::unique_ptr<quic::ProofSource> proof_source(new DummyProofSource);
-      crypto_server_config_ = std::make_unique<quic::QuicCryptoServerConfig>(
-          quic::QuicCryptoServerConfig::TESTING, helper_->GetRandomGenerator(),
-          std::move(proof_source), quic::KeyExchangeSource::Default(),
-          quic::TlsServerHandshaker::CreateSslCtx());
+      DCHECK(crypto_server_config_);
       // Provide server with serialized config string to prove ownership.
       quic::QuicCryptoServerConfig::ConfigOptions options;
       // The |message| is used to handle the return value of AddDefaultConfig
