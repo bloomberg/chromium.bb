@@ -120,6 +120,9 @@ extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
 extern const char kAutofillRichMetadataQueriesName[];
 extern const char kAutofillRichMetadataQueriesDescription[];
 
+extern const char kAutofillSettingsSplitByCardTypeName[];
+extern const char kAutofillSettingsSplitByCardTypeDescription[];
+
 extern const char kAutoplayPolicyName[];
 extern const char kAutoplayPolicyDescription[];
 

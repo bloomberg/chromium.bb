@@ -151,6 +151,12 @@ const char kAutofillRichMetadataQueriesDescription[] =
     "Transmit rich form/field metadata when querying the autofill server. "
     "This feature only works on the Canary and Dev channels.";
 
+const char kAutofillSettingsSplitByCardTypeName[] =
+    "Autofill settings split by card type";
+const char kAutofillSettingsSplitByCardTypeDescription[] =
+    "When enabled, the cards in the payments settings will be split into two "
+    "lists based on where they are stored.";
+
 const char kAutoplayPolicyName[] = "Autoplay policy";
 const char kAutoplayPolicyDescription[] =
     "Policy used when deciding if audio or video is allowed to autoplay.";

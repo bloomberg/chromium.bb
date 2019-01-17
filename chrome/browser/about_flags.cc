@@ -4300,6 +4300,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrostiniAppSearchDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kCrostiniAppSearch)},
 #endif  // OS_CHROMEOS
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+    {"autofill-settings-split-by-card-type",
+     flag_descriptions::kAutofillSettingsSplitByCardTypeName,
+     flag_descriptions::kAutofillSettingsSplitByCardTypeDescription,
+     kOsMac | kOsWin | kOsLinux,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillSettingsCardTypeSplit)},
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 };
 
 class FlagsStateSingleton {
