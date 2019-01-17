@@ -885,16 +885,25 @@ class EBuild(object):
 
     # The chromeos-version script will output a usable raw version number,
     # or nothing in case of error or no available version
-    try:
-      output = self._RunCommand([vers_script] + srcdirs).strip()
-    except cros_build_lib.RunCommandError as e:
-      cros_build_lib.Die('Package %s chromeos-version.sh failed: %s' %
-                         (self.pkgname, e))
+    result = cros_build_lib.RunCommand(['bash', '-x', vers_script] + srcdirs,
+                                       capture_output=True, error_code_ok=True)
 
-    if not output:
-      cros_build_lib.Die('Package %s has a chromeos-version.sh script but '
-                         'it returned no valid version for "%s"' %
-                         (self.pkgname, ' '.join(srcdirs)))
+    output = result.output.strip()
+    if result.returncode or not output:
+      # Crbug.com/917099 - Let's get more information for debugging, at least
+      # temporarily.
+      fsck_out = {}
+      for srcdir in srcdirs:
+        fsck_out[srcdir] = self._RunCommand(['git', 'fsck', srcdir],
+                                            error_code_ok=True)
+      # TODO(crbug.com/917099): Remove this long-term because it's verbose.
+      ls_out = self._RunCommand(['ls', '-lRa'] + srcdirs, error_code_ok=True)
+      cros_build_lib.Die(
+          'Package %s has a chromeos-version.sh script but failed:\n'
+          'return code = %s\nstdout = %s\nstderr = %s\ndir listing = %s\n'
+          'git fsck = %s\nsrcdirs = %s\n',
+          self.pkgname, result.returncode, result.output, result.error,
+          ls_out, fsck_out, srcdirs)
 
     # Sanity check: disallow versions that will be larger than the 9999 ebuild
     # used by cros-workon.
