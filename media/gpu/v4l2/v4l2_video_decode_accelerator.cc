@@ -20,8 +20,10 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/base/media_switches.h"
@@ -91,6 +93,7 @@ struct V4L2VideoDecodeAccelerator::BitstreamBufferRef {
       scoped_refptr<DecoderBuffer> buffer,
       int32_t input_id);
   ~BitstreamBufferRef();
+
   const base::WeakPtr<Client> client;
   const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner;
   scoped_refptr<DecoderBuffer> buffer;
@@ -275,6 +278,9 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
   }
 
   decoder_state_ = kInitialized;
+
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "media::V4l2VideoDecodeAccelerator", decoder_thread_.task_runner());
 
   // InitializeTask will NOTIFY_ERROR on failure.
   decoder_thread_.task_runner()->PostTask(
@@ -806,7 +812,7 @@ void V4L2VideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
     return;
   }
 
-  decoder_input_queue_.push(std::move(bitstream_record));
+  decoder_input_queue_.push_back(std::move(bitstream_record));
   decoder_decode_buffer_tasks_scheduled_++;
   DecodeBufferTask();
 }
@@ -840,7 +846,7 @@ void V4L2VideoDecodeAccelerator::DecodeBufferTask() {
 
     // Setup to use the next buffer.
     decoder_current_bitstream_buffer_ = std::move(decoder_input_queue_.front());
-    decoder_input_queue_.pop();
+    decoder_input_queue_.pop_front();
     const auto& buffer = decoder_current_bitstream_buffer_->buffer;
     if (buffer) {
       DVLOGF(4) << "reading input_id="
@@ -1625,7 +1631,7 @@ void V4L2VideoDecodeAccelerator::FlushTask() {
   DCHECK(!decoder_flushing_);
 
   // Queue up an empty buffer -- this triggers the flush.
-  decoder_input_queue_.push(std::make_unique<BitstreamBufferRef>(
+  decoder_input_queue_.push_back(std::make_unique<BitstreamBufferRef>(
       decode_client_, decode_task_runner_, nullptr, kFlushBufferId));
   decoder_flushing_ = true;
   SendPictureReady();  // Send all pending PictureReady.
@@ -1740,7 +1746,7 @@ void V4L2VideoDecodeAccelerator::ResetTask() {
   }
   decoder_current_bitstream_buffer_.reset();
   while (!decoder_input_queue_.empty())
-    decoder_input_queue_.pop();
+    decoder_input_queue_.pop_front();
 
   current_input_buffer_ = V4L2WritableBufferRef();
 
@@ -1854,13 +1860,22 @@ void V4L2VideoDecodeAccelerator::DestroyTask() {
   decoder_decode_buffer_tasks_scheduled_ = 0;
   decoder_frames_at_client_ = 0;
   while (!decoder_input_queue_.empty())
-    decoder_input_queue_.pop();
+    decoder_input_queue_.pop_front();
   decoder_flushing_ = false;
 
   image_processor_ = nullptr;
 
   DestroyInputBuffers();
   DestroyOutputBuffers();
+
+  if (decoder_thread_.IsRunning()) {
+    DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+    // DestroyTask can be executed on not only decoder_thread but also child
+    // thread. When decoder thread is Stop(), |this| is not registered in
+    // MemoryDumpManager. So
+    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+        this);
+  }
 }
 
 bool V4L2VideoDecodeAccelerator::StartDevicePoll() {
@@ -2714,6 +2729,64 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(
 void V4L2VideoDecodeAccelerator::ImageProcessorError() {
   VLOGF(1) << "Image processor error";
   NOTIFY_ERROR(PLATFORM_FAILURE);
+}
+
+bool V4L2VideoDecodeAccelerator::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  // OnMemoryDump() must be performed on |decoder_thread_|.
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+
+  // |input_queue| and |output_queue| are owned by |decoder_thread_|.
+  size_t input_queue_buffers_count = 0;
+  size_t input_queue_memory_usage = 0;
+  std::string input_queue_buffers_memory_type;
+  if (input_queue_) {
+    input_queue_buffers_count = input_queue_->AllocatedBuffersCount();
+    input_queue_buffers_memory_type =
+        V4L2Device::V4L2MemoryToString(input_queue_->GetMemoryType());
+    if (output_queue_->GetMemoryType() == V4L2_MEMORY_MMAP)
+      input_queue_memory_usage = input_queue_->GetMemoryUsage();
+  }
+
+  size_t output_queue_buffers_count = 0;
+  size_t output_queue_memory_usage = 0;
+  std::string output_queue_buffers_memory_type;
+  if (output_queue_) {
+    output_queue_buffers_count = output_queue_->AllocatedBuffersCount();
+    output_queue_buffers_memory_type =
+        V4L2Device::V4L2MemoryToString(output_queue_->GetMemoryType());
+    if (output_queue_->GetMemoryType() == V4L2_MEMORY_MMAP)
+      output_queue_memory_usage = output_queue_->GetMemoryUsage();
+  }
+
+  const size_t total_usage =
+      input_queue_memory_usage + output_queue_memory_usage;
+
+  using ::base::trace_event::MemoryAllocatorDump;
+
+  auto dump_name = base::StringPrintf("gpu/v4l2/decoder/0x%" PRIxPTR,
+                                      reinterpret_cast<uintptr_t>(this));
+  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
+  dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                  MemoryAllocatorDump::kUnitsBytes,
+                  static_cast<uint64_t>(total_usage));
+  dump->AddScalar("input_queue_memory_usage", MemoryAllocatorDump::kUnitsBytes,
+                  static_cast<uint64_t>(input_queue_memory_usage));
+  dump->AddScalar("input_queue_buffers_count",
+                  MemoryAllocatorDump::kUnitsObjects,
+                  static_cast<uint64_t>(input_queue_buffers_count));
+  dump->AddString("input_queue_buffers_memory_type", "",
+                  input_queue_buffers_memory_type);
+  dump->AddScalar("output_queue_memory_usage", MemoryAllocatorDump::kUnitsBytes,
+                  static_cast<uint64_t>(output_queue_memory_usage));
+  dump->AddScalar("output_queue_buffers_count",
+                  MemoryAllocatorDump::kUnitsObjects,
+                  static_cast<uint64_t>(output_queue_buffers_count));
+  dump->AddString("output_queue_buffers_memory_type", "",
+                  output_queue_buffers_memory_type);
+
+  return true;
 }
 
 }  // namespace media

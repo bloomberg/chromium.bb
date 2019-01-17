@@ -40,6 +40,7 @@ class V4L2Buffer {
   ~V4L2Buffer();
 
   void* GetPlaneMapping(const size_t plane);
+  size_t GetMemoryUsage() const;
   const struct v4l2_buffer* v4l2_buffer() const { return &v4l2_buffer_; }
 
  private:
@@ -143,6 +144,14 @@ void* V4L2Buffer::GetPlaneMapping(const size_t plane) {
 
   plane_mappings_[plane] = p;
   return p;
+}
+
+size_t V4L2Buffer::GetMemoryUsage() const {
+  size_t usage = 0;
+  for (size_t i = 0; i < v4l2_buffer_.length; i++) {
+    usage += v4l2_buffer_.m.planes[i].length;
+  }
+  return usage;
 }
 
 // Module-private class that let users query/write V4L2 buffer information.
@@ -620,6 +629,19 @@ bool V4L2Queue::DeallocateBuffers() {
   DCHECK_EQ(queued_buffers_.size(), 0u);
 
   return true;
+}
+
+size_t V4L2Queue::GetMemoryUsage() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  size_t usage = 0;
+  for (const auto& buf : buffers_) {
+    usage += buf->GetMemoryUsage();
+  }
+  return usage;
+}
+
+v4l2_memory V4L2Queue::GetMemoryType() const {
+  return memory_;
 }
 
 V4L2WritableBufferRef V4L2Queue::GetFreeBuffer() {
@@ -1174,6 +1196,22 @@ gfx::Size V4L2Device::AllocatedSizeFromV4L2Format(struct v4l2_format format) {
   DCHECK_LE(sizeimage, VideoFrame::AllocationSize(frame_format, coded_size));
 
   return coded_size;
+}
+
+// static
+std::string V4L2Device::V4L2MemoryToString(const v4l2_memory memory) {
+  switch (memory) {
+    case V4L2_MEMORY_MMAP:
+      return "V4L2_MEMORY_MMAP";
+    case V4L2_MEMORY_USERPTR:
+      return "V4L2_MEMORY_USERPTR";
+    case V4L2_MEMORY_DMABUF:
+      return "V4L2_MEMORY_DMABUF";
+    case V4L2_MEMORY_OVERLAY:
+      return "V4L2_MEMORY_OVERLAY";
+    default:
+      return "UNKNOWN";
+  }
 }
 
 // static
