@@ -18,7 +18,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
-#include "components/leveldb_proto/proto_database.h"
+#include "components/leveldb_proto/public/proto_database.h"
 #include "crypto/random.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -67,7 +67,7 @@ class GCMKeyStoreTest : public ::testing::Test {
   void TearDown() override {
     gcm_key_store_.reset();
 
-    // |gcm_key_store_| owns a ProtoDatabaseImpl whose destructor deletes the
+    // |gcm_key_store_| owns a ProtoDatabase whose destructor deletes the
     // underlying LevelDB database on the task runner.
     base::RunLoop().RunUntilIdle();
   }

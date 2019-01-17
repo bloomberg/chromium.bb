@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/leveldb_proto/shared_proto_database.h"
+#include "components/leveldb_proto/internal/shared_proto_database.h"
 
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
-#include "components/leveldb_proto/leveldb_database.h"
-#include "components/leveldb_proto/proto/shared_db_metadata.pb.h"
-#include "components/leveldb_proto/proto_database.h"
-#include "components/leveldb_proto/proto_leveldb_wrapper.h"
+#include "components/leveldb_proto/internal/leveldb_database.h"
+#include "components/leveldb_proto/internal/proto/shared_db_metadata.pb.h"
+#include "components/leveldb_proto/internal/proto_leveldb_wrapper.h"
+#include "components/leveldb_proto/public/proto_database.h"
 
 namespace leveldb_proto {
 

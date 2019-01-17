@@ -9,7 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "components/leveldb_proto/proto_database.h"
+#include "components/leveldb_proto/public/proto_database.h"
 #include "media/base/media_export.h"
 #include "media/base/video_codecs.h"
 #include "media/capabilities/video_decode_stats_db.h"

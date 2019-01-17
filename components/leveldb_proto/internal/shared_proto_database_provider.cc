@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/leveldb_proto/shared_proto_database_provider.h"
+#include "components/leveldb_proto/internal/shared_proto_database_provider.h"
 
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "components/leveldb_proto/proto_database_provider.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 
 namespace leveldb_proto {
 

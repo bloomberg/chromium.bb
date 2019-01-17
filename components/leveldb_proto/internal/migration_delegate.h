@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_LEVELDB_PROTO_MIGRATION_DELEGATE_H_
-#define COMPONENTS_LEVELDB_PROTO_MIGRATION_DELEGATE_H_
+#ifndef COMPONENTS_LEVELDB_PROTO_INTERNAL_MIGRATION_DELEGATE_H_
+#define COMPONENTS_LEVELDB_PROTO_INTERNAL_MIGRATION_DELEGATE_H_
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/leveldb_proto/proto_database.h"
+#include "components/leveldb_proto/public/proto_database.h"
 
 namespace leveldb_proto {
 
@@ -92,4 +92,4 @@ void MigrationDelegate<T>::OnUpdateEntries(MigrationCallback callback,
 
 }  // namespace leveldb_proto
 
-#endif  // COMPONENTS_LEVELDB_PROTO_MIGRATION_DELEGATE_H_
+#endif  // COMPONENTS_LEVELDB_PROTO_INTERNAL_MIGRATION_DELEGATE_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/leveldb_proto/shared_proto_database_client.h"
+#include "components/leveldb_proto/internal/shared_proto_database_client.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -11,8 +11,8 @@
 #include "base/strings/string_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
-#include "components/leveldb_proto/proto_leveldb_wrapper.h"
-#include "components/leveldb_proto/shared_proto_database.h"
+#include "components/leveldb_proto/internal/proto_leveldb_wrapper.h"
+#include "components/leveldb_proto/internal/shared_proto_database.h"
 #include "components/leveldb_proto/testing/proto/test_db.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

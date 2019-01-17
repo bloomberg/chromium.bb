@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_LEVELDB_PROTO_PROTO_DATABASE_WRAPPER_H_
-#define COMPONENTS_LEVELDB_PROTO_PROTO_DATABASE_WRAPPER_H_
+#ifndef COMPONENTS_LEVELDB_PROTO_INTERNAL_PROTO_DATABASE_WRAPPER_H_
+#define COMPONENTS_LEVELDB_PROTO_INTERNAL_PROTO_DATABASE_WRAPPER_H_
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/leveldb_proto/migration_delegate.h"
-#include "components/leveldb_proto/proto_database.h"
-#include "components/leveldb_proto/proto_leveldb_wrapper.h"
-#include "components/leveldb_proto/shared_proto_database.h"
-#include "components/leveldb_proto/shared_proto_database_client_list.h"
-#include "components/leveldb_proto/shared_proto_database_provider.h"
-#include "components/leveldb_proto/unique_proto_database.h"
+#include "components/leveldb_proto/internal/migration_delegate.h"
+#include "components/leveldb_proto/internal/proto_leveldb_wrapper.h"
+#include "components/leveldb_proto/internal/shared_proto_database.h"
+#include "components/leveldb_proto/internal/shared_proto_database_provider.h"
+#include "components/leveldb_proto/internal/unique_proto_database.h"
+#include "components/leveldb_proto/public/proto_database.h"
+#include "components/leveldb_proto/public/shared_proto_database_client_list.h"
 
 namespace leveldb_proto {
 
@@ -724,4 +724,4 @@ void ProtoDatabaseWrapper<T>::Destroy(Callbacks::DestroyCallback callback) {
 
 }  // namespace leveldb_proto
 
-#endif  // COMPONENTS_LEVELDB_PROTO_PROTO_DATABASE_WRAPPER_H_
+#endif  // COMPONENTS_LEVELDB_PROTO_INTERNAL_PROTO_DATABASE_WRAPPER_H_

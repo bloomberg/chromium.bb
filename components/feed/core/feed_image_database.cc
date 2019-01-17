@@ -16,7 +16,7 @@
 #include "base/time/time.h"
 #include "components/feed/core/proto/cached_image.pb.h"
 #include "components/feed/core/time_serialization.h"
-#include "components/leveldb_proto/proto_database_impl.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 
 namespace feed {
 
@@ -36,10 +36,10 @@ const size_t kDatabaseWriteBufferSizeBytesForLowEndDevice = 128 * 1024;
 FeedImageDatabase::FeedImageDatabase(const base::FilePath& database_dir)
     : FeedImageDatabase(
           database_dir,
-          std::make_unique<leveldb_proto::ProtoDatabaseImpl<CachedImageProto>>(
-              base::CreateSequencedTaskRunnerWithTraits(
-                  {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-                   base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
+          leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<
+              CachedImageProto>(base::CreateSequencedTaskRunnerWithTraits(
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
           base::DefaultClock::GetInstance()) {}
 
 FeedImageDatabase::FeedImageDatabase(

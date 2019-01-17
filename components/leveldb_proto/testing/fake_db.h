@@ -16,8 +16,8 @@
 #include "base/files/file_path.h"
 #include "base/task/post_task.h"
 #include "base/test/test_simple_task_runner.h"
-#include "components/leveldb_proto/proto_database.h"
-#include "components/leveldb_proto/unique_proto_database.h"
+#include "components/leveldb_proto/internal/unique_proto_database.h"
+#include "components/leveldb_proto/public/proto_database.h"
 
 namespace leveldb_proto {
 namespace test {

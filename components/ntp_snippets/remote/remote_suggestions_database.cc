@@ -9,11 +9,11 @@
 #include "base/files/file_path.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
-#include "components/leveldb_proto/proto_database_impl.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/ntp_snippets/remote/proto/ntp_snippets.pb.h"
 
 using leveldb_proto::ProtoDatabase;
-using leveldb_proto::ProtoDatabaseImpl;
+using leveldb_proto::ProtoDatabaseProvider;
 
 namespace {
 // Statistics are logged to UMA with this string as part of histogram name. They
@@ -43,8 +43,8 @@ RemoteSuggestionsDatabase::RemoteSuggestionsDatabase(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const base::FilePath& database_dir)
     : RemoteSuggestionsDatabase(
-          std::make_unique<ProtoDatabaseImpl<SnippetProto>>(task_runner),
-          std::make_unique<ProtoDatabaseImpl<SnippetImageProto>>(task_runner),
+          ProtoDatabaseProvider::CreateUniqueDB<SnippetProto>(task_runner),
+          ProtoDatabaseProvider::CreateUniqueDB<SnippetImageProto>(task_runner),
           database_dir) {}
 
 RemoteSuggestionsDatabase::RemoteSuggestionsDatabase(

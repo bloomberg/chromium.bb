@@ -13,7 +13,7 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/budget.pb.h"
-#include "components/leveldb_proto/proto_database_impl.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -55,10 +55,10 @@ BudgetDatabase::BudgetInfo::~BudgetInfo() = default;
 
 BudgetDatabase::BudgetDatabase(Profile* profile)
     : profile_(profile),
-      db_(new leveldb_proto::ProtoDatabaseImpl<budget_service::Budget>(
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))),
+      db_(leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<
+          budget_service::Budget>(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))),
       clock_(base::WrapUnique(new base::DefaultClock)),
       weak_ptr_factory_(this) {
   db_->Init(kDatabaseUMAName,

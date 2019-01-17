@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "components/image_fetcher/core/cache/image_metadata_store.h"
 #include "components/image_fetcher/core/cache/image_store_types.h"
-#include "components/leveldb_proto/proto_database.h"
+#include "components/leveldb_proto/public/proto_database.h"
 
 namespace base {
 class Clock;

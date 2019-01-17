@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_LEVELDB_PROTO_SHARED_PROTO_DATABASE_PROVIDER_H_
-#define COMPONENTS_LEVELDB_PROTO_SHARED_PROTO_DATABASE_PROVIDER_H_
+#ifndef COMPONENTS_LEVELDB_PROTO_INTERNAL_SHARED_PROTO_DATABASE_PROVIDER_H_
+#define COMPONENTS_LEVELDB_PROTO_INTERNAL_SHARED_PROTO_DATABASE_PROVIDER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
@@ -42,4 +42,4 @@ class SharedProtoDatabaseProvider {
 
 }  // namespace leveldb_proto
 
-#endif  // COMPONENTS_LEVELDB_PROTO_SHARED_PROTO_DATABASE_PROVIDER_H_
+#endif  // COMPONENTS_LEVELDB_PROTO_INTERNAL_SHARED_PROTO_DATABASE_PROVIDER_H_

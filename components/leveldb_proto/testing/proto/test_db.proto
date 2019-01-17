@@ -8,7 +8,7 @@ option optimize_for = LITE_RUNTIME;
 
 package leveldb_proto;
 
-// A proto to test leveldb_proto::ProtoDatabaseImpl.
+// A proto to test leveldb_proto::ProtoDatabase implementations.
 //
 // Next tag: 3
 message TestProto {

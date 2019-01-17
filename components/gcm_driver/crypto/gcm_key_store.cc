@@ -16,7 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
-#include "components/leveldb_proto/proto_database_impl.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 #include "crypto/random.h"
 
 namespace gcm {
@@ -294,8 +294,9 @@ void GCMKeyStore::LazyInitialize(base::OnceClosure done_closure) {
 
   state_ = State::INITIALIZING;
 
-  database_.reset(new leveldb_proto::ProtoDatabaseImpl<EncryptionData>(
-      blocking_task_runner_));
+  database_ =
+      leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<EncryptionData>(
+          blocking_task_runner_);
 
   database_->Init(
       kDatabaseUMAClientName, key_store_path_,

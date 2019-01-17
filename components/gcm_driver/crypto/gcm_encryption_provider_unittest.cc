@@ -70,7 +70,7 @@ class GCMEncryptionProviderTest : public ::testing::Test {
   void TearDown() override {
     encryption_provider_.reset();
 
-    // |encryption_provider_| owns a ProtoDatabaseImpl whose destructor deletes
+    // |encryption_provider_| owns a ProtoDatabase whose destructor deletes
     // the underlying LevelDB database on the task runner.
     base::RunLoop().RunUntilIdle();
   }

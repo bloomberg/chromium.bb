@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/leveldb_proto/proto_database_wrapper.h"
+#include "components/leveldb_proto/internal/proto_database_wrapper.h"
 
-#include "components/leveldb_proto/proto_database_provider.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 
 namespace leveldb_proto {
 

@@ -19,7 +19,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/feature_engagement/internal/proto/availability.pb.h"
 #include "components/feature_engagement/public/feature_list.h"
-#include "components/leveldb_proto/proto_database.h"
+#include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

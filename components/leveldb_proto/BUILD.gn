@@ -6,35 +6,34 @@ import("//third_party/protobuf/proto_library.gni")
 
 proto_library("proto") {
   sources = [
-    "proto/shared_db_metadata.proto",
+    "internal/proto/shared_db_metadata.proto",
   ]
 }
 
 static_library("leveldb_proto") {
   sources = [
-    "leveldb_database.cc",
-    "leveldb_database.h",
-    "migration_delegate.h",
-    "proto_database.cc",
-    "proto_database.h",
-    "proto_database_impl.h",
-    "proto_database_provider.cc",
-    "proto_database_provider.h",
-    "proto_database_wrapper.cc",
-    "proto_database_wrapper.h",
-    "proto_leveldb_wrapper.cc",
-    "proto_leveldb_wrapper.h",
-    "proto_leveldb_wrapper_metrics.cc",
-    "proto_leveldb_wrapper_metrics.h",
-    "shared_proto_database.cc",
-    "shared_proto_database.h",
-    "shared_proto_database_client.cc",
-    "shared_proto_database_client.h",
-    "shared_proto_database_client_list.cc",
-    "shared_proto_database_client_list.h",
-    "shared_proto_database_provider.cc",
-    "shared_proto_database_provider.h",
-    "unique_proto_database.h",
+    "internal/leveldb_database.cc",
+    "internal/leveldb_database.h",
+    "internal/migration_delegate.h",
+    "internal/proto_database_wrapper.cc",
+    "internal/proto_database_wrapper.h",
+    "internal/proto_leveldb_wrapper.cc",
+    "internal/proto_leveldb_wrapper.h",
+    "internal/proto_leveldb_wrapper_metrics.cc",
+    "internal/proto_leveldb_wrapper_metrics.h",
+    "internal/shared_proto_database.cc",
+    "internal/shared_proto_database.h",
+    "internal/shared_proto_database_client.cc",
+    "internal/shared_proto_database_client.h",
+    "internal/shared_proto_database_provider.cc",
+    "internal/shared_proto_database_provider.h",
+    "internal/unique_proto_database.h",
+    "public/proto_database.cc",
+    "public/proto_database.h",
+    "public/proto_database_provider.cc",
+    "public/proto_database_provider.h",
+    "public/shared_proto_database_client_list.cc",
+    "public/shared_proto_database_client_list.h",
   ]
   deps = [
     ":proto",
@@ -64,10 +63,10 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "proto_database_wrapper_unittest.cc",
-    "shared_proto_database_client_unittest.cc",
-    "shared_proto_database_unittest.cc",
-    "unique_proto_database_unittest.cc",
+    "internal/proto_database_wrapper_unittest.cc",
+    "internal/shared_proto_database_client_unittest.cc",
+    "internal/shared_proto_database_unittest.cc",
+    "internal/unique_proto_database_unittest.cc",
   ]
   deps = [
     ":test_support",

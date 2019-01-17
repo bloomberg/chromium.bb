@@ -1,8 +1,8 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef COMPONENTS_LEVELDB_PROTO_PROTO_LEVELDB_WRAPPER_H_
-#define COMPONENTS_LEVELDB_PROTO_PROTO_LEVELDB_WRAPPER_H_
+#ifndef COMPONENTS_LEVELDB_PROTO_INTERNAL_PROTO_LEVELDB_WRAPPER_H_
+#define COMPONENTS_LEVELDB_PROTO_INTERNAL_PROTO_LEVELDB_WRAPPER_H_
 
 #include <memory>
 #include <string>
@@ -17,9 +17,9 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
-#include "components/leveldb_proto/leveldb_database.h"
-#include "components/leveldb_proto/proto_database.h"
-#include "components/leveldb_proto/proto_leveldb_wrapper_metrics.h"
+#include "components/leveldb_proto/internal/leveldb_database.h"
+#include "components/leveldb_proto/internal/proto_leveldb_wrapper_metrics.h"
+#include "components/leveldb_proto/public/proto_database.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
 namespace base {
@@ -36,7 +36,6 @@ using KeyVector = std::vector<std::string>;
 // Construction/calls/destruction should all happen on the same thread.
 class ProtoLevelDBWrapper {
  public:
-
   // All blocking calls/disk access will happen on the provided |task_runner|.
   ProtoLevelDBWrapper(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
@@ -463,4 +462,4 @@ void ProtoLevelDBWrapper::GetEntry(
 
 }  // namespace leveldb_proto
 
-#endif  // COMPONENTS_LEVELDB_PROTO_PROTO_LEVELDB_WRAPPER_H_
+#endif  // COMPONENTS_LEVELDB_PROTO_INTERNAL_PROTO_LEVELDB_WRAPPER_H_

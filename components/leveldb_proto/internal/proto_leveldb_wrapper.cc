@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/leveldb_proto/proto_leveldb_wrapper.h"
+#include "components/leveldb_proto/internal/proto_leveldb_wrapper.h"
 
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/leveldb_proto/proto_leveldb_wrapper_metrics.h"
+#include "components/leveldb_proto/internal/proto_leveldb_wrapper_metrics.h"
 
 namespace leveldb_proto {
 
