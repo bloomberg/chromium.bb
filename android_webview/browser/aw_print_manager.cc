@@ -8,7 +8,6 @@
 #include "components/printing/browser/print_manager_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_view_host.h"
 
 namespace android_webview {
 
@@ -45,9 +44,9 @@ AwPrintManager::AwPrintManager(content::WebContents* contents,
                                const base::FileDescriptor& file_descriptor,
                                PdfWritingDoneCallback callback)
     : PrintManager(contents), settings_(settings) {
-  set_file_descriptor(file_descriptor);
+  file_descriptor_ = file_descriptor;
   pdf_writing_done_callback_ = std::move(callback);
-  cookie_ = 1;
+  cookie_ = 1;  // Set a valid dummy cookie value.
 }
 
 AwPrintManager::~AwPrintManager() {
@@ -72,8 +71,7 @@ bool AwPrintManager::OnMessageReceived(
                                     FrameDispatchHelper::OnScriptedPrint)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  return handled ? true
-                 : PrintManager::OnMessageReceived(message, render_frame_host);
+  return handled || PrintManager::OnMessageReceived(message, render_frame_host);
 }
 
 void AwPrintManager::OnGetDefaultPrintSettings(
