@@ -102,6 +102,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   const GURL& GetPreviousURL() override;
   net::HostPortPair GetSocketAddress() override;
   const net::HttpRequestHeaders& GetRequestHeaders() override;
+  void RemoveRequestHeader(const std::string& header_name) override;
+  void SetRequestHeader(const std::string& header_name,
+                        const std::string& header_value) override;
   const net::HttpResponseHeaders* GetResponseHeaders() override;
   net::HttpResponseInfo::ConnectionInfo GetConnectionInfo() override;
   const net::SSLInfo& GetSSLInfo() override;
@@ -347,17 +350,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // This is used to inform the RenderProcessHost to expect a navigation to the
   // url we're navigating to.
   void SetExpectedProcess(RenderProcessHost* expected_process);
-
-  // Remove a request's header. If the header is not present, it has no effect.
-  // Must be called during a redirect.
-  void RemoveRequestHeader(const std::string& header_name);
-
-  // Set a request's header. If the header is already present, its value is
-  // overwritten. When modified during a navigation start, the headers will be
-  // applied to the initial network request. When modified during a redirect,
-  // the headers will be applied to the redirected request.
-  void SetRequestHeader(const std::string& header_name,
-                        const std::string& header_value);
 
   NavigationThrottle* GetDeferringThrottleForTesting() const {
     return GetDeferringThrottle();

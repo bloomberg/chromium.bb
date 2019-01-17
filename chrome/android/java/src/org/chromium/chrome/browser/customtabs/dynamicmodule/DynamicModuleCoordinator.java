@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -40,6 +41,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.content_public.browser.NavigationHandleProxy;
 import org.chromium.content_public.browser.WebContents;
 
 import java.lang.annotation.Retention;
@@ -111,6 +113,45 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
             maybeCustomizeCctHeader(url);
         }
     };
+
+    // Update the request's header on module managed URLs.
+    private final EmptyTabObserver mCustomRequestHeaderModifier = new EmptyTabObserver() {
+        @Override
+        public void onDidStartNavigation(Tab tab, String url, boolean isInMainFrame,
+                boolean isSameDocument, long navigationHandleProxy) {
+            if (!isInMainFrame || isSameDocument) return;
+
+            updateCustomRequestHeader(url, navigationHandleProxy, false /* isRedirect */);
+        }
+
+        @Override
+        public void onDidRedirectNavigation(
+                Tab tab, String url, boolean isInMainFrame, long navigationHandleProxy) {
+            if (!isInMainFrame) return;
+
+            updateCustomRequestHeader(url, navigationHandleProxy, true /* isRedirect */);
+        }
+
+        private void updateCustomRequestHeader(
+                String url, long navigationHandleProxy, boolean isRedirect) {
+            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE_CUSTOM_REQUEST_HEADER))
+                return;
+            try (TraceEvent e = TraceEvent.scoped(
+                         "DynamicModuleCoordinator.updateCustomRequestHeader")) {
+                if (isModuleManagedUrl(url)) {
+                    String headerValue = mIntentDataProvider.getExtraModuleManagedUrlsHeaderValue();
+                    if (headerValue != null) {
+                        NavigationHandleProxy.nativeSetRequestHeader(navigationHandleProxy,
+                                DynamicModuleConstants.MANAGED_URL_HEADER, headerValue);
+                    }
+                } else if (isRedirect) {
+                    NavigationHandleProxy.nativeRemoveRequestHeader(
+                            navigationHandleProxy, DynamicModuleConstants.MANAGED_URL_HEADER);
+                }
+            }
+        }
+    };
+
     private final DynamicModuleNavigationEventObserver mModuleNavigationEventObserver =
             new DynamicModuleNavigationEventObserver();
 
@@ -131,6 +172,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
 
         mTabObserverRegistrar.registerTabObserver(mModuleNavigationEventObserver);
         mTabObserverRegistrar.registerTabObserver(mHeaderVisibilityObserver);
+        mTabObserverRegistrar.registerTabObserver(mCustomRequestHeaderModifier);
 
         mActivityDelegate = activityDelegate;
         mTopBarDelegate = topBarDelegate;
@@ -306,7 +348,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
                         >= DynamicModuleConstants.ON_NAVIGATION_EVENT_MODULE_API_VERSION) {
                     mModuleNavigationEventObserver.setActivityDelegate(mActivityDelegate);
                 } else {
-                    unregisterModuleObservers();
+                    unregisterObserver(mModuleNavigationEventObserver);
                 }
 
                 // Initialise the PostMessageHandler for the current web contents.
@@ -393,6 +435,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     private void unregisterModuleObservers() {
         unregisterObserver(mModuleNavigationEventObserver);
         unregisterObserver(mHeaderVisibilityObserver);
+        unregisterObserver(mCustomRequestHeaderModifier);
     }
 
     private void unregisterObserver(TabObserver observer) {

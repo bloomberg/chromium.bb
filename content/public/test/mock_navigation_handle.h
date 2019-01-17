@@ -69,6 +69,8 @@ class MockNavigationHandle : public NavigationHandle {
   const net::HttpRequestHeaders& GetRequestHeaders() override {
     return request_headers_;
   }
+  MOCK_METHOD1(RemoveRequestHeader, void(const std::string&));
+  MOCK_METHOD2(SetRequestHeader, void(const std::string&, const std::string&));
   const net::HttpResponseHeaders* GetResponseHeaders() override {
     return response_headers_;
   }

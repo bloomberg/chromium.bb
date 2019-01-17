@@ -44,6 +44,7 @@ class WebContentsObserverProxy : public WebContentsObserver {
   void TitleWasSet(NavigationEntry* entry) override;
 
   void DidStartNavigation(NavigationHandle* navigation_handle) override;
+  void DidRedirectNavigation(NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
   void DidFinishLoad(RenderFrameHost* render_frame_host,
