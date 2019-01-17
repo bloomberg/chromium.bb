@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlBarDelegate;
@@ -84,8 +85,10 @@ public interface LocationBar extends UrlBarDelegate {
      * Initialize controls that will act as hooks to various functions.
      * @param windowDelegate {@link WindowDelegate} that will provide {@link Window} related info.
      * @param windowAndroid {@link WindowAndroid} that is used by the owning {@link Activity}.
+     * @param provider An {@link ActivityTabProvider} to access the activity's current tab.
      */
-    void initializeControls(WindowDelegate windowDelegate, WindowAndroid windowAndroid);
+    void initializeControls(WindowDelegate windowDelegate, WindowAndroid windowAndroid,
+            ActivityTabProvider provider);
 
     /**
      * Adds a URL focus change listener that will be notified when the URL gains or loses focus.

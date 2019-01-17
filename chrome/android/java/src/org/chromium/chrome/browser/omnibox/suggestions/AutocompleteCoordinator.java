@@ -17,6 +17,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
@@ -26,7 +27,8 @@ import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsList.Om
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionListViewBinder.SuggestionListViewHolder;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionView;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewViewBinder;
-import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionCoordinator;
+import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
+import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionViewBinder;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
@@ -89,7 +91,7 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
     /**
      * Provides the additional functionality to trigger and interact with autocomplete suggestions.
      */
-    public interface AutocompleteDelegate extends EditUrlSuggestionCoordinator.LocationBarDelegate {
+    public interface AutocompleteDelegate extends EditUrlSuggestionProcessor.LocationBarDelegate {
         /**
          * Notified that the URL text has changed.
          */
@@ -188,6 +190,11 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
                         () -> new SuggestionView(mListView.getContext()),
                         SuggestionViewViewBinder::bind);
 
+                adapter.registerType(
+                        OmniboxSuggestionUiType.EDIT_URL_SUGGESTION,
+                        () -> EditUrlSuggestionProcessor.createView(mListView.getContext()),
+                        EditUrlSuggestionViewBinder::bind);
+
                 mHolder = new SuggestionListViewHolder(container, list, adapter);
 
                 for (int i = 0; i < mCallbacks.size(); i++) {
@@ -238,6 +245,13 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
      */
     public void setWindowAndroid(WindowAndroid windowAndroid) {
         mMediator.setWindowAndroid(windowAndroid);
+    }
+
+    /**
+     * @param provider A means of accessing the activity's tab.
+     */
+    public void setActivityTabProvider(ActivityTabProvider provider) {
+        mMediator.setActivityTabProvider(provider);
     }
 
     /**

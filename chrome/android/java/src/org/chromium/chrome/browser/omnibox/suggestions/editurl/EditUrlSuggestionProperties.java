@@ -6,7 +6,9 @@ package org.chromium.chrome.browser.omnibox.suggestions.editurl;
 
 import android.view.View;
 
+import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
@@ -36,6 +38,9 @@ class EditUrlSuggestionProperties {
     public static final WritableObjectPropertyKey<View.OnClickListener> TEXT_CLICK_LISTENER =
             new WritableObjectPropertyKey<>();
 
-    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {COPY_ICON_VISIBLE,
+    private static final PropertyKey[] ALL_UNIQUE_KEYS = new PropertyKey[] {COPY_ICON_VISIBLE,
             SHARE_ICON_VISIBLE, TITLE_TEXT, URL_TEXT, BUTTON_CLICK_LISTENER, TEXT_CLICK_LISTENER};
+
+    public static final PropertyKey[] ALL_KEYS =
+            PropertyModel.concatKeys(ALL_UNIQUE_KEYS, SuggestionCommonProperties.ALL_KEYS);
 }

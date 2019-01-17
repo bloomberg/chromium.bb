@@ -43,8 +43,7 @@ public class EditUrlSuggestionViewBinder {
                             model.get(EditUrlSuggestionProperties.BUTTON_CLICK_LISTENER));
         } else if (EditUrlSuggestionProperties.TEXT_CLICK_LISTENER == propertyKey) {
             view.setOnClickListener(model.get(EditUrlSuggestionProperties.TEXT_CLICK_LISTENER));
-        } else {
-            throw new RuntimeException("Unknown property key in EditUrlSuggestionViewBinder!");
         }
+        // TODO(mdjones): Support SuggestionCommonProperties.*
     }
 }
