@@ -317,7 +317,7 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
 
   # Compiles with Error Prone take twice as long to run as pure javac. Thus GN
   # rules run both in parallel, with Error Prone only used for checks.
-  save_outputs = not options.use_errorprone_path
+  save_outputs = not options.enable_errorprone
 
   with build_utils.TempDir() as temp_dir:
     srcjars = options.java_srcjars
@@ -546,8 +546,11 @@ def _ParseOptions(argv):
       help='Whether code being compiled should be built with stricter '
       'warnings for chromium code.')
   parser.add_option(
-      '--use-errorprone-path',
-      help='Use the Errorprone compiler at this path.')
+      '--errorprone-path', help='Use the Errorprone compiler at this path.')
+  parser.add_option(
+      '--enable-errorprone',
+      action='store_true',
+      help='Enable errorprone checks')
   parser.add_option('--jar-path', help='Jar output path.')
   parser.add_option(
       '--javac-arg',
@@ -603,27 +606,38 @@ def main(argv):
   argv = build_utils.ExpandFileArgs(argv)
   options, java_files = _ParseOptions(argv)
 
-  if options.use_errorprone_path:
-    javac_path = options.use_errorprone_path
+  # Until we add a version of javac via DEPS, use errorprone with all checks
+  # disabled rather than javac. This ensures builds are reproducible.
+  # https://crbug.com/693079
+  # As of Jan 2019, on a z920, compiling chrome_java times:
+  # * With javac: 17 seconds
+  # * With errorprone (checks disabled): 20 seconds
+  # * With errorprone (checks enabled): 30 seconds
+  if options.errorprone_path:
+    javac_path = options.errorprone_path
   else:
     javac_path = distutils.spawn.find_executable('javac')
-  javac_cmd = [javac_path]
 
-  javac_cmd.extend((
-    '-g',
-    # Chromium only allows UTF8 source files.  Being explicit avoids
-    # javac pulling a default encoding from the user's environment.
-    '-encoding', 'UTF-8',
-    # Prevent compiler from compiling .java files not listed as inputs.
-    # See: http://blog.ltgt.net/most-build-tools-misuse-javac/
-    '-sourcepath', ':',
-  ))
+  javac_cmd = [
+      javac_path,
+      '-g',
+      # Chromium only allows UTF8 source files.  Being explicit avoids
+      # javac pulling a default encoding from the user's environment.
+      '-encoding',
+      'UTF-8',
+      # Prevent compiler from compiling .java files not listed as inputs.
+      # See: http://blog.ltgt.net/most-build-tools-misuse-javac/
+      '-sourcepath',
+      ':',
+  ]
 
-  if options.use_errorprone_path:
+  if options.enable_errorprone:
     for warning in ERRORPRONE_WARNINGS_TO_TURN_OFF:
       javac_cmd.append('-Xep:{}:OFF'.format(warning))
     for warning in ERRORPRONE_WARNINGS_TO_ERROR:
       javac_cmd.append('-Xep:{}:ERROR'.format(warning))
+  elif options.errorprone_path:
+    javac_cmd.append('-XepDisableAllChecks')
 
   if options.java_version:
     javac_cmd.extend([
@@ -665,7 +679,7 @@ def main(argv):
                       options.processorpath)
   # GN already knows of java_files, so listing them just make things worse when
   # they change.
-  depfile_deps = ([javac_path] + classpath_inputs + options.java_srcjars)
+  depfile_deps = [javac_path] + classpath_inputs + options.java_srcjars
   input_paths = depfile_deps + java_files
 
   output_paths = [
