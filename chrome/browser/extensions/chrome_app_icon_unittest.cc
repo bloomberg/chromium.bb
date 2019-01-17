@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
+#include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #include "chrome/browser/ui/app_list/search/extension_app_result.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
@@ -42,6 +43,15 @@ constexpr char kTestAppId[] = "emfkafnhnpcmabnnkckkchdilgeoekbo";
 // Receives icon image updates from ChromeAppIcon.
 class TestAppIcon : public ChromeAppIconDelegate {
  public:
+  TestAppIcon(content::BrowserContext* context,
+              const std::string& app_id,
+              int size,
+              const ChromeAppIconService::ResizeFunction& resize_function) {
+    app_icon_ = ChromeAppIconService::Get(context)->CreateIcon(
+        this, app_id, size, resize_function);
+    DCHECK(app_icon_);
+  }
+
   TestAppIcon(content::BrowserContext* context,
               const std::string& app_id,
               int size) {
@@ -306,10 +316,14 @@ TEST_F(ChromeAppIconWithModelTest, IconsTheSame) {
   std::unique_ptr<gfx::ImageSkia> app_list_item_image =
       app_list_item->icon().DeepCopy();
 
+  const ChromeAppIconService::ResizeFunction resize_function =
+      base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd);
+
   // Load reference icon sized for the app list.
   TestAppIcon reference_icon_app_list(
       profile(), kTestAppId,
-      app_list::AppListConfig::instance().grid_icon_dimension());
+      app_list::AppListConfig::instance().grid_icon_dimension(),
+      resize_function);
 
   // Wait until reference data is loaded.
   reference_icon_app_list.image_skia().EnsureRepsForSupportedScales();
@@ -323,7 +337,8 @@ TEST_F(ChromeAppIconWithModelTest, IconsTheSame) {
   // Load reference icon sized for the search result.
   TestAppIcon reference_icon_search(
       profile(), kTestAppId,
-      app_list::AppListConfig::instance().suggestion_chip_icon_dimension());
+      app_list::AppListConfig::instance().suggestion_chip_icon_dimension(),
+      resize_function);
 
   // Wait until reference data is loaded.
   reference_icon_search.image_skia().EnsureRepsForSupportedScales();
@@ -338,7 +353,8 @@ TEST_F(ChromeAppIconWithModelTest, IconsTheSame) {
 
   // Load reference icon sized for the shelf.
   TestAppIcon reference_icon_shelf(profile(), kTestAppId,
-                                   extension_misc::EXTENSION_ICON_MEDIUM);
+                                   extension_misc::EXTENSION_ICON_MEDIUM,
+                                   resize_function);
 
   // Wait until reference data is loaded.
   reference_icon_shelf.image_skia().EnsureRepsForSupportedScales();
@@ -347,7 +363,7 @@ TEST_F(ChromeAppIconWithModelTest, IconsTheSame) {
 
   TestAppIconLoader loader_delegate;
   ChromeAppIconLoader loader(profile(), extension_misc::EXTENSION_ICON_MEDIUM,
-                             &loader_delegate);
+                             resize_function, &loader_delegate);
   loader.FetchImage(kTestAppId);
   WaitForIconUpdates(loader_delegate.icon());
   EXPECT_TRUE(

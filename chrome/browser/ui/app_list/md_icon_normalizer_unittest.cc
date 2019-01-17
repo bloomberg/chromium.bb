@@ -290,16 +290,25 @@ TEST_P(MdIconNormalizerTestWithNoAlpha, NoScaling) {
 
   const SkPixmap pixmap = bitmap.pixmap();
 
-  ASSERT_NE(kPremul_SkAlphaType, pixmap.alphaType());
-  ASSERT_NE(kUnpremul_SkAlphaType, pixmap.alphaType());
+  ASSERT_EQ(kOpaque_SkAlphaType, pixmap.alphaType());
 
-  // Transparent bitmap, no scaling.
+  // In the absence of alpha channel, any bitmap should be treated as a solid
+  // block of opaque pixels.
+
+  // Transparent color should be treated the same as opaque.
   pixmap.erase(SK_ColorTRANSPARENT);
-  EXPECT_EQ(1, ::GetScale(bitmap));
+  ::ExpectScaledSize(kGuidelineSizeSquare, kIconSize, bitmap);
 
-  // Full size square, should not scale, as alpha information is not available.
+  // Draw a smaller at square at the center, should not make any difference.
+  constexpr int kInset = 4;
+  constexpr int kWidth = kIconSize - kInset * 2;
+  constexpr int kHeight = kWidth;
+  pixmap.erase(kFillColor, SkIRect::MakeXYWH(kInset, kInset, kWidth, kHeight));
+  ::ExpectScaledSize(kGuidelineSizeSquare, kIconSize, bitmap);
+
+  // Full size square, the result is the same.
   pixmap.erase(kFillColor);
-  EXPECT_EQ(1, ::GetScale(bitmap));
+  ::ExpectScaledSize(kGuidelineSizeSquare, kIconSize, bitmap);
 }
 
 INSTANTIATE_TEST_CASE_P(

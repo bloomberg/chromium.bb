@@ -82,10 +82,11 @@ void ConvertToConvexArray(std::vector<float>* x_coord,
 float GetMdIconScale(const SkBitmap& bitmap) {
   const SkPixmap pixmap = bitmap.pixmap();
 
-  // Do not attempt scaling if alpha information is not available.
+  // In the absence of alpha information, assume that the icon is a fully opaque
+  // square and scale accordingly.
   if (pixmap.alphaType() == kUnknown_SkAlphaType ||
       pixmap.alphaType() == kOpaque_SkAlphaType) {
-    return 1;
+    return (float)std::sqrt(kMaxSquareAreaFactor);
   }
 
   bool const nativeColorType = pixmap.colorType() == kN32_SkColorType;
