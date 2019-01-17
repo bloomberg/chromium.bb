@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -131,8 +132,9 @@ int FeaturePromoBubbleView::GetDialogButtons() const {
 }
 
 bool FeaturePromoBubbleView::OnMousePressed(const ui::MouseEvent& event) {
-  CloseBubble();
-  return true;
+  base::RecordAction(
+      base::UserMetricsAction("InProductHelp.Promos.BubbleClicked"));
+  return false;
 }
 
 void FeaturePromoBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
