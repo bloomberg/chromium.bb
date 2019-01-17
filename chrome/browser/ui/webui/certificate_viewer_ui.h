@@ -7,17 +7,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
-#include "ui/web_dialogs/web_dialog_ui.h"
-
-// The WebUI for chrome://view-cert-dialog
-class CertificateViewerModalDialogUI : public ui::WebDialogUI {
- public:
-  explicit CertificateViewerModalDialogUI(content::WebUI* web_ui);
-  ~CertificateViewerModalDialogUI() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CertificateViewerModalDialogUI);
-};
 
 // The WebUI for chrome://view-cert
 class CertificateViewerUI : public ConstrainedWebDialogUI {

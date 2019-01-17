@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/certificate_dialogs.h"
 #include "chrome/browser/ui/webui/certificate_viewer_ui.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
@@ -120,17 +119,44 @@ void ShowCertificateViewer(WebContents* web_contents,
       net::x509_util::CreateCERTCertificateListFromX509Certificate(cert);
   if (nss_certs.empty())
     return;
-  CertificateViewerDialog* dialog =
-      new CertificateViewerDialog(std::move(nss_certs));
-  dialog->Show(web_contents, parent);
+
+  CertificateViewerDialog::ShowConstrained(std::move(nss_certs), web_contents,
+                                           parent);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // CertificateViewerDialog
 
-CertificateViewerModalDialog::CertificateViewerModalDialog(
+// static
+CertificateViewerDialog* CertificateViewerDialog::ShowConstrained(
+    net::ScopedCERTCertificateList certs,
+    WebContents* web_contents,
+    gfx::NativeWindow parent) {
+  CertificateViewerDialog* dialog =
+      new CertificateViewerDialog(std::move(certs));
+
+  // TODO(bshe): UI tweaks needed for Aura HTML Dialog, such as adding padding
+  // on the title for Aura ConstrainedWebDialogUI.
+  dialog->delegate_ = ShowConstrainedWebDialog(
+      web_contents->GetBrowserContext(), dialog, web_contents);
+
+  // Clear the zoom level for the dialog so that it is not affected by the page
+  // zoom setting.
+  content::WebContents* dialog_web_contents =
+      dialog->delegate_->GetWebContents();
+  const GURL dialog_url = dialog->GetDialogContentURL();
+  content::HostZoomMap::Get(dialog_web_contents->GetSiteInstance())
+      ->SetZoomLevelForHostAndScheme(dialog_url.scheme(), dialog_url.host(), 0);
+  return dialog;  // For tests.
+}
+
+gfx::NativeWindow CertificateViewerDialog::GetNativeWebContentsModalDialog() {
+  return delegate_->GetNativeDialog();
+}
+
+CertificateViewerDialog::CertificateViewerDialog(
     net::ScopedCERTCertificateList certs)
-    : nss_certs_(std::move(certs)), webui_(NULL), window_(NULL) {
+    : nss_certs_(std::move(certs)) {
   // Construct the dialog title from the certificate.
   title_ = l10n_util::GetStringFUTF16(
       IDS_CERT_INFO_DIALOG_TITLE,
@@ -138,52 +164,34 @@ CertificateViewerModalDialog::CertificateViewerModalDialog(
           x509_certificate_model::GetTitle(nss_certs_.front().get())));
 }
 
-CertificateViewerModalDialog::~CertificateViewerModalDialog() {
+CertificateViewerDialog::~CertificateViewerDialog() = default;
+
+ui::ModalType CertificateViewerDialog::GetDialogModalType() const {
+  return ui::MODAL_TYPE_NONE;
 }
 
-void CertificateViewerModalDialog::Show(content::WebContents* web_contents,
-                                        gfx::NativeWindow parent) {
-  window_ = chrome::ShowWebDialog(parent,
-                                  web_contents->GetBrowserContext(),
-                                  this);
-}
-
-gfx::NativeWindow
-CertificateViewerModalDialog::GetNativeWebContentsModalDialog() {
-#if defined(USE_AURA)
-  return window_;
-#else
-  NOTREACHED();
-  return NULL;
-#endif
-}
-
-ui::ModalType CertificateViewerModalDialog::GetDialogModalType() const {
-  return ui::MODAL_TYPE_SYSTEM;
-}
-
-base::string16 CertificateViewerModalDialog::GetDialogTitle() const {
+base::string16 CertificateViewerDialog::GetDialogTitle() const {
   return title_;
 }
 
-GURL CertificateViewerModalDialog::GetDialogContentURL() const {
-  return GURL(chrome::kChromeUICertificateViewerDialogURL);
+GURL CertificateViewerDialog::GetDialogContentURL() const {
+  return GURL(chrome::kChromeUICertificateViewerURL);
 }
 
-void CertificateViewerModalDialog::GetWebUIMessageHandlers(
+void CertificateViewerDialog::GetWebUIMessageHandlers(
     std::vector<WebUIMessageHandler*>* handlers) const {
   handlers->push_back(new CertificateViewerDialogHandler(
-      const_cast<CertificateViewerModalDialog*>(this),
+      const_cast<CertificateViewerDialog*>(this),
       net::x509_util::DupCERTCertificateList(nss_certs_)));
 }
 
-void CertificateViewerModalDialog::GetDialogSize(gfx::Size* size) const {
+void CertificateViewerDialog::GetDialogSize(gfx::Size* size) const {
   const int kDefaultWidth = 544;
   const int kDefaultHeight = 628;
   size->SetSize(kDefaultWidth, kDefaultHeight);
 }
 
-std::string CertificateViewerModalDialog::GetDialogArgs() const {
+std::string CertificateViewerDialog::GetDialogArgs() const {
   std::string data;
 
   // Certificate information. The keys in this dictionary's general key
@@ -275,67 +283,30 @@ std::string CertificateViewerModalDialog::GetDialogArgs() const {
   return data;
 }
 
-void CertificateViewerModalDialog::OnDialogShown(
+void CertificateViewerDialog::OnDialogShown(
     content::WebUI* webui,
     content::RenderViewHost* render_view_host) {
   webui_ = webui;
 }
 
-void CertificateViewerModalDialog::OnDialogClosed(
-    const std::string& json_retval) {
+void CertificateViewerDialog::OnDialogClosed(const std::string& json_retval) {
+  // Don't |delete this|: owned by the constrained dialog manager.
 }
 
-void CertificateViewerModalDialog::OnCloseContents(WebContents* source,
+void CertificateViewerDialog::OnCloseContents(WebContents* source,
                                               bool* out_close_dialog) {
   *out_close_dialog = true;
 }
 
-bool CertificateViewerModalDialog::ShouldShowDialogTitle() const {
+bool CertificateViewerDialog::ShouldShowDialogTitle() const {
   return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// CertificateViewerDialog
-
-CertificateViewerDialog::CertificateViewerDialog(
-    net::ScopedCERTCertificateList certs)
-    : CertificateViewerModalDialog(std::move(certs)), dialog_(NULL) {}
-
-CertificateViewerDialog::~CertificateViewerDialog() {
-}
-
-void CertificateViewerDialog::Show(WebContents* web_contents,
-                                   gfx::NativeWindow parent) {
-  // TODO(bshe): UI tweaks needed for Aura HTML Dialog, such as adding padding
-  // on the title for Aura ConstrainedWebDialogUI.
-  dialog_ = ShowConstrainedWebDialog(web_contents->GetBrowserContext(), this,
-                                     web_contents);
-
-  // Clear the zoom level for the dialog so that it is not affected by the page
-  // zoom setting.
-  content::WebContents* dialog_web_contents = dialog_->GetWebContents();
-  const GURL dialog_url = GetDialogContentURL();
-  content::HostZoomMap::Get(dialog_web_contents->GetSiteInstance())
-      ->SetZoomLevelForHostAndScheme(dialog_url.scheme(), dialog_url.host(), 0);
-}
-
-gfx::NativeWindow CertificateViewerDialog::GetNativeWebContentsModalDialog() {
-  return dialog_->GetNativeDialog();
-}
-
-GURL CertificateViewerDialog::GetDialogContentURL() const {
-  return GURL(chrome::kChromeUICertificateViewerURL);
-}
-
-ui::ModalType CertificateViewerDialog::GetDialogModalType() const {
-  return ui::MODAL_TYPE_NONE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // CertificateViewerDialogHandler
 
 CertificateViewerDialogHandler::CertificateViewerDialogHandler(
-    CertificateViewerModalDialog* dialog,
+    CertificateViewerDialog* dialog,
     net::ScopedCERTCertificateList cert_chain)
     : dialog_(dialog), cert_chain_(std::move(cert_chain)) {}
 

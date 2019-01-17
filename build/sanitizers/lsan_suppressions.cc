@@ -81,9 +81,6 @@ char kLSanDefaultSuppressions[] =
     // http://crbug.com/355641
     "leak:TrayAccessibilityTest\n"
 
-    // http://crbug.com/354644
-    "leak:CertificateViewerUITest::ShowModalCertificateViewer\n"
-
     // http://crbug.com/356306
     "leak:service_manager::SetProcessTitleFromCommandLine\n"
 

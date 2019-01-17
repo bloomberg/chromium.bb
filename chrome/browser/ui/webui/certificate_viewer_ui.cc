@@ -63,19 +63,6 @@ content::WebUIDataSource* GetWebUIDataSource(const std::string& host) {
 
 }  // namespace
 
-CertificateViewerModalDialogUI::CertificateViewerModalDialogUI(
-    content::WebUI* web_ui)
-    : ui::WebDialogUI(web_ui) {
-  // Set up the chrome://view-cert-dialog source.
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(
-      profile,
-      GetWebUIDataSource(chrome::kChromeUICertificateViewerDialogHost));
-}
-
-CertificateViewerModalDialogUI::~CertificateViewerModalDialogUI() {
-}
-
 CertificateViewerUI::CertificateViewerUI(content::WebUI* web_ui)
     : ConstrainedWebDialogUI(web_ui) {
   // Set up the chrome://view-cert source.
