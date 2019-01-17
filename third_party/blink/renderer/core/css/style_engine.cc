@@ -318,6 +318,8 @@ void StyleEngine::AdoptedStyleSheetsWillChange(
     EnsureStyleSheetCollectionFor(tree_scope);
     if (tree_scope != document_)
       active_tree_scopes_.insert(&tree_scope);
+  } else if (!StyleSheetCollectionFor(tree_scope)) {
+    return;
   }
   SetNeedsActiveStyleUpdate(tree_scope);
 }

@@ -354,6 +354,7 @@ void TreeScope::SetAdoptedStyleSheets(
       exception_state.ThrowDOMException(
           DOMExceptionCode::kNotAllowedError,
           "Can't adopt non-constructed stylesheets.");
+      return;
     }
     Document* associated_document = sheet->AssociatedDocument();
     if (associated_document && *associated_document != GetDocument()) {
