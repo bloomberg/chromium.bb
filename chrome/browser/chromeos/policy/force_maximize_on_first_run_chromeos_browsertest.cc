@@ -53,8 +53,7 @@ class ForceMaximizeOnFirstRunTest : public LoginPolicyTestBase {
   DISALLOW_COPY_AND_ASSIGN(ForceMaximizeOnFirstRunTest);
 };
 
-// crbug.com/919100: disabled because of flakiness.
-IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, DISABLED_PRE_TwoRuns) {
+IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, PRE_TwoRuns) {
   SetUpResolution();
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, kEmptyServices);
@@ -77,8 +76,7 @@ IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, DISABLED_PRE_TwoRuns) {
   EXPECT_FALSE(browser1->window()->IsMaximized());
 }
 
-// crbug.com/919100: disabled because of flakiness.
-IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, DISABLED_TwoRuns) {
+IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, TwoRuns) {
   SetUpResolution();
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
