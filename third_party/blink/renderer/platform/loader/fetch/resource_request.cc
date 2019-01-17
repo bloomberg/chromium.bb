@@ -150,12 +150,12 @@ void ResourceRequest::SetURL(const KURL& url) {
   url_ = url;
 }
 
-const KURL& ResourceRequest::GetOriginalUrl() const {
-  return original_url_;
+const KURL& ResourceRequest::GetInitialUrlForResourceTiming() const {
+  return initial_url_for_resource_timing_;
 }
 
-void ResourceRequest::SetOriginalUrl(const KURL& url) {
-  original_url_ = url;
+void ResourceRequest::SetInitialUrlForResourceTiming(const KURL& url) {
+  initial_url_for_resource_timing_ = url;
 }
 
 void ResourceRequest::RemoveUserAndPassFromURL() {
