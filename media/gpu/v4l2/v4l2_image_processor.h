@@ -18,9 +18,9 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_checker.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
 #include "media/gpu/image_processor.h"
@@ -37,13 +37,6 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
  public:
   // ImageProcessor implementation.
   ~V4L2ImageProcessor() override;
-  bool Process(scoped_refptr<VideoFrame> frame,
-               int output_buffer_index,
-               std::vector<base::ScopedFD> output_dmabuf_fds,
-               FrameReadyCB cb) override;
-  bool Process(scoped_refptr<VideoFrame> input_frame,
-               scoped_refptr<VideoFrame> output_frame,
-               FrameReadyCB cb) override;
   bool Reset() override;
 
   // Returns true if image processing is supported on this platform.
@@ -142,11 +135,16 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   void DestroyInputBuffers();
   void DestroyOutputBuffers();
 
-  // Posts error on |client_task_runner_| thread. This must be called in a
-  // thread |client_task_runner_| doesn't belong to.
   void NotifyError();
-  // Invokes |erro_cb_|. This must be called in |client_task_runner_|'s thread.
-  void NotifyErrorOnClientThread();
+
+  // ImageProcessor implementation.
+  bool ProcessInternal(scoped_refptr<VideoFrame> frame,
+                       int output_buffer_index,
+                       std::vector<base::ScopedFD> output_dmabuf_fds,
+                       FrameReadyCB cb) override;
+  bool ProcessInternal(scoped_refptr<VideoFrame> input_frame,
+                       scoped_refptr<VideoFrame> output_frame,
+                       FrameReadyCB cb) override;
 
   void ProcessTask(std::unique_ptr<JobRecord> job_record);
   void ServiceDeviceTask();
@@ -157,9 +155,6 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
 
   // Ran on device_poll_thread_ to wait for device events.
   void DevicePollTask(bool poll_device);
-
-  // A processed frame is ready.
-  void FrameReady(FrameReadyCB cb, scoped_refptr<VideoFrame> frame);
 
   // Stop all processing and clean up. After this method returns no more
   // callbacks will be invoked.
@@ -172,9 +167,6 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   // Stores output frame's visible size and v4l2_memory type.
   const gfx::Size output_visible_size_;
   const v4l2_memory output_memory_type_;
-
-  // A task runner belongs to a thread where V4L2ImageProcessor is created.
-  const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner_;
 
   // V4L2 device in use.
   scoped_refptr<V4L2Device> device_;
@@ -217,20 +209,8 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   // Error callback to the client.
   ErrorCB error_cb_;
 
-  // Emits weak pointer to |this| for tasks from |processor_thread_| to the
-  // thread that creates V4L2ImageProcessor. So the tasks are cancelled if
-  // |this| is invalidated, which leads to avoid calling FrameReadyCB and
-  // ErrorCB of the invalidated client (e.g. V4L2VideoEncodeAccelerator).
-  // On the other hand, since |device_thread_| is the member of this class, it
-  // is guaranteed this instance is alive when a task on the thread is executed.
-  // Therefore, base::Unretained(this) is safe for |device_thread_| tasks
-  // posted from |client_task_runner_|'s thread.
-  // NOTE: |weak_this_| must always be dereferenced and invalidated on the
-  // thread that creates V4L2ImageProcessor.
-  base::WeakPtr<V4L2ImageProcessor> weak_this_;
-
-  // The WeakPtrFactory for |weak_this_|.
-  base::WeakPtrFactory<V4L2ImageProcessor> weak_this_factory_;
+  // Checker for the thread that creates this V4L2ImageProcessor.
+  THREAD_CHECKER(client_thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(V4L2ImageProcessor);
 };
