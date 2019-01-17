@@ -46,7 +46,10 @@ class CONTENT_EXPORT AppCacheBackendImpl {
 
   // The xxxWithCallback functions take ownership of the callback iff the host
   // is found (and the return value is true). If the result is false, the
-  // callback is still available to the caller of these methods.
+  // callback might still be available to the caller of these methods.
+  // TODO(mek): Just pass callbacks unconditionally. That is possible if the
+  // caller is changed to call BindingSet::ReportBadMessage rather than calling
+  // the global mojo::ReportBadMessage.
   bool GetStatusWithCallback(int host_id, GetStatusCallback* callback);
   bool StartUpdateWithCallback(int host_id, StartUpdateCallback* callback);
   bool SwapCacheWithCallback(int host_id, SwapCacheCallback* callback);
