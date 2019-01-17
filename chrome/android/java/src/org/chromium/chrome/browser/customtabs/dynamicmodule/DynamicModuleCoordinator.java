@@ -198,9 +198,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
      */
     @VisibleForTesting
     /* package */ void loadModule() {
-        ComponentName componentName = mIntentDataProvider.getModuleComponentName();
-
-        ModuleLoader moduleLoader = mConnection.getModuleLoader(componentName);
+        ModuleLoader moduleLoader = getModuleLoader();
         moduleLoader.loadModule();
         mModuleCallback = new LoadModuleCallback();
         moduleLoader.addCallbackAndIncrementUseCount(mModuleCallback);
@@ -209,10 +207,13 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     @Override
     public void destroy() {
         mModuleEntryPoint = null;
+        getModuleLoader().removeCallbackAndDecrementUseCount(mModuleCallback);
+    }
 
-        ComponentName moduleComponentName = mIntentDataProvider.getModuleComponentName();
-        mConnection.getModuleLoader(moduleComponentName)
-                    .removeCallbackAndDecrementUseCount(mModuleCallback);
+    private ModuleLoader getModuleLoader() {
+        ComponentName componentName = mIntentDataProvider.getModuleComponentName();
+        int dexResourceId = mIntentDataProvider.getModuleDexResourceId();
+        return mConnection.getModuleLoader(componentName, dexResourceId);
     }
 
     /* package */ Context getActivityContext() {

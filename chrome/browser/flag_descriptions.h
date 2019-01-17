@@ -1333,6 +1333,9 @@ extern const char kCCTModuleCacheDescription[];
 extern const char kCCTModuleCustomHeaderName[];
 extern const char kCCTModuleCustomHeaderDescription[];
 
+extern const char kCCTModuleDexLoadingName[];
+extern const char kCCTModuleDexLoadingDescription[];
+
 extern const char kCCTModulePostMessageName[];
 extern const char kCCTModulePostMessageDescription[];
 

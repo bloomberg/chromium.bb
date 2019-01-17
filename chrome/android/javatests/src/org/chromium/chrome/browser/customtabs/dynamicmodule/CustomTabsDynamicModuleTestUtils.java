@@ -13,6 +13,7 @@ import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModule
 import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleNavigationEventObserver.URL_KEY;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -27,6 +28,8 @@ import org.chromium.chrome.browser.AppHooksModule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -39,6 +42,24 @@ public class CustomTabsDynamicModuleTestUtils {
     /* package */ final static String FAKE_MODULE_CLASS_NAME = FakeCCTDynamicModule.class.getName();
     /* package */ final static ComponentName FAKE_MODULE_COMPONENT_NAME = new ComponentName(
             FAKE_MODULE_PACKAGE_NAME, FAKE_MODULE_CLASS_NAME);
+
+    /**
+     * A resource ID used to load {@link #FAKE_MODULE_DEX}.
+     */
+    /* package */ final static int FAKE_MODULE_DEX_RESOURCE_ID = 42;
+
+    /**
+     * A fake "dex file" that consists of couple of bytes.
+     */
+    /* package */ final static byte[] FAKE_MODULE_DEX = new byte[] {42, 42};
+
+    /**
+     * A fake {@link ModuleLoader.DexClassLoaderProvider} that provides the {@link ClassLoader} of
+     * {@link FakeCCTDynamicModule} which guarantees that it can always load the entry module.
+     */
+    /* package */ final static ModuleLoader.DexClassLoaderProvider FAKE_CLASS_LOADER_PROVIDER =
+            dexFile -> FakeCCTDynamicModule.class.getClassLoader();
+
     private static int sModuleVersion = 1;
 
     public static void setModuleVersion(int version) {
@@ -242,6 +263,29 @@ public class CustomTabsDynamicModuleTestUtils {
         IntentBuilder setHideCCTHeader(boolean isEnabled) {
             mIntent.putExtra(EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS, isEnabled);
             return this;
+        }
+    }
+
+    /**
+     * A fake version of {@link ModuleLoader.DexInputStreamProvider} that provides {@link
+     * #FAKE_MODULE_DEX}.
+     */
+    /* package */ static class FakeDexInputStreamProvider
+            implements ModuleLoader.DexInputStreamProvider {
+        private int mCallCount;
+
+        @Override
+        public InputStream createInputStream(int dexResourceId, Context moduleContext) {
+            if (dexResourceId != FAKE_MODULE_DEX_RESOURCE_ID) {
+                throw new RuntimeException("Unknown resource ID: " + dexResourceId);
+            }
+
+            mCallCount++;
+            return new ByteArrayInputStream(FAKE_MODULE_DEX);
+        }
+
+        /* package */ int getCallCount() {
+            return mCallCount;
         }
     }
 }

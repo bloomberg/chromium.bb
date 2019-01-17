@@ -33,13 +33,13 @@ public final class ModuleMetrics {
 
     /**
      * Possible results when loading a dynamic module. Keep in sync with the
-     * CustomTabs.DynamicModule.LoadResult enum in histograms.xml. Do not remove
+     * CustomTabsDynamicModuleLoadResult enum in enums.xml. Do not remove
      * or change existing values other than NUM_ENTRIES.
      */
     @IntDef({LoadResult.SUCCESS_NEW, LoadResult.SUCCESS_CACHED, LoadResult.FEATURE_DISABLED,
             LoadResult.NOT_GOOGLE_SIGNED, LoadResult.PACKAGE_NAME_NOT_FOUND_EXCEPTION,
             LoadResult.CLASS_NOT_FOUND_EXCEPTION, LoadResult.INSTANTIATION_EXCEPTION,
-            LoadResult.INCOMPATIBLE_VERSION})
+            LoadResult.INCOMPATIBLE_VERSION, LoadResult.FAILED_TO_COPY_DEX_EXCEPTION})
     @Retention(RetentionPolicy.SOURCE)
     public @interface LoadResult {
         /** A new instance of the module was loaded successfully. */
@@ -59,8 +59,10 @@ public final class ModuleMetrics {
         int INSTANTIATION_EXCEPTION = 6;
         /** The module was loaded but the host and module versions are incompatible. */
         int INCOMPATIBLE_VERSION = 7;
+        /** The module dex could not be copied to local storage. */
+        int FAILED_TO_COPY_DEX_EXCEPTION = 8;
         /** Upper bound for legal sample values - all sample values have to be strictly lower. */
-        int NUM_ENTRIES = 8;
+        int NUM_ENTRIES = 9;
     }
 
     /**

@@ -9985,6 +9985,8 @@ Called by update_net_error_codes.py.-->
              instantiated"/>
   <int value="7"
       label="Loaded but the host and module versions are incompatible"/>
+  <int value="8"
+      label="Not loaded because the module dex could not be copied to storage"/>
 </enum>
 
 <enum name="CustomTabsParallelRequestStatusOnStart">
@@ -31184,6 +31186,7 @@ from previous Chrome versions.
   <int value="-579192400" label="disable-input-view"/>
   <int value="-572112724" label="DialogTouchBar:disabled"/>
   <int value="-572012175" label="AssistantEnableStereoAudioInput:disabled"/>
+  <int value="-570889908" label="CCTModuleDexLoading:enabled"/>
   <int value="-567920515" label="disable-experimental-hotwording"/>
   <int value="-563980787" label="disable-webrtc"/>
   <int value="-562274241" label="enable-extension-action-redesign"/>
@@ -32220,6 +32223,7 @@ from previous Chrome versions.
   <int value="1284910808" label="disable-checker-imaging"/>
   <int value="1285905715" label="WebXRHitTest:enabled"/>
   <int value="1291257442" label="TabsInCBD:disabled"/>
+  <int value="1291761696" label="CCTModuleDexLoading:disabled"/>
   <int value="1291966558" label="ScrollAnchoring:disabled"/>
   <int value="1292091029" label="OmniboxOneClickUnelide:disabled"/>
   <int value="1292763218" label="SystemTrayUnified:disabled"/>
