@@ -431,7 +431,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
   if (params->enable_quic) {
     params->enable_quic_proxies_for_https_urls =
         ShouldEnableQuicProxiesForHttpsUrls(quic_trial_params);
-    params->enable_quic_proxies_for_https_urls = false;
     params->quic_connection_options =
         GetQuicConnectionOptions(quic_trial_params);
     params->quic_client_connection_options =
