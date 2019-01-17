@@ -365,7 +365,7 @@ void WebBluetoothServiceImpl::DeviceChanged(device::BluetoothAdapter* adapter,
 }
 
 void WebBluetoothServiceImpl::DeviceAdvertisementReceived(
-    const std::string& device_id,
+    const std::string& device_address,
     const base::Optional<std::string>& device_name,
     const base::Optional<std::string>& advertisement_name,
     base::Optional<int8_t> rssi,
@@ -382,15 +382,7 @@ void WebBluetoothServiceImpl::DeviceAdvertisementReceived(
   auto client = scanning_clients_.begin();
   while (client != scanning_clients_.end()) {
     auto device = blink::mojom::WebBluetoothDevice::New();
-    // TODO(dougt):
-    // Currently, Web Bluetooth (GATT Connections) obfuscate the device
-    // address, here called the |device->id|. However, for scanning, it
-    // may be desirable to expose the actual MAC.
-    //
-    // What needs to happen next is for us to figure out if we can expose
-    // the MAC address or if we need to obfuscate like we do with GATT
-    // Connections.
-    device->id = WebBluetoothDeviceId(device_id, /*is_mac_address=*/true);
+    device->id = allowed_devices().AddDevice(device_address);
     device->name = device_name;
 
     auto result = blink::mojom::WebBluetoothScanResult::New();
@@ -519,6 +511,12 @@ void WebBluetoothServiceImpl::RemoteServerConnect(
     blink::mojom::WebBluetoothServerClientAssociatedPtrInfo client,
     RemoteServerConnectCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!allowed_devices().IsAllowedToGATTConnect(device_id)) {
+    std::move(callback).Run(
+        blink::mojom::WebBluetoothResult::GATT_NOT_AUTHORIZED);
+    return;
+  }
 
   const CacheQueryResult query_result = QueryCacheForDevice(device_id);
 
