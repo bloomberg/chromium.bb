@@ -64,6 +64,8 @@ class ParentProcess : public base::RefCountedThreadSafe<ParentProcess> {
   virtual bool PrepareAndLaunchTestChildProcess(
       const std::string& child_main_function);
 
+  scoped_refptr<MojoTaskRunner> mojo_task_runner();
+
   base::CommandLine command_line_;
 
  private:

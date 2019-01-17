@@ -100,7 +100,7 @@ bool GetSystemResourceUsage(HANDLE process, SystemResourceUsage* stats) {
 
   PROCESS_MEMORY_COUNTERS pmc;
   if (::GetProcessMemoryInfo(::GetCurrentProcess(), &pmc, sizeof(pmc))) {
-    stats->peak_working_set_size = pmc.PeakWorkingSetSize / 1024;
+    stats->peak_working_set_size = pmc.PeakWorkingSetSize;
   }
 
   return true;

@@ -24,6 +24,10 @@ namespace chrome_cleaner {
 bool GetNativeKeyPath(const base::win::RegKey& key,
                       base::string16* native_key_path);
 
+// Returns true for predefined handles, such as NULL, INVALID_HANDLE_VALUE, and
+// for predefined registry root keys, such as HKEY_CLASSES_ROOT.
+bool IsPredefinedRegistryHandle(HANDLE key);
+
 // Utility class to store a registry key path. Unlike a RegKey, this class is
 // copy/moveable.
 // It stores |rootkey|, which must be a predefined registry root key.

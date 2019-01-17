@@ -206,6 +206,10 @@ void ParentProcess::ConnectMojoPipe(base::Process process) {
                                  mojo_channel_.TakeLocalEndpoint());
 }
 
+scoped_refptr<MojoTaskRunner> ParentProcess::mojo_task_runner() {
+  return mojo_task_runner_;
+}
+
 SandboxedParentProcess::SandboxedParentProcess(
     scoped_refptr<MojoTaskRunner> mojo_task_runner)
     : ParentProcess(mojo_task_runner) {}
