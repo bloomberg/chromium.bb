@@ -750,7 +750,7 @@ bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
   // Home Launcher feature is enabled, since it gives the user the ability to
   // minimize all windows when pressing the Launcher button on the shelf.
   const bool hide_caption_buttons_in_tablet_mode =
-      !browser_view()->browser()->is_app();
+      !UsePackagedAppHeaderStyle(browser_view()->browser());
   if (hide_caption_buttons_in_tablet_mode && TabletModeClient::Get() &&
       TabletModeClient::Get()->tablet_mode_enabled()) {
     return false;
