@@ -88,6 +88,38 @@ const GritResourceMap kTheRcHeader[] = {
 };
 const size_t kTheRcHeaderSize = base::size(kTheRcHeader);''', output)
 
+  def testGzippedMapFileSourceWithGeneratedFile(self):
+    os.environ["root_gen_dir"] = "gen"
+
+    grd = util.ParseGrdForUnittest('''\
+        <outputs>
+          <output type="rc_header" filename="the_rc_header.h" />
+          <output type="gzipped_resource_map_header"
+                  filename="gzipped_resource_map_header.h" />
+        </outputs>
+        <release seq="3">
+          <includes first_id="10000">
+            <include type="BINDATA"
+                     file="${root_gen_dir}/foo/bar/baz.js"
+                     name="IDR_FOO_BAR_BAZ_JS"
+                     use_base_dir="false"
+                     compress="gzip" />
+         </includes>
+        </release>''', run_gatherers=True)
+
+    formatter = resource_map.GetFormatter('gzipped_resource_file_map_source')
+    output = util.StripBlankLinesAndComments(''.join(formatter(grd, 'en', '.')))
+    expected = '''\
+#include "gzipped_resource_map_header.h"
+#include <stddef.h>
+#include "base/stl_util.h"
+#include "the_rc_header.h"
+const GzippedGritResourceMap kTheRcHeader[] = {
+  {"@out_folder@/gen/foo/bar/baz.js", IDR_FOO_BAR_BAZ_JS, true},
+};
+const size_t kTheRcHeaderSize = base::size(kTheRcHeader);'''
+    self.assertEqual(expected, output)
+
   def testGzippedMapHeaderAndFileSource(self):
     grd = util.ParseGrdForUnittest('''\
         <outputs>
