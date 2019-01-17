@@ -15,14 +15,10 @@ component("client") {
     "gwp_asan.h",
     "sampling_allocator_shims.cc",
     "sampling_allocator_shims.h",
-    "sampling_allocator_shims_win.h",
   ]
 
   if (is_posix) {
-    sources += [
-      "guarded_page_allocator_posix.cc",
-      "sampling_allocator_shims_posix.h",
-    ]
+    sources += [ "guarded_page_allocator_posix.cc" ]
   }
 
   defines = [ "GWP_ASAN_IMPLEMENTATION" ]

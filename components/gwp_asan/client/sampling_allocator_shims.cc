@@ -17,12 +17,11 @@
 #include "components/gwp_asan/client/export.h"
 #include "components/gwp_asan/client/guarded_page_allocator.h"
 
-#if defined(OS_POSIX)
-#include "components/gwp_asan/client/sampling_allocator_shims_posix.h"
-#endif
-
-#if defined(OS_WIN)
-#include "components/gwp_asan/client/sampling_allocator_shims_win.h"
+#if defined(OS_MACOSX)
+// TODO(https://crbug.com/829078): thread_local is not currently supported on
+// macOS; however, it works correctly on other platforms and is noticeably
+// faster.
+#error "macOS does not support thread_local"
 #endif
 
 namespace gwp_asan {
@@ -39,25 +38,24 @@ class SamplingState {
   constexpr SamplingState() {}
 
   void Init(size_t sampling_frequency) {
-    TLSInit(&tls_key_);
-
     DCHECK_GT(sampling_frequency, 0U);
     sampling_frequency_ = sampling_frequency;
   }
 
   // Return true if this allocation should be sampled.
-  bool Sample() {
+  ALWAYS_INLINE bool Sample() {
     // For a new thread the initial TLS value will be zero, we do not want to
     // sample on zero as it will always sample the first allocation on thread
     // creation and heavily bias allocations towards that particular call site.
     //
     // Instead, use zero to mean 'get a new counter value' and one to mean
     // that this allocation should be sampled.
-    size_t samples_left = TLSGetValue(tls_key_);
+    static thread_local size_t tls_counter = 0;
+    size_t samples_left = tls_counter;
     if (UNLIKELY(!samples_left))
       samples_left = NextSample();
 
-    TLSSetValue(tls_key_, samples_left - 1);
+    tls_counter = samples_left - 1;
     return (samples_left == 1);
   }
 
@@ -74,7 +72,6 @@ class SamplingState {
     return next_sample;
   }
 
-  TLSKey tls_key_ = 0;
   size_t sampling_frequency_ = 0;
 
   // Stores the number of allocations we need to skip to reach the end of the
