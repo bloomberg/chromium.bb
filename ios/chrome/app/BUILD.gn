@@ -10,21 +10,10 @@ import("//ios/build/chrome_build.gni")
 import("//ios/build/config.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
 import("//ios/third_party/firebase/firebase.gni")
-import("//services/service_manager/public/service_manifest.gni")
 
 buildflag_header("firebase_buildflags") {
   header = "firebase_buildflags.h"
   flags = [ "FIREBASE_ENABLED=$ios_enable_firebase_sdk" ]
-}
-
-service_manifest("chrome_browser_manifest_overlay") {
-  source = "//ios/chrome/browser/chrome_browser_manifest_overlay.json"
-  packaged_services = [ "//services/identity:manifest" ]
-}
-
-service_manifest("chrome_packaged_services_manifest_overlay") {
-  source = "//ios/chrome/browser/chrome_packaged_services_manifest_overlay.json"
-  packaged_services = [ "//components/services/unzip:manifest" ]
 }
 
 source_set("app") {

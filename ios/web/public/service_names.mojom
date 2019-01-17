@@ -5,11 +5,9 @@
 module web.mojom;
 
 // The default service name the browser identifies as when connecting to
-// the Service Manager. This must match the name in
-// src/ios/web/public/app/mojo/web_browser_manifest.json.
+// the Service Manager.
 const string kBrowserServiceName = "web_browser";
 
 // The service name used to identify the browser process's singleton service
-// instance which packages other browser-wide services. This must match the name
-// in src/ios/web/public/app/mojo/web_packaged_services_manifest.json.
+// instance which packages other browser-wide services.
 const string kPackagedServicesServiceName = "web_packaged_services";

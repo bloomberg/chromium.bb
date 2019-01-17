@@ -12,19 +12,19 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "ios/web/grit/ios_web_resources.h"
 #include "ios/web/public/service_manager_connection.h"
 #include "ios/web/public/service_names.mojom.h"
 #include "ios/web/public/web_client.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/service_manager_connection_impl.h"
+#import "ios/web/web_browser_manifest.h"
+#import "ios/web/web_packaged_services_manifest.h"
 #include "services/catalog/public/mojom/constants.mojom.h"
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -46,26 +46,6 @@ struct ManifestInfo {
   const char* name;
   int resource_id;
 };
-
-service_manager::Manifest LoadServiceManifest(base::StringPiece service_name,
-                                              int resource_id) {
-  std::string contents =
-      GetWebClient()
-          ->GetDataResource(resource_id, ui::ScaleFactor::SCALE_FACTOR_NONE)
-          .as_string();
-  DCHECK(!contents.empty());
-
-  service_manager::Manifest manifest =
-      service_manager::Manifest::FromValueDeprecated(
-          base::JSONReader::Read(contents));
-
-  base::Optional<service_manager::Manifest> overlay =
-      GetWebClient()->GetServiceManifestOverlay(service_name);
-  if (overlay)
-    manifest.Amend(*overlay);
-
-  return manifest;
-}
 
 }  // namespace
 
@@ -125,12 +105,8 @@ class ServiceManagerContext::InProcessServiceManagerContext
 };
 
 ServiceManagerContext::ServiceManagerContext() {
-  std::vector<service_manager::Manifest> manifests = {
-      LoadServiceManifest(mojom::kBrowserServiceName,
-                          IDR_MOJO_WEB_BROWSER_MANIFEST),
-      LoadServiceManifest(mojom::kPackagedServicesServiceName,
-                          IDR_MOJO_WEB_PACKAGED_SERVICES_MANIFEST),
-  };
+  const std::vector<service_manager::Manifest> manifests = {
+      GetWebBrowserManifest(), GetWebPackagedServicesManifest()};
 
   in_process_context_ = base::MakeRefCounted<InProcessServiceManagerContext>();
   service_manager::mojom::ServicePtr packaged_services_service;

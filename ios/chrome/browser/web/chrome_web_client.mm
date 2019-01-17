@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
-#include "base/json/json_reader.h"
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/dom_distiller/core/url_constants.h"
@@ -25,8 +24,8 @@
 #include "ios/chrome/browser/passwords/password_manager_features.h"
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
+#include "ios/chrome/browser/web/chrome_overlay_manifests.h"
 #import "ios/chrome/browser/web/error_page_util.h"
-#include "ios/chrome/grit/ios_resources.h"
 #include "ios/public/provider/chrome/browser/browser_url_rewriter_provider.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/voice/audio_session_controller.h"
@@ -151,20 +150,11 @@ base::RefCountedMemory* ChromeWebClient::GetDataResourceBytes(
 
 base::Optional<service_manager::Manifest>
 ChromeWebClient::GetServiceManifestOverlay(base::StringPiece name) {
-  int identifier = -1;
   if (name == web::mojom::kBrowserServiceName)
-    identifier = IDR_CHROME_BROWSER_MANIFEST_OVERLAY;
-  else if (name == web::mojom::kPackagedServicesServiceName)
-    identifier = IDR_CHROME_PACKAGED_SERVICES_MANIFEST_OVERLAY;
-
-  if (identifier == -1)
-    return base::nullopt;
-
-  base::StringPiece manifest_contents =
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
-          identifier, ui::ScaleFactor::SCALE_FACTOR_NONE);
-  return service_manager::Manifest::FromValueDeprecated(
-      base::JSONReader::Read(manifest_contents));
+    return GetChromeWebBrowserOverlayManifest();
+  if (name == web::mojom::kPackagedServicesServiceName)
+    return GetChromeWebPackagedServicesOverlayManifest();
+  return base::nullopt;
 }
 
 void ChromeWebClient::GetAdditionalWebUISchemes(
