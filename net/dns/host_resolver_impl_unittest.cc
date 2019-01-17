@@ -5923,6 +5923,7 @@ TEST_F(HostResolverImplDnsTest, CanonicalName_CreateRequest) {
 
   HostResolver::ResolveHostParameters params;
   params.include_canonical_name = true;
+  params.source = HostResolverSource::DNS;
   ResolveHostResponseHelper response(resolver_->CreateRequest(
       HostPortPair("alias", 80), NetLogWithSource(), params));
   ASSERT_THAT(response.result_error(), IsOk());
@@ -5944,6 +5945,7 @@ TEST_F(HostResolverImplDnsTest, CanonicalName_PreferV6_CreateRequest) {
 
   HostResolver::ResolveHostParameters params;
   params.include_canonical_name = true;
+  params.source = HostResolverSource::DNS;
   ResolveHostResponseHelper response(resolver_->CreateRequest(
       HostPortPair("alias", 80), NetLogWithSource(), params));
   ASSERT_FALSE(response.complete());
@@ -5965,11 +5967,35 @@ TEST_F(HostResolverImplDnsTest, CanonicalName_V4Only_CreateRequest) {
   HostResolver::ResolveHostParameters params;
   params.dns_query_type = DnsQueryType::A;
   params.include_canonical_name = true;
+  params.source = HostResolverSource::DNS;
   ResolveHostResponseHelper response(resolver_->CreateRequest(
       HostPortPair("alias", 80), NetLogWithSource(), params));
   ASSERT_THAT(response.result_error(), IsOk());
   EXPECT_EQ(response.request()->GetAddressResults().value().canonical_name(),
             "correct");
+}
+
+// Test that without specifying source, a request that would otherwise be
+// handled by DNS is sent to the system resolver if cannonname is requested.
+TEST_F(HostResolverImplDnsTest, CanonicalNameForcesProc) {
+  // Disable fallback to ensure system resolver is used directly, not via
+  // fallback.
+  set_allow_fallback_to_proctask(false);
+
+  proc_->AddRuleForAllFamilies("nx_succeed", "192.168.1.102",
+                               HOST_RESOLVER_CANONNAME, "canonical");
+  proc_->SignalMultiple(1u);
+
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  HostResolver::ResolveHostParameters params;
+  params.include_canonical_name = true;
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("nx_succeed", 80), NetLogWithSource(), params));
+  ASSERT_THAT(response.result_error(), IsOk());
+
+  EXPECT_EQ(response.request()->GetAddressResults().value().canonical_name(),
+            "canonical");
 }
 
 TEST_F(HostResolverImplTest, ResolveLocalHostname) {
