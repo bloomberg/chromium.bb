@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/mac/mac_util.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 
 namespace {
 
@@ -128,89 +128,70 @@ MacOSBluetoothOperationsResult GetMacOSOperationResultFromNSError(
 void RecordDidFailToConnectPeripheralResult(NSError* error) {
   MacOSBluetoothOperationsResult histogram_macos_error =
       GetMacOSOperationResultFromNSError(error);
-  UMA_HISTOGRAM_ENUMERATION(
+  base::UmaHistogramSparse(
       "Bluetooth.MacOS.Errors.DidFailToConnectToPeripheral",
-      static_cast<int>(histogram_macos_error),
-      static_cast<int>(MacOSBluetoothOperationsResult::MAX));
+      static_cast<int>(histogram_macos_error));
 }
 
 void RecordDidDisconnectPeripheralResult(NSError* error) {
   MacOSBluetoothOperationsResult histogram_macos_error =
       GetMacOSOperationResultFromNSError(error);
-  UMA_HISTOGRAM_ENUMERATION(
-      "Bluetooth.MacOS.Errors.DidDisconnectPeripheral",
-      static_cast<int>(histogram_macos_error),
-      static_cast<int>(MacOSBluetoothOperationsResult::MAX));
+  base::UmaHistogramSparse("Bluetooth.MacOS.Errors.DidDisconnectPeripheral",
+                           static_cast<int>(histogram_macos_error));
 }
 
 void RecordDidDiscoverPrimaryServicesResult(NSError* error) {
   MacOSBluetoothOperationsResult histogram_macos_error =
       GetMacOSOperationResultFromNSError(error);
-  UMA_HISTOGRAM_ENUMERATION(
-      "Bluetooth.MacOS.Errors.DidDiscoverPrimaryServices",
-      static_cast<int>(histogram_macos_error),
-      static_cast<int>(MacOSBluetoothOperationsResult::MAX));
+  base::UmaHistogramSparse("Bluetooth.MacOS.Errors.DidDiscoverPrimaryServices",
+                           static_cast<int>(histogram_macos_error));
 }
 
 void RecordDidDiscoverCharacteristicsResult(NSError* error) {
   MacOSBluetoothOperationsResult histogram_macos_error =
       GetMacOSOperationResultFromNSError(error);
-  UMA_HISTOGRAM_ENUMERATION(
-      "Bluetooth.MacOS.Errors.DidDiscoverCharacteristics",
-      static_cast<int>(histogram_macos_error),
-      static_cast<int>(MacOSBluetoothOperationsResult::MAX));
+  base::UmaHistogramSparse("Bluetooth.MacOS.Errors.DidDiscoverCharacteristics",
+                           static_cast<int>(histogram_macos_error));
 }
 
 void RecordDidUpdateValueResult(NSError* error) {
   MacOSBluetoothOperationsResult histogram_macos_error =
       GetMacOSOperationResultFromNSError(error);
-  UMA_HISTOGRAM_ENUMERATION(
-      "Bluetooth.MacOS.Errors.DidUpdateValue",
-      static_cast<int>(histogram_macos_error),
-      static_cast<int>(MacOSBluetoothOperationsResult::MAX));
+  base::UmaHistogramSparse("Bluetooth.MacOS.Errors.DidUpdateValue",
+                           static_cast<int>(histogram_macos_error));
 }
 
 void RecordDidWriteValueResult(NSError* error) {
   MacOSBluetoothOperationsResult histogram_macos_error =
       GetMacOSOperationResultFromNSError(error);
-  UMA_HISTOGRAM_ENUMERATION(
-      "Bluetooth.MacOS.Errors.DidWriteValue",
-      static_cast<int>(histogram_macos_error),
-      static_cast<int>(MacOSBluetoothOperationsResult::MAX));
+  base::UmaHistogramSparse("Bluetooth.MacOS.Errors.DidWriteValue",
+                           static_cast<int>(histogram_macos_error));
 }
 
 void RecordDidUpdateNotificationStateResult(NSError* error) {
   MacOSBluetoothOperationsResult histogram_macos_error =
       GetMacOSOperationResultFromNSError(error);
-  UMA_HISTOGRAM_ENUMERATION(
-      "Bluetooth.MacOS.Errors.DidUpdateNotificationState",
-      static_cast<int>(histogram_macos_error),
-      static_cast<int>(MacOSBluetoothOperationsResult::MAX));
+  base::UmaHistogramSparse("Bluetooth.MacOS.Errors.DidUpdateNotificationState",
+                           static_cast<int>(histogram_macos_error));
 }
 
 void RecordDidDiscoverDescriptorsResult(NSError* error) {
   MacOSBluetoothOperationsResult histogram_macos_error =
       GetMacOSOperationResultFromNSError(error);
-  UMA_HISTOGRAM_ENUMERATION(
-      "Bluetooth.MacOS.Errors.DidDiscoverDescriptors",
-      static_cast<int>(histogram_macos_error),
-      static_cast<int>(MacOSBluetoothOperationsResult::MAX));
+  base::UmaHistogramSparse("Bluetooth.MacOS.Errors.DidDiscoverDescriptors",
+                           static_cast<int>(histogram_macos_error));
 }
 
 void RecordDidUpdateValueForDescriptorResult(NSError* error) {
   MacOSBluetoothOperationsResult histogram_macos_error =
       GetMacOSOperationResultFromNSError(error);
-  UMA_HISTOGRAM_ENUMERATION(
-      "Bluetooth.MacOS.Errors.DidUpdateValueForDescriptor",
-      static_cast<int>(histogram_macos_error),
-      static_cast<int>(MacOSBluetoothOperationsResult::MAX));
+  base::UmaHistogramSparse("Bluetooth.MacOS.Errors.DidUpdateValueForDescriptor",
+                           static_cast<int>(histogram_macos_error));
 }
 
 void RecordDidWriteValueForDescriptorResult(NSError* error) {
   MacOSBluetoothOperationsResult histogram_macos_error =
       GetMacOSOperationResultFromNSError(error);
-  UMA_HISTOGRAM_ENUMERATION(
-      "Bluetooth.MacOS.Errors.DidWriteValueForDescriptor",
-      static_cast<int>(histogram_macos_error),
-      static_cast<int>(MacOSBluetoothOperationsResult::MAX));
+  base::UmaHistogramSparse("Bluetooth.MacOS.Errors.DidWriteValueForDescriptor",
+                           static_cast<int>(histogram_macos_error));
 }

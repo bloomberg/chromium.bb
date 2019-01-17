@@ -78,4 +78,11 @@ using base::scoped_nsobject;
                             error:error];
 }
 
+- (void)simulateUpdateWithError:(NSError*)error {
+  CBPeripheral* peripheral = _characteristic.service.peripheral;
+  [peripheral.delegate peripheral:peripheral
+      didUpdateValueForDescriptor:self.descriptor
+                            error:error];
+}
+
 @end

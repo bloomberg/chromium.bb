@@ -320,6 +320,9 @@ class BluetoothTestBase : public testing::Test {
   // Simulates GattConnection disconnecting.
   virtual void SimulateGattDisconnection(BluetoothDevice* device) {}
 
+  // Simulates Error in GattConnection disconnecting.
+  virtual void SimulateGattDisconnectionError(BluetoothDevice* device) {}
+
   // Simulates an event where the OS breaks the Gatt connection. Defaults to
   // SimulateGattDisconnection(device).
   virtual void SimulateDeviceBreaksConnection(BluetoothDevice* device);
@@ -542,6 +545,11 @@ class BluetoothTestBase : public testing::Test {
 
   // Simulates a Descriptor Write operation failing with a GattErrorCode.
   virtual void SimulateGattDescriptorWriteError(
+      BluetoothRemoteGattDescriptor* descriptor,
+      BluetoothRemoteGattService::GattErrorCode) {}
+
+  // Simulates a Descriptor Update operation failing with a GattErrorCode.
+  virtual void SimulateGattDescriptorUpdateError(
       BluetoothRemoteGattDescriptor* descriptor,
       BluetoothRemoteGattService::GattErrorCode) {}
 
