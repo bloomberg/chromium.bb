@@ -107,10 +107,12 @@ class V4L2ConfigStoreDecodeSurface : public V4L2DecodeSurface {
 
   void PrepareSetCtrls(struct v4l2_ext_controls* ctrls) const override;
   void PrepareQueueBuffer(struct v4l2_buffer* buffer) const override;
-  virtual uint64_t GetReferenceID() const override;
+  uint64_t GetReferenceID() const override;
   bool Submit() const override;
 
  private:
+  ~V4L2ConfigStoreDecodeSurface() override = default;
+
   // The configuration store of the input buffer.
   uint32_t config_store_;
 };
