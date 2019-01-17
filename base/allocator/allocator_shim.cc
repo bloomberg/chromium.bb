@@ -170,7 +170,7 @@ ALWAYS_INLINE void* ShimCppAlignedNew(size_t size, size_t alignment) {
 #if defined(OS_MACOSX)
     context = malloc_default_zone();
 #endif
-    ptr = chain_head->alloc_aligned_function(chain_head, size, alignment,
+    ptr = chain_head->alloc_aligned_function(chain_head, alignment, size,
                                              context);
   } while (!ptr && CallNewHandler(size));
   return ptr;
