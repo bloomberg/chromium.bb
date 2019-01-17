@@ -9,6 +9,7 @@ Runs various style checks before upload.
 def CheckChangeOnUpload(input_api, output_api):
   results = []
   results.extend(_CheckAnnotatedInvocationHandlers(input_api, output_api))
+  results.extend(_CheckFeatureDevSuffix(input_api, output_api))
   return results
 
 def _CheckAnnotatedInvocationHandlers(input_api, output_api):
@@ -56,3 +57,21 @@ represent using a comment, e.g.:
         errors))
 
   return results
+
+def _CheckFeatureDevSuffix(input_api, output_api):
+  """Checks that Features.DEV_SUFFIX is not used in boundary_interfaces. The
+  right place to use it is SupportLibWebViewChromiumFactory.
+  """
+
+  problems = []
+  filt = lambda f: 'boundary_interfaces' in f.LocalPath()
+  for f in input_api.AffectedFiles(file_filter=filt):
+    for line_num, line in f.ChangedContents():
+      if 'DEV_SUFFIX' in line:
+        problems.append('  %s:%d\n    %s\n' % (f.LocalPath(), line_num, line))
+
+  if not problems:
+    return []
+  return [output_api.PresubmitPromptWarning(
+    'DEV_SUFFIX should not be used in boundary_interfaces.\n' + '\n'
+    .join(problems))]
