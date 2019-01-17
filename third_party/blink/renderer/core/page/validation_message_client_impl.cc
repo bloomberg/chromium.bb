@@ -176,7 +176,7 @@ void ValidationMessageClientImpl::LayoutOverlay() {
 
 void ValidationMessageClientImpl::PaintOverlay() {
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  if (overlay_)
+  if (overlay_ && overlay_->GetGraphicsLayer())
     overlay_->GetGraphicsLayer()->Paint(nullptr);
 }
 
