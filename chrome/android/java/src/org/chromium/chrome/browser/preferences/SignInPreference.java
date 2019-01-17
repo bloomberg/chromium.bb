@@ -247,11 +247,12 @@ public class SignInPreference
 
         setLayoutResource(R.layout.account_management_account_row);
         setTitle(profileData.getFullNameOrEmail());
-        setSummary(SyncPreference.getSyncStatusSummary(getContext()));
+        setSummary(SyncPreferenceUtils.getSyncStatusSummary(getContext()));
         setFragment(AccountManagementFragment.class.getName());
         setIcon(profileData.getImage());
-        setWidgetLayoutResource(
-                SyncPreference.showSyncErrorIcon(getContext()) ? R.layout.sync_error_widget : 0);
+        setWidgetLayoutResource(SyncPreferenceUtils.showSyncErrorIcon(getContext())
+                        ? R.layout.sync_error_widget
+                        : 0);
         setViewEnabled(true);
 
         mSigninPromoController = null;

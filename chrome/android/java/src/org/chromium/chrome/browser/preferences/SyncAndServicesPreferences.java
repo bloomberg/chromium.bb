@@ -62,7 +62,6 @@ import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.PassphraseType;
 import org.chromium.components.sync.ProtocolErrorClientAction;
-import org.chromium.components.sync.StopSource;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -471,11 +470,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
                 || !getSelectedModelTypes().isEmpty() || !canDisableSync();
         if (mIsSyncEnabled == shouldEnableSync) return;
         mIsSyncEnabled = shouldEnableSync;
-        if (shouldEnableSync) {
-            mProfileSyncService.requestStart();
-        } else {
-            stopSync();
-        }
+        SyncPreferenceUtils.enableSync(shouldEnableSync);
         updateSyncPreferences();
     }
 
@@ -816,14 +811,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         if (mCurrentSyncError == SyncError.PASSPHRASE_REQUIRED) {
             displayPassphraseDialog();
             return;
-        }
-    }
-
-    private void stopSync() {
-        if (mProfileSyncService.isSyncRequested()) {
-            RecordHistogram.recordEnumeratedHistogram("Sync.StopSource",
-                    StopSource.CHROME_SYNC_SETTINGS, StopSource.STOP_SOURCE_LIMIT);
-            mProfileSyncService.requestStop();
         }
     }
 

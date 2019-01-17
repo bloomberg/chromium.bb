@@ -33,11 +33,11 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
+import org.chromium.chrome.browser.preferences.SyncPreferenceUtils;
 import org.chromium.chrome.browser.preferences.SyncedAccountPreference;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -52,7 +52,6 @@ import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.PassphraseType;
 import org.chromium.components.sync.ProtocolErrorClientAction;
-import org.chromium.components.sync.StopSource;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -185,11 +184,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
         mSyncSwitchPreference = (ChromeSwitchPreference) findPreference(PREF_SYNC_SWITCH);
         mSyncSwitchPreference.setOnPreferenceChangeListener((preference, newValue) -> {
             assert canDisableSync();
-            if ((boolean) newValue) {
-                mProfileSyncService.requestStart();
-            } else {
-                stopSync();
-            }
+            SyncPreferenceUtils.enableSync((boolean) newValue);
             // Must be done asynchronously because the switch state isn't updated
             // until after this function exits.
             ThreadUtils.postOnUiThread(this::updateSyncStateFromSwitch);
@@ -716,17 +711,9 @@ public class SyncCustomizationFragment extends PreferenceFragment
                 || !canDisableSync()) {
             return;
         }
-        stopSync();
+        SyncPreferenceUtils.enableSync(false);
         mSyncSwitchPreference.setChecked(false);
         // setChecked doesn't trigger the callback, so update manually.
         updateSyncStateFromSwitch();
-    }
-
-    private void stopSync() {
-        if (mProfileSyncService.isSyncRequested()) {
-            RecordHistogram.recordEnumeratedHistogram("Sync.StopSource",
-                    StopSource.CHROME_SYNC_SETTINGS, StopSource.STOP_SOURCE_LIMIT);
-            mProfileSyncService.requestStop();
-        }
     }
 }
