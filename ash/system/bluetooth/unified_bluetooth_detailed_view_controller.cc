@@ -12,8 +12,8 @@
 #include "ash/shell.h"
 #include "ash/system/bluetooth/bluetooth_detailed_view.h"
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
+#include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/unified/unified_detailed_view_delegate.h"
 #include "base/stl_util.h"
 
 using device::mojom::BluetoothSystem;
@@ -55,7 +55,7 @@ void RemoveObsoleteBluetoothDevicesFromList(
 UnifiedBluetoothDetailedViewController::UnifiedBluetoothDetailedViewController(
     UnifiedSystemTrayController* tray_controller)
     : detailed_view_delegate_(
-          std::make_unique<UnifiedDetailedViewDelegate>(tray_controller)) {
+          std::make_unique<DetailedViewDelegate>(tray_controller)) {
   Shell::Get()->tray_bluetooth_helper()->AddObserver(this);
 }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/unified/unified_detailed_view_delegate.h"
+#include "ash/system/tray/detailed_view_delegate.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -93,30 +93,30 @@ class BackButton : public CustomShapeButton {
 
 }  // namespace
 
-UnifiedDetailedViewDelegate::UnifiedDetailedViewDelegate(
+DetailedViewDelegate::DetailedViewDelegate(
     UnifiedSystemTrayController* tray_controller)
     : tray_controller_(tray_controller) {}
 
-UnifiedDetailedViewDelegate::~UnifiedDetailedViewDelegate() = default;
+DetailedViewDelegate::~DetailedViewDelegate() = default;
 
-void UnifiedDetailedViewDelegate::TransitionToMainView(bool restore_focus) {
+void DetailedViewDelegate::TransitionToMainView(bool restore_focus) {
   tray_controller_->TransitionToMainView(restore_focus);
 }
 
-void UnifiedDetailedViewDelegate::CloseBubble() {
+void DetailedViewDelegate::CloseBubble() {
   tray_controller_->CloseBubble();
 }
 
-SkColor UnifiedDetailedViewDelegate::GetBackgroundColor(
+SkColor DetailedViewDelegate::GetBackgroundColor(
     ui::NativeTheme* native_theme) {
   return SK_ColorTRANSPARENT;
 }
 
-bool UnifiedDetailedViewDelegate::IsOverflowIndicatorEnabled() const {
+bool DetailedViewDelegate::IsOverflowIndicatorEnabled() const {
   return false;
 }
 
-TriView* UnifiedDetailedViewDelegate::CreateTitleRow(int string_id) {
+TriView* DetailedViewDelegate::CreateTitleRow(int string_id) {
   auto* tri_view = new TriView(kUnifiedTopShortcutSpacing);
 
   ConfigureTitleTriView(tri_view, TriView::Container::START);
@@ -137,7 +137,7 @@ TriView* UnifiedDetailedViewDelegate::CreateTitleRow(int string_id) {
   return tri_view;
 }
 
-views::View* UnifiedDetailedViewDelegate::CreateTitleSeparator() {
+views::View* DetailedViewDelegate::CreateTitleSeparator() {
   views::Separator* separator = new views::Separator();
   separator->SetColor(kUnifiedMenuSeparatorColor);
   separator->SetBorder(views::CreateEmptyBorder(
@@ -145,9 +145,8 @@ views::View* UnifiedDetailedViewDelegate::CreateTitleSeparator() {
   return separator;
 }
 
-void UnifiedDetailedViewDelegate::ShowStickyHeaderSeparator(
-    views::View* view,
-    bool show_separator) {
+void DetailedViewDelegate::ShowStickyHeaderSeparator(views::View* view,
+                                                     bool show_separator) {
   if (show_separator) {
     const int separator_width = ash::TrayConstants::separator_width();
     view->SetBorder(views::CreatePaddedBorder(
@@ -162,7 +161,7 @@ void UnifiedDetailedViewDelegate::ShowStickyHeaderSeparator(
   view->SchedulePaint();
 }
 
-views::Separator* UnifiedDetailedViewDelegate::CreateListSubHeaderSeparator() {
+views::Separator* DetailedViewDelegate::CreateListSubHeaderSeparator() {
   views::Separator* separator = new views::Separator();
   separator->SetColor(kUnifiedMenuSeparatorColor);
   separator->SetBorder(views::CreateEmptyBorder(
@@ -170,7 +169,7 @@ views::Separator* UnifiedDetailedViewDelegate::CreateListSubHeaderSeparator() {
   return separator;
 }
 
-HoverHighlightView* UnifiedDetailedViewDelegate::CreateScrollListItem(
+HoverHighlightView* DetailedViewDelegate::CreateScrollListItem(
     ViewClickListener* listener,
     const gfx::VectorIcon& icon,
     const base::string16& text) {
@@ -184,19 +183,19 @@ HoverHighlightView* UnifiedDetailedViewDelegate::CreateScrollListItem(
   return item;
 }
 
-views::Button* UnifiedDetailedViewDelegate::CreateBackButton(
+views::Button* DetailedViewDelegate::CreateBackButton(
     views::ButtonListener* listener) {
   return new BackButton(listener);
 }
 
-views::Button* UnifiedDetailedViewDelegate::CreateInfoButton(
+views::Button* DetailedViewDelegate::CreateInfoButton(
     views::ButtonListener* listener,
     int info_accessible_name_id) {
   return new TopShortcutButton(listener, kUnifiedMenuInfoIcon,
                                info_accessible_name_id);
 }
 
-views::Button* UnifiedDetailedViewDelegate::CreateSettingsButton(
+views::Button* DetailedViewDelegate::CreateSettingsButton(
     views::ButtonListener* listener,
     int setting_accessible_name_id) {
   auto* button = new TopShortcutButton(listener, kUnifiedMenuSettingsIcon,
@@ -206,7 +205,7 @@ views::Button* UnifiedDetailedViewDelegate::CreateSettingsButton(
   return button;
 }
 
-views::Button* UnifiedDetailedViewDelegate::CreateHelpButton(
+views::Button* DetailedViewDelegate::CreateHelpButton(
     views::ButtonListener* listener) {
   auto* button = new TopShortcutButton(listener, vector_icons::kHelpOutlineIcon,
                                        IDS_ASH_STATUS_TRAY_HELP);

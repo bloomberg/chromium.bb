@@ -7,7 +7,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/shell.h"
 #include "ash/system/accessibility/tray_accessibility.h"
-#include "ash/system/unified/unified_detailed_view_delegate.h"
+#include "ash/system/tray/detailed_view_delegate.h"
 
 namespace ash {
 
@@ -15,7 +15,7 @@ UnifiedAccessibilityDetailedViewController::
     UnifiedAccessibilityDetailedViewController(
         UnifiedSystemTrayController* tray_controller)
     : detailed_view_delegate_(
-          std::make_unique<UnifiedDetailedViewDelegate>(tray_controller)) {
+          std::make_unique<DetailedViewDelegate>(tray_controller)) {
   Shell::Get()->accessibility_controller()->AddObserver(this);
 }
 
