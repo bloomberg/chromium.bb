@@ -45,6 +45,7 @@ using testing::Mock;
 using testing::NiceMock;
 using testing::Return;
 using testing::StrictMock;
+using FillingSource = ManualFillingController::FillingSource;
 
 constexpr char kExampleSite[] = "https://example.com";
 constexpr char kExampleDomain[] = "example.com";
@@ -58,8 +59,8 @@ class MockManualFillingController
   MOCK_METHOD1(OnFilledIntoFocusedField, void(FillingStatus));
   MOCK_METHOD2(RefreshSuggestionsForField,
                void(bool, const AccessorySheetData&));
-  MOCK_METHOD0(ShowWhenKeyboardIsVisible, void());
-  MOCK_METHOD0(Hide, void());
+  MOCK_METHOD1(ShowWhenKeyboardIsVisible, void(FillingSource));
+  MOCK_METHOD1(Hide, void(FillingSource));
   MOCK_METHOD2(GetFavicon,
                void(int, base::OnceCallback<void(const gfx::Image&)>));
   MOCK_METHOD2(OnFillingTriggered,
@@ -382,10 +383,12 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                           false)
+                           true)
               .AppendField(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
                            true, false)
               .Build()));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -406,6 +409,8 @@ TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
               .AppendField(ASCIIToUTF16("S3cur3"),
                            password_for_str(no_user_str()), true, false)
               .Build()));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -425,25 +430,27 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"), false,
-                           false)
+                           true)
               .AppendField(ASCIIToUTF16("PWD"), password_for_str("Alf"), true,
                            false)
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                           false)
+                           true)
               .AppendField(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
                            true, false)
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Cat"), ASCIIToUTF16("Cat"), false,
-                           false)
+                           true)
               .AppendField(ASCIIToUTF16("M1@u"), password_for_str("Cat"), true,
                            false)
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Zebra"), ASCIIToUTF16("Zebra"), false,
-                           false)
+                           true)
               .AppendField(ASCIIToUTF16("M3h"), password_for_str("Zebra"), true,
                            false)
               .Build()));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -462,14 +469,16 @@ TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                           false)
+                           true)
               .AppendField(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
                            true, false)
               .Build()));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
-      /*is_fillable=*/false);
+      /*is_password_field=*/false);
 }
 
 TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
@@ -481,6 +490,8 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
                   /*is_fillable=*/true, PasswordAccessorySheetDataBuilder(
                                             passwords_empty_str(kExampleDomain))
                                             .Build()));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -565,10 +576,12 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                           false)
+                           true)
               .AppendField(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
                            true, false)
               .Build()));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -587,6 +600,8 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
               .AppendField(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
                            true, true)
               .Build()));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              ShowWhenKeyboardIsVisible(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -603,10 +618,12 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                           false)
+                           true)
               .AppendField(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
                            true, false)
               .Build()));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -621,10 +638,12 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"), false,
-                           false)
+                           true)
               .AppendField(ASCIIToUTF16("M3lm4k"), password_for_str("Alf"),
                            true, false)
               .Build()));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -643,10 +662,12 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                           false)
+                           true)
               .AppendField(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
                            true, false)
               .Build()));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -660,6 +681,8 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
           /*is_fillable=*/false,
           PasswordAccessorySheetDataBuilder(passwords_empty_str(kExampleDomain))
               .Build()));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/false,
@@ -678,10 +701,12 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                           false)
+                           true)
               .AppendField(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
                            true, false)
               .Build()));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -698,6 +723,8 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
                   PasswordAccessorySheetDataBuilder(
                       passwords_empty_str("random.other-site.org"))
                       .Build()));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL("https://random.other-site.org/")),
       /*is_fillable=*/true,
@@ -709,6 +736,8 @@ TEST_F(PasswordAccessoryControllerTest, FetchFaviconForCurrentUrl) {
 
   EXPECT_CALL(mock_manual_filling_controller_,
               RefreshSuggestionsForField(/*is_fillable=*/true, _));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -727,6 +756,8 @@ TEST_F(PasswordAccessoryControllerTest, RequestsFaviconsOnceForOneOrigin) {
 
   EXPECT_CALL(mock_manual_filling_controller_, RefreshSuggestionsForField(
                                                    /*is_fillable=*/true, _));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -765,6 +796,8 @@ TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
   // Populate the cache by requesting a favicon.
   EXPECT_CALL(mock_manual_filling_controller_,
               RefreshSuggestionsForField(/*is_fillable=*/true, _));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -792,6 +825,8 @@ TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
   controller()->DidNavigateMainFrame();
   EXPECT_CALL(mock_manual_filling_controller_,
               RefreshSuggestionsForField(/*is_fillable=*/true, _));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)), /*is_fillable=*/true,
       /*is_password_field=*/false);
@@ -811,6 +846,8 @@ TEST_F(PasswordAccessoryControllerTest, NoFaviconCallbacksWhenOriginChanges) {
   EXPECT_CALL(mock_manual_filling_controller_,
               RefreshSuggestionsForField(/*is_fillable=*/true, _))
       .Times(2);
+  EXPECT_CALL(mock_manual_filling_controller_,
+              Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)), true, false);
 
@@ -822,6 +859,8 @@ TEST_F(PasswordAccessoryControllerTest, NoFaviconCallbacksWhenOriginChanges) {
       .WillOnce(favicon::PostReply<6>(favicon_base::FaviconRawBitmapResult()));
   EXPECT_CALL(mock_callback, Run).Times(0);
   controller()->GetFavicon(kIconSize, mock_callback.Get());
+  EXPECT_CALL(mock_manual_filling_controller_,
+              Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL("https://other.frame.com/")), true, false);
 
@@ -854,9 +893,4 @@ TEST_F(PasswordAccessoryControllerTest, RecordsGeneratedPasswordAccepted) {
 
   histogram_tester.ExpectUniqueSample(
       "KeyboardAccessory.GeneratedPasswordDialog", true, 1);
-}
-
-TEST_F(PasswordAccessoryControllerTest, Hide) {
-  EXPECT_CALL(mock_manual_filling_controller_, Hide());
-  controller()->Hide();
 }

@@ -86,14 +86,6 @@ class PasswordAccessoryController
   // Reacts to a navigation on the main frame, e.g. by clearing caches.
   virtual void DidNavigateMainFrame() = 0;
 
-  // Requests to show the accessory bar. The accessory will only be shown
-  // when the keyboard becomes visible.
-  virtual void ShowWhenKeyboardIsVisible() = 0;
-
-  // Requests to hide the accessory. This hides both the accessory sheet
-  // (if open) and the accessory bar.
-  virtual void Hide() = 0;
-
   // --------------------------
   // Methods called by UI code:
   // --------------------------

@@ -40,6 +40,10 @@
 //   controller->RefreshSuggestionsForField(...);
 class ManualFillingController {
  public:
+  // The controller checks if at least one of these sources needs the accessory
+  // to be displayed. Only if neither needs the accessory, it will not show up.
+  enum class FillingSource { AUTOFILL, PASSWORD_FALLBACKS };
+
   ManualFillingController() = default;
   virtual ~ManualFillingController() = default;
 
@@ -67,11 +71,11 @@ class ManualFillingController {
 
   // Requests to show the accessory bar. The accessory will only be shown
   // when the keyboard becomes visible.
-  virtual void ShowWhenKeyboardIsVisible() = 0;
+  virtual void ShowWhenKeyboardIsVisible(FillingSource source) = 0;
 
   // Requests to hide the accessory. This hides both the accessory sheet
   // (if open) and the accessory bar.
-  virtual void Hide() = 0;
+  virtual void Hide(FillingSource source) = 0;
 
   // Notifies the view that automatic password generation status changed.
   //

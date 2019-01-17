@@ -1064,29 +1064,12 @@ void ChromePasswordManagerClient::FocusedInputChanged(bool is_fillable,
                                                       bool is_password_field) {
 #if defined(OS_ANDROID)
   // Either #passwords-keyboards-accessory or #experimental-ui must be enabled.
-  if (!PasswordAccessoryController::AllowedForWebContents(web_contents())) {
-    return;  // No need to even create the bridge if it's not going to be used.
-  }
-  if (is_password_field) {
-    DCHECK(is_fillable);
-    PasswordAccessoryController* accessory =
-        PasswordAccessoryController::GetOrCreate(web_contents());
-    accessory->RefreshSuggestionsForField(
-        password_manager_driver_bindings_.GetCurrentTargetFrame()
-            ->GetLastCommittedOrigin(),
-        is_fillable, is_password_field);
-    // TODO(crbug.com/905669): Move all the logic to control accessory
-    // visibility to ManualFillingController.
-    accessory->ShowWhenKeyboardIsVisible();
-  } else {
-    // If not a password field, only update the accessory if one exists.
-    PasswordAccessoryController* accessory =
-        PasswordAccessoryController::GetIfExisting(web_contents());
-    if (accessory) {
-      // TODO(crbug.com/905669): Move all the logic to control accessory
-      // visibility to ManualFillingController.
-      accessory->Hide();
-    }
+  if (PasswordAccessoryController::AllowedForWebContents(web_contents())) {
+    PasswordAccessoryController::GetOrCreate(web_contents())
+        ->RefreshSuggestionsForField(
+            password_manager_driver_bindings_.GetCurrentTargetFrame()
+                ->GetLastCommittedOrigin(),
+            is_fillable, is_password_field);
   }
 #endif  // defined(OS_ANDROID)
 }

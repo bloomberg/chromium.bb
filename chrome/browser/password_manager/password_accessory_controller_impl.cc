@@ -34,6 +34,7 @@ using autofill::AccessorySheetData;
 using autofill::FooterCommand;
 using autofill::PasswordForm;
 using autofill::UserInfo;
+using FillingSource = ManualFillingController::FillingSource;
 
 namespace {
 
@@ -147,7 +148,7 @@ void PasswordAccessoryControllerImpl::SavePasswordsForOrigin(
   for (const auto& pair : best_matches) {
     const PasswordForm* form = pair.second;
     suggestions->emplace_back(form->password_value, GetDisplayUsername(*form),
-                              /*username_selectable*/ false);
+                              /*selectable=*/!form->username_value.empty());
   }
 }
 
@@ -205,6 +206,12 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
                        is_fillable ? origin_suggestions_[origin]
                                    : std::vector<SuggestionElementData>(),
                        is_password_field));
+  if (is_password_field) {
+    GetManualFillingController()->ShowWhenKeyboardIsVisible(
+        FillingSource::PASSWORD_FALLBACKS);
+  } else {
+    GetManualFillingController()->Hide(FillingSource::PASSWORD_FALLBACKS);
+  }
 }
 
 void PasswordAccessoryControllerImpl::DidNavigateMainFrame() {
@@ -212,14 +219,6 @@ void PasswordAccessoryControllerImpl::DidNavigateMainFrame() {
   current_origin_ = url::Origin();
   icons_request_data_.clear();
   origin_suggestions_.clear();
-}
-
-void PasswordAccessoryControllerImpl::ShowWhenKeyboardIsVisible() {
-  GetManualFillingController()->ShowWhenKeyboardIsVisible();
-}
-
-void PasswordAccessoryControllerImpl::Hide() {
-  GetManualFillingController()->Hide();
 }
 
 void PasswordAccessoryControllerImpl::GetFavicon(
@@ -354,7 +353,7 @@ AccessorySheetData PasswordAccessoryControllerImpl::CreateAccessorySheetData(
 
     user_info.add_field(UserInfo::Field(
         suggestion.username, suggestion.username, /*is_password=*/false,
-        /*selectable=*/suggestion.username_selectable));
+        /*selectable=*/suggestion.username_selectable && !is_password_field));
 
     user_info.add_field(UserInfo::Field(
         suggestion.password,

@@ -10,9 +10,11 @@
 
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/autofill/manual_filling_view_interface.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,6 +23,7 @@ using testing::_;
 using testing::AnyNumber;
 using testing::NiceMock;
 using testing::StrictMock;
+using FillingSource = ManualFillingController::FillingSource;
 
 constexpr char kExampleSite[] = "https://example.com";
 
@@ -40,8 +43,6 @@ class MockPasswordAccessoryController : public PasswordAccessoryController {
   MOCK_METHOD3(RefreshSuggestionsForField,
                void(const url::Origin&, bool, bool));
   MOCK_METHOD0(DidNavigateMainFrame, void());
-  MOCK_METHOD0(ShowWhenKeyboardIsVisible, void());
-  MOCK_METHOD0(Hide, void());
   MOCK_METHOD2(GetFavicon,
                void(int, base::OnceCallback<void(const gfx::Image&)>));
   MOCK_METHOD2(OnFillingTriggered, void(bool, const base::string16&));
@@ -155,9 +156,29 @@ TEST_F(ManualFillingControllerTest, ClosesViewOnSuccessfullFillingOnly) {
 
 TEST_F(ManualFillingControllerTest, RelaysShowAndHideKeyboardAccessory) {
   EXPECT_CALL(*view(), ShowWhenKeyboardIsVisible());
-  controller()->ShowWhenKeyboardIsVisible();
+  controller()->ShowWhenKeyboardIsVisible(FillingSource::PASSWORD_FALLBACKS);
   EXPECT_CALL(*view(), Hide());
-  controller()->Hide();
+  controller()->Hide(FillingSource::PASSWORD_FALLBACKS);
+}
+
+TEST_F(ManualFillingControllerTest, HidesAccessoryWhenAllSourcesRequestedIt) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      autofill::features::kAutofillKeyboardAccessory);
+  EXPECT_CALL(*view(), ShowWhenKeyboardIsVisible()).Times(3);
+  controller()->ShowWhenKeyboardIsVisible(FillingSource::PASSWORD_FALLBACKS);
+  controller()->ShowWhenKeyboardIsVisible(FillingSource::AUTOFILL);
+  // This duplicate call accounts for a single, visible source.
+  controller()->ShowWhenKeyboardIsVisible(FillingSource::PASSWORD_FALLBACKS);
+
+  // Hiding just one of two active filling sources won't have any effect.
+  EXPECT_CALL(*view(), Hide()).Times(0);
+  controller()->Hide(FillingSource::PASSWORD_FALLBACKS);
+  testing::Mock::VerifyAndClearExpectations(view());
+
+  // Hiding the remaining second source will result in the view being hidden.
+  EXPECT_CALL(*view(), Hide()).Times(1);
+  controller()->Hide(FillingSource::AUTOFILL);
 }
 
 TEST_F(ManualFillingControllerTest, OnAutomaticGenerationStatusChanged) {
