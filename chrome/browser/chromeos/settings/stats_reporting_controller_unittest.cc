@@ -49,6 +49,10 @@ class StatsReportingControllerTest : public testing::Test {
     both_keys->SetPrivateKey(device_policy_.GetSigningKey());
     public_key_only->SetPublicKeyFromPrivateKey(
         *device_policy_.GetSigningKey());
+
+    observer_subscription_ = StatsReportingController::Get()->AddObserver(
+        base::BindRepeating(&StatsReportingControllerTest::OnNotifiedOfChange,
+                            base::Unretained(this)));
   }
 
   std::unique_ptr<TestingProfile> CreateUser(
@@ -73,13 +77,20 @@ class StatsReportingControllerTest : public testing::Test {
     EXPECT_FALSE(StatsReportingController::Get()->GetPendingValue(&pending));
   }
 
-  void ExpectThatActualValueIs(bool expected) {
-    bool actual = false;
-    EXPECT_TRUE(StatsReportingController::Get()->GetActualValue(&actual));
-    EXPECT_EQ(expected, actual);
+  void ExpectThatSignedStoredValueIs(bool expected) {
+    bool stored = false;
+    EXPECT_TRUE(StatsReportingController::Get()->GetSignedStoredValue(&stored));
+    EXPECT_EQ(expected, stored);
   }
 
-  void TearDown() override { StatsReportingController::Shutdown(); }
+  void OnNotifiedOfChange() {
+    value_at_last_notification_ = StatsReportingController::Get()->IsEnabled();
+  }
+
+  void TearDown() override {
+    observer_subscription_.reset();
+    StatsReportingController::Shutdown();
+  }
 
   content::TestBrowserThreadBundle thread_bundle_{
       content::TestBrowserThreadBundle::IO_MAINLOOP};
@@ -89,6 +100,10 @@ class StatsReportingControllerTest : public testing::Test {
   ScopedTestCrosSettings scoped_cros_settings_{RegisterPrefs(&local_state_)};
   FakeSessionManagerClient fake_session_manager_client_;
   policy::DevicePolicyBuilder device_policy_;
+
+  bool value_at_last_notification_{false};
+  std::unique_ptr<StatsReportingController::ObserverSubscription>
+      observer_subscription_;
 
   scoped_refptr<ownership::MockOwnerKeyUtil> both_keys{
       base::MakeRefCounted<ownership::MockOwnerKeyUtil>()};
@@ -102,22 +117,24 @@ TEST_F(StatsReportingControllerTest, GetAndSet_OwnershipUnknown) {
   EXPECT_EQ(DeviceSettingsService::OWNERSHIP_UNKNOWN,
             DeviceSettingsService::Get()->GetOwnershipStatus());
   EXPECT_FALSE(StatsReportingController::Get()->IsEnabled());
+  EXPECT_FALSE(value_at_last_notification_);
   ExpectThatPendingValueIsNotSet();
-  ExpectThatActualValueIs(false);
+  ExpectThatSignedStoredValueIs(false);
 
-  auto user = CreateUser(no_keys);
+  std::unique_ptr<TestingProfile> user = CreateUser(no_keys);
   StatsReportingController::Get()->SetEnabled(user.get(), true);
   // A pending value is written in case there is no owner, in which case it will
   // be written properly when ownership is taken - but we don't read the
   // pending value, in case there actually is an owner already.
   EXPECT_FALSE(StatsReportingController::Get()->IsEnabled());
   ExpectThatPendingValueIs(true);
-  ExpectThatActualValueIs(false);
+  ExpectThatSignedStoredValueIs(false);
 
   StatsReportingController::Get()->SetEnabled(user.get(), false);
   EXPECT_FALSE(StatsReportingController::Get()->IsEnabled());
+  EXPECT_FALSE(value_at_last_notification_);
   ExpectThatPendingValueIs(false);
-  ExpectThatActualValueIs(false);
+  ExpectThatSignedStoredValueIs(false);
 }
 
 TEST_F(StatsReportingControllerTest, GetAndSet_OwnershipNone) {
@@ -129,89 +146,99 @@ TEST_F(StatsReportingControllerTest, GetAndSet_OwnershipNone) {
   EXPECT_EQ(DeviceSettingsService::OWNERSHIP_NONE,
             DeviceSettingsService::Get()->GetOwnershipStatus());
   EXPECT_FALSE(StatsReportingController::Get()->IsEnabled());
+  EXPECT_FALSE(value_at_last_notification_);
   ExpectThatPendingValueIsNotSet();
-  ExpectThatActualValueIs(false);
+  ExpectThatSignedStoredValueIs(false);
 
   // Before the device is owned, the value is written as a pending value:
-  auto user = CreateUser(no_keys);
+  std::unique_ptr<TestingProfile> user = CreateUser(no_keys);
   StatsReportingController::Get()->SetEnabled(user.get(), true);
   EXPECT_TRUE(StatsReportingController::Get()->IsEnabled());
+  EXPECT_TRUE(value_at_last_notification_);
   ExpectThatPendingValueIs(true);
-  ExpectThatActualValueIs(false);
+  ExpectThatSignedStoredValueIs(false);
 
   StatsReportingController::Get()->SetEnabled(user.get(), false);
   EXPECT_FALSE(StatsReportingController::Get()->IsEnabled());
+  EXPECT_FALSE(value_at_last_notification_);
   ExpectThatPendingValueIs(false);
-  ExpectThatActualValueIs(false);
+  ExpectThatSignedStoredValueIs(false);
 }
 
 TEST_F(StatsReportingControllerTest, GetAndSet_OwnershipTaken) {
   DeviceSettingsService::Get()->SetSessionManager(&fake_session_manager_client_,
                                                   both_keys);
-  auto owner = CreateUser(both_keys);
+  std::unique_ptr<TestingProfile> owner = CreateUser(both_keys);
 
   EXPECT_EQ(DeviceSettingsService::OWNERSHIP_TAKEN,
             DeviceSettingsService::Get()->GetOwnershipStatus());
   EXPECT_FALSE(StatsReportingController::Get()->IsEnabled());
+  EXPECT_FALSE(value_at_last_notification_);
   ExpectThatPendingValueIsNotSet();
-  ExpectThatActualValueIs(false);
+  ExpectThatSignedStoredValueIs(false);
 
-  // When the device is owned, the owner can write the actual value:
+  // When the device is owned, the owner can sign and store the value:
   StatsReportingController::Get()->SetEnabled(owner.get(), true);
   EXPECT_TRUE(StatsReportingController::Get()->IsEnabled());
+  EXPECT_TRUE(value_at_last_notification_);
   ExpectThatPendingValueIsNotSet();
-  ExpectThatActualValueIs(true);
+  ExpectThatSignedStoredValueIs(true);
 
   StatsReportingController::Get()->SetEnabled(owner.get(), false);
   EXPECT_FALSE(StatsReportingController::Get()->IsEnabled());
   ExpectThatPendingValueIsNotSet();
-  ExpectThatActualValueIs(false);
+  ExpectThatSignedStoredValueIs(false);
 }
 
 TEST_F(StatsReportingControllerTest, GetAndSet_OwnershipTaken_NonOwner) {
   DeviceSettingsService::Get()->SetSessionManager(&fake_session_manager_client_,
                                                   both_keys);
-  auto owner = CreateUser(both_keys);
+  std::unique_ptr<TestingProfile> owner = CreateUser(both_keys);
 
   EXPECT_EQ(DeviceSettingsService::OWNERSHIP_TAKEN,
             DeviceSettingsService::Get()->GetOwnershipStatus());
   EXPECT_FALSE(StatsReportingController::Get()->IsEnabled());
+  EXPECT_FALSE(value_at_last_notification_);
   ExpectThatPendingValueIsNotSet();
-  ExpectThatActualValueIs(false);
+  ExpectThatSignedStoredValueIs(false);
 
   // Setting value has no effect from a non-owner once device is owned:
-  auto non_owner = CreateUser(public_key_only);
+  std::unique_ptr<TestingProfile> non_owner = CreateUser(public_key_only);
   StatsReportingController::Get()->SetEnabled(non_owner.get(), true);
   EXPECT_FALSE(StatsReportingController::Get()->IsEnabled());
+  EXPECT_FALSE(value_at_last_notification_);
   ExpectThatPendingValueIsNotSet();
-  ExpectThatActualValueIs(false);
+  ExpectThatSignedStoredValueIs(false);
 }
 
 TEST_F(StatsReportingControllerTest, SetBeforeOwnershipTaken) {
   EXPECT_EQ(DeviceSettingsService::OWNERSHIP_UNKNOWN,
             DeviceSettingsService::Get()->GetOwnershipStatus());
   EXPECT_FALSE(StatsReportingController::Get()->IsEnabled());
+  EXPECT_FALSE(value_at_last_notification_);
   ExpectThatPendingValueIsNotSet();
-  ExpectThatActualValueIs(false);
+  ExpectThatSignedStoredValueIs(false);
 
   // Before device is owned, setting the value means writing a pending value:
-  auto pre_ownership_user = CreateUser(no_keys);
+  std::unique_ptr<TestingProfile> pre_ownership_user = CreateUser(no_keys);
   StatsReportingController::Get()->SetEnabled(pre_ownership_user.get(), true);
   EXPECT_FALSE(StatsReportingController::Get()->IsEnabled());
+  EXPECT_FALSE(value_at_last_notification_);
   ExpectThatPendingValueIs(true);
-  ExpectThatActualValueIs(false);
+  ExpectThatSignedStoredValueIs(false);
 
   DeviceSettingsService::Get()->SetSessionManager(&fake_session_manager_client_,
                                                   both_keys);
-  auto owner = CreateUser(both_keys);
+  std::unique_ptr<TestingProfile> owner = CreateUser(both_keys);
   EXPECT_EQ(DeviceSettingsService::OWNERSHIP_TAKEN,
             DeviceSettingsService::Get()->GetOwnershipStatus());
 
   // After device is owned, the value is written to Cros settings.
   StatsReportingController::Get()->OnOwnershipTaken(owner.get());
   EXPECT_TRUE(StatsReportingController::Get()->IsEnabled());
+  EXPECT_TRUE(value_at_last_notification_);
   ExpectThatPendingValueIsNotSet();
-  ExpectThatActualValueIs(true);
+  ExpectThatSignedStoredValueIs(true);
 }
 
 }  // namespace chromeos

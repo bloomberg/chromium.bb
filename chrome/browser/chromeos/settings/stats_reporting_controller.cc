@@ -60,6 +60,7 @@ void StatsReportingController::RegisterLocalStatePrefs(
 
 void StatsReportingController::SetEnabled(Profile* profile, bool enabled) {
   DCHECK(profile);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (GetOwnershipStatus() == DeviceSettingsService::OWNERSHIP_TAKEN) {
     // The device has an owner. If the current profile is that owner, we will
@@ -73,15 +74,17 @@ void StatsReportingController::SetEnabled(Profile* profile, bool enabled) {
     // restarted before ownership is taken, we will still persist it eventually.
     // See OnOwnershipTaken.
     local_state_->SetBoolean(kPendingPref, enabled);
+    NotifyObservers();
   }
 }
 
 bool StatsReportingController::IsEnabled() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool value = false;
   auto ownership = GetOwnershipStatus();
   if (ownership == DeviceSettingsService::OWNERSHIP_TAKEN) {
-    // If ownership has been taken, return the actual value.
-    GetActualValue(&value);
+    // If ownership has been taken, return the signed, stored value.
+    GetSignedStoredValue(&value);
   } else if (ownership == DeviceSettingsService::OWNERSHIP_NONE) {
     // If ownership has not been taken, return the pending value.
     GetPendingValue(&value);
@@ -92,8 +95,16 @@ bool StatsReportingController::IsEnabled() {
   return value;
 }
 
+std::unique_ptr<CrosSettings::ObserverSubscription>
+StatsReportingController::AddObserver(const base::RepeatingClosure& callback) {
+  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return callback_list_.Add(callback);
+}
+
 void StatsReportingController::OnOwnershipTaken(Profile* owner) {
   DCHECK_EQ(GetOwnershipStatus(), DeviceSettingsService::OWNERSHIP_TAKEN);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   bool pending_value;
   if (GetPendingValue(&pending_value)) {
@@ -104,9 +115,17 @@ void StatsReportingController::OnOwnershipTaken(Profile* owner) {
 }
 
 StatsReportingController::StatsReportingController(PrefService* local_state)
-    : local_state_(local_state), weak_factory_(this) {}
+    : local_state_(local_state), weak_factory_(this) {
+  setting_subscription_ = CrosSettings::Get()->AddSettingsObserver(
+      kStatsReportingPref,
+      base::BindRepeating(&StatsReportingController::NotifyObservers,
+                          this->as_weak_ptr()));
+  value_notified_to_observers_ = IsEnabled();
+}
 
-StatsReportingController::~StatsReportingController() {}
+StatsReportingController::~StatsReportingController() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void StatsReportingController::SetWithServiceAsync(
     ownership::OwnerSettingsService* service,  // Can be null for non-owners.
@@ -116,9 +135,9 @@ void StatsReportingController::SetWithServiceAsync(
     // Service is not yet ready. Listen for changes in its readiness so we can
     // write the value once it is ready. Uses weak pointers, so if everything
     // is shutdown and deleted in the meantime, this callback isn't run.
-    service->IsOwnerAsync(
-        base::Bind(&StatsReportingController::SetWithServiceCallback,
-                   this->as_weak_ptr(), service->as_weak_ptr(), enabled));
+    service->IsOwnerAsync(base::BindRepeating(
+        &StatsReportingController::SetWithServiceCallback, this->as_weak_ptr(),
+        service->as_weak_ptr(), enabled));
   } else {
     // Service is either null, or ready - use it right now.
     SetWithService(service, enabled);
@@ -139,10 +158,20 @@ void StatsReportingController::SetWithService(
   if (service && service->IsOwner()) {
     service->SetBoolean(kStatsReportingPref, enabled);
     ClearPendingValue();
+    NotifyObservers();
   } else {
     // Do nothing since we are not the owner.
     LOG(WARNING) << "Changing settings from non-owner, setting="
                  << kStatsReportingPref;
+  }
+}
+
+void StatsReportingController::NotifyObservers() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  bool current_value = IsEnabled();
+  if (current_value != value_notified_to_observers_) {
+    value_notified_to_observers_ = current_value;
+    callback_list_.Notify();
   }
 }
 
@@ -168,7 +197,7 @@ void StatsReportingController::ClearPendingValue() {
   local_state_->ClearPref(kPendingPref);
 }
 
-bool StatsReportingController::GetActualValue(bool* result) {
+bool StatsReportingController::GetSignedStoredValue(bool* result) {
   return CrosSettings::Get()->GetBoolean(kStatsReportingPref, result);
 }
 
