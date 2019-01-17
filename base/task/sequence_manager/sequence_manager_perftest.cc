@@ -570,6 +570,50 @@ class TwoThreadTestCase : public TestCase {
   int done_count_ = 0;
 };
 
+class TwoThreadPingPongTestCase : public TestCase {
+ public:
+  TwoThreadPingPongTestCase(PerfTestDelegate* delegate,
+                            std::vector<scoped_refptr<TaskRunner>> task_runners)
+      : TestCase(delegate),
+        task_runners_(std::move(task_runners)),
+        ping_task_(base::BindRepeating(&TwoThreadPingPongTestCase::PingTask,
+                                       Unretained(this))),
+        pong_task_(base::BindRepeating(&TwoThreadPingPongTestCase::PongTask,
+                                       Unretained(this))),
+        num_tasks_(kNumTasks / 2),  // We run two tasks per iteration.
+        auxiliary_thread_("auxiliary thread") {
+    DCHECK_EQ(task_runners.size(), 1u);
+    auxiliary_thread_.Start();
+  }
+
+  ~TwoThreadPingPongTestCase() override { auxiliary_thread_.Stop(); }
+
+ protected:
+  void Start() override {
+    done_count_ = 0;
+    auxiliary_thread_.task_runner()->PostTask(FROM_HERE, pong_task_);
+  }
+
+  void PingTask() {
+    if (++done_count_ == num_tasks_) {
+      delegate_->SignalDone();
+      return;
+    }
+
+    auxiliary_thread_.task_runner()->PostTask(FROM_HERE, pong_task_);
+  }
+
+  void PongTask() { task_runners_[0]->PostTask(FROM_HERE, ping_task_); }
+
+ private:
+  const std::vector<scoped_refptr<TaskRunner>> task_runners_;
+  RepeatingClosure ping_task_;
+  RepeatingClosure pong_task_;
+  const size_t num_tasks_;
+  Thread auxiliary_thread_;
+  size_t done_count_ = 0;
+};
+
 class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
  public:
   void SetUp() override {
@@ -684,6 +728,7 @@ INSTANTIATE_TEST_CASE_P(
         PerfTestType::kUseIOMessageLoop,
         PerfTestType::kUseSingleThreadInWorkerPool,
         PerfTestType::kUseSequenceManagerWithMessagePumpAndRandomSampling));
+
 TEST_P(SequenceManagerPerfTest, PostDelayedTasks_OneQueue) {
   if (!delegate_->VirtualTimeIsSupported()) {
     LOG(INFO) << "Unsupported";
@@ -805,6 +850,11 @@ TEST_P(SequenceManagerPerfTest,
   TwoThreadTestCase task_source(delegate_.get(), CreateTaskRunners(32));
   Benchmark("post immediate tasks with thirty two queues from two threads",
             &task_source);
+}
+
+TEST_P(SequenceManagerPerfTest, TwoThreadPingPongTestCase) {
+  TwoThreadPingPongTestCase task_source(delegate_.get(), CreateTaskRunners(1));
+  Benchmark("ping pong tasks between two threads", &task_source);
 }
 
 // TODO(alexclarke): Add additional tests with different mixes of non-delayed vs
