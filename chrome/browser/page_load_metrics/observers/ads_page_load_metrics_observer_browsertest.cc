@@ -386,8 +386,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("createAdFrame('frame_factory.html', '');"));
   // Two pages subresources should have been reported as ad. The iframe resource
-  // should also be reported as an ad.
-  waiter->AddMinimumAdResourceExpectation(5);
+  // and its three subresources should also be reported as ads.
+  waiter->AddMinimumAdResourceExpectation(6);
   waiter->Wait();
 }
 
@@ -408,14 +408,14 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("createAdFrame('frame_factory.html', 'test');"));
-  waiter->AddMinimumAdResourceExpectation(5);
+  waiter->AddMinimumAdResourceExpectation(6);
   waiter->Wait();
   NavigateIframeToURL(
       web_contents(), "test",
       embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
-  // The new subframe as well as two of its page subresources should be reported
-  // as an ad.
-  waiter->AddMinimumAdResourceExpectation(8);
+  // The new subframe and its three subresources should be reported
+  // as ads.
+  waiter->AddMinimumAdResourceExpectation(10);
   waiter->Wait();
 }
 
