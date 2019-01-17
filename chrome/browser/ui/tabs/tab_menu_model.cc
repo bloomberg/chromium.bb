@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_features.h"
+#include "chrome/browser/ui/tabs/existing_tab_group_sub_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
@@ -21,6 +22,8 @@ TabMenuModel::TabMenuModel(ui::SimpleMenuModel::Delegate* delegate,
   Build(tab_strip, index);
 }
 
+TabMenuModel::~TabMenuModel() {}
+
 void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   std::vector<int> affected_indices =
       tab_strip->IsTabSelected(index)
@@ -31,6 +34,15 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   if (base::FeatureList::IsEnabled(features::kTabGroups)) {
     AddItemWithStringId(TabStripModel::CommandAddToNewGroup,
                         IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP);
+
+    // Create submenu with existing groups
+    if (ExistingTabGroupSubMenuModel::ShouldShowSubmenu(tab_strip, index)) {
+      add_to_existing_group_submenu_ =
+          std::make_unique<ExistingTabGroupSubMenuModel>(tab_strip, index);
+      AddSubMenuWithStringId(TabStripModel::CommandAddToExistingGroup,
+                             IDS_TAB_CXMENU_ADD_TAB_TO_EXISTING_GROUP,
+                             add_to_existing_group_submenu_.get());
+    }
   }
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);

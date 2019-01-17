@@ -7,7 +7,9 @@
 #include "third_party/skia/include/utils/SkRandom.h"
 
 TabGroupData::TabGroupData() {
-  title_ = base::ASCIIToUTF16("Group");
+  static int groupCount = 0;
+  title_ = base::ASCIIToUTF16("Group " + std::to_string(groupCount));
+  groupCount++;
   static SkRandom rand;
   stroke_color_ = rand.nextU() | 0xff000000;
 }
