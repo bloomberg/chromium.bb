@@ -13,7 +13,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryTabLayoutCoordinator.AccessoryTabObserver;
-import org.chromium.chrome.browser.modelutil.ListObservable;
+import org.chromium.ui.modelutil.ListObservable;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyObservable;

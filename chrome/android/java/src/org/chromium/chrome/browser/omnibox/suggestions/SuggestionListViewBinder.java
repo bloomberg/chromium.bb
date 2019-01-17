@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.chrome.browser.modelutil.ModelListAdapter;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.modelutil.ModelListAdapter;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -34,7 +34,7 @@ class SuggestionListViewBinder {
 
     /**
      * @see
-     * org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor.ViewBinder#bind(Object,
+     * PropertyModelChangeProcessor.ViewBinder#bind(Object,
      * Object, Object)
      */
     public static void bind(

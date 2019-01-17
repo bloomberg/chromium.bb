@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import android.support.annotation.Nullable;
 
-import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
+import org.chromium.ui.modelutil.RecyclerViewAdapter;
 
 /**
  * Helper class for implementations of {@link RecyclerViewAdapter.Delegate} using partial

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.modelutil;
+package org.chromium.ui.modelutil;
 
 import android.content.Context;
 import android.util.Pair;
@@ -11,10 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor.ViewBinder;
-import org.chromium.ui.modelutil.PropertyKey;
-import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.R;
 import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableFloatPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
@@ -40,7 +37,8 @@ public class ModelListAdapter extends BaseAdapter {
 
     private final Context mContext;
     private final List<Pair<Integer, PropertyModel>> mSuggestionItems = new ArrayList<>();
-    private final SparseArray<Pair<ViewBuilder, ViewBinder>> mViewBuilderMap = new SparseArray<>();
+    private final SparseArray<Pair<ViewBuilder, PropertyModelChangeProcessor.ViewBinder>>
+            mViewBuilderMap = new SparseArray<>();
 
     public ModelListAdapter(Context context) {
         mContext = context;
@@ -77,8 +75,8 @@ public class ModelListAdapter extends BaseAdapter {
      * @param builder A mechanism for building new views of the specified type.
      * @param binder A means of binding a model to the provided view.
      */
-    public <T extends View> void registerType(
-            int typeId, ViewBuilder<T> builder, ViewBinder<PropertyModel, T, PropertyKey> binder) {
+    public <T extends View> void registerType(int typeId, ViewBuilder<T> builder,
+            PropertyModelChangeProcessor.ViewBinder<PropertyModel, T, PropertyKey> binder) {
         assert mViewBuilderMap.valueAt(typeId) == null;
         mViewBuilderMap.put(typeId, new Pair<>(builder, binder));
     }

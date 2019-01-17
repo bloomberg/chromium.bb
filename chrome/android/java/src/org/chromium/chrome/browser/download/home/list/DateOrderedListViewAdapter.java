@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.download.home.list;
 import android.support.v7.widget.RecyclerView;
 
 import org.chromium.chrome.browser.download.home.list.holder.ListItemViewHolder;
-import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
+import org.chromium.ui.modelutil.RecyclerViewAdapter;
 
 /**
  * A helper {@link RecyclerView.Adapter} implementation meant to glue a {@link ListItemModel}

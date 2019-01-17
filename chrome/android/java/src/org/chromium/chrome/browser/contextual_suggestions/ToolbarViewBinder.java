@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.contextual_suggestions;
 
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModel.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
  * A view binder for use with a {@link ToolbarView}.

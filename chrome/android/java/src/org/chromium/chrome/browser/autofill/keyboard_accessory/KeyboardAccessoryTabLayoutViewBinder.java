@@ -11,8 +11,8 @@ import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAc
 import android.support.design.widget.TabLayout;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.modelutil.ListModel;
-import org.chromium.chrome.browser.modelutil.ListModelChangeProcessor;
+import org.chromium.ui.modelutil.ListModel;
+import org.chromium.ui.modelutil.ListModelChangeProcessor;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 

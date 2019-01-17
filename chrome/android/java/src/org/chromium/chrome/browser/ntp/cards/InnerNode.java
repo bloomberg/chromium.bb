@@ -8,9 +8,9 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.modelutil.ListObservable;
-import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
-import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
+import org.chromium.ui.modelutil.ListObservable;
+import org.chromium.ui.modelutil.ListObservable.ListObserver;
+import org.chromium.ui.modelutil.RecyclerViewAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;

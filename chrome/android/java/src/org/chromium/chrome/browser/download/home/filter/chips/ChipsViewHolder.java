@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
+import org.chromium.ui.modelutil.RecyclerViewAdapter;
 import org.chromium.ui.widget.ChipView;
 
 /** The {@link ViewHolder} responsible for reflecting a {@link Chip} to a {@link View}. */
@@ -26,7 +27,7 @@ public class ChipsViewHolder extends ViewHolder {
 
     /**
      * Used as a method reference for ViewHolderFactory.
-     * @see org.chromium.chrome.browser.modelutil.RecyclerViewAdapter
+     * @see RecyclerViewAdapter
      *         .ViewHolderFactory#createViewHolder
      */
     public static ChipsViewHolder create(ViewGroup parent, int viewType) {
@@ -39,7 +40,7 @@ public class ChipsViewHolder extends ViewHolder {
      * Used as a method reference for ViewBinder, to push the properties of {@code chip} to
      * {@link #itemView}.
      * @param chip The {@link Chip} to visually reflect in the stored {@link View}.
-     * @see org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcp.ViewBinder#onBindViewHolder
+     * @see SimpleRecyclerViewMcp.ViewBinder#onBindViewHolder
      */
     public void bind(Chip chip) {
         getChipView().setEnabled(chip.enabled);

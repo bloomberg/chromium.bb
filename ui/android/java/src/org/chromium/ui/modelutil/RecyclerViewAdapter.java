@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.modelutil;
+package org.chromium.ui.modelutil;
 
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
@@ -10,8 +10,6 @@ import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +25,7 @@ import java.util.Set;
  * partial updates.
  */
 public class RecyclerViewAdapter<VH extends ViewHolder, P>
-        extends RecyclerView.Adapter<VH> implements ListObserver<P> {
+        extends RecyclerView.Adapter<VH> implements ListObservable.ListObserver<P> {
     /**
      * Delegate interface for the adapter.
      * @param <VH> The {@link ViewHolder} type for the {@link RecyclerView}.
@@ -69,15 +67,14 @@ public class RecyclerViewAdapter<VH extends ViewHolder, P>
          * @param viewHolder A view holder that will be recycled.
          * @see RecyclerView.Adapter#onViewRecycled(ViewHolder)
          */
-        default void
-            onViewRecycled(VH viewHolder) {}
+        default void onViewRecycled(VH viewHolder) {}
 
         /**
          * @param position The position of an item to be dismissed.
          * @return The set of item positions that should be dismissed simultaneously when dismissing
          *         the item at the given {@code position} (including the position itself), or an
          *         empty set if the item can't be dismissed.
-         * @see NewTabPageAdapter#getItemDismissalGroup
+         * @see org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter#getItemDismissalGroup
          */
         default Set<Integer> getItemDismissalGroup(int position) {
             return Collections.emptySet();
@@ -88,7 +85,7 @@ public class RecyclerViewAdapter<VH extends ViewHolder, P>
          * @param position The position of the item to be dismissed.
          * @param itemRemovedCallback Should be called with the title of the dismissed item, to
          * announce it for accessibility purposes.
-         * @see NewTabPageAdapter#dismissItem
+         * @see org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter#dismissItem
          */
         default void dismissItem(int position, Callback<String> itemRemovedCallback) {
             assert false;

@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.toolbar.bottom;
 import android.view.View;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
  * This class is responsible for pushing updates the view of the tab switcher bottom toolbar. These

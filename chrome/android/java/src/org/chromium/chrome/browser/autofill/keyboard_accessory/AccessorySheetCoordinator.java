@@ -19,10 +19,10 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.widget.RecyclerView;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.modelutil.LazyConstructionPropertyMcp;
-import org.chromium.chrome.browser.modelutil.ListModel;
-import org.chromium.chrome.browser.modelutil.ListModelChangeProcessor;
 import org.chromium.ui.ViewProvider;
+import org.chromium.ui.modelutil.LazyConstructionPropertyMcp;
+import org.chromium.ui.modelutil.ListModel;
+import org.chromium.ui.modelutil.ListModelChangeProcessor;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**

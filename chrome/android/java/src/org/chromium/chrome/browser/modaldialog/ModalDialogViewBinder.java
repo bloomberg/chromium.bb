@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.modaldialog;
 
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
  * This class is responsible for binding view properties from {@link ModalDialogProperties} to a

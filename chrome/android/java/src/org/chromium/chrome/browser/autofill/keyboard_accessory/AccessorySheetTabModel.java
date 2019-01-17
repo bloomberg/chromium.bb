@@ -8,7 +8,7 @@ import android.support.annotation.IntDef;
 import android.support.v7.widget.RecyclerView;
 
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.AccessorySheetData;
-import org.chromium.chrome.browser.modelutil.ListModel;
+import org.chromium.ui.modelutil.ListModel;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

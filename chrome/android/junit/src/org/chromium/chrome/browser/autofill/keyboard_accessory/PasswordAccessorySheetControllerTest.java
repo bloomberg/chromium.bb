@@ -36,7 +36,7 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessory
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.FooterCommand;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.UserInfo;
-import org.chromium.chrome.browser.modelutil.ListObservable;
+import org.chromium.ui.modelutil.ListObservable;
 
 /**
  * Controller tests for the password accessory sheet.
