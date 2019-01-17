@@ -4,6 +4,7 @@
 
 #include "components/page_image_annotation/core/page_annotator.h"
 
+#include "base/test/scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -11,51 +12,57 @@ namespace page_image_annotation {
 
 using testing::Eq;
 
-// Tests that destroying subscriptions successfully prevents notifications.
-TEST(PageAnnotatorTest, Subscriptions) {
+// Tests that the right messages are sent to observers.
+TEST(PageAnnotatorTest, Observers) {
   class TestObserver : public PageAnnotator::Observer {
    public:
-    TestObserver(PageAnnotator* const page_annotator)
-        : sub_(page_annotator->AddObserver(this)), last_id_(0ul) {}
+    TestObserver() : last_added_(0), last_modified_(0), last_removed_(0) {}
 
-    void OnImageAdded(const uint64_t node_id) override { last_id_ = node_id; }
-    void OnImageModified(const uint64_t node_id) override {
-      last_id_ = node_id;
+    void OnImageAdded(const PageAnnotator::ImageMetadata& metadata) override {
+      last_added_ = metadata.node_id;
     }
-    void OnImageRemoved(const uint64_t node_id) override { last_id_ = node_id; }
 
-    PageAnnotator::Subscription sub_;
-    uint64_t last_id_;
+    void OnImageModified(
+        const PageAnnotator::ImageMetadata& metadata) override {
+      last_modified_ = metadata.node_id;
+    }
+
+    void OnImageRemoved(const uint64_t node_id) override {
+      last_removed_ = node_id;
+    }
+
+    uint64_t last_added_, last_modified_, last_removed_;
   };
 
+  base::test::ScopedTaskEnvironment test_task_env;
+
+  const auto get_pixels = base::BindRepeating([]() { return SkBitmap(); });
+
   PageAnnotator page_annotator;
-  TestObserver o1(&page_annotator), o2(&page_annotator);
 
-  page_annotator.ImageAdded(1ul, "test.jpg");
-  EXPECT_THAT(o1.last_id_, Eq(1ul));
-  EXPECT_THAT(o2.last_id_, Eq(1ul));
+  TestObserver o1;
+  page_annotator.AddObserver(&o1);
 
-  page_annotator.ImageAdded(2ul, "example.png");
-  EXPECT_THAT(o1.last_id_, Eq(2ul));
-  EXPECT_THAT(o2.last_id_, Eq(2ul));
+  page_annotator.ImageAddedOrPossiblyModified({1ul, "test.jpg"}, get_pixels);
+  EXPECT_THAT(o1.last_added_, Eq(1ul));
 
-  page_annotator.ImageModified(1ul, "demo.gif");
-  EXPECT_THAT(o1.last_id_, Eq(1ul));
-  EXPECT_THAT(o2.last_id_, Eq(1ul));
+  page_annotator.ImageAddedOrPossiblyModified({2ul, "example.png"}, get_pixels);
+  EXPECT_THAT(o1.last_added_, Eq(2ul));
+
+  page_annotator.ImageAddedOrPossiblyModified({1ul, "demo.gif"}, get_pixels);
+  EXPECT_THAT(o1.last_added_, Eq(2ul));
+  EXPECT_THAT(o1.last_modified_, Eq(1ul));
 
   page_annotator.ImageRemoved(2ul);
-  EXPECT_THAT(o1.last_id_, Eq(2ul));
-  EXPECT_THAT(o2.last_id_, Eq(2ul));
+  EXPECT_THAT(o1.last_added_, Eq(2ul));
+  EXPECT_THAT(o1.last_modified_, Eq(1ul));
+  EXPECT_THAT(o1.last_removed_, Eq(2ul));
 
-  o1.sub_.Cancel();
-  page_annotator.ImageAdded(3ul, "placeholder.bmp");
-  EXPECT_THAT(o1.last_id_, Eq(2ul));
-  EXPECT_THAT(o2.last_id_, Eq(3ul));
+  TestObserver o2;
+  page_annotator.AddObserver(&o2);
 
-  o2.sub_.Cancel();
-  page_annotator.ImageRemoved(1ul);
-  EXPECT_THAT(o1.last_id_, Eq(2ul));
-  EXPECT_THAT(o2.last_id_, Eq(3ul));
+  EXPECT_THAT(o1.last_added_, Eq(2ul));
+  EXPECT_THAT(o2.last_added_, Eq(1ul));
 }
 
 // TODO(crbug.com/916363): add more tests when behavior is added to the

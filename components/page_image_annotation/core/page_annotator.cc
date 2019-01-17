@@ -8,59 +8,59 @@ namespace page_image_annotation {
 
 PageAnnotator::Observer::~Observer() {}
 
-PageAnnotator::Subscription::Subscription(
-    const Observer* const observer,
-    base::WeakPtr<PageAnnotator> page_annotator)
-    : observer_(observer), page_annotator_(page_annotator) {}
-
-PageAnnotator::Subscription::Subscription(Subscription&& subscription) =
-    default;
-
-PageAnnotator::Subscription::~Subscription() {
-  Cancel();
-}
-
-void PageAnnotator::Subscription::Cancel() {
-  if (page_annotator_)
-    page_annotator_->RemoveObserver(observer_);
-}
-
-PageAnnotator::PageAnnotator() : weak_ptr_factory_(this) {}
+PageAnnotator::PageAnnotator() {}
 
 PageAnnotator::~PageAnnotator() {}
 
-void PageAnnotator::ImageAdded(const uint64_t node_id,
-                               const std::string& source_id) {
-  // TODO(crbug.com/916363): create a connection to the image annotation service
-  //                         for this image.
-  for (Observer& observer : observers_) {
-    observer.OnImageAdded(node_id);
-  }
-}
+void PageAnnotator::ImageAddedOrPossiblyModified(
+    const ImageMetadata& metadata,
+    base::RepeatingCallback<SkBitmap()> pixels_callback) {
+  const auto lookup = images_.find(metadata.node_id);
 
-void PageAnnotator::ImageModified(const uint64_t node_id,
-                                  const std::string& source_id) {
-  // TODO(crbug.com/916363): reset the service connection for this image.
+  if (lookup == images_.end()) {
+    // This is an image addition.
 
-  for (Observer& observer : observers_) {
-    observer.OnImageModified(node_id);
+    AddNewImage(metadata, std::move(pixels_callback));
+
+    for (Observer& observer : observers_) {
+      observer.OnImageAdded(metadata);
+    }
+  } else if (lookup->second.first.source_id != metadata.source_id) {
+    // We already have older data for this node ID; this is an update.
+
+    images_.erase(lookup);
+    AddNewImage(metadata, std::move(pixels_callback));
+
+    for (Observer& observer : observers_) {
+      observer.OnImageModified(metadata);
+    }
   }
 }
 
 void PageAnnotator::ImageRemoved(const uint64_t node_id) {
-  // TODO(crbug.com/916363): close the service connection for this image.
+  images_.erase(node_id);
+
   for (Observer& observer : observers_) {
     observer.OnImageRemoved(node_id);
   }
 }
 
-PageAnnotator::Subscription PageAnnotator::AddObserver(Observer* observer) {
+void PageAnnotator::AddObserver(Observer* const observer) {
   observers_.AddObserver(observer);
-  return Subscription(observer, weak_ptr_factory_.GetWeakPtr());
+
+  // The new observer has not received any previous messages; inform them now of
+  // all existing images.
+  for (const auto& image : images_) {
+    observer->OnImageAdded(image.second.first);
+  }
 }
 
-void PageAnnotator::RemoveObserver(const Observer* observer) {
-  observers_.RemoveObserver(observer);
+void PageAnnotator::AddNewImage(
+    const ImageMetadata& metadata,
+    base::RepeatingCallback<SkBitmap()> pixels_callback) {
+  images_.emplace(std::piecewise_construct,
+                  std::forward_as_tuple(metadata.node_id),
+                  std::forward_as_tuple(metadata, std::move(pixels_callback)));
 }
 
 }  // namespace page_image_annotation
