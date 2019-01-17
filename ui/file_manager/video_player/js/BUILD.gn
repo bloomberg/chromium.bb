@@ -50,12 +50,16 @@ js_library("media_controls") {
 js_library("mouse_inactivity_watcher") {
 }
 
+js_library("video_player_native_controls") {
+}
+
 js_library("video_player") {
   deps = [
     ":error_util",
     ":media_controls",
     ":mouse_inactivity_watcher",
     ":video_player_metrics",
+    ":video_player_native_controls",
     "cast:cast_video_element",
     "cast:media_manager",
     "//ui/file_manager/base/js:filtered_volume_manager",

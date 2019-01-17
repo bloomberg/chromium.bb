@@ -54,6 +54,7 @@
 // <include src="media_controls.js">
 // <include src="mouse_inactivity_watcher.js">
 
+// <include src="video_player_native_controls.js">
 // <include src="video_player.js">
 
 window.unload = unload;
