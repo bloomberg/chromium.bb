@@ -13,9 +13,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "net/base/address_family.h"
+#include "net/base/address_list.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_util.h"
-#include "net/dns/host_resolver.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/log/net_log_capture_mode.h"
@@ -137,56 +138,6 @@ HttpAuthHandlerNegotiate::HttpAuthHandlerNegotiate(
 
 HttpAuthHandlerNegotiate::~HttpAuthHandlerNegotiate() = default;
 
-std::string HttpAuthHandlerNegotiate::CreateSPN(const AddressList& address_list,
-                                                const GURL& origin) {
-  // Kerberos Web Server SPNs are in the form HTTP/<host>:<port> through SSPI,
-  // and in the form HTTP@<host>:<port> through GSSAPI
-  //   http://msdn.microsoft.com/en-us/library/ms677601%28VS.85%29.aspx
-  //
-  // However, reality differs from the specification. A good description of
-  // the problems can be found here:
-  //   http://blog.michelbarneveld.nl/michel/archive/2009/11/14/the-reason-why-kb911149-and-kb908209-are-not-the-soluton.aspx
-  //
-  // Typically the <host> portion should be the canonical FQDN for the service.
-  // If this could not be resolved, the original hostname in the URL will be
-  // attempted instead. However, some intranets register SPNs using aliases
-  // for the same canonical DNS name to allow multiple web services to reside
-  // on the same host machine without requiring different ports. IE6 and IE7
-  // have hotpatches that allow the default behavior to be overridden.
-  //   http://support.microsoft.com/kb/911149
-  //   http://support.microsoft.com/kb/938305
-  //
-  // According to the spec, the <port> option should be included if it is a
-  // non-standard port (i.e. not 80 or 443 in the HTTP case). However,
-  // historically browsers have not included the port, even on non-standard
-  // ports. IE6 required a hotpatch and a registry setting to enable
-  // including non-standard ports, and IE7 and IE8 also require the same
-  // registry setting, but no hotpatch. Firefox does not appear to have an
-  // option to include non-standard ports as of 3.6.
-  //   http://support.microsoft.com/kb/908209
-  //
-  // Without any command-line flags, Chrome matches the behavior of Firefox
-  // and IE. Users can override the behavior so aliases are allowed and
-  // non-standard ports are included.
-  int port = origin.EffectiveIntPort();
-  std::string server = address_list.canonical_name();
-  if (server.empty())
-    server = origin.host();
-#if defined(OS_WIN)
-  static const char kSpnSeparator = '/';
-#elif defined(OS_POSIX)
-  static const char kSpnSeparator = '@';
-#endif
-  if (port != 80 && port != 443 &&
-      (http_auth_preferences_ &&
-       http_auth_preferences_->NegotiateEnablePort())) {
-    return base::StringPrintf("HTTP%c%s:%d", kSpnSeparator, server.c_str(),
-                              port);
-  } else {
-    return base::StringPrintf("HTTP%c%s", kSpnSeparator, server.c_str());
-  }
-}
-
 HttpAuth::AuthorizationResult HttpAuthHandlerNegotiate::HandleAnotherChallenge(
     HttpAuthChallengeTokenizer* challenge) {
   return auth_system_.ParseChallenge(challenge);
@@ -273,6 +224,53 @@ int HttpAuthHandlerNegotiate::GenerateAuthTokenImpl(
   return rv;
 }
 
+std::string HttpAuthHandlerNegotiate::CreateSPN(const std::string& server,
+                                                const GURL& origin) {
+  // Kerberos Web Server SPNs are in the form HTTP/<host>:<port> through SSPI,
+  // and in the form HTTP@<host>:<port> through GSSAPI
+  //   http://msdn.microsoft.com/en-us/library/ms677601%28VS.85%29.aspx
+  //
+  // However, reality differs from the specification. A good description of
+  // the problems can be found here:
+  //   http://blog.michelbarneveld.nl/michel/archive/2009/11/14/the-reason-why-kb911149-and-kb908209-are-not-the-soluton.aspx
+  //
+  // Typically the <host> portion should be the canonical FQDN for the service.
+  // If this could not be resolved, the original hostname in the URL will be
+  // attempted instead. However, some intranets register SPNs using aliases
+  // for the same canonical DNS name to allow multiple web services to reside
+  // on the same host machine without requiring different ports. IE6 and IE7
+  // have hotpatches that allow the default behavior to be overridden.
+  //   http://support.microsoft.com/kb/911149
+  //   http://support.microsoft.com/kb/938305
+  //
+  // According to the spec, the <port> option should be included if it is a
+  // non-standard port (i.e. not 80 or 443 in the HTTP case). However,
+  // historically browsers have not included the port, even on non-standard
+  // ports. IE6 required a hotpatch and a registry setting to enable
+  // including non-standard ports, and IE7 and IE8 also require the same
+  // registry setting, but no hotpatch. Firefox does not appear to have an
+  // option to include non-standard ports as of 3.6.
+  //   http://support.microsoft.com/kb/908209
+  //
+  // Without any command-line flags, Chrome matches the behavior of Firefox
+  // and IE. Users can override the behavior so aliases are allowed and
+  // non-standard ports are included.
+  int port = origin.EffectiveIntPort();
+#if defined(OS_WIN)
+  static const char kSpnSeparator = '/';
+#elif defined(OS_POSIX)
+  static const char kSpnSeparator = '@';
+#endif
+  if (port != 80 && port != 443 &&
+      (http_auth_preferences_ &&
+       http_auth_preferences_->NegotiateEnablePort())) {
+    return base::StringPrintf("HTTP%c%s:%d", kSpnSeparator, server.c_str(),
+                              port);
+  } else {
+    return base::StringPrintf("HTTP%c%s", kSpnSeparator, server.c_str());
+  }
+}
+
 void HttpAuthHandlerNegotiate::OnIOComplete(int result) {
   int rv = DoLoop(result);
   if (rv != ERR_IO_PENDING)
@@ -325,27 +323,36 @@ int HttpAuthHandlerNegotiate::DoResolveCanonicalName() {
     return OK;
 
   // TODO(cbentzel): Add reverse DNS lookup for numeric addresses.
-  HostResolver::RequestInfo info(HostPortPair(origin_.host(), 0));
-  info.set_host_resolver_flags(HOST_RESOLVER_CANONNAME);
-  return resolver_->Resolve(info, DEFAULT_PRIORITY, &address_list_,
-                            base::Bind(&HttpAuthHandlerNegotiate::OnIOComplete,
-                                       base::Unretained(this)),
-                            &request_, net_log_);
+  HostResolver::ResolveHostParameters parameters;
+  parameters.include_canonical_name = true;
+  resolve_host_request_ = resolver_->CreateRequest(
+      HostPortPair(origin_.host(), 0), net_log_, parameters);
+  return resolve_host_request_->Start(base::BindOnce(
+      &HttpAuthHandlerNegotiate::OnIOComplete, base::Unretained(this)));
 }
 
 int HttpAuthHandlerNegotiate::DoResolveCanonicalNameComplete(int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
-  if (rv != OK) {
-    // Even in the error case, try to use origin_.host instead of
-    // passing the failure on to the caller.
-    VLOG(1) << "Problem finding canonical name for SPN for host "
-            << origin_.host() << ": " << ErrorToString(rv);
-    rv = OK;
+  std::string server = origin_.host();
+  if (resolve_host_request_) {
+    if (rv == OK) {
+      DCHECK(resolve_host_request_->GetAddressResults());
+      const std::string& canonical_name =
+          resolve_host_request_->GetAddressResults().value().canonical_name();
+      if (!canonical_name.empty())
+        server = canonical_name;
+    } else {
+      // Even in the error case, try to use origin_.host instead of
+      // passing the failure on to the caller.
+      VLOG(1) << "Problem finding canonical name for SPN for host "
+              << origin_.host() << ": " << ErrorToString(rv);
+      rv = OK;
+    }
   }
 
   next_state_ = STATE_GENERATE_AUTH_TOKEN;
-  spn_ = CreateSPN(address_list_, origin_);
-  address_list_ = AddressList();
+  spn_ = CreateSPN(server, origin_);
+  resolve_host_request_ = nullptr;
   return rv;
 }
 

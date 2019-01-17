@@ -5,11 +5,11 @@
 #ifndef NET_HTTP_HTTP_AUTH_HANDLER_NEGOTIATE_H_
 #define NET_HTTP_HTTP_AUTH_HANDLER_NEGOTIATE_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "build/build_config.h"
-#include "net/base/address_list.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/dns/host_resolver.h"
@@ -107,16 +107,14 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
 
   ~HttpAuthHandlerNegotiate() override;
 
-  // These are public for unit tests
-  std::string CreateSPN(const AddressList& address_list, const GURL& orign);
-  const std::string& spn() const { return spn_; }
-
   // HttpAuthHandler:
   HttpAuth::AuthorizationResult HandleAnotherChallenge(
       HttpAuthChallengeTokenizer* challenge) override;
   bool NeedsIdentity() override;
   bool AllowsDefaultCredentials() override;
   bool AllowsExplicitCredentials() override;
+
+  const std::string& spn_for_testing() const { return spn_; }
 
  protected:
   bool Init(HttpAuthChallengeTokenizer* challenge,
@@ -136,6 +134,8 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
     STATE_NONE,
   };
 
+  std::string CreateSPN(const std::string& server, const GURL& orign);
+
   void OnIOComplete(int result);
   void DoCallback(int result);
   int DoLoop(int result);
@@ -150,8 +150,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
   HostResolver* const resolver_;
 
   // Members which are needed for DNS lookup + SPN.
-  AddressList address_list_;
-  std::unique_ptr<net::HostResolver::Request> request_;
+  std::unique_ptr<HostResolver::ResolveHostRequest> resolve_host_request_;
 
   // Things which should be consistent after first call to GenerateAuthToken.
   bool already_called_;
