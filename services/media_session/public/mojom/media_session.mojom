@@ -9,7 +9,7 @@ import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/url.mojom";
 
-// Next MinVersion: 3
+// Next MinVersion: 4
 
 [Extensible]
 enum MediaPlaybackState {
@@ -76,6 +76,10 @@ struct MediaSessionInfo {
 
   // If true then the session should be controllable by the user.
   [MinVersion=2] bool is_controllable;
+
+  // If true then we will stop this MediaSession instead of suspending when the
+  // session loses focus to a kGain focus type.
+  [MinVersion=4] bool prefer_stop_for_gain_focus_loss;
 };
 
 // Contains debugging information about a MediaSession. This will be displayed

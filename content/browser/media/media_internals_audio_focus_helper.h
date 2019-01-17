@@ -36,8 +36,9 @@ class MediaInternalsAudioFocusHelper
   void SetEnabled(bool enabled);
 
  private:
-  void EnsureServiceConnection();
+  bool EnsureServiceConnection();
   void OnMojoError();
+  void OnDebugMojoError();
 
   // Called when we receive the list of audio focus requests to display.
   void DidGetAudioFocusRequestList(
@@ -49,7 +50,6 @@ class MediaInternalsAudioFocusHelper
       const std::string& id,
       media_session::mojom::MediaSessionDebugInfoPtr info);
 
-  bool CanUpdate() const;
   void SerializeAndSendUpdate(const std::string& function,
                               const base::Value* value);
 

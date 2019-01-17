@@ -98,8 +98,8 @@ class AudioFocusManager : public mojom::AudioFocusManager,
 
   struct EnforcementState {
     bool should_duck = false;
+    bool should_stop = false;
     bool should_suspend = false;
-    bool should_transient_suspend = false;
   };
 
   void RequestAudioFocusInternal(std::unique_ptr<StackRow>,

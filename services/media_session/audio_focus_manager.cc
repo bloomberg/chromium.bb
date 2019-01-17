@@ -142,19 +142,28 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
     controller_->BindToInterface(std::move(request));
   }
 
-  void Suspend(bool transient) {
+  void Suspend(const EnforcementState& state) {
     DCHECK(!session_info_->force_duck);
-    transient_suspend_ = transient_suspend_ || transient;
-    session_->Suspend(mojom::MediaSession::SuspendType::kSystem);
+
+    // In most cases if we stop or suspend we should call the ::Suspend method
+    // on the media session. The only exception is if the session has the
+    // |prefer_stop_for_gain_focus_loss| bit set in which case we should use
+    // ::Stop and ::Suspend respectively.
+    if (state.should_stop && session_info_->prefer_stop_for_gain_focus_loss) {
+      session_->Stop(mojom::MediaSession::SuspendType::kSystem);
+    } else {
+      was_suspended_ = was_suspended_ || state.should_suspend;
+      session_->Suspend(mojom::MediaSession::SuspendType::kSystem);
+    }
   }
 
   void MaybeResume() {
     DCHECK(!session_info_->force_duck);
 
-    if (!transient_suspend_)
+    if (!was_suspended_)
       return;
 
-    transient_suspend_ = false;
+    was_suspended_ = false;
     session_->Resume(mojom::MediaSession::SuspendType::kSystem);
   }
 
@@ -192,7 +201,7 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
 
   AudioFocusManagerMetricsHelper metrics_helper_;
   bool encountered_error_ = false;
-  bool transient_suspend_ = false;
+  bool was_suspended_ = false;
 
   std::unique_ptr<MediaController> controller_;
 
@@ -425,10 +434,10 @@ void AudioFocusManager::EnforceAudioFocus() {
     // Update the flags based on the audio focus type of this session.
     switch (session->audio_focus_type()) {
       case mojom::AudioFocusType::kGain:
-        state.should_suspend = true;
+        state.should_stop = true;
         break;
       case mojom::AudioFocusType::kGainTransient:
-        state.should_transient_suspend = true;
+        state.should_suspend = true;
         break;
       case mojom::AudioFocusType::kGainTransientMayDuck:
         state.should_duck = true;
@@ -500,8 +509,7 @@ bool AudioFocusManager::IsSessionOnTopOfAudioFocusStack(
 bool AudioFocusManager::ShouldSessionBeSuspended(
     const StackRow* session,
     const EnforcementState& state) const {
-  bool should_suspend_any =
-      state.should_suspend || state.should_transient_suspend;
+  bool should_suspend_any = state.should_stop || state.should_suspend;
 
   switch (enforcement_mode_) {
     case mojom::EnforcementMode::kSingleSession:
@@ -547,7 +555,7 @@ void AudioFocusManager::EnforceSingleSession(StackRow* session,
     return;
 
   if (ShouldSessionBeSuspended(session, state)) {
-    session->Suspend(state.should_transient_suspend);
+    session->Suspend(state);
   } else {
     session->MaybeResume();
   }

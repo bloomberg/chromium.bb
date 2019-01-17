@@ -109,6 +109,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
 
   void SetIsControllable(bool value);
 
+  void SetPreferStop(bool value) { prefer_stop_ = value; }
+
   void AbandonAudioFocusFromClient();
   base::UnguessableToken GetRequestIdFromClient();
 
@@ -149,6 +151,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   const bool force_duck_ = false;
   bool is_ducking_ = false;
   bool is_controllable_ = false;
+  bool prefer_stop_ = false;
 
   int prev_track_count_ = 0;
   int next_track_count_ = 0;
