@@ -58,6 +58,10 @@
       :host([toolbar-shadow_]) #drop-shadow {
         opacity: var(--cr-container-shadow-max-opacity);
       }
+
+      :host-context([dark]) cr-drawer {
+        --cr-drawer-heading-color: var(--cr-primary-text-color);
+      }
     </style>
     <history-query-manager query-state="{{queryState_}}"
         query-result="[[queryResult_]]"

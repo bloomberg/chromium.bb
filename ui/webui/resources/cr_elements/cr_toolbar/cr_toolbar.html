@@ -21,6 +21,7 @@
 
       :host-context([dark]) {
         border-bottom: 1px solid var(--cr-separator-color);
+        color: var(--cr-secondary-text-color);
       }
 
       h1 {
@@ -31,6 +32,10 @@
         line-height: normal;
         margin-inline-start: 6px;
         padding-inline-end: 12px;
+      }
+
+      :host-context([dark]) :-webkit-any(h1, #menuButtonContainer) {
+        color: var(--cr-primary-text-color);
       }
 
       #leftContent {

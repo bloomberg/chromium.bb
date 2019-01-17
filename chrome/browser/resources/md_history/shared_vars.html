@@ -25,12 +25,17 @@
     --item-height: 44px;
     --iron-icon-height: var(--cr-icon-size);
     --iron-icon-width: var(--cr-icon-size);
-    --link-color: var(--google-blue-700);
     --separator-color: rgba(0, 0, 0, 0.08);
     --side-bar-width: 256px;
     --sidebar-footer-text-color: #6e6e6e;
     --sidebar-unselected-color: #5a5a5a;
     --toolbar-height: 56px;
+  }
+
+  html[dark] {
+    --history-item-time-color: var(--cr-secondary-text-color);
+    --sidebar-unselected-color: var(--cr-secondary-text-color);
+    /* TODO(dbeam): check with Namrata about --separator-color */
   }
 </style>
 </custom-style>
