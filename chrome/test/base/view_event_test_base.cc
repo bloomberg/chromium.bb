@@ -56,9 +56,6 @@ class TestView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(TestView);
 };
 
-// Delay in background thread before posting mouse move.
-const int kMouseMoveDelayMS = 200;
-
 }  // namespace
 
 ViewEventTestBase::ViewEventTestBase()
@@ -174,18 +171,17 @@ void ViewEventTestBase::StartMessageLoopAndRunTest() {
 }
 
 void ViewEventTestBase::ScheduleMouseMoveInBackground(int x, int y) {
-  if (!dnd_thread_.get()) {
-    dnd_thread_.reset(new base::Thread("mouse-move-thread"));
+  if (!dnd_thread_) {
+    dnd_thread_ = std::make_unique<base::Thread>("mouse-move-thread");
     dnd_thread_->Start();
   }
-  dnd_thread_->task_runner()->PostDelayedTask(
+  dnd_thread_->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&ui_controls::SendMouseMove), x, y),
-      base::TimeDelta::FromMilliseconds(kMouseMoveDelayMS));
+      base::BindOnce(base::IgnoreResult(&ui_controls::SendMouseMove), x, y));
 }
 
 void ViewEventTestBase::StopBackgroundThread() {
-  dnd_thread_.reset(NULL);
+  dnd_thread_.reset();
 }
 
 void ViewEventTestBase::RunTestMethod(const base::Closure& task) {

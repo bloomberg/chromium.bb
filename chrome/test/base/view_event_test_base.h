@@ -60,16 +60,17 @@ class ViewEventTestPlatformPart;
 // Once you have created a ViewEventTestBase use the macro VIEW_TEST to define
 // the fixture.
 //
-// I encountered weird timing problems in initiating dragging and drop that
-// necessitated ugly hacks. In particular when the hook installed by
-// ui_controls received the mouse event and posted a task that task was not
-// processed. To work around this use the following pattern when initiating
-// dnd:
+// Testing drag and drop is tricky because the mouse move that initiates drag
+// and drop may trigger a nested native event loop that waits for more mouse
+// messages.  Thus code needs an initial mouse move to start the drag, then a
+// mouse move enqueued from a background thread to finish the drag (since tasks
+// on the main thread may be stalled waiting for the nested loop to terminate).
+// You can do this with a pattern like:
 //   // Schedule the mouse move at a location slightly different from where
-//   // you really want to move to.
+//   // you really want to move to to start the drag.
 //   ui_controls::SendMouseMoveNotifyWhenDone(loc.x + 10, loc.y,
 //       base::BindOnce(&YYY, this));
-//   // Then use this to schedule another mouse move.
+//   // Then schedule another mouse move to finish it.
 //   ScheduleMouseMoveInBackground(loc.x, loc.y);
 
 class ViewEventTestBase : public views::WidgetDelegate,
