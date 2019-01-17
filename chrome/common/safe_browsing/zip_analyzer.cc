@@ -17,6 +17,7 @@
 #include "base/rand_util.h"
 #include "build/build_config.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
+#include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "third_party/zlib/google/zip_reader.h"
 
@@ -67,6 +68,7 @@ void AnalyzeZipFile(base::File zip_file,
     return;
   }
 
+  bool contains_zip = false;
   bool advanced = true;
   int zip_entry_count = 0;
   for (; reader.HasMore(); advanced = reader.AdvanceToNextEntry()) {
@@ -88,12 +90,16 @@ void AnalyzeZipFile(base::File zip_file,
         reader.current_entry_info()->file_path(), &temp_file,
         reader.current_entry_info()->is_encrypted(), results);
 
+    if (FileTypePolicies::GetFileExtension(
+            reader.current_entry_info()->file_path()) ==
+        FILE_PATH_LITERAL(".zip"))
+      contains_zip = true;
     zip_entry_count++;
   }
 
   results->success = true;
 
-  if (base::RandDouble() < 0.01) {
+  if (base::RandDouble() < 0.01 && !contains_zip) {
     int lfh_count = CountLocalFileHeaders(&zip_file);
 
     DCHECK_LE(zip_entry_count, lfh_count);
