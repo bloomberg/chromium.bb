@@ -33,7 +33,11 @@ class AppServiceAppItem : public ChromeAppListItem,
                     const apps::AppUpdate& app_update);
   ~AppServiceAppItem() override;
 
+  void OnAppUpdate(const apps::AppUpdate& app_update);
+
  private:
+  void OnAppUpdate(const apps::AppUpdate& app_update, bool in_constructor);
+
   // ChromeAppListItem overrides:
   void Activate(int event_flags) override;
   const char* GetItemType() const override;

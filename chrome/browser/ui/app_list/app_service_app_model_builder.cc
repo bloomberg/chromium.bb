@@ -27,17 +27,32 @@ void AppServiceAppModelBuilder::BuildModel() {
 }
 
 void AppServiceAppModelBuilder::OnAppUpdate(const apps::AppUpdate& update) {
-  // TODO(crbug.com/826982): look for (and update) existing AppServiceAppItem's
-  // for the update's AppId, instead of always creating new ones.
-  //
-  // Do we want to have one AppModelBuilder that observes the Cache (and
-  // forwards updates such as icon changes on to each AppItem)?? Or should
-  // every AppItem be its own observer??
+  ChromeAppListItem* item = GetAppItem(update.AppId());
+  bool show = (update.Readiness() == apps::mojom::Readiness::kReady) &&
+              (update.ShowInLauncher() == apps::mojom::OptionalBool::kTrue);
 
-  if (update.ShowInLauncher() != apps::mojom::OptionalBool::kTrue) {
-    return;
+  if (item) {
+    if (show) {
+      DCHECK(item->GetItemType() == AppServiceAppItem::kItemType);
+      static_cast<AppServiceAppItem*>(item)->OnAppUpdate(update);
+
+      // TODO(crbug.com/826982): drop the check for kExtension or kWeb, and
+      // call UpdateItem unconditionally?
+      apps::mojom::AppType app_type = update.AppType();
+      if ((app_type == apps::mojom::AppType::kExtension) ||
+          (app_type == apps::mojom::AppType::kWeb)) {
+        app_list::AppListSyncableService* serv = service();
+        if (serv) {
+          serv->UpdateItem(item);
+        }
+      }
+
+    } else {
+      RemoveApp(update.AppId(), false /* unsynced_change */);
+    }
+
+  } else if (show) {
+    InsertApp(std::make_unique<AppServiceAppItem>(
+        profile(), model_updater(), GetSyncItem(update.AppId()), update));
   }
-
-  InsertApp(std::make_unique<AppServiceAppItem>(
-      profile(), model_updater(), GetSyncItem(update.AppId()), update));
 }
