@@ -51,6 +51,16 @@ TEST(CSVReaderTest, HeaderOnly) {
   EXPECT_EQ(0u, table.records().size());
 }
 
+TEST(CSVReaderTest, NoNewline) {
+  const char kTestCSVInput[] = "foo,bar";
+
+  CSVTable table;
+  ASSERT_TRUE(table.ReadCSV(kTestCSVInput));
+
+  EXPECT_THAT(table.column_names(), testing::ElementsAre("foo", "bar"));
+  EXPECT_EQ(0u, table.records().size());
+}
+
 TEST(CSVReaderTest, HeaderAndSimpleRecords) {
   const char kTestCSVInput[] =
       "foo,bar,baz\n"
@@ -292,6 +302,30 @@ TEST(CSVReaderTest, FailureWhenSemiQuotedContentOnSubsequentLine) {
 
   CSVTable table;
   ASSERT_FALSE(table.ReadCSV(kTestCSVInput));
+}
+
+TEST(CSVReaderTest, FailureWhenJustOneQuote) {
+  const char kTestCSVInput[] = "\"";
+
+  CSVTable table;
+  EXPECT_FALSE(table.ReadCSV(kTestCSVInput));
+}
+
+TEST(CSVReaderTest, FailureWhenJustOneQuoteAndComma) {
+  const char kTestCSVInput[] = "\",";
+
+  CSVTable table;
+  EXPECT_FALSE(table.ReadCSV(kTestCSVInput));
+}
+
+TEST(CSVReaderTest, EmptyLastFieldAndNoNewline) {
+  const char kTestCSVInput[] = "alpha,";
+
+  CSVTable table;
+  ASSERT_TRUE(table.ReadCSV(kTestCSVInput));
+
+  EXPECT_THAT(table.column_names(), testing::ElementsAre("alpha", ""));
+  ASSERT_TRUE(table.records().empty());
 }
 
 }  // namespace password_manager
