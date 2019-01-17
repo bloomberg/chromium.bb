@@ -13,6 +13,10 @@ namespace display {
 class Display;
 }
 
+namespace aura {
+class Window;
+}
+
 namespace keyboard {
 
 // A delegate class to control the virtual keyboard layout
@@ -20,11 +24,14 @@ class KEYBOARD_EXPORT KeyboardLayoutDelegate {
  public:
   virtual ~KeyboardLayoutDelegate() {}
 
-  virtual void MoveKeyboardToDisplay(const display::Display& display) = 0;
+  // Get the container window where the virtual keyboard show appear by default.
+  // Usually, this would be a touchable display with input focus.
+  // This function must not return null.
+  virtual aura::Window* GetContainerForDefaultDisplay() = 0;
 
-  // Move the keyboard to the touchable display which has the input focus, or
-  // the first touchable display.
-  virtual void MoveKeyboardToTouchableDisplay() = 0;
+  // Get the container window for a particular display. |display| must be valid.
+  virtual aura::Window* GetContainerForDisplay(
+      const display::Display& display) = 0;
 };
 
 }  // namespace keyboard

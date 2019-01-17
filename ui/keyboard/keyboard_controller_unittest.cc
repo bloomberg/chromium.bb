@@ -153,14 +153,13 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
     aura::test::AuraTestBase::SetUp();
     new wm::DefaultActivationClient(root_window());
     focus_controller_.reset(new TestFocusController(root_window()));
-    layout_delegate_.reset(new TestKeyboardLayoutDelegate());
+    layout_delegate_.reset(new TestKeyboardLayoutDelegate(root_window()));
 
     // Force enable the virtual keyboard.
     keyboard::SetTouchKeyboardEnabled(true);
     controller_.EnableKeyboard(
         std::make_unique<TestKeyboardUI>(host()->GetInputMethod()),
         layout_delegate_.get());
-    controller_.ActivateKeyboardInContainer(root_window());
     controller_.AddObserver(this);
   }
 
@@ -682,22 +681,6 @@ TEST_F(KeyboardControllerAnimationTest, ContainerShowWhileHide) {
   RunAnimationForLayer(layer);
   EXPECT_TRUE(keyboard_window()->IsVisible());
   EXPECT_EQ(1.0, layer->opacity());
-}
-
-TEST_F(KeyboardControllerAnimationTest,
-       SetKeyboardWindowBoundsOnDeactivatedKeyboard) {
-  // Ensure keyboard ui is populated
-  ui::Layer* layer = keyboard_window()->layer();
-  ShowKeyboard();
-  RunAnimationForLayer(layer);
-
-  ASSERT_TRUE(keyboard_window());
-
-  controller().DeactivateKeyboard();
-
-  // lingering handle to the contents window is adjusted.
-  // container_window's LayoutManager should abort silently and not crash.
-  keyboard_window()->SetBounds(gfx::Rect());
 }
 
 TEST_F(KeyboardControllerTest, DisplayChangeShouldNotifyBoundsChange) {

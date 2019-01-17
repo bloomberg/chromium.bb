@@ -153,10 +153,6 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
     AshTestBase::SetUp();
   }
 
-  void ActivateKeyboard() {
-    Shell::Get()->ash_keyboard_controller()->ActivateKeyboard();
-  }
-
   aura::Window* OpenToplevelTestWindow(bool modal) {
     views::Widget* widget = views::Widget::CreateWindowWithContext(
         new TestWindow(modal), CurrentContext());
@@ -680,7 +676,6 @@ TEST_F(SystemModalContainerLayoutManagerTest, MultiDisplays) {
 // positioned into the visible area.
 TEST_F(SystemModalContainerLayoutManagerTest,
        SystemModalDialogGetPushedFromKeyboard) {
-  ActivateKeyboard();
   const gfx::Rect& container_bounds = GetModalContainer()->bounds();
   // Place the window at the bottom of the screen.
   gfx::Size modal_size(100, 100);
@@ -717,7 +712,6 @@ TEST_F(SystemModalContainerLayoutManagerTest,
 // if centered.
 TEST_F(SystemModalContainerLayoutManagerTest,
        SystemModalDialogGetPushedButNotCroppedFromKeyboard) {
-  ActivateKeyboard();
   const gfx::Rect& container_bounds = GetModalContainer()->bounds();
   const gfx::Size screen_size = Shell::GetPrimaryRootWindow()->bounds().size();
   // Place the window at the bottom of the screen.
@@ -751,7 +745,6 @@ TEST_F(SystemModalContainerLayoutManagerTest,
 // if not centered.
 TEST_F(SystemModalContainerLayoutManagerTest,
        SystemModalDialogGetPushedButNotCroppedFromKeyboardIfNotCentered) {
-  ActivateKeyboard();
   const gfx::Size screen_size = Shell::GetPrimaryRootWindow()->bounds().size();
   // Place the window at the bottom of the screen.
   gfx::Size modal_size(100, screen_size.height() - 70);

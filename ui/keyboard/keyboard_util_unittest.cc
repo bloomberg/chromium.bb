@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/test/aura_test_base.h"
 #include "ui/base/ime/dummy_input_method.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_ui.h"
@@ -17,7 +18,7 @@
 namespace keyboard {
 namespace {
 
-class KeyboardUtilTest : public testing::Test {
+class KeyboardUtilTest : public aura::test::AuraTestBase {
  public:
   KeyboardUtilTest() {}
   ~KeyboardUtilTest() override {}
@@ -53,7 +54,10 @@ class KeyboardUtilTest : public testing::Test {
     ClearEnableFlag(mojom::KeyboardEnableFlag::kExtensionEnabled);
   }
 
-  void SetUp() override { ResetAllFlags(); }
+  void SetUp() override {
+    aura::test::AuraTestBase::SetUp();
+    ResetAllFlags();
+  }
 
  protected:
   void SetEnableFlag(mojom::KeyboardEnableFlag flag) {
@@ -154,6 +158,11 @@ TEST_F(KeyboardUtilTest, UpdateKeyboardConfig) {
 TEST_F(KeyboardUtilTest, IsOverscrollEnabled) {
   ResetAllFlags();
 
+  ui::DummyInputMethod input_method;
+  TestKeyboardLayoutDelegate layout_delegate(root_window());
+  keyboard_controller_.EnableKeyboard(
+      std::make_unique<TestKeyboardUI>(&input_method), &layout_delegate);
+
   // Return false when keyboard is disabled.
   EXPECT_FALSE(keyboard_controller_.IsKeyboardOverscrollEnabled());
 
@@ -168,19 +177,17 @@ TEST_F(KeyboardUtilTest, IsOverscrollEnabled) {
   keyboard_controller_.UpdateKeyboardConfig(config);
   EXPECT_FALSE(keyboard_controller_.IsKeyboardOverscrollEnabled());
 
+  // Set default overscroll flag.
   config.overscroll_behavior =
       keyboard::mojom::KeyboardOverscrollBehavior::kDefault;
   keyboard_controller_.UpdateKeyboardConfig(config);
   EXPECT_TRUE(keyboard_controller_.IsKeyboardOverscrollEnabled());
 
   // Set keyboard_locked() to true.
-  ui::DummyInputMethod input_method;
-  TestKeyboardLayoutDelegate layout_delegate;
-  keyboard_controller_.EnableKeyboard(
-      std::make_unique<TestKeyboardUI>(&input_method), &layout_delegate);
   keyboard_controller_.set_keyboard_locked(true);
   EXPECT_TRUE(keyboard_controller_.keyboard_locked());
   EXPECT_FALSE(keyboard_controller_.IsKeyboardOverscrollEnabled());
+
   keyboard_controller_.DisableKeyboard();
 }
 
