@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/service_manifest.gni")
-
 source_set("app") {
   sources = [
     "task_scheduler_init_params_callback.h",
@@ -30,14 +28,4 @@ source_set("app") {
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-service_manifest("packaged_services_manifest") {
-  name = "web_packaged_services"
-  source = "mojo/web_packaged_services_manifest.json"
-}
-
-service_manifest("browser_manifest") {
-  name = "web_browser"
-  source = "mojo/web_browser_manifest.json"
 }
