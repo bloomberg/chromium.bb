@@ -506,6 +506,7 @@ jumbo_component("platform") {
     "exported/interface_registry.cc",
     "exported/platform.cc",
     "exported/platform_media_stream_source.cc",
+    "exported/platform_media_stream_track.cc",
     "exported/service_registry.cc",
     "exported/url_conversion.cc",
     "exported/web_audio_bus.cc",

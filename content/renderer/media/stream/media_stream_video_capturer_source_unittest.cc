@@ -357,7 +357,8 @@ TEST_F(MediaStreamVideoCapturerSourceTest, StartStopAndNotify) {
       .WillOnce(InvokeWithoutArgs(
           this, &MediaStreamVideoCapturerSourceTest::SetStopCaptureFlag));
   EXPECT_CALL(*this, MockNotification());
-  MediaStreamTrack* track = MediaStreamTrack::GetTrack(web_track);
+  blink::PlatformMediaStreamTrack* track =
+      blink::PlatformMediaStreamTrack::GetTrack(web_track);
   track->StopAndNotify(
       base::BindOnce(&MediaStreamVideoCapturerSourceTest::MockNotification,
                      base::Unretained(this)));

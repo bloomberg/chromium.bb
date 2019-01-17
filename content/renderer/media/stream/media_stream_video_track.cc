@@ -254,7 +254,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
     MediaStreamVideoSource* source,
     const MediaStreamVideoSource::ConstraintsCallback& callback,
     bool enabled)
-    : MediaStreamTrack(true),
+    : PlatformMediaStreamTrack(true),
       frame_deliverer_(
           new MediaStreamVideoTrack::FrameDeliverer(source->io_task_runner(),
                                                     enabled)),
@@ -284,7 +284,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
     const base::Optional<double>& min_frame_rate,
     const MediaStreamVideoSource::ConstraintsCallback& callback,
     bool enabled)
-    : MediaStreamTrack(true),
+    : PlatformMediaStreamTrack(true),
       frame_deliverer_(
           new MediaStreamVideoTrack::FrameDeliverer(source->io_task_runner(),
                                                     enabled)),

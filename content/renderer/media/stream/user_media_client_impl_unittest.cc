@@ -21,7 +21,6 @@
 #include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_video_content.h"
 #include "content/renderer/media/stream/media_stream_device_observer.h"
-#include "content/renderer/media/stream/media_stream_track.h"
 #include "content/renderer/media/stream/mock_constraint_factory.h"
 #include "content/renderer/media/stream/mock_media_stream_video_source.h"
 #include "content/renderer/media/stream/mock_mojo_media_stream_dispatcher_host.h"
@@ -30,6 +29,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
+#include "third_party/blink/public/platform/modules/mediastream/platform_media_stream_track.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
@@ -703,14 +703,16 @@ TEST_F(UserMediaClientImplTest, StopLocalTracks) {
 
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks =
       mixed_desc.AudioTracks();
-  MediaStreamTrack* audio_track = MediaStreamTrack::GetTrack(audio_tracks[0]);
+  blink::PlatformMediaStreamTrack* audio_track =
+      blink::PlatformMediaStreamTrack::GetTrack(audio_tracks[0]);
   audio_track->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_dispatcher_host_.stop_audio_device_counter());
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
       mixed_desc.VideoTracks();
-  MediaStreamTrack* video_track = MediaStreamTrack::GetTrack(video_tracks[0]);
+  blink::PlatformMediaStreamTrack* video_track =
+      blink::PlatformMediaStreamTrack::GetTrack(video_tracks[0]);
   video_track->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_dispatcher_host_.stop_video_device_counter());
@@ -727,28 +729,32 @@ TEST_F(UserMediaClientImplTest, StopLocalTracksWhenTwoStreamUseSameDevices) {
 
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks1 =
       desc1.AudioTracks();
-  MediaStreamTrack* audio_track1 = MediaStreamTrack::GetTrack(audio_tracks1[0]);
+  blink::PlatformMediaStreamTrack* audio_track1 =
+      blink::PlatformMediaStreamTrack::GetTrack(audio_tracks1[0]);
   audio_track1->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, mock_dispatcher_host_.stop_audio_device_counter());
 
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks2 =
       desc2.AudioTracks();
-  MediaStreamTrack* audio_track2 = MediaStreamTrack::GetTrack(audio_tracks2[0]);
+  blink::PlatformMediaStreamTrack* audio_track2 =
+      blink::PlatformMediaStreamTrack::GetTrack(audio_tracks2[0]);
   audio_track2->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_dispatcher_host_.stop_audio_device_counter());
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks1 =
       desc1.VideoTracks();
-  MediaStreamTrack* video_track1 = MediaStreamTrack::GetTrack(video_tracks1[0]);
+  blink::PlatformMediaStreamTrack* video_track1 =
+      blink::PlatformMediaStreamTrack::GetTrack(video_tracks1[0]);
   video_track1->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, mock_dispatcher_host_.stop_video_device_counter());
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks2 =
       desc2.VideoTracks();
-  MediaStreamTrack* video_track2 = MediaStreamTrack::GetTrack(video_tracks2[0]);
+  blink::PlatformMediaStreamTrack* video_track2 =
+      blink::PlatformMediaStreamTrack::GetTrack(video_tracks2[0]);
   video_track2->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_dispatcher_host_.stop_video_device_counter());
@@ -854,14 +860,16 @@ TEST_F(UserMediaClientImplTest, StopTrackAfterReload) {
 
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks =
       mixed_desc.AudioTracks();
-  MediaStreamTrack* audio_track = MediaStreamTrack::GetTrack(audio_tracks[0]);
+  blink::PlatformMediaStreamTrack* audio_track =
+      blink::PlatformMediaStreamTrack::GetTrack(audio_tracks[0]);
   audio_track->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_dispatcher_host_.stop_audio_device_counter());
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
       mixed_desc.VideoTracks();
-  MediaStreamTrack* video_track = MediaStreamTrack::GetTrack(video_tracks[0]);
+  blink::PlatformMediaStreamTrack* video_track =
+      blink::PlatformMediaStreamTrack::GetTrack(video_tracks[0]);
   video_track->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_dispatcher_host_.stop_video_device_counter());
@@ -1250,7 +1258,7 @@ TEST_F(UserMediaClientImplTest, ApplyConstraintsVideoDeviceTwoTracks) {
   // Try to use applyConstraints() to change the first track to 800x600@30Hz.
   // after stopping the second track. In this case, the source is left with a
   // single track and it supports reconfiguration to the requested mode.
-  MediaStreamTrack::GetTrack(web_track2)->Stop();
+  blink::PlatformMediaStreamTrack::GetTrack(web_track2)->Stop();
   ApplyConstraintsVideoMode(web_track, 800, 600, 30.0);
   CheckVideoSourceAndTrack(source, 800, 600, 30.0, web_track, 800, 600, 30.0);
 }
@@ -1311,7 +1319,8 @@ TEST_F(UserMediaClientImplTest, ApplyConstraintsVideoDeviceStopped) {
   CheckVideoSourceAndTrack(source, 1024, 768, 20.0, web_track, 1024, 768, 20.0);
 
   // Try to switch the source and track to 640x480 after stopping the track.
-  MediaStreamTrack* track = MediaStreamTrack::GetTrack(web_track);
+  blink::PlatformMediaStreamTrack* track =
+      blink::PlatformMediaStreamTrack::GetTrack(web_track);
   track->Stop();
   EXPECT_EQ(web_track.Source().GetReadyState(),
             blink::WebMediaStreamSource::kReadyStateEnded);

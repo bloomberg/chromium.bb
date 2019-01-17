@@ -15,9 +15,9 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/media_stream_video_sink.h"
-#include "content/renderer/media/stream/media_stream_track.h"
 #include "content/renderer/media/stream/media_stream_video_source.h"
 #include "content/renderer/media/stream/secure_display_link_tracker.h"
+#include "third_party/blink/public/platform/modules/mediastream/platform_media_stream_track.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 
 namespace content {
@@ -28,7 +28,8 @@ class VideoTrackAdapterSettings;
 // blink::WebMediaStreamTrack in content. It is owned by the blink object
 // and can be retrieved from a blink object using
 // WebMediaStreamTrack::getExtraData() or MediaStreamVideoTrack::GetVideoTrack.
-class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
+class CONTENT_EXPORT MediaStreamVideoTrack
+    : public blink::PlatformMediaStreamTrack {
  public:
   // Help method to create a blink::WebMediaStreamTrack and a
   // MediaStreamVideoTrack instance. The MediaStreamVideoTrack object is owned
@@ -150,6 +151,10 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
                const VideoCaptureDeliverFrameCB& callback,
                bool is_sink_secure);
   void RemoveSink(MediaStreamVideoSink* sink);
+
+  // In debug builds, check that all methods that could cause object graph
+  // or data flow changes are being called on the main thread.
+  THREAD_CHECKER(main_render_thread_checker_);
 
   std::vector<MediaStreamVideoSink*> sinks_;
 
