@@ -113,7 +113,8 @@ void ChromeFeaturesServiceProvider::IsFeatureEnabled(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
   static const base::Feature constexpr* kFeatureLookup[] = {
-      &features::kUsbguard, &features::kShillSandboxing};
+      &features::kUsbbouncer, &features::kUsbguard,
+      &features::kShillSandboxing};
 
   dbus::MessageReader reader(method_call);
   std::string feature_name;

@@ -435,6 +435,8 @@ extern const base::Feature kMachineLearningService;
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kUsbguard;
 
+COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kUsbbouncer;
+
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kShillSandboxing;
 #endif  // defined(OS_CHROMEOS)
 
