@@ -64,7 +64,7 @@ public class ManageTrustedWebActivityDataActivity extends AppCompatActivity {
 
         // We expect that origin has been verified on the client side, and here we synchronously
         // check if a result of a successful verification has been cached.
-        return OriginVerifier.isValidOrigin(clientPackageName, origin,
+        return OriginVerifier.wasPreviouslyVerified(clientPackageName, origin,
                 CustomTabsService.RELATION_HANDLE_ALL_URLS);
     }
 

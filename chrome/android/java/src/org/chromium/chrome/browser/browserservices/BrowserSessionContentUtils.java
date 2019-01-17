@@ -166,7 +166,7 @@ public class BrowserSessionContentUtils {
         String packageName =
                 CustomTabsConnection.getInstance().getClientPackageNameForSession(session);
         if (TextUtils.isEmpty(packageName)) return false;
-        boolean valid = OriginVerifier.isValidOrigin(
+        boolean valid = OriginVerifier.wasPreviouslyVerified(
                 packageName, new Origin(referrer), CustomTabsService.RELATION_USE_AS_ORIGIN);
 
         // OriginVerifier should only be allowing https schemes.
