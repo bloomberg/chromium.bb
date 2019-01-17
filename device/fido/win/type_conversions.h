@@ -49,6 +49,10 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 CtapDeviceResponseCode WinErrorNameToCtapDeviceResponseCode(
     const base::string16& error_name);
 
+COMPONENT_EXPORT(DEVICE_FIDO)
+uint32_t ToWinAttestationConveyancePreference(
+    const AttestationConveyancePreference&);
+
 }  // namespace device
 
 #endif  // DEVICE_FIDO_WIN_TYPE_CONVERSIONS_H_

@@ -41,9 +41,12 @@ base::Optional<std::vector<uint8_t>> ConvertToU2fRegisterCommand(
   if (!IsConvertibleToU2fRegisterCommand(request))
     return base::nullopt;
 
+  const bool is_invidual_attestation =
+      request.attestation_preference() ==
+      AttestationConveyancePreference::ENTERPRISE;
   return ConstructU2fRegisterCommand(
       fido_parsing_utils::CreateSHA256Hash(request.rp().rp_id()),
-      request.client_data_hash(), request.is_individual_attestation());
+      request.client_data_hash(), is_invidual_attestation);
 }
 
 base::Optional<std::vector<uint8_t>> ConvertToU2fCheckOnlySignCommand(

@@ -386,6 +386,16 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionHmacSecret[];
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::TimeDelta kBleDevicePairingModeWaitingInterval;
 
+// https://w3c.github.io/webauthn/#attestation-convey
+enum class AttestationConveyancePreference : uint8_t {
+  NONE,
+  INDIRECT,
+  DIRECT,
+  // Non-standard value for individual attestation that we hope to end up in
+  // the standard eventually.
+  ENTERPRISE,
+};
+
 }  // namespace device
 
 #endif  // DEVICE_FIDO_FIDO_CONSTANTS_H_

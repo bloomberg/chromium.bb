@@ -226,4 +226,21 @@ CtapDeviceResponseCode WinErrorNameToCtapDeviceResponseCode(
              : CtapDeviceResponseCode::kCtap2ErrOther;
 }
 
+uint32_t ToWinAttestationConveyancePreference(
+    const AttestationConveyancePreference& value) {
+  switch (value) {
+    case AttestationConveyancePreference::NONE:
+      return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_NONE;
+    case AttestationConveyancePreference::INDIRECT:
+      return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT;
+    case AttestationConveyancePreference::DIRECT:
+      return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT;
+    case AttestationConveyancePreference::ENTERPRISE:
+      // Windows does not support enterprise attestation.
+      return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT;
+  }
+  NOTREACHED();
+  return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_NONE;
+}
+
 }  // namespace device
