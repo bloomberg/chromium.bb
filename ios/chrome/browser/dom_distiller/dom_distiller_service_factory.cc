@@ -8,7 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/distiller.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
@@ -52,7 +52,8 @@ namespace dom_distiller {
 
 // static
 DomDistillerServiceFactory* DomDistillerServiceFactory::GetInstance() {
-  return base::Singleton<DomDistillerServiceFactory>::get();
+  static base::NoDestructor<DomDistillerServiceFactory> instance;
+  return instance.get();
 }
 
 // static
