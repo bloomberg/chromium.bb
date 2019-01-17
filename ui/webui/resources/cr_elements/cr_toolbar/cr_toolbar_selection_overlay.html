@@ -3,6 +3,7 @@
 <link rel="import" href="../cr_icons_css.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../paper_button_style_css.html">
+<link rel="import" href="../shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 
@@ -25,6 +26,14 @@
         transition: opacity var(--cr-toolbar-overlay-animation-duration),
                     visibility var(--cr-toolbar-overlay-animation-duration);
         visibility: hidden;
+      }
+
+      :host-context([dark]) {
+        background: var(--google-grey-refresh-900);
+        background-image: linear-gradient(rgba(255, 255, 255, .04),
+                                          rgba(255, 255, 255, .04));
+        border-bottom-color: var(--google-grey-refresh-700);
+        color: var(--cr-secondary-text-color);
       }
 
       :host([show]) {
