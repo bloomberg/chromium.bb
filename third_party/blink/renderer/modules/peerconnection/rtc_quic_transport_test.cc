@@ -179,15 +179,13 @@ TEST_F(RTCQuicTransportTest, StartPassesRemoteFingerprints) {
 
   auto mock_transport = std::make_unique<MockP2PQuicTransport>();
   EXPECT_CALL(*mock_transport, MockStart(_))
-      .WillOnce(
-          Invoke([](const std::vector<std::unique_ptr<rtc::SSLFingerprint>>&
-                        remote_fingerprints) {
-            ASSERT_EQ(1u, remote_fingerprints.size());
-            EXPECT_EQ(kRemoteFingerprintAlgorithm1,
-                      remote_fingerprints[0]->algorithm);
-            EXPECT_EQ(kRemoteFingerprintValue1,
-                      remote_fingerprints[0]->GetRfc4572Fingerprint());
-          }));
+      .WillOnce(Invoke([](const P2PQuicTransport::StartConfig& config) {
+        ASSERT_EQ(1u, config.remote_fingerprints.size());
+        EXPECT_EQ(kRemoteFingerprintAlgorithm1,
+                  config.remote_fingerprints[0]->algorithm);
+        EXPECT_EQ(kRemoteFingerprintValue1,
+                  config.remote_fingerprints[0]->GetRfc4572Fingerprint());
+      }));
   Persistent<RTCQuicTransport> quic_transport =
       CreateQuicTransport(scope, ice_transport, GenerateLocalRTCCertificates(),
                           std::move(mock_transport));
