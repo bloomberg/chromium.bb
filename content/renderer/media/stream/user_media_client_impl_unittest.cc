@@ -341,20 +341,20 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   blink::WebString constraint_name() const { return constraint_name_; }
 
   // UserMediaProcessor overrides.
-  MediaStreamVideoSource* CreateVideoSource(
+  std::unique_ptr<MediaStreamVideoSource> CreateVideoSource(
       const blink::MediaStreamDevice& device,
       const blink::PlatformMediaStreamSource::SourceStoppedCallback&
           stop_callback) override {
     video_source_ =
         new MockMediaStreamVideoCapturerSource(device, stop_callback, factory_);
-    return video_source_;
+    return base::WrapUnique(video_source_);
   }
 
-  MediaStreamAudioSource* CreateAudioSource(
+  std::unique_ptr<MediaStreamAudioSource> CreateAudioSource(
       const blink::MediaStreamDevice& device,
       const blink::PlatformMediaStreamSource::ConstraintsCallback& source_ready)
       override {
-    MediaStreamAudioSource* source;
+    std::unique_ptr<MediaStreamAudioSource> source;
     if (create_source_that_fails_) {
       class FailedAtLifeAudioSource : public MediaStreamAudioSource {
        public:
@@ -364,12 +364,12 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
        protected:
         bool EnsureSourceIsStarted() override { return false; }
       };
-      source = new FailedAtLifeAudioSource();
+      source = std::make_unique<FailedAtLifeAudioSource>();
     } else if (IsDesktopCaptureMediaType(device.type)) {
       local_audio_source_ = new MockLocalMediaStreamAudioSource();
-      source = local_audio_source_;
+      source = base::WrapUnique(local_audio_source_);
     } else {
-      source = new MediaStreamAudioSource(true);
+      source = std::make_unique<MediaStreamAudioSource>(true);
     }
 
     source->SetDevice(device);
@@ -379,7 +379,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
       blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
           FROM_HERE,
           base::BindOnce(&UserMediaProcessorUnderTest::SignalSourceReady,
-                         source_ready, source));
+                         source_ready, source.get()));
     }
 
     return source;
@@ -653,8 +653,8 @@ TEST_F(UserMediaClientImplTest, GenerateTwoMediaStreamsWithSameSource) {
   EXPECT_EQ(desc1_video_tracks[0].Source().Id(),
             desc2_video_tracks[0].Source().Id());
 
-  EXPECT_EQ(desc1_video_tracks[0].Source().GetExtraData(),
-            desc2_video_tracks[0].Source().GetExtraData());
+  EXPECT_EQ(desc1_video_tracks[0].Source().GetPlatformSource(),
+            desc2_video_tracks[0].Source().GetPlatformSource());
 
   blink::WebVector<blink::WebMediaStreamTrack> desc1_audio_tracks =
       desc1.AudioTracks();
@@ -683,8 +683,8 @@ TEST_F(UserMediaClientImplTest, GenerateTwoMediaStreamsWithDifferentSources) {
   EXPECT_NE(desc1_video_tracks[0].Source().Id(),
             desc2_video_tracks[0].Source().Id());
 
-  EXPECT_NE(desc1_video_tracks[0].Source().GetExtraData(),
-            desc2_video_tracks[0].Source().GetExtraData());
+  EXPECT_NE(desc1_video_tracks[0].Source().GetPlatformSource(),
+            desc2_video_tracks[0].Source().GetPlatformSource());
 
   blink::WebVector<blink::WebMediaStreamTrack> desc1_audio_tracks =
       desc1.AudioTracks();

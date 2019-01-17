@@ -64,7 +64,7 @@ void MockMediaStreamRegistry::AddVideoTrack(
                           blink::WebMediaStreamSource::kTypeVideo,
                           "mock video source name", false /* remote */);
   MockMediaStreamVideoSource* native_source = new MockMediaStreamVideoSource();
-  blink_source.SetExtraData(native_source);
+  blink_source.SetPlatformSource(base::WrapUnique(native_source));
   blink::WebMediaStreamTrack blink_track;
   blink_track.Initialize(blink::WebString::FromUTF8(track_id), blink_source);
 
@@ -87,7 +87,7 @@ void MockMediaStreamRegistry::AddAudioTrack(const std::string& track_id) {
                           blink::WebMediaStreamSource::kTypeAudio,
                           "mock audio source name", false /* remote */);
   MediaStreamAudioSource* const source = new MockCDQualityAudioSource();
-  blink_source.SetExtraData(source);  // Takes ownership.
+  blink_source.SetPlatformSource(base::WrapUnique(source));  // Takes ownership.
 
   blink::WebMediaStreamTrack blink_track;
   blink_track.Initialize(blink_source);

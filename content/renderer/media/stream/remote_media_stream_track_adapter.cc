@@ -28,7 +28,7 @@ RemoteVideoTrackAdapter::~RemoteVideoTrackAdapter() {
   DCHECK(main_thread_->BelongsToCurrentThread());
   if (initialized()) {
     static_cast<MediaStreamRemoteVideoSource*>(
-        web_track()->Source().GetExtraData())
+        web_track()->Source().GetPlatformSource())
         ->OnSourceTerminated();
   }
 }
@@ -37,18 +37,18 @@ void RemoteVideoTrackAdapter::InitializeWebVideoTrack(
     std::unique_ptr<TrackObserver> observer,
     bool enabled) {
   DCHECK(main_thread_->BelongsToCurrentThread());
-  std::unique_ptr<MediaStreamRemoteVideoSource> video_source(
-      new MediaStreamRemoteVideoSource(std::move(observer)));
+  std::unique_ptr<MediaStreamRemoteVideoSource> video_source_ptr =
+      std::make_unique<MediaStreamRemoteVideoSource>(std::move(observer));
+  MediaStreamRemoteVideoSource* video_source = video_source_ptr.get();
   InitializeWebTrack(blink::WebMediaStreamSource::kTypeVideo);
-  web_track()->Source().SetExtraData(video_source.get());
+  web_track()->Source().SetPlatformSource(std::move(video_source_ptr));
 
   blink::WebMediaStreamSource::Capabilities capabilities;
   capabilities.device_id = blink::WebString::FromUTF8(id());
   web_track()->Source().SetCapabilities(capabilities);
 
   MediaStreamVideoTrack* media_stream_track = new MediaStreamVideoTrack(
-      video_source.release(), MediaStreamVideoSource::ConstraintsCallback(),
-      enabled);
+      video_source, MediaStreamVideoSource::ConstraintsCallback(), enabled);
   web_track()->SetTrackData(media_stream_track);
 }
 
@@ -87,7 +87,8 @@ void RemoteAudioTrackAdapter::InitializeWebAudioTrack() {
 
   MediaStreamAudioSource* const source =
       new PeerConnectionRemoteAudioSource(observed_track().get());
-  web_track()->Source().SetExtraData(source);  // Takes ownership.
+  web_track()->Source().SetPlatformSource(
+      base::WrapUnique(source));  // Takes ownership.
 
   blink::WebMediaStreamSource::Capabilities capabilities;
   capabilities.device_id = blink::WebString::FromUTF8(id());

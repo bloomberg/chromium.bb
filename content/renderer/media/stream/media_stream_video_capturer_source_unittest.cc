@@ -119,7 +119,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
                               blink::WebMediaStreamSource::kTypeVideo,
                               blink::WebString::FromASCII("dummy_source_name"),
                               false /* remote */);
-    webkit_source_.SetExtraData(source_);
+    webkit_source_.SetPlatformSource(base::WrapUnique(source_));
     webkit_source_id_ = webkit_source_.Id();
 
     MediaStreamVideoCapturerSource::DeviceVideoCapturerFactoryCallback

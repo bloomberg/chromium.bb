@@ -63,7 +63,7 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
                            blink::WebMediaStreamSource::kTypeVideo,
                            blink::WebString::FromASCII("dummy_source_name"),
                            false /* remote */);
-    web_source_.SetExtraData(mock_source_);
+    web_source_.SetPlatformSource(base::WrapUnique(mock_source_));
   }
 
   void TearDown() override {
@@ -238,7 +238,7 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
   void OnConstraintsApplied(blink::PlatformMediaStreamSource* source,
                             blink::MediaStreamRequestResult result,
                             const blink::WebString& result_name) {
-    ASSERT_EQ(source, web_source().GetExtraData());
+    ASSERT_EQ(source, web_source().GetPlatformSource());
 
     if (result == blink::MEDIA_DEVICE_OK) {
       ++number_of_successful_constraints_applied_;

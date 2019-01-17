@@ -131,14 +131,11 @@ class CONTENT_EXPORT UserMediaProcessor
 
   // Creates a MediaStreamAudioSource/MediaStreamVideoSource objects.
   // These are virtual for test purposes.
-  // The caller takes ownership of the returned pointers.
-  // TODO(guidou): return std::unique_ptr to make ownership clearer.
-  // https://crbug.com/764293
-  virtual MediaStreamAudioSource* CreateAudioSource(
+  virtual std::unique_ptr<MediaStreamAudioSource> CreateAudioSource(
       const blink::MediaStreamDevice& device,
       const blink::PlatformMediaStreamSource::ConstraintsCallback&
           source_ready);
-  virtual MediaStreamVideoSource* CreateVideoSource(
+  virtual std::unique_ptr<MediaStreamVideoSource> CreateVideoSource(
       const blink::MediaStreamDevice& device,
       const blink::PlatformMediaStreamSource::SourceStoppedCallback&
           stop_callback);

@@ -36,6 +36,7 @@
 #include <utility>
 
 #include "base/optional.h"
+#include "third_party/blink/public/platform/modules/mediastream/platform_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
@@ -55,13 +56,6 @@ class PLATFORM_EXPORT MediaStreamSource final
    public:
     virtual ~Observer() = default;
     virtual void SourceChangedState() = 0;
-  };
-
-  class ExtraData {
-    USING_FAST_MALLOC(ExtraData);
-
-   public:
-    virtual ~ExtraData() = default;
   };
 
   enum StreamType { kTypeAudio, kTypeVideo };
@@ -101,9 +95,12 @@ class PLATFORM_EXPORT MediaStreamSource final
 
   void AddObserver(Observer*);
 
-  ExtraData* GetExtraData() const { return extra_data_.get(); }
-  void SetExtraData(std::unique_ptr<ExtraData> extra_data) {
-    extra_data_ = std::move(extra_data);
+  PlatformMediaStreamSource* GetPlatformSource() const {
+    return platform_source_.get();
+  }
+  void SetPlatformSource(
+      std::unique_ptr<PlatformMediaStreamSource> platform_source) {
+    platform_source_ = std::move(platform_source);
   }
 
   void SetAudioProcessingProperties(EchoCancellationMode echo_cancellation_mode,
@@ -146,7 +143,7 @@ class PLATFORM_EXPORT MediaStreamSource final
   HeapHashSet<WeakMember<Observer>> observers_;
   Mutex audio_consumers_lock_;
   HashSet<AudioDestinationConsumer*> audio_consumers_;
-  std::unique_ptr<ExtraData> extra_data_;
+  std::unique_ptr<PlatformMediaStreamSource> platform_source_;
   WebMediaConstraints constraints_;
   WebMediaStreamSource::Capabilities capabilities_;
   base::Optional<EchoCancellationMode> echo_cancellation_mode_;

@@ -86,7 +86,7 @@ class MediaStreamRemoteVideoSourceTest
                               blink::WebMediaStreamSource::kTypeVideo,
                               blink::WebString::FromASCII("dummy_source_name"),
                               true /* remote */);
-    webkit_source_.SetExtraData(remote_source_);
+    webkit_source_.SetPlatformSource(base::WrapUnique(remote_source_));
   }
 
   void TearDown() override {

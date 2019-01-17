@@ -51,7 +51,7 @@ class WebRtcMediaStreamTrackAdapterTest : public ::testing::Test {
                           false);
     MediaStreamAudioSource* audio_source = new MediaStreamAudioSource(true);
     // Takes ownership of |audio_source|.
-    web_source.SetExtraData(audio_source);
+    web_source.SetPlatformSource(base::WrapUnique(audio_source));
 
     blink::WebMediaStreamTrack web_track;
     web_track.Initialize(web_source.Id(), web_source);
@@ -67,7 +67,7 @@ class WebRtcMediaStreamTrackAdapterTest : public ::testing::Test {
                           false);
     MockMediaStreamVideoSource* video_source = new MockMediaStreamVideoSource();
     // Takes ownership of |video_source|.
-    web_source.SetExtraData(video_source);
+    web_source.SetPlatformSource(base::WrapUnique(video_source));
 
     return MediaStreamVideoTrack::CreateVideoTrack(
         video_source, MediaStreamVideoSource::ConstraintsCallback(), true);

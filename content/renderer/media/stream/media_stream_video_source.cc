@@ -31,7 +31,7 @@ MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
       source.GetType() != blink::WebMediaStreamSource::kTypeVideo) {
     return nullptr;
   }
-  return static_cast<MediaStreamVideoSource*>(source.GetExtraData());
+  return static_cast<MediaStreamVideoSource*>(source.GetPlatformSource());
 }
 
 MediaStreamVideoSource::MediaStreamVideoSource()

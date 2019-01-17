@@ -52,7 +52,8 @@ void CreateNativeAudioMediaStreamTrack(
   if (!media_stream_source && source.RequiresAudioConsumer()) {
     DVLOG(1) << "Creating WebAudio media stream source.";
     media_stream_source = new WebAudioMediaStreamSource(&source);
-    source.SetExtraData(media_stream_source);  // Takes ownership.
+    source.SetPlatformSource(
+        base::WrapUnique(media_stream_source));  // Takes ownership.
 
     blink::WebMediaStreamSource::Capabilities capabilities;
     capabilities.device_id = source.Id();
@@ -190,7 +191,7 @@ void MediaStreamCenter::DidStopMediaStreamSource(
   if (web_source.IsNull())
     return;
   blink::PlatformMediaStreamSource* const source =
-      static_cast<blink::PlatformMediaStreamSource*>(web_source.GetExtraData());
+      web_source.GetPlatformSource();
   DCHECK(source);
   source->StopSource();
 }

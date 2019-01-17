@@ -779,7 +779,8 @@ void RendererBlinkPlatformImpl::CreateHTMLAudioElementCapturer(
           web_media_player);
 
   // Takes ownership of |media_stream_source|.
-  web_media_stream_source.SetExtraData(media_stream_source);
+  web_media_stream_source.SetPlatformSource(
+      base::WrapUnique(media_stream_source));
 
   blink::WebMediaStreamSource::Capabilities capabilities;
   capabilities.device_id = track_id;

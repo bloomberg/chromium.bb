@@ -45,7 +45,8 @@ bool AddVideoTrackToMediaStream(
   web_media_stream_source.Initialize(
       track_id, blink::WebMediaStreamSource::kTypeVideo, track_id, is_remote);
   // Takes ownership of |media_stream_source|.
-  web_media_stream_source.SetExtraData(media_stream_source);
+  web_media_stream_source.SetPlatformSource(
+      base::WrapUnique(media_stream_source));
   web_media_stream_source.SetCapabilities(ComputeCapabilitiesForVideoSource(
       track_id, preferred_formats,
       media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE,
@@ -87,7 +88,8 @@ bool AddAudioTrackToMediaStream(
                                          channel_layout, frames_per_buffer,
                                          is_remote);
   // Takes ownership of |media_stream_source|.
-  web_media_stream_source.SetExtraData(media_stream_source);
+  web_media_stream_source.SetPlatformSource(
+      base::WrapUnique(media_stream_source));
 
   blink::WebMediaStreamSource::Capabilities capabilities;
   capabilities.device_id = track_id;

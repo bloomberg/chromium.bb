@@ -11,9 +11,11 @@ blink::WebMediaStreamTrack CreateWebMediaStreamTrack(const std::string& id) {
   web_source.Initialize(blink::WebString::FromUTF8(id),
                         blink::WebMediaStreamSource::kTypeAudio,
                         blink::WebString::FromUTF8("audio_track"), false);
-  MediaStreamAudioSource* audio_source = new MediaStreamAudioSource(true);
-  // Takes ownership of |audio_source|.
-  web_source.SetExtraData(audio_source);
+  std::unique_ptr<MediaStreamAudioSource> audio_source_ptr =
+      std::make_unique<MediaStreamAudioSource>(true);
+  MediaStreamAudioSource* audio_source = audio_source_ptr.get();
+  // Takes ownership of |audio_source_ptr|.
+  web_source.SetPlatformSource(std::move(audio_source_ptr));
 
   blink::WebMediaStreamTrack web_track;
   web_track.Initialize(web_source.Id(), web_source);

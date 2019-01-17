@@ -329,7 +329,8 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
             base::Bind(&RTCPeerConnectionHandlerTest::OnAudioSourceStarted),
             mock_dependency_factory_.get());
     audio_source->SetAllowInvalidRenderFrameIdForTesting(true);
-    blink_audio_source.SetExtraData(audio_source);  // Takes ownership.
+    blink_audio_source.SetPlatformSource(
+        base::WrapUnique(audio_source));  // Takes ownership.
 
     blink::WebMediaStreamSource video_source;
     video_source.Initialize(blink::WebString::FromUTF8(video_track_label),
@@ -338,7 +339,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
                             false /* remote */);
     MockMediaStreamVideoSource* native_video_source =
         new MockMediaStreamVideoSource();
-    video_source.SetExtraData(native_video_source);
+    video_source.SetPlatformSource(base::WrapUnique(native_video_source));
 
     blink::WebVector<blink::WebMediaStreamTrack> audio_tracks(
         static_cast<size_t>(1));
@@ -844,7 +845,7 @@ TEST_F(RTCPeerConnectionHandlerTest, addStreamWithStoppedAudioAndVideoTrack) {
       local_stream.VideoTracks();
   MediaStreamVideoSource* native_video_source =
       static_cast<MediaStreamVideoSource*>(
-          video_tracks[0].Source().GetExtraData());
+          video_tracks[0].Source().GetPlatformSource());
   native_video_source->StopSource();
 
   EXPECT_TRUE(AddStream(local_stream));

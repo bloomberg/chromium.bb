@@ -43,7 +43,7 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
                              blink::WebMediaStreamSource::kTypeVideo,
                              blink::WebString::FromASCII("dummy_source_name"),
                              false /* remote */);
-    blink_source_.SetExtraData(mock_source_);
+    blink_source_.SetPlatformSource(base::WrapUnique(mock_source_));
     blink_track_ = MediaStreamVideoTrack::CreateVideoTrack(
         mock_source_, blink::PlatformMediaStreamSource::ConstraintsCallback(),
         true);

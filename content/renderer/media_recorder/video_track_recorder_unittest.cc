@@ -73,7 +73,7 @@ class VideoTrackRecorderTest
     blink_source_.Initialize(webkit_track_id,
                              blink::WebMediaStreamSource::kTypeVideo,
                              webkit_track_id);
-    blink_source_.SetExtraData(mock_source_);
+    blink_source_.SetPlatformSource(base::WrapUnique(mock_source_));
     blink_track_.Initialize(blink_source_);
 
     track_ = new MediaStreamVideoTrack(
@@ -82,8 +82,8 @@ class VideoTrackRecorderTest
     blink_track_.SetTrackData(track_);
 
     // Paranoia checks.
-    EXPECT_EQ(blink_track_.Source().GetExtraData(),
-              blink_source_.GetExtraData());
+    EXPECT_EQ(blink_track_.Source().GetPlatformSource(),
+              blink_source_.GetPlatformSource());
     EXPECT_TRUE(blink::scheduler::GetSingleThreadTaskRunnerForTesting()
                     ->BelongsToCurrentThread());
   }

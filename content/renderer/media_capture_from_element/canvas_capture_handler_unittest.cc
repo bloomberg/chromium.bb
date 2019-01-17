@@ -166,7 +166,7 @@ TEST_P(CanvasCaptureHandlerTest, GetFormatsStartAndStop) {
   EXPECT_FALSE(web_media_stream_source.IsNull());
   MediaStreamVideoCapturerSource* const ms_source =
       static_cast<MediaStreamVideoCapturerSource*>(
-          web_media_stream_source.GetExtraData());
+          web_media_stream_source.GetPlatformSource());
   EXPECT_TRUE(ms_source != nullptr);
   media::VideoCapturerSource* source = GetVideoCapturerSource(ms_source);
   EXPECT_TRUE(source != nullptr);
@@ -206,7 +206,7 @@ TEST_P(CanvasCaptureHandlerTest, VerifyFrame) {
   InSequence s;
   media::VideoCapturerSource* const source =
       GetVideoCapturerSource(static_cast<MediaStreamVideoCapturerSource*>(
-          track_.Source().GetExtraData()));
+          track_.Source().GetPlatformSource()));
   EXPECT_TRUE(source != nullptr);
 
   base::RunLoop run_loop;
@@ -227,7 +227,7 @@ TEST_F(CanvasCaptureHandlerTest, CheckNeedsNewFrame) {
   InSequence s;
   media::VideoCapturerSource* source =
       GetVideoCapturerSource(static_cast<MediaStreamVideoCapturerSource*>(
-          track_.Source().GetExtraData()));
+          track_.Source().GetPlatformSource()));
   EXPECT_TRUE(source != nullptr);
   EXPECT_TRUE(canvas_capture_handler_->NeedsNewFrame());
   source->StopCapture();

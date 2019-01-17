@@ -31,6 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_STREAM_SOURCE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_STREAM_SOURCE_H_
 
+#include <memory>
+
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -43,27 +45,12 @@
 namespace blink {
 
 class MediaStreamSource;
+class PlatformMediaStreamSource;
 class WebAudioDestinationConsumer;
 class WebString;
 
 class WebMediaStreamSource {
  public:
-  class ExtraData {
-   public:
-    ExtraData() : owner_(0) {}
-    virtual ~ExtraData() = default;
-
-    BLINK_PLATFORM_EXPORT WebMediaStreamSource Owner();
-#if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT void SetOwner(MediaStreamSource*);
-#endif
-
-   private:
-#if INSIDE_BLINK
-    GC_PLUGIN_IGNORE("http://crbug.com/409526")
-#endif
-    MediaStreamSource* owner_;
-  };
 
   enum Type { kTypeAudio, kTypeVideo };
 
@@ -126,12 +113,9 @@ class WebMediaStreamSource {
   BLINK_PLATFORM_EXPORT void SetReadyState(ReadyState);
   BLINK_PLATFORM_EXPORT ReadyState GetReadyState() const;
 
-  // Extra data associated with this object.
-  // If non-null, the extra data pointer will be deleted when the object is
-  // destroyed.  Setting the extra data pointer will cause any existing non-null
-  // extra data pointer to be deleted.
-  BLINK_PLATFORM_EXPORT ExtraData* GetExtraData() const;
-  BLINK_PLATFORM_EXPORT void SetExtraData(ExtraData*);
+  BLINK_PLATFORM_EXPORT PlatformMediaStreamSource* GetPlatformSource() const;
+  BLINK_PLATFORM_EXPORT void SetPlatformSource(
+      std::unique_ptr<PlatformMediaStreamSource>);
 
   BLINK_PLATFORM_EXPORT void SetAudioProcessingProperties(
       EchoCancellationMode echo_cancellation_mode,
