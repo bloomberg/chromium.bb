@@ -724,37 +724,29 @@ void OmniboxViewViews::SelectAllForUserGesture() {
 }
 
 bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
-  // No need to update the text if the user is already inputting text.
-  if (model()->user_input_in_progress())
-    return false;
-
-  // No need to unelide if we are already displaying the full URL.
-  LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
-  base::string16 full_url = location_bar_model->GetFormattedFullURL();
-  if (text() == full_url)
-    return false;
-
-  // Don't unelide if we are currently displaying Query in Omnibox search terms,
-  // as otherwise, it would be impossible to refine query terms.
-  if (location_bar_model->GetDisplaySearchTerms(nullptr /* search_terms */))
-    return false;
-
   // If everything is selected, the user likely does not intend to edit the URL.
   // But if the Home key is pressed, the user probably does want to interact
   // with the beginning of the URL - in which case we unelide.
   if (IsSelectAll() && gesture != UnelisionGesture::HOME_KEY_PRESSED)
     return false;
 
+  // Get the original selection bounds so we can adjust it later.
   size_t start, end;
   GetSelectionBounds(&start, &end);
+
+  // Try to unelide. Early exit if there's no unelisions to perform.
+  base::string16 original_text = GetText();
+  base::string16 original_selected_text = GetSelectedText();
+  if (!model()->Unelide(false /* exit_query_in_omnibox */))
+    return false;
 
   // Find the length of the prefix that was chopped off to form the elided URL.
   // This simple logic only works because we elide only prefixes from the full
   // URL. Otherwise, we would have to use the FormatURL offset adjustments.
-  size_t offset = full_url.find(GetText());
+  size_t offset = GetText().find(original_text);
   if (offset != base::string16::npos) {
     if (start != end && gesture == UnelisionGesture::MOUSE_RELEASE &&
-        !model()->ClassifiesAsSearch(GetSelectedText())) {
+        !model()->ClassifiesAsSearch(original_selected_text)) {
       // For user selections that look like a URL instead of a Search:
       // If we are uneliding at the end of a drag-select (on mouse release),
       // and the selection spans to the beginning of the elided URL, ensure that
@@ -775,8 +767,6 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
     OffsetDoubleClickWord(offset);
   }
 
-  // We have already early-exited if Query in Omnibox is active.
-  model()->Unelide(false /* exit_query_in_omnibox */);
   SelectRange(gfx::Range(start, end));
   return true;
 }

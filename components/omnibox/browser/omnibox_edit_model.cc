@@ -292,23 +292,29 @@ void OmniboxEditModel::SetUserText(const base::string16& text) {
   has_temporary_text_ = false;
 }
 
-void OmniboxEditModel::Unelide(bool exit_query_in_omnibox) {
+bool OmniboxEditModel::Unelide(bool exit_query_in_omnibox) {
   // Unelision should not occur if the user has already inputted text.
   if (user_input_in_progress())
-    return;
+    return false;
+
+  // No need to unelide if we are already displaying the full URL.
+  LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
+  if (view_->GetText() == location_bar_model->GetFormattedFullURL())
+    return false;
 
   // Early exit if we don't want to exit Query in Omnibox mode, and the omnibox
   // is displaying a query.
-  LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
   if (!exit_query_in_omnibox &&
       location_bar_model->GetDisplaySearchTerms(nullptr))
-    return;
+    return false;
 
   SetUserText(url_for_editing_);
   view_->SetWindowTextAndCaretPos(url_for_editing_, 0, false, false);
 
   // Select all in reverse to ensure the beginning of the URL is shown.
   view_->SelectAll(true /* reversed */);
+
+  return true;
 }
 
 void OmniboxEditModel::OnChanged() {

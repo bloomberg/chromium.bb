@@ -285,25 +285,29 @@ TEST_F(OmniboxEditModelTest, DisplayText) {
   location_bar_model()->set_url(GURL("https://www.example.com/"));
   location_bar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
 
-  // Verify we show the display text when there is no Query in Omnibox match.
-  model()->ResetDisplayTexts();
-#if defined(OS_IOS)
-  // iOS OmniboxEditModel always provides the full URL as the OmniboxView
-  // permanent display text.
-  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"),
-            model()->GetPermanentDisplayText());
-#else
-  EXPECT_EQ(base::ASCIIToUTF16("example.com"),
-            model()->GetPermanentDisplayText());
-#endif
+  EXPECT_TRUE(model()->ResetDisplayTexts());
+  model()->Revert();
 
   EXPECT_TRUE(model()->CurrentTextIsURL());
 
+#if defined(OS_IOS)
+  // iOS OmniboxEditModel always provides the full URL as the OmniboxView
+  // permanent display text. Unelision should return false.
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"),
+            model()->GetPermanentDisplayText());
+  EXPECT_FALSE(model()->Unelide(false /* exit_query_in_omnibox */));
+  EXPECT_FALSE(model()->user_input_in_progress());
+  EXPECT_FALSE(view()->IsSelectAll());
+#else
   // Verify we can unelide and show the full URL properly.
-  model()->Unelide(false /* exit_query_in_omnibox */);
-  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("example.com"),
+            model()->GetPermanentDisplayText());
+  EXPECT_TRUE(model()->Unelide(false /* exit_query_in_omnibox */));
   EXPECT_TRUE(model()->user_input_in_progress());
   EXPECT_TRUE(view()->IsSelectAll());
+#endif
+
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
   EXPECT_TRUE(model()->CurrentTextIsURL());
 
   // We should still show the current page's icon until the URL is modified.
@@ -316,16 +320,17 @@ TEST_F(OmniboxEditModelTest, DisplayAndExitQueryInOmnibox) {
   location_bar_model()->set_url(GURL("https://www.example.com/"));
   location_bar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
   location_bar_model()->set_display_search_terms(base::ASCIIToUTF16("foobar"));
-  EXPECT_TRUE(model()->ResetDisplayTexts());
 
+  EXPECT_TRUE(model()->ResetDisplayTexts());
   model()->Revert();
+
   EXPECT_EQ(base::ASCIIToUTF16("foobar"), model()->GetPermanentDisplayText());
   EXPECT_EQ(base::ASCIIToUTF16("foobar"), view()->GetText());
   EXPECT_FALSE(model()->CurrentTextIsURL());
   EXPECT_TRUE(model()->ShouldShowCurrentPageIcon());
 
   // Verify we can exit Query in Omnibox mode properly.
-  model()->Unelide(true /* exit_query_in_omnibox */);
+  EXPECT_TRUE(model()->Unelide(true /* exit_query_in_omnibox */));
   EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
   EXPECT_TRUE(model()->user_input_in_progress());
   EXPECT_TRUE(view()->IsSelectAll());
@@ -335,6 +340,27 @@ TEST_F(OmniboxEditModelTest, DisplayAndExitQueryInOmnibox) {
   EXPECT_TRUE(model()->ShouldShowCurrentPageIcon());
   view()->SetUserText(base::ASCIIToUTF16("something else"));
   EXPECT_FALSE(model()->ShouldShowCurrentPageIcon());
+}
+
+TEST_F(OmniboxEditModelTest, UnelideDoesNothingWhenFullURLAlreadyShown) {
+  location_bar_model()->set_url(GURL("https://www.example.com/"));
+  location_bar_model()->set_url_for_display(
+      base::ASCIIToUTF16("https://www.example.com/"));
+
+  EXPECT_TRUE(model()->ResetDisplayTexts());
+  model()->Revert();
+
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"),
+            model()->GetPermanentDisplayText());
+  EXPECT_TRUE(model()->CurrentTextIsURL());
+
+  // Verify Unelide does nothing.
+  EXPECT_FALSE(model()->Unelide(false /* exit_query_in_omnibox */));
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
+  EXPECT_FALSE(model()->user_input_in_progress());
+  EXPECT_FALSE(view()->IsSelectAll());
+  EXPECT_TRUE(model()->CurrentTextIsURL());
+  EXPECT_TRUE(model()->ShouldShowCurrentPageIcon());
 }
 
 TEST_F(OmniboxEditModelTest, DisablePasteAndGoForLongTexts) {
