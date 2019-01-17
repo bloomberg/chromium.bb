@@ -77,6 +77,8 @@ class CORE_EXPORT FrameOverlay : public GraphicsLayerClient,
   // FrameOverlay is always the same size as the viewport.
   IntSize Size() const;
 
+  const Delegate* GetDelegate() const { return delegate_.get(); }
+
   // DisplayItemClient methods.
   String DebugName() const final { return "FrameOverlay"; }
   LayoutRect VisualRect() const override;

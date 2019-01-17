@@ -85,7 +85,7 @@ interface CoreProbes {
   void didFireWebGLWarning(Element*);
   void didFireWebGLErrorOrWarning(Element*, const String& message);
   void didResizeMainFrame(LocalFrame*);
-  void didPaint(LocalFrame*, const GraphicsLayer*, GraphicsContext&, const LayoutRect&);
+  void didPaint(LocalFrame*, const cc::Layer*, GraphicsContext&, const LayoutRect&);
   void applyAcceptLanguageOverride(ExecutionContext*, String* acceptLanguage);
   void applyUserAgentOverride(CoreProbeSink*, String* userAgent);
   void didBlockRequest([Keep] ExecutionContext*, const ResourceRequest&, DocumentLoader*, const FetchInitiatorInfo&, ResourceRequestBlockedReason, ResourceType);

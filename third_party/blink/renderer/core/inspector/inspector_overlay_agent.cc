@@ -187,6 +187,8 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
       layer_->SetNeedsDisplay();
   }
 
+  const cc::Layer* GetLayer() const { return layer_.get(); }
+
  private:
   // cc::ContentLayerClient implementation
   gfx::Rect PaintableRegion() override { return gfx::Rect(layer_->bounds()); }
@@ -603,8 +605,15 @@ void InspectorOverlayAgent::PaintOverlay(GraphicsContext& context) {
     frame_overlay_->Paint(context);
 }
 
-bool InspectorOverlayAgent::IsInspectorLayer(GraphicsLayer* layer) {
-  return frame_overlay_ && frame_overlay_->GetGraphicsLayer() == layer;
+bool InspectorOverlayAgent::IsInspectorLayer(const cc::Layer* layer) const {
+  if (!frame_overlay_)
+    return false;
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    return layer == static_cast<const InspectorPageOverlayDelegate*>(
+                        frame_overlay_->GetDelegate())
+                        ->GetLayer();
+  }
+  return layer == frame_overlay_->GetGraphicsLayer()->CcLayer();
 }
 
 void InspectorOverlayAgent::DispatchBufferedTouchEvents() {

@@ -77,6 +77,7 @@ scoped_refptr<Layer> Layer::Create() {
 
 Layer::Layer()
     : ignore_set_needs_commit_(false),
+      paint_count_(0),
       parent_(nullptr),
       layer_tree_host_(nullptr),
       // Layer IDs start from 1.
@@ -97,7 +98,9 @@ Layer::Layer()
       needs_show_scrollbars_(false),
       has_transform_node_(false),
       subtree_has_copy_request_(false),
-      safe_opaque_background_color_(0) {}
+      safe_opaque_background_color_(0),
+      compositing_reasons_(0),
+      owner_node_id_(0) {}
 
 Layer::~Layer() {
   // Our parent should be holding a reference to us so there should be no
