@@ -56,7 +56,6 @@
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/TabWebContentsDelegateAndroid_jni.h"
-#include "ppapi/buildflags/buildflags.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
