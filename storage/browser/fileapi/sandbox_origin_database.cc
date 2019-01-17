@@ -321,7 +321,7 @@ void SandboxOriginDatabase::RewriteDatabase() {
   options.create_if_missing = true;
   if (env_override_)
     options.env = env_override_;
-  // There is a possiblity that |db_| is null after this call. This case
+  // There is a possibility that |db_| is null after this call. This case
   // will be handled by the |!Init(...)| checks above each method.
   leveldb_env::RewriteDB(options, path, &db_);
 }
