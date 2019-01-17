@@ -195,7 +195,8 @@ void ResourceMessageFilter::InitializeOnIOThread() {
         base::BindRepeating(&ResourceDispatcherHostImpl::CancelRequest,
                             base::Unretained(ResourceDispatcherHostImpl::Get()),
                             requester_info_->child_id()),
-        &shared_cors_origin_access_list_->GetOriginAccessList());
+        &shared_cors_origin_access_list_->GetOriginAccessList(),
+        requester_info_->child_id() == -1 ? 0 : requester_info_->child_id());
   }
 
   std::vector<network::mojom::URLLoaderFactoryRequest> requests =

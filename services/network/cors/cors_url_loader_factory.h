@@ -47,7 +47,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
       bool disable_web_security,
       std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory,
       const base::RepeatingCallback<void(int)>& preflight_finalizer,
-      const OriginAccessList* origin_access_list);
+      const OriginAccessList* origin_access_list,
+      uint32_t process_id);
   ~CorsURLLoaderFactory() override;
 
   void OnLoaderCreated(std::unique_ptr<mojom::URLLoader> loader);
@@ -81,6 +82,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
 
   const bool disable_web_security_;
+
+  const uint32_t process_id_;
 
   // Relative order of |network_loader_factory_| and |loaders_| matters -
   // URLLoaderFactory needs to live longer than URLLoaders created using the

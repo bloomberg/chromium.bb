@@ -4758,6 +4758,80 @@ TEST_F(NetworkContextMockHostTest, CustomProxyUsesAlternateProxyList) {
             ConvertToProxyServer(proxy_test_server));
 }
 
+TEST_F(NetworkContextTest, MaximumCount) {
+  net::EmbeddedTestServer test_server;
+  test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+
+  const char kPath1[] = "/foobar";
+  const char kPath2[] = "/hung";
+  const char kPath3[] = "/hello.html";
+  net::test_server::ControllableHttpResponse controllable_response1(
+      &test_server, kPath1);
+
+  ASSERT_TRUE(test_server.Start());
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+  network_context->set_max_loaders_per_process_for_testing(2);
+
+  mojom::URLLoaderFactoryPtr loader_factory;
+  mojom::URLLoaderFactoryParamsPtr params =
+      mojom::URLLoaderFactoryParams::New();
+  params->process_id = mojom::kBrowserProcessId;
+  params->is_corb_enabled = false;
+  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
+                                          std::move(params));
+
+  ResourceRequest request;
+  request.url = test_server.GetURL(kPath1);
+  auto client1 = std::make_unique<TestURLLoaderClient>();
+  mojom::URLLoaderPtr loader1;
+  loader_factory->CreateLoaderAndStart(
+      mojo::MakeRequest(&loader1), 0 /* routing_id */, 0 /* request_id */,
+      0 /* options */, request, client1->CreateInterfacePtr(),
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  request.url = test_server.GetURL(kPath2);
+  auto client2 = std::make_unique<TestURLLoaderClient>();
+  mojom::URLLoaderPtr loader2;
+  loader_factory->CreateLoaderAndStart(
+      mojo::MakeRequest(&loader2), 0 /* routing_id */, 0 /* request_id */,
+      0 /* options */, request, client2->CreateInterfacePtr(),
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  // A third request should fail, since the first two are outstanding and the
+  // limit is 2.
+  request.url = test_server.GetURL(kPath3);
+  auto client3 = std::make_unique<TestURLLoaderClient>();
+  mojom::URLLoaderPtr loader3;
+  loader_factory->CreateLoaderAndStart(
+      mojo::MakeRequest(&loader3), 0 /* routing_id */, 0 /* request_id */,
+      0 /* options */, request, client3->CreateInterfacePtr(),
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  client3->RunUntilComplete();
+  ASSERT_EQ(client3->completion_status().error_code,
+            net::ERR_INSUFFICIENT_RESOURCES);
+
+  // Complete the first request and try the third again.
+  controllable_response1.WaitForRequest();
+  controllable_response1.Send("HTTP/1.1 200 OK\r\n");
+  controllable_response1.Done();
+
+  client1->RunUntilComplete();
+  ASSERT_EQ(client1->completion_status().error_code, net::OK);
+
+  client3 = std::make_unique<TestURLLoaderClient>();
+  loader_factory->CreateLoaderAndStart(
+      mojo::MakeRequest(&loader3), 0 /* routing_id */, 0 /* request_id */,
+      0 /* options */, request, client3->CreateInterfacePtr(),
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  client3->RunUntilComplete();
+  ASSERT_EQ(client3->completion_status().error_code, net::OK);
+}
+
 }  // namespace
 
 }  // namespace network
