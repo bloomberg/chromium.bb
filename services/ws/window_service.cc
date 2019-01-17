@@ -167,15 +167,17 @@ Id WindowService::GetCompleteTransportIdForWindow(aura::Window* window) {
   ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window);
   if (!proxy_window)
     return kInvalidTransportId;
-  if (!proxy_window->owning_window_tree())
+  WindowTree* tree = proxy_window->owning_window_tree()
+                         ? proxy_window->owning_window_tree()
+                         : proxy_window->embedded_window_tree();
+  if (!tree)
     return kInvalidTransportId;
   // NOTE: WindowTree::TransportIdForWindow() is the id sent to the client,
   // which has the client_id portion set to 0. This function wants to see the
   // real client_id, so it has to build it.
   return BuildTransportId(
-      proxy_window->owning_window_tree()->client_id(),
-      ClientWindowIdFromTransportId(
-          proxy_window->owning_window_tree()->TransportIdForWindow(window)));
+      tree->client_id(),
+      ClientWindowIdFromTransportId(tree->TransportIdForWindow(window)));
 }
 
 WindowService::TreeAndWindowId
