@@ -24,6 +24,14 @@
         @apply --cr-dialog-native;
       }
 
+      :host-context([dark]) dialog {
+        background-color: var(--google-grey-refresh-900);
+        /* Note: the colors in linear-gradient() are intentionally the same to
+         * add a 4% white layer on top of the fully opaque background-color. */
+        background-image: linear-gradient(rgba(255, 255, 255, .04),
+                                          rgba(255, 255, 255, .04));
+      }
+
       dialog[open] #content-wrapper {
         /* Keep max-height within viewport, and flex content accordingly. */
         display: flex;
