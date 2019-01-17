@@ -198,6 +198,14 @@ void GeneratedCodeCache::WriteData(const GURL& url,
            data.size());
 
   std::string key = GetCacheKey(url, origin_lock);
+  // If there is an in progress operation corresponding to this key. Enqueue it
+  // so we can issue once the in-progress operation finishes.
+  if (EnqueueAsPendingOperation(
+          key, GeneratedCodeCache::PendingOperation::CreateWritePendingOp(
+                   key, buffer))) {
+    return;
+  }
+
   if (backend_state_ != kInitialized) {
     // Insert it into the list of pending operations while the backend is
     // still being opened.
@@ -221,6 +229,14 @@ void GeneratedCodeCache::FetchEntry(const GURL& url,
   }
 
   std::string key = GetCacheKey(url, origin_lock);
+  // If there is an in progress operation corresponding to this key. Enqueue it
+  // so we can issue once the in-progress operation finishes.
+  if (EnqueueAsPendingOperation(
+          key, GeneratedCodeCache::PendingOperation::CreateFetchPendingOp(
+                   key, read_data_callback))) {
+    return;
+  }
+
   if (backend_state_ != kInitialized) {
     // Insert it into the list of pending operations while the backend is
     // still being opened.
@@ -309,29 +325,35 @@ void GeneratedCodeCache::IssuePendingOperations() {
   // Issue all the pending operations that were received when creating
   // the backend.
   for (auto const& op : pending_ops_) {
-    switch (op->operation()) {
-      case kFetch:
-        FetchEntryImpl(op->key(), op->ReleaseReadCallback());
-        break;
-      case kWrite:
-        WriteDataImpl(op->key(), op->data());
-        break;
-      case kDelete:
-        DeleteEntryImpl(op->key());
-        break;
-      case kClearCache:
-        DoPendingClearCache(op->ReleaseCallback());
-        break;
-    }
+    IssueOperation(op.get());
   }
   pending_ops_.clear();
+}
+
+void GeneratedCodeCache::IssueOperation(PendingOperation* op) {
+  switch (op->operation()) {
+    case kFetch:
+      FetchEntryImpl(op->key(), op->ReleaseReadCallback());
+      break;
+    case kWrite:
+      WriteDataImpl(op->key(), op->data());
+      break;
+    case kDelete:
+      DeleteEntryImpl(op->key());
+      break;
+    case kClearCache:
+      DoPendingClearCache(op->ReleaseCallback());
+      break;
+  }
 }
 
 void GeneratedCodeCache::WriteDataImpl(
     const std::string& key,
     scoped_refptr<net::IOBufferWithSize> buffer) {
-  if (backend_state_ != kInitialized)
+  if (backend_state_ != kInitialized) {
+    IssueQueuedOperationForEntry(key);
     return;
+  }
 
   scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry_ptr =
       new base::RefCountedData<disk_cache::Entry*>();
@@ -354,47 +376,72 @@ void GeneratedCodeCache::OpenCompleteForWriteData(
   if (rv != net::OK) {
     net::CompletionOnceCallback callback =
         base::BindOnce(&GeneratedCodeCache::CreateCompleteForWriteData,
-                       weak_ptr_factory_.GetWeakPtr(), buffer, entry);
+                       weak_ptr_factory_.GetWeakPtr(), key, buffer, entry);
 
     int result =
         backend_->CreateEntry(key, net::LOW, &entry->data, std::move(callback));
     if (result != net::ERR_IO_PENDING) {
-      CreateCompleteForWriteData(buffer, entry, result);
+      CreateCompleteForWriteData(key, buffer, entry, result);
     }
     return;
   }
 
   DCHECK(entry->data);
-  disk_cache::ScopedEntryPtr disk_entry(entry->data);
+  int result = net::ERR_FAILED;
+  {
+    disk_cache::ScopedEntryPtr disk_entry(entry->data);
 
-  CollectStatistics(CacheEntryStatus::kUpdate);
-  // This call will truncate the data. This is safe to do since we read the
-  // entire data at the same time currently. If we want to read in parts we have
-  // to doom the entry first.
-  disk_entry->WriteData(kDataIndex, 0, buffer.get(), buffer->size(),
-                        net::CompletionOnceCallback(), true);
+    CollectStatistics(CacheEntryStatus::kUpdate);
+    // This call will truncate the data. This is safe to do since we read the
+    // entire data at the same time currently. If we want to read in parts we
+    // have to doom the entry first.
+    result = disk_entry->WriteData(
+        kDataIndex, 0, buffer.get(), buffer->size(),
+        base::BindOnce(&GeneratedCodeCache::WriteDataCompleted,
+                       weak_ptr_factory_.GetWeakPtr(), key),
+        true);
+  }
+  if (result != net::ERR_IO_PENDING) {
+    WriteDataCompleted(key, result);
+  }
 }
 
 void GeneratedCodeCache::CreateCompleteForWriteData(
+    const std::string& key,
     scoped_refptr<net::IOBufferWithSize> buffer,
     scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
     int rv) {
   if (rv != net::OK) {
     CollectStatistics(CacheEntryStatus::kError);
+    IssueQueuedOperationForEntry(key);
     return;
   }
 
   DCHECK(entry->data);
-  disk_cache::ScopedEntryPtr disk_entry(entry->data);
-  CollectStatistics(CacheEntryStatus::kCreate);
-  disk_entry->WriteData(kDataIndex, 0, buffer.get(), buffer->size(),
-                        net::CompletionOnceCallback(), true);
+  int result = net::ERR_FAILED;
+  {
+    disk_cache::ScopedEntryPtr disk_entry(entry->data);
+    CollectStatistics(CacheEntryStatus::kCreate);
+    result = disk_entry->WriteData(
+        kDataIndex, 0, buffer.get(), buffer->size(),
+        base::BindOnce(&GeneratedCodeCache::WriteDataCompleted,
+                       weak_ptr_factory_.GetWeakPtr(), key),
+        true);
+  }
+  if (result != net::ERR_IO_PENDING) {
+    WriteDataCompleted(key, result);
+  }
+}
+
+void GeneratedCodeCache::WriteDataCompleted(const std::string& key, int rv) {
+  IssueQueuedOperationForEntry(key);
 }
 
 void GeneratedCodeCache::FetchEntryImpl(const std::string& key,
                                         ReadDataCallback read_data_callback) {
   if (backend_state_ != kInitialized) {
     std::move(read_data_callback).Run(base::Time(), std::vector<uint8_t>());
+    IssueQueuedOperationForEntry(key);
     return;
   }
 
@@ -403,64 +450,61 @@ void GeneratedCodeCache::FetchEntryImpl(const std::string& key,
 
   net::CompletionOnceCallback callback = base::BindOnce(
       &GeneratedCodeCache::OpenCompleteForReadData,
-      weak_ptr_factory_.GetWeakPtr(), read_data_callback, entry_ptr);
+      weak_ptr_factory_.GetWeakPtr(), read_data_callback, key, entry_ptr);
 
   // This is a part of loading cycle and hence should run with a high priority.
   int result = backend_->OpenEntry(key, net::HIGHEST, &entry_ptr->data,
                                    std::move(callback));
   if (result != net::ERR_IO_PENDING) {
-    OpenCompleteForReadData(read_data_callback, entry_ptr, result);
+    OpenCompleteForReadData(read_data_callback, key, entry_ptr, result);
   }
 }
 
 void GeneratedCodeCache::OpenCompleteForReadData(
     ReadDataCallback read_data_callback,
+    const std::string& key,
     scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
     int rv) {
   if (rv != net::OK) {
     CollectStatistics(CacheEntryStatus::kMiss);
     std::move(read_data_callback).Run(base::Time(), std::vector<uint8_t>());
+    IssueQueuedOperationForEntry(key);
     return;
   }
 
   // There should be a valid entry if the open was successful.
   DCHECK(entry->data);
-
-  disk_cache::ScopedEntryPtr disk_entry(entry->data);
-  int size = disk_entry->GetDataSize(kDataIndex);
-  scoped_refptr<net::IOBufferWithSize> buffer =
-      base::MakeRefCounted<net::IOBufferWithSize>(size);
-  net::CompletionOnceCallback callback = base::BindOnce(
-      &GeneratedCodeCache::ReadDataComplete, weak_ptr_factory_.GetWeakPtr(),
-      read_data_callback, buffer);
-  int result = disk_entry->ReadData(kDataIndex, 0, buffer.get(), size,
-                                    std::move(callback));
+  int result = net::ERR_FAILED;
+  scoped_refptr<net::IOBufferWithSize> buffer;
+  {
+    disk_cache::ScopedEntryPtr disk_entry(entry->data);
+    int size = disk_entry->GetDataSize(kDataIndex);
+    buffer = base::MakeRefCounted<net::IOBufferWithSize>(size);
+    net::CompletionOnceCallback callback = base::BindOnce(
+        &GeneratedCodeCache::ReadDataComplete, weak_ptr_factory_.GetWeakPtr(),
+        key, read_data_callback, buffer);
+    result = disk_entry->ReadData(kDataIndex, 0, buffer.get(), size,
+                                  std::move(callback));
+  }
   if (result != net::ERR_IO_PENDING) {
-    ReadDataComplete(read_data_callback, buffer, result);
+    ReadDataComplete(key, read_data_callback, buffer, result);
   }
 }
 
 void GeneratedCodeCache::ReadDataComplete(
+    const std::string& key,
     ReadDataCallback callback,
     scoped_refptr<net::IOBufferWithSize> buffer,
     int rv) {
   if (rv != buffer->size()) {
     CollectStatistics(CacheEntryStatus::kMiss);
     std::move(callback).Run(base::Time(), std::vector<uint8_t>());
-  } else if (buffer->size() < kResponseTimeSizeInBytes) {
-    // TODO(crbug.com/886892): Change the implementation, so serialize requests
-    // for the same key here. When we do that, this case should not arise.
-    // We might be reading an entry before the write was completed. This can
-    // happen if we have a write and read operation for the same key almost at
-    // the same time and they interleave as:
-    // W(Create) -> R(Open) -> R(Read) -> W(Write).
-    CollectStatistics(CacheEntryStatus::kIncompleteEntry);
-    std::move(callback).Run(base::Time(), std::vector<uint8_t>());
   } else {
     // DiskCache ensures that the operations that are queued for an entry
     // go in order. Hence, we would either read an empty data or read the full
-    // data. Please look at comment in else to see why we read empty data.
+    // data.
     CollectStatistics(CacheEntryStatus::kHit);
+    DCHECK_GE(buffer->size(), kResponseTimeSizeInBytes);
     int64_t raw_response_time = *(reinterpret_cast<int64_t*>(buffer->data()));
     base::Time response_time = base::Time::FromDeltaSinceWindowsEpoch(
         base::TimeDelta::FromMicroseconds(raw_response_time));
@@ -471,6 +515,7 @@ void GeneratedCodeCache::ReadDataComplete(
     }
     std::move(callback).Run(response_time, data);
   }
+  IssueQueuedOperationForEntry(key);
 }
 
 void GeneratedCodeCache::DeleteEntryImpl(const std::string& key) {
@@ -479,6 +524,38 @@ void GeneratedCodeCache::DeleteEntryImpl(const std::string& key) {
 
   CollectStatistics(CacheEntryStatus::kClear);
   backend_->DoomEntry(key, net::LOWEST, net::CompletionOnceCallback());
+}
+
+void GeneratedCodeCache::IssueQueuedOperationForEntry(const std::string& key) {
+  auto it = active_entries_map_.find(key);
+  DCHECK(it != active_entries_map_.end());
+
+  // If no more queued entries then remove the entry to indicate that there are
+  // no in-progress operations for this key.
+  if (it->second.empty()) {
+    active_entries_map_.erase(it);
+    return;
+  }
+
+  std::unique_ptr<PendingOperation> op = std::move(it->second.front());
+  // Pop it before issuing the operation. Still retain the queue even if it is
+  // empty to indicate that there is a in-progress operation.
+  it->second.pop();
+  IssueOperation(op.get());
+}
+
+bool GeneratedCodeCache::EnqueueAsPendingOperation(
+    const std::string& key,
+    std::unique_ptr<PendingOperation> op) {
+  auto it = active_entries_map_.find(key);
+  if (it != active_entries_map_.end()) {
+    it->second.emplace(std::move(op));
+    return true;
+  }
+
+  // Create a entry to indicate there is a in-progress operation for this key.
+  active_entries_map_[key] = base::queue<std::unique_ptr<PendingOperation>>();
+  return false;
 }
 
 void GeneratedCodeCache::DoPendingClearCache(

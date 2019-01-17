@@ -310,9 +310,6 @@ class RemoveCodeCacheTester {
     GetCache(cache)->WriteData(url, origin_lock, base::Time::Now(),
                                data_vector);
     base::RunLoop().RunUntilIdle();
-    // TODO(crbug.com/886892): Remove this once we update GeneratedCodeCache
-    // to serialize operations corresponding to each entry.
-    content::RunAllTasksUntilIdle();
   }
 
   std::string received_data() { return received_data_; }
