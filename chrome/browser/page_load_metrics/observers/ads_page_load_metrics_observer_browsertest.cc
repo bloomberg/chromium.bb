@@ -251,8 +251,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
       "AdFrames",
       1, 1);
   histogram_tester.ExpectUniqueSample(
-      "PageLoad.Clients.Ads.SubresourceFilter.Bytes.AdFrames.Aggregate.Total",
-      0 /* < 1 KB */, 1);
+      "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Total", 0 /* < 1 KB */, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
@@ -502,7 +501,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       "Ads.ResourceUsage.Size.Network.Subframe.AdResource", 2);
 
   histogram_tester.ExpectBucketCount(
-      "PageLoad.Clients.Ads.Resources.Bytes.Total", 4, 1);
+      "PageLoad.Clients.Ads.Bytes.FullPage.Network", 4, 1);
   // We have received 4 KB of ads and 1 KB of toplevel ads.
   histogram_tester.ExpectBucketCount("PageLoad.Clients.Ads.Resources.Bytes.Ads",
                                      4, 1);
@@ -512,6 +511,65 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   // 4 resources loaded, one unfinished.
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.Ads.Resources.Bytes.Unfinished", 1, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       IncompleteResourcesRecordedToFrameMetrics) {
+  base::HistogramTester histogram_tester;
+  SetRulesetWithRules(
+      {subresource_filter::testing::CreateSuffixRule("ad_iframe_writer.js")});
+  embedded_test_server()->ServeFilesFromSourceDirectory(
+      "chrome/test/data/ads_observer");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+
+  const char kHttpResponseHeader[] =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n";
+  auto incomplete_resource_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/incomplete_resource.js",
+          true /*relative_url_is_prefix*/);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+
+  browser()->OpenURL(content::OpenURLParams(
+      embedded_test_server()->GetURL("/ad_with_incomplete_resource.html"),
+      content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      ui::PAGE_TRANSITION_TYPED, false));
+
+  waiter->AddMinimumCompleteResourcesExpectation(3);
+  waiter->Wait();
+  int64_t initial_page_bytes = waiter->current_network_bytes();
+
+  // Ad resource will not finish loading but should be reported to metrics.
+  incomplete_resource_response->WaitForRequest();
+  incomplete_resource_response->Send(kHttpResponseHeader);
+  incomplete_resource_response->Send(std::string(2048, ' '));
+
+  // Wait for the resource update to be received for the incomplete response.
+  waiter->AddMinimumNetworkBytesExpectation(2048);
+  waiter->Wait();
+
+  // Close all tabs instead of navigating as the embedded_test_server will
+  // hang waiting for loads to finish when we have an unfinished
+  // ControlledHttpResponse.
+  browser()->tab_strip_model()->CloseAllTabs();
+
+  int expected_page_kilobytes = (initial_page_bytes + 2048) / 1024;
+
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.Ads.Bytes.FullPage.Network", expected_page_kilobytes,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Network", 2, 1);
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Total", 2, 1);
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Network", 2, 1);
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Total", 2, 1);
 }
 
 // Verify that per-resource metrics are reported for cached resources and

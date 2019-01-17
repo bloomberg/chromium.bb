@@ -115,8 +115,7 @@ class ResourceLoadingCancellingThrottle
 };
 
 std::string SuffixedHistogram(const std::string& suffix) {
-  return base::StringPrintf("PageLoad.Clients.Ads.SubresourceFilter.%s",
-                            suffix.c_str());
+  return base::StringPrintf("PageLoad.Clients.Ads.%s", suffix.c_str());
 }
 
 // Verifies that the histograms match what is expected.
@@ -155,8 +154,9 @@ void TestHistograms(const base::HistogramTester& histograms,
 
   // Test the histograms.
   histograms.ExpectUniqueSample(
-      SuffixedHistogram("FrameCounts.AnyParentFrame.AdFrames"), ad_frame_count,
-      1);
+      SuffixedHistogram(
+          "SubresourceFilter.FrameCounts.AnyParentFrame.AdFrames"),
+      ad_frame_count, 1);
 
   if (ad_frame_count == 0)
     return;
@@ -318,8 +318,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithNoAds) {
 
   // Verify that other UMA wasn't written.
   histogram_tester().ExpectTotalCount(
-      "PageLoad.Clients.Ads.SubresourceFilter.Bytes.AdFrames.Aggregate.Total",
-      0);
+      "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Total", 0);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, PageWithAds) {
@@ -603,8 +602,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, MainFrameResource) {
   // There shouldn't be any other histograms for a page with no ad
   // resources.
   EXPECT_EQ(1u, histogram_tester()
-                    .GetTotalCountsForPrefix(
-                        "PageLoad.Clients.Ads.SubresourceFilter.")
+                    .GetTotalCountsForPrefix("PageLoad.Clients.Ads.")
                     .size());
 }
 
@@ -629,8 +627,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, NoHistogramWithoutCommit) {
 
   // There shouldn't be any histograms for an aborted main frame.
   EXPECT_EQ(0u, histogram_tester()
-                    .GetTotalCountsForPrefix(
-                        "PageLoad.Clients.Ads.SubresourceFilter.")
+                    .GetTotalCountsForPrefix("PageLoad.Clients.Ads.")
                     .size());
 }
 
