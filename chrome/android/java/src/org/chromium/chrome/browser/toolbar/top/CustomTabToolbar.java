@@ -43,6 +43,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
@@ -532,7 +533,8 @@ public class CustomTabToolbar
     }
 
     @Override
-    public void initializeControls(WindowDelegate windowDelegate, WindowAndroid windowAndroid) {}
+    public void initializeControls(WindowDelegate windowDelegate, WindowAndroid windowAndroid,
+            ActivityTabProvider provider) {}
 
     @Override
     public void updateStatusIcon() {

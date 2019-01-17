@@ -20,6 +20,8 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
@@ -30,6 +32,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator.S
 import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionView.SuggestionViewDelegate;
+import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.content_public.browser.WebContents;
@@ -83,6 +86,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
     private final List<Runnable> mDeferredNativeRunnables = new ArrayList<Runnable>();
     private final Handler mHandler;
     private final BasicSuggestionProcessor mBasicSuggestionProcessor;
+    private EditUrlSuggestionProcessor mEditUrlProcessor;
 
     private ToolbarDataProvider mDataProvider;
     private boolean mNativeInitialized;
@@ -139,6 +143,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
         mAutocomplete = new AutocompleteController(this);
         mHandler = new Handler();
         mBasicSuggestionProcessor = new BasicSuggestionProcessor(mContext, this, textProvider);
+        mEditUrlProcessor = new EditUrlSuggestionProcessor(
+                delegate, (suggestion) -> onSelection(suggestion, 0));
     }
 
     /**
@@ -245,11 +251,25 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
     void onNativeInitialized() {
         mNativeInitialized = true;
 
+        // The feature is instantiated in the constructor to simplify plumbing. If the feature is
+        // actually disabled, null out the coordinator.
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SEARCH_READY_OMNIBOX)) {
+            mEditUrlProcessor.destroy();
+            mEditUrlProcessor = null;
+        }
+
         for (Runnable deferredRunnable : mDeferredNativeRunnables) {
             mHandler.post(deferredRunnable);
         }
         mDeferredNativeRunnables.clear();
         mBasicSuggestionProcessor.onNativeInitialized();
+    }
+
+    /**
+     * @param provider A means of accessing the activity tab.
+     */
+    void setActivityTabProvider(ActivityTabProvider provider) {
+        if (mEditUrlProcessor != null) mEditUrlProcessor.setActivityTabProvider(provider);
     }
 
     /** @see org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlFocusChange(boolean) */
@@ -274,6 +294,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
             hideSuggestions();
         }
         mBasicSuggestionProcessor.onUrlFocusChange(hasFocus);
+        if (mEditUrlProcessor != null) mEditUrlProcessor.onUrlFocusChange(hasFocus);
     }
 
     /**
@@ -621,6 +642,9 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
      * @return The appropriate suggestion processor for the provided suggestion.
      */
     private SuggestionProcessor getProcessorForSuggestion(OmniboxSuggestion suggestion) {
+        if (mEditUrlProcessor != null && mEditUrlProcessor.doesProcessSuggestion(suggestion)) {
+            return mEditUrlProcessor;
+        }
         return mBasicSuggestionProcessor;
     }
 
