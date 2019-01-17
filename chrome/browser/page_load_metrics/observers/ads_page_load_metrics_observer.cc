@@ -28,7 +28,7 @@
 namespace {
 
 #define ADS_HISTOGRAM(suffix, hist_macro, value) \
-  hist_macro("PageLoad.Clients.Ads.SubresourceFilter." suffix, value);
+  hist_macro("PageLoad.Clients.Ads." suffix, value);
 
 #define RESOURCE_BYTES_HISTOGRAM(suffix, was_cached, value)                \
   if (was_cached) {                                                        \
@@ -77,7 +77,7 @@ AdsPageLoadMetricsObserver::AdFrameData::AdFrameData(
     AdOriginStatus origin_status,
     bool frame_navigated)
     : frame_bytes(0u),
-      frame_bytes_uncached(0u),
+      frame_network_bytes(0u),
       frame_tree_node_id(frame_tree_node_id),
       origin_status(origin_status),
       frame_navigated(frame_navigated) {}
@@ -366,23 +366,24 @@ void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
     return;
   }
 
-  if (resource->is_complete) {
+  // |delta_bytes| only includes bytes used by the network.
+  page_bytes_ += resource->delta_bytes;
+  page_network_bytes_ += resource->delta_bytes;
+  if (resource->is_complete && resource->was_fetched_via_cache)
     page_bytes_ += resource->encoded_body_length;
-    if (!resource->was_fetched_via_cache)
-      uncached_page_bytes_ += resource->encoded_body_length;
-  }
 
   // Determine if the frame (or its ancestor) is an ad, if so attribute the
   // bytes to the highest ad ancestor.
   AdFrameData* ancestor_data = id_and_data->second;
+  if (!ancestor_data)
+    return;
 
-  if (ancestor_data) {
-    if (resource->is_complete) {
-      ancestor_data->frame_bytes += resource->encoded_body_length;
-      if (!resource->was_fetched_via_cache)
-        ancestor_data->frame_bytes_uncached += resource->encoded_body_length;
-    }
-  }
+  ancestor_data->frame_bytes += resource->delta_bytes;
+  ancestor_data->frame_network_bytes += resource->delta_bytes;
+
+  // Report cached resource body bytes to overall frame bytes.
+  if (resource->is_complete && resource->was_fetched_via_cache)
+    ancestor_data->frame_bytes += resource->encoded_body_length;
 }
 
 AdsPageLoadMetricsObserver::ResourceMimeType
@@ -419,7 +420,6 @@ void AdsPageLoadMetricsObserver::UpdateResource(
   if (it == page_resources_.end())
     total_number_page_resources_++;
 
-  page_resource_bytes_ += resource->delta_bytes;
   if (resource->reported_as_ad_resource) {
     // If the resource had already started loading, and is now labeled as an ad,
     // but was not before, we need to account for all the previously received
@@ -518,8 +518,6 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
   // Only records histograms on pages that have some ad bytes.
   if (page_ad_resource_bytes_ == 0)
     return;
-  PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.Total",
-                       page_resource_bytes_);
   PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.Ads",
                        page_ad_resource_bytes_);
   PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.TopLevelAds",
@@ -532,7 +530,7 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
 
   auto* ukm_recorder = ukm::UkmRecorder::Get();
   ukm::builders::AdPageLoad builder(source_id);
-  builder.SetTotalBytes(page_resource_bytes_ >> 10)
+  builder.SetTotalBytes(page_bytes_ >> 10)
       .SetAdBytes(page_ad_resource_bytes_ >> 10)
       .SetAdJavascriptBytes(page_ad_javascript_bytes_ >> 10)
       .SetAdVideoBytes(page_ad_video_bytes_ >> 10);
@@ -571,7 +569,7 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging() {
 
   int non_zero_ad_frames = 0;
   size_t total_ad_frame_bytes = 0;
-  size_t uncached_ad_frame_bytes = 0;
+  size_t ad_frame_network_bytes = 0;
 
   for (const AdFrameData& ad_frame_data : ad_frames_data_storage_) {
     if (ad_frame_data.frame_bytes == 0)
@@ -579,23 +577,23 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging() {
 
     non_zero_ad_frames += 1;
     total_ad_frame_bytes += ad_frame_data.frame_bytes;
+    ad_frame_network_bytes += ad_frame_data.frame_network_bytes;
 
-    uncached_ad_frame_bytes += ad_frame_data.frame_bytes_uncached;
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.Total", PAGE_BYTES_HISTOGRAM,
                   ad_frame_data.frame_bytes);
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.Network", PAGE_BYTES_HISTOGRAM,
-                  ad_frame_data.frame_bytes_uncached);
+                  ad_frame_data.frame_network_bytes);
     ADS_HISTOGRAM(
         "Bytes.AdFrames.PerFrame.PercentNetwork", UMA_HISTOGRAM_PERCENTAGE,
-
-        ad_frame_data.frame_bytes_uncached * 100 / ad_frame_data.frame_bytes);
-    ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.OriginStatus",
-                  UMA_HISTOGRAM_ENUMERATION, ad_frame_data.origin_status);
+        ad_frame_data.frame_network_bytes * 100 / ad_frame_data.frame_bytes);
+    ADS_HISTOGRAM(
+        "SubresourceFilter.FrameCounts.AdFrames.PerFrame.OriginStatus",
+        UMA_HISTOGRAM_ENUMERATION, ad_frame_data.origin_status);
   }
 
   // TODO(ericrobinson): Consider renaming this to match
   //   'FrameCounts.AdFrames.PerFrame.OriginStatus'.
-  ADS_HISTOGRAM("FrameCounts.AnyParentFrame.AdFrames",
+  ADS_HISTOGRAM("SubresourceFilter.FrameCounts.AnyParentFrame.AdFrames",
                 UMA_HISTOGRAM_COUNTS_1000, non_zero_ad_frames);
 
   // Don't post UMA for pages that don't have ads.
@@ -607,27 +605,26 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging() {
 
   ADS_HISTOGRAM("Bytes.FullPage.Total", PAGE_BYTES_HISTOGRAM, page_bytes_);
   ADS_HISTOGRAM("Bytes.FullPage.Network", PAGE_BYTES_HISTOGRAM,
-                uncached_page_bytes_);
+                page_network_bytes_);
 
   if (page_bytes_) {
     ADS_HISTOGRAM("Bytes.FullPage.Total.PercentAds", UMA_HISTOGRAM_PERCENTAGE,
                   total_ad_frame_bytes * 100 / page_bytes_);
   }
-  if (uncached_page_bytes_ > 0) {
+  if (page_network_bytes_ > 0) {
     ADS_HISTOGRAM("Bytes.FullPage.Network.PercentAds", UMA_HISTOGRAM_PERCENTAGE,
-
-                  uncached_ad_frame_bytes * 100 / uncached_page_bytes_);
+                  ad_frame_network_bytes * 100 / page_network_bytes_);
   }
 
   ADS_HISTOGRAM("Bytes.AdFrames.Aggregate.Total", PAGE_BYTES_HISTOGRAM,
                 total_ad_frame_bytes);
   ADS_HISTOGRAM("Bytes.AdFrames.Aggregate.Network", PAGE_BYTES_HISTOGRAM,
-                uncached_ad_frame_bytes);
+                ad_frame_network_bytes);
 
   if (total_ad_frame_bytes) {
     ADS_HISTOGRAM("Bytes.AdFrames.Aggregate.PercentNetwork",
                   UMA_HISTOGRAM_PERCENTAGE,
-                  uncached_ad_frame_bytes * 100 / total_ad_frame_bytes);
+                  ad_frame_network_bytes * 100 / total_ad_frame_bytes);
   }
 }
 

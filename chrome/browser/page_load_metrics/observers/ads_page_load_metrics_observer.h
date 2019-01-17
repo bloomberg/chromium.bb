@@ -86,10 +86,10 @@ class AdsPageLoadMetricsObserver
     AdFrameData(FrameTreeNodeId frame_tree_node_id,
                 AdOriginStatus origin_status,
                 bool frame_navigated);
-
-    // Total prefilter (body) bytes loaded for complete resources.
+    // Total bytes used to load resources on the page, including headers.
     size_t frame_bytes;
-    size_t frame_bytes_uncached;
+    size_t frame_network_bytes;
+
     const FrameTreeNodeId frame_tree_node_id;
     AdOriginStatus origin_status;
     bool frame_navigated;
@@ -177,7 +177,6 @@ class AdsPageLoadMetricsObserver
   // entire page.
   size_t page_ad_javascript_bytes_ = 0u;
   size_t page_ad_video_bytes_ = 0u;
-  size_t page_resource_bytes_ = 0u;
   size_t page_ad_resource_bytes_ = 0u;
   size_t page_main_frame_ad_resource_bytes_ = 0u;
   uint32_t total_number_page_resources_ = 0;
@@ -192,7 +191,7 @@ class AdsPageLoadMetricsObserver
   size_t page_ad_resource_bytes_since_interactive_ = 0u;
 
   size_t page_bytes_ = 0u;
-  size_t uncached_page_bytes_ = 0u;
+  size_t page_network_bytes_ = 0u;
   bool committed_ = false;
 
   ScopedObserver<subresource_filter::SubresourceFilterObserverManager,
