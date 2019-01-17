@@ -7,7 +7,6 @@
 #include "ash/keyboard/ash_keyboard_ui.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -54,7 +53,10 @@ void AshKeyboardController::EnableKeyboard() {
       keyboard_ui_factory_ ? keyboard_ui_factory_->CreateKeyboardUI()
                            : std::make_unique<AshKeyboardUI>(this),
       virtual_keyboard_controller_.get());
-  ActivateKeyboard();
+
+  // Start preloading the virtual keyboard UI in the background, so that it
+  // shows up faster when needed.
+  keyboard_controller_->LoadKeyboardWindowInBackground();
 }
 
 void AshKeyboardController::DisableKeyboard() {
@@ -218,10 +220,6 @@ void AshKeyboardController::OnSessionStateChanged(
     return;
 
   switch (state) {
-    case session_manager::SessionState::OOBE:
-    case session_manager::SessionState::LOGIN_PRIMARY:
-      ActivateKeyboard();
-      break;
     case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
     case session_manager::SessionState::ACTIVE:
       // Reload the keyboard on user profile change to refresh keyboard
@@ -238,42 +236,13 @@ void AshKeyboardController::OnSessionStateChanged(
 
 // private methods
 
-void AshKeyboardController::ActivateKeyboard() {
-  ActivateKeyboardForRoot(Shell::Get()->GetPrimaryRootWindowController());
-}
-
-void AshKeyboardController::ActivateKeyboardForRoot(
-    RootWindowController* controller) {
-  DCHECK(controller);
-  // If the keyboard is already activated, do nothing.
-  if (!keyboard_controller_->IsEnabled() ||
-      keyboard_controller_->GetRootWindow()) {
-    if (keyboard_controller_->GetRootWindow() != controller->GetRootWindow()) {
-      LOG(ERROR)
-          << "Tried to activate an already activated virtual keyboard on a "
-             "different root window";
-    }
-    return;
-  }
-
-  aura::Window* container =
-      controller->GetContainer(kShellWindowId_VirtualKeyboardContainer);
-  DCHECK(container);
-  keyboard_controller_->ActivateKeyboardInContainer(container);
-  keyboard_controller_->LoadKeyboardWindowInBackground();
-}
-
-void AshKeyboardController::DeactivateKeyboard() {
-  if (!keyboard_controller_->IsEnabled() ||
-      !keyboard_controller_->GetRootWindow()) {
-    return;
-  }
-  keyboard_controller_->DeactivateKeyboard();
-}
-
 void AshKeyboardController::OnRootWindowClosing(aura::Window* root_window) {
-  if (keyboard_controller_->GetRootWindow() == root_window)
-    DeactivateKeyboard();
+  if (keyboard_controller_->GetRootWindow() == root_window) {
+    aura::Window* new_parent =
+        virtual_keyboard_controller_->GetContainerForDefaultDisplay();
+    DCHECK_NE(root_window, new_parent);
+    keyboard_controller_->MoveToParentContainer(new_parent);
+  }
 }
 
 void AshKeyboardController::UpdateEnableFlag(bool was_enabled) {

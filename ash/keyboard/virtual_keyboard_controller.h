@@ -49,8 +49,9 @@ class ASH_EXPORT VirtualKeyboardController
   void ToggleIgnoreExternalKeyboard();
 
   // keyboard::KeyboardLayoutDelegate:
-  void MoveKeyboardToDisplay(const display::Display& display) override;
-  void MoveKeyboardToTouchableDisplay() override;
+  aura::Window* GetContainerForDefaultDisplay() override;
+  aura::Window* GetContainerForDisplay(
+      const display::Display& display) override;
 
   // keyboard::KeyboardControllerObserver:
   void OnKeyboardEnabledChanged(bool is_enabled) override;

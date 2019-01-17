@@ -430,24 +430,3 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
   EXPECT_EQ(controller->GetStateForTest(),
             keyboard::KeyboardControllerState::INITIAL);
 }
-
-// A test for crbug.com/734534. Only for classic Ash.
-IN_PROC_BROWSER_TEST_F(KeyboardControllerWebContentTest,
-                       DoesNotCrashWhenParentDoesNotExist) {
-  if (::features::IsUsingWindowService())
-    return;
-  auto* controller = keyboard::KeyboardController::Get();
-
-  controller->LoadKeyboardWindowInBackground();
-
-  aura::Window* view = controller->GetKeyboardWindow();
-  EXPECT_TRUE(view);
-
-  // Remove the keyboard window parent.
-  EXPECT_TRUE(view->parent());
-  controller->DeactivateKeyboard();
-  EXPECT_FALSE(view->parent());
-
-  // Change window size to trigger OnWindowBoundsChanged.
-  view->SetBounds(gfx::Rect(0, 0, 1200, 800));
-}
