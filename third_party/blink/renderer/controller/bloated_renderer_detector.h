@@ -29,18 +29,20 @@ class CONTROLLER_EXPORT BloatedRendererDetector {
 
  private:
   friend class BloatedRendererDetectorTest;
+  FRIEND_TEST_ALL_PREFIXES(BloatedRendererDetectorTest, CooldownTime);
   FRIEND_TEST_ALL_PREFIXES(BloatedRendererDetectorTest, ForwardToBrowser);
-  FRIEND_TEST_ALL_PREFIXES(BloatedRendererDetectorTest, SmallUptime);
+  FRIEND_TEST_ALL_PREFIXES(BloatedRendererDetectorTest, MultipleDetections);
 
-  // The minimum uptime after which bloated renderer detection starts.
-  static const int kMinimumUptimeInMinutes = 10;
+  // The time which should pass between 2 successive detections of bloated
+  // renderer.
+  static const int kMinimumCooldownInMinutes = 10;
 
-  explicit BloatedRendererDetector(WTF::TimeTicks startup_time)
-      : startup_time_(startup_time) {}
+  explicit BloatedRendererDetector(WTF::TimeTicks time)
+      : last_detection_time_(time) {}
 
   NearV8HeapLimitHandling OnNearV8HeapLimitOnMainThreadImpl();
 
-  const WTF::TimeTicks startup_time_;
+  WTF::TimeTicks last_detection_time_;
 };
 
 }  // namespace blink

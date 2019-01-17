@@ -131,13 +131,6 @@ size_t NearHeapLimitCallbackOnMainThread(void* data,
                                          size_t current_heap_limit,
                                          size_t initial_heap_limit) {
   v8::Isolate* isolate = reinterpret_cast<v8::Isolate*>(data);
-  V8PerIsolateData* per_isolate_data = V8PerIsolateData::From(isolate);
-  if (per_isolate_data->IsNearV8HeapLimitHandled()) {
-    // Ignore all calls after the first one.
-    return current_heap_limit;
-  }
-  per_isolate_data->HandledNearV8HeapLimit();
-
   // Find the main document for UKM recording.
   Document* document = nullptr;
   int pages = 0;
@@ -174,12 +167,6 @@ size_t NearHeapLimitCallbackOnWorkerThread(void* data,
                                            size_t current_heap_limit,
                                            size_t initial_heap_limit) {
   v8::Isolate* isolate = reinterpret_cast<v8::Isolate*>(data);
-  V8PerIsolateData* per_isolate_data = V8PerIsolateData::From(isolate);
-  if (per_isolate_data->IsNearV8HeapLimitHandled()) {
-    // Ignore all calls after the first one.
-    return current_heap_limit;
-  }
-  per_isolate_data->HandledNearV8HeapLimit();
   // Do not record UKM on worker thread.
   Record(NearV8HeapLimitHandling::kIgnoredDueToWorker, isolate,
          current_heap_limit, nullptr, 0);
@@ -731,6 +718,7 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
     DCHECK(g_near_heap_limit_on_main_thread_callback_);
     isolate->AddNearHeapLimitCallback(NearHeapLimitCallbackOnMainThread,
                                       isolate);
+    isolate->AutomaticallyRestoreInitialHeapLimit();
   }
   isolate->SetFatalErrorHandler(ReportFatalErrorInMainThread);
   isolate->AddMessageListenerWithErrorLevel(

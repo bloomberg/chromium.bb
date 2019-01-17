@@ -11,30 +11,43 @@ namespace blink {
 
 class BloatedRendererDetectorTest : public testing::Test {
  public:
-  static TimeDelta GetMockLargeUptime() {
+  static TimeDelta GetMockAfterCooldown() {
     return TimeDelta::FromMinutes(
-        BloatedRendererDetector::kMinimumUptimeInMinutes + 1);
+        BloatedRendererDetector::kMinimumCooldownInMinutes + 1);
   }
 
-  static TimeDelta GetMockSmallUptime() {
+  static TimeDelta GetMockBeforeCooldown() {
     return TimeDelta::FromMinutes(
-        BloatedRendererDetector::kMinimumUptimeInMinutes - 1);
+        BloatedRendererDetector::kMinimumCooldownInMinutes - 1);
   }
 };
 
 TEST_F(BloatedRendererDetectorTest, ForwardToBrowser) {
   WTF::ScopedMockClock clock;
-  clock.Advance(GetMockLargeUptime());
+  clock.Advance(GetMockAfterCooldown());
   BloatedRendererDetector detector(TimeTicks{});
   EXPECT_EQ(NearV8HeapLimitHandling::kForwardedToBrowser,
             detector.OnNearV8HeapLimitOnMainThreadImpl());
 }
 
-TEST_F(BloatedRendererDetectorTest, SmallUptime) {
+TEST_F(BloatedRendererDetectorTest, CooldownTime) {
   WTF::ScopedMockClock clock;
-  clock.Advance(GetMockSmallUptime());
+  clock.Advance(GetMockBeforeCooldown());
   BloatedRendererDetector detector(TimeTicks{});
-  EXPECT_EQ(NearV8HeapLimitHandling::kIgnoredDueToSmallUptime,
+  EXPECT_EQ(NearV8HeapLimitHandling::kIgnoredDueToCooldownTime,
+            detector.OnNearV8HeapLimitOnMainThreadImpl());
+}
+
+TEST_F(BloatedRendererDetectorTest, MultipleDetections) {
+  WTF::ScopedMockClock clock;
+  clock.Advance(GetMockAfterCooldown());
+  BloatedRendererDetector detector(TimeTicks{});
+  EXPECT_EQ(NearV8HeapLimitHandling::kForwardedToBrowser,
+            detector.OnNearV8HeapLimitOnMainThreadImpl());
+  EXPECT_EQ(NearV8HeapLimitHandling::kIgnoredDueToCooldownTime,
+            detector.OnNearV8HeapLimitOnMainThreadImpl());
+  clock.Advance(GetMockAfterCooldown());
+  EXPECT_EQ(NearV8HeapLimitHandling::kForwardedToBrowser,
             detector.OnNearV8HeapLimitOnMainThreadImpl());
 }
 

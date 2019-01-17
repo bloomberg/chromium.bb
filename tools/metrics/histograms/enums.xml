@@ -35911,6 +35911,7 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Ignored due to small uptime of the renderer process"/>
   <int value="2" label="Ignored because V8 heap limit was already changed"/>
   <int value="3" label="Ignored worker isolate"/>
+  <int value="4" label="Ignored due to cooldown time"/>
 </enum>
 
 <enum name="NegativeSampleReason">

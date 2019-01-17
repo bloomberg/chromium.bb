@@ -44,7 +44,8 @@ enum class NearV8HeapLimitHandling {
   kIgnoredDueToSmallUptime = 1,
   kIgnoredDueToChangedHeapLimit = 2,
   kIgnoredDueToWorker = 3,
-  kMaxValue = kIgnoredDueToWorker
+  kIgnoredDueToCooldownTime = 4,
+  kMaxValue = kIgnoredDueToCooldownTime
 };
 
 // A callback function called when V8 reaches the heap limit.
