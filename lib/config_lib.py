@@ -1098,14 +1098,13 @@ def DefaultSettings():
 
 
 def GerritInstanceParameters(name, instance):
-  GOB_HOST = '%s.googlesource.com'
   param_names = ['_GOB_INSTANCE', '_GERRIT_INSTANCE', '_GOB_HOST',
                  '_GERRIT_HOST', '_GOB_URL', '_GERRIT_URL']
 
   gob_instance = instance
   gerrit_instance = '%s-review' % instance
-  gob_host = GOB_HOST % gob_instance
-  gerrit_host = GOB_HOST % gerrit_instance
+  gob_host = constants.GOB_HOST % gob_instance
+  gerrit_host = constants.GOB_HOST % gerrit_instance
   gob_url = 'https://%s' % gob_host
   gerrit_url = 'https://%s' % gerrit_host
 
@@ -1120,9 +1119,6 @@ def DefaultSiteParameters():
   # All site parameters should be documented.
   default_site_params = {}
 
-  # Helper variables for defining site parameters.
-  gob_host = '%s.googlesource.com'
-
   manifest_project = 'chromiumos/manifest'
   manifest_int_project = 'chromeos/manifest-internal'
   external_remote = 'cros'
@@ -1136,7 +1132,6 @@ def DefaultSiteParameters():
   external_change_prefix = ''
 
   # Gerrit instance site parameters.
-  default_site_params.update(GOB_HOST=gob_host)
   default_site_params.update(
       GerritInstanceParameters('EXTERNAL', 'chromium'))
   default_site_params.update(

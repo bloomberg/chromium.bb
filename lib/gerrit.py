@@ -10,6 +10,7 @@ from __future__ import print_function
 import operator
 
 from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
@@ -74,7 +75,7 @@ class GerritHelper(object):
   def FromGob(cls, gob, **kwargs):
     """Return a helper for a GoB instance."""
     site_params = config_lib.GetSiteParams()
-    host = site_params.GOB_HOST % ('%s-review' % gob)
+    host = constants.GOB_HOST % ('%s-review' % gob)
     # TODO(phobbs) this will be wrong when "gob" isn't in GOB_REMOTES.
     # We should get rid of remotes altogether and just use the host.
     return cls(host, site_params.GOB_REMOTES.get(gob, gob), **kwargs)

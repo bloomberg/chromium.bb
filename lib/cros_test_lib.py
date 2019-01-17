@@ -1196,7 +1196,7 @@ class GerritTestCase(MockTempDirTestCase):
   def _create_gerrit_instance(self, tmp_dir):
     default_host = 't3st-chr0m3'
     git_host = os.environ.get('CROS_TEST_GIT_HOST',
-                              '%s.googlesource.com' % default_host)
+                              constants.GOB_HOST % default_host)
     gerrit_host = os.environ.get('CROS_TEST_GERRIT_HOST',
                                  '%s-review.googlesource.com' % default_host)
     ip = socket.gethostbyname(socket.gethostname())
