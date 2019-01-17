@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
+#include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -44,6 +45,7 @@ KeyframeEffect* CreateKeyframeEffect(Element* element) {
 WorkletAnimation* CreateWorkletAnimation(
     ScriptState* script_state,
     Element* element,
+    const String& animator_name,
     ScrollTimeline* scroll_timeline = nullptr) {
   AnimationEffectOrAnimationEffectSequence effects;
   AnimationEffect* effect = CreateKeyframeEffect(element);
@@ -55,7 +57,7 @@ WorkletAnimation* CreateWorkletAnimation(
 
   ScriptState::Scope scope(script_state);
   DummyExceptionStateForTesting exception_state;
-  return WorkletAnimation::Create(script_state, "WorkletAnimation", effects,
+  return WorkletAnimation::Create(script_state, animator_name, effects,
                                   timeline, std::move(options),
                                   exception_state);
 }
@@ -70,7 +72,14 @@ class WorkletAnimationTest : public RenderingTest {
   void SetUp() override {
     RenderingTest::SetUp();
     element_ = GetDocument().CreateElementForBinding("test");
-    worklet_animation_ = CreateWorkletAnimation(GetScriptState(), element_);
+    // Animator has to be registored before constructing WorkletAnimation. For
+    // unit test this is faked by adding the animator name to
+    // WorkletAnimationController.
+    animator_name_ = "WorkletAnimationTest";
+    GetDocument().GetWorkletAnimationController().SynchronizeAnimatorName(
+        animator_name_);
+    worklet_animation_ =
+        CreateWorkletAnimation(GetScriptState(), element_, animator_name_);
   }
 
   ScriptState* GetScriptState() {
@@ -79,6 +88,7 @@ class WorkletAnimationTest : public RenderingTest {
 
   Persistent<Element> element_;
   Persistent<WorkletAnimation> worklet_animation_;
+  String animator_name_;
 };
 
 TEST_F(WorkletAnimationTest, WorkletAnimationInElementAnimations) {
@@ -159,8 +169,8 @@ TEST_F(WorkletAnimationTest,
   options->setScrollSource(GetElementById("scroller"));
   ScrollTimeline* scroll_timeline =
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
-  WorkletAnimation* worklet_animation =
-      CreateWorkletAnimation(GetScriptState(), element_, scroll_timeline);
+  WorkletAnimation* worklet_animation = CreateWorkletAnimation(
+      GetScriptState(), element_, animator_name_, scroll_timeline);
   WorkletAnimationId id = worklet_animation->GetWorkletAnimationId();
 
   DummyExceptionStateForTesting exception_state;
