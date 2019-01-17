@@ -276,20 +276,20 @@ class CookiesTreeModelTest : public testing::Test {
     switch (node_type) {
       case CookieTreeNode::DetailedInfo::TYPE_SESSION_STORAGE:
         return node->GetDetailedInfo().session_storage_info->origin_url.spec() +
-            ",";
+               ",";
       case CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE:
         return node->GetDetailedInfo().local_storage_info->origin_url.spec() +
-            ",";
+               ",";
       case CookieTreeNode::DetailedInfo::TYPE_DATABASE:
         return node->GetDetailedInfo().database_info->database_name + ",";
       case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
         return node->GetDetailedInfo().cookie->Name() + ",";
       case CookieTreeNode::DetailedInfo::TYPE_APPCACHE:
-        return node->GetDetailedInfo().appcache_info->manifest_url.spec() +
-            ",";
+        return node->GetDetailedInfo().appcache_info->manifest_url.spec() + ",";
       case CookieTreeNode::DetailedInfo::TYPE_INDEXED_DB:
-        return node->GetDetailedInfo().indexed_db_info->origin.GetURL().spec() +
-               ",";
+      case CookieTreeNode::DetailedInfo::TYPE_SERVICE_WORKER:
+      case CookieTreeNode::DetailedInfo::TYPE_CACHE_STORAGE:
+        return node->GetDetailedInfo().usage_info->origin.GetURL().spec() + ",";
       case CookieTreeNode::DetailedInfo::TYPE_FILE_SYSTEM:
         return node->GetDetailedInfo()
                    .file_system_info->origin.GetURL()
@@ -297,18 +297,8 @@ class CookiesTreeModelTest : public testing::Test {
                ",";
       case CookieTreeNode::DetailedInfo::TYPE_QUOTA:
         return node->GetDetailedInfo().quota_info->host + ",";
-      case CookieTreeNode::DetailedInfo::TYPE_SERVICE_WORKER:
-        return node->GetDetailedInfo()
-                   .service_worker_info->origin.GetURL()
-                   .spec() +
-               ",";
       case CookieTreeNode::DetailedInfo::TYPE_SHARED_WORKER:
         return node->GetDetailedInfo().shared_worker_info->worker.spec() + ",";
-      case CookieTreeNode::DetailedInfo::TYPE_CACHE_STORAGE:
-        return node->GetDetailedInfo()
-                   .cache_storage_info->origin.GetURL()
-                   .spec() +
-               ",";
       case CookieTreeNode::DetailedInfo::TYPE_FLASH_LSO:
         return node->GetDetailedInfo().flash_lso_domain + ",";
       case CookieTreeNode::DetailedInfo::TYPE_MEDIA_LICENSE:
