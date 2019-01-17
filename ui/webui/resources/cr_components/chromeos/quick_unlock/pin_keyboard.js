@@ -185,7 +185,7 @@ Polymer({
    * @param {number=} opt_selectionStart
    * @param {number=} opt_selectionEnd
    */
-  focus: function(opt_selectionStart, opt_selectionEnd) {
+  focusInput: function(opt_selectionStart, opt_selectionEnd) {
     setTimeout(function() {
       this.passwordElement_().focus();
       this.selectionStart_ = opt_selectionStart || 0;
@@ -197,11 +197,11 @@ Polymer({
    * Transfers focus to the input. Called when a non button element on the
    * PIN button area is clicked to prevent focus from leaving the input.
    */
-  focusInput_: function() {
+  onRootTap_: function() {
     // Focus the input and place the selected region to its exact previous
     // location, as this function will not be called by something that will also
     // modify the input value.
-    this.focus(this.selectionStart_, this.selectionEnd_);
+    this.focusInput(this.selectionStart_, this.selectionEnd_);
   },
 
   /** @private */
@@ -233,7 +233,7 @@ Polymer({
     // button is tabbed into, it should keep focus, so users can use tab and
     // spacebar/return to enter their PIN.
     if (!event.target.receivedFocusFromKeyboard) {
-      this.focus(selectionStart + 1, selectionStart + 1);
+      this.focusInput(selectionStart + 1, selectionStart + 1);
     }
     event.stopImmediatePropagation();
   },
@@ -266,7 +266,7 @@ Polymer({
     // selected region of the input element. If it is just a caret, remove the
     // character in front of the caret.
     let selectionStart = this.selectionStart_;
-    let selectionEnd = this.selectionEnd_;
+    const selectionEnd = this.selectionEnd_;
     if (selectionStart == selectionEnd && selectionStart) {
       selectionStart--;
     }
@@ -312,7 +312,7 @@ Polymer({
     }.bind(this), INITIAL_BACKSPACE_DELAY_MS);
 
     if (!event.target.receivedFocusFromKeyboard) {
-      this.focus(this.selectionStart_, this.selectionEnd_);
+      this.focusInput(this.selectionStart_, this.selectionEnd_);
     }
     event.stopImmediatePropagation();
   },
@@ -344,11 +344,11 @@ Polymer({
 
     // Since on-down gives the input element focus, the input element will
     // already have focus when on-up is called. This will actually bring up the
-    // virtual keyboard, even if focus() is wrapped in a setTimeout. Blur the
-    // input element first to workaround this.
+    // virtual keyboard, even if focusInput() is wrapped in a setTimeout. Blur
+    // the input element first to workaround this.
     this.blur();
     if (!event.target.receivedFocusFromKeyboard) {
-      this.focus(this.selectionStart_, this.selectionEnd_);
+      this.focusInput(this.selectionStart_, this.selectionEnd_);
     }
     event.stopImmediatePropagation();
   },
