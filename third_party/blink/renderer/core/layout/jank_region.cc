@@ -144,9 +144,8 @@ class SegmentTree {
 };
 
 SegmentTree::SegmentTree(const BasicIntervals& intervals)
-    : intervals_(intervals) {
-  nodes_.resize(ComputeCapacity(intervals.NumIntervals()));
-}
+    : intervals_(intervals),
+      nodes_(ComputeCapacity(intervals.NumIntervals())) {}
 
 inline void SegmentTree::RefSegment(Segment segment) {
   Visit(0, RootSegment(), segment, 1);
