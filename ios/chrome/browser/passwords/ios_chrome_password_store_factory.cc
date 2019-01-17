@@ -9,7 +9,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -49,7 +49,8 @@ IOSChromePasswordStoreFactory::GetForBrowserState(
 
 // static
 IOSChromePasswordStoreFactory* IOSChromePasswordStoreFactory::GetInstance() {
-  return base::Singleton<IOSChromePasswordStoreFactory>::get();
+  static base::NoDestructor<IOSChromePasswordStoreFactory> instance;
+  return instance.get();
 }
 
 // static
