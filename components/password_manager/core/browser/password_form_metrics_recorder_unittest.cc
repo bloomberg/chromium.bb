@@ -894,8 +894,8 @@ TEST(PasswordFormMetricsRecorder, FillingAssistanceUserTypedPassword) {
        .saved_usernames = {"user1", "user2"},
        .saved_passwords = {"password1", "password2"},
 
-       .expectation =
-           PasswordFormMetricsRecorder::FillingAssistance::kPasswordTyped});
+       .expectation = PasswordFormMetricsRecorder::FillingAssistance::
+           kKnownPasswordTyped});
 }
 
 TEST(PasswordFormMetricsRecorder, FillingAssistanceUserTypedUsername) {
@@ -927,7 +927,7 @@ TEST(PasswordFormMetricsRecorder, FillingAssistanceUserTypedNewCredentials) {
        .saved_passwords = {"password1", "password2"},
 
        .expectation = PasswordFormMetricsRecorder::FillingAssistance::
-           kNewCredentialsTyped});
+           kNewPasswordTypedWhileCredentialsExisted});
 }
 
 TEST(PasswordFormMetricsRecorder, FillingAssistanceChangePasswordForm) {

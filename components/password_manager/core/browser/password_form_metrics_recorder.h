@@ -259,10 +259,9 @@ class PasswordFormMetricsRecorder
     // typed.
     kUsernameTypedPasswordFilled = 2,
     // Known password was typed.
-    kPasswordTyped = 3,
-    // Unknown credentials were typed (neither username nor password were known)
-    // while some credentials were stored.
-    kNewCredentialsTyped = 4,
+    kKnownPasswordTyped = 3,
+    // Unknown password was typed while some credentials were stored.
+    kNewPasswordTypedWhileCredentialsExisted = 4,
     // No saved credentials.
     kNoSavedCredentials = 5,
     // Neither user input nor filling.
