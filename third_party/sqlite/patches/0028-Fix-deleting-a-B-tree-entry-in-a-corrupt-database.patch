@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Tue, 15 Jan 2019 20:35:58 -0800
+Subject: [PATCH 28/30] Fix deleting a B-tree entry in a corrupt database.
+
+This backports https://sqlite.org/src/info/682053d1e603c21b
+
+Bug: 921894
+---
+ third_party/sqlite/src/src/btree.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/third_party/sqlite/src/src/btree.c b/third_party/sqlite/src/src/btree.c
+index 13342288934d..9b5745558514 100644
+--- a/third_party/sqlite/src/src/btree.c
++++ b/third_party/sqlite/src/src/btree.c
+@@ -8642,6 +8642,7 @@ int sqlite3BtreeDelete(BtCursor *pCur, u8 flags){
+   if( bPreserve ){
+     if( !pPage->leaf
+      || (pPage->nFree+cellSizePtr(pPage,pCell)+2)>(int)(pBt->usableSize*2/3)
++     || pPage->nCell==1  /* See dbfuzz001.test for a test case */
+     ){
+       /* A b-tree rebalance will be required after deleting this entry.
+       ** Save the cursor key.  */
+--
+2.18.0
+

@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Victor Costan <pwnall@chromium.org>
+Date: Wed, 16 Jan 2019 12:46:56 -0800
+Subject: [PATCH 29/30] Fix sorting results with SRT_EphemTab and a LIMIT
+ clause.
+
+This backports https://www.sqlite.org/src/info/49fcde2f1f981ac0
+
+Bug: 922312
+---
+ third_party/sqlite/src/src/select.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/third_party/sqlite/src/src/select.c b/third_party/sqlite/src/src/select.c
+index fab4df68fa17..c68c1ddc643d 100644
+--- a/third_party/sqlite/src/src/select.c
++++ b/third_party/sqlite/src/src/select.c
+@@ -1457,8 +1457,13 @@ static void generateSortTail(
+     regRow = pDest->iSdst;
+   }else{
+     regRowid = sqlite3GetTempReg(pParse);
++    if( eDest==SRT_EphemTab || eDest==SRT_Table ){
++      regRow = sqlite3GetTempReg(pParse);
++      nColumn = 0;
++    }else{
+       regRow = sqlite3GetTempRange(pParse, nColumn);
+     }
++  }
+   nKey = pOrderBy->nExpr - pSort->nOBSat;
+   if( pSort->sortFlags & SORTFLAG_UseSorter ){
+     int regSortOut = ++pParse->nMem;
+@@ -1537,6 +1542,7 @@ static void generateSortTail(
+   switch( eDest ){
+     case SRT_Table:
+     case SRT_EphemTab: {
++      sqlite3VdbeAddOp3(v, OP_Column, iSortTab, nKey+bSeq, regRow);
+       sqlite3VdbeAddOp2(v, OP_NewRowid, iParm, regRowid);
+       sqlite3VdbeAddOp3(v, OP_Insert, iParm, regRow, regRowid);
+       sqlite3VdbeChangeP5(v, OPFLAG_APPEND);
+--
+2.18.0
+
