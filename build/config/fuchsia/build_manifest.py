@@ -179,13 +179,13 @@ def BuildManifest(root_dir, out_dir, app_name, app_filename,
     # Compute the set of dynamic libraries used by the application or its
     # transitive dependencies (dist libs and components), and merge the result
     # with |expanded_files| so that they are included in the manifest.
-
-    # TODO(https://crbug.com/861931): Temporarily just include all |dist_libs|.
-    #expanded_files = expanded_files.union(
-    #    ComputeTransitiveLibDeps(
-    #        app_filename,
-    #        {os.path.basename(f): f for f in expanded_files.union(dist_libs)}))
-    expanded_files = expanded_files.union(dist_libs)
+    #
+    # TODO(crbug.com/861931): Make sure that deps of the files in data_deps
+    # (binaries and libraries) are included as well.
+    expanded_files = expanded_files.union(
+       ComputeTransitiveLibDeps(
+           app_filename,
+           {os.path.basename(f): f for f in expanded_files.union(dist_libs)}))
 
     # Format and write out the manifest contents.
     gen_dir = os.path.join(out_dir, "gen")
