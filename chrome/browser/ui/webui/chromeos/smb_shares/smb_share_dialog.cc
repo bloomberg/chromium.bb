@@ -19,7 +19,7 @@ namespace chromeos {
 namespace smb_dialog {
 namespace {
 
-constexpr int kSmbShareDialogHeight = 442;
+constexpr int kSmbShareDialogHeight = 522;
 
 void AddSmbSharesStrings(content::WebUIDataSource* html_source) {
   // Add strings specific to smb_dialog.
