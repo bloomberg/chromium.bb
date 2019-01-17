@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill_assistant;
+package org.chromium.chrome.browser.autofill_assistant.header;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -20,7 +20,7 @@ import java.util.Queue;
  * Wrapper around {@link MaterialProgressBar} to animate progress changes and enable/disable
  * pulsing.
  */
-public class AnimatedProgressBar {
+class AnimatedProgressBar {
     // The number of ms the progress bar would take to go from 0 to 100%.
     private static final int PROGRESS_BAR_SPEED_MS = 3_000;
     private static final int PROGRESS_BAR_PULSING_DURATION_MS = 1_000;
@@ -34,7 +34,7 @@ public class AnimatedProgressBar {
     private Queue<ValueAnimator> mPendingIncreaseAnimations = new ArrayDeque<>();
     private ValueAnimator mPulseAnimation;
 
-    public AnimatedProgressBar(MaterialProgressBar progressBar, int normalColor, int pulsedColor) {
+    AnimatedProgressBar(MaterialProgressBar progressBar, int normalColor, int pulsedColor) {
         mProgressBar = progressBar;
         mNormalColor = normalColor;
         mPulsedColor = pulsedColor;

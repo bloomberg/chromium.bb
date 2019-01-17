@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.content.Context;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
@@ -11,33 +12,34 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.chromium.base.Callback;
+import org.chromium.base.Promise;
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
-/** Class for managing the first run screen. */
-class FirstRunScreen {
+/**
+ * Coordinator responsible for showing the onboarding screen when the user is using the Autofill
+ * Assistant for the first time.
+ */
+class AssistantOnboardingCoordinator {
     /**
-     * Shows the first run screen and calls callback with the result.
+     * Shows the onboarding screen and returns whether we should proceed.
      */
-    static void show(ChromeActivity activity, Callback<Boolean> callback) {
-        ViewGroup coordinatorView = (ViewGroup) activity.findViewById(
-                org.chromium.chrome.autofill_assistant.R.id.coordinator);
-        View initView = LayoutInflater.from(activity)
-                                .inflate(R.layout.init_screen, coordinatorView)
-                                .findViewById(R.id.init_screen);
+    static Promise<Boolean> show(Context context, ViewGroup root) {
+        Promise<Boolean> promise = new Promise<>();
+        View initView = LayoutInflater.from(context)
+                                .inflate(R.layout.autofill_assistant_onboarding, root)
+                                .findViewById(R.id.assistant_onboarding);
 
         TextView termsTextView = initView.findViewById(R.id.google_terms_message);
-        String termsString = activity.getApplicationContext().getString(
+        String termsString = context.getApplicationContext().getString(
                 R.string.autofill_assistant_google_terms_description);
 
         NoUnderlineClickableSpan termsSpan = new NoUnderlineClickableSpan(
                 (widget)
-                        -> CustomTabActivity.showInfoPage(activity.getApplicationContext(),
-                                activity.getApplicationContext().getString(
+                        -> CustomTabActivity.showInfoPage(context.getApplicationContext(),
+                                context.getApplicationContext().getString(
                                         R.string.autofill_assistant_google_terms_url)));
         SpannableString spannableMessage = SpanApplier.applySpans(
                 termsString, new SpanApplier.SpanInfo("<link>", "</link>", termsSpan));
@@ -45,23 +47,21 @@ class FirstRunScreen {
         termsTextView.setMovementMethod(LinkMovementMethod.getInstance());
 
         // Set focusable for accessibility.
-        initView.findViewById(R.id.init).setFocusable(true);
+        initView.setFocusable(true);
 
         initView.findViewById(R.id.button_init_ok)
-                .setOnClickListener(unusedView -> onClicked(true, initView, activity, callback));
+                .setOnClickListener(unusedView -> onClicked(true, root, initView, promise));
         initView.findViewById(R.id.button_init_not_ok)
-                .setOnClickListener(unusedView -> onClicked(false, initView, activity, callback));
+                .setOnClickListener(unusedView -> onClicked(false, root, initView, promise));
         initView.announceForAccessibility(
-                activity.getString(R.string.autofill_assistant_first_run_accessibility));
+                context.getString(R.string.autofill_assistant_first_run_accessibility));
+        return promise;
     }
 
     private static void onClicked(
-            boolean accept, View initView, ChromeActivity activity, Callback<Boolean> callback) {
-        ViewGroup coordinatorView = (ViewGroup) activity.findViewById(
-                org.chromium.chrome.autofill_assistant.R.id.coordinator);
+            boolean accept, ViewGroup root, View initView, Promise<Boolean> promise) {
         AutofillAssistantPreferencesUtil.setInitialPreferences(accept);
-        coordinatorView.removeView(initView);
-
-        callback.onResult(accept);
+        root.removeView(initView);
+        promise.fulfill(accept);
     }
 }

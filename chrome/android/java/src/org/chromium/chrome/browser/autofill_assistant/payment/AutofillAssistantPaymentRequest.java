@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill_assistant;
+package org.chromium.chrome.browser.autofill_assistant.payment;
 
 import android.content.Context;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.util.ArrayMap;
 import android.text.TextUtils;
-import android.view.ViewGroup;
+import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
-import org.chromium.chrome.browser.autofill_assistant.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.AddressEditor;
 import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.AutofillContact;
@@ -154,7 +153,7 @@ public class AutofillAssistantPaymentRequest {
      * @param container View to replace with the payment request.
      * @param callback The callback to return payment information.
      */
-    /* package */ void show(ViewGroup container, Callback<SelectedPaymentInformation> callback) {
+    public void show(View container, Callback<SelectedPaymentInformation> callback) {
         // Do not expect calling show multiple times.
         assert mCallback == null;
         assert mUI == null;

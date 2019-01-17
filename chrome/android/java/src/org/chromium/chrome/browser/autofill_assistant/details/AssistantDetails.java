@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill_assistant;
+package org.chromium.chrome.browser.autofill_assistant.details;
 
 import android.support.annotation.Nullable;
 
@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * Java side equivalent of autofill_assistant::DetailsProto.
  */
-class Details {
+public class AssistantDetails {
     private final String mTitle;
     private final String mUrl;
     @Nullable
@@ -31,19 +31,20 @@ class Details {
     private boolean mHighlightTitle;
     /** Whether the date should be highlighted. */
     private boolean mHighlightDate;
+    /** Whether empty fields should have the animated placeholder background. */
+    private final boolean mShowPlaceholdersForEmptyFields;
     /**
      * The correctly formatted price for the client locale, including the currency.
      * Example: '$20.50' or '20.50 €'.
      */
-    @Nullable
     private final String mPrice;
     // NOTE: When adding a new field, update the clearChangedFlags and toJSONObject methods.
 
     private static final String RFC_3339_FORMAT_WITHOUT_TIMEZONE = "yyyy'-'MM'-'dd'T'HH':'mm':'ss";
 
-    Details(String title, String url, @Nullable Date date, String description, String mId,
-            @Nullable String price, boolean userApprovalRequired, boolean highlightTitle,
-            boolean highlightDate) {
+    public AssistantDetails(String title, String url, @Nullable Date date, String description,
+            String mId, @Nullable String price, boolean userApprovalRequired,
+            boolean highlightTitle, boolean highlightDate, boolean showPlaceholdersForEmptyFields) {
         this.mTitle = title;
         this.mUrl = url;
         this.mDate = date;
@@ -53,6 +54,7 @@ class Details {
         this.mUserApprovalRequired = userApprovalRequired;
         this.mHighlightTitle = highlightTitle;
         this.mHighlightDate = highlightDate;
+        this.mShowPlaceholdersForEmptyFields = showPlaceholdersForEmptyFields;
     }
 
     String getTitle() {
@@ -81,7 +83,7 @@ class Details {
         return mPrice;
     }
 
-    JSONObject toJSONObject() throws JSONException {
+    public JSONObject toJSONObject() throws JSONException {
         // Details are part of the feedback form, hence they need a JSON representation.
         JSONObject jsonRepresentation = new JSONObject();
         jsonRepresentation.put("title", mTitle);
@@ -96,7 +98,7 @@ class Details {
         return jsonRepresentation;
     }
 
-    boolean getUserApprovalRequired() {
+    public boolean getUserApprovalRequired() {
         return mUserApprovalRequired;
     }
 
@@ -108,10 +110,14 @@ class Details {
         return mHighlightDate;
     }
 
+    boolean getShowPlaceholdersForEmptyFields() {
+        return mShowPlaceholdersForEmptyFields;
+    }
+
     /**
      * Clears all flags that indicate that this Details object has been changed.
      */
-    void clearChangedFlags() {
+    public void clearChangedFlags() {
         mUserApprovalRequired = false;
         mHighlightTitle = false;
         mHighlightDate = false;
@@ -123,7 +129,7 @@ class Details {
      * @return A new instance or null if no field could be inferred.
      */
     @Nullable
-    static Details makeFromParameters(Map<String, String> parameters) {
+    public static AssistantDetails makeFromParameters(Map<String, String> parameters) {
         String title = "";
         String description = "";
         Date date = null;
@@ -163,8 +169,8 @@ class Details {
 
         if (empty) return null;
 
-        return new Details(title, /* url= */ "", date, description, mId, /* price= */ null,
+        return new AssistantDetails(title, /* url= */ "", date, description, mId, /* price= */ "",
                 /* userApprovalRequired= */ false, /* highlightTitle= */ false,
-                /* highlightDate= */ false);
+                /* highlightDate= */ false, /* showPlaceholdersForEmptyFields= */ true);
     }
 }

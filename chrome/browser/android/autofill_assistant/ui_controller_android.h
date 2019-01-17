@@ -25,6 +25,10 @@ class UiControllerAndroid : public UiController {
                       UiDelegate* ui_delegate);
   ~UiControllerAndroid() override;
 
+  // Called by ClientAndroid.
+  void ShowOnboarding(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& on_accept);
+
   // Overrides UiController:
   void ShowStatusMessage(const std::string& message) override;
   std::string GetStatusMessage() override;

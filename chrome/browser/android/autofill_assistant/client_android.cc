@@ -89,16 +89,22 @@ ClientAndroid::~ClientAndroid() {
                                               java_object_);
 }
 
+void ClientAndroid::ShowOnboarding(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jobject>& on_accept) {
+  GetUiController()->ShowOnboarding(env, on_accept);
+}
+
 base::android::ScopedJavaLocalRef<jobject> ClientAndroid::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(java_object_);
 }
 
-void ClientAndroid::Autostart(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller,
-    const JavaParamRef<jstring>& jinitial_url,
-    const JavaParamRef<jobjectArray>& parameterNames,
-    const JavaParamRef<jobjectArray>& parameterValues) {
+void ClientAndroid::Start(JNIEnv* env,
+                          const JavaParamRef<jobject>& jcaller,
+                          const JavaParamRef<jstring>& jinitial_url,
+                          const JavaParamRef<jobjectArray>& parameterNames,
+                          const JavaParamRef<jobjectArray>& parameterValues) {
   CreateController();
   GURL initial_url(base::android::ConvertJavaStringToUTF8(env, jinitial_url));
   std::map<std::string, std::string> parameters;
@@ -160,8 +166,11 @@ std::string ClientAndroid::GetServerUrl() {
   return kAutofillAssistantServerUrl.Get();
 }
 
-UiController* ClientAndroid::GetUiController() {
-  DCHECK(controller_);
+UiControllerAndroid* ClientAndroid::GetUiController() {
+  if (!controller_) {
+    CreateController();
+  }
+
   if (!ui_controller_android_ && controller_) {
     ui_controller_android_ = std::make_unique<UiControllerAndroid>(
         web_contents_, /* client= */ this, controller_.get());

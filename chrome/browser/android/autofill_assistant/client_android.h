@@ -39,12 +39,15 @@ class ClientAndroid : public Client,
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
   // Called from the Java side:
-  void Autostart(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jcaller,
-      const base::android::JavaParamRef<jstring>& jinitial_url,
-      const base::android::JavaParamRef<jobjectArray>& parameterNames,
-      const base::android::JavaParamRef<jobjectArray>& parameterValues);
+  void ShowOnboarding(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& jcaller,
+                      const base::android::JavaParamRef<jobject>& on_accept);
+
+  void Start(JNIEnv* env,
+             const base::android::JavaParamRef<jobject>& jcaller,
+             const base::android::JavaParamRef<jstring>& jinitial_url,
+             const base::android::JavaParamRef<jobjectArray>& parameterNames,
+             const base::android::JavaParamRef<jobjectArray>& parameterValues);
   base::android::ScopedJavaLocalRef<jstring> GetPrimaryAccountName(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
@@ -59,7 +62,7 @@ class ClientAndroid : public Client,
   AccessTokenFetcher* GetAccessTokenFetcher() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   std::string GetServerUrl() override;
-  UiController* GetUiController() override;
+  UiControllerAndroid* GetUiController() override;
   std::string GetLocale() override;
   std::string GetCountryCode() override;
   void Stop() override;
