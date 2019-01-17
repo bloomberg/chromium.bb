@@ -699,8 +699,7 @@ NTPTilesVector MostVisitedSites::InsertHomeTile(
 
 void MostVisitedSites::OnCustomLinksChanged() {
   DCHECK(custom_links_);
-  DCHECK(custom_links_->IsInitialized());
-  if (custom_links_enabled_)
+  if (custom_links_enabled_ && custom_links_->IsInitialized())
     BuildCustomLinks(custom_links_->GetLinks());
 }
 
