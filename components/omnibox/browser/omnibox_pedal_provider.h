@@ -18,7 +18,8 @@ class OmniboxPedalProvider {
   explicit OmniboxPedalProvider(AutocompleteProviderClient& client);
   ~OmniboxPedalProvider();
 
-  // Returns the Pedal triggered by given match_text or nullptr if none trigger.
+  // Returns the Pedal triggered by given |match_text| or nullptr if none
+  // trigger.
   OmniboxPedal* FindPedalMatch(const base::string16& match_text) const;
 
  protected:

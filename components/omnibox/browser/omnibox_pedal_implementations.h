@@ -8,7 +8,24 @@
 #include <memory>
 #include <vector>
 
-class OmniboxPedal;
+#include "build/build_config.h"
+#include "components/omnibox/browser/omnibox_pedal.h"
+
+class OmniboxPedalClearBrowsingData : public OmniboxPedal {
+ public:
+  OmniboxPedalClearBrowsingData();
+#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+  const gfx::VectorIcon& GetVectorIcon() const override;
+#endif
+};
+
+class OmniboxPedalUpdateChrome : public OmniboxPedal {
+ public:
+  OmniboxPedalUpdateChrome();
+  void Execute(ExecutionContext& context) const override;
+  bool IsReadyToTrigger(
+      const AutocompleteProviderClient& client) const override;
+};
 
 // Returns the full set of encapsulated OmniboxPedal implementations.
 std::vector<std::unique_ptr<OmniboxPedal>> GetPedalImplementations();

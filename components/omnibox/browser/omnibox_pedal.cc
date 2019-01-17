@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/omnibox_pedal.h"
 
+#include <cctype>
+
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
@@ -21,8 +23,61 @@ OmniboxPedal::LabelStrings::LabelStrings(int id_hint,
       hint_short(l10n_util::GetStringUTF16(id_hint_short)),
       suggestion_contents(l10n_util::GetStringUTF16(id_suggestion_contents)) {}
 
-OmniboxPedal::OmniboxPedal(OmniboxPedal::LabelStrings strings)
-    : strings_(strings) {}
+// =============================================================================
+
+OmniboxPedal::SynonymGroup::SynonymGroup(
+    bool required,
+    std::initializer_list<const char*> synonyms)
+    : required_(required) {
+  // The DCHECK logic below is quickly ensuring that the synonyms are provided
+  // in descending order of string length.
+#if DCHECK_IS_ON()
+  size_t min_size = std::numeric_limits<std::size_t>::max();
+#endif
+  synonyms_.reserve(synonyms.size());
+  for (const char* synonym : synonyms) {
+    synonyms_.push_back(base::ASCIIToUTF16(synonym));
+#if DCHECK_IS_ON()
+    size_t size = synonyms_.back().size();
+    DCHECK_LE(size, min_size);
+    min_size = size;
+#endif
+  }
+}
+
+OmniboxPedal::SynonymGroup::SynonymGroup(const SynonymGroup& other) = default;
+
+OmniboxPedal::SynonymGroup::~SynonymGroup() = default;
+
+bool OmniboxPedal::SynonymGroup::EraseFirstMatchIn(
+    base::string16& remaining) const {
+  for (const auto& synonym : synonyms_) {
+    const size_t pos = remaining.find(synonym);
+    if (pos != base::string16::npos) {
+      remaining.erase(pos, synonym.size());
+      return true;
+    }
+  }
+  return !required_;
+}
+
+// =============================================================================
+
+OmniboxPedal::OmniboxPedal(
+    LabelStrings strings,
+    GURL url,
+    std::initializer_list<const char*> triggers,
+    std::initializer_list<const SynonymGroup> synonym_groups)
+    : strings_(strings), url_(url) {
+  triggers_.reserve(triggers.size());
+  for (const char* trigger : triggers) {
+    triggers_.insert(base::ASCIIToUTF16(trigger));
+  }
+  synonym_groups_.reserve(synonym_groups.size());
+  for (const SynonymGroup& group : synonym_groups) {
+    synonym_groups_.push_back(group);
+  }
+}
 
 OmniboxPedal::~OmniboxPedal() {}
 
@@ -67,7 +122,20 @@ const gfx::VectorIcon& OmniboxPedal::GetVectorIcon() const {
 #endif
 
 bool OmniboxPedal::IsTriggerMatch(const base::string16& match_text) const {
-  return triggers_.find(match_text) != triggers_.end();
+  return (triggers_.find(match_text) != triggers_.end()) ||
+         IsConceptMatch(match_text);
+}
+
+bool OmniboxPedal::IsConceptMatch(const base::string16& match_text) const {
+  base::string16 remaining = match_text;
+  for (const auto& group : synonym_groups_) {
+    if (!group.EraseFirstMatchIn(remaining))
+      return false;
+  }
+  // If any non-space is remaining, it means there is something in match_text
+  // that was not covered by groups, so conservatively treat it as non-match.
+  const auto is_space = [](auto c) { return std::isspace(c); };
+  return std::all_of(remaining.begin(), remaining.end(), is_space);
 }
 
 void OmniboxPedal::OpenURL(OmniboxPedal::ExecutionContext& context,

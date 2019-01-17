@@ -5,51 +5,72 @@
 #include "components/omnibox/browser/omnibox_pedal.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
-#include "base/time/time.h"
-#include "components/omnibox/browser/mock_autocomplete_provider_client.h"
+#include "components/omnibox/browser/omnibox_pedal_implementations.h"
 #include "components/omnibox/browser/omnibox_pedal_provider.h"
-#include "components/omnibox/browser/test_omnibox_client.h"
-#include "components/omnibox/browser/test_omnibox_edit_controller.h"
+#include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 class OmniboxPedalTest : public testing::Test {
  protected:
-  OmniboxPedalTest()
-      : omnibox_client_(new TestOmniboxClient),
-        omnibox_edit_controller_(new TestOmniboxEditController) {}
-
-  base::test::ScopedTaskEnvironment task_environment_;
-  std::unique_ptr<TestOmniboxClient> omnibox_client_;
-  std::unique_ptr<TestOmniboxEditController> omnibox_edit_controller_;
+  OmniboxPedalTest() {}
 };
 
-TEST_F(OmniboxPedalTest, PedalExecutes) {
-  MockAutocompleteProviderClient client;
-  OmniboxPedalProvider provider(client);
-  base::TimeTicks match_selection_timestamp;
-  OmniboxPedal::ExecutionContext context(
-      *omnibox_client_, *omnibox_edit_controller_, match_selection_timestamp);
-  {
-    const base::string16 trigger = base::ASCIIToUTF16("clear history");
-    const OmniboxPedal* pedal = provider.FindPedalMatch(trigger);
-    EXPECT_NE(pedal, nullptr) << "Pedal not registered or not triggered.";
-    EXPECT_TRUE(pedal->IsTriggerMatch(trigger));
-    pedal->Execute(context);
-    const GURL& url = omnibox_edit_controller_->destination_url();
-    EXPECT_EQ(url, GURL("chrome://settings/clearBrowserData"));
-  }
+TEST_F(OmniboxPedalTest, SynonymGroupErasesFirstMatchOnly) {
+  const auto group = OmniboxPedal::SynonymGroup(true, {
+                                                          "hello",
+                                                          "hi",
+                                                      });
+  base::string16 text = base::ASCIIToUTF16("hello hi world");
+  const bool found = group.EraseFirstMatchIn(text);
+  EXPECT_TRUE(found);
+  // Only the first representative should be removed.
+  EXPECT_EQ(text, base::ASCIIToUTF16(" hi world"));
 }
 
-TEST_F(OmniboxPedalTest, PedalIsFiltered) {
-  MockAutocompleteProviderClient client;
-  OmniboxPedalProvider provider(client);
-  const base::string16 trigger = base::ASCIIToUTF16("update chrome");
-  const OmniboxPedal* pedal = provider.FindPedalMatch(trigger);
-  EXPECT_EQ(pedal, nullptr) << "Pedal not filtered by condition.";
-  client.set_browser_update_available(true);
-  pedal = provider.FindPedalMatch(trigger);
-  EXPECT_NE(pedal, nullptr) << "Pedal not discovered though condition is met.";
-  EXPECT_TRUE(pedal->IsTriggerMatch(trigger));
+TEST_F(OmniboxPedalTest, SynonymGroupsDriveConceptMatches) {
+  OmniboxPedal test_pedal(
+      OmniboxPedal::LabelStrings(
+          IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT,
+          IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT_SHORT,
+          IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUGGESTION_CONTENTS),
+      GURL(),
+      {
+          "test trigger phrase",
+      },
+      {
+          OmniboxPedal::SynonymGroup(false,
+                                     {
+                                         "optional",
+                                     }),
+          OmniboxPedal::SynonymGroup(true,
+                                     {
+                                         "required_a",
+                                     }),
+          OmniboxPedal::SynonymGroup(true,
+                                     {
+                                         "required_b",
+                                     }),
+      });
+  const auto is_concept_match = [&](const char* text) {
+    return test_pedal.IsConceptMatch(base::ASCIIToUTF16(text));
+  };
+
+  // As long as required synonym groups are present, order shouldn't matter.
+  EXPECT_TRUE(is_concept_match("required_a required_b"));
+  EXPECT_TRUE(is_concept_match("required_b required_a"));
+
+  // Optional groups may be added without stopping trigger.
+  EXPECT_TRUE(is_concept_match("required_a required_b optional"));
+  EXPECT_TRUE(is_concept_match("required_a optional required_b"));
+  EXPECT_TRUE(is_concept_match("optional required_b required_a"));
+
+  // Any required group's absence will stop trigger.
+  EXPECT_FALSE(is_concept_match("required_a optional"));
+  EXPECT_FALSE(is_concept_match("nonsense"));
+  EXPECT_FALSE(is_concept_match("nonsense optional"));
+
+  // Presence of extra text will stop trigger even with all required present.
+  EXPECT_FALSE(is_concept_match("required_a required_b nonsense optional"));
+  EXPECT_FALSE(is_concept_match("required_b required_a nonsense"));
 }
