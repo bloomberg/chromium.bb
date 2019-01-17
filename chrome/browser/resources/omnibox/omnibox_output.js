@@ -48,7 +48,6 @@ cr.define('omnibox_output', function() {
     updateDisplayInputs(displayInputs) {
       this.displayInputs_ = displayInputs;
       this.updateVisibility_();
-      this.updateEliding_();
     }
 
     /** @param {string} filterText */
@@ -144,13 +143,6 @@ cr.define('omnibox_output', function() {
             this.displayInputs_.showDetails,
             this.displayInputs_.showAllProviders);
       });
-    }
-
-    /** @private */
-    updateEliding_() {
-      this.resultsGroups_.forEach(
-          resultsGroup =>
-              resultsGroup.updateEliding(this.displayInputs_.elideCells));
     }
 
     /** @private */
@@ -305,11 +297,6 @@ cr.define('omnibox_output', function() {
       // Show certain columns only if they showDetails is true.
       this.autocompleteMatches.forEach(
           match => match.updateVisibility(showDetails));
-    }
-
-    /** @param {boolean} elideCells */
-    updateEliding(elideCells) {
-      this.matches.forEach(match => match.updateEliding(elideCells));
     }
 
     /**
@@ -468,12 +455,6 @@ cr.define('omnibox_output', function() {
         this.properties[column.matchKey].hidden =
             !showDetails && !column.displayAlways;
       });
-    }
-
-    /** @param {boolean} elideCells */
-    updateEliding(elideCells) {
-      Object.values(this.properties)
-          .forEach(property => property.classList.toggle('elided', elideCells));
     }
 
     /** @param {string} filterText */
