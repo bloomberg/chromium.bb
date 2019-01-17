@@ -128,17 +128,15 @@
       }
     </style>
     <div id="banner" hidden="[[syncStatus.signedIn]]"></div>
-    <div class="settings-box first two-line" id="promo-header"
-        hidden="[[syncStatus.signedIn]]">
+    <div class$="settings-box first
+                 [[getPromoHeaderClass_(subLabel_)]]"
+        id="promo-header" hidden="[[syncStatus.signedIn]]">
       <div class="start settings-box-text">
         <div id="promo-title">
           [[getLabel_(promoLabelWithAccount,
               promoLabelWithNoAccount, shownAccount_)]]
         </div>
-        <div class="secondary">
-          [[getLabel_(promoSecondaryLabelWithAccount,
-              promoSecondaryLabelWithNoAccount, shownAccount_)]]
-        </div>
+        <div class="secondary">[[subLabel_]]</div>
       </div>
       <div id="promo-separator" class="separator"
           hidden="[[shouldShowAvatarRow_]]"></div>
