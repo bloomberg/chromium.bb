@@ -32,7 +32,8 @@ namespace {
 const int kThumbnailSizeInDP = 64;
 
 bool ShouldShowDownloadItem(const download::DownloadItem* item) {
-  return !item->IsTemporary() && !item->IsTransient() && !item->IsDangerous();
+  return !item->IsTemporary() && !item->IsTransient() && !item->IsDangerous() &&
+         !item->GetTargetFilePath().empty();
 }
 
 }  // namespace
