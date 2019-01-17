@@ -7,15 +7,10 @@
 
 #include <map>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "ios/chrome/browser/voice/speech_input_locale_config.h"
 
 class SpeechInputLocaleConfigImplTest;
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 namespace voice {
 
@@ -62,7 +57,7 @@ class SpeechInputLocaleConfigImpl : public SpeechInputLocaleConfig {
   // Populates |text_to_speech_languages_| with the available locales.
   void InitializeTextToSpeechLangauges();
 
-  friend struct base::DefaultSingletonTraits<SpeechInputLocaleConfigImpl>;
+  friend class base::NoDestructor<SpeechInputLocaleConfigImpl>;
   friend class ::SpeechInputLocaleConfigImplTest;
 
   // The list of available speech input locales.
