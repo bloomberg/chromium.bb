@@ -13,6 +13,7 @@
 #include "android_webview/browser/net_helpers.h"
 #include "android_webview/browser/net_network_service/android_stream_reader_url_loader.h"
 #include "android_webview/browser/renderer_host/auto_login_parser.h"
+#include "base/android/build_info.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -166,6 +167,13 @@ void InterceptedRequest::Restart() {
       AwWebResourceRequest(request_),
       base::BindOnce(&InterceptedRequest::InterceptResponseReceived,
                      weak_factory_.GetWeakPtr()));
+
+  // We send the application's package name in the X-Requested-With header for
+  // compatibility with previous WebView versions. This should not be visible to
+  // shouldInterceptRequest.
+  request_.headers.SetHeaderIfMissing(
+      "X-Requested-With",
+      base::android::BuildInfo::GetInstance()->host_package_name());
 }
 
 void InterceptedRequest::InterceptResponseReceived(

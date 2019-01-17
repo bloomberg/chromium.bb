@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -43,62 +42,6 @@ import java.util.concurrent.CountDownLatch;
 public class AwContentsClientShouldInterceptRequestTest {
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
-
-    private static class ShouldInterceptRequestClient extends TestAwContentsClient {
-
-        public static class ShouldInterceptRequestHelper extends CallbackHelper {
-            private List<String> mShouldInterceptRequestUrls = new ArrayList<String>();
-            private ConcurrentHashMap<String, AwWebResourceResponse> mReturnValuesByUrls =
-                    new ConcurrentHashMap<String, AwWebResourceResponse>();
-            private ConcurrentHashMap<String, AwWebResourceRequest> mRequestsByUrls =
-                    new ConcurrentHashMap<String, AwWebResourceRequest>();
-            // This is read on another thread, so needs to be marked volatile.
-            private volatile AwWebResourceResponse mShouldInterceptRequestReturnValue;
-            void setReturnValue(AwWebResourceResponse value) {
-                mShouldInterceptRequestReturnValue = value;
-            }
-            void setReturnValueForUrl(String url, AwWebResourceResponse value) {
-                mReturnValuesByUrls.put(url, value);
-            }
-            public List<String> getUrls() {
-                assert getCallCount() > 0;
-                return mShouldInterceptRequestUrls;
-            }
-            public AwWebResourceResponse getReturnValue(String url) {
-                AwWebResourceResponse value = mReturnValuesByUrls.get(url);
-                if (value != null) return value;
-                return mShouldInterceptRequestReturnValue;
-            }
-            public AwWebResourceRequest getRequestsForUrl(String url) {
-                assert getCallCount() > 0;
-                assert mRequestsByUrls.containsKey(url);
-                return mRequestsByUrls.get(url);
-            }
-            public void notifyCalled(AwWebResourceRequest request) {
-                mShouldInterceptRequestUrls.add(request.url);
-                mRequestsByUrls.put(request.url, request);
-                notifyCalled();
-            }
-        }
-
-        @Override
-        public AwWebResourceResponse shouldInterceptRequest(AwWebResourceRequest request) {
-            AwWebResourceResponse returnValue =
-                    mShouldInterceptRequestHelper.getReturnValue(request.url);
-            mShouldInterceptRequestHelper.notifyCalled(request);
-            return returnValue;
-        }
-
-        private ShouldInterceptRequestHelper mShouldInterceptRequestHelper;
-
-        public ShouldInterceptRequestClient() {
-            mShouldInterceptRequestHelper = new ShouldInterceptRequestHelper();
-        }
-
-        public ShouldInterceptRequestHelper getShouldInterceptRequestHelper() {
-            return mShouldInterceptRequestHelper;
-        }
-    }
 
     private static final int TEAPOT_STATUS_CODE = 418;
     private static final String TEAPOT_RESPONSE_PHRASE = "I'm a teapot";
@@ -124,14 +67,14 @@ public class AwContentsClientShouldInterceptRequestTest {
     }
 
     private TestWebServer mWebServer;
-    private ShouldInterceptRequestClient mContentsClient;
+    private TestAwContentsClient mContentsClient;
     private AwTestContainerView mTestContainerView;
     private AwContents mAwContents;
-    private ShouldInterceptRequestClient.ShouldInterceptRequestHelper mShouldInterceptRequestHelper;
+    private TestAwContentsClient.ShouldInterceptRequestHelper mShouldInterceptRequestHelper;
 
     @Before
     public void setUp() throws Exception {
-        mContentsClient = new ShouldInterceptRequestClient();
+        mContentsClient = new TestAwContentsClient();
         mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = mTestContainerView.getAwContents();
         mShouldInterceptRequestHelper = mContentsClient.getShouldInterceptRequestHelper();
@@ -289,7 +232,7 @@ public class AwContentsClientShouldInterceptRequestTest {
     @Feature({"AndroidWebView"})
     public void testOnLoadResourceCalledWithCorrectUrl() throws Throwable {
         final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
-        final ShouldInterceptRequestClient.OnLoadResourceHelper onLoadResourceHelper =
+        final TestAwContentsClient.OnLoadResourceHelper onLoadResourceHelper =
                 mContentsClient.getOnLoadResourceHelper();
 
         int callCount = onLoadResourceHelper.getCallCount();
