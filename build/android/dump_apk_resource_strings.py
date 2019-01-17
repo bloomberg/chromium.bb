@@ -352,37 +352,39 @@ def IsFilePathABundle(input_file):
 # to strings:
 #
 # 0x7F1200A0 - string/abc_action_menu_overflow_description
-#         (default) - More options [STR]
-#         locale: "ca" - Més opcions [STR]
-#         locale: "da" - Flere muligheder [STR]
-#         locale: "fa" - گزینه<U+200C>های بیشتر [STR]
-#         locale: "ja" - その他のオプション [STR]
-#         locale: "ta" - மேலும் விருப்பங்கள் [STR]
-#         locale: "nb" - Flere alternativer [STR]
+#         (default) - [STR] "More options"
+#         locale: "ca" - [STR] "Més opcions"
+#         locale: "da" - [STR] "Flere muligheder"
+#         locale: "fa" - [STR] " گزینه<U+200C>های بیشتر"
+#         locale: "ja" - [STR] "その他のオプション"
+#         locale: "ta" - [STR] "மேலும் விருப்பங்கள்"
+#         locale: "nb" - [STR] "Flere alternativer"
 #         ...
 #
 # Fun fact #1: Bundletool uses <lang>-<REGION> instead of <lang>-r<REGION>
 #              for locales!
 #
-# Fun fact #2: Bundletool doesn't quote the string values, making parsing
-#              multi-line strings difficult.
+# Fun fact #2: The <U+200C> is terminal output for \u200c, the output is
+#              really UTF-8 encoded when it is read by this script.
 #
-# The following are compiled regular expressions used to recognize each kind
-# of line and extract relevant information.
+# Fun fact #3: Bundletool quotes \n, \\ and \" just like aapt since 0.8.0.
 #
 _RE_BUNDLE_STRING_RESOURCE_HEADER = re.compile(
     r'^0x([0-9A-F]+)\s\-\sstring/(\w+)$')
 assert _RE_BUNDLE_STRING_RESOURCE_HEADER.match(
     '0x7F1200A0 - string/abc_action_menu_overflow_description')
 
-_RE_BUNDLE_STRING_DEFAULT_VALUE = re.compile(r'^\s+\(default\) - ')
+_RE_BUNDLE_STRING_DEFAULT_VALUE = re.compile(
+    r'^\s+\(default\) - \[STR\] "(.*)"$')
 assert _RE_BUNDLE_STRING_DEFAULT_VALUE.match(
-    '        (default) - More options [STR]')
+    '        (default) - [STR] "More options"')
+assert _RE_BUNDLE_STRING_DEFAULT_VALUE.match(
+    '        (default) - [STR] "More options"').group(1) == "More options"
 
 _RE_BUNDLE_STRING_LOCALIZED_VALUE = re.compile(
-    r'^\s+locale: "([0-9a-zA-Z-]+)" - ')
+    r'^\s+locale: "([0-9a-zA-Z-]+)" - \[STR\] "(.*)"$')
 assert _RE_BUNDLE_STRING_LOCALIZED_VALUE.match(
-    '        locale: "da" - Flere muligheder [STR]')
+    u'        locale: "ar" - [STR] "گزینه\u200cهای بیشتر"'.encode('utf-8'))
 
 
 def ParseBundleResources(bundle_tool_jar_path, bundle_path):
@@ -426,45 +428,19 @@ def ParseBundleResources(bundle_tool_jar_path, bundle_path):
     m = _RE_BUNDLE_STRING_DEFAULT_VALUE.match(line)
     if m:
       resource_config = 'config (default)'
-      line = line[m.end():]
+      resource_value = m.group(1)
     else:
       m = _RE_BUNDLE_STRING_LOCALIZED_VALUE.match(line)
       if m:
         resource_config = 'config %s' % m.group(1)
-        line = line[m.end():]
+        resource_value = m.group(2)
 
     if resource_config is None:
       need_value = False
       continue
 
-    # Trying to untangle the lack of string quoting. This relies on the fact
-    # that the string ends with ' [STR]', so any newline before that is really
-    # part of the string (but was removed by readline().rstrip() above).
-    #
-    # Note that this format is not reliable, since a resource string value
-    # could contain ' [STR]\n' which would be interpreted as the string
-    # end by this code. There is unfortunately no way to distinguish between
-    # this use case and a real string resource end.
-    suffix = ' [STR]'
-    resource_value = ''
-    while not line.endswith(suffix):
-      resource_value += line
-      resource_value += '\n'
-      line = p.stdout.readline()
-      if not line:
-        # This is bad, the end is not properly terminated
-        line = suffix
-        keep_parsing = False
-        need_value = False
-        break
-      line = line.rstrip('\n\r')
-
-    line = line[:-len(suffix)]
-    resource_value += line
-    # NOTE: Store resource value as-is since it was not quoted, unlike the
-    # output from 'aapt dump resources --values'.
     res_map.AddValue(current_resource_id, current_resource_name,
-                     resource_config, resource_value)
+                     resource_config, UnquoteString(resource_value))
   return res_map
 
 
