@@ -76,7 +76,7 @@ class SignedExchangeEnvelopeTest
     : public ::testing::TestWithParam<SignedExchangeVersion> {};
 
 TEST_P(SignedExchangeEnvelopeTest, ParseGoldenFile) {
-  if (GetParam() != SignedExchangeVersion::kB2)
+  if (GetParam() != SignedExchangeVersion::kB3)
     return;
 
   base::FilePath test_sxg_path;
@@ -119,7 +119,7 @@ TEST_P(SignedExchangeEnvelopeTest, ParseGoldenFile) {
       prologue_b.cbor_header_length());
   const base::Optional<SignedExchangeEnvelope> envelope =
       SignedExchangeEnvelope::Parse(
-          SignedExchangeVersion::kB2, prologue_b.fallback_url(),
+          SignedExchangeVersion::kB3, prologue_b.fallback_url(),
           signature_header_field, cbor_bytes, nullptr /* devtools_proxy */);
   ASSERT_TRUE(envelope.has_value());
   EXPECT_EQ(envelope->request_url().url,
