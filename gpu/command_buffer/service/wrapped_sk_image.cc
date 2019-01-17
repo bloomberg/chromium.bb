@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
+#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -205,11 +206,13 @@ class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
     write_surface_ = nullptr;
   }
 
-  bool BeginReadAccess(SkSurface* sk_surface,
-                       GrBackendTexture* backend_texture) override {
-    if (!wrapped_sk_image()->GetGrBackendTexture(backend_texture))
-      return false;
-    return true;
+  sk_sp<SkPromiseImageTexture> BeginReadAccess(SkSurface* sk_surface) override {
+    if (!promise_texture_) {
+      GrBackendTexture backend_texture;
+      wrapped_sk_image()->GetGrBackendTexture(&backend_texture);
+      promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
+    }
+    return promise_texture_;
   }
 
   void EndReadAccess() override {
@@ -222,6 +225,7 @@ class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
   }
 
   SkSurface* write_surface_ = nullptr;
+  sk_sp<SkPromiseImageTexture> promise_texture_;
 };
 
 }  // namespace

@@ -23,6 +23,7 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -185,10 +186,14 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
   EXPECT_EQ(size.width(), surface->width());
   EXPECT_EQ(size.height(), surface->height());
   skia_representation->EndWriteAccess(std::move(surface));
-  GrBackendTexture backend_texture;
-  EXPECT_TRUE(skia_representation->BeginReadAccess(nullptr, &backend_texture));
-  EXPECT_EQ(size.width(), backend_texture.width());
-  EXPECT_EQ(size.width(), backend_texture.width());
+  auto promise_texture = skia_representation->BeginReadAccess(nullptr);
+  EXPECT_TRUE(promise_texture);
+  if (promise_texture) {
+    GrBackendTexture backend_texture = promise_texture->backendTexture();
+    EXPECT_TRUE(backend_texture.isValid());
+    EXPECT_EQ(size.width(), backend_texture.width());
+    EXPECT_EQ(size.height(), backend_texture.height());
+  }
   skia_representation->EndReadAccess();
   skia_representation.reset();
 
@@ -269,10 +274,14 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
   EXPECT_EQ(size.width(), surface->width());
   EXPECT_EQ(size.height(), surface->height());
   skia_representation->EndWriteAccess(std::move(surface));
-  GrBackendTexture backend_texture;
-  EXPECT_TRUE(skia_representation->BeginReadAccess(nullptr, &backend_texture));
-  EXPECT_EQ(size.width(), backend_texture.width());
-  EXPECT_EQ(size.width(), backend_texture.width());
+  auto promise_texture = skia_representation->BeginReadAccess(nullptr);
+  EXPECT_TRUE(promise_texture);
+  if (promise_texture) {
+    GrBackendTexture backend_texture = promise_texture->backendTexture();
+    EXPECT_TRUE(backend_texture.isValid());
+    EXPECT_EQ(size.width(), backend_texture.width());
+    EXPECT_EQ(size.height(), backend_texture.height());
+  }
   skia_representation->EndReadAccess();
   skia_representation.reset();
 

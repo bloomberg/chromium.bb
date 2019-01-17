@@ -120,8 +120,7 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
         PromiseTextureHelper::Release, PromiseTextureHelper::Done, this);
   }
 
-  static void Fulfill(void* texture_context,
-                      GrBackendTexture* backend_texture) {
+  static sk_sp<SkPromiseImageTexture> Fulfill(void* texture_context) {
     DCHECK(texture_context);
     auto* helper = static_cast<PromiseTextureHelper*>(texture_context);
     // The fulfill is always called by SkiaOutputSurfaceImplOnGpu::SwapBuffers
@@ -129,21 +128,20 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
     // should be always valid.
     DCHECK(helper->impl_on_gpu_);
     if (helper->render_pass_id_) {
-      helper->impl_on_gpu_->FulfillPromiseTexture(
-          helper->render_pass_id_, &helper->shared_image_, backend_texture);
+      return helper->impl_on_gpu_->FulfillPromiseTexture(
+          helper->render_pass_id_, &helper->shared_image_);
     } else {
-      helper->impl_on_gpu_->FulfillPromiseTexture(
+      return helper->impl_on_gpu_->FulfillPromiseTexture(
           helper->mailbox_holder_, helper->size_, helper->resource_format_,
-          &helper->shared_image_, backend_texture);
+          &helper->shared_image_);
     }
   }
 
   static void Release(void* texture_context) {
     DCHECK(texture_context);
     auto* helper = static_cast<PromiseTextureHelper*>(texture_context);
-    if (helper->shared_image_) {
+    if (helper->shared_image_)
       helper->shared_image_->EndReadAccess();
-    }
   }
 
   static void Done(void* texture_context) {

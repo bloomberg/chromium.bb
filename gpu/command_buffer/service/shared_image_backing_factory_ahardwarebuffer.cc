@@ -27,6 +27,7 @@
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
+#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gfx/color_space.h"
@@ -165,9 +166,15 @@ class SharedImageRepresentationSkiaGLAHB
                                      MemoryTypeTracker* tracker,
                                      GLenum target,
                                      GLuint service_id)
-      : SharedImageRepresentationSkia(manager, backing, tracker),
-        target_(target),
-        service_id_(service_id) {}
+      : SharedImageRepresentationSkia(manager, backing, tracker) {
+    GrBackendTexture backend_texture;
+    GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(), target,
+                        size(), service_id, format(), &backend_texture);
+    promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
+#if DCHECK_IS_ON()
+    context_ = gl::GLContext::GetCurrent();
+#endif
+  }
 
   ~SharedImageRepresentationSkiaGLAHB() override { DCHECK(!write_surface_); }
 
@@ -175,6 +182,7 @@ class SharedImageRepresentationSkiaGLAHB
       GrContext* gr_context,
       int final_msaa_count,
       const SkSurfaceProps& surface_props) override {
+    CheckContext();
     // if there is already a write_surface_, it means previous BeginWriteAccess
     // doesn't have a corresponding EndWriteAccess.
     if (write_surface_)
@@ -188,23 +196,22 @@ class SharedImageRepresentationSkiaGLAHB
     if (!InsertEglFenceAndWait(std::move(sync_fd)))
       return nullptr;
 
-    GrBackendTexture backend_texture;
-    if (!GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(),
-                             target_, size(), service_id_, format(),
-                             &backend_texture)) {
+    if (!promise_texture_) {
       return nullptr;
     }
 
     SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
         /*gpu_compositing=*/true, format());
     auto surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
-        gr_context, backend_texture, kTopLeft_GrSurfaceOrigin, final_msaa_count,
-        sk_color_type, nullptr, &surface_props);
+        gr_context, promise_texture_->backendTexture(),
+        kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type, nullptr,
+        &surface_props);
     write_surface_ = surface.get();
     return surface;
   }
 
   void EndWriteAccess(sk_sp<SkSurface> surface) override {
+    CheckContext();
     DCHECK_EQ(surface.get(), write_surface_);
     DCHECK(surface->unique());
     // TODO(ericrk): Keep the surface around for re-use.
@@ -220,20 +227,16 @@ class SharedImageRepresentationSkiaGLAHB
     ahb_backing()->SetGLWriteSyncFd(std::move(sync_fd));
   }
 
-  bool BeginReadAccess(SkSurface* sk_surface,
-                       GrBackendTexture* backend_texture) override {
+  sk_sp<SkPromiseImageTexture> BeginReadAccess(SkSurface* sk_surface) override {
+    CheckContext();
     // TODO(vikassoni): Currently Skia Vk backing never does a write. So this
     // read do not need to wait for the Vk write to finish. Eventually when Vk
     // starts writing, we might need to TakeVkWriteSyncFd() and wait on it.
-    if (!GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(),
-                             target_, size(), service_id_, format(),
-                             backend_texture)) {
-      return false;
-    }
-    return true;
+    return promise_texture_;
   }
 
   void EndReadAccess() override {
+    CheckContext();
     // TODO(vikassoni): Currently Skia Vk backing never does a write. So Vk
     // writes do not need to wait on this read to finish. Eventually when Vk
     // starts writing, we will need to create and set a SkiaGLReadSyncFd.
@@ -245,9 +248,17 @@ class SharedImageRepresentationSkiaGLAHB
     return static_cast<SharedImageBackingAHB*>(backing());
   }
 
-  GLenum target_;
-  GLuint service_id_;
+  void CheckContext() {
+#if DCHECK_IS_ON()
+    DCHECK(gl::GLContext::GetCurrent() == context_);
+#endif
+  }
+
+  sk_sp<SkPromiseImageTexture> promise_texture_;
   SkSurface* write_surface_ = nullptr;
+#if DCHECK_IS_ON()
+  gl::GLContext* context_;
+#endif
 };
 
 // Vk backed Skia representation of SharedImageBackingAHB.
@@ -285,13 +296,11 @@ class SharedImageRepresentationSkiaVkAHB
 
   void EndWriteAccess(sk_sp<SkSurface> surface) override { NOTIMPLEMENTED(); }
 
-  bool BeginReadAccess(SkSurface* sk_surface,
-                       GrBackendTexture* backend_texture) override {
+  sk_sp<SkPromiseImageTexture> BeginReadAccess(SkSurface* sk_surface) override {
     // If previous read access has not ended.
     if (read_surface_)
-      return false;
+      return nullptr;
     DCHECK(sk_surface);
-    DCHECK(backend_texture);
 
     // Synchronise the read access with the GL writes.
     base::ScopedFD sync_fd = ahb_backing()->TakeGLWriteSyncFd();
@@ -306,7 +315,7 @@ class SharedImageRepresentationSkiaVkAHB
       static const int InfiniteSyncWaitTimeout = -1;
       if (sync_wait(sync_fd.get(), InfiniteSyncWaitTimeout) < 0) {
         LOG(ERROR) << "Failed while waiting on GL Write sync fd";
-        return false;
+        return nullptr;
       }
     }
 
@@ -319,7 +328,7 @@ class SharedImageRepresentationSkiaVkAHB
             vk_device_, vk_phy_device_, size(), ahb_backing()->GetAhbHandle(),
             &vk_image, &vk_image_info, &vk_device_memory,
             &mem_allocation_size)) {
-      return false;
+      return nullptr;
     }
 
     // Create backend texture from the VkImage.
@@ -330,19 +339,21 @@ class SharedImageRepresentationSkiaVkAHB
                              vk_image_info.initialLayout,
                              vk_image_info.format,
                              vk_image_info.mipLevels};
-    *backend_texture =
-        GrBackendTexture(size().width(), size().height(), vk_info);
-    if (!backend_texture->isValid()) {
+    // TODO(bsalomon): Determine whether it makes sense to attempt to reuse this
+    // if the vk_info stays the same on subsequent calls.
+    auto promise_texture = SkPromiseImageTexture::Make(
+        GrBackendTexture(size().width(), size().height(), vk_info));
+    if (!promise_texture) {
       vkDestroyImage(vk_device_, vk_image, nullptr);
       vkFreeMemory(vk_device_, vk_device_memory, nullptr);
-      return false;
+      return nullptr;
     }
 
     // Cache the sk surface in the representation so that it can be used in the
     // EndReadAccess. Also make sure previous read_surface_ have been consumed
     // by EndReadAccess() call.
     read_surface_ = sk_surface;
-    return true;
+    return promise_texture;
   }
 
   void EndReadAccess() override {

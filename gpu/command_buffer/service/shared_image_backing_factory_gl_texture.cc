@@ -21,7 +21,7 @@
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_preferences.h"
-#include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
@@ -234,9 +234,15 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
                                     MemoryTypeTracker* tracker,
                                     GLenum target,
                                     GLuint service_id)
-      : SharedImageRepresentationSkia(manager, backing, tracker),
-        target_(target),
-        service_id_(service_id) {}
+      : SharedImageRepresentationSkia(manager, backing, tracker) {
+    GrBackendTexture backend_texture;
+    GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(), target,
+                        size(), service_id, format(), &backend_texture);
+    promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
+#if DCHECK_IS_ON()
+    context_ = gl::GLContext::GetCurrent();
+#endif
+  }
 
   ~SharedImageRepresentationSkiaImpl() override { DCHECK(!write_surface_); }
 
@@ -244,20 +250,19 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
       GrContext* gr_context,
       int final_msaa_count,
       const SkSurfaceProps& surface_props) override {
+    CheckContext();
     if (write_surface_)
       return nullptr;
 
-    GrBackendTexture backend_texture;
-    if (!GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(),
-                             target_, size(), service_id_, format(),
-                             &backend_texture)) {
+    if (!promise_texture_) {
       return nullptr;
     }
     SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
         /*gpu_compositing=*/true, format());
     auto surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
-        gr_context, backend_texture, kTopLeft_GrSurfaceOrigin, final_msaa_count,
-        sk_color_type, nullptr, &surface_props);
+        gr_context, promise_texture_->backendTexture(),
+        kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type, nullptr,
+        &surface_props);
     write_surface_ = surface.get();
     return surface;
   }
@@ -265,18 +270,14 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
   void EndWriteAccess(sk_sp<SkSurface> surface) override {
     DCHECK_EQ(surface.get(), write_surface_);
     DCHECK(surface->unique());
+    CheckContext();
     // TODO(ericrk): Keep the surface around for re-use.
     write_surface_ = nullptr;
   }
 
-  bool BeginReadAccess(SkSurface* sk_surface,
-                       GrBackendTexture* backend_texture) override {
-    if (!GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(),
-                             target_, size(), service_id_, format(),
-                             backend_texture)) {
-      return false;
-    }
-    return true;
+  sk_sp<SkPromiseImageTexture> BeginReadAccess(SkSurface* sk_surface) override {
+    CheckContext();
+    return promise_texture_;
   }
 
   void EndReadAccess() override {
@@ -284,10 +285,18 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
   }
 
  private:
-  GLenum target_;
-  GLuint service_id_;
+  void CheckContext() {
+#if DCHECK_IS_ON()
+    DCHECK(gl::GLContext::GetCurrent() == context_);
+#endif
+  }
+
+  sk_sp<SkPromiseImageTexture> promise_texture_;
 
   SkSurface* write_surface_ = nullptr;
+#if DCHECK_IS_ON()
+  gl::GLContext* context_;
+#endif
 };
 
 // Implementation of SharedImageBacking that creates a GL Texture and stores it
