@@ -4803,3 +4803,8 @@ TEST_F(DiskCacheBackendTest, InMemoryOnlyOpenOrCreateEntry) {
 TEST_F(DiskCacheBackendTest, BlockFileOpenOrCreateEntry) {
   BackendOpenOrCreateEntry();
 }
+
+TEST_F(DiskCacheBackendTest, SimpleOpenOrCreateEntry) {
+  SetSimpleCacheMode();
+  BackendOpenOrCreateEntry();
+}

@@ -114,6 +114,10 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
                          net::RequestPriority request_priority,
                          Entry** entry,
                          CompletionOnceCallback callback) override;
+  net::Error OpenOrCreateEntry(const std::string& key,
+                               net::RequestPriority priority,
+                               EntryWithOpened* entry_struct,
+                               CompletionOnceCallback callback) override;
   net::Error DoomEntry(const std::string& key,
                        net::RequestPriority priority,
                        CompletionOnceCallback callback) override;

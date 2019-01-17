@@ -247,8 +247,7 @@ net::Error SimpleEntryImpl::CreateEntry(Entry** out_entry,
 
     ReturnEntryToCaller(out_entry);
     pending_operations_.push(SimpleEntryOperation::CreateOperation(
-        this, index_state, CompletionOnceCallback(),
-        static_cast<Entry**>(NULL)));
+        this, index_state, CompletionOnceCallback(), nullptr));
     ret_value = net::OK;
 
     // If we are optimistically returning before a preceeding doom, we need to
@@ -261,6 +260,50 @@ net::Error SimpleEntryImpl::CreateEntry(Entry** out_entry,
   } else {
     pending_operations_.push(SimpleEntryOperation::CreateOperation(
         this, index_state, std::move(callback), out_entry));
+    ret_value = net::ERR_IO_PENDING;
+  }
+
+  // We insert the entry in the index before creating the entry files in the
+  // SimpleSynchronousEntry, because this way the worst scenario is when we
+  // have the entry in the index but we don't have the created files yet, this
+  // way we never leak files. CreationOperationComplete will remove the entry
+  // from the index if the creation fails.
+  backend_->index()->Insert(entry_hash_);
+
+  RunNextOperationIfNeeded();
+  return ret_value;
+}
+
+net::Error SimpleEntryImpl::OpenOrCreateEntry(
+    EntryWithOpened* entry_struct,
+    net::CompletionOnceCallback callback) {
+  DCHECK(backend_.get());
+  DCHECK_EQ(entry_hash_, simple_util::GetEntryHashKey(key_));
+
+  net_log_.AddEvent(
+      net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_OR_CREATE_CALL);
+  net::Error ret_value = net::ERR_FAILED;
+
+  OpenEntryIndexEnum index_state =
+      ComputeIndexState(backend_.get(), entry_hash_);
+  RecordOpenEntryIndexState(cache_type_, index_state);
+
+  if (index_state == INDEX_MISS && use_optimistic_operations_ &&
+      state_ == STATE_UNINITIALIZED && pending_operations_.size() == 0) {
+    net_log_.AddEvent(
+        net::NetLogEventType::SIMPLE_CACHE_ENTRY_CREATE_OPTIMISTIC);
+
+    entry_struct->opened = false;  // Creating.
+    ReturnEntryToCaller(&entry_struct->entry);
+    pending_operations_.push(SimpleEntryOperation::OpenOrCreateOperation(
+        this, index_state, CompletionOnceCallback(), nullptr));
+    ret_value = net::OK;
+
+    // The post-doom stuff should go through CreateEntry, not here.
+    DCHECK_EQ(CREATE_NORMAL, optimistic_create_pending_doom_state_);
+  } else {
+    pending_operations_.push(SimpleEntryOperation::OpenOrCreateOperation(
+        this, index_state, std::move(callback), entry_struct));
     ret_value = net::ERR_IO_PENDING;
   }
 
@@ -667,6 +710,11 @@ void SimpleEntryImpl::RunNextOperationIfNeeded() {
         CreateEntryInternal(operation.have_index(), operation.ReleaseCallback(),
                             operation.out_entry());
         break;
+      case SimpleEntryOperation::TYPE_OPEN_OR_CREATE:
+        OpenOrCreateEntryInternal(operation.index_state(),
+                                  operation.ReleaseCallback(),
+                                  operation.entry_struct());
+        break;
       case SimpleEntryOperation::TYPE_CLOSE:
         CloseInternal();
         break;
@@ -753,6 +801,7 @@ void SimpleEntryImpl::OpenEntryInternal(bool have_index,
   base::OnceClosure reply = base::BindOnce(
       &SimpleEntryImpl::CreationOperationComplete, this, std::move(callback),
       start_time, last_used_time, base::Passed(&results), out_entry,
+      nullptr /* out_opened */,
       net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_END);
 
   prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
@@ -783,10 +832,6 @@ void SimpleEntryImpl::CreateEntryInternal(bool have_index,
   // |last_modified_| yet, we make this approximation.
   last_used_ = last_modified_ = base::Time::Now();
 
-  // If creation succeeds, we should mark all streams to be saved on close.
-  for (int i = 0; i < kSimpleEntryStreamCount; ++i)
-    have_written_[i] = true;
-
   const base::TimeTicks start_time = base::TimeTicks::Now();
   std::unique_ptr<SimpleEntryCreationResults> results(
       new SimpleEntryCreationResults(SimpleEntryStat(
@@ -798,7 +843,74 @@ void SimpleEntryImpl::CreateEntryInternal(bool have_index,
   OnceClosure reply = base::BindOnce(
       &SimpleEntryImpl::CreationOperationComplete, this, std::move(callback),
       start_time, base::Time(), base::Passed(&results), out_entry,
+      nullptr, /* out_opened */
       net::NetLogEventType::SIMPLE_CACHE_ENTRY_CREATE_END);
+  prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
+                                             std::move(reply), entry_priority_);
+}
+
+void SimpleEntryImpl::OpenOrCreateEntryInternal(
+    OpenEntryIndexEnum index_state,
+    net::CompletionOnceCallback callback,
+    EntryWithOpened* entry_struct) {
+  ScopedOperationRunner operation_runner(this);
+
+  net_log_.AddEvent(
+      net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_OR_CREATE_BEGIN);
+
+  // entry_struct may be null if an optimistic create is being performed,
+  // which must be in STATE_UNINITIALIZED.
+  DCHECK(entry_struct != nullptr || state_ == STATE_UNINITIALIZED);
+
+  if (state_ == STATE_READY) {
+    entry_struct->opened = true;
+    ReturnEntryToCaller(&entry_struct->entry);
+    PostClientCallback(std::move(callback), net::OK);
+    net_log_.AddEvent(
+        net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_OR_CREATE_END,
+        CreateNetLogSimpleEntryCreationCallback(this, net::OK));
+    return;
+  }
+  if (state_ == STATE_FAILURE) {
+    PostClientCallback(std::move(callback), net::ERR_FAILED);
+    net_log_.AddEvent(
+        net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_OR_CREATE_END,
+        CreateNetLogSimpleEntryCreationCallback(this, net::ERR_FAILED));
+    return;
+  }
+
+  DCHECK_EQ(STATE_UNINITIALIZED, state_);
+  DCHECK(!synchronous_entry_);
+  state_ = STATE_IO_PENDING;
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+  std::unique_ptr<SimpleEntryCreationResults> results(
+      new SimpleEntryCreationResults(SimpleEntryStat(
+          last_used_, last_modified_, data_size_, sparse_data_size_)));
+
+  int32_t trailer_prefetch_size = -1;
+  base::Time last_used_time;
+  if (SimpleBackendImpl* backend = backend_.get()) {
+    if (cache_type_ == net::APP_CACHE) {
+      trailer_prefetch_size =
+          backend->index()->GetTrailerPrefetchSize(entry_hash_);
+    } else {
+      last_used_time = backend->index()->GetLastUsedTime(entry_hash_);
+    }
+  }
+
+  bool optimistic_create = (entry_struct == nullptr);
+  base::OnceClosure task = base::BindOnce(
+      &SimpleSynchronousEntry::OpenOrCreateEntry, cache_type_, path_, key_,
+      entry_hash_, index_state, optimistic_create, start_time, file_tracker_,
+      trailer_prefetch_size, results.get());
+
+  base::OnceClosure reply = base::BindOnce(
+      &SimpleEntryImpl::CreationOperationComplete, this, std::move(callback),
+      start_time, last_used_time, base::Passed(&results),
+      entry_struct ? &entry_struct->entry : nullptr,
+      entry_struct ? &entry_struct->opened : nullptr,
+      net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_OR_CREATE_END);
+
   prioritized_task_runner_->PostTaskAndReply(FROM_HERE, std::move(task),
                                              std::move(reply), entry_priority_);
 }
@@ -1273,6 +1385,7 @@ void SimpleEntryImpl::CreationOperationComplete(
     const base::Time index_last_used_time,
     std::unique_ptr<SimpleEntryCreationResults> in_results,
     Entry** out_entry,
+    bool* out_opened,
     net::NetLogEventType end_event_type) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, STATE_IO_PENDING);
@@ -1299,11 +1412,21 @@ void SimpleEntryImpl::CreationOperationComplete(
     return;
   }
 
+  // If this is a successful creation (rather than open), mark all streams to be
+  // saved on close.
+  if (in_results->created) {
+    for (int i = 0; i < kSimpleEntryStreamCount; ++i)
+      have_written_[i] = true;
+  }
+
   // Make sure to keep the index up-to-date. We likely already did this when
   // CreateEntry was called, but it's possible we were sitting on a queue
   // after an op that removed us.
   if (backend_ && doom_state_ == DOOM_NONE)
     backend_->index()->Insert(entry_hash_);
+
+  if (out_opened)
+    *out_opened = !in_results->created;
 
   // If out_entry is NULL, it means we already called ReturnEntryToCaller from
   // the optimistic Create case.

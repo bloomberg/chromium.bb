@@ -25,6 +25,7 @@
 #include "net/base/net_export.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_file_tracker.h"
+#include "net/disk_cache/simple/simple_histogram_enums.h"
 
 namespace net {
 class GrowableIOBuffer;
@@ -106,6 +107,7 @@ struct SimpleEntryCreationResults {
   SimpleEntryStat entry_stat;
   int32_t computed_trailer_prefetch_size = -1;
   int result;
+  bool created;
 };
 
 struct SimpleEntryCloseResults {
@@ -183,6 +185,10 @@ class SimpleSynchronousEntry {
     int buf_len;
   };
 
+  // Like Entry, the SimpleSynchronousEntry self releases when Close() is
+  // called, but sometimes temporary ones are kept in unique_ptr.
+  NET_EXPORT_PRIVATE ~SimpleSynchronousEntry();
+
   // Opens a disk cache entry on disk. The |key| parameter is optional, if empty
   // the operation may be slower. The |entry_hash| parameter is required.
   // |had_index| is provided only for histograms.
@@ -206,6 +212,17 @@ class SimpleSynchronousEntry {
                           const base::TimeTicks& time_enqueued,
                           SimpleFileTracker* file_tracker,
                           SimpleEntryCreationResults* out_results);
+
+  static void OpenOrCreateEntry(net::CacheType cache_type,
+                                const base::FilePath& path,
+                                const std::string& key,
+                                uint64_t entry_hash,
+                                OpenEntryIndexEnum index_state,
+                                bool optimistic_create,
+                                const base::TimeTicks& time_enqueued,
+                                SimpleFileTracker* file_tracker,
+                                int32_t trailer_prefetch_size,
+                                SimpleEntryCreationResults* out_results);
 
   // Renames the entry on the file system, making it no longer possible to open
   // it again, but allowing operations to continue to be executed through that
@@ -327,10 +344,6 @@ class SimpleSynchronousEntry {
       bool had_index,
       SimpleFileTracker* simple_file_tracker,
       int32_t stream_0_size);
-
-  // Like Entry, the SimpleSynchronousEntry self releases when Close() is
-  // called.
-  NET_EXPORT_PRIVATE ~SimpleSynchronousEntry();
 
   // Tries to open one of the cache entry files. Succeeds if the open succeeds
   // or if the file was not found and is allowed to be omitted if the

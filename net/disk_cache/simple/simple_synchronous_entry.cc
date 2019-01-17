@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/hash.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -80,6 +81,10 @@ void RecordKeySHA256Result(net::CacheType cache_type, KeySHA256Result result) {
 void RecordOpenPrefetchMode(net::CacheType cache_type, OpenPrefetchMode mode) {
   SIMPLE_CACHE_UMA(ENUMERATION, "SyncOpenPrefetchMode", cache_type, mode,
                    OPEN_PREFETCH_MAX);
+}
+
+void RecordDiskCreateLatency(net::CacheType cache_type, base::TimeDelta delay) {
+  SIMPLE_CACHE_UMA(TIMES, "DiskCreateLatency", cache_type, delay);
 }
 
 bool CanOmitEmptyFile(int file_index) {
@@ -295,7 +300,10 @@ SimpleStreamPrefetchData::~SimpleStreamPrefetchData() = default;
 
 SimpleEntryCreationResults::SimpleEntryCreationResults(
     SimpleEntryStat entry_stat)
-    : sync_entry(NULL), entry_stat(entry_stat), result(net::OK) {}
+    : sync_entry(NULL),
+      entry_stat(entry_stat),
+      result(net::OK),
+      created(false) {}
 
 SimpleEntryCreationResults::~SimpleEntryCreationResults() = default;
 
@@ -398,8 +406,68 @@ void SimpleSynchronousEntry::CreateEntry(
     return;
   }
   out_results->sync_entry = sync_entry;
-  SIMPLE_CACHE_UMA(TIMES, "DiskCreateLatency", cache_type,
-                   base::TimeTicks::Now() - start_sync_create_entry);
+  out_results->created = true;
+  RecordDiskCreateLatency(cache_type,
+                          base::TimeTicks::Now() - start_sync_create_entry);
+}
+
+// static
+void SimpleSynchronousEntry::OpenOrCreateEntry(
+    net::CacheType cache_type,
+    const FilePath& path,
+    const std::string& key,
+    const uint64_t entry_hash,
+    OpenEntryIndexEnum index_state,
+    bool optimistic_create,
+    const base::TimeTicks& time_enqueued,
+    SimpleFileTracker* file_tracker,
+    int32_t trailer_prefetch_size,
+    SimpleEntryCreationResults* out_results) {
+  const bool had_index = (index_state != INDEX_NOEXIST);
+
+  base::TimeTicks start = base::TimeTicks::Now();
+  SIMPLE_CACHE_UMA(TIMES, "QueueLatency.OpenOrCreateEntry", cache_type,
+                   (start - time_enqueued));
+  if (index_state == INDEX_MISS) {
+    // Try to just create.
+    auto sync_entry = base::WrapUnique(
+        new SimpleSynchronousEntry(cache_type, path, key, entry_hash, had_index,
+                                   file_tracker, trailer_prefetch_size));
+
+    out_results->result =
+        sync_entry->InitializeForCreate(&out_results->entry_stat);
+    switch (out_results->result) {
+      case net::OK:
+        out_results->sync_entry = sync_entry.release();
+        out_results->created = true;
+        RecordDiskCreateLatency(cache_type, base::TimeTicks::Now() - start);
+        return;
+      case net::ERR_FILE_EXISTS:
+        // Our index was messed up.
+        if (optimistic_create) {
+          // In this case, ::OpenOrCreateEntry already returned claiming it made
+          // a new entry. Try extra-hard to make that the actual case.
+          sync_entry->Doom();
+          CreateEntry(cache_type, path, key, entry_hash, had_index,
+                      time_enqueued, file_tracker, out_results);
+          return;
+        }
+        // Otherwise can just try opening.
+        break;
+      default:
+        // Trouble. Fail this time.
+        sync_entry->Doom();
+        return;
+    }
+  }
+
+  // Try open, then if that fails create.
+  OpenEntry(cache_type, path, key, entry_hash, had_index, time_enqueued,
+            file_tracker, trailer_prefetch_size, out_results);
+  if (out_results->sync_entry)
+    return;
+  CreateEntry(cache_type, path, key, entry_hash, had_index, time_enqueued,
+              file_tracker, out_results);
 }
 
 // static

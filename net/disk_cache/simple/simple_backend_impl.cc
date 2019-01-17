@@ -467,6 +467,42 @@ net::Error SimpleBackendImpl::CreateEntry(const std::string& key,
   return simple_entry->CreateEntry(entry, std::move(callback));
 }
 
+net::Error SimpleBackendImpl::OpenOrCreateEntry(
+    const std::string& key,
+    net::RequestPriority request_priority,
+    EntryWithOpened* entry_struct,
+    CompletionOnceCallback callback) {
+  DCHECK_LT(0u, key.size());
+  const uint64_t entry_hash = simple_util::GetEntryHashKey(key);
+
+  std::vector<PostDoomWaiter>* post_doom = nullptr;
+  scoped_refptr<SimpleEntryImpl> simple_entry = CreateOrFindActiveOrDoomedEntry(
+      entry_hash, key, request_priority, &post_doom);
+
+  // If couldn't grab an entry object due to pending doom, see if circumstances
+  // are right for an optimistic create.
+  if (!simple_entry) {
+    simple_entry = MaybeOptimisticCreateForPostDoom(
+        entry_hash, key, request_priority, post_doom);
+    if (simple_entry) {
+      entry_struct->opened = false;
+      return simple_entry->CreateEntry(&entry_struct->entry,
+                                       std::move(callback));
+    } else {
+      // If that doesn't work either, retry this once doom is done.
+      base::OnceCallback<net::Error(CompletionOnceCallback)> operation =
+          base::BindOnce(&SimpleBackendImpl::OpenOrCreateEntry,
+                         base::Unretained(this), key, request_priority,
+                         entry_struct);
+      post_doom->emplace_back(base::BindOnce(
+          &RunOperationAndCallback, std::move(operation), std::move(callback)));
+      return net::ERR_IO_PENDING;
+    }
+  }
+
+  return simple_entry->OpenOrCreateEntry(entry_struct, std::move(callback));
+}
+
 scoped_refptr<SimpleEntryImpl>
 SimpleBackendImpl::MaybeOptimisticCreateForPostDoom(
     uint64_t entry_hash,

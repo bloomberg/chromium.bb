@@ -2695,6 +2695,21 @@ EVENT_TYPE(SIMPLE_CACHE_ENTRY_CREATE_BEGIN)
 // }
 EVENT_TYPE(SIMPLE_CACHE_ENTRY_CREATE_END)
 
+// This event is created when OpenOrCreateEntry is called.  It has no
+// parameters.
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_OPEN_OR_CREATE_CALL)
+
+// This event is created when the Simple Cache actually begins open/create of
+// the cache entry.  It has no parameters.
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_OPEN_OR_CREATE_BEGIN)
+
+// This event is created when the Simple Cache finishes the OpenOrCreateEntry
+// call. It contains the following parameter:
+// {
+//   "net_error": <net error code returned from the call>
+// }
+EVENT_TYPE(SIMPLE_CACHE_ENTRY_OPEN_OR_CREATE_END)
+
 // This event is created when ReadData is called.
 // It contains the following parameters:
 //   {
