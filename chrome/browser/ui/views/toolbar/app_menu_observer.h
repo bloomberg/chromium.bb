@@ -15,6 +15,10 @@ class AppMenuObserver {
   // Called after AppMenu::RunMenu().
   virtual void AppMenuShown() {}
 
+  // Called when a menu item is activated, just before the associated command is
+  // executed.
+  virtual void OnExecuteCommand(int command_id) {}
+
  protected:
   virtual ~AppMenuObserver() {}
 };

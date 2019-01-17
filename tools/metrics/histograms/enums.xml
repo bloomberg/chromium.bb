@@ -45396,6 +45396,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="99" label="IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE"/>
 </enum>
 
+<enum name="ReopenTabPromoStepAtDismissal">
+  <int value="0" label="Promo bubble shown"/>
+  <int value="1" label="App menu opened"/>
+  <int value="2" label="Tab reopened"/>
+</enum>
+
 <enum name="ReportingHeaderEndpointGroupOutcome">
   <obsolete>
     Moved to NetReportingHeaderEndpointGroupOutcome.

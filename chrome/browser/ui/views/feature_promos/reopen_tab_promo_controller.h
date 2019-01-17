@@ -23,6 +23,7 @@ class ReopenTabPromoController : public AppMenuObserver,
   explicit ReopenTabPromoController(BrowserView* browser_view);
   ~ReopenTabPromoController() override = default;
 
+  // Shows the IPH promo. Should only be called once.
   void ShowPromo();
 
  private:
@@ -34,10 +35,16 @@ class ReopenTabPromoController : public AppMenuObserver,
 
   // AppMenuObserver:
   void AppMenuClosed() override;
+  void OnExecuteCommand(int command_id) override;
 
   ReopenTabInProductHelp* const iph_service_;
   BrowserView* const browser_view_;
   FeaturePromoBubbleView* promo_bubble_ = nullptr;
+
+  // Flag used to determine whether the promo completed successfully or not upon
+  // the app menu closing. This is set to true if
+  // OnExecuteCommand(AppMenuModel::kMinRecentTabsCommandId) is called.
+  bool tab_reopened_before_app_menu_closed_ = false;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FEATURE_PROMOS_REOPEN_TAB_PROMO_CONTROLLER_H_

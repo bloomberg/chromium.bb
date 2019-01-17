@@ -990,6 +990,10 @@ bool AppMenu::IsCommandEnabled(int command_id) const {
 }
 
 void AppMenu::ExecuteCommand(int command_id, int mouse_event_flags) {
+  for (AppMenuObserver& observer : observer_list_) {
+    observer.OnExecuteCommand(command_id);
+  }
+
   if (IsBookmarkCommand(command_id)) {
     UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.OpenBookmark",
                         menu_opened_timer_.Elapsed());
