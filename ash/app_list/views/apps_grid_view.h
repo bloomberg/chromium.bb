@@ -104,10 +104,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   gfx::Size GetTileGridSizeWithoutPadding() const;
 
   // Returns the minimum size of the entire tile grid.
-  gfx::Size GetMinimumTileGridSize() const;
+  gfx::Size GetMinimumTileGridSize(int cols, int rows_per_page) const;
 
   // Returns the maximum size of the entire tile grid.
-  gfx::Size GetMaximumTileGridSize() const;
+  gfx::Size GetMaximumTileGridSize(int cols, int rows_per_page) const;
 
   // This resets the grid view to a fresh state for showing the app list.
   void ResetForShowApps();

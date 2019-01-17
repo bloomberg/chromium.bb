@@ -310,9 +310,19 @@ void ContentsView::UpdateSearchBox(double progress,
 
   search_box->UpdateLayout(progress, current_state, target_state);
   search_box->UpdateBackground(progress, current_state, target_state);
-  search_box->GetWidget()->SetBounds(
-      search_box->GetViewBoundsForSearchBoxContentsBounds(
-          ConvertRectToWidgetWithoutTransform(search_box_rect)));
+  search_box_rect = search_box->GetViewBoundsForSearchBoxContentsBounds(
+      ConvertRectToWidgetWithoutTransform(search_box_rect));
+
+  // Search box is in a different widget with AppListMainView, so we need to
+  // manually transform the search box using the same scale based on the same
+  // origin.
+  const float scale = GetAppListMainViewScale();
+  search_box_rect.set_origin(
+      gfx::Point(search_box_rect.x() * scale, search_box_rect.y() * scale));
+  search_box->GetWidget()->SetBounds(search_box_rect);
+  gfx::Transform transform;
+  transform.Scale(scale, scale);
+  search_box->GetWidget()->GetNativeView()->SetTransform(transform);
 }
 
 void ContentsView::UpdateExpandArrowOpacity(double progress,
@@ -414,17 +424,6 @@ gfx::Rect ContentsView::GetDefaultContentsBounds() const {
   return GetContentsBounds();
 }
 
-gfx::Size ContentsView::GetMaximumContentsSize() const {
-  int max_width = 0;
-  int max_height = 0;
-  for (AppListPage* page : app_list_pages_) {
-    const gfx::Size size(page->GetPreferredSize());
-    max_width = std::max(size.width(), max_width);
-    max_height = std::max(size.height(), max_height);
-  }
-  return gfx::Size(max_width, max_height);
-}
-
 bool ContentsView::Back() {
   // If the virtual keyboard is visible, dismiss the keyboard and return early
   auto* const keyboard_controller = keyboard::KeyboardController::Get();
@@ -468,16 +467,6 @@ bool ContentsView::Back() {
 
 gfx::Size ContentsView::GetDefaultContentsSize() const {
   return horizontal_page_container_->GetPreferredSize();
-}
-
-gfx::Size ContentsView::CalculatePreferredSize() const {
-  // If shelf is set auto-hide, the work area will become fullscreen. The bottom
-  // row of apps will be partially blocked by the shelf when it becomes shown.
-  // So always cut the shelf bounds from widget bounds.
-  gfx::Size size = GetWidget()->GetNativeView()->bounds().size();
-  if (!app_list_view_->is_side_shelf())
-    size.set_height(size.height() - AppListConfig::instance().shelf_height());
-  return size;
 }
 
 void ContentsView::Layout() {
@@ -563,16 +552,28 @@ void ContentsView::UpdateYPositionAndOpacity() {
 
   AppsContainerView* apps_container_view = GetAppsContainerView();
   SearchBoxView* search_box = GetSearchBoxView();
-  search_box->GetWidget()->SetBounds(
-      search_box->GetViewBoundsForSearchBoxContentsBounds(
-          ConvertRectToWidgetWithoutTransform(
-              apps_container_view->GetSearchBoxExpectedBounds())));
+  gfx::Rect search_rect = search_box->GetViewBoundsForSearchBoxContentsBounds(
+      ConvertRectToWidgetWithoutTransform(
+          apps_container_view->GetSearchBoxExpectedBounds()));
+
+  // Search box is in a different widget with AppListMainView, so we need to
+  // manually transform the search box position using the same scale based on
+  // the same origin.
+  const float scale = GetAppListMainViewScale();
+  search_rect.set_origin(
+      gfx::Point(search_rect.x() * scale, search_rect.y() * scale));
+  search_box->GetWidget()->SetBounds(search_rect);
 
   search_results_page_view()->SetBoundsRect(
       search_results_page_view()->AddShadowBorderToBounds(
           apps_container_view->GetSearchBoxExpectedBounds()));
 
   apps_container_view->UpdateYPositionAndOpacity();
+}
+
+float ContentsView::GetAppListMainViewScale() const {
+  // The x and y scale are the same.
+  return app_list_view_->app_list_main_view()->GetTransform().Scale2d().x();
 }
 
 bool ContentsView::ShouldLayoutPage(AppListPage* page,

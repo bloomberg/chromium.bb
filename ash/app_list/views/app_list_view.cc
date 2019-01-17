@@ -427,14 +427,34 @@ bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 void AppListView::Layout() {
   const gfx::Rect contents_bounds = GetContentsBounds();
 
-  // Make sure to layout |app_list_main_view_| at the center of the widget.
-  gfx::Rect centered_bounds = contents_bounds;
-  ContentsView* contents_view = app_list_main_view_->contents_view();
-  centered_bounds.ClampToCenteredSize(
-      gfx::Size(contents_view->GetMaximumContentsSize().width(),
-                contents_bounds.height()));
+  // Exclude the shelf height from the contents bounds to avoid apps grid from
+  // overlapping with shelf.
+  gfx::Rect main_bounds = contents_bounds;
+  main_bounds.Inset(0, 0, 0, AppListConfig::instance().shelf_height());
 
-  app_list_main_view_->SetBoundsRect(centered_bounds);
+  // The AppListMainView's size is supposed to be the same as AppsContainerView.
+  const gfx::Size min_main_size = GetAppsContainerView()->GetMinimumSize();
+
+  if ((main_bounds.width() > 0 && main_bounds.height() > 0) &&
+      (main_bounds.width() < min_main_size.width() ||
+       main_bounds.height() < min_main_size.height())) {
+    // Scale down the AppListMainView if AppsContainerView does not fit in the
+    // display.
+    const float scale = std::min(
+        (main_bounds.width()) / static_cast<float>(min_main_size.width()),
+        main_bounds.height() / static_cast<float>(min_main_size.height()));
+    DCHECK_GT(scale, 0);
+    const gfx::RectF scaled_main_bounds(main_bounds.x(), main_bounds.y(),
+                                        main_bounds.width() / scale,
+                                        main_bounds.height() / scale);
+    gfx::Transform transform;
+    transform.Scale(scale, scale);
+    app_list_main_view_->SetTransform(transform);
+    app_list_main_view_->SetBoundsRect(gfx::ToEnclosedRect(scaled_main_bounds));
+  } else {
+    app_list_main_view_->SetTransform(gfx::Transform());
+    app_list_main_view_->SetBoundsRect(main_bounds);
+  }
 
   gfx::Rect app_list_background_shield_bounds = contents_bounds;
   // Inset bottom by 2 * |kAppListBackgroundRadius| to account for the rounded

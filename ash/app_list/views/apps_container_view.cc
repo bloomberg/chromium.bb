@@ -23,6 +23,8 @@
 #include "base/command_line.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -32,9 +34,6 @@
 namespace app_list {
 
 namespace {
-
-// Minimum top padding of search box in fullscreen state.
-constexpr int kSearchBoxMinimumTopPadding = 24;
 
 // Height of suggestion chip container.
 constexpr int kSuggestionChipContainerHeight = 32;
@@ -212,10 +211,6 @@ void AppsContainerView::OnTabletModeChanged(bool started) {
   app_list_folder_view_->OnTabletModeChanged(started);
 }
 
-gfx::Size AppsContainerView::CalculatePreferredSize() const {
-  return contents_view_->GetPreferredSize();
-}
-
 void AppsContainerView::Layout() {
   gfx::Rect rect(GetContentsBounds());
   if (rect.IsEmpty())
@@ -236,16 +231,22 @@ void AppsContainerView::Layout() {
       rect.set_y(chip_container_rect.bottom());
       rect.set_height(rect.height() - kSuggestionChipFullscreenY -
                       kSuggestionChipContainerHeight);
+      const int page_switcher_width =
+          page_switcher_->GetPreferredSize().width();
+      rect.Inset(kAppsGridPageSwitcherSpacing + page_switcher_width, 0);
 
       // Layout apps grid.
       gfx::Rect grid_rect = rect;
       // Switch the column and row size if apps grid's height is greater than
       // its width.
-      const int cols = AppListConfig::instance().preferred_cols();
-      const int rows = AppListConfig::instance().preferred_rows();
-      const bool switch_cols_and_rows = grid_rect.height() > grid_rect.width();
-      apps_grid_view_->SetLayout(switch_cols_and_rows ? rows : cols,
-                                 switch_cols_and_rows ? cols : rows);
+      const bool switch_cols_and_rows = ShouldSwitchColsAndRows();
+      const int cols = switch_cols_and_rows
+                           ? AppListConfig::instance().preferred_rows()
+                           : AppListConfig::instance().preferred_cols();
+      const int rows = switch_cols_and_rows
+                           ? AppListConfig::instance().preferred_cols()
+                           : AppListConfig::instance().preferred_rows();
+      apps_grid_view_->SetLayout(cols, rows);
 
       // Calculate the maximum margin of apps grid.
       const int max_horizontal_margin =
@@ -254,7 +255,7 @@ void AppsContainerView::Layout() {
 
       // Calculate the minimum size of apps grid.
       const gfx::Size min_grid_size =
-          apps_grid_view()->GetMinimumTileGridSize();
+          apps_grid_view()->GetMinimumTileGridSize(cols, rows);
 
       // Calculate the actual margin of apps grid based on the rule: Always
       // keep maximum margin if apps grid can maintain at least
@@ -270,36 +271,13 @@ void AppsContainerView::Layout() {
               ? max_vertical_margin
               : std::max(kAppsGridMinimumMargin,
                          (grid_rect.height() - min_grid_size.height()) / 2);
-      grid_rect.Inset(horizontal_margin, vertical_margin);
-      grid_rect.ClampToCenteredSize(apps_grid_view_->GetMaximumTileGridSize());
-
-      if ((grid_rect.width() > 0 && grid_rect.height() > 0) &&
-          (grid_rect.width() < min_grid_size.width() ||
-           grid_rect.height() < min_grid_size.height())) {
-        // If the minimum size does not fit inside available bounds, scale
-        // down the apps grid view via transform while keep the minimum size.
-        const gfx::Insets insets = apps_grid_view_->GetInsets();
-        const float scale =
-            std::min((grid_rect.width()) /
-                         static_cast<float>(min_grid_size.width() +
-                                            insets.left() + insets.right()),
-                     grid_rect.height() /
-                         static_cast<float>(min_grid_size.height() +
-                                            insets.top() + insets.bottom()));
-        DCHECK_GT(scale, 0);
-        const gfx::RectF scaled_grid_rect(grid_rect.x(), grid_rect.y(),
-                                          grid_rect.width() / scale,
-                                          grid_rect.height() / scale);
-
-        gfx::Transform transform;
-        transform.Scale(scale, scale);
-        apps_grid_view_->SetTransform(transform);
-        apps_grid_view_->SetBoundsRect(gfx::ToEnclosedRect(scaled_grid_rect));
-      } else {
-        grid_rect.Inset(-apps_grid_view_->GetInsets());
-        apps_grid_view_->SetTransform(gfx::Transform());
-        apps_grid_view_->SetBoundsRect(grid_rect);
-      }
+      grid_rect.Inset(
+          horizontal_margin,
+          std::max(apps_grid_view_->GetInsets().top(), vertical_margin));
+      grid_rect.ClampToCenteredSize(
+          apps_grid_view_->GetMaximumTileGridSize(cols, rows));
+      grid_rect.Inset(-apps_grid_view_->GetInsets());
+      apps_grid_view_->SetBoundsRect(grid_rect);
 
       // Record the distance of y position between suggestion chip container
       // and apps grid view to avoid duplicate calculation of apps grid view's
@@ -308,11 +286,9 @@ void AppsContainerView::Layout() {
           apps_grid_view_->y() - suggestion_chip_container_view_->y();
 
       // Layout page switcher.
-      gfx::Rect page_switcher_rect = rect;
-      page_switcher_rect.Inset(grid_rect.right() + kAppsGridPageSwitcherSpacing,
-                               0, 0, 0);
-      page_switcher_rect.set_width(page_switcher_->GetPreferredSize().width());
-      page_switcher_->SetBoundsRect(page_switcher_rect);
+      page_switcher_->SetBoundsRect(
+          gfx::Rect(grid_rect.right() + kAppsGridPageSwitcherSpacing, rect.y(),
+                    page_switcher_width, rect.height()));
       break;
     }
     case SHOW_ACTIVE_FOLDER: {
@@ -369,6 +345,33 @@ void AppsContainerView::OnGestureEvent(ui::GestureEvent* event) {
     event->SetHandled();
 }
 
+gfx::Size AppsContainerView::GetMinimumSize() const {
+  const bool switch_cols_and_rows = ShouldSwitchColsAndRows();
+  const int cols = switch_cols_and_rows
+                       ? AppListConfig::instance().preferred_rows()
+                       : AppListConfig::instance().preferred_cols();
+  const int rows = switch_cols_and_rows
+                       ? AppListConfig::instance().preferred_cols()
+                       : AppListConfig::instance().preferred_rows();
+  gfx::Size min_size = apps_grid_view_->GetMinimumTileGridSize(cols, rows);
+
+  // Calculate the minimum size based on the Layout().
+  // Enlarge with the insets and margin.
+  min_size.Enlarge(
+      kAppsGridMinimumMargin * 2,
+      std::max(apps_grid_view_->GetInsets().top(), kAppsGridMinimumMargin) * 2);
+
+  // Enlarge with suggestion chips.
+  min_size.Enlarge(0,
+                   kSuggestionChipFullscreenY + kSuggestionChipContainerHeight);
+
+  // Enlarge with page switcher.
+  min_size.Enlarge((kAppsGridPageSwitcherSpacing +
+                    page_switcher_->GetPreferredSize().width()) * 2,
+                   0);
+  return min_size;
+}
+
 void AppsContainerView::OnWillBeHidden() {
   if (show_state_ == SHOW_APPS || show_state_ == SHOW_ITEM_REPARENT)
     apps_grid_view_->EndDrag(true);
@@ -390,7 +393,7 @@ views::View* AppsContainerView::GetFirstFocusableView() {
 
 gfx::Rect AppsContainerView::GetPageBoundsForState(
     ash::AppListState state) const {
-  return gfx::Rect(contents_view_->GetPreferredSize());
+  return contents_view_->GetContentsBounds();
 }
 
 gfx::Rect AppsContainerView::GetSearchBoxExpectedBounds() const {
@@ -408,74 +411,6 @@ gfx::Rect AppsContainerView::GetSearchBoxExpectedBounds() const {
         AppListConfig::instance().search_box_fullscreen_top_padding()));
   }
   return search_box_bounds;
-}
-
-int AppsContainerView::GetSearchBoxFinalTopPadding() const {
-  gfx::Rect search_box_bounds(contents_view_->GetDefaultSearchBoxBounds());
-  const int total_height =
-      GetPreferredSize().height() + search_box_bounds.height();
-
-  // Makes search box and content vertically centered in contents_view.
-  int y = std::max(
-      search_box_bounds.y(),
-      (contents_view_->GetPreferredSize().height() - total_height) / 2);
-
-  // Top padding of the searchbox should not be smaller than
-  // |kSearchBoxMinimumTopPadding|
-  return std::max(y, kSearchBoxMinimumTopPadding);
-}
-
-gfx::Rect AppsContainerView::GetPageBoundsDuringDragging(
-    ash::AppListState state) const {
-  const int shelf_height = AppListConfig::instance().shelf_height();
-  const float drag_amount = std::max(
-      0.f, static_cast<float>(
-               contents_view_->app_list_view()->GetCurrentAppListHeight() -
-               shelf_height));
-  const int peeking_height =
-      AppListConfig::instance().peeking_app_list_height();
-
-  float y = 0;
-  const float peeking_final_y =
-      AppListConfig::instance().search_box_peeking_top_padding() +
-      search_box::kSearchBoxPreferredHeight + kSearchBoxPeekingBottomPadding -
-      kSearchBoxBottomPadding;
-  if (drag_amount <= (peeking_height - shelf_height)) {
-    // App list is dragged from collapsed to peeking, which moved up at most
-    // |peeking_height - shelf_size| (272px). The top padding of apps
-    // container view changes from |-kSearchBoxFullscreenBottomPadding| to
-    // |kSearchBoxPeekingTopPadding + kSearchBoxPreferredHeight +
-    // kSearchBoxPeekingBottomPadding - kSearchBoxFullscreenBottomPadding|.
-    y = std::ceil(((peeking_final_y + kSearchBoxBottomPadding) * drag_amount) /
-                      (peeking_height - shelf_height) -
-                  kSearchBoxBottomPadding);
-  } else {
-    // App list is dragged from peeking to fullscreen, which moved up at most
-    // |peeking_to_fullscreen_height|. The top padding of apps container view
-    // changes from |peeking_final_y| to |final_y|.
-    float final_y =
-        GetSearchBoxFinalTopPadding() + search_box::kSearchBoxPreferredHeight;
-    float peeking_to_fullscreen_height =
-        contents_view_->GetPreferredSize().height() - peeking_height;
-    y = std::ceil((final_y - peeking_final_y) *
-                      (drag_amount - (peeking_height - shelf_height)) /
-                      peeking_to_fullscreen_height +
-                  peeking_final_y);
-    y = std::max(std::min(final_y, y), peeking_final_y);
-  }
-
-  gfx::Rect bounds = parent()->GetContentsBounds();
-  bounds.ClampToCenteredSize(GetPreferredSize());
-
-  // AppsContainerView page is shown in both STATE_START and STATE_APPS.
-  if (state == ash::AppListState::kStateApps ||
-      state == ash::AppListState::kStateStart) {
-    gfx::Point point(0, y);
-    ConvertPointToTarget(contents_view_, parent(), &point);
-    bounds.set_y(point.y());
-  }
-
-  return bounds;
 }
 
 void AppsContainerView::SetShowState(ShowState show_state,
@@ -541,6 +476,16 @@ int AppsContainerView::GetExpectedSuggestionChipY(float progress) {
   // state.
   return gfx::Tween::IntValueBetween(progress - 1, kSuggestionChipPeekingY,
                                      kSuggestionChipFullscreenY);
+}
+
+bool AppsContainerView::ShouldSwitchColsAndRows() const {
+  // Adapt columns and rows based on the work area size.
+  const gfx::Size size =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestView(GetWidget()->GetNativeView())
+          .work_area()
+          .size();
+  return size.width() < size.height();
 }
 
 }  // namespace app_list

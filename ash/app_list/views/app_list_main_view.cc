@@ -52,6 +52,11 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
       search_box_view_(nullptr),
       contents_view_(nullptr),
       app_list_view_(app_list_view) {
+  // We need a layer to apply transform to in small display so that the apps
+  // grid fits in the display.
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+
   model_->AddObserver(this);
 }
 
