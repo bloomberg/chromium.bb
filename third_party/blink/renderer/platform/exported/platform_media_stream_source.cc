@@ -21,6 +21,7 @@ PlatformMediaStreamSource::PlatformMediaStreamSource() {}
 
 PlatformMediaStreamSource::~PlatformMediaStreamSource() {
   DCHECK(stop_callback_.is_null());
+  owner_ = nullptr;
 }
 
 void PlatformMediaStreamSource::StopSource() {
@@ -31,13 +32,16 @@ void PlatformMediaStreamSource::StopSource() {
 void PlatformMediaStreamSource::FinalizeStopSource() {
   if (!stop_callback_.is_null())
     base::ResetAndReturn(&stop_callback_).Run(Owner());
-  Owner().SetReadyState(blink::WebMediaStreamSource::kReadyStateEnded);
+  if (Owner())
+    Owner().SetReadyState(blink::WebMediaStreamSource::kReadyStateEnded);
 }
 
 void PlatformMediaStreamSource::SetSourceMuted(bool is_muted) {
   // Although this change is valid only if the ready state isn't already Ended,
   // there's code further along (like in blink::MediaStreamTrack) which filters
   // that out already.
+  if (!Owner())
+    return;
   Owner().SetReadyState(is_muted
                             ? blink::WebMediaStreamSource::kReadyStateMuted
                             : blink::WebMediaStreamSource::kReadyStateLive);
@@ -66,7 +70,7 @@ void PlatformMediaStreamSource::ChangeSource(
 
 WebMediaStreamSource PlatformMediaStreamSource::Owner() {
   DCHECK(owner_);
-  return WebMediaStreamSource(owner_);
+  return WebMediaStreamSource(owner_.Get());
 }
 
 #if INSIDE_BLINK

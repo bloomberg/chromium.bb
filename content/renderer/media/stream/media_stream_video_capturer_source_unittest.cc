@@ -153,6 +153,8 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
 
   void OnSourceStopped(const blink::WebMediaStreamSource& source) {
     source_stopped_ = true;
+    if (source.IsNull())
+      return;
     EXPECT_EQ(source.Id(), webkit_source_id_);
   }
   void OnStarted(bool result) {

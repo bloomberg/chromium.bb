@@ -88,10 +88,10 @@ class BLINK_PLATFORM_EXPORT PlatformMediaStreamSource {
  private:
   MediaStreamDevice device_;
   SourceStoppedCallback stop_callback_;
-#if INSIDE_BLINK
-  GC_PLUGIN_IGNORE("http://crbug.com/409526")
-#endif
-  MediaStreamSource* owner_ = nullptr;
+  blink::WebPrivatePtr<MediaStreamSource,
+                       kWebPrivatePtrDestructionSameThread,
+                       WebPrivatePtrStrength::kWeak>
+      owner_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformMediaStreamSource);
 };
