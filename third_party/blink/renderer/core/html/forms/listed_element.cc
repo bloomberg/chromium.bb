@@ -28,10 +28,14 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/id_target_observer.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
+#include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/html_data_list_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_field_set_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element_with_state.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_legend_element.h"
 #include "third_party/blink/renderer/core/html/forms/validity_state.h"
@@ -114,6 +118,13 @@ void ListedElement::InsertedInto(ContainerNode& insertion_point) {
   FieldSetAncestorsSetNeedsValidityCheck(&insertion_point);
   DisabledStateMightBeChanged();
 
+  if (IsFormControlElementWithState() && insertion_point.isConnected() &&
+      !element->ContainingShadowRoot()) {
+    element->GetDocument()
+        .GetFormController()
+        .InvalidateStatefulFormControlList();
+  }
+
   // Trigger for elements outside of forms.
   if (!form_ && insertion_point.isConnected())
     element->GetDocument().DidAssociateFormControl(element);
@@ -141,6 +152,14 @@ void ListedElement::RemovedFrom(ContainerNode& insertion_point) {
     ResetFormOwner();
 
   DisabledStateMightBeChanged();
+
+  if (IsFormControlElementWithState() && insertion_point.isConnected() &&
+      !element->ContainingShadowRoot() &&
+      !insertion_point.ContainingShadowRoot()) {
+    element->GetDocument()
+        .GetFormController()
+        .InvalidateStatefulFormControlList();
+  }
 }
 
 HTMLFormElement* ListedElement::FindAssociatedForm(
@@ -568,6 +587,34 @@ bool ListedElement::IsActuallyDisabled() const {
   if (ancestor_disabled_state_ == AncestorDisabledState::kUnknown)
     UpdateAncestorDisabledState();
   return ancestor_disabled_state_ == AncestorDisabledState::kDisabled;
+}
+
+bool ListedElement::ShouldSaveAndRestoreFormControlState() const {
+  return false;
+}
+
+FormControlState ListedElement::SaveFormControlState() const {
+  return FormControlState();
+}
+
+void ListedElement::RestoreFormControlState(const FormControlState& state) {}
+
+void ListedElement::NotifyFormStateChanged() {
+  Document& doc = ToHTMLElement(*this).GetDocument();
+  // This can be called during fragment parsing as a result of option
+  // selection before the document is active (or even in a frame).
+  if (!doc.IsActive())
+    return;
+  doc.GetFrame()->Client()->DidUpdateCurrentHistoryItem();
+}
+
+void ListedElement::TakeStateAndRestore() {
+  if (IsFormControlElementWithState()) {
+    ToHTMLElement(*this)
+        .GetDocument()
+        .GetFormController()
+        .RestoreControlStateFor(ToHTMLFormControlElementWithState(*this));
+  }
 }
 
 void ListedElement::SetFormAttributeTargetObserver(

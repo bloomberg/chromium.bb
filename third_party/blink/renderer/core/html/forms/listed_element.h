@@ -36,6 +36,7 @@ class ContainerNode;
 class Document;
 class Element;
 class FormAttributeTargetObserver;
+class FormControlState;
 class FormData;
 class HTMLElement;
 class HTMLFormElement;
@@ -145,6 +146,16 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
 
   // https://html.spec.whatwg.org/multipage/semantics-other.html#concept-element-disabled
   bool IsActuallyDisabled() const;
+
+  virtual bool ShouldSaveAndRestoreFormControlState() const;
+  virtual FormControlState SaveFormControlState() const;
+  // The specified FormControlState must have at least one string value.
+  virtual void RestoreFormControlState(const FormControlState& state);
+  // This should be called whenever an element supports state restore changes
+  // its state.
+  void NotifyFormStateChanged();
+  // This should be called in Element::FinishParsingChildren() override.
+  void TakeStateAndRestore();
 
   void Trace(blink::Visitor*) override;
 
