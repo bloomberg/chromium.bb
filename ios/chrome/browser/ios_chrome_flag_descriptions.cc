@@ -361,6 +361,11 @@ const char kSearchIconToggleName[] = "Change the icon for the search button";
 const char kSearchIconToggleDescription[] =
     "Different icons for the search button.";
 
+const char kSettingsRefreshName[] = "Enable the UI Refresh for Settings";
+const char kSettingsRefreshDescription[] =
+    "Change the UI appearance of the settings to have something in phase with "
+    "UI Refresh.";
+
 const char kSlimNavigationManagerName[] = "Use Slim Navigation Manager";
 const char kSlimNavigationManagerDescription[] =
     "When enabled, uses the experimental slim navigation manager that provides "

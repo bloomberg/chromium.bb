@@ -291,6 +291,11 @@ extern const char kIgnoresViewportScaleLimitsDescription[];
 extern const char kSearchIconToggleName[];
 extern const char kSearchIconToggleDescription[];
 
+// Title and description for the flag to toggle the flag for the settings UI
+// Refresh.
+extern const char kSettingsRefreshName[];
+extern const char kSettingsRefreshDescription[];
+
 // Title and description for the flag to enable WKBackForwardList based
 // navigation manager.
 extern const char kSlimNavigationManagerName[];
