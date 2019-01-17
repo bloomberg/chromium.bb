@@ -14,11 +14,16 @@
 #include "components/translate/core/browser/translate_driver.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace content {
 class NavigationController;
 class WebContents;
 }
+
+namespace language {
+class UrlLanguageHistogram;
+}  // namespace language
 
 namespace translate {
 
@@ -27,6 +32,7 @@ class TranslateManager;
 
 // Content implementation of TranslateDriver.
 class ContentTranslateDriver : public TranslateDriver,
+                               public translate::mojom::ContentTranslateDriver,
                                public content::WebContentsObserver {
  public:
   // The observer for the ContentTranslateDriver.
@@ -52,8 +58,9 @@ class ContentTranslateDriver : public TranslateDriver,
     virtual ~Observer() {}
   };
 
-  explicit ContentTranslateDriver(
-      content::NavigationController* nav_controller);
+  ContentTranslateDriver(
+      content::NavigationController* nav_controller,
+      language::UrlLanguageHistogram* url_language_histogram);
   ~ContentTranslateDriver() override;
 
   // Adds or Removes observers.
@@ -100,10 +107,12 @@ class ContentTranslateDriver : public TranslateDriver,
                         const std::string& translated_lang,
                         TranslateErrors::Type error_type);
 
+  // Adds a binding in |bindings_| for the passed |request|.
+  void AddBinding(translate::mojom::ContentTranslateDriverRequest request);
   // Called when a page has been loaded and can be potentially translated.
-  void OnPageReady(mojom::PagePtr page,
-                   const LanguageDetectionDetails& details,
-                   bool page_needs_translation);
+  void RegisterPage(translate::mojom::PagePtr page,
+                    const translate::LanguageDetectionDetails& details,
+                    bool page_needs_translation) override;
 
  private:
   void OnPageAway(int page_seq_no);
@@ -120,7 +129,19 @@ class ContentTranslateDriver : public TranslateDriver,
 
   // Records mojo connections with all current alive pages.
   int next_page_seq_no_;
+  // PagePtr is the connection between this driver and a TranslateHelper (which
+  // are per RenderFrame). Each TranslateHelper has a |binding_| member,
+  // representing the other end of this pipe.
   std::map<int, mojom::PagePtr> pages_;
+
+  // Histogram to be notified about detected language of every page visited. Not
+  // owned here.
+  language::UrlLanguageHistogram* const language_histogram_;
+
+  // ContentTranslateDriver is a singleton per web contents but multiple render
+  // frames may be contained in a single web contents. TranslateHelpers get the
+  // other end of this binding in the form of a ContentTranslateDriverPtr.
+  mojo::BindingSet<translate::mojom::ContentTranslateDriver> bindings_;
 
   base::WeakPtrFactory<ContentTranslateDriver> weak_pointer_factory_;
 

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/language/core/browser/url_language_histogram.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -34,12 +35,14 @@ const int kMaxTranslateLoadCheckAttempts = 20;
 namespace translate {
 
 ContentTranslateDriver::ContentTranslateDriver(
-    content::NavigationController* nav_controller)
+    content::NavigationController* nav_controller,
+    language::UrlLanguageHistogram* url_language_histogram)
     : content::WebContentsObserver(nav_controller->GetWebContents()),
       navigation_controller_(nav_controller),
       translate_manager_(nullptr),
       max_reload_check_attempts_(kMaxTranslateLoadCheckAttempts),
       next_page_seq_no_(0),
+      language_histogram_(url_language_histogram),
       weak_pointer_factory_(this) {
   DCHECK(navigation_controller_);
 }
@@ -236,10 +239,20 @@ void ContentTranslateDriver::OnPageAway(int page_seq_no) {
   pages_.erase(page_seq_no);
 }
 
-void ContentTranslateDriver::OnPageReady(
-    mojom::PagePtr page,
-    const LanguageDetectionDetails& details,
-    bool page_needs_translation) {
+void ContentTranslateDriver::AddBinding(
+    translate::mojom::ContentTranslateDriverRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+}
+
+void ContentTranslateDriver::RegisterPage(
+    translate::mojom::PagePtr page,
+    const translate::LanguageDetectionDetails& details,
+    const bool page_needs_translation) {
+  // If we have a language histogram (i.e. we're not in incognito), update it
+  // with the detected language of every page visited.
+  if (language_histogram_ && details.is_cld_reliable)
+    language_histogram_->OnPageVisited(details.cld_language);
+
   pages_[++next_page_seq_no_] = std::move(page);
   pages_[next_page_seq_no_].set_connection_error_handler(
       base::BindOnce(&ContentTranslateDriver::OnPageAway,
