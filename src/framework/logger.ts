@@ -101,7 +101,6 @@ export class CaseRecorder {
   public threw(e: Error) {
     this.failed = true;
     let m = "EXCEPTION";
-    console.log(e);
     m += " " + getStackTrace(e);
     this.log(m);
   }
