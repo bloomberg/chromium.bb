@@ -70,8 +70,6 @@ class MimeHandlerViewAttachHelper : content::RenderProcessHostObserver {
   std::map<int32_t, std::unique_ptr<FrameNavigationHelper>>
       frame_navigation_helpers_;
 
-  static const uint32_t kFilteredMessageClasses[];
-
   content::RenderProcessHost* const render_process_host_;
 
   base::WeakPtrFactory<MimeHandlerViewAttachHelper> weak_factory_;
