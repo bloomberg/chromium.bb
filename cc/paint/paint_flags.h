@@ -53,18 +53,10 @@ class CC_PAINT_EXPORT PaintFlags {
   ALWAYS_INLINE SkBlendMode getBlendMode() const {
     return static_cast<SkBlendMode>(blend_mode_);
   }
-  ALWAYS_INLINE bool isAntiAlias() const {
-    return !!(bitfields_.flags_ & SkPaint::kAntiAlias_Flag);
-  }
-  ALWAYS_INLINE void setAntiAlias(bool aa) {
-    SetInternalFlag(aa, SkPaint::kAntiAlias_Flag);
-  }
-  ALWAYS_INLINE bool isDither() const {
-    return !!(bitfields_.flags_ & SkPaint::kDither_Flag);
-  }
-  ALWAYS_INLINE void setDither(bool dither) {
-    SetInternalFlag(dither, SkPaint::kDither_Flag);
-  }
+  ALWAYS_INLINE bool isAntiAlias() const { return bitfields_.antialias_; }
+  ALWAYS_INLINE void setAntiAlias(bool aa) { bitfields_.antialias_ = aa; }
+  ALWAYS_INLINE bool isDither() const { return bitfields_.dither_; }
+  ALWAYS_INLINE void setDither(bool dither) { bitfields_.dither_ = dither; }
   ALWAYS_INLINE void setFilterQuality(SkFilterQuality quality) {
     bitfields_.filter_quality_ = quality;
   }
@@ -168,13 +160,6 @@ class CC_PAINT_EXPORT PaintFlags {
   friend class PaintOpReader;
   friend class PaintOpWriter;
 
-  ALWAYS_INLINE void SetInternalFlag(bool value, uint32_t mask) {
-    if (value)
-      bitfields_.flags_ |= mask;
-    else
-      bitfields_.flags_ &= ~mask;
-  }
-
   sk_sp<SkPathEffect> path_effect_;
   sk_sp<PaintShader> shader_;
   sk_sp<SkMaskFilter> mask_filter_;
@@ -190,7 +175,8 @@ class CC_PAINT_EXPORT PaintFlags {
   uint32_t blend_mode_ = static_cast<uint32_t>(SkBlendMode::kSrcOver);
 
   struct PaintFlagsBitfields {
-    uint32_t flags_ : 16;  // TODO(fmalita): only 3 bits used - squeeze?
+    uint32_t antialias_ : 1;
+    uint32_t dither_ : 1;
     uint32_t cap_type_ : 2;
     uint32_t join_type_ : 2;
     uint32_t style_ : 2;

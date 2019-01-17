@@ -136,7 +136,8 @@ SkPaint PaintFlags::ToSkPaint() const {
   paint.setStrokeWidth(width_);
   paint.setStrokeMiter(miter_limit_);
   paint.setBlendMode(getBlendMode());
-  paint.setFlags(bitfields_.flags_);
+  paint.setAntiAlias(bitfields_.antialias_);
+  paint.setDither(bitfields_.dither_);
   paint.setStrokeCap(static_cast<SkPaint::Cap>(getStrokeCap()));
   paint.setStrokeJoin(static_cast<SkPaint::Join>(getStrokeJoin()));
   paint.setStyle(static_cast<SkPaint::Style>(getStyle()));

@@ -342,7 +342,7 @@ void AppendFlagToString(String* flags_string, bool is_set, const String& name) {
 }
 
 String StringForSkPaintFlags(const SkPaint& paint) {
-  if (!paint.getFlags())
+  if (!paint.isAntiAlias() && !paint.isDither())
     return "none";
   String flags_string = "";
   AppendFlagToString(&flags_string, paint.isAntiAlias(), "AntiAlias");
