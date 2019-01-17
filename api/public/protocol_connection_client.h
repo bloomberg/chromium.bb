@@ -50,9 +50,9 @@ class ProtocolConnectionClient {
 
     uint64_t request_id() const { return request_id_; }
 
-    // Records that the requested connect operation is successful so it doesn't
+    // Records that the requested connect operation is complete so it doesn't
     // need to attempt a cancel on destruction.
-    void MarkSuccess() { request_id_ = 0; }
+    void MarkComplete() { request_id_ = 0; }
 
    private:
     ProtocolConnectionClient* parent_ = nullptr;
@@ -88,6 +88,8 @@ class ProtocolConnectionClient {
   // (e.g. there are no existing open connections to that endpoint).
   virtual std::unique_ptr<ProtocolConnection> CreateProtocolConnection(
       uint64_t endpoint_id) = 0;
+
+  MessageDemuxer* message_demuxer() const { return demuxer_; }
 
   // Returns the current state of the listener.
   State state() const { return state_; }

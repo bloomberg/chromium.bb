@@ -82,9 +82,9 @@ TEST_F(MessageDemuxerTest, WatchStartStop) {
       .WillOnce(Invoke([&decode_result, &received_request](
                            uint64_t endpoint_id, uint64_t connection_id,
                            msgs::Type message_type, const uint8_t* buffer,
-                           size_t buffer_sizesize) {
+                           size_t buffer_size) {
         decode_result = msgs::DecodePresentationConnectionOpenRequest(
-            buffer, buffer_sizesize, &received_request);
+            buffer, buffer_size, &received_request);
         return ConvertDecodeResult(decode_result);
       }));
   demuxer_.OnStreamData(endpoint_id_, connection_id_, buffer_.data(),

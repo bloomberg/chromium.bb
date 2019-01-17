@@ -13,6 +13,8 @@
 
 namespace openscreen {
 
+// This contains canonical information about a specific screen found on the
+// network via our discovery mechanism (mDNS).
 struct ScreenInfo {
   bool operator==(const ScreenInfo& other) const;
   bool operator!=(const ScreenInfo& other) const;

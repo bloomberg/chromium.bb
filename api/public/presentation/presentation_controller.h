@@ -26,10 +26,20 @@ class ScreenObserver {
  public:
   virtual ~ScreenObserver() = default;
 
+  // Called when there is an unrecoverable error in requesting availability.
+  // This means the availability is unknown and there is no further response to
+  // wait for.
+  virtual void OnRequestFailed(const std::string& presentation_url,
+                               const std::string& screen_id) = 0;
+
   // Called when screens compatible with |presentation_url| are known to be
   // available.
-  virtual void OnScreensAvailable(const std::string& presentation_url,
-                                  const std::string& screen_id) = 0;
+  virtual void OnScreenAvailable(const std::string& presentation_url,
+                                 const std::string& screen_id) = 0;
+  // Called when screens compatible with |presentation_url| are known to be
+  // unavailable.
+  virtual void OnScreenUnavailable(const std::string& presentation_url,
+                                   const std::string& screen_id) = 0;
 };
 
 class Controller {

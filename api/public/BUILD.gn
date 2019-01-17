@@ -6,6 +6,8 @@ source_set("api") {
   sources = [
     "client_config.cc",
     "client_config.h",
+    "clock.cc",
+    "clock.h",
     "mdns_screen_listener_factory.h",
     "mdns_screen_publisher_factory.h",
     "message_demuxer.cc",

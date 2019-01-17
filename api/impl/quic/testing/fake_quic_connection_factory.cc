@@ -41,6 +41,18 @@ FakeQuicStream* FakeQuicConnectionFactory::StartIncomingStream(
   return ptr;
 }
 
+FakeQuicStream* FakeQuicConnectionFactory::GetIncomingStream(
+    const IPEndpoint& endpoint,
+    uint64_t connection_id) {
+  auto connection_entry = connections_.find(endpoint);
+  if (connection_entry == connections_.end())
+    return nullptr;
+  auto stream_entry = connection_entry->second->streams().find(connection_id);
+  if (stream_entry == connection_entry->second->streams().end())
+    return nullptr;
+  return stream_entry->second;
+}
+
 void FakeQuicConnectionFactory::OnConnectionClosed(QuicConnection* connection) {
   for (auto entry = connections_.begin(); entry != connections_.end();
        ++entry) {

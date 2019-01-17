@@ -50,16 +50,17 @@ timestamp = (
 presentation-url-availability-request = {
   request
   urls: [* url]
+  watch-id: uint
 }
 
 presentation-url-availability-response = {
   response
-  timestamp
   url-availabilities: [* presentation-url-availability]
 }
 
 presentation-url-availability-event = {
-  timestamp
+  watch-id: uint
+  urls: [* url]
   url-availabilities: [* presentation-url-availability]
 }
 
@@ -122,10 +123,13 @@ presentation-termination-event = {
   reason: &(
     receiver: 1
     user-via-receiver: 2
+    receiver-shutting-down: 3
     controller: 10
     user-via-controller: 11
     new-replacing-current: 20
+    unloaded: 21
     idle-too-long: 30
+    terminate: 40
   )
 }
 

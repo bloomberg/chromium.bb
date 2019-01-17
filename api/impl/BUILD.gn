@@ -13,6 +13,8 @@ source_set("impl") {
     "mdns_screen_listener_factory.cc",
     "mdns_screen_publisher_factory.cc",
     "network_service_manager.cc",
+    "presentation/url_availability_requester.cc",
+    "presentation/url_availability_requester.h",
     "screen_list.cc",
     "screen_list.h",
     "screen_listener_impl.cc",

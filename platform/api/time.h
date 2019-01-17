@@ -12,6 +12,9 @@ namespace platform {
 
 class TimeDelta {
  public:
+  constexpr static TimeDelta FromSeconds(int64_t sec) {
+    return TimeDelta(sec * 1000000);
+  }
   constexpr static TimeDelta FromMilliseconds(int64_t msec) {
     return TimeDelta(msec * 1000);
   }
@@ -23,11 +26,24 @@ class TimeDelta {
   constexpr int64_t AsMilliseconds() const { return microseconds_ / 1000; }
   constexpr int64_t AsMicroseconds() const { return microseconds_; }
 
+  constexpr TimeDelta& operator-=(TimeDelta t) {
+    microseconds_ -= t.microseconds_;
+    return *this;
+  }
+
+  constexpr TimeDelta& operator+=(TimeDelta t) {
+    microseconds_ += t.microseconds_;
+    return *this;
+  }
+
  private:
   constexpr explicit TimeDelta(int64_t usec) : microseconds_(usec) {}
 
   friend constexpr TimeDelta operator-(TimeDelta t1, TimeDelta t2) {
     return TimeDelta(t1.microseconds_ - t2.microseconds_);
+  }
+  friend constexpr TimeDelta operator+(TimeDelta t1, TimeDelta t2) {
+    return TimeDelta(t1.microseconds_ + t2.microseconds_);
   }
   friend constexpr bool operator<(TimeDelta t1, TimeDelta t2) {
     return t1.microseconds_ < t2.microseconds_;

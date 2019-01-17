@@ -379,6 +379,7 @@ bool WriteEncoder(int fd,
     } break;
     case CppType::Which::kVector: {
       std::string cid = ToUnderscoreId(name);
+      dprintf(fd, "  {\n");
       dprintf(fd, "  CborEncoder encoder%d;\n", encoder_depth + 1);
       dprintf(fd,
               "  CBOR_RETURN_ON_ERROR(cbor_encoder_create_array(&encoder%d, "
@@ -394,6 +395,7 @@ bool WriteEncoder(int fd,
               "  CBOR_RETURN_ON_ERROR(cbor_encoder_close_container(&encoder%d, "
               "&encoder%d));\n",
               encoder_depth, encoder_depth + 1);
+      dprintf(fd, "  }\n");
       return true;
     } break;
     case CppType::Which::kEnum: {
@@ -835,6 +837,7 @@ bool WriteDecoder(int fd,
               decoder_depth);
       dprintf(fd, "    return -1;\n");
       dprintf(fd, "  }\n");
+      dprintf(fd, "  {\n");
       dprintf(fd, "  CborValue it%d;\n", decoder_depth + 1);
       dprintf(fd, "  size_t it%d_length = 0;\n", decoder_depth + 1);
       dprintf(fd,
@@ -859,6 +862,7 @@ bool WriteDecoder(int fd,
           fd,
           "  CBOR_RETURN_ON_ERROR(cbor_value_leave_container(&it%d, &it%d));\n",
           decoder_depth, decoder_depth + 1);
+      dprintf(fd, "  }\n");
       return true;
     } break;
     case CppType::Which::kEnum: {
@@ -1188,8 +1192,14 @@ bool WriteHeaderPrologue(int fd, const std::string& header_filename) {
 #include <string>
 #include <vector>
 
+#include "third_party/tinycbor/src/src/cbor.h"
+
 namespace openscreen {
 namespace msgs {
+
+enum CborErrors {
+  kParserEOF = -CborErrorUnexpectedEOF,
+};
 
 class CborEncodeBuffer;
 )";
@@ -1238,7 +1248,6 @@ bool WriteSourcePrologue(int fd, const std::string& header_filename) {
       R"(#include "%s"
 
 #include "platform/api/logging.h"
-#include "third_party/tinycbor/src/src/cbor.h"
 #include "third_party/tinycbor/src/src/utf8_p.h"
 
 namespace openscreen {

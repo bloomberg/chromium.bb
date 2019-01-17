@@ -6,10 +6,12 @@
 #define API_PUBLIC_MESSAGE_DEMUXER_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/error.h"
 #include "msgs/osp_messages.h"
+#include "platform/api/time.h"
 
 namespace openscreen {
 
@@ -74,6 +76,8 @@ class MessageDemuxer {
                                           MessageCallback* callback);
 
   // Gives data from |endpoint_id| to the demuxer for processing.
+  // TODO(btolsch): It'd be nice if errors could propagate out of here to close
+  // the stream.
   void OnStreamData(uint64_t endpoint_id,
                     uint64_t connection_id,
                     const uint8_t* data,
@@ -106,6 +110,10 @@ class MessageDemuxer {
   std::map<msgs::Type, MessageCallback*> default_callbacks_;
   std::map<uint64_t, std::map<uint64_t, std::vector<uint8_t>>> buffers_;
 };
+
+// TODO(btolsch): Make sure all uses of MessageWatch are converted to this
+// resest function for readability.
+void StopWatching(MessageDemuxer::MessageWatch* watch);
 
 }  // namespace openscreen
 

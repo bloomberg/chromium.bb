@@ -25,6 +25,7 @@ source_set("api_unittests") {
 
   sources = [
     "impl/mdns_responder_service_unittest.cc",
+    "impl/presentation/url_availability_requester_unittest.cc",
     "impl/quic/quic_client_unittest.cc",
     "impl/quic/quic_server_unittest.cc",
     "impl/screen_list_unittest.cc",

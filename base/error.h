@@ -20,9 +20,12 @@ class Error {
   enum class Code {
     // No error occurred.
     kNone = 0,
-    // CBOR parsing error.
+    // CBOR errors.
     kCborParsing = 1,
+    kCborEncoding,
     kCborIncompleteMessage,
+    kCborInvalidResponseId,
+    kCborInvalidMessage,
 
     // Presentation start errors.
     kNoAvailableScreens,

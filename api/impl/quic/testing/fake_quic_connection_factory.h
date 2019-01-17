@@ -23,6 +23,8 @@ class FakeQuicConnectionFactory final : public QuicConnectionFactory {
 
   void StartServerConnection(const IPEndpoint& endpoint);
   FakeQuicStream* StartIncomingStream(const IPEndpoint& endpoint);
+  FakeQuicStream* GetIncomingStream(const IPEndpoint& endpoint,
+                                    uint64_t connection_id);
   void OnConnectionClosed(QuicConnection* connection);
 
   // QuicConnectionFactory overrides.
