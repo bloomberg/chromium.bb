@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
 #include "third_party/blink/renderer/core/svg/svg_path_utilities.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
+#include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -1390,8 +1391,8 @@ CSSValue* ConsumeFontStyle(CSSParserTokenRange& range,
   CSSIdentifierValue* oblique_identifier =
       css_property_parser_helpers::ConsumeIdent<CSSValueOblique>(range);
 
-  CSSPrimitiveValue* start_angle =
-      css_property_parser_helpers::ConsumeAngle(range, nullptr, base::nullopt);
+  CSSPrimitiveValue* start_angle = css_property_parser_helpers::ConsumeAngle(
+      range, nullptr, base::nullopt, MinObliqueValue(), MaxObliqueValue());
   if (!start_angle)
     return oblique_identifier;
   if (!IsAngleWithinLimits(start_angle))
@@ -1403,8 +1404,8 @@ CSSValue* ConsumeFontStyle(CSSParserTokenRange& range,
     return CSSFontStyleRangeValue::Create(*oblique_identifier, *value_list);
   }
 
-  CSSPrimitiveValue* end_angle =
-      css_property_parser_helpers::ConsumeAngle(range, nullptr, base::nullopt);
+  CSSPrimitiveValue* end_angle = css_property_parser_helpers::ConsumeAngle(
+      range, nullptr, base::nullopt, MinObliqueValue(), MaxObliqueValue());
   if (!end_angle || !IsAngleWithinLimits(end_angle))
     return nullptr;
 
