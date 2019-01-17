@@ -6,6 +6,8 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/web_preferences.h"
 #include "device/vr/buildflags/buildflags.h"
@@ -74,7 +76,21 @@ void VrTabHelper::SetIsContentDisplayedInHeadset(content::WebContents* contents,
     VrTabHelper::CreateForWebContents(contents);
     vr_tab_helper = VrTabHelper::FromWebContents(contents);
   }
+  bool old_state = vr_tab_helper->IsContentDisplayedInHeadset(contents);
   vr_tab_helper->SetIsContentDisplayedInHeadset(state);
+  if (old_state != state) {
+#if !defined(OS_ANDROID)
+    Browser* browser = chrome::FindBrowserWithWebContents(contents);
+    if (browser) {
+      TabStripModel* tab_strip_model = browser->tab_strip_model();
+      if (tab_strip_model) {
+        tab_strip_model->UpdateWebContentsStateAt(
+            tab_strip_model->GetIndexOfWebContents(contents),
+            TabChangeType::kAll);
+      }
+    }
+#endif
+  }
 }
 
 void VrTabHelper::SetIsContentDisplayedInHeadset(bool state) {

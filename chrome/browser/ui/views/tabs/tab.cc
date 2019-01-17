@@ -650,6 +650,7 @@ SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
     case TabAlertState::BLUETOOTH_CONNECTED:
     case TabAlertState::USB_CONNECTED:
     case TabAlertState::NONE:
+    case TabAlertState::VR_PRESENTING_IN_HEADSET:
       return button_color_;
     default:
       NOTREACHED();

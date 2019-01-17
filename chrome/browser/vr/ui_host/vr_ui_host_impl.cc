@@ -9,6 +9,7 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
+#include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/vr/win/vr_browser_renderer_thread_win.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_controller.h"
@@ -70,6 +71,11 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
     permission_request_manager_->RemoveObserver(this);
     permission_request_manager_ = nullptr;
   }
+
+  if (web_contents_)
+    VrTabHelper::SetIsContentDisplayedInHeadset(web_contents_, false);
+  if (contents)
+    VrTabHelper::SetIsContentDisplayedInHeadset(contents, true);
 
   web_contents_ = contents;
   if (contents) {
