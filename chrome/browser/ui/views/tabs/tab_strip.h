@@ -116,8 +116,6 @@ class TabStrip : public views::AccessiblePaneView,
   // keep the throbbers in sync.
   void UpdateLoadingAnimations(const base::TimeDelta& elapsed_time);
 
-  bool IsAnyIconAnimating() const;
-
   // If |adjust_layout| is true the stacked layout changes based on whether the
   // user uses a mouse or a touch device with the tabstrip.
   void set_adjust_layout(bool adjust_layout) { adjust_layout_ = adjust_layout; }
