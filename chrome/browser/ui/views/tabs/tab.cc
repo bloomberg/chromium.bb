@@ -735,10 +735,6 @@ void Tab::StepLoadingAnimation(const base::TimeDelta& elapsed_time) {
   icon_->SetCanPaintToLayer(controller_->CanPaintThrobberToLayer());
 }
 
-bool Tab::ShowingLoadingAnimation() const {
-  return icon_->ShowingLoadingAnimation();
-}
-
 void Tab::SetTabNeedsAttention(bool attention) {
   icon_->SetAttention(TabIcon::AttentionType::kTabWantsAttentionStatus,
                       attention);

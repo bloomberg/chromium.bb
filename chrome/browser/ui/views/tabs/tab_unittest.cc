@@ -34,12 +34,6 @@
 
 using views::Widget;
 
-namespace {
-bool UsingNewLoadingAnimation() {
-  return base::FeatureList::IsEnabled(features::kNewTabLoadingAnimation);
-}
-}  // namespace
-
 class FakeTabController : public TabController {
  public:
   FakeTabController() {}
@@ -318,15 +312,6 @@ class TabTest : public ChromeViewsTestBase {
   }
 
   void SetupFakeClock(TabIcon* icon) { icon->clock_ = &fake_clock_; }
-
-  void FinishRunningLoadingAnimations(TabIcon* icon) {
-    // Forward the clock enough for any running animations to finish.
-    DCHECK(icon->clock_ == &fake_clock_);
-    constexpr base::TimeDelta delta = base::TimeDelta::FromMilliseconds(2000);
-    fake_clock_.Advance(delta);
-    icon->StepLoadingAnimation(icon->waiting_state_.elapsed_time + delta);
-    icon->animation_state_ = icon->pending_animation_state_;
-  }
 
  protected:
   void InitWidget(Widget* widget) {
@@ -613,12 +598,6 @@ TEST_F(TabTest, LayeredThrobber) {
   EXPECT_TRUE(icon->layer());
   data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
-  if (UsingNewLoadingAnimation()) {
-    // The post-loading animation should still be playing (loading bar fades
-    // out).
-    EXPECT_TRUE(icon->ShowingLoadingAnimation());
-    FinishRunningLoadingAnimations(icon);
-  }
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
 
   // Simulate a tab that should hide throbber.
@@ -648,12 +627,6 @@ TEST_F(TabTest, LayeredThrobber) {
   EXPECT_TRUE(icon->layer());
   data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
-  if (UsingNewLoadingAnimation()) {
-    // The post-loading animation should still be playing (loading bar fades
-    // out).
-    EXPECT_TRUE(icon->ShowingLoadingAnimation());
-    FinishRunningLoadingAnimations(icon);
-  }
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
 
   // After loading is done, simulate another resource starting to load.
@@ -664,7 +637,6 @@ TEST_F(TabTest, LayeredThrobber) {
   // Reset.
   data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
-  FinishRunningLoadingAnimations(icon);
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
 
   // Simulate a drag started and stopped during a load: layer painting stops
@@ -683,7 +655,6 @@ TEST_F(TabTest, LayeredThrobber) {
   EXPECT_TRUE(icon->layer());
   data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
-  FinishRunningLoadingAnimations(icon);
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
 
   // Simulate a tab load starting and stopping during tab dragging (or with
@@ -695,7 +666,6 @@ TEST_F(TabTest, LayeredThrobber) {
   EXPECT_FALSE(icon->layer());
   data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
-  FinishRunningLoadingAnimations(icon);
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
 }
 

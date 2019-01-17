@@ -28,12 +28,6 @@
 
 namespace {
 
-constexpr int kFinishedLoadingAnimationTimeMs = 375;
-constexpr int kFinishedLoadingFadeOutTimeMs = 150;
-constexpr int kFaviconFadeInMs = 350;
-constexpr int kFaviconPlaceholderFadeInMs = 400;
-constexpr int kFaviconPlaceholderFadeOutMs = 150;
-
 bool UseNewLoadingAnimation() {
   return base::FeatureList::IsEnabled(features::kNewTabLoadingAnimation);
 }
@@ -52,16 +46,6 @@ bool ShouldThemifyFaviconForUrl(const GURL& url) {
 bool NetworkStateIsAnimated(TabNetworkState network_state) {
   return network_state != TabNetworkState::kNone &&
          network_state != TabNetworkState::kError;
-}
-
-// Returns a rect in which the throbber should be painted.
-gfx::RectF GetThrobberBounds(const gfx::Rect& bounds) {
-  gfx::RectF throbber_bounds(bounds);
-  constexpr float kThrobberHeightDp = 3;
-  // The throbber starts 1dp below the tab icon.
-  throbber_bounds.set_y(bounds.bottom() + 1);
-  throbber_bounds.set_height(kThrobberHeightDp);
-  return throbber_bounds;
 }
 
 }  // namespace
@@ -94,8 +78,6 @@ class TabIcon::CrashAnimation : public gfx::LinearAnimation,
   DISALLOW_COPY_AND_ASSIGN(CrashAnimation);
 };
 
-TabIcon::LoadingAnimationState::LoadingAnimationState() = default;
-
 TabIcon::TabIcon() : clock_(base::DefaultTickClock::GetInstance()) {
   set_can_process_events_within_subtree(false);
 
@@ -123,7 +105,7 @@ void TabIcon::SetData(const TabRendererData& data) {
 
   if (was_showing_load && !showing_load) {
     // Loading animation transitioning from on to off.
-    old_animation_loading_start_time_ = base::TimeTicks();
+    loading_animation_start_time_ = base::TimeTicks();
     waiting_state_ = gfx::ThrobberWaitingState();
     SchedulePaint();
   } else if (!was_showing_load && showing_load) {
@@ -148,26 +130,7 @@ bool TabIcon::ShowingLoadingAnimation() const {
   if (inhibit_loading_animation_)
     return false;
 
-  if (NetworkStateIsAnimated(network_state_))
-    return true;
-
-  if (!UseNewLoadingAnimation())
-    return false;
-
-  // If any animations were active in the last painted state we need to keep
-  // animations going.
-  // Note that the fade-in check is different as the fade-in progress doesn't
-  // reset as it ends but stays at 1.0. Unset means we're waiting for the
-  // animation to start.
-  if (keep_loading_animation_running_ ||
-      animation_state_.finished_loading_animation ||
-      animation_state_.finished_loading_animation_fade_out ||
-      animation_state_.favicon_placeholder_alpha ||
-      animation_state_.favicon_fade_in_progress.value_or(0.0) < 1.0) {
-    return true;
-  }
-
-  return false;
+  return NetworkStateIsAnimated(network_state_);
 }
 
 bool TabIcon::ShowingAttentionIndicator() const {
@@ -182,20 +145,12 @@ void TabIcon::SetCanPaintToLayer(bool can_paint_to_layer) {
 }
 
 void TabIcon::StepLoadingAnimation(const base::TimeDelta& elapsed_time) {
-  // The old loading animation only updates elapsed time while it's loading.
-  // This is used as a starting point for PaintThrobberSpinningAfterWaiting().
-  if (UseNewLoadingAnimation() || network_state_ == TabNetworkState::kWaiting)
+  // Only update elapsed time in the kWaiting state. This is later used as a
+  // starting point for PaintThrobberSpinningAfterWaiting().
+  if (network_state_ == TabNetworkState::kWaiting)
     waiting_state_.elapsed_time = elapsed_time;
-
-  UpdatePendingAnimationState();
-
   if (ShowingLoadingAnimation())
     SchedulePaint();
-
-  // TODO(pbos): Revisit this, ideally we should always be able to paint on a
-  // layer.
-  if (UseNewLoadingAnimation())
-    RefreshLayer();
 }
 
 void TabIcon::SetBackgroundColor(SkColor bg_color) {
@@ -206,9 +161,6 @@ void TabIcon::SetBackgroundColor(SkColor bg_color) {
 void TabIcon::OnPaint(gfx::Canvas* canvas) {
   // Compute the bounds adjusted for the hiding fraction.
   gfx::Rect contents_bounds = GetContentsBounds();
-  // Update animation state regardless of empty bounds or not, so we don't think
-  // we're perpetually animating.
-  animation_state_ = pending_animation_state_;
 
   if (contents_bounds.IsEmpty())
     return;
@@ -228,78 +180,11 @@ void TabIcon::OnPaint(gfx::Canvas* canvas) {
   if (ShowingAttentionIndicator() && !should_display_crashed_favicon_) {
     PaintAttentionIndicatorAndIcon(canvas, GetIconToPaint(), icon_bounds);
   } else {
-    MaybePaintFaviconPlaceholder(canvas, icon_bounds);
     MaybePaintFavicon(canvas, GetIconToPaint(), icon_bounds);
   }
 
   if (ShowingLoadingAnimation())
     PaintLoadingAnimation(canvas, icon_bounds);
-}
-
-void TabIcon::UpdatePendingAnimationState() {
-  if (last_animation_update_time_.is_null())
-    return;
-  const base::TimeTicks now = clock_->NowTicks();
-
-  double animation_delta_ms =
-      (now - last_animation_update_time_).InMilliseconds();
-  last_animation_update_time_ = now;
-
-  pending_animation_state_.elapsed_time = waiting_state_.elapsed_time;
-
-  if (keep_loading_animation_running_) {
-    const int previously_painted_cycles =
-        animation_state_.elapsed_time.InMilliseconds() /
-        gfx::kNewThrobberWaitingAnimationCycleMs;
-    const int next_painted_cycles =
-        pending_animation_state_.elapsed_time.InMilliseconds() /
-        gfx::kNewThrobberWaitingAnimationCycleMs;
-    // Throbber's gone a full circle since last paint, transition to
-    // finished-loading animation.
-    if (previously_painted_cycles != next_painted_cycles) {
-      pending_animation_state_.finished_loading_animation = 0.0;
-      keep_loading_animation_running_ = false;
-      MaybeStartFaviconFadeIn();
-    }
-  }
-
-  if (pending_animation_state_.favicon_placeholder_alpha) {
-    // Fade in until the favicon fade-in starts. Then fade out.
-    if (!pending_animation_state_.favicon_fade_in_progress) {
-      pending_animation_state_.favicon_placeholder_alpha =
-          std::min(*pending_animation_state_.favicon_placeholder_alpha +
-                       animation_delta_ms / kFaviconPlaceholderFadeInMs,
-                   1.0);
-    } else {
-      *pending_animation_state_.favicon_placeholder_alpha -=
-          animation_delta_ms / kFaviconPlaceholderFadeOutMs;
-      if (pending_animation_state_.favicon_placeholder_alpha <= 0.0)
-        pending_animation_state_.favicon_placeholder_alpha.reset();
-    }
-  }
-
-  if (pending_animation_state_.finished_loading_animation) {
-    *pending_animation_state_.finished_loading_animation +=
-        animation_delta_ms / kFinishedLoadingAnimationTimeMs;
-    if (*pending_animation_state_.finished_loading_animation >= 1.0) {
-      pending_animation_state_.finished_loading_animation.reset();
-      pending_animation_state_.finished_loading_animation_fade_out = 0.0;
-    }
-  }
-
-  if (pending_animation_state_.finished_loading_animation_fade_out) {
-    *pending_animation_state_.finished_loading_animation_fade_out +=
-        animation_delta_ms / kFinishedLoadingFadeOutTimeMs;
-    if (*pending_animation_state_.finished_loading_animation_fade_out >= 1.0)
-      pending_animation_state_.finished_loading_animation_fade_out.reset();
-  }
-
-  if (pending_animation_state_.favicon_fade_in_progress) {
-    *pending_animation_state_.favicon_fade_in_progress =
-        std::min(*pending_animation_state_.favicon_fade_in_progress +
-                     animation_delta_ms / kFaviconFadeInMs,
-                 1.0);
-  }
 }
 
 void TabIcon::OnThemeChanged() {
@@ -341,67 +226,25 @@ void TabIcon::PaintAttentionIndicatorAndIcon(gfx::Canvas* canvas,
   canvas->DrawCircle(circle_center, kAttentionIndicatorRadius, indicator_flags);
 }
 
-void TabIcon::PaintLoadingProgressIndicator(gfx::Canvas* canvas,
-                                            gfx::RectF bounds,
-                                            SkColor color) {
-  // Don't paint if both the loading-progress and fade-out animations both have
-  // finished.
-  if (!animation_state_.finished_loading_animation &&
-      !animation_state_.finished_loading_animation_fade_out) {
-    return;
-  }
-  const double progress = gfx::Tween::CalculateValue(
-      gfx::Tween::EASE_IN_OUT,
-      animation_state_.finished_loading_animation.value_or(1.0));
-  bounds.set_width(bounds.height() +
-                   progress * (bounds.width() - bounds.height()));
-
-  cc::PaintFlags flags;
-  flags.setColor(color);
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-  if (animation_state_.finished_loading_animation_fade_out) {
-    flags.setAlpha(
-        (1.0 - *animation_state_.finished_loading_animation_fade_out) *
-        SK_AlphaOPAQUE);
-  }
-
-  canvas->DrawRoundRect(bounds, bounds.height() / 2, flags);
-}
-
 void TabIcon::PaintLoadingAnimation(gfx::Canvas* canvas,
                                     const gfx::Rect& bounds) {
   const ui::ThemeProvider* tp = GetThemeProvider();
-  if (UseNewLoadingAnimation()) {
-    const gfx::RectF throbber_bounds = GetThrobberBounds(bounds);
-    const SkColor loading_color =
-        tp->GetColor(network_state_ == TabNetworkState::kWaiting
-                         ? ThemeProperties::COLOR_TAB_THROBBER_WAITING
-                         : ThemeProperties::COLOR_TAB_THROBBER_SPINNING);
-    if (NetworkStateIsAnimated(network_state_) ||
-        keep_loading_animation_running_) {
-      gfx::PaintNewThrobberWaiting(canvas, throbber_bounds, loading_color,
-                                   animation_state_.elapsed_time);
-    } else {
-      PaintLoadingProgressIndicator(canvas, throbber_bounds, loading_color);
-    }
+  if (network_state_ == TabNetworkState::kWaiting) {
+    gfx::PaintThrobberWaiting(
+        canvas, bounds,
+        tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_WAITING),
+        waiting_state_.elapsed_time);
   } else {
-    if (network_state_ == TabNetworkState::kWaiting) {
-      gfx::PaintThrobberWaiting(
-          canvas, bounds,
-          tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_WAITING),
-          waiting_state_.elapsed_time);
-    } else {
-      const base::TimeTicks current_time = clock_->NowTicks();
-      if (old_animation_loading_start_time_.is_null())
-        old_animation_loading_start_time_ = current_time;
+    const base::TimeTicks current_time = clock_->NowTicks();
+    if (loading_animation_start_time_.is_null())
+      loading_animation_start_time_ = current_time;
 
-      waiting_state_.color =
-          tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_WAITING);
-      gfx::PaintThrobberSpinningAfterWaiting(
-          canvas, bounds,
-          tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_SPINNING),
-          current_time - old_animation_loading_start_time_, &waiting_state_);
-    }
+    waiting_state_.color =
+        tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_WAITING);
+    gfx::PaintThrobberSpinningAfterWaiting(
+        canvas, bounds,
+        tp->GetColor(ThemeProperties::COLOR_TAB_THROBBER_SPINNING),
+        current_time - loading_animation_start_time_, &waiting_state_);
   }
 }
 
@@ -417,79 +260,20 @@ const gfx::ImageSkia& TabIcon::GetIconToPaint() {
   return themed_favicon_.isNull() ? favicon_ : themed_favicon_;
 }
 
-void TabIcon::MaybePaintFaviconPlaceholder(gfx::Canvas* canvas,
-                                           const gfx::Rect& bounds) {
-  if (!UseNewLoadingAnimation())
-    return;
-  if (!animation_state_.favicon_placeholder_alpha)
-    return;
-  cc::PaintFlags flags;
-  double placeholder_alpha = gfx::Tween::CalculateValue(
-      !pending_animation_state_.favicon_fade_in_progress
-          ? gfx::Tween::LINEAR_OUT_SLOW_IN
-          : gfx::Tween::SLOW_OUT_LINEAR_IN,
-      *animation_state_.favicon_placeholder_alpha);
-  const SkColor placeholder_color =
-      color_utils::IsDark(bg_color_)
-          ? SkColorSetA(SK_ColorWHITE, 32 * placeholder_alpha)
-          : SkColorSetA(SK_ColorBLACK, 16 * placeholder_alpha);
-  flags.setColor(placeholder_color);
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setAntiAlias(true);
-
-  constexpr float kFaviconPlaceholderRadiusDp = 4;
-  canvas->DrawRoundRect(bounds, kFaviconPlaceholderRadiusDp, flags);
-}
-
 void TabIcon::MaybePaintFavicon(gfx::Canvas* canvas,
                                 const gfx::ImageSkia& icon,
                                 const gfx::Rect& bounds) {
-  // While loading, the favicon (or placeholder) isn't drawn until it has
-  // started fading in.
-  if (UseNewLoadingAnimation() && !animation_state_.favicon_fade_in_progress)
-    return;
-
   if (icon.isNull())
     return;
 
-  cc::PaintFlags flags;
-  double fade_in_progress =
-      UseNewLoadingAnimation() ? gfx::Tween::CalculateValue(
-                                     gfx::Tween::FAST_OUT_SLOW_IN,
-                                     *animation_state_.favicon_fade_in_progress)
-                               : 1.0;
-  flags.setAlpha(fade_in_progress * SK_AlphaOPAQUE);
-  // Drop in the new favicon from the top while it's fading in.
-  const int offset = round((fade_in_progress - 1.0) * 4.0);
-
   canvas->DrawImageInt(icon, 0, 0, bounds.width(), bounds.height(), bounds.x(),
-                       bounds.y() + offset, bounds.width(), bounds.height(),
-                       false, flags);
+                       bounds.y(), bounds.width(), bounds.height(), false);
 }
 
 bool TabIcon::HasNonDefaultFavicon() const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return !favicon_.isNull() && !favicon_.BackedBySameObjectAs(
                                    *rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON));
-}
-
-void TabIcon::MaybeStartFaviconFadeIn() {
-  if (!UseNewLoadingAnimation())
-    return;
-
-  if (pending_animation_state_.favicon_fade_in_progress)
-    return;
-
-  // Start fading in the favicon if we're no longer animating.
-  if (!NetworkStateIsAnimated(network_state_)) {
-    pending_animation_state_.favicon_fade_in_progress = 0.0;
-    return;
-  }
-
-  // If we have a non-default favicon and are already loading the throbber state
-  // start fading in the favicon.
-  if (HasNonDefaultFavicon() && network_state_ == TabNetworkState::kLoading)
-    pending_animation_state_.favicon_fade_in_progress = 0.0;
 }
 
 void TabIcon::SetIcon(const GURL& url, const gfx::ImageSkia& icon) {
@@ -506,39 +290,11 @@ void TabIcon::SetIcon(const GURL& url, const gfx::ImageSkia& icon) {
     themed_favicon_ = gfx::ImageSkia();
   }
 
-  MaybeStartFaviconFadeIn();
   SchedulePaint();
 }
 
 void TabIcon::SetNetworkState(TabNetworkState network_state) {
-  if (network_state_ == network_state)
-    return;
-
-  if (!UseNewLoadingAnimation()) {
-    network_state_ = network_state;
-    return;
-  }
-
-  const bool was_animated = NetworkStateIsAnimated(network_state_);
   network_state_ = network_state;
-  const bool is_animated = NetworkStateIsAnimated(network_state_);
-
-  // If we either start animating (or go from loading to waiting), reset all
-  // animations.
-  if ((!was_animated && is_animated) ||
-      network_state_ == TabNetworkState::kWaiting) {
-    last_animation_update_time_ = clock_->NowTicks();
-    keep_loading_animation_running_ = false;
-    pending_animation_state_ = LoadingAnimationState();
-    pending_animation_state_.favicon_placeholder_alpha = 0.0;
-    pending_animation_state_.favicon_fade_in_progress.reset();
-  }
-
-  if (was_animated && !is_animated)
-    keep_loading_animation_running_ = true;
-
-  MaybeStartFaviconFadeIn();
-  SchedulePaint();
 }
 
 void TabIcon::SetIsCrashed(bool is_crashed) {

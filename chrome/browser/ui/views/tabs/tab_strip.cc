@@ -391,14 +391,6 @@ void TabStrip::UpdateLoadingAnimations(const base::TimeDelta& elapsed_time) {
     tab_at(i)->StepLoadingAnimation(elapsed_time);
 }
 
-bool TabStrip::IsAnyIconAnimating() const {
-  for (int i = 0; i < tab_count(); i++) {
-    if (tab_at(i)->ShowingLoadingAnimation())
-      return true;
-  }
-  return false;
-}
-
 void TabStrip::SetStackedLayout(bool stacked_layout) {
   if (stacked_layout == stacked_layout_)
     return;
