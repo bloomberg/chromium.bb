@@ -109,6 +109,11 @@ static const arg_def_t dump_seg_id_arg =
 static const arg_def_t usage_arg = ARG_DEF("h", "help", 0, "Help");
 static const arg_def_t skip_non_transform_arg = ARG_DEF(
     "snt", "skip_non_transform", 1, "Skip is counted as a non transform.");
+static const arg_def_t combined_arg =
+    ARG_DEF("comb", "combined", 1, "combinining parameters into one output.");
+
+int combined_parm_list[5];
+int combined_parm_count = 0;
 
 static const arg_def_t *main_args[] = { &limit_arg,
                                         &dump_all_arg,
@@ -134,6 +139,7 @@ static const arg_def_t *main_args[] = { &limit_arg,
                                         &dump_seg_id_arg,
                                         &usage_arg,
                                         &skip_non_transform_arg,
+                                        &combined_arg,
                                         NULL };
 #define ENUM(name) \
   { #name, name }
@@ -233,6 +239,43 @@ const map_entry skip_map[] = { ENUM(SKIP), ENUM(NO_SKIP), LAST_ENUM };
 const map_entry config_map[] = { ENUM(MI_SIZE), LAST_ENUM };
 
 static const char *exec_name;
+
+struct parm_offset {
+  char parm[60];
+  char offset;
+};
+struct parm_offset parm_offsets[] = {
+  { "blockSize", offsetof(insp_mi_data, sb_type) },
+  { "transformSize", offsetof(insp_mi_data, tx_size) },
+  { "transformType", offsetof(insp_mi_data, tx_type) },
+  { "dualFilterType", offsetof(insp_mi_data, dual_filter_type) },
+  { "mode", offsetof(insp_mi_data, mode) },
+  { "uv_mode", offsetof(insp_mi_data, uv_mode) },
+  { "motion_mode", offsetof(insp_mi_data, motion_mode) },
+  { "compound_type", offsetof(insp_mi_data, compound_type) },
+  { "referenceFrame", offsetof(insp_mi_data, ref_frame) },
+  { "skip", offsetof(insp_mi_data, skip) },
+};
+int parm_count = sizeof(parm_offsets) / sizeof(parm_offsets[0]);
+
+int convert_to_indices(char *str, int *indices, int maxCount, int *count) {
+  *count = 0;
+  do {
+    char *comma = strchr(str, ',');
+    int length = (comma ? (int)(comma - str) : (int)strlen(str));
+    int i;
+    for (i = 0; i < parm_count; ++i) {
+      if (!strncmp(str, parm_offsets[i].parm, length)) {
+        break;
+      }
+    }
+    if (i == parm_count) return 0;
+    indices[(*count)++] = i;
+    if (*count > maxCount) return 0;
+    str += length + 1;
+  } while (strlen(str) > 0);
+  return 1;
+}
 
 insp_frame_data frame_data;
 int frame_count = 0;
@@ -395,6 +438,38 @@ int put_motion_vectors(char *buffer) {
           c = t - 1;
         }
       }
+      if (c < mi_cols - 1) *(buf++) = ',';
+    }
+    *(buf++) = ']';
+    if (r < mi_rows - 1) *(buf++) = ',';
+  }
+  buf += put_str(buf, "],\n");
+  return (int)(buf - buffer);
+}
+
+int put_combined(char *buffer) {
+  const int mi_rows = frame_data.mi_rows;
+  const int mi_cols = frame_data.mi_cols;
+  char *buf = buffer;
+  int r, c, p;
+  buf += put_str(buf, "  \"");
+  for (p = 0; p < combined_parm_count; ++p) {
+    if (p) buf += put_str(buf, "&");
+    buf += put_str(buf, parm_offsets[combined_parm_list[p]].parm);
+  }
+  buf += put_str(buf, "\": [");
+  for (r = 0; r < mi_rows; ++r) {
+    *(buf++) = '[';
+    for (c = 0; c < mi_cols; ++c) {
+      insp_mi_data *mi = &frame_data.mi_grid[r * mi_cols + c];
+      *(buf++) = '[';
+      for (p = 0; p < combined_parm_count; ++p) {
+        if (p) *(buf++) = ',';
+        int16_t *v = (int16_t *)(((int8_t *)mi) +
+                                 parm_offsets[combined_parm_list[p]].offset);
+        buf += put_num(buf, 0, v[0], 0);
+      }
+      *(buf++) = ']';
       if (c < mi_cols - 1) *(buf++) = ',';
     }
     *(buf++) = ']';
@@ -591,6 +666,7 @@ void inspect(void *pbi, void *data) {
   if (layers & MOTION_VECTORS_LAYER) {
     buf += put_motion_vectors(buf);
   }
+  if (combined_parm_count > 0) buf += put_combined(buf);
   if (layers & REFERENCE_FRAME_LAYER) {
     buf += put_block_info(buf, refs_map, "referenceFrame",
                           offsetof(insp_mi_data, ref_frame), 2);
@@ -792,7 +868,11 @@ static void parse_args(char **argv) {
       stop_after = arg_parse_uint(&arg);
     else if (arg_match(&arg, &skip_non_transform_arg, argi))
       skip_non_transform = arg_parse_uint(&arg);
-
+    else if (arg_match(&arg, &combined_arg, argi))
+      convert_to_indices(
+          (char *)arg.val, combined_parm_list,
+          sizeof(combined_parm_list) / sizeof(combined_parm_list[0]),
+          &combined_parm_count);
     else
       argj++;
   }
