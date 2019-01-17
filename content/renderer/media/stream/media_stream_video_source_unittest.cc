@@ -652,7 +652,8 @@ TEST_F(MediaStreamVideoSourceTest, StartStopAndNotifyRestartSupported) {
             blink::WebMediaStreamSource::kReadyStateLive);
 
   EXPECT_CALL(*this, MockNotification());
-  MediaStreamTrack* track = MediaStreamTrack::GetTrack(web_track);
+  blink::PlatformMediaStreamTrack* track =
+      blink::PlatformMediaStreamTrack::GetTrack(web_track);
   track->StopAndNotify(base::BindOnce(
       &MediaStreamVideoSourceTest::MockNotification, base::Unretained(this)));
   EXPECT_EQ(web_track.Source().GetReadyState(),
@@ -669,7 +670,8 @@ TEST_F(MediaStreamVideoSourceTest, StartStopAndNotifyRestartNotSupported) {
             blink::WebMediaStreamSource::kReadyStateLive);
 
   EXPECT_CALL(*this, MockNotification());
-  MediaStreamTrack* track = MediaStreamTrack::GetTrack(web_track);
+  blink::PlatformMediaStreamTrack* track =
+      blink::PlatformMediaStreamTrack::GetTrack(web_track);
   track->StopAndNotify(base::BindOnce(
       &MediaStreamVideoSourceTest::MockNotification, base::Unretained(this)));
   EXPECT_EQ(web_track.Source().GetReadyState(),

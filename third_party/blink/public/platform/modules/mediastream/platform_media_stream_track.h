@@ -2,31 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_TRACK_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_TRACK_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_PLATFORM_MEDIA_STREAM_TRACK_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_PLATFORM_MEDIA_STREAM_TRACK_H_
 
 #include <string>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
-#include "base/macros.h"
-#include "base/threading/thread_checker.h"
-#include "content/common/content_export.h"
-#include "media/base/audio_parameters.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 
-namespace content {
+namespace blink {
 
-// MediaStreamTrack is a Chrome representation of blink::WebMediaStreamTrack.
-// It is owned by blink::WebMediaStreamTrack as
+// PlatformMediaStreamTrack is a Chrome representation of
+// blink::WebMediaStreamTrack. It is owned by blink::WebMediaStreamTrack as
 // blink::WebMediaStreamTrack::ExtraData.
-class CONTENT_EXPORT MediaStreamTrack
+class BLINK_PLATFORM_EXPORT PlatformMediaStreamTrack
     : public blink::WebMediaStreamTrack::TrackData {
  public:
-  explicit MediaStreamTrack(bool is_local_track);
-  ~MediaStreamTrack() override;
+  explicit PlatformMediaStreamTrack(bool is_local_track);
+  ~PlatformMediaStreamTrack() override;
 
-  static MediaStreamTrack* GetTrack(const blink::WebMediaStreamTrack& track);
+  static PlatformMediaStreamTrack* GetTrack(
+      const blink::WebMediaStreamTrack& track);
 
   virtual void SetEnabled(bool enabled) = 0;
 
@@ -43,16 +40,13 @@ class CONTENT_EXPORT MediaStreamTrack
 
   bool is_local_track() const { return is_local_track_; }
 
- protected:
+ private:
   const bool is_local_track_;
 
-  // Used to DCHECK that we are called on Render main Thread.
-  THREAD_CHECKER(main_render_thread_checker_);
-
  private:
-  DISALLOW_COPY_AND_ASSIGN(MediaStreamTrack);
+  DISALLOW_COPY_AND_ASSIGN(PlatformMediaStreamTrack);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_TRACK_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_PLATFORM_MEDIA_STREAM_TRACK_H_

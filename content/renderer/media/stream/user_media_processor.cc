@@ -1115,13 +1115,15 @@ void UserMediaProcessor::OnCreateNativeTracksCompleted(
     GetUserMediaRequestFailed(result, constraint_name);
 
     for (auto& web_track : request_info->web_stream()->AudioTracks()) {
-      MediaStreamTrack* track = MediaStreamTrack::GetTrack(web_track);
+      blink::PlatformMediaStreamTrack* track =
+          blink::PlatformMediaStreamTrack::GetTrack(web_track);
       if (track)
         track->Stop();
     }
 
     for (auto& web_track : request_info->web_stream()->VideoTracks()) {
-      MediaStreamTrack* track = MediaStreamTrack::GetTrack(web_track);
+      blink::PlatformMediaStreamTrack* track =
+          blink::PlatformMediaStreamTrack::GetTrack(web_track);
       if (track)
         track->Stop();
     }

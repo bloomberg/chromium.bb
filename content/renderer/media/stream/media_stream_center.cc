@@ -145,23 +145,24 @@ void MediaStreamCenter::DidCloneMediaStreamTrack(
 
 void MediaStreamCenter::DidSetContentHint(
     const blink::WebMediaStreamTrack& track) {
-  MediaStreamTrack* native_track = MediaStreamTrack::GetTrack(track);
+  blink::PlatformMediaStreamTrack* native_track =
+      blink::PlatformMediaStreamTrack::GetTrack(track);
   if (native_track)
     native_track->SetContentHint(track.ContentHint());
 }
 
 void MediaStreamCenter::DidEnableMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
-  MediaStreamTrack* native_track =
-      MediaStreamTrack::GetTrack(track);
+  blink::PlatformMediaStreamTrack* native_track =
+      blink::PlatformMediaStreamTrack::GetTrack(track);
   if (native_track)
     native_track->SetEnabled(true);
 }
 
 void MediaStreamCenter::DidDisableMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
-  MediaStreamTrack* native_track =
-      MediaStreamTrack::GetTrack(track);
+  blink::PlatformMediaStreamTrack* native_track =
+      blink::PlatformMediaStreamTrack::GetTrack(track);
   if (native_track)
     native_track->SetEnabled(false);
 }
@@ -170,8 +171,8 @@ blink::WebAudioSourceProvider*
 MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
   DVLOG(1) << "MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack";
-  MediaStreamTrack* media_stream_track =
-      static_cast<MediaStreamTrack*>(track.GetTrackData());
+  blink::PlatformMediaStreamTrack* media_stream_track =
+      static_cast<blink::PlatformMediaStreamTrack*>(track.GetTrackData());
   if (!media_stream_track) {
     DLOG(ERROR) << "Native track missing for webaudio source.";
     return nullptr;
