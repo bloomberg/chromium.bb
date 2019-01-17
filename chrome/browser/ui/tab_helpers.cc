@@ -27,7 +27,6 @@
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/installable/installable_manager.h"
-#include "chrome/browser/language/chrome_language_detection_tab_helper.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_observer.h"
 #include "chrome/browser/metrics/oom/out_of_memory_reporter.h"
@@ -198,7 +197,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       web_contents, BookmarkModelFactory::GetForBrowserContext(
                         web_contents->GetBrowserContext()));
   chrome_browser_net::NetErrorTabHelper::CreateForWebContents(web_contents);
-  ChromeLanguageDetectionTabHelper::CreateForWebContents(web_contents);
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       web_contents,
       autofill::ChromeAutofillClient::FromWebContents(web_contents));

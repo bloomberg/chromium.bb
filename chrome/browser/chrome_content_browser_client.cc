@@ -55,7 +55,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/font_family_cache.h"
-#include "chrome/browser/language/chrome_language_detection_tab_helper.h"
+#include "chrome/browser/language/translate_frame_binder.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -4328,8 +4328,8 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
           content::RenderProcessHost*, const url::Origin&>>();
 
   // Register mojo ContentTranslateDriver interface only for main frame.
-  frame_interfaces_parameterized_->AddInterface(base::BindRepeating(
-      &ChromeLanguageDetectionTabHelper::BindContentTranslateDriver));
+  frame_interfaces_parameterized_->AddInterface(
+      base::BindRepeating(&language::BindContentTranslateDriver));
 
   frame_interfaces_parameterized_->AddInterface(
       base::BindRepeating(&ChromePasswordManagerClient::BindCredentialManager));

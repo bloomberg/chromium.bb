@@ -58,7 +58,8 @@ class TranslateManagerRenderViewHostAndroidTest
     details.adopted_language = lang;
     ChromeTranslateClient::FromWebContents(web_contents())
         ->translate_driver()
-        .OnPageReady(fake_page_.BindToNewPagePtr(), details, page_translatable);
+        .RegisterPage(fake_page_.BindToNewPagePtr(), details,
+                      page_translatable);
   }
 
   InfoBarService* infobar_service() {
