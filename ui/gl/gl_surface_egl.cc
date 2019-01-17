@@ -61,6 +61,11 @@
 #define EGL_GL_COLORSPACE_DISPLAY_P3_EXT 0x3363
 #endif /* EGL_EXT_gl_colorspace_display_p3 */
 
+#ifndef EGL_EXT_gl_colorspace_display_p3_passthrough
+#define EGL_EXT_gl_colorspace_display_p3_passthrough 1
+#define EGL_GL_COLORSPACE_DISPLAY_P3_PASSTHROUGH_EXT 0x3490
+#endif /* EGL_EXT_gl_colorspace_display_p3_passthrough */
+
 // From ANGLE's egl/eglext.h.
 
 #ifndef EGL_ANGLE_platform_angle
@@ -150,6 +155,7 @@ bool g_egl_surface_orientation_supported = false;
 bool g_egl_context_priority_supported = false;
 bool g_egl_khr_colorspace = false;
 bool g_egl_ext_colorspace_display_p3 = false;
+bool g_egl_ext_colorspace_display_p3_passthrough = false;
 bool g_egl_flexible_surface_compatibility_supported = false;
 bool g_egl_robust_resource_init_supported = false;
 bool g_egl_display_texture_share_group_supported = false;
@@ -694,6 +700,8 @@ bool GLSurfaceEGL::InitializeOneOffCommon() {
   g_egl_khr_colorspace = HasEGLExtension("EGL_KHR_gl_colorspace");
   g_egl_ext_colorspace_display_p3 =
       HasEGLExtension("EGL_EXT_gl_colorspace_display_p3");
+  g_egl_ext_colorspace_display_p3_passthrough =
+      HasEGLExtension("EGL_EXT_gl_colorspace_display_p3_passthrough");
   // According to https://source.android.com/compatibility/android-cdd.html the
   // EGL_IMG_context_priority extension is mandatory for Virtual Reality High
   // Performance support, but due to a bug in Android Nougat the extension
@@ -1041,9 +1049,20 @@ bool NativeViewGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
       // with the P3 gamut instead of the the sRGB gamut.
       // COLORSPACE_DISPLAY_P3_LINEAR has a linear transfer function, and is
       // intended for use with 16-bit formats.
-      if (g_egl_khr_colorspace && g_egl_ext_colorspace_display_p3) {
+      bool p3_supported = g_egl_ext_colorspace_display_p3 ||
+                          g_egl_ext_colorspace_display_p3_passthrough;
+      if (g_egl_khr_colorspace && p3_supported) {
         egl_window_attributes.push_back(EGL_GL_COLORSPACE_KHR);
-        egl_window_attributes.push_back(EGL_GL_COLORSPACE_DISPLAY_P3_EXT);
+        // Chrome relied on incorrect Android behavior when dealing with P3 /
+        // framebuffer_srgb interactions. This behavior was fixed in Q, which
+        // causes invalid Chrome rendering. To achieve Android-P behavior in Q+,
+        // use EGL_GL_COLORSPACE_P3_PASSTHROUGH_EXT where possible.
+        if (g_egl_ext_colorspace_display_p3_passthrough) {
+          egl_window_attributes.push_back(
+              EGL_GL_COLORSPACE_DISPLAY_P3_PASSTHROUGH_EXT);
+        } else {
+          egl_window_attributes.push_back(EGL_GL_COLORSPACE_DISPLAY_P3_EXT);
+        }
       }
       break;
   }
