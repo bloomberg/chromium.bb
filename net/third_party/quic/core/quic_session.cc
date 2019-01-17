@@ -88,10 +88,6 @@ void QuicSession::Initialize() {
   connection_->SetDataProducer(this);
   connection_->SetFromConfig(config_);
 
-  // Make sure connection and control frame manager latch the same flag values.
-  connection_->set_donot_retransmit_old_window_updates(
-      control_frame_manager_.donot_retransmit_old_window_updates());
-
   DCHECK_EQ(QuicUtils::GetCryptoStreamId(connection_->transport_version()),
             GetMutableCryptoStream()->id());
   RegisterStaticStream(
@@ -1462,6 +1458,14 @@ WriteStreamDataResult QuicSession::WriteStreamData(QuicStreamId id,
     return WRITE_SUCCESS;
   }
   return WRITE_FAILED;
+}
+
+bool QuicSession::WriteCryptoData(EncryptionLevel level,
+                                  QuicStreamOffset offset,
+                                  QuicByteCount data_length,
+                                  QuicDataWriter* writer) {
+  QUIC_BUG << "QuicSession::WriteCryptoData is unimplemented";
+  return false;
 }
 
 QuicUint128 QuicSession::GetStatelessResetToken() const {

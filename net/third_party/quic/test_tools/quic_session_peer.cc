@@ -18,6 +18,12 @@ QuicStreamId QuicSessionPeer::GetNextOutgoingBidirectionalStreamId(
 }
 
 // static
+QuicStreamId QuicSessionPeer::GetNextOutgoingUnidirectionalStreamId(
+    QuicSession* session) {
+  return session->GetNextOutgoingUnidirectionalStreamId();
+}
+
+// static
 void QuicSessionPeer::SetNextOutgoingBidirectionalStreamId(QuicSession* session,
                                                            QuicStreamId id) {
   if (session->connection()->transport_version() == QUIC_VERSION_99) {

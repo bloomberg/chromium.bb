@@ -130,6 +130,10 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
                                         QuicStreamOffset offset,
                                         QuicByteCount data_length,
                                         QuicDataWriter* writer) override;
+  bool WriteCryptoData(EncryptionLevel level,
+                       QuicStreamOffset offset,
+                       QuicByteCount data_length,
+                       QuicDataWriter* writer) override;
 
   // SessionNotifierInterface methods:
   bool OnFrameAcked(const QuicFrame& frame,

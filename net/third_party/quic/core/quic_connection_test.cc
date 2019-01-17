@@ -21,6 +21,7 @@
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_simple_buffer_allocator.h"
+#include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
@@ -293,6 +294,7 @@ class TestPacketWriter : public QuicPacketWriter {
         last_packet_size_(0),
         write_blocked_(false),
         write_should_fail_(false),
+        block_on_next_flush_(false),
         block_on_next_write_(false),
         next_packet_too_large_(false),
         always_get_packet_too_large_(false),
@@ -389,7 +391,16 @@ class TestPacketWriter : public QuicPacketWriter {
     return nullptr;
   }
 
-  WriteResult Flush() override { return WriteResult(WRITE_STATUS_OK, 0); }
+  WriteResult Flush() override {
+    if (block_on_next_flush_) {
+      block_on_next_flush_ = false;
+      SetWriteBlocked();
+      return WriteResult(WRITE_STATUS_BLOCKED, /*errno*/ -1);
+    }
+    return WriteResult(WRITE_STATUS_OK, 0);
+  }
+
+  void BlockOnNextFlush() { block_on_next_flush_ = true; }
 
   void BlockOnNextWrite() { block_on_next_write_ = true; }
 
@@ -509,6 +520,7 @@ class TestPacketWriter : public QuicPacketWriter {
   QuicPacketHeader last_packet_header_;
   bool write_blocked_;
   bool write_should_fail_;
+  bool block_on_next_flush_;
   bool block_on_next_write_;
   bool next_packet_too_large_;
   bool always_get_packet_too_large_;
@@ -589,7 +601,7 @@ class TestConnection : public QuicConnection {
                                          QuicStreamOffset offset,
                                          StreamSendingState state) {
     ScopedPacketFlusher flusher(this, NO_ACK);
-    producer_.SaveStreamData(id, iov, iov_count, 0u, offset, total_length);
+    producer_.SaveStreamData(id, iov, iov_count, 0u, total_length);
     if (notifier_ != nullptr) {
       return notifier_->WriteOrBufferData(id, total_length, state);
     }
@@ -2273,7 +2285,8 @@ TEST_P(QuicConnectionTest, AckSentEveryNthPacket) {
 }
 
 TEST_P(QuicConnectionTest, AckDecimationReducesAcks) {
-  if (GetQuicReloadableFlag(quic_enable_ack_decimation)) {
+  if (GetQuicReloadableFlag(quic_enable_ack_decimation) &&
+      !GetQuicReloadableFlag(quic_keep_ack_decimation_reordering)) {
     return;
   }
 
@@ -3322,6 +3335,19 @@ TEST_P(QuicConnectionTest, DoNotAddToWriteBlockedListAfterDisconnect) {
   }
 }
 
+TEST_P(QuicConnectionTest, AddToWriteBlockedListIfBlockedOnFlushPackets) {
+  writer_->SetBatchMode(true);
+  writer_->BlockOnNextFlush();
+
+  EXPECT_CALL(visitor_, OnWriteBlocked()).Times(1);
+  {
+    QuicConnection::ScopedPacketFlusher flusher(&connection_,
+                                                QuicConnection::NO_ACK);
+    // flusher's destructor will call connection_.FlushPackets, which should add
+    // the connection to the write blocked list.
+  }
+}
+
 TEST_P(QuicConnectionTest, NoLimitPacketsPerNack) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   int offset = 0;
@@ -3625,45 +3651,6 @@ TEST_P(QuicConnectionTest, BufferNonDecryptablePackets) {
   ProcessDataPacketAtLevel(3, !kHasStopWaiting, ENCRYPTION_INITIAL);
 }
 
-TEST_P(QuicConnectionTest, Buffer100NonDecryptablePackets) {
-  if (GetQuicReloadableFlag(quic_decrypt_packets_on_key_change)) {
-    return;
-  }
-
-  // SetFromConfig is always called after construction from InitializeSession.
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-  QuicConfig config;
-  config.set_max_undecryptable_packets(100);
-  connection_.SetFromConfig(config);
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  use_tagging_decrypter();
-
-  const uint8_t tag = 0x07;
-  peer_framer_.SetEncrypter(ENCRYPTION_INITIAL,
-                            QuicMakeUnique<TaggingEncrypter>(tag));
-
-  // Process an encrypted packet which can not yet be decrypted which should
-  // result in the packet being buffered.
-  for (QuicPacketNumber i = 1; i <= 100; ++i) {
-    ProcessDataPacketAtLevel(i, !kHasStopWaiting, ENCRYPTION_INITIAL);
-  }
-
-  // Transition to the new encryption state and process another encrypted packet
-  // which should result in the original packets being processed.
-  connection_.SetDecrypter(ENCRYPTION_INITIAL,
-                           QuicMakeUnique<StrictTaggingDecrypter>(tag));
-  connection_.SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
-  connection_.SetEncrypter(ENCRYPTION_INITIAL,
-                           QuicMakeUnique<TaggingEncrypter>(tag));
-  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(101);
-  ProcessDataPacketAtLevel(101, !kHasStopWaiting, ENCRYPTION_INITIAL);
-
-  // Finally, process a third packet and note that we do not reprocess the
-  // buffered packet.
-  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
-  ProcessDataPacketAtLevel(102, !kHasStopWaiting, ENCRYPTION_INITIAL);
-}
-
 TEST_P(QuicConnectionTest, TestRetransmitOrder) {
   connection_.SetMaxTailLossProbes(0);
 
@@ -3697,10 +3684,6 @@ TEST_P(QuicConnectionTest, TestRetransmitOrder) {
 }
 
 TEST_P(QuicConnectionTest, Buffer100NonDecryptablePacketsThenKeyChange) {
-  if (!GetQuicReloadableFlag(quic_decrypt_packets_on_key_change)) {
-    return;
-  }
-
   // SetFromConfig is always called after construction from InitializeSession.
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   QuicConfig config;
@@ -5402,7 +5385,8 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationEighthRtt) {
 }
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReordering) {
-  if (GetQuicReloadableFlag(quic_enable_ack_decimation)) {
+  if (GetQuicReloadableFlag(quic_enable_ack_decimation) &&
+      !GetQuicReloadableFlag(quic_keep_ack_decimation_reordering)) {
     return;
   }
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
@@ -5470,7 +5454,8 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReordering) {
 }
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithLargeReordering) {
-  if (GetQuicReloadableFlag(quic_enable_ack_decimation)) {
+  if (GetQuicReloadableFlag(quic_enable_ack_decimation) &&
+      !GetQuicReloadableFlag(quic_keep_ack_decimation_reordering)) {
     return;
   }
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
@@ -5557,7 +5542,8 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithLargeReordering) {
 }
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReorderingEighthRtt) {
-  if (GetQuicReloadableFlag(quic_enable_ack_decimation)) {
+  if (GetQuicReloadableFlag(quic_enable_ack_decimation) &&
+      !GetQuicReloadableFlag(quic_keep_ack_decimation_reordering)) {
     return;
   }
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
@@ -5629,7 +5615,8 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReorderingEighthRtt) {
 
 TEST_P(QuicConnectionTest,
        SendDelayedAckDecimationWithLargeReorderingEighthRtt) {
-  if (GetQuicReloadableFlag(quic_enable_ack_decimation)) {
+  if (GetQuicReloadableFlag(quic_enable_ack_decimation) &&
+      !GetQuicReloadableFlag(quic_keep_ack_decimation_reordering)) {
     return;
   }
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());

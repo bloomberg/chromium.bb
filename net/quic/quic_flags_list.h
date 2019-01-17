@@ -149,28 +149,13 @@ QUIC_FLAG(bool,
 // expire when the bandwidth increases more than 25% in QUIC BBR STARTUP.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup4, false)
 
-// If true, QuicCryptoServerConfig::EvaluateClientHello will use GetCertChain
-// instead of the more expensive GetProof.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_get_cert_chain, true)
-
 // If true, try to aggregate acked stream frames.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_aggregate_acked_stream_frames_2,
           true)
 
-// If true, only process stateless reset packets on the client side.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_process_stateless_reset_at_client_only,
-    true)
-
-// If true, do not retransmit old window update frames.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_donot_retransmit_old_window_update2,
-          true)
-
 // If true, disable QUIC version 35.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_35, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_35, true)
 // If true, then QuicCryptoServerConfig::ProcessClientHelloAfterGetProof() will
 // use the async interface to KeyExchange::CalculateSharedKeys.
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_use_async_key_exchange, true)
@@ -224,12 +209,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_timestamps, false)
 // When true, QUIC server push uses a unidirectional stream.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_unidirectional_server_push_stream,
-          true)
-
-// If true, a QUIC connection will attempt to process decryptable packets when
-// a new decryption key is made available.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_decrypt_packets_on_key_change,
           true)
 
 // This flag fixes a bug where dispatcher's last_packet_is_ietf_quic may be
@@ -344,3 +323,9 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_always_reset_ietf_connections,
           true)
+
+// When true, allows the AKD2 and AKD4 connection options to continue activating
+// ack decimation with reordering.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_keep_ack_decimation_reordering,
+          false)

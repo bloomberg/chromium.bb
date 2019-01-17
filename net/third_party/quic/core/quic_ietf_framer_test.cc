@@ -623,6 +623,39 @@ TEST_F(QuicIetfFramerTest, ZeroLengthStreamFrame) {
   }
 }
 
+TEST_F(QuicIetfFramerTest, CryptoFrame) {
+  SimpleDataProducer data_producer;
+  framer_.set_data_producer(&data_producer);
+  char packet_buffer[kNormalPacketBufferSize];
+
+  QuicStringPiece frame_data("This is a CRYPTO frame.");
+
+  QuicStreamOffset offsets[] = {kOffset8, kOffset4, kOffset2, kOffset1,
+                                kOffset0};
+  for (QuicStreamOffset offset : offsets) {
+    QuicCryptoFrame frame(ENCRYPTION_NONE, offset, frame_data.length());
+    data_producer.SaveCryptoData(ENCRYPTION_NONE, offset, frame_data);
+
+    QuicDataWriter writer(QUIC_ARRAYSIZE(packet_buffer), packet_buffer,
+                          NETWORK_BYTE_ORDER);
+
+    // Write the frame.
+    EXPECT_TRUE(QuicFramerPeer::AppendCryptoFrame(&framer_, frame, &writer));
+    EXPECT_NE(0u, writer.length());
+    // Read it back.
+    QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+    QuicCryptoFrame read_frame;
+    EXPECT_TRUE(
+        QuicFramerPeer::ProcessCryptoFrame(&framer_, &reader, &read_frame));
+
+    // Check that the frames match:
+    QuicStringPiece read_data(read_frame.data_buffer, read_frame.data_length);
+    EXPECT_EQ(read_frame.data_length, frame.data_length);
+    EXPECT_EQ(read_frame.offset, frame.offset);
+    EXPECT_EQ(read_data, frame_data);
+  }
+}
+
 TEST_F(QuicIetfFramerTest, ConnectionCloseEmptyString) {
   char packet_buffer[kNormalPacketBufferSize];
 
