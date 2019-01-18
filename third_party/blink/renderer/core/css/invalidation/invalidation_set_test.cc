@@ -7,6 +7,230 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
+namespace {
+
+using BackingType = InvalidationSet::BackingType;
+using BackingFlags = InvalidationSet::BackingFlags;
+template <BackingType type>
+using Backing = InvalidationSet::Backing<type>;
+
+template <BackingType type>
+bool HasAny(const Backing<type>& backing,
+            const BackingFlags& flags,
+            std::initializer_list<const char*> args) {
+  for (const char* str : args) {
+    if (backing.Contains(flags, str))
+      return true;
+  }
+  return false;
+}
+
+template <BackingType type>
+bool HasAll(const Backing<type>& backing,
+            const BackingFlags& flags,
+            std::initializer_list<const char*> args) {
+  for (const char* str : args) {
+    if (!backing.Contains(flags, str))
+      return false;
+  }
+  return true;
+}
+
+TEST(InvalidationSetTest, Backing_Create) {
+  BackingFlags flags;
+  Backing<BackingType::kClasses> backing;
+
+  ASSERT_FALSE(backing.IsHashSet(flags));
+}
+
+TEST(InvalidationSetTest, Backing_Add) {
+  BackingFlags flags;
+  Backing<BackingType::kClasses> backing;
+
+  ASSERT_FALSE(backing.IsHashSet(flags));
+  backing.Add(flags, AtomicString("test1"));
+  ASSERT_FALSE(backing.IsHashSet(flags));
+  backing.Add(flags, AtomicString("test2"));
+  ASSERT_TRUE(backing.IsHashSet(flags));
+}
+
+TEST(InvalidationSetTest, Backing_AddSame) {
+  BackingFlags flags;
+  Backing<BackingType::kClasses> backing;
+
+  ASSERT_FALSE(backing.IsHashSet(flags));
+  backing.Add(flags, AtomicString("test1"));
+  ASSERT_FALSE(backing.IsHashSet(flags));
+  backing.Add(flags, AtomicString("test1"));
+  // No need to upgrade to HashSet if we're adding the item we already have.
+  ASSERT_FALSE(backing.IsHashSet(flags));
+}
+
+TEST(InvalidationSetTest, Backing_Independence) {
+  BackingFlags flags;
+
+  Backing<BackingType::kClasses> classes;
+  Backing<BackingType::kIds> ids;
+  Backing<BackingType::kTagNames> tag_names;
+  Backing<BackingType::kAttributes> attributes;
+
+  classes.Add(flags, "test1");
+  ids.Add(flags, "test2");
+  tag_names.Add(flags, "test3");
+  attributes.Add(flags, "test4");
+
+  // Adding to set does not affect other backings:
+  ASSERT_TRUE(classes.Contains(flags, "test1"));
+  ASSERT_FALSE(HasAny(classes, flags, {"test2", "test3", "test4"}));
+
+  ASSERT_TRUE(ids.Contains(flags, "test2"));
+  ASSERT_FALSE(HasAny(ids, flags, {"test1", "test3", "test4"}));
+
+  ASSERT_TRUE(tag_names.Contains(flags, "test3"));
+  ASSERT_FALSE(HasAny(tag_names, flags, {"test1", "test2", "test4"}));
+
+  ASSERT_TRUE(attributes.Contains(flags, "test4"));
+  ASSERT_FALSE(HasAny(attributes, flags, {"test1", "test2", "test3"}));
+
+  // Adding additional items to one set does not affect others:
+  classes.Add(flags, "test5");
+  tag_names.Add(flags, "test6");
+
+  ASSERT_TRUE(HasAll(classes, flags, {"test1", "test5"}));
+  ASSERT_FALSE(HasAny(classes, flags, {"test2", "test3", "test4", "test6"}));
+
+  ASSERT_TRUE(ids.Contains(flags, "test2"));
+  ASSERT_FALSE(
+      HasAny(ids, flags, {"test1", "test3", "test4", "test5", "test6"}));
+
+  ASSERT_TRUE(HasAll(tag_names, flags, {"test3", "test6"}));
+  ASSERT_FALSE(HasAny(tag_names, flags, {"test1", "test2", "test4", "test5"}));
+
+  ASSERT_TRUE(attributes.Contains(flags, "test4"));
+  ASSERT_FALSE(HasAny(attributes, flags, {"test1", "test2", "test3"}));
+
+  // Clearing one set does not clear others:
+
+  classes.Clear(flags);
+  ids.Clear(flags);
+  attributes.Clear(flags);
+
+  auto all_test_strings = {"test1", "test2", "test3",
+                           "test4", "test5", "test6"};
+
+  ASSERT_FALSE(HasAny(classes, flags, all_test_strings));
+  ASSERT_FALSE(HasAny(ids, flags, all_test_strings));
+  ASSERT_FALSE(HasAny(attributes, flags, all_test_strings));
+
+  ASSERT_FALSE(classes.IsHashSet(flags));
+  ASSERT_FALSE(ids.IsHashSet(flags));
+  ASSERT_FALSE(attributes.IsHashSet(flags));
+
+  ASSERT_TRUE(tag_names.IsHashSet(flags));
+  ASSERT_TRUE(HasAll(tag_names, flags, {"test3", "test6"}));
+  ASSERT_FALSE(HasAny(tag_names, flags, {"test1", "test2", "test4", "test5"}));
+}
+
+TEST(InvalidationSetTest, Backing_ClearContains) {
+  BackingFlags flags;
+  Backing<BackingType::kClasses> backing;
+
+  // Clearing an empty set:
+  ASSERT_FALSE(backing.Contains(flags, "test1"));
+  ASSERT_FALSE(backing.IsHashSet(flags));
+  backing.Clear(flags);
+  ASSERT_FALSE(backing.IsHashSet(flags));
+
+  // Add one element to the set, and clear it:
+  backing.Add(flags, "test1");
+  ASSERT_FALSE(backing.IsHashSet(flags));
+  ASSERT_TRUE(backing.Contains(flags, "test1"));
+  backing.Clear(flags);
+  ASSERT_FALSE(backing.Contains(flags, "test1"));
+  ASSERT_FALSE(backing.IsHashSet(flags));
+
+  // Add two elements to the set, and clear them:
+  backing.Add(flags, "test1");
+  ASSERT_FALSE(backing.IsHashSet(flags));
+  ASSERT_TRUE(backing.Contains(flags, "test1"));
+  ASSERT_FALSE(backing.Contains(flags, "test2"));
+  backing.Add(flags, "test2");
+  ASSERT_TRUE(backing.IsHashSet(flags));
+  ASSERT_TRUE(backing.Contains(flags, "test1"));
+  ASSERT_TRUE(backing.Contains(flags, "test2"));
+  backing.Clear(flags);
+  ASSERT_FALSE(backing.Contains(flags, "test1"));
+  ASSERT_FALSE(backing.Contains(flags, "test2"));
+  ASSERT_FALSE(backing.IsHashSet(flags));
+}
+
+TEST(InvalidationSetTest, Backing_BackingIsEmpty) {
+  BackingFlags flags;
+  Backing<BackingType::kClasses> backing;
+
+  ASSERT_TRUE(backing.IsEmpty(flags));
+  backing.Add(flags, "test1");
+  ASSERT_FALSE(backing.IsEmpty(flags));
+  backing.Add(flags, "test2");
+  backing.Clear(flags);
+  ASSERT_TRUE(backing.IsEmpty(flags));
+}
+
+TEST(InvalidationSetTest, Backing_IsEmpty) {
+  BackingFlags flags;
+  Backing<BackingType::kClasses> backing;
+
+  ASSERT_TRUE(backing.IsEmpty(flags));
+
+  backing.Add(flags, "test1");
+  ASSERT_FALSE(backing.IsEmpty(flags));
+
+  backing.Clear(flags);
+  ASSERT_TRUE(backing.IsEmpty(flags));
+}
+
+TEST(InvalidationSetTest, Backing_Iterator) {
+  // Iterate over empty set.
+  {
+    BackingFlags flags;
+    Backing<BackingType::kClasses> backing;
+
+    Vector<AtomicString> strings;
+    for (const AtomicString& str : backing.Items(flags))
+      strings.push_back(str);
+    ASSERT_EQ(0u, strings.size());
+  }
+
+  // Iterate over set with one item.
+  {
+    BackingFlags flags;
+    Backing<BackingType::kClasses> backing;
+
+    backing.Add(flags, "test1");
+    Vector<AtomicString> strings;
+    for (const AtomicString& str : backing.Items(flags))
+      strings.push_back(str);
+    ASSERT_EQ(1u, strings.size());
+    ASSERT_TRUE(strings.Contains("test1"));
+  }
+
+  // Iterate over set with multiple items.
+  {
+    BackingFlags flags;
+    Backing<BackingType::kClasses> backing;
+
+    backing.Add(flags, "test1");
+    backing.Add(flags, "test2");
+    backing.Add(flags, "test3");
+    Vector<AtomicString> strings;
+    for (const AtomicString& str : backing.Items(flags))
+      strings.push_back(str);
+    ASSERT_EQ(3u, strings.size());
+    ASSERT_TRUE(strings.Contains("test1"));
+    ASSERT_TRUE(strings.Contains("test2"));
+    ASSERT_TRUE(strings.Contains("test3"));
+  }
+}
 
 // Once we setWholeSubtreeInvalid, we should not keep the HashSets.
 TEST(InvalidationSetTest, SubtreeInvalid_AddBefore) {
@@ -88,4 +312,5 @@ TEST(InvalidationSetTest, ShowDebug) {
 }
 #endif  // NDEBUG
 
+}  // namespace
 }  // namespace blink

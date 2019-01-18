@@ -69,25 +69,23 @@ bool InvalidationSet::InvalidatesElement(Element& element) const {
   if (invalidation_flags_.WholeSubtreeInvalid())
     return true;
 
-  if (tag_names_ &&
-      tag_names_->Contains(element.LocalNameForSelectorMatching())) {
+  if (HasTagName(element.LocalNameForSelectorMatching())) {
     TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(
         element, kInvalidationSetMatchedTagName, *this,
         element.LocalNameForSelectorMatching());
     return true;
   }
 
-  if (element.HasID() && ids_ &&
-      ids_->Contains(element.IdForStyleResolution())) {
+  if (element.HasID() && HasId(element.IdForStyleResolution())) {
     TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(
         element, kInvalidationSetMatchedId, *this,
         element.IdForStyleResolution());
     return true;
   }
 
-  if (element.HasClass() && classes_) {
+  if (element.HasClass() && HasClasses()) {
     const SpaceSplitString& class_names = element.ClassNames();
-    for (const auto& class_name : *classes_) {
+    for (const auto& class_name : Classes()) {
       if (class_names.Contains(class_name)) {
         TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(
             element, kInvalidationSetMatchedClass, *this, class_name);
@@ -96,8 +94,8 @@ bool InvalidationSet::InvalidatesElement(Element& element) const {
     }
   }
 
-  if (element.hasAttributes() && attributes_) {
-    for (const auto& attribute : *attributes_) {
+  if (element.hasAttributes() && HasAttributes()) {
+    for (const auto& attribute : Attributes()) {
       if (element.hasAttribute(attribute)) {
         TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(
             element, kInvalidationSetMatchedAttribute, *this, attribute);
@@ -116,8 +114,7 @@ bool InvalidationSet::InvalidatesElement(Element& element) const {
 }
 
 bool InvalidationSet::InvalidatesTagName(Element& element) const {
-  if (tag_names_ &&
-      tag_names_->Contains(element.LocalNameForSelectorMatching())) {
+  if (HasTagName(element.LocalNameForSelectorMatching())) {
     TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(
         element, kInvalidationSetMatchedTagName, *this,
         element.LocalNameForSelectorMatching());
@@ -189,25 +186,17 @@ void InvalidationSet::Combine(const InvalidationSet& other) {
   if (other.InvalidatesParts())
     SetInvalidatesParts();
 
-  if (other.classes_) {
-    for (const auto& class_name : *other.classes_)
-      AddClass(class_name);
-  }
+  for (const auto& class_name : other.Classes())
+    AddClass(class_name);
 
-  if (other.ids_) {
-    for (const auto& id : *other.ids_)
-      AddId(id);
-  }
+  for (const auto& id : other.Ids())
+    AddId(id);
 
-  if (other.tag_names_) {
-    for (const auto& tag_name : *other.tag_names_)
-      AddTagName(tag_name);
-  }
+  for (const auto& tag_name : other.TagNames())
+    AddTagName(tag_name);
 
-  if (other.attributes_) {
-    for (const auto& attribute : *other.attributes_)
-      AddAttribute(attribute);
-  }
+  for (const auto& attribute : other.Attributes())
+    AddAttribute(attribute);
 }
 
 void InvalidationSet::Destroy() const {
@@ -217,56 +206,45 @@ void InvalidationSet::Destroy() const {
     delete ToSiblingInvalidationSet(this);
 }
 
-HashSet<AtomicString>& InvalidationSet::EnsureClassSet() {
-  if (!classes_)
-    classes_ = std::make_unique<HashSet<AtomicString>>();
-  return *classes_;
+void InvalidationSet::ClearAllBackings() {
+  classes_.Clear(backing_flags_);
+  ids_.Clear(backing_flags_);
+  tag_names_.Clear(backing_flags_);
+  attributes_.Clear(backing_flags_);
 }
 
-HashSet<AtomicString>& InvalidationSet::EnsureIdSet() {
-  if (!ids_)
-    ids_ = std::make_unique<HashSet<AtomicString>>();
-  return *ids_;
-}
-
-HashSet<AtomicString>& InvalidationSet::EnsureTagNameSet() {
-  if (!tag_names_)
-    tag_names_ = std::make_unique<HashSet<AtomicString>>();
-  return *tag_names_;
-}
-
-HashSet<AtomicString>& InvalidationSet::EnsureAttributeSet() {
-  if (!attributes_)
-    attributes_ = std::make_unique<HashSet<AtomicString>>();
-  return *attributes_;
+bool InvalidationSet::HasEmptyBackings() const {
+  return classes_.IsEmpty(backing_flags_) && ids_.IsEmpty(backing_flags_) &&
+         tag_names_.IsEmpty(backing_flags_) &&
+         attributes_.IsEmpty(backing_flags_);
 }
 
 void InvalidationSet::AddClass(const AtomicString& class_name) {
   if (WholeSubtreeInvalid())
     return;
   CHECK(!class_name.IsEmpty());
-  EnsureClassSet().insert(class_name);
+  classes_.Add(backing_flags_, class_name);
 }
 
 void InvalidationSet::AddId(const AtomicString& id) {
   if (WholeSubtreeInvalid())
     return;
   CHECK(!id.IsEmpty());
-  EnsureIdSet().insert(id);
+  ids_.Add(backing_flags_, id);
 }
 
 void InvalidationSet::AddTagName(const AtomicString& tag_name) {
   if (WholeSubtreeInvalid())
     return;
   CHECK(!tag_name.IsEmpty());
-  EnsureTagNameSet().insert(tag_name);
+  tag_names_.Add(backing_flags_, tag_name);
 }
 
 void InvalidationSet::AddAttribute(const AtomicString& attribute) {
   if (WholeSubtreeInvalid())
     return;
   CHECK(!attribute.IsEmpty());
-  EnsureAttributeSet().insert(attribute);
+  attributes_.Add(backing_flags_, attribute);
 }
 
 void InvalidationSet::SetWholeSubtreeInvalid() {
@@ -279,10 +257,7 @@ void InvalidationSet::SetWholeSubtreeInvalid() {
   invalidation_flags_.SetInsertionPointCrossing(false);
   invalidation_flags_.SetInvalidatesSlotted(false);
   invalidation_flags_.SetInvalidatesParts(false);
-  classes_ = nullptr;
-  ids_ = nullptr;
-  tag_names_ = nullptr;
-  attributes_ = nullptr;
+  ClearAllBackings();
 }
 
 namespace {
@@ -330,30 +305,30 @@ void InvalidationSet::ToTracedValue(TracedValue* value) const {
   if (invalidation_flags_.InvalidatesParts())
     value->SetBoolean("invalidatesParts", true);
 
-  if (ids_) {
+  if (HasIds()) {
     value->BeginArray("ids");
-    for (const auto& id : *ids_)
+    for (const auto& id : Ids())
       value->PushString(id);
     value->EndArray();
   }
 
-  if (classes_) {
+  if (HasClasses()) {
     value->BeginArray("classes");
-    for (const auto& class_name : *classes_)
+    for (const auto& class_name : Classes())
       value->PushString(class_name);
     value->EndArray();
   }
 
-  if (tag_names_) {
+  if (HasTagNames()) {
     value->BeginArray("tagNames");
-    for (const auto& tag_name : *tag_names_)
+    for (const auto& tag_name : TagNames())
       value->PushString(tag_name);
     value->EndArray();
   }
 
-  if (attributes_) {
+  if (HasAttributes()) {
     value->BeginArray("attributes");
-    for (const auto& attribute : *attributes_)
+    for (const auto& attribute : Attributes())
       value->PushString(attribute);
     value->EndArray();
   }
