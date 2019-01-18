@@ -14,7 +14,6 @@
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
 #include "base/i18n/rtl.h"
-#include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -35,12 +34,12 @@
 #include "chromecast/browser/cast_http_user_agent_settings.h"
 #include "chromecast/browser/cast_navigation_ui_data.h"
 #include "chromecast/browser/cast_network_delegate.h"
+#include "chromecast/browser/cast_overlay_manifests.h"
 #include "chromecast/browser/cast_quota_permission_context.h"
 #include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
 #include "chromecast/browser/cast_session_id_map.h"
 #include "chromecast/browser/default_navigation_throttle.h"
 #include "chromecast/browser/devtools/cast_devtools_manager_delegate.h"
-#include "chromecast/browser/grit/cast_browser_resources.h"
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/tts/tts_controller.h"
@@ -78,7 +77,6 @@
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/service_manager/embedder/descriptors.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gl/gl_switches.h"
@@ -776,21 +774,14 @@ void CastContentBrowserClient::HandleServiceRequest(
 base::Optional<service_manager::Manifest>
 CastContentBrowserClient::GetServiceManifestOverlay(
     base::StringPiece service_name) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  int id = -1;
-  if (service_name == content::mojom::kBrowserServiceName) {
-    id = IDR_CAST_CONTENT_BROWSER_MANIFEST_OVERLAY;
-  } else if (service_name == content::mojom::kPackagedServicesServiceName) {
-    id = IDR_CAST_CONTENT_PACKAGED_SERVICES_MANIFEST_OVERLAY;
-  } else if (service_name == content::mojom::kRendererServiceName) {
-    id = IDR_CAST_CONTENT_RENDERER_MANIFEST_OVERLAY;
-  } else {
-    return base::nullopt;
-  }
-  base::StringPiece manifest_contents =
-      rb.GetRawDataResourceForScale(id, ui::ScaleFactor::SCALE_FACTOR_NONE);
-  return service_manager::Manifest::FromValueDeprecated(
-      base::JSONReader::Read(manifest_contents));
+  if (service_name == content::mojom::kBrowserServiceName)
+    return GetCastContentBrowserOverlayManifest();
+  if (service_name == content::mojom::kPackagedServicesServiceName)
+    return GetCastContentPackagedServicesOverlayManifest();
+  if (service_name == content::mojom::kRendererServiceName)
+    return GetCastContentRendererOverlayManifest();
+
+  return base::nullopt;
 }
 
 void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
