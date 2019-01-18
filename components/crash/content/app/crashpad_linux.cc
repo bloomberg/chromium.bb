@@ -101,6 +101,21 @@ class SandboxedHandler {
     server_fd_ = base::GlobalDescriptors::GetInstance()->Get(
         service_manager::kCrashDumpSignal);
 
+#if defined(OS_ANDROID)
+    // Android's debuggerd handler on JB MR2 until OREO displays a dialog which
+    // is a bad user experience for child process crashes. Disable the debuggerd
+    // handler for user builds. crbug.com/273706
+    base::android::BuildInfo* build_info =
+        base::android::BuildInfo::GetInstance();
+    restore_previous_handler_ =
+        build_info->sdk_int() < base::android::SDK_VERSION_JELLY_BEAN_MR2 ||
+        build_info->sdk_int() >= base::android::SDK_VERSION_OREO ||
+        strcmp(build_info->build_type(), "eng") == 0 ||
+        strcmp(build_info->build_type(), "userdebug") == 0;
+#else
+    restore_previous_handler_ = false;
+#endif
+
     return Signals::InstallCrashHandlers(HandleCrash, 0, &old_actions_);
   }
 
@@ -174,13 +189,19 @@ class SandboxedHandler {
     SandboxedHandler* state = Get();
     state->HandleCrashNonFatal(signo, siginfo, context);
     Signals::RestoreHandlerAndReraiseSignalOnReturn(
-        siginfo, state->old_actions_.ActionForSignal(signo));
+        siginfo, state->restore_previous_handler_
+                     ? state->old_actions_.ActionForSignal(signo)
+                     : nullptr);
   }
 
   Signals::OldActions old_actions_ = {};
   SanitizationInformation sanitization_;
   int server_fd_;
   unsigned char request_dump_;
+
+  // true if the previously installed signal handler is restored after
+  // handling a crash. Otherwise SIG_DFL is restored.
+  bool restore_previous_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxedHandler);
 };
