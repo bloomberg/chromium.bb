@@ -75,16 +75,17 @@ namespace learning {
 // TODO(liberato): consider PRF or other simplified approximations.
 // TODO(liberato): separate Model and TrainingAlgorithm.  This is the latter.
 class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer
-    : public HasRandomNumberGenerator {
+    : public TrainingAlgorithm,
+      public HasRandomNumberGenerator {
  public:
   explicit RandomTreeTrainer(RandomNumberGenerator* rng = nullptr);
-  ~RandomTreeTrainer();
+  ~RandomTreeTrainer() override;
 
   // Train on all examples.  Calls |model_cb| with the trained model, which
   // won't happen before this returns.
   void Train(const LearningTask& task,
              const TrainingData& examples,
-             TrainedModelCB model_cb);
+             TrainedModelCB model_cb) override;
 
  private:
   // Train on the subset |training_idx|.

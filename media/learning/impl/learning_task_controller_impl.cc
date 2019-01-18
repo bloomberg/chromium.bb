@@ -21,13 +21,7 @@ LearningTaskControllerImpl::LearningTaskControllerImpl(
       reporter_(std::move(reporter)) {
   switch (task_.model) {
     case LearningTask::Model::kExtraTrees:
-      training_cb_ = base::BindRepeating(
-          [](const LearningTask& task, TrainingData training_data,
-             TrainedModelCB model_cb) {
-            ExtraTreesTrainer trainer;
-            trainer.Train(task, training_data, std::move(model_cb));
-          },
-          task_);
+      trainer_ = std::make_unique<ExtraTreesTrainer>();
       break;
   }
 }
@@ -75,8 +69,9 @@ void LearningTaskControllerImpl::AddExample(const LabelledExample& example) {
   // Note that this copies the training data, so it's okay if we add more
   // examples to our copy before this returns.
   // TODO(liberato): Post to a background task runner, and bind |model_cb| to
-  // the current one.
-  training_cb_.Run(*training_data_.get(), std::move(model_cb));
+  // the current one.  Be careful about ownership if we invalidate |trainer_|
+  // on this thread.  Be sure to post destruction to that sequence.
+  trainer_->Train(task_, *training_data_, std::move(model_cb));
 }
 
 void LearningTaskControllerImpl::OnModelTrained(std::unique_ptr<Model> model) {
@@ -85,9 +80,9 @@ void LearningTaskControllerImpl::OnModelTrained(std::unique_ptr<Model> model) {
   model_ = std::move(model);
 }
 
-void LearningTaskControllerImpl::SetTrainingCBForTesting(
-    TrainingAlgorithmCB cb) {
-  training_cb_ = std::move(cb);
+void LearningTaskControllerImpl::SetTrainerForTesting(
+    std::unique_ptr<TrainingAlgorithm> trainer) {
+  trainer_ = std::move(trainer);
 }
 
 }  // namespace learning

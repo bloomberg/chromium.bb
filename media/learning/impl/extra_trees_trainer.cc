@@ -28,6 +28,13 @@ void ExtraTreesTrainer::Train(const LearningTask& task,
   task_ = task;
   trees_.reserve(task.rf_number_of_trees);
 
+  // Instantiate our tree trainer if we haven't already.  We do this now only
+  // so that we can send it our rng, mostly for tests.
+  // TODO(liberato): We should always take the rng in the ctor, rather than
+  // via SetRngForTesting.  Then we can do this earlier.
+  if (!tree_trainer_)
+    tree_trainer_ = std::make_unique<RandomTreeTrainer>(rng());
+
   // RandomTree requires one-hot vectors to properly choose split points the way
   // that ExtraTrees require.
   // TODO(liberato): Modify it not to need this.  It's slow.
@@ -55,9 +62,8 @@ void ExtraTreesTrainer::OnRandomTreeModel(TrainedModelCB model_cb,
   // Train the next tree.
   auto cb = base::BindOnce(&ExtraTreesTrainer::OnRandomTreeModel, AsWeakPtr(),
                            std::move(model_cb));
-  RandomTreeTrainer tree_trainer(rng());
-  tree_trainer.Train(converter_->converted_task(), converted_training_data_,
-                     std::move(cb));
+  tree_trainer_->Train(converter_->converted_task(), converted_training_data_,
+                       std::move(cb));
 }
 
 }  // namespace learning

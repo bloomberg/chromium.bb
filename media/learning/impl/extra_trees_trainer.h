@@ -28,18 +28,22 @@ namespace learning {
 //
 // These will automatically convert nominal values to one-hot vectors.
 class COMPONENT_EXPORT(LEARNING_IMPL) ExtraTreesTrainer
-    : public HasRandomNumberGenerator,
+    : public TrainingAlgorithm,
+      public HasRandomNumberGenerator,
       public base::SupportsWeakPtr<ExtraTreesTrainer> {
  public:
   ExtraTreesTrainer();
-  ~ExtraTreesTrainer();
+  ~ExtraTreesTrainer() override;
 
+  // TrainingAlgorithm
   void Train(const LearningTask& task,
              const TrainingData& training_data,
-             TrainedModelCB model_cb);
+             TrainedModelCB model_cb) override;
 
  private:
   void OnRandomTreeModel(TrainedModelCB model_cb, std::unique_ptr<Model> model);
+
+  std::unique_ptr<TrainingAlgorithm> tree_trainer_;
 
   // In-flight training.
   LearningTask task_;
