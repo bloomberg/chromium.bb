@@ -370,7 +370,6 @@ ExtensionFunction::ResponseAction AutofillPrivateGetAddressListFunction::Run() {
 
   autofill_util::AddressEntryList address_list =
       autofill_util::GenerateAddressList(*personal_data);
-  base::RecordAction(base::UserMetricsAction("AutofillAddressesViewed"));
   return RespondNow(ArgumentList(
       api::autofill_private::GetAddressList::Results::Create(address_list)));
 }
@@ -539,7 +538,6 @@ AutofillPrivateGetCreditCardListFunction::Run() {
 
   autofill_util::CreditCardEntryList credit_card_list =
       autofill_util::GenerateCreditCardList(*personal_data);
-  base::RecordAction(base::UserMetricsAction("AutofillCreditCardsViewed"));
   return RespondNow(
       ArgumentList(api::autofill_private::GetCreditCardList::Results::Create(
           credit_card_list)));

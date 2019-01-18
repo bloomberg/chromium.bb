@@ -265,6 +265,9 @@ Polymer({
         this.handleSyncStatus_.bind(this));
     this.addWebUIListener(
         'sync-status-changed', this.handleSyncStatus_.bind(this));
+
+    // Record that the user opened the payments settings.
+    chrome.metricsPrivate.recordUserAction('AutofillCreditCardsViewed');
   },
 
   /** @override */
