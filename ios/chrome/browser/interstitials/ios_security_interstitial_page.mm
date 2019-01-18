@@ -5,12 +5,15 @@
 #include "ios/chrome/browser/interstitials/ios_security_interstitial_page.h"
 
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "components/grit/components_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
+#include "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #include "ios/web/public/interstitials/web_interstitial.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -20,6 +23,24 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+// Adjusts the interstitial page's template parameter "fontsize" by system font
+// size multiplier.
+void AdjustFontSize(base::DictionaryValue& load_time_data) {
+  base::Value* value = load_time_data.FindKey("fontsize");
+  DCHECK(value && value->is_string());
+  std::string old_size = value->GetString();
+  // |old_size| should be in form of "75%".
+  DCHECK(old_size.size() > 1 && old_size.back() == '%');
+  double new_size = 75.0;
+  bool converted =
+      base::StringToDouble(old_size.substr(0, old_size.size() - 1), &new_size);
+  DCHECK(converted);
+  new_size *= SystemSuggestedFontSizeMultiplier();
+  load_time_data.SetString("fontsize", base::StringPrintf("%.0lf%%", new_size));
+}
+}
 
 IOSSecurityInterstitialPage::IOSSecurityInterstitialPage(
     web::WebState* web_state,
@@ -47,6 +68,7 @@ std::string IOSSecurityInterstitialPage::GetHtmlContents() const {
   PopulateInterstitialStrings(&load_time_data);
   webui::SetLoadTimeDataDefaults(
       GetApplicationContext()->GetApplicationLocale(), &load_time_data);
+  AdjustFontSize(load_time_data);
   std::string html = ui::ResourceBundle::GetSharedInstance()
                          .GetRawDataResource(IDR_SECURITY_INTERSTITIAL_HTML)
                          .as_string();
