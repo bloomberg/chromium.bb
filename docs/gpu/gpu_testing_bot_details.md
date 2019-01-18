@@ -215,6 +215,7 @@ In the [chromium/src] workspace:
 [gn_isolate_map.pyl]:        https://chromium.googlesource.com/chromium/src/+/master/testing/buildbot/gn_isolate_map.pyl
 [mb_config.pyl]:             https://chromium.googlesource.com/chromium/src/+/master/tools/mb/mb_config.pyl
 [generate_buildbot_json.py]: https://chromium.googlesource.com/chromium/src/+/master/testing/buildbot/generate_buildbot_json.py
+[mixins.pyl]:                https://chromium.googlesource.com/chromium/src/+/master/testing/buildbot/mixins.pyl
 [waterfalls.pyl]:            https://chromium.googlesource.com/chromium/src/+/master/testing/buildbot/waterfalls.pyl
 [README for generate_buildbot_json.py]: ../../testing/buildbot/README.md
 
@@ -585,20 +586,46 @@ everywhere. To do this:
     particular configuration. Keep the time window for these test suppressions
     as narrow as possible.
 1.  Watch the new machine for a day or two to make sure it's stable.
-1.  When it is, update [waterfalls.pyl] to use the
-    "gpu trigger script" functionality to select *either* the stable *or* the
-    new driver version on the stable version of the bot. See [this
-    CL](https://chromium-review.googlesource.com/1189059) for an example, though
-    that CL was targeting a different OS version rather than driver version.
+1.  When it is, update [mixins.pyl] to add a mixin to *optionally* use
+    the new driver version. The syntax looks like this:
+<pre>
+  'win10_nvidia_quadro_p400_upgrade': {
+    'swarming': {
+      'optional_dimensions': {
+        # Wait 10 minutes for this new driver version and then fall back to the
+        # current "stable" driver version. The format for optional dimensions
+        # is: expiration: [{key, value}, ..].
+        600: [
+          {
+            'gpu': '10de:1cb3-24.21.14.1195',
+          }
+        ],
+      },
+    }
+  },
+</pre>
+
+    The new driver version should match the one just added for the
+    experimental bot. A separate mixin must be used because the syntax
+    is different from these optional, or fallback, dimensions. See
+    [https://chromium-review.googlesource.com/1376653](https://chromium-review.googlesource.com/1376653)
+    for an example of how this was used to perform a recent OS
+    upgrade. [This
+    CL](https://chromium-review.googlesource.com/1396604) shows an
+    example of an actual driver upgrade, but using older "trigger
+    script" functionality no longer recommended for this purpose.
+
+1.  In the same CL, modify [waterfalls.pyl], adding that mixin to all
+    of the bots being upgraded. Note that it must just be *added*; it
+    does not *replace* the bot's current "stable" graphics driver mixin.
 1.  After that lands, ask the Chrome Infrastructure Labs team to roll out the
     driver update across all of the similarly configured bots in the swarming
     pool.
 1.  If necessary, update pixel test expectations and remove the suppressions
     added above.
-1.  Remove the alternate swarming dimensions for the stable bot from
-    [waterfalls.pyl], locking it to the new driver version. See [this
-    CL](https://chromium-review.googlesource.com/1197329) for an example, though
-    that CL was targeting a different OS version rather than driver version.
+1.  Remove the upgrade mixin from [mixins.pyl] and the references from
+    [waterfalls.pyl], and change the bot's stable dimensions to the upgraded
+    ones.
 
 Note that we leave the experimental bot in place. We could reclaim it, but it
 seems worthwhile to continuously test the "next" version of graphics drivers as
