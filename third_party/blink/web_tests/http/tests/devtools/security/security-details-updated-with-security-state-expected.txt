@@ -70,18 +70,8 @@ foo.test
             </SPAN>
         </DIV>
         <DIV class=view-network-button >
-            <BUTTON is=text-button type=button class=origin-button >
+            <BUTTON class=origin-button text-button type=button >
 View requests in Network Panel
-                <#document-fragment >
-                    <STYLE type=text/css >
-                    </STYLE>
-                    <STYLE type=text/css >
-                    </STYLE>
-                    <STYLE type=text/css >
-                    </STYLE>
-                    <CONTENT >
-                    </CONTENT>
-                </#document-fragment>
             </BUTTON>
         </DIV>
     </DIV>
@@ -172,18 +162,8 @@ Super CA
                 <DIV >
                 </DIV>
                 <DIV >
-                    <BUTTON is=text-button type=button class=origin-button >
+                    <BUTTON class=origin-button text-button type=button >
 Open full certificate details
-                        <#document-fragment >
-                            <STYLE type=text/css >
-                            </STYLE>
-                            <STYLE type=text/css >
-                            </STYLE>
-                            <STYLE type=text/css >
-                            </STYLE>
-                            <CONTENT >
-                            </CONTENT>
-                        </#document-fragment>
                     </BUTTON>
                 </DIV>
             </DIV>
