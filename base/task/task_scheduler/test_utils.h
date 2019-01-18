@@ -14,6 +14,7 @@
 #include "base/task/task_scheduler/task_tracker.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner.h"
+#include "base/thread_annotations.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {
@@ -39,8 +40,8 @@ class MockSchedulerWorkerObserver : public SchedulerWorkerObserver {
 
  private:
   SchedulerLock lock_;
-  std::unique_ptr<ConditionVariable> on_main_exit_cv_;
-  int allowed_calls_on_main_exit_ = 0;
+  std::unique_ptr<ConditionVariable> on_main_exit_cv_ GUARDED_BY(lock_);
+  int allowed_calls_on_main_exit_ GUARDED_BY(lock_) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MockSchedulerWorkerObserver);
 };
