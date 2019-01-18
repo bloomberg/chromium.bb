@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_WINDOW_TREE_HOST_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_WINDOW_TREE_HOST_WIN_H_
 
-#include <windows.h>
-#include <uxtheme.h>
-
 #include "base/macros.h"
 #include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host.h"
 #include "chrome/browser/ui/views/frame/minimize_button_metrics_win.h"
@@ -44,6 +41,7 @@ class BrowserDesktopWindowTreeHostWin : public BrowserDesktopWindowTreeHost,
   int GetInitialShowState() const override;
   bool GetClientAreaInsets(gfx::Insets* insets,
                            HMONITOR monitor) const override;
+  bool GetDwmFrameInsetsInPixels(gfx::Insets* insets) const override;
   void HandleCreate() override;
   void HandleDestroying() override;
   void HandleFrameChanged() override;
@@ -56,10 +54,6 @@ class BrowserDesktopWindowTreeHostWin : public BrowserDesktopWindowTreeHost,
   views::FrameMode GetFrameMode() const override;
   bool ShouldUseNativeFrame() const override;
   bool ShouldWindowContentsBeTransparent() const override;
-  void FrameTypeChanged() override;
-
-  void UpdateDWMFrame();
-  MARGINS GetDWMFrameMargins() const;
 
   bool IsOpaqueHostedAppFrame() const;
 
@@ -73,9 +67,6 @@ class BrowserDesktopWindowTreeHostWin : public BrowserDesktopWindowTreeHost,
 
   // The wrapped system menu itself.
   std::unique_ptr<views::NativeMenuWin> system_menu_;
-
-  // Necessary to avoid corruption on NC paint in Aero mode.
-  bool did_gdi_clear_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserDesktopWindowTreeHostWin);
 };

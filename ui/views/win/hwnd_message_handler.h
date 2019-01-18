@@ -532,6 +532,9 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // Provides functionality to transition a frame to DWM.
   void PerformDwmTransition();
 
+  // Updates DWM frame to extend into client area if needed.
+  void UpdateDwmFrame();
+
   // Generates a touch event and adds it to the |touch_events| parameter.
   // |point| is the point where the touch was initiated.
   // |id| is the event id associated with the touch event.
@@ -736,6 +739,13 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // True if we enable feature kPrecisionTouchpadScrollPhase. Indicate we will
   // report the scroll phase information or not.
   bool precision_touchpad_scroll_phase_enabled_;
+
+  // True if DWM frame should be cleared on next WM_ERASEBKGND message.  This is
+  // necessary to avoid white flashing in the titlebar area around the
+  // minimize/maximize/close buttons.  Clearing the frame on every WM_ERASEBKGND
+  // message causes black flickering in the titlebar region so we do it on for
+  // the first message after frame type changes.
+  bool needs_dwm_frame_clear_ = true;
 
   // This is a map of the HMONITOR to full screeen window instance. It is safe
   // to keep a raw pointer to the HWNDMessageHandler instance as we track the

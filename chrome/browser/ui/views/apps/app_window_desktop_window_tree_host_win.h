@@ -29,12 +29,8 @@ class AppWindowDesktopWindowTreeHostWin
   // Overridden from DesktopWindowTreeHostWin:
   bool GetClientAreaInsets(gfx::Insets* insets,
                            HMONITOR monitor) const override;
+  bool GetDwmFrameInsetsInPixels(gfx::Insets* insets) const override;
   void HandleFrameChanged() override;
-  void PostHandleMSG(UINT message, WPARAM w_param, LPARAM l_param) override;
-
-  // Updates the glass frame area by calling the DwmExtendFrameIntoClientArea
-  // Windows function.
-  void UpdateDWMFrame();
 
   ChromeNativeAppWindowViewsWin* app_window_;
 
