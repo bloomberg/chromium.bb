@@ -168,10 +168,13 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // when a main frame is requested.
   SwapPromiseManager* GetSwapPromiseManager();
 
-  // Sets whether the content is suitable to use Gpu Rasterization. This flag is
-  // used to enable gpu rasterization, and can be modified at any time to change
-  // the setting based on content.
+  // Sets or gets whether the content is suitable to use Gpu Rasterization. This
+  // flag is used to enable gpu rasterization, and can be modified at any time
+  // to change the setting based on content.
   void SetHasGpuRasterizationTrigger(bool has_trigger);
+  bool has_gpu_rasterization_trigger() const {
+    return has_gpu_rasterization_trigger_;
+  }
 
   // Visibility and LayerTreeFrameSink -------------------------------
 
@@ -604,10 +607,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   }
 
   void SetAnimationEvents(std::unique_ptr<MutatorEvents> events);
-
-  bool has_gpu_rasterization_trigger() const {
-    return has_gpu_rasterization_trigger_;
-  }
 
   Proxy* proxy() const { return proxy_.get(); }
 
