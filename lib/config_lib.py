@@ -1155,7 +1155,6 @@ def DefaultSiteParameters():
           default_site_params['EXTERNAL_GOB_INSTANCE']: external_remote,
           default_site_params['INTERNAL_GOB_INSTANCE']: internal_remote,
       },
-      KAYLE_INTERNAL_REMOTE=None,
       CHROMIUM_REMOTE=chromium_remote,
       CHROME_REMOTE=chrome_remote,
       AOSP_REMOTE=aosp_remote,
