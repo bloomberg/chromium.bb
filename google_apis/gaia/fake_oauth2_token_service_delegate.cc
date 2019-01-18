@@ -117,6 +117,10 @@ FakeOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
   return shared_factory_;
 }
 
+bool FakeOAuth2TokenServiceDelegate::FixRequestErrorIfPossible() {
+  return fix_request_if_possible_;
+}
+
 void FakeOAuth2TokenServiceDelegate::UpdateAuthError(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {

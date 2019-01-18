@@ -166,8 +166,13 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
   void Start();
   void InformWaitingRequests();
   void InformWaitingRequestsAndDelete();
-  static bool ShouldRetry(const GoogleServiceAuthError& error);
+  bool ShouldRetry(const GoogleServiceAuthError& error) const;
   int64_t ComputeExponentialBackOffMilliseconds(int retry_num);
+
+  // Attempts to retry the fetch if possible.  This is possible if the retry
+  // count has not been exceeded.  Returns true if a retry has been restarted
+  // and false otherwise.
+  bool RetryIfPossible(const GoogleServiceAuthError& error);
 
   // |oauth2_token_service_| remains valid for the life of this Fetcher, since
   // this Fetcher is destructed in the dtor of the OAuth2TokenService or is
@@ -274,19 +279,8 @@ void OAuth2TokenService::Fetcher::OnGetTokenFailure(
     const GoogleServiceAuthError& error) {
   fetcher_.reset();
 
-  if (ShouldRetry(error) && retry_number_ < max_fetch_retry_num_) {
-    base::TimeDelta backoff = base::TimeDelta::FromMilliseconds(
-        ComputeExponentialBackOffMilliseconds(retry_number_));
-    ++retry_number_;
-    UMA_HISTOGRAM_ENUMERATION("Signin.OAuth2TokenGetRetry",
-        error.state(), GoogleServiceAuthError::NUM_STATES);
-    retry_timer_.Stop();
-    retry_timer_.Start(FROM_HERE,
-                       backoff,
-                       this,
-                       &OAuth2TokenService::Fetcher::Start);
+  if (ShouldRetry(error) && RetryIfPossible(error))
     return;
-  }
 
   UMA_HISTOGRAM_ENUMERATION("Signin.OAuth2TokenGetFailure",
       error.state(), GoogleServiceAuthError::NUM_STATES);
@@ -304,13 +298,35 @@ int64_t OAuth2TokenService::Fetcher::ComputeExponentialBackOffMilliseconds(
   return (exponential_backoff_in_seconds + base::RandDouble()) * 1000;
 }
 
-// static
-bool OAuth2TokenService::Fetcher::ShouldRetry(
+bool OAuth2TokenService::Fetcher::RetryIfPossible(
     const GoogleServiceAuthError& error) {
+  if (retry_number_ < max_fetch_retry_num_) {
+    base::TimeDelta backoff = base::TimeDelta::FromMilliseconds(
+        ComputeExponentialBackOffMilliseconds(retry_number_));
+    ++retry_number_;
+    UMA_HISTOGRAM_ENUMERATION("Signin.OAuth2TokenGetRetry", error.state(),
+                              GoogleServiceAuthError::NUM_STATES);
+    retry_timer_.Stop();
+    retry_timer_.Start(FROM_HERE, backoff, this,
+                       &OAuth2TokenService::Fetcher::Start);
+    return true;
+  }
+
+  return false;
+}
+
+bool OAuth2TokenService::Fetcher::ShouldRetry(
+    const GoogleServiceAuthError& error) const {
   GoogleServiceAuthError::State error_state = error.state();
-  return error_state == GoogleServiceAuthError::CONNECTION_FAILED ||
-         error_state == GoogleServiceAuthError::REQUEST_CANCELED ||
-         error_state == GoogleServiceAuthError::SERVICE_UNAVAILABLE;
+  bool should_retry =
+      error_state == GoogleServiceAuthError::CONNECTION_FAILED ||
+      error_state == GoogleServiceAuthError::REQUEST_CANCELED ||
+      error_state == GoogleServiceAuthError::SERVICE_UNAVAILABLE;
+
+  // Give the delegate a chance to correct the error first.  This is a best
+  // effort only.
+  return should_retry ||
+         oauth2_token_service_->GetDelegate()->FixRequestErrorIfPossible();
 }
 
 void OAuth2TokenService::Fetcher::InformWaitingRequests() {

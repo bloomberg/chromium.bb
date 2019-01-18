@@ -132,3 +132,7 @@ void OAuth2TokenServiceDelegate::ExtractCredentials(
     const std::string& account_id) {
   NOTREACHED();
 }
+
+bool OAuth2TokenServiceDelegate::FixRequestErrorIfPossible() {
+  return false;
+}

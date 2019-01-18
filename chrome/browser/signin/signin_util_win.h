@@ -17,6 +17,11 @@ namespace signin_util {
 // provider if available.
 void SigninWithCredentialProviderIfPossible(Profile* profile);
 
+// Attempt to reauthenticate with a credentials from a system installed
+// credential provider if available.  If a new authentication token was
+// installed returns true.
+bool ReauthWithCredentialProviderIfPossible(Profile* profile);
+
 // Sets the DiceTurnSyncOnHelper delegate for browser tests.
 void SetDiceTurnSyncOnHelperDelegateForTesting(
     std::unique_ptr<DiceTurnSyncOnHelper::Delegate> delegate);

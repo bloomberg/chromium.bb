@@ -20,6 +20,7 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
@@ -50,14 +51,13 @@ std::string DecryptRefreshToken(const std::string& cipher_text) {
   return refresh_token;
 }
 
-// Finish the process of signing in with the credential provider.  This is
-// either called directly from SigninWithCredentialProvider() is a browser
-// window for the profile is already available or is delayed until a browser
-// can first be opened.
-void FinishSigninWithCredentialProvider(const std::string& account_id,
-                                        Browser* browser,
-                                        Profile* profile,
-                                        Profile::CreateStatus status) {
+// Finish the process of import credentials.  This is either called directly
+// from ImportCredentialsFromProvider() if a browser window for the profile is
+// already available or is delayed until a browser can first be opened.
+void FinishImportCredentialsFromProvider(const std::string& account_id,
+                                         Browser* browser,
+                                         Profile* profile,
+                                         Profile::CreateStatus status) {
   // DiceTurnSyncOnHelper deletes itself once done.
   if (GetDiceTurnSyncOnHelperDelegateForTestingStorage()->get()) {
     new DiceTurnSyncOnHelper(
@@ -80,20 +80,19 @@ void FinishSigninWithCredentialProvider(const std::string& account_id,
 
   // Mark this profile as having been signed in with the credential provider.
   profile->GetPrefs()->SetBoolean(prefs::kSignedInWithCredentialProvider, true);
-
-  // TODO(rogerta): delete the refresh_token regkey.
 }
 
-// Start the process of signing in with the credential provider given that
-// all the required information is available.  The process depends on having
-// a browser window for the profile.  If a browser window exists the profile
-// be signed in and sync will be starting up.  If not, the profile will be
-// still be signed in but sync will be started once the browser window is
+// Start the process of importing credentials from the credential provider given
+// that all the required information is available.  The process depends on
+// having a browser window for the profile.  If a browser window exists the
+// profile be signed in and sync will be starting up.  If not, the profile will
+// be still be signed in but sync will be started once the browser window is
 // ready.
-void SigninWithCredentialProvider(Profile* profile,
-                                  const base::string16& gaia_id,
-                                  const base::string16& email,
-                                  const std::string& refresh_token) {
+void ImportCredentialsFromProvider(Profile* profile,
+                                   const base::string16& gaia_id,
+                                   const base::string16& email,
+                                   const std::string& refresh_token,
+                                   bool turn_on_sync) {
   // For debugging purposes, record that the credentials for this profile
   // came from a credential provider.
   AboutSigninInternals* signin_internals =
@@ -114,18 +113,84 @@ void SigninWithCredentialProvider(Profile* profile,
       signin_metrics::SourceForRefreshTokenOperation::
           kMachineLogon_CredentialProvider);
 
-  Browser* browser = chrome::FindLastActiveWithProfile(profile);
-  if (browser) {
-    FinishSigninWithCredentialProvider(account_id, browser, profile,
-                                       Profile::CREATE_STATUS_CREATED);
-  } else {
-    // If no active browser exists yet, this profile is in the process of
-    // being created.  Wait for the browser to be created before finishing the
-    // sign in.  This object deletes itself when done.
-    new profiles::BrowserAddedForProfileObserver(
-        profile, base::BindRepeating(&FinishSigninWithCredentialProvider,
-                                     account_id, nullptr));
+  if (turn_on_sync) {
+    Browser* browser = chrome::FindLastActiveWithProfile(profile);
+    if (browser) {
+      FinishImportCredentialsFromProvider(account_id, browser, profile,
+                                          Profile::CREATE_STATUS_CREATED);
+    } else {
+      // If no active browser exists yet, this profile is in the process of
+      // being created.  Wait for the browser to be created before finishing the
+      // sign in.  This object deletes itself when done.
+      new profiles::BrowserAddedForProfileObserver(
+          profile, base::BindRepeating(&FinishImportCredentialsFromProvider,
+                                       account_id, nullptr));
+    }
   }
+}
+
+// Attempt to sign in with a credentials from a system installed credential
+// provider if available.  If |auth_gaia_id| is not empty then the system
+// credential must be for the same account.  Starts the process to turn on DICE
+// only if |turn_on_sync| is true.
+bool TrySigninWithCredentialProvider(Profile* profile,
+                                     const base::string16& auth_gaia_id,
+                                     bool turn_on_sync) {
+  base::win::RegKey key;
+  if (key.Open(HKEY_CURRENT_USER, credential_provider::kRegHkcuAccountsPath,
+               KEY_READ) != ERROR_SUCCESS) {
+    return false;
+  }
+
+  base::win::RegistryKeyIterator it(key.Handle(), L"");
+  if (!it.Valid() || it.SubkeyCount() == 0)
+    return false;
+
+  base::win::RegKey key_account(key.Handle(), it.Name(), KEY_READ | KEY_WRITE);
+  if (!key_account.Valid())
+    return false;
+
+  base::string16 gaia_id = it.Name();
+  if (!auth_gaia_id.empty() && auth_gaia_id != gaia_id)
+    return false;
+
+  base::string16 email;
+  if (key_account.ReadValue(
+          base::UTF8ToUTF16(credential_provider::kKeyEmail).c_str(), &email) !=
+      ERROR_SUCCESS) {
+    return false;
+  }
+
+  // Read the encrypted refresh token.  The data is stored in binary format.
+  // No matter what happens, delete the registry entry.
+
+  std::string encrypted_refresh_token;
+  DWORD size = 0;
+  DWORD type;
+  if (key_account.ReadValue(
+          base::UTF8ToUTF16(credential_provider::kKeyRefreshToken).c_str(),
+          nullptr, &size, &type) != ERROR_SUCCESS) {
+    return false;
+  }
+
+  encrypted_refresh_token.resize(size);
+  bool reauth_attempted = false;
+  key_account.ReadValue(
+      base::UTF8ToUTF16(credential_provider::kKeyRefreshToken).c_str(),
+      const_cast<char*>(encrypted_refresh_token.c_str()), &size, &type);
+  if (!gaia_id.empty() && !email.empty() && type == REG_BINARY &&
+      !encrypted_refresh_token.empty()) {
+    std::string refresh_token = DecryptRefreshToken(encrypted_refresh_token);
+    if (!refresh_token.empty()) {
+      reauth_attempted = true;
+      ImportCredentialsFromProvider(profile, gaia_id, email, refresh_token,
+                                    turn_on_sync);
+    }
+  }
+
+  key_account.DeleteValue(
+      base::UTF8ToUTF16(credential_provider::kKeyRefreshToken).c_str());
+  return reauth_attempted;
 }
 
 }  // namespace
@@ -144,56 +209,33 @@ void SigninWithCredentialProviderIfPossible(Profile* profile) {
   if (!(first_run::IsChromeFirstRun() &&
         g_browser_process->profile_manager()->GetInitialProfileDir() ==
             profile->GetPath().BaseName() &&
-        !IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount())) {
+        !SigninManagerFactory::GetForProfile(profile)->IsAuthenticated())) {
     return;
   }
 
-  base::win::RegKey key;
-  if (key.Open(HKEY_CURRENT_USER, credential_provider::kRegHkcuAccountsPath,
-               KEY_READ) != ERROR_SUCCESS) {
-    return;
+  TrySigninWithCredentialProvider(profile, base::string16(), true);
+}
+
+bool ReauthWithCredentialProviderIfPossible(Profile* profile) {
+  // Check to see if auto signin information is available.  Only applies if:
+  //
+  //  - The profile is marked as having been signed in with a system credential.
+  //  - The profile is already signed in.
+  //  - The profile is in an auth error state.
+  SigninManager* manager = SigninManagerFactory::GetForProfile(profile);
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  if (!(profile->GetPrefs()->GetBoolean(
+            prefs::kSignedInWithCredentialProvider) &&
+        manager->IsAuthenticated() &&
+        token_service->RefreshTokenHasError(
+            manager->GetAuthenticatedAccountId()))) {
+    return false;
   }
 
-  base::win::RegistryKeyIterator it(key.Handle(), L"");
-  if (!it.Valid() || it.SubkeyCount() == 0)
-    return;
-
-  base::win::RegKey key_account(key.Handle(), it.Name(), KEY_READ | KEY_WRITE);
-  if (!key_account.Valid())
-    return;
-
-  base::string16 gaia_id = it.Name();
-  base::string16 email;
-  if (key_account.ReadValue(
-          base::UTF8ToUTF16(credential_provider::kKeyEmail).c_str(), &email) !=
-      ERROR_SUCCESS) {
-    return;
-  }
-
-  // Read the encrypted refresh token.  The data is stored in binary format.
-  // No matter what happens, delete the registry entry.
-  std::string encrypted_refresh_token;
-  DWORD size = 0;
-  DWORD type;
-  if (key_account.ReadValue(
-          base::UTF8ToUTF16(credential_provider::kKeyRefreshToken).c_str(),
-          nullptr, &size, &type) != ERROR_SUCCESS) {
-    return;
-  }
-
-  encrypted_refresh_token.resize(size);
-  key_account.ReadValue(
-      base::UTF8ToUTF16(credential_provider::kKeyRefreshToken).c_str(),
-      const_cast<char*>(encrypted_refresh_token.c_str()), &size, &type);
-  if (!gaia_id.empty() && !email.empty() && type == REG_BINARY &&
-      !encrypted_refresh_token.empty()) {
-    std::string refresh_token = DecryptRefreshToken(encrypted_refresh_token);
-    if (!refresh_token.empty())
-      SigninWithCredentialProvider(profile, gaia_id, email, refresh_token);
-  }
-
-  key_account.DeleteValue(
-      base::UTF8ToUTF16(credential_provider::kKeyRefreshToken).c_str());
+  base::string16 gaia_id =
+      base::UTF8ToUTF16(manager->GetAuthenticatedAccountInfo().gaia.c_str());
+  return TrySigninWithCredentialProvider(profile, gaia_id, false);
 }
 
 }  // namespace signin_util
