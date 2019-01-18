@@ -40,11 +40,14 @@ class CONTENT_EXPORT EmbeddedFrameSinkImpl : public viz::HostFrameSinkClient {
     return local_surface_id_;
   }
 
-  // Creates a CompositorFrameSink connection to FrameSinkManagerImpl. This
-  // should only ever be called once.
+  // Creates a CompositorFrameSink connection to FrameSinkManagerImpl.
   void CreateCompositorFrameSink(
       viz::mojom::CompositorFrameSinkClientPtr client,
-      viz::mojom::CompositorFrameSinkRequest request,
+      viz::mojom::CompositorFrameSinkRequest request);
+
+  // Establishes a connection to the emedder of this FrameSink. Allows the child
+  // to notify its embedder of its LocalSurfaceId changes.
+  void ConnectToEmbedder(
       blink::mojom::SurfaceEmbedderRequest surface_embedder_request);
 
   // viz::HostFrameSinkClient implementation.

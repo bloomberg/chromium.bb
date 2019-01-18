@@ -23,6 +23,8 @@ class MockCompositorFrameSink : public viz::mojom::blink::CompositorFrameSink {
       : binding_(this, std::move(request)) {
     EXPECT_CALL(*this, SetNeedsBeginFrame(true))
         .Times(num_expected_set_needs_begin_frame_on_construction);
+    if (!num_expected_set_needs_begin_frame_on_construction)
+      EXPECT_CALL(*this, SetNeedsBeginFrame(false)).Times(testing::AtLeast(0));
   }
 
   // viz::mojom::blink::CompositorFrameSink implementation

@@ -251,8 +251,11 @@ void VideoFrameSubmitter::StartSubmitting() {
   binding_.Bind(mojo::MakeRequest(&client));
   provider->CreateCompositorFrameSink(
       frame_sink_id_, std::move(client),
-      mojo::MakeRequest(&compositor_frame_sink_),
-      mojo::MakeRequest(&surface_embedder_));
+      mojo::MakeRequest(&compositor_frame_sink_));
+  if (!surface_embedder_.is_bound()) {
+    provider->ConnectToEmbedder(frame_sink_id_,
+                                mojo::MakeRequest(&surface_embedder_));
+  }
 
   compositor_frame_sink_.set_connection_error_handler(base::BindOnce(
       &VideoFrameSubmitter::OnContextLost, base::Unretained(this)));
