@@ -48,7 +48,7 @@ const base::Feature kEnableThirdPartyKeyboardWorkaround{
 namespace experimental_flags {
 
 const base::Feature kExternalFilesLoadedInWebState{
-    "ExternalFilesLoadedInWebState", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ExternalFilesLoadedInWebState", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool AlwaysDisplayFirstRun() {
   return
