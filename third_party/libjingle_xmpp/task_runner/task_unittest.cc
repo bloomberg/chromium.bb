@@ -15,7 +15,6 @@
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/task_runner/taskrunner.h"
-#include "third_party/webrtc/rtc_base/thread.h"
 
 namespace rtc {
 
@@ -31,9 +30,6 @@ class FakeTask : public Task {
 // GetSystemTimeAsFileTime() to get the current clock ticks
 class MyTaskRunner : public TaskRunner {
  public:
-  MyTaskRunner() { ThreadManager::Instance()->WrapCurrentThread(); }
-  ~MyTaskRunner() { ThreadManager::Instance()->UnwrapCurrentThread(); }
-
   virtual void WakeTasks() { RunTasks(); }
 
   bool timeout_change() const {
