@@ -5,52 +5,9 @@
 <script src="resources/gamepad-helpers.js"></script>
 <script>
 
-// TODO(crbug.com/146285): Allow more than 4 connected gamepads.
-var MAX_GAMEPADS = 4;
-
-function disconnectGamepads() {
-    // Simulate disconnecting all gamepads.
-    for (let i = 0; i < MAX_GAMEPADS; ++i) {
-        gamepadController.disconnect(i);
-    }
-}
-
-function connectOneGamepad() {
-    // Simulate a connected gamepad at index 0 with:
-    // * id 'MockStick 3000'
-    // * two buttons (values 1.0/pressed, 0.0/unpressed)
-    // * two axes (values 0.5, -1.0)
-    gamepadController.connect(0);
-    gamepadController.setId(0, "MockStick 3000");
-    gamepadController.setButtonCount(0, 2);
-    gamepadController.setAxisCount(0, 2);
-    gamepadController.setButtonData(0, 0, 1);
-    gamepadController.setButtonData(0, 1, 0);
-    gamepadController.setAxisData(0, 0, .5);
-    gamepadController.setAxisData(0, 1, -1.0);
-    gamepadController.dispatchConnected(0);
-}
-
-function testGamepadStateAllDisconnected() {
-    // To pass this test, the getGamepads array should have only null elements.
-    let pads = navigator.getGamepads();
-    // According to the spec, the length of the array returned by getGamepads
-    // must be one greater than the maximum index of Gamepad objects in the
-    // array. It does not specify the size when there are no objects in the
-    // array. The current behavior in Chrome is to return an array with length
-    // equal to the maximum number of connected gamepads, and to fill all unused
-    // slots with null.
-    assert_equals(pads.length, MAX_GAMEPADS, 'pads.length');
-    for (let i = 0; i < pads.length; ++i) {
-        // TODO(crbug.com/865642): Remove deprecated Gamepad.item method.
-        assert_equals(pads.item(i), null);
-        assert_equals(pads[i], null);
-    }
-}
-
 function testGamepadStateOneConnected() {
     // To pass this test, Gamepad 0 should have the values set in
-    // setUpOneGamepad.
+    // connectGamepads.
     let gamepad = navigator.getGamepads()[0];
     assert_equals(gamepad.id, 'MockStick 3000');
     assert_equals(gamepad.buttons.length, 2);
@@ -133,7 +90,7 @@ function testDifferentValueUpdateReturnsNewObjects() {
     // returned.
     // TODO(crbug.com/855760): Check that the axes array is preserved.
     gamepadBefore = navigator.getGamepads()[0];
-    gamepadController.setButtonData(0, 0, gamepad.buttons[0].value + 0.1);
+    gamepadController.setButtonData(0, 0, gamepadBefore.buttons[0].value + 0.1);
     gamepadAfter = navigator.getGamepads()[0];
     assert_not_equals(gamepadBefore, gamepadAfter,
                       "expected new gamepad after new-value setButtonData");
@@ -146,8 +103,8 @@ function testDifferentValueUpdateReturnsNewObjects() {
     // Test that changing a button value and an axis value causes a new gamepad
     // object to be returned.
     gamepadBefore = navigator.getGamepads()[0];
-    gamepadController.setAxisData(0, 0, gamepad.axes[0] - 0.1);
-    gamepadController.setButtonData(0, 0, gamepad.buttons[0].value - 0.1);
+    gamepadController.setAxisData(0, 0, gamepadBefore.axes[0] - 0.1);
+    gamepadController.setButtonData(0, 0, gamepadBefore.buttons[0].value - 0.1);
     gamepadAfter = navigator.getGamepads()[0];
     assert_not_equals(
         gamepadBefore, gamepadAfter,
@@ -170,7 +127,7 @@ promise_test(async () => {
 
     // Simulate a gamepad connection and verify the state changes as expected.
     let connectPromise = ongamepadconnected();
-    connectOneGamepad();
+    connectGamepads(1);
     await connectPromise;
     testGamepadStateOneConnected();
 
@@ -182,19 +139,18 @@ promise_test(async () => {
     window.addEventListener('gamepaddisconnected', disconnectListener);
     testNoChangeReturnsSameObjects();
     testSameValueUpdateReturnsSameObjects();
-    // TODO(crbug.com/855760): With a listener registered, Chrome will only
-    // create a new object if there was a gamepad disconnection. Otherwise,
-    // the previous gamepad object is overwritten with the new data. Re-enable
-    // this test once Chrome correctly creates a new gamepad object.
-    //testDifferentValueUpdateReturnsNewObjects();
+    testDifferentValueUpdateReturnsNewObjects();
 
     window.removeEventListener('gamepaddisconnected', disconnectListener);
     testNoChangeReturnsSameObjects();
     testSameValueUpdateReturnsSameObjects();
-    // TODO(crbug.com/855760): With no listener registered, Chrome always reuses
-    // the gamepad object. Re-enable this test once Chrome correctly creates a
-    // new gamepad object.
-    //testDifferentValueUpdateReturnsNewObjects();
+    testDifferentValueUpdateReturnsNewObjects();
+
+    // Disconnect all gamepads to end the test.
+    let disconnectPromise = ongamepaddisconnected();
+    disconnectGamepads();
+    await disconnectPromise;
+    testGamepadStateAllDisconnected();
 }, "Typical polling access to gamepads contents.");
 
 </script>

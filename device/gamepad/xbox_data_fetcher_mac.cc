@@ -364,9 +364,11 @@ void XboxDataFetcher::XboxControllerGotData(
     pad.buttons[i].pressed = data.buttons[i];
     pad.buttons[i].value = data.buttons[i] ? 1.0f : 0.0f;
   }
-  pad.buttons[6].pressed = data.triggers[0] > kDefaultButtonPressedThreshold;
+  pad.buttons[6].pressed =
+      data.triggers[0] > GamepadButton::kDefaultButtonPressedThreshold;
   pad.buttons[6].value = data.triggers[0];
-  pad.buttons[7].pressed = data.triggers[1] > kDefaultButtonPressedThreshold;
+  pad.buttons[7].pressed =
+      data.triggers[1] > GamepadButton::kDefaultButtonPressedThreshold;
   pad.buttons[7].value = data.triggers[1];
   for (size_t i = 8; i < 16; i++) {
     pad.buttons[i].pressed = data.buttons[i - 2];

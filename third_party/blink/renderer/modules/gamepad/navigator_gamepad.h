@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/platform_event_controller.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/async_method_runner.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
@@ -66,12 +65,10 @@ class MODULES_EXPORT NavigatorGamepad final
   void Trace(blink::Visitor*) override;
 
  private:
-  void DispatchOneEvent();
   void DidRemoveGamepadEventListeners();
   bool StartUpdatingIfAttached();
-  void SampleAndCheckConnectedGamepads();
-  bool CheckConnectedGamepads(GamepadList*, GamepadList*);
-  void CheckConnectedGamepad(Gamepad*, Gamepad*, bool*, bool*);
+  void SampleAndCompareGamepadState();
+  void DispatchGamepadEvent(const AtomicString&, Gamepad*);
 
   // PageVisibilityObserver
   void PageVisibilityChanged() override;
@@ -87,11 +84,35 @@ class MODULES_EXPORT NavigatorGamepad final
   void DidRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
   void DidRemoveAllEventListeners(LocalDOMWindow*) override;
 
+  // A reference to the buffer containing the last-received gamepad state. May
+  // be nullptr if no data has been received yet. Do not overwrite this buffer
+  // as it may have already been returned to the page. Instead, write to
+  // |gamepads_back_| and swap buffers.
   Member<GamepadList> gamepads_;
+
+  // True if the buffer referenced by |gamepads_| has been exposed to the page.
+  // When the buffer is not exposed, prefer to reuse it.
+  bool is_gamepads_exposed_ = false;
+
+  // A reference to the buffer for receiving new gamepad state. May be
+  // overwritten.
   Member<GamepadList> gamepads_back_;
-  HeapDeque<Member<Gamepad>> pending_events_;
-  Member<AsyncMethodRunner<NavigatorGamepad>> dispatch_one_event_runner_;
+
+  // The timestamp for the navigationStart attribute. Gamepad timestamps are
+  // reported relative to this value.
   TimeTicks navigation_start_;
+
+  // The timestamp when gamepads were made available to the page. If no data has
+  // been received from the hardware, the gamepad timestamp should be equal to
+  // this value.
+  TimeTicks gamepads_start_;
+
+  // True if there is at least one listener for gamepad connection or
+  // disconnection events.
+  bool has_connection_event_listener_ = false;
+
+  // True while processing gamepad events.
+  bool processing_events_ = false;
 };
 
 }  // namespace blink

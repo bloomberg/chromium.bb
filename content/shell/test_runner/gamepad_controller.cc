@@ -26,6 +26,18 @@ using device::Gamepads;
 
 namespace test_runner {
 
+namespace {
+
+// Set button.pressed if the button value is above a threshold. The threshold is
+// chosen to match XInput's trigger deadzone.
+constexpr float kButtonPressedThreshold = 30.f / 255.f;
+
+int64_t CurrentTimeInMicroseconds() {
+  return base::TimeTicks::Now().since_origin().InMicroseconds();
+}
+
+}  // namespace
+
 class GamepadControllerBindings
     : public gin::Wrappable<GamepadControllerBindings> {
  public:
@@ -233,8 +245,11 @@ void GamepadController::SetObserver(
 void GamepadController::Connect(int index) {
   if (index < 0 || index >= static_cast<int>(Gamepads::kItemsLengthCap))
     return;
+  const int64_t now = CurrentTimeInMicroseconds();
   gamepads_->seqlock.WriteBegin();
-  gamepads_->data.items[index].connected = true;
+  Gamepad& pad = gamepads_->data.items[index];
+  pad.connected = true;
+  pad.timestamp = now;
   gamepads_->seqlock.WriteEnd();
 }
 
@@ -257,9 +272,11 @@ void GamepadController::DispatchConnected(int index) {
 void GamepadController::Disconnect(int index) {
   if (index < 0 || index >= static_cast<int>(Gamepads::kItemsLengthCap))
     return;
+  const int64_t now = CurrentTimeInMicroseconds();
   gamepads_->seqlock.WriteBegin();
   Gamepad& pad = gamepads_->data.items[index];
   pad.connected = false;
+  pad.timestamp = now;
   if (observer_)
     observer_->GamepadDisconnected(index, pad);
   gamepads_->seqlock.WriteEnd();
@@ -269,11 +286,13 @@ void GamepadController::SetId(int index, const std::string& src) {
   if (index < 0 || index >= static_cast<int>(Gamepads::kItemsLengthCap))
     return;
   const char* p = src.c_str();
+  const int64_t now = CurrentTimeInMicroseconds();
   gamepads_->seqlock.WriteBegin();
-  memset(gamepads_->data.items[index].id, 0,
-         sizeof(gamepads_->data.items[index].id));
+  Gamepad& pad = gamepads_->data.items[index];
+  memset(pad.id, 0, sizeof(pad.id));
   for (unsigned i = 0; *p && i < Gamepad::kIdLengthCap - 1; ++i)
-    gamepads_->data.items[index].id[i] = *p++;
+    pad.id[i] = *p++;
+  pad.timestamp = now;
   gamepads_->seqlock.WriteEnd();
 }
 
@@ -282,8 +301,11 @@ void GamepadController::SetButtonCount(int index, int buttons) {
     return;
   if (buttons < 0 || buttons >= static_cast<int>(Gamepad::kButtonsLengthCap))
     return;
+  const int64_t now = CurrentTimeInMicroseconds();
   gamepads_->seqlock.WriteBegin();
-  gamepads_->data.items[index].buttons_length = buttons;
+  Gamepad& pad = gamepads_->data.items[index];
+  pad.buttons_length = buttons;
+  pad.timestamp = now;
   gamepads_->seqlock.WriteEnd();
 }
 
@@ -292,9 +314,12 @@ void GamepadController::SetButtonData(int index, int button, double data) {
     return;
   if (button < 0 || button >= static_cast<int>(Gamepad::kButtonsLengthCap))
     return;
+  const int64_t now = CurrentTimeInMicroseconds();
   gamepads_->seqlock.WriteBegin();
-  gamepads_->data.items[index].buttons[button].value = data;
-  gamepads_->data.items[index].buttons[button].pressed = data > 0.1f;
+  Gamepad& pad = gamepads_->data.items[index];
+  pad.buttons[button].value = data;
+  pad.buttons[button].pressed = data > kButtonPressedThreshold;
+  pad.timestamp = now;
   gamepads_->seqlock.WriteEnd();
 }
 
@@ -303,8 +328,11 @@ void GamepadController::SetAxisCount(int index, int axes) {
     return;
   if (axes < 0 || axes >= static_cast<int>(Gamepad::kAxesLengthCap))
     return;
+  const int64_t now = CurrentTimeInMicroseconds();
   gamepads_->seqlock.WriteBegin();
-  gamepads_->data.items[index].axes_length = axes;
+  Gamepad& pad = gamepads_->data.items[index];
+  pad.axes_length = axes;
+  pad.timestamp = now;
   gamepads_->seqlock.WriteEnd();
 }
 
@@ -313,8 +341,11 @@ void GamepadController::SetAxisData(int index, int axis, double data) {
     return;
   if (axis < 0 || axis >= static_cast<int>(Gamepad::kAxesLengthCap))
     return;
+  const int64_t now = CurrentTimeInMicroseconds();
   gamepads_->seqlock.WriteBegin();
-  gamepads_->data.items[index].axes[axis] = data;
+  Gamepad& pad = gamepads_->data.items[index];
+  pad.axes[axis] = data;
+  pad.timestamp = now;
   gamepads_->seqlock.WriteEnd();
 }
 
@@ -322,10 +353,12 @@ void GamepadController::SetDualRumbleVibrationActuator(int index,
                                                        bool enabled) {
   if (index < 0 || index >= static_cast<int>(Gamepads::kItemsLengthCap))
     return;
+  const int64_t now = CurrentTimeInMicroseconds();
   gamepads_->seqlock.WriteBegin();
-  gamepads_->data.items[index].vibration_actuator.type =
-      device::GamepadHapticActuatorType::kDualRumble;
-  gamepads_->data.items[index].vibration_actuator.not_null = enabled;
+  Gamepad& pad = gamepads_->data.items[index];
+  pad.vibration_actuator.type = device::GamepadHapticActuatorType::kDualRumble;
+  pad.vibration_actuator.not_null = enabled;
+  pad.timestamp = now;
   gamepads_->seqlock.WriteEnd();
 }
 
