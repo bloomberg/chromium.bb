@@ -6,6 +6,7 @@
 
 #include "components/metrics/reporting_service.h"
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -150,7 +151,10 @@ void ReportingService::SendStagedLog() {
   const std::string hash =
       base::HexEncode(log_store()->staged_log_hash().data(),
                       log_store()->staged_log_hash().size());
-  log_uploader_->UploadLog(log_store()->staged_log(), hash, reporting_info_);
+  std::string signature;
+  base::Base64Encode(log_store()->staged_log_signature(), &signature);
+  log_uploader_->UploadLog(log_store()->staged_log(), hash, signature,
+                           reporting_info_);
 }
 
 void ReportingService::OnLogUploadComplete(int response_code,

@@ -137,6 +137,37 @@ void RecordUploadSizeForServiceTypeHistograms(
   }
 }
 
+// Encrypts a |plaintext| string, using the encrypted_messages component,
+// returns |encrypted| which is a serialized EncryptedMessage object. Returns
+// false if there was a problem encrypting.
+bool EncryptString(const std::string& plaintext, std::string* encrypted) {
+  encrypted_messages::EncryptedMessage encrypted_message;
+  if (!encrypted_messages::EncryptSerializedMessage(
+          kServerPublicKey, kServerPublicKeyVersion, kEncryptedMessageLabel,
+          plaintext, &encrypted_message)) {
+    NOTREACHED() << "Error encrypting string.";
+    return false;
+  }
+  if (!encrypted_message.SerializeToString(encrypted)) {
+    NOTREACHED() << "Error serializing encrypted string.";
+    return false;
+  }
+  return true;
+}
+
+// Encrypts a |plaintext| string and returns |encoded|, which is a base64
+// encoded serialized EncryptedMessage object. Returns false if there was a
+// problem encrypting or serializing.
+bool EncryptAndBase64EncodeString(const std::string& plaintext,
+                                  std::string* encoded) {
+  std::string encrypted_text;
+  if (!EncryptString(plaintext, &encrypted_text))
+    return false;
+
+  base::Base64Encode(encrypted_text, encoded);
+  return true;
+}
+
 }  // namespace
 
 namespace metrics {
@@ -172,6 +203,7 @@ NetMetricsLogUploader::~NetMetricsLogUploader() {
 
 void NetMetricsLogUploader::UploadLog(const std::string& compressed_log_data,
                                       const std::string& log_hash,
+                                      const std::string& log_signature,
                                       const ReportingInfo& reporting_info) {
   // If this attempt is a retry, there was a network error, the last attempt was
   // over https, and there is an insecure url set, attempt this upload over
@@ -181,16 +213,18 @@ void NetMetricsLogUploader::UploadLog(const std::string& compressed_log_data,
       reporting_info.last_error_code() != 0 &&
       reporting_info.last_attempt_was_https() &&
       base::FeatureList::IsEnabled(kHttpRetryFeature)) {
-    UploadLogToURL(compressed_log_data, log_hash, reporting_info,
+    UploadLogToURL(compressed_log_data, log_hash, log_signature, reporting_info,
                    insecure_server_url_);
     return;
   }
-  UploadLogToURL(compressed_log_data, log_hash, reporting_info, server_url_);
+  UploadLogToURL(compressed_log_data, log_hash, log_signature, reporting_info,
+                 server_url_);
 }
 
 void NetMetricsLogUploader::UploadLogToURL(
     const std::string& compressed_log_data,
     const std::string& log_hash,
+    const std::string& log_signature,
     const ReportingInfo& reporting_info,
     const GURL& url) {
   DCHECK(!log_hash.empty());
@@ -210,27 +244,35 @@ void NetMetricsLogUploader::UploadLogToURL(
   bool should_encrypt =
       !url.SchemeIs(url::kHttpsScheme) && !net::IsLocalhost(url);
   if (should_encrypt) {
-    std::string encrypted_hash;
     std::string base64_encoded_hash;
-    if (!EncryptString(log_hash, &encrypted_hash)) {
-      on_upload_complete_.Run(0, net::ERR_FAILED, false);
+    if (!EncryptAndBase64EncodeString(log_hash, &base64_encoded_hash)) {
+      HTTPFallbackAborted();
       return;
     }
-    base::Base64Encode(encrypted_hash, &base64_encoded_hash);
     resource_request->headers.SetHeader("X-Chrome-UMA-Log-SHA1",
                                         base64_encoded_hash);
 
-    std::string encrypted_reporting_info;
-    std::string base64_reporting_info;
-    if (!EncryptString(reporting_info_string, &encrypted_reporting_info)) {
-      on_upload_complete_.Run(0, net::ERR_FAILED, false);
+    std::string base64_encoded_signature;
+    if (!EncryptAndBase64EncodeString(log_signature,
+                                      &base64_encoded_signature)) {
+      HTTPFallbackAborted();
       return;
     }
-    base::Base64Encode(encrypted_reporting_info, &base64_reporting_info);
+    resource_request->headers.SetHeader("X-Chrome-UMA-Log-HMAC-SHA256",
+                                        base64_encoded_signature);
+
+    std::string base64_reporting_info;
+    if (!EncryptAndBase64EncodeString(reporting_info_string,
+                                      &base64_reporting_info)) {
+      HTTPFallbackAborted();
+      return;
+    }
     resource_request->headers.SetHeader("X-Chrome-UMA-ReportingInfo",
                                         base64_reporting_info);
   } else {
     resource_request->headers.SetHeader("X-Chrome-UMA-Log-SHA1", log_hash);
+    resource_request->headers.SetHeader("X-Chrome-UMA-Log-HMAC-SHA256",
+                                        log_signature);
     resource_request->headers.SetHeader("X-Chrome-UMA-ReportingInfo",
                                         reporting_info_string);
     // Tell the server that we're uploading gzipped protobufs only if we are not
@@ -246,7 +288,7 @@ void NetMetricsLogUploader::UploadLogToURL(
     std::string encrypted_message;
     if (!EncryptString(compressed_log_data, &encrypted_message)) {
       url_loader_.reset();
-      on_upload_complete_.Run(0, net::ERR_FAILED, false);
+      HTTPFallbackAborted();
       return;
     }
     url_loader_->AttachStringForUpload(encrypted_message, mime_type_);
@@ -267,6 +309,13 @@ void NetMetricsLogUploader::UploadLogToURL(
                      base::Unretained(this)));
 }
 
+void NetMetricsLogUploader::HTTPFallbackAborted() {
+  // The callbark is called with: a response code of 0 to indicate no upload was
+  // attempted, a generic net error, and false to indicate it wasn't a secure
+  // connection.
+  on_upload_complete_.Run(0, net::ERR_FAILED, false);
+}
+
 // The callback is only invoked if |url_loader_| it was bound against is alive.
 void NetMetricsLogUploader::OnURLLoadComplete(
     std::unique_ptr<std::string> response_body) {
@@ -281,15 +330,4 @@ void NetMetricsLogUploader::OnURLLoadComplete(
   on_upload_complete_.Run(response_code, error_code, was_https);
 }
 
-bool NetMetricsLogUploader::EncryptString(const std::string& plaintext,
-                                          std::string* encrypted) {
-  encrypted_messages::EncryptedMessage encrypted_message;
-  if (!encrypted_messages::EncryptSerializedMessage(
-          kServerPublicKey, kServerPublicKeyVersion, kEncryptedMessageLabel,
-          plaintext, &encrypted_message) ||
-      !encrypted_message.SerializeToString(encrypted)) {
-    return false;
-  }
-  return true;
-}
 }  // namespace metrics
