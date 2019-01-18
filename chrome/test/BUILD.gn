@@ -763,7 +763,6 @@ test("browser_tests") {
       "../browser/prerender/prerender_nostate_prefetch_browsertest.cc",
       "../browser/prerender/prerender_test_utils.cc",
       "../browser/prerender/prerender_test_utils.h",
-      "../browser/previews/lazyload_browsertest.cc",
       "../browser/previews/previews_browsertest.cc",
       "../browser/previews/previews_lite_page_browsertest.cc",
       "../browser/previews/previews_service_browser_test.cc",

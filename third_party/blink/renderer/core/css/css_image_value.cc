@@ -78,16 +78,13 @@ StyleImage* CSSImageValue::CacheImage(
         document.GetFrame()->IsClientLoFiAllowed(params.GetResourceRequest())) {
       params.SetClientLoFiPlaceholder();
     }
-    bool is_lazily_loaded =
-        image_request_optimization == FetchParameters::kDeferImageLoad &&
+    cached_image_ = StyleFetchedImage::Create(
+        document, params,
         // Only http/https images are eligible to be lazily loaded.
-        params.Url().ProtocolIsInHTTPFamily();
-    if (is_lazily_loaded)
-      params.SetLazyImageDeferred();
-
-    cached_image_ =
-        StyleFetchedImage::Create(document, params, is_lazily_loaded);
+        params.Url().ProtocolIsInHTTPFamily() &&
+            image_request_optimization == FetchParameters::kDeferImageLoad);
   }
+
   return cached_image_.Get();
 }
 
