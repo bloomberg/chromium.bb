@@ -771,7 +771,7 @@ public class WebappActivity extends SingleTabActivity {
             taskDescriptionColor = mBrandColor;
             statusBarColor = ColorUtils.getDarkenedColorForStatusBar(mBrandColor);
             if (getToolbarManager() != null) {
-                getToolbarManager().updatePrimaryColor(mBrandColor, false);
+                getToolbarManager().onThemeColorChanged(mBrandColor, false);
             }
         }
 

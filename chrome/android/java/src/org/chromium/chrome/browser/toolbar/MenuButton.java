@@ -15,14 +15,14 @@ import android.widget.ImageView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ThemeColorProvider;
+import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
-import org.chromium.chrome.browser.toolbar.ThemeColorProvider.ThemeColorObserver;
-import org.chromium.chrome.browser.util.ColorUtils;
 
 /**
  * The overflow menu button.
  */
-public class MenuButton extends FrameLayout implements ThemeColorObserver {
+public class MenuButton extends FrameLayout implements TintObserver {
     /** The {@link ImageButton} for the menu button. */
     private ImageButton mMenuImageButton;
 
@@ -151,18 +151,18 @@ public class MenuButton extends FrameLayout implements ThemeColorObserver {
 
     public void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
         mThemeColorProvider = themeColorProvider;
-        mThemeColorProvider.addObserver(this);
+        mThemeColorProvider.addTintObserver(this);
     }
 
     @Override
-    public void onThemeColorChanged(ColorStateList tintList, int primaryColor) {
+    public void onTintChanged(ColorStateList tintList, boolean useLight) {
         ApiCompatibilityUtils.setImageTintList(mMenuImageButton, tintList);
-        setUseLightDrawables(ColorUtils.shouldUseLightForegroundOnBackground(primaryColor));
+        setUseLightDrawables(useLight);
     }
 
     public void destroy() {
         if (mThemeColorProvider != null) {
-            mThemeColorProvider.removeObserver(this);
+            mThemeColorProvider.removeTintObserver(this);
             mThemeColorProvider = null;
         }
     }

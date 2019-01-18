@@ -5,34 +5,22 @@
 package org.chromium.chrome.browser.toolbar.bottom;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
-import android.support.v7.content.res.AppCompatResources;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider.IncognitoStateObserver;
-import org.chromium.chrome.browser.toolbar.ThemeColorProvider;
-import org.chromium.chrome.browser.toolbar.ThemeColorProvider.ThemeColorObserver;
 
 /** A ThemeColorProvider for the bottom toolbar. */
-public class BottomToolbarThemeColorProvider implements ThemeColorProvider, IncognitoStateObserver {
-    /** List of {@link ThemeColorObserver}s. These are used to broadcast events to listeners. */
-    private final ObserverList<ThemeColorObserver> mThemeColorObservers;
-
-    /** Tint to be used in dark mode. */
-    private final ColorStateList mDarkModeTint;
-
-    /** Tint to be used in light mode. */
-    private final ColorStateList mLightModeTint;
-
+public class BottomToolbarThemeColorProvider
+        extends ThemeColorProvider implements IncognitoStateObserver {
     /** Primary color for light mode. */
     private final int mLightPrimaryColor;
 
@@ -46,7 +34,7 @@ public class BottomToolbarThemeColorProvider implements ThemeColorProvider, Inco
     private OverviewModeBehavior mOverviewModeBehavior;
 
     /** Observer to know when overview mode is entered/exited. */
-    private OverviewModeObserver mOverviewModeObserver;
+    private final OverviewModeObserver mOverviewModeObserver;
 
     /** Whether theme is dark mode. */
     private boolean mIsUsingDarkBackground;
@@ -58,11 +46,7 @@ public class BottomToolbarThemeColorProvider implements ThemeColorProvider, Inco
     private boolean mIsOverviewVisible;
 
     public BottomToolbarThemeColorProvider() {
-        mThemeColorObservers = new ObserverList<ThemeColorObserver>();
-
         final Context context = ContextUtils.getApplicationContext();
-        mDarkModeTint = AppCompatResources.getColorStateList(context, R.color.light_mode_tint);
-        mLightModeTint = AppCompatResources.getColorStateList(context, R.color.dark_mode_tint);
         mLightPrimaryColor = ApiCompatibilityUtils.getColor(
                 context.getResources(), R.color.modern_primary_color);
         mDarkPrimaryColor = ApiCompatibilityUtils.getColor(
@@ -81,16 +65,6 @@ public class BottomToolbarThemeColorProvider implements ThemeColorProvider, Inco
                 updateTheme();
             }
         };
-    }
-
-    @Override
-    public void addObserver(ThemeColorObserver observer) {
-        mThemeColorObservers.addObserver(observer);
-    }
-
-    @Override
-    public void removeObserver(ThemeColorObserver observer) {
-        mThemeColorObservers.removeObserver(observer);
     }
 
     void setIncognitoStateProvider(IncognitoStateProvider provider) {
@@ -117,16 +91,12 @@ public class BottomToolbarThemeColorProvider implements ThemeColorProvider, Inco
                 && (isAccessibilityEnabled || isHorizontalTabSwitcherEnabled
                         || !mIsOverviewVisible);
 
-        if (shouldUseDarkBackground == mIsUsingDarkBackground) return;
-        mIsUsingDarkBackground = shouldUseDarkBackground;
-        final int primaryColor = mIsUsingDarkBackground ? mDarkPrimaryColor : mLightPrimaryColor;
-        final ColorStateList tint = mIsUsingDarkBackground ? mDarkModeTint : mLightModeTint;
-        for (ThemeColorObserver observer : mThemeColorObservers) {
-            observer.onThemeColorChanged(tint, primaryColor);
-        }
+        updatePrimaryColor(shouldUseDarkBackground ? mDarkPrimaryColor : mLightPrimaryColor, false);
     }
 
-    void destroy() {
+    @Override
+    public void destroy() {
+        super.destroy();
         if (mIncognitoStateProvider != null) {
             mIncognitoStateProvider.removeObserver(this);
             mIncognitoStateProvider = null;
@@ -135,6 +105,5 @@ public class BottomToolbarThemeColorProvider implements ThemeColorProvider, Inco
             mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
             mOverviewModeBehavior = null;
         }
-        mThemeColorObservers.clear();
     }
 }

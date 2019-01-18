@@ -276,7 +276,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             getToolbarManager().setUrlBarHidden(true);
         }
         int toolbarColor = mIntentDataProvider.getToolbarColor();
-        getToolbarManager().updatePrimaryColor(toolbarColor, false);
+        getToolbarManager().onThemeColorChanged(toolbarColor, false);
         if (!mIntentDataProvider.isOpenedByChrome()) {
             getToolbarManager().setShouldUpdateToolbarPrimaryColor(false);
         }
@@ -519,11 +519,11 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
                 if (tab.isPreview()) {
                     final int defaultColor = ColorUtils.getDefaultThemeColor(getResources(), false);
-                    manager.updatePrimaryColor(defaultColor, false);
+                    manager.onThemeColorChanged(defaultColor, false);
                     setStatusBarColor(defaultColor, false);
                     mTriggeredPreviewChange = true;
                 } else if (mOriginalColor != manager.getPrimaryColor() && mTriggeredPreviewChange) {
-                    manager.updatePrimaryColor(mOriginalColor, false);
+                    manager.onThemeColorChanged(mOriginalColor, false);
                     setStatusBarColor(mOriginalColor, false);
 
                     mTriggeredPreviewChange = false;

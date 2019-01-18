@@ -2186,6 +2186,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         });
         mBrandColorTransitionAnimation.start();
         mBrandColorTransitionActive = true;
+        mLayoutUpdateHost.requestUpdate();
     }
 
     private void updateNtpAnimationState() {
