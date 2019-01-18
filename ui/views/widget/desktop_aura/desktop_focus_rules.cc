@@ -21,6 +21,15 @@ bool DesktopFocusRules::CanActivateWindow(const aura::Window* window) const {
       wm::WindowStateIs(window->GetRootWindow(), ui::SHOW_STATE_MINIMIZED)) {
     return true;
   }
+
+#if defined(OS_CHROMEOS)
+  // Always-on-top widgets are not activatable in ChromeOS.
+  if (window &&
+      window->GetRootWindow()->GetProperty(aura::client::kAlwaysOnTopKey)) {
+    return false;
+  }
+#endif
+
   if (!BaseFocusRules::CanActivateWindow(window))
     return false;
   // Never activate a window that is not a child of the root window. Transients
