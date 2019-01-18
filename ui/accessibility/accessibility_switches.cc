@@ -21,6 +21,11 @@ const char kEnableExperimentalAccessibilityAutoclick[] =
 const char kEnableExperimentalAccessibilityLabels[] =
     "enable-experimental-accessibility-labels";
 
+// Enables language detection on in-page text content which is then exposed to
+// accessibility technology such as screen readers.
+const char kEnableExperimentalAccessibilityLanguageDetection[] =
+    "enable-experimental-accessibility-language-detection";
+
 // Shows setting to enable Switch Access before it has launched.
 const char kEnableExperimentalAccessibilitySwitchAccess[] =
     "enable-experimental-accessibility-switch-access";
@@ -28,6 +33,11 @@ const char kEnableExperimentalAccessibilitySwitchAccess[] =
 bool AreExperimentalAccessibilityFeaturesEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableExperimentalAccessibilityFeatures);
+}
+
+bool AreExperimentalAccessibilityLanguageDetectionEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnableExperimentalAccessibilityLanguageDetection);
 }
 
 }  // namespace switches

@@ -31663,6 +31663,8 @@ from previous Chrome versions.
   <int value="316182183" label="MediaDocumentDownloadButton:disabled"/>
   <int value="319683583" label="ContentSuggestionsDebugLog:enabled"/>
   <int value="323605372" label="ui-disable-compositor-animation-timelines"/>
+  <int value="324060906"
+      label="enable-experimental-accessibility-language-detection"/>
   <int value="324522065" label="app-menu-icon"/>
   <int value="324631366" label="enable-drive-search-in-app-launcher"/>
   <int value="326876883" label="HappinessTrackingSurveysForDesktop:disabled"/>
