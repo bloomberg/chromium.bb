@@ -61,6 +61,22 @@ void PositionView(UIView* view, CGPoint point) {
 @end
 
 @implementation GridCell
+// Public properties.
+@synthesize delegate = _delegate;
+@synthesize theme = _theme;
+@synthesize itemIdentifier = _itemIdentifier;
+@synthesize icon = _icon;
+@synthesize snapshot = _snapshot;
+@synthesize title = _title;
+@synthesize titleHidden = _titleHidden;
+// Private properties.
+@synthesize topBarHeight = _topBarHeight;
+@synthesize topBar = _topBar;
+@synthesize snapshotView = _snapshotView;
+@synthesize titleLabel = _titleLabel;
+@synthesize closeIconView = _closeIconView;
+@synthesize closeTapTargetButton = _closeTapTargetButton;
+@synthesize border = _border;
 
 // |-dequeueReusableCellWithReuseIdentifier:forIndexPath:| calls this method to
 // initialize a cell.
@@ -91,11 +107,15 @@ void PositionView(UIView* view, CGPoint point) {
     _snapshotView = snapshotView;
     _closeTapTargetButton = closeTapTargetButton;
 
+    _topBarHeight =
+        [topBar.heightAnchor constraintEqualToConstant:kGridCellHeaderHeight];
+
     NSArray* constraints = @[
       [topBar.topAnchor constraintEqualToAnchor:contentView.topAnchor],
       [topBar.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
       [topBar.trailingAnchor
           constraintEqualToAnchor:contentView.trailingAnchor],
+      _topBarHeight,
       [snapshotView.topAnchor constraintEqualToAnchor:topBar.bottomAnchor],
       [snapshotView.leadingAnchor
           constraintEqualToAnchor:contentView.leadingAnchor],
@@ -254,8 +274,6 @@ void PositionView(UIView* view, CGPoint point) {
   _closeIconView = closeIconView;
 
   _accessibilityConstraints = @[
-    [topBar.heightAnchor
-        constraintEqualToConstant:kGridCellHeaderAccessibilityHeight],
     [titleLabel.leadingAnchor
         constraintEqualToAnchor:topBar.leadingAnchor
                        constant:kGridCellHeaderLeadingInset],
@@ -264,7 +282,6 @@ void PositionView(UIView* view, CGPoint point) {
   ];
 
   _nonAccessibilityConstraints = @[
-    [topBar.heightAnchor constraintEqualToConstant:kGridCellHeaderHeight],
     [iconView.leadingAnchor
         constraintEqualToAnchor:topBar.leadingAnchor
                        constant:kGridCellHeaderLeadingInset],
@@ -279,11 +296,10 @@ void PositionView(UIView* view, CGPoint point) {
   NSArray* constraints = @[
     [titleLabel.centerYAnchor constraintEqualToAnchor:topBar.centerYAnchor],
     [titleLabel.trailingAnchor
-        constraintEqualToAnchor:closeIconView.leadingAnchor
-                       constant:-kGridCellTitleLabelContentInset],
-    [closeIconView.topAnchor
-        constraintEqualToAnchor:topBar.topAnchor
-                       constant:kGridCellCloseButtonContentInset],
+        constraintLessThanOrEqualToAnchor:closeIconView.leadingAnchor
+                                 constant:-kGridCellTitleLabelContentInset],
+    [closeIconView.topAnchor constraintEqualToAnchor:topBar.topAnchor],
+    [closeIconView.bottomAnchor constraintEqualToAnchor:topBar.bottomAnchor],
     [closeIconView.trailingAnchor
         constraintEqualToAnchor:topBar.trailingAnchor
                        constant:-kGridCellCloseButtonContentInset],
@@ -308,11 +324,9 @@ void PositionView(UIView* view, CGPoint point) {
 - (void)updateTopBar {
   if (UIContentSizeCategoryIsAccessibilityCategory(
           self.traitCollection.preferredContentSizeCategory)) {
-    self.titleLabel.numberOfLines = 2;
     [NSLayoutConstraint deactivateConstraints:_nonAccessibilityConstraints];
     [NSLayoutConstraint activateConstraints:_accessibilityConstraints];
   } else {
-    self.titleLabel.numberOfLines = 1;
     [NSLayoutConstraint deactivateConstraints:_accessibilityConstraints];
     [NSLayoutConstraint activateConstraints:_nonAccessibilityConstraints];
   }

@@ -75,12 +75,10 @@ extern const int kGridDarkThemeCellSeparatorColor;
 extern const CGSize kGridCellSizeSmall;
 extern const CGSize kGridCellSizeMedium;
 extern const CGSize kGridCellSizeLarge;
-extern const CGSize kGridCellSizeAccessibility;
 extern const CGFloat kGridCellCornerRadius;
 extern const CGFloat kGridCellIconCornerRadius;
 // The cell header contains the icon, title, and close button.
 extern const CGFloat kGridCellHeaderHeight;
-extern const CGFloat kGridCellHeaderAccessibilityHeight;
 extern const CGFloat kGridCellHeaderLeadingInset;
 extern const CGFloat kGridCellCloseTapTargetWidthHeight;
 extern const CGFloat kGridCellCloseButtonContentInset;
