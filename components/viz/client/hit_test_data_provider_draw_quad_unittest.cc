@@ -13,6 +13,7 @@
 #include "base/threading/thread.h"
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
+#include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/test_context_provider.h"
@@ -32,6 +33,7 @@ SurfaceId CreateChildSurfaceId(uint32_t id) {
 }
 
 std::unique_ptr<RenderPass> CreateRenderPassWithChildSurface(
+    RenderPassId render_pass_id,
     const SurfaceId& child_surface_id,
     const gfx::Rect& rect,
     const gfx::Rect& child_rect,
@@ -40,7 +42,7 @@ std::unique_ptr<RenderPass> CreateRenderPassWithChildSurface(
     const base::Optional<SurfaceId>& fallback_child_surface_id =
         base::nullopt) {
   auto pass = RenderPass::Create();
-  pass->SetNew(1, rect, rect, render_pass_transform);
+  pass->SetNew(render_pass_id, rect, rect, render_pass_transform);
 
   auto* shared_state = pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(shared_state_transform, rect, rect, rect, false, false,
@@ -90,7 +92,7 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataRenderer) {
   gfx::Transform shared_state_transform;
   shared_state_transform.Translate(-200, -100);
   auto pass = CreateRenderPassWithChildSurface(
-      child_surface_id, kFrameRect, child_rect, render_pass_transform,
+      1, child_surface_id, kFrameRect, child_rect, render_pass_transform,
       shared_state_transform);
   compositor_frame =
       CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
@@ -147,21 +149,21 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataSkipQuads) {
   // A render pass that has non-invertible transform.
   SurfaceId child_surface_id1 = CreateChildSurfaceId(2);
   auto pass1 = CreateRenderPassWithChildSurface(
-      child_surface_id1, kFrameRect, child_rect, not_invertible_transform,
+      1, child_surface_id1, kFrameRect, child_rect, not_invertible_transform,
       invertible_transform);
   pass_list.push_back(std::move(pass1));
 
   // A render pass with a draw quad that has non-invertible transform.
   SurfaceId child_surface_id2 = CreateChildSurfaceId(3);
   auto pass2 = CreateRenderPassWithChildSurface(
-      child_surface_id2, kFrameRect, child_rect, invertible_transform,
+      2, child_surface_id2, kFrameRect, child_rect, invertible_transform,
       not_invertible_transform);
   pass_list.push_back(std::move(pass2));
 
   // A render pass and its draw quad both have invertible transforms.
   SurfaceId child_surface_id3 = CreateChildSurfaceId(4);
   auto pass3 = CreateRenderPassWithChildSurface(
-      child_surface_id3, kFrameRect, child_rect, invertible_transform,
+      3, child_surface_id3, kFrameRect, child_rect, invertible_transform,
       invertible_transform);
   pass_list.push_back(std::move(pass3));
 
@@ -169,9 +171,49 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataSkipQuads) {
   SurfaceId child_surface_id4 = CreateChildSurfaceId(5);
   SurfaceId fallback_child_surface_id4 = CreateChildSurfaceId(6);
   auto pass4 = CreateRenderPassWithChildSurface(
-      child_surface_id4, kFrameRect, child_rect, invertible_transform,
+      4, child_surface_id4, kFrameRect, child_rect, invertible_transform,
       invertible_transform, fallback_child_surface_id4);
   pass_list.push_back(std::move(pass4));
+
+  auto pass5_root = RenderPass::Create();
+  pass5_root->output_rect = kFrameRect;
+  pass5_root->id = 5;
+  auto* shared_quad_state5_root = pass5_root->CreateAndAppendSharedQuadState();
+  gfx::Rect rect5_root(kFrameRect);
+  shared_quad_state5_root->SetAll(
+      gfx::Transform(), /*quad_layer_rect=*/rect5_root,
+      /*visible_quad_layer_rect=*/rect5_root, /*clip_rect=*/rect5_root,
+      /*is_clipped=*/false, /*are_contents_opaque=*/false,
+      /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
+  auto* quad5_root_1 =
+      pass5_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+  quad5_root_1->SetNew(shared_quad_state5_root, /*rect=*/rect5_root,
+                       /*visible_rect=*/rect5_root, /*render_pass_id=*/1,
+                       /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
+                       gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                       1.0f);
+  auto* quad5_root_2 =
+      pass5_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+  quad5_root_2->SetNew(shared_quad_state5_root, /*rect=*/rect5_root,
+                       /*visible_rect=*/rect5_root, /*render_pass_id=*/2,
+                       /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
+                       gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                       1.0f);
+  auto* quad5_root_3 =
+      pass5_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+  quad5_root_3->SetNew(shared_quad_state5_root, /*rect=*/rect5_root,
+                       /*visible_rect=*/rect5_root, /*render_pass_id=*/3,
+                       /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
+                       gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                       1.0f);
+  auto* quad5_root_4 =
+      pass5_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+  quad5_root_4->SetNew(shared_quad_state5_root, /*rect=*/rect5_root,
+                       /*visible_rect=*/rect5_root, /*render_pass_id=*/4,
+                       /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
+                       gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                       1.0f);
+  pass_list.push_back(std::move(pass5_root));
 
   auto compositor_frame =
       CompositorFrameBuilder().SetRenderPassList(std::move(pass_list)).Build();
@@ -198,7 +240,7 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataBrowser) {
   constexpr gfx::Rect child_rect(200, 100);
   gfx::Transform render_to_browser_transform;
   render_to_browser_transform.Translate(-200, -100);
-  auto pass = CreateRenderPassWithChildSurface(child_surface_id, frame_rect,
+  auto pass = CreateRenderPassWithChildSurface(1, child_surface_id, frame_rect,
                                                child_rect, gfx::Transform(),
                                                render_to_browser_transform);
   CompositorFrame compositor_frame =
@@ -243,7 +285,7 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataTransparent) {
   constexpr gfx::Rect child_rect(200, 100);
   gfx::Transform child_to_parent_transform;
   child_to_parent_transform.Translate(-200, -100);
-  auto pass = CreateRenderPassWithChildSurface(child_surface_id, frame_rect,
+  auto pass = CreateRenderPassWithChildSurface(1, child_surface_id, frame_rect,
                                                child_rect, gfx::Transform(),
                                                child_to_parent_transform);
   CompositorFrame compositor_frame =
