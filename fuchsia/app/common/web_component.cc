@@ -36,7 +36,9 @@ std::unique_ptr<WebComponent> WebComponent::ForUrlRequest(
   chromium::web::NavigationControllerPtr navigation_controller;
   component->frame()->GetNavigationController(
       navigation_controller.NewRequest());
-  navigation_controller->LoadUrl(url.spec(), nullptr);
+  auto params = std::make_unique<chromium::web::LoadUrlParams>();
+  params->was_activated = true;
+  navigation_controller->LoadUrl(url.spec(), std::move(params));
   return component;
 }
 

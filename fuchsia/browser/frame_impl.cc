@@ -18,6 +18,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences_util.h"
+#include "content/public/common/was_activated_option.h"
 #include "fuchsia/browser/context_impl.h"
 #include "fuchsia/browser/message_port_impl.h"
 #include "fuchsia/common/mem_buffer_util.h"
@@ -299,6 +300,9 @@ void FrameImpl::LoadUrl(std::string url,
 
   params_converted.transition_type = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  params_converted.was_activated = (params && params->was_activated)
+                                       ? content::WasActivatedOption::kYes
+                                       : content::WasActivatedOption::kNo;
   web_contents_->GetController().LoadURLWithParams(params_converted);
 }
 
