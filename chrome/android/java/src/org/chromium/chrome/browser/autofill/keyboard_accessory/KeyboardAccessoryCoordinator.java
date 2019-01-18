@@ -16,7 +16,6 @@ import android.support.v4.view.ViewPager;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryModernViewBinder.ModernBarItemViewHolder;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BarItem;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.BarItemViewHolder;
 import org.chromium.ui.ViewProvider;
@@ -26,7 +25,6 @@ import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
-import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
 
 /**
  * Creates and owns all elements which are part of the keyboard accessory component.
@@ -150,12 +148,13 @@ public class KeyboardAccessoryCoordinator {
     static RecyclerViewAdapter<BarItemViewHolder, Void> createBarItemsAdapter(
             ListModel<BarItem> barItems) {
         RecyclerViewAdapter.ViewHolderFactory<BarItemViewHolder> factory =
-                BarItemViewHolder::create;
+                KeyboardAccessoryViewBinder::create;
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
-            factory = ModernBarItemViewHolder::create;
+            factory = KeyboardAccessoryModernViewBinder::create;
         }
-        return new RecyclerViewAdapter<>(new SimpleRecyclerViewMcp<>(barItems, BarItem::getViewType,
-                                                 BarItemViewHolder::bind),
+        return new RecyclerViewAdapter<>(
+                new KeyboardAccessoryRecyclerViewMcp<>(barItems, BarItem::getViewType,
+                        BarItemViewHolder::bind, BarItemViewHolder::recycle),
                 factory);
     }
 

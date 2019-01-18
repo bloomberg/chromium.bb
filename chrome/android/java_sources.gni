@@ -118,6 +118,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/KeyboardAccessoryModernView.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/KeyboardAccessoryModernViewBinder.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/KeyboardAccessoryProperties.java",
+  "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/KeyboardAccessoryRecyclerViewMcp.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/KeyboardAccessoryTabLayoutCoordinator.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/KeyboardAccessoryTabLayoutMediator.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/KeyboardAccessoryTabLayoutProperties.java",

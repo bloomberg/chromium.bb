@@ -25,7 +25,7 @@ class AccessorySheetTabViewBinder {
     /**
      * Holds any View that represents a list entry.
      */
-    static class ElementViewHolder<T, V extends View> extends RecyclerView.ViewHolder {
+    static abstract class ElementViewHolder<T, V extends View> extends RecyclerView.ViewHolder {
         ElementViewHolder(ViewGroup parent, int layout) {
             super(LayoutInflater.from(parent.getContext()).inflate(layout, parent, false));
         }
@@ -35,7 +35,7 @@ class AccessorySheetTabViewBinder {
             bind((T) accessorySheetDataWrapper.getDataPiece(), (V) itemView);
         }
 
-        void bind(T t, V view) {}
+        protected abstract void bind(T t, V view);
     }
 
     /**
