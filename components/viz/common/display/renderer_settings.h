@@ -9,6 +9,7 @@
 
 #include "build/build_config.h"
 #include "components/viz/common/viz_common_export.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace viz {
@@ -45,6 +46,8 @@ class VIZ_COMMON_EXPORT RendererSettings {
 #if defined(OS_ANDROID)
   // The screen size at renderer creation time.
   gfx::Size initial_screen_size = gfx::Size(0, 0);
+
+  gfx::ColorSpace color_space;
 #endif
 };
 

@@ -1201,6 +1201,7 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
           ->GetDisplayNearestWindow(root_window_)
           .GetSizeInPixel();
   renderer_settings.use_skia_renderer = features::IsUsingSkiaRenderer();
+  renderer_settings.color_space = display_color_space_;
   root_params->frame_sink_id = frame_sink_id_;
   root_params->widget = surface_handle_;
   root_params->gpu_compositing = true;
@@ -1229,6 +1230,8 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
   display_private_->SetDisplayVisible(true);
   display_private_->Resize(size_);
+  display_private_->SetDisplayColorSpace(display_color_space_,
+                                         display_color_space_);
   display_private_->SetVSyncPaused(vsync_paused_);
 }
 

@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -317,12 +318,18 @@ void PixelTest::SetUpSkiaRenderer() {
   gpu::ImageFactory* image_factory = gpu_service_->gpu_image_factory();
   auto* gpu_channel_manager_delegate =
       gpu_service_->gpu_channel_manager()->delegate();
+  viz::RendererSettings renderer_settings;
+  renderer_settings.requires_alpha_channel = false;
+#if defined(OS_ANDROID)
+  // Pick a reasonable arbitrary size for tests - used to set memory limits.
+  renderer_settings.initial_screen_size = gfx::Size(1920, 1080);
+  renderer_settings.color_space = gfx::ColorSpace::CreateSRGB();
+#endif
   child_context_provider_ =
       base::MakeRefCounted<viz::VizProcessContextProvider>(
           task_executor_, gpu::kNullSurfaceHandle,
           gpu_memory_buffer_manager_.get(), image_factory,
-          gpu_channel_manager_delegate, gpu::SharedMemoryLimits(),
-          false /* requires_alpha_channel */);
+          gpu_channel_manager_delegate, renderer_settings);
   child_context_provider_->BindToCurrentThread();
   constexpr bool sync_token_verification = false;
   child_resource_provider_ =
