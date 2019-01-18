@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_android_sms_app_helper_delegate.h"
+#include "chromeos/services/multidevice_setup/public/cpp/fake_android_sms_pairing_state_tracker.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/prefs/testing_pref_service.h"
@@ -27,9 +28,12 @@ class TestMultideviceHandler : public MultideviceHandler {
   TestMultideviceHandler(
       PrefService* prefs,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+      multidevice_setup::AndroidSmsPairingStateTracker*
+          android_sms_pairing_state_tracker,
       multidevice_setup::AndroidSmsAppHelperDelegate* android_sms_app_helper)
       : MultideviceHandler(prefs,
                            multidevice_setup_client,
+                           android_sms_pairing_state_tracker,
                            std::move(android_sms_app_helper)) {}
   ~TestMultideviceHandler() override = default;
 
@@ -115,6 +119,8 @@ class MultideviceHandlerTest : public testing::Test {
 
     fake_multidevice_setup_client_ =
         std::make_unique<multidevice_setup::FakeMultiDeviceSetupClient>();
+    fake_android_sms_pairing_state_tracker_ = std::make_unique<
+        multidevice_setup::FakeAndroidSmsPairingStateTracker>();
     fake_android_sms_app_helper_delegate_ =
         std::make_unique<multidevice_setup::FakeAndroidSmsAppHelperDelegate>();
 
@@ -122,6 +128,7 @@ class MultideviceHandlerTest : public testing::Test {
 
     handler_ = std::make_unique<TestMultideviceHandler>(
         prefs_.get(), fake_multidevice_setup_client_.get(),
+        fake_android_sms_pairing_state_tracker_.get(),
         fake_android_sms_app_helper_delegate_.get());
     handler_->set_web_ui(test_web_ui_.get());
     handler_->RegisterMessages();
@@ -211,6 +218,22 @@ class MultideviceHandlerTest : public testing::Test {
     VerifyPageContent(call_data.arg2());
   }
 
+  void SimulatePairingStateUpdate(bool is_android_sms_pairing_complete) {
+    size_t call_data_count_before_call = test_web_ui()->call_data().size();
+
+    fake_android_sms_pairing_state_tracker_->SetPairingComplete(
+        is_android_sms_pairing_complete);
+    EXPECT_EQ(call_data_count_before_call + 2u,
+              test_web_ui()->call_data().size());
+
+    const content::TestWebUI::CallData& call_data =
+        CallDataAtIndex(call_data_count_before_call);
+    EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
+    EXPECT_EQ("settings.updateMultidevicePageContentData",
+              call_data.arg1()->GetString());
+    VerifyPageContent(call_data.arg2());
+  }
+
   void CallRetryPendingHostSetup(bool success) {
     base::ListValue empty_args;
     test_web_ui()->HandleReceivedMessage("retryPendingHostSetup", &empty_args);
@@ -284,6 +307,8 @@ class MultideviceHandlerTest : public testing::Test {
   std::unique_ptr<multidevice_setup::FakeMultiDeviceSetupClient>
       fake_multidevice_setup_client_;
   std::unique_ptr<TestMultideviceHandler> handler_;
+  std::unique_ptr<multidevice_setup::FakeAndroidSmsPairingStateTracker>
+      fake_android_sms_pairing_state_tracker_;
 
   multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice
       host_status_with_device_;
@@ -320,6 +345,8 @@ TEST_F(MultideviceHandlerTest, PageContentData) {
   feature_states_map[multidevice_setup::mojom::Feature::kBetterTogetherSuite] =
       multidevice_setup::mojom::FeatureState::kDisabledByUser;
   SimulateFeatureStatesUpdate(feature_states_map);
+
+  SimulatePairingStateUpdate(/*is_android_sms_pairing_complete=*/true);
 }
 
 TEST_F(MultideviceHandlerTest, RetryPendingHostSetup) {

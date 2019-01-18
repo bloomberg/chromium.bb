@@ -293,6 +293,9 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
             chromeos::multidevice_setup::MultiDeviceSetupClientFactory::
                 GetForProfile(profile),
             android_sms_service
+                ? android_sms_service->android_sms_pairing_state_tracker()
+                : nullptr,
+            android_sms_service
                 ? android_sms_service->android_sms_app_helper_delegate()
                 : nullptr));
   }

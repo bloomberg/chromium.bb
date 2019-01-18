@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/android_sms/android_sms_pairing_state_tracker_impl.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
@@ -34,6 +35,7 @@ const char kPageContentDataBetterTogetherStateKey[] = "betterTogetherState";
 const char kPageContentDataInstantTetheringStateKey[] = "instantTetheringState";
 const char kPageContentDataMessagesStateKey[] = "messagesState";
 const char kPageContentDataSmartLockStateKey[] = "smartLockState";
+const char kIsAndroidSmsPairingComplete[] = "isAndroidSmsPairingComplete";
 
 constexpr char kAndroidSmsInfoOriginKey[] = "origin";
 constexpr char kAndroidSmsInfoEnabledKey[] = "enabled";
@@ -51,11 +53,15 @@ void OnRetrySetHostNowResult(bool success) {
 MultideviceHandler::MultideviceHandler(
     PrefService* prefs,
     multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+    multidevice_setup::AndroidSmsPairingStateTracker*
+        android_sms_pairing_state_tracker,
     multidevice_setup::AndroidSmsAppHelperDelegate* android_sms_app_helper)
     : prefs_(prefs),
       multidevice_setup_client_(multidevice_setup_client),
+      android_sms_pairing_state_tracker_(android_sms_pairing_state_tracker),
       android_sms_app_helper_(android_sms_app_helper),
       multidevice_setup_observer_(this),
+      android_sms_pairing_state_tracker_observer_(this),
       callback_weak_ptr_factory_(this) {
   RegisterPrefChangeListeners();
 }
@@ -108,11 +114,17 @@ void MultideviceHandler::RegisterMessages() {
 void MultideviceHandler::OnJavascriptAllowed() {
   if (multidevice_setup_client_)
     multidevice_setup_observer_.Add(multidevice_setup_client_);
+
+  if (android_sms_pairing_state_tracker_)
+    android_sms_pairing_state_tracker_->AddObserver(this);
 }
 
 void MultideviceHandler::OnJavascriptDisallowed() {
   if (multidevice_setup_client_)
     multidevice_setup_observer_.Remove(multidevice_setup_client_);
+
+  if (android_sms_pairing_state_tracker_)
+    android_sms_pairing_state_tracker_->RemoveObserver(this);
 
   // Ensure that pending callbacks do not complete and cause JS to be evaluated.
   callback_weak_ptr_factory_.InvalidateWeakPtrs();
@@ -128,6 +140,11 @@ void MultideviceHandler::OnHostStatusChanged(
 void MultideviceHandler::OnFeatureStatesChanged(
     const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
         feature_states_map) {
+  UpdatePageContent();
+  NotifyAndroidSmsInfoChange();
+}
+
+void MultideviceHandler::OnPairingStateChanged() {
   UpdatePageContent();
   NotifyAndroidSmsInfoChange();
 }
@@ -330,6 +347,12 @@ MultideviceHandler::GeneratePageContentDataDictionary() {
     page_content_dictionary->SetString(kPageContentDataHostDeviceNameKey,
                                        host_status_with_device.second->name());
   }
+
+  page_content_dictionary->SetBoolean(
+      kIsAndroidSmsPairingComplete,
+      android_sms_pairing_state_tracker_
+          ? android_sms_pairing_state_tracker_->IsAndroidSmsPairingComplete()
+          : false);
 
   return page_content_dictionary;
 }
