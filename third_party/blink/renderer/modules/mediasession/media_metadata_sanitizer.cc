@@ -100,6 +100,9 @@ MediaMetadataSanitizer::SanitizeAndConvertToMojo(const MediaMetadata* metadata,
   mojo_metadata->artist = metadata->artist().Left(kMaxStringLength);
   mojo_metadata->album = metadata->album().Left(kMaxStringLength);
 
+  // |source_title_| is populated by content::MediaSessionImpl.
+  mojo_metadata->source_title = g_empty_string16_bit;
+
   for (const MediaImage* image : metadata->artwork()) {
     media_session::mojom::blink::MediaImagePtr mojo_image =
         SanitizeMediaImageAndConvertToMojo(image, context);

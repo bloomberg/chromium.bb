@@ -32,11 +32,17 @@ bool StructTraits<media_session::mojom::MediaMetadataDataView,
          media_session::MediaMetadata* out) {
   if (!data.ReadTitle(&out->title))
     return false;
+
   if (!data.ReadArtist(&out->artist))
     return false;
+
   if (!data.ReadAlbum(&out->album))
     return false;
+
   if (!data.ReadArtwork(&out->artwork))
+    return false;
+
+  if (!data.ReadSourceTitle(&out->source_title))
     return false;
 
   return true;

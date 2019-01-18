@@ -180,6 +180,8 @@ void MediaSessionImpl::DidFinishNavigation(
   RenderFrameHost* rfh = navigation_handle->GetRenderFrameHost();
   if (services_.count(rfh))
     services_[rfh]->DidFinishNavigation();
+
+  NotifyMediaSessionMetadataChange();
 }
 
 void MediaSessionImpl::OnWebContentsFocused(
@@ -209,8 +211,9 @@ void MediaSessionImpl::NotifyAddedObserver(MediaSessionObserver* observer) {
   observer->MediaSessionStateChanged(IsControllable(), IsActuallyPaused());
 }
 
-void MediaSessionImpl::NotifyMediaSessionMetadataChange(
-    const base::Optional<media_session::MediaMetadata>& metadata) {
+void MediaSessionImpl::NotifyMediaSessionMetadataChange() {
+  const media_session::MediaMetadata& metadata = GetMediaMetadata();
+
   for (auto& observer : observers_)
     observer.MediaSessionMetadataChanged(metadata);
 
@@ -771,8 +774,7 @@ void MediaSessionImpl::GetMediaSessionInfo(
 void MediaSessionImpl::AddObserver(
     media_session::mojom::MediaSessionObserverPtr observer) {
   observer->MediaSessionInfoChanged(GetMediaSessionInfoSync());
-  observer->MediaSessionMetadataChanged(
-      routed_service_ ? routed_service_->metadata() : base::nullopt);
+  observer->MediaSessionMetadataChanged(GetMediaMetadata());
 
   if (routed_service_) {
     std::vector<media_session::mojom::MediaSessionAction> actions(
@@ -928,6 +930,18 @@ bool MediaSessionImpl::AddOneShotPlayer(MediaSessionPlayerObserver* observer,
   return true;
 }
 
+media_session::MediaMetadata MediaSessionImpl::GetMediaMetadata() const {
+  media_session::MediaMetadata metadata =
+      (routed_service_ && routed_service_->metadata())
+          ? *routed_service_->metadata()
+          : media_session::MediaMetadata();
+
+  metadata.source_title = base::ASCIIToUTF16(
+      web_contents()->GetLastCommittedURL().GetOrigin().host());
+
+  return metadata;
+}
+
 // MediaSessionService-related methods
 
 void MediaSessionImpl::OnServiceCreated(MediaSessionServiceImpl* service) {
@@ -961,7 +975,7 @@ void MediaSessionImpl::OnMediaSessionMetadataChanged(
   if (service != routed_service_)
     return;
 
-  NotifyMediaSessionMetadataChange(routed_service_->metadata());
+  NotifyMediaSessionMetadataChange();
 }
 
 void MediaSessionImpl::OnMediaSessionActionsChanged(
@@ -1025,10 +1039,11 @@ void MediaSessionImpl::UpdateRoutedService() {
     return;
 
   routed_service_ = new_service;
-  if (routed_service_) {
-    NotifyMediaSessionMetadataChange(routed_service_->metadata());
+
+  if (routed_service_)
     RebuildAndNotifyActionsChanged();
-  }
+
+  NotifyMediaSessionMetadataChange();
 }
 
 MediaSessionServiceImpl* MediaSessionImpl::ComputeServiceForRouting() {
