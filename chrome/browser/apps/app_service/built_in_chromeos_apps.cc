@@ -109,8 +109,8 @@ void BuiltInChromeOsApps::LoadIcon(
       (icon_key->icon_type == apps::mojom::IconType::kResource) &&
       (icon_key->u_key != 0) && (icon_key->u_key <= INT_MAX)) {
     int resource_id = static_cast<int>(icon_key->u_key);
-    LoadIconFromResource(icon_compression, size_hint_in_dip,
-                         std::move(callback), resource_id);
+    LoadIconFromResource(icon_compression, size_hint_in_dip, resource_id,
+                         std::move(callback));
     return;
   }
   // On failure, we still run the callback, with the zero IconValue.

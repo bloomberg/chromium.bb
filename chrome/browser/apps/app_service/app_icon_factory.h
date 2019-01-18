@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "ui/gfx/image/image_skia.h"
@@ -20,14 +21,25 @@ namespace apps {
 
 void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
                            int size_hint_in_dip,
-                           apps::mojom::Publisher::LoadIconCallback callback,
                            content::BrowserContext* context,
-                           const std::string& extension_id);
+                           const std::string& extension_id,
+                           apps::mojom::Publisher::LoadIconCallback callback);
+
+// The file named by |path| might be empty, not found or otherwise unreadable.
+// If so, "fallback(callback)" is run. If the file is non-empty and readable,
+// just "callback" is run, even if that file doesn't contain a valid image.
+void LoadIconFromFileWithFallback(
+    apps::mojom::IconCompression icon_compression,
+    int size_hint_in_dip,
+    const base::FilePath& path,
+    apps::mojom::Publisher::LoadIconCallback callback,
+    base::OnceCallback<void(apps::mojom::Publisher::LoadIconCallback)>
+        fallback);
 
 void LoadIconFromResource(apps::mojom::IconCompression icon_compression,
                           int size_hint_in_dip,
-                          apps::mojom::Publisher::LoadIconCallback callback,
-                          int resource_id);
+                          int resource_id,
+                          apps::mojom::Publisher::LoadIconCallback callback);
 
 }  // namespace apps
 

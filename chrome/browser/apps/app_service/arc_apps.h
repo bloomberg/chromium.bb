@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/arc/connection_observer.h"
@@ -73,6 +75,13 @@ class ArcApps : public KeyedService,
 
   void ObservePrefs();
 
+  const base::FilePath GetCachedIconFilePath(const std::string& app_id,
+                                             int32_t size_hint_in_dip);
+  void LoadIconFromVM(const std::string icon_key_s_key,
+                      apps::mojom::IconCompression icon_compression,
+                      int32_t size_hint_in_dip,
+                      LoadIconCallback callback);
+
   apps::mojom::AppPtr Convert(const std::string& app_id,
                               const ArcAppListPrefs::AppInfo& app_info);
   apps::mojom::IconKeyPtr NewIconKey(const std::string& app_id);
@@ -92,6 +101,8 @@ class ArcApps : public KeyedService,
   // that when an app's icon has changed, this apps::mojom::Publisher sends a
   // different IconKey even though the IconKey's s_key hasn't changed.
   uint64_t next_u_key_;
+
+  base::WeakPtrFactory<ArcApps> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcApps);
 };
