@@ -8,8 +8,10 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 #include <string>
 
@@ -52,7 +54,6 @@ class HeadlessRequestContextManager {
  private:
   void Initialize();
   void InitializeOnIO();
-  void MaybeSetUpOSCrypt();
 
   ::network::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
 
@@ -67,6 +68,10 @@ class HeadlessRequestContextManager {
   std::unique_ptr<net::ProxyConfig> proxy_config_;
   std::unique_ptr<HeadlessProxyConfigMonitor> proxy_config_monitor_;
   bool is_system_context_;
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  ::network::mojom::CryptConfigPtr crypt_config_;
+#endif
 
   ::network::mojom::NetworkContextPtr network_context_;
   ::network::mojom::NetworkContextRequest network_context_request_;
