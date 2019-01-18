@@ -514,7 +514,7 @@ class ProtoDBPerfTest : public testing::Test {
     leveldb::ReadOptions options;
     options.fill_cache = fill_read_cache;
     db->proto_db()->LoadEntriesWithFilter(
-        LevelDB::KeyFilter(), options, prefix,
+        KeyFilter(), options, prefix,
         base::BindOnce(
             [](base::OnceClosure signal, unsigned int* num_entries_loaded,
                bool success, std::unique_ptr<std::vector<TestProto>> entries) {

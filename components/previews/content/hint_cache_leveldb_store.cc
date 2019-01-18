@@ -384,7 +384,7 @@ void HintCacheLevelDBStore::OnDatabaseInitialized(bool purge_existing_data,
 
   // Load all entries from the DB with the metadata key prefix.
   database_->LoadKeysAndEntriesWithFilter(
-      leveldb_proto::LevelDB::KeyFilter(), leveldb::ReadOptions(),
+      leveldb_proto::KeyFilter(), leveldb::ReadOptions(),
       GetMetadataEntryKeyPrefix(),
       base::BindOnce(&HintCacheLevelDBStore::OnLoadMetadata,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));

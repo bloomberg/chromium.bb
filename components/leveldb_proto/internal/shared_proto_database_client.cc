@@ -52,7 +52,7 @@ std::unique_ptr<std::vector<std::string>> PrefixStrings(
   return strings;
 }
 
-bool KeyFilterStripPrefix(const LevelDB::KeyFilter& key_filter,
+bool KeyFilterStripPrefix(const KeyFilter& key_filter,
                           const std::string& prefix,
                           const std::string& key) {
   if (key_filter.is_null())

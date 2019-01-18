@@ -56,11 +56,6 @@ class ProtoDatabaseWrapper : public UniqueProtoDatabase<T> {
   void Init(const std::string& client_name,
             Callbacks::InitStatusCallback callback) override;
 
-  void InitWithDatabase(LevelDB* database,
-                        const base::FilePath& database_dir,
-                        const leveldb_env::Options& options,
-                        Callbacks::InitStatusCallback callback) override;
-
   void UpdateEntries(std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
                          entries_to_save,
                      std::unique_ptr<std::vector<std::string>> keys_to_remove,
@@ -69,12 +64,12 @@ class ProtoDatabaseWrapper : public UniqueProtoDatabase<T> {
   void UpdateEntriesWithRemoveFilter(
       std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
           entries_to_save,
-      const LevelDB::KeyFilter& delete_key_filter,
+      const KeyFilter& delete_key_filter,
       Callbacks::UpdateCallback callback) override;
   void UpdateEntriesWithRemoveFilter(
       std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
           entries_to_save,
-      const LevelDB::KeyFilter& delete_key_filter,
+      const KeyFilter& delete_key_filter,
       const std::string& target_prefix,
       Callbacks::UpdateCallback callback) override;
 
@@ -82,10 +77,10 @@ class ProtoDatabaseWrapper : public UniqueProtoDatabase<T> {
       typename Callbacks::Internal<T>::LoadCallback callback) override;
 
   void LoadEntriesWithFilter(
-      const LevelDB::KeyFilter& filter,
+      const KeyFilter& filter,
       typename Callbacks::Internal<T>::LoadCallback callback) override;
   void LoadEntriesWithFilter(
-      const LevelDB::KeyFilter& key_filter,
+      const KeyFilter& key_filter,
       const leveldb::ReadOptions& options,
       const std::string& target_prefix,
       typename Callbacks::Internal<T>::LoadCallback callback) override;
@@ -95,11 +90,11 @@ class ProtoDatabaseWrapper : public UniqueProtoDatabase<T> {
       override;
 
   void LoadKeysAndEntriesWithFilter(
-      const LevelDB::KeyFilter& filter,
+      const KeyFilter& filter,
       typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback)
       override;
   void LoadKeysAndEntriesWithFilter(
-      const LevelDB::KeyFilter& filter,
+      const KeyFilter& filter,
       const leveldb::ReadOptions& options,
       const std::string& target_prefix,
       typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback)
@@ -516,21 +511,6 @@ void ProtoDatabaseWrapper<T>::OnMigrationCleanupComplete(
 }
 
 template <typename T>
-void ProtoDatabaseWrapper<T>::InitWithDatabase(
-    LevelDB* database,
-    const base::FilePath& database_dir,
-    const leveldb_env::Options& options,
-    Callbacks::InitStatusCallback callback) {
-  if (!db_) {
-    RunCallbackOnCallingSequence(
-        base::BindOnce(std::move(callback), Enums::InitStatus::kError));
-    return;
-  }
-
-  db_->InitWithDatabase(database, database_dir, options, std::move(callback));
-}
-
-template <typename T>
 void ProtoDatabaseWrapper<T>::UpdateEntries(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
     std::unique_ptr<std::vector<std::string>> keys_to_remove,
@@ -547,7 +527,7 @@ void ProtoDatabaseWrapper<T>::UpdateEntries(
 template <typename T>
 void ProtoDatabaseWrapper<T>::UpdateEntriesWithRemoveFilter(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
-    const LevelDB::KeyFilter& delete_key_filter,
+    const KeyFilter& delete_key_filter,
     Callbacks::UpdateCallback callback) {
   if (!db_) {
     RunCallbackOnCallingSequence(base::BindOnce(std::move(callback), false));
@@ -561,7 +541,7 @@ void ProtoDatabaseWrapper<T>::UpdateEntriesWithRemoveFilter(
 template <typename T>
 void ProtoDatabaseWrapper<T>::UpdateEntriesWithRemoveFilter(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
-    const LevelDB::KeyFilter& delete_key_filter,
+    const KeyFilter& delete_key_filter,
     const std::string& target_prefix,
     Callbacks::UpdateCallback callback) {
   if (!db_) {
@@ -588,7 +568,7 @@ void ProtoDatabaseWrapper<T>::LoadEntries(
 
 template <typename T>
 void ProtoDatabaseWrapper<T>::LoadEntriesWithFilter(
-    const LevelDB::KeyFilter& filter,
+    const KeyFilter& filter,
     typename Callbacks::Internal<T>::LoadCallback callback) {
   if (!db_) {
     RunCallbackOnCallingSequence(base::BindOnce(
@@ -601,7 +581,7 @@ void ProtoDatabaseWrapper<T>::LoadEntriesWithFilter(
 
 template <typename T>
 void ProtoDatabaseWrapper<T>::LoadEntriesWithFilter(
-    const LevelDB::KeyFilter& key_filter,
+    const KeyFilter& key_filter,
     const leveldb::ReadOptions& options,
     const std::string& target_prefix,
     typename Callbacks::Internal<T>::LoadCallback callback) {
@@ -630,7 +610,7 @@ void ProtoDatabaseWrapper<T>::LoadKeysAndEntries(
 
 template <typename T>
 void ProtoDatabaseWrapper<T>::LoadKeysAndEntriesWithFilter(
-    const LevelDB::KeyFilter& filter,
+    const KeyFilter& filter,
     typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
   if (!db_) {
     RunCallbackOnCallingSequence(
@@ -644,7 +624,7 @@ void ProtoDatabaseWrapper<T>::LoadKeysAndEntriesWithFilter(
 
 template <typename T>
 void ProtoDatabaseWrapper<T>::LoadKeysAndEntriesWithFilter(
-    const LevelDB::KeyFilter& filter,
+    const KeyFilter& filter,
     const leveldb::ReadOptions& options,
     const std::string& target_prefix,
     typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
