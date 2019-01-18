@@ -177,7 +177,7 @@ source_set("app_framework_shared_headers") {
 ios_framework_bundle("app_framework") {
   testonly = true
 
-  output_name = "EarlGreyAppFramework"
+  output_name = "AppFramework"
   info_plist = "Info.plist"
 
   sources = [
