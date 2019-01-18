@@ -141,6 +141,9 @@ Polymer({
 
     // Listen for changes.
     this.autofillManager_.addAddressListChangedListener(setAddressesListener);
+
+    // Record that the user opened the address settings.
+    chrome.metricsPrivate.recordUserAction('AutofillAddressesViewed');
   },
 
   /** @override */
