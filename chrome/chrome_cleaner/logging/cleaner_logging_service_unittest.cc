@@ -1074,10 +1074,17 @@ TEST_P(CleanerLoggingServiceTest, AddInstalledExtension) {
   ASSERT_TRUE(report.ParseFromString(logging_service_->RawReportContent()));
   ASSERT_EQ(report.system_report().installed_extensions_size(), 0);
 
+  internal::FileInformation file1, file2;
+  const base::string16 kFilePath1 = L"path/file1";
+  const base::string16 kFilePath2 = L"path/file2";
+  file1.path = kFilePath1;
+  file2.path = kFilePath2;
   logging_service_->AddInstalledExtension(
-      kExtensionId, ExtensionInstallMethod::POLICY_EXTENSION_FORCELIST);
+      kExtensionId, ExtensionInstallMethod::POLICY_EXTENSION_FORCELIST,
+      {file1});
   logging_service_->AddInstalledExtension(
-      kExtensionId2, ExtensionInstallMethod::POLICY_MASTER_PREFERENCES);
+      kExtensionId2, ExtensionInstallMethod::POLICY_MASTER_PREFERENCES,
+      {file1, file2});
 
   ASSERT_TRUE(report.ParseFromString(logging_service_->RawReportContent()));
   ASSERT_EQ(report.system_report().installed_extensions_size(), 2);
@@ -1087,12 +1094,23 @@ TEST_P(CleanerLoggingServiceTest, AddInstalledExtension) {
   EXPECT_EQ(base::WideToUTF8(kExtensionId), installed_extension.extension_id());
   EXPECT_EQ(ExtensionInstallMethod::POLICY_EXTENSION_FORCELIST,
             installed_extension.install_method());
+  ASSERT_EQ(installed_extension.extension_files().size(), 1);
+  EXPECT_EQ(installed_extension.extension_files(0).path(),
+            base::UTF16ToUTF8(kFilePath1));
 
   installed_extension = report.system_report().installed_extensions(1);
   EXPECT_EQ(base::WideToUTF8(kExtensionId2),
             installed_extension.extension_id());
   EXPECT_EQ(ExtensionInstallMethod::POLICY_MASTER_PREFERENCES,
             installed_extension.install_method());
+  ASSERT_EQ(installed_extension.extension_files().size(), 2);
+
+  std::vector<std::string> reported_files = {
+      installed_extension.extension_files(0).path(),
+      installed_extension.extension_files(1).path()};
+  EXPECT_THAT(reported_files, testing::UnorderedElementsAreArray(
+                                  {base::UTF16ToUTF8(kFilePath1),
+                                   base::UTF16ToUTF8(kFilePath2)}));
 }
 
 TEST_P(CleanerLoggingServiceTest, AddScheduledTask) {

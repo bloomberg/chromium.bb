@@ -161,8 +161,10 @@ class LoggingServiceAPI {
                                        const base::string16& bypass) = 0;
 
   // Add an installed extension to the system report.
-  virtual void AddInstalledExtension(const base::string16& extension_id,
-                                     ExtensionInstallMethod install_method) = 0;
+  virtual void AddInstalledExtension(
+      const base::string16& extension_id,
+      ExtensionInstallMethod install_method,
+      const std::vector<internal::FileInformation>& extension_files) = 0;
 
   // Add a scheduled task to the system report.
   virtual void AddScheduledTask(

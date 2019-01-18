@@ -41,6 +41,7 @@
 #include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"
 #include "chrome/chrome_cleaner/chrome_utils/chrome_util.h"
+#include "chrome/chrome_cleaner/chrome_utils/extension_file_logger.h"
 #include "chrome/chrome_cleaner/chrome_utils/extensions_util.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/constants/common_registry_names.h"
@@ -683,18 +684,23 @@ void ReportProxySettingsInformation() {
   }
 }
 
-void ReportForcelistExtensions() {
+void ReportForcelistExtensions(ExtensionFileLogger* extension_file_logger) {
   std::vector<ExtensionPolicyRegistryEntry> policies;
   GetExtensionForcelistRegistryPolicies(&policies);
 
   for (const ExtensionPolicyRegistryEntry& policy : policies) {
+    std::vector<internal::FileInformation> extension_files;
+    extension_file_logger->GetExtensionFiles(policy.extension_id,
+                                             &extension_files);
+
     LoggingServiceAPI::GetInstance()->AddInstalledExtension(
-        policy.extension_id,
-        ExtensionInstallMethod::POLICY_EXTENSION_FORCELIST);
+        policy.extension_id, ExtensionInstallMethod::POLICY_EXTENSION_FORCELIST,
+        extension_files);
   }
 }
 
-void ReportInstalledExtensions(JsonParserAPI* json_parser) {
+void ReportInstalledExtensions(JsonParserAPI* json_parser,
+                               ExtensionFileLogger* extension_file_logger) {
   DCHECK(json_parser);
   // TODO(proberge): Temporarily allowing syncing to avoid crashes in debug
   // mode. This isn't catastrophic since the cleanup tool doesn't have a UI and
@@ -702,7 +708,7 @@ void ReportInstalledExtensions(JsonParserAPI* json_parser) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::ScopedAllowBaseSyncPrimitivesForTesting allow_sync;
 
-  ReportForcelistExtensions();
+  ReportForcelistExtensions(extension_file_logger);
 
   std::vector<ExtensionPolicyRegistryEntry> extension_settings_policies;
   WaitableEvent extension_settings_done(
@@ -734,23 +740,46 @@ void ReportInstalledExtensions(JsonParserAPI* json_parser) {
   default_extensions_done.TimedWaitUntil(end_time);
 
   // Log extensions that were found
-  for (const ExtensionPolicyRegistryEntry& policy : extension_settings_policies)
-    LoggingServiceAPI::GetInstance()->AddInstalledExtension(
-        policy.extension_id, ExtensionInstallMethod::POLICY_EXTENSION_SETTINGS);
+  for (const ExtensionPolicyRegistryEntry& policy :
+       extension_settings_policies) {
+    std::vector<internal::FileInformation> extension_files;
+    extension_file_logger->GetExtensionFiles(policy.extension_id,
+                                             &extension_files);
 
-  for (const ExtensionPolicyFile& policy : master_preferences_policies)
     LoggingServiceAPI::GetInstance()->AddInstalledExtension(
-        policy.extension_id, ExtensionInstallMethod::POLICY_MASTER_PREFERENCES);
+        policy.extension_id, ExtensionInstallMethod::POLICY_EXTENSION_SETTINGS,
+        extension_files);
+  }
 
-  for (const ExtensionPolicyFile& policy : default_extension_policies)
+  for (const ExtensionPolicyFile& policy : master_preferences_policies) {
+    std::vector<internal::FileInformation> extension_files;
+    extension_file_logger->GetExtensionFiles(policy.extension_id,
+                                             &extension_files);
+
     LoggingServiceAPI::GetInstance()->AddInstalledExtension(
-        policy.extension_id, ExtensionInstallMethod::DEFAULT_APPS_EXTENSION);
+        policy.extension_id, ExtensionInstallMethod::POLICY_MASTER_PREFERENCES,
+        extension_files);
+  }
+
+  for (const ExtensionPolicyFile& policy : default_extension_policies) {
+    std::vector<internal::FileInformation> extension_files;
+    extension_file_logger->GetExtensionFiles(policy.extension_id,
+                                             &extension_files);
+
+    LoggingServiceAPI::GetInstance()->AddInstalledExtension(
+        policy.extension_id, ExtensionInstallMethod::DEFAULT_APPS_EXTENSION,
+        extension_files);
+  }
 }
 
 }  // namespace
 
 SystemReportComponent::SystemReportComponent(JsonParserAPI* json_parser)
-    : created_report_(false), json_parser_(json_parser) {}
+    : created_report_(false),
+      json_parser_(json_parser),
+      user_data_path_(
+          PreFetchedPaths::GetInstance()->GetLocalAppDataFolder().Append(
+              L"Google\\Chrome\\User Data")) {}
 
 void SystemReportComponent::PreScan() {}
 
@@ -785,11 +814,13 @@ void SystemReportComponent::CreateFullSystemReport() {
   if (created_report_)
     return;
 
+  ExtensionFileLogger extension_file_logger(user_data_path_);
+
   // Don't collect a system report if logs won't be uploaded.
   if (!logging_service->uploads_enabled()) {
     // TODO(proberge): Remove this by EOQ4 2018.
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(kDumpRawLogsSwitch)) {
-      ReportInstalledExtensions(json_parser_);
+      ReportInstalledExtensions(json_parser_, &extension_file_logger);
       created_report_ = true;
     }
 
@@ -825,9 +856,14 @@ void SystemReportComponent::CreateFullSystemReport() {
   ReportInstalledPrograms();
   ReportLayeredServiceProviders();
   ReportProxySettingsInformation();
-  ReportInstalledExtensions(json_parser_);
+  ReportInstalledExtensions(json_parser_, &extension_file_logger);
 
   created_report_ = true;
+}
+
+void SystemReportComponent::SetUserDataPathForTesting(
+    const base::FilePath& test_user_data_path) {
+  user_data_path_ = test_user_data_path;
 }
 
 }  // namespace chrome_cleaner

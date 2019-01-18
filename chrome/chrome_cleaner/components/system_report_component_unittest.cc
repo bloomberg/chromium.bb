@@ -30,6 +30,7 @@
 #include "chrome/chrome_cleaner/os/pre_fetched_paths.h"
 #include "chrome/chrome_cleaner/os/registry_util.h"
 #include "chrome/chrome_cleaner/parsers/json_parser/test_json_parser.h"
+#include "chrome/chrome_cleaner/test/test_extensions.h"
 #include "chrome/chrome_cleaner/test/test_file_util.h"
 #include "chrome/chrome_cleaner/test/test_pup_data.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
@@ -74,48 +75,49 @@ struct ReportTestData {
 const ReportTestData kExtensionPolicyEmpty{
     HKEY_LOCAL_MACHINE, kChromePoliciesWhitelistKeyPath, L"test1", L""};
 
-constexpr base::char16 kTestExtensionId1[] =
+constexpr base::char16 kTestingExtensionId1[] =
     L"ababababcdcdcdcdefefefefghghghgh";
-constexpr base::char16 kTestExtensionId1WithUpdateUrl[] =
+constexpr base::char16 kTestingExtensionId1WithUpdateUrl[] =
     L"ababababcdcdcdcdefefefefghghghgh;https://clients2.google.com/service/"
     L"update2/crx";
-constexpr base::char16 kTestExtensionId2[] =
+constexpr base::char16 kTestingExtensionId2[] =
     L"aaaabbbbccccddddeeeeffffgggghhhh";
-constexpr base::char16 kTestExtensionId2WithUpdateUrl[] =
+constexpr base::char16 kTestingExtensionId2WithUpdateUrl[] =
     L"aaaabbbbccccddddeeeeffffgggghhhh;https://clients2.google.com/service/"
     L"update2/crx";
 
 const ReportTestData extension_policies[] = {
     {HKEY_LOCAL_MACHINE, kChromePoliciesWhitelistKeyPath, L"test1",
-     kTestExtensionId1},
+     kTestingExtensionId1},
     {HKEY_CURRENT_USER, kChromePoliciesWhitelistKeyPath, L"test2",
-     kTestExtensionId1},
+     kTestingExtensionId1},
     {HKEY_LOCAL_MACHINE, kChromePoliciesForcelistKeyPath, L"test3",
-     kTestExtensionId2WithUpdateUrl},
+     kTestingExtensionId2WithUpdateUrl},
     {HKEY_CURRENT_USER, kChromePoliciesForcelistKeyPath, L"test4",
-     kTestExtensionId2WithUpdateUrl},
+     kTestingExtensionId2WithUpdateUrl},
     {HKEY_LOCAL_MACHINE, kChromiumPoliciesWhitelistKeyPath, L"test5",
-     kTestExtensionId1},
+     kTestingExtensionId1},
     {HKEY_CURRENT_USER, kChromiumPoliciesWhitelistKeyPath, L"test6",
-     kTestExtensionId1},
+     kTestingExtensionId1},
     {HKEY_LOCAL_MACHINE, kChromiumPoliciesForcelistKeyPath, L"test7",
-     kTestExtensionId2WithUpdateUrl},
+     kTestingExtensionId2WithUpdateUrl},
     {HKEY_CURRENT_USER, kChromiumPoliciesForcelistKeyPath, L"test8",
-     kTestExtensionId2WithUpdateUrl},
+     kTestingExtensionId2WithUpdateUrl},
 };
 
 const ReportTestData extension_forcelist_policies[] = {
     {HKEY_LOCAL_MACHINE, kChromePoliciesForcelistKeyPath, L"test1",
-     kTestExtensionId1WithUpdateUrl},
+     kTestingExtensionId1WithUpdateUrl},
     {HKEY_CURRENT_USER, kChromePoliciesForcelistKeyPath, L"test2",
-     kTestExtensionId2WithUpdateUrl},
+     kTestingExtensionId2WithUpdateUrl},
 };
 
 const UwSId kFakePupId = 42;
 
-const wchar_t kFakeChromeFolder[] = L"google\\chrome\\application\\42.12.34.56";
+const wchar_t kFakeChromeFolderForTests[] =
+    L"google\\chrome\\application\\42.12.34.56";
 
-const char kDefaultExtensionsJson[] = R"(
+const char kDefaultExtensionsJsonForTests[] = R"(
     {
       "ababababcdcdcdcdefefefefghghghgh" : {
         "external_update_url": "https://clients2.google.com/service/update2/crx"
@@ -125,7 +127,8 @@ const char kDefaultExtensionsJson[] = R"(
       }
     })";
 // Don't include the null-terminator in the length.
-const int kDefaultExtensionsJsonSize = sizeof(kDefaultExtensionsJson) - 1;
+const int kDefaultExtensionsJsonForTestsSize =
+    sizeof(kDefaultExtensionsJsonForTests) - 1;
 
 // ExtensionSettings that has two force_installed extensions and two not.
 const wchar_t kExtensionSettingsJson[] =
@@ -145,14 +148,14 @@ const wchar_t kExtensionSettingsJson[] =
       },
       "extensionwithnosettingsabcdefghi": {}
     })";
+
 const ReportTestData extension_settings_entry = {
     HKEY_LOCAL_MACHINE, kChromePoliciesKeyPath, L"ExtensionSettings",
     kExtensionSettingsJson};
 
-const wchar_t kChromeExePath[] = L"google\\chrome\\application";
-const wchar_t kMasterPreferencesFileName[] = L"master_preferences";
-const char kMasterPreferencesJson[] =
-    R"(
+const wchar_t kChromeExePathForTests[] = L"google\\chrome\\application";
+const wchar_t kMasterPreferencesFileNameForTests[] = L"master_preferences";
+const char kMasterPreferencesJsonForTests[] = R"(
     {
       "homepage": "http://dev.chromium.org/",
       "extensions": {
@@ -173,6 +176,9 @@ const char kMasterPreferencesJson[] =
       }
     })";
 
+typedef std::map<base::string16, std::vector<base::string16>>
+    ExtensionIdToFileNamesMap;
+
 class SystemReportComponentTest : public testing::Test {
  public:
   SystemReportComponentTest() : component_(&json_parser_) {}
@@ -184,6 +190,21 @@ class SystemReportComponentTest : public testing::Test {
     LoggingServiceAPI::SetInstanceForTesting(cleaner_logging_service_);
     registry_override_.OverrideRegistry(HKEY_CURRENT_USER);
     registry_override_.OverrideRegistry(HKEY_LOCAL_MACHINE);
+
+    ASSERT_TRUE(fake_user_data_.CreateUniqueTempDir());
+
+    extension_id_to_filenames_map_[kTestingExtensionId1] = {L"file1.test",
+                                                            L"file2.test"};
+    ASSERT_TRUE(CreateProfileWithExtensionAndFiles(
+        fake_user_data_.GetPath().Append(L"Profile 1"), kTestingExtensionId1,
+        extension_id_to_filenames_map_[kTestingExtensionId1]));
+
+    extension_id_to_filenames_map_[kTestingExtensionId2] = {L"file1.test"};
+    ASSERT_TRUE(CreateProfileWithExtensionAndFiles(
+        fake_user_data_.GetPath().Append(L"Profile 2"), kTestingExtensionId2,
+        extension_id_to_filenames_map_[kTestingExtensionId2]));
+
+    component_.SetUserDataPathForTesting(fake_user_data_.GetPath());
   }
 
   void TearDown() override {
@@ -201,6 +222,8 @@ class SystemReportComponentTest : public testing::Test {
   SystemReportComponent component_;
   CleanerLoggingService* cleaner_logging_service_ = nullptr;
   registry_util::RegistryOverrideManager registry_override_;
+  base::ScopedTempDir fake_user_data_;
+  ExtensionIdToFileNamesMap extension_id_to_filenames_map_;
 };
 
 template <typename Component>
@@ -254,6 +277,41 @@ bool RegistryKeyCollected(
       return true;
   }
   return false;
+}
+
+// Returns whether |extension_files| contains the expected file information
+// of |extension_id|.
+::testing::AssertionResult ExtensionsReportedWithExpectedFiles(
+    const RepeatedPtrField<InstalledExtension>& reported_extensions,
+    const ExtensionIdToFileNamesMap& extension_id_to_filenames_map) {
+  for (const auto& installed_extension : reported_extensions) {
+    const RepeatedPtrField<FileInformation> extension_files =
+        installed_extension.extension_files();
+
+    std::unordered_set<base::string16> expected_files(
+        extension_id_to_filenames_map
+            .at(base::UTF8ToUTF16(installed_extension.extension_id()))
+            .begin(),
+        extension_id_to_filenames_map
+            .at(base::UTF8ToUTF16(installed_extension.extension_id()))
+            .end());
+
+    if (static_cast<size_t>(extension_files.size()) != expected_files.size())
+      return ::testing::AssertionFailure()
+             << "Different number of files than expected for extension "
+             << installed_extension.extension_id();
+
+    for (const auto& file : extension_files) {
+      base::string16 file_name =
+          base::FilePath(base::UTF8ToUTF16(file.path())).BaseName().value();
+
+      if (expected_files.find(file_name) == expected_files.end())
+        return ::testing::AssertionFailure()
+               << "file : " << file_name << " not reported for extension "
+               << installed_extension.extension_id();
+    }
+  }
+  return ::testing::AssertionSuccess();
 }
 
 // Returns whether |reported_extensions| contains an entry for an extension with
@@ -521,13 +579,14 @@ TEST_F(SystemReportComponentTest, ReportDefaultExtensions) {
       base::PathService::Get(base::DIR_PROGRAM_FILES, &program_files_dir));
 
   base::FilePath fake_apps_dir(
-      program_files_dir.Append(kFakeChromeFolder).Append(L"default_apps"));
+      program_files_dir.Append(kFakeChromeFolderForTests)
+          .Append(L"default_apps"));
   ASSERT_TRUE(base::CreateDirectoryAndGetError(fake_apps_dir, nullptr));
 
   base::FilePath default_extensions_file =
       fake_apps_dir.Append(L"external_extensions.json");
-  CreateFileWithContent(default_extensions_file, kDefaultExtensionsJson,
-                        kDefaultExtensionsJsonSize);
+  CreateFileWithContent(default_extensions_file, kDefaultExtensionsJsonForTests,
+                        kDefaultExtensionsJsonForTestsSize);
   ASSERT_TRUE(base::PathExists(default_extensions_file));
 
   base::test::ScopedCommandLine scoped_command_line;
@@ -536,11 +595,15 @@ TEST_F(SystemReportComponentTest, ReportDefaultExtensions) {
 
   EXPECT_EQ(2, report.system_report().installed_extensions().size());
   EXPECT_TRUE(InstalledExtensionReported(
-      report.system_report().installed_extensions(), kTestExtensionId1,
+      report.system_report().installed_extensions(), kTestingExtensionId1,
       ExtensionInstallMethod::DEFAULT_APPS_EXTENSION));
   EXPECT_TRUE(InstalledExtensionReported(
-      report.system_report().installed_extensions(), kTestExtensionId2,
+      report.system_report().installed_extensions(), kTestingExtensionId2,
       ExtensionInstallMethod::DEFAULT_APPS_EXTENSION));
+
+  EXPECT_TRUE(ExtensionsReportedWithExpectedFiles(
+      report.system_report().installed_extensions(),
+      extension_id_to_filenames_map_));
 }
 
 TEST_F(SystemReportComponentTest, ReportExtensionSettings) {
@@ -560,11 +623,15 @@ TEST_F(SystemReportComponentTest, ReportExtensionSettings) {
   ChromeCleanerReport report = GetChromeCleanerReport();
 
   EXPECT_TRUE(InstalledExtensionReported(
-      report.system_report().installed_extensions(), kTestExtensionId1,
+      report.system_report().installed_extensions(), kTestingExtensionId1,
       ExtensionInstallMethod::POLICY_EXTENSION_SETTINGS));
   EXPECT_TRUE(InstalledExtensionReported(
-      report.system_report().installed_extensions(), kTestExtensionId2,
+      report.system_report().installed_extensions(), kTestingExtensionId2,
       ExtensionInstallMethod::POLICY_EXTENSION_SETTINGS));
+
+  EXPECT_TRUE(ExtensionsReportedWithExpectedFiles(
+      report.system_report().installed_extensions(),
+      extension_id_to_filenames_map_));
 }
 
 TEST_F(SystemReportComponentTest, ReportMasterPreferencesExtensions) {
@@ -576,13 +643,13 @@ TEST_F(SystemReportComponentTest, ReportMasterPreferencesExtensions) {
   ASSERT_TRUE(
       base::PathService::Get(base::DIR_PROGRAM_FILES, &program_files_dir));
 
-  base::FilePath chrome_dir(program_files_dir.Append(kChromeExePath));
+  base::FilePath chrome_dir(program_files_dir.Append(kChromeExePathForTests));
   ASSERT_TRUE(base::CreateDirectoryAndGetError(chrome_dir, nullptr));
 
   base::FilePath master_preferences =
-      chrome_dir.Append(kMasterPreferencesFileName);
-  CreateFileWithContent(master_preferences, kMasterPreferencesJson,
-                        sizeof(kMasterPreferencesJson) - 1);
+      chrome_dir.Append(kMasterPreferencesFileNameForTests);
+  CreateFileWithContent(master_preferences, kMasterPreferencesJsonForTests,
+                        sizeof(kMasterPreferencesJsonForTests) - 1);
   ASSERT_TRUE(base::PathExists(master_preferences));
 
   base::test::ScopedCommandLine scoped_command_line;
@@ -591,11 +658,15 @@ TEST_F(SystemReportComponentTest, ReportMasterPreferencesExtensions) {
 
   EXPECT_EQ(2, report.system_report().installed_extensions().size());
   EXPECT_TRUE(InstalledExtensionReported(
-      report.system_report().installed_extensions(), kTestExtensionId1,
+      report.system_report().installed_extensions(), kTestingExtensionId1,
       ExtensionInstallMethod::POLICY_MASTER_PREFERENCES));
   EXPECT_TRUE(InstalledExtensionReported(
-      report.system_report().installed_extensions(), kTestExtensionId2,
+      report.system_report().installed_extensions(), kTestingExtensionId2,
       ExtensionInstallMethod::POLICY_MASTER_PREFERENCES));
+
+  EXPECT_TRUE(ExtensionsReportedWithExpectedFiles(
+      report.system_report().installed_extensions(),
+      extension_id_to_filenames_map_));
 }
 
 }  // namespace chrome_cleaner
