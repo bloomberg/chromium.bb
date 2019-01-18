@@ -449,7 +449,8 @@ void WindowSelector::RemoveWindowSelectorItem(WindowSelectorItem* item,
 
 void WindowSelector::InitiateDrag(WindowSelectorItem* item,
                                   const gfx::Point& location_in_screen) {
-  window_drag_controller_.reset(new OverviewWindowDragController(this));
+  window_drag_controller_ =
+      std::make_unique<OverviewWindowDragController>(this);
   window_drag_controller_->InitiateDrag(item, location_in_screen);
 
   for (std::unique_ptr<WindowGrid>& grid : grid_list_)
