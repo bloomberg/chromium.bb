@@ -186,6 +186,8 @@ extern const char kChromeUIWebApksHost[];
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
+extern const char kChromeUIAccountManagerWelcomeHost[];
+extern const char kChromeUIAccountManagerWelcomeURL[];
 extern const char kChromeUIActivationMessageHost[];
 extern const char kChromeUIBluetoothPairingHost[];
 extern const char kChromeUIBluetoothPairingURL[];

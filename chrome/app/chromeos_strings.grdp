@@ -3762,4 +3762,16 @@
   <message name="IDS_PLUGIN_VM_LAUNCHER_RETRY_BUTTON" desc="Label for the button in the PluginVm launcher dialog to retry PluginVm environment setting." translateable="false">
     Retry
   </message>
+
+  <!-- Strings for Account Manager welcome screen -->
+  <message name="IDS_ACCOUNT_MANAGER_WELCOME_TITLE" desc="Title for the Chrome OS Account Manager Welcome screen.">
+    Manage your Google Accounts in one place
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_WELCOME_TEXT" desc="Text body for the Chrome OS Account Manager Welcome screen.">
+    Apps and websites that have your permission can access the account information they need to work properly.
+
+    If you don't want to add an account, sign in as a guest or open an incognito window for web browsing.
+
+    You can go to Settings -> Google Accounts to view and manage all accounts.
+  </message>
 </grit-part>

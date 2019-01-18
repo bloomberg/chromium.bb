@@ -498,6 +498,14 @@
             <include name="IDR_BLUETOOTH_PAIRING_DIALOG_JS" file="resources\chromeos\bluetooth_pairing_dialog\bluetooth_pairing_dialog.js" type="chrome_html" />
           </else>
         </if>
+        <!-- Chrome OS Account Manager welcome screen resources -->
+        <include name="IDR_ACCOUNT_MANAGER_WELCOME_CSS" file="resources\chromeos\account_manager_welcome.css" flattenhtml="true" type="chrome_html" />
+        <include name="IDR_ACCOUNT_MANAGER_WELCOME_HTML" file="resources\chromeos\account_manager_welcome.html" allowexternalscript="true" flattenhtml="true" type="chrome_html" />
+        <include name="IDR_ACCOUNT_MANAGER_WELCOME_JS" file="resources\chromeos\account_manager_welcome.js" flattenhtml="true" type="chrome_html" />
+        <include name="IDR_ACCOUNT_MANAGER_WELCOME_1X_PNG" file="resources\chromeos\account_manager_welcome_1x.png" type="BINDATA" />
+        <include name="IDR_ACCOUNT_MANAGER_WELCOME_2X_PNG" file="resources\chromeos\account_manager_welcome_2x.png" type="BINDATA" />
+        <include name="IDR_ACCOUNT_MANAGER_WELCOME_GOOGLE_LOGO_SVG" file="resources\chromeos\googleg.svg" type="BINDATA" />
+
         <include name="IDR_CROSH_BUILTIN_MANIFEST" file="resources\chromeos\crosh_builtin\manifest.json" type="BINDATA" />
         <include name="IDR_CRYPTOHOME_HTML" file="resources\chromeos\cryptohome.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_CRYPTOHOME_JS" file="resources\chromeos\cryptohome.js" type="BINDATA" />
