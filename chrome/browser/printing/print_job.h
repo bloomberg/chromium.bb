@@ -20,7 +20,6 @@
 namespace base {
 class Location;
 class RefCountedMemory;
-class SequencedTaskRunner;
 }
 
 namespace printing {
@@ -104,10 +103,6 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
   // Access the current printed document. Warning: may be NULL.
   PrintedDocument* document() const;
 
-  // Returns true if tasks posted to this TaskRunner are sequenced
-  // with this call.
-  bool RunsTasksInCurrentSequence() const;
-
   // Posts the given task to be run.
   bool PostTask(const base::Location& from_here, base::OnceClosure task);
 
@@ -190,21 +185,17 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
   scoped_refptr<PrintedDocument> document_;
 
   // Is the worker thread printing.
-  bool is_job_pending_;
+  bool is_job_pending_ = false;
 
   // Is Canceling? If so, try to not cause recursion if on FAILED notification,
   // the notified calls Cancel() again.
-  bool is_canceling_;
+  bool is_canceling_ = false;
 
 #if defined(OS_WIN)
   class PdfConversionState;
   std::unique_ptr<PdfConversionState> pdf_conversion_state_;
   std::vector<int> pdf_page_mapping_;
 #endif  // defined(OS_WIN)
-
-  // Task runner reference. Used to send notifications in the right
-  // thread.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Holds the quit closure while running a nested RunLoop to flush tasks.
   base::OnceClosure quit_closure_;

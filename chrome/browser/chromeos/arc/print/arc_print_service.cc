@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/print/arc_print_service.h"
 
 #include <limits>
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -457,6 +458,7 @@ class PrintJobHostImpl : public mojom::PrintJobHost,
 
   // Create PrintJob and start printing if Metafile is created as well.
   void OnSetSettingsDone(scoped_refptr<printing::PrinterQuery> query) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     job_ = base::MakeRefCounted<printing::PrintJob>();
     job_->Initialize(query.get(), base::string16() /* name */,
                      1 /* page_count */);

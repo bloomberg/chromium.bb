@@ -157,8 +157,8 @@ PrintJobWorker::~PrintJobWorker() {
     DCHECK(!print_job_);
     DCHECK(query_->RunsTasksInCurrentSequence());
   } else {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     DCHECK(print_job_);
-    DCHECK(print_job_->RunsTasksInCurrentSequence());
   }
   Stop();
 }

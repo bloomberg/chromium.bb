@@ -102,7 +102,6 @@ TEST(PrintJobTest, SimplePrint) {
                 content::NotificationService::AllSources());
   volatile bool check = false;
   scoped_refptr<PrintJob> job(new TestPrintJob(&check));
-  EXPECT_TRUE(job->RunsTasksInCurrentSequence());
   scoped_refptr<TestQuery> query = base::MakeRefCounted<TestQuery>();
   job->Initialize(query.get(), base::string16(), 1);
   job->Stop();
@@ -149,6 +148,8 @@ TEST(PrintJobTest, SimplePrintLateInit) {
 
 #if defined(OS_WIN)
 TEST(PrintJobTest, PageRangeMapping) {
+  content::TestBrowserThreadBundle thread_bundle;
+
   int page_count = 4;
   std::vector<int> input_full = {0, 1, 2, 3};
   std::vector<int> expected_output_full = {0, 1, 2, 3};

@@ -522,6 +522,7 @@ void PrintViewManagerBase::ShouldQuitFromInnerMessageLoop() {
 }
 
 bool PrintViewManagerBase::CreateNewPrintJob(PrinterQuery* query) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!quit_inner_loop_);
   DCHECK(query);
 
