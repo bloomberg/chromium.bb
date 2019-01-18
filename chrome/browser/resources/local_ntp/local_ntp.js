@@ -997,6 +997,9 @@ function init() {
   ntpApiHandle.onthemechange = onThemeChange;
   ntpApiHandle.onmostvisitedchange = onMostVisitedChange;
 
+  if (configData.isDarkModeEnabled) {
+    document.documentElement.setAttribute('darkmode', true);
+  }
   renderTheme();
 
   var searchboxApiHandle = embeddedSearchApiHandle.searchBox;
