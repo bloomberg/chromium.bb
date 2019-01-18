@@ -1497,11 +1497,6 @@ void SigninScreenHandler::HandleMaxIncorrectPasswordAttempts(
 }
 
 void SigninScreenHandler::HandleSendFeedback() {
-  if (!LoginFeedback::IsEnabled()) {
-    OnFeedbackFinished();
-    return;
-  }
-
   login_feedback_ =
       std::make_unique<LoginFeedback>(Profile::FromWebUI(web_ui()));
   login_feedback_->Request(
@@ -1510,11 +1505,6 @@ void SigninScreenHandler::HandleSendFeedback() {
 }
 
 void SigninScreenHandler::HandleSendFeedbackAndResyncUserData() {
-  if (!LoginFeedback::IsEnabled()) {
-    OnUnrecoverableCryptohomeFeedbackFinished();
-    return;
-  }
-
   const std::string description = base::StringPrintf(
       "Auto generated feedback for http://crbug.com/547857.\n"
       "(uniquifier:%s)",
