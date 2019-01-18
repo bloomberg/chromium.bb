@@ -2786,13 +2786,6 @@
           'gpu_telemetry_tests': 'gpu_fyi_win7_nvidia_release_telemetry_tests',
         },
         'use_multi_dimension_trigger_script': True,
-        'alternate_swarming_dimensions': [
-          {
-            'gpu': '10de:1cb3-23.21.14.1195',
-            'os': 'Windows-2008ServerR2-SP1',
-            'pool': 'Chrome-GPU',
-          },
-        ],
       },
       'Win7 FYI dEQP Release (AMD)': {
         'os_type': 'win',
