@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/base/test_proxy_delegate.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_proxy_client_socket.h"
 #include "net/http/http_response_headers.h"
@@ -93,6 +94,7 @@ class HttpProxyClientSocketPoolTest
                                                         kMaxSocketsPerGroup,
                                                         &transport_socket_pool_,
                                                         &ssl_socket_pool_,
+                                                        nullptr,
                                                         &estimator_,
                                                         nullptr)) {
     session_ = CreateNetworkSession();
@@ -133,6 +135,12 @@ class HttpProxyClientSocketPoolTest
 
     // Force static global that reads the field trials to update.
     HttpProxyConnectJob::UpdateFieldTrialParametersForTesting();
+  }
+
+  void InitPoolWithProxyDelegate(ProxyDelegate* proxy_delegate) {
+    pool_ = std::make_unique<HttpProxyClientSocketPool>(
+        kMaxSockets, kMaxSocketsPerGroup, &transport_socket_pool_,
+        &ssl_socket_pool_, proxy_delegate, &estimator_, nullptr);
   }
 
   void AddAuthToCache() {
@@ -274,6 +282,9 @@ INSTANTIATE_TEST_CASE_P(HttpProxyType,
                         ::testing::Values(HTTP, HTTPS, SPDY));
 
 TEST_P(HttpProxyClientSocketPoolTest, NoTunnel) {
+  TestProxyDelegate proxy_delegate;
+  InitPoolWithProxyDelegate(&proxy_delegate);
+
   Initialize(base::span<MockRead>(), base::span<MockWrite>(),
              base::span<MockRead>(), base::span<MockWrite>());
 
@@ -285,12 +296,56 @@ TEST_P(HttpProxyClientSocketPoolTest, NoTunnel) {
   EXPECT_TRUE(handle_.is_initialized());
   ASSERT_TRUE(handle_.socket());
   EXPECT_TRUE(handle_.socket()->IsConnected());
+  EXPECT_FALSE(proxy_delegate.on_before_tunnel_request_called());
 
   bool is_secure_proxy = GetParam() == HTTPS || GetParam() == SPDY;
   histogram_tester().ExpectTotalCount(
       "Net.HttpProxy.ConnectLatency.Insecure.Success", is_secure_proxy ? 0 : 1);
   histogram_tester().ExpectTotalCount(
       "Net.HttpProxy.ConnectLatency.Secure.Success", is_secure_proxy ? 1 : 0);
+}
+
+TEST_P(HttpProxyClientSocketPoolTest, ProxyDelegateExtraHeaders) {
+  // It's pretty much impossible to make the SPDY case behave synchronously
+  // so we skip this test for SPDY.
+  if (GetParam() == SPDY)
+    return;
+
+  TestProxyDelegate proxy_delegate;
+  InitPoolWithProxyDelegate(&proxy_delegate);
+
+  const ProxyServer proxy_server(
+      GetParam() == HTTP ? ProxyServer::SCHEME_HTTP : ProxyServer::SCHEME_HTTPS,
+      HostPortPair(GetParam() == HTTP ? kHttpProxyHost : kHttpsProxyHost,
+                   GetParam() == HTTP ? 80 : 443));
+  const std::string request =
+      "CONNECT www.google.com:443 HTTP/1.1\r\n"
+      "Host: www.google.com:443\r\n"
+      "Proxy-Connection: keep-alive\r\n"
+      "Foo: " +
+      proxy_server.ToURI() + "\r\n\r\n";
+  MockWrite writes[] = {
+      MockWrite(SYNCHRONOUS, 0, request.c_str()),
+  };
+
+  const std::string response_header_name = "Foo";
+  const std::string response_header_value = "Response";
+  const std::string response = "HTTP/1.1 200 Connection Established\r\n" +
+                               response_header_name + ": " +
+                               response_header_value + "\r\n\r\n";
+  MockRead reads[] = {
+      MockRead(SYNCHRONOUS, 1, response.c_str()),
+  };
+
+  Initialize(reads, writes, base::span<MockRead>(), base::span<MockWrite>());
+
+  int rv = handle_.Init("a", CreateTunnelParams(), LOW, SocketTag(),
+                        ClientSocketPool::RespectLimits::ENABLED,
+                        callback_.callback(), pool_.get(), NetLogWithSource());
+  EXPECT_THAT(rv, IsOk());
+
+  proxy_delegate.VerifyOnTunnelHeadersReceived(
+      proxy_server, response_header_name, response_header_value);
 }
 
 // Make sure that HttpProxyConnectJob passes on its priority to its
@@ -384,13 +439,12 @@ TEST_P(HttpProxyClientSocketPoolTest, HaveAuth) {
   // so we skip this test for SPDY
   if (GetParam() == SPDY)
     return;
-  std::string request =
-      "CONNECT www.google.com:443 HTTP/1.1\r\n"
-      "Host: www.google.com:443\r\n"
-      "Proxy-Connection: keep-alive\r\n"
-      "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n";
   MockWrite writes[] = {
-    MockWrite(SYNCHRONOUS, 0, request.c_str()),
+      MockWrite(SYNCHRONOUS, 0,
+                "CONNECT www.google.com:443 HTTP/1.1\r\n"
+                "Host: www.google.com:443\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
   };
   MockRead reads[] = {
     MockRead(SYNCHRONOUS, 1, "HTTP/1.1 200 Connection Established\r\n\r\n"),
@@ -409,13 +463,12 @@ TEST_P(HttpProxyClientSocketPoolTest, HaveAuth) {
 }
 
 TEST_P(HttpProxyClientSocketPoolTest, AsyncHaveAuth) {
-  std::string request =
-      "CONNECT www.google.com:443 HTTP/1.1\r\n"
-      "Host: www.google.com:443\r\n"
-      "Proxy-Connection: keep-alive\r\n"
-      "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n";
   MockWrite writes[] = {
-    MockWrite(ASYNC, 0, request.c_str()),
+      MockWrite(ASYNC, 0,
+                "CONNECT www.google.com:443 HTTP/1.1\r\n"
+                "Host: www.google.com:443\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
   };
   MockRead reads[] = {
     MockRead(ASYNC, 1, "HTTP/1.1 200 Connection Established\r\n\r\n"),
@@ -867,7 +920,8 @@ TEST_P(HttpProxyClientSocketPoolTest, ProxyPoolTimeoutWithConnectionProperty) {
       false, kSecureMultiplier, kNonSecureMultiplier, kMinTimeout, kMaxTimeout);
 
   HttpProxyClientSocketPool::HttpProxyConnectJobFactory job_factory(
-      transport_socket_pool(), ssl_socket_pool(), estimator(), nullptr);
+      transport_socket_pool(), ssl_socket_pool(), nullptr, estimator(),
+      nullptr);
 
   const base::TimeDelta kRttEstimate = base::TimeDelta::FromSeconds(2);
   estimator()->SetStartTimeNullHttpRtt(kRttEstimate);

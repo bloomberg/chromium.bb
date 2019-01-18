@@ -140,6 +140,7 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
                                 &transport_socket_pool_,
                                 NULL,
                                 NULL,
+                                NULL,
                                 NULL) {
     ssl_config_service_->GetSSLConfig(&ssl_config_);
   }

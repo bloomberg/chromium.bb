@@ -35,6 +35,7 @@ class HttpProxyClientSocketPool;
 class HostResolver;
 class NetLog;
 class NetworkQualityEstimator;
+class ProxyDelegate;
 class ProxyServer;
 class SocketPerformanceWatcherFactory;
 class SOCKSClientSocketPool;
@@ -62,6 +63,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
       const std::string& ssl_session_cache_shard,
       SSLConfigService* ssl_config_service,
       WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
+      ProxyDelegate* proxy_delegate,
       HttpNetworkSession::SocketPoolType pool_type);
   ~ClientSocketPoolManagerImpl() override;
 
@@ -113,6 +115,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
   CTPolicyEnforcer* const ct_policy_enforcer_;
   const std::string ssl_session_cache_shard_;
   SSLConfigService* const ssl_config_service_;
+  ProxyDelegate* const proxy_delegate_;
   const HttpNetworkSession::SocketPoolType pool_type_;
 
   // Note: this ordering is important.

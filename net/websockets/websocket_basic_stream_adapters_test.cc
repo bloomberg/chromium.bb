@@ -70,6 +70,7 @@ class WebSocketClientSocketHandleAdapterTest
             "test_shard",
             nullptr,
             &websocket_endpoint_lock_manager_,
+            nullptr,
             HttpNetworkSession::NORMAL_SOCKET_POOL)),
         transport_params_(base::MakeRefCounted<TransportSocketParams>(
             host_port_pair_,

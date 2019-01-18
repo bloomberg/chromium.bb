@@ -67,7 +67,7 @@ class NET_EXPORT_PRIVATE ProxyClientSocket : public StreamSocket {
   // in draft-luotonen-web-proxy-tunneling-01.txt and RFC 2817, Sections 5.2
   // and 5.3.
   static void BuildTunnelRequest(const HostPortPair& endpoint,
-                                 const HttpRequestHeaders& auth_headers,
+                                 const HttpRequestHeaders& extra_headers,
                                  const std::string& user_agent,
                                  std::string* request_line,
                                  HttpRequestHeaders* request_headers);

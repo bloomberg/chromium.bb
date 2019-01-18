@@ -165,6 +165,16 @@ void NetworkServiceProxyDelegate::OnResolveProxy(
 void NetworkServiceProxyDelegate::OnFallback(const net::ProxyServer& bad_proxy,
                                              int net_error) {}
 
+void NetworkServiceProxyDelegate::OnBeforeTunnelRequest(
+    const net::ProxyServer& proxy_server,
+    net::HttpRequestHeaders* extra_headers) {}
+
+net::Error NetworkServiceProxyDelegate::OnTunnelHeadersReceived(
+    const net::ProxyServer& proxy_server,
+    const net::HttpResponseHeaders& response_headers) {
+  return net::OK;
+}
+
 void NetworkServiceProxyDelegate::OnCustomProxyConfigUpdated(
     mojom::CustomProxyConfigPtr proxy_config) {
   DCHECK(proxy_config->rules.empty() ||

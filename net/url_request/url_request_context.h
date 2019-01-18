@@ -45,6 +45,7 @@ class HttpUserAgentSettings;
 class NetLog;
 class NetworkDelegate;
 class NetworkQualityEstimator;
+class ProxyDelegate;
 class ProxyResolutionService;
 class SSLConfigService;
 class URLRequest;
@@ -138,6 +139,11 @@ class NET_EXPORT URLRequestContext
   void set_proxy_resolution_service(
       ProxyResolutionService* proxy_resolution_service) {
     proxy_resolution_service_ = proxy_resolution_service;
+  }
+
+  ProxyDelegate* proxy_delegate() const { return proxy_delegate_; }
+  void set_proxy_delegate(ProxyDelegate* proxy_delegate) {
+    proxy_delegate_ = proxy_delegate;
   }
 
   // Get the ssl config service for this context.
@@ -303,6 +309,7 @@ class NET_EXPORT URLRequestContext
   ChannelIDService* channel_id_service_;
   HttpAuthHandlerFactory* http_auth_handler_factory_;
   ProxyResolutionService* proxy_resolution_service_;
+  ProxyDelegate* proxy_delegate_;
   SSLConfigService* ssl_config_service_;
   NetworkDelegate* network_delegate_;
   HttpServerProperties* http_server_properties_;

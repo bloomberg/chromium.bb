@@ -70,6 +70,7 @@ void URLRequestContextStorage::set_http_auth_handler_factory(
 
 void URLRequestContextStorage::set_proxy_delegate(
     std::unique_ptr<ProxyDelegate> proxy_delegate) {
+  context_->set_proxy_delegate(proxy_delegate.get());
   proxy_delegate_ = std::move(proxy_delegate);
 }
 
