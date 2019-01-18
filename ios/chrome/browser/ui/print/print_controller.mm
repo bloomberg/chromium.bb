@@ -152,9 +152,7 @@ class PrintPDFFetcherDelegate : public URLFetcherDelegate {
   return self;
 }
 
-- (void)printView:(UIView*)view
-         withTitle:(NSString*)title
-    viewController:(UIViewController*)viewController {
+- (void)printView:(UIView*)view withTitle:(NSString*)title {
   base::RecordAction(base::UserMetricsAction("MobilePrintMenuAirPrint"));
   UIPrintInteractionController* printInteractionController =
       [UIPrintInteractionController sharedPrintController];

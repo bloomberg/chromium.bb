@@ -19,7 +19,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ios_chrome_main_parts.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
