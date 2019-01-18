@@ -54,6 +54,14 @@ public class AwSettings {
     public static final int LAYOUT_ALGORITHM_NARROW_COLUMNS = 2;
     public static final int LAYOUT_ALGORITHM_TEXT_AUTOSIZING = 3;
 
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({FORCE_DARK_OFF, FORCE_DARK_AUTO, FORCE_DARK_ON})
+    public @interface ForceDarkMode {}
+
+    public static final int FORCE_DARK_OFF = -1;
+    public static final int FORCE_DARK_AUTO = 0;
+    public static final int FORCE_DARK_ON = +1;
+
     // This class must be created on the UI thread. Afterwards, it can be
     // used from any thread. Internally, the class uses a message queue
     // to call native code on the UI thread only.
@@ -102,6 +110,8 @@ public class AwSettings {
     private boolean mSpatialNavigationEnabled;  // Default depends on device features.
     private boolean mEnableSupportedHardwareAcceleratedFeatures;
     private int mMixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW;
+    @ForceDarkMode
+    private int mForceDarkMode = FORCE_DARK_AUTO;
     private boolean mCSSHexAlphaColorEnabled;
     private boolean mScrollTopLeftInteropEnabled;
 
@@ -1631,6 +1641,21 @@ public class AwSettings {
     public int getMixedContentMode() {
         synchronized (mAwSettingsLock) {
             return mMixedContentMode;
+        }
+    }
+
+    @ForceDarkMode
+    public int getForceDarkMode() {
+        synchronized (mAwSettingsLock) {
+            return mForceDarkMode;
+        }
+    }
+
+    public void setForceDarkMode(@ForceDarkMode int forceDarkMode) {
+        synchronized (mAwSettingsLock) {
+            if (mForceDarkMode != forceDarkMode) {
+                mForceDarkMode = forceDarkMode;
+            }
         }
     }
 
