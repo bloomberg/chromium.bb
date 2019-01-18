@@ -6,6 +6,7 @@
 
 #include <iterator>
 
+#include "base/atomicops.h"
 #include "base/bits.h"
 #include "base/no_destructor.h"
 #include "base/process/process_metrics.h"
@@ -108,7 +109,11 @@ void GuardedPageAllocator::Deallocate(void* ptr) {
   // Check for double free.
   if (state_.data[slot].dealloc.trace_addr) {
     state_.double_free_detected = true;
-    *reinterpret_cast<char*>(ptr) = 'X';  // Trigger exception.
+    base::subtle::MemoryBarrier();
+    // Trigger an exception by writing to the inaccessible free()d allocation.
+    // We want to crash by accessing the offending allocation in order to signal
+    // to the crash handler that this crash is caused by that allocation.
+    *reinterpret_cast<char*>(ptr) = 'X';
     __builtin_trap();
   }
 
@@ -136,12 +141,6 @@ size_t GuardedPageAllocator::ReserveSlot() {
   base::AutoLock lock(lock_);
 
   if (num_alloced_pages_ == max_alloced_pages_)
-    return SIZE_MAX;
-
-  // Disable allocations after a double free is detected so that the double
-  // freed allocation is not reallocated while the crash handler could be
-  // concurrently inspecting the metadata.
-  if (state_.double_free_detected)
     return SIZE_MAX;
 
   SlotTy slot = free_slot_ring_buffer_[free_slot_start_idx_];

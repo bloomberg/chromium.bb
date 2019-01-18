@@ -25,8 +25,6 @@
 #ifndef COMPONENTS_GWP_ASAN_COMMON_ALLOCATOR_STATE_H_
 #define COMPONENTS_GWP_ASAN_COMMON_ALLOCATOR_STATE_H_
 
-#include <atomic>
-
 #include "base/debug/stack_trace.h"
 #include "base/threading/platform_thread.h"
 
@@ -133,7 +131,7 @@ class AllocatorState {
   size_t page_size = 0;           // Page size.
 
   // Set to true if a double free has occurred.
-  std::atomic<bool> double_free_detected{false};
+  bool double_free_detected = false;
 
   DISALLOW_COPY_AND_ASSIGN(AllocatorState);
 };
