@@ -18,19 +18,20 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 
 SigninBrowserStateInfoUpdater::SigninBrowserStateInfoUpdater(
-    SigninManagerBase* signin_manager,
+    identity::IdentityManager* identity_manager,
     SigninErrorController* signin_error_controller,
     const base::FilePath& browser_state_path)
-    : signin_error_controller_(signin_error_controller),
-      signin_manager_(signin_manager),
+    : identity_manager_(identity_manager),
+      signin_error_controller_(signin_error_controller),
       browser_state_path_(browser_state_path),
-      signin_error_controller_observer_(this),
-      signin_manager_observer_(this) {
+      identity_manager_observer_(this),
+      signin_error_controller_observer_(this) {
   // Some tests don't have a ChromeBrowserStateManager, disable this service.
   if (!GetApplicationContext()->GetChromeBrowserStateManager())
     return;
 
-  signin_manager_observer_.Add(signin_manager_);
+  identity_manager_observer_.Add(identity_manager_);
+
   signin_error_controller_observer_.Add(signin_error_controller);
 
   UpdateBrowserStateInfo();
@@ -42,8 +43,8 @@ SigninBrowserStateInfoUpdater::SigninBrowserStateInfoUpdater(
 SigninBrowserStateInfoUpdater::~SigninBrowserStateInfoUpdater() = default;
 
 void SigninBrowserStateInfoUpdater::Shutdown() {
+  identity_manager_observer_.RemoveAll();
   signin_error_controller_observer_.RemoveAll();
-  signin_manager_observer_.RemoveAll();
 }
 
 void SigninBrowserStateInfoUpdater::UpdateBrowserStateInfo() {
@@ -56,8 +57,8 @@ void SigninBrowserStateInfoUpdater::UpdateBrowserStateInfo() {
   if (index == std::string::npos)
     return;
 
-  if (signin_manager_->IsAuthenticated()) {
-    AccountInfo account_info = signin_manager_->GetAuthenticatedAccountInfo();
+  if (identity_manager_->HasPrimaryAccount()) {
+    AccountInfo account_info = identity_manager_->GetPrimaryAccountInfo();
     cache->SetAuthInfoOfBrowserStateAtIndex(
         index, account_info.gaia, base::UTF8ToUTF16(account_info.email));
   } else {
@@ -78,12 +79,12 @@ void SigninBrowserStateInfoUpdater::OnErrorChanged() {
       index, signin_error_controller_->HasError());
 }
 
-void SigninBrowserStateInfoUpdater::GoogleSigninSucceeded(
-    const AccountInfo& account_info) {
+void SigninBrowserStateInfoUpdater::OnPrimaryAccountSet(
+    const AccountInfo& primary_account_info) {
   UpdateBrowserStateInfo();
 }
 
-void SigninBrowserStateInfoUpdater::GoogleSignedOut(
-    const AccountInfo& account_info) {
+void SigninBrowserStateInfoUpdater::OnPrimaryAccountCleared(
+    const AccountInfo& previous_primary_account_info) {
   UpdateBrowserStateInfo();
 }
