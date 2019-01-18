@@ -57,6 +57,9 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   template <typename T>
   inline static void WriteBarrier(const T* dst_object);
 
+  template <typename T>
+  static void WriteBarrier(TraceWrapperMember<T>* array, size_t length);
+
   static void WriteBarrier(v8::Isolate*, const WrapperTypeInfo*, void*);
 
   static void WriteBarrier(v8::Isolate*,
@@ -227,6 +230,25 @@ inline void ScriptWrappableMarkingVisitor::WriteBarrier(const T* dst_object) {
   CurrentVisitor(thread_state->GetIsolate())
       ->VisitWithWrappers(const_cast<T*>(dst_object),
                           TraceDescriptorFor(dst_object));
+}
+
+template <typename T>
+inline void ScriptWrappableMarkingVisitor::WriteBarrier(
+    TraceWrapperMember<T>* array,
+    size_t length) {
+  if (!ThreadState::IsAnyWrapperTracing() || !array)
+    return;
+
+  const ThreadState* thread_state =
+      ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
+  DCHECK(thread_state);
+  // Bail out if tracing is not in progress.
+  if (!thread_state->IsWrapperTracing())
+    return;
+
+  for (size_t i = 0; i < length; ++i) {
+    CurrentVisitor(thread_state->GetIsolate())->Trace(array[i]);
+  }
 }
 
 }  // namespace blink
