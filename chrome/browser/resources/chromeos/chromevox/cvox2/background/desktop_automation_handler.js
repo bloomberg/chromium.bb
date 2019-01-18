@@ -591,7 +591,8 @@ DesktopAutomationHandler.prototype = {
             range, range, Output.EventType.NAVIGATE);
         this.lastValueTarget_ = t;
       } else {
-        output.format('$value', t);
+        output.format(
+            '$if($value, $value, $if($valueForRange, $valueForRange))', t);
       }
       output.go();
     }
