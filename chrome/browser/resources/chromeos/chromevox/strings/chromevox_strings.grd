@@ -3200,6 +3200,10 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Describes web content that has no title." name="IDS_CHROMEVOX_WEB_CONTENT">
         Web Content
       </message>
+      <message desc="The text label for ChromeVox language switching checkbox."
+        name="IDS_CHROMEVOX_OPTIONS_LANG_SWITCHING_CHECKBOX_LABEL">
+        Automatically detect and switch ChromeVox language.
+      </message>
     </messages>
   </release>
 </grit>
