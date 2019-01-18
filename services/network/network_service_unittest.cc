@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1206,6 +1207,30 @@ TEST_F(NetworkServiceTestWithService, GetDnsConfigChangeManager) {
 
   network_service_->GetDnsConfigChangeManager(mojo::MakeRequest(&ptr));
   EXPECT_TRUE(ptr.is_bound());
+}
+
+TEST_F(NetworkServiceTestWithService, GetNetworkList) {
+  base::RunLoop run_loop;
+  network_service_->GetNetworkList(
+      net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES,
+      base::BindLambdaForTesting(
+          [&](const base::Optional<std::vector<net::NetworkInterface>>& list) {
+            EXPECT_NE(base::nullopt, list);
+            for (auto it = list->begin(); it != list->end(); ++it) {
+              // Verify that names are not empty.
+              EXPECT_FALSE(it->name.empty());
+              EXPECT_FALSE(it->friendly_name.empty());
+
+              // Verify that the address is correct.
+              EXPECT_TRUE(it->address.IsValid());
+
+              EXPECT_FALSE(it->address.IsZero());
+              EXPECT_GT(it->prefix_length, 1u);
+              EXPECT_LE(it->prefix_length, it->address.size() * 8);
+            }
+            run_loop.Quit();
+          }));
+  run_loop.Run();
 }
 
 class TestNetworkChangeManagerClient
