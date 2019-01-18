@@ -237,6 +237,50 @@ void ArcApps::OnConnectionReady() {
   }
 }
 
+void ArcApps::OnAppRegistered(const std::string& app_id,
+                              const ArcAppListPrefs::AppInfo& app_info) {
+  OnAppStatesChanged(app_id, app_info);
+}
+
+void ArcApps::OnAppStatesChanged(const std::string& app_id,
+                                 const ArcAppListPrefs::AppInfo& app_info) {
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = apps::mojom::AppType::kArc;
+  app->app_id = app_id;
+  app->readiness = NewReadiness(app_info.ready);
+  Publish(std::move(app));
+}
+
+void ArcApps::OnAppRemoved(const std::string& app_id) {
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = apps::mojom::AppType::kArc;
+  app->app_id = app_id;
+  app->readiness = NewReadiness(false);
+  Publish(std::move(app));
+}
+
+void ArcApps::OnAppIconUpdated(const std::string& app_id,
+                               const ArcAppIconDescriptor& descriptor) {
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = apps::mojom::AppType::kArc;
+  app->app_id = app_id;
+  app->icon_key = NewIconKey(app_id);
+  Publish(std::move(app));
+}
+
+void ArcApps::OnAppNameUpdated(const std::string& app_id,
+                               const std::string& name) {
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = apps::mojom::AppType::kArc;
+  app->app_id = app_id;
+  app->name = name;
+  Publish(std::move(app));
+}
+
+void ArcApps::OnAppLastLaunchTimeUpdated(const std::string& app_id) {
+  // TODO(crbug.com/826982): implement.
+}
+
 void ArcApps::ObservePrefs() {
   prefs_->AddObserver(this);
   prefs_->app_connection_holder()->AddObserver(this);
@@ -248,13 +292,10 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
 
   app->app_type = apps::mojom::AppType::kArc;
   app->app_id = app_id;
-  app->readiness = apps::mojom::Readiness::kReady;
+  app->readiness = NewReadiness(app_info.ready);
   app->name = app_info.name;
 
-  app->icon_key = apps::mojom::IconKey::New();
-  app->icon_key->icon_type = apps::mojom::IconType::kArc;
-  app->icon_key->s_key = app_id;
-  app->icon_key->u_key = next_u_key_++;
+  app->icon_key = NewIconKey(app_id);
 
   bool installed_internally =
       prefs_->IsDefault(app_id) ||
@@ -269,6 +310,31 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
   app->show_in_search = show;
 
   return app;
+}
+
+apps::mojom::IconKeyPtr ArcApps::NewIconKey(const std::string& app_id) {
+  auto icon_key = apps::mojom::IconKey::New();
+  icon_key->icon_type = apps::mojom::IconType::kArc;
+  icon_key->s_key = app_id;
+  icon_key->u_key = next_u_key_++;
+  return icon_key;
+}
+
+// static
+apps::mojom::Readiness ArcApps::NewReadiness(bool ready) {
+  // TODO(crbug.com/826982): examine ArcAppListPrefs::AppInfo::suspended, and
+  // possibly have a corresponding 'suspended' apps::mojom::Readiness enum
+  // value.
+  return ready ? apps::mojom::Readiness::kReady
+               : apps::mojom::Readiness::kUninstalledByUser;
+}
+
+void ArcApps::Publish(apps::mojom::AppPtr app) {
+  subscribers_.ForAllPtrs([&app](apps::mojom::Subscriber* subscriber) {
+    std::vector<apps::mojom::AppPtr> apps;
+    apps.push_back(app.Clone());
+    subscriber->OnApps(std::move(apps));
+  });
 }
 
 }  // namespace apps
