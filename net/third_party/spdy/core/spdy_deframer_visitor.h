@@ -81,6 +81,7 @@
 #include "net/third_party/spdy/core/spdy_protocol_test_utils.h"
 #include "net/third_party/spdy/core/spdy_test_utils.h"
 #include "net/third_party/spdy/platform/api/spdy_string.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace spdy {
 namespace test {
@@ -194,9 +195,7 @@ struct CollectedFrame {
             typename X =
                 typename std::enable_if<std::is_base_of<SpdyFrameIR, T>::value>>
   ::testing::AssertionResult VerifyHasFrame(const T& expected_ir) const {
-    return VerifySpdyFrameIREquals(expected_ir, frame_ir.get())
-               ? ::testing::AssertionSuccess()
-               : ::testing::AssertionFailure();
+    return VerifySpdyFrameIREquals(expected_ir, frame_ir.get());
   }
 
   // Compare the collected headers against a StringPairVector. Ignores

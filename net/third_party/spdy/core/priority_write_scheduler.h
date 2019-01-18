@@ -5,20 +5,21 @@
 #ifndef NET_THIRD_PARTY_SPDY_CORE_PRIORITY_WRITE_SCHEDULER_H_
 #define NET_THIRD_PARTY_SPDY_CORE_PRIORITY_WRITE_SCHEDULER_H_
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
-#include "base/containers/circular_deque.h"
 #include "base/logging.h"
-#include "net/third_party/spdy/core/spdy_bug_tracker.h"
+#include "net/third_party/quiche/src/http2/platform/api/http2_containers.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/third_party/spdy/core/write_scheduler.h"
+#include "net/third_party/spdy/platform/api/spdy_bug_tracker.h"
+#include "net/third_party/spdy/platform/api/spdy_macros.h"
+#include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "net/third_party/spdy/platform/api/spdy_string_utils.h"
 
 namespace spdy {
@@ -48,12 +49,14 @@ class PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
 
   void RegisterStream(StreamIdType stream_id,
                       const StreamPrecedenceType& precedence) override {
-    SPDY_BUG_IF(!precedence.is_spdy3_priority()) << "Expected SPDY priority";
+    // TODO(mpw): verify |precedence.is_spdy3_priority() == true| once
+    //   Http2PriorityWriteScheduler enabled for HTTP/2.
 
     // parent_id not used here, but may as well validate it.  However,
     // parent_id may legitimately not be registered yet--see b/15676312.
     StreamIdType parent_id = precedence.parent_id();
-    DVLOG_IF(1, parent_id != kHttp2RootStreamId && !StreamRegistered(parent_id))
+    SPDY_DVLOG_IF(
+        1, parent_id != kHttp2RootStreamId && !StreamRegistered(parent_id))
         << "Parent stream " << parent_id << " not registered";
 
     if (stream_id == kHttp2RootStreamId) {
@@ -97,12 +100,14 @@ class PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
 
   void UpdateStreamPrecedence(StreamIdType stream_id,
                               const StreamPrecedenceType& precedence) override {
-    SPDY_BUG_IF(!precedence.is_spdy3_priority()) << "Expected SPDY priority";
+    // TODO(mpw): verify |precedence.is_spdy3_priority() == true| once
+    //   Http2PriorityWriteScheduler enabled for HTTP/2.
 
     // parent_id not used here, but may as well validate it.  However,
     // parent_id may legitimately not be registered yet--see b/15676312.
     StreamIdType parent_id = precedence.parent_id();
-    DVLOG_IF(1, parent_id != kHttp2RootStreamId && !StreamRegistered(parent_id))
+    SPDY_DVLOG_IF(
+        1, parent_id != kHttp2RootStreamId && !StreamRegistered(parent_id))
         << "Parent stream " << parent_id << " not registered";
 
     auto it = stream_infos_.find(stream_id);
@@ -278,8 +283,8 @@ class PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
     bool ready;
   };
 
-  // 0(1) size lookup, Amortized 0(1) insert at front or back.
-  using ReadyList = base::circular_deque<StreamInfo*>;
+  // O(1) size lookup, O(1) insert at front or back (amortized).
+  using ReadyList = http2::Http2Deque<StreamInfo*>;
 
   // State kept for each priority level.
   struct PriorityInfo {

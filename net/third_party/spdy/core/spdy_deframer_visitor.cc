@@ -12,6 +12,7 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "net/third_party/quiche/src/http2/platform/api/http2_macros.h"
 #include "net/third_party/spdy/core/hpack/hpack_constants.h"
 #include "net/third_party/spdy/core/mock_spdy_framer_visitor.h"
 #include "net/third_party/spdy/core/spdy_frame_reader.h"
@@ -267,8 +268,7 @@ void SpdyTestDeframerImpl::AtDataEnd() {
 void SpdyTestDeframerImpl::AtGoAwayEnd() {
   DVLOG(1) << "AtDataEnd";
   CHECK_EQ(frame_type_, GOAWAY);
-  CHECK(goaway_description_);
-  if (goaway_description_->empty()) {
+  if (HTTP2_DIE_IF_NULL(goaway_description_)->empty()) {
     listener_->OnGoAway(std::move(goaway_ir_));
   } else {
     listener_->OnGoAway(SpdyMakeUnique<SpdyGoAwayIR>(
@@ -761,10 +761,8 @@ void SpdyTestDeframerImpl::OnHeader(SpdyStringPiece key,
         frame_type_ == PUSH_PROMISE)
       << "   frame_type_=" << Http2FrameTypeToString(frame_type_);
   CHECK(!got_hpack_end_);
-  CHECK(headers_);
-  headers_->emplace_back(SpdyString(key), SpdyString(value));
-  CHECK(headers_handler_);
-  headers_handler_->OnHeader(key, value);
+  HTTP2_DIE_IF_NULL(headers_)->emplace_back(SpdyString(key), SpdyString(value));
+  HTTP2_DIE_IF_NULL(headers_handler_)->OnHeader(key, value);
 }
 
 void SpdyTestDeframerImpl::OnHeaderBlockEnd(
@@ -914,9 +912,7 @@ AssertionResult CollectedFrame::VerifyHasSettings(
 
 DeframerCallbackCollector::DeframerCallbackCollector(
     std::vector<CollectedFrame>* collected_frames)
-    : collected_frames_(collected_frames) {
-  CHECK(collected_frames);
-}
+    : collected_frames_(HTTP2_DIE_IF_NULL(collected_frames)) {}
 
 void DeframerCallbackCollector::OnAltSvc(
     std::unique_ptr<SpdyAltSvcIR> frame_ir) {

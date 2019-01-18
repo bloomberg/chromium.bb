@@ -57,7 +57,6 @@ class SpdyHeaderBlock::Storage {
   Storage() : arena_(kDefaultStorageBlockSize) {}
   Storage(const Storage&) = delete;
   Storage& operator=(const Storage&) = delete;
-  ~Storage() { Clear(); }
 
   SpdyStringPiece Write(const SpdyStringPiece s) {
     return SpdyStringPiece(arena_.Memdup(s.data(), s.size()), s.size());

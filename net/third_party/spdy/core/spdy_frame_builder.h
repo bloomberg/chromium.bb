@@ -9,13 +9,13 @@
 #include <cstdint>
 #include <memory>
 
-#include "base/gtest_prod_util.h"
-#include "net/third_party/spdy/core/spdy_bug_tracker.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/third_party/spdy/core/zero_copy_output_buffer.h"
+#include "net/third_party/spdy/platform/api/spdy_bug_tracker.h"
 #include "net/third_party/spdy/platform/api/spdy_endianness_util.h"
 #include "net/third_party/spdy/platform/api/spdy_export.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
+#include "net/third_party/spdy/platform/api/spdy_test_utils_prod.h"
 
 namespace spdy {
 
@@ -101,9 +101,9 @@ class SPDY_EXPORT_PRIVATE SpdyFrameBuilder {
   bool WriteBytes(const void* data, uint32_t data_len);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SpdyFrameBuilderTest, GetWritableBuffer);
-  FRIEND_TEST_ALL_PREFIXES(SpdyFrameBuilderTest, GetWritableOutput);
-  FRIEND_TEST_ALL_PREFIXES(SpdyFrameBuilderTest, GetWritableOutputNegative);
+  SPDY_FRIEND_TEST(SpdyFrameBuilderTest, GetWritableBuffer);
+  SPDY_FRIEND_TEST(SpdyFrameBuilderTest, GetWritableOutput);
+  SPDY_FRIEND_TEST(SpdyFrameBuilderTest, GetWritableOutputNegative);
 
   // Populates this frame with a HTTP2 frame prefix with type and length
   // information.

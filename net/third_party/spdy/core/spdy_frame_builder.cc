@@ -10,9 +10,9 @@
 #include <new>
 
 #include "base/logging.h"
-#include "net/third_party/spdy/core/spdy_bug_tracker.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/third_party/spdy/core/zero_copy_output_buffer.h"
+#include "net/third_party/spdy/platform/api/spdy_bug_tracker.h"
 
 namespace spdy {
 

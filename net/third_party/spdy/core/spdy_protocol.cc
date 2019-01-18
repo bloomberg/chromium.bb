@@ -6,7 +6,7 @@
 
 #include <ostream>
 
-#include "net/third_party/spdy/core/spdy_bug_tracker.h"
+#include "net/third_party/spdy/platform/api/spdy_bug_tracker.h"
 #include "net/third_party/spdy/platform/api/spdy_ptr_util.h"
 #include "net/third_party/spdy/platform/api/spdy_string_utils.h"
 
@@ -417,7 +417,7 @@ SpdyFrameType SpdyContinuationIR::frame_type() const {
 size_t SpdyContinuationIR::size() const {
   // We don't need to get the size of CONTINUATION frame directly. It is
   // calculated in HEADERS or PUSH_PROMISE frame.
-  SPDY_BUG << "Shouldn't not call size() for CONTINUATION frame.";
+  DLOG(WARNING) << "Shouldn't not call size() for CONTINUATION frame.";
   return 0;
 }
 
