@@ -7,12 +7,11 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
 
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BarItem;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.BarItemViewHolder;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -21,34 +20,30 @@ import org.chromium.ui.modelutil.PropertyModel;
  * the {@link KeyboardAccessoryViewBinder} which will modify the view accordingly.
  */
 class KeyboardAccessoryModernViewBinder {
-    static class ModernBarItemViewHolder extends KeyboardAccessoryViewBinder.BarItemViewHolder {
-        public ModernBarItemViewHolder(View barItemView) {
-            super(barItemView);
+    public static BarItemViewHolder create(ViewGroup parent, @BarItem.Type int viewType) {
+        switch (viewType) {
+            case BarItem.Type.SUGGESTION:
+                return new KeyboardAccessoryViewBinder.BarItemTextViewHolder(
+                        parent, R.layout.keyboard_accessory_suggestion);
+            case BarItem.Type.TAB_SWITCHER:
+                return new TabItemViewHolder(parent);
+            case BarItem.Type.ACTION_BUTTON: // Intentional fallthrough. Use legacy handling.
+            case BarItem.Type.COUNT: // Intentional fallthrough. Use legacy handling.
+                break;
         }
+        return KeyboardAccessoryViewBinder.create(parent, viewType);
+    }
 
-        public static KeyboardAccessoryViewBinder.BarItemViewHolder create(
-                ViewGroup parent, @BarItem.Type int viewType) {
-            switch (viewType) {
-                case BarItem.Type.SUGGESTION:
-                    return new ModernBarItemViewHolder(
-                            LayoutInflater.from(parent.getContext())
-                                    .inflate(
-                                            R.layout.keyboard_accessory_suggestion, parent, false));
-                case BarItem.Type.TAB_SWITCHER:
-                    return new ModernBarItemViewHolder((
-                            LayoutInflater.from(parent.getContext())
-                                    .inflate(R.layout.keyboard_accessory_tabs, parent, false)));
-                case BarItem.Type.ACTION_BUTTON: // Intentional fallthrough. Use legacy handling.
-                case BarItem.Type.COUNT: // Intentional fallthrough. Use legacy handling.
-                    break;
-            }
-            return KeyboardAccessoryViewBinder.BarItemViewHolder.create(parent, viewType);
+    static class TabItemViewHolder
+            extends BarItemViewHolder<BarItem, KeyboardAccessoryTabLayoutView> {
+        private KeyboardAccessoryTabLayoutView mTabLayout;
+
+        TabItemViewHolder(ViewGroup parent) {
+            super(parent, R.layout.keyboard_accessory_suggestion);
         }
 
         @Override
-        public void bind(BarItem barItem) {
-            super.bind(barItem);
-        }
+        protected void bind(BarItem item, KeyboardAccessoryTabLayoutView view) {}
     }
 
     public static void bind(
