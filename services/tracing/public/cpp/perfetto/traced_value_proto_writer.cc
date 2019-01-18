@@ -10,8 +10,9 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "base/values.h"
-#include "services/tracing/public/cpp/perfetto/heap_scattered_stream_delegate.h"
 #include "third_party/perfetto/include/perfetto/protozero/message_handle.h"
+#include "third_party/perfetto/include/perfetto/protozero/scattered_heap_buffer.h"
+#include "third_party/perfetto/include/perfetto/protozero/scattered_stream_writer.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 
 using TracedValue = base::trace_event::TracedValue;
@@ -40,12 +41,16 @@ size_t PerfettoProtoAppender::Finalize(uint32_t field_id) {
 
 namespace {
 
+constexpr size_t kDefaultSliceSize = 128;
+
 class ProtoWriter final : public TracedValue::Writer {
  public:
-  explicit ProtoWriter(size_t capacity)
-      : delegate_(capacity), stream_(&delegate_) {
+  explicit ProtoWriter(size_t initial_slice_size_bytes)
+      : buffer_(initial_slice_size_bytes ? initial_slice_size_bytes
+                                         : kDefaultSliceSize),
+        stream_(&buffer_) {
     proto_.Reset(&stream_);
-    delegate_.set_writer(&stream_);
+    buffer_.set_writer(&stream_);
     node_stack_.emplace(TracedValueHandle(&proto_));
     proto_.set_nested_type(perfetto::protos::pbzero::ChromeTracedValue::DICT);
   }
@@ -107,8 +112,8 @@ class ProtoWriter final : public TracedValue::Writer {
     node_stack_.top()->add_dict_keys(name);
 
     std::vector<protozero::ContiguousMemoryRange> ranges;
-    for (auto& chunk : child_proto_writer->delegate_.chunks()) {
-      ranges.emplace_back(chunk.GetUsedRange());
+    for (auto& slice : child_proto_writer->buffer_.slices()) {
+      ranges.emplace_back(slice.GetUsedRange());
     }
 
     size_t appended_size = node_stack_.top()->AppendScatteredBytes(
@@ -190,7 +195,7 @@ class ProtoWriter final : public TracedValue::Writer {
 
     DCHECK(node_stack_.empty());
     uint32_t full_size = proto_.Finalize();
-    delegate_.AdjustUsedSizeOfCurrentChunk();
+    buffer_.AdjustUsedSizeOfCurrentSlice();
 
     return full_size;
   }
@@ -201,9 +206,9 @@ class ProtoWriter final : public TracedValue::Writer {
       base::trace_event::TracedValue::ProtoAppender* appender) override {
     uint32_t full_size = Finalize();
 
-    for (auto& chunk : delegate_.chunks()) {
-      appender->AddBuffer(chunk.start(),
-                          chunk.start() + chunk.size() - chunk.unused_bytes());
+    for (auto& slice : buffer_.slices()) {
+      appender->AddBuffer(slice.start(),
+                          slice.start() + slice.size() - slice.unused_bytes());
     }
 
     size_t appended_size =
@@ -217,9 +222,9 @@ class ProtoWriter final : public TracedValue::Writer {
       base::trace_event::TraceEventMemoryOverhead* overhead) override {
     overhead->Add(base::trace_event::TraceEventMemoryOverhead::kTracedValue,
                   /* allocated size */
-                  delegate_.GetTotalSize(),
+                  buffer_.GetTotalSize(),
                   /* resident size */
-                  delegate_.GetTotalSize());
+                  buffer_.GetTotalSize());
   }
 
   std::unique_ptr<base::Value> ToBaseValue() const override {
@@ -248,12 +253,13 @@ class ProtoWriter final : public TracedValue::Writer {
   std::stack<TracedValueHandle> node_stack_;
 
   perfetto::protos::pbzero::ChromeTracedValue proto_;
-  HeapScatteredStreamWriterDelegate delegate_;
+  protozero::ScatteredHeapBuffer buffer_;
   protozero::ScatteredStreamWriter stream_;
 };
 
-std::unique_ptr<TracedValue::Writer> CreateProtoWriter(size_t capacity) {
-  return std::make_unique<ProtoWriter>(capacity);
+std::unique_ptr<TracedValue::Writer> CreateProtoWriter(
+    size_t initial_slice_size_bytes) {
+  return std::make_unique<ProtoWriter>(initial_slice_size_bytes);
 }
 
 }  // namespace
