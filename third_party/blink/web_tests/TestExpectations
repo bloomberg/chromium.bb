@@ -5879,7 +5879,7 @@ crbug.com/917970 [ Mac10.13 Retina ] virtual/mouseevent_fractional/fast/events/p
 crbug.com/917970 [ Mac10.13 Retina ] virtual/user-activation-v2/fast/events/popup-blocking-timers5.html [ Pass Failure ]
 
 # Sheriff 2019-01-03
-crbug.com/918905 [ Mac Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1b.html [ Pass Failure ]
+crbug.com/918905 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1b.html [ Pass Failure ]
 
 # Android doesn't support H264/AVC1 encoding.
 # Some other bots are built without H264/AVC1 encoding support.
