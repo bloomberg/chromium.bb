@@ -229,6 +229,17 @@ IdentityManager::CreateUbertokenFetcherForAccount(
       url_loader_factory, bount_to_channel_id);
 }
 
+// static
+bool IdentityManager::IsAccountIdMigrationSupported() {
+  return AccountTrackerService::IsMigrationSupported();
+}
+
+IdentityManager::AccountIdMigrationState
+IdentityManager::GetAccountIdMigrationState() const {
+  return static_cast<IdentityManager::AccountIdMigrationState>(
+      account_tracker_service_->GetMigrationState());
+}
+
 PrimaryAccountMutator* IdentityManager::GetPrimaryAccountMutator() {
   return primary_account_mutator_.get();
 }

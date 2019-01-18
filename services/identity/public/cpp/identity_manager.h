@@ -169,6 +169,15 @@ class IdentityManager : public SigninManagerBase::Observer,
                                         const identity::ScopeSet& scopes) {}
   };
 
+  // Possible values for the account ID migration state, needs to be kept in
+  // sync with AccountTrackerService::AccountIdMigrationState.
+  enum AccountIdMigrationState {
+    MIGRATION_NOT_STARTED = 0,
+    MIGRATION_IN_PROGRESS = 1,
+    MIGRATION_DONE = 2,
+    NUM_MIGRATION_STATES
+  };
+
   IdentityManager(
       SigninManagerBase* signin_manager,
       ProfileOAuth2TokenService* token_service,
@@ -306,6 +315,13 @@ class IdentityManager : public SigninManagerBase::Observer,
       gaia::GaiaSource source,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       bool bound_to_channel_id = true);
+
+  // Returns |true| if migration of the account ID from normalized email is
+  // supported for the current platform.
+  static bool IsAccountIdMigrationSupported();
+
+  // Returns the currently saved state for the migration of accounts IDs.
+  AccountIdMigrationState GetAccountIdMigrationState() const;
 
   // Returns pointer to the object used to change the signed-in state of the
   // primary account, if supported on the current platform. Otherwise, returns
