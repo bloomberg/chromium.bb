@@ -24,6 +24,7 @@
 using base::HistogramTester;
 using base::Time;
 using base::TimeDelta;
+using gaia::ListedAccount;
 using signin_metrics::AccountRelation;
 using signin_metrics::ReportingType;
 
@@ -49,20 +50,20 @@ class AccountInvestigatorTest : public testing::Test {
                   const TimeDelta interval) {
     return AccountInvestigator::CalculatePeriodicDelay(previous, now, interval);
   }
-  std::string Hash(const std::vector<AccountInfo>& signed_in_accounts,
-                   const std::vector<AccountInfo>& signed_out_accounts) {
+  std::string Hash(const std::vector<ListedAccount>& signed_in_accounts,
+                   const std::vector<ListedAccount>& signed_out_accounts) {
     return AccountInvestigator::HashAccounts(signed_in_accounts,
                                              signed_out_accounts);
   }
   AccountRelation Relation(
-      const AccountInfo& info,
-      const std::vector<AccountInfo>& signed_in_accounts,
-      const std::vector<AccountInfo>& signed_out_accounts) {
-    return AccountInvestigator::DiscernRelation(info, signed_in_accounts,
-                                                signed_out_accounts);
+      const AccountInfo& account_info,
+      const std::vector<ListedAccount>& signed_in_accounts,
+      const std::vector<ListedAccount>& signed_out_accounts) {
+    return AccountInvestigator::DiscernRelation(
+        account_info, signed_in_accounts, signed_out_accounts);
   }
-  void SharedReport(const std::vector<AccountInfo>& signed_in_accounts,
-                    const std::vector<AccountInfo>& signed_out_accounts,
+  void SharedReport(const std::vector<ListedAccount>& signed_in_accounts,
+                    const std::vector<ListedAccount>& signed_out_accounts,
                     const Time now,
                     const ReportingType type) {
     investigator_.SharedCookieJarReport(signed_in_accounts, signed_out_accounts,
@@ -75,10 +76,11 @@ class AccountInvestigatorTest : public testing::Test {
   }
   base::OneShotTimer* timer() { return &investigator_.timer_; }
 
-  void ExpectRelationReport(const std::vector<AccountInfo> signed_in_accounts,
-                            const std::vector<AccountInfo> signed_out_accounts,
-                            const ReportingType type,
-                            const AccountRelation expected) {
+  void ExpectRelationReport(
+      const std::vector<ListedAccount> signed_in_accounts,
+      const std::vector<ListedAccount> signed_out_accounts,
+      const ReportingType type,
+      const AccountRelation expected) {
     HistogramTester histogram_tester;
     investigator_.SignedInAccountRelationReport(signed_in_accounts,
                                                 signed_out_accounts, type);
@@ -144,29 +146,36 @@ class AccountInvestigatorTest : public testing::Test {
 
 namespace {
 
-AccountInfo Account(const std::string& id) {
-  AccountInfo account;
-  account.account_id = id;
+ListedAccount Account(const std::string& id) {
+  ListedAccount account;
+  account.id = id;
   return account;
+}
+
+AccountInfo ToAccountInfo(ListedAccount account) {
+  AccountInfo account_info;
+  account_info.account_id = account.id;
+  account_info.gaia = account.gaia_id;
+  account_info.email = account.email;
+  return account_info;
 }
 
 // NOTE: IdentityTestEnvironment uses a prefix for generating gaia IDs:
 // "gaia_id_for_". For this reason, the tests prefix expected account IDs
 // used so that there is a match.
-
 const std::string kGaiaId1 = identity::GetTestGaiaIdForEmail("1@mail.com");
 const std::string kGaiaId2 = identity::GetTestGaiaIdForEmail("2@mail.com");
 const std::string kGaiaId3 = identity::GetTestGaiaIdForEmail("3@mail.com");
 
-const AccountInfo one(Account(kGaiaId1));
-const AccountInfo two(Account(kGaiaId2));
-const AccountInfo three(Account(kGaiaId3));
+const ListedAccount one(Account(kGaiaId1));
+const ListedAccount two(Account(kGaiaId2));
+const ListedAccount three(Account(kGaiaId3));
 
-const std::vector<AccountInfo> no_accounts{};
-const std::vector<AccountInfo> just_one{one};
-const std::vector<AccountInfo> just_two{two};
-const std::vector<AccountInfo> both{one, two};
-const std::vector<AccountInfo> both_reversed{two, one};
+const std::vector<ListedAccount> no_accounts{};
+const std::vector<ListedAccount> just_one{one};
+const std::vector<ListedAccount> just_two{two};
+const std::vector<ListedAccount> both{one, two};
+const std::vector<ListedAccount> both_reversed{two, one};
 
 TEST_F(AccountInvestigatorTest, CalculatePeriodicDelay) {
   const Time epoch;
@@ -197,25 +206,25 @@ TEST_F(AccountInvestigatorTest, HashAccounts) {
 
 TEST_F(AccountInvestigatorTest, DiscernRelation) {
   EXPECT_EQ(AccountRelation::EMPTY_COOKIE_JAR,
-            Relation(one, no_accounts, no_accounts));
+            Relation(ToAccountInfo(one), no_accounts, no_accounts));
   EXPECT_EQ(AccountRelation::SINGLE_SIGNED_IN_MATCH_NO_SIGNED_OUT,
-            Relation(one, just_one, no_accounts));
+            Relation(ToAccountInfo(one), just_one, no_accounts));
   EXPECT_EQ(AccountRelation::SINGLE_SINGED_IN_MATCH_WITH_SIGNED_OUT,
-            Relation(one, just_one, just_two));
+            Relation(ToAccountInfo(one), just_one, just_two));
   EXPECT_EQ(AccountRelation::WITH_SIGNED_IN_NO_MATCH,
-            Relation(one, just_two, no_accounts));
+            Relation(ToAccountInfo(one), just_two, no_accounts));
   EXPECT_EQ(AccountRelation::ONE_OF_SIGNED_IN_MATCH_ANY_SIGNED_OUT,
-            Relation(one, both, just_one));
+            Relation(ToAccountInfo(one), both, just_one));
   EXPECT_EQ(AccountRelation::ONE_OF_SIGNED_IN_MATCH_ANY_SIGNED_OUT,
-            Relation(one, both, no_accounts));
+            Relation(ToAccountInfo(one), both, no_accounts));
   EXPECT_EQ(AccountRelation::NO_SIGNED_IN_ONE_OF_SIGNED_OUT_MATCH,
-            Relation(one, no_accounts, both));
+            Relation(ToAccountInfo(one), no_accounts, both));
   EXPECT_EQ(AccountRelation::NO_SIGNED_IN_SINGLE_SIGNED_OUT_MATCH,
-            Relation(one, no_accounts, just_one));
+            Relation(ToAccountInfo(one), no_accounts, just_one));
   EXPECT_EQ(AccountRelation::WITH_SIGNED_IN_ONE_OF_SIGNED_OUT_MATCH,
-            Relation(one, just_two, just_one));
+            Relation(ToAccountInfo(one), just_two, just_one));
   EXPECT_EQ(AccountRelation::NO_SIGNED_IN_WITH_SIGNED_OUT_NO_MATCH,
-            Relation(three, no_accounts, both));
+            Relation(ToAccountInfo(three), no_accounts, both));
 }
 
 TEST_F(AccountInvestigatorTest, SignedInAccountRelationReport) {

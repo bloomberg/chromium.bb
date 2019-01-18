@@ -21,6 +21,7 @@
 
 using base::Time;
 using base::TimeDelta;
+using gaia::ListedAccount;
 using signin_metrics::AccountRelation;
 using signin_metrics::ReportingType;
 
@@ -31,8 +32,8 @@ namespace {
 const char kSignedInHashPrefix[] = "i";
 const char kSignedOutHashPrefix[] = "o";
 
-bool AreSame(const AccountInfo& info, const AccountInfo& account) {
-  return info.account_id == account.account_id;
+bool AreSame(const AccountInfo& info, const ListedAccount& account) {
+  return info.account_id == account.id;
 }
 
 }  // namespace
@@ -89,8 +90,8 @@ void AccountInvestigator::OnAccountsInCookieUpdated(
 }
 
 void AccountInvestigator::OnGaiaAccountsInCookieUpdated(
-    const std::vector<AccountInfo>& signed_in_accounts,
-    const std::vector<AccountInfo>& signed_out_accounts,
+    const std::vector<ListedAccount>& signed_in_accounts,
+    const std::vector<ListedAccount>& signed_out_accounts,
     const GoogleServiceAuthError& error) {
   if (error != GoogleServiceAuthError::AuthErrorNone()) {
     // If we are pending periodic reporting, leave the flag set, and we will
@@ -140,19 +141,19 @@ TimeDelta AccountInvestigator::CalculatePeriodicDelay(Time previous,
 
 // static
 std::string AccountInvestigator::HashAccounts(
-    const std::vector<AccountInfo>& signed_in_accounts,
-    const std::vector<AccountInfo>& signed_out_accounts) {
+    const std::vector<ListedAccount>& signed_in_accounts,
+    const std::vector<ListedAccount>& signed_out_accounts) {
   std::vector<std::string> sorted_ids(signed_in_accounts.size());
   std::transform(std::begin(signed_in_accounts), std::end(signed_in_accounts),
                  std::back_inserter(sorted_ids),
-                 [](const AccountInfo& account) {
-                   return std::string(kSignedInHashPrefix) + account.account_id;
+                 [](const ListedAccount& account) {
+                   return std::string(kSignedInHashPrefix) + account.id;
                  });
-  std::transform(
-      std::begin(signed_out_accounts), std::end(signed_out_accounts),
-      std::back_inserter(sorted_ids), [](const AccountInfo& account) {
-        return std::string(kSignedOutHashPrefix) + account.account_id;
-      });
+  std::transform(std::begin(signed_out_accounts), std::end(signed_out_accounts),
+                 std::back_inserter(sorted_ids),
+                 [](const ListedAccount& account) {
+                   return std::string(kSignedOutHashPrefix) + account.id;
+                 });
   std::sort(sorted_ids.begin(), sorted_ids.end());
   std::ostringstream stream;
   std::copy(sorted_ids.begin(), sorted_ids.end(),
@@ -168,17 +169,17 @@ std::string AccountInvestigator::HashAccounts(
 // static
 AccountRelation AccountInvestigator::DiscernRelation(
     const AccountInfo& info,
-    const std::vector<AccountInfo>& signed_in_accounts,
-    const std::vector<AccountInfo>& signed_out_accounts) {
+    const std::vector<ListedAccount>& signed_in_accounts,
+    const std::vector<ListedAccount>& signed_out_accounts) {
   if (signed_in_accounts.empty() && signed_out_accounts.empty()) {
     return AccountRelation::EMPTY_COOKIE_JAR;
   }
   auto signed_in_match_iter = std::find_if(
       signed_in_accounts.begin(), signed_in_accounts.end(),
-      [&info](const AccountInfo& account) { return AreSame(info, account); });
+      [&info](const ListedAccount& account) { return AreSame(info, account); });
   auto signed_out_match_iter = std::find_if(
       signed_out_accounts.begin(), signed_out_accounts.end(),
-      [&info](const AccountInfo& account) { return AreSame(info, account); });
+      [&info](const ListedAccount& account) { return AreSame(info, account); });
   if (signed_in_match_iter != signed_in_accounts.end()) {
     if (signed_in_accounts.size() == 1) {
       return signed_out_accounts.empty()
@@ -190,8 +191,8 @@ AccountRelation AccountInvestigator::DiscernRelation(
   } else if (signed_out_match_iter != signed_out_accounts.end()) {
     if (signed_in_accounts.empty()) {
       return signed_out_accounts.size() == 1
-               ? AccountRelation::NO_SIGNED_IN_SINGLE_SIGNED_OUT_MATCH
-               : AccountRelation::NO_SIGNED_IN_ONE_OF_SIGNED_OUT_MATCH;
+                 ? AccountRelation::NO_SIGNED_IN_SINGLE_SIGNED_OUT_MATCH
+                 : AccountRelation::NO_SIGNED_IN_ONE_OF_SIGNED_OUT_MATCH;
     } else {
       return AccountRelation::WITH_SIGNED_IN_ONE_OF_SIGNED_OUT_MATCH;
     }
@@ -214,8 +215,8 @@ void AccountInvestigator::TryPeriodicReport() {
 }
 
 void AccountInvestigator::DoPeriodicReport(
-    const std::vector<AccountInfo>& signed_in_accounts,
-    const std::vector<AccountInfo>& signed_out_accounts) {
+    const std::vector<ListedAccount>& signed_in_accounts,
+    const std::vector<ListedAccount>& signed_out_accounts) {
   SharedCookieJarReport(signed_in_accounts, signed_out_accounts, Time::Now(),
                         ReportingType::PERIODIC);
 
@@ -227,8 +228,8 @@ void AccountInvestigator::DoPeriodicReport(
 }
 
 void AccountInvestigator::SharedCookieJarReport(
-    const std::vector<AccountInfo>& signed_in_accounts,
-    const std::vector<AccountInfo>& signed_out_accounts,
+    const std::vector<ListedAccount>& signed_in_accounts,
+    const std::vector<ListedAccount>& signed_out_accounts,
     const Time now,
     const ReportingType type) {
   const Time last_changed = Time::FromDoubleT(
@@ -240,8 +241,7 @@ void AccountInvestigator::SharedCookieJarReport(
 
   int signed_in_count = signed_in_accounts.size();
   int signed_out_count = signed_out_accounts.size();
-  signin_metrics::LogCookieJarCounts(signed_in_count,
-                                     signed_out_count,
+  signin_metrics::LogCookieJarCounts(signed_in_count, signed_out_count,
                                      signed_in_count + signed_out_count, type);
 
   if (identity_manager_->HasPrimaryAccount()) {
@@ -256,8 +256,8 @@ void AccountInvestigator::SharedCookieJarReport(
 }
 
 void AccountInvestigator::SignedInAccountRelationReport(
-    const std::vector<AccountInfo>& signed_in_accounts,
-    const std::vector<AccountInfo>& signed_out_accounts,
+    const std::vector<ListedAccount>& signed_in_accounts,
+    const std::vector<ListedAccount>& signed_out_accounts,
     ReportingType type) {
   signin_metrics::LogAccountRelation(
       DiscernRelation(identity_manager_->GetPrimaryAccountInfo(),
