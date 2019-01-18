@@ -315,6 +315,9 @@ source_set("chromeos") {
     "account_mapper_util.h",
     "android_sms/android_sms_app_helper_delegate_impl.cc",
     "android_sms/android_sms_app_helper_delegate_impl.h",
+    "android_sms/android_sms_app_setup_controller.h",
+    "android_sms/android_sms_app_setup_controller_impl.cc",
+    "android_sms/android_sms_app_setup_controller_impl.h",
     "android_sms/android_sms_pairing_state_tracker_impl.cc",
     "android_sms/android_sms_pairing_state_tracker_impl.h",
     "android_sms/android_sms_service.cc",
@@ -2041,6 +2044,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "android_sms/fake_android_sms_app_setup_controller.cc",
+    "android_sms/fake_android_sms_app_setup_controller.h",
     "android_sms/fake_connection_establisher.cc",
     "android_sms/fake_connection_establisher.h",
     "app_mode/test_kiosk_extension_builder.cc",
@@ -2125,6 +2130,7 @@ source_set("unit_tests") {
     "accessibility/switch_access_panel_unittest.cc",
     "account_manager/account_migration_runner_unittest.cc",
     "android_sms/android_sms_app_helper_delegate_impl_unittest.cc",
+    "android_sms/android_sms_app_setup_controller_impl_unittest.cc",
     "android_sms/connection_establisher_impl_unittest.cc",
     "android_sms/connection_manager_unittest.cc",
     "android_sms/pairing_lost_notifier_unittest.cc",
