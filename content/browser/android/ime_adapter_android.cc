@@ -31,7 +31,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
-using base::android::ConvertUTF8ToJavaString;
+using base::android::ConvertUTF16ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
@@ -181,7 +181,7 @@ void ImeAdapterAndroid::UpdateState(const TextInputState& state) {
     return;
 
   ScopedJavaLocalRef<jstring> jstring_text =
-      ConvertUTF8ToJavaString(env, state.value);
+      ConvertUTF16ToJavaString(env, state.value);
   Java_ImeAdapterImpl_updateState(
       env, obj, static_cast<int>(state.type), state.flags, state.mode,
       state.show_ime_if_needed, jstring_text, state.selection_start,

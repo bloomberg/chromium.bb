@@ -6,6 +6,7 @@
 
 #include <unordered_set>
 
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -365,7 +366,7 @@ bool TextInputManagerTester::GetTextInputValue(std::string* value) {
       observer_->text_input_manager()->GetTextInputState();
   if (!state)
     return false;
-  *value = state->value;
+  *value = base::UTF16ToUTF8(state->value);
   return true;
 }
 
