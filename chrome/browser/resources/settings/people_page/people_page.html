@@ -133,6 +133,7 @@
         <template is="dom-if" if="[[shouldShowSyncAccountControl_(diceEnabled_,
             syncStatus.syncSystemEnabled, syncStatus.signinAllowed)]]">
           <settings-sync-account-control
+              unified-consent-enabled="[[unifiedConsentEnabled_]]"
               sync-status="[[syncStatus]]"
               promo-label-with-account="$i18n{peopleSignInPrompt}"
               promo-label-with-no-account="$i18n{peopleSignInPrompt}"

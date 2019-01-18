@@ -86,6 +86,8 @@ Polymer({
       computed: 'computeSubLabel_(promoSecondaryLabelWithAccount,' +
           'promoSecondaryLabelWithNoAccount, shownAccount_)',
     },
+
+    unifiedConsentEnabled: Boolean,
   },
 
   observers: [
@@ -201,6 +203,9 @@ Polymer({
    * @private
    */
   getAccountLabel_: function(label, account) {
+    if(!!this.unifiedConsentEnabled && !!this.syncStatus.setupInProgress) {
+      return this.syncStatus.statusText || account;
+    }
     return this.syncStatus.signedIn && !this.syncStatus.hasError &&
             !this.syncStatus.disabled ?
         loadTimeData.substituteString(label, account) :

@@ -43,12 +43,24 @@ cr.define('settings_sync_account_control', function() {
       testElement = document.createElement('settings-sync-account-control');
       testElement.syncStatus = {
         signedIn: true,
-        signedInUsername: 'fakeUsername'
+        signedInUsername: 'foo@foo.com'
       };
       document.body.appendChild(testElement);
 
       return browserProxy.whenCalled('getStoredAccounts').then(() => {
         Polymer.dom.flush();
+        sync_test_util.simulateStoredAccounts([
+          {
+            fullName: 'fooName',
+            givenName: 'foo',
+            email: 'foo@foo.com',
+          },
+          {
+            fullName: 'barName',
+            givenName: 'bar',
+            email: 'bar@bar.com',
+          },
+        ]);
       });
     });
 
@@ -110,13 +122,7 @@ cr.define('settings_sync_account_control', function() {
 
       assertVisible(testElement.$$('#promo-header'), true);
       assertVisible(testElement.$$('#avatar-row'), false);
-      // TODO (rbpotter): Remove this conditional when the migration to
-      // Polymer 2 is completed.
-      if (Polymer.DomIf) {
-        assertEquals(null, testElement.$$('#menu'));
-      } else {
-        assertVisible(testElement.$$('#menu'), false);
-      }
+      assertVisible(testElement.$$('#menu'), false);
       assertVisible(testElement.$$('#sign-in'), true);
 
       testElement.$$('#sign-in').click();
@@ -215,7 +221,7 @@ cr.define('settings_sync_account_control', function() {
           });
     });
 
-    test('signed in', function() {
+    test('signed in, no error', function() {
       testElement.syncStatus = {
         signedIn: true,
         signedInUsername: 'bar@bar.com',
@@ -224,18 +230,7 @@ cr.define('settings_sync_account_control', function() {
         hasUnrecoverableError: false,
         disabled: false,
       };
-      sync_test_util.simulateStoredAccounts([
-        {
-          fullName: 'fooName',
-          givenName: 'foo',
-          email: 'foo@foo.com',
-        },
-        {
-          fullName: 'barName',
-          givenName: 'bar',
-          email: 'bar@bar.com',
-        },
-      ]);
+      Polymer.dom.flush();
 
       assertVisible(testElement.$$('#avatar-row'), true);
       assertVisible(testElement.$$('paper-icon-button-light'), false);
@@ -258,7 +253,9 @@ cr.define('settings_sync_account_control', function() {
       Polymer.dom.flush();
 
       assertEquals(settings.getCurrentRoute(), settings.routes.SIGN_OUT);
+    });
 
+    test('signed in, has error', function() {
       testElement.syncStatus = {
         signedIn: true,
         signedInUsername: 'bar@bar.com',
@@ -267,6 +264,9 @@ cr.define('settings_sync_account_control', function() {
         statusAction: settings.StatusAction.CONFIRM_SYNC_SETTINGS,
         disabled: false,
       };
+      Polymer.dom.flush();
+      const userInfo = testElement.$$('#user-info');
+
       assertTrue(testElement.$$('#sync-icon-container')
                      .classList.contains('sync-problem'));
       assertTrue(!!testElement.$$('[icon=\'settings:sync-problem\']'));
@@ -329,6 +329,30 @@ cr.define('settings_sync_account_control', function() {
       assertFalse(displayedText.includes('barName'));
       assertFalse(displayedText.includes('fooName'));
       assertTrue(displayedText.includes('Sync isn\'t working'));
+    });
+
+    test('signed in, setup in progress', function() {
+      testElement.unifiedConsentEnabled = false;
+      testElement.syncStatus = {
+        signedIn: true,
+        signedInUsername: 'bar@bar.com',
+        statusAction: settings.StatusAction.NO_ACTION,
+        statusText: 'Setup in progress...',
+        setupInProgress: true,
+        hasError: false,
+        hasUnrecoverableError: false,
+        disabled: false,
+      };
+      Polymer.dom.flush();
+      const userInfo = testElement.$$('#user-info');
+
+      assertTrue(userInfo.textContent.includes('barName'));
+      assertFalse(userInfo.textContent.includes('Setup in progress...'));
+
+      testElement.unifiedConsentEnabled = true;
+
+      assertTrue(userInfo.textContent.includes('barName'));
+      assertTrue(userInfo.textContent.includes('Setup in progress...'));
     });
 
     test('embedded in another page', function() {
