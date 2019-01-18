@@ -142,6 +142,7 @@ source_set("blink_headers") {
     "platform/modules/media_capabilities/web_video_configuration.h",
     "platform/modules/mediastream/platform_media_stream_source.h",
     "platform/modules/mediastream/platform_media_stream_track.h",
+    "platform/modules/mediastream/web_media_stream_sink.h",
     "platform/modules/notifications/web_notification_action.h",
     "platform/modules/notifications/web_notification_constants.h",
     "platform/modules/notifications/web_notification_data.h",
