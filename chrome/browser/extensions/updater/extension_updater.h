@@ -18,8 +18,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -78,14 +76,26 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
     // right away.
     bool install_immediately;
 
-    // An extension update check can be originated by a user or by a timer.
-    // When the value of |fetch_priority| is FOREGROUND, the update request was
-    // initiated by a user.
+    // An extension update check can be originated by a user or by a scheduled
+    // task. When the value of |fetch_priority| is FOREGROUND, the update
+    // request was initiated by a user.
     ManifestFetchData::FetchPriority fetch_priority;
 
     // Callback to call when the update check is complete. Can be null, if
     // you're not interested in when this happens.
     FinishedCallback callback;
+  };
+
+  // A class for use in tests to skip scheduled update checks for extensions
+  // during the lifetime of an instance of it. Only one instance should be alive
+  // at any given time.
+  class ScopedSkipScheduledCheckForTest {
+   public:
+    ScopedSkipScheduledCheckForTest();
+    ~ScopedSkipScheduledCheckForTest();
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ScopedSkipScheduledCheckForTest);
   };
 
   // Holds a pointer to the passed |service|, using it for querying installed
@@ -128,9 +138,6 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // Overrides the extension cache with |extension_cache| for testing.
   void SetExtensionCacheForTesting(ExtensionCache* extension_cache);
 
-  // Stop the timer to prevent scheduled updates for testing.
-  void StopTimerForTesting();
-
  private:
   friend class ExtensionUpdaterTest;
   friend class ExtensionUpdaterFileHandler;
@@ -170,14 +177,9 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // |downloader|.
   void EnsureDownloaderCreated();
 
-  // Computes when to schedule the first update check.
-  base::TimeDelta DetermineFirstCheckDelay();
-
-  // Sets the timer to call TimerFired after roughly |target_delay| from now.
-  // To help spread load evenly on servers, this method adds some random
-  // jitter. It also saves the scheduled time so it can be reloaded on
-  // browser restart.
-  void ScheduleNextCheck(const base::TimeDelta& target_delay);
+  // Schedules a task to call NextCheck after |frequency_| delay, plus
+  // or minus 0 to 20% (to help spread load evenly on servers).
+  void ScheduleNextCheck();
 
   // Add fetch records for extensions that are installed to the downloader,
   // ignoring |pending_ids| so the extension isn't fetched again.
@@ -187,8 +189,8 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
                        ManifestFetchData::FetchPriority fetch_priority,
                        ExtensionUpdateCheckParams* update_check_params);
 
-  // BaseTimer::ReceiverMethod callback.
-  void TimerFired();
+  // Conduct a check as scheduled by ScheduleNextCheck.
+  void NextCheck();
 
   // Posted by CheckSoon().
   void DoCheckSoon();
@@ -254,8 +256,8 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // shutdown.
   UpdateService* update_service_;
 
-  base::OneShotTimer timer_;
-  int frequency_seconds_;
+  bool do_scheduled_checks_;
+  base::TimeDelta frequency_;
   bool will_check_soon_;
 
   ExtensionPrefs* extension_prefs_;
