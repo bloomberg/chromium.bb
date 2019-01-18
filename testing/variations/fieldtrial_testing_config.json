@@ -761,6 +761,25 @@
             ]
         }
     ],
+    "AutofillSaveCreditCardUsesStrikeSystemV2": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillSaveCreditCardUsesStrikeSystemV2"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillSmallFormSupport": [
         {
             "platforms": [

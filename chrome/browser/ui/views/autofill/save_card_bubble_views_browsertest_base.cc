@@ -29,6 +29,7 @@
 #include "components/autofill/core/browser/credit_card_save_manager.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -465,7 +466,16 @@ views::View* SaveCardBubbleViewsBrowserTestBase::FindViewInBubbleById(
 void SaveCardBubbleViewsBrowserTestBase::ClickOnCancelButton() {
   SaveCardBubbleViews* save_card_bubble_views = GetSaveCardBubbleViews();
   DCHECK(save_card_bubble_views);
-  ResetEventWaiterForSequence({DialogEvent::BUBBLE_CLOSED});
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSaveCreditCardUsesStrikeSystem) ||
+      base::FeatureList::IsEnabled(
+          features::kAutofillSaveCreditCardUsesStrikeSystemV2)) {
+    ResetEventWaiterForSequence(
+        {DialogEvent::STRIKE_CHANGE_COMPLETE, DialogEvent::BUBBLE_CLOSED});
+  } else {
+    ResetEventWaiterForSequence({DialogEvent::BUBBLE_CLOSED});
+  }
+
   ClickOnDialogViewWithIdAndWait(DialogViewId::CANCEL_BUTTON);
   DCHECK(!GetSaveCardBubbleViews());
 }
