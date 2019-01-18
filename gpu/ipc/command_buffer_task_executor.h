@@ -72,7 +72,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor
                             SyncPointManager* sync_point_manager,
                             MailboxManager* mailbox_manager,
                             scoped_refptr<gl::GLShareGroup> share_group,
-                            gl::GLSurfaceFormat share_group_surface_format);
+                            gl::GLSurfaceFormat share_group_surface_format,
+                            SharedImageManager* shared_image_manager);
 
   // Always use virtualized GL contexts if this returns true.
   virtual bool ForceVirtualizedGLContexts() const = 0;
@@ -112,7 +113,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor
   gles2::FramebufferCompletenessCache* framebuffer_completeness_cache() {
     return &framebuffer_completeness_cache_;
   }
-  SharedImageManager* shared_image_manager() { return &shared_image_manager_; }
+  SharedImageManager* shared_image_manager() { return shared_image_manager_; }
 
   // These methods construct accessed fields if not already initialized.
   scoped_refptr<gl::GLShareGroup> share_group();
@@ -127,7 +128,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor
  private:
   const GpuPreferences gpu_preferences_;
   const GpuFeatureInfo gpu_feature_info_;
-  std::unique_ptr<MailboxManager> owned_mailbox_manager_;
   SyncPointManager* sync_point_manager_;
   MailboxManager* mailbox_manager_;
   std::unique_ptr<gles2::Outputter> outputter_;
@@ -139,7 +139,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor
   PassthroughDiscardableManager passthrough_discardable_manager_;
   gles2::ShaderTranslatorCache shader_translator_cache_;
   gles2::FramebufferCompletenessCache framebuffer_completeness_cache_;
-  SharedImageManager shared_image_manager_;
+  SharedImageManager* shared_image_manager_;
 
   // No-op default initialization is used in in-process mode.
   GpuProcessActivityFlags activity_flags_;

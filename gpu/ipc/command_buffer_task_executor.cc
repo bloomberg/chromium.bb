@@ -19,19 +19,18 @@ CommandBufferTaskExecutor::CommandBufferTaskExecutor(
     SyncPointManager* sync_point_manager,
     MailboxManager* mailbox_manager,
     scoped_refptr<gl::GLShareGroup> share_group,
-    gl::GLSurfaceFormat share_group_surface_format)
+    gl::GLSurfaceFormat share_group_surface_format,
+    SharedImageManager* shared_image_manager)
     : gpu_preferences_(gpu_preferences),
       gpu_feature_info_(gpu_feature_info),
       sync_point_manager_(sync_point_manager),
       mailbox_manager_(mailbox_manager),
       share_group_(share_group),
       share_group_surface_format_(share_group_surface_format),
-      shader_translator_cache_(gpu_preferences_) {
-  if (!mailbox_manager_) {
-    // TODO(piman): have embedders own the mailbox manager.
-    owned_mailbox_manager_ = gles2::CreateMailboxManager(gpu_preferences_);
-    mailbox_manager_ = owned_mailbox_manager_.get();
-  }
+      shader_translator_cache_(gpu_preferences_),
+      shared_image_manager_(shared_image_manager) {
+  DCHECK(mailbox_manager_);
+  DCHECK(shared_image_manager_);
 }
 
 CommandBufferTaskExecutor::~CommandBufferTaskExecutor() = default;

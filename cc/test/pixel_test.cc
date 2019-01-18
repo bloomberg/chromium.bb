@@ -269,7 +269,8 @@ void PixelTest::SetUpGpuServiceOnGpuThread(base::WaitableEvent* event) {
           ->default_offscreen_surface()
           ->GetFormat(),
       gpu_service_->gpu_feature_info(),
-      gpu_service_->gpu_channel_manager()->gpu_preferences());
+      gpu_service_->gpu_channel_manager()->gpu_preferences(),
+      gpu_service_->shared_image_manager());
   event->Signal();
 }
 

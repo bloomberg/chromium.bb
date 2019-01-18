@@ -235,7 +235,8 @@ void VizMainImpl::CreateFrameSinkManagerInternal(
       gpu_thread_task_runner_, gpu_service_->scheduler(),
       gpu_service_->sync_point_manager(), gpu_service_->mailbox_manager(),
       gpu_service_->share_group(), format, gpu_service_->gpu_feature_info(),
-      gpu_service_->gpu_channel_manager()->gpu_preferences());
+      gpu_service_->gpu_channel_manager()->gpu_preferences(),
+      gpu_service_->shared_image_manager());
 
   viz_compositor_thread_runner_->CreateFrameSinkManager(
       std::move(params), task_executor_, gpu_service_.get());

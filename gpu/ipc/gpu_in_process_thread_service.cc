@@ -55,13 +55,15 @@ GpuInProcessThreadService::GpuInProcessThreadService(
     scoped_refptr<gl::GLShareGroup> share_group,
     gl::GLSurfaceFormat share_group_surface_format,
     const GpuFeatureInfo& gpu_feature_info,
-    const GpuPreferences& gpu_preferences)
+    const GpuPreferences& gpu_preferences,
+    SharedImageManager* shared_image_manager)
     : CommandBufferTaskExecutor(gpu_preferences,
                                 gpu_feature_info,
                                 sync_point_manager,
                                 mailbox_manager,
                                 share_group,
-                                share_group_surface_format),
+                                share_group_surface_format,
+                                shared_image_manager),
       task_runner_(task_runner),
       scheduler_(scheduler) {}
 
