@@ -2310,24 +2310,63 @@ TEST(SchedulerStateMachineTest,
       SchedulerStateMachine::Action::PERFORM_IMPL_SIDE_INVALIDATION);
 }
 
-TEST(SchedulerStateMachineTest,
-     NoImplSideInvalidationWithoutLayerTreeFrameSink) {
+TEST(SchedulerStateMachineTest, NoImplSideInvalidationUntilFrameSinkActive) {
   SchedulerSettings settings;
   StateMachine state(settings);
-  SET_UP_STATE(state);
+  SET_UP_STATE(state)
 
-  // Impl-side invalidations should not be triggered till the frame sink is
-  // initialized.
+  // Prefer impl side invalidation over begin main frame.
+  state.set_should_defer_invalidation_for_fast_main_frame(false);
+
   state.DidLoseLayerTreeFrameSink();
+
+  // Create new frame sink but don't commit or activate yet.
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::Action::BEGIN_LAYER_TREE_FRAME_SINK_CREATION);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
 
-  // No impl-side invalidations should be performed during frame sink creation.
+  state.DidCreateAndInitializeLayerTreeFrameSink();
+  state.SetNeedsBeginMainFrame();
+
   bool needs_first_draw_on_activation = true;
   state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
+
   state.IssueNextBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
+  // No impl side invalidation because we're still waiting for first commit.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
+
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::COMMIT);
+
+  state.OnBeginImplFrameDeadline();
+  state.OnBeginImplFrameIdle();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
+
+  state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
+
+  state.IssueNextBeginImplFrame();
+  // No impl side invalidation because we're still waiting for first activation.
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::NONE);
+
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::ACTIVATE_SYNC_TREE);
+
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::Action::DRAW_IF_POSSIBLE);
+  state.OnBeginImplFrameIdle();
+
+  state.SetNeedsBeginMainFrame();
+  state.SetNeedsImplSideInvalidation(needs_first_draw_on_activation);
+
+  state.IssueNextBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME);
+  // Impl side invalidation only after receiving first commit and activation for
+  // new frame sink.
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::Action::PERFORM_IMPL_SIDE_INVALIDATION);
 }
 
 TEST(SchedulerStateMachineTest, ImplSideInvalidationWhenPendingTreeExists) {
