@@ -225,7 +225,8 @@ void DedicatedWorker::Start() {
                  .GetFetchClientSettingsObject());
     context_proxy_->StartWorkerGlobalScope(
         CreateGlobalScopeCreationParams(
-            script_request_url_, network::mojom::ReferrerPolicy::kDefault),
+            script_request_url_, OffMainThreadWorkerScriptFetchOption::kEnabled,
+            network::mojom::ReferrerPolicy::kDefault),
         options_, script_request_url_, outside_settings_object, stack_id,
         String() /* source_code */);
     return;
@@ -358,7 +359,9 @@ void DedicatedWorker::OnFinished(const v8_inspector::V8StackTraceId& stack_id) {
                  ->Context()
                  .GetFetchClientSettingsObject());
     context_proxy_->StartWorkerGlobalScope(
-        CreateGlobalScopeCreationParams(script_response_url, referrer_policy),
+        CreateGlobalScopeCreationParams(
+            script_response_url,
+            OffMainThreadWorkerScriptFetchOption::kDisabled, referrer_policy),
         options_, script_response_url, outside_settings_object, stack_id,
         classic_script_loader_->SourceText());
     probe::scriptImported(GetExecutionContext(),
@@ -371,6 +374,7 @@ void DedicatedWorker::OnFinished(const v8_inspector::V8StackTraceId& stack_id) {
 std::unique_ptr<GlobalScopeCreationParams>
 DedicatedWorker::CreateGlobalScopeCreationParams(
     const KURL& script_url,
+    OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option,
     network::mojom::ReferrerPolicy referrer_policy) {
   base::UnguessableToken parent_devtools_token;
   std::unique_ptr<WorkerSettings> settings;
@@ -409,8 +413,8 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
   }
 
   return std::make_unique<GlobalScopeCreationParams>(
-      script_url, script_type, GetExecutionContext()->UserAgent(),
-      std::move(web_worker_fetch_context),
+      script_url, script_type, off_main_thread_fetch_option,
+      GetExecutionContext()->UserAgent(), std::move(web_worker_fetch_context),
       GetExecutionContext()->GetContentSecurityPolicy()->Headers(),
       referrer_policy, GetExecutionContext()->GetSecurityOrigin(),
       GetExecutionContext()->IsSecureContext(),

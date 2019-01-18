@@ -528,7 +528,8 @@ WorkerGlobalScope::WorkerGlobalScope(
   // Set the referrer policy here for workers whose script is fetched on the
   // main thread. For off-the-main-thread fetches, it is instead set after the
   // script is fetched.
-  if (IsScriptFetchedOnMainThread())
+  if (creation_params->off_main_thread_fetch_option ==
+      OffMainThreadWorkerScriptFetchOption::kDisabled)
     SetReferrerPolicy(creation_params->referrer_policy);
 
   SetAddressSpace(creation_params->address_space);
@@ -607,20 +608,6 @@ void WorkerGlobalScope::SetWorkerSettings(
   worker_settings_->MakeGenericFontFamilySettingsAtomic();
   font_selector_->UpdateGenericFontFamilySettings(
       worker_settings_->GetGenericFontFamilySettings());
-}
-
-bool WorkerGlobalScope::IsScriptFetchedOnMainThread() {
-  if (script_type_ == mojom::ScriptType::kModule)
-    return false;
-  // It's now supported only for dedicated workers to load top-level classic
-  // worker script off the main thread.
-  // TODO(nhiroki): Support loading top-level classic worker script off the main
-  // thread for shared workers and service workers.
-  if (IsDedicatedWorkerGlobalScope() &&
-      RuntimeEnabledFeatures::OffMainThreadWorkerScriptFetchEnabled()) {
-    return false;
-  }
-  return true;
 }
 
 TrustedTypePolicyFactory* WorkerGlobalScope::trustedTypes() {
