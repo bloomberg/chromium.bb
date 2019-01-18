@@ -302,8 +302,11 @@ size_t SimpleSerialize(const PaintOp* op, void* memory, size_t size) {
   return sizeof(T);
 }
 
-PlaybackParams::PlaybackParams(ImageProvider* image_provider)
+PlaybackParams::PlaybackParams(
+    ImageProvider* image_provider,
+    PaintWorkletImageProvider* paint_worklet_image_provider)
     : image_provider(image_provider),
+      paint_worklet_image_provider(paint_worklet_image_provider),
       original_ctm(SkMatrix::I()),
       custom_callback(CustomDataRasterCallback()),
       did_draw_op_callback(DidDrawOpCallback()) {}
@@ -2382,6 +2385,8 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
   PlaybackParams new_params(params.image_provider, canvas->getTotalMatrix(),
                             params.custom_callback,
                             params.did_draw_op_callback);
+  // TODO(xidachen): retrieve the PaintRecord stored in PaintWorkletImageCache,
+  // from the PaintWorkletImageProvider in the params.
   for (PlaybackFoldingIterator iter(this, offsets); iter; ++iter) {
     const PaintOp* op = *iter;
 

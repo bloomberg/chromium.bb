@@ -37,8 +37,10 @@ class FakeRasterSource : public RasterSource {
       const RecordingSource* recording_source,
       base::WaitableEvent* playback_allowed_event);
 
-  void PlaybackToCanvas(SkCanvas* canvas,
-                        ImageProvider* image_provider) const override;
+  void PlaybackToCanvas(
+      SkCanvas* canvas,
+      ImageProvider* image_provider,
+      PaintWorkletImageProvider* paint_worklet_image_provider) const override;
 
  protected:
   explicit FakeRasterSource(const RecordingSource* recording_source);

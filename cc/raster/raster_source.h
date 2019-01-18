@@ -75,8 +75,10 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   //
   // Note that this should only be called after the image decode controller has
   // been set, which happens during commit.
-  virtual void PlaybackToCanvas(SkCanvas* canvas,
-                                ImageProvider* image_provider) const;
+  virtual void PlaybackToCanvas(
+      SkCanvas* canvas,
+      ImageProvider* image_provider,
+      PaintWorkletImageProvider* paint_worklet_image_provider) const;
 
   // Returns whether the given rect at given scale is of solid color in
   // this raster source, as well as the solid color value.

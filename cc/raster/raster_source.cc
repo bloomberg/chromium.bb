@@ -169,17 +169,21 @@ void RasterSource::PlaybackToCanvas(
     raster_canvas->clear(SK_ColorTRANSPARENT);
   }
 
-  PlaybackToCanvas(raster_canvas, settings.image_provider);
+  PlaybackToCanvas(raster_canvas, settings.image_provider,
+                   settings.paint_worklet_image_provider);
   raster_canvas->restore();
 }
 
-void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
-                                    ImageProvider* image_provider) const {
+void RasterSource::PlaybackToCanvas(
+    SkCanvas* raster_canvas,
+    ImageProvider* image_provider,
+    PaintWorkletImageProvider* paint_worklet_image_provider) const {
   // TODO(enne): Temporary CHECK debugging for http://crbug.com/823835
   CHECK(display_list_.get());
   int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
   for (int i = 0; i < repeat_count; ++i)
-    display_list_->Raster(raster_canvas, image_provider);
+    display_list_->Raster(raster_canvas, image_provider,
+                          paint_worklet_image_provider);
 }
 
 sk_sp<SkPicture> RasterSource::GetFlattenedPicture() {
@@ -189,7 +193,7 @@ sk_sp<SkPicture> RasterSource::GetFlattenedPicture() {
   SkCanvas* canvas = recorder.beginRecording(size_.width(), size_.height());
   if (!size_.IsEmpty()) {
     canvas->clear(SK_ColorTRANSPARENT);
-    PlaybackToCanvas(canvas, nullptr);
+    PlaybackToCanvas(canvas, nullptr, nullptr);
   }
 
   return recorder.finishRecordingAsPicture();
