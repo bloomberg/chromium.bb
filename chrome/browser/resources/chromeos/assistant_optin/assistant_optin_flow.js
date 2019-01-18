@@ -34,12 +34,19 @@ Polymer({
 
   /**
    * Signal from host to show the screen.
-   * @param {number} type The type of the flow.
+   * @param {?number} type The type of the flow.
    */
   onShow: function(type) {
-    this.flowType = Number(type);
-    if (this.flowType == NaN) {
-      console.error('Invalid flow type.');
+    var flowType = Number(type);
+    switch (flowType) {
+      case this.FlowType.CONSENT_FLOW:
+      case this.FlowType.SPEAKER_ID_ENROLLMENT:
+        this.flowType = flowType;
+        break;
+      default:
+        console.error('Invalid flow type, using default.');
+        this.flowType = this.FlowType.CONSENT_FLOW;
+        break;
     }
 
     this.boundShowLoadingScreen = this.showLoadingScreen.bind(this);
