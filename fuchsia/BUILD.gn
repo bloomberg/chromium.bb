@@ -297,6 +297,10 @@ fuchsia_package("service_pkg") {
   binary = ":service_exe"
   package_name_override = "chromium"
   sandbox_policy = "service/sandbox_policy"
+  excluded_files = [
+    "lib/libswiftshader_libEGL.so",
+    "lib/libswiftshader_libGLESv2.so",
+  ]
 }
 
 executable("service_exe") {
