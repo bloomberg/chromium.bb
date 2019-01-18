@@ -41,7 +41,7 @@ void {{struct_name}}_Destroy({{struct_name}}Ptr self) {
 {%- for packed_field in struct.packed.packed_fields_in_ordinal_order %}
 {%-  set kind = packed_field.field.kind %}
 {%-  if kind|is_array_kind %}
-void {{struct_name}}_{{packed_field.field.name}}_add({{struct_name}}Ptr self, {{kind.kind|c_wrapper_type}} element) {
+void {{struct_name}}_{{packed_field.field.name}}_add({{struct_name}}Ptr self, const {{kind.kind|c_wrapper_type}} element) {
   DCHECK(self);
 {%-   if kind.kind|is_struct_kind %}
   self->{{packed_field.field.name}}.push_back(*element);
@@ -50,7 +50,7 @@ void {{struct_name}}_{{packed_field.field.name}}_add({{struct_name}}Ptr self, {{
 {%-   endif %}
 }
 {%-  else %}
-void {{struct_name}}_{{packed_field.field.name}}_set({{struct_name}}Ptr self, {{packed_field.field.kind|c_wrapper_type}} {{packed_field.field.name}}) {
+void {{struct_name}}_{{packed_field.field.name}}_set({{struct_name}}Ptr self, const {{packed_field.field.kind|c_wrapper_type}} {{packed_field.field.name}}) {
   DCHECK(self);
 {%-   if kind|is_struct_kind %}
   self->{{packed_field.field.name}}.reset();
@@ -79,7 +79,7 @@ uint32_t {{struct_name}}_{{packed_field.field.name}}_size({{struct_name}}Ptr sel
   DCHECK(self);
   return self->{{packed_field.field.name}}.size();
 }
-{{kind.kind|c_wrapper_type}} {{struct_name}}_{{packed_field.field.name}}_at({{struct_name}}Ptr self, uint32_t index) {
+{{kind.kind|c_wrapper_type}} {{struct_name}}_{{packed_field.field.name}}_at(const {{struct_name}}Ptr self, uint32_t index) {
   DCHECK(self);
   DCHECK(index < self->{{packed_field.field.name}}.size());
 {%-   if kind.kind|is_struct_kind %}
@@ -95,7 +95,7 @@ void {{struct_name}}_{{packed_field.field.name}}_clear({{struct_name}}Ptr self) 
   self->{{packed_field.field.name}}.clear();
 }
 {%-  else %}
-{{packed_field.field.kind|c_wrapper_type}} {{struct_name}}_{{packed_field.field.name}}_get({{struct_name}}Ptr self) {
+{{packed_field.field.kind|c_wrapper_type}} {{struct_name}}_{{packed_field.field.name}}_get(const {{struct_name}}Ptr self) {
   DCHECK(self);
 {%-   if kind|is_struct_kind %}
   if (self->{{packed_field.field.name}} == base::nullopt)
