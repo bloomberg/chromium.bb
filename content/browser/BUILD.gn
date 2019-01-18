@@ -1802,6 +1802,8 @@ jumbo_source_set("browser") {
     "web_contents/web_drag_source_mac.mm",
     "web_contents/web_drag_utils_win.cc",
     "web_contents/web_drag_utils_win.h",
+    "web_package/http_structured_header.cc",
+    "web_package/http_structured_header.h",
     "web_package/origins_list.cc",
     "web_package/origins_list.h",
     "web_package/signed_exchange_cert_fetcher.cc",
