@@ -1114,6 +1114,8 @@ class PolicyTest : public InProcessBrowserTest {
   MockConfigurationPolicyProvider provider_;
   std::unique_ptr<extensions::ExtensionCacheFake> test_extension_cache_;
   extensions::ScopedIgnoreContentVerifierForTest ignore_content_verifier_;
+  extensions::ExtensionUpdater::ScopedSkipScheduledCheckForTest
+      skip_scheduled_extension_checks_;
 };
 
 // A subclass of PolicyTest that runs each test with the old interstitial code
@@ -2810,9 +2812,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequired) {
   extensions::ExtensionPrefs* extension_prefs =
       extensions::ExtensionPrefs::Get(browser()->profile());
 
-  // Explicitly stop the timer to avoid all scheduled extension auto-updates.
-  service->updater()->StopTimerForTesting();
-
   // Install the extension.
   EXPECT_TRUE(InstallExtension(kGoodV1CrxName));
   EXPECT_TRUE(registry->enabled_extensions().Contains(kGoodCrxId));
@@ -2882,9 +2881,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequiredAlt) {
       extensions::ExtensionRegistry::Get(browser()->profile());
   extensions::ExtensionPrefs* extension_prefs =
       extensions::ExtensionPrefs::Get(browser()->profile());
-
-  // Explicitly stop the timer to avoid all scheduled extension auto-updates.
-  service->updater()->StopTimerForTesting();
 
   // Set the policy to require an even higher minimum version this time.
   {
