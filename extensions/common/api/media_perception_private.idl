@@ -67,7 +67,8 @@ namespace mediaPerceptionPrivate {
     AUTOZOOM,
     HOTWORD_DETECTION,
     OCCUPANCY_DETECTION,
-    EDGE_EMBEDDINGS
+    EDGE_EMBEDDINGS,
+    SOFTWARE_CROPPING
   };
 
   dictionary NamedTemplateArgument {

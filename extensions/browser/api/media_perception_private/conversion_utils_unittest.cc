@@ -528,6 +528,7 @@ TEST(MediaPerceptionConversionUtilsTest, StateProtoToIdl) {
   state.add_features(mri::State::FEATURE_HOTWORD_DETECTION);
   state.add_features(mri::State::FEATURE_OCCUPANCY_DETECTION);
   state.add_features(mri::State::FEATURE_EDGE_EMBEDDINGS);
+  state.add_features(mri::State::FEATURE_SOFTWARE_CROPPING);
   state.add_features(mri::State::FEATURE_UNSET);
 
   // Number NamedTemplateArgument.
@@ -564,7 +565,7 @@ TEST(MediaPerceptionConversionUtilsTest, StateProtoToIdl) {
 
   ASSERT_TRUE(state_result.features);
   ASSERT_TRUE(state_result.features.get());
-  ASSERT_EQ(state_result.features.get()->size(), 4u);
+  ASSERT_EQ(state_result.features.get()->size(), 5u);
   EXPECT_EQ(state_result.features.get()->at(0),
             media_perception::FEATURE_AUTOZOOM);
   EXPECT_EQ(state_result.features.get()->at(1),
@@ -573,6 +574,8 @@ TEST(MediaPerceptionConversionUtilsTest, StateProtoToIdl) {
             media_perception::FEATURE_OCCUPANCY_DETECTION);
   EXPECT_EQ(state_result.features.get()->at(3),
             media_perception::FEATURE_EDGE_EMBEDDINGS);
+  EXPECT_EQ(state_result.features.get()->at(4),
+            media_perception::FEATURE_SOFTWARE_CROPPING);
 
   ASSERT_EQ(state_result.named_template_arguments->size(),
             kNamedTemplateArgumentsSize);
@@ -644,6 +647,7 @@ TEST(MediaPerceptionConversionUtilsTest, StateIdlToProto) {
   state.features->emplace_back(media_perception::FEATURE_HOTWORD_DETECTION);
   state.features->emplace_back(media_perception::FEATURE_OCCUPANCY_DETECTION);
   state.features->emplace_back(media_perception::FEATURE_EDGE_EMBEDDINGS);
+  state.features->emplace_back(media_perception::FEATURE_SOFTWARE_CROPPING);
   state.features->emplace_back(media_perception::FEATURE_NONE);
 
   // {Number, Empty, String} test cases.
@@ -688,12 +692,13 @@ TEST(MediaPerceptionConversionUtilsTest, StateIdlToProto) {
   ASSERT_TRUE(state_proto.whiteboard().has_aspect_ratio());
   EXPECT_EQ(state_proto.whiteboard().aspect_ratio(), kWhiteboardAspectRatio);
 
-  ASSERT_EQ(state_proto.features_size(), 5);
+  ASSERT_EQ(state_proto.features_size(), 6);
   EXPECT_EQ(state_proto.features(0), mri::State::FEATURE_AUTOZOOM);
   EXPECT_EQ(state_proto.features(1), mri::State::FEATURE_HOTWORD_DETECTION);
   EXPECT_EQ(state_proto.features(2), mri::State::FEATURE_OCCUPANCY_DETECTION);
   EXPECT_EQ(state_proto.features(3), mri::State::FEATURE_EDGE_EMBEDDINGS);
-  EXPECT_EQ(state_proto.features(4), mri::State::FEATURE_UNSET);
+  EXPECT_EQ(state_proto.features(4), mri::State::FEATURE_SOFTWARE_CROPPING);
+  EXPECT_EQ(state_proto.features(5), mri::State::FEATURE_UNSET);
 
   ASSERT_EQ(state_proto.named_template_arguments_size(),
             static_cast<int>(kNamedTemplateArgumentsSize));
