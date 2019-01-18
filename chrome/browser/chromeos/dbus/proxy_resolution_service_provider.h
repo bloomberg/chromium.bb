@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
-#include "net/base/completion_callback.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -71,6 +70,15 @@ class ProxyResolutionServiceProvider
   // Data used for a single proxy resolution.
   struct Request;
 
+  // Callback that is invoked with the result of proxy resolution. On success
+  // |error| is empty, and |pac_string| contains the result. Otherwise |error|
+  // is non-empty.
+  using NotifyCallback =
+      base::OnceCallback<void(const std::string& error,
+                              const std::string& pac_string)>;
+
+  friend class ProxyResolutionServiceProviderTestWrapper;
+
   // Returns true if called on |origin_thread_|.
   bool OnOriginThread();
 
@@ -81,35 +89,27 @@ class ProxyResolutionServiceProvider
 
   // Callback invoked when Chrome OS clients send network proxy resolution
   // requests to the service. Called on UI thread.
-  void ResolveProxy(dbus::MethodCall* method_call,
-                    dbus::ExportedObject::ResponseSender response_sender);
+  void DbusResolveProxy(dbus::MethodCall* method_call,
+                        dbus::ExportedObject::ResponseSender response_sender);
 
-  // Callback passed to network thread static methods to run
-  // NotifyProxyResolved() on |origin_thread_|. This callback can be bound to a
-  // WeakPtr from |weak_ptr_factory_| (since the pointer will be dereferenced on
-  // |origin_thread_|), but the network methods can't (since WeakPtr disallows
-  // use on threads besides the one where it was created) and are static as a
-  // result.
-  using NotifyCallback = base::Callback<void(std::unique_ptr<Request>)>;
+  void ResolveProxyInternal(const std::string& source_url,
+                            NotifyCallback callback);
 
   // Helper method for ResolveProxy() that runs on network thread.
-  static void ResolveProxyOnNetworkThread(
-      std::unique_ptr<Request> request,
-      scoped_refptr<base::SingleThreadTaskRunner> notify_thread,
-      NotifyCallback notify_callback);
+  static void ResolveProxyOnNetworkThread(std::unique_ptr<Request> request);
 
   // Callback on network thread for when
   // net::ProxyResolutionService::ResolveProxy() completes, synchronously or
   // asynchronously.
-  static void OnResolutionComplete(
-      std::unique_ptr<Request> request,
-      scoped_refptr<base::SingleThreadTaskRunner> notify_thread,
-      NotifyCallback notify_callback,
-      int result);
+  static void OnResolutionComplete(std::unique_ptr<Request> request,
+                                   int result);
 
   // Called on UI thread from OnResolutionComplete() to pass the resolved proxy
   // information to the client over D-Bus.
-  void NotifyProxyResolved(std::unique_ptr<Request> request);
+  void NotifyProxyResolved(std::unique_ptr<dbus::Response> response,
+                           dbus::ExportedObject::ResponseSender response_sender,
+                           const std::string& error,
+                           const std::string& pac_string);
 
   scoped_refptr<dbus::ExportedObject> exported_object_;
   scoped_refptr<base::SingleThreadTaskRunner> origin_thread_;
