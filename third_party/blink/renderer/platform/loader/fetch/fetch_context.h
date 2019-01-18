@@ -61,6 +61,7 @@
 
 namespace blink {
 
+enum class ResourceType : uint8_t;
 class ClientHintsPreferences;
 class KURL;
 class PlatformProbeSink;
@@ -68,7 +69,7 @@ class ResourceError;
 class ResourceFetcherProperties;
 class ResourceResponse;
 class ResourceTimingInfo;
-enum class ResourceType : uint8_t;
+class WebScopedVirtualTimePauser;
 
 enum FetchResourceType { kFetchMainResource, kFetchSubresource };
 
@@ -113,11 +114,16 @@ class PLATFORM_EXPORT FetchContext
                                                  ResourceLoadPriority,
                                                  int intra_priority_value);
 
-  // This internally dispatches WebLocalFrameClient::willSendRequest and hooks
+  // This internally dispatches WebLocalFrameClient::WillSendRequest and hooks
   // request interceptors like ServiceWorker and ApplicationCache.
   // This may modify the request.
+  // |virtual_time_pauser| is an output parameter. PrepareRequest may
+  // create a new WebScopedVirtualTimePauser and set it to
+  // |virtual_time_pauser|.
   enum class RedirectType { kForRedirect, kNotForRedirect };
-  virtual void PrepareRequest(ResourceRequest&, RedirectType);
+  virtual void PrepareRequest(ResourceRequest&,
+                              WebScopedVirtualTimePauser& virtual_time_pauser,
+                              RedirectType);
 
   // The last callback before a request is actually sent to the browser process.
   // TODO(https://crbug.com/632580): make this take const ResourceRequest&.

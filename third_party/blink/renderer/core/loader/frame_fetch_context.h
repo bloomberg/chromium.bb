@@ -88,7 +88,9 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   void DispatchDidChangeResourcePriority(unsigned long identifier,
                                          ResourceLoadPriority,
                                          int intra_priority_value) override;
-  void PrepareRequest(ResourceRequest&, RedirectType) override;
+  void PrepareRequest(ResourceRequest&,
+                      WebScopedVirtualTimePauser&,
+                      RedirectType) override;
   void DispatchWillSendRequest(
       unsigned long identifier,
       ResourceRequest&,

@@ -223,6 +223,7 @@ std::unique_ptr<CodeCacheLoader> WorkerFetchContext::CreateCodeCacheLoader() {
 }
 
 void WorkerFetchContext::PrepareRequest(ResourceRequest& request,
+                                        WebScopedVirtualTimePauser&,
                                         RedirectType) {
   String user_agent = global_scope_->UserAgent();
   probe::applyUserAgentOverride(Probe(), &user_agent);

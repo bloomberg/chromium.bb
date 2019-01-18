@@ -91,7 +91,9 @@ mojom::FetchCacheMode FetchContext::ResourceRequestCachePolicy(
   return mojom::FetchCacheMode::kDefault;
 }
 
-void FetchContext::PrepareRequest(ResourceRequest&, RedirectType) {}
+void FetchContext::PrepareRequest(ResourceRequest&,
+                                  WebScopedVirtualTimePauser&,
+                                  RedirectType) {}
 
 void FetchContext::DispatchWillSendRequest(unsigned long,
                                            ResourceRequest&,
