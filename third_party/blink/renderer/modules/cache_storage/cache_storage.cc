@@ -40,7 +40,7 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver,
              GlobalFetch::ScopedFetcher* fetcher, TimeTicks start_time,
-             CacheStorage*, mojom::blink::OpenResultPtr result) {
+             CacheStorage* cache_storage, mojom::blink::OpenResultPtr result) {
             if (!resolver->GetExecutionContext() ||
                 resolver->GetExecutionContext()->IsContextDestroyed()) {
               return;
@@ -60,10 +60,10 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
               UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Open",
                                   TimeTicks::Now() - start_time);
               // See https://bit.ly/2S0zRAS for task types.
-              resolver->Resolve(
-                  Cache::Create(fetcher, std::move(result->get_cache()),
-                                resolver->GetExecutionContext()->GetTaskRunner(
-                                    blink::TaskType::kMiscPlatformAPI)));
+              resolver->Resolve(Cache::Create(
+                  fetcher, cache_storage, std::move(result->get_cache()),
+                  resolver->GetExecutionContext()->GetTaskRunner(
+                      blink::TaskType::kMiscPlatformAPI)));
             }
           },
           WrapPersistent(resolver), WrapPersistent(scoped_fetcher_.Get()),
