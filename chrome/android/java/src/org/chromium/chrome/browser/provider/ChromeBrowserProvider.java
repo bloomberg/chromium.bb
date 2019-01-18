@@ -177,7 +177,6 @@ public class ChromeBrowserProvider extends ContentProvider {
     private UriMatcher mUriMatcher;
     private long mLastModifiedBookmarkFolderId = INVALID_BOOKMARK_ID;
     private long mNativeChromeBrowserProvider;
-    private BookmarkNode mMobileBookmarksFolder;
 
     private void ensureUriMatcherInitialized() {
         synchronized (mInitializeUriMatcherLock) {
@@ -1149,32 +1148,6 @@ public class ChromeBrowserProvider extends ContentProvider {
         if (mNativeChromeBrowserProvider == 0) mNativeChromeBrowserProvider = nativeInit();
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            // Per Object#finalize(), finalizers are run on a single VM-wide finalizer thread, and
-            // the native objects need to be destroyed on the UI thread.
-            ThreadUtils.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    ensureNativeChromeDestroyedOnUIThread();
-                }
-            });
-        } finally {
-            super.finalize();
-        }
-    }
-
-    /**
-     * This method should only run on UI thread.
-     */
-    private void ensureNativeChromeDestroyedOnUIThread() {
-        if (mNativeChromeBrowserProvider != 0) {
-            nativeDestroy(mNativeChromeBrowserProvider);
-            mNativeChromeBrowserProvider = 0;
-        }
-    }
-
     @SuppressLint("NewApi")
     private void notifyChange(final Uri uri) {
         // If the calling user is different than current one, we need to post a
@@ -1240,7 +1213,6 @@ public class ChromeBrowserProvider extends ContentProvider {
     }
 
     private native long nativeInit();
-    private native void nativeDestroy(long nativeChromeBrowserProvider);
 
     // Public API native methods.
     private native long nativeAddBookmark(long nativeChromeBrowserProvider,
