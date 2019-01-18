@@ -4235,9 +4235,10 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       PREVIEWS_OFF, base::TimeTicks::Now(), "GET", nullptr,
       base::Optional<SourceLocation>(), false /* started_from_context_menu */,
       false /* has_user_gesture */, InitiatorCSPInfo(), std::string());
-  CommitNavigation(0, nullptr, network::mojom::URLLoaderClientEndpointsPtr(),
-                   common_params, CommitNavigationParams(), false,
-                   base::nullopt, base::nullopt /* subresource_overrides */,
+  CommitNavigation(nullptr /* navigation_request */, nullptr /* response */,
+                   network::mojom::URLLoaderClientEndpointsPtr(), common_params,
+                   CommitNavigationParams(), false, base::nullopt,
+                   base::nullopt /* subresource_overrides */,
                    base::UnguessableToken::Create() /* not traced */);
 }
 
@@ -4563,7 +4564,7 @@ void RenderFrameHostImpl::SendJavaScriptDialogReply(
 }
 
 void RenderFrameHostImpl::CommitNavigation(
-    int64_t navigation_id,
+    NavigationRequest* navigation_request,
     network::ResourceResponse* response,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     const CommonNavigationParams& common_params,
@@ -4819,14 +4820,14 @@ void RenderFrameHostImpl::CommitNavigation(
                          std::move(factory_bundle_for_prefetch)));
     }
 
-    auto find_request = navigation_requests_.find(navigation_id);
-    NavigationRequest* request = find_request != navigation_requests_.end()
-                                     ? find_request->second.get()
-                                     : nullptr;
+    int64_t navigation_id =
+        navigation_request
+            ? navigation_request->navigation_handle()->GetNavigationId()
+            : 0;
 
     mojom::NavigationClient* navigation_client = nullptr;
-    if (IsPerNavigationMojoInterfaceEnabled() && request)
-      navigation_client = request->GetCommitNavigationClient();
+    if (IsPerNavigationMojoInterfaceEnabled() && navigation_request)
+      navigation_client = navigation_request->GetCommitNavigationClient();
 
     SendCommitNavigation(
         navigation_client, navigation_id, head, common_params, commit_params,
@@ -4834,11 +4835,12 @@ void RenderFrameHostImpl::CommitNavigation(
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
         std::move(prefetch_loader_factory), devtools_navigation_token,
-        request ? base::BindOnce(
-                      &RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
-                      base::Unretained(this), navigation_id)
-                : content::mojom::FrameNavigationControl::
-                      CommitNavigationCallback());
+        navigation_request
+            ? base::BindOnce(
+                  &RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
+                  base::Unretained(this), navigation_id)
+            : content::mojom::FrameNavigationControl::
+                  CommitNavigationCallback());
 
     // |remote_object| is an associated interface ptr, so calls can't be made on
     // it until its request endpoint is sent. Now that the request endpoint was
@@ -4861,7 +4863,7 @@ void RenderFrameHostImpl::CommitNavigation(
 }
 
 void RenderFrameHostImpl::FailedNavigation(
-    int64_t navigation_id,
+    NavigationRequest* navigation_request,
     const CommonNavigationParams& common_params,
     const CommitNavigationParams& commit_params,
     bool has_stale_copy_in_cache,
@@ -4899,14 +4901,14 @@ void RenderFrameHostImpl::FailedNavigation(
             bypass_redirect_checks);
   }
 
-  auto find_request = navigation_requests_.find(navigation_id);
-  NavigationRequest* request = find_request != navigation_requests_.end()
-                                   ? find_request->second.get()
-                                   : nullptr;
+  int64_t navigation_id =
+      navigation_request
+          ? navigation_request->navigation_handle()->GetNavigationId()
+          : 0;
 
   mojom::NavigationClient* navigation_client = nullptr;
-  if (IsPerNavigationMojoInterfaceEnabled() && request)
-    navigation_client = request->GetCommitNavigationClient();
+  if (IsPerNavigationMojoInterfaceEnabled() && navigation_request)
+    navigation_client = navigation_request->GetCommitNavigationClient();
 
   SendCommitFailedNavigation(
       navigation_client, navigation_id, common_params, commit_params,
@@ -4917,8 +4919,8 @@ void RenderFrameHostImpl::FailedNavigation(
 
   // An error page is expected to commit, hence why is_loading_ is set to true.
   is_loading_ = true;
-  DCHECK(request && request->navigation_handle() &&
-         request->navigation_handle()->GetNetErrorCode() != net::OK);
+  DCHECK(navigation_request && navigation_request->navigation_handle() &&
+         navigation_request->navigation_handle()->GetNetErrorCode() != net::OK);
 }
 
 void RenderFrameHostImpl::HandleRendererDebugURL(const GURL& url) {

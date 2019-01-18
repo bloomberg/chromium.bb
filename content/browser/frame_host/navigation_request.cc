@@ -1792,9 +1792,9 @@ void NavigationRequest::CommitErrorPage(
   }
 
   navigation_handle_->ReadyToCommitNavigation(render_frame_host, true);
-  render_frame_host->FailedNavigation(
-      navigation_handle_->GetNavigationId(), common_params_, commit_params_,
-      has_stale_copy_in_cache_, net_error_, error_page_content);
+  render_frame_host->FailedNavigation(this, common_params_, commit_params_,
+                                      has_stale_copy_in_cache_, net_error_,
+                                      error_page_content);
 }
 
 void NavigationRequest::CommitNavigation() {
@@ -1837,10 +1837,10 @@ void NavigationRequest::CommitNavigation() {
     associated_site_instance_id_.reset();
   }
   render_frame_host->CommitNavigation(
-      navigation_handle_->GetNavigationId(), response_.get(),
-      std::move(url_loader_client_endpoints_), common_params_, commit_params_,
-      is_view_source_, std::move(subresource_loader_params_),
-      std::move(subresource_overrides_), devtools_navigation_token_);
+      this, response_.get(), std::move(url_loader_client_endpoints_),
+      common_params_, commit_params_, is_view_source_,
+      std::move(subresource_loader_params_), std::move(subresource_overrides_),
+      devtools_navigation_token_);
 
   // Give SpareRenderProcessHostManager a heads-up about the most recently used
   // BrowserContext.  This is mostly needed to make sure the spare is warmed-up
