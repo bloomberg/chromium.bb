@@ -74,6 +74,10 @@
             "_bug_id": "crbug.com/896022"
           },
           {
+            "match": "android.webkit.cts.WebViewSslTest#testSecureServerRequiringClientCertDoesCancelRequest",
+            "_bug_id": "crbug.com/922400"
+          },
+          {
             "match": "android.webkit.cts.WebViewClientTest#testShouldOverrideUrlLoading",
             "_bug_id": "crbug.com/896022"
           },
@@ -136,6 +140,10 @@
             "_bug_id": "crbug.com/896022"
           },
           {
+            "match": "android.webkit.cts.WebViewSslTest#testSecureServerRequiringClientCertDoesCancelRequest",
+            "_bug_id": "crbug.com/922400"
+          },
+          {
             "match": "android.webkit.cts.WebViewClientTest#testShouldOverrideUrlLoading",
             "_bug_id": "crbug.com/896022"
           },
@@ -159,7 +167,13 @@
       "unzip_dir": "arm64/N/5075646/",
       "test_runs": [
       {
-        "apk": "android-cts/testcases/CtsWebkitTestCases.apk"
+        "apk": "android-cts/testcases/CtsWebkitTestCases.apk",
+        "excludes": [
+          {
+            "match": "android.webkit.cts.WebViewSslTest#testSecureServerRequiringClientCertDoesCancelRequest",
+            "_bug_id": "crbug.com/922400"
+          }
+        ]
       },
       {
         "apk": "android-cts/testcases/CtsWidgetTestCases.apk",
@@ -175,7 +189,13 @@
       "unzip_dir": "arm64/O/5075719/",
       "test_runs": [
       {
-        "apk": "android-cts/testcases/CtsWebkitTestCases.apk"
+        "apk": "android-cts/testcases/CtsWebkitTestCases.apk",
+        "excludes": [
+          {
+            "match": "android.webkit.cts.WebViewSslTest#testSecureServerRequiringClientCertDoesCancelRequest",
+            "_bug_id": "crbug.com/922400"
+          }
+        ]
       },
       {
         "apk": "android-cts/testcases/CtsWebViewStartupApp.apk"
