@@ -393,6 +393,10 @@ def SyncGitRepoCmds(url, destination, revision, clobber_invalid_repo=False,
 
     abs_dir = subst.SubstituteAbsPaths(directory)
     git_dir = os.path.join(abs_dir, '.git')
+
+    logger.debug('Updating mirrors: %s (.git exists: %s)',
+                 abs_dir, os.path.exists(git_dir))
+
     if os.path.exists(git_dir):
       fetch_list = pynacl.repo_tools.GitRemoteRepoList(abs_dir,
                                                        include_fetch=True,
