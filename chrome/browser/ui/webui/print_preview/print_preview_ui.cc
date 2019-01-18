@@ -262,7 +262,7 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"scalingLabel", IDS_PRINT_PREVIEW_SCALING_LABEL},
     {"searchBoxPlaceholder", IDS_PRINT_PREVIEW_SEARCH_BOX_PLACEHOLDER},
     {"selectButton", IDS_PRINT_PREVIEW_BUTTON_SELECT},
-    {"selectDestination", IDS_PRINT_PREVIEW_SELECT_DESTINATION},
+    {"moreDestinations", IDS_PRINT_PREVIEW_MORE_DESTINATIONS},
     {"title", IDS_PRINT_PREVIEW_TITLE},
     {"top", IDS_PRINT_PREVIEW_TOP_MARGIN_LABEL},
     {"unsupportedCloudPrinter", IDS_PRINT_PREVIEW_UNSUPPORTED_CLOUD_PRINTER},

@@ -207,7 +207,7 @@ cr.define('destination_settings_test', function() {
         assertEquals(expectedValue, options[index].value);
       });
       assertEquals(
-          'selectDestination', options[expectedDestinations.length].value);
+          'moreDestinations', options[expectedDestinations.length].value);
     }
 
     // Tests that the dropdown contains the appropriate destinations when there
@@ -460,7 +460,7 @@ cr.define('destination_settings_test', function() {
           });
     });
 
-    // Tests that selecting the 'select destination' option opens the dialog.
+    // Tests that selecting the 'more destinations' option opens the dialog.
     test(assert(TestNames.OpenDialog), function() {
       recentDestinations = destinations.slice(0, 3).map(
           destination => print_preview.makeRecentDestination(destination));
@@ -480,7 +480,7 @@ cr.define('destination_settings_test', function() {
               'Save as PDF/local/',
             ]);
 
-            dropdown.fire('selected-option-change', 'selectDestination');
+            dropdown.fire('selected-option-change', 'moreDestinations');
             return test_util.waitForRender(destinationSettings);
           })
           .then(() => {
