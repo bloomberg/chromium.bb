@@ -298,7 +298,7 @@ void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
 }
 
 void NetworkService::DeregisterNetworkContext(NetworkContext* network_context) {
-  // If the NetworkContext is bthe primary network context, all other
+  // If the NetworkContext is the primary network context, all other
   // NetworkContexts must already have been destroyed.
   DCHECK(!network_context->IsPrimaryNetworkContext() ||
          network_contexts_.size() == 1);
@@ -483,6 +483,17 @@ void NetworkService::GetDnsConfigChangeManager(
 void NetworkService::GetTotalNetworkUsages(
     mojom::NetworkService::GetTotalNetworkUsagesCallback callback) {
   std::move(callback).Run(network_usage_accumulator_->GetTotalNetworkUsages());
+}
+
+void NetworkService::GetNetworkList(
+    uint32_t policy,
+    mojom::NetworkService::GetNetworkListCallback callback) {
+  net::NetworkInterfaceList networks;
+  if (net::GetNetworkList(&networks, policy)) {
+    std::move(callback).Run(networks);
+  } else {
+    std::move(callback).Run(base::nullopt);
+  }
 }
 
 #if BUILDFLAG(IS_CT_SUPPORTED)

@@ -5,9 +5,11 @@
 #ifndef SERVICES_NETWORK_NETWORK_SERVICE_H_
 #define SERVICES_NETWORK_NETWORK_SERVICE_H_
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/component_export.h"
 #include "base/containers/flat_set.h"
@@ -170,6 +172,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       mojom::DnsConfigChangeManagerRequest request) override;
   void GetTotalNetworkUsages(
       mojom::NetworkService::GetTotalNetworkUsagesCallback callback) override;
+  void GetNetworkList(
+      uint32_t policy,
+      mojom::NetworkService::GetNetworkListCallback callback) override;
 #if BUILDFLAG(IS_CT_SUPPORTED)
   void UpdateSignedTreeHead(const net::ct::SignedTreeHead& sth) override;
 #endif  // !BUILDFLAG(IS_CT_SUPPORTED)

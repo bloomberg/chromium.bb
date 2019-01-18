@@ -16,6 +16,7 @@ import "services/network/public/mojom/host_resolver.mojom";
 import "services/network/public/mojom/net_log.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/network_context.mojom";
+import "services/network/public/mojom/network_interface.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/network_quality_estimator_manager.mojom";
 import "services/network/public/mojom/url_loader.mojom";
@@ -318,6 +319,11 @@ interface NetworkService {
 
   // Gets the accumulated network usage since the start/restart of the service.
   GetTotalNetworkUsages() => (array<NetworkUsage> total_network_usages);
+
+  // Gets list of network interfaces.
+  // The |policy| parameter is a flag that specifies whether to include/exclude
+  // network interfaces. Corresponds to enum net::HostAddressSelectionPolicy.
+  GetNetworkList(uint32 policy) => (array<NetworkInterface>? networks);
 
   // Updates Signed Tree Heads (STH) used in the handling of Certificate
   // Transparency. Broadcast to each NetworkContext using the NetworkService.
