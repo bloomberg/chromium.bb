@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
@@ -65,7 +65,8 @@ SnapshotCache* SnapshotCacheFactory::GetForBrowserState(
 
 // static
 SnapshotCacheFactory* SnapshotCacheFactory::GetInstance() {
-  return base::Singleton<SnapshotCacheFactory>::get();
+  static base::NoDestructor<SnapshotCacheFactory> instance;
+  return instance.get();
 }
 
 // static

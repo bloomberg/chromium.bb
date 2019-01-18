@@ -8,14 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 @class SnapshotCache;
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
 
 namespace ios {
 class ChromeBrowserState;
@@ -35,7 +31,7 @@ class SnapshotCacheFactory : public BrowserStateKeyedServiceFactory {
   static TestingFactory GetDefaultFactory();
 
  private:
-  friend struct base::DefaultSingletonTraits<SnapshotCacheFactory>;
+  friend class base::NoDestructor<SnapshotCacheFactory>;
 
   SnapshotCacheFactory();
   ~SnapshotCacheFactory() override;
