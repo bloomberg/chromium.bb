@@ -1889,3 +1889,50 @@ TEST_F('ChromeVoxBackgroundTest', 'DetectLanguage', function() {
     mockFeedback.replay();
   });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'AriaSliderWithValueNow', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*
+    <div id="slider" role="slider" tabindex="0" aria-valuemin="0"
+             aria-valuenow="50" aria-valuemax="100"></div>
+    <script>
+      let slider = document.getElementById('slider');
+      slider.addEventListener('click', () => {
+        slider.setAttribute('aria-valuenow',
+            parseInt(slider.getAttribute('aria-valuenow'), 10) + 1);
+      });
+    </script>
+  */}, function(root) {
+    let slider = root.find({role: RoleType.SLIDER});
+    assertNotNullNorUndefined(slider);
+    mockFeedback
+        .call(slider.doDefault.bind(slider))
+        .expectSpeech('51')
+        .replay();
+  });
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'AriaSliderWithValueText', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*
+    <div id="slider" role="slider" tabindex="0" aria-valuemin="0"
+             aria-valuenow="50" aria-valuemax="100" aria-valuetext="tiny"></div>
+    <script>
+      let slider = document.getElementById('slider');
+      slider.addEventListener('click', () => {
+        slider.setAttribute('aria-valuenow',
+            parseInt(slider.getAttribute('aria-valuenow'), 10) + 1);
+        slider.setAttribute('aria-valuetext', 'large');
+      });
+    </script>
+  */}, function(root) {
+    let slider = root.find({role: RoleType.SLIDER});
+    assertNotNullNorUndefined(slider);
+    mockFeedback
+        .clearPendingOutput()
+        .call(slider.doDefault.bind(slider))
+        .expectNextSpeechUtteranceIsNot('51')
+        .expectSpeech('large')
+        .replay();
+  });
+});
