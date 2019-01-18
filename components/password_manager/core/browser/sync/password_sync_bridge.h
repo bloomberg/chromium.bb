@@ -6,6 +6,8 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SYNC_PASSWORD_SYNC_BRIDGE_H_
 
 #include "base/macros.h"
+#include "base/sequence_checker.h"
+#include "components/password_manager/core/browser/password_store_change.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 
 namespace syncer {
@@ -29,6 +31,11 @@ class PasswordSyncBridge : public syncer::ModelTypeSyncBridge {
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
   ~PasswordSyncBridge() override;
 
+  // Notifies the bridge of changes to the password database. Callers are
+  // responsible for calling this function within the very same transaction as
+  // the data changes.
+  void ActOnPasswordStoreChanges(const PasswordStoreChangeList& changes);
+
   // ModelTypeSyncBridge implementation.
   void OnSyncStarting(
       const syncer::DataTypeActivationRequest& request) override;
@@ -50,6 +57,8 @@ class PasswordSyncBridge : public syncer::ModelTypeSyncBridge {
       override;
 
  private:
+  SEQUENCE_CHECKER(sequence_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(PasswordSyncBridge);
 };
 
