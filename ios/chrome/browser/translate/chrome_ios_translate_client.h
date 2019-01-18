@@ -37,6 +37,7 @@ class WebState;
 }  // namespace web
 
 @protocol LanguageSelectionHandler;
+@protocol TranslateNotificationHandler;
 @protocol TranslateOptionSelectionHandler;
 
 class ChromeIOSTranslateClient
@@ -86,6 +87,11 @@ class ChromeIOSTranslateClient
     translate_option_selection_handler_ = handler;
   }
 
+  void set_translate_notification_handler(
+      id<TranslateNotificationHandler> handler) {
+    translate_notification_handler_ = handler;
+  }
+
  private:
   ChromeIOSTranslateClient(web::WebState* web_state);
   friend class web::WebStateUserData<ChromeIOSTranslateClient>;
@@ -103,6 +109,7 @@ class ChromeIOSTranslateClient
   __weak id<LanguageSelectionHandler> language_selection_handler_;
   __weak id<TranslateOptionSelectionHandler>
       translate_option_selection_handler_;
+  __weak id<TranslateNotificationHandler> translate_notification_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeIOSTranslateClient);
 };

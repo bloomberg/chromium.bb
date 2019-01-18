@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_consumer.h"
 #import "ios/chrome/browser/ui/translate/cells/select_language_popup_menu_item.h"
 #import "ios/chrome/browser/ui/translate/cells/translate_popup_menu_item.h"
+#import "ios/chrome/browser/ui/translate/translate_notification_handler.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -40,15 +41,24 @@
     id<LanguageSelectionHandler, TranslateOptionSelectionHandler>
         selectionHandler;
 
+// Presents and dismisses translate related notification UI.
+@property(nonatomic, weak) id<TranslateNotificationHandler> notificationHandler;
+
 @end
 
 @implementation TranslatePopupMenuMediator
 
-- (instancetype)initWithSelectionHandler:
-    (id<LanguageSelectionHandler, TranslateOptionSelectionHandler>)handler {
-  DCHECK(handler);
+- (instancetype)
+    initWithSelectionHandler:
+        (id<LanguageSelectionHandler, TranslateOptionSelectionHandler>)
+            selectionHandler
+         notificationHandler:
+             (id<TranslateNotificationHandler>)notificationHandler {
+  DCHECK(selectionHandler);
+  DCHECK(notificationHandler);
   if ((self = [super init])) {
-    _selectionHandler = handler;
+    _selectionHandler = selectionHandler;
+    _notificationHandler = notificationHandler;
   }
   return self;
 }
@@ -203,6 +213,8 @@
         ->set_language_selection_handler(self.selectionHandler);
     ChromeIOSTranslateClient::FromWebState(webState)
         ->set_translate_option_selection_handler(self.selectionHandler);
+    ChromeIOSTranslateClient::FromWebState(webState)
+        ->set_translate_notification_handler(self.notificationHandler);
   }
 }
 
@@ -213,6 +225,8 @@
         ->set_language_selection_handler(nil);
     ChromeIOSTranslateClient::FromWebState(webState)
         ->set_translate_option_selection_handler(nil);
+    ChromeIOSTranslateClient::FromWebState(webState)
+        ->set_translate_notification_handler(nil);
   }
 }
 
