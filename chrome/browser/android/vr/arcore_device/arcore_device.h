@@ -53,7 +53,7 @@ class ArCoreDevice : public VRDeviceBase {
   // TODO(crbug.com/893348): these should not be public.
   // Use callbacks instead.
   void OnRequestInstallArModuleResult(bool success);
-  void OnRequestInstallSupportedArCoreCanceled();
+  void OnRequestInstallSupportedArCoreResult(bool success);
 
  private:
   // VRDeviceBase implementation
@@ -67,8 +67,7 @@ class ArCoreDevice : public VRDeviceBase {
 
   void OnMailboxBridgeReady();
   void OnArCoreGlThreadInitialized();
-  void OnRequestCameraPermissionComplete(
-      bool success);
+  void OnRequestCameraPermissionComplete(bool success);
 
   template <typename... Args>
   static void RunCallbackOnTaskRunner(
