@@ -51,6 +51,9 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       mojom::kBlockedForAssistantSnapshot_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
+      kCanAttachToAnotherWindowKey, mojom::kCanAttachToAnotherWindow_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterPrimitiveProperty(
       kCanConsumeSystemKeysKey, mojom::kCanConsumeSystemKeys_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterStringProperty(

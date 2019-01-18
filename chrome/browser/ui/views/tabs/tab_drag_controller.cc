@@ -597,6 +597,11 @@ void TabDragController::OnWidgetBoundsChanged(views::Widget* widget,
                                               const gfx::Rect& new_bounds) {
   TRACE_EVENT1("views", "TabDragController::OnWidgetBoundsChanged",
                "new_bounds", new_bounds.ToString());
+  // Detaching and attaching can be suppresed temporarily to suppress attaching
+  // to incorrect window on changing bounds. We should prevent Drag() itself,
+  // otherwise it can clear deferred attaching tab.
+  if (!CanDetachFromTabStrip(GetTabStripForWindow(widget->GetNativeWindow())))
+    return;
 #if defined(USE_AURA)
   aura::Env* env = widget->GetNativeWindow()->env();
   // WidgetBoundsChanged happens as a step of ending a drag, but Drag() doesn't
@@ -1014,13 +1019,6 @@ TabDragController::Liveness TabDragController::GetTargetTabStripForPoint(
   *tab_strip = nullptr;
   TRACE_EVENT1("views", "TabDragController::GetTargetTabStripForPoint",
                "point_in_screen", point_in_screen.ToString());
-
-  // Do not change the current attached tabstrip if it's not allowed to detach
-  // from the current tabstrip and attach into another window's tabstrip.
-  if (attached_tabstrip_ && !CanDetachFromTabStrip(attached_tabstrip_)) {
-    *tab_strip = attached_tabstrip_;
-    return Liveness::ALIVE;
-  }
 
   if (move_only() && attached_tabstrip_) {
     // move_only() is intended for touch, in which case we only want to detach
