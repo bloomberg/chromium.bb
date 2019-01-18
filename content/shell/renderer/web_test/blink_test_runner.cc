@@ -730,6 +730,11 @@ void BlinkTestRunner::Navigate(const GURL& url) {
 
 void BlinkTestRunner::DidCommitProvisionalLoad(WebLocalFrame* frame,
                                                bool is_new_navigation) {
+  if (waiting_for_reset_ && frame == render_view()->GetWebView()->MainFrame() &&
+      GURL(frame->GetDocumentLoader()->GetUrl()).IsAboutBlank()) {
+    waiting_for_reset_ = false;
+    Send(new ShellViewHostMsg_ResetDone(routing_id()));
+  }
   if (!focus_on_next_commit_)
     return;
   focus_on_next_commit_ = false;
@@ -745,6 +750,7 @@ void BlinkTestRunner::DidFailProvisionalLoad(WebLocalFrame* frame,
 
 void BlinkTestRunner::Reset(bool for_new_test) {
   prefs_.Reset();
+  waiting_for_reset_ = false;
 
   render_view()->ClearEditCommands();
   if (for_new_test) {
@@ -842,10 +848,9 @@ void BlinkTestRunner::OnReset() {
   WebTestRenderThreadObserver::GetInstance()->test_interfaces()->ResetAll();
   Reset(true /* for_new_test */);
   // Navigating to about:blank will make sure that no new loads are initiated
-  // by the renderer. We know that about:blank navigation will finish
-  // without going to the network.
+  // by the renderer.
+  waiting_for_reset_ = true;
   main_frame->StartNavigation(WebURLRequest(GURL(url::kAboutBlankURL)));
-  Send(new ShellViewHostMsg_ResetDone(routing_id()));
 }
 
 void BlinkTestRunner::OnTestFinishedInSecondaryRenderer() {

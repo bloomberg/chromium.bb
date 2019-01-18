@@ -1291,8 +1291,6 @@ void BlinkTestController::OnResetDone() {
   if (leak_detector_) {
     if (main_window_ && main_window_->web_contents()) {
       RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
-      DCHECK_EQ(GURL(url::kAboutBlankURL),
-                rvh->GetMainFrame()->GetLastCommittedURL());
       leak_detector_->TryLeakDetection(
           rvh->GetProcess(),
           base::BindOnce(&BlinkTestController::OnLeakDetectionDone,

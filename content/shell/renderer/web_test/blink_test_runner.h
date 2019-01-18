@@ -202,6 +202,7 @@ class BlinkTestRunner : public RenderViewObserver,
   bool is_main_window_;
 
   bool focus_on_next_commit_;
+  bool waiting_for_reset_ = false;
 
   std::unique_ptr<test_runner::AppBannerService> app_banner_service_;
 
