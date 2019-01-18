@@ -244,13 +244,8 @@ BoxPaintInvalidator::ComputeViewBackgroundInvalidation() {
       new_background_rect.Size() != old_background_rect.Size();
   if (background_location_changed || background_size_changed) {
     for (auto* object :
-         layout_view.GetFrameView()->BackgroundAttachmentFixedObjects()) {
-      if (background_location_changed ||
-          ShouldFullyInvalidateFillLayersOnSizeChange(
-              object->StyleRef().BackgroundLayers(), old_background_rect.Size(),
-              new_background_rect.Size()))
-        object->SetBackgroundNeedsFullPaintInvalidation();
-    }
+         layout_view.GetFrameView()->BackgroundAttachmentFixedObjects())
+      object->SetBackgroundNeedsFullPaintInvalidation();
   }
 
   if (background_location_changed ||
