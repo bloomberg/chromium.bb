@@ -2246,6 +2246,12 @@
         },
         {
           "board_name": "octopus",
+          "name": "nospike",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "octopus",
           "name": "orbatrix",
           "test_suites": [
             "sanity",
