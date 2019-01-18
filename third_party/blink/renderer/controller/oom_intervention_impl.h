@@ -50,6 +50,8 @@ class CONTROLLER_EXPORT OomInterventionImpl
 
   void TimerFiredUMAReport(TimerBase*);
 
+  static void TriggerGC();
+
   mojom::blink::DetectionArgsPtr detection_args_;
 
   mojom::blink::OomInterventionHostPtr host_;

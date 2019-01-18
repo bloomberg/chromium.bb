@@ -330,6 +330,12 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/blink/renderer/controller/oom_intervention_impl.cc'],
+        'allowed': [
+            'base::BindOnce',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/animation'],
         'allowed': [
             '[a-z_]+_functions::.+',

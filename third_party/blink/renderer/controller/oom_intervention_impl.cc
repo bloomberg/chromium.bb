@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/controller/crash_memory_metrics_reporter_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
 namespace blink {
@@ -99,6 +100,9 @@ void OomInterventionImpl::Check(TimerBase*) {
 
     host_->OnHighMemoryUsage();
     timer_.Stop();
+    // Send memory pressure notification to trigger GC.
+    Thread::MainThread()->GetTaskRunner()->PostTask(FROM_HERE,
+                                                    base::BindOnce(&TriggerGC));
     // Notify V8GCForContextDispose that page navigation gc is needed when
     // intervention runs, as it indicates that memory usage is high.
     V8GCForContextDispose::Instance().SetForcePageNavigationGC();
@@ -175,6 +179,11 @@ void OomInterventionImpl::TimerFiredUMAReport(TimerBase*) {
       delayed_report_timer_.Stop();
       break;
   }
+}
+
+void OomInterventionImpl::TriggerGC() {
+  V8PerIsolateData::MainThreadIsolate()->MemoryPressureNotification(
+      v8::MemoryPressureLevel::kCritical);
 }
 
 }  // namespace blink
