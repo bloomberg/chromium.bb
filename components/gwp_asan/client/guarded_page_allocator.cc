@@ -84,7 +84,7 @@ void* GuardedPageAllocator::Allocate(size_t size, size_t align) {
   MarkPageReadWrite(reinterpret_cast<void*>(free_page));
 
   size_t offset;
-  if (base::RandInt(0, 1))
+  if (free_slot & 1)
     // Return right-aligned allocation to detect overflows.
     offset = state_.page_size - base::bits::Align(size, align);
   else
