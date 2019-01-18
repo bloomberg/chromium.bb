@@ -241,14 +241,10 @@ bool CSSParserContext::IsDocumentHandleEqual(const Document* other) const {
   return document_.Get() == other;
 }
 
-bool CSSParserContext::IsLayoutAnimationsPolicyEnforced() const {
-  return document_ && !document_->IsFeatureEnabled(
-                          mojom::FeaturePolicyFeature::kLayoutAnimations);
-}
-
 void CSSParserContext::ReportLayoutAnimationsViolationIfNeeded(
     const StyleRuleKeyframe& rule) const {
-  DCHECK(IsLayoutAnimationsPolicyEnforced());
+  if (!document_)
+    return;
   for (size_t i = 0; i < rule.Properties().PropertyCount(); ++i) {
     const CSSProperty& property = rule.Properties().PropertyAt(i).Property();
     if (!LayoutAnimationsPolicy::AffectedCSSProperties().Contains(&property))
