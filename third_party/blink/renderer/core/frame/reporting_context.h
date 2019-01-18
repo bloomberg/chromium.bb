@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -46,7 +47,7 @@ class CORE_EXPORT ReportingContext final
 
  private:
   HeapListHashSet<Member<ReportingObserver>> observers_;
-  HeapListHashSet<Member<Report>> report_buffer_;
+  HeapHashMap<String, HeapListHashSet<Member<Report>>> report_buffer_;
   Member<ExecutionContext> execution_context_;
 };
 

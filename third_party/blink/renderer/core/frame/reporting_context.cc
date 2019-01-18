@@ -33,12 +33,16 @@ ReportingContext* ReportingContext::From(ExecutionContext* context) {
 
 void ReportingContext::QueueReport(Report* report) {
   CountReport(report);
-  report_buffer_.insert(report);
 
-  // Only the most recent 100 reports will remain buffered.
+  // Buffer the report.
+  if (!report_buffer_.Contains(report->type()))
+    report_buffer_.insert(report->type(), HeapListHashSet<Member<Report>>());
+  report_buffer_.find(report->type())->value.insert(report);
+
+  // Only the most recent 100 reports will remain buffered, per report type.
   // https://w3c.github.io/reporting/#notify-observers
-  if (report_buffer_.size() > 100)
-    report_buffer_.RemoveFirst();
+  if (report_buffer_.at(report->type()).size() > 100)
+    report_buffer_.find(report->type())->value.RemoveFirst();
 
   for (auto observer : observers_)
     observer->QueueReport(report);
@@ -69,8 +73,11 @@ void ReportingContext::RegisterObserver(ReportingObserver* observer) {
     return;
 
   observer->ClearBuffered();
-  for (auto report : report_buffer_)
-    observer->QueueReport(report);
+  for (auto type : report_buffer_) {
+    for (Report* report : type.value) {
+      observer->QueueReport(report);
+    }
+  }
 }
 
 void ReportingContext::UnregisterObserver(ReportingObserver* observer) {
