@@ -104,8 +104,8 @@ class ContextualSearchDelegate
   void ResolveSearchTermFromContext();
 
   // Builds and returns the search term resolution request URL.
-  // |context| is used to help build the query.
-  std::string BuildRequestUrl(ContextualSearchContext* context);
+  // |selection| is used as the default query.
+  std::string BuildRequestUrl(std::string selection);
 
   // Uses the TemplateURL service to construct a search term resolution URL from
   // the given parameters.
@@ -149,8 +149,7 @@ class ContextualSearchDelegate
       std::string* thumbnail_url,
       std::string* caption,
       std::string* quick_action_uri,
-      QuickActionCategory* quick_action_category,
-      int64_t* logged_event_id);
+      QuickActionCategory* quick_action_category);
 
   // Extracts the start and end location from a mentions list, and sets the
   // integers referenced by |startResult| and |endResult|.
