@@ -188,6 +188,22 @@ void Frame::DidChangeVisibilityState() {
 void Frame::NotifyUserActivationInLocalTree() {
   for (Frame* node = this; node; node = node->Tree().Parent())
     node->user_activation_state_.Activate();
+
+  // See FrameTreeNode::NotifyUserActivation() for details about this block.
+  if (IsLocalFrame() && RuntimeEnabledFeatures::UserActivationV2Enabled() &&
+      RuntimeEnabledFeatures::UserActivationSameOriginVisibilityEnabled()) {
+    const SecurityOrigin* security_origin =
+        ToLocalFrame(this)->GetSecurityContext()->GetSecurityOrigin();
+
+    Frame& root = Tree().Top();
+    for (Frame* node = &root; node; node = node->Tree().TraverseNext(&root)) {
+      if (node->IsLocalFrame() &&
+          security_origin->CanAccess(
+              ToLocalFrame(node)->GetSecurityContext()->GetSecurityOrigin())) {
+        node->user_activation_state_.Activate();
+      }
+    }
+  }
 }
 
 bool Frame::ConsumeTransientUserActivationInLocalTree() {

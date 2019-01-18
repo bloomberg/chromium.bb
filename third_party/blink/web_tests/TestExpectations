@@ -81,6 +81,17 @@ crbug.com/860713 external/wpt/bluetooth/service/getCharacteristics/gen-reconnect
 # The following tests passes only with User Activation v2 (UAv2) disabled.
 crbug.com/908841 external/wpt/fullscreen/api/element-ready-check-containing-iframe-manual.html [ Timeout ]
 
+# The following tests fail with UserActivationSameOriginVisibility plus UAv2.
+crbug.com/922725 external/wpt/fullscreen/api/element-ready-check-containing-iframe-manual.tentative.html [ Failure ]
+crbug.com/922725 external/wpt/html/user-activation/activation-api-iframe-no-activate.tenative.html [ Failure ]
+crbug.com/922725 fullscreen/full-screen-iframe-zIndex.html [ Timeout ]
+crbug.com/922725 virtual/android/fullscreen/full-screen-iframe-zIndex.html [ Timeout ]
+crbug.com/922725 virtual/user-activation-v2/fullscreen/full-screen-iframe-zIndex.html [ Timeout ]
+crbug.com/922725 http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Failure ]
+crbug.com/922725 http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Failure ]
+crbug.com/922725 virtual/user-activation-v2/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Failure ]
+crbug.com/922725 virtual/user-activation-v2/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Failure ]
+
 # The following fail only on Mac.
 crbug.com/891427 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
