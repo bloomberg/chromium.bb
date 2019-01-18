@@ -1953,6 +1953,7 @@ jumbo_source_set("unit_tests") {
     "html/image_document_test.cc",
     "html/imports/html_import_sheets_test.cc",
     "html/lazy_load_frame_observer_test.cc",
+    "html/lazy_load_image_observer_test.cc",
     "html/link_element_loading_test.cc",
     "html/link_rel_attribute_test.cc",
     "html/list_item_ordinal_test.cc",
