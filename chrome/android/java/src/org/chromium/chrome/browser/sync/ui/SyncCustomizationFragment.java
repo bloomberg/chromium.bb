@@ -609,7 +609,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
             return SyncError.OTHER_ERRORS;
         }
 
-        if (mProfileSyncService.isSyncActive()
+        if (mProfileSyncService.isEngineInitialized()
                 && mProfileSyncService.isPassphraseRequiredForDecryption()) {
             return SyncError.PASSPHRASE_REQUIRED;
         }
