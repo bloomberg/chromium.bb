@@ -446,6 +446,8 @@ void AppListItemView::OnContextMenuModelReceived(
   if (apps_grid_view_->IsDragViewMoved(*this))
     return;
 
+  menu_show_initiated_from_key_ = source_type == ui::MENU_SOURCE_KEYBOARD;
+
   if (!apps_grid_view_->IsSelectedView(this))
     apps_grid_view_->ClearAnySelectedView();
 
@@ -764,7 +766,10 @@ void AppListItemView::OnMenuClosed() {
   }
 
   menu_close_initiated_from_drag_ = false;
-  OnBlur();
+
+  // Keep the item focused if the menu was shown via keyboard.
+  if (!menu_show_initiated_from_key_)
+    OnBlur();
 }
 
 void AppListItemView::OnSyncDragEnd() {

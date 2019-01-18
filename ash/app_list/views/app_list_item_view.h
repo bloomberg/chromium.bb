@@ -248,6 +248,9 @@ class APP_LIST_EXPORT AppListItemView
   // gesture.
   bool menu_close_initiated_from_drag_ = false;
 
+  // Whether |context_menu_| was shown via key event.
+  bool menu_show_initiated_from_key_ = false;
+
   base::string16 tooltip_text_;
 
   // A timer to defer showing drag UI when mouse is pressed.
