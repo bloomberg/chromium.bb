@@ -2105,11 +2105,20 @@ IN_PROC_BROWSER_TEST_F(WebAppPictureInPictureWindowControllerBrowserTest,
   EXPECT_FALSE(in_picture_in_picture);
 }
 
+#if defined(OS_WIN)
+// TODO(crbug.com/923428): Unflake on Windows.
+#define MAYBE_AutoPictureInPictureWhenPictureInPictureWindowAlreadyVisible \
+  DISABLED_AutoPictureInPictureWhenPictureInPictureWindowAlreadyVisible
+#else
+#define MAYBE_AutoPictureInPictureWhenPictureInPictureWindowAlreadyVisible \
+  AutoPictureInPictureWhenPictureInPictureWindowAlreadyVisible
+#endif
+
 // Check that Auto Picture-in-Picture is not triggered if there's already a
 // video in Picture-in-Picture.
 IN_PROC_BROWSER_TEST_F(
     WebAppPictureInPictureWindowControllerBrowserTest,
-    AutoPictureInPictureWhenPictureInPictureWindowAlreadyVisible) {
+    MAYBE_AutoPictureInPictureWhenPictureInPictureWindowAlreadyVisible) {
   InstallAndLaunchPWA();
 
   // Enter Picture-in-Picture for the first video and set Auto
