@@ -50,6 +50,7 @@ public class DownloadBackgroundTask extends NativeBackgroundTask {
                 DownloadTaskScheduler.EXTRA_BATTERY_REQUIRES_CHARGING);
         int optimalBatteryPercentage = taskParameters.getExtras().getInt(
                 DownloadTaskScheduler.EXTRA_OPTIMAL_BATTERY_PERCENTAGE);
+        mCurrentTaskType = taskParameters.getExtras().getInt(DownloadTaskScheduler.EXTRA_TASK_TYPE);
         // Reschedule if minimum battery level is not satisfied.
         if (!requiresCharging
                 && BatteryStatusListenerAndroid.getBatteryPercentage() < optimalBatteryPercentage) {
@@ -65,7 +66,6 @@ public class DownloadBackgroundTask extends NativeBackgroundTask {
         // In case of future upgrades, we would need to build an intent for the old version and
         // validate that this code still works. This would require decoupling this immediate class
         // from native as well.
-        mCurrentTaskType = taskParameters.getExtras().getInt(DownloadTaskScheduler.EXTRA_TASK_TYPE);
 
         Callback<Boolean> wrappedCallback = new Callback<Boolean>() {
             @Override
