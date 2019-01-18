@@ -234,6 +234,10 @@ bool IdentityManager::IsAccountIdMigrationSupported() {
   return AccountTrackerService::IsMigrationSupported();
 }
 
+void IdentityManager::LegacySetAccountIdMigrationDone() {
+  account_tracker_service_->SetMigrationDone();
+}
+
 IdentityManager::AccountIdMigrationState
 IdentityManager::GetAccountIdMigrationState() const {
   return static_cast<IdentityManager::AccountIdMigrationState>(

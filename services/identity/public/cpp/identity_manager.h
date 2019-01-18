@@ -320,6 +320,9 @@ class IdentityManager : public SigninManagerBase::Observer,
   // supported for the current platform.
   static bool IsAccountIdMigrationSupported();
 
+  // Marks the migration state for account IDs as finished.
+  void LegacySetAccountIdMigrationDone();
+
   // Returns the currently saved state for the migration of accounts IDs.
   AccountIdMigrationState GetAccountIdMigrationState() const;
 
