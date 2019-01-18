@@ -222,8 +222,9 @@ hb_blob_t* GetFontTable(hb_face_t* face, hb_tag_t tag, void* user_data) {
     return 0;
 
   char* buffer_raw = buffer.release();
-  return hb_blob_create(buffer_raw, table_size, HB_MEMORY_MODE_WRITABLE,
-                        buffer_raw, DeleteArrayByType<char>);
+  return hb_blob_create(buffer_raw, static_cast<uint32_t>(table_size),
+                        HB_MEMORY_MODE_WRITABLE, buffer_raw,
+                        DeleteArrayByType<char>);
 }
 
 void UnrefSkTypeface(void* data) {

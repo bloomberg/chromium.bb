@@ -51,7 +51,7 @@ const VectorIconRep* GetRepForPxSize(const VectorIcon& icon, int icon_size_px) {
 
   // Since |VectorIcon::reps| is sorted in descending order by size, search in
   // reverse order for an icon that is equal to or greater than |icon_size_px|.
-  for (int i = icon.reps_size - 1; i >= 0; --i) {
+  for (int i = static_cast<int>(icon.reps_size - 1); i >= 0; --i) {
     if (GetCanvasDimensions(icon.reps[i].path) >= icon_size_px)
       return &icon.reps[i];
   }

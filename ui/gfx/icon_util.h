@@ -228,7 +228,7 @@ class GFX_EXPORT IconUtil {
                                             size_t index,
                                             ICONDIR* icon_dir,
                                             ICONIMAGE* icon_image,
-                                            size_t image_offset,
+                                            DWORD image_offset,
                                             size_t* image_byte_count);
 
   // Copies the bits of an SkBitmap object into a buffer holding the bits of
@@ -259,7 +259,7 @@ class GFX_EXPORT IconUtil {
   //                       different size components.
   static void ComputeBitmapSizeComponents(const SkBitmap& bitmap,
                                           size_t* xor_mask_size,
-                                          size_t* bytes_in_resource);
+                                          DWORD* bytes_in_resource);
 
   // A helper function of CreateSkBitmapFromHICON.
   static SkBitmap CreateSkBitmapFromHICONHelper(HICON icon,

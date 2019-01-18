@@ -307,8 +307,8 @@ bool ElideString(const base::string16& input,
                      input.substr(input.length() - 1));
       break;
     default: {
-      int rstr_len = (max_len - 3) / 2;
-      int lstr_len = rstr_len + ((max_len - 3) % 2);
+      size_t rstr_len = (max_len - 3) / 2;
+      size_t lstr_len = rstr_len + ((max_len - 3) % 2);
       output->assign(input.substr(0, lstr_len) + ASCIIToUTF16("...") +
                      input.substr(input.length() - rstr_len));
       break;
@@ -651,7 +651,7 @@ void RectangleText::AddLine(const base::string16& line) {
         if (lines_added) {
           if (truncate) {
             // Trim trailing whitespace from the line that was added.
-            const int line = lines_->size() - lines_added;
+            const size_t line = lines_->size() - lines_added;
             base::TrimWhitespace(lines_->at(line), base::TRIM_TRAILING,
                                  &lines_->at(line));
           }
