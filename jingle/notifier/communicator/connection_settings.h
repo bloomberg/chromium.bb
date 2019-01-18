@@ -13,7 +13,7 @@
 #include "net/base/host_port_pair.h"
 #include "jingle/notifier/base/server_information.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmppClientSettings;
 }  // namespace
 
@@ -37,7 +37,7 @@ struct ConnectionSettings {
   std::string ToString() const;
 
   // Fill in the connection-related fields of |client_settings|.
-  void FillXmppClientSettings(buzz::XmppClientSettings* client_settings) const;
+  void FillXmppClientSettings(jingle_xmpp::XmppClientSettings* client_settings) const;
 
   net::HostPortPair server;
   SslTcpMode ssltcp_mode;

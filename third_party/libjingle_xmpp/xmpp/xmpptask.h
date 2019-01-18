@@ -21,7 +21,7 @@
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -80,9 +80,9 @@ class XmppClientInterface {
 // We really ought to inherit from a TaskParentInterface, but we tried
 // that and it's way too complicated to change
 // Task/TaskParent/TaskRunner.  For now, this works.
-class XmppTaskParentInterface : public rtc::Task {
+class XmppTaskParentInterface : public jingle_xmpp::Task {
  public:
-  explicit XmppTaskParentInterface(rtc::TaskParent* parent)
+  explicit XmppTaskParentInterface(jingle_xmpp::TaskParent* parent)
       : Task(parent) {
   }
   virtual ~XmppTaskParentInterface() {}
@@ -170,6 +170,6 @@ private:
 #endif
 };
 
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 #endif // THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPTASK_H_

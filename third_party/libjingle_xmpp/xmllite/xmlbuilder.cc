@@ -15,7 +15,7 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlconstants.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 XmlBuilder::XmlBuilder() :
   pelCurrent_(NULL),
@@ -121,4 +121,4 @@ XmlBuilder::BuiltElement() {
 XmlBuilder::~XmlBuilder() {
 }
 
-}  // namespace buzz
+}  // namespace jingle_xmpp

@@ -26,9 +26,9 @@ namespace base {
 class TimeDelta;
 }  // namespace base
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmlElement;
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 namespace remoting {
 
@@ -138,19 +138,19 @@ class HeartbeatSender : public SignalStrategy::Listener {
 
   // SignalStrategy::Listener interface.
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
-  bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
+  bool OnSignalStrategyIncomingStanza(const jingle_xmpp::XmlElement* stanza) override;
 
   void SendHeartbeat();
-  void OnResponse(IqRequest* request, const buzz::XmlElement* response);
-  HeartbeatResult ProcessResponse(const buzz::XmlElement* response);
+  void OnResponse(IqRequest* request, const jingle_xmpp::XmlElement* response);
+  HeartbeatResult ProcessResponse(const jingle_xmpp::XmlElement* response);
 
   // Handlers for host-offline-reason completion and timeout.
   void OnHostOfflineReasonTimeout();
   void OnHostOfflineReasonAck();
 
   // Helper methods used by DoSendStanza() to generate heartbeat stanzas.
-  std::unique_ptr<buzz::XmlElement> CreateHeartbeatMessage();
-  std::unique_ptr<buzz::XmlElement> CreateSignature();
+  std::unique_ptr<jingle_xmpp::XmlElement> CreateHeartbeatMessage();
+  std::unique_ptr<jingle_xmpp::XmlElement> CreateSignature();
 
   base::Closure on_heartbeat_successful_callback_;
   base::Closure on_unknown_host_id_error_;

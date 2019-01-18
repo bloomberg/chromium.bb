@@ -18,7 +18,7 @@
 #include "base/logging.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 Jid::Jid() {
 }
@@ -375,4 +375,4 @@ char Jid::PrepDomainLabelAscii(char ch, bool* valid) {
   }
 }
 
-}  // namespace buzz
+}  // namespace jingle_xmpp

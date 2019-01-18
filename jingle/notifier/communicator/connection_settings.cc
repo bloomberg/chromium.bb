@@ -57,9 +57,9 @@ std::string ConnectionSettings::ToString() const {
 }
 
 void ConnectionSettings::FillXmppClientSettings(
-    buzz::XmppClientSettings* client_settings) const {
-  client_settings->set_protocol((ssltcp_mode == USE_SSLTCP) ? buzz::PROTO_SSLTCP
-                                                            : buzz::PROTO_TCP);
+    jingle_xmpp::XmppClientSettings* client_settings) const {
+  client_settings->set_protocol((ssltcp_mode == USE_SSLTCP) ? jingle_xmpp::PROTO_SSLTCP
+                                                            : jingle_xmpp::PROTO_TCP);
   client_settings->set_server(server);
 }
 

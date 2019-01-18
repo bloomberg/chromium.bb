@@ -39,11 +39,11 @@ class PushNotificationSubscriber : public SignalStrategy::Listener {
  private:
   // SignalStrategy::Listener interface.
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
-  bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
+  bool OnSignalStrategyIncomingStanza(const jingle_xmpp::XmlElement* stanza) override;
 
   void Subscribe(const Subscription& subscription);
   void OnSubscriptionResult(IqRequest* request,
-                            const buzz::XmlElement* response);
+                            const jingle_xmpp::XmlElement* response);
 
   SignalStrategy* signal_strategy_;
   SubscriptionList subscriptions_;

@@ -13,7 +13,7 @@
 
 #include <string>
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmlElement;
 

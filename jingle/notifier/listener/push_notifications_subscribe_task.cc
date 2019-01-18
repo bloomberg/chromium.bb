@@ -20,10 +20,10 @@
 namespace notifier {
 
 PushNotificationsSubscribeTask::PushNotificationsSubscribeTask(
-    buzz::XmppTaskParentInterface* parent,
+    jingle_xmpp::XmppTaskParentInterface* parent,
     const SubscriptionList& subscriptions,
     Delegate* delegate)
-    : XmppTask(parent, buzz::XmppEngine::HL_SINGLE),
+    : XmppTask(parent, jingle_xmpp::XmppEngine::HL_SINGLE),
       subscriptions_(subscriptions), delegate_(delegate) {
 }
 
@@ -31,7 +31,7 @@ PushNotificationsSubscribeTask::~PushNotificationsSubscribeTask() {
 }
 
 bool PushNotificationsSubscribeTask::HandleStanza(
-    const buzz::XmlElement* stanza) {
+    const jingle_xmpp::XmlElement* stanza) {
   if (!MatchResponseIq(stanza, GetClient()->jid().BareJid(), task_id()))
     return false;
   QueueStanza(stanza);
@@ -40,12 +40,12 @@ bool PushNotificationsSubscribeTask::HandleStanza(
 
 int PushNotificationsSubscribeTask::ProcessStart() {
   DVLOG(1) << "Push notifications: Subscription task started.";
-  std::unique_ptr<buzz::XmlElement> iq_stanza(
+  std::unique_ptr<jingle_xmpp::XmlElement> iq_stanza(
       MakeSubscriptionMessage(subscriptions_, GetClient()->jid(), task_id()));
   DVLOG(1) << "Push notifications: Subscription stanza: "
           << XmlElementToString(*iq_stanza.get());
 
-  if (SendStanza(iq_stanza.get()) != buzz::XMPP_RETURN_OK) {
+  if (SendStanza(iq_stanza.get()) != jingle_xmpp::XMPP_RETURN_OK) {
     if (delegate_)
       delegate_->OnSubscriptionError();
     return STATE_ERROR;
@@ -55,15 +55,15 @@ int PushNotificationsSubscribeTask::ProcessStart() {
 
 int PushNotificationsSubscribeTask::ProcessResponse() {
   DVLOG(1) << "Push notifications: Subscription response received.";
-  const buzz::XmlElement* stanza = NextStanza();
+  const jingle_xmpp::XmlElement* stanza = NextStanza();
   if (stanza == NULL) {
     return STATE_BLOCKED;
   }
   DVLOG(1) << "Push notifications: Subscription response: "
            << XmlElementToString(*stanza);
   // We've received a response to our subscription request.
-  if (stanza->HasAttr(buzz::QN_TYPE) &&
-    stanza->Attr(buzz::QN_TYPE) == buzz::STR_RESULT) {
+  if (stanza->HasAttr(jingle_xmpp::QN_TYPE) &&
+    stanza->Attr(jingle_xmpp::QN_TYPE) == jingle_xmpp::STR_RESULT) {
     if (delegate_)
       delegate_->OnSubscribed();
     return STATE_DONE;
@@ -74,11 +74,11 @@ int PushNotificationsSubscribeTask::ProcessResponse() {
   return STATE_ERROR;
 }
 
-buzz::XmlElement* PushNotificationsSubscribeTask::MakeSubscriptionMessage(
+jingle_xmpp::XmlElement* PushNotificationsSubscribeTask::MakeSubscriptionMessage(
     const SubscriptionList& subscriptions,
-    const buzz::Jid& jid, const std::string& task_id) {
+    const jingle_xmpp::Jid& jid, const std::string& task_id) {
   DCHECK(jid.IsFull());
-  const buzz::QName kQnSubscribe(
+  const jingle_xmpp::QName kQnSubscribe(
       kPushNotificationsNamespace, "subscribe");
 
   // Create the subscription stanza using the notifications protocol.
@@ -89,17 +89,17 @@ buzz::XmlElement* PushNotificationsSubscribeTask::MakeSubscriptionMessage(
   //    <item channel={channel_name3} from={domain_name or bare_jid}/>
   //  </subscribe>
   // </iq>
-  buzz::XmlElement* iq = MakeIq(buzz::STR_SET, jid.BareJid(), task_id);
-  buzz::XmlElement* subscribe = new buzz::XmlElement(kQnSubscribe, true);
+  jingle_xmpp::XmlElement* iq = MakeIq(jingle_xmpp::STR_SET, jid.BareJid(), task_id);
+  jingle_xmpp::XmlElement* subscribe = new jingle_xmpp::XmlElement(kQnSubscribe, true);
   iq->AddElement(subscribe);
 
   for (SubscriptionList::const_iterator iter =
            subscriptions.begin(); iter != subscriptions.end(); ++iter) {
-    buzz::XmlElement* item = new buzz::XmlElement(
-        buzz::QName(kPushNotificationsNamespace, "item"));
-    item->AddAttr(buzz::QName(buzz::STR_EMPTY, "channel"),
+    jingle_xmpp::XmlElement* item = new jingle_xmpp::XmlElement(
+        jingle_xmpp::QName(kPushNotificationsNamespace, "item"));
+    item->AddAttr(jingle_xmpp::QName(jingle_xmpp::STR_EMPTY, "channel"),
                   iter->channel.c_str());
-    item->AddAttr(buzz::QN_FROM, iter->from.c_str());
+    item->AddAttr(jingle_xmpp::QN_FROM, iter->from.c_str());
     subscribe->AddElement(item);
   }
   return iq;

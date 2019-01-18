@@ -14,7 +14,7 @@
 #include "net/base/host_port_pair.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 enum ProtocolType {
   PROTO_TCP = 1,
@@ -24,7 +24,7 @@ enum ProtocolType {
 class XmppUserSettings {
  public:
   XmppUserSettings()
-    : use_tls_(buzz::TLS_DISABLED),
+    : use_tls_(jingle_xmpp::TLS_DISABLED),
       allow_plain_(false) {
   }
 

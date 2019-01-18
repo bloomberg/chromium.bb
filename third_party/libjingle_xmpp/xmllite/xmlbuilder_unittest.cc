@@ -17,9 +17,9 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlparser.h"
 
-using buzz::XmlBuilder;
-using buzz::XmlElement;
-using buzz::XmlParser;
+using jingle_xmpp::XmlBuilder;
+using jingle_xmpp::XmlElement;
+using jingle_xmpp::XmlParser;
 
 TEST(XmlBuilderTest, TestTrivial) {
   XmlBuilder builder;

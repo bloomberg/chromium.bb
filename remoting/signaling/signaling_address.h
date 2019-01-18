@@ -7,9 +7,9 @@
 
 #include <string>
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmlElement;
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 namespace remoting {
 
@@ -25,11 +25,11 @@ class SignalingAddress {
   // XMPP JID or an LCS address in a JID like format.
   explicit SignalingAddress(const std::string& jid);
 
-  static SignalingAddress Parse(const buzz::XmlElement* iq,
+  static SignalingAddress Parse(const jingle_xmpp::XmlElement* iq,
                                 Direction direction,
                                 std::string* error);
 
-  void SetInMessage(buzz::XmlElement* message, Direction direction) const;
+  void SetInMessage(jingle_xmpp::XmlElement* message, Direction direction) const;
 
   const std::string& jid() const { return jid_; }
   const std::string& endpoint_id() const { return endpoint_id_; }

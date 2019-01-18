@@ -18,7 +18,7 @@
 #include "third_party/libjingle_xmpp/xmpp/xmpptask.h"
 
 namespace notifier {
-class PushNotificationsSubscribeTask : public buzz::XmppTask {
+class PushNotificationsSubscribeTask : public jingle_xmpp::XmppTask {
  public:
   class Delegate {
    public:
@@ -27,7 +27,7 @@ class PushNotificationsSubscribeTask : public buzz::XmppTask {
      virtual void OnSubscriptionError() = 0;
   };
 
-  PushNotificationsSubscribeTask(buzz::XmppTaskParentInterface* parent,
+  PushNotificationsSubscribeTask(jingle_xmpp::XmppTaskParentInterface* parent,
                                  const SubscriptionList& subscriptions,
                                  Delegate* delegate);
   ~PushNotificationsSubscribeTask() override;
@@ -35,13 +35,13 @@ class PushNotificationsSubscribeTask : public buzz::XmppTask {
   // Overridden from XmppTask.
   int ProcessStart() override;
   int ProcessResponse() override;
-  bool HandleStanza(const buzz::XmlElement* stanza) override;
+  bool HandleStanza(const jingle_xmpp::XmlElement* stanza) override;
 
  private:
   // Assembles an Xmpp stanza which can be sent to subscribe to notifications.
-  static buzz::XmlElement* MakeSubscriptionMessage(
+  static jingle_xmpp::XmlElement* MakeSubscriptionMessage(
       const SubscriptionList& subscriptions,
-      const buzz::Jid& jid, const std::string& task_id);
+      const jingle_xmpp::Jid& jid, const std::string& task_id);
 
   SubscriptionList subscriptions_;
   Delegate* delegate_;

@@ -72,7 +72,7 @@ class XmppSignalStrategy::Core : public XmppLoginHandler::Delegate {
   const SignalingAddress& GetLocalAddress() const;
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);
-  bool SendStanza(std::unique_ptr<buzz::XmlElement> stanza);
+  bool SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza);
 
   void SetAuthInfo(const std::string& username,
                    const std::string& auth_token);
@@ -111,7 +111,7 @@ class XmppSignalStrategy::Core : public XmppLoginHandler::Delegate {
   void OnMessageSent();
 
   // Event handlers for XmppStreamParser.
-  void OnStanza(const std::unique_ptr<buzz::XmlElement> stanza);
+  void OnStanza(const std::unique_ptr<jingle_xmpp::XmlElement> stanza);
   void OnParserError();
 
   void OnNetworkError(int error);
@@ -253,7 +253,7 @@ void XmppSignalStrategy::Core::RemoveListener(Listener* listener) {
 }
 
 bool XmppSignalStrategy::Core::SendStanza(
-    std::unique_ptr<buzz::XmlElement> stanza) {
+    std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!stream_parser_) {
@@ -397,7 +397,7 @@ void XmppSignalStrategy::Core::OnMessageSent() {
 }
 
 void XmppSignalStrategy::Core::OnStanza(
-    const std::unique_ptr<buzz::XmlElement> stanza) {
+    const std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   HOST_LOG << "Received incoming stanza:\n"
@@ -581,7 +581,7 @@ void XmppSignalStrategy::AddListener(Listener* listener) {
 void XmppSignalStrategy::RemoveListener(Listener* listener) {
   core_->RemoveListener(listener);
 }
-bool XmppSignalStrategy::SendStanza(std::unique_ptr<buzz::XmlElement> stanza) {
+bool XmppSignalStrategy::SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
   return core_->SendStanza(std::move(stanza));
 }
 

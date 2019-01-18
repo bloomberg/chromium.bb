@@ -21,7 +21,7 @@
 #include "third_party/libjingle_xmpp/xmpp/xmpptask.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class PreXmppAuth;
 class CaptchaChallenge;
@@ -57,7 +57,7 @@ class XmppClient : public XmppTaskParentInterface,
                    public sigslot::has_slots<>
 {
 public:
-  explicit XmppClient(rtc::TaskParent * parent);
+  explicit XmppClient(jingle_xmpp::TaskParent * parent);
   virtual ~XmppClient();
 
   XmppReturnStatus Connect(const XmppClientSettings & settings,

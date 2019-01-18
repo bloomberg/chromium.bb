@@ -17,7 +17,7 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/jid.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 // TODO: Remove static objects of complex types, particularly
 // Jid and QName.
@@ -608,4 +608,4 @@ const char AUTH_MECHANISM_GOOGLE_TOKEN[] = "X-GOOGLE-TOKEN";
 const char AUTH_MECHANISM_OAUTH2[] = "X-OAUTH2";
 const char AUTH_MECHANISM_PLAIN[] = "PLAIN";
 
-}  // namespace buzz
+}  // namespace jingle_xmpp

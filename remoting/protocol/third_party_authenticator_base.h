@@ -13,11 +13,11 @@
 #include "remoting/protocol/authenticator.h"
 #include "third_party/libjingle_xmpp/xmllite/qname.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmlElement;
 
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 namespace remoting {
 namespace protocol {
@@ -39,33 +39,33 @@ class ThirdPartyAuthenticatorBase : public Authenticator {
   State state() const override;
   bool started() const override;
   RejectionReason rejection_reason() const override;
-  void ProcessMessage(const buzz::XmlElement* message,
+  void ProcessMessage(const jingle_xmpp::XmlElement* message,
                       const base::Closure& resume_callback) override;
-  std::unique_ptr<buzz::XmlElement> GetNextMessage() override;
+  std::unique_ptr<jingle_xmpp::XmlElement> GetNextMessage() override;
   const std::string& GetAuthKey() const override;
   std::unique_ptr<ChannelAuthenticator> CreateChannelAuthenticator()
       const override;
 
  protected:
   // XML tag names for third party authentication fields.
-  static const buzz::StaticQName kTokenUrlTag;
-  static const buzz::StaticQName kTokenScopeTag;
-  static const buzz::StaticQName kTokenTag;
+  static const jingle_xmpp::StaticQName kTokenUrlTag;
+  static const jingle_xmpp::StaticQName kTokenScopeTag;
+  static const jingle_xmpp::StaticQName kTokenTag;
 
   explicit ThirdPartyAuthenticatorBase(State initial_state);
 
   // Gives the message to the underlying authenticator for processing.
   void ProcessUnderlyingMessage(
-      const buzz::XmlElement* message,
+      const jingle_xmpp::XmlElement* message,
       const base::Closure& resume_callback);
 
   // Processes the token-related elements of the message.
   virtual void ProcessTokenMessage(
-      const buzz::XmlElement* message,
+      const jingle_xmpp::XmlElement* message,
       const base::Closure& resume_callback) = 0;
 
   // Adds the token related XML elements to the message.
-  virtual void AddTokenElements(buzz::XmlElement* message) = 0;
+  virtual void AddTokenElements(jingle_xmpp::XmlElement* message) = 0;
 
   std::unique_ptr<Authenticator> underlying_;
   State token_state_;

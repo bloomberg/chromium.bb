@@ -15,10 +15,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
-using buzz::QName;
-using buzz::XmlAttr;
-using buzz::XmlChild;
-using buzz::XmlElement;
+using jingle_xmpp::QName;
+using jingle_xmpp::XmlAttr;
+using jingle_xmpp::XmlChild;
+using jingle_xmpp::XmlElement;
 
 std::ostream& operator<<(std::ostream& os, const QName& name) {
   os << name.Namespace() << ":" << name.LocalPart();

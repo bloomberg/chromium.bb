@@ -10,9 +10,9 @@
 
 #include "base/macros.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmlElement;
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 namespace remoting {
 
@@ -55,7 +55,7 @@ class SignalStrategy {
     // otherwise. The signal strategy must not be deleted from a
     // handler of this message.
     virtual bool OnSignalStrategyIncomingStanza(
-        const buzz::XmlElement* stanza) = 0;
+        const jingle_xmpp::XmlElement* stanza) = 0;
   };
 
   SignalStrategy() {}
@@ -89,7 +89,7 @@ class SignalStrategy {
   virtual void RemoveListener(Listener* listener) = 0;
 
   // Sends a raw XMPP stanza. Returns false if the stanza couldn't be send.
-  virtual bool SendStanza(std::unique_ptr<buzz::XmlElement> stanza) = 0;
+  virtual bool SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza) = 0;
 
   // Returns new ID that should be used for the next outgoing IQ
   // request.

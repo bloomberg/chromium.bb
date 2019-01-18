@@ -15,7 +15,7 @@
 #include "third_party/libjingle_xmpp/xmllite/qname.h"
 #include "third_party/libjingle_xmpp/xmpp/jid.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 extern const char NS_CLIENT[];
 extern const char NS_SERVER[];
@@ -544,6 +544,6 @@ extern const char AUTH_MECHANISM_GOOGLE_TOKEN[];
 extern const char AUTH_MECHANISM_OAUTH2[];
 extern const char AUTH_MECHANISM_PLAIN[];
 
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 #endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMPP_CONSTANTS_H_

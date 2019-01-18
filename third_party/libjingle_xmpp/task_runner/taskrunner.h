@@ -19,7 +19,7 @@
 #include "third_party/libjingle_xmpp/task_runner/taskparent.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 
-namespace rtc {
+namespace jingle_xmpp {
 class Task;
 
 const int64_t kSecToMsec = 1000;
@@ -83,6 +83,6 @@ class TaskRunner : public TaskParent, public sigslot::has_slots<> {
 #endif
 };
 
-} // namespace rtc
+} // namespace jingle_xmpp
 
 #endif  // THIRD_PARTY_LIBJINGLE_XMPP_TASK_RUNNER_TASKRUNNER_H_

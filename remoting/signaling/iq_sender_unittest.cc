@@ -25,8 +25,8 @@ using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SaveArg;
 
-using ::buzz::QName;
-using ::buzz::XmlElement;
+using ::jingle_xmpp::QName;
+using ::jingle_xmpp::XmlElement;
 
 namespace remoting {
 
@@ -79,7 +79,7 @@ class IqSenderTest : public testing::Test {
 
   bool FormatAndDeliverResponse(const std::string& from,
                                 std::unique_ptr<XmlElement>* response_out) {
-    std::unique_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
+    std::unique_ptr<XmlElement> response(new XmlElement(jingle_xmpp::QN_IQ));
     response->AddAttr(QName(std::string(), "type"), "result");
     response->AddAttr(QName(std::string(), "id"), kStanzaId);
     response->AddAttr(QName(std::string(), "from"), from);

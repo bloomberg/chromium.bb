@@ -52,7 +52,7 @@ void DelegatingSignalStrategy::OnIncomingMessageFromDelegate(
 
 void DelegatingSignalStrategy::OnIncomingMessage(const std::string& message) {
   DCHECK(client_task_runner_->BelongsToCurrentThread());
-  std::unique_ptr<buzz::XmlElement> stanza(buzz::XmlElement::ForStr(message));
+  std::unique_ptr<jingle_xmpp::XmlElement> stanza(jingle_xmpp::XmlElement::ForStr(message));
   if (!stanza.get()) {
     LOG(WARNING) << "Malformed XMPP stanza received: " << message;
     return;
@@ -100,7 +100,7 @@ void DelegatingSignalStrategy::RemoveListener(Listener* listener) {
 }
 
 bool DelegatingSignalStrategy::SendStanza(
-    std::unique_ptr<buzz::XmlElement> stanza) {
+    std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
   DCHECK(client_task_runner_->BelongsToCurrentThread());
   GetLocalAddress().SetInMessage(stanza.get(), SignalingAddress::FROM);
   delegate_task_runner_->PostTask(FROM_HERE,

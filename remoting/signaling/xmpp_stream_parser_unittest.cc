@@ -32,7 +32,7 @@ class XmppStreamParserTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void OnStanza(std::unique_ptr<buzz::XmlElement> stanza) {
+  void OnStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
     received_stanzas_.push_back(std::move(stanza));
   }
 
@@ -44,7 +44,7 @@ class XmppStreamParserTest : public testing::Test {
   base::MessageLoop message_loop_;
 
   std::unique_ptr<XmppStreamParser> parser_;
-  std::vector<std::unique_ptr<buzz::XmlElement>> received_stanzas_;
+  std::vector<std::unique_ptr<jingle_xmpp::XmlElement>> received_stanzas_;
   bool error_;
 };
 

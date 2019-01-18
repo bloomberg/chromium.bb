@@ -23,14 +23,14 @@
 namespace remoting {
 
 // static
-std::unique_ptr<buzz::XmlElement> IqSender::MakeIqStanza(
+std::unique_ptr<jingle_xmpp::XmlElement> IqSender::MakeIqStanza(
     const std::string& type,
     const std::string& addressee,
-    std::unique_ptr<buzz::XmlElement> iq_body) {
-  std::unique_ptr<buzz::XmlElement> stanza(new buzz::XmlElement(buzz::QN_IQ));
-  stanza->AddAttr(buzz::QN_TYPE, type);
+    std::unique_ptr<jingle_xmpp::XmlElement> iq_body) {
+  std::unique_ptr<jingle_xmpp::XmlElement> stanza(new jingle_xmpp::XmlElement(jingle_xmpp::QN_IQ));
+  stanza->AddAttr(jingle_xmpp::QN_TYPE, type);
   if (!addressee.empty())
-    stanza->AddAttr(buzz::QN_TO, addressee);
+    stanza->AddAttr(jingle_xmpp::QN_TO, addressee);
   stanza->AddElement(iq_body.release());
   return stanza;
 }
@@ -45,13 +45,13 @@ IqSender::~IqSender() {
 }
 
 std::unique_ptr<IqRequest> IqSender::SendIq(
-    std::unique_ptr<buzz::XmlElement> stanza,
+    std::unique_ptr<jingle_xmpp::XmlElement> stanza,
     const ReplyCallback& callback) {
-  std::string addressee = stanza->Attr(buzz::QN_TO);
-  std::string id = stanza->Attr(buzz::QN_ID);
+  std::string addressee = stanza->Attr(jingle_xmpp::QN_TO);
+  std::string id = stanza->Attr(jingle_xmpp::QN_ID);
   if (id.empty()) {
     id = signal_strategy_->GetNextId();
-    stanza->AddAttr(buzz::QN_ID, id);
+    stanza->AddAttr(jingle_xmpp::QN_ID, id);
   }
   if (!signal_strategy_->SendStanza(std::move(stanza))) {
     return nullptr;
@@ -66,7 +66,7 @@ std::unique_ptr<IqRequest> IqSender::SendIq(
 std::unique_ptr<IqRequest> IqSender::SendIq(
     const std::string& type,
     const std::string& addressee,
-    std::unique_ptr<buzz::XmlElement> iq_body,
+    std::unique_ptr<jingle_xmpp::XmlElement> iq_body,
     const ReplyCallback& callback) {
   return SendIq(MakeIqStanza(type, addressee, std::move(iq_body)), callback);
 }
@@ -86,13 +86,13 @@ void IqSender::RemoveRequest(IqRequest* request) {
 void IqSender::OnSignalStrategyStateChange(SignalStrategy::State state) {
 }
 
-bool IqSender::OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) {
-  if (stanza->Name() != buzz::QN_IQ) {
+bool IqSender::OnSignalStrategyIncomingStanza(const jingle_xmpp::XmlElement* stanza) {
+  if (stanza->Name() != jingle_xmpp::QN_IQ) {
     LOG(WARNING) << "Received unexpected non-IQ packet " << stanza->Str();
     return false;
   }
 
-  const std::string& type = stanza->Attr(buzz::QN_TYPE);
+  const std::string& type = stanza->Attr(jingle_xmpp::QN_TYPE);
   if (type.empty()) {
     LOG(WARNING) << "IQ packet missing type " << stanza->Str();
     return false;
@@ -102,13 +102,13 @@ bool IqSender::OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) {
     return false;
   }
 
-  const std::string& id = stanza->Attr(buzz::QN_ID);
+  const std::string& id = stanza->Attr(jingle_xmpp::QN_ID);
   if (id.empty()) {
     LOG(WARNING) << "IQ packet missing id " << stanza->Str();
     return false;
   }
 
-  std::string from = stanza->Attr(buzz::QN_FROM);
+  std::string from = stanza->Attr(jingle_xmpp::QN_FROM);
 
   auto it = requests_.find(id);
   if (it == requests_.end()) {
@@ -148,7 +148,7 @@ void IqRequest::SetTimeout(base::TimeDelta timeout) {
       timeout);
 }
 
-void IqRequest::CallCallback(const buzz::XmlElement* stanza) {
+void IqRequest::CallCallback(const jingle_xmpp::XmlElement* stanza) {
   if (!callback_.is_null())
     base::ResetAndReturn(&callback_).Run(this, stanza);
 }
@@ -157,17 +157,17 @@ void IqRequest::OnTimeout() {
   CallCallback(nullptr);
 }
 
-void IqRequest::OnResponse(const buzz::XmlElement* stanza) {
+void IqRequest::OnResponse(const jingle_xmpp::XmlElement* stanza) {
   // It's unsafe to delete signal strategy here, and the callback may
   // want to do that, so we post task to invoke the callback later.
-  std::unique_ptr<buzz::XmlElement> stanza_copy(new buzz::XmlElement(*stanza));
+  std::unique_ptr<jingle_xmpp::XmlElement> stanza_copy(new jingle_xmpp::XmlElement(*stanza));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&IqRequest::DeliverResponse, weak_factory_.GetWeakPtr(),
                  base::Passed(&stanza_copy)));
 }
 
-void IqRequest::DeliverResponse(std::unique_ptr<buzz::XmlElement> stanza) {
+void IqRequest::DeliverResponse(std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
   CallCallback(stanza.get());
 }
 

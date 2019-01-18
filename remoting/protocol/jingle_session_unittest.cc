@@ -79,7 +79,7 @@ class FakeTransport : public Transport {
     return send_transport_info_callback_;
   }
 
-  const std::vector<std::unique_ptr<buzz::XmlElement>>& received_messages() {
+  const std::vector<std::unique_ptr<jingle_xmpp::XmlElement>>& received_messages() {
     return received_messages_;
   }
 
@@ -93,9 +93,9 @@ class FakeTransport : public Transport {
     send_transport_info_callback_ = send_transport_info_callback;
   }
 
-  bool ProcessTransportInfo(buzz::XmlElement* transport_info) override {
+  bool ProcessTransportInfo(jingle_xmpp::XmlElement* transport_info) override {
     received_messages_.push_back(
-        std::make_unique<buzz::XmlElement>(*transport_info));
+        std::make_unique<jingle_xmpp::XmlElement>(*transport_info));
     if (!on_message_callback_.is_null())
       on_message_callback_.Run();
     return true;
@@ -103,34 +103,34 @@ class FakeTransport : public Transport {
 
  private:
   SendTransportInfoCallback send_transport_info_callback_;
-  std::vector<std::unique_ptr<buzz::XmlElement>> received_messages_;
+  std::vector<std::unique_ptr<jingle_xmpp::XmlElement>> received_messages_;
   base::Closure on_message_callback_;
 };
 
 class FakePlugin : public SessionPlugin {
  public:
-   std::unique_ptr<buzz::XmlElement> GetNextMessage() override {
+   std::unique_ptr<jingle_xmpp::XmlElement> GetNextMessage() override {
      std::string tag_name = "test-tag-";
      tag_name += base::IntToString(outgoing_messages_.size());
-     std::unique_ptr<buzz::XmlElement> new_message(new buzz::XmlElement(
-         buzz::QName("test-namespace", tag_name)));
+     std::unique_ptr<jingle_xmpp::XmlElement> new_message(new jingle_xmpp::XmlElement(
+         jingle_xmpp::QName("test-namespace", tag_name)));
      outgoing_messages_.push_back(*new_message);
      return new_message;
   }
 
-  void OnIncomingMessage(const buzz::XmlElement& attachments) override {
-    for (const buzz::XmlElement* it = attachments.FirstElement();
+  void OnIncomingMessage(const jingle_xmpp::XmlElement& attachments) override {
+    for (const jingle_xmpp::XmlElement* it = attachments.FirstElement();
          it != nullptr;
          it = it->NextElement()) {
       incoming_messages_.push_back(*it);
     }
   }
 
-  const std::vector<buzz::XmlElement>& outgoing_messages() const {
+  const std::vector<jingle_xmpp::XmlElement>& outgoing_messages() const {
     return outgoing_messages_;
   }
 
-  const std::vector<buzz::XmlElement>& incoming_messages() const {
+  const std::vector<jingle_xmpp::XmlElement>& incoming_messages() const {
     return incoming_messages_;
   }
 
@@ -140,14 +140,14 @@ class FakePlugin : public SessionPlugin {
   }
 
  private:
-  std::vector<buzz::XmlElement> outgoing_messages_;
-  std::vector<buzz::XmlElement> incoming_messages_;
+  std::vector<jingle_xmpp::XmlElement> outgoing_messages_;
+  std::vector<jingle_xmpp::XmlElement> incoming_messages_;
 };
 
-std::unique_ptr<buzz::XmlElement> CreateTransportInfo(const std::string& id) {
-  std::unique_ptr<buzz::XmlElement> result(
-      buzz::XmlElement::ForStr("<transport xmlns='google:remoting:ice'/>"));
-  result->AddAttr(buzz::QN_ID, id);
+std::unique_ptr<jingle_xmpp::XmlElement> CreateTransportInfo(const std::string& id) {
+  std::unique_ptr<jingle_xmpp::XmlElement> result(
+      jingle_xmpp::XmlElement::ForStr("<transport xmlns='google:remoting:ice'/>"));
+  result->AddAttr(jingle_xmpp::QN_ID, id);
   return result;
 }
 
@@ -380,13 +380,13 @@ TEST_F(JingleSessionTest, Connect) {
 
   // Verify that the client specified correct initiator value.
   ASSERT_GT(host_signal_strategy_->received_messages().size(), 0U);
-  const buzz::XmlElement* initiate_xml =
+  const jingle_xmpp::XmlElement* initiate_xml =
       host_signal_strategy_->received_messages().front().get();
-  const buzz::XmlElement* jingle_element =
-      initiate_xml->FirstNamed(buzz::QName("urn:xmpp:jingle:1", "jingle"));
+  const jingle_xmpp::XmlElement* jingle_element =
+      initiate_xml->FirstNamed(jingle_xmpp::QName("urn:xmpp:jingle:1", "jingle"));
   ASSERT_TRUE(jingle_element);
   ASSERT_EQ(client_signal_strategy_->GetLocalAddress().id(),
-            jingle_element->Attr(buzz::QName(std::string(), "initiator")));
+            jingle_element->Attr(jingle_xmpp::QName(std::string(), "initiator")));
 }
 
 // Verify that we can connect two endpoints with multi-step authentication.
@@ -409,8 +409,8 @@ TEST_F(JingleSessionTest, ConnectWithOutOfOrderIqs) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(client_transport_.received_messages().size(), 2U);
-  EXPECT_EQ("1", client_transport_.received_messages()[0]->Attr(buzz::QN_ID));
-  EXPECT_EQ("2", client_transport_.received_messages()[1]->Attr(buzz::QN_ID));
+  EXPECT_EQ("1", client_transport_.received_messages()[0]->Attr(jingle_xmpp::QN_ID));
+  EXPECT_EQ("2", client_transport_.received_messages()[1]->Attr(jingle_xmpp::QN_ID));
 }
 
 // Verify that out-of-order messages are handled correctly when the session is
@@ -431,7 +431,7 @@ TEST_F(JingleSessionTest, ConnectWithOutOfOrderIqsDestroyOnFirstMessage) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(client_transport_.received_messages().size(), 1U);
-  EXPECT_EQ("1", client_transport_.received_messages()[0]->Attr(buzz::QN_ID));
+  EXPECT_EQ("1", client_transport_.received_messages()[0]->Attr(jingle_xmpp::QN_ID));
 }
 
 // Verify that connection is terminated when single-step auth fails.
@@ -589,7 +589,7 @@ TEST_F(JingleSessionTest, TransportInfoDuringAuthentication) {
   // Verify that transport-info that the first transport-info message was
   // received.
   ASSERT_EQ(client_transport_.received_messages().size(), 1U);
-  EXPECT_EQ("1", client_transport_.received_messages()[0]->Attr(buzz::QN_ID));
+  EXPECT_EQ("1", client_transport_.received_messages()[0]->Attr(jingle_xmpp::QN_ID));
 }
 
 TEST_F(JingleSessionTest, TestSessionPlugin) {

@@ -17,7 +17,7 @@ namespace notifier {
 
 class LoginSettings {
  public:
-  LoginSettings(const buzz::XmppClientSettings& user_settings,
+  LoginSettings(const jingle_xmpp::XmppClientSettings& user_settings,
                 jingle_glue::GetProxyResolvingSocketFactoryCallback
                     get_socket_factory_callback,
                 const ServerList& default_servers,
@@ -31,11 +31,11 @@ class LoginSettings {
 
   // Copy constructor and assignment operator welcome.
 
-  const buzz::XmppClientSettings& user_settings() const {
+  const jingle_xmpp::XmppClientSettings& user_settings() const {
     return user_settings_;
   }
 
-  void set_user_settings(const buzz::XmppClientSettings& user_settings);
+  void set_user_settings(const jingle_xmpp::XmppClientSettings& user_settings);
 
   jingle_glue::GetProxyResolvingSocketFactoryCallback
   get_socket_factory_callback() const {
@@ -66,7 +66,7 @@ class LoginSettings {
  private:
   ServerList GetServersForTime(base::Time now) const;
 
-  buzz::XmppClientSettings user_settings_;
+  jingle_xmpp::XmppClientSettings user_settings_;
   jingle_glue::GetProxyResolvingSocketFactoryCallback
       get_socket_factory_callback_;
   ServerList default_servers_;

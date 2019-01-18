@@ -14,9 +14,9 @@
 #include "jingle/notifier/communicator/login_settings.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmppTaskParentInterface;
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 namespace notifier {
 
@@ -36,7 +36,7 @@ class SingleLoginAttempt : public XmppConnection::Delegate {
    public:
     // Called when the login attempt is successful.
     virtual void OnConnect(
-        base::WeakPtr<buzz::XmppTaskParentInterface> base_task) = 0;
+        base::WeakPtr<jingle_xmpp::XmppTaskParentInterface> base_task) = 0;
 
     // Called when the server responds with a redirect.  A new login
     // attempt should be made to the given redirect server.
@@ -62,10 +62,10 @@ class SingleLoginAttempt : public XmppConnection::Delegate {
   ~SingleLoginAttempt() override;
 
   // XmppConnection::Delegate implementation.
-  void OnConnect(base::WeakPtr<buzz::XmppTaskParentInterface> parent) override;
-  void OnError(buzz::XmppEngine::Error error,
+  void OnConnect(base::WeakPtr<jingle_xmpp::XmppTaskParentInterface> parent) override;
+  void OnError(jingle_xmpp::XmppEngine::Error error,
                int error_subcode,
-               const buzz::XmlElement* stream_error) override;
+               const jingle_xmpp::XmlElement* stream_error) override;
 
  private:
   void TryConnect(const ConnectionSettings& new_settings);

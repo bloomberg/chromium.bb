@@ -21,7 +21,7 @@
 #include "third_party/libjingle_xmpp/xmpp/saslhandler.h"
 #include "third_party/libjingle_xmpp/xmpp/xmpplogintask.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 XmppEngine* XmppEngine::Create() {
   return new XmppEngineImpl();
@@ -34,7 +34,7 @@ XmppEngineImpl::XmppEngineImpl()
       engine_entered_(0),
       password_(),
       requested_resource_(STR_EMPTY),
-      tls_option_(buzz::TLS_REQUIRED),
+      tls_option_(jingle_xmpp::TLS_REQUIRED),
       login_task_(new XmppLoginTask(this)),
       next_id_(0),
       state_(STATE_START),
@@ -443,4 +443,4 @@ XmppEngineImpl::EnterExit::~EnterExit()  {
  }
 }
 
-}  // namespace buzz
+}  // namespace jingle_xmpp

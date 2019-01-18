@@ -16,7 +16,7 @@ namespace notifier {
 using ::testing::_;
 using ::testing::Return;
 
-class MockAsyncSocket : public buzz::AsyncSocket {
+class MockAsyncSocket : public jingle_xmpp::AsyncSocket {
  public:
   ~MockAsyncSocket() override {}
 
@@ -38,16 +38,16 @@ namespace {
 // PushNotificationsSubscribeTask.
 class FakeWeakXmppClient : public notifier::WeakXmppClient {
  public:
-  explicit FakeWeakXmppClient(rtc::TaskParent* parent)
+  explicit FakeWeakXmppClient(jingle_xmpp::TaskParent* parent)
       : notifier::WeakXmppClient(parent),
         jid_("test@example.com/testresource") {}
 
   ~FakeWeakXmppClient() override {}
 
-  const buzz::Jid& jid() const override { return jid_; }
+  const jingle_xmpp::Jid& jid() const override { return jid_; }
 
  private:
-  buzz::Jid jid_;
+  jingle_xmpp::Jid jid_;
 };
 
 }  // namespace
@@ -60,7 +60,7 @@ FakeBaseTask::FakeBaseTask() {
       new FakeWeakXmppClient(&task_pump_);
 
   weak_xmpp_client->Start();
-  buzz::XmppClientSettings settings;
+  jingle_xmpp::XmppClientSettings settings;
   // Owned by |weak_xmpp_client|.
   MockAsyncSocket* mock_async_socket = new MockAsyncSocket();
   EXPECT_CALL(*mock_async_socket, Connect(_)).WillOnce(Return(true));
@@ -73,7 +73,7 @@ FakeBaseTask::FakeBaseTask() {
 
 FakeBaseTask::~FakeBaseTask() {}
 
-base::WeakPtr<buzz::XmppTaskParentInterface> FakeBaseTask::AsWeakPtr() {
+base::WeakPtr<jingle_xmpp::XmppTaskParentInterface> FakeBaseTask::AsWeakPtr() {
   return base_task_;
 }
 

@@ -18,7 +18,7 @@
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppstanzaparser.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmppLoginTask;
 class XmppEngine;
@@ -262,6 +262,6 @@ class XmppEngineImpl : public XmppEngine {
   std::unique_ptr<std::stringstream> output_;
 };
 
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 #endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPENGINEIMPL_H_

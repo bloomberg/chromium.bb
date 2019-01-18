@@ -16,10 +16,10 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppstanzaparser.h"
 
-using buzz::QName;
-using buzz::XmlElement;
-using buzz::XmppStanzaParser;
-using buzz::XmppStanzaParseHandler;
+using jingle_xmpp::QName;
+using jingle_xmpp::XmlElement;
+using jingle_xmpp::XmppStanzaParser;
+using jingle_xmpp::XmppStanzaParseHandler;
 
 class XmppStanzaParserTestHandler : public XmppStanzaParseHandler {
  public:

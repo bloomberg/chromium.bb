@@ -19,12 +19,12 @@
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 class PreXmppAuth;
 class XmlElement;
 class XmppClientSettings;
 class XmppTaskParentInterface;
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 namespace jingle_glue {
 class TaskPump;
@@ -42,7 +42,7 @@ class XmppConnection : public sigslot::has_slots<> {
     // |base_task| can be used by the client as the parent of any Task
     // it creates as long as it is valid (i.e., non-NULL).
     virtual void OnConnect(
-        base::WeakPtr<buzz::XmppTaskParentInterface> base_task) = 0;
+        base::WeakPtr<jingle_xmpp::XmppTaskParentInterface> base_task) = 0;
 
     // Called if an error has occurred (either before or after a call
     // to OnConnect()).  No calls to the delegate will be made after
@@ -57,8 +57,8 @@ class XmppConnection : public sigslot::has_slots<> {
     // Ideally, |error| would always be set to something that is not
     // ERROR_NONE, but due to inconsistent error-handling this doesn't
     // always happen.
-    virtual void OnError(buzz::XmppEngine::Error error, int subcode,
-                         const buzz::XmlElement* stream_error) = 0;
+    virtual void OnError(jingle_xmpp::XmppEngine::Error error, int subcode,
+                         const jingle_xmpp::XmlElement* stream_error) = 0;
 
    protected:
     virtual ~Delegate();
@@ -68,11 +68,11 @@ class XmppConnection : public sigslot::has_slots<> {
   // NULL.  Takes ownership of |pre_xmpp_auth|, which may be NULL.
   //
   // TODO(akalin): Avoid the need for |pre_xmpp_auth|.
-  XmppConnection(const buzz::XmppClientSettings& xmpp_client_settings,
+  XmppConnection(const jingle_xmpp::XmppClientSettings& xmpp_client_settings,
                  jingle_glue::GetProxyResolvingSocketFactoryCallback
                      get_socket_factory_callback,
                  Delegate* delegate,
-                 buzz::PreXmppAuth* pre_xmpp_auth,
+                 jingle_xmpp::PreXmppAuth* pre_xmpp_auth,
                  const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Invalidates any weak pointers passed to the delegate by
@@ -88,7 +88,7 @@ class XmppConnection : public sigslot::has_slots<> {
   FRIEND_TEST_ALL_PREFIXES(XmppConnectionTest,
                            TasksDontRunAfterXmppConnectionDestructor);
 
-  void OnStateChange(buzz::XmppEngine::State state);
+  void OnStateChange(jingle_xmpp::XmppEngine::State state);
   void OnInputLog(const char* data, int len);
   void OnOutputLog(const char* data, int len);
 

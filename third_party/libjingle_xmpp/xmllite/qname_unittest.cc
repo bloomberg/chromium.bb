@@ -13,8 +13,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/qname.h"
 
-using buzz::StaticQName;
-using buzz::QName;
+using jingle_xmpp::StaticQName;
+using jingle_xmpp::QName;
 
 TEST(QNameTest, TestTrivial) {
   QName name("test");

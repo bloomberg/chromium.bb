@@ -49,7 +49,7 @@ class IceTransport : public Transport,
   // Transport interface.
   void Start(Authenticator* authenticator,
              SendTransportInfoCallback send_transport_info_callback) override;
-  bool ProcessTransportInfo(buzz::XmlElement* transport_info) override;
+  bool ProcessTransportInfo(jingle_xmpp::XmlElement* transport_info) override;
 
  private:
   typedef std::map<std::string, IceTransportChannel*> ChannelsMap;

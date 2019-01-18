@@ -13,7 +13,7 @@
 
 #include <string>
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class QName;
 
@@ -78,6 +78,6 @@ inline bool StaticQName::operator!=(const QName& other) const {
   return other.Compare(*this) != 0;
 }
 
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 #endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_QNAME_H_

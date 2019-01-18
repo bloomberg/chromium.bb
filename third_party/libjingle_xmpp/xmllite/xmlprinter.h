@@ -14,7 +14,7 @@
 #include <iosfwd>
 #include <string>
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmlElement;
 class XmlnsStack;
@@ -27,6 +27,6 @@ class XmlPrinter {
                        XmlnsStack* ns_stack);
 };
 
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 #endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_XMLPRINTER_H_

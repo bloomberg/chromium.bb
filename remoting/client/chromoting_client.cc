@@ -250,7 +250,7 @@ void ChromotingClient::OnSignalStrategyStateChange(
 }
 
 bool ChromotingClient::OnSignalStrategyIncomingStanza(
-    const buzz::XmlElement* stanza) {
+    const jingle_xmpp::XmlElement* stanza) {
   return false;
 }
 

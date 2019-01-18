@@ -27,7 +27,7 @@ ThirdPartyHostAuthenticator::ThirdPartyHostAuthenticator(
 ThirdPartyHostAuthenticator::~ThirdPartyHostAuthenticator() = default;
 
 void ThirdPartyHostAuthenticator::ProcessTokenMessage(
-    const buzz::XmlElement* message,
+    const jingle_xmpp::XmlElement* message,
     const base::Closure& resume_callback) {
   // Host has already sent the URL and expects a token from the client.
   std::string token = message->TextNamed(kTokenTag);
@@ -48,21 +48,21 @@ void ThirdPartyHostAuthenticator::ProcessTokenMessage(
   token_validator_->ValidateThirdPartyToken(token, base::Bind(
           &ThirdPartyHostAuthenticator::OnThirdPartyTokenValidated,
           base::Unretained(this),
-          base::Owned(new buzz::XmlElement(*message)),
+          base::Owned(new jingle_xmpp::XmlElement(*message)),
           resume_callback));
 }
 
 void ThirdPartyHostAuthenticator::AddTokenElements(
-    buzz::XmlElement* message) {
+    jingle_xmpp::XmlElement* message) {
   DCHECK_EQ(token_state_, MESSAGE_READY);
   DCHECK(token_validator_->token_url().is_valid());
   DCHECK(!token_validator_->token_scope().empty());
 
-  buzz::XmlElement* token_url_tag = new buzz::XmlElement(
+  jingle_xmpp::XmlElement* token_url_tag = new jingle_xmpp::XmlElement(
       kTokenUrlTag);
   token_url_tag->SetBodyText(token_validator_->token_url().spec());
   message->AddElement(token_url_tag);
-  buzz::XmlElement* token_scope_tag = new buzz::XmlElement(
+  jingle_xmpp::XmlElement* token_scope_tag = new jingle_xmpp::XmlElement(
       kTokenScopeTag);
   token_scope_tag->SetBodyText(token_validator_->token_scope());
   message->AddElement(token_scope_tag);
@@ -70,7 +70,7 @@ void ThirdPartyHostAuthenticator::AddTokenElements(
 }
 
 void ThirdPartyHostAuthenticator::OnThirdPartyTokenValidated(
-    const buzz::XmlElement* message,
+    const jingle_xmpp::XmlElement* message,
     const base::Closure& resume_callback,
     const std::string& shared_secret) {
   if (shared_secret.empty()) {

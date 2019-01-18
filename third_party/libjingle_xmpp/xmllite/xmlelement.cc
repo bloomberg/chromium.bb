@@ -22,7 +22,7 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlparser.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlprinter.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 XmlChild::~XmlChild() {
 }
@@ -493,4 +493,4 @@ XmlElement::~XmlElement() {
   }
 }
 
-}  // namespace buzz
+}  // namespace jingle_xmpp

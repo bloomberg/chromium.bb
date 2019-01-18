@@ -15,7 +15,7 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlparser.h"
 
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmlElement;
 

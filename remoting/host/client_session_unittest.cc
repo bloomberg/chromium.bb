@@ -455,8 +455,8 @@ TEST_F(ClientSessionTest, DataChannelCallbackIsCalled) {
 
 TEST_F(ClientSessionTest, ForwardHostSessionOptions1) {
   auto session = std::make_unique<protocol::FakeSession>();
-  auto configuration = std::make_unique<buzz::XmlElement>(
-      buzz::QName(kChromotingXmlNamespace, "host-configuration"));
+  auto configuration = std::make_unique<jingle_xmpp::XmlElement>(
+      jingle_xmpp::QName(kChromotingXmlNamespace, "host-configuration"));
   configuration->SetBodyText("Detect-Updated-Region:true");
   session->SetAttachment(0, std::move(configuration));
   CreateClientSession(std::move(session));
@@ -469,8 +469,8 @@ TEST_F(ClientSessionTest, ForwardHostSessionOptions1) {
 
 TEST_F(ClientSessionTest, ForwardHostSessionOptions2) {
   auto session = std::make_unique<protocol::FakeSession>();
-  auto configuration = std::make_unique<buzz::XmlElement>(
-      buzz::QName(kChromotingXmlNamespace, "host-configuration"));
+  auto configuration = std::make_unique<jingle_xmpp::XmlElement>(
+      jingle_xmpp::QName(kChromotingXmlNamespace, "host-configuration"));
   configuration->SetBodyText("Detect-Updated-Region:false");
   session->SetAttachment(0, std::move(configuration));
   CreateClientSession(std::move(session));
@@ -484,8 +484,8 @@ TEST_F(ClientSessionTest, ForwardHostSessionOptions2) {
 #if defined(OS_WIN)
 TEST_F(ClientSessionTest, ForwardDirectXHostSessionOptions1) {
   auto session = std::make_unique<protocol::FakeSession>();
-  auto configuration = std::make_unique<buzz::XmlElement>(
-      buzz::QName(kChromotingXmlNamespace, "host-configuration"));
+  auto configuration = std::make_unique<jingle_xmpp::XmlElement>(
+      jingle_xmpp::QName(kChromotingXmlNamespace, "host-configuration"));
   configuration->SetBodyText("DirectX-Capturer:true");
   session->SetAttachment(0, std::move(configuration));
   CreateClientSession(std::move(session));
@@ -498,8 +498,8 @@ TEST_F(ClientSessionTest, ForwardDirectXHostSessionOptions1) {
 
 TEST_F(ClientSessionTest, ForwardDirectXHostSessionOptions2) {
   auto session = std::make_unique<protocol::FakeSession>();
-  auto configuration = std::make_unique<buzz::XmlElement>(
-      buzz::QName(kChromotingXmlNamespace, "host-configuration"));
+  auto configuration = std::make_unique<jingle_xmpp::XmlElement>(
+      jingle_xmpp::QName(kChromotingXmlNamespace, "host-configuration"));
   configuration->SetBodyText("DirectX-Capturer:false");
   session->SetAttachment(0, std::move(configuration));
   CreateClientSession(std::move(session));

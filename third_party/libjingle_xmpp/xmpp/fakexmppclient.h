@@ -19,14 +19,14 @@
 
 #include "third_party/libjingle_xmpp/xmpp/xmpptask.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmlElement;
 
 class FakeXmppClient : public XmppTaskParentInterface,
                        public XmppClientInterface {
  public:
-  explicit FakeXmppClient(rtc::TaskParent* parent)
+  explicit FakeXmppClient(jingle_xmpp::TaskParent* parent)
       : XmppTaskParentInterface(parent) {
   }
 
@@ -102,6 +102,6 @@ class FakeXmppClient : public XmppTaskParentInterface,
   std::vector<const XmlElement*> sent_stanzas_;
 };
 
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 #endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMPP_FAKEXMPPCLIENT_H_

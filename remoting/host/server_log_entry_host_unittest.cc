@@ -13,8 +13,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
-using buzz::XmlAttr;
-using buzz::XmlElement;
+using jingle_xmpp::XmlAttr;
+using jingle_xmpp::XmlElement;
 
 namespace remoting {
 

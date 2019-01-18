@@ -82,7 +82,7 @@ class WebrtcTransport : public Transport {
   // Transport interface.
   void Start(Authenticator* authenticator,
              SendTransportInfoCallback send_transport_info_callback) override;
-  bool ProcessTransportInfo(buzz::XmlElement* transport_info) override;
+  bool ProcessTransportInfo(jingle_xmpp::XmlElement* transport_info) override;
   void Close(ErrorCode error);
 
   void ApplySessionOptions(const SessionOptions& options);
@@ -149,7 +149,7 @@ class WebrtcTransport : public Transport {
 
   bool want_ice_restart_ = false;
 
-  std::unique_ptr<buzz::XmlElement> pending_transport_info_message_;
+  std::unique_ptr<jingle_xmpp::XmlElement> pending_transport_info_message_;
   base::OneShotTimer transport_info_timer_;
 
   std::vector<std::unique_ptr<webrtc::IceCandidateInterface>>

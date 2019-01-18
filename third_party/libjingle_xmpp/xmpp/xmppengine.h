@@ -17,7 +17,7 @@
 #include "third_party/libjingle_xmpp/xmpp/jid.h"
 
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmppEngine;
 class SaslHandler;
@@ -305,11 +305,11 @@ public:
 // Move these to a better location
 
 #define XMPP_FAILED(x)                      \
-  ( (x) == buzz::XMPP_RETURN_OK ? false : true)   \
+  ( (x) == jingle_xmpp::XMPP_RETURN_OK ? false : true)   \
 
 
 #define XMPP_SUCCEEDED(x)                   \
-  ( (x) == buzz::XMPP_RETURN_OK ? true : false)   \
+  ( (x) == jingle_xmpp::XMPP_RETURN_OK ? true : false)   \
 
 #define IFR(x)                        \
   do {                                \

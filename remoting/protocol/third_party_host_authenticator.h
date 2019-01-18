@@ -37,12 +37,12 @@ class ThirdPartyHostAuthenticator : public ThirdPartyAuthenticatorBase {
 
  protected:
   // ThirdPartyAuthenticator implementation.
-  void ProcessTokenMessage(const buzz::XmlElement* message,
+  void ProcessTokenMessage(const jingle_xmpp::XmlElement* message,
                            const base::Closure& resume_callback) override;
-  void AddTokenElements(buzz::XmlElement* message) override;
+  void AddTokenElements(jingle_xmpp::XmlElement* message) override;
 
  private:
-  void OnThirdPartyTokenValidated(const buzz::XmlElement* message,
+  void OnThirdPartyTokenValidated(const jingle_xmpp::XmlElement* message,
                                   const base::Closure& resume_callback,
                                   const std::string& shared_secret);
 

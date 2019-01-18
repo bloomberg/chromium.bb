@@ -86,7 +86,7 @@ void SignalingConnector::OnSignalStrategyStateChange(
 }
 
 bool SignalingConnector::OnSignalStrategyIncomingStanza(
-    const buzz::XmlElement* stanza) {
+    const jingle_xmpp::XmlElement* stanza) {
   return false;
 }
 

@@ -87,7 +87,7 @@
 // yet in the STATE_DONE state.
 //
 
-namespace rtc {
+namespace jingle_xmpp {
 
 // Executes a sequence of steps
 class Task : public TaskParent {
@@ -152,6 +152,6 @@ class Task : public TaskParent {
   static int32_t unique_id_seed_;
 };
 
-}  // namespace rtc
+}  // namespace jingle_xmpp
 
 #endif  // THIRD_PARTY_LIBJINGLE_XMPP_TASK_RUNNER_TASK_H_

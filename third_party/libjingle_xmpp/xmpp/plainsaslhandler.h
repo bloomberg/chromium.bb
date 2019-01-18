@@ -15,7 +15,7 @@
 #include "third_party/libjingle_xmpp/xmpp/saslhandler.h"
 #include "third_party/libjingle_xmpp/xmpp/saslplainmechanism.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class PlainSaslHandler : public SaslHandler {
 public:

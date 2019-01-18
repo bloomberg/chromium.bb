@@ -64,7 +64,7 @@ class JingleSession : public Session {
   void AcceptIncomingConnection(const JingleMessage& initiate_message);
 
   // Callback for Transport interface to send transport-info messages.
-  void SendTransportInfo(std::unique_ptr<buzz::XmlElement> transport_info);
+  void SendTransportInfo(std::unique_ptr<jingle_xmpp::XmlElement> transport_info);
 
   // Sends |message| to the peer. The session is closed if the send fails or no
   // response is received within a reasonable time. All other responses are
@@ -74,12 +74,12 @@ class JingleSession : public Session {
   // Iq response handler.
   void OnMessageResponse(JingleMessage::ActionType request_type,
                          IqRequest* request,
-                         const buzz::XmlElement* response);
+                         const jingle_xmpp::XmlElement* response);
 
   // Response handler for transport-info responses. Transport-info timeouts are
   // ignored and don't terminate connection.
   void OnTransportInfoResponse(IqRequest* request,
-                               const buzz::XmlElement* response);
+                               const jingle_xmpp::XmlElement* response);
 
   // Called by JingleSessionManager on incoming |message|. Must call
   // |reply_callback| to send reply message before sending any other
