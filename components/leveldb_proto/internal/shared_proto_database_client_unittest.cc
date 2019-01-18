@@ -154,7 +154,7 @@ class SharedProtoDatabaseClientTest : public testing::Test {
   void UpdateEntriesWithRemoveFilter(
       SharedProtoDatabaseClient<TestProto>* client,
       const leveldb_proto::KeyVector& keys,
-      const LevelDB::KeyFilter& delete_key_filter,
+      const KeyFilter& delete_key_filter,
       bool expect_success) {
     auto entries = std::make_unique<ProtoDatabase<TestProto>::KeyEntryVector>();
     for (auto& key : keys) {
@@ -178,7 +178,7 @@ class SharedProtoDatabaseClientTest : public testing::Test {
   // This fills in for all the LoadEntriesX functions because they all call this
   // one.
   void LoadEntriesWithFilter(SharedProtoDatabaseClient<TestProto>* client,
-                             const LevelDB::KeyFilter& key_filter,
+                             const KeyFilter& key_filter,
                              const leveldb::ReadOptions& options,
                              const std::string& target_prefix,
                              bool expect_success,
@@ -449,14 +449,14 @@ TEST_F(SharedProtoDatabaseClientTest, LoadEntriesWithFilter) {
   UpdateEntries(client_b.get(), key_list_b, leveldb_proto::KeyVector(), true);
 
   std::unique_ptr<std::vector<TestProto>> entries;
-  LoadEntriesWithFilter(client_a.get(), leveldb_proto::LevelDB::KeyFilter(),
-                        leveldb::ReadOptions(), std::string(), true, &entries);
+  LoadEntriesWithFilter(client_a.get(), KeyFilter(), leveldb::ReadOptions(),
+                        std::string(), true, &entries);
   ASSERT_EQ(entries->size(), 3U);
   ASSERT_TRUE(ContainsEntries(key_list_a, *entries, kDefaultNamespace,
                               kDefaultTypePrefix));
 
-  LoadEntriesWithFilter(client_b.get(), leveldb_proto::LevelDB::KeyFilter(),
-                        leveldb::ReadOptions(), std::string(), true, &entries);
+  LoadEntriesWithFilter(client_b.get(), KeyFilter(), leveldb::ReadOptions(),
+                        std::string(), true, &entries);
   ASSERT_EQ(entries->size(), 3U);
   ASSERT_TRUE(ContainsEntries(key_list_b, *entries, kDefaultNamespace2,
                               kDefaultTypePrefix));

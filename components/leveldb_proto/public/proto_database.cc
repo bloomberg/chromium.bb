@@ -24,16 +24,4 @@ leveldb_env::Options CreateSimpleOptions() {
   return options;
 }
 
-// static
-Enums::InitStatus Util::ConvertLevelDBStatusToInitStatus(
-    const leveldb::Status& status) {
-  if (status.ok())
-    return Enums::InitStatus::kOK;
-  if (status.IsCorruption())
-    return Enums::InitStatus::kCorrupt;
-  if (status.IsNotSupportedError() || status.IsInvalidArgument())
-    return Enums::InitStatus::kInvalidOperation;
-  return Enums::InitStatus::kError;
-}
-
 }  // namespace leveldb_proto

@@ -21,6 +21,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/leveldb_proto/internal/leveldb_database.h"
+#include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/testing/proto/test_db.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -991,7 +992,7 @@ TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBLoadKeysAndEntriesWhile) {
   EXPECT_TRUE(db->Save(save_entries, remove_keys, &status));
 
   EXPECT_TRUE(db->LoadKeysAndEntriesWhile(
-      LevelDB::KeyFilter(), &load_keys_entries, leveldb::ReadOptions(), "b",
+      KeyFilter(), &load_keys_entries, leveldb::ReadOptions(), "b",
       base::BindRepeating(
           [](const std::string& range_end, const std::string& key) {
             return key.compare(range_end) <= 0;
@@ -1097,8 +1098,7 @@ TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBDeleteWithFilter) {
   std::unique_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
   EXPECT_TRUE(db->Init(temp_dir.GetPath(), CreateSimpleOptions()));
   leveldb::Status status;
-  EXPECT_TRUE(
-      db->UpdateWithRemoveFilter(save_entries, LevelDB::KeyFilter(), &status));
+  EXPECT_TRUE(db->UpdateWithRemoveFilter(save_entries, KeyFilter(), &status));
 
   // Make sure the "0" entry is in database.
   EXPECT_TRUE(

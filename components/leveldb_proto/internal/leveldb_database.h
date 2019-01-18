@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/strings/string_split.h"
+#include "components/leveldb_proto/public/proto_database.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
 namespace base {
@@ -36,8 +37,6 @@ class LevelDB {
   // change once shipped.
   explicit LevelDB(const char* client_name);
   virtual ~LevelDB();
-
-  using KeyFilter = base::RepeatingCallback<bool(const std::string& key)>;
 
   // Initializes a leveldb with the given options. If |database_dir| is
   // empty, this opens an in-memory db.

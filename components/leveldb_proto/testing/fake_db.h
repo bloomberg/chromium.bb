@@ -38,10 +38,6 @@ class FakeDB : public UniqueProtoDatabase<T> {
             const base::FilePath& database_dir,
             const leveldb_env::Options& options,
             Callbacks::InitCallback callback) override;
-  void InitWithDatabase(LevelDB* database,
-                        const base::FilePath& database_dir,
-                        const leveldb_env::Options& options,
-                        Callbacks::InitStatusCallback callback) override;
   void UpdateEntries(std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
                          entries_to_save,
                      std::unique_ptr<std::vector<std::string>> keys_to_remove,
@@ -49,15 +45,15 @@ class FakeDB : public UniqueProtoDatabase<T> {
   void UpdateEntriesWithRemoveFilter(
       std::unique_ptr<typename Util::Internal<T>::KeyEntryVector>
           entries_to_save,
-      const LevelDB::KeyFilter& filter,
+      const KeyFilter& filter,
       Callbacks::UpdateCallback callback) override;
   void LoadEntries(
       typename Callbacks::Internal<T>::LoadCallback callback) override;
   void LoadEntriesWithFilter(
-      const LevelDB::KeyFilter& key_filter,
+      const KeyFilter& key_filter,
       typename Callbacks::Internal<T>::LoadCallback callback) override;
   void LoadEntriesWithFilter(
-      const LevelDB::KeyFilter& filter,
+      const KeyFilter& filter,
       const leveldb::ReadOptions& options,
       const std::string& target_prefix,
       typename Callbacks::Internal<T>::LoadCallback callback) override;
@@ -65,11 +61,11 @@ class FakeDB : public UniqueProtoDatabase<T> {
       typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback)
       override;
   void LoadKeysAndEntriesWithFilter(
-      const LevelDB::KeyFilter& filter,
+      const KeyFilter& filter,
       typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback)
       override;
   void LoadKeysAndEntriesWithFilter(
-      const LevelDB::KeyFilter& filter,
+      const KeyFilter& filter,
       const leveldb::ReadOptions& options,
       const std::string& target_prefix,
       typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback)
@@ -153,15 +149,6 @@ void FakeDB<T>::Init(const char* client_name,
 }
 
 template <typename T>
-void FakeDB<T>::InitWithDatabase(LevelDB* database,
-                                 const base::FilePath& database_dir,
-                                 const leveldb_env::Options& options,
-                                 Callbacks::InitStatusCallback callback) {
-  dir_ = database_dir;
-  init_status_callback_ = std::move(callback);
-}
-
-template <typename T>
 void FakeDB<T>::UpdateEntries(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
     std::unique_ptr<std::vector<std::string>> keys_to_remove,
@@ -178,7 +165,7 @@ void FakeDB<T>::UpdateEntries(
 template <typename T>
 void FakeDB<T>::UpdateEntriesWithRemoveFilter(
     std::unique_ptr<typename Util::Internal<T>::KeyEntryVector> entries_to_save,
-    const LevelDB::KeyFilter& delete_key_filter,
+    const KeyFilter& delete_key_filter,
     Callbacks::UpdateCallback callback) {
   for (const auto& pair : *entries_to_save)
     (*db_)[pair.first] = pair.second;
@@ -197,12 +184,12 @@ void FakeDB<T>::UpdateEntriesWithRemoveFilter(
 template <typename T>
 void FakeDB<T>::LoadEntries(
     typename Callbacks::Internal<T>::LoadCallback callback) {
-  LoadEntriesWithFilter(LevelDB::KeyFilter(), std::move(callback));
+  LoadEntriesWithFilter(KeyFilter(), std::move(callback));
 }
 
 template <typename T>
 void FakeDB<T>::LoadEntriesWithFilter(
-    const LevelDB::KeyFilter& key_filter,
+    const KeyFilter& key_filter,
     typename Callbacks::Internal<T>::LoadCallback callback) {
   LoadEntriesWithFilter(key_filter, leveldb::ReadOptions(), std::string(),
                         std::move(callback));
@@ -210,7 +197,7 @@ void FakeDB<T>::LoadEntriesWithFilter(
 
 template <typename T>
 void FakeDB<T>::LoadEntriesWithFilter(
-    const LevelDB::KeyFilter& key_filter,
+    const KeyFilter& key_filter,
     const leveldb::ReadOptions& options,
     const std::string& target_prefix,
     typename Callbacks::Internal<T>::LoadCallback callback) {
@@ -229,12 +216,12 @@ void FakeDB<T>::LoadEntriesWithFilter(
 template <typename T>
 void FakeDB<T>::LoadKeysAndEntries(
     typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
-  LoadKeysAndEntriesWithFilter(LevelDB::KeyFilter(), std::move(callback));
+  LoadKeysAndEntriesWithFilter(KeyFilter(), std::move(callback));
 }
 
 template <typename T>
 void FakeDB<T>::LoadKeysAndEntriesWithFilter(
-    const LevelDB::KeyFilter& key_filter,
+    const KeyFilter& key_filter,
     typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
   LoadKeysAndEntriesWithFilter(key_filter, leveldb::ReadOptions(),
                                std::string(), std::move(callback));
@@ -242,7 +229,7 @@ void FakeDB<T>::LoadKeysAndEntriesWithFilter(
 
 template <typename T>
 void FakeDB<T>::LoadKeysAndEntriesWithFilter(
-    const LevelDB::KeyFilter& key_filter,
+    const KeyFilter& key_filter,
     const leveldb::ReadOptions& options,
     const std::string& target_prefix,
     typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {

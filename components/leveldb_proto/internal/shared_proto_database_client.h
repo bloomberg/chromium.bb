@@ -28,7 +28,7 @@ std::string StripPrefix(const std::string& key, const std::string& prefix);
 std::unique_ptr<std::vector<std::string>> PrefixStrings(
     std::unique_ptr<std::vector<std::string>> strings,
     const std::string& prefix);
-bool KeyFilterStripPrefix(const LevelDB::KeyFilter& key_filter,
+bool KeyFilterStripPrefix(const KeyFilter& key_filter,
                           const std::string& prefix,
                           const std::string& key);
 std::unique_ptr<std::vector<std::string>> PrefixStrings(
@@ -73,10 +73,6 @@ class SharedProtoDatabaseClient : public ProtoDatabase<T> {
             const base::FilePath& database_dir,
             const leveldb_env::Options& options,
             Callbacks::InitCallback callback) override;
-  void InitWithDatabase(LevelDB* database,
-                        const base::FilePath& database_dir,
-                        const leveldb_env::Options& options,
-                        Callbacks::InitStatusCallback callback) override;
 
   // Overrides for prepending namespace and type prefix to all operations on the
   // shared database.
@@ -87,22 +83,22 @@ class SharedProtoDatabaseClient : public ProtoDatabase<T> {
   void UpdateEntriesWithRemoveFilter(
       std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
           entries_to_save,
-      const LevelDB::KeyFilter& delete_key_filter,
+      const KeyFilter& delete_key_filter,
       Callbacks::UpdateCallback callback) override;
   void UpdateEntriesWithRemoveFilter(
       std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
           entries_to_save,
-      const LevelDB::KeyFilter& delete_key_filter,
+      const KeyFilter& delete_key_filter,
       const std::string& target_prefix,
       Callbacks::UpdateCallback callback) override;
 
   void LoadEntries(
       typename Callbacks::Internal<T>::LoadCallback callback) override;
   void LoadEntriesWithFilter(
-      const LevelDB::KeyFilter& filter,
+      const KeyFilter& filter,
       typename Callbacks::Internal<T>::LoadCallback callback) override;
   void LoadEntriesWithFilter(
-      const LevelDB::KeyFilter& key_filter,
+      const KeyFilter& key_filter,
       const leveldb::ReadOptions& options,
       const std::string& target_prefix,
       typename Callbacks::Internal<T>::LoadCallback callback) override;
@@ -115,11 +111,11 @@ class SharedProtoDatabaseClient : public ProtoDatabase<T> {
       typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback)
       override;
   void LoadKeysAndEntriesWithFilter(
-      const LevelDB::KeyFilter& filter,
+      const KeyFilter& filter,
       typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback)
       override;
   void LoadKeysAndEntriesWithFilter(
-      const LevelDB::KeyFilter& filter,
+      const KeyFilter& filter,
       const leveldb::ReadOptions& options,
       const std::string& target_prefix,
       typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback)
@@ -235,15 +231,6 @@ void SharedProtoDatabaseClient<T>::Init(const char* client_uma_name,
 }
 
 template <typename T>
-void SharedProtoDatabaseClient<T>::InitWithDatabase(
-    LevelDB* database,
-    const base::FilePath& database_dir,
-    const leveldb_env::Options& options,
-    Callbacks::InitStatusCallback callback) {
-  NOTREACHED();
-}
-
-template <typename T>
 void SharedProtoDatabaseClient<T>::UpdateEntries(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
     std::unique_ptr<std::vector<std::string>> keys_to_remove,
@@ -257,7 +244,7 @@ void SharedProtoDatabaseClient<T>::UpdateEntries(
 template <typename T>
 void SharedProtoDatabaseClient<T>::UpdateEntriesWithRemoveFilter(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
-    const LevelDB::KeyFilter& delete_key_filter,
+    const KeyFilter& delete_key_filter,
     Callbacks::UpdateCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UpdateEntriesWithRemoveFilter(std::move(entries_to_save), delete_key_filter,
@@ -267,7 +254,7 @@ void SharedProtoDatabaseClient<T>::UpdateEntriesWithRemoveFilter(
 template <typename T>
 void SharedProtoDatabaseClient<T>::UpdateEntriesWithRemoveFilter(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
-    const LevelDB::KeyFilter& delete_key_filter,
+    const KeyFilter& delete_key_filter,
     const std::string& target_prefix,
     Callbacks::UpdateCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -281,12 +268,12 @@ template <typename T>
 void SharedProtoDatabaseClient<T>::LoadEntries(
     typename Callbacks::Internal<T>::LoadCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  LoadEntriesWithFilter(LevelDB::KeyFilter(), std::move(callback));
+  LoadEntriesWithFilter(KeyFilter(), std::move(callback));
 }
 
 template <typename T>
 void SharedProtoDatabaseClient<T>::LoadEntriesWithFilter(
-    const LevelDB::KeyFilter& filter,
+    const KeyFilter& filter,
     typename Callbacks::Internal<T>::LoadCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   LoadEntriesWithFilter(filter, leveldb::ReadOptions(), std::string(),
@@ -295,7 +282,7 @@ void SharedProtoDatabaseClient<T>::LoadEntriesWithFilter(
 
 template <typename T>
 void SharedProtoDatabaseClient<T>::LoadEntriesWithFilter(
-    const LevelDB::KeyFilter& filter,
+    const KeyFilter& filter,
     const leveldb::ReadOptions& options,
     const std::string& target_prefix,
     typename Callbacks::Internal<T>::LoadCallback callback) {
@@ -326,12 +313,12 @@ void SharedProtoDatabaseClient<T>::LoadKeys(
 template <typename T>
 void SharedProtoDatabaseClient<T>::LoadKeysAndEntries(
     typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
-  LoadKeysAndEntriesWithFilter(LevelDB::KeyFilter(), std::move(callback));
+  LoadKeysAndEntriesWithFilter(KeyFilter(), std::move(callback));
 }
 
 template <typename T>
 void SharedProtoDatabaseClient<T>::LoadKeysAndEntriesWithFilter(
-    const LevelDB::KeyFilter& filter,
+    const KeyFilter& filter,
     typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
   LoadKeysAndEntriesWithFilter(filter, leveldb::ReadOptions(), std::string(),
                                std::move(callback));
@@ -339,7 +326,7 @@ void SharedProtoDatabaseClient<T>::LoadKeysAndEntriesWithFilter(
 
 template <typename T>
 void SharedProtoDatabaseClient<T>::LoadKeysAndEntriesWithFilter(
-    const LevelDB::KeyFilter& filter,
+    const KeyFilter& filter,
     const leveldb::ReadOptions& options,
     const std::string& target_prefix,
     typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {

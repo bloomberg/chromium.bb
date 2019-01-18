@@ -8,9 +8,10 @@
 #include <map>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "components/leveldb_proto/internal/leveldb_database.h"
+#include "third_party/leveldatabase/env_chromium.h"
 
 namespace leveldb_proto {
 
@@ -51,9 +52,6 @@ class Callbacks {
 
 class Util {
  public:
-  static Enums::InitStatus ConvertLevelDBStatusToInitStatus(
-      const leveldb::Status& status);
-
   template <typename T>
   class Internal {
    public:
@@ -61,6 +59,8 @@ class Util {
     using KeyEntryVector = std::vector<std::pair<std::string, T>>;
   };
 };
+
+using KeyFilter = base::RepeatingCallback<bool(const std::string& key)>;
 
 // Interface for classes providing persistent storage of Protocol Buffer
 // entries (T must be a Proto type extending MessageLite).
@@ -83,11 +83,6 @@ class ProtoDatabase {
                     const leveldb_env::Options& options,
                     Callbacks::InitCallback callback) = 0;
 
-  virtual void InitWithDatabase(LevelDB* database,
-                                const base::FilePath& database_dir,
-                                const leveldb_env::Options& options,
-                                Callbacks::InitStatusCallback callback) = 0;
-
   // Asynchronously saves |entries_to_save| and deletes entries from
   // |keys_to_remove| from the database. |callback| will be invoked on the
   // calling thread when complete.
@@ -104,12 +99,12 @@ class ProtoDatabase {
   virtual void UpdateEntriesWithRemoveFilter(
       std::unique_ptr<typename Util::Internal<T>::KeyEntryVector>
           entries_to_save,
-      const LevelDB::KeyFilter& delete_key_filter,
+      const leveldb_proto::KeyFilter& delete_key_filter,
       Callbacks::UpdateCallback callback) = 0;
   virtual void UpdateEntriesWithRemoveFilter(
       std::unique_ptr<typename Util::Internal<T>::KeyEntryVector>
           entries_to_save,
-      const LevelDB::KeyFilter& delete_key_filter,
+      const leveldb_proto::KeyFilter& delete_key_filter,
       const std::string& target_prefix,
       Callbacks::UpdateCallback callback) = 0;
 
@@ -122,10 +117,10 @@ class ProtoDatabase {
   // and invokes |callback| when complete. The filter will be called on
   // ProtoDatabase's taskrunner.
   virtual void LoadEntriesWithFilter(
-      const LevelDB::KeyFilter& filter,
+      const leveldb_proto::KeyFilter& filter,
       typename Callbacks::Internal<T>::LoadCallback callback) = 0;
   virtual void LoadEntriesWithFilter(
-      const LevelDB::KeyFilter& key_filter,
+      const leveldb_proto::KeyFilter& key_filter,
       const leveldb::ReadOptions& options,
       const std::string& target_prefix,
       typename Callbacks::Internal<T>::LoadCallback callback) = 0;
@@ -134,10 +129,10 @@ class ProtoDatabase {
       typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) = 0;
 
   virtual void LoadKeysAndEntriesWithFilter(
-      const LevelDB::KeyFilter& filter,
+      const leveldb_proto::KeyFilter& filter,
       typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) = 0;
   virtual void LoadKeysAndEntriesWithFilter(
-      const LevelDB::KeyFilter& filter,
+      const leveldb_proto::KeyFilter& filter,
       const leveldb::ReadOptions& options,
       const std::string& target_prefix,
       typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) = 0;

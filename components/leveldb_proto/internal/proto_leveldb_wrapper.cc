@@ -9,6 +9,7 @@
 #include "base/task/task_traits.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/leveldb_proto/internal/proto_leveldb_wrapper_metrics.h"
+#include "components/leveldb_proto/public/proto_database.h"
 
 namespace leveldb_proto {
 
@@ -23,7 +24,13 @@ Enums::InitStatus InitFromTaskRunner(LevelDB* database,
   auto status = database->Init(database_dir, options, destroy_on_corruption);
   ProtoLevelDBWrapperMetrics::RecordInit(client_id, status);
 
-  return Util::ConvertLevelDBStatusToInitStatus(status);
+  if (status.ok())
+    return Enums::InitStatus::kOK;
+  if (status.IsCorruption())
+    return Enums::InitStatus::kCorrupt;
+  if (status.IsNotSupportedError() || status.IsInvalidArgument())
+    return Enums::InitStatus::kInvalidOperation;
+  return Enums::InitStatus::kError;
 }
 
 bool DestroyFromTaskRunner(LevelDB* database, const std::string& client_id) {
@@ -50,7 +57,7 @@ void LoadKeysFromTaskRunner(
 void RemoveKeysFromTaskRunner(
     LevelDB* database,
     const std::string& target_prefix,
-    const LevelDB::KeyFilter& filter,
+    const KeyFilter& filter,
     const std::string& client_id,
     Callbacks::UpdateCallback callback,
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner) {
@@ -116,7 +123,7 @@ void ProtoLevelDBWrapper::LoadKeys(
                                 base::SequencedTaskRunnerHandle::Get()));
 }
 
-void ProtoLevelDBWrapper::RemoveKeys(const LevelDB::KeyFilter& filter,
+void ProtoLevelDBWrapper::RemoveKeys(const KeyFilter& filter,
                                      const std::string& target_prefix,
                                      Callbacks::UpdateCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
