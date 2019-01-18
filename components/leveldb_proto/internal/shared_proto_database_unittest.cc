@@ -56,8 +56,7 @@ class SharedProtoDatabaseTest : public testing::Test {
               SharedClientInitCallback callback) {
     db_->task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&SharedProtoDatabase::Init,
-                       db_->weak_factory_->GetWeakPtr(), create_if_missing,
+        base::BindOnce(&SharedProtoDatabase::Init, db_, create_if_missing,
                        client_name, std::move(callback),
                        scoped_task_environment_.GetMainThreadTaskRunner()));
   }
