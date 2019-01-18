@@ -64,6 +64,7 @@
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/translate/core/browser/translate_manager.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -533,6 +534,11 @@ void ChromeOmniboxClient::OpenUpdateChromeDialog() {
 void ChromeOmniboxClient::DoPrerender(
     const AutocompleteMatch& match) {
   content::WebContents* web_contents = controller_->GetWebContents();
+
+  // Don't prerender when DevTools is open in this tab.
+  if (content::DevToolsAgentHost::IsDebuggerAttached(web_contents))
+    return;
+
   gfx::Rect container_bounds = web_contents->GetContainerBounds();
 
   predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_)
