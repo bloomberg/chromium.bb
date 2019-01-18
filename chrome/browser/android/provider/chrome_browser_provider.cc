@@ -58,7 +58,6 @@ using base::android::GetClass;
 using base::android::JavaParamRef;
 using base::android::MethodID;
 using base::android::JavaRef;
-using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
@@ -833,11 +832,7 @@ ChromeBrowserProvider::ChromeBrowserProvider(JNIEnv* env, jobject obj)
 
 ChromeBrowserProvider::~ChromeBrowserProvider() {
   bookmark_model_->RemoveObserver(this);
-}
-
-void ChromeBrowserProvider::Destroy(JNIEnv*, const JavaParamRef<jobject>&) {
   history_service_observer_.RemoveAll();
-  delete this;
 }
 
 // ------------- Provider public APIs ------------- //
@@ -1166,19 +1161,16 @@ void ChromeBrowserProvider::BookmarkModelChanged() {
     return;
 
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = weak_java_provider_.get(env);
-  if (obj.is_null())
-    return;
-
-  Java_ChromeBrowserProvider_onBookmarkChanged(env, obj);
+  ScopedJavaLocalRef<jobject> obj;
+  if (GetJavaProviderOrDeleteSelf(&obj, env))
+    Java_ChromeBrowserProvider_onBookmarkChanged(env, obj);
 }
 
 void ChromeBrowserProvider::OnHistoryChanged() {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = weak_java_provider_.get(env);
-  if (obj.is_null())
-    return;
-  Java_ChromeBrowserProvider_onHistoryChanged(env, obj);
+  ScopedJavaLocalRef<jobject> obj;
+  if (GetJavaProviderOrDeleteSelf(&obj, env))
+    Java_ChromeBrowserProvider_onHistoryChanged(env, obj);
 }
 
 void ChromeBrowserProvider::OnURLVisited(
@@ -1202,13 +1194,27 @@ void ChromeBrowserProvider::OnKeywordSearchTermUpdated(
     history::KeywordID keyword_id,
     const base::string16& term) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = weak_java_provider_.get(env);
-  if (obj.is_null())
-    return;
-  Java_ChromeBrowserProvider_onSearchTermChanged(env, obj);
+  ScopedJavaLocalRef<jobject> obj;
+  if (GetJavaProviderOrDeleteSelf(&obj, env))
+    Java_ChromeBrowserProvider_onSearchTermChanged(env, obj);
 }
 
 void ChromeBrowserProvider::OnKeywordSearchTermDeleted(
     history::HistoryService* history_service,
     history::URLID url_id) {
+}
+
+bool ChromeBrowserProvider::GetJavaProviderOrDeleteSelf(
+    ScopedJavaLocalRef<jobject>* out_ref,
+    JNIEnv* env) {
+  *out_ref = weak_java_provider_.get(env);
+  // Providers are never destroyed on Android (that's why there is no
+  // onDestroy() for them). However, tests create multiple of them, and there
+  // have also been reports of them being destroyed in the wild
+  // (https://crbug.com/606992).
+  if (out_ref->is_null()) {
+    delete this;
+    return false;
+  }
+  return true;
 }
