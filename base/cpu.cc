@@ -152,6 +152,7 @@ void CPU::Initialize() {
   memcpy(cpu_string, &cpu_info[1], kVendorNameSize);
   cpu_string[kVendorNameSize] = '\0';
   cpu_vendor_ = cpu_string;
+  bool hypervisor = false;
 
   // Interpret CPU feature information.
   if (num_ids > 0) {
@@ -175,6 +176,13 @@ void CPU::Initialize() {
     has_sse41_ = (cpu_info[2] & 0x00080000) != 0;
     has_sse42_ = (cpu_info[2] & 0x00100000) != 0;
     has_popcnt_ = (cpu_info[2] & 0x00800000) != 0;
+
+    // "Hypervisor Present Bit: Bit 31 of ECX of CPUID leaf 0x1."
+    // See https://lwn.net/Articles/301888/
+    // This is checking for any hypervisor. Hypervisors may choose not to
+    // announce themselves. Hypervisors trap CPUID and sometimes return
+    // different results to underlying hardware.
+    hypervisor = (cpu_info[2] & 0x80000000) != 0;
 
     // AVX instructions will generate an illegal instruction exception unless
     //   a) they are supported by the CPU,
@@ -221,6 +229,23 @@ void CPU::Initialize() {
   if (max_parameter >= kParameterContainingNonStopTimeStampCounter) {
     __cpuid(cpu_info, kParameterContainingNonStopTimeStampCounter);
     has_non_stop_time_stamp_counter_ = (cpu_info[3] & (1 << 8)) != 0;
+  }
+
+  if (!has_non_stop_time_stamp_counter_ && hypervisor) {
+    int cpu_info_hv[4] = {};
+    __cpuid(cpu_info_hv, 0x40000000);
+    if (cpu_info_hv[1] == 0x7263694D &&  // Micr
+        cpu_info_hv[2] == 0x666F736F &&  // osof
+        cpu_info_hv[3] == 0x76482074) {  // t Hv
+      // If CPUID says we have a variant TSC and a hypervisor has identified
+      // itself and the hypervisor says it is Microsoft Hyper-V, then treat
+      // TSC as invariant.
+      //
+      // Microsoft Hyper-V hypervisor reports variant TSC as there are some
+      // scenarios (eg. VM live migration) where the TSC is variant, but for
+      // our purposes we can treat it as invariant.
+      has_non_stop_time_stamp_counter_ = true;
+    }
   }
 #elif defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
   cpu_brand_ = *CpuInfoBrand();
