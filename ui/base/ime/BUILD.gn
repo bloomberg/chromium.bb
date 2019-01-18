@@ -143,7 +143,6 @@ jumbo_component("ime") {
     "//net",
     "//third_party/icu",
     "//ui/base",
-    "//ui/base/ime/chromeos/public/interfaces",
     "//ui/display",
     "//ui/events",
     "//ui/gfx",
@@ -189,6 +188,7 @@ jumbo_component("ime") {
     deps += [
       "//chromeos",
       "//services/ws/public/cpp/input_devices",
+      "//ui/base/ime/chromeos/public/interfaces",
       "//ui/chromeos/strings",
       "//ui/events:dom_keycode_converter",
     ]
