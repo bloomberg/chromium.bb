@@ -66,6 +66,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -487,7 +488,9 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     // way to pass the settings object over mojo IPCs.
     auto* outside_settings_object =
         MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-            *document->Fetcher()->Context().GetFetchClientSettingsObject());
+            document->Fetcher()
+                ->GetProperties()
+                .GetFetchClientSettingsObject());
     network::mojom::FetchCredentialsMode credentials_mode =
         network::mojom::FetchCredentialsMode::kOmit;
     worker_thread_->ImportModuleScript(worker_start_data_.script_url,

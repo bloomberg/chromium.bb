@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
@@ -219,10 +220,10 @@ void DedicatedWorker::Start() {
     // worker thread.
     auto* outside_settings_object =
         MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-            *GetExecutionContext()
-                 ->Fetcher()
-                 ->Context()
-                 .GetFetchClientSettingsObject());
+            GetExecutionContext()
+                ->Fetcher()
+                ->GetProperties()
+                .GetFetchClientSettingsObject());
     context_proxy_->StartWorkerGlobalScope(
         CreateGlobalScopeCreationParams(
             script_request_url_, OffMainThreadWorkerScriptFetchOption::kEnabled,
@@ -354,10 +355,10 @@ void DedicatedWorker::OnFinished(const v8_inspector::V8StackTraceId& stack_id) {
                                                  script_response_url));
     auto* outside_settings_object =
         MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-            *GetExecutionContext()
-                 ->Fetcher()
-                 ->Context()
-                 .GetFetchClientSettingsObject());
+            GetExecutionContext()
+                ->Fetcher()
+                ->GetProperties()
+                .GetFetchClientSettingsObject());
     context_proxy_->StartWorkerGlobalScope(
         CreateGlobalScopeCreationParams(
             script_response_url,

@@ -143,36 +143,6 @@ void FetchContext::DidObserveLoadingBehavior(WebLoadingBehaviorFlag) {}
 
 void FetchContext::AddResourceTiming(const ResourceTimingInfo&) {}
 
-mojom::ControllerServiceWorkerMode FetchContext::IsControlledByServiceWorker()
-    const {
-  return GetResourceFetcherProperties().GetControllerServiceWorkerMode();
-}
-
-int64_t FetchContext::ServiceWorkerID() const {
-  return GetResourceFetcherProperties().ServiceWorkerId();
-}
-
-bool FetchContext::IsMainFrame() const {
-  return GetResourceFetcherProperties().IsMainFrame();
-}
-
-bool FetchContext::DefersLoading() const {
-  return GetResourceFetcherProperties().IsPaused();
-}
-
-bool FetchContext::IsLoadComplete() const {
-  return GetResourceFetcherProperties().IsLoadComplete();
-}
-
-const SecurityOrigin* FetchContext::GetSecurityOrigin() const {
-  return GetFetchClientSettingsObject()->GetSecurityOrigin();
-}
-
-const FetchClientSettingsObject* FetchContext::GetFetchClientSettingsObject()
-    const {
-  return &GetResourceFetcherProperties().GetFetchClientSettingsObject();
-}
-
 void FetchContext::PopulateResourceRequest(
     ResourceType,
     const ClientHintsPreferences&,

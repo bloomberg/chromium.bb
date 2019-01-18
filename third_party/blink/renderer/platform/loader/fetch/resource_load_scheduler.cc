@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/aggregated_metric_reporter.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_status.h"
@@ -91,9 +92,8 @@ uint32_t GetFieldTrialUint32Param(const char* trial_name,
   return param;
 }
 
-size_t GetOutstandingThrottledLimit(FetchContext* context) {
-  DCHECK(context);
-
+size_t GetOutstandingThrottledLimit(
+    const ResourceFetcherProperties& properties) {
   if (!RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled())
     return ResourceLoadScheduler::kOutstandingUnlimited;
 
@@ -104,7 +104,7 @@ size_t GetOutstandingThrottledLimit(FetchContext* context) {
       kResourceLoadThrottlingTrial, kOutstandingLimitForBackgroundSubFrameName,
       kOutstandingLimitForBackgroundSubFrameDefault);
 
-  return context->IsMainFrame() ? main_frame_limit : sub_frame_limit;
+  return properties.IsMainFrame() ? main_frame_limit : sub_frame_limit;
 }
 
 int TakeWholeKilobytes(int64_t& bytes) {
@@ -158,16 +158,14 @@ class ResourceLoadScheduler::TrafficMonitor {
 };
 
 ResourceLoadScheduler::TrafficMonitor::TrafficMonitor(FetchContext* context)
-    : is_main_frame_(context->IsMainFrame()),
+    : is_main_frame_(context->GetResourceFetcherProperties().IsMainFrame()),
       context_(context),
       traffic_kilobytes_per_frame_status_(
           "Blink.ResourceLoadScheduler.TrafficBytes.KBPerFrameStatus",
           &TakeWholeKilobytes),
       decoded_kilobytes_per_frame_status_(
           "Blink.ResourceLoadScheduler.DecodedBytes.KBPerFrameStatus",
-          &TakeWholeKilobytes) {
-  DCHECK(context_);
-}
+          &TakeWholeKilobytes) {}
 
 ResourceLoadScheduler::TrafficMonitor::~TrafficMonitor() {
   ReportAll();
@@ -354,9 +352,9 @@ ResourceLoadScheduler::ResourceLoadScheduler(
     FetchContext* context)
     : policy_(initial_throttling_policy),
       outstanding_limit_for_throttled_frame_scheduler_(
-          GetOutstandingThrottledLimit(context)),
+          GetOutstandingThrottledLimit(
+              context->GetResourceFetcherProperties())),
       context_(context) {
-  DCHECK(context);
   traffic_monitor_ =
       std::make_unique<ResourceLoadScheduler::TrafficMonitor>(context_);
 
@@ -542,13 +540,13 @@ void ResourceLoadScheduler::OnNetworkQuiet() {
   switch (throttling_history_) {
     case ThrottlingHistory::kInitial:
     case ThrottlingHistory::kNotThrottled:
-      if (context_->IsMainFrame())
+      if (context_->GetResourceFetcherProperties().IsMainFrame())
         main_frame_not_throttled.Count(maximum_running_requests_seen_);
       else
         sub_frame_not_throttled.Count(maximum_running_requests_seen_);
       break;
     case ThrottlingHistory::kThrottled:
-      if (context_->IsMainFrame())
+      if (context_->GetResourceFetcherProperties().IsMainFrame())
         main_frame_throttled.Count(maximum_running_requests_seen_);
       else
         sub_frame_throttled.Count(maximum_running_requests_seen_);

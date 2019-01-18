@@ -305,7 +305,9 @@ class RequestSameResourceOnComplete
   explicit RequestSameResourceOnComplete(FetchParameters& params,
                                          ResourceFetcher* fetcher)
       : notify_finished_called_(false),
-        source_origin_(fetcher->Context().GetSecurityOrigin()) {
+        source_origin_(fetcher->GetProperties()
+                           .GetFetchClientSettingsObject()
+                           .GetSecurityOrigin()) {
     MockResource::Fetch(params, fetcher, this);
   }
 
@@ -986,6 +988,115 @@ TEST_F(ResourceFetcherTest, CachedResourceShouldNotCrashByNullURL) {
   ASSERT_NE(fetcher->CachedResource(url), nullptr);
 
   ASSERT_EQ(fetcher->CachedResource(KURL()), nullptr);
+}
+
+TEST_F(ResourceFetcherTest, DetachedPropertiesWithDefaultValues) {
+  const auto& original_client_settings_object =
+      *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+          KURL("https://example.com/foo.html"),
+          SecurityOrigin::Create(KURL("https://example.com/")),
+          network::mojom::ReferrerPolicy::kDefault,
+          "https://example.com/foo.html", HttpsState::kModern,
+          AllowedByNosniff::MimeTypeCheck::kStrict);
+  const auto& original_properties =
+      *MakeGarbageCollected<TestResourceFetcherProperties>(
+          original_client_settings_object);
+  auto* const fetcher =
+      MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+          original_properties, CreateFetchContext(), CreateTaskRunner()));
+  const auto& properties = fetcher->GetProperties();
+
+  EXPECT_NE(&original_properties, &properties);
+
+  const auto& client_settings_object =
+      properties.GetFetchClientSettingsObject();
+  EXPECT_EQ(&original_client_settings_object, &client_settings_object);
+  EXPECT_FALSE(properties.IsMainFrame());
+  EXPECT_EQ(properties.GetControllerServiceWorkerMode(),
+            mojom::ControllerServiceWorkerMode::kNoController);
+  // We cannot call ServiceWorkerId as the service worker mode is kNoController.
+  EXPECT_FALSE(properties.IsPaused());
+  EXPECT_FALSE(properties.IsDetached());
+  EXPECT_FALSE(properties.IsLoadComplete());
+  EXPECT_FALSE(properties.ShouldBlockLoadingMainResource());
+  EXPECT_FALSE(properties.ShouldBlockLoadingSubResource());
+
+  fetcher->ClearContext();
+  // ResourceFetcher::GetProperties always returns the same object.
+  EXPECT_EQ(&properties, &fetcher->GetProperties());
+
+  EXPECT_NE(&client_settings_object,
+            &properties.GetFetchClientSettingsObject());
+  EXPECT_EQ(properties.GetFetchClientSettingsObject().BaseURL(),
+            KURL("https://example.com/foo.html"));
+  EXPECT_FALSE(properties.IsMainFrame());
+  EXPECT_EQ(properties.GetControllerServiceWorkerMode(),
+            mojom::ControllerServiceWorkerMode::kNoController);
+  // We cannot call ServiceWorkerId as the service worker mode is kNoController.
+  EXPECT_FALSE(properties.IsPaused());
+  EXPECT_TRUE(properties.IsDetached());
+  EXPECT_FALSE(properties.IsLoadComplete());
+  EXPECT_TRUE(properties.ShouldBlockLoadingMainResource());
+  EXPECT_TRUE(properties.ShouldBlockLoadingSubResource());
+}
+
+TEST_F(ResourceFetcherTest, DetachedPropertiesWithNonDefaultValues) {
+  const auto& original_client_settings_object =
+      *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+          KURL("https://example.com/foo.html"),
+          SecurityOrigin::Create(KURL("https://example.com/")),
+          network::mojom::ReferrerPolicy::kDefault,
+          "https://example.com/foo.html", HttpsState::kModern,
+          AllowedByNosniff::MimeTypeCheck::kStrict);
+  auto& original_properties =
+      *MakeGarbageCollected<TestResourceFetcherProperties>(
+          original_client_settings_object);
+  auto* const fetcher =
+      MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+          original_properties, CreateFetchContext(), CreateTaskRunner()));
+  const auto& properties = fetcher->GetProperties();
+
+  EXPECT_NE(&original_properties, &properties);
+
+  original_properties.SetIsMainFrame(true);
+  original_properties.SetControllerServiceWorkerMode(
+      mojom::ControllerServiceWorkerMode::kControlled);
+  original_properties.SetServiceWorkerId(133);
+  original_properties.SetIsPaused(true);
+  original_properties.SetIsLoadComplete(true);
+  original_properties.SetShouldBlockLoadingMainResource(true);
+  original_properties.SetShouldBlockLoadingSubResource(true);
+
+  const auto& client_settings_object =
+      properties.GetFetchClientSettingsObject();
+  EXPECT_EQ(&original_client_settings_object, &client_settings_object);
+  EXPECT_TRUE(properties.IsMainFrame());
+  EXPECT_EQ(properties.GetControllerServiceWorkerMode(),
+            mojom::ControllerServiceWorkerMode::kControlled);
+  EXPECT_EQ(properties.ServiceWorkerId(), 133);
+  EXPECT_TRUE(properties.IsPaused());
+  EXPECT_FALSE(properties.IsDetached());
+  EXPECT_TRUE(properties.IsLoadComplete());
+  EXPECT_TRUE(properties.ShouldBlockLoadingMainResource());
+  EXPECT_TRUE(properties.ShouldBlockLoadingSubResource());
+
+  fetcher->ClearContext();
+  // ResourceFetcher::GetProperties always returns the same object.
+  EXPECT_EQ(&properties, &fetcher->GetProperties());
+
+  EXPECT_NE(&client_settings_object,
+            &properties.GetFetchClientSettingsObject());
+  EXPECT_EQ(properties.GetFetchClientSettingsObject().BaseURL(),
+            KURL("https://example.com/foo.html"));
+  EXPECT_TRUE(properties.IsMainFrame());
+  EXPECT_EQ(properties.GetControllerServiceWorkerMode(),
+            mojom::ControllerServiceWorkerMode::kNoController);
+  // We cannot call ServiceWorkerId as the service worker mode is kNoController.
+  EXPECT_TRUE(properties.IsPaused());
+  EXPECT_TRUE(properties.IsDetached());
+  EXPECT_TRUE(properties.IsLoadComplete());
+  EXPECT_TRUE(properties.ShouldBlockLoadingMainResource());
+  EXPECT_TRUE(properties.ShouldBlockLoadingSubResource());
 }
 
 }  // namespace blink
