@@ -135,6 +135,13 @@ cca.views.camera.Options.Sound = Object.freeze({
   RECORDEND: 3,
 });
 
+cca.views.camera.Options.prototype = {
+  get newStreamRequestDisabled() {
+    return !document.body.classList.contains('capturing') ||
+        document.body.classList.contains('taking');
+  },
+};
+
 /**
  * Prepares the options.
  */
@@ -156,6 +163,9 @@ cca.views.camera.Options.prototype.prepare = function() {
  * @private
  */
 cca.views.camera.Options.prototype.switchMode_ = function(record) {
+  if (this.newStreamRequestDisabled) {
+    return;
+  }
   document.body.classList.toggle('record-mode', record);
   document.body.classList.add('mode-switching');
   this.onNewStreamNeeded_().then(
@@ -167,6 +177,9 @@ cca.views.camera.Options.prototype.switchMode_ = function(record) {
  * @private
  */
 cca.views.camera.Options.prototype.switchDevice_ = function() {
+  if (this.newStreamRequestDisabled) {
+    return;
+  }
   this.videoDevices_.then((devices) => {
     cca.util.animateOnce(document.querySelector('#switch-device'));
     var index = devices.findIndex(
@@ -265,19 +278,6 @@ cca.views.camera.Options.prototype.timerTicks = function() {
 };
 
 /**
- * Updates UI controls' disabled status for capturing/taking state changes.
- * @param {boolean} capturing Whether camera is capturing.
- * @param {boolean} taking Whether camera is taking.
- */
-cca.views.camera.Options.prototype.updateControls = function(
-    capturing, taking) {
-  var disabled = !capturing || taking;
-  var selector = '#switch-device, #switch-recordvideo, #switch-takephoto';
-  document.querySelectorAll(selector).forEach(
-      (element) => element.disabled = disabled);
-};
-
-/**
  * Updates the options' values for the current constraints and stream.
  * @param {Object} constraints Current stream constraints in use.
  * @param {MediaStream} stream Current Stream in use.
@@ -366,7 +366,6 @@ cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
   this.videoDevices_ = navigator.mediaDevices.enumerateDevices().then(
       (devices) => devices.filter((device) => device.kind == 'videoinput'));
 
-  // Show switch-device button only when more than one camera.
   var multi = false;
   this.videoDevices_.then((devices) => {
     multi = devices.length >= 2;

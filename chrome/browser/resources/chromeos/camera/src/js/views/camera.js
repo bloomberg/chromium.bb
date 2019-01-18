@@ -195,6 +195,9 @@ cca.views.Camera.prototype.focus = function() {
  * @private
  */
 cca.views.Camera.prototype.onShutterButtonClicked_ = function(event) {
+  if (!this.capturing) {
+    return;
+  }
   if (this.taking) {
     // End the prior ongoing take if any; a new take shouldn't be started
     // until the prior one is ended.
@@ -216,21 +219,7 @@ cca.views.Camera.prototype.onShutterButtonClicked_ = function(event) {
 };
 
 /**
- * Updates UI controls for capturing/taking state changes.
- * @private
- */
-cca.views.Camera.prototype.updateControls_ = function() {
-  // Update the shutter's label before enabling or disabling it.
-  var [capturing, taking] = [this.capturing, this.taking];
-  this.updateShutterLabel_();
-  // TODO(yuli): Use no-op instead of disabling buttions.
-  this.shutterButton_.disabled = !capturing;
-  this.options_.updateControls(capturing, taking);
-  this.galleryButton_.disabled = !capturing || taking;
-};
-
-/**
- * Updates the shutter button's label.
+ * Updates the shutter button's label for taking/record-mode state changes.
  * @private
  */
 cca.views.Camera.prototype.updateShutterLabel_ = function() {
@@ -269,7 +258,7 @@ cca.views.Camera.prototype.handlingKey = function(key) {
 cca.views.Camera.prototype.beginTake_ = function() {
   document.body.classList.add('taking');
   this.ticks_ = this.options_.timerTicks();
-  this.updateControls_();
+  this.updateShutterLabel_();
 
   Promise.resolve(this.ticks_).then(() => {
     // Play a sound before starting to record and delay the take to avoid the
@@ -329,7 +318,7 @@ cca.views.Camera.prototype.endTake_ = function() {
     // Re-enable UI controls after finishing the take.
     this.take_ = null;
     document.body.classList.remove('taking');
-    this.updateControls_();
+    this.updateShutterLabel_();
   });
 };
 
@@ -479,6 +468,8 @@ cca.views.Camera.prototype.constraintsCandidates_ = function() {
  * @private
  */
 cca.views.Camera.prototype.stop_ = function() {
+  // Update shutter label as record-mode might be toggled before reaching here.
+  this.updateShutterLabel_();
   // Wait for ongoing 'start' and 'take' done before restarting camera.
   return Promise.all([
     this.started_,
@@ -489,7 +480,6 @@ cca.views.Camera.prototype.stop_ = function() {
     this.imageCapture_ = null;
     this.photoCapabilities_ = null;
     document.body.classList.remove('capturing');
-    this.updateControls_();
     this.start_();
     return this.started_;
   });
@@ -512,7 +502,6 @@ cca.views.Camera.prototype.start_ = function() {
           this.preview_.start.bind(this.preview_)).then(() => {
         this.options_.updateValues(constraints, this.preview_.stream);
         document.body.classList.add('capturing');
-        this.updateControls_();
         cca.nav.close('warning', 'no-camera');
       }).catch((error) => {
         console.error(error);

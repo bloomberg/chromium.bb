@@ -75,12 +75,6 @@ input {
   -webkit-appearance: none;
 }
 
-button[disabled],
-input[disabled] {
-  opacity: 0.75;
-  pointer-events: none;
-}
-
 button:focus:after,
 input:focus:after {
   position: absolute;

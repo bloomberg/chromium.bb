@@ -58,12 +58,6 @@ cca.views.camera.GalleryButton = function(model) {
   });
 };
 
-cca.views.camera.GalleryButton.prototype = {
-  set disabled(value) {
-    this.button_.disabled = value;
-  },
-};
-
 /**
  * Updates the button for the model changes.
  * @private
