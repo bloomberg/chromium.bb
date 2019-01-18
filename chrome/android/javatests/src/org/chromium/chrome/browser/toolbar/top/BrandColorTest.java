@@ -152,7 +152,7 @@ public class BrandColorTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getActivity().getToolbarManager().updatePrimaryColor(
+                mActivityTestRule.getActivity().getToolbarManager().onThemeColorChanged(
                         mDefaultColor, false);
                 // Since the color should change instantly, there is no need to use the criteria
                 // helper.

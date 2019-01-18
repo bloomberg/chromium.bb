@@ -19,19 +19,19 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
+import org.chromium.chrome.browser.ThemeColorProvider;
+import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.toolbar.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.widget.ChromeImageButton;
 
 /**
  * The home button.
  */
-public class HomeButton extends ChromeImageButton implements ThemeColorObserver,
-                                                             OnCreateContextMenuListener,
-                                                             MenuItem.OnMenuItemClickListener {
+public class HomeButton extends ChromeImageButton
+        implements TintObserver, OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {
     private static final int ID_REMOVE = 0;
 
     /** A provider that notifies components when the theme color changes.*/
@@ -55,7 +55,7 @@ public class HomeButton extends ChromeImageButton implements ThemeColorObserver,
 
     public void destroy() {
         if (mThemeColorProvider != null) {
-            mThemeColorProvider.removeObserver(this);
+            mThemeColorProvider.removeTintObserver(this);
             mThemeColorProvider = null;
         }
         if (mActivityTabTabObserver != null) {
@@ -66,11 +66,11 @@ public class HomeButton extends ChromeImageButton implements ThemeColorObserver,
 
     public void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
         mThemeColorProvider = themeColorProvider;
-        mThemeColorProvider.addObserver(this);
+        mThemeColorProvider.addTintObserver(this);
     }
 
     @Override
-    public void onThemeColorChanged(ColorStateList tint, int primaryColor) {
+    public void onTintChanged(ColorStateList tint, boolean useLight) {
         ApiCompatibilityUtils.setImageTintList(this, tint);
     }
 

@@ -33,6 +33,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.TabLoadStatus;
+import org.chromium.chrome.browser.ThemeColorProvider;
+import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
@@ -92,7 +94,6 @@ import org.chromium.chrome.browser.toolbar.top.ToolbarLayout;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.browser.toolbar.top.ViewShiftingActionBarDelegate;
 import org.chromium.chrome.browser.translate.TranslateBridge;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimObserver;
@@ -122,7 +123,8 @@ import java.util.concurrent.TimeUnit;
  * Contains logic for managing the toolbar visual component.  This class manages the interactions
  * with the rest of the application to ensure the toolbar is always visually up to date.
  */
-public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlFocusChangeListener {
+public class ToolbarManager
+        implements ScrimObserver, ToolbarTabController, UrlFocusChangeListener, ThemeColorObserver {
     /**
      * Handle UI updates of menu icons. Only applicable for phones.
      */
@@ -168,6 +170,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private final AsyncViewProvider<ToolbarLayout> mToolbarProvider;
     private final IncognitoStateProvider mIncognitoStateProvider;
     private final TabCountProvider mTabCountProvider;
+    private final ThemeColorProvider mThemeColorProvider;
     private TopToolbarCoordinator mToolbar;
     private final ToolbarControlContainer mControlContainer;
 
@@ -235,7 +238,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      */
     public ToolbarManager(ChromeActivity activity, ToolbarControlContainer controlContainer,
             final AppMenuHandler menuHandler, AppMenuPropertiesDelegate appMenuPropertiesDelegate,
-            Invalidator invalidator, Callback<Boolean> urlFocusChangedCallback) {
+            Invalidator invalidator, Callback<Boolean> urlFocusChangedCallback,
+            ThemeColorProvider themeColorProvider) {
         mActivity = activity;
         mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
 
@@ -301,6 +305,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mToolbarProvider.whenLoaded((toolbar)
                                             -> onToolbarInflationComplete(menuHandler,
                                                     appMenuPropertiesDelegate, invalidator));
+        mThemeColorProvider = themeColorProvider;
+        mThemeColorProvider.addThemeColorObserver(this);
     }
 
     @Override
@@ -1173,6 +1179,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             mLocationBar.removeUrlFocusChangeListener(mLocationBarFocusObserver);
             mLocationBarFocusObserver = null;
         }
+
+        if (mThemeColorProvider != null) mThemeColorProvider.removeThemeColorObserver(this);
     }
 
     /**
@@ -1412,7 +1420,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      * @param color The primary color for the current tab.
      * @param shouldAnimate Whether the change of color should be animated.
      */
-    public void updatePrimaryColor(int color, boolean shouldAnimate) {
+    @Override
+    public void onThemeColorChanged(int color, boolean shouldAnimate) {
         if (!mShouldUpdateToolbarPrimaryColor) return;
 
         boolean colorChanged = mCurrentThemeColor != color;
@@ -1652,11 +1661,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 }
                 if (tab != null) tab.addObserver(mTabObserver);
             }
-            int defaultPrimaryColor =
-                    ColorUtils.getDefaultThemeColor(mActivity.getResources(), isIncognito);
-            int primaryColor =
-                    tab != null ? TabThemeColorHelper.getColor(tab) : defaultPrimaryColor;
-            updatePrimaryColor(primaryColor, false);
 
             mToolbar.onTabOrModelChanged();
 

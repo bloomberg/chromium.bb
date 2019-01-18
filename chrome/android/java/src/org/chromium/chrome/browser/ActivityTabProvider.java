@@ -213,7 +213,9 @@ public class ActivityTabProvider {
      */
     private void triggerActivityTabChangeEvent(Tab tab) {
         // Allow the event to trigger before native is ready (before the layout manager is set).
-        if (mLayoutManager != null && !(mLayoutManager.getActiveLayout() instanceof StaticLayout)
+        if (mLayoutManager != null
+                && !(mLayoutManager.getActiveLayout() instanceof StaticLayout
+                        || mLayoutManager.getActiveLayout() instanceof SimpleAnimationLayout)
                 && tab != null) {
             return;
         }

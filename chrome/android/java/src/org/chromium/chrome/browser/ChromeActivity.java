@@ -316,6 +316,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     /** A means of providing the foreground tab of the activity to different features. */
     private ActivityTabProvider mActivityTabProvider = new ActivityTabProvider();
 
+    /** A means of providing the theme color to different features. */
+    private final TabThemeColorProvider mTabThemeColorProvider = new TabThemeColorProvider();
+
     /** Whether or not the activity is in started state. */
     private boolean mStarted;
 
@@ -627,7 +630,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             Callback<Boolean> urlFocusChangedCallback = hasFocus -> onOmniboxFocusChanged(hasFocus);
             mToolbarManager = new ToolbarManager(this, toolbarContainer, mAppMenuHandler,
                     mAppMenuPropertiesDelegate, getCompositorViewHolder().getInvalidator(),
-                    urlFocusChangedCallback);
+                    urlFocusChangedCallback, mTabThemeColorProvider);
             mFindToolbarManager =
                     new FindToolbarManager(this, mToolbarManager.getActionModeControllerCallback());
             mAppMenuHandler.addObserver(new AppMenuObserver() {
@@ -666,6 +669,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         mTabModelSelector = createTabModelSelector();
         mActivityTabProvider.setTabModelSelector(mTabModelSelector);
+        mTabThemeColorProvider.setActivityTabProvider(mActivityTabProvider);
 
         if (mTabModelSelector == null) {
             assert isFinishing();
@@ -727,12 +731,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             @Override
             public void onDidChangeThemeColor(Tab tab, int color) {
                 setStatusBarColor(tab, color);
-
-                if (getToolbarManager() == null) return;
-                getToolbarManager().updatePrimaryColor(color, true);
-
-                ControlContainer controlContainer = findViewById(R.id.control_container);
-                controlContainer.getToolbarResourceAdapter().invalidate(null);
             }
 
             @Override
@@ -1367,6 +1365,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             manager.removeTouchExplorationStateChangeListener(mTouchExplorationStateChangeListener);
         }
 
+        mTabThemeColorProvider.destroy();
         mActivityTabProvider.destroy();
 
         mComponent = null;
