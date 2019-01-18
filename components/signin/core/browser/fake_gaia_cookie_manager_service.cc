@@ -28,21 +28,6 @@ FakeGaiaCookieManagerService::FakeGaiaCookieManagerService(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
               test_url_loader_factory_)) {}
 
-FakeGaiaCookieManagerService::FakeGaiaCookieManagerService(
-    OAuth2TokenService* token_service,
-    SigninClient* client,
-    bool use_fake_url_loader)
-    : GaiaCookieManagerService(token_service, client) {
-  if (use_fake_url_loader) {
-    owned_test_url_loader_factory_ =
-        std::make_unique<network::TestURLLoaderFactory>();
-    test_url_loader_factory_ = owned_test_url_loader_factory_.get();
-    shared_loader_factory_ =
-        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            test_url_loader_factory_);
-  }
-}
-
 FakeGaiaCookieManagerService::~FakeGaiaCookieManagerService() {
   if (shared_loader_factory_)
     shared_loader_factory_->Detach();

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SIGNIN_FAKE_GAIA_COOKIE_MANAGER_SERVICE_BUILDER_H_
 
 #include <memory>
+#include "services/network/test/test_url_loader_factory.h"
 
 class KeyedService;
 
@@ -25,11 +26,6 @@ std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerService(
 // |test_url_loader_factory| for cookie-related requests.
 std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerServiceWithURLLoader(
     network::TestURLLoaderFactory* test_url_loader_factory,
-    content::BrowserContext* context);
-
-// TODO(https://crbug.com/907782): Remove all references and delete this method.
-std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerServiceWithOptions(
-    bool create_fake_url_loader_factory_for_cookie_requests,
     content::BrowserContext* context);
 
 #endif  // CHROME_BROWSER_SIGNIN_FAKE_GAIA_COOKIE_MANAGER_SERVICE_BUILDER_H_

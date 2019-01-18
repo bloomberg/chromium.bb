@@ -27,13 +27,6 @@ class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
       SigninClient* client,
       network::TestURLLoaderFactory* test_url_loader_factory);
 
-  // DEPRECATED, use other constructors instead.
-  // TODO(https://crbug.com/907782): Delete this after all references are
-  // removed.
-  FakeGaiaCookieManagerService(OAuth2TokenService* token_service,
-                               SigninClient* client,
-                               bool use_fake_url_fetcher);
-
   ~FakeGaiaCookieManagerService() override;
 
   void SetListAccountsResponseHttpNotFound();
@@ -55,18 +48,11 @@ class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
  private:
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
-  // Temporary workaround until all tests are updated to own the
-  // TestURLLoaderFactory themselves.
-  // TODO(https://crbug.com/907782): Remove this.
-  std::unique_ptr<network::TestURLLoaderFactory> owned_test_url_loader_factory_;
-
-  // Provide a fake response for calls to /ListAccounts.
+  // Provides a fake response for calls to /ListAccounts.
   // Owned by the client if passed in via the constructor that takes in this
-  // pointer; owned by the ivar above if |true| is passed in via the constructor
-  // that takes in a boolean; null otherwise.
-  // TODO(https://crbug.com/907782): Update this comment as necessary when the
-  // constructor that takes in a boolean is eliminated.
+  // pointer; null otherwise.
   network::TestURLLoaderFactory* test_url_loader_factory_ = nullptr;
+
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       shared_loader_factory_;
 

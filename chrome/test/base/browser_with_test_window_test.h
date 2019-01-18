@@ -12,6 +12,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -35,7 +36,7 @@ class GURL;
 namespace views {
 class MusClient;
 class TestViewsDelegate;
-}
+}  // namespace views
 #endif
 
 namespace content {
@@ -98,12 +99,8 @@ class BrowserWithTestWindowTest : public testing::Test {
   BrowserWindow* window() const { return window_.get(); }
 
   Browser* browser() const { return browser_.get(); }
-  void set_browser(Browser* browser) {
-    browser_.reset(browser);
-  }
-  Browser* release_browser() WARN_UNUSED_RESULT {
-    return browser_.release();
-  }
+  void set_browser(Browser* browser) { browser_.reset(browser); }
+  Browser* release_browser() WARN_UNUSED_RESULT { return browser_.release(); }
 
   TestingProfile* profile() const { return profile_; }
 
@@ -112,6 +109,10 @@ class BrowserWithTestWindowTest : public testing::Test {
   TestingProfileManager* profile_manager() { return profile_manager_.get(); }
 
   content::TestBrowserThreadBundle* thread_bundle() { return &thread_bundle_; }
+
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return &test_url_loader_factory_;
+  }
 
   BrowserWindow* release_browser_window() WARN_UNUSED_RESULT {
     return window_.release();
@@ -186,6 +187,10 @@ class BrowserWithTestWindowTest : public testing::Test {
 #endif
 
   TestingProfile* profile_;
+
+  // test_url_loader_factory_ is declared before profile_manager_
+  // to guarantee it outlives any profiles that might use it.
+  network::TestURLLoaderFactory test_url_loader_factory_;
 
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<BrowserWindow> window_;  // Usually a TestBrowserWindow.
