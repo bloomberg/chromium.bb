@@ -47,7 +47,7 @@ void PositionView(UIView* view, CGPoint point) {
 @property(nonatomic, strong)
     NSArray<NSLayoutConstraint*>* nonAccessibilityConstraints;
 // Header height of the cell.
-@property(nonatomic, strong) NSLayoutConstraint* topBarHeight;
+@property(nonatomic, strong) NSLayoutConstraint* topBarHeightConstraint;
 // Visual components of the cell.
 @property(nonatomic, weak) UIView* topBar;
 @property(nonatomic, weak) UIImageView* iconView;
@@ -254,8 +254,6 @@ void PositionView(UIView* view, CGPoint point) {
   _closeIconView = closeIconView;
 
   _accessibilityConstraints = @[
-    [topBar.heightAnchor
-        constraintEqualToConstant:kGridCellHeaderAccessibilityHeight],
     [titleLabel.leadingAnchor
         constraintEqualToAnchor:topBar.leadingAnchor
                        constant:kGridCellHeaderLeadingInset],
@@ -264,7 +262,6 @@ void PositionView(UIView* view, CGPoint point) {
   ];
 
   _nonAccessibilityConstraints = @[
-    [topBar.heightAnchor constraintEqualToConstant:kGridCellHeaderHeight],
     [iconView.leadingAnchor
         constraintEqualToAnchor:topBar.leadingAnchor
                        constant:kGridCellHeaderLeadingInset],
@@ -276,7 +273,13 @@ void PositionView(UIView* view, CGPoint point) {
                        constant:kGridCellHeaderLeadingInset],
   ];
 
+  _topBarHeightConstraint =
+      [topBar.heightAnchor constraintEqualToConstant:kGridCellHeaderHeight];
+
+  [self updateTopBar];
+
   NSArray* constraints = @[
+    _topBarHeightConstraint,
     [titleLabel.centerYAnchor constraintEqualToAnchor:topBar.centerYAnchor],
     [titleLabel.trailingAnchor
         constraintEqualToAnchor:closeIconView.leadingAnchor
@@ -297,8 +300,6 @@ void PositionView(UIView* view, CGPoint point) {
                                       forAxis:UILayoutConstraintAxisHorizontal];
   [closeIconView setContentHuggingPriority:UILayoutPriorityRequired
                                    forAxis:UILayoutConstraintAxisHorizontal];
-
-  [self updateTopBar];
   return topBar;
 }
 
@@ -306,6 +307,7 @@ void PositionView(UIView* view, CGPoint point) {
 // font size is chosen, the favicon will be hidden, and the title text will be
 // shown in two lines.
 - (void)updateTopBar {
+  self.topBarHeightConstraint.constant = [self topBarHeight];
   if (UIContentSizeCategoryIsAccessibilityCategory(
           self.traitCollection.preferredContentSizeCategory)) {
     self.titleLabel.numberOfLines = 2;
@@ -356,6 +358,15 @@ void PositionView(UIView* view, CGPoint point) {
 // Selector registered to the close button.
 - (void)closeButtonTapped:(id)sender {
   [self.delegate closeButtonTappedForCell:self];
+}
+
+// Returns the height of top bar in grid cell. The value depends on whether
+// accessibility font size is chosen.
+- (CGFloat)topBarHeight {
+  return UIContentSizeCategoryIsAccessibilityCategory(
+             self.traitCollection.preferredContentSizeCategory)
+             ? kGridCellHeaderAccessibilityHeight
+             : kGridCellHeaderHeight;
 }
 
 @end
@@ -446,7 +457,7 @@ void PositionView(UIView* view, CGPoint point) {
 
 - (void)positionTabViews {
   [self scaleTabViews];
-  self.topBarHeight.constant = self.topTabView.frame.size.height;
+  self.topBarHeightConstraint.constant = self.topTabView.frame.size.height;
   [self setNeedsUpdateConstraints];
   [self layoutIfNeeded];
   PositionView(self.topTabView, CGPointMake(0, 0));
@@ -463,7 +474,7 @@ void PositionView(UIView* view, CGPoint point) {
 
 - (void)positionCellViews {
   [self scaleTabViews];
-  self.topBarHeight.constant = kGridCellHeaderHeight;
+  self.topBarHeightConstraint.constant = [self topBarHeight];
   [self setNeedsUpdateConstraints];
   [self layoutIfNeeded];
   CGFloat yOffset = kGridCellHeaderHeight - self.topTabView.frame.size.height;
