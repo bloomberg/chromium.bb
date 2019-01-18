@@ -11,7 +11,6 @@
 
 #if defined(OS_ANDROID)
 #include "base/callback.h"
-#include "base/file_descriptor_posix.h"
 #endif
 
 namespace printing {
@@ -24,15 +23,7 @@ class PrintManager : public content::WebContentsObserver {
   // TODO(timvolodine): consider introducing PrintManagerAndroid (crbug/500960)
   using PdfWritingDoneCallback = base::Callback<void(int /* page count */)>;
 
-  void PdfWritingDone(int page_count);
-
-  // Sets the file descriptor into which the PDF will be written.
-  void set_file_descriptor(const base::FileDescriptor& file_descriptor) {
-    file_descriptor_ = file_descriptor;
-  }
-
-  // Gets the file descriptor into which the PDF will be written.
-  base::FileDescriptor file_descriptor() const { return file_descriptor_; }
+  virtual void PdfWritingDone(int page_count) = 0;
 #endif
 
  protected:
@@ -49,13 +40,10 @@ class PrintManager : public content::WebContentsObserver {
   virtual void OnDidGetPrintedPagesCount(int cookie, int number_pages);
   virtual void OnPrintingFailed(int cookie);
 
-  int number_pages_;  // Number of pages to print in the print job.
-  int cookie_;        // The current document cookie.
+  int number_pages_ = 0;  // Number of pages to print in the print job.
+  int cookie_ = 0;        // The current document cookie.
 
 #if defined(OS_ANDROID)
-  // The file descriptor into which the PDF of the page will be written.
-  base::FileDescriptor file_descriptor_;
-
   // Callback to execute when done writing pdf.
   PdfWritingDoneCallback pdf_writing_done_callback_;
 #endif

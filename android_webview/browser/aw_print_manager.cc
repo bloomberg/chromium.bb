@@ -31,7 +31,7 @@ struct AwPrintManager::FrameDispatchHelper {
 AwPrintManager* AwPrintManager::CreateForWebContents(
     content::WebContents* contents,
     const printing::PrintSettings& settings,
-    const base::FileDescriptor& file_descriptor,
+    int file_descriptor,
     PrintManager::PdfWritingDoneCallback callback) {
   AwPrintManager* print_manager = new AwPrintManager(
       contents, settings, file_descriptor, std::move(callback));
@@ -41,15 +41,20 @@ AwPrintManager* AwPrintManager::CreateForWebContents(
 
 AwPrintManager::AwPrintManager(content::WebContents* contents,
                                const printing::PrintSettings& settings,
-                               const base::FileDescriptor& file_descriptor,
+                               int file_descriptor,
                                PdfWritingDoneCallback callback)
-    : PrintManager(contents), settings_(settings) {
-  file_descriptor_ = file_descriptor;
+    : PrintManager(contents), settings_(settings), fd_(file_descriptor) {
   pdf_writing_done_callback_ = std::move(callback);
   cookie_ = 1;  // Set a valid dummy cookie value.
 }
 
-AwPrintManager::~AwPrintManager() {
+AwPrintManager::~AwPrintManager() = default;
+
+void AwPrintManager::PdfWritingDone(int page_count) {
+  if (pdf_writing_done_callback_)
+    pdf_writing_done_callback_.Run(page_count);
+  // Invalidate the file descriptor so it doesn't get reused.
+  fd_ = -1;
 }
 
 bool AwPrintManager::PrintNow() {

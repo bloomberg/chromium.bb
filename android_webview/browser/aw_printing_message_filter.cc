@@ -26,7 +26,7 @@ AwPrintManager* GetPrintManager(int render_process_id, int render_frame_id) {
   return web_contents ? AwPrintManager::FromWebContents(web_contents) : nullptr;
 }
 
-} // namespace
+}  // namespace
 
 AwPrintingMessageFilter::AwPrintingMessageFilter(int render_process_id)
     : BrowserMessageFilter(PrintMsgStart),
@@ -68,7 +68,7 @@ void AwPrintingMessageFilter::OnAllocateTempFileForPrinting(
     return;
 
   *sequence_number = 0;  // we don't really use the sequence number.
-  temp_file_fd->fd = print_manager->file_descriptor().fd;
+  temp_file_fd->fd = print_manager->fd();
   temp_file_fd->auto_close = false;
 }
 
