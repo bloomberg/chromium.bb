@@ -43,6 +43,7 @@ class GPU_EXPORT GPUTestConfig {
     kOsAndroid = 1 << 16,
     kOsWin10 = 1 << 17,
     kOsWin = kOsWinXP | kOsWinVista | kOsWin7 | kOsWin8 | kOsWin10,
+    kOsFuchsia = 1 << 18,
   };
 
   enum BuildType {

@@ -109,8 +109,11 @@ class ScenicPixmap : public gfx::NativePixmap {
 ScenicSurfaceFactory::ScenicSurfaceFactory(mojom::ScenicGpuHost* gpu_host)
     : gpu_host_(gpu_host),
       egl_implementation_(std::make_unique<GLOzoneEGLScenic>()),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  // TODO(spang, crbug.com/923445): Add message loop to GPU tests.
+  if (base::ThreadTaskRunnerHandle::IsSet())
+    main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+}
 
 ScenicSurfaceFactory::~ScenicSurfaceFactory() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

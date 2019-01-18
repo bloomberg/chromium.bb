@@ -132,8 +132,11 @@ class OzonePlatformScenic
   }
 
   void InitializeGPU(const InitParams& params) override {
-    scenic_gpu_service_ = std::make_unique<ScenicGpuService>(
-        mojo::MakeRequest(&scenic_gpu_host_ptr_));
+    // TODO(spang, crbug.com/923445): Add message loop to GPU tests.
+    if (base::ThreadTaskRunnerHandle::IsSet()) {
+      scenic_gpu_service_ = std::make_unique<ScenicGpuService>(
+          mojo::MakeRequest(&scenic_gpu_host_ptr_));
+    }
     DCHECK(!surface_factory_);
     surface_factory_ =
         std::make_unique<ScenicSurfaceFactory>(scenic_gpu_host_ptr_.get());
