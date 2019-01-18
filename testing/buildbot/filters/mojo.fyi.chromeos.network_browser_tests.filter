@@ -12,6 +12,11 @@
 # Crashing on Mash. https://crbug.com/919108
 -ChromeBrowserMainBrowserTest.VariationsServiceStartsRequestOnNetworkChange
 
+# https://crbug.com/921814
+# ProxyResolutionServiceProvider needs to be converted to NetworkService.
+-ProxyResolutionServiceProviderPacBrowserTest.ResolveProxy
+-ProxyResolutionServiceProviderManualProxyBrowserTest.ResolveProxy
+
 # NOTE: if adding an exclusion for an existing failure (e.g. additional test for
 # feature X that is already not working), please add it beside the existing
 # failures. Otherwise please reach out to network-service-dev@.
