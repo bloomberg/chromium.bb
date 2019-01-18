@@ -1372,14 +1372,8 @@ TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
   p->RemoveIsolatedOriginForTesting(baz_http);
 }
 
-// Fails on Fuchsia x64. crbug.com/922732
-#if defined(OS_FUCHSIA)
-#define MAYBE_DynamicIsolatedOrigins DISABLED_DynamicIsolatedOrigins
-#else
-#define MAYBE_DynamicIsolatedOrigins DynamicIsolatedOrigins
-#endif
 // Verifies that isolated origins only apply to future BrowsingInstances.
-TEST_F(ChildProcessSecurityPolicyTest, MAYBE_DynamicIsolatedOrigins) {
+TEST_F(ChildProcessSecurityPolicyTest, DynamicIsolatedOrigins) {
   url::Origin foo = url::Origin::Create(GURL("https://foo.com/"));
   url::Origin bar = url::Origin::Create(GURL("https://bar.com/"));
   url::Origin baz = url::Origin::Create(GURL("https://baz.com/"));
@@ -1391,89 +1385,92 @@ TEST_F(ChildProcessSecurityPolicyTest, MAYBE_DynamicIsolatedOrigins) {
   LOCKED_EXPECT_THAT(p->isolated_origins_lock_, p->isolated_origins_,
                      testing::IsEmpty());
 
-  // There should be no BrowsingInstances created yet.  The ID that will be
-  // assigned to the first BrowsingInstance to be created is 1.
-  EXPECT_EQ(BrowsingInstanceId::FromUnsafeValue(1),
-            SiteInstanceImpl::NextBrowsingInstanceId());
+  // Save the next BrowsingInstance ID to be created.  Because unit tests run
+  // in batches, this isn't guaranteed to always be 1, for example if a
+  // previous test in the same batch had already created a SiteInstance and
+  // BrowsingInstance.
+  int initial_id(SiteInstanceImpl::NextBrowsingInstanceId().GetUnsafeValue());
 
   // Isolate foo.com and bar.com.
   p->AddIsolatedOrigins({foo, bar});
   LOCKED_EXPECT_THAT(
       p->isolated_origins_lock_, p->isolated_origins_,
-      testing::UnorderedElementsAre(GetIsolatedOriginEntry(1, foo),
-                                    GetIsolatedOriginEntry(1, bar)));
+      testing::UnorderedElementsAre(GetIsolatedOriginEntry(initial_id, foo),
+                                    GetIsolatedOriginEntry(initial_id, bar)));
 
   // Isolating bar.com again should have no effect.
   p->AddIsolatedOrigins({bar});
   LOCKED_EXPECT_THAT(
       p->isolated_origins_lock_, p->isolated_origins_,
-      testing::UnorderedElementsAre(GetIsolatedOriginEntry(1, foo),
-                                    GetIsolatedOriginEntry(1, bar)));
+      testing::UnorderedElementsAre(GetIsolatedOriginEntry(initial_id, foo),
+                                    GetIsolatedOriginEntry(initial_id, bar)));
 
-  // Create a new BrowsingInstance.  Its ID will be 1.
+  // Create a new BrowsingInstance.  Its ID will be |initial_id|.
   std::unique_ptr<BrowserContext> browser_context(new TestBrowserContext());
   scoped_refptr<SiteInstanceImpl> foo_instance = SiteInstanceImpl::CreateForURL(
       browser_context.get(), GURL("https://foo.com/"));
-  EXPECT_EQ(BrowsingInstanceId::FromUnsafeValue(1),
+  EXPECT_EQ(BrowsingInstanceId::FromUnsafeValue(initial_id),
             foo_instance->GetIsolationContext().browsing_instance_id());
-  EXPECT_EQ(BrowsingInstanceId::FromUnsafeValue(2),
+  EXPECT_EQ(BrowsingInstanceId::FromUnsafeValue(initial_id + 1),
             SiteInstanceImpl::NextBrowsingInstanceId());
 
-  // Isolate baz.com.  This will apply to BrowsingInstances with ID 2 and
-  // above.
+  // Isolate baz.com.  This will apply to BrowsingInstances with IDs
+  // |initial_id + 1| and above.
   p->AddIsolatedOrigins({baz});
-  LOCKED_EXPECT_THAT(
-      p->isolated_origins_lock_, p->isolated_origins_,
-      testing::UnorderedElementsAre(GetIsolatedOriginEntry(1, foo),
-                                    GetIsolatedOriginEntry(1, bar),
-                                    GetIsolatedOriginEntry(2, baz)));
+  LOCKED_EXPECT_THAT(p->isolated_origins_lock_, p->isolated_origins_,
+                     testing::UnorderedElementsAre(
+                         GetIsolatedOriginEntry(initial_id, foo),
+                         GetIsolatedOriginEntry(initial_id, bar),
+                         GetIsolatedOriginEntry(initial_id + 1, baz)));
 
   // Isolating bar.com again should not update the old BrowsingInstance ID.
   p->AddIsolatedOrigins({bar});
-  LOCKED_EXPECT_THAT(
-      p->isolated_origins_lock_, p->isolated_origins_,
-      testing::UnorderedElementsAre(GetIsolatedOriginEntry(1, foo),
-                                    GetIsolatedOriginEntry(1, bar),
-                                    GetIsolatedOriginEntry(2, baz)));
+  LOCKED_EXPECT_THAT(p->isolated_origins_lock_, p->isolated_origins_,
+                     testing::UnorderedElementsAre(
+                         GetIsolatedOriginEntry(initial_id, foo),
+                         GetIsolatedOriginEntry(initial_id, bar),
+                         GetIsolatedOriginEntry(initial_id + 1, baz)));
 
   // Create another BrowsingInstance.
   scoped_refptr<SiteInstanceImpl> bar_instance = SiteInstanceImpl::CreateForURL(
       browser_context.get(), GURL("https://bar.com/"));
-  EXPECT_EQ(BrowsingInstanceId::FromUnsafeValue(2),
+  EXPECT_EQ(BrowsingInstanceId::FromUnsafeValue(initial_id + 1),
             bar_instance->GetIsolationContext().browsing_instance_id());
-  EXPECT_EQ(BrowsingInstanceId::FromUnsafeValue(3),
+  EXPECT_EQ(BrowsingInstanceId::FromUnsafeValue(initial_id + 2),
             SiteInstanceImpl::NextBrowsingInstanceId());
 
   // Isolate qux.com.
   p->AddIsolatedOrigins({qux});
-  LOCKED_EXPECT_THAT(
-      p->isolated_origins_lock_, p->isolated_origins_,
-      testing::UnorderedElementsAre(
-          GetIsolatedOriginEntry(1, foo), GetIsolatedOriginEntry(1, bar),
-          GetIsolatedOriginEntry(2, baz), GetIsolatedOriginEntry(3, qux)));
+  LOCKED_EXPECT_THAT(p->isolated_origins_lock_, p->isolated_origins_,
+                     testing::UnorderedElementsAre(
+                         GetIsolatedOriginEntry(initial_id, foo),
+                         GetIsolatedOriginEntry(initial_id, bar),
+                         GetIsolatedOriginEntry(initial_id + 1, baz),
+                         GetIsolatedOriginEntry(initial_id + 2, qux)));
 
   // Check IsIsolatedOrigin() only returns isolated origins if they apply to
   // the provided BrowsingInstance. foo and bar should apply in
-  // BrowsingInstance ID 1+, baz in IDs 2+, and qux in 3+.
-  EXPECT_TRUE(IsIsolatedOrigin(1, foo));
-  EXPECT_TRUE(IsIsolatedOrigin(1, bar));
-  EXPECT_FALSE(IsIsolatedOrigin(1, baz));
-  EXPECT_FALSE(IsIsolatedOrigin(1, qux));
+  // BrowsingInstance ID |initial_id| and above, baz in IDs |initial_id + 1|
+  // and above, and qux in |initial_id + 2| and above.
+  EXPECT_TRUE(IsIsolatedOrigin(initial_id, foo));
+  EXPECT_TRUE(IsIsolatedOrigin(initial_id, bar));
+  EXPECT_FALSE(IsIsolatedOrigin(initial_id, baz));
+  EXPECT_FALSE(IsIsolatedOrigin(initial_id, qux));
 
-  EXPECT_TRUE(IsIsolatedOrigin(2, foo));
-  EXPECT_TRUE(IsIsolatedOrigin(2, bar));
-  EXPECT_TRUE(IsIsolatedOrigin(2, baz));
-  EXPECT_FALSE(IsIsolatedOrigin(2, qux));
+  EXPECT_TRUE(IsIsolatedOrigin(initial_id + 1, foo));
+  EXPECT_TRUE(IsIsolatedOrigin(initial_id + 1, bar));
+  EXPECT_TRUE(IsIsolatedOrigin(initial_id + 1, baz));
+  EXPECT_FALSE(IsIsolatedOrigin(initial_id + 1, qux));
 
-  EXPECT_TRUE(IsIsolatedOrigin(3, foo));
-  EXPECT_TRUE(IsIsolatedOrigin(3, bar));
-  EXPECT_TRUE(IsIsolatedOrigin(3, baz));
-  EXPECT_TRUE(IsIsolatedOrigin(3, qux));
+  EXPECT_TRUE(IsIsolatedOrigin(initial_id + 2, foo));
+  EXPECT_TRUE(IsIsolatedOrigin(initial_id + 2, bar));
+  EXPECT_TRUE(IsIsolatedOrigin(initial_id + 2, baz));
+  EXPECT_TRUE(IsIsolatedOrigin(initial_id + 2, qux));
 
-  EXPECT_TRUE(IsIsolatedOrigin(42, foo));
-  EXPECT_TRUE(IsIsolatedOrigin(42, bar));
-  EXPECT_TRUE(IsIsolatedOrigin(42, baz));
-  EXPECT_TRUE(IsIsolatedOrigin(42, qux));
+  EXPECT_TRUE(IsIsolatedOrigin(initial_id + 42, foo));
+  EXPECT_TRUE(IsIsolatedOrigin(initial_id + 42, bar));
+  EXPECT_TRUE(IsIsolatedOrigin(initial_id + 42, baz));
+  EXPECT_TRUE(IsIsolatedOrigin(initial_id + 42, qux));
 
   // A default-constructed IsolationContext should return the latest available
   // isolated origins.
