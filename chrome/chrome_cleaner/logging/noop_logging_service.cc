@@ -91,7 +91,8 @@ void NoOpLoggingService::SetWinHttpProxySettings(
 
 void NoOpLoggingService::AddInstalledExtension(
     const base::string16& extension_id,
-    ExtensionInstallMethod install_method) {}
+    ExtensionInstallMethod install_method,
+    const std::vector<internal::FileInformation>& extension_files) {}
 
 void NoOpLoggingService::AddScheduledTask(
     const base::string16& /*name*/,

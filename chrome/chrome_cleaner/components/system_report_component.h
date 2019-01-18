@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "chrome/chrome_cleaner/chrome_utils/extension_file_logger.h"
 #include "chrome/chrome_cleaner/components/component_api.h"
 #include "chrome/chrome_cleaner/parsers/json_parser/json_parser_api.h"
 
@@ -29,10 +30,12 @@ class SystemReportComponent : public ComponentAPI {
 
   // Only exposed for tests.
   bool created_report() { return created_report_; }
+  void SetUserDataPathForTesting(const base::FilePath& test_user_data_path);
 
  private:
   bool created_report_;
   JsonParserAPI* json_parser_;
+  base::FilePath user_data_path_;
 };
 
 }  // namespace chrome_cleaner

@@ -29,6 +29,7 @@
 #include "chrome/chrome_cleaner/logging/api_keys.h"
 #include "chrome/chrome_cleaner/logging/pending_logs_service.h"
 #include "chrome/chrome_cleaner/logging/proto/removal_status.pb.h"
+#include "chrome/chrome_cleaner/logging/proto/shared_data.pb.h"
 #include "chrome/chrome_cleaner/logging/registry_logger.h"
 #include "chrome/chrome_cleaner/logging/utils.h"
 #include "chrome/chrome_cleaner/os/disk_util.h"
@@ -585,13 +586,19 @@ void CleanerLoggingService::SetWinHttpProxySettings(
 
 void CleanerLoggingService::AddInstalledExtension(
     const base::string16& extension_id,
-    ExtensionInstallMethod install_method) {
+    ExtensionInstallMethod install_method,
+    const std::vector<internal::FileInformation>& extension_files) {
   base::AutoLock lock(lock_);
   ChromeCleanerReport_SystemReport_InstalledExtension* installed_extension =
       chrome_cleaner_report_.mutable_system_report()
           ->add_installed_extensions();
   installed_extension->set_extension_id(base::UTF16ToUTF8(extension_id));
   installed_extension->set_install_method(install_method);
+  for (const auto& file : extension_files) {
+    FileInformation proto_file_information;
+    FileInformationToProtoObject(file, &proto_file_information);
+    *installed_extension->add_extension_files() = proto_file_information;
+  }
 }
 
 void CleanerLoggingService::AddScheduledTask(

@@ -72,9 +72,11 @@ class MockLoggingService : public LoggingServiceAPI {
   MOCK_METHOD2(SetWinHttpProxySettings,
                void(const base::string16& config,
                     const base::string16& bypass));
-  MOCK_METHOD2(AddInstalledExtension,
-               void(const base::string16& extension_id,
-                    ExtensionInstallMethod install_method));
+  MOCK_METHOD3(
+      AddInstalledExtension,
+      void(const base::string16& extension_id,
+           ExtensionInstallMethod install_method,
+           const std::vector<internal::FileInformation>& file_information));
   MOCK_METHOD3(AddScheduledTask,
                void(const base::string16& name,
                     const base::string16& description,
