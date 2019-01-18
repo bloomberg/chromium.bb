@@ -81,9 +81,6 @@ void ImmersiveGestureDragHandler::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 bool ImmersiveGestureDragHandler::CanDrag(ui::GestureEvent* event) {
-  if (!base::FeatureList::IsEnabled(ash::features::kDragAppsInTabletMode))
-    return false;
-
   views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(
       static_cast<aura::Window*>(event->target()));
   if (!widget)
