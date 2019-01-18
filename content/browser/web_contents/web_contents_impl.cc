@@ -1729,7 +1729,10 @@ void WebContentsImpl::SetMainFrameImportance(
 #endif
 
 void WebContentsImpl::WasOccluded() {
-  if (!IsBeingCaptured()) {
+  // If there are entities capturing screenshots or video (e.g. mirroring),
+  // or in Picture-in-Picture mode, don't activate the "disable rendering"
+  // optimization.
+  if (!IsBeingCaptured() && !HasPictureInPictureVideo()) {
     if (auto* main_view = GetRenderWidgetHostView())
       main_view->WasOccluded();
     if (!ShowingInterstitialPage()) {
@@ -1738,6 +1741,12 @@ void WebContentsImpl::WasOccluded() {
       SetVisibilityForChildViews(false);
     }
   }
+
+  // Inform the renderer that the page was hidden if there are no entities
+  // capturing screenshots or video (e.g. mirroring).
+  if (!IsBeingCaptured())
+    SendPageMessage(new PageMsg_WasHidden(MSG_ROUTING_NONE));
+
   SetVisibility(Visibility::OCCLUDED);
 }
 
