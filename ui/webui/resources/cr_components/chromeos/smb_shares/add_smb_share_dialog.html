@@ -123,16 +123,13 @@
         </div>
       </div>
       <div slot="button-container">
-        <!-- Buttons -->
-        <div>
-          <paper-button class="cancel-button" on-click="cancel_" id="cancel">
-            [[i18n('cancel')]]
-          </paper-button>
-          <paper-button class="action-button" on-click="onAddButtonTap_"
-              disabled="[[!canAddShare_(mountUrl_, inProgress_)]]">
-            [[i18n('add')]]
-          </paper-button>
-        </div>
+        <paper-button class="cancel-button" on-click="cancel_" id="cancel">
+          [[i18n('cancel')]]
+        </paper-button>
+        <paper-button class="action-button" on-click="onAddButtonTap_"
+            disabled="[[!canAddShare_(mountUrl_, inProgress_)]]">
+          [[i18n('add')]]
+        </paper-button>
       </div>
     </cr-dialog>
   </template>
