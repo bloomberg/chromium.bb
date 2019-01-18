@@ -4,6 +4,8 @@
 
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 
+#include <Security/Security.h>
+
 #include <utility>
 
 #include "apps/app_lifetime_monitor_factory.h"
@@ -12,6 +14,8 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
@@ -101,6 +105,56 @@ bool FocusHostedAppWindows(const std::set<Browser*>& browsers) {
 
   ui::FocusWindowSet(native_windows);
   return true;
+}
+
+// Returns whether |pid|'s code signature is trusted:
+// - True if |pid| is validly signed and satisfies the designated requirement
+//   embedded in the calling process's signature.
+// - True if the caller is not signed *and* not an official Chrome build.
+// - False otherwise (e.g. the shim doesn't satisfy the browser's designated
+//   requirement, or the browser is an official Chrome build but unsigned).
+bool IsAcceptablyCodeSigned(pid_t pid) {
+  base::ScopedCFTypeRef<SecCodeRef> own_code;
+  base::ScopedCFTypeRef<SecRequirementRef> own_designated_requirement;
+
+  // Fetch the calling process's designated requirement. The shim can only be
+  // validated if the caller has one (i.e. if the caller is code signed).
+  //
+  // Note: Don't validate |own_code|: updates modify the browser's bundle and
+  // invalidate its code signature while an update is pending. This can be
+  // revisited after https://crbug.com/496298 is resolved.
+  if (SecCodeCopySelf(kSecCSDefaultFlags, own_code.InitializeInto()) !=
+          errSecSuccess ||
+      SecCodeCopyDesignatedRequirement(
+          own_code, kSecCSDefaultFlags,
+          own_designated_requirement.InitializeInto()) != errSecSuccess) {
+#if defined(OFFICIAL_BUILD) && defined(GOOGLE_CHROME_BUILD)
+    // This is an official Chrome build, which should always be signed. Fail.
+    return false;
+#else
+    // This is some other kind of unsigned build (like a local one). Pass.
+    return true;
+#endif
+  }
+
+  base::ScopedCFTypeRef<SecCodeRef> guest_code;
+
+  base::ScopedCFTypeRef<CFNumberRef> pid_cf(
+      CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &pid));
+  const void* guest_attribute_keys[] = {kSecGuestAttributePid};
+  const void* guest_attribute_values[] = {pid_cf};
+  base::ScopedCFTypeRef<CFDictionaryRef> guest_attributes(CFDictionaryCreate(
+      nullptr, guest_attribute_keys, guest_attribute_values,
+      base::size(guest_attribute_keys), &kCFTypeDictionaryKeyCallBacks,
+      &kCFTypeDictionaryValueCallBacks));
+  if (SecCodeCopyGuestWithAttributes(nullptr, guest_attributes,
+                                     kSecCSDefaultFlags,
+                                     guest_code.InitializeInto())) {
+    return false;
+  }
+
+  return SecCodeCheckValidity(guest_code, kSecCSDefaultFlags,
+                              own_designated_requirement) == errSecSuccess;
 }
 
 // Attempts to launch a packaged app, prompting the user to enable it if
@@ -579,6 +633,18 @@ void ExtensionAppShimHandler::OnExtensionEnabled(
       delegate_->MaybeGetAppExtension(profile, bootstrap->GetAppId());
   if (!extension) {
     bootstrap->OnFailedToConnectToHost(APP_SHIM_LAUNCH_APP_NOT_FOUND);
+    return;
+  }
+
+  // If the connecting shim process doesn't have an acceptable code signature,
+  // reject the connection and recreate the shim.
+  if (!IsAcceptablyCodeSigned(bootstrap->GetAppShimPid())) {
+    if (bootstrap->GetLaunchType() == APP_SHIM_LAUNCH_NORMAL) {
+      constexpr bool recreate_shims = true;
+      delegate_->LaunchShim(profile, extension, recreate_shims,
+                            base::BindOnce([](base::Process) {}));
+    }
+    bootstrap->OnFailedToConnectToHost(APP_SHIM_LAUNCH_FAILED_VALIDATION);
     return;
   }
 
