@@ -69,23 +69,16 @@ group("closure_compile") {
     ":settings_resources",
     "a11y_page:closure_compile",
     "about_page:closure_compile",
-    "android_apps_page:closure_compile",
     "appearance_page:closure_compile",
     "autofill_page:closure_compile",
     "basic_page:closure_compile",
-    "bluetooth_page:closure_compile",
     "change_password_page:closure_compile",
     "chrome_cleanup_page:closure_compile",
     "clear_browsing_data_dialog:closure_compile",
     "controls:closure_compile",
-    "date_time_page:closure_compile",
-    "default_browser_page:closure_compile",
-    "device_page:closure_compile",
     "downloads_page:closure_compile",
     "incompatible_applications_page:closure_compile",
-    "internet_page:closure_compile",
     "languages_page:closure_compile",
-    "multidevice_page:closure_compile",
     "on_startup_page:closure_compile",
     "people_page:closure_compile",
     "prefs:closure_compile",
@@ -100,8 +93,25 @@ group("closure_compile") {
     "settings_ui:closure_compile",
     "site_settings:closure_compile",
     "site_settings_page:closure_compile",
-    "system_page:closure_compile",
   ]
+
+  if (!is_chromeos) {
+    deps += [
+      "default_browser_page:closure_compile",
+      "system_page:closure_compile",
+    ]
+  }
+
+  if (is_chromeos) {
+    deps += [
+      "android_apps_page:closure_compile",
+      "bluetooth_page:closure_compile",
+      "date_time_page:closure_compile",
+      "device_page:closure_compile",
+      "internet_page:closure_compile",
+      "multidevice_page:closure_compile",
+    ]
+  }
 }
 
 js_type_check("settings_resources") {
