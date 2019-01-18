@@ -19,8 +19,6 @@
 
 namespace net {
 
-class NetLog;
-class WebSocketEndpointLockManager;
 class WebSocketTransportConnectSubJob;
 
 // WebSocketTransportConnectJob handles the host resolution necessary for socket
@@ -39,15 +37,10 @@ class WebSocketTransportConnectSubJob;
 class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
  public:
   WebSocketTransportConnectJob(
-      const std::string& group_name,
       RequestPriority priority,
-      bool respect_limits,
+      const CommonConnectJobParams& common_connect_job_params,
       const scoped_refptr<TransportSocketParams>& params,
-      ClientSocketFactory* client_socket_factory,
-      HostResolver* host_resolver,
-      Delegate* delegate,
-      NetLog* pool_net_log,
-      WebSocketEndpointLockManager* websocket_endpoint_lock_manager);
+      Delegate* delegate);
   ~WebSocketTransportConnectJob() override;
 
   // ConnectJob methods.
@@ -90,9 +83,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
   void ChangePriorityInternal(RequestPriority priority) override;
 
   scoped_refptr<TransportSocketParams> params_;
-  HostResolver* resolver_;
   std::unique_ptr<HostResolver::Request> request_;
-  ClientSocketFactory* const client_socket_factory_;
 
   State next_state_;
 
@@ -106,7 +97,6 @@ class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
 
   base::OneShotTimer fallback_timer_;
   TransportConnectJob::RaceResult race_result_;
-  WebSocketEndpointLockManager* const websocket_endpoint_lock_manager_;
 
   bool had_ipv4_;
   bool had_ipv6_;

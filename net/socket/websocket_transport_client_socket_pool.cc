@@ -111,11 +111,13 @@ int WebSocketTransportClientSocketPool::RequestSocket(
 
   std::unique_ptr<ConnectJob> connect_job =
       casted_params->create_connect_job_callback().Run(
-          group_name, priority, SocketTag(),
-          respect_limits == RespectLimits::ENABLED, client_socket_factory_,
-          nullptr /* SocketPerformanceWatcherFactory */, host_resolver_,
-          connect_job_delegate.get(), pool_net_log_,
-          websocket_endpoint_lock_manager_);
+          priority,
+          CommonConnectJobParams(
+              group_name, SocketTag(), respect_limits == RespectLimits::ENABLED,
+              client_socket_factory_,
+              nullptr /* SocketPerformanceWatcherFactory */, host_resolver_,
+              pool_net_log_, websocket_endpoint_lock_manager_),
+          connect_job_delegate.get());
 
   int result = connect_job_delegate->Connect(std::move(connect_job));
 

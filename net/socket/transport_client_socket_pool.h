@@ -25,7 +25,6 @@ class NetLog;
 class NetLogWithSource;
 class SocketPerformanceWatcherFactory;
 class TransportSocketParams;
-class WebSocketEndpointLockManager;
 
 class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
  public:
@@ -36,16 +35,9 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
   // WebSockets should be created.
   using CreateConnectJobCallback =
       base::RepeatingCallback<std::unique_ptr<ConnectJob>(
-          const std::string& group_name,
           RequestPriority priority,
-          const SocketTag& socket_tag,
-          bool respect_limits,
-          ClientSocketFactory* client_socket_factory,
-          SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
-          HostResolver* host_resolver,
-          ConnectJob::Delegate* delegate,
-          NetLog* net_log,
-          WebSocketEndpointLockManager* websocket_endpoint_lock_manager)>;
+          const CommonConnectJobParams& common_connect_job_params,
+          ConnectJob::Delegate* delegate)>;
 
   // "Parameters" that own a single callback for creating a ConnectJob that can
   // be of any type.
