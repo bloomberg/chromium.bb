@@ -1041,6 +1041,17 @@ bool TestRecipeReplayer::ExecuteValidateFieldValueAction(
       return false;
     }
 
+    // If we are validating the value of a Chrome autofilled field, print the
+    // Chrome Autofill's field annotation for debugging purpose.
+    std::string title;
+    if (GetElementProperty(frame, xpath, "return target.getAttribute('title');",
+                           &title)) {
+      VLOG(1) << title;
+    } else {
+      ADD_FAILURE()
+          << "Failed to obtain the field's Chrome Autofill annotation!";
+    }
+
     std::string expected_autofill_prediction_type =
         autofill_prediction_container->GetString();
     VLOG(1) << "Checking the field `" << xpath << "` has the autofill type '"
@@ -1381,6 +1392,28 @@ bool TestRecipeReplayer::ExecuteJavaScriptOnElementByXpath(
   return ExecuteScript(frame, js);
 }
 
+bool TestRecipeReplayer::GetElementProperty(
+    const content::ToRenderFrameHost& frame,
+    const std::string& element_xpath,
+    const std::string& get_property_function_body,
+    std::string* property) {
+  return ExecuteScriptAndExtractString(
+      frame,
+      base::StringPrintf(
+          "window.domAutomationController.send("
+          "    (function() {"
+          "      try {"
+          "        var element = function() {"
+          "          return automation_helper.getElementByXpath(`%s`);"
+          "        }();"
+          "        return function(target){%s}(element);"
+          "      } catch (ex) {}"
+          "      return 'Exception encountered';"
+          "    })());",
+          element_xpath.c_str(), get_property_function_body.c_str()),
+      property);
+}
+
 bool TestRecipeReplayer::ExpectElementPropertyEquals(
     const content::ToRenderFrameHost& frame,
     const std::string& element_xpath,
@@ -1388,35 +1421,22 @@ bool TestRecipeReplayer::ExpectElementPropertyEquals(
     const std::string& expected_value,
     bool ignoreCase) {
   std::string value;
-  if (ExecuteScriptAndExtractString(
-          frame,
-          base::StringPrintf(
-              "window.domAutomationController.send("
-              "    (function() {"
-              "      try {"
-              "        var element = function() {"
-              "          return automation_helper.getElementByXpath(`%s`);"
-              "        }();"
-              "        return function(target){%s}(element);"
-              "      } catch (ex) {}"
-              "      return 'Exception encountered';"
-              "    })());",
-              element_xpath.c_str(), get_property_function_body.c_str()),
-          &value)) {
-    if (ignoreCase) {
-      EXPECT_TRUE(base::EqualsCaseInsensitiveASCII(expected_value, value))
-          << "Field xpath: `" << element_xpath << "`, "
-          << "Expected: " << expected_value << ", actual: " << value;
-    } else {
-      EXPECT_EQ(expected_value, value)
-          << "Field xpath: `" << element_xpath << "`, ";
-    }
-    return true;
+  if (!GetElementProperty(frame, element_xpath, get_property_function_body,
+                          &value)) {
+    ADD_FAILURE() << "Failed to extract element property! " << element_xpath
+                  << ", " << get_property_function_body;
+    return false;
   }
 
-  ADD_FAILURE() << "Failed to extract element property! " << element_xpath
-                << ", " << get_property_function_body;
-  return false;
+  if (ignoreCase) {
+    EXPECT_TRUE(base::EqualsCaseInsensitiveASCII(expected_value, value))
+        << "Field xpath: `" << element_xpath << "`, "
+        << "Expected: " << expected_value << ", actual: " << value;
+  } else {
+    EXPECT_EQ(expected_value, value)
+        << "Field xpath: `" << element_xpath << "`, ";
+  }
+  return true;
 }
 
 bool TestRecipeReplayer::PlaceFocusOnElement(
