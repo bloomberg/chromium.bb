@@ -44,6 +44,14 @@ html {
   height: 100%;
 }
 
+html[darkmode=true] {
+  /* These can be overridden by themes. */
+  --text-color: rgb(var(--GG200-rgb));
+  --text-color-light: rgb(var(--GG200-rgb));
+  --text-color-link: rgb(var(--GB400-dark-rgb));
+}
+
+
 /* width >= (3 cols * (16px + 154px) - 16px + 200px) */
 @media (min-width: 694px) {
   html {
@@ -306,12 +314,21 @@ html[dir=rtl] #mv-notice-x {
   margin-right: 20px;
 }
 
+html[darkmode=true] #mv-notice-x {
+  background-color: rgb(var(--GG200-rgb));
+}
+
 #mv-notice-x:hover {
   background-color: rgba(90, 90, 90, 1.0);
 }
 
 #mv-notice-x:active {
   background-color: rgb(var(--GB500-rgb));
+}
+
+html[darkmode=true] #mv-notice-x:hover,
+html[darkmode=true] #mv-notice-x:active {
+  background-color: rgb(var(--GG400-rgb));
 }
 
 .md-icons #mv-notice-x {
@@ -370,6 +387,11 @@ html[dir=rtl] #mv-notice-x {
   width: fit-content;
 }
 
+html[darkmode=true] .md-icons #mv-notice {
+  background-color: rgb(var(--GG900-rgb));
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 #mv-notice span {
   cursor: default;
   display: inline-block;
@@ -383,6 +405,10 @@ html[dir=rtl] #mv-notice-x {
   height: auto;
   line-height: 32px;
   vertical-align: unset;
+}
+
+html[darkmode=true] .md-icons #mv-notice span {
+  color: rgb(var(--GG200-rgb));
 }
 
 /* Links in the notification. */
@@ -403,6 +429,10 @@ html[dir=rtl] #mv-notice-x {
   position: relative;
 }
 
+html[darkmode=true] .md-icons #mv-notice-links span {
+  color: rgb(var(--GB400-dark-rgb));
+}
+
 #mv-notice-links span:hover,
 #mv-notice-links span:focus {
   text-decoration: underline;
@@ -413,6 +443,11 @@ html[dir=rtl] #mv-notice-x {
   background-color: rgba(var(--GB600-rgb), 0.1);
   text-decoration: none;
   transition: background-color 200ms;
+}
+
+html[darkmode=true] .md-icons #mv-notice-links span:hover,
+html[darkmode=true] .md-icons #mv-notice-links span:active {
+  background-color: rgba(var(--GB400-dark-rgb), 0.1);
 }
 
 #mv-msg {
@@ -429,6 +464,11 @@ html[dir=rtl] #mv-notice-x {
 
 .default-theme.dark #mv-notice-links :not(.md-icons) span {
   color: #fff;
+}
+
+html[darkmode=true] .default-theme.dark #mv-msg :not(.md-icons),
+html[darkmode=true] .default-theme.dark #mv-notice-links :not(.md-icons) span {
+  color: rgb(var(--GG200-rgb));
 }
 
 #mv-notice.mv-notice-delayed-hide:not(:focus-within) {
@@ -601,6 +641,12 @@ input:checked + .toggle::before {
   width: fit-content;
 }
 
+html[darkmode=true] #error-notice {
+  background-color: rgb(var(--GG900-rgb));
+  border-color: rgba(0, 0, 0, 0.1);
+  color: rgb(var(--GR500-dark-rgb));
+}
+
 #error-notice.notice-hide {
   display: none;
 }
@@ -648,6 +694,10 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
   position: relative;
 }
 
+html[darkmode=true] #error-notice-link {
+  color: rgb(var(--GB400-dark-rgb));
+}
+
 #error-notice:not(.has-link) #error-notice-link {
   display: none;
 }
@@ -662,6 +712,11 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
   background-color: rgba(var(--GB600-rgb), 0.1);
   text-decoration: none;
   transition: background-color 200ms;
+}
+
+html[darkmode=true] #error-notice-link:hover,
+html[darkmode=true] #error-notice-link:active {
+  background-color: rgba(var(--GB400-dark-rgb), 0.1);
 }
 
 #promo {
@@ -697,6 +752,12 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
   white-space: nowrap;
 }
 
+html[darkmode=true] #promo > div {
+  background-color: rgb(var(--GG900-rgb));
+  border-color: rgba(0, 0, 0, 0.1);
+  color: rgb(var(--GG200-rgb));
+}
+
 /**
  * Hide the promo if the window is too small:
  * max-width = promo.max-width (505px) + 2 * edit gear icon (16px + 28px + 8px)
@@ -716,6 +777,11 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 
 #promo > div > a:visited {
   color: rgb(51, 103, 214) !important;
+}
+
+html[darkmode=true] #promo > div > a,
+html[darkmode=true] #promo > div > a:visited {
+  color: rgb(var(--GB400-dark-rgb)) !important;
 }
 
 #promo > div > img {
