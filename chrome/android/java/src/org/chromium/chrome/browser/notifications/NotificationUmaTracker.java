@@ -116,6 +116,21 @@ public class NotificationUmaTracker {
                 .record(type);
     }
 
+    /**
+     * Logs notification dismiss event the user swipes away the notification.
+     * @param type Type of the notification.
+     */
+    public void onNotificationDismiss(@SystemNotificationType int type) {
+        if (type == SystemNotificationType.UNKNOWN) return;
+
+        // TODO(xingliu): This may not work if Android kill Chrome before native library is loaded.
+        // Cache data in Android shared preference and flush them to native when available.
+        new CachedMetrics
+                .EnumeratedHistogramSample(
+                        "Mobile.SystemNotification.Dismiss", SystemNotificationType.NUM_ENTRIES)
+                .record(type);
+    }
+
     private void logNotificationShown(
             @SystemNotificationType int type, @ChannelDefinitions.ChannelId String channelId) {
         if (!mNotificationManager.areNotificationsEnabled()) {

@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -68,7 +69,7 @@ public class NotificationIntentInterceptor {
                             notificationType);
                     break;
                 case IntentType.DELETE_INTENT:
-                    // TODO(xingliu): Tracks dismiss event.
+                    NotificationUmaTracker.getInstance().onNotificationDismiss(notificationType);
                     break;
                 case IntentType.ACTION_INTENT:
                     // TODO(xingliu): Tracks action click event.
@@ -82,20 +83,27 @@ public class NotificationIntentInterceptor {
     private NotificationIntentInterceptor() {}
 
     /**
-     * Wraps the notification {@link PendingIntent }into another PendingIntent, to intercept clicks
+     * Wraps the notification {@link PendingIntent} into another PendingIntent, to intercept clicks
      * and dismiss events for metrics purpose.
      * @param intentType The type of the pending intent to intercept.
      * @param intentId The unique ID of the {@link PendingIntent}, used to distinguish action
      *                 intents.
      * @param metadata The metadata including notification id, tag, type, etc.
-     * @param pendingIntent The {@link PendingIntentProvider} of the notification that contains the
-     *                      {@link Notification#contentIntent}.
+     * @param pendingIntentProvider Provides the {@link PendingIntent} to launch Chrome.
+     *
      */
     public static PendingIntent createInterceptPendingIntent(@IntentType int intentType,
-            int intentId, NotificationMetadata metadata, PendingIntentProvider pendingIntent) {
+            int intentId, NotificationMetadata metadata,
+            @Nullable PendingIntentProvider pendingIntentProvider) {
+        PendingIntent pendingIntent = null;
+        int flags = 0;
+        if (pendingIntentProvider != null) {
+            pendingIntent = pendingIntentProvider.getPendingIntent();
+            flags = pendingIntentProvider.getFlags();
+        }
         Context applicationContext = ContextUtils.getApplicationContext();
         Intent intent = new Intent(applicationContext, Receiver.class);
-        intent.putExtra(EXTRA_PENDING_INTENT, pendingIntent.getPendingIntent());
+        intent.putExtra(EXTRA_PENDING_INTENT, pendingIntent);
         intent.putExtra(EXTRA_INTENT_TYPE, intentType);
         intent.putExtra(EXTRA_NOTIFICATION_TYPE, metadata.type);
 
@@ -106,8 +114,18 @@ public class NotificationIntentInterceptor {
         }
         // Use request code to distinguish different PendingIntents on Android.
         int requestCode = computeHashCode(metadata, intentType, intentId);
-        return PendingIntent.getBroadcast(
-                applicationContext, requestCode, intent, pendingIntent.getFlags());
+        return PendingIntent.getBroadcast(applicationContext, requestCode, intent, flags);
+    }
+
+    /**
+     * Get the default delete PendingIntent used to track the notification metrics.
+     * @param metadata The metadata including notification id, tag, type, etc.
+     * @return The {@link PendingIntent} triggered when the user dismiss the notification.
+     */
+    public static PendingIntent getDefaultDeletePendingIntent(NotificationMetadata metadata) {
+        return NotificationIntentInterceptor.createInterceptPendingIntent(
+                NotificationIntentInterceptor.IntentType.DELETE_INTENT, 0 /* intentId */, metadata,
+                null /* pendingIntentProvider */);
     }
 
     // Launches the notification's pending intent, which will perform Chrome feature related tasks.

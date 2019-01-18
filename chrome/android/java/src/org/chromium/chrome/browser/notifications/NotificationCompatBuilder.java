@@ -31,6 +31,10 @@ public class NotificationCompatBuilder implements ChromeNotificationBuilder {
         }
         mBuilder = new NotificationCompat.Builder(context, channelId);
         mMetadata = metadata;
+        if (mMetadata != null) {
+            mBuilder.setDeleteIntent(
+                    NotificationIntentInterceptor.getDefaultDeletePendingIntent(mMetadata));
+        }
     }
 
     @Override
@@ -141,6 +145,15 @@ public class NotificationCompatBuilder implements ChromeNotificationBuilder {
     @Override
     public ChromeNotificationBuilder setDeleteIntent(PendingIntent intent) {
         mBuilder.setDeleteIntent(intent);
+        return this;
+    }
+
+    @Override
+    public ChromeNotificationBuilder setDeleteIntent(PendingIntentProvider intent) {
+        assert (mMetadata != null);
+        mBuilder.setDeleteIntent(NotificationIntentInterceptor.createInterceptPendingIntent(
+                NotificationIntentInterceptor.IntentType.DELETE_INTENT, 0 /* intentId */, mMetadata,
+                intent));
         return this;
     }
 
