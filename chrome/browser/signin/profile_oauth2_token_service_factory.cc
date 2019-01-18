@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -38,6 +39,10 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/user_manager/user_manager.h"
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_WIN)
+#include "chrome/browser/signin/signin_util_win.h"
+#endif
 
 namespace {
 
@@ -104,7 +109,13 @@ CreateMutableProfileOAuthDelegate(Profile* profile) {
       WebDataServiceFactory::GetTokenWebDataForProfile(
           profile, ServiceAccessType::EXPLICIT_ACCESS),
       account_consistency, revoke_all_tokens_on_load,
-      CanRevokeCredentials(profile));
+      CanRevokeCredentials(profile),
+#if defined(OS_WIN)
+      base::BindRepeating(&signin_util::ReauthWithCredentialProviderIfPossible,
+                          base::Unretained(profile)));
+#else
+      MutableProfileOAuth2TokenServiceDelegate::FixRequestErrorCallback());
+#endif  // defined(OS_WIN)
 }
 #endif  // !defined(OS_ANDROID)
 

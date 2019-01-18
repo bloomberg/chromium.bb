@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
@@ -31,13 +32,16 @@ class MutableProfileOAuth2TokenServiceDelegate
       public WebDataServiceConsumer,
       public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
+  using FixRequestErrorCallback = base::RepeatingCallback<bool()>;
+
   MutableProfileOAuth2TokenServiceDelegate(
       SigninClient* client,
       AccountTrackerService* account_tracker_service,
       scoped_refptr<TokenWebData> token_web_data,
       signin::AccountConsistencyMethod account_consistency,
       bool revoke_all_tokens_on_load,
-      bool can_revoke_credentials);
+      bool can_revoke_credentials,
+      FixRequestErrorCallback fix_request_error_callback);
   ~MutableProfileOAuth2TokenServiceDelegate() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -75,6 +79,8 @@ class MutableProfileOAuth2TokenServiceDelegate
 
   // Overridden from OAuth2TokenServiceDelegate.
   const net::BackoffEntry* BackoffEntry() const override;
+
+  bool FixRequestErrorIfPossible() override;
 
   // Returns the account's refresh token used for testing purposes.
   std::string GetRefreshTokenForTest(const std::string& account_id) const;
@@ -219,6 +225,10 @@ class MutableProfileOAuth2TokenServiceDelegate
   // TODO(droger): remove this when supervised users are no longer supported on
   // any platform.
   const bool can_revoke_credentials_;
+
+  // Callback function that attempts to correct request errors.  Best effort
+  // only.  Returns true if the error was fixed and retry should be reattempted.
+  FixRequestErrorCallback fix_request_error_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MutableProfileOAuth2TokenServiceDelegate);
 };

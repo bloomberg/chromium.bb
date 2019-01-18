@@ -121,6 +121,10 @@ class OAuth2TokenServiceDelegate {
   virtual void ExtractCredentials(OAuth2TokenService* to_service,
                                   const std::string& account_id);
 
+  // Attempts to fix the error if possible.  Returns true if the error was fixed
+  // and false otherwise.
+  virtual bool FixRequestErrorIfPossible();
+
   // -----------------------------------------------------------------------
   // End of methods that are only used by ProfileOAuth2TokenService
   // -----------------------------------------------------------------------

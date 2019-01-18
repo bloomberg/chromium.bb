@@ -15,6 +15,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_util_win.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
@@ -25,6 +27,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 
 namespace {
@@ -95,15 +98,7 @@ class SigninUtilWinBrowserTest
     registry_override_.OverrideRegistry(HKEY_CURRENT_USER);
 
     base::win::RegKey key;
-
-    if (!GetParam().gaia_id.empty()) {
-      EXPECT_EQ(
-          ERROR_SUCCESS,
-          key.Create(HKEY_CURRENT_USER,
-                     credential_provider::kRegHkcuAccountsPath, KEY_WRITE));
-      EXPECT_EQ(ERROR_SUCCESS,
-                key.CreateKey(GetParam().gaia_id.c_str(), KEY_WRITE));
-    }
+    CreateRegKey(&key);
 
     if (!GetParam().email.empty()) {
       EXPECT_TRUE(key.Valid());
@@ -113,17 +108,8 @@ class SigninUtilWinBrowserTest
                     GetParam().email.c_str()));
     }
 
-    if (!GetParam().refresh_token.empty()) {
-      EXPECT_TRUE(key.Valid());
-      std::string ciphertext;
-      EXPECT_TRUE(
-          OSCrypt::EncryptString(GetParam().refresh_token, &ciphertext));
-      EXPECT_EQ(
-          ERROR_SUCCESS,
-          key.WriteValue(
-              base::ASCIIToUTF16(credential_provider::kKeyRefreshToken).c_str(),
-              ciphertext.c_str(), ciphertext.length(), REG_BINARY));
-    }
+    if (!GetParam().refresh_token.empty())
+      WriteRrefreshToken(&key, GetParam().refresh_token);
 
     if (GetParam().expect_is_started) {
       signin_util::SetDiceTurnSyncOnHelperDelegateForTesting(
@@ -132,6 +118,41 @@ class SigninUtilWinBrowserTest
     }
 
     return InProcessBrowserTest::SetUpUserDataDirectory();
+  }
+
+  void CreateRegKey(base::win::RegKey* key) {
+    if (!GetParam().gaia_id.empty()) {
+      EXPECT_EQ(
+          ERROR_SUCCESS,
+          key->Create(HKEY_CURRENT_USER,
+                      credential_provider::kRegHkcuAccountsPath, KEY_WRITE));
+      EXPECT_EQ(ERROR_SUCCESS,
+                key->CreateKey(GetParam().gaia_id.c_str(), KEY_WRITE));
+    }
+  }
+
+  void WriteRrefreshToken(base::win::RegKey* key,
+                          const std::string& refresh_token) {
+    EXPECT_TRUE(key->Valid());
+    std::string ciphertext;
+    EXPECT_TRUE(OSCrypt::EncryptString(refresh_token, &ciphertext));
+    EXPECT_EQ(
+        ERROR_SUCCESS,
+        key->WriteValue(
+            base::ASCIIToUTF16(credential_provider::kKeyRefreshToken).c_str(),
+            ciphertext.c_str(), ciphertext.length(), REG_BINARY));
+  }
+
+  void ExpectRefreshTokenExists(bool exists) {
+    base::win::RegKey key;
+    EXPECT_EQ(ERROR_SUCCESS,
+              key.Open(HKEY_CURRENT_USER,
+                       credential_provider::kRegHkcuAccountsPath, KEY_READ));
+    EXPECT_EQ(ERROR_SUCCESS, key.OpenKey(GetParam().gaia_id.c_str(), KEY_READ));
+    EXPECT_EQ(
+        exists,
+        key.HasValue(
+            base::ASCIIToUTF16(credential_provider::kKeyRefreshToken).c_str()));
   }
 
  private:
@@ -156,14 +177,75 @@ IN_PROC_BROWSER_TEST_P(SigninUtilWinBrowserTest, Run) {
 
   // If a refresh token was specified and a sign in attempt was expected, make
   // sure the refresh token was removed from the registry.
-  if (!GetParam().refresh_token.empty() && GetParam().expect_is_started) {
+  if (!GetParam().refresh_token.empty() && GetParam().expect_is_started)
+    ExpectRefreshTokenExists(false);
+}
+
+IN_PROC_BROWSER_TEST_P(SigninUtilWinBrowserTest, ReauthNoop) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ASSERT_EQ(1u, profile_manager->GetNumberOfProfiles());
+
+  Profile* profile =
+      profile_manager->GetLastUsedProfile(profile_manager->user_data_dir());
+
+  // Whether the profile was signed in with the credential provider or not,
+  // reauth should be a noop.
+  ASSERT_FALSE(signin_util::ReauthWithCredentialProviderIfPossible(profile));
+}
+
+IN_PROC_BROWSER_TEST_P(SigninUtilWinBrowserTest, NoReauthAfterSignout) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ASSERT_EQ(1u, profile_manager->GetNumberOfProfiles());
+
+  Profile* profile =
+      profile_manager->GetLastUsedProfile(profile_manager->user_data_dir());
+
+  if (GetParam().expect_is_started) {
+    // Write a new refresh token.
     base::win::RegKey key;
-    EXPECT_EQ(ERROR_SUCCESS,
-              key.Open(HKEY_CURRENT_USER,
-                       credential_provider::kRegHkcuAccountsPath, KEY_READ));
-    EXPECT_EQ(ERROR_SUCCESS, key.OpenKey(GetParam().gaia_id.c_str(), KEY_READ));
-    EXPECT_FALSE(key.HasValue(
-        base::ASCIIToUTF16(credential_provider::kKeyRefreshToken).c_str()));
+    CreateRegKey(&key);
+    WriteRrefreshToken(&key, "lst-new");
+    ASSERT_FALSE(signin_util::ReauthWithCredentialProviderIfPossible(profile));
+
+    // Sign user out of browser.
+    SigninManager* manager = SigninManagerFactory::GetForProfile(profile);
+    manager->SignOut(signin_metrics::ProfileSignout::SIGNOUT_TEST,
+                     signin_metrics::SignoutDelete::DELETED);
+
+    // Even with a refresh token available, no reauth happens if the profile
+    // is signed out.
+    ASSERT_FALSE(signin_util::ReauthWithCredentialProviderIfPossible(profile));
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(SigninUtilWinBrowserTest, FixReauth) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ASSERT_EQ(1u, profile_manager->GetNumberOfProfiles());
+
+  Profile* profile =
+      profile_manager->GetLastUsedProfile(profile_manager->user_data_dir());
+
+  if (GetParam().expect_is_started) {
+    // Write a new refresh token. This time reauth should work.
+    base::win::RegKey key;
+    CreateRegKey(&key);
+    WriteRrefreshToken(&key, "lst-new");
+    ASSERT_FALSE(signin_util::ReauthWithCredentialProviderIfPossible(profile));
+
+    // Make sure the profile stays signed in, but in an auth error state.
+    ProfileOAuth2TokenService* token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+    OAuth2TokenServiceDelegate* delegate = token_service->GetDelegate();
+    SigninManager* manager = SigninManagerFactory::GetForProfile(profile);
+    delegate->UpdateAuthError(
+        manager->GetAuthenticatedAccountId(),
+        GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+            GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                CREDENTIALS_REJECTED_BY_SERVER));
+
+    // If the profile remains signed in but is in an auth error state,
+    // reauth should happen.
+    ASSERT_TRUE(signin_util::ReauthWithCredentialProviderIfPossible(profile));
   }
 }
 

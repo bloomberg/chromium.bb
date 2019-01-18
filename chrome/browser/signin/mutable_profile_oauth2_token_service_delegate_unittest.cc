@@ -146,7 +146,8 @@ class MutableProfileOAuth2TokenServiceDelegateTest
     return std::make_unique<MutableProfileOAuth2TokenServiceDelegate>(
         client_.get(), &account_tracker_service_, token_web_data_,
         account_consistency, revoke_all_tokens_on_load_,
-        true /* can_revoke_credantials */);
+        true /* can_revoke_credantials */,
+        MutableProfileOAuth2TokenServiceDelegate::FixRequestErrorCallback());
   }
 
   void InitializeOAuth2ServiceDelegate(

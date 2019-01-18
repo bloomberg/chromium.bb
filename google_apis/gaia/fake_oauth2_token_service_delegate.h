@@ -47,10 +47,16 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
 
+  bool FixRequestErrorIfPossible() override;
+
   std::string GetRefreshToken(const std::string& account_id) const;
 
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;
+  }
+
+  void set_fix_request_if_possible(bool value) {
+    fix_request_if_possible_ = value;
   }
 
  private:
@@ -69,6 +75,7 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
+  bool fix_request_if_possible_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeOAuth2TokenServiceDelegate);
 };
