@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -131,7 +131,8 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
 
 // static
 SessionSyncServiceFactory* SessionSyncServiceFactory::GetInstance() {
-  return base::Singleton<SessionSyncServiceFactory>::get();
+  static base::NoDestructor<SessionSyncServiceFactory> instance;
+  return instance.get();
 }
 
 // static

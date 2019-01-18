@@ -8,14 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 class GURL;
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 namespace sync_sessions {
 class SessionSyncService;
@@ -37,7 +33,7 @@ class SessionSyncServiceFactory : public BrowserStateKeyedServiceFactory {
   static bool ShouldSyncURLForTesting(const GURL& url);
 
  private:
-  friend struct base::DefaultSingletonTraits<SessionSyncServiceFactory>;
+  friend class base::NoDestructor<SessionSyncServiceFactory>;
 
   SessionSyncServiceFactory();
   ~SessionSyncServiceFactory() override;
