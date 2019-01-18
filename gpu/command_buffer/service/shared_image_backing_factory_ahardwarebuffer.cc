@@ -96,6 +96,7 @@ class SharedImageBackingAHB : public SharedImageBacking {
   base::ScopedFD gl_write_sync_fd_;
   base::ScopedFD vk_read_sync_fd_;
 
+  sk_sp<SkPromiseImageTexture> cached_promise_texture_;
   DISALLOW_COPY_AND_ASSIGN(SharedImageBackingAHB);
 };
 
@@ -161,16 +162,15 @@ class SharedImageRepresentationGLTextureAHB
 class SharedImageRepresentationSkiaGLAHB
     : public SharedImageRepresentationSkia {
  public:
-  SharedImageRepresentationSkiaGLAHB(SharedImageManager* manager,
-                                     SharedImageBacking* backing,
-                                     MemoryTypeTracker* tracker,
-                                     GLenum target,
-                                     GLuint service_id)
-      : SharedImageRepresentationSkia(manager, backing, tracker) {
-    GrBackendTexture backend_texture;
-    GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(), target,
-                        size(), service_id, format(), &backend_texture);
-    promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
+  SharedImageRepresentationSkiaGLAHB(
+      SharedImageManager* manager,
+      SharedImageBacking* backing,
+      sk_sp<SkPromiseImageTexture> cached_promise_image_texture,
+      MemoryTypeTracker* tracker,
+      GLenum target,
+      GLuint service_id)
+      : SharedImageRepresentationSkia(manager, backing, tracker),
+        promise_texture_(cached_promise_image_texture) {
 #if DCHECK_IS_ON()
     context_ = gl::GLContext::GetCurrent();
 #endif
@@ -538,9 +538,17 @@ SharedImageBackingAHB::ProduceSkia(SharedImageManager* manager,
   if (!GenGLTexture())
     return nullptr;
 
+  if (!cached_promise_texture_) {
+    GrBackendTexture backend_texture;
+    GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(),
+                        texture_->target(), size(), texture_->service_id(),
+                        format(), &backend_texture);
+    cached_promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
+  }
   DCHECK(texture_);
   return std::make_unique<SharedImageRepresentationSkiaGLAHB>(
-      manager, this, tracker, texture_->target(), texture_->service_id());
+      manager, this, cached_promise_texture_, tracker, texture_->target(),
+      texture_->service_id());
 }
 
 bool SharedImageBackingAHB::GenGLTexture() {
