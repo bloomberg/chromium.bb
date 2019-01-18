@@ -9,6 +9,8 @@ from __future__ import print_function
 
 import os
 
+import mock
+
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
@@ -24,14 +26,6 @@ _ID = 'id'
 _NAME = 'name'
 
 
-def GetDLCGenerator(temp_dir, fs_type):
-  """Factory method for a DLCGenerator object"""
-  src_dir = os.path.join(temp_dir, 'src')
-  osutils.SafeMakedirs(src_dir)
-  return build_dlc.DLCGenerator(temp_dir, temp_dir, src_dir, fs_type,
-                                _PRE_ALLOCATED_BLOCKS, _VERSION, _ID, _NAME)
-
-
 class HashFileTest(cros_test_lib.TempDirTestCase):
   """Test build_dlc.HashFile"""
   def testHashFile(self):
@@ -44,48 +38,53 @@ class HashFileTest(cros_test_lib.TempDirTestCase):
                      '8eba1b75baed65f5d99eafa948899a6a')
 
 
-class SquashOwnershipsTest(cros_test_lib.RunCommandTempDirTestCase):
-  """Test build_dlc.SquashOwnershipsTest"""
+class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
+  """Tests DlcGenerator."""
+
+  def GetDlcGenerator(self, fs_type=_FS_TYPE_SQUASHFS):
+    """Factory method for a DcGenerator object"""
+    src_dir = os.path.join(self.tempdir, 'src')
+    osutils.SafeMakedirs(src_dir)
+    return build_dlc.DlcGenerator(self.tempdir, self.tempdir, src_dir, fs_type,
+                                  _PRE_ALLOCATED_BLOCKS, _VERSION, _ID, _NAME)
+
   def testSquashOwnerships(self):
-    GetDLCGenerator(self.tempdir, _FS_TYPE_EXT4).SquashOwnerships(self.tempdir)
+    """Test build_dlc.SquashOwnershipsTest"""
+    self.GetDlcGenerator().SquashOwnerships(self.tempdir)
     self.assertCommandContains(['chown', '-R', '0:0'])
     self.assertCommandContains(['find'])
 
-
-class CreateExt4ImageTest(cros_test_lib.RunCommandTempDirTestCase):
-  """Test build_dlc.CreateExt4Image"""
   def testCreateExt4Image(self):
-    """Test that command is run with correct parameters."""
+    """Test CreateExt4Image to make sure it runs with valid parameters."""
     copy_dir_mock = self.PatchObject(osutils, 'CopyDirContents')
+    mount_mock = self.PatchObject(osutils, 'MountDir')
+    umount_mock = self.PatchObject(osutils, 'UmountDir')
 
-    GetDLCGenerator(self.tempdir, _FS_TYPE_EXT4).CreateExt4Image()
+    self.GetDlcGenerator(fs_type=_FS_TYPE_EXT4).CreateExt4Image()
     self.assertCommandContains(['/sbin/mkfs.ext4', '-b', '4096', '-O',
                                 '^has_journal'])
-    self.assertCommandContains(['mount', '-o', 'loop,rw'])
-    self.assertCommandContains(['umount'])
     self.assertCommandContains(['/sbin/e2fsck', '-y', '-f'])
     self.assertCommandContains(['/sbin/resize2fs', '-M'])
     copy_dir_mock.assert_called_once_with(partial_mock.HasString('src'),
                                           partial_mock.HasString('root'))
+    mount_mock.assert_called_once_with(mock.ANY,
+                                       partial_mock.HasString('mount_point'),
+                                       mount_opts=('loop', 'rw'))
+    umount_mock.assert_called_once_with(partial_mock.HasString('mount_point'))
 
-class CreateSquashfsImageTest(cros_test_lib.RunCommandTempDirTestCase):
-  """Test build_dlc.CreateImageSquashfs"""
   def testCreateSquashfsImage(self):
-    """Test that commands are run with correct parameters."""
+    """Test that creating squashfs commands are run with correct parameters."""
     copy_dir_mock = self.PatchObject(osutils, 'CopyDirContents')
 
-    GetDLCGenerator(self.tempdir, _FS_TYPE_SQUASHFS).CreateSquashfsImage()
+    self.GetDlcGenerator().CreateSquashfsImage()
     self.assertCommandContains(['mksquashfs', '-4k-align', '-noappend'])
     copy_dir_mock.assert_called_once_with(partial_mock.HasString('src'),
                                           partial_mock.HasString('root'))
 
-
-class GetImageloaderJsonContentTest(cros_test_lib.TestCase):
-  """Test build_dlc.GetImageloaderJsonContent"""
   def testGetImageloaderJsonContent(self):
     """Test that GetImageloaderJsonContent returns correct content."""
     blocks = 100
-    content = GetDLCGenerator("", _FS_TYPE_SQUASHFS).GetImageloaderJsonContent(
+    content = self.GetDlcGenerator().GetImageloaderJsonContent(
         '01234567', 'deadbeef', blocks)
     self.assertEqual(content, {
         'fs-type': _FS_TYPE_SQUASHFS,

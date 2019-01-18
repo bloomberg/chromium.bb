@@ -36,7 +36,7 @@ def HashFile(file_path):
   return sha256.hexdigest()
 
 
-class DLCGenerator(object):
+class DlcGenerator(object):
   """Object to generate DLC artifacts."""
   # Block size for the DLC image.
   # We use 4K for various reasons:
@@ -249,7 +249,7 @@ def main(argv):
   opts.Freeze()
 
   # Generate final DLC files.
-  dlc_generator = DLCGenerator(opts.img_dir, opts.meta_dir, opts.src_dir,
+  dlc_generator = DlcGenerator(opts.img_dir, opts.meta_dir, opts.src_dir,
                                opts.fs_type, opts.pre_allocated_blocks,
                                opts.version, opts.id, opts.name)
   dlc_generator.GenerateDLC()
