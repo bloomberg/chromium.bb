@@ -10,10 +10,10 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -72,7 +72,7 @@ class QuotaPolicyChannelIDStoreTest : public testing::Test {
   scoped_refptr<QuotaPolicyChannelIDStore> store_;
   std::vector<std::unique_ptr<net::DefaultChannelIDStore::ChannelID>>
       channel_ids_;
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 // Test if data is stored as expected in the QuotaPolicy database.
