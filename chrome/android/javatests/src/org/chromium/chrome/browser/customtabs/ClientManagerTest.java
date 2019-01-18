@@ -192,7 +192,7 @@ public class ClientManagerTest {
                 Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
 
                 // If there is a prepopulated origin, we should get a synchronous verification.
-                OriginVerifier.addVerifiedOriginForPackage(
+                OriginVerifier.addVerificationOverride(
                         ContextUtils.getApplicationContext().getPackageName(), new Origin(URL),
                         CustomTabsService.RELATION_USE_AS_ORIGIN);
                 cm.verifyAndInitializeWithPostMessageOriginForSession(
@@ -240,7 +240,7 @@ public class ClientManagerTest {
         Assert.assertNull(cm.getPostMessageOriginForSessionForTesting(mSession));
         ThreadUtils.runOnUiThreadBlocking(() -> {
             // Prepopulated origins should depend on the relation used.
-            OriginVerifier.addVerifiedOriginForPackage(
+            OriginVerifier.addVerificationOverride(
                     ContextUtils.getApplicationContext().getPackageName(), origin,
                     CustomTabsService.RELATION_HANDLE_ALL_URLS);
             // This uses CustomTabsService.RELATION_USE_AS_ORIGIN by default.
@@ -282,7 +282,7 @@ public class ClientManagerTest {
 
                 // Even if there is a prepopulated origin, non-https origins should get an early
                 // return with false.
-                OriginVerifier.addVerifiedOriginForPackage(
+                OriginVerifier.addVerificationOverride(
                         ContextUtils.getApplicationContext().getPackageName(), origin,
                         CustomTabsService.RELATION_USE_AS_ORIGIN);
                 cm.verifyAndInitializeWithPostMessageOriginForSession(
