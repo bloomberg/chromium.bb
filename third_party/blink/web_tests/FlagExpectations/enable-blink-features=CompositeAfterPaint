@@ -1,8 +1,6 @@
 # Expectations for CompositeAfterPaint
 # See: https://docs.google.com/document/d/1QCM912Dr6u38DqyQqd7pxQxDy8FFOoWMMDq7uAXqKdA/view
 # We are focused on fast/, compositing/, and svg/ with all other directories skipped (for now).
-Bug(none) css3/ [ Skip ]
-Bug(none) css3/blending [ Pass ]
 Bug(none) editing/input [ Skip ]
 Bug(none) external/wpt [ Skip ]
 Bug(none) http/tests/devtools/layers/ [ Skip ]
@@ -39,6 +37,7 @@ crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html 
 crbug.com/817175 compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Pass ]
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
 crbug.com/857501 compositing/gestures/gesture-tapHighlight-with-filter.html [ Pass ]
+crbug.com/802915 css3/blending/isolation-should-include-non-local-background.html [ Pass ]
 
 Bug(none) compositing/animation/hidden-composited.html [ Failure ]
 Bug(none) compositing/change-preferCompositingToLCDText-setting.html [ Failure ]
@@ -171,6 +170,8 @@ Bug(none) compositing/visibility/layer-visible-content.html [ Failure ]
 Bug(none) compositing/visibility/visibility-image-layers-dynamic.html [ Crash Failure ]
 Bug(none) compositing/webgl/webgl-reflection.html [ Failure Pass ]
 Bug(none) compositing/webgl/webgl-with-accelerated-background-color.html [ Failure Pass ]
+Bug(none) css3/filters/backdrop-filter-basic-blur.html [ Failure ]
+Bug(none) css3/filters/backdrop-filter-rendering-no-background.html [ Failure ]
 Bug(none) fast/css/outline-offset-large.html [ Failure ]
 Bug(none) fast/webgl/pixelated.html [ Failure ]
 Bug(none) images/color-profile-reflection.html [ Crash Failure ]
@@ -183,7 +184,6 @@ Bug(none) fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Failure ]
 Bug(none) fragmentation/outline-crossing-columns.html [ Crash ]
 Bug(none) fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
 Bug(none) http/tests/misc/slow-loading-mask.html [ Failure ]
-Bug(none) ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Failure ]
 Bug(none) inspector-protocol/layers/paint-profiler.js [ Failure ]
 Bug(none) inspector-protocol/layers/get-layers.js [ Timeout ]
 Bug(none) paint/pagination/pagination-change-clip-crash.html [ Failure ]
