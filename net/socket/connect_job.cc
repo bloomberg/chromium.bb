@@ -14,6 +14,50 @@
 
 namespace net {
 
+CommonConnectJobParams::CommonConnectJobParams(
+    const std::string& group_name,
+    const SocketTag& socket_tag,
+    bool respect_limits,
+    ClientSocketFactory* client_socket_factory,
+    SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
+    HostResolver* host_resolver,
+    NetLog* net_log,
+    WebSocketEndpointLockManager* websocket_endpoint_lock_manager)
+    : group_name(group_name),
+      socket_tag(socket_tag),
+      respect_limits(respect_limits),
+      client_socket_factory(client_socket_factory),
+      socket_performance_watcher_factory(socket_performance_watcher_factory),
+      host_resolver(host_resolver),
+      net_log(net_log),
+      websocket_endpoint_lock_manager(websocket_endpoint_lock_manager) {
+  DCHECK(!group_name.empty());
+}
+
+CommonConnectJobParams::CommonConnectJobParams(
+    const CommonConnectJobParams& other) = default;
+
+CommonConnectJobParams::~CommonConnectJobParams() = default;
+
+CommonConnectJobParams& CommonConnectJobParams::operator=(
+    const CommonConnectJobParams& other) = default;
+
+ConnectJob::ConnectJob(RequestPriority priority,
+                       base::TimeDelta timeout_duration,
+                       const CommonConnectJobParams& common_connect_job_params,
+                       Delegate* delegate,
+                       const NetLogWithSource& net_log)
+    : timeout_duration_(timeout_duration),
+      priority_(priority),
+      common_connect_job_params_(common_connect_job_params),
+      delegate_(delegate),
+      net_log_(net_log) {
+  DCHECK(delegate);
+  net_log.BeginEvent(NetLogEventType::SOCKET_POOL_CONNECT_JOB,
+                     NetLog::StringCallback(
+                         "group_name", &common_connect_job_params.group_name));
+}
+
 ConnectJob::ConnectJob(const std::string& group_name,
                        base::TimeDelta timeout_duration,
                        RequestPriority priority,
@@ -21,18 +65,19 @@ ConnectJob::ConnectJob(const std::string& group_name,
                        bool respect_limits,
                        Delegate* delegate,
                        const NetLogWithSource& net_log)
-    : group_name_(group_name),
-      timeout_duration_(timeout_duration),
-      priority_(priority),
-      socket_tag_(socket_tag),
-      respect_limits_(respect_limits),
-      delegate_(delegate),
-      net_log_(net_log) {
-  DCHECK(!group_name.empty());
-  DCHECK(delegate);
-  net_log.BeginEvent(NetLogEventType::SOCKET_POOL_CONNECT_JOB,
-                     NetLog::StringCallback("group_name", &group_name_));
-}
+    : ConnectJob(priority,
+                 timeout_duration,
+                 CommonConnectJobParams(
+                     group_name,
+                     socket_tag,
+                     respect_limits,
+                     nullptr /* client_socket_factory */,
+                     nullptr /* socket_performance_watcher_factory */,
+                     nullptr /* host_resolver */,
+                     nullptr /* net_log */,
+                     nullptr /* websocket_endpoint_lock_manager */),
+                 delegate,
+                 net_log) {}
 
 ConnectJob::~ConnectJob() {
   net_log().EndEvent(NetLogEventType::SOCKET_POOL_CONNECT_JOB);

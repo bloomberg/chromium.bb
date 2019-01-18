@@ -20,33 +20,23 @@
 namespace net {
 
 WebSocketTransportConnectJob::WebSocketTransportConnectJob(
-    const std::string& group_name,
     RequestPriority priority,
-    bool respect_limits,
+    const CommonConnectJobParams& common_connect_job_params,
     const scoped_refptr<TransportSocketParams>& params,
-    ClientSocketFactory* client_socket_factory,
-    HostResolver* host_resolver,
-    Delegate* delegate,
-    NetLog* pool_net_log,
-    WebSocketEndpointLockManager* websocket_endpoint_lock_manager)
-    : ConnectJob(group_name,
+    Delegate* delegate)
+    : ConnectJob(priority,
                  TransportConnectJob::ConnectionTimeout(),
-                 priority,
-                 SocketTag(),
-                 respect_limits,
+                 common_connect_job_params,
                  delegate,
                  NetLogWithSource::Make(
-                     pool_net_log,
+                     common_connect_job_params.net_log,
                      NetLogSourceType::WEB_SOCKET_TRANSPORT_CONNECT_JOB)),
       params_(params),
-      resolver_(host_resolver),
-      client_socket_factory_(client_socket_factory),
       next_state_(STATE_NONE),
       race_result_(TransportConnectJob::RACE_UNKNOWN),
-      websocket_endpoint_lock_manager_(websocket_endpoint_lock_manager),
       had_ipv4_(false),
       had_ipv6_(false) {
-  DCHECK(websocket_endpoint_lock_manager_);
+  DCHECK(common_connect_job_params.websocket_endpoint_lock_manager);
 }
 
 WebSocketTransportConnectJob::~WebSocketTransportConnectJob() = default;
@@ -105,7 +95,7 @@ int WebSocketTransportConnectJob::DoResolveHost() {
   next_state_ = STATE_RESOLVE_HOST_COMPLETE;
   connect_timing_.dns_start = base::TimeTicks::Now();
 
-  return resolver_->Resolve(
+  return host_resolver()->Resolve(
       params_->destination(), priority(), &addresses_,
       base::Bind(&WebSocketTransportConnectJob::OnIOComplete,
                  base::Unretained(this)),
@@ -160,13 +150,13 @@ int WebSocketTransportConnectJob::DoTransportConnect() {
   if (!ipv4_addresses.empty()) {
     had_ipv4_ = true;
     ipv4_job_.reset(new WebSocketTransportConnectSubJob(
-        ipv4_addresses, this, SUB_JOB_IPV4, websocket_endpoint_lock_manager_));
+        ipv4_addresses, this, SUB_JOB_IPV4, websocket_endpoint_lock_manager()));
   }
 
   if (!ipv6_addresses.empty()) {
     had_ipv6_ = true;
     ipv6_job_.reset(new WebSocketTransportConnectSubJob(
-        ipv6_addresses, this, SUB_JOB_IPV6, websocket_endpoint_lock_manager_));
+        ipv6_addresses, this, SUB_JOB_IPV6, websocket_endpoint_lock_manager()));
     result = ipv6_job_->Start();
     switch (result) {
       case OK:

@@ -26,6 +26,7 @@
 #include "net/socket/socket_performance_watcher.h"
 #include "net/socket/socket_performance_watcher_factory.h"
 #include "net/socket/tcp_client_socket.h"
+#include "net/socket/websocket_transport_connect_job.h"
 
 namespace net {
 
@@ -68,32 +69,38 @@ const int TransportConnectJob::kTimeoutInSeconds = 240;  // 4 minutes.
 // don't synchronize.
 const int TransportConnectJob::kIPv6FallbackTimerInMs = 300;
 
-TransportConnectJob::TransportConnectJob(
-    const std::string& group_name,
+std::unique_ptr<ConnectJob> TransportConnectJob::CreateTransportConnectJob(
+    scoped_refptr<TransportSocketParams> transport_client_params,
     RequestPriority priority,
-    const SocketTag& socket_tag,
-    bool respect_limits,
+    const CommonConnectJobParams& common_connect_job_params,
+    ConnectJob::Delegate* delegate) {
+  if (!common_connect_job_params.websocket_endpoint_lock_manager) {
+    return std::make_unique<TransportConnectJob>(
+        priority, common_connect_job_params, transport_client_params, delegate);
+  }
+
+  return std::make_unique<WebSocketTransportConnectJob>(
+      priority, common_connect_job_params, transport_client_params, delegate);
+}
+
+TransportConnectJob::TransportConnectJob(
+    RequestPriority priority,
+    const CommonConnectJobParams& common_connect_job_params,
     const scoped_refptr<TransportSocketParams>& params,
-    ClientSocketFactory* client_socket_factory,
-    SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
-    HostResolver* host_resolver,
-    Delegate* delegate,
-    NetLog* net_log)
+    Delegate* delegate)
     : ConnectJob(
-          group_name,
-          ConnectionTimeout(),
           priority,
-          socket_tag,
-          respect_limits,
+          ConnectionTimeout(),
+          common_connect_job_params,
           delegate,
-          NetLogWithSource::Make(net_log,
+          NetLogWithSource::Make(common_connect_job_params.net_log,
                                  NetLogSourceType::TRANSPORT_CONNECT_JOB)),
       params_(params),
-      resolver_(host_resolver),
-      client_socket_factory_(client_socket_factory),
       next_state_(STATE_NONE),
-      socket_performance_watcher_factory_(socket_performance_watcher_factory),
-      resolve_result_(OK) {}
+      resolve_result_(OK) {
+  // This is only set for WebSockets.
+  DCHECK(!common_connect_job_params.websocket_endpoint_lock_manager);
+}
 
 TransportConnectJob::~TransportConnectJob() {
   // We don't worry about cancelling the host resolution and TCP connect, since
@@ -240,10 +247,11 @@ int TransportConnectJob::DoResolveHost() {
   next_state_ = STATE_RESOLVE_HOST_COMPLETE;
   connect_timing_.dns_start = base::TimeTicks::Now();
 
-  return resolver_->Resolve(params_->destination(), priority(), &addresses_,
-                            base::BindOnce(&TransportConnectJob::OnIOComplete,
-                                           base::Unretained(this)),
-                            &request_, net_log());
+  return host_resolver()->Resolve(
+      params_->destination(), priority(), &addresses_,
+      base::BindOnce(&TransportConnectJob::OnIOComplete,
+                     base::Unretained(this)),
+      &request_, net_log());
 }
 
 int TransportConnectJob::DoResolveHostComplete(int result) {
@@ -273,12 +281,12 @@ int TransportConnectJob::DoTransportConnect() {
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
   // Create a |SocketPerformanceWatcher|, and pass the ownership.
   std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher;
-  if (socket_performance_watcher_factory_) {
+  if (socket_performance_watcher_factory()) {
     socket_performance_watcher =
-        socket_performance_watcher_factory_->CreateSocketPerformanceWatcher(
+        socket_performance_watcher_factory()->CreateSocketPerformanceWatcher(
             SocketPerformanceWatcherFactory::PROTOCOL_TCP, addresses_);
   }
-  transport_socket_ = client_socket_factory_->CreateTransportClientSocket(
+  transport_socket_ = client_socket_factory()->CreateTransportClientSocket(
       addresses_, std::move(socket_performance_watcher), net_log().net_log(),
       net_log().source());
 
@@ -355,15 +363,15 @@ void TransportConnectJob::DoIPv6FallbackTransportConnect() {
 
   // Create a |SocketPerformanceWatcher|, and pass the ownership.
   std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher;
-  if (socket_performance_watcher_factory_) {
+  if (socket_performance_watcher_factory()) {
     socket_performance_watcher =
-        socket_performance_watcher_factory_->CreateSocketPerformanceWatcher(
+        socket_performance_watcher_factory()->CreateSocketPerformanceWatcher(
             SocketPerformanceWatcherFactory::PROTOCOL_TCP,
             *fallback_addresses_);
   }
 
   fallback_transport_socket_ =
-      client_socket_factory_->CreateTransportClientSocket(
+      client_socket_factory()->CreateTransportClientSocket(
           *fallback_addresses_, std::move(socket_performance_watcher),
           net_log().net_log(), net_log().source());
   fallback_connect_start_time_ = base::TimeTicks::Now();

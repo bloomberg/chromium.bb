@@ -20,11 +20,8 @@
 
 namespace net {
 
-class ClientSocketFactory;
 class HostPortPair;
-class NetLog;
 class NetLogWithSource;
-class SocketPerformanceWatcherFactory;
 
 typedef base::RepeatingCallback<int(const AddressList&,
                                     const NetLogWithSource& net_log)>
@@ -84,17 +81,20 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
   // IPv4 addresses after this many milliseconds. (This is "Happy Eyeballs".)
   static const int kIPv6FallbackTimerInMs;
 
-  TransportConnectJob(
-      const std::string& group_name,
+  // Creates a TransportConnectJob or WebSocketTransportConnectJob, depending on
+  // whether or not |common_connect_job_params.web_socket_endpoint_lock_manager|
+  // is nullptr.
+  // TODO(mmenke): Merge those two ConnectJob classes, and remove this method.
+  static std::unique_ptr<ConnectJob> CreateTransportConnectJob(
+      scoped_refptr<TransportSocketParams> transport_client_params,
       RequestPriority priority,
-      const SocketTag& socket_tag,
-      bool respect_limits,
-      const scoped_refptr<TransportSocketParams>& params,
-      ClientSocketFactory* client_socket_factory,
-      SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
-      HostResolver* host_resolver,
-      Delegate* delegate,
-      NetLog* net_log);
+      const CommonConnectJobParams& common_connect_job_params,
+      ConnectJob::Delegate* delegate);
+
+  TransportConnectJob(RequestPriority priority,
+                      const CommonConnectJobParams& common_connect_job_params,
+                      const scoped_refptr<TransportSocketParams>& params,
+                      Delegate* delegate);
   ~TransportConnectJob() override;
 
   // ConnectJob methods.
@@ -146,9 +146,7 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
   void CopyConnectionAttemptsFromSockets();
 
   scoped_refptr<TransportSocketParams> params_;
-  HostResolver* resolver_;
   std::unique_ptr<HostResolver::Request> request_;
-  ClientSocketFactory* const client_socket_factory_;
 
   State next_state_;
 
@@ -159,7 +157,6 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
   std::unique_ptr<AddressList> fallback_addresses_;
   base::TimeTicks fallback_connect_start_time_;
   base::OneShotTimer fallback_timer_;
-  SocketPerformanceWatcherFactory* socket_performance_watcher_factory_;
 
   int resolve_result_;
 

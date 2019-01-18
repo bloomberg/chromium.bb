@@ -36,11 +36,17 @@ class TestConnectJob : public ConnectJob {
                  ConnectJob::Delegate* delegate,
                  NetLog* net_log)
       : ConnectJob(
-            "group_name",
-            timeout_duration,
             DEFAULT_PRIORITY,
-            SocketTag(),
-            true /* respect_limits */,
+            timeout_duration,
+            CommonConnectJobParams(
+                "group_name",
+                SocketTag(),
+                true /* respect_limits */,
+                nullptr /* client_socket_factory */,
+                nullptr /* socket_performance_watcher_factory */,
+                nullptr /* host_resolver */,
+                nullptr /* net_log */,
+                nullptr /* websocket_endpoint_lock_manager */),
             delegate,
             NetLogWithSource::Make(net_log,
                                    NetLogSourceType::TRANSPORT_CONNECT_JOB)),

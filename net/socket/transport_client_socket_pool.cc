@@ -24,37 +24,6 @@
 
 namespace net {
 
-namespace {
-
-// Creates a TransportConnectJob or WebSocketTransportConnectJob, depending on
-// whether or not |web_socket_endpoint_lock_manager| is nullptr.
-std::unique_ptr<ConnectJob> CreateTransportConnectJob(
-    scoped_refptr<TransportSocketParams> transport_client_params,
-    const std::string& group_name,
-    RequestPriority priority,
-    const SocketTag& socket_tag,
-    bool respect_limits,
-    ClientSocketFactory* client_socket_factory,
-    SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
-    HostResolver* host_resolver,
-    ConnectJob::Delegate* delegate,
-    NetLog* net_log,
-    WebSocketEndpointLockManager* web_socket_endpoint_lock_manager) {
-  if (!web_socket_endpoint_lock_manager) {
-    return std::make_unique<TransportConnectJob>(
-        group_name, priority, socket_tag, respect_limits,
-        transport_client_params, client_socket_factory,
-        socket_performance_watcher_factory, host_resolver, delegate, net_log);
-  }
-
-  return std::make_unique<WebSocketTransportConnectJob>(
-      group_name, priority, respect_limits, transport_client_params,
-      client_socket_factory, host_resolver, delegate, net_log,
-      web_socket_endpoint_lock_manager);
-}
-
-}  // namespace
-
 TransportClientSocketPool::SocketParams::SocketParams(
     const CreateConnectJobCallback& create_connect_job_callback)
     : create_connect_job_callback_(create_connect_job_callback) {}
@@ -63,7 +32,8 @@ scoped_refptr<TransportClientSocketPool::SocketParams>
 TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
     scoped_refptr<TransportSocketParams> transport_client_params) {
   CreateConnectJobCallback callback =
-      base::BindRepeating(&CreateTransportConnectJob, transport_client_params);
+      base::BindRepeating(&TransportConnectJob::CreateTransportConnectJob,
+                          std::move(transport_client_params));
   return base::MakeRefCounted<SocketParams>(callback);
 }
 
@@ -75,11 +45,14 @@ TransportClientSocketPool::TransportConnectJobFactory::NewConnectJob(
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate) const {
   return request.params()->create_connect_job_callback().Run(
-      group_name, request.priority(), request.socket_tag(),
-      request.respect_limits() == ClientSocketPool::RespectLimits::ENABLED,
-      client_socket_factory_, socket_performance_watcher_factory_,
-      host_resolver_, delegate, net_log_,
-      nullptr /* websocket_endpoint_lock_manager */);
+      request.priority(),
+      CommonConnectJobParams(
+          group_name, request.socket_tag(),
+          request.respect_limits() == ClientSocketPool::RespectLimits::ENABLED,
+          client_socket_factory_, socket_performance_watcher_factory_,
+          host_resolver_, net_log_,
+          nullptr /* websocket_endpoint_lock_manager */),
+      delegate);
 }
 
 TransportClientSocketPool::TransportClientSocketPool(
