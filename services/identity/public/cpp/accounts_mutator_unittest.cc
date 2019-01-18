@@ -5,6 +5,7 @@
 #include "services/identity/public/cpp/accounts_mutator_impl.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/test/gtest_util.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "services/identity/public/cpp/accounts_mutator_impl.h"
@@ -214,6 +215,94 @@ TEST_F(AccountsMutatorTest, AddOrUpdateAccount_UpdateExistingAccount) {
   }
   EXPECT_NE(account_info.is_under_advanced_protection,
             updated_account_info.is_under_advanced_protection);
+}
+
+// Test that the information of an existing account for a given ID gets updated.
+TEST_F(AccountsMutatorTest, UpdateAccountInfo) {
+  // Abort the test if the current platform does not support accounts mutation.
+  if (!accounts_mutator())
+    return;
+
+  // First of all add the account to the account tracker service.
+  base::RunLoop run_loop;
+  identity_manager_observer()->set_on_refresh_token_updated_callback(
+      base::BindOnce(
+          [](base::OnceClosure quit_closure, const std::string& account_id) {
+            std::move(quit_closure).Run();
+          },
+          run_loop.QuitClosure()));
+
+  std::string account_id = accounts_mutator()->AddOrUpdateAccount(
+      kTestGaiaId, kTestEmail, kRefreshToken,
+      /*is_under_advanced_protection=*/false,
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  run_loop.Run();
+
+  EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 1U);
+
+  AccountInfo original_account_info =
+      identity_manager()
+          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          .value();
+  EXPECT_EQ(original_account_info.account_id, account_id);
+  EXPECT_EQ(original_account_info.email, kTestEmail);
+  EXPECT_FALSE(original_account_info.is_child_account);
+  EXPECT_FALSE(original_account_info.is_under_advanced_protection);
+
+  accounts_mutator()->UpdateAccountInfo(
+      account_id,
+      /*is_child_account=*/true,
+      /*is_under_advanced_protection=*/base::nullopt);
+  AccountInfo updated_account_info_1 =
+      identity_manager()
+          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          .value();
+
+  // Only |is_child_account| changed so far, everything else remains the same.
+  EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 1U);
+  EXPECT_EQ(updated_account_info_1.account_id,
+            original_account_info.account_id);
+  EXPECT_EQ(updated_account_info_1.email, original_account_info.email);
+  EXPECT_NE(updated_account_info_1.is_child_account,
+            original_account_info.is_child_account);
+  EXPECT_EQ(updated_account_info_1.is_under_advanced_protection,
+            original_account_info.is_under_advanced_protection);
+
+  accounts_mutator()->UpdateAccountInfo(account_id,
+                                        /*is_child_account=*/base::nullopt,
+                                        /*is_under_advanced_protection=*/true);
+  AccountInfo updated_account_info_2 =
+      identity_manager()
+          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          .value();
+
+  // |is_under_advanced_protection| has changed now, but |is_child_account|
+  // remains the same since we previously set it to |true| in the previous step.
+  EXPECT_NE(updated_account_info_2.is_under_advanced_protection,
+            original_account_info.is_under_advanced_protection);
+  EXPECT_EQ(updated_account_info_2.is_child_account,
+            updated_account_info_1.is_child_account);
+
+  // Last, reset |is_child_account| and |is_under_advanced_protection| together
+  // to its initial |false| value, which is no longer the case.
+  EXPECT_TRUE(updated_account_info_2.is_child_account);
+  EXPECT_TRUE(updated_account_info_2.is_under_advanced_protection);
+
+  accounts_mutator()->UpdateAccountInfo(account_id,
+                                        /*is_child_account=*/false,
+                                        /*is_under_advanced_protection=*/false);
+  AccountInfo reset_account_info =
+      identity_manager()
+          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          .value();
+
+  // Everything is back to its original state now.
+  EXPECT_EQ(reset_account_info.is_child_account,
+            original_account_info.is_child_account);
+  EXPECT_EQ(reset_account_info.is_under_advanced_protection,
+            original_account_info.is_under_advanced_protection);
+  EXPECT_FALSE(reset_account_info.is_child_account);
+  EXPECT_FALSE(reset_account_info.is_under_advanced_protection);
 }
 
 TEST_F(AccountsMutatorTest,
