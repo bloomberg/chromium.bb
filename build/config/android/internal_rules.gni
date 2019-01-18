@@ -1983,6 +1983,14 @@ if (enable_java_templates) {
   #   proto_format: (optional). If true, compiles resources into protocol
   #     buffer format.
   #
+  #   package_name: (optional)
+  #     Name of the package for the purpose of assigning package ID.
+  #
+  #   package_name_to_id_mapping: (optional)
+  #     List containing mapping from package names to package IDs. It will be
+  #     used to determine which package ID to assign if package_name variable
+  #     was passed in.
+  #
   # Output variables:
   #   output:  Path to a zip file containing the compiled resources.
   #
@@ -2072,6 +2080,12 @@ if (enable_java_templates) {
         "--android-manifest",
         rebase_path(invoker.android_manifest, root_build_dir),
       ]
+
+      if (defined(invoker.package_name_to_id_mapping)) {
+        args += [
+          "--package-name-to-id-mapping=${invoker.package_name_to_id_mapping}",
+        ]
+      }
 
       if (defined(invoker.no_xml_namespaces) && invoker.no_xml_namespaces) {
         args += [ "--no-xml-namespaces" ]
@@ -2236,6 +2250,10 @@ if (enable_java_templates) {
 
       if (defined(invoker.args)) {
         args += invoker.args
+      }
+
+      if (defined(invoker.package_name)) {
+        args += [ "--package-name=${invoker.package_name}" ]
       }
     }
 

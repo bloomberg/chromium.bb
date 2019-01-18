@@ -67,6 +67,13 @@ def _PackageIdArgument(x):
   return x
 
 
+def _ListToDictionary(lst, separator):
+  """Splits each element of the passed-in |lst| using |separator| and creates
+  dictionary treating first element of the split as the key and second as the
+  value."""
+  return dict(item.split(separator, 1) for item in lst)
+
+
 def _ParseArgs(args):
   """Parses command line options.
 
@@ -193,6 +200,12 @@ def _ParseArgs(args):
   if options.shared_resources and options.app_as_shared_lib:
     raise Exception('Only one of --app-as-shared-lib or --shared-resources '
                     'can be used.')
+
+  if options.package_name_to_id_mapping:
+    package_names_list = build_utils.ParseGnList(
+        options.package_name_to_id_mapping)
+    options.package_name_to_id_mapping = _ListToDictionary(
+        package_names_list, '=')
 
   return options
 
@@ -362,6 +375,25 @@ def _MoveImagesToNonMdpiFolders(res_root):
   return renamed_paths
 
 
+def _GetLinkOptionsForPackage(options):
+  """Returns package-specific link options for aapt2 based on package_name and
+  package_name_to_id_mapping passed through command-line options."""
+  link_options = []
+  if not options.package_name:
+    return link_options
+
+  if options.package_name in options.package_name_to_id_mapping:
+    package_id = options.package_name_to_id_mapping[options.package_name]
+    link_options += ['--package-id', package_id]
+    if int(package_id, 16) < 0x7f:
+      link_options.append('--allow-reserved-package-id')
+  else:
+    raise Exception(
+        'Package name %s is not present in package_name_to_id_mapping.' %
+        options.package_name)
+  return link_options
+
+
 def _CreateLinkApkArgs(options):
   """Create command-line arguments list to invoke 'aapt2 link'.
 
@@ -400,6 +432,8 @@ def _CreateLinkApkArgs(options):
 
   if options.no_xml_namespaces:
     link_command.append('--no-xml-namespaces')
+
+  link_command += _GetLinkOptionsForPackage(options)
 
   return link_command
 
@@ -795,10 +829,8 @@ def _OnStaleMd5(options, debug_temp_resources_dir):
       rjava_build_options.GenerateOnResourcesLoaded()
 
     resource_utils.CreateRJavaFiles(
-        build.srcjar_dir, None, r_txt_path,
-        options.extra_res_packages,
-        options.extra_r_text_files,
-        rjava_build_options)
+        build.srcjar_dir, None, r_txt_path, options.extra_res_packages,
+        options.extra_r_text_files, rjava_build_options)
 
     if options.srcjar_out:
       build_utils.ZipDir(options.srcjar_out, build.srcjar_dir)
