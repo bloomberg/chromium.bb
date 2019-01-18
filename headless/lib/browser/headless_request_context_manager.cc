@@ -81,6 +81,24 @@ net::NetworkTrafficAnnotationTag GetProxyConfigTrafficAnnotationTag() {
   return traffic_annotation;
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+::network::mojom::CryptConfigPtr BuildCryptConfigOnce(
+    const base::FilePath& user_data_path) {
+  static bool done_once = false;
+  if (done_once)
+    return nullptr;
+  done_once = true;
+  ::network::mojom::CryptConfigPtr config =
+      ::network::mojom::CryptConfig::New();
+  config->store = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kPasswordStore);
+  config->product_name = kProductName;
+  config->should_use_preference = false;
+  config->user_data_path = user_data_path;
+  return config;
+}
+#endif
+
 }  // namespace
 
 // Contains net::URLRequestContextGetter required for resource loading.
@@ -272,7 +290,11 @@ HeadlessRequestContextManager::HeadlessRequestContextManager(
     proxy_config_monitor_ =
         std::make_unique<HeadlessProxyConfigMonitor>(proxy_monitor_task_runner);
   }
-  MaybeSetUpOSCrypt();
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  crypt_config_ = BuildCryptConfigOnce(user_data_path_);
+  if (network_service_enabled_ && crypt_config_)
+    content::GetNetworkService()->SetCryptConfig(std::move(crypt_config_));
+#endif
 }
 
 HeadlessRequestContextManager::~HeadlessRequestContextManager() {
@@ -344,7 +366,12 @@ void HeadlessRequestContextManager::InitializeOnIO() {
                                   std::move(protocol_handler.second));
     }
     protocol_handlers_.clear();
-
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    if (crypt_config_) {
+      content::GetNetworkServiceImpl()->SetCryptConfig(
+          std::move(crypt_config_));
+    }
+#endif
     net::URLRequestContext* url_request_context = nullptr;
     network_context_owner_ =
         content::GetNetworkServiceImpl()->CreateNetworkContextWithBuilder(
@@ -359,25 +386,6 @@ void HeadlessRequestContextManager::InitializeOnIO() {
   builder.set_proxy_resolution_service(
       net::ProxyResolutionService::CreateDirect());
   url_request_context_getter_->SetURLRequestContext(builder.Build());
-}
-
-void HeadlessRequestContextManager::MaybeSetUpOSCrypt() {
-  static bool initialized = false;
-  if (initialized || !cookie_encryption_enabled_)
-    return;
-  if (user_data_path_.empty())
-    return;
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  ::network::mojom::CryptConfigPtr config =
-      ::network::mojom::CryptConfig::New();
-  config->store = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kPasswordStore);
-  config->product_name = kProductName;
-  config->should_use_preference = false;
-  config->user_data_path = user_data_path_;
-  content::GetNetworkService()->SetCryptConfig(std::move(config));
-#endif
-  initialized = true;
 }
 
 ::network::mojom::NetworkContextParamsPtr
