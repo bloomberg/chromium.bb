@@ -119,8 +119,8 @@ void ExtensionApps::LoadIcon(const std::string& app_id,
   if (!icon_key.is_null() &&
       (icon_key->icon_type == apps::mojom::IconType::kExtension) &&
       !icon_key->s_key.empty()) {
-    LoadIconFromExtension(icon_compression, size_hint_in_dip,
-                          std::move(callback), profile_, icon_key->s_key);
+    LoadIconFromExtension(icon_compression, size_hint_in_dip, profile_,
+                          icon_key->s_key, std::move(callback));
     return;
   }
   // On failure, we still run the callback, with the zero IconValue.

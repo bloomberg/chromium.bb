@@ -4,15 +4,18 @@
 
 #include "chrome/browser/apps/app_service/arc_apps.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/arc_apps_factory.h"
 #include "chrome/browser/apps/app_service/dip_px_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_icon_descriptor.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
@@ -23,9 +26,9 @@
 
 namespace {
 
-// ArcApps::LoadIcon runs a series of callbacks, defined here in back-to-front
-// order so that e.g. the compiler knows LoadIcon2's signature when compiling
-// LoadIcon1 (which binds LoadIcon2).
+// ArcApps::LoadIcon (via ArcApps::LoadIconFromVM) runs a series of callbacks,
+// defined here in back-to-front order so that e.g. the compiler knows
+// LoadIcon2's signature when compiling LoadIcon1 (which binds LoadIcon2).
 //
 //  - LoadIcon0 is called back when the AppConnectionHolder is connected.
 //  - LoadIcon1 is called back when the compressed (PNG) image is loaded.
@@ -156,24 +159,18 @@ void ArcApps::LoadIcon(const std::string& app_id,
   if (prefs_ && !icon_key.is_null() &&
       (icon_key->icon_type == apps::mojom::IconType::kArc) &&
       !icon_key->s_key.empty()) {
-    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-        prefs_->GetApp(icon_key->s_key);
-    if (app_info) {
-      base::OnceCallback<void(apps::ArcApps::AppConnectionHolder*)> pending =
-          base::BindOnce(&LoadIcon0, icon_compression,
-                         ConvertDipToPx(size_hint_in_dip),
-                         app_info->package_name, app_info->activity,
-                         app_info->icon_resource_id, std::move(callback));
+    // TODO(crbug.com/826982): treat (app_id == arc::kPlayStoreAppId) as a
+    // special case, like what ArcAppIcon::Source::GetImageForScale does.
 
-      AppConnectionHolder* app_connection_holder =
-          prefs_->app_connection_holder();
-      if (app_connection_holder->IsConnected()) {
-        std::move(pending).Run(app_connection_holder);
-      } else {
-        pending_load_icon_calls_.push_back(std::move(pending));
-      }
-      return;
-    }
+    // Try loading the icon from an on-disk cache. If that fails, fall back to
+    // LoadIconFromVM.
+    LoadIconFromFileWithFallback(
+        icon_compression, size_hint_in_dip,
+        GetCachedIconFilePath(icon_key->s_key, size_hint_in_dip),
+        std::move(callback),
+        base::BindOnce(&ArcApps::LoadIconFromVM, weak_ptr_factory_.GetWeakPtr(),
+                       icon_key->s_key, icon_compression, size_hint_in_dip));
+    return;
   }
 
   // On failure, we still run the callback, with the zero IconValue.
@@ -284,6 +281,51 @@ void ArcApps::OnAppLastLaunchTimeUpdated(const std::string& app_id) {
 void ArcApps::ObservePrefs() {
   prefs_->AddObserver(this);
   prefs_->app_connection_holder()->AddObserver(this);
+}
+
+const base::FilePath ArcApps::GetCachedIconFilePath(const std::string& app_id,
+                                                    int32_t size_hint_in_dip) {
+  if (!prefs_) {
+    return base::FilePath();
+  }
+
+  // TODO(crbug.com/826982): process the app_id argument like the private
+  // GetAppFromAppOrGroupId function and the ArcAppIcon::mapped_app_id_ field
+  // in arc_app_icon.cc?
+  //
+  // TODO(crbug.com/826982): don't hard-code SCALE_FACTOR_100P.
+  return prefs_->GetIconPath(
+      app_id, ArcAppIconDescriptor(size_hint_in_dip,
+                                   ui::ScaleFactor::SCALE_FACTOR_100P));
+}
+
+void ArcApps::LoadIconFromVM(const std::string icon_key_s_key,
+                             apps::mojom::IconCompression icon_compression,
+                             int32_t size_hint_in_dip,
+                             LoadIconCallback callback) {
+  if (prefs_) {
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+        prefs_->GetApp(icon_key_s_key);
+    if (app_info) {
+      base::OnceCallback<void(apps::ArcApps::AppConnectionHolder*)> pending =
+          base::BindOnce(&LoadIcon0, icon_compression,
+                         ConvertDipToPx(size_hint_in_dip),
+                         app_info->package_name, app_info->activity,
+                         app_info->icon_resource_id, std::move(callback));
+
+      AppConnectionHolder* app_connection_holder =
+          prefs_->app_connection_holder();
+      if (app_connection_holder->IsConnected()) {
+        std::move(pending).Run(app_connection_holder);
+      } else {
+        pending_load_icon_calls_.push_back(std::move(pending));
+      }
+      return;
+    }
+  }
+
+  // On failure, we still run the callback, with the zero IconValue.
+  std::move(callback).Run(apps::mojom::IconValue::New());
 }
 
 apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
