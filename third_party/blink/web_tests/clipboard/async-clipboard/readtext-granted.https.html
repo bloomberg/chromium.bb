@@ -1,34 +1,12 @@
 <!DOCTYPE html>
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
+<meta charset="utf-8">
+<title>navigator.clipboard.readText() succeeds when permission granted</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script src="../../http/tests/resources/permissions-helper.js"></script>
-</head>
-<body>
 <script>
-description("Tests navigator.clipboard.readText() permission success.");
-
-shouldBeDefined("PermissionsHelper.setPermission");
-
-function successCallback(access) {
-  testPassed("clipboard.readText() success (as expected).");
-  finishJSTest();
-}
-
-function errorCallback(error) {
-  testFailed(
-    "clipboard.readText() does not fail (even though we hoped it would).");
-  finishJSTest();
-}
-
-window.jsTestIsAsync = true;
-
-PermissionsHelper.setPermission('clipboard-read', 'granted').then(function() {
-  shouldBeNonNull("navigator.clipboard");
-  navigator.clipboard.readText().then(successCallback, errorCallback);
-});
-
-
+promise_test(async () => {
+  await PermissionsHelper.setPermission('clipboard-read', 'granted');
+  await navigator.clipboard.readText();
+}, "navigator.clipboard.readText() succeeds when permission granted");
 </script>
-</body>
-</html>
