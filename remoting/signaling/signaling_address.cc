@@ -28,7 +28,7 @@ const NameMapElement<SignalingAddress::Channel> kChannelTypes[] = {
     {SignalingAddress::Channel::XMPP, "xmpp"},
 };
 
-buzz::QName GetQNameByField(Field attr, SignalingAddress::Direction direction) {
+jingle_xmpp::QName GetQNameByField(Field attr, SignalingAddress::Direction direction) {
   const char* attribute_name = nullptr;
   switch (attr) {
     case Field::JID:
@@ -44,7 +44,7 @@ buzz::QName GetQNameByField(Field attr, SignalingAddress::Direction direction) {
           (direction == SignalingAddress::FROM) ? "from-channel" : "to-channel";
       break;
   }
-  return buzz::QName("", attribute_name);
+  return jingle_xmpp::QName("", attribute_name);
 }
 
 SignalingAddress::Channel GetChannelType(std::string address) {
@@ -99,7 +99,7 @@ bool SignalingAddress::operator!=(const SignalingAddress& other) const {
   return !(*this == other);
 }
 
-SignalingAddress SignalingAddress::Parse(const buzz::XmlElement* iq,
+SignalingAddress SignalingAddress::Parse(const jingle_xmpp::XmlElement* iq,
                                          SignalingAddress::Direction direction,
                                          std::string* error) {
   std::string jid(iq->Attr(GetQNameByField(Field::JID, direction)));
@@ -107,14 +107,14 @@ SignalingAddress SignalingAddress::Parse(const buzz::XmlElement* iq,
     return SignalingAddress();
   }
 
-  const buzz::XmlElement* jingle =
-      iq->FirstNamed(buzz::QName(kJingleNamespace, "jingle"));
+  const jingle_xmpp::XmlElement* jingle =
+      iq->FirstNamed(jingle_xmpp::QName(kJingleNamespace, "jingle"));
 
   if (!jingle) {
     return SignalingAddress(jid);
   }
 
-  std::string type(iq->Attr(buzz::QName(std::string(), "type")));
+  std::string type(iq->Attr(jingle_xmpp::QName(std::string(), "type")));
   // For error IQs, invert the direction as the jingle node represents the
   // original request.
   if (type == "error") {
@@ -150,7 +150,7 @@ SignalingAddress SignalingAddress::Parse(const buzz::XmlElement* iq,
   return SignalingAddress(jid, endpoint_id, channel);
 }
 
-void SignalingAddress::SetInMessage(buzz::XmlElement* iq,
+void SignalingAddress::SetInMessage(jingle_xmpp::XmlElement* iq,
                                     Direction direction) const {
   DCHECK(!empty()) << "Signaling Address is empty";
 
@@ -166,13 +166,13 @@ void SignalingAddress::SetInMessage(buzz::XmlElement* iq,
 
   // Do not tamper the routing-info in the jingle tag for error IQ's, as
   // it corresponds to the original message.
-  std::string type(iq->Attr(buzz::QName(std::string(), "type")));
+  std::string type(iq->Attr(jingle_xmpp::QName(std::string(), "type")));
   if (type == "error") {
     return;
   }
 
-  buzz::XmlElement* jingle =
-      iq->FirstNamed(buzz::QName(kJingleNamespace, "jingle"));
+  jingle_xmpp::XmlElement* jingle =
+      iq->FirstNamed(jingle_xmpp::QName(kJingleNamespace, "jingle"));
 
   if (jingle) {
     // Start from a fresh slate regardless of the previous address format.

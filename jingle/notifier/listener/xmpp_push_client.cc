@@ -23,7 +23,7 @@ XmppPushClient::~XmppPushClient() {
 }
 
 void XmppPushClient::OnConnect(
-    base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
+    base::WeakPtr<jingle_xmpp::XmppTaskParentInterface> base_task) {
   DCHECK(thread_checker_.CalledOnValidThread());
   base_task_ = base_task;
 

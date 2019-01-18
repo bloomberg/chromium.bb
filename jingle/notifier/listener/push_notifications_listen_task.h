@@ -7,8 +7,8 @@
 // see if they look like notifications, and filters out those which are not
 // valid.
 //
-// The task is deleted automatically by the buzz::XmppClient. This occurs in the
-// destructor of TaskRunner, which is a superclass of buzz::XmppClient.
+// The task is deleted automatically by the jingle_xmpp::XmppClient. This occurs in the
+// destructor of TaskRunner, which is a superclass of jingle_xmpp::XmppClient.
 
 #ifndef JINGLE_NOTIFIER_PUSH_NOTIFICATIONS_LISTENER_LISTEN_TASK_H_
 #define JINGLE_NOTIFIER_PUSH_NOTIFICATIONS_LISTENER_LISTEN_TASK_H_
@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "third_party/libjingle_xmpp/xmpp/xmpptask.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmlElement;
 }
 
@@ -25,7 +25,7 @@ namespace notifier {
 
 struct Notification;
 
-class PushNotificationsListenTask : public buzz::XmppTask {
+class PushNotificationsListenTask : public jingle_xmpp::XmppTask {
  public:
   class Delegate {
    public:
@@ -35,17 +35,17 @@ class PushNotificationsListenTask : public buzz::XmppTask {
     virtual ~Delegate();
   };
 
-  PushNotificationsListenTask(buzz::XmppTaskParentInterface* parent,
+  PushNotificationsListenTask(jingle_xmpp::XmppTaskParentInterface* parent,
                               Delegate* delegate);
   ~PushNotificationsListenTask() override;
 
-  // Overriden from buzz::XmppTask.
+  // Overriden from jingle_xmpp::XmppTask.
   int ProcessStart() override;
   int ProcessResponse() override;
-  bool HandleStanza(const buzz::XmlElement* stanza) override;
+  bool HandleStanza(const jingle_xmpp::XmlElement* stanza) override;
 
  private:
-  bool IsValidNotification(const buzz::XmlElement* stanza);
+  bool IsValidNotification(const jingle_xmpp::XmlElement* stanza);
 
   Delegate* delegate_;
 

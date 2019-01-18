@@ -25,23 +25,23 @@ namespace remoting {
 
 const char kOAuthMechanism[] = "X-OAUTH2";
 
-buzz::StaticQName kXmppIqName = {"jabber:client", "iq"};
+jingle_xmpp::StaticQName kXmppIqName = {"jabber:client", "iq"};
 
 char kXmppBindNs[] = "urn:ietf:params:xml:ns:xmpp-bind";
-buzz::StaticQName kXmppBindName = {kXmppBindNs, "bind"};
-buzz::StaticQName kXmppJidName = {kXmppBindNs, "jid"};
+jingle_xmpp::StaticQName kXmppBindName = {kXmppBindNs, "bind"};
+jingle_xmpp::StaticQName kXmppJidName = {kXmppBindNs, "jid"};
 
-buzz::StaticQName kJabberFeaturesName = {"http://etherx.jabber.org/streams",
+jingle_xmpp::StaticQName kJabberFeaturesName = {"http://etherx.jabber.org/streams",
                                          "features"};
 
 char kXmppTlsNs[] = "urn:ietf:params:xml:ns:xmpp-tls";
-buzz::StaticQName kStartTlsName = {kXmppTlsNs, "starttls"};
-buzz::StaticQName kTlsProceedName = {kXmppTlsNs, "proceed"};
+jingle_xmpp::StaticQName kStartTlsName = {kXmppTlsNs, "starttls"};
+jingle_xmpp::StaticQName kTlsProceedName = {kXmppTlsNs, "proceed"};
 
 char kXmppSaslNs[] = "urn:ietf:params:xml:ns:xmpp-sasl";
-buzz::StaticQName kSaslMechanismsName = {kXmppSaslNs, "mechanisms"};
-buzz::StaticQName kSaslMechanismName = {kXmppSaslNs, "mechanism"};
-buzz::StaticQName kSaslSuccessName = {kXmppSaslNs, "success"};
+jingle_xmpp::StaticQName kSaslMechanismsName = {kXmppSaslNs, "mechanisms"};
+jingle_xmpp::StaticQName kSaslMechanismName = {kXmppSaslNs, "mechanism"};
+jingle_xmpp::StaticQName kSaslSuccessName = {kXmppSaslNs, "success"};
 
 XmppLoginHandler::XmppLoginHandler(const std::string& server,
                                    const std::string& username,
@@ -82,7 +82,7 @@ void XmppLoginHandler::OnDataReceived(const std::string& data) {
   stream_parser_->AppendData(data);
 }
 
-void XmppLoginHandler::OnStanza(std::unique_ptr<buzz::XmlElement> stanza) {
+void XmppLoginHandler::OnStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
   switch (state_) {
     case State::WAIT_STREAM_HEADER: {
       if (stanza->Name() == kJabberFeaturesName &&
@@ -107,11 +107,11 @@ void XmppLoginHandler::OnStanza(std::unique_ptr<buzz::XmlElement> stanza) {
     }
 
     case State::WAIT_STREAM_HEADER_AFTER_TLS: {
-      buzz::XmlElement* mechanisms_element =
+      jingle_xmpp::XmlElement* mechanisms_element =
           stanza->FirstNamed(kSaslMechanismsName);
       bool oauth_supported = false;
       if (mechanisms_element) {
-        for (buzz::XmlElement* element =
+        for (jingle_xmpp::XmlElement* element =
                  mechanisms_element->FirstNamed(kSaslMechanismName);
              element; element = element->NextNamed(kSaslMechanismName)) {
           if (element->BodyText() == kOAuthMechanism) {
@@ -161,10 +161,10 @@ void XmppLoginHandler::OnStanza(std::unique_ptr<buzz::XmlElement> stanza) {
       break;
 
     case State::WAIT_BIND_RESULT: {
-      buzz::XmlElement* bind = stanza->FirstNamed(kXmppBindName);
-      buzz::XmlElement* jid = bind ? bind->FirstNamed(kXmppJidName) : nullptr;
-      if (stanza->Attr(buzz::QName("", "id")) != "0" ||
-          stanza->Attr(buzz::QName("", "type")) != "result" || !jid) {
+      jingle_xmpp::XmlElement* bind = stanza->FirstNamed(kXmppBindName);
+      jingle_xmpp::XmlElement* jid = bind ? bind->FirstNamed(kXmppJidName) : nullptr;
+      if (stanza->Attr(jingle_xmpp::QName("", "id")) != "0" ||
+          stanza->Attr(jingle_xmpp::QName("", "type")) != "result" || !jid) {
         LOG(ERROR) << "Received unexpected response to bind: " << stanza->Str();
         OnError(SignalStrategy::PROTOCOL_ERROR);
         return;
@@ -176,8 +176,8 @@ void XmppLoginHandler::OnStanza(std::unique_ptr<buzz::XmlElement> stanza) {
 
     case State::WAIT_SESSION_IQ_RESULT:
       if (stanza->Name() != kXmppIqName ||
-          stanza->Attr(buzz::QName("", "id")) != "1" ||
-          stanza->Attr(buzz::QName("", "type")) != "result") {
+          stanza->Attr(jingle_xmpp::QName("", "id")) != "1" ||
+          stanza->Attr(jingle_xmpp::QName("", "type")) != "result") {
         LOG(ERROR) << "Failed to start session: " << stanza->Str();
         OnError(SignalStrategy::PROTOCOL_ERROR);
         return;

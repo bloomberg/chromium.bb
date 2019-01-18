@@ -12,7 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmpp/jid.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmlElement;
 }
 
@@ -26,7 +26,7 @@ class PushNotificationsSubscribeTaskTest : public testing::Test {
   }
 
  protected:
-  const buzz::Jid jid_;
+  const jingle_xmpp::Jid jid_;
   const std::string task_id_;
 
  private:
@@ -43,7 +43,7 @@ TEST_F(PushNotificationsSubscribeTaskTest, MakeSubscriptionMessage) {
   subscription.channel = "test_channel2";
   subscription.from = "from.test2.com";
   subscriptions.push_back(subscription);
-  std::unique_ptr<buzz::XmlElement> message(
+  std::unique_ptr<jingle_xmpp::XmlElement> message(
       PushNotificationsSubscribeTask::MakeSubscriptionMessage(subscriptions,
                                                               jid_, task_id_));
   std::string expected_xml_string =

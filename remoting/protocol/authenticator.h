@@ -10,9 +10,9 @@
 
 #include "base/callback_forward.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmlElement;
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 namespace remoting {
 namespace protocol {
@@ -89,15 +89,15 @@ class Authenticator {
       CreateBaseAuthenticatorCallback;
 
   // Returns true if |message| is an Authenticator message.
-  static bool IsAuthenticatorMessage(const buzz::XmlElement* message);
+  static bool IsAuthenticatorMessage(const jingle_xmpp::XmlElement* message);
 
   // Creates an empty Authenticator message, owned by the caller.
-  static std::unique_ptr<buzz::XmlElement> CreateEmptyAuthenticatorMessage();
+  static std::unique_ptr<jingle_xmpp::XmlElement> CreateEmptyAuthenticatorMessage();
 
   // Finds Authenticator message among child elements of |message|, or
   // returns nullptr otherwise.
-  static const buzz::XmlElement* FindAuthenticatorMessage(
-      const buzz::XmlElement* message);
+  static const jingle_xmpp::XmlElement* FindAuthenticatorMessage(
+      const jingle_xmpp::XmlElement* message);
 
   Authenticator() {}
   virtual ~Authenticator() {}
@@ -118,12 +118,12 @@ class Authenticator {
   // ownership of |message|. |resume_callback| will be called when processing is
   // finished. The implementation must guarantee that |resume_callback| is not
   // called after the Authenticator is destroyed.
-  virtual void ProcessMessage(const buzz::XmlElement* message,
+  virtual void ProcessMessage(const jingle_xmpp::XmlElement* message,
                               const base::Closure& resume_callback) = 0;
 
   // Must be called when in MESSAGE_READY state. Returns next
   // authentication message that needs to be sent to the peer.
-  virtual std::unique_ptr<buzz::XmlElement> GetNextMessage() = 0;
+  virtual std::unique_ptr<jingle_xmpp::XmlElement> GetNextMessage() = 0;
 
   // Returns the auth key received as result of the authentication handshake.
   virtual const std::string& GetAuthKey() const = 0;

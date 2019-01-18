@@ -30,7 +30,7 @@
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 #include "third_party/webrtc/api/candidate.h"
 
-using buzz::XmlElement;
+using jingle_xmpp::XmlElement;
 
 namespace remoting {
 namespace protocol {
@@ -270,7 +270,7 @@ void JingleSession::AcceptIncomingConnection(
 
   ProcessIncomingPluginMessage(initiate_message);
   // Process the first authentication message.
-  const buzz::XmlElement* first_auth_message =
+  const jingle_xmpp::XmlElement* first_auth_message =
       initiate_message.description->authenticator_message();
 
   if (!first_auth_message) {
@@ -296,7 +296,7 @@ void JingleSession::ContinueAcceptIncomingConnection() {
   std::unique_ptr<JingleMessage> message(new JingleMessage(
       peer_address_, JingleMessage::SESSION_ACCEPT, session_id_));
 
-  std::unique_ptr<buzz::XmlElement> auth_message;
+  std::unique_ptr<jingle_xmpp::XmlElement> auth_message;
   if (authenticator_->state() == Authenticator::MESSAGE_READY)
     auth_message = authenticator_->GetNextMessage();
 
@@ -335,7 +335,7 @@ void JingleSession::SetTransport(Transport* transport) {
 }
 
 void JingleSession::SendTransportInfo(
-    std::unique_ptr<buzz::XmlElement> transport_info) {
+    std::unique_ptr<jingle_xmpp::XmlElement> transport_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, AUTHENTICATED);
 
@@ -344,8 +344,8 @@ void JingleSession::SendTransportInfo(
   message->transport_info = std::move(transport_info);
   AddPluginAttachments(message.get());
 
-  std::unique_ptr<buzz::XmlElement> stanza = message->ToXml();
-  stanza->AddAttr(buzz::QN_ID, GetNextOutgoingId());
+  std::unique_ptr<jingle_xmpp::XmlElement> stanza = message->ToXml();
+  stanza->AddAttr(jingle_xmpp::QN_ID, GetNextOutgoingId());
 
   auto request = session_manager_->iq_sender()->SendIq(
       std::move(stanza), base::Bind(&JingleSession::OnTransportInfoResponse,
@@ -424,8 +424,8 @@ void JingleSession::SendMessage(std::unique_ptr<JingleMessage> message) {
     // SESSION_TERMINATE message.
     AddPluginAttachments(message.get());
   }
-  std::unique_ptr<buzz::XmlElement> stanza = message->ToXml();
-  stanza->AddAttr(buzz::QN_ID, GetNextOutgoingId());
+  std::unique_ptr<jingle_xmpp::XmlElement> stanza = message->ToXml();
+  stanza->AddAttr(jingle_xmpp::QN_ID, GetNextOutgoingId());
 
   auto request = session_manager_->iq_sender()->SendIq(
       std::move(stanza), base::Bind(&JingleSession::OnMessageResponse,
@@ -448,7 +448,7 @@ void JingleSession::SendMessage(std::unique_ptr<JingleMessage> message) {
 void JingleSession::OnMessageResponse(
     JingleMessage::ActionType request_type,
     IqRequest* request,
-    const buzz::XmlElement* response) {
+    const jingle_xmpp::XmlElement* response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Delete the request from the list of pending requests.
@@ -471,7 +471,7 @@ void JingleSession::OnMessageResponse(
     return;
   } else {
     const std::string& type =
-        response->Attr(buzz::QName(std::string(), "type"));
+        response->Attr(jingle_xmpp::QName(std::string(), "type"));
     if (type != "result") {
       LOG(ERROR) << "Received error in response to " << type_str
                  << " message: \"" << response->Str()
@@ -485,7 +485,7 @@ void JingleSession::OnMessageResponse(
 }
 
 void JingleSession::OnTransportInfoResponse(IqRequest* request,
-                                            const buzz::XmlElement* response) {
+                                            const jingle_xmpp::XmlElement* response) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!transport_info_requests_.empty());
 
@@ -506,7 +506,7 @@ void JingleSession::OnTransportInfoResponse(IqRequest* request,
     return;
   }
 
-  const std::string& type = response->Attr(buzz::QName(std::string(), "type"));
+  const std::string& type = response->Attr(jingle_xmpp::QName(std::string(), "type"));
   if (type != "result") {
     LOG(ERROR) << "Received error in response to transport-info message: \""
                << response->Str() << "\". Terminating the session.";
@@ -570,7 +570,7 @@ void JingleSession::OnAccept(std::unique_ptr<JingleMessage> message,
 
   reply_callback.Run(JingleMessageReply::NONE);
 
-  const buzz::XmlElement* auth_message =
+  const jingle_xmpp::XmlElement* auth_message =
       message->description->authenticator_message();
   if (!auth_message) {
     DLOG(WARNING) << "Received session-accept without authentication message ";

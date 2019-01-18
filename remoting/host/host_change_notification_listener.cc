@@ -14,8 +14,8 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 
-using buzz::QName;
-using buzz::XmlElement;
+using jingle_xmpp::QName;
+using jingle_xmpp::XmlElement;
 
 namespace remoting {
 
@@ -43,8 +43,8 @@ void HostChangeNotificationListener::OnSignalStrategyStateChange(
 }
 
 bool HostChangeNotificationListener::OnSignalStrategyIncomingStanza(
-    const buzz::XmlElement* stanza) {
-  if (stanza->Name() != buzz::QN_IQ || stanza->Attr(buzz::QN_TYPE) != "set")
+    const jingle_xmpp::XmlElement* stanza) {
+  if (stanza->Name() != jingle_xmpp::QN_IQ || stanza->Attr(jingle_xmpp::QN_TYPE) != "set")
     return false;
 
   const XmlElement* host_changed_element =
@@ -54,7 +54,7 @@ bool HostChangeNotificationListener::OnSignalStrategyIncomingStanza(
 
   const std::string& host_id =
       host_changed_element->Attr(QName(kChromotingXmlNamespace, "hostid"));
-  const std::string& from = stanza->Attr(buzz::QN_FROM);
+  const std::string& from = stanza->Attr(jingle_xmpp::QN_FROM);
 
   std::string to_error;
   SignalingAddress to =

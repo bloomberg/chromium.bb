@@ -70,7 +70,7 @@ void GcdStateUpdater::OnSignalStrategyStateChange(SignalStrategy::State state) {
 }
 
 bool GcdStateUpdater::OnSignalStrategyIncomingStanza(
-    const buzz::XmlElement* stanza) {
+    const jingle_xmpp::XmlElement* stanza) {
   // Ignore all XMPP stanzas.
   return false;
 }

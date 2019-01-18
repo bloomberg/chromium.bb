@@ -12,7 +12,7 @@
 
 namespace jingle_glue {
 
-class MockTask : public rtc::Task {
+class MockTask : public jingle_xmpp::Task {
  public:
   MockTask(TaskParent* parent);
 

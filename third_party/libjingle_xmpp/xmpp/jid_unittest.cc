@@ -11,7 +11,7 @@
 #include "third_party/libjingle_xmpp/xmpp/jid.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using buzz::Jid;
+using jingle_xmpp::Jid;
 
 TEST(JidTest, TestDomain) {
   Jid jid("dude");

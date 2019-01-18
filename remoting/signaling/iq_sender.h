@@ -19,9 +19,9 @@ namespace base {
 class TimeDelta;
 }  // namespace base
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmlElement;
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 namespace remoting {
 
@@ -35,7 +35,7 @@ class IqSender : public SignalStrategy::Listener {
   // Callback that is called when an Iq response is received. Called
   // with the |response| set to nullptr in case of a timeout.
   typedef base::Callback<void(IqRequest* request,
-                              const buzz::XmlElement* response)> ReplyCallback;
+                              const jingle_xmpp::XmlElement* response)> ReplyCallback;
 
   explicit IqSender(SignalStrategy* signal_strategy);
   ~IqSender() override;
@@ -45,28 +45,28 @@ class IqSender : public SignalStrategy::Listener {
   // received. Destroy the returned IqRequest to cancel the callback.
   // Caller must take ownership of the result. Result must be
   // destroyed before sender is destroyed.
-  std::unique_ptr<IqRequest> SendIq(std::unique_ptr<buzz::XmlElement> stanza,
+  std::unique_ptr<IqRequest> SendIq(std::unique_ptr<jingle_xmpp::XmlElement> stanza,
                                     const ReplyCallback& callback);
 
   // Same as above, but also formats the message.
   std::unique_ptr<IqRequest> SendIq(const std::string& type,
                                     const std::string& addressee,
-                                    std::unique_ptr<buzz::XmlElement> iq_body,
+                                    std::unique_ptr<jingle_xmpp::XmlElement> iq_body,
                                     const ReplyCallback& callback);
 
   // SignalStrategy::Listener implementation.
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
-  bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
+  bool OnSignalStrategyIncomingStanza(const jingle_xmpp::XmlElement* stanza) override;
 
  private:
   typedef std::map<std::string, IqRequest*> IqRequestMap;
   friend class IqRequest;
 
   // Helper function used to create iq stanzas.
-  static std::unique_ptr<buzz::XmlElement> MakeIqStanza(
+  static std::unique_ptr<jingle_xmpp::XmlElement> MakeIqStanza(
       const std::string& type,
       const std::string& addressee,
-      std::unique_ptr<buzz::XmlElement> iq_body);
+      std::unique_ptr<jingle_xmpp::XmlElement> iq_body);
 
   // Removes |request| from the list of pending requests. Called by IqRequest.
   void RemoveRequest(IqRequest* request);
@@ -91,13 +91,13 @@ class IqRequest {
  private:
   friend class IqSender;
 
-  void CallCallback(const buzz::XmlElement* stanza);
+  void CallCallback(const jingle_xmpp::XmlElement* stanza);
   void OnTimeout();
 
   // Called by IqSender when a response is received.
-  void OnResponse(const buzz::XmlElement* stanza);
+  void OnResponse(const jingle_xmpp::XmlElement* stanza);
 
-  void DeliverResponse(std::unique_ptr<buzz::XmlElement> stanza);
+  void DeliverResponse(std::unique_ptr<jingle_xmpp::XmlElement> stanza);
 
   IqSender* sender_;
   IqSender::ReplyCallback callback_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// An implementation of buzz::AsyncSocket that uses Chrome Network Service
+// An implementation of jingle_xmpp::AsyncSocket that uses Chrome Network Service
 // sockets.
 
 #ifndef JINGLE_GLUE_NETWORK_SERVICE_ASYNC_SOCKET_H_
@@ -28,7 +28,7 @@
 
 namespace jingle_glue {
 
-class NetworkServiceAsyncSocket : public buzz::AsyncSocket,
+class NetworkServiceAsyncSocket : public jingle_xmpp::AsyncSocket,
                                   public network::mojom::SocketObserver {
  public:
   NetworkServiceAsyncSocket(
@@ -41,9 +41,9 @@ class NetworkServiceAsyncSocket : public buzz::AsyncSocket,
   // Does not raise any signals.
   ~NetworkServiceAsyncSocket() override;
 
-  // buzz::AsyncSocket implementation.
+  // jingle_xmpp::AsyncSocket implementation.
 
-  // The current state (see buzz::AsyncSocket::State; all but
+  // The current state (see jingle_xmpp::AsyncSocket::State; all but
   // STATE_CLOSING is used).
   State state() override;
 
@@ -214,9 +214,9 @@ class NetworkServiceAsyncSocket : public buzz::AsyncSocket,
 
   bool use_fake_tls_handshake_;
 
-  // buzz::AsyncSocket state.
-  buzz::AsyncSocket::State state_;
-  buzz::AsyncSocket::Error error_;
+  // jingle_xmpp::AsyncSocket state.
+  jingle_xmpp::AsyncSocket::State state_;
+  jingle_xmpp::AsyncSocket::Error error_;
   net::Error net_error_;
 
   // State for the read loop.  |read_start_| <= |read_end_| <=

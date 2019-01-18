@@ -15,7 +15,7 @@
 #include <string>
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 // This class captures callbacks from engine.
 class XmppTestHandler : public XmppOutputHandler,  public XmppSessionHandler,
@@ -48,9 +48,9 @@ class XmppTestHandler : public XmppOutputHandler,  public XmppSessionHandler,
   std::stringstream stanza_;
 };
 
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
-inline std::ostream& operator<<(std::ostream& os, const buzz::Jid& jid) {
+inline std::ostream& operator<<(std::ostream& os, const jingle_xmpp::Jid& jid) {
   os << jid.Str();
   return os;
 }

@@ -46,9 +46,9 @@ class PairingAuthenticatorBase : public Authenticator {
   State state() const override;
   bool started() const override;
   RejectionReason rejection_reason() const override;
-  void ProcessMessage(const buzz::XmlElement* message,
+  void ProcessMessage(const jingle_xmpp::XmlElement* message,
                       const base::Closure& resume_callback) override;
-  std::unique_ptr<buzz::XmlElement> GetNextMessage() override;
+  std::unique_ptr<jingle_xmpp::XmlElement> GetNextMessage() override;
   const std::string& GetAuthKey() const override;
   std::unique_ptr<ChannelAuthenticator> CreateChannelAuthenticator()
       const override;
@@ -76,8 +76,8 @@ class PairingAuthenticatorBase : public Authenticator {
 
  private:
   // Helper methods for ProcessMessage() and GetNextMessage().
-  void MaybeAddErrorMessage(buzz::XmlElement* message);
-  bool HasErrorMessage(const buzz::XmlElement* message) const;
+  void MaybeAddErrorMessage(jingle_xmpp::XmlElement* message);
+  bool HasErrorMessage(const jingle_xmpp::XmlElement* message) const;
   void CheckForFailedSpakeExchange(const base::Closure& resume_callback);
 
   base::WeakPtrFactory<PairingAuthenticatorBase> weak_factory_;

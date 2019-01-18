@@ -16,9 +16,9 @@
 #include "remoting/signaling/signal_strategy.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmlElement;
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 namespace base {
 class TimeDelta;
@@ -58,17 +58,17 @@ class RegisterSupportHostRequest : public SignalStrategy::Listener {
 
   // HostStatusObserver implementation.
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
-  bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
+  bool OnSignalStrategyIncomingStanza(const jingle_xmpp::XmlElement* stanza) override;
 
  private:
   void DoSend();
 
-  std::unique_ptr<buzz::XmlElement> CreateRegistrationRequest(
+  std::unique_ptr<jingle_xmpp::XmlElement> CreateRegistrationRequest(
       const std::string& jid);
-  std::unique_ptr<buzz::XmlElement> CreateSignature(const std::string& jid);
+  std::unique_ptr<jingle_xmpp::XmlElement> CreateSignature(const std::string& jid);
 
-  void ProcessResponse(IqRequest* request, const buzz::XmlElement* response);
-  void ParseResponse(const buzz::XmlElement* response,
+  void ProcessResponse(IqRequest* request, const jingle_xmpp::XmlElement* response);
+  void ParseResponse(const jingle_xmpp::XmlElement* response,
                      std::string* support_id,
                      base::TimeDelta* lifetime,
                      protocol::ErrorCode* error_code);

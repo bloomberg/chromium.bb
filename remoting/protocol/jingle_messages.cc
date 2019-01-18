@@ -13,8 +13,8 @@
 #include "remoting/protocol/session_plugin.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
-using buzz::QName;
-using buzz::XmlElement;
+using jingle_xmpp::QName;
+using jingle_xmpp::XmlElement;
 
 namespace remoting {
 namespace protocol {
@@ -53,7 +53,7 @@ const NameMapElement<JingleMessage::Reason> kReasons[] = {
   { JingleMessage::INCOMPATIBLE_PARAMETERS, "incompatible-parameters" },
 };
 
-bool ParseIceCredentials(const buzz::XmlElement* element,
+bool ParseIceCredentials(const jingle_xmpp::XmlElement* element,
                          IceTransportInfo::IceCredentials* credentials) {
   DCHECK(element->Name() == QName(kIceTransportNamespace, "credentials"));
 
@@ -74,7 +74,7 @@ bool ParseIceCredentials(const buzz::XmlElement* element,
   return true;
 }
 
-bool ParseIceCandidate(const buzz::XmlElement* element,
+bool ParseIceCandidate(const jingle_xmpp::XmlElement* element,
                        IceTransportInfo::NamedCandidate* candidate) {
   DCHECK(element->Name() == QName(kIceTransportNamespace, "candidate"));
 
@@ -148,7 +148,7 @@ XmlElement* FormatIceCandidate(
 }  // namespace
 
 // static
-bool JingleMessage::IsJingleMessage(const buzz::XmlElement* stanza) {
+bool JingleMessage::IsJingleMessage(const jingle_xmpp::XmlElement* stanza) {
   return stanza->Name() == QName(kJabberNamespace, "iq") &&
          stanza->Attr(QName(std::string(), "type")) == "set" &&
          stanza->FirstNamed(QName(kJingleNamespace, "jingle")) != nullptr;
@@ -168,7 +168,7 @@ JingleMessage::JingleMessage(const SignalingAddress& to,
 
 JingleMessage::~JingleMessage() = default;
 
-bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
+bool JingleMessage::ParseXml(const jingle_xmpp::XmlElement* stanza,
                              std::string* error) {
   if (!IsJingleMessage(stanza)) {
     *error = "Not a jingle message";
@@ -271,7 +271,7 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
   const XmlElement* webrtc_transport_tag = content_tag->FirstNamed(
       QName(kWebrtcTransportNamespace, "transport"));
   if (webrtc_transport_tag) {
-    transport_info.reset(new buzz::XmlElement(*webrtc_transport_tag));
+    transport_info.reset(new jingle_xmpp::XmlElement(*webrtc_transport_tag));
   }
 
   description.reset();
@@ -295,14 +295,14 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
     const XmlElement* ice_transport_tag = content_tag->FirstNamed(
         QName(kIceTransportNamespace, "transport"));
     if (ice_transport_tag) {
-      transport_info.reset(new buzz::XmlElement(*ice_transport_tag));
+      transport_info.reset(new jingle_xmpp::XmlElement(*ice_transport_tag));
     }
   }
 
   return true;
 }
 
-std::unique_ptr<buzz::XmlElement> JingleMessage::ToXml() const {
+std::unique_ptr<jingle_xmpp::XmlElement> JingleMessage::ToXml() const {
   std::unique_ptr<XmlElement> root(
       new XmlElement(QName("jabber:client", "iq"), true));
 
@@ -405,8 +405,8 @@ JingleMessageReply::JingleMessageReply(ErrorType error,
 
 JingleMessageReply::~JingleMessageReply() = default;
 
-std::unique_ptr<buzz::XmlElement> JingleMessageReply::ToXml(
-    const buzz::XmlElement* request_stanza) const {
+std::unique_ptr<jingle_xmpp::XmlElement> JingleMessageReply::ToXml(
+    const jingle_xmpp::XmlElement* request_stanza) const {
   std::unique_ptr<XmlElement> iq(
       new XmlElement(QName(kJabberNamespace, "iq"), true));
 
@@ -433,13 +433,13 @@ std::unique_ptr<buzz::XmlElement> JingleMessageReply::ToXml(
   iq->SetAttr(QName(kEmptyNamespace, "type"), "error");
   original_from.SetInMessage(iq.get(), SignalingAddress::TO);
 
-  for (const buzz::XmlElement* child = request_stanza->FirstElement();
+  for (const jingle_xmpp::XmlElement* child = request_stanza->FirstElement();
        child != nullptr; child = child->NextElement()) {
-    iq->AddElement(new buzz::XmlElement(*child));
+    iq->AddElement(new jingle_xmpp::XmlElement(*child));
   }
 
-  buzz::XmlElement* error =
-      new buzz::XmlElement(QName(kJabberNamespace, "error"));
+  jingle_xmpp::XmlElement* error =
+      new jingle_xmpp::XmlElement(QName(kJabberNamespace, "error"));
   iq->AddElement(error);
 
   std::string type;
@@ -481,15 +481,15 @@ std::unique_ptr<buzz::XmlElement> JingleMessageReply::ToXml(
   // to first add some error from that namespace.
   if (name.Namespace() != kJabberNamespace) {
     error->AddElement(
-        new buzz::XmlElement(QName(kJabberNamespace, "undefined-condition")));
+        new jingle_xmpp::XmlElement(QName(kJabberNamespace, "undefined-condition")));
   }
-  error->AddElement(new buzz::XmlElement(name));
+  error->AddElement(new jingle_xmpp::XmlElement(name));
 
   if (!error_text.empty()) {
     // It's okay to always use English here. This text is for
     // debugging purposes only.
-    buzz::XmlElement* text_elem =
-            new buzz::XmlElement(QName(kJabberNamespace, "text"));
+    jingle_xmpp::XmlElement* text_elem =
+            new jingle_xmpp::XmlElement(QName(kJabberNamespace, "text"));
     text_elem->SetAttr(QName(kXmlNamespace, "lang"), "en");
     text_elem->SetBodyText(error_text);
     error->AddElement(text_elem);
@@ -512,7 +512,7 @@ IceTransportInfo::IceTransportInfo() = default;
 IceTransportInfo::~IceTransportInfo() = default;
 
 bool IceTransportInfo::ParseXml(
-    const buzz::XmlElement* element) {
+    const jingle_xmpp::XmlElement* element) {
   if (element->Name() != QName(kIceTransportNamespace, "transport")) {
     return false;
   }
@@ -544,8 +544,8 @@ bool IceTransportInfo::ParseXml(
   return true;
 }
 
-std::unique_ptr<buzz::XmlElement> IceTransportInfo::ToXml() const {
-  std::unique_ptr<buzz::XmlElement> result(
+std::unique_ptr<jingle_xmpp::XmlElement> IceTransportInfo::ToXml() const {
+  std::unique_ptr<jingle_xmpp::XmlElement> result(
       new XmlElement(QName(kIceTransportNamespace, "transport"), true));
   for (const IceCredentials& credentials : ice_credentials) {
     result->AddElement(FormatIceCredentials(credentials));

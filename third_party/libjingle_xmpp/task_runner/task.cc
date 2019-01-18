@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "third_party/libjingle_xmpp/task_runner/taskrunner.h"
 
-namespace rtc {
+namespace jingle_xmpp {
 
 int32_t Task::unique_id_seed_ = 0;
 
@@ -212,4 +212,4 @@ int Task::ProcessResponse() {
   return STATE_DONE;
 }
 
-} // namespace rtc
+} // namespace jingle_xmpp

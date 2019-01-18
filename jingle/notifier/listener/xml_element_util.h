@@ -7,22 +7,22 @@
 
 #include <string>
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmlElement;
 }
 
 namespace notifier {
 
-std::string XmlElementToString(const buzz::XmlElement& xml_element);
+std::string XmlElementToString(const jingle_xmpp::XmlElement& xml_element);
 
 // The functions below are helpful for building notifications-related
 // XML stanzas.
 
-buzz::XmlElement* MakeBoolXmlElement(const char* name, bool value);
+jingle_xmpp::XmlElement* MakeBoolXmlElement(const char* name, bool value);
 
-buzz::XmlElement* MakeIntXmlElement(const char* name, int value);
+jingle_xmpp::XmlElement* MakeIntXmlElement(const char* name, int value);
 
-buzz::XmlElement* MakeStringXmlElement(const char* name, const char* value);
+jingle_xmpp::XmlElement* MakeStringXmlElement(const char* name, const char* value);
 
 }  // namespace notifier
 

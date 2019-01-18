@@ -16,7 +16,7 @@
 #include <vector>
 #include "third_party/libjingle_xmpp/xmllite/qname.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmlnsStack {
 public:

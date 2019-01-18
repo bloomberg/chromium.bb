@@ -16,7 +16,7 @@
 #include "third_party/libjingle_xmpp/task_runner/taskrunner.h"
 #include "third_party/libjingle_xmpp/task_runner/task.h"
 
-namespace rtc {
+namespace jingle_xmpp {
 
 TaskParent::TaskParent(Task* derived_instance, TaskParent *parent)
     : parent_(parent) {
@@ -95,4 +95,4 @@ void TaskParent::OnChildStopped(Task *child) {
   children_->erase(child);
 }
 
-} // namespace rtc
+} // namespace jingle_xmpp

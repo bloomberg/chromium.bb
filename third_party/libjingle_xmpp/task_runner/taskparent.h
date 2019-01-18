@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/logging.h"
 
-namespace rtc {
+namespace jingle_xmpp {
 
 class Task;
 class TaskRunner;
@@ -58,6 +58,6 @@ class TaskParent {
 };
 
 
-} // namespace rtc
+} // namespace jingle_xmpp
 
 #endif  // THIRD_PARTY_LIBJINGLE_XMPP_TASK_RUNNER_TASKPARENT_H_

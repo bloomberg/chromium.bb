@@ -16,7 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/task_runner/taskrunner.h"
 
-namespace rtc {
+namespace jingle_xmpp {
 
 class FakeTask : public Task {
  public:
@@ -191,4 +191,4 @@ TEST(unstarted_task_test, DoNotDeleteTask1) {
   // Never run the tasks
 }
 
-}  // namespace rtc
+}  // namespace jingle_xmpp

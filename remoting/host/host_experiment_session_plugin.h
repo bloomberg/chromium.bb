@@ -20,9 +20,9 @@ class HostExperimentSessionPlugin : public protocol::SessionPlugin {
   using SessionPlugin::SessionPlugin;
 
   // protocol::SessionPlug implementation.
-  std::unique_ptr<buzz::XmlElement> GetNextMessage() override;
+  std::unique_ptr<jingle_xmpp::XmlElement> GetNextMessage() override;
 
-  void OnIncomingMessage(const buzz::XmlElement& attachments) override;
+  void OnIncomingMessage(const jingle_xmpp::XmlElement& attachments) override;
 
   // Whether we have received configuration from client.
   bool configuration_received() const;

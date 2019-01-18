@@ -22,7 +22,7 @@
 #include "third_party/expat/v2_0_1/Source/lib/expat.h"
 #endif  // EXPAT_RELATIVE_PATH
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmlElement;
 class XmlParseContext;

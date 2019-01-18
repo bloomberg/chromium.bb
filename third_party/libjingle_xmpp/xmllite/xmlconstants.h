@@ -13,7 +13,7 @@
 
 #include "third_party/libjingle_xmpp/xmllite/qname.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 extern const char STR_EMPTY[];
 extern const char NS_XML[];
@@ -25,6 +25,6 @@ extern const char STR_ENCODING[];
 
 extern const StaticQName QN_XMLNS;
 
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 #endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_XMLCONSTANTS_H_

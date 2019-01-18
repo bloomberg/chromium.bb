@@ -18,7 +18,7 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlnsstack.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmlPrinterImpl {
 public:
@@ -171,4 +171,4 @@ void XmlPrinterImpl::PrintCDATAText(const std::string& text) {
   *pout_ << "<![CDATA[" << text << "]]>";
 }
 
-}  // namespace buzz
+}  // namespace jingle_xmpp

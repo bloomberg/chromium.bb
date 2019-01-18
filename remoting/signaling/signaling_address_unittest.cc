@@ -10,14 +10,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
-using buzz::QName;
+using jingle_xmpp::QName;
 
 namespace remoting {
 
 namespace {
 
-std::unique_ptr<buzz::XmlElement> GetEmptyJingleMessage() {
-  return std::unique_ptr<buzz::XmlElement>(buzz::XmlElement::ForStr(
+std::unique_ptr<jingle_xmpp::XmlElement> GetEmptyJingleMessage() {
+  return std::unique_ptr<jingle_xmpp::XmlElement>(jingle_xmpp::XmlElement::ForStr(
       "<iq xmlns='jabber:client'><jingle xmlns='urn:xmpp:jingle:1'/></iq>"));
 }
 
@@ -39,8 +39,8 @@ TEST(SignalingAddressTest, ParseAddress) {
       "  </jingle>"
       "</cli:iq>";
 
-  std::unique_ptr<buzz::XmlElement> message(
-      buzz::XmlElement::ForStr(kTestMessage));
+  std::unique_ptr<jingle_xmpp::XmlElement> message(
+      jingle_xmpp::XmlElement::ForStr(kTestMessage));
   std::string error;
 
   SignalingAddress from =
@@ -77,8 +77,8 @@ TEST(SignalingAddressTest, ParseErrorAddress) {
       "<error/>"
       "</cli:iq>";
 
-  std::unique_ptr<buzz::XmlElement> message(
-      buzz::XmlElement::ForStr(kTestMessage));
+  std::unique_ptr<jingle_xmpp::XmlElement> message(
+      jingle_xmpp::XmlElement::ForStr(kTestMessage));
   std::string error;
 
   SignalingAddress from =
@@ -113,8 +113,8 @@ TEST(SignalingAddressTest, ParseInvalidBotAddress) {
       "  </jingle>"
       "</cli:iq>";
 
-  std::unique_ptr<buzz::XmlElement> message(
-      buzz::XmlElement::ForStr(kTestMessage));
+  std::unique_ptr<jingle_xmpp::XmlElement> message(
+      jingle_xmpp::XmlElement::ForStr(kTestMessage));
   std::string error;
 
   SignalingAddress from =
@@ -135,8 +135,8 @@ TEST(SignalingAddressTest, ParseMissingEndpointId) {
       "  </jingle>"
       "</cli:iq>";
 
-  std::unique_ptr<buzz::XmlElement> message(
-      buzz::XmlElement::ForStr(kTestMessage));
+  std::unique_ptr<jingle_xmpp::XmlElement> message(
+      jingle_xmpp::XmlElement::ForStr(kTestMessage));
   std::string error;
 
   SignalingAddress from =
@@ -146,47 +146,47 @@ TEST(SignalingAddressTest, ParseMissingEndpointId) {
 }
 
 TEST(SignalingAddressTest, SetInMessageToXmpp) {
-  std::unique_ptr<buzz::XmlElement> message = GetEmptyJingleMessage();
+  std::unique_ptr<jingle_xmpp::XmlElement> message = GetEmptyJingleMessage();
   SignalingAddress addr("user@domain.com/chromoting12345");
   addr.SetInMessage(message.get(), SignalingAddress::TO);
   EXPECT_EQ("user@domain.com/chromoting12345", message->Attr(QName("", "to")));
-  buzz::XmlElement* jingle =
-      message->FirstNamed(buzz::QName("urn:xmpp:jingle:1", "jingle"));
+  jingle_xmpp::XmlElement* jingle =
+      message->FirstNamed(jingle_xmpp::QName("urn:xmpp:jingle:1", "jingle"));
   EXPECT_EQ("", jingle->Attr(QName("", "to-channel")));
   EXPECT_EQ("", jingle->Attr(QName("", "to-endpoint-id")));
 }
 
 TEST(SignalingAddressTest, SetInMessageToLcs) {
-  std::unique_ptr<buzz::XmlElement> message = GetEmptyJingleMessage();
+  std::unique_ptr<jingle_xmpp::XmlElement> message = GetEmptyJingleMessage();
   SignalingAddress addr(kLcsAddress);
 
   addr.SetInMessage(message.get(), SignalingAddress::TO);
   EXPECT_EQ(remoting::kRemotingBotJid, message->Attr(QName("", "to")));
-  buzz::XmlElement* jingle =
-      message->FirstNamed(buzz::QName("urn:xmpp:jingle:1", "jingle"));
+  jingle_xmpp::XmlElement* jingle =
+      message->FirstNamed(jingle_xmpp::QName("urn:xmpp:jingle:1", "jingle"));
   EXPECT_EQ("lcs", jingle->Attr(QName("", "to-channel")));
   EXPECT_EQ(kLcsAddress, jingle->Attr(QName("", "to-endpoint-id")));
 }
 
 TEST(SignalingAddressTest, SetInMessageFromXmpp) {
-  std::unique_ptr<buzz::XmlElement> message = GetEmptyJingleMessage();
+  std::unique_ptr<jingle_xmpp::XmlElement> message = GetEmptyJingleMessage();
   SignalingAddress addr("user@domain.com/resource");
   addr.SetInMessage(message.get(), SignalingAddress::FROM);
   EXPECT_EQ("user@domain.com/resource", message->Attr(QName("", "from")));
-  buzz::XmlElement* jingle =
-      message->FirstNamed(buzz::QName("urn:xmpp:jingle:1", "jingle"));
+  jingle_xmpp::XmlElement* jingle =
+      message->FirstNamed(jingle_xmpp::QName("urn:xmpp:jingle:1", "jingle"));
   EXPECT_EQ("", jingle->Attr(QName("", "from-channel")));
   EXPECT_EQ("", jingle->Attr(QName("", "from-endpoint-id")));
 }
 
 TEST(SignalingAddressTest, SetInMessageFromLcs) {
-  std::unique_ptr<buzz::XmlElement> message = GetEmptyJingleMessage();
+  std::unique_ptr<jingle_xmpp::XmlElement> message = GetEmptyJingleMessage();
   SignalingAddress addr(kLcsAddress);
 
   addr.SetInMessage(message.get(), SignalingAddress::FROM);
   EXPECT_EQ(kLcsAddress, message->Attr(QName("", "from")));
-  buzz::XmlElement* jingle =
-      message->FirstNamed(buzz::QName("urn:xmpp:jingle:1", "jingle"));
+  jingle_xmpp::XmlElement* jingle =
+      message->FirstNamed(jingle_xmpp::QName("urn:xmpp:jingle:1", "jingle"));
   EXPECT_EQ("lcs", jingle->Attr(QName("", "from-channel")));
   EXPECT_EQ(kLcsAddress, jingle->Attr(QName("", "from-endpoint-id")));
 }

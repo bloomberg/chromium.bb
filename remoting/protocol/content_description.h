@@ -11,9 +11,9 @@
 #include "base/memory/ref_counted.h"
 #include "remoting/protocol/session_config.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmlElement;
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 namespace remoting {
 namespace protocol {
@@ -28,28 +28,28 @@ class ContentDescription {
   static const char kChromotingContentName[];
 
   ContentDescription(std::unique_ptr<CandidateSessionConfig> config,
-                     std::unique_ptr<buzz::XmlElement> authenticator_message);
+                     std::unique_ptr<jingle_xmpp::XmlElement> authenticator_message);
   ~ContentDescription();
 
   const CandidateSessionConfig* config() const {
     return candidate_config_.get();
   }
 
-  const buzz::XmlElement* authenticator_message() const {
+  const jingle_xmpp::XmlElement* authenticator_message() const {
     return authenticator_message_.get();
   }
 
-  buzz::XmlElement* ToXml() const;
+  jingle_xmpp::XmlElement* ToXml() const;
 
   static std::unique_ptr<ContentDescription> ParseXml(
-      const buzz::XmlElement* element,
+      const jingle_xmpp::XmlElement* element,
       bool webrtc_transport);
 
  private:
   std::unique_ptr<const CandidateSessionConfig> candidate_config_;
-  std::unique_ptr<const buzz::XmlElement> authenticator_message_;
+  std::unique_ptr<const jingle_xmpp::XmlElement> authenticator_message_;
 
-  static bool ParseChannelConfigs(const buzz::XmlElement* const element,
+  static bool ParseChannelConfigs(const jingle_xmpp::XmlElement* const element,
                                   const char tag_name[],
                                   bool codec_required,
                                   bool optional,

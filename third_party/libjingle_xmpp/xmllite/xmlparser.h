@@ -23,7 +23,7 @@
 struct XML_ParserStruct;
 typedef struct XML_ParserStruct* XML_Parser;
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmlParseHandler;
 class XmlParseContext;
@@ -98,6 +98,6 @@ private:
   bool sentError_;
 };
 
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 #endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_XMLPARSER_H_

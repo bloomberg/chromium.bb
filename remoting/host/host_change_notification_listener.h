@@ -13,9 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "remoting/signaling/signal_strategy.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmlElement;
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 namespace remoting {
 
@@ -42,7 +42,7 @@ class HostChangeNotificationListener : public SignalStrategy::Listener {
 
   // SignalStrategy::Listener interface.
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
-  bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
+  bool OnSignalStrategyIncomingStanza(const jingle_xmpp::XmlElement* stanza) override;
 
  private:
   void OnHostDeleted();

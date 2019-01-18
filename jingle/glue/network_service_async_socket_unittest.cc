@@ -376,15 +376,15 @@ class NetworkServiceAsyncSocketTest : public testing::Test,
     }
 
     static SignalSocketState FromAsyncSocket(Signal signal,
-                                             buzz::AsyncSocket* async_socket) {
+                                             jingle_xmpp::AsyncSocket* async_socket) {
       return SignalSocketState(
           signal, async_socket->state(), async_socket->error(),
           static_cast<net::Error>(async_socket->GetError()));
     }
 
     static SignalSocketState NoError(Signal signal,
-                                     buzz::AsyncSocket::State state) {
-      return SignalSocketState(signal, state, buzz::AsyncSocket::ERROR_NONE,
+                                     jingle_xmpp::AsyncSocket::State state) {
+      return SignalSocketState(signal, state, jingle_xmpp::AsyncSocket::ERROR_NONE,
                                net::OK);
     }
 

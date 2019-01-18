@@ -14,9 +14,9 @@
 #include "base/memory/ref_counted.h"
 #include "remoting/protocol/authenticator.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 struct StaticQName;
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 namespace remoting {
 namespace protocol {
@@ -101,18 +101,18 @@ class NegotiatingAuthenticatorBase : public Authenticator {
 
   // Calls |current_authenticator_| to process |message|, passing the supplied
   // |resume_callback|.
-  void ProcessMessageInternal(const buzz::XmlElement* message,
+  void ProcessMessageInternal(const jingle_xmpp::XmlElement* message,
                               const base::Closure& resume_callback);
 
  protected:
   friend class NegotiatingAuthenticatorTest;
 
-  static const buzz::StaticQName kMethodAttributeQName;
-  static const buzz::StaticQName kSupportedMethodsAttributeQName;
+  static const jingle_xmpp::StaticQName kMethodAttributeQName;
+  static const jingle_xmpp::StaticQName kSupportedMethodsAttributeQName;
   static const char kSupportedMethodsSeparator;
 
-  static const buzz::StaticQName kPairingInfoTag;
-  static const buzz::StaticQName kClientIdAttribute;
+  static const jingle_xmpp::StaticQName kPairingInfoTag;
+  static const jingle_xmpp::StaticQName kClientIdAttribute;
 
   // Parses a string that defines an authentication method. Returns
   // Method::INVALID if the string is invalid.
@@ -131,7 +131,7 @@ class NegotiatingAuthenticatorBase : public Authenticator {
 
   // Gets the next message from |current_authenticator_|, if any, and fills in
   // the 'method' tag with |current_method_|.
-  virtual std::unique_ptr<buzz::XmlElement> GetNextMessageInternal();
+  virtual std::unique_ptr<jingle_xmpp::XmlElement> GetNextMessageInternal();
 
   std::vector<Method> methods_;
   Method current_method_ = Method::INVALID;

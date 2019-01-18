@@ -22,12 +22,12 @@ class MockXmppDelegate : public sigslot::has_slots<> {
  public:
   ~MockXmppDelegate() override {}
 
-  MOCK_METHOD1(OnStateChange, void(buzz::XmppEngine::State));
+  MOCK_METHOD1(OnStateChange, void(jingle_xmpp::XmppEngine::State));
   MOCK_METHOD2(OnInputLog, void(const char*, int));
   MOCK_METHOD2(OnOutputLog, void(const char*, int));
 };
 
-const buzz::XmppEngine::State kState = buzz::XmppEngine::STATE_OPEN;
+const jingle_xmpp::XmppEngine::State kState = jingle_xmpp::XmppEngine::STATE_OPEN;
 const char kInputLog[] = "input log";
 const char kOutputLog[] = "output log";
 
@@ -37,7 +37,7 @@ class WeakXmppClientTest : public testing::Test {
 
   ~WeakXmppClientTest() override {}
 
-  void ConnectSignals(buzz::XmppClient* xmpp_client) {
+  void ConnectSignals(jingle_xmpp::XmppClient* xmpp_client) {
     xmpp_client->SignalStateChange.connect(
         &mock_xmpp_delegate_, &MockXmppDelegate::OnStateChange);
     xmpp_client->SignalLogInput.connect(
@@ -54,7 +54,7 @@ class WeakXmppClientTest : public testing::Test {
                 OnOutputLog(kOutputLog, base::size(kOutputLog)));
   }
 
-  void RaiseSignals(buzz::XmppClient* xmpp_client) {
+  void RaiseSignals(jingle_xmpp::XmppClient* xmpp_client) {
     xmpp_client->SignalStateChange(kState);
     xmpp_client->SignalLogInput(kInputLog, base::size(kInputLog));
     xmpp_client->SignalLogOutput(kOutputLog, base::size(kOutputLog));

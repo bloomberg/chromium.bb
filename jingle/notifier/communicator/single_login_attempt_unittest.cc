@@ -23,9 +23,9 @@
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmppTaskParentInterface;
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 namespace notifier {
 
@@ -40,7 +40,7 @@ class FakeDelegate : public SingleLoginAttempt::Delegate {
   FakeDelegate() : state_(IDLE) {}
 
   void OnConnect(
-      base::WeakPtr<buzz::XmppTaskParentInterface> base_task) override {
+      base::WeakPtr<jingle_xmpp::XmppTaskParentInterface> base_task) override {
     state_ = CONNECTED;
     base_task_ = base_task;
   }
@@ -56,7 +56,7 @@ class FakeDelegate : public SingleLoginAttempt::Delegate {
 
   DelegateState state() const { return state_; }
 
-  base::WeakPtr<buzz::XmppTaskParentInterface> base_task() const {
+  base::WeakPtr<jingle_xmpp::XmppTaskParentInterface> base_task() const {
     return base_task_;
   }
 
@@ -66,7 +66,7 @@ class FakeDelegate : public SingleLoginAttempt::Delegate {
 
  private:
   DelegateState state_;
-  base::WeakPtr<buzz::XmppTaskParentInterface> base_task_;
+  base::WeakPtr<jingle_xmpp::XmppTaskParentInterface> base_task_;
   ServerInformation redirect_server_;
 };
 
@@ -89,7 +89,7 @@ class SingleLoginAttemptTest : public ::testing::Test {
                 std::unique_ptr<net::TestURLRequestContext>(
                     new MyTestURLRequestContext()))),
         login_settings_(
-            buzz::XmppClientSettings(),
+            jingle_xmpp::XmppClientSettings(),
             net_config_helper_.MakeSocketFactoryCallback(),
             ServerList(1,
                        ServerInformation(net::HostPortPair("example.com", 100),
@@ -101,8 +101,8 @@ class SingleLoginAttemptTest : public ::testing::Test {
 
   void TearDown() override { base::RunLoop().RunUntilIdle(); }
 
-  void FireRedirect(buzz::XmlElement* redirect_error) {
-    attempt_->OnError(buzz::XmppEngine::ERROR_STREAM, 0, redirect_error);
+  void FireRedirect(jingle_xmpp::XmlElement* redirect_error) {
+    attempt_->OnError(jingle_xmpp::XmppEngine::ERROR_STREAM, 0, redirect_error);
   }
 
   ~SingleLoginAttemptTest() override {
@@ -135,7 +135,7 @@ TEST_F(SingleLoginAttemptTest, Basic) {
 TEST_F(SingleLoginAttemptTest, Error) {
   for (int i = 0; i < 2; ++i) {
     EXPECT_EQ(IDLE, fake_delegate_.state());
-    attempt_->OnError(buzz::XmppEngine::ERROR_NONE, 0, NULL);
+    attempt_->OnError(jingle_xmpp::XmppEngine::ERROR_NONE, 0, NULL);
   }
   EXPECT_EQ(SETTINGS_EXHAUSTED, fake_delegate_.state());
 }
@@ -143,20 +143,20 @@ TEST_F(SingleLoginAttemptTest, Error) {
 // Fire OnErrors but replace the last one with OnConnect, and make
 // sure the delegate still gets the OnConnect message.
 TEST_F(SingleLoginAttemptTest, ErrorThenSuccess) {
-  attempt_->OnError(buzz::XmppEngine::ERROR_NONE, 0, NULL);
+  attempt_->OnError(jingle_xmpp::XmppEngine::ERROR_NONE, 0, NULL);
   attempt_->OnConnect(fake_base_task_.AsWeakPtr());
   EXPECT_EQ(CONNECTED, fake_delegate_.state());
   EXPECT_EQ(fake_base_task_.AsWeakPtr().get(),
             fake_delegate_.base_task().get());
 }
 
-buzz::XmlElement* MakeRedirectError(const std::string& redirect_server) {
-  buzz::XmlElement* stream_error =
-      new buzz::XmlElement(buzz::QN_STREAM_ERROR, true);
+jingle_xmpp::XmlElement* MakeRedirectError(const std::string& redirect_server) {
+  jingle_xmpp::XmlElement* stream_error =
+      new jingle_xmpp::XmlElement(jingle_xmpp::QN_STREAM_ERROR, true);
   stream_error->AddElement(
-      new buzz::XmlElement(buzz::QN_XSTREAM_SEE_OTHER_HOST, true));
-  buzz::XmlElement* text =
-      new buzz::XmlElement(buzz::QN_XSTREAM_TEXT, true);
+      new jingle_xmpp::XmlElement(jingle_xmpp::QN_XSTREAM_SEE_OTHER_HOST, true));
+  jingle_xmpp::XmlElement* text =
+      new jingle_xmpp::XmlElement(jingle_xmpp::QN_XSTREAM_TEXT, true);
   stream_error->AddElement(text);
   text->SetBodyText(redirect_server);
   return stream_error;
@@ -169,7 +169,7 @@ TEST_F(SingleLoginAttemptTest, Redirect) {
       net::HostPortPair("example.com", 1000),
       SUPPORTS_SSLTCP);
 
-  std::unique_ptr<buzz::XmlElement> redirect_error(
+  std::unique_ptr<jingle_xmpp::XmlElement> redirect_error(
       MakeRedirectError(redirect_server.server.ToString()));
   FireRedirect(redirect_error.get());
 
@@ -184,7 +184,7 @@ TEST_F(SingleLoginAttemptTest, RedirectHostOnly) {
       net::HostPortPair("example.com", kDefaultXmppPort),
       SUPPORTS_SSLTCP);
 
-  std::unique_ptr<buzz::XmlElement> redirect_error(
+  std::unique_ptr<jingle_xmpp::XmlElement> redirect_error(
       MakeRedirectError(redirect_server.server.host()));
   FireRedirect(redirect_error.get());
 
@@ -199,7 +199,7 @@ TEST_F(SingleLoginAttemptTest, RedirectZeroPort) {
       net::HostPortPair("example.com", kDefaultXmppPort),
       SUPPORTS_SSLTCP);
 
-  std::unique_ptr<buzz::XmlElement> redirect_error(
+  std::unique_ptr<jingle_xmpp::XmlElement> redirect_error(
       MakeRedirectError(redirect_server.server.host() + ":0"));
   FireRedirect(redirect_error.get());
 
@@ -214,7 +214,7 @@ TEST_F(SingleLoginAttemptTest, RedirectInvalidPort) {
       net::HostPortPair("example.com", kDefaultXmppPort),
       SUPPORTS_SSLTCP);
 
-  std::unique_ptr<buzz::XmlElement> redirect_error(
+  std::unique_ptr<jingle_xmpp::XmlElement> redirect_error(
       MakeRedirectError(redirect_server.server.host() + ":invalidport"));
   FireRedirect(redirect_error.get());
 
@@ -225,7 +225,7 @@ TEST_F(SingleLoginAttemptTest, RedirectInvalidPort) {
 // Fire an empty redirect and make sure the delegate does not get a
 // redirect.
 TEST_F(SingleLoginAttemptTest, RedirectEmpty) {
-  std::unique_ptr<buzz::XmlElement> redirect_error(
+  std::unique_ptr<jingle_xmpp::XmlElement> redirect_error(
       MakeRedirectError(std::string()));
   FireRedirect(redirect_error.get());
   EXPECT_EQ(IDLE, fake_delegate_.state());
@@ -234,7 +234,7 @@ TEST_F(SingleLoginAttemptTest, RedirectEmpty) {
 // Fire a redirect with a missing text element and make sure the
 // delegate does not get a redirect.
 TEST_F(SingleLoginAttemptTest, RedirectMissingText) {
-  std::unique_ptr<buzz::XmlElement> redirect_error(
+  std::unique_ptr<jingle_xmpp::XmlElement> redirect_error(
       MakeRedirectError(std::string()));
   redirect_error->RemoveChildAfter(redirect_error->FirstChild());
   FireRedirect(redirect_error.get());
@@ -244,7 +244,7 @@ TEST_F(SingleLoginAttemptTest, RedirectMissingText) {
 // Fire a redirect with a missing see-other-host element and make sure
 // the delegate does not get a redirect.
 TEST_F(SingleLoginAttemptTest, RedirectMissingSeeOtherHost) {
-  std::unique_ptr<buzz::XmlElement> redirect_error(
+  std::unique_ptr<jingle_xmpp::XmlElement> redirect_error(
       MakeRedirectError(std::string()));
   redirect_error->RemoveChildAfter(NULL);
   FireRedirect(redirect_error.get());
@@ -254,7 +254,7 @@ TEST_F(SingleLoginAttemptTest, RedirectMissingSeeOtherHost) {
 // Fire 'Unauthorized' errors and make sure the delegate gets the
 // OnCredentialsRejected() event.
 TEST_F(SingleLoginAttemptTest, CredentialsRejected) {
-  attempt_->OnError(buzz::XmppEngine::ERROR_UNAUTHORIZED, 0, NULL);
+  attempt_->OnError(jingle_xmpp::XmppEngine::ERROR_UNAUTHORIZED, 0, NULL);
   EXPECT_EQ(CREDENTIALS_REJECTED, fake_delegate_.state());
 }
 

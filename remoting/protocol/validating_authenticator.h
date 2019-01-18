@@ -49,9 +49,9 @@ class ValidatingAuthenticator : public Authenticator {
   const std::string& GetAuthKey() const override;
   std::unique_ptr<ChannelAuthenticator> CreateChannelAuthenticator()
       const override;
-  void ProcessMessage(const buzz::XmlElement* message,
+  void ProcessMessage(const jingle_xmpp::XmlElement* message,
                       const base::Closure& resume_callback) override;
-  std::unique_ptr<buzz::XmlElement> GetNextMessage() override;
+  std::unique_ptr<jingle_xmpp::XmlElement> GetNextMessage() override;
 
  private:
   // Checks |result|.  If the connection was rejected, |state_| and
@@ -76,7 +76,7 @@ class ValidatingAuthenticator : public Authenticator {
 
   std::unique_ptr<Authenticator> current_authenticator_;
 
-  std::unique_ptr<buzz::XmlElement> pending_auth_message_;
+  std::unique_ptr<jingle_xmpp::XmlElement> pending_auth_message_;
 
   base::WeakPtrFactory<ValidatingAuthenticator> weak_factory_;
 

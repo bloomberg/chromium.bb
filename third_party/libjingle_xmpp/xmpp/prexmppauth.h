@@ -14,7 +14,7 @@
 #include "third_party/libjingle_xmpp/xmpp/saslhandler.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class Jid;
 class SaslMechanism;

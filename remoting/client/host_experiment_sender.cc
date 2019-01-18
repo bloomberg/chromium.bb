@@ -11,18 +11,18 @@ namespace remoting {
 HostExperimentSender::HostExperimentSender(const std::string& experiment_config)
     : experiment_config_(experiment_config) {}
 
-std::unique_ptr<buzz::XmlElement> HostExperimentSender::GetNextMessage() {
+std::unique_ptr<jingle_xmpp::XmlElement> HostExperimentSender::GetNextMessage() {
   if (message_sent_ || experiment_config_.empty()) {
     return nullptr;
   }
   message_sent_ = true;
-  std::unique_ptr<buzz::XmlElement> configuration(new buzz::XmlElement(
-      buzz::QName(kChromotingXmlNamespace, "host-configuration")));
+  std::unique_ptr<jingle_xmpp::XmlElement> configuration(new jingle_xmpp::XmlElement(
+      jingle_xmpp::QName(kChromotingXmlNamespace, "host-configuration")));
   configuration->SetBodyText(experiment_config_);
   return configuration;
 }
 
 void HostExperimentSender::OnIncomingMessage(
-    const buzz::XmlElement& attachments) {}
+    const jingle_xmpp::XmlElement& attachments) {}
 
 }  // namespace remoting

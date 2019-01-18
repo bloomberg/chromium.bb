@@ -30,8 +30,8 @@
 #undef ERROR  // Defined by windows.h
 #endif
 
-using buzz::QName;
-using buzz::XmlElement;
+using jingle_xmpp::QName;
+using jingle_xmpp::XmlElement;
 
 namespace remoting {
 
@@ -109,7 +109,7 @@ void HeartbeatSender::OnSignalStrategyStateChange(SignalStrategy::State state) {
 }
 
 bool HeartbeatSender::OnSignalStrategyIncomingStanza(
-    const buzz::XmlElement* stanza) {
+    const jingle_xmpp::XmlElement* stanza) {
   return false;
 }
 
@@ -158,7 +158,7 @@ void HeartbeatSender::SendHeartbeat() {
   if (iq_sender_) {
     DCHECK_EQ(signal_strategy_->GetState(), SignalStrategy::CONNECTED);
     request_ = iq_sender_->SendIq(
-        buzz::STR_SET, directory_bot_jid_, CreateHeartbeatMessage(),
+        jingle_xmpp::STR_SET, directory_bot_jid_, CreateHeartbeatMessage(),
         base::Bind(&HeartbeatSender::OnResponse, base::Unretained(this)));
   } else {
     DCHECK_EQ(signal_strategy_->GetState(), SignalStrategy::DISCONNECTED);
@@ -175,7 +175,7 @@ void HeartbeatSender::SendHeartbeat() {
 }
 
 void HeartbeatSender::OnResponse(IqRequest* request,
-                                 const buzz::XmlElement* response) {
+                                 const jingle_xmpp::XmlElement* response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   HeartbeatResult result = ProcessResponse(response);
@@ -263,17 +263,17 @@ void HeartbeatSender::OnResponse(IqRequest* request,
 }
 
 HeartbeatSender::HeartbeatResult HeartbeatSender::ProcessResponse(
-    const buzz::XmlElement* response) {
+    const jingle_xmpp::XmlElement* response) {
   if (!response) {
     return HeartbeatResult::TIMEOUT;
   }
 
-  std::string type = response->Attr(buzz::QN_TYPE);
-  if (type == buzz::STR_ERROR) {
+  std::string type = response->Attr(jingle_xmpp::QN_TYPE);
+  if (type == jingle_xmpp::STR_ERROR) {
     const XmlElement* error_element =
-        response->FirstNamed(QName(buzz::NS_CLIENT, kErrorTag));
+        response->FirstNamed(QName(jingle_xmpp::NS_CLIENT, kErrorTag));
     if (error_element &&
-        error_element->FirstNamed(QName(buzz::NS_STANZA, kNotFoundTag))) {
+        error_element->FirstNamed(QName(jingle_xmpp::NS_STANZA, kNotFoundTag))) {
       LOG(ERROR) << "Received error: Host ID not found";
       return HeartbeatResult::INVALID_HOST_ID;
     }
@@ -284,7 +284,7 @@ HeartbeatSender::HeartbeatResult HeartbeatSender::ProcessResponse(
   }
 
   // This method must only be called for error or result stanzas.
-  DCHECK_EQ(std::string(buzz::STR_RESULT), type);
+  DCHECK_EQ(std::string(jingle_xmpp::STR_RESULT), type);
 
   const XmlElement* result_element =
       response->FirstNamed(QName(kChromotingXmlNamespace, kHeartbeatResultTag));

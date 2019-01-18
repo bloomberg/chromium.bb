@@ -18,7 +18,7 @@
 #include "third_party/expat/v2_0_1/Source/lib/expat.h"
 #endif
 
-namespace buzz {
+namespace jingle_xmpp {
 
 XmppStanzaParser::XmppStanzaParser(XmppStanzaParseHandler *psph) :
   psph_(psph),

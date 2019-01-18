@@ -14,7 +14,7 @@
 #include <string>
 #include "third_party/libjingle_xmpp/xmllite/xmlconstants.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 // The Jid class encapsulates and provides parsing help for Jids. A Jid
 // consists of three parts: the node, the domain and the resource, e.g.:

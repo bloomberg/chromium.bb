@@ -87,7 +87,7 @@ void AuthenticatorTestBase::ContinueAuthExchangeWith(Authenticator* sender,
                                                      Authenticator* receiver,
                                                      bool sender_started,
                                                      bool receiver_started) {
-  std::unique_ptr<buzz::XmlElement> message;
+  std::unique_ptr<jingle_xmpp::XmlElement> message;
   ASSERT_NE(Authenticator::WAITING_MESSAGE, sender->state());
   if (sender->state() == Authenticator::ACCEPTED ||
       sender->state() == Authenticator::REJECTED) {

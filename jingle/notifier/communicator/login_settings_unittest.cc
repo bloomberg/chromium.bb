@@ -30,7 +30,7 @@ class LoginSettingsTest : public ::testing::Test {
 
 TEST_F(LoginSettingsTest, Basic) {
   const LoginSettings login_settings(
-      buzz::XmppClientSettings(),
+      jingle_xmpp::XmppClientSettings(),
       jingle_glue::GetProxyResolvingSocketFactoryCallback(), servers_,
       false /* try_ssltcp_first */, kAuthMechanism,
       TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -45,7 +45,7 @@ TEST_F(LoginSettingsTest, Basic) {
 
 TEST_F(LoginSettingsTest, Redirect) {
   LoginSettings login_settings(
-      buzz::XmppClientSettings(),
+      jingle_xmpp::XmppClientSettings(),
       jingle_glue::GetProxyResolvingSocketFactoryCallback(), servers_,
       false /* try_ssltcp_first */, kAuthMechanism,
       TRAFFIC_ANNOTATION_FOR_TESTS);

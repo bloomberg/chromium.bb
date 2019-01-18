@@ -53,7 +53,7 @@ void IceTransport::Start(
       base::Bind(&IceTransport::OnChannelError, weak_factory_.GetWeakPtr())));
 }
 
-bool IceTransport::ProcessTransportInfo(buzz::XmlElement* transport_info_xml) {
+bool IceTransport::ProcessTransportInfo(jingle_xmpp::XmlElement* transport_info_xml) {
   IceTransportInfo transport_info;
   if (!transport_info.ParseXml(transport_info_xml))
     return false;
@@ -194,7 +194,7 @@ void IceTransport::EnsurePendingTransportInfoMessage() {
 void IceTransport::SendTransportInfo() {
   DCHECK(pending_transport_info_message_);
 
-  std::unique_ptr<buzz::XmlElement> transport_info_xml =
+  std::unique_ptr<jingle_xmpp::XmlElement> transport_info_xml =
       pending_transport_info_message_->ToXml();
   pending_transport_info_message_.reset();
   send_transport_info_callback_.Run(std::move(transport_info_xml));

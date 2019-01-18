@@ -15,7 +15,7 @@
 #include "base/logging.h"
 #include "third_party/libjingle_xmpp/task_runner/task.h"
 
-namespace rtc {
+namespace jingle_xmpp {
 
 TaskRunner::TaskRunner()
     : TaskParent(this) {}
@@ -86,4 +86,4 @@ void TaskRunner::InternalRunTasks(bool in_destructor) {
   tasks_running_ = false;
 }
 
-} // namespace rtc
+} // namespace jingle_xmpp

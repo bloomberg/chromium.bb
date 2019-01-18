@@ -19,7 +19,7 @@
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 #include "xmpptask.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmppClient::Private :
     public sigslot::has_slots<>,
@@ -112,10 +112,10 @@ XmppReturnStatus XmppClient::Connect(
   // domain to be used.  We do the same for gmail.com and googlemail.com as the
   // returned CN matches the account domain in those cases.
   std::string server_name = settings.server().ToString();
-  if (server_name == buzz::STR_TALK_GOOGLE_COM ||
-      server_name == buzz::STR_TALKX_L_GOOGLE_COM ||
-      server_name == buzz::STR_XMPP_GOOGLE_COM ||
-      server_name == buzz::STR_XMPPX_L_GOOGLE_COM) {
+  if (server_name == jingle_xmpp::STR_TALK_GOOGLE_COM ||
+      server_name == jingle_xmpp::STR_TALKX_L_GOOGLE_COM ||
+      server_name == jingle_xmpp::STR_XMPP_GOOGLE_COM ||
+      server_name == jingle_xmpp::STR_XMPPX_L_GOOGLE_COM) {
     if (settings.host() != STR_GMAIL_COM &&
         settings.host() != STR_GOOGLEMAIL_COM) {
       d_->engine_->SetTlsServer("", STR_TALK_GOOGLE_COM);
@@ -125,7 +125,7 @@ XmppReturnStatus XmppClient::Connect(
   // Set language
   d_->engine_->SetLanguage(lang);
 
-  d_->engine_->SetUser(buzz::Jid(settings.user(), settings.host(), STR_EMPTY));
+  d_->engine_->SetUser(jingle_xmpp::Jid(settings.user(), settings.host(), STR_EMPTY));
 
   d_->pass_ = settings.pass();
   d_->auth_mechanism_ = settings.auth_mechanism();
@@ -405,4 +405,4 @@ void XmppClient::EnsureClosed() {
   }
 }
 
-}  // namespace buzz
+}  // namespace jingle_xmpp

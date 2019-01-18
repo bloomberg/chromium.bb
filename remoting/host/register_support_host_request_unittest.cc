@@ -27,8 +27,8 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 
-using buzz::QName;
-using buzz::XmlElement;
+using jingle_xmpp::QName;
+using jingle_xmpp::XmlElement;
 
 using testing::_;
 using testing::Invoke;
@@ -121,9 +121,9 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   std::unique_ptr<XmlElement> stanza(sent_iq);
   ASSERT_TRUE(stanza != nullptr);
 
-  EXPECT_EQ(stanza->Attr(buzz::QName(std::string(), "to")),
+  EXPECT_EQ(stanza->Attr(jingle_xmpp::QName(std::string(), "to")),
             std::string(kTestBotJid));
-  EXPECT_EQ(stanza->Attr(buzz::QName(std::string(), "type")), "set");
+  EXPECT_EQ(stanza->Attr(jingle_xmpp::QName(std::string(), "type")), "set");
 
   EXPECT_EQ(QName(kChromotingXmlNamespace, "register-support-host"),
             stanza->FirstElement()->Name());
@@ -164,7 +164,7 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   EXPECT_CALL(callback_, Run(kSupportId, base::TimeDelta::FromSeconds(300),
                              ErrorCode::OK));
 
-  std::unique_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
+  std::unique_ptr<XmlElement> response(new XmlElement(jingle_xmpp::QN_IQ));
   response->AddAttr(QName(std::string(), "from"), kTestBotJid);
   response->AddAttr(QName(std::string(), "type"), "result");
   response->AddAttr(QName(std::string(), "id"), kStanzaId);

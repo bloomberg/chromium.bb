@@ -148,7 +148,7 @@ bool NetworkServiceAsyncSocket::Connect(const net::HostPortPair& address) {
     return false;
   }
 
-  DCHECK_EQ(state_, buzz::AsyncSocket::STATE_CLOSED);
+  DCHECK_EQ(state_, jingle_xmpp::AsyncSocket::STATE_CLOSED);
   DCHECK_EQ(read_state_, IDLE);
   DCHECK_EQ(write_state_, IDLE);
 

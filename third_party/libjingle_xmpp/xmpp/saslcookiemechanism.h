@@ -16,7 +16,7 @@
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 #include "third_party/libjingle_xmpp/xmpp/saslmechanism.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class SaslCookieMechanism : public SaslMechanism {
 

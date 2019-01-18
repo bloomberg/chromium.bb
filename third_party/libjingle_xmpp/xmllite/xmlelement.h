@@ -16,7 +16,7 @@
 
 #include "third_party/libjingle_xmpp/xmllite/qname.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmlChild;
 class XmlText;
@@ -228,6 +228,6 @@ class XmlElement : public XmlChild {
   bool cdata_;
 };
 
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 #endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_XMLELEMENT_H_
