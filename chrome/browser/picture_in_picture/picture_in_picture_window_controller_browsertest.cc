@@ -2055,9 +2055,16 @@ class WebAppPictureInPictureWindowControllerBrowserTest
   DISALLOW_COPY_AND_ASSIGN(WebAppPictureInPictureWindowControllerBrowserTest);
 };
 
+#if defined(OS_WIN)
+// TODO(crbug.com/923428): Unflake on Windows.
+#define MAYBE_AutoPictureInPicture DISABLED_AutoPictureInPicture
+#else
+#define MAYBE_AutoPictureInPicture AutoPictureInPicture
+#endif
+
 // Show/hide pwa page and check that Auto Picture-in-Picture is triggered.
 IN_PROC_BROWSER_TEST_F(WebAppPictureInPictureWindowControllerBrowserTest,
-                       AutoPictureInPicture) {
+                       MAYBE_AutoPictureInPicture) {
   InstallAndLaunchPWA();
   ASSERT_TRUE(content::ExecuteScript(web_contents(), "video.play();"));
   ASSERT_TRUE(content::ExecuteScript(web_contents(),
