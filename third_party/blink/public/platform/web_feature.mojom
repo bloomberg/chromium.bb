@@ -2170,6 +2170,7 @@ enum WebFeature {
   kV8HTMLMediaElement_CaptureStream_Method = 2729,
   kQuirkyLineBoxBackgroundSize = 2730,
   kDirectlyCompositedImage = 2731,
+  kForbiddenSyncXhrInPageDismissal = 2732,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

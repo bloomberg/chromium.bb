@@ -1128,17 +1128,25 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
       // Update histogram for usage of sync xhr within pagedismissal.
       auto pagedismissal = GetDocument()->PageDismissalEventBeingDispatched();
       if (pagedismissal != Document::kNoDismissal) {
-        UseCounter::Count(GetDocument(), WebFeature::kSyncXhrInPageDismissal);
-        DEFINE_STATIC_LOCAL(EnumerationHistogram, syncxhr_pagedismissal_histogram,
-                            ("XHR.Sync.PageDismissal", 5));
-        syncxhr_pagedismissal_histogram.Count(pagedismissal);
         // Disallow synchronous requests on page dismissal
         if (base::FeatureList::IsEnabled(
                 features::kForbidSyncXHRInPageDismissal)) {
+          UseCounter::Count(GetDocument(),
+                            WebFeature::kForbiddenSyncXhrInPageDismissal);
+          DEFINE_STATIC_LOCAL(EnumerationHistogram,
+                              forbidden_syncxhr_pagedismissal_histogram,
+                              ("XHR.Sync.PageDismissal_forbidden", 5));
+          forbidden_syncxhr_pagedismissal_histogram.Count(pagedismissal);
           HandleNetworkError();
           ThrowForLoadFailureIfNeeded(exception_state,
                                       "Synchronous XHR in page dismissal.");
           return;
+        } else {
+          UseCounter::Count(GetDocument(), WebFeature::kSyncXhrInPageDismissal);
+          DEFINE_STATIC_LOCAL(EnumerationHistogram,
+                              syncxhr_pagedismissal_histogram,
+                              ("XHR.Sync.PageDismissal", 5));
+          syncxhr_pagedismissal_histogram.Count(pagedismissal);
         }
       }
     }
