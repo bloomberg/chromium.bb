@@ -331,11 +331,6 @@ crbug.com/670246 [ Android ] fast/text/variable-fonts/variable-mac-system-font.h
 crbug.com/670246 [ Win ] fast/text/variable-fonts/variable-mac-system-font.html [ WontFix ]
 crbug.com/670246 [ Mac10.10 ] fast/text/variable-fonts/variable-mac-system-font.html [ WontFix ]
 
-# FontCache masking issue only testable on Mac.
-crbug.com/921029 [ Linux ] fast/text/unique-vs-family-match.html [ WontFix ]
-crbug.com/921029 [ Android ] fast/text/unique-vs-family-match.html [ WontFix ]
-crbug.com/921029 [ Win ] fast/text/unique-vs-family-match.html [ WontFix ]
-
 # prefer_compositing_to_lcd_text causes things to get composited regardless of their opaqueness, causing the test to fail
 crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-scroll-background-opaque-to-transparent.html [ WontFix ]
 crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-scroll-background-transparent-to-opaque.html [ WontFix ]
