@@ -85,9 +85,10 @@
               feature="[[MultiDeviceFeature.MESSAGES]]"
               page-content-data="[[pageContentData]]">
             <template is="dom-if"
-                if="[[doesAndroidMessagesRequireSetup_(pageContentData)]]"
+                if="[[doesAndroidMessagesRequireSetUp_(pageContentData)]]"
                 restamp>
-              <paper-button on-click="handleAndroidMessagesButtonClick_"
+              <paper-button disabled$="[[!isSuiteOn(pageContentData)]]"
+                on-click="handleAndroidMessagesButtonClick_"
                   slot="feature-controller">
                 $i18n{multideviceSetupButton}
               </paper-button>
