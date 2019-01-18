@@ -107,3 +107,16 @@ bool SearchIPCRouterPolicyImpl::
     ShouldProcessSetCustomBackgroundURLWithAttributions() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
+
+bool SearchIPCRouterPolicyImpl::ShouldProcessBlacklistSearchSuggestion() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
+bool SearchIPCRouterPolicyImpl::
+    ShouldProcessBlacklistSearchSuggestionWithHash() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
+bool SearchIPCRouterPolicyImpl::ShouldProcessOptOutOfSearchSuggestions() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}

@@ -149,6 +149,17 @@ class SearchBox : public content::RenderFrameObserver,
   // Let the user select a local file for the NTP background.
   void SelectLocalBackgroundImage();
 
+  // Add a search suggestion task id to the blacklist.
+  void BlacklistSearchSuggestion(int task_version, long task_id);
+
+  // Add a search suggestion task id and hash to the blacklist.
+  void BlacklistSearchSuggestionWithHash(int task_version,
+                                         long task_id,
+                                         const std::vector<uint8_t>& hash);
+
+  // Opts the user out of receiving search suggestions.
+  void OptOutOfSearchSuggestions();
+
   bool is_focused() const { return is_focused_; }
   bool is_input_in_progress() const { return is_input_in_progress_; }
   bool is_key_capture_enabled() const { return is_key_capture_enabled_; }

@@ -25,7 +25,9 @@ class SearchSuggestLoader {
     TRANSIENT_ERROR,
     // A fatal error occurred, such as the server responding with an error code
     // or with invalid data. Any previously cached response should be cleared.
-    FATAL_ERROR
+    FATAL_ERROR,
+    // The user has opted out of seeing search suggestions on the NTP.
+    OPTED_OUT
   };
   using SearchSuggestionsCallback =
       base::OnceCallback<void(Status,
@@ -35,7 +37,9 @@ class SearchSuggestLoader {
 
   // Initiates a load from the network. On completion (successful or not), the
   // callback will be called with the result, which will be nullopt on failure.
-  virtual void Load(SearchSuggestionsCallback callback) = 0;
+  // |blacklist| will be appended to the request as the url param 'vtgb'.
+  virtual void Load(const std::string& blacklist,
+                    SearchSuggestionsCallback callback) = 0;
 
   // Retrieves the URL from which SearchSuggestData will be loaded.
   virtual GURL GetLoadURLForTesting() const = 0;

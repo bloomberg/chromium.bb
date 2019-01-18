@@ -24,7 +24,7 @@ using testing::StrictMock;
 
 class FakeSearchSuggestLoader : public SearchSuggestLoader {
  public:
-  void Load(SearchSuggestionsCallback callback) override {
+  void Load(const std::string&, SearchSuggestionsCallback callback) override {
     callbacks_.push_back(std::move(callback));
   }
 
@@ -50,11 +50,12 @@ class SearchSuggestServiceTest : public testing::Test {
     // GaiaCookieManagerService calls static methods of AccountTrackerService
     // which access prefs.
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
+    SearchSuggestService::RegisterProfilePrefs(pref_service_.registry());
 
     auto loader = std::make_unique<FakeSearchSuggestLoader>();
     loader_ = loader.get();
     service_ = std::make_unique<SearchSuggestService>(
-        identity_env_.identity_manager(), std::move(loader));
+        &pref_service_, identity_env_.identity_manager(), std::move(loader));
 
     identity_env_.MakePrimaryAccountAvailable("example@gmail.com");
     identity_env_.SetAutomaticIssueOfAccessTokens(true);
@@ -176,5 +177,75 @@ TEST_F(SearchSuggestServiceTest, ResetsOnSignOut) {
 
   // Sign out. This should clear the cached data and notify the observer.
   SignOut();
+  EXPECT_THAT(service()->search_suggest_data(), Eq(base::nullopt));
+}
+
+TEST_F(SearchSuggestServiceTest, BlacklistSuggestionUpdatesBlacklistString) {
+  ASSERT_THAT(service()->GetBlacklistAsString(), Eq(std::string()));
+
+  std::vector<uint8_t> hash1 = {'a', 'b', 'c', 'd'};
+  std::vector<uint8_t> hash2 = {'e', 'f', 'g', 'h'};
+  service()->BlacklistSearchSuggestionWithHash(0, 1234, hash1);
+  service()->BlacklistSearchSuggestion(2, 5678);
+  service()->BlacklistSearchSuggestionWithHash(1, 1234, hash2);
+  service()->BlacklistSearchSuggestionWithHash(2, 1234, hash1);
+  service()->BlacklistSearchSuggestion(4, 1234);
+  service()->BlacklistSearchSuggestionWithHash(2, 1234, hash2);
+  service()->BlacklistSearchSuggestionWithHash(0, 1234, hash2);
+
+  std::string expected =
+      "0_1234:abcd,efgh;1_1234:efgh;2_1234:abcd,efgh;2_5678;4_1234";
+
+  ASSERT_THAT(service()->GetBlacklistAsString(), Eq(expected));
+}
+
+TEST_F(SearchSuggestServiceTest,
+       BlacklistSuggestionOverridesBlackistSuggestionWithHash) {
+  ASSERT_THAT(service()->GetBlacklistAsString(), Eq(std::string()));
+
+  std::vector<uint8_t> hash = {'a', 'b', 'c', 'd'};
+  service()->BlacklistSearchSuggestionWithHash(0, 1234, hash);
+  ASSERT_THAT(service()->GetBlacklistAsString(), Eq("0_1234:abcd"));
+
+  service()->BlacklistSearchSuggestion(0, 1234);
+  ASSERT_THAT(service()->GetBlacklistAsString(), Eq("0_1234"));
+}
+
+TEST_F(SearchSuggestServiceTest, BlacklistClearsCachedDataAndIssuesRequest) {
+  ASSERT_THAT(service()->search_suggest_data(), Eq(base::nullopt));
+  SignIn();
+
+  // Request a refresh. That should arrive at the loader.
+  service()->Refresh();
+  EXPECT_THAT(loader()->GetCallbackCount(), Eq(1u));
+
+  // Fulfill it.
+  SearchSuggestData data;
+  data.suggestions_html = "<div></div>";
+  loader()->RespondToAllCallbacks(SearchSuggestLoader::Status::OK, data);
+  EXPECT_THAT(service()->search_suggest_data(), Eq(data));
+
+  // Blacklist something.
+  std::vector<uint8_t> hash = {'a', 'b', 'c', 'd'};
+  service()->BlacklistSearchSuggestionWithHash(0, 1234, hash);
+  ASSERT_THAT(service()->GetBlacklistAsString(), Eq("0_1234:abcd"));
+  EXPECT_THAT(loader()->GetCallbackCount(), Eq(1u));
+
+  // Fulfill the second request.
+  SearchSuggestData other_data;
+  other_data.suggestions_html = "<div>Different!</div>";
+  loader()->RespondToAllCallbacks(SearchSuggestLoader::Status::OK, other_data);
+  EXPECT_THAT(service()->search_suggest_data(), Eq(other_data));
+}
+
+TEST_F(SearchSuggestServiceTest, OptOutPreventsRequests) {
+  ASSERT_THAT(service()->search_suggest_data(), Eq(base::nullopt));
+  SignIn();
+
+  service()->OptOutOfSearchSuggestions();
+
+  // Request a refresh. That should do nothing as the user opted-out.
+  service()->Refresh();
+  EXPECT_THAT(loader()->GetCallbackCount(), Eq(0u));
   EXPECT_THAT(service()->search_suggest_data(), Eq(base::nullopt));
 }

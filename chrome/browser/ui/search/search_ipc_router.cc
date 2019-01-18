@@ -358,6 +358,31 @@ void SearchIPCRouter::SelectLocalBackgroundImage() {
   delegate_->OnSelectLocalBackgroundImage();
 }
 
+void SearchIPCRouter::BlacklistSearchSuggestion(int32_t task_version,
+                                                int64_t task_id) {
+  if (!policy_->ShouldProcessBlacklistSearchSuggestion())
+    return;
+
+  delegate_->OnBlacklistSearchSuggestion(task_version, task_id);
+}
+
+void SearchIPCRouter::BlacklistSearchSuggestionWithHash(
+    int32_t task_version,
+    int64_t task_id,
+    const std::vector<uint8_t>& hash) {
+  if (!policy_->ShouldProcessBlacklistSearchSuggestionWithHash())
+    return;
+
+  delegate_->OnBlacklistSearchSuggestionWithHash(task_version, task_id, hash);
+}
+
+void SearchIPCRouter::OptOutOfSearchSuggestions() {
+  if (!policy_->ShouldProcessOptOutOfSearchSuggestions())
+    return;
+
+  delegate_->OnOptOutOfSearchSuggestions();
+}
+
 void SearchIPCRouter::set_delegate_for_testing(Delegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
