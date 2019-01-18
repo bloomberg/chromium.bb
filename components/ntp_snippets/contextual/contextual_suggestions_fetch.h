@@ -13,10 +13,10 @@
 #include "components/ntp_snippets/contextual/contextual_suggestions_result.h"
 #include "components/ntp_snippets/contextual/reporting/contextual_suggestions_metrics_reporter.h"
 #include "net/base/load_flags.h"
-#include "net/http/http_request_headers.h"
 #include "url/gurl.h"
 
 namespace network {
+struct ResourceRequest;
 class SimpleURLLoader;
 class SharedURLLoaderFactory;
 }  // namespace network
@@ -43,9 +43,14 @@ class ContextualSuggestionsFetch {
       ReportFetchMetricsCallback metrics_callback,
       const scoped_refptr<network::SharedURLLoaderFactory>& loader_factory);
 
+  // Methods for testing.
+  std::unique_ptr<network::ResourceRequest> MakeResourceRequestForTesting()
+      const;
+
  private:
   std::unique_ptr<network::SimpleURLLoader> MakeURLLoader() const;
-  net::HttpRequestHeaders MakeHeaders() const;
+  std::unique_ptr<network::ResourceRequest> MakeResourceRequest() const;
+  void AppendHeaders(network::ResourceRequest*) const;
   void OnURLLoaderComplete(ReportFetchMetricsCallback metrics_callback,
                            std::unique_ptr<std::string> result);
   void ReportFetchMetrics(size_t clusters_size,

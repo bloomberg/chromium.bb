@@ -24,7 +24,9 @@
 #include "components/variations/net/variations_http_headers.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "third_party/protobuf/src/google/protobuf/io/coded_stream.h"
@@ -250,16 +252,7 @@ ContextualSuggestionsFetch::MakeURLLoader() const {
           "A policy will be added before enabling for enterprise users."
         })");
 
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-
-  resource_request->url = GURL(GetFetchEndpoint());
-
-  int cookie_flag = include_cookies_ ? 0 : net::LOAD_DO_NOT_SEND_COOKIES;
-  resource_request->load_flags = net::LOAD_BYPASS_CACHE |
-                                 net::LOAD_DO_NOT_SAVE_COOKIES | cookie_flag |
-                                 net::LOAD_DO_NOT_SEND_AUTH_DATA;
-  resource_request->headers = MakeHeaders();
-  resource_request->method = "GET";
+  auto resource_request = MakeResourceRequest();
 
   auto simple_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
@@ -267,7 +260,29 @@ ContextualSuggestionsFetch::MakeURLLoader() const {
   return simple_loader;
 }
 
-net::HttpRequestHeaders ContextualSuggestionsFetch::MakeHeaders() const {
+std::unique_ptr<network::ResourceRequest>
+ContextualSuggestionsFetch::MakeResourceRequestForTesting() const {
+  return MakeResourceRequest();
+}
+
+std::unique_ptr<network::ResourceRequest>
+ContextualSuggestionsFetch::MakeResourceRequest() const {
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+
+  resource_request->url = GURL(GetFetchEndpoint());
+  resource_request->method = "GET";
+  AppendHeaders(resource_request.get());
+
+  int cookie_flag = include_cookies_ ? 0 : net::LOAD_DO_NOT_SEND_COOKIES;
+  resource_request->load_flags = net::LOAD_BYPASS_CACHE |
+                                 net::LOAD_DO_NOT_SAVE_COOKIES | cookie_flag |
+                                 net::LOAD_DO_NOT_SEND_AUTH_DATA;
+
+  return resource_request;
+}
+
+void ContextualSuggestionsFetch::AppendHeaders(
+    network::ResourceRequest* resource_request) const {
   net::HttpRequestHeaders headers;
   std::string serialized_request_body =
       SerializedPivotsRequest(url_.spec(), bcp_language_code_);
@@ -276,14 +291,15 @@ net::HttpRequestHeaders ContextualSuggestionsFetch::MakeHeaders() const {
                         base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                         &base64_encoded_body);
   headers.SetHeader("X-Protobuffer-Request-Payload", base64_encoded_body);
-  variations::AppendVariationHeaders(url_, variations::InIncognito::kNo,
+  variations::AppendVariationHeaders(resource_request->url,
+                                     variations::InIncognito::kNo,
                                      variations::SignedIn::kNo, &headers);
 
   UMA_HISTOGRAM_COUNTS_1M(
       "ContextualSuggestions.FetchRequestProtoSizeKB",
       static_cast<int>(base64_encoded_body.length() / 1024));
 
-  return headers;
+  resource_request->headers = headers;
 }
 
 void ContextualSuggestionsFetch::OnURLLoaderComplete(
