@@ -657,14 +657,6 @@ void SVGImage::ServiceAnimations(
     DocumentAnimations::UpdateAnimations(
         frame_view->GetLayoutView()->GetDocument(),
         DocumentLifecycle::kLayoutClean, composited_element_ids);
-
-    // Notify observers for image change. In SPv1 this is done through window
-    // rect invalidation during paint invalidation of the SVGImage's frame view.
-    auto* layer = frame_view->GetLayoutView()->Layer();
-    if (layer->NeedsRepaint()) {
-      if (auto* observer = GetImageObserver())
-        observer->Changed(this);
-    }
   }
 }
 

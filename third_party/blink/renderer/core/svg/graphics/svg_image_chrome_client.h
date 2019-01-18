@@ -74,8 +74,7 @@ class CORE_EXPORT SVGImageChromeClient final : public EmptyChromeClient {
 
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, TimelineSuspendAndResume);
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, ResetAnimation);
-  FRIEND_TEST_ALL_PREFIXES(SVGImagePageVisibilityTest,
-                           PageVisibilityHiddenToVisible);
+  FRIEND_TEST_ALL_PREFIXES(SVGImageSimTest, PageVisibilityHiddenToVisible);
 };
 
 DEFINE_TYPE_CASTS(SVGImageChromeClient,

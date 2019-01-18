@@ -197,9 +197,9 @@ TEST_F(SVGImageTest, SetSizeOnVisualViewport) {
             GetImage().GetPageForTesting()->GetVisualViewport().Size());
 }
 
-class SVGImagePageVisibilityTest : public SimTest {};
+class SVGImageSimTest : public SimTest {};
 
-TEST_F(SVGImagePageVisibilityTest, PageVisibilityHiddenToVisible) {
+TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
   SimRequest main_resource("https://example.com/", "text/html");
   SimSubresourceRequest image_resource("https://example.com/image.svg",
                                        "image/svg+xml");
@@ -249,6 +249,28 @@ TEST_F(SVGImagePageVisibilityTest, PageVisibilityHiddenToVisible) {
   Compositor().BeginFrame();
 
   EXPECT_FALSE(svg_image_chrome_client.IsSuspended());
+}
+
+TEST_F(SVGImageSimTest, TwoImagesSameSVGImageDifferentSize) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimSubresourceRequest image_resource("https://example.com/image.svg",
+                                       "image/svg+xml");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <img src="image.svg" style="width: 100px">
+    <img src="image.svg" style="width: 200px">
+  )HTML");
+  image_resource.Complete(R"SVG(
+    <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+       <rect fill="green" width="100" height="100"/>
+    </svg>
+  )SVG");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  // The previous frame should result in a stable state and should not schedule
+  // new visual updates.
+  EXPECT_FALSE(Compositor().NeedsBeginFrame());
 }
 
 }  // namespace blink
