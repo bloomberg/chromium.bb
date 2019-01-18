@@ -1214,6 +1214,16 @@
     "expiry_milestone": 78
   },
   {
+    "name": "enable-experimental-accessibility-chromevox-language-switching",
+    "owners": [ "akihiroota", "dmazzoni", "dtseng" ],
+    "expiry_milestone": 78
+  },
+  {
+    "name": "enable-experimental-crostini-ui",
+    "owners": [ "nverne", "benwells" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-experimental-productivity-features",
     "owners": [ "feature-control@chromium.org" ],
     "expiry_milestone": 76

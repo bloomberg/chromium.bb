@@ -3358,6 +3358,12 @@ const char kEolNotificationName[] = "Disable Device End of Life notification.";
 const char kEolNotificationDescription[] =
     "Disable Notifcation when Device is End of Life.";
 
+const char kExperimentalAccessibilityChromeVoxLanguageSwitchingName[] =
+    "Enable experimental ChromeVox language switching.";
+const char kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[] =
+    "Enable ChromeVox language switching, which changes ChromeVox's "
+    "output language upon detection of new language.";
+
 const char kFileManagerTouchModeName[] = "Files App. touch mode";
 const char kFileManagerTouchModeDescription[] =
     "Touchscreen-specific interactions of the Files app.";

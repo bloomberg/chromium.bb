@@ -2023,6 +2023,10 @@ extern const char kEnableZeroStateSuggestionsDescription[];
 extern const char kEolNotificationName[];
 extern const char kEolNotificationDescription[];
 
+extern const char kExperimentalAccessibilityChromeVoxLanguageSwitchingName[];
+extern const char
+    kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[];
+
 extern const char kFileManagerTouchModeName[];
 extern const char kFileManagerTouchModeDescription[];
 
