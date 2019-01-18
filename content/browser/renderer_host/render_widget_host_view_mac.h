@@ -186,8 +186,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   const viz::FrameSinkId& GetFrameSinkId() const override;
   const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
       const override;
-  // Returns true when we can do SurfaceHitTesting for the event type.
-  bool ShouldRouteEvent(const blink::WebInputEvent& event) const;
+  // Returns true when we can hit test input events with location data to be
+  // sent to the targeted RenderWidgetHost.
+  bool ShouldRouteEvents() const;
   // This method checks |event| to see if a GesturePinch or double tap event
   // can be routed according to ShouldRouteEvent, and if not, sends it directly
   // to the view's RenderWidgetHost.

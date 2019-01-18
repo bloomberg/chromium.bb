@@ -120,7 +120,8 @@ void MouseWheelPhaseHandler::ResetTouchpadScrollSequence() {
   touchpad_scroll_phase_state_ = TOUCHPAD_SCROLL_STATE_UNKNOWN;
 }
 
-void MouseWheelPhaseHandler::SendWheelEndForTouchpadScrollingIfNeeded() {
+void MouseWheelPhaseHandler::SendWheelEndForTouchpadScrollingIfNeeded(
+    bool should_route_event) {
   if (touchpad_scroll_phase_state_ == TOUCHPAD_SCROLL_IN_PROGRESS) {
     RenderWidgetHostImpl* widget_host = host_view_->host();
     if (!widget_host) {
@@ -128,8 +129,6 @@ void MouseWheelPhaseHandler::SendWheelEndForTouchpadScrollingIfNeeded() {
       return;
     }
 
-    bool should_route_event = widget_host->delegate() &&
-                              widget_host->delegate()->GetInputEventRouter();
     TRACE_EVENT_INSTANT0("input", "MouseWheelPhaseHandler Sent touchpad end",
                          TRACE_EVENT_SCOPE_THREAD);
     SendSyntheticWheelEventWithPhaseEnded(should_route_event);
