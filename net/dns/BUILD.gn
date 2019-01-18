@@ -54,6 +54,8 @@ source_set("dns") {
       "host_cache.cc",
       "host_resolver.cc",
       "host_resolver_impl.cc",
+      "host_resolver_mdns_listener_impl.cc",
+      "host_resolver_mdns_listener_impl.h",
       "host_resolver_mdns_task.cc",
       "host_resolver_mdns_task.h",
       "host_resolver_proc.cc",

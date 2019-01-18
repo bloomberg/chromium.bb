@@ -36,6 +36,7 @@ namespace net {
 
 class AddressList;
 class DnsClient;
+class HostPortPair;
 class IPAddress;
 class MDnsClient;
 class MDnsSocketFactory;
@@ -157,6 +158,9 @@ class NET_EXPORT HostResolverImpl
                             AddressList* addresses,
                             HostCache::EntryStaleness* stale_info,
                             const NetLogWithSource& source_net_log) override;
+  std::unique_ptr<MdnsListener> CreateMdnsListener(
+      const HostPortPair& host,
+      DnsQueryType query_type) override;
   void SetDnsClientEnabled(bool enabled) override;
 
   HostCache* GetHostCache() override;

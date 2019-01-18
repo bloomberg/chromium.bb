@@ -167,6 +167,10 @@ class NET_EXPORT HostCache {
     // |this| is.
     NetLogParametersCallback CreateNetLogCallback() const;
 
+    // Creates a copy of |this| with the port of all address and hostname values
+    // set to |port| if the current port is 0. Preserves any non-zero ports.
+    HostCache::Entry CopyWithDefaultPort(uint16_t port) const;
+
    private:
     friend class HostCache;
 

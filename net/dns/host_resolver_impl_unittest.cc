@@ -24,14 +24,18 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/simple_test_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/timer/mock_timer.h"
 #include "base/values.h"
 #include "net/base/address_list.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_client.h"
@@ -49,6 +53,10 @@
 #include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if BUILDFLAG(ENABLE_MDNS)
+#include "net/dns/mdns_client_impl.h"
+#endif  // BUILDFLAG(ENABLE_MDNS)
 
 using net::test::IsError;
 using net::test::IsOk;
@@ -3040,6 +3048,46 @@ const uint8_t kMdnsResponseA[] = {
     0x01, 0x02, 0x03, 0x04,  // 1.2.3.4
 };
 
+const uint8_t kMdnsResponseA2[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x01,  // 1 RR (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+
+    // "myhello.local."
+    0x07, 'm', 'y', 'h', 'e', 'l', 'l', 'o', 0x05, 'l', 'o', 'c', 'a', 'l',
+    0x00,
+
+    0x00, 0x01,              // TYPE is A.
+    0x00, 0x01,              // CLASS is IN.
+    0x00, 0x00, 0x00, 0x10,  // TTL is 16 (seconds)
+    0x00, 0x04,              // RDLENGTH is 4 bytes.
+    0x05, 0x06, 0x07, 0x08,  // 5.6.7.8
+};
+
+const uint8_t kMdnsResponseA2Goodbye[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x01,  // 1 RR (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+
+    // "myhello.local."
+    0x07, 'm', 'y', 'h', 'e', 'l', 'l', 'o', 0x05, 'l', 'o', 'c', 'a', 'l',
+    0x00,
+
+    0x00, 0x01,              // TYPE is A.
+    0x00, 0x01,              // CLASS is IN.
+    0x00, 0x00, 0x00, 0x00,  // TTL is 0 (signaling "goodbye" removal of result)
+    0x00, 0x04,              // RDLENGTH is 4 bytes.
+    0x05, 0x06, 0x07, 0x08,  // 5.6.7.8
+};
+
 const uint8_t kMdnsResponseAAAA[] = {
     // Header
     0x00, 0x00,  // ID is zeroed out
@@ -3133,6 +3181,27 @@ const uint8_t kMdnsResponsePtr[] = {
 
     // "foo.com."
     0x03, 'f', 'o', 'o', 0x03, 'c', 'o', 'm', 0x00};
+
+const uint8_t kMdnsResponsePtrRoot[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x01,  // 1 RR (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+
+    // "myhello.local."
+    0x07, 'm', 'y', 'h', 'e', 'l', 'l', 'o', 0x05, 'l', 'o', 'c', 'a', 'l',
+    0x00,
+
+    0x00, 0x0c,              // TYPE is PTR.
+    0x00, 0x01,              // CLASS is IN.
+    0x00, 0x00, 0x00, 0x13,  // TTL is 19 (seconds)
+    0x00, 0x01,              // RDLENGTH is 1 byte.
+
+    // "." (the root domain)
+    0x00};
 
 const uint8_t kMdnsResponseSrv[] = {
     // Header
@@ -3473,6 +3542,299 @@ TEST_F(HostResolverImplTest, Mdns_PartialFailure) {
 
   EXPECT_THAT(response.result_error(), IsError(ERR_FAILED));
   EXPECT_FALSE(response.request()->GetAddressResults());
+}
+
+// Implementation of HostResolver::MdnsListenerDelegate that records all
+// received results in maps.
+class TestMdnsListenerDelegate : public HostResolver::MdnsListener::Delegate {
+ public:
+  using UpdateKey =
+      std::pair<HostResolver::MdnsListener::Delegate::UpdateType, DnsQueryType>;
+
+  void OnAddressResult(
+      HostResolver::MdnsListener::Delegate::UpdateType update_type,
+      DnsQueryType result_type,
+      IPEndPoint address) override {
+    address_results_.insert({{update_type, result_type}, std::move(address)});
+  }
+
+  void OnTextResult(
+      HostResolver::MdnsListener::Delegate::UpdateType update_type,
+      DnsQueryType result_type,
+      std::vector<std::string> text_records) override {
+    for (auto& text_record : text_records) {
+      text_results_.insert(
+          {{update_type, result_type}, std::move(text_record)});
+    }
+  }
+
+  void OnHostnameResult(
+      HostResolver::MdnsListener::Delegate::UpdateType update_type,
+      DnsQueryType result_type,
+      HostPortPair host) override {
+    hostname_results_.insert({{update_type, result_type}, std::move(host)});
+  }
+
+  void OnUnhandledResult(
+      HostResolver::MdnsListener::Delegate::UpdateType update_type,
+      DnsQueryType result_type) override {
+    unhandled_results_.insert({update_type, result_type});
+  }
+
+  const std::multimap<UpdateKey, IPEndPoint>& address_results() {
+    return address_results_;
+  }
+
+  const std::multimap<UpdateKey, std::string>& text_results() {
+    return text_results_;
+  }
+
+  const std::multimap<UpdateKey, HostPortPair>& hostname_results() {
+    return hostname_results_;
+  }
+
+  const std::multiset<UpdateKey>& unhandled_results() {
+    return unhandled_results_;
+  }
+
+  template <typename T>
+  static std::pair<UpdateKey, T> CreateExpectedResult(
+      HostResolver::MdnsListener::Delegate::UpdateType update_type,
+      DnsQueryType query_type,
+      T result) {
+    return std::make_pair(std::make_pair(update_type, query_type), result);
+  }
+
+ private:
+  std::multimap<UpdateKey, IPEndPoint> address_results_;
+  std::multimap<UpdateKey, std::string> text_results_;
+  std::multimap<UpdateKey, HostPortPair> hostname_results_;
+  std::multiset<UpdateKey> unhandled_results_;
+};
+
+TEST_F(HostResolverImplTest, MdnsListener) {
+  auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
+  base::SimpleTestClock clock;
+  clock.SetNow(base::Time::Now());
+  auto cache_cleanup_timer = std::make_unique<base::MockOneShotTimer>();
+  auto* cache_cleanup_timer_ptr = cache_cleanup_timer.get();
+  auto mdns_client =
+      std::make_unique<MDnsClientImpl>(&clock, std::move(cache_cleanup_timer));
+  mdns_client->StartListening(socket_factory.get());
+  resolver_->SetMdnsClientForTesting(std::move(mdns_client));
+
+  std::unique_ptr<HostResolver::MdnsListener> listener =
+      resolver_->CreateMdnsListener(HostPortPair("myhello.local", 80),
+                                    DnsQueryType::A);
+
+  TestMdnsListenerDelegate delegate;
+  ASSERT_THAT(listener->Start(&delegate), IsOk());
+  ASSERT_THAT(delegate.address_results(), testing::IsEmpty());
+
+  socket_factory->SimulateReceive(kMdnsResponseA, sizeof(kMdnsResponseA));
+  socket_factory->SimulateReceive(kMdnsResponseA2, sizeof(kMdnsResponseA2));
+  socket_factory->SimulateReceive(kMdnsResponseA2Goodbye,
+                                  sizeof(kMdnsResponseA2Goodbye));
+
+  // Per RFC6762 section 10.1, removals take effect 1 second after receiving the
+  // goodbye message.
+  clock.Advance(base::TimeDelta::FromSeconds(1));
+  cache_cleanup_timer_ptr->Fire();
+
+  // Expect 1 record adding "1.2.3.4", another changing to "5.6.7.8", and a
+  // final removing "5.6.7.8".
+  EXPECT_THAT(delegate.address_results(),
+              testing::ElementsAre(
+                  TestMdnsListenerDelegate::CreateExpectedResult(
+                      HostResolver::MdnsListener::Delegate::UpdateType::ADDED,
+                      DnsQueryType::A, CreateExpected("1.2.3.4", 80)),
+                  TestMdnsListenerDelegate::CreateExpectedResult(
+                      HostResolver::MdnsListener::Delegate::UpdateType::CHANGED,
+                      DnsQueryType::A, CreateExpected("5.6.7.8", 80)),
+                  TestMdnsListenerDelegate::CreateExpectedResult(
+                      HostResolver::MdnsListener::Delegate::UpdateType::REMOVED,
+                      DnsQueryType::A, CreateExpected("5.6.7.8", 80))));
+
+  EXPECT_THAT(delegate.text_results(), testing::IsEmpty());
+  EXPECT_THAT(delegate.hostname_results(), testing::IsEmpty());
+  EXPECT_THAT(delegate.unhandled_results(), testing::IsEmpty());
+}
+
+// Test that removal notifications are sent on natural expiration of MDNS
+// records.
+TEST_F(HostResolverImplTest, MdnsListener_Expiration) {
+  auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
+  base::SimpleTestClock clock;
+  clock.SetNow(base::Time::Now());
+  auto cache_cleanup_timer = std::make_unique<base::MockOneShotTimer>();
+  auto* cache_cleanup_timer_ptr = cache_cleanup_timer.get();
+  auto mdns_client =
+      std::make_unique<MDnsClientImpl>(&clock, std::move(cache_cleanup_timer));
+  mdns_client->StartListening(socket_factory.get());
+  resolver_->SetMdnsClientForTesting(std::move(mdns_client));
+
+  std::unique_ptr<HostResolver::MdnsListener> listener =
+      resolver_->CreateMdnsListener(HostPortPair("myhello.local", 100),
+                                    DnsQueryType::A);
+
+  TestMdnsListenerDelegate delegate;
+  ASSERT_THAT(listener->Start(&delegate), IsOk());
+  ASSERT_THAT(delegate.address_results(), testing::IsEmpty());
+
+  socket_factory->SimulateReceive(kMdnsResponseA, sizeof(kMdnsResponseA));
+
+  EXPECT_THAT(
+      delegate.address_results(),
+      testing::ElementsAre(TestMdnsListenerDelegate::CreateExpectedResult(
+          HostResolver::MdnsListener::Delegate::UpdateType::ADDED,
+          DnsQueryType::A, CreateExpected("1.2.3.4", 100))));
+
+  clock.Advance(base::TimeDelta::FromSeconds(16));
+  cache_cleanup_timer_ptr->Fire();
+
+  EXPECT_THAT(delegate.address_results(),
+              testing::ElementsAre(
+                  TestMdnsListenerDelegate::CreateExpectedResult(
+                      HostResolver::MdnsListener::Delegate::UpdateType::ADDED,
+                      DnsQueryType::A, CreateExpected("1.2.3.4", 100)),
+                  TestMdnsListenerDelegate::CreateExpectedResult(
+                      HostResolver::MdnsListener::Delegate::UpdateType::REMOVED,
+                      DnsQueryType::A, CreateExpected("1.2.3.4", 100))));
+
+  EXPECT_THAT(delegate.text_results(), testing::IsEmpty());
+  EXPECT_THAT(delegate.hostname_results(), testing::IsEmpty());
+  EXPECT_THAT(delegate.unhandled_results(), testing::IsEmpty());
+}
+
+TEST_F(HostResolverImplTest, MdnsListener_Txt) {
+  auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
+  MockMDnsSocketFactory* socket_factory_ptr = socket_factory.get();
+  resolver_->SetMdnsSocketFactoryForTesting(std::move(socket_factory));
+
+  std::unique_ptr<HostResolver::MdnsListener> listener =
+      resolver_->CreateMdnsListener(HostPortPair("myhello.local", 12),
+                                    DnsQueryType::TXT);
+
+  TestMdnsListenerDelegate delegate;
+  ASSERT_THAT(listener->Start(&delegate), IsOk());
+  ASSERT_THAT(delegate.text_results(), testing::IsEmpty());
+
+  socket_factory_ptr->SimulateReceive(kMdnsResponseTxt,
+                                      sizeof(kMdnsResponseTxt));
+
+  EXPECT_THAT(delegate.text_results(),
+              testing::ElementsAre(
+                  TestMdnsListenerDelegate::CreateExpectedResult(
+                      HostResolver::MdnsListener::Delegate::UpdateType::ADDED,
+                      DnsQueryType::TXT, "foo"),
+                  TestMdnsListenerDelegate::CreateExpectedResult(
+                      HostResolver::MdnsListener::Delegate::UpdateType::ADDED,
+                      DnsQueryType::TXT, "bar")));
+
+  EXPECT_THAT(delegate.address_results(), testing::IsEmpty());
+  EXPECT_THAT(delegate.hostname_results(), testing::IsEmpty());
+  EXPECT_THAT(delegate.unhandled_results(), testing::IsEmpty());
+}
+
+TEST_F(HostResolverImplTest, MdnsListener_Ptr) {
+  auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
+  MockMDnsSocketFactory* socket_factory_ptr = socket_factory.get();
+  resolver_->SetMdnsSocketFactoryForTesting(std::move(socket_factory));
+
+  std::unique_ptr<HostResolver::MdnsListener> listener =
+      resolver_->CreateMdnsListener(HostPortPair("myhello.local", 13),
+                                    DnsQueryType::PTR);
+
+  TestMdnsListenerDelegate delegate;
+  ASSERT_THAT(listener->Start(&delegate), IsOk());
+  ASSERT_THAT(delegate.text_results(), testing::IsEmpty());
+
+  socket_factory_ptr->SimulateReceive(kMdnsResponsePtr,
+                                      sizeof(kMdnsResponsePtr));
+
+  EXPECT_THAT(
+      delegate.hostname_results(),
+      testing::ElementsAre(TestMdnsListenerDelegate::CreateExpectedResult(
+          HostResolver::MdnsListener::Delegate::UpdateType::ADDED,
+          DnsQueryType::PTR, HostPortPair("foo.com", 13))));
+
+  EXPECT_THAT(delegate.address_results(), testing::IsEmpty());
+  EXPECT_THAT(delegate.text_results(), testing::IsEmpty());
+  EXPECT_THAT(delegate.unhandled_results(), testing::IsEmpty());
+}
+
+TEST_F(HostResolverImplTest, MdnsListener_Srv) {
+  auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
+  MockMDnsSocketFactory* socket_factory_ptr = socket_factory.get();
+  resolver_->SetMdnsSocketFactoryForTesting(std::move(socket_factory));
+
+  std::unique_ptr<HostResolver::MdnsListener> listener =
+      resolver_->CreateMdnsListener(HostPortPair("myhello.local", 14),
+                                    DnsQueryType::SRV);
+
+  TestMdnsListenerDelegate delegate;
+  ASSERT_THAT(listener->Start(&delegate), IsOk());
+  ASSERT_THAT(delegate.text_results(), testing::IsEmpty());
+
+  socket_factory_ptr->SimulateReceive(kMdnsResponseSrv,
+                                      sizeof(kMdnsResponseSrv));
+
+  EXPECT_THAT(
+      delegate.hostname_results(),
+      testing::ElementsAre(TestMdnsListenerDelegate::CreateExpectedResult(
+          HostResolver::MdnsListener::Delegate::UpdateType::ADDED,
+          DnsQueryType::SRV, HostPortPair("foo.com", 8265))));
+
+  EXPECT_THAT(delegate.address_results(), testing::IsEmpty());
+  EXPECT_THAT(delegate.text_results(), testing::IsEmpty());
+  EXPECT_THAT(delegate.unhandled_results(), testing::IsEmpty());
+}
+
+// Ensure query types we are not listening for do not affect MdnsListener.
+TEST_F(HostResolverImplTest, MdnsListener_NonListeningTypes) {
+  auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
+  MockMDnsSocketFactory* socket_factory_ptr = socket_factory.get();
+  resolver_->SetMdnsSocketFactoryForTesting(std::move(socket_factory));
+
+  std::unique_ptr<HostResolver::MdnsListener> listener =
+      resolver_->CreateMdnsListener(HostPortPair("myhello.local", 41),
+                                    DnsQueryType::A);
+
+  TestMdnsListenerDelegate delegate;
+  ASSERT_THAT(listener->Start(&delegate), IsOk());
+
+  socket_factory_ptr->SimulateReceive(kMdnsResponseAAAA,
+                                      sizeof(kMdnsResponseAAAA));
+
+  EXPECT_THAT(delegate.address_results(), testing::IsEmpty());
+  EXPECT_THAT(delegate.text_results(), testing::IsEmpty());
+  EXPECT_THAT(delegate.hostname_results(), testing::IsEmpty());
+  EXPECT_THAT(delegate.unhandled_results(), testing::IsEmpty());
+}
+
+TEST_F(HostResolverImplTest, MdnsListener_RootDomain) {
+  auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
+  MockMDnsSocketFactory* socket_factory_ptr = socket_factory.get();
+  resolver_->SetMdnsSocketFactoryForTesting(std::move(socket_factory));
+
+  std::unique_ptr<HostResolver::MdnsListener> listener =
+      resolver_->CreateMdnsListener(HostPortPair("myhello.local", 5),
+                                    DnsQueryType::PTR);
+
+  TestMdnsListenerDelegate delegate;
+  ASSERT_THAT(listener->Start(&delegate), IsOk());
+
+  socket_factory_ptr->SimulateReceive(kMdnsResponsePtrRoot,
+                                      sizeof(kMdnsResponsePtrRoot));
+
+  EXPECT_THAT(delegate.unhandled_results(),
+              testing::ElementsAre(std::make_pair(
+                  HostResolver::MdnsListener::Delegate::UpdateType::ADDED,
+                  DnsQueryType::PTR)));
+
+  EXPECT_THAT(delegate.address_results(), testing::IsEmpty());
+  EXPECT_THAT(delegate.text_results(), testing::IsEmpty());
+  EXPECT_THAT(delegate.hostname_results(), testing::IsEmpty());
 }
 #endif  // BUILDFLAG(ENABLE_MDNS)
 

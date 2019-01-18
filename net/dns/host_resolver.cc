@@ -114,6 +114,15 @@ HostResolver::RequestInfo::RequestInfo()
 
 HostResolver::~HostResolver() = default;
 
+std::unique_ptr<HostResolver::MdnsListener> HostResolver::CreateMdnsListener(
+    const HostPortPair& host,
+    DnsQueryType query_type) {
+  // Should be overridden in any HostResolver implementation where this method
+  // may be called.
+  NOTREACHED();
+  return nullptr;
+}
+
 void HostResolver::SetDnsClientEnabled(bool enabled) {}
 
 HostCache* HostResolver::GetHostCache() {
