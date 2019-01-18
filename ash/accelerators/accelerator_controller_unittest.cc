@@ -43,6 +43,7 @@
 #include "base/stl_util.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "media/base/media_switches.h"
 #include "services/media_session/public/cpp/test/test_media_controller.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
@@ -1550,10 +1551,10 @@ class MediaSessionAcceleratorTest
   void SetUp() override {
     if (service_enabled()) {
       scoped_feature_list_.InitAndEnableFeature(
-          features::kMediaSessionAccelerators);
+          media::kHardwareMediaKeyHandling);
     } else {
       scoped_feature_list_.InitAndDisableFeature(
-          features::kMediaSessionAccelerators);
+          media::kHardwareMediaKeyHandling);
     }
 
     AcceleratorControllerTest::SetUp();

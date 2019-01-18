@@ -4,8 +4,8 @@
 
 #include "ash/media/media_controller.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "base/feature_list.h"
+#include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -27,7 +27,7 @@ MediaController::MediaController(service_manager::Connector* connector)
     : connector_(connector) {
   // If media session media key handling is enabled this will setup a connection
   // and bind an observer to the media session service.
-  if (base::FeatureList::IsEnabled(features::kMediaSessionAccelerators))
+  if (base::FeatureList::IsEnabled(media::kHardwareMediaKeyHandling))
     GetMediaSessionController();
 }
 
@@ -159,7 +159,7 @@ void MediaController::BindMediaSessionObserver() {
 }
 
 bool MediaController::ShouldUseMediaSession() {
-  return base::FeatureList::IsEnabled(features::kMediaSessionAccelerators) &&
+  return base::FeatureList::IsEnabled(media::kHardwareMediaKeyHandling) &&
          GetMediaSessionController() && supported_media_session_action_;
 }
 
