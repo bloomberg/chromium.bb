@@ -451,6 +451,10 @@
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 #if defined(USE_X11)
 #include "chrome/browser/chrome_browser_main_extra_parts_x11.h"
 #endif
@@ -2219,8 +2223,15 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
     command_line->AppendSwitchASCII(switches::kMashServiceName,
                                     identity.name());
   }
-  if (identity.name() == viz::mojom::kVizServiceName)
+  if (identity.name() == viz::mojom::kVizServiceName) {
+#if defined(USE_OZONE)
+    if (ui::OzonePlatform::EnsureInstance()->GetMessageLoopTypeForGpu() ==
+        base::MessageLoop::TYPE_UI) {
+      command_line->AppendSwitch(switches::kMessageLoopTypeUi);
+    }
+#endif
     content::GpuDataManager::GetInstance()->AppendGpuCommandLine(command_line);
+  }
   // TODO(crbug.com/906954): whitelist flags to copy.
   if (copy_switches) {
     for (const auto& sw : base::CommandLine::ForCurrentProcess()->GetSwitches())
