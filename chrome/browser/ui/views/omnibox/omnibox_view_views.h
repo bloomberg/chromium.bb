@@ -138,6 +138,8 @@ class OmniboxViewViews : public OmniboxView,
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, FriendlyAccessibleLabel);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, DoNotNavigateOnDrop);
 
+  class PathFadeAnimation;
+
   enum class UnelisionGesture {
     HOME_KEY_PRESSED,
     MOUSE_RELEASE,
@@ -282,6 +284,9 @@ class OmniboxViewViews : public OmniboxView,
   bool popup_window_mode_;
 
   std::unique_ptr<OmniboxPopupContentsView> popup_view_;
+
+  // Animation used to fade out the path under some elision settings.
+  std::unique_ptr<PathFadeAnimation> path_fade_animation_;
 
   security_state::SecurityLevel security_level_;
 
