@@ -322,8 +322,7 @@ AutomationRichEditableText.prototype = {
 
     // We must validate the previous lines as state changes in the accessibility
     // tree may have invalidated the lines.
-    if (prevAnchorLine.isValidLine() && prevFocusLine.isValidLine() &&
-        anchorLine.isSameLine(prevAnchorLine) &&
+    if (anchorLine.isSameLine(prevAnchorLine) &&
         focusLine.isSameLine(prevFocusLine)) {
       // Intra-line changes.
       var text = cur.text;
