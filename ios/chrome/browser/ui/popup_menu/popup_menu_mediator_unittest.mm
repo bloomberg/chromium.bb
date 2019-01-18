@@ -6,15 +6,20 @@
 #include "base/time/default_clock.h"
 #include "components/feature_engagement/test/mock_tracker.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
+#import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_navigation_manager.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_web_state.h"
+#include "ios/chrome/browser/web/chrome_web_client.h"
+#import "ios/chrome/browser/web/chrome_web_test.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
+#import "ios/web/public/navigation_item.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -29,6 +34,21 @@
 #error "This file requires ARC support."
 #endif
 
+@interface FakePopupMenuConsumer : NSObject <PopupMenuConsumer>
+@property(nonatomic, strong)
+    NSArray<NSArray<TableViewItem<PopupMenuItem>*>*>* popupMenuItems;
+@end
+
+@implementation FakePopupMenuConsumer
+
+@synthesize itemToHighlight;
+
+- (void)itemsHaveChanged:(NSArray<TableViewItem<PopupMenuItem>*>*)items {
+  // Do nothing.
+}
+
+@end
+
 namespace {
 const int kNumberOfWebStates = 3;
 }  // namespace
@@ -40,9 +60,9 @@ const int kNumberOfWebStates = 3;
 @implementation TestPopupMenuMediator
 @end
 
-class PopupMenuMediatorTest : public PlatformTest {
+class PopupMenuMediatorTest : public ChromeWebTest {
  public:
-  PopupMenuMediatorTest() {
+  PopupMenuMediatorTest() : ChromeWebTest(std::make_unique<ChromeWebClient>()) {
     reading_list_model_.reset(new ReadingListModelImpl(
         nullptr, nullptr, base::DefaultClock::GetInstance()));
     popup_menu_ = OCMClassMock([PopupMenuTableViewController class]);
@@ -74,6 +94,10 @@ class PopupMenuMediatorTest : public PlatformTest {
   void SetUpWebStateList() {
     auto navigation_manager = std::make_unique<ToolbarTestNavigationManager>();
     navigation_manager_ = navigation_manager.get();
+
+    navigation_item_ = web::NavigationItem::Create();
+    navigation_item_->SetURL(GURL("http://chromium.org"));
+    navigation_manager->SetVisibleItem(navigation_item_.get());
 
     std::unique_ptr<ToolbarTestWebState> test_web_state =
         std::make_unique<ToolbarTestWebState>();
@@ -124,10 +148,23 @@ class PopupMenuMediatorTest : public PlatformTest {
     EXPECT_OCMOCK_VERIFY(popup_menu_);
   }
 
+  bool HasItem(FakePopupMenuConsumer* consumer,
+               NSString* accessibility_identifier,
+               BOOL enabled) {
+    for (NSArray* innerArray in consumer.popupMenuItems) {
+      for (PopupMenuToolsItem* item in innerArray) {
+        if (item.accessibilityIdentifier == accessibility_identifier)
+          return item.enabled == enabled;
+      }
+    }
+    return NO;
+  }
+
   PopupMenuMediator* mediator_;
   std::unique_ptr<ReadingListModelImpl> reading_list_model_;
   ToolbarTestWebState* web_state_;
   ToolbarTestNavigationManager* navigation_manager_;
+  std::unique_ptr<web::NavigationItem> navigation_item_;
   std::unique_ptr<WebStateList> web_state_list_;
   FakeWebStateListDelegate web_state_list_delegate_;
   id popup_menu_;
@@ -203,4 +240,37 @@ TEST_F(PopupMenuMediatorTest, TestNewIncognitoHintTabGrid) {
   SetUpActiveWebState();
   mediator_.popupMenu = popup_menu_;
   EXPECT_OCMOCK_VERIFY(popup_menu_);
+}
+
+// Tests that the items returned by the mediator are correctly enabled on a
+// WebPage.
+TEST_F(PopupMenuMediatorTest, TestItemsStatusOnWebPage) {
+  CreateMediator(PopupMenuTypeToolsMenu, NO, NO);
+  mediator_.webStateList = web_state_list_.get();
+  FakePopupMenuConsumer* consumer = [[FakePopupMenuConsumer alloc] init];
+  mediator_.popupMenu = consumer;
+  SetUpActiveWebState();
+
+  web::FakeNavigationContext context;
+  web_state_->OnNavigationFinished(&context);
+
+  EXPECT_TRUE(HasItem(consumer, kToolsMenuNewTabId, /*enabled=*/YES));
+  EXPECT_TRUE(HasItem(consumer, kToolsMenuSiteInformation, /*enabled=*/YES));
+}
+
+// Tests that the items returned by the mediator are correctly enabled on the
+// NTP.
+TEST_F(PopupMenuMediatorTest, TestItemsStatusOnNTP) {
+  CreateMediator(PopupMenuTypeToolsMenu, NO, NO);
+  mediator_.webStateList = web_state_list_.get();
+  FakePopupMenuConsumer* consumer = [[FakePopupMenuConsumer alloc] init];
+  mediator_.popupMenu = consumer;
+  SetUpActiveWebState();
+
+  navigation_item_->SetVirtualURL(GURL("chrome://newtab"));
+  web::FakeNavigationContext context;
+  web_state_->OnNavigationFinished(&context);
+
+  EXPECT_TRUE(HasItem(consumer, kToolsMenuNewTabId, /*enabled=*/YES));
+  EXPECT_TRUE(HasItem(consumer, kToolsMenuSiteInformation, /*enabled=*/NO));
 }
