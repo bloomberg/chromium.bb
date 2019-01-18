@@ -1,5 +1,5 @@
 export const description = `
-Unit tests for parameterization system.
+Demos of parameterization system.
 `;
 
 import {

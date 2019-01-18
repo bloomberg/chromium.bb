@@ -1,5 +1,5 @@
 export const description = `
-Tests that throw exceptions or reject promises.
+Manual tests for tests which throw/reject.
 `;
 
 import {

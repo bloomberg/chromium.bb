@@ -1,5 +1,5 @@
 export const description = `
-Basic unit tests for test framework.
+Manual tests for pass/fail display and output behavior.
 `;
 
 import {

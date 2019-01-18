@@ -10,6 +10,8 @@ import {
 
 export const group = new TestGroup();
 
+// TODO: these tests should really create their own TestGroup and assert things about it
+
 function print(t: Fixture) {
   t.log(JSON.stringify(t.params));
 }
