@@ -35,6 +35,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
@@ -60,6 +61,7 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -1331,6 +1333,27 @@ TEST_F(ShelfViewTest, ShelfTooltipTest) {
   generator->MoveMouseTo(platform_button->GetBoundsInScreen().CenterPoint());
   EXPECT_FALSE(tooltip_manager->IsVisible());
   EXPECT_EQ(nullptr, tooltip_manager->GetCurrentAnchorView());
+}
+
+TEST_F(ShelfViewTest, ButtonTitlesTest) {
+  AddButtonsUntilOverflow();
+  EXPECT_EQ(base::UTF8ToUTF16("Launcher"),
+            shelf_view_->GetAppListButton()->GetAccessibleName());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_SHELF_BACK_BUTTON_TITLE),
+            shelf_view_->GetBackButton()->GetAccessibleName());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_SHELF_OVERFLOW_NAME),
+            shelf_view_->GetOverflowButton()->GetAccessibleName());
+
+  for (int i = 0; i < test_api_->GetButtonCount(); i++) {
+    ShelfAppButton* button = test_api_->GetButton(i);
+    if (button) {
+      base::string16 tooltip;
+      button->GetTooltipText(gfx::Point(), &tooltip);
+      EXPECT_EQ(tooltip, button->GetAccessibleName())
+          << "Each button's tooltip text should read the same as its "
+          << "accessible name";
+    }
+  }
 }
 
 // Verify a fix for crash caused by a tooltip update for a deleted shelf
