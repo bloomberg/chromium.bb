@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -72,7 +72,8 @@ void UpdateNetworkTime(const base::Time& network_time,
 
 // static
 ProfileSyncServiceFactory* ProfileSyncServiceFactory::GetInstance() {
-  return base::Singleton<ProfileSyncServiceFactory>::get();
+  static base::NoDestructor<ProfileSyncServiceFactory> instance;
+  return instance.get();
 }
 
 // static

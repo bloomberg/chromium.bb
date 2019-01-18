@@ -13,7 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/time/default_clock.h"
 #include "components/consent_auditor/consent_auditor_impl.h"
 #include "components/consent_auditor/consent_sync_bridge.h"
@@ -48,7 +48,8 @@ ConsentAuditorFactory::GetForBrowserStateIfExists(
 
 // static
 ConsentAuditorFactory* ConsentAuditorFactory::GetInstance() {
-  return base::Singleton<ConsentAuditorFactory>::get();
+  static base::NoDestructor<ConsentAuditorFactory> instance;
+  return instance.get();
 }
 
 ConsentAuditorFactory::ConsentAuditorFactory()
