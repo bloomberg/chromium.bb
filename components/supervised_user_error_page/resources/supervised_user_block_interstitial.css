@@ -18,7 +18,9 @@ button {
   color: #fff;
   cursor: pointer;
   float: right;
-  font-size: .875em;
+  font-family: Roboto;
+  font-size: 14px;
+  font-weight: 500;
   margin: 0;
   padding: 10px 24px;
   transition: box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -124,8 +126,10 @@ html {
 }
 
 .small-link {
-  color: #696969;
-  font-size: .875em;
+  color: rgba(66, 133, 244, 100);
+  font-family: Roboto;
+  font-size: 15px;
+  font-weight: 500;
 }
 
 .avatar-img {
@@ -149,18 +153,19 @@ html {
 .custodian-information {
   align-items: center;
   display: flex;
-  font-size: 12px;
+  font-size: 15px;
+  font-weight: 400;
   line-height: normal;
   margin-top: 14px;
 }
 
 .custodian-name {
-  color: rgb(97,97,97);
+  color: rgba(0, 0, 0, 0.87);
   padding: 1px 0;
 }
 
 .custodian-email {
-  color: rgb(183, 183, 183);
+  color: rgb(0, 0, 0, 0.54);
   padding: 1px 0;
 }
 
