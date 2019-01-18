@@ -8,6 +8,14 @@
 
 namespace zucchini {
 
+namespace {
+
+inline bool IsMisaligned(rva_t rva, ArmAlign align) {
+  return (rva & (align - 1)) != 0;
+}
+
+}  // namespace
+
 /******** Arm32Rel32Translator ********/
 
 Arm32Rel32Translator::Arm32Rel32Translator() = default;
@@ -76,11 +84,14 @@ bool Arm32Rel32Translator::EncodeA24(arm_disp_t disp, uint32_t* code32) {
 bool Arm32Rel32Translator::ReadA24(rva_t instr_rva,
                                    uint32_t code32,
                                    rva_t* target_rva) {
-  arm_disp_t disp;
-  ArmAlign align = DecodeA24(code32, &disp);
-  if (align == kArmAlignFail)
+  constexpr ArmAlign kInstrAlign = kArmAlign4;
+  if (IsMisaligned(instr_rva, kInstrAlign))
     return false;
-  *target_rva = GetArmTargetRvaFromDisp(instr_rva, disp, align);
+  arm_disp_t disp;
+  ArmAlign target_align = DecodeA24(code32, &disp);
+  if (target_align == kArmAlignFail)
+    return false;
+  *target_rva = GetArmTargetRvaFromDisp(instr_rva, disp, target_align);
   return true;
 }
 
@@ -88,12 +99,16 @@ bool Arm32Rel32Translator::ReadA24(rva_t instr_rva,
 bool Arm32Rel32Translator::WriteA24(rva_t instr_rva,
                                     rva_t target_rva,
                                     uint32_t* code32) {
-  // Dummy decode to get |align|.
-  arm_disp_t dummy_disp;
-  ArmAlign align = DecodeA24(*code32, &dummy_disp);
-  if (align == kArmAlignFail)
+  constexpr ArmAlign kInstrAlign = kArmAlign4;
+  if (IsMisaligned(instr_rva, kInstrAlign))
     return false;
-  arm_disp_t disp = GetArmDispFromTargetRva(instr_rva, target_rva, align);
+  // Dummy decode to get |target_align|.
+  arm_disp_t dummy_disp;
+  ArmAlign target_align = DecodeA24(*code32, &dummy_disp);
+  if (target_align == kArmAlignFail || IsMisaligned(target_rva, target_align))
+    return false;
+  arm_disp_t disp =
+      GetArmDispFromTargetRva(instr_rva, target_rva, target_align);
   return EncodeA24(disp, code32);
 }
 
@@ -128,11 +143,14 @@ bool Arm32Rel32Translator::EncodeT8(arm_disp_t disp, uint16_t* code16) {
 bool Arm32Rel32Translator::ReadT8(rva_t instr_rva,
                                   uint16_t code16,
                                   rva_t* target_rva) {
-  arm_disp_t disp;
-  ArmAlign align = DecodeT8(code16, &disp);
-  if (align == kArmAlignFail)
+  constexpr ArmAlign kInstrAlign = kArmAlign2;
+  if (IsMisaligned(instr_rva, kInstrAlign))
     return false;
-  *target_rva = GetThumb2TargetRvaFromDisp(instr_rva, disp, align);
+  arm_disp_t disp;
+  ArmAlign target_align = DecodeT8(code16, &disp);
+  if (target_align == kArmAlignFail)
+    return false;
+  *target_rva = GetThumb2TargetRvaFromDisp(instr_rva, disp, target_align);
   return true;
 }
 
@@ -140,8 +158,14 @@ bool Arm32Rel32Translator::ReadT8(rva_t instr_rva,
 bool Arm32Rel32Translator::WriteT8(rva_t instr_rva,
                                    rva_t target_rva,
                                    uint16_t* code16) {
+  constexpr ArmAlign kInstrAlign = kArmAlign2;
+  constexpr ArmAlign kTargetAlign = kArmAlign2;
+  if (IsMisaligned(instr_rva, kInstrAlign) ||
+      IsMisaligned(target_rva, kTargetAlign)) {
+    return false;
+  }
   arm_disp_t disp =
-      GetThumb2DispFromTargetRva(instr_rva, target_rva, kArmAlign2);
+      GetThumb2DispFromTargetRva(instr_rva, target_rva, kTargetAlign);
   return EncodeT8(disp, code16);
 }
 
@@ -176,11 +200,14 @@ bool Arm32Rel32Translator::EncodeT11(arm_disp_t disp, uint16_t* code16) {
 bool Arm32Rel32Translator::ReadT11(rva_t instr_rva,
                                    uint16_t code16,
                                    rva_t* target_rva) {
-  arm_disp_t disp;
-  ArmAlign align = DecodeT11(code16, &disp);
-  if (align == kArmAlignFail)
+  constexpr ArmAlign kInstrAlign = kArmAlign2;
+  if (IsMisaligned(instr_rva, kInstrAlign))
     return false;
-  *target_rva = GetThumb2TargetRvaFromDisp(instr_rva, disp, align);
+  arm_disp_t disp;
+  ArmAlign target_align = DecodeT11(code16, &disp);
+  if (target_align == kArmAlignFail)
+    return false;
+  *target_rva = GetThumb2TargetRvaFromDisp(instr_rva, disp, target_align);
   return true;
 }
 
@@ -188,8 +215,14 @@ bool Arm32Rel32Translator::ReadT11(rva_t instr_rva,
 bool Arm32Rel32Translator::WriteT11(rva_t instr_rva,
                                     rva_t target_rva,
                                     uint16_t* code16) {
+  constexpr ArmAlign kInstrAlign = kArmAlign2;
+  constexpr ArmAlign kTargetAlign = kArmAlign2;
+  if (IsMisaligned(instr_rva, kInstrAlign) ||
+      IsMisaligned(target_rva, kTargetAlign)) {
+    return false;
+  }
   arm_disp_t disp =
-      GetThumb2DispFromTargetRva(instr_rva, target_rva, kArmAlign2);
+      GetThumb2DispFromTargetRva(instr_rva, target_rva, kTargetAlign);
   return EncodeT11(disp, code16);
 }
 
@@ -238,11 +271,14 @@ bool Arm32Rel32Translator::EncodeT20(arm_disp_t disp, uint32_t* code32) {
 bool Arm32Rel32Translator::ReadT20(rva_t instr_rva,
                                    uint32_t code32,
                                    rva_t* target_rva) {
-  arm_disp_t disp;
-  ArmAlign align = DecodeT20(code32, &disp);
-  if (align == kArmAlignFail)
+  constexpr ArmAlign kInstrAlign = kArmAlign2;
+  if (IsMisaligned(instr_rva, kInstrAlign))
     return false;
-  *target_rva = GetThumb2TargetRvaFromDisp(instr_rva, disp, align);
+  arm_disp_t disp;
+  ArmAlign target_align = DecodeT20(code32, &disp);
+  if (target_align == kArmAlignFail)
+    return false;
+  *target_rva = GetThumb2TargetRvaFromDisp(instr_rva, disp, target_align);
   return true;
 }
 
@@ -250,8 +286,14 @@ bool Arm32Rel32Translator::ReadT20(rva_t instr_rva,
 bool Arm32Rel32Translator::WriteT20(rva_t instr_rva,
                                     rva_t target_rva,
                                     uint32_t* code32) {
+  constexpr ArmAlign kInstrAlign = kArmAlign2;
+  constexpr ArmAlign kTargetAlign = kArmAlign2;
+  if (IsMisaligned(instr_rva, kInstrAlign) ||
+      IsMisaligned(target_rva, kTargetAlign)) {
+    return false;
+  }
   arm_disp_t disp =
-      GetThumb2DispFromTargetRva(instr_rva, target_rva, kArmAlign2);
+      GetThumb2DispFromTargetRva(instr_rva, target_rva, kTargetAlign);
   return EncodeT20(disp, code32);
 }
 
@@ -279,15 +321,15 @@ ArmAlign Arm32Rel32Translator::DecodeT24(uint32_t code32, arm_disp_t* disp) {
     t = SignExtend<24, int32_t>(t);
     // BLX encoding T2 requires final target to be 4-byte aligned by rounding
     // downward. This is applied to |t| *after* clipping.
-    ArmAlign align_by = kArmAlign2;
+    ArmAlign target_align = kArmAlign2;
     if (bits == 0xF000C000) {
       uint32_t H = GetBit<0>(code32);
       if (H)
         return kArmAlignFail;  // Illegal instruction: H must be 0.
-      align_by = kArmAlign4;
+      target_align = kArmAlign4;
     }
     *disp = static_cast<int32_t>(t);
-    return align_by;
+    return target_align;
   }
   return kArmAlignFail;
 }
@@ -326,11 +368,14 @@ bool Arm32Rel32Translator::EncodeT24(arm_disp_t disp, uint32_t* code32) {
 bool Arm32Rel32Translator::ReadT24(rva_t instr_rva,
                                    uint32_t code32,
                                    rva_t* target_rva) {
-  arm_disp_t disp;
-  ArmAlign align = DecodeT24(code32, &disp);
-  if (align == kArmAlignFail)
+  constexpr ArmAlign kInstrAlign = kArmAlign2;
+  if (IsMisaligned(instr_rva, kInstrAlign))
     return false;
-  *target_rva = GetThumb2TargetRvaFromDisp(instr_rva, disp, align);
+  arm_disp_t disp;
+  ArmAlign target_align = DecodeT24(code32, &disp);
+  if (target_align == kArmAlignFail)
+    return false;
+  *target_rva = GetThumb2TargetRvaFromDisp(instr_rva, disp, target_align);
   return true;
 }
 
@@ -338,12 +383,16 @@ bool Arm32Rel32Translator::ReadT24(rva_t instr_rva,
 bool Arm32Rel32Translator::WriteT24(rva_t instr_rva,
                                     rva_t target_rva,
                                     uint32_t* code32) {
-  // Dummy decode to get |align|.
-  arm_disp_t dummy_disp;
-  ArmAlign align = DecodeT24(*code32, &dummy_disp);
-  if (align == kArmAlignFail)
+  constexpr ArmAlign kInstrAlign = kArmAlign2;
+  if (IsMisaligned(instr_rva, kInstrAlign))
     return false;
-  arm_disp_t disp = GetThumb2DispFromTargetRva(instr_rva, target_rva, align);
+  // Dummy decode to get |target_align|.
+  arm_disp_t dummy_disp;
+  ArmAlign target_align = DecodeT24(*code32, &dummy_disp);
+  if (target_align == kArmAlignFail || IsMisaligned(target_rva, target_align))
+    return false;
+  arm_disp_t disp =
+      GetThumb2DispFromTargetRva(instr_rva, target_rva, target_align);
   return EncodeT24(disp, code32);
 }
 
@@ -390,6 +439,9 @@ bool AArch64Rel32Translator::EncodeImmd14(arm_disp_t disp, uint32_t* code32) {
 bool AArch64Rel32Translator::ReadImmd14(rva_t instr_rva,
                                         uint32_t code32,
                                         rva_t* target_rva) {
+  constexpr ArmAlign kInstrAlign = kArmAlign4;
+  if (IsMisaligned(instr_rva, kInstrAlign))
+    return false;
   arm_disp_t disp;
   if (DecodeImmd14(code32, &disp) == kArmAlignFail)
     return false;
@@ -401,6 +453,12 @@ bool AArch64Rel32Translator::ReadImmd14(rva_t instr_rva,
 bool AArch64Rel32Translator::WriteImmd14(rva_t instr_rva,
                                          rva_t target_rva,
                                          uint32_t* code32) {
+  constexpr ArmAlign kInstrAlign = kArmAlign4;
+  constexpr ArmAlign kTargetAlign = kArmAlign4;
+  if (IsMisaligned(instr_rva, kInstrAlign) ||
+      IsMisaligned(target_rva, kTargetAlign)) {
+    return false;
+  }
   arm_disp_t disp = GetDispFromTargetRva(instr_rva, target_rva);
   return EncodeImmd14(disp, code32);
 }
@@ -449,6 +507,9 @@ bool AArch64Rel32Translator::EncodeImmd19(arm_disp_t disp, uint32_t* code32) {
 bool AArch64Rel32Translator::ReadImmd19(rva_t instr_rva,
                                         uint32_t code32,
                                         rva_t* target_rva) {
+  constexpr ArmAlign kInstrAlign = kArmAlign4;
+  if (IsMisaligned(instr_rva, kInstrAlign))
+    return false;
   arm_disp_t disp;
   if (DecodeImmd19(code32, &disp) == kArmAlignFail)
     return false;
@@ -460,6 +521,12 @@ bool AArch64Rel32Translator::ReadImmd19(rva_t instr_rva,
 bool AArch64Rel32Translator::WriteImmd19(rva_t instr_rva,
                                          rva_t target_rva,
                                          uint32_t* code32) {
+  constexpr ArmAlign kInstrAlign = kArmAlign4;
+  constexpr ArmAlign kTargetAlign = kArmAlign4;
+  if (IsMisaligned(instr_rva, kInstrAlign) ||
+      IsMisaligned(target_rva, kTargetAlign)) {
+    return false;
+  }
   arm_disp_t disp = GetDispFromTargetRva(instr_rva, target_rva);
   return EncodeImmd19(disp, code32);
 }
@@ -503,6 +570,9 @@ bool AArch64Rel32Translator::EncodeImmd26(arm_disp_t disp, uint32_t* code32) {
 bool AArch64Rel32Translator::ReadImmd26(rva_t instr_rva,
                                         uint32_t code32,
                                         rva_t* target_rva) {
+  constexpr ArmAlign kInstrAlign = kArmAlign4;
+  if (IsMisaligned(instr_rva, kInstrAlign))
+    return false;
   arm_disp_t disp;
   if (DecodeImmd26(code32, &disp) == kArmAlignFail)
     return false;
@@ -514,6 +584,12 @@ bool AArch64Rel32Translator::ReadImmd26(rva_t instr_rva,
 bool AArch64Rel32Translator::WriteImmd26(rva_t instr_rva,
                                          rva_t target_rva,
                                          uint32_t* code32) {
+  constexpr ArmAlign kInstrAlign = kArmAlign4;
+  constexpr ArmAlign kTargetAlign = kArmAlign4;
+  if (IsMisaligned(instr_rva, kInstrAlign) ||
+      IsMisaligned(target_rva, kTargetAlign)) {
+    return false;
+  }
   arm_disp_t disp = GetDispFromTargetRva(instr_rva, target_rva);
   return EncodeImmd26(disp, code32);
 }

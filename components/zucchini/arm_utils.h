@@ -21,7 +21,7 @@ namespace zucchini {
 // * AArch64 (64-bit ARM):
 //     https://static.docs.arm.com/ddi0487/da/DDI0487D_a_armv8_arm.pdf
 
-// Definitions (non-official, but used in this file):
+// Definitions (used in Zucchini):
 // * |instr_rva|: Instruction RVA: The RVA where an instruction is located. In
 //   ARM mode and for AArch64 this is 4-byte aligned; in THUMB2 mode this is
 //   2-byte aligned.
@@ -51,7 +51,7 @@ namespace zucchini {
 // Example 2 (THUMB2 mode):
 //   001030A2: 00 F0 01 FA    BL    001034A8
 //   |instr_rva| = 0x001030A2  (2-byte aligned).
-//   |code| = 0xF000FA01  (special THUMB2 mode data fetch method).
+//   |code| = 0xF000FA01  (special THUMB2 mode data fetch).
 //   |disp| = 0x00000402  (decoded from |code| with T24 -> BL encoding T1).
 //   PC = |instr_rva| + 4 = 0x001030A6  (THUMB2 mode).
 //   |target_rva| = PC + |disp| = 0x001034A8.
@@ -64,20 +64,26 @@ namespace zucchini {
 //   PC = |instr_rva| = 0x00305070  (AArch64).
 //   |target_rva| = PC + |disp| = 0x0034587C.
 
-// BLX complication: BLX encoding T2 transits mode from THUMB2 to ARM. Therefore
-// |target_rva| must be 4-byte aligned; it's not just PC + |disp|. In THUMB2
-// encoding, |disp| is required to be multiple of 4 (so H = 0, where H is the
-// bit corresponding to 2). |target_rva| becomes PC + |disp| rounded down to the
-// nearest 4-byte aligned address. We have two alternatives to handle this
-// complexity (this affects |disp|'s definition):
-// (1) Handle in |code| <-> |disp|: Let |disp| be |target_rva| - PC. For
-//     BLX encoding T2, we'd examine |instr_rva| % 4 and adjust accordingly.
-// (2) Handle in |disp| <-> |target_rva|: Let |disp| be the value stored in
-//     |code|. Computation involving |target_rva| would require |instr_rva| and
-//     prior |code| extraction, from which we deduce expected target alignment
-//     (4 for ARM mode; 2 for THUMB2 mode except for 4 for BLX encoding T2) and
-//     adjust accordingly.
-// We adopt (2) since |code| <-> |disp| is useful, and should be made simple.
+// BLX complication: BLX transits between ARM mode and THUMB2 mode, and branches
+// to an address. Therefore |instr_rva| must align by the "old" mode, and
+// |target_rva| must align by the "new" mode. In particular:
+// * BLX encoding A2 (ARM -> THUMB2): |instr_rva| is 4-byte aligned with
+//   PC = |instr_rva| + 8; |target_rva| is 2-byte aligned, and so |disp| is
+//   2-byte aligned.
+// * BLX encoding T2 (THUMB2 -> ARM): |instr_rva| is 2-byte aligned with
+//   PC = |instr_rva| + 4; |target_rva| is 4-byte aligned. Complication: BLX
+//   encoding T2 stores a bit |H| that corresponds to "2" in binary, but |H|
+//   must be set to 0. Thus the encoded value is effectively 4-byte aligned. So
+//   when computing |target_rva| by adding PC (2-byte aligned) to the stored
+//   value (4-byte aligned), the result must be rounded down to the nearest
+//   4-byte aligned address.
+// The last situation creates ambiguity in how |disp| is defined! Alternatives:
+// (1) |disp| := |target_rva| - PC: So |code| <-> |disp| for BLX encoding T2,
+//     requires |instr_rva| % 4 to be determined, and adjustments made.
+// (2) |disp| := Value stored in |code|: So |disp| <-> |target_rva| for BLX
+//     encoding T2 requires adjustment: |disp| -> |target_rva| needs to round
+//     down, whereas |target_rva| -> |disp| needs to round up.
+// We adopt (2) to simplify |code| <-> |disp|, since that gets used.
 
 using arm_disp_t = int32_t;
 
@@ -129,6 +135,13 @@ class Arm32Rel32Translator {
   // Rel32 address types enumeration.
   enum AddrType : uint8_t {
     ADDR_NONE = 0xFF,
+    // Naming: Here "A24" represents ARM mode instructions where |code|
+    // dedicates 24 bits (including sign bit) to specify |disp|. Similarly, "T8"
+    // represents THUMB2 mode instructions with 8 bits for |disp|. Currently
+    // only {A24, T8, T11, T20, T24} are defined. These are not to be confused
+    // with "B encoding A1", "B encoding T3", etc., which are specific encoding
+    // schemes given by the manual for the "B" (or other) instructions (only
+    // {A1, A2, T1, T2, T3, T4} are seen).
     ADDR_A24 = 0,
     ADDR_T8,
     ADDR_T11,
