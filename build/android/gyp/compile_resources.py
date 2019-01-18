@@ -505,9 +505,10 @@ def _CreateKeepPredicate(resource_dirs, resource_blacklist_regex,
     A lambda that takes a path, and returns true if the corresponding file
     must be kept.
   """
+  naive_predicate = lambda path: os.path.basename(path)[0] != '.'
   if resource_blacklist_regex == '' and not android_locale_whitelist:
     # Do not extract dotfiles (e.g. ".gitkeep"). aapt ignores them anyways.
-    return lambda path: os.path.basename(path)[0] != '.'
+    return naive_predicate
 
   if resource_blacklist_regex != '':
     # A simple predicate that only removes (returns False for) paths covered by
