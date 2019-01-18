@@ -355,61 +355,24 @@ void GeneratedCodeCache::WriteDataImpl(
     return;
   }
 
-  scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry_ptr =
-      new base::RefCountedData<disk_cache::Entry*>();
+  scoped_refptr<base::RefCountedData<disk_cache::EntryWithOpened>>
+      entry_struct = new base::RefCountedData<disk_cache::EntryWithOpened>();
   net::CompletionOnceCallback callback =
-      base::BindOnce(&GeneratedCodeCache::OpenCompleteForWriteData,
-                     weak_ptr_factory_.GetWeakPtr(), buffer, key, entry_ptr);
+      base::BindOnce(&GeneratedCodeCache::CompleteForWriteData,
+                     weak_ptr_factory_.GetWeakPtr(), buffer, key, entry_struct);
 
-  int result =
-      backend_->OpenEntry(key, net::LOW, &entry_ptr->data, std::move(callback));
+  int result = backend_->OpenOrCreateEntry(key, net::LOW, &entry_struct->data,
+                                           std::move(callback));
   if (result != net::ERR_IO_PENDING) {
-    OpenCompleteForWriteData(buffer, key, entry_ptr, result);
+    CompleteForWriteData(buffer, key, entry_struct, result);
   }
 }
 
-void GeneratedCodeCache::OpenCompleteForWriteData(
+void GeneratedCodeCache::CompleteForWriteData(
     scoped_refptr<net::IOBufferWithSize> buffer,
     const std::string& key,
-    scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
-    int rv) {
-  if (rv != net::OK) {
-    net::CompletionOnceCallback callback =
-        base::BindOnce(&GeneratedCodeCache::CreateCompleteForWriteData,
-                       weak_ptr_factory_.GetWeakPtr(), key, buffer, entry);
-
-    int result =
-        backend_->CreateEntry(key, net::LOW, &entry->data, std::move(callback));
-    if (result != net::ERR_IO_PENDING) {
-      CreateCompleteForWriteData(key, buffer, entry, result);
-    }
-    return;
-  }
-
-  DCHECK(entry->data);
-  int result = net::ERR_FAILED;
-  {
-    disk_cache::ScopedEntryPtr disk_entry(entry->data);
-
-    CollectStatistics(CacheEntryStatus::kUpdate);
-    // This call will truncate the data. This is safe to do since we read the
-    // entire data at the same time currently. If we want to read in parts we
-    // have to doom the entry first.
-    result = disk_entry->WriteData(
-        kDataIndex, 0, buffer.get(), buffer->size(),
-        base::BindOnce(&GeneratedCodeCache::WriteDataCompleted,
-                       weak_ptr_factory_.GetWeakPtr(), key),
-        true);
-  }
-  if (result != net::ERR_IO_PENDING) {
-    WriteDataCompleted(key, result);
-  }
-}
-
-void GeneratedCodeCache::CreateCompleteForWriteData(
-    const std::string& key,
-    scoped_refptr<net::IOBufferWithSize> buffer,
-    scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
+    scoped_refptr<base::RefCountedData<disk_cache::EntryWithOpened>>
+        entry_struct,
     int rv) {
   if (rv != net::OK) {
     CollectStatistics(CacheEntryStatus::kError);
@@ -417,11 +380,19 @@ void GeneratedCodeCache::CreateCompleteForWriteData(
     return;
   }
 
-  DCHECK(entry->data);
+  DCHECK(entry_struct->data.entry);
   int result = net::ERR_FAILED;
   {
-    disk_cache::ScopedEntryPtr disk_entry(entry->data);
-    CollectStatistics(CacheEntryStatus::kCreate);
+    disk_cache::ScopedEntryPtr disk_entry(entry_struct->data.entry);
+
+    if (entry_struct->data.opened) {
+      CollectStatistics(CacheEntryStatus::kUpdate);
+    } else {
+      CollectStatistics(CacheEntryStatus::kCreate);
+    }
+    // This call will truncate the data. This is safe to do since we read the
+    // entire data at the same time currently. If we want to read in parts we
+    // have to doom the entry first.
     result = disk_entry->WriteData(
         kDataIndex, 0, buffer.get(), buffer->size(),
         base::BindOnce(&GeneratedCodeCache::WriteDataCompleted,
