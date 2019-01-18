@@ -86,7 +86,6 @@ class MockAccountReconcilor : public AccountReconcilor {
   MockAccountReconcilor(SigninClient* client)
       : AccountReconcilor(
             nullptr,
-            nullptr,
             client,
             nullptr,
             std::make_unique<signin::AccountReconcilorDelegate>()) {}
