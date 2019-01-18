@@ -306,7 +306,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      * @return The absolute amount in DP that the browser controls have shifted off screen.
      */
     protected float getBrowserControlsOffsetDp() {
-        if (mActivity == null || mActivity.getFullscreenManager() == null) return 0.0f;
+        if (mActivity == null) return 0.0f;
         return -mActivity.getFullscreenManager().getTopControlOffset() * mPxToDp;
     }
 

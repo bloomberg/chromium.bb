@@ -306,7 +306,7 @@ public class WebappActivity extends SingleTabActivity {
         getToolbarManager().setShowTitle(true);
         getToolbarManager().setCloseButtonDrawable(null); // Hides close button.
 
-        if (getFullscreenManager() != null) getFullscreenManager().setTab(getActivityTab());
+        getFullscreenManager().setTab(getActivityTab());
         mSplashController.onFinishedNativeInit(getActivityTab(), getCompositorViewHolder());
         super.finishNativeInitialization();
         mIsInitialized = true;
@@ -328,9 +328,7 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     public void onStopWithNative() {
         super.onStopWithNative();
-        if (getFullscreenManager() != null) {
-            getFullscreenManager().exitPersistentFullscreenMode();
-        }
+        getFullscreenManager().exitPersistentFullscreenMode();
     }
 
     /**

@@ -88,6 +88,7 @@ public class DocumentActivity extends ChromeActivity {
 
     @Override
     protected ChromeFullscreenManager createFullscreenManager() {
-        return null;
+        throw new IllegalStateException("Shouldn't reach. Document Activity must shut down as soon "
+                + "as it's created.");
     }
 }

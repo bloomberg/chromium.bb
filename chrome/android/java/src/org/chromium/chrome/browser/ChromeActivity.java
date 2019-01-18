@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.CallSuper;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.Pair;
@@ -257,8 +258,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     // Observes when sync becomes ready to create the mContextReporter.
     private ProfileSyncService.SyncStateChangedListener mSyncStateChangedListener;
 
+    @Nullable
     private ChromeFullscreenManager mFullscreenManager;
-    private boolean mCreatedFullscreenManager;
 
     // The PictureInPictureController is initialized lazily https://crbug.com/729738.
     private PictureInPictureController mPictureInPictureController;
@@ -362,9 +363,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         getWindow().setBackgroundDrawable(getBackgroundDrawable());
-
-        mFullscreenManager = createFullscreenManager();
-        mCreatedFullscreenManager = true;
     }
 
     private C createComponent() {
@@ -1775,13 +1773,16 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * Gets the full screen manager.
-     * @return The fullscreen manager, possibly null
+     * Gets the full screen manager, creates it unless already created.
      */
+    @NonNull
     public ChromeFullscreenManager getFullscreenManager() {
-        if (!mCreatedFullscreenManager) {
-            throw new IllegalStateException(
-                    "Attempting to access FullscreenManager before it has been created.");
+        if (isActivityDestroyed()) {
+            throw new IllegalStateException("Accessing FullscreenManager in destroyed activity");
+        }
+        if (mFullscreenManager == null) {
+            mFullscreenManager = createFullscreenManager();
+            assert mFullscreenManager != null;
         }
         return mFullscreenManager;
     }
@@ -1827,10 +1828,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     /**
      * Create a full-screen manager to be used by this activity.
-     * Note: This is called during {@link #postInflationStartup}, so native code may not have been
-     * initialized, but Android Views will have been.
+     * Note: This may be called before native code is initialized.
      * @return A {@link ChromeFullscreenManager} instance that's been created.
      */
+    @NonNull
     protected ChromeFullscreenManager createFullscreenManager() {
         return new ChromeFullscreenManager(this, ChromeFullscreenManager.ControlsPosition.TOP);
     }
@@ -1841,7 +1842,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     protected boolean exitFullscreenIfShowing() {
         ChromeFullscreenManager fullscreenManager = getFullscreenManager();
-        if (fullscreenManager != null && fullscreenManager.getPersistentFullscreenMode()) {
+        if (fullscreenManager.getPersistentFullscreenMode()) {
             fullscreenManager.exitPersistentFullscreenMode();
             return true;
         }

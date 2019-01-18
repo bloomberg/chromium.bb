@@ -32,7 +32,6 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
@@ -837,16 +836,8 @@ public class ChromeTabbedActivity
 
             mUndoBarPopupController.initialize();
 
-            // Adjust the content container if we're not entering fullscreen mode.
-            if (getFullscreenManager() == null) {
-                float controlHeight = getResources().getDimension(R.dimen.control_container_height);
-                ((FrameLayout.LayoutParams) mContentContainer.getLayoutParams()).topMargin =
-                        (int) controlHeight;
-            }
-
             OnClickListener tabSwitcherClickHandler = v -> {
-                if (getFullscreenManager() != null
-                        && getFullscreenManager().getPersistentFullscreenMode()) {
+                if (getFullscreenManager().getPersistentFullscreenMode()) {
                     return;
                 }
 

@@ -103,7 +103,7 @@ public class CompositorViewHolder extends FrameLayout
     private Runnable mPostHideKeyboardTask;
 
     private TabModelSelector mTabModelSelector;
-    private ChromeFullscreenManager mFullscreenManager;
+    private @Nullable ChromeFullscreenManager mFullscreenManager;
     private View mAccessibilityView;
     private CompositorAccessibilityProvider mNodeProvider;
 
@@ -876,9 +876,7 @@ public class CompositorViewHolder extends FrameLayout
      */
     public void setFullscreenHandler(ChromeFullscreenManager fullscreen) {
         mFullscreenManager = fullscreen;
-        if (mFullscreenManager != null) {
-            mFullscreenManager.addListener(this);
-        }
+        mFullscreenManager.addListener(this);
         onViewportChanged();
     }
 
