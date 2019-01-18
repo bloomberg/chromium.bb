@@ -79,6 +79,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER, "payment-handler"},
     {CONTENT_SETTINGS_TYPE_USB_GUARD, "usb-devices"},
     {CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, kUsbChooserDataGroupType},
+    {CONTENT_SETTINGS_TYPE_IDLE_DETECTION, "idle-detection"},
 
     // Add new content settings here if a corresponding Javascript string
     // representation for it is not required. Note some exceptions do have UI in

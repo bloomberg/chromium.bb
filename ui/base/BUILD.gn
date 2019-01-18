@@ -342,6 +342,7 @@ jumbo_component("base") {
       "emoji/emoji_panel_helper.h",
       "idle/idle.cc",
       "idle/idle.h",
+      "idle/idle_android.cc",
       "idle/idle_chromeos.cc",
       "idle/idle_linux.cc",
       "idle/idle_mac.mm",

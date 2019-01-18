@@ -594,6 +594,8 @@ jumbo_split_static_library("browser") {
     "icon_loader_win.cc",
     "icon_manager.cc",
     "icon_manager.h",
+    "idle/idle_detection_permission_context.cc",
+    "idle/idle_detection_permission_context.h",
     "image_decoder.cc",
     "image_decoder.h",
     "infobars/infobar_responder.cc",

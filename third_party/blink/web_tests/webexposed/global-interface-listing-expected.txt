@@ -4117,6 +4117,16 @@ interface IdleDeadline
     getter didTimeout
     method constructor
     method timeRemaining
+interface IdleManager
+    attribute @@toStringTag
+    method constructor
+    method query
+interface IdleStatus : EventTarget
+    attribute @@toStringTag
+    getter onchange
+    getter state
+    method constructor
+    setter onchange
 interface Image
     attribute @@toStringTag
     getter align
@@ -4790,6 +4800,7 @@ interface Navigator
     getter doNotTrack
     getter geolocation
     getter hardwareConcurrency
+    getter idle
     getter keyboard
     getter language
     getter languages

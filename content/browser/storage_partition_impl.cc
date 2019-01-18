@@ -654,6 +654,7 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
       in_memory ? base::FilePath() : context->GetPath(),
       relative_partition_path, context->GetSpecialStoragePolicy());
 
+  partition->idle_manager_ = std::make_unique<IdleManager>();
   partition->lock_manager_ = new LockManager();
 
   base::FilePath path = in_memory ? base::FilePath() : partition_path;
@@ -830,6 +831,10 @@ storage::DatabaseTracker* StoragePartitionImpl::GetDatabaseTracker() {
 
 DOMStorageContextWrapper* StoragePartitionImpl::GetDOMStorageContext() {
   return dom_storage_context_.get();
+}
+
+IdleManager* StoragePartitionImpl::GetIdleManager() {
+  return idle_manager_.get();
 }
 
 LockManager* StoragePartitionImpl::GetLockManager() {

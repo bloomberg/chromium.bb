@@ -27,6 +27,7 @@ enum PermissionName {
     "clipboard-read",
     "clipboard-write",
     "payment-handler",
+    "idle-detection",
 };
 
 // The PermissionDescriptor dictionary is a base to describe permissions. Some
