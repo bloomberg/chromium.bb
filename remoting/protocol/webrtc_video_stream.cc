@@ -100,11 +100,8 @@ WebrtcVideoStream::WebrtcVideoStream(const SessionOptions& session_options)
 
 WebrtcVideoStream::~WebrtcVideoStream() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (stream_) {
-    for (const auto& track : stream_->GetVideoTracks()) {
-      stream_->RemoveTrack(track.get());
-    }
-    peer_connection_->RemoveStream(stream_.get());
+  if (video_sender_) {
+    peer_connection_->RemoveTrack(video_sender_.get());
   }
 }
 
@@ -138,17 +135,10 @@ void WebrtcVideoStream::Start(
   rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track =
       peer_connection_factory->CreateVideoTrack(kVideoLabel, src);
 
-  stream_ = peer_connection_factory->CreateLocalMediaStream(kStreamLabel);
-
-  // AddTrack() may fail only if there is another track with the same name,
-  // which is impossible because it's a brand new stream.
-  bool result = stream_->AddTrack(video_track.get());
-  DCHECK(result);
-
-  // AddStream() may fail if there is another stream with the same name or when
-  // the PeerConnection is closed, neither is expected.
-  result = peer_connection_->AddStream(stream_.get());
-  DCHECK(result);
+  // value() DCHECKs if AddTrack() fails, which only happens if a track was
+  // already added with the stream label.
+  video_sender_ =
+      peer_connection_->AddTrack(video_track.get(), {kStreamLabel}).value();
 
   scheduler_.reset(new WebrtcFrameSchedulerSimple(session_options_));
   scheduler_->Start(

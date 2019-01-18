@@ -24,11 +24,8 @@ const char kAudioTrackLabel[] = "system_audio";
 WebrtcAudioStream::WebrtcAudioStream() = default;
 
 WebrtcAudioStream::~WebrtcAudioStream() {
-  if (stream_) {
-    for (const auto& track : stream_->GetAudioTracks()) {
-      stream_->RemoveTrack(track.get());
-    }
-    peer_connection_->RemoveStream(stream_.get());
+  if (audio_sender_) {
+    peer_connection_->RemoveTrack(audio_sender_.get());
   }
 }
 
@@ -50,17 +47,11 @@ void WebrtcAudioStream::Start(
       peer_connection_factory->CreateAudioTrack(kAudioTrackLabel,
                                                 source_adapter_.get());
 
-  stream_ = peer_connection_factory->CreateLocalMediaStream(kAudioStreamLabel);
-
-  // AddTrack() may fail only if there is another track with the same name,
-  // which is impossible because it's a brand new stream.
-  bool result = stream_->AddTrack(audio_track.get());
-  DCHECK(result);
-
-  // AddStream() may fail if there is another stream with the same name or when
-  // the PeerConnection is closed, neither is expected.
-  result = peer_connection_->AddStream(stream_.get());
-  DCHECK(result);
+  // value() DCHECKs if AddTrack() fails, which only happens if a track was
+  // already added with the stream label.
+  audio_sender_ =
+      peer_connection_->AddTrack(audio_track.get(), {kAudioStreamLabel})
+          .value();
 }
 
 void WebrtcAudioStream::Pause(bool pause) {
