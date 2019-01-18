@@ -22,6 +22,7 @@
 #include "chrome/browser/android/explore_sites/get_version_task.h"
 #include "chrome/browser/android/explore_sites/image_helper.h"
 #include "chrome/browser/android/explore_sites/import_catalog_task.h"
+#include "chrome/browser/android/explore_sites/record_site_click_task.h"
 #include "chrome/browser/browser_process.h"
 #include "components/offline_pages/task/task.h"
 #include "components/variations/service/variations_service.h"
@@ -124,6 +125,13 @@ void ExploreSitesServiceImpl::UpdateCatalogFromNetwork(
       base::BindOnce(&ExploreSitesServiceImpl::GotVersionToStartFetch,
                      weak_ptr_factory_.GetWeakPtr(), is_immediate_fetch,
                      accept_languages)));
+}
+
+void ExploreSitesServiceImpl::RecordClick(const std::string& url,
+                                          int category_type) {
+  // Record the activity in the activity table.
+  task_queue_.AddTask(std::make_unique<RecordSiteClickTask>(
+      explore_sites_store_.get(), url, category_type));
 }
 
 void ExploreSitesServiceImpl::BlacklistSite(const std::string& url) {

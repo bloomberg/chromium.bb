@@ -2220,6 +2220,8 @@ jumbo_split_static_library("browser") {
       "android/explore_sites/import_catalog_task.h",
       "android/explore_sites/ntp_json_fetcher.cc",
       "android/explore_sites/ntp_json_fetcher.h",
+      "android/explore_sites/record_site_click_task.cc",
+      "android/explore_sites/record_site_click_task.h",
       "android/explore_sites/url_util.cc",
       "android/explore_sites/url_util.h",
       "android/explore_sites/url_util_experimental.cc",

@@ -68,11 +68,20 @@ public class ExploreSitesBridge {
             Profile profile, boolean isImmediateFetch, Callback<Boolean> finishedCallback) {
         nativeUpdateCatalogFromNetwork(profile, isImmediateFetch, finishedCallback);
     }
+
     /**
      * Adds a site to the blacklist when the user chooses "remove" from the long press menu.
      */
     public static void blacklistSite(Profile profile, String url) {
         nativeBlacklistSite(profile, url);
+    }
+
+    /**
+     * Records that a site has been clicked.
+     */
+    public static void recordClick(
+            Profile profile, String url, @ExploreSitesCategory.CategoryType int type) {
+        nativeRecordClick(profile, url, type);
     }
 
     /**
@@ -126,4 +135,6 @@ public class ExploreSitesBridge {
             Profile profile, int categoryID, int pixelSize, Callback<Bitmap> callback);
 
     private static native void nativeBlacklistSite(Profile profile, String url);
+
+    private static native void nativeRecordClick(Profile profile, String url, int type);
 }
