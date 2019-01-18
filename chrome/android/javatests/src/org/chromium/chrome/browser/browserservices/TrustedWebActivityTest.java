@@ -77,7 +77,7 @@ public class TrustedWebActivityTest {
     /** Caches a successful verification for the given |packageName| and |url|. */
     private static void spoofVerification(String packageName, String url) {
         ThreadUtils.runOnUiThreadBlocking(
-                () -> OriginVerifier.addVerifiedOriginForPackage(packageName, new Origin(url),
+                () -> OriginVerifier.addVerificationOverride(packageName, new Origin(url),
                         CustomTabsService.RELATION_HANDLE_ALL_URLS));
     }
 
