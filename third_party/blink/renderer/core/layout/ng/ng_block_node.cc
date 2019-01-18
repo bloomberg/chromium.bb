@@ -901,11 +901,13 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
     }
     box_->ComputeAndSetBlockDirectionMargins(box_->ContainingBlock());
 
-    if (box_->NeedsLayout() && box_->IsLayoutNGMixin()) {
-      ToLayoutBlockFlow(box_)->LayoutBlockFlow::UpdateBlockLayout(true);
-    } else {
-      box_->ForceLayout();
-    }
+    // Using |LayoutObject::LayoutIfNeeded| save us a little bit of overhead,
+    // compared to |LayoutObject::ForceChildLayout|.
+    DCHECK(!box_->IsLayoutNGMixin());
+    if (box_->NeedsLayout())
+      box_->LayoutIfNeeded();
+    else
+      box_->ForceChildLayout();
 
     // Reset the containing block size override size, now that we're done with
     // subtree layout. Min/max calculation that depends on the block size of the
