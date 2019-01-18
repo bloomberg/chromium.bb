@@ -264,3 +264,12 @@ message PremountOptionsProto {
   // Mount options set by the client.
   optional MountConfigProto mount_config = 2;
 }
+
+// Used for passing inputs into Smbprovider.UpdateSharePath().
+message UpdateSharePathOptionsProto {
+  // Mount ID of the mount to be updated.
+  optional int32 mount_id = 1;
+
+  // Share path of the mount to be updated.
+  optional string path = 2;
+}

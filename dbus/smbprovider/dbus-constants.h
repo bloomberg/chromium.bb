@@ -38,6 +38,7 @@ const char kStartReadDirectoryMethod[] = "StartReadDirectory";
 const char kContinueReadDirectoryMethod[] = "ContinueReadDirectory";
 const char kUpdateMountCredentialsMethod[] = "UpdateMountCredentials";
 const char kPremountMethod[] = "Premount";
+const char kUpdateSharePathMethod[] = "UpdateSharePath";
 
 }  // namespace smbprovider
 
