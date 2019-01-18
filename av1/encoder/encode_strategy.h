@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AOM_AV1_ENCODE_STRATEGY_H_
-#define AOM_AV1_ENCODE_STRATEGY_H_
+#ifndef AOM_AV1_ENCODER_ENCODE_STRATEGY_H_
+#define AOM_AV1_ENCODER_ENCODE_STRATEGY_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,4 +26,4 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 }  // extern "C"
 #endif
 
-#endif  // AOM_AV1_ENCODE_STRATEGY_H_
+#endif  // AOM_AV1_ENCODER_ENCODE_STRATEGY_H_
