@@ -361,7 +361,8 @@ class CORE_EXPORT EventHandler final
       const String& canvas_region_id,
       const WebMouseEvent&,
       const Vector<WebMouseEvent>& coalesced_events,
-      const Vector<WebMouseEvent>& predicted_events);
+      const Vector<WebMouseEvent>& predicted_events,
+      bool skip_click_dispatch = false);
 
   WebInputEventResult PassMousePressEventToSubframe(
       MouseEventWithHitTestResults&,

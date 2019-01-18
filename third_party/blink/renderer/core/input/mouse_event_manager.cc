@@ -297,8 +297,9 @@ WebInputEventResult MouseEventManager::SetMousePositionAndDispatchMouseEvent(
 }
 
 WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
-    const MouseEventWithHitTestResults& mev,
-    Element& mouse_release_target) {
+    Element* mouse_release_target,
+    const WebMouseEvent& mouse_event,
+    const String& canvas_region_id) {
   // We only prevent click event when the click may cause contextmenu to popup.
   // However, we always send auxclick.
   bool context_menu_event = false;
@@ -306,20 +307,17 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
   // FIXME: The Mac port achieves the same behavior by checking whether the
   // context menu is currently open in WebPage::mouseEvent(). Consider merging
   // the implementations.
-  if (mev.Event().button == WebPointerProperties::Button::kLeft &&
-      mev.Event().GetModifiers() & WebInputEvent::Modifiers::kControlKey)
+  if (mouse_event.button == WebPointerProperties::Button::kLeft &&
+      mouse_event.GetModifiers() & WebInputEvent::Modifiers::kControlKey)
     context_menu_event = true;
 #endif
 
   const bool should_dispatch_click_event =
       click_count_ > 0 && !context_menu_event && mouse_down_element_ &&
-      mouse_release_target.CanParticipateInFlatTree() &&
+      mouse_release_target &&
+      mouse_release_target->CanParticipateInFlatTree() &&
       mouse_down_element_->CanParticipateInFlatTree() &&
-      mouse_down_element_->isConnected() &&
-      !(frame_->GetEventHandler()
-            .GetSelectionController()
-            .HasExtendedSelection() &&
-        IsSelectionOverLink(mev));
+      mouse_down_element_->isConnected();
   if (!should_dispatch_click_event)
     return WebInputEventResult::kNotHandled;
 
@@ -327,13 +325,13 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
   if (mouse_down_element_ == mouse_release_target) {
     click_target_node = mouse_down_element_;
   } else if (mouse_down_element_->GetDocument() ==
-             mouse_release_target.GetDocument()) {
+             mouse_release_target->GetDocument()) {
     // Updates distribution because a 'mouseup' event listener can make the
     // tree dirty at dispatchMouseEvent() invocation above.
     // Unless distribution is updated, commonAncestor would hit ASSERT.
     mouse_down_element_->UpdateDistributionForFlatTreeTraversal();
-    mouse_release_target.UpdateDistributionForFlatTreeTraversal();
-    click_target_node = mouse_release_target.CommonAncestor(
+    mouse_release_target->UpdateDistributionForFlatTreeTraversal();
+    click_target_node = mouse_release_target->CommonAncestor(
         *mouse_down_element_, event_handling_util::ParentForClickEvent);
   }
   if (!click_target_node)
@@ -355,10 +353,10 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
       RuntimeEnabledFeatures::ClickRetargettingEnabled()) {
     return DispatchMouseEvent(
         click_target_node,
-        (mev.Event().button == WebPointerProperties::Button::kLeft)
+        (mouse_event.button == WebPointerProperties::Button::kLeft)
             ? event_type_names::kClick
             : event_type_names::kAuxclick,
-        mev.Event(), mev.CanvasRegionId(), nullptr, nullptr);
+        mouse_event, canvas_region_id, nullptr, nullptr);
   }
 
   return WebInputEventResult::kNotHandled;

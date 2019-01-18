@@ -60,8 +60,9 @@ class CORE_EXPORT MouseEventManager final
       const WebMouseEvent&);
 
   WebInputEventResult DispatchMouseClickIfNeeded(
-      const MouseEventWithHitTestResults&,
-      Element& mouse_release_target);
+      Element* mouse_release_target,
+      const WebMouseEvent& mouse_event,
+      const String& canvas_region_id);
 
   WebInputEventResult DispatchDragSrcEvent(const AtomicString& event_type,
                                            const WebMouseEvent&);

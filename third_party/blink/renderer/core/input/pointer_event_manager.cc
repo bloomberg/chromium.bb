@@ -625,7 +625,8 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
     const WebInputEvent::Type event_type,
     const WebMouseEvent& mouse_event,
     const Vector<WebMouseEvent>& coalesced_events,
-    const Vector<WebMouseEvent>& predicted_events) {
+    const Vector<WebMouseEvent>& predicted_events,
+    bool skip_click_dispatch) {
   DCHECK(event_type == WebInputEvent::kPointerDown ||
          event_type == WebInputEvent::kPointerMove ||
          event_type == WebInputEvent::kPointerUp);
@@ -720,6 +721,11 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
         mouse_event_manager_->DispatchMouseEvent(
             mouse_target, MouseEventNameForPointerEventInputType(event_type),
             mouse_event, canvas_region_id, &last_mouse_position, nullptr));
+    if (!skip_click_dispatch && mouse_target &&
+        event_type == WebInputEvent::kPointerUp) {
+      mouse_event_manager_->DispatchMouseClickIfNeeded(
+          mouse_target, mouse_event, canvas_region_id);
+    }
   }
 
   if (pointer_event->type() == event_type_names::kPointerup ||
