@@ -61,6 +61,9 @@
 }
 .caselog {
   margin-left: 2pt;
+  border-width: 0 0 1px 0;
+  border-style: solid;
+  border-color: #eee;
 }
 
 .fail {
@@ -162,6 +165,7 @@ function mkCase(testcases, {name, params, run}) {
           .text(l);
       }
     }
+    console.log(res);
   };
   caserun[0].runCase = runCase;
   caserun.click(runCase);
@@ -224,8 +228,8 @@ async function loadListing(base, listing) {
     if (!mod) {
       continue;
     }
-    const [tres, trec] = log.record(path);
-    for (const t of mod.group.iterate(trec)) {
+    const [tResult, tRec] = log.record(path);
+    for (const t of mod.group.iterate(tRec)) {
       const runCase = mkCase(testcasesVis, t);
       if (runnow) {
         await runCase();

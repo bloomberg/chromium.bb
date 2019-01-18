@@ -4,10 +4,10 @@ Unit tests for parameterization system.
 `;
 
 import {
-  Fixture,
-  TestGroup,
   CaseRecorder,
+  Fixture,
   IParamsAny,
+  TestGroup,
 } from "../framework/index.js";
 
 export const group = new TestGroup();

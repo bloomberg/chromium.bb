@@ -3,7 +3,9 @@ Unit tests for parameterization system.
 `;
 
 import {
+  CaseRecorder,
   DefaultFixture,
+  IParamsAny,
   IParamsSpec,
   objectEquals,
   ParamSpecIterable,
@@ -12,8 +14,6 @@ import {
   pfilter,
   poptions,
   TestGroup,
-  CaseRecorder,
-  IParamsAny,
 } from "../framework/index.js";
 
 export const group = new TestGroup();

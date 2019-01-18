@@ -5,7 +5,7 @@ type TestFn<F extends Fixture> = (t: F) => (Promise<void> | void);
 interface ICase {
   name: string;
   params?: object;
-  run: (log: CaseRecorder) => (Promise<void> | void);
+  run: (log: CaseRecorder) => Promise<void>;
 }
 interface IRunCase {
   name: string;
@@ -15,7 +15,7 @@ interface IRunCase {
 
 interface IFixtureClass<F extends Fixture> {
   create(log: CaseRecorder, params: IParamsAny): F | Promise<F>;
-};
+}
 
 export abstract class Fixture {
   public params: IParamsAny;
@@ -110,7 +110,7 @@ export class TestGroup {
     const p = params ? params : {};
     this.tests.push({ name: n, run: async (log) => {
       const inst = await fixture.create(log, p);
-      return await fn(inst);
+      return fn(inst);
     }});
   }
 }

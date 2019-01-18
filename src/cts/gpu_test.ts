@@ -1,9 +1,9 @@
 import { getGPU } from "../framework/gpu/implementation.js";
 import {
   GPU,
+  WebGPUBuffer,
   WebGPUDevice,
   WebGPUQueue,
-  WebGPUBuffer,
 } from "../framework/gpu/interface.js";
 import { CaseRecorder, Fixture, IParamsAny } from "../framework/index.js";
 
@@ -12,13 +12,13 @@ function wait() {
 }
 
 export class GPUTest extends Fixture {
-  device: WebGPUDevice;
-  queue: WebGPUQueue;
 
   public static async create(log: CaseRecorder, params: IParamsAny) {
     const gpu = await getGPU();
     return new GPUTest(log, params, gpu);
   }
+  public device: WebGPUDevice;
+  public queue: WebGPUQueue;
 
   protected constructor(log: CaseRecorder, params: IParamsAny, gpu: GPU) {
     super(log, params);
@@ -43,9 +43,11 @@ export class GPUTest extends Fixture {
       const actual = new Uint8Array(ab);
       for (let i = 0; i < size; ++i) {
         if (actual[i] !== expected[i]) {
-          this.rec.fail(`at ${i}: expected ${expected[i]}, got ${actual[i]}`);
+          this.rec.fail(`at [${i}], expected ${expected[i]}, got ${actual[i]}`);
+          // TODO: limit number of fail logs for one expectContents?
         }
       }
+      // TODO: log the actual and expected data
       done = true;
     });
 
