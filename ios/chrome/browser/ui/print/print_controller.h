@@ -22,10 +22,8 @@ class URLRequestContextGetter;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Shows print UI for |view| with |title| on |viewController|.
-- (void)printView:(UIView*)view
-         withTitle:(NSString*)title
-    viewController:(UIViewController*)viewController;
+// Shows print UI for |view| with |title|.
+- (void)printView:(UIView*)view withTitle:(NSString*)title;
 
 // Dismisses the print dialog with animation if |animated|.
 - (void)dismissAnimated:(BOOL)animated;

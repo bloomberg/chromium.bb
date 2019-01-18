@@ -344,8 +344,7 @@
   }
   Tab* currentTab = self.tabModel.currentTab;
   [self.printController printView:[currentTab viewForPrinting]
-                        withTitle:tab_util::GetTabTitle(currentTab.webState)
-                   viewController:self.viewController];
+                        withTitle:tab_util::GetTabTitle(currentTab.webState)];
 }
 
 - (void)showReadingList {
