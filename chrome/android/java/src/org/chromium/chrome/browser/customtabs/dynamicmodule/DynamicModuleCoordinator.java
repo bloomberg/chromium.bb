@@ -371,9 +371,6 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     }
 
     private boolean isModuleManagedUrl(String url) {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE)) {
-            return false;
-        }
         if (TextUtils.isEmpty(url)) {
             return false;
         }
@@ -414,13 +411,24 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
         return mDefaultTopControlContainerHeight;
     }
 
+    private boolean shouldHideCctHeaderOnModuleManagedUrls() {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER)) return false;
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE_USE_INTENT_EXTRAS)
+                && mIntentDataProvider.shouldHideCctHeaderOnModuleManagedUrls()) {
+            return true;
+        }
+
+        return mConnection.shouldHideTopBarOnModuleManagedUrlsForSession(
+                mIntentDataProvider.getSession());
+    }
+
     private void maybeCustomizeCctHeader(String url) {
         if (!isModuleLoaded() && !isModuleLoading()) return;
 
         boolean isModuleManagedUrl = isModuleManagedUrl(url);
         mTopBarDelegate.get().showTopBarIfNecessary(isModuleManagedUrl);
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER)
-                && mIntentDataProvider.shouldHideCctHeaderOnModuleManagedUrls()) {
+        if (shouldHideCctHeaderOnModuleManagedUrls()) {
             mActivity.getToolbarManager().setToolbarVisibility(
                     isModuleManagedUrl ? View.GONE : mDefaultToolbarVisibility);
             mActivity.getToolbarManager().setToolbarShadowVisibility(

@@ -30,6 +30,7 @@ extern const base::Feature kCCTModuleCustomHeader;
 extern const base::Feature kCCTModuleCustomRequestHeader;
 extern const base::Feature kCCTModuleDexLoading;
 extern const base::Feature kCCTModulePostMessage;
+extern const base::Feature kCCTModuleUseIntentExtras;
 extern const base::Feature kCCTPostMessageAPI;
 extern const base::Feature kCCTRedirectPreconnect;
 extern const base::Feature kCCTReportParallelRequestStatus;

@@ -184,6 +184,7 @@ class ClientManager {
         private boolean mAllowParallelRequest;
         private boolean mAllowResourcePrefetch;
         private boolean mShouldGetPageLoadMetrics;
+        private boolean mShouldHideTopBar;
 
         public SessionParams(Context context, int uid, CustomTabsCallback customTabsCallback,
                 DisconnectCallback callback, PostMessageHandler postMessageHandler,
@@ -618,6 +619,26 @@ class ClientManager {
             CustomTabsSessionToken session) {
         SessionParams params = mSessionParams.get(session);
         return params != null ? params.mShouldSpeculateLoadOnCellular : false;
+    }
+
+    /**
+     * @return Whether the CCT TopBar should be hidden on dynamic module managed URLs
+     * for a given session.
+     */
+    public synchronized boolean shouldHideTopBarOnModuleManagedUrlsForSession(
+            CustomTabsSessionToken session) {
+        SessionParams params = mSessionParams.get(session);
+        return params != null && params.mShouldHideTopBar;
+    }
+
+    /**
+     * Sets whether the CCT TopBar should be hidden on dynamic module managed URLs
+     * for a given session.
+     */
+    public synchronized void setHideCCTTopBarOnModuleManagedUrls(
+            CustomTabsSessionToken session, boolean hide) {
+        SessionParams params = mSessionParams.get(session);
+        if (params != null) params.mShouldHideTopBar = hide;
     }
 
     /**

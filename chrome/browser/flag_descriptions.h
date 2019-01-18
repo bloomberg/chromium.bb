@@ -1345,6 +1345,9 @@ extern const char kCCTModuleDexLoadingDescription[];
 extern const char kCCTModulePostMessageName[];
 extern const char kCCTModulePostMessageDescription[];
 
+extern const char kCCTModuleUseIntentExtrasName[];
+extern const char kCCTModuleUseIntentExtrasDescription[];
+
 extern const char kChromeDuetName[];
 extern const char kChromeDuetDescription[];
 

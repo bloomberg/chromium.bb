@@ -377,6 +377,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "cct-module-use-intent-extras",
+    "owners": [ "mvanouwerkerk" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "clear-old-browsing-data",
     "owners": [ "dullweber" ],
     "expiry_milestone": 78

@@ -99,6 +99,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTModuleCustomRequestHeader,
     &kCCTModuleDexLoading,
     &kCCTModulePostMessage,
+    &kCCTModuleUseIntentExtras,
     &kCCTPostMessageAPI,
     &kCCTRedirectPreconnect,
     &kCCTReportParallelRequestStatus,
@@ -253,6 +254,9 @@ const base::Feature kCCTModuleDexLoading{"CCTModuleDexLoading",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCCTModulePostMessage{"CCTModulePostMessage",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCCTModuleUseIntentExtras{"CCTModuleUseIntentExtras",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCCTPostMessageAPI{"CCTPostMessageAPI",

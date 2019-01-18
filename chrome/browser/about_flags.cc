@@ -3901,6 +3901,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"cct-module-post-message", flag_descriptions::kCCTModulePostMessageName,
      flag_descriptions::kCCTModulePostMessageDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kCCTModulePostMessage)},
+     {"cct-module-use-intent-extras",
+     flag_descriptions::kCCTModuleUseIntentExtrasName,
+     flag_descriptions::kCCTModuleUseIntentExtrasDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCCTModuleUseIntentExtras)},
 #endif
 
     {"enable-css-fragment-identifiers",
