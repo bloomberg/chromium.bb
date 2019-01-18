@@ -71,7 +71,9 @@ class WorkerFetchContext final : public BaseFetchContext {
       const ResourceRequest&,
       const ResourceLoaderOptions&) override;
   std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() override;
-  void PrepareRequest(ResourceRequest&, RedirectType) override;
+  void PrepareRequest(ResourceRequest&,
+                      WebScopedVirtualTimePauser&,
+                      RedirectType) override;
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
   void DispatchWillSendRequest(unsigned long,

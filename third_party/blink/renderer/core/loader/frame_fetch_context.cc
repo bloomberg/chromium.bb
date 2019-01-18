@@ -47,6 +47,7 @@
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -479,8 +480,13 @@ void FrameFetchContext::DispatchDidChangeResourcePriority(
                                    identifier, load_priority);
 }
 
-void FrameFetchContext::PrepareRequest(ResourceRequest& request,
-                                       RedirectType redirect_type) {
+void FrameFetchContext::PrepareRequest(
+    ResourceRequest& request,
+    WebScopedVirtualTimePauser& virtual_time_pauser,
+    RedirectType redirect_type) {
+  // TODO(yhirano): Clarify which statements are actually needed when
+  // |redirect_type| is |kForRedirect|.
+
   SetFirstPartyCookie(request);
   request.SetTopFrameOrigin(GetTopFrameOrigin());
 
@@ -490,6 +496,12 @@ void FrameFetchContext::PrepareRequest(ResourceRequest& request,
   if (IsDetached())
     return;
   GetLocalFrameClient()->DispatchWillSendRequest(request);
+  if (redirect_type == FetchContext::RedirectType::kNotForRedirect &&
+      GetFrameScheduler()) {
+    virtual_time_pauser = GetFrameScheduler()->CreateWebScopedVirtualTimePauser(
+        request.Url().GetString(),
+        WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
+  }
 
   // ServiceWorker hook ups.
   if (MasterDocumentLoader()->GetServiceWorkerNetworkProvider()) {

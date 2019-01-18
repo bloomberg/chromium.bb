@@ -36,6 +36,7 @@
 #include "base/time/time.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
@@ -741,7 +742,8 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
     FetchParameters& params,
     const ResourceFactory& factory,
     const SubstituteData& substitute_data,
-    unsigned long identifier) {
+    unsigned long identifier,
+    WebScopedVirtualTimePauser& virtual_time_pauser) {
   ResourceRequest& resource_request = params.MutableResourceRequest();
   ResourceType resource_type = factory.GetType();
   const ResourceLoaderOptions& options = params.Options();
@@ -848,9 +850,9 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   if (blocked_reason)
     return blocked_reason;
 
-  // For initial requests, call prepareRequest() here before revalidation
+  // For initial requests, call PrepareRequest() here before revalidation
   // policy is determined.
-  Context().PrepareRequest(resource_request,
+  Context().PrepareRequest(resource_request, virtual_time_pauser,
                            FetchContext::RedirectType::kNotForRedirect);
 
   if (!params.Url().IsValid())
@@ -918,8 +920,9 @@ Resource* ResourceFetcher::RequestResource(
         properties_->GetFetchClientSettingsObject().GetSecurityOrigin());
   }
 
+  WebScopedVirtualTimePauser pauser;
   base::Optional<ResourceRequestBlockedReason> blocked_reason =
-      PrepareRequest(params, factory, substitute_data, identifier);
+      PrepareRequest(params, factory, substitute_data, identifier, pauser);
   if (blocked_reason) {
     return ResourceForBlockedRequest(params, factory, blocked_reason.value(),
                                      client);
@@ -1007,8 +1010,10 @@ Resource* ResourceFetcher::RequestResource(
   // TODO(yoav): turn to a DCHECK. See https://crbug.com/690632
   CHECK_EQ(resource->GetType(), resource_type);
 
-  if (policy != kUse)
+  if (policy != kUse) {
     resource->SetIdentifier(identifier);
+    resource->VirtualTimePauser() = std::move(pauser);
+  }
 
   if (client)
     client->SetResource(resource, task_runner_.get());
@@ -1846,14 +1851,7 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
                                             request, response,
                                             resource->Options().initiator_info);
 
-    if (Context().GetFrameScheduler()) {
-      WebScopedVirtualTimePauser virtual_time_pauser =
-          Context().GetFrameScheduler()->CreateWebScopedVirtualTimePauser(
-              resource->Url().GetString(),
-              WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
-      virtual_time_pauser.PauseVirtualTime();
-      resource->VirtualTimePauser() = std::move(virtual_time_pauser);
-    }
+    resource->VirtualTimePauser().PauseVirtualTime();
     Context().DispatchWillSendRequest(resource->Identifier(), request, response,
                                       resource->GetType(),
                                       resource->Options().initiator_info);

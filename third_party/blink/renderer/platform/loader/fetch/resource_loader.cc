@@ -690,7 +690,8 @@ bool ResourceLoader::WillFollowRedirect(
   // new_url after calling them, and return false to make the redirect fail on
   // mismatch.
 
-  Context().PrepareRequest(*new_request,
+  WebScopedVirtualTimePauser unused_virtual_time_pauser;
+  Context().PrepareRequest(*new_request, unused_virtual_time_pauser,
                            FetchContext::RedirectType::kForRedirect);
   Context().DispatchWillSendRequest(
       resource_->Identifier(), *new_request, redirect_response_to_pass,

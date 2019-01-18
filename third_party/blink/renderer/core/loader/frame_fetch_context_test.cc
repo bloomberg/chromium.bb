@@ -45,6 +45,7 @@
 #include "third_party/blink/public/platform/web_document_subresource_filter.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
+#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
@@ -1240,8 +1241,10 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   checkpoint.Call(2);
 
   ResourceRequest request(KURL("https://localhost/"));
+  WebScopedVirtualTimePauser virtual_time_pauser;
   GetFetchContext()->PrepareRequest(
-      request, FetchContext::RedirectType::kNotForRedirect);
+      request, virtual_time_pauser,
+      FetchContext::RedirectType::kNotForRedirect);
 
   EXPECT_EQ("hi", request.HttpHeaderField(http_names::kUserAgent));
 }
