@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "services/network/test/test_url_loader_factory.h"
 
 class BrowserView;
 

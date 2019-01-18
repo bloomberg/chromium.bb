@@ -14,8 +14,10 @@
 
 std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerService(
     content::BrowserContext* context) {
-  return BuildFakeGaiaCookieManagerServiceWithOptions(
-      /*create_fake_url_loader_factory_for_cookie_requests=*/false, context);
+  Profile* profile = Profile::FromBrowserContext(context);
+  return std::make_unique<FakeGaiaCookieManagerService>(
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+      ChromeSigninClientFactory::GetForProfile(profile));
 }
 
 std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerServiceWithURLLoader(
@@ -26,14 +28,4 @@ std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerServiceWithURLLoader(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       ChromeSigninClientFactory::GetForProfile(profile),
       test_url_loader_factory);
-}
-
-std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerServiceWithOptions(
-    bool create_fake_url_loader_factory_for_cookie_requests,
-    content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  return std::make_unique<FakeGaiaCookieManagerService>(
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      ChromeSigninClientFactory::GetForProfile(profile),
-      create_fake_url_loader_factory_for_cookie_requests);
 }

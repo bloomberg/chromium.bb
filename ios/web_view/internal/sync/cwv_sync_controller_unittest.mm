@@ -62,7 +62,7 @@ class CWVSyncControllerTest : public PlatformTest {
                            token_service_delegate_)),
         gaia_cookie_manager_service_(&token_service_,
                                      &signin_client_,
-                                     /*use_fake_url_fetcher=*/true),
+                                     &test_url_loader_factory_),
         signin_manager_(&signin_client_,
                         &token_service_,
                         &account_tracker_service_,
@@ -127,6 +127,10 @@ class CWVSyncControllerTest : public PlatformTest {
   ProfileOAuth2TokenServiceIOSDelegate* token_service_delegate_;
 
   FakeProfileOAuth2TokenService token_service_;
+
+  // test_url_loader_factory_ is declared before gaia_cookie_manager_service_
+  // to guarantee that the former outlives the latter.
+  network::TestURLLoaderFactory test_url_loader_factory_;
   FakeGaiaCookieManagerService gaia_cookie_manager_service_;
   FakeSigninManager signin_manager_;
   identity::IdentityTestEnvironment identity_test_env_;

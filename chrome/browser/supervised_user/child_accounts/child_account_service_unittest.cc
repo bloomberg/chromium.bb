@@ -34,9 +34,8 @@ class ChildAccountServiceTest : public ::testing::Test {
                               base::BindRepeating(&BuildTestSigninClient));
     builder.AddTestingFactory(
         GaiaCookieManagerServiceFactory::GetInstance(),
-        base::BindRepeating(
-            &BuildFakeGaiaCookieManagerServiceWithOptions,
-            /*create_fake_url_loader_factory_for_cookie_requests=*/true));
+        base::BindRepeating(&BuildFakeGaiaCookieManagerServiceWithURLLoader,
+                            &test_url_loader_factory_));
     profile_ = builder.Build();
     gaia_cookie_manager_service_ = static_cast<FakeGaiaCookieManagerService*>(
         GaiaCookieManagerServiceFactory::GetForProfile(profile_.get()));
@@ -44,6 +43,10 @@ class ChildAccountServiceTest : public ::testing::Test {
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
+
+  // test_url_loader_factory_ is declared before profile_ to guarantee that the
+  // former outlives the latter.
+  network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<TestingProfile> profile_;
   FakeGaiaCookieManagerService* gaia_cookie_manager_service_ = nullptr;
 };

@@ -58,9 +58,8 @@ void CocoaProfileTest::SetUp() {
   // Always fake out the Gaia service to avoid issuing network requests.
   TestingProfile::TestingFactories testing_factories = {
       {GaiaCookieManagerServiceFactory::GetInstance(),
-       base::BindRepeating(
-           &BuildFakeGaiaCookieManagerServiceWithOptions,
-           /*create_fake_url_loader_factory_for_cookie_requests=*/true)}};
+       base::BindRepeating(&BuildFakeGaiaCookieManagerServiceWithURLLoader,
+                           &test_url_loader_factory_)}};
 
   profile_ = profile_manager_.CreateTestingProfile(
       "Person 1", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),

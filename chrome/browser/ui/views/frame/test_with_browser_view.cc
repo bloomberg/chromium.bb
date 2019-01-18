@@ -124,7 +124,6 @@ BrowserWindow* TestWithBrowserView::CreateBrowserWindow() {
 
 TestingProfile::TestingFactories TestWithBrowserView::GetTestingFactories() {
   return {{GaiaCookieManagerServiceFactory::GetInstance(),
-           base::BindRepeating(
-               &BuildFakeGaiaCookieManagerServiceWithOptions,
-               /*create_fake_url_loader_factory_for_cookie_requests=*/true)}};
+           base::BindRepeating(&BuildFakeGaiaCookieManagerServiceWithURLLoader,
+                               test_url_loader_factory())}};
 }
