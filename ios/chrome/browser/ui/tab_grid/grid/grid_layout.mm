@@ -39,13 +39,8 @@
   UIUserInterfaceSizeClass verticalSizeClass =
       self.collectionView.traitCollection.verticalSizeClass;
   CGFloat width = CGRectGetWidth(self.collectionView.bounds);
-  if (UIContentSizeCategoryIsAccessibilityCategory(
-          UIApplication.sharedApplication.preferredContentSizeCategory)) {
-    self.itemSize = kGridCellSizeAccessibility;
-    self.sectionInset = kGridLayoutInsetsRegularCompact;
-    self.minimumLineSpacing = kGridLayoutLineSpacingRegularCompact;
-  } else if (horizontalSizeClass == UIUserInterfaceSizeClassCompact &&
-             verticalSizeClass == UIUserInterfaceSizeClassCompact) {
+  if (horizontalSizeClass == UIUserInterfaceSizeClassCompact &&
+      verticalSizeClass == UIUserInterfaceSizeClassCompact) {
     self.itemSize = kGridCellSizeSmall;
     if (width < kGridLayoutCompactCompactLimitedWidth) {
       self.sectionInset = kGridLayoutInsetsCompactCompactLimitedWidth;

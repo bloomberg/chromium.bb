@@ -100,8 +100,6 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   return self;
 }
 
-#pragma mark - UIViewController
-
 - (void)loadView {
   self.defaultLayout = [[GridLayout alloc] init];
   self.reorderingLayout = [[GridReorderingLayout alloc] init];
@@ -165,13 +163,6 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)viewWillDisappear:(BOOL)animated {
   self.updatesCollectionView = NO;
   [super viewWillDisappear:animated];
-}
-
-#pragma mark - UITraitEnvironment
-
-- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [super traitCollectionDidChange:previousTraitCollection];
-  [self.collectionView.collectionViewLayout invalidateLayout];
 }
 
 #pragma mark - Public
