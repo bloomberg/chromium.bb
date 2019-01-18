@@ -8,6 +8,7 @@
 #include "content/browser/renderer_host/media/service_launched_video_capture_device.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_frame_receiver_on_task_runner.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/video_capture/public/cpp/receiver_media_to_mojo_adapter.h"
@@ -31,7 +32,10 @@ void ConcludeLaunchDeviceWithSuccess(
   video_capture::mojom::ReceiverPtr receiver_proxy;
   mojo::MakeStrongBinding<video_capture::mojom::Receiver>(
       std::move(receiver_adapter), mojo::MakeRequest(&receiver_proxy));
-  device->Start(params, std::move(receiver_proxy));
+  media::VideoCaptureParams new_params = params;
+  new_params.power_line_frequency =
+      media::VideoCaptureDevice::GetPowerLineFrequency(params);
+  device->Start(new_params, std::move(receiver_proxy));
   callbacks->OnDeviceLaunched(
       std::make_unique<ServiceLaunchedVideoCaptureDevice>(
           std::move(device), std::move(connection_lost_cb)));
