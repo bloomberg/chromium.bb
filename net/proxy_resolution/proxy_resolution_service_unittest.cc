@@ -220,6 +220,15 @@ class TestResolveProxyDelegate : public ProxyDelegate {
 
   void OnFallback(const ProxyServer& bad_proxy, int net_error) override {}
 
+  void OnBeforeTunnelRequest(const ProxyServer& proxy_server,
+                             HttpRequestHeaders* extra_headers) override {}
+
+  Error OnTunnelHeadersReceived(
+      const ProxyServer& proxy_server,
+      const HttpResponseHeaders& response_headers) override {
+    return OK;
+  }
+
  private:
   int num_resolve_proxy_called_ = 0;
   bool add_proxy_ = false;
@@ -236,10 +245,20 @@ class TestProxyFallbackProxyDelegate : public ProxyDelegate {
                       const std::string& method,
                       const ProxyRetryInfoMap& proxy_retry_info,
                       ProxyInfo* result) override {}
+
   void OnFallback(const ProxyServer& bad_proxy, int net_error) override {
     proxy_server_ = bad_proxy;
     last_proxy_fallback_net_error_ = net_error;
     num_proxy_fallback_called_++;
+  }
+
+  void OnBeforeTunnelRequest(const ProxyServer& proxy_server,
+                             HttpRequestHeaders* extra_headers) override {}
+
+  Error OnTunnelHeadersReceived(
+      const ProxyServer& proxy_server,
+      const HttpResponseHeaders& response_headers) override {
+    return OK;
   }
 
   bool num_proxy_fallback_called() const { return num_proxy_fallback_called_; }

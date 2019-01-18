@@ -173,6 +173,7 @@ HttpProxyConnectJob::HttpProxyConnectJob(
     const SocketTag& socket_tag,
     ClientSocketPool::RespectLimits respect_limits,
     const scoped_refptr<HttpProxySocketParams>& params,
+    ProxyDelegate* proxy_delegate,
     TransportClientSocketPool* transport_pool,
     SSLClientSocketPool* ssl_pool,
     NetworkQualityEstimator* network_quality_estimator,
@@ -207,6 +208,7 @@ HttpProxyConnectJob::HttpProxyConnectJob(
           params->quic_stream_factory(),
           params->is_trusted_proxy(),
           params->tunnel(),
+          proxy_delegate,
           params->traffic_annotation(),
           this->net_log())) {}
 
@@ -301,10 +303,12 @@ HttpProxyClientSocketPool::HttpProxyConnectJobFactory::
     HttpProxyConnectJobFactory(
         TransportClientSocketPool* transport_pool,
         SSLClientSocketPool* ssl_pool,
+        ProxyDelegate* proxy_delegate,
         NetworkQualityEstimator* network_quality_estimator,
         NetLog* net_log)
     : transport_pool_(transport_pool),
       ssl_pool_(ssl_pool),
+      proxy_delegate_(proxy_delegate),
       network_quality_estimator_(network_quality_estimator),
       net_log_(net_log) {}
 
@@ -315,8 +319,9 @@ HttpProxyClientSocketPool::HttpProxyConnectJobFactory::NewConnectJob(
     ConnectJob::Delegate* delegate) const {
   return std::make_unique<HttpProxyConnectJob>(
       group_name, request.priority(), request.socket_tag(),
-      request.respect_limits(), request.params(), transport_pool_, ssl_pool_,
-      network_quality_estimator_, delegate, net_log_);
+      request.respect_limits(), request.params(), proxy_delegate_,
+      transport_pool_, ssl_pool_, network_quality_estimator_, delegate,
+      net_log_);
 }
 
 HttpProxyClientSocketPool::HttpProxyClientSocketPool(
@@ -324,6 +329,7 @@ HttpProxyClientSocketPool::HttpProxyClientSocketPool(
     int max_sockets_per_group,
     TransportClientSocketPool* transport_pool,
     SSLClientSocketPool* ssl_pool,
+    ProxyDelegate* proxy_delegate,
     NetworkQualityEstimator* network_quality_estimator,
     NetLog* net_log)
     : transport_pool_(transport_pool),
@@ -335,6 +341,7 @@ HttpProxyClientSocketPool::HttpProxyClientSocketPool(
             ClientSocketPool::used_idle_socket_timeout(),
             new HttpProxyConnectJobFactory(transport_pool,
                                            ssl_pool,
+                                           proxy_delegate,
                                            network_quality_estimator,
                                            net_log)) {
   // We should always have a |transport_pool_| except in unit tests.

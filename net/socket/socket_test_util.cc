@@ -796,10 +796,12 @@ MockClientSocketFactory::CreateProxyClientSocket(
     std::unique_ptr<ClientSocketHandle> transport_socket,
     const std::string& user_agent,
     const HostPortPair& endpoint,
+    const ProxyServer& proxy_server,
     HttpAuthController* http_auth_controller,
     bool tunnel,
     bool using_spdy,
     NextProto negotiated_protocol,
+    ProxyDelegate* proxy_delegate,
     bool is_https_proxy,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   if (use_mock_proxy_client_sockets_) {
@@ -808,9 +810,9 @@ MockClientSocketFactory::CreateProxyClientSocket(
         std::move(transport_socket), http_auth_controller, next_proxy_data);
   } else {
     return GetDefaultFactory()->CreateProxyClientSocket(
-        std::move(transport_socket), user_agent, endpoint, http_auth_controller,
-        tunnel, using_spdy, negotiated_protocol, is_https_proxy,
-        traffic_annotation);
+        std::move(transport_socket), user_agent, endpoint, proxy_server,
+        http_auth_controller, tunnel, using_spdy, negotiated_protocol,
+        proxy_delegate, is_https_proxy, traffic_annotation);
   }
 }
 

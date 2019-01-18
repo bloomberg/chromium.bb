@@ -52,6 +52,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
                       const net::ProxyRetryInfoMap& proxy_retry_info,
                       net::ProxyInfo* result) override;
   void OnFallback(const net::ProxyServer& bad_proxy, int net_error) override;
+  void OnBeforeTunnelRequest(const net::ProxyServer& proxy_server,
+                             net::HttpRequestHeaders* extra_headers) override;
+  net::Error OnTunnelHeadersReceived(
+      const net::ProxyServer& proxy_server,
+      const net::HttpResponseHeaders& response_headers) override;
 
  private:
   // Checks whether |proxy_server| is present in the current proxy config.

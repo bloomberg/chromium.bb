@@ -67,6 +67,7 @@ class NetLog;
 class NetworkErrorLoggingService;
 #endif
 class NetworkQualityEstimator;
+class ProxyDelegate;
 class ProxyResolutionService;
 class ProxyServer;
 class QuicCryptoClientStreamFactory;
@@ -252,6 +253,7 @@ class NET_EXPORT HttpNetworkSession {
     CTVerifier* cert_transparency_verifier;
     CTPolicyEnforcer* ct_policy_enforcer;
     ProxyResolutionService* proxy_resolution_service;
+    ProxyDelegate* proxy_delegate;
     SSLConfigService* ssl_config_service;
     HttpAuthHandlerFactory* http_auth_handler_factory;
     HttpServerProperties* http_server_properties;

@@ -18,6 +18,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_export.h"
+#include "net/base/proxy_server.h"
 #include "net/http/http_auth_controller.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
@@ -34,6 +35,7 @@ class GrowableIOBuffer;
 class HttpStream;
 class HttpStreamParser;
 class IOBuffer;
+class ProxyDelegate;
 
 class NET_EXPORT_PRIVATE HttpProxyClientSocket : public ProxyClientSocket {
  public:
@@ -43,10 +45,12 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocket : public ProxyClientSocket {
   HttpProxyClientSocket(std::unique_ptr<ClientSocketHandle> transport_socket,
                         const std::string& user_agent,
                         const HostPortPair& endpoint,
+                        const ProxyServer& proxy_server,
                         HttpAuthController* http_auth_controller,
                         bool tunnel,
                         bool using_spdy,
                         NextProto negotiated_protocol,
+                        ProxyDelegate* proxy_delegate,
                         bool is_https_proxy,
                         const NetworkTrafficAnnotationTag& traffic_annotation);
 
@@ -166,6 +170,11 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocket : public ProxyClientSocket {
   // Used only for redirects.
   bool redirect_has_load_timing_info_;
   LoadTimingInfo redirect_load_timing_info_;
+
+  const ProxyServer proxy_server_;
+
+  // This delegate must outlive this proxy client socket.
+  ProxyDelegate* proxy_delegate_;
 
   // Network traffic annotation for handshaking and setup.
   const NetworkTrafficAnnotationTag traffic_annotation_;

@@ -52,6 +52,7 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
     const std::string& ssl_session_cache_shard,
     SSLConfigService* ssl_config_service,
     WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
+    ProxyDelegate* proxy_delegate,
     HttpNetworkSession::SocketPoolType pool_type)
     : net_log_(net_log),
       socket_factory_(socket_factory),
@@ -65,6 +66,7 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
       ct_policy_enforcer_(ct_policy_enforcer),
       ssl_session_cache_shard_(ssl_session_cache_shard),
       ssl_config_service_(ssl_config_service),
+      proxy_delegate_(proxy_delegate),
       pool_type_(pool_type),
       transport_socket_pool_(pool_type ==
                                      HttpNetworkSession::WEBSOCKET_SOCKET_POOL
@@ -308,7 +310,7 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPLikeProxy(
           http_proxy, std::make_unique<HttpProxyClientSocketPool>(
                           sockets_per_proxy_server, sockets_per_group,
                           tcp_http_ret.first->second.get(),
-                          ssl_https_ret.first->second.get(),
+                          ssl_https_ret.first->second.get(), proxy_delegate_,
                           network_quality_estimator_, net_log_)));
 
   return ret.first->second.get();

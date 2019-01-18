@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/proxy_server.h"
 #include "net/log/test_net_log.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_tag.h"
@@ -29,9 +30,9 @@ TEST(HttpProxyClientSocketTest, Tag) {
   // |connection| takes ownership of |tagging_sock|, but keep a
   // non-owning pointer to it.
   connection->SetSocket(std::unique_ptr<StreamSocket>(tagging_sock));
-  HttpProxyClientSocket socket(std::move(connection), "", HostPortPair(),
-                               nullptr, false, false, NextProto(), false,
-                               TRAFFIC_ANNOTATION_FOR_TESTS);
+  HttpProxyClientSocket socket(
+      std::move(connection), "", HostPortPair(), ProxyServer(), nullptr, false,
+      false, NextProto(), nullptr, false, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   EXPECT_EQ(tagging_sock->tag(), SocketTag());
 #if defined(OS_ANDROID)

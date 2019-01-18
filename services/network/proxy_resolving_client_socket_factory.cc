@@ -36,6 +36,7 @@ ProxyResolvingClientSocketFactory::ProxyResolvingClientSocketFactory(
   session_context.channel_id_service = NULL;
   session_context.proxy_resolution_service =
       request_context->proxy_resolution_service();
+  session_context.proxy_delegate = request_context->proxy_delegate();
   session_context.ssl_config_service = request_context->ssl_config_service();
   session_context.http_auth_handler_factory =
       request_context->http_auth_handler_factory();

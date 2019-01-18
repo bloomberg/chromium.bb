@@ -153,6 +153,12 @@ void DataReductionProxyDelegate::OnFallback(const net::ProxyServer& bad_proxy,
     bypass_stats_->OnProxyFallback(bad_proxy, net_error);
 }
 
+net::Error DataReductionProxyDelegate::OnTunnelHeadersReceived(
+    const net::ProxyServer& proxy_server,
+    const net::HttpResponseHeaders& response_headers) {
+  return net::OK;
+}
+
 void DataReductionProxyDelegate::GetAlternativeProxy(
     const GURL& url,
     const net::ProxyRetryInfoMap& proxy_retry_info,

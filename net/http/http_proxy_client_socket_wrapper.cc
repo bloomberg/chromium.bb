@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
+#include "net/base/proxy_delegate.h"
 #include "net/http/http_proxy_client_socket.h"
 #include "net/http/http_response_info.h"
 #include "net/log/net_log_event_type.h"
@@ -54,6 +55,7 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
     QuicStreamFactory* quic_stream_factory,
     bool is_trusted_proxy,
     bool tunnel,
+    ProxyDelegate* proxy_delegate,
     const NetworkTrafficAnnotationTag& traffic_annotation,
     const NetLogWithSource& net_log)
     : next_state_(STATE_NONE),
@@ -73,6 +75,7 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
       spdy_session_pool_(spdy_session_pool),
       has_restarted_(false),
       tunnel_(tunnel),
+      proxy_delegate_(proxy_delegate),
       using_spdy_(false),
       is_trusted_proxy_(is_trusted_proxy),
       quic_stream_factory_(quic_stream_factory),
@@ -394,6 +397,16 @@ int HttpProxyClientSocketWrapper::GetLocalAddress(IPEndPoint* address) const {
   return ERR_SOCKET_NOT_CONNECTED;
 }
 
+ProxyServer::Scheme HttpProxyClientSocketWrapper::GetProxyServerScheme() const {
+  if (quic_version_ != quic::QUIC_VERSION_UNSUPPORTED)
+    return ProxyServer::SCHEME_QUIC;
+
+  if (transport_params_)
+    return ProxyServer::SCHEME_HTTP;
+
+  return ProxyServer::SCHEME_HTTPS;
+}
+
 void HttpProxyClientSocketWrapper::OnIOComplete(int result) {
   int rv = DoLoop(result);
   if (rv != ERR_IO_PENDING) {
@@ -473,12 +486,18 @@ int HttpProxyClientSocketWrapper::DoLoop(int result) {
 int HttpProxyClientSocketWrapper::DoBeginConnect() {
   connect_start_time_ = base::TimeTicks::Now();
   SetConnectTimer(connect_timeout_duration_);
-  if (quic_version_ != quic::QUIC_VERSION_UNSUPPORTED) {
-    next_state_ = STATE_QUIC_PROXY_CREATE_SESSION;
-  } else if (transport_params_) {
-    next_state_ = STATE_TCP_CONNECT;
-  } else {
-    next_state_ = STATE_SSL_CONNECT;
+  switch (GetProxyServerScheme()) {
+    case ProxyServer::SCHEME_QUIC:
+      next_state_ = STATE_QUIC_PROXY_CREATE_SESSION;
+      break;
+    case ProxyServer::SCHEME_HTTP:
+      next_state_ = STATE_TCP_CONNECT;
+      break;
+    case ProxyServer::SCHEME_HTTPS:
+      next_state_ = STATE_SSL_CONNECT;
+      break;
+    default:
+      NOTREACHED();
   }
   return OK;
 }
@@ -617,8 +636,10 @@ int HttpProxyClientSocketWrapper::DoHttpProxyConnect() {
   transport_socket_ =
       transport_pool_->client_socket_factory()->CreateProxyClientSocket(
           std::move(transport_socket_handle_), user_agent_, endpoint_,
+          ProxyServer(GetProxyServerScheme(),
+                      GetDestination().host_port_pair()),
           http_auth_controller_.get(), tunnel_, using_spdy_,
-          negotiated_protocol_, ssl_params_.get() != nullptr,
+          negotiated_protocol_, proxy_delegate_, ssl_params_.get() != nullptr,
           traffic_annotation_);
   return transport_socket_->Connect(base::Bind(
       &HttpProxyClientSocketWrapper::OnIOComplete, base::Unretained(this)));

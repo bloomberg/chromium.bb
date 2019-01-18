@@ -59,7 +59,8 @@ std::unique_ptr<ClientSocketPoolManager> CreateSocketPoolManager(
       context.cert_verifier, context.channel_id_service,
       context.transport_security_state, context.cert_transparency_verifier,
       context.ct_policy_enforcer, ssl_session_cache_shard,
-      context.ssl_config_service, websocket_endpoint_lock_manager, pool_type);
+      context.ssl_config_service, websocket_endpoint_lock_manager,
+      context.proxy_delegate, pool_type);
 }
 
 }  // unnamed namespace
@@ -160,6 +161,7 @@ HttpNetworkSession::Context::Context()
       cert_transparency_verifier(nullptr),
       ct_policy_enforcer(nullptr),
       proxy_resolution_service(nullptr),
+      proxy_delegate(nullptr),
       ssl_config_service(nullptr),
       http_auth_handler_factory(nullptr),
       net_log(nullptr),

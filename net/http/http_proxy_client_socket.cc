@@ -14,6 +14,7 @@
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
+#include "net/base/proxy_delegate.h"
 #include "net/http/http_basic_stream.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
@@ -33,10 +34,12 @@ HttpProxyClientSocket::HttpProxyClientSocket(
     std::unique_ptr<ClientSocketHandle> transport_socket,
     const std::string& user_agent,
     const HostPortPair& endpoint,
+    const ProxyServer& proxy_server,
     HttpAuthController* http_auth_controller,
     bool tunnel,
     bool using_spdy,
     NextProto negotiated_protocol,
+    ProxyDelegate* proxy_delegate,
     bool is_https_proxy,
     const NetworkTrafficAnnotationTag& traffic_annotation)
     : io_callback_(base::BindRepeating(&HttpProxyClientSocket::OnIOComplete,
@@ -50,6 +53,8 @@ HttpProxyClientSocket::HttpProxyClientSocket(
       negotiated_protocol_(negotiated_protocol),
       is_https_proxy_(is_https_proxy),
       redirect_has_load_timing_info_(false),
+      proxy_server_(proxy_server),
+      proxy_delegate_(proxy_delegate),
       traffic_annotation_(traffic_annotation),
       net_log_(transport_->socket()->NetLog()) {
   // Synthesize the bits of a request that we actually use.
@@ -382,16 +387,25 @@ int HttpProxyClientSocket::DoSendRequest() {
   // we have proxy info available.
   if (request_line_.empty()) {
     DCHECK(request_headers_.IsEmpty());
-    HttpRequestHeaders authorization_headers;
+
+    HttpRequestHeaders extra_headers;
     if (auth_->HaveAuth())
-      auth_->AddAuthorizationHeader(&authorization_headers);
+      auth_->AddAuthorizationHeader(&extra_headers);
+
+    if (proxy_delegate_) {
+      HttpRequestHeaders proxy_delegate_headers;
+      proxy_delegate_->OnBeforeTunnelRequest(proxy_server_,
+                                             &proxy_delegate_headers);
+      extra_headers.MergeFrom(proxy_delegate_headers);
+    }
+
     std::string user_agent;
     if (!request_.extra_headers.GetHeader(HttpRequestHeaders::kUserAgent,
                                           &user_agent)) {
       user_agent.clear();
     }
-    BuildTunnelRequest(endpoint_, authorization_headers, user_agent,
-                       &request_line_, &request_headers_);
+    BuildTunnelRequest(endpoint_, extra_headers, user_agent, &request_line_,
+                       &request_headers_);
 
     net_log_.AddEvent(
         NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
@@ -431,6 +445,15 @@ int HttpProxyClientSocket::DoReadHeadersComplete(int result) {
   net_log_.AddEvent(
       NetLogEventType::HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS,
       base::Bind(&HttpResponseHeaders::NetLogCallback, response_.headers));
+
+  if (proxy_delegate_) {
+    int rv = proxy_delegate_->OnTunnelHeadersReceived(proxy_server_,
+                                                      *response_.headers);
+    if (rv != OK) {
+      DCHECK_NE(ERR_IO_PENDING, rv);
+      return rv;
+    }
+  }
 
   switch (response_.headers->response_code()) {
     case 200:  // OK

@@ -462,7 +462,13 @@ CapturePreconnectsHttpProxySocketPool::CapturePreconnectsSocketPool(
     TransportSecurityState*,
     CTVerifier*,
     CTPolicyEnforcer*)
-    : HttpProxyClientSocketPool(0, 0, nullptr, nullptr, nullptr, nullptr),
+    : HttpProxyClientSocketPool(0,
+                                0,
+                                nullptr,
+                                nullptr,
+                                nullptr,
+                                nullptr,
+                                nullptr),
       last_num_streams_(-1) {}
 
 template <>
