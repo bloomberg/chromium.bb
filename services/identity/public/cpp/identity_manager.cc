@@ -63,6 +63,7 @@ IdentityManager::IdentityManager(
   signin_manager_->AddObserver(this);
   token_service_->AddDiagnosticsObserver(this);
   token_service_->AddObserver(this);
+  account_tracker_service_->AddObserver(this);
   gaia_cookie_manager_service_->AddObserver(this);
 }
 
@@ -70,6 +71,7 @@ IdentityManager::~IdentityManager() {
   signin_manager_->RemoveObserver(this);
   token_service_->RemoveObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
+  account_tracker_service_->RemoveObserver(this);
   gaia_cookie_manager_service_->RemoveObserver(this);
 }
 
@@ -438,6 +440,12 @@ void IdentityManager::OnAccessTokenRequested(
   // are no direct clients of ProfileOAuth2TokenService.
   for (auto& observer : diagnostics_observer_list_) {
     observer.OnAccessTokenRequested(account_id, consumer_id, scopes);
+  }
+}
+
+void IdentityManager::OnAccountUpdated(const AccountInfo& info) {
+  for (auto& observer : observer_list_) {
+    observer.OnAccountUpdated(info);
   }
 }
 
