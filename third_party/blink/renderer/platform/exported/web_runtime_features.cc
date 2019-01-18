@@ -364,6 +364,10 @@ bool WebRuntimeFeatures::IsCompositeAfterPaintEnabled() {
   return RuntimeEnabledFeatures::CompositeAfterPaintEnabled();
 }
 
+void WebRuntimeFeatures::EnableUserActivationSameOriginVisibility(bool enable) {
+  RuntimeEnabledFeatures::SetUserActivationSameOriginVisibilityEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableUserActivationV2(bool enable) {
   RuntimeEnabledFeatures::SetUserActivationV2Enabled(enable);
 }
