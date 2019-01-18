@@ -3245,8 +3245,10 @@ class PictureInPictureDelegate : public WebContentsDelegate {
  public:
   PictureInPictureDelegate() = default;
 
-  MOCK_METHOD2(EnterPictureInPicture,
-               gfx::Size(const viz::SurfaceId&, const gfx::Size&));
+  MOCK_METHOD3(EnterPictureInPicture,
+               gfx::Size(content::WebContents* web_contents,
+                         const viz::SurfaceId&,
+                         const gfx::Size&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PictureInPictureDelegate);
@@ -3326,7 +3328,8 @@ TEST_F(WebContentsImplTest, EnterPictureInPicture) {
                      viz::LocalSurfaceId(
                          11, base::UnguessableToken::Deserialize(0x111111, 0)));
 
-  EXPECT_CALL(delegate, EnterPictureInPicture(surface_id, gfx::Size(42, 42)));
+  EXPECT_CALL(delegate,
+              EnterPictureInPicture(contents(), surface_id, gfx::Size(42, 42)));
 
   rfh->OnMessageReceived(
       MediaPlayerDelegateHostMsg_OnPictureInPictureModeStarted(

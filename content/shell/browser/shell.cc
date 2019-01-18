@@ -614,7 +614,8 @@ bool Shell::ShouldAllowRunningInsecureContent(
   return allowed_per_prefs || allowed_by_test;
 }
 
-gfx::Size Shell::EnterPictureInPicture(const viz::SurfaceId& surface_id,
+gfx::Size Shell::EnterPictureInPicture(content::WebContents* web_contents,
+                                       const viz::SurfaceId& surface_id,
                                        const gfx::Size& natural_size) {
   // During tests, returning a fake window size (same aspect ratio) to pretend
   // the window was created and allow tests to run accordingly.
