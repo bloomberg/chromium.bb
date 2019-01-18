@@ -19,6 +19,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -131,6 +132,11 @@ class JpegEncodeAcceleratorTestEnvironment : public ::testing::Environment {
 };
 
 void JpegEncodeAcceleratorTestEnvironment::SetUp() {
+  // Since base::test::ScopedTaskEnvironment will call
+  // TestTimeouts::action_max_timeout(), TestTimeouts::Initialize() needs to be
+  // called in advance.
+  TestTimeouts::Initialize();
+
   if (!log_path_.empty()) {
     log_file_.reset(new base::File(
         log_path_, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE));
