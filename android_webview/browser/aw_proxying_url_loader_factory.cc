@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "android_webview/browser/android_protocol_handler.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/input_stream.h"
@@ -13,6 +14,7 @@
 #include "android_webview/browser/net_helpers.h"
 #include "android_webview/browser/net_network_service/android_stream_reader_url_loader.h"
 #include "android_webview/browser/renderer_host/auto_login_parser.h"
+#include "android_webview/common/url_constants.h"
 #include "base/android/build_info.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -31,15 +33,44 @@ namespace {
 
 const char kAutoLoginHeaderName[] = "X-Auto-Login";
 
-class AndroidResponseDelegate
+class InterceptResponseDelegate
     : public AndroidStreamReaderURLLoader::ResponseDelegate {
  public:
-  AndroidResponseDelegate(std::unique_ptr<AwWebResourceResponse> response)
+  explicit InterceptResponseDelegate(
+      std::unique_ptr<AwWebResourceResponse> response)
       : response_(std::move(response)) {}
 
   std::unique_ptr<android_webview::InputStream> OpenInputStream(
       JNIEnv* env) override {
     return response_->GetInputStream(env);
+  }
+
+  bool GetMimeType(JNIEnv* env,
+                   const GURL& url,
+                   android_webview::InputStream* stream,
+                   std::string* mime_type) override {
+    return response_->GetMimeType(env, mime_type);
+  }
+
+  bool GetCharset(JNIEnv* env,
+                  const GURL& url,
+                  android_webview::InputStream* stream,
+                  std::string* charset) override {
+    return response_->GetCharset(env, charset);
+  }
+
+  void AppendResponseHeaders(JNIEnv* env,
+                             net::HttpResponseHeaders* headers) override {
+    int status_code;
+    std::string reason_phrase;
+    if (response_->GetStatusInfo(env, &status_code, &reason_phrase)) {
+      std::string status_line("HTTP/1.1 ");
+      status_line.append(base::IntToString(status_code));
+      status_line.append(" ");
+      status_line.append(reason_phrase);
+      headers->ReplaceStatusLine(status_line);
+    }
+    response_->GetResponseHeaders(env, headers);
   }
 
  private:
@@ -95,6 +126,8 @@ class InterceptedRequest : public network::mojom::URLLoader,
   void InterceptResponseReceived(
       std::unique_ptr<AwWebResourceResponse> response);
 
+  void InputStreamFailed();
+
  private:
   std::unique_ptr<AwContentsIoThreadClient> GetIoThreadClient();
   void OnRequestError(const network::URLLoaderCompletionStatus& status);
@@ -106,6 +139,7 @@ class InterceptedRequest : public network::mojom::URLLoader,
   const uint64_t request_id_;
   const int32_t routing_id_;
   const uint32_t options_;
+  bool input_stream_previously_failed_ = false;
 
   network::ResourceRequest request_;
   const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
@@ -120,6 +154,46 @@ class InterceptedRequest : public network::mojom::URLLoader,
   base::WeakPtrFactory<InterceptedRequest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InterceptedRequest);
+};
+
+class ProtocolResponseDelegate
+    : public AndroidStreamReaderURLLoader::ResponseDelegate {
+ public:
+  ProtocolResponseDelegate(const GURL& url,
+                           base::WeakPtr<InterceptedRequest> request)
+      : url_(url), request_(request) {}
+
+  std::unique_ptr<android_webview::InputStream> OpenInputStream(
+      JNIEnv* env) override {
+    auto stream = CreateInputStream(env, url_);
+    if (!stream && request_)
+      request_->InputStreamFailed();
+    return stream;
+  }
+
+  bool GetMimeType(JNIEnv* env,
+                   const GURL& url,
+                   android_webview::InputStream* stream,
+                   std::string* mime_type) override {
+    return GetInputStreamMimeType(env, url, stream, mime_type);
+  }
+
+  bool GetCharset(JNIEnv* env,
+                  const GURL& url,
+                  android_webview::InputStream* stream,
+                  std::string* charset) override {
+    // TODO: We should probably be getting this from the managed side.
+    return false;
+  }
+
+  void AppendResponseHeaders(JNIEnv* env,
+                             net::HttpResponseHeaders* headers) override {
+    // no-op
+  }
+
+ private:
+  GURL url_;
+  base::WeakPtr<InterceptedRequest> request_;
 };
 
 InterceptedRequest::InterceptedRequest(
@@ -194,7 +268,37 @@ void InterceptedRequest::InterceptResponseReceived(
   }
 }
 
+void InterceptedRequest::InputStreamFailed() {
+  DCHECK(!input_stream_previously_failed_);
+  input_stream_previously_failed_ = true;
+  proxied_client_binding_.Unbind();
+  Restart();
+}
+
 void InterceptedRequest::ContinueAfterIntercept() {
+  // For WebViewClassic compatibility this job can only accept URLs that can be
+  // opened. URLs that cannot be opened should be resolved by the next handler.
+  //
+  // If a request is initially handled here but the job fails due to it being
+  // unable to open the InputStream for that request the request is marked as
+  // previously failed and restarted.
+  // Restarting a request involves creating a new job for that request. This
+  // handler will ignore requests known to have previously failed to 1) prevent
+  // an infinite loop, 2) ensure that the next handler in line gets the
+  // opportunity to create a job for the request.
+  if (!input_stream_previously_failed_ &&
+      (request_.url.SchemeIs(url::kContentScheme) ||
+       android_webview::IsAndroidSpecialFileUrl(request_.url))) {
+    network::mojom::URLLoaderClientPtr proxied_client;
+    proxied_client_binding_.Bind(mojo::MakeRequest(&proxied_client));
+    AndroidStreamReaderURLLoader* loader = new AndroidStreamReaderURLLoader(
+        request_, std::move(proxied_client), traffic_annotation_,
+        std::make_unique<ProtocolResponseDelegate>(request_.url,
+                                                   weak_factory_.GetWeakPtr()));
+    loader->Start();
+    return;
+  }
+
   if (!target_loader_ && target_factory_) {
     network::mojom::URLLoaderClientPtr proxied_client;
     proxied_client_binding_.Bind(mojo::MakeRequest(&proxied_client));
@@ -210,7 +314,7 @@ void InterceptedRequest::ContinueAfterInterceptWithOverride(
   proxied_client_binding_.Bind(mojo::MakeRequest(&proxied_client));
   AndroidStreamReaderURLLoader* loader = new AndroidStreamReaderURLLoader(
       request_, std::move(proxied_client), traffic_annotation_,
-      std::make_unique<AndroidResponseDelegate>(std::move(response)));
+      std::make_unique<InterceptResponseDelegate>(std::move(response)));
   loader->Start();
 }
 

@@ -14,27 +14,12 @@
 # https://crbug.com/882650
 -*__multiprocess_mode
 
-# https://crbug.com/893563
--org.chromium.android_webview.test.AwContentsClientFullScreenTest.testExitFullscreenEndsIfAppInvokesCallbackFromOnHideCustomView
--org.chromium.android_webview.test.AwContentsClientFullScreenTest.testFullscreenForNonVideoElementIsSupportedInSoftwareMode
--org.chromium.android_webview.test.AwContentsClientFullScreenTest.testFullscreenNotSupported_video
--org.chromium.android_webview.test.AwContentsClientFullScreenTest.testFullscreenNotSupported_videoInsideDiv
--org.chromium.android_webview.test.AwContentsClientFullScreenTest.testOnShowCustomViewAndPlayWithHtmlControl_video
--org.chromium.android_webview.test.AwContentsClientFullScreenTest.testOnShowCustomViewAndPlayWithHtmlControl_videoInsideDiv
--org.chromium.android_webview.test.AwContentsClientFullScreenTest.testPowerSaveBlockerIsEnabledDuringEmbeddedPlayback
--org.chromium.android_webview.test.AwContentsClientFullScreenTest.testPowerSaveBlockerIsEnabledDuringFullscreenPlayback_video
--org.chromium.android_webview.test.AwContentsClientFullScreenTest.testPowerSaveBlockerIsEnabledDuringFullscreenPlayback_videoInsideDiv
--org.chromium.android_webview.test.AwContentsClientFullScreenTest.testPowerSaveBlockerIsTransferredToEmbedded
--org.chromium.android_webview.test.AwContentsClientFullScreenTest.testPowerSaveBlockerIsTransferredToFullscreen
 
 # https://crbug.com/893566
 -org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testBaseUrlOfLoadDataSentInRefererHeader
--org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCalledForExistingFiles
 -org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCalledForUnsupportedSchemes
 -org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCalledWithCorrectRefererHeader
--org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCanInterceptMainFrame
 -org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testContentIdIframe
--org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testDoesNotCrashOnEmptyStream
 -org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testHttpResponseHeader
 -org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testHttpStatusCodeAndText
 -org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testLoadDataShouldTriggerShouldInterceptRequest
@@ -44,23 +29,13 @@
 -org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testNotCalledForExistingContentUrl
 -org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testNotCalledForExistingResource
 -org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testNotCalledForHttpRedirect
--org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testDoesNotChangeReportedUrl
 
 # https://crbug.com/893568
 -org.chromium.android_webview.test.AwContentsTest.testDownload
--org.chromium.android_webview.test.AwContentsTest.testEscapingOfErrorPage
 
 # https://crbug.com/893569
 -org.chromium.android_webview.test.AwServiceWorkerClientTest.testFetchResourceLoadingError
 -org.chromium.android_webview.test.AwServiceWorkerClientTest.testInvokeInterceptCallback
-
-# https://crbug.com/893570
--org.chromium.android_webview.test.AwSettingsTest.testAssetUrl
--org.chromium.android_webview.test.AwSettingsTest.testContentUrlAccessWithTwoViews
--org.chromium.android_webview.test.AwSettingsTest.testContentUrlFromFileWithTwoViews
--org.chromium.android_webview.test.AwSettingsTest.testFileUrlAccessToggleDoesNotBlockAssetUrls
--org.chromium.android_webview.test.AwSettingsTest.testFileUrlAccessToggleDoesNotBlockResourceUrls
--org.chromium.android_webview.test.AwSettingsTest.testResourceUrl
 
 # https://crbug.com/893572
 -org.chromium.android_webview.test.ClientOnPageStartedTest.testBrowserInitiatedRedirectHangingNavigation
@@ -96,20 +71,8 @@
 
 # https://crbug.com/893582
 -org.chromium.android_webview.test.SafeBrowsingTest.testSafeBrowsingDontProceedCausesNetworkErrorForMainFrame
--org.chromium.android_webview.test.SafeBrowsingTest.testSafeBrowsingHardcodedMalwareUrl
--org.chromium.android_webview.test.SafeBrowsingTest.testSafeBrowsingHardcodedPhishingUrl
 -org.chromium.android_webview.test.SafeBrowsingTest.testSafeBrowsingOnSafeBrowsingHitBackToSafety
 -org.chromium.android_webview.test.SafeBrowsingTest.testSafeBrowsingShowsNetworkErrorForInvisibleViews
-
-# https://crbug.com/893583
--org.chromium.android_webview.test.VisualStateTest.testOnPageCommitVisible
--org.chromium.android_webview.test.VisualStateTest.testVisualStateCallbackFromJsDuringFullscreenTransitions
--org.chromium.android_webview.test.VisualStateTest.testVisualStateCallbackWaitsForJs
--org.chromium.android_webview.test.VisualStateTest.testVisualStateCallbackWhenContainerViewDetached
-
-# https://crbug.com/893585
--org.chromium.android_webview.test.WebViewWebVrTest.testWebVrNotFunctional
-
 
 # https://crbug.com/902658
 -org.chromium.android_webview.test.AwProxyControllerTest.testProxyOverride

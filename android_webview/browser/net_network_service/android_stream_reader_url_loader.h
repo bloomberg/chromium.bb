@@ -28,6 +28,19 @@ class AndroidStreamReaderURLLoader : public network::mojom::URLLoader {
     virtual ~ResponseDelegate() {}
     virtual std::unique_ptr<android_webview::InputStream> OpenInputStream(
         JNIEnv* env) = 0;
+
+    virtual bool GetMimeType(JNIEnv* env,
+                             const GURL& url,
+                             android_webview::InputStream* stream,
+                             std::string* mime_type) = 0;
+
+    virtual bool GetCharset(JNIEnv* env,
+                            const GURL& url,
+                            android_webview::InputStream* stream,
+                            std::string* charset) = 0;
+
+    virtual void AppendResponseHeaders(JNIEnv* env,
+                                       net::HttpResponseHeaders* headers) = 0;
   };
 
   AndroidStreamReaderURLLoader(
@@ -62,6 +75,9 @@ class AndroidStreamReaderURLLoader : public network::mojom::URLLoader {
   void CleanUp();
   void DidRead(int result);
   void ReadMore();
+
+  // Expected content size
+  int64_t expected_content_size_ = -1;
 
   net::HttpByteRange byte_range_;
   network::ResourceRequest resource_request_;
