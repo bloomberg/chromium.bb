@@ -38,6 +38,12 @@ class AccountsMutator {
   virtual void RemoveAllAccounts(
       signin_metrics::SourceForRefreshTokenOperation source) = 0;
 
+  // Invalidates the refresh token of the primary account.
+  // The primary account must necessarily be set by the time this method
+  // is invoked.
+  virtual void InvalidateRefreshTokenForPrimaryAccount(
+      signin_metrics::SourceForRefreshTokenOperation source) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountsMutator);
 };

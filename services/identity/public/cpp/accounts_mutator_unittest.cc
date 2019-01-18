@@ -5,6 +5,7 @@
 #include "services/identity/public/cpp/accounts_mutator_impl.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/test/gtest_util.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "services/identity/public/cpp/accounts_mutator_impl.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -213,6 +214,135 @@ TEST_F(AccountsMutatorTest, AddOrUpdateAccount_UpdateExistingAccount) {
   }
   EXPECT_NE(account_info.is_under_advanced_protection,
             updated_account_info.is_under_advanced_protection);
+}
+
+TEST_F(AccountsMutatorTest,
+       InvalidateRefreshTokenForPrimaryAccount_WithPrimaryAccount) {
+  // Abort the test if the current platform does not support accounts mutation.
+  if (!accounts_mutator())
+    return;
+
+  // Set up the primary account.
+  std::string primary_account_email("primary.account@example.com");
+  AccountInfo primary_account_info = identity::MakePrimaryAccountAvailable(
+      identity_manager(), primary_account_email);
+
+  // Now try invalidating the primary account, and check that it gets updated.
+  base::RunLoop run_loop;
+  identity_manager_observer()->set_on_refresh_token_updated_callback(
+      base::BindOnce(
+          [](base::OnceClosure quit_closure,
+             const std::string& expected_account_id,
+             const std::string& added_or_updated_account_id) {
+            EXPECT_EQ(added_or_updated_account_id, expected_account_id);
+            std::move(quit_closure).Run();
+          },
+          run_loop.QuitClosure(), primary_account_info.account_id));
+
+  accounts_mutator()->InvalidateRefreshTokenForPrimaryAccount(
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  run_loop.Run();
+
+  EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
+      primary_account_info.account_id));
+  EXPECT_TRUE(
+      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          primary_account_info.account_id));
+  auto error = identity_manager()->GetErrorStateOfRefreshTokenForAccount(
+      primary_account_info.account_id);
+  EXPECT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS, error.state());
+  EXPECT_EQ(GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                CREDENTIALS_REJECTED_BY_CLIENT,
+            error.GetInvalidGaiaCredentialsReason());
+}
+
+TEST_F(
+    AccountsMutatorTest,
+    InvalidateRefreshTokenForPrimaryAccount_WithPrimaryAndSecondaryAccounts) {
+  // Abort the test if the current platform does not support accounts mutation.
+  if (!accounts_mutator())
+    return;
+
+  // Set up the primary account.
+  std::string primary_account_email("primary.account@example.com");
+  AccountInfo primary_account_info = identity::MakePrimaryAccountAvailable(
+      identity_manager(), primary_account_email);
+
+  // Next, add a secondary account.
+  base::RunLoop run_loop;
+  identity_manager_observer()->set_on_refresh_token_updated_callback(
+      base::BindOnce(
+          [](base::OnceClosure quit_closure, const std::string& account_id) {
+            std::move(quit_closure).Run();
+          },
+          run_loop.QuitClosure()));
+
+  std::string account_id = accounts_mutator()->AddOrUpdateAccount(
+      kTestGaiaId, kTestEmail, kRefreshToken,
+      /*is_under_advanced_protection=*/false,
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  run_loop.Run();
+
+  AccountInfo secondary_account_info =
+      identity_manager()
+          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          .value();
+  EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 2U);
+
+  // Now try invalidating the primary account, and check that it gets updated.
+  base::RunLoop run_loop2;
+  identity_manager_observer()->set_on_refresh_token_updated_callback(
+      base::BindOnce(
+          [](base::OnceClosure quit_closure,
+             const std::string& expected_account_id,
+             const std::string& added_or_updated_account_id) {
+            EXPECT_EQ(added_or_updated_account_id, expected_account_id);
+            std::move(quit_closure).Run();
+          },
+          run_loop2.QuitClosure(), primary_account_info.account_id));
+
+  accounts_mutator()->InvalidateRefreshTokenForPrimaryAccount(
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  run_loop2.Run();
+
+  // Check whether the primary account refresh token got invalidated.
+  EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
+      primary_account_info.account_id));
+  EXPECT_TRUE(
+      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          primary_account_info.account_id));
+  auto error = identity_manager()->GetErrorStateOfRefreshTokenForAccount(
+      primary_account_info.account_id);
+  EXPECT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS, error.state());
+  EXPECT_EQ(GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                CREDENTIALS_REJECTED_BY_CLIENT,
+            error.GetInvalidGaiaCredentialsReason());
+
+  // Last, check whether the secondary account credentials remain untouched.
+  EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_id));
+  EXPECT_FALSE(
+      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          account_id));
+  EXPECT_EQ(secondary_account_info.account_id, account_id);
+  EXPECT_EQ(secondary_account_info.email, kTestEmail);
+  EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 2U);
+}
+
+TEST_F(AccountsMutatorTest,
+       InvalidateRefreshTokenForPrimaryAccount_WithoutPrimaryAccount) {
+  // Abort the test if the current platform does not support accounts mutation.
+  if (!accounts_mutator())
+    return;
+
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+
+  // Now try invalidating the primary account, and make sure the test
+  // expectedly fails, since the primary account is not set.
+  EXPECT_DCHECK_DEATH(
+      accounts_mutator()->InvalidateRefreshTokenForPrimaryAccount(
+          signin_metrics::SourceForRefreshTokenOperation::kUnknown));
+
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test that attempting to remove a non-existing account should not result in
