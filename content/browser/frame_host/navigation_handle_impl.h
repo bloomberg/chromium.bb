@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigation_throttle_runner.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
@@ -40,7 +41,6 @@ namespace content {
 class AppCacheNavigationHandle;
 class ChromeAppCacheService;
 class NavigationUIData;
-class NavigationRequest;
 class NavigatorDelegate;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandle;
@@ -275,7 +275,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
       ThrottleChecksFinishedCallback callback);
 
   // Returns the FrameTreeNode this navigation is happening in.
-  FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
+  FrameTreeNode* frame_tree_node() const {
+    return navigation_request_->frame_tree_node();
+  }
 
   // Called when the navigation is ready to be committed in
   // |render_frame_host|. This will update the |state_| and inform the
@@ -388,7 +390,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
       const GURL& url,
       const base::Optional<url::Origin>& initiator_origin,
       const std::vector<GURL>& redirect_chain,
-      FrameTreeNode* frame_tree_node,
       bool is_renderer_initiated,
       bool is_same_document,
       base::TimeTicks navigation_start,
@@ -506,9 +507,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
 
   // The state the navigation is in.
   State state_;
-
-  // The FrameTreeNode this navigation is happening in.
-  FrameTreeNode* frame_tree_node_;
 
   // A list of Throttles registered for this navigation.
   std::vector<std::unique_ptr<NavigationThrottle>> throttles_;
