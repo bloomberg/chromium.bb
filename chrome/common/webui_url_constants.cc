@@ -187,6 +187,9 @@ const char kChromeUIWebApksHost[] = "webapks";
 #endif
 
 #if defined(OS_CHROMEOS)
+const char kChromeUIAccountManagerWelcomeHost[] = "account-manager-welcome";
+const char kChromeUIAccountManagerWelcomeURL[] =
+    "chrome://account-manager-welcome";
 const char kChromeUIActivationMessageHost[] = "activationmessage";
 const char kChromeUIBluetoothPairingHost[] = "bluetooth-pairing";
 const char kChromeUIBluetoothPairingURL[] = "chrome://bluetooth-pairing/";
