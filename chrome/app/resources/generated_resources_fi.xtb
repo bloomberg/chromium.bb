@@ -862,7 +862,7 @@
 <translation id="2266957463645820432">IPP–USB-yhteys (IPPUSB)</translation>
 <translation id="2270450558902169558">Vaihtaa tietoja minkä tahansa verkkotunnusta <ph name="DOMAIN" /> käyttävän laitteen kanssa.</translation>
 <translation id="2270627217422354837">Vaihtaa tietoja minkä tahansa seuraavia verkkotunnuksia käyttävien laitteiden kanssa: <ph name="DOMAINS" />.</translation>
-<translation id="2271088077909873520">Hallitse synkronoitavia tietojasi <ph name="BEGIN_LINK" />Google Hallintapaneelissa<ph name="END_LINK" />.</translation>
+<translation id="2271088077909873520">Synkronoidun datan valinnat <ph name="BEGIN_LINK" />Google Hallintapaneelissa<ph name="END_LINK" />.</translation>
 <translation id="2272570998639520080">Martinilasi</translation>
 <translation id="2276503375879033601">Lisää sovelluksia</translation>
 <translation id="2277255602909579701">Kaikki evästeet ja sivuston tiedot</translation>
@@ -3748,7 +3748,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6686817083349815241">Tallenna salasanasi</translation>
 <translation id="6690659332373509948">Tiedoston jäsennys epäonnistui: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">Valitse valvottava käyttäjä, jonka haluat lisätä tähän laitteeseen.</translation>
-<translation id="6691331417640343772">Hallinnoi synkronoituja tietoja Google Hallintapaneelin avulla</translation>
+<translation id="6691331417640343772">Synkronoidun datan valinnat Google Hallintapaneelissa</translation>
 <translation id="6691936601825168937">S&amp;euraava</translation>
 <translation id="6697492270171225480">Näytä ehdotuksia samankaltaisista sivuista, kun sivua ei löydy</translation>
 <translation id="6698810901424468597">lukea ja muuttaa tietojasi sivustoissa <ph name="WEBSITE_1" /> ja <ph name="WEBSITE_2" /></translation>
