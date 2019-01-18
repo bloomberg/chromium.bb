@@ -16,6 +16,7 @@
 #include "base/task/single_thread_task_runner_thread_mode.h"
 #include "base/task/task_scheduler/scheduler_lock.h"
 #include "base/task/task_traits.h"
+#include "base/thread_annotations.h"
 #include "build/build_config.h"
 
 // Lazy(Sequenced|SingleThread|COMSTA)TaskRunner lazily creates a TaskRunner.
@@ -203,11 +204,10 @@ class BASE_EXPORT ScopedLazyTaskRunnerListForTesting {
   // Add |callback| to the list of callbacks to run on destruction.
   void AddCallback(OnceClosure callback);
 
-  // Synchronizes accesses to |callbacks_|.
   SchedulerLock lock_;
 
   // List of callbacks to run on destruction.
-  std::vector<OnceClosure> callbacks_;
+  std::vector<OnceClosure> callbacks_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(ScopedLazyTaskRunnerListForTesting);
 };
