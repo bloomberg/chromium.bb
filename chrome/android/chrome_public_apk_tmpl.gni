@@ -370,12 +370,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       png_to_webp = true
     }
 
-    # TODO(crbug.com/862719): Remove Java VR code from the monochrome base
-    # module once we can conditionally install the VR DFM.
-    if (enable_vr) {
-      deps += [ "//chrome/browser/android/vr:java" ]
-    }
-
     if ((invoker.target_type == "android_apk" || !modularize_ar) &&
         package_arcore) {
       deps += [ "//third_party/android_deps:com_google_ar_core_java" ]

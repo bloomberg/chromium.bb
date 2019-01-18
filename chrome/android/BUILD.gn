@@ -1836,6 +1836,16 @@ if (modularize_vr) {
     base_module_target = ":chrome_modern_public_base_bundle_module"
     version_code = chrome_modern_version_code
     version_name = chrome_version_name
+    uncompress_shared_libraries = chromium_linker_supported
+  }
+
+  vr_module_tmpl("vr_monochrome_public_bundle_module") {
+    manifest_package = manifest_package
+    module_name = "VrMonochromePublic"
+    base_module_target = ":monochrome_public_base_bundle_module"
+    version_code = monochrome_version_code
+    version_name = chrome_version_name
+    uncompress_shared_libraries = true
   }
 }
 
@@ -1878,11 +1888,20 @@ android_app_bundle("monochrome_public_bundle") {
     proguard_android_sdk_dep = webview_framework_dep
   }
   enable_language_splits = enable_chrome_language_splits
+  extra_modules = []
   if (modularize_ar) {
-    extra_modules = [
+    extra_modules += [
       {
         name = "ar"
         module_target = ":ar_public_bundle_module"
+      },
+    ]
+  }
+  if (modularize_vr) {
+    extra_modules += [
+      {
+        name = "vr"
+        module_target = ":vr_monochrome_public_bundle_module"
       },
     ]
   }

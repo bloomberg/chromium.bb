@@ -3861,6 +3861,9 @@ if (enable_java_templates) {
 
     if (defined(invoker.extra_modules)) {
       _module_count = 0
+
+      # Mark as used in case extra_modules is an empty list.
+      assert(_module_count == 0)
       foreach(_module, invoker.extra_modules) {
         _module_count += 1
         assert(defined(_module.name),
