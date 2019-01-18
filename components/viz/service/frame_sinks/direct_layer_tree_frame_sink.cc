@@ -12,10 +12,9 @@
 #include "build/build_config.h"
 #include "cc/base/histograms.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
+#include "components/viz/common/hit_test/hit_test_data_builder.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/quads/compositor_frame.h"
-#include "components/viz/common/quads/draw_quad.h"
-#include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
@@ -112,51 +111,6 @@ void DirectLayerTreeFrameSink::DetachFromClient() {
   cc::LayerTreeFrameSink::DetachFromClient();
 }
 
-static HitTestRegionList CreateHitTestData(const CompositorFrame& frame) {
-  HitTestRegionList hit_test_region_list;
-  hit_test_region_list.flags = HitTestRegionFlags::kHitTestMouse |
-                               HitTestRegionFlags::kHitTestTouch |
-                               HitTestRegionFlags::kHitTestMine;
-  hit_test_region_list.bounds.set_size(frame.size_in_pixels());
-
-  for (const auto& render_pass : frame.render_pass_list) {
-    // Skip the render_pass if the transform is not invertible (i.e. it will not
-    // be able to receive events).
-    gfx::Transform transform_from_root_target;
-    if (!render_pass->transform_to_root_target.GetInverse(
-            &transform_from_root_target)) {
-      continue;
-    }
-
-    for (const DrawQuad* quad : render_pass->quad_list) {
-      if (quad->material == DrawQuad::SURFACE_CONTENT) {
-        const SurfaceDrawQuad* surface_quad =
-            SurfaceDrawQuad::MaterialCast(quad);
-
-        // Skip the quad if the transform is not invertible (i.e. it will not
-        // be able to receive events).
-        gfx::Transform target_to_quad_transform;
-        if (!quad->shared_quad_state->quad_to_target_transform.GetInverse(
-                &target_to_quad_transform)) {
-          continue;
-        }
-
-        hit_test_region_list.regions.emplace_back();
-        HitTestRegion* hit_test_region = &hit_test_region_list.regions.back();
-        hit_test_region->frame_sink_id =
-            surface_quad->surface_range.end().frame_sink_id();
-        hit_test_region->flags = HitTestRegionFlags::kHitTestMouse |
-                                 HitTestRegionFlags::kHitTestTouch |
-                                 HitTestRegionFlags::kHitTestChildSurface;
-        hit_test_region->rect = surface_quad->rect;
-        hit_test_region->transform =
-            target_to_quad_transform * transform_from_root_target;
-      }
-    }
-  }
-  return hit_test_region_list;
-}
-
 void DirectLayerTreeFrameSink::SubmitCompositorFrame(
     CompositorFrame frame,
     bool hit_test_data_changed,
@@ -193,7 +147,9 @@ void DirectLayerTreeFrameSink::SubmitCompositorFrame(
                          "SubmitHitTestData");
 
   base::Optional<HitTestRegionList> hit_test_region_list(
-      CreateHitTestData(frame));
+      HitTestDataBuilder::CreateHitTestData(
+          frame, /*root_accepts_events=*/true,
+          /*should_ask_for_child_region=*/false));
 
   // Do not send duplicate hit-test data.
   if (!hit_test_data_changed) {

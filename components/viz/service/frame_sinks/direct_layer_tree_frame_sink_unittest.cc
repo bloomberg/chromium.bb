@@ -11,6 +11,7 @@
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
+#include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -233,8 +234,6 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionList) {
   quad3->SetNew(shared_quad_state3, rect3 /* rect */, rect3 /* visible_rect */,
                 SK_ColorBLACK, false /* force_anti_aliasing_off */);
   pass_list.push_back(std::move(pass3));
-  SendRenderPassList(&pass_list);
-  task_runner_->RunUntilIdle();
 
   const SurfaceId child_surface_id4(
       FrameSinkId(4, 1), LocalSurfaceId(1, base::UnguessableToken::Create()));
@@ -260,6 +259,42 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionList) {
                 false /* stretch_content_to_fill_bounds */,
                 false /* ignores_input_event */);
   pass_list.push_back(std::move(pass4));
+
+  auto pass5_root = RenderPass::Create();
+  pass5_root->output_rect = display_rect_;
+  pass5_root->id = 5;
+  auto* shared_quad_state5_root = pass5_root->CreateAndAppendSharedQuadState();
+  gfx::Rect rect5_root(display_rect_);
+  shared_quad_state5_root->SetAll(
+      gfx::Transform(), /*quad_layer_rect=*/rect5_root,
+      /*visible_quad_layer_rect=*/rect5_root, /*clip_rect=*/rect5_root,
+      /*is_clipped=*/false, /*are_contents_opaque=*/false,
+      /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
+  auto* quad5_root_1 =
+      pass5_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+  quad5_root_1->SetNew(shared_quad_state5_root, /*rect=*/rect5_root,
+                       /*visible_rect=*/rect5_root, /*render_pass_id=*/2,
+                       /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
+                       gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                       1.0f);
+  auto* quad5_root_2 =
+      pass5_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+  quad5_root_2->SetNew(shared_quad_state5_root, /*rect=*/rect5_root,
+                       /*visible_rect=*/rect5_root, /*render_pass_id=*/3,
+                       /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
+                       gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                       1.0f);
+  auto* quad5_root_3 =
+      pass5_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+  quad5_root_3->SetNew(shared_quad_state5_root, /*rect=*/rect5_root,
+                       /*visible_rect=*/rect5_root, /*render_pass_id=*/4,
+                       /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
+                       gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                       1.0f);
+  pass_list.push_back(std::move(pass5_root));
+
+  SendRenderPassList(&pass_list);
+  task_runner_->RunUntilIdle();
 
   const auto* hit_test_region_list1 =
       frame_sink_manager_.hit_test_manager()->GetActiveHitTestRegionList(
@@ -378,6 +413,33 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
                     /*force_anti_aliasing_off=*/false);
     pass_list.push_back(std::move(pass3_1));
 
+    auto pass3_root = RenderPass::Create();
+    pass3_root->output_rect = display_rect_;
+    pass3_root->id = 5;
+    auto* shared_quad_state3_root =
+        pass3_root->CreateAndAppendSharedQuadState();
+    gfx::Rect rect3_root(display_rect_);
+    shared_quad_state3_root->SetAll(
+        gfx::Transform(), /*quad_layer_rect=*/rect3_root,
+        /*visible_quad_layer_rect=*/rect3_root, /*clip_rect=*/rect3_root,
+        /*is_clipped=*/false, /*are_contents_opaque=*/false,
+        /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
+    auto* quad3_root_1 =
+        pass3_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+    quad3_root_1->SetNew(shared_quad_state3_root, /*rect=*/rect3_root,
+                         /*visible_rect=*/rect3_root, /*render_pass_id=*/3,
+                         /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
+                         gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(),
+                         false, 1.0f);
+    auto* quad3_root_2 =
+        pass3_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+    quad3_root_2->SetNew(shared_quad_state3_root, /*rect=*/rect3_root,
+                         /*visible_rect=*/rect3_root, /*render_pass_id=*/4,
+                         /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
+                         gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(),
+                         false, 1.0f);
+    pass_list.push_back(std::move(pass3_root));
+
     SendRenderPassList(&pass_list);
     task_runner_->RunUntilIdle();
 
@@ -422,6 +484,33 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
                     /*visible_rect=*/rect4_1, SK_ColorBLACK,
                     /*force_anti_aliasing_off=*/false);
     pass_list.push_back(std::move(pass4_1));
+
+    auto pass4_root = RenderPass::Create();
+    pass4_root->output_rect = display_rect_;
+    pass4_root->id = 5;
+    auto* shared_quad_state4_root =
+        pass4_root->CreateAndAppendSharedQuadState();
+    gfx::Rect rect4_root(display_rect_);
+    shared_quad_state4_root->SetAll(
+        gfx::Transform(), /*quad_layer_rect=*/rect4_root,
+        /*visible_quad_layer_rect=*/rect4_root, /*clip_rect=*/rect4_root,
+        /*is_clipped=*/false, /*are_contents_opaque=*/false,
+        /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
+    auto* quad4_root_1 =
+        pass4_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+    quad4_root_1->SetNew(shared_quad_state4_root, /*rect=*/rect4_root,
+                         /*visible_rect=*/rect4_root, /*render_pass_id=*/5,
+                         /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
+                         gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(),
+                         false, 1.0f);
+    auto* quad4_root_2 =
+        pass4_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+    quad4_root_2->SetNew(shared_quad_state4_root, /*rect=*/rect4_root,
+                         /*visible_rect=*/rect4_root, /*render_pass_id=*/6,
+                         /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
+                         gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(),
+                         false, 1.0f);
+    pass_list.push_back(std::move(pass4_root));
 
     SendRenderPassList(&pass_list);
     task_runner_->RunUntilIdle();
@@ -469,6 +558,34 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
                     /*visible_rect=*/rect5_1, SK_ColorBLACK,
                     /*force_anti_aliasing_off=*/false);
     pass_list.push_back(std::move(pass5_1));
+
+    auto pass5_root = RenderPass::Create();
+    pass5_root->output_rect = display_rect_;
+    pass5_root->id = 5;
+    auto* shared_quad_state5_root =
+        pass5_root->CreateAndAppendSharedQuadState();
+    gfx::Rect rect5_root(display_rect_);
+    shared_quad_state5_root->SetAll(
+        gfx::Transform(), /*quad_layer_rect=*/rect5_root,
+        /*visible_quad_layer_rect=*/rect5_root, /*clip_rect=*/rect5_root,
+        /*is_clipped=*/false, /*are_contents_opaque=*/false,
+        /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
+    auto* quad5_root_1 =
+        pass5_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+    quad5_root_1->SetNew(shared_quad_state5_root, /*rect=*/rect5_root,
+                         /*visible_rect=*/rect5_root, /*render_pass_id=*/7,
+                         /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
+                         gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(),
+                         false, 1.0f);
+    auto* quad5_root_2 =
+        pass5_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+    quad5_root_2->SetNew(shared_quad_state5_root, /*rect=*/rect5_root,
+                         /*visible_rect=*/rect5_root, /*render_pass_id=*/8,
+                         /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
+                         gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(),
+                         false, 1.0f);
+    pass_list.push_back(std::move(pass5_root));
+
     SendRenderPassList(&pass_list);
     task_runner_->RunUntilIdle();
 
@@ -516,6 +633,34 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
                     /*visible_rect=*/rect6_1, SK_ColorBLACK,
                     /*force_anti_aliasing_off=*/false);
     pass_list.push_back(std::move(pass6_1));
+
+    auto pass6_root = RenderPass::Create();
+    pass6_root->output_rect = display_rect_;
+    pass6_root->id = 6;
+    auto* shared_quad_state6_root =
+        pass6_root->CreateAndAppendSharedQuadState();
+    gfx::Rect rect6_root(display_rect_);
+    shared_quad_state6_root->SetAll(
+        gfx::Transform(), /*quad_layer_rect=*/rect6_root,
+        /*visible_quad_layer_rect=*/rect6_root, /*clip_rect=*/rect6_root,
+        /*is_clipped=*/false, /*are_contents_opaque=*/false,
+        /*opacity=*/0.6f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
+    auto* quad6_root_1 =
+        pass6_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+    quad6_root_1->SetNew(shared_quad_state6_root, /*rect=*/rect6_root,
+                         /*visible_rect=*/rect6_root, /*render_pass_id=*/9,
+                         /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
+                         gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(),
+                         false, 1.0f);
+    auto* quad6_root_2 =
+        pass6_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+    quad6_root_2->SetNew(shared_quad_state6_root, /*rect=*/rect6_root,
+                         /*visible_rect=*/rect6_root, /*render_pass_id=*/10,
+                         /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
+                         gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(),
+                         false, 1.0f);
+    pass_list.push_back(std::move(pass6_root));
+
     SendRenderPassList(&pass_list);
     task_runner_->RunUntilIdle();
 
