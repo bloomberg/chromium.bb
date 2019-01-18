@@ -987,6 +987,13 @@ static INLINE int enc_is_ref_frame_buf(const AV1_COMMON *const cm,
   return (ref_frame <= ALTREF_FRAME);
 }
 
+static INLINE void alloc_frame_mvs(AV1_COMMON *const cm, RefCntBuffer *buf) {
+  assert(buf != NULL);
+  ensure_mv_buffer(buf, cm);
+  buf->width = cm->width;
+  buf->height = cm->height;
+}
+
 // Token buffer is only used for palette tokens.
 static INLINE unsigned int get_token_alloc(int mb_rows, int mb_cols,
                                            int sb_size_log2,
