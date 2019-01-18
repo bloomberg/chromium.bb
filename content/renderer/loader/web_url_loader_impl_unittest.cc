@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -25,6 +26,7 @@
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/sync_load_response.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_util.h"
@@ -38,6 +40,7 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -300,9 +303,11 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
   DISALLOW_COPY_AND_ASSIGN(TestWebURLLoaderClient);
 };
 
-class WebURLLoaderImplTest : public testing::Test {
+class WebURLLoaderImplTest : public testing::TestWithParam<bool> {
  public:
   WebURLLoaderImplTest() {
+    scoped_feature_list_.InitWithFeatureState(
+        blink::features::kResourceLoadViaDataPipe, IsResourceLoadViaDataPipe());
     client_.reset(new TestWebURLLoaderClient(&dispatcher_));
   }
 
@@ -352,17 +357,38 @@ class WebURLLoaderImplTest : public testing::Test {
     EXPECT_TRUE(client()->did_receive_response());
   }
 
+  void DoStartLoadingResponseBody() {
+    if (!IsResourceLoadViaDataPipe())
+      return;
+    mojo::ScopedDataPipeConsumerHandle handle_to_pass;
+    MojoResult rv =
+        mojo::CreateDataPipe(nullptr, &body_handle_, &handle_to_pass);
+    ASSERT_EQ(MOJO_RESULT_OK, rv);
+    peer()->OnStartLoadingResponseBody(std::move(handle_to_pass));
+  }
+
   // Assumes it is called only once for a request.
   void DoReceiveData() {
     EXPECT_EQ("", client()->received_data());
-    auto size = strlen(kTestData);
-    peer()->OnReceivedData(
-        std::make_unique<FixedReceivedData>(kTestData, size));
+    uint32_t size = strlen(kTestData);
+    if (IsResourceLoadViaDataPipe()) {
+      body_handle_->WriteData(kTestData, &size, MOJO_WRITE_DATA_FLAG_NONE);
+      EXPECT_EQ(strlen(kTestData), size);
+      base::RunLoop().RunUntilIdle();
+    } else {
+      peer()->OnReceivedData(
+          std::make_unique<FixedReceivedData>(kTestData, size));
+    }
     EXPECT_EQ(kTestData, client()->received_data());
   }
 
   void DoCompleteRequest() {
     EXPECT_FALSE(client()->did_finish());
+    if (body_handle_.is_valid()) {
+      DCHECK(IsResourceLoadViaDataPipe());
+      body_handle_.reset();
+      base::RunLoop().RunUntilIdle();
+    }
     network::URLLoaderCompletionStatus status(net::OK);
     status.encoded_data_length = base::size(kTestData);
     status.encoded_body_length = base::size(kTestData);
@@ -375,6 +401,11 @@ class WebURLLoaderImplTest : public testing::Test {
 
   void DoFailRequest() {
     EXPECT_FALSE(client()->did_finish());
+    if (body_handle_.is_valid()) {
+      DCHECK(IsResourceLoadViaDataPipe());
+      body_handle_.reset();
+      base::RunLoop().RunUntilIdle();
+    }
     network::URLLoaderCompletionStatus status(net::ERR_FAILED);
     status.encoded_data_length = base::size(kTestData);
     status.encoded_body_length = base::size(kTestData);
@@ -389,34 +420,45 @@ class WebURLLoaderImplTest : public testing::Test {
   TestResourceDispatcher* dispatcher() { return &dispatcher_; }
   RequestPeer* peer() { return dispatcher()->peer(); }
 
+  static bool IsResourceLoadViaDataPipe() { return GetParam(); }
+
  private:
   base::test::ScopedTaskEnvironment task_environment_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   TestResourceDispatcher dispatcher_;
+  mojo::ScopedDataPipeProducerHandle body_handle_;
   std::unique_ptr<TestWebURLLoaderClient> client_;
 };
 
-TEST_F(WebURLLoaderImplTest, Success) {
+INSTANTIATE_TEST_CASE_P(WebURLLoaderImplTestP,
+                        WebURLLoaderImplTest,
+                        testing::Bool());
+
+TEST_P(WebURLLoaderImplTest, Success) {
   DoStartAsyncRequest();
   DoReceiveResponse();
+  DoStartLoadingResponseBody();
   DoReceiveData();
   DoCompleteRequest();
   EXPECT_FALSE(dispatcher()->canceled());
   EXPECT_EQ(kTestData, client()->received_data());
 }
 
-TEST_F(WebURLLoaderImplTest, Redirect) {
+TEST_P(WebURLLoaderImplTest, Redirect) {
   DoStartAsyncRequest();
   DoReceiveRedirect();
   DoReceiveResponse();
+  DoStartLoadingResponseBody();
   DoReceiveData();
   DoCompleteRequest();
   EXPECT_FALSE(dispatcher()->canceled());
   EXPECT_EQ(kTestData, client()->received_data());
 }
 
-TEST_F(WebURLLoaderImplTest, Failure) {
+TEST_P(WebURLLoaderImplTest, Failure) {
   DoStartAsyncRequest();
   DoReceiveResponse();
+  DoStartLoadingResponseBody();
   DoReceiveData();
   DoFailRequest();
   EXPECT_FALSE(dispatcher()->canceled());
@@ -424,42 +466,45 @@ TEST_F(WebURLLoaderImplTest, Failure) {
 
 // The client may delete the WebURLLoader during any callback from the loader.
 // These tests make sure that doesn't result in a crash.
-TEST_F(WebURLLoaderImplTest, DeleteOnReceiveRedirect) {
+TEST_P(WebURLLoaderImplTest, DeleteOnReceiveRedirect) {
   client()->set_delete_on_receive_redirect();
   DoStartAsyncRequest();
   DoReceiveRedirect();
 }
 
-TEST_F(WebURLLoaderImplTest, DeleteOnReceiveResponse) {
+TEST_P(WebURLLoaderImplTest, DeleteOnReceiveResponse) {
   client()->set_delete_on_receive_response();
   DoStartAsyncRequest();
   DoReceiveResponse();
 }
 
-TEST_F(WebURLLoaderImplTest, DeleteOnReceiveData) {
+TEST_P(WebURLLoaderImplTest, DeleteOnReceiveData) {
   client()->set_delete_on_receive_data();
   DoStartAsyncRequest();
   DoReceiveResponse();
+  DoStartLoadingResponseBody();
   DoReceiveData();
 }
 
-TEST_F(WebURLLoaderImplTest, DeleteOnFinish) {
+TEST_P(WebURLLoaderImplTest, DeleteOnFinish) {
   client()->set_delete_on_finish();
   DoStartAsyncRequest();
   DoReceiveResponse();
+  DoStartLoadingResponseBody();
   DoReceiveData();
   DoCompleteRequest();
 }
 
-TEST_F(WebURLLoaderImplTest, DeleteOnFail) {
+TEST_P(WebURLLoaderImplTest, DeleteOnFail) {
   client()->set_delete_on_fail();
   DoStartAsyncRequest();
   DoReceiveResponse();
+  DoStartLoadingResponseBody();
   DoReceiveData();
   DoFailRequest();
 }
 
-TEST_F(WebURLLoaderImplTest, DeleteBeforeResponseDataURL) {
+TEST_P(WebURLLoaderImplTest, DeleteBeforeResponseDataURL) {
   blink::WebURLRequest request(GURL("data:text/html;charset=utf-8,blah!"));
   client()->loader()->LoadAsynchronously(request, client());
   client()->DeleteLoader();
@@ -469,7 +514,7 @@ TEST_F(WebURLLoaderImplTest, DeleteBeforeResponseDataURL) {
 
 // Data URL tests.
 
-TEST_F(WebURLLoaderImplTest, DataURL) {
+TEST_P(WebURLLoaderImplTest, DataURL) {
   blink::WebURLRequest request(GURL("data:text/html;charset=utf-8,blah!"));
   client()->loader()->LoadAsynchronously(request, client());
   base::RunLoop().RunUntilIdle();
@@ -478,7 +523,7 @@ TEST_F(WebURLLoaderImplTest, DataURL) {
   EXPECT_FALSE(client()->error());
 }
 
-TEST_F(WebURLLoaderImplTest, DataURLDeleteOnReceiveResponse) {
+TEST_P(WebURLLoaderImplTest, DataURLDeleteOnReceiveResponse) {
   blink::WebURLRequest request(GURL("data:text/html;charset=utf-8,blah!"));
   client()->set_delete_on_receive_response();
   client()->loader()->LoadAsynchronously(request, client());
@@ -488,7 +533,7 @@ TEST_F(WebURLLoaderImplTest, DataURLDeleteOnReceiveResponse) {
   EXPECT_FALSE(client()->did_finish());
 }
 
-TEST_F(WebURLLoaderImplTest, DataURLDeleteOnReceiveData) {
+TEST_P(WebURLLoaderImplTest, DataURLDeleteOnReceiveData) {
   blink::WebURLRequest request(GURL("data:text/html;charset=utf-8,blah!"));
   client()->set_delete_on_receive_data();
   client()->loader()->LoadAsynchronously(request, client());
@@ -498,7 +543,7 @@ TEST_F(WebURLLoaderImplTest, DataURLDeleteOnReceiveData) {
   EXPECT_FALSE(client()->did_finish());
 }
 
-TEST_F(WebURLLoaderImplTest, DataURLDeleteOnFinish) {
+TEST_P(WebURLLoaderImplTest, DataURLDeleteOnFinish) {
   blink::WebURLRequest request(GURL("data:text/html;charset=utf-8,blah!"));
   client()->set_delete_on_finish();
   client()->loader()->LoadAsynchronously(request, client());
@@ -508,7 +553,7 @@ TEST_F(WebURLLoaderImplTest, DataURLDeleteOnFinish) {
   EXPECT_TRUE(client()->did_finish());
 }
 
-TEST_F(WebURLLoaderImplTest, DataURLDefersLoading) {
+TEST_P(WebURLLoaderImplTest, DataURLDefersLoading) {
   blink::WebURLRequest request(GURL("data:text/html;charset=utf-8,blah!"));
   client()->loader()->LoadAsynchronously(request, client());
 
@@ -543,7 +588,7 @@ TEST_F(WebURLLoaderImplTest, DataURLDefersLoading) {
   EXPECT_FALSE(client()->error());
 }
 
-TEST_F(WebURLLoaderImplTest, DefersLoadingBeforeStart) {
+TEST_P(WebURLLoaderImplTest, DefersLoadingBeforeStart) {
   client()->loader()->SetDefersLoading(true);
   EXPECT_FALSE(dispatcher()->defers_loading());
   DoStartAsyncRequest();
@@ -552,7 +597,7 @@ TEST_F(WebURLLoaderImplTest, DefersLoadingBeforeStart) {
 
 // Checks that the navigation response override parameters provided on
 // navigation commit are properly applied.
-TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
+TEST_P(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
   // Initialize the request and the stream override.
   const GURL kNavigationURL = GURL(kTestURL);
   const std::string kMimeType = "text/html";
@@ -582,13 +627,14 @@ TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
   ASSERT_FALSE(client()->response().IsNull());
   EXPECT_EQ(kMimeType, client()->response().MimeType().Latin1());
 
+  DoStartLoadingResponseBody();
   DoReceiveData();
   DoCompleteRequest();
   EXPECT_FALSE(dispatcher()->canceled());
   EXPECT_EQ(kTestData, client()->received_data());
 }
 
-TEST_F(WebURLLoaderImplTest, ResponseIPAddress) {
+TEST_P(WebURLLoaderImplTest, ResponseIPAddress) {
   GURL url("http://example.test/");
 
   struct TestCase {
@@ -614,7 +660,7 @@ TEST_F(WebURLLoaderImplTest, ResponseIPAddress) {
   };
 }
 
-TEST_F(WebURLLoaderImplTest, ResponseCert) {
+TEST_P(WebURLLoaderImplTest, ResponseCert) {
   GURL url("https://test.example/");
 
   net::CertificateList certs;
@@ -656,7 +702,7 @@ TEST_F(WebURLLoaderImplTest, ResponseCert) {
             security_details.certificate[1]);
 }
 
-TEST_F(WebURLLoaderImplTest, ResponseCertWithNoSANs) {
+TEST_P(WebURLLoaderImplTest, ResponseCertWithNoSANs) {
   GURL url("https://test.example/");
 
   net::CertificateList certs;
@@ -690,7 +736,7 @@ TEST_F(WebURLLoaderImplTest, ResponseCertWithNoSANs) {
 
 // Verifies that the lengths used by the PerformanceResourceTiming API are
 // correctly assigned for sync XHR.
-TEST_F(WebURLLoaderImplTest, SyncLengths) {
+TEST_P(WebURLLoaderImplTest, SyncLengths) {
   static const char kBodyData[] =  "Today is Thursday";
   const int kEncodedBodyLength = 30;
   const int kEncodedDataLength = 130;
