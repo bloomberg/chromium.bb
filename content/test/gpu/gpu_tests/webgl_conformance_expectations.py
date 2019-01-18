@@ -520,8 +520,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan', 'amd'], bug=2922) # ANGLE bug ID
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['win', 'passthrough', 'vulkan', 'amd'], bug=2722) # ANGLE bug ID
-    self.Fail('conformance/textures/image_bitmap_from_canvas/*',
-        ['win', 'passthrough', 'vulkan', 'amd'], bug=2913) # ANGLE bug ID
     self.Fail('deqp/data/gles2/shaders/conversions.html',
         ['win', 'passthrough', 'vulkan', 'amd'], bug=2926) # ANGLE bug ID
     self.Fail('deqp/data/gles2/shaders/linkage.html',
