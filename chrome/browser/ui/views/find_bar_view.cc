@@ -370,12 +370,12 @@ void FindBarView::AddedToWidget() {
 ////////////////////////////////////////////////////////////////////////////////
 // FindBarView, DropdownBarHostDelegate implementation:
 
-void FindBarView::SetFocusAndSelection(bool select_all) {
+void FindBarView::FocusAndSelectAll() {
   find_text_->RequestFocus();
 #if !defined(OS_WIN)
   GetWidget()->GetInputMethod()->ShowVirtualKeyboardIfEnabled();
 #endif
-  if (select_all && !find_text_->text().empty())
+  if (!find_text_->text().empty())
     find_text_->SelectAll(true);
 }
 

@@ -153,7 +153,7 @@ void ChromeNewWindowClient::NewTab() {
     chrome::NewTab(browser);
   }
 
-  browser->SetFocusToLocationBar(false);
+  browser->SetFocusToLocationBar();
 }
 
 void ChromeNewWindowClient::NewTabWithUrl(const GURL& url,

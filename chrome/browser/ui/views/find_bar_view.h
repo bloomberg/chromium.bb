@@ -73,7 +73,7 @@ class FindBarView : public views::View,
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // DropdownBarHostDelegate:
-  void SetFocusAndSelection(bool select_all) override;
+  void FocusAndSelectAll() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

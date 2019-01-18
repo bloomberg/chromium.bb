@@ -1098,7 +1098,7 @@ bool Browser::ShouldPreserveAbortedURLs(WebContents* source) {
   return search::IsNTPURL(committed_url, profile);
 }
 
-void Browser::SetFocusToLocationBar(bool select_all) {
+void Browser::SetFocusToLocationBar() {
   // Two differences between this and FocusLocationBar():
   // (1) This doesn't get recorded in user metrics, since it's called
   //     internally.
@@ -1106,7 +1106,7 @@ void Browser::SetFocusToLocationBar(bool select_all) {
   //     the focus.  FocusLocationBar() is only reached when the location bar is
   //     focusable, but this may be reached at other times, e.g. while in
   //     fullscreen mode, where we need to leave focus in a consistent state.
-  window_->SetFocusToLocationBar(select_all);
+  window_->SetFocusToLocationBar();
 }
 
 content::KeyboardEventProcessingResult Browser::PreHandleKeyboardEvent(

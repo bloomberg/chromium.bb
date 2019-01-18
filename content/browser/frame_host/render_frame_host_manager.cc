@@ -2150,7 +2150,7 @@ void RenderFrameHostManager::CommitPendingWebUI() {
   render_frame_host_->CommitPendingWebUI();
 
   if (will_focus_location_bar)
-    delegate_->SetFocusToLocationBar(false);
+    delegate_->SetFocusToLocationBar();
 }
 
 void RenderFrameHostManager::CommitPending(
@@ -2246,7 +2246,7 @@ void RenderFrameHostManager::CommitPending(
   delegate_->UpdateRenderViewSizeForRenderManager(is_main_frame);
 
   if (will_focus_location_bar) {
-    delegate_->SetFocusToLocationBar(false);
+    delegate_->SetFocusToLocationBar();
   } else if (focus_render_view && render_frame_host_->GetView()) {
     if (is_main_frame) {
       render_frame_host_->GetView()->Focus();

@@ -87,7 +87,7 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsFullscreenBubbleVisible() const override;
   LocationBar* GetLocationBar() const override;
   PageActionIconContainer* GetPageActionIconContainer() override;
-  void SetFocusToLocationBar(bool select_all) override {}
+  void SetFocusToLocationBar() override {}
   void UpdateReloadStopState(bool is_loading, bool force) override {}
   void UpdateToolbar(content::WebContents* contents) override {}
   void UpdateToolbarVisibility(bool visible, bool animate) override {}
@@ -194,7 +194,7 @@ class TestBrowserWindow : public BrowserWindow {
     base::TimeTicks GetMatchSelectionTimestamp() const override;
     void AcceptInput() override {}
     void AcceptInput(base::TimeTicks match_selection_timestamp) override {}
-    void FocusLocation(bool select_all) override {}
+    void FocusLocation() override {}
     void FocusSearch() override {}
     void UpdateContentSettingsIcons() override {}
     void UpdateSaveCreditCardIcon() override {}

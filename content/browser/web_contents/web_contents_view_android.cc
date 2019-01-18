@@ -192,7 +192,7 @@ void WebContentsViewAndroid::Focus() {
 
 void WebContentsViewAndroid::SetInitialFocus() {
   if (web_contents_->FocusLocationBarByDefault())
-    web_contents_->SetFocusToLocationBar(false);
+    web_contents_->SetFocusToLocationBar();
   else
     Focus();
 }

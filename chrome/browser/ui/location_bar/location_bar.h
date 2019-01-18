@@ -44,8 +44,8 @@ class LocationBar {
   // latency of page loads starting at user input.
   virtual void AcceptInput(base::TimeTicks match_selection_timestamp) = 0;
 
-  // Focuses the location bar.  Optionally also selects its contents.
-  virtual void FocusLocation(bool select_all) = 0;
+  // Focuses the location bar and selects its contents.
+  virtual void FocusLocation() = 0;
 
   // Puts the user into keyword mode with their default search provider.
   virtual void FocusSearch() = 0;
