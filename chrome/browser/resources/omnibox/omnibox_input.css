@@ -36,9 +36,8 @@ select {
   font-size: inherit;
 }
 
-:host,
-.arrow-padding {
-  font-size: 14px;
+:host {
+  font-size: .875rem;
 }
 
 .row {
@@ -48,7 +47,7 @@ select {
 
 .section-header {
   color: gray;
-  font-size: 12px;
+  font-size: .75rem;
   margin-inline-start: var(--input-alignment-indentation);
 }
 
@@ -117,7 +116,6 @@ input[type=text].input-icon-container {
 .arrow-container {
   --arrow-size: 5px;
   display: flex;
-  font-size: 0;
   margin-top: -5px;
 }
 
