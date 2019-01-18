@@ -497,6 +497,10 @@ void WebSettingsImpl::SetPresentationReceiver(bool enabled) {
   settings_->SetPresentationReceiver(enabled);
 }
 
+void WebSettingsImpl::SetHighlightAds(bool enabled) {
+  settings_->SetHighlightAds(enabled);
+}
+
 void WebSettingsImpl::SetHistoryEntryRequiresUserGesture(bool enabled) {
   settings_->SetHistoryEntryRequiresUserGesture(enabled);
 }

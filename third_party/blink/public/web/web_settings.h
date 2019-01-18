@@ -166,6 +166,7 @@ class WebSettings {
   virtual void SetForceZeroLayoutHeight(bool) = 0;
   virtual void SetFullscreenSupported(bool) = 0;
   virtual void SetHideDownloadUI(bool) = 0;
+  virtual void SetHighlightAds(bool) = 0;
   virtual void SetHistoryEntryRequiresUserGesture(bool) = 0;
   virtual void SetHyperlinkAuditingEnabled(bool) = 0;
   virtual void SetIgnoreMainFrameOverflowHiddenQuirk(bool) = 0;

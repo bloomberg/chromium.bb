@@ -2279,9 +2279,6 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
   });
 
   frame_->GetPage()->GetValidationMessageClient().LayoutOverlay();
-  frame_->UpdateFrameColorOverlay();
-  ForAllChildLocalFrameViews(
-      [](LocalFrameView& view) { view.frame_->UpdateFrameColorOverlay(); });
 
   if (target_state == DocumentLifecycle::kPaintClean) {
     ForAllNonThrottledLocalFrameViews(
@@ -2597,9 +2594,10 @@ void LocalFrameView::PaintTree() {
       frame_->GetPage()->GetValidationMessageClient().PaintOverlay(
           graphics_context);
       frame_->PaintFrameColorOverlay(graphics_context);
-      ForAllChildLocalFrameViews([&graphics_context](LocalFrameView& view) {
-        view.frame_->PaintFrameColorOverlay(graphics_context);
-      });
+      ForAllNonThrottledLocalFrameViews(
+          [&graphics_context](LocalFrameView& view) {
+            view.frame_->PaintFrameColorOverlay(graphics_context);
+          });
 
       // Devtools overlays query the inspected page's paint data so this update
       // needs to be after other paintings.
@@ -2645,7 +2643,7 @@ void LocalFrameView::PaintTree() {
 
     frame_->GetPage()->GetValidationMessageClient().PaintOverlay();
     frame_->PaintFrameColorOverlay();
-    ForAllChildLocalFrameViews(
+    ForAllNonThrottledLocalFrameViews(
         [](LocalFrameView& view) { view.frame_->PaintFrameColorOverlay(); });
 
     // Devtools overlays query the inspected page's paint data so this update

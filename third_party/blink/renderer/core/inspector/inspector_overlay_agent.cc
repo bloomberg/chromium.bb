@@ -271,6 +271,7 @@ InspectorOverlayAgent::InspectorOverlayAgent(
       backend_node_id_to_inspect_(0),
       enabled_(&agent_state_, false),
       suspended_(&agent_state_, false),
+      show_ad_highlights_(&agent_state_, false),
       show_debug_borders_(&agent_state_, false),
       show_fps_counter_(&agent_state_, false),
       show_paint_rects_(&agent_state_, false),
@@ -299,6 +300,7 @@ void InspectorOverlayAgent::Trace(blink::Visitor* visitor) {
 }
 
 void InspectorOverlayAgent::Restore() {
+  setShowAdHighlights(show_ad_highlights_.Get());
   setShowDebugBorders(show_debug_borders_.Get());
   setShowFPSCounter(show_fps_counter_.Get());
   setShowPaintRects(show_paint_rects_.Get());
@@ -343,6 +345,7 @@ Response InspectorOverlayAgent::enable() {
 
 Response InspectorOverlayAgent::disable() {
   enabled_.Clear();
+  setShowAdHighlights(false);
   setShowDebugBorders(false);
   setShowFPSCounter(false);
   setShowPaintRects(false);
@@ -354,6 +357,12 @@ Response InspectorOverlayAgent::disable() {
   SetSearchingForNode(kNotSearching,
                       Maybe<protocol::Overlay::HighlightConfig>());
   SetNeedsUnbufferedInput(false);
+  return Response::OK();
+}
+
+Response InspectorOverlayAgent::setShowAdHighlights(bool show) {
+  show_ad_highlights_.Set(show);
+  frame_impl_->ViewImpl()->GetPage()->GetSettings().SetHighlightAds(show);
   return Response::OK();
 }
 

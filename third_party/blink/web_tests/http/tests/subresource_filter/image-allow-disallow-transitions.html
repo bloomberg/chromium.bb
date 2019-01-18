@@ -47,7 +47,7 @@ var numPendingImages =
     Object.keys(INITIAL_URLS).length * Object.keys(FINAL_URLS).length;
 
 if (window.testRunner)
-  testRunner.setDisallowedSubresourcePathSuffixes(["gamma.png", "delta.png"]);
+  testRunner.setDisallowedSubresourcePathSuffixes(["gamma.png", "delta.png"], true /* block_subresources */);
 
 let table = document.createElement("table");
 let headerRow = table.insertRow();

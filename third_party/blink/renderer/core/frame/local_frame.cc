@@ -1501,13 +1501,29 @@ bool LocalFrame::IsAdRoot() const {
 
 void LocalFrame::SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type) {
   DCHECK(!IsMainFrame());
+
+  // Once |ad_frame_type_| has been set to an ad type on this frame, it cannot
+  // be changed.
   if (ad_frame_type == blink::mojom::AdFrameType::kNonAd)
     return;
   if (ad_frame_type_ != blink::mojom::AdFrameType::kNonAd)
     return;
   ad_frame_type_ = ad_frame_type;
+  UpdateAdHighlight();
   frame_scheduler_->SetIsAdFrame();
   InstanceCounters::IncrementCounter(InstanceCounters::kAdSubframeCounter);
+}
+
+void LocalFrame::UpdateAdHighlight() {
+  if (!IsAdRoot()) {
+    // Verify that non root ad subframes do not have an overlay.
+    DCHECK(IsMainFrame() || !frame_color_overlay_);
+    return;
+  }
+  if (GetPage()->GetSettings().GetHighlightAds())
+    SetSubframeColorOverlay(SkColorSetARGB(128, 255, 0, 0));
+  else
+    SetSubframeColorOverlay(Color::kTransparent);
 }
 
 void LocalFrame::PauseSubresourceLoading(
@@ -1664,6 +1680,8 @@ class FrameColorOverlay final : public FrameOverlay::Delegate {
                          const IntSize&) const override {
     const auto* view = frame_->View();
     DCHECK(view);
+    if (view->Width() == 0 || view->Height() == 0)
+      return;
     ScopedPaintChunkProperties properties(
         graphics_context.GetPaintController(),
         view->GetLayoutView()->FirstFragment().LocalBorderBoxProperties(),
@@ -1706,25 +1724,25 @@ void LocalFrame::SetFrameColorOverlay(SkColor color) {
   // update below will be able to attach to the root graphics layer.
   if (View()) {
     View()->UpdateLifecycleToCompositingCleanPlusScrolling();
-    UpdateFrameColorOverlay();
-  }
-}
-
-void LocalFrame::UpdateFrameColorOverlay() {
-  if (frame_color_overlay_)
     frame_color_overlay_->Update();
+  }
 }
 
 void LocalFrame::PaintFrameColorOverlay() {
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  if (frame_color_overlay_ && frame_color_overlay_->GetGraphicsLayer())
+  if (!frame_color_overlay_)
+    return;
+  frame_color_overlay_->Update();
+  if (frame_color_overlay_->GetGraphicsLayer())
     frame_color_overlay_->GetGraphicsLayer()->Paint(nullptr);
 }
 
 void LocalFrame::PaintFrameColorOverlay(GraphicsContext& context) {
   DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  if (frame_color_overlay_)
-    frame_color_overlay_->Paint(context);
+  if (!frame_color_overlay_)
+    return;
+  frame_color_overlay_->Update();
+  frame_color_overlay_->Paint(context);
 }
 
 void LocalFrame::ForciblyPurgeV8Memory() {

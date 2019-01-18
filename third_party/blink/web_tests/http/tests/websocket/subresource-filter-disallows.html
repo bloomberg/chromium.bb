@@ -2,7 +2,7 @@
 <script src="../resources/testharnessreport.js"></script>
 <script>
 if (window.testRunner)
-  testRunner.setDisallowedSubresourcePathSuffixes(["echo"]);
+  testRunner.setDisallowedSubresourcePathSuffixes(["echo"], true /* block_subresources */);
 
 async_test(t => {
   let ws_allow = new WebSocket("ws://localhost:8880/pong?payload=Hello");

@@ -393,6 +393,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   bool IsAdRoot() const;
   void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type);
 
+  // Updates the frame color overlay to match the highlight ad setting.
+  void UpdateAdHighlight();
+
   // Binds |request| and prevents resource loading until either the frame is
   // navigated or the request pipe is closed.
   void PauseSubresourceLoading(
@@ -420,10 +423,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Overlays a color on top of this LocalFrameView if it is associated with
   // a subframe. Should not have multiple consumers.
   void SetSubframeColorOverlay(SkColor color);
-
-  // Called from LocalFrameView when updating document life cycle.
-  void UpdateFrameColorOverlay();
   void PaintFrameColorOverlay();
+
   // For CompositeAfterPaint.
   void PaintFrameColorOverlay(GraphicsContext&);
 

@@ -504,6 +504,10 @@ void TestRunnerForSpecificView::RemoveWebPageOverlay() {
   web_view()->SetMainFrameOverlayColor(SK_ColorTRANSPARENT);
 }
 
+void TestRunnerForSpecificView::SetHighlightAds(bool enabled) {
+  web_view()->GetSettings()->SetHighlightAds(enabled);
+}
+
 void TestRunnerForSpecificView::ForceNextWebGLContextCreationToFail() {
   web_view()->ForceNextWebGLContextCreationToFail();
 }

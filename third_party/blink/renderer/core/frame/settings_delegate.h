@@ -66,6 +66,7 @@ class CORE_EXPORT SettingsDelegate {
     kDOMWorldsChange,
     kMediaControlsChange,
     kPluginsChange,
+    kHighlightAdsChange,
   };
 
   virtual void SettingsChanged(ChangeType) = 0;

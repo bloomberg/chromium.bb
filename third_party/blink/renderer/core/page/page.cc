@@ -76,6 +76,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/plugins/plugin_data.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace blink {
 
@@ -652,6 +653,14 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
       break;
     case SettingsDelegate::kPluginsChange: {
       NotifyPluginsChanged();
+      break;
+    }
+    case SettingsDelegate::kHighlightAdsChange: {
+      for (Frame* frame = MainFrame(); frame;
+           frame = frame->Tree().TraverseNext()) {
+        if (frame->IsLocalFrame())
+          ToLocalFrame(frame)->UpdateAdHighlight();
+      }
       break;
     }
   }
