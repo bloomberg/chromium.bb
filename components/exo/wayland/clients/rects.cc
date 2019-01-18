@@ -30,6 +30,7 @@
 #include "components/exo/wayland/clients/client_base.h"
 #include "components/exo/wayland/clients/client_helper.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
