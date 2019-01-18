@@ -321,6 +321,7 @@ void ManagementUIHandler::HandleGetManagementTitle(
 void ManagementUIHandler::HandleGetDeviceManagementStatus(
     const base::ListValue* args) {
   base::RecordAction(base::UserMetricsAction("ManagementPageViewed"));
+  AllowJavascript();
 
 #if defined(OS_CHROMEOS)
   policy::BrowserPolicyConnectorChromeOS* connector =
@@ -339,6 +340,7 @@ void ManagementUIHandler::HandleGetDeviceManagementStatus(
 void ManagementUIHandler::HandleGetReportingDevice(
     const base::ListValue* args) {
   base::Value report_sources(base::Value::Type::LIST);
+  AllowJavascript();
 
 // Only Chrome OS devices report status.
 #if defined(OS_CHROMEOS)
@@ -352,6 +354,7 @@ void ManagementUIHandler::HandleGetReportingDevice(
 void ManagementUIHandler::HandleGetReportingSecurity(
     const base::ListValue* args) {
   base::Value report_sources(base::Value::Type::LIST);
+  AllowJavascript();
 
 // Only Chrome OS devices report status.
 #if defined(OS_CHROMEOS)
@@ -365,6 +368,7 @@ void ManagementUIHandler::HandleGetReportingSecurity(
 void ManagementUIHandler::HandleGetReportingUserActivity(
     const base::ListValue* args) {
   base::Value report_sources(base::Value::Type::LIST);
+  AllowJavascript();
 
 // Only Chrome OS devices report status.
 #if defined(OS_CHROMEOS)
@@ -377,6 +381,7 @@ void ManagementUIHandler::HandleGetReportingUserActivity(
 
 void ManagementUIHandler::HandleGetReportingWeb(const base::ListValue* args) {
   base::Value report_sources(base::Value::Type::LIST);
+  AllowJavascript();
 
 // Only Chrome OS devices report status.
 #if defined(OS_CHROMEOS)
@@ -389,6 +394,7 @@ void ManagementUIHandler::HandleGetReportingWeb(const base::ListValue* args) {
 
 void ManagementUIHandler::HandleGetReportingInfo(const base::ListValue* args) {
   base::Value report_sources(base::Value::Type::LIST);
+  AllowJavascript();
 
 // Only Chrome OS devices report status.
 #if defined(OS_CHROMEOS)
@@ -400,6 +406,7 @@ void ManagementUIHandler::HandleGetReportingInfo(const base::ListValue* args) {
 }
 
 void ManagementUIHandler::HandleGetExtensions(const base::ListValue* args) {
+  AllowJavascript();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // List of all enabled extensions
   const extensions::ExtensionSet& extensions =
@@ -420,6 +427,7 @@ void ManagementUIHandler::HandleGetLocalTrustRootsInfo(
     const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   base::Value trust_roots_configured(false);
+  AllowJavascript();
 // Only Chrome OS could have installed trusted certificates.
 #if defined(OS_CHROMEOS)
   policy::PolicyCertService* policy_service =
