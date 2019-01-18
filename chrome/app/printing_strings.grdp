@@ -210,8 +210,8 @@
     <message name="IDS_PRINT_PREVIEW_MANAGE" desc="Text of link to manage printers.">
       Manage...
     </message>
-    <message name="IDS_PRINT_PREVIEW_SELECT_DESTINATION" desc="Dropdown option to select a destination from dialog." meaning="Label text">
-      Select destination
+    <message name="IDS_PRINT_PREVIEW_MORE_DESTINATIONS" desc="Dropdown option to view more print destinations in a dialog." meaning="Label text">
+      More destinations
     </message>
     <message name="IDS_PRINT_PREVIEW_OFFLINE_FOR_YEAR" desc="Shown when printer has been offline for more than a year.">
       Offline for more than a year
