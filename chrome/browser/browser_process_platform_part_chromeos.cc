@@ -113,7 +113,7 @@ void BrowserProcessPlatformPart::InitializeCrosComponentManager() {
   DCHECK(!cros_component_manager_);
   cros_component_manager_ =
       std::make_unique<component_updater::CrOSComponentInstaller>(
-          component_updater::MetadataTable::Create(
+          std::make_unique<component_updater::MetadataTable>(
               g_browser_process->local_state()),
           g_browser_process->component_updater());
 
