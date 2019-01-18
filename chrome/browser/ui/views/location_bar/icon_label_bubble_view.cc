@@ -66,10 +66,9 @@ IconLabelBubbleView::SeparatorView::SeparatorView(IconLabelBubbleView* owner) {
 }
 
 void IconLabelBubbleView::SeparatorView::OnPaint(gfx::Canvas* canvas) {
-  const SkColor plain_text_color = owner_->GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultColor);
+  const SkColor background_color = owner_->GetParentBackgroundColor();
   const SkColor separator_color =
-      SkColorSetA(color_utils::GetColorWithMaxContrast(plain_text_color), 0x66);
+      SkColorSetA(color_utils::GetColorWithMaxContrast(background_color), 0x69);
   const float x = GetLocalBounds().right() -
                   owner_->GetEndPaddingWithSeparator() -
                   1.0f / canvas->image_scale();
@@ -179,6 +178,11 @@ void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
 
 void IconLabelBubbleView::SetFontList(const gfx::FontList& font_list) {
   label_->SetFontList(font_list);
+}
+
+SkColor IconLabelBubbleView::GetParentBackgroundColor() const {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultBackground);
 }
 
 bool IconLabelBubbleView::ShouldShowSeparator() const {
@@ -403,11 +407,6 @@ void IconLabelBubbleView::OnTouchUiChanged() {
   // only call it when this view is showing.
   if (visible())
     PreferredSizeChanged();
-}
-
-SkColor IconLabelBubbleView::GetParentBackgroundColor() const {
-  return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultBackground);
 }
 
 gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {

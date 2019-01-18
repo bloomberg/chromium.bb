@@ -82,6 +82,9 @@ class IconLabelBubbleView : public views::InkDropObserver,
   const views::ImageView* GetImageView() const { return image_; }
   views::ImageView* GetImageView() { return image_; }
 
+  // Returns the color of the IconLabelBubbleView's surrounding context.
+  SkColor GetParentBackgroundColor() const;
+
   // Exposed for testing.
   SeparatorView* separator_view() const { return separator_view_; }
 
@@ -154,8 +157,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   void OnTouchUiChanged() override;
 
   const gfx::FontList& font_list() const { return label_->font_list(); }
-
-  SkColor GetParentBackgroundColor() const;
 
   gfx::Size GetSizeForLabelWidth(int label_width) const;
 
