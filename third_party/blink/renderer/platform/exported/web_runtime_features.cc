@@ -594,10 +594,6 @@ void WebRuntimeFeatures::EnableBackgroundFetch(bool enable) {
   RuntimeEnabledFeatures::SetBackgroundFetchEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableBackgroundFetchUploads(bool enable) {
-  RuntimeEnabledFeatures::SetBackgroundFetchUploadsEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableMergeBlockingNonBlockingPools(bool enable) {
   RuntimeEnabledFeatures::SetMergeBlockingNonBlockingPoolsEnabled(enable);
 }

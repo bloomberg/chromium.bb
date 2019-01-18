@@ -57,10 +57,6 @@ const base::Feature kAwaitOptimization{"AwaitOptimization",
 const base::Feature kBackgroundFetch{"BackgroundFetch",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables using uploads in a Background Fetch.
-const base::Feature kBackgroundFetchUploads{"BackgroundFetchUploads",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable using the BackForwardCache.
 const base::Feature kBackForwardCache{"BackForwardCache",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
