@@ -387,8 +387,8 @@ class CookieTreeAppCacheNode : public CookieTreeNode {
   }
 
   void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    callback.Run(this->GetDetailedInfo().origin,
-                 this->GetDetailedInfo().appcache_info->size);
+    const DetailedInfo info = GetDetailedInfo();
+    callback.Run(info.origin, info.appcache_info->size);
   }
 
  private:
@@ -432,8 +432,8 @@ class CookieTreeDatabaseNode : public CookieTreeNode {
   }
 
   void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    callback.Run(this->GetDetailedInfo().origin,
-                 this->GetDetailedInfo().database_info->size);
+    const DetailedInfo info = GetDetailedInfo();
+    callback.Run(info.origin, info.database_info->size);
   }
 
  private:
@@ -475,8 +475,8 @@ class CookieTreeLocalStorageNode : public CookieTreeNode {
   }
 
   void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    callback.Run(this->GetDetailedInfo().origin,
-                 this->GetDetailedInfo().local_storage_info->size);
+    const DetailedInfo info = GetDetailedInfo();
+    callback.Run(info.origin, info.local_storage_info->size);
   }
 
  private:
@@ -559,8 +559,8 @@ class CookieTreeIndexedDBNode : public CookieTreeNode {
   }
 
   void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    callback.Run(this->GetDetailedInfo().origin,
-                 this->GetDetailedInfo().usage_info->total_size_bytes);
+    const DetailedInfo info = GetDetailedInfo();
+    callback.Run(info.origin, info.usage_info->total_size_bytes);
   }
 
  private:
@@ -603,11 +603,11 @@ class CookieTreeFileSystemNode : public CookieTreeNode {
 
   void RetrieveSize(const SizeRetrievalCallback& callback) override {
     int64_t size = 0;
-    for (auto const& usage :
-         this->GetDetailedInfo().file_system_info->usage_map) {
+    const DetailedInfo info = GetDetailedInfo();
+    for (auto const& usage : info.file_system_info->usage_map) {
       size += usage.second;
     }
-    callback.Run(this->GetDetailedInfo().origin, size);
+    callback.Run(info.origin, size);
   }
 
  private:
@@ -686,8 +686,8 @@ class CookieTreeServiceWorkerNode : public CookieTreeNode {
   }
 
   void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    callback.Run(this->GetDetailedInfo().origin,
-                 this->GetDetailedInfo().usage_info->total_size_bytes);
+    const DetailedInfo info = GetDetailedInfo();
+    callback.Run(info.origin, info.usage_info->total_size_bytes);
   }
 
  private:
@@ -768,8 +768,8 @@ class CookieTreeCacheStorageNode : public CookieTreeNode {
   }
 
   void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    callback.Run(this->GetDetailedInfo().origin,
-                 this->GetDetailedInfo().usage_info->total_size_bytes);
+    const DetailedInfo info = GetDetailedInfo();
+    callback.Run(info.origin, info.usage_info->total_size_bytes);
   }
 
  private:
@@ -806,13 +806,14 @@ class CookieTreeMediaLicenseNode : public CookieTreeNode {
       container->media_license_info_list_.erase(media_license_info_);
     }
   }
+
   DetailedInfo GetDetailedInfo() const override {
     return DetailedInfo().InitMediaLicense(&*media_license_info_);
   }
 
   void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    callback.Run(this->GetDetailedInfo().origin,
-                 this->GetDetailedInfo().media_license_info->size);
+    const DetailedInfo info = GetDetailedInfo();
+    callback.Run(info.origin, info.media_license_info->size);
   }
 
  private:
@@ -887,24 +888,38 @@ class CookieTreeCookiesNode : public CookieTreeNode {
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+// CookieTreeCollectionNode
+
+class CookieTreeCollectionNode : public CookieTreeNode {
+ public:
+  explicit CookieTreeCollectionNode(const base::string16& title)
+      : CookieTreeNode(title) {}
+
+  ~CookieTreeCollectionNode() override {}
+
+  void RetrieveSize(const SizeRetrievalCallback& callback) final {
+    for (int i = 0; i < this->child_count(); ++i) {
+      this->GetChild(i)->RetrieveSize(callback);
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CookieTreeCollectionNode);
+};
+
+///////////////////////////////////////////////////////////////////////////////
 // CookieTreeAppCachesNode
 
-class CookieTreeAppCachesNode : public CookieTreeNode {
+class CookieTreeAppCachesNode : public CookieTreeCollectionNode {
  public:
   CookieTreeAppCachesNode()
-      : CookieTreeNode(
+      : CookieTreeCollectionNode(
             l10n_util::GetStringUTF16(IDS_COOKIES_APPLICATION_CACHES)) {}
 
   ~CookieTreeAppCachesNode() override {}
 
   DetailedInfo GetDetailedInfo() const override {
     return DetailedInfo().Init(DetailedInfo::TYPE_APPCACHES);
-  }
-
-  void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    for (int i = 0; i < this->child_count(); ++i) {
-      this->GetChild(i)->RetrieveSize(callback);
-    }
   }
 
   void AddAppCacheNode(std::unique_ptr<CookieTreeAppCacheNode> child) {
@@ -918,21 +933,16 @@ class CookieTreeAppCachesNode : public CookieTreeNode {
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeDatabasesNode
 
-class CookieTreeDatabasesNode : public CookieTreeNode {
+class CookieTreeDatabasesNode : public CookieTreeCollectionNode {
  public:
   CookieTreeDatabasesNode()
-      : CookieTreeNode(l10n_util::GetStringUTF16(IDS_COOKIES_WEB_DATABASES)) {}
+      : CookieTreeCollectionNode(
+            l10n_util::GetStringUTF16(IDS_COOKIES_WEB_DATABASES)) {}
 
   ~CookieTreeDatabasesNode() override {}
 
   DetailedInfo GetDetailedInfo() const override {
     return DetailedInfo().Init(DetailedInfo::TYPE_DATABASES);
-  }
-
-  void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    for (int i = 0; i < this->child_count(); ++i) {
-      this->GetChild(i)->RetrieveSize(callback);
-    }
   }
 
   void AddDatabaseNode(std::unique_ptr<CookieTreeDatabaseNode> child) {
@@ -946,21 +956,16 @@ class CookieTreeDatabasesNode : public CookieTreeNode {
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeLocalStoragesNode
 
-class CookieTreeLocalStoragesNode : public CookieTreeNode {
+class CookieTreeLocalStoragesNode : public CookieTreeCollectionNode {
  public:
   CookieTreeLocalStoragesNode()
-      : CookieTreeNode(l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE)) {}
+      : CookieTreeCollectionNode(
+            l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE)) {}
 
   ~CookieTreeLocalStoragesNode() override {}
 
   DetailedInfo GetDetailedInfo() const override {
     return DetailedInfo().Init(DetailedInfo::TYPE_LOCAL_STORAGES);
-  }
-
-  void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    for (int i = 0; i < this->child_count(); ++i) {
-      this->GetChild(i)->RetrieveSize(callback);
-    }
   }
 
   void AddLocalStorageNode(std::unique_ptr<CookieTreeLocalStorageNode> child) {
@@ -998,21 +1003,16 @@ class CookieTreeSessionStoragesNode : public CookieTreeNode {
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeIndexedDBsNode
 
-class CookieTreeIndexedDBsNode : public CookieTreeNode {
+class CookieTreeIndexedDBsNode : public CookieTreeCollectionNode {
  public:
   CookieTreeIndexedDBsNode()
-      : CookieTreeNode(l10n_util::GetStringUTF16(IDS_COOKIES_INDEXED_DBS)) {}
+      : CookieTreeCollectionNode(
+            l10n_util::GetStringUTF16(IDS_COOKIES_INDEXED_DBS)) {}
 
   ~CookieTreeIndexedDBsNode() override {}
 
   DetailedInfo GetDetailedInfo() const override {
     return DetailedInfo().Init(DetailedInfo::TYPE_INDEXED_DBS);
-  }
-
-  void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    for (int i = 0; i < this->child_count(); ++i) {
-      this->GetChild(i)->RetrieveSize(callback);
-    }
   }
 
   void AddIndexedDBNode(std::unique_ptr<CookieTreeIndexedDBNode> child) {
@@ -1026,21 +1026,16 @@ class CookieTreeIndexedDBsNode : public CookieTreeNode {
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeFileSystemsNode
 
-class CookieTreeFileSystemsNode : public CookieTreeNode {
+class CookieTreeFileSystemsNode : public CookieTreeCollectionNode {
  public:
   CookieTreeFileSystemsNode()
-      : CookieTreeNode(l10n_util::GetStringUTF16(IDS_COOKIES_FILE_SYSTEMS)) {}
+      : CookieTreeCollectionNode(
+            l10n_util::GetStringUTF16(IDS_COOKIES_FILE_SYSTEMS)) {}
 
   ~CookieTreeFileSystemsNode() override {}
 
   DetailedInfo GetDetailedInfo() const override {
     return DetailedInfo().Init(DetailedInfo::TYPE_FILE_SYSTEMS);
-  }
-
-  void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    for (int i = 0; i < this->child_count(); ++i) {
-      this->GetChild(i)->RetrieveSize(callback);
-    }
   }
 
   void AddFileSystemNode(std::unique_ptr<CookieTreeFileSystemNode> child) {
@@ -1054,22 +1049,16 @@ class CookieTreeFileSystemsNode : public CookieTreeNode {
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeServiceWorkersNode
 
-class CookieTreeServiceWorkersNode : public CookieTreeNode {
+class CookieTreeServiceWorkersNode : public CookieTreeCollectionNode {
  public:
   CookieTreeServiceWorkersNode()
-      : CookieTreeNode(l10n_util::GetStringUTF16(IDS_COOKIES_SERVICE_WORKERS)) {
-  }
+      : CookieTreeCollectionNode(
+            l10n_util::GetStringUTF16(IDS_COOKIES_SERVICE_WORKERS)) {}
 
   ~CookieTreeServiceWorkersNode() override {}
 
   DetailedInfo GetDetailedInfo() const override {
     return DetailedInfo().Init(DetailedInfo::TYPE_SERVICE_WORKERS);
-  }
-
-  void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    for (int i = 0; i < this->child_count(); ++i) {
-      this->GetChild(i)->RetrieveSize(callback);
-    }
   }
 
   void AddServiceWorkerNode(
@@ -1106,21 +1095,16 @@ class CookieTreeSharedWorkersNode : public CookieTreeNode {
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeCacheStoragesNode
 
-class CookieTreeCacheStoragesNode : public CookieTreeNode {
+class CookieTreeCacheStoragesNode : public CookieTreeCollectionNode {
  public:
   CookieTreeCacheStoragesNode()
-      : CookieTreeNode(l10n_util::GetStringUTF16(IDS_COOKIES_CACHE_STORAGE)) {}
+      : CookieTreeCollectionNode(
+            l10n_util::GetStringUTF16(IDS_COOKIES_CACHE_STORAGE)) {}
 
   ~CookieTreeCacheStoragesNode() override {}
 
   DetailedInfo GetDetailedInfo() const override {
     return DetailedInfo().Init(DetailedInfo::TYPE_CACHE_STORAGES);
-  }
-
-  void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    for (int i = 0; i < this->child_count(); ++i) {
-      this->GetChild(i)->RetrieveSize(callback);
-    }
   }
 
   void AddCacheStorageNode(std::unique_ptr<CookieTreeCacheStorageNode> child) {
@@ -1166,21 +1150,16 @@ class CookieTreeFlashLSONode : public CookieTreeNode {
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeMediaLicensesNode
 
-class CookieTreeMediaLicensesNode : public CookieTreeNode {
+class CookieTreeMediaLicensesNode : public CookieTreeCollectionNode {
  public:
   CookieTreeMediaLicensesNode()
-      : CookieTreeNode(l10n_util::GetStringUTF16(IDS_COOKIES_MEDIA_LICENSES)) {}
+      : CookieTreeCollectionNode(
+            l10n_util::GetStringUTF16(IDS_COOKIES_MEDIA_LICENSES)) {}
 
   ~CookieTreeMediaLicensesNode() override {}
 
   DetailedInfo GetDetailedInfo() const override {
     return DetailedInfo().Init(DetailedInfo::TYPE_MEDIA_LICENSES);
-  }
-
-  void RetrieveSize(const SizeRetrievalCallback& callback) override {
-    for (int i = 0; i < this->child_count(); ++i) {
-      this->GetChild(i)->RetrieveSize(callback);
-    }
   }
 
   void AddMediaLicenseNode(std::unique_ptr<CookieTreeMediaLicenseNode> child) {
