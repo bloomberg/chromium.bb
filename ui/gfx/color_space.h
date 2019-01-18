@@ -149,9 +149,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
     return ColorSpace(PrimaryID::SMPTEST432_1, TransferID::IEC61966_2_1,
                       MatrixID::RGB, RangeID::FULL);
   }
-  static ColorSpace CreateCustom(const SkMatrix44& to_XYZD50,
-                                 TransferID transfer_id);
-  static ColorSpace CreateCustom(const SkMatrix44& to_XYZD50,
+  static ColorSpace CreateCustom(const skcms_Matrix3x3& to_XYZD50,
                                  const SkColorSpaceTransferFn& fn);
   static constexpr ColorSpace CreateXYZD50() {
     return ColorSpace(PrimaryID::XYZ_D50, TransferID::LINEAR, MatrixID::RGB,
@@ -251,7 +249,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
 
  private:
   void SetCustomTransferFunction(const SkColorSpaceTransferFn& fn);
-  void SetCustomPrimaries(const SkMatrix44& to_XYZD50);
+  void SetCustomPrimaries(const skcms_Matrix3x3& to_XYZD50);
 
   // Returns true if the transfer function is defined by an
   // SkColorSpaceTransferFn which is extended to all real values.

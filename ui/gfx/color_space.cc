@@ -94,9 +94,8 @@ ColorSpace::ColorSpace(const SkColorSpace& sk_color_space)
   }
 
   // Use custom primaries, if they are representable as a "to XYZD50" matrix.
-  SkMatrix44 to_XYZD50{SkMatrix44::kUninitialized_Constructor};
+  skcms_Matrix3x3 to_XYZD50;
   if (sk_color_space.toXYZD50(&to_XYZD50)) {
-    primaries_ = PrimaryID::CUSTOM;
     SetCustomPrimaries(to_XYZD50);
     return;
   }
@@ -111,7 +110,7 @@ bool ColorSpace::IsValid() const {
 }
 
 // static
-ColorSpace ColorSpace::CreateCustom(const SkMatrix44& to_XYZD50,
+ColorSpace ColorSpace::CreateCustom(const skcms_Matrix3x3& to_XYZD50,
                                     const SkColorSpaceTransferFn& fn) {
   ColorSpace result(ColorSpace::PrimaryID::CUSTOM,
                     ColorSpace::TransferID::CUSTOM, ColorSpace::MatrixID::RGB,
@@ -121,12 +120,8 @@ ColorSpace ColorSpace::CreateCustom(const SkMatrix44& to_XYZD50,
   return result;
 }
 
-void ColorSpace::SetCustomPrimaries(const SkMatrix44& to_XYZD50) {
-  for (int row = 0; row < 3; ++row) {
-    for (int col = 0; col < 3; ++col) {
-      custom_primary_matrix_[3 * row + col] = to_XYZD50.get(row, col);
-    }
-  }
+void ColorSpace::SetCustomPrimaries(const skcms_Matrix3x3& to_XYZD50) {
+  memcpy(custom_primary_matrix_, &to_XYZD50, 9 * sizeof(float));
   primaries_ = PrimaryID::CUSTOM;
 }
 
@@ -140,17 +135,6 @@ void ColorSpace::SetCustomTransferFunction(const SkColorSpaceTransferFn& fn) {
   custom_transfer_params_[6] = fn.fG;
   // TODO(ccameron): Use enums for near matches to know color spaces.
   transfer_ = TransferID::CUSTOM;
-}
-
-// static
-ColorSpace ColorSpace::CreateCustom(const SkMatrix44& to_XYZD50,
-                                    ColorSpace::TransferID transfer_id) {
-  DCHECK_NE(transfer_id, ColorSpace::TransferID::CUSTOM);
-  DCHECK_NE(transfer_id, ColorSpace::TransferID::INVALID);
-  ColorSpace result(ColorSpace::PrimaryID::CUSTOM, transfer_id,
-                    ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
-  result.SetCustomPrimaries(to_XYZD50);
-  return result;
 }
 
 // static
@@ -396,11 +380,11 @@ ColorSpace ColorSpace::GetAsRGB() const {
 
 ColorSpace ColorSpace::GetScaledColorSpace(float factor) const {
   ColorSpace result(*this);
-  SkMatrix44 to_XYZD50;
+  skcms_Matrix3x3 to_XYZD50;
   GetPrimaryMatrix(&to_XYZD50);
   for (int row = 0; row < 3; ++row) {
     for (int col = 0; col < 3; ++col) {
-      to_XYZD50.set(row, col, to_XYZD50.get(row, col) * factor);
+      to_XYZD50.vals[row][col] *= factor;
     }
   }
   result.SetCustomPrimaries(to_XYZD50);

@@ -245,7 +245,7 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
     };
 
     for (size_t i = 0; i < kNumTransferFns; ++i) {
-      SkMatrix44 primaries;
+      skcms_Matrix3x3 primaries;
       gfx::ColorSpace::CreateSRGB().GetPrimaryMatrix(&primaries);
       gfx::ColorSpace src =
           gfx::ColorSpace::CreateCustom(primaries, transfer_fns[i]);

@@ -97,7 +97,7 @@ ICCProfile::Internals::AnalyzeResult ICCProfile::Internals::Initialize() {
   DCHECK(sk_color_space_);
 
   // Extract the primary matrix and transfer function
-  to_XYZD50_.set3x3RowMajorf(&profile.toXYZD50.vals[0][0]);
+  to_XYZD50_ = profile.toXYZD50;
   memcpy(&transfer_fn_, &profile.trc[0].parametric, sizeof(transfer_fn_));
 
   // We assume that if we accurately approximated the profile, then the
