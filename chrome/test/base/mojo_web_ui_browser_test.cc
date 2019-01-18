@@ -15,6 +15,37 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+namespace {
+
+// Handles Mojo-style test communication.
+class WebUITestPageHandler : public web_ui_test::mojom::TestRunner,
+                             public WebUITestHandler {
+ public:
+  explicit WebUITestPageHandler(content::WebUI* web_ui)
+      : web_ui_(web_ui), binding_(this) {}
+  ~WebUITestPageHandler() override {}
+
+  // Binds the Mojo test interface to this handler.
+  void BindToTestRunnerRequest(web_ui_test::mojom::TestRunnerRequest request) {
+    binding_.Bind(std::move(request));
+  }
+
+  // web_ui_test::mojom::TestRunner:
+  void TestComplete(const base::Optional<std::string>& message) override {
+    WebUITestHandler::TestComplete(message);
+  }
+
+  content::WebUI* GetWebUI() override { return web_ui_; }
+
+ private:
+  content::WebUI* web_ui_;
+  mojo::Binding<web_ui_test::mojom::TestRunner> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebUITestPageHandler);
+};
+
+}  // namespace
+
 MojoWebUIBrowserTest::MojoWebUIBrowserTest() {
   registry_.AddInterface<web_ui_test::mojom::TestRunner>(base::BindRepeating(
       &MojoWebUIBrowserTest::BindTestRunner, base::Unretained(this)));
@@ -23,7 +54,7 @@ MojoWebUIBrowserTest::MojoWebUIBrowserTest() {
 MojoWebUIBrowserTest::~MojoWebUIBrowserTest() = default;
 
 void MojoWebUIBrowserTest::SetUpOnMainThread() {
-  WebUIBrowserTest::SetUpOnMainThread();
+  BaseWebUIBrowserTest::SetUpOnMainThread();
 
   base::FilePath pak_path;
   ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &pak_path));
@@ -49,7 +80,7 @@ void MojoWebUIBrowserTest::OnInterfaceRequestFromFrame(
 
 void MojoWebUIBrowserTest::BindTestRunner(
     web_ui_test::mojom::TestRunnerRequest request) {
-  test_handler()->BindToTestRunnerRequest(std::move(request));
+  test_page_handler_->BindToTestRunnerRequest(std::move(request));
 }
 
 void MojoWebUIBrowserTest::SetupHandlers() {
@@ -59,13 +90,15 @@ void MojoWebUIBrowserTest::SetupHandlers() {
           : browser()->tab_strip_model()->GetActiveWebContents()->GetWebUI();
   ASSERT_TRUE(web_ui_instance != nullptr);
 
-  test_handler()->set_web_ui(web_ui_instance);
+  auto test_handler = std::make_unique<WebUITestPageHandler>(web_ui_instance);
+  test_page_handler_ = test_handler.get();
+  set_test_handler(std::move(test_handler));
 
   Observe(web_ui_instance->GetWebContents());
 }
 
 void MojoWebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
-  WebUIBrowserTest::BrowsePreload(browse_to);
+  BaseWebUIBrowserTest::BrowsePreload(browse_to);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   if (use_mojo_lite_bindings_) {
