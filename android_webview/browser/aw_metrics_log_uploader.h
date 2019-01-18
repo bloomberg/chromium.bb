@@ -21,8 +21,12 @@ class AwMetricsLogUploader : public ::metrics::MetricsLogUploader {
   ~AwMetricsLogUploader() override;
 
   // ::metrics::MetricsLogUploader:
+  // Note: |log_hash| and |log_signature| are only used by the normal UMA
+  // server. WebView uses the platform logging mechanism instead of the normal
+  // UMA server, so |log_hash| and |log_signature| aren't used.
   void UploadLog(const std::string& compressed_log_data,
                  const std::string& log_hash,
+                 const std::string& log_signature,
                  const metrics::ReportingInfo& reporting_info) override;
 
  private:

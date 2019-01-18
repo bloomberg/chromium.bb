@@ -52,20 +52,23 @@ class NetMetricsLogUploader : public MetricsLogUploader {
   // Uploads a log to the server_url specified in the constructor.
   void UploadLog(const std::string& compressed_log_data,
                  const std::string& log_hash,
+                 const std::string& log_signature,
                  const ReportingInfo& reporting_info) override;
 
  private:
   // Uploads a log to a URL passed as a parameter.
   void UploadLogToURL(const std::string& compressed_log_data,
                       const std::string& log_hash,
+                      const std::string& log_signature,
                       const ReportingInfo& reporting_info,
                       const GURL& url);
 
-  void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
+  // Calls |on_upload_complete_| with failure codes. Used when there's a local
+  // reason that prevented an upload over HTTP, such as an error encrpyting
+  // the payload.
+  void HTTPFallbackAborted();
 
-  // Encrypts a |plaintext| string, using the encrypted_messages component,
-  // returns |encrypted| which is a serialized EncryptedMessage object.
-  bool EncryptString(const std::string& plaintext, std::string* encrypted);
+  void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
 
   // The URLLoader factory for loads done using the network stack.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
