@@ -922,26 +922,6 @@ TEST_F(DesktopWindowTreeHostMusTest, TransientChildMatchesParentVisibility) {
   transient_child->RemoveObserver(&observer);
 }
 
-TEST_F(DesktopWindowTreeHostMusTest, AlwaysOnTopWidgetIsNotActivatable) {
-  std::unique_ptr<Widget> widget = std::make_unique<Widget>();
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(0, 1, 111, 123);
-  params.keep_on_top = true;
-  widget->Init(params);
-  widget->AddObserver(this);
-
-  RunPendingMessages();
-  EXPECT_FALSE(widget_activated());
-
-  widget->Activate();
-  EXPECT_FALSE(widget->GetNativeWindow()->HasFocus());
-  RunPendingMessages();
-  EXPECT_FALSE(widget->IsActive());
-  EXPECT_FALSE(widget->GetNativeWindow()->HasFocus());
-  EXPECT_FALSE(widget_activated());
-}
-
 // DesktopWindowTreeHostMusTest with --force-device-scale-factor=1.25.
 class DesktopWindowTreeHostMusTestFractionalDPI
     : public DesktopWindowTreeHostMusTest {
