@@ -15,6 +15,11 @@
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 #include "ui/latency/mojo/latency_info_struct_traits.h"
 
+#if defined(USE_OZONE)
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"  // nogncheck
+#include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"  // nogncheck
+#endif
+
 namespace ui {
 
 namespace {
@@ -43,6 +48,17 @@ void ExpectMouseWheelEventsEqual(const MouseWheelEvent& expected,
   EXPECT_EQ(expected.offset(), actual.offset());
 }
 
+void ExpectKeyEventsEqual(const KeyEvent& expected, const KeyEvent& actual) {
+  EXPECT_EQ(expected.GetCharacter(), actual.GetCharacter());
+  EXPECT_EQ(expected.GetUnmodifiedText(), actual.GetUnmodifiedText());
+  EXPECT_EQ(expected.GetText(), actual.GetText());
+  EXPECT_EQ(expected.is_char(), actual.is_char());
+  EXPECT_EQ(expected.is_repeat(), actual.is_repeat());
+  EXPECT_EQ(expected.GetConflatedWindowsKeyCode(),
+            actual.GetConflatedWindowsKeyCode());
+  EXPECT_EQ(expected.code(), actual.code());
+}
+
 void ExpectEventsEqual(const Event& expected, const Event& actual) {
   EXPECT_EQ(expected.type(), actual.type());
   EXPECT_EQ(expected.time_stamp(), actual.time_stamp());
@@ -64,6 +80,10 @@ void ExpectEventsEqual(const Event& expected, const Event& actual) {
   if (expected.IsTouchEvent()) {
     ASSERT_TRUE(actual.IsTouchEvent());
     ExpectTouchEventsEqual(*expected.AsTouchEvent(), *actual.AsTouchEvent());
+  }
+  if (expected.IsKeyEvent()) {
+    ASSERT_TRUE(actual.IsKeyEvent());
+    ExpectKeyEventsEqual(*expected.AsKeyEvent(), *actual.AsKeyEvent());
   }
 }
 
@@ -95,15 +115,6 @@ TEST(StructTraitsTest, KeyEvent) {
 
     const KeyEvent* output_key_event = output->AsKeyEvent();
     ExpectEventsEqual(kTestData[i], *output_key_event);
-    EXPECT_EQ(kTestData[i].GetCharacter(), output_key_event->GetCharacter());
-    EXPECT_EQ(kTestData[i].GetUnmodifiedText(),
-              output_key_event->GetUnmodifiedText());
-    EXPECT_EQ(kTestData[i].GetText(), output_key_event->GetText());
-    EXPECT_EQ(kTestData[i].is_char(), output_key_event->is_char());
-    EXPECT_EQ(kTestData[i].is_repeat(), output_key_event->is_repeat());
-    EXPECT_EQ(kTestData[i].GetConflatedWindowsKeyCode(),
-              output_key_event->GetConflatedWindowsKeyCode());
-    EXPECT_EQ(kTestData[i].code(), output_key_event->code());
   }
 }
 
@@ -387,5 +398,45 @@ TEST(StructTraitsTest, UnserializedTouchEventFields) {
   EXPECT_NE(expected->AsTouchEvent()->unique_event_id(),
             output->AsTouchEvent()->unique_event_id());
 }
+
+#if defined(USE_OZONE)
+
+// Test KeyboardLayoutEngine implementation that always returns 'x'.
+class FixedKeyboardLayoutEngine : public StubKeyboardLayoutEngine {
+ public:
+  FixedKeyboardLayoutEngine() = default;
+  ~FixedKeyboardLayoutEngine() override = default;
+
+  // StubKeyboardLayoutEngine:
+  bool Lookup(DomCode dom_code,
+              int flags,
+              DomKey* out_dom_key,
+              KeyboardCode* out_key_code) const override {
+    *out_dom_key = DomKey::FromCharacter('x');
+    *out_key_code = ui::VKEY_X;
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FixedKeyboardLayoutEngine);
+};
+
+TEST(StructTraitsTest, DifferentKeyboardLayout) {
+  // Verifies KeyEvent serialization is not impacted by a KeyboardLayoutEngine.
+  KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+      std::make_unique<FixedKeyboardLayoutEngine>());
+  std::unique_ptr<KeyEvent> key_event = std::make_unique<KeyEvent>(
+      ET_KEY_PRESSED, VKEY_S, DomCode::US_S, EF_NONE,
+      DomKey::FromCharacter('s'), base::TimeTicks::Now());
+  std::unique_ptr<Event> expected = std::move(key_event);
+  std::unique_ptr<Event> output;
+  ASSERT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojom::Event>(&expected, &output));
+  ExpectEventsEqual(*expected, *output);
+  KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+      std::make_unique<StubKeyboardLayoutEngine>());
+}
+
+#endif
 
 }  // namespace ui

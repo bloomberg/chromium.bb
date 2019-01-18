@@ -262,15 +262,11 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::key_data(
 
   const ui::KeyEvent* key_event = event->AsKeyEvent();
   ui::mojom::KeyDataPtr key_data(ui::mojom::KeyData::New());
-  key_data->key_code = key_event->GetConflatedWindowsKeyCode();
-  key_data->native_key_code =
-      ui::KeycodeConverter::DomCodeToNativeKeycode(key_event->code());
+
+  key_data->key_code = static_cast<int32_t>(key_event->key_code());
   key_data->is_char = key_event->is_char();
-  key_data->character = key_event->GetCharacter();
-  key_data->windows_key_code = static_cast<ui::mojom::KeyboardCode>(
-      key_event->GetLocatedWindowsKeyboardCode());
-  key_data->text = key_event->GetText();
-  key_data->unmodified_text = key_event->GetUnmodifiedText();
+  key_data->dom_code = static_cast<uint32_t>(key_event->code());
+  key_data->dom_key = static_cast<int32_t>(key_event->GetDomKey());
   return key_data;
 }
 
@@ -367,19 +363,32 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
       if (!event.ReadKeyData<ui::mojom::KeyDataPtr>(&key_data))
         return false;
 
-      if (key_data->is_char) {
-        *out = std::make_unique<ui::KeyEvent>(
-            static_cast<base::char16>(key_data->character),
-            static_cast<ui::KeyboardCode>(key_data->key_code),
-            ui::DomCode::NONE, event.flags(), time_stamp);
-      } else {
-        *out = std::make_unique<ui::KeyEvent>(
-            event.action() == ui::mojom::EventType::KEY_PRESSED
-                ? ui::ET_KEY_PRESSED
-                : ui::ET_KEY_RELEASED,
-            static_cast<ui::KeyboardCode>(key_data->key_code), event.flags(),
-            time_stamp);
+      base::Optional<ui::DomKey> dom_key =
+          ui::DomKey::FromBase(key_data->dom_key);
+      if (!dom_key)
+        return false;
+
+      if (!key_data->is_char &&
+          (key_data->key_code < 0 || key_data->key_code > 255)) {
+        return false;
       }
+      if (event.flags() > ui::EF_MAX_KEY_EVENT_FLAGS_VALUE)
+        return false;
+
+      const ui::KeyboardCode key_code =
+          static_cast<ui::KeyboardCode>(key_data->key_code);
+      // Deserialization uses UsbKeycodeToDomCode() rather than a direct cast
+      // to ensure the value is valid. Invalid values are mapped to
+      // DomCode::NONE.
+      const ui::DomCode dom_code =
+          ui::KeycodeConverter::UsbKeycodeToDomCode(key_data->dom_code);
+      const ui::EventType event_type =
+          (event.action() == ui::mojom::EventType::KEY_PRESSED)
+              ? ui::ET_KEY_PRESSED
+              : ui::ET_KEY_RELEASED;
+      *out = std::make_unique<ui::KeyEvent>(event_type, key_code, dom_code,
+                                            event.flags(), *dom_key, time_stamp,
+                                            key_data->is_char);
       break;
     }
     case ui::mojom::EventType::GESTURE_TAP:
