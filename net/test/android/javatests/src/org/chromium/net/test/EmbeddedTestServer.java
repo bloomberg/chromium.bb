@@ -21,15 +21,20 @@ import org.chromium.net.test.util.CertTestUtil;
 
 import java.io.File;
 
-/** A simple file server for java tests.
+import javax.annotation.concurrent.GuardedBy;
+
+/**
+ * A simple file server for java tests.
  *
  * An example use:
- *   EmbeddedTestServer s = EmbeddedTestServer.createAndStartServer(context);
+ * <pre>
+ * EmbeddedTestServer s = EmbeddedTestServer.createAndStartServer(context);
  *
- *   // serve requests...
- *   s.getURL("/foo/bar.txt");
+ * // serve requests...
+ * s.getURL("/foo/bar.txt");
  *
- *   s.stopAndDestroyServer();
+ * s.stopAndDestroyServer();
+ * </pre>
  *
  * Note that this runs net::test_server::EmbeddedTestServer in a service in a separate APK.
  */
@@ -40,6 +45,7 @@ public class EmbeddedTestServer {
             "org.chromium.net.test.EMBEDDED_TEST_SERVER_SERVICE";
     private static final long SERVICE_CONNECTION_WAIT_INTERVAL_MS = 5000;
 
+    @GuardedBy("mImplMonitor")
     private IEmbeddedTestServerImpl mImpl;
     private ServiceConnection mConn = new ServiceConnection() {
         @Override
@@ -217,7 +223,7 @@ public class EmbeddedTestServer {
      *
      * @param serverCertificate The type of certificate the server should use.
      */
-    public void setSSLConfig(int serverCertificate) {
+    public void setSSLConfig(@ServerCertificate int serverCertificate) {
         try {
             synchronized (mImplMonitor) {
                 checkServiceLocked();
@@ -270,6 +276,7 @@ public class EmbeddedTestServer {
         }
     }
 
+    @GuardedBy("mImplMonitor")
     private void checkServiceLocked() {
         if (mImpl == null) {
             throw new EmbeddedTestServerFailure("Service disconnected.");
@@ -348,7 +355,7 @@ public class EmbeddedTestServer {
      *  @return The created server.
      */
     public static EmbeddedTestServer createAndStartHTTPSServer(
-            Context context, int serverCertificate) throws InterruptedException {
+            Context context, @ServerCertificate int serverCertificate) throws InterruptedException {
         return createAndStartHTTPSServerWithPort(context, serverCertificate, 0 /* port */);
     }
 
@@ -362,8 +369,8 @@ public class EmbeddedTestServer {
      *  @param port The port to use for the server, 0 to auto-select an unused port.
      *  @return The created server.
      */
-    public static EmbeddedTestServer createAndStartHTTPSServerWithPort(
-            Context context, int serverCertificate, int port) throws InterruptedException {
+    public static EmbeddedTestServer createAndStartHTTPSServerWithPort(Context context,
+            @ServerCertificate int serverCertificate, int port) throws InterruptedException {
         Assert.assertNotEquals("EmbeddedTestServer should not be created on UiThread, "
                         + "the instantiation will hang forever waiting for tasks"
                         + " to post to UI thread",
@@ -404,8 +411,9 @@ public class EmbeddedTestServer {
      *  @param port The port to use for the server.
      *  @return The created server.
      */
-    public static <T extends EmbeddedTestServer> T initializeAndStartHTTPSServer(T server,
-            Context context, int serverCertificate, int port) throws InterruptedException {
+    public static <T extends EmbeddedTestServer> T initializeAndStartHTTPSServer(
+            T server, Context context, @ServerCertificate int serverCertificate, int port)
+            throws InterruptedException {
         server.initializeNative(context, ServerHTTPSSetting.USE_HTTPS);
         server.addDefaultHandlers("");
         server.setSSLConfig(serverCertificate);
