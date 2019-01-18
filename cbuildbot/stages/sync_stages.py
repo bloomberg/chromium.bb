@@ -2079,7 +2079,7 @@ class PreCQLauncherStage(SyncStage):
         build_ids = [x.build_id for x in progress_map[change].values()]
         # Change the status to inflight.
         self.UpdateChangeStatuses([change], constants.CL_STATUS_INFLIGHT)
-        build_dicts = db.GetBuildStatuses(build_ids)
+        build_dicts = self.buildstore.GetBuildStatuses(build_ids=build_ids)
         lines = []
         for b in build_dicts:
           url = tree_status.ConstructLegolandBuildURL(b['buildbucket_id'])

@@ -306,6 +306,9 @@ class BuildStore(object):
   def GetBuildStatuses(self, buildbucket_ids=None, build_ids=None):
     """Retrieve the build statuses of list of builds.
 
+    The two arguments are to be mutually exclusive. If both are provided,
+    an error will be raised. If both are absent, an empty list will be returned.
+
     Args:
       buildbucket_ids: list of buildbucket_id's to query.
       build_ids: list of CIDB id's to query.
@@ -318,14 +321,16 @@ class BuildStore(object):
     if not self.InitializeClients():
       raise BuildStoreException('BuildStore clients could not be initialized.')
     if not self._read_from_bb:
+      if buildbucket_ids and build_ids:
+        raise BuildStoreException('GetBuildStatuses: Cannot process both '
+                                  'buildbucket_ids and build_ids.')
       if buildbucket_ids:
         return self.cidb_conn.GetBuildStatusesWithBuildbucketIds(
             buildbucket_ids)
       elif build_ids:
         return self.cidb_conn.GetBuildStatuses(build_ids)
       else:
-        raise BuildStoreException('GetBuildStatuses needs either build_ids'
-                                  'or buildbucket_ids.')
+        return []
 
 
 class FakeBuildStore(object):
@@ -405,3 +410,5 @@ class FakeBuildStore(object):
       return self.fake_cidb.GetBuildStatusesWithBuildbucketIds(buildbucket_ids)
     elif build_ids:
       return self.fake_cidb.GetBuildStatuses(build_ids)
+    else:
+      return []

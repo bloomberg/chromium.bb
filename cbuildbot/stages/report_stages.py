@@ -326,18 +326,17 @@ class SlaveFailureSummaryStage(generic_stages.BuilderStage):
                    'Doing nothing.')
       return
 
-    _, db = self._run.GetCIDBHandle()
-
-    if not db:
-      logging.info('No cidb connection for this build. '
+    if not self.buildstore.AreClientsReady():
+      logging.info('No buildstore connection for this build. '
                    'Doing nothing.')
       return
 
     slave_buildbucket_ids = self.GetScheduledSlaveBuildbucketIds()
     child_build_ids = [
         c['id']
-        for c in db.GetBuildStatusesWithBuildbucketIds(slave_buildbucket_ids)]
-    child_failures = db.GetBuildsFailures(child_build_ids)
+        for c in self.buildstore.GetBuildStatuses(slave_buildbucket_ids)]
+    child_failures = self.buildstore.GetCIDBHandle().GetBuildsFailures(
+        child_build_ids)
     failures_by_build = cros_collections.GroupNamedtuplesByKey(
         child_failures, 'build_id')
     for _, build_failures in sorted(failures_by_build.items()):
@@ -1085,9 +1084,9 @@ class ReportStage(generic_stages.BuilderStage,
     This method should be called only after the build has been Finished in
     cidb.
     """
-    build_id, db = self._run.GetCIDBHandle()
-    if db:
-      build_info = db.GetBuildStatus(build_id)
+    build_id, _ = self._run.GetCIDBHandle()
+    if self.buildstore.AreClientsReady():
+      build_info = self.buildstore.GetBuildStatuses(build_ids=[build_id])[0]
       duration = (build_info['finish_time'] -
                   build_info['start_time']).total_seconds()
       return duration

@@ -20,6 +20,7 @@ from chromite.lib import fake_cidb
 from chromite.lib import failure_message_lib
 from chromite.lib import failure_message_lib_unittest
 from chromite.lib import metadata_lib
+from chromite.lib.buildstore import FakeBuildStore
 
 
 bb_infos = build_status_unittest.BuildbucketInfos
@@ -50,6 +51,7 @@ class BuilderStatusLibTests(cros_test_lib.MockTestCase):
   def testGetSlavesAbortedBySelfDestructedMaster(self):
     """Test GetSlavesAbortedBySelfDestructedMaster with aborted slaves."""
     db = fake_cidb.FakeCIDBConnection()
+    buildstore = FakeBuildStore(db)
     cidb.CIDBConnectionFactory.SetupMockCidb(db)
     master_build_id = db.InsertBuild(
         'master', 1, 'master', 'bot_hostname',
@@ -58,7 +60,7 @@ class BuilderStatusLibTests(cros_test_lib.MockTestCase):
     self.assertEqual(
         set(),
         builder_status_lib.GetSlavesAbortedBySelfDestructedMaster(
-            master_build_id, db))
+            master_build_id, buildstore))
 
     slave_build_id_1 = db.InsertBuild(
         'slave_1', 1, 'slave_1', 'bot_hostname',
@@ -78,7 +80,7 @@ class BuilderStatusLibTests(cros_test_lib.MockTestCase):
     self.assertEqual(
         {'slave_1', 'slave_2'},
         builder_status_lib.GetSlavesAbortedBySelfDestructedMaster(
-            master_build_id, db))
+            master_build_id, buildstore))
 
 
 # pylint: disable=protected-access

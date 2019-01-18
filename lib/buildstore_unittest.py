@@ -21,6 +21,30 @@ BuildStore = buildstore.BuildStore
 class TestBuildStore(cros_test_lib.MockTestCase):
   """Test buildstore.BuildStore."""
 
+  def testIsCIDBClientMissing(self):
+    """Tests _IsCIDBClientMissing function."""
+    # pylint: disable=protected-access
+    # Test CIDB needed and client missing.
+    bs = BuildStore(_read_from_bb=False, _write_to_cidb=True)
+    self.assertEqual(bs._IsCIDBClientMissing(), True)
+    bs = BuildStore(_read_from_bb=True, _write_to_cidb=True)
+    self.assertEqual(bs._IsCIDBClientMissing(), True)
+    bs = BuildStore(_read_from_bb=False, _write_to_cidb=False)
+    self.assertEqual(bs._IsCIDBClientMissing(), True)
+    # Test CIDB is needed and client is up and running.
+    bs = BuildStore(_read_from_bb=False, _write_to_cidb=True)
+    bs.cidb_conn = object()
+    self.assertEqual(bs._IsCIDBClientMissing(), False)
+    bs = BuildStore(_read_from_bb=True, _write_to_cidb=True)
+    bs.cidb_conn = object()
+    self.assertEqual(bs._IsCIDBClientMissing(), False)
+    bs = BuildStore(_read_from_bb=False, _write_to_cidb=False)
+    bs.cidb_conn = object()
+    self.assertEqual(bs._IsCIDBClientMissing(), False)
+    # Test CIDB is not needed.
+    bs = BuildStore(_read_from_bb=True, _write_to_cidb=False)
+    self.assertEqual(bs._IsCIDBClientMissing(), False)
+
   def testIsBuildbucketClientMissing(self):
     """Tests _IsBuildbucketClientMissing function."""
     # pylint: disable=protected-access
@@ -262,3 +286,24 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):
       bs.ExtendDeadline(constants.MOCK_BUILD_ID, mock_timeout)
+
+  def testGetBuildStatuses(self):
+    """Tests the redirect for GetBuildStatuses function."""
+    init = self.PatchObject(BuildStore, 'InitializeClients',
+                            return_value=True)
+    bs = BuildStore()
+    bs.cidb_conn = mock.MagicMock()
+    build_ids = ['build 1', 'build 2']
+    buildbucket_ids = ['bucket 1', 'bucket 2']
+    # Test for buildbucket_ids.
+    bs.GetBuildStatuses(buildbucket_ids)
+    bs.cidb_conn.GetBuildStatusesWithBuildbucketIds.assert_called_once_with(
+        buildbucket_ids)
+    # Test for build_ids.
+    bs.GetBuildStatuses(build_ids=build_ids)
+    bs.cidb_conn.GetBuildStatuses.assert_called_once_with(build_ids)
+    # Test for neither arguments.
+    self.assertEqual(bs.GetBuildStatuses(), [])
+    init.return_value = False
+    with self.assertRaises(buildstore.BuildStoreException):
+      bs.GetBuildStatuses(build_ids=build_ids)

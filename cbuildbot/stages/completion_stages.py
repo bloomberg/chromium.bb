@@ -335,11 +335,11 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         # If the master build itself didn't pass, report fatal.
         return self._run.config.name in not_passed_builders
 
-      build_id, db = self._run.GetCIDBHandle()
-      if db:
+      build_id, _ = self._run.GetCIDBHandle()
+      if self.buildstore.AreClientsReady():
         aborted_slaves = (
             builder_status_lib.GetSlavesAbortedBySelfDestructedMaster(
-                build_id, db))
+                build_id, self.buildstore))
         # Ignore the slaves aborted by self-destruction.
         not_passed_builders -= aborted_slaves
 
