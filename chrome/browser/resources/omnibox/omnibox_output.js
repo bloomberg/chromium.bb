@@ -133,10 +133,10 @@ cr.define('omnibox_output', function() {
      */
     updateVisibility_() {
       // Show non-last result groups only if showIncompleteResults is true.
-      this.resultsGroups_.forEach(
-          (resultsGroup, index) => resultsGroup.hidden =
-              !this.displayInputs_.showIncompleteResults &&
-              index !== this.resultsGroups_.length - 1);
+      this.resultsGroups_.forEach((resultsGroup, index) => {
+        resultsGroup.hidden = !this.displayInputs_.showIncompleteResults &&
+            index !== this.resultsGroups_.length - 1;
+      });
 
       this.resultsGroups_.forEach(resultsGroup => {
         resultsGroup.updateVisibility(
@@ -298,9 +298,9 @@ cr.define('omnibox_output', function() {
           innerHeader => innerHeader.hidden = !showAllProviders);
 
       // Show certain column headers only if they showDetails is true.
-      COLUMNS.forEach(
-          (column, index) => this.headers[index].hidden =
-              !showDetails && !column.displayAlways);
+      COLUMNS.forEach(({displayAlways}, index) => {
+        this.headers[index].hidden = !showDetails && !displayAlways;
+      });
 
       // Show certain columns only if they showDetails is true.
       this.autocompleteMatches.forEach(
@@ -417,23 +417,15 @@ cr.define('omnibox_output', function() {
 
       COLUMNS.forEach(column => {
         const values = column.sourceProperties.map(
-            propertyName =>
-                /** @type {Object} */ (match)[propertyName]);
+            propertyName => /** @type {Object} */ (match)[propertyName]);
         this.properties[column.matchKey] =
             OutputProperty.create(column, values);
       });
 
       const unconsumedProperties = {};
       Object.entries(match)
-          .filter(propertyNameValueTuple => {
-            const propertyName = propertyNameValueTuple[0];
-            return !CONSUMED_SOURCE_PROPERTIES.includes(propertyName);
-          })
-          .forEach(propertyNameValueTuple => {
-            const propertyName = propertyNameValueTuple[0];
-            const propertyValue = propertyNameValueTuple[1];
-            unconsumedProperties[propertyName] = propertyValue;
-          });
+          .filter(([name]) => !CONSUMED_SOURCE_PROPERTIES.includes(name))
+          .forEach(([name, value]) => unconsumedProperties[name] = value);
 
       /** @type {!OutputProperty} */
       this.additionalProperties = OutputProperty.create(
@@ -465,9 +457,8 @@ cr.define('omnibox_output', function() {
     /** @param {boolean} showDetails */
     updateVisibility(showDetails) {
       // Show certain columns only if they showDetails is true.
-      COLUMNS.forEach(column => {
-        this.properties[column.matchKey].hidden =
-            !showDetails && !column.displayAlways;
+      COLUMNS.forEach(({matchKey, displayAlways}) => {
+        this.properties[matchKey].hidden = !showDetails && !displayAlways;
       });
     }
 
@@ -601,8 +592,7 @@ cr.define('omnibox_output', function() {
 
     /** @private @override */
     render_() {
-      this.first_.textContent = this.values_[0];
-      this.second_.textContent = this.values_[1];
+      [this.first_.textContent, this.second_.textContent] = this.values_;
     }
 
     /** @override @return {string} */
@@ -718,9 +708,10 @@ cr.define('omnibox_output', function() {
     render_() {
       clearChildren(this.pre_);
       this.text.split(/("(?:[^"\\]|\\.)*":?|\w+)/)
-          .map(
-              word => OutputJsonProperty.renderJsonWord(
-                  word, OutputJsonProperty.classifyJsonWord(word)))
+          .map(word => {
+            return OutputJsonProperty.renderJsonWord(
+                word, OutputJsonProperty.classifyJsonWord(word));
+          })
           .forEach(jsonSpan => this.pre_.appendChild(jsonSpan));
     }
 

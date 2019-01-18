@@ -48,10 +48,10 @@ class OmniboxInput extends OmniboxElement {
      '#prefer-keyword',
      '#current-url',
      '#page-classification',
-    ]
-        .forEach(
-            query => this.$$(query).addEventListener(
-                'input', this.onQueryInputsChanged_.bind(this)));
+    ].forEach(query => {
+      this.$$(query).addEventListener(
+          'input', this.onQueryInputsChanged_.bind(this));
+    });
 
     // Set text of .arrow-padding to substring of #input-text text, from
     // beginning until cursor position, in order to correctly align .arrow-up.
@@ -68,10 +68,10 @@ class OmniboxInput extends OmniboxElement {
      '#show-details',
      '#show-all-providers',
      '#elide-cells',
-    ]
-        .forEach(
-            query => this.$$(query).addEventListener(
-                'input', this.onDisplayInputsChanged_.bind(this)));
+    ].forEach(query => {
+      this.$$(query).addEventListener(
+          'input', this.onDisplayInputsChanged_.bind(this));
+    });
 
     this.$$('#filter-text')
         .addEventListener('input', this.onFilterInputsChanged_.bind(this));

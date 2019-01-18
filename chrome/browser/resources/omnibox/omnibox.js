@@ -83,32 +83,30 @@ document.addEventListener('DOMContentLoaded', () => {
   browserProxy = new BrowserProxy(omniboxOutput);
   exportDelegate = new ExportDelegate(omniboxOutput, omniboxInput);
 
-  omniboxInput.addEventListener('query-inputs-changed', event => {
-    omniboxOutput.updateQueryInputs(event.detail);
+  omniboxInput.addEventListener('query-inputs-changed', e => {
+    omniboxOutput.updateQueryInputs(e.detail);
     browserProxy.makeRequest(
-        event.detail.inputText, event.detail.resetAutocompleteController,
-        event.detail.cursorPosition, event.detail.zeroSuggest,
-        event.detail.preventInlineAutocomplete, event.detail.preferKeyword,
-        event.detail.currentUrl, event.detail.pageClassification);
+        e.detail.inputText, e.detail.resetAutocompleteController,
+        e.detail.cursorPosition, e.detail.zeroSuggest,
+        e.detail.preventInlineAutocomplete, e.detail.preferKeyword,
+        e.detail.currentUrl, e.detail.pageClassification);
   });
   omniboxInput.addEventListener(
       'display-inputs-changed',
-      event => omniboxOutput.updateDisplayInputs(event.detail));
+      e => omniboxOutput.updateDisplayInputs(e.detail));
   omniboxInput.addEventListener(
-      'filter-input-changed',
-      event => omniboxOutput.updateFilterText(event.detail));
+      'filter-input-changed', e => omniboxOutput.updateFilterText(e.detail));
   omniboxInput.addEventListener(
-      'import-json', event => exportDelegate.importJson(event.detail));
+      'import-json', e => exportDelegate.importJson(e.detail));
   omniboxInput.addEventListener('copy-text', () => exportDelegate.copyText());
   omniboxInput.addEventListener(
       'download-json', () => exportDelegate.downloadJson());
   omniboxInput.addEventListener(
       'response-select',
-      event => omniboxOutput.updateSelectedResponseIndex(event.detail));
+      e => omniboxOutput.updateSelectedResponseIndex(e.detail));
 
   omniboxOutput.addEventListener(
-      'responses-count-changed',
-      event => omniboxInput.responsesCount = event.detail);
+      'responses-count-changed', e => omniboxInput.responsesCount = e.detail);
 });
 
 class ExportDelegate {
@@ -125,22 +123,8 @@ class ExportDelegate {
 
   /** @param {OmniboxExport} importData */
   importJson(importData) {
-    // This is the minimum validation required to ensure no console errors.
-    // Invalid importData that passes validation will be processed with a
-    // best-attempt; e.g. if responses are missing 'relevance' values, then
-    // those cells will be left blank.
-    const valid = importData && importData.queryInputs &&
-        importData.displayInputs &&
-        Array.isArray(importData.responsesHistory) &&
-        importData.responsesHistory.every(
-            responses => Array.isArray(responses) &&
-                responses.every(
-                    response => Array.isArray(response.combinedResults) &&
-                        Array.isArray(response.resultsByProvider)));
-    if (!valid) {
-      return console.error(
-          'invalid import format:',
-          'expected {queryInputs: {}, displayInputs: {}, responsesHistory: []}');
+    if (!validateImportData_(importData)) {
+      return;
     }
     this.omniboxInput_.queryInputs = importData.queryInputs;
     this.omniboxInput_.displayInputs = importData.displayInputs;
@@ -185,5 +169,60 @@ class ExportDelegate {
     a.download = fileName;
     a.click();
   }
+}
+
+/**
+ * This is the minimum validation required to ensure no console errors.
+ * Invalid importData that passes validation will be processed with a
+ * best-attempt; e.g. if responses are missing 'relevance' values, then those
+ * cells will be left blank.
+ * @private
+ * @param {OmniboxExport} importData
+ * @return {boolean}
+ */
+function validateImportData_(importData) {
+  const EXPECTED_FORMAT = {
+    queryInputs: {},
+    displayInputs: {},
+    responsesHistory: [[{combinedResults: [], resultsByProvider: []}]]
+  };
+  const INVALID_MESSAGE = `Invalid import format; expected \n${
+      JSON.stringify(EXPECTED_FORMAT, null, 2)};\n`;
+
+  if (!importData) {
+    console.error(INVALID_MESSAGE + 'received non object.');
+    return false;
+  }
+
+  if (!importData.queryInputs || !importData.displayInputs) {
+    console.error(
+        INVALID_MESSAGE +
+        'import missing objects queryInputs and displayInputs.');
+    return false;
+  }
+
+  if (!Array.isArray(importData.responsesHistory)) {
+    console.error(INVALID_MESSAGE + 'import missing array responsesHistory.');
+    return false;
+  }
+
+  if (!importData.responsesHistory.every(Array.isArray)) {
+    console.error(INVALID_MESSAGE + 'responsesHistory contains non arrays.');
+    return false;
+  }
+
+  if (!importData.responsesHistory.every(
+          responses => responses.every(
+              ({combinedResults, resultsByProvider}) =>
+                  Array.isArray(combinedResults) &&
+                  Array.isArray(resultsByProvider)))) {
+    console.error(
+        INVALID_MESSAGE +
+        'responsesHistory items\' items missing combinedResults and ' +
+        'resultsByProvider arrays.');
+    return false;
+  }
+
+  return true;
 }
 })();
