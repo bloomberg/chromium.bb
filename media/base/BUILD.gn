@@ -152,6 +152,7 @@ jumbo_source_set("base") {
     "key_systems.h",
     "localized_strings.cc",
     "localized_strings.h",
+    "logging_override_if_enabled.h",
     "loopback_audio_converter.cc",
     "loopback_audio_converter.h",
     "media.cc",
