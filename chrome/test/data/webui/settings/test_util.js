@@ -241,6 +241,7 @@ cr.define('test_util', function() {
           engagement: 0,
           usage: 0,
           numCookies: 0,
+          hasPermissionSettings: false,
         },
         override);
   }
