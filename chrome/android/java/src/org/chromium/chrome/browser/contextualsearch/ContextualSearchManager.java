@@ -1356,8 +1356,7 @@ public class ContextualSearchManager
 
     /** @return Whether the display is in a full-screen video overlay mode. */
     private boolean isOverlayVideoMode() {
-        return mActivity.getFullscreenManager() != null
-                && mActivity.getFullscreenManager().isOverlayVideoMode();
+        return mActivity.getFullscreenManager().isOverlayVideoMode();
     }
 
     // ============================================================================================
