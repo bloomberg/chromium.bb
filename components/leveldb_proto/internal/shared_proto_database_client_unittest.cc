@@ -25,11 +25,6 @@ const char* kDefaultNamespace1 = "cde";
 const char* kDefaultNamespace2 = "cfd";
 const char* kDefaultTypePrefix = "tp";
 
-void DeleteSoon(scoped_refptr<SharedProtoDatabase> db,
-                std::unique_ptr<base::ScopedTempDir>) {
-  db.reset();
-}
-
 }  // namespace
 
 class SharedProtoDatabaseClientTest : public testing::Test {
@@ -42,11 +37,8 @@ class SharedProtoDatabaseClientTest : public testing::Test {
   }
 
   void TearDown() override {
-    // TODO(ssid): SharedProtoDatabase should use scoped_refptr and this
-    // shouldn't be required.
-    db_->database_task_runner_for_testing()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&DeleteSoon, std::move(db_), std::move(temp_dir_)));
+    db_->database_task_runner_for_testing()->DeleteSoon(FROM_HERE,
+                                                        std::move(temp_dir_));
   }
 
  protected:

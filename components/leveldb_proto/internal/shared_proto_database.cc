@@ -58,9 +58,8 @@ SharedProtoDatabase::SharedProtoDatabase(const std::string& client_db_id,
       db_(std::make_unique<LevelDB>(client_db_id.c_str())),
       db_wrapper_(std::make_unique<ProtoLevelDBWrapper>(task_runner_)),
       metadata_db_(std::make_unique<LevelDB>(kMetadataDatabaseName)),
-      metadata_db_wrapper_(std::make_unique<ProtoLevelDBWrapper>(task_runner_)),
-      weak_factory_(
-          std::make_unique<base::WeakPtrFactory<SharedProtoDatabase>>(this)) {
+      metadata_db_wrapper_(
+          std::make_unique<ProtoLevelDBWrapper>(task_runner_)) {
   DETACH_FROM_SEQUENCE(on_task_runner_);
 }
 
@@ -73,10 +72,9 @@ void SharedProtoDatabase::GetDatabaseInitStatusAsync(
     Callbacks::InitStatusCallback callback) {
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
   task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SharedProtoDatabase::RunInitCallback,
-                     weak_factory_->GetWeakPtr(), std::move(callback),
-                     base::SequencedTaskRunnerHandle::Get()));
+      FROM_HERE, base::BindOnce(&SharedProtoDatabase::RunInitCallback, this,
+                                std::move(callback),
+                                base::SequencedTaskRunnerHandle::Get()));
 }
 
 void SharedProtoDatabase::RunInitCallback(
@@ -93,9 +91,8 @@ void SharedProtoDatabase::UpdateClientMetadataAsync(
   if (base::SequencedTaskRunnerHandle::Get() != task_runner_) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&SharedProtoDatabase::UpdateClientMetadataAsync,
-                       weak_factory_->GetWeakPtr(), client_db_id,
-                       migration_status, std::move(callback)));
+        base::BindOnce(&SharedProtoDatabase::UpdateClientMetadataAsync, this,
+                       client_db_id, migration_status, std::move(callback)));
     return;
   }
   auto update_entries = std::make_unique<
@@ -121,9 +118,9 @@ void SharedProtoDatabase::GetClientMetadataAsync(
   // on the calling sequence.
   metadata_db_wrapper_->GetEntry<SharedDBMetadataProto>(
       std::string(client_db_id),
-      base::BindOnce(&SharedProtoDatabase::OnGetClientMetadata,
-                     weak_factory_->GetWeakPtr(), client_db_id,
-                     std::move(callback), std::move(callback_task_runner)));
+      base::BindOnce(&SharedProtoDatabase::OnGetClientMetadata, this,
+                     client_db_id, std::move(callback),
+                     std::move(callback_task_runner)));
 }
 
 // As mentioned above, |current_task_runner| is the appropriate calling sequence
@@ -251,9 +248,8 @@ void SharedProtoDatabase::InitMetadataDatabase(bool create_shared_db_if_missing,
   metadata_db_wrapper_->InitWithDatabase(
       metadata_db_.get(), metadata_path, CreateSimpleOptions(),
       true /* destroy_on_corruption */,
-      base::BindOnce(&SharedProtoDatabase::OnMetadataInitComplete,
-                     weak_factory_->GetWeakPtr(), create_shared_db_if_missing,
-                     attempt, corruption));
+      base::BindOnce(&SharedProtoDatabase::OnMetadataInitComplete, this,
+                     create_shared_db_if_missing, attempt, corruption));
 }
 
 void SharedProtoDatabase::OnMetadataInitComplete(
@@ -282,9 +278,8 @@ void SharedProtoDatabase::OnMetadataInitComplete(
   // to treat the shared database as corrupt, we can't know for sure anymore.
   metadata_db_wrapper_->GetEntry<SharedDBMetadataProto>(
       std::string(kGlobalMetadataKey),
-      base::BindOnce(&SharedProtoDatabase::OnGetGlobalMetadata,
-                     weak_factory_->GetWeakPtr(), create_shared_db_if_missing,
-                     corruption));
+      base::BindOnce(&SharedProtoDatabase::OnGetGlobalMetadata, this,
+                     create_shared_db_if_missing, corruption));
 }
 
 void SharedProtoDatabase::OnGetGlobalMetadata(
@@ -306,8 +301,8 @@ void SharedProtoDatabase::OnGetGlobalMetadata(
   metadata_->set_corruptions(corruption ? 1U : 0U);
   metadata_->clear_migration_status();
   CommitUpdatedGlobalMetadata(
-      base::BindOnce(&SharedProtoDatabase::OnFinishCorruptionCountWrite,
-                     weak_factory_->GetWeakPtr(), create_shared_db_if_missing));
+      base::BindOnce(&SharedProtoDatabase::OnFinishCorruptionCountWrite, this,
+                     create_shared_db_if_missing));
 }
 
 void SharedProtoDatabase::OnFinishCorruptionCountWrite(
@@ -337,8 +332,7 @@ void SharedProtoDatabase::InitDatabase(bool create_shared_db_if_missing) {
   // the InitState will be final after Init is called.
   db_wrapper_->InitWithDatabase(
       db_.get(), db_dir_, options, false /* destroy_on_corruption */,
-      base::BindOnce(&SharedProtoDatabase::OnDatabaseInit,
-                     weak_factory_->GetWeakPtr()));
+      base::BindOnce(&SharedProtoDatabase::OnDatabaseInit, this));
 }
 
 void SharedProtoDatabase::OnDatabaseInit(Enums::InitStatus status) {
@@ -354,9 +348,8 @@ void SharedProtoDatabase::OnDatabaseInit(Enums::InitStatus status) {
     // serious has gone wrong with the metadata database.
     metadata_->set_corruptions(metadata_->corruptions() + 1);
 
-    CommitUpdatedGlobalMetadata(
-        base::BindOnce(&SharedProtoDatabase::OnUpdateCorruptionCountAtInit,
-                       weak_factory_->GetWeakPtr()));
+    CommitUpdatedGlobalMetadata(base::BindOnce(
+        &SharedProtoDatabase::OnUpdateCorruptionCountAtInit, this));
     return;
   }
 
@@ -410,7 +403,6 @@ void SharedProtoDatabase::CommitUpdatedGlobalMetadata(
 SharedProtoDatabase::~SharedProtoDatabase() {
   task_runner_->DeleteSoon(FROM_HERE, std::move(db_));
   task_runner_->DeleteSoon(FROM_HERE, std::move(metadata_db_));
-  task_runner_->DeleteSoon(FROM_HERE, std::move(weak_factory_));
 }
 
 LevelDB* SharedProtoDatabase::GetLevelDBForTesting() const {
