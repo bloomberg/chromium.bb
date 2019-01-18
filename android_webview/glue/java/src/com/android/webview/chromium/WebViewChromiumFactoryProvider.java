@@ -127,7 +127,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     private SharedPreferences mWebViewPrefs;
     private WebViewDelegate mWebViewDelegate;
 
-    private boolean mShouldDisableThreadChecking;
+    protected boolean mShouldDisableThreadChecking;
 
     // Initialization guarded by mAwInit.getLock()
     private Statics mStaticsAdapter;
