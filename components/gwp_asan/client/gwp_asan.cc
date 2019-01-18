@@ -24,9 +24,9 @@ const base::Feature kGwpAsan{"GwpAsanMalloc",
                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::FeatureParam<int> kMaxAllocationsParam{&kGwpAsan, "MaxAllocations",
-                                                   32};
+                                                   6};
 
-const base::FeatureParam<int> kTotalPagesParam{&kGwpAsan, "TotalPages", 128};
+const base::FeatureParam<int> kTotalPagesParam{&kGwpAsan, "TotalPages", 20};
 
 const base::FeatureParam<int> kAllocationSamplingParam{
     &kGwpAsan, "AllocationSamplingFrequency", 1000};
