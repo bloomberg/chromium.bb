@@ -1582,6 +1582,49 @@ TEST_P(FrameProcessorTest,
   CheckReadsThenReadStalls(video_.get(), "100 110 120 130 240 250");
 }
 
+TEST_P(FrameProcessorTest, ContinuousPts_DiscontinuousDts_AcrossGops) {
+  // GOPs which overlap in DTS, but are continuous in PTS should be buffered
+  // correctly (though with different results if the overlap is significant
+  // enough) in each of ByPts and ByDts buffering modes. In particular,
+  // monotonic increase of DTS in continuous-in-PTS append sequences is not
+  // required across GOPs when buffering by PTS (just within GOPs). When
+  // buffering by DTS, a continuous sequence is determined by DTS (not PTS), so
+  // the append sequence is required to have monotonically increasing DTS (even
+  // across GOPs).
+  InSequence s;
+  AddTestTracks(HAS_VIDEO);
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
+
+  // Make the sequence mode buffering appear just like segments mode to simplify
+  // this test case.
+  if (use_sequence_mode_)
+    SetTimestampOffset(Milliseconds(200));
+
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(240)));
+  EXPECT_TRUE(ProcessFrames("", "200K 210 220 230"));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [200,240) }");
+
+  // Note that duration is reported based on PTS regardless of buffering model.
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(280)));
+
+  // Append a second GOP whose first DTS is below the last DTS of the first GOP,
+  // but whose PTS interval is continuous with the end of the first GOP.
+  EXPECT_TRUE(ProcessFrames("", "240|225K 250|235 260|245 270|255"));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+  SeekStream(video_.get(), Milliseconds(200));
+
+  if (range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts) {
+    CheckExpectedRangesByTimestamp(video_.get(), "{ [200,265) }");
+    // Note that even when buffering by DTS, this verification method checks the
+    // PTS sequence of frames read from the stream.
+    CheckReadsThenReadStalls(video_.get(), "200 210 220 240 250 260 270");
+  } else {
+    CheckExpectedRangesByTimestamp(video_.get(), "{ [200,280) }");
+    CheckReadsThenReadStalls(video_.get(), "200 210 220 230 240 250 260 270");
+  }
+}
+
 INSTANTIATE_TEST_CASE_P(SequenceModeLegacyByDts,
                         FrameProcessorTest,
                         Values(FrameProcessorTestParams(
