@@ -7,11 +7,29 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
-class CORE_EXPORT PortalHost : public EventTargetWithInlineData {
+class ExecutionContext;
+class LocalDOMWindow;
+
+class CORE_EXPORT PortalHost : public EventTargetWithInlineData,
+                               public Supplement<LocalDOMWindow> {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(PortalHost);
+
+ public:
+  explicit PortalHost(LocalDOMWindow& window);
+
+  void Trace(Visitor* visitor) override;
+
+  static const char kSupplementName[];
+  static PortalHost& From(LocalDOMWindow& window);
+
+  // EventTarget overrides
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
 };
 
 }  // namespace blink

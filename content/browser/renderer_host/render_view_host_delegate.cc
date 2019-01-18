@@ -65,4 +65,8 @@ RenderFrameHost* RenderViewHostDelegate::GetPendingMainFrame() {
   return nullptr;
 }
 
+bool RenderViewHostDelegate::IsPortal() const {
+  return false;
+}
+
 }  // namespace content
