@@ -26,6 +26,8 @@ static_library("device_sync") {
     "cryptauth_enrollment_manager.h",
     "cryptauth_enrollment_manager_impl.cc",
     "cryptauth_enrollment_manager_impl.h",
+    "cryptauth_enrollment_result.cc",
+    "cryptauth_enrollment_result.h",
     "cryptauth_gcm_manager.cc",
     "cryptauth_gcm_manager.h",
     "cryptauth_gcm_manager_impl.cc",
