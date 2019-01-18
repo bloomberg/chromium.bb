@@ -123,7 +123,7 @@ body.hide-fakebox #fakebox {
 }
 
 #fakebox {
-  background-color: rgb(241, 243, 244);
+  background-color: rgb(var(--GG100-rgb));
   border-radius: 22px;
   cursor: text;
   font-size: 18px;
@@ -138,7 +138,7 @@ body.hide-fakebox #fakebox {
 }
 
 #fakebox:hover {
-  background-color: rgb(232, 234, 237);
+  background-color: rgb(var(--GG200-rgb));
 }
 
 .non-google-page #fakebox-container {
@@ -165,7 +165,7 @@ html[dir=rtl] #fakebox > input {
 
 #fakebox-text {
   bottom: 4px;
-  color: rgb(128, 134, 139);
+  color: rgb(var(--GG600-rgb));
   font-family: 'Roboto', arial, sans-serif;
   font-size: 14px;
   left: 0;
@@ -290,7 +290,7 @@ body.fakebox-focused #fakebox-cursor {
   -webkit-mask-position: 3px 3px;
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 10px 10px;
-  background-color: rgba(90,90,90,0.7);
+  background-color: rgba(90, 90, 90, 0.7);
   cursor: pointer;
   display: inline-block;
   filter: var(--theme-filter, 'none');
@@ -307,11 +307,11 @@ html[dir=rtl] #mv-notice-x {
 }
 
 #mv-notice-x:hover {
-  background-color: rgba(90,90,90,1.0);
+  background-color: rgba(90, 90, 90, 1.0);
 }
 
 #mv-notice-x:active {
-  background-color: rgb(66,133,244);
+  background-color: rgb(var(--GB500-rgb));
 }
 
 .md-icons #mv-notice-x {
@@ -359,7 +359,7 @@ html[dir=rtl] #mv-notice-x {
 
 .md-icons #mv-notice {
   background-color: white;
-  border: 1px solid rgb(218, 220, 224);
+  border: 1px solid rgb(var(--GG300-rgb));
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 16px;
   font-family: 'Roboto', arial, sans-serif;
@@ -379,7 +379,7 @@ html[dir=rtl] #mv-notice-x {
 }
 
 .md-icons #mv-notice span {
-  color: rgb(95,99,104);
+  color: rgb(var(--GG700-rgb));
   height: auto;
   line-height: 32px;
   vertical-align: unset;
@@ -397,7 +397,7 @@ html[dir=rtl] #mv-notice-x {
 .md-icons #mv-notice-links span {
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 16px;
-  color: rgb(26, 115, 232);
+  color: rgb(var(--GB600-rgb));
   margin-inline-start: 0;
   padding: 0 16px;
   position: relative;
@@ -410,7 +410,7 @@ html[dir=rtl] #mv-notice-x {
 
 .md-icons #mv-notice-links span:hover,
 .md-icons #mv-notice-links span:active {
-  background-color: rgba(26,115,232, 0.1);
+  background-color: rgba(var(--GB600-rgb), 0.1);
   text-decoration: none;
   transition: background-color 200ms;
 }
@@ -556,7 +556,7 @@ html[dir=rtl] #attribution,
 }
 
 input:checked + .toggle {
-  background-color: rgba(26, 115, 232, .5);
+  background-color: rgba(var(--GB600-rgb), .5);
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
 }
 
@@ -566,7 +566,7 @@ input:focus + .toggle {
 
 input:checked + .toggle::before {
   -webkit-transform: translateX(26px);
-  background-color: rgb(26, 115, 232);
+  background-color: rgb(var(--GB600-rgb));
   transform: translateX(26px);
 }
 
@@ -585,10 +585,10 @@ input:checked + .toggle::before {
 
 #error-notice {
   background-color: white;
-  border: 1px solid rgb(218, 220, 224);
+  border: 1px solid rgb(var(--GG300-rgb));
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 16px;
-  color: rgb(217, 48, 37);
+  color: rgb(var(--GR600-rgb));
   display: flex;
   font-family: 'Roboto', arial, sans-serif;
   font-size: 12px;
@@ -640,7 +640,7 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 #error-notice-link {
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 16px;
-  color: rgb(26, 115, 232);
+  color: rgb(var(--GB600-rgb));
   cursor: pointer;
   display: none;
   outline: none;
@@ -659,7 +659,7 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 
 #error-notice-link:hover,
 #error-notice-link:active {
-  background-color: rgba(26,115,232, 0.1);
+  background-color: rgba(var(--GB600-rgb), 0.1);
   text-decoration: none;
   transition: background-color 200ms;
 }
@@ -680,10 +680,10 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 
 #promo > div {
   background-color: #FFF;
-  border: 1px solid rgb(218, 220, 224);
+  border: 1px solid rgb(var(--GG300-rgb));
   border-radius: 16px;
   box-sizing: border-box;
-  color: rgb(95, 99, 104);
+  color: rgb(var(--GG700-rgb));
   display: inline-block;
   font-family: 'Roboto', arial, sans-serif;
   font-size: 12px;
