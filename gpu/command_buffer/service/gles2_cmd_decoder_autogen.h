@@ -739,7 +739,7 @@ error::Error GLES2DecoderImpl::HandleDeleteBuffersImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t buffers_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &buffers_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&buffers_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* buffers = GetImmediateDataAs<volatile const GLuint*>(
@@ -759,7 +759,7 @@ error::Error GLES2DecoderImpl::HandleDeleteFramebuffersImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t framebuffers_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &framebuffers_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&framebuffers_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* framebuffers =
@@ -780,7 +780,7 @@ error::Error GLES2DecoderImpl::HandleDeleteRenderbuffersImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t renderbuffers_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &renderbuffers_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&renderbuffers_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* renderbuffers =
@@ -803,7 +803,7 @@ error::Error GLES2DecoderImpl::HandleDeleteSamplersImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t samplers_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &samplers_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&samplers_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* samplers = GetImmediateDataAs<volatile const GLuint*>(
@@ -834,7 +834,7 @@ error::Error GLES2DecoderImpl::HandleDeleteTexturesImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t textures_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &textures_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&textures_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* textures = GetImmediateDataAs<volatile const GLuint*>(
@@ -857,7 +857,7 @@ error::Error GLES2DecoderImpl::HandleDeleteTransformFeedbacksImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t ids_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &ids_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&ids_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* ids = GetImmediateDataAs<volatile const GLuint*>(
@@ -1111,7 +1111,7 @@ error::Error GLES2DecoderImpl::HandleGenBuffersImmediate(
       *static_cast<const volatile gles2::cmds::GenBuffersImmediate*>(cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t buffers_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &buffers_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&buffers_size)) {
     return error::kOutOfBounds;
   }
   volatile GLuint* buffers = GetImmediateDataAs<volatile GLuint*>(
@@ -1151,7 +1151,7 @@ error::Error GLES2DecoderImpl::HandleGenFramebuffersImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t framebuffers_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &framebuffers_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&framebuffers_size)) {
     return error::kOutOfBounds;
   }
   volatile GLuint* framebuffers = GetImmediateDataAs<volatile GLuint*>(
@@ -1177,7 +1177,7 @@ error::Error GLES2DecoderImpl::HandleGenRenderbuffersImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t renderbuffers_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &renderbuffers_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&renderbuffers_size)) {
     return error::kOutOfBounds;
   }
   volatile GLuint* renderbuffers = GetImmediateDataAs<volatile GLuint*>(
@@ -1204,7 +1204,7 @@ error::Error GLES2DecoderImpl::HandleGenSamplersImmediate(
       *static_cast<const volatile gles2::cmds::GenSamplersImmediate*>(cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t samplers_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &samplers_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&samplers_size)) {
     return error::kOutOfBounds;
   }
   volatile GLuint* samplers = GetImmediateDataAs<volatile GLuint*>(
@@ -1229,7 +1229,7 @@ error::Error GLES2DecoderImpl::HandleGenTexturesImmediate(
       *static_cast<const volatile gles2::cmds::GenTexturesImmediate*>(cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t textures_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &textures_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&textures_size)) {
     return error::kOutOfBounds;
   }
   volatile GLuint* textures = GetImmediateDataAs<volatile GLuint*>(
@@ -1257,7 +1257,7 @@ error::Error GLES2DecoderImpl::HandleGenTransformFeedbacksImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t ids_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &ids_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&ids_size)) {
     return error::kOutOfBounds;
   }
   volatile GLuint* ids =
@@ -4448,7 +4448,7 @@ error::Error GLES2DecoderImpl::HandleGenQueriesEXTImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t queries_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &queries_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&queries_size)) {
     return error::kOutOfBounds;
   }
   volatile GLuint* queries = GetImmediateDataAs<volatile GLuint*>(
@@ -4474,7 +4474,7 @@ error::Error GLES2DecoderImpl::HandleDeleteQueriesEXTImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t queries_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &queries_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&queries_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* queries = GetImmediateDataAs<volatile const GLuint*>(
@@ -4566,7 +4566,7 @@ error::Error GLES2DecoderImpl::HandleGenVertexArraysOESImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t arrays_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &arrays_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&arrays_size)) {
     return error::kOutOfBounds;
   }
   volatile GLuint* arrays =
@@ -4592,7 +4592,7 @@ error::Error GLES2DecoderImpl::HandleDeleteVertexArraysOESImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t arrays_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &arrays_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&arrays_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* arrays = GetImmediateDataAs<volatile const GLuint*>(

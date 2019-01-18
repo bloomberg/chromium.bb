@@ -22,37 +22,6 @@
 namespace gpu {
 namespace gles2 {
 
-// Does a multiply and checks for overflow.  If the multiply did not overflow
-// returns true.
-
-// Multiplies 2 32 bit unsigned numbers checking for overflow.
-// If there was no overflow returns true.
-inline bool SafeMultiplyUint32(uint32_t a, uint32_t b, uint32_t* dst) {
-  DCHECK(dst);
-  base::CheckedNumeric<uint32_t> checked = a;
-  checked *= b;
-  *dst = checked.ValueOrDefault(0);
-  return checked.IsValid();
-}
-
-// Does an add checking for overflow.  If there was no overflow returns true.
-inline bool SafeAddUint32(uint32_t a, uint32_t b, uint32_t* dst) {
-  DCHECK(dst);
-  base::CheckedNumeric<uint32_t> checked = a;
-  checked += b;
-  *dst = checked.ValueOrDefault(0);
-  return checked.IsValid();
-}
-
-// Does an add checking for overflow.  If there was no overflow returns true.
-inline bool SafeAddInt32(int32_t a, int32_t b, int32_t* dst) {
-  DCHECK(dst);
-  base::CheckedNumeric<int32_t> checked = a;
-  checked += b;
-  *dst = checked.ValueOrDefault(0);
-  return checked.IsValid();
-}
-
 // A 32-bit and 64-bit compatible way of converting a pointer to a
 // 32-bit usigned integer, suitable to be stored in a GLuint.
 inline uint32_t ToGLuint(const void* ptr) {

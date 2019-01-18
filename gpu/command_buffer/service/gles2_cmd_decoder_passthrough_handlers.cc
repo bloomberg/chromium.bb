@@ -958,7 +958,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleShaderBinary(
   uint32_t binary_shm_offset = c.binary_shm_offset;
 
   uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&data_size)) {
     return error::kOutOfBounds;
   }
   const GLuint* shaders = GetSharedMemoryAs<const GLuint*>(

@@ -2209,11 +2209,10 @@ class GENnHandler(TypeHandler):
   def WriteGetDataSizeCode(self, func, arg, f):
     """Overrriden from TypeHandler."""
     code = """  uint32_t %(data_size)s;
-  if (!%(namespace)sSafeMultiplyUint32(n, sizeof(GLuint), &%(data_size)s)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&%(data_size)s)) {
     return error::kOutOfBounds;
   }
-""" % {'data_size': arg.GetReservedSizeId(),
-       'namespace': _Namespace()}
+""" % {'data_size': arg.GetReservedSizeId()}
     f.write(code)
 
   def WriteHandlerImplementation (self, func, f):
@@ -2662,11 +2661,10 @@ class DELnHandler(TypeHandler):
   def WriteGetDataSizeCode(self, func, arg, f):
     """Overrriden from TypeHandler."""
     code = """  uint32_t %(data_size)s;
-  if (!%(namespace)sSafeMultiplyUint32(n, sizeof(GLuint), &%(data_size)s)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&%(data_size)s)) {
     return error::kOutOfBounds;
   }
-""" % {'data_size': arg.GetReservedSizeId(),
-       'namespace': _Namespace()}
+""" % {'data_size': arg.GetReservedSizeId()}
     f.write(code)
 
   def WriteGLES2ImplementationUnitTest(self, func, f):
