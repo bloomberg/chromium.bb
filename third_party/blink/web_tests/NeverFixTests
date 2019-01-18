@@ -2051,7 +2051,6 @@ external/wpt/payment-request/show-method-postmessage-manual.https.html [ WontFix
 external/wpt/payment-request/updateWith-method-pmi-handling-manual.https.html [ WontFix ]
 external/wpt/payment-request/user-abort-algorithm-manual.https.html [ WontFix ]
 external/wpt/payment-request/user-accepts-payment-request-algo-manual.https.html [ WontFix ]
-external/wpt/pointerevents/pointerevent_click_during_capture-manual.html [ WontFix ]
 external/wpt/pointerevents/pointerevent_touch-action-button-test_touch-manual.html [ WontFix ]
 external/wpt/pointerevents/pointerevent_touch-action-svg-test_touch-manual.html [ WontFix ]
 external/wpt/pointerlock/movementX_Y_no-jumps-manual.html [ WontFix ]

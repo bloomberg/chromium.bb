@@ -1037,7 +1037,6 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   MouseEventWithHitTestResults mev =
       event_handling_util::PerformMouseEventHitTest(frame_, request,
                                                     mouse_event);
-  Element* mouse_release_target = mev.InnerElement();
   LocalFrame* subframe = event_handling_util::GetTargetSubframe(
       mev, capturing_mouse_events_element_.Get());
   if (event_handler_will_reset_capturing_mouse_events_node_)
@@ -1064,12 +1063,9 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
 
   WebInputEventResult event_result = DispatchMousePointerEvent(
       WebInputEvent::kPointerUp, mev.InnerElement(), mev.CanvasRegionId(),
-      mev.Event(), Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
-
-  WebInputEventResult click_event_result =
-      mouse_release_target ? mouse_event_manager_->DispatchMouseClickIfNeeded(
-                                 mev, *mouse_release_target)
-                           : WebInputEventResult::kNotHandled;
+      mev.Event(), Vector<WebMouseEvent>(), Vector<WebMouseEvent>(),
+      (GetSelectionController().HasExtendedSelection() &&
+       IsSelectionOverLink(mev)));
 
   scroll_manager_->ClearResizeScrollableArea(false);
 
@@ -1079,8 +1075,7 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   mouse_event_manager_->HandleMouseReleaseEventUpdateStates();
   CaptureMouseEventsToWidget(false);
 
-  return event_handling_util::MergeEventResult(click_event_result,
-                                               event_result);
+  return event_result;
 }
 
 static bool TargetIsFrame(Node* target, LocalFrame*& frame) {
@@ -1328,10 +1323,12 @@ WebInputEventResult EventHandler::DispatchMousePointerEvent(
     const String& canvas_region_id,
     const WebMouseEvent& mouse_event,
     const Vector<WebMouseEvent>& coalesced_events,
-    const Vector<WebMouseEvent>& predicted_events) {
+    const Vector<WebMouseEvent>& predicted_events,
+    bool skip_click_dispatch) {
   const auto& event_result = pointer_event_manager_->SendMousePointerEvent(
       EffectiveMouseEventTargetElement(target_element), canvas_region_id,
-      event_type, mouse_event, coalesced_events, predicted_events);
+      event_type, mouse_event, coalesced_events, predicted_events,
+      skip_click_dispatch);
   return event_result;
 }
 
