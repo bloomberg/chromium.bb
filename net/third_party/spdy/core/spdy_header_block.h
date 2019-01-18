@@ -13,8 +13,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "net/base/linked_hash_map.h"
+#include "net/third_party/spdy/platform/api/spdy_containers.h"
 #include "net/third_party/spdy/platform/api/spdy_export.h"
+#include "net/third_party/spdy/platform/api/spdy_macros.h"
 #include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
@@ -81,9 +82,8 @@ class SPDY_EXPORT_PRIVATE SpdyHeaderBlock {
     size_t separator_size_ = 0;
   };
 
-  typedef net::
-      linked_hash_map<SpdyStringPiece, HeaderValue, base::StringPieceHash>
-          MapType;
+  typedef SpdyLinkedHashMap<SpdyStringPiece, HeaderValue, SpdyStringPieceHash>
+      MapType;
 
  public:
   typedef std::pair<SpdyStringPiece, SpdyStringPiece> value_type;
@@ -181,12 +181,11 @@ class SPDY_EXPORT_PRIVATE SpdyHeaderBlock {
                               const SpdyStringPiece value);
 
   // Allows either lookup or mutation of the value associated with a key.
-  ValueProxy operator[](const SpdyStringPiece key);
+  ValueProxy operator[](const SpdyStringPiece key) SPDY_MUST_USE_RESULT;
 
   // This object provides automatic conversions that allow SpdyHeaderBlock to be
-  // nearly a drop-in replacement for net::linked_hash_map<SpdyString,
-  // SpdyString>. It reads data from or writes data to a
-  // SpdyHeaderBlock::Storage.
+  // nearly a drop-in replacement for SpdyLinkedHashMap<SpdyString, SpdyString>.
+  // It reads data from or writes data to a SpdyHeaderBlock::Storage.
   class SPDY_EXPORT_PRIVATE ValueProxy {
    public:
     ~ValueProxy();

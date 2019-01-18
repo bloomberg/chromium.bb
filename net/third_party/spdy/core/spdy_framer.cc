@@ -11,6 +11,7 @@
 #include <new>
 
 #include "base/logging.h"
+#include "net/third_party/quiche/src/http2/platform/api/http2_macros.h"
 #include "net/third_party/spdy/core/hpack/hpack_constants.h"
 #include "net/third_party/spdy/core/spdy_bitmasks.h"
 #include "net/third_party/spdy/core/spdy_bug_tracker.h"
@@ -421,7 +422,7 @@ std::unique_ptr<SpdyFrameSequence> SpdyFramer::CreateIterator(
     }
     case SpdyFrameType::DATA: {
       DVLOG(1) << "Serialize a stream end DATA frame for VTL";
-      FALLTHROUGH;
+      HTTP2_FALLTHROUGH;
     }
     default: {
       return SpdyMakeUnique<SpdyControlFrameIterator>(framer,

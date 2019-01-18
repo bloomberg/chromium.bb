@@ -9,14 +9,14 @@
 #include "base/logging.h"
 #include "net/third_party/spdy/core/hpack/hpack_constants.h"
 #include "net/third_party/spdy/core/hpack/hpack_static_table.h"
+#include "net/third_party/spdy/platform/api/spdy_containers.h"
 #include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
 
 namespace spdy {
 
 size_t HpackHeaderTable::EntryHasher::operator()(
     const HpackEntry* entry) const {
-  return base::StringPieceHash()(entry->name()) ^
-         base::StringPieceHash()(entry->value());
+  return SpdyHashStringPair(entry->name(), entry->value());
 }
 
 bool HpackHeaderTable::EntriesEq::operator()(const HpackEntry* lhs,

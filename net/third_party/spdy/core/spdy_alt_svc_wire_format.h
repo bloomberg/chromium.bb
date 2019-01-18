@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "net/third_party/spdy/platform/api/spdy_containers.h"
 #include "net/third_party/spdy/platform/api/spdy_export.h"
 #include "net/third_party/spdy/platform/api/spdy_string.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
@@ -25,7 +26,7 @@ class SpdyAltSvcWireFormatPeer;
 
 class SPDY_EXPORT_PRIVATE SpdyAltSvcWireFormat {
  public:
-  using VersionVector = std::vector<uint32_t>;
+  using VersionVector = SpdyInlinedVector<uint32_t, 8>;
 
   struct SPDY_EXPORT_PRIVATE AlternativeService {
     SpdyString protocol_id;

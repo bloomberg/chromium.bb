@@ -14,6 +14,7 @@
 #include "net/third_party/spdy/core/hpack/hpack_entry.h"
 #include "net/third_party/spdy/platform/api/spdy_containers.h"
 #include "net/third_party/spdy/platform/api/spdy_export.h"
+#include "net/third_party/spdy/platform/api/spdy_macros.h"
 #include "net/third_party/spdy/platform/api/spdy_string_piece.h"
 
 // All section references below are to http://tools.ietf.org/html/rfc7541.
@@ -68,7 +69,7 @@ class SPDY_EXPORT_PRIVATE HpackHeaderTable {
   };
   using UnorderedEntrySet = SpdyHashSet<HpackEntry*, EntryHasher, EntriesEq>;
   using NameToEntryMap =
-      SpdyHashMap<SpdyStringPiece, const HpackEntry*, base::StringPieceHash>;
+      SpdyHashMap<SpdyStringPiece, const HpackEntry*, SpdyStringPieceHash>;
 
   HpackHeaderTable();
   HpackHeaderTable(const HpackHeaderTable&) = delete;
@@ -119,7 +120,7 @@ class SPDY_EXPORT_PRIVATE HpackHeaderTable {
   // evicted and the empty table is of insufficent size for the representation.
   const HpackEntry* TryAddEntry(SpdyStringPiece name, SpdyStringPiece value);
 
-  void DebugLogTableState() const;
+  void DebugLogTableState() const SPDY_UNUSED;
 
   void set_debug_visitor(std::unique_ptr<DebugVisitorInterface> visitor) {
     debug_visitor_ = std::move(visitor);

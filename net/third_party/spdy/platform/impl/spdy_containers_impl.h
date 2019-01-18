@@ -6,6 +6,10 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
+
+#include "base/strings/string_piece.h"
+#include "net/base/linked_hash_map.h"
 
 namespace spdy {
 
@@ -17,6 +21,18 @@ using SpdyHashMapImpl = std::unordered_map<KeyType, ValueType, Hash>;
 
 template <typename ElementType, typename Hasher, typename Eq>
 using SpdyHashSetImpl = std::unordered_set<ElementType, Hasher, Eq>;
+
+template <typename Key, typename Value, typename Hash>
+using SpdyLinkedHashMapImpl = net::linked_hash_map<Key, Value, Hash>;
+
+template <typename T, size_t N, typename A = std::allocator<T>>
+using SpdyInlinedVectorImpl = std::vector<T, A>;
+
+using SpdyStringPieceHashImpl = base::StringPieceHash;
+
+inline size_t SpdyHashStringPairImpl(SpdyStringPiece a, SpdyStringPiece b) {
+  return base::StringPieceHash()(a) ^ base::StringPieceHash()(b);
+}
 
 }  // namespace spdy
 
