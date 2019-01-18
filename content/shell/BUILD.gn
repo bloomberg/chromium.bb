@@ -10,7 +10,6 @@ import("//build/config/win/manifest.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/buildflags/buildflags.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
@@ -261,7 +260,6 @@ jumbo_static_library("content_shell_lib") {
     "//services/network:network_service",
   ]
   deps = [
-    ":content_shell_packaged_services_manifest_overlay",
     ":resources",
     ":web_test_switches",
     ":web_test_utils",
@@ -296,6 +294,7 @@ jumbo_static_library("content_shell_lib") {
     "//device/bluetooth",
     "//device/bluetooth:fake_bluetooth",
     "//device/bluetooth:mocks",
+    "//device/bluetooth/public/mojom:fake_bluetooth_interfaces",
     "//gin",
     "//gpu",
     "//media",
@@ -312,6 +311,7 @@ jumbo_static_library("content_shell_lib") {
     "//services/service_manager/embedder:embedder_result_codes",
     "//services/service_manager/public/cpp",
     "//services/test/echo:lib",
+    "//services/test/echo:manifest",
     "//services/test/echo/public/mojom",
     "//skia",
     "//storage/browser",
@@ -441,6 +441,7 @@ jumbo_static_library("content_shell_lib") {
     deps += [
       "//chromeos/dbus",
       "//services/ws/test_ws:lib",
+      "//services/ws/test_ws:manifest",
       "//services/ws/test_ws:mojom",
       "//ui/wm:test_support",
     ]
@@ -471,16 +472,6 @@ grit("content_shell_resources_grit") {
   outputs = [
     "grit/shell_resources.h",
     "shell_resources.pak",
-  ]
-
-  # Mojo manifest overlays are generated.
-  source_is_generated = true
-  grit_flags = [
-    "-E",
-    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
-  ]
-  deps = [
-    ":content_shell_packaged_services_manifest_overlay",
   ]
 }
 
@@ -927,17 +918,6 @@ mojom("mojo_bindings") {
     "//ui/gfx/geometry/mojo",
     "//url/mojom:url_mojom_gurl",
   ]
-}
-
-service_manifest("content_shell_packaged_services_manifest_overlay") {
-  testonly = true
-
-  source = "//content/shell/browser/content_shell_packaged_services_manifest_overlay.json"
-  packaged_services = [ "//services/test/echo:manifest" ]
-
-  if (is_chromeos) {
-    packaged_services += [ "//services/ws/test_ws:manifest" ]
-  }
 }
 
 group("content_shell_crash_test") {
