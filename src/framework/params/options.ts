@@ -13,8 +13,6 @@ class POptions implements ParamSpecIterable {
     this.values = values;
   }
 
-  // TODO: this can't be properly typed without dependent types (needs to be
-  // type-parameterized on 'name')
   public * [Symbol.iterator](): ParamSpecIterator {
     for (const value of this.values) {
       yield {[this.name]: value};

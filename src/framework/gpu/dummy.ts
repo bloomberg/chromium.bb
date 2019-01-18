@@ -1,4 +1,6 @@
-import * as w from "./webgpu";
+/* tslint:disable:max-line-length */
+
+import * as w from "./interface.js";
 
 const kNoExtensions: w.WebGPUExtensions = {
   anisotropicFiltering: false,
@@ -24,6 +26,12 @@ class Buffer implements w.WebGPUBuffer {
   public _getStatus() {
     return this.status;
   }
+
+  // TODO: TBD
+  public mapReadAsync(offset: number, size: number, callback: (ab: ArrayBuffer) => void): void {
+    setTimeout(() => callback(new ArrayBuffer(size)), 0);
+  }
+  public setSubData(offset: number, ab: ArrayBuffer): void {}
 }
 class CommandBuffer implements w.WebGPUCommandBuffer {
   public label: string | undefined;
@@ -167,6 +175,9 @@ class Device implements w.WebGPUDevice {
   public getQueue(): Queue {
     return this.queue;
   }
+
+  // TODO: temporary
+  public flush(): void {}
 }
 
 class Adapter implements w.WebGPUAdapter {
@@ -177,8 +188,15 @@ class Adapter implements w.WebGPUAdapter {
   }
 }
 
-export const gpu = {
-  requestAdapter(options?: w.WebGPURequestAdapterOptions): Promise<Adapter> {
+import { GPU } from "./interface";
+const gpu: GPU = {
+  requestAdapter(options?: w.WebGPURequestAdapterOptions): Promise<w.WebGPUAdapter> {
     return Promise.resolve(new Adapter());
   },
+
+  // TODO: temporary
+  getDevice(): Device {
+    return new Device(new Adapter(), {});
+  },
 };
+export default gpu;

@@ -3,6 +3,9 @@
 <title></title>
 <script src="third_party/jquery/jquery-3.3.1.min.js"></script>
 <style>
+#info {
+  font-family: monospace;
+}
 #resultsVis {
 }
 .test {
@@ -72,7 +75,7 @@
 </style>
 </head>
 <body>
-<div id="suitename"><!--TODO: remove when there's a tree display--></div>
+<div id="info"></div>
 <div id="resultsVis"></div>
 
 <script type="module">
@@ -162,6 +165,7 @@ function mkCase(testcases, {name, params, run}) {
   };
   caserun[0].runCase = runCase;
   caserun.click(runCase);
+  return runCase;
 }
 
 function basepath(path) {
@@ -169,30 +173,63 @@ function basepath(path) {
   return path.slice(0, at);
 }
 
+function filterListing(filter, fullListing) {
+  // TODO: this is probably gonna be slow
+  const listing = [];
+  for (const l of fullListing) {
+    for (const f of filter) {
+      if (l.path.startsWith(f)) {
+        listing.push(l);
+      }
+    }
+  }
+  return listing;
+}
+
+async function loadListing(base, listing) {
+  const promises = [];
+  for (const { path, description } of listing) {
+    if (path.endsWith("/")) {
+      promises.push([path, { mod: null, description }]);
+    } else {
+      console.assert(path.startsWith("/"));
+      promises.push(import(base + path + ".spec.js").then((mod) => [path, { mod, description }]));
+    }
+  }
+  return new Map(await Promise.all(promises));
+}
+
 (async () => {
   const url = new URL(window.location);
   const suite = url.searchParams.get("suite") || "out/cts/listing.json";
+  const filterparam = url.searchParams.get("filter") || "";
+  const runnow = url.searchParams.get("runnow") === "1";
+  const filter = filterparam.split(",");
+  console.log("Filtering to test paths starting with", filter);
   const base = "./" + basepath(suite);
-  document.getElementById("suitename").innerText = suite;
 
-  const listing = await (await fetch(suite)).json();
+  const info = `?runnow=${runnow ? "1" : "0"}&suite=${suite}&filter=${filterparam}`;
+  document.getElementById("info").innerText = info;
+
+  const fullListing = await (await fetch(suite)).json();
+  const listing = await loadListing(base, filterListing(filter, fullListing));
+  // TODO: convert listing to tree so it can be displayed as a tree?
 
   const log = new Logger();
-
-  for (const {path, description} of listing) {
+  for (const [path, { mod, description }] of listing) {
     console.log("");
     console.log(path, description);
-    if (path.endsWith("/")) {
+    const testcasesVis = mkTest(path, description);
+
+    if (!mod) {
       continue;
     }
-
-    const testcasesVis = mkTest(path, description);
-    console.assert(path.startsWith("/"));
-    const mod = await import(base + path + ".spec.js")
-
     const [tres, trec] = log.record(path);
     for (const t of mod.group.iterate(trec)) {
-      mkCase(testcasesVis, t);
+      const runCase = mkCase(testcasesVis, t);
+      if (runnow) {
+        await runCase();
+      }
     }
   }
 })();

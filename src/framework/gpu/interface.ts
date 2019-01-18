@@ -1,22 +1,23 @@
+/* tslint:disable */
 // https://github.com/gpuweb/gpuweb/blob/e4f6adf2625edbfc91f280efbb81309a70b9a094/design/sketch.webidl
 
-type u64 = number;
+export type u64 = number;
 
-type WebGPUObjectStatusQuery = Promise<WebGPUObjectStatus>;
-type WebGPUStatusableObject = WebGPUBuffer | WebGPUTexture;
-type WebGPUBindingResource = WebGPUSampler | WebGPUTextureView | WebGPUBufferBinding;
+export type WebGPUObjectStatusQuery = Promise<WebGPUObjectStatus>;
+export type WebGPUStatusableObject = WebGPUBuffer | WebGPUTexture;
+export type WebGPUBindingResource = WebGPUSampler | WebGPUTextureView | WebGPUBufferBinding;
 
-type WebGPUAddressMode =
+export type WebGPUAddressMode =
   | "clampToEdge"
   | "repeat"
   | "mirrorRepeat"
   | "clampToBorderColor";
-type WebGPUBindingType =
+export type WebGPUBindingType =
   | "uniformBuffer"
   | "sampler"
   | "sampledTexture"
   | "storageBuffer";
-type WebGPUBlendFactor =
+export type WebGPUBlendFactor =
   | "zero"
   | "one"
   | "srcColor"
@@ -30,17 +31,17 @@ type WebGPUBlendFactor =
   | "srcAlphaSaturated"
   | "blendColor"
   | "oneMinusBlendColor";
-type WebGPUBlendOperation =
+export type WebGPUBlendOperation =
   | "add"
   | "subtract"
   | "reverseSubtract"
   | "min"
   | "max";
-type WebGPUBorderColor =
+export type WebGPUBorderColor =
   | "transparentBlack"
   | "opaqueBlack"
   | "opaqueWhite";
-type WebGPUCompareFunction =
+export type WebGPUCompareFunction =
   | "never"
   | "less"
   | "equal"
@@ -49,40 +50,40 @@ type WebGPUCompareFunction =
   | "notEqual"
   | "greaterEqual"
   | "always";
-type WebGPUCullMode =
+export type WebGPUCullMode =
   | "none"
   | "front"
   | "back";
-type WebGPUFilterMode =
+export type WebGPUFilterMode =
   | "nearest"
   | "linear";
-type WebGPUFrontFace =
+export type WebGPUFrontFace =
   | "ccw"
   | "cw";
-type WebGPUIndexFormat =
+export type WebGPUIndexFormat =
   | "uint16"
   | "uint32";
-type WebGPUInputStepMode =
+export type WebGPUInputStepMode =
   | "vertex"
   | "instance";
-type WebGPULoadOp =
+export type WebGPULoadOp =
   | "clear"
   | "load";
-type WebGPULogEntryType =
+export type WebGPULogEntryType =
   | "device-lost"
   | "validation-error"
   | "recoverable-out-of-memory";
-type WebGPUObjectStatus =
+export type WebGPUObjectStatus =
   | "valid"
   | "out-of-memory"
   | "invalid";
-type WebGPUPrimitiveTopology =
+export type WebGPUPrimitiveTopology =
   | "pointList"
   | "lineList"
   | "lineStrip"
   | "trangleList"
   | "triangleStrip";
-type WebGPUStencilOperation =
+export type WebGPUStencilOperation =
   | "keep"
   | "zero"
   | "replace"
@@ -91,32 +92,32 @@ type WebGPUStencilOperation =
   | "decrementClamp"
   | "incrementWrap"
   | "decrementWrap";
-type WebGPUStoreOp =
+export type WebGPUStoreOp =
   | "store";
-type WebGPUTextureDimension =
+export type WebGPUTextureDimension =
   | "1d"
   | "2d"
   | "3d";
-type WebGPUTextureFormat =
+export type WebGPUTextureFormat =
   | "R8G8B8A8Unorm"
   | "R8G8B8A8Uint"
   | "B8G8R8A8Unorm"
   | "D32FloatS8Uint";
-type WebGPUTextureViewDimension =
+export type WebGPUTextureViewDimension =
   | "1d"
   | "2d"
   | "2darray"
   | "cube"
   | "cubearray"
   | "3d";
-type WebGPUVertexFormat =
+export type WebGPUVertexFormat =
   | "floatR32G32B32A32"
   | "floatR32G32B32"
   | "floatR32G32"
   | "floatR32";
 
-type WebGPUBufferUsageFlags = number;
-declare const enum WebGPUBufferUsage {
+export type WebGPUBufferUsageFlags = number;
+export const enum WebGPUBufferUsage {
   NONE = 0,
   MAP_READ = 1,
   MAP_WRITE = 2,
@@ -128,8 +129,8 @@ declare const enum WebGPUBufferUsage {
   STORAGE = 128,
 }
 
-type WebGPUColorWriteFlags = number;
-declare const enum WebGPUColorWriteBits {
+export type WebGPUColorWriteFlags = number;
+export const enum WebGPUColorWriteBits {
   NONE = 0,
   RED = 1,
   GREEN = 2,
@@ -138,23 +139,23 @@ declare const enum WebGPUColorWriteBits {
   ALL = 15,
 }
 
-type WebGPUShaderStageFlags = number;
-declare const enum WebGPUShaderStageBit {
+export type WebGPUShaderStageFlags = number;
+export const enum WebGPUShaderStageBit {
   NONE = 0,
   VERTEX = 1,
   FRAGMENT = 2,
   COMPUTE = 4,
 }
 
-type WebGPUTextureAspectFlags = number;
-declare const enum WebGPUTextureAspect {
+export type WebGPUTextureAspectFlags = number;
+export const enum WebGPUTextureAspect {
   COLOR = 1,
   DEPTH = 2,
   STENCIL = 4,
 }
 
-type WebGPUTextureUsageFlags = number;
-declare const enum WebGPUTextureUsage {
+export type WebGPUTextureUsageFlags = number;
+export const enum WebGPUTextureUsage {
   NONE = 0,
   TRANSFER_SRC = 1,
   TRANSFER_DST = 2,
@@ -164,82 +165,82 @@ declare const enum WebGPUTextureUsage {
   PRESENT = 32,
 }
 
-interface WebGPUAttachmentDescriptor {
+export interface WebGPUAttachmentDescriptor {
   format?: WebGPUTextureFormat;
 }
 
-interface WebGPUAttachmentsStateDescriptor {
+export interface WebGPUAttachmentsStateDescriptor {
   colorAttachments?: WebGPUAttachmentDescriptor[];
   depthStencilAttachment?: WebGPUAttachmentDescriptor | null;
 }
 
-interface WebGPUBindGroupBinding {
+export interface WebGPUBindGroupBinding {
   binding?: number;
   resource?: WebGPUBindingResource;
 }
 
-interface WebGPUBindGroupDescriptor {
+export interface WebGPUBindGroupDescriptor {
   bindings?: WebGPUBindGroupBinding[];
   layout?: WebGPUBindGroupLayout;
 }
 
-interface WebGPUBindGroupLayoutBinding {
+export interface WebGPUBindGroupLayoutBinding {
   binding?: number;
   type?: WebGPUBindingType;
   visibility?: WebGPUShaderStageFlags;
 }
 
-interface WebGPUBindGroupLayoutDescriptor {
+export interface WebGPUBindGroupLayoutDescriptor {
   bindings?: WebGPUBindGroupLayoutBinding[];
 }
 
-interface WebGPUBlendDescriptor {
+export interface WebGPUBlendDescriptor {
   dstFactor?: WebGPUBlendFactor;
   operation?: WebGPUBlendOperation;
   srcFactor?: WebGPUBlendFactor;
 }
 
-interface WebGPUBlendStateDescriptor {
+export interface WebGPUBlendStateDescriptor {
   alpha?: WebGPUBlendDescriptor;
   blendEnabled?: boolean;
   color?: WebGPUBlendDescriptor;
   writeMask?: WebGPUColorWriteFlags;
 }
 
-interface WebGPUBufferBinding {
+export interface WebGPUBufferBinding {
   buffer?: WebGPUBuffer;
   offset?: number;
   size?: number;
 }
 
-interface WebGPUBufferCopyView {
+export interface WebGPUBufferCopyView {
   buffer?: WebGPUBuffer;
   imageHeight?: number;
   offset?: number;
   rowPitch?: number;
 }
 
-interface WebGPUBufferDescriptor {
+export interface WebGPUBufferDescriptor {
   size?: number;
   usage?: WebGPUBufferUsageFlags;
 }
 
-interface WebGPUColor {
+export interface WebGPUColor {
   a?: number;
   b?: number;
   g?: number;
   r?: number;
 }
 
-interface WebGPUCommandBufferDescriptor {
+export interface WebGPUCommandBufferDescriptor {
   label?: string;
 }
 
-interface WebGPUComputePipelineDescriptor extends WebGPUPipelineDescriptorBase {
+export interface WebGPUComputePipelineDescriptor extends WebGPUPipelineDescriptorBase {
   computeStage?: WebGPUPipelineStageDescriptor;
 }
 
-interface WebGPUDepthStencilStateDescriptor {
+export interface WebGPUDepthStencilStateDescriptor {
   back?: WebGPUStencilStateFaceDescriptor;
   depthCompare?: WebGPUCompareFunction;
   depthWriteEnabled?: boolean;
@@ -248,57 +249,57 @@ interface WebGPUDepthStencilStateDescriptor {
   stencilWriteMask?: number;
 }
 
-interface WebGPUDeviceDescriptor {
+export interface WebGPUDeviceDescriptor {
   extensions?: WebGPUExtensions;
 }
 
-interface WebGPUExtensions {
+export interface WebGPUExtensions {
   anisotropicFiltering?: boolean;
 }
 
-interface WebGPUExtent3D {
+export interface WebGPUExtent3D {
   depth?: number;
   height?: number;
   width?: number;
 }
 
-interface WebGPUFenceDescriptor {
+export interface WebGPUFenceDescriptor {
   initialValue?: u64;
   label?: string;
   signalQueue?: WebGPUQueue;
 }
 
-interface WebGPUInputStateDescriptor {
+export interface WebGPUInputStateDescriptor {
   attributes?: WebGPUVertexAttributeDescriptor[];
   indexFormat?: WebGPUIndexFormat;
   inputs?: WebGPUVertexInputDescriptor[];
 }
 
-interface WebGPULimits {
+export interface WebGPULimits {
   maxBindGroups?: number;
 }
 
-interface WebGPUOrigin3D {
+export interface WebGPUOrigin3D {
   x?: number;
   y?: number;
   z?: number;
 }
 
-interface WebGPUPipelineDescriptorBase {
+export interface WebGPUPipelineDescriptorBase {
   label?: string;
   layout?: WebGPUPipelineLayout;
 }
 
-interface WebGPUPipelineLayoutDescriptor {
+export interface WebGPUPipelineLayoutDescriptor {
   bindGroupLayouts?: WebGPUBindGroupLayout[];
 }
 
-interface WebGPUPipelineStageDescriptor {
+export interface WebGPUPipelineStageDescriptor {
   entryPoint?: string;
   module?: WebGPUShaderModule;
 }
 
-interface WebGPURasterizationStateDescriptor {
+export interface WebGPURasterizationStateDescriptor {
   cullMode?: WebGPUCullMode;
   depthBias?: number;
   depthBiasClamp?: number;
@@ -306,7 +307,7 @@ interface WebGPURasterizationStateDescriptor {
   frontFace?: WebGPUFrontFace;
 }
 
-interface WebGPURenderPassColorAttachmentDescriptor {
+export interface WebGPURenderPassColorAttachmentDescriptor {
   attachment?: WebGPUTextureView;
   clearColor?: WebGPUColor;
   loadOp?: WebGPULoadOp;
@@ -314,7 +315,7 @@ interface WebGPURenderPassColorAttachmentDescriptor {
   storeOp?: WebGPUStoreOp;
 }
 
-interface WebGPURenderPassDepthStencilAttachmentDescriptor {
+export interface WebGPURenderPassDepthStencilAttachmentDescriptor {
   attachment?: WebGPUTextureView;
   clearDepth?: number;
   clearStencil?: number;
@@ -324,12 +325,12 @@ interface WebGPURenderPassDepthStencilAttachmentDescriptor {
   stencilStoreOp?: WebGPUStoreOp;
 }
 
-interface WebGPURenderPassDescriptor {
+export interface WebGPURenderPassDescriptor {
   colorAttachments?: WebGPURenderPassColorAttachmentDescriptor[];
   depthStencilAttachment?: WebGPURenderPassDepthStencilAttachmentDescriptor;
 }
 
-interface WebGPURenderPipelineDescriptor extends WebGPUPipelineDescriptorBase {
+export interface WebGPURenderPipelineDescriptor extends WebGPUPipelineDescriptorBase {
   attachmentsState?: WebGPUAttachmentsStateDescriptor;
   blendStates?: WebGPUBlendStateDescriptor[];
   depthStencilState?: WebGPUDepthStencilStateDescriptor;
@@ -341,7 +342,7 @@ interface WebGPURenderPipelineDescriptor extends WebGPUPipelineDescriptorBase {
   vertexStage?: WebGPUPipelineStageDescriptor;
 }
 
-interface WebGPUSamplerDescriptor {
+export interface WebGPUSamplerDescriptor {
   borderColor?: WebGPUBorderColor;
   compareFunction?: WebGPUCompareFunction;
   lodMaxClamp?: number;
@@ -355,19 +356,19 @@ interface WebGPUSamplerDescriptor {
   tAddressMode?: WebGPUAddressMode;
 }
 
-interface WebGPUShaderModuleDescriptor {
+export interface WebGPUShaderModuleDescriptor {
   code: ArrayBuffer | string;
   label?: string;
 }
 
-interface WebGPUStencilStateFaceDescriptor {
+export interface WebGPUStencilStateFaceDescriptor {
   compare?: WebGPUCompareFunction;
   depthFailOp?: WebGPUStencilOperation;
   passOp?: WebGPUStencilOperation;
   stencilFailOp?: WebGPUStencilOperation;
 }
 
-interface WebGPUSwapChainDescriptor {
+export interface WebGPUSwapChainDescriptor {
   device?: WebGPUDevice | null;
   format?: WebGPUTextureFormat;
   height?: number;
@@ -375,14 +376,14 @@ interface WebGPUSwapChainDescriptor {
   width?: number;
 }
 
-interface WebGPUTextureCopyView {
+export interface WebGPUTextureCopyView {
   level?: number;
   origin?: WebGPUOrigin3D;
   slice?: number;
   texture?: WebGPUTexture;
 }
 
-interface WebGPUTextureDescriptor {
+export interface WebGPUTextureDescriptor {
   arraySize?: number;
   dimension?: WebGPUTextureDimension;
   format?: WebGPUTextureFormat;
@@ -392,7 +393,7 @@ interface WebGPUTextureDescriptor {
   usage?: WebGPUTextureUsageFlags;
 }
 
-interface WebGPUTextureViewDescriptor {
+export interface WebGPUTextureViewDescriptor {
   aspect?: WebGPUTextureAspectFlags;
   baseArrayLayer?: number;
   baseMipLevel?: number;
@@ -402,38 +403,42 @@ interface WebGPUTextureViewDescriptor {
   levelCount?: number;
 }
 
-interface WebGPUVertexAttributeDescriptor {
+export interface WebGPUVertexAttributeDescriptor {
   format?: WebGPUVertexFormat;
   inputSlot?: number;
   offset?: number;
   shaderLocation?: number;
 }
 
-interface WebGPUVertexInputDescriptor {
+export interface WebGPUVertexInputDescriptor {
   inputSlot?: number;
   stepMode?: WebGPUInputStepMode;
   stride?: number;
 }
 
-interface WebGPUAdapter {
+export interface WebGPUAdapter {
   readonly extensions: WebGPUExtensions;
   readonly name: string;
   createDevice(descriptor: WebGPUDeviceDescriptor): WebGPUDevice;
 }
 
-interface WebGPUBindGroup {
+export interface WebGPUBindGroup {
 }
 
-interface WebGPUBindGroupLayout {
+export interface WebGPUBindGroupLayout {
 }
 
-interface WebGPUBuffer {
+export interface WebGPUBuffer {
   readonly mapping: ArrayBuffer | null;
   destroy(): void;
   unmap(): void;
+
+  // TODO: TBD
+  mapReadAsync(offset: number, size: number, callback: (ab: ArrayBuffer) => void): void;
+  setSubData(offset: number, ab: ArrayBuffer): void;
 }
 
-interface WebGPUCommandBuffer extends WebGPUDebugLabel {
+export interface WebGPUCommandBuffer extends WebGPUDebugLabel {
   beginComputePass(): WebGPUComputePassEncoder;
   beginRenderPass(descriptor: WebGPURenderPassDescriptor): WebGPURenderPassEncoder;
   blit(): void;
@@ -443,18 +448,18 @@ interface WebGPUCommandBuffer extends WebGPUDebugLabel {
   copyTextureToTexture(source: WebGPUTextureCopyView, destination: WebGPUTextureCopyView, copySize: WebGPUExtent3D): void;
 }
 
-interface WebGPUComputePassEncoder extends WebGPUProgrammablePassEncoder {
+export interface WebGPUComputePassEncoder extends WebGPUProgrammablePassEncoder {
   dispatch(x: number, y: number, z: number): void;
 }
 
-interface WebGPUComputePipeline extends WebGPUDebugLabel {
+export interface WebGPUComputePipeline extends WebGPUDebugLabel {
 }
 
-interface WebGPUDebugLabel {
+export interface WebGPUDebugLabel {
   label: string | undefined;
 }
 
-interface WebGPUDevice {
+export interface WebGPUDevice {
   readonly adapter: WebGPUAdapter;
   readonly extensions: WebGPUExtensions;
   readonly limits: WebGPULimits;
@@ -472,23 +477,26 @@ interface WebGPUDevice {
   createTexture(descriptor: WebGPUTextureDescriptor): WebGPUTexture;
   getObjectStatus(statusableObject: WebGPUStatusableObject): WebGPUObjectStatusQuery;
   getQueue(): WebGPUQueue;
+
+  // TODO: temporary
+  flush(): void;
 }
 
-interface WebGPUFence extends WebGPUDebugLabel {
+export interface WebGPUFence extends WebGPUDebugLabel {
   getCompletedValue(): u64;
   onCompletion(completionValue: u64): Promise<void>;
 }
 
-interface WebGPULogEntry {
+export interface WebGPULogEntry {
   readonly reason: string | null;
   readonly sourceObject: any;
   readonly type: WebGPULogEntryType;
 }
 
-interface WebGPUPipelineLayout {
+export interface WebGPUPipelineLayout {
 }
 
-interface WebGPUProgrammablePassEncoder extends WebGPUDebugLabel {
+export interface WebGPUProgrammablePassEncoder extends WebGPUDebugLabel {
   endPass(): WebGPUCommandBuffer;
   insertDebugMarker(markerLabel: string): void;
   popDebugGroup(groupLabel: string): void;
@@ -497,13 +505,13 @@ interface WebGPUProgrammablePassEncoder extends WebGPUDebugLabel {
   setPipeline(pipeline: WebGPUComputePipeline | WebGPURenderPipeline): void;
 }
 
-interface WebGPUQueue extends WebGPUDebugLabel {
+export interface WebGPUQueue extends WebGPUDebugLabel {
   signal(fence: WebGPUFence, signalValue: u64): void;
   submit(buffers: WebGPUCommandBuffer[]): void;
   wait(fence: WebGPUFence, valueToWait: u64): void;
 }
 
-interface WebGPURenderPassEncoder extends WebGPUProgrammablePassEncoder {
+export interface WebGPURenderPassEncoder extends WebGPUProgrammablePassEncoder {
   draw(vertexCount: number, instanceCount: number, firstVertex: number, firstInstance: number): void;
   drawIndexed(indexCount: number, instanceCount: number, firstIndex: number, baseVertex: number, firstInstance: number): void;
   setBlendColor(r: number, g: number, b: number, a: number): void;
@@ -514,41 +522,43 @@ interface WebGPURenderPassEncoder extends WebGPUProgrammablePassEncoder {
   setViewport(x: number, y: number, width: number, height: number, minDepth: number, maxDepth: number): void;
 }
 
-interface WebGPURenderPipeline extends WebGPUDebugLabel {
+export interface WebGPURenderPipeline extends WebGPUDebugLabel {
 }
 
-interface WebGPURenderingContext extends WebGPUSwapChain {
+export interface WebGPURenderingContext extends WebGPUSwapChain {
 }
 
-interface WebGPUSampler {
+export interface WebGPUSampler {
 }
 
-interface WebGPUShaderModule extends WebGPUDebugLabel {
+export interface WebGPUShaderModule extends WebGPUDebugLabel {
 }
 
-interface WebGPUSwapChain {
+export interface WebGPUSwapChain {
   configure(descriptor: WebGPUSwapChainDescriptor): void;
   getNextTexture(): WebGPUTexture;
   present(): void;
 }
 
-interface WebGPUTexture {
+export interface WebGPUTexture {
   createDefaultTextureView(): WebGPUTextureView;
   createTextureView(desc: WebGPUTextureViewDescriptor): WebGPUTextureView;
   destroy(): void;
 }
 
-interface WebGPUTextureView {
+export interface WebGPUTextureView {
 }
 
-type WebGPULogCallback = (error: WebGPULogEntry) => void;
+export type WebGPULogCallback = (error: WebGPULogEntry) => void;
 
-type WebGPUPowerPreference =
+export type WebGPUPowerPreference =
   | "low-power"
   | "high-performance";
-interface WebGPURequestAdapterOptions {
+export interface WebGPURequestAdapterOptions {
   powerPreference: WebGPUPowerPreference;
 }
-export declare namespace gpu {
-  function requestAdapter(options?: WebGPURequestAdapterOptions): Promise<WebGPUAdapter>;
+
+export interface GPU {
+  requestAdapter(options?: WebGPURequestAdapterOptions): Promise<WebGPUAdapter>;
+  getDevice(): WebGPUDevice;
 }
