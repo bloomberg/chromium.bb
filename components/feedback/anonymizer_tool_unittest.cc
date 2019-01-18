@@ -133,7 +133,7 @@ TEST_F(AnonymizerToolTest, AnonymizeCustomPatterns) {
             AnonymizeCustomPatterns("[2001:db8:0:0:0:ff00:42:8329]"));
   EXPECT_EQ("[<IPv6: 3>]", AnonymizeCustomPatterns("[2001:db8::ff00:42:8329]"));
   EXPECT_EQ("[<IPv6: 4>]", AnonymizeCustomPatterns("[::1]"));
-  EXPECT_EQ("<IPv4: 1>", AnonymizeCustomPatterns("192.168.0.1"));
+  EXPECT_EQ("<IPv4: 1>", AnonymizeCustomPatterns("192.160.0.1"));
 
   EXPECT_EQ("<URL: 1>",
             AnonymizeCustomPatterns("http://example.com/foo?test=1"));
@@ -211,6 +211,32 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
       "example@@1234\n"           // No PII, it is not valid email address.
       "255.255.155.2\n"           // IP address.
       "255.255.155.255\n"         // IP address.
+      "127.0.0.1\n"               // IPv4 loopback.
+      "127.255.0.1\n"             // IPv4 loopback.
+      "0.0.0.0\n"                 // Any IPv4.
+      "0.255.255.255\n"           // Any IPv4.
+      "10.10.10.100\n"            // IPv4 private class A.
+      "10.10.10.100\n"            // Intentional duplicate.
+      "10.10.10.101\n"            // IPv4 private class A.
+      "10.255.255.255\n"          // IPv4 private class A.
+      "172.16.0.0\n"              // IPv4 private class B.
+      "172.31.255.255\n"          // IPv4 private class B.
+      "172.11.5.5\n"              // IP address.
+      "172.111.5.5\n"             // IP address.
+      "192.168.0.0\n"             // IPv4 private class C.
+      "192.168.255.255\n"         // IPv4 private class C.
+      "192.169.2.120\n"           // IP address.
+      "169.254.0.1\n"             // Link local.
+      "169.200.0.1\n"             // IP address.
+      "224.0.0.24\n"              // Multicast.
+      "240.0.0.0\n"               // IP address.
+      "255.255.255.255\n"         // Broadcast.
+      "100.115.92.92\n"           // ChromeOS.
+      "100.115.91.92\n"           // IP address.
+      "1.1.1.1\n"                 // DNS
+      "8.8.8.8\n"                 // DNS
+      "8.8.4.4\n"                 // DNS
+      "8.8.8.4\n"                 // IP address.
       "255.255.259.255\n"         // Not an IP address.
       "255.300.255.255\n"         // Not an IP address.
       "aaaa123.123.45.4aaa\n"     // IP address.
@@ -225,9 +251,35 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
       "example@@1234\n"
       "<IPv4: 1>\n"
       "<IPv4: 2>\n"
+      "<127.0.0.0/8: 3>\n"
+      "<127.0.0.0/8: 4>\n"
+      "<0.0.0.0/8: 5>\n"
+      "<0.0.0.0/8: 6>\n"
+      "<10.0.0.0/8: 7>\n"
+      "<10.0.0.0/8: 7>\n"
+      "<10.0.0.0/8: 8>\n"
+      "<10.0.0.0/8: 9>\n"
+      "<172.16.0.0/12: 10>\n"
+      "<172.16.0.0/12: 11>\n"
+      "<IPv4: 12>\n"
+      "<IPv4: 13>\n"
+      "<192.168.0.0/16: 14>\n"
+      "<192.168.0.0/16: 15>\n"
+      "<IPv4: 16>\n"
+      "<169.254.0.0/16: 17>\n"
+      "<IPv4: 18>\n"
+      "<224.0.0.0/4: 19>\n"
+      "<IPv4: 20>\n"
+      "255.255.255.255\n"
+      "100.115.92.92\n"
+      "<IPv4: 23>\n"
+      "1.1.1.1\n"
+      "8.8.8.8\n"
+      "8.8.4.4\n"
+      "<IPv4: 27>\n"
       "255.255.259.255\n"
       "255.300.255.255\n"
-      "aaaa<IPv4: 3>aaa\n"
+      "aaaa<IPv4: 28>aaa\n"
       "11:11;<IPv6: 1>\n"
       "<IPv6: 1>\n"
       "11:11:abcdef:0:0:0:0:0\n"
