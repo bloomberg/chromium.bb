@@ -56,147 +56,19 @@ const int kClockLeadingPadding = 8;
 
 }  // namespace
 
-BaseDateTimeView::~BaseDateTimeView() {
-  model_->RemoveObserver(this);
-  timer_.Stop();
-}
-
-void BaseDateTimeView::UpdateText() {
-  base::Time now = base::Time::Now();
-  UpdateTextInternal(now);
-  SchedulePaint();
-  SetTimer(now);
-}
-
-void BaseDateTimeView::UpdateTimeFormat() {
-  UpdateText();
-}
-
-void BaseDateTimeView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  ActionableView::GetAccessibleNodeData(node_data);
-  node_data->role = ax::mojom::Role::kTime;
-}
-
-void BaseDateTimeView::OnDateFormatChanged() {
-  UpdateTimeFormat();
-}
-
-void BaseDateTimeView::OnSystemClockTimeUpdated() {
-  UpdateTimeFormat();
-}
-
-void BaseDateTimeView::OnSystemClockCanSetTimeChanged(bool can_set_time) {}
-
-void BaseDateTimeView::Refresh() {}
-
-base::HourClockType BaseDateTimeView::GetHourTypeForTesting() const {
-  return model_->hour_clock_type();
-}
-
-BaseDateTimeView::BaseDateTimeView(ClockModel* model)
+TimeView::TimeView(ClockLayout clock_layout, ClockModel* model)
     : ActionableView(TrayPopupInkDropStyle::INSET_BOUNDS), model_(model) {
   SetTimer(base::Time::Now());
   SetFocusBehavior(FocusBehavior::NEVER);
   model_->AddObserver(this);
-}
-
-void BaseDateTimeView::SetTimer(const base::Time& now) {
-  // Try to set the timer to go off at the next change of the minute. We don't
-  // want to have the timer go off more than necessary since that will cause
-  // the CPU to wake up and consume power.
-  base::Time::Exploded exploded;
-  now.LocalExplode(&exploded);
-
-  // Often this will be called at minute boundaries, and we'll actually want
-  // 60 seconds from now.
-  int seconds_left = 60 - exploded.second;
-  if (seconds_left == 0)
-    seconds_left = 60;
-
-  // Make sure that the timer fires on the next minute. Without this, if it is
-  // called just a teeny bit early, then it will skip the next minute.
-  seconds_left += kTimerSlopSeconds;
-
-  timer_.Stop();
-  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(seconds_left), this,
-               &BaseDateTimeView::UpdateText);
-}
-
-void BaseDateTimeView::UpdateTextInternal(const base::Time& now) {
-  SetAccessibleName(base::TimeFormatTimeOfDayWithHourClockType(
-                        now, model_->hour_clock_type(), base::kKeepAmPm) +
-                    base::ASCIIToUTF16(", ") +
-                    base::TimeFormatFriendlyDate(now));
-
-  NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
-}
-
-void BaseDateTimeView::ChildPreferredSizeChanged(views::View* child) {
-  PreferredSizeChanged();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-TimeView::TimeView(ClockLayout clock_layout, ClockModel* model)
-    : BaseDateTimeView(model) {
   SetupLabels();
   UpdateTextInternal(base::Time::Now());
   UpdateClockLayout(clock_layout);
 }
 
-TimeView::~TimeView() = default;
-
-void TimeView::UpdateTextInternal(const base::Time& now) {
-  // Just in case |now| is null, do NOT update time; otherwise, it will
-  // crash icu code by calling into base::TimeFormatTimeOfDayWithHourClockType,
-  // see details in crbug.com/147570.
-  if (now.is_null()) {
-    LOG(ERROR) << "Received null value from base::Time |now| in argument";
-    return;
-  }
-
-  BaseDateTimeView::UpdateTextInternal(now);
-  base::string16 current_time = base::TimeFormatTimeOfDayWithHourClockType(
-      now, model_->hour_clock_type(), base::kDropAmPm);
-  horizontal_label_->SetText(current_time);
-  horizontal_label_->SetTooltipText(base::TimeFormatFriendlyDate(now));
-  horizontal_label_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
-                                              true);
-
-  // Calculate vertical clock layout labels.
-  size_t colon_pos = current_time.find(base::ASCIIToUTF16(":"));
-  base::string16 hour = current_time.substr(0, colon_pos);
-  base::string16 minute = current_time.substr(colon_pos + 1);
-
-  // Sometimes pad single-digit hours with a zero for aesthetic reasons.
-  if (hour.length() == 1 && model_->hour_clock_type() == base::k24HourClock &&
-      !base::i18n::IsRTL())
-    hour = base::ASCIIToUTF16("0") + hour;
-
-  vertical_label_hours_->SetText(hour);
-  vertical_label_minutes_->SetText(minute);
-  vertical_label_hours_->NotifyAccessibilityEvent(
-      ax::mojom::Event::kTextChanged, true);
-  vertical_label_minutes_->NotifyAccessibilityEvent(
-      ax::mojom::Event::kTextChanged, true);
-  Layout();
-}
-
-bool TimeView::PerformAction(const ui::Event& event) {
-  return false;
-}
-
-bool TimeView::OnMousePressed(const ui::MouseEvent& event) {
-  // Let the event fall through.
-  return false;
-}
-
-void TimeView::OnGestureEvent(ui::GestureEvent* event) {
-  // Skip gesture handling happening in Button so that the container views
-  // receive and handle them properly.
-  // TODO(mohsen): Refactor TimeView/DateView classes so that they are not
-  // ActionableView anymore. Create an ActionableView as a container for when
-  // needed.
+TimeView::~TimeView() {
+  model_->RemoveObserver(this);
+  timer_.Stop();
 }
 
 void TimeView::UpdateClockLayout(ClockLayout clock_layout) {
@@ -236,8 +108,101 @@ void TimeView::SetTextColorBasedOnSession(
   set_color(vertical_label_minutes_);
 }
 
+void TimeView::OnDateFormatChanged() {
+  UpdateTimeFormat();
+}
+
+void TimeView::OnSystemClockTimeUpdated() {
+  UpdateTimeFormat();
+}
+
+void TimeView::OnSystemClockCanSetTimeChanged(bool can_set_time) {}
+
 void TimeView::Refresh() {
   UpdateText();
+}
+
+base::HourClockType TimeView::GetHourTypeForTesting() const {
+  return model_->hour_clock_type();
+}
+
+bool TimeView::PerformAction(const ui::Event& event) {
+  return false;
+}
+
+void TimeView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  ActionableView::GetAccessibleNodeData(node_data);
+  node_data->role = ax::mojom::Role::kTime;
+}
+
+void TimeView::ChildPreferredSizeChanged(views::View* child) {
+  PreferredSizeChanged();
+}
+
+bool TimeView::OnMousePressed(const ui::MouseEvent& event) {
+  // Let the event fall through.
+  return false;
+}
+
+void TimeView::OnGestureEvent(ui::GestureEvent* event) {
+  // Skip gesture handling happening in Button so that the container views
+  // receive and handle them properly.
+  // TODO(mohsen): Refactor TimeView/DateView classes so that they are not
+  // ActionableView anymore. Create an ActionableView as a container for when
+  // needed.
+}
+
+void TimeView::UpdateText() {
+  base::Time now = base::Time::Now();
+  UpdateTextInternal(now);
+  SchedulePaint();
+  SetTimer(now);
+}
+
+void TimeView::UpdateTimeFormat() {
+  UpdateText();
+}
+
+void TimeView::UpdateTextInternal(const base::Time& now) {
+  // Just in case |now| is null, do NOT update time; otherwise, it will
+  // crash icu code by calling into base::TimeFormatTimeOfDayWithHourClockType,
+  // see details in crbug.com/147570.
+  if (now.is_null()) {
+    LOG(ERROR) << "Received null value from base::Time |now| in argument";
+    return;
+  }
+
+  SetAccessibleName(base::TimeFormatTimeOfDayWithHourClockType(
+                        now, model_->hour_clock_type(), base::kKeepAmPm) +
+                    base::ASCIIToUTF16(", ") +
+                    base::TimeFormatFriendlyDate(now));
+
+  NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
+
+  base::string16 current_time = base::TimeFormatTimeOfDayWithHourClockType(
+      now, model_->hour_clock_type(), base::kDropAmPm);
+  horizontal_label_->SetText(current_time);
+  horizontal_label_->SetTooltipText(base::TimeFormatFriendlyDate(now));
+  horizontal_label_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
+                                              true);
+
+  // Calculate vertical clock layout labels.
+  size_t colon_pos = current_time.find(base::ASCIIToUTF16(":"));
+  base::string16 hour = current_time.substr(0, colon_pos);
+  base::string16 minute = current_time.substr(colon_pos + 1);
+
+  // Sometimes pad single-digit hours with a zero for aesthetic reasons.
+  if (hour.length() == 1 && model_->hour_clock_type() == base::k24HourClock &&
+      !base::i18n::IsRTL())
+    hour = base::ASCIIToUTF16("0") + hour;
+
+  vertical_label_hours_->SetText(hour);
+  vertical_label_minutes_->SetText(minute);
+  vertical_label_hours_->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextChanged, true);
+  vertical_label_minutes_->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextChanged, true);
+  Layout();
 }
 
 void TimeView::SetupLabels() {
@@ -259,6 +224,28 @@ void TimeView::SetupLabel(views::Label* label) {
   label->set_owned_by_client();
   SetupLabelForTray(label);
   label->SetElideBehavior(gfx::NO_ELIDE);
+}
+
+void TimeView::SetTimer(const base::Time& now) {
+  // Try to set the timer to go off at the next change of the minute. We don't
+  // want to have the timer go off more than necessary since that will cause
+  // the CPU to wake up and consume power.
+  base::Time::Exploded exploded;
+  now.LocalExplode(&exploded);
+
+  // Often this will be called at minute boundaries, and we'll actually want
+  // 60 seconds from now.
+  int seconds_left = 60 - exploded.second;
+  if (seconds_left == 0)
+    seconds_left = 60;
+
+  // Make sure that the timer fires on the next minute. Without this, if it is
+  // called just a teeny bit early, then it will skip the next minute.
+  seconds_left += kTimerSlopSeconds;
+
+  timer_.Stop();
+  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(seconds_left), this,
+               &TimeView::UpdateText);
 }
 
 }  // namespace tray
