@@ -32,6 +32,9 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension_builder.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "third_party/zlib/google/compression_utils.h"
 
 using compression::GzipUncompress;
@@ -70,6 +73,9 @@ static const char kTestLoggingSessionIdValue[] = "0123456789abcdef";
 static const char kTestLoggingUrl[] = "dummy url string";
 
 constexpr int kWebAppId = 15;  // Arbitrary.
+
+constexpr char kTestUploadUrlPath[] = "/upload_webrtc_log";
+constexpr char kTestReportId[] = "report_id";
 
 std::string ParamsToString(const base::ListValue& parameters) {
   std::string parameter_string;
@@ -113,6 +119,30 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
     return GetBrowser()->tab_strip_model()->GetActiveWebContents();
   }
 
+  bool SetupTestServerLogUploading() {
+    embedded_test_server()->RegisterRequestHandler(
+        base::BindRepeating(&WebrtcLoggingPrivateApiTest::HandleServerRequest,
+                            base::Unretained(this)));
+    const bool start_result = StartEmbeddedTestServer();
+    g_browser_process->webrtc_log_uploader()->SetUploadUrlForTesting(
+        embedded_test_server()->GetURL(kTestUploadUrlPath));
+    return start_result;
+  }
+
+  std::unique_ptr<net::test_server::HttpResponse> HandleServerRequest(
+      const net::test_server::HttpRequest& request) {
+    if (request.relative_url == kTestUploadUrlPath) {
+      upload_request_content_ = request.content;
+      std::unique_ptr<net::test_server::BasicHttpResponse> response(
+          new net::test_server::BasicHttpResponse);
+      response->set_code(net::HTTP_OK);
+      response->set_content(kTestReportId);
+      return std::move(response);
+    }
+
+    return nullptr;
+  }
+
   void AppendTabIdAndUrl(base::ListValue* parameters) {
     std::unique_ptr<base::DictionaryValue> request_info(
         new base::DictionaryValue());
@@ -124,38 +154,28 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
 
   // This function implicitly expects the function to succeed (test failure
   // initiated otherwise).
-  // Returns whether the function that was run returned a value (NOT whether
-  // it had succeeded or failed).
-  // TODO(crbug.com/829419): Return success/failure of the executed function.
-  bool RunFunction(UIThreadExtensionFunction* function,
-                   const base::ListValue& parameters) {
-    std::unique_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-        function, ParamsToString(parameters), GetBrowser()));
-    return (result != nullptr);
-  }
-
-  // This function implicitly expects the function to succeed (test failure
-  // initiated otherwise).
-  // Returns whether the function that was run returned a value (NOT whether
-  // it had succeeded or failed).
+  // Returns the value (NOT whether it had succeeded or failed).
   // TODO(crbug.com/829419): Return success/failure of the executed function.
   template <typename Function>
-  bool RunFunction(const base::ListValue& parameters) {
+  std::unique_ptr<base::Value> RunFunction(const base::ListValue& parameters) {
     scoped_refptr<Function> function(CreateFunction<Function>());
-    return RunFunction(function.get(), parameters);
+    std::unique_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        function.get(), ParamsToString(parameters), GetBrowser()));
+    return result;
   }
 
   // This function implicitly expects the function to succeed (test failure
   // initiated otherwise).
-  // Returns whether the function that was run returned a value (NOT whether
-  // it had succeeded or failed).
+  // Returns the value (NOT whether it had succeeded or failed).
   // TODO(crbug.com/829419): Return success/failure of the executed function.
   template <typename Function>
-  bool RunNoArgsFunction() {
+  std::unique_ptr<base::Value> RunNoArgsFunction() {
     base::ListValue params;
     AppendTabIdAndUrl(&params);
     scoped_refptr<Function> function(CreateFunction<Function>());
-    return RunFunction(function.get(), params);
+    std::unique_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+        function.get(), ParamsToString(params), GetBrowser()));
+    return result;
   }
 
   template <typename Function>
@@ -174,10 +194,10 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
   // returning a value, according to expectation.
   // TODO(crbug.com/829419): Return success/failure of the executed function.
   bool StartLogging() {
-    constexpr bool result_expected = false;
-    const bool result_returned =
+    constexpr bool value_expected = false;
+    std::unique_ptr<base::Value> value =
         RunNoArgsFunction<WebrtcLoggingPrivateStartFunction>();
-    return (result_expected == result_returned);
+    return value_expected == (value != nullptr);
   }
 
   // This function implicitly expects the function to succeed (test failure
@@ -186,10 +206,10 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
   // returning a value, according to expectation.
   // TODO(crbug.com/829419): Return success/failure of the executed function.
   bool StopLogging() {
-    constexpr bool result_expected = false;
-    const bool result_returned =
+    constexpr bool value_expected = false;
+    std::unique_ptr<base::Value> value =
         RunNoArgsFunction<WebrtcLoggingPrivateStopFunction>();
-    return (result_expected == result_returned);
+    return value_expected == (value != nullptr);
   }
 
   // This function implicitly expects the function to succeed (test failure
@@ -198,10 +218,10 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
   // returning a value, according to expectation.
   // TODO(crbug.com/829419): Return success/failure of the executed function.
   bool DiscardLog() {
-    constexpr bool result_expected = false;
-    const bool result_returned =
+    constexpr bool value_expected = false;
+    std::unique_ptr<base::Value> value =
         RunNoArgsFunction<WebrtcLoggingPrivateDiscardFunction>();
-    return (result_expected == result_returned);
+    return value_expected == (value != nullptr);
   }
 
   // This function implicitly expects the function to succeed (test failure
@@ -209,11 +229,14 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
   // Returns whether the function that was run returned a value, or avoided
   // returning a value, according to expectation.
   // TODO(crbug.com/829419): Return success/failure of the executed function.
-  bool UploadLog() {
-    constexpr bool result_expected = true;
-    const bool result_returned =
+  bool UploadLog(std::string* report_id) {
+    constexpr bool value_expected = true;
+    std::unique_ptr<base::Value> value =
         RunNoArgsFunction<WebrtcLoggingPrivateUploadFunction>();
-    return (result_expected == result_returned);
+    const bool value_returned = value != nullptr;
+    if (value_returned)
+      *report_id = *value->FindStringKey("reportId");
+    return value_expected == value_returned;
   }
 
   // This function implicitly expects the function to succeed (test failure
@@ -222,10 +245,10 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
   // returning a value, according to expectation.
   // TODO(crbug.com/829419): Return success/failure of the executed function.
   bool SetMetaData(const base::ListValue& data) {
-    constexpr bool result_expected = false;
-    const bool result_returned =
+    constexpr bool value_expected = false;
+    std::unique_ptr<base::Value> value =
         RunFunction<WebrtcLoggingPrivateSetMetaDataFunction>(data);
-    return (result_expected == result_returned);
+    return value_expected == (value != nullptr);
   }
 
   // This function implicitly expects the function to succeed (test failure
@@ -238,10 +261,10 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
     AppendTabIdAndUrl(&params);
     params.AppendBoolean(incoming);
     params.AppendBoolean(outgoing);
-    constexpr bool result_expected = false;
-    const bool result_returned =
+    constexpr bool value_expected = false;
+    std::unique_ptr<base::Value> value =
         RunFunction<WebrtcLoggingPrivateStartRtpDumpFunction>(params);
-    return (result_expected == result_returned);
+    return value_expected == (value != nullptr);
   }
 
   // This function implicitly expects the function to succeed (test failure
@@ -254,10 +277,10 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
     AppendTabIdAndUrl(&params);
     params.AppendBoolean(incoming);
     params.AppendBoolean(outgoing);
-    constexpr bool result_expected = false;
-    const bool result_returned =
+    constexpr bool value_expected = false;
+    std::unique_ptr<base::Value> value =
         RunFunction<WebrtcLoggingPrivateStopRtpDumpFunction>(params);
-    return (result_expected == result_returned);
+    return value_expected == (value != nullptr);
   }
 
   // This function implicitly expects the function to succeed (test failure
@@ -269,10 +292,10 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
     base::ListValue params;
     AppendTabIdAndUrl(&params);
     params.AppendString(log_id);
-    constexpr bool result_expected = false;
-    const bool result_returned =
+    constexpr bool value_expected = false;
+    std::unique_ptr<base::Value> value =
         RunFunction<WebrtcLoggingPrivateStoreFunction>(params);
-    return (result_expected == result_returned);
+    return value_expected == (value != nullptr);
   }
 
   // This function implicitly expects the function to succeed (test failure
@@ -280,14 +303,17 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
   // Returns whether the function that was run returned a value, or avoided
   // returning a value, according to expectation.
   // TODO(crbug.com/829419): Return success/failure of the executed function.
-  bool UploadStoredLog(const std::string& log_id) {
+  bool UploadStoredLog(const std::string& log_id, std::string* report_id) {
     base::ListValue params;
     AppendTabIdAndUrl(&params);
     params.AppendString(log_id);
-    constexpr bool result_expected = true;
-    const bool result_returned =
+    constexpr bool value_expected = true;
+    std::unique_ptr<base::Value> value =
         RunFunction<WebrtcLoggingPrivateUploadStoredFunction>(params);
-    return (result_expected == result_returned);
+    const bool value_returned = value != nullptr;
+    if (value_returned)
+      *report_id = *value->FindStringKey("reportId");
+    return value_expected == value_returned;
   }
 
   // This function implicitly expects the function to succeed (test failure
@@ -299,11 +325,11 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
     base::ListValue params;
     AppendTabIdAndUrl(&params);
     params.AppendInteger(seconds);
-    constexpr bool result_expected = true;
-    const bool result_returned =
+    constexpr bool value_expected = true;
+    std::unique_ptr<base::Value> value =
         RunFunction<WebrtcLoggingPrivateStartAudioDebugRecordingsFunction>(
             params);
-    return (result_expected == result_returned);
+    return value_expected == (value != nullptr);
   }
 
   // This function implicitly expects the function to succeed (test failure
@@ -314,11 +340,11 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
   bool StopAudioDebugRecordings() {
     base::ListValue params;
     AppendTabIdAndUrl(&params);
-    constexpr bool result_expected = true;
-    const bool result_returned =
+    constexpr bool value_expected = true;
+    std::unique_ptr<base::Value> value =
         RunFunction<WebrtcLoggingPrivateStopAudioDebugRecordingsFunction>(
             params);
-    return (result_expected == result_returned);
+    return value_expected == (value != nullptr);
   }
 
   // This function expects the function to succeed or fail according to
@@ -380,38 +406,17 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
   base::test::ScopedFeatureList scoped_feature_list_;
   base::test::ScopedCommandLine scoped_command_line_;
   scoped_refptr<const Extension> extension_;
-};
 
-// Helper class to temporarily tell the uploader to save the multipart buffer to
-// a test string instead of uploading.
-class ScopedOverrideUploadBuffer {
- public:
-  ScopedOverrideUploadBuffer() {
-    g_browser_process->webrtc_log_uploader()->
-        OverrideUploadWithBufferForTesting(&multipart_);
-  }
-
-  ~ScopedOverrideUploadBuffer() {
-    g_browser_process->webrtc_log_uploader()->
-        OverrideUploadWithBufferForTesting(nullptr);
-  }
-
-  const std::string& multipart() const { return multipart_; }
-
- private:
-  std::string multipart_;
+  // The content of the upload request that reached the test server.
+  std::string upload_request_content_;
 };
 
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopDiscard) {
-  ScopedOverrideUploadBuffer buffer_override;
-
   EXPECT_TRUE(StartLogging());
   EXPECT_TRUE(StopLogging());
   EXPECT_TRUE(DiscardLog());
-
-  EXPECT_TRUE(buffer_override.multipart().empty());
 }
 
 // Tests WebRTC diagnostic logging. Sets up the browser to save the multipart
@@ -449,19 +454,21 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopDiscard) {
 // ------**--yradnuoBgoLtrapitluMklaTelgooG--**------
 //
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopUpload) {
-  ScopedOverrideUploadBuffer buffer_override;
+  ASSERT_TRUE(SetupTestServerLogUploading());
 
   base::ListValue parameters;
   AppendTabIdAndUrl(&parameters);
   InitializeTestMetaData(&parameters);
 
+  std::string report_id;
+
   SetMetaData(parameters);
   StartLogging();
   StopLogging();
-  UploadLog();
+  UploadLog(&report_id);
 
-  std::string multipart = buffer_override.multipart();
-  ASSERT_FALSE(multipart.empty());
+  ASSERT_FALSE(upload_request_content_.empty());
+  EXPECT_STREQ(kTestReportId, report_id.c_str());
 
   // Check multipart data.
 
@@ -470,17 +477,17 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopUpload) {
   // Move the compressed data to its own string, since it may contain "\r\n" and
   // it makes the tests below easier.
   const char zip_content_type[] = "Content-Type: application/gzip";
-  size_t zip_pos = multipart.find(&zip_content_type[0]);
+  size_t zip_pos = upload_request_content_.find(&zip_content_type[0]);
   ASSERT_NE(std::string::npos, zip_pos);
   // Move pos to where the zip begins. - 1 to remove '\0', + 4 for two "\r\n".
   zip_pos += sizeof(zip_content_type) + 3;
-  size_t zip_length = multipart.find(boundary, zip_pos);
+  size_t zip_length = upload_request_content_.find(boundary, zip_pos);
   ASSERT_NE(std::string::npos, zip_length);
   // Calculate length, adjust for a "\r\n".
   zip_length -= zip_pos + 2;
   ASSERT_GT(zip_length, 0u);
-  std::string log_part = multipart.substr(zip_pos, zip_length);
-  multipart.erase(zip_pos, zip_length);
+  std::string log_part = upload_request_content_.substr(zip_pos, zip_length);
+  upload_request_content_.erase(zip_pos, zip_length);
 
   // Uncompress log and verify contents.
   EXPECT_TRUE(GzipUncompress(log_part, &log_part));
@@ -493,8 +500,9 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopUpload) {
   EXPECT_NE(std::string::npos, log_part.find("Cpu brand:"));
 
   // Check the multipart contents.
-  std::vector<std::string> multipart_lines = base::SplitStringUsingSubstr(
-      multipart, "\r\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::vector<std::string> multipart_lines =
+      base::SplitStringUsingSubstr(upload_request_content_, "\r\n",
+                                   base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   ASSERT_EQ(31, static_cast<int>(multipart_lines.size()));
 
   EXPECT_STREQ(&boundary[0], multipart_lines[0].c_str());
@@ -576,19 +584,24 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopStore) {
 
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
                        TestStartStopStoreAndUpload) {
+  ASSERT_TRUE(SetupTestServerLogUploading());
+
   static const char kLogId[] = "TestStartStopStoreAndUpload";
   ASSERT_TRUE(StartLogging());
   ASSERT_TRUE(StopLogging());
   ASSERT_TRUE(StoreLog(kLogId));
 
-  ScopedOverrideUploadBuffer buffer_override;
-  EXPECT_TRUE(UploadStoredLog(kLogId));
+  std::string report_id;
+  EXPECT_TRUE(UploadStoredLog(kLogId, &report_id));
   EXPECT_NE(std::string::npos,
-            buffer_override.multipart().find("filename=\"webrtc_log.gz\""));
+            upload_request_content_.find("filename=\"webrtc_log.gz\""));
+  EXPECT_STREQ(kTestReportId, report_id.c_str());
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
                        TestStartStopStoreAndUploadWithRtp) {
+  ASSERT_TRUE(SetupTestServerLogUploading());
+
   static const char kLogId[] = "TestStartStopStoreAndUploadWithRtp";
   ASSERT_TRUE(StartLogging());
   ASSERT_TRUE(StartRtpDump(true, true));
@@ -596,14 +609,17 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
   ASSERT_TRUE(StopRtpDump(true, true));
   ASSERT_TRUE(StoreLog(kLogId));
 
-  ScopedOverrideUploadBuffer buffer_override;
-  EXPECT_TRUE(UploadStoredLog(kLogId));
+  std::string report_id;
+  EXPECT_TRUE(UploadStoredLog(kLogId, &report_id));
   EXPECT_NE(std::string::npos,
-            buffer_override.multipart().find("filename=\"webrtc_log.gz\""));
+            upload_request_content_.find("filename=\"webrtc_log.gz\""));
+  EXPECT_STREQ(kTestReportId, report_id.c_str());
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
                        TestStartStopStoreAndUploadWithMetaData) {
+  ASSERT_TRUE(SetupTestServerLogUploading());
+
   static const char kLogId[] = "TestStartStopStoreAndUploadWithRtp";
   ASSERT_TRUE(StartLogging());
 
@@ -615,12 +631,12 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
   ASSERT_TRUE(StopLogging());
   ASSERT_TRUE(StoreLog(kLogId));
 
-  ScopedOverrideUploadBuffer buffer_override;
-  EXPECT_TRUE(UploadStoredLog(kLogId));
+  std::string report_id;
+  EXPECT_TRUE(UploadStoredLog(kLogId, &report_id));
   EXPECT_NE(std::string::npos,
-            buffer_override.multipart().find("filename=\"webrtc_log.gz\""));
-  EXPECT_NE(std::string::npos,
-            buffer_override.multipart().find(kTestLoggingUrl));
+            upload_request_content_.find("filename=\"webrtc_log.gz\""));
+  EXPECT_NE(std::string::npos, upload_request_content_.find(kTestLoggingUrl));
+  EXPECT_STREQ(kTestReportId, report_id.c_str());
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,

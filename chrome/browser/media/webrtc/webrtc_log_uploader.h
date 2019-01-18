@@ -95,6 +95,13 @@ class WebRtcLogUploader {
     post_data_ = post_data;
   }
 
+  // For testing purposes.
+  void SetUploadUrlForTesting(const GURL& url) {
+    DCHECK((!url.is_empty() && upload_url_for_testing_.is_empty()) ||
+           (url.is_empty() && !upload_url_for_testing_.is_empty()));
+    upload_url_for_testing_ = url;
+  }
+
   const scoped_refptr<base::SequencedTaskRunner>& background_task_runner()
       const {
     return background_task_runner_;
@@ -187,6 +194,9 @@ class WebRtcLogUploader {
   // For testing purposes, see OverrideUploadWithBufferForTesting. Only accessed
   // on the FILE thread.
   std::string* post_data_ = nullptr;
+
+  // For testing purposes.
+  GURL upload_url_for_testing_;
 
   // Only accessed on the IO thread.
   SimpleURLLoaderList pending_uploads_;

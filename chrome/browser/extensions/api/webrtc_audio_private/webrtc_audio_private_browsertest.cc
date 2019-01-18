@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -40,6 +41,8 @@
 #include "media/audio/audio_system.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "services/audio/public/cpp/audio_system_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -253,6 +256,23 @@ class HangoutServicesBrowserTest : public AudioWaitingExtensionTest {
 #if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
 IN_PROC_BROWSER_TEST_F(HangoutServicesBrowserTest,
                        RunComponentExtensionTest) {
+  constexpr char kLogUploadUrlPath[] = "/upload_webrtc_log";
+
+  // Set up handling of the log upload request.
+  embedded_test_server()->RegisterRequestHandler(base::BindLambdaForTesting(
+      [&](const net::test_server::HttpRequest& request)
+          -> std::unique_ptr<net::test_server::HttpResponse> {
+        if (request.relative_url == kLogUploadUrlPath) {
+          std::unique_ptr<net::test_server::BasicHttpResponse> response =
+              std::make_unique<net::test_server::BasicHttpResponse>();
+          response->set_code(net::HTTP_OK);
+          response->set_content("report_id");
+          return std::move(response);
+        }
+
+        return nullptr;
+      }));
+
   // This runs the end-to-end JavaScript test for the Hangout Services
   // component extension, which uses the webrtcAudioPrivate API among
   // others.
@@ -270,12 +290,9 @@ IN_PROC_BROWSER_TEST_F(HangoutServicesBrowserTest,
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   WaitUntilAudioIsPlaying(tab);
 
-  // Override, i.e. disable, uploading. We don't want to try sending data to
-  // servers when running the test. We don't bother about the contents of the
-  // buffer |dummy|, that's tested in other tests.
-  std::string dummy;
-  g_browser_process->webrtc_log_uploader()->
-      OverrideUploadWithBufferForTesting(&dummy);
+  // Use a test server URL for uploading.
+  g_browser_process->webrtc_log_uploader()->SetUploadUrlForTesting(
+      embedded_test_server()->GetURL(kLogUploadUrlPath));
 
   ASSERT_TRUE(content::ExecuteScript(tab, "browsertestRunAllTests();"));
 
@@ -283,9 +300,6 @@ IN_PROC_BROWSER_TEST_F(HangoutServicesBrowserTest,
   title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("failure"));
   base::string16 result = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(base::ASCIIToUTF16("success"), result);
-
-  g_browser_process->webrtc_log_uploader()->OverrideUploadWithBufferForTesting(
-      NULL);
 }
 #endif  // BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
 
