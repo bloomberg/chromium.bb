@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browser_switcher/mock_alternative_browser_driver.h"
 
+#include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
+
 namespace browser_switcher {
 
 MockAlternativeBrowserDriver::MockAlternativeBrowserDriver() = default;

@@ -4,8 +4,11 @@
 
 #include "chrome/browser/browser_switcher/browser_switcher_service.h"
 
+#include <string>
+#include <utility>
+
 #include "build/build_config.h"
-#include "chrome/browser/browser_switcher/alternative_browser_launcher.h"
+#include "chrome/browser/browser_switcher/alternative_browser_driver.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "chrome/browser/browser_switcher/browser_switcher_sitelist.h"
 #include "chrome/browser/browser_switcher/ieem_sitelist_parser.h"
@@ -148,16 +151,11 @@ void XmlDownloader::DoneParsing(ParsedXml xml) {
 }
 
 BrowserSwitcherService::BrowserSwitcherService(Profile* profile)
-    : launcher_(nullptr),
-      sitelist_(nullptr),
-      prefs_(profile->GetPrefs()),
+    : prefs_(profile->GetPrefs()),
+      driver_(new AlternativeBrowserDriverImpl(&prefs_)),
+      sitelist_(new BrowserSwitcherSitelistImpl(&prefs_)),
       weak_ptr_factory_(this) {
-  DCHECK(profile);
-  DCHECK(prefs_);
-
-  GURL external_url;
-  if (prefs_->IsManagedPreference(prefs::kExternalSitelistUrl))
-    external_url = GURL(prefs_->GetString(prefs::kExternalSitelistUrl));
+  GURL external_url = prefs_.GetExternalSitelistUrl();
   if (external_url.is_valid()) {
     external_sitelist_downloader_ = std::make_unique<XmlDownloader>(
         profile, std::move(external_url), fetch_delay_,
@@ -166,8 +164,7 @@ BrowserSwitcherService::BrowserSwitcherService(Profile* profile)
   }
 
 #if defined(OS_WIN)
-  if (prefs_->GetBoolean(prefs::kUseIeSitelist) &&
-      prefs_->IsManagedPreference(prefs::kUseIeSitelist)) {
+  if (prefs_.UseIeSitelist()) {
     GURL sitelist_url = GetIeemSitelistUrl();
     if (sitelist_url.is_valid()) {
       ieem_downloader_ = std::make_unique<XmlDownloader>(
@@ -181,21 +178,21 @@ BrowserSwitcherService::BrowserSwitcherService(Profile* profile)
 
 BrowserSwitcherService::~BrowserSwitcherService() {}
 
-AlternativeBrowserLauncher* BrowserSwitcherService::launcher() {
-  if (!launcher_)
-    launcher_ = std::make_unique<AlternativeBrowserLauncherImpl>(prefs_);
-  return launcher_.get();
+AlternativeBrowserDriver* BrowserSwitcherService::driver() {
+  return driver_.get();
 }
 
 BrowserSwitcherSitelist* BrowserSwitcherService::sitelist() {
-  if (!sitelist_)
-    sitelist_ = std::make_unique<BrowserSwitcherSitelistImpl>(prefs_);
   return sitelist_.get();
 }
 
-void BrowserSwitcherService::SetLauncherForTesting(
-    std::unique_ptr<AlternativeBrowserLauncher> launcher) {
-  launcher_ = std::move(launcher);
+const BrowserSwitcherPrefs& BrowserSwitcherService::prefs() const {
+  return prefs_;
+}
+
+void BrowserSwitcherService::SetDriverForTesting(
+    std::unique_ptr<AlternativeBrowserDriver> driver) {
+  driver_ = std::move(driver);
 }
 
 void BrowserSwitcherService::SetSitelistForTesting(

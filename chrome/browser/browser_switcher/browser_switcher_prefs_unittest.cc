@@ -4,13 +4,16 @@
 
 #include "chrome/browser/browser_switcher/browser_switcher_sitelist.h"
 
+#include <algorithm>
+#include <memory>
+
 #include "base/values.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "chrome/browser/browser_switcher/ieem_sitelist_parser.h"
-#include "chrome/browser/browser_switcher/mock_alternative_browser_driver.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -29,28 +32,22 @@ std::unique_ptr<base::Value> StringArrayToValue(
   return std::make_unique<base::Value>(values);
 }
 
-void SetStringToItWorked(std::string* str) {
-  *str = "it worked";
-}
-
 }  // namespace
 
 class BrowserSwitcherPrefsTest : public testing::Test {
  public:
   void SetUp() override {
     BrowserSwitcherPrefs::RegisterProfilePrefs(prefs_backend_.registry());
-    prefs_ = std::make_unique<BrowserSwitcherPrefs>(&prefs_backend_, &driver_);
+    prefs_ = std::make_unique<BrowserSwitcherPrefs>(&prefs_backend_);
   }
 
   sync_preferences::TestingPrefServiceSyncable* prefs_backend() {
     return &prefs_backend_;
   }
-  MockAlternativeBrowserDriver& driver() { return driver_; }
   BrowserSwitcherPrefs* prefs() { return prefs_.get(); }
 
  private:
   sync_preferences::TestingPrefServiceSyncable prefs_backend_;
-  MockAlternativeBrowserDriver driver_;
   std::unique_ptr<BrowserSwitcherPrefs> prefs_;
 };
 
@@ -76,33 +73,6 @@ TEST_F(BrowserSwitcherPrefsTest, ListensForPrefChanges) {
 
   EXPECT_EQ(1u, prefs()->GetRules().greylist.size());
   EXPECT_EQ("foo.example.com", prefs()->GetRules().greylist[0]);
-}
-
-TEST_F(BrowserSwitcherPrefsTest, ExpandsEnvironmentVariablesInPath) {
-  EXPECT_CALL(driver(), ExpandEnvVars(_))
-      .WillOnce(Invoke(&SetStringToItWorked));
-  prefs_backend()->SetManagedPref(
-      prefs::kAlternativeBrowserPath,
-      std::make_unique<base::Value>("it didn't work"));
-  EXPECT_EQ("it worked", prefs()->GetAlternativeBrowserPath());
-}
-
-TEST_F(BrowserSwitcherPrefsTest, ExpandsPresetBrowsersInPath) {
-  EXPECT_CALL(driver(), ExpandPresetBrowsers(_))
-      .WillOnce(Invoke(&SetStringToItWorked));
-  prefs_backend()->SetManagedPref(
-      prefs::kAlternativeBrowserPath,
-      std::make_unique<base::Value>("it didn't work"));
-  EXPECT_EQ("it worked", prefs()->GetAlternativeBrowserPath());
-}
-
-TEST_F(BrowserSwitcherPrefsTest, ExpandsEnvironmentVariablesInParameters) {
-  EXPECT_CALL(driver(), ExpandEnvVars(_))
-      .WillOnce(Invoke(&SetStringToItWorked));
-  prefs_backend()->SetManagedPref(prefs::kAlternativeBrowserParameters,
-                                  StringArrayToValue({"it didn't work"}));
-  EXPECT_EQ(1u, prefs()->GetAlternativeBrowserParameters().size());
-  EXPECT_EQ("it worked", prefs()->GetAlternativeBrowserParameters()[0]);
 }
 
 }  // namespace browser_switcher

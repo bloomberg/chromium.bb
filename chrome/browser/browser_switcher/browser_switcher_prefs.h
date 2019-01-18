@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_BROWSER_SWITCHER_BROWSER_SWITCHER_PREFS_H_
 #define CHROME_BROWSER_BROWSER_SWITCHER_BROWSER_SWITCHER_PREFS_H_
 
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -17,8 +20,6 @@ class PrefRegistrySyncable;
 class PrefService;
 
 namespace browser_switcher {
-
-class AlternativeBrowserDriver;
 
 // A named pair type.
 struct RuleSet {
@@ -35,37 +36,31 @@ struct RuleSet {
 // AlternativeBrowserPath).
 class BrowserSwitcherPrefs {
  public:
-  BrowserSwitcherPrefs(PrefService* prefs, AlternativeBrowserDriver* driver);
+  explicit BrowserSwitcherPrefs(PrefService* prefs);
   virtual ~BrowserSwitcherPrefs();
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Returns the path to the alternative browser to launch, after substitutions
-  // (preset browsers, environment variables, tildes). If the pref is not
-  // managed, returns the empty string.
-  const std::string& GetAlternativeBrowserPath();
+  // Returns the path to the alternative browser to launch, before
+  // substitutions. If the pref is not managed, returns the empty string.
+  const std::string& GetAlternativeBrowserPath() const;
 
-  // Same as above, but returns the value before substitutions. Still checks
-  // that the pref is managed.
-  std::string GetAlternativeBrowserPathRaw();
-
-  // Returns the arguments to pass to the alternative browser, after
-  // substitutions (environment variables, tildes). If the pref is not managed,
-  // returns the empty string.
-  const std::vector<std::string>& GetAlternativeBrowserParameters();
+  // Returns the arguments to pass to the alternative browser, before
+  // substitutions. If the pref is not managed, returns the empty string.
+  const std::vector<std::string>& GetAlternativeBrowserParameters() const;
 
   // Returns the sitelist + greylist configured directly through Chrome
   // policies. If the pref is not managed, returns an empty vector.
-  const RuleSet& GetRules();
+  const RuleSet& GetRules() const;
 
   // Returns the URL to download for an external XML sitelist. If the pref is
   // not managed, returns an invalid URL.
-  GURL GetExternalSitelistUrl();
+  GURL GetExternalSitelistUrl() const;
 
 #if defined(OS_WIN)
   // Returns true if Chrome should download and apply the XML sitelist from
   // IEEM's SiteList policy. If the pref is not managed, returns false.
-  bool UseIeSitelist();
+  bool UseIeSitelist() const;
 #endif
 
  private:
@@ -78,10 +73,6 @@ class BrowserSwitcherPrefs {
   PrefService* prefs_;
   PrefChangeRegistrar change_registrar_;
 
-  // Used to expand environment variables and platform-specific presets
-  // (e.g. ${ie}) in AlternativeBrowserPath.
-  AlternativeBrowserDriver* driver_;
-
   // Type-converted and/or expanded pref values, updated by the
   // PrefChangeRegistrar hooks.
   std::string alt_browser_path_;
@@ -89,7 +80,7 @@ class BrowserSwitcherPrefs {
 
   RuleSet rules_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserSwitcherPrefs);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(BrowserSwitcherPrefs);
 };
 
 namespace prefs {
