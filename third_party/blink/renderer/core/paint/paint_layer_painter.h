@@ -51,8 +51,7 @@ class CORE_EXPORT PaintLayerPainter {
 
   // Returns true if the painted output of this PaintLayer and its children is
   // invisible and therefore can't impact painted output.
-  bool PaintedOutputInvisible(const ComputedStyle&,
-                              GlobalPaintFlags = kGlobalPaintNormalPhase) const;
+  static bool PaintedOutputInvisible(const ComputedStyle&);
 
  private:
   friend class PaintLayerPainterTest;

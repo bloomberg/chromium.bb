@@ -20,8 +20,10 @@ class PaintLayerPainterTest : public PaintControllerPaintTest {
   USING_FAST_MALLOC(PaintLayerPainterTest);
 
  public:
-  void ExpectPaintedOutputInvisible(const char* element_name,
-                                    bool expected_value) {
+  void ExpectPaintedOutputInvisibleAndPaintsWithTransparency(
+      const char* element_name,
+      bool expected_invisible,
+      bool expected_paints_with_transparency) {
     // The optimization to skip painting for effectively-invisible content is
     // limited to pre-CAP.
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
@@ -29,15 +31,11 @@ class PaintLayerPainterTest : public PaintControllerPaintTest {
 
     PaintLayer* target_layer =
         ToLayoutBox(GetLayoutObjectByElementId(element_name))->Layer();
-    PaintLayerPaintingInfo painting_info(nullptr, CullRect(),
-                                         kGlobalPaintNormalPhase, LayoutSize());
-    bool invisible =
-        PaintLayerPainter(*target_layer)
-            .PaintedOutputInvisible(target_layer->GetLayoutObject().StyleRef(),
-                                    painting_info.GetGlobalPaintFlags());
-    EXPECT_EQ(expected_value, invisible)
-        << "Failed painted output visibility, expected=" << expected_value
-        << ", actual=" << invisible << "].";
+    bool invisible = PaintLayerPainter::PaintedOutputInvisible(
+        target_layer->GetLayoutObject().StyleRef());
+    EXPECT_EQ(expected_invisible, invisible);
+    EXPECT_EQ(expected_paints_with_transparency,
+              target_layer->PaintsWithTransparency(kGlobalPaintNormalPhase));
   }
 
   PaintController& MainGraphicsLayerPaintController() {
@@ -843,21 +841,21 @@ TEST_P(PaintLayerPainterTest,
 TEST_P(PaintLayerPainterTest, DontPaintWithTinyOpacity) {
   SetBodyInnerHTML(
       "<div id='target' style='background: blue; opacity: 0.0001'></div>");
-  ExpectPaintedOutputInvisible("target", true);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", true, true);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithTinyOpacityAndWillChangeOpacity) {
   SetBodyInnerHTML(
       "<div id='target' style='background: blue; opacity: 0.0001; "
       "    will-change: opacity'></div>");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", false, false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithTinyOpacityAndBackdropFilter) {
   SetBodyInnerHTML(
       "<div id='target' style='background: blue; opacity: 0.0001;"
       "    backdrop-filter: blur(2px);'></div>");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", false, false);
 }
 
 TEST_P(PaintLayerPainterTest,
@@ -865,20 +863,20 @@ TEST_P(PaintLayerPainterTest,
   SetBodyInnerHTML(
       "<div id='target' style='background: blue; opacity: 0.0001;"
       "    backdrop-filter: blur(2px); will-change: opacity'></div>");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", false, false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithCompositedTinyOpacity) {
   SetBodyInnerHTML(
       "<div id='target' style='background: blue; opacity: 0.0001;"
       "    will-change: transform'></div>");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", true, false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithNonTinyOpacity) {
   SetBodyInnerHTML(
       "<div id='target' style='background: blue; opacity: 0.1'></div>");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", false, true);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithEffectAnimationZeroOpacity) {
@@ -897,7 +895,7 @@ TEST_P(PaintLayerPainterTest, DoPaintWithEffectAnimationZeroOpacity) {
     </style>
     <div id='target'></div>
   )HTML");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", true, false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithTransformAnimationZeroOpacity) {
@@ -915,7 +913,7 @@ TEST_P(PaintLayerPainterTest, DoPaintWithTransformAnimationZeroOpacity) {
     </style>
     <div id='target'>x</div></div>
   )HTML");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", true, false);
 }
 
 TEST_P(PaintLayerPainterTest,
@@ -935,7 +933,7 @@ TEST_P(PaintLayerPainterTest,
     </style>
     <div id='target'>x</div></div>
   )HTML");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", false, false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithWillChangeOpacity) {
@@ -949,7 +947,7 @@ TEST_P(PaintLayerPainterTest, DoPaintWithWillChangeOpacity) {
     </style>
     <div id='target'></div>
   )HTML");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", false, false);
 }
 
 TEST_P(PaintLayerPainterTest, DoPaintWithZeroOpacityAndWillChangeOpacity) {
@@ -964,7 +962,7 @@ TEST_P(PaintLayerPainterTest, DoPaintWithZeroOpacityAndWillChangeOpacity) {
     </style>
     <div id='target'></div>
   )HTML");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", false, false);
 }
 
 TEST_P(PaintLayerPainterTest,
@@ -980,7 +978,7 @@ TEST_P(PaintLayerPainterTest,
     </style>
     <div id='target'></div>
   )HTML");
-  ExpectPaintedOutputInvisible("target", false);
+  ExpectPaintedOutputInvisibleAndPaintsWithTransparency("target", false, false);
 }
 
 using PaintLayerPainterTestCAP = PaintLayerPainterTest;

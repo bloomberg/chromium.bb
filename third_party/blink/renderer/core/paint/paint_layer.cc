@@ -3188,15 +3188,12 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
       // context, in order to generate new paint chunks in the correct order.
       // Raster invalidation will be issued if needed during paint.
       SetNeedsRepaint();
-    } else if (old_style) {
+    } else if (old_style &&
+               !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       // Change of PaintedOutputInvisible() will affect existence of paint
       // chunks, so needs repaint.
-      PaintLayerPainter painter(*this);
-      // It's fine for PaintedOutputInvisible() to access the current
-      // compositing state.
-      DisableCompositingQueryAsserts disable;
-      if (painter.PaintedOutputInvisible(*old_style) !=
-          painter.PaintedOutputInvisible(new_style))
+      if (PaintLayerPainter::PaintedOutputInvisible(*old_style) !=
+          PaintLayerPainter::PaintedOutputInvisible(new_style))
         SetNeedsRepaint();
     }
   }
