@@ -18,7 +18,6 @@
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_internals_service_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
-#include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "net/cert/cert_status_flags.h"
 #include "url/gurl.h"
