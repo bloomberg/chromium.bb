@@ -1029,6 +1029,7 @@ body.dialog #dialog #dialog-popup {
 
 #dialog-buttons button:focus {
   background-color: #2581df;
+  border-color: #2581df;
   color: white;
 }
 
