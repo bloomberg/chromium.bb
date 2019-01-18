@@ -30,6 +30,7 @@ template("vr_module_tmpl") {
                            [
                              "base_module_target",
                              "module_name",
+                             "uncompress_shared_libraries",
                              "version_code",
                              "version_name",
                            ])
@@ -39,6 +40,8 @@ template("vr_module_tmpl") {
       "//chrome/browser/android/vr:java",
     ]
     proguard_enabled = !is_java_debug
-    uncompress_shared_libraries = chromium_linker_supported
+    if (!defined(invoker.uncompress_shared_libraries)) {
+      uncompress_shared_libraries = chromium_linker_supported
+    }
   }
 }
