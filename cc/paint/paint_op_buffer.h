@@ -41,6 +41,7 @@ class SkStrikeServer;
 namespace cc {
 class ClientPaintCache;
 class ServicePaintCache;
+class PaintWorkletImageProvider;
 
 class CC_PAINT_EXPORT ThreadsafeMatrix : public SkMatrix {
  public:
@@ -107,7 +108,9 @@ struct CC_PAINT_EXPORT PlaybackParams {
       base::RepeatingCallback<void(SkCanvas* canvas, uint32_t id)>;
   using DidDrawOpCallback = base::RepeatingCallback<void()>;
 
-  explicit PlaybackParams(ImageProvider* image_provider);
+  explicit PlaybackParams(
+      ImageProvider* image_provider,
+      PaintWorkletImageProvider* paint_worklet_image_provider = nullptr);
   PlaybackParams(
       ImageProvider* image_provider,
       const SkMatrix& original_ctm,
@@ -119,6 +122,7 @@ struct CC_PAINT_EXPORT PlaybackParams {
   PlaybackParams& operator=(const PlaybackParams& other);
 
   ImageProvider* image_provider;
+  PaintWorkletImageProvider* paint_worklet_image_provider;
   SkMatrix original_ctm;
   CustomDataRasterCallback custom_callback;
   DidDrawOpCallback did_draw_op_callback;
