@@ -637,11 +637,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // |subresource_loader_params| is used in network service land to pass
   // the parameters to create a custom subresource loader in the renderer
   // process, e.g. by AppCache etc.
-  // TODO(clamy): Pass the NavigationRequest directly to this function when
-  // interstitials have been refactored to no longer call CommitNavigation
-  // without a NavigationRequest.
   void CommitNavigation(
-      int64_t navigation_id,
+      NavigationRequest* navigation_request,
       network::ResourceResponse* response,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       const CommonNavigationParams& common_params,
@@ -654,7 +651,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Indicates that a navigation failed and that this RenderFrame should display
   // an error page.
-  void FailedNavigation(int64_t navigation_id,
+  void FailedNavigation(NavigationRequest* navigation_request,
                         const CommonNavigationParams& common_params,
                         const CommitNavigationParams& commit_params,
                         bool has_stale_copy_in_cache,
