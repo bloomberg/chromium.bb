@@ -2201,6 +2201,19 @@ if (enable_java_templates) {
           "$target_out_dir/$_template_name.unoptimized.ap_"
     }
 
+    if (defined(invoker.shared_resources_whitelist_target)) {
+      _whitelist_gen_dir =
+          get_label_info(invoker.shared_resources_whitelist_target,
+                         "target_gen_dir")
+      _whitelist_target_name =
+          get_label_info(invoker.shared_resources_whitelist_target, "name")
+      _whitelist_r_txt_path =
+          "${_whitelist_gen_dir}/${_whitelist_target_name}" +
+          "__compile_resources_R.txt"
+      _whitelist_deps =
+          "${invoker.shared_resources_whitelist_target}__compile_resources"
+    }
+
     _compile_resources_target = "${_template_name}__compile_resources"
     _compile_resources_rtxt_out =
         "${target_gen_dir}/${_compile_resources_target}_R.txt"
@@ -2253,17 +2266,10 @@ if (enable_java_templates) {
       }
 
       if (defined(invoker.shared_resources_whitelist_target)) {
-        _whitelist_gen_dir =
-            get_label_info(invoker.shared_resources_whitelist_target,
-                           "target_gen_dir")
-        _whitelist_target_name =
-            get_label_info(invoker.shared_resources_whitelist_target, "name")
-        shared_resources_whitelist =
-            "${_whitelist_gen_dir}/${_whitelist_target_name}" +
-            "__compile_resources_R.txt"
-        deps += [
-          "${invoker.shared_resources_whitelist_target}__compile_resources",
-        ]
+        # Used to ensure that the WebView resources are properly shared
+        # (i.e. are non-final and with package ID 0).
+        shared_resources_whitelist = _whitelist_r_txt_path
+        deps += [ _whitelist_deps ]
       }
     }
 
@@ -2524,6 +2530,11 @@ if (enable_java_templates) {
       extra_shared_libraries = _extra_native_libs
 
       uncompress_shared_libraries = _uncompress_shared_libraries
+
+      if (defined(_whitelist_r_txt_path) && _is_bundle_module) {
+        # Used to write the file path to the target's .build_config only.
+        base_whitelist_rtxt_path = _whitelist_r_txt_path
+      }
     }
 
     # TODO(cjhopman): This is only ever needed to calculate the list of tests to
@@ -3850,12 +3861,19 @@ if (enable_java_templates) {
     _base_target_name = get_label_info(invoker.base_module_target, "name")
     _base_target_gen_dir =
         get_label_info(invoker.base_module_target, "target_gen_dir")
+    _base_module_build_config =
+        "$_base_target_gen_dir/${_base_target_name}.build_config"
+    _base_module_build_config_target =
+        "${invoker.base_module_target}$build_config_target_suffix"
+    _rebased_base_module_build_config =
+        rebase_path(_base_module_build_config, root_build_dir)
+
     _all_modules = [
       {
         name = "base"
         module_target = invoker.base_module_target
-        build_config = "$_base_target_gen_dir/${_base_target_name}.build_config"
-        build_config_target = "$module_target$build_config_target_suffix"
+        build_config = _base_module_build_config
+        build_config_target = _base_module_build_config_target
       },
     ]
 
@@ -3989,9 +4007,11 @@ if (enable_java_templates) {
 
     _sign_bundle = defined(invoker.sign_bundle) && invoker.sign_bundle
 
+    _enable_language_splits = defined(invoker.enable_language_splits) &&
+                              invoker.enable_language_splits
+
     _split_dimensions = []
-    if (defined(invoker.enable_language_splits) &&
-        invoker.enable_language_splits) {
+    if (_enable_language_splits) {
       _split_dimensions += [ "language" ]
     }
 
@@ -4040,6 +4060,14 @@ if (enable_java_templates) {
       if (_split_dimensions != []) {
         args += [ "--split-dimensions=$_split_dimensions" ]
       }
+
+      if (_enable_language_splits) {
+        args += [
+          "--base-whitelist-rtxt-path=@FileArg(" + "${_rebased_base_module_build_config}:deps_info:base_whitelist_rtxt_path)",
+          "--base-module-rtxt-path=@FileArg(" + "${_rebased_base_module_build_config}:deps_info:module_rtxt_path)",
+        ]
+      }
+
       foreach(build_config, _all_module_build_configs) {
         _rebased_build_config = rebase_path(build_config, root_build_dir)
         args += [
@@ -4059,12 +4087,6 @@ if (enable_java_templates) {
     _bundle_apks_path = "$_bundle_base_path/$_bundle_name.apks"
     _bundle_wrapper_script_dir = "$root_build_dir/bin"
     _bundle_wrapper_script_path = "$_bundle_wrapper_script_dir/$target_name"
-
-    _base_module_build_config = _all_module_build_configs[0]
-    _base_module_build_config_target =
-        "${invoker.base_module_target}$build_config_target_suffix"
-    _rebased_base_module_build_config =
-        rebase_path(_base_module_build_config, root_build_dir)
 
     action_with_pydeps("${target_name}__wrapper_script") {
       script = "//build/android/gyp/create_bundle_wrapper_script.py"

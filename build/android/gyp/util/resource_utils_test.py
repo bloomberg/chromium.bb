@@ -59,6 +59,20 @@ int styleable SnackbarLayout_android_maxWidth 0
 int styleable SnackbarLayout_elevation 2
 '''
 
+# Test whitelist R.txt file. Note that AlternateErrorPagesEnabledTitle is
+# listed as an 'anim' and should thus be skipped. Similarly the string
+# 'ThisStringDoesNotAppear' should not be in the final result.
+_TEST_WHITELIST_R_TXT = r'''int anim AlternateErrorPagesEnabledTitle 0x7f0eeeee
+int string AllowedDomainsForAppsDesc 0x7f0c0105
+int string AlternateErrorPagesEnabledDesc 0x7f0c0107
+int string ThisStringDoesNotAppear 0x7f0fffff
+'''
+
+_TEST_R_TEXT_RESOURCES_IDS = {
+    0x7f0c0105: 'AllowedDomainsForAppsDesc',
+    0x7f0c0107: 'AlternateErrorPagesEnabledDesc',
+}
+
 # Names of string resources in _TEST_R_TXT, should be sorted!
 _TEST_R_TXT_STRING_RESOURCE_NAMES = sorted([
     'AllowedDomainsForAppsDesc',
@@ -69,17 +83,32 @@ _TEST_R_TXT_STRING_RESOURCE_NAMES = sorted([
 ])
 
 
+def _CreateTestFile(tmp_dir, file_name, file_data):
+  file_path = os.path.join(tmp_dir, file_name)
+  with open(file_path, 'wt') as f:
+    f.write(file_data)
+  return file_path
+
+
+
 class ResourceUtilsTest(unittest.TestCase):
 
   def test_GetRTxtStringResourceNames(self):
     with build_utils.TempDir() as tmp_dir:
-      tmp_file = os.path.join(tmp_dir, "test_R.txt")
-      with open(tmp_file, 'wt') as f:
-        f.write(_TEST_R_TXT)
-
+      tmp_file = _CreateTestFile(tmp_dir, "test_R.txt", _TEST_R_TXT)
       self.assertListEqual(
           resource_utils.GetRTxtStringResourceNames(tmp_file),
           _TEST_R_TXT_STRING_RESOURCE_NAMES)
+
+  def test_GenerateStringResourcesWhitelist(self):
+    with build_utils.TempDir() as tmp_dir:
+      tmp_module_rtxt_file = _CreateTestFile(tmp_dir, "test_R.txt", _TEST_R_TXT)
+      tmp_whitelist_rtxt_file = _CreateTestFile(tmp_dir, "test_whitelist_R.txt",
+                                                _TEST_WHITELIST_R_TXT)
+      self.assertDictEqual(
+          resource_utils.GenerateStringResourcesWhitelist(
+              tmp_module_rtxt_file, tmp_whitelist_rtxt_file),
+          _TEST_R_TEXT_RESOURCES_IDS)
 
   def test_IsAndroidLocaleQualifier(self):
     good_locales = [

@@ -340,6 +340,13 @@ template("write_build_config") {
       ]
     }
 
+    if (defined(invoker.base_whitelist_rtxt_path)) {
+      args += [
+        "--base-whitelist-rtxt-path",
+        rebase_path(invoker.base_whitelist_rtxt_path, root_build_dir),
+      ]
+    }
+
     if (defined(invoker.loadable_modules) && invoker.loadable_modules != []) {
       _rebased_modules = rebase_path(invoker.loadable_modules, root_build_dir)
       args += [ "--native-libs=$_rebased_modules" ]
@@ -3000,6 +3007,9 @@ if (enable_java_templates) {
   #    binary xml + resources.arsc).
   #  module_rtxt_path: The path of the R.txt file generated when compiling the
   #    resources for the bundle module.
+  #  base_whitelist_rtxt_path: The path of the R.txt file containing the
+  #    list of string resources to keep in the base split APK for any bundle
+  #    that uses this target.
   #
   # For 'java_binary' and 'junit_binary' targets only. Ignored by others:
   #
@@ -3182,6 +3192,7 @@ if (enable_java_templates) {
       forward_variables_from(invoker,
                              [
                                "annotation_processor_deps",
+                               "base_whitelist_rtxt_path",
                                "classpath_deps",
                                "gradle_treat_as_prebuilt",
                                "input_jars_paths",
