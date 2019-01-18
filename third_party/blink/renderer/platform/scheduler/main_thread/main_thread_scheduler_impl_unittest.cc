@@ -3215,35 +3215,6 @@ void RecordingTimeTestTask(
   run_times->push_back(task_runner->GetMockTickClock()->NowTicks());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
-       DefaultTimerTasksAreThrottledWhenBackgrounded) {
-  std::vector<base::TimeTicks> run_times;
-
-  scheduler_->SetRendererBackgrounded(true);
-  timer_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RecordingTimeTestTask, &run_times, test_task_runner_));
-
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1100));
-  // It's expected to run every "absolute" second.
-  EXPECT_THAT(run_times, testing::ElementsAre(base::TimeTicks() +
-                                              base::TimeDelta::FromSeconds(1)));
-  run_times.clear();
-
-  base::TimeTicks posting_time = Now();
-  timer_task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&RecordingTimeTestTask, &run_times, test_task_runner_),
-      base::TimeDelta::FromMilliseconds(200));
-
-  scheduler_->SetRendererBackgrounded(false);
-
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(400));
-  EXPECT_THAT(run_times,
-              testing::ElementsAre(posting_time +
-                                   base::TimeDelta::FromMilliseconds(200)));
-}
-
 //                  Nav Start     Nav Start            assert
 //                     |             |                   |
 //                     v             v                   v
