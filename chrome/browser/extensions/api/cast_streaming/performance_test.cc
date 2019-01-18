@@ -7,27 +7,28 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <iterator>
 #include <map>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/command_line.h"
-#include "base/macros.h"
-#include "base/strings/string_number_conversions.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/time/default_tick_clock.h"
+#include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/extensions/api/tab_capture/tab_capture_performance_test_base.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/test_launcher_utils.h"
-#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/tracing.h"
 #include "content/public/common/content_switches.h"
-#include "extensions/common/switches.h"
-#include "extensions/test/extension_test_message_listener.h"
+#include "content/public/test/browser_test_utils.h"
 #include "media/base/audio_bus.h"
 #include "media/base/video_frame.h"
 #include "media/cast/test/skewed_tick_clock.h"
@@ -44,18 +45,9 @@
 #include "net/base/rand_callback.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/udp_server_socket.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
-#include "ui/compositor/compositor_switches.h"
-#include "ui/gl/gl_switches.h"
-
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
 
 namespace {
-
-constexpr char kExtensionId[] = "ddchlicdkolnonkihahngkmmmjnjlkkf";
 
 // Number of events to trim from the begining and end. These events don't
 // contribute anything toward stable measurements: A brief moment of startup
@@ -67,9 +59,6 @@ constexpr size_t kTrimEvents = 24;  // 1 sec at 24fps, or 0.4 sec at 60 fps.
 constexpr size_t kMinDataPoints = 100;  // 1 sec of audio, or ~5 sec at 24fps.
 
 enum TestFlags {
-  kUseGpu = 1 << 0,           // Only execute test if --enable-gpu was given
-                              // on the command line.  This is required for
-                              // tests that run on GPU.
   kSmallWindow = 1 << 2,      // Window size: 1 = 800x600, 0 = 2000x1000
   k24fps = 1 << 3,            // Use 24 fps video.
   k30fps = 1 << 4,            // Use 30 fps video.
@@ -350,25 +339,21 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
   DISALLOW_COPY_AND_ASSIGN(TestPatternReceiver);
 };
 
-class CastV2PerformanceTest : public extensions::ExtensionApiTest,
+class CastV2PerformanceTest : public TabCapturePerformanceTestBase,
                               public testing::WithParamInterface<int> {
  public:
-  CastV2PerformanceTest() { LOG(ERROR) << __func__ << ": Hello!"; }
-
-  ~CastV2PerformanceTest() override { LOG(ERROR) << __func__ << ": Goodbye!"; }
+  CastV2PerformanceTest() = default;
+  ~CastV2PerformanceTest() override = default;
 
   bool HasFlag(TestFlags flag) const {
     return (GetParam() & flag) == flag;
   }
 
-  bool IsGpuAvailable() const {
-    return base::CommandLine::ForCurrentProcess()->HasSwitch("enable-gpu");
-  }
-
-  std::string GetSuffixForTestFlags() {
+  std::string GetSuffixForTestFlags() const {
     std::string suffix;
-    if (HasFlag(kUseGpu))
-      suffix += "_gpu";
+    // Note: Add "_gpu" tag for backwards-compatibility with existing
+    // Performance Dashboard timeseries data.
+    suffix += "_gpu";
     if (HasFlag(kSmallWindow))
       suffix += "_small";
     if (HasFlag(k24fps))
@@ -392,7 +377,7 @@ class CastV2PerformanceTest : public extensions::ExtensionApiTest,
     return suffix;
   }
 
-  int getfps() {
+  int get_fps() const {
     if (HasFlag(k24fps))
       return 24;
     if (HasFlag(k30fps))
@@ -404,45 +389,38 @@ class CastV2PerformanceTest : public extensions::ExtensionApiTest,
   }
 
   void SetUp() override {
-    LOG(ERROR) << __func__ << ": Starting...";
-    EnablePixelOutput();
-    if (!HasFlag(kUseGpu))
-      UseSoftwareCompositing();
-    LOG(ERROR) << __func__ << ": Doing normal SetUp()...";
-    extensions::ExtensionApiTest::SetUp();
-    LOG(ERROR) << __func__ << ": Completed.";
-  }
+    // Produce the full HTML test page with the barcode video embedded within
+    // (as a data URI).
+    const base::FilePath video_file =
+        GetApiTestDataDir()
+            .AppendASCII("cast_streaming")
+            .AppendASCII(
+                base::StringPrintf("test_video_%dfps.webm", get_fps()));
+    std::string file_contents;
+    const bool success = base::ReadFileToString(video_file, &file_contents);
+    CHECK(success) << "Failed to load video at: " << video_file.AsUTF8Unsafe();
+    std::string video_in_base64;
+    base::Base64Encode(file_contents, &video_in_base64);
+    test_page_html_ =
+        base::StrCat({"<html><body>\n"
+                      "<video width='100%' height='100%'>\n"
+                      "  <source src='data:video/webm;base64,",
+                      video_in_base64,
+                      "'>\n"
+                      "</video>\n"
+                      "</body></html>"});
 
-  void SetUpOnMainThread() override {
-    LOG(ERROR) << __func__ << ": Doing normal SetUpOnMainThread()...";
-    extensions::ExtensionApiTest::SetUpOnMainThread();
-    LOG(ERROR) << __func__ << ": Completed.";
+    TabCapturePerformanceTestBase::SetUp();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    LOG(ERROR) << __func__ << ": Starting...";
-    // Some of the tests may launch http requests through JSON or AJAX
-    // which causes a security error (cross domain request) when the page
-    // is loaded from the local file system ( file:// ). The following switch
-    // fixes that error.
-    command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
-
     if (HasFlag(kSmallWindow)) {
       command_line->AppendSwitchASCII(switches::kWindowSize, "800,600");
     } else {
       command_line->AppendSwitchASCII(switches::kWindowSize, "2000,1500");
     }
 
-    if (!HasFlag(kUseGpu))
-      command_line->AppendSwitch(switches::kDisableGpu);
-
-    command_line->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID,
-        kExtensionId);
-
-    LOG(ERROR) << __func__ << ": Doing normal SetUpCommandLine()...";
-    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
-    LOG(ERROR) << __func__ << ": Completed.";
+    TabCapturePerformanceTestBase::SetUpCommandLine(command_line);
   }
 
   void GetTraceEvents(trace_analyzer::TraceAnalyzer* analyzer,
@@ -623,128 +601,139 @@ class CastV2PerformanceTest : public extensions::ExtensionApiTest,
     return MeanAndError(deltas);
   }
 
-  void RunTest(const std::string& test_name) {
-    LOG(ERROR) << __func__ << ": Starting...";
+ protected:
+  // The complete HTML test web page without any external dependencies,
+  // including the entire barcode video as an embedded data URI. Populated in
+  // SetUp().
+  std::string test_page_html_;
 
-    if (HasFlag(kUseGpu) && !IsGpuAvailable()) {
-      LOG(WARNING) <<
-          "Test skipped: requires gpu. Pass --enable-gpu on the command "
-          "line if use of GPU is desired.";
-      return;
-    }
+  // While the source video frame rate may vary (24, 30, or 60 FPS), the maximum
+  // capture frame rate is always fixed at 30 FPS. This allows testing of the
+  // entire system when it is forced to perform a 60→30 frame rate conversion.
+  static constexpr int kMaxCaptureFrameRate = 30;
 
-    ASSERT_EQ(1,
-              (HasFlag(k24fps) ? 1 : 0) +
-              (HasFlag(k30fps) ? 1 : 0) +
-              (HasFlag(k60fps) ? 1 : 0));
-
-    net::IPEndPoint receiver_end_point = media::cast::test::GetFreeLocalPort();
-    LOG(ERROR) << __func__ << ": Got local UDP port for testing: "
-               << receiver_end_point.ToString();
-
-    // Start the in-process receiver that examines audio/video for the expected
-    // test patterns.
-    base::TimeDelta delta = base::TimeDelta::FromSeconds(0);
-    if (HasFlag(kFastClock)) {
-      delta = base::TimeDelta::FromSeconds(10);
-    }
-    if (HasFlag(kSlowClock)) {
-      delta = base::TimeDelta::FromSeconds(-10);
-    }
-    scoped_refptr<media::cast::StandaloneCastEnvironment> cast_environment(
-        new SkewedCastEnvironment(delta));
-    TestPatternReceiver* const receiver =
-        new TestPatternReceiver(cast_environment, receiver_end_point);
-    LOG(ERROR) << __func__ << ": Starting receiver...";
-    receiver->Start();
-
-    LOG(ERROR) << __func__ << ": Creating UDPProxy...";
-    std::unique_ptr<media::cast::test::UDPProxy> udp_proxy;
-    if (HasFlag(kProxyWifi) || HasFlag(kProxySlow) || HasFlag(kProxyBad)) {
-      net::IPEndPoint proxy_end_point = media::cast::test::GetFreeLocalPort();
-      if (HasFlag(kProxyWifi)) {
-        udp_proxy = media::cast::test::UDPProxy::Create(
-            proxy_end_point, receiver_end_point,
-            media::cast::test::WifiNetwork(), media::cast::test::WifiNetwork(),
-            nullptr);
-      } else if (HasFlag(kProxySlow)) {
-        udp_proxy = media::cast::test::UDPProxy::Create(
-            proxy_end_point, receiver_end_point,
-            media::cast::test::SlowNetwork(), media::cast::test::SlowNetwork(),
-            nullptr);
-      } else if (HasFlag(kProxyBad)) {
-        udp_proxy = media::cast::test::UDPProxy::Create(
-            proxy_end_point, receiver_end_point,
-            media::cast::test::BadNetwork(), media::cast::test::BadNetwork(),
-            nullptr);
-      }
-      receiver_end_point = proxy_end_point;
-    }
-
-    LOG(ERROR) << __func__ << ": Starting tracing...";
-    std::string json_events;
-    ASSERT_TRUE(tracing::BeginTracing("gpu.capture,cast_perf_test"));
-    const std::string page_url = base::StringPrintf(
-        "performance%d.html?port=%d&autoThrottling=%s&aesKey=%s&aesIvMask=%s",
-        getfps(), receiver_end_point.port(),
-        HasFlag(kAutoThrottling) ? "true" : "false",
-        base::HexEncode(kAesKey, sizeof(kAesKey)).c_str(),
-        base::HexEncode(kAesIvMask, sizeof(kAesIvMask)).c_str());
-    LOG(ERROR) << __func__ << ": Running extension subtest...";
-    ASSERT_TRUE(RunExtensionSubtest("cast_streaming", page_url)) << message_;
-    LOG(ERROR) << __func__ << ": Extension subtest finished. Ending tracing...";
-    ASSERT_TRUE(tracing::EndTracing(&json_events));
-    LOG(ERROR) << __func__ << ": Stopping receiver...";
-    receiver->Stop();
-
-    // Stop all threads, removes the need for synchronization when analyzing
-    // the data.
-    LOG(ERROR) << __func__ << ": Shutting-down CastEnvironment...";
-    cast_environment->Shutdown();
-    LOG(ERROR) << __func__ << ": Analyzing...";
-    std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer;
-    analyzer.reset(trace_analyzer::TraceAnalyzer::Create(json_events));
-    analyzer->AssociateAsyncBeginEndEvents();
-
-    // This prints out the average time between capture events.
-    // Depending on the test, the capture frame rate is capped (e.g., at 30fps,
-    // this score cannot get any better than 33.33 ms). However, the measurement
-    // is important since it provides a valuable check that capture can keep up
-    // with the content's framerate.
-    MeanAndError capture_data = AnalyzeTraceDistance(analyzer.get(), "Capture");
-    // Lower is better.
-    capture_data.Print(test_name,
-                       GetSuffixForTestFlags(),
-                       "time_between_captures",
-                       "ms");
-
-    receiver->Analyze(test_name, GetSuffixForTestFlags());
-
-    AnalyzeLatency(test_name, analyzer.get());
-    LOG(ERROR) << __func__ << ": Completed.";
-  }
+  // Naming of performance measurement written to stdout.
+  static const char kTestName[];
 };
+
+// static
+const char CastV2PerformanceTest::kTestName[] = "CastV2Performance";
 
 }  // namespace
 
 IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, Performance) {
-  LOG(ERROR) << __func__ << ": Test procedure started.";
-  RunTest("CastV2Performance");
-  LOG(ERROR) << __func__ << ": Completed.";
+  net::IPEndPoint receiver_end_point = media::cast::test::GetFreeLocalPort();
+  VLOG(1) << "Got local UDP port for testing: "
+          << receiver_end_point.ToString();
+
+  // Start the in-process receiver that examines audio/video for the expected
+  // test patterns.
+  base::TimeDelta delta = base::TimeDelta::FromSeconds(0);
+  if (HasFlag(kFastClock)) {
+    delta = base::TimeDelta::FromSeconds(10);
+  }
+  if (HasFlag(kSlowClock)) {
+    delta = base::TimeDelta::FromSeconds(-10);
+  }
+  scoped_refptr<media::cast::StandaloneCastEnvironment> cast_environment(
+      new SkewedCastEnvironment(delta));
+  TestPatternReceiver* const receiver =
+      new TestPatternReceiver(cast_environment, receiver_end_point);
+  receiver->Start();
+
+  // Create a proxy for the UDP packets that simulates certain network
+  // environments.
+  std::unique_ptr<media::cast::test::UDPProxy> udp_proxy;
+  if (HasFlag(kProxyWifi) || HasFlag(kProxySlow) || HasFlag(kProxyBad)) {
+    net::IPEndPoint proxy_end_point = media::cast::test::GetFreeLocalPort();
+    if (HasFlag(kProxyWifi)) {
+      udp_proxy = media::cast::test::UDPProxy::Create(
+          proxy_end_point, receiver_end_point, media::cast::test::WifiNetwork(),
+          media::cast::test::WifiNetwork(), nullptr);
+    } else if (HasFlag(kProxySlow)) {
+      udp_proxy = media::cast::test::UDPProxy::Create(
+          proxy_end_point, receiver_end_point, media::cast::test::SlowNetwork(),
+          media::cast::test::SlowNetwork(), nullptr);
+    } else if (HasFlag(kProxyBad)) {
+      udp_proxy = media::cast::test::UDPProxy::Create(
+          proxy_end_point, receiver_end_point, media::cast::test::BadNetwork(),
+          media::cast::test::BadNetwork(), nullptr);
+    }
+    receiver_end_point = proxy_end_point;
+  }
+
+  // Load the extension and test page, and tell the extension to start tab
+  // capture + Cast Streaming.
+  LoadExtension(GetApiTestDataDir()
+                    .AppendASCII("cast_streaming")
+                    .AppendASCII("perftest_extension"));
+  NavigateToTestPage(test_page_html_);
+  const base::Value response = SendMessageToExtension(base::StringPrintf(
+      "{start:true, enableAutoThrottling:%s, maxFrameRate:%d, recvPort:%d,"
+      " aesKey:'%s', aesIvMask:'%s'}",
+      HasFlag(kAutoThrottling) ? "true" : "false", kMaxCaptureFrameRate,
+      receiver_end_point.port(),
+      base::HexEncode(kAesKey, sizeof(kAesKey)).c_str(),
+      base::HexEncode(kAesIvMask, sizeof(kAesIvMask)).c_str()));
+  const std::string* reason = response.FindStringKey("reason");
+  ASSERT_TRUE(response.FindBoolKey("success").value_or(false))
+      << (reason ? *reason : std::string("<MISSING REASON>"));
+
+  // Now that capture has started, start playing the barcode video in the test
+  // page.
+  const std::string javascript_to_play_video(
+      "new Promise((resolve) => {\n"
+      "  const video = document.getElementsByTagName('video')[0];\n"
+      "  video.addEventListener('playing', () => { resolve(true); });\n"
+      "  video.play();\n"
+      "})");
+  LOG(INFO) << "Starting playback of barcode video...";
+  ASSERT_EQ(true, content::EvalJs(
+                      browser()->tab_strip_model()->GetActiveWebContents(),
+                      javascript_to_play_video));
+
+  // Observe the running browser for a while, collecting a trace.
+  const std::string json_events = TraceAndObserve("gpu.capture,cast_perf_test");
+
+  // Shut down the receiver and all the CastEnvironment threads.
+  VLOG(1) << "Shutting-down receiver and CastEnvironment...";
+  receiver->Stop();
+  cast_environment->Shutdown();
+
+  VLOG(2) << "Dump of trace events (trace_events.json.gz.b64):\n"
+          << MakeBase64EncodedGZippedString(json_events);
+
+  VLOG(1) << "Analyzing trace events...";
+  std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer;
+  analyzer.reset(trace_analyzer::TraceAnalyzer::Create(json_events));
+  analyzer->AssociateAsyncBeginEndEvents();
+
+  // This prints out the average time between capture events.
+  // Depending on the test, the capture frame rate is capped (e.g., at 30fps,
+  // this score cannot get any better than 33.33 ms). However, the measurement
+  // is important since it provides a valuable check that capture can keep up
+  // with the content's framerate.
+  MeanAndError capture_data = AnalyzeTraceDistance(analyzer.get(), "Capture");
+  // Lower is better.
+  capture_data.Print(kTestName, GetSuffixForTestFlags(),
+                     "time_between_captures", "ms");
+
+  receiver->Analyze(kTestName, GetSuffixForTestFlags());
+
+  AnalyzeLatency(kTestName, analyzer.get());
 }
 
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
-INSTANTIATE_TEST_CASE_P(
-    ,
-    CastV2PerformanceTest,
-    testing::Values(kUseGpu | k24fps,
-                    kUseGpu | k30fps,
-                    kUseGpu | k60fps,
-                    kUseGpu | k30fps | kProxyWifi,
-                    kUseGpu | k30fps | kProxyBad,
-                    kUseGpu | k30fps | kSlowClock,
-                    kUseGpu | k30fps | kFastClock,
-                    kUseGpu | k30fps | kProxyWifi | kAutoThrottling,
-                    kUseGpu | k30fps | kProxySlow | kAutoThrottling,
-                    kUseGpu | k30fps | kProxyBad | kAutoThrottling));
+INSTANTIATE_TEST_CASE_P(,
+                        CastV2PerformanceTest,
+                        testing::Values(k24fps,
+                                        k30fps,
+                                        k60fps,
+                                        k30fps | kProxyWifi,
+                                        k30fps | kProxyBad,
+                                        k30fps | kSlowClock,
+                                        k30fps | kFastClock,
+                                        k30fps | kProxyWifi | kAutoThrottling,
+                                        k30fps | kProxySlow | kAutoThrottling,
+                                        k30fps | kProxyBad | kAutoThrottling));
