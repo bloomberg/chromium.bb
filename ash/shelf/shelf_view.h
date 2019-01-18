@@ -151,6 +151,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   AppListButton* GetAppListButton() const;
   BackButton* GetBackButton() const;
+  OverflowButton* GetOverflowButton() const;
 
   // Updates the union of all the shelf item bounds shown by this shelf view.
   // This is used to determine the common area where the mouse can hover
@@ -166,12 +167,16 @@ class ASH_EXPORT ShelfView : public views::View,
   // Returns true if a tooltip should be shown for the shelf item |view|.
   bool ShouldShowTooltipForView(const views::View* view) const;
 
-  // Returns the title of the shelf item |view|.
-  base::string16 GetTitleForView(const views::View* view) const;
-
   // Returns rectangle bounding all visible launcher items. Used screen
   // coordinate system.
   gfx::Rect GetVisibleItemsBoundsInScreen();
+
+  // Overridden from views::View:
+  gfx::Size CalculatePreferredSize() const override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  FocusTraversable* GetPaneFocusTraversable() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
 
   // InkDropButtonListener:
   void ButtonPressed(views::Button* sender,
@@ -393,12 +398,6 @@ class ASH_EXPORT ShelfView : public views::View,
   gfx::Rect GetMenuAnchorRect(const views::View& source,
                               const gfx::Point& location,
                               bool context_menu) const;
-
-  // Overridden from views::View:
-  gfx::Size CalculatePreferredSize() const override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  FocusTraversable* GetPaneFocusTraversable() override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;

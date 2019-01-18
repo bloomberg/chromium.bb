@@ -96,8 +96,9 @@ void ShelfTooltipManager::ShowTooltip(views::View* view) {
         view, arrow, open_windows, this,
         shelf_view_->shelf_widget()->GetShelfBackgroundColor());
   } else {
-    bubble_ =
-        new ShelfTooltipBubble(view, arrow, shelf_view_->GetTitleForView(view));
+    base::string16 title;
+    view->GetTooltipText(gfx::Point(), &title);
+    bubble_ = new ShelfTooltipBubble(view, arrow, title);
   }
 
   aura::Window* window = bubble_->GetWidget()->GetNativeWindow();
