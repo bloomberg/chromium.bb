@@ -132,6 +132,10 @@ bool IdentityManager::HasPrimaryAccountWithRefreshToken() const {
   return HasAccountWithRefreshToken(GetPrimaryAccountId());
 }
 
+bool IdentityManager::AreRefreshTokensLoaded() const {
+  return token_service_->AreAllCredentialsLoaded();
+}
+
 base::Optional<AccountInfo>
 IdentityManager::FindAccountInfoForAccountWithRefreshTokenByAccountId(
     const std::string& account_id) const {
