@@ -322,7 +322,7 @@ TEST_F(DrmUtilTest, GetColorSpaceFromEdid) {
       .fBY = 0.043945f,
       .fWX = 0.313477f,
       .fWY = 0.329102f};
-  SkMatrix44 expected_hpz32x_toXYZ50_matrix;
+  skcms_Matrix3x3 expected_hpz32x_toXYZ50_matrix;
   expected_hpz32x_primaries.toXYZD50(&expected_hpz32x_toXYZ50_matrix);
   const std::vector<uint8_t> hpz32x_edid(kHPz32x,
                                          kHPz32x + base::size(kHPz32x) - 1);
@@ -347,7 +347,7 @@ TEST_F(DrmUtilTest, GetColorSpaceFromEdid) {
                                                               .fBY = 0.090820f,
                                                               .fWX = 0.313477f,
                                                               .fWY = 0.329102f};
-  SkMatrix44 expected_samus_toXYZ50_matrix;
+  skcms_Matrix3x3 expected_samus_toXYZ50_matrix;
   expected_samus_primaries.toXYZD50(&expected_samus_toXYZ50_matrix);
   const std::vector<uint8_t> samus_edid(kSamus,
                                         kSamus + base::size(kSamus) - 1);
@@ -372,7 +372,7 @@ TEST_F(DrmUtilTest, GetColorSpaceFromEdid) {
                                                             .fBY = 0.059570f,
                                                             .fWX = 0.312500f,
                                                             .fWY = 0.328125f};
-  SkMatrix44 expected_eve_toXYZ50_matrix;
+  skcms_Matrix3x3 expected_eve_toXYZ50_matrix;
   expected_eve_primaries.toXYZD50(&expected_eve_toXYZ50_matrix);
   const std::vector<uint8_t> eve_edid(kEve, kEve + base::size(kEve) - 1);
   const gfx::ColorSpace expected_eve_color_space =

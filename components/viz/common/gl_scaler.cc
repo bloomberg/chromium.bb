@@ -192,7 +192,7 @@ bool GLScaler::Configure(const Parameters& new_params) {
       scaling_color_space_ = params_.source_color_space;
     } else {
       // Use the source color space, but with a linear transfer function.
-      SkMatrix44 to_XYZD50;
+      skcms_Matrix3x3 to_XYZD50;
       params_.source_color_space.GetPrimaryMatrix(&to_XYZD50);
       std::tie(fn.fA, fn.fB, fn.fC, fn.fD, fn.fE, fn.fF, fn.fG) =
           kLinearFunction;

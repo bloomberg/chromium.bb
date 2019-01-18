@@ -103,7 +103,7 @@ class COLOR_SPACE_EXPORT ICCProfile {
     sk_sp<SkColorSpace> sk_color_space_;
 
     // The best-fit parametric primaries and transfer function.
-    SkMatrix44 to_XYZD50_;
+    skcms_Matrix3x3 to_XYZD50_;
     SkColorSpaceTransferFn transfer_fn_;
 
     // The set of display ids which have have caused this ICC profile to be

@@ -428,7 +428,7 @@ TEST(SimpleColorSpace, DefaultToSRGB) {
 // This tests to make sure that we don't emit "pow" parts of a
 // transfer function unless necessary.
 TEST(SimpleColorSpace, ShaderSourceTrFnOptimizations) {
-  SkMatrix44 primaries;
+  skcms_Matrix3x3 primaries;
   gfx::ColorSpace::CreateSRGB().GetPrimaryMatrix(&primaries);
 
   SkColorSpaceTransferFn fn_no_pow = {

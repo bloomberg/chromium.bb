@@ -666,7 +666,7 @@ gfx::ColorSpace GetColorSpaceFromEdid(const display::EdidParser& edid_parser) {
     return gfx::ColorSpace();
   }
 
-  SkMatrix44 color_space_as_matrix;
+  skcms_Matrix3x3 color_space_as_matrix;
   if (!primaries.toXYZD50(&color_space_as_matrix)) {
     EmitEdidColorSpaceChecksOutcomeUma(
         EdidColorSpaceChecksOutcome::kErrorCannotExtractToXYZD50);
