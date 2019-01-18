@@ -52,7 +52,7 @@ table {
   overflow: hidden;
 }
 
-.body td:not(:hover) {
+.body td.elided:not(:hover) {
   white-space: nowrap;
 }
 
