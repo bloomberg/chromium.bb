@@ -4538,7 +4538,8 @@ bool GLES2DecoderImpl::GenTransformFeedbacksHelper(
 bool GLES2DecoderImpl::GenPathsCHROMIUMHelper(GLuint first_client_id,
                                               GLsizei range) {
   GLuint last_client_id;
-  if (!SafeAddUint32(first_client_id, range - 1, &last_client_id))
+  if (range < 1 || !base::CheckAdd(first_client_id, range - 1)
+                        .AssignIfValid(&last_client_id))
     return false;
 
   if (path_manager()->HasPathsInRange(first_client_id, last_client_id))
@@ -4564,7 +4565,8 @@ bool GLES2DecoderImpl::GenPathsCHROMIUMHelper(GLuint first_client_id,
 bool GLES2DecoderImpl::DeletePathsCHROMIUMHelper(GLuint first_client_id,
                                                  GLsizei range) {
   GLuint last_client_id;
-  if (!SafeAddUint32(first_client_id, range - 1, &last_client_id))
+  if (range < 1 || !base::CheckAdd(first_client_id, range - 1)
+                        .AssignIfValid(&last_client_id))
     return false;
 
   path_manager()->RemovePaths(first_client_id, last_client_id);
@@ -10602,7 +10604,8 @@ bool GLES2DecoderImpl::SimulateAttrib0(
   uint32_t size_needed = 0;
 
   if (num_vertices == 0 ||
-      !SafeMultiplyUint32(num_vertices, sizeof(Vec4f), &size_needed) ||
+      !base::CheckMul(num_vertices, sizeof(Vec4f))
+           .AssignIfValid(&size_needed) ||
       size_needed > 0x7FFFFFFFU) {
     LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, function_name, "Simulating attrib 0");
     return false;
@@ -10719,7 +10722,7 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
   // to be used normally. It's just here to pass that OpenGL ES 2.0 conformance
   // tests so we just add to the buffer attrib used.
 
-  GLuint elements_needed = 0;
+  base::CheckedNumeric<uint32_t> elements_needed = 0;
   const VertexAttribManager::VertexAttribList& enabled_attribs =
       state_.vertex_attrib_manager->GetEnabledVertexAttribs();
   for (VertexAttribManager::VertexAttribList::const_iterator it =
@@ -10738,19 +10741,14 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
     if (attrib_info &&
         attrib->CanAccess(max_accessed) &&
         attrib->type() == GL_FIXED) {
-      uint32_t elements_used = 0;
-      if (!SafeMultiplyUint32(num_vertices, attrib->size(), &elements_used) ||
-          !SafeAddUint32(elements_needed, elements_used, &elements_needed)) {
-        LOCAL_SET_GL_ERROR(
-            GL_OUT_OF_MEMORY, function_name, "simulating GL_FIXED attribs");
-        return false;
-      }
+      elements_needed += base::CheckMul(num_vertices, attrib->size());
     }
   }
 
   const uint32_t kSizeOfFloat = sizeof(float);  // NOLINT
   uint32_t size_needed = 0;
-  if (!SafeMultiplyUint32(elements_needed, kSizeOfFloat, &size_needed) ||
+  if (!base::CheckMul(elements_needed, kSizeOfFloat)
+           .AssignIfValid(&size_needed) ||
       size_needed > 0x7FFFFFFFU) {
     LOCAL_SET_GL_ERROR(
         GL_OUT_OF_MEMORY, function_name, "simulating GL_FIXED attribs");
@@ -12584,7 +12582,8 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
       return error::kNoError;
     }
     uint32_t size = 0;
-    if (!SafeAddUint32(pixels_size + skip_size, pixels_shm_offset, &size)) {
+    if (!base::CheckAdd(pixels_size + skip_size, pixels_shm_offset)
+             .AssignIfValid(&size)) {
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "size + offset overflow");
       return error::kNoError;
     }
@@ -12729,7 +12728,8 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
 
   int32_t max_x;
   int32_t max_y;
-  if (!SafeAddInt32(x, width, &max_x) || !SafeAddInt32(y, height, &max_y)) {
+  if (!base::CheckAdd(x, width).AssignIfValid(&max_x) ||
+      !base::CheckAdd(y, height).AssignIfValid(&max_y)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "dimensions out of range");
     return error::kNoError;
   }
@@ -13869,7 +13869,8 @@ bool GLES2DecoderImpl::ClearLevel3D(Texture* texture,
     subs.push_back(TexSubCoord3D(0, 0, 0, width, height, depth));
   } else {
     uint32_t size_per_layer;
-    if (!SafeMultiplyUint32(padded_row_size, height, &size_per_layer)) {
+    if (!base::CheckMul(padded_row_size, height)
+             .AssignIfValid(&size_per_layer)) {
       return false;
     }
     if (size_per_layer < kMaxZeroSize) {
@@ -14533,7 +14534,7 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(uint32_t immediate_data_size,
   // For testing only. Allows us to stress the ability to respond to OOM errors.
   uint32_t num_pixels;
   if (workarounds().simulate_out_of_memory_on_large_textures &&
-      (!SafeMultiplyUint32(width, height, &num_pixels) ||
+      (!base::CheckMul(width, height).AssignIfValid(&num_pixels) ||
        (num_pixels >= 4096 * 4096))) {
     LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, func_name, "synthetic out of memory");
     return error::kNoError;
@@ -14631,7 +14632,7 @@ error::Error GLES2DecoderImpl::HandleTexImage3D(uint32_t immediate_data_size,
   // For testing only. Allows us to stress the ability to respond to OOM errors.
   uint32_t num_pixels;
   if (workarounds().simulate_out_of_memory_on_large_textures &&
-      (!SafeMultiplyUint32(width, height, &num_pixels) ||
+      (!base::CheckMul(width, height).AssignIfValid(&num_pixels) ||
        (num_pixels >= 4096 * 4096))) {
     LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, func_name, "synthetic out of memory");
     return error::kNoError;
@@ -16108,7 +16109,7 @@ error::Error GLES2DecoderImpl::HandleShaderBinary(
     return error::kNoError;
   }
   uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&data_size)) {
     return error::kOutOfBounds;
   }
   const GLuint* shaders = GetSharedMemoryAs<const GLuint*>(
@@ -17533,8 +17534,9 @@ void GLES2DecoderImpl::CopySubTextureHelper(const char* function_name,
     // See: https://crbug.com/586476
     int32_t max_x;
     int32_t max_y;
-    if (!SafeAddInt32(x, width, &max_x) || !SafeAddInt32(y, height, &max_y) ||
-        x < 0 || y < 0 || max_x > source_width || max_y > source_height) {
+    if (!base::CheckAdd(x, width).AssignIfValid(&max_x) ||
+        !base::CheckAdd(y, height).AssignIfValid(&max_y) || x < 0 || y < 0 ||
+        max_x > source_width || max_y > source_height) {
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name,
                          "source texture bad dimensions");
       return;
@@ -19227,7 +19229,8 @@ class PathCommandValidatorContext {
     DCHECK_LE(transforms_component_count, 12U);
     uint32_t one_transform_size = sizeof(GLfloat) * transforms_component_count;
     uint32_t transforms_size = 0;
-    if (!SafeMultiplyUint32(one_transform_size, num_paths, &transforms_size)) {
+    if (!base::CheckMul(one_transform_size, num_paths)
+             .AssignIfValid(&transforms_size)) {
       error_ = error::kOutOfBounds;
       return false;
     }
@@ -19262,7 +19265,7 @@ class PathCommandValidatorContext {
                            uint32_t shm_offset,
                            std::unique_ptr<GLuint[]>* out_buffer) {
     uint32_t paths_size = 0;
-    if (!SafeMultiplyUint32(num_paths, sizeof(T), &paths_size)) {
+    if (!base::CheckMul(num_paths, sizeof(T)).AssignIfValid(&paths_size)) {
       error_ = error::kOutOfBounds;
       return false;
     }
@@ -19442,7 +19445,8 @@ error::Error GLES2DecoderImpl::HandlePathCommandsCHROMIUM(
     uint32_t coords_size = 0;
     uint32_t coord_type_size =
         GLES2Util::GetGLTypeSizeForPathCoordType(coord_type);
-    if (!SafeMultiplyUint32(num_coords, coord_type_size, &coords_size))
+    if (!base::CheckMul(num_coords, coord_type_size)
+             .AssignIfValid(&coords_size))
       return error::kOutOfBounds;
 
     uint32_t coords_shm_id = static_cast<uint32_t>(c.coords_shm_id);

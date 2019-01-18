@@ -10,12 +10,11 @@
 
 #include "base/format_macros.h"
 #include "base/logging.h"
-#include "base/numerics/safe_math.h"
+#include "base/numerics/checked_math.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -210,9 +209,8 @@ bool Buffer::CheckRange(GLintptr offset, GLsizeiptr size) const {
       size < 0 || size > std::numeric_limits<int32_t>::max()) {
     return false;
   }
-  base::CheckedNumeric<int32_t> max = offset;
-  max += size;
-  return max.IsValid() && max.ValueOrDefault(0) <= size_;
+  int32_t max;
+  return base::CheckAdd(offset, size).AssignIfValid(&max) && max <= size_;
 }
 
 void Buffer::SetRange(GLintptr offset, GLsizeiptr size, const GLvoid * data) {
@@ -307,12 +305,10 @@ bool Buffer::GetMaxValueForRange(
   }
 
   uint32_t size;
-  if (!SafeMultiplyUint32(
-      count, GLES2Util::GetGLTypeSizeForBuffers(type), &size)) {
-    return false;
-  }
-
-  if (!SafeAddUint32(offset, size, &size)) {
+  if (!base::CheckAdd(
+           offset,
+           base::CheckMul(count, GLES2Util::GetGLTypeSizeForBuffers(type)))
+           .AssignIfValid(&size)) {
     return false;
   }
 
@@ -908,10 +904,10 @@ bool BufferManager::RequestBuffersAccess(
       return false;
     }
     GLsizeiptr size = bindings->GetEffectiveBufferSize(ii);
-    base::CheckedNumeric<GLsizeiptr> required_size = variable_sizes[ii];
-    required_size *= count;
-    if (size < required_size.ValueOrDefault(
-            std::numeric_limits<GLsizeiptr>::max())) {
+    GLsizeiptr required_size;
+    if (!base::CheckMul(variable_sizes[ii], count)
+             .AssignIfValid(&required_size) ||
+        size < required_size) {
       std::string msg = base::StringPrintf(
           "%s : buffer or buffer range at index %zu not large enough",
           message_tag, ii);

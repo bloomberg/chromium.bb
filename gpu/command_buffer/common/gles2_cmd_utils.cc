@@ -608,7 +608,8 @@ bool GLES2Util::ComputeImageRowSizeHelper(int width,
   DCHECK(alignment == 1 || alignment == 2 ||
          alignment == 4 || alignment == 8);
   uint32_t unpadded_row_size;
-  if (!SafeMultiplyUint32(width, bytes_per_group, &unpadded_row_size)) {
+  if (!base::CheckMul(width, bytes_per_group)
+           .AssignIfValid(&unpadded_row_size)) {
     return false;
   }
   uint32_t residual = unpadded_row_size % alignment;
@@ -616,7 +617,8 @@ bool GLES2Util::ComputeImageRowSizeHelper(int width,
   uint32_t padded_row_size = unpadded_row_size;
   if (residual > 0) {
     padding = alignment - residual;
-    if (!SafeAddUint32(unpadded_row_size, padding, &padded_row_size)) {
+    if (!base::CheckAdd(unpadded_row_size, padding)
+             .AssignIfValid(&padded_row_size)) {
       return false;
     }
   }
@@ -686,8 +688,8 @@ bool GLES2Util::ComputeImageDataSizesES3(
   int image_height = params.image_height > 0 ? params.image_height : height;
   uint32_t num_of_rows;
   if (depth > 0) {
-    if (!SafeMultiplyUint32(image_height, depth - 1, &num_of_rows) ||
-        !SafeAddUint32(num_of_rows, height, &num_of_rows)) {
+    if (!base::CheckAdd(base::CheckMul(image_height, depth - 1), height)
+             .AssignIfValid(&num_of_rows)) {
       return false;
     }
   } else {
@@ -695,42 +697,28 @@ bool GLES2Util::ComputeImageDataSizesES3(
   }
 
   if (num_of_rows > 0) {
-    uint32_t size_of_all_but_last_row;
-    if (!SafeMultiplyUint32((num_of_rows - 1), padded_row_size,
-                            &size_of_all_but_last_row)) {
-      return false;
-    }
-    if (!SafeAddUint32(size_of_all_but_last_row, unpadded_row_size, size)) {
+    if (!base::CheckAdd(base::CheckMul(num_of_rows - 1, padded_row_size),
+                        unpadded_row_size)
+             .AssignIfValid(size)) {
       return false;
     }
   } else {
     *size = 0;
   }
 
-  uint32_t skip_size = 0;
+  base::CheckedNumeric<uint32_t> skip_size = 0;
   if (params.skip_images > 0) {
-    uint32_t image_size;
-    if (!SafeMultiplyUint32(image_height, padded_row_size, &image_size))
-      return false;
-    if (!SafeMultiplyUint32(image_size, params.skip_images, &skip_size))
-      return false;
+    skip_size = image_height;
+    skip_size *= padded_row_size;
+    skip_size *= params.skip_images;
   }
   if (params.skip_rows > 0) {
-    uint32_t temp;
-    if (!SafeMultiplyUint32(padded_row_size, params.skip_rows, &temp))
-      return false;
-    if (!SafeAddUint32(skip_size, temp, &skip_size))
-      return false;
+    skip_size += base::CheckMul(padded_row_size, params.skip_rows);
   }
   if (params.skip_pixels > 0) {
-    uint32_t temp;
-    if (!SafeMultiplyUint32(bytes_per_group, params.skip_pixels, &temp))
-      return false;
-    if (!SafeAddUint32(skip_size, temp, &skip_size))
-      return false;
+    skip_size += base::CheckMul(bytes_per_group, params.skip_pixels);
   }
-  uint32_t total_size;
-  if (!SafeAddUint32(*size, skip_size, &total_size))
+  if (!base::CheckAdd(*size, skip_size).IsValid())
     return false;
 
   if (opt_padded_row_size) {
@@ -740,7 +728,7 @@ bool GLES2Util::ComputeImageDataSizesES3(
     *opt_unpadded_row_size = unpadded_row_size;
   }
   if (opt_skip_size)
-    *opt_skip_size = skip_size;
+    *opt_skip_size = skip_size.ValueOrDefault(0);
   return true;
 }
 

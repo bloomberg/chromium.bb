@@ -1761,8 +1761,8 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(
     // See: https://crbug.com/586476
     int32_t max_x;
     int32_t max_y;
-    if (!gles2::SafeAddInt32(x, width, &max_x) ||
-        !gles2::SafeAddInt32(y, height, &max_y) || x < 0 || y < 0 ||
+    if (!base::CheckAdd(x, width).AssignIfValid(&max_x) ||
+        !base::CheckAdd(y, height).AssignIfValid(&max_y) || x < 0 || y < 0 ||
         max_x > source_width || max_y > source_height) {
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
                          "source texture bad dimensions");
