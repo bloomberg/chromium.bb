@@ -82,6 +82,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   // protocol::Dispatcher::OverlayCommandHandler implementation.
   protocol::Response enable() override;
   protocol::Response disable() override;
+  protocol::Response setShowAdHighlights(bool) override;
   protocol::Response setShowPaintRects(bool) override;
   protocol::Response setShowDebugBorders(bool) override;
   protocol::Response setShowFPSCounter(bool) override;
@@ -229,6 +230,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   IntPoint screenshot_position_;
   InspectorAgentState::Boolean enabled_;
   InspectorAgentState::Boolean suspended_;
+  InspectorAgentState::Boolean show_ad_highlights_;
   InspectorAgentState::Boolean show_debug_borders_;
   InspectorAgentState::Boolean show_fps_counter_;
   InspectorAgentState::Boolean show_paint_rects_;

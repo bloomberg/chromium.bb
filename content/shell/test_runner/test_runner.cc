@@ -146,6 +146,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                                      const std::string& destination_host,
                                      bool allow_destination_subdomains);
   void AddWebPageOverlay();
+  void SetHighlightAds();
   void CapturePixelsAsyncThen(v8::Local<v8::Function> callback);
   void ClearAllDatabases();
   void ClearPrinting();
@@ -229,7 +230,8 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetCustomTextOutput(const std::string& output);
   void SetDatabaseQuota(int quota);
   void SetDisallowedSubresourcePathSuffixes(
-      const std::vector<std::string>& suffixes);
+      const std::vector<std::string>& suffixes,
+      bool block_subresources);
   void SetDomainRelaxationForbiddenForURLScheme(bool forbidden,
                                                 const std::string& scheme);
   void SetDumpConsoleMessages(bool value);
@@ -545,6 +547,7 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetDumpJavaScriptDialogs)
       .SetMethod("setEffectiveConnectionType",
                  &TestRunnerBindings::SetEffectiveConnectionType)
+      .SetMethod("setHighlightAds", &TestRunnerBindings::SetHighlightAds)
       .SetMethod("setMockSpellCheckerEnabled",
                  &TestRunnerBindings::SetMockSpellCheckerEnabled)
       .SetMethod("setIconDatabaseEnabled", &TestRunnerBindings::NotImplemented)
@@ -902,9 +905,10 @@ void TestRunnerBindings::DisableMockScreenOrientation() {
 }
 
 void TestRunnerBindings::SetDisallowedSubresourcePathSuffixes(
-    const std::vector<std::string>& suffixes) {
+    const std::vector<std::string>& suffixes,
+    bool block_subresources) {
   if (runner_)
-    runner_->SetDisallowedSubresourcePathSuffixes(suffixes);
+    runner_->SetDisallowedSubresourcePathSuffixes(suffixes, block_subresources);
 }
 
 void TestRunnerBindings::DidAcquirePointerLock() {
@@ -1303,6 +1307,11 @@ void TestRunnerBindings::SimulateWebNotificationClose(const std::string& title,
   if (!runner_)
     return;
   runner_->SimulateWebNotificationClose(title, by_user);
+}
+
+void TestRunnerBindings::SetHighlightAds() {
+  if (view_runner_)
+    view_runner_->SetHighlightAds(true);
 }
 
 void TestRunnerBindings::AddWebPageOverlay() {
@@ -2372,14 +2381,16 @@ void TestRunner::DumpPermissionClientCallbacks() {
 }
 
 void TestRunner::SetDisallowedSubresourcePathSuffixes(
-    const std::vector<std::string>& suffixes) {
+    const std::vector<std::string>& suffixes,
+    bool block_subresources) {
   DCHECK(main_view_);
   if (!main_view_->MainFrame()->IsWebLocalFrame())
     return;
   main_view_->MainFrame()
       ->ToWebLocalFrame()
       ->GetDocumentLoader()
-      ->SetSubresourceFilter(new MockWebDocumentSubresourceFilter(suffixes));
+      ->SetSubresourceFilter(
+          new MockWebDocumentSubresourceFilter(suffixes, block_subresources));
 }
 
 void TestRunner::DumpSpellCheckCallbacks() {

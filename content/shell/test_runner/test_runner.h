@@ -382,9 +382,12 @@ class TestRunner : public WebTestRunner {
   // Sets up a mock DocumentSubresourceFilter to disallow subsequent subresource
   // loads within the current document with the given path |suffixes|. The
   // filter is created and injected even if |suffixes| is empty. If |suffixes|
-  // contains the empty string, all subresource loads will be disallowed.
+  // contains the empty string, all subresource loads will be disallowed. If
+  // |block_subresources| is false, matching resources will not be blocked but
+  // instead marked as matching a disallowed resource.
   void SetDisallowedSubresourcePathSuffixes(
-      const std::vector<std::string>& suffixes);
+      const std::vector<std::string>& suffixes,
+      bool block_subresources);
 
   // This function sets a flag that tells the test runner to dump all
   // the lines of descriptive text about spellcheck execution.

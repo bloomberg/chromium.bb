@@ -77,6 +77,11 @@ class CORE_EXPORT FrameOverlay : public GraphicsLayerClient,
   // FrameOverlay is always the same size as the viewport.
   IntSize Size() const;
 
+  // Ensure that |layer_| is attached to the root graphics layer. Updates
+  // to the frames compositing may remove the graphics layer at any
+  // point. This should be called before calling PaintContents.
+  void EnsureOverlayAttached() const;
+
   const Delegate* GetDelegate() const { return delegate_.get(); }
 
   // DisplayItemClient methods.

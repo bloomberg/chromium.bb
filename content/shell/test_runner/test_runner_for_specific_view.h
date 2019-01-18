@@ -175,6 +175,8 @@ class TestRunnerForSpecificView {
   void AddWebPageOverlay();
   void RemoveWebPageOverlay();
 
+  void SetHighlightAds(bool);
+
   // Sets a flag causing the next call to WebGLRenderingContext::create to fail.
   void ForceNextWebGLContextCreationToFail();
 

@@ -96,6 +96,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetFullscreenSupported(bool) override;
   void SetHideDownloadUI(bool) override;
   void SetPresentationReceiver(bool) override;
+  void SetHighlightAds(bool) override;
   void SetHistoryEntryRequiresUserGesture(bool) override;
   void SetHyperlinkAuditingEnabled(bool) override;
   void SetIgnoreMainFrameOverflowHiddenQuirk(bool) override;

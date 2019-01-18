@@ -86,10 +86,8 @@ void FrameOverlay::Update() {
             : local_root_frame_widget->RootGraphicsLayer();
     if (!parent_layer)
       return;
-
     layer_ = GraphicsLayer::Create(*this);
     layer_->SetDrawsContent(true);
-    parent_layer->AddChild(layer_.get());
 
     if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
       // This is required for contents of overlay to stay in sync with the page
@@ -109,7 +107,10 @@ void FrameOverlay::Update() {
 }
 
 IntSize FrameOverlay::Size() const {
-  return frame_->GetPage()->GetVisualViewport().Size();
+  if (frame_->IsMainFrame())
+    return frame_->GetPage()->GetVisualViewport().Size();
+  return frame_->GetPage()->GetVisualViewport().Size().ExpandedTo(
+      frame_->View()->Size());
 }
 
 LayoutRect FrameOverlay::VisualRect() const {
@@ -122,12 +123,26 @@ IntRect FrameOverlay::ComputeInterestRect(const GraphicsLayer* graphics_layer,
   return IntRect(IntPoint(), Size());
 }
 
+void FrameOverlay::EnsureOverlayAttached() const {
+  DCHECK(layer_);
+  auto* local_root_frame_widget =
+      WebLocalFrameImpl::FromFrame(frame_)->LocalRootFrameWidget();
+  GraphicsLayer* parent_layer =
+      frame_->GetPage()->MainFrame()->IsLocalFrame()
+          ? frame_->GetPage()->GetVisualViewport().ContainerLayer()
+          : local_root_frame_widget->RootGraphicsLayer();
+  DCHECK(parent_layer);
+  if (layer_->Parent() != parent_layer)
+    parent_layer->AddChild(layer_.get());
+}
+
 void FrameOverlay::PaintContents(const GraphicsLayer* graphics_layer,
                                  GraphicsContext& gc,
                                  GraphicsLayerPaintingPhase phase,
                                  const IntRect& interest_rect) const {
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   DCHECK(layer_);
+  EnsureOverlayAttached();
   delegate_->PaintFrameOverlay(*this, gc, Size());
 }
 

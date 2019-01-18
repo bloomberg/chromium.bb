@@ -138,7 +138,11 @@
       name: "shouldClearDocumentBackground",
       initial: true,
     },
-
+    {
+      name: "HighlightAds",
+      initial: false,
+      invalidate: "HighlightAds"
+    },
     {
       name: "textAreasAreResizable",
       initial: false,
