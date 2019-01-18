@@ -400,6 +400,9 @@ void ShelfView::OnShelfAlignmentChanged() {
   AppListButton* app_list_button = GetAppListButton();
   if (app_list_button)
     app_list_button->SchedulePaint();
+
+  GetFocusManager()->set_arrow_key_traversal_enabled(
+      !shelf_->IsHorizontalAlignment());
 }
 
 gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(const ShelfID& id) {
