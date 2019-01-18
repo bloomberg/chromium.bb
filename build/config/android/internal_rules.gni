@@ -2798,16 +2798,23 @@ if (enable_java_templates) {
       if (_chromium_code) {
         args += [ "--chromium-code=1" ]
       }
-      if (invoker.enable_errorprone) {
+
+      # Use system javac only for debug builds. It's faster, but non-hermetic.
+      if (!is_java_debug || invoker.enable_errorprone) {
         deps += [ "//third_party/errorprone:errorprone($default_toolchain)" ]
+        args += [
+          "--errorprone-path",
+          "bin/errorprone",
+        ]
+      }
+      if (invoker.enable_errorprone) {
         deps += [ "//tools/android/errorprone_plugin:errorprone_plugin_java($default_toolchain)" ]
         _rebased_errorprone_processorpath = [
           "lib.java/tools/android/errorprone_plugin/errorprone_plugin_java.jar",
         ]
         args += [
-          "--use-errorprone-path",
-          "bin/errorprone",
           "--processorpath=$_rebased_errorprone_processorpath",
+          "--enable-errorprone",
         ]
       }
       foreach(e, _provider_configurations) {
