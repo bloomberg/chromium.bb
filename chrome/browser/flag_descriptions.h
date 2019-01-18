@@ -661,6 +661,9 @@ extern const char kGoogleProfileInfoDescription[];
 extern const char kHandwritingGestureName[];
 extern const char kHandwritingGestureDescription[];
 
+extern const char kHardwareMediaKeyHandling[];
+extern const char kHardwareMediaKeyHandlingDescription[];
+
 extern const char kHarfbuzzRendertextName[];
 extern const char kHarfbuzzRendertextDescription[];
 
