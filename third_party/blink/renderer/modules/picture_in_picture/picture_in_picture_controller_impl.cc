@@ -262,9 +262,9 @@ void PictureInPictureControllerImpl::PageVisibilityChanged() {
 
   // If page becomes hidden with no video in Picture-in-Picture and a video
   // element is allowed to, enter Picture-in-Picture.
-  // TODO(crbug.com/922885): Check that video is potentially playing.
   if (GetSupplementable()->hidden() && !picture_in_picture_element_ &&
       AutoPictureInPictureElement() &&
+      !AutoPictureInPictureElement()->paused() &&
       IsElementAllowed(*AutoPictureInPictureElement()) == Status::kEnabled) {
     EnterPictureInPicture(AutoPictureInPictureElement(), nullptr);
   }
