@@ -39,7 +39,6 @@ namespace {
 // List of sections.
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SyncSectionIdentifier = kSectionIdentifierEnumZero,
-  SyncFeedbackSectionIdentifier,
   NonPersonalizedSectionIdentifier,
 };
 
@@ -47,7 +46,6 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 typedef NS_ENUM(NSInteger, ItemType) {
   // SyncSectionIdentifier section.
   SignInItemType = kItemTypeEnumZero,
-  // SyncErrorSectionIdentifier section.
   RestartAuthenticationFlowErrorItemType,
   ReauthDialogAsSyncIsInAuthErrorItemType,
   ShowPassphraseDialogErrorItemType,
@@ -75,8 +73,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, assign, readonly) BOOL isAuthenticated;
 // Sync setup service.
 @property(nonatomic, assign, readonly) SyncSetupService* syncSetupService;
+// ** Sync section.
 // YES if the impression of the Signin cell has already been recorded.
 @property(nonatomic, assign) BOOL hasRecordedSigninImpression;
+// Sync error item (in the sync section).
+@property(nonatomic, strong) TableViewItem* syncErrorItem;
+// ** Non personalized section.
 // Preference value for the "Autocomplete searches and URLs" feature.
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* autocompleteSearchPreference;
@@ -99,7 +101,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Preference value for the "Make searches and browsing better" feature.
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* anonymizedDataCollectionPreference;
-
 // All the items for the non-personalized section.
 @property(nonatomic, strong, readonly) ItemArray nonPersonalizedItems;
 
@@ -149,33 +150,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Loads the sync section.
 - (void)loadSyncSection {
+  self.syncErrorItem = nil;
   TableViewModel* model = self.consumer.tableViewModel;
   [model addSectionWithIdentifier:SyncSectionIdentifier];
   [self updateSyncSection:NO];
 }
 
-// Reloads the sync section. If |notifyConsumer| is NO, the consumer will not be
+// Updates the sync section. If |notifyConsumer| is YES, the consumer is
 // notified about model changes.
 - (void)updateSyncSection:(BOOL)notifyConsumer {
-  TableViewModel* model = self.consumer.tableViewModel;
-  [model deleteAllItemsFromSectionWithIdentifier:SyncSectionIdentifier];
-  if (self.isAuthenticated) {
-    self.hasRecordedSigninImpression = NO;
-  } else {
-    AccountSignInItem* item =
-        [[AccountSignInItem alloc] initWithType:SignInItemType];
-    item.detailText = l10n_util::GetNSString(
-        IDS_IOS_GOOGLE_SERVICES_SETTINGS_SIGN_IN_DETAIL_TEXT);
-    [model addItem:item toSectionWithIdentifier:SyncSectionIdentifier];
-    if (!self.hasRecordedSigninImpression) {
-      // Once the Settings are open, this button impression will at most be
-      // recorded once per dialog displayed and per sign-in.
-      signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
-          signin_metrics::AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS);
-      self.hasRecordedSigninImpression = YES;
-    }
-  }
-  if (notifyConsumer) {
+  BOOL needsAccountSigninItemUpdate = [self updateAccountSignInItem];
+  BOOL needsSyncErrorItemsUpdate = [self updateSyncErrorItems];
+  if (notifyConsumer &&
+      (needsAccountSigninItemUpdate || needsSyncErrorItemsUpdate)) {
+    TableViewModel* model = self.consumer.tableViewModel;
     NSUInteger sectionIndex =
         [model sectionForSectionIdentifier:SyncSectionIdentifier];
     NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:sectionIndex];
@@ -183,14 +171,48 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 }
 
-#pragma mark - Load sync feedback section
+// Adds, removes and updates the account sign-in item in the model as needed.
+// Returns YES if the consumer should be notified.
+- (BOOL)updateAccountSignInItem {
+  TableViewModel* model = self.consumer.tableViewModel;
+  BOOL hasAccountSignInItem = [model hasItemForItemType:SignInItemType
+                                      sectionIdentifier:SyncSectionIdentifier];
 
-// Reloads the sync feedback section. If |notifyConsumer| is YES, the consumer
-// is notified to add or remove the sync error section.
-- (void)updateSyncErrorSectionAndNotifyConsumer:(BOOL)notifyConsumer {
+  if (self.isAuthenticated) {
+    self.hasRecordedSigninImpression = NO;
+    if (!hasAccountSignInItem)
+      return NO;
+    [model removeItemWithType:SignInItemType
+        fromSectionWithIdentifier:SyncSectionIdentifier];
+    return YES;
+  }
+
+  if (hasAccountSignInItem)
+    return NO;
+  AccountSignInItem* accountSignInItem =
+      [[AccountSignInItem alloc] initWithType:SignInItemType];
+  accountSignInItem.detailText =
+      GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_SIGN_IN_DETAIL_TEXT);
+  [model addItem:accountSignInItem
+      toSectionWithIdentifier:SyncSectionIdentifier];
+
+  if (!self.hasRecordedSigninImpression) {
+    // Once the Settings are open, this button impression will at most be
+    // recorded once per dialog displayed and per sign-in.
+    signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
+        signin_metrics::AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS);
+    self.hasRecordedSigninImpression = YES;
+  }
+  return YES;
+}
+
+// Adds, removes and updates the sync error item in the model as needed. Returns
+// YES if the consumer should be notified.
+- (BOOL)updateSyncErrorItems {
   TableViewModel* model = self.consumer.tableViewModel;
   BOOL hasError = NO;
   ItemType type;
+
   if (self.isAuthenticated) {
     switch (self.syncSetupService->GetSyncServiceState()) {
       case SyncSetupService::kSyncServiceUnrecoverableError:
@@ -211,47 +233,28 @@ typedef NS_ENUM(NSInteger, ItemType) {
         break;
     }
   }
-  if (!hasError) {
-    // No action to do, therefore the sync error section should not be visibled.
-    if ([model hasSectionForSectionIdentifier:SyncFeedbackSectionIdentifier]) {
-      // Remove the sync error item if it exists.
-      NSUInteger sectionIndex =
-          [model sectionForSectionIdentifier:SyncFeedbackSectionIdentifier];
-      [model removeSectionWithIdentifier:SyncFeedbackSectionIdentifier];
-      if (notifyConsumer) {
-        NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:sectionIndex];
-        [self.consumer deleteSections:indexSet];
-      }
-    }
-    return;
+
+  if ((!hasError && !self.syncErrorItem) ||
+      (hasError && self.syncErrorItem && type == self.syncErrorItem.type)) {
+    // Nothing to update.
+    return NO;
   }
-  // Add the sync error item and its section (if it doesn't already exist) and
-  // reload them.
-  BOOL sectionAdded = NO;
-  SettingsImageDetailTextItem* syncErrorItem =
-      [self createSyncErrorItemWithItemType:type];
-  if (![model hasSectionForSectionIdentifier:SyncFeedbackSectionIdentifier]) {
-    // Adding the sync error item and its section.
-    [model insertSectionWithIdentifier:SyncFeedbackSectionIdentifier atIndex:0];
-    [model addItem:syncErrorItem
-        toSectionWithIdentifier:SyncFeedbackSectionIdentifier];
-    sectionAdded = YES;
-  } else {
-    [model
-        deleteAllItemsFromSectionWithIdentifier:SyncFeedbackSectionIdentifier];
-    [model addItem:syncErrorItem
-        toSectionWithIdentifier:SyncFeedbackSectionIdentifier];
+
+  if (self.syncErrorItem) {
+    // Remove the previous sync error item, since it is either the wrong error
+    // (if hasError is YES), or there is no error anymore.
+    [model removeItemWithType:self.syncErrorItem.type
+        fromSectionWithIdentifier:SyncSectionIdentifier];
+    self.syncErrorItem = nil;
+    if (!hasError)
+      return YES;
   }
-  if (notifyConsumer) {
-    NSUInteger sectionIndex =
-        [model sectionForSectionIdentifier:SyncFeedbackSectionIdentifier];
-    NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:sectionIndex];
-    if (sectionAdded) {
-      [self.consumer insertSections:indexSet];
-    } else {
-      [self.consumer reloadSections:indexSet];
-    }
-  }
+  // Add the sync error item and its section.
+  self.syncErrorItem = [self createSyncErrorItemWithItemType:type];
+  [model insertItem:self.syncErrorItem
+      inSectionWithIdentifier:SyncSectionIdentifier
+                      atIndex:0];
+  return YES;
 }
 
 #pragma mark - Load non personalized section
@@ -360,7 +363,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     (NSInteger)itemType {
   SettingsImageDetailTextItem* syncErrorItem =
       [[SettingsImageDetailTextItem alloc] initWithType:itemType];
-  syncErrorItem.text = l10n_util::GetNSString(IDS_IOS_SYNC_ERROR_TITLE);
+  syncErrorItem.text = GetNSString(IDS_IOS_SYNC_ERROR_TITLE);
   syncErrorItem.detailText =
       GetSyncErrorDescriptionForSyncSetupService(self.syncSetupService);
   {
@@ -381,7 +384,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     (GoogleServicesSettingsViewController*)controller {
   DCHECK_EQ(self.consumer, controller);
   [self loadSyncSection];
-  [self updateSyncErrorSectionAndNotifyConsumer:NO];
   [self loadNonPersonalizedSection];
   _identityManagerObserverBridge.reset(
       new identity::IdentityManagerObserverBridge(self.identityManager, self));
@@ -449,7 +451,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - SyncObserverModelBridge
 
 - (void)onSyncStateChanged {
-  [self updateSyncErrorSectionAndNotifyConsumer:YES];
+  [self updateSyncSection:YES];
 }
 #pragma mark - IdentityManagerObserverBridgeDelegate
 
