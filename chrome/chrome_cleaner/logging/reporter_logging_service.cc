@@ -284,6 +284,18 @@ void ReporterLoggingService::AddScheduledTask(
     const base::string16& /*description*/,
     const std::vector<internal::FileInformation>& /*actions*/) {}
 
+void ReporterLoggingService::AddShortcutData(
+    const base::string16& /*lnk_path*/,
+    const base::string16& /*executable_path*/,
+    const std::string& /*executable _hash*/,
+    const std::vector<base::string16>& /*command_line_arguments*/) {}
+
+void ReporterLoggingService::SetFoundModifiedChromeShortcuts(
+    bool found_modified_shortcuts) {
+  base::AutoLock lock(lock_);
+  reporter_logs_.set_found_modified_chrome_shortcuts(found_modified_shortcuts);
+}
+
 void ReporterLoggingService::LogProcessInformation(
     SandboxType process_type,
     const SystemResourceUsage& usage) {

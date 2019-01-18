@@ -172,6 +172,17 @@ class LoggingServiceAPI {
       const base::string16& description,
       const std::vector<internal::FileInformation>& actions) = 0;
 
+  // Add a ShortcutData to the system report.
+  virtual void AddShortcutData(
+      const base::string16& lnk_path,
+      const base::string16& executable_path,
+      const std::string& executable_hash,
+      const std::vector<base::string16>& command_line_arguments) = 0;
+
+  // Set |found_modified_shortcuts| in the |reporter_logs|.
+  virtual void SetFoundModifiedChromeShortcuts(
+      bool found_modified_shortcuts) = 0;
+
   // Log resource usage of a Chrome Cleanup process identified by
   // |process_type|.
   virtual void LogProcessInformation(SandboxType process_type,

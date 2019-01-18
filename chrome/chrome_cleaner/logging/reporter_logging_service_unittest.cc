@@ -252,4 +252,16 @@ TEST_F(ReporterLoggingServiceTest, LogProcessInformation) {
   EXPECT_EQ(123456U, usage_msg.peak_working_set_size());
 }
 
+TEST_F(ReporterLoggingServiceTest, SetFoundModifiedChromeShortcuts) {
+  reporter_logging_service_->SetFoundModifiedChromeShortcuts(true);
+  FoilReporterLogs report;
+  ASSERT_TRUE(
+      report.ParseFromString(reporter_logging_service_->RawReportContent()));
+  EXPECT_TRUE(report.found_modified_chrome_shortcuts());
+  reporter_logging_service_->SetFoundModifiedChromeShortcuts(false);
+  ASSERT_TRUE(
+      report.ParseFromString(reporter_logging_service_->RawReportContent()));
+  EXPECT_FALSE(report.found_modified_chrome_shortcuts());
+}
+
 }  // namespace chrome_cleaner

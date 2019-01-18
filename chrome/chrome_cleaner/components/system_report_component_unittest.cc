@@ -4,6 +4,7 @@
 
 #include "chrome/chrome_cleaner/components/system_report_component.h"
 
+#include <shlobj.h>
 #include <string>
 #include <vector>
 
@@ -13,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_command_line.h"
@@ -30,6 +32,8 @@
 #include "chrome/chrome_cleaner/os/pre_fetched_paths.h"
 #include "chrome/chrome_cleaner/os/registry_util.h"
 #include "chrome/chrome_cleaner/parsers/json_parser/test_json_parser.h"
+#include "chrome/chrome_cleaner/parsers/parser_utils/command_line_arguments_sanitizer.h"
+#include "chrome/chrome_cleaner/parsers/shortcut_parser/broker/fake_shortcut_parser.h"
 #include "chrome/chrome_cleaner/test/test_extensions.h"
 #include "chrome/chrome_cleaner/test/test_file_util.h"
 #include "chrome/chrome_cleaner/test/test_pup_data.h"
@@ -176,12 +180,13 @@ const char kMasterPreferencesJsonForTests[] = R"(
       }
     })";
 
+const char kSanitizedLnkPath[] = "CSIDL_PROFILE\\appdata\\roaming";
 typedef std::map<base::string16, std::vector<base::string16>>
     ExtensionIdToFileNamesMap;
 
 class SystemReportComponentTest : public testing::Test {
  public:
-  SystemReportComponentTest() : component_(&json_parser_) {}
+  SystemReportComponentTest() : component_(&json_parser_, &shortcut_parser_) {}
 
   void SetUp() override {
     cleaner_logging_service_ = CleanerLoggingService::GetInstance();
@@ -190,6 +195,9 @@ class SystemReportComponentTest : public testing::Test {
     LoggingServiceAPI::SetInstanceForTesting(cleaner_logging_service_);
     registry_override_.OverrideRegistry(HKEY_CURRENT_USER);
     registry_override_.OverrideRegistry(HKEY_LOCAL_MACHINE);
+
+    base::PathService::Get(CsidlToPathServiceKey(CSIDL_APPDATA),
+                           &appdata_file_path_);
 
     ASSERT_TRUE(fake_user_data_.CreateUniqueTempDir());
 
@@ -219,9 +227,11 @@ class SystemReportComponentTest : public testing::Test {
   }
 
   TestJsonParser json_parser_;
+  FakeShortcutParser shortcut_parser_;
   SystemReportComponent component_;
   CleanerLoggingService* cleaner_logging_service_ = nullptr;
   registry_util::RegistryOverrideManager registry_override_;
+  base::FilePath appdata_file_path_;
   base::ScopedTempDir fake_user_data_;
   ExtensionIdToFileNamesMap extension_id_to_filenames_map_;
 };
@@ -669,4 +679,112 @@ TEST_F(SystemReportComponentTest, ReportMasterPreferencesExtensions) {
       extension_id_to_filenames_map_));
 }
 
+TEST_F(SystemReportComponentTest,
+       ReportModifiedShortcutWithCommandLineArguments) {
+  const base::string16 kShortcutArguments =
+      L"--some-flag --some-other-scary-flag --flag-with-personal-data=" +
+      appdata_file_path_.value();
+  const int kArgumentSize = 3;
+  ShortcutInformation shortcut_with_command_line_arguments;
+  shortcut_with_command_line_arguments.lnk_path = appdata_file_path_;
+  shortcut_with_command_line_arguments.target_path =
+      (appdata_file_path_.Append(L"chrome.exe")).value();
+  shortcut_with_command_line_arguments.command_line_arguments =
+      kShortcutArguments;
+
+  std::vector<ShortcutInformation> fake_parsed_shortcuts;
+  fake_parsed_shortcuts.push_back(shortcut_with_command_line_arguments);
+
+  shortcut_parser_.SetShortcutsToReturn(fake_parsed_shortcuts);
+
+  component_.CreateFullSystemReport();
+  ChromeCleanerReport report = GetChromeCleanerReport();
+  ASSERT_EQ(report.system_report().shortcut_data().size(), 1);
+  ChromeCleanerReport_SystemReport_ShortcutData shortcut_data =
+      report.system_report().shortcut_data(0);
+
+  EXPECT_EQ(shortcut_data.lnk_path(), kSanitizedLnkPath);
+
+  const std::string kSanitizedFakeChromePath = "CSIDL_APPDATA\\chrome.exe";
+  EXPECT_EQ(shortcut_data.executable_path(), kSanitizedFakeChromePath);
+
+  ASSERT_EQ(shortcut_data.command_line_arguments().size(), kArgumentSize);
+  EXPECT_EQ(
+      shortcut_data.command_line_arguments(0),
+      base::JoinString({"--flag-with-personal-data=", kSanitizedLnkPath}, ""));
+  EXPECT_EQ(shortcut_data.command_line_arguments(1), "--some-flag");
+  EXPECT_EQ(shortcut_data.command_line_arguments(2), "--some-other-scary-flag");
+}
+
+TEST_F(SystemReportComponentTest, ReportShortcutWithPersonalSite) {
+  const base::string16 kPersonalSite =
+      L"http://www.somesite.com/user/happy_user";
+  const std::string kSanitizedPersonalSite = "http://www.somesite.com";
+  ShortcutInformation shortcut_with_personal_site;
+  shortcut_with_personal_site.lnk_path = appdata_file_path_;
+  shortcut_with_personal_site.target_path =
+      (appdata_file_path_.Append(L"chrome.exe")).value();
+  shortcut_with_personal_site.command_line_arguments = kPersonalSite;
+
+  std::vector<ShortcutInformation> fake_parsed_shortcuts;
+  fake_parsed_shortcuts.push_back(shortcut_with_personal_site);
+  shortcut_parser_.SetShortcutsToReturn(fake_parsed_shortcuts);
+
+  component_.CreateFullSystemReport();
+  ChromeCleanerReport report = GetChromeCleanerReport();
+  ASSERT_EQ(report.system_report().shortcut_data().size(), 1);
+  ChromeCleanerReport_SystemReport_ShortcutData shortcut_data =
+      report.system_report().shortcut_data(0);
+
+  ASSERT_EQ(shortcut_data.command_line_arguments().size(), 1);
+  EXPECT_EQ(shortcut_data.lnk_path(), kSanitizedLnkPath);
+
+  const std::string kSanitizedFakeChromePath = "CSIDL_APPDATA\\chrome.exe";
+  EXPECT_EQ(shortcut_data.executable_path(), kSanitizedFakeChromePath);
+
+  ASSERT_EQ(shortcut_data.command_line_arguments().size(), 1);
+  EXPECT_EQ(shortcut_data.command_line_arguments(0), kSanitizedPersonalSite);
+}
+
+TEST_F(SystemReportComponentTest, ReportShortcutWithDifferentTarget) {
+  ShortcutInformation shortcut_with_different_target;
+  shortcut_with_different_target.lnk_path = appdata_file_path_;
+  shortcut_with_different_target.target_path =
+      (appdata_file_path_.Append(L"totallynotuws.exe")).value();
+  shortcut_with_different_target.command_line_arguments = L"";
+
+  std::vector<ShortcutInformation> fake_parsed_shortcuts;
+  fake_parsed_shortcuts.push_back(shortcut_with_different_target);
+  shortcut_parser_.SetShortcutsToReturn(fake_parsed_shortcuts);
+
+  component_.CreateFullSystemReport();
+
+  ChromeCleanerReport report = GetChromeCleanerReport();
+  ASSERT_EQ(report.system_report().shortcut_data().size(), 1);
+  ChromeCleanerReport_SystemReport_ShortcutData shortcut_data =
+      report.system_report().shortcut_data(0);
+
+  EXPECT_EQ(shortcut_data.lnk_path(), kSanitizedLnkPath);
+
+  const std::string kSanitizedFakeUwSFile = "CSIDL_APPDATA\\totallynotuws.exe";
+  EXPECT_EQ(shortcut_data.executable_path(), kSanitizedFakeUwSFile);
+
+  EXPECT_EQ(shortcut_data.command_line_arguments().size(), 0);
+}
+
+TEST_F(SystemReportComponentTest, DoNotReportShortcutWithoutModifications) {
+  ShortcutInformation not_modified_shortcut;
+  not_modified_shortcut.lnk_path = appdata_file_path_;
+  not_modified_shortcut.target_path =
+      (appdata_file_path_.Append(L"chrome.exe")).value();
+  not_modified_shortcut.command_line_arguments = L"";
+
+  std::vector<ShortcutInformation> fake_parsed_shortcuts;
+  fake_parsed_shortcuts.push_back(not_modified_shortcut);
+  shortcut_parser_.SetShortcutsToReturn(fake_parsed_shortcuts);
+
+  component_.CreateFullSystemReport();
+  ChromeCleanerReport report = GetChromeCleanerReport();
+  EXPECT_EQ(report.system_report().shortcut_data().size(), 0);
+}
 }  // namespace chrome_cleaner

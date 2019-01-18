@@ -98,6 +98,14 @@ class CleanerLoggingService : public LoggingServiceAPI {
       const base::string16& description,
       const std::vector<internal::FileInformation>& actions) override;
 
+  void AddShortcutData(
+      const base::string16& lnk_path,
+      const base::string16& executable_path,
+      const std::string& executable_hash,
+      const std::vector<base::string16>& command_line_arguments) override;
+
+  void SetFoundModifiedChromeShortcuts(bool found_modified_shortcuts) override;
+
   void LogProcessInformation(SandboxType process_type,
                              const SystemResourceUsage& usage) override;
 

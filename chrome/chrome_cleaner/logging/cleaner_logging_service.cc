@@ -620,6 +620,25 @@ void CleanerLoggingService::AddScheduledTask(
       scheduled_task;
 }
 
+void CleanerLoggingService::AddShortcutData(
+    const base::string16& lnk_path,
+    const base::string16& executable_path,
+    const std::string& executable_hash,
+    const std::vector<base::string16>& command_line_arguments) {
+  base::AutoLock lock(lock_);
+  ChromeCleanerReport_SystemReport_ShortcutData* shortcut_data =
+      chrome_cleaner_report_.mutable_system_report()->add_shortcut_data();
+  shortcut_data->set_lnk_path(base::UTF16ToUTF8(lnk_path));
+  shortcut_data->set_executable_path(base::UTF16ToUTF8(executable_path));
+  shortcut_data->set_executable_hash(executable_hash);
+  for (const auto& argument : command_line_arguments) {
+    shortcut_data->add_command_line_arguments(base::UTF16ToUTF8(argument));
+  }
+}
+
+void CleanerLoggingService::SetFoundModifiedChromeShortcuts(
+    bool /*found_modified_shortcuts*/) {}
+
 void CleanerLoggingService::LogProcessInformation(
     SandboxType process_type,
     const SystemResourceUsage& usage) {
