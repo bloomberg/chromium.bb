@@ -1440,11 +1440,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     new_policy.timer_queue_policy().is_paused = true;
   }
 
-  if (main_thread_only().renderer_backgrounded &&
-      RuntimeEnabledFeatures::TimerThrottlingForBackgroundTabsEnabled()) {
-    new_policy.timer_queue_policy().is_throttled = true;
-  }
-
   if (main_thread_only().use_virtual_time) {
     new_policy.compositor_queue_policy().use_virtual_time = true;
     new_policy.default_queue_policy().use_virtual_time = true;
@@ -1530,11 +1525,6 @@ void MainThreadSchedulerImpl::ApplyTaskQueuePolicy(
       new_task_queue_policy.GetTimeDomainType(task_queue);
 
   if (old_time_domain_type != new_time_domain_type) {
-    if (old_time_domain_type == TimeDomainType::kThrottled) {
-      task_queue_throttler_->DecreaseThrottleRefCount(task_queue);
-    } else if (new_time_domain_type == TimeDomainType::kThrottled) {
-      task_queue_throttler_->IncreaseThrottleRefCount(task_queue);
-    }
     if (new_time_domain_type == TimeDomainType::kVirtual) {
       DCHECK(virtual_time_domain_);
       task_queue->SetTimeDomain(virtual_time_domain_.get());
@@ -2006,8 +1996,6 @@ MainThreadSchedulerImpl::TaskQueuePolicy::GetTimeDomainType(
     MainThreadTaskQueue* task_queue) const {
   if (use_virtual_time)
     return TimeDomainType::kVirtual;
-  if (is_throttled && task_queue->CanBeThrottled())
-    return TimeDomainType::kThrottled;
   return TimeDomainType::kReal;
 }
 
@@ -2015,7 +2003,6 @@ void MainThreadSchedulerImpl::TaskQueuePolicy::AsValueInto(
     base::trace_event::TracedValue* state) const {
   state->SetBoolean("is_enabled", is_enabled);
   state->SetBoolean("is_paused", is_paused);
-  state->SetBoolean("is_throttled", is_throttled);
   state->SetBoolean("is_deferred", is_deferred);
   state->SetBoolean("use_virtual_time", use_virtual_time);
 }
@@ -2675,8 +2662,6 @@ const char* MainThreadSchedulerImpl::TimeDomainTypeToString(
   switch (domain_type) {
     case TimeDomainType::kReal:
       return "real";
-    case TimeDomainType::kThrottled:
-      return "throttled";
     case TimeDomainType::kVirtual:
       return "virtual";
     default:
