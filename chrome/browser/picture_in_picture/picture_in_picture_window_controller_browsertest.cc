@@ -37,6 +37,7 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/views/overlay/overlay_window_views.h"
+#include "chrome/browser/ui/views/overlay/playback_image_button.h"
 #include "chrome/browser/ui/views/overlay/skip_ad_label_button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget_observer.h"
@@ -155,6 +156,13 @@ class PictureInPictureWindowControllerBrowserTest
     gfx::Rect initial_bounds_;
     base::RunLoop run_loop_;
   };
+
+  void MoveMouseOver(OverlayWindowViews* window) {
+    gfx::Point p(window->GetBounds().x(), window->GetBounds().y());
+    ui::MouseEvent moved_over(ui::ET_MOUSE_MOVED, p, p, ui::EventTimeForNow(),
+                              ui::EF_NONE, ui::EF_NONE);
+    window->OnMouseEvent(&moved_over);
+  }
 #endif  // !defined(OS_ANDROID)
 
  private:
@@ -1727,6 +1735,45 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
 #endif  // defined(OS_CHROMEOS)
 
+#if !defined(OS_ANDROID)
+// Tests that the Play/Pause button is displayed appropriately in the
+// Picture-in-Picture window.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       PlayPauseButtonVisibility) {
+  LoadTabAndEnterPictureInPicture(browser());
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NE(nullptr, active_web_contents);
+
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+  ASSERT_TRUE(overlay_window);
+
+  // Play/Pause button is displayed if video is not a mediastream.
+  MoveMouseOver(overlay_window);
+  EXPECT_TRUE(
+      overlay_window->play_pause_controls_view_for_testing()->IsDrawn());
+
+  // Play/Pause button is hidden if video is a mediastream.
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "changeVideoSrcToMediaStream();", &result));
+  EXPECT_TRUE(result);
+  MoveMouseOver(overlay_window);
+  EXPECT_FALSE(
+      overlay_window->play_pause_controls_view_for_testing()->IsDrawn());
+
+  // Play/Pause button is not hidden anymore when video is not a mediastream.
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "changeVideoSrc();", &result));
+  EXPECT_TRUE(result);
+  MoveMouseOver(overlay_window);
+  EXPECT_TRUE(
+      overlay_window->play_pause_controls_view_for_testing()->IsDrawn());
+}
+#endif
+
 // Check that page visibility API events are fired even when video is in
 // Picture-in-Picture.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
@@ -1782,15 +1829,6 @@ class MediaSessionPictureInPictureWindowControllerBrowserTest
     scoped_feature_list_.InitWithFeatures(
         {media_session::features::kMediaSessionService, media::kSkipAd}, {});
   }
-
-#if !defined(OS_ANDROID)
-  void MoveMouseOver(OverlayWindowViews* window) {
-    gfx::Point p(window->GetBounds().x(), window->GetBounds().y());
-    ui::MouseEvent moved_over(ui::ET_MOUSE_MOVED, p, p, ui::EventTimeForNow(),
-                              ui::EF_NONE, ui::EF_NONE);
-    window->OnMouseEvent(&moved_over);
-  }
-#endif
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;

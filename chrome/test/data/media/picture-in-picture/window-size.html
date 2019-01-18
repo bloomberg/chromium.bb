@@ -94,6 +94,10 @@
   }
 
   function changeVideoSrc() {
+    if (video.srcObject) {
+      video.srcObject.getTracks().forEach(track => track.stop());
+      video.srcObject = null;
+    }
     video.src = video.src;
     video.play()
     .then(_ => { window.domAutomationController.send(true); })

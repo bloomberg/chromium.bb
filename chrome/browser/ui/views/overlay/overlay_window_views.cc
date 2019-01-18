@@ -411,9 +411,8 @@ void OverlayWindowViews::UpdateLayerBoundsWithLetterboxing(
 }
 
 void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
-  if (always_hide_play_pause_button_ && is_visible)
-    play_pause_controls_view_->SetVisible(false);
-
+  play_pause_controls_view_->SetVisible(is_visible &&
+                                        !always_hide_play_pause_button_);
   GetControlsScrimLayer()->SetVisible(is_visible);
   GetControlsParentLayer()->SetVisible(is_visible);
   GetBackToTabControlsLayer()->SetVisible(is_visible);
