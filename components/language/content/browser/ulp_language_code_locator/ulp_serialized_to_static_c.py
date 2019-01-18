@@ -36,25 +36,20 @@ def ReadSerializedData(input_path):
     for b in xrange(4))
     for i in xrange(0, len(tree_bytes), 4)
   ]
-  return tree_serialized, language_codes
+  return language_codes, tree_serialized
 
 
 def GenerateCpp(output_path,
                 template_path,
-                tree_serialized,
-                language_codes):
+                models):
     """Render the template"""
     with open(template_path, "r") as f:
-        template = jinja2.Template(f.read())
-        context = {
-            "tree_serialized" : tree_serialized,
-            "languages" : language_codes,
-        }
-        generated_code = template.render(context)
+      template = jinja2.Template(f.read())
+      generated_code = template.render(models=models)
 
     # Write the generated code.
     with open(output_path, "w") as f:
-        f.write(generated_code)
+      f.write(generated_code)
 
 
 def Main():
@@ -66,20 +61,19 @@ def Main():
       "--template", required=True,
       help="path to the template used to generate c++ file")
     parser.add_argument(
-      "--data", required=True,
+      "--data", required=True, nargs='+',
       help="path to the input serialized ULP data file")
+
     args = parser.parse_args()
 
     output_path = args.output
     template_path = args.template
-    data_path = args.data
 
-    tree_serialized, language_codes = ReadSerializedData(data_path)
+    models = [ReadSerializedData(data_path) for data_path in args.data]
 
     GenerateCpp(output_path,
                 template_path,
-                tree_serialized,
-                language_codes)
+                models)
 
 if __name__ == "__main__":
     Main()

@@ -16,17 +16,21 @@ class S2LangQuadTreeNode;
 
 namespace language {
 
+// A LanguageCodeLocator that returns languages contained in each of its
+// provided quadtrees, in the order the quadtrees were provided to the
+// constructor.
 class UlpLanguageCodeLocator : public LanguageCodeLocator {
  public:
-  UlpLanguageCodeLocator(std::unique_ptr<S2LangQuadTreeNode> root);
+  UlpLanguageCodeLocator(
+      std::vector<std::unique_ptr<S2LangQuadTreeNode>>&& roots);
   ~UlpLanguageCodeLocator() override;
 
   // LanguageCodeLocator implementation.
-  std::vector<std::string> GetLanguageCode(double latitude,
-                                           double longitude) const override;
+  std::vector<std::string> GetLanguageCodes(double latitude,
+                                            double longitude) const override;
 
  private:
-  std::unique_ptr<S2LangQuadTreeNode> root_;
+  std::vector<std::unique_ptr<S2LangQuadTreeNode>> roots_;
   DISALLOW_COPY_AND_ASSIGN(UlpLanguageCodeLocator);
 };
 }  // namespace language

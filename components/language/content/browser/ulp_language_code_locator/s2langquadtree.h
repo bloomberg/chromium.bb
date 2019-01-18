@@ -14,12 +14,15 @@
 
 class S2CellId;
 
+// The node of a S2Cell-based quadtree holding string languages in its leaves.
 class S2LangQuadTreeNode {
  public:
   S2LangQuadTreeNode();
   S2LangQuadTreeNode(const S2LangQuadTreeNode& other);
   ~S2LangQuadTreeNode();
 
+  // Return the language in the deepest/lowest/smallest node containing the
+  // given cell.
   std::string Get(const S2CellId& cell) const;
 
   // Reconstruct a S2LangQuadTree with structure given by |tree| and with
@@ -27,7 +30,8 @@ class S2LangQuadTreeNode {
   // of the tree with (1) internal nodes represented by a single bit 0, and (2)
   // leaf nodes represented by a bit 1 followed by the binary form of the index
   // of the language at that leaf into |languages|. We assume those indexes have
-  // the smallest number of bits necessary.
+  // the smallest number of bits necessary. Indices are 1-based; index 0
+  // represents absent language.
   // The bitset size is templated to allow this method to be re-used for the
   // small number of different-sized serialized trees we have.
   template <size_t numbits>
@@ -75,8 +79,10 @@ class S2LangQuadTreeNode {
 
   const S2LangQuadTreeNode* GetChild(const int child_index) const;
 
+  // Return true iff the node is a leaf.
   bool IsLeaf() const;
 
+  // Return true iff the node is a leaf with no language.
   bool IsNullLeaf() const;
 
   static int GetBitsPerLanguageIndex(const size_t num_languages) {
