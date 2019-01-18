@@ -159,15 +159,13 @@ body.hide-fakebox #fakebox {
   left: 0;
   margin: 0;
   opacity: 0;
-  padding-left: 20px;
+  padding-inline-start: 20px;
   position: absolute;
   top: 0;
   width: 100%;
 }
 
 html[dir=rtl] #fakebox > input {
-  padding-left: 0;
-  padding-right: 20px;
   right: 0;
 }
 
@@ -179,7 +177,7 @@ html[dir=rtl] #fakebox > input {
   left: 0;
   margin-top: 1px;
   overflow: hidden;
-  padding-left: 20px;
+  padding-inline-start: 20px;
   position: absolute;
   right: 13px;
   text-align: initial;
@@ -192,7 +190,6 @@ html[dir=rtl] #fakebox > input {
 
 html[dir=rtl] #fakebox-text {
   left: auto;
-  padding-right: 20px;
   right: 0;
 }
 
@@ -216,7 +213,7 @@ html[dir=rtl] #fakebox-cursor {
   background-size: 24px 24px;
   bottom: 0;
   cursor: pointer;
-  margin-right: 12px;
+  margin-inline-end: 12px;
   padding: 22px 12px 0;
   position: absolute;
   right: 0;
@@ -226,7 +223,6 @@ html[dir=rtl] #fakebox-cursor {
 
 html[dir=rtl] #fakebox-microphone {
   left: 0;
-  margin-left: 12px;
   right: auto;
 }
 
@@ -303,15 +299,10 @@ body.fakebox-focused #fakebox-cursor {
   display: inline-block;
   filter: var(--theme-filter, 'none');
   height: 16px;
-  margin-left: 20px;
+  margin-inline-start: 20px;
   outline: none;
   vertical-align: middle;
   width: 16px;
-}
-
-html[dir=rtl] #mv-notice-x {
-  margin-left: 0;
-  margin-right: 20px;
 }
 
 html[darkmode=true] #mv-notice-x {
@@ -490,7 +481,7 @@ html[darkmode=true] .default-theme.dark #mv-notice-links :not(.md-icons) span {
   left: auto;
   position: fixed;
   right: 8px;
-  text-align: left;
+  text-align: start;
   user-select: none;
   z-index: -1;
 }
@@ -499,7 +490,7 @@ html[dir=rtl] #attribution,
 #attribution.left-align-attribution {
   left: 8px;
   right: auto;
-  text-align: right;
+  text-align: end;
 }
 
 #mv-single {
@@ -667,16 +658,11 @@ html[darkmode=true] #error-notice {
 
 #error-notice-msg {
   cursor: default;
-  padding-right: 16px;
-}
-
-html[dir=rtl] #error-notice-msg {
-  padding-left: 16px;
-  padding-right: 0;
+  padding-inline-end: 16px;
 }
 
 #error-notice.has-link #error-notice-msg {
-  padding-right: 0;
+  padding-inline-end: 0;
 }
 
 html[dir=rtl] #error-notice.has-link #error-notice-msg {
