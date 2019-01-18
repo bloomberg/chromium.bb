@@ -75,8 +75,9 @@ CanvasResourceDispatcher::CanvasResourceDispatcher(
   DCHECK(provider);
   binding_.Bind(mojo::MakeRequest(&client_ptr_));
   provider->CreateCompositorFrameSink(frame_sink_id_, std::move(client_ptr_),
-                                      mojo::MakeRequest(&sink_),
-                                      mojo::MakeRequest(&surface_embedder_));
+                                      mojo::MakeRequest(&sink_));
+  provider->ConnectToEmbedder(frame_sink_id_,
+                              mojo::MakeRequest(&surface_embedder_));
 }
 
 CanvasResourceDispatcher::~CanvasResourceDispatcher() = default;

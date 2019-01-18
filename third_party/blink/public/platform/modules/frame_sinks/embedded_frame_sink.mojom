@@ -41,14 +41,19 @@ interface EmbeddedFrameSinkProvider {
   // calling RegisterEmbeddedFrameSink() for |frame_sink_id|.
   CreateCompositorFrameSink(viz.mojom.FrameSinkId frame_sink_id,
                             viz.mojom.CompositorFrameSinkClient client,
-                            viz.mojom.CompositorFrameSink& sink,
-                            SurfaceEmbedder& notifier);
+                            viz.mojom.CompositorFrameSink& sink);
 
-  // Ceate CompositorFrameSink directly in a single call (instead of going
+  // Create CompositorFrameSink directly in a single call (instead of going
   // through both function above).
   CreateSimpleCompositorFrameSink(viz.mojom.FrameSinkId parent_frame_sink_id,
                                   viz.mojom.FrameSinkId frame_sink_id,
                                   EmbeddedFrameSinkClient surface_client,
                                   viz.mojom.CompositorFrameSinkClient client,
                                   viz.mojom.CompositorFrameSink& sink);
+
+  // Establishes a direct connection to the embedder of |frame_sink_id|. This
+  // will allow the client to let the embedder know what LocalSurfaceId it is
+  // using.
+  ConnectToEmbedder(viz.mojom.FrameSinkId frame_sink_id,
+                    SurfaceEmbedder& embedder);
 };

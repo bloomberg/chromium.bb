@@ -29,8 +29,7 @@ class MockEmbeddedFrameSinkProvider
   void CreateCompositorFrameSink(
       const viz::FrameSinkId& frame_sink_id,
       viz::mojom::blink::CompositorFrameSinkClientPtr client,
-      viz::mojom::blink::CompositorFrameSinkRequest sink,
-      mojom::blink::SurfaceEmbedderRequest surface_embedder_request) override {
+      viz::mojom::blink::CompositorFrameSinkRequest sink) override {
     mock_compositor_frame_sink_ = std::make_unique<MockCompositorFrameSink>(
         std::move(sink),
         num_expected_set_needs_begin_frame_on_sink_construction_);
@@ -43,6 +42,9 @@ class MockEmbeddedFrameSinkProvider
                     mojom::blink::EmbeddedFrameSinkClientPtr,
                     viz::mojom::blink::CompositorFrameSinkClientPtr,
                     viz::mojom::blink::CompositorFrameSinkRequest));
+  MOCK_METHOD2(ConnectToEmbedder,
+               void(const viz::FrameSinkId&,
+                    mojom::blink::SurfaceEmbedderRequest));
 
   // Utility method to create a scoped EmbeddedFrameSinkProvider override.
   std::unique_ptr<TestingPlatformSupport::ScopedOverrideMojoInterface>

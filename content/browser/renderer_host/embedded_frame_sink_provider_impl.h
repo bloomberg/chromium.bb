@@ -40,8 +40,7 @@ class CONTENT_EXPORT EmbeddedFrameSinkProviderImpl
   void CreateCompositorFrameSink(
       const viz::FrameSinkId& frame_sink_id,
       viz::mojom::CompositorFrameSinkClientPtr sink_client,
-      viz::mojom::CompositorFrameSinkRequest sink_request,
-      blink::mojom::SurfaceEmbedderRequest surface_embedder_request) override;
+      viz::mojom::CompositorFrameSinkRequest sink_request) override;
   void CreateSimpleCompositorFrameSink(
       const viz::FrameSinkId& parent_frame_sink_id,
       const viz::FrameSinkId& frame_sink_id,
@@ -49,6 +48,9 @@ class CONTENT_EXPORT EmbeddedFrameSinkProviderImpl
       viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client,
       viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request)
       override;
+  void ConnectToEmbedder(
+      const viz::FrameSinkId& child_frame_sink_id,
+      blink::mojom::SurfaceEmbedderRequest surface_embedder_request) override;
 
  private:
   friend class EmbeddedFrameSinkProviderImplTest;

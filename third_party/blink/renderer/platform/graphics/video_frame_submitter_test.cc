@@ -20,6 +20,8 @@
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/graphics/test/mock_compositor_frame_sink.h"
+#include "third_party/blink/renderer/platform/graphics/test/mock_embedded_frame_sink_provider.h"
 #include "third_party/blink/renderer/platform/graphics/video_frame_resource_provider.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -47,12 +49,13 @@ class MockVideoFrameProvider : public cc::VideoFrameProvider {
   DISALLOW_COPY_AND_ASSIGN(MockVideoFrameProvider);
 };
 
-class MockCompositorFrameSink : public viz::mojom::blink::CompositorFrameSink {
+class VideoMockCompositorFrameSink
+    : public viz::mojom::blink::CompositorFrameSink {
  public:
-  MockCompositorFrameSink(
+  VideoMockCompositorFrameSink(
       viz::mojom::blink::CompositorFrameSinkRequest* request)
       : binding_(this, std::move(*request)) {}
-  ~MockCompositorFrameSink() override = default;
+  ~VideoMockCompositorFrameSink() override = default;
 
   const viz::CompositorFrame& last_submitted_compositor_frame() const {
     return last_submitted_compositor_frame_;
@@ -101,7 +104,7 @@ class MockCompositorFrameSink : public viz::mojom::blink::CompositorFrameSink {
 
   viz::CompositorFrame last_submitted_compositor_frame_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockCompositorFrameSink);
+  DISALLOW_COPY_AND_ASSIGN(VideoMockCompositorFrameSink);
 };
 
 class MockVideoFrameResourceProvider
@@ -163,7 +166,8 @@ class VideoFrameSubmitterTest : public testing::Test {
     viz::mojom::blink::CompositorFrameSinkPtr submitter_sink;
     viz::mojom::blink::CompositorFrameSinkRequest request =
         mojo::MakeRequest(&submitter_sink);
-    sink_ = std::make_unique<StrictMock<MockCompositorFrameSink>>(&request);
+    sink_ =
+        std::make_unique<StrictMock<VideoMockCompositorFrameSink>>(&request);
 
     // By setting the submission state before we set the sink, we can make
     // testing easier without having to worry about the first sent frame.
@@ -195,7 +199,7 @@ class VideoFrameSubmitterTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<base::SimpleTestTickClock> now_src_;
   std::unique_ptr<viz::FakeExternalBeginFrameSource> begin_frame_source_;
-  std::unique_ptr<StrictMock<MockCompositorFrameSink>> sink_;
+  std::unique_ptr<StrictMock<VideoMockCompositorFrameSink>> sink_;
   std::unique_ptr<StrictMock<MockVideoFrameProvider>> video_frame_provider_;
   StrictMock<MockVideoFrameResourceProvider>* resource_provider_;
   scoped_refptr<viz::TestContextProvider> context_provider_;
@@ -591,6 +595,26 @@ TEST_F(VideoFrameSubmitterTest, WaitingForAckPreventsNewFrame) {
   args = begin_frame_source_->CreateBeginFrameArgs(BEGINFRAME_FROM_HERE,
                                                    new_time.get());
   submitter_->OnBeginFrame(args, {});
+  scoped_task_environment_.RunUntilIdle();
+}
+
+// Test that after context is lost, the CompositorFrameSink is recreated but the
+// SurfaceEmbedder isn't.
+TEST_F(VideoFrameSubmitterTest, RecreateCompositorFrameSinkAfterContextLost) {
+  MockEmbeddedFrameSinkProvider mock_embedded_frame_sink_provider;
+  mojo::Binding<mojom::blink::EmbeddedFrameSinkProvider>
+      embedded_frame_sink_provider_binding(&mock_embedded_frame_sink_provider);
+  auto override =
+      mock_embedded_frame_sink_provider.CreateScopedOverrideMojoInterface(
+          &embedded_frame_sink_provider_binding);
+
+  EXPECT_CALL(*resource_provider_, Initialize(_, _));
+  EXPECT_CALL(mock_embedded_frame_sink_provider, ConnectToEmbedder(_, _))
+      .Times(0);
+  EXPECT_CALL(mock_embedded_frame_sink_provider, CreateCompositorFrameSink_(_))
+      .Times(1);
+  submitter_->OnContextLost();
+  submitter_->OnReceivedContextProvider(true, context_provider_);
   scoped_task_environment_.RunUntilIdle();
 }
 
