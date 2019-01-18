@@ -268,7 +268,6 @@ crbug.com/591099 fast/events/touch/compositor-touch-hit-rects-continuation.html 
 crbug.com/591099 fast/events/touch/compositor-touch-hit-rects-list-translate.html [ Failure ]
 crbug.com/591099 fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 crbug.com/889721 fast/inline/outline-continuations.html [ Failure ]
-crbug.com/591099 fast/replaced/replaced-breaking.html [ Failure Pass ]
 crbug.com/591099 fast/text/descent-clip-in-scaled-page.html [ Failure ]
 crbug.com/899902 fast/text/ellipsis-with-self-painting-layer.html [ Pass ]
 crbug.com/796943 fast/text/international/shape-across-elements-simple.html [ Pass ]
