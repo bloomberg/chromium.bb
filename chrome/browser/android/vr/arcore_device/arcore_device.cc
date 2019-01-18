@@ -290,12 +290,12 @@ void ArCoreDevice::OnRequestInstallArModuleResult(bool success) {
   }
 }
 
-void ArCoreDevice::OnRequestInstallSupportedArCoreCanceled() {
+void ArCoreDevice::OnRequestInstallSupportedArCoreResult(bool success) {
   DCHECK(IsOnMainThread());
   DCHECK(is_arcore_gl_thread_initialized_);
   DCHECK(on_request_arcore_install_or_update_result_callback_);
 
-  std::move(on_request_arcore_install_or_update_result_callback_).Run(false);
+  std::move(on_request_arcore_install_or_update_result_callback_).Run(success);
 }
 
 void ArCoreDevice::CallDeferredRequestSessionCallbacks(bool success) {

@@ -147,6 +147,7 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.vr.ArDelegate;
+import org.chromium.chrome.browser.vr.ArDelegateProvider;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.webapps.AddToHomescreenManager;
 import org.chromium.chrome.browser.widget.ControlContainer;
@@ -1019,6 +1020,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mPictureInPictureController.cleanup(this);
         }
         VrModuleProvider.getDelegate().maybeRegisterVrEntryHook(this);
+        ArDelegate arDelegate = ArDelegateProvider.getDelegate();
+        if (arDelegate != null) {
+            arDelegate.registerOnResumeActivity(this);
+        }
 
         getManualFillingController().onResume();
     }
@@ -1438,7 +1443,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         VrModuleProvider.maybeInit();
         VrModuleProvider.getDelegate().onNativeLibraryAvailable();
-        ArDelegate.maybeInit();
+        ArDelegate arDelegate = ArDelegateProvider.getDelegate();
+        if (arDelegate != null) {
+            arDelegate.init();
+        }
         if (getSavedInstanceState() == null && getIntent() != null) {
             VrModuleProvider.getDelegate().onNewIntentWithNative(this, getIntent());
         }

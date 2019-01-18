@@ -32,9 +32,10 @@ class ArCoreJavaUtils : public ArCoreInstallUtils {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       bool success);
-  void OnRequestInstallSupportedArCoreCanceled(
+  void OnRequestInstallSupportedArCoreResult(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
+      const base::android::JavaParamRef<jobject>& obj,
+      bool success);
 
   bool EnsureLoaded() override;
   base::android::ScopedJavaLocalRef<jobject> GetApplicationContext() override;

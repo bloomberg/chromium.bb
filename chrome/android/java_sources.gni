@@ -1676,6 +1676,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/util/UrlUtilities.java",
   "java/src/org/chromium/chrome/browser/util/ViewUtils.java",
   "java/src/org/chromium/chrome/browser/vr/ArDelegate.java",
+  "java/src/org/chromium/chrome/browser/vr/ArDelegateProvider.java",
   "java/src/org/chromium/chrome/browser/vr/OnExitVrRequestListener.java",
   "java/src/org/chromium/chrome/browser/vr/VrDelegate.java",
   "java/src/org/chromium/chrome/browser/vr/VrDelegateFallback.java",
@@ -2584,6 +2585,9 @@ if (enable_feed_in_chrome) {
 # example, would complain that the java classes.dex differs between 32bit and
 # 64bit. We must include this, even if we're not packaging the shim.
 if (enable_arcore) {
-  chrome_java_sources +=
-      [ "java/src/org/chromium/chrome/browser/vr/ArCoreJavaUtils.java" ]
+  chrome_java_sources += [
+    "java/src/org/chromium/chrome/browser/vr/ArCoreJavaUtils.java",
+    "java/src/org/chromium/chrome/browser/vr/ArDelegateImpl.java",
+    "java/src/org/chromium/chrome/browser/vr/ArCoreShim.java",
+  ]
 }

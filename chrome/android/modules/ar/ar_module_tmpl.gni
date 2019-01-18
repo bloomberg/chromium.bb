@@ -37,6 +37,7 @@ template("ar_module_tmpl") {
     android_manifest = _manifest
     android_manifest_dep = ":$_manifest_target"
     deps = [
+      "//chrome/browser/android/vr:ar_java",
       "//third_party/android_deps:com_google_ar_core_java",
     ]
 

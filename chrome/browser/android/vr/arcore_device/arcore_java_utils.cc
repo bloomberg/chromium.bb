@@ -58,11 +58,12 @@ ArCoreJavaUtils::~ArCoreJavaUtils() {
   Java_ArCoreJavaUtils_onNativeDestroy(env, j_arcore_java_utils_);
 }
 
-void ArCoreJavaUtils::OnRequestInstallSupportedArCoreCanceled(
+void ArCoreJavaUtils::OnRequestInstallSupportedArCoreResult(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+    const base::android::JavaParamRef<jobject>& obj,
+    bool success) {
   // TODO(crbug.com/893348): don't reach back into arcore device like this.
-  arcore_device_->OnRequestInstallSupportedArCoreCanceled();
+  arcore_device_->OnRequestInstallSupportedArCoreResult(success);
 }
 
 bool ArCoreJavaUtils::ShouldRequestInstallArModule() {

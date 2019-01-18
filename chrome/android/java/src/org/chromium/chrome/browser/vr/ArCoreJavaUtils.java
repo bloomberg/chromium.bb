@@ -6,17 +6,15 @@ package org.chromium.chrome.browser.vr;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 
 import dalvik.system.BaseDexClassLoader;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -36,17 +34,11 @@ import java.lang.annotation.RetentionPolicy;
  * Provides ARCore classes access to java-related app functionality.
  */
 @JNINamespace("vr")
-@UsedByReflection("ArDelegate.java")
 public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
-    private static final int MIN_SDK_VERSION = Build.VERSION_CODES.O;
+    private static final String TAG = "ArCoreJavaUtils";
     private static final String AR_CORE_PACKAGE = "com.google.ar.core";
     private static final String METADATA_KEY_MIN_APK_VERSION = "com.google.ar.core.min_apk_version";
     private static final int ARCORE_NOT_INSTALLED_VERSION_CODE = -1;
-    private static final String AR_CORE_MARKET_URI = "market://details?id=" + AR_CORE_PACKAGE;
-
-    // TODO(https://crbug.com/850840): Listen to ActivityOnResult to know when
-    // the intent to install ARCore returns.
-    private static final int AR_CORE_INSTALL_RESULT = -1;
 
     @IntDef({ArCoreInstallStatus.ARCORE_NEEDS_UPDATE, ArCoreInstallStatus.ARCORE_NOT_INSTALLED,
             ArCoreInstallStatus.ARCORE_INSTALLED})
@@ -61,6 +53,33 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
     private boolean mAppInfoInitialized;
     private int mAppMinArCoreApkVersionCode = ARCORE_NOT_INSTALLED_VERSION_CODE;
     private Tab mTab;
+
+    // Instance that requested installation of ARCore.
+    // Should be non-null only if there is a pending request to install ARCore.
+    private static ArCoreJavaUtils sRequestInstallInstance;
+
+    // Cached ArCoreShim instance - valid only after AR module was installed and
+    // getArCoreShimInstance() was called.
+    private static ArCoreShim sArCoreInstance;
+
+    private static ArCoreShim getArCoreShimInstance() {
+        if (sArCoreInstance != null) return sArCoreInstance;
+
+        try {
+            sArCoreInstance =
+                    (ArCoreShim) Class.forName("org.chromium.chrome.browser.vr.ArCoreShimImpl")
+                            .newInstance();
+        } catch (ClassNotFoundException e) {
+            // shouldn't happen - we should only call this method once AR module is installed.
+            throw new RuntimeException(e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+
+        return sArCoreInstance;
+    }
 
     @UsedByReflection("ArDelegate.java")
     public static void installArCoreDeviceProviderFactory() {
@@ -152,6 +171,7 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
         }
     }
 
+    // TODO(bialpio): this method could be converted to start using ArCoreApk.checkAvailability()
     private @ArCoreInstallStatus int getArCoreInstallStatus() {
         assert mAppInfoInitialized;
         int arCoreApkVersionNumber = getArCoreApkVersionNumber();
@@ -210,20 +230,39 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
                 break;
         }
 
-        // TODO(https://crbug.com/916651) - use ARCore SDK's InstallActivity to install ARCore
         SimpleConfirmInfoBarBuilder.Listener listener = new SimpleConfirmInfoBarBuilder.Listener() {
             @Override
             public void onInfoBarDismissed() {
-                if (mNativeArCoreJavaUtils != 0) {
-                    nativeOnRequestInstallSupportedArCoreCanceled(mNativeArCoreJavaUtils);
-                }
+                maybeNotifyNativeOnRequestInstallSupportedArCoreResult(false);
             }
 
             @Override
             public boolean onInfoBarButtonClicked(boolean isPrimary) {
-                activity.startActivityForResult(
-                        new Intent(Intent.ACTION_VIEW, Uri.parse(AR_CORE_MARKET_URI)),
-                        AR_CORE_INSTALL_RESULT);
+                try {
+                    assert sRequestInstallInstance == null;
+                    ArCoreShim.InstallStatus installStatus =
+                            getArCoreShimInstance().requestInstall(activity, true);
+
+                    if (installStatus == ArCoreShim.InstallStatus.INSTALL_REQUESTED) {
+                        // Install flow will resume in onArCoreRequestInstallReturned, mark that
+                        // there is active request. Native code notification will be deferred until
+                        // our activity gets resumed.
+                        sRequestInstallInstance = ArCoreJavaUtils.this;
+                    } else if (installStatus == ArCoreShim.InstallStatus.INSTALLED) {
+                        // No need to install - notify native code.
+                        maybeNotifyNativeOnRequestInstallSupportedArCoreResult(true);
+                    }
+
+                } catch (ArCoreShim.UnavailableDeviceNotCompatibleException e) {
+                    sRequestInstallInstance = null;
+                    Log.w(TAG, "ARCore installation request failed with exception: %s",
+                            e.toString());
+
+                    maybeNotifyNativeOnRequestInstallSupportedArCoreResult(false);
+                } catch (ArCoreShim.UnavailableUserDeclinedInstallationException e) {
+                    maybeNotifyNativeOnRequestInstallSupportedArCoreResult(false);
+                }
+
                 return false;
             }
         };
@@ -243,8 +282,46 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
         }
     }
 
+    private void onArCoreRequestInstallReturned(Activity activity) {
+        try {
+            // Since |userRequestedInstall| parameter is false, the below call should
+            // throw if ARCore is still not installed - no need to check the result.
+            getArCoreShimInstance().requestInstall(activity, false);
+            maybeNotifyNativeOnRequestInstallSupportedArCoreResult(true);
+        } catch (ArCoreShim.UnavailableDeviceNotCompatibleException e) {
+            Log.w(TAG, "Exception thrown when trying to validate install state of ARCore: %s",
+                    e.toString());
+            maybeNotifyNativeOnRequestInstallSupportedArCoreResult(false);
+        } catch (ArCoreShim.UnavailableUserDeclinedInstallationException e) {
+            maybeNotifyNativeOnRequestInstallSupportedArCoreResult(false);
+        }
+    }
+
+    /**
+     * This method should be called by the Activity that gets resumed.
+     * We are only interested in the cases where our current Activity got paused
+     * as a result of a call to ArCoreApk.requestInstall() method.
+     */
+    @UsedByReflection("ArDelegate.java")
+    public static void onResumeActivityWithNative(Activity activity) {
+        if (sRequestInstallInstance != null) {
+            sRequestInstallInstance.onArCoreRequestInstallReturned(activity);
+            sRequestInstallInstance = null;
+        }
+    }
+
+    /**
+     * Helper used to notify native code about the result of the request to install ARCore.
+     */
+    private void maybeNotifyNativeOnRequestInstallSupportedArCoreResult(boolean success) {
+        if (mNativeArCoreJavaUtils != 0) {
+            nativeOnRequestInstallSupportedArCoreResult(mNativeArCoreJavaUtils, success);
+        }
+    }
+
     private static native void nativeInstallArCoreDeviceProviderFactory();
     private native void nativeOnRequestInstallArModuleResult(
             long nativeArCoreJavaUtils, boolean success);
-    private native void nativeOnRequestInstallSupportedArCoreCanceled(long nativeArCoreJavaUtils);
+    private native void nativeOnRequestInstallSupportedArCoreResult(
+            long nativeArCoreJavaUtils, boolean success);
 }
