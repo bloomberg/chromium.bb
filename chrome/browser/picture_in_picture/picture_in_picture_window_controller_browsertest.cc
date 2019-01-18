@@ -1923,6 +1923,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_NE(nullptr, active_web_contents);
 
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
   ASSERT_TRUE(content::ExecuteScript(active_web_contents,
                                      "video.autoPictureInPicture = true;"));
   ASSERT_TRUE(content::ExecuteScript(active_web_contents,
@@ -2011,6 +2012,7 @@ class WebAppPictureInPictureWindowControllerBrowserTest
 IN_PROC_BROWSER_TEST_F(WebAppPictureInPictureWindowControllerBrowserTest,
                        AutoPictureInPicture) {
   InstallAndLaunchPWA();
+  ASSERT_TRUE(content::ExecuteScript(web_contents(), "video.play();"));
   ASSERT_TRUE(content::ExecuteScript(web_contents(),
                                      "video.autoPictureInPicture = true;"));
 
@@ -2030,6 +2032,32 @@ IN_PROC_BROWSER_TEST_F(WebAppPictureInPictureWindowControllerBrowserTest,
       content::TitleWatcher(web_contents(), expected_title).WaitAndGetTitle());
 }
 
+// Show pwa page and check that Auto Picture-in-Picture is not triggered if
+// video is not playing.
+IN_PROC_BROWSER_TEST_F(WebAppPictureInPictureWindowControllerBrowserTest,
+                       AutoPictureInPictureNotTriggeredIfVideoNotPlaying) {
+  InstallAndLaunchPWA();
+  ASSERT_TRUE(content::ExecuteScript(web_contents(),
+                                     "video.autoPictureInPicture = true;"));
+  bool is_paused = false;
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractBool(web_contents(), "isPaused();", &is_paused));
+  EXPECT_TRUE(is_paused);
+
+  // Hide page and check that the video did not entered
+  // Picture-in-Picture automatically.
+  web_contents()->WasHidden();
+  base::string16 expected_title = base::ASCIIToUTF16("hidden");
+  EXPECT_EQ(
+      expected_title,
+      content::TitleWatcher(web_contents(), expected_title).WaitAndGetTitle());
+
+  bool in_picture_in_picture = false;
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(
+      web_contents(), "isInPictureInPicture();", &in_picture_in_picture));
+  EXPECT_FALSE(in_picture_in_picture);
+}
+
 // Check that Auto Picture-in-Picture is not triggered if there's already a
 // video in Picture-in-Picture.
 IN_PROC_BROWSER_TEST_F(
@@ -2043,6 +2071,7 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       web_contents(), "enterPictureInPicture();", &result));
   EXPECT_TRUE(result);
+  ASSERT_TRUE(content::ExecuteScript(web_contents(), "secondVideo.play();"));
   ASSERT_TRUE(content::ExecuteScript(
       web_contents(), "secondVideo.autoPictureInPicture = true;"));
 
@@ -2067,6 +2096,7 @@ IN_PROC_BROWSER_TEST_F(
     WebAppPictureInPictureWindowControllerBrowserTest,
     AutoPictureInPictureNotTriggeredOnPageShownIfNoAttribute) {
   InstallAndLaunchPWA();
+  ASSERT_TRUE(content::ExecuteScript(web_contents(), "video.play();"));
   ASSERT_TRUE(content::ExecuteScript(web_contents(),
                                      "video.autoPictureInPicture = true;"));
 
@@ -2102,8 +2132,10 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(WebAppPictureInPictureWindowControllerBrowserTest,
                        AutoPictureInPictureAttributeApplies) {
   InstallAndLaunchPWA();
+  ASSERT_TRUE(content::ExecuteScript(web_contents(), "video.play();"));
   ASSERT_TRUE(content::ExecuteScript(web_contents(),
                                      "video.autoPictureInPicture = true;"));
+  ASSERT_TRUE(content::ExecuteScript(web_contents(), "secondVideo.play();"));
   ASSERT_TRUE(content::ExecuteScript(
       web_contents(), "secondVideo.autoPictureInPicture = true;"));
 
@@ -2157,6 +2189,7 @@ IN_PROC_BROWSER_TEST_F(
     WebAppPictureInPictureWindowControllerBrowserTest,
     AutoPictureInPictureNotTriggeredOnPageShownIfNotEnteredAutoPictureInPicture) {
   InstallAndLaunchPWA();
+  ASSERT_TRUE(content::ExecuteScript(web_contents(), "video.play();"));
   ASSERT_TRUE(content::ExecuteScript(web_contents(),
                                      "video.autoPictureInPicture = true;"));
 
@@ -2168,6 +2201,7 @@ IN_PROC_BROWSER_TEST_F(
       expected_title,
       content::TitleWatcher(web_contents(), expected_title).WaitAndGetTitle());
 
+  ASSERT_TRUE(content::ExecuteScript(web_contents(), "secondVideo.play();"));
   ASSERT_TRUE(content::ExecuteScript(
       web_contents(), "secondVideo.autoPictureInPicture = true;"));
 

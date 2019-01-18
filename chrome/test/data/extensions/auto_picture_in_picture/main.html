@@ -38,6 +38,10 @@
     function isInPictureInPicture() {
       window.domAutomationController.send(document.pictureInPictureElement == video);
     }
+
+    function isPaused() {
+      window.domAutomationController.send(video.paused);
+    }
   </script>
 </body>
 </html>
