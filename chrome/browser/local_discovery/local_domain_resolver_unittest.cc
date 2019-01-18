@@ -5,9 +5,9 @@
 #include <stdint.h>
 
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/service_discovery_client_impl.h"
 #include "net/dns/mdns_client_impl.h"
@@ -101,7 +101,7 @@ class LocalDomainResolverTest : public testing::Test {
 
   net::MockMDnsSocketFactory socket_factory_;
   net::MDnsClientImpl mdns_client_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(LocalDomainResolverTest, ResolveDomainA) {
