@@ -31,4 +31,4 @@ class SkpicturePrinterUnitTest(page_test_test_case.PageTestTestCase):
     saved_picture_count = results.FindAllPageSpecificValuesNamed(
         'saved_picture_count')
     self.assertEquals(len(saved_picture_count), 1)
-    self.assertGreater(saved_picture_count[0].GetRepresentativeNumber(), 0)
+    self.assertGreater(saved_picture_count[0].value, 0)
