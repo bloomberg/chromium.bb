@@ -30,7 +30,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
       scoped_refptr<gl::GLShareGroup> share_group,
       gl::GLSurfaceFormat share_group_surface_format,
       const GpuFeatureInfo& gpu_feature_info,
-      const GpuPreferences& gpu_preferences);
+      const GpuPreferences& gpu_preferences,
+      SharedImageManager* shared_image_manager);
 
   // CommandBufferTaskExecutor implementation.
   bool ForceVirtualizedGLContexts() const override;

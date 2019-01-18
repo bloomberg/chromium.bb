@@ -15,6 +15,7 @@
 #include "content/public/browser/gpu_utils.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/mailbox_manager_factory.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
@@ -133,7 +134,9 @@ DeferredGpuCommandService::CreateDeferredGpuCommandService() {
     LOG(FATAL) << "gpu::InitializeGLThreadSafe() failed.";
   }
   return new DeferredGpuCommandService(
-      std::make_unique<gpu::SyncPointManager>(), gpu_preferences, gpu_info,
+      std::make_unique<gpu::SyncPointManager>(),
+      gpu::gles2::CreateMailboxManager(gpu_preferences),
+      std::make_unique<gpu::SharedImageManager>(), gpu_preferences, gpu_info,
       gpu_feature_info);
 }
 
@@ -146,17 +149,22 @@ DeferredGpuCommandService* DeferredGpuCommandService::GetInstance() {
 
 DeferredGpuCommandService::DeferredGpuCommandService(
     std::unique_ptr<gpu::SyncPointManager> sync_point_manager,
+    std::unique_ptr<gpu::MailboxManager> mailbox_manager,
+    std::unique_ptr<gpu::SharedImageManager> shared_image_manager,
     const gpu::GpuPreferences& gpu_preferences,
     const gpu::GPUInfo& gpu_info,
     const gpu::GpuFeatureInfo& gpu_feature_info)
     : gpu::CommandBufferTaskExecutor(gpu_preferences,
                                      gpu_feature_info,
                                      sync_point_manager.get(),
+                                     mailbox_manager.get(),
                                      nullptr,
-                                     nullptr,
-                                     gl::GLSurfaceFormat()),
+                                     gl::GLSurfaceFormat(),
+                                     shared_image_manager.get()),
       sync_point_manager_(std::move(sync_point_manager)),
-      gpu_info_(gpu_info) {
+      mailbox_manager_(std::move(mailbox_manager)),
+      gpu_info_(gpu_info),
+      shared_image_manager_(std::move(shared_image_manager)) {
   DETACH_FROM_THREAD(task_queue_thread_checker_);
 }
 

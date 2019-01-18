@@ -23,6 +23,7 @@ namespace gpu {
 struct GpuFeatureInfo;
 struct GpuPreferences;
 class SyncPointManager;
+class SharedImageManager;
 }
 
 namespace android_webview {
@@ -68,6 +69,8 @@ class DeferredGpuCommandService : public gpu::CommandBufferTaskExecutor {
 
   DeferredGpuCommandService(
       std::unique_ptr<gpu::SyncPointManager> sync_point_manager,
+      std::unique_ptr<gpu::MailboxManager> mailbox_manager,
+      std::unique_ptr<gpu::SharedImageManager> shared_image_manager,
       const gpu::GpuPreferences& gpu_preferences,
       const gpu::GPUInfo& gpu_info,
       const gpu::GpuFeatureInfo& gpu_feature_info);
@@ -95,7 +98,12 @@ class DeferredGpuCommandService : public gpu::CommandBufferTaskExecutor {
   bool inside_run_idle_tasks_ = false;
 
   std::unique_ptr<gpu::SyncPointManager> sync_point_manager_;
+  std::unique_ptr<gpu::MailboxManager> mailbox_manager_;
   gpu::GPUInfo gpu_info_;
+
+  // TODO(https://crbug.com/922834): This should eventually be shared with the
+  // GpuChannelManager's SharedImageManager.
+  std::unique_ptr<gpu::SharedImageManager> shared_image_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DeferredGpuCommandService);
 };
