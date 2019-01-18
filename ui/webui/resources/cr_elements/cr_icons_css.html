@@ -9,8 +9,12 @@
       }
 
       paper-icon-button-light paper-ripple {
-        color: currentColor;
-        opacity: 0.6;
+        opacity: 0.6;  /* TODO(dbeam): seems like ripples are too light. */
+      }
+
+      :host-context([dark]) paper-icon-button-light paper-ripple {
+        --paper-ripple-opacity: .4;
+        opacity: 1;
       }
 
       paper-icon-button-light button {
@@ -30,8 +34,8 @@
       }
 
       :-webkit-any(paper-icon-button-light, .cr-icon).no-overlap {
-        margin-left: 0;
-        margin-right: 0;
+        margin-inline-end: 0;
+        margin-inline-start: 0;
       }
 
       :-webkit-any(paper-icon-button-light, .cr-icon).icon-arrow-back {
