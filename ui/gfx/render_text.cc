@@ -143,9 +143,9 @@ sk_sp<cc::PaintShader> CreateFadeShader(const FontList& font_list,
 
   const SkPoint points[2] = { PointToSkPoint(text_rect.origin()),
                               PointToSkPoint(text_rect.top_right()) };
-  return cc::PaintShader::MakeLinearGradient(&points[0], &colors[0],
-                                             &positions[0], colors.size(),
-                                             SkShader::kClamp_TileMode);
+  return cc::PaintShader::MakeLinearGradient(
+      &points[0], &colors[0], &positions[0], static_cast<int>(colors.size()),
+      SkShader::kClamp_TileMode);
 }
 
 // Converts a FontRenderParams::Hinting value to the corresponding
@@ -1490,18 +1490,20 @@ void RenderText::OnTextAttributeChanged() {
     icu::StringCharacterIterator iter(text.c_str());
     // Respect ELIDE_HEAD and ELIDE_MIDDLE preferences during truncation.
     if (elide_behavior_ == ELIDE_HEAD) {
-      iter.setIndex32(text.length() - truncate_length_ + 1);
+      iter.setIndex32(
+          static_cast<int32_t>(text.length() - truncate_length_ + 1));
       layout_text_.assign(kEllipsisUTF16 + text.substr(iter.getIndex()));
     } else if (elide_behavior_ == ELIDE_MIDDLE) {
-      iter.setIndex32(truncate_length_ / 2);
+      iter.setIndex32(static_cast<int32_t>(truncate_length_ / 2));
       const size_t ellipsis_start = iter.getIndex();
-      iter.setIndex32(text.length() - (truncate_length_ / 2));
+      iter.setIndex32(
+          static_cast<int32_t>(text.length() - (truncate_length_ / 2)));
       const size_t ellipsis_end = iter.getIndex();
       DCHECK_LE(ellipsis_start, ellipsis_end);
       layout_text_.assign(text.substr(0, ellipsis_start) + kEllipsisUTF16 +
                           text.substr(ellipsis_end));
     } else {
-      iter.setIndex32(truncate_length_ - 1);
+      iter.setIndex32(static_cast<int32_t>(truncate_length_ - 1));
       layout_text_.assign(text.substr(0, iter.getIndex()) + kEllipsisUTF16);
     }
   }
@@ -1734,7 +1736,7 @@ size_t RenderText::GetNearestWordStartBoundary(size_t index) const {
 
   // First search for the word start boundary in the CURSOR_BACKWARD direction,
   // then in the CURSOR_FORWARD direction.
-  for (int i = std::min(index, length - 1); i >= 0; i--)
+  for (int i = static_cast<int>(std::min(index, length - 1)); i >= 0; i--)
     if (iter.IsStartOfWord(i))
       return i;
 

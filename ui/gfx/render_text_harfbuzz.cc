@@ -195,10 +195,10 @@ size_t FindRunBreakingCharacter(const base::string16& text,
 // Consider 3 characters with the script values {Kana}, {Hira, Kana}, {Kana}.
 // Without script extensions only the first script in each set would be taken
 // into account, resulting in 3 runs where 1 would be enough.
-int ScriptInterval(const base::string16& text,
-                   size_t start,
-                   size_t length,
-                   UScriptCode* script) {
+size_t ScriptInterval(const base::string16& text,
+                      size_t start,
+                      size_t length,
+                      UScriptCode* script) {
   DCHECK_GT(length, 0U);
 
   UScriptCode scripts[kMaxScripts] = { USCRIPT_INVALID_CODE };
@@ -1100,9 +1100,9 @@ void ShapeRunWithFont(const ShapeRunWithFontInput& in,
   // Note that the value of the |item_offset| argument (here specified as
   // |in.range.start()|) does affect the result, so we will have to adjust
   // the computed offsets.
-  hb_buffer_add_utf16(buffer,
-                      reinterpret_cast<const uint16_t*>(in.text.c_str()),
-                      in.text.length(), in.range.start(), in.range.length());
+  hb_buffer_add_utf16(
+      buffer, reinterpret_cast<const uint16_t*>(in.text.c_str()),
+      static_cast<int>(in.text.length()), in.range.start(), in.range.length());
   hb_buffer_set_script(buffer, ICUScriptToHBScript(in.script));
   hb_buffer_set_direction(buffer,
                           in.is_rtl ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
