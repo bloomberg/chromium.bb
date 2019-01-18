@@ -9,11 +9,10 @@
 #endif
 
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/signin/signin_browser_state_info_updater.h"
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
 
 // static
 SigninBrowserStateInfoUpdater*
@@ -33,8 +32,8 @@ SigninBrowserStateInfoUpdaterFactory::SigninBrowserStateInfoUpdaterFactory()
     : BrowserStateKeyedServiceFactory(
           "SigninBrowserStateInfoUpdater",
           BrowserStateDependencyManager::GetInstance()) {
+  DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(ios::SigninErrorControllerFactory::GetInstance());
-  DependsOn(ios::SigninManagerFactory::GetInstance());
 }
 
 SigninBrowserStateInfoUpdaterFactory::~SigninBrowserStateInfoUpdaterFactory() {}
@@ -45,7 +44,7 @@ SigninBrowserStateInfoUpdaterFactory::BuildServiceInstanceFor(
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(state);
   return std::make_unique<SigninBrowserStateInfoUpdater>(
-      ios::SigninManagerFactory::GetForBrowserState(chrome_browser_state),
+      IdentityManagerFactory::GetForBrowserState(chrome_browser_state),
       ios::SigninErrorControllerFactory::GetForBrowserState(
           chrome_browser_state),
       chrome_browser_state->GetStatePath());
