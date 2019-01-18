@@ -1289,7 +1289,7 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     next_previous_flags_ = 0;
 #endif
     params.flags |= next_previous_flags_;
-    params.value = new_info.value.Utf8();
+    params.value = new_info.value.Utf16();
     params.selection_start = new_info.selection_start;
     params.selection_end = new_info.selection_end;
     params.composition_start = new_info.composition_start;
