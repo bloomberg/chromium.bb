@@ -511,7 +511,9 @@ void WebRtcLogUploader::UploadCompressedLog(
 
   constexpr char kUploadURL[] = "https://clients2.google.com/cr/report";
   auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = GURL(kUploadURL);
+  resource_request->url = !upload_url_for_testing_.is_empty()
+                              ? upload_url_for_testing_
+                              : GURL(kUploadURL);
   resource_request->load_flags =
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
   resource_request->method = "POST";
