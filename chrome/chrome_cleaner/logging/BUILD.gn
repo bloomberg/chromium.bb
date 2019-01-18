@@ -182,6 +182,7 @@ static_library("noop_logging") {
   deps = [
     ":common",
     "//base",
+    "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
     "//components/chrome_cleaner/public/constants:constants",

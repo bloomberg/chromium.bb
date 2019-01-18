@@ -21,6 +21,7 @@
 #include "chrome/chrome_cleaner/logging/proto/shared_data.pb.h"
 #include "chrome/chrome_cleaner/logging/registry_logger.h"
 #include "chrome/chrome_cleaner/logging/safe_browsing_reporter.h"
+#include "chrome/chrome_cleaner/os/disk_util_types.h"
 #include "chrome/chrome_cleaner/pup_data/pup_data.h"
 #include "components/chrome_cleaner/public/constants/result_codes.h"
 
@@ -86,6 +87,9 @@ class ReporterLoggingService : public LoggingServiceAPI {
       const std::vector<base::string16>& command_line_arguments) override;
 
   void SetFoundModifiedChromeShortcuts(bool found_modified_shortcuts) override;
+
+  void SetScannedLocations(
+      const std::vector<UwS::TraceLocation>& scanned_locations) override;
 
   void LogProcessInformation(SandboxType process_type,
                              const SystemResourceUsage& usage) override;

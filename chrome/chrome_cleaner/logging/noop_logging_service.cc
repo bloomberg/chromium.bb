@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "chrome/chrome_cleaner/os/disk_util_types.h"
 
 namespace chrome_cleaner {
 
@@ -107,6 +108,9 @@ void NoOpLoggingService::AddShortcutData(
 
 void NoOpLoggingService::SetFoundModifiedChromeShortcuts(
     bool /*found_modified_shortcuts*/) {}
+
+void NoOpLoggingService::SetScannedLocations(
+    const std::vector<UwS::TraceLocation>& /*scanned_locations*/) {}
 
 void NoOpLoggingService::LogProcessInformation(
     SandboxType /*process_type*/,

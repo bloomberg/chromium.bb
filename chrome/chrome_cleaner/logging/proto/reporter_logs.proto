@@ -18,7 +18,7 @@ package chrome_cleaner;
 // FoilReporterLogs is a legacy name that must be kept because existing
 // analysis tools use it.
 //
-// Next tag: 11.
+// Next tag: 12.
 message FoilReporterLogs {
   // Corresponded to data related to reporter experiments.
   reserved 7, 8;
@@ -78,4 +78,7 @@ message FoilReporterLogs {
 
   // Flag to signal if we encountered a modified Chrome shortcut on the machine.
   optional bool found_modified_chrome_shortcuts = 10;
+
+  // UwS trace locations scanned by the reporter.
+  repeated UwS.TraceLocation scanned_locations = 11;
 }
