@@ -766,10 +766,8 @@ class BookmarkBarViewTest5 : public BookmarkBarViewEventTestBase {
 
   GURL url_dragging_;
 };
-// flaky on LinuxChromeOS: https://crbug.com/758210
-#if !defined(OS_LINUX) && !defined(OS_CHROMEOS)
-VIEW_TEST(BookmarkBarViewTest5, DND)
-#endif
+// Flaky: https://crbug.com/758210
+VIEW_TEST(BookmarkBarViewTest5, DISABLED_DND)
 
 // Tests holding mouse down on overflow button, dragging such that menu pops up
 // then selecting an item.
