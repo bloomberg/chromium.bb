@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "components/invalidation/impl/status.h"
 #include "components/invalidation/public/invalidation_util.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
