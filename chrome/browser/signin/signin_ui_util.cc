@@ -224,14 +224,14 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
     // Fetch accounts in the Gaia cookies.
     auto accounts_in_cookie_jar_info =
         identity_manager->GetAccountsInCookieJar();
-    std::vector<AccountInfo> signed_in_accounts =
+    std::vector<gaia::ListedAccount> signed_in_accounts =
         accounts_in_cookie_jar_info.signed_in_accounts;
     UMA_HISTOGRAM_BOOLEAN("Profile.DiceUI.GaiaAccountsStale",
                           !accounts_in_cookie_jar_info.accounts_are_fresh);
 
     if (accounts_in_cookie_jar_info.accounts_are_fresh &&
         !signed_in_accounts.empty())
-      default_account_id = signed_in_accounts[0].account_id;
+      default_account_id = signed_in_accounts[0].id;
   }
 
   // Fetch account information for each id and make sure that the first account

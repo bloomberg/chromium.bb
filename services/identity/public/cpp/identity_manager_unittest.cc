@@ -1757,11 +1757,12 @@ TEST_F(IdentityManagerTest,
   ASSERT_EQ(1u, accounts_in_cookie_jar_info.signed_in_accounts.size());
   ASSERT_TRUE(accounts_in_cookie_jar_info.signed_out_accounts.empty());
 
-  AccountInfo account_info = accounts_in_cookie_jar_info.signed_in_accounts[0];
+  gaia::ListedAccount listed_account =
+      accounts_in_cookie_jar_info.signed_in_accounts[0];
   EXPECT_EQ(account_tracker()->PickAccountIdForAccount(kTestGaiaId, kTestEmail),
-            account_info.account_id);
-  EXPECT_EQ(kTestGaiaId, account_info.gaia);
-  EXPECT_EQ(kTestEmail, account_info.email);
+            listed_account.id);
+  EXPECT_EQ(kTestGaiaId, listed_account.gaia_id);
+  EXPECT_EQ(kTestEmail, listed_account.email);
 }
 
 TEST_F(IdentityManagerTest,
@@ -1783,17 +1784,19 @@ TEST_F(IdentityManagerTest,
 
   // Verify not only that both accounts are present but that they are listed in
   // the expected order as well.
-  AccountInfo account_info1 = accounts_in_cookie_jar_info.signed_in_accounts[0];
+  gaia::ListedAccount listed_account1 =
+      accounts_in_cookie_jar_info.signed_in_accounts[0];
   EXPECT_EQ(account_tracker()->PickAccountIdForAccount(kTestGaiaId, kTestEmail),
-            account_info1.account_id);
-  EXPECT_EQ(kTestGaiaId, account_info1.gaia);
-  EXPECT_EQ(kTestEmail, account_info1.email);
+            listed_account1.id);
+  EXPECT_EQ(kTestGaiaId, listed_account1.gaia_id);
+  EXPECT_EQ(kTestEmail, listed_account1.email);
 
-  AccountInfo account_info2 = accounts_in_cookie_jar_info.signed_in_accounts[1];
+  gaia::ListedAccount account_info2 =
+      accounts_in_cookie_jar_info.signed_in_accounts[1];
   EXPECT_EQ(
       account_tracker()->PickAccountIdForAccount(kTestGaiaId2, kTestEmail2),
-      account_info2.account_id);
-  EXPECT_EQ(kTestGaiaId2, account_info2.gaia);
+      account_info2.id);
+  EXPECT_EQ(kTestGaiaId2, account_info2.gaia_id);
   EXPECT_EQ(kTestEmail2, account_info2.email);
 }
 
@@ -1834,27 +1837,27 @@ TEST_F(IdentityManagerTest, CallbackSentOnUpdateToSignOutAccountsInCookie) {
     // The two variables below, control the lookup indexes signed in and signed
     // out accounts list, respectively.
     int i = 0, j = 0;
-    AccountInfo account_info1 =
+    gaia::ListedAccount listed_account1 =
         signed_out_status.account_1
             ? accounts_in_cookie_jar_info.signed_out_accounts[i++]
             : accounts_in_cookie_jar_info.signed_in_accounts[j++];
     if (!signed_out_status.account_1)
       EXPECT_EQ(
           account_tracker()->PickAccountIdForAccount(kTestGaiaId, kTestEmail),
-          account_info1.account_id);
-    EXPECT_EQ(kTestGaiaId, account_info1.gaia);
-    EXPECT_EQ(kTestEmail, account_info1.email);
+          listed_account1.id);
+    EXPECT_EQ(kTestGaiaId, listed_account1.gaia_id);
+    EXPECT_EQ(kTestEmail, listed_account1.email);
 
-    AccountInfo account_info2 =
+    gaia::ListedAccount listed_account2 =
         signed_out_status.account_2
             ? accounts_in_cookie_jar_info.signed_out_accounts[i++]
             : accounts_in_cookie_jar_info.signed_in_accounts[j++];
     if (!signed_out_status.account_2)
       EXPECT_EQ(
           account_tracker()->PickAccountIdForAccount(kTestGaiaId2, kTestEmail2),
-          account_info2.account_id);
-    EXPECT_EQ(kTestGaiaId2, account_info2.gaia);
-    EXPECT_EQ(kTestEmail2, account_info2.email);
+          listed_account2.id);
+    EXPECT_EQ(kTestGaiaId2, listed_account2.gaia_id);
+    EXPECT_EQ(kTestEmail2, listed_account2.email);
   }
 }
 
@@ -1932,12 +1935,12 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithOneAccount) {
   ASSERT_EQ(1u, updated_accounts_in_cookie_jar.signed_in_accounts.size());
   ASSERT_TRUE(updated_accounts_in_cookie_jar.signed_out_accounts.empty());
 
-  AccountInfo account_info =
+  gaia::ListedAccount listed_account =
       updated_accounts_in_cookie_jar.signed_in_accounts[0];
   EXPECT_EQ(account_tracker()->PickAccountIdForAccount(kTestGaiaId, kTestEmail),
-            account_info.account_id);
-  EXPECT_EQ(kTestGaiaId, account_info.gaia);
-  EXPECT_EQ(kTestEmail, account_info.email);
+            listed_account.id);
+  EXPECT_EQ(kTestGaiaId, listed_account.gaia_id);
+  EXPECT_EQ(kTestEmail, listed_account.email);
 }
 
 TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithTwoAccounts) {
@@ -1970,20 +1973,20 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithTwoAccounts) {
 
   // Verify not only that both accounts are present but that they are listed in
   // the expected order as well.
-  AccountInfo account_info1 =
+  gaia::ListedAccount listed_account1 =
       updated_accounts_in_cookie_jar.signed_in_accounts[0];
   EXPECT_EQ(account_tracker()->PickAccountIdForAccount(kTestGaiaId, kTestEmail),
-            account_info1.account_id);
-  EXPECT_EQ(kTestGaiaId, account_info1.gaia);
-  EXPECT_EQ(kTestEmail, account_info1.email);
+            listed_account1.id);
+  EXPECT_EQ(kTestGaiaId, listed_account1.gaia_id);
+  EXPECT_EQ(kTestEmail, listed_account1.email);
 
-  AccountInfo account_info2 =
+  gaia::ListedAccount listed_account2 =
       updated_accounts_in_cookie_jar.signed_in_accounts[1];
   EXPECT_EQ(
       account_tracker()->PickAccountIdForAccount(kTestGaiaId2, kTestEmail2),
-      account_info2.account_id);
-  EXPECT_EQ(kTestGaiaId2, account_info2.gaia);
-  EXPECT_EQ(kTestEmail2, account_info2.email);
+      listed_account2.id);
+  EXPECT_EQ(kTestGaiaId2, listed_account2.gaia_id);
+  EXPECT_EQ(kTestEmail2, listed_account2.email);
 }
 
 TEST_F(IdentityManagerTest, CallbackSentOnSuccessfulAdditionOfAccountToCookie) {

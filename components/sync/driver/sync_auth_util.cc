@@ -30,12 +30,15 @@ SyncAccountInfo DetermineAccountToUse(
   if (allow_secondary_accounts) {
     // Check if there is a content area signed-in account, and we have a refresh
     // token for it.
-    std::vector<AccountInfo> cookie_accounts =
+    std::vector<gaia::ListedAccount> cookie_accounts =
         identity_manager->GetAccountsInCookieJar().signed_in_accounts;
     if (!cookie_accounts.empty() &&
-        identity_manager->HasAccountWithRefreshToken(
-            cookie_accounts[0].account_id)) {
-      return SyncAccountInfo(cookie_accounts[0], /*is_primary=*/false);
+        identity_manager->HasAccountWithRefreshToken(cookie_accounts[0].id)) {
+      AccountInfo account_info;
+      account_info.account_id = cookie_accounts[0].id;
+      account_info.gaia = cookie_accounts[0].gaia_id;
+      account_info.email = cookie_accounts[0].email;
+      return SyncAccountInfo(account_info, /*is_primary=*/false);
     }
   }
   return SyncAccountInfo();

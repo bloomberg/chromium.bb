@@ -28,23 +28,6 @@ const char kSupervisedUserPseudoEmail[] = "managed_user@localhost";
 // TODO(860492): Remove this once supervised user support is removed.
 const char kSupervisedUserPseudoGaiaID[] = "managed_user_gaia_id";
 
-// Maps a vector of gaia::ListedAccount structs to a corresponding vector of
-// AccountInfo structs.
-std::vector<AccountInfo> ListedAccountsToAccountInfos(
-    const std::vector<gaia::ListedAccount>& listed_accounts) {
-  std::vector<AccountInfo> account_infos;
-
-  for (const auto& listed_account : listed_accounts) {
-    AccountInfo account_info;
-    account_info.account_id = listed_account.id;
-    account_info.gaia = listed_account.gaia_id;
-    account_info.email = listed_account.email;
-    account_infos.push_back(account_info);
-  }
-
-  return account_infos;
-}
-
 }  // namespace
 
 IdentityManager::IdentityManager(
@@ -110,9 +93,8 @@ AccountsInCookieJarInfo IdentityManager::GetAccountsInCookieJar() const {
   bool accounts_are_fresh = gaia_cookie_manager_service_->ListAccounts(
       &signed_in_accounts, &signed_out_accounts);
 
-  return AccountsInCookieJarInfo(
-      accounts_are_fresh, ListedAccountsToAccountInfos(signed_in_accounts),
-      ListedAccountsToAccountInfos(signed_out_accounts));
+  return AccountsInCookieJarInfo(accounts_are_fresh, signed_in_accounts,
+                                 signed_out_accounts);
 }
 
 bool IdentityManager::HasAccountWithRefreshToken(
@@ -415,9 +397,8 @@ void IdentityManager::OnGaiaAccountsInCookieUpdated(
     const std::vector<gaia::ListedAccount>& signed_out_accounts,
     const GoogleServiceAuthError& error) {
   AccountsInCookieJarInfo accounts_in_cookie_jar_info(
-      error == GoogleServiceAuthError::AuthErrorNone(),
-      ListedAccountsToAccountInfos(signed_in_accounts),
-      ListedAccountsToAccountInfos(signed_out_accounts));
+      error == GoogleServiceAuthError::AuthErrorNone(), signed_in_accounts,
+      signed_out_accounts);
 
   for (auto& observer : observer_list_) {
     observer.OnAccountsInCookieUpdated(accounts_in_cookie_jar_info, error);

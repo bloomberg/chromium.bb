@@ -10,8 +10,8 @@ AccountsInCookieJarInfo::AccountsInCookieJarInfo() = default;
 
 AccountsInCookieJarInfo::AccountsInCookieJarInfo(
     bool accounts_are_fresh_param,
-    const std::vector<AccountInfo>& signed_in_accounts_param,
-    const std::vector<AccountInfo>& signed_out_accounts_param)
+    const std::vector<gaia::ListedAccount>& signed_in_accounts_param,
+    const std::vector<gaia::ListedAccount>& signed_out_accounts_param)
     : accounts_are_fresh(accounts_are_fresh_param),
       signed_in_accounts(signed_in_accounts_param),
       signed_out_accounts(signed_out_accounts_param) {}

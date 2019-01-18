@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "components/signin/core/browser/account_info.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 namespace identity {
 
@@ -18,16 +18,16 @@ struct AccountsInCookieJarInfo {
   bool accounts_are_fresh;
 
   // The current list of signed in accounts from the cookie jar.
-  std::vector<AccountInfo> signed_in_accounts;
+  std::vector<gaia::ListedAccount> signed_in_accounts;
 
   // The current list of signed out accounts from the cookie jar.
-  std::vector<AccountInfo> signed_out_accounts;
+  std::vector<gaia::ListedAccount> signed_out_accounts;
 
   AccountsInCookieJarInfo();
   AccountsInCookieJarInfo(
       bool accounts_are_fresh_param,
-      const std::vector<AccountInfo>& signed_in_accounts_param,
-      const std::vector<AccountInfo>& signed_out_accounts_param);
+      const std::vector<gaia::ListedAccount>& signed_in_accounts_param,
+      const std::vector<gaia::ListedAccount>& signed_out_accounts_param);
   AccountsInCookieJarInfo(const AccountsInCookieJarInfo& other);
   ~AccountsInCookieJarInfo();
 };
