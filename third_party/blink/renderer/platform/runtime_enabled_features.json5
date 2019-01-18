@@ -606,6 +606,10 @@
       status: "experimental",
     },
     {
+      name: "IdleDetection",
+      status: "experimental",
+    },
+    {
       name: "IgnoreCrossOriginWindowWhenNamedAccessOnWindow",
       status: "experimental",
     },

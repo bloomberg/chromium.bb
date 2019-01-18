@@ -177,6 +177,13 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
             ->GetLockManager()
             ->CreateService(std::move(request), origin);
       }));
+  parameterized_binder_registry_.AddInterface(base::BindRepeating(
+      [](blink::mojom::IdleManagerRequest request, RenderProcessHost* host,
+         const url::Origin& origin) {
+        static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
+            ->GetIdleManager()
+            ->CreateService(std::move(request), origin);
+      }));
   parameterized_binder_registry_.AddInterface(
       base::Bind([](blink::mojom::NotificationServiceRequest request,
                     RenderProcessHost* host, const url::Origin& origin) {

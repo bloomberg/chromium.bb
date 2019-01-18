@@ -141,6 +141,8 @@ Response FromProtocolPermissionType(
     *out_type = PermissionType::PAYMENT_HANDLER;
   } else if (type == protocol::Browser::PermissionTypeEnum::BackgroundFetch) {
     *out_type = PermissionType::BACKGROUND_FETCH;
+  } else if (type == protocol::Browser::PermissionTypeEnum::IdleDetection) {
+    *out_type = PermissionType::IDLE_DETECTION;
   } else {
     return Response::InvalidParams("Unknown permission type: " + type);
   }

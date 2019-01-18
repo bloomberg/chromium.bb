@@ -17,6 +17,7 @@
 #include "chrome/browser/clipboard/clipboard_write_permission_context.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/generic_sensor/sensor_permission_context.h"
+#include "chrome/browser/idle/idle_detection_permission_context.h"
 #include "chrome/browser/media/midi_permission_context.h"
 #include "chrome/browser/media/midi_sysex_permission_context.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permission_context.h"
@@ -124,6 +125,8 @@ ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
       return CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER;
     case PermissionType::BACKGROUND_FETCH:
       return CONTENT_SETTINGS_TYPE_BACKGROUND_FETCH;
+    case PermissionType::IDLE_DETECTION:
+      return CONTENT_SETTINGS_TYPE_IDLE_DETECTION;
     case PermissionType::NUM:
       // This will hit the NOTREACHED below.
       break;
@@ -310,6 +313,8 @@ PermissionManager::PermissionManager(Profile* profile) : profile_(profile) {
       std::make_unique<payments::PaymentHandlerPermissionContext>(profile);
   permission_contexts_[CONTENT_SETTINGS_TYPE_BACKGROUND_FETCH] =
       std::make_unique<BackgroundFetchPermissionContext>(profile);
+  permission_contexts_[CONTENT_SETTINGS_TYPE_IDLE_DETECTION] =
+      std::make_unique<IdleDetectionPermissionContext>(profile);
 }
 
 PermissionManager::~PermissionManager() {

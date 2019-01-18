@@ -147,6 +147,8 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
     }
     return CreatePermissionDescriptor(PermissionName::BACKGROUND_FETCH);
   }
+  if (name == "idle-detection")
+    return CreatePermissionDescriptor(PermissionName::IDLE_DETECTION);
 
   return nullptr;
 }

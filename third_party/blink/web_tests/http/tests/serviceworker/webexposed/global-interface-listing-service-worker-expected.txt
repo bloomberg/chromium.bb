@@ -3508,6 +3508,7 @@ interface WorkerNavigator
     getter connection
     getter deviceMemory
     getter hardwareConcurrency
+    getter idle
     getter language
     getter languages
     getter locks
