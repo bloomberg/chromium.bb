@@ -215,7 +215,7 @@ IdentityTestEnvironment::IdentityTestEnvironment(
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
     accounts_mutator = std::make_unique<AccountsMutatorImpl>(
-        token_service_, account_tracker_service_);
+        token_service_, account_tracker_service_, signin_manager_);
 #endif
 
     owned_identity_manager_ = std::make_unique<IdentityManager>(

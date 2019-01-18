@@ -11,6 +11,7 @@
 
 class AccountTrackerService;
 class ProfileOAuth2TokenService;
+class SigninManagerBase;
 
 namespace identity {
 
@@ -18,7 +19,8 @@ namespace identity {
 class AccountsMutatorImpl : public AccountsMutator {
  public:
   explicit AccountsMutatorImpl(ProfileOAuth2TokenService* token_service,
-                               AccountTrackerService* account_tracker_service);
+                               AccountTrackerService* account_tracker_service,
+                               SigninManagerBase* signin_manager);
   ~AccountsMutatorImpl() override;
 
   // Updates the information of the account associated with |gaia_id|, first
@@ -40,9 +42,16 @@ class AccountsMutatorImpl : public AccountsMutator {
   void RemoveAllAccounts(
       signin_metrics::SourceForRefreshTokenOperation source) override;
 
+  // Invalidates the refresh token of the primary account.
+  // The primary account must necessarily be set by the time this method
+  // is invoked.
+  void InvalidateRefreshTokenForPrimaryAccount(
+      signin_metrics::SourceForRefreshTokenOperation source) override;
+
  private:
   ProfileOAuth2TokenService* token_service_;
   AccountTrackerService* account_tracker_service_;
+  SigninManagerBase* signin_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountsMutatorImpl);
 };
