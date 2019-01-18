@@ -50,6 +50,7 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
   void UpdateCatalogFromNetwork(bool is_immediate_fetch,
                                 const std::string& accept_languages,
                                 BooleanCallback callback) override;
+  void RecordClick(const std::string& url, int category_type) override;
   void BlacklistSite(const std::string& url) override;
   void ClearActivities(base::Time begin,
                        base::Time end,

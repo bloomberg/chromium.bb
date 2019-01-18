@@ -63,6 +63,7 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         public void onClick(View view) {
             recordCategoryClick(mCategory.getType());
             recordTileIndexClick(mCategoryCardIndex, mTileIndex);
+            ExploreSitesBridge.recordClick(mProfile, mSiteUrl, mCategory.getType());
             mNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,
                     new LoadUrlParams(getUrl(), PageTransition.AUTO_BOOKMARK));
         }

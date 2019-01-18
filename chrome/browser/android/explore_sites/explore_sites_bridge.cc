@@ -182,6 +182,23 @@ void JNI_ExploreSitesBridge_BlacklistSite(
   service->BlacklistSite(url);
 }
 
+void JNI_ExploreSitesBridge_RecordClick(JNIEnv* env,
+                                        const JavaParamRef<jobject>& j_profile,
+                                        const JavaParamRef<jstring>& j_url,
+                                        const jint j_category_type) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  ExploreSitesService* service =
+      ExploreSitesServiceFactory::GetForBrowserContext(profile);
+  if (!service) {
+    DLOG(ERROR) << "Unable to create the ExploreSitesService!";
+    return;
+  }
+
+  std::string url = ConvertJavaStringToUTF8(env, j_url);
+  int category_type = static_cast<int>(j_category_type);
+  service->RecordClick(url, category_type);
+}
+
 // static
 void ExploreSitesBridge::ScheduleDailyTask() {
   JNIEnv* env = base::android::AttachCurrentThread();
