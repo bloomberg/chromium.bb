@@ -143,6 +143,8 @@ class OmniboxPedal {
  protected:
   FRIEND_TEST_ALL_PREFIXES(OmniboxPedalTest, SynonymGroupErasesFirstMatchOnly);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPedalTest, SynonymGroupsDriveConceptMatches);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxPedalImplementationsTest,
+                           UnorderedSynonymExpressionsAreConceptMatches);
 
   // If a sufficient set of triggering synonym groups are present in match_text
   // then it's a concept match and this returns true.  If a required group is
