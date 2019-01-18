@@ -33,11 +33,7 @@ void GuardedPageAllocator::MarkPageReadWrite(void* ptr) {
 }
 
 void GuardedPageAllocator::MarkPageInaccessible(void* ptr) {
-  // Mark the page inaccessible and then decommit the page to save space.
-  DWORD old_prot;
-  BOOL err = VirtualProtect(ptr, state_.page_size, PAGE_NOACCESS, &old_prot);
-  PCHECK(err != 0) << "VirtualProtect";
-  err = VirtualFree(ptr, state_.page_size, MEM_DECOMMIT);
+  BOOL err = VirtualFree(ptr, state_.page_size, MEM_DECOMMIT);
   PCHECK(err != 0) << "VirtualFree";
 }
 
