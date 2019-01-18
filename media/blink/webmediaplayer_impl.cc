@@ -1875,7 +1875,7 @@ void WebMediaPlayerImpl::ActivateSurfaceLayerForVideo() {
           base::Unretained(compositor_.get()), bridge_->GetSurfaceId(),
           bridge_->GetLocalSurfaceIdAllocationTime(),
           pipeline_metadata_.video_decoder_config.video_rotation(),
-          IsInPictureInPicture(), opaque_,
+          IsInPictureInPicture(),
           BindToCurrentLoop(base::BindRepeating(
               &WebMediaPlayerImpl::OnFrameSinkDestroyed, AsWeakPtr()))));
   bridge_->SetContentsOpaque(opaque_);
@@ -2151,16 +2151,10 @@ void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
   DCHECK_NE(ready_state_, WebMediaPlayer::kReadyStateHaveNothing);
 
   opaque_ = opaque;
-  if (!surface_layer_for_video_enabled_) {
-    if (video_layer_)
-      video_layer_->SetContentsOpaque(opaque_);
-  } else if (bridge_->GetCcLayer()) {
+  if (!surface_layer_for_video_enabled_ && video_layer_)
+    video_layer_->SetContentsOpaque(opaque_);
+  else if (bridge_->GetCcLayer())
     bridge_->SetContentsOpaque(opaque_);
-    vfc_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&VideoFrameCompositor::UpdateIsOpaque,
-                       base::Unretained(compositor_.get()), opaque_));
-  }
 }
 
 void WebMediaPlayerImpl::OnAudioConfigChange(const AudioDecoderConfig& config) {

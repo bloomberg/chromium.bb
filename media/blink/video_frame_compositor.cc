@@ -75,7 +75,6 @@ void VideoFrameCompositor::EnableSubmission(
     base::TimeTicks local_surface_id_allocation_time,
     VideoRotation rotation,
     bool force_submit,
-    bool is_opaque,
     blink::WebFrameSinkDestroyedCallback frame_sink_destroyed_callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -85,7 +84,6 @@ void VideoFrameCompositor::EnableSubmission(
 
   submitter_->SetRotation(rotation);
   submitter_->SetForceSubmit(force_submit);
-  submitter_->SetIsOpaque(is_opaque);
   submitter_->EnableSubmission(id, local_surface_id_allocation_time,
                                std::move(frame_sink_destroyed_callback));
   client_ = submitter_.get();
@@ -292,11 +290,6 @@ void VideoFrameCompositor::SetIsPageVisible(bool is_visible) {
 void VideoFrameCompositor::SetForceSubmit(bool force_submit) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   submitter_->SetForceSubmit(force_submit);
-}
-
-void VideoFrameCompositor::UpdateIsOpaque(bool is_opaque) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  submitter_->SetIsOpaque(is_opaque);
 }
 
 void VideoFrameCompositor::BackgroundRender() {

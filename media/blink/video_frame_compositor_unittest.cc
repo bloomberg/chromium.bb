@@ -37,7 +37,6 @@ class MockWebVideoFrameSubmitter : public blink::WebVideoFrameSubmitter {
   MOCK_CONST_METHOD0(IsDrivingFrameUpdates, bool(void));
   MOCK_METHOD1(Initialize, void(cc::VideoFrameProvider*));
   MOCK_METHOD1(SetRotation, void(media::VideoRotation));
-  MOCK_METHOD1(SetIsOpaque, void(bool));
   MOCK_METHOD1(SetIsSurfaceVisible, void(bool));
   MOCK_METHOD1(SetIsPageVisible, void(bool));
   MOCK_METHOD1(SetForceSubmit, void(bool));
@@ -79,10 +78,9 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
                   SetRotation(Eq(media::VideoRotation::VIDEO_ROTATION_90)));
       EXPECT_CALL(*submitter_, SetForceSubmit(false));
       EXPECT_CALL(*submitter_, EnableSubmission(Eq(viz::SurfaceId()), _, _));
-      EXPECT_CALL(*submitter_, SetIsOpaque(true));
       compositor_->EnableSubmission(viz::SurfaceId(), base::TimeTicks(),
                                     media::VideoRotation::VIDEO_ROTATION_90,
-                                    false, true, base::BindRepeating([] {}));
+                                    false, base::BindRepeating([] {}));
     }
 
     compositor_->set_tick_clock_for_testing(&tick_clock_);

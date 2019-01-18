@@ -340,11 +340,10 @@ class MockVideoFrameCompositor : public VideoFrameCompositor {
   void SetOnNewProcessedFrameCallback(OnNewProcessedFrameCB cb) override {}
   MOCK_METHOD1(SetIsPageVisible, void(bool));
   MOCK_METHOD0(GetCurrentFrameAndUpdateIfStale, scoped_refptr<VideoFrame>());
-  MOCK_METHOD6(EnableSubmission,
+  MOCK_METHOD5(EnableSubmission,
                void(const viz::SurfaceId&,
                     base::TimeTicks,
                     media::VideoRotation,
-                    bool,
                     bool,
                     blink::WebFrameSinkDestroyedCallback));
 };
@@ -907,7 +906,7 @@ TEST_F(WebMediaPlayerImplTest, LazyLoadPreloadMetadataSuspend) {
         .WillOnce(ReturnRef(surface_id_));
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
         .WillOnce(Return(base::TimeTicks()));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, false, _));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   }
 
@@ -939,7 +938,7 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoVideoMemoryUsage) {
         .WillOnce(ReturnRef(surface_id_));
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
         .WillOnce(Return(base::TimeTicks()));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, false, _));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   }
 
@@ -1369,7 +1368,7 @@ TEST_F(WebMediaPlayerImplTest, NoStreams) {
   if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer()).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId()).Times(0);
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, _, _)).Times(0);
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, _)).Times(0);
   }
 
   // Nothing should happen.  In particular, no assertions should fail.
@@ -1422,7 +1421,7 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
         .WillOnce(ReturnRef(surface_id_));
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
         .WillOnce(Return(base::TimeTicks()));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, false, _));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
     EXPECT_CALL(client_, SetCcLayer(NotNull()));
@@ -1451,7 +1450,7 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
         .WillOnce(ReturnRef(surface_id_));
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
         .WillOnce(Return(base::TimeTicks()));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, false, _));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
     EXPECT_CALL(client_, SetCcLayer(NotNull()));
@@ -1481,7 +1480,7 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
         .WillOnce(ReturnRef(surface_id_));
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
         .WillOnce(Return(base::TimeTicks()));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, false, _));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
     EXPECT_CALL(client_, SetCcLayer(NotNull()));
@@ -1559,7 +1558,7 @@ TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
         .WillOnce(ReturnRef(surface_id_));
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
         .WillOnce(Return(base::TimeTicks()));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, false, _));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
     EXPECT_CALL(client_, SetCcLayer(NotNull()));
@@ -1600,7 +1599,7 @@ TEST_F(WebMediaPlayerImplTest, SetContentsLayerGetsWebLayerFromBridge) {
   EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
       .WillOnce(Return(base::TimeTicks()));
   EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
-  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, false, _));
+  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, _));
 
   // We only call the callback to create the bridge in OnMetadata, so we need
   // to call it.
@@ -1645,7 +1644,7 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
       .WillRepeatedly(ReturnRef(surface_id_));
   EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
       .WillRepeatedly(Return(base::TimeTicks()));
-  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, false, _));
+  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, _));
   EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
 
   PipelineMetadata metadata;
@@ -1690,7 +1689,7 @@ TEST_F(WebMediaPlayerImplTest,
       .WillRepeatedly(ReturnRef(surface_id_));
   EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
       .WillRepeatedly(Return(base::TimeTicks()));
-  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, false, _));
+  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, _));
   EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
 
   PipelineMetadata metadata;

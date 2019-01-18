@@ -1097,7 +1097,7 @@ void WebMediaPlayerMS::ActivateSurfaceLayerForVideo() {
       base::BindOnce(
           &WebMediaPlayerMSCompositor::EnableSubmission, compositor_,
           bridge_->GetSurfaceId(), bridge_->GetLocalSurfaceIdAllocationTime(),
-          video_rotation_, IsInPictureInPicture(), opaque_,
+          video_rotation_, IsInPictureInPicture(),
           media::BindToCurrentLoop(base::BindRepeating(
               &WebMediaPlayerMS::OnFrameSinkDestroyed, AsWeakPtr()))));
 
