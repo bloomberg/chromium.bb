@@ -165,6 +165,22 @@ source_set("context_menu") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
+source_set("find_in_page") {
+  deps = [
+    ":web_frame",
+    ":web_state_impl_header",
+    "//base",
+    "//ios/web/public",
+  ]
+
+  sources = [
+    "find_in_page/find_in_page_manager_impl.h",
+    "find_in_page/find_in_page_manager_impl.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("web_frame") {
   deps = [
     ":web_state_impl_header",
