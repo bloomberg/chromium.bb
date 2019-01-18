@@ -66,7 +66,7 @@ class MouseWheelPhaseHandler {
   void DispatchPendingWheelEndEvent();
   void IgnorePendingWheelEndEvent();
   void ResetTouchpadScrollSequence();
-  void SendWheelEndForTouchpadScrollingIfNeeded();
+  void SendWheelEndForTouchpadScrollingIfNeeded(bool should_route_event);
   void TouchpadScrollingMayBegin();
 
   // Used to set the timer timeout for testing.

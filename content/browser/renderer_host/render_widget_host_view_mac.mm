@@ -666,7 +666,7 @@ void RenderWidgetHostViewMac::OnGestureEvent(
 
   ui::LatencyInfo latency_info(ui::SourceEventType::TOUCH);
 
-  if (ShouldRouteEvent(web_gesture)) {
+  if (ShouldRouteEvents()) {
     blink::WebGestureEvent gesture_event(web_gesture);
     host()->delegate()->GetInputEventRouter()->RouteGestureEvent(
         this, &gesture_event, latency_info);
@@ -1241,25 +1241,20 @@ const viz::FrameSinkId& RenderWidgetHostViewMac::GetFrameSinkId() const {
   return browser_compositor_->GetDelegatedFrameHost()->frame_sink_id();
 }
 
-bool RenderWidgetHostViewMac::ShouldRouteEvent(
-    const WebInputEvent& event) const {
+bool RenderWidgetHostViewMac::ShouldRouteEvents() const {
   // Event routing requires a valid frame sink (that is, that we be connected to
   // a ui::Compositor), which is not guaranteed to be the case.
   // https://crbug.com/844095
   if (!browser_compositor_->GetRootFrameSinkId().is_valid())
     return false;
-  // See also RenderWidgetHostViewAura::ShouldRouteEvent.
-  // TODO(wjmaclean): Update this function if RenderWidgetHostViewMac implements
-  // OnTouchEvent(), to match what we are doing in RenderWidgetHostViewAura.
-  // The only touch events and touch gesture events expected here are
-  // injected synthetic events.
+
   return host()->delegate() && host()->delegate()->GetInputEventRouter();
 }
 
 void RenderWidgetHostViewMac::SendTouchpadZoomEvent(
     const WebGestureEvent* event) {
   DCHECK(event->IsTouchpadZoomEvent());
-  if (ShouldRouteEvent(*event)) {
+  if (ShouldRouteEvents()) {
     host()->delegate()->GetInputEventRouter()->RouteGestureEvent(
         this, event, ui::LatencyInfo(ui::SourceEventType::TOUCHPAD));
     return;
@@ -1275,7 +1270,7 @@ void RenderWidgetHostViewMac::InjectTouchEvent(
   if (!result.succeeded)
     return;
 
-  if (ShouldRouteEvent(event)) {
+  if (ShouldRouteEvents()) {
     WebTouchEvent touch_event(event);
     host()->delegate()->GetInputEventRouter()->RouteTouchEvent(
         this, &touch_event, latency_info);
@@ -1580,7 +1575,7 @@ void RenderWidgetHostViewMac::RouteOrProcessMouseEvent(
   blink::WebMouseEvent web_event = const_web_event;
   ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT);
-  if (ShouldRouteEvent(web_event)) {
+  if (ShouldRouteEvents()) {
     host()->delegate()->GetInputEventRouter()->RouteMouseEvent(this, &web_event,
                                                                latency_info);
   } else {
@@ -1598,7 +1593,7 @@ void RenderWidgetHostViewMac::RouteOrProcessTouchEvent(
 
   ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT);
-  if (ShouldRouteEvent(web_event)) {
+  if (ShouldRouteEvents()) {
     host()->delegate()->GetInputEventRouter()->RouteTouchEvent(this, &web_event,
                                                                latency_info);
   } else {
@@ -1612,14 +1607,14 @@ void RenderWidgetHostViewMac::RouteOrProcessWheelEvent(
   ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT);
   mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
-      web_event, ShouldRouteEvent(web_event));
+      web_event, ShouldRouteEvents());
   if (web_event.phase == blink::WebMouseWheelEvent::kPhaseEnded) {
     // A wheel end event is scheduled and will get dispatched if momentum
     // phase doesn't start in 100ms. Don't sent the wheel end event
     // immediately.
     return;
   }
-  if (ShouldRouteEvent(web_event)) {
+  if (ShouldRouteEvents()) {
     host()->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
         this, &web_event, latency_info);
   } else {
