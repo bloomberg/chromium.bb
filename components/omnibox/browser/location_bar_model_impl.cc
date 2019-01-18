@@ -50,11 +50,6 @@ base::string16 LocationBarModelImpl::GetURLForDisplay() const {
 
 #if defined(OS_IOS)
   format_types |= url_formatter::kFormatUrlTrimAfterHost;
-#else
-  if (base::FeatureList::IsEnabled(
-          omnibox::kHideSteadyStateUrlPathQueryAndRef)) {
-    format_types |= url_formatter::kFormatUrlTrimAfterHost;
-  }
 #endif
 
   if (OmniboxFieldTrial::IsHideSteadyStateUrlSchemeEnabled())

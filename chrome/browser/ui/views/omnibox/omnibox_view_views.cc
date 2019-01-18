@@ -54,6 +54,8 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/multi_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
@@ -121,6 +123,52 @@ OmniboxState::~OmniboxState() {
 
 }  // namespace
 
+// Animation chosen to match the default values in the edwardjung prototype.
+class OmniboxViewViews::PathFadeAnimation : public gfx::AnimationDelegate {
+ public:
+  PathFadeAnimation(OmniboxViewViews* view, SkColor starting_color)
+      : view_(view),
+        starting_color_(starting_color),
+        animation_(
+            {
+                gfx::MultiAnimation::Part(4000, gfx::Tween::ZERO),
+                gfx::MultiAnimation::Part(300, gfx::Tween::FAST_OUT_SLOW_IN),
+            },
+            gfx::MultiAnimation::GetDefaultTimerInterval()) {
+    DCHECK(view_);
+
+    animation_.set_delegate(this);
+    animation_.set_continuous(false);
+  }
+
+  // Starts the animation over |path_bounds|. The caller is responsible for
+  // calling Stop() if the text changes and |path_bounds| is no longer valid.
+  void Start(const gfx::Range& path_bounds) {
+    path_bounds_ = path_bounds;
+    animation_.Start();
+  }
+
+  void Stop() { animation_.Stop(); }
+
+  // gfx::AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override {
+    DCHECK(!view_->model()->user_input_in_progress());
+
+    SkColor color = gfx::Tween::ColorValueBetween(
+        animation->GetCurrentValue(), starting_color_, SK_ColorTRANSPARENT);
+    view_->ApplyColor(color, path_bounds_);
+  }
+
+ private:
+  // Non-owning pointer. |view_| must always outlive this class.
+  OmniboxViewViews* view_;
+  SkColor starting_color_;
+
+  // The path text range we are fading.
+  gfx::Range path_bounds_;
+
+  gfx::MultiAnimation animation_;
+};
 
 // OmniboxViewViews -----------------------------------------------------------
 
@@ -147,6 +195,15 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       scoped_template_url_service_observer_(this) {
   set_id(VIEW_ID_OMNIBOX);
   SetFontList(font_list);
+
+  if (base::FeatureList::IsEnabled(
+          omnibox::kHideSteadyStateUrlPathQueryAndRef)) {
+    // The animation only applies when the path is dimmed to begin with.
+    SkColor starting_color =
+        location_bar_view_->GetColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
+    path_fade_animation_ =
+        std::make_unique<PathFadeAnimation>(this, starting_color);
+  }
 }
 
 OmniboxViewViews::~OmniboxViewViews() {
@@ -259,14 +316,35 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   if (!location_bar_view_)
     return;
 
+  // Cancel any existing path fading animation. The path style will be reset
+  // in the following lines, so there should be no ill effects from cancelling
+  // the animation midway.
+  if (path_fade_animation_)
+    path_fade_animation_->Stop();
+
   // If the current contents is a URL, turn on special URL rendering mode in
   // RenderText.
   bool text_is_url = model()->CurrentTextIsURL();
   GetRenderText()->SetDirectionalityMode(
       text_is_url ? gfx::DIRECTIONALITY_AS_URL : gfx::DIRECTIONALITY_FROM_TEXT);
   SetStyle(gfx::STRIKE, false);
-  UpdateTextStyle(text(), text_is_url,
-                  model()->client()->GetSchemeClassifier());
+
+  base::string16 text = GetText();
+  bool path_eligible_for_fading = UpdateTextStyle(
+      text, text_is_url, model()->client()->GetSchemeClassifier());
+
+  // Only fade the path when everything but the host is de-emphasized.
+  if (path_fade_animation_ && path_eligible_for_fading && !HasFocus() &&
+      !model()->user_input_in_progress()) {
+    url::Component scheme, host;
+    AutocompleteInput::ParseForEmphasizeComponents(
+        text, model()->client()->GetSchemeClassifier(), &scheme, &host);
+    gfx::Range path_bounds(host.end(), text.size());
+
+    // Whenever the text changes, EmphasizeURLComponents is called again, and
+    // the animation is reset with a new |path_bounds|.
+    path_fade_animation_->Start(path_bounds);
+  }
 }
 
 void OmniboxViewViews::Update() {

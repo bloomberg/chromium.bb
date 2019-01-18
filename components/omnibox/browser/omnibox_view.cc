@@ -265,7 +265,7 @@ void OmniboxView::TextChanged() {
     model_->OnChanged();
 }
 
-void OmniboxView::UpdateTextStyle(
+bool OmniboxView::UpdateTextStyle(
     const base::string16& display_text,
     const bool text_is_url,
     const AutocompleteSchemeClassifier& classifier) {
@@ -320,4 +320,7 @@ void OmniboxView::UpdateTextStyle(
   // Emphasize the scheme for security UI display purposes (if necessary).
   if (!model()->user_input_in_progress() && scheme_range.IsValid())
     UpdateSchemeStyle(scheme_range);
+
+  // Path is eligible for fading only when the host is the only emphasized part.
+  return deemphasize == ALL_BUT_HOST;
 }
