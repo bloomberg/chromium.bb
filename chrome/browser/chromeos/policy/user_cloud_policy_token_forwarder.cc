@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -31,6 +32,9 @@ const net::BackoffEntry::Policy
         -1,              // Never discard the entry.
         true,  // Don't use initial delay unless last request was an error.
 };
+
+// static
+constexpr char UserCloudPolicyTokenForwarder::kUMAChildUserOAuthTokenError[];
 
 UserCloudPolicyTokenForwarder::UserCloudPolicyTokenForwarder(
     UserCloudPolicyManagerChromeOS* manager,
@@ -137,6 +141,9 @@ void UserCloudPolicyTokenForwarder::OnAccessTokenFetchCompleted(
     Shutdown();
     return;
   }
+
+  UMA_HISTOGRAM_ENUMERATION(kUMAChildUserOAuthTokenError, error.state(),
+                            GoogleServiceAuthError::NUM_STATES);
 
   // Schedule fetching fresh OAuth token after current token expiration, if
   // UserCloudPolicyManagerChromeOS needs valid OAuth token all the time.
