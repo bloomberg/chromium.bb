@@ -99,6 +99,15 @@ void NoOpLoggingService::AddScheduledTask(
     const base::string16& /*description*/,
     const std::vector<internal::FileInformation>& /*actions*/) {}
 
+void NoOpLoggingService::AddShortcutData(
+    const base::string16& /*lnk_path*/,
+    const base::string16& /*executable_path*/,
+    const std::string& /*executable _hash*/,
+    const std::vector<base::string16>& /*command_line_arguments*/) {}
+
+void NoOpLoggingService::SetFoundModifiedChromeShortcuts(
+    bool /*found_modified_shortcuts*/) {}
+
 void NoOpLoggingService::LogProcessInformation(
     SandboxType /*process_type*/,
     const SystemResourceUsage& /*usage*/) {}

@@ -1505,6 +1505,36 @@ TEST_P(CleanerLoggingServiceTest, AllExpectedRemovalsConfirmed) {
   EXPECT_TRUE(logging_service_->AllExpectedRemovalsConfirmed());
 }
 
+TEST_P(CleanerLoggingServiceTest, AddShortcutData) {
+  const base::string16 kLnkPath = L"C:\\Users\\SomeUser";
+  const base::string16 kExecutablePath1 =
+      L"C:\\executable_path\\executable.exe";
+  const base::string16 kExecutablePath2 = L"C:\\executable_path\\bad_file.exe";
+  const std::string kHash = "HASHSTRING";
+  const std::vector<base::string16> kCommandLineArguments = {
+      L"some-argument", L"-ha", L"-ha", L"-ha"};
+
+  logging_service_->AddShortcutData(kLnkPath, kExecutablePath1, kHash, {});
+  logging_service_->AddShortcutData(kLnkPath, kExecutablePath2, kHash,
+                                    kCommandLineArguments);
+
+  ChromeCleanerReport report;
+  ASSERT_TRUE(report.ParseFromString(logging_service_->RawReportContent()));
+  ASSERT_EQ(report.system_report().shortcut_data().size(), 2);
+  ChromeCleanerReport_SystemReport_ShortcutData shortcut1, shortcut2;
+  shortcut1 = report.system_report().shortcut_data(0);
+  shortcut2 = report.system_report().shortcut_data(1);
+
+  EXPECT_EQ(shortcut1.lnk_path(), base::UTF16ToUTF8(kLnkPath));
+  EXPECT_EQ(shortcut2.lnk_path(), base::UTF16ToUTF8(kLnkPath));
+  EXPECT_EQ(shortcut1.executable_path(), base::UTF16ToUTF8(kExecutablePath1));
+  EXPECT_EQ(shortcut2.executable_path(), base::UTF16ToUTF8(kExecutablePath2));
+  EXPECT_EQ(shortcut1.executable_hash(), kHash);
+  EXPECT_EQ(shortcut2.executable_hash(), kHash);
+  EXPECT_EQ(shortcut1.command_line_arguments().size(), 0);
+  EXPECT_EQ(shortcut2.command_line_arguments().size(), 4);
+}
+
 // TODO(csharp) add multi-thread tests.
 
 INSTANTIATE_TEST_CASE_P(All,

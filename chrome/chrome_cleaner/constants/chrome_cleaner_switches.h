@@ -32,6 +32,7 @@ extern const char kPostRebootSwitchesInOtherRegistryKeySwitch[];
 extern const char kPostRebootTriggerSwitch[];
 extern const char kQuarantineDirSwitch[];
 extern const char kRemoveScanOnlyUwS[];
+extern const char kReportChromeLnkChangesSwitch[];
 extern const char kReportExtensionsSwitch[];
 extern const char kSandboxMojoPipeTokenSwitch[];
 extern const char kSandboxedProcessIdSwitch[];

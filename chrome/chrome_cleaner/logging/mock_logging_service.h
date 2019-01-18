@@ -81,6 +81,13 @@ class MockLoggingService : public LoggingServiceAPI {
                void(const base::string16& name,
                     const base::string16& description,
                     const std::vector<internal::FileInformation>& actions));
+  MOCK_METHOD4(AddShortcutData,
+               void(const base::string16& lnk_path,
+                    const base::string16& executable_path,
+                    const std::string& executable_hash,
+                    const std::vector<base::string16>& command_line_arguments));
+  MOCK_METHOD1(SetFoundModifiedChromeShortcuts,
+               void(bool found_modified_shortcuts));
   MOCK_METHOD2(LogProcessInformation,
                void(SandboxType process_type,
                     const SystemResourceUsage& usage));

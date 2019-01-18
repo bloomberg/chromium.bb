@@ -10,13 +10,15 @@
 #include "chrome/chrome_cleaner/chrome_utils/extension_file_logger.h"
 #include "chrome/chrome_cleaner/components/component_api.h"
 #include "chrome/chrome_cleaner/parsers/json_parser/json_parser_api.h"
+#include "chrome/chrome_cleaner/parsers/shortcut_parser/broker/sandboxed_shortcut_parser.h"
 
 namespace chrome_cleaner {
 
 // This class manages the production of a system information report.
 class SystemReportComponent : public ComponentAPI {
  public:
-  explicit SystemReportComponent(JsonParserAPI* json_parser);
+  explicit SystemReportComponent(JsonParserAPI* json_parser,
+                                 ShortcutParserAPI* shortcut_parser);
 
   // ComponentAPI methods.
   void PreScan() override;
@@ -35,6 +37,7 @@ class SystemReportComponent : public ComponentAPI {
  private:
   bool created_report_;
   JsonParserAPI* json_parser_;
+  ShortcutParserAPI* shortcut_parser_;
   base::FilePath user_data_path_;
 };
 

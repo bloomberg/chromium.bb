@@ -114,6 +114,9 @@ const char kQuarantineDirSwitch[] = "quarantine-dir";
 // only.
 const char kRemoveScanOnlyUwS[] = "remove-scan-only-uws";
 
+// Enable reporting modifications to the Chrome Lnk files.
+const char kReportChromeLnkChangesSwitch[] = "report-chrome-lnk-changes";
+
 // Enable reporting of force-installed Chrome extensions.
 const char kReportExtensionsSwitch[] = "report-extensions";
 

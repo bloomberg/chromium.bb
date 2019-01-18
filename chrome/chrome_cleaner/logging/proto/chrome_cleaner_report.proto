@@ -130,7 +130,7 @@ message ChromeCleanerReport {
 
   // All the additional information gathered when performing a
   // detailed system report.
-  // Next tag: 13.
+  // Next tag: 14.
   message SystemReport {
     // Deprecated preferences field that stopped being sent after 20.114.
     reserved 10;
@@ -224,6 +224,16 @@ message ChromeCleanerReport {
       repeated FileInformation extension_files = 3;
     }
     repeated InstalledExtension installed_extensions = 12;
+
+    // Information about modifications found on Chrome Shortcuts.
+    // Next tag: 5.
+    message ShortcutData {
+      optional string lnk_path = 1;
+      optional string executable_path = 2;
+      optional string executable_hash = 3;
+      repeated string command_line_arguments = 4;
+    }
+    repeated ShortcutData shortcut_data = 13;
   }
   optional SystemReport system_report = 14;
 
