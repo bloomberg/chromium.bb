@@ -27,7 +27,7 @@ cr.define('omnibox_output', function() {
 
       /** @private {number} */
       this.selectedResponseIndex_ = 0;
-      /** @type {!Array<!Array<!mojom.OmniboxResult>>} */
+      /** @type {!Array<!Array<!mojom.OmniboxResponse>>} */
       this.responsesHistory = [];
       /** @private {!Array<!OutputResultsGroup>} */
       this.resultsGroups_ = [];
@@ -57,7 +57,7 @@ cr.define('omnibox_output', function() {
       this.updateFilterHighlights_();
     }
 
-    /** @param {!Array<!Array<!mojom.OmniboxResult>>} responsesHistory */
+    /** @param {!Array<!Array<!mojom.OmniboxResponse>>} responsesHistory */
     setResponsesHistory(responsesHistory) {
       this.responsesHistory = responsesHistory;
       this.dispatchEvent(new CustomEvent(
@@ -81,7 +81,7 @@ cr.define('omnibox_output', function() {
           'responses-count-changed', {detail: this.responsesHistory.length}));
     }
 
-    /** @param {!mojom.OmniboxResult} response */
+    /** @param {!mojom.OmniboxResponse} response */
     addAutocompleteResponse(response) {
       const lastIndex = this.responsesHistory.length - 1;
       this.responsesHistory[lastIndex].push(response);
@@ -101,7 +101,7 @@ cr.define('omnibox_output', function() {
 
     /**
      * Creates and adds a result group to the UI.
-     * @private @param {!mojom.OmniboxResult} response
+     * @private @param {!mojom.OmniboxResponse} response
      */
     createResultsGroup_(response) {
       const resultsGroup =
@@ -183,7 +183,7 @@ cr.define('omnibox_output', function() {
    */
   class OutputResultsGroup extends OmniboxElement {
     /**
-     * @param {!mojom.OmniboxResult} resultsGroup
+     * @param {!mojom.OmniboxResponse} resultsGroup
      * @param {number} cursorPosition
      * @return {!OutputResultsGroup}
      */
@@ -198,7 +198,7 @@ cr.define('omnibox_output', function() {
     }
 
     /**
-     *  @param {!mojom.OmniboxResult} resultsGroup
+     *  @param {!mojom.OmniboxResponse} resultsGroup
      *  @param {number} cursorPosition
      */
     setResultsGroup(resultsGroup, cursorPosition) {

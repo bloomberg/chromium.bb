@@ -42,7 +42,7 @@ struct AutocompleteResultsForProvider {
   array<AutocompleteMatch> results;
 };
 
-struct OmniboxResult {
+struct OmniboxResponse {
   bool done;
   // Time delta since the request was started, in milliseconds.
   int32 time_since_omnibox_started_ms;
@@ -68,7 +68,8 @@ interface OmniboxPageHandler {
 };
 
 interface OmniboxPage {
-  HandleNewAutocompleteResult(OmniboxResult result, bool isPageController);
+  handleNewAutocompleteResponse(OmniboxResponse response,
+                                bool isPageController);
   HandleNewAutocompleteQuery(bool isPageController);
   HandleAnswerImageData(string image_url, string image_data);
 };
