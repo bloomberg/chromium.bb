@@ -112,24 +112,6 @@ Polymer.IronIconsetSvg.prototype.createIcon = function(iconName, targetIsRTL) {}
  */
 let BigInt = function(value) {};
 
-/**
- * TODO(manukh): Remove this once it is added to Closure Compiler itself.
- * @see https://w3c.github.io/clipboard-apis/#async-clipboard-api
- * @interface
- */
-function Clipboard() {}
-
-/**
- * @return {!Promise<string>}
- */
-Clipboard.prototype.readText = function() {};
-
-/**
- * @param {string} text
- * @return {!Promise<void>}
- */
-Clipboard.prototype.writeText = function(text) {};
-
 /** @const {!Clipboard} */
 Navigator.prototype.clipboard;
 
@@ -144,12 +126,3 @@ Navigator.prototype.clipboard;
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap
  */
 Array.prototype.flatMap = function(callback, opt_this) {};
-
-/**
- * @param {string} name
- * @param {boolean=} force
- * @return {boolean}
- * @throws {DOMException}
- * @see https://dom.spec.whatwg.org/#dom-element-toggleattribute
- */
-Element.prototype.toggleAttribute = function(name, force) {};
