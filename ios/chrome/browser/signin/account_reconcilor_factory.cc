@@ -14,7 +14,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/web/public/features.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -26,7 +25,6 @@ AccountReconcilorFactory::AccountReconcilorFactory()
           "AccountReconcilor",
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(SigninClientFactory::GetInstance());
 }
@@ -52,8 +50,6 @@ std::unique_ptr<KeyedService> AccountReconcilorFactory::BuildServiceInstanceFor(
   auto* identity_manager =
       IdentityManagerFactory::GetForBrowserState(chrome_browser_state);
   std::unique_ptr<AccountReconcilor> reconcilor(new AccountReconcilor(
-      ProfileOAuth2TokenServiceFactory::GetForBrowserState(
-          chrome_browser_state),
       identity_manager,
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
       GaiaCookieManagerServiceFactory::GetForBrowserState(chrome_browser_state),

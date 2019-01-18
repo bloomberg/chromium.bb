@@ -120,13 +120,11 @@ class SpyReconcilorDelegate : public signin::AccountReconcilorDelegate {
 class DummyAccountReconcilorWithDelegate : public AccountReconcilor {
  public:
   DummyAccountReconcilorWithDelegate(
-      ProfileOAuth2TokenService* token_service,
       identity::IdentityManager* identity_manager,
       SigninClient* client,
       GaiaCookieManagerService* cookie_manager_service,
       signin::AccountConsistencyMethod account_consistency)
       : AccountReconcilor(
-            token_service,
             identity_manager,
             client,
             cookie_manager_service,
@@ -142,13 +140,11 @@ class DummyAccountReconcilorWithDelegate : public AccountReconcilor {
   // Takes ownership of |delegate|.
   // gmock can't work with move only parameters.
   DummyAccountReconcilorWithDelegate(
-      ProfileOAuth2TokenService* token_service,
       identity::IdentityManager* identity_manager,
       SigninClient* client,
       GaiaCookieManagerService* cookie_manager_service,
       signin::AccountReconcilorDelegate* delegate)
       : AccountReconcilor(
-            token_service,
             identity_manager,
             client,
             cookie_manager_service,
@@ -189,14 +185,12 @@ class MockAccountReconcilor
     : public testing::StrictMock<DummyAccountReconcilorWithDelegate> {
  public:
   explicit MockAccountReconcilor(
-      ProfileOAuth2TokenService* token_service,
       identity::IdentityManager* identity_manager,
       SigninClient* client,
       GaiaCookieManagerService* cookie_manager_service,
       signin::AccountConsistencyMethod account_consistency);
 
   explicit MockAccountReconcilor(
-      ProfileOAuth2TokenService* token_service,
       identity::IdentityManager* identity_manager,
       SigninClient* client,
       GaiaCookieManagerService* cookie_manager_service,
@@ -209,26 +203,22 @@ class MockAccountReconcilor
 };
 
 MockAccountReconcilor::MockAccountReconcilor(
-    ProfileOAuth2TokenService* token_service,
     identity::IdentityManager* identity_manager,
     SigninClient* client,
     GaiaCookieManagerService* cookie_manager_service,
     signin::AccountConsistencyMethod account_consistency)
     : testing::StrictMock<DummyAccountReconcilorWithDelegate>(
-          token_service,
           identity_manager,
           client,
           cookie_manager_service,
           account_consistency) {}
 
 MockAccountReconcilor::MockAccountReconcilor(
-    ProfileOAuth2TokenService* token_service,
     identity::IdentityManager* identity_manager,
     SigninClient* client,
     GaiaCookieManagerService* cookie_manager_service,
     std::unique_ptr<signin::AccountReconcilorDelegate> delegate)
     : testing::StrictMock<DummyAccountReconcilorWithDelegate>(
-          token_service,
           identity_manager,
           client,
           cookie_manager_service,
@@ -383,8 +373,8 @@ AccountReconcilorTest::AccountReconcilorTest()
 MockAccountReconcilor* AccountReconcilorTest::GetMockReconcilor() {
   if (!mock_reconcilor_) {
     mock_reconcilor_ = std::make_unique<MockAccountReconcilor>(
-        &token_service_, identity_test_env_.identity_manager(),
-        &test_signin_client_, &cookie_manager_service_, account_consistency_);
+        identity_test_env_.identity_manager(), &test_signin_client_,
+        &cookie_manager_service_, account_consistency_);
   }
 
   return mock_reconcilor_.get();
@@ -393,8 +383,8 @@ MockAccountReconcilor* AccountReconcilorTest::GetMockReconcilor() {
 MockAccountReconcilor* AccountReconcilorTest::GetMockReconcilor(
     std::unique_ptr<signin::AccountReconcilorDelegate> delegate) {
   mock_reconcilor_ = std::make_unique<MockAccountReconcilor>(
-      &token_service_, identity_test_env_.identity_manager(),
-      &test_signin_client_, &cookie_manager_service_, std::move(delegate));
+      identity_test_env_.identity_manager(), &test_signin_client_,
+      &cookie_manager_service_, std::move(delegate));
 
   return mock_reconcilor_.get();
 }
@@ -666,15 +656,15 @@ class AccountReconcilorTestTable
 TEST_P(AccountReconcilorMirrorEndpointParamTest, SigninManagerRegistration) {
   AccountReconcilor* reconcilor = GetMockReconcilor();
   ASSERT_TRUE(reconcilor);
-  ASSERT_FALSE(reconcilor->IsRegisteredWithTokenService());
+  ASSERT_FALSE(reconcilor->IsRegisteredWithIdentityManager());
 
   identity_test_env()->MakePrimaryAccountAvailable("user@gmail.com");
-  ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
+  ASSERT_TRUE(reconcilor->IsRegisteredWithIdentityManager());
 
   EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction());
 
   identity_test_env()->ClearPrimaryAccount();
-  ASSERT_FALSE(reconcilor->IsRegisteredWithTokenService());
+  ASSERT_FALSE(reconcilor->IsRegisteredWithIdentityManager());
 }
 
 // This method requires the use of the |TestSigninClient| to be created from the
@@ -687,7 +677,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, Reauth) {
 
   AccountReconcilor* reconcilor = GetMockReconcilor();
   ASSERT_TRUE(reconcilor);
-  ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
+  ASSERT_TRUE(reconcilor->IsRegisteredWithIdentityManager());
 
   // Simulate reauth.  The state of the reconcilor should not change.
   auto* account_mutator =
@@ -695,7 +685,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, Reauth) {
   DCHECK(account_mutator);
   account_mutator->SetPrimaryAccount(account_info.account_id);
 
-  ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
+  ASSERT_TRUE(reconcilor->IsRegisteredWithIdentityManager());
 }
 
 #endif  // !defined(OS_CHROMEOS)
@@ -705,7 +695,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, ProfileAlreadyConnected) {
 
   AccountReconcilor* reconcilor = GetMockReconcilor();
   ASSERT_TRUE(reconcilor);
-  ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
+  ASSERT_TRUE(reconcilor->IsRegisteredWithIdentityManager());
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -1145,10 +1135,10 @@ class AccountReconcilorDiceEndpointParamTest
 TEST_P(AccountReconcilorDiceEndpointParamTest, DiceTokenServiceRegistration) {
   AccountReconcilor* reconcilor = GetMockReconcilor();
   ASSERT_TRUE(reconcilor);
-  ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
+  ASSERT_TRUE(reconcilor->IsRegisteredWithIdentityManager());
 
   identity_test_env()->MakePrimaryAccountAvailable("user@gmail.com");
-  ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
+  ASSERT_TRUE(reconcilor->IsRegisteredWithIdentityManager());
 
   // Reconcilor should not logout all accounts from the cookies when
   // SigninManager signs out.
@@ -1157,7 +1147,7 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, DiceTokenServiceRegistration) {
       .Times(0);
 
   identity_test_env()->ClearPrimaryAccount();
-  ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
+  ASSERT_TRUE(reconcilor->IsRegisteredWithIdentityManager());
 }
 
 // Tests that reconcile starts even when Sync is not enabled.

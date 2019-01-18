@@ -13,7 +13,6 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_reconcilor.h"
@@ -117,7 +116,6 @@ AccountReconcilorFactory::AccountReconcilorFactory()
   DependsOn(ChromeSigninClientFactory::GetInstance());
   DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
 }
 
 AccountReconcilorFactory::~AccountReconcilorFactory() {}
@@ -137,7 +135,6 @@ KeyedService* AccountReconcilorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   AccountReconcilor* reconcilor = new AccountReconcilor(
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       IdentityManagerFactory::GetForProfile(profile),
       ChromeSigninClientFactory::GetForProfile(profile),
       GaiaCookieManagerServiceFactory::GetForProfile(profile),
