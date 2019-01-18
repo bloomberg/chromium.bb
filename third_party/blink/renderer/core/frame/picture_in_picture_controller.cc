@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 
 namespace blink {
 
@@ -28,6 +29,16 @@ PictureInPictureController& PictureInPictureController::From(
     ProvideTo(document, controller);
   }
   return *controller;
+}
+
+// static
+bool PictureInPictureController::IsElementInPictureInPicture(
+    const Element* element) {
+  DCHECK(element);
+  Document& document = element->GetDocument();
+  PictureInPictureController* controller =
+      Supplement<Document>::From<PictureInPictureController>(document);
+  return controller && controller->IsPictureInPictureElement(element);
 }
 
 void PictureInPictureController::Trace(blink::Visitor* visitor) {

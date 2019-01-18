@@ -686,8 +686,7 @@ void HTMLVideoElement::PictureInPictureControlClicked(
 
 WebMediaPlayer::DisplayType HTMLVideoElement::DisplayType() const {
   if (is_auto_picture_in_picture_ ||
-      PictureInPictureController::From(GetDocument())
-          .IsPictureInPictureElement(this)) {
+      PictureInPictureController::IsElementInPictureInPicture(this)) {
     return WebMediaPlayer::DisplayType::kPictureInPicture;
   }
 
