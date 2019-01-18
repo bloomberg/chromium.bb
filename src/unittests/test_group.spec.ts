@@ -6,6 +6,8 @@ Unit tests for parameterization system.
 import {
   Fixture,
   TestGroup,
+  CaseRecorder,
+  IParamsAny,
 } from "../framework/index.js";
 
 export const group = new TestGroup();
@@ -21,6 +23,10 @@ group.test("test", (t) => {});
 group.testp("testp", {a: 1}, print);
 
 class Printer extends Fixture {
+  public static create(log: CaseRecorder, params: IParamsAny): Printer {
+    return new Printer(log, params);
+  }
+
   public print() {
     this.log(JSON.stringify(this.params));
   }

@@ -12,11 +12,17 @@ import {
   pfilter,
   poptions,
   TestGroup,
+  CaseRecorder,
+  IParamsAny,
 } from "../framework/index.js";
 
 export const group = new TestGroup();
 
 class ParamsTest extends DefaultFixture {
+  public static create(log: CaseRecorder, params: IParamsAny): ParamsTest {
+    return new ParamsTest(log, params);
+
+  }
   public test(act: ParamSpecIterable, exp: IParamsSpec[]) {
     this.expect(objectEquals(Array.from(act), exp));
   }
