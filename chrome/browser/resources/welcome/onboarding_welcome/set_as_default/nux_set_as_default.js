@@ -87,7 +87,15 @@ Polymer({
     if (status.isDefault) {
       this.browserProxy_.recordSuccessfullySetDefault();
       this.finished_();
+      return;
     }
+
+    // <if expr="is_macosx">
+    // On Mac OS, we do not get a notification when the default browser changes.
+    // This will fake the notification.
+    window.setTimeout(
+        () => this.browserProxy_.requestDefaultBrowserState(), 100);
+    // </if>
   },
 
   /** @private */
