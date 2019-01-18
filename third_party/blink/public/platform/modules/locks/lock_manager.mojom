@@ -13,8 +13,9 @@ interface LockHandle {};
 // from the lock manager's queue.
 
 interface LockRequest {
-  // Request was granted.
-  Granted(LockHandle lock_handle);
+  // Request was granted. Associated to maintain ordering within
+  // a LockManager, to match task queue behavior required by spec.
+  Granted(associated LockHandle lock_handle);
 
   // Request failed; e.g. request was only "if available" and it was not.
   Failed();
@@ -63,11 +64,12 @@ interface LockManager {
   // when the lock is granted or if the request fails. If |request|'s
   // channel is closed (e.g. due to terminated process) the request
   // is removed from the manager's queues, which can unblock later
-  // requests.
+  // requests. Associated to maintain to match task queue behavior
+  // defined by spec.
   RequestLock(string name,
               LockMode mode,
               WaitMode wait,
-              LockRequest request);
+              associated LockRequest request);
 
   // Produces a snapshot of the lock manager's state. Web applications
   // can use this for diagnostic purposes.

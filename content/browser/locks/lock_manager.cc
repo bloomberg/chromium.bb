@@ -13,7 +13,7 @@
 #include "base/guid.h"
 #include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/strong_associated_binding.h"
 
 using blink::mojom::LockMode;
 
@@ -30,12 +30,12 @@ constexpr int64_t kPreemptiveLockId = 0;
 // connection can also be closed here when a lock is stolen.
 class LockHandleImpl final : public blink::mojom::LockHandle {
  public:
-  static mojo::StrongBindingPtr<blink::mojom::LockHandle> Create(
+  static mojo::StrongAssociatedBindingPtr<blink::mojom::LockHandle> Create(
       base::WeakPtr<LockManager> context,
       const url::Origin& origin,
       int64_t lock_id,
-      blink::mojom::LockHandlePtr* ptr) {
-    return mojo::MakeStrongBinding(
+      blink::mojom::LockHandleAssociatedPtr* ptr) {
+    return mojo::MakeStrongAssociatedBinding(
         std::make_unique<LockHandleImpl>(std::move(context), origin, lock_id),
         mojo::MakeRequest(ptr));
   }
@@ -73,7 +73,7 @@ class LockManager::Lock {
        LockMode mode,
        int64_t lock_id,
        const std::string& client_id,
-       blink::mojom::LockRequestPtr request)
+       blink::mojom::LockRequestAssociatedPtr request)
       : name_(name),
         mode_(mode),
         client_id_(client_id),
@@ -98,10 +98,10 @@ class LockManager::Lock {
     DCHECK(request_);
     DCHECK(!handle_);
 
-    blink::mojom::LockHandlePtr ptr;
+    blink::mojom::LockHandleAssociatedPtr ptr;
     handle_ =
         LockHandleImpl::Create(std::move(context), origin, lock_id_, &ptr);
-    request_->Granted(std::move(ptr));
+    request_->Granted(ptr.PassInterface());
     request_ = nullptr;
   }
 
@@ -134,11 +134,11 @@ class LockManager::Lock {
   // Exactly one of the following is non-null at any given time.
 
   // |request_| is valid until the lock is granted (or failure).
-  blink::mojom::LockRequestPtr request_;
+  blink::mojom::LockRequestAssociatedPtr request_;
 
   // Once granted, |handle_| holds this end of the pipe that lets us monitor
   // for the other end going away.
-  mojo::StrongBindingPtr<blink::mojom::LockHandle> handle_;
+  mojo::StrongAssociatedBindingPtr<blink::mojom::LockHandle> handle_;
 };
 
 LockManager::LockManager() : weak_ptr_factory_(this) {}
@@ -169,7 +169,7 @@ class LockManager::OriginState {
                    const std::string& name,
                    LockMode mode,
                    const std::string& client_id,
-                   blink::mojom::LockRequestPtr request,
+                   blink::mojom::LockRequestAssociatedPtr request,
                    const url::Origin origin) {
     // Preempting shared locks is not supported.
     DCHECK_EQ(mode, LockMode::EXCLUSIVE);
@@ -187,7 +187,7 @@ class LockManager::OriginState {
                   const std::string& name,
                   LockMode mode,
                   const std::string& client_id,
-                  blink::mojom::LockRequestPtr request,
+                  blink::mojom::LockRequestAssociatedPtr request,
                   WaitMode wait,
                   const url::Origin origin) {
     DCHECK(wait != WaitMode::PREEMPT);
@@ -316,10 +316,11 @@ void LockManager::CreateService(blink::mojom::LockManagerRequest request,
   bindings_.AddBinding(this, std::move(request), {origin, client_id});
 }
 
-void LockManager::RequestLock(const std::string& name,
-                              LockMode mode,
-                              WaitMode wait,
-                              blink::mojom::LockRequestPtr request) {
+void LockManager::RequestLock(
+    const std::string& name,
+    LockMode mode,
+    WaitMode wait,
+    blink::mojom::LockRequestAssociatedPtrInfo request_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (wait == WaitMode::PREEMPT && mode != LockMode::EXCLUSIVE) {
@@ -338,6 +339,9 @@ void LockManager::RequestLock(const std::string& name,
     origins_.emplace(context.origin, this);
 
   int64_t lock_id = NextLockId();
+
+  blink::mojom::LockRequestAssociatedPtr request;
+  request.Bind(std::move(request_info));
   request.set_connection_error_handler(base::BindOnce(&LockManager::ReleaseLock,
                                                       base::Unretained(this),
                                                       context.origin, lock_id));
