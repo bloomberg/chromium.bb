@@ -35,14 +35,15 @@ class SearchSuggestLoaderImpl : public SearchSuggestLoader {
       const std::string& application_locale);
   ~SearchSuggestLoaderImpl() override;
 
-  void Load(SearchSuggestionsCallback callback) override;
+  void Load(const std::string& blacklist,
+            SearchSuggestionsCallback callback) override;
 
   GURL GetLoadURLForTesting() const override;
 
  private:
   class AuthenticatedURLLoader;
 
-  GURL GetApiUrl() const;
+  GURL GetApiUrl(const std::string& blacklist) const;
 
   void LoadDone(const network::SimpleURLLoader* simple_loader,
                 std::unique_ptr<std::string> response_body);

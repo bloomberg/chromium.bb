@@ -54,6 +54,7 @@ KeyedService* SearchSuggestServiceFactory::BuildServiceInstanceFor(
     return nullptr;
   }
   Profile* profile = Profile::FromBrowserContext(context);
+  PrefService* pref_service = profile->GetPrefs();
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   GoogleURLTracker* google_url_tracker =
@@ -62,7 +63,8 @@ KeyedService* SearchSuggestServiceFactory::BuildServiceInstanceFor(
       content::BrowserContext::GetDefaultStoragePartition(context)
           ->GetURLLoaderFactoryForBrowserProcess();
   return new SearchSuggestService(
-      identity_manager, std::make_unique<SearchSuggestLoaderImpl>(
-                            url_loader_factory, google_url_tracker,
-                            g_browser_process->GetApplicationLocale()));
+      pref_service, identity_manager,
+      std::make_unique<SearchSuggestLoaderImpl>(
+          url_loader_factory, google_url_tracker,
+          g_browser_process->GetApplicationLocale()));
 }

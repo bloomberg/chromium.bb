@@ -139,7 +139,8 @@ TEST_F(SearchSuggestLoaderImplTest, RequestReturns) {
   SetUpResponseWithData(kMinimalValidResponse);
 
   base::MockCallback<SearchSuggestLoader::SearchSuggestionsCallback> callback;
-  search_suggest_loader()->Load(callback.Get());
+  std::string blacklist;
+  search_suggest_loader()->Load(blacklist, callback.Get());
 
   base::Optional<SearchSuggestData> data;
   base::RunLoop loop;
@@ -156,7 +157,8 @@ TEST_F(SearchSuggestLoaderImplTest, HandlesResponsePreamble) {
   SetUpResponseWithData(std::string(")]}'") + kMinimalValidResponse);
 
   base::MockCallback<SearchSuggestLoader::SearchSuggestionsCallback> callback;
-  search_suggest_loader()->Load(callback.Get());
+  std::string blacklist;
+  search_suggest_loader()->Load(blacklist, callback.Get());
 
   base::Optional<SearchSuggestData> data;
   base::RunLoop loop;
@@ -173,7 +175,8 @@ TEST_F(SearchSuggestLoaderImplTest, ParsesFullResponse) {
       "<div></div>", "script" : "<script></script>"}}})json");
 
   base::MockCallback<SearchSuggestLoader::SearchSuggestionsCallback> callback;
-  search_suggest_loader()->Load(callback.Get());
+  std::string blacklist;
+  search_suggest_loader()->Load(blacklist, callback.Get());
 
   base::Optional<SearchSuggestData> data;
   base::RunLoop loop;
@@ -192,10 +195,11 @@ TEST_F(SearchSuggestLoaderImplTest, CoalescesMultipleRequests) {
   // Trigger two requests.
   base::MockCallback<SearchSuggestLoader::SearchSuggestionsCallback>
       first_callback;
-  search_suggest_loader()->Load(first_callback.Get());
+  std::string blacklist;
+  search_suggest_loader()->Load(blacklist, first_callback.Get());
   base::MockCallback<SearchSuggestLoader::SearchSuggestionsCallback>
       second_callback;
-  search_suggest_loader()->Load(second_callback.Get());
+  search_suggest_loader()->Load(blacklist, second_callback.Get());
 
   // Make sure that a single response causes both callbacks to be called.
   base::Optional<SearchSuggestData> first_data;
@@ -217,7 +221,8 @@ TEST_F(SearchSuggestLoaderImplTest, NetworkErrorIsTransient) {
   SetUpResponseWithNetworkError();
 
   base::MockCallback<SearchSuggestLoader::SearchSuggestionsCallback> callback;
-  search_suggest_loader()->Load(callback.Get());
+  std::string blacklist;
+  search_suggest_loader()->Load(blacklist, callback.Get());
 
   base::RunLoop loop;
   EXPECT_CALL(callback, Run(SearchSuggestLoader::Status::TRANSIENT_ERROR,
@@ -230,7 +235,8 @@ TEST_F(SearchSuggestLoaderImplTest, InvalidJsonErrorIsFatal) {
   SetUpResponseWithData(kMinimalValidResponse + std::string(")"));
 
   base::MockCallback<SearchSuggestLoader::SearchSuggestionsCallback> callback;
-  search_suggest_loader()->Load(callback.Get());
+  std::string blacklist;
+  search_suggest_loader()->Load(blacklist, callback.Get());
 
   base::RunLoop loop;
   EXPECT_CALL(callback,
@@ -243,7 +249,8 @@ TEST_F(SearchSuggestLoaderImplTest, IncompleteJsonErrorIsFatal) {
   SetUpResponseWithData(R"json({"update": {}})json");
 
   base::MockCallback<SearchSuggestLoader::SearchSuggestionsCallback> callback;
-  search_suggest_loader()->Load(callback.Get());
+  std::string blacklist;
+  search_suggest_loader()->Load(blacklist, callback.Get());
 
   base::RunLoop loop;
   EXPECT_CALL(callback,

@@ -379,6 +379,22 @@ void SearchBox::SelectLocalBackgroundImage() {
   embedded_search_service_->SelectLocalBackgroundImage();
 }
 
+void SearchBox::BlacklistSearchSuggestion(int task_version, long task_id) {
+  embedded_search_service_->BlacklistSearchSuggestion(task_version, task_id);
+}
+
+void SearchBox::BlacklistSearchSuggestionWithHash(
+    int task_version,
+    long task_id,
+    const std::vector<uint8_t>& hash) {
+  embedded_search_service_->BlacklistSearchSuggestionWithHash(task_version,
+                                                              task_id, hash);
+}
+
+void SearchBox::OptOutOfSearchSuggestions() {
+  embedded_search_service_->OptOutOfSearchSuggestions();
+}
+
 void SearchBox::SetPageSequenceNumber(int page_seq_no) {
   page_seq_no_ = page_seq_no;
 }

@@ -185,30 +185,34 @@ SearchSuggestLoaderImpl::SearchSuggestLoaderImpl(
 
 SearchSuggestLoaderImpl::~SearchSuggestLoaderImpl() = default;
 
-void SearchSuggestLoaderImpl::Load(SearchSuggestionsCallback callback) {
+void SearchSuggestLoaderImpl::Load(const std::string& blacklist,
+                                   SearchSuggestionsCallback callback) {
   callbacks_.push_back(std::move(callback));
 
   // Note: If there is an ongoing request, abandon it. It's possible that
   // something has changed in the meantime (e.g. signin state) that would make
   // the result obsolete.
   pending_request_ = std::make_unique<AuthenticatedURLLoader>(
-      url_loader_factory_, GetApiUrl(),
+      url_loader_factory_, GetApiUrl(blacklist),
       base::BindOnce(&SearchSuggestLoaderImpl::LoadDone,
                      base::Unretained(this)));
   pending_request_->Start();
 }
 
 GURL SearchSuggestLoaderImpl::GetLoadURLForTesting() const {
-  return GetApiUrl();
+  std::string blacklist;
+  return GetApiUrl(blacklist);
 }
 
-GURL SearchSuggestLoaderImpl::GetApiUrl() const {
+GURL SearchSuggestLoaderImpl::GetApiUrl(const std::string& blacklist) const {
   GURL google_base_url = google_util::CommandLineGoogleBaseURL();
   if (!google_base_url.is_valid()) {
     google_base_url = google_url_tracker_->google_url();
   }
 
   GURL api_url = google_base_url.Resolve(kNewTabSearchSuggestionsApiPath);
+
+  api_url = net::AppendQueryParameter(api_url, "vtgb", blacklist);
 
   return api_url;
 }

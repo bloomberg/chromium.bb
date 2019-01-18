@@ -118,6 +118,21 @@ class SearchIPCRouter : public content::WebContentsObserver,
     // Called to open the file select dialog for selecting a
     // NTP background image.
     virtual void OnSelectLocalBackgroundImage() = 0;
+
+    // Called when a search suggestion is blacklisted on the local NTP.
+    virtual void OnBlacklistSearchSuggestion(int task_version,
+                                             long task_id) = 0;
+
+    // Called when a search suggestion is blacklisted on the local NTP and a
+    // hash is provided.
+    virtual void OnBlacklistSearchSuggestionWithHash(
+        int task_version,
+        long task_id,
+        const std::vector<uint8_t>& hash) = 0;
+
+    // Called when a user selected to completely opt out of NTP search
+    // suggestions.
+    virtual void OnOptOutOfSearchSuggestions() = 0;
   };
 
   // An interface to be implemented by consumers of SearchIPCRouter objects to
@@ -150,6 +165,9 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessSetCustomBackgroundURL() = 0;
     virtual bool ShouldProcessSetCustomBackgroundURLWithAttributions() = 0;
     virtual bool ShouldProcessSelectLocalBackgroundImage() = 0;
+    virtual bool ShouldProcessBlacklistSearchSuggestion() = 0;
+    virtual bool ShouldProcessBlacklistSearchSuggestionWithHash() = 0;
+    virtual bool ShouldProcessOptOutOfSearchSuggestions() = 0;
   };
 
   // Creates chrome::mojom::EmbeddedSearchClient connections on request.
@@ -238,6 +256,13 @@ class SearchIPCRouter : public content::WebContentsObserver,
       const std::string& attribution_line_2,
       const GURL& action_url) override;
   void SelectLocalBackgroundImage() override;
+  void BlacklistSearchSuggestion(int32_t task_version,
+                                 int64_t task_id) override;
+  void BlacklistSearchSuggestionWithHash(
+      int32_t task_version,
+      int64_t task_id,
+      const std::vector<uint8_t>& hash) override;
+  void OptOutOfSearchSuggestions() override;
   void set_embedded_search_client_factory_for_testing(
       std::unique_ptr<EmbeddedSearchClientFactory> factory) {
     embedded_search_client_factory_ = std::move(factory);
