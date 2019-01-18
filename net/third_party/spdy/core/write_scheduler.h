@@ -5,11 +5,13 @@
 #ifndef NET_THIRD_PARTY_SPDY_CORE_WRITE_SCHEDULER_H_
 #define NET_THIRD_PARTY_SPDY_CORE_WRITE_SCHEDULER_H_
 
+#include <cstdint>
 #include <tuple>
 #include <vector>
 
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/third_party/spdy/platform/api/spdy_export.h"
+#include "net/third_party/spdy/platform/api/spdy_string.h"
 
 namespace spdy {
 
@@ -144,6 +146,9 @@ class SPDY_EXPORT_PRIVATE WriteScheduler {
 
   // Returns the number of streams currently marked ready.
   virtual size_t NumReadyStreams() const = 0;
+
+  // Returns summary of internal state, for logging/debugging.
+  virtual SpdyString DebugString() const = 0;
 };
 
 }  // namespace spdy

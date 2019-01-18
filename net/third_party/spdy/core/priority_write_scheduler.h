@@ -19,6 +19,7 @@
 #include "net/third_party/spdy/core/spdy_bug_tracker.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/third_party/spdy/core/write_scheduler.h"
+#include "net/third_party/spdy/platform/api/spdy_string_utils.h"
 
 namespace spdy {
 
@@ -249,6 +250,12 @@ class PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
 
   // Returns the number of ready streams.
   size_t NumReadyStreams() const override { return num_ready_streams_; }
+
+  SpdyString DebugString() const override {
+    return SpdyStrCat(
+        "PriorityWriteScheduler {num_streams=", stream_infos_.size(),
+        " num_ready_streams=", NumReadyStreams(), "}");
+  }
 
   // Returns true if a stream is ready.
   bool IsStreamReady(StreamIdType stream_id) const {
